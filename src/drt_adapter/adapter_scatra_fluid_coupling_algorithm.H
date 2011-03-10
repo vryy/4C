@@ -51,7 +51,8 @@ namespace ADAPTER
     explicit ScaTraFluidCouplingAlgorithm(
         Epetra_Comm& comm,              ///< communicator
         const Teuchos::ParameterList& prbdyn, ///< problem-specific parameters
-        bool isale  ///< do we need an ALE formulation of the fields?
+        bool isale,  ///< do we need an ALE formulation of the fields?
+        const int disnum=0 ///< scatra discretization number (default: 0)
         );
 
     /// virtual destructor to support polymorph destruction

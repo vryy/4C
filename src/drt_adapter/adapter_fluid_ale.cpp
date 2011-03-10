@@ -20,6 +20,13 @@ Maintainer: Ulrich Kuettler
 
 #include "adapter_fluid_ale.H"
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -32,13 +39,15 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
                                    FluidField().Interface().FSICondMap(),
                                   *AleField().Discretization(),
                                    AleField().Interface().FSICondMap(),
-                                   condname);
+                                  condname,
+                                  genprob.ndim);
 
   fscoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
                                     FluidField().Interface().FSCondMap(),
                                    *AleField().Discretization(),
                                     AleField().Interface().FSCondMap(),
-                                    "FREESURFCoupling");
+                                   "FREESURFCoupling",
+                                   genprob.ndim);
 
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
@@ -47,7 +56,8 @@ ADAPTER::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn,
   coupfa_.SetupCoupling(*FluidField().Discretization(),
                         *AleField().Discretization(),
                         *fluidnodemap,
-                        *alenodemap);
+                        *alenodemap,
+                        genprob.ndim);
 
   FluidField().SetMeshMap(coupfa_.MasterDofMap());
 

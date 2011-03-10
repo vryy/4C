@@ -1578,6 +1578,11 @@ int main(int argc, char** argv)
       }
       break;
     }
+    case prb_fsi_lung_gas:
+    {
+      dserror("not implemented yet");
+      break;
+    }
     default:
     {
       dserror("problem type %d not yet supported", problem.Problemtype());

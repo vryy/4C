@@ -194,6 +194,10 @@ FSI::Monolithic::Monolithic(Epetra_Comm& comm)
     sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(StructureField().Discretization()));
     //fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(FluidField().Discretization()));
   }
+
+  std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  s.append(".iteration");
+  log_ = Teuchos::rcp(new std::ofstream(s.c_str()));
 }
 
 
@@ -201,20 +205,28 @@ FSI::Monolithic::Monolithic(Epetra_Comm& comm)
 /*----------------------------------------------------------------------*/
 void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
 {
+  PrepareTimeloop();
+
+  while (NotFinished())
+  {
+    PrepareTimeStep();
+    TimeStep(interface);
+    Update();
+    Output();
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::Monolithic::PrepareTimeloop()
+{
   // make sure we didn't destroy the maps before we entered the timeloop
   Extractor().CheckForValidMapExtractor();
 
   // Get the top level parameter list
   Teuchos::ParameterList& nlParams = NOXParameterList();
 
-  // sublists
-
-  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
-  //Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
-  Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
-  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
-
-  //Teuchos::ParameterList& searchParams = nlParams.sublist("Line Search");
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
   printParams.set("MyPID", Comm().MyPID());
 
@@ -256,21 +268,15 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   // Create printing utilities
   utils_ = Teuchos::rcp(new NOX::Utils(printParams));
 
-  Teuchos::RCP<std::ofstream> log;
   if (Comm().MyPID()==0)
   {
-    std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    s.append(".iteration");
-    log = Teuchos::rcp(new std::ofstream(s.c_str()));
-    (*log) << "# num procs      = " << Comm().NumProc() << "\n"
+    (*log_) << "# num procs      = " << Comm().NumProc() << "\n"
            << "# Method         = " << nlParams.sublist("Direction").get("Method","Newton") << "\n"
            << "#\n"
       ;
   }
 
-  Teuchos::Time timer("time step timer");
-
-  // check for prestressing, 
+  // check for prestressing,
   // do not allow monolithic in the pre-phase
   // allow monolithic in the post-phase
   {
@@ -287,81 +293,95 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
       if (time+dt <= pstime) dserror("No monolithic FSI in the pre-phase of prestressing, use Aitken!");
     }
   }
-  
+}
 
-  while (NotFinished())
-  {
-    PrepareTimeStep();
 
-    if (sdbg_!=Teuchos::null)
-      sdbg_->NewTimeStep(Step(),"struct");
-    if (fdbg_!=Teuchos::null)
-      fdbg_->NewTimeStep(Step(),"fluid");
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
+{
+  // Get the top level parameter list
+  Teuchos::ParameterList& nlParams = NOXParameterList();
 
-    // start time measurement
-    Teuchos::RCP<Teuchos::TimeMonitor> timemonitor = rcp(new Teuchos::TimeMonitor(timer,true));
+  // sublists
 
-    // calculate initial linear system at current position
-    // (no increment)
-    // This initializes the field algorithms and creates the first linear
-    // systems. And this is the reason we know the initial linear system is
-    // there when we create the NOX::Group.
-    Evaluate(Teuchos::null);
+  Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+  //Teuchos::ParameterList& solverOptions = nlParams.sublist("Solver Options");
+  Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
+  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
-    // Get initial guess.
-    // The initial system is there, so we can happily extract the
-    // initial guess. (The Dirichlet conditions are already build in!)
-    Teuchos::RCP<Epetra_Vector> initial_guess = Teuchos::rcp(new Epetra_Vector(*DofRowMap()));
-    InitialGuess(initial_guess);
+  //Teuchos::ParameterList& searchParams = nlParams.sublist("Line Search");
+  Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
+  printParams.set("MyPID", Comm().MyPID());
 
-    NOX::Epetra::Vector noxSoln(initial_guess, NOX::Epetra::Vector::CreateView);
+  Teuchos::Time timer("time step timer");
 
-    // Create the linear system
-    Teuchos::RCP<NOX::Epetra::LinearSystem> linSys =
-      CreateLinearSystem(nlParams, noxSoln, utils_);
+  if (sdbg_!=Teuchos::null)
+    sdbg_->NewTimeStep(Step(),"struct");
+  if (fdbg_!=Teuchos::null)
+    fdbg_->NewTimeStep(Step(),"fluid");
 
-    // Create the Group
-    Teuchos::RCP<NOX::FSI::Group> grp =
-      Teuchos::rcp(new NOX::FSI::Group(*this, printParams, interface, noxSoln, linSys));
+  // start time measurement
+  Teuchos::RCP<Teuchos::TimeMonitor> timemonitor = rcp(new Teuchos::TimeMonitor(timer,true));
 
-    // Convergence Tests
-    Teuchos::RCP<NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
+  // calculate initial linear system at current position
+  // (no increment)
+  // This initializes the field algorithms and creates the first linear
+  // systems. And this is the reason we know the initial linear system is
+  // there when we create the NOX::Group.
+  Evaluate(Teuchos::null);
 
-    // Create the solver
-    Teuchos::RCP<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(grp,combo,RCP<ParameterList>(&nlParams,false));
+  // Get initial guess.
+  // The initial system is there, so we can happily extract the
+  // initial guess. (The Dirichlet conditions are already build in!)
+  Teuchos::RCP<Epetra_Vector> initial_guess = Teuchos::rcp(new Epetra_Vector(*DofRowMap()));
+  InitialGuess(initial_guess);
 
-    // we know we already have the first linear system calculated
-    grp->CaptureSystemState();
+  NOX::Epetra::Vector noxSoln(initial_guess, NOX::Epetra::Vector::CreateView);
 
-    // solve the whole thing
-    NOX::StatusTest::StatusType status = solver->solve();
+  // Create the linear system
+  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys =
+    CreateLinearSystem(nlParams, noxSoln, utils_);
 
-    if (status != NOX::StatusTest::Converged)
-      if (Comm().MyPID()==0)
-        utils_->out() << RED "Nonlinear solver failed to converge!" END_COLOR << endl;
+  // Create the Group
+  Teuchos::RCP<NOX::FSI::Group> grp =
+    Teuchos::rcp(new NOX::FSI::Group(*this, printParams, interface, noxSoln, linSys));
 
-    // cleanup
-    //mat_->Zero();
+  // Convergence Tests
+  Teuchos::RCP<NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
 
-    // stop time measurement
-    timemonitor = Teuchos::null;
+  // Create the solver
+  Teuchos::RCP<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(grp,combo,RCP<ParameterList>(&nlParams,false));
 
+  // we know we already have the first linear system calculated
+  grp->CaptureSystemState();
+
+  // solve the whole thing
+  NOX::StatusTest::StatusType status = solver->solve();
+
+  if (status != NOX::StatusTest::Converged)
     if (Comm().MyPID()==0)
-    {
-      (*log) << Step()
-             << " " << timer.totalElapsedTime()
-             << " " << nlParams.sublist("Output").get("Nonlinear Iterations",0)
-             << " " << nlParams.sublist("Output").get("2-Norm of Residual", 0.)
-             << " " << lsParams.sublist("Output").get("Total Number of Linear Iterations",0)
-        ;
-      (*log) << std::endl;
-      lsParams.sublist("Output").set("Total Number of Linear Iterations",0);
-    }
+      utils_->out() << RED "Nonlinear solver failed to converge!" END_COLOR << endl;
 
-    Update();
-    Output();
+  // cleanup
+  //mat_->Zero();
+
+  // stop time measurement
+  timemonitor = Teuchos::null;
+
+  if (Comm().MyPID()==0)
+  {
+    (*log_) << Step()
+            << " " << timer.totalElapsedTime()
+            << " " << nlParams.sublist("Output").get("Nonlinear Iterations",0)
+            << " " << nlParams.sublist("Output").get("2-Norm of Residual", 0.)
+            << " " << lsParams.sublist("Output").get("Total Number of Linear Iterations",0)
+      ;
+    (*log_) << std::endl;
+    lsParams.sublist("Output").set("Total Number of Linear Iterations",0);
   }
 }
+
 
 
 /*----------------------------------------------------------------------*/

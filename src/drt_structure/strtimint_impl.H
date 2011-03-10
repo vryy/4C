@@ -85,13 +85,13 @@ namespace STR
     void Predict();
 
     //! Identify residual
-    //! This method does not predict the target solution but 
+    //! This method does not predict the target solution but
     //! evaluates the residual and the stiffness matrix.
     //! In partitioned solution schemes, it is better to keep the current
     //! solution instead of evaluating the initial guess (as the predictor)
     //! does.
     void PreparePartitionStep();
-    
+
     //! Predict constant displacements, velocities and accelerations,
     //! i.e. the initial guess is equal to the last converged step
     //! except Dirichlet BCs
@@ -290,7 +290,7 @@ namespace STR
 
     //! Build up STC Matrix
     void ComputeSTCMatrix();
-    
+
     //! recover standard solution
     void RecoverSTCSolution();
     //@}
@@ -645,6 +645,12 @@ namespace STR
 
     //! Return effective residual force \f$R_{n+1}\f$
     Teuchos::RCP<const Epetra_Vector> ForceRes() const { return fres_; }
+
+    virtual Teuchos::RCP<Epetra_Vector> Velaf()
+    {
+      dserror("mid velocities not available");
+      return Teuchos::null;
+    }
 
     //@}
 

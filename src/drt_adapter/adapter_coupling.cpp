@@ -49,7 +49,8 @@ void ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& master
                                                Teuchos::RCP<const Epetra_Map> mastercondmap,
                                                const DRT::Discretization& slavedis,
                                                Teuchos::RCP<const Epetra_Map> slavecondmap,
-                                               const std::string& condname)
+                                               const std::string& condname,
+                                               const int numdof)
 {
   std::vector<int> masternodes;
   DRT::UTILS::FindConditionedNodes(masterdis,condname,masternodes);
@@ -68,12 +69,12 @@ void ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& master
     dserror("got %d master nodes but %d slave nodes for coupling",
             mastercount,slavecount);
 
-  SetupCoupling(masterdis, slavedis, masternodes, slavenodes);
+  SetupCoupling(masterdis, slavedis, masternodes, slavenodes, numdof);
 
   // test for completeness
-  if (static_cast<int>(masternodes.size())*genprob.ndim != masterdofmap_->NumMyElements())
+  if (static_cast<int>(masternodes.size())*numdof != masterdofmap_->NumMyElements())
     dserror("failed to setup master nodes properly");
-  if (static_cast<int>(slavenodes.size())*genprob.ndim != slavedofmap_->NumMyElements())
+  if (static_cast<int>(slavenodes.size())*numdof != slavedofmap_->NumMyElements())
     dserror("failed to setup slave nodes properly");
 
   // Now swap in the maps we already had.
@@ -108,7 +109,8 @@ void ADAPTER::Coupling::SetupConstrainedConditionCoupling(const DRT::Discretizat
                                                           const DRT::Discretization& slavedis,
                                                           Teuchos::RCP<const Epetra_Map> slavecondmap,
                                                           const std::string& condname1,
-                                                          const std::string& condname2)
+                                                          const std::string& condname2,
+                                                          const int numdof)
 {
   std::vector<int> masternodes1;
   DRT::UTILS::FindConditionedNodes(masterdis,condname1,masternodes1);
@@ -150,12 +152,12 @@ void ADAPTER::Coupling::SetupConstrainedConditionCoupling(const DRT::Discretizat
     dserror("got %d master nodes but %d slave nodes for coupling",
             mastercount,slavecount);
 
-  SetupCoupling(masterdis, slavedis, masternodes, slavenodes);
+  SetupCoupling(masterdis, slavedis, masternodes, slavenodes, numdof);
 
   // test for completeness
-  if (static_cast<int>(masternodes.size())*genprob.ndim != masterdofmap_->NumMyElements())
+  if (static_cast<int>(masternodes.size())*numdof != masterdofmap_->NumMyElements())
     dserror("failed to setup master nodes properly");
-  if (static_cast<int>(slavenodes.size())*genprob.ndim != slavedofmap_->NumMyElements())
+  if (static_cast<int>(slavenodes.size())*numdof != slavedofmap_->NumMyElements())
     dserror("failed to setup slave nodes properly");
 
   // Now swap in the maps we already had.
@@ -185,7 +187,8 @@ void ADAPTER::Coupling::SetupConstrainedConditionCoupling(const DRT::Discretizat
 void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
                                       const DRT::Discretization& slavedis,
                                       const std::vector<int>& masternodes,
-                                      const std::vector<int>& slavenodes)
+                                      const std::vector<int>& slavenodes,
+                                      const int numdof)
 {
   std::vector<int> patchedmasternodes(masternodes);
   std::vector<int> permslavenodes;
@@ -202,7 +205,7 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
   Teuchos::RCP<Epetra_Map> permslavenodemap =
     rcp(new Epetra_Map(-1, permslavenodes.size(), &permslavenodes[0], 0, slavedis.Comm()));
 
-  FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap);
+  FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap, numdof);
 }
 
 
@@ -211,7 +214,8 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
 void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
                                       const DRT::Discretization& slavedis,
                                       const Epetra_Map& masternodes,
-                                      const Epetra_Map& slavenodes)
+                                      const Epetra_Map& slavenodes,
+                                      const int numdof)
 {
   if (masternodes.NumGlobalElements()!=slavenodes.NumGlobalElements())
     dserror("got %d master nodes but %d slave nodes for coupling",
@@ -237,7 +241,7 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
   Teuchos::RCP<Epetra_Map> permslavenodemap =
     rcp(new Epetra_Map(-1, permslavenodes.size(), &permslavenodes[0], 0, slavedis.Comm()));
 
-  FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap);
+  FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap, numdof);
 }
 
 
@@ -298,10 +302,11 @@ void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::Coupling::FinishCoupling(const DRT::Discretization& masterdis,
-                                   const DRT::Discretization& slavedis,
-                                   Teuchos::RCP<Epetra_Map> masternodemap,
-                                   Teuchos::RCP<Epetra_Map> slavenodemap,
-                                   Teuchos::RCP<Epetra_Map> permslavenodemap)
+                                       const DRT::Discretization& slavedis,
+                                       Teuchos::RCP<Epetra_Map> masternodemap,
+                                       Teuchos::RCP<Epetra_Map> slavenodemap,
+                                       Teuchos::RCP<Epetra_Map> permslavenodemap,
+                                       const int numdof)
 {
   // we expect to get maps of exactly the same shape
   if (not masternodemap->PointSameAs(*permslavenodemap))
@@ -332,8 +337,8 @@ void ADAPTER::Coupling::FinishCoupling(const DRT::Discretization& masterdis,
   masternodevec = Teuchos::null;
   permmasternodevec = Teuchos::null;
 
-  BuildDofMaps(masterdis, masternodemap, permmasternodemap, masterdofmap_, permmasterdofmap_, masterexport_);
-  BuildDofMaps(slavedis,  slavenodemap,  permslavenodemap,  slavedofmap_,  permslavedofmap_,  slaveexport_);
+  BuildDofMaps(masterdis, masternodemap, permmasternodemap, masterdofmap_, permmasterdofmap_, masterexport_, numdof);
+  BuildDofMaps(slavedis,  slavenodemap,  permslavenodemap,  slavedofmap_,  permslavedofmap_,  slaveexport_, numdof);
 }
 
 
@@ -344,7 +349,8 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
                                      Teuchos::RCP<const Epetra_Map> permnodemap,
                                      Teuchos::RCP<const Epetra_Map>& dofmap,
                                      Teuchos::RCP<const Epetra_Map>& permdofmap,
-                                     Teuchos::RCP<Epetra_Export>& exporter)
+                                     Teuchos::RCP<Epetra_Export>& exporter,
+                                     const int numdof)
 {
   // communicate dofs
 
@@ -394,10 +400,10 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
     }
 
     const vector<int> dof = dis.Dof(actnode);
-    if (genprob.ndim > static_cast<int>(dof.size()))
-      dserror("got just %d dofs at node %d (lid=%d) but expected %d",dof.size(),nodes[i],i,genprob.ndim);
-    copy(&dof[0], &dof[0]+genprob.ndim, back_inserter(dofs[nodes[i]]));
-    copy(&dof[0], &dof[0]+genprob.ndim, back_inserter(dofmapvec));
+    if (numdof > static_cast<int>(dof.size()))
+      dserror("got just %d dofs at node %d (lid=%d) but expected %d",dof.size(),nodes[i],i,numdof);
+    copy(&dof[0], &dof[0]+numdof, back_inserter(dofs[nodes[i]]));
+    copy(&dof[0], &dof[0]+numdof, back_inserter(dofmapvec));
   }
 
   std::vector<int>::const_iterator pos = std::min_element(dofmapvec.begin(), dofmapvec.end());

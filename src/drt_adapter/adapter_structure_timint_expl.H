@@ -265,10 +265,8 @@ namespace ADAPTER {
     //@}
 
 
-    //! @name TSI specific methods
+    //! @name Extract methods
     //@{
-
-    //! Extract coupling values (displacements)
 
     /// extract displacements
     virtual Teuchos::RCP<Epetra_Vector> ExtractDispn();
@@ -281,6 +279,14 @@ namespace ADAPTER {
 
     /// extract velocities
     virtual Teuchos::RCP<Epetra_Vector> ExtractVelnp();
+
+    /// extract velocities
+    virtual Teuchos::RCP<Epetra_Vector> ExtractVelaf();
+
+    //@}
+
+    //! @name TSI specific methods
+    //@{
 
     //! Apply temperatures  for TSI
 

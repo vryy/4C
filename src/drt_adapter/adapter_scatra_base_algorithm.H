@@ -46,8 +46,9 @@ namespace ADAPTER {
     /// constructor
     explicit ScaTraBaseAlgorithm(
         const Teuchos::ParameterList& prbdyn, ///< problem-dependent parameters
-        const bool isale                      ///< do we need the ALE formulation?
-        );
+        const bool isale,                     ///< do we need the ALE formulation?
+        const int disnum=0                    ///< scatra discretization number (default: 0)
+      );
 
     /// virtual destructor to support polymorph destruction
     virtual ~ScaTraBaseAlgorithm();

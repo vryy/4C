@@ -6,6 +6,13 @@
 #include "fsi_nox_linearsystem_partitioned.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -35,7 +42,8 @@ void FSI::PartitionedMonolithic::SetupSystem()
                                  StructureField().Interface().FSICondMap(),
                                 *FluidField().Discretization(),
                                  FluidField().Interface().FSICondMap(),
-                                 "FSICoupling");
+                                "FSICoupling",
+                                 genprob.ndim);
 
   // structure to ale
 
@@ -43,7 +51,8 @@ void FSI::PartitionedMonolithic::SetupSystem()
                                  StructureField().Interface().FSICondMap(),
                                 *AleField().Discretization(),
                                  AleField().Interface().FSICondMap(),
-                                 "FSICoupling");
+                                "FSICoupling",
+                                 genprob.ndim);
 
   // fluid to ale at the interface
 
@@ -51,7 +60,8 @@ void FSI::PartitionedMonolithic::SetupSystem()
                                    FluidField().Interface().FSICondMap(),
                                   *AleField().Discretization(),
                                    AleField().Interface().FSICondMap(),
-                                   "FSICoupling");
+                                  "FSICoupling",
+                                   genprob.ndim);
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
@@ -70,7 +80,8 @@ void FSI::PartitionedMonolithic::SetupSystem()
   coupfa.SetupCoupling(*FluidField().Discretization(),
                        *AleField().Discretization(),
                        *fluidnodemap,
-                       *alenodemap);
+                       *alenodemap,
+                        genprob.ndim);
 
   FluidField().SetMeshMap(coupfa.MasterDofMap());
 

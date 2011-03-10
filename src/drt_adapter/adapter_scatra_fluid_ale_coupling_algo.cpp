@@ -19,6 +19,13 @@ Maintainer: Georg Bauer
 #include "adapter_scatra_fluid_ale_coupling_algo.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
@@ -34,22 +41,25 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::ScaTraFluidAleCouplingAlgorithm(
                                     FluidField().Interface().FSICondMap(),
                                    *AleField().Discretization(),
                                     AleField().Interface().FSICondMap(),
-                                    condname);
+                                    condname,
+                                    genprob.ndim);
 
    fscoupfa_.SetupConditionCoupling(*FluidField().Discretization(),
                                      FluidField().Interface().FSCondMap(),
                                     *AleField().Discretization(),
                                      AleField().Interface().FSCondMap(),
-                                     "FREESURFCoupling");
+                                    "FREESURFCoupling",
+                                     genprob.ndim);
 
    // the fluid-ale coupling always matches
    const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
    const Epetra_Map* alenodemap   = AleField().Discretization()->NodeRowMap();
 
    coupfa_.SetupCoupling(*FluidField().Discretization(),
-       *AleField().Discretization(),
-       *fluidnodemap,
-       *alenodemap);
+                         *AleField().Discretization(),
+                         *fluidnodemap,
+                         *alenodemap,
+                          genprob.ndim);
 
    FluidField().SetMeshMap(coupfa_.MasterDofMap());
 

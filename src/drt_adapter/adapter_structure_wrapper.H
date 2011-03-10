@@ -117,6 +117,8 @@ namespace ADAPTER
     { return structure_->ExtractVeln(); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractVelnp()
     { return structure_->ExtractVelnp(); }
+    virtual Teuchos::RCP<Epetra_Vector> ExtractVelaf()
+    { return structure_->ExtractVelaf(); }
 
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest()
     { return structure_->CreateFieldTest(); }

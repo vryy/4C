@@ -28,6 +28,13 @@ Maintainer: Thomas Kloeppel
 #include <Epetra_Time.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -45,7 +52,8 @@ FSI::StructureALE::StructureALE(Epetra_Comm& comm)
                                    StructureField().Interface().FSICondMap(),
                                   *MBFluidField().Discretization(),
                                    MBFluidField().Interface().FSICondMap(),
-                                  "FSICoupling");
+                                  "FSICoupling",
+                                   genprob.ndim);
 
     // In the following we assume that both couplings find the same dof
     // map at the structural side. This enables us to use just one

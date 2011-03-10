@@ -355,20 +355,18 @@ void ADAPTER::StructureTimIntExpl::Integrate()
 
 
 /*----------------------------------------------------------------------*/
-/* extract coupling values needed for TSI                    dano 05/10 */
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntExpl::ExtractDispn()
+/* extract displacements D_{n} needed for TSI                dano 05/10 */
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntExpl::ExtractDispnp()
 {
-  dserror("not implemented");
-  return Teuchos::null;
+  return structure_->DisNew();
 }
 
 
 /*----------------------------------------------------------------------*/
-/* extract displacements D_{n+1} needed for TSI              dano 05/10 */
-Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntExpl::ExtractDispnp()
+/* extract displacements D_{n+1} needed for TSI               dano 05/10 */
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntExpl::ExtractDispn()
 {
-  dserror("not implemented");
-  return Teuchos::null;
+  return structure_->Dis();
 }
 
 
@@ -376,8 +374,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntExpl::ExtractDispnp()
 /* extract velocities V_{n} needed for TSI                   dano 08/10 */
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntExpl::ExtractVeln()
 {
-  dserror("not implemented");
-  return Teuchos::null;
+  return structure_->Vel();
 }
 
 
@@ -385,8 +382,16 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntExpl::ExtractVeln()
 /* extract velocities V_{n+1} needed for TSI                 dano 06/10 */
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntExpl::ExtractVelnp()
 {
-  dserror("not implemented");
-  return Teuchos::null;
+  return structure_->VelNew();
+}
+
+
+/*----------------------------------------------------------------------*
+ | Extract midpoint velocities                                          |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntExpl::ExtractVelaf()
+{
+  return structure_->Velaf();
 }
 
 

@@ -205,7 +205,8 @@ public:
     VolumetricSurfaceFlowCond,
     VolumetricFlowBorderNodes,
     ThermoConvections,
-    ScaTraFluxCalc
+    ScaTraFluxCalc,
+    ScaTraCoupling
   };
 
   /*!

@@ -32,6 +32,13 @@
 #include <mpi.h>
 #endif
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -554,7 +561,8 @@ FSI::MonolithicFS::MonolithicFS(Epetra_Comm& comm)
                                    FluidField().Interface().FSCondMap(),
                                   *AleField().Discretization(),
                                    AleField().Interface().FSCondMap(),
-                                   "FREESURFCoupling");
+                                  "FREESURFCoupling",
+                                  genprob.ndim);
 
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
@@ -563,7 +571,8 @@ FSI::MonolithicFS::MonolithicFS(Epetra_Comm& comm)
   coupfa.SetupCoupling(*FluidField().Discretization(),
                        *AleField().Discretization(),
                        *fluidnodemap,
-                       *alenodemap);
+                       *alenodemap,
+                        genprob.ndim);
 
   FluidField().SetMeshMap(coupfa.MasterDofMap());
 

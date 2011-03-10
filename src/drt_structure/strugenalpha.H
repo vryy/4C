@@ -440,7 +440,9 @@ public:
   Teuchos::RCP<Epetra_Vector> Dispm() { return dism_; }
   Teuchos::RCP<Epetra_Vector> Disp() { return dis_; }
   Teuchos::RCP<Epetra_Vector> Vel() { return vel_; }
+  Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }
   Teuchos::RCP<Epetra_Vector> Acc() { return acc_; }
+  virtual Teuchos::RCP<Epetra_Vector> Velaf() { return velm_; }
   Teuchos::RCP<Epetra_Vector> FRobin() { return frobin_; }
   Teuchos::RCP<Epetra_Vector> FExtn() { return fextn_; }
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_); }

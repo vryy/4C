@@ -191,7 +191,7 @@ namespace STR
 
     //! Update step
     void UpdateStepState();
-    
+
     //! Update element
     void UpdateStepElement();
 
@@ -214,6 +214,8 @@ namespace STR
     {
       return fextn_;
     }
+
+    virtual Teuchos::RCP<Epetra_Vector> Velaf() { return velm_; }
 
     //@}
 

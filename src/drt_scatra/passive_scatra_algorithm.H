@@ -35,8 +35,9 @@ namespace SCATRA{
 
     /// constructor
     explicit PassiveScaTraAlgorithm(
-        Epetra_Comm& comm,                   ///< communicator
-        const Teuchos::ParameterList& prbdyn ///< problem-specific parameter list
+        Epetra_Comm& comm,                    ///< communicator
+        const Teuchos::ParameterList& prbdyn, ///< problem-specific parameter list
+        const int disnum=0                    ///< scatra discretization number (default: 0)
         );
 
     /// virtual destructor to support polymorph destruction
@@ -44,8 +45,6 @@ namespace SCATRA{
 
     /// outer level time loop
     void TimeLoop();
-
-  protected:
 
     /// start a new time step
     void PrepareTimeStep();

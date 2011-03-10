@@ -10,6 +10,13 @@
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -38,14 +45,16 @@ void FSI::MonolithicLagrange::SetupSystem()
                                  StructureField().Interface().FSICondMap(),
                                 *FluidField().Discretization(),
                                  FluidField().Interface().FSICondMap(),
-                                 "FSICoupling");
+                                "FSICoupling",
+                                 genprob.ndim);
 
   // structure (master) to ale (slave)
   coupsa.SetupConditionCoupling(*StructureField().Discretization(),
                                  StructureField().Interface().FSICondMap(),
                                 *AleField().Discretization(),
                                  AleField().Interface().FSICondMap(),
-                                 "FSICoupling");
+                                "FSICoupling",
+                                 genprob.ndim);
 
   // assure that both coupling objects use the same map
   // at their common master side (i.e. the structure)
@@ -67,7 +76,8 @@ void FSI::MonolithicLagrange::SetupSystem()
   coupfa.SetupCoupling(*FluidField().Discretization(),
                        *AleField().Discretization(),
                        *fluidnodemap,
-                       *alenodemap);
+                       *alenodemap,
+                       genprob.ndim);
 
   FluidField().SetMeshMap(coupfa.MasterDofMap());
 
@@ -76,7 +86,8 @@ void FSI::MonolithicLagrange::SetupSystem()
                                    FluidField().Interface().FSICondMap(),
                                   *AleField().Discretization(),
                                    AleField().Interface().FSICondMap(),
-                                   "FSICoupling");
+                                  "FSICoupling",
+                                  genprob.ndim);
 
   // create combined map
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;

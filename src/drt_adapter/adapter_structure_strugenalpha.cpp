@@ -649,8 +649,7 @@ void ADAPTER::StructureGenAlpha::PreparePartitionStep()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractDispn()
 {
-  dserror("no application here");
-  return Teuchos::null;
+  return structure_->Disp();
 }
 
 
@@ -659,8 +658,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractDispn()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractDispnp()
 {
-  dserror("no application here");
-  return Teuchos::null;
+  return structure_->Dispn();
 }
 
 
@@ -669,8 +667,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractDispnp()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractVeln()
 {
-  dserror("no application here");
-  return Teuchos::null;
+  return structure_->Vel();
 }
 
 
@@ -679,9 +676,16 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractVeln()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractVelnp()
 {
-  dserror("no application here");
-  return Teuchos::null;
+  return structure_->Veln();
 }
 
+
+/*----------------------------------------------------------------------*
+ | Extract midpoint velocities                                          |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractVelaf()
+{
+  return structure_->Velaf();
+}
 
 #endif

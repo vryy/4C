@@ -13,6 +13,13 @@
 
 #include "../drt_io/io_control.H"
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::MonolithicStructureSplit::MonolithicStructureSplit(Epetra_Comm& comm)
@@ -43,7 +50,8 @@ void FSI::MonolithicStructureSplit::SetupSystem()
                                  StructureField().Interface().FSICondMap(),
                                 *FluidField().Discretization(),
                                  FluidField().Interface().FSICondMap(),
-                                 "FSICoupling");
+                                "FSICoupling",
+                                 genprob.ndim);
 
   // structure to ale
 
@@ -51,7 +59,8 @@ void FSI::MonolithicStructureSplit::SetupSystem()
                                  StructureField().Interface().FSICondMap(),
                                 *AleField().Discretization(),
                                  AleField().Interface().FSICondMap(),
-                                 "FSICoupling");
+                                "FSICoupling",
+                                 genprob.ndim);
 
   // fluid to ale at the interface
 
@@ -59,7 +68,8 @@ void FSI::MonolithicStructureSplit::SetupSystem()
                                    FluidField().Interface().FSICondMap(),
                                   *AleField().Discretization(),
                                    AleField().Interface().FSICondMap(),
-                                   "FSICoupling");
+                                  "FSICoupling",
+                                   genprob.ndim);
 
   // we might have a free surface
   if (FluidField().Interface().FSCondRelevant())
@@ -68,7 +78,8 @@ void FSI::MonolithicStructureSplit::SetupSystem()
                                       FluidField().Interface().FSCondMap(),
                                      *AleField().Discretization(),
                                       AleField().Interface().FSCondMap(),
-                                      "FREESURFCoupling");
+                                     "FREESURFCoupling",
+                                      genprob.ndim);
   }
 
   // In the following we assume that both couplings find the same dof
@@ -88,7 +99,8 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   coupfa.SetupCoupling(*FluidField().Discretization(),
                        *AleField().Discretization(),
                        *fluidnodemap,
-                       *alenodemap);
+                       *alenodemap,
+                        genprob.ndim);
 
   FluidField().SetMeshMap(coupfa.MasterDofMap());
 

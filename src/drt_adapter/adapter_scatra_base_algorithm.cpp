@@ -41,7 +41,8 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
     const Teuchos::ParameterList& prbdyn,
-    bool isale
+    bool isale,
+    const int disnum
 )
 {
   // setup scalar transport algorithm (overriding some dynamic parameters
@@ -51,7 +52,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // access the discretization
   // -------------------------------------------------------------------
   RCP<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numscatra,0);
+  actdis = DRT::Problem::Instance()->Dis(genprob.numscatra,disnum);
 
   // -------------------------------------------------------------------
   // set degrees of freedom in the discretization

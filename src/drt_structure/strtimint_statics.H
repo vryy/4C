@@ -145,7 +145,7 @@ namespace STR
 
     //! Update step
     void UpdateStepState();
-    
+
     //! Update element
     void UpdateStepElement();
 
@@ -166,6 +166,12 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> FextNew()
     {
       return fextn_;
+    }
+
+    virtual Teuchos::RCP<Epetra_Vector> Velaf()
+    {
+      dserror("mid velocities not available");
+      return Teuchos::null;
     }
 
     //@}

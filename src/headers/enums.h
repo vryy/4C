@@ -19,6 +19,7 @@ typedef enum _PROBLEM_TYP
                        prb_fsi,          /*  fluid structure interaction problem */
                        prb_fsi_xfem,     /*  fluid structure interaction problem including XFEM interfaces*/
                        prb_fsi_lung,     /*  airway fsi problem with attached parenchyma balloon */
+                       prb_fsi_lung_gas, /*  lung fsi problem with gas exchange */
                        prb_ssi,          /*  structure structure interaction problem */
                        prb_structure,    /*  structural problem */
                        prb_fluid,        /*  fluid problem */
@@ -44,7 +45,7 @@ typedef enum _PROBLEM_TYP
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential for the filters to read the problem
  * type! */
-#define PROBLEMNAMES { "none","fsi","fsi_xfem","fsi_lung","ssi","structure", "fluid","fluid_xfem","fluid_dgfem","fluid_ale","freesurf","opt","ale","tsi","thermo","fluid_pm","scatra","pfsi","struct_multi","loma","elch","combustion","art_net","red_airways",NULL }
+#define PROBLEMNAMES { "none","fsi","fsi_xfem","fsi_lung","fsi_lung_gas","ssi","structure", "fluid","fluid_xfem","fluid_dgfem","fluid_ale","freesurf","opt","ale","tsi","thermo","fluid_pm","scatra","pfsi","struct_multi","loma","elch","combustion","art_net","red_airways",NULL }
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
  *----------------------------------------------------------------------*/
@@ -69,6 +70,8 @@ typedef enum _FIELDTYP
                        pressure,    /* pure pressure field */
                        boundary,    /* boundary field */
                        scatra,      /* scalar transport field */
+                       scatra1,      /* scalar transport field in case of multiple fields */
+                       scatra2,      /* scalar transport field in case of multiple fields */
                        artery,      /* artery field*/
                        thermo,      /* thermal field */
                        fluidfluidboundary,  /*fluidfluidboundary field*/
@@ -76,7 +79,7 @@ typedef enum _FIELDTYP
 } FIELDTYP;
 /* Mapping from fieldtyp numbers to printable names. To be used to
  * initialize static variables. Keep in sync! */
-#define FIELDNAMES {"none", "fluid", "xfluid", "ale", "structure", "thermal", "pressure", "boundary", "scatra", "artery", "thermo", "FluidFluidboundary", "red_airway",NULL}
+#define FIELDNAMES {"none", "fluid", "xfluid", "ale", "structure", "thermal", "pressure", "boundary", "scatra", "scatra1", "scatra2", "artery", "thermo", "FluidFluidboundary", "red_airway",NULL}
 
 
 

@@ -56,6 +56,9 @@ std::map<string,string> SCATRA::ScatraFluidCloneStrategy::ConditionsToCopy()
   // for moving boundary problems
   conditions_to_copy.insert(pair<string,string>("FSICoupling","FSICoupling"));
 
+  // for coupled scalar transport fields
+  conditions_to_copy.insert(pair<string,string>("ScaTraCoupling","ScaTraCoupling"));
+
   return conditions_to_copy;
 }
 
@@ -123,6 +126,36 @@ bool SCATRA::ScatraFluidCloneStrategy::DetermineEleType(
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<int> SCATRA::GetScaTraMatList(const Teuchos::ParameterList& scatradyn)
+{
+  int num;
+  std::vector<int> matlist;
+  std::istringstream matliststream(Teuchos::getNumericStringParameter(scatradyn,"MATID"));
+
+  while (matliststream >> num)
+  {
+    if (num == -1) // default (invalid) material ID
+      dserror("Invalid matlist ID");
+    else
+      matlist.push_back(num);
+  }
+  return matlist;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+int SCATRA::GetScaTraMatID(const Teuchos::ParameterList& scatradyn)
+{
+  std::vector<int> matlist = GetScaTraMatList(scatradyn);
+
+  if (matlist.size() != 1)
+    dserror("Expected one matlist in scatra problem");
+
+  return matlist[0];
+}
 
 
 #endif  // CCADISCRET

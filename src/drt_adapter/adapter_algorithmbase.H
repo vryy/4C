@@ -32,6 +32,9 @@ namespace ADAPTER
     /// communicator
     const Epetra_Comm& Comm() const { return comm_; }
 
+    /// tests if there are more time steps to do
+    bool NotFinished() { return step_ < nstep_ and time_+1e-10*dt_ < maxtime_; }
+
   protected:
 
     /// time step size
@@ -50,9 +53,6 @@ namespace ADAPTER
     double Time() const {return time_;}
 
     //! @name Time loop building blocks
-
-    /// tests if there are more time steps to do
-    bool NotFinished() { return step_ < nstep_ and time_+1e-10*dt_ < maxtime_; }
 
     /// increment time and step value
     void IncrementTimeAndStep()

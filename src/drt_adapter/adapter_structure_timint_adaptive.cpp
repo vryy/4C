@@ -404,13 +404,22 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntAda::ExtractVeln()
 
 
 /*----------------------------------------------------------------------*/
-/* extract velocities V_{n+1} needed for coupling in TSI*/
+/* extract velocities V_{n+1} needed for TSI                 dano 06/10 */
 Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntAda::ExtractVelnp()
 {
   dserror("not implemented");
   return Teuchos::null;
 }
 
+
+/*----------------------------------------------------------------------*
+ | Extract midpoint velocities                                          |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntAda::ExtractVelaf()
+{
+  dserror("not implemented");
+  return Teuchos::null;
+}
 
 
 /*----------------------------------------------------------------------*/

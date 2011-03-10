@@ -37,7 +37,8 @@ FSI::MonolithicBaseXFEM::MonolithicBaseXFEM(Epetra_Comm& comm)
                                   StructureField().Interface().FSICondMap(),
                                  *FluidField().Discretization(),
                                   FluidField().Interface().FSICondMap(),
-                                 "FSICoupling");
+                                 "FSICoupling",
+                                  genprob.ndim);
 
   // Use splitted structure matrix
   StructureField().UseBlockMatrix();

@@ -182,6 +182,9 @@ public:
   /// update density field for ELCH natural convection
   virtual void UpdateDensityElch() = 0;
 
+  /// iterative update of concentrations
+  void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc);
+
   /// output of mean values of scalar(s)
   void OutputMeanScalars();
 
@@ -296,6 +299,9 @@ public:
   /// return system matrix downcasted as block sparse matrix
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
 
+  /// return residual
+  Teuchos::RCP<Epetra_Vector> Residual();
+
   /// calculate error compared to analytical solution
   void EvaluateErrorComparedToAnalyticalSol();
 
@@ -320,6 +326,15 @@ public:
 
   /// return flux vector
   Teuchos::RCP<Epetra_MultiVector> Flux(){return flux_;};
+
+  /// preparations for solve
+  void PrepareLinearSolve();
+
+  /// provide access to the Dirichlet map
+  const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
+
+  /// return flag for incremental solver
+  bool Incremental() { return incremental_; }
 
 protected:
 
@@ -419,9 +434,6 @@ protected:
       const double ittol,
       const double abstolres,
       double& actresidual);
-
-  /// provide access to the Dirichlet map
-  const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
 
   /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
   ///

@@ -289,7 +289,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   }
 
   // sanity checks and default flags
-  if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung)
+  if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_fsi_lung_gas)
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
@@ -457,7 +457,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   sdyn->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
 
   // sanity checks and default flags
-  if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung)
+  if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_fsi_lung_gas)
   {
     // FSI input parameters
     const Teuchos::ParameterList& fsidyn
@@ -546,7 +546,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
 
   if (sta!=Teuchos::null)
   {
-    if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung)
+    if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_fsi_lung_gas)
     {
       dserror("no adaptive time integration with fsi");
     }
@@ -555,7 +555,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   }
   else if (stie!=Teuchos::null)
   {
-    if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung)
+    if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_fsi_lung_gas)
     {
       dserror("no explicit time integration with fsi");
     }
@@ -570,6 +570,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
 
     if (genprob.probtyp == prb_fsi or
         genprob.probtyp == prb_fsi_lung or
+        genprob.probtyp == prb_fsi_lung_gas or
         genprob.probtyp == prb_fsi_xfem)
     {
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();

@@ -20,6 +20,7 @@ Maintainer: Georg Bauer
 
 #include "../linalg/linalg_blocksparsematrix.H"
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 using namespace std;
 using namespace Teuchos;
@@ -31,7 +32,6 @@ class Element;
 
 namespace SCATRA
 {
-
 /*!
 \brief implementation of special clone strategy for automatic generation
        of scatra from a given fluid discretization
@@ -359,6 +359,12 @@ private:
 
   }; // class SplitStrategy
 
+
+  /// get vector of material (list) IDs
+  vector<int> GetScaTraMatList(const ParameterList& scatradyn);
+
+  /// get material (list) ID (in case of single ScaTra field)
+  int GetScaTraMatID(const ParameterList& scatradyn);
 }
 
 #endif

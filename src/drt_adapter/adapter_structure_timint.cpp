@@ -575,5 +575,13 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntImpl::ExtractVelnp()
 }
 
 
+/*----------------------------------------------------------------------*
+ | Extract midpoint velocities                                          |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntImpl::ExtractVelaf()
+{
+  return structure_->Velaf();
+}
+
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

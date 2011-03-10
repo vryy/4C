@@ -85,6 +85,28 @@ int main(
         }
         break;
     }
+    case prb_fsi_lung_gas:
+    {
+      string basename = problem.outname();
+      PostField* structfield = problem.get_discretization(0);
+      StructureEnsightWriter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      structwriter.WriteFiles();
+
+      PostField* fluidfield = problem.get_discretization(1);
+      FluidEnsightWriter fluidwriter(fluidfield, basename);
+      fluidwriter.WriteFiles();
+
+      int numdisc = problem.num_discr();
+
+      for (int i=0; i<numdisc-3; ++i)
+      {
+        PostField* scatrafield = problem.get_discretization(3+i);
+        ScaTraEnsightWriter scatrawriter(scatrafield, basename);
+        scatrawriter.WriteFiles();
+      }
+
+      break;
+    }
     case prb_structure:
     {
         PostField* field = problem.get_discretization(0);

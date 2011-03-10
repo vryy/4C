@@ -78,8 +78,6 @@ namespace UTILS
     /// read restart data
     virtual void ReadRestart(int step);
 
-  protected:
-
     //! @name Time loop building blocks
 
     /// start a new time step
@@ -91,7 +89,16 @@ namespace UTILS
     /// write output
     virtual void Output();
 
+    /// access to fluid adapter
+    ADAPTER::Fluid& FluidAdapter(){return FluidField();};
+
+    /// access to structure adapter
+    ADAPTER::Structure& StructureAdapter(){return StructureField();};
+
+
     //@}
+
+  protected:
 
     //! @name Transfer helpers
 
@@ -167,8 +174,14 @@ namespace UTILS
     */
     virtual void SetupSystem() = 0;
 
+    /// prepare time loop
+    void PrepareTimeloop();
+
     /// outer level FSI time loop
     void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
+
+    /// do new time step
+    virtual void TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
 
     //! @name NOX methods
 
@@ -293,6 +306,9 @@ namespace UTILS
     /// adaptive Newton direction
     std::vector<Teuchos::RCP<NOX::FSI::AdaptiveNewtonNormF> > statustests_;
 
+    /// output stream
+    Teuchos::RCP<std::ofstream> log_;
+
     /// @name special debugging output
 
     Teuchos::RCP<UTILS::DebugWriter> sdbg_;
@@ -343,10 +359,10 @@ namespace UTILS
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b) {}
 
-  protected:
-
     /// start a new time step
     virtual void PrepareTimeStep();
+
+  protected:
 
     /// debug writer to be used inside preconditioner
     Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg_;

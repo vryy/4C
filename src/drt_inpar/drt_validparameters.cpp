@@ -574,6 +574,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     name.push_back("ArterialNetwork");                             label.push_back(prb_art_net);
     name.push_back("Fluid_Structure_Interaction_Lung");            label.push_back(prb_fsi_lung);
     name.push_back("ReducedDimensionalAirWays");                   label.push_back(prb_red_airways);
+    name.push_back("Fluid_Structure_Interaction_Lung_Gas");        label.push_back(prb_fsi_lung_gas);
     setStringToIntegralParameter<int>(
       "PROBLEMTYP",
       "Fluid_Structure_Interaction",
@@ -2528,7 +2529,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //IntParameter("WRITESOLEVRY",1,"Increment for writing solution",&scatradyn);
   IntParameter("UPRES",1,"Increment for writing solution",&scatradyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&scatradyn);
-  IntParameter("MATID",-1,"Material Id for automatic mesh creation",&scatradyn);
+  setNumericStringParameter("MATID","-1",
+               "Material IDs for automatic mesh generation",
+               &scatradyn);
 
   setStringToIntegralParameter<int>("VELOCITYFIELD","zero",
                                "type of velocity field used for scalar transport problems",

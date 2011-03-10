@@ -14,6 +14,14 @@
 
 #include "../drt_io/io_control.H"
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::MortarMonolithicStructureSplit::MortarMonolithicStructureSplit(Epetra_Comm& comm)
@@ -58,7 +66,8 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
                                      FluidField().Interface().FSICondMap(),
                                     *AleField().Discretization(),
                                      AleField().Interface().FSICondMap(),
-                                     "FSICoupling");
+                                    "FSICoupling",
+                                     genprob.ndim);
 
     // we might have a free surface
     if (FluidField().Interface().FSCondRelevant())
@@ -67,7 +76,8 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
                                         FluidField().Interface().FSCondMap(),
                                        *AleField().Discretization(),
                                         AleField().Interface().FSCondMap(),
-                                        "FREESURFCoupling");
+                                       "FREESURFCoupling",
+                                        genprob.ndim);
     }
 
     // the fluid-ale coupling always matches
@@ -79,7 +89,8 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     coupfa.SetupCoupling(*FluidField().Discretization(),
                          *AleField().Discretization(),
                          *fluidnodemap,
-                         *alenodemap);
+                         *alenodemap,
+                          genprob.ndim);
 
     FluidField().SetMeshMap(coupfa.MasterDofMap());
 

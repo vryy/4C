@@ -108,7 +108,7 @@ void loma_dyn(int disnumff,int disnumscatra, int restart)
       Epetra_Time time(comm);
 
       // fetch the desired material id for the transport elements
-      const int matid = scatradyn.get<int>("MATID");
+      const int matid = SCATRA::GetScaTraMatID(scatradyn);
 
       // create the scatra discretization
       {

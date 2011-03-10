@@ -100,6 +100,9 @@ void ntacal()
     case prb_fsi_xfem:
       xfsi_drt();
       break;
+    case prb_fsi_lung_gas:
+      fsi_lung_gas();
+      break;
 
     case prb_ale:
       dyn_ale_drt();

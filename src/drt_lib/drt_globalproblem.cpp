@@ -268,6 +268,14 @@ void DRT::Problem::InputControl()
     genprob.numaf=2;
     break;
   }
+  case prb_fsi_lung_gas:
+  {
+    genprob.numsf=0;
+    genprob.numff=1;
+    genprob.numaf=2;
+    genprob.numscatra=3;
+    break;
+  }
   case prb_fsi_xfem:
   case prb_fluid_xfem:
   {
@@ -706,6 +714,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   RCP<DRT::Discretization> boundarydis     = null;
   RCP<DRT::Discretization> thermdis        = null;
   RCP<DRT::Discretization> scatradis       = null;
+  RCP<DRT::Discretization> fluidscatradis  = null;
+  RCP<DRT::Discretization> structscatradis = null;
   RCP<DRT::Discretization> structdis_macro = null;
   RCP<DRT::Discretization> structdis_micro = null;
   RCP<DRT::Discretization> arterydis       = null; //_1D_ARTERY_
@@ -775,6 +785,61 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     // read microscale fields from second, third, ... inputfile if necessary
     // (in case of multi-scale material models in structure field)
     ReadMicroFields(reader);
+
+    break;
+  }
+  case prb_fsi_lung_gas:
+  {
+    // allocate and input general old stuff....
+    std::string distype = ptype.get<std::string>("SHAPEFCT");
+
+    if(distype == "Nurbs")
+    {
+      dserror("Nurbs discretization not possible for lung gas exchange!");
+    }
+    else
+    {
+      structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
+      fluiddis  = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
+      xfluiddis = rcp(new DRT::Discretization("xfluid"   ,reader.Comm()));
+      aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
+    }
+
+
+    AddDis(genprob.numsf, structdis);
+    AddDis(genprob.numff, fluiddis);
+    if (xfluiddis!=Teuchos::null)
+      AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
+    AddDis(genprob.numaf, aledis);
+
+    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
+
+    std::set<std::string> fluidelementtypes;
+    fluidelementtypes.insert("FLUID");
+    fluidelementtypes.insert("FLUID2");
+    fluidelementtypes.insert("FLUID3");
+
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
+    if (xfluiddis!=Teuchos::null)
+      nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "XFLUID3")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+
+    nodereader.Read();
+#ifdef EXTENDEDPARALLELOVERLAP
+    structdis->CreateExtendedOverlap(false,false,false);
+#endif
+    // read microscale fields from second, third, ... inputfile if necessary
+    // (in case of multi-scale material models in structure field)
+    ReadMicroFields(reader);
+
+    // fluid scatra field
+    fluidscatradis = rcp(new DRT::Discretization("scatra1",reader.Comm()));
+    AddDis(genprob.numscatra, fluidscatradis);
+
+    // structure scatra field
+    structscatradis = rcp(new DRT::Discretization("scatra2",reader.Comm()));
+    AddDis(genprob.numscatra, structscatradis);
 
     break;
   }

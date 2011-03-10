@@ -32,6 +32,9 @@
 
 #include "fs_monolithic.H"
 
+#include "../drt_scatra/scatra_utils.H"
+
+#include "fsi_lung_scatra.H"
 
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_lib/drt_resulttest.H"
@@ -513,6 +516,162 @@ void xfsi_drt()
   }
 
   Teuchos::TimeMonitor::summarize();
+}
+
+
+/*----------------------------------------------------------------------*/
+// entry point for gas exchange lung fsi
+/*----------------------------------------------------------------------*/
+void fsi_lung_gas()
+{
+#ifdef PARALLEL
+  Epetra_MpiComm comm(MPI_COMM_WORLD);
+#else
+  Epetra_SerialComm comm;
+#endif
+
+  RCP<DRT::Problem> problem = DRT::Problem::Instance();
+
+  // make sure the three discretizations are filled in the right order
+  // this creates dof numbers with
+  //
+  //       structure dof < fluid dof < ale dof
+  //
+  // We rely on this ordering in certain non-intuitive places!
+
+  problem->Dis(genprob.numsf,0)->FillComplete();
+  problem->Dis(genprob.numff,0)->FillComplete();
+  problem->Dis(genprob.numaf,0)->FillComplete();
+  problem->Dis(genprob.numscatra,0)->FillComplete();
+  problem->Dis(genprob.numscatra,1)->FillComplete();
+
+  // create ale elements if the ale discretization is empty
+  RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
+  if (aledis->NumGlobalNodes()==0)
+  {
+    RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
+
+    Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
+      Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
+
+    alecreator->CreateMatchingDiscretization(fluiddis,aledis,-1);
+  }
+  //FSI::UTILS::CreateAleDiscretization();
+
+  // access the fluid discretization
+  RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(1,0);
+  // access the structure discretization
+  RefCountPtr<DRT::Discretization> structdis = DRT::Problem::Instance()->Dis(0,0);
+  // access the fluid scatra discretization
+  RefCountPtr<DRT::Discretization> fluidscatradis = DRT::Problem::Instance()->Dis(3,0);
+  // access the fluid structure discretization
+  RefCountPtr<DRT::Discretization> structscatradis = DRT::Problem::Instance()->Dis(3,1);
+
+  // access the problem-specific parameter list
+  const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
+
+  // fetch the desired material id for the transport elements
+  std::vector<int> matlist = SCATRA::GetScaTraMatList(scatradyn);
+  if (matlist.size() != 2)
+    dserror("2 matlists needed for lung gas exchange");
+
+  // FLUID SCATRA
+  // we use the fluid discretization as layout for the scalar transport discretization
+  if (fluiddis->NumGlobalNodes()==0) dserror("Fluid discretization is empty!");
+
+  // create fluid scatra elements if the fluid scatra discretization is empty
+  if (fluidscatradis->NumGlobalNodes()==0)
+  {
+    Epetra_Time time(comm);
+
+    // create the fluid scatra discretization
+    {
+      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy> > clonewizard =
+        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy>() );
+
+      clonewizard->CreateMatchingDiscretization(fluiddis,fluidscatradis,matlist[0]);
+    }
+    if (comm.MyPID()==0)
+      cout<<"Created scalar transport discretization from fluid field in...."
+          <<time.ElapsedTime() << " secs\n\n";
+  }
+  else
+    dserror("Fluid AND ScaTra discretization present. This is not supported.");
+
+  // STRUCTURE SCATRA
+  // we use the structure discretization as layout for the scalar transport discretization
+  if (structdis->NumGlobalNodes()==0) dserror("Structure discretization is empty!");
+
+  // create structure scatra elements if the structure scatra discretization is empty
+  if (structscatradis->NumGlobalNodes()==0)
+  {
+    Epetra_Time time(comm);
+
+    // create the structure scatra discretization
+    {
+      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy> > clonewizard =
+        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy>() );
+
+      clonewizard->CreateMatchingDiscretization(structdis,structscatradis,matlist[1]);
+    }
+    if (comm.MyPID()==0)
+      cout<<"Created scalar transport discretization from structure field in...."
+          <<time.ElapsedTime() << " secs\n\n";
+  }
+  else
+    dserror("Structure AND ScaTra discretization present. This is not supported.");
+
+  const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
+
+  int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+  switch (coupling)
+  {
+  case fsi_iter_monolithicfluidsplit:
+  case fsi_iter_monolithicstructuresplit:
+  {
+    Teuchos::RCP<FSI::Monolithic> fsi;
+
+    INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+
+    // call constructor to initialise the base class
+    if (linearsolverstrategy==INPAR::FSI::PartitionedAitken or
+        linearsolverstrategy==INPAR::FSI::PartitionedVectorExtrapolation or
+        linearsolverstrategy==INPAR::FSI::PartitionedJacobianFreeNewtonKrylov)
+    {
+      fsi = Teuchos::rcp(new FSI::PartitionedMonolithic(comm));
+    }
+    else if (coupling==fsi_iter_monolithicfluidsplit)
+    {
+      fsi = Teuchos::rcp(new FSI::MonolithicOverlap(comm));
+    }
+    else if (coupling==fsi_iter_monolithicstructuresplit)
+    {
+      fsi = Teuchos::rcp(new FSI::MonolithicStructureSplit(comm));
+    }
+    else
+    {
+      dserror("Cannot find appropriate monolithic solver for coupling %d and linear strategy %d",coupling,linearsolverstrategy);
+    }
+
+    Teuchos::RCP<FSI::LungScatra> lungscatra = Teuchos::rcp(new FSI::LungScatra(fsi));
+
+    lungscatra->ReadRestart();
+    lungscatra->SetupFSISystem();
+    lungscatra->Timeloop();
+
+    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
+    DRT::Problem::Instance()->TestAll(comm);
+    break;
+  }
+  default:
+  {
+    dserror("coupling algorithm not yet implemented for lung fsi gas exchange");
+    break;
+  }
+  }
+
+  Teuchos::TimeMonitor::summarize(std::cout, false, true, false);
 }
 
 #endif

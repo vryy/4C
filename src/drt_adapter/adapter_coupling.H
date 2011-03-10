@@ -99,7 +99,8 @@ namespace ADAPTER
                                 Teuchos::RCP<const Epetra_Map> mastercondmap,
                                 const DRT::Discretization& slavedis,
                                 Teuchos::RCP<const Epetra_Map> slavecondmap,
-                                const std::string& condname);
+                                const std::string& condname,
+                                const int numdof);
 
     /// setup coupling of nodes marked with condition1 not belonging
     /// also to condition2
@@ -113,7 +114,8 @@ namespace ADAPTER
                                            const DRT::Discretization& slavedis,
                                            Teuchos::RCP<const Epetra_Map> slavecondmap,
                                            const std::string& condname1,
-                                           const std::string& condname2);
+                                           const std::string& condname2,
+                                           const int numdof);
 
     /// setup coupling of given nodes
     /*!
@@ -129,11 +131,13 @@ namespace ADAPTER
       \param slavedis    (i) slave side mesh
       \param masternodes (i) gids of nodes on master side to be coupled
       \param slavenodes  (i) gids of nodes on slave side to be coupled
+      \param numdof      (i) number of dofs per node to be coupled
      */
     void SetupCoupling(const DRT::Discretization& masterdis,
                        const DRT::Discretization& slavedis,
                        const std::vector<int>& masternodes,
-                       const std::vector<int>& slavenodes);
+                       const std::vector<int>& slavenodes,
+                       const int numdof);
 
     /// setup coupling of given nodes
     /*!
@@ -149,11 +153,13 @@ namespace ADAPTER
       \param slavedis    (i) slave side mesh
       \param masternodes (i) gids of nodes on master side to be coupled
       \param slavenodes  (i) gids of nodes on slave side to be coupled
+      \param numdof      (i) number of dofs per node to be coupled
      */
     void SetupCoupling(const DRT::Discretization& masterdis,
                        const DRT::Discretization& slavedis,
                        const Epetra_Map& masternodes,
-                       const Epetra_Map& slavenodes);
+                       const Epetra_Map& slavenodes,
+                       const int numdof);
 
     //@}
 
@@ -362,7 +368,8 @@ namespace ADAPTER
                         const DRT::Discretization& slavedis,
                         Teuchos::RCP<Epetra_Map> masternodemap,
                         Teuchos::RCP<Epetra_Map> slavenodemap,
-                        Teuchos::RCP<Epetra_Map> permslavenodemap);
+                        Teuchos::RCP<Epetra_Map> permslavenodemap,
+                        const int numdof);
 
     /// build dof maps from node maps
     /*!
@@ -374,7 +381,8 @@ namespace ADAPTER
                       Teuchos::RCP<const Epetra_Map> permnodemap,
                       Teuchos::RCP<const Epetra_Map>& dofmap,
                       Teuchos::RCP<const Epetra_Map>& permdofmap,
-                      Teuchos::RCP<Epetra_Export>& exporter);
+                      Teuchos::RCP<Epetra_Export>& exporter,
+                      const int numdof);
 
     /** \name Fundamental dof maps */
     //@{

@@ -19,6 +19,8 @@ Maintainer: Volker Gravemeier
 #include <mpi.h>
 #endif
 
+#include <iostream>
+
 #include "scatra_dyn.H"
 #include "passive_scatra_algorithm.H"
 #include "scatra_utils.H"
@@ -102,8 +104,8 @@ void scatra_dyn(int disnumff, int disnumscatra, int restart)
       {
         Epetra_Time time(comm);
 
-        // fetch the desired material id for the transport elements
-        const int matid = scatradyn.get<int>("MATID");
+        const int matid = SCATRA::GetScaTraMatID(scatradyn);
+
         // create the scatra discretization
         {
         Teuchos::RCP<DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy> > clonewizard =

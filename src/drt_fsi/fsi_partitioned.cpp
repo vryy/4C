@@ -39,6 +39,13 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_Time.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -58,7 +65,8 @@ FSI::Partitioned::Partitioned(Epetra_Comm& comm)
                                    StructureField().Interface().FSICondMap(),
                                   *MBFluidField().Discretization(),
                                    MBFluidField().Interface().FSICondMap(),
-                                  "FSICoupling");
+                                  "FSICoupling",
+                                  genprob.ndim);
 
     if (coupsf.MasterDofMap()->NumGlobalElements()==0)
       dserror("No nodes in matching FSI interface. Empty FSI coupling condition?");
@@ -453,8 +461,8 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
     }
 
     // ==================================================================
-   
-  	//In case of sliding ALE interfaces, 'remesh' fluid field 
+
+  	//In case of sliding ALE interfaces, 'remesh' fluid field
   	INPAR::FSI::PartitionedCouplingMethod usedmethod =
        	DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
 
@@ -467,7 +475,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
       }
     	Remeshing();
     }
-    
+
     // prepare field variables for new time step
     Update();
 

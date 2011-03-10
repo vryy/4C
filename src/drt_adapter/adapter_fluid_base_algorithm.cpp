@@ -303,7 +303,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   INPAR::FLUID::TimeIntegrationScheme timeint = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,"TIMEINTEGR");
 
   // sanity checks and default flags
-  if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung)
+  if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_fsi_lung_gas)
   {
     // in case of FSI calculations we do not want a stationary fluid solver
     if (timeint == INPAR::FLUID::timeint_stationary)
@@ -407,7 +407,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
     bool dirichletcond = true;
-    if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung)
+    if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_fsi_lung_gas)
     {
       // FSI input parameters
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();

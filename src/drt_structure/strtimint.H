@@ -483,6 +483,9 @@ namespace STR
     //! Return velocities \f$V_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> VelNew() { return veln_; }
 
+    //! Return velocities \f$V_{n+1-a_f}\f$
+    virtual Teuchos::RCP<Epetra_Vector> Velaf() = 0;
+
     //! Return accelerations \f$A_{n}\f$
     Teuchos::RCP<Epetra_Vector> Acc() { return (*acc_)(0); }
 

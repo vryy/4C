@@ -17,6 +17,13 @@
 #include "../drt_adapter/adapter_fluid_lung.H"
 #include "../drt_constraint/constraintdofset.H"
 
+/*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::LungMonolithic::LungMonolithic(Epetra_Comm& comm)
@@ -187,7 +194,8 @@ void FSI::LungMonolithic::GeneralSetup()
                                  StructureField().Interface().FSICondMap(),
                                 *FluidField().Discretization(),
                                  FluidField().Interface().FSICondMap(),
-                                "FSICoupling");
+                                "FSICoupling",
+                                genprob.ndim);
 
   // structure to ale
 
@@ -195,7 +203,8 @@ void FSI::LungMonolithic::GeneralSetup()
                                  StructureField().Interface().FSICondMap(),
                                 *AleField().Discretization(),
                                  AleField().Interface().FSICondMap(),
-                                "FSICoupling");
+                                "FSICoupling",
+                                genprob.ndim);
 
   // fluid to ale at the interface
 
@@ -203,7 +212,8 @@ void FSI::LungMonolithic::GeneralSetup()
                                    FluidField().Interface().FSICondMap(),
                                   *AleField().Discretization(),
                                    AleField().Interface().FSICondMap(),
-                                  "FSICoupling");
+                                  "FSICoupling",
+                                  genprob.ndim);
 
   // In the following we assume that both couplings find the same dof
   // map at the structural side. This enables us to use just one
@@ -222,7 +232,8 @@ void FSI::LungMonolithic::GeneralSetup()
   coupfa.SetupCoupling(*FluidField().Discretization(),
                        *AleField().Discretization(),
                        *fluidnodemap,
-                       *alenodemap);
+                       *alenodemap,
+                       genprob.ndim);
 
   FluidField().SetMeshMap(coupfa.MasterDofMap());
 
@@ -238,7 +249,8 @@ void FSI::LungMonolithic::GeneralSetup()
                                                *AleField().Discretization(),
                                                AleField().Interface().LungASICondMap(),
                                                "StructAleCoupling",
-                                               "FSICoupling");
+                                               "FSICoupling",
+                                               genprob.ndim);
   if (coupsaout_.MasterDofMap()->NumGlobalElements()==0)
     dserror("No nodes in matching structure ale interface. Empty coupling condition?");
 
@@ -248,7 +260,8 @@ void FSI::LungMonolithic::GeneralSetup()
                                                *StructureField().Discretization(),
                                                StructureField().Interface().LungASICondMap(),
                                                "StructAleCoupling",
-                                               "FSICoupling");
+                                               "FSICoupling",
+                                               genprob.ndim);
   if (coupfsout_.MasterDofMap()->NumGlobalElements()==0)
     dserror("No nodes in matching structure ale/fluid interface. Empty coupling condition?");
 
@@ -258,7 +271,8 @@ void FSI::LungMonolithic::GeneralSetup()
                                                *AleField().Discretization(),
                                                AleField().Interface().LungASICondMap(),
                                                "StructAleCoupling",
-                                               "FSICoupling");
+                                               "FSICoupling",
+                                               genprob.ndim);
   if (coupfaout_.MasterDofMap()->NumGlobalElements()==0)
     dserror("No nodes in matching ale fluid ouflow interface. Empty coupling condition?");
 
@@ -602,8 +616,8 @@ FSI::LungMonolithic::CreateLinearSystem(ParameterList& nlParams,
   {
   case INPAR::FSI::PreconditionedKrylov:
     linSys =
-      Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(
-                     //FSI::MonolithicLinearSystem::MonolithicLinearSystem(
+      Teuchos::rcp(new //NOX::Epetra::LinearSystemAztecOO(
+                     FSI::MonolithicLinearSystem::MonolithicLinearSystem(
                                                                printParams,
                                                                *lsParams,
                                                                Teuchos::rcp(iJac,false),
@@ -637,13 +651,13 @@ FSI::LungMonolithic::CreateStatusTest(Teuchos::ParameterList& nlParams,
   Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters = Teuchos::rcp(new NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
   Teuchos::RCP<NOX::StatusTest::FiniteValue> fv    = Teuchos::rcp(new NOX::StatusTest::FiniteValue);
 
-  Teuchos::RCP<NOX::StatusTest::NormUpdate> update =
-  Teuchos::rcp(new NOX::StatusTest::NormUpdate(nlParams.get("Norm Update", 1.0e-5)));
-  combo->addStatusTest(update);
+//   Teuchos::RCP<NOX::StatusTest::NormUpdate> update =
+//   Teuchos::rcp(new NOX::StatusTest::NormUpdate(nlParams.get("Norm Update", 1.0e-5)));
+//   combo->addStatusTest(update);
 
   combo->addStatusTest(fv);
   combo->addStatusTest(converged);
-  combo->addStatusTest(update);
+//   combo->addStatusTest(update);
   combo->addStatusTest(maxiters);
 
   // require one solve

@@ -1840,6 +1840,29 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surfbndryfluxeval);
 
   /*--------------------------------------------------------------------*/
+  // Coupling of different scalar transport fields
+
+  std::vector<Teuchos::RCP<ConditionComponent> > scatracoupcomponents;
+
+  scatracoupcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+  scatracoupcomponents.push_back(Teuchos::rcp(new IntConditionComponent("field number")));
+
+  Teuchos::RCP<ConditionDefinition> surfscatracoup =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA COUPLING SURF CONDITIONS",
+                                         "ScaTraCoupling",
+                                         "ScaTra Coupling",
+                                         DRT::Condition::ScaTraCoupling,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  for (unsigned i=0; i<scatracoupcomponents.size(); ++i)
+  {
+    surfscatracoup->AddComponent(scatracoupcomponents[i]);
+  }
+
+  condlist.push_back(surfscatracoup);
+
+  /*--------------------------------------------------------------------*/
   // flow rate through line
 
   std::vector<Teuchos::RCP<ConditionComponent> > lineflowratecomponents;

@@ -77,7 +77,7 @@ namespace STR
     //! Thus the 'last' converged is lost and a reset of the time step
     //! becomes impossible. We are ready and keen awating the next time step.
     virtual void UpdateStepState() = 0;
-    
+
     //! Update Element
     virtual void UpdateStepElement() = 0;
 
@@ -155,6 +155,11 @@ namespace STR
     //! Read and set external forces from file
     virtual void ReadRestartForce() = 0;
 
+    virtual Teuchos::RCP<Epetra_Vector> Velaf()
+    {
+      dserror("mid velocities not available");
+      return Teuchos::null;
+    }
 
     //@}
 

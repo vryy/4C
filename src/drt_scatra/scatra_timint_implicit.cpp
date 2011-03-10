@@ -116,10 +116,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   //  allow the usage of a given user input)
   if ((scatratype_ == INPAR::SCATRA::scatratype_undefined) or (prbtype_ != "elch"))
   {
-    if (prbtype_ == "elch")            scatratype_ = INPAR::SCATRA::scatratype_elch_enc;
-    else if (prbtype_ == "combustion") scatratype_ = INPAR::SCATRA::scatratype_levelset;
-    else if (prbtype_ == "loma")       scatratype_ = INPAR::SCATRA::scatratype_loma;
-    else if (prbtype_ == "scatra")     scatratype_ = INPAR::SCATRA::scatratype_condif;
+    if (prbtype_ == "elch")              scatratype_ = INPAR::SCATRA::scatratype_elch_enc;
+    else if (prbtype_ == "combustion")   scatratype_ = INPAR::SCATRA::scatratype_levelset;
+    else if (prbtype_ == "loma")         scatratype_ = INPAR::SCATRA::scatratype_loma;
+    else if (prbtype_ == "scatra")       scatratype_ = INPAR::SCATRA::scatratype_condif;
+    else if (prbtype_ == "fsi_lung_gas") scatratype_ = INPAR::SCATRA::scatratype_condif;
     else
       dserror("Problemtype %s not supported", prbtype_.c_str());
   }
@@ -1108,54 +1109,27 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
   PrintTimeStepInfo();
 
   // -------------------------------------------------------------------
-  // call elements to calculate system matrix and rhs and assemble
+  //                     preparations for solve
   // -------------------------------------------------------------------
-  AssembleMatAndRHS();
+  PrepareLinearSolve();
 
   // -------------------------------------------------------------------
-  // potential residual scaling and potential addition of Neumann terms
-  // -------------------------------------------------------------------
-  ScalingAndNeumann();
-
-  // -------------------------------------------------------------------
-  // Apply Dirichlet boundary conditions to system matrix and solve
-  // system in incremental or non-incremental case
+  // Solve system in incremental or non-incremental case
   // -------------------------------------------------------------------
   if (incremental_)
   {
-    // blank residual DOFs which are on Dirichlet BC
-    // We can do this because the values at the Dirichlet positions
-    // are not used anyway.
-    // We could avoid this though, if the dofrowmap would not include
-    // the Dirichlet values as well. But it is expensive to avoid that.
-    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
+    TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + solver calls");
 
-    //--------- Apply Dirichlet boundary conditions to system of equations
-    // residual values are supposed to be zero at Dirichlet boundaries
-    increment_->PutScalar(0.0);
+    // get cpu time
+    const double tcpusolve=Teuchos::Time::wallTime();
 
-    {
-      // time measurement: application of DBC to system
-      TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
+    solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,true);
 
-      LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,*(dbcmaps_->CondMap()));
-    }
-
-    //-------solve
-    {
-      TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + solver calls");
-
-      // get cpu time
-      const double tcpusolve=Teuchos::Time::wallTime();
-
-      solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,true);
-
-      // end time measurement for solver
-      dtsolve_=Teuchos::Time::wallTime()-tcpusolve;
-    }
+    // end time measurement for solver
+    dtsolve_=Teuchos::Time::wallTime()-tcpusolve;
 
     //------------------------------------------------ update solution vector
-    phinp_->Update(1.0,*increment_,1.0);
+    UpdateIter(increment_);
 
     //--------------------------------------------- compute norm of increment
     double incnorm_L2(0.0);
@@ -1178,25 +1152,15 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
   }
   else
   {
-    {
-      // time measurement: application of DBC to system
-      TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
+    TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + solver calls");
 
-      LINALG::ApplyDirichlettoSystem(sysmat_,phinp_,residual_,phinp_,*(dbcmaps_->CondMap()));
-    }
+    // get cpu time
+    const double tcpusolve=Teuchos::Time::wallTime();
 
-    //-------solve
-    {
-      TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + solver calls");
+    solver_->Solve(sysmat_->EpetraOperator(),phinp_,residual_,true,true);
 
-      // get cpu time
-      const double tcpusolve=Teuchos::Time::wallTime();
-
-      solver_->Solve(sysmat_->EpetraOperator(),phinp_,residual_,true,true);
-
-      // end time measurement for solver
-      dtsolve_=Teuchos::Time::wallTime()-tcpusolve;
-    }
+    // end time measurement for solver
+    dtsolve_=Teuchos::Time::wallTime()-tcpusolve;
 
     if (myrank_==0)
       printf("Solvertype linear_full (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
@@ -1209,6 +1173,65 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
 
   return;
 } // ScaTraTimIntImpl::Solve
+
+
+/*----------------------------------------------------------------------*
+ | preparations for solve                                               |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::PrepareLinearSolve()
+{
+  // -------------------------------------------------------------------
+  // call elements to calculate system matrix and rhs and assemble
+  // -------------------------------------------------------------------
+  AssembleMatAndRHS();
+
+  // -------------------------------------------------------------------
+  // potential residual scaling and potential addition of Neumann terms
+  // -------------------------------------------------------------------
+  ScalingAndNeumann();
+
+  // -------------------------------------------------------------------
+  // Apply Dirichlet boundary conditions to system matrix
+  // -------------------------------------------------------------------
+  if (incremental_)
+  {
+    // blank residual DOFs which are on Dirichlet BC
+    // We can do this because the values at the Dirichlet positions
+    // are not used anyway.
+    // We could avoid this though, if the dofrowmap would not include
+    // the Dirichlet values as well. But it is expensive to avoid that.
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
+
+    //--------- Apply Dirichlet boundary conditions to system of equations
+    // residual values are supposed to be zero at Dirichlet boundaries
+    increment_->PutScalar(0.0);
+
+    {
+      // time measurement: application of DBC to system
+      TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
+
+      LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,*(dbcmaps_->CondMap()));
+    }
+  }
+  else
+  {
+    // time measurement: application of DBC to system
+    TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
+
+    LINALG::ApplyDirichlettoSystem(sysmat_,phinp_,residual_,phinp_,*(dbcmaps_->CondMap()));
+  }
+
+  return;
+} // ScaTraTimIntImpl::PrepareSolve
+
+
+/*----------------------------------------------------------------------*
+ | iterative update of concentrations                                   |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc)
+{
+  phinp_->Update(1.0,*inc,1.0);
+}
 
 
 /*----------------------------------------------------------------------*
@@ -3252,5 +3275,12 @@ SCATRA::ScaTraTimIntImpl::~ScaTraTimIntImpl()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | return residual vector                                               |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> SCATRA::ScaTraTimIntImpl::Residual()
+{
+  return residual_;
+}
 
 #endif /* CCADISCRET       */
