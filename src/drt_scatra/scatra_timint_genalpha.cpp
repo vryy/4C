@@ -66,6 +66,10 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(
   // initialize time-dependent electrode kinetics variables (galvanostatic mode)
   ElectrodeKineticsTimeUpdate(true);
 
+  // for initializing phiaf_, phiam based on the initial field that was
+  // set for phinp_, phin_ in the TimInt base class constructor
+  ComputeIntermediateValues();
+
   return;
 }
 
@@ -545,7 +549,16 @@ void SCATRA::TimIntGenAlpha::ElectrodeKineticsTimeUpdate(const bool init)
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
     if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
-      dserror("Galvanostatic mode for GenAlpha not yet supported.");
+    {
+      vector<DRT::Condition*> cond;
+       discret_->GetCondition("ElectrodeKinetics",cond);
+       for (size_t i=0; i < cond.size(); i++) // we update simply every condition!
+       {
+         const double dlcapacitance = cond[i]->GetDouble("dlcap");
+         if (dlcapacitance > EPS12)
+           dserror("Galvanostatic mode for GenAlpha does not support double-layer capacitance yet.");
+       }
+    }
   }
   return;
 }
