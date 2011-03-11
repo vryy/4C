@@ -1067,8 +1067,9 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
     //lids of gids of node
     lids[p] = (fluiddofrowmap_)->LID((fluiddis->Dof(node))[p]);
 
-    // current coord of ale node
-    LINALG::Matrix<3,1> alenodecurr;
+    // current coord of ale node. 
+    // Initialize as coordinates of current node, which is extremely important for 2D!
+    LINALG::Matrix<3,1> alenodecurr (node->X());
 
     // translate ale by centerdisp
     if (aletype_==INPAR::FSI::ALEprojection_curr)
