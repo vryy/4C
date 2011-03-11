@@ -667,11 +667,8 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
   LINALG::Matrix<3,1> center;
   center.PutScalar(periodlength/2);
   GmshOutputBox(0.0, &center, periodlength, &filename);
-  // plot the shifted center
-  LINALG::Matrix<3,1> dummyshift;
-  std::vector<int> dummyentries;
- 	DDCorrShift(&center, &dummyshift, &dummyentries);
-  GmshOutputBox(0.75, &center, 0.05, &filename);
+  // plot the cog
+  GmshOutputBox(0.75, &cog_, 0.05, &filename);
   // plot crosslink molecule diffusion and (partial) bonding
   GmshOutputCrosslinkDiffusion(0.125, &filename, disrow);
   // finish data section of this view by closing curly brackets
@@ -680,8 +677,23 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
     fp = fopen(filename.str().c_str(), "a");
     std::stringstream gmshfileend;
 
-    gmshfileend << "SP(" << scientific;
-    gmshfileend << center(0)<<","<<center(1)<<","<<center(2)<<"){" << scientific << 0.75 << ","<< 0.75 <<"};"<<endl;
+    if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
+    {
+			// plot the rotated material triad (with axis length 0.5)
+			for(int i=0; i<trafo_->M(); i++)
+			{
+				LINALG::SerialDenseMatrix coord(3,2);
+				for(int j=0;j<coord.M(); j++)
+				{
+					coord(j,0) = cog_(j);
+					coord(j,1) = cog_(j)+0.5*(*trafo_)(i,j);
+				}
+				GMSH_2_noded(1,coord,discret_.lRowElement(0),gmshfileend,0.0,true,true);
+			}
+
+			gmshfileend << "SP(" << scientific;
+			gmshfileend << cog_(0)<<","<<cog_(1)<<","<<cog_(2)<<"){" << scientific << 0.75 << ","<< 0.75 <<"};"<<endl;
+    }
     // gmsh output of detected network structure volume
     int nline = 16;
     if(step>0)
@@ -881,7 +893,7 @@ void StatMechManager::GmshOutputBox(double boundarycolor, LINALG::Matrix<3,1>* b
 {
   double periodlength = statmechparams_.get<double> ("PeriodLength", 0.0);
   // plot the periodic box in case of periodic boundary conditions (first processor)
-  if (periodlength > 0 && discret_.Comm().MyPID() == 0)
+  if (periodlength > 0.0 && discret_.Comm().MyPID() == 0)
   {
     FILE *fp = fopen(filename->str().c_str(), "a");
     std::stringstream gmshfilefooter;
@@ -3186,14 +3198,6 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 								{
 									if(crossfrac<threshold-lowlim || crossfrac>threshold+uplim)
 									{
-										/*cout<<"\niter"<<iter<<" = [";
-										for(int k=0; k<(int)itercoords.size(); k++)
-										{
-											for(int l=0; l<(int)itercoords[k].M(); l++)
-												cout<<itercoords[k](l)<<" ";
-											cout<<endl;
-										}
-										cout<<"];"<<endl;*/
 										//calculate new set of layer corner coordinates
 										for(int j=0; j<(int)itercoords.size(); j++)
 										{
@@ -3246,14 +3250,6 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 									else
 									{
 										// set itercoords as new interseccoords
-										/*cout<<"iter"<<iter<<" = [";
-										for(int k=0; k<(int)itercoords.size(); k++)
-										{
-											for(int l=0; l<(int)itercoords[k].M(); l++)
-												cout<<itercoords[k](l)<<" ";
-											cout<<endl;
-										}
-										cout<<"];"<<endl;*/
 										interseccoords = itercoords;
 										crosslinksinvolume[i] = rcount;
 										crossfraction[i] *= pr;
@@ -3293,7 +3289,6 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 
 									// volume of layer (factor 0.5 missing, since "real" thickness is thickness*2.0)
 									volumes[i] = cl*h*thickness;
-									//cout<<"layer volume_tri = "<<volumes[i]<<endl;
 								}
 								break;
 								// square/rectangle/trapezoid
@@ -3348,7 +3343,6 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 														hexvolume += cl*h*thickness;
 													}
 									volumes[i] = hexvolume;
-									//cout<<"layer volume_hex = "<<volumes[i]<<endl;
 								}
 								break;
 							}
@@ -3402,23 +3396,10 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 
   			// calculate the trafo_ matrix (as if we had a layer)
 
-				// calculate second plane vector (which is now exactly orthogonal to vec1)
-			  LINALG::SerialDenseMatrix RotMat(3, 3);
-			  // build the matrix of rotation for rotation about layervectors[2] = plane normal.
-			  for (int i=0; i<3; i++)
-			    RotMat(i, i) = clusterlayervecs[2](i) * clusterlayervecs[2](i);
-			  RotMat(0, 1) = clusterlayervecs[2](0) * clusterlayervecs[2](1) - clusterlayervecs[2](2);
-			  RotMat(0, 2) = clusterlayervecs[2](0) * clusterlayervecs[2](2) + clusterlayervecs[2](1);
-			  RotMat(1, 0) = clusterlayervecs[2](1) * clusterlayervecs[2](0) + clusterlayervecs[2](2);
-			  RotMat(1, 2) = clusterlayervecs[2](1) * clusterlayervecs[2](2) - clusterlayervecs[2](0);
-			  RotMat(2, 0) = clusterlayervecs[2](2) * clusterlayervecs[2](0) - clusterlayervecs[2](1);
-			  RotMat(2, 1) = clusterlayervecs[2](2) * clusterlayervecs[2](1) + clusterlayervecs[2](0);
-
-			  // rotate the first layer vector and overwrite the second layer vector
-			  clusterlayervecs[1].PutScalar(0.0);
-			  for (int i=0; i<3; i++)
-			    for (int j=0; j<3; j++)
-			    	clusterlayervecs[1](i) += RotMat(i, j) * clusterlayervecs[0](j);
+				// adjust second plane direction so that we get an orthonormal basis
+  			clusterlayervecs[1](0) = clusterlayervecs[0](1)*clusterlayervecs[2](2) - clusterlayervecs[0](2)*clusterlayervecs[2](1);
+  			clusterlayervecs[1](1) = clusterlayervecs[0](2)*clusterlayervecs[2](0) - clusterlayervecs[0](0)*clusterlayervecs[2](2);
+  			clusterlayervecs[1](2) = clusterlayervecs[0](0)*clusterlayervecs[2](1) - clusterlayervecs[0](1)*clusterlayervecs[2](0);
 			  clusterlayervecs[1].Scale(1/clusterlayervecs[1].Norm2()); // hm, not necessary
 
 			  // build the base
@@ -3478,31 +3459,10 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
   			for(int i=0; i<(int)interseccoords.size(); i++)
   				testvolumepos_.push_back(interseccoords[i]);
 
-  			/*/cout
-  			for(int i=0; i<(int)interseccoords.size(); i++)
-  			{
-  				for(int j=0; j<(int)interseccoords[i].M();j++)
-  					cout<<interseccoords[i](j)<<" ";
-  				cout<<endl;
-  			}*/
-
   			// calculate second plane vector (which is now exactly orthogonal to vec1)
-				LINALG::SerialDenseMatrix RotMat(3, 3);
-				// build the matrix of rotation for rotation about layervectors[2] = plane normal.
-				for (int i=0; i<3; i++)
-					RotMat(i, i) = layervectors[2](i) * layervectors[2](i);
-				RotMat(0, 1) = layervectors[2](0) * layervectors[2](1) - layervectors[2](2);
-				RotMat(0, 2) = layervectors[2](0) * layervectors[2](2) + layervectors[2](1);
-				RotMat(1, 0) = layervectors[2](1) * layervectors[2](0) + layervectors[2](2);
-				RotMat(1, 2) = layervectors[2](1) * layervectors[2](2) - layervectors[2](0);
-				RotMat(2, 0) = layervectors[2](2) * layervectors[2](0) - layervectors[2](1);
-				RotMat(2, 1) = layervectors[2](2) * layervectors[2](1) + layervectors[2](0);
-
-				// rotate the first layer vector and overwrite the second layer vector
-				layervectors[1].PutScalar(0.0);
-				for (int i=0; i<3; i++)
-					for (int j=0; j<3; j++)
-						layervectors[1](i) += RotMat(i, j) * layervectors[0](j);
+  			layervectors[1](0) = layervectors[0](1)*layervectors[2](2) - layervectors[0](2)*layervectors[2](1);
+  			layervectors[1](1) = layervectors[0](2)*layervectors[2](0) - layervectors[0](0)*layervectors[2](2);
+  			layervectors[1](2) = layervectors[0](0)*layervectors[2](1) - layervectors[0](1)*layervectors[2](0);
 				layervectors[1].Scale(1/layervectors[1].Norm2()); // hm, not necessary
 
 			  // build the base
@@ -3524,7 +3484,6 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
   		}
   		break;
   	}
-  	//cout<<*trafo_<<endl;
   }
   // Communicate trafo_ to other procs
   std::vector<double> localtrafo(9,0.0);
@@ -3536,6 +3495,7 @@ void StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disrow,
 			discret_.Comm().SumAll(&localtrafo[3*i+j], &globaltrafo[3*i+j], 1);
   		(*trafo_)(i,j) = globaltrafo.at(3*i+j);
   	}
+  //cout<<*trafo_<<endl;
 }//DDCorrCurrentStructure()
 
 /*------------------------------------------------------------------------------*                                                 |
@@ -3664,10 +3624,8 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
 
 	// retrieve center of gravity for global and rotated system
 	Epetra_SerialDenseMatrix cog(3,1);
-	Epetra_SerialDenseMatrix cogrot(3,1);
 	for(int i=0; i<cog.M(); i++)
 		cog(i,0) = cog_(i);
-	trafo_->Multiply(false,cog,cogrot);
 
 	//parallel brute force from here on
 	// transfer map loop
@@ -3722,15 +3680,16 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
 					// rotate cboxpos and surrboxpos into new (material) coordinate system
 					Epetra_SerialDenseMatrix cboxrot(3,1);
 					Epetra_SerialDenseMatrix surrboxrot(3,1);
+					/*f_tilde: x |--> x_tilde = (x-cog)*/
+					for(int m=0; m<cog.M(); m++)
+					{
+						cboxrot(m,0) -= cog(m,0);
+						surrboxrot(m,0) -= cog(m,0);
+					}
 					// calculate rotation
+					/*f_roof: x_tilde |--> x_roof = R_trans x_tilde = R_trans(x-cog)*/
 					trafo_->Multiply(false,cboxpos,cboxrot);
 					trafo_->Multiply(false,surrboxpos,surrboxrot);
-					// new coordinates
-					for(int m=0; m<cboxrot.M(); m++)
-					{
-						cboxrot(m,0) -= cogrot(m,0);
-						surrboxrot(m,0) -= cogrot(m,0);
-					}
 
 					// determine bin for rotated fixed system coordinates
 					for(int m=0; m<cboxrot.M(); m++)

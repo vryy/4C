@@ -694,7 +694,6 @@ void StatMechManager::PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,
 	int N = statmechparams_.get<int>("SEARCHRES", 1);
 
 	/*nodes*/
-	//cout<<"Proc "<<discret_.Comm().MyPID()<<" : partitioning of nodes"<<endl;
 	// loop over node positions to map their column map LIDs to partitions
 	for (std::map<int, LINALG::Matrix<3, 1> >::const_iterator posi = currentpositions.begin(); posi != currentpositions.end(); posi++)
 		for(int j=0; j<(int)nodeinpartition.size(); j++) // nodeinpartition.size==3
@@ -708,7 +707,6 @@ void StatMechManager::PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,
 		}
 
 	/*crosslink molecules*/
-	//cout<<"Proc "<<discret_.Comm().MyPID()<<" : Epetra_Export"<<endl;
 	// Export crosslinkerpositions_ to transfermap_ format (kind of a row map format for crosslink molecules)
 	Epetra_MultiVector crosslinkerpositionstrans(*transfermap_, 3, true);
 	Epetra_Vector numbondtrans(*transfermap_, true);
@@ -724,7 +722,7 @@ void StatMechManager::PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,
 	// Export to transfer map format
 	numbondtrans.Export(*numbond_, crosslinkexporter, Add);
 	crosslinkerpositionstrans.Export(*crosslinkerpositions_, crosslinkexporter, Add);
-	//cout<<"Proc "<<discret_.Comm().MyPID()<<" : partitioning of crosslink molecules"<<endl;
+
 	for(int i=0; i<crosslinkpartitiontrans.MyLength(); i++)
 	{
 	  // mark entries with double-bonded crosslink molecules
@@ -745,10 +743,8 @@ void StatMechManager::PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,
 			}
 	  }
 	}
-	//cout<<"Proc "<<discret_.Comm().MyPID()<<" : DetectNeighbourNodes()...";
 	// detection of nodes within search proximity of the crosslink molecules
 	DetectNeighbourNodes(currentpositions, &nodeinpartition, numbondtrans, crosslinkerpositionstrans, crosslinkpartitiontrans, neighbourslid);
-	//cout<<"done!"<<endl;
 	return;
 }//void StatMechManager::PartitioningAndSearch
 
@@ -833,30 +829,11 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
 													const map<int, LINALG::Matrix<3, 1> >::const_iterator nodepos = currentpositions.find(tmplid);
 													// calculate distance crosslinker-node
 													LINALG::Matrix<3, 1> difference;
-													/*TEST_START/ get node gid of one-bonded crosslink
-													int nodelid = -1;
-													// numbond = 0
-													if(numbond[part]<0.1)TEST_END*/
 														for (int l=0; l<(int)difference.M(); l++)
 															difference(l) = crosslinkerpositions[l][part]-(nodepos->second)(l);
-													/*TEST_START/ numbond = 1
-													else if(numbond[part]>0.9 && numbond[part]<1.9)
-													{
-														for(int l=0; l<crosslinkerbond.NumVectors(); l++)
-															if(crosslinkerbond[l][part]>-0.9)
-																nodelid = discret_.NodeColMap()->LID((int)crosslinkerbond[l][part]);
-
-														const map<int, LINALG::Matrix<3, 1> >::const_iterator neighbor = currentpositions.find(nodelid);
-														for (int l=0; l<(int)difference.M(); l++)
-															difference(l) = (neighbor->second)(l)-(nodepos->second)(l);
-													}TEST_END*/
 													// only nodes within the search volume are stored
 													if(difference.Norm2()<rmax && difference.Norm2()>rmin)
-													{
-														/*if(numbond[part]>0.1)
-															cout<<"numbond="<<numbond[part]<<", nodegids="<<discret_.NodeColMap()->GID(tmplid)<<","<<discret_.NodeColMap()->GID(nodelid)<<", length="<<difference.Norm2()<<endl;*/
 														neighbournodes[part].push_back(tmplid);
-													}
 													// exit loop immediately
 													break;
 												}
@@ -1491,22 +1468,22 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 	for (int i=0; i<delcrosslinkers.MyLength(); i++)
 		if (discret_.HaveGlobalElement((int)delcrosslinkers[i]))
 		{
-                  //save the element by packing before elimination to make it restorable in case that needed
-                  vdata.push_back( DRT::PackBuffer() );
-                  discret_.gElement((int)delcrosslinkers[i])->Pack( vdata.back() );
+			//save the element by packing before elimination to make it restorable in case that needed
+			vdata.push_back( DRT::PackBuffer() );
+			discret_.gElement((int)delcrosslinkers[i])->Pack( vdata.back() );
 		}
-        for ( unsigned i=startsize; i<vdata.size(); ++i )
-          vdata[i].StartPacking();
+	for ( unsigned i=startsize; i<vdata.size(); ++i )
+		vdata[i].StartPacking();
 	for (int i=0; i<delcrosslinkers.MyLength(); i++)
 		if (discret_.HaveGlobalElement((int)delcrosslinkers[i]))
 		{
-                  //save the element by packing before elimination to make it restorable in case that needed
-                  deletedelements_.push_back( std::vector<char>() );
-                  discret_.gElement((int)delcrosslinkers[i])->Pack( vdata[deletedelements_.size()-1] );
-                  discret_.DeleteElement( (int)delcrosslinkers[i] );
+			//save the element by packing before elimination to make it restorable in case that needed
+			deletedelements_.push_back( std::vector<char>() );
+			discret_.gElement((int)delcrosslinkers[i])->Pack( vdata[deletedelements_.size()-1] );
+			discret_.DeleteElement( (int)delcrosslinkers[i] );
 		}
-        for ( unsigned i=startsize; i<vdata.size(); ++i )
-          swap( deletedelements_[i], vdata[i]() );
+	for ( unsigned i=startsize; i<vdata.size(); ++i )
+		swap( deletedelements_[i], vdata[i]() );
 	/*synchronize
 	 *the Filled() state on all processors after having added or deleted elements by ChekcFilledGlobally(); then build
 	 *new element maps and call FillComplete();*/
@@ -1712,32 +1689,32 @@ void StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
 		}
 	}
 
-        unsigned startsize = deletedelements_.size();
-        std::vector<DRT::PackBuffer> vdata( startsize );
+	unsigned startsize = deletedelements_.size();
+	std::vector<DRT::PackBuffer> vdata( startsize );
 
 	// DELETION OF ELEMENTS
 	for (int i=0; i<deletecrosslinkerelements.MyLength(); i++)
 		if (discret_.HaveGlobalElement((int)deletecrosslinkerelements[i]))
-	{
-          //save the element by packing before elimination to make it restorable in case that needed
-          //cout<<"Proc "<<discret_.Comm().MyPID()<<": deleting element
-          //"<<(int)deletecrosslinkerelements[i]<<endl;
-          vdata.push_back( DRT::PackBuffer() );
-          discret_.gElement((int)deletecrosslinkerelements[i])->Pack( vdata.back() );
-	}
-        for ( unsigned i=startsize; i<vdata.size(); ++i )
-          vdata[i].StartPacking();
+		{
+			//save the element by packing before elimination to make it restorable in case that needed
+			//cout<<"Proc "<<discret_.Comm().MyPID()<<": deleting element
+			//"<<(int)deletecrosslinkerelements[i]<<endl;
+			vdata.push_back( DRT::PackBuffer() );
+			discret_.gElement((int)deletecrosslinkerelements[i])->Pack( vdata.back() );
+		}
+	for ( unsigned i=startsize; i<vdata.size(); ++i )
+		vdata[i].StartPacking();
 	for (int i=0; i<deletecrosslinkerelements.MyLength(); i++)
 		if (discret_.HaveGlobalElement((int)deletecrosslinkerelements[i]))
-	{
-          //save the element by packing before elimination to make it restorable in case that needed
-          //cout<<"Proc "<<discret_.Comm().MyPID()<<": deleting element "<<(int)deletecrosslinkerelements[i]<<endl;
-          deletedelements_.push_back( std::vector<char>() );
-          discret_.gElement((int)deletecrosslinkerelements[i])->Pack( vdata[deletedelements_.size()-1] );
-          discret_.DeleteElement( (int)deletecrosslinkerelements[i]);
-	}
-        for ( unsigned i=startsize; i<vdata.size(); ++i )
-          swap( deletedelements_[i], vdata[i]() );
+		{
+			//save the element by packing before elimination to make it restorable in case that needed
+			//cout<<"Proc "<<discret_.Comm().MyPID()<<": deleting element "<<(int)deletecrosslinkerelements[i]<<endl;
+			deletedelements_.push_back( std::vector<char>() );
+			discret_.gElement((int)deletecrosslinkerelements[i])->Pack( vdata[deletedelements_.size()-1] );
+			discret_.DeleteElement( (int)deletecrosslinkerelements[i]);
+		}
+	for ( unsigned i=startsize; i<vdata.size(); ++i )
+		swap( deletedelements_[i], vdata[i]() );
 	/*synchronize
 	*the Filled() state on all processors after having added or deleted elements by ChekcFilledGlobally(); then build
 	*new element maps and call FillComplete();*/
@@ -2377,9 +2354,11 @@ void StatMechManager::CrosslinkerMoleculeInit()
 		ddcorrcolmap_ = rcp(new Epetra_Map(-1, discret_.Comm().NumProc()*numbins, &bins[0], 0, discret_.Comm()));
 		// create processor-specific density-density-correlation-function map
 		ddcorrrowmap_ = rcp(new Epetra_Map(discret_.Comm().NumProc()*numbins, 0, discret_.Comm()));
-		// create new trafo matrix (for later use in DDCorr Function where we evaluate in layer directions
-		if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
-			trafo_ = rcp(new LINALG::SerialDenseMatrix(3,3,true));
+		// create new trafo matrix (for later use in DDCorr Function where we evaluate in layer directions), initialize with identity matrix
+		trafo_ = rcp(new LINALG::SerialDenseMatrix(3,3,true));
+		for(int i=0; i<trafo_->M(); i++)
+			(*trafo_)(i,i) = 1.0;
+		cog_.PutScalar(periodlength/2.0);
 	}
 
 	double upperbound = 0.0;
