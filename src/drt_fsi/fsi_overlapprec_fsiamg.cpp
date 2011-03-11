@@ -76,6 +76,10 @@ aiterations_(aiterations)
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
 {
+#ifdef BLOCKMATRIXMERGE
+  dserror("class OverlappingBlockMatrixFSIAMG does not support #define BLOCKMATRIXMERGE");
+#endif
+
   MLAPI::Init();
   const int myrank = Matrix(0,0).Comm().MyPID();
 
