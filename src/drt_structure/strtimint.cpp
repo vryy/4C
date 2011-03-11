@@ -1359,7 +1359,13 @@ void STR::TimInt::ApplyTemperatures(
   Teuchos::RCP<const Epetra_Vector> temp  ///< the current temperature
   )
 {
-  tempn_ = temp;
+  if(temp!=Teuchos::null)
+  {
+    // temperatures T_{n+1} at t_{n+1}
+    tempn_ = LINALG::CreateVector(*(discret_->DofRowMap(1)), true);
+    tempn_ = temp;
+  }
+  else dserror("no temperatures available for TSI");
   // where the fun starts
   return;
 }

@@ -100,7 +100,7 @@ void THR::TimIntStatics::EvaluateRhsTangResidual()
 {
   //! build new external forces
   fextn_->PutScalar(0.0);
-  
+
   //! initialize tangent matrix to zero
   tang_->Zero();
 
@@ -271,7 +271,7 @@ void THR::TimIntStatics::ApplyForceTangInternal(
   const Teuchos::RCP<Epetra_Vector> tempi,  //!< residual temperatures
   Teuchos::RCP<Epetra_Vector> fint,  //!< internal force
   Teuchos::RCP<LINALG::SparseMatrix> tang  //!< tangent matrix
-)
+  )
 {
   //! create the parameters for the discretization
   Teuchos::ParameterList p;

@@ -916,8 +916,22 @@ void THR::TimInt::ApplyStructVariables(
   Teuchos::RCP<const Epetra_Vector> vel  ///< the current velocities
   )
 {
-  disn_ = disp;
-  veln_ = vel;
+  if(disp!=Teuchos::null)
+  {
+    // temperatures T_{n+1} at t_{n+1}
+    disn_ = LINALG::CreateVector(*(discret_->DofRowMap(1)), true);
+    disn_ = disp;
+  }
+  else dserror("no displacements available for TSI");
+
+  if(vel!=Teuchos::null)
+  {
+    // temperatures T_{n+1} at t_{n+1}
+    veln_ = LINALG::CreateVector(*(discret_->DofRowMap(1)), true);
+    veln_ = vel;
+  }
+  else dserror("no velocities available for TSI");
+
   // where the fun starts
   return;
 }

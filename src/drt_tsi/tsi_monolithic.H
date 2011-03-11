@@ -112,7 +112,10 @@ namespace TSI
   {
 
   public:
-    explicit Monolithic(Epetra_Comm& comm);
+    explicit Monolithic(
+      Epetra_Comm& comm,
+      const Teuchos::ParameterList& sdynparams
+      );
 
     /*! do the setup for the monolithic system
 
@@ -133,7 +136,9 @@ namespace TSI
     virtual void SetupSystem();
 
     /// outer level TSI time loop
-    void TimeLoop();
+    void TimeLoop(
+      const Teuchos::ParameterList& sdynparams  //!< structural dynamic input parameters
+      );
 
     //! @name Apply current field state to system
 
@@ -142,7 +147,18 @@ namespace TSI
     void SetupRHS();
 
     /// setup composed system matrix from field solvers
-    void SetupSystemMatrix();
+    void SetupSystemMatrix(const Teuchos::ParameterList& sdynparams);
+
+    //! Evaluate mechanical-thermal system matrix
+    void ApplyStrCouplMatrix(
+      Teuchos::RCP<LINALG::SparseMatrix> k_st  //!< mechanical-thermal stiffness matrix
+      );
+
+    //! Evaluate thermal-mechanical system matrix
+    void ApplyThrCouplMatrix(
+      Teuchos::RCP<LINALG::SparseMatrix> k_ts,  //!< thermal-mechanical tangent matrix
+      const Teuchos::ParameterList& sdynparams
+      );
 
     //@}
 
@@ -164,15 +180,7 @@ namespace TSI
     bool Converged();
 
     /// outer iteration loop
-    void NewtonFull();
-
-    //! @name Updates
-    //@{
-
-    //! update iteration
-    void NewtonUpdate();
-
-    //@}
+    void NewtonFull(const Teuchos::ParameterList& sdyn);
 
     //! @name Output
 
@@ -201,17 +209,17 @@ namespace TSI
 
     //! @name Access methods
 
-    /// velocity calculation given the displacements (like in FSI)
+    //! velocity calculation given the displacements (like in FSI)
     Teuchos::RCP<Epetra_Vector> CalcVelocity(
       Teuchos::RCP<const Epetra_Vector> dispnp
       );
 
     //@}
 
-    /// convergence check for Newton solver
+    //! convergence check for Newton solver
     bool ConvergenceCheck(int itnum, int itmax, double ittol);
 
-    /// extract the three field vectors from a given composed vector
+    //! extract the three field vectors from a given composed vector
     /*!
       x is the sum of all increments up to this point.
       \param x  (i) composed vector that contains all field vectors
@@ -226,13 +234,13 @@ namespace TSI
 
     //! @name Access methods for subclasses
 
-    /// full monolithic dof row map
+    //! full monolithic dof row map
     Teuchos::RCP<const Epetra_Map> DofRowMap() const
     {
       return blockrowdofmap_.FullMap();
     }
 
-    /// set full monolithic dof row map
+    //! set full monolithic dof row map
     /*!
      A subclass calls this method (from its constructor) and thereby
      defines the number of blocks, their maps and the block order. The block
@@ -240,7 +248,11 @@ namespace TSI
     */
     void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
 
-    /// extractor to communicate between full monolithic map and block maps
+    //! combined DBC map
+    //! unique map of all dofs that should be constrained with DBC
+    Teuchos::RCP<Epetra_Map> CombinedDBCMap();
+
+    //! extractor to communicate between full monolithic map and block maps
     const LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
 
     //@}
@@ -265,25 +277,26 @@ namespace TSI
     //@}
 
     //! @name Global vectors
-
     Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
-
     //@}
+
+    //! enum for STR time integartion
+    enum INPAR::STR::DynamicType strmethodname_;
 
 
   private:
 
-    /// dof row map splitted in (field) blocks
+    //! dof row map splitted in (field) blocks
     LINALG::MultiMapExtractor blockrowdofmap_;
 
-    /// build block vector from field vectors, e.g. rhs, increment vector
+    //! build block vector from field vectors, e.g. rhs, increment vector
     void SetupVector(
       Epetra_Vector &f,  //!< vector of length of all dofs
       Teuchos::RCP<const Epetra_Vector> sv,  //!< vector containing only structural dofs
       Teuchos::RCP<const Epetra_Vector> tv  //!< vector containing only thermal dofs
       );
 
-    /// block systemmatrix
+    //! block systemmatrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
 
     //! @name Iterative solution technique
@@ -310,10 +323,10 @@ namespace TSI
     Teuchos::RCP<Epetra_Vector> freact_;  //!< reaction force
     Teuchos::RCP<Epetra_Vector> iterinc_;  //!< increment between Newton steps k and k+1
                                            //!< \f$\Delta{x}^{<k>}_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> veln_;  //!< global velocities
+                                        //!< \f${V}_{n+1}\f$
+                                        //!< at \f$t_{n+1}\f$
     //@}
-
-    /// quasi-static solution of the mechancial equation
-    bool quasistatic_;
 
   }; // Monolithic
 

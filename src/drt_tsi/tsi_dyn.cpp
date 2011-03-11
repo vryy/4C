@@ -103,8 +103,13 @@ void tsi_dyn_drt()
       dserror("Structure AND Thermo discretization present. This is not supported.");
 
   // access the problem-specific parameter list
-  const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
-  const INPAR::TSI::SolutionSchemeOverFields coupling  = DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
+  const Teuchos::ParameterList& tsidyn
+    = DRT::Problem::Instance()->TSIDynamicParams();
+  // access the problem-specific parameter list
+  const Teuchos::ParameterList& sdynparams
+      = DRT::Problem::Instance()->StructuralDynamicParams();
+  const INPAR::TSI::SolutionSchemeOverFields coupling
+    = DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
 
   // choose algorithm depending on solution type
   switch (coupling)
@@ -112,7 +117,7 @@ void tsi_dyn_drt()
   case INPAR::TSI::Monolithic:
   {
     // create an TSI::Monolithic instance
-    Teuchos::RCP<TSI::Monolithic> tsi = Teuchos::rcp(new TSI::Monolithic(comm));
+    Teuchos::RCP<TSI::Monolithic> tsi = Teuchos::rcp(new TSI::Monolithic(comm,sdynparams));
 
     if (genprob.restart)
     {
@@ -124,7 +129,7 @@ void tsi_dyn_drt()
     tsi->SetupSystem();
 
     // solve the whole tsi problem
-    tsi->TimeLoop();
+    tsi->TimeLoop(sdynparams);
 
     // summarize the performance measurements
     Teuchos::TimeMonitor::summarize();

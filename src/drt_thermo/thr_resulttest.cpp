@@ -96,7 +96,6 @@ void THR::ResultTest::TestNode(
       if (position == "rate")
       {
         unknownpos = false;
-        // 01.03.10 NEW
         result = (*rate_)[ratemap.LID(thrdisc_->Dof(0,actnode,0))];
       }
     }

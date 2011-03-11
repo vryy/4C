@@ -27,6 +27,7 @@ Maintainer: Caroline Danowski
 
 // GENERAL DEBUGGING OPTIONS
 //#define TSIASOUTPUT             /* flag for detailed active set output */
+//#define TSIMONOLITHASOUTPUT       /* flag for detailed output in monolithic TSI */
 //#define TSIPARALLEL             /* flag for detailed active set output */
 //#define THRASOUTPUT             /* flag for detailed active set output */
 

@@ -207,8 +207,6 @@ void TSI::Algorithm::TimeLoop()
   dispn_ = StructureField().ExtractDispn();
   veln_ = StructureField().ExtractVeln();
 
-  // ==================================================================
-
   // call the TSI parameter list
   const Teuchos::ParameterList& tsidyn
     = DRT::Problem::Instance()->TSIDynamicParams();
@@ -460,7 +458,7 @@ void TSI::Algorithm::TimeLoopSequStagg()
   // like implicit-implicit staggered scheme, compare Farhat & Park, 1991
   if (displacementcoupling_) // (temperature change due to deformation)
   {
-    // Begin Nonlinear Solver / Outer Iteration ******************************
+    // begin nonlinear solver ************************************************
 
     // predict the displacement field (structural predictor for TSI)
 
@@ -498,7 +496,7 @@ void TSI::Algorithm::TimeLoopSequStagg()
     // solve coupled equation
     DoStructureStep();
 
-    // End Nonlinear Solver **************************************
+    // end nonlinear solver **************************************************
 
     // get the velocities needed as predictor for the thermo field for the next
     // time step
@@ -519,7 +517,7 @@ void TSI::Algorithm::TimeLoopSequStagg()
   // temperature is coupling variable
   else  // (deformation due to heating)
   {
-    // Begin Nonlinear Solver / Outer Iteration ******************************
+    // begin nonlinear solver ************************************************
 
     // predict the temperature field (thermal predictor for TSI)
 
@@ -563,7 +561,7 @@ void TSI::Algorithm::TimeLoopSequStagg()
     /// been set.
     DoThermoStep();
 
-    // End Nonlinear Solver **************************************
+    // end nonlinear solver **************************************************
 
     // update all single field solvers
     Update();
@@ -688,7 +686,7 @@ void TSI::Algorithm::OuterIterationLoop()
       // extract current displacements
       const Teuchos::RCP<Epetra_Vector> dispnp = StructureField().ExtractDispnp();
 
-      // End Nonlinear Solver **************************************
+      // end nonlinear solver / outer iteration ********************************
 
       if(quasistatic_)
         veln_ = CalcVelocity(dispnp);
@@ -721,6 +719,8 @@ void TSI::Algorithm::OuterIterationLoop()
       // elch_algorithm: here the current values are needed)
       tempincnp_->Update(1.0,*ThermoField().Tempnp(),0.0);
       dispincnp_->Update(1.0,*StructureField().Dispnp(),0.0);
+
+      // begin nonlinear solver / outer iteration ******************************
 
       /// structure field
 
@@ -766,7 +766,7 @@ void TSI::Algorithm::OuterIterationLoop()
       /// do the solve for the time step. All boundary conditions have been set.
       DoThermoStep();
 
-      // end Nonlinear Solver **************************************
+      // end nonlinear solver / outer iteration ********************************
 
       // check convergence of both field for "partitioned scheme"
       stopnonliniter = ConvergenceCheck(itnum,itmax_,ittol_);

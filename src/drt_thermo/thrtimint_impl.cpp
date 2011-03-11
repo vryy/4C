@@ -426,28 +426,7 @@ void THR::TimIntImpl::NewtonFull()
   // equilibrium iteration loop
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
-    //    04.03.10 like Georg did in scatra_timint_implicit.cpp
-    /*
-          // matrix printing options (DEBUGGING!)
-          RCP<LINALG::SparseMatrix> A = SystemMatrix();
-          if (A != Teuchos::null)
-          {
-            // print to file in matlab format
-            const std::string fname = "sparsematrix.mtl";
-            LINALG::PrintMatrixInMatlabFormat(fname,*(A->EpetraMatrix()));
-            // print to screen
-            (A->EpetraMatrix())->Print(cout);
-            // print sparsity pattern to file
-            LINALG::PrintSparsityToPostscript( *(A->EpetraMatrix()) );
-          }
-          else
-          {
-            Teuchos::RCP<LINALG::BlockSparseMatrixBase> A = BlockSystemMatrix();
-            const std::string fname = "sparsematrix.mtl";
-            LINALG::PrintBlockMatrixInMatlabFormat(fname,*(A));
-          }
-          */
-    // make negative residual
+   // make negative residual
     fres_->Scale(-1.0);
 
     // apply Dirichlet BCs to system of equations
@@ -513,24 +492,6 @@ void THR::TimIntImpl::NewtonFull()
     PrintNewtonConv();
   }
 
-//  // 03.12.10
-//  // matrix printing options (DEBUGGING!)
-//   RCP<LINALG::SparseMatrix> A = Tang();
-//   if (A != Teuchos::null)
-//   {
-//     // print to file in matlab format
-//     const std::string fname = "sparsematrix.mtl";
-//     LINALG::PrintMatrixInMatlabFormat(fname,*(A->EpetraMatrix()));
-//     // print to screen
-//     (A->EpetraMatrix())->Print(cout);
-//     // print sparsity pattern to file
-//     LINALG::PrintSparsityToPostscript( *(A->EpetraMatrix()) );
-//   }
-//
-//   // 6.12.10 cout comment
-//  cout << "tang_\n" << tang_  << "\n" <<  endl;
-//  cout << "tempi_\n" << *tempi_ << "\n" <<  endl;
-
   // get out of here
   return;
 }
@@ -547,10 +508,13 @@ void THR::TimIntImpl::PrepareSystemForNewtonSolve()
 
   // make the residual negative
   fres_->Scale(-1.0);
-  // blank residual at DOFs on Dirichlet BCs
+  // blank residual at DOFs on Dirichlet BCs, fres_=0 at nodes with DBC
   dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+
   // apply Dirichlet BCs to system of equations
   tempi_->PutScalar(0.0);  // Useful? depends on solver and more
+  // at dofs with DBC change tang_:
+  // blank all off-diagonal terms and put 1s at diagonal terms of tang_
   LINALG::ApplyDirichlettoSystem(tang_, tempi_, fres_,
                                  zeros_, *(dbcmaps_->CondMap()));
 
