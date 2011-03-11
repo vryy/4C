@@ -237,7 +237,7 @@ namespace ELEMENTS
 
     //! Calculate element vectors (internal/external) and a few matrices
     //! considering current displacement solution
-    void CouplCalculateFintCondCapa(
+    void CalculateCouplFintCondCapa(
       DRT::Element* ele,  ///< the element whose matrix is calculated
       const double& time,  ///< current time
       vector<double>& disp,  // current displacements
@@ -248,6 +248,14 @@ namespace ELEMENTS
       LINALG::Matrix<nen_*numdofpernode_,1>* efext,  ///< external force
       LINALG::Matrix<nquad_,nsd_>* eheatflux,  ///< heat fluxes at Gauss points
       LINALG::Matrix<nquad_,nsd_>* etempgrad  ///< temperature gradients at Gauss points
+      );
+
+    //! calculate thermal-mechanical system matrix term needed in monolithic TSI
+    void CalculateCouplCond(
+      DRT::Element* ele,  ///< the element whose matrix is calculated
+      vector<double>& disp,  // current displacements
+      vector<double>& vel,  // current velocities
+      LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* econdcoupl  ///< k_Tu matrix
       );
 
     //@}

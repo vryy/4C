@@ -490,7 +490,8 @@ protected:
     multi_readrestart,         //!< multi-scale: read restart on microscale
     multi_newresultfile,       //!< multi-scale: define new result file (for inverse analysis)
     calc_potential_stiff,       //!< volume interaction potential
-    calc_stc_matrix            //! calculate scaled director matrix for thin shell structures
+    calc_stc_matrix,            //! calculate scaled director matrix for thin shell structures
+    calc_struct_stifftemp    //!< TSI specific: mechanical-thermal stiffness
   };
 
   //! kinematic types of so_hex8 (default: total-lagrangian)
@@ -683,6 +684,19 @@ protected:
     );
 
   /*!
+   * \brief Calculate mechanical thermal stiffness term needed for monolithic TSI
+   *
+   * \param *stiffmatrixtemp (out): mechanical thermal stiffness term at current gp
+   * \param &disp (in): current displacement
+   * \param &temp (in): current temperatures
+   * */
+  virtual void soh8_stifftemp(
+    DRT::Element::LocationArray& la,
+    vector<double>& disp,
+    LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8>* stiffmatrixcoupl  // element mechanical thermal stiffness matrix
+    );
+
+  /*!
    * \brief Interface to the material law (Thermo St.Venant Kirchoff) working
    * with soh8.
    *
@@ -695,7 +709,7 @@ protected:
    * \param *stress (out): Voigt-Vector of stresses at current gp
    * \param *ctemp (out): temperature dependent tangent matrix at current gp
    * \param *density (out): density of material
-   * \param *Ntemp (out): shapefcts * element temperature at current gp
+   * \param *Ntemp (out): (shapefcts . element temperature) at current gp
    * \param *defgrd (in): F at current gp, CAUTION! only for disp-based soh8
    * \param gp (in): current gp
    * \param params (in): parameterlist to access time, etc. in materials
@@ -705,9 +719,7 @@ protected:
     LINALG::Matrix<MAT::NUM_STRESS_3D,1>* ctemp,
     double* density,
     LINALG::Matrix<1,1>* Ntemp,  // temperature of element
-    LINALG::Matrix<3,3>* defgrd,
-    const int gp,
-    Teuchos::ParameterList& params
+    LINALG::Matrix<3,3>* defgrd
     );
 
   // calculate the constant temperature fraction for stresstemp
@@ -715,6 +727,12 @@ protected:
     LINALG::Matrix<6,1>* ctemp,
     LINALG::Matrix<6,1>* stempconst
     );
+
+  // calculate the constant temperature fraction for stresstemp
+  void Ctemp(
+    LINALG::Matrix<6,1>* ctemp
+    );
+
 
   //@}
 

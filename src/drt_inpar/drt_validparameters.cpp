@@ -1740,12 +1740,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&tsidyn);
   // Time loop control
   IntParameter("NUMSTEP",200,"maximum number of Timesteps",&tsidyn);
-  DoubleParameter("MAXTIME",1000.0,"Total simulation time",&tsidyn);
+  DoubleParameter("MAXTIME",1000.0,"total simulation time",&tsidyn);
   DoubleParameter("TIMESTEP",0.05,"time step size dt",&tsidyn);
-  DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&tsidyn);
-  IntParameter("ITEMAX",1,"Maximum number of iterations over fields",&tsidyn);
-  IntParameter("ITEMIN",1,"Minimal number of iterations over fields",&tsidyn);
-  IntParameter("UPRES",1,"Increment for writing solution",&tsidyn);
+  DoubleParameter("CONVTOL",1e-6,"tolerance for convergence check",&tsidyn);
+  IntParameter("ITEMAX",10,"maximum number of iterations over fields",&tsidyn);
+  IntParameter("ITEMIN",1,"minimal number of iterations over fields",&tsidyn);
+  IntParameter("UPRES",1,"increment for writing solution",&tsidyn);
 
   // Iterationparameters
   setStringToIntegralParameter<int>("NORM_INC","Abs","type of norm for primary variables convergence check",

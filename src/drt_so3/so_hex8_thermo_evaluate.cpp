@@ -98,6 +98,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
   else if (action=="calc_struct_update_istep")  act = So_hex8::calc_struct_update_istep;
   else if (action=="calc_struct_reset_istep")   act = So_hex8::calc_struct_reset_istep;    // needed for TangDis predictor
   else if (action=="postprocess_stress")        act = So_hex8::postprocess_stress;
+  else if (action=="calc_struct_stifftemp")     act = So_hex8::calc_struct_stifftemp;
   else dserror("Unknown type of action for So_hex8");
   // what should the element do
   switch(act)
@@ -513,7 +514,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmasstemp(
     // calculate the stress part dependent on the temperature in the material
     LINALG::Matrix<NUMSTR_SOH8,1> ctemp(true);
     LINALG::Matrix<NUMSTR_SOH8,1> stresstemp(true);
-    soh8_mat_temp(&stresstemp,&ctemp,&density,&Ntemp,&defgrd,gp,params);
+    soh8_mat_temp(&stresstemp,&ctemp,&density,&Ntemp,&defgrd);
 
     // and now add the constant temperature fraction to stresstemp, too
     LINALG::Matrix<NUMSTR_SOH8,1> stempconst(true);
@@ -652,9 +653,9 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_temp(
   LINALG::Matrix<MAT::NUM_STRESS_3D,1>* ctemp,
   double* density,
   LINALG::Matrix<1,1>* Ntemp,  // temperature of element
-  LINALG::Matrix<3,3>* defgrd,
-  const int gp,
-  Teuchos::ParameterList& params
+  LINALG::Matrix<3,3>* defgrd //,
+//  const int gp,
+//  Teuchos::ParameterList& params
   )
 {
 #ifdef DEBUG
@@ -717,6 +718,32 @@ void DRT::ELEMENTS::So_hex8::Stempconst(
 
   return;
 } // So_hex8::Stempconst
+
+
+/*----------------------------------------------------------------------*
+ | get the constant temperature fraction for stresstemp      dano 05/10 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8::Ctemp(LINALG::Matrix<6,1>* ctemp)
+{
+  Teuchos::RCP<MAT::Material> mat = Material();
+  switch (mat->MaterialType())
+  {
+    /*-------- thermo st.venant-kirchhoff-material */
+    case INPAR::MAT::m_thermostvenant:
+    {
+      MAT::ThermoStVenantKirchhoff* thrstvk
+        = static_cast<MAT::ThermoStVenantKirchhoff*>(mat.get());
+       return thrstvk->SetupCthermo(*ctemp); //thrstvk->Stempconst(*ctemp,*stempconst);
+
+       break;
+    }
+    default:
+      dserror("Cannot ask material for the temperature rhs");
+      break;
+  } // switch (mat->MaterialType())
+
+}
+
 
 
 /*----------------------------------------------------------------------*/

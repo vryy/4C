@@ -358,7 +358,7 @@ namespace ELEMENTS
 //      Epetra_SerialDenseVector& elevec3
 //      );
 
-    //  29.01.2010 new Evaluate for volume coupling
+
     //! \brief Evaluate an element, i.e. call the implementation to evaluate element
     //! tangent, capacity, internal forces or evaluate errors, statistics or updates
     //! etc. directly.
