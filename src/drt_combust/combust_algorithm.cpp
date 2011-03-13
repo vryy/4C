@@ -211,7 +211,7 @@ void COMBUST::Algorithm::TimeLoop()
       //      G-function is zero, if a zero initial fluid field is used.
       //      -> Should the fluid be solved first?
       // solve linear G-function equation
-      //DoGfuncField();
+      DoGfuncField();
 
       // update interface geometry
       UpdateInterface();
@@ -543,8 +543,10 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::OverwriteFluidVel()
 /*------------------------------------------------------------------------------------------------*
  | protected: compute flame velocity                                                  henke 07/09 |
  *------------------------------------------------------------------------------------------------*/
-const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuchos::RCP<Epetra_Vector>& convel,
-    const Teuchos::RCP<const DRT::DofSet>& dofset)
+const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
+    const Teuchos::RCP<Epetra_Vector>& convel,
+    const Teuchos::RCP<const DRT::DofSet>& dofset
+    )
 {
   if((DRT::INPUT::IntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == false) and
      (DRT::INPUT::IntegralValue<INPAR::COMBUST::InitialField>(combustdyn_.sublist("COMBUSTION FLUID"),"INITIALFIELD")
@@ -777,7 +779,11 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(const Teuc
           if (ele->NodeIds()[inode] == lnode->Id())
           {
             // get local (element) coordinates of this node
-            LINALG::Matrix<3,1> coord = DRT::UTILS::getNodeCoordinates(inode,ele->Shape());
+            LINALG::Matrix<3,1> coord(true);
+            for(size_t icomp = 0; icomp<3; ++icomp)
+            {
+              coord(icomp) = DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[inode][icomp];
+            }
             // evaluate derivatives of shape functions at this node
             DRT::UTILS::shape_function_3D_deriv1(deriv,coord(0),coord(1),coord(2),ele->Shape());
 #ifdef DEBUG
@@ -1350,19 +1356,25 @@ void COMBUST::Algorithm::printMassConservationCheck(const double volume_start, c
   if (Comm().MyPID() == 0)
   {
     // compute mass loss
-    if (volume_start == 0.0)
-      dserror(" there is no 'minus domain'! -> division by zero checking mass conservation");
-    double massloss = -(volume_start - volume_end) / volume_start *100;
-    // 'isnan' seems to work not reliably; error occurs in line above
-    if (std::isnan(massloss))
-      dserror("NaN detected in mass conservation check");
+    if (volume_start != 0.0)
+    {
 
-    std::cout << "---------------------------------------" << endl;
-    std::cout << "           mass conservation           " << endl;
-    std::cout << " initial mass: " << volume_start << endl;
-    std::cout << " final mass:   " << volume_end   << endl;
-    std::cout << " mass loss:    " << massloss << "%" << endl;
-    std::cout << "---------------------------------------" << endl;
+      double massloss = -(volume_start - volume_end) / volume_start *100;
+      // 'isnan' seems to work not reliably; error occurs in line above
+      if (std::isnan(massloss))
+        dserror("NaN detected in mass conservation check");
+
+      std::cout << "---------------------------------------" << endl;
+      std::cout << "           mass conservation           " << endl;
+      std::cout << " initial mass: " << volume_start << endl;
+      std::cout << " final mass:   " << volume_end   << endl;
+      std::cout << " mass loss:    " << massloss << "%" << endl;
+      std::cout << "---------------------------------------" << endl;
+    }
+    else
+    {
+      dserror(" there is no 'minus domain'! -> division by zero checking mass conservation");
+    }
   }
 
   return;

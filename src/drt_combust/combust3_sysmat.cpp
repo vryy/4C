@@ -803,12 +803,13 @@ void COMBUST::callSysmat(
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
     break;
-//    case DRT::Element::hex20:
-//      COMBUST::Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
-//          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
-//    break;
+    case DRT::Element::hex20:
+      COMBUST::Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
+          ele, ih, eleDofManager, mystate, estif, eforce,
+          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,
+          connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
+    break;
 //    case DRT::Element::hex27:
 //      COMBUST::Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
@@ -842,12 +843,13 @@ void COMBUST::callSysmat(
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
     break;
-//    case DRT::Element::hex20:
-//      COMBUST::Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
-//          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-//          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
-//    break;
+    case DRT::Element::hex20:
+      COMBUST::Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
+          ele, ih, eleDofManager, mystate, estif, eforce,
+          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,
+            connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
+    break;
 //    case DRT::Element::hex27:
 //      COMBUST::Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,

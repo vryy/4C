@@ -210,7 +210,7 @@ void IO::GMSH::VectorFieldNodeBasedToGmsh(
   {
     const DRT::Element* ele = discret->lRowElement(iele);
     const DRT::Element::DiscretizationType distype = ele->Shape();
-    const int numnode = distypeToGmshNumNode(distype);
+    const int numnode = ele->NumNode();
 
     LINALG::SerialDenseMatrix xyze(3,numnode);
 
