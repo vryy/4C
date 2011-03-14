@@ -1957,7 +1957,10 @@ void StatMechManager::RestoreConv(RCP<LINALG::SparseOperator>& stiff)
   //loop through all elements deleted in this time step and restore them in the discretization
   for(int i=0; i<(int)deletedelements_.size(); i++)
   {
-    DRT::ParObject* o = DRT::UTILS::Factory(deletedelements_[i]);
+    vector<char> tmp;
+    vector<char>::size_type position = 0;
+    DRT::ParObject::ExtractfromPack(position,deletedelements_[i],tmp);
+    DRT::ParObject* o = DRT::UTILS::Factory(tmp);
     DRT::Element* ele = dynamic_cast<DRT::Element*>(o);
     if (ele == NULL)
       dserror("Failed to build an element from the element data");
