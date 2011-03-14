@@ -78,9 +78,9 @@ void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,st
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("MOMIN")
-    //.AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
+    .AddNamedDouble("IYY")
+    .AddNamedDouble("IZZ")
+    .AddNamedDouble("IRR")
     .AddNamedDoubleVector("TRIADS",6)
     ;
 
@@ -89,9 +89,9 @@ void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,st
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("MOMIN")
-    //.AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
+    .AddNamedDouble("IYY")
+    .AddNamedDouble("IZZ")
+    .AddNamedDouble("IRR")
     .AddNamedDoubleVector("TRIADS",6)
     ;
 
@@ -100,9 +100,9 @@ void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,st
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("MOMIN")
-    //.AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
+    .AddNamedDouble("IYY")
+    .AddNamedDouble("IZZ")
+    .AddNamedDouble("IRR")
     .AddNamedDoubleVector("TRIADS",9)
     ;
 
@@ -111,9 +111,9 @@ void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,st
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("MOMIN")
-    //.AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
+    .AddNamedDouble("IYY")
+    .AddNamedDouble("IZZ")
+    .AddNamedDouble("IRR")
     .AddNamedDoubleVector("TRIADS",9)
     ;
 
@@ -122,9 +122,9 @@ void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,st
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("MOMIN")
-    //.AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
+    .AddNamedDouble("IYY")
+    .AddNamedDouble("IZZ")
+    .AddNamedDouble("IRR")
     .AddNamedDoubleVector("TRIADS",12)
     ;
 
@@ -133,9 +133,9 @@ void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,st
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("MOMIN")
-    //.AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
+    .AddNamedDouble("IYY")
+    .AddNamedDouble("IZZ")
+    .AddNamedDouble("IRR")
     .AddNamedDoubleVector("TRIADS",12)
     ;
 
@@ -144,9 +144,9 @@ void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,st
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("MOMIN")
-    //.AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
+    .AddNamedDouble("IYY")
+    .AddNamedDouble("IZZ")
+    .AddNamedDouble("IRR")
     .AddNamedDoubleVector("TRIADS",15)
     ;
 
@@ -155,9 +155,9 @@ void DRT::ELEMENTS::Beam3iiType::SetupElementDefinition( std::map<std::string,st
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedDouble("SHEARCORR")
-    .AddNamedDouble("MOMIN")
-    //.AddNamedDouble("MOMIN")
-    .AddNamedDouble("MOMINPOL")
+    .AddNamedDouble("IYY")
+    .AddNamedDouble("IZZ")
+    .AddNamedDouble("IRR")
     .AddNamedDoubleVector("TRIADS",15)
     ;
 }
