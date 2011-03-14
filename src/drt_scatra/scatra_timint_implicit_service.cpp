@@ -2072,7 +2072,9 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
 
       // Newton step:  Jacobian * \Delta pot = - Residual
       const double potinc_cathode = newtonrhs/currtangent_cathode;
-      const double potinc_anode = newtonrhs/currtangent_anode;
+      double potinc_anode = 0.0;
+      if (abs(currtangent_anode)>EPS13) // anode surface overpotential is optional
+        potinc_anode = newtonrhs/currtangent_anode;
       gstatincrement_ = (potinc_cathode+potinc_anode+potinc_ohm);
       // update electric potential
       potnew += gstatincrement_;

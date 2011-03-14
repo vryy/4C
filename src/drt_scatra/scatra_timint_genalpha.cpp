@@ -63,13 +63,13 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
     fsphiaf_ = LINALG::CreateVector(*dofrowmap,true);
 
+  // initialize time-dependent electrode kinetics variables (galvanostatic mode)
+  ElectrodeKineticsTimeUpdate(true);
+
   // Important: this adds the required ConditionID's to the single conditions.
   // It is necessary to do this BEFORE ReadRestart() is called!
   // Output to screen and file is suppressed
   OutputElectrodeInfo(false,false);
-
-  // initialize time-dependent electrode kinetics variables (galvanostatic mode)
-  ElectrodeKineticsTimeUpdate(true);
 
   // for initializing phiaf_, phiam based on the initial field that was
   // set for phinp_, phin_ in the TimInt base class constructor

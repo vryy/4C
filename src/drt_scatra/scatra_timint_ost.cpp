@@ -64,13 +64,13 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
     fsphinp_ = LINALG::CreateVector(*dofrowmap,true);
 
+  // initialize time-dependent electrode kinetics variables (galvanostatic mode)
+  ElectrodeKineticsTimeUpdate(true);
+
   // Important: this adds the required ConditionID's to the single conditions.
   // It is necessary to do this BEFORE ReadRestart() is called!
   // Output to screen and file is suppressed
   OutputElectrodeInfo(false,false);
-
-  // initialize time-dependent electrode kinetics variables (galvanostatic mode)
-  ElectrodeKineticsTimeUpdate(true);
 
   return;
 }
