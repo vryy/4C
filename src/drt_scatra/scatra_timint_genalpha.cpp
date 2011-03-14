@@ -63,6 +63,11 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
     fsphiaf_ = LINALG::CreateVector(*dofrowmap,true);
 
+  // Important: this adds the required ConditionID's to the single conditions.
+  // It is necessary to do this BEFORE ReadRestart() is called!
+  // Output to screen and file is suppressed
+  OutputElectrodeInfo(false,false);
+
   // initialize time-dependent electrode kinetics variables (galvanostatic mode)
   ElectrodeKineticsTimeUpdate(true);
 
@@ -453,20 +458,33 @@ void SCATRA::TimIntGenAlpha::OutputRestart()
   output_->WriteVector("phidtn", phidtn_);
   output_->WriteVector("phin",   phin_);
 
-  // write electrode potential of the first, galvanostatic electro kinetic condition
+  // write additional restart data for galvanostatic applications
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
     if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
-      // define a vector with all electrokinetic BC
+      // define a vector with all electrode kinetics BCs
       vector<DRT::Condition*> cond;
       discret_->GetCondition("ElectrodeKinetics",cond);
-      if (!cond.empty())
+
+      int condid_cathode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_CATHODE");
+
+      vector<DRT::Condition*>::iterator fool;
+      // loop through conditions and find the cathode
+      for (fool=cond.begin(); fool!=cond.end(); ++fool)
       {
-        // electrode potential of the first electrokinetic BC
-        double pot = cond[0]->GetDouble("pot");
-        // write electrode potential to the .control file
-        output_->WriteDouble("pot",pot);
+        DRT::Condition* mycond = (*(fool));
+        const int condid = mycond->GetInt("ConditionID");
+        if (condid_cathode==condid)
+        {
+          // electrode potential of the adjusted electrode kinetics BC at time n+1
+          double pot = mycond->GetDouble("pot");
+          output_->WriteDouble("pot",pot);
+
+          // electrode potential of the adjusted electrode kinetics BC at time n
+          double potn = mycond->GetDouble("potn");
+          output_->WriteDouble("potn",potn);
+        }
       }
     }
   }
@@ -490,21 +508,40 @@ void SCATRA::TimIntGenAlpha::ReadRestart(int step)
   reader.ReadVector(phidtnp_,"phidtnp");
   reader.ReadVector(phidtn_, "phidtn");
 
-  // get electrode potential of the first, galvanostatic ButlerVolmer condition
+  // restart for galvanostatic applications
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
     if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
-      // define a vector with all electrokinetic BC
+      // define a vector with all electrode kinetics BCs
       vector<DRT::Condition*> cond;
       discret_->GetCondition("ElectrodeKinetics",cond);
-      if (!cond.empty())
+
+      int condid_cathode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_CATHODE");
+      vector<DRT::Condition*>::iterator fool;
+      bool read_pot=false;
+
+      // read desired values from the .control file and add/set the value to
+      // the electrode kinetics boundary condition representing the cathode
+      for (fool=cond.begin(); fool!=cond.end(); ++fool)
       {
-        // read electrode potential from the .case file
-        double pot = reader.ReadDouble("pot");
-        // adapt electrode potential of the first electrokinetic condition
-        cond[0]->Add("pot",pot);
+        DRT::Condition* mycond = (*(fool));
+        const int condid = mycond->GetInt("ConditionID");
+        if (condid_cathode==condid)
+        {
+          double pot = reader.ReadDouble("pot");
+          mycond->Add("pot",pot);
+
+          double potn = reader.ReadDouble("potn");
+          mycond->Add("potn",potn);
+
+          read_pot=true;
+          if (myrank_==0)
+            cout<<"Successfully read restart data for galvanostatic mode (condid "<<condid<<")"<<endl;
+        }
       }
+      if (!read_pot)
+        dserror("Reading of electrode potential for restart not successful.");
     }
   }
 
@@ -554,6 +591,15 @@ void SCATRA::TimIntGenAlpha::ElectrodeKineticsTimeUpdate(const bool init)
        discret_->GetCondition("ElectrodeKinetics",cond);
        for (size_t i=0; i < cond.size(); i++) // we update simply every condition!
        {
+         double potnp = cond[i]->GetDouble("pot");
+         if (init) // create and initialize additional b.c. entries if desired
+         {
+           cond[i]->Add("potn",potnp);
+         }
+         //double potn = cond[i]->GetDouble("potn");
+         // shift status variables
+         cond[i]->Add("potn",potnp);
+
          const double dlcapacitance = cond[i]->GetDouble("dlcap");
          if (dlcapacitance > EPS12)
            dserror("Galvanostatic mode for GenAlpha does not support double-layer capacitance yet.");

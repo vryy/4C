@@ -84,8 +84,8 @@ NUMSTEP          10
 TIMESTEP         0.2
 CONVTOL                         1e-06
 GALVANOSTATIC                   Yes
-GSTATCONDID_ANODE               1
-GSTATCONDID_CATHODE             0
+GSTATCONDID_ANODE               0 // unusual case for nightly testing ;-)
+GSTATCONDID_CATHODE             1 // unusual case for nightly testing ;-)
 GSTATCONVTOL                    1e-04
 GSTATCURTOL                     1e-13
 GSTATCURVENO                    3
@@ -138,8 +138,8 @@ E 1 - default // for flux calculation on these two boundaries
 E 2 - default
 --------------------------------ELECTRODE KINETICS LINE CONDITIONS
 DLINE 2
-E 1 - Tafel species 1 pot -0.0125 curve none alpha_a 1.5 alpha_c 0.5 i0 -4.0 gamma 0.0 refcon 0.1 dlcap 0.0
-E 2 - linear species 1 pot 0.0 curve none alpha_a 1.5 alpha_c 0.5 i0 -4.0 gamma 0.0 refcon 0.1 dlcap 0.0
+E 2 - Tafel species 1 pot -0.0125 curve none alpha_a 1.5 alpha_c 0.5 i0 -4.0 gamma 0.0 refcon 0.1 dlcap 0.0
+E 1 - linear species 1 pot 0.0 curve none alpha_a 1.5 alpha_c 0.5 i0 -4.0 gamma 0.0 refcon 0.1 dlcap 0.0
 -------------------------------------------------FLUID KNOTVECTORS
 ---------------------------------------------------ALE KNOTVECTORS
 ---------------------------------------------TRANSPORT KNOTVECTORS
@@ -333,30 +333,30 @@ NODE 12 DNODE 2
 NODE 133 DNODE 3
 NODE 144 DNODE 4
 -----------------------------------------------DLINE-NODE TOPOLOGY
-NODE 1 DLINE 1
-NODE 2 DLINE 1
-NODE 3 DLINE 1
-NODE 4 DLINE 1
-NODE 5 DLINE 1
-NODE 6 DLINE 1
-NODE 7 DLINE 1
-NODE 8 DLINE 1
-NODE 9 DLINE 1
-NODE 10 DLINE 1
-NODE 11 DLINE 1
-NODE 12 DLINE 1
-NODE 133 DLINE 2
-NODE 134 DLINE 2
-NODE 135 DLINE 2
-NODE 136 DLINE 2
-NODE 137 DLINE 2
-NODE 138 DLINE 2
-NODE 139 DLINE 2
-NODE 140 DLINE 2
-NODE 141 DLINE 2
-NODE 142 DLINE 2
-NODE 143 DLINE 2
-NODE 144 DLINE 2
+NODE 133 DLINE 1
+NODE 134 DLINE 1
+NODE 135 DLINE 1
+NODE 136 DLINE 1
+NODE 137 DLINE 1
+NODE 138 DLINE 1
+NODE 139 DLINE 1
+NODE 140 DLINE 1
+NODE 141 DLINE 1
+NODE 142 DLINE 1
+NODE 143 DLINE 1
+NODE 144 DLINE 1
+NODE 1 DLINE 2
+NODE 2 DLINE 2
+NODE 3 DLINE 2
+NODE 4 DLINE 2
+NODE 5 DLINE 2
+NODE 6 DLINE 2
+NODE 7 DLINE 2
+NODE 8 DLINE 2
+NODE 9 DLINE 2
+NODE 10 DLINE 2
+NODE 11 DLINE 2
+NODE 12 DLINE 2
 NODE 1 DLINE 3
 NODE 13 DLINE 3
 NODE 25 DLINE 3

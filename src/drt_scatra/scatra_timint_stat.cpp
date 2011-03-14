@@ -43,6 +43,11 @@ SCATRA::TimIntStationary::TimIntStationary(
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
     fsphinp_ = LINALG::CreateVector(*dofrowmap,true);
 
+  // Important: this adds the required ConditionID's to the single conditions.
+  // It is necessary to do this BEFORE ReadRestart() is called!
+  // Output to screen and file is suppressed
+  OutputElectrodeInfo(false,false);
+
   return;
 }
 
@@ -136,22 +141,37 @@ void SCATRA::TimIntStationary::ReadRestart(int step)
   // read state vectors that are needed for restart
   reader.ReadVector(phinp_, "phinp");
 
-  // get electrode potential of the first, galvanostatic ButlerVolmer condition
+  // restart for galvanostatic applications
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
-  if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
-  {
-    // define a vector with all electro kinetic BC
-    vector<DRT::Condition*> cond;
-    discret_->GetCondition("ElectrodeKinetics",cond);
-    if (!cond.empty())
+    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
-      // read electrode potential from the .case file
-      double pot = reader.ReadDouble("pot");
-      // adapt electrode potential of the first electro kinetic condition
-      cond[0]->Add("pot",pot);
+      // define a vector with all electrode kinetics BCs
+      vector<DRT::Condition*> cond;
+      discret_->GetCondition("ElectrodeKinetics",cond);
+
+      int condid_cathode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_CATHODE");
+      vector<DRT::Condition*>::iterator fool;
+      bool read_pot=false;
+
+      // read desired values from the .control file and add/set the value to
+      // the electrode kinetics boundary condition representing the cathode
+      for (fool=cond.begin(); fool!=cond.end(); ++fool)
+      {
+        DRT::Condition* mycond = (*(fool));
+        const int condid = mycond->GetInt("ConditionID");
+        if (condid_cathode==condid)
+        {
+          double pot = reader.ReadDouble("pot");
+          mycond->Add("pot",pot);
+          read_pot=true;
+          if (myrank_==0)
+            cout<<"Successfully read restart data for galvanostatic mode (condid "<<condid<<")"<<endl;
+        }
+      }
+      if (!read_pot)
+        dserror("Reading of electrode potential for restart not successful.");
     }
-  }
   }
 
   return;
@@ -186,22 +206,31 @@ void SCATRA::TimIntStationary::OutputRestart()
   output_->WriteVector("phinm", phinp_); // for BDF2
   output_->WriteVector("phidtn", zeros_); // for OST
 
-  // write electrode potential of the first, galvanostatic electro kinetic condition
+  // write additional restart data for galvanostatic applications
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
-  if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
-  {
-    // define a vector with all electro kinetic BC
-    vector<DRT::Condition*> cond;
-    discret_->GetCondition("ElectrodeKinetics",cond);
-    if (!cond.empty())
+    if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
-      // electrode potential of the first electro kinetic BC
-      double pot = cond[0]->GetDouble("pot");
-      // write electrode potential to the .case file
-      output_->WriteDouble("pot",pot);
+      // define a vector with all electrode kinetics BCs
+      vector<DRT::Condition*> cond;
+      discret_->GetCondition("ElectrodeKinetics",cond);
+
+      int condid_cathode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_CATHODE");
+
+      vector<DRT::Condition*>::iterator fool;
+      // loop through conditions and find the cathode
+      for (fool=cond.begin(); fool!=cond.end(); ++fool)
+      {
+        DRT::Condition* mycond = (*(fool));
+        const int condid = mycond->GetInt("ConditionID");
+        if (condid_cathode==condid)
+        {
+          // electrode potential of the adjusted electrode kinetics BC at time n+1
+          double pot = mycond->GetDouble("pot");
+          output_->WriteDouble("pot",pot);
+        }
+      }
     }
-  }
   }
 
   return;

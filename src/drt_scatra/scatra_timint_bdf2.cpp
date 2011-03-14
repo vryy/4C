@@ -63,6 +63,11 @@ SCATRA::TimIntBDF2::TimIntBDF2(
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
     fsphinp_ = LINALG::CreateVector(*dofrowmap,true);
 
+  // Important: this adds the required ConditionID's to the single conditions.
+  // It is necessary to do this BEFORE ReadRestart() is called!
+  // Output to screen and file is suppressed
+  OutputElectrodeInfo(false,false);
+
   // initialize time-dependent electrode kinetics variables (galvanostatic mode)
   ElectrodeKineticsTimeUpdate(true);
 
@@ -441,31 +446,41 @@ void SCATRA::TimIntBDF2::OutputRestart()
   output_->WriteVector("phin", phin_);
   output_->WriteVector("phinm", phinm_);
 
-  // write electrode potential of the first, galvanostatic electro kinetic condition
+  // write additional restart data for galvanostatic applications
   if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
   {
     if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
-      // define a vector with all electro kinetic BC
+      // define a vector with all electrode kinetics BCs
       vector<DRT::Condition*> cond;
       discret_->GetCondition("ElectrodeKinetics",cond);
-      if (!cond.empty())
+
+      int condid_cathode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_CATHODE");
+
+      vector<DRT::Condition*>::iterator fool;
+      // loop through conditions and find the cathode
+      for (fool=cond.begin(); fool!=cond.end(); ++fool)
       {
-        // electrode potential of the first electrode kinetics BC at time n+1
-        double pot = cond[0]->GetDouble("pot");
-        output_->WriteDouble("pot",pot);
+        DRT::Condition* mycond = (*(fool));
+        const int condid = mycond->GetInt("ConditionID");
+        if (condid_cathode==condid)
+        {
+          // electrode potential of the adjusted electrode kinetics BC at time n+1
+          double pot = mycond->GetDouble("pot");
+          output_->WriteDouble("pot",pot);
 
-        // electrode potential of the first electrode kinetics BC at time n
-        double potn = cond[0]->GetDouble("potn");
-        output_->WriteDouble("potn",potn);
+          // electrode potential of the adjusted electrode kinetics BC at time n
+          double potn = mycond->GetDouble("potn");
+          output_->WriteDouble("potn",potn);
 
-        // electrode potential of the first electrode kinetics BC at time n -1
-        double potnm = cond[0]->GetDouble("potnm");
-        output_->WriteDouble("potnm",potnm);
+          // electrode potential of the adjusted electrode kinetics BC at time n -1
+          double potnm = mycond->GetDouble("potnm");
+          output_->WriteDouble("potnm",potnm);
 
-        // history of electrode potential of the first electrode kinetics BC
-        double pothist = cond[0]->GetDouble("pothist");
-        output_->WriteDouble("pothist",pothist);
+          // history of electrode potential of the adjusted electrode kinetics BC
+          double pothist = mycond->GetDouble("pothist");
+          output_->WriteDouble("pothist",pothist);
+        }
       }
     }
   }
@@ -496,19 +511,34 @@ void SCATRA::TimIntBDF2::ReadRestart(int step)
       // define a vector with all electrode kinetics BCs
       vector<DRT::Condition*> cond;
       discret_->GetCondition("ElectrodeKinetics",cond);
-      if (!cond.empty())
+
+      int condid_cathode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_CATHODE");
+      vector<DRT::Condition*>::iterator fool;
+      bool read_pot=false;
+
+      // read desired values from the .control file and add/set the value to
+      // the electrode kinetics boundary condition representing the cathode
+      for (fool=cond.begin(); fool!=cond.end(); ++fool)
       {
-        // read desired values from the .control file and add/set the value to
-        // the first(!) electrode kinetics boundary condition
-        double pot = reader.ReadDouble("pot");
-        cond[0]->Add("pot",pot);
-        double potn = reader.ReadDouble("potn");
-        cond[0]->Add("potn",potn);
-        double potnm = reader.ReadDouble("potnm");
-        cond[0]->Add("potnm",potnm);
-        double pothist = reader.ReadDouble("pothist");
-        cond[0]->Add("pothist",pothist);
+        DRT::Condition* mycond = (*(fool));
+        const int condid = mycond->GetInt("ConditionID");
+        if (condid_cathode==condid)
+        {
+          double pot = reader.ReadDouble("pot");
+          mycond->Add("pot",pot);
+          double potn = reader.ReadDouble("potn");
+          mycond->Add("potn",potn);
+          double potnm = reader.ReadDouble("potnm");
+          mycond->Add("potnm",potnm);
+          double pothist = reader.ReadDouble("pothist");
+          mycond->Add("pothist",pothist);
+          read_pot=true;
+          if (myrank_==0)
+            cout<<"Successfully read restart data for galvanostatic mode (condid "<<condid<<")"<<endl;
+        }
       }
+      if (!read_pot)
+        dserror("Reading of electrode potential for restart not successful.");
     }
   }
 

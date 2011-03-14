@@ -1135,6 +1135,11 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
   if (isale_)
     AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
+  // Since we just want to have the status ouput for t_{n+1},
+  // we have to take care for Gen.Alpha!
+  // AddSpecificTimeIntegrationParameters cannot be used since we do not want
+  // an evaluation for t_{n+\alpha_f} !!!
+
   // add element parameters according to time-integration scheme
   AddSpecificTimeIntegrationParameters(eleparams);
 
@@ -1980,13 +1985,20 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
       // Otherwise you modify your output to file called during Output()
       ComputeTimeDerivative();
 
+      double targetcurrent = DRT::Problem::Instance()->Curve(curvenum-1).f(time_);
+      double timefac = 1.0/ResidualScaling();
+
+      double currtangent_anode(0.0);
+      double currtangent_cathode(0.0);
+      double potinc_ohm(0.0);
+
       // loop over all BV
       // degenerated to a loop over 2 (user-specified) BV conditions
       for (unsigned int icond = 0; icond < cond.size(); icond++)
       {
         // consider only the specified electrode kinetics boundaries!
         if ((icond != condid_cathode)and((icond != condid_anode)))
-            continue;
+          continue;
 
         actualcurrent = 0.0;
         currtangent = 0.0;
@@ -1995,14 +2007,17 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
         // note: only the potential at the boundary with id condid_cathode will be adjusted!
         OutputSingleElectrodeInfo(cond[icond],icond,false,false,actualcurrent,currtangent,currresidual,electrodesurface);
 
-        double targetcurrent = DRT::Problem::Instance()->Curve(curvenum-1).f(time_);
-        double timefac = 1.0/ResidualScaling();
+        // store the tangent for later usage
+        if (icond==condid_cathode)
+          currtangent_cathode=currtangent;
+        if (icond==condid_anode)
+          currtangent_anode=currtangent;
 
         if (icond==condid_cathode)
         {
           //Assumption: Residual at BV1 is the negative of the value at BV2, therefore only the first residual is calculated
           // newtonrhs = -residual, with the definition:  residual := timefac*(-I + I_target)
-          newtonrhs = + currresidual - (timefac*targetcurrent);
+          newtonrhs = + currresidual - (timefac*targetcurrent); // newtonrhs is stored only from cathode!
           if (myrank_==0)
           {
             cout<<"\nGALVANOSTATIC MODE:\n";
@@ -2022,7 +2037,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
             if (myrank_==0) cout<< endl <<"  --> Newton-RHS-Residual is smaller than " << gstatcurrenttol<< "!" <<endl<<endl;
             return true; // we proceed to next time step
           }
-          // increment of the last iteration
+          // electric potential increment of the last iteration
           else if ((gstatnumite_ > 1) and (abs(gstatincrement_)< (1+abs(potold))*tol)) // < ATOL + |pot|* RTOL
           {
             if (myrank_==0) cout<< endl <<"  --> converged: |"<<gstatincrement_<<"| < "<<(1+abs(potold))*tol<<endl<<endl;
@@ -2037,16 +2052,14 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
           // delta E_0 = delta U_BV1 + delta U_ohmic - (delta U_BV2)
           // => delta E_0 = (R_BV1(I_target, I)/J) + (R_ohmic(I_target, I)/J) - (-R_BV2(I_target, I)/J)
 
-          // Newton step:  Delta pot = - Residual / (-Jacobian)
-          potnew += (-1.0*effective_length*newtonrhs)/(sigma_(numscal_)*timefac*electrodesurface);
+          potinc_ohm=(-1.0*effective_length*newtonrhs)/(sigma_(numscal_)*timefac*electrodesurface);
 
           // print additional information
           if (myrank_==0)
           {
-            cout<< "  area                          =" << electrodesurface << endl;
-            cout<< "  actualcurrent - targetcurrent =" << (targetcurrent - actualcurrent) << endl;
-            cout<< "  conductivity                  =" << sigma_(numscal_) << endl;
-            cout<< "  ohmic overpotential           =" << (-1.0*effective_length*newtonrhs)/(sigma_(numscal_)*timefac*electrodesurface) << endl;
+            cout<< "  area                          = " << electrodesurface << endl;
+            cout<< "  actualcurrent - targetcurrent = " << (actualcurrent-targetcurrent) << endl;
+            cout<< "  conductivity                  = " << sigma_(numscal_) << endl;
           }
         }
 
@@ -2054,23 +2067,28 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
         if (abs(currtangent)<EPS13)
           dserror("Tangent in galvanostatic control is near zero: %lf",currtangent);
 
-        // Newton step:  Jacobian * \Delta pot = - Residual
-        gstatincrement_ = newtonrhs/currtangent;
-        // update electric potential
-        potnew += gstatincrement_;
-        // print potential drop due to surface overpotential
-        if (myrank_==0)
-          cout<< "  surface overpotential BV" << icond <<"     =" << gstatincrement_ << endl;
       }
       // end loop over electrode kinetics
 
-      // Apply new electrode potential
+      // Newton step:  Jacobian * \Delta pot = - Residual
+      const double potinc_cathode = newtonrhs/currtangent_cathode;
+      const double potinc_anode = newtonrhs/currtangent_anode;
+      gstatincrement_ = (potinc_cathode+potinc_anode+potinc_ohm);
+      // update electric potential
+      potnew += gstatincrement_;
+
+      // print info to screen
       if (myrank_==0)
       {
+        cout<<endl<< "  ohmic overpotential                        = " << potinc_ohm << endl;
+        cout<< "  overpotential increment cathode (condid " << condid_cathode <<") = " << potinc_cathode << endl;
+        if (abs(potinc_anode)>EPS12) // prevents output if an anode is not considered
+          cout<< "  overpotential increment anode   (condid " << condid_anode <<") = " << potinc_anode << endl;
+
+        cout<< "  total increment for potential              = " << potinc_cathode+potinc_anode+potinc_ohm << endl;
         cout<< endl;
-        cout<< "  old electrode potential = "<<potold<<endl;
-        cout<< "  new electrode potential = "<<potnew<<endl;
-        cout<< "  (at boundary with condition id "<<condid_cathode<<")"<<endl<<endl;
+        cout<< "  old electrode potential (condid "<<condid_cathode <<") = "<<potold<<endl;
+        cout<< "  new electrode potential (condid "<<condid_cathode <<") = "<<potnew<<endl<<endl;
       }
       // replace potential value of the boundary condition (on all processors)
       cond[condid_cathode]->Add("pot",potnew);
