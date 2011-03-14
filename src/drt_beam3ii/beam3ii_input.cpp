@@ -47,9 +47,9 @@ bool DRT::ELEMENTS::Beam3ii::ReadElement(const std::string& eletype,
    * cross sections can be done easily by allowing for more complex input right here and by calculating an approxipate
    * initial nodal triad in the frame of the registration; */
 
-  linedef->ExtractDouble("MOMIN",Iyy_);
-  linedef->ExtractDouble("MOMIN",Izz_);
-  linedef->ExtractDouble("MOMINPOL",Irr_);
+  linedef->ExtractDouble("IYY",Iyy_);
+  linedef->ExtractDouble("IZZ",Izz_);
+  linedef->ExtractDouble("IRR",Irr_);
   
   //set nodal tridas according to input file
   Qnew_.resize(NumNode());

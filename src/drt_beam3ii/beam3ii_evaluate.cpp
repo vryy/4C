@@ -522,7 +522,7 @@ inline void DRT::ELEMENTS::Beam3ii::strainstress(const LINALG::Matrix<3,1>& gamm
   CM.PutScalar(0);
   CM(0,0) = sm*Irr_;
   CM(1,1) = ym*Iyy_;
-  CM(2,2) = ym*Iyy_;
+  CM(2,2) = ym*Izz_;
 
   //computing stresses by multiplying strains with respective constitutive matrix
   stressN.Multiply(CN,gamma);
