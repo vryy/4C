@@ -14,6 +14,8 @@ Maintainer: Florian Henke
  *------------------------------------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <iterator>
+
 #include "../drt_lib/standardtypes_cpp.H" // has to be declared first
 
 #include "combust_flamefront.H"
@@ -3549,7 +3551,7 @@ void COMBUST::FlameFront::buildPLC(
       nids.push_back(i);
     }
 
-#if 1
+#if 0
 
     // Use the existing cut triangles and preserve the surface that way.
 
@@ -3668,7 +3670,22 @@ void COMBUST::FlameFront::buildPLC(
     GEO::CUT::LevelSetIntersection levelset;
 
     levelset.AddElement( 1, nids, globalcellcoord, &gfuncvalues[0], cell_distype );
-    levelset.Cut();
+
+    try
+    {
+      levelset.Cut();
+    }
+    catch ( std::runtime_error & err )
+    {
+      std::cerr << "failed to cut element\n"
+                << "coordinates:\n"
+        ;
+      globalcellcoord.Print( std::cerr );
+      std::cerr << "g-function values:\n";
+      std::copy( gfuncvalues.begin(), gfuncvalues.end(), std::ostream_iterator<double>( std::cerr, ", " ) );
+      std::cerr << "\n";
+      throw;
+    }
 
     GEO::CUT::ElementHandle * e = levelset.GetElement( 1 );
 
