@@ -326,7 +326,7 @@ static const char * level_desc[] = {
   "unknown"
 };
 
-static const char * GetStateDesc(int i)
+static const char * GetStateDesc(post_state i)
 {
   static int last = sizeof(level_desc)/sizeof(level_desc[0]) - 1;
   return (i<0 || i >= last) ? level_desc[last] : level_desc[i];

@@ -443,7 +443,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
     //
     //
     //  ds = 1/N
-    //                /  i  \
+    //                /  i  \                                           .
     //  V|   =  V|  + |-----|*
     //    i       1   \ N-1 /
     //

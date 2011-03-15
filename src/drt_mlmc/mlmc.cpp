@@ -524,7 +524,7 @@ void STR::MLMC::ReadInParameters()
   // loop all materials in problem
   const map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
 
-  if (myrank == 0) printf("No. material laws considered : %d\n",mats.size());
+  if (myrank == 0) printf("No. material laws considered : %d\n",(int) mats.size());
   map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
   for (curr=mats.begin(); curr != mats.end(); ++curr)
   {
