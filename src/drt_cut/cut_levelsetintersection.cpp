@@ -37,7 +37,7 @@ void GEO::CUT::LevelSetIntersection::AddElement( int eid,
   }
 }
 
-void GEO::CUT::LevelSetIntersection::Cut()
+void GEO::CUT::LevelSetIntersection::Cut( bool include_inner )
 {
   Mesh & m = NormalMesh();
 
@@ -48,9 +48,14 @@ void GEO::CUT::LevelSetIntersection::Cut()
 
   m.FindLSNodePositions();
 
-  //m.DumpGmsh( "mesh" );
+  m.FindNodalDOFSets( include_inner );
 
   m.CreateIntegrationCells();
+
+#ifdef DEBUGCUTLIBRARY
+  m.DumpGmsh( "mesh.pos" );
+  m.DumpGmshIntegrationcells( "integrationcells.pos" );
+#endif
 }
 
 GEO::CUT::ElementHandle * GEO::CUT::LevelSetIntersection::GetElement( int eid )

@@ -33,6 +33,7 @@ maintainer: shadan shahmiri
 #include "../drt_xfem/dof_distribution_switcher.H"
 #include "../drt_xfem/enrichment_utils.H"
 #include "../drt_xfem/element_ansatz.H"
+#include "../drt_xfem/interfacexfsi.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_f3/xfluid3_interpolation.H"
 #include "../drt_xdiff3/xdiff3_interpolation.H"

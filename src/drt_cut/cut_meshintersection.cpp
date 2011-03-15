@@ -141,12 +141,7 @@ GEO::CUT::ElementHandle * GEO::CUT::MeshIntersection::GetElement( int eid ) cons
 
 GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::GetCutSide( int sid, int mi ) const
 {
-  SideHandle * cut_side = cut_mesh_[mi]->GetSide( sid );
-  if ( cut_side!=NULL )
-  {
-    return cut_side;
-  }
-  throw std::runtime_error( "no such side" );
+  return cut_mesh_[mi]->GetSide( sid );
 }
 
 void GEO::CUT::MeshIntersection::Status()

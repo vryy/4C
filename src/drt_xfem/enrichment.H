@@ -15,12 +15,12 @@
 #define ENRICHMENT_H
 
 
-#include "interfacexfsi.H"
 #include "../drt_combust/combust_interface.H"
 
 //! namespace for all XFEM related stuff
 namespace XFEM
 {
+  class InterfaceHandle;
 
   /*!
    * \brief Corresponds to a specific enrichment with unique type and id

@@ -342,6 +342,9 @@ protected:
   /// filled flag
   bool filled_;
 
+  /// position of dofset inside its discretization
+  unsigned dspos_;
+
   /// number of dofs for each node
   RefCountPtr<Epetra_IntVector>                 numdfcolnodes_;
 

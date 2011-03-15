@@ -222,6 +222,15 @@ bool GEO::CUT::Element::IsCut()
   return false;
 }
 
+bool GEO::CUT::Element::OnSide( Facet * f )
+{
+  if ( not f->HasHoles() )
+  {
+    return OnSide( f->Points() );
+  }
+  return false;
+}
+
 bool GEO::CUT::Element::OnSide( const std::vector<Point*> & facet_points )
 {
   const std::vector<Node*> & nodes = Nodes();
@@ -349,7 +358,7 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
   for ( std::vector<Facet*>::iterator i=all_facets_sorted.begin(); i!=all_facets_sorted.end(); ++i )
   {
     Facet * f = *i;
-    if ( facets_done.count( f )==0 and OwnedSide( f->ParentSide() ) )
+    if ( facets_done.count( f )==0 and ( OwnedSide( f->ParentSide() ) or OnSide( f ) ) )
     {
       std::set<std::vector<Facet*>::iterator> new_facets;
       std::set<Facet*> collected_facets;
@@ -397,7 +406,7 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
               if ( collected_facets.count( f )==0 )
               {
                 bool found = false;
-                if ( not OwnedSide( f->ParentSide() ) )
+                if ( not OwnedSide( f->ParentSide() ) ) // OnSide( f )
                 {
                   found = true;
                 }

@@ -151,7 +151,7 @@ public:
 
     /// Owner of dof (that is owner of node or element the dof belongs to)
     vector<int> lmowner_;
-    
+
     /// Nodal stride (that is, how many dofs are guaranteed to be contigous in the system matrix)
     vector<int> stride_;
   };
@@ -709,6 +709,35 @@ public:
   /*!
   \brief Return the location vector of this element
 
+  Extended version that features a nodal dof set (nds) array. Each node might
+  have multiple sets of (physical) dofs. That is the actual number of dofs at
+  a node represent a (small) number of independent physical dofs. This is not
+  to be confused with multiple DRT::DofSet objects within one
+  DRT::Discretization.
+
+  The case of multiple set of dofs occurs in xfem without enrichments. E.g. a
+  node of a cutted fluid element might own two or more velocity-pressure
+  pairs. In that case we need to choose one set of physical dofs for each
+  node. The nds array gives the dof set number of each node.
+
+  \note The degrees of freedom returned are not neccessarily only nodal dofs.
+        Depending on the element implementation, output might also include
+        element dofs.
+
+  \param dis (in)      : the discretization this element belongs to
+  \param nds           : dof set number of each node
+  \param la (out)      : location data for all dofsets of the discretization
+  \param doDirichlet (in): whether to get the Dirichlet flags
+
+  */
+  virtual void LocationVector( const DRT::Discretization & dis,
+                               const std::vector<int> & nds,
+                               DRT::Element::LocationArray & la,
+                               bool doDirichlet ) const;
+
+  /*!
+  \brief Return the location vector of this element
+
   The method computes degrees of freedom this element adresses.
   Degree of freedom ordering is as follows:<br>
   First all degrees of freedom of adjacent nodes are numbered in
@@ -761,7 +790,7 @@ public:
                          matches dofs in lm.
 
   */
-  virtual void LocationVector(const Discretization& dis, vector<int>& lm, vector<int>& lmdirich, 
+  virtual void LocationVector(const Discretization& dis, vector<int>& lm, vector<int>& lmdirich,
                               vector<int>& lmowner, vector<int>& lmstride) const;
 
   /*!
@@ -790,7 +819,7 @@ public:
                          matches dofs in lm.
 
   */
-  virtual void LocationVector(const Discretization& dis, vector<int>& lm, 
+  virtual void LocationVector(const Discretization& dis, vector<int>& lm,
                               vector<int>& lmowner, vector<int>& lmstride) const;
 
   /*!

@@ -8,8 +8,10 @@
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_singletondestruction.H"
+
 #include "drt_utils_local_connectivity_matrices.H"
 #include "drt_utils_fem_shapefunctions.H"
+#include "drt_utils_boundary_integration.H"
 
 namespace DRT
 {
@@ -51,8 +53,18 @@ public:
 
   void Append( double x, double y, double z, double w )
   {
-    if ( w > 1e-15 )
-      gp_.push_back( Entry( x,y,z,w ) );
+    //if ( w > 1e-15 )
+    gp_.push_back( Entry( x,y,z,w ) );
+  }
+
+  void Append( const LINALG::Matrix<2,1> & xi, double w )
+  {
+    gp_.push_back( Entry( xi( 0 ),xi( 1 ),0.,w ) );
+  }
+
+  void Append( const LINALG::Matrix<3,1> & xi, double w )
+  {
+    gp_.push_back( Entry( xi( 0 ),xi( 1 ),xi( 2 ),w ) );
   }
 
   void IncreaseReserved( int size )
@@ -146,14 +158,15 @@ public:
   virtual double Weight( int point ) const
   {
     Teuchos::RCP<GaussPoints> gp = Find( point );
-    if ( gp_[0]==gp )
-    {
-      return gp->Weight( point );
-    }
-    else
-    {
-      return -1. * gp->Weight( point );
-    }
+    return gp->Weight( point );
+//     if ( gp_[0]==gp )
+//     {
+//       return gp->Weight( point );
+//     }
+//     else
+//     {
+//       return -1. * gp->Weight( point );
+//     }
   }
 
   /// debug print
@@ -291,6 +304,11 @@ public:
   {
   }
 
+  void Clear()
+  {
+    gp_ = Teuchos::null;
+  }
+
   iterator begin() { return GaussPointIterator( &*gp_, 0 ); }
 
   const_iterator begin() const { return GaussPointIterator( &*gp_, 0 ); }
@@ -318,11 +336,12 @@ public:
 
   void SetPoints( Teuchos::RCP<GaussPoints> gp ) { gp_ = gp; }
 
+#if 0
   /// create projected gauss points
   template <DRT::Element::DiscretizationType distype>
   static Teuchos::RCP<GaussPoints> CreateProjected(
     const LINALG::Matrix<3, DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> & xyze,
-    const LINALG::Matrix<3, DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> & xie,
+    const LINALG::Matrix<2, DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> & xie,
     int degree )
   {
     Teuchos::RCP<GaussPoints> gp = GaussPointCache::Instance().Create( distype, degree );
@@ -331,10 +350,12 @@ public:
     const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     LINALG::Matrix<nen,1> funct;
-    LINALG::Matrix<3,nen> deriv;
+    LINALG::Matrix<2,nen> deriv;
 
-    LINALG::Matrix<3,3> xjm;
-    LINALG::Matrix<3,1> xi;
+//     LINALG::Matrix<2,2> xjm;
+    LINALG::Matrix<2,1> xi;
+
+    LINALG::Matrix<2,2> metrictensor;
 
     GaussIntegration intpoints( gp );
     for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin();
@@ -344,19 +365,70 @@ public:
       const double * eta = iquad.Point();
 
       // cell shape functions and their first derivatives
-      DRT::UTILS::shape_function_3D(funct,eta[0],eta[1],eta[2],distype);
-      DRT::UTILS::shape_function_3D_deriv1(deriv,eta[0],eta[1],eta[2],distype);
+      DRT::UTILS::shape_function_2D(funct,eta[0],eta[1],distype);
+      DRT::UTILS::shape_function_2D_deriv1(deriv,eta[0],eta[1],distype);
+
+      double drs;
+
+      // compute measure tensor for surface element, infinitesimal area
+      // element drs
+      DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze,deriv,metrictensor,drs);
+
+      // local coordinates of gauss point
+      xi.Multiply( xie, funct );
+
+//       // get transposed of the jacobian matrix d x / d \xi
+//       // xjm(i,j) = deriv(i,k)*xyze(j,k)
+//       xjm.MultiplyNT( deriv, xyze );
+
+//       double det = xjm.Determinant();
+
+      cgp->Append( xi( 0 ), xi( 1 ), 0., iquad.Weight()*drs );
+    }
+    return cgp;
+  }
+#endif
+
+  /// create projected gauss points
+  template <DRT::Element::DiscretizationType distype>
+  static Teuchos::RCP<GaussPoints> CreateProjected(
+    const LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
+                         DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement> & xie,
+    int degree )
+  {
+    const int nsd = DRT::UTILS::DisTypeToDim<distype>::dim;
+    const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+    Teuchos::RCP<GaussPoints> gp = GaussPointCache::Instance().Create( distype, degree );
+    Teuchos::RCP<CollectedGaussPoints> cgp = Teuchos::rcp( new CollectedGaussPoints( gp->NumPoints() ) );
+
+    LINALG::Matrix<nen,1> funct;
+    LINALG::Matrix<nsd,nen> deriv;
+
+    LINALG::Matrix<nsd,nsd> xjm;
+    LINALG::Matrix<nsd,1> xi;
+
+    GaussIntegration intpoints( gp );
+    for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin();
+          iquad!=intpoints.end();
+          ++iquad )
+    {
+      LINALG::Matrix<nsd,1> eta( iquad.Point() );
+
+      // cell shape functions and their first derivatives
+      DRT::UTILS::shape_function<distype>(eta,funct);
+      DRT::UTILS::shape_function_deriv1<distype>(eta,deriv);
 
       // local coordinates of gauss point
       xi.Multiply( xie, funct );
 
       // get transposed of the jacobian matrix d x / d \xi
       // xjm(i,j) = deriv(i,k)*xyze(j,k)
-      xjm.MultiplyNT( deriv, xyze );
+      xjm.MultiplyNT( deriv, xie );
 
       double det = xjm.Determinant();
 
-      cgp->Append( xi( 0 ), xi( 1 ), xi( 2 ), iquad.Weight()*det );
+      cgp->Append( xi, iquad.Weight()*det );
     }
     return cgp;
   }

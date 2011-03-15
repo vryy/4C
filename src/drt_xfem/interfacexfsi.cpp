@@ -33,7 +33,7 @@ Maintainer: Axel Gerstenberger
 #include "enrichment_utils.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
-
+#include "xfem_fluidwizard.H"
 
 /*----------------------------------------------------------------------*
  * standard constructor
@@ -76,15 +76,15 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
   DRT::UTILS::CollectElementsByConditionLabel(*cutterdis, boundaryElementsByLabel_, "XFEMCoupling");
   InvertElementsPerLabel();
 
-  if(cutterdis_->NumMyColElements()!=0)
+  if (cutterdis_->NumMyColElements()!=0)
   {
-#ifdef QHULL
-    GEO::computeIntersection(xfemdis, cutterdis, cutterposnp_, currentXAABBs_, elementalDomainIntCells_, elementalBoundaryIntCells_, labelPerBoundaryElementId_, MovingFluideleGIDs);
-#else
-    dserror("you have to compile with the QHULL flag!");
-#endif
+    fluidwizard_ = Teuchos::rcp( new FluidWizard( *xfemdis, *cutterdis ) );
+    fluidwizard_->Cut( *cutterdis->GetState("idispcolnp"),
+                       elementalDomainIntCells_,
+                       elementalBoundaryIntCells_,
+                       labelPerBoundaryElementId_,
+                       MovingFluideleGIDs );
   }
-
 
   xfemdis->Comm().Barrier();
 

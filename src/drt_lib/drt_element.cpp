@@ -379,6 +379,116 @@ DRT::Condition* DRT::Element::GetCondition(const string& name) const
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
+void DRT::Element::LocationVector( const DRT::Discretization & dis,
+                                   const std::vector<int> & nds,
+                                   DRT::Element::LocationArray & la,
+                                   bool doDirichlet ) const
+{
+  const int numnode = NumNode();
+  const DRT::Node*const* nodes = Nodes();
+
+  if ( numnode != static_cast<int>( nds.size() ) )
+  {
+    throw std::runtime_error( "wrong number of nodes" );
+  }
+
+  la.Clear();
+
+  // we need to look at all DofSets of our Discretization
+  for (int dofset=0; dofset<la.Size(); ++dofset)
+  {
+    std::vector<int>& lm       = la[dofset].lm_;
+    std::vector<int>& lmdirich = la[dofset].lmdirich_;
+    std::vector<int>& lmowner  = la[dofset].lmowner_;
+    std::vector<int>& lmstride = la[dofset].stride_;
+
+    // fill the vector with nodal dofs
+    if (nodes)
+    {
+      for (int i=0; i<numnode; ++i)
+      {
+        const DRT::Node* node = nodes[i];
+
+        const int owner = node->Owner();
+        std::vector<int> dof = dis.Dof(dofset,node);
+        const int size = NumDofPerNode(dofset,*node);
+        if (size)
+          lmstride.push_back(size);
+        const int offset = size*nds[i];
+#ifdef DEBUG
+        if ( dof.size() < static_cast<unsigned>( offset+size ) )
+        {
+          dserror( "illegal physical dofs offset" );
+        }
+#endif
+        for (int j=0; j< size; ++j)
+        {
+          lmowner.push_back(owner);
+          lm.push_back(dof[offset + j]);
+        }
+
+        if (doDirichlet)
+        {
+          const std::vector<int>* flag = NULL;
+          DRT::Condition* dirich = node->GetCondition("Dirichlet");
+          if (dirich)
+          {
+            if (dirich->Type()!=DRT::Condition::PointDirichlet &&
+                dirich->Type()!=DRT::Condition::LineDirichlet &&
+                dirich->Type()!=DRT::Condition::SurfaceDirichlet &&
+                dirich->Type()!=DRT::Condition::VolumeDirichlet)
+              dserror("condition with name Dirichlet is not of type Dirichlet");
+            flag = dirich->Get<std::vector<int> >("onoff");
+          }
+          for (unsigned j=0; j<dof.size(); ++j)
+          {
+            if (flag && (*flag)[j])
+              lmdirich.push_back(1);
+            else
+              lmdirich.push_back(0);
+          }
+        }
+      }
+    }
+
+    // fill the vector with element dofs
+    const int owner = Owner();
+    std::vector<int> dof = dis.Dof(dofset,this);
+    if (dof.size())
+      lmstride.push_back(dof.size());
+    for (unsigned j=0; j<dof.size(); ++j)
+    {
+      lmowner.push_back(owner);
+      lm.push_back(dof[j]);
+    }
+    if (doDirichlet)
+    {
+      const std::vector<int>* flag = NULL;
+      DRT::Condition* dirich = GetCondition("Dirichlet");
+      if (dirich)
+      {
+        if (dirich->Type()!=DRT::Condition::PointDirichlet &&
+            dirich->Type()!=DRT::Condition::LineDirichlet &&
+            dirich->Type()!=DRT::Condition::SurfaceDirichlet &&
+            dirich->Type()!=DRT::Condition::VolumeDirichlet)
+          dserror("condition with name Dirichlet is not of type Dirichlet");
+        flag = dirich->Get<std::vector<int> >("onoff");
+      }
+      for (unsigned j=0; j<dof.size(); ++j)
+      {
+        if (flag && (*flag)[j])
+          lmdirich.push_back(1);
+        else
+          lmdirich.push_back(0);
+      }
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ |  Get degrees of freedom used by this element                (public) |
+ |                                                            gee 12/06 |
+ *----------------------------------------------------------------------*/
 void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet) const
 {
   const int numnode = NumNode();

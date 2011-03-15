@@ -651,15 +651,30 @@ void DoDirichletCondition(DRT::Condition&             cond,
   for (int i=0; i<nnode; ++i)
   {
     // do only nodes in my row map
-    if (!dis.NodeRowMap()->MyGID((*nodeids)[i])) continue;
-    DRT::Node* actnode = dis.gNode((*nodeids)[i]);
-    if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
+    int nlid = dis.NodeRowMap()->LID((*nodeids)[i]);
+    if (nlid < 0) continue;
+    DRT::Node* actnode = dis.lRowNode( nlid );
+
     // call explicitly the main dofset, i.e. the first column
-    vector<int> dofs = dis.Dof(0,actnode);
-    const unsigned numdf = dofs.size();
-    for (unsigned j=0; j<numdf; ++j)
+    std::vector<int> dofs = dis.Dof(0,actnode);
+    const unsigned total_numdf = dofs.size();
+
+    // Get native number of dofs at this node. There might be multiple dofsets
+    // (in xfem cases), thus the size of the dofs vector might be a multiple
+    // of this.
+    const int numele = actnode->NumElement();
+    const DRT::Element * const * myele = actnode->Elements();
+    int numdf = 0;
+    for (int j=0; j<numele; ++j)
+      numdf = std::max(numdf,myele[j]->NumDofPerNode(0,*actnode));
+
+    if ( ( total_numdf % numdf ) != 0 )
+      dserror( "illegal dof set number" );
+
+    for (unsigned j=0; j<total_numdf; ++j)
     {
-      if ((*onoff)[j]==0)
+      int onesetj = j % numdf;
+      if ((*onoff)[onesetj]==0)
       {
         const int lid = (*systemvectoraux).Map().LID(dofs[j]);
         if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
@@ -671,12 +686,12 @@ void DoDirichletCondition(DRT::Condition&             cond,
         continue;
       }
       const int gid = dofs[j];
-      vector<double> value(deg+1,(*val)[j]);
+      vector<double> value(deg+1,(*val)[onesetj]);
 
       // factor given by time curve
       std::vector<double> curvefac(deg+1, 1.0);
       int curvenum = -1;
-      if (curve) curvenum = (*curve)[j];
+      if (curve) curvenum = (*curve)[onesetj];
       if (curvenum>=0 && usetime)
         curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
       else
@@ -687,10 +702,10 @@ void DoDirichletCondition(DRT::Condition&             cond,
       int funct_num = -1;
       if (funct)
       {
-         funct_num = (*funct)[j];
-         if (funct_num>0)
-           functfac =
-             DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(j,
+        funct_num = (*funct)[onesetj];
+        if (funct_num>0)
+          functfac =
+            DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(onesetj,
                                                                   actnode->X(),
                                                                   time,
                                                                   &dis);

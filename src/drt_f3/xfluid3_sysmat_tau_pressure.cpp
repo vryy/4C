@@ -1425,7 +1425,8 @@ void SysmatBoundaryTauPressure(
         intrule = DRT::UTILS::intrule_tri_37point;
         break;
       case DRT::Element::quad4:
-        intrule = DRT::UTILS::intrule_quad_4point;
+        // we can go high here, but do we need that?
+        intrule = DRT::UTILS::intrule_quad_36point;
         break;
       default:
         dserror( "unsupported distype %d", distype );

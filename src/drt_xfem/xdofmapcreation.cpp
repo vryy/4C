@@ -26,6 +26,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_utils.H"
 
+#include "../drt_xfem/interfacexfsi.H"
 
 
 /*----------------------------------------------------------------------*

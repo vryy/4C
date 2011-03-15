@@ -335,7 +335,7 @@ public:
 private:
 
   /// private default constructor to disallow creation of instances
-  Problem() {}
+  Problem();
 
   /// no copying
   Problem(const Problem&);

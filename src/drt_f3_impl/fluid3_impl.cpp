@@ -16,6 +16,8 @@ Maintainer: Ulrich Kuettler
 #ifdef D_FLUID3
 #ifdef CCADISCRET
 
+#include <fstream>
+
 #include "fluid3_impl.H"
 #include "fluid3_impl_parameter.H"
 
@@ -38,8 +40,10 @@ Maintainer: Ulrich Kuettler
 #include "../drt_mat/modpowerlaw.H"
 #include "../drt_mat/permeablefluid.H"
 
-#ifdef DEBUG
-#endif
+#include "../drt_cut/cut_boundarycell.H"
+#include "../drt_cut/cut_position.H"
+
+#include "../linalg/linalg_fixedsizeblockmatrix.H"
 
 #define TAU_SUBGRID_IN_RES_MOM
 
@@ -523,6 +527,25 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
                                                  Epetra_SerialDenseVector&  elevec2_epetra,
                                                  Epetra_SerialDenseVector&  elevec3_epetra )
 {
+  return Evaluate( ele, discretization, lm, params, mat,
+                   elemat1_epetra, elemat2_epetra,
+                   elevec1_epetra, elevec2_epetra, elevec3_epetra,
+                   intpoints_ );
+}
+
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
+                                                 DRT::Discretization & discretization,
+                                                 const std::vector<int> & lm,
+                                                 Teuchos::ParameterList&    params,
+                                                 Teuchos::RCP<MAT::Material> & mat,
+                                                 Epetra_SerialDenseMatrix&  elemat1_epetra,
+                                                 Epetra_SerialDenseMatrix&  elemat2_epetra,
+                                                 Epetra_SerialDenseVector&  elevec1_epetra,
+                                                 Epetra_SerialDenseVector&  elevec2_epetra,
+                                                 Epetra_SerialDenseVector&  elevec3_epetra,
+                                                 const DRT::UTILS::GaussIntegration & intpoints )
+{
   // rotationally symmetric periodic bc's: do setup for current element
   rotsymmpbc_->Setup(ele);
 
@@ -547,8 +570,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
   // resized and initialised to zero
   if ( f3Parameter_->tds_==INPAR::FLUID::subscales_time_dependent )
   {
-    //const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
-    ele->ActivateTDS( intpoints_.NumPoints(), nsd_, &saccn, &sveln, &svelnp );
+    ele->ActivateTDS( intpoints.NumPoints(), nsd_, &saccn, &sveln, &svelnp );
   }
 
   // ---------------------------------------------------------------------
@@ -682,7 +704,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
     saccn,
     sveln,
     svelnp,
-    intpoints_);
+    intpoints);
 
   // rotate matrices and vectors if we have a rotationally symmetric problem
   rotsymmpbc_->RotateMatandVecIfNecessary(elemat1,elemat2,elevec1);
@@ -6874,6 +6896,723 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::CalcDissipation(
   return 0;
 }
 
-#endif
+namespace DRT
+{
+  namespace ELEMENTS
+  {
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void Fluid3Impl<distype>::ElementXfemInterface(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra
+  )
+{
+  //----------------------------------------------------------------------------
+  //                         ELEMENT GEOMETRY
+  //----------------------------------------------------------------------------
+
+  // get node coordinates
+  GEO::fillInitialPositionArray< distype, nsd_, LINALG::Matrix<nsd_,nen_> >( ele, xyze_ );
+
+  LINALG::Matrix<nsd_,nen_> evelaf(true);
+  LINALG::Matrix<nen_,1> epreaf(true);
+  ExtractValuesFromGlobalVector(dis, lm, *rotsymmpbc_, &evelaf, &epreaf, "velaf");
+
+  int eid = ele->Id();
+  LINALG::Matrix<nen_,nen_> bK_ss;
+  LINALG::Matrix<nen_,nen_> invbK_ss( true );
+  LINALG::Matrix<nen_,nen_> half_invbK_ss;
+  LINALG::Matrix<nen_,nen_> conv_x;
+  LINALG::Matrix<nen_,nen_> conv_y;
+  LINALG::Matrix<nen_,nen_> conv_z;
+
+  LINALG::Matrix<nen_,1> dx;
+  LINALG::Matrix<nen_,1> dy;
+  LINALG::Matrix<nen_,1> dz;
+
+  // get viscosity
+  // check here, if we really have a fluid !!
+//   Teuchos::RCP<const MAT::Material> material = ele->Material();
+//   dsassert(material->MaterialType() == INPAR::MAT::m_fluid, "Material law is not of type m_fluid.");
+//   const MAT::NewtonianFluid* actmat = dynamic_cast<const MAT::NewtonianFluid*>(material.get());
+//   const double dens = actmat->Density();
+//   // dynamic viscosity \mu
+//   const double dynvisc = actmat->Viscosity() * dens;
+
+//   const double viscfac = 1.0/(2.0*dynvisc);
+
+  LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,6,(nsd_+1)> K_su;
+  LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,(nsd_+1),6> K_us;
+  LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,6,6>        invK_ss;
+  LINALG::BlockMatrix<LINALG::Matrix<nen_,   1>,6,1>        rhs;
+
+  const unsigned Velx = 0;
+  const unsigned Vely = 1;
+  const unsigned Velz = 2;
+  const unsigned Pres = 3;
+
+  const unsigned Sigmaxx = 0;
+  const unsigned Sigmaxy = 1;
+  const unsigned Sigmaxz = 2;
+  const unsigned Sigmayx = 1;
+  const unsigned Sigmayy = 3;
+  const unsigned Sigmayz = 4;
+  const unsigned Sigmazx = 2;
+  const unsigned Sigmazy = 4;
+  const unsigned Sigmazz = 5;
+
+  // volume integral
+
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
+  {
+    // evaluate shape functions and derivatives at integration point
+    EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+
+    //----------------------------------------------------------------------
+    // set time-integration factors for left- and right-hand side
+    // (two right-hand-side factors: general and for residuals)
+    //----------------------------------------------------------------------
+    const double timefacfac = f3Parameter_->timefac_ * fac_;
+#if 0
+    double rhsfac           = timefacfac;
+    double rhsresfac        = fac_;
+    // modify integration factors for right-hand side such that they
+    // are identical in case of generalized-alpha time integration:
+    if (f3Parameter_->is_genalpha_)
+    {
+      rhsfac   /= f3Parameter_->alphaF_;
+      rhsresfac = rhsfac;
+    }
+    else
+    {
+      // modify residual integration factor for right-hand side in instat. case:
+      if (not f3Parameter_->is_stationary_) rhsresfac *= f3Parameter_->dt_;
+    }
 #endif
 
+    //const double visceff_timefacfac = visceff_*timefacfac;
+
+    //const double viscfac = 1.0/(2.0*dynvisc);
+    const double viscfac = 1.0/(2.0*visceff_);
+
+    // get velocity at integration point
+    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    velint_.Multiply(evelaf,funct_);
+
+    // get velocity derivatives at integration point
+    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    vderxy_.MultiplyNT(evelaf,derxy_);
+
+    // get pressure at integration point
+    // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    double press = funct_.Dot(epreaf);
+
+    for ( int i=0; i<nen_; ++i )
+    {
+      dx( i ) = derxy_( 0, i );
+      dy( i ) = derxy_( 1, i );
+      dz( i ) = derxy_( 2, i );
+    }
+
+    bK_ss.MultiplyNT( funct_, funct_ );
+
+    conv_x.MultiplyNT( funct_, dx );
+    conv_y.MultiplyNT( funct_, dy );
+    conv_z.MultiplyNT( funct_, dz );
+
+                       /*                     \
+                    - |  virt tau , eps(Dtau)  |
+                       \                     */
+
+    invbK_ss.Update( -viscfac*timefacfac, bK_ss, 1.0 );
+
+                   /*                 \
+                  | virt tau , eps(Du) |
+                   \                 */
+
+    // K_su
+
+    K_su( Sigmaxx, Velx )->Update( timefacfac, conv_x, 1.0 );
+    K_su( Sigmaxy, Velx )->Update( timefacfac, conv_y, 1.0 );
+    K_su( Sigmayx, Vely )->Update( timefacfac, conv_x, 1.0 );
+    K_su( Sigmaxz, Velx )->Update( timefacfac, conv_z, 1.0 );
+    K_su( Sigmazx, Velz )->Update( timefacfac, conv_x, 1.0 );
+    K_su( Sigmayy, Vely )->Update( timefacfac, conv_y, 1.0 );
+    K_su( Sigmayz, Vely )->Update( timefacfac, conv_z, 1.0 );
+    K_su( Sigmazy, Velz )->Update( timefacfac, conv_y, 1.0 );
+    K_su( Sigmazz, Velz )->Update( timefacfac, conv_z, 1.0 );
+
+    // r_su
+
+    rhs( Sigmaxx, 0 )->Update( - timefacfac* vderxy_(0, 0)                 , funct_, 1.0 );
+    rhs( Sigmaxy, 0 )->Update( - timefacfac*(vderxy_(0, 1) + vderxy_(1, 0)), funct_, 1.0 );
+    rhs( Sigmaxz, 0 )->Update( - timefacfac*(vderxy_(0, 2) + vderxy_(2, 0)), funct_, 1.0 );
+    rhs( Sigmayy, 0 )->Update( - timefacfac* vderxy_(1, 1)                 , funct_, 1.0 );
+    rhs( Sigmayz, 0 )->Update( - timefacfac*(vderxy_(1, 2) + vderxy_(2, 1)), funct_, 1.0 );
+    rhs( Sigmazz, 0 )->Update( - timefacfac* vderxy_(2, 2)                 , funct_, 1.0 );
+
+    // stressbar-pressure coupling
+    /*
+                     /                    \
+                    |                      |
+                  - | tr(virt tau^e) , p I |
+                    |                      |
+                     \                    /
+    */
+
+    // K_sp
+
+    K_su( Sigmaxx, Pres )->Update( -viscfac*timefacfac, bK_ss, 1.0 );
+    K_su( Sigmayy, Pres )->Update( -viscfac*timefacfac, bK_ss, 1.0 );
+    K_su( Sigmazz, Pres )->Update( -viscfac*timefacfac, bK_ss, 1.0 );
+
+    // r_sp
+
+    rhs( Sigmaxx, 0 )->Update( viscfac*timefacfac*press, funct_, 1.0 );
+    rhs( Sigmayy, 0 )->Update( viscfac*timefacfac*press, funct_, 1.0 );
+    rhs( Sigmazz, 0 )->Update( viscfac*timefacfac*press, funct_, 1.0 );
+  }
+
+  // integrate surface
+
+  //DRT::Element::LocationArray cutla( 1 );
+
+  LINALG::Matrix<3,1> normal;
+  LINALG::Matrix<3,1> x;
+
+  for ( std::map<int, std::vector<DRT::UTILS::GaussIntegration> >::const_iterator i=bintpoints.begin();
+        i!=bintpoints.end();
+        ++i )
+  {
+    int sid = i->first;
+    const std::vector<DRT::UTILS::GaussIntegration> & cutintpoints = i->second;
+
+    std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator j = bcells.find( sid );
+    if ( j==bcells.end() )
+      dserror( "missing boundary cell" );
+
+    const std::vector<GEO::CUT::BoundaryCell*> & bcs = j->second;
+    if ( bcs.size()!=cutintpoints.size() )
+      dserror( "boundary cell integration rules mismatch" );
+
+    DRT::Element * side = cutdis.gElement( sid );
+    //side->LocationVector(cutdis,cutla,false);
+
+    const int numnodes = side->NumNode();
+    DRT::Node ** nodes = side->Nodes();
+    Epetra_SerialDenseMatrix side_xyze( 3, numnodes );
+    for ( int i=0; i<numnodes; ++i )
+    {
+      const double * x = nodes[i]->X();
+      std::copy( x, x+3, &side_xyze( 0, i ) );
+    }
+
+    for ( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=cutintpoints.begin();
+          i!=cutintpoints.end();
+          ++i )
+    {
+      const DRT::UTILS::GaussIntegration & gi = *i;
+      //const GEO::CUT::BoundaryCell & bc = *bcs[i - cutintpoints.begin()];
+
+      //gi.Print();
+
+      for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
+      {
+        const LINALG::Matrix<2,1> eta( iquad.Point() );
+
+        double drs = 0;
+
+        switch ( side->Shape() )
+        {
+        case DRT::Element::tri3:
+        {
+          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
+          LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
+          LINALG::Matrix<numnodes,1> funct;
+          LINALG::Matrix<2,numnodes> deriv;
+          LINALG::Matrix<2,2> metrictensor;
+          DRT::UTILS::shape_function_2D( funct, eta( 0 ), eta( 1 ), DRT::Element::tri3 );
+          DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::tri3 );
+          DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::tri3>( xyze, deriv, metrictensor, drs, &normal );
+          x.Multiply( xyze, funct );
+          break;
+        }
+        case DRT::Element::tri6:
+        {
+          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri6>::numNodePerElement;
+          LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
+          LINALG::Matrix<numnodes,1> funct;
+          LINALG::Matrix<2,numnodes> deriv;
+          LINALG::Matrix<2,2> metrictensor;
+          DRT::UTILS::shape_function_2D( funct, eta( 0 ), eta( 1 ), DRT::Element::tri6 );
+          DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::tri6 );
+          DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::tri6>( xyze, deriv, metrictensor, drs, &normal );
+          x.Multiply( xyze, funct );
+          break;
+        }
+        case DRT::Element::quad4:
+        {
+          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
+          LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
+          LINALG::Matrix<numnodes,1> funct;
+          LINALG::Matrix<2,numnodes> deriv;
+          LINALG::Matrix<2,2> metrictensor;
+          DRT::UTILS::shape_function_2D( funct, eta( 0 ), eta( 1 ), DRT::Element::quad4 );
+          DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::quad4 );
+          DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad4>( xyze, deriv, metrictensor, drs, &normal );
+          x.Multiply( xyze, funct );
+          break;
+        }
+        case DRT::Element::quad8:
+        {
+          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement;
+          LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
+          LINALG::Matrix<numnodes,1> funct;
+          LINALG::Matrix<2,numnodes> deriv;
+          LINALG::Matrix<2,2> metrictensor;
+          DRT::UTILS::shape_function_2D( funct, eta( 0 ), eta( 1 ), DRT::Element::quad8 );
+          DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::quad8 );
+          DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad8>( xyze, deriv, metrictensor, drs, &normal );
+          x.Multiply( xyze, funct );
+          break;
+        }
+        case DRT::Element::quad9:
+        {
+          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement;
+          LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
+          LINALG::Matrix<numnodes,1> funct;
+          LINALG::Matrix<2,numnodes> deriv;
+          LINALG::Matrix<2,2> metrictensor;
+          DRT::UTILS::shape_function_2D( funct, eta( 0 ), eta( 1 ), DRT::Element::quad9 );
+          DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::quad9 );
+          DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad9>( xyze, deriv, metrictensor, drs, &normal );
+          x.Multiply( xyze, funct );
+          break;
+        }
+        default:
+          dserror( "unsupported side shape %d", side->Shape() );
+        }
+
+        const double fac = drs*iquad.Weight();
+
+        // find element local position of gauss point at interface
+        GEO::CUT::Position<distype> pos( xyze_, x );
+        pos.Compute();
+        const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+
+        // evaluate shape functions
+        DRT::UTILS::shape_function<distype>( rst, funct_ );
+
+        // evaluate shape functions and derivatives at integration point
+        //EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+
+        // get velocity at integration point
+        // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+        velint_.Multiply(evelaf,funct_);
+
+        // get velocity derivatives at integration point
+        // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+        //vderxy_.MultiplyNT(evelaf,derxy_);
+
+        // get pressure at integration point
+        // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+        //double press = funct_.Dot(epreaf);
+
+        bK_ss.MultiplyNT( funct_, funct_ );
+
+               /*                      \
+            - |  (virt tau) * n^f , Du  |
+               \                      */
+
+        // G_su
+
+        K_su( Sigmaxx, Velx )->Update( -fac*normal(0), bK_ss, 1.0 );
+        K_su( Sigmaxy, Velx )->Update( -fac*normal(1), bK_ss, 1.0 );
+        K_su( Sigmaxz, Velx )->Update( -fac*normal(2), bK_ss, 1.0 );
+        K_su( Sigmayx, Vely )->Update( -fac*normal(0), bK_ss, 1.0 );
+        K_su( Sigmayy, Vely )->Update( -fac*normal(1), bK_ss, 1.0 );
+        K_su( Sigmayz, Vely )->Update( -fac*normal(2), bK_ss, 1.0 );
+        K_su( Sigmazx, Velz )->Update( -fac*normal(0), bK_ss, 1.0 );
+        K_su( Sigmazy, Velz )->Update( -fac*normal(1), bK_ss, 1.0 );
+        K_su( Sigmazz, Velz )->Update( -fac*normal(2), bK_ss, 1.0 );
+
+        rhs( Sigmaxx, 0 )->Update( fac*normal(0)*velint_(0), funct_, 1.0 );
+        rhs( Sigmaxy, 0 )->Update( fac*normal(1)*velint_(0), funct_, 1.0 );
+        rhs( Sigmaxz, 0 )->Update( fac*normal(2)*velint_(0), funct_, 1.0 );
+        rhs( Sigmayx, 0 )->Update( fac*normal(0)*velint_(1), funct_, 1.0 );
+        rhs( Sigmayy, 0 )->Update( fac*normal(1)*velint_(1), funct_, 1.0 );
+        rhs( Sigmayz, 0 )->Update( fac*normal(2)*velint_(1), funct_, 1.0 );
+        rhs( Sigmazx, 0 )->Update( fac*normal(0)*velint_(2), funct_, 1.0 );
+        rhs( Sigmazy, 0 )->Update( fac*normal(1)*velint_(2), funct_, 1.0 );
+        rhs( Sigmazz, 0 )->Update( fac*normal(2)*velint_(2), funct_, 1.0 );
+
+
+               /*               \
+            - |  v , Dtau * n^f  |
+               \               */
+
+        // G_us
+
+        K_us( Velx, Sigmaxx )->Update( -fac*normal(0), bK_ss, 1.0 );
+        K_us( Velx, Sigmaxy )->Update( -fac*normal(1), bK_ss, 1.0 );
+        K_us( Velx, Sigmaxz )->Update( -fac*normal(2), bK_ss, 1.0 );
+        K_us( Vely, Sigmayx )->Update( -fac*normal(0), bK_ss, 1.0 );
+        K_us( Vely, Sigmayy )->Update( -fac*normal(1), bK_ss, 1.0 );
+        K_us( Vely, Sigmayz )->Update( -fac*normal(2), bK_ss, 1.0 );
+        K_us( Velz, Sigmazx )->Update( -fac*normal(0), bK_ss, 1.0 );
+        K_us( Velz, Sigmazy )->Update( -fac*normal(1), bK_ss, 1.0 );
+        K_us( Velz, Sigmazz )->Update( -fac*normal(2), bK_ss, 1.0 );
+
+
+#if 0
+              /*                      \
+             |  (virt tau) * n^f , Dui |
+              \                      */
+
+        // G_si
+
+        patchassembler.template Matrix<Sigmaxx,Velxiface>(*(couplmats.Gsui_uncond), shp_tau.d0, fac*normal(0), shp_iface_d0);
+        patchassembler.template Matrix<Sigmaxy,Velxiface>(*(couplmats.Gsui_uncond), shp_tau.d0, fac*normal(1), shp_iface_d0);
+        patchassembler.template Matrix<Sigmaxz,Velxiface>(*(couplmats.Gsui_uncond), shp_tau.d0, fac*normal(2), shp_iface_d0);
+        patchassembler.template Matrix<Sigmayx,Velyiface>(*(couplmats.Gsui_uncond), shp_tau.d0, fac*normal(0), shp_iface_d0);
+        patchassembler.template Matrix<Sigmayy,Velyiface>(*(couplmats.Gsui_uncond), shp_tau.d0, fac*normal(1), shp_iface_d0);
+        patchassembler.template Matrix<Sigmayz,Velyiface>(*(couplmats.Gsui_uncond), shp_tau.d0, fac*normal(2), shp_iface_d0);
+        patchassembler.template Matrix<Sigmazx,Velziface>(*(couplmats.Gsui_uncond), shp_tau.d0, fac*normal(0), shp_iface_d0);
+        patchassembler.template Matrix<Sigmazy,Velziface>(*(couplmats.Gsui_uncond), shp_tau.d0, fac*normal(1), shp_iface_d0);
+        patchassembler.template Matrix<Sigmazz,Velziface>(*(couplmats.Gsui_uncond), shp_tau.d0, fac*normal(2), shp_iface_d0);
+
+        assembler.template Vector<Sigmaxx>(shp_tau.d0, -fac*normal(0)*interface_gpvelnp(0));
+        assembler.template Vector<Sigmaxy>(shp_tau.d0, -fac*normal(1)*interface_gpvelnp(0));
+        assembler.template Vector<Sigmaxz>(shp_tau.d0, -fac*normal(2)*interface_gpvelnp(0));
+        assembler.template Vector<Sigmayx>(shp_tau.d0, -fac*normal(0)*interface_gpvelnp(1));
+        assembler.template Vector<Sigmayy>(shp_tau.d0, -fac*normal(1)*interface_gpvelnp(1));
+        assembler.template Vector<Sigmayz>(shp_tau.d0, -fac*normal(2)*interface_gpvelnp(1));
+        assembler.template Vector<Sigmazx>(shp_tau.d0, -fac*normal(0)*interface_gpvelnp(2));
+        assembler.template Vector<Sigmazy>(shp_tau.d0, -fac*normal(1)*interface_gpvelnp(2));
+        assembler.template Vector<Sigmazz>(shp_tau.d0, -fac*normal(2)*interface_gpvelnp(2));
+
+        if (monolithic_FSI)
+        {
+          const double facvelx = monolithic_FSI ? fac*(gpvelnp(0) - interface_gpvelnp(0)) : 0.0;
+          const double facvely = monolithic_FSI ? fac*(gpvelnp(1) - interface_gpvelnp(1)) : 0.0;
+          const double facvelz = monolithic_FSI ? fac*(gpvelnp(2) - interface_gpvelnp(2)) : 0.0;
+          patchassembler.template Matrix<Sigmaxx,Dispxiface>(*couplmats.GNsdi_uncond, shp_tau.d0, -facvelx, normalderiv.dnxdx);
+          patchassembler.template Matrix<Sigmaxy,Dispxiface>(*couplmats.GNsdi_uncond, shp_tau.d0, -facvelx, normalderiv.dnydx);
+          patchassembler.template Matrix<Sigmaxz,Dispxiface>(*couplmats.GNsdi_uncond, shp_tau.d0, -facvelx, normalderiv.dnzdx);
+          patchassembler.template Matrix<Sigmayx,Dispyiface>(*couplmats.GNsdi_uncond, shp_tau.d0, -facvely, normalderiv.dnxdy);
+          patchassembler.template Matrix<Sigmayy,Dispyiface>(*couplmats.GNsdi_uncond, shp_tau.d0, -facvely, normalderiv.dnydy);
+          patchassembler.template Matrix<Sigmayz,Dispyiface>(*couplmats.GNsdi_uncond, shp_tau.d0, -facvely, normalderiv.dnzdy);
+          patchassembler.template Matrix<Sigmazx,Dispziface>(*couplmats.GNsdi_uncond, shp_tau.d0, -facvelz, normalderiv.dnxdz);
+          patchassembler.template Matrix<Sigmazy,Dispziface>(*couplmats.GNsdi_uncond, shp_tau.d0, -facvelz, normalderiv.dnydz);
+          patchassembler.template Matrix<Sigmazz,Dispziface>(*couplmats.GNsdi_uncond, shp_tau.d0, -facvelz, normalderiv.dnzdz);
+        }
+#endif
+
+//         if (monolithic_FSI)
+//         {
+//           const double nfac1 = monolithic_FSI ? fac : 0.0;
+//           patchassembler.template Matrix<Velx,Dispxiface>(*couplmats.GNudi_uncond, shp.d0, -nfac1, tau_times_nderiv.xx);
+//           patchassembler.template Matrix<Velx,Dispyiface>(*couplmats.GNudi_uncond, shp.d0, -nfac1, tau_times_nderiv.xy);
+//           patchassembler.template Matrix<Velx,Dispziface>(*couplmats.GNudi_uncond, shp.d0, -nfac1, tau_times_nderiv.xz);
+//           patchassembler.template Matrix<Vely,Dispxiface>(*couplmats.GNudi_uncond, shp.d0, -nfac1, tau_times_nderiv.yx);
+//           patchassembler.template Matrix<Vely,Dispyiface>(*couplmats.GNudi_uncond, shp.d0, -nfac1, tau_times_nderiv.yy);
+//           patchassembler.template Matrix<Vely,Dispziface>(*couplmats.GNudi_uncond, shp.d0, -nfac1, tau_times_nderiv.yz);
+//           patchassembler.template Matrix<Velz,Dispxiface>(*couplmats.GNudi_uncond, shp.d0, -nfac1, tau_times_nderiv.zx);
+//           patchassembler.template Matrix<Velz,Dispyiface>(*couplmats.GNudi_uncond, shp.d0, -nfac1, tau_times_nderiv.zy);
+//           patchassembler.template Matrix<Velz,Dispziface>(*couplmats.GNudi_uncond, shp.d0, -nfac1, tau_times_nderiv.zz);
+//         }
+
+//         LINALG::Matrix<nsd,1> disctau_times_nf;
+//         disctau_times_nf.Multiply(tau,normal);
+//         //cout << "sigmaijnj : " << disctau_times_n << endl;
+//         assembler.template Vector<Velx>(shp.d0, fac*disctau_times_nf(0));
+//         assembler.template Vector<Vely>(shp.d0, fac*disctau_times_nf(1));
+//         assembler.template Vector<Velz>(shp.d0, fac*disctau_times_nf(2));
+
+
+#if 0
+              /*                  \
+             |  v^i , Dtau * n^f   |
+              \                  */
+
+
+        patchassembler.template Matrix<Velxiface,Sigmaxx>(*(couplmats.Guis_uncond), shp_iface_d0, fac*normal(0), shp_tau.d0);
+        patchassembler.template Matrix<Velxiface,Sigmaxy>(*(couplmats.Guis_uncond), shp_iface_d0, fac*normal(1), shp_tau.d0);
+        patchassembler.template Matrix<Velxiface,Sigmaxz>(*(couplmats.Guis_uncond), shp_iface_d0, fac*normal(2), shp_tau.d0);
+        patchassembler.template Matrix<Velyiface,Sigmayx>(*(couplmats.Guis_uncond), shp_iface_d0, fac*normal(0), shp_tau.d0);
+        patchassembler.template Matrix<Velyiface,Sigmayy>(*(couplmats.Guis_uncond), shp_iface_d0, fac*normal(1), shp_tau.d0);
+        patchassembler.template Matrix<Velyiface,Sigmayz>(*(couplmats.Guis_uncond), shp_iface_d0, fac*normal(2), shp_tau.d0);
+        patchassembler.template Matrix<Velziface,Sigmazx>(*(couplmats.Guis_uncond), shp_iface_d0, fac*normal(0), shp_tau.d0);
+        patchassembler.template Matrix<Velziface,Sigmazy>(*(couplmats.Guis_uncond), shp_iface_d0, fac*normal(1), shp_tau.d0);
+        patchassembler.template Matrix<Velziface,Sigmazz>(*(couplmats.Guis_uncond), shp_iface_d0, fac*normal(2), shp_tau.d0);
+
+        if (monolithic_FSI)
+        {
+          const double nfac1 = monolithic_FSI ? fac : 0.0;
+          patchassembler.template Matrix<Dispxiface,Dispxiface>(*couplmats.GNdidi_uncond, shp_iface_d0, -nfac1, tau_times_nderiv.xx);
+          patchassembler.template Matrix<Dispxiface,Dispyiface>(*couplmats.GNdidi_uncond, shp_iface_d0, -nfac1, tau_times_nderiv.xy);
+          patchassembler.template Matrix<Dispxiface,Dispziface>(*couplmats.GNdidi_uncond, shp_iface_d0, -nfac1, tau_times_nderiv.xz);
+          patchassembler.template Matrix<Dispyiface,Dispxiface>(*couplmats.GNdidi_uncond, shp_iface_d0, -nfac1, tau_times_nderiv.yx);
+          patchassembler.template Matrix<Dispyiface,Dispyiface>(*couplmats.GNdidi_uncond, shp_iface_d0, -nfac1, tau_times_nderiv.yy);
+          patchassembler.template Matrix<Dispyiface,Dispziface>(*couplmats.GNdidi_uncond, shp_iface_d0, -nfac1, tau_times_nderiv.yz);
+          patchassembler.template Matrix<Dispziface,Dispxiface>(*couplmats.GNdidi_uncond, shp_iface_d0, -nfac1, tau_times_nderiv.zx);
+          patchassembler.template Matrix<Dispziface,Dispyiface>(*couplmats.GNdidi_uncond, shp_iface_d0, -nfac1, tau_times_nderiv.zy);
+          patchassembler.template Matrix<Dispziface,Dispziface>(*couplmats.GNdidi_uncond, shp_iface_d0, -nfac1, tau_times_nderiv.zz);
+        }
+
+        patchassembler.template Vector<Velxiface>(*(couplmats.rhsui_uncond), shp_iface_d0, -fac*disctau_times_nf(0));
+        patchassembler.template Vector<Velyiface>(*(couplmats.rhsui_uncond), shp_iface_d0, -fac*disctau_times_nf(1));
+        patchassembler.template Vector<Velziface>(*(couplmats.rhsui_uncond), shp_iface_d0, -fac*disctau_times_nf(2));
+
+        // here the interface force is integrated
+        // this is done using test shape functions of the boundary mesh
+        // hence, we can't use the local assembler here
+        for (size_t inode = 0; inode < numnode_boundary; ++inode)
+        {
+          force_boundary(0,inode) += funct_boundary(inode) * -(disctau_times_nf(0) * fac);
+          force_boundary(1,inode) += funct_boundary(inode) * -(disctau_times_nf(1) * fac);
+          force_boundary(2,inode) += funct_boundary(inode) * -(disctau_times_nf(2) * fac);
+        }
+#endif
+      }
+    }
+  }
+
+  // construct views
+  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> elemat1(elemat1_epetra,true);
+  LINALG::Matrix<(nsd_+1)*nen_,            1> elevec1(elevec1_epetra,true);
+
+#if 0
+
+  // DEBUG
+
+  LINALG::Matrix<nen_,nen_> two_invbK_ss( true );
+  two_invbK_ss.Update( 2, invbK_ss, 0.0 );
+  LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,6,6> K_ss;
+
+  K_ss.AddView( Sigmaxx, Sigmaxx,     invbK_ss );
+  K_ss.AddView( Sigmaxy, Sigmaxy, two_invbK_ss );
+  K_ss.AddView( Sigmaxz, Sigmaxz, two_invbK_ss );
+  K_ss.AddView( Sigmayy, Sigmayy,     invbK_ss );
+  K_ss.AddView( Sigmayz, Sigmayz, two_invbK_ss );
+  K_ss.AddView( Sigmazz, Sigmazz,     invbK_ss );
+
+  LINALG::Matrix<4*nen_, 6*nen_> real_K_us( true );
+  LINALG::Matrix<6*nen_, 4*nen_> real_K_su( true );
+  LINALG::Matrix<6*nen_, 6*nen_> real_K_ss( true );
+
+  K_us.template AssembleTo<4*nen_, 6*nen_>( real_K_us, 1. );
+  K_su.template AssembleTo<6*nen_, 4*nen_>( real_K_su, 1. );
+  K_ss.template AssembleTo<6*nen_, 6*nen_>( real_K_ss, 1. );
+
+  std::cout << real_K_us << "*\n" << real_K_su << "*\n" << real_K_ss << "***\n";
+
+  LINALG::FixedSizeSerialDenseSolver<6*nen_,6*nen_> solver;
+  solver.SetMatrix( real_K_ss );
+  solver.Invert();
+
+  LINALG::Matrix<(nsd_+1)*nen_,6*nen_> K_iK( true );
+  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> extK( true );
+  //LINALG::Matrix<(nsd_+1)*nen_,   1> extrhs;
+
+  K_iK  .Multiply( real_K_us, real_K_ss );
+  extK  .Multiply( K_iK, real_K_su );
+  //extrhs.Multiply( K_iK, rhs );
+
+  elemat1.Update( -1, extK, 1 );
+  //elevec1.Update( -1, extrhs, 1 );
+
+#else
+
+  // invert block mass matrix
+  LINALG::FixedSizeSerialDenseSolver<nen_,nen_> solver;
+  solver.SetMatrix( invbK_ss );
+  solver.Invert();
+
+  half_invbK_ss.Update( 0.5, invbK_ss, 0.0 );
+
+  invK_ss.AddView( Sigmaxx, Sigmaxx,      invbK_ss );
+  invK_ss.AddView( Sigmaxy, Sigmaxy, half_invbK_ss );
+  invK_ss.AddView( Sigmaxz, Sigmaxz, half_invbK_ss );
+  invK_ss.AddView( Sigmayy, Sigmayy,      invbK_ss );
+  invK_ss.AddView( Sigmayz, Sigmayz, half_invbK_ss );
+  invK_ss.AddView( Sigmazz, Sigmazz,      invbK_ss );
+
+  LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,(nsd_+1),6>        K_iK;
+  LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,(nsd_+1),(nsd_+1)> extK;
+  LINALG::BlockMatrix<LINALG::Matrix<nen_,   1>,(nsd_+1),1>        extrhs;
+
+  K_iK  .Multiply( K_us, invK_ss );
+  extK  .Multiply( K_iK, K_su );
+  extrhs.Multiply( K_iK, rhs );
+
+  for ( unsigned icb=0; icb<nsd_+1; ++icb )
+  {
+    for ( unsigned irb=0; irb<nsd_+1; ++irb )
+    {
+      if ( extK.IsUsed( irb, icb ) )
+      {
+        LINALG::Matrix<nen_,nen_> & local_extK = *extK( irb, icb );
+        for ( int ic=0; ic<nen_; ++ic )
+        {
+          unsigned c = ( nsd_+1 )*ic + icb;
+          for ( int ir=0; ir<nen_; ++ir )
+          {
+            unsigned r = ( nsd_+1 )*ir + irb;
+            elemat1( r, c ) -= local_extK( ir, ic );
+          }
+        }
+      }
+    }
+  }
+
+  for ( unsigned irb=0; irb<nsd_+1; ++irb )
+  {
+    if ( extrhs.IsUsed( irb, 0 ) )
+    {
+      LINALG::Matrix<nen_,1> & local_extrhs = *extrhs( irb, 0 );
+      for ( int ir=0; ir<nen_; ++ir )
+      {
+        unsigned r = ( nsd_+1 )*ir + irb;
+        elevec1( r, 0 ) -= local_extrhs( ir, 0 );
+      }
+    }
+  }
+
+#endif
+
+//   std::cout << elemat1;
+//   std::cout << elevec1;
+
+//   elemat1_epetra.Print( std::cout );
+}
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <>
+void Fluid3Impl<DRT::Element::tri3>::ElementXfemInterface(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra
+  )
+{
+  dserror( "distype not supported" );
+}
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <>
+void Fluid3Impl<DRT::Element::tri6>::ElementXfemInterface(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra
+  )
+{
+  dserror( "distype not supported" );
+}
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <>
+void Fluid3Impl<DRT::Element::quad4>::ElementXfemInterface(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra
+  )
+{
+  dserror( "distype not supported" );
+}
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <>
+void Fluid3Impl<DRT::Element::quad8>::ElementXfemInterface(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra
+  )
+{
+  dserror( "distype not supported" );
+}
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <>
+void Fluid3Impl<DRT::Element::quad9>::ElementXfemInterface(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra
+  )
+{
+  dserror( "distype not supported" );
+}
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <>
+void Fluid3Impl<DRT::Element::nurbs9>::ElementXfemInterface(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra
+  )
+{
+  dserror( "distype not supported" );
+}
+
+  }
+}
+
+#endif
+#endif

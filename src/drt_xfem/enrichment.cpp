@@ -13,6 +13,7 @@ Maintainer: Axel Gerstenberger
 #ifdef CCADISCRET
 
 #include "enrichment.H"
+#include "interfacexfsi.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_geometry/intersection_service.H"

@@ -17,6 +17,11 @@ public:
   {
   }
 
+  virtual DRT::Element::DiscretizationType Shape()
+  {
+    return DRT::Element::dis_none;
+  }
+
   virtual void Cut( Mesh & mesh, Edge & edge, std::set<Point*, PointPidLess> & cut_points );
 
   virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges );

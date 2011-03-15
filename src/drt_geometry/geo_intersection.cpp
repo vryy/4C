@@ -18,16 +18,50 @@
 #include "../drt_cut/cut_integrationcell.H"
 #include "../drt_cut/cut_mesh.H"
 #include "../drt_cut/cut_meshintersection.H"
+#include "../drt_cut/cut_node.H"
+#include "../drt_cut/cut_point.H"
 #include "../drt_cut/cut_side.H"
+#include "../drt_cut/cut_volumecell.H"
 
 
-GEO::CutManager::CutManager( DRT::Discretization & dis, int numcutmesh )
-  : dis_( dis )
+// int GEO::CutDofSet::NumDofPerNode( const DRT::Node & node, unsigned dspos ) const
+// {
+//   GEO::CUT::Node * n = mesh_->GetNode( node.Id() );
+//   if ( n!=NULL )
+//   {
+//     int numdofpernode = DRT::DofSet::NumDofPerNode( node, dspos );
+//     return numdofpernode * n->NumDofSets( include_inner_ );
+//   }
+//   return DRT::DofSet::NumDofPerNode( node, dspos );
+// }
+
+// int GEO::CutDofSet::PlainNumDofPerNode( const DRT::Node & node ) const
+// {
+//   return DRT::DofSet::NumDofPerNode( node, dspos_ );
+// }
+
+// void GEO::CutDofSet::Dof( DRT::Node & node, int nodaldofset, std::vector<int> & dofs ) const
+// {
+//   const int lid = node.LID();
+//   if (lid==-1)
+//     return;
+//   int numdf = PlainNumDofPerNode( node );
+//   const int idx = (*idxcolnodes_)[lid] + nodaldofset*numdf;
+//   dofs.reserve( numdf );
+//   for ( int i=0; i<numdf; ++i )
+//   {
+//     dofs.push_back( idx+i );
+//   }
+// }
+
+GEO::CutWizard::CutWizard( DRT::Discretization & dis, bool include_inner, int numcutmesh )
+  : dis_( dis ),
+    include_inner_( include_inner )
 {
   mesh_ = Teuchos::rcp( new GEO::CUT::MeshIntersection( numcutmesh ) );
 }
 
-void GEO::CutManager::AddCutSide( int mi, DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze )
+void GEO::CutWizard::AddCutSide( int mi, DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze )
 {
   const int numnode = ele->NumNode();
   const int * nodeids = ele->NodeIds();
@@ -36,7 +70,7 @@ void GEO::CutManager::AddCutSide( int mi, DRT::Element * ele, const Epetra_Seria
   mesh_->AddCutSide( ele->Id(), nids, xyze, ele->Shape(), mi );
 }
 
-void GEO::CutManager::AddElement( DRT::Element * ele )
+void GEO::CutWizard::AddElement( DRT::Element * ele )
 {
   const int numnode = ele->NumNode();
   const DRT::Node * const * nodes = ele->Nodes();
@@ -54,11 +88,27 @@ void GEO::CutManager::AddElement( DRT::Element * ele )
   mesh_->AddElement( ele->Id(), nids, xyze, ele->Shape() );
 }
 
+GEO::CUT::ElementHandle * GEO::CutWizard::GetElement( DRT::Element * ele )
+{
+  return mesh_->GetElement( ele->Id() );
+}
 
-void GEO::CutManager::Cut( std::map< int, DomainIntCells >& domainintcells,
-                           std::map< int, BoundaryIntCells >& boundaryintcells )
+GEO::CUT::Node * GEO::CutWizard::GetNode( int nid )
+{
+  return mesh_->GetNode( nid );
+}
+
+void GEO::CutWizard::Cut( bool include_inner )
+{
+  mesh_->Cut( include_inner );
+}
+
+void GEO::CutWizard::Cut( std::map< int, DomainIntCells >& domainintcells,
+                          std::map< int, BoundaryIntCells >& boundaryintcells )
 {
   mesh_->Cut( true );
+
+  std::vector<int> cutelements;
 
   for ( int k = 0; k < dis_.NumMyColElements(); ++k )
   {
@@ -68,6 +118,8 @@ void GEO::CutManager::Cut( std::map< int, DomainIntCells >& domainintcells,
 
     if ( e!=NULL and e->IsCut() )
     {
+      cutelements.push_back( eid );
+
       std::set<GEO::CUT::IntegrationCell*> cells;
       e->GetIntegrationCells( cells );
 
@@ -182,7 +234,148 @@ void GEO::CutManager::Cut( std::map< int, DomainIntCells >& domainintcells,
       }
     }
   }
+
+  cutelementmap_ = Teuchos::rcp( new Epetra_Map( -1, cutelements.size(), &cutelements[0], 0, dis_.Comm() ) );
 }
+
+// Teuchos::RCP<GEO::CutDofSet> GEO::CutWizard::CreateDofSet()
+// {
+//   return Teuchos::rcp( new CutDofSet( &*mesh_, include_inner_ ) );
+// }
+
+#if 0
+Teuchos::RCP<Epetra_CrsGraph> GEO::CutWizard::MatrixGraph( const CutDofSet & dofset, const Epetra_Map & dbcmap )
+{
+  const Epetra_Map & noderowmap = * dis_.NodeRowMap();
+  const Epetra_Map & dofrowmap  = * dofset.DofRowMap();
+
+  int numnode = noderowmap.NumMyElements();
+
+  // build graph
+
+  std::map<int, std::set<int> > graph;
+
+  int row = 0;
+  for ( int i=0; i<numnode; ++i )
+  {
+    DRT::Node * rn = dis_.lRowNode( i );
+
+    int numelements = rn->NumElement();
+    DRT::Element** elements = rn->Elements();
+    if ( elements==NULL )
+      dserror( "no elements at node %d", rn->Id() );
+
+    GEO::CUT::Node * crn = mesh_->GetNode( rn->Id() );
+    if ( crn!=NULL )
+    {
+      std::vector<int> rdofs = dis_.Dof( rn );
+      int rplain_numdf = dofset.PlainNumDofPerNode( *rn );
+      for ( int k=0; k<numelements; ++k )
+      {
+        DRT::Element * e = elements[k];
+        int numnodes = e->NumNode();
+        DRT::Node ** nodes = e->Nodes();
+
+        GEO::CUT::ElementHandle * ce = mesh_->GetElement( e->Id() );
+        if ( ce!=NULL )
+        {
+          std::set<GEO::CUT::VolumeCell*> cells;
+          ce->GetVolumeCells( cells );
+          for ( std::set<GEO::CUT::VolumeCell*>::iterator i=cells.begin();
+                i!=cells.end();
+                ++i )
+          {
+            GEO::CUT::VolumeCell * c = *i;
+            const std::vector<int> & nodaldofset = c->NodalDofSet();
+            if ( nodaldofset.size()!=numnodes )
+            {
+              throw std::runtime_error( "number of nodes mismatch" );
+            }
+            for ( int l=0; l<numnodes; ++l )
+            {
+              DRT::Node * cn = nodes[l];
+              std::vector<int> cdofs;
+              dofset.Dof( *cn, nodaldofset[l], cdofs );
+            }
+          }
+        }
+        else
+        {
+          for ( int l=0; l<numnodes; ++l )
+          {
+            DRT::Node * cn = nodes[l];
+
+            std::vector<int> cdofs = dis_.Dof( cn );
+          }
+        }
+      }
+    }
+    else
+    {
+      std::vector<int> rdofs = dis_.Dof( rn );
+      for ( unsigned rj=0; rj<rdofs.size(); ++rj, ++row )
+      {
+        std::set<int> & rowset = graph[rdofs[rj]];
+        if ( not dbcmap.MyGID( rdofs[rj] ) )
+        {
+          // non-Dirichlet row
+          for ( int k=0; k<numelements; ++k )
+          {
+            DRT::Element * e = elements[k];
+            int numnodes = e->NumNode();
+            DRT::Node ** nodes = e->Nodes();
+            for ( int l=0; l<numnodes; ++l )
+            {
+              DRT::Node * cn = nodes[l];
+
+              std::vector<int> cdofs = dis_.Dof( cn );
+              rowset.insert( cdofs.begin(), cdofs.end() );
+            }
+          }
+        }
+        else
+        {
+          // just diagonal entry on Dirichlet rows
+          rowset.insert( rdofs[rj] );
+        }
+      }
+    }
+  }
+
+  // setup graph with row length and column indices per row
+
+  std::vector<int> sizes;
+  sizes.reserve( graph.size() );
+  for ( std::map<int, std::set<int> >::iterator i=graph.begin(); i!=graph.end(); ++i )
+  {
+    std::set<int> & rowset = i->second;
+    unsigned s = rowset.size();
+    sizes.push_back( s );
+  }
+
+  Teuchos::RCP<Epetra_CrsGraph> crsgraph =
+    Teuchos::rcp( new Epetra_CrsGraph( Copy, dofrowmap, &sizes[0], true ) );
+
+  for ( std::map<int, std::set<int> >::iterator i=graph.begin(); i!=graph.end(); ++i )
+  {
+    int gid = i->first;
+    std::set<int> & rowset = i->second;
+    unsigned s = rowset.size();
+    std::vector<int> row;
+    row.reserve( s );
+    row.assign( rowset.begin(), rowset.end() );
+
+    int err = crsgraph->InsertGlobalIndices( gid, row.size(), &row[0] );
+    if ( err )
+      dserror( "InsertGlobalIndices failed: %d", err );
+  }
+
+  crsgraph->FillComplete();
+
+  return crsgraph;
+  return Teuchos::null;
+}
+#endif
 
 
 void GEO::computeIntersection( const Teuchos::RCP<DRT::Discretization> xfemdis,
@@ -201,7 +394,7 @@ void GEO::computeIntersection( const Teuchos::RCP<DRT::Discretization> xfemdis,
 
   const double t_start = Teuchos::Time::wallTime();
 
-  CutManager manager( *xfemdis );
+  CutWizard wizard( *xfemdis, false );
 
   for ( int k = 0; k < cutterdis->NumMyColElements(); ++k )
   {
@@ -232,7 +425,7 @@ void GEO::computeIntersection( const Teuchos::RCP<DRT::Discretization> xfemdis,
       std::copy( x.A(), x.A()+3, &xyze( 0, i ) );
     }
 
-    manager.AddCutSide( 0, ele, xyze );
+    wizard.AddCutSide( 0, ele, xyze );
   }
 
   for ( int k = 0; k < xfemdis->NumMyColElements(); ++k )
@@ -251,12 +444,12 @@ void GEO::computeIntersection( const Teuchos::RCP<DRT::Discretization> xfemdis,
       }
     }
 
-    manager.AddElement( xfemElement );
+    wizard.AddElement( xfemElement );
   }
 
   // Call tetgen on all cut elements.
 
-  manager.Cut( domainintcells, boundaryintcells );
+  wizard.Cut( domainintcells, boundaryintcells );
 
   // cleanup
 

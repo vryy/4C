@@ -40,6 +40,8 @@ public:
 
   virtual double Area() const = 0;
 
+  virtual void Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal ) const = 0;
+
   const std::vector<Point*> & Points() const { return points_; }
 
   const Epetra_SerialDenseMatrix & Coordinates() const { return xyz_; }
@@ -68,11 +70,13 @@ public:
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tri3; }
 
-  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const { return 7; }
+  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const { return 20; }
 
   virtual void DumpGmsh( std::ofstream & file );
 
   virtual double Area() const;
+
+  virtual void Normal( const LINALG::Matrix<2,1> & pos, LINALG::Matrix<3,1> & normal ) const;
 };
 
 class Quad4BoundaryCell : public BoundaryCell
@@ -91,11 +95,13 @@ public:
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::quad4; }
 
-  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const { return 7; }
+  virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const { return 20; }
 
   virtual void DumpGmsh( std::ofstream & file );
 
   virtual double Area() const;
+
+  virtual void Normal( const LINALG::Matrix<2,1> & pos, LINALG::Matrix<3,1> & normal ) const;
 };
 
 }

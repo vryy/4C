@@ -744,7 +744,7 @@ void FileSchema::assign_indices( stk::mesh::BulkData & arg_mesh ) const
   stk::mesh::BulkData & M = arg_mesh ;
   const stk::mesh::MetaData & S = m_schema ;
 
-  S.assert_same_mesh_meta_data( method , M.mesh_meta_data() );
+  //S.assert_same_mesh_meta_data( method , M.mesh_meta_data() );
 
   //--------------------------------------------------------------------
 

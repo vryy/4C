@@ -8,7 +8,10 @@
 
 #include <Teuchos_RCP.hpp>
 
+#include <Epetra_CrsGraph.h>
+
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "../drt_lib/drt_dofset.H"
 
 #include "integrationcell.H"
 
@@ -22,26 +25,69 @@ namespace GEO
   namespace CUT
   {
     class MeshIntersection;
+    class ElementHandle;
+    class Node;
   }
 
+//   class CutDofSet : public DRT::DofSet
+//   {
+//   public:
+
+//     CutDofSet( GEO::CUT::MeshIntersection * mesh, bool include_inner )
+//       : mesh_( mesh ),
+//         include_inner_( include_inner )
+//     {
+//     }
+
+//     int PlainNumDofPerNode( const DRT::Node & node, unsigned dspos ) const;
+
+//     void Dof( DRT::Node & node, int nodaldofset, std::vector<int> & dofs ) const;
+
+//   protected:
+
+//     /// get number of nodal dofs for this element at this node
+//     virtual int NumDofPerNode( const DRT::Node & node, unsigned dspos ) const;
+
+//   private:
+
+//     GEO::CUT::MeshIntersection * mesh_;
+//     bool include_inner_;
+//   };
+
   /// contains the cut
-  class CutManager
+  class CutWizard
   {
   public:
 
-    CutManager( DRT::Discretization & dis, int numcutmesh=1 );
+    CutWizard( DRT::Discretization & dis, bool include_inner, int numcutmesh=1 );
 
     void AddCutSide( int mi, DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze );
 
     void AddElement( DRT::Element * ele );
 
+    GEO::CUT::ElementHandle * GetElement( DRT::Element * ele );
+
+    GEO::CUT::Node * GetNode( int nid );
+
+    void Cut( bool include_inner );
+
     void Cut( std::map< int, DomainIntCells >& domainintcells,
               std::map< int, BoundaryIntCells >& boundaryintcells );
+
+//     Teuchos::RCP<CutDofSet> CreateDofSet();
+
+//     Teuchos::RCP<Epetra_CrsGraph> MatrixGraph( const CutDofSet & dofset, const Epetra_Map & dbcmap );
+
+    Teuchos::RCP<Epetra_Map> CutElementMap() const { return cutelementmap_; }
+
+    GEO::CUT::MeshIntersection & Mesh() { return *mesh_; }
 
   private:
 
     DRT::Discretization & dis_;
     Teuchos::RCP<GEO::CUT::MeshIntersection> mesh_;
+    Teuchos::RCP<Epetra_Map> cutelementmap_;
+    bool include_inner_;
   };
 
   /*!

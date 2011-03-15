@@ -27,7 +27,9 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_globalproblem.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-
+#include "../drt_combust/combust_interface.H"
+#include "interfacexfsi.H"
+#include "xfem_fluidwizard.H"
 
 /*------------------------------------------------------------------------------------------------*
  | constructor: used for xfsi problems                                                   ag 11/07 |
@@ -42,6 +44,19 @@ XFEM::DofManager::DofManager(
   ih_(ih)
 {
   XFEM::createDofMapFSI(*ih, nodalDofSet_, elementalDofs_, fieldset, element_ansatz, params, MovingFluidnodeGIDs);
+
+#if 0
+  std::map<int, const std::set<XFEM::FieldEnr> >    nodalDofSet;
+  std::map<int, const std::set<XFEM::FieldEnr> >    elementalDofs;
+
+  ih->Wizard()->CreateDofMap( nodalDofSet, elementalDofs, fieldset, element_ansatz, params );
+
+  if ( nodalDofSet!=nodalDofSet_ )
+    dserror( "nodes mismatch" );
+
+  if ( elementalDofs!=elementalDofs_ )
+    dserror( "elements mismatch" );
+#endif
 
   GatherUniqueEnrichments();
 }

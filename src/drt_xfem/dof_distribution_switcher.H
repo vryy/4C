@@ -14,13 +14,13 @@ Maintainer: Axel Gerstenberger
 #ifndef DOF_DISTRIBUTION_SWITCHER_H
 #define DOF_DISTRIBUTION_SWITCHER_H
 
-#include "interfacexfsi.H"
 #include "dofkey.H"
 #include "../drt_cut/cut_boundingbox.H"
 #include "../drt_lib/drt_exporter.H"
 
 namespace XFEM
 {
+  class InterfaceHandle;
 
   /*!
   \brief this class is used to switch from one distribution to a second

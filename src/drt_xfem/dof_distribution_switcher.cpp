@@ -15,6 +15,7 @@ Maintainer: Axel Gerstenberger
 #include "dof_management.H"
 #include "dof_distribution_switcher.H"
 #include "dofkey.H"
+#include "interfacexfsi.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_mapextractor.H"

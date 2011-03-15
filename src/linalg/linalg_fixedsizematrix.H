@@ -3092,6 +3092,9 @@ private:
   bool isview_;
 
 public:
+
+  typedef value_type scalar_type;
+
   /// Default constructor
   /*!
     Constructs a new Matrix and allocates the
@@ -4122,21 +4125,33 @@ inline value_type TMatrix<value_type,rows,cols>::Invert(const TMatrix<value_type
 template <class value_type, unsigned int rows,  unsigned int cols>
 void TMatrix<value_type,rows,cols>::Print(std::ostream& out) const
 {
-  out << "TMatrix<" << rows << ',' << cols << '>';
+  out << "Matrix<" << rows << ',' << cols << '>';
   if (isview_) out << " (view to memory only)";
   if (data_ == NULL) {
     out << " with data_==NULL!\n";
     return;
   }
-  out << "\n[";
-  for (unsigned int i = 0; i < rows; ++i) {
-    if (i!=0) out << ' ';
-    for (unsigned int j = 0; j < cols; ++j) {
-      out << data_[i+rows*j];
-      if (j+1 < cols) out << ", ";
+  if ( cols > 1 )
+  {
+    out << "\n[";
+    for (unsigned int i = 0; i < rows; ++i) {
+      if (i!=0) out << ' ';
+      for (unsigned int j = 0; j < cols; ++j) {
+        out << data_[i+rows*j];
+        if (j+1 < cols) out << ", ";
+      }
+      if (i+1 < rows) out << ",\n";
+      else out << "]\n";
     }
-    if (i+1 < rows) out << ",\n";
-    else out << "]\n";
+  }
+  else
+  {
+    out << "[";
+    for (unsigned int i = 0; i < rows; ++i) {
+      if (i!=0) out << ' ';
+      out << data_[i];
+    }
+    out << "]\n";
   }
 }
 

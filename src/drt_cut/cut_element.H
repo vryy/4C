@@ -61,6 +61,8 @@ public:
 
   bool IsCut();
 
+  bool OnSide( Facet * f );
+
   bool OnSide( const std::vector<Point*> & facet_points );
 
   void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );

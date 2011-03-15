@@ -1,0 +1,35 @@
+#ifndef XFEM_FLUIDDOFSET_H
+#define XFEM_FLUIDDOFSET_H
+
+#include "../drt_lib/drt_dofset.H"
+
+namespace XFEM
+{
+  class FluidWizard;
+
+  class FluidDofSet : public DRT::DofSet
+  {
+  public:
+
+    FluidDofSet( FluidWizard * wizard )
+      : wizard_( wizard )
+    {
+    }
+
+    void Dof( DRT::Node & node, int nodaldofset, std::vector<int> & dofs ) const;
+
+    /// Assign dof numbers using all elements and nodes of the discretization.
+    virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start);
+
+  protected:
+
+    /// get number of nodal dofs for this element at this node
+    virtual int NumDofPerNode( const DRT::Node & node, unsigned dspos ) const;
+
+  private:
+
+    FluidWizard * wizard_;
+  };
+}
+
+#endif

@@ -18,11 +18,15 @@ Maintainer: Axel Gerstenberger
 
 #include "dofkey.H"
 #include "element_ansatz.H"
-// Der ist hier nur drin, damit ich auf die FlameFront im InterfaceHandle zugreifen kann
-#include "../drt_combust/combust_interface.H"
+
+namespace COMBUST
+{
+  class InterfaceHandleCombust;
+}
 
 namespace XFEM
 {
+  class InterfaceHandleXFSI;
 
   /*!
  \brief He knows everything about the XFEM enrichments for one particular interface setup

@@ -59,7 +59,7 @@ Maintainer: Ulrrich Kuettler
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
 DRT::DofSet::DofSet()
-  : DRT::DofSetBase(), filled_(false)
+  : DRT::DofSetBase(), filled_(false), dspos_( 0 )
 {
   return;
 }
@@ -165,6 +165,8 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   // A definite offset is currently not supported.
   if (start!=0)
     dserror("right now user specified dof offsets are not supported");
+
+  dspos_ = dspos;
 
   // Add DofSets in order of assignment to list. Once it is there it has its
   // place and will get its starting id from the previous DofSet.

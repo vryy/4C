@@ -45,6 +45,8 @@ public:
     std::copy( elements_.begin(), elements_.end(), std::inserter( elements, elements.begin() ) );
   }
 
+  virtual DRT::Element::DiscretizationType Shape() = 0;
+
   virtual void Cut( Mesh & mesh, Edge & edge, std::set<Point*, PointPidLess> & cut_points ) = 0;
 
   virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges ) = 0;
@@ -144,6 +146,11 @@ public:
     : Side( sid, nodes, edges )
   {}
 
+  virtual DRT::Element::DiscretizationType Shape()
+  {
+    return DRT::Element::tri3;
+  }
+
   virtual void Cut( Mesh & mesh, Edge & edge, std::set<Point*, PointPidLess> & cut_points )
   {
     return edge.Cut( mesh, *this, cut_points );
@@ -175,6 +182,11 @@ public:
                                      const std::vector<Edge*> & edges )
     : Side( sid, nodes, edges )
   {}
+
+  virtual DRT::Element::DiscretizationType Shape()
+  {
+    return DRT::Element::quad4;
+  }
 
   virtual void Cut( Mesh & mesh, Edge & edge, std::set<Point*, PointPidLess> & cut_points )
   {

@@ -102,7 +102,7 @@ void DRT::Problem::Done()
     }
     p->sds_.clear();
   }
-  
+
   // This is called at the very end of a baci run.
   //
   // It removes all global problem objects. Therefore all
@@ -110,6 +110,14 @@ void DRT::Problem::Done()
   //
   // There is a whole lot going on here...
   instances_.clear();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+DRT::Problem::Problem()
+{
+  materials_ = Teuchos::rcp(new MAT::PAR::Bundle());
 }
 
 
@@ -278,6 +286,7 @@ void DRT::Problem::InputControl()
   }
   case prb_fsi_xfem:
   case prb_fluid_xfem:
+  case prb_fluid_xfem2:
   {
     genprob.numsf=0;
     genprob.numff=1;
@@ -368,10 +377,6 @@ void DRT::Problem::InputControl()
 /*----------------------------------------------------------------------*/
 void DRT::Problem::ReadMaterials(const DRT::INPUT::DatFileReader& reader)
 {
-  if (materials_ != Teuchos::null)
-    dserror("Trying to create again the material bundle");
-  materials_ = Teuchos::rcp(new MAT::PAR::Bundle());
-
   // create list of known materials
   Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > vm = DRT::INPUT::ValidMaterials();
   std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> >& matlist = *vm;
@@ -845,6 +850,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   }
   case prb_fsi_xfem:
   case prb_fluid_xfem:
+  case prb_fluid_xfem2:
   {
     structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
     fluiddis  = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));

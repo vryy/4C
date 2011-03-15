@@ -25,6 +25,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/dof_management.H"
 #include "../drt_xfem/xdofmapcreation_fsi.H"
 #include "../drt_xfem/enrichment_utils.H"
+#include "../drt_xfem/interfacexfsi.H"
 
 
 /*---------------------------------------------------------------------*

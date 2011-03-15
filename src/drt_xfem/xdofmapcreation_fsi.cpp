@@ -24,6 +24,7 @@ Maintainer: Axel Gerstenberger
 #include "xdofmapcreation_parallel_utils.H"
 #include "enrichment_utils.H"
 #include "dofkey.H"
+#include "interfacexfsi.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_utils.H"
@@ -630,9 +631,9 @@ static void processStandardEnrichmentNodalBasedApproach(
     if (not voidenrichment_in_set and not voidfsienrichment_in_set)
     {
       const bool in_fluid = (0 == ih.PositionWithinConditionNP(nodalpos));
-      
-      const bool in_moving_fluid = (std::find(MovingFluidnodeGIDs.begin(), MovingFluidnodeGIDs.end(), node->Id()) != MovingFluidnodeGIDs.end());      
-              
+
+      const bool in_moving_fluid = (std::find(MovingFluidnodeGIDs.begin(), MovingFluidnodeGIDs.end(), node->Id()) != MovingFluidnodeGIDs.end());
+
       if (in_fluid or in_moving_fluid)
       {
         for (std::set<XFEM::PHYSICS::Field>::const_iterator field = fieldset.begin();field != fieldset.end();++field)

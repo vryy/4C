@@ -3,6 +3,8 @@
 #include "cut_volumecell.H"
 #include "cut_facet.H"
 
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+
 
 void GEO::CUT::Tri3BoundaryCell::CreateCell( Mesh & mesh, VolumeCell * cell, Facet * facet, const std::vector<Point*> & side )
 {
@@ -158,4 +160,63 @@ void GEO::CUT::Quad4BoundaryCell::DumpGmsh( std::ofstream & file )
     file << -1;
   }
   file << "};\n";
+}
+
+void GEO::CUT::Tri3BoundaryCell::Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal ) const
+{
+#if 1
+  // get derivatives at pos
+  LINALG::Matrix<3,3> side_xyze( xyz_.A(), true );
+
+  LINALG::Matrix<2,3> deriv;
+  LINALG::Matrix<2,3> A;
+
+  DRT::UTILS::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), DRT::Element::tri3);
+  A.MultiplyNT( deriv, side_xyze );
+
+  // cross product to get the normal at the point
+  normal( 0 ) = A( 0, 1 )*A( 1, 2 ) - A( 0, 2 )*A( 1, 1 );
+  normal( 1 ) = A( 0, 2 )*A( 1, 0 ) - A( 0, 0 )*A( 1, 2 );
+  normal( 2 ) = A( 0, 0 )*A( 1, 1 ) - A( 0, 1 )*A( 1, 0 );
+
+//   double norm = normal.Norm2();
+//   normal.Scale( 1./norm );
+#else
+  LINALG::Matrix<3,1> x1( &xyz_( 0, 0 ) );
+  LINALG::Matrix<3,1> x2( &xyz_( 0, 1 ) );
+  LINALG::Matrix<3,1> x3( &xyz_( 0, 2 ) );
+
+  x2.Update( -1., x1, 1. );
+  x1.Update( -1., x3, 1. );
+
+  // cross product to get the normal at the point
+  normal( 0 ) = x1( 1 )*x2( 2 ) - x1( 2 )*x2( 1 );
+  normal( 1 ) = x1( 2 )*x2( 0 ) - x1( 0 )*x2( 2 );
+  normal( 2 ) = x1( 0 )*x2( 1 ) - x1( 1 )*x2( 0 );
+
+  double norm = normal.Norm2();
+  normal.Scale( 1./norm );
+#endif
+}
+
+void GEO::CUT::Quad4BoundaryCell::Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal ) const
+{
+  // get derivatives at pos
+  LINALG::Matrix<3,4> side_xyze( xyz_.A(), true );
+  //Position2d<DRT::Element::quad4> position( side_xyze, xsi );
+  //position.Normal( xsi, normal );
+
+  LINALG::Matrix<2,4> deriv;
+  LINALG::Matrix<2,3> A;
+
+  DRT::UTILS::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), DRT::Element::quad4);
+  A.MultiplyNT( deriv, side_xyze );
+
+  // cross product to get the normal at the point
+  normal( 0 ) = A( 0, 1 )*A( 1, 2 ) - A( 0, 2 )*A( 1, 1 );
+  normal( 1 ) = A( 0, 2 )*A( 1, 0 ) - A( 0, 0 )*A( 1, 2 );
+  normal( 2 ) = A( 0, 0 )*A( 1, 1 ) - A( 0, 1 )*A( 1, 0 );
+
+//   double norm = normal.Norm2();
+//   normal.Scale( 1./norm );
 }

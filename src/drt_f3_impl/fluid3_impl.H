@@ -20,7 +20,6 @@ Maintainer: Ulrich Kuettler
 #include "fluid3_interface.H"
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_fem_general/drt_utils_gausspoints.H"
 
 namespace DRT
 {
@@ -126,6 +125,19 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector&  elevec2_epetra,
                          Epetra_SerialDenseVector&  elevec3_epetra );
 
+    /// Evaluate the element at specified gauss points
+    virtual int Evaluate(DRT::ELEMENTS::Fluid3*    ele,
+                         DRT::Discretization & discretization,
+                         const std::vector<int> & lm,
+                         Teuchos::ParameterList&    params,
+                         Teuchos::RCP<MAT::Material> & mat,
+                         Epetra_SerialDenseMatrix&  elemat1_epetra,
+                         Epetra_SerialDenseMatrix&  elemat2_epetra,
+                         Epetra_SerialDenseVector&  elevec1_epetra,
+                         Epetra_SerialDenseVector&  elevec2_epetra,
+                         Epetra_SerialDenseVector&  elevec3_epetra,
+                         const DRT::UTILS::GaussIntegration & intpoints );
+
     /*!
       \brief evaluate function for Fluid3 element
 
@@ -165,6 +177,18 @@ namespace ELEMENTS
                                 DRT::Discretization&       discretization,
                                 vector<int>&               lm,
                                 RefCountPtr<MAT::Material> mat);
+
+    virtual void ElementXfemInterface( DRT::ELEMENTS::Fluid3 * ele,
+                                       DRT::Discretization & dis,
+                                       const std::vector<int> & lm,
+                                       const DRT::UTILS::GaussIntegration & intpoints,
+                                       DRT::Discretization & cutdis,
+                                       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+                                       const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
+                                       Teuchos::ParameterList&    params,
+                                       Epetra_SerialDenseMatrix&  elemat1_epetra,
+                                       Epetra_SerialDenseVector&  elevec1_epetra
+      );
 
     /*!
       \brief calculate element matrix and rhs

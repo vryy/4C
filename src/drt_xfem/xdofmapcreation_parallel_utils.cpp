@@ -47,7 +47,7 @@ void XFEM::fillNodalDofKeySet(
       // no dofs for this node... must be a hole or somethin'
       continue;
     }
-    const std::set<XFEM::FieldEnr> dofset = entry->second;
+    const std::set<XFEM::FieldEnr> & dofset = entry->second;
 
     std::set<XFEM::FieldEnr>::const_iterator fieldenr;
     for(fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )

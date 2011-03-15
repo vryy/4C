@@ -64,6 +64,12 @@ enum GaussRule3D
     intrule_hex_1point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 1 (open)
     intrule_hex_8point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 3 (open)
     intrule_hex_27point,            ///< GAUSS INTEGRATION, DEG.OF PRECISION 5 (open)
+    intrule_hex_64point,
+    intrule_hex_125point,
+    intrule_hex_216point,
+    intrule_hex_343point,
+    intrule_hex_512point,
+    intrule_hex_729point,
     intrule_tet_1point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 1 (open)
     intrule_tet_4point,             ///< GAUSS INTEGRATION, DEG.OF PRECISION 2 (open)
     intrule_tet_4point_gauss_radau, ///< GAUSS INTEGRATION, DEG.OF PRECISION 2 (closed)
@@ -130,6 +136,12 @@ enum GaussRule2D
     intrule_quad_1point,             ///< degree of precision: 1  (open)
     intrule_quad_4point,             ///< degree of precision: 3  (open)
     intrule_quad_9point,             ///< degree of precision: 5  (open)
+    intrule_quad_16point,
+    intrule_quad_25point,
+    intrule_quad_36point,
+    intrule_quad_49point,
+    intrule_quad_64point,
+    //intrule_quad_81point,
     intrule_tri_1point,              ///< degree of precision: 1  (open)
     intrule_tri_3point,              ///< degree of precision: 2  (open)   (Hughes, The Finite Element Method)
     intrule_tri_3point_gauss_radau,  ///< degree of precision: 2  (closed) (Hughes, The Finite Element Method)

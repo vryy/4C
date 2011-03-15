@@ -35,13 +35,13 @@ public:
                    const double * lsv,
                    DRT::Element::DiscretizationType distype );
 
-  void Cut();
+  void Cut( bool include_inner=true );
 
   ElementHandle * GetElement( int eid );
 
-private:
-
   Mesh & NormalMesh() { return mesh_.LinearMesh(); }
+
+private:
 
   Teuchos::RCP<PointPool> pp_;
 

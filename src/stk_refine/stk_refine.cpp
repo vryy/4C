@@ -1100,7 +1100,11 @@ void RefineSet::ConnectNewEntities( EntitySet & elements,
                       std::transform( child_nodes.begin(), child_nodes.end(),
                                       std::back_inserter( node_entities ),
                                       boost::bind( &stk::mesh::Relation::entity, _1 ) );
-                      unsigned local_side_num = stk::mesh::element_local_side_id( *me, get_cell_topology( *child ), node_entities );
+                      //unsigned local_side_num = stk::mesh::element_local_side_id( *me, get_cell_topology( *child ), node_entities );
+                      int local_side_num = stk::mesh::get_entity_subcell_id( *me,
+                                                                             child->entity_rank(),
+                                                                             get_cell_topology( *child ),
+                                                                             node_entities );
                       stk::mesh::declare_element_side( *me, *child, local_side_num, NULL );
                     }
                   }

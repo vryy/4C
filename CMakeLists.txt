@@ -544,6 +544,8 @@ set(OBJS_INTERSECTION
   src/drt_xfem/xdofmapcreation_combust.cpp
   src/drt_xfem/xdofmapcreation_fsi.cpp
   src/drt_xfem/xdofmapcreation_parallel_utils.cpp
+  src/drt_xfem/xfem_fluiddofset.cpp
+  src/drt_xfem/xfem_fluidwizard.cpp
   src/drt_geometry/geo_intersection.cpp
 )
 set(OBJS_POST_DRT_MONITOR
@@ -887,6 +889,7 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/turbulence_statistics_sqc.cpp
   src/drt_fluid/xfluidimplicitintegration.cpp
   src/drt_fluid/xfluidresulttest.cpp
+  src/drt_fluid/xfluid.cpp
 )
 set(OBJS_DRT_SR_LIB
   src/drt_smoothrod/smoothrod.cpp
@@ -2182,6 +2185,7 @@ if (QHULL)
   baci_test(xf3_multibody_hex8_tp_condense_no 2 "")
   baci_test(xf3_multibody_hex8_tp_condense_yes 1 "")
   baci_test(xf3_multibody_hex8_tp_condense_yes 2 "")
+  baci_test(xf3_multibody_hex8_2 1 "")
   baci_test(xf3_pure_shear_forces 1 "")
   baci_test(xf3_pure_shear_forces 2 "")
   baci_test(xf3_pure_shear_forces_bdf2 1 10)

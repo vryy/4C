@@ -18,6 +18,8 @@ namespace CUT
   class Node;
   class Element;
   class Mesh;
+  class MeshIntersection;
+  class LevelSetIntersection;
 
 class ElementHandle
 {
@@ -61,10 +63,16 @@ public:
   void BoundaryCellGaussPoints( const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
                                 std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints );
 
-private:
+  void BoundaryCellGaussPoints( MeshIntersection & mesh,
+                                int mi,
+                                const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+                                std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints );
 
-  template <DRT::Element::DiscretizationType distype>
-  Teuchos::RCP<DRT::UTILS::GaussPoints> CreateProjected( GEO::CUT::BoundaryCell * bc );
+  void BoundaryCellGaussPoints( LevelSetIntersection & mesh,
+                                const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+                                std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints );
+
+private:
 
   template <DRT::Element::DiscretizationType distype>
   Teuchos::RCP<DRT::UTILS::GaussPoints> CreateProjected( GEO::CUT::IntegrationCell * ic );

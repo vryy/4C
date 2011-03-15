@@ -30,6 +30,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_xfem/spacetime_boundary.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
+#include "../drt_xfem/interfacexfsi.H"
 
   using namespace XFEM::PHYSICS;
 

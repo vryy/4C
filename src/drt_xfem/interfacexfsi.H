@@ -21,6 +21,7 @@ Maintainer: Axel Gerstenberger
 
 namespace XFEM
 {
+  class FluidWizard;
 
   /// This class describes the interface using an extra discretization with surface element
   class InterfaceHandleXFSI : public InterfaceHandle
@@ -146,7 +147,7 @@ namespace XFEM
     //! return string representation of the interface handle
     void toGmsh(const int step) const;
 
-
+    Teuchos::RCP<FluidWizard> Wizard() { return fluidwizard_; }
 
   private:
 
@@ -185,6 +186,8 @@ namespace XFEM
 
     //! moving fluid element ids
     const vector<int> 						      MovingFluideleGIDs_;
+
+    Teuchos::RCP<FluidWizard> fluidwizard_;
 
     //! bounding boxes of cutter elements
     std::map<int,LINALG::Matrix<3,2> >            currentXAABBs_;

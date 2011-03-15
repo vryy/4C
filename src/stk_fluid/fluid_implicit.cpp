@@ -671,9 +671,11 @@ void STK::FLD::Fluid::NonlinearSolve()
       eleparams.set("is stationary", false);
     }
 
+#if 0
     // no need to call preevaluate here
     DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter = DRT::ELEMENTS::Fluid3ImplParameter::Instance();
     f3Parameter->SetParameter( eleparams );
+#endif
 
     // We need to evaluate all active elements including ghosted ones. There
     // might even be elements that do not have any node owned by the local

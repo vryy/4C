@@ -208,7 +208,11 @@ void GEO::CUT::VolumeCell::GetBoundaryCells( std::map<int, std::vector<GEO::CUT:
   {
     BoundaryCell * bc = *i;
     Facet * f = bc->GetFacet();
-    bcells[f->SideId()].push_back( bc );
+    int sid = f->SideId();
+    if ( sid > -1 )
+    {
+      bcells[sid].push_back( bc );
+    }
   }
 }
 

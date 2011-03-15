@@ -43,6 +43,12 @@ public:
 
   const LINALG::Matrix<3,1> & LocalCoordinates() { return xsi_; }
 
+  void LocalCoordinates( LINALG::Matrix<2,1> & rs )
+  {
+    rs( 0 ) = xsi_( 0 );
+    rs( 1 ) = xsi_( 1 );
+  }
+
   double Distance() const { return xsi_( 2, 0 ); }
 
 private:

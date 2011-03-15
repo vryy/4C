@@ -793,15 +793,15 @@ int GEO::CUT::Tet4IntegrationCell::CubatureDegree( DRT::Element::DiscretizationT
   switch ( elementshape )
   {
   case DRT::Element::hex8:
-    return 5;
+    return 11;
   case DRT::Element::hex20:
-    return 6;
+    return 12;
   case DRT::Element::hex27:
-    return 7;
+    return 14;
   case DRT::Element::tet4:
-    return 2;
+    return 5;
   case DRT::Element::tet10:
-    return 4;
+    return 7;
   default:
     throw std::runtime_error( "no rule defined for this element type" );
   }

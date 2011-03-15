@@ -32,6 +32,8 @@
 
 #include "fs_monolithic.H"
 
+#include "../drt_fluid/xfluid.H"
+
 #include "../drt_scatra/scatra_utils.H"
 
 #include "fsi_lung_scatra.H"
@@ -135,6 +137,48 @@ void fluid_xfem_drt()
   DRT::Problem::Instance()->TestAll(comm);
 }
 
+/*----------------------------------------------------------------------*/
+// entry point for Fluid on XFEM in DRT
+/*----------------------------------------------------------------------*/
+void fluid_xfem2_drt()
+{
+#ifdef PARALLEL
+  Epetra_MpiComm comm(MPI_COMM_WORLD);
+#else
+  Epetra_SerialComm comm;
+#endif
+
+  RCP<DRT::Problem> problem = DRT::Problem::Instance();
+
+  RCP<DRT::Discretization> soliddis = problem->Dis(genprob.numsf,0);
+  soliddis->FillComplete();
+
+  RCP<DRT::Discretization> actdis = problem->Dis(genprob.numff,0);
+  actdis->FillComplete();
+
+  // -------------------------------------------------------------------
+  // create a solver
+  // -------------------------------------------------------------------
+  Teuchos::RCP<LINALG::Solver> solver =
+    Teuchos::rcp(new LINALG::Solver(problem->FluidSolverParams(),
+                                    actdis->Comm(),
+                                    problem->ErrorFile()->Handle()));
+  //actdis->ComputeNullSpaceIfNecessary(solver->Params());
+
+  FLD::XFluid fluid( actdis,soliddis,*solver,problem->FluidDynamicParams() );
+  fluid.Integrate();
+
+//   Teuchos::RCP<FSI::FluidXFEMAlgorithm> xfluid = Teuchos::rcp(new FSI::FluidXFEMAlgorithm(comm));
+//   if (genprob.restart)
+//   {
+//     // read the restart information, set vectors and variables
+//     xfluid->ReadRestart(genprob.restart);
+//   }
+//   xfluid->Timeloop();
+
+  DRT::Problem::Instance()->AddFieldTest(Teuchos::rcp(new FLD::XFluidResultTest2(&fluid)));
+  DRT::Problem::Instance()->TestAll(comm);
+}
 
 /*----------------------------------------------------------------------*/
 // entry point for (pure) free surface in DRT

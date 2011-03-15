@@ -2,8 +2,7 @@
 #include "cut_sidehandle.H"
 #include "cut_mesh.H"
 #include "cut_node.H"
-
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "cut_position2d.H"
 
 
 GEO::CUT::Tri6SideHandle::Tri6SideHandle( Mesh & mesh, int sid, const std::vector<int> & nodes )
@@ -135,4 +134,58 @@ GEO::CUT::Quad9SideHandle::Quad9SideHandle( Mesh & mesh, int sid, const std::vec
   nids[2] = nodes[6];
   nids[3] = nodes[3];
   subsides_.push_back( mesh.GetSide( sid, nids, top_data ) );
+}
+
+void GEO::CUT::Tri6SideHandle::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rst )
+{
+  LINALG::Matrix<3,6> xyze;
+
+  for ( int i=0; i<6; ++i )
+  {
+    Node * n = nodes_[i];
+    n->Coordinates( &xyze( 0, i ) );
+  }
+
+  Position2d<DRT::Element::tri6> pos( xyze, xyz );
+  bool success = pos.Compute();
+  if ( not success )
+  {
+  }
+  pos.LocalCoordinates( rst );
+}
+
+void GEO::CUT::Quad8SideHandle::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rst )
+{
+  LINALG::Matrix<3,8> xyze;
+
+  for ( int i=0; i<8; ++i )
+  {
+    Node * n = nodes_[i];
+    n->Coordinates( &xyze( 0, i ) );
+  }
+
+  Position2d<DRT::Element::quad8> pos( xyze, xyz );
+  bool success = pos.Compute();
+  if ( not success )
+  {
+  }
+  pos.LocalCoordinates( rst );
+}
+
+void GEO::CUT::Quad9SideHandle::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rst )
+{
+  LINALG::Matrix<3,9> xyze;
+
+  for ( int i=0; i<9; ++i )
+  {
+    Node * n = nodes_[i];
+    n->Coordinates( &xyze( 0, i ) );
+  }
+
+  Position2d<DRT::Element::quad9> pos( xyze, xyz );
+  bool success = pos.Compute();
+  if ( not success )
+  {
+  }
+  pos.LocalCoordinates( rst );
 }
