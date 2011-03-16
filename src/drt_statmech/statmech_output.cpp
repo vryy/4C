@@ -690,10 +690,9 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 				}
 				GMSH_2_noded(1,coord,discret_.lRowElement(0),gmshfileend,0.0,true,true);
 			}
-
-			gmshfileend << "SP(" << scientific;
-			gmshfileend << cog_(0)<<","<<cog_(1)<<","<<cog_(2)<<"){" << scientific << 0.75 << ","<< 0.75 <<"};"<<endl;
     }
+		gmshfileend << "SP(" << scientific;
+		gmshfileend << cog_(0)<<","<<cog_(1)<<","<<cog_(2)<<"){" << scientific << 0.75 << ","<< 0.75 <<"};"<<endl;
     // gmsh output of detected network structure volume
     int nline = 16;
     if(step>0)
@@ -3696,9 +3695,10 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
 					{
 						double distm = fabs(surrboxrot(m,0)-cboxrot(m,0));
 						int thebin = (int)floor(distm/periodlength*(double)numbins);
+						int thecol = m;
 						// only distances [0;H[
 						if(thebin<numbins)
-							crosslinksperbinrotrow[m][thebin] += 1.0;
+							crosslinksperbinrotrow[thecol][thebin] += 1.0;
 					}
 				}
 			}
