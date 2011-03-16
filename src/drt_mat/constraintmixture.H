@@ -92,6 +92,80 @@ namespace MAT
 
   }  // namespace PAR
 
+  class ConstraintMixtureHistoryType : public DRT::ParObjectType
+  {
+  public:
+
+    std::string Name() const { return "ConstraintMixtureHistoryType"; }
+
+    static ConstraintMixtureHistoryType & Instance() { return instance_; };
+
+    virtual DRT::ParObject* Create( const vector<char> & data );
+
+  private:
+
+    static ConstraintMixtureHistoryType instance_;
+  };
+
+  /*----------------------------------------------------------------------*/
+  /// Wrapper for history of constraint mixture material
+  class ConstraintMixtureHistory : public DRT::ParObject
+  {
+  public:
+    /// construct empty history object
+    ConstraintMixtureHistory(){;}
+    /// destruct history object
+    virtual ~ConstraintMixtureHistory() { ;}
+
+    //! @name Packing and Unpacking
+    virtual int UniqueParObjectId() const { return ConstraintMixtureHistoryType::Instance().UniqueParObjectId(); }
+    virtual void Pack(DRT::PackBuffer& data) const;
+    virtual void Unpack(const vector<char>& data);
+    //@}
+
+    /// Setup
+    void Setup(const int ngp, const double massprodbasal);
+
+    // communicate time variables to the outside
+    void SetTime(double deptime, double dt) {depositiontime_ = deptime; dt_ = dt;};
+    void GetTime(double* deptime, double* dt) {*deptime = depositiontime_; *dt = dt_;};
+
+    // communicate stretches to the outside
+    void SetStretches(int gp, LINALG::Matrix<4,1> stretches);
+    void GetStretches(int gp, LINALG::Matrix<4,1>* stretches);
+
+    // communicate mass production rates to the outside
+    void SetMass(int gp, LINALG::Matrix<4,1> massprod);
+    void GetMass(int gp, LINALG::Matrix<4,1>* massprod);
+
+    // return number of gausspoints
+    int NumGP() const { return numgp_;}
+
+  private:
+    /// deposition time of collagen fibers
+    double depositiontime_;
+    /// time step at this time
+    double dt_;
+    /// number of gausspoints
+    int numgp_;
+    /// stretch of first collagen fiber family
+    Teuchos::RCP<vector<double> > collagenstretch1_;
+    /// stretch of second collagen fiber family
+    Teuchos::RCP<vector<double> > collagenstretch2_;
+    /// stretch of third collagen fiber family
+    Teuchos::RCP<vector<double> > collagenstretch3_;
+    /// stretch of fourth collagen fiber family
+    Teuchos::RCP<vector<double> > collagenstretch4_;
+    /// mass production rate of first fiber family
+    Teuchos::RCP<vector<double> > massprod1_;
+    /// mass production rate of second fiber family
+    Teuchos::RCP<vector<double> > massprod2_;
+    /// mass production rate of third fiber family
+    Teuchos::RCP<vector<double> > massprod3_;
+    /// mass production rate of fourth fiber family
+    Teuchos::RCP<vector<double> > massprod4_;
+  };
+
   class ConstraintMixtureType : public DRT::ParObjectType
   {
   public:
@@ -215,30 +289,8 @@ namespace MAT
     Teuchos::RCP<vector<double> > vismassstress_;
     /// basal rate of mass production
     double massprodbasal_;
-    /// number of past steps which are stored
-    int numpast_;
-    // history variables: gp and number of past steps as indexes
-    // convention: massprod_at(gp)[0] corresponds to actual time step
-    // massprod_->at(gp)[numpast-1] corresponds to oldest time step
-    /// stretch of first collagen fiber family
-    Teuchos::RCP<vector<vector<double> > > collagenstretch1_;
-    /// stretch of second collagen fiber family
-    Teuchos::RCP<vector<vector<double> > > collagenstretch2_;
-    /// stretch of third collagen fiber family
-    Teuchos::RCP<vector<vector<double> > > collagenstretch3_;
-    /// stretch of fourth collagen fiber family
-    Teuchos::RCP<vector<vector<double> > > collagenstretch4_;
-    /// mass production rate of first fiber family
-    Teuchos::RCP<vector<vector<double> > > massprod1_;
-    /// mass production rate of second fiber family
-    Teuchos::RCP<vector<vector<double> > > massprod2_;
-    /// mass production rate of third fiber family
-    Teuchos::RCP<vector<vector<double> > > massprod3_;
-    /// mass production rate of fourth fiber family
-    Teuchos::RCP<vector<vector<double> > > massprod4_;
 
     /// first fiber vector per gp (reference), circumferential
-    //Teuchos::RCP<vector<vector<double> > > a1_;
     Teuchos::RCP<vector<LINALG::Matrix<3,1> > > a1_;
     /// second fiber vector per gp (reference), axial
     Teuchos::RCP<vector<LINALG::Matrix<3,1> > > a2_;
@@ -248,6 +300,8 @@ namespace MAT
     Teuchos::RCP<vector<LINALG::Matrix<3,1> > > a4_;
     /// indicates if material is initialized
     bool isinit_;
+
+    Teuchos::RCP<vector<ConstraintMixtureHistory> > history_;
 
     /// compute stress and cmat
     void EvaluateStress
@@ -302,7 +356,14 @@ namespace MAT
     );
 
     /// returns how much collagen has been degraded
-    void Degradation(double t, double* degr) {*degr = 1.0;};
+    void Degradation(double t, double* degr)
+    {
+      if (t <= params_->lifetime_ + 1.0e-12) {
+        *degr = 1.0;
+      } else {
+        *degr = 0.0;
+      }
+    }
 
   };
 

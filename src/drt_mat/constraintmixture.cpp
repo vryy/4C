@@ -110,9 +110,7 @@ void MAT::ConstraintMixture::Pack(DRT::PackBuffer& data) const
   if (!isinit_)
   {
     numgp = 0; // not initialized -> nothing to pack
-  }
-  else
-  {
+  } else {
     numgp = a1_->size();   // size is number of gausspoints
   }
   AddtoPack(data,numgp);
@@ -123,17 +121,18 @@ void MAT::ConstraintMixture::Pack(DRT::PackBuffer& data) const
     AddtoPack(data,a2_->at(gp));
     AddtoPack(data,a3_->at(gp));
     AddtoPack(data,a4_->at(gp));
-    AddtoPack(data,collagenstretch1_->at(gp));
-    AddtoPack(data,collagenstretch2_->at(gp));
-    AddtoPack(data,collagenstretch3_->at(gp));
-    AddtoPack(data,collagenstretch4_->at(gp));
-    AddtoPack(data,massprod1_->at(gp));
-    AddtoPack(data,massprod2_->at(gp));
-    AddtoPack(data,massprod3_->at(gp));
-    AddtoPack(data,massprod4_->at(gp));
     AddtoPack(data,vismassstress_->at(gp));
   }
-  if (numgp > 0) AddtoPack(data,massprodbasal_);
+  if (numgp > 0)
+  {
+    AddtoPack(data,massprodbasal_);
+
+    // Pack history
+    int sizehistory = history_->size();
+    AddtoPack(data,sizehistory);
+    for (int idpast = 0; idpast < sizehistory; idpast++)
+      history_->at(idpast).Pack(data);
+  }
 
   return;
 }
@@ -176,19 +175,12 @@ void MAT::ConstraintMixture::Unpack(const vector<char>& data)
       dserror("Mismatch in size of data %d <-> %d",data.size(),position);
     return;
   }
+
   // unpack fiber internal variables
   a1_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> >(numgp));
   a2_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> >(numgp));
   a3_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> >(numgp));
   a4_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> >(numgp));
-  collagenstretch1_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  collagenstretch2_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  collagenstretch3_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  collagenstretch4_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  massprod1_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  massprod2_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  massprod3_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  massprod4_ = Teuchos::rcp(new vector<vector<double> > (numgp));
   vismassstress_ = Teuchos::rcp(new vector<double> (numgp));
 
   for (int gp = 0; gp < numgp; ++gp) {
@@ -201,31 +193,24 @@ void MAT::ConstraintMixture::Unpack(const vector<char>& data)
     a3_->at(gp) = alin;
     ExtractfromPack(position,data,alin);
     a4_->at(gp) = alin;
-    vector<double> a;
-    ExtractfromPack(position,data,a);
-    collagenstretch1_->at(gp) = a;
-    ExtractfromPack(position,data,a);
-    collagenstretch2_->at(gp) = a;
-    ExtractfromPack(position,data,a);
-    collagenstretch3_->at(gp) = a;
-    ExtractfromPack(position,data,a);
-    collagenstretch4_->at(gp) = a;
-    ExtractfromPack(position,data,a);
-    massprod1_->at(gp) = a;
-    ExtractfromPack(position,data,a);
-    massprod2_->at(gp) = a;
-    ExtractfromPack(position,data,a);
-    massprod3_->at(gp) = a;
-    ExtractfromPack(position,data,a);
-    massprod4_->at(gp) = a;
     double b;
     ExtractfromPack(position,data,b);
     vismassstress_->at(gp) = b;
   }
-  numpast_ = massprod1_->at(0).size();
   double basal;
   ExtractfromPack(position,data,basal);
   massprodbasal_=basal;
+
+  // unpack history
+  int sizehistory;
+  ExtractfromPack(position,data,sizehistory);
+  history_ = Teuchos::rcp(new vector<ConstraintMixtureHistory> (sizehistory));
+  vector<char> datahistory;
+  for (int idpast = 0; idpast < sizehistory; idpast++)
+  {
+    ExtractfromPack(position,data,datahistory);
+    history_->at(idpast).Unpack(datahistory);
+  }
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
@@ -242,6 +227,9 @@ void MAT::ConstraintMixture::Setup (const int numgp, DRT::INPUT::LineDefinition*
   vismassstress_ = Teuchos::rcp(new vector<double> (numgp));
   for (int gp = 0; gp < numgp; gp++)
     vismassstress_->at(gp) = 0.0;
+
+  // basal mass production rate determined by DENS, PHIE and LIFETIME
+  massprodbasal_ = (1 - params_->phielastin_) * params_->density_ / 4.0 / params_->lifetime_;
 
   // history
   SetupHistory(numgp);
@@ -297,43 +285,15 @@ void MAT::ConstraintMixture::Setup (const int numgp, DRT::INPUT::LineDefinition*
  *----------------------------------------------------------------------*/
 void MAT::ConstraintMixture::SetupHistory (const int numgp)
 {
-  // history variables
-  collagenstretch1_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  collagenstretch2_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  collagenstretch3_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  collagenstretch4_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  massprod1_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  massprod2_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  massprod3_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  massprod4_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-
-  // I don't like this way of getting dt!!!
   const Teuchos::ParameterList& timeintegr = DRT::Problem::Instance()->StructuralDynamicParams();
   double dt = timeintegr.get<double>("TIMESTEP");
-  numpast_ = static_cast<int>(round(params_->lifetime_ / dt)) + params_->explicit_;
-  // basal mass production rate determined by DENS, PHIE and LIFETIME
-  massprodbasal_ = (1 - params_->phielastin_) * params_->density_ / 4.0 / params_->lifetime_;
-  for (int gp = 0; gp < numgp; gp++)
+  int numpast = static_cast<int>(round(params_->lifetime_ / dt)) + params_->explicit_;
+  // history
+  history_ = Teuchos::rcp(new vector<ConstraintMixtureHistory> (numpast));
+  for (int idpast = 0; idpast < numpast; idpast++)
   {
-    collagenstretch1_->at(gp).resize(numpast_);
-    collagenstretch2_->at(gp).resize(numpast_);
-    collagenstretch3_->at(gp).resize(numpast_);
-    collagenstretch4_->at(gp).resize(numpast_);
-    massprod1_->at(gp).resize(numpast_);
-    massprod2_->at(gp).resize(numpast_);
-    massprod3_->at(gp).resize(numpast_);
-    massprod4_->at(gp).resize(numpast_);
-    for (int idpast = 0; idpast < numpast_; idpast++)
-    {
-      collagenstretch1_->at(gp)[idpast] = 1.0;
-      collagenstretch2_->at(gp)[idpast] = 1.0;
-      collagenstretch3_->at(gp)[idpast] = 1.0;
-      collagenstretch4_->at(gp)[idpast] = 1.0;
-      massprod1_->at(gp)[idpast] = massprodbasal_;
-      massprod2_->at(gp)[idpast] = massprodbasal_;
-      massprod3_->at(gp)[idpast] = massprodbasal_;
-      massprod4_->at(gp)[idpast] = massprodbasal_;
-    }
+    history_->at(idpast).Setup(numgp,massprodbasal_);
+    history_->at(idpast).SetTime(dt-(numpast-1-idpast)*dt,dt);
   }
 }
 
@@ -342,28 +302,38 @@ void MAT::ConstraintMixture::SetupHistory (const int numgp)
  *----------------------------------------------------------------------*/
 void MAT::ConstraintMixture::Update()
 {
-  int numpast = numpast_;
-  int numgp = massprod1_->size();
-  for (int gp = 0; gp < numgp; gp++)
+  // erase oldest collagen
+  int numgp = history_->at(0).NumGP();
+  int sizehistory = history_->size();
+  double deptime = 0.0;
+  double depdt = 0.0;
+  double eps = 1.0e-12;
+  // delete just the steps that surely won't be needed, especially with a smaller timestep later
+  // thus reference time is deposition time of last collagen fibers
+  history_->back().GetTime(&deptime,&depdt);
+  double erasetime = deptime - params_->lifetime_;
+  int eraseiter = 0;
+  history_->at(eraseiter).GetTime(&deptime,&depdt);
+  while (deptime < erasetime-eps && eraseiter < sizehistory)
   {
-    for (int idpast =  numpast-1; idpast > 0; idpast--)
-    {
-       collagenstretch1_->at(gp)[idpast] = collagenstretch1_->at(gp)[idpast-1];
-       collagenstretch2_->at(gp)[idpast] = collagenstretch2_->at(gp)[idpast-1];
-       collagenstretch3_->at(gp)[idpast] = collagenstretch3_->at(gp)[idpast-1];
-       collagenstretch4_->at(gp)[idpast] = collagenstretch4_->at(gp)[idpast-1];
-       massprod1_->at(gp)[idpast] = massprod1_->at(gp)[idpast-1];
-       massprod2_->at(gp)[idpast] = massprod2_->at(gp)[idpast-1];
-       massprod3_->at(gp)[idpast] = massprod3_->at(gp)[idpast-1];
-       massprod4_->at(gp)[idpast] = massprod4_->at(gp)[idpast-1];
-       //cout << idpast << endl;
-    }
-    // nothing to do for collagenstretch as the actual fiber stretch is already stored there
-    massprod1_->at(gp)[0] = massprodbasal_;
-    massprod2_->at(gp)[0] = massprodbasal_;
-    massprod3_->at(gp)[0] = massprodbasal_;
-    massprod4_->at(gp)[0] = massprodbasal_;
+    eraseiter +=1;
+    history_->at(eraseiter).GetTime(&deptime,&depdt);
   }
+  if (eraseiter > 0)
+  {
+    history_->erase(history_->begin(),history_->begin()+eraseiter);
+    //cout << "erased " << eraseiter << " history variables" << endl;
+  }
+
+  // append new collagen
+  ConstraintMixtureHistory newhis;
+  newhis.Setup(numgp,massprodbasal_);
+  // it is very important to set time and dt to 0.0
+  // this makes it clear that this step was created in update and has no reliable content
+  // they are not known here either
+  // in EvaluateStress this is important, if called after Update
+  newhis.SetTime(0.0,0.0);
+  history_->push_back(newhis);
 }
 
 /*----------------------------------------------------------------------*
@@ -382,500 +352,537 @@ void MAT::ConstraintMixture::Evaluate
 {
   // differentiate between explicit and implicit description
   bool explintegration = params_->explicit_;
-//  int numsteps;
   int firstiter;
   if (explintegration == 1)
   {
-//    numsteps = numpast -1;
     firstiter = 1;
   } else {
-//    numsteps = numpast;
     firstiter = 0;
   }
 
-  //--------------------------------------------------------------------------------------
-  // build identity tensor I
-  LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
-  for (int i = 0; i < 3; i++) Id(i) = 1.0;
-  // right Cauchy-Green Tensor  C = 2 * E + I
-  LINALG::Matrix<NUM_STRESS_3D,1> C(*glstrain);
-  C.Scale(2.0);
-  C += Id;
+  if (!output) {
+    // set actual time as it might have changed after an restart etc. but just once
+    // in remodeling time might be wrong depending on the time integration used
+    // correct this
+    double temptime = 0.0;
+    double tempdt = 0.0;
+    history_->back().GetTime(&temptime,&tempdt);
 
-  //--------------------------------------------------------------------------------------
-  // compute actual collagen stretches and store them
-  double eps = 1.0e-12;
-  if (time > params_->starttime_ + eps)
-  {
-    double actcollagenstretch =  a1_->at(gp)(0)*a1_->at(gp)(0)*C(0) + a1_->at(gp)(1)*a1_->at(gp)(1)*C(1)
-          + a1_->at(gp)(2)*a1_->at(gp)(2)*C(2) + a1_->at(gp)(0)*a1_->at(gp)(1)*C(3)
-          + a1_->at(gp)(1)*a1_->at(gp)(2)*C(4) + a1_->at(gp)(0)*a1_->at(gp)(2)*C(5); // = trace(A1:C)
-    actcollagenstretch = sqrt(actcollagenstretch);
-    collagenstretch1_->at(gp)[0] = actcollagenstretch;
-    actcollagenstretch =  a2_->at(gp)(0)*a2_->at(gp)(0)*C(0) + a2_->at(gp)(1)*a2_->at(gp)(1)*C(1)
-          + a2_->at(gp)(2)*a2_->at(gp)(2)*C(2) + a2_->at(gp)(0)*a2_->at(gp)(1)*C(3)
-          + a2_->at(gp)(1)*a2_->at(gp)(2)*C(4) + a2_->at(gp)(0)*a2_->at(gp)(2)*C(5); // = trace(A2:C)
-    actcollagenstretch = sqrt(actcollagenstretch);
-    collagenstretch2_->at(gp)[0] = actcollagenstretch;
-    actcollagenstretch =  a3_->at(gp)(0)*a3_->at(gp)(0)*C(0) + a3_->at(gp)(1)*a3_->at(gp)(1)*C(1)
-          + a3_->at(gp)(2)*a3_->at(gp)(2)*C(2) + a3_->at(gp)(0)*a3_->at(gp)(1)*C(3)
-          + a3_->at(gp)(1)*a3_->at(gp)(2)*C(4) + a3_->at(gp)(0)*a3_->at(gp)(2)*C(5); // = trace(A3:C)
-    actcollagenstretch = sqrt(actcollagenstretch);
-    collagenstretch3_->at(gp)[0] = actcollagenstretch;
-    actcollagenstretch =  a4_->at(gp)(0)*a4_->at(gp)(0)*C(0) + a4_->at(gp)(1)*a4_->at(gp)(1)*C(1)
-          + a4_->at(gp)(2)*a4_->at(gp)(2)*C(2) + a4_->at(gp)(0)*a4_->at(gp)(1)*C(3)
-          + a4_->at(gp)(1)*a4_->at(gp)(2)*C(4) + a4_->at(gp)(0)*a4_->at(gp)(2)*C(5); // = trace(A4:C)
-    actcollagenstretch = sqrt(actcollagenstretch);
-    collagenstretch4_->at(gp)[0] = actcollagenstretch;
-  }
+    if (temptime == 0.0 && tempdt == 0.0)
+      history_->back().SetTime(time,dt);
+    else if (time > temptime)
+      time = temptime;
 
-  //--------------------------------------------------------------------------------------
-  // some variables
-  //int numpast = numpast_;
-  //double prestretchelastin = params_->prestretchelastin_;
-  double prestretchcollagen = params_->prestretchcollagen_;
-  double density = params_->density_;
-  //double currmassdens = 0.0;
-
-  EvaluateStress(glstrain, gp, cmat, stress, firstiter, dt, time);
-
-  if (time > params_->starttime_ + eps && params_->growthfactor_ != 0.0)
-  {
     //--------------------------------------------------------------------------------------
-    // compute new deposition rates
-    LINALG::Matrix<3,3> Cmatrix;
-    LINALG::Matrix<3,3> Smatrix;
-    LINALG::Matrix<4,1> massstress;
-    LINALG::Matrix<4,1> massprodcomp;
-    MassProduction(gp,C,&Cmatrix,*stress,&Smatrix,&massstress,&massprodcomp);
+    // build identity tensor I
+    LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
+    for (int i = 0; i < 3; i++) Id(i) = 1.0;
+    // right Cauchy-Green Tensor  C = 2 * E + I
+    LINALG::Matrix<NUM_STRESS_3D,1> C(*glstrain);
+    C.Scale(2.0);
+    C += Id;
 
-    // start values for local Newton iteration are computed
-    // distinguish between explicit and implicit integration
-    if (explintegration == 1.0)
+    //--------------------------------------------------------------------------------------
+    // compute actual collagen stretches and store them
+    double eps = 1.0e-12;
+    if (time > params_->starttime_ + eps)
     {
-      massprod1_->at(gp)[0] = massprodcomp(0);
-      massprod2_->at(gp)[0] = massprodcomp(1);
-      massprod3_->at(gp)[0] = massprodcomp(2);
-      massprod4_->at(gp)[0] = massprodcomp(3);
-      vismassstress_->at(gp) = massstress(1);
-    } else {
-      LINALG::Matrix<10,1> Residual(true);
-      // first six components are zero as the start value for stress is the computed value
-      Residual(6) = massprod1_->at(gp)[0] - massprodcomp(0);
-      Residual(7) = massprod2_->at(gp)[0] - massprodcomp(1);
-      Residual(8) = massprod3_->at(gp)[0] - massprodcomp(2);
-      Residual(9) = massprod4_->at(gp)[0] - massprodcomp(3);
+      LINALG::Matrix<4,1> actstretch(true);
+      double actcollagenstretch =  a1_->at(gp)(0)*a1_->at(gp)(0)*C(0) + a1_->at(gp)(1)*a1_->at(gp)(1)*C(1)
+            + a1_->at(gp)(2)*a1_->at(gp)(2)*C(2) + a1_->at(gp)(0)*a1_->at(gp)(1)*C(3)
+            + a1_->at(gp)(1)*a1_->at(gp)(2)*C(4) + a1_->at(gp)(0)*a1_->at(gp)(2)*C(5); // = trace(A1:C)
+      actcollagenstretch = sqrt(actcollagenstretch);
+      actstretch(0) = actcollagenstretch;
+      actcollagenstretch =  a2_->at(gp)(0)*a2_->at(gp)(0)*C(0) + a2_->at(gp)(1)*a2_->at(gp)(1)*C(1)
+            + a2_->at(gp)(2)*a2_->at(gp)(2)*C(2) + a2_->at(gp)(0)*a2_->at(gp)(1)*C(3)
+            + a2_->at(gp)(1)*a2_->at(gp)(2)*C(4) + a2_->at(gp)(0)*a2_->at(gp)(2)*C(5); // = trace(A2:C)
+      actcollagenstretch = sqrt(actcollagenstretch);
+      actstretch(1) = actcollagenstretch;
+      actcollagenstretch =  a3_->at(gp)(0)*a3_->at(gp)(0)*C(0) + a3_->at(gp)(1)*a3_->at(gp)(1)*C(1)
+            + a3_->at(gp)(2)*a3_->at(gp)(2)*C(2) + a3_->at(gp)(0)*a3_->at(gp)(1)*C(3)
+            + a3_->at(gp)(1)*a3_->at(gp)(2)*C(4) + a3_->at(gp)(0)*a3_->at(gp)(2)*C(5); // = trace(A3:C)
+      actcollagenstretch = sqrt(actcollagenstretch);
+      actstretch(2) = actcollagenstretch;
+      actcollagenstretch =  a4_->at(gp)(0)*a4_->at(gp)(0)*C(0) + a4_->at(gp)(1)*a4_->at(gp)(1)*C(1)
+            + a4_->at(gp)(2)*a4_->at(gp)(2)*C(2) + a4_->at(gp)(0)*a4_->at(gp)(1)*C(3)
+            + a4_->at(gp)(1)*a4_->at(gp)(2)*C(4) + a4_->at(gp)(0)*a4_->at(gp)(2)*C(5); // = trace(A4:C)
+      actcollagenstretch = sqrt(actcollagenstretch);
+      actstretch(3) = actcollagenstretch;
+      history_->back().SetStretches(gp,actstretch);
+    }
 
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatelastic(*cmat);
-      // isotropic invariant
-      const double I3 = C(0)*C(1)*C(2)
-            + 0.25 * C(3)*C(4)*C(5)
-            - 0.25 * C(1)*C(5)*C(5)
-            - 0.25 * C(2)*C(3)*C(3)
-            - 0.25 * C(0)*C(4)*C(4);    // 3rd invariant, determinant
-      const double J = sqrt(I3);     // determinant of F
-      //-------------------------------------
-      // invert C
-      LINALG::Matrix<NUM_STRESS_3D,1> Cinv(6);
-      Cinv(0) = C(1)*C(2) - 0.25*C(4)*C(4);
-      Cinv(1) = C(0)*C(2) - 0.25*C(5)*C(5);
-      Cinv(2) = C(0)*C(1) - 0.25*C(3)*C(3);
-      Cinv(3) = 0.25*C(5)*C(4) - 0.5*C(3)*C(2);
-      Cinv(4) = 0.25*C(3)*C(5) - 0.5*C(0)*C(4);
-      Cinv(5) = 0.25*C(3)*C(4) - 0.5*C(5)*C(1);
-      Cinv.Scale(1.0/I3);
-      double qdegrad = 0.0;
-      Degradation(0.0, &qdegrad);
-      // include the case homstress = 0.0!!
-      double homstressfixed = 1.0;
-      if (params_->homstress_ != 0.0) homstressfixed = params_->homstress_;
+    //--------------------------------------------------------------------------------------
+    // some variables
+    double density = params_->density_;
 
+    EvaluateStress(glstrain, gp, cmat, stress, firstiter, dt, time);
+
+    if (time > params_->starttime_ + eps && params_->growthfactor_ != 0.0)
+    {
       //--------------------------------------------------------------------------------------
-      // local Newton iteration
-      int localistep = 0;
-      int maxstep = 50;
-      while (Residual.Norm2() > params_->abstol_ && localistep < maxstep)
+      // compute new deposition rates
+      LINALG::Matrix<3,3> Cmatrix;
+      LINALG::Matrix<3,3> Smatrix;
+      LINALG::Matrix<4,1> massstress;
+      LINALG::Matrix<4,1> massprodcomp;
+      MassProduction(gp,C,&Cmatrix,*stress,&Smatrix,&massstress,&massprodcomp);
+
+      // start values for local Newton iteration are computed
+      // distinguish between explicit and implicit integration
+      if (explintegration == 1)
       {
-        localistep += 1;
+        history_->back().SetMass(gp,massprodcomp);
+        vismassstress_->at(gp) = massstress(1);
+      } else {
+        // store actual collagen stretches, do not change anymore
+        LINALG::Matrix<4,1> actcollstretch(true);
+        history_->back().GetStretches(gp,&actcollstretch);
+
         //--------------------------------------------------------------------------------------
-        // derivative of residual
-        LINALG::Matrix<10,10> DResidual(true);
-        for (int id = 0; id < 10; id++) DResidual(id,id) = 1.0;
+        // prestress time
+        const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+        INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+        double pstime = -1.0 * params_->lifetime_ - dt;
+        if (pstype == INPAR::STR::prestress_mulf)
+          pstime = pslist.get<double>("PRESTRESSTIME");
+        // we already have prestretch in prestress time, thus the prestretch from the inputfile is not applied
+        double prestretchcollagen = params_->prestretchcollagen_;
+        if (time <= pstime + 1.0e-12)
+          prestretchcollagen = 1.0;
 
-        // derivative of stress part with respect to mass production
-        // do it for all 4 fiber families
-        double stretch = prestretchcollagen/collagenstretch1_->at(gp)[0];
-        LINALG::Matrix<NUM_STRESS_3D,1> Saniso1(true);
-        EvaluateFiber(glstrain, NULL, & Saniso1, a1_->at(gp), stretch);
-        double facS = pow(stretch,2) * qdegrad / density * dt;
-        Saniso1.Scale(facS);
-        for (int id = 0; id < 6; id++) DResidual(id,6) = - Saniso1(id) + dt / density * qdegrad * params_->kappa_ * J * Cinv(id);
+        // determine residual
+        LINALG::Matrix<10,1> Residual(true);
+        // first six components are zero as the start value for stress is the computed value
+        LINALG::Matrix<4,1> massprod(true);
+        history_->back().GetMass(gp,&massprod);
+        Residual(6) = massprod(0) - massprodcomp(0);
+        Residual(7) = massprod(1) - massprodcomp(1);
+        Residual(8) = massprod(2) - massprodcomp(2);
+        Residual(9) = massprod(3) - massprodcomp(3);
 
-        stretch = prestretchcollagen/collagenstretch2_->at(gp)[0];
-        LINALG::Matrix<NUM_STRESS_3D,1> Saniso2(true);
-        EvaluateFiber(glstrain, NULL, & Saniso2, a2_->at(gp), stretch);
-        facS = pow(stretch,2) * qdegrad / density * dt;
-        Saniso2.Scale(facS);
-        for (int id = 0; id < 6; id++) DResidual(id,7) = - Saniso2(id) + dt / density * qdegrad * params_->kappa_ * J * Cinv(id);
+        LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatelastic(*cmat);
+        // isotropic invariant
+        const double I3 = C(0)*C(1)*C(2)
+              + 0.25 * C(3)*C(4)*C(5)
+              - 0.25 * C(1)*C(5)*C(5)
+              - 0.25 * C(2)*C(3)*C(3)
+              - 0.25 * C(0)*C(4)*C(4);    // 3rd invariant, determinant
+        const double J = sqrt(I3);     // determinant of F
+        //-------------------------------------
+        // invert C
+        LINALG::Matrix<NUM_STRESS_3D,1> Cinv(6);
+        Cinv(0) = C(1)*C(2) - 0.25*C(4)*C(4);
+        Cinv(1) = C(0)*C(2) - 0.25*C(5)*C(5);
+        Cinv(2) = C(0)*C(1) - 0.25*C(3)*C(3);
+        Cinv(3) = 0.25*C(5)*C(4) - 0.5*C(3)*C(2);
+        Cinv(4) = 0.25*C(3)*C(5) - 0.5*C(0)*C(4);
+        Cinv(5) = 0.25*C(3)*C(4) - 0.5*C(5)*C(1);
+        Cinv.Scale(1.0/I3);
+        double qdegrad = 0.0;
+        Degradation(0.0, &qdegrad);
+        // include the case homstress = 0.0!!
+        double homstressfixed = 1.0;
+        if (params_->homstress_ != 0.0) homstressfixed = params_->homstress_;
 
-        stretch = prestretchcollagen/collagenstretch3_->at(gp)[0];
-        LINALG::Matrix<NUM_STRESS_3D,1> Saniso3(true);
-        EvaluateFiber(glstrain, NULL, & Saniso3, a3_->at(gp), stretch);
-        facS = pow(stretch,2) * qdegrad / density * dt;
-        Saniso3.Scale(facS);
-        for (int id = 0; id < 6; id++) DResidual(id,8) = - Saniso3(id) + dt / density * qdegrad * params_->kappa_ * J * Cinv(id);
+        //--------------------------------------------------------------------------------------
+        // local Newton iteration
+        int localistep = 0;
+        int maxstep = 50;
+        while (Residual.Norm2() > params_->abstol_ && localistep < maxstep)
+        {
+          localistep += 1;
+          //--------------------------------------------------------------------------------------
+          // derivative of residual
+          LINALG::Matrix<10,10> DResidual(true);
+          for (int id = 0; id < 10; id++)
+            DResidual(id,id) = 1.0;
 
-        stretch = prestretchcollagen/collagenstretch4_->at(gp)[0];
-        LINALG::Matrix<NUM_STRESS_3D,1> Saniso4(true);
-        EvaluateFiber(glstrain, NULL, & Saniso4, a4_->at(gp), stretch);
-        facS = pow(stretch,2) * qdegrad / density * dt;
-        Saniso4.Scale(facS);
-        for (int id = 0; id < 6; id++) DResidual(id,9) = - Saniso4(id) + dt / density * qdegrad * params_->kappa_ * J * Cinv(id);
+          // derivative of stress part with respect to mass production
+          // do it for all 4 fiber families
+          double stretch = prestretchcollagen/actcollstretch(0);
+          LINALG::Matrix<NUM_STRESS_3D,1> Saniso1(true);
+          EvaluateFiber(glstrain, NULL, & Saniso1, a1_->at(gp), stretch);
+          double facS = pow(stretch,2) * qdegrad / density * dt;
+          Saniso1.Scale(facS);
+          for (int id = 0; id < 6; id++)
+            DResidual(id,6) = - Saniso1(id) + dt / density * qdegrad * params_->kappa_ * J * Cinv(id);
 
-        // derivative of mass production with respect to stress
+          stretch = prestretchcollagen/actcollstretch(1);
+          LINALG::Matrix<NUM_STRESS_3D,1> Saniso2(true);
+          EvaluateFiber(glstrain, NULL, & Saniso2, a2_->at(gp), stretch);
+          facS = pow(stretch,2) * qdegrad / density * dt;
+          Saniso2.Scale(facS);
+          for (int id = 0; id < 6; id++)
+            DResidual(id,7) = - Saniso2(id) + dt / density * qdegrad * params_->kappa_ * J * Cinv(id);
+
+          stretch = prestretchcollagen/actcollstretch(2);
+          LINALG::Matrix<NUM_STRESS_3D,1> Saniso3(true);
+          EvaluateFiber(glstrain, NULL, & Saniso3, a3_->at(gp), stretch);
+          facS = pow(stretch,2) * qdegrad / density * dt;
+          Saniso3.Scale(facS);
+          for (int id = 0; id < 6; id++)
+            DResidual(id,8) = - Saniso3(id) + dt / density * qdegrad * params_->kappa_ * J * Cinv(id);
+
+          stretch = prestretchcollagen/actcollstretch(3);
+          LINALG::Matrix<NUM_STRESS_3D,1> Saniso4(true);
+          EvaluateFiber(glstrain, NULL, & Saniso4, a4_->at(gp), stretch);
+          facS = pow(stretch,2) * qdegrad / density * dt;
+          Saniso4.Scale(facS);
+          for (int id = 0; id < 6; id++)
+            DResidual(id,9) = - Saniso4(id) + dt / density * qdegrad * params_->kappa_ * J * Cinv(id);
+
+          // derivative of mass production with respect to stress
+          LINALG::Matrix<3,3> CSC(true);
+          LINALG::Matrix<3,3> temp1(true);
+          temp1.Multiply(Smatrix,Cmatrix);
+          CSC.Multiply(Cmatrix,temp1);
+
+          LINALG::Matrix<3,1> Ca(true);
+          Ca.Multiply(Cmatrix,a1_->at(gp));
+          LINALG::Matrix<3,1> CSCa(true);
+          CSCa.Multiply(CSC,a1_->at(gp));
+          double fac = - massprodbasal_ * params_->growthfactor_ / homstressfixed /pow(J,2)
+                     / massstress(0) / pow(actcollstretch(0),2);
+          DResidual(6,0) = fac * Ca(0) * CSCa(0);
+          DResidual(6,1) = fac * Ca(1) * CSCa(1);
+          DResidual(6,2) = fac * Ca(2) * CSCa(2);
+          DResidual(6,3) = fac * 0.5 * (Ca(0) * CSCa(1) + Ca(1) * CSCa(0));
+          DResidual(6,4) = fac * 0.5 * (Ca(1) * CSCa(2) + Ca(2) * CSCa(1));
+          DResidual(6,5) = fac * 0.5 * (Ca(0) * CSCa(2) + Ca(2) * CSCa(0));
+
+          Ca.Scale(0.0);
+          Ca.Multiply(Cmatrix,a2_->at(gp));
+          CSCa.Scale(0.0);
+          CSCa.Multiply(CSC,a2_->at(gp));
+          fac = - massprodbasal_ * params_->growthfactor_ / homstressfixed /pow(J,2)
+              / massstress(1) / pow(actcollstretch(1),2);
+          DResidual(7,0) = fac * Ca(0) * CSCa(0);
+          DResidual(7,1) = fac * Ca(1) * CSCa(1);
+          DResidual(7,2) = fac * Ca(2) * CSCa(2);
+          DResidual(7,3) = fac * 0.5 * (Ca(0) * CSCa(1) + Ca(1) * CSCa(0));
+          DResidual(7,4) = fac * 0.5 * (Ca(1) * CSCa(2) + Ca(2) * CSCa(1));
+          DResidual(7,5) = fac * 0.5 * (Ca(0) * CSCa(2) + Ca(2) * CSCa(0));
+
+          Ca.Scale(0.0);
+          Ca.Multiply(Cmatrix,a3_->at(gp));
+          CSCa.Scale(0.0);
+          CSCa.Multiply(CSC,a3_->at(gp));
+          fac = - massprodbasal_ * params_->growthfactor_ / homstressfixed /pow(J,2)
+              / massstress(2) / pow(actcollstretch(2),2);
+          DResidual(8,0) = fac * Ca(0) * CSCa(0);
+          DResidual(8,1) = fac * Ca(1) * CSCa(1);
+          DResidual(8,2) = fac * Ca(2) * CSCa(2);
+          DResidual(8,3) = fac * 0.5 * (Ca(0) * CSCa(1) + Ca(1) * CSCa(0));
+          DResidual(8,4) = fac * 0.5 * (Ca(1) * CSCa(2) + Ca(2) * CSCa(1));
+          DResidual(8,5) = fac * 0.5 * (Ca(0) * CSCa(2) + Ca(2) * CSCa(0));
+
+          Ca.Scale(0.0);
+          Ca.Multiply(Cmatrix,a4_->at(gp));
+          CSCa.Scale(0.0);
+          CSCa.Multiply(CSC,a4_->at(gp));
+          fac = - massprodbasal_ * params_->growthfactor_ / homstressfixed /pow(J,2)
+              / massstress(3) / pow(actcollstretch(3),2);
+          DResidual(9,0) = fac * Ca(0) * CSCa(0);
+          DResidual(9,1) = fac * Ca(1) * CSCa(1);
+          DResidual(9,2) = fac * Ca(2) * CSCa(2);
+          DResidual(9,3) = fac * 0.5 * (Ca(0) * CSCa(1) + Ca(1) * CSCa(0));
+          DResidual(9,4) = fac * 0.5 * (Ca(1) * CSCa(2) + Ca(2) * CSCa(1));
+          DResidual(9,5) = fac * 0.5 * (Ca(0) * CSCa(2) + Ca(2) * CSCa(0));
+
+          //----------------------------------------------------
+          // solve linear system of equations: gradF * incr = -F
+          //----------------------------------------------------
+          // F = F*-1.0
+          Residual.Scale(-1.0);
+          LINALG::Matrix<10,1> increment(true);
+          // solve A.X=B
+          LINALG::FixedSizeSerialDenseSolver<10,10,1> solver;
+          solver.SetMatrix(DResidual);              // set A=DResidual
+          solver.SetVectors(increment, Residual);           // set X=increment, B=Residual
+          solver.FactorWithEquilibration(true); // "some easy type of preconditioning" (Michael)
+          int err2 = solver.Factor();           // ?
+          int err = solver.Solve();             // X = A^-1 B
+          if ((err!=0) || (err2!=0))
+            dserror("solving linear system in Newton-Raphson method for implicit integration failed");
+
+          // damping strategy
+          double omega = 2.0;
+          LINALG::Matrix<6,1> stepstress(true);
+          LINALG::Matrix<4,1> oldmass(true);
+          oldmass = massprod;
+          LINALG::Matrix<10,1> Residualtemp(Residual);
+          double omegamin = 1.0/64.0;
+          while (Residualtemp.Norm2() > (1.0-0.5*omega)*Residual.Norm2() && omega > omegamin)
+          {
+            // update of theta
+            omega = omega/2.0;
+            for (int id = 0; id < 6; id++) stepstress(id) = (*stress)(id) + omega*increment(id);
+            LINALG::Matrix<4,1> newmass(true);
+            newmass(0) = increment(6); newmass(1) = increment(7); newmass(2) = increment(8); newmass(3) = increment(9);
+            newmass.Update(1.0,oldmass,omega);
+            history_->back().SetMass(gp,newmass);
+            massprod = newmass;
+
+            LINALG::Matrix<NUM_STRESS_3D,1> Scomp(true);
+            cmatelastic.Scale(0.0);
+            EvaluateStress(glstrain, gp, &cmatelastic, &Scomp, firstiter, dt, time);
+            MassProduction(gp,C,&Cmatrix,stepstress,&Smatrix,&massstress,&massprodcomp);
+
+            for (int id = 0; id < 6; id++)
+              Residualtemp(id) = stepstress(id) - Scomp(id);
+            Residualtemp(6) = massprod(0) - massprodcomp(0);
+            Residualtemp(7) = massprod(1) - massprodcomp(1);
+            Residualtemp(8) = massprod(2) - massprodcomp(2);
+            Residualtemp(9) = massprod(3) - massprodcomp(3);
+          }
+          if (omega <= omegamin && Residualtemp.Norm2() > (1.0-0.5*omega)*Residual.Norm2())
+            dserror("no damping coefficient found");
+
+          for (int id = 0; id < 6; id++)
+            (*stress)(id) = stepstress(id);
+          Residual = Residualtemp;
+
+  //        for (int id = 0; id < 6; id++) (*stress)(id) += increment(id);
+          Smatrix(0,0) = (*stress)(0);
+          Smatrix(0,1) = (*stress)(3);
+          Smatrix(0,2) = (*stress)(5);
+          Smatrix(1,0) = Smatrix(0,1);
+          Smatrix(1,1) = (*stress)(1);
+          Smatrix(1,2) = (*stress)(4);
+          Smatrix(2,0) = Smatrix(0,2);
+          Smatrix(2,1) = Smatrix(1,2);
+          Smatrix(2,2) = (*stress)(2);
+  //        massprod(0) += increment(6);
+  //        massprod(1) += increment(7);
+  //        massprod(2) += increment(8);
+  //        massprod(3) += increment(9);
+
+          if ((massprod(0) < 0.0) || (massprod(1) < 0.0) ||
+              (massprod(2) < 0.0) || (massprod(3) < 0.0))
+          {
+            cout << "1: " << massprod(0) << endl;
+            cout << "2: " << massprod(1) << endl;
+            cout << "3: " << massprod(2) << endl;
+            cout << "4: " << massprod(3) << endl;
+            dserror("negative mass production computed for at least one collagen fiber family!");
+          }
+
+  //        LINALG::Matrix<NUM_STRESS_3D,1> Scomp(true);
+  //        cmatelastic.Scale(0.0);
+  //        EvaluateStress(glstrain, gp, &cmatelastic, &Scomp, firstiter, dt, time);
+  //        MassProduction(gp,C,&Cmatrix,*stress,&Smatrix,&massstress,&massprodcomp);
+  //
+  //        for (int id = 0; id < 6; id++) Residual(id) = (*stress)(id) - Scomp(id);
+  //        Residual(6) = massprod(0) - massprodcomp(0);
+  //        Residual(7) = massprod(1) - massprodcomp(1);
+  //        Residual(8) = massprod(2) - massprodcomp(2);
+  //        Residual(9) = massprod(3) - massprodcomp(3);
+
+        } //while loop
+        if (localistep == maxstep && Residual.Norm2() > params_->abstol_)
+          dserror("local Newton iteration did not converge %e", Residual.Norm2());
+
+        vismassstress_->at(gp) = massstress(1);
+
+        //--------------------------------------------------------------------------------------
+        // compute cmat
+        // formulas are given in the corresponding pdf file, they are to long for here
+        LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> RHS(cmatelastic);
+        LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> LM(true);
+        for (int id = 0; id < 6; id++) LM(id,id) = 1.0;
+        LINALG::Matrix<3,3> SC(true);
         LINALG::Matrix<3,3> CSC(true);
-        LINALG::Matrix<3,3> temp1(true);
-        temp1.Multiply(Smatrix,Cmatrix);
-        CSC.Multiply(Cmatrix,temp1);
+        LINALG::Matrix<3,3> SCSC(true);
+        SC.Multiply(Smatrix,Cmatrix);
+        CSC.Multiply(Cmatrix,SC);
+        SCSC.Multiply(Smatrix,CSC);
 
+        // Fiber1
+        double stretch = prestretchcollagen/actcollstretch(0);
+        LINALG::Matrix<NUM_STRESS_3D,1> left(true);
+        EvaluateFiber(glstrain, NULL, & left, a1_->at(gp), stretch);
+        double facS = pow(stretch,2) * qdegrad / density * dt;
+        left.Scale(facS);
+        left.Update(-dt/density*qdegrad*params_->kappa_*J,Cinv,1.0);
+        LINALG::Matrix<NUM_STRESS_3D,1> right(true);
+        right(0) = a1_->at(gp)(0)*a1_->at(gp)(0); right(1) = a1_->at(gp)(1)*a1_->at(gp)(1);
+        right(2) = a1_->at(gp)(2)*a1_->at(gp)(2); right(3) = a1_->at(gp)(0)*a1_->at(gp)(1);
+        right(4) = a1_->at(gp)(1)*a1_->at(gp)(2); right(5) = a1_->at(gp)(0)*a1_->at(gp)(2);
+        right.Update(1.0,Cinv,1.0/pow(actcollstretch(0),2));
+        right.Scale(- 1.0 * massstress(0));
+        LINALG::Matrix<3,1> SCa(true);
+        SCa.Multiply(SC,a1_->at(gp));
+        LINALG::Matrix<3,1> SCSCa(true);
+        SCSCa.Multiply(SCSC,a1_->at(gp));
+        double fac = 1.0 / massstress(0) / pow(actcollstretch(0),2) / pow(J,2);
+        right(0) += fac * (2.0 * a1_->at(gp)(0) * SCSCa(0) + SCa(0) * SCa(0));
+        right(1) += fac * (2.0 * a1_->at(gp)(1) * SCSCa(1) + SCa(1) * SCa(1));
+        right(2) += fac * (2.0 * a1_->at(gp)(2) * SCSCa(2) + SCa(2) * SCa(2));
+        right(3) += fac * (a1_->at(gp)(0) * SCSCa(1) + a1_->at(gp)(1) * SCSCa(0) + SCa(0) * SCa(1));
+        right(4) += fac * (a1_->at(gp)(1) * SCSCa(2) + a1_->at(gp)(2) * SCSCa(1) + SCa(1) * SCa(2));
+        right(5) += fac * (a1_->at(gp)(0) * SCSCa(2) + a1_->at(gp)(2) * SCSCa(0) + SCa(0) * SCa(2));
+        right.Scale(0.5*massprodbasal_*params_->growthfactor_/homstressfixed);
+        RHS.MultiplyNT(2.0,left,right,1.0);
         LINALG::Matrix<3,1> Ca(true);
         Ca.Multiply(Cmatrix,a1_->at(gp));
         LINALG::Matrix<3,1> CSCa(true);
         CSCa.Multiply(CSC,a1_->at(gp));
-        double fac = - massprodbasal_ * params_->growthfactor_ / homstressfixed /pow(J,2)
-                   / massstress(0) / pow(collagenstretch1_->at(gp)[0],2);
-        DResidual(6,0) = fac * Ca(0) * CSCa(0);
-        DResidual(6,1) = fac * Ca(1) * CSCa(1);
-        DResidual(6,2) = fac * Ca(2) * CSCa(2);
-        DResidual(6,3) = fac * 0.5 * (Ca(0) * CSCa(1) + Ca(1) * CSCa(0));
-        DResidual(6,4) = fac * 0.5 * (Ca(1) * CSCa(2) + Ca(2) * CSCa(1));
-        DResidual(6,5) = fac * 0.5 * (Ca(0) * CSCa(2) + Ca(2) * CSCa(0));
+        fac = massprodbasal_ * params_->growthfactor_ / homstressfixed /pow(J,2)
+            / massstress(0) / pow(actcollstretch(0),2);
+        right(0) = fac * Ca(0) * CSCa(0);
+        right(1) = fac * Ca(1) * CSCa(1);
+        right(2) = fac * Ca(2) * CSCa(2);
+        right(3) = fac * 0.5 * (Ca(0) * CSCa(1) + Ca(1) * CSCa(0));
+        right(4) = fac * 0.5 * (Ca(1) * CSCa(2) + Ca(2) * CSCa(1));
+        right(5) = fac * 0.5 * (Ca(0) * CSCa(2) + Ca(2) * CSCa(0));
+        LM.MultiplyNT(-1.0,left,right,1.0);
 
+        // Fiber2
+        stretch = prestretchcollagen/actcollstretch(1);
+        left.Scale(0.0);
+        EvaluateFiber(glstrain, NULL, & left, a2_->at(gp), stretch);
+        facS = pow(stretch,2) * qdegrad / density * dt;
+        left.Scale(facS);
+        left.Update(-dt/density*qdegrad*params_->kappa_*J,Cinv,1.0);
+        right(0) = a2_->at(gp)(0)*a2_->at(gp)(0); right(1) = a2_->at(gp)(1)*a2_->at(gp)(1);
+        right(2) = a2_->at(gp)(2)*a2_->at(gp)(2); right(3) = a2_->at(gp)(0)*a2_->at(gp)(1);
+        right(4) = a2_->at(gp)(1)*a2_->at(gp)(2); right(5) = a2_->at(gp)(0)*a2_->at(gp)(2);
+        right.Update(1.0,Cinv,1.0/pow(actcollstretch(1),2));
+        right.Scale(- 1.0 * massstress(1));
+        SCa.Scale(0.0);
+        SCa.Multiply(SC,a2_->at(gp));
+        SCSCa.Scale(0.0);
+        SCSCa.Multiply(SCSC,a2_->at(gp));
+        fac = 1.0 / massstress(1) / pow(actcollstretch(1),2) / pow(J,2);
+        right(0) += fac * (2.0 * a2_->at(gp)(0) * SCSCa(0) + SCa(0) * SCa(0));
+        right(1) += fac * (2.0 * a2_->at(gp)(1) * SCSCa(1) + SCa(1) * SCa(1));
+        right(2) += fac * (2.0 * a2_->at(gp)(2) * SCSCa(2) + SCa(2) * SCa(2));
+        right(3) += fac * (a2_->at(gp)(0) * SCSCa(1) + a2_->at(gp)(1) * SCSCa(0) + SCa(0) * SCa(1));
+        right(4) += fac * (a2_->at(gp)(1) * SCSCa(2) + a2_->at(gp)(2) * SCSCa(1) + SCa(1) * SCa(2));
+        right(5) += fac * (a2_->at(gp)(0) * SCSCa(2) + a2_->at(gp)(2) * SCSCa(0) + SCa(0) * SCa(2));
+        right.Scale(0.5*massprodbasal_*params_->growthfactor_/homstressfixed);
+        RHS.MultiplyNT(2.0,left,right,1.0);
         Ca.Scale(0.0);
         Ca.Multiply(Cmatrix,a2_->at(gp));
         CSCa.Scale(0.0);
         CSCa.Multiply(CSC,a2_->at(gp));
-        fac = - massprodbasal_ * params_->growthfactor_ / homstressfixed /pow(J,2)
-            / massstress(1) / pow(collagenstretch2_->at(gp)[0],2);
-        DResidual(7,0) = fac * Ca(0) * CSCa(0);
-        DResidual(7,1) = fac * Ca(1) * CSCa(1);
-        DResidual(7,2) = fac * Ca(2) * CSCa(2);
-        DResidual(7,3) = fac * 0.5 * (Ca(0) * CSCa(1) + Ca(1) * CSCa(0));
-        DResidual(7,4) = fac * 0.5 * (Ca(1) * CSCa(2) + Ca(2) * CSCa(1));
-        DResidual(7,5) = fac * 0.5 * (Ca(0) * CSCa(2) + Ca(2) * CSCa(0));
+        fac = massprodbasal_ * params_->growthfactor_ / homstressfixed /pow(J,2)
+            / massstress(1) / pow(actcollstretch(1),2);
+        right(0) = fac * Ca(0) * CSCa(0);
+        right(1) = fac * Ca(1) * CSCa(1);
+        right(2) = fac * Ca(2) * CSCa(2);
+        right(3) = fac * 0.5 * (Ca(0) * CSCa(1) + Ca(1) * CSCa(0));
+        right(4) = fac * 0.5 * (Ca(1) * CSCa(2) + Ca(2) * CSCa(1));
+        right(5) = fac * 0.5 * (Ca(0) * CSCa(2) + Ca(2) * CSCa(0));
+        LM.MultiplyNT(-1.0,left,right,1.0);
 
+        // Fiber3
+        stretch = prestretchcollagen/actcollstretch(2);
+        left.Scale(0.0);
+        EvaluateFiber(glstrain, NULL, & left, a3_->at(gp), stretch);
+        facS = pow(stretch,2) * qdegrad / density * dt;
+        left.Scale(facS);
+        left.Update(-dt/density*qdegrad*params_->kappa_*J,Cinv,1.0);
+        right(0) = a3_->at(gp)(0)*a3_->at(gp)(0); right(1) = a3_->at(gp)(1)*a3_->at(gp)(1);
+        right(2) = a3_->at(gp)(2)*a3_->at(gp)(2); right(3) = a3_->at(gp)(0)*a3_->at(gp)(1);
+        right(4) = a3_->at(gp)(1)*a3_->at(gp)(2); right(5) = a3_->at(gp)(0)*a3_->at(gp)(2);
+        right.Update(1.0,Cinv,1.0/pow(actcollstretch(2),2));
+        right.Scale(- 1.0 * massstress(2));
+        SCa.Scale(0.0);
+        SCa.Multiply(SC,a3_->at(gp));
+        SCSCa.Scale(0.0);
+        SCSCa.Multiply(SCSC,a3_->at(gp));
+        fac = 1.0 / massstress(2) / pow(actcollstretch(2),2) / pow(J,2);
+        right(0) += fac * (2.0 * a3_->at(gp)(0) * SCSCa(0) + SCa(0) * SCa(0));
+        right(1) += fac * (2.0 * a3_->at(gp)(1) * SCSCa(1) + SCa(1) * SCa(1));
+        right(2) += fac * (2.0 * a3_->at(gp)(2) * SCSCa(2) + SCa(2) * SCa(2));
+        right(3) += fac * (a3_->at(gp)(0) * SCSCa(1) + a3_->at(gp)(1) * SCSCa(0) + SCa(0) * SCa(1));
+        right(4) += fac * (a3_->at(gp)(1) * SCSCa(2) + a3_->at(gp)(2) * SCSCa(1) + SCa(1) * SCa(2));
+        right(5) += fac * (a3_->at(gp)(0) * SCSCa(2) + a3_->at(gp)(2) * SCSCa(0) + SCa(0) * SCa(2));
+        right.Scale(0.5*massprodbasal_*params_->growthfactor_/homstressfixed);
+        RHS.MultiplyNT(2.0,left,right,1.0);
         Ca.Scale(0.0);
         Ca.Multiply(Cmatrix,a3_->at(gp));
         CSCa.Scale(0.0);
         CSCa.Multiply(CSC,a3_->at(gp));
-        fac = - massprodbasal_ * params_->growthfactor_ / homstressfixed /pow(J,2)
-            / massstress(2) / pow(collagenstretch3_->at(gp)[0],2);
-        DResidual(8,0) = fac * Ca(0) * CSCa(0);
-        DResidual(8,1) = fac * Ca(1) * CSCa(1);
-        DResidual(8,2) = fac * Ca(2) * CSCa(2);
-        DResidual(8,3) = fac * 0.5 * (Ca(0) * CSCa(1) + Ca(1) * CSCa(0));
-        DResidual(8,4) = fac * 0.5 * (Ca(1) * CSCa(2) + Ca(2) * CSCa(1));
-        DResidual(8,5) = fac * 0.5 * (Ca(0) * CSCa(2) + Ca(2) * CSCa(0));
+        fac = massprodbasal_ * params_->growthfactor_ / homstressfixed /pow(J,2)
+            / massstress(2) / pow(actcollstretch(2),2);
+        right(0) = fac * Ca(0) * CSCa(0);
+        right(1) = fac * Ca(1) * CSCa(1);
+        right(2) = fac * Ca(2) * CSCa(2);
+        right(3) = fac * 0.5 * (Ca(0) * CSCa(1) + Ca(1) * CSCa(0));
+        right(4) = fac * 0.5 * (Ca(1) * CSCa(2) + Ca(2) * CSCa(1));
+        right(5) = fac * 0.5 * (Ca(0) * CSCa(2) + Ca(2) * CSCa(0));
+        LM.MultiplyNT(-1.0,left,right,1.0);
 
+        // Fiber4
+        stretch = prestretchcollagen/actcollstretch(3);
+        left.Scale(0.0);
+        EvaluateFiber(glstrain, NULL, & left, a4_->at(gp), stretch);
+        facS = pow(stretch,2) * qdegrad / density * dt;
+        left.Scale(facS);
+        left.Update(-dt/density*qdegrad*params_->kappa_*J,Cinv,1.0);
+        right(0) = a4_->at(gp)(0)*a4_->at(gp)(0); right(1) = a4_->at(gp)(1)*a4_->at(gp)(1);
+        right(2) = a4_->at(gp)(2)*a4_->at(gp)(2); right(3) = a4_->at(gp)(0)*a4_->at(gp)(1);
+        right(4) = a4_->at(gp)(1)*a4_->at(gp)(2); right(5) = a4_->at(gp)(0)*a4_->at(gp)(2);
+        right.Update(1.0,Cinv,1.0/pow(actcollstretch(3),2));
+        right.Scale(- 1.0 * massstress(3));
+        SCa.Scale(0.0);
+        SCa.Multiply(SC,a4_->at(gp));
+        SCSCa.Scale(0.0);
+        SCSCa.Multiply(SCSC,a4_->at(gp));
+        fac = 1.0 / massstress(3) / pow(actcollstretch(3),2) / pow(J,2);
+        right(0) += fac * (2.0 * a4_->at(gp)(0) * SCSCa(0) + SCa(0) * SCa(0));
+        right(1) += fac * (2.0 * a4_->at(gp)(1) * SCSCa(1) + SCa(1) * SCa(1));
+        right(2) += fac * (2.0 * a4_->at(gp)(2) * SCSCa(2) + SCa(2) * SCa(2));
+        right(3) += fac * (a4_->at(gp)(0) * SCSCa(1) + a4_->at(gp)(1) * SCSCa(0) + SCa(0) * SCa(1));
+        right(4) += fac * (a4_->at(gp)(1) * SCSCa(2) + a4_->at(gp)(2) * SCSCa(1) + SCa(1) * SCa(2));
+        right(5) += fac * (a4_->at(gp)(0) * SCSCa(2) + a4_->at(gp)(2) * SCSCa(0) + SCa(0) * SCa(2));
+        right.Scale(0.5*massprodbasal_*params_->growthfactor_/homstressfixed);
+        RHS.MultiplyNT(2.0,left,right,1.0);
         Ca.Scale(0.0);
         Ca.Multiply(Cmatrix,a4_->at(gp));
         CSCa.Scale(0.0);
         CSCa.Multiply(CSC,a4_->at(gp));
-        fac = - massprodbasal_ * params_->growthfactor_ / homstressfixed /pow(J,2)
-            / massstress(3) / pow(collagenstretch4_->at(gp)[0],2);
-        DResidual(9,0) = fac * Ca(0) * CSCa(0);
-        DResidual(9,1) = fac * Ca(1) * CSCa(1);
-        DResidual(9,2) = fac * Ca(2) * CSCa(2);
-        DResidual(9,3) = fac * 0.5 * (Ca(0) * CSCa(1) + Ca(1) * CSCa(0));
-        DResidual(9,4) = fac * 0.5 * (Ca(1) * CSCa(2) + Ca(2) * CSCa(1));
-        DResidual(9,5) = fac * 0.5 * (Ca(0) * CSCa(2) + Ca(2) * CSCa(0));
+        fac = massprodbasal_ * params_->growthfactor_ / homstressfixed /pow(J,2)
+            / massstress(3) / pow(actcollstretch(3),2);
+        right(0) = fac * Ca(0) * CSCa(0);
+        right(1) = fac * Ca(1) * CSCa(1);
+        right(2) = fac * Ca(2) * CSCa(2);
+        right(3) = fac * 0.5 * (Ca(0) * CSCa(1) + Ca(1) * CSCa(0));
+        right(4) = fac * 0.5 * (Ca(1) * CSCa(2) + Ca(2) * CSCa(1));
+        right(5) = fac * 0.5 * (Ca(0) * CSCa(2) + Ca(2) * CSCa(0));
+        LM.MultiplyNT(-1.0,left,right,1.0);
 
         //----------------------------------------------------
-        // solve linear system of equations: gradF * incr = -F
+        // solve linear system of equations: A.X=B
         //----------------------------------------------------
-        // F = F*-1.0
-        Residual.Scale(-1.0);
-        LINALG::Matrix<10,1> increment(true);
-        // solve A.X=B
-        LINALG::FixedSizeSerialDenseSolver<10,10,1> solver;
-        solver.SetMatrix(DResidual);              // set A=DResidual
-        solver.SetVectors(increment, Residual);           // set X=increment, B=Residual
+        LINALG::FixedSizeSerialDenseSolver<6,6,6> solver;
+        solver.SetMatrix(LM);              // set A=LM
+        solver.SetVectors(*cmat, RHS);           // set X=increment, B=RHS
         solver.FactorWithEquilibration(true); // "some easy type of preconditioning" (Michael)
         int err2 = solver.Factor();           // ?
         int err = solver.Solve();             // X = A^-1 B
         if ((err!=0) || (err2!=0))
-          dserror("solving linear system in Newton-Raphson method for implicit integration failed");
+          dserror("solving linear system for cmat failed");
 
-        // damping strategy
-        double omega = 2.0;
-        LINALG::Matrix<6,1> stepstress(true);
-        LINALG::Matrix<4,1> oldmass(true);
-        oldmass(0) = massprod1_->at(gp)[0];
-        oldmass(1) = massprod2_->at(gp)[0];
-        oldmass(2) = massprod3_->at(gp)[0];
-        oldmass(3) = massprod4_->at(gp)[0];
-        LINALG::Matrix<10,1> Residualtemp(Residual);
-        double omegamin = 1.0/64.0;
-        while (Residualtemp.Norm2() > (1.0-0.5*omega)*Residual.Norm2() && omega > omegamin)
-        {
-          // update of theta
-          omega = omega/2.0;
-          for (int id = 0; id < 6; id++) stepstress(id) = (*stress)(id) + omega*increment(id);
-          massprod1_->at(gp)[0] = oldmass(0) + omega*increment(6);
-          massprod2_->at(gp)[0] = oldmass(1) + omega*increment(7);
-          massprod3_->at(gp)[0] = oldmass(2) + omega*increment(8);
-          massprod4_->at(gp)[0] = oldmass(3) + omega*increment(9);
+      } // implicit
 
-          LINALG::Matrix<NUM_STRESS_3D,1> Scomp(true);
-          cmatelastic.Scale(0.0);
-          EvaluateStress(glstrain, gp, &cmatelastic, &Scomp, firstiter, dt, time);
-          MassProduction(gp,C,&Cmatrix,stepstress,&Smatrix,&massstress,&massprodcomp);
-
-          for (int id = 0; id < 6; id++) Residualtemp(id) = stepstress(id) - Scomp(id);
-          Residualtemp(6) = massprod1_->at(gp)[0] - massprodcomp(0);
-          Residualtemp(7) = massprod2_->at(gp)[0] - massprodcomp(1);
-          Residualtemp(8) = massprod3_->at(gp)[0] - massprodcomp(2);
-          Residualtemp(9) = massprod4_->at(gp)[0] - massprodcomp(3);
-        }
-        if (omega <= omegamin && Residualtemp.Norm2() > (1.0-0.5*omega)*Residual.Norm2()) dserror("no damping coefficient found");
-
-        for (int id = 0; id < 6; id++) (*stress)(id) = stepstress(id);
-        Residual = Residualtemp;
-
-//        for (int id = 0; id < 6; id++) (*stress)(id) += increment(id);
-        Smatrix(0,0) = (*stress)(0);
-        Smatrix(0,1) = (*stress)(3);
-        Smatrix(0,2) = (*stress)(5);
-        Smatrix(1,0) = Smatrix(0,1);
-        Smatrix(1,1) = (*stress)(1);
-        Smatrix(1,2) = (*stress)(4);
-        Smatrix(2,0) = Smatrix(0,2);
-        Smatrix(2,1) = Smatrix(1,2);
-        Smatrix(2,2) = (*stress)(2);
-//        massprod1_->at(gp)[0] += increment(6);
-//        massprod2_->at(gp)[0] += increment(7);
-//        massprod3_->at(gp)[0] += increment(8);
-//        massprod4_->at(gp)[0] += increment(9);
-
-        if ((massprod1_->at(gp)[0] < 0.0) || (massprod2_->at(gp)[0] < 0.0) ||
-            (massprod3_->at(gp)[0] < 0.0) || (massprod4_->at(gp)[0] < 0.0))
-        {
-          cout << "1: " << massprod1_->at(gp)[0] << endl;
-          cout << "2: " << massprod2_->at(gp)[0] << endl;
-          cout << "3: " << massprod3_->at(gp)[0] << endl;
-          cout << "4: " << massprod4_->at(gp)[0] << endl;
-          dserror("negative mass production computed for at least one collagen fiber family!");
-        }
-
-//        LINALG::Matrix<NUM_STRESS_3D,1> Scomp(true);
-//        cmatelastic.Scale(0.0);
-//        EvaluateStress(glstrain, gp, &cmatelastic, &Scomp, firstiter, dt, time);
-//        MassProduction(gp,C,&Cmatrix,*stress,&Smatrix,&massstress,&massprodcomp);
-//
-//        for (int id = 0; id < 6; id++) Residual(id) = (*stress)(id) - Scomp(id);
-//        Residual(6) = massprod1_->at(gp)[0] - massprodcomp(0);
-//        Residual(7) = massprod2_->at(gp)[0] - massprodcomp(1);
-//        Residual(8) = massprod3_->at(gp)[0] - massprodcomp(2);
-//        Residual(9) = massprod4_->at(gp)[0] - massprodcomp(3);
-
-      } //while loop
-      if (localistep == maxstep && Residual.Norm2() > params_->abstol_) dserror("local Newton iteration did not converge %e", Residual.Norm2());
-
+    } else {
+      // Visualization of massstresss also for time < starttime
+      LINALG::Matrix<3,3> temp1(true);
+      LINALG::Matrix<3,3> temp2(true);
+      LINALG::Matrix<4,1> temp3(true);
+      LINALG::Matrix<4,1> massstress(true);
+      MassProduction(gp,C,&temp1,(*stress),&temp2,&massstress,&temp3);
       vismassstress_->at(gp) = massstress(1);
-
-      //--------------------------------------------------------------------------------------
-      // compute cmat
-      // formulas are given in the corresponding pdf file, they are to long for here
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> RHS(cmatelastic);
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> LM(true);
-      for (int id = 0; id < 6; id++) LM(id,id) = 1.0;
-      LINALG::Matrix<3,3> SC(true);
-      LINALG::Matrix<3,3> CSC(true);
-      LINALG::Matrix<3,3> SCSC(true);
-      SC.Multiply(Smatrix,Cmatrix);
-      CSC.Multiply(Cmatrix,SC);
-      SCSC.Multiply(Smatrix,CSC);
-
-      // Fiber1
-      double stretch = prestretchcollagen/collagenstretch1_->at(gp)[0];
-      LINALG::Matrix<NUM_STRESS_3D,1> left(true);
-      EvaluateFiber(glstrain, NULL, & left, a1_->at(gp), stretch);
-      double facS = pow(stretch,2) * qdegrad / density * dt;
-      left.Scale(facS);
-      left.Update(-dt/density*qdegrad*params_->kappa_*J,Cinv,1.0);
-      LINALG::Matrix<NUM_STRESS_3D,1> right(true);
-      right(0) = a1_->at(gp)(0)*a1_->at(gp)(0); right(1) = a1_->at(gp)(1)*a1_->at(gp)(1);
-      right(2) = a1_->at(gp)(2)*a1_->at(gp)(2); right(3) = a1_->at(gp)(0)*a1_->at(gp)(1);
-      right(4) = a1_->at(gp)(1)*a1_->at(gp)(2); right(5) = a1_->at(gp)(0)*a1_->at(gp)(2);
-      right.Update(1.0,Cinv,1.0/pow(collagenstretch1_->at(gp)[0],2));
-      right.Scale(- 1.0 * massstress(0));
-      LINALG::Matrix<3,1> SCa(true);
-      SCa.Multiply(SC,a1_->at(gp));
-      LINALG::Matrix<3,1> SCSCa(true);
-      SCSCa.Multiply(SCSC,a1_->at(gp));
-      double fac = 1.0 / massstress(0) / pow(collagenstretch1_->at(gp)[0],2) / pow(J,2);
-      right(0) += fac * (2.0 * a1_->at(gp)(0) * SCSCa(0) + SCa(0) * SCa(0));
-      right(1) += fac * (2.0 * a1_->at(gp)(1) * SCSCa(1) + SCa(1) * SCa(1));
-      right(2) += fac * (2.0 * a1_->at(gp)(2) * SCSCa(2) + SCa(2) * SCa(2));
-      right(3) += fac * (a1_->at(gp)(0) * SCSCa(1) + a1_->at(gp)(1) * SCSCa(0) + SCa(0) * SCa(1));
-      right(4) += fac * (a1_->at(gp)(1) * SCSCa(2) + a1_->at(gp)(2) * SCSCa(1) + SCa(1) * SCa(2));
-      right(5) += fac * (a1_->at(gp)(0) * SCSCa(2) + a1_->at(gp)(2) * SCSCa(0) + SCa(0) * SCa(2));
-      right.Scale(0.5*massprodbasal_*params_->growthfactor_/homstressfixed);
-      RHS.MultiplyNT(2.0,left,right,1.0);
-      LINALG::Matrix<3,1> Ca(true);
-      Ca.Multiply(Cmatrix,a1_->at(gp));
-      LINALG::Matrix<3,1> CSCa(true);
-      CSCa.Multiply(CSC,a1_->at(gp));
-      fac = massprodbasal_ * params_->growthfactor_ / homstressfixed /pow(J,2)
-          / massstress(0) / pow(collagenstretch1_->at(gp)[0],2);
-      right(0) = fac * Ca(0) * CSCa(0);
-      right(1) = fac * Ca(1) * CSCa(1);
-      right(2) = fac * Ca(2) * CSCa(2);
-      right(3) = fac * 0.5 * (Ca(0) * CSCa(1) + Ca(1) * CSCa(0));
-      right(4) = fac * 0.5 * (Ca(1) * CSCa(2) + Ca(2) * CSCa(1));
-      right(5) = fac * 0.5 * (Ca(0) * CSCa(2) + Ca(2) * CSCa(0));
-      LM.MultiplyNT(-1.0,left,right,1.0);
-
-      // Fiber2
-      stretch = prestretchcollagen/collagenstretch2_->at(gp)[0];
-      left.Scale(0.0);
-      EvaluateFiber(glstrain, NULL, & left, a2_->at(gp), stretch);
-      facS = pow(stretch,2) * qdegrad / density * dt;
-      left.Scale(facS);
-      left.Update(-dt/density*qdegrad*params_->kappa_*J,Cinv,1.0);
-      right(0) = a2_->at(gp)(0)*a2_->at(gp)(0); right(1) = a2_->at(gp)(1)*a2_->at(gp)(1);
-      right(2) = a2_->at(gp)(2)*a2_->at(gp)(2); right(3) = a2_->at(gp)(0)*a2_->at(gp)(1);
-      right(4) = a2_->at(gp)(1)*a2_->at(gp)(2); right(5) = a2_->at(gp)(0)*a2_->at(gp)(2);
-      right.Update(1.0,Cinv,1.0/pow(collagenstretch2_->at(gp)[0],2));
-      right.Scale(- 1.0 * massstress(1));
-      SCa.Scale(0.0);
-      SCa.Multiply(SC,a2_->at(gp));
-      SCSCa.Scale(0.0);
-      SCSCa.Multiply(SCSC,a2_->at(gp));
-      fac = 1.0 / massstress(1) / pow(collagenstretch2_->at(gp)[0],2) / pow(J,2);
-      right(0) += fac * (2.0 * a2_->at(gp)(0) * SCSCa(0) + SCa(0) * SCa(0));
-      right(1) += fac * (2.0 * a2_->at(gp)(1) * SCSCa(1) + SCa(1) * SCa(1));
-      right(2) += fac * (2.0 * a2_->at(gp)(2) * SCSCa(2) + SCa(2) * SCa(2));
-      right(3) += fac * (a2_->at(gp)(0) * SCSCa(1) + a2_->at(gp)(1) * SCSCa(0) + SCa(0) * SCa(1));
-      right(4) += fac * (a2_->at(gp)(1) * SCSCa(2) + a2_->at(gp)(2) * SCSCa(1) + SCa(1) * SCa(2));
-      right(5) += fac * (a2_->at(gp)(0) * SCSCa(2) + a2_->at(gp)(2) * SCSCa(0) + SCa(0) * SCa(2));
-      right.Scale(0.5*massprodbasal_*params_->growthfactor_/homstressfixed);
-      RHS.MultiplyNT(2.0,left,right,1.0);
-      Ca.Scale(0.0);
-      Ca.Multiply(Cmatrix,a2_->at(gp));
-      CSCa.Scale(0.0);
-      CSCa.Multiply(CSC,a2_->at(gp));
-      fac = massprodbasal_ * params_->growthfactor_ / homstressfixed /pow(J,2)
-          / massstress(1) / pow(collagenstretch2_->at(gp)[0],2);
-      right(0) = fac * Ca(0) * CSCa(0);
-      right(1) = fac * Ca(1) * CSCa(1);
-      right(2) = fac * Ca(2) * CSCa(2);
-      right(3) = fac * 0.5 * (Ca(0) * CSCa(1) + Ca(1) * CSCa(0));
-      right(4) = fac * 0.5 * (Ca(1) * CSCa(2) + Ca(2) * CSCa(1));
-      right(5) = fac * 0.5 * (Ca(0) * CSCa(2) + Ca(2) * CSCa(0));
-      LM.MultiplyNT(-1.0,left,right,1.0);
-
-      // Fiber3
-      stretch = prestretchcollagen/collagenstretch3_->at(gp)[0];
-      left.Scale(0.0);
-      EvaluateFiber(glstrain, NULL, & left, a3_->at(gp), stretch);
-      facS = pow(stretch,2) * qdegrad / density * dt;
-      left.Scale(facS);
-      left.Update(-dt/density*qdegrad*params_->kappa_*J,Cinv,1.0);
-      right(0) = a3_->at(gp)(0)*a3_->at(gp)(0); right(1) = a3_->at(gp)(1)*a3_->at(gp)(1);
-      right(2) = a3_->at(gp)(2)*a3_->at(gp)(2); right(3) = a3_->at(gp)(0)*a3_->at(gp)(1);
-      right(4) = a3_->at(gp)(1)*a3_->at(gp)(2); right(5) = a3_->at(gp)(0)*a3_->at(gp)(2);
-      right.Update(1.0,Cinv,1.0/pow(collagenstretch3_->at(gp)[0],2));
-      right.Scale(- 1.0 * massstress(2));
-      SCa.Scale(0.0);
-      SCa.Multiply(SC,a3_->at(gp));
-      SCSCa.Scale(0.0);
-      SCSCa.Multiply(SCSC,a3_->at(gp));
-      fac = 1.0 / massstress(2) / pow(collagenstretch3_->at(gp)[0],2) / pow(J,2);
-      right(0) += fac * (2.0 * a3_->at(gp)(0) * SCSCa(0) + SCa(0) * SCa(0));
-      right(1) += fac * (2.0 * a3_->at(gp)(1) * SCSCa(1) + SCa(1) * SCa(1));
-      right(2) += fac * (2.0 * a3_->at(gp)(2) * SCSCa(2) + SCa(2) * SCa(2));
-      right(3) += fac * (a3_->at(gp)(0) * SCSCa(1) + a3_->at(gp)(1) * SCSCa(0) + SCa(0) * SCa(1));
-      right(4) += fac * (a3_->at(gp)(1) * SCSCa(2) + a3_->at(gp)(2) * SCSCa(1) + SCa(1) * SCa(2));
-      right(5) += fac * (a3_->at(gp)(0) * SCSCa(2) + a3_->at(gp)(2) * SCSCa(0) + SCa(0) * SCa(2));
-      right.Scale(0.5*massprodbasal_*params_->growthfactor_/homstressfixed);
-      RHS.MultiplyNT(2.0,left,right,1.0);
-      Ca.Scale(0.0);
-      Ca.Multiply(Cmatrix,a3_->at(gp));
-      CSCa.Scale(0.0);
-      CSCa.Multiply(CSC,a3_->at(gp));
-      fac = massprodbasal_ * params_->growthfactor_ / homstressfixed /pow(J,2)
-          / massstress(2) / pow(collagenstretch3_->at(gp)[0],2);
-      right(0) = fac * Ca(0) * CSCa(0);
-      right(1) = fac * Ca(1) * CSCa(1);
-      right(2) = fac * Ca(2) * CSCa(2);
-      right(3) = fac * 0.5 * (Ca(0) * CSCa(1) + Ca(1) * CSCa(0));
-      right(4) = fac * 0.5 * (Ca(1) * CSCa(2) + Ca(2) * CSCa(1));
-      right(5) = fac * 0.5 * (Ca(0) * CSCa(2) + Ca(2) * CSCa(0));
-      LM.MultiplyNT(-1.0,left,right,1.0);
-
-      // Fiber4
-      stretch = prestretchcollagen/collagenstretch4_->at(gp)[0];
-      left.Scale(0.0);
-      EvaluateFiber(glstrain, NULL, & left, a4_->at(gp), stretch);
-      facS = pow(stretch,2) * qdegrad / density * dt;
-      left.Scale(facS);
-      left.Update(-dt/density*qdegrad*params_->kappa_*J,Cinv,1.0);
-      right(0) = a4_->at(gp)(0)*a4_->at(gp)(0); right(1) = a4_->at(gp)(1)*a4_->at(gp)(1);
-      right(2) = a4_->at(gp)(2)*a4_->at(gp)(2); right(3) = a4_->at(gp)(0)*a4_->at(gp)(1);
-      right(4) = a4_->at(gp)(1)*a4_->at(gp)(2); right(5) = a4_->at(gp)(0)*a4_->at(gp)(2);
-      right.Update(1.0,Cinv,1.0/pow(collagenstretch4_->at(gp)[0],2));
-      right.Scale(- 1.0 * massstress(3));
-      SCa.Scale(0.0);
-      SCa.Multiply(SC,a4_->at(gp));
-      SCSCa.Scale(0.0);
-      SCSCa.Multiply(SCSC,a4_->at(gp));
-      fac = 1.0 / massstress(3) / pow(collagenstretch4_->at(gp)[0],2) / pow(J,2);
-      right(0) += fac * (2.0 * a4_->at(gp)(0) * SCSCa(0) + SCa(0) * SCa(0));
-      right(1) += fac * (2.0 * a4_->at(gp)(1) * SCSCa(1) + SCa(1) * SCa(1));
-      right(2) += fac * (2.0 * a4_->at(gp)(2) * SCSCa(2) + SCa(2) * SCa(2));
-      right(3) += fac * (a4_->at(gp)(0) * SCSCa(1) + a4_->at(gp)(1) * SCSCa(0) + SCa(0) * SCa(1));
-      right(4) += fac * (a4_->at(gp)(1) * SCSCa(2) + a4_->at(gp)(2) * SCSCa(1) + SCa(1) * SCa(2));
-      right(5) += fac * (a4_->at(gp)(0) * SCSCa(2) + a4_->at(gp)(2) * SCSCa(0) + SCa(0) * SCa(2));
-      right.Scale(0.5*massprodbasal_*params_->growthfactor_/homstressfixed);
-      RHS.MultiplyNT(2.0,left,right,1.0);
-      Ca.Scale(0.0);
-      Ca.Multiply(Cmatrix,a4_->at(gp));
-      CSCa.Scale(0.0);
-      CSCa.Multiply(CSC,a4_->at(gp));
-      fac = massprodbasal_ * params_->growthfactor_ / homstressfixed /pow(J,2)
-          / massstress(3) / pow(collagenstretch4_->at(gp)[0],2);
-      right(0) = fac * Ca(0) * CSCa(0);
-      right(1) = fac * Ca(1) * CSCa(1);
-      right(2) = fac * Ca(2) * CSCa(2);
-      right(3) = fac * 0.5 * (Ca(0) * CSCa(1) + Ca(1) * CSCa(0));
-      right(4) = fac * 0.5 * (Ca(1) * CSCa(2) + Ca(2) * CSCa(1));
-      right(5) = fac * 0.5 * (Ca(0) * CSCa(2) + Ca(2) * CSCa(0));
-      LM.MultiplyNT(-1.0,left,right,1.0);
-
-      //----------------------------------------------------
-      // solve linear system of equations: A.X=B
-      //----------------------------------------------------
-      LINALG::FixedSizeSerialDenseSolver<6,6,6> solver;
-      solver.SetMatrix(LM);              // set A=LM
-      solver.SetVectors(*cmat, RHS);           // set X=increment, B=RHS
-      solver.FactorWithEquilibration(true); // "some easy type of preconditioning" (Michael)
-      int err2 = solver.Factor();           // ?
-      int err = solver.Solve();             // X = A^-1 B
-      if ((err!=0) || (err2!=0))
-        dserror("solving linear system for cmat failed");
-
-    } // implicit
-
+    }// time > starttime
   } else {
-    // Visualization of massstresss also for time < starttime
-    LINALG::Matrix<3,3> temp1(true);
-    LINALG::Matrix<3,3> temp2(true);
-    LINALG::Matrix<4,1> temp3(true);
-    LINALG::Matrix<4,1> massstress(true);
-    MassProduction(gp,C,&temp1,(*stress),&temp2,&massstress,&temp3);
-    vismassstress_->at(gp) = massstress(1);
-  }// time > starttime
+    // in case of output everything is fully converged, we just have to evaluate stress etc.
+    // should be independent of order of update and output, as new steps are set with dt = 0.0
+    // and oldest fibers are carefully erased
+    EvaluateStress(glstrain, gp, cmat, stress, firstiter, dt, time);
+  }
 } // Evaluate
 
 /*----------------------------------------------------------------------*
@@ -894,11 +901,19 @@ void MAT::ConstraintMixture::EvaluateStress
 {
   //--------------------------------------------------------------------------------------
   // some variables
-  int numpast = numpast_;
   double prestretchelastin = params_->prestretchelastin_;
   double prestretchcollagen = params_->prestretchcollagen_;
   double density = params_->density_;
   double currmassdens = 0.0;
+  int sizehistory = history_->size();
+
+  //--------------------------------------------------------------------------------------
+  // prestress time
+  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
+  double pstime = -1.0 * params_->lifetime_ - dt;
+  if (pstype == INPAR::STR::prestress_mulf)
+    pstime = pslist.get<double>("PRESTRESSTIME");
 
   //--------------------------------------------------------------------------------------
   // calculate stress and elasticity matrix
@@ -921,78 +936,163 @@ void MAT::ConstraintMixture::EvaluateStress
 
   // 2nd step: collagen1
   //==========================
-  for (int idpast = firstiter; idpast < numpast; idpast++)
+  for (int idpast = 0; idpast < sizehistory - firstiter; idpast++)
   {
-    double stretch = prestretchcollagen/collagenstretch1_->at(gp)[idpast];
-    LINALG::Matrix<NUM_STRESS_3D,1> Saniso1(true);
-    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmataniso1(true);
-    EvaluateFiber(glstrain, & cmataniso1, & Saniso1, a1_->at(gp), stretch);
+    double deptime = 0.0;
+    double depdt = 0.0;
+    history_->at(idpast).GetTime(&deptime,&depdt);
+    // right dt for explicit integration & adaptation for one implicit step
+    if (firstiter == 1)
+    {
+      double timeloc = 0.0;
+      double dtloc = 0.0;
+      history_->at(idpast+1).GetTime(&timeloc,&dtloc);
+      depdt = dtloc;
+    } else if (deptime >= (time - params_->lifetime_ - 1.0e-12) &&
+               (deptime - depdt) < (time - params_->lifetime_ - 1.0e-12))
+    {
+      depdt = deptime - time + params_->lifetime_;
+    }
+    LINALG::Matrix<4,1> collstretch(true);
+    history_->at(idpast).GetStretches(gp,&collstretch);
+    double stretch = prestretchcollagen / collstretch(0);
+    // we already have prestretch in prestress time, thus the prestretch from the inputfile is not applied
+    if (deptime <= pstime + 1.0e-12)
+      stretch = 1.0 / collstretch(0);
+    LINALG::Matrix<NUM_STRESS_3D,1> Saniso(true);
+    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmataniso(true);
+    EvaluateFiber(glstrain, & cmataniso, & Saniso, a1_->at(gp), stretch);
     double qdegrad = 0.0;
-    Degradation(dt*idpast, &qdegrad);
-    double facS = pow(stretch,2) * qdegrad * massprod1_->at(gp)[idpast] / density * dt;
-    Saniso1.Scale(facS);
-    (*stress) += Saniso1;
-    double faccmat = pow(stretch,4) * qdegrad * massprod1_->at(gp)[idpast] / density * dt;
-    cmataniso1.Scale(faccmat);
-    (*cmat) += cmataniso1;
-    currmassdens += qdegrad * massprod1_->at(gp)[idpast] * dt;
+    Degradation(time - deptime, &qdegrad);
+    LINALG::Matrix<4,1> collmass(true);
+    history_->at(idpast).GetMass(gp,&collmass);
+    double facS = pow(stretch,2) * qdegrad * collmass(0) / density * depdt;
+    Saniso.Scale(facS);
+    (*stress) += Saniso;
+    double faccmat = pow(stretch,4) * qdegrad * collmass(0) / density * depdt;
+    cmataniso.Scale(faccmat);
+    (*cmat) += cmataniso;
+    currmassdens += qdegrad * collmass(0) * depdt;
   }
 
   // 3rd step: collagen2
   //==========================
-  for (int idpast = firstiter; idpast < numpast; idpast++)
+  for (int idpast = 0; idpast < sizehistory - firstiter; idpast++)
   {
-    double stretch = prestretchcollagen/collagenstretch2_->at(gp)[idpast];
-    LINALG::Matrix<NUM_STRESS_3D,1> Saniso2(true);
-    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmataniso2(true);
-    EvaluateFiber(glstrain, & cmataniso2, & Saniso2, a2_->at(gp), stretch);
+    double deptime = 0.0;
+    double depdt = 0.0;
+    history_->at(idpast).GetTime(&deptime,&depdt);
+    // right dt for explicit integration
+    if (firstiter == 1)
+    {
+      double timeloc = 0.0;
+      double dtloc = 0.0;
+      history_->at(idpast+1).GetTime(&timeloc,&dtloc);
+      depdt = dtloc;
+    } else if (deptime >= (time - params_->lifetime_ - 1.0e-12) &&
+               (deptime - depdt) < (time - params_->lifetime_ - 1.0e-12)) {
+      depdt = deptime - time + params_->lifetime_;
+    }
+    LINALG::Matrix<4,1> collstretch(true);
+    history_->at(idpast).GetStretches(gp,&collstretch);
+    double stretch = prestretchcollagen / collstretch(1);
+    // we already have prestretch in prestress time, thus the prestretch from the inputfile is not applied
+    if (deptime <= pstime + 1.0e-12)
+      stretch = 1.0 / collstretch(1);
+    LINALG::Matrix<NUM_STRESS_3D,1> Saniso(true);
+    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmataniso(true);
+    EvaluateFiber(glstrain, & cmataniso, & Saniso, a2_->at(gp), stretch);
     double qdegrad = 0.0;
-    Degradation(dt*idpast, &qdegrad);
-    double facS = pow(stretch,2) * qdegrad * massprod2_->at(gp)[idpast] / density * dt;
-    Saniso2.Scale(facS);
-    (*stress) += Saniso2;
-    double faccmat = pow(stretch,4) * qdegrad * massprod2_->at(gp)[idpast] / density * dt;
-    cmataniso2.Scale(faccmat);
-    (*cmat) += cmataniso2;
-    currmassdens += qdegrad * massprod2_->at(gp)[idpast] * dt;
-  }
+    Degradation(time - deptime, &qdegrad);
+    LINALG::Matrix<4,1> collmass(true);
+    history_->at(idpast).GetMass(gp,&collmass);
+    double facS = pow(stretch,2) * qdegrad * collmass(1) / density * depdt;
+    Saniso.Scale(facS);
+    (*stress) += Saniso;
+    double faccmat = pow(stretch,4) * qdegrad * collmass(1) / density * depdt;
+    cmataniso.Scale(faccmat);
+    (*cmat) += cmataniso;
+    currmassdens += qdegrad * collmass(1) * depdt;
+   }
 
   // 4th step: collagen3
   //==========================
-  for (int idpast = firstiter; idpast < numpast; idpast++)
+  for (int idpast = 0; idpast < sizehistory - firstiter; idpast++)
   {
-    double stretch = prestretchcollagen/collagenstretch3_->at(gp)[idpast];
-    LINALG::Matrix<NUM_STRESS_3D,1> Saniso3(true);
-    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmataniso3(true);
-    EvaluateFiber(glstrain, & cmataniso3, & Saniso3, a3_->at(gp), stretch);
+    double deptime = 0.0;
+    double depdt = 0.0;
+    history_->at(idpast).GetTime(&deptime,&depdt);
+    // right dt for explicit integration
+    if (firstiter == 1)
+    {
+      double timeloc = 0.0;
+      double dtloc = 0.0;
+      history_->at(idpast+1).GetTime(&timeloc,&dtloc);
+      depdt = dtloc;
+    } else if (deptime >= (time - params_->lifetime_ - 1.0e-12) &&
+               (deptime - depdt) < (time - params_->lifetime_ - 1.0e-12)) {
+      depdt = deptime - time + params_->lifetime_;
+    }
+    LINALG::Matrix<4,1> collstretch(true);
+    history_->at(idpast).GetStretches(gp,&collstretch);
+    double stretch = prestretchcollagen / collstretch(2);
+    // we already have prestretch in prestress time, thus the prestretch from the inputfile is not applied
+    if (deptime <= pstime + 1.0e-12)
+      stretch = 1.0 / collstretch(2);
+    LINALG::Matrix<NUM_STRESS_3D,1> Saniso(true);
+    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmataniso(true);
+    EvaluateFiber(glstrain, & cmataniso, & Saniso, a3_->at(gp), stretch);
     double qdegrad = 0.0;
-    Degradation(dt*idpast, &qdegrad);
-    double facS = pow(stretch,2) * qdegrad * massprod3_->at(gp)[idpast] / density * dt;
-    Saniso3.Scale(facS);
-    (*stress) += Saniso3;
-    double faccmat = pow(stretch,4) * qdegrad * massprod3_->at(gp)[idpast] / density * dt;
-    cmataniso3.Scale(faccmat);
-    (*cmat) += cmataniso3;
-    currmassdens += qdegrad * massprod3_->at(gp)[idpast] * dt;
+    Degradation(time - deptime, &qdegrad);
+    LINALG::Matrix<4,1> collmass(true);
+    history_->at(idpast).GetMass(gp,&collmass);
+    double facS = pow(stretch,2) * qdegrad * collmass(2) / density * depdt;
+    Saniso.Scale(facS);
+    (*stress) += Saniso;
+    double faccmat = pow(stretch,4) * qdegrad * collmass(2) / density * depdt;
+    cmataniso.Scale(faccmat);
+    (*cmat) += cmataniso;
+    currmassdens += qdegrad * collmass(2) * depdt;
   }
 
   // 5th step: collagen4
   //==========================
-  for (int idpast = firstiter; idpast < numpast; idpast++)
+  for (int idpast = 0; idpast < sizehistory - firstiter; idpast++)
   {
-    double stretch = prestretchcollagen/collagenstretch4_->at(gp)[idpast];
-    LINALG::Matrix<NUM_STRESS_3D,1> Saniso4(true);
-    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmataniso4(true);
-    EvaluateFiber(glstrain, & cmataniso4, & Saniso4, a4_->at(gp), stretch);
+    double deptime = 0.0;
+    double depdt = 0.0;
+    history_->at(idpast).GetTime(&deptime,&depdt);
+    // right dt for explicit integration
+    if (firstiter == 1)
+    {
+      double timeloc = 0.0;
+      double dtloc = 0.0;
+      history_->at(idpast+1).GetTime(&timeloc,&dtloc);
+      depdt = dtloc;
+    } else if (deptime >= (time - params_->lifetime_ - 1.0e-12) &&
+               (deptime - depdt) < (time - params_->lifetime_ - 1.0e-12)) {
+      depdt = deptime - time + params_->lifetime_;
+    }
+    LINALG::Matrix<4,1> collstretch(true);
+    history_->at(idpast).GetStretches(gp,&collstretch);
+    double stretch = prestretchcollagen / collstretch(3);
+    // we already have prestretch in prestress time, thus the prestretch from the inputfile is not applied
+    if (deptime <= pstime + 1.0e-12)
+      stretch = 1.0 / collstretch(3);
+    LINALG::Matrix<NUM_STRESS_3D,1> Saniso(true);
+    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmataniso(true);
+    EvaluateFiber(glstrain, & cmataniso, & Saniso, a4_->at(gp), stretch);
     double qdegrad = 0.0;
-    Degradation(dt*idpast, &qdegrad);
-    double facS = pow(stretch,2) * qdegrad * massprod4_->at(gp)[idpast] / density * dt;
-    Saniso4.Scale(facS);
-    (*stress) += Saniso4;
-    double faccmat = pow(stretch,4) * qdegrad * massprod4_->at(gp)[idpast] / density * dt;
-    cmataniso4.Scale(faccmat);
-    (*cmat) += cmataniso4;
-    currmassdens += qdegrad * massprod4_->at(gp)[idpast] * dt;
+    Degradation(time - deptime, &qdegrad);
+    LINALG::Matrix<4,1> collmass(true);
+    history_->at(idpast).GetMass(gp,&collmass);
+    double facS = pow(stretch,2) * qdegrad * collmass(3) / density * depdt;
+    Saniso.Scale(facS);
+    (*stress) += Saniso;
+    double faccmat = pow(stretch,4) * qdegrad * collmass(3) / density * depdt;
+    cmataniso.Scale(faccmat);
+    (*cmat) += cmataniso;
+    currmassdens += qdegrad * collmass(3) * depdt;
   }
 
   // 6th step: volumetric part
@@ -1220,13 +1320,16 @@ void MAT::ConstraintMixture::MassProduction
   temp2.Scale(0.0);
   temp2.Multiply(1.0/detC,Cmatrix,temp1);
 
+  LINALG::Matrix<4,1> currentstretch(true);
+  history_->back().GetStretches(gp,&currentstretch);
+
   double massstress1 = 0.0;
   for (int i = 0; i < 3; i++){
     for (int j = 0; j < 3; j++){
       massstress1 += a1_->at(gp)(i) * temp2(i,j) * a1_->at(gp)(j);
     }
   }
-  massstress1 = sqrt(massstress1) / collagenstretch1_->at(gp)[0];
+  massstress1 = sqrt(massstress1) / currentstretch(0);
   if (params_->homstress_ != 0.0)
     (*massprodcomp)(0) = massprodbasal_ * (1.0 + params_->growthfactor_ * (massstress1 / params_->homstress_ - 1.0));
   else
@@ -1239,7 +1342,7 @@ void MAT::ConstraintMixture::MassProduction
       massstress2 += a2_->at(gp)(i) * temp2(i,j) * a2_->at(gp)(j);
     }
   }
-  massstress2 = sqrt(massstress2) / collagenstretch2_->at(gp)[0];
+  massstress2 = sqrt(massstress2) / currentstretch(1);
   if (params_->homstress_ != 0.0)
     (*massprodcomp)(1) = massprodbasal_ * (1.0 + params_->growthfactor_ * (massstress2 / params_->homstress_ - 1.0));
   else
@@ -1252,7 +1355,7 @@ void MAT::ConstraintMixture::MassProduction
       massstress3 += a3_->at(gp)(i) * temp2(i,j) * a3_->at(gp)(j);
     }
   }
-  massstress3 = sqrt(massstress3) / collagenstretch3_->at(gp)[0];
+  massstress3 = sqrt(massstress3) / currentstretch(2);
   if (params_->homstress_ != 0.0)
     (*massprodcomp)(2) = massprodbasal_ * (1.0 + params_->growthfactor_ * (massstress3 / params_->homstress_ - 1.0));
   else
@@ -1265,7 +1368,7 @@ void MAT::ConstraintMixture::MassProduction
       massstress4 += a4_->at(gp)(i) * temp2(i,j) * a4_->at(gp)(j);
     }
   }
-  massstress4 = sqrt(massstress4) / collagenstretch4_->at(gp)[0];
+  massstress4 = sqrt(massstress4) / currentstretch(3);
   if (params_->homstress_ != 0.0)
     (*massprodcomp)(3) = massprodbasal_ * (1.0 + params_->growthfactor_ * (massstress4 / params_->homstress_ - 1.0));
   else
@@ -1329,24 +1432,203 @@ void MAT::ConstraintMixture::EvaluateFiberVecs
   LINALG::Matrix<3,1> a4_0(true);
   LINALG::Matrix<3,3> idefgrd(false);
   idefgrd.Invert(defgrd);
-  for (int i = 0; i < 3; i++) {
-    a1_0(i) = idefgrd(i,0)*ca1(0) + idefgrd(i,1)*ca1(1) + idefgrd(i,2)*ca1(2);
-    a2_0(i) = idefgrd(i,0)*ca2(0) + idefgrd(i,1)*ca2(1) + idefgrd(i,2)*ca2(2);
-    a3_0(i) = idefgrd(i,0)*ca3(0) + idefgrd(i,1)*ca3(1) + idefgrd(i,2)*ca3(2);
-    a4_0(i) = idefgrd(i,0)*ca4(0) + idefgrd(i,1)*ca4(1) + idefgrd(i,2)*ca4(2);
-  }
-  double a1_0norm = sqrt(a1_0(0)*a1_0(0) + a1_0(1)*a1_0(1) + a1_0(2)*a1_0(2));
-  double a2_0norm = sqrt(a2_0(0)*a2_0(0) + a2_0(1)*a2_0(1) + a2_0(2)*a2_0(2));
-  double a3_0norm = sqrt(a3_0(0)*a3_0(0) + a3_0(1)*a3_0(1) + a3_0(2)*a3_0(2));
-  double a4_0norm = sqrt(a4_0(0)*a4_0(0) + a4_0(1)*a4_0(1) + a4_0(2)*a4_0(2));
-  for (int i = 0; i < 3; i++) {
-    a1_->at(gp)(i) = a1_0(i)/a1_0norm;
-    a2_->at(gp)(i) = a2_0(i)/a2_0norm;
-    a3_->at(gp)(i) = a3_0(i)/a3_0norm;
-    a4_->at(gp)(i) = a4_0(i)/a4_0norm;
+  a1_0.Multiply(idefgrd,ca1);
+  a2_0.Multiply(idefgrd,ca2);
+  a3_0.Multiply(idefgrd,ca3);
+  a4_0.Multiply(idefgrd,ca4);
+
+  // normalize vectors
+  double a1_0norm = a1_0.Norm2();
+  a1_->at(gp).Update(1.0/a1_0norm,a1_0);
+  double a2_0norm = a2_0.Norm2();
+  a2_->at(gp).Update(1.0/a2_0norm,a2_0);
+  double a3_0norm = a3_0.Norm2();
+  a3_->at(gp).Update(1.0/a3_0norm,a3_0);
+  double a4_0norm = a4_0.Norm2();
+  a4_->at(gp).Update(1.0/a4_0norm,a4_0);
+
+  return;
+}
+
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+//History
+//----------------------------------------------------------------------
+//----------------------------------------------------------------------
+
+MAT::ConstraintMixtureHistoryType MAT::ConstraintMixtureHistoryType::instance_;
+
+DRT::ParObject* MAT::ConstraintMixtureHistoryType::Create( const std::vector<char> & data )
+{
+  MAT::ConstraintMixtureHistory* cmhis = new MAT::ConstraintMixtureHistory();
+  cmhis->Unpack(data);
+  return cmhis;
+}
+
+/*----------------------------------------------------------------------*
+ |  History: Pack                                 (public)         03/11|
+ *----------------------------------------------------------------------*/
+void MAT::ConstraintMixtureHistory::Pack(DRT::PackBuffer& data) const
+{
+  DRT::PackBuffer::SizeMarker sm( data );
+  sm.Insert();
+
+  // pack type of this instance of ParObject
+  int type = UniqueParObjectId();
+  AddtoPack(data,type);
+
+  // Pack internal variables
+  AddtoPack(data,depositiontime_);
+  AddtoPack(data,dt_);
+  AddtoPack(data,numgp_);
+  for (int gp = 0; gp < numgp_; ++gp)
+  {
+    AddtoPack(data,collagenstretch1_->at(gp));
+    AddtoPack(data,collagenstretch2_->at(gp));
+    AddtoPack(data,collagenstretch3_->at(gp));
+    AddtoPack(data,collagenstretch4_->at(gp));
+    AddtoPack(data,massprod1_->at(gp));
+    AddtoPack(data,massprod2_->at(gp));
+    AddtoPack(data,massprod3_->at(gp));
+    AddtoPack(data,massprod4_->at(gp));
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  History: Unpack                               (public)         03/11|
+ *----------------------------------------------------------------------*/
+void MAT::ConstraintMixtureHistory::Unpack(const vector<char>& data)
+{
+  vector<char>::size_type position = 0;
+  // extract type
+  int type = 0;
+  ExtractfromPack(position,data,type);
+  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
+  // unpack internal variables
+  double a;
+  ExtractfromPack(position,data,a);
+  depositiontime_ = a;
+  ExtractfromPack(position,data,a);
+  dt_ = a;
+  int b;
+  ExtractfromPack(position,data,b);
+  numgp_ = b;
+
+  collagenstretch1_ = Teuchos::rcp(new vector<double> (numgp_));
+  collagenstretch2_ = Teuchos::rcp(new vector<double> (numgp_));
+  collagenstretch3_ = Teuchos::rcp(new vector<double> (numgp_));
+  collagenstretch4_ = Teuchos::rcp(new vector<double> (numgp_));
+  massprod1_ = Teuchos::rcp(new vector<double> (numgp_));
+  massprod2_ = Teuchos::rcp(new vector<double> (numgp_));
+  massprod3_ = Teuchos::rcp(new vector<double> (numgp_));
+  massprod4_ = Teuchos::rcp(new vector<double> (numgp_));
+  for (int gp = 0; gp < numgp_; ++gp) {
+    ExtractfromPack(position,data,a);
+    collagenstretch1_->at(gp) = a;
+    ExtractfromPack(position,data,a);
+    collagenstretch2_->at(gp) = a;
+    ExtractfromPack(position,data,a);
+    collagenstretch3_->at(gp) = a;
+    ExtractfromPack(position,data,a);
+    collagenstretch4_->at(gp) = a;
+    ExtractfromPack(position,data,a);
+    massprod1_->at(gp) = a;
+    ExtractfromPack(position,data,a);
+    massprod2_->at(gp) = a;
+    ExtractfromPack(position,data,a);
+    massprod3_->at(gp) = a;
+    ExtractfromPack(position,data,a);
+    massprod4_->at(gp) = a;
+  }
+
+  if (position != data.size())
+    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  History: Setup                                (public)         03/11|
+ *----------------------------------------------------------------------*/
+void MAT::ConstraintMixtureHistory::Setup(const int ngp,const double massprodbasal)
+{
+  dt_ = 0.0;
+  depositiontime_ = 0.0;
+
+  numgp_=ngp;
+  // history variables
+  collagenstretch1_ = Teuchos::rcp(new vector<double> (numgp_));
+  collagenstretch2_ = Teuchos::rcp(new vector<double> (numgp_));
+  collagenstretch3_ = Teuchos::rcp(new vector<double> (numgp_));
+  collagenstretch4_ = Teuchos::rcp(new vector<double> (numgp_));
+  massprod1_ = Teuchos::rcp(new vector<double> (numgp_));
+  massprod2_ = Teuchos::rcp(new vector<double> (numgp_));
+  massprod3_ = Teuchos::rcp(new vector<double> (numgp_));
+  massprod4_ = Teuchos::rcp(new vector<double> (numgp_));
+  for (int gp = 0; gp < numgp_; gp++)
+  {
+    collagenstretch1_->at(gp) = 1.0;
+    collagenstretch2_->at(gp) = 1.0;
+    collagenstretch3_->at(gp) = 1.0;
+    collagenstretch4_->at(gp) = 1.0;
+    massprod1_->at(gp) = massprodbasal;
+    massprod2_->at(gp) = massprodbasal;
+    massprod3_->at(gp) = massprodbasal;
+    massprod4_->at(gp) = massprodbasal;
+  }
+}
+
+/*----------------------------------------------------------------------*
+ |  History: SetStretches                         (public)         03/11|
+ *----------------------------------------------------------------------*/
+void MAT::ConstraintMixtureHistory::SetStretches(int gp, LINALG::Matrix<4,1> stretches)
+{
+  if (gp < numgp_) {
+    collagenstretch1_->at(gp) = stretches(0);
+    collagenstretch2_->at(gp) = stretches(1);
+    collagenstretch3_->at(gp) = stretches(2);
+    collagenstretch4_->at(gp) = stretches(3);
+  } else dserror("gp out of range in SetStretches");
+}
+/*----------------------------------------------------------------------*
+ |  History: GetStretches                         (public)         03/11|
+ *----------------------------------------------------------------------*/
+void MAT::ConstraintMixtureHistory::GetStretches(int gp, LINALG::Matrix<4,1>* stretches)
+{
+  if (gp < numgp_) {
+    (*stretches)(0) = collagenstretch1_->at(gp);
+    (*stretches)(1) = collagenstretch2_->at(gp);
+    (*stretches)(2) = collagenstretch3_->at(gp);
+    (*stretches)(3) = collagenstretch4_->at(gp);
+  } else dserror("gp out of range in GetStretches");
+}
+
+/*----------------------------------------------------------------------*
+ |  History: SetMass                              (public)         03/11|
+ *----------------------------------------------------------------------*/
+void MAT::ConstraintMixtureHistory::SetMass(int gp, LINALG::Matrix<4,1> massprod)
+{
+  if (gp < numgp_) {
+    massprod1_->at(gp) = massprod(0);
+    massprod2_->at(gp) = massprod(1);
+    massprod3_->at(gp) = massprod(2);
+    massprod4_->at(gp) = massprod(3);
+  } else dserror("gp out of range in SetMass");
+}
+/*----------------------------------------------------------------------*
+ |  History: GetMass                              (public)         03/11|
+ *----------------------------------------------------------------------*/
+void MAT::ConstraintMixtureHistory::GetMass(int gp, LINALG::Matrix<4,1>* massprod)
+{
+  if (gp < numgp_) {
+    (*massprod)(0) = massprod1_->at(gp);
+    (*massprod)(1) = massprod2_->at(gp);
+    (*massprod)(2) = massprod3_->at(gp);
+    (*massprod)(3) = massprod4_->at(gp);
+  } else dserror("gp out of range in GetMass");
 }
 
 /*----------------------------------------------------------------------*
