@@ -359,26 +359,27 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
     //==================================================================================
     case calc_struct_update_istep:
     {
-      // Update of history for visco material
-      RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
-      {
-        MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
-        comix->Update();
-      }
       // determine new fiber directions
+      RCP<MAT::Material> mat = Material();
       bool remodel;
       const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
       remodel = DRT::INPUT::IntegralValue<int>(patspec,"REMODEL");
       if (remodel &&
           ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
-           (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
+           (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular) ||
+           (mat->MaterialType() == INPAR::MAT::m_constraintmixture)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
       {
         RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vectors 'displacement'");
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
         so_tet4_remodel(lm,mydisp,params,mat);
+      }
+      // Update of history for visco material
+      if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
+      {
+        MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
+        comix->Update();
       }
     }
     break;
@@ -386,26 +387,27 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
     //==================================================================================
     case calc_struct_update_imrlike:
     {
-      // Update of history for visco material
-      RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
-      {
-        MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
-        comix->Update();
-      }
       // determine new fiber directions
+      RCP<MAT::Material> mat = Material();
       bool remodel;
       const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
       remodel = DRT::INPUT::IntegralValue<int>(patspec,"REMODEL");
       if (remodel &&
           ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
-           (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
+           (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular) ||
+           (mat->MaterialType() == INPAR::MAT::m_constraintmixture)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
       {
         RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==null) dserror("Cannot get state vectors 'displacement'");
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
         so_tet4_remodel(lm,mydisp,params,mat);
+      }
+      // Update of history for visco material
+      if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
+      {
+        MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
+        comix->Update();
       }
     }
     break;
@@ -1612,6 +1614,9 @@ void DRT::ELEMENTS::So_tet4::so_tet4_remodel(
     } else if (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular) {
       MAT::HumphreyCardio* hum = static_cast <MAT::HumphreyCardio*>(mat.get());
       hum->EvaluateFiberVecs(gp,locsys,defgrd);
+    } else if (mat->MaterialType() == INPAR::MAT::m_constraintmixture) {
+      MAT::ConstraintMixture* comi = static_cast <MAT::ConstraintMixture*>(mat.get());
+      comi->EvaluateFiberVecs(gp,locsys,defgrd);
     } else dserror("material not implemented for remodeling");
 
   } // end loop over gauss points

@@ -354,6 +354,22 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     //==================================================================================
     case calc_struct_update_istep:
     {
+      // determine new fiber directions
+      RCP<MAT::Material> mat = Material();
+      bool remodel;
+      const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
+      remodel = DRT::INPUT::IntegralValue<int>(patspec,"REMODEL");
+      if (remodel &&
+          ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
+           (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular) ||
+           (mat->MaterialType() == INPAR::MAT::m_constraintmixture)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
+      {
+        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+        if (disp==null) dserror("Cannot get state vectors 'displacement'");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        soh8_remodel(lm,mydisp,params,mat);
+      }
       // do something with internal EAS, etc parameters
       if (eastype_ != soh8_easnone)
       {
@@ -369,7 +385,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         }
       }
       // Update of history for visco material
-      RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
       {
         MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
@@ -400,7 +415,14 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
         comix->Update();
       }
+    }
+    break;
+
+    //==================================================================================
+    case calc_struct_update_imrlike:
+    {
       // determine new fiber directions
+      RCP<MAT::Material> mat = Material();
       bool remodel;
       const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
       remodel = DRT::INPUT::IntegralValue<int>(patspec,"REMODEL");
@@ -415,12 +437,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
         soh8_remodel(lm,mydisp,params,mat);
       }
-    }
-    break;
-
-    //==================================================================================
-    case calc_struct_update_imrlike:
-    {
       // do something with internal EAS, etc parameters
       // this depends on the applied solution technique (static, generalised-alpha,
       // or other time integrators)
@@ -450,7 +466,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         }
       }
       // Update of history for visco material
-      RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
       {
         MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
@@ -480,21 +495,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       {
         MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
         comix->Update();
-      }
-      // determine new fiber directions
-      bool remodel;
-      const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
-      remodel = DRT::INPUT::IntegralValue<int>(patspec,"REMODEL");
-      if (remodel &&
-          ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
-           (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular) ||
-           (mat->MaterialType() == INPAR::MAT::m_constraintmixture)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
-      {
-        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp==null) dserror("Cannot get state vectors 'displacement'");
-        vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        soh8_remodel(lm,mydisp,params,mat);
       }
     }
     break;

@@ -193,6 +193,7 @@ std::string DRT::ParObjectList()
     << MAT::CHARMMType::Instance().Name() << " "
     << MAT::CarreauYasudaType::Instance().Name() << " "
     << MAT::ConstraintMixtureType::Instance().Name() << " "
+    << MAT::ConstraintMixtureHistoryType::Instance().Name() << " "
     << MAT::ContChainNetwType::Instance().Name() << " "
     << MAT::ElastHyperType::Instance().Name() << " "
     << MAT::FerEchPVType::Instance().Name() << " "
