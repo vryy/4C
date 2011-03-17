@@ -2440,7 +2440,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
 	if(!discret_.Comm().MyPID())
 		cout<<"\n\n====================== Analysis of structural polymorphism ======================"<<endl;
 
-
+	double periodlength = statmechparams_.get<double>("PeriodLength",0.0);
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
 	// storage vector for shifted crosslinker LIDs(crosslinkermap)
 	LINALG::Matrix<3,1> boxcenter;
@@ -2464,10 +2464,15 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   ComputeInternalEnergy(disp, internalenergy,dt);
 
 	//calculcate the distance of crosslinker elements to all crosslinker elements (crosslinkermap)
+  // testwise, base centershift upon calculated cog_ (rise in adequacy?)
+  LINALG::Matrix<3,1> newcentershift;
+  for(int i=0; i<(int)cog.M(); i++)
+  	newcentershift(i) = cog(i) - periodlength/2.0;
+
   // MultiVector because result vector will be of length 3*ddcorrrowmap_->MyLength()
 	Epetra_MultiVector crosslinksperbinrow(*ddcorrrowmap_,9 , true);
 	Epetra_MultiVector crosslinksperbinrotrow(*ddcorrrowmap_,3 , true);
-	DDCorrFunction(crosslinksperbinrow, crosslinksperbinrotrow, &centershift);
+	DDCorrFunction(crosslinksperbinrow, crosslinksperbinrotrow, &newcentershift);
 
   // calculation of filament element orientation in sperical coordinates, sorted into histogram
   Epetra_Vector phibinsrow(*ddcorrrowmap_, true);
@@ -2476,7 +2481,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   SphericalCoordsDistribution(disrow, phibinsrow, thetabinsrow, costhetabinsrow);
 
   Epetra_Vector radialdistancesrow(*ddcorrrowmap_, true);
-  RadialDensityDistribution(radialdistancesrow, &cog, &centershift, &crosslinkerentries);
+  RadialDensityDistribution(radialdistancesrow, &cog, &newcentershift, &crosslinkerentries);
 
   // Import
   Epetra_MultiVector crosslinksperbincol(*ddcorrcolmap_,crosslinksperbinrow.NumVectors() , true);
@@ -2581,8 +2586,6 @@ void StatMechManager::DDCorrShift(LINALG::Matrix<3,1>* boxcenter, LINALG::Matrix
 					currentrasterpoint(0) = i*periodlength/(numrasterpoints-1);
 					currentrasterpoint(1) = j*periodlength/(numrasterpoints-1);
 					currentrasterpoint(2) = k*periodlength/(numrasterpoints-1);
-
-					//cout<<"currentrasterpoint:   "<<currentrasterpoint[0]<<", "<<currentrasterpoint[1]<<", "<<currentrasterpoint[2]<<endl;
 
 					// calculate the center shift (difference vector between regular center and new center of the boundary box)
 					for(int l=0; l<(int)currentrasterpoint.M(); l++)
@@ -3580,95 +3583,131 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
   int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
 	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
 
-/// inter-crosslink distances between central box and surrounding box crosslinker elements
-	// get crosslinker positions vector
-	Epetra_MultiVector positions(*crosslinkermap_, 3*27, true);
-	std::vector<std::vector<int> > boxindices;
-	int boxnumber=0;
-	for(int i=0; i<3; i++)
-		for(int j=0; j<3; j++)
-			for(int k=0; k<3; k++)
-			{
-				// store the boxes
-				std::vector<int> ijk;
-				ijk.push_back(i);
-				ijk.push_back(j);
-				ijk.push_back(k);
-				boxindices.push_back(ijk);
-				//if(!discret_.Comm().MyPID())
-				//	cout<<"boxnumber = "<<boxnumber<<": "<<ijk[0]<<" "<<ijk[1]<<" "<<ijk[2]<<endl;
-				// obtain standard crosslinker position and shift it according to current box with respect to box (i=1;j=1;k=1)
-				for(int l=0; l<crosslinkermap_->NumMyElements(); l++)
-					for(int m=0; m<crosslinkerpositions_->NumVectors(); m++)
-						positions[boxnumber*3+m][l] = (*crosslinkerpositions_)[m][l]+(ijk[m]-1)*periodlength;
-				boxnumber++;
-			}
 
-	// tranfer map format of crosslinkerbond_
-	Epetra_MultiVector crosslinkerbondtrans(*transfermap_,2,true);
-	Epetra_MultiVector crosslinkerpositionstrans(*transfermap_,3,true);
+/// preliminary operations to set workframe
+	// exporter and importer
 	Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
 	Epetra_Import crosslinkimporter(*crosslinkermap_, *transfermap_);
+	// tranfer map format of crosslinkerbond_ and crosslinkerpositions_
+	Epetra_MultiVector crosslinkerbondtrans(*transfermap_,2,true);
+	Epetra_MultiVector crosslinkerpositionstrans(*transfermap_,3,true);
 	if(discret_.Comm().MyPID()!=0)
 	{
 		crosslinkerbond_->PutScalar(0.0);
 		crosslinkerpositions_->PutScalar(0.0);
 	}
+	// distribute information to processors
 	crosslinkerbondtrans.Export(*crosslinkerbond_, crosslinkexporter, Add);
 	crosslinkerpositionstrans.Export(*crosslinkerpositions_, crosslinkexporter, Add);
 
-	// reproduce redundancy prior to Export
+	// reproduce redundancy prior to Export (not needed in this method, but in the course of DDCorroutput())
 	crosslinkerbond_->Import(crosslinkerbondtrans, crosslinkimporter, Insert);
 	crosslinkerpositions_->Import(crosslinkerpositionstrans, crosslinkimporter, Insert);
 
-	// retrieve center of gravity for global and rotated system
+/// preparations for calculation of inter-crosslink distances between central box and surrounding box crosslinker elements
+	/* rotate crosslinker position into new (material) coordinate system, then construct
+	 * new surrounding box crosslinker position with periodic continuations according to the new
+	 * coordinate directions. This will in some cases lead to a cutoff of crosslinkers which come to lie
+	 * outside of the rotated volume. These crosslinkers are neglected.
+	 * The reasons why we are allowed do this, lie with the structure of the network as well as the object of observation.
+	 * When considering the worst case, we lose 19.6% of the volume (rotation around two axis, 45° each). Still, this does
+	 * not matter in our case. Since we want to study stationary phases like the cluster or the layer phase,
+	 * we only consider time intervals where the phase in question does not change its shape anymore. In addition,
+	 * we try to center the structure as well as possible within the boundary volume by shifting the center of the
+	 * periodic box. Clusters are not affected by the rotation and cutoff since they constitute a structural singularity,
+	 * so to speak, and therefore have no contace to the volume boundaries. They are not affected by periodic BCs and are
+	 * strongly localized density peaks. Layers tend to span over at least one direction of the periodic boundary volume.
+	 * If this stage is reached, the cutoff will not affect the layer, i.e. its crosslinkers at all, since there is no material
+	 * in the corners of the boundary volume anymore.
+	 * Ergo, we wait until this stadium is reached and then start to evaluate (done via Matlab, not directly implemented).
+	 * For homogeneous networks, of course, things are different. However, we do not need to worry about it since we have
+	 * equally distributed filament directions and hence no need to rotate neither the coordinate system nor the entire volume.
+	 */
+/// calculate  shifted as well as shifted and rotated crosslinker positions of the center box
+	Epetra_MultiVector centerboxpostrans(*transfermap_,3);
+	Epetra_MultiVector centerboxrotpostrans(*transfermap_,3);
+	for(int i=0; i<transfermap_->NumMyElements(); i++)
+	{
+		LINALG::SerialDenseMatrix crosspos(3,1);
+		for(int j=0; j<crosspos.M(); j++)
+		{
+			// 1. original position
+			crosspos(j,0) = crosslinkerpositionstrans[j][i];
+			// 2. shift to not yet rotated new center box position
+			if (crosspos(j,0) > periodlength+(*centershift)(j))
+				crosspos(j,0) -= periodlength;
+			if (crosspos(j,0) < 0.0+(*centershift)(j))
+				crosspos(j,0) += periodlength;
+			// 2.5 store standard shifted center box position
+			centerboxpostrans[j][i] = crosspos(j,0);
+			// 3. translate origin
+			crosspos(j,0) -= cog_(j);
+		}
+		// 4. transform the crosslink molecule position into material coordinates
+		LINALG::SerialDenseMatrix crossposrot(3,1);
+		trafo_->Multiply(false, crosspos, crossposrot);
+		for(int j=0; j<centerboxrotpostrans.NumVectors(); j++)
+			centerboxrotpostrans[j][i] = crossposrot(j,0);
+	}
+
+/// calculate shifted and rotated crosslinker positions for the surrounding boxes (including the center box)
+	Epetra_MultiVector positionstrans(*transfermap_, 3*27, true);
+	Epetra_MultiVector rotatedpositionstrans(*transfermap_, 3*27, true);
+	int boxnumber=0;
+	for(int i=0; i<3; i++)
+		for(int j=0; j<3; j++)
+			for(int k=0; k<3; k++)
+			{
+				// box indices
+				std::vector<int> ijk;
+				ijk.push_back(i);
+				ijk.push_back(j);
+				ijk.push_back(k);
+				// obtain standard crosslinker position and shift it according to current box with respect to box (i=1;j=1;k=1)
+				for(int l=0; l<transfermap_->NumMyElements(); l++)
+					for(int m=0; m<centerboxpostrans.NumVectors(); m++)
+					{
+						// shift standard crosslinker positions to box with indices (i,j,k)
+						positionstrans[boxnumber*3+m][l] = centerboxpostrans[m][l] + (ijk[m]-1)*periodlength;
+						// shift the rotated crosslinker positions to box with indices (i,j,k)
+						rotatedpositionstrans[boxnumber*3+m][l] = centerboxrotpostrans[m][l] + (ijk[m]-1)*periodlength;
+					}
+				boxnumber++;
+			}
+	// communicate positions for redundancy (crosslinkermap format)
+	Epetra_MultiVector positions(*crosslinkermap_, 3*27, true);
+	Epetra_MultiVector rotatedpositions(*crosslinkermap_, 3*27, true);
+	positions.Import(positionstrans, crosslinkimporter, Insert);
+	rotatedpositions.Import(rotatedpositionstrans, crosslinkimporter, Insert);
+
+	// retrieve center of gravity (global coordinates)
 	Epetra_SerialDenseMatrix cog(3,1);
 	for(int i=0; i<cog.M(); i++)
 		cog(i,0) = cog_(i);
 
+/// sort inter-crosslink distances into respective bins
 	//parallel brute force from here on
-	// transfer map loop
-	int surrcount = 0;
-	// surrounding box crosslinker element loop
-	for(int boxnum=0; boxnum<(int)boxindices.size(); boxnum++)
-	{
+	/* 1. loop over boxes
+	 * 2. loop over the crosslinkermap format crosslinkers of the boxes
+	 * 3. loop over the transfermap format crosslinkers of the actual (center box)
+	 * 4. if(): only calculate deltaxij if the following if both indices i and j stand for crosslinker elements or periodic
+	 *          images of the those elements
+	 */
+	for(int boxnum=0; boxnum<boxnumber; boxnum++)
 		for(int j=0; j<crosslinkermap_->NumMyElements(); j++)
 			for(int i=0; i<transfermap_->NumMyElements(); i++)
-			{
-				// remapped crosslinkerbond_ indices
-				// only calculate deltaxij if the following if both indices i and j stand for crosslinker elements
 				if(crosslinkerbondtrans[0][i]>-0.9 && crosslinkerbondtrans[1][i]>-0.9 && (*crosslinkerbond_)[0][j]>-0.9 && (*crosslinkerbond_)[1][j]>-0.9)
 				{
-					surrcount++;
-
-					// central box crosslinker position and surrounding box crosslinker position
-					Epetra_SerialDenseMatrix cboxpos(3,1);
-					Epetra_SerialDenseMatrix surrboxpos(3,1);
-
-					// shift positions for central box crosslinker element and for surrounding boxes with respect to the
-					// new center given by the centershift
-					for(int m=0; m<cboxpos.M(); m++)
+					// sort standard (GLOBAL coordinates) inter-crosslink distances into bins
+					for(int m=0; m<centerboxpostrans.NumVectors(); m++)
 					{
-						//centerbox crosslinker
-						cboxpos(m,0) = crosslinkerpositionstrans[m][i];
-						if (cboxpos(m,0) > periodlength+(*centershift)(m))
-							cboxpos(m,0) -= periodlength;
-						if (cboxpos(m,0) < 0.0+(*centershift)(m))
-							cboxpos(m,0) += periodlength;
+						// centerbox crosslinker component m
+						double cboxposm = centerboxpostrans[m][i];
+						// surr. box crosslinker component m
+						double surrboxposm = positions[boxnum*3+m][j];
 
-						// surr. box crosslinker
-						// spatial index of the current box
-						int surrboxindex = boxindices[boxnum][m];
-						surrboxpos(m,0) = positions[boxnum*3+m][j];
-						if (surrboxpos(m,0) > (*centershift)(m) + (1.0+(surrboxindex-1))*periodlength)
-							surrboxpos(m,0) -= periodlength;
-						if (surrboxpos(m,0) < (*centershift)(m) + (surrboxindex-1)*periodlength)
-							surrboxpos(m,0) += periodlength;
-
-						double distm = fabs(surrboxpos(m,0)-cboxpos(m,0));
+						double distm = fabs(surrboxposm-cboxposm);
 						int absbin = (int)floor(distm/periodlength*(double)numbins);
-						//if(absbin==0)
-						//	cout<<"Proc "<<discret_.Comm().MyPID()<<": distm = "<<distm<<endl;
 						if(absbin==3*numbins)
 							absbin--;
 						int thebin = absbin%numbins;
@@ -3676,33 +3715,26 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
 						crosslinksperbinrow[thecol][thebin] += 1.0;
 					}
 
-					// rotate cboxpos and surrboxpos into new (material) coordinate system
-					Epetra_SerialDenseMatrix cboxrot(3,1);
-					Epetra_SerialDenseMatrix surrboxrot(3,1);
-					/*f_tilde: x |--> x_tilde = (x-cog)*/
-					for(int m=0; m<cog.M(); m++)
+					// sort inter-crosslink distances of ROTATED system into bins
+					for(int m=0; m<centerboxrotpostrans.NumVectors(); m++)
 					{
-						cboxrot(m,0) -= cog(m,0);
-						surrboxrot(m,0) -= cog(m,0);
-					}
-					// calculate rotation
-					/*f_roof: x_tilde |--> x_roof = R_trans x_tilde = R_trans(x-cog)*/
-					trafo_->Multiply(false,cboxpos,cboxrot);
-					trafo_->Multiply(false,surrboxpos,surrboxrot);
-
-					// determine bin for rotated fixed system coordinates
-					for(int m=0; m<cboxrot.M(); m++)
-					{
-						double distm = fabs(surrboxrot(m,0)-cboxrot(m,0));
-						int thebin = (int)floor(distm/periodlength*(double)numbins);
-						int thecol = m;
-						// only distances [0;H[
-						if(thebin<numbins)
-							crosslinksperbinrotrow[thecol][thebin] += 1.0;
+						//centerbox crosslinker component m
+						double cboxposrotm = centerboxrotpostrans[m][i];
+						// surrounding box crosslinker position component m
+						double surrboxposrotm = rotatedpositions[boxnum*3+m][j];
+						// check if both crosslinkers lie within the shifted and rotated boundary volume
+						if(fabs(cboxposrotm)<=periodlength/2.0 && fabs(surrboxposrotm)<=periodlength/2.0) // inside the rotated volume
+						{
+							// determine bin for rotated fixed system coordinates
+							double distm = fabs(surrboxposrotm-cboxposrotm);
+							int thebin = (int)floor(distm/periodlength*(double)numbins);
+							int thecol = m;
+							// only distances [0;H[
+							if(thebin<numbins)
+								crosslinksperbinrotrow[thecol][thebin] += 1.0;
+						}
 					}
 				}
-			}
-	}
 	return;
 }//StatMechManager::DDCorrFunction()
 
