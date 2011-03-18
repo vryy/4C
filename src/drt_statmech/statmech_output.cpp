@@ -3633,7 +3633,7 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
 		{
 			// 1. original position
 			crosspos(j,0) = crosslinkerpositionstrans[j][i];
-			// 2. shift to not yet rotated new center box position
+			// 2. shift, so that crosspos comes to lie within not yet rotated new center box
 			if (crosspos(j,0) > periodlength+(*centershift)(j))
 				crosspos(j,0) -= periodlength;
 			if (crosspos(j,0) < 0.0+(*centershift)(j))
@@ -3653,6 +3653,7 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
 /// calculate shifted and rotated crosslinker positions for the surrounding boxes (including the center box)
 	Epetra_MultiVector positionstrans(*transfermap_, 3*27, true);
 	Epetra_MultiVector rotatedpositionstrans(*transfermap_, 3*27, true);
+	std::vector<std::vector<int> > boxindices;
 	int boxnumber=0;
 	for(int i=0; i<3; i++)
 		for(int j=0; j<3; j++)
@@ -3663,6 +3664,7 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
 				ijk.push_back(i);
 				ijk.push_back(j);
 				ijk.push_back(k);
+				boxindices.push_back(ijk);
 				// obtain standard crosslinker position and shift it according to current box with respect to box (i=1;j=1;k=1)
 				for(int l=0; l<transfermap_->NumMyElements(); l++)
 					for(int m=0; m<centerboxpostrans.NumVectors(); m++)
@@ -3722,8 +3724,11 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
 						double cboxposrotm = centerboxrotpostrans[m][i];
 						// surrounding box crosslinker position component m
 						double surrboxposrotm = rotatedpositions[boxnum*3+m][j];
+						int surrboxindex = boxindices[boxnum][m];
 						// check if both crosslinkers lie within the shifted and rotated boundary volume
-						if(fabs(cboxposrotm)<=periodlength/2.0 && fabs(surrboxposrotm)<=periodlength/2.0) // inside the rotated volume
+						double deltacbox = fabs(cboxposrotm-(*centershift)(m));
+						double deltasbox = fabs(surrboxposrotm-((*centershift)(m)+(surrboxindex-1)*periodlength));
+						if(deltacbox<=periodlength/2.0 && deltasbox<=periodlength/2.0) // inside the rotated volume
 						{
 							// determine bin for rotated fixed system coordinates
 							double distm = fabs(surrboxposrotm-cboxposrotm);
