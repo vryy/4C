@@ -1816,6 +1816,11 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
   // ************************************************************** 2D ***
   if (Dim()==2)
   {
+    // ***************************************************** linear 2D ***
+    // ************************************************** quadratic 2D ***
+    // neither quadratic interpolation nor mixed linear and quadratic
+    // interpolation need any special treatment in the 2d case
+
     // create instance of coupling class
     MORTAR::Coupling2d coup(shapefcn_,Discret(),Dim(),sele,mele);
 
@@ -1828,6 +1833,7 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
     bool auxplane = DRT::INPUT::IntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
 
     // ************************************************** quadratic 3D ***
+    // also treats the mixed linear and quadratic interpolation case
     if (sele.IsQuad3d() || mele.IsQuad3d())
     {
       // build linear integration elements from quadratic MortarElements
