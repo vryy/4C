@@ -71,6 +71,10 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   if (DRT::Problem::Instance()->Materials() == Teuchos::null)
     dserror("Sorry dude, cannot work out problem instance.");
 
+  // yet another safety check
+  if (DRT::Problem::Instance()->Materials()->Num() == 0)
+    dserror("Sorry dude, no materials defined.");
+
   // retrieve problem instance to read from
   const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
   // retrieve validated input line of material ID in question

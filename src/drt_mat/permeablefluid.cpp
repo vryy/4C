@@ -94,19 +94,17 @@ void MAT::PermeableFluid::Unpack(const vector<char>& data)
   // matid
   int matid;
   ExtractfromPack(position,data,matid);
+  params_ = NULL;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
-  {
-    const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-    MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-    if (mat->Type() == MaterialType())
-      params_ = static_cast<MAT::PAR::PermeableFluid*>(mat);
-    else
-      dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
-  }
-  else
-  {
-    params_ = NULL;
-  }
+    if (DRT::Problem::Instance()->Materials()->Num() != 0)
+    {
+      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      MAT::PAR::Parameter* mat = DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
+      if (mat->Type() == MaterialType())
+        params_ = static_cast<MAT::PAR::PermeableFluid*>(mat);
+      else
+        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(), MaterialType());
+    }
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
