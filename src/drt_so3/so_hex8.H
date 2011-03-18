@@ -317,9 +317,9 @@ public:
   /*!
   \brief Read input for this element
   */
-  bool ReadElement(const std::string& eletype,
-                   const std::string& distype,
-                   DRT::INPUT::LineDefinition* linedef);
+  virtual bool ReadElement(const std::string& eletype,
+                           const std::string& distype,
+                           DRT::INPUT::LineDefinition* linedef);
 
   //@}
 
@@ -351,14 +351,14 @@ public:
                           to fill this vector
   \return 0 if successful, negative otherwise
   */
-  int Evaluate(ParameterList& params,
-               DRT::Discretization&      discretization,
-               vector<int>&              lm,
-               Epetra_SerialDenseMatrix& elemat1,
-               Epetra_SerialDenseMatrix& elemat2,
-               Epetra_SerialDenseVector& elevec1,
-               Epetra_SerialDenseVector& elevec2,
-               Epetra_SerialDenseVector& elevec3);
+  virtual int Evaluate(ParameterList& params,
+                       DRT::Discretization&      discretization,
+                       vector<int>&              lm,
+                       Epetra_SerialDenseMatrix& elemat1,
+                       Epetra_SerialDenseMatrix& elemat2,
+                       Epetra_SerialDenseVector& elevec1,
+                       Epetra_SerialDenseVector& elevec2,
+                       Epetra_SerialDenseVector& elevec3);
 
   /*!
   \brief Evaluate an element
@@ -386,14 +386,15 @@ public:
                           to fill this vector
   \return 0 if successful, negative otherwise
   */
-  int Evaluate(Teuchos::ParameterList& params,
-               DRT::Discretization& discretization,
-               DRT::Element::LocationArray& la,
-               Epetra_SerialDenseMatrix& elemat1,
-               Epetra_SerialDenseMatrix& elemat2,
-               Epetra_SerialDenseVector& elevec1,
-               Epetra_SerialDenseVector& elevec2,
-               Epetra_SerialDenseVector& elevec3);
+  
+  virtual int Evaluate(Teuchos::ParameterList& params,
+                       DRT::Discretization& discretization,
+                       DRT::Element::LocationArray& la,
+                       Epetra_SerialDenseMatrix& elemat1,
+                       Epetra_SerialDenseMatrix& elemat2,
+                       Epetra_SerialDenseVector& elevec1,
+                       Epetra_SerialDenseVector& elevec2,
+                       Epetra_SerialDenseVector& elevec3);
 
   /*!
   \brief Evaluate an element
@@ -543,12 +544,12 @@ protected:
   /// Prestressing object
   RCP<DRT::ELEMENTS::PreStress>                                         prestress_;
   // compute Jacobian mapping wrt to deformed configuration
-  void UpdateJacobianMapping(const vector<double>& disp,
-                             DRT::ELEMENTS::PreStress& prestress);
+  virtual void UpdateJacobianMapping(const vector<double>& disp,
+                                     DRT::ELEMENTS::PreStress& prestress);
   // compute defgrd in all gp for given disp
-  void DefGradient(const vector<double>& disp,
-                   Epetra_SerialDenseMatrix& gpdefgrd,
-                   DRT::ELEMENTS::PreStress& prestress);
+  virtual void DefGradient(const vector<double>& disp,
+                           Epetra_SerialDenseMatrix& gpdefgrd,
+                           DRT::ELEMENTS::PreStress& prestress);
 
   // inverse design analysis objects
   friend class DRT::ELEMENTS::InvDesign;
