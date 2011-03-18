@@ -10,7 +10,11 @@
         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-first 3D structure meshtying tester (dual Lagrange multipliers)
+3D finite deformation contact test
+// - first-order interpolation (hex8 elements)
+// - standard Newton solution scheme
+// - dual Lagrange multiplier interpolation
+// - quasi-static problem
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS 	341
 NODES    	559

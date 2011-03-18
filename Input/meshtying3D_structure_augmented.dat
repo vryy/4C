@@ -10,7 +10,11 @@
         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-first 3D structure meshtying tester (augmented Lagrange)
+3D finite deformation meshtying test
+// - first-order interpolation (hex8 elements)
+// - augmented Lagrange solution scheme
+// - standard Lagrange multiplier interpolation
+// - quasi-static problem
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS 	341
 NODES    	559

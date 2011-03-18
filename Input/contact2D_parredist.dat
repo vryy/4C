@@ -10,7 +10,11 @@
                         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-two curved beams (dynamic parallel redistribution)
+2D curved beam contact test (parallel redistribution)
+// - first-order interpolation (quad4 elements)
+// - semi-smooth Newton solution scheme
+// - dual Lagrange multiplier interpolation
+// - quasi-static problem
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS     200
 NODES        306

@@ -10,9 +10,14 @@
                         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-meshtying patch test with non-conforming interface mesh and the
-slave side being larger than the master side (test of algorithm
-for restriction of the slave surface to an actual meshtying zone)
+2D small deformation meshtying patch test
+// - first-order interpolation (quad4 elements)
+// - standard Lagrange multiplier interpolation
+// - exact solution recovered despite non-matching meshes
+// - slave side wider than master side
+// - restriction of slave surface to actual meshtying zone
+// - solution of saddle point system
+// - quasi-static problem
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS     75
 NODES        102

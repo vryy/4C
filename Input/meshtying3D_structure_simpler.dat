@@ -10,7 +10,12 @@
         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-first 3D structure meshtying tester (SIMPLER preconditioner)
+3D finite deformation meshtying test with SIMPLER
+// - first-order interpolation (hex8 elements)
+// - standard Newton solution scheme
+// - standard Lagrange multiplier interpolation
+// - SIMPLER block preconditioned solution
+// - quasi-static problem
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS    341
 NODES       559

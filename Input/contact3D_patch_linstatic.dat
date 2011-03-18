@@ -10,7 +10,12 @@
                         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-contact patch test with nonconforming interface mesh (3D)
+3D small deformation contact patch test
+// - first-order interpolation (hex8 elements)
+// - nested active set solution scheme (inner loop linear)
+// - dual Lagrange multiplier interpolation
+// - exact solution recovered despite non-matching meshes
+// - quasi-static problem
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS     843
 NODES        1238

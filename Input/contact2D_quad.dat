@@ -10,7 +10,11 @@
                         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-first 2D contact tester (quadratic elements)
+2D finite deformation contact test
+// - second-order interpolation (quad9 elements)
+// - semi-smooth Newton solution scheme
+// - dual Lagrange multiplier interpolation
+// - generalized alpha time integration
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS          90
 NODES            438

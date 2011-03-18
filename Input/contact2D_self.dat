@@ -10,7 +10,11 @@
                         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-Self contact tester (folding of 2D structure)
+2D self contact test (folding of simple structure)
+// - first-order interpolation (quad4 elements)
+// - semi-smooth Newton solution scheme
+// - dual Lagrange multiplier interpolation
+// - generalized alpha time integration
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS     1152
 NODES        1440

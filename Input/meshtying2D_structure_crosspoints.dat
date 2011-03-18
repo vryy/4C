@@ -10,7 +10,12 @@
         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-2D dual mortar meshtying (linear shape fct.) with cross-points
+2D finite deformation meshtying test (with crospoints)
+// - first-order interpolation (quad4 elements)
+// - standard Newton solution scheme
+// - dual Lagrange multiplier interpolation
+// - special treatment of crosspoints
+// - quasi-static problem
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS 	1536
 NODES    	1687

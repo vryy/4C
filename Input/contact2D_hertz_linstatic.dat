@@ -10,7 +10,11 @@
                         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-Default_title
+2D small deformation Hertzian contact test
+// - first-order interpolation (quad4 elements)
+// - nested active set solution scheme (inner loop linear)
+// - dual Lagrange multiplier interpolation
+// - quasi-static problem
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS     1256
 NODES        1376

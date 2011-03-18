@@ -10,7 +10,12 @@
         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-Multibody contact tester (impact of 10 balls) with SIMPLER
+2D multibody contact tester (impact of 10 balls) with SIMPLER
+// - first-order interpolation (quad4 elements)
+// - semi-smooth Newton solution scheme
+// - standard Lagrange multiplier interpolation
+// - SIMPLER block preconditioned solution
+// - generalized alpha time integration
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS    720
 NODES       850

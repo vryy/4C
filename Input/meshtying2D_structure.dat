@@ -10,7 +10,11 @@
                         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-first 2D structure meshtying tester
+2D finite deformation meshtying test
+// - first-order interpolation (quad4 elements)
+// - standard Newton solution scheme
+// - dual Lagrange multiplier interpolation
+// - quasi-static problem
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS     110
 NODES        143

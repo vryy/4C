@@ -10,7 +10,11 @@
                         General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-Default_title
+3D finite deformation contact test
+// - second-order interpolation (hex27 elements)
+// - penalty solution scheme
+// - standard Lagrange multiplier interpolation (pwlin)
+// - generalized alpha time integration
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS     129
 NODES        1472
