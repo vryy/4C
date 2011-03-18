@@ -220,6 +220,14 @@ protected:
   //! don't want = operator
   So_hex8fbar& operator = (const So_hex8fbar& old);
 
+  // compute Jacobian mapping wrt to deformed configuration
+  virtual void UpdateJacobianMapping(const vector<double>& disp,
+                                     DRT::ELEMENTS::PreStress& prestress);
+  // compute defgrd in all gp for given disp
+  virtual void DefGradient(const vector<double>& disp,
+                           Epetra_SerialDenseMatrix& gpdefgrd,
+                           DRT::ELEMENTS::PreStress& prestress);
+
   //! Calculate nonlinear stiffness and mass matrix
   virtual void soh8fbar_nlnstiffmass(
 		vector<int>&              lm,             ///< location matrix
@@ -233,6 +241,9 @@ protected:
 		ParameterList&            params,         ///< algorithmic parameters e.g. time
 		const INPAR::STR::StressType   iostress,  ///< stress output option
 		const INPAR::STR::StrainType   iostrain); ///< strain output option
+
+  //! init the inverse of the jacobian and its determinant in the material configuration
+  virtual void InitJacobianMapping();
 
 }; // class So_hex8fbar
 

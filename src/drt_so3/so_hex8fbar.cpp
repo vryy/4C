@@ -83,6 +83,8 @@ void DRT::ELEMENTS::So_hex8fbarType::SetupElementDefinition( std::map<std::strin
 DRT::ELEMENTS::So_hex8fbar::So_hex8fbar(int id, int owner) :
 DRT::ELEMENTS::So_hex8(id,owner)
 {
+  if (pstype_==INPAR::STR::prestress_mulf)
+    prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8,NUMGPT_SOH8+1));
   return;
 }
 

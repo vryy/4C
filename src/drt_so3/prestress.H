@@ -149,10 +149,10 @@ private:
   Teuchos::RCP<Epetra_SerialDenseMatrix>    invJhist_;
 
   /// get number of gaussian points considered
-  inline int NGP() { return Fhist_->M(); }
+  inline int NGP() const { return Fhist_->M(); }
 
   /// get no. of nodal points
-  inline int NumNode() { return numnode_; }
+  inline int NumNode() const { return numnode_; }
 
 }; // class PreStress
 } // namespace ELEMENTS

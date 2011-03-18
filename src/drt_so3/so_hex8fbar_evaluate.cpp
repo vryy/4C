@@ -69,6 +69,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
   else if (action=="calc_homog_dens")                             act = So_hex8fbar::calc_homog_dens;
   else if (action=="postprocess_stress")                          act = So_hex8fbar::postprocess_stress;
   else if (action=="multi_readrestart")                           act = So_hex8fbar::multi_readrestart;
+  else if (action=="calc_struct_prestress_update")                act = So_hex8fbar::prestress_update;
   else dserror("Unknown type of action for So_hex8fbar");
   // what should the element do
   switch(act)
@@ -152,8 +153,8 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
       // nothing to do for ghost elements
       if (discretization.Comm().MyPID()==Owner())
       {
-        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-        RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+        RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
         RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
         RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
         if (disp==null) dserror("Cannot get state vectors 'displacement'");
@@ -299,6 +300,41 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
     }
     break;
 
+    //==================================================================================
+    case prestress_update:
+    {
+      time_ = params.get<double>("total time");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get displacement state");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+      // build def gradient for every gauss point
+      LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_SOH8+1,9);
+      DefGradient(mydisp,gpdefgrd,*prestress_);
+
+      // update deformation gradient and put back to storage
+      LINALG::Matrix<3,3> deltaF;
+      LINALG::Matrix<3,3> Fhist;
+      LINALG::Matrix<3,3> Fnew;
+      for (int gp=0; gp<NUMGPT_SOH8+1; ++gp)
+      {
+        prestress_->StoragetoMatrix(gp,deltaF,gpdefgrd);
+        prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
+        Fnew.Multiply(deltaF,Fhist);
+        prestress_->MatrixtoStorage(gp,Fnew,prestress_->FHistory());
+      }
+
+      // push-forward invJ for every gaussian point
+      UpdateJacobianMapping(mydisp,*prestress_);
+    }
+    break;
+
+    //==================================================================================
+    case inversedesign_update:
+      dserror("The sohex8fbar element does not support inverse design analysis");
+    break;
+
 
     // read restart of microscale
     case multi_readrestart:
@@ -309,11 +345,60 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
         soh8_read_restart_multi(params);
     }
     break;
+    
+    
+    
 
     default:
       dserror("Unknown type of action for So_hex8fbar");
   }
   return 0;
+}
+
+/*----------------------------------------------------------------------*
+ |  init the element jacobian mapping (protected)              gee 03/11|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8fbar::InitJacobianMapping()
+{
+  const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;
+  for (int i=0; i<NUMNOD_SOH8; ++i)
+  {
+    xrefe(i,0) = Nodes()[i]->X()[0];
+    xrefe(i,1) = Nodes()[i]->X()[1];
+    xrefe(i,2) = Nodes()[i]->X()[2];
+  }
+  invJ_.resize(NUMGPT_SOH8);
+  detJ_.resize(NUMGPT_SOH8);
+  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  {
+    //invJ_[gp].Shape(NUMDIM_SOH8,NUMDIM_SOH8);
+    invJ_[gp].Multiply(derivs[gp],xrefe);
+    detJ_[gp] = invJ_[gp].Invert();
+
+    if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
+      if (!(prestress_->IsInit()))
+        prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
+
+  }
+  
+  // init the centroid invJ
+  if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
+    if (!(prestress_->IsInit()))
+    {
+      LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
+      DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0, 0, 0, hex8);
+      LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
+      invJ_0.Multiply(N_rst_0,xrefe);
+      invJ_0.Invert();
+      prestress_->MatrixtoStorage(NUMGPT_SOH8,invJ_0,prestress_->JHistory());
+    }
+  
+
+  if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
+    prestress_->IsInit() = true;
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -417,6 +502,7 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
   // update element geometry
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xdisp;
   DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_SOH8; ++i)
   {
@@ -428,28 +514,71 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
     xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOH8+0];
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOH8+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOH8+2];
+
+    if (pstype_==INPAR::STR::prestress_mulf)
+    {
+      xdisp(i,0) = disp[i*NODDOF_SOH8+0];
+      xdisp(i,1) = disp[i*NODDOF_SOH8+1];
+      xdisp(i,2) = disp[i*NODDOF_SOH8+2];
+    }
   }
 
   //****************************************************************************
 	// deformation gradient at centroid of element
   //****************************************************************************
-	//element coordinate derivatives at centroid
-	LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-	DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0, 0, 0, hex8);
-	//inverse jacobian matrix at centroid
-	LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
-	invJ_0.Multiply(N_rst_0,xrefe);
-	invJ_0.Invert();
-	//material derivatives at centroid
-	LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ_0;
-	N_XYZ_0.Multiply(invJ_0,N_rst_0);
-	//deformation gradient and its determinant at centroid
-	LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd_0(false);
-	defgrd_0.MultiplyTT(xcurr,N_XYZ_0);
-	LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> invdefgrd_0;
-	invdefgrd_0.Invert(defgrd_0);
-	double detF_0=defgrd_0.Determinant();
+  double detF_0 = -1.0;
+  LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> invdefgrd_0;
+  LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_XYZ_0;
+  //element coordinate derivatives at centroid
+  LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
+  DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0, 0, 0, hex8);
+  {
+    //inverse jacobian matrix at centroid
+    LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
+    invJ_0.Multiply(N_rst_0,xrefe);
+    invJ_0.Invert();
+    //material derivatives at centroid
+    N_XYZ_0.Multiply(invJ_0,N_rst_0); 
+  }
+  
+  if (pstype_==INPAR::STR::prestress_mulf)
+  {
+    // get Jacobian mapping wrt to the stored configuration
+    // centroid is 9th Gaussian point in storage
+    LINALG::Matrix<3,3> invJdef_0;
+    prestress_->StoragetoMatrix(NUMGPT_SOH8,invJdef_0,prestress_->JHistory());
+    // get derivatives wrt to last spatial configuration
+    LINALG::Matrix<3,8> N_xyz_0;
+    N_xyz_0.Multiply(invJdef_0,N_rst_0); //if (!Id()) cout << invJdef_0;
+    
+    // build multiplicative incremental defgrd
+    LINALG::Matrix<3,3> defgrd_0(false);
+    defgrd_0.MultiplyTT(xdisp,N_xyz_0);
+    defgrd_0(0,0) += 1.0;
+    defgrd_0(1,1) += 1.0;
+    defgrd_0(2,2) += 1.0;
+    
+    // get stored old incremental F
+    LINALG::Matrix<3,3> Fhist;
+    prestress_->StoragetoMatrix(NUMGPT_SOH8,Fhist,prestress_->FHistory());
 
+    // build total defgrd = delta F * F_old
+    LINALG::Matrix<3,3> tmp;
+    tmp.Multiply(defgrd_0,Fhist);
+    defgrd_0 = tmp;
+    
+    // build inverse and detF
+    invdefgrd_0.Invert(defgrd_0);
+    detF_0=defgrd_0.Determinant();
+  }
+  else // no prestressing
+  {
+    //deformation gradient and its determinant at centroid
+    LINALG::Matrix<3,3> defgrd_0(false);
+    defgrd_0.MultiplyTT(xcurr,N_XYZ_0);
+    invdefgrd_0.Invert(defgrd_0);
+    detF_0=defgrd_0.Determinant();
+  }
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
   /* =========================================================================*/
@@ -469,8 +598,35 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
     N_XYZ.Multiply(invJ_[gp],derivs[gp]);
     double detJ = detJ_[gp];
 
-    // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    defgrd.MultiplyTT(xcurr,N_XYZ);
+    if (pstype_==INPAR::STR::prestress_mulf)
+    {
+      // get Jacobian mapping wrt to the stored configuration
+      LINALG::Matrix<3,3> invJdef;
+      prestress_->StoragetoMatrix(gp,invJdef,prestress_->JHistory());
+      // get derivatives wrt to last spatial configuration
+      LINALG::Matrix<3,8> N_xyz;
+      N_xyz.Multiply(invJdef,derivs[gp]);
+      
+      // build multiplicative incremental defgrd
+      defgrd.MultiplyTT(xdisp,N_xyz);
+      defgrd(0,0) += 1.0;
+      defgrd(1,1) += 1.0;
+      defgrd(2,2) += 1.0;
+
+      // get stored old incremental F
+      LINALG::Matrix<3,3> Fhist;
+      prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
+
+      // build total defgrd = delta F * F_old
+      LINALG::Matrix<3,3> Fnew;
+      Fnew.Multiply(defgrd,Fhist);
+      defgrd = Fnew;
+    }
+    else // no prestressing
+    {
+      // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
+      defgrd.MultiplyTT(xcurr,N_XYZ);
+    }
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> invdefgrd;
     invdefgrd.Invert(defgrd);
     double detF=defgrd.Determinant();
@@ -480,24 +636,24 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
     cauchygreen.MultiplyTN(defgrd,defgrd);
 
     // F_bar deformation gradient =(detF_0/detF)^1/3*F
-		LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd_bar(defgrd);
-		double f_bar_factor=pow(detF_0/detF,1.0/3.0);
-		defgrd_bar.Scale(f_bar_factor);
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> defgrd_bar(defgrd);
+    double f_bar_factor=pow(detF_0/detF,1.0/3.0);
+    defgrd_bar.Scale(f_bar_factor);
 
-		// Right Cauchy-Green tensor(Fbar) = F_bar^T * F_bar
-		LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> cauchygreen_bar;
-		cauchygreen_bar.MultiplyTN(defgrd_bar,defgrd_bar);
+    // Right Cauchy-Green tensor(Fbar) = F_bar^T * F_bar
+    LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> cauchygreen_bar;
+    cauchygreen_bar.MultiplyTN(defgrd_bar,defgrd_bar);
 
     // Green-Lagrange strains(F_bar) matrix E = 0.5 * (Cauchygreen(F_bar) - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-		Epetra_SerialDenseVector glstrain_bar_epetra(NUMSTR_SOH8);
-		LINALG::Matrix<NUMSTR_SOH8,1> glstrain_bar(glstrain_bar_epetra.A(),true);
-		glstrain_bar(0) = 0.5 * (cauchygreen_bar(0,0) - 1.0);
-		glstrain_bar(1) = 0.5 * (cauchygreen_bar(1,1) - 1.0);
-		glstrain_bar(2) = 0.5 * (cauchygreen_bar(2,2) - 1.0);
-		glstrain_bar(3) = cauchygreen_bar(0,1);
-		glstrain_bar(4) = cauchygreen_bar(1,2);
-		glstrain_bar(5) = cauchygreen_bar(2,0);
+    Epetra_SerialDenseVector glstrain_bar_epetra(NUMSTR_SOH8);
+    LINALG::Matrix<NUMSTR_SOH8,1> glstrain_bar(glstrain_bar_epetra.A(),true);
+    glstrain_bar(0) = 0.5 * (cauchygreen_bar(0,0) - 1.0);
+    glstrain_bar(1) = 0.5 * (cauchygreen_bar(1,1) - 1.0);
+    glstrain_bar(2) = 0.5 * (cauchygreen_bar(2,2) - 1.0);
+    glstrain_bar(3) = cauchygreen_bar(0,1);
+    glstrain_bar(4) = cauchygreen_bar(1,2);
+    glstrain_bar(5) = cauchygreen_bar(2,0);
 
     // return gp strains (only in case of stress/strain output)
     switch (iostrain)
@@ -757,6 +913,137 @@ int DRT::ELEMENTS::So_hex8fbarType::Initialize(DRT::Discretization& dis)
   }
   return 0;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  compute def gradient at every gaussian point (protected)   gee 07/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8fbar::DefGradient(const vector<double>& disp,
+                                         Epetra_SerialDenseMatrix& gpdefgrd,
+                                         DRT::ELEMENTS::PreStress& prestress)
+{
+  const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+  // derivatives at centroid point
+  LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
+  DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0, 0, 0, hex8);
+
+  // update element geometry
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xdisp;  // current  coord. of element
+  for (int i=0; i<NUMNOD_SOH8; ++i)
+  {
+    xdisp(i,0) = disp[i*NODDOF_SOH8+0];
+    xdisp(i,1) = disp[i*NODDOF_SOH8+1];
+    xdisp(i,2) = disp[i*NODDOF_SOH8+2];
+  }
+
+  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  {
+    // get Jacobian mapping wrt to the stored deformed configuration
+    LINALG::Matrix<3,3> invJdef;
+    prestress.StoragetoMatrix(gp,invJdef,prestress.JHistory());
+
+    // by N_XYZ = J^-1 * N_rst
+    LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_xyz;
+    N_xyz.Multiply(invJdef,derivs[gp]);
+
+    // build defgrd (independent of xrefe!)
+    LINALG::Matrix<3,3> defgrd;
+    defgrd.MultiplyTT(xdisp,N_xyz);
+    defgrd(0,0) += 1.0;
+    defgrd(1,1) += 1.0;
+    defgrd(2,2) += 1.0;
+
+    prestress.MatrixtoStorage(gp,defgrd,gpdefgrd);
+  }
+  
+  {
+    // get Jacobian mapping wrt to the stored deformed configuration
+    LINALG::Matrix<3,3> invJdef;
+    prestress.StoragetoMatrix(NUMGPT_SOH8,invJdef,prestress.JHistory());
+
+    // by N_XYZ = J^-1 * N_rst
+    LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_xyz;
+    N_xyz.Multiply(invJdef,N_rst_0);
+
+    // build defgrd (independent of xrefe!)
+    LINALG::Matrix<3,3> defgrd;
+    defgrd.MultiplyTT(xdisp,N_xyz);
+    defgrd(0,0) += 1.0;
+    defgrd(1,1) += 1.0;
+    defgrd(2,2) += 1.0;
+
+    prestress.MatrixtoStorage(NUMGPT_SOH8,defgrd,gpdefgrd);
+  }  
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  compute Jac.mapping wrt deformed configuration (protected) gee 07/08|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex8fbar::UpdateJacobianMapping(
+                                            const vector<double>& disp,
+                                            DRT::ELEMENTS::PreStress& prestress)
+{
+  const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+  // derivatives at centroid
+  LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
+  DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0, 0, 0, hex8);
+
+  // get incremental disp
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xdisp;
+  for (int i=0; i<NUMNOD_SOH8; ++i)
+  {
+    xdisp(i,0) = disp[i*NODDOF_SOH8+0];
+    xdisp(i,1) = disp[i*NODDOF_SOH8+1];
+    xdisp(i,2) = disp[i*NODDOF_SOH8+2];
+  }
+
+  LINALG::Matrix<3,3> invJhist;
+  LINALG::Matrix<3,3> invJ;
+  LINALG::Matrix<3,3> defgrd;
+  LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> N_xyz;
+  LINALG::Matrix<3,3> invJnew;
+  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  {
+    // get the invJ old state
+    prestress.StoragetoMatrix(gp,invJhist,prestress.JHistory());
+    // get derivatives wrt to invJhist
+    N_xyz.Multiply(invJhist,derivs[gp]);
+    // build defgrd \partial x_new / \parial x_old , where x_old != X
+    defgrd.MultiplyTT(xdisp,N_xyz);
+    defgrd(0,0) += 1.0;
+    defgrd(1,1) += 1.0;
+    defgrd(2,2) += 1.0;
+    // make inverse of this defgrd
+    defgrd.Invert();
+    // push-forward of Jinv
+    invJnew.MultiplyTN(defgrd,invJhist);
+    // store new reference configuration
+    prestress.MatrixtoStorage(gp,invJnew,prestress.JHistory());
+  } // for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+
+  {
+    // get the invJ old state
+    prestress.StoragetoMatrix(NUMGPT_SOH8,invJhist,prestress.JHistory());
+    // get derivatives wrt to invJhist
+    N_xyz.Multiply(invJhist,N_rst_0);
+    // build defgrd \partial x_new / \parial x_old , where x_old != X
+    defgrd.MultiplyTT(xdisp,N_xyz);
+    defgrd(0,0) += 1.0;
+    defgrd(1,1) += 1.0;
+    defgrd(2,2) += 1.0;
+    // make inverse of this defgrd
+    defgrd.Invert();
+    // push-forward of Jinv
+    invJnew.MultiplyTN(defgrd,invJhist);
+    // store new reference configuration
+    prestress.MatrixtoStorage(NUMGPT_SOH8,invJnew,prestress.JHistory());
+  }
+
+  return;
+}
+
 
 #endif  // #ifdef CCADISCRET
 #endif  // #ifdef D_SOLID3

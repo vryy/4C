@@ -14,6 +14,7 @@ Maintainer: Moritz Frenzel
 #ifdef CCADISCRET
 
 #include "so_hex8.H"
+#include "so_hex8fbar.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
@@ -216,7 +217,7 @@ void DRT::ELEMENTS::So_hex8::Pack(DRT::PackBuffer& data) const
   }
 
   // invdesign_
-  if (pstype_==INPAR::STR::prestress_id)
+  else if (pstype_==INPAR::STR::prestress_id)
   {
     DRT::ParObject::AddtoPack(data,*invdesign_);
   }
@@ -269,12 +270,18 @@ void DRT::ELEMENTS::So_hex8::Unpack(const vector<char>& data)
     vector<char> tmpprestress(0);
     ExtractfromPack(position,data,tmpprestress);
     if (prestress_ == Teuchos::null)
-      prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8,NUMGPT_SOH8));
+    {
+      int numgpt = NUMGPT_SOH8;
+      // see whether I am actually a So_hex8fbar element
+      DRT::ELEMENTS::So_hex8fbar* me = dynamic_cast<DRT::ELEMENTS::So_hex8fbar*>(this);
+      if (me) numgpt += 1; // one more history entry for centroid data in hex8fbar
+      prestress_ = rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8,numgpt));
+    }
     prestress_->Unpack(tmpprestress);
   }
 
   // invdesign_
-  if (pstype_==INPAR::STR::prestress_id)
+  else if (pstype_==INPAR::STR::prestress_id)
   {
     vector<char> tmpinvdesign(0);
     ExtractfromPack(position,data,tmpinvdesign);
