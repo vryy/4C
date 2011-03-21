@@ -1,6 +1,7 @@
 
 #include "../../src/drt_cut/cut_mesh.H"
 #include "../../src/drt_cut/cut_element.H"
+#include "../../src/drt_cut/cut_position2d.H"
 #include "cut_test_utils.H"
 
 GEO::CUT::Element* create_tet4( GEO::CUT::Mesh & mesh )
@@ -1465,4 +1466,44 @@ void test_hex8_quad4_mesh()
   }
 
   cutmesh( mesh );
+}
+
+void test_position2d()
+{
+  LINALG::Matrix<3,3> side_xyze;
+  LINALG::Matrix<3,1> xyz;
+  LINALG::Matrix<3,1> shift;
+
+  side_xyze( 0, 0 ) = -0.20710678118654757;
+  side_xyze( 1, 0 ) = 0;
+  side_xyze( 2, 0 ) = 0.62132034355964261;
+  side_xyze( 0, 1 ) = -0.20710678118654757;
+  side_xyze( 1, 1 ) = 0;
+  side_xyze( 2, 1 ) = -0.62132034355964261;
+  side_xyze( 0, 2 ) = 0.41421356237309503;
+  side_xyze( 1, 2 ) = 0;
+  side_xyze( 2, 2 ) = 0;
+
+  xyz( 0 ) = -0.20710678118654757;
+  xyz( 1 ) = -0.62132046378538341;
+  xyz( 2 ) = -0.62132034355964261;
+
+  shift( 0 ) = -0.41421356237309503;
+  shift( 1 ) = 1.2022574075492253e-07;
+  shift( 2 ) = 0;
+
+  for ( int i=0; i<3; ++i )
+  {
+    LINALG::Matrix<3,1> x1( &side_xyze( 0, i ),  true );
+    x1.Update( 1, shift, 1 );
+  }
+  xyz.Update( 1, shift, 1 );
+
+  double scale = 1.6094757082487299;
+
+  side_xyze.Scale( scale );
+  xyz.Scale( scale );
+
+  GEO::CUT::Position2d<DRT::Element::tri3> pos( side_xyze, xyz );
+  pos.Compute();
 }
