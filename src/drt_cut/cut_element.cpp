@@ -40,13 +40,13 @@ bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side )
 
   for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
   {
-    Side * s = dynamic_cast<Side*>( *i );
+    Side * s = *i;
     FindCutPoints( mesh, *s, side );
   }
 
   for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
   {
-    Side * s = dynamic_cast<Side*>( *i );
+    Side * s = *i;
     if ( FindCutLines( mesh, *s, side ) )
     {
       cut = true;

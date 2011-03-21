@@ -40,6 +40,8 @@ public:
 
   virtual Facet * FindFacet( const std::vector<Point*> & facet_points );
 
+  virtual bool FindLevelSetCutLines( Mesh & mesh, Element * element, Side & side, const std::set<Point*> & cut );
+
 };
 
   }

@@ -116,7 +116,7 @@ bool GEO::CUT::Side::FindCutLines( Mesh & mesh, Element * element, Side & other 
       }
       return true;
     }
-    return false;
+    return other.FindLevelSetCutLines( mesh, element, *this, cuts );
   }
   }
 }
@@ -166,6 +166,11 @@ GEO::CUT::Facet * GEO::CUT::Side::FindFacet( const std::vector<Point*> & facet_p
   return NULL;
 }
 
+bool GEO::CUT::Side::FindLevelSetCutLines( Mesh & mesh, Element * element, Side & side, const std::set<Point*> & cut )
+{
+  // This is not a levelset side. No special cut lines here.
+  return false;
+}
 
 void GEO::CUT::Side::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )
 {
