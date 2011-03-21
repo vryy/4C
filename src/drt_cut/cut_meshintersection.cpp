@@ -172,7 +172,8 @@ void GEO::CUT::MeshIntersection::Status()
     count++;
   }
 
-  NormalMesh().DumpGmshIntegrationcells( "integrationcells.pos" );
+  //NormalMesh().DumpGmshVolumeCells( "volumecells" );
+  NormalMesh().DumpGmshIntegrationCells( "integrationcells.pos" );
 #endif
 #endif
 }

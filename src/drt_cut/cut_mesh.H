@@ -127,7 +127,9 @@ public:
 
   void DumpGmsh( std::string name );
 
-  void DumpGmshIntegrationcells( std::string name );
+  void DumpGmshVolumeCells( std::string name );
+
+  void DumpGmshIntegrationCells( std::string name );
 
   Node* GetNode( int nid ) const;
 

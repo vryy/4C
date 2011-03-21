@@ -52,7 +52,7 @@ GEO::CUT::Facet::Facet( Mesh & mesh, const std::vector<Point*> & points, Side * 
       }
       else
       {
-        position_ = Point::inside;
+        position_ = Point::undecided;
       }
     }
   }

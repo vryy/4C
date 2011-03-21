@@ -54,7 +54,8 @@ void GEO::CUT::LevelSetIntersection::Cut( bool include_inner )
 
 #ifdef DEBUGCUTLIBRARY
   m.DumpGmsh( "mesh.pos" );
-  m.DumpGmshIntegrationcells( "integrationcells.pos" );
+  //m.DumpGmshVolumeCells( "volumecells" );
+  m.DumpGmshIntegrationCells( "integrationcells.pos" );
 #endif
 }
 

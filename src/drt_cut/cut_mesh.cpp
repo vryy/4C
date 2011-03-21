@@ -806,6 +806,7 @@ void GEO::CUT::Mesh::FindNodePositions()
     e.FindNodePositions();
   }
 
+#if 0
   // If there are any undecided facets left, those should be outside. This can
   // only happen in test cases where there is no edge cut to determine a
   // genuine facet position.
@@ -819,6 +820,7 @@ void GEO::CUT::Mesh::FindNodePositions()
       f->Position( Point::outside );
     }
   }
+#endif
 }
 
 void GEO::CUT::Mesh::FindLSNodePositions()
@@ -871,24 +873,12 @@ void GEO::CUT::Mesh::FindNodalDOFSets( bool include_inner )
 
 void GEO::CUT::Mesh::CreateIntegrationCells()
 {
-#ifdef DEBUGCUTLIBRARY
-  int debugcounter = 0;
-#endif
   for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin();
         i!=cells_.end();
         ++i )
   {
     VolumeCell * cell = &**i;
-
-//     std::ofstream file( "volumecell.plot" );
-//     file.precision( 16 );
-//     cell->Print( file );
-//     file.close();
-
     cell->CreateIntegrationCells( *this );
-#ifdef DEBUGCUTLIBRARY
-    debugcounter += 1;
-#endif
   }
 }
 
@@ -1157,7 +1147,45 @@ void GEO::CUT::Mesh::DumpGmsh( std::ofstream & file, const std::vector<Node*> & 
   file << "};\n";
 }
 
-void GEO::CUT::Mesh::DumpGmshIntegrationcells( std::string name )
+void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name )
+{
+  int count = 0;
+  for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin();
+        i!=cells_.end();
+        ++i )
+  {
+    VolumeCell * vc = &**i;
+    std::stringstream filename;
+    filename << name << count << ".pos";
+    std::ofstream file( filename.str().c_str() );
+
+    file << "View \"IntegrationCells\" {\n";
+    const std::set<IntegrationCell*> & integrationcells = vc->IntegrationCells();
+    for ( std::set<IntegrationCell*>::const_iterator i=integrationcells.begin();
+          i!=integrationcells.end();
+          ++i )
+    {
+      IntegrationCell * ic = *i;
+      ic->DumpGmsh( file );
+    }
+    file << "};\n";
+
+    file << "View \"BoundaryCells\" {\n";
+    const std::set<BoundaryCell*> & boundarycells = vc->BoundaryCells();
+    for ( std::set<BoundaryCell*>::const_iterator i=boundarycells.begin();
+          i!=boundarycells.end();
+          ++i )
+    {
+      BoundaryCell * bc = *i;
+      bc->DumpGmsh( file );
+    }
+    file << "};\n";
+
+    count += 1;
+  }
+}
+
+void GEO::CUT::Mesh::DumpGmshIntegrationCells( std::string name )
 {
   std::ofstream file( name.c_str() );
   file << "View \"IntegrationCells\" {\n";

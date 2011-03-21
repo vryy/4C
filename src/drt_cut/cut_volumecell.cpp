@@ -78,6 +78,11 @@ void GEO::CUT::VolumeCell::GetAllPoints( Mesh & mesh, std::set<Point*> & cut_poi
 
 void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
 {
+  // determine volume position and fix any facet positions that might still
+  // be undecided (those that have just oncutsurface nodes but do not belong
+  // to any cut surface)
+  Point::PointPosition position = Position();
+
   if ( element_->IsCut() )
   {
     IntegrationCell * ic;
@@ -124,8 +129,6 @@ void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
 
       const std::vector<std::vector<int> > & tets = tetmesh.Tets();
       const std::map<Facet*, std::vector<Point*> > & sides_xyz = tetmesh.SidesXYZ();
-
-      Point::PointPosition position = Position();
 
       for ( std::vector<std::vector<int> >::const_iterator i=tets.begin();
             i!=tets.end();
@@ -235,6 +238,7 @@ void GEO::CUT::VolumeCell::ConnectNodalDOFSets( bool include_inner )
 
 GEO::CUT::Point::PointPosition GEO::CUT::VolumeCell::Position()
 {
+  bool havecutsurface = false;
   GEO::CUT::Point::PointPosition position = GEO::CUT::Point::undecided;
   for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
@@ -243,8 +247,10 @@ GEO::CUT::Point::PointPosition GEO::CUT::VolumeCell::Position()
     switch ( fp )
     {
     case GEO::CUT::Point::undecided:
-      throw std::runtime_error( "undecided facet position" );
+      //throw std::runtime_error( "undecided facet position" );
+      break;
     case GEO::CUT::Point::oncutsurface:
+      havecutsurface = true;
       break;
     case GEO::CUT::Point::inside:
     case GEO::CUT::Point::outside:
@@ -255,6 +261,26 @@ GEO::CUT::Point::PointPosition GEO::CUT::VolumeCell::Position()
       position = fp;
     }
   }
+
+  if ( position == GEO::CUT::Point::undecided )
+  {
+    //throw std::runtime_error( "undecided volume position" );
+    if ( havecutsurface )
+      position = GEO::CUT::Point::inside;
+    else
+      position = GEO::CUT::Point::outside;
+  }
+
+  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  {
+    Facet * f = *i;
+    GEO::CUT::Point::PointPosition fp = f->Position();
+    if ( fp==GEO::CUT::Point::undecided )
+    {
+      f->Position( position );
+    }
+  }
+
   return position;
 }
 

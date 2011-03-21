@@ -52,6 +52,7 @@ void test_hex8_quad4_mesh();
 
 void test_hex8_quad4_qhull1();
 void test_hex8_quad4_alex1();
+void test_hex8_quad4_alex2();
 void test_hex8_quad4_axel1();
 void test_hex8_quad4_axel2();
 void test_hex8_quad4_axel3();
@@ -74,6 +75,9 @@ void test_tet10_quad9_simple();
 void test_tet10_quad9_moved();
 
 void test_ls_hex8_florian1();
+void test_ls_hex8_florian2();
+void test_ls_hex8_florian3();
+void test_ls_hex8_florian4();
 void test_ls_hex8_simple();
 void test_ls_hex8_simple2();
 void test_ls_hex8_simple3();
@@ -137,6 +141,7 @@ int main( int argc, char ** argv )
 
   functable["hex8_quad4_qhull1"] = test_hex8_quad4_qhull1;
   functable["hex8_quad4_alex1"] = test_hex8_quad4_alex1;
+  functable["hex8_quad4_alex2"] = test_hex8_quad4_alex2;
   functable["hex8_quad4_axel1"] = test_hex8_quad4_axel1;
   functable["hex8_quad4_axel2"] = test_hex8_quad4_axel2;
   functable["hex8_quad4_axel3"] = test_hex8_quad4_axel3;
@@ -159,6 +164,9 @@ int main( int argc, char ** argv )
   functable["tet10_quad9_moved"] = test_tet10_quad9_moved;
 
   functable["ls_hex8_florian1"] = test_ls_hex8_florian1;
+  functable["ls_hex8_florian2"] = test_ls_hex8_florian2;
+  functable["ls_hex8_florian3"] = test_ls_hex8_florian3;
+  functable["ls_hex8_florian4"] = test_ls_hex8_florian4;
   functable["ls_hex8_simple"] = test_ls_hex8_simple;
   functable["ls_hex8_simple2"] = test_ls_hex8_simple2;
   functable["ls_hex8_simple3"] = test_ls_hex8_simple3;
