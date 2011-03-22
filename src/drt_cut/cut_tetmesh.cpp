@@ -961,10 +961,19 @@ void GEO::CUT::TetMesh::RemoveSimpleOverlappingTriFacets()
         }
         else
         {
-          if ( tri->HasOnCutSurface( points_ ) )
-          {
-            throw std::runtime_error( "broken tri partly on cut surface -- rotation needed" );
-          }
+//           if ( tri->HasOnCutSurface( points_ ) )
+//           {
+//             throw std::runtime_error( "broken tri partly on cut surface -- rotation needed" );
+//           }
+
+          // We have emergency tris here. But lets assume those tris belong to
+          // the cut surface for now. If this version is used and things go
+          // right these tris will be rotated later on. We will suffer a
+          // volume gap. But still, we should find the right interface via
+          // rotation.
+
+          active_surface_tris_[tri->Id()] = true;
+          local_broken_tris.push_back( tri );
         }
       }
 
@@ -1388,12 +1397,32 @@ void GEO::CUT::TetMesh::ActivateSingleTetsOnFacets()
       std::set<Entity<3>*> & tris = fi.tris_;
       for ( std::set<Entity<3>*>::iterator i=tris.begin(); i!=tris.end(); ++i )
       {
-        Entity<3> & tri = **i;
-        const std::vector<Entity<4>*> & tets = tri.Parents();
+        Entity<3> * tri = *i;
+        const std::vector<Entity<4>*> & tets = tri->Parents();
         if ( tets.size()==1 )
         {
-          accept_tets_[tets[0]->Id()] = true;
+          Entity<4> * tet = tets[0];
+          accept_tets_[tet->Id()] = true;
         }
+      }
+    }
+  }
+
+  // if there are broken tris that do not touch the cut surface at one point
+  // --- a rare case ---, deactivate all its parent tets
+
+  for ( std::set<Entity<3>*>::iterator i=broken_tris_.begin(); i!=broken_tris_.end(); ++i )
+  {
+    Entity<3> * tri = *i;
+    if ( not tri->AllOnCutSurface( points_ ) )
+    {
+      const std::vector<Entity<4>*> & tets = tri->Parents();
+      for ( std::vector<Entity<4>*>::const_iterator i=tets.begin();
+            i!=tets.end();
+            ++i )
+      {
+        Entity<4> * tet = *i;
+        accept_tets_[tet->Id()] = false;
       }
     }
   }
@@ -1757,13 +1786,23 @@ void GEO::CUT::TetMesh::CollectCoordinates( const std::vector<std::vector<int> >
   for ( std::vector<std::vector<int> >::const_iterator i=sides.begin(); i!=sides.end(); ++i )
   {
     const std::vector<int> & side = *i;
-    side_coords.push_back( points_[side[0]] );
-    side_coords.push_back( points_[side[1]] );
-    side_coords.push_back( points_[side[2]] );
+
+    Point * p1 = points_[side[0]];
+    Point * p2 = points_[side[1]];
+    Point * p3 = points_[side[2]];
+
+    if ( p1->Position()==Point::oncutsurface and
+         p2->Position()==Point::oncutsurface and
+         p3->Position()==Point::oncutsurface )
+    {
+      side_coords.push_back( p1 );
+      side_coords.push_back( p2 );
+      side_coords.push_back( p3 );
 
 #ifdef TETMESH_GMSH_DEBUG_OUTPUT
-    surface_tris_.push_back( side );
+      surface_tris_.push_back( side );
 #endif
+    }
   }
 }
 
