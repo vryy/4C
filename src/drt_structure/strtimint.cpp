@@ -1016,6 +1016,12 @@ void STR::TimInt::OutputContact()
   // get out of here if no contact / meshtying simulation
   if (cmtman_ == Teuchos::null) return;
 
+  // THIS IS FOR DEBUGGING ONLY!!!
+  // print contact forces with respect to reference configuration
+#ifdef CONTACTFORCEREFCONFIG
+  cmtman_->GetStrategy().ForceRefConfig();
+#endif
+
   // print active set
   cmtman_->GetStrategy().PrintActiveSet();
 
