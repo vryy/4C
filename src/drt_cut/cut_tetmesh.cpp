@@ -1299,7 +1299,7 @@ void GEO::CUT::TetMesh::ActivateCutSurfaceTris()
   {
     Facet * f = i->first;
     FacetInfo & fi = i->second;
-    if ( not f->OnCutSurface() )
+    if ( f->OnCutSide() )
     {
       std::set<Entity<3>*> & tris = fi.tris_;
       for ( std::set<Entity<3>*>::iterator i=tris.begin(); i!=tris.end(); ++i )
@@ -1321,7 +1321,7 @@ void GEO::CUT::TetMesh::TestCutSurface()
   {
     Facet * f = i->first;
     FacetInfo & fi = i->second;
-    if ( not f->OnCutSurface() )
+    if ( f->OnCutSide() )
     {
       std::set<Entity<3>*> & tris = fi.tris_;
 
@@ -1675,7 +1675,7 @@ void GEO::CUT::TetMesh::FillCutSides( std::map<Facet*, std::vector<Point*> > & s
   {
     Facet * f = i->first;
     FacetInfo & fi = i->second;
-    if ( not f->OnCutSurface() )
+    if ( f->OnCutSide() )
     {
       std::set<Entity<3>*> & tris = fi.tris_;
 

@@ -185,7 +185,9 @@ GEO::CUT::Hex8IntegrationCell * GEO::CUT::Hex8IntegrationCell::CreateCell( Mesh 
         {
           side[j] = rpoints[DRT::UTILS::eleNodeNumbering_hex27_surfaces[i][j]];
         }
-        Quad4BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
+        Facet * f = FindFacet( facets, side );
+        if ( f->OnCutSide() )
+          Quad4BoundaryCell::CreateCell( mesh, cell, f, side );
       }
 
       return mesh.NewHex8Cell( VolumePosition( facets ), rpoints, cell );
@@ -199,7 +201,9 @@ GEO::CUT::Hex8IntegrationCell * GEO::CUT::Hex8IntegrationCell::CreateCell( Mesh 
         {
           side[j] = points[DRT::UTILS::eleNodeNumbering_hex27_surfaces[i][j]];
         }
-        Quad4BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
+        Facet * f = FindFacet( facets, side );
+        if ( f->OnCutSide() )
+          Quad4BoundaryCell::CreateCell( mesh, cell, f, side );
       }
 
       return mesh.NewHex8Cell( VolumePosition( facets ), points, cell );
@@ -288,7 +292,9 @@ GEO::CUT::Tet4IntegrationCell * GEO::CUT::Tet4IntegrationCell::CreateCell( Mesh 
         {
           side[j] = points[DRT::UTILS::eleNodeNumbering_tet10_surfaces[i][j]];
         }
-        Tri3BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
+        Facet * f = FindFacet( facets, side );
+        if ( f->OnCutSide() )
+          Tri3BoundaryCell::CreateCell( mesh, cell, f, side );
       }
 
       return mesh.NewTet4Cell( VolumePosition( facets ), points, cell );
@@ -307,7 +313,9 @@ GEO::CUT::Tet4IntegrationCell * GEO::CUT::Tet4IntegrationCell::CreateCell( Mesh 
         {
           side[j] = points[DRT::UTILS::eleNodeNumbering_tet10_surfaces[i][j]];
         }
-        Tri3BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
+        Facet * f = FindFacet( facets, side );
+        if ( f->OnCutSide() )
+          Tri3BoundaryCell::CreateCell( mesh, cell, f, side );
       }
 
       return mesh.NewTet4Cell( VolumePosition( facets ), points, cell );
@@ -495,7 +503,9 @@ GEO::CUT::Wedge6IntegrationCell * GEO::CUT::Wedge6IntegrationCell::CreateCell( M
         {
           side[j] = rpoints[DRT::UTILS::eleNodeNumbering_wedge15_trisurfaces[i][j]];
         }
-        Tri3BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
+        Facet * f = FindFacet( facets, side );
+        if ( f->OnCutSide() )
+          Tri3BoundaryCell::CreateCell( mesh, cell, f, side );
       }
       for ( int i=0; i<3; ++i )
       {
@@ -504,7 +514,9 @@ GEO::CUT::Wedge6IntegrationCell * GEO::CUT::Wedge6IntegrationCell::CreateCell( M
         {
           side[j] = rpoints[DRT::UTILS::eleNodeNumbering_wedge15_quadsurfaces[i][j]];
         }
-        Quad4BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
+        Facet * f = FindFacet( facets, side );
+        if ( f->OnCutSide() )
+          Quad4BoundaryCell::CreateCell( mesh, cell, f, side );
       }
 
       return mesh.NewWedge6Cell( VolumePosition( facets ), rpoints, cell );
@@ -518,7 +530,9 @@ GEO::CUT::Wedge6IntegrationCell * GEO::CUT::Wedge6IntegrationCell::CreateCell( M
         {
           side[j] = points[DRT::UTILS::eleNodeNumbering_wedge15_trisurfaces[i][j]];
         }
-        Tri3BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
+        Facet * f = FindFacet( facets, side );
+        if ( f->OnCutSide() )
+          Tri3BoundaryCell::CreateCell( mesh, cell, f, side );
       }
       for ( int i=0; i<3; ++i )
       {
@@ -527,7 +541,9 @@ GEO::CUT::Wedge6IntegrationCell * GEO::CUT::Wedge6IntegrationCell::CreateCell( M
         {
           side[j] = points[DRT::UTILS::eleNodeNumbering_wedge15_quadsurfaces[i][j]];
         }
-        Quad4BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
+        Facet * f = FindFacet( facets, side );
+        if ( f->OnCutSide() )
+          Quad4BoundaryCell::CreateCell( mesh, cell, f, side );
       }
 
       return mesh.NewWedge6Cell( VolumePosition( facets ), points, cell );
@@ -634,7 +650,9 @@ GEO::CUT::Pyramid5IntegrationCell * GEO::CUT::Pyramid5IntegrationCell::CreateCel
         {
           side[j] = points[DRT::UTILS::eleNodeNumbering_pyramid5_trisurfaces[i][j]];
         }
-        Tri3BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
+        Facet * f = FindFacet( facets, side );
+        if ( f->OnCutSide() )
+          Tri3BoundaryCell::CreateCell( mesh, cell, f, side );
       }
       for ( int i=0; i<1; ++i )
       {
@@ -643,7 +661,9 @@ GEO::CUT::Pyramid5IntegrationCell * GEO::CUT::Pyramid5IntegrationCell::CreateCel
         {
           side[j] = points[DRT::UTILS::eleNodeNumbering_pyramid5_quadsurfaces[i][j]];
         }
-        Quad4BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
+        Facet * f = FindFacet( facets, side );
+        if ( f->OnCutSide() )
+          Quad4BoundaryCell::CreateCell( mesh, cell, f, side );
       }
 
       return mesh.NewPyramid5Cell( VolumePosition( facets ), points, cell );
@@ -662,7 +682,9 @@ GEO::CUT::Pyramid5IntegrationCell * GEO::CUT::Pyramid5IntegrationCell::CreateCel
         {
           side[j] = points[DRT::UTILS::eleNodeNumbering_pyramid5_trisurfaces[i][j]];
         }
-        Tri3BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
+        Facet * f = FindFacet( facets, side );
+        if ( f->OnCutSide() )
+          Tri3BoundaryCell::CreateCell( mesh, cell, f, side );
       }
       for ( int i=0; i<1; ++i )
       {
@@ -671,7 +693,9 @@ GEO::CUT::Pyramid5IntegrationCell * GEO::CUT::Pyramid5IntegrationCell::CreateCel
         {
           side[j] = points[DRT::UTILS::eleNodeNumbering_pyramid5_quadsurfaces[i][j]];
         }
-        Quad4BoundaryCell::CreateCell( mesh, cell, FindFacet( facets, side ), side );
+        Facet * f = FindFacet( facets, side );
+        if ( f->OnCutSide() )
+          Quad4BoundaryCell::CreateCell( mesh, cell, f, side );
       }
 
       return mesh.NewPyramid5Cell( VolumePosition( facets ), points, cell );

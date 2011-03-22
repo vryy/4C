@@ -53,7 +53,7 @@ public:
 
   void Print( std::ostream & stream );
 
-  bool OnCutSurface() { return SideId() < 0; }
+  bool OnCutSide() { return SideId() > -1; }
 
   int SideId();
 

@@ -60,7 +60,7 @@ void GEO::CUT::Tri3BoundaryCell::CollectCoordinates( const std::vector<Point*> &
     f = found;
   }
 
-  if ( f->OnCutSurface() )
+  if ( not f->OnCutSide() )
   {
     return;
   }
@@ -93,7 +93,7 @@ void GEO::CUT::Quad4BoundaryCell::CollectCoordinates( const std::vector<Point*> 
   }
 
   Facet * f = *facets.begin();
-  if ( f->OnCutSurface() )
+  if ( not f->OnCutSide() )
   {
     return;
   }
