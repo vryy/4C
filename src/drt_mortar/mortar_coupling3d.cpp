@@ -331,8 +331,8 @@ bool MORTAR::Coupling3d::RoughCheckOrient()
 
   // check orientation with respect to slave element
   double dot = nmc[0]*Auxn()[0]+nmc[1]*Auxn()[1]+nmc[2]*Auxn()[2];
-  if (dot<0) return true;
-  else       return false;
+  if (dot < -1.0e-12) return true;
+  else                return false;
 }
 
 /*----------------------------------------------------------------------*
