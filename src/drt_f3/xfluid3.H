@@ -78,7 +78,8 @@ private:
           MyState(
               const DRT::Discretization&      discret,
               const std::vector<int>&         lm,
-              const bool                      instat
+              const bool                      instat,
+              const bool                      isale
               );
 
           const bool instationary;   ///< whether we need unknowns for transient computation
@@ -86,6 +87,9 @@ private:
           std::vector<double> veln;  ///< unknowns at n
           std::vector<double> velnm; ///< unknowns at n-1
           std::vector<double> accn;  ///< time derivative of unknowns at n
+
+          std::vector<double> dispnp; ///< ale displacement
+          std::vector<double> gridv; ///< ale displacement
         };
 
         /// fluid-interface coupling matrices and vectors of uncondensed system at element level
@@ -105,6 +109,9 @@ private:
         };
 
         FluidFluidCouplingMatrices fluidfluidmatrices_;
+
+       //! flag for euler/ale net algorithm
+        bool                         is_ale_;
 
         //! @name Constructors and destructors and related methods
 
@@ -148,6 +155,8 @@ private:
         virtual void Pack(DRT::PackBuffer& data) const;
 
         virtual void Unpack(const std::vector<char>& data);
+
+        bool IsAle() const {return is_ale_;}
 
         //! Destructor
         virtual ~XFluid3();

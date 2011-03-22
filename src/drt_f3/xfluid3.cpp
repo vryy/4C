@@ -72,51 +72,61 @@ void DRT::ELEMENTS::XFluid3Type::SetupElementDefinition( std::map<std::string,st
   defs["HEX8"]
     .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
+    .AddNamedString("NA")
     ;
 
   defs["HEX20"]
     .AddIntVector("HEX20",20)
     .AddNamedInt("MAT")
+    .AddNamedString("NA")
     ;
 
   defs["HEX27"]
     .AddIntVector("HEX27",27)
     .AddNamedInt("MAT")
+    .AddNamedString("NA")
     ;
 
   defs["TET4"]
     .AddIntVector("TET4",4)
     .AddNamedInt("MAT")
+    .AddNamedString("NA")
     ;
 
   defs["TET10"]
     .AddIntVector("TET10",10)
     .AddNamedInt("MAT")
+    .AddNamedString("NA")
     ;
 
   defs["WEDGE6"]
     .AddIntVector("WEDGE6",6)
     .AddNamedInt("MAT")
+    .AddNamedString("NA")
     ;
 
   defs["WEDGE15"]
     .AddIntVector("WEDGE15",15)
     .AddNamedInt("MAT")
+    .AddNamedString("NA")
     ;
 
   defs["PYRAMID5"]
     .AddIntVector("PYRAMID5",5)
     .AddNamedInt("MAT")
+    .AddNamedString("NA")
     ;
 
   defs["NURBS8"]
     .AddIntVector("NURBS8",8)
     .AddNamedInt("MAT")
+    .AddNamedString("NA")
     ;
 
   defs["NURBS27"]
     .AddIntVector("NURBS27",27)
     .AddNamedInt("MAT")
+    .AddNamedString("NA")
     ;
 }
 
@@ -314,11 +324,17 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::XFluid3::Volumes()
 DRT::ELEMENTS::XFluid3::MyState::MyState(
     const DRT::Discretization&      discret,
     const std::vector<int>&         lm,
-    const bool                      instat
+    const bool                      instat,
+    const bool                      isale
     ) :
       instationary(instat)
 {
   DRT::UTILS::ExtractMyValues(*discret.GetState("velnp"),velnp,lm);
+  if (isale)
+  {
+    DRT::UTILS::ExtractMyValues(*discret.GetState("dispnp") ,dispnp ,lm);
+    DRT::UTILS::ExtractMyValues(*discret.GetState("gridv") ,gridv ,lm);
+  }
   if (instat)
   {
     DRT::UTILS::ExtractMyValues(*discret.GetState("veln") ,veln ,lm);

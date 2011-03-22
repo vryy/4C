@@ -28,6 +28,17 @@ bool DRT::ELEMENTS::XFluid3::ReadElement(const std::string& eletype,
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
 
+  std::string na;
+  linedef->ExtractString("NA",na);
+  if (na=="ale" or na=="ALE" or na=="Ale")
+  {
+    is_ale_ = true;
+  }
+  else if (na=="euler" or na=="EULER" or na=="Euler")
+    is_ale_ = false;
+  else
+    dserror("Reading of XFLUID3 element failed: Euler/Ale");
+
   return true;
 }
 

@@ -81,7 +81,8 @@ namespace XFLUID
           const bool                        ifaceForceContribution, ///< is xfem element a row element?
           const bool                        monolithic_FSI,
           double&                           L2,
-          DRT::ELEMENTS::XFluid3::FluidFluidCouplingMatrices fluidfluidmatrices
+          DRT::ELEMENTS::XFluid3::FluidFluidCouplingMatrices fluidfluidmatrices,
+          const bool                        isale
           );
 
 
@@ -112,7 +113,8 @@ namespace XFLUID
           const bool                        ifaceForceContribution, ///< is xfem element a row element?
           const bool                        monolithic_FSI,
           double&                           L2,
-          DRT::ELEMENTS::XFluid3::FluidFluidCouplingMatrices fluidfluidmatrices
+          DRT::ELEMENTS::XFluid3::FluidFluidCouplingMatrices fluidfluidmatrices,
+          const bool                        isale
           )
   {
     switch (btype)
@@ -120,7 +122,7 @@ namespace XFLUID
     case INPAR::XFEM::BoundaryTypeSigma:
       XFLUID::callSysmatSigma(params, assembly_type,
           ele, ih, eleDofManager, mystate, iforcecol, estif, eforce,
-          material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices);
+                              material, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices,isale);
       break;
     case INPAR::XFEM::BoundaryTypeTauPressure:
       XFLUID::callSysmatTauPressure(params, assembly_type,

@@ -266,7 +266,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       // extract local values from the global vectors
       const bool instationary = (timealgo != INPAR::FLUID::timeint_stationary);
 
-      DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,instationary);
+      DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,instationary,is_ale_);
 
       const bool monolithic_FSI = params.get<bool>("monolithic_FSI");
 
@@ -308,7 +308,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       // extract local values from the global vectors
       const bool instationary = (timealgo != INPAR::FLUID::timeint_stationary);
 
-      DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,instationary);
+      DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,instationary,is_ale_);
       DRT::DEBUGGING::NaNChecker(mystate.velnp);
 
       const bool newton = params.get<bool>("include reactive terms for linearisation");
@@ -338,7 +338,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat(DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(params, "EMBEDDED_BOUNDARY"), params, assembly_type,
                 this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1,
-                mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2,fluidfluidmatrices_);
+                           mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2,fluidfluidmatrices_,is_ale_);
 
         if (ih_->ElementIntersected(Id()))
         {
@@ -403,7 +403,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat(DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(params, "EMBEDDED_BOUNDARY"), params, assembly_type,
                 this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond,
-                mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices_);
+                           mat, timealgo, dt, theta, newton, pstab, supg, cstab, ifaceForceContribution, monolithic_FSI, L2, fluidfluidmatrices_,is_ale_);
 
         const bool stationary_monolithic_FSI = (monolithic_FSI and (timealgo == INPAR::FLUID::timeint_stationary));
         const bool instationary_monolithic_FSI = (monolithic_FSI and (timealgo != INPAR::FLUID::timeint_stationary));
@@ -548,7 +548,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
       // extract local values from the global vectors
       const bool instationary = (timealgo != INPAR::FLUID::timeint_stationary);
 
-      DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,instationary);
+      DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,instationary,is_ale_);
 
       const bool newton = params.get<bool>("include reactive terms for linearisation");
       const bool pstab  = true;
@@ -575,7 +575,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat(DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(params, "EMBEDDED_BOUNDARY"), params, assembly_type,
             this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1,
-            mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, monolithic_FSI, L2, fluidfluidmatrices_);
+                           mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, monolithic_FSI, L2, fluidfluidmatrices_,is_ale_);
 
         if (ih_->ElementIntersected(Id()))
         {
@@ -635,7 +635,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         XFLUID::callSysmat(DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(params, "EMBEDDED_BOUNDARY"), params, assembly_type,
             this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond,
-            mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, monolithic_FSI, L2, fluidfluidmatrices_);
+                           mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, monolithic_FSI, L2, fluidfluidmatrices_,is_ale_);
 
         // condensation
         CondenseElementStressAndStoreOldIterationStep(
@@ -683,7 +683,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
           // extract local values from the global vectors
           const bool instationary = (timealgo != INPAR::FLUID::timeint_stationary);
 
-          DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,instationary);
+          DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,instationary,is_ale_);
 
           const bool newton = params.get<bool>("include reactive terms for linearisation");
           const bool pstab  = true;
@@ -710,7 +710,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             // calculate element coefficient matrix and rhs
             XFLUID::callSysmat(DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(params, "EMBEDDED_BOUNDARY"), params, assembly_type,
                 this, ih_, *eleDofManager_, mystate, iforcecol, elemat1, elevec1,
-                mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, monolithic_FSI, L2, fluidfluidmatrices_);
+                               mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, monolithic_FSI, L2, fluidfluidmatrices_,is_ale_);
 
             if (ih_->ElementIntersected(Id()))
             {
@@ -770,7 +770,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
             // calculate element coefficient matrix and rhs
             XFLUID::callSysmat(DRT::INPUT::get<INPAR::XFEM::BoundaryIntegralType>(params, "EMBEDDED_BOUNDARY"), params, assembly_type,
                 this, ih_, *eleDofManager_uncondensed_, mystate, iforcecol, elemat1_uncond, elevec1_uncond,
-                mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, monolithic_FSI, L2, fluidfluidmatrices_);
+                               mat, timealgo, dt, theta, newton, pstab, supg, cstab, false, monolithic_FSI, L2, fluidfluidmatrices_,is_ale_);
 
             // condensation
             CondenseElementStressAndStoreOldIterationStep(
@@ -807,7 +807,7 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
         break;
 
       // extract local values from the global vector
-      DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,true);
+      DRT::ELEMENTS::XFluid3::MyState mystate(discretization,lm,true,is_ale_);
 
       const bool pstab  = true;
 
