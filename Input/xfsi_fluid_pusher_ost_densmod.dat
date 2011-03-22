@@ -1484,10 +1484,10 @@ CURVE1 on EXPR FUNC (1-cos(2.0*t*pi))/2.0 t1 0.0 t2 1000.0
 -----------------------------------------------------------LOCSYS4
 -----------------------------------------------------------LOCSYS5
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 85 POSITION velx     NAME velx     VALUE -4.4832264809908526 TOLERANCE 1e-4
+FLUID DIS 1 NODE 85 POSITION velx     NAME velx     VALUE -4.4832232944406556 TOLERANCE 1e-4
 FLUID DIS 1 NODE 85 POSITION vely     NAME vely     VALUE 0.0e00 TOLERANCE 1e-4
 FLUID DIS 1 NODE 85 POSITION velz     NAME velz     VALUE 0.0e00 TOLERANCE 1e-4
-FLUID DIS 1 NODE 85 POSITION pressure NAME pressure VALUE 9.4561826603465011 TOLERANCE 1e-4
+FLUID DIS 1 NODE 85 POSITION pressure NAME pressure VALUE 9.4557545102541170 TOLERANCE 1e-3
 --------------------------------------------------------MONITORING
 // FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
 // FLUID 1 - 0 0 0 0 0 0
