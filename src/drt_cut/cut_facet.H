@@ -53,6 +53,8 @@ public:
 
   void Print( std::ostream & stream );
 
+  bool OnCutSurface() { return SideId() < 0; }
+
   int SideId();
 
   int PositionSideId();

@@ -464,7 +464,7 @@ bool GEO::CUT::Side::IsCut()
 {
   if ( facets_.size()>1 )
     return true;
-  if ( facets_[0]->SideId() > -1 )
+  if ( not facets_[0]->OnCutSurface() )
     return true;
   return false;
 }
