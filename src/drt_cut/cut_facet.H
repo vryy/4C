@@ -67,7 +67,9 @@ public:
 
   void GetAllPoints( Mesh & mesh, std::set<Point*> & cut_points );
 
+#if 0
   void CreateLinearElements( Mesh & mesh );
+#endif
 
   void AddHole( Facet * hole );
 

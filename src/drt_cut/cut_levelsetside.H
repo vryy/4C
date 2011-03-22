@@ -36,6 +36,8 @@ public:
 
   virtual bool IsCut();
 
+  virtual bool DoTriangulation() { return true; }
+
   virtual void AddLine( Line* cut_line );
 
   virtual Facet * FindFacet( const std::vector<Point*> & facet_points );

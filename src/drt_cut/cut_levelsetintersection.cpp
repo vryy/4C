@@ -42,7 +42,9 @@ void GEO::CUT::LevelSetIntersection::Cut( bool include_inner )
   Mesh & m = NormalMesh();
 
   m.Cut( side_ );
-  //m.Status();
+
+  m.Status();
+
   m.MakeFacets();
   m.MakeVolumeCells();
 

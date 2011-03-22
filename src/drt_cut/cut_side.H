@@ -72,6 +72,8 @@ public:
 
   virtual bool IsCut();
 
+  virtual bool DoTriangulation() { return true; }
+
   //bool FullSideCut() { return cut_lines_.size()==edges_.size() and facets_.size()==1; }
 
   bool OnSide( const std::set<Point*, PointPidLess> & points );

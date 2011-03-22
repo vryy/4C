@@ -139,6 +139,7 @@ void GEO::CUT::Facet::GetAllPoints( Mesh & mesh, std::set<Point*> & cut_points )
   }
 }
 
+#if 0
 void GEO::CUT::Facet::CreateLinearElements( Mesh & mesh )
 {
   if ( holes_.size()>0 )
@@ -177,6 +178,7 @@ void GEO::CUT::Facet::CreateLinearElements( Mesh & mesh )
     mesh.CreateTri3( SideId(), nids );
   }
 }
+#endif
 
 void GEO::CUT::Facet::AddHole( Facet * hole )
 {
@@ -190,6 +192,9 @@ void GEO::CUT::Facet::AddHole( Facet * hole )
 
 bool GEO::CUT::Facet::IsPlanar( Mesh & mesh )
 {
+  if ( not parentside_->DoTriangulation() )
+    return true;
+
   if ( triangulation_.size()>0 )
   {
     // if there is a triangulation use it
