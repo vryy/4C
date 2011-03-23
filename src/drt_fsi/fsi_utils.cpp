@@ -24,6 +24,7 @@
 
 // we need to know all element types for the ale mesh creation
 #include "../drt_f3/fluid3.H"
+#include "../drt_f3/xfluid3.H"
 
 #include "../drt_ale2/ale2.H"
 #include "../drt_ale2/ale2_nurbs.H"
@@ -637,6 +638,23 @@ bool FSI::UTILS::AleFluidCloneStrategy::DetermineEleType(
           dserror("%i D Dimension not supported", nsd);
       }
     }
+    DRT::ELEMENTS::XFluid3* xf3 = dynamic_cast<DRT::ELEMENTS::XFluid3*>(actele);
+    if (not found and xf3!=NULL)
+    {
+      const int  nsd = DRT::UTILS::getDimension(xf3->Shape());
+      found = true;
+      isale = xf3->IsAle();
+
+      if (isale and ismyele)
+      {
+        if (nsd == 3)
+          eletype.push_back("ALE3");
+        else if (nsd == 2)
+          eletype.push_back("ALE2");
+        else
+          dserror("%i D Dimension not supported", nsd);
+      }
+    }
 #endif
 
     if (not found)
@@ -1067,7 +1085,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
     //lids of gids of node
     lids[p] = (fluiddofrowmap_)->LID((fluiddis->Dof(node))[p]);
 
-    // current coord of ale node. 
+    // current coord of ale node.
     // Initialize as coordinates of current node, which is extremely important for 2D!
     LINALG::Matrix<3,1> alenodecurr (node->X());
 
@@ -1237,7 +1255,7 @@ void FSI::UTILS::SlideAleUtils::OutputRestart
 )
 {
   output.WriteVector("projhist", iprojhist_);
-  
+
   return;
 }
 
