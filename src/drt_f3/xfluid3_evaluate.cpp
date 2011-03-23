@@ -127,6 +127,8 @@ int DRT::ELEMENTS::XFluid3::Evaluate(ParameterList& params,
     dserror("newtonian fluid material expected but got type %d", mat->MaterialType());
 
   const MAT::NewtonianFluid* actmat = dynamic_cast<const MAT::NewtonianFluid*>(mat.get());
+  //this should be changed!!
+  is_ale_ = false;
 
   switch(act)
   {
