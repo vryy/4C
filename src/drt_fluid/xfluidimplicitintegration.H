@@ -34,6 +34,8 @@ Maintainer: Axel Gerstenberger
 
 #include "fluid_utils_mapextractor.H"
 
+#include "../drt_cut/cut_boundingbox.H"
+
 /// fluid algorithms
 namespace FLD
 {
@@ -250,6 +252,9 @@ public:
   Teuchos::RCP<const Epetra_Map> VelocityRowMap() const { return velpressplitter_.OtherMap(); }
   Teuchos::RCP<const Epetra_Map> PressureRowMap() const { return velpressplitter_.CondMap(); }
 
+  Teuchos::RCP<Epetra_Vector> Dispnp() {return state_.dispnp_; }
+  Teuchos::RCP<Epetra_Vector> Dispn() { return state_.dispn_; }
+
   double ResidualScaling() const { return 1.0; }
   double Dt() const { return dta_; }
 
@@ -298,6 +303,10 @@ public:
                       const LINALG::MultiMapExtractor& domainmaps,
                       const LINALG::MultiMapExtractor& rangemaps,
                       bool splitmatrix=true);
+
+  /// determine grid velocity
+  void UpdateGridv();
+
 
 protected:
 
@@ -398,7 +407,7 @@ protected:
       );
 
   void preparefluidfluidboundaryDis();
-  
+
   void preparefluidfluidboundaryDofset();
 
   void ComputeFluidFluidInterfaceAccelerationsAndVelocities();
@@ -408,7 +417,7 @@ protected:
       const RCP<vector<int> >    ifaceboundarylm,
       const RCP<vector<int> >    ifaceboundarylmowner
       ) const;
-  
+
   void BuildFluidFluidboundaryDofMap(
       Teuchos::RCP<XFEM::InterfaceHandleXFSI> ih,
       const Teuchos::RCP<DRT::Discretization> fluiddis
@@ -425,6 +434,8 @@ protected:
 
   void MovingFluidOutput();
 
+  void CreatePatchBoxes(std::map<int,GEO::CUT::BoundingBox>& patchboxes) const;
+
   //! @name general algorithm parameters
   //! fluid discretization
   const Teuchos::RCP<DRT::Discretization>      discret_;
@@ -433,10 +444,10 @@ protected:
 
   //! Fluid-Fluid-Boundray discretization
   Teuchos::RCP<DRT::Discretization>			   FluidFluidboundarydis_;
-  
+
   // ALE-Fluid-Boundary discretization
   Teuchos::RCP<DRT::Discretization>            ALEFluidboundarydis_;
-  
+
   // Moving-Fluid discretization
   Teuchos::RCP<DRT::Discretization>            MovingFluiddis_;
 
@@ -465,7 +476,7 @@ protected:
 
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?
   const bool                          alefluid_;
-  
+
   bool                          fluidfluidCoupling_;
 
   bool                                diffusion_problem_;
@@ -580,7 +591,22 @@ protected:
     Teuchos::RCP<Epetra_Vector>    velnm_;  ///< velocities and pressures at time n-1
     //@}
 
+    Teuchos::RCP<Epetra_Vector>            gridv_;
+    Teuchos::RCP<Epetra_Vector>            dispnp_;
+    Teuchos::RCP<Epetra_Vector>            dispn_;
+    Teuchos::RCP<Epetra_Vector>            dispnm_;
+    Teuchos::RCP<Epetra_Vector>            dispnmm_;
+
+    Teuchos::RCP<Epetra_Vector>            dispnptotal_;
+    Teuchos::RCP<Epetra_Vector>            dispntotal_;
+    Teuchos::RCP<Epetra_Vector>            dispnmtotal_;
+
+    std::map<int,int>    nodelabelnp_;  // label of every node at time n+1
+    std::map<int,int>    nodelabeln_;    // label of every node at time n
+
   } state_;
+
+  std::map<int,GEO::CUT::BoundingBox> patchboxes;
 
   /// this struct holds information about degrees of freedom for the problem
   struct PhysProb
@@ -614,15 +640,12 @@ protected:
 	  /// Nonlinear iteration increment vector
 	  Teuchos::RCP<Epetra_Vector>    fluidfluidincvel_;
   }fluidfluidstate_;
-  
+
   struct ALEFluidState
   {
     Teuchos::RCP<Epetra_Vector>            afidispnp_;   ///< ALE fluid interface displacement  n+1
     Teuchos::RCP<Epetra_Vector>            afidispn_;    ///< ALE fluid interface displacement  n
-   
-    /// grid velocity
-    Teuchos::RCP<Epetra_Vector>            gridv_;
-     
+
   }ALEfluidstate_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)
@@ -640,6 +663,8 @@ protected:
 
   /// coupling row dof map extractor
   const FLD::UTILS::MapExtractor* surfacesplitter_;
+
+  std::map<int,GEO::CUT::BoundingBox> patchboxes_;
 
 }; // class FluidImplicitTimeInt
 

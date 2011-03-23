@@ -581,6 +581,13 @@ void FLD::XFluidImplicitTimeInt::PrepareTimeStep(const Teuchos::RCP<DRT::Discret
     }
   }
 
+  if (alefluid_)
+  {
+    state_.dispnmm_->Update(1.0,*state_.dispnm_,0.0);
+    state_.dispnm_->Update(1.0,*state_.dispn_,0.0);
+    state_.dispn_ ->Update(1.0,*state_.dispnp_,0.0);
+  }
+
   // -------------------------------------------------------------------
   //                     do explicit predictor step
   //
@@ -733,38 +740,126 @@ Teuchos::RCP<XFEM::InterfaceHandleXFSI> FLD::XFluidImplicitTimeInt::ComputeInter
         state_.nodalDofDistributionMap_,
         state_.elementalDofDistributionMap_);
 
-    // create switcher
-    const XFEM::DofDistributionSwitcher dofswitch(
-            ih_np_, dofmanager_np_,
-            olddofrowmap, newdofrowmap,
-            oldNodalDofDistributionMap, state_.nodalDofDistributionMap_,
-            oldElementalDofDistributionMap, state_.elementalDofDistributionMap_
-            );
-
-    // --------------------------------------------
-    // switch state vectors to new dof distribution
-    // --------------------------------------------
-
-    cout0_ << " ->  Initialize system vectors..." << endl;
-    // accelerations
-    dofswitch.mapVectorToNewDofDistribution(state_.accnp_);
-    dofswitch.mapVectorToNewDofDistribution(state_.accn_);
-
-    // velocities and pressures
-    dofswitch.mapVectorToNewDofDistribution(state_.velnp_);
-    dofswitch.mapVectorToNewDofDistribution(state_.veln_);
-    dofswitch.mapVectorToNewDofDistribution(state_.velnm_);
-
-    // if dofs appear, extrapolate from the interface to the newly created dofs
-    if (Step() > 1)
+    if (step_>1 and fluidfluidCoupling_)
     {
-      dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("ivelcoln") , state_.veln_ );
-      dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("ivelcolnm"), state_.velnm_);
-      dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("iacccoln") , state_.accn_ );
+      for (int node=0; node<discret_->NumMyColNodes(); ++node)
+      {
+        const DRT::Node* actnode = discret_->lColNode(node);
+        // if not moving
+        const bool in_moving_fluid = (std::find(fluidfluidstate_.MovingFluidNodeGIDs_.begin(), fluidfluidstate_.MovingFluidNodeGIDs_.end(), actnode->Id()) != fluidfluidstate_.MovingFluidNodeGIDs_.end());
+        if (in_moving_fluid==false)
+        {
+          const LINALG::Matrix<3,1> pos(actnode->X());
+          // cout << " node id " << actnode->Id() << "pos " << ih_np_->PositionWithinConditionNP(pos) << endl;
+          state_.nodelabeln_[actnode->Id()] = ih_n_->PositionWithinConditionNP(pos);
+        }
+        else
+          state_.nodelabeln_[actnode->Id()] = 0;
+      }
     }
-    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_) , "sol_field_veln_extrapolated" ,"Velocity Solution (Physical) n"    ,false, Step(), Time());
-    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnm_), "sol_field_velnm_extrapolated","Velocity Solution (Physical) n-1"  ,false, Step(), Time());
-    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accn_) , "sol_field_accn_extrapolated" ,"Acceleration Solution (Physical) n",false, Step(), Time());
+
+    // Gmsh_Output for Node positions in old time step
+    if (gmshdebugout and step_>1 and fluidfluidCoupling_)
+    {
+      const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("node_positions_n",step_, 5, false, discret_->Comm().MyPID());
+      std::ofstream gmshfilecontent(filename.c_str());
+      gmshfilecontent << "View \" " << "Node->Position \" {\n";
+      for (int i=0; i<discret_->NumMyColNodes(); ++i)
+      {
+        const DRT::Node* actnode = discret_->lColNode(i);
+        const LINALG::Matrix<3,1> pos(actnode->X());
+        map<int,int>::const_iterator iter = state_.nodelabeln_.find(actnode->Id());
+        int label = iter->second;
+        IO::GMSH::cellWithScalarToStream(DRT::Element::point1, label, pos, gmshfilecontent);
+      }
+      gmshfilecontent << "};\n";
+    }
+
+
+    // create switcher
+     if (fluidfluidCoupling_)
+     {
+       const XFEM::DofDistributionSwitcher dofswitch(
+             ih_np_, dofmanager_np_,
+             olddofrowmap, newdofrowmap,
+             oldNodalDofDistributionMap, state_.nodalDofDistributionMap_,
+             oldElementalDofDistributionMap, state_.elementalDofDistributionMap_,
+             state_.nodelabeln_
+             );
+        cout0_ << " ->  Initialize system vectors..." << endl;
+        // accelerations
+        dofswitch.mapVectorToNewDofDistributionFluidXFluid(state_.accnp_,state_.nodelabeln_);
+        dofswitch.mapVectorToNewDofDistributionFluidXFluid(state_.accn_,state_.nodelabeln_);
+
+        // velocities and pressures
+        dofswitch.mapVectorToNewDofDistributionFluidXFluid(state_.velnp_,state_.nodelabeln_);
+        dofswitch.mapVectorToNewDofDistributionFluidXFluid(state_.veln_,state_.nodelabeln_);
+        dofswitch.mapVectorToNewDofDistributionFluidXFluid(state_.velnm_,state_.nodelabeln_);
+
+        dofswitch.mapVectorToNewDofDistributionFluidXFluid(state_.dispnp_,state_.nodelabeln_);
+        dofswitch.mapVectorToNewDofDistributionFluidXFluid(state_.dispn_,state_.nodelabeln_);
+        dofswitch.mapVectorToNewDofDistributionFluidXFluid(state_.dispnm_,state_.nodelabeln_);
+        dofswitch.mapVectorToNewDofDistributionFluidXFluid(state_.dispnmm_,state_.nodelabeln_);
+        dofswitch.mapVectorToNewDofDistributionFluidXFluid(state_.gridv_,state_.nodelabeln_);
+        dofswitch.mapVectorToNewDofDistributionFluidXFluid(state_.dispnptotal_,state_.nodelabeln_);
+        dofswitch.mapVectorToNewDofDistributionFluidXFluid(state_.dispntotal_,state_.nodelabeln_);
+        dofswitch.mapVectorToNewDofDistributionFluidXFluid(state_.dispnmtotal_,state_.nodelabeln_);
+
+        state_.dispntotal_->Update(1.0,*state_.dispn_,1.0);
+        state_.dispnmtotal_->Update(1.0,*state_.dispnm_,1.0);
+
+        if (Step() > 1 and alefluid_)
+        {
+          //Gmsh output before Interpolation
+          PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_) , "sol_xfluid_veln_beforeProject" ,"Velocity Solution (Physical) n" ,false, Step(), Time());
+          PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnm_) , "sol_xfluid_velnm_beforeProject" ,"Velocity Solution (Physical) n-1" ,false, Step(), Time());
+          PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accn_) , "sol_xfluid_accn_beforeProject" ,"Acc Solution (Physical) n-1" ,false, Step(), Time());
+
+          //Project the values of the last tme step from embedded fluid to background fluid
+          dofswitch.projectEmbeddedtoBackgroundfluid(discret_, patchboxes_, state_.veln_,state_.veln_,state_.dispnmtotal_, step_);// state_.dispnm_, step_);
+          dofswitch.projectEmbeddedtoBackgroundfluid(discret_, patchboxes_, state_.velnm_,state_.velnm_,state_.dispnmtotal_, step_);
+          dofswitch.projectEmbeddedtoBackgroundfluid(discret_, patchboxes_, state_.accn_,state_.accn_,state_.dispnmtotal_, step_);
+
+          //Gmsh output after Interpolation
+          PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_) , "sol_xfluid_veln_afterProject" ,"Velocity Solution (Physical) n"    ,false, Step(), Time());
+          PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnm_) , "sol_xfluid_velnm_afterProject" ,"Velocity Solution (Physical) n-1"    ,false, Step(), Time());
+          PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accn_) , "sol_xfluid_accn_afterProject" ,"Acc Solution (Physical) n-1"    ,false, Step(), Time());
+        }
+     }
+    else
+    {
+      const XFEM::DofDistributionSwitcher dofswitch(
+        ih_np_, dofmanager_np_,
+        olddofrowmap, newdofrowmap,
+        oldNodalDofDistributionMap, state_.nodalDofDistributionMap_,
+        oldElementalDofDistributionMap, state_.elementalDofDistributionMap_
+        );
+
+      // --------------------------------------------
+      // switch state vectors to new dof distribution
+      // --------------------------------------------
+
+      cout0_ << " ->  Initialize system vectors..." << endl;
+      // accelerations
+      dofswitch.mapVectorToNewDofDistribution(state_.accnp_);
+      dofswitch.mapVectorToNewDofDistribution(state_.accn_);
+
+      // velocities and pressures
+      dofswitch.mapVectorToNewDofDistribution(state_.velnp_);
+      dofswitch.mapVectorToNewDofDistribution(state_.veln_);
+      dofswitch.mapVectorToNewDofDistribution(state_.velnm_);
+
+      // if dofs appear, extrapolate from the interface to the newly created dofs
+      if (Step() > 1)
+      {
+        dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("ivelcoln") , state_.veln_ );
+        dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("ivelcolnm"), state_.velnm_);
+        dofswitch.extrapolateOldTimeStepValues(ih_np_->cutterdis(), *ih_np_->cutterposn(), ih_np_->cutterdis()->GetState("iacccoln") , state_.accn_ );
+      }
+      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_) , "sol_field_veln_extrapolated" ,"Velocity Solution (Physical) n"    ,false, Step(), Time());
+      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnm_), "sol_field_velnm_extrapolated","Velocity Solution (Physical) n-1"  ,false, Step(), Time());
+      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.accn_) , "sol_field_accn_extrapolated" ,"Acceleration Solution (Physical) n",false, Step(), Time());
+     }
   }
 
   // --------------------------------------------------
@@ -983,6 +1078,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     ComputeFluidFluidInterfaceAccelerationsAndVelocities();
     preparefluidfluidboundaryDis();
     ComputeInterfaceAndSetDOFs(FluidFluidboundarydis_);
+
+    // map of element id of the fluid-patch element to it's patchbox
+    CreatePatchBoxes(patchboxes_);
   }
   else
     ComputeInterfaceAndSetDOFs(cutterdiscret);
@@ -1191,6 +1289,11 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
         FluidFluidboundarydis_->SetState("iveln"  ,fluidfluidstate_.fiveln_);
         FluidFluidboundarydis_->SetState("ivelnm" ,fluidfluidstate_.fivelnm_);
         FluidFluidboundarydis_->SetState("iaccn"  ,fluidfluidstate_.fiaccn_);
+        if (alefluid_)
+        {
+          discret_->SetState("dispnp", state_.dispnp_);
+          discret_->SetState("gridv", state_.gridv_);
+        }
       }
 
       discret_->SetState("velpres nodal iterinc",oldinc);
@@ -1552,6 +1655,12 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       LINALG::Export(*state_.velnp_,*fluidfluidstate_.fivelnp_);
       LINALG::Export(*incvel_,*fluidfluidstate_.fluidfluidincvel_);
       FluidFluidboundarydis_->SetState("ivelcolnp",fluidfluidstate_.fivelnp_);
+       if (alefluid_)
+       {
+         fluidfluidstate_.fidispn_->Update(1.0,*fluidfluidstate_.fidispnp_,0.0);
+         state_.dispnptotal_->Update(1.0,*state_.dispnp_,1.0);
+         LINALG::Export(*state_.dispnptotal_,*fluidfluidstate_.fidispnp_);
+       }
     }
    }
 
@@ -2045,6 +2154,12 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
   // get a copy on columnmn parallel distribution
   Teuchos::RCP<const Epetra_Vector> output_col_velnp = DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_);
 
+  Teuchos::RCP<const Epetra_Vector> col_fluiddispn;
+  if (alefluid_)
+  {
+    col_fluiddispn = DRT::UTILS::GetColVersionOfRowVector(discret_, state_.dispntotal_);
+  }
+
   if (gmshdebugout and (this->physprob_.fieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.fieldset_.end()))
   {
     cout << "XFluidImplicitTimeInt::OutputToGmsh()" << endl;
@@ -2072,9 +2187,31 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
         vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
 
+        vector<double> mydispn(lm.size());
+        if (alefluid_)
+        {
+          DRT::UTILS::ExtractMyValues(*col_fluiddispn, mydispn, lm);
+        }
+
         const int numparam = eledofman.NumDofPerField(field);
         if (numparam > 0)
         {
+          int nsd = 3;
+          LINALG::SerialDenseMatrix elementpositions(nsd,numparam);
+          for (int inode=0; inode<numparam; ++inode)
+          {
+            elementpositions(0,inode) = actele->Nodes()[inode]->X()[0];
+            elementpositions(1,inode) = actele->Nodes()[inode]->X()[1];
+            elementpositions(2,inode) = actele->Nodes()[inode]->X()[2];
+
+            if (alefluid_)
+            {
+              elementpositions(0,inode) += mydispn[0+(inode*4)];
+              elementpositions(1,inode) += mydispn[1+(inode*4)];
+              elementpositions(2,inode) += mydispn[2+(inode*4)];
+            }
+          }
+
           const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
 
           LINALG::SerialDenseVector elementvalues(numparam);
@@ -2087,10 +2224,16 @@ void FLD::XFluidImplicitTimeInt::OutputToGmsh(
                  domainintcells.begin(); cell != domainintcells.end(); ++cell)
           {
             LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+            LINALG::SerialDenseMatrix cellpositions(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+            XFEM::computeVectorCellNodeValues(*actele, &*ih_np_, eledofman,
+                *cell, XFEM::PHYSICS::Velx, elementpositions, cellpositions);
             XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman,
                                                                *cell, field, elementvalues, cellvalues);
+            //IO::GMSH::cellWithScalarFieldToStream(
+            //  cell->Shape(), cellvalues, cell->CellNodalPosXYZ(),
+            //  gmshfilecontent);
             IO::GMSH::cellWithScalarFieldToStream(
-              cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
+              cell->Shape(), cellvalues, cellpositions, gmshfilecontent);
           }
         }
       }
@@ -2425,6 +2568,12 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
   const bool gmshdebugout = DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
   const bool screen_out = DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT_SCREEN")==1;
 
+  Teuchos::RCP<const Epetra_Vector> col_fluiddispn;
+  if (alefluid_)
+  {
+    col_fluiddispn = DRT::UTILS::GetColVersionOfRowVector(discret_, state_.dispntotal_);
+  }
+
   if (gmshdebugout)
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, step, 5, screen_out, discret_->Comm().MyPID());
@@ -2448,6 +2597,12 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*vectorfield, myvelnp, lm);
 
+        vector<double> mydispn(lm.size());
+        if (alefluid_)
+        {
+          DRT::UTILS::ExtractMyValues(*col_fluiddispn, mydispn, lm);
+        }
+
         const int numparam = eledofman.NumDofPerField(XFEM::PHYSICS::Velx);
         LINALG::SerialDenseMatrix elementvalues(3, numparam);
 
@@ -2468,41 +2623,53 @@ void FLD::XFluidImplicitTimeInt::PlotVectorFieldToGmsh(
           }
         }
 
+        int nsd = 3;
+        LINALG::SerialDenseMatrix elementpositions(nsd,numparam);
+        if (fluidfluidCoupling_)
+        {
+          for (int inode=0; inode<numparam; ++inode)
+          {
+            elementpositions(0,inode) = actele->Nodes()[inode]->X()[0];
+            elementpositions(1,inode) = actele->Nodes()[inode]->X()[1];
+            elementpositions(2,inode) = actele->Nodes()[inode]->X()[2];
+
+            if (alefluid_)
+            {
+              elementpositions(0,inode) += mydispn[0+(inode*4)];
+              elementpositions(1,inode) += mydispn[1+(inode*4)];
+              elementpositions(2,inode) += mydispn[2+(inode*4)];
+            }
+          }
+        }
+
           const GEO::DomainIntCells& domainintcells =
             dofmanager_np_->getInterfaceHandle()->GetDomainIntCells(actele);
           for (GEO::DomainIntCells::const_iterator cell =
             domainintcells.begin(); cell != domainintcells.end(); ++cell)
           {
             LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
+             LINALG::SerialDenseMatrix cellpositions(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
             XFEM::computeVectorCellNodeValues(*actele, &*ih_np_, eledofman,
                 *cell, XFEM::PHYSICS::Velx, elementvalues, cellvalues);
-            IO::GMSH::cellWithVectorFieldToStream(
-                cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
+            if(fluidfluidCoupling_){
+              XFEM::computeVectorCellNodeValues(*actele, &*ih_np_, eledofman,
+                *cell, XFEM::PHYSICS::Velx, elementpositions, cellpositions);
+              IO::GMSH::cellWithVectorFieldToStream(
+                cell->Shape(), cellvalues,  cellpositions, gmshfilecontent);
+            }
+            else
+              IO::GMSH::cellWithVectorFieldToStream(cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
           }
-//          const GEO::BoundaryIntCells& boundaryintcells =
-//              ih_np_->GetBoundaryIntCells(actele->Id());
-//          // draw boundary integration cells with values
-//          for (GEO::BoundaryIntCells::const_iterator cell =
-//            boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
-//          {
-//            LINALG::SerialDenseMatrix cellvalues(3, DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
-//
-//            const DRT::Element* boundaryele = ih_np_->GetBoundaryEle(cell->GetSurfaceEleGid());
-//            const int label = ih_np_->GetLabelPerBoundaryElementId(boundaryele->Id());
-//
-//            XFEM::computeVectorCellNodeValues(*actele, ih_np_, eledofman,
-//                *cell, XFEM::PHYSICS::Velx, label, elementvalues, cellvalues);
-//            IO::GMSH::cellWithVectorFieldToStream(
-//                cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
-//          }
 
           // draw uncut element
           {
             LINALG::SerialDenseMatrix elevalues(3, DRT::UTILS::getNumberOfElementNodes(actele->Shape()),true);
-            static LINALG::Matrix<3,27> xyze_ele;
-            GEO::fillInitialPositionArray(actele, xyze_ele);
-            IO::GMSH::cellWithVectorFieldToStream(
-                            actele->Shape(), elevalues, xyze_ele, gmshfilecontent);
+             static LINALG::Matrix<3,27> xyze_ele;
+             GEO::fillInitialPositionArray(actele, xyze_ele);
+             if(fluidfluidCoupling_)
+               IO::GMSH::cellWithVectorFieldToStream(actele->Shape(), elevalues, elementpositions, gmshfilecontent);
+             else
+               IO::GMSH::cellWithVectorFieldToStream(actele->Shape(), elevalues, xyze_ele, gmshfilecontent);
           }
 
 //        }
@@ -3886,6 +4053,13 @@ void FLD::XFluidImplicitTimeInt::MovingFluidOutput()
 
   PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, fluidfluidstate_.mfvelnp_),"sol_field_patch_vel_np","Patch Velocity Solution (Physical) n+1",true, step_, time_);
 
+  // get column version of fluidstate_.dispn_
+  Teuchos::RCP<const Epetra_Vector> col_fluiddispn;
+  if (alefluid_)
+  {
+    col_fluiddispn = DRT::UTILS::GetColVersionOfRowVector(discret_, state_.dispntotal_);
+  }
+
   if (gmshdebugout)
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("sol_field_patch_pres", step_, 5, screen_out, discret_->Comm().MyPID());
@@ -3919,12 +4093,34 @@ void FLD::XFluidImplicitTimeInt::MovingFluidOutput()
               vector<double> myvelnp(lm.size());
               DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
 
+              vector<double> mydispn(lm.size());
+              if (alefluid_)
+              {
+                DRT::UTILS::ExtractMyValues(*col_fluiddispn, mydispn, lm);
+              }
+
               const int numparam = eledofman.NumDofPerField(field);
               const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
 
               LINALG::SerialDenseVector elementvalues(numparam);
               for (int iparam=0; iparam<numparam; ++iparam)
                 elementvalues(iparam) = myvelnp[dofpos[iparam]];
+
+              int nsd = 3;
+              LINALG::SerialDenseMatrix elementpositions(nsd,numparam);
+              for (int inode=0; inode<numparam; ++inode)
+              {
+                elementpositions(0,inode) = actele->Nodes()[inode]->X()[0];
+                elementpositions(1,inode) = actele->Nodes()[inode]->X()[1];
+                elementpositions(2,inode) = actele->Nodes()[inode]->X()[2];
+
+                if (alefluid_)
+                {
+                  elementpositions(0,inode) += mydispn[0+(inode*4)];
+                  elementpositions(1,inode) += mydispn[1+(inode*4)];
+                  elementpositions(2,inode) += mydispn[2+(inode*4)];
+                }
+              }
 
               const GEO::DomainIntCells& domainintcells =
               dofmanager_np_->getInterfaceHandle()->GetDomainIntCells(actele);
@@ -3933,13 +4129,101 @@ void FLD::XFluidImplicitTimeInt::MovingFluidOutput()
                 LINALG::SerialDenseVector cellvalues(DRT::UTILS::getNumberOfElementNodes(cell->Shape()));
                 XFEM::computeScalarCellNodeValuesFromNodalUnknowns(*actele, &*dofmanager_np_->getInterfaceHandle(), eledofman,
                 *cell, field, elementvalues, cellvalues);
-                IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
+                IO::GMSH::cellWithScalarFieldToStream(cell->Shape(), cellvalues, elementpositions, gmshfilecontent);
               }
             }
         }
         gmshfilecontent << "};\n";
     }
     gmshfilecontent.close();
+  }
+}
+//--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+void FLD::XFluidImplicitTimeInt::CreatePatchBoxes(
+  std::map<int,GEO::CUT::BoundingBox>& patchboxes
+  ) const
+{
+   cout << "CreatePatchBoxes" << endl;
+   //cout << *state_.dispntotal_ << endl;
+   // get column version of the displacement vector
+   Teuchos::RCP<const Epetra_Vector> col_fluiddispnm = DRT::UTILS::GetColVersionOfRowVector(discret_, state_.dispntotal_); //  state_.dispnm_);
+
+   // Map of all boxes of patch fluid discretization
+   for (int pele=0; pele<discret_->NumMyColElements(); ++pele)
+   {
+     const DRT::Element* actpele = discret_->lColElement(pele);
+     const bool is_moving = (std::find(fluidfluidstate_.MovingFluideleGIDs_.begin(), fluidfluidstate_.MovingFluideleGIDs_.end(), actpele->Id()) != fluidfluidstate_.MovingFluideleGIDs_.end());
+
+     if (is_moving)
+     {
+       const DRT::Node*const* pelenodes = actpele->Nodes();
+       //cout << " pele id " << actpele->Id() << endl;
+
+       vector<int> lm;
+       vector<int> lmowner;
+       vector<int> lmstride;
+       actpele->LocationVector(*discret_, lm, lmowner, lmstride);
+
+       vector<double> mydispnm(lm.size());
+       DRT::UTILS::ExtractMyValues(*col_fluiddispnm, mydispnm, lm);
+
+       GEO::CUT::BoundingBox patchbox;
+       // patchboxes
+       for (int pnode = 0; pnode < actpele->NumNode(); ++pnode)
+       {
+         // the coordinates of the actuall node
+         LINALG::Matrix<3,1> pnodepos(true);
+         pnodepos(0,0) = pelenodes[pnode]->X()[0] + mydispnm[0+(pnode*4)];
+         pnodepos(1,0) = pelenodes[pnode]->X()[1] + mydispnm[1+(pnode*4)];
+         pnodepos(2,0) = pelenodes[pnode]->X()[2] + mydispnm[2+(pnode*4)];;
+
+         //cout <<  pnodepos(0,0) << " " << pnodepos(1,0) << " " << pnodepos(2,0)<< endl;
+
+         // fill the patchbox
+         patchbox.AddPoint(pnodepos);
+       }
+       //patchbox.Print();
+       patchboxes[actpele->Id()] = patchbox;
+     }
+   }
+}
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |                                                           chfoe 01/08|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::XFluidImplicitTimeInt::UpdateGridv()
+{
+  // get order of accuracy of grid velocity determination
+  // from input file data
+  const int order  = params_.get<int>("order gridvel");
+
+  switch (order)
+  {
+    case 1:
+      /* get gridvelocity from BE time discretisation of mesh motion:
+           -> cheap
+           -> easy
+           -> limits FSI algorithm to first order accuracy in time
+
+                  x^n+1 - x^n
+             uG = -----------
+                    Delta t                        */
+      state_.gridv_->Update(1/dta_, *state_.dispnp_, -1/dta_, *state_.dispn_, 0.0);
+    break;
+    case 2:
+      /* get gridvelocity from BDF2 time discretisation of mesh motion:
+           -> requires one more previous mesh position or displacemnt
+           -> somewhat more complicated
+           -> allows second order accuracy for the overall flow solution  */
+      state_.gridv_->Update(1.5/dta_, *state_.dispnp_, -2.0/dta_, *state_.dispn_, 0.0);
+      state_.gridv_->Update(0.5/dta_, *state_.dispnm_, 1.0);
+    break;
   }
 }
 #endif /* CCADISCRET       */
