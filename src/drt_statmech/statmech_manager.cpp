@@ -372,10 +372,13 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
 			currentrotations[node->LID()] = currrot;
 		}
 
-		// set crosslinkers, i.e. considering crosslink molecule diffusion
-    SearchAndSetCrosslinkers(istep, dt, noderowmap, nodecolmap, currentpositions,currentrotations);
+		// set crosslinkers, i.e. considering crosslink molecule diffusion after filaments had time to equilibrate
+		if(time_>=statmechparams_.get<double>("EQUILIBTIME",0.0) || fabs(time_-statmechparams_.get<double>("EQUILIBTIME",0.0))<(dt/1e3))
+		{
+			SearchAndSetCrosslinkers(istep, dt, noderowmap, nodecolmap, currentpositions,currentrotations);
 
-    SearchAndDeleteCrosslinkers(dt, noderowmap, nodecolmap, currentpositions);
+			SearchAndDeleteCrosslinkers(dt, noderowmap, nodecolmap, currentpositions);
+		}
 
 
 		// Set a certain percentage of double-bonded crosslinkers free
