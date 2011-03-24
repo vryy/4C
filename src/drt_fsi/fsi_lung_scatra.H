@@ -51,9 +51,11 @@ namespace FSI
 
     void LinearSolveScatra();
 
-    void ScatraMergeSolve();
+    void CoupledScatraSolve();
 
     void SetVelocityFields();
+
+    void SetMeshDisp();
 
     /// extract fluid convective and structure grid velocities
     void ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >& vel);
@@ -92,6 +94,9 @@ namespace FSI
 
     /// scatra block matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> scatrasystemmatrix_;
+
+    /// scatra solver
+    Teuchos::RCP<LINALG::Solver> scatrasolver_;
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks

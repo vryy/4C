@@ -57,12 +57,6 @@ extern struct _GENPROB     genprob;
 FSI::LungScatra::LungScatra(Teuchos::RCP<FSI::Monolithic> fsi):
   fsi_(fsi)
 {
-#ifdef PARALLEL
-  Epetra_MpiComm comm(MPI_COMM_WORLD);
-#else
-  Epetra_SerialComm comm;
-#endif
-
   // access the problem-specific parameter lists
   const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
   const Teuchos::ParameterList& structdyn = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -131,6 +125,18 @@ FSI::LungScatra::LungScatra(Teuchos::RCP<FSI::Monolithic> fsi):
   // check whether potential Dirichlet conditions at the scatra interface are
   // defined on both discretizations
   CheckInterfaceDirichletBC();
+
+  // scatra solver
+  Teuchos::RCP<DRT::Discretization> firstscatradis = (scatravec_[0])->ScaTraField().Discretization();
+#ifdef SCATRABLOCKMATRIXMERGE
+  Teuchos::RCP<Teuchos::ParameterList> scatrasolvparams = rcp(new Teuchos::ParameterList);
+  scatrasolvparams->set("solver","umfpack");
+  scatrasolver_ = rcp(new LINALG::Solver(scatrasolvparams,
+                                         firstscatradis->Comm(),
+                                         DRT::Problem::Instance()->ErrorFile()->Handle()));
+#else
+  dserror("currently only direct solution of merged scatra system possible");
+#endif
 }
 
 
@@ -224,6 +230,7 @@ void FSI::LungScatra::DoScatraStep()
   bool stopnonliniter=false;
   int itnum = 0;
 
+  SetMeshDisp();
   SetVelocityFields();
   PrepareTimeStep();
 
@@ -283,6 +290,24 @@ void FSI::LungScatra::SetVelocityFields()
                                            Teuchos::null,
                                            discret[i]);
   }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::LungScatra::SetMeshDisp()
+{
+  // fluid field
+  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra = scatravec_[0];
+  ADAPTER::Fluid& fluidadapter = fsi_->FluidAdapter();
+  fluidscatra->ScaTraField().ApplyMeshMovement(fluidadapter.Dispnp(),
+                                               fluidadapter.Discretization());
+
+  // structure field
+  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra = scatravec_[1];
+  ADAPTER::Structure& structadapter = fsi_->StructureAdapter();
+  structscatra->ScaTraField().ApplyMeshMovement(structadapter.Dispnp(),
+                                                structadapter.Discretization());
 }
 
 
@@ -520,12 +545,7 @@ void FSI::LungScatra::SetupCoupledScatraMatrix()
 void FSI::LungScatra::LinearSolveScatra()
 {
   scatraincrement_->PutScalar(0.0);
-
-#ifdef SCATRABLOCKMATRIXMERGE
-    ScatraMergeSolve();
-#else
-  dserror("no other solver option for coupled scatra problem available (yet)");
-#endif
+  CoupledScatraSolve();
 }
 
 
@@ -555,30 +575,19 @@ void FSI::LungScatra::UpdateAndOutput()
   }
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungScatra::ScatraMergeSolve()
+void FSI::LungScatra::CoupledScatraSolve()
 {
 #ifdef SCATRABLOCKMATRIXMERGE
-
-#ifdef PARALLEL
-  Epetra_MpiComm comm(MPI_COMM_WORLD);
-#else
-  Epetra_SerialComm comm;
-#endif
-
   Teuchos::RCP<LINALG::SparseMatrix> sparse = scatrasystemmatrix_->Merge();
 
-  RCP<Teuchos::ParameterList> scatrasolvparams = rcp(new Teuchos::ParameterList);
-  scatrasolvparams->set("solver","umfpack");
-  Teuchos::RCP<LINALG::Solver> scatrasolver = rcp(new LINALG::Solver(scatrasolvparams,
-                                                                     comm,
-                                                                     DRT::Problem::Instance()->ErrorFile()->Handle()));
-  scatrasolver->Solve(sparse->EpetraMatrix(),
-                      scatraincrement_,
-                      scatrarhs_,
-                      true);
+  scatrasolver_->Solve(sparse->EpetraMatrix(),
+                       scatraincrement_,
+                       scatrarhs_,
+                       true);
+#else
+  dserror("currently only direct solution of merged scatra system possible");
 #endif
 }
 
