@@ -86,11 +86,6 @@ void FSI::DirichletNeumannSlideale::Remeshing()
 	Teuchos::RCP<Epetra_Vector> idispstep = StructureField().ExtractInterfaceDispnp();
 	idispstep->Update(-1.0, *idispn, 1.0);
 	
-  INPAR::FSI::SlideALEProj aletype = 
-      DRT::INPUT::IntegralValue<INPAR::FSI::SlideALEProj>(DRT::Problem::Instance()->FSIDynamicParams(),"SLIDEALEPROJ");
-	
-
-
 	slideale_->Remeshing(StructureField(),
                         MBFluidField().Discretization(),
                         idisptotal,
