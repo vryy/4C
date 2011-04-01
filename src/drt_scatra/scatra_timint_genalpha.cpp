@@ -168,10 +168,6 @@ void SCATRA::TimIntGenAlpha::ComputeThermPressureIntermediateValues()
   thermpressaf_ = alphaF_*thermpressnp_ + (1.0-alphaF_)*thermpressn_;
   thermpressam_ = alphaM_*thermpressnp_ + (1.0-alphaM_)*thermpressn_;
 
-  // time derivatives are not independent, but rather have to be computed
-  // from thermpressnp_, thermpressn_ and thermpressdtn_
-  ComputeThermPressureTimeDerivative();
-
   // time derivative of thermodyn. press. at n+alpha_F for low-Mach-number case
   // -> required as right-hand-side contribution to temperature equation,
   // hence, evaluated at n+alpha_F
@@ -353,6 +349,9 @@ void SCATRA::TimIntGenAlpha::ComputeThermPressure()
     cout << "Thermodynamic pressure: "                     << thermpressnp_ << endl;
     cout << "+--------------------------------------------------------------------------------------------+" << endl;
   }
+
+  // compute time derivative of thermodynamic pressure at time step n+1
+  ComputeThermPressureTimeDerivative();
 
   // compute values at intermediate time steps
   ComputeThermPressureIntermediateValues();

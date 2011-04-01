@@ -668,6 +668,9 @@ void SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons()
     cout << "+--------------------------------------------------------------------------------------------+" << endl;
   }
 
+  // compute time derivative of thermodynamic pressure at time step n+1
+  ComputeThermPressureTimeDerivative();
+
   // compute values at intermediate time steps
   // (only for generalized-alpha time-integration scheme)
   ComputeThermPressureIntermediateValues();

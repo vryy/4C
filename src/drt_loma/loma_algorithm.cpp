@@ -270,30 +270,12 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
     // store scalar from first solution for convergence check
     ScaTraField().ScalIncNp()->Update(1.0,*ScaTraField().Phinp(),0.0);
 
-    // compute scalar time derivative
-    // (still required to be called here for one-step-theta scheme)
-    ScaTraField().ComputeTimeDerivative();
-
     // in case of non-constant thermodynamic pressure: compute
     // (either based on energy conservation or based on mass conservation)
     if (consthermpress_=="No_energy")
-    {
-      // compute thermodynamic pressure
       ScaTraField().ComputeThermPressure();
-
-      // compute time derivative of thermodynamic pressure
-      // (still required to be called here for one-step-theta scheme)
-      ScaTraField().ComputeThermPressureTimeDerivative();
-    }
     else if (consthermpress_=="No_mass")
-    {
-      // compute thermodynamic pressure
       ScaTraField().ComputeThermPressureFromMassCons();
-
-      // compute time derivative of thermodynamic pressure
-      // (still required to be called here for one-step-theta scheme)
-      ScaTraField().ComputeThermPressureTimeDerivative();
-    }
 
     // set scalar and thermodynamic pressure values as well as time derivatives
     // at n+1 and n, respectively, and number of scalars
