@@ -1247,7 +1247,7 @@ void StatMechTime::Output()
   bool isdatawritten = false;
 
   //------------------------------------------------- write restart step
-  if (writeresevry and istep%writeresevry==0)
+  if ((writeresevry and istep%writeresevry==0) or istep==nstep)
   {
     output_.WriteMesh(istep,timen);
     output_.NewStep(istep, timen);
