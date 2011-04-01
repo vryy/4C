@@ -140,8 +140,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
       // dimension of the problem
       const int numdofpernode_ = NumDofPerNode(1,*(Nodes()[0]));
       // number of nodes per element
-      const int iel = 8;
-      if (la[1].Size() != iel*numdofpernode_)
+      const int nen_ = 8;
+      if (la[1].Size() != nen_*numdofpernode_)
         dserror("Location vector length for temperature does not match!");
       // extract the current temperatures
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
@@ -196,14 +196,14 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
       // dimension of the problem
       const int numdofpernode_ = 1;
       // number of nodes per element
-      const int iel = 8;
+      const int nen_ = 8;
 
-      if (la[1].Size() != iel*numdofpernode_)
+      if (la[1].Size() != nen_*numdofpernode_)
         dserror("Location vector length for temperature does not match!");
       // extract the current temperatures
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
       // build the current temperature vector
-      LINALG::Matrix<iel*numdofpernode_,1> etemp(&(mytempnp[1]),true);  // view only!
+      LINALG::Matrix<nen_*numdofpernode_,1> etemp(&(mytempnp[1]),true);  // view only!
       // the coupling stiffness matrix (3nx1)
       LINALG::Matrix<NUMDOF_SOH8,1> elemat1(elemat1_epetra.A(),true);
       // calculate the THERMOmechanical solution
@@ -270,9 +270,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
         // dimension of the problem
         const int numdofpernode_ = 1;
         // number of nodes per element
-        const int iel = 8;
+        const int nen_ = 8;
 
-        if (la[1].Size() != iel*numdofpernode_)
+        if (la[1].Size() != nen_*numdofpernode_)
           dserror("Location vector length for temperature does not match!");
         // extract the current temperatures
         DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
@@ -516,12 +516,6 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmasstemp(
     LINALG::Matrix<NUMSTR_SOH8,1> stresstemp(true);
     soh8_mat_temp(&stresstemp,&ctemp,&density,&Ntemp,&defgrd);
 
-    // and now add the constant temperature fraction to stresstemp, too
-    LINALG::Matrix<NUMSTR_SOH8,1> stempconst(true);
-    Stempconst(&ctemp,&stempconst);
-    // total temperature stress
-    stresstemp.Update(1.0,stempconst,1.0);
-
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses
@@ -733,7 +727,7 @@ void DRT::ELEMENTS::So_hex8::Ctemp(LINALG::Matrix<6,1>* ctemp)
     {
       MAT::ThermoStVenantKirchhoff* thrstvk
         = static_cast<MAT::ThermoStVenantKirchhoff*>(mat.get());
-       return thrstvk->SetupCthermo(*ctemp); //thrstvk->Stempconst(*ctemp,*stempconst);
+       return thrstvk->SetupCthermo(*ctemp);
 
        break;
     }

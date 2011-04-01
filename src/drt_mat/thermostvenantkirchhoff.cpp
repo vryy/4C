@@ -365,14 +365,10 @@ void MAT::ThermoStVenantKirchhoff::SetupCthermo(LINALG::Matrix<6,1>& ctemp)
 
   // loop over the element nodes
   for (int i=0; i<3; ++i)
-  {
     // non-zero entries only in main directions
     ctemp(i,0) = m;
-  }
   for (int i=3; i<6; ++i)
-  {
     ctemp(i,0) = 0;
-  }
 }
 
 
@@ -386,9 +382,18 @@ void MAT::ThermoStVenantKirchhoff::Evaluate(
   )
 {
   SetupCthermo(ctemp);
+
+  LINALG::Matrix<1,1> init(true);
+  const double inittemp = -1.0*(params_->thetainit_);
+  // loop over the element nodes
+  init(0,0) = inittemp;
+  // Delta T = T - T_0
+  LINALG::Matrix<1,1> deltaT(true);
+  deltaT.Update(Ntemp,init);
+
   // temperature dependent stress
-  // sigma = C_theta * theta = (m*I) * theta
-  stresstemp.MultiplyNN(ctemp,Ntemp);
+  // sigma = C_theta * Delta T = (m*I) * Delta T
+  stresstemp.MultiplyNN(ctemp,deltaT);
 
 } // Evaluate
 
@@ -414,4 +419,5 @@ void MAT::ThermoStVenantKirchhoff::Stempconst(
 
 /*----------------------------------------------------------------------*/
 #endif  // CCADISCRET
+
 
