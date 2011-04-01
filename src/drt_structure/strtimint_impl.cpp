@@ -26,6 +26,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_contact/meshtying_manager.H"
 #include "../drt_contact/contact_manager.H"
+#include "../drt_contact/contact_defines.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
@@ -1331,6 +1332,22 @@ void STR::TimIntImpl::CmtLinearSolve()
   INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
   INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
 
+  // analysis of eigenvalues and condition number
+#ifdef CONTACTEIG
+    // global counter 
+    static int globindex = 0;
+    ++globindex;
+    
+    // print to file in matlab format
+    std::ostringstream filename;
+    const std::string filebase = "sparsematrix";
+    filename << "o/matlab_output/" << filebase << "_" << globindex << ".mtl";
+    LINALG::PrintMatrixInMatlabFormat(filename.str().c_str(),*(SystemMatrix()->EpetraMatrix()));
+
+    // print sparsity pattern to file
+    LINALG::PrintSparsityToPostscript( *(SystemMatrix()->EpetraMatrix()) );
+#endif // #ifdef CONTACTEIG
+    
   //**********************************************************************
   // Solving a saddle point system
   // (1) Standard / Dual Lagrange multipliers -> SaddlePointCoupled
