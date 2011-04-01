@@ -184,6 +184,14 @@ namespace INPAR
       consistency_l2_projection_lumped
     };
 
+    /// initial field
+    enum MeshTying
+    {
+      no_mesh_tying,
+      condensed,
+      saddle_point_problem
+    };
+
   }  // namespace SCATRA
 
 }  // namespace INPAR
