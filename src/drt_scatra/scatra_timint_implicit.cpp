@@ -1421,10 +1421,10 @@ void SCATRA::ScaTraTimIntImpl::Output()
 
     // write mean values of scalar(s)
     if (outmean_)
-    {
       OutputMeanScalars();
-      OutputElectrodeInfo();
-    }
+
+    // output of electrode status to screen and file (only if existing)
+    OutputElectrodeInfo();
 
     // magnetic field (if existing)
     if (magneticfield_ != Teuchos::null)
