@@ -1379,6 +1379,9 @@ void MORTAR::MortarInterface::Evaluate()
     if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
     MortarElement* selement = static_cast<MortarElement*>(ele1);
 
+    // empty vector of master element pointers
+    vector<MortarElement*> melements;
+    
     // loop over the candidate master elements of sele_
     // use slave element's candidate list SearchElements !!!
     for (int j=0;j<selement->MoData().NumSearchElements();++j)
@@ -1387,14 +1390,15 @@ void MORTAR::MortarInterface::Evaluate()
       DRT::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
       MortarElement* melement = static_cast<MortarElement*>(ele2);
-
-      //********************************************************************
-      // 1) perform coupling (projection + overlap detection for sl/m pair)
-      // 2) integrate Mortar matrix M and weighted gap g
-      // 3) compute directional derivative of M and g and store into nodes
-      //********************************************************************
-      IntegrateCoupling(*selement,*melement);
+      melements.push_back(melement);
     }
+  
+    //********************************************************************
+    // 1) perform coupling (projection + overlap detection for sl/m pairs)
+    // 2) integrate Mortar matrix M and weighted gap g
+    // 3) compute directional derivative of M and g and store into nodes
+    //********************************************************************
+    IntegrateCoupling(selement,melements);
   }
 
   return;
@@ -1806,8 +1810,8 @@ bool MORTAR::MortarInterface::IntegrateSlave(MORTAR::MortarElement& sele)
 /*----------------------------------------------------------------------*
  |  Integrate matrix M and gap g on slave/master overlap      popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
-                                                MORTAR::MortarElement& mele)
+bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
+                                                vector<MORTAR::MortarElement*> mele)
 {
   // *********************************************************************
   // do interface coupling within a new class
@@ -1816,8 +1820,11 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
   // ************************************************************** 2D ***
   if (Dim()==2)
   {
-    // ***************************************************** linear 2D ***
-    // ************************************************** quadratic 2D ***
+    // new coupling method -> loop over all master elements is hidden
+    // inside the Coupling2d class (in EvaluateCoupling method)
+    
+    // *************************************************** linear 2D ***
+    // ************************************************ quadratic 2D ***
     // neither quadratic interpolation nor mixed linear and quadratic
     // interpolation need any special treatment in the 2d case
 
@@ -1832,42 +1839,46 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
   {
     bool auxplane = DRT::INPUT::IntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
 
-    // ************************************************** quadratic 3D ***
-    // also treats the mixed linear and quadratic interpolation case
-    if (sele.IsQuad3d() || mele.IsQuad3d())
+    // loop over all master elements associated with this slave element
+    for (int m=0;m<(int)mele.size();++m)
     {
-      // build linear integration elements from quadratic MortarElements
-      vector<RCP<MORTAR::IntElement> > sauxelements(0);
-      vector<RCP<MORTAR::IntElement> > mauxelements(0);
-      SplitIntElements(sele,sauxelements);
-      SplitIntElements(mele,mauxelements);
-
-      // get LM interpolation and testing type
-      INPAR::MORTAR::LagMultQuad3D lmtype =
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D");
-
-      // loop over all IntElement pairs for coupling
-      for (int i=0;i<(int)sauxelements.size();++i)
+      // ************************************************** quadratic 3D ***
+      // also treats the mixed linear and quadratic interpolation case
+      if (sele->IsQuad3d() || mele[m]->IsQuad3d())
       {
-        for (int j=0;j<(int)mauxelements.size();++j)
+        // build linear integration elements from quadratic MortarElements
+        vector<RCP<MORTAR::IntElement> > sauxelements(0);
+        vector<RCP<MORTAR::IntElement> > mauxelements(0);
+        SplitIntElements(*sele,sauxelements);
+        SplitIntElements(*mele[m],mauxelements);
+  
+        // get LM interpolation and testing type
+        INPAR::MORTAR::LagMultQuad3D lmtype =
+          DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D");
+  
+        // loop over all IntElement pairs for coupling
+        for (int i=0;i<(int)sauxelements.size();++i)
         {
-          // create instance of coupling class
-          MORTAR::Coupling3dQuad coup(shapefcn_,Discret(),Dim(),true,auxplane,
-                        sele,mele,*sauxelements[i],*mauxelements[j],lmtype);
-          // do coupling
-          coup.EvaluateCoupling();
+          for (int j=0;j<(int)mauxelements.size();++j)
+          {
+            // create instance of coupling class
+            MORTAR::Coupling3dQuad coup(shapefcn_,Discret(),Dim(),true,auxplane,
+                          *sele,*mele[m],*sauxelements[i],*mauxelements[j],lmtype);
+            // do coupling
+            coup.EvaluateCoupling();
+          }
         }
       }
-    }
 
-    // ***************************************************** linear 3D ***
-    else
-    {
-      // create instance of coupling class
-      MORTAR::Coupling3d coup(shapefcn_,Discret(),Dim(),false,auxplane,
-                              sele,mele);
-      // do coupling
-      coup.EvaluateCoupling();
+      // *************************************************** linear 3D ***
+      else
+      {
+        // create instance of coupling class
+        MORTAR::Coupling3d coup(shapefcn_,Discret(),Dim(),false,auxplane,
+                                *sele,*mele[m]);
+        // do coupling
+        coup.EvaluateCoupling();
+      }
     }
   }
   else

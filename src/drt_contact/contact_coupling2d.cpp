@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file contact_coupling2d.cpp
-\brief A class for mortar coupling of ONE slave element and ONE master
-       element of a contact interface in 2D.
+\brief A class for mortar coupling of ONE slave element and SEVERAL
+       master elements of a contact interface in 2D.
 
 <pre>
 -------------------------------------------------------------------------
@@ -50,8 +50,8 @@ Maintainer: Alexander Popp
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 CONTACT::CoCoupling2d::CoCoupling2d(DRT::Discretization& idiscret, int dim,
-                                    MORTAR::MortarElement& sele,
-                                    MORTAR::MortarElement& mele) :
+                                    MORTAR::MortarElement* sele,
+                                    vector<MORTAR::MortarElement*> mele) :
 MORTAR::Coupling2d(idiscret,dim,sele,mele)
 {
   // empty constructor
@@ -64,8 +64,8 @@ MORTAR::Coupling2d(idiscret,dim,sele,mele)
  *----------------------------------------------------------------------*/
 CONTACT::CoCoupling2d::CoCoupling2d(const INPAR::MORTAR::ShapeFcn shapefcn,
                                     DRT::Discretization& idiscret, int dim,
-                                    MORTAR::MortarElement& sele,
-                                    MORTAR::MortarElement& mele) :
+                                    MORTAR::MortarElement* sele,
+                                    vector<MORTAR::MortarElement*> mele) :
 MORTAR::Coupling2d(shapefcn,idiscret,dim,sele,mele)
 {
   // empty constructor
@@ -76,7 +76,7 @@ MORTAR::Coupling2d(shapefcn,idiscret,dim,sele,mele)
 /*----------------------------------------------------------------------*
  |  Integrate slave / master overlap (public)                 popp 04/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoCoupling2d::IntegrateOverlap(vector<double>& xiproj)
+bool CONTACT::CoCoupling2d::IntegrateOverlap(int k, vector<double>& xiproj)
 {
   // explicitely defined shapefunction type needed
   if( shapefcn_ == INPAR::MORTAR::shape_undefined)
@@ -96,11 +96,11 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap(vector<double>& xiproj)
   double mxib = xiproj[3];
 
   // create a CONTACT integrator instance with correct NumGP and Dim
-  CONTACT::CoIntegrator integrator(shapefcn_,sele_.Shape());
+  CONTACT::CoIntegrator integrator(shapefcn_,SlaveElement().Shape());
 
   // do the overlap integration (integrate and linearize both M and gap and wear)
-  int nrow = sele_.NumNode();
-  int ncol = mele_.NumNode();
+  int nrow = SlaveElement().NumNode();
+  int ncol = MasterElement(k).NumNode();
   RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
   RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
   RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
@@ -108,14 +108,14 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap(vector<double>& xiproj)
   if((DRT::Problem::Instance()->MeshtyingAndContactParams()).get<double>("WEARCOEFF")>0.0)
     wseg = rcp(new Epetra_SerialDenseVector(nrow));
 
-  integrator.IntegrateDerivSegment2D(sele_,sxia,sxib,mele_,mxia,mxib,dseg,mseg,gseg,wseg);
+  integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(k),mxia,mxib,dseg,mseg,gseg,wseg);
 
   // do the two assemblies into the slave nodes
-  integrator.AssembleD(Comm(),sele_,*dseg);
-  integrator.AssembleM(Comm(),sele_,mele_,*mseg);
+  integrator.AssembleD(Comm(),SlaveElement(),*dseg);
+  integrator.AssembleM(Comm(),SlaveElement(),MasterElement(k),*mseg);
   
   // also do assembly of weighted gap vector
-  integrator.AssembleG(Comm(),sele_,*gseg);
+  integrator.AssembleG(Comm(),SlaveElement(),*gseg);
   
   // assemble wear
   if((DRT::Problem::Instance()->MeshtyingAndContactParams()).get<double>("WEARCOEFF")>0.0)

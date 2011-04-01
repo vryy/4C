@@ -1167,10 +1167,10 @@ bool CONTACT::CoInterface::IntegrateSlave(MORTAR::MortarElement& sele)
 }
 
 /*----------------------------------------------------------------------*
- |  Integrate matrix M and gap g on slave/master overlap      popp 11/08|
+ |  Integrate matrix M and gap g on slave/master overlaps     popp 11/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
-                                             MORTAR::MortarElement& mele)
+bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
+                                             vector<MORTAR::MortarElement*> mele)
 {
   // *********************************************************************
   // do interface coupling within a new class
@@ -1179,6 +1179,14 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
   // ************************************************************** 2D ***
   if (Dim()==2)
   {
+    // new coupling method -> loop over all master elements is hidden
+    // inside the Coupling2d class (in EvaluateCoupling method)
+
+    // *************************************************** linear 2D ***
+    // ************************************************ quadratic 2D ***
+    // neither quadratic interpolation nor mixed linear and quadratic
+    // interpolation need any special treatment in the 2d case
+    
     // create instance of coupling class
     CONTACT::CoCoupling2d coup(shapefcn_,Discret(),Dim(),sele,mele);
     
@@ -1190,44 +1198,49 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement& sele,
   {
     bool auxplane = DRT::INPUT::IntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
 
-    // ************************************************** quadratic 3D ***
-    if (sele.IsQuad3d() || mele.IsQuad3d())
+    // loop over all master elements associated with this slave element
+    for (int m=0;m<(int)mele.size();++m)
     {
-      // only for auxiliary plane 3D version
-      if (!auxplane) dserror("ERROR: Quadratic 3D coupling only for AuxPlane case!");
-
-      // build linear integration elements from quadratic MortarElements
-      vector<RCP<MORTAR::IntElement> > sauxelements(0);
-      vector<RCP<MORTAR::IntElement> > mauxelements(0);
-      SplitIntElements(sele,sauxelements);
-      SplitIntElements(mele,mauxelements);
-
-      // get LM interpolation and testing type
-      INPAR::MORTAR::LagMultQuad3D lmtype =
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D");
-            
-      // loop over all IntElement pairs for coupling
-      for (int i=0;i<(int)sauxelements.size();++i)
+      // ************************************************** quadratic 3D ***
+      // also treats the mixed linear and quadratic interpolation case
+      if (sele->IsQuad3d() || mele[m]->IsQuad3d())
       {
-        for (int j=0;j<(int)mauxelements.size();++j)
+        // only for auxiliary plane 3D version
+        if (!auxplane) dserror("ERROR: Quadratic 3D coupling only for AuxPlane case!");
+  
+        // build linear integration elements from quadratic MortarElements
+        vector<RCP<MORTAR::IntElement> > sauxelements(0);
+        vector<RCP<MORTAR::IntElement> > mauxelements(0);
+        SplitIntElements(*sele,sauxelements);
+        SplitIntElements(*mele[m],mauxelements);
+  
+        // get LM interpolation and testing type
+        INPAR::MORTAR::LagMultQuad3D lmtype =
+          DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D");
+              
+        // loop over all IntElement pairs for coupling
+        for (int i=0;i<(int)sauxelements.size();++i)
         {
-          // create instance of coupling class
-          CONTACT::CoCoupling3dQuad coup(shapefcn_,Discret(),Dim(),true,auxplane,
-                        sele,mele,*sauxelements[i],*mauxelements[j],lmtype);
-          // do coupling
-          coup.EvaluateCoupling();
+          for (int j=0;j<(int)mauxelements.size();++j)
+          {
+            // create instance of coupling class
+            CONTACT::CoCoupling3dQuad coup(shapefcn_,Discret(),Dim(),true,auxplane,
+                          *sele,*mele[m],*sauxelements[i],*mauxelements[j],lmtype);
+            // do coupling
+            coup.EvaluateCoupling();
+          }
         }
       }
-    }
-
-    // ***************************************************** linear 3D ***
-    else
-    {
-      // create instance of coupling class
-      CONTACT::CoCoupling3d coup(shapefcn_,Discret(),Dim(),false,auxplane,
-                                 sele,mele);
-      // do coupling
-      coup.EvaluateCoupling();
+  
+      // ***************************************************** linear 3D ***
+      else
+      {
+        // create instance of coupling class
+        CONTACT::CoCoupling3d coup(shapefcn_,Discret(),Dim(),false,auxplane,
+                                   *sele,*mele[m]);
+        // do coupling
+        coup.EvaluateCoupling();
+      }
     }
   }
   else

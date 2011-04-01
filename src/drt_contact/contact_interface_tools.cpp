@@ -2308,7 +2308,10 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
       MORTAR::MortarElement* selement = static_cast<MORTAR::MortarElement*>(ele1);
 
-      // loop over the contact candidate master elements of sele_
+      // empty vector of master element pointers
+      vector<MORTAR::MortarElement*> melements;
+    
+      // loop over the candidate master elements of sele_
       // use slave element's candidate list SearchElements !!!
       for (int j=0;j<selement->MoData().NumSearchElements();++j)
       {
@@ -2316,14 +2319,15 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
         DRT::Element* ele2 = idiscret_->gElement(gid2);
         if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
         MORTAR::MortarElement* melement = static_cast<MORTAR::MortarElement*>(ele2);
-
-        //********************************************************************
-        // 1) perform coupling (projection + overlap detection for sl/m pair)
-        // 2) integrate Mortar matrix M and weighted gap g
-        // 3) compute directional derivative of M and g and store into nodes
-        //********************************************************************
-        IntegrateCoupling(*selement,*melement);
+        melements.push_back(melement);
       }
+    
+      //********************************************************************
+      // 1) perform coupling (projection + overlap detection for sl/m pair)
+      // 2) integrate Mortar matrix M and weighted gap g
+      // 3) compute directional derivative of M and g and store into nodes
+      //********************************************************************
+      IntegrateCoupling(selement,melements);
     }
     // *******************************************************************
 
@@ -2510,7 +2514,10 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
       MORTAR::MortarElement* selement = static_cast<MORTAR::MortarElement*>(ele1);
 
-      // loop over the contact candidate master elements of sele_
+      // empty vector of master element pointers
+      vector<MORTAR::MortarElement*> melements;
+    
+      // loop over the candidate master elements of sele_
       // use slave element's candidate list SearchElements !!!
       for (int j=0;j<selement->MoData().NumSearchElements();++j)
       {
@@ -2518,14 +2525,15 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
         DRT::Element* ele2 = idiscret_->gElement(gid2);
         if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
         MORTAR::MortarElement* melement = static_cast<MORTAR::MortarElement*>(ele2);
-
-        //********************************************************************
-        // 1) perform coupling (projection + overlap detection for sl/m pair)
-        // 2) integrate Mortar matrix M and weighted gap g
-        // 3) compute directional derivative of M and g and store into nodes
-        //********************************************************************
-        IntegrateCoupling(*selement,*melement);
+        melements.push_back(melement);
       }
+    
+      //********************************************************************
+      // 1) perform coupling (projection + overlap detection for sl/m pair)
+      // 2) integrate Mortar matrix M and weighted gap g
+      // 3) compute directional derivative of M and g and store into nodes
+      //********************************************************************
+      IntegrateCoupling(selement,melements);
     }
     // *******************************************************************
 
@@ -2683,7 +2691,10 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     if (!ele1) dserror("ERROR: Cannot find slave element with gid %",gid1);
     MORTAR::MortarElement* selement = static_cast<MORTAR::MortarElement*>(ele1);
 
-    // loop over the contact candidate master elements of sele_
+    // empty vector of master element pointers
+    vector<MORTAR::MortarElement*> melements;
+  
+    // loop over the candidate master elements of sele_
     // use slave element's candidate list SearchElements !!!
     for (int j=0;j<selement->MoData().NumSearchElements();++j)
     {
@@ -2691,14 +2702,15 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       DRT::Element* ele2 = idiscret_->gElement(gid2);
       if (!ele2) dserror("ERROR: Cannot find master element with gid %",gid2);
       MORTAR::MortarElement* melement = static_cast<MORTAR::MortarElement*>(ele2);
-
-      //********************************************************************
-      // 1) perform coupling (projection + overlap detection for sl/m pair)
-      // 2) integrate Mortar matrix M and weighted gap g
-      // 3) compute directional derivative of M and g and store into nodes
-      //********************************************************************
-      IntegrateCoupling(*selement,*melement);
+      melements.push_back(melement);
     }
+  
+    //********************************************************************
+    // 1) perform coupling (projection + overlap detection for sl/m pair)
+    // 2) integrate Mortar matrix M and weighted gap g
+    // 3) compute directional derivative of M and g and store into nodes
+    //********************************************************************
+    IntegrateCoupling(selement,melements);
   }
   // *******************************************************************
 

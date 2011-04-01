@@ -52,7 +52,7 @@ namespace CONTACT
 
 /*!
 \brief A class representing the framework for mortar coupling of ONE
-       slave element and ONE master element of a contact interface in
+       slave element and SEVERAL master elements of a contact interface in
        2D. This is a derived class from MORTAR::Coupling2d which does
        the contact-specific stuff for 2d mortar coupling.
 
@@ -76,7 +76,7 @@ public:
 
   */
   CoCoupling2d(DRT::Discretization& idiscret, int dim,
-               MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
+               MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
   
   /*!
   \brief Constructor with shape function specification
@@ -87,7 +87,7 @@ public:
   
   */  
   CoCoupling2d(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret, int dim,
-               MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
+               MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
   
   /*!
   \brief Destructor
@@ -105,11 +105,11 @@ public:
   does integration of the mortar quantity linearizations
   
   This method integrates the overlap of the current MortarElement
-  pair sele_ / mele_ based on the integration limits (xiproj). The
-  integration includes the Mortar matrices D/M and the gap g.
+  pair sele_ / mele_[k] based on the integration limits (xiproj).
+  The integration includes the Mortar matrices D/M and the gap g.
 
   */
-  bool IntegrateOverlap(vector<double>& xiproj);
+  bool IntegrateOverlap(int k, vector<double>& xiproj);
 
   //@}
 

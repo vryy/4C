@@ -313,13 +313,13 @@ public:
   bool IntegrateSlave(MORTAR::MortarElement& sele);
 
   /*!
-  \brief Integrate Mortar matrix M and gap g on slave/master overlap
+  \brief Integrate Mortar matrix M and gap g on slave/master overlaps
   
   Derived verision!
 
   */
-  bool IntegrateCoupling(MORTAR::MortarElement& sele,
-                         MORTAR::MortarElement& mele);
+  bool IntegrateCoupling(MORTAR::MortarElement* sele,
+                         vector<MORTAR::MortarElement*> mele);
     
   /*!
   \brief Integrate penalty sclaing factor kappa on slave element

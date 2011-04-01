@@ -590,19 +590,15 @@ public:
   This method is outdated!!! We now obtain the D-matrix by
   integrating the mortar segments (just like the M-matrix entries).
 
-  \param nonlinear (in): evaluate linearizations or not
-
   */
   virtual bool IntegrateSlave(MORTAR::MortarElement& sele);
 
   /*!
-  \brief Integrate Mortar matrix M and gap g on slave/master overlap
-
-  \param nonlinear (in): evaluate linearizations or not
+  \brief Integrate Mortar matrix M and gap g on slave/master overlaps
   
   */
-  virtual bool IntegrateCoupling(MORTAR::MortarElement& sele,
-                                 MORTAR::MortarElement& mele);
+  virtual bool IntegrateCoupling(MORTAR::MortarElement* sele,
+                                 vector<MORTAR::MortarElement*> mele);
 
   /*!
   \brief Split MortarElements into IntElements for 3D quadratic coupling
