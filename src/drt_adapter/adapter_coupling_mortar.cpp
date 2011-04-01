@@ -31,6 +31,8 @@
 using namespace std;
 extern struct _GENPROB genprob;
 
+//#define SADDLEPOINTSYSTEM
+
 ADAPTER::CouplingMortar::CouplingMortar()
 {
 
@@ -330,8 +332,11 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
 
   // check for invalid parameter values
+#ifdef SADDLEPOINTSYSTEM
+#else
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
     dserror("Mortar coupling adapter only works for dual shape functions");
+#endif
 
   // check for parallel redistribution (only if more than 1 proc)
   //bool parredist = false;
@@ -351,7 +356,8 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   RCP<MORTAR::MortarInterface> interface = rcp(new MORTAR::MortarInterface(0, comm, dim, input, redundant));
 
   //  Pressure DoF are also transferred to MortarInterface
-  dim += 1;
+  dim = dis.NumDof(dis.lRowNode(0));
+  //dim = dis.NumDof(dis.lRowNode(0))-1;
 
   // TODO: At one point, cout should be changed to dserror
   if (dim == genprob.ndim)
@@ -411,8 +417,14 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
     interface->AddMortarElement(mrtrele);
   }
 
+  // TODO: Difference between condensed and saddlePointproblem
+  //       parallel distribution
   // finalize the contact interface construction
+#ifdef SADDLEPOINTSYSTEM
+  interface->FillComplete(dis.DofRowMap()->MaxAllGID());
+#else
   interface->FillComplete();
+#endif
 
   // store old row maps (before parallel redistribution)
   slavedofrowmap_  = rcp(new Epetra_Map(*interface->SlaveRowDofs()));
@@ -465,7 +477,7 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   interface->Evaluate();
 
   // print message
-  if(comm.MyPID()==0) cout << "done!" << endl;
+  if(comm.MyPID()==0) cout << "done!" << endl << endl;
 
   // preparation for AssembleDM
   // (Note that redistslave and redistmaster are the slave and master row maps
@@ -499,7 +511,36 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   Dinv_->ReplaceDiagonalValues(*diag);
   Dinv_->Complete( D_->RangeMap(), D_->DomainMap() );
   DinvM_ = MLMultiply(*Dinv_,*M_,false,false,true);
+#ifdef SADDLEPOINTSYSTEM
+  // make numbering of LM dofs consecutive and unique across N interfaces
+  int offset_if = 0;
 
+  // build Lagrange multiplier dof map
+  interface->UpdateLagMultSets(offset_if);
+
+  glmdofrowmap_ = Teuchos::null;
+  glmdofrowmap_ = LINALG::MergeMap(glmdofrowmap_, interface->LagMultDofs());
+
+  offset_if = glmdofrowmap_->NumGlobalElements();
+  if (offset_if < 0) offset_if = 0;
+
+  // first setup
+  RCP<LINALG::SparseMatrix> constrmt = rcp(new LINALG::SparseMatrix(*(dis.DofRowMap()),100,false,true));
+  constrmt->Add(*D_,true,1.0,1.0);
+  constrmt->Add(*M_,true,-1.0,1.0);
+  constrmt->Complete(*slavedofrowmap_,*(dis.DofRowMap()));
+
+  //cout << *constrmt<< endl;
+  conmatrix_ = MORTAR::MatrixColTransformGIDs(constrmt,glmdofrowmap_);
+  //cout << *conmatrix_ << endl;
+
+  /*
+  cout << "M matrix" << endl;
+  cout << *M_ << endl;
+  cout << "D matrix" << endl;
+  cout << *D_ << endl;
+*/
+#endif
   // store interface
   interface_ = interface;
 

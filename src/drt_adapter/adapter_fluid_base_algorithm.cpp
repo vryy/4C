@@ -239,7 +239,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   fluidtimeparams->set<string> ("Neumann inflow",fdyn.get<string>("NEUMANNINFLOW"));
 
   //--------------------------------------mesh tying for fluid
-  fluidtimeparams->set<bool>("Mesh Tying",
+  fluidtimeparams->set<int>("Mesh Tying",
       DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"));
 
   //--------------------------------------analytical error evaluation

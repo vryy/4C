@@ -1968,7 +1968,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1),
                                &fdyn);
 
-  BoolParameter("MESHTYING", "no", "Flag to (de)activate mesh tying algorithm", &fdyn);
+  setStringToIntegralParameter<int>("MESHTYING", "noMeshTying", "Flag to (de)activate mesh tying algorithm",
+                                  tuple<std::string>(
+                                    "noMeshTying",
+                                    "Condensed",
+                                    "SaddlePointProblem"),
+                                  tuple<int>(
+                                      INPAR::FLUID::no_mesh_tying,
+                                      INPAR::FLUID::condensed,
+                                      INPAR::FLUID::saddle_point_problem),
+                                  &fdyn);
 
   setStringToIntegralParameter<int>("CALCERROR",
                                "no",
@@ -2674,6 +2683,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::SCATRA::scatratype_elch_poisson,
                                  INPAR::SCATRA::scatratype_levelset),
                                  &scatradyn);
+
+  setStringToIntegralParameter<int>("MESHTYING", "noMeshTying", "Flag to (de)activate mesh tying algorithm",
+                                  tuple<std::string>(
+                                    "noMeshTying",
+                                    "Condensed",
+                                    "SaddlePointProblem"),
+                                  tuple<int>(
+                                      INPAR::SCATRA::no_mesh_tying,
+                                      INPAR::SCATRA::condensed,
+                                      INPAR::SCATRA::saddle_point_problem),
+                                  &scatradyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(

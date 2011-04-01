@@ -717,6 +717,11 @@ protected:
   // master dof rowmap
   RCP<Epetra_Map> gmdofrowmap_;
 
+  // map extractor mesh tying
+  LINALG::MultiMapExtractor extractor_;
+
+  // lagrange multiplier
+  RCP<Epetra_Vector> lag_;
 
   //@}
 

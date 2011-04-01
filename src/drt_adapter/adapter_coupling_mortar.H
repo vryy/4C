@@ -115,8 +115,20 @@ namespace ADAPTER
     /// the interface dof map of the slave side
     RefCountPtr<Epetra_Map> SlaveDofRowMap()  const { return slavedofrowmap_; }
 
+    /// the interface dof map of the lagrainge multiplier
+    RefCountPtr<Epetra_Map> LmDofRowMap()  const { return glmdofrowmap_; }
+
     /// the mortar projection operator
     RCP<LINALG::SparseMatrix> GetMortarTrafo() const { return DinvM_;}
+
+    /// return constraint matrix
+    RCP<LINALG::SparseMatrix> GetConMatrix() const { return conmatrix_;}
+
+    /// return mortar M matrix
+    RCP<LINALG::SparseMatrix> GetMMatrix() const { return M_;}
+
+    /// return mortar D matrix
+    RCP<LINALG::SparseMatrix> GetDMatrix() const { return D_;}
 
 
   private:
@@ -124,6 +136,8 @@ namespace ADAPTER
     RCP<MORTAR::MortarInterface>  interface_;        ///< interface
     RefCountPtr<Epetra_Map>       masterdofrowmap_;  ///< map of master row dofs
     RefCountPtr<Epetra_Map>       slavedofrowmap_;   ///< map of slave row dofs
+    RefCountPtr<Epetra_Map>       glmdofrowmap_;   ///< map of slave row dofs
+    RCP<LINALG::SparseMatrix>     conmatrix_ ;
 
     RefCountPtr<LINALG::SparseMatrix> D_;            ///< mortar matrix
     RefCountPtr<LINALG::SparseMatrix> Dinv_;         ///< inverse of mortar matrix #D_

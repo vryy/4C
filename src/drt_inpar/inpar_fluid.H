@@ -158,6 +158,14 @@ namespace INPAR
       shear_flow
     };
 
+    /// initial field
+    enum MeshTying
+    {
+      no_mesh_tying,
+      condensed,
+      saddle_point_problem
+    };
+
     //! physical turbulence models
     enum TurbModelAction
     {

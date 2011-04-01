@@ -148,21 +148,29 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     extrapolationpredictor_=false;
   }
 
-  if(params_.get<bool>("Mesh Tying"))
+  if(params_.get<int>("Mesh Tying")!= INPAR::FLUID::no_mesh_tying)
   {
-    meshtying_.Setup( *discret_,
-                      discret_->Comm(),
-                      false);
-#if Output_MeshTying
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("FLUID:       Meshtying Setup");
+      meshtying_.Setup( *discret_,
+                        discret_->Comm(),
+                        false);
+    }
+
+#ifdef Output_MeshTying
     if(myrank_==0)
     {
       // Output:
+      cout << endl << "DofRowMap:" << endl;
+      cout << *(discret_->DofRowMap())<< endl << endl;
       cout << endl << "masterDofRowMap:" << endl;
       cout << *(meshtying_.MasterDofRowMap())<< endl << endl;
       cout << "slaveDofRowMap:" << endl;
       cout << *(meshtying_.SlaveDofRowMap())<< endl << endl;
-      cout << "Projection matrix:" << endl;
-      cout << *(meshtying_.GetMortarTrafo())<< endl << endl;
+      cout << "lmDofRowMap:" << endl;
+      cout << *(meshtying_.LmDofRowMap())<< endl << endl;
+      //cout << "Projection matrix:" << endl;
+      //cout << *(meshtying_.GetMortarTrafo())<< endl << endl;
     }
 #endif
   }
@@ -222,7 +230,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
 #ifdef BLOCKMATRIX
-  if(params_.get<bool>("Mesh Tying"))
+  if(params_.get<int>("Mesh Tying")== INPAR::FLUID::condensed);
   {
     // slave dof rowmap
     gsdofrowmap_ = meshtying_.SlaveDofRowMap();
@@ -243,21 +251,24 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     fluidmaps.push_back(gmdofrowmap_);
     fluidmaps.push_back(gsdofrowmap_);
 
-    Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMaps(fluidmaps);
+    //Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMapsKeepOrder(fluidmaps);
 
-    const std::vector<Teuchos::RCP<const Epetra_Map> > maps = fluidmaps;
-    LINALG::MultiMapExtractor blockrowdofmap;
-    blockrowdofmap.Setup(*fullmap,maps);
+    //const std::vector<Teuchos::RCP<const Epetra_Map> > maps = fluidmaps;
+    extractor_.Setup(*dofrowmap,fluidmaps);
+
+    // check, if extractor maps are valid
+    extractor_.CheckForValidMapExtractor();
 
     // allocate block matrix
     Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat;
-    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(blockrowdofmap,blockrowdofmap,81,false,false));
+    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>
+             (extractor_,extractor_,81,false,false));
 
     sysmat_=mat;
   }
   else
 #else
-  if(params_.get<bool>("Mesh Tying"))
+  if(params_.get<int>("Mesh Tying")== INPAR::FLUID::condensed)
   {
     // slave dof rowmap
     gsdofrowmap_ = meshtying_.SlaveDofRowMap();
@@ -271,6 +282,23 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     // dofrowmap for discretisation without slave and master dofrowmap
     RCP<Epetra_Map> gndofrowmap = LINALG::SplitMap(*dofrowmap, *gsdofrowmap_);
     gndofrowmap_ = LINALG::SplitMap(*gndofrowmap, *gmdofrowmap_);
+  }
+  else if(params_.get<int>("Mesh Tying")== INPAR::FLUID::saddle_point_problem)
+  {
+   lag_ = LINALG::CreateVector(*(meshtying_.LmDofRowMap()),true);
+
+   // slave dof rowmap
+   gsdofrowmap_ = meshtying_.SlaveDofRowMap();
+
+   // master dof rowmap
+   gmdofrowmap_ = meshtying_.MasterDofRowMap();
+
+   // merge dofrowmap for slave and master discretization
+   gsmdofrowmap_ = LINALG::MergeMap(*gmdofrowmap_,*gsdofrowmap_,false);
+
+   // dofrowmap for discretisation without slave and master dofrowmap
+   RCP<Epetra_Map> gndofrowmap = LINALG::SplitMap(*dofrowmap, *gsdofrowmap_);
+   gndofrowmap_ = LINALG::SplitMap(*gndofrowmap, *gmdofrowmap_);
   }
   else
   {
@@ -1373,12 +1401,15 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     }
 
     //double dtsysmatsplit_=0.0;
-    if(params_.get<bool>("Mesh Tying"))
+    if(params_.get<int>("Mesh Tying")== INPAR::FLUID::condensed)
     {
 #ifdef BLOCKMATRIX
       MeshTyingMatrixCondenstation_BlockMatrix();
 #else
-      MeshTyingMatrixCondenstation();
+      {
+        TEUCHOS_FUNC_TIME_MONITOR("FLUID:       Meshtying Condensation");
+        MeshTyingMatrixCondenstation();
+      }
 #endif
     }
 
@@ -1509,7 +1540,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*tmpc);
         LINALG::Export(*tmpkspc,*c_);
 
-        if(params_.get<bool>("Mesh Tying"))
+        if(params_.get<int>("Mesh Tying")== INPAR::FLUID::condensed)
         {
           // Take off slave nodes from
           RCP<Epetra_Vector> fm_slave = rcp(new Epetra_Vector(*gsdofrowmap_,true));
@@ -1695,29 +1726,136 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     }
 #endif
 
+
+      if(params_.get<int>("Mesh Tying")== INPAR::FLUID::condensed)
+      {
+#ifdef BLOCKMATRX
+        /*
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat
+                  = (Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_));
+        cout << (sysmat->FullDomainMap()) << endl;
+        dserror("");*/
+
+        Teuchos::RCP<LINALG::SparseMatrix> sysmat
+          = (Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_))->Merge();
+
+        //cout << *residual_ << endl;
+        //LINALG::PrintMatrixInMatlabFormat("sysmat_BlockMatrix",*sysmat->EpetraMatrix(),true);
+        //dserror("");
+        //cout << *(sysmat->RowMap()) << endl;
+  /*
+        if (sysmat->RowMap().SameAs(residual_->Map()))
+          cout << "juhu" << endl;
+        else
+          cout << "nein" << endl;
+  */
+        solver_.Solve(sysmat->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
+#endif
+        solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
+      }
+      else if(params_.get<int>("Mesh Tying")== INPAR::FLUID::saddle_point_problem)
+      {
+        Teuchos::RCP<LINALG::SparseMatrix> sysmat
+                  = (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_));
+
+        RCP<Epetra_Map> mergedmap   = LINALG::MergeMap(*(discret_->DofRowMap()),*(meshtying_.LmDofRowMap()),false);
+        RCP<LINALG::SparseMatrix> mergedsysmat      = Teuchos::null;
+        RCP<Epetra_Vector>        mergedresidual    = LINALG::CreateVector(*mergedmap,true);
+        RCP<Epetra_Vector>        mergedincvel      = LINALG::CreateVector(*mergedmap,true);
+        RCP<Epetra_Vector>        mergedzeros       = LINALG::CreateVector(*mergedmap,true);
+
+
+        // remove meshtying force terms again
+        // (solve directly for z_ and not for increment of z_)
+        RCP<Epetra_Vector> fs = rcp(new Epetra_Vector(*gsdofrowmap_));
+        meshtying_.GetDMatrix()->Multiply(true,*lag_,*fs);
+        RCP<Epetra_Vector> fsexp = rcp(new Epetra_Vector(*(discret_->DofRowMap())));
+        LINALG::Export(*fs,*fsexp);
+        residual_->Update(1.0,*fsexp,1.0);
+
+        RCP<Epetra_Vector> fm = rcp(new Epetra_Vector(*gmdofrowmap_));
+        meshtying_.GetMMatrix()->Multiply(true,*lag_,*fm);
+        RCP<Epetra_Vector> fmexp = rcp(new Epetra_Vector(*(discret_->DofRowMap())));
+        LINALG::Export(*fm,*fmexp);
+        residual_->Update(-1.0,*fmexp,1.0);
+
+        // build constraint rhs (=empty)
+        RCP<Epetra_Vector> constrrhs = LINALG::CreateVector(*meshtying_.LmDofRowMap());
+
+        // build merged matrix
+        mergedsysmat = rcp(new LINALG::SparseMatrix(*mergedmap,100,false,true));
+        mergedsysmat ->Add(*sysmat,false,1.0,1.0);
+        mergedsysmat ->Add(*(meshtying_.GetConMatrix()),false,1.0,1.0);
+        mergedsysmat ->Add(*(meshtying_.GetConMatrix()),true,1.0,1.0);
+        mergedsysmat ->Complete();
+
 #ifdef Output_MeshTying
-    Teuchos::RCP<LINALG::SparseMatrix> sysmat = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
-    Teuchos::RCP<LINALG::SparseMatrix> Test = sysmat->Merge();
-    LINALG::PrintMatrixInMatlabFormat("sysmat_BlockMatrix",*Test->EpetraMatrix(),true);
+        cout << "D" << endl;
+        cout << *meshtying_.GetDMatrix() << endl;
 
-    LINALG::PrintMatrixInMatlabFormat("sysmat_SplitMatrix",*sysmat->EpetraMatrix(),true);
+        cout << "M" << endl;
+        cout << *meshtying_.GetMMatrix() << endl;
 
-    LINALG::PrintBlockMatrixInMatlabFormat("sysmat",*sysmat);
+        cout << "constraint matrix" << endl;
+        cout << *meshtying_.GetConMatrix() << endl;
 
-    LINALG::PrintVectorInMatlabFormat("residual",*residual_);
-
-    dserror("Stop Meshtying");
+        cout << "merged Matrix" << endl;
+        cout << *mergedsysmat << endl;
 #endif
 
-      solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
+        // build merged rhs
+        RCP<Epetra_Vector> residualexp = rcp(new Epetra_Vector(*mergedmap));
+        LINALG::Export(*residual_,*residualexp);
+        mergedresidual->Update(1.0,*residualexp,1.0);
+        RCP<Epetra_Vector> constrexp = rcp(new Epetra_Vector(*mergedmap));
+        LINALG::Export(*constrrhs,*constrexp);
+        mergedresidual->Update(1.0,*constrexp,1.0);
+
+        // adapt dirichtoggle vector and apply DBC ??
+
+#ifdef Output_MeshTying
+        cout << "merged resiudal" << endl;
+        cout << *mergedresidual<< endl;
+#endif
+
+        // adapt dirichtoggle vector and apply DBC
+        //RCP<Epetra_Vector> dirichtoggleexp = rcp(new Epetra_Vector(*mergedmap));
+        //LINALG::Export(*dirichtoggle,*dirichtoggleexp);
+        //LINALG::ApplyDirichlettoSystem(mergedmt,mergedsol,mergedrhs,mergedzeros,dirichtoggleexp);
+
+        // standard solver call
+        solver_.Solve(mergedsysmat->EpetraOperator(),mergedincvel,mergedresidual,true,itnum==1, w_, c_, project_);
+
+        RCP<Epetra_Map> problemrowmap = rcp(new Epetra_Map(*(discret_->DofRowMap())));
+
+        RCP<Epetra_Vector> laginc = rcp(new Epetra_Vector(*(meshtying_.LmDofRowMap())));
+        LINALG::MapExtractor mapext(*mergedmap,problemrowmap,meshtying_.LmDofRowMap());
+        mapext.ExtractCondVector(mergedincvel,incvel_);
+        mapext.ExtractOtherVector(mergedincvel,laginc);
+        laginc->ReplaceMap(*(meshtying_.SlaveDofRowMap()));
+
+        //dserror("");
+        lag_->Update(1.0,*laginc,0.0);
+#ifdef Output_MeshTying
+        dserror("");
+#endif
+      }
+      else
+        solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
+
       solver_.ResetTolerance();
 
       // end time measurement for solver
       dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
     }
 
-    if(params_.get<bool>("Mesh Tying"))
-      GetSlaveVelocity();
+    if(params_.get<int>("Mesh Tying")== INPAR::FLUID::condensed)
+    {
+      {
+        TEUCHOS_FUNC_TIME_MONITOR("FLUID:       Meshtying ReplaceSolution");
+        GetSlaveVelocity();
+      }
+    }
 
     // -------------------------------------------------------------------
     // update velocity and pressure values by increments
@@ -5087,7 +5225,7 @@ void FLD::FluidImplicitTimeInt::MeshTyingMatrixCondenstation_BlockMatrix()
 
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_);
   RCP<Epetra_Vector> residual = residual_;
-  const Epetra_Map* dofrowmap =  discret_->DofRowMap();;
+  const Epetra_Map* dofrowmap =  discret_->DofRowMap();
 
   // we want to split f into 3 groups s.m,n
   RCP<Epetra_Vector> fs, fm, fn;
