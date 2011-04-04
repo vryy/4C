@@ -157,7 +157,7 @@ TSI::Monolithic::Monolithic(
     errfile_(NULL),
     zeros_(Teuchos::null),
     strmethodname_(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP")),
-    veln_(StructureField().ExtractVeln())
+    veln_(Teuchos::null)
 {
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams
@@ -165,6 +165,8 @@ TSI::Monolithic::Monolithic(
   xparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
   errfile_ = xparams->get<FILE*>("err file");
 
+  // velocities V_{n+1} at t_{n+1}
+  veln_ = LINALG::CreateVector(*(StructureField().DofRowMap(0)), true);
   veln_->PutScalar(0.0);
 }
 
@@ -175,15 +177,20 @@ void TSI::Monolithic::TimeLoop(
   const Teuchos::ParameterList& sdynparams
   )
 {
+  // create a linear solver
+  // get UMFPACK...
+  Teuchos::ParameterList solverparams
+    = DRT::Problem::Instance()->ThermalSolverParams();
+  solver_ = rcp(new LINALG::Solver(
+                      solverparams,
+                      Comm(),
+                      DRT::Problem::Instance()->ErrorFile()->Handle()
+                      )
+                );
+
   // time loop
   while (NotFinished())
   {
-    // calculate initial linear system at current position
-    // This initializes the field algorithms and creates the first linear
-    // systems.
-    // coupling parameters must be passed to the fields
-    Evaluate(Teuchos::null); // pass null vector as unknown increments
-
     // counter and print header
     // predict solution of both field (call the adapter)
     PrepareTimeStep();
@@ -200,6 +207,9 @@ void TSI::Monolithic::TimeLoop(
 #ifdef TSIMONOLITHASOUTPUT
     printf("Ende Timeloop ThermoField().ExtractTempnp[0] %12.8f\n",(*ThermoField().ExtractTempnp())[0]);
     printf("Ende Timeloop ThermoField().ExtractTempn[0] %12.8f\n",(*ThermoField().ExtractTempn())[0]);
+
+    printf("Ende Timeloop disp %12.8f\n",(*StructureField().Dispn())[0]);
+    cout << "dispn\n" << *(StructureField().Dispn()) << endl;
 #endif // TSIMONOLITHASOUTPUT
 
   }  // timeloop
@@ -252,6 +262,8 @@ void TSI::Monolithic::NewtonFull(
   zeros_ = LINALG::CreateVector(*DofRowMap(), true);
   zeros_->PutScalar(0.0);
 
+  //---------------------------------------------- iteration loop
+
   // equilibrium iteration loop (loop over k)
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
@@ -282,21 +294,6 @@ void TSI::Monolithic::NewtonFull(
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
     // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
 
-    // apply Dirichlet BCs to system of equations
-    iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
-
-    // create the solver
-    // get UMFPACK...
-    Teuchos::ParameterList solverparams
-      = DRT::Problem::Instance()->ThermalSolverParams();
-
-    solver_ = rcp(new LINALG::Solver(
-                        solverparams,
-                        Comm(),
-                        DRT::Problem::Instance()->ErrorFile()->Handle()
-                        )
-                  );
-
     //---------------------------------------------- solve linear system
 
     // Solve for inc_ = [disi_,tempi_]
@@ -308,20 +305,22 @@ void TSI::Monolithic::NewtonFull(
       double wanted = tolfres_;
       solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
     }
+
     // mere blockmatrix to SparseMatrix and solve
     // --> very expensive, but ok for development of new code 29.11.10
     Teuchos::RCP<LINALG::SparseMatrix> m = systemmatrix_->Merge();
+
+    // apply Dirichlet BCs to system of equations
+    iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
+    LINALG::ApplyDirichlettoSystem(m, iterinc_, rhs_, Teuchos::null, zeros_,
+                                   *CombinedDBCMap());
+    cout << " DBC applied to TSI system" << endl;
 
     // standard solver call
     solver_->Solve(m->EpetraOperator(), iterinc_, rhs_, true, iter_==1);
     cout << " Solved" << endl;
 
-    // blank all increments that have Dirichlet BC, because they must be zero
-    Teuchos::RCP<Epetra_Vector> tmp = LINALG::CreateVector(*DofRowMap(), false);
-    // blank the increments of the TSI system that have Dirichlet BC
-    LINALG::ApplyDirichlettoSystem(iterinc_, tmp, zeros_, *CombinedDBCMap());
-    tmp = Teuchos::null;
-    cout << " DBC applied to TSI system" << endl;
+    //---------------------------------------------- solve linear system
 
     // reset solver tolerance
     solver_->ResetTolerance();
@@ -340,21 +339,19 @@ void TSI::Monolithic::NewtonFull(
 
   }  // end equilibrium loop
 
+  //---------------------------------------------- iteration loop
+
   // correct iteration counter
   iter_ -= 1;
 
   // test whether max iterations was hit
-  if ( (iter_ >= itermax_) and (not iterdivercont_) )
-  {
-    dserror("Newton unconverged in %d iterations", iter_);
-  }
-  else if ( (iter_ >= itermax_) and (iterdivercont_) and (Comm().MyPID() == 0) )
-  {
-    printf("Newton unconverged in %d iterations ... continuing\n", iter_);
-  }
-  else if ( (Converged()) and (Comm().MyPID() == 0) )
+  if ( (Converged()) and (Comm().MyPID() == 0) )
   {
     PrintNewtonConv();
+  }
+  else if (iter_ >= itermax_)
+  {
+    dserror("Newton unconverged in %d iterations", iter_);
   }
 
 }  // NewtonFull()
@@ -365,6 +362,7 @@ void TSI::Monolithic::NewtonFull(
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 {
+  cout << "\n TSI::Monolithic::Evaluate()" << endl;
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::Evaluate");
 
   // displacement and temperature incremental vector
@@ -403,9 +401,6 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 #endif // TSIASOUTPUT
 
   // call all elements and assemble rhs and matrices
-  cout << " \nEvaluate elements\n" << endl;
-
-
   /// structural field
 
   // structure Evaluate (builds tangent, residual and applies DBC)
@@ -431,7 +426,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   //   EvaluateForceStiffResidual()
   //   PrepareSystemForNewtonSolve()
   StructureField().Evaluate(sx);
-  cout << " structure time for calling Evaluate: " << timerstructure.ElapsedTime() << "\n";
+  cout << "  structure time for calling Evaluate: " << timerstructure.ElapsedTime() << "\n";
 
 #ifdef TSIASOUTPUT
   cout << "STR fres_" << *StructureField().RHS() << endl;
@@ -465,7 +460,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   //   EvaluateRhsTangResidual() and
   //   PrepareSystemForNewtonSolve()
   ThermoField().Evaluate();
-  cout << " thermo time for calling Evaluate: " << timerthermo.ElapsedTime() << "\n";
+  cout << "  thermo time for calling Evaluate: " << timerthermo.ElapsedTime() << "\n";
 
 }  // Evaluate()
 
@@ -616,7 +611,7 @@ void TSI::Monolithic::SetupSystemMatrix(
                    );
 
   // call the element and calculate the matrix block
-  ApplyStrCouplMatrix(k_st);
+  ApplyStrCouplMatrix(k_st,sdynparams);
 
   // Uncomplete mechanical-thermal matrix to be able to deal with slightly
   // defective interface meshes.
@@ -827,7 +822,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   switch ( normtypeinc_ )
   {
   case INPAR::TSI::convnorm_abs :
-    oss <<std::setw(18)<< "abs-temp-norm";
+    oss <<std::setw(18)<< "abs-inc-norm";
     break;
   default:
     dserror("You should not turn up here.");
@@ -921,14 +916,21 @@ void TSI::Monolithic::PrintNewtonConv()
  |  evaluate mechanical-thermal system matrix at state       dano 03/11 |
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::ApplyStrCouplMatrix(
-  Teuchos::RCP<LINALG::SparseMatrix> k_st  //!< off-diagonal tangent matrix term
+  Teuchos::RCP<LINALG::SparseMatrix> k_st,  //!< off-diagonal tangent matrix term
+  const Teuchos::ParameterList& sdynparams
   )
 {
+  cout << " TSI::Monolithic::ApplyStrCouplMatrix()" << endl;
+
   // create the parameters for the discretization
   Teuchos::ParameterList sparams;
   const std::string action = "calc_struct_stifftemp";
   sparams.set("action", action);
+  // other parameters that might be needed by the elements
+  sparams.set("delta time", Dt());
+  sparams.set("total time", Time());
 //  cout << "STR Parameterliste\n " <<  sparams << endl;
+  StructureField().Discretization()->ClearState();
   StructureField().Discretization()->SetState(0,"displacement",StructureField().Dispnp());
 
   // build specific assemble strategy for mechanical-thermal system matrix
@@ -943,8 +945,40 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
                           Teuchos::null,
                           Teuchos::null
                           );
+
   // evaluate the mechancial-thermal system matrix on the structural element
   StructureField().Discretization()->Evaluate( sparams, structuralstrategy );
+  StructureField().Discretization()->ClearState();
+
+  // for consistent linearisation scale k_st with time factor
+  // major switch to different time integrators
+  switch (strmethodname_)
+  {
+   case  INPAR::STR::dyna_statics :
+   {
+     // continue
+     break;
+   }
+   case  INPAR::STR::dyna_onesteptheta :
+   {
+     double theta_ = sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
+     // K_Teffdyn(T_n+1^i) = theta * k_st
+     k_st->Scale(theta_);
+     break;
+   }
+   // TODO: time factor for genalpha
+   case  INPAR::STR::dyna_genalpha :
+   {
+//     double alphaf_ = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
+//     double beta_ = sdynparams.sublist("GENALPHA").get<double>("BETA");
+//     double gamma_ = sdynparams.sublist("GENALPHA").get<double>("GAMMA");
+   }
+   default :
+   {
+     dserror("Don't know what to do...");
+     break;
+   }
+  }  // end of switch(strmethodname_)
 
 }  // ApplyStrCouplMatrix()
 
@@ -957,52 +991,52 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
   const Teuchos::ParameterList& sdynparams
   )
 {
+  cout << " TSI::Monolithic::ApplyThrCouplMatrix()" << endl;
+
   // create the parameters for the discretization
   Teuchos::ParameterList tparams;
-  // type of calling structural time integrator
-  tparams.set<int>("time integrator", strmethodname_);
-  // major switch to different time integrators
-  switch (strmethodname_)
-  {
-    case  INPAR::STR::dyna_statics :
-    {
-      // continue
-      break;
-    }
-    case  INPAR::STR::dyna_onesteptheta :
-    {
-      double theta_ = sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
-      tparams.set<double>("theta", theta_);
-      break;
-    }
-    case  INPAR::STR::dyna_genalpha :
-    {
-      double alphaf_ = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
-      double beta_ = sdynparams.sublist("GENALPHA").get<double>("BETA");
-      double gamma_ = sdynparams.sublist("GENALPHA").get<double>("GAMMA");
-      tparams.set<double>("ALPHA_F", alphaf_);
-      tparams.set<double>("BETA", beta_);
-      tparams.set<double>("GAMMA", gamma_);
-    }
-    default :
-    {
-      dserror("Don't know what to do...");
-      break;
-    }
-  }  // end of switch(strmethodname_)
   // action for elements
   const std::string action = "calc_thermo_coupltang";
   tparams.set("action", action);
   // other parameters that might be needed by the elements
   tparams.set("delta time", Dt());
   tparams.set("total time", Time());
+  // create specific time integrator
+  const Teuchos::ParameterList& tdyn
+    = DRT::Problem::Instance()->ThermalDynamicParams();
+  tparams.set<int>("time integrator", DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP"));
+  switch (DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP"))
+  {
+    // Static analysis
+    case INPAR::THR::dyna_statics :
+    {
+      break;
+    }
+    // Static analysis
+    case INPAR::THR::dyna_onesteptheta :
+    {
+      double theta_ = tdyn.sublist("ONESTEPTHETA").get<double>("THETA");
+      tparams.set("theta",theta_);
+      break;
+    }
+    case INPAR::THR::dyna_genalpha :
+    {
+      dserror("Genalpha not yet implemented");
+      break;
+    }
+    case INPAR::THR::dyna_undefined :
+    default :
+    {
+      dserror("Don't know what to do...");
+      break;
+    }
+  }
 
+  ThermoField().Discretization()->ClearState();
   // set the variables that are needed by the elements
   ThermoField().Discretization()->SetState(0,"temperature",ThermoField().Tempnp());
   ThermoField().Discretization()->SetState(1,"displacement",StructureField().Dispnp());
   ThermoField().Discretization()->SetState(1,"velocity",veln_);
-
-//  cout << "veln_" << *veln_ << endl;
 
   // build specific assemble strategy for the thermal-mechanical system matrix
   // from the point of view of ThermoField:
@@ -1018,6 +1052,40 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
                           );
   // evaluate the thermal-mechancial system matrix on the thermal element
   ThermoField().Discretization()->Evaluate(tparams,thermostrategy);
+  ThermoField().Discretization()->ClearState();
+
+  // consider linearisation of velocities due to displacements
+  // major switch to different time integrators
+  switch (strmethodname_)
+  {
+    case  INPAR::STR::dyna_statics :
+    {
+      // Lin (v_n+1) . \Delta d_n+1 = 1/dt, cf. Diss N. Karajan (2009) for quasistatic approach
+      const double fac = 1.0/Dt();
+      k_ts->Scale(fac);
+      break;
+    }
+    case  INPAR::STR::dyna_onesteptheta :
+    {
+      double theta = sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
+      const double fac = 1.0 / ( theta * Dt() );
+      k_ts->Scale(fac);
+      break;
+    }
+    case  INPAR::STR::dyna_genalpha :
+    {
+      double beta = sdynparams.sublist("GENALPHA").get<double>("BETA");
+      double gamma = sdynparams.sublist("GENALPHA").get<double>("GAMMA");
+      // Lin (v_n+1) . \Delta d_n+1 = (gamma) / (beta . dt)
+      const double fac =  gamma / ( beta * Dt() );
+      k_ts->Scale(fac);
+    }
+    default :
+    {
+      dserror("Don't know what to do...");
+      break;
+    }
+  }  // end of switch(strmethodname_)
 
 }  // ApplyThrCouplMatrix()
 

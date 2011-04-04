@@ -151,7 +151,8 @@ namespace TSI
 
     //! Evaluate mechanical-thermal system matrix
     void ApplyStrCouplMatrix(
-      Teuchos::RCP<LINALG::SparseMatrix> k_st  //!< mechanical-thermal stiffness matrix
+      Teuchos::RCP<LINALG::SparseMatrix> k_st,  //!< mechanical-thermal stiffness matrix
+      const Teuchos::ParameterList& sdynparams
       );
 
     //! Evaluate thermal-mechanical system matrix
@@ -310,8 +311,6 @@ namespace TSI
     int iter_;  //!< iteration step
     int itermax_;  //!< maximally permitted iterations
     int itermin_;  //!< minimally requested iteration
-    bool iterdivercont_;  //!< if TRUE then go on with time integration
-                          //!< even if Newton-Raphson iteration failed
     double normrhs_;  //!< norm of residual forces
     double norminc_;  //!< norm of residual unknowns
 

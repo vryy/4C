@@ -516,6 +516,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 
     // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
     // check the time integrator
+    // K_T = 1/dt . C + theta . K
     const INPAR::THR::DynamicType timint
       = DRT::INPUT::get<INPAR::THR::DynamicType>(params, "time integrator",INPAR::THR::dyna_undefined);
     switch (timint)
@@ -794,39 +795,28 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 
     // BUILD EFFECTIVE TANGENT ACC TO TIME INTEGRATOR
     // check the time integrator
-    const INPAR::STR::DynamicType stimint
-      = DRT::INPUT::get<INPAR::STR::DynamicType>(params, "time integrator");
-    switch (stimint)
+    const INPAR::THR::DynamicType timint
+     = DRT::INPUT::get<INPAR::THR::DynamicType>(params, "time integrator",INPAR::THR::dyna_undefined);
+    switch (timint)
     {
-      case INPAR::STR::dyna_statics :
+      case INPAR::THR::dyna_statics :
       {
-        // Lin (v_n+1) . \Delta d_n+1 = 1/dt, cf. Diss N. Karajan (2009) for quasistatic approach
-        const double stepsize = params.get<double>("delta time");
-        const double fac = 1.0/stepsize;
-        etangcoupl.Scale(fac);
+        // continue
         break;
       }
-      case INPAR::STR::dyna_onesteptheta :
+      case INPAR::THR::dyna_onesteptheta :
       {
         const double theta = params.get<double>("theta");
-        const double stepsize = params.get<double>("delta time");
-        // add linearisation of velocity with respect to displacements
-        // Lin (v_n+1) . \Delta d_n+1 = 1/ (theta . dt)
-        const double fac = 1.0/(theta*stepsize);
-        etangcoupl.Scale(fac);
+        // K_T = theta . K
+        etangcoupl.Scale(theta);
         break;
       }
-      case INPAR::STR::dyna_genalpha :
+      case INPAR::THR::dyna_genalpha :
       {
-        const double alphaf = params.get<double>("ALPHA_F");
-        const double beta = params.get<double>("BETA");
-        const double gamma = params.get<double>("GAMMA");
-        const double stepsize = params.get<double>("delta time");
-        // Lin (v_n+1) . \Delta d_n+1 = (1-alpha_f) * gamma / (theta . dt)
-        const double fac =  ( (1.0-alphaf) * gamma) / (beta*stepsize );
-        etangcoupl.Scale(fac);
+        dserror("Genalpha not yet implemented");
         break;
       }
+      case INPAR::THR::dyna_undefined :
       default :
       {
         dserror("Don't know what to do...");
@@ -834,7 +824,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       }
     }  // end of switch(timint)
   }  // action == "calc_thermo_coupltang"
-
 
   //============================================================================
   else
@@ -994,7 +983,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
       etang->MultiplyTN(fac_,derxy_,aop,1.0); //(8x8)=(8x3)(3x8)
     }
 
-    // capacity matrix (equates mass in structure field)
+    // capacity matrix (equates the mass matrix in the structural field)
     if (ecapa != NULL)
     {
       // ce = ce + ( N^T .  (rho * C_V) . N ) * detJ * w(gp)
