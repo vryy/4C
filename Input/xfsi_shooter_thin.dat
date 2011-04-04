@@ -188,7 +188,7 @@ PARTITION         Cut_Elements
 MAT 1 MAT_fluid VISCOSITY 0.01 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff  YOUNG 10000000.0 NUE 0.4 DENS 2.0 THEXPANS 0.0
 -------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT                  YES
+GMSH_DEBUG_OUT                  No
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC (1-cos(pi*t/4.0))/2.0 t1 0.0 t2 4.0
