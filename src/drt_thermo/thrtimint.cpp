@@ -951,8 +951,7 @@ void THR::TimInt::SetInitialField(
   {
     // extract temperature vector at time t_n (temp_ contains various vectors of
     // old(er) temperatures and is of type TimIntMStep<Epetra_Vector>)
-    Teuchos::RCP<Epetra_Vector> vec = (*temp_)(0);
-    vec->PutScalar(0.0);
+    (*temp_)(0)->PutScalar(0.0);
     tempn_->PutScalar(0.0);
     break;
   }
@@ -978,8 +977,7 @@ void THR::TimInt::SetInitialField(
           = DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(k,lnode->X(),0.0,NULL);
         // extract temperature vector at time t_n (temp_ contains various vectors of
         // old(er) temperatures and is of type TimIntMStep<Epetra_Vector>)
-        Teuchos::RCP<Epetra_Vector> vec = (*temp_)(0);
-        vec->ReplaceMyValues(1,&initialval,&doflid);
+        (*temp_)(0)->ReplaceMyValues(1,&initialval,&doflid);
         // initialize also the solution vector. These values are a pretty good
         // guess for the solution after the first time step (much better than
         // starting with a zero vector)

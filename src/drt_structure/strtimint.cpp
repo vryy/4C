@@ -1269,9 +1269,7 @@ void STR::TimInt::ApplyForceStiffInternal
   //fintn_->PutScalar(0.0);  // initialise internal force vector
   // set the temperature for the coupled problem
   if(tempn_!=Teuchos::null)
-  {
     discret_->SetState(1,"temperature",tempn_);
-  }
   discret_->Evaluate(p, stiff, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
@@ -1365,7 +1363,7 @@ void STR::TimInt::ApplyTemperatures(
   Teuchos::RCP<const Epetra_Vector> temp  ///< the current temperature
   )
 {
-  if(temp!=Teuchos::null)
+  if(temp != Teuchos::null)
   {
     // temperatures T_{n+1} at t_{n+1}
     tempn_ = LINALG::CreateVector(*(discret_->DofRowMap(1)), true);

@@ -107,7 +107,7 @@ void tsi_dyn_drt()
     = DRT::Problem::Instance()->TSIDynamicParams();
   // access the problem-specific parameter list
   const Teuchos::ParameterList& sdynparams
-      = DRT::Problem::Instance()->StructuralDynamicParams();
+    = DRT::Problem::Instance()->StructuralDynamicParams();
   const INPAR::TSI::SolutionSchemeOverFields coupling
     = DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
 

@@ -158,7 +158,7 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
   // build residual  Res = C . R_{n+theta}
   //                     + F_{int;n+theta}
   //                     - F_{ext;n+theta}
-  // with R_{n+theta}     = ( T_{n+1} - T_n ) / dt
+  // with R_{n+theta}     = C . ( T_{n+1} - T_n ) / dt
   //      F_{int;n+theta} = theta * F_{int;n+1} + (1 - theta) * F_{int;n}
   //      F_{ext;n+theta} = - theta * F_{ext;n+1} - (1 - theta) * F_{ext;n}
   fres_->Update(1.0, *fcapn_, -1.0, *fcap_, 0.0);

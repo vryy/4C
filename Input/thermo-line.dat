@@ -70,6 +70,8 @@ ADAPTCONV_BETTER                0.1
 DIVERCONT                       No
 DYNAMICTYP                      Statics     //     Statics,OneStepTheta,GEMM
 ITERNORM                        L2          //     L1,L2,Rms,Inf
+INITFUNCNO                      1
+INITIALFIELD                    zero_field  // field_by_function, field_by_condition
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
@@ -89,13 +91,13 @@ TOLTEMP                         1e-10
 AZBDIAG                         0
 AZCONV                          AZ_r0
 AZDROP                          0
-IFPACKFILL                          1
-IFPACKGFILL                         0
+IFPACKFILL                      1
+IFPACKGFILL                     0
 AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        0
-IFPACKOVERLAP                       0
+IFPACKOVERLAP                   0
 AZPOLY                          3
 AZPREC                          ILU
 AZREUSE                         0
@@ -344,6 +346,7 @@ FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 5.0
 FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 ------------------------------------------------------------FUNCT2
+FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 300.0
 ------------------------------------------------------------FUNCT3
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------------------FUNCT5
