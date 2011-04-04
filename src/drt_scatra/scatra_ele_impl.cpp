@@ -117,11 +117,11 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(
 /*  case DRT::Element::quad8:
   {
     return ScaTraImpl<DRT::Element::quad8>::Instance(numdofpernode,numscal);
-  }
+  }*/
   case DRT::Element::quad9:
   {
     return ScaTraImpl<DRT::Element::quad9>::Instance(numdofpernode,numscal);
-  }*/
+  }
   case DRT::Element::nurbs4:
   {
     return ScaTraImpl<DRT::Element::nurbs4>::Instance(numdofpernode,numscal);
@@ -1847,8 +1847,8 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
     }
     else dserror("material type not allowed");
 
-    // check whether there is zero or negative (physical) diffusivity
-    if (diffus_[k] < EPS15) dserror("zero or negative (physical) diffusivity");
+    // check whether there is negative (physical) diffusivity
+    if (diffus_[k] < -EPS15) dserror("negative (physical) diffusivity");
   }
 }
 else if (material->MaterialType() == INPAR::MAT::m_scatra)
@@ -2094,8 +2094,8 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
 }
 else dserror("Material type is not supported");
 
-// check whether there is zero or negative (physical) diffusivity
-if (diffus_[0] < EPS15) dserror("zero or negative (physical) diffusivity");
+// check whether there is negative (physical) diffusivity
+if (diffus_[0] < -EPS15) dserror("negative (physical) diffusivity");
 
 return;
 } //ScaTraImpl::GetMaterialParams
