@@ -75,7 +75,9 @@ bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side )
 
   if ( cut )
   {
+    // create any remaining cut lines
     side.CreateLineSegment( mesh, this );
+
     cut_faces_.insert( &side );
     return true;
   }
