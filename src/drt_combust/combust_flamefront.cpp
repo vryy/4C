@@ -4557,19 +4557,14 @@ void COMBUST::FlameFront::packBoundaryIntCells(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void COMBUST::FlameFront::unpackBoundaryIntCells(
-    const vector<char>&                     dataRecv,
+    const vector<char>&                     data,
     std::map<int, GEO::BoundaryIntCells>&   intcellmap)
 {
-  // pointer to current position of group of cells in global string (counts bytes)
-  vector<char>::size_type posofgroup = 0;
+  // pointer to current position in a group of cells in local string (counts bytes)
+  vector<char>::size_type posingroup = 0;
 
-  while (posofgroup < dataRecv.size())
+  while (posingroup < data.size())
   {
-    // pointer to current position in a group of cells in local string (counts bytes)
-    vector<char>::size_type posingroup = 0;
-    vector<char> data;
-    DRT::ParObject::ExtractfromPack(posofgroup, dataRecv, data);
-
     // extract fluid element gid
     int elegid = -1;
     DRT::ParObject::ExtractfromPack(posingroup,data,elegid);
@@ -4596,7 +4591,7 @@ void COMBUST::FlameFront::unpackBoundaryIntCells(
       else if (distypeint == 1)
         distype = DRT::Element::quad4;
       else
-        dserror("unexpected distype");
+        dserror("unexpected distype %d", distypeint);
 
       LINALG::SerialDenseMatrix vertices_xi;
       DRT::ParObject::ExtractfromPack(posingroup,data,vertices_xi);
@@ -4613,13 +4608,10 @@ void COMBUST::FlameFront::unpackBoundaryIntCells(
     // add group of cells for this element to the map
     intcellmap.insert(make_pair(elegid,intcellvector));
 
-    // check correct reading
-    if (posingroup != data.size())
-      dserror("mismatch in size of data %d <-> %d",(int)data.size(),posingroup);
   }
   // check correct reading
-  if (posofgroup != dataRecv.size())
-    dserror("mismatch in size of data %d <-> %d",(int)dataRecv.size(),posofgroup);
+  if (posingroup != data.size())
+    dserror("mismatch in size of data %d <-> %d",(int)data.size(),posingroup);
 }
 
 /*----------------------------------------------------------------------------------*
