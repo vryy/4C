@@ -1,5 +1,5 @@
 set(CTEST_PROJECT_NAME "baci")
-set(CTEST_NIGHTLY_START_TIME "22:59:59 GMT")
+set(CTEST_NIGHTLY_START_TIME "21:59:59 GMT")
 
 set(CTEST_DROP_METHOD "http")
 set(CTEST_DROP_SITE "navier.lnm.mw.tum.de")
