@@ -1105,7 +1105,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
           for (CI p=dsxigp.begin(); p!=dsxigp.end(); ++p)
           {
             dmmap_jk[p->first] += fac*(p->second);
-            if (bound) ddmap_jk[p->first] += fac*(p->second);
+            if (!bound) ddmap_jk[p->first] += fac*(p->second);
           }
         } // loop over master nodes
       } // shapefcn_ switch
