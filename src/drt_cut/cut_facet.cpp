@@ -8,6 +8,7 @@
 #include "cut_mesh.H"
 #include "cut_boundarycell.H"
 #include "cut_volumecell.H"
+#include "cut_position2d.H"
 
 GEO::CUT::Facet::Facet( Mesh & mesh, const std::vector<Point*> & points, Side * side, bool cutsurface )
   : points_( points ),
@@ -637,7 +638,28 @@ bool GEO::CUT::Facet::Equals( DRT::Element::DiscretizationType distype )
     switch ( distype )
     {
     case DRT::Element::quad4:
-      return corner_points_.size()==4;
+      if ( corner_points_.size()==4 )
+      {
+        LINALG::Matrix<3,3> xyze;
+        LINALG::Matrix<3,1> xyz;
+        for ( int i=0; i<4; ++i )
+        {
+          corner_points_[( i+0 )%4]->Coordinates( &xyze( 0, 0 ) );
+          corner_points_[( i+1 )%4]->Coordinates( &xyze( 0, 1 ) );
+          corner_points_[( i+2 )%4]->Coordinates( &xyze( 0, 2 ) );
+          corner_points_[( i+3 )%4]->Coordinates( &xyz( 0, 0 ) );
+
+          Position2d<DRT::Element::tri3> pos( xyze, xyz );
+          pos.Compute();
+          //std::cout << pos.LocalCoordinates() << " ";
+          if ( pos.WithinLimits() )
+          {
+            return false;
+          }
+        }
+        return true;
+      }
+      return false;
     case DRT::Element::tri3:
       return corner_points_.size()==3;
     default:

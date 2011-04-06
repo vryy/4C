@@ -59,7 +59,14 @@ unsigned FindNextCornerPoint( const std::vector<LINALG::Matrix<3,1> > & points,
     b3( 1 ) = b1( 2 )*b2( 0 ) - b1( 0 )*b2( 2 );
     b3( 2 ) = b1( 0 )*b2( 1 ) - b1( 1 )*b2( 0 );
 
-    std::cout << "|b3| = " << b3.Norm2() << "\n";
+//     std::cout << "|b3| = " << b3.Norm2() << "\n";
+
+//     if ( b3.Norm2() < 0.1 )
+//     {
+//       std::cout << b1;
+//       std::cout << b2;
+//       std::cout << b3;
+//     }
 
     if ( b3.Norm2() > PLANARTOL )
     {
