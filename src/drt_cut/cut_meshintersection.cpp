@@ -122,11 +122,11 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner )
 
   NormalMesh().CreateIntegrationCells();
 
+  Status();
+
 #ifdef DEBUGCUTLIBRARY
   NormalMesh().TestElementVolume();
 #endif
-
-  Status();
 }
 
 GEO::CUT::Node * GEO::CUT::MeshIntersection::GetNode( int nid ) const
