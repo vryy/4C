@@ -92,6 +92,8 @@ void test_hex8_quad4_double_cut();
 
 void test_unit_intersection_touch();
 
+void test_facets_corner_points();
+
 int main( int argc, char ** argv )
 {
   //MPI_Init( &argc, &argv );
@@ -147,7 +149,7 @@ int main( int argc, char ** argv )
   functable["hex8_quad4_qhull1"] = test_hex8_quad4_qhull1;
   functable["hex8_quad4_alex1"] = test_hex8_quad4_alex1;
   functable["hex8_quad4_alex2"] = test_hex8_quad4_alex2;
-  functable["hex8_quad4_alex3"] = test_hex8_quad4_alex3;
+  //functable["hex8_quad4_alex3"] = test_hex8_quad4_alex3;
   functable["hex8_quad4_axel1"] = test_hex8_quad4_axel1;
   functable["hex8_quad4_axel2"] = test_hex8_quad4_axel2;
   functable["hex8_quad4_axel3"] = test_hex8_quad4_axel3;
@@ -184,6 +186,8 @@ int main( int argc, char ** argv )
   functable["hex8_quad4_double_cut"] = test_hex8_quad4_double_cut;
 
   functable["unit_intersection_touch"] = test_unit_intersection_touch;
+
+  functable["facets_corner_points"] = test_facets_corner_points;
 
   Teuchos::CommandLineProcessor clp( false );
 
