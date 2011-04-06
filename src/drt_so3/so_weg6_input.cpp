@@ -52,7 +52,7 @@ bool DRT::ELEMENTS::So_weg6::ReadElement(const std::string& eletype,
     grow->Setup(NUMGPT_WEG6, linedef);
   } else if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture){
     MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(Material().get());
-    comix->Setup(NUMGPT_SOH8, linedef);
+    comix->Setup(NUMGPT_WEG6, linedef);
   }
 
   std::string buffer;

@@ -546,8 +546,8 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
     MAT::ConstraintMixture* cons = static_cast <MAT::ConstraintMixture*>(Material().get());
     if (name == "MassStress"){
       double temp = 0.0;
-      for (int iter=0; iter<NUMGPT_SOH8; iter++) temp += cons->GetVis(iter);
-      data[0] = temp/NUMGPT_SOH8;
+      for (int iter=0; iter<NUMGPT_WEG6; iter++) temp += cons->GetVis(iter);
+      data[0] = temp/NUMGPT_WEG6;
     } else if (name == "Fiber1"){
       if ((int)data.size()!=3) dserror("size mismatch");
       LINALG::Matrix<3,1> a1 = cons->Geta1()->at(0);  // get a1 of first gp
