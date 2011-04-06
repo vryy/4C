@@ -50,22 +50,48 @@ Maintainer: Georg Bauer
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
 {
+  // assemble system: M phidt^0 = f^n - K\phi^n - C(u_n)\phi^n
+  CalcInitialPhidtAssemble();
+  // solve for phidt_0
+  CalcInitialPhidtSolve();
+}
+
+/*----------------------------------------------------------------------*
+ | calculate initial time derivative of phi at t=t_0 (assembly)gjb 08/08|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
+{
   // time measurement:
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc inital phidt");
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc initial phidt");
   if (myrank_ == 0)
     std::cout<<"SCATRA: calculating initial time derivative of phi"<<endl;
 
   // are we really at step 0?
   dsassert(step_==0,"Step counter is not 0");
 
-  // call elements to calculate matrix and right-hand-side
+  // evaluate Dirichlet boundary conditions at time t=0
+  // the values should match your initial field at the boundary!
+  //ApplyDirichletBC(time_,phin_,phidtn_);
+  ApplyDirichletBC(time_,phin_,Teuchos::null);
+
   {
-    // zero out matrix entries
-    sysmat_->Zero();
+    // evaluate Neumann boundary conditions at time t=0
+    neumann_loads_->PutScalar(0.0);
+    ParameterList p;
+    p.set("total time",time_);
+    p.set<int>("scatratype",scatratype_);
+    p.set("isale",isale_);
+    discret_->ClearState();
+    discret_->EvaluateNeumann(p,*neumann_loads_);
+    discret_->ClearState();
 
     // add potential Neumann boundary condition at time t=0
+    // and zero out the residual_ vector!
     residual_->Update(1.0,*neumann_loads_,0.0);
+  }
 
+  // call elements to calculate matrix and right-hand-side
+  {
     // create the parameters for the discretization
     ParameterList eleparams;
 
@@ -75,7 +101,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
     // set type of scalar transport problem
     eleparams.set<int>("scatratype",scatratype_);
 
-    // add additional parameters
+    // add additional parameters (timefac_ remains unused at element level!!!!)
     AddSpecificTimeIntegrationParameters(eleparams);
 
     // other parameters that are needed by the elements
@@ -117,6 +143,18 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
     sysmat_->Complete();
   }
 
+  // what's next?
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | calculate initial time derivative of phi at t=t_0 (solver) gjb 08/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtSolve()
+{
+  // are we really at step 0?
+  dsassert(step_==0,"Step counter is not 0");
+
   // We determine phidtn at every node (including boundaries)
   // To be consistent with time integration scheme we do not prescribe
   // any values at Dirichlet boundaries for phidtn !!!
@@ -138,6 +176,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
   // reset the solver as well
   solver_->Reset();
 
+  // that's it
   return;
 }
 
@@ -163,17 +202,37 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPotentialField()
       RCP<Epetra_Vector> rhs = LINALG::CreateVector(*dofrowmap,true);
       RCP<Epetra_Vector> phi0 = LINALG::CreateVector(*dofrowmap,true);
 
-      // call elements to calculate matrix and right-hand-side
-      {
-        // zero out matrix entries
-        sysmat_->Zero();
+      // zero out matrix entries
+      sysmat_->Zero();
 
-        // ToDo:
-        // contributions due to Neumann b.c. have to be summed up here, and applied
-        // as a current flux condition at the potential field!
+      // evaluate Dirichlet boundary conditions at time t=0
+      // the values should match your initial field at the boundary!
+      //ApplyDirichletBC(time_,phin_,phidtn_);
+      ApplyDirichletBC(time_,phin_,Teuchos::null);
+
+      // ToDo:
+      // contributions due to Neumann b.c. or ElectrodeKinetics b.c.
+      // have to be summed up here, and applied
+      // as a current flux condition at the potential field!
+
+      // evaluate Neumann boundary conditions at time t=0
+      /*{
+        neumann_loads_->PutScalar(0.0);
+        ParameterList p;
+        p.set("total time",time_);
+        p.set<int>("scatratype",scatratype_);
+        p.set("isale",isale_);
+        discret_->ClearState();
+        discret_->EvaluateNeumann(p,*neumann_loads_);
+        discret_->ClearState();
 
         // add potential Neumann boundary condition at time t=0
+        // and zero out the residual_ vector!
         // residual_->Update(1.0,*neumann_loads_,0.0);
+      }*/
+
+      // call elements to calculate matrix and right-hand-side
+      {
 
         // create the parameters for the discretization
         ParameterList eleparams;

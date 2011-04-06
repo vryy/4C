@@ -104,6 +104,15 @@ public:
   /// setup the variables to do a new time step
   void PrepareTimeStep();
 
+  /// calculate initial value for phidtn_ (only necessary for OnestepTheta and GenAlpha)
+  void CalcInitialPhidt();
+
+  /// calculate initial value for phidtn_ (assembly of system)
+  void CalcInitialPhidtAssemble();
+
+  /// calculate initial value for phidtn_ (solver part)
+  void CalcInitialPhidtSolve();
+
   /// do explicit predictor step (-> better starting value for nonlinear solver)
   virtual void ExplicitPredictor() = 0;
 
@@ -358,9 +367,6 @@ protected:
     step_ += 1;
     time_ += dta_;
   }
-
-  /// calculate initial value for phidtn_
-  void CalcInitialPhidt();
 
   /// calculate phidt after reinitialization for OST scheme
   virtual void CalcPhidtReinit() = 0;

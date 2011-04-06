@@ -554,18 +554,9 @@ void SCATRA::TimIntGenAlpha::ReadRestart(int step)
 void SCATRA::TimIntGenAlpha::PrepareFirstTimeStep()
 {
   // evaluate Dirichlet boundary conditions at time t=0
+  // the values should match your initial field at the boundary!
   // ApplyDirichletBC(time_,phin_,phidtn_);
   ApplyDirichletBC(time_,phin_,Teuchos::null);
-
-  // evaluate Neumann boundary conditions at time t=0
-  neumann_loads_->PutScalar(0.0);
-  ParameterList p;
-  p.set("total time",time_);
-  p.set<int>("scatratype",scatratype_);
-  p.set("isale",isale_);
-  discret_->ClearState();
-  discret_->EvaluateNeumann(p,*neumann_loads_);
-  discret_->ClearState();
 
   // compute initial field for electric potential (ELCH)
   CalcInitialPotentialField();
