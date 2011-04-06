@@ -907,6 +907,9 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     trconstrmt->Add(*constrmt,true,1.0,0.0);
     trconstrmt->Complete(*problemrowmap_,*glmdofrowmap_);
     
+    // scale constrmt with 1-alphaf
+    constrmt->Scale(1.0-alphaf_);
+    
     // apply Dirichlet conditions to (0,1) block
     RCP<Epetra_Vector> zeros   = rcp(new Epetra_Vector(*problemrowmap_,true));
     RCP<Epetra_Vector> rhscopy = rcp(new Epetra_Vector(*fd));
