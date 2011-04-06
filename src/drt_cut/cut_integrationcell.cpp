@@ -681,7 +681,10 @@ bool GEO::CUT::Pyramid5IntegrationCell::CreateCell( Mesh & mesh,
           }
           else if ( top_point!=p )
           {
-            throw std::runtime_error( "illegal pyramid5 cell" );
+            // Corner point confusion. This is actually not a pyramid5.
+            //
+            //throw std::runtime_error( "illegal pyramid5 cell" );
+            return false;
           }
         }
       }

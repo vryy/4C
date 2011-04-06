@@ -59,7 +59,7 @@ unsigned FindNextCornerPoint( const std::vector<LINALG::Matrix<3,1> > & points,
     b3( 1 ) = b1( 2 )*b2( 0 ) - b1( 0 )*b2( 2 );
     b3( 2 ) = b1( 0 )*b2( 1 ) - b1( 1 )*b2( 0 );
 
-//     std::cout << "|b3| = " << b3.Norm2() << "\n";
+    std::cout << "|b3| = " << b3.Norm2() << "\n";
 
 //     if ( b3.Norm2() < 0.1 )
 //     {
@@ -118,6 +118,7 @@ void test_facets_corner_points()
   std::vector<LINALG::Matrix<3,1> > points;
   std::vector<LINALG::Matrix<3,1> > corner_points;
 
+#if 0
   point(0.69116668462893127156,0.88324648922922865957,-0.025000000399999999789);
   point(0.69116668462893127156,0.88324648922922865957,0.025000000399999999789);
   point(0.7071260209999999935,0.8850846289999999561,0.025000000399999999789);
@@ -187,6 +188,7 @@ void test_facets_corner_points()
   point(0.70292299999999996452,0.87883100000000002883,-0.025000000399999999789);
   point(0.70848077023151667664,0.87673525450554323779,-0.025000000399999999789);
   point(0.70848077023151667664,0.87673525450554323779,0.025000000399999999789);
+
   FindCornerPoints( points, corner_points );
 
   std::copy( corner_points.begin(), corner_points.end(), std::ostream_iterator<LINALG::Matrix<3,1> >( std::cout, "" ) );
@@ -194,4 +196,33 @@ void test_facets_corner_points()
 
   points.clear();
   corner_points.clear();
+
+#endif
+
+  point(0.83333331300000001995,0.5,0.58333331300000001995);
+  point(0.82934530938588801874,0.49999999999999994449,0.58333331299999990893);
+  point(0.83043265286268530545,0.49999999999999988898,0.58769440582745469115);
+  point(0.83333331299999990893,0.49999999999999994449,0.5993283359551382361);
+
+  FindCornerPoints( points, corner_points );
+
+  std::copy( corner_points.begin(), corner_points.end(), std::ostream_iterator<LINALG::Matrix<3,1> >( std::cout, "" ) );
+  std::cout << "\n";
+
+  points.clear();
+  corner_points.clear();
+
+  point(0.83333331300000001995,0.5,0.58333331300000001995);
+  point(0.83333331299999990893,0.49999999999999994449,0.5993283359551382361);
+  point(0.83333331300000001995,0.49200432787047709837,0.58697119158534316608);
+  point(0.83333331299999990893,0.48965043899447480147,0.58333331299999990893);
+
+  FindCornerPoints( points, corner_points );
+
+  std::copy( corner_points.begin(), corner_points.end(), std::ostream_iterator<LINALG::Matrix<3,1> >( std::cout, "" ) );
+  std::cout << "\n";
+
+  points.clear();
+  corner_points.clear();
+
 }
