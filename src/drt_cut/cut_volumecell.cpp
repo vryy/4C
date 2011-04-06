@@ -85,26 +85,18 @@ void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
 
   if ( element_->IsCut() )
   {
-    IntegrationCell * ic;
-
-    if ( ( ic = Tet4IntegrationCell::CreateCell( mesh, this, facets_ ) )!=NULL )
+    if ( Tet4IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) )
     {
-      integrationcells_.insert( ic );
     }
-#if 0
-    else if ( ( ic = Hex8IntegrationCell::CreateCell( mesh, this, facets_ ) )!=NULL )
+    else if ( Hex8IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) )
     {
-      integrationcells_.insert( ic );
     }
-    else if ( ( ic = Wedge6IntegrationCell::CreateCell( mesh, this, facets_ ) )!=NULL )
+    else if ( Wedge6IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) )
     {
-      integrationcells_.insert( ic );
     }
-    else if ( ( ic = Pyramid5IntegrationCell::CreateCell( mesh, this, facets_ ) )!=NULL )
+    else if ( Pyramid5IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) )
     {
-      integrationcells_.insert( ic );
     }
-#endif
     else
     {
       std::set<Point*> cut_points;
@@ -170,32 +162,22 @@ void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
   }
   else
   {
-    IntegrationCell * ic;
     switch ( element_->Shape() )
     {
     case DRT::Element::tet4:
-      ic = Tet4IntegrationCell::CreateCell( mesh, this, facets_ );
+      Tet4IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
       break;
     case DRT::Element::hex8:
-      ic = Hex8IntegrationCell::CreateCell( mesh, this, facets_ );
+      Hex8IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
       break;
     case DRT::Element::wedge6:
-      ic = Wedge6IntegrationCell::CreateCell( mesh, this, facets_ );
+      Wedge6IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
       break;
     case DRT::Element::pyramid5:
-      ic = Pyramid5IntegrationCell::CreateCell( mesh, this, facets_ );
+      Pyramid5IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
       break;
     default:
       throw std::runtime_error( "unsupported element shape" );
-    }
-
-    if ( ic!=NULL )
-    {
-      integrationcells_.insert( ic );
-    }
-    else
-    {
-      throw std::runtime_error( "failed to recognize uncut element shape" );
     }
   }
 }

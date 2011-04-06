@@ -52,6 +52,16 @@ public:
 
 protected:
 
+  static void SetTetPoints( const int * totet4,
+                            const std::vector<Point*> & points,
+                            std::vector<Point*> & tet4_points )
+  {
+    for ( int i=0; i<4; ++i )
+    {
+      tet4_points[i] = points[totet4[i]];
+    }
+  }
+
   Point::PointPosition position_;
   Epetra_SerialDenseMatrix xyz_;
   std::vector<Point*> points_;
@@ -68,7 +78,7 @@ public:
   {
   }
 
-  static Hex8IntegrationCell * CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets );
+  static bool CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets, std::set<IntegrationCell*> & integrationcells );
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::hex8; }
 
@@ -77,6 +87,10 @@ public:
   virtual void DumpGmsh( std::ofstream & file );
 
   //virtual double Volume() const;
+
+private:
+
+  static int hex8totet4[5][4];
 };
 
 class Tet4IntegrationCell : public IntegrationCell
@@ -88,7 +102,7 @@ public:
   {
   }
 
-  static Tet4IntegrationCell * CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets );
+  static bool CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets, std::set<IntegrationCell*> & integrationcells );
 
   static Tet4IntegrationCell * CreateCell( Mesh & mesh, VolumeCell * cell, Point::PointPosition position, const std::vector<Point*> & tet );
 
@@ -111,7 +125,7 @@ public:
   {
   }
 
-  static Wedge6IntegrationCell * CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets );
+  static bool CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets, std::set<IntegrationCell*> & integrationcells );
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::wedge6; }
 
@@ -120,6 +134,9 @@ public:
   virtual void DumpGmsh( std::ofstream & file );
 
   //virtual double Volume() const;
+private:
+
+  static int wedge6totet4[3][4];
 };
 
 class Pyramid5IntegrationCell : public IntegrationCell
@@ -131,7 +148,7 @@ public:
   {
   }
 
-  static Pyramid5IntegrationCell * CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets );
+  static bool CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets, std::set<IntegrationCell*> & integrationcells );
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::pyramid5; }
 
@@ -140,6 +157,9 @@ public:
   virtual void DumpGmsh( std::ofstream & file );
 
   //virtual double Volume() const;
+private:
+
+  static int pyramid5totet4[2][4];
 };
 
 #if 0
