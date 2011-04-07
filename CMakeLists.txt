@@ -869,6 +869,7 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/fluid_dyn_nln_drt.cpp
   src/drt_fluid/fluid_genalpha_integration.cpp
   src/drt_fluid/fluid_projectionmethod.cpp
+  src/drt_fluid/fluid_meshtying.cpp
   src/drt_fluid/fluid_utils.cpp
   src/drt_fluid/fluid_utils_mapextractor.cpp
   src/drt_fluid/fluid_MHD_evaluate.cpp
