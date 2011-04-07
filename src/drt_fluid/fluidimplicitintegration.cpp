@@ -21,9 +21,6 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-//#define BLOCKMATRIX
-//#define Output_MeshTying
-
 #undef WRITEOUTSTATISTICS
 
 #include "fluidimplicitintegration.H"
@@ -42,6 +39,8 @@ Maintainer: Peter Gamnitzer
 #include "turbulence_statistic_manager.H"
 #include "fluid_utils_mapextractor.H"
 #include "fluid_windkessel_optimization.H"
+#include "fluid_meshtying.H"
+#include "../drt_adapter/adapter_coupling_mortar.H"
 
 #ifdef D_ARTNET
 #include "../drt_art_net/art_net_dyn_drt.H"
@@ -83,7 +82,8 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   writestresses_(params.get<int>("write stresses", 0)),
   write_wall_shear_stresses_(params.get<int>("write wall shear stresses", 0)),
   surfacesplitter_(NULL),
-  inrelaxation_(false)
+  inrelaxation_(false),
+  msht_(INPAR::FLUID::no_meshtying)
 {
 
   // -------------------------------------------------------------------
@@ -148,33 +148,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     extrapolationpredictor_=false;
   }
 
-  if(params_.get<int>("Mesh Tying")!= INPAR::FLUID::no_mesh_tying)
-  {
-    {
-      TEUCHOS_FUNC_TIME_MONITOR("FLUID:       Meshtying Setup");
-      meshtying_.Setup( *discret_,
-                        discret_->Comm(),
-                        false);
-    }
-
-#ifdef Output_MeshTying
-    if(myrank_==0)
-    {
-      // Output:
-      cout << endl << "DofRowMap:" << endl;
-      cout << *(discret_->DofRowMap())<< endl << endl;
-      cout << endl << "masterDofRowMap:" << endl;
-      cout << *(meshtying_.MasterDofRowMap())<< endl << endl;
-      cout << "slaveDofRowMap:" << endl;
-      cout << *(meshtying_.SlaveDofRowMap())<< endl << endl;
-      cout << "lmDofRowMap:" << endl;
-      cout << *(meshtying_.LmDofRowMap())<< endl << endl;
-      //cout << "Projection matrix:" << endl;
-      //cout << *(meshtying_.GetMortarTrafo())<< endl << endl;
-    }
-#endif
-  }
-
   predictor_ = params_.get<string>("predictor","steady_state_predictor");
 
   // form of convective term
@@ -229,99 +202,28 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // nodes with 4 dofs each. (27*4=108)
   // We do not need the exact number here, just for performance reasons
   // a 'good' estimate
-#ifdef BLOCKMATRIX
-  if(params_.get<int>("Mesh Tying")== INPAR::FLUID::condensed);
+
+  if (not params_.get<int>("Simple Preconditioner",0) && not params_.get<int>("AMG BS Preconditioner",0)
+      && params_.get<int>("Mesh Tying")== INPAR::FLUID::no_meshtying)
   {
-    // slave dof rowmap
-    gsdofrowmap_ = meshtying_.SlaveDofRowMap();
-
-    // master dof rowmap
-    gmdofrowmap_ = meshtying_.MasterDofRowMap();
-
-    // merge dofrowmap for slave and master discretization
-    gsmdofrowmap_ = LINALG::MergeMap(*gmdofrowmap_,*gsdofrowmap_,false);
-
-    // dofrowmap for discretisation without slave and master dofrowmap
-    RCP<Epetra_Map> gndofrowmap = LINALG::SplitMap(*dofrowmap, *gsdofrowmap_);
-    gndofrowmap_ = LINALG::SplitMap(*gndofrowmap, *gmdofrowmap_);
-
-    // generate map for blockmatrix
-    std::vector<Teuchos::RCP<const Epetra_Map> > fluidmaps;
-    fluidmaps.push_back(gndofrowmap_);
-    fluidmaps.push_back(gmdofrowmap_);
-    fluidmaps.push_back(gsdofrowmap_);
-
-    //Teuchos::RCP<Epetra_Map> fullmap = LINALG::MultiMapExtractor::MergeMapsKeepOrder(fluidmaps);
-
-    //const std::vector<Teuchos::RCP<const Epetra_Map> > maps = fluidmaps;
-    extractor_.Setup(*dofrowmap,fluidmaps);
-
-    // check, if extractor maps are valid
-    extractor_.CheckForValidMapExtractor();
-
-    // allocate block matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat;
-    mat = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>
-             (extractor_,extractor_,81,false,false));
-
-    sysmat_=mat;
+    // initialize standard (stabilized) system matrix
+    sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
   }
-  else
-#else
-  if(params_.get<int>("Mesh Tying")== INPAR::FLUID::condensed)
+  else if(params_.get<int>("Mesh Tying")!= INPAR::FLUID::no_meshtying)
   {
-    // slave dof rowmap
-    gsdofrowmap_ = meshtying_.SlaveDofRowMap();
-
-    // master dof rowmap
-    gmdofrowmap_ = meshtying_.MasterDofRowMap();
-
-    // merge dofrowmap for slave and master discretization
-    gsmdofrowmap_ = LINALG::MergeMap(*gmdofrowmap_,*gsdofrowmap_,false);
-
-    // dofrowmap for discretisation without slave and master dofrowmap
-    RCP<Epetra_Map> gndofrowmap = LINALG::SplitMap(*dofrowmap, *gsdofrowmap_);
-    gndofrowmap_ = LINALG::SplitMap(*gndofrowmap, *gmdofrowmap_);
-  }
-  else if(params_.get<int>("Mesh Tying")== INPAR::FLUID::saddle_point_problem)
-  {
-   lag_ = LINALG::CreateVector(*(meshtying_.LmDofRowMap()),true);
-
-   // slave dof rowmap
-   gsdofrowmap_ = meshtying_.SlaveDofRowMap();
-
-   // master dof rowmap
-   gmdofrowmap_ = meshtying_.MasterDofRowMap();
-
-   // merge dofrowmap for slave and master discretization
-   gsmdofrowmap_ = LINALG::MergeMap(*gmdofrowmap_,*gsdofrowmap_,false);
-
-   // dofrowmap for discretisation without slave and master dofrowmap
-   RCP<Epetra_Map> gndofrowmap = LINALG::SplitMap(*dofrowmap, *gsdofrowmap_);
-   gndofrowmap_ = LINALG::SplitMap(*gndofrowmap, *gmdofrowmap_);
+    msht_ = params_.get<int>("Mesh Tying");
+    meshtying_ = Teuchos::rcp(new Meshtying(discret_, msht_));
+    sysmat_ = meshtying_->Setup();
+    //meshtying_->OutputSetUp();
   }
   else
   {
-    gsdofrowmap_ = Teuchos::null;
-    gmdofrowmap_ = Teuchos::null;
-    gsmdofrowmap_ = Teuchos::null;
-    gndofrowmap_ = Teuchos::null;
+    Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy> > blocksysmat =
+      Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
+    blocksysmat->SetNumdim(numdim_);
+    sysmat_ = blocksysmat;
   }
-#endif
-  {
-    if (not params_.get<int>("Simple Preconditioner",0) && not params_.get<int>("AMG BS Preconditioner",0))
-    {
-      // initialize standard (stabilized) system matrix
-      sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
-    }
-    else
-    {
-      Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy> > blocksysmat =
-        Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(velpressplitter_,velpressplitter_,108,false,true));
-      blocksysmat->SetNumdim(numdim_);
-      sysmat_ = blocksysmat;
-    }
-  }
+
   // sysmat might be singular (if we have a purely Dirichlet constrained
   // problem, the pressure mode is defined only up to a constant)
   // in this case, we need a basis vector for the nullspace/kernel
@@ -1401,17 +1303,10 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     }
 
     //double dtsysmatsplit_=0.0;
-    if(params_.get<int>("Mesh Tying")== INPAR::FLUID::condensed)
-    {
-#ifdef BLOCKMATRIX
-      MeshTyingMatrixCondenstation_BlockMatrix();
-#else
-      {
-        TEUCHOS_FUNC_TIME_MONITOR("FLUID:       Meshtying Condensation");
-        MeshTyingMatrixCondenstation();
-      }
-#endif
-    }
+    if(msht_ == INPAR::FLUID::condensed_bmat or msht_ == INPAR::FLUID::condensed_smat)
+      meshtying_->Condensation(sysmat_, residual_);
+    else if (msht_ == INPAR::FLUID::sps_pc or msht_ == INPAR::FLUID::sps_coupled)
+      meshtying_->ResidualSaddlePointSystem(residual_);
 
     // blank residual DOFs which are on Dirichlet BC
     // We can do this because the values at the dirichlet positions
@@ -1540,13 +1435,8 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*tmpc);
         LINALG::Export(*tmpkspc,*c_);
 
-        if(params_.get<int>("Mesh Tying")== INPAR::FLUID::condensed)
-        {
-          // Take off slave nodes from
-          RCP<Epetra_Vector> fm_slave = rcp(new Epetra_Vector(*gsdofrowmap_,true));
-          // add fm subvector to feffnew
-          LINALG::Export(*fm_slave,*c_);
-        }
+        if(msht_!= INPAR::FLUID::no_meshtying)
+          meshtying_->KrylovProjection(c_);
       }
       else
       {
@@ -1726,120 +1616,8 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     }
 #endif
 
-
-      if(params_.get<int>("Mesh Tying")== INPAR::FLUID::condensed)
-      {
-#ifdef BLOCKMATRX
-        /*
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat
-                  = (Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_));
-        cout << (sysmat->FullDomainMap()) << endl;
-        dserror("");*/
-
-        Teuchos::RCP<LINALG::SparseMatrix> sysmat
-          = (Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_))->Merge();
-
-        //cout << *residual_ << endl;
-        //LINALG::PrintMatrixInMatlabFormat("sysmat_BlockMatrix",*sysmat->EpetraMatrix(),true);
-        //dserror("");
-        //cout << *(sysmat->RowMap()) << endl;
-  /*
-        if (sysmat->RowMap().SameAs(residual_->Map()))
-          cout << "juhu" << endl;
-        else
-          cout << "nein" << endl;
-  */
-        solver_.Solve(sysmat->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
-#endif
-        solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
-      }
-      else if(params_.get<int>("Mesh Tying")== INPAR::FLUID::saddle_point_problem)
-      {
-        Teuchos::RCP<LINALG::SparseMatrix> sysmat
-                  = (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_));
-
-        RCP<Epetra_Map> mergedmap   = LINALG::MergeMap(*(discret_->DofRowMap()),*(meshtying_.LmDofRowMap()),false);
-        RCP<LINALG::SparseMatrix> mergedsysmat      = Teuchos::null;
-        RCP<Epetra_Vector>        mergedresidual    = LINALG::CreateVector(*mergedmap,true);
-        RCP<Epetra_Vector>        mergedincvel      = LINALG::CreateVector(*mergedmap,true);
-        RCP<Epetra_Vector>        mergedzeros       = LINALG::CreateVector(*mergedmap,true);
-
-
-        // remove meshtying force terms again
-        // (solve directly for z_ and not for increment of z_)
-        RCP<Epetra_Vector> fs = rcp(new Epetra_Vector(*gsdofrowmap_));
-        meshtying_.GetDMatrix()->Multiply(true,*lag_,*fs);
-        RCP<Epetra_Vector> fsexp = rcp(new Epetra_Vector(*(discret_->DofRowMap())));
-        LINALG::Export(*fs,*fsexp);
-        residual_->Update(1.0,*fsexp,1.0);
-
-        RCP<Epetra_Vector> fm = rcp(new Epetra_Vector(*gmdofrowmap_));
-        meshtying_.GetMMatrix()->Multiply(true,*lag_,*fm);
-        RCP<Epetra_Vector> fmexp = rcp(new Epetra_Vector(*(discret_->DofRowMap())));
-        LINALG::Export(*fm,*fmexp);
-        residual_->Update(-1.0,*fmexp,1.0);
-
-        // build constraint rhs (=empty)
-        RCP<Epetra_Vector> constrrhs = LINALG::CreateVector(*meshtying_.LmDofRowMap());
-
-        // build merged matrix
-        mergedsysmat = rcp(new LINALG::SparseMatrix(*mergedmap,100,false,true));
-        mergedsysmat ->Add(*sysmat,false,1.0,1.0);
-        mergedsysmat ->Add(*(meshtying_.GetConMatrix()),false,1.0,1.0);
-        mergedsysmat ->Add(*(meshtying_.GetConMatrix()),true,1.0,1.0);
-        mergedsysmat ->Complete();
-
-#ifdef Output_MeshTying
-        cout << "D" << endl;
-        cout << *meshtying_.GetDMatrix() << endl;
-
-        cout << "M" << endl;
-        cout << *meshtying_.GetMMatrix() << endl;
-
-        cout << "constraint matrix" << endl;
-        cout << *meshtying_.GetConMatrix() << endl;
-
-        cout << "merged Matrix" << endl;
-        cout << *mergedsysmat << endl;
-#endif
-
-        // build merged rhs
-        RCP<Epetra_Vector> residualexp = rcp(new Epetra_Vector(*mergedmap));
-        LINALG::Export(*residual_,*residualexp);
-        mergedresidual->Update(1.0,*residualexp,1.0);
-        RCP<Epetra_Vector> constrexp = rcp(new Epetra_Vector(*mergedmap));
-        LINALG::Export(*constrrhs,*constrexp);
-        mergedresidual->Update(1.0,*constrexp,1.0);
-
-        // adapt dirichtoggle vector and apply DBC ??
-
-#ifdef Output_MeshTying
-        cout << "merged resiudal" << endl;
-        cout << *mergedresidual<< endl;
-#endif
-
-        // adapt dirichtoggle vector and apply DBC
-        //RCP<Epetra_Vector> dirichtoggleexp = rcp(new Epetra_Vector(*mergedmap));
-        //LINALG::Export(*dirichtoggle,*dirichtoggleexp);
-        //LINALG::ApplyDirichlettoSystem(mergedmt,mergedsol,mergedrhs,mergedzeros,dirichtoggleexp);
-
-        // standard solver call
-        solver_.Solve(mergedsysmat->EpetraOperator(),mergedincvel,mergedresidual,true,itnum==1, w_, c_, project_);
-
-        RCP<Epetra_Map> problemrowmap = rcp(new Epetra_Map(*(discret_->DofRowMap())));
-
-        RCP<Epetra_Vector> laginc = rcp(new Epetra_Vector(*(meshtying_.LmDofRowMap())));
-        LINALG::MapExtractor mapext(*mergedmap,problemrowmap,meshtying_.LmDofRowMap());
-        mapext.ExtractCondVector(mergedincvel,incvel_);
-        mapext.ExtractOtherVector(mergedincvel,laginc);
-        laginc->ReplaceMap(*(meshtying_.SlaveDofRowMap()));
-
-        //dserror("");
-        lag_->Update(1.0,*laginc,0.0);
-#ifdef Output_MeshTying
-        dserror("");
-#endif
-      }
+      if (msht_!= INPAR::FLUID::no_meshtying)
+        meshtying_->SolveMeshtying(solver_, sysmat_, incvel_, residual_, itnum, w_, c_, project_);
       else
         solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
 
@@ -1847,14 +1625,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
       // end time measurement for solver
       dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
-    }
-
-    if(params_.get<int>("Mesh Tying")== INPAR::FLUID::condensed)
-    {
-      {
-        TEUCHOS_FUNC_TIME_MONITOR("FLUID:       Meshtying ReplaceSolution");
-        GetSlaveVelocity();
-      }
     }
 
     // -------------------------------------------------------------------
@@ -2904,6 +2674,9 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   // velocities/pressures of the last step
   velnm_->Update(1.0,*veln_ ,0.0);
   veln_ ->Update(1.0,*velnp_,0.0);
+
+  if (msht_== INPAR::FLUID::sps_coupled or msht_== INPAR::FLUID::sps_pc)
+    meshtying_->UpdateLag();
 
   if (alefluid_)
   {
@@ -4901,564 +4674,5 @@ void FLD::FluidImplicitTimeInt::SetElementTimeParameter()
   return;
 }
 
-void FLD::FluidImplicitTimeInt::MeshTyingMatrixCondenstation()
-{
-  RCP<LINALG::SparseMatrix> sysmat = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
-  RCP<Epetra_Vector> residual = residual_;
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-  /**********************************************************************/
-  /* Split kteff into 3x3 block matrix                                  */
-  /**********************************************************************/
-
-  RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*dofrowmap,500,true,false,sysmat->GetMatrixtype()));
-
-  // we want to split k into 3 groups s,m,n = 9 blocks
-  RCP<LINALG::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
-
-  // temporarily we need the blocks ksmsm, ksmn, knsm
-  // (FIXME: because a direct SplitMatrix3x3 is still missing!)
-  RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
-
-  // some temporary RCPs
-  RCP<Epetra_Map> tempmap;
-  RCP<LINALG::SparseMatrix> tempmtx1;
-  RCP<LINALG::SparseMatrix> tempmtx2;
-  RCP<LINALG::SparseMatrix> tempmtx3;
-
-  RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*dofrowmap,true);
-
-  // we want to split f into 3 groups s.m,n
-  RCP<Epetra_Vector> fs, fm, fn;
-
-  // temporarily we need the group sm
-  RCP<Epetra_Vector> fsm;
-
-/*{
-  // get cpu time
-  const double tcpu=Teuchos::Time::wallTime();*/
-
-  // split into interface and domain dof's
-  LINALG::SplitMatrix2x2(sysmat,gsmdofrowmap_,gndofrowmap_,gsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
-
-  // further splits into slave part + master part
-  LINALG::SplitMatrix2x2(ksmsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,kss,ksm,kms,kmm);
-
-  // tempmap and tempmtx1 are dummy matrixes
-  LINALG::SplitMatrix2x2(ksmn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,tempmap,ksn,tempmtx1,kmn,tempmtx2);
-  // tempmap and tempmtx1 are dummy matrixes
-  LINALG::SplitMatrix2x2(knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,kns,knm,tempmtx1,tempmtx2);
-
-#ifdef Output_MeshTying
-  cout << "sysmat: " << endl << *sysmat << endl;
-
-  cout << "Teil nn " << endl << *knn << endl;
-  cout << "Teil nm: " << endl << *knm << endl;
-  cout << "Teil ns: " << endl << *kns << endl;
-
-  cout << "Teil mn: " << endl << *kmn << endl;
-  cout << "Teil mm: " << endl << *kmm << endl;
-  cout << "Teil ms: " << endl << *kms << endl;
-
-  cout << "Teil sn: " << endl << *ksn << endl;
-  cout << "Teil sm: " << endl << *ksm << endl;
-  cout << "Teil ss: " << endl << *kss << endl;
-#endif
-
-  /**********************************************************************/
-  /* Split feff into 3 subvectors                                       */
-  /**********************************************************************/
-
-  // do the vector splitting smn -> sm+n
-  LINALG::SplitVector(*dofrowmap,*residual,gsmdofrowmap_,fsm,gndofrowmap_,fn);
-
-  // we want to split fsm into 2 groups s,m
-  fs = rcp(new Epetra_Vector(*gsdofrowmap_));
-  fm = rcp(new Epetra_Vector(*gmdofrowmap_));
-
-  // do the vector splitting sm -> s+m
-  LINALG::SplitVector(*gsmdofrowmap_,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
-
-/*  // end time measurement for element
-  cout << endl << "splitting = " << Teuchos::Time::wallTime()-tcpu << endl;
-}*/
-
-#ifdef Output_MeshTying
-  cout << "residual " << endl << *residual << endl << endl;
-  cout << "Teil fn " << endl << *fn << endl << endl;
-  cout << "Teil fm: " << endl << *fm << endl << endl;
-  cout << "Teil fs: " << endl << *fs << endl;
-#endif
-
-  /**********************************************************************/
-  /* Build the final K and f blocks                                     */
-  /**********************************************************************/
-
-  RCP<LINALG::SparseMatrix> knm_mod = rcp(new LINALG::SparseMatrix(*gndofrowmap_,100));
-  RCP<LINALG::SparseMatrix> kms_mod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-  RCP<LINALG::SparseMatrix> kmn_mod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-  RCP<LINALG::SparseMatrix> kmm_mod = rcp(new LINALG::SparseMatrix(*gmdofrowmap_,100));
-  RCP<Epetra_Vector> fm_mod = rcp(new Epetra_Vector(*gmdofrowmap_,true));
-  RCP<Epetra_Vector> fs_mod = rcp(new Epetra_Vector(*gsdofrowmap_,true));
-  RCP<Epetra_Vector> ones = rcp (new Epetra_Vector(*gsdofrowmap_));
-  RCP<LINALG::SparseMatrix> onesdiag;
-
-/*{
-  // get cpu time
-  const double tcpu=Teuchos::Time::wallTime();*/
-
-  RCP<LINALG::SparseMatrix> P = meshtying_.GetMortarTrafo();
-
-  // knn: nothing to do
-
-  // knm: add kns*mbar
-  knm_mod->Add(*knm,false,1.0,1.0);
-  RCP<LINALG::SparseMatrix> knm_add = LINALG::MLMultiply(*kns,false,*P,false,false,false,true);
-  knm_mod->Add(*knm_add,false,1.0,1.0);
-  knm_mod->Complete(knm->DomainMap(),knm->RowMap());
-
-  // kms: add T(mbar)*kss
-  // kms is zero -> fill with zero
-  kms_mod->Add(*kms,false,1.0,1.0);
-  RCP<LINALG::SparseMatrix> kms_add = LINALG::MLMultiply(*P,true,*kss,false,false,false,true);
-  kms_mod->Add(*kms_add,false,1.0,1.0);
-  kms_mod->Complete(kms->DomainMap(),kms->RowMap());
-
-  // kmn: add T(mbar)*ksn
-  kmn_mod->Add(*kmn,false,1.0,1.0);
-  RCP<LINALG::SparseMatrix> kmn_add = LINALG::MLMultiply(*P,true,*ksn,false,false,false,true);
-  kmn_mod->Add(*kmn_add,false,1.0,1.0);
-  kmn_mod->Complete(kmn->DomainMap(),kmn->RowMap());
-
-  // kmm: add T(mbar)*ksm + kmsmod*mbar
-  kmm_mod->Add(*kmm,false,1.0,1.0);
-  // ksm is zero -> fill with zero
-  RCP<LINALG::SparseMatrix> kmm_add = LINALG::MLMultiply(*P,true,*ksm,false,false,false,true);
-  kmm_mod->Add(*kmm_add,false,1.0,1.0);
-  RCP<LINALG::SparseMatrix> kmm_add2 = LINALG::MLMultiply(*kms_mod,false,*P,false,false,false,true);
-  kmm_mod->Add(*kmm_add2,false,1.0,1.0);
-  kmm_mod->Complete(kmm->DomainMap(),kmm->RowMap());
-
-  // fn: nothing to do
-  // fs: nothing to do
-
-  // fm: add T(mbar)*fs
-  P->Multiply(true,*fs,*fm_mod);
-  fm_mod->Update(1.0,*fm,1.0);
-
-  // build identity matrix for slave dofs
-  ones->PutScalar(1.0);
-  //RCP<LINALG::SparseMatrix> onesdiag = rcp(new LINALG::SparseMatrix(*ones));
-  onesdiag = rcp(new LINALG::SparseMatrix(*ones));
-  onesdiag->Complete();
-
-  /**********************************************************************/
-  /* Global setup of kteffnew, feffnew (including meshtying)            */
-  /**********************************************************************/
-
-  // add n submatrices to kteffnew
-  kteffnew->Add(*knn,false,1.0,1.0);
-  kteffnew->Add(*knm_mod,false,1.0,1.0);
-
-  // add m submatrices to kteffnew
-  kteffnew->Add(*kmn_mod,false,1.0,1.0);
-  kteffnew->Add(*kmm_mod,false,1.0,1.0);
-
-  // add identitiy for slave increments
-  kteffnew->Add(*onesdiag,false,1.0,1.0);
-
-  // FillComplete kteffnew (square)
-  kteffnew->Complete();
-
-  // add fn subvector to feffnew
-  RCP<Epetra_Vector> fnexp = rcp(new Epetra_Vector(*dofrowmap));
-  LINALG::Export(*fn,*fnexp);
-  feffnew->Update(1.0,*fnexp,1.0);
-
-  // add fm subvector to feffnew
-  RCP<Epetra_Vector> fm_modexp = rcp(new Epetra_Vector(*dofrowmap));
-  LINALG::Export(*fm_mod,*fm_modexp);
-  feffnew->Update(1.0,*fm_modexp,1.0);
-
-  // add fs subvector to feffnew
-  LINALG::Export(*fs_mod,*feffnew);
-
-#if 0
-    // we want to split k into 3 groups s,m,n = 9 blocks
-    RCP<LINALG::SparseMatrix> ss, sm, sn, ms, mm, mn, ns, nm, nn;
-
-    // temporarily we need the blocks ksmsm, ksmn, knsm
-    // (FIXME: because a direct SplitMatrix3x3 is still missing!)
-    RCP<LINALG::SparseMatrix> smsm, smn, nsm;
-
-    // some temporary RCPs
-    RCP<Epetra_Map> map;
-    RCP<LINALG::SparseMatrix> mtx1;
-    RCP<LINALG::SparseMatrix> mtx2;
-    RCP<LINALG::SparseMatrix> mtx3;
-
-
-    /*{
-      // get cpu time
-      const double tcpu=Teuchos::Time::wallTime();*/
-
-    // split into interface and domain dof's
-    LINALG::SplitMatrix2x2(kteffnew,gsmdofrowmap_,gndofrowmap_,gsmdofrowmap_,gndofrowmap_,smsm,smn,nsm,nn);
-
-    // further splits into slave part + master part
-    LINALG::SplitMatrix2x2(smsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,ss,sm,ms,mm);
-    // tempmap and tempmtx1 are dummy matrixes
-    LINALG::SplitMatrix2x2(smn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,map,sn,mtx1,mn,mtx2);
-    // tempmap and tempmtx1 are dummy matrixes
-    LINALG::SplitMatrix2x2(nsm,gndofrowmap_,map,gsdofrowmap_,gmdofrowmap_,ns,nm,mtx1,mtx2);
-
-    //#ifdef Output_MeshTying
-    //cout << "sysmat: " << endl << *sysmat << endl;
-
-    cout << "Teil nn " << endl << *nn << endl;
-    cout << "Teil nm: " << endl << *nm << endl;
-    cout << "Teil ns: " << endl << *ns << endl;
-
-    cout << "Teil mn: " << endl << *mn << endl;
-    cout << "Teil mm: " << endl << *mm << endl;
-    cout << "Teil ms: " << endl << *ms << endl;
-
-    cout << "Teil sn: " << endl << *sn << endl;
-    cout << "Teil sm: " << endl << *sm << endl;
-    cout << "Teil ss: " << endl << *ss << endl;
-
-    cout << "vector: " << endl << *feffnew << endl;
-
-#endif
-
-
-/*  // end time measurement for element
-   cout << "condenstation = " << Teuchos::Time::wallTime()-tcpu << endl << endl;
-}*/
-
-#ifdef Output_MeshTying
-  cout << "Teil fm_modexp: " << endl << *fm_modexp << endl << endl;
-  cout << "Teil feff: " << endl << *feffnew << endl << endl;
-#endif
-
-  /**********************************************************************/
-  /* Replace kteff and feff by kteffnew and feffnew                     */
-  /**********************************************************************/
-
-  sysmat_ = kteffnew;
-  residual_ = feffnew;
-
-  return;
-};
-
-void FLD::FluidImplicitTimeInt::GetSlaveVelocity()
-{
-  RCP<Epetra_Vector> incvel = incvel_;
-  const Epetra_Map*  dofrowmap = discret_->DofRowMap();
-
-  /**********************************************************************/
-  /* Split feff into 3 subvectors                                       */
-  /**********************************************************************/
-
-  // we want to split f into 3 groups s.m,n
-  RCP<Epetra_Vector> fs, fm, fn;
-
-  // temporarily we need the group sm
-  RCP<Epetra_Vector> fsm;
-
-  // do the vector splitting smn -> sm+n
-  LINALG::SplitVector(*dofrowmap,*incvel,gsmdofrowmap_,fsm,gndofrowmap_,fn);
-
-  // we want to split fsm into 2 groups s,m
-  fs = rcp(new Epetra_Vector(*gsdofrowmap_));
-  fm = rcp(new Epetra_Vector(*gmdofrowmap_));
-
-  // do the vector splitting sm -> s+m
-  LINALG::SplitVector(*gsmdofrowmap_,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
-
-  /**********************************************************************/
-  /* Global setup of kteffnew, feffnew (including meshtying)            */
-  /**********************************************************************/
-
-  RCP<LINALG::SparseMatrix> P = meshtying_.GetMortarTrafo();
-
-  RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*dofrowmap,true);
-
-  // fs: add T(mbar)*fs
-  RCP<Epetra_Vector> fs_mod = rcp(new Epetra_Vector(*gsdofrowmap_,true));
-  P->Multiply(false,*fm,*fs_mod);
-
-#ifdef Output_MeshTying
-  //cout << "Teil fm_comp: " << endl << *fm << endl << endl;
-  //cout << "Teil fs_comp: " << endl << *fs_mod << endl << endl;
-#endif
-
-  // add fn subvector to feffnew
-  RCP<Epetra_Vector> fnexp = rcp(new Epetra_Vector(*dofrowmap));
-  LINALG::Export(*fn,*fnexp);
-  feffnew->Update(1.0,*fnexp,1.0);
-
-  // add fn subvector to feffnew
-  RCP<Epetra_Vector> fmexp = rcp(new Epetra_Vector(*dofrowmap));
-  LINALG::Export(*fm,*fmexp);
-  feffnew->Update(1.0,*fmexp,1.0);
-
-  // add fm subvector to feffnew
-  RCP<Epetra_Vector> fs_modexp = rcp(new Epetra_Vector(*dofrowmap));
-  LINALG::Export(*fs_mod,*fs_modexp);
-  feffnew->Update(1.0,*fs_modexp,1.0);
-
-  /**********************************************************************/
-  /* Replace kteff and feff by kteffnew and feffnew                     */
-  /**********************************************************************/
-
-  incvel_ = feffnew;
-
-  return;
-};
-
-void FLD::FluidImplicitTimeInt::MeshTyingMatrixCondenstation_BlockMatrix()
-{
-  //*************************************************
-  //  split residual into three parts
-  //*************************************************
-
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_);
-  RCP<Epetra_Vector> residual = residual_;
-  const Epetra_Map* dofrowmap =  discret_->DofRowMap();
-
-  // we want to split f into 3 groups s.m,n
-  RCP<Epetra_Vector> fs, fm, fn;
-
-  // temporarily we need the group sm
-  RCP<Epetra_Vector> fsm;
-
-  RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*dofrowmap,true);
-  RCP<Epetra_Vector> fm_mod = rcp(new Epetra_Vector(*gmdofrowmap_,true));
-
-/*{
-  // get cpu time
-  const double tcpu=Teuchos::Time::wallTime();*/
-
-  // do the vector splitting smn -> sm+n
-  LINALG::SplitVector(*dofrowmap,*residual,gsmdofrowmap_,fsm,gndofrowmap_,fn);
-
-  // we want to split fsm into 2 groups s,m
-  fs = rcp(new Epetra_Vector(*gsdofrowmap_));
-  fm = rcp(new Epetra_Vector(*gmdofrowmap_));
-
-  // do the vector splitting sm -> s+m
-  LINALG::SplitVector(*gsmdofrowmap_,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
-
-/*  // end time measurement for element
-  cout << endl << "spliting = " << Teuchos::Time::wallTime()-tcpu << endl;
-}*/
-//*************************************************
-//  split residual into three parts
-//*************************************************
-/*{
-  // get cpu time
-  const double tcpu=Teuchos::Time::wallTime();*/
-
-  // get transformation matrix
-  RCP<LINALG::SparseMatrix> P = meshtying_.GetMortarTrafo();
-
-  // compute modification for block knm
-  RCP<LINALG::SparseMatrix> knm_mod = MLMultiply(sysmat->Matrix(0,2),false,*P,false,false,false,true);
-
-  // compute modification for block kmn
-  RCP<LINALG::SparseMatrix> kmn_mod = MLMultiply(*P,true,sysmat->Matrix(2,0),false,false,false,true);
-
-  // compute modification for block kmm
-  RCP<LINALG::SparseMatrix> kss_mod = MLMultiply(*P,true,sysmat->Matrix(2,2),false,false,false,true);
-  RCP<LINALG::SparseMatrix> kmm_mod = MLMultiply(*kss_mod,false,*P,false,false,false,true);
-
-  // build identity matrix for slave dofs
-  RCP<Epetra_Vector> ones = rcp (new Epetra_Vector(sysmat->Matrix(2,2).RowMap()));
-  ones->PutScalar(1.0);
-  RCP<LINALG::SparseMatrix> onesdiag = rcp(new LINALG::SparseMatrix(*ones));
-  onesdiag->Complete();
-
-  // Add transformation matrix to nm
-  sysmat->Matrix(0,1).UnComplete();
-  sysmat->Matrix(0,1).Add(*knm_mod,false,1.0,1.0);
-
-  // Add transformation matrix to mn
-  sysmat->Matrix(1,0).UnComplete();
-  sysmat->Matrix(1,0).Add(*kmn_mod,false,1.0,1.0);
-  // Add transformation matrix to mm
-  sysmat->Matrix(1,1).UnComplete();
-  sysmat->Matrix(1,1).Add(*kmm_mod,false,1.0,1.0);
-
-  // Fill ns with zero's
-  sysmat->Matrix(0,2).UnComplete();
-  sysmat->Matrix(0,2).Zero();
-
-  // Fill ms with zero's
-  sysmat->Matrix(1,2).UnComplete();
-  sysmat->Matrix(1,2).Zero();
-
-  // Fill sn with zero's
-  sysmat->Matrix(2,0).UnComplete();
-  sysmat->Matrix(2,0).Zero();
-
-  // Fill sm with zero's
-  sysmat->Matrix(2,1).UnComplete();
-  sysmat->Matrix(2,1).Zero();
-
-  // Fill ss with unit matrix
-  sysmat->Matrix(2,2).UnComplete();
-  sysmat->Matrix(2,2).Zero();
-  sysmat->Matrix(2,2).Add(*onesdiag,false,1.0,1.0);
-
-  sysmat->Complete();
-
-  //*************************************************
-  //  condensation operation for the residual
-  //*************************************************
-
-  // fm: add T(mbar)*fs
-  P->Multiply(true,*fs,*fm_mod);
-  fm_mod->Update(1.0,*fm,1.0);
-
-  // add fn subvector to feffnew
-  RCP<Epetra_Vector> fnexp = rcp(new Epetra_Vector(*dofrowmap));
-  LINALG::Export(*fn,*fnexp);
-  feffnew->Update(1.0,*fnexp,1.0);
-
-  // add fm subvector to feffnew
-  RCP<Epetra_Vector> fm_modexp = rcp(new Epetra_Vector(*dofrowmap));
-  LINALG::Export(*fm_mod,*fm_modexp);
-  feffnew->Update(1.0,*fm_modexp,1.0);
-
-/*  // end time measurement for element
-  cout << "condensation = " << Teuchos::Time::wallTime()-tcpu << endl << endl;
-}*/
-
-  residual_ = feffnew;
-
-#if 0
-  LINALG::SparseMatrix sysmat00 = sysmat->Matrix(0,0);
-  LINALG::SparseMatrix sysmat01 = sysmat->Matrix(0,1);
-  LINALG::SparseMatrix sysmat02 = sysmat->Matrix(0,2);
-
-  LINALG::SparseMatrix sysmat10 = sysmat->Matrix(1,0);
-  LINALG::SparseMatrix sysmat11 = sysmat->Matrix(1,1);
-  LINALG::SparseMatrix sysmat12 = sysmat->Matrix(1,2);
-
-  LINALG::SparseMatrix sysmat20 = sysmat->Matrix(2,0);
-  LINALG::SparseMatrix sysmat21 = sysmat->Matrix(2,1);
-  LINALG::SparseMatrix sysmat22 = sysmat->Matrix(2,2);
-
-  cout << "test00" << *(sysmat00.EpetraMatrix()) << endl;
-  cout << "test01" << *(sysmat01.EpetraMatrix()) << endl;
-  cout << "test02" << *(sysmat02.EpetraMatrix()) << endl;
-
-  cout << "test10" << *(sysmat10.EpetraMatrix()) << endl;
-  cout << "test11" << *(sysmat11.EpetraMatrix()) << endl;
-  cout << "test12" << *(sysmat12.EpetraMatrix()) << endl;
-
-  cout << "test20" << *(sysmat20.EpetraMatrix()) << endl;
-  cout << "test21" << *(sysmat21.EpetraMatrix()) << endl;
-  cout << "test22" << *(sysmat22.EpetraMatrix()) << endl;
-
-  cout << "vector: " << endl << *feffnew << endl;
-
-#endif
-
-  return;
-};
-
-void FLD::FluidImplicitTimeInt::SplitMatrixAndVector(RCP<Epetra_Vector>    incvel_)
-{
-  RCP<LINALG::SparseMatrix> sysmat = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
-  RCP<Epetra_Vector> residual = incvel_;
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  /**********************************************************************/
-  /* Split kteff into 3x3 block matrix                                  */
-  /**********************************************************************/
-
-  RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*dofrowmap,500,true,false,sysmat->GetMatrixtype()));
-
-  // we want to split k into 3 groups s,m,n = 9 blocks
-  RCP<LINALG::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
-
-  // temporarily we need the blocks ksmsm, ksmn, knsm
-  // (FIXME: because a direct SplitMatrix3x3 is still missing!)
-  RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
-
-  // some temporary RCPs
-  RCP<Epetra_Map> tempmap;
-  RCP<LINALG::SparseMatrix> tempmtx1;
-  RCP<LINALG::SparseMatrix> tempmtx2;
-  RCP<LINALG::SparseMatrix> tempmtx3;
-
-  RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*dofrowmap,true);
-
-  // we want to split f into 3 groups s.m,n
-  RCP<Epetra_Vector> fs, fm, fn;
-
-  // temporarily we need the group sm
-  RCP<Epetra_Vector> fsm;
-
-/*{
-  // get cpu time
-  const double tcpu=Teuchos::Time::wallTime();*/
-
-  // split into interface and domain dof's
-  LINALG::SplitMatrix2x2(sysmat,gsmdofrowmap_,gndofrowmap_,gsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
-
-  // further splits into slave part + master part
-  LINALG::SplitMatrix2x2(ksmsm,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,kss,ksm,kms,kmm);
-
-  // tempmap and tempmtx1 are dummy matrixes
-  LINALG::SplitMatrix2x2(ksmn,gsdofrowmap_,gmdofrowmap_,gndofrowmap_,tempmap,ksn,tempmtx1,kmn,tempmtx2);
-  // tempmap and tempmtx1 are dummy matrixes
-  LINALG::SplitMatrix2x2(knsm,gndofrowmap_,tempmap,gsdofrowmap_,gmdofrowmap_,kns,knm,tempmtx1,tempmtx2);
-
-#ifdef Output_MeshTying
-  cout << "sysmat: " << endl << *sysmat << endl;
-
-  cout << "Teil nn " << endl << *knn << endl;
-  cout << "Teil nm: " << endl << *knm << endl;
-  cout << "Teil ns: " << endl << *kns << endl;
-
-  cout << "Teil mn: " << endl << *kmn << endl;
-  cout << "Teil mm: " << endl << *kmm << endl;
-  cout << "Teil ms: " << endl << *kms << endl;
-
-  cout << "Teil sn: " << endl << *ksn << endl;
-  cout << "Teil sm: " << endl << *ksm << endl;
-  cout << "Teil ss: " << endl << *kss << endl;
-#endif
-
-  /**********************************************************************/
-  /* Split feff into 3 subvectors                                       */
-  /**********************************************************************/
-
-  // do the vector splitting smn -> sm+n
-  LINALG::SplitVector(*dofrowmap,*residual,gsmdofrowmap_,fsm,gndofrowmap_,fn);
-
-  // we want to split fsm into 2 groups s,m
-  fs = rcp(new Epetra_Vector(*gsdofrowmap_));
-  fm = rcp(new Epetra_Vector(*gmdofrowmap_));
-
-  // do the vector splitting sm -> s+m
-  LINALG::SplitVector(*gsmdofrowmap_,*fsm,gsdofrowmap_,fs,gmdofrowmap_,fm);
-
-/*  // end time measurement for element
-  cout << endl << "splitting = " << Teuchos::Time::wallTime()-tcpu << endl;
-}*/
-
-//#ifdef Output_MeshTying
-  cout << "residual " << endl << *residual << endl << endl;
-  cout << "Teil fn " << endl << *fn << endl << endl;
-  cout << "Teil fm: " << endl << *fm << endl << endl;
-  cout << "Teil fs: " << endl << *fs << endl;
-//#endif
-
-
-  return;
-}
 #endif /* CCADISCRET       */

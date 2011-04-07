@@ -27,6 +27,7 @@
 #include "../drt_io/io.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 using namespace std;
 extern struct _GENPROB genprob;
@@ -290,7 +291,7 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
-    const Epetra_Comm& comm, bool structslave)
+    const Epetra_Comm& comm, int meshtyingoption, bool structslave)
 {
 
   // initialize maps for row nodes
@@ -332,11 +333,20 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
 
   // check for invalid parameter values
-#ifdef SADDLEPOINTSYSTEM
-#else
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
-    dserror("Mortar coupling adapter only works for dual shape functions");
-#endif
+  if(meshtyingoption != INPAR::FLUID::sps_coupled and meshtyingoption != INPAR::FLUID::sps_pc)
+    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
+      dserror("Condensation works only for dual shape functions");
+
+  if (DRT::INPUT::IntegralValue<int>(input,"SHAPEFCN")==INPAR::MORTAR::shape_standard)
+  {
+    if(comm.MyPID()==0)
+      cout << "Shape functions:  standard" << endl;
+  }
+  else if (DRT::INPUT::IntegralValue<int>(input,"SHAPEFCN")==INPAR::MORTAR::shape_dual)
+  {
+    if(comm.MyPID()==0)
+      cout << "Shape functions:  dual" << endl;
+  }
 
   // check for parallel redistribution (only if more than 1 proc)
   //bool parredist = false;
@@ -359,9 +369,16 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   dim = dis.NumDof(dis.lRowNode(0));
   //dim = dis.NumDof(dis.lRowNode(0))-1;
 
-  // TODO: At one point, cout should be changed to dserror
   if (dim == genprob.ndim)
-    cout << endl << endl << "Warning: pressure dof's are not coupled!! " << endl << endl;
+  {
+    if(comm.MyPID()==0)
+      cout << "Warning: pressure dof's are NOT coupled!! " << endl << endl;
+  }
+  else if (dim == genprob.ndim+1)
+  {
+    if(comm.MyPID()==0)
+      cout << "Pressure dof's are coupled!! " << endl << endl;
+  }
 
   // feeding master nodes to the interface including ghosted nodes
   map<int, DRT::Node*>::const_iterator nodeiter;
@@ -420,11 +437,12 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   // TODO: Difference between condensed and saddlePointproblem
   //       parallel distribution
   // finalize the contact interface construction
-#ifdef SADDLEPOINTSYSTEM
-  interface->FillComplete(dis.DofRowMap()->MaxAllGID());
-#else
-  interface->FillComplete();
-#endif
+  if(meshtyingoption != INPAR::FLUID::sps_coupled or meshtyingoption != INPAR::FLUID::sps_pc) // Saddle point problem
+  {
+    interface->FillComplete(dis.DofRowMap()->MaxAllGID());
+  }
+  else
+    interface->FillComplete();
 
   // store old row maps (before parallel redistribution)
   slavedofrowmap_  = rcp(new Epetra_Map(*interface->SlaveRowDofs()));
@@ -511,36 +529,30 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   Dinv_->ReplaceDiagonalValues(*diag);
   Dinv_->Complete( D_->RangeMap(), D_->DomainMap() );
   DinvM_ = MLMultiply(*Dinv_,*M_,false,false,true);
-#ifdef SADDLEPOINTSYSTEM
-  // make numbering of LM dofs consecutive and unique across N interfaces
-  int offset_if = 0;
 
-  // build Lagrange multiplier dof map
-  interface->UpdateLagMultSets(offset_if);
+  if(meshtyingoption != INPAR::FLUID::sps_coupled or meshtyingoption != INPAR::FLUID::sps_pc)  // Saddle point problem
+  {
+    // make numbering of LM dofs consecutive and unique across N interfaces
+    int offset_if = 0;
 
-  glmdofrowmap_ = Teuchos::null;
-  glmdofrowmap_ = LINALG::MergeMap(glmdofrowmap_, interface->LagMultDofs());
+    // build Lagrange multiplier dof map
+    interface->UpdateLagMultSets(offset_if);
 
-  offset_if = glmdofrowmap_->NumGlobalElements();
-  if (offset_if < 0) offset_if = 0;
+    glmdofrowmap_ = Teuchos::null;
+    glmdofrowmap_ = LINALG::MergeMap(glmdofrowmap_, interface->LagMultDofs());
 
-  // first setup
-  RCP<LINALG::SparseMatrix> constrmt = rcp(new LINALG::SparseMatrix(*(dis.DofRowMap()),100,false,true));
-  constrmt->Add(*D_,true,1.0,1.0);
-  constrmt->Add(*M_,true,-1.0,1.0);
-  constrmt->Complete(*slavedofrowmap_,*(dis.DofRowMap()));
+    offset_if = glmdofrowmap_->NumGlobalElements();
+    if (offset_if < 0) offset_if = 0;
 
-  //cout << *constrmt<< endl;
-  conmatrix_ = MORTAR::MatrixColTransformGIDs(constrmt,glmdofrowmap_);
-  //cout << *conmatrix_ << endl;
+    // first setup
+    RCP<LINALG::SparseMatrix> constrmt = rcp(new LINALG::SparseMatrix(*(dis.DofRowMap()),100,false,true));
+    constrmt->Add(*D_,true,1.0,1.0);
+    constrmt->Add(*M_,true,-1.0,1.0);
+    constrmt->Complete(*slavedofrowmap_,*(dis.DofRowMap()));
 
-  /*
-  cout << "M matrix" << endl;
-  cout << *M_ << endl;
-  cout << "D matrix" << endl;
-  cout << *D_ << endl;
-*/
-#endif
+    conmatrix_ = MORTAR::MatrixColTransformGIDs(constrmt,glmdofrowmap_);
+
+  }
   // store interface
   interface_ = interface;
 

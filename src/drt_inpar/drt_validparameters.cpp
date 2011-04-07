@@ -1968,15 +1968,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1),
                                &fdyn);
 
-  setStringToIntegralParameter<int>("MESHTYING", "noMeshTying", "Flag to (de)activate mesh tying algorithm",
+  setStringToIntegralParameter<int>("MESHTYING", "no", "Flag to (de)activate mesh tying algorithm",
                                   tuple<std::string>(
-                                    "noMeshTying",
-                                    "Condensed",
-                                    "SaddlePointProblem"),
+                                    "no",
+                                    "Condensed_Smat",
+                                    "Condensed_Bmat",
+                                    "SaddlePointSystem_coupled",
+                                    "SaddlePointSystem_pc"),
                                   tuple<int>(
-                                      INPAR::FLUID::no_mesh_tying,
-                                      INPAR::FLUID::condensed,
-                                      INPAR::FLUID::saddle_point_problem),
+                                      INPAR::FLUID::no_meshtying,
+                                      INPAR::FLUID::condensed_smat,
+                                      INPAR::FLUID::condensed_bmat,
+                                      INPAR::FLUID::sps_coupled,
+                                      INPAR::FLUID::sps_pc),
                                   &fdyn);
 
   setStringToIntegralParameter<int>("CALCERROR",
@@ -2684,17 +2688,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::SCATRA::scatratype_levelset),
                                  &scatradyn);
 
-  setStringToIntegralParameter<int>("MESHTYING", "noMeshTying", "Flag to (de)activate mesh tying algorithm",
+  setStringToIntegralParameter<int>("MESHTYING", "no", "Flag to (de)activate mesh tying algorithm",
                                   tuple<std::string>(
-                                    "noMeshTying",
-                                    "Condensed",
-                                    "SaddlePointProblem"),
-                                  tuple<int>(
-                                      INPAR::SCATRA::no_mesh_tying,
-                                      INPAR::SCATRA::condensed,
-                                      INPAR::SCATRA::saddle_point_problem),
-                                  &scatradyn);
-
+                                      "no",
+                                      "Condensed_Smat",
+                                      "Condensed_Bmat",
+                                      "SaddlePointSystem_coupled",
+                                      "SaddlePointSystem_pc"),
+                                    tuple<int>(
+                                        INPAR::SCATRA::no_meshtying,
+                                        INPAR::SCATRA::condensed_smat,
+                                        INPAR::SCATRA::condensed_bmat,
+                                        INPAR::SCATRA::sps_coupled,
+                                        INPAR::SCATRA::sps_pc),
+                                    &scatradyn);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(
       "NONLINEAR",

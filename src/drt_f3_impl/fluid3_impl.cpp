@@ -436,7 +436,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::ComputeError(
         // y=0 is located in the middle of the domain
         if (nsd_ == 2)
         {
-          p = 0.0;
+          p = 1.0;
           u(0) = xyzint(1)*maxvel + hight/2*maxvel;
           u(1) = 0.0;
         }

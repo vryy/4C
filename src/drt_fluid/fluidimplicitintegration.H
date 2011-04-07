@@ -39,8 +39,6 @@ Maintainer: Peter Gamnitzer
 #include <Epetra_Map.h>
 #include "../drt_inpar/inpar_fluid.H"
 #include "fluid_utils_mapextractor.H" // should go away
-// TODO: forward declaration??
-#include "../drt_adapter/adapter_coupling_mortar.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -66,6 +64,11 @@ namespace LINALG
   class BlockSparseMatrixBase;
   class SparseOperator;
 }
+
+namespace ADAPTER
+{
+  class CouplingMortar;
+}
 #ifdef D_ARTNET
 namespace ART
 {
@@ -87,6 +90,7 @@ namespace FLD
 // forward declarations
 class TurbulenceStatisticManager;
 class DynSmagFilter;
+class Meshtying;
 namespace UTILS
 {
   class MapExtractor;
@@ -406,33 +410,6 @@ public:
 
   void ApplyFilterForClassicalLES();
 
-  //@}
-
-  //! @name matrix condensation (split matrix)
-  /*!
-
-  \brief mesh tying: matrix condensation
-
-  */
-
-  void MeshTyingMatrixCondenstation();
-
-  //@}
-
-  //! @name matrix condensation (blockmatrix)
-  /*!
-
-  \brief mesh tying: matrix condensation
-  */
-
-  void MeshTyingMatrixCondenstation_BlockMatrix();
-
-  //@}
-  //! @name update slave velocity
-  /*!
-  \brief update slave velocity
-  */
-  void GetSlaveVelocity();
 
 protected:
 
@@ -703,25 +680,10 @@ protected:
   RCP<Epetra_Map>                    vol_surf_flow_bcmaps_;
 
   /// coupling of fluid-fluid at an internal interface
-  ADAPTER::CouplingMortar               meshtying_;
+  RCP<FLD::Meshtying>   meshtying_;
 
-  // slave dof rowmap
-  RCP<Epetra_Map> gndofrowmap_;
-
-  // slave & master dof rowmap
-  RCP<Epetra_Map> gsmdofrowmap_;
-
-  // slave dof rowmap
-  RCP<Epetra_Map> gsdofrowmap_;
-
-  // master dof rowmap
-  RCP<Epetra_Map> gmdofrowmap_;
-
-  // map extractor mesh tying
-  LINALG::MultiMapExtractor extractor_;
-
-  // lagrange multiplier
-  RCP<Epetra_Vector> lag_;
+  /// flag for mesh-tying
+  int msht_;
 
   //@}
 
