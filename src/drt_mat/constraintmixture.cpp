@@ -1672,7 +1672,7 @@ void MAT::ConstraintMixtureOutputToGmsh
     // Teuchos::RCP<vector<double> > mandel = grow->GetVis();
 
     // material plot at gauss points
-    int ngp = 8; //very bad, does not work for other elements than HEX8!!!
+    int ngp = grow->Geta1()->size();
     for (int gp = 0; gp < ngp; ++gp){
       vector<double> point = MAT::MatPointCoords(actele,mydisp,gp); //defined in contchainnetw
 
