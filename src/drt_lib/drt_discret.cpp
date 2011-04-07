@@ -621,7 +621,7 @@ void DRT::Discretization::SetState(unsigned nds,const string& name,RCP<const Epe
   else // if it's not in column map export and allocate
   {
 #ifdef DEBUG
-    if (not DofRowMap()->SameAs(state->Map()))
+    if (not DofRowMap(nds)->SameAs(state->Map()))
     {
       dserror("row map of discretization and state vector are different. This is a fatal bug!");
     }
