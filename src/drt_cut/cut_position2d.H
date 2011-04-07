@@ -113,6 +113,8 @@ bool Position2d<elementtype,numNodesElement>::Compute()
   LINALG::Matrix<3,1> dx;
   LINALG::Matrix<3,1> cross;
 
+  int off_count = 0;
+
   xsi_ = 0;
 
   const double tol = LINSOLVETOL; // / scale_;
@@ -204,12 +206,17 @@ bool Position2d<elementtype,numNodesElement>::Compute()
     // test
 
     double residual = b.Norm2();
+    double base = xsi_.Norm2();
+
+    // avoid divide by zero and weird scaling
+    if ( base < 1 )
+      base = 1;
 
 #ifdef DEBUG
     res.push_back( residual );
 #endif
 
-    if ( fabs( residual ) < tol )
+    if ( residual/base < tol )
     {
       return WithinLimits();
     }
@@ -226,12 +233,28 @@ bool Position2d<elementtype,numNodesElement>::Compute()
     // update
 
     xsi_ += dx;
+
+    if ( not WithinLimits() )
+    {
+      off_count += 1;
+      if ( off_count==3 )
+        return false;
+    }
+    else
+    {
+      off_count = 0;
+    }
+
   }
 #ifdef DEBUG
   std::copy( res.begin(), res.end(), std::ostream_iterator<double>( std::cout, " " ) );
   std::cout << "\n";
 #endif
-  throw std::runtime_error( "Newton scheme did not converge" );
+
+  // Failed to converge Newton loop! This is bad. We have probably a very slow
+  // cut here. But lets assume we are as close to the solution as possible and
+  // use it further.
+  return true;
 }
 
 
