@@ -14,12 +14,20 @@ namespace CUT
   class Element;
   class VolumeCell;
   class Facet;
+  class IntegrationCell;
 
 class Hex8Projection
 {
 public:
 
-  Hex8Projection( Mesh & mesh, Element * element, VolumeCell * cell, Point::PointPosition position, const std::set<Facet*> & facets, int axis, double r );
+  Hex8Projection( Mesh & mesh,
+                  Element * element,
+                  VolumeCell * cell,
+                  Point::PointPosition position,
+                  const std::set<Facet*> & facets,
+                  std::set<IntegrationCell*> & integrationcells,
+                  int axis,
+                  double r );
 
 private:
 

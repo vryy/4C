@@ -82,6 +82,8 @@ public:
 
   static bool CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets, std::set<IntegrationCell*> & integrationcells );
 
+  static void CreateCell( Mesh & mesh, VolumeCell * cell, Point::PointPosition position, const std::vector<Point*> & points, std::set<IntegrationCell*> & integrationcells );
+
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::hex8; }
 
   virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const;
@@ -108,6 +110,8 @@ public:
 
   static Tet4IntegrationCell * CreateCell( Mesh & mesh, VolumeCell * cell, Point::PointPosition position, const std::vector<Point*> & tet );
 
+  static void CreateCell( Mesh & mesh, VolumeCell * cell, Point::PointPosition position, const std::vector<Point*> & points, std::set<IntegrationCell*> & integrationcells );
+
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tet4; }
 
   virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const;
@@ -128,6 +132,8 @@ public:
   }
 
   static bool CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets, std::set<IntegrationCell*> & integrationcells );
+
+  static void CreateCell( Mesh & mesh, VolumeCell * cell, Point::PointPosition position, const std::vector<Point*> & points, std::set<IntegrationCell*> & integrationcells );
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::wedge6; }
 
@@ -151,6 +157,8 @@ public:
   }
 
   static bool CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets, std::set<IntegrationCell*> & integrationcells );
+
+  static void CreateCell( Mesh & mesh, VolumeCell * cell, Point::PointPosition position, const std::vector<Point*> & points, std::set<IntegrationCell*> & integrationcells );
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::pyramid5; }
 

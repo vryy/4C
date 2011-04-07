@@ -149,7 +149,7 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
         return false;
       }
 
-      Hex8Projection projection( mesh, parent, cell, position, facets, axis, r );
+      Hex8Projection projection( mesh, parent, cell, position, facets, integrationcells, axis, r );
       return true;
     }
 
@@ -330,16 +330,7 @@ bool GEO::CUT::Hex8IntegrationCell::CreateCell( Mesh & mesh,
       }
 
       Point::PointPosition position = VolumePosition( facets );
-#if 0
-      integrationcells.insert( mesh.NewHex8Cell( position, rpoints, cell ) );
-#else
-      std::vector<Point*> tet4_points( 4 );
-      for ( int i=0; i<5; ++i )
-      {
-        SetTetPoints( hex8totet4[i], rpoints, tet4_points );
-        integrationcells.insert( mesh.NewTet4Cell( position, tet4_points, cell ) );
-      }
-#endif
+      CreateCell( mesh, cell, position, rpoints, integrationcells );
       return true;
     }
     else if ( distance_counter==4 )
@@ -357,16 +348,7 @@ bool GEO::CUT::Hex8IntegrationCell::CreateCell( Mesh & mesh,
       }
 
       Point::PointPosition position = VolumePosition( facets );
-#if 0
-      integrationcells.insert( mesh.NewHex8Cell( position, points, cell ) );
-#else
-      std::vector<Point*> tet4_points( 4 );
-      for ( int i=0; i<5; ++i )
-      {
-        SetTetPoints( hex8totet4[i], points, tet4_points );
-        integrationcells.insert( mesh.NewTet4Cell( position, tet4_points, cell ) );
-      }
-#endif
+      CreateCell( mesh, cell, position, points, integrationcells );
       return true;
     }
     else
@@ -375,6 +357,24 @@ bool GEO::CUT::Hex8IntegrationCell::CreateCell( Mesh & mesh,
     }
   }
   return false;
+}
+
+void GEO::CUT::Hex8IntegrationCell::CreateCell( Mesh & mesh,
+                                                VolumeCell * cell,
+                                                Point::PointPosition position,
+                                                const std::vector<Point*> & points,
+                                                std::set<IntegrationCell*> & integrationcells )
+{
+#if 0
+  integrationcells.insert( mesh.NewHex8Cell( position, points, cell ) );
+#else
+  std::vector<Point*> tet4_points( 4 );
+  for ( int i=0; i<5; ++i )
+  {
+    SetTetPoints( hex8totet4[i], points, tet4_points );
+    integrationcells.insert( mesh.NewTet4Cell( position, tet4_points, cell ) );
+  }
+#endif
 }
 
 bool GEO::CUT::Tet4IntegrationCell::CreateCell( Mesh & mesh,
@@ -459,7 +459,8 @@ bool GEO::CUT::Tet4IntegrationCell::CreateCell( Mesh & mesh,
           Tri3BoundaryCell::CreateCell( mesh, cell, f, side );
       }
 
-      integrationcells.insert( mesh.NewTet4Cell( VolumePosition( facets ), points, cell ) );
+      Point::PointPosition position = VolumePosition( facets );
+      CreateCell( mesh, cell, position, points, integrationcells );
       return true;
     }
     else if ( bot_distance.Distance() < 0 )
@@ -481,7 +482,8 @@ bool GEO::CUT::Tet4IntegrationCell::CreateCell( Mesh & mesh,
           Tri3BoundaryCell::CreateCell( mesh, cell, f, side );
       }
 
-      integrationcells.insert( mesh.NewTet4Cell( VolumePosition( facets ), points, cell ) );
+      Point::PointPosition position = VolumePosition( facets );
+      CreateCell( mesh, cell, position, points, integrationcells );
       return true;
     }
     else
@@ -498,6 +500,11 @@ GEO::CUT::Tet4IntegrationCell * GEO::CUT::Tet4IntegrationCell::CreateCell( Mesh 
                                                                            const std::vector<Point*> & tet )
 {
   return mesh.NewTet4Cell( position, tet, cell );
+}
+
+void GEO::CUT::Tet4IntegrationCell::CreateCell( Mesh & mesh, VolumeCell * cell, Point::PointPosition position, const std::vector<Point*> & points, std::set<IntegrationCell*> & integrationcells )
+{
+  integrationcells.insert( mesh.NewTet4Cell( position, points, cell ) );
 }
 
 bool GEO::CUT::Wedge6IntegrationCell::CreateCell( Mesh & mesh,
@@ -685,16 +692,7 @@ bool GEO::CUT::Wedge6IntegrationCell::CreateCell( Mesh & mesh,
       }
 
       Point::PointPosition position = VolumePosition( facets );
-#if 0
-      integrationcells.insert( mesh.NewWedge6Cell( position, rpoints, cell ) );
-#else
-      std::vector<Point*> tet4_points( 4 );
-      for ( int i=0; i<3; ++i )
-      {
-        SetTetPoints( wedge6totet4[i], rpoints, tet4_points );
-        integrationcells.insert( mesh.NewTet4Cell( position, tet4_points, cell ) );
-      }
-#endif
+      CreateCell( mesh, cell, position, rpoints, integrationcells );
       return true;
     }
     else if ( distance_counter==3 )
@@ -723,16 +721,7 @@ bool GEO::CUT::Wedge6IntegrationCell::CreateCell( Mesh & mesh,
       }
 
       Point::PointPosition position = VolumePosition( facets );
-#if 0
-      integrationcells.insert( mesh.NewWedge6Cell( position, points, cell ) );
-#else
-      std::vector<Point*> tet4_points( 4 );
-      for ( int i=0; i<3; ++i )
-      {
-        SetTetPoints( wedge6totet4[i], points, tet4_points );
-        integrationcells.insert( mesh.NewTet4Cell( position, tet4_points, cell ) );
-      }
-#endif
+      CreateCell( mesh, cell, position, points, integrationcells );
       return true;
     }
     else
@@ -741,6 +730,20 @@ bool GEO::CUT::Wedge6IntegrationCell::CreateCell( Mesh & mesh,
     }
   }
   return false;
+}
+
+void GEO::CUT::Wedge6IntegrationCell::CreateCell( Mesh & mesh, VolumeCell * cell, Point::PointPosition position, const std::vector<Point*> & points, std::set<IntegrationCell*> & integrationcells )
+{
+#if 0
+  integrationcells.insert( mesh.NewWedge6Cell( position, points, cell ) );
+#else
+  std::vector<Point*> tet4_points( 4 );
+  for ( int i=0; i<3; ++i )
+  {
+    SetTetPoints( wedge6totet4[i], points, tet4_points );
+    integrationcells.insert( mesh.NewTet4Cell( position, tet4_points, cell ) );
+  }
+#endif
 }
 
 bool GEO::CUT::Pyramid5IntegrationCell::CreateCell( Mesh & mesh,
@@ -858,16 +861,7 @@ bool GEO::CUT::Pyramid5IntegrationCell::CreateCell( Mesh & mesh,
       }
 
       Point::PointPosition position = VolumePosition( facets );
-#if 0
-      integrationcells.insert( mesh.NewPyramid5Cell( position, points, cell ) );
-#else
-      std::vector<Point*> tet4_points( 4 );
-      for ( int i=0; i<2; ++i )
-      {
-        SetTetPoints( pyramid5totet4[i], points, tet4_points );
-        integrationcells.insert( mesh.NewTet4Cell( position, tet4_points, cell ) );
-      }
-#endif
+      CreateCell( mesh, cell, position, points, integrationcells );
       return true;
     }
     else if ( bot_distance.Distance() < 0 )
@@ -901,16 +895,7 @@ bool GEO::CUT::Pyramid5IntegrationCell::CreateCell( Mesh & mesh,
       }
 
       Point::PointPosition position = VolumePosition( facets );
-#if 0
-      integrationcells.insert( mesh.NewPyramid5Cell( position, points, cell ) );
-#else
-      std::vector<Point*> tet4_points( 4 );
-      for ( int i=0; i<2; ++i )
-      {
-        SetTetPoints( pyramid5totet4[i], points, tet4_points );
-        integrationcells.insert( mesh.NewTet4Cell( position, tet4_points, cell ) );
-      }
-#endif
+      CreateCell( mesh, cell, position, points, integrationcells );
       return true;
     }
     else
@@ -919,6 +904,20 @@ bool GEO::CUT::Pyramid5IntegrationCell::CreateCell( Mesh & mesh,
     }
   }
   return false;
+}
+
+void GEO::CUT::Pyramid5IntegrationCell::CreateCell( Mesh & mesh, VolumeCell * cell, Point::PointPosition position, const std::vector<Point*> & points, std::set<IntegrationCell*> & integrationcells )
+{
+#if 0
+  integrationcells.insert( mesh.NewPyramid5Cell( position, points, cell ) );
+#else
+  std::vector<Point*> tet4_points( 4 );
+  for ( int i=0; i<2; ++i )
+  {
+    SetTetPoints( pyramid5totet4[i], points, tet4_points );
+    integrationcells.insert( mesh.NewTet4Cell( position, tet4_points, cell ) );
+  }
+#endif
 }
 
 void GEO::CUT::Hex8IntegrationCell::DumpGmsh( std::ofstream & file )
