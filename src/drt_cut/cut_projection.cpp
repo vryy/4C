@@ -25,7 +25,7 @@ GEO::CUT::Hex8Projection::Hex8Projection( Mesh & mesh,
   points.reserve( cut_points.size() );
   points.assign( cut_points.begin(), cut_points.end() );
 
-  std::cout << "hex8 projection along axis " << axis << " to " << r << "\n";
+  //std::cout << "hex8 projection along axis " << axis << " to " << r << "\n";
 
   // find all inner points that need projecting
 
@@ -78,7 +78,7 @@ GEO::CUT::Hex8Projection::Hex8Projection( Mesh & mesh,
         ++i )
   {
     Facet * f = *i;
-#if 1
+#if 0
     if ( f->Equals( DRT::Element::tri3 ) )
     {
       std::vector<Point*> points;
