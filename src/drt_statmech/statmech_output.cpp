@@ -1269,6 +1269,7 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 
           // calculate normal via cross product: [0 0 1]x[tx ty tz]
           LINALG::Matrix<3, 1> normal;
+          normal.Clear();
           normal(0) = -tangent(1);
           normal(1) = tangent(0);
           // norm it since the cross product does not keep the length
@@ -1380,6 +1381,7 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 
             // calculate normal via cross product: [0 0 1]x[tx ty tz]
             LINALG::Matrix<3, 1> normal;
+            normal.Clear();
             normal(0) = -tangent(1);
             normal(1) = tangent(0);
             // norm it since the cross product does not keep the length
