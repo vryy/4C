@@ -117,6 +117,8 @@ public:
 
   const std::vector<Point*> & CornerPoints() const { return corner_points_; }
 
+  const std::vector<std::vector<Point*> > & Triangulation() const { return triangulation_; }
+
   void NewTri3Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, std::set<BoundaryCell*> & bcells );
 
 //  void NewTri3Cells( Mesh & mesh, VolumeCell * volume, const std::vector<Epetra_SerialDenseMatrix> & xyz, std::set<BoundaryCell*> & bcells );

@@ -6,6 +6,7 @@
 #include "cut_boundarycell.H"
 #include "cut_element.H"
 #include "cut_volumecell.H"
+#include "cut_projection.H"
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
@@ -43,6 +44,122 @@ int GEO::CUT::Pyramid5IntegrationCell::pyramid5totet4[2][4] = {
   {1, 2, 3, 4}
 };
 
+
+bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
+                                             VolumeCell * cell,
+                                             Point::PointPosition position,
+                                             const std::set<Facet*> & facets,
+                                             std::set<IntegrationCell*> & integrationcells )
+{
+  for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+  {
+    Facet * f = *i;
+    if ( f->HasHoles() )
+    {
+      return false;
+    }
+  }
+
+  Element * parent = cell->ParentElement();
+
+  switch( parent->Shape() )
+  {
+  case DRT::Element::hex8:
+  {
+    std::map<Side*, int> touched;
+    for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+    {
+      Facet * f = *i;
+      if ( not f->OnCutSide() )
+      {
+        touched[ f->ParentSide() ] += 1;
+      }
+    }
+
+    if ( touched.size() != 5 )
+    {
+      return false;
+    }
+
+    for ( std::map<Side*, int>::iterator i=touched.begin(); i!=touched.end(); ++i )
+    {
+      if ( i->second != 1 )
+      {
+        return false;
+      }
+    }
+
+    int count = 0;
+    std::set<int> uncut;
+    const std::vector<Side*> & sides = parent->Sides();
+    for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
+    {
+      Side * s = *i;
+      if ( not s->IsCut() )
+      {
+        uncut.insert( count );
+      }
+      count += 1;
+    }
+
+    if ( uncut.size() == 2 )
+    {
+      double r = 0.;
+      int axis = -1;
+
+      // We use shards face numbering. Be careful.
+      if ( uncut.count( 4 ) > 0 and uncut.count( 5 ) > 0 )
+      {
+        axis = 2;
+        if ( touched.count( sides[5] ) > 0 )
+        {
+          r = 1;
+        }
+        else
+        {
+          r = -1;
+        }
+      }
+      else if ( uncut.count( 0 ) > 0 and uncut.count( 2 ) > 0 )
+      {
+        axis = 1;
+        if ( touched.count( sides[2] ) > 0 )
+        {
+          r = 1;
+        }
+        else
+        {
+          r = -1;
+        }
+      }
+      else if ( uncut.count( 1 ) > 0 and uncut.count( 3 ) > 0 )
+      {
+        axis = 0;
+        if ( touched.count( sides[1] ) > 0 )
+        {
+          r = 1;
+        }
+        else
+        {
+          r = -1;
+        }
+      }
+      else
+      {
+        return false;
+      }
+
+      Hex8Projection projection( mesh, parent, cell, position, facets, axis, r );
+      return true;
+    }
+
+    return false;
+  }
+  default:
+    break;
+  }
+  return false;
+}
 
 bool GEO::CUT::Hex8IntegrationCell::CreateCell( Mesh & mesh,
                                                 VolumeCell * cell,

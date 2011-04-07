@@ -51,6 +51,8 @@ public:
 
   virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst ) = 0;
 
+  virtual void GlobalCoordinates( const LINALG::Matrix<3,1> & rst, LINALG::Matrix<3,1> & xyz ) = 0;
+
   bool Cut( Mesh & mesh, Side & side );
 
   void MakeFacets( Mesh & mesh );
@@ -135,6 +137,22 @@ public:
 
   virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
 
+  virtual void GlobalCoordinates( const LINALG::Matrix<3,1> & rst, LINALG::Matrix<3,1> & xyz )
+  {
+    const int numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement;
+    LINALG::Matrix<numNodesElement,1> funct;
+    DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::tet4 );
+
+    xyz = 0;
+
+    const std::vector<Node*> & nodes = Nodes();
+    for ( int i=0; i<numNodesElement; ++i )
+    {
+      LINALG::Matrix<3,1> x( nodes[i]->point()->X() );
+      xyz.Update( funct( i ), x, 1 );
+    }
+  }
+
   void Coordinates( LINALG::Matrix<3, 4> & xyze )
   { Element::Coordinates( xyze.A() ); }
 
@@ -157,6 +175,22 @@ public:
   virtual bool PointInside( Point* p );
 
   virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
+
+  virtual void GlobalCoordinates( const LINALG::Matrix<3,1> & rst, LINALG::Matrix<3,1> & xyz )
+  {
+    const int numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement;
+    LINALG::Matrix<numNodesElement,1> funct;
+    DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::wedge6 );
+
+    xyz = 0;
+
+    const std::vector<Node*> & nodes = Nodes();
+    for ( int i=0; i<numNodesElement; ++i )
+    {
+      LINALG::Matrix<3,1> x( nodes[i]->point()->X() );
+      xyz.Update( funct( i ), x, 1 );
+    }
+  }
 
   void Coordinates( LINALG::Matrix<3, 6> & xyze )
   { Element::Coordinates( xyze.A() ); }
@@ -181,6 +215,22 @@ public:
 
   virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
 
+  virtual void GlobalCoordinates( const LINALG::Matrix<3,1> & rst, LINALG::Matrix<3,1> & xyz )
+  {
+    const int numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::pyramid5>::numNodePerElement;
+    LINALG::Matrix<numNodesElement,1> funct;
+    DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::pyramid5 );
+
+    xyz = 0;
+
+    const std::vector<Node*> & nodes = Nodes();
+    for ( int i=0; i<numNodesElement; ++i )
+    {
+      LINALG::Matrix<3,1> x( nodes[i]->point()->X() );
+      xyz.Update( funct( i ), x, 1 );
+    }
+  }
+
   void Coordinates( LINALG::Matrix<3, 5> & xyze )
   { Element::Coordinates( xyze.A() ); }
 
@@ -203,6 +253,22 @@ public:
   virtual bool PointInside( Point* p );
 
   virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
+
+  virtual void GlobalCoordinates( const LINALG::Matrix<3,1> & rst, LINALG::Matrix<3,1> & xyz )
+  {
+    const int numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+    LINALG::Matrix<numNodesElement,1> funct;
+    DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex8 );
+
+    xyz = 0;
+
+    const std::vector<Node*> & nodes = Nodes();
+    for ( int i=0; i<numNodesElement; ++i )
+    {
+      LINALG::Matrix<3,1> x( nodes[i]->point()->X() );
+      xyz.Update( funct( i ), x, 1 );
+    }
+  }
 
   void Coordinates( LINALG::Matrix<3, 8> & xyze )
   { Element::Coordinates( xyze.A() ); }

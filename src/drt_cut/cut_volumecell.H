@@ -43,6 +43,8 @@ public:
 
   void CreateIntegrationCells( Mesh & mesh );
 
+  void CreateTet4IntegrationCells( Mesh & mesh, Point::PointPosition position, const std::vector<Point*> & points, const std::set<Facet*> & facets );
+
   void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );
 
   const std::set<IntegrationCell*> & IntegrationCells() const { return integrationcells_; }

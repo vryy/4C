@@ -50,6 +50,8 @@ public:
 
   static Point::PointPosition VolumePosition( const std::set<Facet*> & facets );
 
+  static bool CreateCells( Mesh & mesh, VolumeCell * cell, Point::PointPosition position, const std::set<Facet*> & facets, std::set<IntegrationCell*> & integrationcells );
+
 protected:
 
   static void SetTetPoints( const int * totet4,

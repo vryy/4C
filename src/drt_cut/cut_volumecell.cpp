@@ -85,19 +85,11 @@ void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
 
   if ( element_->IsCut() )
   {
-    if ( Tet4IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) )
-    {
-    }
-    else if ( Hex8IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) )
-    {
-    }
-    else if ( Wedge6IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) )
-    {
-    }
-    else if ( Pyramid5IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) )
-    {
-    }
-    else
+    if ( not Tet4IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) and
+         not Hex8IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) and
+         not Wedge6IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) and
+         not Pyramid5IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) and
+         not IntegrationCell::CreateCells( mesh, this, position, facets_, integrationcells_ ) )
     {
       std::set<Point*> cut_points;
       GetAllPoints( mesh, cut_points );
@@ -110,74 +102,84 @@ void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
       // pointer values (compiler flags, code structure, memory usage, ...)
       std::sort( points.begin(), points.end(), PointPidLess() );
 
-#ifdef DEBUGCUTLIBRARY
-      {
-        std::ofstream file( "volume.plot" );
-        Print( file );
-      }
-#endif
-
-      TetMesh tetmesh( points, facets_ );
-
-      const std::vector<std::vector<int> > & tets = tetmesh.Tets();
-      const std::map<Facet*, std::vector<Point*> > & sides_xyz = tetmesh.SidesXYZ();
-
-      for ( std::vector<std::vector<int> >::const_iterator i=tets.begin();
-            i!=tets.end();
-            ++i )
-      {
-        const std::vector<int> & t = *i;
-        if ( t.size()==4 )
-        {
-          std::vector<Point*> tet( 4 );
-          for ( int i=0; i<4; ++i )
-          {
-            tet[i] = points[t[i]];
-          }
-          IntegrationCell * ic = Tet4IntegrationCell::CreateCell( mesh, this, position, tet );
-          integrationcells_.insert( ic );
-        }
-      }
-
-      for ( std::map<Facet*, std::vector<Point*> >::const_iterator i=sides_xyz.begin();
-            i!=sides_xyz.end();
-            ++i )
-      {
-        Facet * f = i->first;
-        const std::vector<Point*> & points = i->second;
-
-        std::size_t length = points.size();
-        if ( length % 3 != 0 )
-          throw std::runtime_error( "expect list of triangles" );
-
-        length /= 3;
-        std::vector<Point*> p( 3 );
-        for ( std::size_t i=0; i<length; ++i )
-        {
-          std::copy( &points[3*i], &points[3*( i+1 )], &p[0] );
-          Tri3BoundaryCell::CreateCell( mesh, this, f, p );
-        }
-      }
+      CreateTet4IntegrationCells( mesh, position, points, facets_ );
     }
   }
   else
   {
+    bool success;
     switch ( element_->Shape() )
     {
     case DRT::Element::tet4:
-      Tet4IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
+      success = Tet4IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
       break;
     case DRT::Element::hex8:
-      Hex8IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
+      success = Hex8IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
       break;
     case DRT::Element::wedge6:
-      Wedge6IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
+      success = Wedge6IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
       break;
     case DRT::Element::pyramid5:
-      Pyramid5IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
+      success = Pyramid5IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
       break;
     default:
       throw std::runtime_error( "unsupported element shape" );
+    }
+    if ( not success )
+    {
+      throw std::runtime_error( "failed to create element cell" );
+    }
+  }
+}
+
+void GEO::CUT::VolumeCell::CreateTet4IntegrationCells( Mesh & mesh, Point::PointPosition position, const std::vector<Point*> & points, const std::set<Facet*> & facets )
+{
+#ifdef DEBUGCUTLIBRARY
+  {
+    std::ofstream file( "volume.plot" );
+    Print( file );
+  }
+#endif
+
+  TetMesh tetmesh( points, facets );
+
+  const std::vector<std::vector<int> > & tets = tetmesh.Tets();
+  const std::map<Facet*, std::vector<Point*> > & sides_xyz = tetmesh.SidesXYZ();
+
+  for ( std::vector<std::vector<int> >::const_iterator i=tets.begin();
+        i!=tets.end();
+        ++i )
+  {
+    const std::vector<int> & t = *i;
+    if ( t.size()==4 )
+    {
+      std::vector<Point*> tet( 4 );
+      for ( int i=0; i<4; ++i )
+      {
+        tet[i] = points[t[i]];
+      }
+      IntegrationCell * ic = Tet4IntegrationCell::CreateCell( mesh, this, position, tet );
+      integrationcells_.insert( ic );
+    }
+  }
+
+  for ( std::map<Facet*, std::vector<Point*> >::const_iterator i=sides_xyz.begin();
+        i!=sides_xyz.end();
+        ++i )
+  {
+    Facet * f = i->first;
+    const std::vector<Point*> & points = i->second;
+
+    std::size_t length = points.size();
+    if ( length % 3 != 0 )
+      throw std::runtime_error( "expect list of triangles" );
+
+    length /= 3;
+    std::vector<Point*> p( 3 );
+    for ( std::size_t i=0; i<length; ++i )
+    {
+      std::copy( &points[3*i], &points[3*( i+1 )], &p[0] );
+      Tri3BoundaryCell::CreateCell( mesh, this, f, p );
     }
   }
 }
