@@ -123,6 +123,8 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                          DRT::Discretization & cutdiscret,
                                          int itnum )
 {
+#ifdef D_FLUID3
+
   TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate" );
 
   sysmat_->Zero();
@@ -295,6 +297,9 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
     // finalize the complete matrix
     sysmat_->Complete();
   }
+#else
+  dserror("D_FLUID3 required");
+#endif
 }
 
 // -------------------------------------------------------------------
@@ -1164,6 +1169,7 @@ void FLD::XFluid::Output()
 // -------------------------------------------------------------------
 void FLD::XFluid::SetElementGeneralFluidParameter()
 {
+#ifdef D_FLUID3
   ParameterList eleparams;
 
   eleparams.set("action","set_general_fluid_parameter");
@@ -1187,6 +1193,9 @@ void FLD::XFluid::SetElementGeneralFluidParameter()
   //discret_->Evaluate(eleparams,null,null,null,null,null);
 
   DRT::ELEMENTS::Fluid3Type::Instance().PreEvaluate(*discret_,eleparams,null,null,null,null,null);
+#else
+  dserror("D_FLUID3 required");
+#endif
 }
 
 // -------------------------------------------------------------------
@@ -1194,6 +1203,7 @@ void FLD::XFluid::SetElementGeneralFluidParameter()
 // -------------------------------------------------------------------
 void FLD::XFluid::SetElementTimeParameter()
 {
+#ifdef D_FLUID3
   ParameterList eleparams;
 
   eleparams.set("action","set_time_parameter");
@@ -1224,6 +1234,9 @@ void FLD::XFluid::SetElementTimeParameter()
   //discret_->Evaluate(eleparams,null,null,null,null,null);
 
   DRT::ELEMENTS::Fluid3Type::Instance().PreEvaluate(*discret_,eleparams,null,null,null,null,null);
+#else
+  dserror("D_FLUID3 required");
+#endif
 }
 
 void FLD::XFluid::GenAlphaIntermediateValues()

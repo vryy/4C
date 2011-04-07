@@ -16,6 +16,8 @@ Maintainer: Andreas Ehrl
 #ifndef FLUID3_INTERFACE_H
 #define FLUID3_INTERFACE_H
 
+#ifdef D_FLUID3
+
 #include "../drt_f3/fluid3.H"
 #include "../drt_lib/drt_singletondestruction.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
@@ -123,4 +125,5 @@ namespace ELEMENTS
 }
 }
 
+#endif
 #endif
