@@ -9,14 +9,14 @@
 
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 
-GEO::CUT::Hex8Projection::Hex8Projection( Mesh & mesh,
-                                          Element * element,
-                                          VolumeCell * cell,
-                                          Point::PointPosition position,
-                                          const std::set<Facet*> & facets,
-                                          std::set<IntegrationCell*> & integrationcells,
-                                          int axis,
-                                          double r )
+void GEO::CUT::Hex8Projection::HorizontalCut( Mesh & mesh,
+                                              Element * element,
+                                              VolumeCell * cell,
+                                              Point::PointPosition position,
+                                              const std::set<Facet*> & facets,
+                                              std::set<IntegrationCell*> & integrationcells,
+                                              int axis,
+                                              double r )
 {
   std::set<Point*> cut_points;
   cell->GetAllPoints( mesh, cut_points );
@@ -31,29 +31,34 @@ GEO::CUT::Hex8Projection::Hex8Projection( Mesh & mesh,
 
   std::set<Point*> inner;
 
+  std::vector<Facet*> inner_facets;
+
   for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
   {
     Facet * f = *i;
     if ( f->OnCutSide() )
     {
-      inner_facets_.push_back( f );
+      inner_facets.push_back( f );
       const std::vector<Point*> & points = f->CornerPoints();
       std::copy( points.begin(), points.end(), std::inserter( inner, inner.begin() ) );
     }
   }
 
-  inner_points_.reserve( inner.size() );
-  std::copy( inner.begin(), inner.end(), std::back_inserter( inner_points_ ) );
+  std::vector<Point*> inner_points;
+  std::vector<Point*> projected_points;
+
+  inner_points.reserve( inner.size() );
+  std::copy( inner.begin(), inner.end(), std::back_inserter( inner_points ) );
 
   // project along given axis to r
 
   LINALG::Matrix<3,1> rst;
 
   std::vector<LINALG::Matrix<3,1> > local_points;
-  local_points.reserve( inner_points_.size() );
-  projected_points_.reserve( inner_points_.size() );
+  local_points.reserve( inner_points.size() );
+  projected_points.reserve( inner_points.size() );
 
-  for ( std::vector<Point*>::iterator i=inner_points_.begin(); i!=inner_points_.end(); ++i )
+  for ( std::vector<Point*>::iterator i=inner_points.begin(); i!=inner_points.end(); ++i )
   {
     Point * p = *i;
     LINALG::Matrix<3,1> xyz;
@@ -67,18 +72,18 @@ GEO::CUT::Hex8Projection::Hex8Projection( Mesh & mesh,
 
     // create new points
     element->GlobalCoordinates( rst, xyz );
-    projected_points_.push_back( mesh.NewPoint( xyz.A(), NULL, NULL ) );
-    projected_points_.back()->Position( position );
+    projected_points.push_back( mesh.NewPoint( xyz.A(), NULL, NULL ) );
+    projected_points.back()->Position( position );
   }
 
   // create integration cells
 
-  for ( std::vector<Facet*>::iterator i=inner_facets_.begin();
-        i!=inner_facets_.end();
+  for ( std::vector<Facet*>::iterator i=inner_facets.begin();
+        i!=inner_facets.end();
         ++i )
   {
     Facet * f = *i;
-#if 0
+#if 1
     if ( f->Equals( DRT::Element::tri3 ) )
     {
       std::vector<Point*> points;
@@ -108,15 +113,15 @@ GEO::CUT::Hex8Projection::Hex8Projection( Mesh & mesh,
       {
         Point * p = *i;
 
-        std::vector<Point*>::iterator pos = std::find( inner_points_.begin(), inner_points_.end(), p );
-        if ( pos==inner_points_.end() )
+        std::vector<Point*>::iterator pos = std::find( inner_points.begin(), inner_points.end(), p );
+        if ( pos==inner_points.end() )
         {
           throw std::runtime_error( "inner point missing" );
         }
 
-        points.push_back( projected_points_[pos - inner_points_.begin()] );
+        points.push_back( projected_points[pos - inner_points.begin()] );
 
-        const LINALG::Matrix<3,1> & rst = local_points[pos - inner_points_.begin()];
+        const LINALG::Matrix<3,1> & rst = local_points[pos - inner_points.begin()];
         x = std::copy( rst.A(), rst.A()+3, x );
       }
 
@@ -173,15 +178,15 @@ GEO::CUT::Hex8Projection::Hex8Projection( Mesh & mesh,
       {
         Point * p = *i;
 
-        std::vector<Point*>::iterator pos = std::find( inner_points_.begin(), inner_points_.end(), p );
-        if ( pos==inner_points_.end() )
+        std::vector<Point*>::iterator pos = std::find( inner_points.begin(), inner_points.end(), p );
+        if ( pos==inner_points.end() )
         {
           throw std::runtime_error( "inner point missing" );
         }
 
-        points.push_back( projected_points_[pos - inner_points_.begin()] );
+        points.push_back( projected_points[pos - inner_points.begin()] );
 
-        const LINALG::Matrix<3,1> & rst = local_points[pos - inner_points_.begin()];
+        const LINALG::Matrix<3,1> & rst = local_points[pos - inner_points.begin()];
         x = std::copy( rst.A(), rst.A()+3, x );
       }
 
@@ -242,13 +247,13 @@ GEO::CUT::Hex8Projection::Hex8Projection( Mesh & mesh,
       {
         Point * p = *i;
 
-        std::vector<Point*>::iterator pos = std::find( inner_points_.begin(), inner_points_.end(), p );
-        if ( pos==inner_points_.end() )
+        std::vector<Point*>::iterator pos = std::find( inner_points.begin(), inner_points.end(), p );
+        if ( pos==inner_points.end() )
         {
           throw std::runtime_error( "inner point missing" );
         }
 
-        points.push_back( projected_points_[pos - inner_points_.begin()] );
+        points.push_back( projected_points[pos - inner_points.begin()] );
       }
 
       // sort points that go into qhull to obtain the same result independent of
@@ -257,7 +262,115 @@ GEO::CUT::Hex8Projection::Hex8Projection( Mesh & mesh,
 
       std::set<Facet*> cell_facets;
       cell_facets.insert( f );
-      cell->CreateTet4IntegrationCells( mesh, position, points, cell_facets );
+      cell->CreateTet4IntegrationCells( mesh, position, points, cell_facets, true );
     }
   }
+}
+
+bool GEO::CUT::Hex8Projection::EdgeCut( Mesh & mesh,
+                                        Element * element,
+                                        VolumeCell * cell,
+                                        Point::PointPosition position,
+                                        const std::set<Facet*> & facets,
+                                        std::set<IntegrationCell*> & integrationcells,
+                                        int cutside1,
+                                        int cutside2,
+                                        int upside,
+                                        int downside )
+{
+  Facet * cs1 = FindFacet( element, facets, cutside1 );
+  Facet * cs2 = FindFacet( element, facets, cutside2 );
+  Facet * us  = FindFacet( element, facets, upside );
+  Facet * ds  = FindFacet( element, facets, downside );
+
+  std::set<Facet*> myfacets1;
+  std::set<Facet*> myfacets2;
+
+  FindNeighborFacets( cs1->Points(), facets, us, ds, myfacets1 );
+  FindNeighborFacets( cs2->Points(), facets, us, ds, myfacets2 );
+
+  if ( myfacets1.size()+myfacets2.size()+2 != facets.size() )
+    return false;
+
+  std::set<Facet*> reconstruction_facets;
+  std::copy( myfacets1.begin(), myfacets1.end(), std::inserter( reconstruction_facets, reconstruction_facets.begin() ) );
+  std::copy( myfacets2.begin(), myfacets2.end(), std::inserter( reconstruction_facets, reconstruction_facets.begin() ) );
+  reconstruction_facets.insert( us );
+  reconstruction_facets.insert( ds );
+
+  if ( reconstruction_facets != facets )
+    return false;
+
+  CreateTetMesh( mesh, cell, position, myfacets1 );
+  CreateTetMesh( mesh, cell, position, myfacets2 );
+  return true;
+}
+
+GEO::CUT::Facet * GEO::CUT::Hex8Projection::FindFacet( Element * element, const std::set<Facet*> & facets, int sideid )
+{
+  const std::vector<Side*> & sides = element->Sides();
+
+  Facet * side_facet = NULL;
+  for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+  {
+    Facet * f = *i;
+    if ( f->ParentSide()==sides[sideid] )
+    {
+      if ( side_facet==NULL )
+      {
+        side_facet = f;
+      }
+      else
+      {
+        throw std::runtime_error( "double side facet" );
+      }
+    }
+  }
+  if ( side_facet==NULL )
+    throw std::runtime_error( "facet not found" );
+  return side_facet;
+}
+
+void GEO::CUT::Hex8Projection::FindNeighborFacets( const std::vector<Point*> & facet_points,
+                                                   const std::set<Facet*> & facets,
+                                                   Facet * us,
+                                                   Facet * ds,
+                                                   std::set<Facet*> & myfacets )
+{
+  for ( std::vector<Point*>::const_iterator i=facet_points.begin();
+        i!=facet_points.end();
+        ++i )
+  {
+    Point * p = *i;
+    const std::set<Facet*> & fs = p->Facets();
+    for ( std::set<Facet*>::const_iterator i=fs.begin(); i!=fs.end(); ++i )
+    {
+      Facet * f = *i;
+      if ( f!=us and f!=ds and facets.count( f ) > 0 )
+      {
+        myfacets.insert( f );
+      }
+    }
+  }
+}
+
+void GEO::CUT::Hex8Projection::CreateTetMesh( Mesh & mesh, VolumeCell * cell, Point::PointPosition position, const std::set<Facet*> & myfacets )
+{
+  std::set<Point*> mypoints;
+  for ( std::set<Facet*>::const_iterator i=myfacets.begin(); i!=myfacets.end(); ++i )
+  {
+    Facet * f = *i;
+    const std::vector<Point*> & ps = f->Points();
+    std::copy( ps.begin(), ps.end(), std::inserter( mypoints, mypoints.begin() ) );
+  }
+
+  std::vector<Point*> points;
+  points.reserve( mypoints.size() );
+  points.assign( mypoints.begin(), mypoints.end() );
+
+  // sort points that go into qhull to obtain the same result independent of
+  // pointer values (compiler flags, code structure, memory usage, ...)
+  std::sort( points.begin(), points.end(), PointPidLess() );
+
+  cell->CreateTet4IntegrationCells( mesh, position, points, myfacets, true );
 }

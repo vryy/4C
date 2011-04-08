@@ -91,6 +91,8 @@ public:
 
   const std::vector<Node*> & Nodes() { return nodes_; }
 
+  const std::set<Side*> & CutSides() const { return cut_faces_; }
+
   void GetCutPoints( std::set<Point*> & cut_points );
 
   const std::set<VolumeCell*> & VolumeCells() const { return cells_; }

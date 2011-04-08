@@ -102,7 +102,7 @@ void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
       // pointer values (compiler flags, code structure, memory usage, ...)
       std::sort( points.begin(), points.end(), PointPidLess() );
 
-      CreateTet4IntegrationCells( mesh, position, points, facets_ );
+      CreateTet4IntegrationCells( mesh, position, points, facets_, false );
     }
   }
   else
@@ -132,7 +132,7 @@ void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
   }
 }
 
-void GEO::CUT::VolumeCell::CreateTet4IntegrationCells( Mesh & mesh, Point::PointPosition position, const std::vector<Point*> & points, const std::set<Facet*> & facets )
+void GEO::CUT::VolumeCell::CreateTet4IntegrationCells( Mesh & mesh, Point::PointPosition position, const std::vector<Point*> & points, const std::set<Facet*> & facets, bool project )
 {
 #ifdef DEBUGCUTLIBRARY
   {
@@ -141,47 +141,91 @@ void GEO::CUT::VolumeCell::CreateTet4IntegrationCells( Mesh & mesh, Point::Point
   }
 #endif
 
-  TetMesh tetmesh( points, facets );
-
-  const std::vector<std::vector<int> > & tets = tetmesh.Tets();
-  const std::map<Facet*, std::vector<Point*> > & sides_xyz = tetmesh.SidesXYZ();
-
-  for ( std::vector<std::vector<int> >::const_iterator i=tets.begin();
-        i!=tets.end();
-        ++i )
+#define DEBUGCUTLIBRARYOUTPUT
+#ifdef DEBUGCUTLIBRARYOUTPUT
+  try
   {
-    const std::vector<int> & t = *i;
-    if ( t.size()==4 )
+#endif
+    TetMesh tetmesh( points, facets, project );
+
+    const std::vector<std::vector<int> > & tets = tetmesh.Tets();
+    const std::map<Facet*, std::vector<Point*> > & sides_xyz = tetmesh.SidesXYZ();
+
+    for ( std::vector<std::vector<int> >::const_iterator i=tets.begin();
+          i!=tets.end();
+          ++i )
     {
-      std::vector<Point*> tet( 4 );
-      for ( int i=0; i<4; ++i )
+      const std::vector<int> & t = *i;
+      if ( t.size()==4 )
       {
-        tet[i] = points[t[i]];
+        std::vector<Point*> tet( 4 );
+        for ( int i=0; i<4; ++i )
+        {
+          tet[i] = points[t[i]];
+        }
+        IntegrationCell * ic = Tet4IntegrationCell::CreateCell( mesh, this, position, tet );
+        integrationcells_.insert( ic );
       }
-      IntegrationCell * ic = Tet4IntegrationCell::CreateCell( mesh, this, position, tet );
-      integrationcells_.insert( ic );
     }
-  }
 
-  for ( std::map<Facet*, std::vector<Point*> >::const_iterator i=sides_xyz.begin();
-        i!=sides_xyz.end();
-        ++i )
-  {
-    Facet * f = i->first;
-    const std::vector<Point*> & points = i->second;
-
-    std::size_t length = points.size();
-    if ( length % 3 != 0 )
-      throw std::runtime_error( "expect list of triangles" );
-
-    length /= 3;
-    std::vector<Point*> p( 3 );
-    for ( std::size_t i=0; i<length; ++i )
+    for ( std::map<Facet*, std::vector<Point*> >::const_iterator i=sides_xyz.begin();
+          i!=sides_xyz.end();
+          ++i )
     {
-      std::copy( &points[3*i], &points[3*( i+1 )], &p[0] );
-      Tri3BoundaryCell::CreateCell( mesh, this, f, p );
+      Facet * f = i->first;
+      const std::vector<Point*> & points = i->second;
+
+      std::size_t length = points.size();
+      if ( length % 3 != 0 )
+        throw std::runtime_error( "expect list of triangles" );
+
+      length /= 3;
+      std::vector<Point*> p( 3 );
+      for ( std::size_t i=0; i<length; ++i )
+      {
+        std::copy( &points[3*i], &points[3*( i+1 )], &p[0] );
+        Tri3BoundaryCell::CreateCell( mesh, this, f, p );
+      }
     }
+#ifdef DEBUGCUTLIBRARYOUTPUT
   }
+  catch ( std::runtime_error & err )
+  {
+    const std::set<Side*> & cutsides = element_->CutSides();
+
+    int count = 1;
+    for ( std::set<Side*>::const_iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+    {
+      Side * s = *i;
+      const std::vector<Node*> & nodes = s->Nodes();
+
+      int node_count = 1;
+      for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+      {
+        Node * n = *i;
+        const double * x = n->point()->X();
+        std::cout << "  nxyz" << node_count << "(" << x[0] << "," << x[1] << "," << x[2] << ");\n";
+        node_count += 1;
+      }
+
+      std::cout << "\n  intersection.AddCutSide( " << count << ", nids, quad4_xyze, DRT::Element::quad4 );\n\n";
+      count += 1;
+    }
+
+    count = 0;
+    const std::vector<Node*> & nodes = element_->Nodes();
+    for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+    {
+      Node * n = *i;
+      const double * x = n->point()->X();
+      std::cout << "  hex8_xyze(0," << count << ") = " << x[0] << ";\n"
+                << "  hex8_xyze(1," << count << ") = " << x[1] << ";\n"
+                << "  hex8_xyze(2," << count << ") = " << x[2] << ";\n";
+      count += 1;
+    }
+    throw;
+  }
+#endif
 }
 
 void GEO::CUT::VolumeCell::GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells )

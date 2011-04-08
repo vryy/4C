@@ -20,20 +20,37 @@ class Hex8Projection
 {
 public:
 
-  Hex8Projection( Mesh & mesh,
-                  Element * element,
-                  VolumeCell * cell,
-                  Point::PointPosition position,
-                  const std::set<Facet*> & facets,
-                  std::set<IntegrationCell*> & integrationcells,
-                  int axis,
-                  double r );
+  static void HorizontalCut( Mesh & mesh,
+                             Element * element,
+                             VolumeCell * cell,
+                             Point::PointPosition position,
+                             const std::set<Facet*> & facets,
+                             std::set<IntegrationCell*> & integrationcells,
+                             int axis,
+                             double r );
+
+  static bool EdgeCut( Mesh & mesh,
+                       Element * element,
+                       VolumeCell * cell,
+                       Point::PointPosition position,
+                       const std::set<Facet*> & facets,
+                       std::set<IntegrationCell*> & integrationcells,
+                       int cutside1,
+                       int cutside2,
+                       int upside,
+                       int downside );
 
 private:
 
-  std::vector<Facet*> inner_facets_;
-  std::vector<Point*> inner_points_;
-  std::vector<Point*> projected_points_;
+  static Facet * FindFacet( Element * element, const std::set<Facet*> & facets, int sideid );
+
+  static void FindNeighborFacets( const std::vector<Point*> & facet_points,
+                                  const std::set<Facet*> & facets,
+                                  Facet * us,
+                                  Facet * ds,
+                                  std::set<Facet*> & myfacets );
+
+  static void CreateTetMesh( Mesh & mesh, VolumeCell * cell, Point::PointPosition position, const std::set<Facet*> & myfacets );
 };
 
 }

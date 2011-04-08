@@ -46,13 +46,14 @@ namespace GEO
 
 
 GEO::CUT::TetMesh::TetMesh( const std::vector<Point*> & points,
-                            const std::set<Facet*> & facets )
+                            const std::set<Facet*> & facets,
+                            bool project )
   : points_( points ),
     facets_( facets )
 {
   std::vector<std::vector<int> > original_tets;
 
-  CallQHull( points_, original_tets );
+  CallQHull( points_, original_tets, project );
 
   tets_.reserve( original_tets.size() );
   for ( std::vector<std::vector<int> >::iterator i=original_tets.begin(); i!=original_tets.end(); ++i )
@@ -163,7 +164,8 @@ void GEO::CUT::TetMesh::Init()
 }
 
 void GEO::CUT::TetMesh::CallQHull( const std::vector<Point*> & points,
-                                   std::vector<std::vector<int> > & tets )
+                                   std::vector<std::vector<int> > & tets,
+                                   bool project )
 {
 #ifdef QHULL
 
@@ -181,10 +183,47 @@ void GEO::CUT::TetMesh::CallQHull( const std::vector<Point*> & points,
 
   std::vector<double> coordinates( dim*n );
 
-  for ( int i=0; i<n; ++i )
+  if ( project )
   {
-    Point * p = points[i];
-    p->Coordinates( &coordinates[dim*i] );
+    LINALG::Matrix<3,1> m;
+    m = 0;
+    double scale = 1./n;
+    for ( int i=0; i<n; ++i )
+    {
+      Point * p = points[i];
+      LINALG::Matrix<3,1> x( p->X() );
+      m.Update( scale, x, 1 );
+    }
+    double length = 0;
+    LINALG::Matrix<3,1> l;
+    for ( int i=0; i<n; ++i )
+    {
+      Point * p = points[i];
+      LINALG::Matrix<3,1> x( p->X() );
+      l = m;
+      l.Update( 1, x, -1 );
+      double n = l.Norm2();
+      length = max( n, length );
+    }
+    for ( int i=0; i<n; ++i )
+    {
+      Point * p = points[i];
+      LINALG::Matrix<3,1> x( p->X() );
+      l = m;
+      l.Update( 1, x, -1 );
+      double n = l.Norm2();
+      l.Scale( length/n );
+      l.Update( 1, m, 1 );
+      std::copy( l.A(), l.A()+3, &coordinates[dim*i] );
+    }
+  }
+  else
+  {
+    for ( int i=0; i<n; ++i )
+    {
+      Point * p = points[i];
+      p->Coordinates( &coordinates[dim*i] );
+    }
   }
 
   boolT ismalloc = false;
@@ -1122,7 +1161,8 @@ void GEO::CUT::TetMesh::RemoveFullOverlappingTriFacets()
       }
       if ( cutsurface_ots.size() > 1 )
       {
-        throw std::runtime_error( "ambiguous sets" );
+        //throw std::runtime_error( "ambiguous sets" );
+        cutsurface_ots.resize( 1 );
       }
 
       OverlappingTriSets * ots = cutsurface_ots[0];

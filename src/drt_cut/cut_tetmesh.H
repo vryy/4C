@@ -804,7 +804,8 @@ namespace GEO
         This is where the work is done.
        */
       TetMesh( const std::vector<Point*> & points,
-               const std::set<Facet*> & facets );
+               const std::set<Facet*> & facets,
+               bool project );
 
       /// Return the list of tets.
       const std::vector<std::vector<int> > & Tets() const { return tets_; }
@@ -893,7 +894,8 @@ namespace GEO
       void Init();
 
       void CallQHull( const std::vector<Point*> & points,
-                      std::vector<std::vector<int> > & tets );
+                      std::vector<std::vector<int> > & tets,
+                      bool project );
 
       bool IsValidTet( const std::vector<Point*> & t );
 

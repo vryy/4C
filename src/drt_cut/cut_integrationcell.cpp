@@ -66,6 +66,9 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
   {
   case DRT::Element::hex8:
   {
+
+    // find how many element sides are touched by this volume cell and how
+    // often those sides are touched.
     std::map<Side*, int> touched;
     for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
     {
@@ -76,11 +79,6 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
       }
     }
 
-    if ( touched.size() != 5 )
-    {
-      return false;
-    }
-
     for ( std::map<Side*, int>::iterator i=touched.begin(); i!=touched.end(); ++i )
     {
       if ( i->second != 1 )
@@ -89,27 +87,31 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
       }
     }
 
-    int count = 0;
-    std::set<int> uncut;
+    int cutcount = 0;
+    std::vector<int> cut;
+    cut.reserve( 6 );
     const std::vector<Side*> & sides = parent->Sides();
     for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
     {
       Side * s = *i;
-      if ( not s->IsCut() )
-      {
-        uncut.insert( count );
-      }
-      count += 1;
+      cut.push_back( s->IsCut() );
+      if ( not cut.back() )
+        cutcount += 1;
     }
 
-    if ( uncut.size() == 2 )
+    if ( cutcount == 2 )
     {
       double r = 0.;
       int axis = -1;
 
       // We use shards face numbering. Be careful.
-      if ( uncut.count( 4 ) > 0 and uncut.count( 5 ) > 0 )
+      if ( not cut[4] and not cut[5] )
       {
+        if ( touched.size() != 5 )
+        {
+          return false;
+        }
+
         axis = 2;
         if ( touched.count( sides[5] ) > 0 )
         {
@@ -119,9 +121,16 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
         {
           r = -1;
         }
+        Hex8Projection::HorizontalCut( mesh, parent, cell, position, facets, integrationcells, axis, r );
+        return true;
       }
-      else if ( uncut.count( 0 ) > 0 and uncut.count( 2 ) > 0 )
+      else if ( not cut[0] and not cut[2] )
       {
+        if ( touched.size() != 5 )
+        {
+          return false;
+        }
+
         axis = 1;
         if ( touched.count( sides[2] ) > 0 )
         {
@@ -131,9 +140,16 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
         {
           r = -1;
         }
+        Hex8Projection::HorizontalCut( mesh, parent, cell, position, facets, integrationcells, axis, r );
+        return true;
       }
-      else if ( uncut.count( 1 ) > 0 and uncut.count( 3 ) > 0 )
+      else if ( not cut[1] and not cut[3] )
       {
+        if ( touched.size() != 5 )
+        {
+          return false;
+        }
+
         axis = 0;
         if ( touched.count( sides[1] ) > 0 )
         {
@@ -143,14 +159,124 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
         {
           r = -1;
         }
+        Hex8Projection::HorizontalCut( mesh, parent, cell, position, facets, integrationcells, axis, r );
+        return true;
       }
-      else
+      else if ( not cut[0] and cut[2] )
       {
-        return false;
+        if ( not cut[1] or not cut[3] )
+        {
+          // 4,5
+          if ( cut[1] )
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 2, 1, 4, 5 );
+          else
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 2, 3, 4, 5 );
+        }
+        else if ( not cut[4] or not cut[5] )
+        {
+          // 1,3
+          if ( cut[4] )
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 2, 4, 1, 3 );
+          else
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 2, 5, 1, 3 );
+        }
       }
-
-      Hex8Projection projection( mesh, parent, cell, position, facets, integrationcells, axis, r );
-      return true;
+      else if ( not cut[2] and cut[0] )
+      {
+        if ( not cut[1] or not cut[3] )
+        {
+          // 4,5
+          if ( cut[1] )
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 0, 1, 4, 5 );
+          else
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 0, 3, 4, 5 );
+        }
+        else if ( not cut[4] or not cut[5] )
+        {
+          // 1,3
+          if ( cut[4] )
+            Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 0, 4, 1, 3 );
+          else
+            Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 0, 5, 1, 3 );
+          return true;
+        }
+      }
+      else if ( not cut[3] and cut[1] )
+      {
+        if ( not cut[0] or not cut[2] )
+        {
+          // 4,5
+          if ( cut[0] )
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 1, 0, 4, 5 );
+          else
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 1, 2, 4, 5 );
+        }
+        else if ( not cut[4] or not cut[5] )
+        {
+          // 0,2
+          if ( cut[4] )
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 1, 4, 0, 2 );
+          else
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 1, 5, 0, 2 );
+        }
+      }
+      else if ( not cut[1] and cut[3] )
+      {
+        if ( not cut[0] or not cut[2] )
+        {
+          // 4,5
+          if ( cut[0] )
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 3, 0, 4, 5 );
+          else
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 3, 2, 4, 5 );
+        }
+        else if ( not cut[4] or not cut[5] )
+        {
+          // 0,2
+          if ( cut[4] )
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 3, 4, 0, 2 );
+          else
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 3, 5, 0, 2 );
+        }
+      }
+      else if ( not cut[4] and cut[5] )
+      {
+        if ( not cut[0] or not cut[2] )
+        {
+          // 1,3
+          if ( cut[0] )
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 5, 0, 1, 3 );
+          else
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 5, 2, 1, 3 );
+        }
+        else if ( not cut[1] or not cut[3] )
+        {
+          // 0,2
+          if ( cut[1] )
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 5, 1, 0, 2 );
+          else
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 5, 3, 0, 2 );
+        }
+      }
+      else if ( not cut[5] and cut[4] )
+      {
+        if ( not cut[0] or not cut[2] )
+        {
+          // 1,3
+          if ( cut[0] )
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 4, 0, 1, 3 );
+          else
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 4, 2, 1, 3 );
+        }
+        else if ( not cut[1] or not cut[3] )
+        {
+          // 0,2
+          if ( cut[1] )
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 4, 1, 0, 2 );
+          else
+            return Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 4, 3, 0, 2 );
+        }
+      }
     }
 
     return false;
