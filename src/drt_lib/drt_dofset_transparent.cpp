@@ -115,11 +115,6 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
 //        if(numdofs!=(int)dofs.size())
 //        dserror("numdofs %d!=%d for node %d",numdofs,(int)dofs.size(),newnode->Id());
 
-        if(dofs[0]==0)
-        {
-          printf("dofs %d %d %d %d on PID %d, vector size %d\n",dofs[0],dofs[1],dofs[2],dofs[3],sourcedis.Comm().MyPID(),(int)dofs.size());
-        }
-
         for (int idof = 0; idof < numdofs; ++idof)
         {
           dofcolset.insert(dofs[idof]);
@@ -220,6 +215,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
         PackLocalSourceDofs(gid_to_dofs,data);
         data.StartPacking();
         PackLocalSourceDofs(gid_to_dofs,data);
+        gid_to_dofs.clear();
         swap( sblock, data() );
 
 #ifdef PARALLEL
@@ -276,7 +272,13 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
 
     if(numdofs!=(int)dofs.size())
     {
-      dserror("spooky, isn't it?");
+      printf("This is node %d  (%12.5e,%12.5e,%12.5e)\n",
+             newnode->Id(),
+             newnode->X()[0],
+             newnode->X()[1],
+             newnode->X()[2]);
+
+      dserror("spooky, isn't it? dofs to overwrite %d != %d dofs.size() to set \n",numdofs,dofs.size());
     }
 
     if (numdofs > 0)
@@ -375,6 +377,14 @@ void DRT::TransparentDofSet::SetSourceDofsAvailableOnThisProc(
         curr->second.push_back(*iter);
       }
     }
+    else
+      {
+        int numproc=sourcedis_->Comm().NumProc();
+        if(numproc==1)
+          {
+            dserror("I have a one-processor problem but the node is not on the proc. sourcedis_->NodeRowMap() is probably currupted.");
+          }
+      }
   }
   return;
 }
@@ -413,8 +423,6 @@ void DRT::TransparentDofSet::PackLocalSourceDofs(
     }
   }
 
-  gid_to_dofs.clear();
-
   return;
 }
 
@@ -450,7 +458,7 @@ void DRT::TransparentDofSet::UnpackLocalSourceDofs(
 
     DRT::ParObject::ExtractfromPack(position,rblock,gid);
     DRT::ParObject::ExtractfromPack(position,rblock,numdofs);
-
+    
     for(int ll=0;ll<numdofs;++ll)
     {
       int thisdof=0;
