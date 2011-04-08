@@ -135,7 +135,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       genprob.probtyp != prb_fluid_xfem and
       genprob.probtyp != prb_combust)
   {
-    actdis->ComputeNullSpaceIfNecessary(solver->Params());
+    actdis->ComputeNullSpaceIfNecessary(solver->Params(),true);
   }
 
   // -------------------------------------------------------------------
@@ -494,6 +494,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   }
   else if (timeint == INPAR::FLUID::timeint_gen_alpha)
   {
+    fluidtimeparams->set<int>("time int algo",timeint);
+
     // -------------------------------------------------------------------
     // no additional parameters in list for generalized-alpha scheme
     // -------------------------------------------------------------------
