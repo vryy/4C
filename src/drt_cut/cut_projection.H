@@ -40,6 +40,8 @@ public:
                        int upside,
                        int downside );
 
+  static void CreateTetMesh( Mesh & mesh, VolumeCell * cell, Point::PointPosition position, const std::set<Facet*> & myfacets );
+
 private:
 
   static Facet * FindFacet( Element * element, const std::set<Facet*> & facets, int sideid );
@@ -50,7 +52,6 @@ private:
                                   Facet * ds,
                                   std::set<Facet*> & myfacets );
 
-  static void CreateTetMesh( Mesh & mesh, VolumeCell * cell, Point::PointPosition position, const std::set<Facet*> & myfacets );
 };
 
 }

@@ -141,7 +141,7 @@ void GEO::CUT::VolumeCell::CreateTet4IntegrationCells( Mesh & mesh, Point::Point
   }
 #endif
 
-#define DEBUGCUTLIBRARYOUTPUT
+//#define DEBUGCUTLIBRARYOUTPUT
 #ifdef DEBUGCUTLIBRARYOUTPUT
   try
   {
