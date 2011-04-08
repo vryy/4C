@@ -2620,6 +2620,8 @@ template <DRT::Element::DiscretizationType bndydistype,
     RCP<const Epetra_Vector> velnp = discretization.GetState("u and p (trial,n+1)");
     if (velnp==null) dserror("Cannot get state vector 'u and p (trial,n+1)'");
 
+    double maxvel=0;
+
     vector<double> mypvelaf((*plm).size());
     vector<double> mypvelnp((*plm).size());
 
@@ -2628,11 +2630,28 @@ template <DRT::Element::DiscretizationType bndydistype,
 
     for (int inode=0;inode<piel;++inode)
     {
+      double normvel=0;
+
       for (int idim=0; idim<nsd ; ++idim)
       {
         pevel(idim,inode) = mypvelaf[(nsd +1)*inode+idim];
+
+        normvel+=pevel(idim,inode)*pevel(idim,inode);
       }
+      normvel=sqrt(normvel);
+      
+      if(normvel>maxvel)
+      {
+        maxvel=normvel;
+      }
+
       pepres(inode) = mypvelnp[(nsd +1)*inode+nsd ];
+    }
+
+    // eventually set the characteristic velocity to the maximum value on that element
+    if(u_C<0)
+    {
+      u_C=maxvel;
     }
   }
   else
@@ -2907,7 +2926,6 @@ template <DRT::Element::DiscretizationType bndydistype,
       LINALG::Matrix<numstressdof_*piel,1> vec_r_o_n_u_minus_g_SPALDING(true);
       LINALG::Matrix<numstressdof_*piel,1> SPALDING_stresses(true);
 
-
       // allocate vector/matrix for shape functions and derivatives
       LINALG::Matrix<siel   ,1>     funct(true);
       LINALG::Matrix<bndynsd,siel>  deriv(true);
@@ -2915,7 +2933,6 @@ template <DRT::Element::DiscretizationType bndydistype,
       // allocate vector for parents shape functions and matrix for derivatives
       LINALG::Matrix<piel,1>        pfunct(true);
       LINALG::Matrix<nsd ,piel>     pderiv(true);
-
 
       // get local node coordinates
       LINALG::Matrix<nsd ,siel>    xyze(true);
@@ -2982,7 +2999,7 @@ template <DRT::Element::DiscretizationType bndydistype,
 
 
       //--------------------------------------------------
-      // the actual loop
+      // the actual integration loop to compute the current normalised stresses
       for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
       {
 
@@ -3112,7 +3129,7 @@ template <DRT::Element::DiscretizationType bndydistype,
       double area=0.0;
 
       //--------------------------------------------------
-      // compute the norm of the tangential stresses
+      // compute the norm of the tangential traction
       for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
       {
 
@@ -3158,6 +3175,7 @@ template <DRT::Element::DiscretizationType bndydistype,
           }
         }
 
+        // multiply by normal to obtain the traction
         traction(0)=GP_stress(0)*unitnormal(0)+GP_stress(3)*unitnormal(1)+GP_stress(4)*unitnormal(2);
         traction(1)=GP_stress(3)*unitnormal(0)+GP_stress(1)*unitnormal(1)+GP_stress(5)*unitnormal(2);
         traction(2)=GP_stress(4)*unitnormal(0)+GP_stress(5)*unitnormal(1)+GP_stress(2)*unitnormal(2);
@@ -3166,18 +3184,24 @@ template <DRT::Element::DiscretizationType bndydistype,
         {
           printf("traction (%12.5e,%12.5e,%12.5e)\n",traction(0),traction(1),traction(2));
         }
+        
+        //             /
+        //            |
+        // || t ||  = | sqrt ( t_1**2 + t_2**2 + t_3**2 ) dOmega 
+        //            |
+        //           / Omega
+        normtraction+=fac*sqrt(traction(0)*traction(0)+traction(1)*traction(1)+traction(2)*traction(2));
 
-        normtraction+=fac*(traction(0)*traction(0)+traction(1)*traction(1)+traction(2)*traction(2));
         area        +=fac;
       }
 
+      // compute averaged norm of traction by division by area element
       normtraction/=area;
-      normtraction=sqrt(normtraction);
     }
   }
 
   /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-         PART 3: Gaussloop for line integrals of boundary element
+         PART 3: Gaussloop for integrals on boundary element
     <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>*/
   {
     // allocate vector/matrix for shape functions and derivatives
@@ -3466,12 +3490,7 @@ template <DRT::Element::DiscretizationType bndydistype,
                     |            |
                      \          / Gamma
       */
-      const double invert=1.;
-      const double peclet=u_C*h/visc_;
-
-      double C1=1.0;
-      const double C2=peclet-C1;
-
+      double tau_tangential=1.0;
 
       if (nsd==3)
       {
@@ -3483,7 +3502,14 @@ template <DRT::Element::DiscretizationType bndydistype,
 
 
           // get velocity norm
-          const double normu = velint.Norm2();
+          double normu = velint.Norm2();
+
+#if 0          
+          if((*hixhybdbc_cond).GetDouble("u_C")<0)
+            {
+              normu=u_C;
+            }
+#endif
 
           // compute friction velocity u_tau
           double utau=visc_/y;
@@ -3538,12 +3564,12 @@ template <DRT::Element::DiscretizationType bndydistype,
 	      // based on viscous stresses
               if(*utau_computation=="viscous_tangent")
               {
-                C1*=visc_dudy/normtraction;
+                tau_tangential*=visc_dudy/normtraction;
               }
               else if(*utau_computation=="at_wall")
               {
                 // a la Michler
-                C1*=utau*utau/normtraction;
+                tau_tangential*=utau*utau/normtraction;
               }
 
 	      if(parent->Id()==myid)
@@ -3553,9 +3579,9 @@ template <DRT::Element::DiscretizationType bndydistype,
 		printf("(visc_dudy/normtraction %12.5e) ",visc_dudy/normtraction);
 		printf("sqrt(visc_dudy) %12.5e \n"       ,sqrt(visc_dudy));
 
-		printf("visc_dudy  %12.5e "   ,visc_dudy);
-		printf("normtraction  %12.5e ",normtraction);
-		printf("C1 %12.5e "           ,C1);
+		printf("visc_dudy      %12.5e "   ,visc_dudy);
+		printf("normtraction   %12.5e ",normtraction);
+		printf("tau_tangential %12.5e "           ,tau_tangential);
 		printf("y %12.5e "            ,y);
 		printf("y+  %12.5e\n"         ,y*utau/visc_);
 	      }
@@ -3563,6 +3589,31 @@ template <DRT::Element::DiscretizationType bndydistype,
 	  }
         }
       }
+
+
+      const double eleRey=u_C*h/visc_;
+
+      double tau_normal=1.0+2.0*eleRey;    
+
+      const double C1=tau_tangential;
+
+      const double C2=tau_normal-C1;
+
+      if(parent->Id()==myid)
+      {
+        printf("u_C  %12.5e "           ,u_C);
+        printf("Re_e %12.5e "           ,eleRey);
+        printf("C2   %12.5e "           ,C2);
+        printf("tau_normal  %12.5e \n"  ,tau_normal);
+
+      }
+      /*
+                     /                   \
+                    |  h       /  h    \  |
+             - C1 * | r o n , |  u - g  | |
+                    |          \       /  |
+                     \                   / Gamma
+      */
 
       if(nsd==2)
       {
@@ -3581,10 +3632,10 @@ template <DRT::Element::DiscretizationType bndydistype,
 
         for(int A=0;A<piel;++A)
         {
-          vec_r_o_n_u_minus_g(A*numstressdof_  )-=invert*fac*C1*pfunct(A)*unitnormal(0)*delta_vel(0);
-          vec_r_o_n_u_minus_g(A*numstressdof_+1)-=invert*fac*C1*pfunct(A)*unitnormal(1)*delta_vel(1);
+          vec_r_o_n_u_minus_g(A*numstressdof_  )-=fac*C1*pfunct(A)*unitnormal(0)*delta_vel(0);
+          vec_r_o_n_u_minus_g(A*numstressdof_+1)-=fac*C1*pfunct(A)*unitnormal(1)*delta_vel(1);
 
-          vec_r_o_n_u_minus_g(A*numstressdof_+2)-=invert*fac*C1*pfunct(A)*(unitnormal(1)*delta_vel(0)+unitnormal(0)*delta_vel(1));
+          vec_r_o_n_u_minus_g(A*numstressdof_+2)-=fac*C1*pfunct(A)*(unitnormal(1)*delta_vel(0)+unitnormal(0)*delta_vel(1));
         }
       }
       else if(nsd==3)
@@ -3634,6 +3685,13 @@ template <DRT::Element::DiscretizationType bndydistype,
         }
       }
 
+      /*
+                     /              /             \  \
+                    |  h           |  /  h  \      |  |
+             - C2 * | r o n ,  n * | | u - g | * n |  |
+                    |              |  \     /      |  |
+                     \              \             /  / Gamma
+      */
       if(nsd==2)
       {
         for(int A=0;A<piel;++A)
