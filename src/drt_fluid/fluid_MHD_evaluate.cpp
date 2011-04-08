@@ -354,11 +354,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
                                   belemap,
                                   bndrownodes,
                                   bndcolnodes,
-                                  bndnids,
-                                  numproc,
-                                  numproc,
                                   comm,
-                                  time,
                                   false);
 
 #else
@@ -369,12 +365,15 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
     bndcolnodes=rcp(new Epetra_Map(*newcolnodemap));
 #endif
 #endif
-
+    if(bnd_discret_->Comm().MyPID()==0)
+    {
+      cout << "| Redistributing .";
+    }
     bnd_discret_->Redistribute(*bndrownodes,*bndcolnodes,false,false);    
 
     if(bnd_discret_->Comm().MyPID()==0)
     {
-      cout << "| ... done.\n";
+      cout << ".. done.\n";
     }
 
     if(bnd_discret_->Comm().MyPID()==0)
