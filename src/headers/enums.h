@@ -531,7 +531,8 @@ typedef enum _AZPRECTYP
                        azprec_MLfluid,            /* ML for Fluids */
                        azprec_MLfluid2,           /* energy optimal unsymmetric ML for Fluids */
                        azprec_MLAPI,              /* experimental mlapi preconditioner */
-                       azprec_ML                  /* standard ML for structures */
+                       azprec_ML,                 /* standard ML for structures */
+                       azprec_BGS2x2              /* block Gauss-Seidel for 2x2 system */
 } AZPRECTYP;
 #endif
 /*----------------------------------------------------------------------*

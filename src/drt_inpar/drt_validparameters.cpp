@@ -3468,12 +3468,25 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   SetValidSolverParameters(scatrapotsolver);
 
   /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& coupscatrasolver = list->sublist("COUPLED SCALAR TRANSPORT SOLVER",false,"solver parameters for block-preconditioning");
+  SetValidSolverParameters(coupscatrasolver);
+
+  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& artnetsolver = list->sublist("ARTERY NETWORK SOLVER",false,"");
   SetValidSolverParameters(artnetsolver);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& redairwaysolver = list->sublist("REDUCED DIMENSIONAL AIRWAYS SOLVER",false,"");
   SetValidSolverParameters(redairwaysolver);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& precond1 = list->sublist("BGS PRECONDITIONER BLOCK 1",false,"");
+  SetValidSolverParameters(precond1);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& precond2 = list->sublist("BGS PRECONDITIONER BLOCK 2",false,"");
+  SetValidSolverParameters(precond2);
+
   return list;
 }
 
@@ -3528,8 +3541,8 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   {
     // this one is longer than 15 and the tuple<> function does not support this,
     // so build the Tuple class directly (which can be any size)
-    Teuchos::Tuple<std::string,19> name;
-    Teuchos::Tuple<int,19>  number;
+    Teuchos::Tuple<std::string,20> name;
+    Teuchos::Tuple<int,20>  number;
 
     name[0] = "none";                         number[0] = INPAR::SOLVER::azprec_none;
     name[1] = "ILU";                          number[1] = INPAR::SOLVER::azprec_ILU;
@@ -3550,6 +3563,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     name[16] = "DownwindGaussSeidel";         number[16] = INPAR::SOLVER::azprec_DownwindGaussSeidel;
     name[17] = "AMG(Braess-Sarazin)";         number[17] = INPAR::SOLVER::azprec_AMGBS;
     name[18] = "AMG";                         number[18] = INPAR::SOLVER::azprec_AMG;
+    name[19] = "BGS2x2";                      number[19] = INPAR::SOLVER::azprec_BGS2x2;
 
     setStringToIntegralParameter<int>(
       "AZPREC", "ILU",

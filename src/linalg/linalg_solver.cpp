@@ -58,6 +58,7 @@ Maintainer: Michael Gee
 #include "linalg_mlapi_operator.H"
 #include "simpler_operator.H"
 #include "simpler_operator_ex.H"
+#include "bgs2x2_operator.H"
 #include "linalg_downwindmatrix.H"
 #include "linalg_sparsematrix.H"
 #include "../drt_lib/standardtypes_cpp.H"
@@ -502,6 +503,7 @@ void LINALG::Solver::Solve_aztec(
   bool   dwind     = azlist.get<bool>("downwinding",false);
   bool   dosimpler = Params().isSublist("SIMPLER");
   bool   doamgbs   = Params().isSublist("AMGBS Parameters");
+  bool   dobgs     = Params().isSublist("BGS Parameters");
 
   if (!A || dosimpler)
   {
@@ -658,6 +660,48 @@ void LINALG::Solver::Solve_aztec(
       Pmatrix_ = null;
     }
 
+    // do block Gauss-Seidel if desired
+    if(dobgs)
+    {
+      ParameterList& bgslist = Params().sublist("BGS Parameters");
+      int numblocks = bgslist.get<int>("numblocks");
+
+      if (numblocks == 2) // BGS2x2
+      {
+        // check whether sublists for individual block solvers are present
+        bool haveprec1 = Params().isSublist("PREC1");
+        bool haveprec2 = Params().isSublist("PREC2");
+        if (!haveprec1 or !haveprec2)
+          dserror("individual block solvers for BGS2x2 need to be specified");
+
+        int global_iter = bgslist.get<int>("global_iter");
+        double global_omega = bgslist.get<double>("global_omega");
+        int block1_iter = bgslist.get<int>("block1_iter");
+        double block1_omega = bgslist.get<double>("block1_omega");
+        int block2_iter = bgslist.get<int>("block2_iter");
+        double block2_omega = bgslist.get<double>("block2_omega");
+        bool fliporder = bgslist.get<bool>("fliporder");
+
+        Teuchos::RCP<LINALG::BGS2x2_Operator> BGS2x2_Operator
+          = rcp(new LINALG::BGS2x2_Operator(A_->UnprojectedOperator(),
+                                            Params().sublist("PREC1"),
+                                            Params().sublist("PREC2"),
+                                            global_iter,
+                                            global_omega,
+                                            block1_iter,
+                                            block1_omega,
+                                            block2_iter,
+                                            block2_omega,
+                                            fliporder,
+                                            outfile_));
+
+        P_ = rcp(new LINALG::LinalgPrecondOperator(BGS2x2_Operator,project,projector));
+        Pmatrix_ = null;
+      }
+      else
+        dserror("Block Gauss-Seidel is currently only implemented for a 2x2 system");
+    }
+
     if(doamgbs)
     {
       if(dosimpler == true)
@@ -677,7 +721,7 @@ void LINALG::Solver::Solve_aztec(
   }
 
   // set the preconditioner
-  if (doifpack || doml || dosimpler || doamgbs)
+  if (doifpack || doml || dosimpler || doamgbs || dobgs)
   {
     aztec_->SetPrecOperator(P_.get());
   }
@@ -1065,6 +1109,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     case INPAR::SOLVER::azprec_MLfluid2:
     case INPAR::SOLVER::azprec_AMGBS:
     case INPAR::SOLVER::azprec_AMG:
+    case INPAR::SOLVER::azprec_BGS2x2:
       azlist.set("AZ_precond",AZ_user_precond);
     break;
     default:
@@ -1683,6 +1728,27 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
 
       cout << amglist << endl; // TODO delete me
     } // if AMGBS preconditioner
+    if (azprectyp == INPAR::SOLVER::azprec_BGS2x2)
+    {
+      ParameterList& bgslist = outparams.sublist("BGS Parameters");
+      bgslist.set("numblocks",2);
+
+      // currently, the number of Gauss-Seidel iterations and the relaxation
+      // parameter on the global level are set to 1 and 1.0, respectively
+      bgslist.set("global_iter",1);
+      bgslist.set("global_omega",1.0);
+
+      // currently, the order of blocks in the given EpetraOperator is not changed
+      // in the Gauss-Seidel procedure
+      bgslist.set("fliporder",false);
+
+      // currently, the number of Richardson iteratios and the relaxation
+      // parameter on the individual block level are set to 1 and 1.0, respectively
+      bgslist.set("block1_iter",1);
+      bgslist.set("block1_omega",1.0);
+      bgslist.set("block2_iter",1);
+      bgslist.set("block2_omega",1.0);
+    }
   }
   break;
 #ifdef PARALLEL

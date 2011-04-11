@@ -93,7 +93,8 @@ namespace INPAR
       azprec_MLAPI,              ///< experimental mlapi preconditioner
       azprec_ML,                 ///< standard ML for structures
       azprec_AMGBS,              ///< AMG(Braess-Sarazin) preconditioner for Fluids
-      azprec_AMG                 ///< AMG preconditioner for Fluids (without ML)
+      azprec_AMG,                ///< AMG preconditioner for Fluids (without ML)
+      azprec_BGS2x2              ///< Block Gauss-Seidel for 2x2 system
     };
 
     /// Different prolongation smoothing strategies for AMGBS preconditioner

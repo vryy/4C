@@ -275,10 +275,13 @@ public:
   const Teuchos::ParameterList& ThermalSolverParams() const { return getParameterList()->sublist("THERMAL SOLVER"); }
   const Teuchos::ParameterList& ScalarTransportSolverParams() const { return getParameterList()->sublist("SCALAR TRANSPORT SOLVER"); }
   const Teuchos::ParameterList& ScalarTransportElectricPotentialSolverParams() const { return getParameterList()->sublist("SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER"); }
+  const Teuchos::ParameterList& CoupledScalarTransportSolverParams() const { return getParameterList()->sublist("COUPLED SCALAR TRANSPORT SOLVER"); }
   const Teuchos::ParameterList& ArteryNetworkSolverParams() const { return getParameterList()->sublist("ARTERY NETWORK SOLVER"); }
   const Teuchos::ParameterList& ConditionNamesParams() const { return getParameterList()->sublist("CONDITION NAMES"); }
   const Teuchos::ParameterList& SearchtreeParams() const { return getParameterList()->sublist("SEARCH TREE"); }
   const Teuchos::ParameterList& ReducedDAirwaySolverParams() const { return getParameterList()->sublist("REDUCED DIMENSIONAL AIRWAYS SOLVER"); }
+  const Teuchos::ParameterList& BGSPrecBlock1Params() const { return getParameterList()->sublist("BGS PRECONDITIONER BLOCK 1"); }
+  const Teuchos::ParameterList& BGSPrecBlock2Params() const { return getParameterList()->sublist("BGS PRECONDITIONER BLOCK 2"); }
 
   //@}
 

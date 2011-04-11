@@ -49,7 +49,7 @@
 extern struct _GENPROB     genprob;
 
 
-#define SCATRABLOCKMATRIXMERGE
+//#define SCATRABLOCKMATRIXMERGE
 
 
 /*----------------------------------------------------------------------*/
@@ -135,8 +135,29 @@ FSI::LungScatra::LungScatra(Teuchos::RCP<FSI::Monolithic> fsi):
                                          firstscatradis->Comm(),
                                          DRT::Problem::Instance()->ErrorFile()->Handle()));
 #else
-  dserror("currently only direct solution of merged scatra system possible");
+  const Teuchos::ParameterList& scatrasolvparams =  DRT::Problem::Instance()->CoupledScalarTransportSolverParams();
+  const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(scatrasolvparams,"SOLVER");
+  if (solvertype != INPAR::SOLVER::aztec_msr)
+    dserror("aztec solver expected");
+  const int azprectype = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(scatrasolvparams,"AZPREC");
+  if (azprectype != INPAR::SOLVER::azprec_BGS2x2)
+    dserror("Block Gauss-Seidel preconditioner expected");
+
+  scatrasolver_ = rcp(new LINALG::Solver(scatrasolvparams,
+                                         firstscatradis->Comm(),
+                                         DRT::Problem::Instance()->ErrorFile()->Handle()));
+  scatrasolver_->PutSolverParamsToSubParams("PREC1",
+                                           DRT::Problem::Instance()->BGSPrecBlock1Params());
+  scatrasolver_->PutSolverParamsToSubParams("PREC2",
+                                           DRT::Problem::Instance()->BGSPrecBlock2Params());
+
+  firstscatradis->ComputeNullSpaceIfNecessary(scatrasolver_->Params());
 #endif
+
+  // make sure that initial time derivative of concentration is not calculated
+  // automatically (i.e. field-wise)
+  if (DRT::INPUT::IntegralValue<int>(scatradyn,"SKIPINITDER")==false)
+    dserror("Initial time derivative of phi must not be calculated automatically -> set SKIPINITDER to false");
 }
 
 
@@ -236,6 +257,7 @@ void FSI::LungScatra::DoScatraStep()
 
   while (stopnonliniter==false)
   {
+    SetMeshDisp();
     SetVelocityFields();
 
     EvaluateScatraFields();
@@ -587,7 +609,11 @@ void FSI::LungScatra::CoupledScatraSolve()
                        scatrarhs_,
                        true);
 #else
-  dserror("currently only direct solution of merged scatra system possible");
+  scatrasolver_->Solve(scatrasystemmatrix_->EpetraOperator(),
+                       scatraincrement_,
+                       scatrarhs_,
+                       true,
+                       true);
 #endif
 }
 

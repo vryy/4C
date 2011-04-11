@@ -218,8 +218,11 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--THERMAL SOLVER", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT SOLVER", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER", *list);
+  reader.ReadGidSection("--COUPLED SCALAR TRANSPORT SOLVER", *list);
   reader.ReadGidSection("--ARTERY NETWORK SOLVER", *list);
   reader.ReadGidSection("--REDUCED DIMENSIONAL AIRWAYS SOLVER", *list);
+  reader.ReadGidSection("--BGS PRECONDITIONER BLOCK 1", *list);
+  reader.ReadGidSection("--BGS PRECONDITIONER BLOCK 2", *list);
 
 
   // a special section for condition names that contains a list of key-integer
