@@ -180,8 +180,8 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
           // 4,5
           if ( touched == cut )
           {
-            Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
-            return true;
+//             Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
+//             return true;
           }
           else
           {
@@ -196,8 +196,8 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
           // 1,3
           if ( touched == cut )
           {
-            Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
-            return true;
+//             Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
+//             return true;
           }
           else
           {
@@ -215,8 +215,8 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
           // 4,5
           if ( touched == cut )
           {
-            Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
-            return true;
+//             Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
+//             return true;
           }
           else
           {
@@ -231,8 +231,8 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
           // 1,3
           if ( touched == cut )
           {
-            Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
-            return true;
+//             Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
+//             return true;
           }
           else
           {
@@ -241,7 +241,6 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
             else
               Hex8Projection::EdgeCut( mesh, parent, cell, position, facets, integrationcells, 0, 5, 1, 3 );
           }
-          return true;
         }
       }
       else if ( not cut[3] and cut[1] )
@@ -251,8 +250,8 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
           // 4,5
           if ( touched == cut )
           {
-            Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
-            return true;
+//             Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
+//             return true;
           }
           else
           {
@@ -267,8 +266,8 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
           // 0,2
           if ( touched == cut )
           {
-            Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
-            return true;
+//             Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
+//             return true;
           }
           else
           {
@@ -286,8 +285,8 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
           // 4,5
           if ( touched == cut )
           {
-            Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
-            return true;
+//             Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
+//             return true;
           }
           else
           {
@@ -302,8 +301,8 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
           // 0,2
           if ( touched == cut )
           {
-            Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
-            return true;
+//             Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
+//             return true;
           }
           else
           {
@@ -321,8 +320,8 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
           // 1,3
           if ( touched == cut )
           {
-            Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
-            return true;
+//             Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
+//             return true;
           }
           else
           {
@@ -337,8 +336,8 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
           // 0,2
           if ( touched == cut )
           {
-            Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
-            return true;
+//             Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
+//             return true;
           }
           else
           {
@@ -356,8 +355,8 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
           // 1,3
           if ( touched == cut )
           {
-            Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
-            return true;
+//             Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
+//             return true;
           }
           else
           {
@@ -372,8 +371,8 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
           // 0,2
           if ( touched == cut )
           {
-            Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
-            return true;
+//             Hex8Projection::CreateTetMesh( mesh, cell, position, facets );
+//             return true;
           }
           else
           {
