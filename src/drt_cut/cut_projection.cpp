@@ -268,11 +268,6 @@ void GEO::CUT::Hex8Projection::HorizontalCut( Mesh & mesh,
 }
 
 bool GEO::CUT::Hex8Projection::EdgeCut( Mesh & mesh,
-                                        Element * element,
-                                        VolumeCell * cell,
-                                        Point::PointPosition position,
-                                        const std::set<Facet*> & facets,
-                                        std::set<IntegrationCell*> & integrationcells,
                                         int cutside1,
                                         int cutside2,
                                         int upside,
@@ -337,6 +332,62 @@ void GEO::CUT::Hex8Projection::FindNeighborFacets( const std::vector<Point*> & f
                                                    Facet * ds,
                                                    std::set<Facet*> & myfacets )
 {
+=======
+                                        int cutside,
+                                        int upside,
+                                        int downside )
+{
+  const std::vector<Side*> & sides = element->Sides();
+
+  Facet * cs = NULL;
+  Facet * us = NULL;
+  Facet * ds = NULL;
+
+  for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+  {
+    Facet * f = *i;
+    if ( f->ParentSide()==sides[cutside] )
+    {
+      if ( cs==NULL )
+      {
+        cs = f;
+      }
+      else
+      {
+        throw std::runtime_error( "double cut side" );
+      }
+    }
+    if ( f->ParentSide()==sides[upside] )
+    {
+      if ( us==NULL )
+      {
+        us = f;
+      }
+      else
+      {
+        throw std::runtime_error( "double up side" );
+      }
+    }
+    if ( f->ParentSide()==sides[downside] )
+    {
+      if ( ds==NULL )
+      {
+        ds = f;
+      }
+      else
+      {
+        throw std::runtime_error( "double down side" );
+      }
+    }
+  }
+
+  if ( cs==NULL or us==NULL or ds==NULL )
+    throw std::runtime_error( "facet not found" );
+
+  std::set<Facet*> myfacets;
+  const std::vector<Point*> & facet_points = cs->Points();
+
+>>>>>>> split a concave volume cell in pieces and create tets for each piece in turn.
   for ( std::vector<Point*>::const_iterator i=facet_points.begin();
         i!=facet_points.end();
         ++i )
