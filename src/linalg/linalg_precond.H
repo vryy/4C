@@ -93,7 +93,7 @@ namespace LINALG
 
 
     /// get flag from solver whether factorization has been performed
-    bool IsFactored() const;
+//     bool IsFactored() const;
 
     /// get underlying preconditioner Epetra_Operator
     Teuchos::RCP<Epetra_Operator> EpetraOperator() { return prec_; }

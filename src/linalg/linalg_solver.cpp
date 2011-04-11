@@ -77,9 +77,7 @@ LINALG::Solver::Solver(RefCountPtr<ParameterList> params,
                        const Epetra_Comm& comm, FILE* outfile) :
 comm_(comm),
 params_(params),
-outfile_(outfile),
-factored_(false),
-ncall_(0)
+outfile_(outfile)
 {
   Setup();
   return;
@@ -91,9 +89,7 @@ ncall_(0)
 LINALG::Solver::Solver(const Epetra_Comm& comm, FILE* outfile) :
 comm_(comm),
 params_(rcp(new ParameterList())),
-outfile_(outfile),
-factored_(false),
-ncall_(0)
+outfile_(outfile)
 {
   // set the default solver
   Params().set("solver","klu");
@@ -113,9 +109,7 @@ LINALG::Solver::Solver(const Teuchos::ParameterList& inparams,
                        FILE* outfile) :
 comm_(comm),
 params_(rcp(new ParameterList())),
-outfile_(outfile),
-factored_(false),
-ncall_(0)
+outfile_(outfile)
 {
   // set solver parameters
   *params_ = TranslateSolverParameters(inparams);
@@ -131,31 +125,7 @@ ncall_(0)
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Setup()
 {
-  // create an empty linear problem
-  lp_ = rcp(new Epetra_LinearProblem());
-
-#ifdef PARALLEL
-#ifdef SPOOLES_PACKAGE
-  frontmtx_      =NULL;
-  newA_          =NULL;
-  newY_          =NULL;
-  frontETree_    =NULL;
-  mtxmanager_    =NULL;
-  newToOldIV_    =NULL;
-  oldToNewIV_    =NULL;
-  ownersIV_      =NULL;
-  vtxmapIV_      =NULL;
-  ownedColumnsIV_=NULL;
-  solvemap_      =NULL;
-  symbfacIVL_    =NULL;
-  graph_         =NULL;
-  mtxY_          =NULL;
-  mtxX_          =NULL;
-  mtxA_          =NULL;
-#endif
-#endif
-
-  return;
+  solver_ = Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*
@@ -163,31 +133,8 @@ void LINALG::Solver::Setup()
  *----------------------------------------------------------------------*/
 LINALG::Solver::~Solver()
 {
-#ifdef PARALLEL
-#ifdef SPOOLES_PACKAGE
-  if (frontmtx_)       FrontMtx_free(frontmtx_);        frontmtx_      =NULL;
-  if (newA_)           InpMtx_free(newA_);              newA_          =NULL;
-  if (newY_)           DenseMtx_free(newY_);            newY_          =NULL;
-  if (frontETree_)     ETree_free(frontETree_);         frontETree_    =NULL;
-  if (mtxmanager_)     SubMtxManager_free(mtxmanager_); mtxmanager_    =NULL;
-  if (newToOldIV_)     IV_free(newToOldIV_);            newToOldIV_    =NULL;
-  if (oldToNewIV_)     IV_free(oldToNewIV_);            oldToNewIV_    =NULL;
-  if (ownersIV_)       IV_free(ownersIV_);              ownersIV_      =NULL;
-  if (vtxmapIV_)       IV_free(vtxmapIV_);              vtxmapIV_      =NULL;
-  if (ownedColumnsIV_) IV_free(ownedColumnsIV_);        ownedColumnsIV_=NULL;
-  if (solvemap_)       SolveMap_free(solvemap_);        solvemap_      =NULL;
-  if (graph_)          Graph_free(graph_);              graph_         =NULL;
-  if (mtxY_)           DenseMtx_free(mtxY_);            mtxY_          =NULL;
-  if (mtxX_)           DenseMtx_free(mtxX_);            mtxX_          =NULL;
-  if (mtxA_)           InpMtx_free(mtxA_);              mtxA_          =NULL;
-  if (symbfacIVL_)     IVL_free(symbfacIVL_);           symbfacIVL_    =NULL;
-#endif
-#endif
-
   // destroy in the right order
   Reset();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -195,6 +142,9 @@ LINALG::Solver::~Solver()
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Reset()
 {
+#if 1
+  solver_ = Teuchos::null;
+#else
   lp_       = rcp(new Epetra_LinearProblem());
   amesos_   = null;
   aztec_    = null;
@@ -206,25 +156,6 @@ void LINALG::Solver::Reset()
   b_        = null;
   factored_ = false;
   ncall_    = 0;
-#ifdef PARALLEL
-#ifdef SPOOLES_PACKAGE
-  if (frontmtx_)       FrontMtx_free(frontmtx_);        frontmtx_      =NULL;
-  if (newA_)           InpMtx_free(newA_);              newA_          =NULL;
-  if (newY_)           DenseMtx_free(newY_);            newY_          =NULL;
-  if (frontETree_)     ETree_free(frontETree_);         frontETree_    =NULL;
-  if (mtxmanager_)     SubMtxManager_free(mtxmanager_); mtxmanager_    =NULL;
-  if (newToOldIV_)     IV_free(newToOldIV_);            newToOldIV_    =NULL;
-  if (oldToNewIV_)     IV_free(oldToNewIV_);            oldToNewIV_    =NULL;
-  if (ownersIV_)       IV_free(ownersIV_);              ownersIV_      =NULL;
-  if (vtxmapIV_)       IV_free(vtxmapIV_);              vtxmapIV_      =NULL;
-  if (ownedColumnsIV_) IV_free(ownedColumnsIV_);        ownedColumnsIV_=NULL;
-  if (solvemap_)       SolveMap_free(solvemap_);        solvemap_      =NULL;
-  if (graph_)          Graph_free(graph_);              graph_         =NULL;
-  if (mtxY_)           DenseMtx_free(mtxY_);            mtxY_          =NULL;
-  if (mtxX_)           DenseMtx_free(mtxX_);            mtxX_          =NULL;
-  if (mtxA_)           InpMtx_free(mtxA_);              mtxA_          =NULL;
-  if (symbfacIVL_)     IVL_free(symbfacIVL_);           symbfacIVL_    =NULL;
-#endif
 #endif
 }
 
@@ -322,6 +253,32 @@ void LINALG::Solver::Solve(
     refactor = true;
   }
 
+#if 1
+
+  if ( solver_ == Teuchos::null )
+  {
+    // decide what solver to use
+    std::string solvertype = Params().get("solver","none");
+
+    if ("aztec"  ==solvertype)
+    {
+      solver_ = Teuchos::rcp( new KrylovSolver( comm_, Params(), outfile_ ) );
+    }
+    else if ("klu"    ==solvertype or
+             "umfpack"==solvertype or
+             "superlu"==solvertype or
+             "lapack" ==solvertype)
+    {
+      solver_ = Teuchos::rcp( new DirectSolver( solvertype ) );
+    }
+    else
+      dserror("Unknown type of solver");
+  }
+
+  solver_->Solve( matrix, x, b, refactor, reset, weighted_basis_mean, kernel_c, project );
+
+#else
+
   // is projection desired?
   RCP<LINALG::KrylovProjector> projector = Teuchos::null;
   if(project)
@@ -371,21 +328,12 @@ void LINALG::Solver::Solve(
   else if ("superlu"==solvertype)
     Solve_superlu(reset);
 #endif
-#ifdef PARALLEL
-#ifdef SPOOLES_PACKAGE
-  else if ("spooles"==solvertype)
-    Solve_spooles(reset);
-#endif
-#endif
   else if ("lapack" ==solvertype)
     Solve_lapack(reset);
-  else if ("none"   ==solvertype)
+  else
     dserror("Unknown type of solver");
 
-  factored_ = true;
-  ncall_++;
-
-  return;
+#endif
 }
 
 /*----------------------------------------------------------------------*
@@ -397,7 +345,7 @@ void LINALG::Solver::Solve_aztec(
   const Teuchos::RCP<LINALG::KrylovProjector> projector
   )
 {
-
+#if 0
 #ifdef WRITEOUTSTATISTICS
   double dtimeprecondsetup = 0.;
   Epetra_Time ttt(Comm());       // time measurement for whole Solve_aztec routine
@@ -850,6 +798,7 @@ void LINALG::Solver::Solve_aztec(
   }
 
   return;
+#endif
 }
 
 
@@ -859,6 +808,7 @@ void LINALG::Solver::Solve_aztec(
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Solve_superlu(const bool reset)
 {
+#if 0
 #ifndef HAVENOT_SUPERLU
 #ifdef PARALLEL
   if (reset || !IsFactored())
@@ -885,6 +835,7 @@ void LINALG::Solver::Solve_superlu(const bool reset)
 #endif    //! system of equations
 #endif
   return;
+#endif
 }
 
 /*----------------------------------------------------------------------*
@@ -892,6 +843,7 @@ void LINALG::Solver::Solve_superlu(const bool reset)
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Solve_umfpack(const bool reset)
 {
+#if 0
 #ifndef HAVENOT_UMFPACK
   if (reset || !IsFactored())
   {
@@ -917,6 +869,7 @@ void LINALG::Solver::Solve_umfpack(const bool reset)
 #else
 #endif
   return;
+#endif
 }
 
 /*----------------------------------------------------------------------*
@@ -924,6 +877,7 @@ void LINALG::Solver::Solve_umfpack(const bool reset)
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Solve_klu(const bool reset)
 {
+#if 0
   if (reset || !IsFactored())
   {
     reindexer_ = rcp(new EpetraExt::LinearProblem_Reindex(NULL));
@@ -947,6 +901,7 @@ void LINALG::Solver::Solve_klu(const bool reset)
   if (err) dserror("Amesos::Solve returned an err");
 
   return;
+#endif
 }
 
 /*----------------------------------------------------------------------*
@@ -954,6 +909,7 @@ void LINALG::Solver::Solve_klu(const bool reset)
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Solve_lapack(const bool reset)
 {
+#if 0
   if (reset || !IsFactored())
   {
     reindexer_ = rcp(new EpetraExt::LinearProblem_Reindex(NULL));
@@ -975,6 +931,7 @@ void LINALG::Solver::Solve_lapack(const bool reset)
   if (err) dserror("Amesos::Solve returned an err");
 
   return;
+#endif
 }
 
 /*----------------------------------------------------------------------*
@@ -1751,13 +1708,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     }
   }
   break;
-#ifdef PARALLEL
-  case INPAR::SOLVER::SPOOLES_sym://================================== Spooles (parallel only)
-  case INPAR::SOLVER::SPOOLES_nonsym:
-    outparams.set("solver","spooles");
-    outparams.set("symmetric",false);
-  break;
-#endif
   default:
     dserror("Unsupported type of solver");
   break;
@@ -1976,33 +1926,813 @@ RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Aorig,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 /*
-static void CopySortDeleteZeros(const Epetra_CrsMatrix& A, Epetra_CrsMatrix& As)
-{
+  static void CopySortDeleteZeros(const Epetra_CrsMatrix& A, Epetra_CrsMatrix& As)
+  {
   vector<int>    scindices(A.MaxNumEntries());
   vector<double> scvalues(A.MaxNumEntries());
   for (int i=0; i<A.NumMyRows(); ++i)
   {
-    int grid = A.RowMap().GID(i);
-    int numentries;
-    double* values;
-    int* indices;
-    A.ExtractMyRowView(i,numentries,values,indices);
-    int snumentries=0;
-    for (int j=0; j<numentries; ++j)
-    {
-      if (values[j]==0.0) continue;
-      scindices[snumentries] = A.ColMap().GID(indices[j]);
-      scvalues[snumentries] = values[j];
-      snumentries++;
-    }
-    ML_az_sort(&scindices[0],snumentries,NULL,&scvalues[0]);
-    int err = As.InsertGlobalValues(grid,snumentries,&scvalues[0],&scindices[0]);
-    if (err) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+  int grid = A.RowMap().GID(i);
+  int numentries;
+  double* values;
+  int* indices;
+  A.ExtractMyRowView(i,numentries,values,indices);
+  int snumentries=0;
+  for (int j=0; j<numentries; ++j)
+  {
+  if (values[j]==0.0) continue;
+  scindices[snumentries] = A.ColMap().GID(indices[j]);
+  scvalues[snumentries] = values[j];
+  snumentries++;
+  }
+  ML_az_sort(&scindices[0],snumentries,NULL,&scvalues[0]);
+  int err = As.InsertGlobalValues(grid,snumentries,&scvalues[0],&scindices[0]);
+  if (err) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
   }
   if (A.Filled()) As.FillComplete(A.DomainMap(),A.RangeMap(),true);
   return;
-}
+  }
 */
 
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+LINALG::Solver::DirectSolver::DirectSolver( std::string solvertype )
+  : solvertype_( solvertype ),
+    factored_( false )
+{
+  lp_ = Teuchos::rcp( new Epetra_LinearProblem() );
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+LINALG::Solver::DirectSolver::~DirectSolver()
+{
+  amesos_    = Teuchos::null;
+  reindexer_ = Teuchos::null;
+  lp_        = Teuchos::null;
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::Solver::DirectSolver::Solve( RCP<Epetra_Operator> matrix,
+                                          RCP<Epetra_Vector> x,
+                                          RCP<Epetra_Vector> b,
+                                          bool refactor,
+                                          bool reset,
+                                          RCP<Epetra_MultiVector> weighted_basis_mean,
+                                          RCP<Epetra_MultiVector> kernel_c,
+                                          bool project)
+{
+  if ( project )
+    dserror( "a projection of Krylov space basis vectors is possible only for aztec type iterative solvers" );
+
+  x_ = x;
+  b_ = b;
+  A_ = matrix;
+
+  // fill the linear problem
+  lp_->SetRHS(b_.get());
+  lp_->SetLHS(x_.get());
+  lp_->SetOperator(A_.get());
+
+  if (reset or refactor or not IsFactored())
+  {
+    reindexer_ = rcp(new EpetraExt::LinearProblem_Reindex(NULL));
+
+    if ( solvertype_=="klu" )
+    {
+      amesos_ = rcp(new Amesos_Klu((*reindexer_)(*lp_)));
+    }
+    else if ( solvertype_=="umfpack" )
+    {
+#ifndef HAVENOT_UMFPACK
+      amesos_ = rcp(new Amesos_Umfpack((*reindexer_)(*lp_)));
+#else
+      dserror( "no umfpack here" );
+#endif
+    }
+    else if ( solvertype_=="superlu" )
+    {
+#ifndef HAVENOT_SUPERLU
+#ifdef PARALLEL
+      amesos_ = rcp(new Amesos_Superludist((*reindexer_)(*lp_)));
+#else
+      dserror("Distributed SuperLU only in parallel");
+#endif
+#else
+      dserror( "no superlu_dist here" );
+#endif
+    }
+    else if ( solvertype_=="lapack" )
+    {
+      amesos_ = rcp(new Amesos_Lapack((*reindexer_)(*lp_)));
+    }
+
+    factored_ = false;
+  }
+
+  if (amesos_==null) dserror("No solver allocated");
+
+  // Problem has not been factorized before
+  if (refactor or not IsFactored())
+  {
+    int err = amesos_->SymbolicFactorization();
+    if (err) dserror("Amesos::SymbolicFactorization returned an err");
+    err = amesos_->NumericFactorization();
+    if (err) dserror("Amesos::NumericFactorization returned an err");
+
+    factored_ = true;
+  }
+
+  int err = amesos_->Solve();
+  if (err) dserror("Amesos::Solve returned an err");
+}
+
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+LINALG::Solver::KrylovSolver::KrylovSolver( const Epetra_Comm & comm,
+                                            Teuchos::ParameterList & params,
+                                            FILE * outfile )
+  : comm_( comm ),
+    params_( params ),
+    outfile_( outfile ),
+    ncall_( 0 )
+{
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+LINALG::Solver::KrylovSolver::~KrylovSolver()
+{
+  preconditioner_ = Teuchos::null;
+  A_ = Teuchos::null;
+  x_ = Teuchos::null;
+  b_ = Teuchos::null;
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::Solver::KrylovSolver::Solve( RCP<Epetra_Operator> matrix,
+                                          RCP<Epetra_Vector> x,
+                                          RCP<Epetra_Vector> b,
+                                          bool refactor,
+                                          bool reset,
+                                          RCP<Epetra_MultiVector> weighted_basis_mean,
+                                          RCP<Epetra_MultiVector> kernel_c,
+                                          bool project)
+{
+#ifdef WRITEOUTSTATISTICS
+  double dtimeprecondsetup = 0.;
+  Epetra_Time ttt(Comm());       // time measurement for whole routine
+  Epetra_Time tttcreate(Comm()); // time measurement for creation of preconditioner
+  ttt.ResetStartTime();
+#endif
+
+  if (!Params().isSublist("Aztec Parameters"))
+    dserror("Do not have aztec parameter list");
+  ParameterList& azlist = Params().sublist("Aztec Parameters");
+  //int azoutput = azlist.get<int>("AZ_output",0);
+
+  x_ = x;
+  b_ = b;
+  A_ = matrix;
+
+  // Allocate an aztec solver with default parameters
+  // We do this every time because reusing the solver object
+  // does lead to crashes that are not understood
+
+  // create an aztec solver
+  AztecOO aztec;
+  aztec.SetAztecDefaults();
+
+  // tell aztec to which stream to write
+  aztec.SetOutputStream(std::cout);
+  aztec.SetErrorStream(std::cerr);
+
+  // see whether operator is a Epetra_CrsMatrix
+  Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>( A_.get() );
+
+#ifdef WRITEOUTSTATISTICS
+  tttcreate.ResetStartTime();
+#endif
+
+  // decide whether we recreate preconditioners
+  int  reuse  = azlist.get("reuse",0);
+  if ( reset or not Ncall() or not reuse or ( Ncall() % reuse )==0 )
+  {
+    ncall_ = 0;
+    CreatePreconditioner( azlist, A!=NULL, weighted_basis_mean, kernel_c, project );
+  }
+
+  preconditioner_->Setup( &*A_, &*x_, &*b_ );
+
+#ifdef WRITEOUTSTATISTICS
+  dtimeprecondsetup = tttcreate.ElapsedTime();
+#endif
+
+  // Don't want linear problem to alter our aztec parameters (idiot feature!)
+  // this is why we set our list here AFTER the linear problem has been set
+  aztec.SetProblem( preconditioner_->LinearProblem() );
+
+  {
+    // We don't want to use Aztec's scaling capabilities as we prefer to do
+    // the scaling ourselves (so we precisely know what happens)
+    // Therefore set scaling parameter to none and reset it after aztec has made
+    // its internal copy of the parameter list
+    string scaling = azlist.get("scaling","none");
+    azlist.set("scaling","none");
+    aztec.SetParameters(azlist,false);
+    azlist.set("scaling",scaling);
+  }
+
+  aztec.SetPrecOperator( preconditioner_->PrecOperator() );
+
+  // iterate on the solution
+  int iter = azlist.get("AZ_max_iter",500);
+  double tol = azlist.get("AZ_tol",1.0e-6);
+
+  // This hurts! It supresses error messages. This needs to be fixed.
+#if 1
+  // create an aztec convergence test as combination of
+  // L2-norm and Inf-Norm to be both satisfied where we demand
+  // L2 < tol and Linf < 10*tol
+  {
+    Epetra_Operator* op  = aztec.GetProblem()->GetOperator();
+    Epetra_Vector*   rhs = static_cast<Epetra_Vector*>(aztec.GetProblem()->GetRHS());
+    Epetra_Vector*   lhs = static_cast<Epetra_Vector*>(aztec.GetProblem()->GetLHS());
+    // max iterations
+    aztest_maxiter_ = rcp(new AztecOO_StatusTestMaxIters(iter));
+    // L2 norm
+    aztest_norm2_ = rcp(new AztecOO_StatusTestResNorm(*op,*lhs,*rhs,tol));
+    aztest_norm2_->DefineResForm(AztecOO_StatusTestResNorm::Implicit,
+                                 AztecOO_StatusTestResNorm::TwoNorm);
+    aztest_norm2_->DefineScaleForm(AztecOO_StatusTestResNorm::NormOfInitRes,
+                                   AztecOO_StatusTestResNorm::TwoNorm);
+    // Linf norm (demanded to be 10 times L2-norm now, to become an input parameter)
+    aztest_norminf_ = rcp(new AztecOO_StatusTestResNorm(*op,*lhs,*rhs,1.0*tol));
+    aztest_norminf_->DefineResForm(AztecOO_StatusTestResNorm::Implicit,
+                                   AztecOO_StatusTestResNorm::InfNorm);
+    aztest_norminf_->DefineScaleForm(AztecOO_StatusTestResNorm::NormOfInitRes,
+                                     AztecOO_StatusTestResNorm::InfNorm);
+    // L2 AND Linf
+    aztest_combo1_ = rcp(new AztecOO_StatusTestCombo(AztecOO_StatusTestCombo::SEQ));
+    // maxiters OR (L2 AND Linf)
+    aztest_combo2_ = rcp(new AztecOO_StatusTestCombo(AztecOO_StatusTestCombo::OR));
+    aztest_combo1_->AddStatusTest(*aztest_norm2_);
+    aztest_combo1_->AddStatusTest(*aztest_norminf_);
+    aztest_combo2_->AddStatusTest(*aztest_maxiter_);
+    aztest_combo2_->AddStatusTest(*aztest_combo1_);
+    // set status test
+    aztec.SetStatusTest(aztest_combo2_.get());
+  }
+#endif
+
+  // if you want to get some information on eigenvalues of the Hessenberg matrix/the
+  // estimated condition number of the preconditioned system, uncomment the following
+  // line and set AZOUTPUT>0 in your .dat-file
+  // aztec_->SetAztecOption(AZ_solver,AZ_gmres_condnum);
+
+  //------------------------------- just do it----------------------------------------
+  aztec.Iterate(iter,tol);
+  //----------------------------------------------------------------------------------
+
+  preconditioner_->Finish( &*A_, &*x_, &*b_ );
+
+  // check status of solution process
+  const double* status = aztec.GetAztecStatus();
+  if (status[AZ_why] != AZ_normal)
+  {
+    bool resolve = false;
+    if (status[AZ_why] == AZ_breakdown)
+    {
+      if (comm_.MyPID()==0)
+        printf("Numerical breakdown in AztecOO\n");
+      resolve = true;
+    }
+    else if (status[AZ_why] == AZ_ill_cond)
+    {
+      if (comm_.MyPID()==0)
+        printf("Problem is near singular in AztecOO\n");
+      resolve = true;
+    }
+    else if (status[AZ_why] == AZ_maxits)
+    {
+      if (comm_.MyPID()==0)
+        printf("Max iterations reached in AztecOO\n");
+      resolve = true;
+    }
+  } // if (status[AZ_why] != AZ_normal)
+
+#ifdef WRITEOUTSTATISTICS
+    if(outfile_)
+    {
+      fprintf(outfile_,"LinIter %i\tNumGlobalElements %i\tAZ_solve_time %f\tAztecSolveTime %f\tAztecPrecondSetup %f\t\n",(int)status[AZ_its],A_->OperatorRangeMap().NumGlobalElements(),status[AZ_solve_time],ttt.ElapsedTime(),dtimeprecondsetup);
+      fflush(outfile_);
+    }
+#endif
+
+  // print some output if desired
+  if (comm_.MyPID()==0 && outfile_)
+  {
+    fprintf(outfile_,"AztecOO: unknowns/iterations/time %d  %d  %f\n",
+            A_->OperatorRangeMap().NumGlobalElements(),(int)status[AZ_its],status[AZ_solve_time]);
+    fflush(outfile_);
+  }
+
+  ncall_ += 1;
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::Solver::KrylovSolver::CreatePreconditioner( ParameterList & azlist,
+                                                         bool isCrsMatrix,
+                                                         RCP<Epetra_MultiVector> weighted_basis_mean,
+                                                         RCP<Epetra_MultiVector> kernel_c,
+                                                         bool project )
+{
+  preconditioner_ = Teuchos::null;
+
+  if ( isCrsMatrix )
+  {
+    // get type of preconditioner and build either Ifpack or ML
+    // if we have an ifpack parameter list, we do ifpack
+    // if we have an ml parameter list we do ml
+    // if we have a downwinding flag we downwind the linear problem
+    if ( Params().isSublist("IFPACK Parameters") )
+    {
+      preconditioner_ = Teuchos::rcp( new IFPACKPreconditioner( outfile_, Params().sublist("IFPACK Parameters"), azlist ) );
+    }
+    else if ( Params().isSublist("ML Parameters") )
+    {
+      preconditioner_ = Teuchos::rcp( new MLPreconditioner( outfile_, Params().sublist("ML Parameters") ) );
+    }
+    else
+    {
+      dserror( "unknown preconditioner" );
+    }
+
+    // decide whether we do what kind of scaling
+    string scaling = azlist.get("scaling","none");
+    if (scaling=="none")
+    {
+    }
+    else if (scaling=="infnorm")
+    {
+      preconditioner_ = Teuchos::rcp( new InfNormPreconditioner( preconditioner_ ) );
+    }
+    else if (scaling=="symmetric")
+    {
+      preconditioner_ = Teuchos::rcp( new SymDiagPreconditioner( preconditioner_ ) );
+    }
+    else
+      dserror("Unknown type of scaling found in parameter list");
+
+    if ( azlist.get<bool>("downwinding",false) )
+    {
+      preconditioner_ = Teuchos::rcp( new DWindPreconditioner( outfile_, preconditioner_, azlist ) );
+    }
+
+    if ( project )
+    {
+      preconditioner_ = Teuchos::rcp( new KrylovProjectionPreconditioner( outfile_, preconditioner_, weighted_basis_mean, kernel_c ) );
+    }
+  }
+  else
+  {
+    // assume block matrix
+
+    if ( Params().isSublist("SIMPLER") )
+    {
+      preconditioner_ = Teuchos::rcp( new SimplePreconditioner( outfile_, Params(), Params().sublist("SIMPLER") ) );
+    }
+    else if ( Params().isSublist("AMGBS Parameters") )
+    {
+      preconditioner_ = Teuchos::rcp( new AMGBSPreconditioner( outfile_, Params() ) );
+    }
+    else if ( Params().isSublist("BGS Parameters") )
+    {
+      preconditioner_ = Teuchos::rcp( new BGSPreconditioner( outfile_, Params(), Params().sublist("BGS Parameters") ) );
+    }
+    else
+    {
+      dserror( "unknown preconditioner" );
+    }
+  }
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+LINALG::Solver::PreconditionerType::PreconditionerType( FILE * outfile )
+  : outfile_( outfile )
+{
+}
+
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::Solver::PreconditionerType::SetupLinearProblem( Epetra_Operator * matrix,
+                                                             Epetra_MultiVector * x,
+                                                             Epetra_MultiVector * b )
+{
+  lp_ = Teuchos::rcp(new Epetra_LinearProblem());
+  lp_->SetOperator(matrix);
+  lp_->SetLHS(x);
+  lp_->SetRHS(b);
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+LINALG::Solver::IFPACKPreconditioner::IFPACKPreconditioner( FILE * outfile,
+                                                            ParameterList & ifpacklist,
+                                                            ParameterList & azlist )
+  : PreconditionerType( outfile ),
+    ifpacklist_( ifpacklist ),
+    azlist_( azlist )
+{
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::Solver::IFPACKPreconditioner::Setup( Epetra_Operator * matrix,
+                                                  Epetra_MultiVector * x,
+                                                  Epetra_MultiVector * b )
+{
+  Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>( matrix );
+  if ( A==NULL )
+    dserror( "CrsMatrix expected" );
+
+  SetupLinearProblem( matrix, x, b );
+
+  // free old matrix first
+  prec_    = Teuchos::null;
+  Pmatrix_ = Teuchos::null;
+
+  // create a copy of the scaled matrix
+  // so we can reuse the preconditioner
+  Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
+
+  // get the type of ifpack preconditioner from aztec
+  string prectype = azlist_.get("preconditioner","ILU");
+  int    overlap  = azlist_.get("AZ_overlap",0);
+  Ifpack Factory;
+  prec_ = Teuchos::rcp( Factory.Create(prectype,Pmatrix_.get(),overlap) );
+  prec_->SetParameters(ifpacklist_);
+  prec_->Initialize();
+  prec_->Compute();
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+LINALG::Solver::MLPreconditioner::MLPreconditioner( FILE * outfile, ParameterList & mllist )
+  : PreconditionerType( outfile ),
+    mllist_( mllist )
+{
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::Solver::MLPreconditioner::Setup( Epetra_Operator * matrix,
+                                              Epetra_MultiVector * x,
+                                              Epetra_MultiVector * b )
+{
+  Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>( matrix );
+  if ( A==NULL )
+    dserror( "CrsMatrix expected" );
+
+  SetupLinearProblem( matrix, x, b );
+
+  // free old matrix first
+  P_       = Teuchos::null;
+  Pmatrix_ = Teuchos::null;
+
+  // create a copy of the scaled matrix
+  // so we can reuse the preconditioner
+  Pmatrix_ = rcp(new Epetra_CrsMatrix(*A));
+
+  // see whether we use standard ml or our own mlapi operator
+  const bool domlapioperator = mllist_.get<bool>("LINALG::AMG_Operator",false);
+  const bool doamgpreconditioner = mllist_.get<bool>("LINALG::AMGPreconditioner",false);
+  if (domlapioperator)
+  {
+    P_ = rcp(new LINALG::AMG_Operator(Pmatrix_,mllist_,true));
+  }
+  else if (doamgpreconditioner)
+  {
+    P_ = rcp(new LINALG::AMGPreconditioner(Pmatrix_,mllist_,outfile_));
+  }
+  else
+  {
+    P_ = rcp(new ML_Epetra::MultiLevelPreconditioner(*Pmatrix_,mllist_,true));
+
+    // for debugging ML
+    //dynamic_cast<ML_Epetra::MultiLevelPreconditioner&>(*P_).PrintUnused(0);
+  }
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+LINALG::Solver::DWindPreconditioner::DWindPreconditioner( FILE * outfile,
+                                                          Teuchos::RCP<PreconditionerType> preconditioner,
+                                                          ParameterList & azlist )
+  : PreconditionerType( outfile ),
+    preconditioner_( preconditioner ),
+    azlist_( azlist )
+{
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::Solver::DWindPreconditioner::Setup( Epetra_Operator * matrix,
+                                                 Epetra_MultiVector * x,
+                                                 Epetra_MultiVector * b )
+{
+  Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>( matrix );
+  if ( A==NULL )
+    dserror( "CrsMatrix expected" );
+
+  double tau  = azlist_.get<double>("downwinding tau",1.0);
+  int    nv   = azlist_.get<int>("downwinding nv",1);
+  int    np   = azlist_.get<int>("downwinding np",0);
+  RCP<Epetra_CrsMatrix> fool = rcp(A,false);
+  dwind_ = rcp(new LINALG::DownwindMatrix(fool,nv,np,tau,azlist_.get<int>("AZ_output",0)));
+
+  dwA_ = dwind_->Permute(A);
+  dwx_ = dwind_->Permute(x);
+  dwb_ = dwind_->Permute(b);
+
+  SetupLinearProblem( &*dwA_, &*dwx_, &*dwb_ );
+
+  // build the actual preconditioner based on the permuted matrix
+  preconditioner_->Setup( &*dwA_, &*dwx_, &*dwb_ );
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::Solver::DWindPreconditioner::Finish( Epetra_Operator * matrix,
+                                                  Epetra_MultiVector * x,
+                                                  Epetra_MultiVector * b )
+{
+  preconditioner_->Finish( &*dwA_, &*dwx_, &*dwb_ );
+
+  // undo reordering of lhs, don't care for rhs
+  dwind_->InvPermute(&*dwx_,x);
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+LINALG::Solver::SimplePreconditioner::SimplePreconditioner( FILE * outfile,
+                                                            ParameterList & params,
+                                                            ParameterList & simpleparams )
+  : PreconditionerType( outfile ),
+    params_( params ),
+    simpleparams_( simpleparams )
+{
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::Solver::SimplePreconditioner::Setup( Epetra_Operator * matrix,
+                                                  Epetra_MultiVector * x,
+                                                  Epetra_MultiVector * b )
+{
+  // SIMPLER does not need copy of preconditioning matrix to live
+  // SIMPLER does not use the downwinding installed here, it does
+  // its own downwinding inside if desired
+
+  SetupLinearProblem( matrix, x, b );
+
+  // free old matrix first
+  P_ = Teuchos::null;
+
+  // temporary hack: distinguish between "old" SIMPLER_Operator (for fluid
+  // only) and "new" more general test implementation
+  bool mt = simpleparams_.get<bool>("MESHTYING",false);
+  bool co = simpleparams_.get<bool>("CONTACT",false);
+  bool cstr = simpleparams_.get<bool>("CONSTRAINT",false);
+  if (mt || co || cstr)
+  {
+    P_ = rcp(new LINALG::SIMPLER_BlockPreconditioner(rcp( matrix, false ),params_,simpleparams_,outfile_));
+  }
+  else
+  {
+    P_ = rcp(new LINALG::SIMPLER_Operator(rcp( matrix, false ),params_,simpleparams_,outfile_));
+  }
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+LINALG::Solver::AMGBSPreconditioner::AMGBSPreconditioner( FILE * outfile,
+                                                          ParameterList & params )
+  : PreconditionerType( outfile ),
+    params_( params )
+{
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::Solver::AMGBSPreconditioner::Setup( Epetra_Operator * matrix,
+                                                 Epetra_MultiVector * x,
+                                                 Epetra_MultiVector * b )
+{
+  SetupLinearProblem( matrix, x, b );
+
+  // free old matrix first
+  P_ = Teuchos::null;
+
+  // Params().sublist("AMGBS") just contains the Fluid Pressure Solver block
+  // from the dat file (not needed anymore)
+  P_ = rcp(new LINALG::SaddlePointPreconditioner(rcp( matrix, false ),params_,outfile_));
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+LINALG::Solver::BGSPreconditioner::BGSPreconditioner( FILE * outfile,
+                                                      ParameterList & params, ParameterList & bgslist )
+  : PreconditionerType( outfile ),
+    params_( params ),
+    bgslist_( bgslist )
+{
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::Solver::BGSPreconditioner::Setup( Epetra_Operator * matrix,
+                                               Epetra_MultiVector * x,
+                                               Epetra_MultiVector * b )
+{
+  SetupLinearProblem( matrix, x, b );
+
+  P_ = Teuchos::null;
+
+  int numblocks = bgslist_.get<int>("numblocks");
+
+  if (numblocks == 2) // BGS2x2
+  {
+    // check whether sublists for individual block solvers are present
+    bool haveprec1 = params_.isSublist("PREC1");
+    bool haveprec2 = params_.isSublist("PREC2");
+    if (!haveprec1 or !haveprec2)
+      dserror("individual block solvers for BGS2x2 need to be specified");
+
+    int global_iter = bgslist_.get<int>("global_iter");
+    double global_omega = bgslist_.get<double>("global_omega");
+    int block1_iter = bgslist_.get<int>("block1_iter");
+    double block1_omega = bgslist_.get<double>("block1_omega");
+    int block2_iter = bgslist_.get<int>("block2_iter");
+    double block2_omega = bgslist_.get<double>("block2_omega");
+    bool fliporder = bgslist_.get<bool>("fliporder");
+
+    P_ = rcp(new LINALG::BGS2x2_Operator(rcp( matrix, false ),
+                                         params_.sublist("PREC1"),
+                                         params_.sublist("PREC2"),
+                                         global_iter,
+                                         global_omega,
+                                         block1_iter,
+                                         block1_omega,
+                                         block2_iter,
+                                         block2_omega,
+                                         fliporder,
+                                         outfile_));
+  }
+  else
+    dserror("Block Gauss-Seidel is currently only implemented for a 2x2 system");
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+LINALG::Solver::KrylovProjectionPreconditioner::KrylovProjectionPreconditioner( FILE * outfile,
+                                                                                Teuchos::RCP<PreconditionerType> preconditioner,
+                                                                                RCP<Epetra_MultiVector> weighted_basis_mean,
+                                                                                RCP<Epetra_MultiVector> kernel_c )
+  : PreconditionerType( outfile ),
+    preconditioner_( preconditioner ),
+    weighted_basis_mean_( weighted_basis_mean ),
+    kernel_c_( kernel_c )
+{
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::Solver::KrylovProjectionPreconditioner::Setup( Epetra_Operator * matrix,
+                                                            Epetra_MultiVector * x,
+                                                            Epetra_MultiVector * b )
+{
+  projector_ = rcp(new LINALG::KrylovProjector(true,weighted_basis_mean_,kernel_c_,rcp( matrix, false )));
+  projector_->ApplyPT( *b );
+
+  preconditioner_->Setup( matrix, x, b );
+
+  // Wrap the linar operator of the contained preconditioner. This way the
+  // actual preconditioner is called first and the projection is done
+  // afterwards.
+  A_ = rcp(new LINALG::LinalgProjectedOperator(rcp( preconditioner_->PrecOperator(), false ),true,projector_));
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::Solver::KrylovProjectionPreconditioner::Finish( Epetra_Operator * matrix,
+                                                             Epetra_MultiVector * x,
+                                                             Epetra_MultiVector * b )
+{
+  preconditioner_->Finish( matrix, x, b );
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+LINALG::Solver::InfNormPreconditioner::InfNormPreconditioner( Teuchos::RCP<PreconditionerType> preconditioner )
+  : PreconditionerType( NULL ),
+    preconditioner_( preconditioner )
+{
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::Solver::InfNormPreconditioner::Setup( Epetra_Operator * matrix,
+                                                   Epetra_MultiVector * x,
+                                                   Epetra_MultiVector * b )
+{
+  Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>( matrix );
+  if ( A==NULL )
+    dserror( "CrsMatrix expected" );
+
+  SetupLinearProblem( matrix, x, b );
+
+  // do infnorm scaling
+  rowsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
+  colsum_ = rcp(new Epetra_Vector(A->RowMap(),false));
+  A->InvRowSums(*rowsum_);
+  A->InvColSums(*colsum_);
+
+  lp_->LeftScale(*rowsum_);
+  lp_->RightScale(*colsum_);
+
+  preconditioner_->Setup( matrix, x, b );
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::Solver::InfNormPreconditioner::Finish( Epetra_Operator * matrix,
+                                                    Epetra_MultiVector * x,
+                                                    Epetra_MultiVector * b )
+{
+  preconditioner_->Finish( matrix, x, b );
+
+  // undo scaling
+  Epetra_Vector invrowsum(rowsum_->Map(),false);
+  invrowsum.Reciprocal(*rowsum_);
+  rowsum_ = null;
+  Epetra_Vector invcolsum(colsum_->Map(),false);
+  invcolsum.Reciprocal(*colsum_);
+  colsum_ = null;
+  lp_->LeftScale(invrowsum);
+  lp_->RightScale(invcolsum);
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+LINALG::Solver::SymDiagPreconditioner::SymDiagPreconditioner( Teuchos::RCP<PreconditionerType> preconditioner )
+  : PreconditionerType( NULL ),
+    preconditioner_( preconditioner )
+{
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::Solver::SymDiagPreconditioner::Setup( Epetra_Operator * matrix,
+                                                   Epetra_MultiVector * x,
+                                                   Epetra_MultiVector * b )
+{
+  Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>( matrix );
+  if ( A==NULL )
+    dserror( "CrsMatrix expected" );
+
+  SetupLinearProblem( matrix, x, b );
+
+  // do symmetric diagonal scaling
+  Epetra_Vector invdiag(A->RowMap(),false);
+  diag_ = rcp(new Epetra_Vector(A->RowMap(),false));
+  A->ExtractDiagonalCopy(*diag_);
+  invdiag.Reciprocal(*diag_);
+
+  lp_->LeftScale(invdiag);
+  lp_->RightScale(invdiag);
+
+  preconditioner_->Setup( matrix, x, b );
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::Solver::SymDiagPreconditioner::Finish( Epetra_Operator * matrix,
+                                                    Epetra_MultiVector * x,
+                                                    Epetra_MultiVector * b )
+{
+  preconditioner_->Finish( matrix, x, b );
+
+  lp_->LeftScale(*diag_);
+  lp_->RightScale(*diag_);
+  diag_ = null;
+}
 
 #endif  // #ifdef CCADISCRET

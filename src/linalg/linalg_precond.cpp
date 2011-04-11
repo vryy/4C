@@ -25,10 +25,10 @@ Maintainer: Michael Gee
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool LINALG::Preconditioner::IsFactored() const
-{
-  return solver_->IsFactored();
-}
+// bool LINALG::Preconditioner::IsFactored() const
+// {
+//   return solver_->IsFactored();
+// }
 
 
 /*----------------------------------------------------------------------*
