@@ -479,6 +479,82 @@ void test_hex8_quad4_alex5()
   intersection.Status();
 }
 
+void test_hex8_quad4_alex6()
+{
+  GEO::CUT::MeshIntersection intersection;
+
+  std::vector<int> nids( 4 );
+
+  Epetra_SerialDenseMatrix quad4_xyze( 3, 4 );
+
+  std::map<std::string, int> nodeids;
+
+  nxyz1(0.83,0.0824,0.3209);
+  nxyz2(0.9103,0.0824,0.3209);
+  nxyz3(0.9103,0.1649,0.3209);
+  nxyz4(0.83,0.1649,0.3209);
+
+  intersection.AddCutSide( 1, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(0.9103,0.0824,0.3209);
+  nxyz2(0.9103,0.0824,0.24065);
+  nxyz3(0.9103,0.1649,0.24065);
+  nxyz4(0.9103,0.1649,0.3209);
+
+  intersection.AddCutSide( 2, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(0.83,0.1649,0.3209);
+  nxyz2(0.9103,0.1649,0.3209);
+  nxyz3(0.9103,0.2474,0.3209);
+  nxyz4(0.83,0.2474,0.3209);
+
+  intersection.AddCutSide( 3, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(0.9103,0.1649,0.3209);
+  nxyz2(0.9103,0.1649,0.24065);
+  nxyz3(0.9103,0.2474,0.24065);
+  nxyz4(0.9103,0.2474,0.3209);
+
+  intersection.AddCutSide( 4, nids, quad4_xyze, DRT::Element::quad4 );
+
+  Epetra_SerialDenseMatrix hex8_xyze( 3, 8 );
+
+  hex8_xyze(0,0) = 0.888889;
+  hex8_xyze(1,0) = 0.16;
+  hex8_xyze(2,0) = 0.277778;
+  hex8_xyze(0,1) = 0.916667;
+  hex8_xyze(1,1) = 0.16;
+  hex8_xyze(2,1) = 0.277778;
+  hex8_xyze(0,2) = 0.916667;
+  hex8_xyze(1,2) = 0.186667;
+  hex8_xyze(2,2) = 0.277778;
+  hex8_xyze(0,3) = 0.888889;
+  hex8_xyze(1,3) = 0.186667;
+  hex8_xyze(2,3) = 0.277778;
+  hex8_xyze(0,4) = 0.888889;
+  hex8_xyze(1,4) = 0.16;
+  hex8_xyze(2,4) = 0.333333;
+  hex8_xyze(0,5) = 0.916667;
+  hex8_xyze(1,5) = 0.16;
+  hex8_xyze(2,5) = 0.333333;
+  hex8_xyze(0,6) = 0.916667;
+  hex8_xyze(1,6) = 0.186667;
+  hex8_xyze(2,6) = 0.333333;
+  hex8_xyze(0,7) = 0.888889;
+  hex8_xyze(1,7) = 0.186667;
+  hex8_xyze(2,7) = 0.333333;
+
+  nids.clear();
+  for ( int i=0; i<8; ++i )
+    nids.push_back( i );
+
+  intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
+
+  intersection.Status();
+  intersection.Cut( true );
+  intersection.Status();
+}
+
 void test_hex8_tri3_ursula1()
 {
   GEO::CUT::MeshIntersection intersection;
