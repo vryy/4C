@@ -225,10 +225,10 @@ int main( int argc, char ** argv )
     return 1;
   }
 
-  int errcode = 0;
-
   if ( testname == "(all)" )
   {
+    std::vector<std::string> failures;
+
     for ( std::map<std::string, testfunct>::iterator i=functable.begin(); i!=functable.end(); ++i )
     {
       std::cout << "Testing " << i->first << " ...\n";
@@ -239,14 +239,19 @@ int main( int argc, char ** argv )
       catch ( std::runtime_error & err )
       {
         std::cout << "FAILED: " << err.what() << "\n";
-        errcode += 1;
+        failures.push_back( i->first );
       }
     }
 
-    if ( errcode > 0 )
+    if ( failures.size() > 0 )
     {
-      std::cout << "\n" << errcode << " out of " << functable.size() << " tests failed.\n";
+      std::cout << "\n" << failures.size() << " out of " << functable.size() << " tests failed.\n";
+      for ( std::vector<std::string>::iterator i=failures.begin(); i!=failures.end(); ++i )
+      {
+        std::cout << "    " << ( *i ) << "\n";
+      }
     }
+    return failures.size();
   }
   else
   {
@@ -259,10 +264,7 @@ int main( int argc, char ** argv )
     else
     {
       ( *i->second )();
+      return 0;
     }
   }
-
-  //MPI_Finalize();
-  //MPI::Finalize();
-  return errcode;
 }

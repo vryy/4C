@@ -930,7 +930,7 @@ void GEO::CUT::Mesh::TestElementVolume( Element & e, bool fatal )
               << volume_error << "\n";
 #endif
 
-    if ( fatal and fabs( volume_error ) > MINIMALTOL )
+    if ( fatal and fabs( volume_error ) > 1e-5 )
     {
       std::stringstream err;
       err << "volume test failed: "
