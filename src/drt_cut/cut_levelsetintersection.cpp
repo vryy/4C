@@ -59,6 +59,8 @@ void GEO::CUT::LevelSetIntersection::Cut( bool include_inner )
   //m.DumpGmshVolumeCells( "volumecells" );
   m.DumpGmshIntegrationCells( "integrationcells.pos" );
 #endif
+
+  m.TestElementVolume( true );
 }
 
 GEO::CUT::ElementHandle * GEO::CUT::LevelSetIntersection::GetElement( int eid )

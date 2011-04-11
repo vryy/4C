@@ -882,73 +882,58 @@ void GEO::CUT::Mesh::CreateIntegrationCells()
   }
 }
 
-#ifdef DEBUGCUTLIBRARY
-void GEO::CUT::Mesh::TestElementVolume()
+void GEO::CUT::Mesh::TestElementVolume( bool fatal )
 {
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
         ++i )
   {
     Element & e = *i->second;
-
-    if ( e.IsCut() )
-    {
-      const std::vector<Node*> & nodes = e.Nodes();
-      Epetra_SerialDenseMatrix xyze( 3, nodes.size() );
-      for ( unsigned i=0; i<nodes.size(); ++i )
-      {
-        nodes[i]->Coordinates( &xyze( 0, i ) );
-      }
-
-      double ev = GEO::ElementVolume( e.Shape(), xyze );
-
-      double cv = 0;
-      const std::set<VolumeCell*> & cells = e.VolumeCells();
-      for ( std::set<VolumeCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
-      {
-        VolumeCell * vc = *i;
-        cv += vc->Volume();
-      }
-
-      std::cout << ev << "  "
-                << cv << "  "
-                << ev-cv << "  "
-                << ( ev-cv )/ev << "\n";
-    }
+    TestElementVolume( e, fatal );
   }
   for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
     Element & e = **i;
+    TestElementVolume( e, fatal );
+  }
+}
 
-    if ( e.IsCut() )
+void GEO::CUT::Mesh::TestElementVolume( Element & e, bool fatal )
+{
+  if ( e.IsCut() )
+  {
+    const std::vector<Node*> & nodes = e.Nodes();
+    Epetra_SerialDenseMatrix xyze( 3, nodes.size() );
+    for ( unsigned i=0; i<nodes.size(); ++i )
     {
-      const std::vector<Node*> & nodes = e.Nodes();
-      Epetra_SerialDenseMatrix xyze( 3, nodes.size() );
-      for ( unsigned i=0; i<nodes.size(); ++i )
-      {
-        nodes[i]->Coordinates( &xyze( 0, i ) );
-      }
+      nodes[i]->Coordinates( &xyze( 0, i ) );
+    }
 
-      double ev = GEO::ElementVolume( e.Shape(), xyze );
+    double ev = GEO::ElementVolume( e.Shape(), xyze );
 
-      double cv = 0;
-      const std::set<VolumeCell*> & cells = e.VolumeCells();
-      for ( std::set<VolumeCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
-      {
-        VolumeCell * vc = *i;
-        cv += vc->Volume();
-      }
+    double cv = 0;
+    const std::set<VolumeCell*> & cells = e.VolumeCells();
+    for ( std::set<VolumeCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+    {
+      VolumeCell * vc = *i;
+      cv += vc->Volume();
+    }
 
-      std::cout << ev << "  "
-                << cv << "  "
-                << ev-cv << "  "
-                << ( ev-cv )/ev << "\n";
+#ifdef DEBUGCUTLIBRARY
+    std::cout << ev << "  "
+              << cv << "  "
+              << ev-cv << "  "
+              << ( ev-cv )/ev << "\n";
+#endif
+
+    if ( fatal and ( ev-cv )/ev < MINIMALTOL )
+    {
+      throw std::runtime_error( "volume test failed" );
     }
   }
 }
-#endif
 
 void GEO::CUT::Mesh::Status()
 {

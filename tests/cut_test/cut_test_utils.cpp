@@ -263,7 +263,7 @@ void cutmesh( GEO::CUT::Mesh & mesh )
   mesh.DumpGmshVolumeCells( "volumecells" );
   mesh.DumpGmshIntegrationCells( "integrationcells.pos" );
 #ifdef DEBUGCUTLIBRARY
-  mesh.TestElementVolume();
+  mesh.TestElementVolume( false );
 #endif
 }
 

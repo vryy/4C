@@ -117,9 +117,9 @@ public:
 
   void CreateIntegrationCells();
 
-#ifdef DEBUGCUTLIBRARY
-  void TestElementVolume();
-#endif
+  void TestElementVolume( bool fatal );
+
+  void TestElementVolume( Element & e, bool fatal );
 
   void Status();
 

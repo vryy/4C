@@ -125,7 +125,7 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner )
   Status();
 
 #ifdef DEBUGCUTLIBRARY
-  NormalMesh().TestElementVolume();
+  NormalMesh().TestElementVolume( false );
 #endif
 }
 
