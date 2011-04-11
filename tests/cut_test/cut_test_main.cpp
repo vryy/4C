@@ -225,12 +225,27 @@ int main( int argc, char ** argv )
     return 1;
   }
 
+  int errcode = 0;
+
   if ( testname == "(all)" )
   {
     for ( std::map<std::string, testfunct>::iterator i=functable.begin(); i!=functable.end(); ++i )
     {
       std::cout << "Testing " << i->first << " ...\n";
-      ( *i->second )();
+      try
+      {
+        ( *i->second )();
+      }
+      catch ( std::runtime_error & err )
+      {
+        std::cout << "FAILED: " << err.what() << "\n";
+        errcode += 1;
+      }
+    }
+
+    if ( errcode > 0 )
+    {
+      std::cout << "\n" << errcode << " out of " << functable.size() << " tests failed.\n";
     }
   }
   else
@@ -249,5 +264,5 @@ int main( int argc, char ** argv )
 
   //MPI_Finalize();
   //MPI::Finalize();
-  return 0;
+  return errcode;
 }
