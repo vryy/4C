@@ -332,77 +332,57 @@ void GEO::CUT::Hex8Projection::FindNeighborFacets( const std::vector<Point*> & f
                                                    Facet * ds,
                                                    std::set<Facet*> & myfacets )
 {
-=======
-                                        int cutside,
-                                        int upside,
-                                        int downside )
+  Facet * cs1 = FindFacet( element, facets, cutside1 );
+  Facet * cs2 = FindFacet( element, facets, cutside2 );
+  Facet * us  = FindFacet( element, facets, upside );
+  Facet * ds  = FindFacet( element, facets, downside );
+
+  std::set<Facet*> myfacets1;
+  std::set<Facet*> myfacets2;
+
+  FindNeighborFacets( cs1->Points(), facets, us, ds, myfacets1 );
+  FindNeighborFacets( cs2->Points(), facets, us, ds, myfacets2 );
+
+  if ( myfacets1.size()+myfacets2.size()+2 != facets.size() )
+    return false;
+
+  std::set<Facet*> reconstruction_facets;
+  std::copy( myfacets1.begin(), myfacets1.end(), std::inserter( reconstruction_facets, reconstruction_facets.begin() ) );
+  std::copy( myfacets2.begin(), myfacets2.end(), std::inserter( reconstruction_facets, reconstruction_facets.begin() ) );
+  reconstruction_facets.insert( us );
+  reconstruction_facets.insert( ds );
+
+  if ( reconstruction_facets != facets )
+    return false;
+
+  CreateTetMesh( mesh, cell, position, myfacets1 );
+  CreateTetMesh( mesh, cell, position, myfacets2 );
+  return true;
+}
+
+GEO::CUT::Facet * GEO::CUT::Hex8Projection::FindFacet( Element * element, const std::set<Facet*> & facets, int sideid )
 {
   const std::vector<Side*> & sides = element->Sides();
 
-  Facet * cs = NULL;
-  Facet * us = NULL;
-  Facet * ds = NULL;
-
+  Facet * side_facet = NULL;
   for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
   {
     Facet * f = *i;
-    if ( f->ParentSide()==sides[cutside] )
+    if ( f->ParentSide()==sides[sideid] )
     {
-      if ( cs==NULL )
+      if ( side_facet==NULL )
       {
-        cs = f;
+        side_facet = f;
       }
       else
       {
-        throw std::runtime_error( "double cut side" );
-      }
-    }
-    if ( f->ParentSide()==sides[upside] )
-    {
-      if ( us==NULL )
-      {
-        us = f;
-      }
-      else
-      {
-        throw std::runtime_error( "double up side" );
-      }
-    }
-    if ( f->ParentSide()==sides[downside] )
-    {
-      if ( ds==NULL )
-      {
-        ds = f;
-      }
-      else
-      {
-        throw std::runtime_error( "double down side" );
+        throw std::runtime_error( "double side facet" );
       }
     }
   }
-
-  if ( cs==NULL or us==NULL or ds==NULL )
+  if ( side_facet==NULL )
     throw std::runtime_error( "facet not found" );
-
-  std::set<Facet*> myfacets;
-  const std::vector<Point*> & facet_points = cs->Points();
-
->>>>>>> split a concave volume cell in pieces and create tets for each piece in turn.
-  for ( std::vector<Point*>::const_iterator i=facet_points.begin();
-        i!=facet_points.end();
-        ++i )
-  {
-    Point * p = *i;
-    const std::set<Facet*> & fs = p->Facets();
-    for ( std::set<Facet*>::const_iterator i=fs.begin(); i!=fs.end(); ++i )
-    {
-      Facet * f = *i;
-      if ( f!=us and f!=ds and facets.count( f ) > 0 )
-      {
-        myfacets.insert( f );
-      }
-    }
-  }
+  return side_facet;
 }
 
 void GEO::CUT::Hex8Projection::CreateTetMesh( Mesh & mesh, VolumeCell * cell, Point::PointPosition position, const std::set<Facet*> & myfacets )
