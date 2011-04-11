@@ -57,15 +57,16 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
   // get the required action
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
-  else if (action=="calc_struct_linstiff"      ) act = So_nurbs27::calc_struct_linstiff;
-  else if (action=="calc_struct_nlnstiff"      ) act = So_nurbs27::calc_struct_nlnstiff;
-  else if (action=="calc_struct_internalforce" ) act = So_nurbs27::calc_struct_internalforce;
-  else if (action=="calc_struct_linstiffmass"  ) act = So_nurbs27::calc_struct_linstiffmass;
-  else if (action=="calc_struct_nlnstiffmass"  ) act = So_nurbs27::calc_struct_nlnstiffmass;
+  else if (action=="calc_struct_linstiff"      ) act = So_nurbs27::calc_struct_linstiff      ;
+  else if (action=="calc_struct_nlnstiff"      ) act = So_nurbs27::calc_struct_nlnstiff      ;
+  else if (action=="calc_struct_internalforce" ) act = So_nurbs27::calc_struct_internalforce ;
+  else if (action=="calc_struct_linstiffmass"  ) act = So_nurbs27::calc_struct_linstiffmass  ;
+  else if (action=="calc_struct_nlnstiffmass"  ) act = So_nurbs27::calc_struct_nlnstiffmass  ;
   else if (action=="calc_struct_eleload"       ) act = So_nurbs27::calc_struct_eleload       ;
   else if (action=="calc_struct_fsiload"       ) act = So_nurbs27::calc_struct_fsiload       ;
   else if (action=="calc_struct_update_istep"  ) act = So_nurbs27::calc_struct_update_istep  ;
   else if (action=="calc_struct_update_imrlike") act = So_nurbs27::calc_struct_update_imrlike;
+  else if (action=="calc_stc_matrix"           ) act = So_nurbs27::calc_stc_matrix           ;
   else if (action=="calc_struct_reset_istep"   ) act = So_nurbs27::calc_struct_reset_istep   ;
   else dserror("Unknown type of action '%s' for So_nurbs27",action.c_str());
   // what should the element do
@@ -221,11 +222,306 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
     }
     break;
 
-    default:
+  case calc_stc_matrix:
+    {
+      const INPAR::STR::STC_Scale stc_scaling 
+        =
+        DRT::INPUT::get<INPAR::STR::STC_Scale>(params,"stc_scaling");
+      if (stc_scaling==INPAR::STR::stc_none)
+        dserror("To scale or not to scale, that's the query!");
+      else
+      {
+        CalcSTCMatrix(elemat1,
+                      stc_scaling,
+                      params.get<int>("stc_layer"),
+                      lm, 
+                      discretization);
+      }
+    }
+    break;
+
+  default:
       dserror("Unknown type of action for So_nurbs27");
   }
   return 0;
 } // DRT::ELEMENTS::So_nurbs27::Evaluate
+
+
+/*----------------------------------------------------------------------*
+ | calc. scaled thickness matrix for thin shell-like structs   (public) |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
+(
+    LINALG::Matrix<81,81>&      elemat1,
+    const INPAR::STR::STC_Scale stc_scaling,
+    const int                   stc_layer,
+    vector<int>&                lm,
+    DRT::Discretization&        discretization
+)
+{
+
+  // --------------------------------------------------
+  // Initialisation of nurbs specific stuff
+  std::vector<Epetra_SerialDenseVector> myknots(3);
+
+  // for isogeometric elements:
+  //     o get knots
+  //     o get weights
+  DRT::NURBS::NurbsDiscretization* nurbsdis
+    =
+    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+
+  if(nurbsdis==NULL)
+  {
+    dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+  }
+
+  bool zero_ele=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+
+  // there is nothing to be done for zero sized elements in knotspan
+  if(zero_ele)
+  {
+    return;
+  }
+
+  LINALG::Matrix<27,1> weights;
+  DRT::Node** nodes = Nodes();
+  for (int inode=0; inode<27; inode++)
+  {
+    DRT::NURBS::ControlPoint* cp
+      =
+      dynamic_cast<DRT::NURBS::ControlPoint* > (nodes[inode]);
+
+    weights(inode) = cp->W();
+  }
+
+
+  // --------------------------------------------------
+  // determine the lengths in r-, s- and t-direction
+
+  // compute coordinates  of corners 0,2,6,18
+
+  LINALG::Matrix<27,1> funct;
+
+  LINALG::Matrix<3,1> x0;
+  LINALG::Matrix<3,1> x2;
+  LINALG::Matrix<3,1> x6;
+  LINALG::Matrix<3,1> x18;
+
+  {
+
+    LINALG::Matrix<3,1> gpa;
+    gpa(0)=-1.0;
+    gpa(1)=-1.0;
+    gpa(2)=-1.0;
+
+    DRT::NURBS::UTILS::nurbs_get_3D_funct
+      (funct                 ,
+       gpa                   ,
+       myknots               ,
+       weights               ,
+       DRT::Element::nurbs27);
+    
+    for (int isd=0; isd<3; ++isd)
+      {
+        double val = 0;
+        for (int inode=0; inode<27; ++inode)
+          {
+            val+=(((nodes[inode])->X())[isd])*funct(inode);
+          }
+        x0(isd)=val;
+      }
+  }
+
+  {
+
+    LINALG::Matrix<3,1> gpa;
+    gpa(0)= 1.0;
+    gpa(1)=-1.0;
+    gpa(2)=-1.0;
+
+    DRT::NURBS::UTILS::nurbs_get_3D_funct
+      (funct                 ,
+       gpa                   ,
+       myknots               ,
+       weights               ,
+       DRT::Element::nurbs27);
+    
+    for (int isd=0; isd<3; ++isd)
+      {
+        double val = 0;
+        for (int inode=0; inode<27; ++inode)
+          {
+            val+=(((nodes[inode])->X())[isd])*funct(inode);
+          }
+        x2(isd)=val;
+      }
+  }
+  {
+    LINALG::Matrix<3,1> gpa;
+    gpa(0)= 1.0;
+    gpa(1)= 1.0;
+    gpa(2)=-1.0;
+
+    DRT::NURBS::UTILS::nurbs_get_3D_funct
+      (funct                 ,
+       gpa                   ,
+       myknots               ,
+       weights               ,
+       DRT::Element::nurbs27);
+    
+    for (int isd=0; isd<3; ++isd)
+      {
+        double val = 0;
+        for (int inode=0; inode<27; ++inode)
+          {
+            val+=(((nodes[inode])->X())[isd])*funct(inode);
+          }
+        x6(isd)=val;
+      }
+  }
+  {
+    LINALG::Matrix<3,1> gpa;
+    gpa(0)=-1.0;
+    gpa(1)=-1.0;
+    gpa(2)= 1.0;
+
+    DRT::NURBS::UTILS::nurbs_get_3D_funct
+      (funct                 ,
+       gpa                   ,
+       myknots               ,
+       weights               ,
+       DRT::Element::nurbs27);
+    
+    for (int isd=0; isd<3; ++isd)
+      {
+        double val = 0;
+        for (int inode=0; inode<27; ++inode)
+          {
+            val+=(((nodes[inode])->X())[isd])*funct(inode);
+          }
+        x18(isd)=val;
+      }
+  }
+  
+  LINALG::Matrix<3,1> deltaX;
+
+  deltaX.Update(1.0, x2, -1.0, x0);
+  const double length_r=deltaX.Norm2();
+  deltaX.Update(1.0, x6, -1.0, x0);
+  const double length_s=deltaX.Norm2();
+  deltaX.Update(1.0, x18, -1.0, x0);
+  const double length_t=deltaX.Norm2();
+
+  double C=1.0;
+
+  vector<int> topnodeids;
+  vector<int> midnodeids;
+  vector<int> botnodeids;
+
+  if(length_t<=length_r && length_t<=length_s )
+    {
+      for (int i=0;i<9;++i)
+        botnodeids.push_back(i);
+      for (int i=9;i<18;++i)
+        midnodeids.push_back(i);
+      for (int i=18;i<27;++i)
+        topnodeids.push_back(i);
+
+      C=(length_r+length_s)/(2.0*length_t);
+    }
+  else if (length_s<=length_r && length_s<=length_t)
+    {
+      botnodeids.push_back( 0);
+      botnodeids.push_back( 1);
+      botnodeids.push_back( 2);
+      botnodeids.push_back( 9);
+      botnodeids.push_back(10);
+      botnodeids.push_back(11);
+      botnodeids.push_back(18);
+      botnodeids.push_back(19);
+      botnodeids.push_back(20);
+
+      midnodeids.push_back( 3);
+      midnodeids.push_back( 4);
+      midnodeids.push_back( 5);
+      midnodeids.push_back(12);
+      midnodeids.push_back(13);
+      midnodeids.push_back(14);
+      midnodeids.push_back(21);
+      midnodeids.push_back(22);
+      midnodeids.push_back(23);
+
+      topnodeids.push_back( 6);
+      topnodeids.push_back( 7);
+      topnodeids.push_back( 8);
+      topnodeids.push_back(15);
+      topnodeids.push_back(16);
+      topnodeids.push_back(17);
+      topnodeids.push_back(24);
+      topnodeids.push_back(25);
+      topnodeids.push_back(26);
+
+      C=(length_r+length_t)/(2.0*length_s);
+    }
+  else if (length_r<=length_s && length_r<=length_t)
+    {
+      for (int i=0;i<27;i+=3)
+        botnodeids.push_back(i);
+
+      for (int i=1;i<27;i+=3)
+        midnodeids.push_back(i);
+
+      for (int i=2;i<27;i+=3)
+        topnodeids.push_back(i);
+
+      C=(length_t+length_s)/(2.0*length_r);
+    }
+
+  LINALG::Matrix<27,1> adjele(true);
+
+  for(int i=0; i<27; i++)
+    {
+      adjele(i,0) = nodes[i]->NumElement();
+    }
+
+  // loop row midnode
+  for(int i=0; i<9; i++)
+    {
+      int dvi=3*midnodeids[i];
+      
+      for(int j=0; j<3; j++)
+        elemat1(dvi+j,dvi+j)+=1.0/adjele(midnodeids[i],0);
+    }
+
+  // loop row botnode
+  for(int i=0; i<9; i++)
+    {
+      int dvi=3*botnodeids[i];
+      int dui=3*midnodeids[i];
+      
+      for(int j=0; j<3; j++)
+        {
+          elemat1(dvi+j,dvi+j)+=1.0/C*1.0/adjele(botnodeids[i],0);
+          elemat1(dvi+j,dui+j)+=(C-1.0)/C*1.0/adjele(botnodeids[i],0);
+        }
+    }
+
+  // loop row topnode
+  for(int i=0; i<9; i++)
+    {
+      int dvi=3*topnodeids[i];
+      int dui=3*midnodeids[i];
+      
+      for(int j=0; j<3; j++)
+        {
+          elemat1(dvi+j,dvi+j)+=1.0/C*1.0/adjele(topnodeids[i],0);
+          elemat1(dvi+j,dui+j)+=(C-1.0)/C*1.0/adjele(topnodeids[i],0);
+        }
+    }
+
+  return;
+} // CalcSTCMatrix
 
 
 
@@ -260,8 +556,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
     dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
   }
 
-  bool zero_ele=false;
-  (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+  bool zero_ele=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
 
   // there is nothing to be done for zero sized elements in knotspan
   if(zero_ele)
@@ -392,8 +687,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::InitJacobianMapping(DRT::Discretization& 
     dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
   }
 
-  bool zero_ele=false;
-  (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+  bool zero_ele=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
 
   // there is nothing to be done for zero sized elements in knotspan
   if(zero_ele)
@@ -469,8 +763,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
     dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
   }
 
-  bool zero_ele=false;
-  (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
+  bool zero_ele=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
 
   // there is nothing to be done for zero sized elements in knotspan
   if(zero_ele)

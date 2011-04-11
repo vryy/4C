@@ -302,6 +302,22 @@ public:
 
   //@}
 
+ /*!
+  \brief calculate a. scaled director matrix for thin shell-like structures 
+
+  \return void
+  */
+  void CalcSTCMatrix
+  (
+   LINALG::Matrix<81,81>& elemat1,
+   const INPAR::STR::STC_Scale stc_scaling,
+   const int                   stc_layer,
+   vector<int>&                lm,
+   DRT::Discretization&        discretization
+   );
+
+
+
 protected:
 
   //! action parameters recognized by So_nurbs27
@@ -317,6 +333,7 @@ protected:
     calc_struct_fsiload       ,
     calc_struct_update_istep  ,
     calc_struct_update_imrlike,
+    calc_stc_matrix           , //! calculate scaled director matrix for thin shell-like structures
     calc_struct_reset_istep
   };
 
