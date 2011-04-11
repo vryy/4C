@@ -205,6 +205,10 @@ void GEO::CUT::TetMesh::CallQHull( const std::vector<Point*> & points,
       double n = l.Norm2();
       length = max( n, length );
     }
+#ifdef DEBUGCUTLIBRARY
+    std::ofstream pointfile( "points.plot" );
+    pointfile << m( 0 ) << " " << m( 1 ) << " " << m( 2 ) << "\n";
+#endif
     for ( int i=0; i<n; ++i )
     {
       Point * p = points[i];
@@ -215,6 +219,9 @@ void GEO::CUT::TetMesh::CallQHull( const std::vector<Point*> & points,
       l.Scale( length/n );
       l.Update( 1, m, 1 );
       std::copy( l.A(), l.A()+3, &coordinates[dim*i] );
+#ifdef DEBUGCUTLIBRARY
+      pointfile << l( 0 ) << " " << l( 1 ) << " " << l( 2 ) << "\n";
+#endif
     }
   }
   else
