@@ -921,16 +921,24 @@ void GEO::CUT::Mesh::TestElementVolume( Element & e, bool fatal )
       cv += vc->Volume();
     }
 
+    double volume_error = ( ev-cv )/ev;
+
 #ifdef DEBUGCUTLIBRARY
     std::cout << ev << "  "
               << cv << "  "
               << ev-cv << "  "
-              << ( ev-cv )/ev << "\n";
+              << volume_error << "\n";
 #endif
 
-    if ( fatal and ( ev-cv )/ev < MINIMALTOL )
+    if ( fatal and volume_error > MINIMALTOL )
     {
-      throw std::runtime_error( "volume test failed" );
+      std::stringstream err;
+      err << "volume test failed: "
+          << "ve=" << ev << "  "
+          << "vc=" << cv << "  "
+          << "vd= "<< ev-cv << "  "
+          << "err=" << volume_error;
+      throw std::runtime_error( err.str() );
     }
   }
 }
