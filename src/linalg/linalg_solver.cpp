@@ -234,9 +234,8 @@ void LINALG::Solver::ResetTolerance()
 }
 
 /*----------------------------------------------------------------------*
- |  solve (public)                                           mwgee 02/07|
  *----------------------------------------------------------------------*/
-void LINALG::Solver::Solve(
+void LINALG::Solver::Setup(
   RefCountPtr<Epetra_Operator>     matrix             ,
   RefCountPtr<Epetra_Vector>       x                  ,
   RefCountPtr<Epetra_Vector>       b                  ,
@@ -275,7 +274,7 @@ void LINALG::Solver::Solve(
       dserror("Unknown type of solver");
   }
 
-  solver_->Solve( matrix, x, b, refactor, reset, weighted_basis_mean, kernel_c, project );
+  solver_->Setup( matrix, x, b, refactor, reset, weighted_basis_mean, kernel_c, project );
 
 #else
 
@@ -334,6 +333,36 @@ void LINALG::Solver::Solve(
     dserror("Unknown type of solver");
 
 #endif
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::Solver::Solve()
+{
+  solver_->Solve();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int LINALG::Solver::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+{
+  return solver_->ApplyInverse( X, Y );
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::Solver::Solve(
+  RefCountPtr<Epetra_Operator>     matrix             ,
+  RefCountPtr<Epetra_Vector>       x                  ,
+  RefCountPtr<Epetra_Vector>       b                  ,
+  bool                             refactor           ,
+  bool                             reset              ,
+  RefCountPtr<Epetra_MultiVector>  weighted_basis_mean,
+  RefCountPtr<Epetra_MultiVector>  kernel_c           ,
+  bool                             project            )
+{
+  Setup( matrix, x, b, refactor, reset, weighted_basis_mean, kernel_c, project );
+  Solve();
 }
 
 /*----------------------------------------------------------------------*
@@ -1975,7 +2004,7 @@ LINALG::Solver::DirectSolver::~DirectSolver()
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::Solver::DirectSolver::Solve( RCP<Epetra_Operator> matrix,
+void LINALG::Solver::DirectSolver::Setup( RCP<Epetra_Operator> matrix,
                                           RCP<Epetra_Vector> x,
                                           RCP<Epetra_Vector> b,
                                           bool refactor,
@@ -2031,11 +2060,27 @@ void LINALG::Solver::DirectSolver::Solve( RCP<Epetra_Operator> matrix,
 
     factored_ = false;
   }
+}
 
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+int LINALG::Solver::DirectSolver::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y)
+{
+  x_->Update( 1., X, 0. );
+  Solve();
+  Y.Update( 1., *b_, 0. );
+
+  return 0;
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::Solver::DirectSolver::Solve()
+{
   if (amesos_==null) dserror("No solver allocated");
 
   // Problem has not been factorized before
-  if (refactor or not IsFactored())
+  if (not IsFactored())
   {
     int err = amesos_->SymbolicFactorization();
     if (err) dserror("Amesos::SymbolicFactorization returned an err");
@@ -2074,7 +2119,7 @@ LINALG::Solver::KrylovSolver::~KrylovSolver()
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::Solver::KrylovSolver::Solve( RCP<Epetra_Operator> matrix,
+void LINALG::Solver::KrylovSolver::Setup( RCP<Epetra_Operator> matrix,
                                           RCP<Epetra_Vector> x,
                                           RCP<Epetra_Vector> b,
                                           bool refactor,
@@ -2084,10 +2129,8 @@ void LINALG::Solver::KrylovSolver::Solve( RCP<Epetra_Operator> matrix,
                                           bool project)
 {
 #ifdef WRITEOUTSTATISTICS
-  double dtimeprecondsetup = 0.;
-  Epetra_Time ttt(Comm());       // time measurement for whole routine
+  dtimeprecondsetup_ = 0.;
   Epetra_Time tttcreate(Comm()); // time measurement for creation of preconditioner
-  ttt.ResetStartTime();
 #endif
 
   if (!Params().isSublist("Aztec Parameters"))
@@ -2098,18 +2141,6 @@ void LINALG::Solver::KrylovSolver::Solve( RCP<Epetra_Operator> matrix,
   x_ = x;
   b_ = b;
   A_ = matrix;
-
-  // Allocate an aztec solver with default parameters
-  // We do this every time because reusing the solver object
-  // does lead to crashes that are not understood
-
-  // create an aztec solver
-  AztecOO aztec;
-  aztec.SetAztecDefaults();
-
-  // tell aztec to which stream to write
-  aztec.SetOutputStream(std::cout);
-  aztec.SetErrorStream(std::cerr);
 
   // see whether operator is a Epetra_CrsMatrix
   Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>( A_.get() );
@@ -2132,6 +2163,30 @@ void LINALG::Solver::KrylovSolver::Solve( RCP<Epetra_Operator> matrix,
 #ifdef WRITEOUTSTATISTICS
   dtimeprecondsetup = tttcreate.ElapsedTime();
 #endif
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::Solver::KrylovSolver::Solve()
+{
+#ifdef WRITEOUTSTATISTICS
+  Epetra_Time ttt(Comm());       // time measurement for whole routine
+  ttt.ResetStartTime();
+#endif
+
+  ParameterList& azlist = Params().sublist("Aztec Parameters");
+
+  // Allocate an aztec solver with default parameters
+  // We do this every time because reusing the solver object
+  // does lead to crashes that are not understood
+
+  // create an aztec solver
+  AztecOO aztec;
+  aztec.SetAztecDefaults();
+
+  // tell aztec to which stream to write
+  aztec.SetOutputStream(std::cout);
+  aztec.SetErrorStream(std::cerr);
 
   // Don't want linear problem to alter our aztec parameters (idiot feature!)
   // this is why we set our list here AFTER the linear problem has been set
@@ -2229,7 +2284,12 @@ void LINALG::Solver::KrylovSolver::Solve( RCP<Epetra_Operator> matrix,
 #ifdef WRITEOUTSTATISTICS
     if(outfile_)
     {
-      fprintf(outfile_,"LinIter %i\tNumGlobalElements %i\tAZ_solve_time %f\tAztecSolveTime %f\tAztecPrecondSetup %f\t\n",(int)status[AZ_its],A_->OperatorRangeMap().NumGlobalElements(),status[AZ_solve_time],ttt.ElapsedTime(),dtimeprecondsetup);
+      fprintf(outfile_,"LinIter %i\tNumGlobalElements %i\tAZ_solve_time %f\tAztecSolveTime %f\tAztecPrecondSetup %f\t\n",
+              (int)status[AZ_its],
+              A_->OperatorRangeMap().NumGlobalElements(),
+              status[AZ_solve_time],
+              dtimeprecondsetup_ + ttt.ElapsedTime(),
+              dtimeprecondsetup_);
       fflush(outfile_);
     }
 #endif
@@ -2243,6 +2303,13 @@ void LINALG::Solver::KrylovSolver::Solve( RCP<Epetra_Operator> matrix,
   }
 
   ncall_ += 1;
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+int LINALG::Solver::KrylovSolver::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y)
+{
+  return preconditioner_->ApplyInverse( X, Y );
 }
 
 //----------------------------------------------------------------------------------

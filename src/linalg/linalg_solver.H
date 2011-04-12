@@ -175,7 +175,13 @@ class Solver
     /*!
       This is how aztec sees the linear operator to be used for preconditioning.
      */
-    virtual Epetra_Operator * PrecOperator() = 0;
+    virtual Epetra_Operator * PrecOperator() const = 0;
+
+    /// Apply inverse of the preconditioner
+    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+    {
+      return PrecOperator()->ApplyInverse( X, Y );
+    }
 
     /// debug output
     virtual void Print( std::ostream & stream ) = 0;
@@ -204,7 +210,7 @@ class Solver
                         Epetra_MultiVector * x,
                         Epetra_MultiVector * b );
 
-    virtual Epetra_Operator * PrecOperator() { return &*prec_; }
+    virtual Epetra_Operator * PrecOperator() const { return &*prec_; }
 
     virtual void Print( std::ostream & stream ) { stream << "IFPACK"; }
 
@@ -235,7 +241,7 @@ class Solver
                         Epetra_MultiVector * x,
                         Epetra_MultiVector * b );
 
-    virtual Epetra_Operator * PrecOperator() { return &*P_; }
+    virtual Epetra_Operator * PrecOperator() const { return &*P_; }
 
     virtual void Print( std::ostream & stream ) { stream << "ML"; }
 
@@ -281,7 +287,7 @@ class Solver
 
     /// return the wrapped preconditioner, no work needs to be done after the
     /// permutation is performed
-    virtual Epetra_Operator * PrecOperator() { return preconditioner_->PrecOperator(); }
+    virtual Epetra_Operator * PrecOperator() const { return preconditioner_->PrecOperator(); }
 
     virtual void Print( std::ostream & stream )
     {
@@ -321,7 +327,7 @@ class Solver
                         Epetra_MultiVector * x,
                         Epetra_MultiVector * b );
 
-    virtual Epetra_Operator * PrecOperator() { return &*P_; }
+    virtual Epetra_Operator * PrecOperator() const { return &*P_; }
 
     virtual void Print( std::ostream & stream ) { stream << "Simple"; }
 
@@ -345,7 +351,7 @@ class Solver
                         Epetra_MultiVector * x,
                         Epetra_MultiVector * b );
 
-    virtual Epetra_Operator * PrecOperator() { return &*P_; }
+    virtual Epetra_Operator * PrecOperator() const { return &*P_; }
 
     virtual void Print( std::ostream & stream ) { stream << "AMG BS"; }
 
@@ -370,7 +376,7 @@ class Solver
                         Epetra_MultiVector * x,
                         Epetra_MultiVector * b );
 
-    virtual Epetra_Operator * PrecOperator() { return &*P_; }
+    virtual Epetra_Operator * PrecOperator() const { return &*P_; }
 
     virtual void Print( std::ostream & stream ) { stream << "BGS"; }
 
@@ -409,7 +415,7 @@ class Solver
                          Epetra_MultiVector * b );
 
     /// return the projecting operator
-    virtual Epetra_Operator * PrecOperator() { return &*P_; }
+    virtual Epetra_Operator * PrecOperator() const { return &*P_; }
 
     virtual void Print( std::ostream & stream )
     {
@@ -455,7 +461,7 @@ class Solver
                          Epetra_MultiVector * x,
                          Epetra_MultiVector * b );
 
-    virtual Epetra_Operator * PrecOperator() { return preconditioner_->PrecOperator(); }
+    virtual Epetra_Operator * PrecOperator() const { return preconditioner_->PrecOperator(); }
 
     virtual void Print( std::ostream & stream )
     {
@@ -492,7 +498,7 @@ class Solver
                          Epetra_MultiVector * x,
                          Epetra_MultiVector * b );
 
-    virtual Epetra_Operator * PrecOperator() { return preconditioner_->PrecOperator(); }
+    virtual Epetra_Operator * PrecOperator() const { return preconditioner_->PrecOperator(); }
 
     virtual void Print( std::ostream & stream )
     {
@@ -518,7 +524,7 @@ class Solver
     virtual ~SolverType() {}
 
     /// solve the linear system
-    virtual void Solve( RCP<Epetra_Operator>     matrix             ,
+    virtual void Setup( RCP<Epetra_Operator>     matrix             ,
                         RCP<Epetra_Vector>       x                  ,
                         RCP<Epetra_Vector>       b                  ,
                         bool                             refactor           ,
@@ -526,6 +532,10 @@ class Solver
                         RCP<Epetra_MultiVector>  weighted_basis_mean,
                         RCP<Epetra_MultiVector>  kernel_c           ,
                         bool                             project) = 0;
+
+    virtual void Solve() = 0;
+
+    virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) = 0;
 
     /// preconditioner used within this solver
     virtual PreconditionerType * Preconditioner() = 0;
@@ -540,7 +550,7 @@ class Solver
 
     ~DirectSolver();
 
-    virtual void Solve( RCP<Epetra_Operator>     matrix             ,
+    virtual void Setup( RCP<Epetra_Operator>     matrix             ,
                         RCP<Epetra_Vector>       x                  ,
                         RCP<Epetra_Vector>       b                  ,
                         bool                             refactor           ,
@@ -548,6 +558,10 @@ class Solver
                         RCP<Epetra_MultiVector>  weighted_basis_mean,
                         RCP<Epetra_MultiVector>  kernel_c           ,
                         bool                             project);
+
+    virtual void Solve();
+
+    virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y);
 
     virtual PreconditionerType * Preconditioner() { return NULL; }
 
@@ -588,7 +602,7 @@ class Solver
 
     ~KrylovSolver();
 
-    virtual void Solve( RCP<Epetra_Operator>     matrix             ,
+    virtual void Setup( RCP<Epetra_Operator>     matrix             ,
                         RCP<Epetra_Vector>       x                  ,
                         RCP<Epetra_Vector>       b                  ,
                         bool                             refactor           ,
@@ -596,6 +610,10 @@ class Solver
                         RCP<Epetra_MultiVector>  weighted_basis_mean,
                         RCP<Epetra_MultiVector>  kernel_c           ,
                         bool                             project);
+
+    virtual void Solve();
+
+    virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y);
 
     virtual PreconditionerType * Preconditioner() { return &*preconditioner_; }
 
@@ -643,6 +661,10 @@ class Solver
     // ! combination of the above tests
     RCP<AztecOO_StatusTestCombo>          aztest_combo1_;
     RCP<AztecOO_StatusTestCombo>          aztest_combo2_;
+
+#ifdef WRITEOUTSTATISTICS
+    double dtimeprecondsetup_;
+#endif
   };
 
 public:
@@ -705,7 +727,51 @@ public:
   //! @name Solve and ApplyInverse methods
 
   /*!
-  \brief Solve system of equations
+  \brief Setup system of equations
+
+  \param matrix                (in/out): system of equations
+  \param x                     (in/out): initial guess on input, solution on output
+  \param b                     (in/out): right hand side vector
+                                         if project!=false it might be modified if not orthognal
+                                         to matrix kernel.
+  \param refactor              (in)    : flag indicating whether system should be refactorized
+  \param reset                 (in)    : flag indicating whether all data from previous solves
+                                         should be recalculated including preconditioners
+  \param weighted_basis_mean_w (in)    : weight vector defining projector for iterative solution
+                                         of singluar problems using iterative solvers. Required
+                                         if project!=false. (Aztec only option)
+                                         x will be orthogonalized to these weights on output.
+  \param kernel_c              (in)    : Vector of ones in the respective components. Necessary
+                                         if project!=false. (Aztec only option)
+                                         Krylov space will be orthogonalized to this basis!
+  \param project               (in)    : flag indicating whether several modes will be projected
+                                         out of the Krylov space (Aztec only option)
+  */
+  void Setup(
+    RCP<Epetra_Operator>     matrix                              ,
+    RCP<Epetra_Vector>       x                                   ,
+    RCP<Epetra_Vector>       b                                   ,
+    bool                     refactor                            ,
+    bool                     reset   = false                     ,
+    RCP<Epetra_MultiVector>  weighted_basis_mean_w= Teuchos::null,
+    RCP<Epetra_MultiVector>  kernel_c= Teuchos::null             ,
+    bool                     project = false                     );
+
+  /// solve linear system after setup has been done
+  void Solve();
+
+  /// Apply inverse of the preconditioner
+  /*!
+    For krylov solver, only the preconditioner is called here. Direct solvers
+    do a direct solve. Setup needs to be called before.
+   */
+  int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+
+  /*!
+  \brief Solve system of equations in one go
+
+  This includes setup. Reuse of preconditioners and factorized systems is
+  provided.
 
   \param matrix                (in/out): system of equations
   \param x                     (in/out): initial guess on input, solution on output
