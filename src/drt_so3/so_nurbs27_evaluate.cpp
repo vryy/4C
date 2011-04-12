@@ -413,7 +413,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
   deltaX.Update(1.0, x18, -1.0, x0);
   const double length_t=deltaX.Norm2();
 
-  double C=1.0;
+  double ratio=1.0;
 
   vector<int> topnodeids;
   vector<int> midnodeids;
@@ -428,7 +428,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
       for (int i=18;i<27;++i)
         topnodeids.push_back(i);
 
-      C=(length_r+length_s)/(2.0*length_t);
+      ratio=(length_r+length_s)/(2.0*length_t);
     }
   else if (length_s<=length_r && length_s<=length_t)
     {
@@ -462,7 +462,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
       topnodeids.push_back(25);
       topnodeids.push_back(26);
 
-      C=(length_r+length_t)/(2.0*length_s);
+      ratio=(length_r+length_t)/(2.0*length_s);
     }
   else if (length_r<=length_s && length_r<=length_t)
     {
@@ -475,9 +475,19 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
       for (int i=2;i<27;i+=3)
         topnodeids.push_back(i);
 
-      C=(length_t+length_s)/(2.0*length_r);
+      ratio=(length_t+length_s)/(2.0*length_r);
     }
 
+  double C = 1.0;
+  if (stc_scaling==INPAR::STR::stc_currsym or stc_scaling==INPAR::STR::stc_parasym)
+  {
+    C = ratio;
+  }
+  else
+  {
+    C = ratio*ratio;
+  }
+  
   LINALG::Matrix<27,1> adjele(true);
 
   for(int i=0; i<27; i++)
