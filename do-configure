@@ -27,7 +27,6 @@ Trilinos_DIR="/lnm/lib/fc8/openmpi/trilinos"
     -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
     -D DEBUG:BOOL=OFF \
     -D TRAP_FE:BOOL=OFF \
-    -D QHULL:BOOL=ON \
     -D COLOROUTPUT:BOOL=ON \
     -D D_EXODUS:BOOL=ON \
     -D D_ARTNET:BOOL=OFF \

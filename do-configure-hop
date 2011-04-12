@@ -23,7 +23,6 @@ export PATH=/cluster/gcc-4.2.2/bin:$PATH:$MPIDIR/bin
     -D CMAKE_Fortran_FLAGS_RELEASE:STRING="-pipe -O5 -ffast-math -funroll-all-loops -fpeel-loops -ftracer -funswitch-loops -funit-at-a-time" \
     -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
     -D TRAP_FE:BOOL=OFF \
-    -D QHULL:BOOL=OFF \
     -D D_ALE:BOOL=ON \
     -D D_BEAM2:BOOL=ON \
     -D D_BEAM2R:BOOL=ON \
