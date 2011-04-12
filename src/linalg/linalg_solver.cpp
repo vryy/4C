@@ -2325,6 +2325,11 @@ void LINALG::Solver::KrylovSolver::CreatePreconditioner( ParameterList & azlist,
       dserror( "unknown preconditioner" );
     }
   }
+
+#if 0
+  preconditioner_->Print( std::cout );
+  std::cout << "\n";
+#endif
 }
 
 //----------------------------------------------------------------------------------
@@ -2341,10 +2346,9 @@ void LINALG::Solver::PreconditionerType::SetupLinearProblem( Epetra_Operator * m
                                                              Epetra_MultiVector * x,
                                                              Epetra_MultiVector * b )
 {
-  lp_ = Teuchos::rcp(new Epetra_LinearProblem());
-  lp_->SetOperator(matrix);
-  lp_->SetLHS(x);
-  lp_->SetRHS(b);
+  lp_.SetOperator(matrix);
+  lp_.SetLHS(x);
+  lp_.SetRHS(b);
 }
 
 //----------------------------------------------------------------------------------
@@ -2365,13 +2369,13 @@ void LINALG::Solver::IFPACKPreconditioner::Setup( bool create,
                                                   Epetra_MultiVector * x,
                                                   Epetra_MultiVector * b )
 {
+  SetupLinearProblem( matrix, x, b );
+
   if ( create )
   {
     Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>( matrix );
     if ( A==NULL )
       dserror( "CrsMatrix expected" );
-
-    SetupLinearProblem( matrix, x, b );
 
     // free old matrix first
     prec_    = Teuchos::null;
@@ -2407,13 +2411,13 @@ void LINALG::Solver::MLPreconditioner::Setup( bool create,
                                               Epetra_MultiVector * x,
                                               Epetra_MultiVector * b )
 {
+  SetupLinearProblem( matrix, x, b );
+
   if ( create )
   {
     Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>( matrix );
     if ( A==NULL )
       dserror( "CrsMatrix expected" );
-
-    SetupLinearProblem( matrix, x, b );
 
     // free old matrix first
     P_       = Teuchos::null;
@@ -2479,10 +2483,12 @@ void LINALG::Solver::DWindPreconditioner::Setup( bool create,
   dwx_ = dwind_->Permute(x);
   dwb_ = dwind_->Permute(b);
 
-  SetupLinearProblem( &*dwA_, &*dwx_, &*dwb_ );
-
   // build the actual preconditioner based on the permuted matrix
   preconditioner_->Setup( create, &*dwA_, &*dwx_, &*dwb_ );
+
+  Epetra_LinearProblem & lp = preconditioner_->LinearProblem();
+
+  SetupLinearProblem( lp.GetOperator(), lp.GetLHS(), lp.GetRHS() );
 }
 
 //----------------------------------------------------------------------------------
@@ -2515,13 +2521,13 @@ void LINALG::Solver::SimplePreconditioner::Setup( bool create,
                                                   Epetra_MultiVector * x,
                                                   Epetra_MultiVector * b )
 {
+  SetupLinearProblem( matrix, x, b );
+
   if ( create )
   {
     // SIMPLER does not need copy of preconditioning matrix to live
     // SIMPLER does not use the downwinding installed here, it does
     // its own downwinding inside if desired
-
-    SetupLinearProblem( matrix, x, b );
 
     // free old matrix first
     P_ = Teuchos::null;
@@ -2560,12 +2566,15 @@ void LINALG::Solver::AMGBSPreconditioner::Setup( bool create,
 {
   SetupLinearProblem( matrix, x, b );
 
-  // free old matrix first
-  P_ = Teuchos::null;
+  if ( create )
+  {
+    // free old matrix first
+    P_ = Teuchos::null;
 
-  // Params().sublist("AMGBS") just contains the Fluid Pressure Solver block
-  // from the dat file (not needed anymore)
-  P_ = rcp(new LINALG::SaddlePointPreconditioner(rcp( matrix, false ),params_,outfile_));
+    // Params().sublist("AMGBS") just contains the Fluid Pressure Solver block
+    // from the dat file (not needed anymore)
+    P_ = rcp(new LINALG::SaddlePointPreconditioner(rcp( matrix, false ),params_,outfile_));
+  }
 }
 
 //----------------------------------------------------------------------------------
@@ -2585,10 +2594,10 @@ void LINALG::Solver::BGSPreconditioner::Setup( bool create,
                                                Epetra_MultiVector * x,
                                                Epetra_MultiVector * b )
 {
+  SetupLinearProblem( matrix, x, b );
+
   if ( create )
   {
-    SetupLinearProblem( matrix, x, b );
-
     P_ = Teuchos::null;
 
     int numblocks = bgslist_.get<int>("numblocks");
@@ -2702,8 +2711,8 @@ void LINALG::Solver::InfNormPreconditioner::Setup( bool create,
 
   SetupLinearProblem( matrix, x, b );
 
-  lp_->LeftScale(*rowsum_);
-  lp_->RightScale(*colsum_);
+  lp_.LeftScale(*rowsum_);
+  lp_.RightScale(*colsum_);
 
   preconditioner_->Setup( create, matrix, x, b );
 }
@@ -2723,8 +2732,8 @@ void LINALG::Solver::InfNormPreconditioner::Finish( Epetra_Operator * matrix,
   Epetra_Vector invcolsum(colsum_->Map(),false);
   invcolsum.Reciprocal(*colsum_);
   colsum_ = null;
-  lp_->LeftScale(invrowsum);
-  lp_->RightScale(invcolsum);
+  lp_.LeftScale(invrowsum);
+  lp_.RightScale(invcolsum);
 }
 
 //----------------------------------------------------------------------------------
@@ -2754,8 +2763,8 @@ void LINALG::Solver::SymDiagPreconditioner::Setup( bool create,
   A->ExtractDiagonalCopy(*diag_);
   invdiag.Reciprocal(*diag_);
 
-  lp_->LeftScale(invdiag);
-  lp_->RightScale(invdiag);
+  lp_.LeftScale(invdiag);
+  lp_.RightScale(invdiag);
 
   preconditioner_->Setup( create, matrix, x, b );
 }
@@ -2768,8 +2777,8 @@ void LINALG::Solver::SymDiagPreconditioner::Finish( Epetra_Operator * matrix,
 {
   preconditioner_->Finish( matrix, x, b );
 
-  lp_->LeftScale(*diag_);
-  lp_->RightScale(*diag_);
+  lp_.LeftScale(*diag_);
+  lp_.RightScale(*diag_);
   diag_ = null;
 }
 

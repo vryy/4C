@@ -148,7 +148,7 @@ class Solver
     /*!
       This is how aztec sees the linear problem that needs to be solved.
      */
-    virtual Epetra_LinearProblem & LinearProblem() { return *lp_; }
+    virtual Epetra_LinearProblem & LinearProblem() { return lp_; }
 
     /// support routine for setup
     void SetupLinearProblem( Epetra_Operator * matrix,
@@ -176,10 +176,13 @@ class Solver
      */
     virtual Epetra_Operator * PrecOperator() = 0;
 
+    /// debug output
+    virtual void Print( std::ostream & stream ) = 0;
+
   protected:
 
     //! a linear problem wrapper class used by Trilinos and for scaling of the system
-    Teuchos::RCP<Epetra_LinearProblem> lp_;
+    Epetra_LinearProblem lp_;
 
     //! file to write output to (proc 0 only, can be NULL on input)
     FILE * outfile_;
@@ -201,6 +204,8 @@ class Solver
                         Epetra_MultiVector * b );
 
     virtual Epetra_Operator * PrecOperator() { return &*prec_; }
+
+    virtual void Print( std::ostream & stream ) { stream << "IFPACK"; }
 
   private:
 
@@ -230,6 +235,8 @@ class Solver
                         Epetra_MultiVector * b );
 
     virtual Epetra_Operator * PrecOperator() { return &*P_; }
+
+    virtual void Print( std::ostream & stream ) { stream << "ML"; }
 
   private:
 
@@ -261,13 +268,6 @@ class Solver
                          Teuchos::RCP<PreconditionerType> preconditioner,
                          ParameterList & azlist );
 
-    /// return the linear problem of the wrapped preconditioner, thus showing
-    /// the permuted system to aztec.
-    virtual Epetra_LinearProblem & LinearProblem()
-    {
-      return preconditioner_->LinearProblem();
-    }
-
     virtual void Setup( bool create,
                         Epetra_Operator * matrix,
                         Epetra_MultiVector * x,
@@ -281,6 +281,13 @@ class Solver
     /// return the wrapped preconditioner, no work needs to be done after the
     /// permutation is performed
     virtual Epetra_Operator * PrecOperator() { return preconditioner_->PrecOperator(); }
+
+    virtual void Print( std::ostream & stream )
+    {
+      stream << "DWind(";
+      preconditioner_->Print( stream );
+      stream << ")";
+    }
 
   private:
 
@@ -315,6 +322,8 @@ class Solver
 
     virtual Epetra_Operator * PrecOperator() { return &*P_; }
 
+    virtual void Print( std::ostream & stream ) { stream << "Simple"; }
+
   private:
     ParameterList & params_;
     ParameterList & simpleparams_;
@@ -336,6 +345,8 @@ class Solver
                         Epetra_MultiVector * b );
 
     virtual Epetra_Operator * PrecOperator() { return &*P_; }
+
+    virtual void Print( std::ostream & stream ) { stream << "AMG BS"; }
 
   private:
     ParameterList & params_;
@@ -359,6 +370,8 @@ class Solver
                         Epetra_MultiVector * b );
 
     virtual Epetra_Operator * PrecOperator() { return &*P_; }
+
+    virtual void Print( std::ostream & stream ) { stream << "BGS"; }
 
   private:
 
@@ -396,7 +409,13 @@ class Solver
 
     /// return the projecting operator
     virtual Epetra_Operator * PrecOperator() { return &*P_; }
-    //virtual Epetra_Operator * PrecOperator() { return preconditioner_->PrecOperator(); }
+
+    virtual void Print( std::ostream & stream )
+    {
+      stream << "krylov projection(";
+      preconditioner_->Print( stream );
+      stream << ")";
+    }
 
   private:
     Teuchos::RCP<PreconditionerType> preconditioner_;
@@ -437,6 +456,13 @@ class Solver
 
     virtual Epetra_Operator * PrecOperator() { return preconditioner_->PrecOperator(); }
 
+    virtual void Print( std::ostream & stream )
+    {
+      stream << "InfNorm(";
+      preconditioner_->Print( stream );
+      stream << ")";
+    }
+
   private:
     Teuchos::RCP<PreconditionerType> preconditioner_;
     RCP<Epetra_Vector> rowsum_;
@@ -466,6 +492,13 @@ class Solver
                          Epetra_MultiVector * b );
 
     virtual Epetra_Operator * PrecOperator() { return preconditioner_->PrecOperator(); }
+
+    virtual void Print( std::ostream & stream )
+    {
+      stream << "SymDiag(";
+      preconditioner_->Print( stream );
+      stream << ")";
+    }
 
   private:
 
