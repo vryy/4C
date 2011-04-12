@@ -268,6 +268,9 @@ namespace STR
     //! Error norm output
     void OutputErrorNorms();
 
+    //! Nodal positions output
+    void OutputNodalPositions();
+
     //! Check wether energy output file is attached
     bool AttachedEnergyFile()
     {
