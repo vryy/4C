@@ -73,7 +73,7 @@ public:
   const Epetra_Map& OperatorRangeMap() const {return A_->FullRangeMap();}
 
   /// Setup of preconditioners for individual blocks
-  void SetupPreconditioner();
+  void SetupBlockPreconditioners();
 
   /// Apply inverse of the preconditioner
   int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const ;

@@ -61,13 +61,7 @@ LINALG::BGS2x2_Operator::BGS2x2_Operator(RCP<Epetra_Operator> A,
     dserror("BGS2x2: provided operator is not a BlockSparseMatrix!");
   }
 
-  Teuchos::RCP<ParameterList> rcplist1 = rcp(&list1_,false);
-  Teuchos::RCP<LINALG::Solver> s1 = rcp(new LINALG::Solver(rcplist1,A_->Comm(),outfile_));
-  solver1_ = Teuchos::rcp(new LINALG::Preconditioner(s1));
-
-  Teuchos::RCP<ParameterList> rcplist2 = rcp(&list2_,false);
-  Teuchos::RCP<LINALG::Solver> s2 = rcp(new LINALG::Solver(rcplist2,A_->Comm(),outfile_));
-  solver2_ = Teuchos::rcp(new LINALG::Preconditioner(s2));
+  SetupBlockPreconditioners();
 
   return;
 }
@@ -75,11 +69,17 @@ LINALG::BGS2x2_Operator::BGS2x2_Operator(RCP<Epetra_Operator> A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::BGS2x2_Operator::SetupPreconditioner()
+void LINALG::BGS2x2_Operator::SetupBlockPreconditioners()
 {
+  Teuchos::RCP<ParameterList> rcplist1 = rcp(&list1_,false);
+  Teuchos::RCP<LINALG::Solver> s1 = rcp(new LINALG::Solver(rcplist1,A_->Comm(),outfile_));
+  solver1_ = Teuchos::rcp(new LINALG::Preconditioner(s1));
   const LINALG::SparseMatrix& Op11 = A_->Matrix(firstind_,firstind_);
   solver1_->Setup(Op11.EpetraMatrix());
 
+  Teuchos::RCP<ParameterList> rcplist2 = rcp(&list2_,false);
+  Teuchos::RCP<LINALG::Solver> s2 = rcp(new LINALG::Solver(rcplist2,A_->Comm(),outfile_));
+  solver2_ = Teuchos::rcp(new LINALG::Preconditioner(s2));
   const LINALG::SparseMatrix& Op22 = A_->Matrix(secind_,secind_);
   solver2_->Setup(Op22.EpetraMatrix());
 
