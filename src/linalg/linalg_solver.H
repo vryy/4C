@@ -156,7 +156,8 @@ class Solver
                              Epetra_MultiVector * b );
 
     /// Setup preconditioner with a given linear system.
-    virtual void Setup( Epetra_Operator * matrix,
+    virtual void Setup( bool create,
+                        Epetra_Operator * matrix,
                         Epetra_MultiVector * x,
                         Epetra_MultiVector * b ) = 0;
 
@@ -194,7 +195,8 @@ class Solver
 
     IFPACKPreconditioner( FILE * outfile, ParameterList & ifpacklist, ParameterList & azlist );
 
-    virtual void Setup( Epetra_Operator * matrix,
+    virtual void Setup( bool create,
+                        Epetra_Operator * matrix,
                         Epetra_MultiVector * x,
                         Epetra_MultiVector * b );
 
@@ -222,7 +224,8 @@ class Solver
 
     MLPreconditioner( FILE * outfile, ParameterList & mllist );
 
-    virtual void Setup( Epetra_Operator * matrix,
+    virtual void Setup( bool create,
+                        Epetra_Operator * matrix,
                         Epetra_MultiVector * x,
                         Epetra_MultiVector * b );
 
@@ -265,7 +268,8 @@ class Solver
       return preconditioner_->LinearProblem();
     }
 
-    virtual void Setup( Epetra_Operator * matrix,
+    virtual void Setup( bool create,
+                        Epetra_Operator * matrix,
                         Epetra_MultiVector * x,
                         Epetra_MultiVector * b );
 
@@ -304,7 +308,8 @@ class Solver
     SimplePreconditioner( FILE * outfile,
                           ParameterList & params, ParameterList & simpleparams );
 
-    virtual void Setup( Epetra_Operator * matrix,
+    virtual void Setup( bool create,
+                        Epetra_Operator * matrix,
                         Epetra_MultiVector * x,
                         Epetra_MultiVector * b );
 
@@ -325,7 +330,8 @@ class Solver
     AMGBSPreconditioner( FILE * outfile,
                          ParameterList & params );
 
-    virtual void Setup( Epetra_Operator * matrix,
+    virtual void Setup( bool create,
+                        Epetra_Operator * matrix,
                         Epetra_MultiVector * x,
                         Epetra_MultiVector * b );
 
@@ -347,7 +353,8 @@ class Solver
     BGSPreconditioner( FILE * outfile,
                        ParameterList & params, ParameterList & bgslist );
 
-    virtual void Setup( Epetra_Operator * matrix,
+    virtual void Setup( bool create,
+                        Epetra_Operator * matrix,
                         Epetra_MultiVector * x,
                         Epetra_MultiVector * b );
 
@@ -378,7 +385,8 @@ class Solver
 
     virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }
 
-    virtual void Setup( Epetra_Operator * matrix,
+    virtual void Setup( bool create,
+                        Epetra_Operator * matrix,
                         Epetra_MultiVector * x,
                         Epetra_MultiVector * b );
 
@@ -415,7 +423,8 @@ class Solver
 
     virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }
 
-    virtual void Setup( Epetra_Operator * matrix,
+    virtual void Setup( bool create,
+                        Epetra_Operator * matrix,
                         Epetra_MultiVector * x,
                         Epetra_MultiVector * b );
 
@@ -444,7 +453,8 @@ class Solver
 
     virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }
 
-    virtual void Setup( Epetra_Operator * matrix,
+    virtual void Setup( bool create,
+                        Epetra_Operator * matrix,
                         Epetra_MultiVector * x,
                         Epetra_MultiVector * b );
 
