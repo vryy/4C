@@ -2227,3 +2227,5 @@ if (QHULL)
   baci_test(xfsi_shooter_thin 1 "")
 endif (QHULL)
 
+# remove any output files from our tests
+add_test(NAME test_cleanup COMMAND rm -f xxx* core.*)
