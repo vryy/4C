@@ -81,7 +81,6 @@ STR::TimIntImpl::TimIntImpl
   normfres_(0.0),
   normdisi_(0.0),
   disi_(Teuchos::null),
-  timer_(actdis->Comm()),
   fres_(Teuchos::null),
   freact_(Teuchos::null),
   fifc_(Teuchos::null),
@@ -578,6 +577,10 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying
 {
   if (cmtman_ != Teuchos::null)
   {
+    // *********** time measurement ***********
+    double dtcpu = timer_->WallTime();
+    // *********** time measurement ***********
+
     // contact / meshtying modifications need -fres
     fresm->Scale(-1.0);
 
@@ -587,6 +590,10 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying
 
     // scaling back
     fresm->Scale(-1.0);
+
+    // *********** time measurement ***********
+    dtcmt_ = timer_->WallTime() - dtcpu;
+    // *********** time measurement ***********
   }
 
   // wotcha
@@ -788,7 +795,7 @@ void STR::TimIntImpl::NewtonFull()
   iter_ = 1;
   normfres_ = CalcRefNormForce();
   // normdisi_ was already set in predictor; this is strictly >0
-  timer_.ResetStartTime();
+  timer_->ResetStartTime();
 
   // equilibrium iteration loop
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
@@ -806,6 +813,11 @@ void STR::TimIntImpl::NewtonFull()
     LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
                                    GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
 
+    // *********** time measurement ***********
+    double dtcpu = timer_->WallTime();
+    // *********** time measurement ***********
+
+    // STC preconditioning
     STCPreconditioning();
 
     // solve for disi_
@@ -829,6 +841,10 @@ void STR::TimIntImpl::NewtonFull()
     // recover contact / meshtying Lagrange multipliers
     if (cmtman_ != Teuchos::null)
       cmtman_->GetStrategy().Recover(disi_);
+
+    // *********** time measurement ***********
+    dtsolve_ = timer_->WallTime() - dtcpu;
+    // *********** time measurement ***********
 
     // update end-point displacements etc
     UpdateIter(iter_);
@@ -1030,7 +1046,7 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
   normfres_ = CalcRefNormForce();
   // normdisi_ was already set in predictor; this is strictly >0
   normcon_ = conman_->GetErrorNorm();
-  timer_.ResetStartTime();
+  timer_->ResetStartTime();
 
   // equilibrium iteration loop
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
@@ -1052,6 +1068,10 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
 
     // prepare residual Lagrange multiplier
     lagrincr->PutScalar(0.0);
+
+    // *********** time measurement ***********
+    double dtcpu = timer_->WallTime();
+    // *********** time measurement ***********
 
     //Use STC preconditioning on system matrix
     STCPreconditioning();
@@ -1082,6 +1102,10 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
 
     //recover unscaled solution
     RecoverSTCSolution();
+
+    // *********** time measurement ***********
+    dtsolve_ = timer_->WallTime() - dtcpu;
+    // *********** time measurement ***********
 
     // transform back to global co-ordinate system
     if (locsysman_ != Teuchos::null)
@@ -1505,13 +1529,13 @@ void STR::TimIntImpl::PrintNewtonIterHeader
   switch ( normtypefres_ )
   {
   case INPAR::STR::convnorm_rel:
-    oss <<std::setw(18)<< "rel-res-norm";
+    oss <<std::setw(16)<< "rel-res-norm";
     break;
   case INPAR::STR::convnorm_abs :
-    oss <<std::setw(18)<< "abs-res-norm";
+    oss <<std::setw(16)<< "abs-res-norm";
     break;
   case INPAR::STR::convnorm_mix :
-    oss <<std::setw(18)<< "mix-res-norm";
+    oss <<std::setw(16)<< "mix-res-norm";
     break;
   default:
     dserror("You should not turn up here.");
@@ -1522,7 +1546,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader
     switch (normtypepfres_)
     {
     case INPAR::STR::convnorm_abs :
-      oss <<std::setw(18)<< "abs-pre-res-norm";
+      oss <<std::setw(16)<< "abs-inco-norm";
       break;
     default:
       dserror("You should not turn up here.");
@@ -1532,13 +1556,13 @@ void STR::TimIntImpl::PrintNewtonIterHeader
   switch ( normtypedisi_ )
   {
   case INPAR::STR::convnorm_rel:
-    oss <<std::setw(18)<< "rel-dis-norm";
+    oss <<std::setw(16)<< "rel-dis-norm";
     break;
   case INPAR::STR::convnorm_abs :
-    oss <<std::setw(18)<< "abs-dis-norm";
+    oss <<std::setw(16)<< "abs-dis-norm";
     break;
   case INPAR::STR::convnorm_mix :
-    oss <<std::setw(18)<< "mix-dis-norm";
+    oss <<std::setw(16)<< "mix-dis-norm";
     break;
   default:
     dserror("You should not turn up here.");
@@ -1549,7 +1573,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader
     switch (normtypepfres_)
     {
     case INPAR::STR::convnorm_abs :
-      oss <<std::setw(18)<< "abs-pre-norm";
+      oss <<std::setw(16)<< "abs-pre-norm";
       break;
     default:
       dserror("You should not turn up here.");
@@ -1559,11 +1583,15 @@ void STR::TimIntImpl::PrintNewtonIterHeader
   // add constraint norm
   if (conman_->HaveConstraintLagr())
   {
-    oss << std::setw(18)<< "abs-constr-norm";
+    oss << std::setw(16)<< "abs-constr-norm";
   }
 
   // add solution time
-  oss << std::setw(14)<< "wct";
+  //oss << std::setw(14)<< "wct";
+  oss << std::setw(13)<< "ts";
+  oss << std::setw(10)<< "te";
+  if (cmtman_ != Teuchos::null)
+    oss << std::setw(10)<< "tc";
 
   // finish oss
   oss << std::ends;
@@ -1597,13 +1625,13 @@ void STR::TimIntImpl::PrintNewtonIterText
   switch ( normtypefres_ )
   {
   case INPAR::STR::convnorm_rel:
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << normfres_/normcharforce_;
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << normfres_/normcharforce_;
     break;
   case INPAR::STR::convnorm_abs :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << normfres_;
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << normfres_;
     break;
   case INPAR::STR::convnorm_mix :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << min(normfres_, normfres_/normcharforce_);
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << min(normfres_, normfres_/normcharforce_);
     break;
   default:
     dserror("You should not turn up here.");
@@ -1614,7 +1642,7 @@ void STR::TimIntImpl::PrintNewtonIterText
     switch (normtypepfres_)
     {
     case INPAR::STR::convnorm_abs :
-      oss << std::setw(18) << std::setprecision(5) << std::scientific << normpfres_;
+      oss << std::setw(16) << std::setprecision(5) << std::scientific << normpfres_;
       break;
     default:
       dserror("You should not turn up here.");
@@ -1624,13 +1652,13 @@ void STR::TimIntImpl::PrintNewtonIterText
   switch ( normtypedisi_ )
   {
   case INPAR::STR::convnorm_rel:
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << normdisi_/normchardis_;
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisi_/normchardis_;
     break;
   case INPAR::STR::convnorm_abs :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << normdisi_;
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisi_;
     break;
   case INPAR::STR::convnorm_mix :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << min(normdisi_, normdisi_/normchardis_);
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << min(normdisi_, normdisi_/normchardis_);
     break;
   default:
     dserror("You should not turn up here.");
@@ -1641,7 +1669,7 @@ void STR::TimIntImpl::PrintNewtonIterText
     switch (normtypepfres_)
     {
     case INPAR::STR::convnorm_abs :
-      oss << std::setw(18) << std::scientific << normpres_;
+      oss << std::setw(16) << std::scientific << normpres_;
       break;
     default:
       dserror("You should not turn up here.");
@@ -1651,11 +1679,15 @@ void STR::TimIntImpl::PrintNewtonIterText
   // add constraint norm
   if (conman_->HaveConstraintLagr())
   {
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << normcon_;
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << normcon_;
   }
 
   // add solution time
-  oss << std::setw(14) << std::setprecision(2) << std::scientific << timer_.ElapsedTime();
+  //oss << std::setw(14) << std::setprecision(2) << std::scientific << timer_->ElapsedTime();
+  oss << std::setw(13) << std::setprecision(2) << std::scientific << dtsolve_;
+  oss << std::setw(10) << std::setprecision(2) << std::scientific << dtele_;
+  if (cmtman_ != Teuchos::null)
+    oss << std::setw(10) << std::setprecision(2) << std::scientific << dtcmt_;
 
   // finish oss
   oss << std::ends;
@@ -1713,19 +1745,22 @@ void STR::TimIntImpl::PrintStepText
   FILE* ofile
 )
 {
+  // open outstringstream
+  std::ostringstream oss;
+
   // the text
-  fprintf(ofile,
-          "Finalised: step %6d"
-          " | nstep %6d"
-          " | time %-14.8E"
-          " | dt %-14.8E"
-          " | numiter %3d\n",
-          step_, stepmax_, (*time_)[0], (*dt_)[0], iter_);
-  // print a beautiful line made exactly of 80 dashes
-  fprintf(ofile,
-          "--------------------------------------------------------------"
-          "------------------\n");
-  // do it, print now!
+  oss << "Finalised step " << std::setw(1) << step_;
+  oss << " / " << std::setw(1) << stepmax_;
+  oss << " | time " << std::setw(9) << std::setprecision(3) << std::scientific << (*time_)[0];
+  oss << " | dt " << std::setw(9) << std::setprecision(3) << std::scientific << (*dt_)[0];
+  oss << " | numiter " << std::setw(1) << iter_;
+  oss << " | wct " << std::setw(8) << std::setprecision(2) << std::scientific << timer_->ElapsedTime();
+  oss << "\n--------------------------------------------------------------------------------\n";
+
+  // print to ofile (could be done differently...)
+  fprintf(ofile, "%s\n", oss.str().c_str());
+
+  // print it, now
   fflush(ofile);
 
   // fall asleep

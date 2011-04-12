@@ -117,7 +117,11 @@ STR::TimInt::TimInt
   accn_(Teuchos::null),
   stiff_(Teuchos::null),
   mass_(Teuchos::null),
-  damp_(Teuchos::null)
+  damp_(Teuchos::null),
+  timer_(rcp(new Epetra_Time(actdis->Comm()))),
+  dtsolve_(0.0),
+  dtele_(0.0),
+  dtcmt_(0.0)
 {
   // welcome user
   if ( (printlogo_) and (myrank_ == 0) )
@@ -1251,6 +1255,10 @@ void STR::TimInt::ApplyForceStiffInternal
   Teuchos::RCP<LINALG::SparseOperator> stiff  // stiffness matrix
 )
 {
+  // *********** time measurement ***********
+  double dtcpu = timer_->WallTime();
+  // *********** time measurement ***********
+
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // action for elements
@@ -1277,6 +1285,10 @@ void STR::TimInt::ApplyForceStiffInternal
   if (pressure_ != Teuchos::null)
     cout << "Total volume=" << std::scientific << p.get<double>("volume") << endl;
 #endif
+
+  // *********** time measurement ***********
+  dtele_ = timer_->WallTime() - dtcpu;
+  // *********** time measurement ***********
 
   // that's it
   return;

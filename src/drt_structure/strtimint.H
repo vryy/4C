@@ -28,6 +28,7 @@ Maintainer: Burkhard Bornemann
 #include <Epetra_Vector.h>
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
+#include <Epetra_Time.h>
 #include <NOX.H>
 #include <NOX_Epetra.H>
 #include <ml_common.h>
@@ -677,6 +678,14 @@ namespace STR
     Teuchos::RCP<LINALG::SparseOperator> mass_;
     //! Rayleigh damping matrix (constant)
     Teuchos::RCP<LINALG::SparseOperator> damp_;
+    //@}
+
+    //! @name Time measurement
+    //@{
+    RCP<Epetra_Time>  timer_;    //!< timer for solution technique
+    double            dtsolve_;  //!< linear solver time
+    double            dtele_;    //!< element evaluation time
+    double            dtcmt_;    //!< contact / meshtying evaluation time
     //@}
 
   };

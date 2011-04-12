@@ -714,7 +714,6 @@ namespace STR
     double normpres_; //!< norm of residual pressures
     Teuchos::RCP<Epetra_Vector> disi_;  //!< residual displacements (and pressure)
                                         //!< \f$\Delta{D}^{<k>}_{n+1}\f$
-    Epetra_Time timer_;  //!< timer for solution technique
     //@}
 
     //! @name Various global forces
