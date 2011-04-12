@@ -383,7 +383,7 @@ class Solver
                                     RCP<Epetra_MultiVector>  weighted_basis_mean,
                                     RCP<Epetra_MultiVector>  kernel_c );
 
-    virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }
+    //virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }
 
     virtual void Setup( bool create,
                         Epetra_Operator * matrix,
@@ -395,7 +395,8 @@ class Solver
                          Epetra_MultiVector * b );
 
     /// return the projecting operator
-    virtual Epetra_Operator * PrecOperator() { return &*A_; }
+    virtual Epetra_Operator * PrecOperator() { return &*P_; }
+    //virtual Epetra_Operator * PrecOperator() { return preconditioner_->PrecOperator(); }
 
   private:
     Teuchos::RCP<PreconditionerType> preconditioner_;
@@ -408,6 +409,8 @@ class Solver
     /// linear operator that calls a "real" preconditioning operator and does
     /// a projection afterwards.
     Teuchos::RCP<LINALG::LinalgProjectedOperator> A_;
+
+    Teuchos::RCP<Epetra_Operator> P_;
   };
 
   /// inf-norm scaling fits the preconditioner framework perfecty

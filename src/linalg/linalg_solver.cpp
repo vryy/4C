@@ -2649,12 +2649,21 @@ void LINALG::Solver::KrylovProjectionPreconditioner::Setup( bool create,
   projector_ = rcp(new LINALG::KrylovProjector(true,weighted_basis_mean_,kernel_c_,rcp( matrix, false )));
   projector_->ApplyPT( *b );
 
+  // setup wrapped preconditioner
   preconditioner_->Setup( create, matrix, x, b );
 
   // Wrap the linar operator of the contained preconditioner. This way the
   // actual preconditioner is called first and the projection is done
   // afterwards.
-  A_ = rcp(new LINALG::LinalgProjectedOperator(rcp( preconditioner_->PrecOperator(), false ),true,projector_));
+
+  Epetra_LinearProblem & lp = preconditioner_->LinearProblem();
+  Epetra_Operator * A = lp.GetOperator();
+
+  A_ = rcp(new LINALG::LinalgProjectedOperator(rcp( A, false ),true,projector_));
+
+  P_ = rcp(new LINALG::LinalgPrecondOperator(rcp( preconditioner_->PrecOperator(), false ),true,projector_));
+
+  SetupLinearProblem( &*A_, lp.GetLHS(), lp.GetRHS() );
 }
 
 //----------------------------------------------------------------------------------
