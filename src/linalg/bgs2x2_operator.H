@@ -25,14 +25,13 @@ Maintainer: Lena Wiechert
 #include "linalg_mapextractor.H"
 #include "linalg_blocksparsematrix.H"
 #include "linalg_precond.H"
-#include "linalg_solver.H"
 #include "linalg_utils.H"
 
 namespace LINALG
 {
 
 /// Block Gauss-Seidel preconditioner for a 2x2 system
-class  BGS2x2_Operator : public virtual Epetra_Operator
+class  BGS2x2_Operator : public Epetra_Operator
 {
 public:
 

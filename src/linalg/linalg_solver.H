@@ -93,7 +93,7 @@ Maintainer: Michael Gee
 
 #include "linalg_projected_precond.H"
 #include "linalg_projected_operator.H"
-
+#include "bgs2x2_operator.H"
 
 
 using namespace std;
@@ -107,6 +107,7 @@ namespace LINALG
 class SparseMatrix;
 class SparseOperator;
 class DownwindMatrix;
+
 
 /*!
 \brief A general solver interface to Trilinos solvers and spooles
@@ -377,7 +378,7 @@ class Solver
 
     ParameterList & params_;
     ParameterList & bgslist_;
-    RCP<Epetra_Operator>    P_;
+    RCP<LINALG::BGS2x2_Operator> P_;
   };
 
   /// krylov projection for undefined pressure value in incompressible fluids
