@@ -2269,6 +2269,10 @@ void LINALG::Solver::KrylovSolver::CreatePreconditioner( ParameterList & azlist,
     {
       preconditioner_ = Teuchos::rcp( new MLPreconditioner( outfile_, Params().sublist("ML Parameters") ) );
     }
+    else if ( Params().isSublist("AMGBS Parameters") )
+    {
+      preconditioner_ = Teuchos::rcp( new AMGBSPreconditioner( outfile_, Params() ) );
+    }
     else
     {
       dserror( "unknown preconditioner" );
@@ -2308,13 +2312,13 @@ void LINALG::Solver::KrylovSolver::CreatePreconditioner( ParameterList & azlist,
     {
       preconditioner_ = Teuchos::rcp( new SimplePreconditioner( outfile_, Params(), Params().sublist("SIMPLER") ) );
     }
-    else if ( Params().isSublist("AMGBS Parameters") )
-    {
-      preconditioner_ = Teuchos::rcp( new AMGBSPreconditioner( outfile_, Params() ) );
-    }
     else if ( Params().isSublist("BGS Parameters") )
     {
       preconditioner_ = Teuchos::rcp( new BGSPreconditioner( outfile_, Params(), Params().sublist("BGS Parameters") ) );
+    }
+    else if ( Params().isSublist("AMGBS Parameters") )
+    {
+      preconditioner_ = Teuchos::rcp( new AMGBSPreconditioner( outfile_, Params() ) );
     }
     else
     {
