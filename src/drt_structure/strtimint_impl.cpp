@@ -2060,11 +2060,9 @@ void STR::TimIntImpl::STCPreconditioning()
     stiff_ = MLMultiply(*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),*stcmat_,false,false,true);
     if(stcscale_==INPAR::STR::stc_parasym or stcscale_==INPAR::STR::stc_currsym)
     {
-      stcmat_->SetUseTranspose(true);
-      stiff_ = MLMultiply(*stcmat_,*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),false,false,true);
+      stiff_ = MLMultiply(*stcmat_,true,*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),false,false,false,true);
       Teuchos::RCP<Epetra_Vector> fressdc = LINALG::CreateVector(*dofrowmap_, true);
-      stcmat_->Multiply(false,*fres_,*fressdc);
-      stcmat_->SetUseTranspose(false);
+      stcmat_->Multiply(true,*fres_,*fressdc);
       fres_->Update(1.0,*fressdc,0.0);
     }
 
@@ -2102,7 +2100,7 @@ void STR::TimIntImpl::ComputeSTCMatrix()
 
   stcmat_->Complete();
 
-  #ifdef DEBUG
+  #if 1
   if (iter_==1&& step_==0)
   {
     const std::string fname = "stcmatrix1.mtl";
