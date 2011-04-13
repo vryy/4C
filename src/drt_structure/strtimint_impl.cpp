@@ -24,6 +24,7 @@ Maintainer: Burkhard Bornemann
 #include "str_aux.H"
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_mortar/mortar_strategy_base.H"
+#include "../drt_mortar/mortar_defines.H"
 #include "../drt_contact/meshtying_manager.H"
 #include "../drt_contact/contact_manager.H"
 #include "../drt_contact/contact_defines.H"
@@ -595,6 +596,11 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying
     dtcmt_ = timer_->WallTime() - dtcpu;
     // *********** time measurement ***********
   }
+
+  // visualization of current Newton step
+#ifdef MORTARGMSH2
+  cmtman_->GetStrategy().VisualizeGmsh(stepn_,iter_);
+#endif // #ifdef MORTARGMSH2
 
   // wotcha
   return;
