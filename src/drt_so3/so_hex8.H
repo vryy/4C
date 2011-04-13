@@ -256,6 +256,8 @@ public:
   */
   void Print(ostream& os) const;
 
+
+
   virtual DRT::ElementType & ElementType() const
   { return So_hex8Type::Instance(); }
 
@@ -492,7 +494,8 @@ protected:
     multi_newresultfile,       //!< multi-scale: define new result file (for inverse analysis)
     calc_potential_stiff,       //!< volume interaction potential
     calc_stc_matrix,            //! calculate scaled director matrix for thin shell structures
-    calc_struct_stifftemp    //!< TSI specific: mechanical-thermal stiffness
+    calc_struct_stifftemp,    //!< TSI specific: mechanical-thermal stiffness
+    calc_gobal_gpstresses_map // basically calc_struct_stress but with assembly of global gpstresses map
   };
 
   //! kinematic types of so_hex8 (default: total-lagrangian)

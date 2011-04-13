@@ -22,6 +22,7 @@ Maintainer: Moritz Frenzel
 #include "../linalg/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/visconeohooke.H"
+#include "../drt_mat/aaaneohooke_stopro.H"
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_mat/plasticneohooke.H"
@@ -93,6 +94,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
   else if (action=="calc_struct_prestress_update")                act = So_hex8::prestress_update;
   else if (action=="calc_struct_inversedesign_update")            act = So_hex8::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch")            act = So_hex8::inversedesign_switch;
+  else if (action=="calc_gobal_gpstresses_map")                   act = So_hex8::calc_gobal_gpstresses_map;
   else dserror("Unknown type of action for So_hex8");
 
   // check for patient specific data
@@ -305,11 +307,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         string stresstype = params.get<string>("stresstype","ndxyz");
         int gid = Id();
         LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> gpstress(((*gpstressmap)[gid])->A(),true);
-
         RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
         if (poststress==null)
           dserror("No element stress/strain vector available");
-
         if (stresstype=="ndxyz")
         {
           // extrapolate stresses/strains at Gauss points to nodes
@@ -976,7 +976,82 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       time_ = params.get<double>("total time");
     }
     break;
+    //==================================================================================
+    // evaluate stresses and strains at gauss points and store gpstresses in map <EleId, gpstresses >
+    case calc_gobal_gpstresses_map:
+    {
+      // nothing to do for ghost elements
+      if (discretization.Comm().MyPID()==Owner())
+      {
+        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+        RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+        RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
+        RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
+        if (disp==null) dserror("Cannot get state vectors 'displacement'");
+        if (stressdata==null) dserror("Cannot get 'stress' data");
+        if (straindata==null) dserror("Cannot get 'strain' data");
+        const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+                params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
+        if (gpstressmap==null)
+          dserror("no gp stress/strain map available for writing gpstresses");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+        vector<double> myres(lm.size());
+        DRT::UTILS::ExtractMyValues(*res,myres,lm);
+        LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
+        LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
+        INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+        INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+        //
 
+        // if a linear analysis is desired
+        if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
+          soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+        // standard is: geometrically non-linear with Total Lagrangean approach
+        else
+        {
+          if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
+            invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+
+          else // standard analysis
+            soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+        }
+        // add stresses to global map
+        //get EleID Id()
+        int gid = Id();
+        RCP<Epetra_SerialDenseMatrix> gpstress = rcp(new Epetra_SerialDenseMatrix);
+        gpstress->Shape(NUMGPT_SOH8,NUMSTR_SOH8);
+
+        //move stresses to serial dense matrix
+        for(int i=0;i<NUMGPT_SOH8;i++)
+        {
+          for(int j=0;j<NUMSTR_SOH8;j++)
+          {
+            (*gpstress)(i,j)=stress(i,j);
+          }
+        }
+
+        //add to map
+        (*gpstressmap)[gid]=gpstress;
+
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, stress);
+          data.StartPacking();
+          AddtoPack(data, stress);
+          std::copy(data().begin(),data().end(),std::back_inserter(*stressdata));
+        }
+
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, strain);
+          data.StartPacking();
+          AddtoPack(data, strain);
+          std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
+        }
+      }
+    }
+    break;
 
     //==================================================================================
     default:
@@ -1487,6 +1562,16 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       if (elestress == NULL) dserror("stress data not available");
       for (int i = 0; i < NUMSTR_SOH8; ++i)
         (*elestress)(gp,i) = stress(i);
+      RCP<MAT::Material> mat = Material();
+        if (mat->MaterialType()==INPAR::MAT::m_aaaneohooke_stopro)
+          {
+          MAT::AAAneohooke_stopro* aaa_stopro= static_cast <MAT::AAAneohooke_stopro*>(Material().get());
+          // Get stochastic mat parameter beta
+          double beta = aaa_stopro->Beta();
+          // and write it into stress tensor FOR TESTING ONLY !!!!
+          (*elestress)(gp,0)=beta;
+        }
+
     }
     break;
     case INPAR::STR::stress_cauchy:
