@@ -3431,7 +3431,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
             {
               // check (euclidean)-frbound <= 0
 #ifdef CONTACTCOMPHUEBER
-            if(euclidean-frcoeff*(nz-cn*wgap) <= 1e-14) {}
+            if(euclidean-frcoeff*(nz-cn*wgap) <= 1e-10) {}
 #else
             if(euclidean-frcoeff*nz <= 0) {}
 #endif
@@ -3446,7 +3446,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
             {
               // check (euclidean)-frbound > 0
 #ifdef CONTACTCOMPHUEBER
-              if(euclidean-frcoeff*(nz-cn*wgap) > -1e-14) {}
+              if(euclidean-frcoeff*(nz-cn*wgap) > -1e-10) {}
 #else
               if(euclidean-frcoeff*nz > 0) {}
 #endif
