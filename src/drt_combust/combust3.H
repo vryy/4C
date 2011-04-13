@@ -167,7 +167,7 @@ private:
 
         virtual int NumDofPerNode(const DRT::Node& node) const
         {
-          if (output_mode_)
+          if (standard_mode_)
           {
             return 4;
           }
@@ -187,7 +187,7 @@ private:
 
         virtual int NumDofPerElement() const
         {
-          if (output_mode_)
+          if (standard_mode_)
           {
             return 0;
           }
@@ -260,7 +260,7 @@ private:
           store_xfem_info,
           get_density,
           reset,
-          set_output_mode
+          set_standard_mode
         };
 
         //! stabilization actions recognized by fluid3 (genalpha implementation)
@@ -322,11 +322,10 @@ private:
         //! will remove all dofs that are not in eleDofManager_
         Teuchos::RCP<XFEM::ElementDofManager> eleDofManager_uncondensed_;
 
-        //! for postprocessing in the filters
-        //! then element has always 4 unknowns per node
-        //! so if element is in output mode, it will answer without
-        //! the elementdofmanager
-        bool output_mode_;
+        //! if element is in 'standard mode', it will answer without asking the elementdofmanager
+        //! -> it will pretend to have 4 dofs per node and no element dofs
+        //! needed for postprocessing in the filters (output) and for some initialization procedures
+        bool standard_mode_;
 
         //! store information about the interface handle
         COMBUST::InterfaceHandleCombust* ih_;

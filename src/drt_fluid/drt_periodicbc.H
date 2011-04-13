@@ -107,9 +107,16 @@ public:
   //@}
 
   //! @name methods to provide constructed node to node coupling
-  RefCountPtr<map<int,vector<int> > > ReturnAllCoupledNodesOnThisProc()
+  RefCountPtr<map<int,vector<int> > > ReturnAllCoupledColNodes()
   {
     return (allcoupledcolnodes_);
+  }
+  //@}
+
+  //! @name methods to provide constructed node to node coupling
+  RefCountPtr<map<int,vector<int> > > ReturnAllCoupledRowNodes()
+  {
+    return (allcoupledrownodes_);
   }
   //@}
 

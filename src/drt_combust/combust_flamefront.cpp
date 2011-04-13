@@ -53,10 +53,12 @@ Maintainer: Florian Henke
  *------------------------------------------------------------------------------------------------*/
 COMBUST::FlameFront::FlameFront(
     const Teuchos::RCP<const DRT::Discretization> fluiddis,
-    const Teuchos::RCP<DRT::Discretization> gfuncdis
+    const Teuchos::RCP<DRT::Discretization> gfuncdis,
+    const Teuchos::RCP<map<int,vector<int> > > pbcmap
 ) :
 fluiddis_(fluiddis),
 gfuncdis_(gfuncdis),
+pbcmap_(pbcmap),
 phinm_(Teuchos::null),
 phin_(Teuchos::null),
 phinp_(Teuchos::null),
@@ -88,7 +90,7 @@ void COMBUST::FlameFront::UpdateFlameFront(
   // rearrange and store phi vectors
   StorePhiVectors(phin, phinp);
   // modify phi vectors nearly zero
-  //  ModifyPhiVector(combustdyn, ReinitModifyPhi);
+  ModifyPhiVector(combustdyn, ReinitModifyPhi);
 
   // generate the interface geometry based on the G-function (level set field)
   // remark: must be called after StorePhiVectors, since it relies on phinp_
@@ -121,7 +123,7 @@ void COMBUST::FlameFront::ProcessFlameFront(
    */
 
   if (fluiddis_->Comm().MyPID()==0)
-    std::cout << "\n---  processing flame front ... " << std::flush;;
+    std::cout << "\n---  processing flame front... " << std::flush;
 
   const Teuchos::RCP<Epetra_Vector> phicol = rcp(new Epetra_Vector(*fluiddis_->NodeColMap()));
   if (phicol->MyLength() != phi->MyLength())
@@ -194,7 +196,8 @@ void COMBUST::FlameFront::ProcessFlameFront(
   //}
   //std::cout << "Anzahl Integrationszellen: " << cells << std::endl;
 
-  std::cout << "done" << std::endl;
+  if (fluiddis_->Comm().MyPID()==0)
+    std::cout << "done" << std::endl;
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -227,13 +230,6 @@ void COMBUST::FlameFront::StorePhiVectors(
   const Teuchos::RCP<Epetra_Vector> phinrow  = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
   const Teuchos::RCP<Epetra_Vector> phinprow = rcp(new Epetra_Vector(*fluiddis_->NodeRowMap()));
 
-  //if (phinmrow->MyLength() != phinm->MyLength())
-  //  dserror("vectors phinmrow and phinm must have the same length");
-  if (phinrow->MyLength() != phin->MyLength())
-    dserror("vectors phinrow and phin must have the same length");
-  if (phinprow->MyLength() != phinp->MyLength())
-    dserror("vectors phinprow and phinp must have the same length");
-
   //----------------------------------------------------------------------------------------------
   // congruent (matching) discretizations (Fluid == G-function)
   //----------------------------------------------------------------------------------------------
@@ -250,21 +246,61 @@ void COMBUST::FlameFront::StorePhiVectors(
      * This means that vector phinp living on the G-function DofRowMap can be directly copied to the
      * Fluid NodeRowMap without any rearrangement for congruent discretizations.
      *
+     * Here is what we used to do:
+     *
+     *  // get the G-function values corresponding to fluid nodes
+     *  *phinmrow = *phinm;
+     *  *phinrow  = *phin;
+     *  *phinprow = *phinp;
+     *  // ausgeschrieben, was *phinprow = *phinp in einer Zeile macht:
+     *  for(int lnodeid=0;lnodeid<fluiddis_->NumMyRowNodes();lnodeid++)
+     *  {
+     *    // get the G-function value corresponding to this fluid node
+     *    double value = (*phinp)[lnodeid];
+     *    phinprow->ReplaceMyValue(lnodeid,value);
+     *    }
+     *
      * henke 02/09
+     *
+     * This is not possible anymore if we use periodic boundary conditions. The number of nodes remains
+     * the same, but dofs are removed, since master and slave nodes share a dof. Things are not so
+     * easy anymore and we have to pick the corresponding G-function dof by looping over all fluid
+     * nodes.
+     *
+     * henke 04/11
      */
 
-    // get the G-function values corresponding to fluid nodes
-    //*phinmrow = *phinm;
-    *phinrow  = *phin;
-    *phinprow = *phinp;
-    /* ausgeschrieben, was *phinprow = *phinp in einer Zeile macht:
-       for(int lnodeid=0;lnodeid<fluiddis_->NumMyRowNodes();lnodeid++)
-       {
-         // get the G-function value corresponding to this fluid node
-         double value = (*phinp)[lnodeid];
-         phinprow->ReplaceMyValue(lnodeid,value);
-       }
-     */
+    DRT::UTILS::PrintParallelDistribution(*fluiddis_);
+    DRT::UTILS::PrintParallelDistribution(*gfuncdis_);
+
+    // loop all nodes on the processor
+    for(int lfluidnodeid=0;lfluidnodeid<fluiddis_->NumMyRowNodes();lfluidnodeid++)
+    {
+      // get the processor's scatra node
+      // remark: we rely on identical parallel distributions of fluid and G-function discretizations, here
+      DRT::Node* gfuncnode = gfuncdis_->lRowNode(lfluidnodeid);
+#ifdef DEBUG
+      if(gfuncdis_->NumDof(gfuncnode)!=1) dserror("G-function node should have 1 dof");
+#endif
+      // find out the local dof id of the dof at the scatra node
+      const int gfuncdofgid = gfuncdis_->Dof(gfuncnode,0);
+
+      const int lgfuncdofidn = phin->Map().LID(gfuncdofgid);
+      const int lgfuncdofidnp = phinp->Map().LID(gfuncdofgid);
+
+      if (lgfuncdofidn < 0) dserror("local dof id not found in map for given global dof id");
+      if (lgfuncdofidnp < 0) dserror("local dof id not found in map for given global dof id");
+
+      // now copy the values
+      const double valuen = (*phin)[lgfuncdofidn];
+      const int errn = phinrow->ReplaceMyValue(lfluidnodeid,0,valuen);
+      if (errn) dserror("error while inserting value into phinrow");
+
+      const double valuenp = (*phinp)[lgfuncdofidnp];
+      const int errnp = phinprow->ReplaceMyValue(lfluidnodeid,0,valuenp);
+      if (errnp) dserror("error while inserting value into phinprow");
+    }
+
   }
   //----------------------------------------------------------------------------------------------
   // no congruent (matching) discretizations (Fluid != G-function)
@@ -303,7 +339,7 @@ void COMBUST::FlameFront::StorePhiVectors(
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustdyn, bool ReinitModifyPhi)
 {
-  std::cout << "\n---  Modify the fluid phi-vector (G-function) at nodes with small values ... " << std::endl << std::flush ;
+  //std::cout << "---  Modify the fluid phi-vector (G-function) at nodes with small values ... " << std::endl << std::flush ;
 
   if (ReinitModifyPhi==true)
   {
@@ -446,13 +482,11 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
     // usually we choose SearchTOL = 0.1
     //========================================================================================
     const double SearchTOL = 0.1;
-    cout << "\n \t -> SearchTOL for G-func values which get potentially modified is set to " << SearchTOL << " !" << endl;
+    //cout << "\n \t -> SearchTOL for G-func values which get potentially modified is set to " << SearchTOL << " !" << endl;
 
     // tolerance for which we interpret a value as zero-> these phi-values are set to zero!
     const double TOL_zero = 1e-14;
-
-    cout << "\n \t -> TOL_zero for G-func values which are a numerical null is set to " << TOL_zero << " !" << endl;
-
+    //cout << "\n \t -> TOL_zero for G-func values which are a numerical null is set to " << TOL_zero << " !" << endl;
 
     // number space dimensions for 3d combustion element
     const size_t nsd = 3;
@@ -547,7 +581,7 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
       if ( (fabs(phinp_current - 0.0) < SearchTOL * maxEleDiam) and (phinp_current != 0.0) )
       {
         modify_phinp_pot = true;
-        cout << "\t --- node "<< nodeID << ": nodal phinp value get potentially modified" << std::endl<< std::flush;
+        //cout << "\t --- node "<< nodeID << ": nodal phinp value get potentially modified" << std::endl<< std::flush;
       }
 
       if ( (fabs(phin_current - 0.0) < SearchTOL * maxEleDiam)  and (phin_current  != 0.0) )
@@ -805,7 +839,13 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
   const size_t nsd = 3;
 
   // TODO template the 2nd part with switch(DISTYPE)
+#ifndef COMBUST_HEX20 // changed_grundl Flag eingebracht
   const DRT::Element::DiscretizationType DISTYPE = DRT::Element::hex8;
+#else
+  const DRT::Element::DiscretizationType DISTYPE = DRT::Element::hex20;
+#endif
+  // number of nodes of this element for interpolation
+  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // gradphi_ gets a NodeColMap
   gradphi_ = rcp(new Epetra_MultiVector(*fluiddis_->NodeColMap(),nsd));
@@ -813,25 +853,18 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
   // before we can export to NodeColMap we need reconstruction with a NodeRowMap
   const Teuchos::RCP<Epetra_MultiVector> gradphirow = rcp(new Epetra_MultiVector(*fluiddis_->NodeRowMap(),nsd));
 
-  // map of pointers to nodes which must be reconstructed by this processor
-  // key is the local id at processor
+  // map of pointers to nodes which must be reconstructed by this processor <local id, node>
   std::map<int, const DRT::Node*> nodesToReconstruct;
   nodesToReconstruct.clear();
 
-  //============================================================
-  // I.PART:  loop over all elements in column!!! map -> intersected elements at processor boundary
-  // must be seen by all processors!!!
-  // => find all nodes which must be reconstructed
-  //============================================================
+  //--------------------------------------------------------------------------------------------
+  // PART I:  loop over all elements in column map to find all nodes which must be reconstructed
+  // remark: intersected elements at processor boundary must be seen by all processors
+  //--------------------------------------------------------------------------------------------
   for(int iele=0;iele<fluiddis_->NumMyColElements();iele++)
   {
     // get element from fluid discretization
     const DRT::Element *actele = fluiddis_->lColElement(iele);
-
-    //--------------------------------------------------------------------------------------------
-    // find out whether this element is intersected or not by looking at number of integration cells
-    //--------------------------------------------------------------------------------------------
-
     // get global Id of element
     int actele_GID = actele->Id();
     // get vector of all integration cells of this element
@@ -842,56 +875,49 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
     //    cout << actele->Id() << "\t" << IntCells.size() << endl;
     //    cout << actele->Id() << "\t" <<BoundIntCells.size() << endl;
 
-    //    if (IntCells.size() > 1 || BoundIntCells.size() > 0) // element is intersected or touched
-    //    {
-    //cout << "element with ID: " << actele->Id() << "is reconstructed "<< endl;
-    // -> assemble all adjacent nodes, these node values must be reconstructed
 
-    // number of nodes of this element (number of vertices)
-    // e.g. hex20 elements hasGEO::DomainIntCells IntCells = myelementintcells_[actele_GID]; numnode=20 but numberOfNodes=8
-    // if actele is an element at processor boundary, actele will be less than 8
-    // TODO:: check this
+    // TODO check if this can be put back in
+    // find out whether this element is intersected or not by looking at number of integration cells
+    //if (IntCells.size() > 1 || BoundIntCells.size() > 0) // element is intersected or touched
+    //{
+    //  cout << "element with ID: " << actele->Id() << "is reconstructed "<< endl;
+    //-> assemble all adjacent nodes, these node values must be reconstructed
+
+    // get number of nodes of this element (number of vertices)
+    // remark: e.g. hex20 elements has GEO::DomainIntCells IntCells = myelementintcells_[actele_GID]; numnode=20 but numberOfNodes=8
+    //         if actele is an element at processor boundary, actele will be less than 8
     const int numberOfNodes = actele->NumNode();
-
     // get vector of pointers of node (for this element)
     const DRT::Node* const* ele_vecOfPtsToNode = actele->Nodes();
 
+    // loop nodes of this element
     for(int vec_it = 0; vec_it < numberOfNodes; vec_it++)
     {
       // get owner of the node to compare with my_rank
       int node_owner = (ele_vecOfPtsToNode[vec_it])->Owner();
-
       // check wheather this node is a row node, compare with actual processor id
       if(node_owner == fluiddis_->Comm().MyPID() )
       {
-        // get local processor id of node
-
-        // TODO: check whether insert in map avoids twice-inserting
+        // insert in map (overwrite existing entry)
         int lid = ele_vecOfPtsToNode[vec_it]->LID();
         nodesToReconstruct[lid] = ele_vecOfPtsToNode[vec_it];
-      } // end if
+      }
+      // remark: all non-row nodes are reconstructed by another processor
+    }
 
-      // REMARK: all not row nodes are reconstructed by another processor!!!
-    }// end vec iteration (vec of nodes of element)
-    //    }// end if element intersected
+    //}
   }// end for loop over row elements
 
-  typedef std::map<int, const DRT::Node*> Node_Map;
 
-  //===============================================================================================
-  // II.PART: reconstruct nodes
-  // => row nodes!!! adjacent to intersected elements must be reconstructed by this processor
-  //===============================================================================================
+  //-------------------------------------------------------------------------------------------
+  // PART II: reconstruct nodes
+  // remark: row nodes adjacent to intersected elements must be reconstructed by this processor
+  //-------------------------------------------------------------------------------------------
 
-  // number of nodes of this element for interpolation!!!
-  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-
-
-  //===============loop over all nodes inserted in nodesToReconstruct==============
-  // map iterator
   typedef std::map<int, const DRT::Node*> Map_NodesToReconstruct;
   typedef Map_NodesToReconstruct::iterator Reconstruct_iterator;
 
+  // loop over all nodes inserted into map 'nodesToReconstruct'
   for(Reconstruct_iterator it_node = nodesToReconstruct.begin(); it_node!= nodesToReconstruct.end(); it_node++)
   {
     // define vector for smoothed values (Phi, grad_Phi) of current node
@@ -900,23 +926,74 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
     static LINALG::Matrix<nsd,1> PHI_SMOOTHED_3D; // set whole 3D vector also for 2D examples
     PHI_SMOOTHED_3D.Clear();
 
-
     // get local processor id of current node and pointer to current node
     //int lid_node = it_node->first;
     const DRT::Node* ptToNode = it_node->second;
+    const int nodegid = ptToNode->Id();
 
-    int numberOfElements = ptToNode->NumElement();
+    // vector of elements located around this node
+    vector<const DRT::Element*> elements;
 
+    // get adjacent elements for this node
+    const DRT::Element*const* adjelements = ptToNode->Elements();
+    for (int iele=0;iele<ptToNode->NumElement();iele++)
+    {
+      //const DRT::Element* ele = elements[iele];
+      elements.push_back(adjelements[iele]);
+    }
 
-    // =================SET TYPE OF RECONSTRUCTION FOR CURRENT NODE =======================================
-    // REMARK:
-    // although least squares reconstruction is chosen in input file, boundary elements have to be reconstructed
-    // by the mean value (average) method because there are not enough adjacent elements to reconstruct
-    // the nodal phi gradient
-    // minimal number of adjacent elements for least_squares reconstruction is 3 for 3D and 2 for 2D, so nsd_real
-    // mean value method is the same for 2D and 3D
+    //--------------------------------------
+    // add elements along perodic boundaries
+    //--------------------------------------
+    // boolean indicating whether this node is a pbc node
+    bool pbcnode = false;
+    int coupnodegid = -1;
+    // loop all nodes with periodic boundary conditions (master nodes)
+    for (std::map<int, vector<int>  >::const_iterator pbciter= (*pbcmap_).begin(); pbciter != (*pbcmap_).end(); ++pbciter)
+    {
+      if (pbciter->first == nodegid) // node is a pbc master node
+      {
+        pbcnode = true;
+        // coupled node is the (first) slave node
+        coupnodegid = pbciter->second[0];
+        if (pbciter->second.size()!=1) dserror("this might need to be modified for more than 1 slave per master");
+      }
+      else
+      {
+        // loop all slave nodes
+        for (size_t islave=0;islave<pbciter->second.size();islave++)
+        {
+          if (pbciter->second[islave] == nodegid) // node is a pbc slave node
+          {
+            pbcnode = true;
+            // coupled node is the master node
+            coupnodegid = pbciter->first;
+          }
+        }
+      }
+    }
 
-    // initialize reconstruction type for current node with none
+    // add elements located around the coupled pbc node
+    if (pbcnode)
+    {
+      // get coupled pbc node (master or slave)
+      const DRT::Node* ptToCoupNode = gfuncdis_->gNode(coupnodegid);
+      // get adjacent elements of this node
+      const DRT::Element*const* pbcelements = ptToCoupNode->Elements();
+      // add elements to list
+      for (int iele=0;iele<ptToCoupNode->NumElement();iele++)// = ptToNode->Elements();
+      {
+        elements.push_back(pbcelements[iele]);
+      }
+    }
+
+    // number of elements located around this node
+    const int numberOfElements = elements.size();
+
+    //--------------------------------------------
+    // set type of reconstruction for current node
+    //--------------------------------------------
+    // initialize reconstruction type for current node with 'none'
     INPAR::COMBUST::SmoothGradPhi CurrTypeOfNodeReconst = INPAR::COMBUST::smooth_grad_phi_none;
 
     // set reconstruction node for current node with special cases (boundary elements)
@@ -924,35 +1001,35 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
       dserror("SmoothGradPhi() should not be called for reconstruction type Grad_phi_None");
     else if (SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_meanvalue)
       CurrTypeOfNodeReconst = INPAR::COMBUST::smooth_grad_phi_meanvalue;
-    else if ( (SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_3D  && numberOfElements < int(nsd_real)) ||
+    else if (
+        (SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_3D  && numberOfElements <  int(nsd_real)) ||
         (SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dx && numberOfElements <= int(nsd_real)) ||
         (SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dy && numberOfElements <= int(nsd_real)) ||
-        (SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dz && numberOfElements <= int(nsd_real))    )
+        (SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dz && numberOfElements <= int(nsd_real)) )
     {
       CurrTypeOfNodeReconst = INPAR::COMBUST::smooth_grad_phi_meanvalue;
-
-      cout << "warning:\n"
-          << "\t\tnode\t" << (it_node->second)->Id() << "\tis a boundary node with "<< numberOfElements << " elements and is reconstructed with average (mean value) method" << endl;
+      // remark: although least squares reconstruction is chosen in input file, boundary elements
+      //         have to be reconstructed by the mean value (average) method because there are not
+      //         enough adjacent elements to reconstruct the nodal phi gradient minimal number of
+      //         adjacent elements for least_squares reconstruction is 3 for 3D and 2 for 2D,
+      //         so nsd_real mean value method is the same for 2D and 3D
+      cout << "/!\\" << "\t\tnode\t" << (it_node->second)->Id() << "\tis a boundary node with "
+           << numberOfElements << " elements and is reconstructed with average (mean value) method" << endl;
     }
     else // type of reconstruction as chosen in input file
       CurrTypeOfNodeReconst = SmoothGradPhi;
 
-    // ====================================================================================================
-    // REMARK:
+    // remark:
     // special case for intersected elements which have boundary nodes
     // for boundary nodes there are not enough elements to reconstruct node gradient with least squares
     // => build average of gradients of adjacent elements instead of least squares reconstruction
     // at least nsd+1 adjacent elements necessary for least squares reconstruction, we take at least numnode!!!
     if(CurrTypeOfNodeReconst == INPAR::COMBUST::smooth_grad_phi_meanvalue)  //(int)numnode
     {
-      //==============================================================================
-      //      average (mean value) reconstruction for boundary nodes and as alternative
-      //==============================================================================
-
-      // get adjacent elements to current node actnode
-      const DRT::Element* const* elements = ptToNode->Elements();
-
-      // loop over adjacent elements
+      //--------------------------------------------------------------------------
+      // average (mean value) reconstruction for boundary nodes and as alternative
+      //--------------------------------------------------------------------------
+      // loop over elements located around this node
       for(int ele_current=0; ele_current<numberOfElements; ele_current++)
       {
         // get current element
@@ -969,7 +1046,8 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 
         // get vector of node GIDs of this adjacent element -> needed for ExtractMyValues
         vector<int> nodeID_adj(numnode);
-        for (size_t inode=0; inode < numnode; inode++){
+        for (size_t inode=0; inode < numnode; inode++)
+        {
           nodeID_adj[inode] = ptToNodeIds_adj[inode];
           // get local number of node actnode in ele_adj
           if(ptToNode->Id() == ptToNodeIds_adj[inode]) ID_param_space = inode;
@@ -980,26 +1058,26 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
         DRT::UTILS::ExtractMyValues(*phinp_, ephinp, nodeID_adj);
         LINALG::Matrix<numnode,1> ephi_adj(ephinp);
 
-        //===============================================================================
-        // calculate gradient of phi at this node
-
-        // get Xi-coordinates of node for current element
-
-        // get derivatives of shapefunctions evaluated at node in XYZ-coordinates
+        //-------------------------------------
+        // compute gradient of phi at this node
+        //-------------------------------------
+        // get derivatives of shape functions evaluated at node in XYZ-coordinates
         static LINALG::Matrix<nsd,numnode> deriv3Dele_xyz;
-        // get derivatives of shapefunctions evaluates at node in Xi-coordinates
+        // get derivatives of shape functions evaluates at node in Xi-coordinates
         static LINALG::Matrix<nsd,numnode> deriv3Dele;
 
         // get Xi-coordinates of current node in current adjacent element
         static LINALG::Matrix<nsd,1> node_Xicoordinates;
         node_Xicoordinates.Clear();
-        node_Xicoordinates = DRT::UTILS::getNodeCoordinates(ID_param_space, DISTYPE);
-
+        for(size_t icomp = 0; icomp<nsd; ++icomp)
+        {
+          node_Xicoordinates(icomp) = DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[ID_param_space][icomp];
+        }
 
         // get derivatives of shapefunctions at node
         DRT::UTILS::shape_function_3D_deriv1(deriv3Dele,node_Xicoordinates(0),node_Xicoordinates(1),node_Xicoordinates(2),DISTYPE);
 
-        // reconstruct XYZ!-gradient
+        // reconstruct XYZ-gradient
 
         // get node coordinates of this element
         static LINALG::Matrix<nsd,numnode> xyze_adj;
@@ -1016,8 +1094,9 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
         // set XYZ-derivates of shapefunctions
         deriv3Dele_xyz.Multiply(xji_ele_XiToXYZ,deriv3Dele);
 
-        //===============================================================================
-        // calculate gradient of phi at node for current element
+        //----------------------------------------------------
+        // compute gradient of phi at node for current element
+        //----------------------------------------------------
         static LINALG::Matrix<3,1> nodal_grad_tmp;
         nodal_grad_tmp.Clear();
 
@@ -1034,6 +1113,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
         PHI_SMOOTHED_3D(2,0) += nodal_grad_tmp(2,0);
 
       }// end loop over all adjacent elements
+
 #if(0)
       // special case for straight_bodyforce
       // this is a node of an intersected element
@@ -1066,20 +1146,9 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
       }
 #endif
 
-#if(0)
-      // special case for flame vortex interaction
-      // this is a node of an intersected element
-      // the element must be a boundary element!
-      // assume a continued interface across the domain boundary
-      if(numberOfElements == 2 || numberOfElements == 1)
-      {
-        // set two vectors in y-direction
-        PHI_SMOOTHED_3D(0,0) = 0.0;
-        PHI_SMOOTHED_3D(1,0) = 1.0 * numberOfElements;
-        PHI_SMOOTHED_3D(2,0) = 0.0;
-
-        cout << "\n\t !!! warning !!! (flame_vortex_interaction modification) we modify the gradient of phi periodically at the domain boundary";
-      }
+#ifdef COMBUST_2D
+      //std::cout << "/!\\ third component or normal vector set to 0 to keep 2D-character!" << std::endl;
+      PHI_SMOOTHED_3D(2,0) = 0.0;
 #endif
 
 
@@ -1088,24 +1157,20 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
     } // end of average (mean value) reconstruction
     else // least squares reconstruction
     {
-      //==============================================================================
-      //      standard reconstruction with least squares method, see Merchandise'07
-      //==============================================================================
+      //----------------------------------------------------------------------
+      // standard reconstruction with least squares method, see Merchandise'07
+      //----------------------------------------------------------------------
 
       // we need Epetra-Matrix (numberOfElements is not a valid template parameter)
 
       Epetra_SerialDenseMatrix RHS_LS(numberOfElements,1);
       Epetra_SerialDenseMatrix MAT_LS(numberOfElements, nsd_real);
 
-      // get adjacent elements to current node actnode
-      const DRT::Element* const* elements = ptToNode->Elements();
-
       int xyz_2D_dim = -1;
       // set one dimension (xyz-dim) to zero for 2D LS-reconstruction
       if(SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dx) xyz_2D_dim = 0;
       if(SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dy) xyz_2D_dim = 1;
       if(SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dz) xyz_2D_dim = 2;
-
 
       // loop over adjacent elements
       for(int ele_current=0; ele_current<numberOfElements; ele_current++)
@@ -1136,7 +1201,6 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
         DRT::UTILS::ExtractMyValues(*phinp_, ephinp, nodeID_adj);
         LINALG::Matrix<numnode,1> ephi_adj(ephinp);
 
-
         // calculate center of gravity
         static LINALG::Matrix<numnode,1> funct;
         funct.Clear();
@@ -1148,8 +1212,6 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
         centerOfGravXi(0) = 0.0;
         centerOfGravXi(1) = 0.0;
         centerOfGravXi(2) = 0.0;
-
-
 
         DRT::UTILS::shape_function_3D(funct,centerOfGravXi(0),centerOfGravXi(1),centerOfGravXi(2),DISTYPE);
 
@@ -1172,11 +1234,8 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
         direction(1) = centerOfGravXYZ(1) - xyze_adj(1, ID_param_space);
         direction(2) = centerOfGravXYZ(2) - xyze_adj(2, ID_param_space);
 
-
-
         // cancel out the 2D direction
         if(xyz_2D_dim != -1) direction(xyz_2D_dim) = 0.0;
-
 
         // assemble direction into matrix A
 
@@ -1207,7 +1266,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
           } // end for
         } // end else
 
-      } // =================================end loop over all adjacent elements===========================
+      } // end loop over all adjacent elements
 
       // the system MAT_LS * phi_smoothed = RHS_LS is only solvable in a least squares manner
       // MAT_LS is not square
@@ -1224,8 +1283,9 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
       LINALG::Matrix<nsd_real,nsd_real> MAT(MAT_tmp);
       LINALG::Matrix<nsd_real,1> RHS(RHS_tmp);
 
-      //=================solve A^T*A* phi_smoothed = A^T*RHS (LEAST SQUARES)================
-
+      //----------------------------------------------------
+      // solve A^T*A* phi_smoothed = A^T*RHS (LEAST SQUARES)
+      //----------------------------------------------------
       // solve the system for current node
       LINALG::FixedSizeSerialDenseSolver<nsd_real,nsd_real,1> solver; //1 is dimension of RHS
       solver.SetMatrix(MAT);
@@ -1256,9 +1316,9 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
     } // end of standard (Least_squares-) reconstruction case
 
 
-    //=====================================================================================================
-    // set the global vector gradphirow holding the new reconstructed values of gradient of phi in row!!! map
-    //=====================================================================================================
+    //----------------------------------------------------------------------------------------------------
+    // set the global vector gradphirow holding the new reconstructed values of gradient of phi in row map
+    //----------------------------------------------------------------------------------------------------
 
     // get the global id for current node
     int GID = (it_node->second)->Id();
@@ -1282,14 +1342,10 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
       globalcolumn[lid] = PHI_SMOOTHED_3D(col,0);
     }
 
-  }// ====================================== end loop over nodes ==========================================
+  }// end loop over nodes
 
   // export NodeRowMap to NodeColMap gradphi_
   LINALG::Export(*gradphirow,*gradphi_);
-
-  std::cout << "done" << std::endl;
-
-
 
   //
   //  //===================================== new 2-Ring version
@@ -1596,7 +1652,6 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
   //
   //
 
-
   return;
 }
 
@@ -1610,7 +1665,7 @@ void COMBUST::FlameFront::CallSmoothGradPhi(const Teuchos::ParameterList& combus
 {
   TEUCHOS_FUNC_TIME_MONITOR("SMOOTHING OF GRAD_PHI");
   if (gfuncdis_->Comm().MyPID()==0)
-    std::cout << "\n---  smoothing gradient of phi (G-function) around the interface for surface tension applications ... " << std::flush;
+    std::cout << "---  compute smoothed gradient of phi... " << std::flush;
 
   // get type of reconstruction
   const INPAR::COMBUST::SmoothGradPhi SmoothGradPhi = DRT::INPUT::IntegralValue<INPAR::COMBUST::SmoothGradPhi>
@@ -1633,8 +1688,8 @@ void COMBUST::FlameFront::CallSmoothGradPhi(const Teuchos::ParameterList& combus
     std::cout << "\n---  \t reconstruction with:\t LeastSquares_2Dz... " << std::flush;
   if(SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_leastsquares_3D)
     std::cout << "\n---  \t reconstruction with:\t LeastSquares_3D... " << std::flush;
-  if(SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_meanvalue)
-    std::cout << "\n---  \t reconstruction with:\t MeanValue... " << std::flush;
+  //if(SmoothGradPhi == INPAR::COMBUST::smooth_grad_phi_meanvalue)
+  //  std::cout << "\n---  \t reconstruction with:\t MeanValue... " << std::flush;
 
   // switch: real dimension of reconstruction, is real dimension 2D or 3D?
   switch (nsd_real)
@@ -1898,8 +1953,9 @@ void COMBUST::FlameFront::FindFlameFront(
       // get the vertex coordinates of the refinement cell
       // given in the coordinate system of the element == rootcell
       const std::vector<std::vector<double> > vertexcoord = cell->GetVertexCoord();
+      const std::size_t numnodecell = vertexcoord.size();
       // to be filled with the G-Function values of the refinement cell
-      std::vector<double> gfunctionvalues(8);
+      std::vector<double> gfunctionvalues(numnodecell);
       // G-Function values of the corresponding element
       if (cell->ReturnRootCell()==NULL)
         dserror("return NULL");
@@ -1911,17 +1967,22 @@ void COMBUST::FlameFront::FindFlameFront(
 
       const int numnode = cell->Ele()->NumNode();
 #ifdef DEBUG
-      if (gfuncelement.size() != static_cast<unsigned>( numnode ))
+      if (gfuncelement.size() != static_cast<unsigned>(numnode) or
+          numnodecell != numnode)
         dserror("number of G-Function values does not match number of element nodes");
 #endif
       // loop over all vertices of the refinement cell
-      for (std::size_t ivertex = 0; ivertex < vertexcoord.size(); ivertex++)
+      for (std::size_t ivertex = 0; ivertex < numnodecell; ivertex++)
       {
         // evaluate shape function at the coordinates of the current refinement cell vertex
         Epetra_SerialDenseVector funct(numnode);
+#ifndef COMBUST_HEX20
         DRT::UTILS::shape_function_3D(funct,vertexcoord[ivertex][0],vertexcoord[ivertex][1],vertexcoord[ivertex][2],DRT::Element::hex8);
+#else
+        DRT::UTILS::shape_function_3D(funct,vertexcoord[ivertex][0],vertexcoord[ivertex][1],vertexcoord[ivertex][2],DRT::Element::hex20);
+#endif
         // compute G-Function value
-        gfunctionvalues[ivertex] = 0;
+        gfunctionvalues[ivertex] = 0.0;
         for (int inode = 0; inode < numnode; inode++)
           gfunctionvalues[ivertex] += gfuncelement[inode] * funct(inode);
       }
@@ -1987,7 +2048,7 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
   // get vertex coordinates (local fluid element coordinates) from refinement cell
   const std::vector<std::vector<double> >& vertexcoord = cell->GetVertexCoord();
   // temporary variable to store intersection points
-  std::map<int,std::vector<double> > intersectionpoints;
+  std::multimap<int,std::vector<double> > intersectionpoints;
   // for double intersected lines of quadratic element a multimap is necessary
   // std::multimap<int,std::vector<double> > intersectionpoints;
 
@@ -2000,6 +2061,7 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
   switch(cell->Ele()->Shape())
   {
   case DRT::Element::hex8:
+  case DRT::Element::hex20:
   {
     lines = DRT::UTILS::getEleNodeNumberingLines(DRT::Element::hex8);
     // remark: vertices are assumed to be numbered in the same way the nodes are
@@ -2072,7 +2134,8 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
         }
 
         // store coordinates of intersection point for each line
-        intersectionpoints[iline] = coordinates;
+        intersectionpoints.insert(pair<int, std::vector<double> >( iline, coordinates));
+        //intersectionpoints[iline] = coordinates;
       }
       else
       {
@@ -2082,10 +2145,11 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
 
     break;
   }
+#if 0
   case DRT::Element::hex20:
   case DRT::Element::hex27:
   {
-    dserror("Hallo Kilian, ich habe noch einige Hinweise!");
+    //dserror("Hallo Kilian, ich habe noch einige Hinweise!");
     // TODO @ Kilian:Kannst du, bevor du damit deine Level-Set-Beispiele
     //        rechnest noch eine paar Testfaelle dafuer rechnen. Du kannst
     //        von mir dazu ein Inputfile mit einem Hex20-Element haben.
@@ -2127,6 +2191,8 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
     // determine intersection points
     //-------------------------------
     // loop edges of refinement cell
+
+    //CHANGED_GRUNDL: erweitert (va. Ausgaben) und "drüber geschaut" (Beim kopieren darauf achten den alten Code bestehen zu lassen)
     for(std::size_t iline=0; iline<lines.size(); iline++)
     {
       // get G-function value of the three nodes
@@ -2170,6 +2236,7 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
             // get coordinates
             for (int dim = 0; dim < 3; dim++)
             {
+              //find the dimension of the xi-coordinates
               // vertices have one coordinate in common
               if(vertexcoord[lines[iline][0]][dim] == vertexcoord[lines[iline][1]][dim])
               {
@@ -2190,11 +2257,25 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
               std::cout << "<!> WARNING: FindIntersectionPoints() has detected double intersected line of hex20-element" << std::endl;
               std::cout << "G-Function-Values of element:" << std::endl;
               for (std::size_t k=0;k<gfuncvalues.size();k++)
-                std::cout << gfuncvalues[k] << std::endl;
+                std::cout << "Node " << k << ":   " << gfuncvalues[k] << std::endl;
               std::cout << "Adapt BuildFlameFrontSegements()!" << std::endl;
-              dserror("Check this first!");
+              std::cout << "The xi-values are: " << std::endl;
+              std::cout << "xi1: " << xi_1 << std::endl;
+              std::cout << "xi2: " << xi_2 << std::endl;
+              std::cout << "The coordinates are: " << std::endl;
+              std::cout << "coordinate1: " << std::endl;
+              for (int i = 0; i < 3; i++) {
+                std::cout << coordinates1[i] << std::endl;
+              }
+              std::cout << "coordinate2: " << std::endl;
+              for (int i = 0; i < 3; i++) {
+                std::cout << coordinates2[i] << std::endl;
+              }
+              intersectionpoints.insert(pair<int, std::vector<double> > (iline, coordinates1));
+              intersectionpoints.insert(pair<int, std::vector<double> > (iline, coordinates2));
+              //dserror("Check this first!");
             }
-
+            else {
             // store intersectionpoint if it is located in the interval ]-1.0;1.0[
             if (fabs(xi_1) < 1.0)
               intersectionpoints.insert(pair<int,std::vector<double> >(iline,coordinates1));
@@ -2231,8 +2312,10 @@ void COMBUST::FlameFront::FindIntersectionPoints(const Teuchos::RCP<COMBUST::Ref
         }
       }
     }
+    }
     break;
   }
+#endif
   default:
     dserror("FindIntersectionPoints() does not support this element shape!");
   }
@@ -2291,9 +2374,11 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
     for (std::size_t icell = 0; icell < RefinementCells.size(); icell++)
     {
 #ifdef DEBUG
+#ifndef COMBUST_HEX20
       // check if distype of cell correct (hex8)
       const DRT::Element::DiscretizationType distype = RefinementCells[icell]->Shape();
       if(distype != DRT::Element::hex8) dserror("hex8 refinement cell expected");
+#endif
 #endif
       // for cut cells
       if(RefinementCells[icell]->Bisected())
@@ -2330,9 +2415,11 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
     for (std::size_t icell = 0; icell < RefinementCells.size(); icell++)
     {
 #ifdef DEBUG
+#ifndef COMBUST_HEX20
       // check if distype of cell correct (hex8)
       const DRT::Element::DiscretizationType distype = RefinementCells[icell]->Shape();
       if(distype != DRT::Element::hex8) dserror("hex8 refinement cell expected");
+#endif
 #endif
 
       if(RefinementCells[icell]->Bisected())
@@ -2364,9 +2451,11 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
   case INPAR::COMBUST::xfemintegration_hexahedra:
   {
 #ifdef DEBUG
+#ifndef COMBUST_HEX20
     // check if distype of cell correct (hex8)
     const DRT::Element::DiscretizationType distype = rootcell->Shape();
     if(distype != DRT::Element::hex8) dserror("hex8 refinement cell expected");
+#endif
 #endif
     if(rootcell->Bisected())
     {
@@ -2393,7 +2482,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
     // the rootcell is touched (interface aligned with an element surface)
     // remark: in all other cases (leaf cell is touched) the root cell will be bisected
     //         -> previous case, since domain hexahedra are created for both cases
-    if(rootcell->Touched())
+    else if(rootcell->Touched())
     {
       // store hex8 domain integration cell
       StoreDomainIntegrationCell(rootcell->ReturnRootCell(),listDomainIntCellsperEle);
@@ -2743,7 +2832,7 @@ void COMBUST::FlameFront::TriangulateFlameFront(
     std::vector<std::vector<int> >&       trianglelist,
     std::multimap<int,std::vector<int> >& segmentlist,
     std::vector<std::vector<double> >&    pointlist,
-    std::map<int,int>&                    intersectionpointsids,
+    std::multimap<int,int>&               intersectionpointsids,
     const std::vector<double>&            gfuncvalues
 )
 {
@@ -2976,6 +3065,22 @@ void COMBUST::FlameFront::TriangulateFlameFront(
         converged = projectMidpoint<DRT::Element::hex8>(valuesGcell, midpoint, projpoint);
         break;
       }
+      case DRT::Element::hex20:
+      {
+#ifdef DEBUG
+        if (gfuncvaluesrootcell.size() != 20)
+          dserror("discretization types do not match!");
+#endif
+        // store G-function values in a fixed size vector
+        const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
+        LINALG::Matrix<numvertices,1> valuesGcell(true);
+        for (unsigned irow=0;irow<gfuncvaluesrootcell.size();++irow)
+          valuesGcell(irow) = gfuncvaluesrootcell[irow];
+
+        // project midpoint on level set zero iso-surface
+        converged = projectMidpoint<DRT::Element::hex20>(valuesGcell, midpoint, projpoint);
+        break;
+      }
       default:
         dserror("unknown type of boundary integration cell");
       }
@@ -2987,7 +3092,7 @@ void COMBUST::FlameFront::TriangulateFlameFront(
       }
 #endif
 
-#ifndef COMBUST_2D
+//#ifndef COMBUST_2D
       // add midpoint to list of points defining piecewise linear complex (interface surface)
       std::size_t midpoint_id = pointlist.size();//ids start at 0
       //std::cout<< "pointlistsize " << pointlist.size() << "midpointid " << midpoint_id<<std::endl;
@@ -3002,9 +3107,9 @@ void COMBUST::FlameFront::TriangulateFlameFront(
         trianglepoints[2] = midpoint_id;
         trianglelist.push_back(trianglepoints);
       }
-#else
-      projectMidpoint2D(trianglelist,segmentlist,pointlist,polypoints,midpoint);
-#endif
+//#else
+//      projectMidpoint2D(trianglelist,segmentlist,pointlist,polypoints,midpoint);
+//#endif
     }
   }
 
@@ -3027,7 +3132,7 @@ void COMBUST::FlameFront::TriangulateFlameFront(
 void COMBUST::FlameFront::IdentifyPolygonOrientation(
     std::vector<int>&           segment,
     const int                   surf_id,
-    std::map<int,int>&          intersectionpointsids,
+    std::multimap<int,int>&     intersectionpointsids,
     const std::vector<double>&  gfuncvalues
 )
 {
@@ -3101,7 +3206,7 @@ void COMBUST::FlameFront::IdentifyPolygonOrientation(
  | hex8 only                                                                                      |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::buildFlameFrontSegments(
-    std::map<int,int>&                       intersectionpointsids,
+    std::multimap<int,int>&                  intersectionpointsids,
     std::multimap<int,std::vector<int> >&    segmentlist,
     const std::vector<double>&               gfuncvalues,
     const std::vector<std::vector<double> >& pointlist
@@ -3295,11 +3400,12 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
       }
       if (zeropoints.size()!=1)
       {
+        std::cout << "Surface " << i << endl;
         for (size_t l=0; l < gfuncvalues.size(); l++)
         {
-          std::cout << gfuncvalues[l] << std::endl;
+          std::cout << "Node " << l << " " << gfuncvalues[l] << std::endl;
         }
-        dserror("can't build intersection segment");
+        dserror("can't build intersection segment, one intersection point, but not one vertex that has G=0");
       }
 
       std::vector<int> segment (2);
@@ -3317,7 +3423,7 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
     }
     case 3:
     {
-      dserror("impossible number of intersectionpoints for hex8 element surface");
+      dserror("3 is an impossible number of intersectionpoints for hex8 element surface");
       break;
     }
     case 4:
@@ -3387,6 +3493,411 @@ void COMBUST::FlameFront::buildFlameFrontSegments(
 
 
 /*------------------------------------------------------------------------------------------------*
+ | build polygon segments of intersection surface of a refinement cell (hex20)        henke 12/10 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::FlameFront::buildFlameFrontSegmentsHex20(
+    std::multimap<int, int>& intersectionpointsids,
+    std::multimap<int, std::vector<int> >& segmentlist,
+    const std::vector<double>& gfuncvalues,
+    const std::vector<std::vector<double> >& pointlist)
+{
+  // written by Kilan Grundl
+  dserror("Thou shalt not call this function without knowing what it does!");
+#if 0
+  // array containing the line_id's for each surface (same for hex8, hex20 and hex27)
+  int surface[6][4] = { { 3, 2, 1, 0 }, { 0, 5, 8, 4 }, { 1, 6, 9, 5 }, { 2, 7, 10, 6 }, { 4, 11, 7, 3 }, { 8, 9, 10, 11 } };
+
+  for (int surfaceNo = 0; surfaceNo < 6; surfaceNo++)//loop over all surfaces
+  {
+    cout << "Surface No.: " << surfaceNo << endl;
+    std::vector<std::vector<int> > surfacepointlist = DRT::UTILS::getEleNodeNumberingSurfaces(DRT::Element::hex20);
+
+    // gets end points of the segment
+    std::vector<int> segmentpoints;
+    //to store the segments later on
+    std::vector<int> segment(2);
+    //saves the coordinates of the segmentationpoints
+    std::vector<LINALG::Matrix<3,1> > SegmentationCoordinates;
+
+    //
+    int involvedlines = 0;
+
+    int oldline = -1;
+    for (int lineNo = 0; lineNo < 4; lineNo++) //loop over all lines of the surface (find intersection points within the lines)
+    {
+      // find line
+      //stores all segmentpoints of one line
+      pair<multimap<int,int>::const_iterator,multimap<int,int>::const_iterator> range_intersectionpoint = intersectionpointsids.equal_range(surface[surfaceNo][lineNo]);
+
+      //iterates over all segmentpoints of the line
+      multimap<int,int>::const_iterator it_intersectionpoint;
+      for(it_intersectionpoint = range_intersectionpoint.first; it_intersectionpoint != range_intersectionpoint.second; it_intersectionpoint++)
+      {
+        //get id of the intersectionpoint and store it in segmentpoints vector
+        segmentpoints.push_back(it_intersectionpoint->second);
+        //cout << "Intersectionpoint found on line: " << surface[surfaceNo][lineNo] << " with ID: " << it_intersectionpoint->second << endl;
+
+        if(oldline != lineNo)
+        {
+          oldline = lineNo;
+          involvedlines++;
+        }
+        else //double intersected edge --> sort segpoints to the beginning of the list
+        {
+          segmentpoints.insert(segmentpoints.begin(), segmentpoints.back());
+          segmentpoints.erase(segmentpoints.end()-1);
+          segmentpoints.insert(segmentpoints.begin(), segmentpoints.back());
+          segmentpoints.erase(segmentpoints.end()-1);
+        }
+
+      }
+    }
+
+
+    //save the local element-coordinates of the segmentationpoints
+    LINALG::Matrix<3,1> Coords;
+    for(int i=0; i<segmentpoints.size(); i++)
+    {
+      for(int dim = 0; dim<3; dim++)
+      {
+        Coords(dim) = pointlist[segmentpoints[i]][dim];
+      }
+      cout << "The Coordinate are: " << Coords << endl;
+      SegmentationCoordinates.push_back(Coords);
+    }
+
+    std::vector<int> zeropoints;
+    for (int nodeNo = 0; nodeNo < 4; nodeNo++)//loop over corner nodes (the four first nodes of a (hex8/20/27) surface are the corner nodes)
+    {
+      if (gfuncvalues[surfacepointlist[surfaceNo][nodeNo]] == 0)
+        zeropoints.push_back(surfacepointlist[surfaceNo][nodeNo]);
+    }
+
+    int segsize = segmentpoints.size();
+    int zersize = zeropoints.size();
+
+    switch (segsize) {
+    case 0: //not one intersection point at all
+    {
+      switch (zeropoints.size()) {
+      case 0: //surface not intersected
+      case 1: //surface not intersected, but one vertex touches the interface
+      {
+        break;
+      }
+      case 2: //taken from hex8
+        /*
+         * 2 opposite vertices with Phi=0
+         * - surface is intersected, iff Phi at the remaining vertices has different sign (segment == diagonal)
+         * - otherwise vertiches touch interface
+         * 2 neighboring vertices with Phi=0
+         * - edge touchs interface, but cell is not intersected
+         * - edge limits interface patch -> then, it is needed in TriangulateFlameFront()
+         */
+      {
+        // intersection: opposite vertices with Phi=0
+        if (((zeropoints[0] == surfacepointlist[surfaceNo][0]) and (zeropoints[1] == surfacepointlist[surfaceNo][2]))) {
+          // different sign of Phi at the remaining vertices
+          if (gfuncvalues[surfacepointlist[surfaceNo][1]] * gfuncvalues[surfacepointlist[surfaceNo][3]] < 0) {
+            //store in segmentlist
+            segmentlist.insert(pair<int, std::vector<int> > (surfaceNo, zeropoints));
+          }
+        }
+        else if (((zeropoints[0] == surfacepointlist[surfaceNo][1]) and (zeropoints[1] == surfacepointlist[surfaceNo][3]))) {
+          if (gfuncvalues[surfacepointlist[surfaceNo][0]] * gfuncvalues[surfacepointlist[surfaceNo][2]] < 0) {
+            segmentlist.insert(pair<int, std::vector<int> > (surfaceNo, zeropoints));
+          }
+        }
+        else {
+          // no intersection
+          // possibly segment limits the interface
+          // store in segment list (key=-1), if it is not already contained in the segmentlist
+          if (zeropoints[0] > zeropoints[1]) {
+            int temp = zeropoints[1];
+            zeropoints[1] = zeropoints[0];
+            zeropoints[0] = temp;
+          }
+          //already in segmentlist?
+          bool not_in_segmentlist = true;
+          for (std::multimap<int, std::vector<int> >::iterator iter = segmentlist.equal_range(-1).first; iter != segmentlist.equal_range(-1).second; iter++) {
+            if (iter->second == zeropoints)
+              not_in_segmentlist = false;
+          }
+          if (not_in_segmentlist)
+            //store in segmentlist
+            segmentlist.insert(pair<int, std::vector<int> > (-1, zeropoints));
+        }
+        break;
+      }
+      case 3: //surface might be intersected --> TODO: add case
+      {
+        // surface is not intersected, but two following edges are aligned with the interface
+        // store in segment list (key=-1), if it is not already contained in the segmentlist
+
+        // zeropoints are assigned to segments
+        // check which vertex is missing
+        if (zeropoints[0] == surfacepointlist[surfaceNo][0]) {
+          if (zeropoints[1] == surfacepointlist[surfaceNo][1]) {
+            if (zeropoints[2] == surfacepointlist[surfaceNo][2]) {
+              //vertex 4 is missing -> no problem
+            }
+            else {
+              //vertex 3 is missing -> rearrange zeropoints
+              int temp = zeropoints[0];
+              zeropoints[0] = zeropoints[2];
+              zeropoints[2] = zeropoints[1];
+              zeropoints[1] = temp;
+            }
+          }
+          else {
+            //vertex 2 is missing -> rearrange zeropoints
+            int temp = zeropoints[0];
+            zeropoints[0] = zeropoints[1];
+            zeropoints[1] = zeropoints[2];
+            zeropoints[2] = temp;
+          }
+        }
+        else {
+          //vertex 1 is missing -> no problem
+        }
+
+        for (std::size_t k = 0; k < zeropoints.size() - 1; k++) {
+          segment[0] = zeropoints[k];
+          segment[1] = zeropoints[k + 1];
+          if (segment[0] > segment[1]) {
+            int temp = segment[1];
+            segment[1] = segment[0];
+            segment[0] = temp;
+          }
+          bool not_in_segmentlist = true;
+          for (std::multimap<int, std::vector<int> >::iterator iter = segmentlist.equal_range(-1).first; iter != segmentlist.equal_range(-1).second; iter++) {
+            if (iter->second == segment)
+              not_in_segmentlist = false;
+          }
+          if (not_in_segmentlist)
+            segmentlist.insert(pair<int, std::vector<int> > (-1, segment));
+        }
+        break;
+      }
+      case 4:
+        // surface is aligned with the interface -> cell is not intersected
+        // TODO: OR: surface is intersected by two double intersected lines
+      {
+
+        break;
+      }
+      default:
+        dserror("impossible number of zero values");
+      }
+      break;
+    }
+    case 1: //one intersection point on the surface
+
+    {
+      switch (zeropoints.size())
+      {
+      case 0:
+      {
+        for (size_t l=0; l < gfuncvalues.size(); l++)
+        {
+          std::cout << gfuncvalues[l] << std::endl;
+        }
+        dserror("can't build intersection segment, one intersection point, but no vertex with G=0");
+        break;
+      }
+      case 1:
+      {
+        int counter = 0; //counts the positive corner nodes
+        for(int node=0; node<4; node++)//loop over corner nodes
+        {
+          if (gfuncvalues[surfacepointlist[surfaceNo][node]]>0.0)
+            counter++;
+        }
+        if(counter>0 and counter < 4) //this implies a sign-change for the corner nodes, so the intersection point is not a double zero
+        {
+          segment[0] = segmentpoints[0];
+          segment[1] = zeropoints[0];
+          segmentlist.insert(pair<int,std::vector<int> >(surfaceNo,segment));
+        }
+        break;
+      }
+      case 2:
+        dserror("one intersectionpoint and two corner-zero-nodes: not implemented yet");
+        break;
+      case 3:
+        dserror("one intersectionpoint and three corner-zero-nodes: not implemented yet");
+        break;
+      case 4:
+        dserror("one intersectionpoint and four corner-zero-nodes: not implemented yet");
+        break;
+      }
+      break;
+    }
+    case 2: //two intersection points on the surface
+      switch(zeropoints.size())
+      {
+      case 0:
+      {
+        segment[0] = segmentpoints[0];
+        segment[1] = segmentpoints[1];
+        segmentlist.insert(pair<int,std::vector<int> >(surfaceNo,segment));
+        break;
+      }
+      default:
+      {
+        int zersize = zeropoints.size();
+        dserror("Two intersectionpoints and %i corner-zero-nodes: not implemented yet", zersize);
+        break;
+      }
+      }
+      break;
+      case 4: //four intersection points on the surface
+        switch(zersize)
+        {
+        case 0:
+        {
+          if(involvedlines < 4)
+          {
+            LINALG::Matrix<3,1> Diff1 = SegmentationCoordinates[0];
+            LINALG::Matrix<3,1> Diff2 = SegmentationCoordinates[1];
+            Diff1 -= SegmentationCoordinates[2];
+            Diff2 -= SegmentationCoordinates[3];
+            LINALG::Matrix<3,1> SurfaceNormal = GEO::computeCrossProduct(Diff1, Diff2);
+            if (SurfaceNormal.Norm1() <= 1e-10) //the two lines are parallel
+            {
+              segmentlist.insert(pair<int, int>(segmentpoints[0], segmentpoints[2]));
+              segmentlist.insert(pair<int, int>(segmentpoints[1], segmentpoints[3]));
+            }
+            else //lines are not parallel
+            {
+              LINALG::Matrix<3,1> planeNormal = GEO::computeCrossProduct(SurfaceNormal, Diff1);
+              double d = - planeNormal(0) *SegmentationCoordinates[0](0) - planeNormal(1)*SegmentationCoordinates[0](1) - planeNormal(2)*SegmentationCoordinates[0](2);
+              if ( //Diff1 und Diff2 are not intersected within the surface
+                  (d + planeNormal(0) *SegmentationCoordinates[1](0) + planeNormal(1)*SegmentationCoordinates[1](1) + planeNormal(2)*SegmentationCoordinates[1](2))
+                  * (d + planeNormal(0) *SegmentationCoordinates[3](0) + planeNormal(1)*SegmentationCoordinates[3](1) + planeNormal(2)*SegmentationCoordinates[3](2))
+                  > 0)
+              {
+                segmentlist.insert(pair<int, int>(segmentpoints[0], segmentpoints[2]));
+                segmentlist.insert(pair<int, int>(segmentpoints[1], segmentpoints[3]));
+              }
+              else
+              {//Diff1 and Diff2 are intersected within the surface
+                segmentlist.insert(pair<int, int>(segmentpoints[0], segmentpoints[3]));
+                segmentlist.insert(pair<int, int>(segmentpoints[1], segmentpoints[2]));
+              }
+            }
+          }
+          else
+          {
+            dserror("Four intersectionpoints one on each edge, no corner-zero-nodes: not implemented yet", zersize);
+          }
+          dserror("Four intersectionpoints and %i corner-zero-nodes: not implemented yet", zersize);
+          break;
+        }
+        default:
+          dserror("Four intersectionpoints and %i corner-zero-nodes: not implemented yet", zersize);
+          break;
+        }
+        break;
+        default:
+        {
+          dserror("%i intersectionpoints and %i corner-zero-nodes: not implemented yet", segsize, zersize);
+          break;
+        }
+    }
+
+    //testing-output
+    std::cout << segsize << " intersectionpoints and " << zersize << " corner-zero-nodes" << std::endl;
+  }
+
+  return;
+
+#endif
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | store domain integration cell (only for hex8 cells at present)                     henke 08/10 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::FlameFront::StoreDomainIntegrationCell(
+    const COMBUST::RefinementCell* cell,
+    GEO::DomainIntCells& domainintcelllist
+)
+{
+  if (cell->Shape() != DRT::Element::hex8) dserror("check if this makes sense for non-hex8 elements first");
+  // get G-function values at vertices from cell
+  const std::vector<double>& gfuncvalues = cell->GetGfuncValues();
+  // get vertex coordinates (local fluid element coordinates) from refinement cell
+  const std::vector<std::vector<double> >& vertexcoord = cell->GetVertexCoord();
+
+  //---------------------------------
+  // get global coordinates of nodes
+  //---------------------------------
+  const int numnode = cell->Ele()->NumNode();
+  LINALG::SerialDenseMatrix xyze(3,numnode);
+  for(int inode=0;inode<numnode;inode++)
+  {
+    xyze(0,inode) = cell->Ele()->Nodes()[inode]->X()[0];
+    xyze(1,inode) = cell->Ele()->Nodes()[inode]->X()[1];
+    xyze(2,inode) = cell->Ele()->Nodes()[inode]->X()[2];
+  }
+
+  //-----------------------------------------
+  // get global coordinates of cell vertices
+  //-----------------------------------------
+  //coordinates of vertices of cell, corresponds to 'vertexcoord')
+  LINALG::SerialDenseMatrix cellcoord(3,numnode);
+  // if cell == element, globalcellcoord == xyze
+  LINALG::SerialDenseMatrix globalcellcoord(3,numnode);
+
+  for(int ivert=0; ivert<numnode; ivert++)
+  {
+    static LINALG::Matrix<3,1> vertcoord;
+    for(int dim=0; dim<3; dim++)
+    {
+      // cellcoord = transpose of vertexcoord
+      cellcoord(dim,ivert) = vertexcoord[ivert][dim];
+      // coordinates of a single cell vertex
+      vertcoord(dim) = cellcoord(dim,ivert);
+    }
+    // transform vertex from local (element) coordinates to global (physical) coordinates
+    GEO::elementToCurrentCoordinatesInPlace(cell->Ele()->Shape(), xyze, vertcoord);
+
+    // store vertex in array of global cell coordinates
+    for(int  dim=0; dim<3; dim++)
+      globalcellcoord(dim,ivert) = vertcoord(dim);
+#ifdef DEBUG
+    // if cell == element, globalcellcoord == xyze!
+    // TODO we could use a check here
+#endif
+  }
+
+  //-------------------------------------------
+  // determine which domain the cell belongs to
+  //-------------------------------------------
+  // compute average G-function value for this refinement cell (= integration cell)
+  bool inGplus = GetIntCellDomain(cellcoord,gfuncvalues,cell->Shape());
+
+  //TEST
+  //std::cout << "globalcellcoord " << globalcellcoord(0,3) << globalcellcoord(1,3) << std::endl;
+  //if(inGplus) {
+  //  std::cout << "In G plus" << std::endl;
+  //}
+  //else {
+  //  std::cout << "In G minus" << std::endl;
+  //}
+  //------------------------
+  // create integration cell
+  //------------------------
+  // create an integration cell and add it to the list of integration cells per element
+  // remark: for now, this is restricted to hex8 integration cells
+  domainintcelllist.push_back(GEO::DomainIntCell(DRT::Element::hex8, cellcoord, globalcellcoord, inGplus));
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
  | build piecewise linear complex (PLC) in Tetgen format                              henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::buildPLC(
@@ -3443,26 +3954,29 @@ void COMBUST::FlameFront::buildPLC(
   int numofpoints = 0;
   int numvertex = DRT::UTILS::getNumberOfElementCornerNodes(distype);
   // get intersection points from refinement cell
-  const std::map<int,std::vector<double> >& intersectionpoints = cell->intersectionpoints_;
 
+  // corner points
   for (int ivertex=0; ivertex<numvertex; ivertex++)
   {
-    // remark: Hex hat 8 Ecken, weitere Koord in vertexcoord bei hex20-27 sind innere Knoten
-    //         und keine Ecken!
+    // remark: all hex elements/cells have 8 corners;
+    //         additional nodes (hex20,hex27) are inner nodes and not corners
+    //         here, only the corners are written into the point list
     pointlist.push_back(vertexcoord[ivertex]);
     numofpoints++;
   }
 
+  const std::multimap<int,std::vector<double> >& intersectionpoints = cell->intersectionpoints_;
   // map corresponds to intersection points, but contains the points' IDs instead of their coordinates
   // links 'pointlist' required by TetGen to 'intersectionpointlist'
-  std::map<int,int> intersectionpointsids;
+  std::multimap<int,int> intersectionpointsids;
 
   // intersection points
   // map<ID of cut edge in element, coordinates of intersection point>
-  for (std::map<int,std::vector<double> >::const_iterator iter = intersectionpoints.begin(); iter != intersectionpoints.end(); ++iter)
+  for (std::multimap<int,std::vector<double> >::const_iterator iter = intersectionpoints.begin(); iter != intersectionpoints.end(); ++iter)
   {
     pointlist.push_back(iter->second);
-    intersectionpointsids[iter->first] = numofpoints;
+    intersectionpointsids.insert(pair<int, int>(iter->first,numofpoints));
+    //intersectionpointsids[iter->first] = numofpoints;
     numofpoints++;
   }
 
@@ -3484,6 +3998,19 @@ void COMBUST::FlameFront::buildPLC(
   // Segments form the boundary of the interfacepatch in the cell (element, without refinement).
   // Some special cases have to be distinguished
   buildFlameFrontSegments(intersectionpointsids, segmentlist, gfuncvalues, pointlist);
+
+  //COMBUST_HEX20
+  //  switch (distype) {
+  //  case DRT::Element::hex8:
+  //    buildFlameFrontSegments(intersectionpointsids, segmentlist, gfuncvalues, pointlist);
+  //    break;
+  //  case DRT::Element::hex20:
+  //    buildFlameFrontSegmentsHex20(intersectionpointsids, segmentlist, gfuncvalues, pointlist);
+  //    break;
+  //  default:
+  //    dserror("Distype not implemented");
+  //    break;
+  //  }
 
   //TEST
   //std::cout<<"Segments"<< std::endl;
@@ -3533,7 +4060,7 @@ void COMBUST::FlameFront::buildPLC(
         Teuchos::null, phystrianglecoord, true));
   }
 
-#if 1
+#if 1 // use Uli's new cut algorithm
 
   if (xfeminttype_ == INPAR::COMBUST::xfemintegration_tetgen)
   {
@@ -3552,8 +4079,7 @@ void COMBUST::FlameFront::buildPLC(
     }
 
 #if 0
-
-    // Use the existing cut triangles and preserve the surface that way.
+    // Use the existing cut triangles and preserve the surface that way (enables use of projectMidpoint)
 
     // use element local coordinates since we want to avoid roundoff errors
 
@@ -3574,6 +4100,8 @@ void COMBUST::FlameFront::buildPLC(
       intersection.AddCutSide( i+1, t, trianglecoord, DRT::Element::tri3, 0 );
     }
 
+    //TODO check, if numvertex should be used instead of numnode; code crashes here for hex20
+    //#ifdef COMBUST_HEX20
     LINALG::SerialDenseMatrix cellcoord(3,numnode);
 
     for (int ivert=0; ivert<numnode; ivert++)
@@ -3737,7 +4265,6 @@ void COMBUST::FlameFront::buildPLC(
   }
 
 #else
-
   //------------------------------------------------------------------------------------
   // call external program TetGen based on CDT (Constrained Delaunay Tetrahedralization)
   //------------------------------------------------------------------------------------
@@ -3765,86 +4292,6 @@ void COMBUST::FlameFront::buildPLC(
 
 
 /*------------------------------------------------------------------------------------------------*
- | store domain integration cell (only for hex8 cells at present)                     henke 08/10 |
- *------------------------------------------------------------------------------------------------*/
-void COMBUST::FlameFront::StoreDomainIntegrationCell(
-    const COMBUST::RefinementCell* cell,
-    GEO::DomainIntCells& domainintcelllist
-)
-{
-  // get G-function values at vertices from cell
-  const std::vector<double>& gfuncvalues = cell->GetGfuncValues();
-  // get vertex coordinates (local fluid element coordinates) from refinement cell
-  const std::vector<std::vector<double> >& vertexcoord = cell->GetVertexCoord();
-
-  //---------------------------------
-  // get global coordinates of nodes
-  //---------------------------------
-  const int numnode = cell->Ele()->NumNode();
-  LINALG::SerialDenseMatrix xyze(3,numnode);
-  for(int inode=0;inode<numnode;inode++)
-  {
-    xyze(0,inode) = cell->Ele()->Nodes()[inode]->X()[0];
-    xyze(1,inode) = cell->Ele()->Nodes()[inode]->X()[1];
-    xyze(2,inode) = cell->Ele()->Nodes()[inode]->X()[2];
-  }
-
-  //-----------------------------------------
-  // get global coordinates of cell vertices
-  //-----------------------------------------
-  //coordinates of vertices of cell, corresponds to 'vertexcoord')
-  LINALG::SerialDenseMatrix cellcoord(3,numnode);
-  // if cell == element, globalcellcoord == xyze
-  LINALG::SerialDenseMatrix globalcellcoord(3,numnode);
-
-  for(int ivert=0; ivert<numnode; ivert++)
-  {
-    static LINALG::Matrix<3,1> vertcoord;
-    for(int dim=0; dim<3; dim++)
-    {
-      // cellcoord = transpose of vertexcoord
-      cellcoord(dim,ivert) = vertexcoord[ivert][dim];
-      // coordinates of a single cell vertex
-      vertcoord(dim) = cellcoord(dim,ivert);
-    }
-    // transform vertex from local (element) coordinates to global (physical) coordinates
-    GEO::elementToCurrentCoordinatesInPlace(cell->Ele()->Shape(), xyze, vertcoord);
-
-    // store vertex in array of global cell coordinates
-    for(int  dim=0; dim<3; dim++)
-      globalcellcoord(dim,ivert) = vertcoord(dim);
-#ifdef DEBUG
-    // if cell == element, globalcellcoord == xyze!
-    // TODO we could use a check here
-#endif
-  }
-
-  //-------------------------------------------
-  // determine which domain the cell belongs to
-  //-------------------------------------------
-  // compute average G-function value for this refinement cell (= integration cell)
-  bool inGplus = GetIntCellDomain(cellcoord,gfuncvalues,cell->Shape());
-
-  //TEST
-  //std::cout << "globalcellcoord " << globalcellcoord(0,3) << globalcellcoord(1,3) << std::endl;
-  //if(inGplus) {
-  //  std::cout << "In G plus" << std::endl;
-  //}
-  //else {
-  //  std::cout << "In G minus" << std::endl;
-  //}
-  //------------------------
-  // create integration cell
-  //------------------------
-  // create an integration cell and add it to the list of integration cells per element
-  // remark: for now, this is restricted to hex8 integration cells
-  domainintcelllist.push_back(GEO::DomainIntCell(DRT::Element::hex8, cellcoord, globalcellcoord, inGplus));
-
-  return;
-}
-
-
-/*------------------------------------------------------------------------------------------------*
  | store (quad4) boundary integration cell                                            henke 08/10 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::StoreBoundaryIntegrationCell(
@@ -3861,11 +4308,13 @@ void COMBUST::FlameFront::StoreBoundaryIntegrationCell(
   // check cell shape
   DRT::Element::DiscretizationType celldistype = cell->Shape();
 #ifdef DEBUG
+#ifndef COMBUST_HEX20
   if (cell->Shape()!=DRT::Element::hex8)
     dserror("not supported for this cell shape");
   // TODO not sure if this is really a prerequisite for this function
   if (cell->Ele()->Shape()!=DRT::Element::hex8)
     dserror("not supported for this element shape");
+#endif
 #endif
 
   // get G-function values from refinement cell
@@ -4183,6 +4632,10 @@ bool COMBUST::FlameFront::GetIntCellDomainInElementAtCenter(
     numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
     break;
   }
+  case DRT::Element::hex20: {
+    numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
+    break;
+  }
   default:
     dserror("Discretization Type (IntCell) not supported yet!");
   }
@@ -4190,6 +4643,9 @@ bool COMBUST::FlameFront::GetIntCellDomainInElementAtCenter(
   int numelenodes = 0;
   if (xfem_distype==DRT::Element::hex8) {
     numelenodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+  }
+  else if (xfem_distype==DRT::Element::hex20) {
+    numelenodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
   }
   else {
     dserror("Discretization Type (Ele) not supported yet!");
@@ -4253,6 +4709,11 @@ bool COMBUST::FlameFront::GetIntCellDomain(
     numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
     break;
   }
+  case DRT::Element::hex20:
+  {
+    numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
+    break;
+  }
   default:
     dserror("Discretization Type (IntCell) not supported yet!");
   }
@@ -4311,6 +4772,11 @@ bool COMBUST::FlameFront::GetIntCellDomainInElement(
     numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
     break;
   }
+  case DRT::Element::hex20:
+  {
+    numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
+    break;
+  }
   default:
     dserror("Discretization Type (IntCell) not supported yet!");
   }
@@ -4318,6 +4784,9 @@ bool COMBUST::FlameFront::GetIntCellDomainInElement(
   int numelenodes = 0;
   if (xfem_distype==DRT::Element::hex8) {
     numelenodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+  }
+  else if (xfem_distype==DRT::Element::hex20) {
+    numelenodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
   }
   else {
     dserror("Discretization Type (Ele) not supported yet!");
@@ -4416,7 +4885,7 @@ void COMBUST::FlameFront::ExportFlameFront(std::map<int, GEO::BoundaryIntCells>&
   //#endif
 
 #ifdef DEBUG
-  std::cout << "proc " << myrank << " number of flame front pieces available before export " << myflamefront.size() << std::endl;
+  std::cout << "proc " << myrank << " flame front pieces for " << myflamefront.size() << " elements available before export" << std::endl;
 #endif
 
   DRT::PackBuffer data;
@@ -4507,7 +4976,7 @@ void COMBUST::FlameFront::ExportFlameFront(std::map<int, GEO::BoundaryIntCells>&
     comm.Barrier();
   }
 #ifdef DEBUG
-  std::cout << "proc " << myrank << " number of flame front pieces now available " << myflamefront.size() << std::endl;
+  std::cout << "proc " << myrank << " flame front pieces for " << myflamefront.size() << " elements available after export" << std::endl;
 #endif
 }
 #endif
@@ -4646,8 +5115,8 @@ void COMBUST::FlameFront::FlamefrontToGmsh(
   }
   {
     gmshfilecontent << "View \" " << "Intersectionpoints \" {\n";
-    const std::map<int,std::vector<double> > intersectionpoints = cell->intersectionpoints_;
-    for(std::map<int,std::vector<double> >::const_iterator iter = intersectionpoints.begin(); iter != intersectionpoints.end(); ++iter)
+    const std::multimap<int,std::vector<double> > intersectionpoints = cell->intersectionpoints_;
+    for(std::multimap<int,std::vector<double> >::const_iterator iter = intersectionpoints.begin(); iter != intersectionpoints.end(); ++iter)
     {
       const int id = iter->first;
       const std::vector<double> point = iter->second;
@@ -4661,8 +5130,8 @@ void COMBUST::FlameFront::FlamefrontToGmsh(
   }
   {
     gmshfilecontent << "View \" " << "Segments \" {\n";
-    const std::map<int,std::vector<double> > intersectionpoints = cell->intersectionpoints_;
-    for(std::map<int,std::vector<int> >::const_iterator iter = segmentlist.begin(); iter != segmentlist.end(); ++iter)
+    const std::multimap<int,std::vector<double> > intersectionpoints = cell->intersectionpoints_;
+    for(std::multimap<int,std::vector<int> >::const_iterator iter = segmentlist.begin(); iter != segmentlist.end(); ++iter)
     {
       const int id = iter->first;
       const std::vector<int> segmentpoints = iter->second;
@@ -4678,7 +5147,7 @@ void COMBUST::FlameFront::FlamefrontToGmsh(
   }
   {
     gmshfilecontent << "View \" " << "Tiangles \" {\n";
-    const std::map<int,std::vector<double> > intersectionpoints = cell->intersectionpoints_;
+    const std::multimap<int,std::vector<double> > intersectionpoints = cell->intersectionpoints_;
     for (size_t l=0; l<trianglelist.size(); l++)
     {
       const std::vector<int> trianglepoints = trianglelist[l];

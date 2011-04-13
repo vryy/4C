@@ -272,6 +272,9 @@ public:
   /// routine to return discretization
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
+  /// routine to return information on periodic bondary conditions (row map)
+  Teuchos::RCP<map<int,vector<int> > > PBCmap() { return pbcmapmastertoslave_; };
+
   /// routine to return thermo. press. at time step n+1 for low-Mach-number flow
   double ThermPressNp() const { return thermpressnp_; }
 
@@ -716,8 +719,8 @@ protected:
   /// Periodic Boundary Conditions. Guess what.
   RCP<PeriodicBoundaryConditions> pbc_;
 
-  /// connection between master and slave nodes on this proc
-  RCP<map<int,vector<int> > >     pbcmapmastertoslave_;
+  /// connection between master and slave row nodes
+  RCP<map<int,vector<int> > > pbcmapmastertoslave_;
 
   /// time measurement
   double dtele_;

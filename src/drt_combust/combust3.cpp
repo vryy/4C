@@ -138,7 +138,7 @@ map<string,DRT::ELEMENTS::Combust3::StabilisationAction> DRT::ELEMENTS::Combust3
 DRT::ELEMENTS::Combust3::Combust3(int id, int owner) :
 DRT::Element(id,owner),
 eleDofManager_(Teuchos::null),
-output_mode_(false),
+standard_mode_(false),
 bisected_(false),
 touched_plus_(false),
 touched_minus_(false)
@@ -153,7 +153,7 @@ touched_minus_(false)
 DRT::ELEMENTS::Combust3::Combust3(const DRT::ELEMENTS::Combust3& old) :
 DRT::Element(old),
 eleDofManager_(old.eleDofManager_),
-output_mode_(old.output_mode_),
+standard_mode_(old.standard_mode_),
 bisected_(old.bisected_),
 touched_plus_(old.touched_plus_),
 touched_minus_(old.touched_minus_)
@@ -208,7 +208,7 @@ void DRT::ELEMENTS::Combust3::Pack(DRT::PackBuffer& data) const
   // add base class Element
   Element::Pack(data);
 
-  AddtoPack(data,output_mode_);
+  AddtoPack(data,standard_mode_);
   AddtoPack(data,bisected_);
   AddtoPack(data,touched_plus_);
   AddtoPack(data,touched_minus_);
@@ -233,7 +233,7 @@ void DRT::ELEMENTS::Combust3::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
 
-  output_mode_ = ExtractInt(position,data);
+  standard_mode_ = ExtractInt(position,data);
   bisected_ = ExtractInt(position,data);
   touched_plus_ = ExtractInt(position,data);
   touched_minus_ = ExtractInt(position,data);
@@ -259,7 +259,7 @@ DRT::ELEMENTS::Combust3::~Combust3()
 void DRT::ELEMENTS::Combust3::Print(ostream& os) const
 {
   os << "Combust3 ";
-  if (output_mode_)
+  if (standard_mode_)
     os << "(outputmode=true)";
   Element::Print(os);
   cout << endl;
@@ -359,15 +359,20 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
     const Teuchos::RCP<Epetra_MultiVector> gradphinp = ih->FlameFront()->GradPhi();
 
     // extract local (element level) G-function values from global vector
-    // only if element is intersected, only adjacent nodal values are calculated
-//    if(ele->Intersected() == true || ele->Touched_Plus() == true || ele->Touched_Minus() == true)
-//    {
-      //TODO @Florian ich brauche hier alle angereicherten Elemente, die geschnittenen sind nicht genug,
-      //      weil ich die normalen Ansatzfunktionen auch fuer partiell angereicherte Elemente brauche
-      if (gradphinp == Teuchos::null)
-        dserror("No gradient of phi computed!");
+    // only if element is intersected; only adjacent nodal values are calculated
+#ifndef COMBUST_NORMAL_ENRICHMENT
+    if(ele->Intersected() == true || ele->Touched_Plus() == true || ele->Touched_Minus() == true)
+    {
+#endif
+      // remark: - for the normal enrichment strategy all enriched elements are needed here
+      //         - the intersected elements are not enough since normal shape functions are also
+      //           needed for partially enriched elements
+      //         - for simplicity the phi gradient is fetched for every element
+      if (gradphinp == Teuchos::null) dserror("no gradient of phi has been computed!");
       DRT::UTILS::ExtractMyNodeBasedValues(ele, gradphinp_,*gradphinp);
-//    }
+#ifndef COMBUST_NORMAL_ENRICHMENT
+    }
+#endif
   }
 }
 

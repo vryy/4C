@@ -41,7 +41,8 @@ XFEM::DofManager::DofManager(
     const Teuchos::ParameterList&          params,
     const vector<int>                      MovingFluidnodeGIDs
     ) :
-  ih_(ih)
+  ih_(ih),
+  pbcmap_(Teuchos::null)
 {
   XFEM::createDofMapFSI(*ih, nodalDofSet_, elementalDofs_, fieldset, element_ansatz, params, MovingFluidnodeGIDs);
 
@@ -68,9 +69,11 @@ XFEM::DofManager::DofManager(
     const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle,
     const std::set<XFEM::PHYSICS::Field>&                fieldset,
     const XFEM::ElementAnsatz&                           element_ansatz,
-    const Teuchos::ParameterList&                        params
+    const Teuchos::ParameterList&                        params,
+    const Teuchos::RCP<map<int,vector<int> > >           pbcmap
     ) :
-  ih_(interfacehandle)
+  ih_(interfacehandle),
+  pbcmap_(pbcmap)
 {
   //if (ih_->xfemdis()->Comm().MyPID() == 0)
   //  std::cout << "Constructing DofManager for combustion problem" << std::endl;
@@ -80,6 +83,59 @@ XFEM::DofManager::DofManager(
 
   // build a DofMap holding dofs for all nodes including additional dofs of enriched nodes
   XFEM::createDofMapCombust(*interfacehandle, nodeDofMap, elementDofMap, fieldset, element_ansatz, params);
+
+  //------------------------------------
+  // connect dofs on periodic boundaries
+  //------------------------------------
+  if (pbcmap_ != Teuchos::null)
+  // remark: - for any regular call of DofManager the pbc map exists (pbcmap_ != Teuchos::null),
+  //         - for the initialization call of DofManager in CombustFluidImplicitTimeInt constructor the
+  //           pbc map does not make sence yet, since no XFEM dofs have been assigned
+  {
+    // for periodic boundary conditions and more than one processor this will not work reliably
+    // remark: - enrichments are distributed in a loop over all column elements
+    //         - periodic boundary conditions live on row (or colunm) nodes
+    //         -> for a general parallel distribution 'pbcmap' and 'nodeDofMap' do not contain the same information
+    //         -> simulation will crash as soon this discrepancy shows
+    if ((*pbcmap_).size()>0 and ih_->xfemdis()->Comm().NumProc()>1)
+      //dserror("algorithm does not work for general parallel distributions");
+      cout << "/!\\ this will crash as soon as the solution becomes unsymmetric at the periodic boundaries" << endl;
+
+    for (std::map<int, vector<int>  >::const_iterator pbciter= (*pbcmap_).begin(); pbciter != (*pbcmap_).end(); ++pbciter)
+    {
+      const int mastergid = pbciter->first;
+      const int slavegid  = pbciter->second[0];
+      if (pbciter->second.size()!=1) dserror("this might need to be modified for more than 1 slave per master");
+      //cout << "proc " << ih_->xfemdis()->Comm().MyPID() << " mastergid " << mastergid << " slavegid " << slavegid << endl;
+
+      std::set<FieldEnr> masterfieldenr = emptyset_;
+      std::set<FieldEnr> slavefieldenr = emptyset_;
+
+      std::map<int, std::set<XFEM::FieldEnr> >::iterator masterentry = nodeDofMap.find(mastergid);
+      if (masterentry != nodeDofMap.end())
+        masterfieldenr = masterentry->second;
+      else dserror("pbc master node not found in node dof map");
+
+      std::map<int, std::set<XFEM::FieldEnr> >::iterator slaveentry = nodeDofMap.find(slavegid);
+      if (slaveentry != nodeDofMap.end())
+        slavefieldenr = slaveentry->second;
+      else
+        dserror("pbc slave node not found in node dof map");
+
+      //if (slaveentry->second != masterentry->second)
+      //{
+      //  cout << mastergid << " das passt nicht zusammen" << endl;
+      //  cout << "proc " << ih_->xfemdis()->Comm().MyPID() << " master dofs " << masterfieldenr.size() << endl;
+      //  cout << "proc " << ih_->xfemdis()->Comm().MyPID() << " slave dofs " << slavefieldenr.size() << endl;
+      //}
+
+      // if slave is enriched, but master is not (slave has more dofs)
+      if (slavefieldenr.size()>masterfieldenr.size())
+        masterentry->second = slaveentry->second;
+      else // slave is overwritten by master
+        slaveentry->second = masterentry->second;
+    }
+  }
 
   //------------------------------------------------------------------------------------------------
   // copy non-const dof maps to const dof maps
@@ -270,7 +326,7 @@ void XFEM::DofManager::fillNodalDofColDistributionMap(
 ) const
 {
   NodalDofColDistributionMap.clear();
-  // loop all (non-overlapping = Row)-Nodes and store the DOF information w.t.h. of DofKeys
+  // loop all (overlapping = Col)-Nodes and store the DOF information w.t.h. of DofKeys
   for (int i=0; i<ih_->xfemdis()->NumMyColNodes(); ++i)
   {
     const DRT::Node* actnode = ih_->xfemdis()->lColNode(i);
@@ -285,6 +341,7 @@ void XFEM::DofManager::fillNodalDofColDistributionMap(
     const std::set<FieldEnr> dofset = entry->second;
     if (gdofs.size() != dofset.size())
     {
+      cout << "proc " << ih_->xfemdis()->Comm().MyPID() << " node " << actnode->Id() << endl;
       cout << "numdof node (Discretization): " <<  gdofs.size() << endl;
       cout << "numdof node (DofManager):     " <<  dofset.size() << endl;
       dserror("Bug!!! Information about nodal dofs in DofManager and Discretization does not fit together!");

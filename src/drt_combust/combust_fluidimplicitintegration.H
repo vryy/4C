@@ -24,6 +24,7 @@ Maintainer: Florian Henke
 #include "../drt_xfem/enrichmentvalues.H"
 #include "../drt_inpar/inpar_combust.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_fluid/drt_pbcdofset.H"
 #include "combust_flamefront.H"
 #include "combust_interface.H"
 
@@ -191,6 +192,11 @@ public:
       const Epetra_Map dofrowmap);
 
   /*!
+   * \brief check symmetry of some numerical examples (flame-vortex-interaction, collapse-flame) 
+   */
+  void EvaluateSymmetryError(RCP<Epetra_Vector> stateVec);
+
+  /*!
   \brief calculate error between a analytical solution and the
          numerical solution of a test problems
   */
@@ -272,7 +278,7 @@ public:
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
   Teuchos::RCP<DRT::Discretization>& Discretization() { return discret_; }
-  Teuchos::RCP<const DRT::DofSet> StandardDofSet() { return standarddofset_; }
+  Teuchos::RCP<const PBCDofSet> StandardDofSet() { return standarddofset_; }
   Teuchos::RCP<Epetra_Vector>& RobinRHS()      { return robinrhs_; }
 
   LINALG::MapExtractor& VelPresSplitter()         { return velpressplitter_; }
@@ -365,6 +371,9 @@ protected:
   //! the processor ID from the communicator
   const int                     myrank_;
 
+  //! connection between master and slave row nodes
+  RCP<map<int,vector<int> > > pbcmapmastertoslave_;
+
   //!< a singular stream to stdout in parallel environment
   IO::Ostream0 cout0_;
   //@}
@@ -441,7 +450,7 @@ protected:
   //! store dof distribution information for output
   Teuchos::RCP<XFEM::DofManager>      dofmanagerForOutput_;
   //! store dofset for unintersected domain
-  Teuchos::RCP<DRT::DofSet>                standarddofset_;
+  Teuchos::RCP<PBCDofSet>                standarddofset_;
 
   /// (standard) system matrix
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;

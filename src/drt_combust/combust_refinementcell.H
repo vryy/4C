@@ -91,7 +91,8 @@ namespace COMBUST
     void RootCellToGmsh() const;
 
     //! public: map of cell edge ID and intersection point coodinates (zero G-function)
-    std::map<int,std::vector<double> > intersectionpoints_;
+    // remark: for hex8 cells a map would be sufficient; for hex20 cells a multimap is required
+    std::multimap<int,std::vector<double> > intersectionpoints_;
 
   private:
 

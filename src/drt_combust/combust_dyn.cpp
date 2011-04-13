@@ -70,7 +70,7 @@ void combust_dyn()
 
   // access G-function discretization (it should be empty)
   RCP<DRT::Discretization> gfuncdis = DRT::Problem::Instance()->Dis(disnumgff,0);
-  if (!gfuncdis->Filled()) gfuncdis->FillComplete();
+  if (!gfuncdis->Filled()) gfuncdis->FillComplete(false,false,false);
 
   if (gfuncdis->NumGlobalNodes()==0)
   {

@@ -756,6 +756,16 @@ void Sysmat(
 //  //dserror("STOP after middle element matrix");
 //}
 
+//  for (int i = 0; i < eforce.Length(); i++)
+//  {
+//    if (std::isnan(eforce[i]))
+//    {
+//      cout << "Laenge Vektor fuer element " << eforce.Length() << endl;
+//      cout << "NaN in dof " << i << "of element " << ele->Id() << endl;
+//      //dserror("NaNs detected! Quitting...");
+//cout << egradphi << endl;
+//    }
+//  }
 
 
 }

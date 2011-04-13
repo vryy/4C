@@ -46,10 +46,11 @@ PBCDofSet::~PBCDofSet()
 
 int PBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start)
 {
+  // assign dofs for the standard dofset, that is without periodic boundary conditions
   int count = DRT::DofSet::AssignDegreesOfFreedom(dis,dspos,start);
 
-  // loop all master nodes and set the degrees of freedom of
-  // the slaves to the degrees of freedom of the master
+  // loop all master nodes and set the dofs of the slaves to the dofs of the master
+  // remark: the previously assigned dofs of slave nodes are overwritten here
   for(map<int,vector<int> >::iterator master = perbndcouples_->begin();
       master != perbndcouples_->end();
       ++master )

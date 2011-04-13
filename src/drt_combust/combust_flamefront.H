@@ -57,7 +57,8 @@ namespace COMBUST
     /// constructor
     explicit FlameFront(
              const Teuchos::RCP<const DRT::Discretization>  fluiddis, ///< fluid discretization (combust3 elements) which will be intersected
-             Teuchos::RCP<DRT::Discretization>  gfuncdis  ///< G-function discretization (condif3 elements) describing the level set function
+             Teuchos::RCP<DRT::Discretization>  gfuncdis,             ///< G-function discretization (condif3 elements) describing the level set function
+             const Teuchos::RCP<map<int,vector<int> > > pbcmap        ///< map holding nodes with periodic boundary conditions
     );
 
     /// destructor
@@ -171,7 +172,7 @@ namespace COMBUST
             std::vector<std::vector<int> >&       trianglelist,
             std::multimap<int,std::vector<int> >& segmentlist,
             std::vector<std::vector<double> >&    pointlist,
-            std::map<int,int>&                    intersectionpoints_id,
+            std::multimap<int,int>&               intersectionpoints_id,
             const std::vector<double>&            gfuncvalue
             );
 
@@ -179,17 +180,25 @@ namespace COMBUST
     void IdentifyPolygonOrientation(
             std::vector<int>&           segment,
             const int                   surf_id,
-            std::map<int,int>&          intersectionpoints_id,
+            std::multimap<int,int>&     intersectionpoints_id,
             const std::vector<double>&  gfuncvalue
             );
 
     /// not documented yet
     void buildFlameFrontSegments(
-            std::map<int,int>&                    intersectionpoints_id,
+            std::multimap<int,int>&               intersectionpoints_id,
             std::multimap<int,std::vector<int> >& segmentlist,
             const std::vector<double>&            gfuncvalue,
             const std::vector<std::vector<double> >& pointlist
             );
+
+    /// not ducumented yet
+    void buildFlameFrontSegmentsHex20(
+        std::multimap<int, int>& intersectionpointsids,
+        std::multimap<int, std::vector<int> >& segmentlist,
+        const std::vector<double>& gfuncvalues,
+        const std::vector<std::vector<double> >& pointlist
+    );
 
     /// projects midpoint on front and back side of cell for 2D-applications
     void projectMidpoint2D(
@@ -281,6 +290,9 @@ namespace COMBUST
 
     /// pointer to level set (G-function) discretization that intersects the fluiddis_
     const Teuchos::RCP<DRT::Discretization> gfuncdis_;
+
+    ///  map holding pairs of nodes (master-slave) on periodic boundaries
+    const Teuchos::RCP<map<int,vector<int> > > pbcmap_;
 
     /// pointer to vector on fluid NodeColMap holding G-function values at n-1 originally stored in phinm
     Teuchos::RCP<Epetra_Vector> phinm_;

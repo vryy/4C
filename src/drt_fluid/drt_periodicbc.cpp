@@ -150,13 +150,13 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
 
       int countslave=0;
       for(map<int,vector<int> >::iterator iter=allcoupledcolnodes_->begin();
-	  iter!=allcoupledcolnodes_->end();++iter)
+          iter!=allcoupledcolnodes_->end();++iter)
       {
-	for(vector<int>::iterator viter=iter->second.begin();
-	    viter!=iter->second.end();++viter)
-	{
-	  ++countslave;
-	}
+        for(vector<int>::iterator viter=iter->second.begin();
+            viter!=iter->second.end();++viter)
+        {
+          ++countslave;
+        }
       }
 
       vector<int> my_n_nodes   (numprocs,0);

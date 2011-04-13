@@ -518,8 +518,7 @@ void XFEM::createDofMapCombust(
         }
          */
       }
-      else if( ih.ElementTouchedPlus(xfemele) ||
-          ih.ElementTouchedMinus(xfemele)   )
+      else if( ih.ElementTouchedPlus(xfemele) or ih.ElementTouchedMinus(xfemele) )
       {
         std::cout << "\n---  element "<< xfemele->Id() << " is touched at a face and nodes with G=0.0 get additionally enriched";
         const INPAR::COMBUST::CombustionType combusttype = DRT::INPUT::get<INPAR::COMBUST::CombustionType>(params, "combusttype");

@@ -601,8 +601,7 @@ void PostProblem::read_meshes()
       // to avoid building dofmanagers, in output mode elements answer
       // with a fixed number of nodal unknowns
       if (currfield.problem()->Problemtype() == prb_fluid_xfem or
-          currfield.problem()->Problemtype() == prb_fsi_xfem or
-          currfield.problem()->Problemtype() == prb_combust)
+          currfield.problem()->Problemtype() == prb_fsi_xfem)
       {
         cout << "Name = " << currfield.discretization()->Name();
         if (currfield.discretization()->Name() == "fluid")
@@ -612,6 +611,20 @@ void PostProblem::read_meshes()
           ParameterList eleparams;
           eleparams.set("action","set_output_mode");
           eleparams.set("output_mode",true);
+          currfield.discretization()->Evaluate(eleparams);
+        }
+        cout << endl;
+      }
+      if (currfield.problem()->Problemtype() == prb_combust)
+      {
+        cout << "Name = " << currfield.discretization()->Name();
+        if (currfield.discretization()->Name() == "fluid")
+        {
+          cout << " ->set output mode for xfem elements" << endl;
+          currfield.discretization()->FillComplete(false,false,false);
+          ParameterList eleparams;
+          eleparams.set("action","set_standard_mode");
+          eleparams.set("standard_mode",true);
           currfield.discretization()->Evaluate(eleparams);
         }
         cout << endl;

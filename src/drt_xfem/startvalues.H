@@ -18,6 +18,7 @@ Maintainer: Florian Henke
 #include "dof_management.H"
 #include "enrichmentvalues.H"
 #include "../drt_lib/drt_exporter.H"
+#include "xfem_element_utils.H"
 
 namespace XFEM
 {
@@ -39,8 +40,7 @@ namespace XFEM
         vector<RCP<Epetra_Vector> > newVectors,
         const RCP<Epetra_Vector> veln,
         const RCP<COMBUST::FlameFront> flamefront,
-        const RCP<XFEM::Enrichmentvalues> ,// TODO @Martin wie heisst das ding?
-        const RCP<InterfaceHandle> ih_npi,
+        const RCP<InterfaceHandle> interfacehandle_old,
         const Epetra_Map& olddofcolmap,
         const map<DofKey<onNode>, DofGID>& oldNodalDofColDistrib,
         const Epetra_Map& newdofrowmap,
@@ -101,8 +101,8 @@ namespace XFEM
           double phiValue,
           int searchedProcs,
           int iter,
-          int startGid,
-          int startOwner,
+          vector<int> startGid,
+          vector<int> startOwner,
           double dMin
       ) :
         movNode_(movNode),
@@ -130,8 +130,8 @@ namespace XFEM
           double phiValue,
           int searchedProcs,
           int iter,
-          int startGid,
-          int startOwner
+          vector<int> startGid,
+          vector<int> startOwner
       ) :
         movNode_(movNode),
         vel_(vel),
@@ -151,8 +151,8 @@ namespace XFEM
           DRT::Node movNode,
           LINALG::Matrix<3,1> startpoint,
           double phiValue,
-          int startGid,
-          int startOwner,
+          vector<int> startGid,
+          vector<int> startOwner,
           vector<LINALG::Matrix<3,1> > velValues,
           vector<double> presValues
       ) :
@@ -173,8 +173,8 @@ namespace XFEM
           vector<LINALG::Matrix<1,3> > presDeriv,
           LINALG::Matrix<3,1> startpoint,
           double phiValue,
-          int startGid,
-          int startOwner
+          vector<int> startGid,
+          vector<int> startOwner
       ) :
         movNode_(movNode),
         vel_(vel),
@@ -204,8 +204,8 @@ namespace XFEM
       double phiValue_; // phi-value according to the analysed node
       int searchedProcs_; // searched procnumber if point lies in
       int iter_; // newton iteration counters for the points
-      int startGid_; // nearest node for a moving node lying in an "interface element"
-      int startOwner_; // nearest nodes owner
+      vector<int> startGid_; // nearest node for a moving node lying in an "interface element"
+      vector<int> startOwner_; // nearest nodes owner
       double dMin_; // minimal distance in initialization
       vector<LINALG::Matrix<3,1> > velValues_; // computed velocity for a node
       vector<double> presValues_; // computed pressure for a node
@@ -222,33 +222,6 @@ namespace XFEM
     // for points "x" which changed interface side 
     void startpoints();
     
-    //! determine velocity and pressure for nodes where the
-    // "normal" semi-lagrange startfinder failed
-    void getDataForNotConvergedNodes(
-    );
-    
-    void alternativeNewtonLoop(
-        DRT::Element*& fittingele,
-        StartpointData& curr,
-        LINALG::Matrix<3,1>& xi,
-        LINALG::Matrix<3,1>& vel,
-        double& phi,
-        bool& elefound,
-        bool& ihSide,
-        bool& stdBackTracking,
-        double& deltaT1
-    );
-
-    //! find Element, local coordinates and data for a given, arbitrary point
-    void elementAndLocalCoords(
-        DRT::Element*& fittingele,
-        LINALG::Matrix<3,1>& x,
-        LINALG::Matrix<3,1>& xi,
-        LINALG::Matrix<3,1>& vel,
-        double& phi,
-        bool& eleFound
-    ) const;
-    
     //! run a Newton loop in order to compute the exact lagrangian
     // origin for a node which changed interface side
     void NewtonLoop(
@@ -263,12 +236,29 @@ namespace XFEM
         double& deltaT1
     );
     
+    void alternativeNewtonLoop(
+        DRT::Element*& fittingele,
+        StartpointData& curr,
+        LINALG::Matrix<3,1>& xi,
+        LINALG::Matrix<3,1>& vel,
+        double& phi,
+        bool& elefound,
+        bool& ihSide,
+        bool& stdBackTracking,
+        double& deltaT1
+    );
+    
+    //! determine velocity and pressure for nodes where the
+    // "normal" semi-lagrange startfinder failed
+    void getDataForNotConvergedNodes(
+    );
+
     //! track back the lagrangian origin to get final startvalues
     void backTracking(
         DRT::Element*& fittingele,
         StartpointData& curr,
         LINALG::Matrix<3,1>& xi,
-        bool stdBackTracking,
+        const char* backTrackingType,
         double deltaT1
     );
     
@@ -276,27 +266,16 @@ namespace XFEM
     void setFinalData(
     ) const;
     
-    //! compare phi values in combustion
-    bool interfaceSideCompareCombust(
-        double phi1,
-        double phi2
+    //! find Element, local coordinates and data for a given, arbitrary point
+    void elementAndLocalCoords(
+        DRT::Element*& fittingele,
+        LINALG::Matrix<3,1>& x,
+        LINALG::Matrix<3,1>& xi,
+        LINALG::Matrix<3,1>& vel,
+        double& phi,
+        bool& eleFound
     ) const;
     
-    //! sign function in combustion
-    int interfaceSideCombust(
-        double phi
-    ) const;
-    
-    //! preparation of new iteration
-    void prepareNewIteration(
-        vector<RCP<Epetra_Vector> > newRowVectors
-    );
-
-    //! gradients at a node
-    void nodalDataAtNewIteration(
-        vector<RCP<Epetra_Vector> > newColVectors
-    );
-
     //! data of the element nodes
     template<size_t nsd, size_t numnode>
     void elementsNodalData(
@@ -306,6 +285,9 @@ namespace XFEM
         const Epetra_Map& dofMap,
         const map<DofKey<onNode>, DofGID>& dofDistribution,
         LINALG::Matrix<nsd,2*numnode>& nodevel,
+#ifdef COMBUST_NORMAL_ENRICHMENT
+        LINALG::Matrix<1,numnode>& nodevelenr,
+#endif
         LINALG::Matrix<1,2*numnode>& nodepres
     ) const;
     
@@ -320,11 +302,46 @@ namespace XFEM
         LINALG::Matrix<2*numnode,1>& enrShapeFcnPres,
         LINALG::Matrix<nsd,2*numnode>& enrShapeXYVelDeriv1,
         LINALG::Matrix<nsd,2*numnode>& enrShapeXYPresDeriv1,
-        RCP<Epetra_Vector> phi,
-        RCP<XFEM::DofManager> dofman
+        bool currentTimeStep
     ) const;
     
+    //! data at an arbitrary point in an element with normal enrichment
+    template<size_t nsd, size_t numnode, DRT::Element::DiscretizationType DISTYPE>
+    void pointdataXFEMnormal(
+        DRT::Element*& element,
+#ifdef COLLAPSE_FLAME_NORMAL
+        LINALG::Matrix<nsd,1> xyz,
+#endif
+        LINALG::Matrix<nsd,1>& xi,
+        LINALG::Matrix<nsd,nsd>& xji,
+        LINALG::Matrix<numnode,1>& shapeFcn,
+        LINALG::Matrix<2*numnode,1>& enrShapeFcnPres,
+        LINALG::Matrix<nsd,2*numnode>& enrShapeXYPresDeriv1,
+        ApproxFuncNormalVector<2,2*numnode>& shp,
+        bool currentTimeStep
+    ) const;
+
+    //! preparation of new iteration
+    void newIteration_prepare(
+        vector<RCP<Epetra_Vector> > newRowVectors
+    );
+
+    //! gradients at a node
+    void newIteration_nodalData(
+        vector<RCP<Epetra_Vector> > newColVectors
+    );
+
+    //! compare phi values in combustion
+    bool interfaceSideCompareCombust(
+        double phi1,
+        double phi2
+    ) const;
     
+    //! sign function in combustion
+    int interfaceSideCombust(
+        double phi
+    ) const;
+
 # ifdef PARALLEL
     //! export data to neighbour proc while computing
     // a first startpoint approximation
@@ -350,6 +367,7 @@ namespace XFEM
     RCP<Epetra_Vector> phinpip_; // phi^n+1,i+1 in column map
     RCP<Epetra_Vector> phinpi_; // phi^n+1,i in column map
     RCP<Epetra_Vector> veln_;
+    RCP<COMBUST::FlameFront> flamefront_; // flamefront
     set<int> oldEnrNodes_; // elements intersected by old interface at time n
     vector<RCP<Epetra_Vector> > oldVectors_; // global vectors at last iteration
     vector<RCP<Epetra_Vector> > newVectors_; // global vectors at new iteration
@@ -359,7 +377,7 @@ namespace XFEM
     const RCP<DRT::Discretization> discret_;
     const RCP<XFEM::DofManager> olddofman_;
     const RCP<XFEM::DofManager> dofman_; // current dof manager
-    map<int,vector<LINALG::Matrix<2,4> > >* oldJumpsAndKinks_;
+    //map<int,vector<LINALG::Matrix<2,4> > >* oldJumpsAndKinks_;
     Epetra_Map olddofcolmap_;
     map<DofKey<onNode>, DofGID> oldNodalDofColDistrib_;
     Epetra_Map newdofrowmap_;

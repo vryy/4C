@@ -56,8 +56,8 @@ DRT::ELEMENTS::Combust3::ActionType DRT::ELEMENTS::Combust3::convertStringToActi
     act = Combust3::get_density;
   else if (action == "reset")
     act = Combust3::reset;
-  else if (action == "set_output_mode")
-    act = Combust3::set_output_mode;
+  else if (action == "set_standard_mode")
+    act = Combust3::set_standard_mode;
   else
     dserror("Unknown type of action for Combust3");
   return act;
@@ -124,9 +124,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       DLM_info_ = Teuchos::null;
     }
     break;
-    case set_output_mode:
+    case set_standard_mode:
     {
-      output_mode_ = true;
+      standard_mode_ = true;
       // reset element dof manager if present
       eleDofManager_ = Teuchos::null;
       eleDofManager_uncondensed_ = Teuchos::null;
@@ -138,7 +138,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       TEUCHOS_FUNC_TIME_MONITOR("COMBUST3 - evaluate - store_xfem_info");
 
       // now the element can answer how many (XFEM) dofs it has
-      output_mode_ = false;
+      standard_mode_ = false;
 
       // store pointer to interface handle
       ih_ = &*params.get< Teuchos::RCP< COMBUST::InterfaceHandleCombust > >("interfacehandle",Teuchos::null);

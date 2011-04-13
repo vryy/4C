@@ -39,8 +39,8 @@ namespace XFEM
         vector<RCP<Epetra_Vector> > oldVectors,
         vector<RCP<Epetra_Vector> > newVectors,
         const RCP<COMBUST::FlameFront> flamefront,
-        const RCP<XFEM::InterfaceHandle> ihold,
-        const RCP<XFEM::InterfaceHandle> ih,
+        const RCP<XFEM::InterfaceHandle> interfacehandle,
+        const RCP<XFEM::InterfaceHandle> interfacehandle_old,
         const Epetra_Map& olddofcolmap,
         const map<DofKey<onNode>, DofGID>& oldNodalDofColDistrib,
         const Epetra_Map& newdofrowmap,
@@ -213,11 +213,13 @@ namespace XFEM
     failedData(
         LINALG::Matrix<3,1> coords,
         double dist,
+        int numNearestNodes,
         vector<LINALG::Matrix<2,4> > jumpAndKinkValues,
         vector<LINALG::Matrix<1,4> > kinkValues
     ) :
     coords_(coords),
     dist_(dist),
+    numNearestNodes_(numNearestNodes),
     jumpAndKinkValues_(jumpAndKinkValues),
     kinkValues_(kinkValues)
     {return;};
@@ -230,6 +232,7 @@ namespace XFEM
     :
     coords_(old.coords_),
     dist_(old.dist_),
+    numNearestNodes_(old.numNearestNodes_),
     jumpAndKinkValues_(old.jumpAndKinkValues_),
     kinkValues_(old.kinkValues_)
     {return;}
@@ -242,6 +245,7 @@ namespace XFEM
     
     const LINALG::Matrix<3,1> coords_;
     double dist_;
+    int numNearestNodes_;
     vector<LINALG::Matrix<2,4> > jumpAndKinkValues_;
     vector<LINALG::Matrix<1,4> > kinkValues_;
     
@@ -273,8 +277,8 @@ namespace XFEM
     RCP<Epetra_Vector> phinpip_; // phi^n+1,i+1
     vector<RCP<Epetra_Vector> > oldVectors_; // global vectors at last iteration
     vector<RCP<Epetra_Vector> > newVectors_; // global vectors at new iteration
-    const RCP<InterfaceHandle> interfacehandle_old_; // Gamma^n+1,i or Gamma^n
     const RCP<InterfaceHandle> interfacehandle_; // Gamma^n+1,i+1
+    const RCP<InterfaceHandle> interfacehandle_old_; // Gamma^n+1,i or Gamma^n
     
     
     // data accessing

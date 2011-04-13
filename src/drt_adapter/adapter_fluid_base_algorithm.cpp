@@ -76,12 +76,13 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     =
     Teuchos::rcp(new map<int,vector<int> > ());
 
-  if(genprob.probtyp != prb_fsi)
+  if((genprob.probtyp != prb_fsi) and
+     (genprob.probtyp != prb_combust))
   {
     PeriodicBoundaryConditions pbc(actdis);
     pbc.UpdateDofsForPeriodicBoundaryConditions();
 
-    pbcmapmastertoslave = pbc.ReturnAllCoupledNodesOnThisProc();
+    pbcmapmastertoslave = pbc.ReturnAllCoupledColNodes();
   }
 
   // -------------------------------------------------------------------

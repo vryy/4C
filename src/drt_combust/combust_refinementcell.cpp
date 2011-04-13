@@ -36,8 +36,9 @@ parent_(NULL)
   // fill matrix holding coordinates of vertices of cell with local node coordinates of element
   switch (distype_)
   {
-    case DRT::Element::hex8: // hex27 genauso!
+    case DRT::Element::hex8:
     case DRT::Element::hex20:
+    case DRT::Element::hex27:
     {
       for(int inode = 0; inode < numnode; ++inode)
       {
@@ -91,84 +92,8 @@ void COMBUST::RefinementCell::SetGfuncValues(std::vector<double> gfuncvalues)
   IdentifyIntersectionStatus();
 }
 
-///*------------------------------------------------------------------------------------------------*
-// | find out, whether refinement cell is intersected by the interface                  henke 03/09 |
-// *------------------------------------------------------------------------------------------------*/
-//void COMBUST::RefinementCell::IdentifyIntersectionStatus()
-//{
-//
-////URSULA 270709
-//  /* When the scatra-field is initialized, nodes may be not exactly equal zero.
-//   * This can lead to incorrect intersection points and , hence, to a failure of the intersection
-//   * algorithm.
-//   * --------------------------------------------------------------------------------------------
-//   * Kann man das vielleicht schon bei der Initialisierung abfangen?
-//   * --------------------------------------------------------------------------------------------
-//   * Moreover, very small G-Function values can yield intersection points which are approximately
-//   * equal the vertices. This can lead small element parts as well as problems with TetGen. It remains
-//   * to find a definition of very small G-Function values which can then be reset to 0.
-//   * Preliminary,to avoid these problems, G-funcion values smaller than 10E-8 (?) are reset to zero.
-//   * ----------------------------------------------------------------------------------------------
-//   * G-Function < 10E-8 ist möglicherweise noch nicht optimal, erfüllt aber im Moment seinen Zweck
-//   * ----------------------------------------------------------------------------------------------
-//   */
-//  //TEST
-////  std::cout << "G-Func" << std::endl;
-////  for (std::size_t i=0; i<gfuncvalues_.size(); i++ )
-////	  std::cout << gfuncvalues_[i] << std::endl;
-//
-//  // tolerance for small G-function values
-//  for (std::size_t i=0; i<gfuncvalues_.size(); i++ )
-//  {
-//    if (fabs(gfuncvalues_[i])<1.0E-6)
-//    {
-//      gfuncvalues_[i] = 0.0;
-//      //std::cout << " G-Function value  reset to 0 " << std::endl;
-//    }
-//  }
-//
-//
-//  // idea: Since the interface is defined by the zero iso-surface of the G-function, we look for
-//  // sign changes among the G-function values at the vertices of the refinement cell.
-//  unsigned counter = 0;
-//
-//  // advance to first non-zero G-function value
-//  while ((gfuncvalues_[counter] == 0.0) and (counter < (gfuncvalues_.size()-1)))
-//  {
-//    counter++;
-//    bisected_ = true;
-//  }
-//
-//  // first non-zero G-function value is negative
-//  if (gfuncvalues_[counter] < 0.0)
-//  {
-//    while (counter < (gfuncvalues_.size()-1) and (bisected_ == false))
-//    {
-//      counter++;
-//      // if next G-function value is positive
-//      if(gfuncvalues_[counter] >= 0.0)
-//        bisected_ = true;
-//    }
-//  }
-//  // first non-zero G-function value is positive
-//  else if (gfuncvalues_[counter] > 0.0)
-//  {
-//    while (counter < (gfuncvalues_.size()-1) and (bisected_ == false))
-//   {
-//      counter++;
-//      // if next G-function value is negative
-//      if(gfuncvalues_[counter] <= 0.0)
-//        bisected_ = true;
-//    }
-//  }
-//  else
-//    dserror("impossible!");
-//}
-
-
 /*------------------------------------------------------------------------------------------------*
  | find out, whether refinement cell is intersected by the interface                  henke 03/09 |
- | modified                                                                       rasthofer 05/10 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::RefinementCell::IdentifyIntersectionStatus()
 {
@@ -293,175 +218,267 @@ void COMBUST::RefinementCell::IdentifyIntersectionStatus()
   //                                  "\t" << " -- touched_ status: " << touched_  << std::endl;
 
   if (distype_ == DRT::Element::hex20)
-    dserror("Read comment first!");
-  //-------------------------------------------------------------------------------------------
-  // Im urspruenglichen, ersten Teil werden nur die die Vorzeichen der Konten des Elements
-  // auf einen Vorzeichenwechsel hin ueberprueft. Das ist fuer Hex8 absolut ok, reicht aber fuer
-  // Hex20 nicht aus. Diese Kiterium reicht dann nicht, wenn alle Koten das gleiche Vorzeichen
-  // haben. Fuer diesen Fall ist es moegchlich, dass zwei Nullstellen zwischen einem der
-  // aeusseren Knoten und dem Mittelknoten liegen. Nur eine Nullstelle ist auch moeglich und
-  // entspricht dann einem Beruehren.
-  //
-  // Dazu wurde von einem Studenten ein zusaetzliches Kriterium implementiert. Das, was der
-  // Student hier gemacht hat, muss noch uberprueft werden.
-  //
-  // In den meisten Schnittfaellen (ich glaube in allen mit einem Interface je Element) sollte
-  // die obige Ueberpruefung des IntersectionStatus vollig ausreichend sein. Daher habe ich diesen
-  // Teil mal raus genommen.
-  //
-  // TODO: @Kilian: Ich glaube, du kannst das erstmal weglassen.
-  //-------------------------------------------------------------------------------------------
+  {
+    // TODO complete the algortihm
+    dserror("read comment first!");
+    //-------------------------------------------------------------------------------------------
+    // Im urspruenglichen, ersten Teil werden nur die die Vorzeichen der Konten des Elements
+    // auf einen Vorzeichenwechsel hin ueberprueft. Das ist fuer Hex8 absolut ok, reicht aber fuer
+    // Hex20 nicht aus. Diese Kiterium reicht dann nicht, wenn alle Koten das gleiche Vorzeichen
+    // haben. Fuer diesen Fall ist es moegchlich, dass zwei Nullstellen zwischen einem der
+    // aeusseren Knoten und dem Mittelknoten liegen. Nur eine Nullstelle ist auch moeglich und
+    // entspricht dann einem Beruehren.
+    //
+    // Dazu wurde von einem Studenten ein zusaetzliches Kriterium implementiert. Das, was der
+    // Student hier gemacht hat, muss noch uberprueft werden.
+    //
+    // In den meisten Schnittfaellen (ich glaube in allen mit einem Interface je Element) sollte
+    // die obige Ueberpruefung des IntersectionStatus vollig ausreichend sein. Daher habe ich diesen
+    // Teil mal raus genommen.
+    //
+    // TODO: @Kilian: Ich glaube, du kannst das erstmal weglassen.
+    //-------------------------------------------------------------------------------------------
 # if 0
-  if ((distype_ == DRT::Element::hex20) and (bisected_ == false))
-  {
-    dserror("This part has been done by a student and should be check before use!");
-  // FARAH
+    //changed_grundl Funktion teilweise geändert (weiterhin keine Garantie ...) (beim Kopieren darauf achten den alten Code stehen zu lassen)
+    if ((distype_ == DRT::Element::hex20) and (bisected_ == false))
+    {
+      //  dserror("This part has been done by a student and should be check before use!");
+      // FARAH
+      // Grundl 11/2010
 
-  std::vector<std::vector<int> > lines = DRT::UTILS::getEleNodeNumberingLines(DRT::Element::hex20);
-  double D = 0;
-  int ecounter = 2;
+      std::vector<std::vector<int> > lines = DRT::UTILS::getEleNodeNumberingLines(DRT::Element::hex20);
 
-//  switch (cell->Ele()->Shape())		//???
-//  {
-//  case DRT::Element::hex8:
-//	  	{ecounter = 1;}
-//
-//  case DRT::Element::hex20:
-//  		{ecounter = 2;}
-//
-//  default:
-//	  dserror("IdentifyIntersectionStatus() does not support this element shape!");
+      int ecounter = 2;  //Grad des Polynoms
 
- // }
+      for (std::size_t iline=0; iline < lines.size(); iline++)
+      {
 
- // 3 positive Werte auf kante
-  if ((intersected_ == false) and (distype_==DRT::Element::hex20))
-  {
+        //the function is f(x)=a1*xi^2+a2*xi+a3;
+        //lines[iline][0] is the first value (xi = -1)
+        //lines[iline][1] is the last value (xi = +1)
+        //lines[iline][2] is the value in the middle (xi = 0)
+        double a1 = (gfuncvalues_[lines [iline][1]]+gfuncvalues_[lines [iline][0]])/2 - gfuncvalues_[lines [iline][2]];
+        double a2 = (gfuncvalues_[lines [iline][1]]-gfuncvalues_[lines [iline][0]])/2;
+        double a3 = gfuncvalues_[lines [iline][2]];
 
+        //        std::cout << "G-Functionvalues for identification of intersection-status:" <<  std::endl;
+        //        std::cout << "First-Point:  " << gfuncvalues_[lines [iline][0]]  << std::endl;
+        //        std::cout << "Middle-Point:  " << gfuncvalues_[lines [iline][2]]  << std::endl;
+        //        std::cout << "End-Point:  " << gfuncvalues_[lines [iline][1]]  << std::endl;
 
-for (std::size_t iline=0; iline < lines.size(); iline++)
-{  int c = 0;
+        //Diskriminante
+        double D = a2*a2-4*a1*a3;
 
+        int p = 0;  //counter for positive values
+        int n = 0;  //counter for negative values
+        for (int b = 0; b <= ecounter; b++)
+        {
+          if ( gfuncvalues_[lines[iline][b]] >0)
+          {
+            p++;
+          }
+          if ( gfuncvalues_[lines[iline][b]] < 0)
+          {
+            n++;
+          }
+        }
 
-	for (int b = 0; b <= ecounter; b++)
-		{
+        if ( p == 3 or n == 3 ) //three values with the same sign on one line
+        {
+          if (D >= 0)
+          {
+            double x1= (-a2+ sqrt(D))/(2*a1);
+            double x2= (-a2-sqrt(D))/(2*a1);
 
+            if ( abs(x1) < 1)
+              if (x1 != x2 )
+              {
+                bisected_ = true;
+              }
+              else //double zero
+              {
+                touched_ = true;
+              }
+            else if (abs(x2) < 1)
+            {
+              bisected_ = true;
+            }
+          }
+        }
 
-		 if ( gfuncvalues_[lines[iline][b]] >0)
-			{
-			  c++;
+      }
 
-			}
-		 //else
-			// break;
-		}
+      // 1 Wert != 0 und alle anderen 0
+      //Kann das überhaupt vorkommen?
 
-		 	if ( c == 3 )
-		 		// Diskriminante
-		 		{//D=(((5*gfuncvalues_[lines [iline][1]]-3*gfuncvalues_[lines [iline][0]]-2*gfuncvalues_[lines [iline][2]])(5*gfuncvalues_[lines [iline][1]]-3*gfuncvalues_[lines [iline][0]]-2*gfuncvalues_[lines [iline][2]]))-4*gfuncvalues_[lines [iline][0]]*(0.5*gfuncvalues_[lines [iline][2]]-gfuncvalues_[lines [iline][1]]+0.5*gfuncvalues_[lines [iline][0]]));
+      if (bisected_ == false)
+      {
 
-		 		 double a1= 0.5*gfuncvalues_[lines [iline][2]]-gfuncvalues_[lines [iline][1]]+0.5*gfuncvalues_[lines [iline][0]];
-		 		 double a2= 2*gfuncvalues_[lines [iline][1]]-1.5*gfuncvalues_[lines [iline][0]]-0.5*gfuncvalues_[lines [iline][2]];
-		 		 double a3= gfuncvalues_[lines [iline][0]];
-		 				 D= a2*a2-4*a1*a3;
-		 		 if (D!=0)
-		 		 {
-		 		 double x1= (-a2+ sqrt(a2*a2-4*a1*a3))/(2*a1);
-		 		 double x2= (-a2-sqrt(a2*a2-4*a1*a3))/(2*a1);
+        int counter2= 0;
 
+        for(int counter1 = 0; counter1 < gfuncvalues_.size()-1; counter1++)
+        {
+          if(gfuncvalues_[counter1] != 0.0)
+          {
+            counter2++;
+          }
+        }
 
-		 			if ((D==0)and (0<=x1)and (2>=x1))
-		 				{touched_ = true;
-		 				//break;
-		 				}
-		 			if ((0 < D)and (((0<=x1)and (2>=x1))or((0<=x2)and (2>=x2))))
-		 				{intersected_ = true;
-		 				//break;
-		 				}
-		 		}
-		}
-
-}};
-// 3 negative Werte auf Kante
-if ((intersected_ == false) and (distype_==DRT::Element::hex20))
-{
-
-for (std::size_t iline=0; iline < lines.size(); iline++)
-{  int c = 0;
-
-	{for (int b = 0; b <= ecounter; b++)
-		{
-
-		 if (0 > gfuncvalues_[lines [iline][b]])
-			{
-			  c++;
-			}}
-		 //else
-			 //break;
-		//};
-
-		 	if ( c == ecounter )
-		 		//Diskriminante
-		 		{//D=(((5*gfuncvalues_[lines [iline][1]]-3*gfuncvalues_[lines [iline][0]]-2*gfuncvalues_[lines [iline][2]])(5*gfuncvalues_[lines [iline][1]]-3*gfuncvalues_[lines [iline][0]]-2*gfuncvalues_[lines [iline][2]]))-4*gfuncvalues_[lines [iline][0]]*(0.5*gfuncvalues_[lines [iline][2]]-gfuncvalues_[lines [iline][1]]+0.5*gfuncvalues_[lines [iline][0]]));
-		 		 double a1= 0.5*gfuncvalues_[lines [iline][2]]-gfuncvalues_[lines [iline][1]]+0.5*gfuncvalues_[lines [iline][0]];
-		 		 double a2= 2*gfuncvalues_[lines [iline][1]]-1.5*gfuncvalues_[lines [iline][0]]-0.5*gfuncvalues_[lines [iline][2]];
-		 		 double a3= gfuncvalues_[lines [iline][0]];
-		 				 D= a2*a2-4*a1*a3;
-		 		 if(D!=0)
-		 		 {
-		 		 double x1= (-a2+ sqrt(a2*a2-4*a1*a3))/(2*a1);
-		 		 double x2= (-a2-sqrt(a2*a2-4*a1*a3))/(2*a1);
-
-
-		 			if ((D==0)and (0<=x1)and (2>=x1))
-		 				{touched_ = true;
-		 				//break;
-		 				}
-		 			if ((0 < D)and (((0<=x1)and (2>=x1))or((0<=x2)and (2>=x2))))
-		 				{intersected_ = true;
-		 				//break;
-		 				}
-		 		}}
-		}
-	}
-};
-
-// 1 Wert != 0 und alle anderen 0
-
-if (intersected_ == false)
-{
-
-		int counter2= 0;
-
-	  for(int counter1 = 0; counter1 < gfuncvalues_.size()-1; counter1++)
-	  {
-		  if(gfuncvalues_[counter1] != 0.0)
-		  {
-			  counter2++;
-		  }
-	  }
-
-	  if(counter2==1)
-		  {intersected_ = true;
-		  }
-}
-
-
-
-// Prüfe ob Nullstelle(n) auf kante liegen
-
-//double a1= 0.5*gfuncvalues_[lines [iline][2]]-gfuncvalues_[lines [iline][1]]+0.5*gfuncvalues_[lines [iline][0]];
-//double a2= 5*gfuncvalues_[lines [iline][1]]-3*gfuncvalues_[lines [iline][0]]-2*gfuncvalues_[lines [iline][2]];
-//double a3= gfuncvalues_[lines [iline][0]];
-//
-//double x1= (-a2+(a2*a2-4*a1*a3)^0,5)/(2*a1);
-//double x2= (-a2-(a2*a2-4*a1*a3)^0,5)/(2*a1);
-
-
-  //FARAH
-  }
+        if(counter2==1)
+        {
+          bisected_ = true;
+          std::cout << "please check code here in:" << std::endl;
+          std::cout << "COMBUST::RefinementCell::IdentifyIntersectionStatus()" << std::endl;
+        }
+      }
+    }
 #endif
 
+#if 0
+    double D = 0;
+    int ecounter = 2;
+
+    //  switch (cell->Ele()->Shape())     //???
+    //  {
+    //  case DRT::Element::hex8:
+    //        {ecounter = 1;}
+    //
+    //  case DRT::Element::hex20:
+    //        {ecounter = 2;}
+    //
+    //  default:
+    //      dserror("IdentifyIntersectionStatus() does not support this element shape!");
+
+    // }
+
+    // 3 positive Werte auf kante
+    if ((intersected_ == false) and (distype_==DRT::Element::hex20))
+    {
+
+
+      for (std::size_t iline=0; iline < lines.size(); iline++)
+      {  int c = 0;
+
+
+      for (int b = 0; b <= ecounter; b++)
+      {
+
+
+        if ( gfuncvalues_[lines[iline][b]] >0)
+        {
+          c++;
+
+        }
+        //else
+        // break;
+      }
+
+      if ( c == 3 )
+        // Diskriminante
+      {//D=(((5*gfuncvalues_[lines [iline][1]]-3*gfuncvalues_[lines [iline][0]]-2*gfuncvalues_[lines [iline][2]])(5*gfuncvalues_[lines [iline][1]]-3*gfuncvalues_[lines [iline][0]]-2*gfuncvalues_[lines [iline][2]]))-4*gfuncvalues_[lines [iline][0]]*(0.5*gfuncvalues_[lines [iline][2]]-gfuncvalues_[lines [iline][1]]+0.5*gfuncvalues_[lines [iline][0]]));
+
+        double a1= 0.5*gfuncvalues_[lines [iline][2]]-gfuncvalues_[lines [iline][1]]+0.5*gfuncvalues_[lines [iline][0]];
+        double a2= 2*gfuncvalues_[lines [iline][1]]-1.5*gfuncvalues_[lines [iline][0]]-0.5*gfuncvalues_[lines [iline][2]];
+        double a3= gfuncvalues_[lines [iline][0]];
+        D= a2*a2-4*a1*a3;
+        if (D!=0)
+        {
+          double x1= (-a2+ sqrt(a2*a2-4*a1*a3))/(2*a1);
+          double x2= (-a2-sqrt(a2*a2-4*a1*a3))/(2*a1);
+
+
+          if ((D==0)and (0<=x1)and (2>=x1))
+          {touched_ = true;
+          //break;
+          }
+          if ((0 < D)and (((0<=x1)and (2>=x1))or((0<=x2)and (2>=x2))))
+          {intersected_ = true;
+          //break;
+          }
+        }
+      }
+
+      }
+    }
+    // 3 negative Werte auf Kante
+    if ((intersected_ == false) and (distype_==DRT::Element::hex20))
+    {
+
+      for (std::size_t iline=0; iline < lines.size(); iline++)
+      {
+        int c = 0;
+
+        for (int b = 0; b <= ecounter; b++)
+        {
+          if (0 > gfuncvalues_[lines [iline][b]])
+          {
+            c++;
+          }
+        }
+        //else
+        //break;
+        //};
+
+        if ( c == ecounter )
+          //Diskriminante
+        {//D=(((5*gfuncvalues_[lines [iline][1]]-3*gfuncvalues_[lines [iline][0]]-2*gfuncvalues_[lines [iline][2]])(5*gfuncvalues_[lines [iline][1]]-3*gfuncvalues_[lines [iline][0]]-2*gfuncvalues_[lines [iline][2]]))-4*gfuncvalues_[lines [iline][0]]*(0.5*gfuncvalues_[lines [iline][2]]-gfuncvalues_[lines [iline][1]]+0.5*gfuncvalues_[lines [iline][0]]));
+          double a1= 0.5*gfuncvalues_[lines [iline][2]]-gfuncvalues_[lines [iline][1]]+0.5*gfuncvalues_[lines [iline][0]];
+          double a2= 2*gfuncvalues_[lines [iline][1]]-1.5*gfuncvalues_[lines [iline][0]]-0.5*gfuncvalues_[lines [iline][2]];
+          double a3= gfuncvalues_[lines [iline][0]];
+          D= a2*a2-4*a1*a3;
+          if(D!=0)
+          {
+            double x1= (-a2+ sqrt(a2*a2-4*a1*a3))/(2*a1);
+            double x2= (-a2-sqrt(a2*a2-4*a1*a3))/(2*a1);
+
+
+            if ((D==0)and (0<=x1)and (2>=x1))
+            {
+              touched_ = true;
+            }
+            if ((0 < D)and (((0<=x1)and (2>=x1))or((0<=x2)and (2>=x2))))
+            {
+              intersected_ = true;
+            }
+          }
+        }
+      }
+    }
+
+    // 1 Wert != 0 und alle anderen 0
+
+    if (intersected_ == false)
+    {
+
+      int counter2= 0;
+
+      for(int counter1 = 0; counter1 < gfuncvalues_.size()-1; counter1++)
+      {
+        if(gfuncvalues_[counter1] != 0.0)
+        {
+          counter2++;
+        }
+      }
+
+      if(counter2==1)
+      {
+        intersected_ = true;
+      }
+    }
+
+    // Prüfe ob Nullstelle(n) auf kante liegen
+
+    //double a1= 0.5*gfuncvalues_[lines [iline][2]]-gfuncvalues_[lines [iline][1]]+0.5*gfuncvalues_[lines [iline][0]];
+    //double a2= 5*gfuncvalues_[lines [iline][1]]-3*gfuncvalues_[lines [iline][0]]-2*gfuncvalues_[lines [iline][2]];
+    //double a3= gfuncvalues_[lines [iline][0]];
+    //
+    //double x1= (-a2+(a2*a2-4*a1*a3)^0,5)/(2*a1);
+    //double x2= (-a2-(a2*a2-4*a1*a3)^0,5)/(2*a1);
+
+
+    //FARAH
+#endif
+  }
   return;
 }
 

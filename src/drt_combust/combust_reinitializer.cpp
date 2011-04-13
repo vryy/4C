@@ -82,11 +82,19 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
   const Epetra_Comm& comm = scatra_.Discretization()->Comm();
   if (comm.MyPID()==0)
   {
-    std::cout << "\n--- reinitializing G-function with signed distance function ..." << std::flush;
-    std::cout << "\n /!\\ warning === third component or normal vector set to 0 to keep 2D-character!" << std::endl;
+    std::cout << "---  reinitializing G-function by computing distance to interface ..." << std::flush;
+#ifdef COMBUST_2D
+    std::cout << "\n /!\\ third component or normal vector set to 0 to keep 2D-character!" << std::endl;
+#endif
   }
   // get a pointer to the G-function discretization
   Teuchos::RCP<DRT::Discretization> gfuncdis = scatra_.Discretization();
+
+  // get map holding pairs of nodes (master-slave) on periodic boundaries (pbc nodes)
+  Teuchos::RCP<map<int,vector<int> > > pbcmap = scatra_.PBCmap();
+
+  // map holding pbc nodes (masters or slaves) <pbc node id, distance to flame front>
+  std::map<int, double> pbcnodes;
 
   const Epetra_Map* dofrowmap = gfuncdis->DofRowMap();
 
@@ -104,22 +112,41 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
     const DRT::Node* lnode = gfuncdis->lRowNode(lnodeid);
     //cout << "proc " << comm.MyPID() << " reinitialization for node: " << lnode->Id() << endl;
 
-    // get physical coordinates of this node
-    nodecoord(0) = lnode->X()[0];
-    nodecoord(1) = lnode->X()[1];
-    nodecoord(2) = lnode->X()[2];
-
-    // the set of degrees of freedom associated with the node
+    // get the dof associated with this node
     const vector<int> nodedofset = gfuncdis->Dof(lnode); // this should not be a vector, but a scalar!
-
 #ifdef DEBUG
     int numdofs = nodedofset.size(); // this should be 1 (scalar field!)
     if (numdofs != 1)
       dserror("There are more than 1 dof for a node in a scalar field!");
 #endif
-
     const int dofgid = nodedofset[0];
     int doflid = dofrowmap->LID(dofgid);
+
+    //---------------------------------------------------------------------------------
+    // check if this node is a node with periodic boundary conditions (master or slave)
+    //---------------------------------------------------------------------------------
+    const int nodeid = lnode->Id();
+    // boolean indicating whether this node is a pbc node
+    bool pbcnode = false;
+    for (std::map<int, vector<int>  >::const_iterator iter= (*pbcmap).begin(); iter != (*pbcmap).end(); ++iter)
+    {
+      if (iter->first == nodeid) // node is a pbc master node
+        pbcnode = true;
+      else
+      {
+        if (iter->second.size()!=1) dserror("this might need to be modified for more than 1 slave per master");
+        for (size_t islave=0;islave<iter->second.size();islave++)
+        {
+          if (iter->second[islave] == nodeid) // node is a pbc slave node
+            pbcnode = true;
+        }
+      }
+    }
+
+    // get physical coordinates of this node
+    nodecoord(0) = lnode->X()[0];
+    nodecoord(1) = lnode->X()[1];
+    nodecoord(2) = lnode->X()[2];
 
     //--------------------------------
     // conditions for reinitialization
@@ -144,7 +171,6 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
         // number of flamefront patches for this element
         const std::vector<GEO::BoundaryIntCell> patches = elepatches->second;
         const int numpatch = patches.size();
-
 
         //-----------------------------------------
         // loop flame front patches of this element
@@ -185,6 +211,15 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
             {
               //cout << "distance to flame front patch: " << mindist << " is overwritten by: " << patchdist << endl;
               mindist = patchdist;
+
+              if (pbcnode)
+              {
+                // add node to map of pbc nodes
+                // remark: this node is a pbc node and it has been projected on a facing patch
+                //pbcpatchnodes[nodeid] = mindist;
+                pbcnodes[nodeid] = mindist;
+              }
+
             }
           }
 
@@ -219,6 +254,15 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
         else
           mindist = vertexdist;
         //cout << "node " << lnode->Id() << " does not face a patch (blind angle) or this patch is not local; distance: " << mindist << endl;
+
+        if (pbcnode)
+        {
+          // add node to map of pbc nodes
+          // remark: this node is a pbc node and the closest distance to a vertex has been computed
+          //pbcvertexnodes[nodeid] = mindist;
+          pbcnodes[nodeid] = mindist;
+        }
+
       }
       if (mindist == 5555.5) // case 3
         dserror ("G-fuction value of node %d was not reinitialized!", lnode->Id());
@@ -227,9 +271,53 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
       // reinitialize G-function field
       //------------------------------
       // assign new values of signed distance function to the G-function field
-      phivector->ReplaceMyValues(1,&mindist,&doflid);
+      int err = phivector->ReplaceMyValues(1,&mindist,&doflid);
+      if (err) dserror("this did not work");
     } // end condition for band around zero level set
   } // end loop nodes
+
+  //-----------------------------------------------------
+  // reinitialize G-function field on periodic boundaries
+  //-----------------------------------------------------
+  // remark: - If a node could not be projected on a facing patch, but its corresponding pbc node could,
+  //           then take the projected distance to reinitialize both nodes. This happens if the
+  //           flame front hits the boundary not in a 90 degree angle
+  //         - previously reinitialized G-function values on periodic boundaries are overwritten
+
+  // loop all master nodes with periodic boundary conditions
+  std::map<int, vector<int>  >::const_iterator pbciter;
+  for (pbciter = (*pbcmap).begin(); pbciter != (*pbcmap).end(); ++pbciter)
+  {
+    // get master node gid
+    const int mastergid = pbciter->first;
+    // get (first) slave node gid
+    if (pbciter->second.size()!=1) dserror("this might need to be modified for more than 1 slave per master");
+    const int slavegid = pbciter->second[0];
+
+    // get the dof associated with these nodes (master and slave share this dof)
+    DRT::Node* masternode = gfuncdis->gNode(mastergid);
+    const vector<int> nodedofset = gfuncdis->Dof(masternode); // this should not be a vector, but a scalar!
+#ifdef DEBUG
+    int numdofs = nodedofset.size(); // this should be 1 (scalar field!)
+    if (numdofs != 1)
+      dserror("There are more than 1 dof for a node in a scalar field!");
+#endif
+    const int dofgid = nodedofset[0];
+    int doflid = dofrowmap->LID(dofgid);
+
+    // look for this pbc master node in map of pbc patch nodes
+    std::map<int, double>::const_iterator pbcmasteriter = pbcnodes.find(mastergid);
+    // look for this pbc slave node in map of pbc patch nodes
+    std::map<int, double>::const_iterator pbcslaveiter = pbcnodes.find(slavegid);
+
+    double mastermindist = pbcmasteriter->second;
+    double slavemindist = pbcslaveiter->second;
+    double mindist = std::min(mastermindist,slavemindist);
+
+    int err = phivector->ReplaceMyValues(1,&mindist,&doflid);
+    if (err) dserror("this did not work");
+  }
+
 
   if (comm.MyPID()==0)
     std::cout << " done" << std::endl;

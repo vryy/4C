@@ -33,6 +33,8 @@ Maintainer: Florian Henke
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fluid/time_integration_scheme.H"
 #include "../drt_fluid/fluid_utils.H"
+#include "../drt_fluid/drt_periodicbc.H"
+#include "../drt_fluid/drt_pbcdofset.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
 #include "../drt_xfem/xfem_element_utils.H"
@@ -119,9 +121,23 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     theta_ = 1.0;
     cout0_ << "parameters 'theta' and 'time step size' have been set to 1.0 for stationary problem " << endl;
   }
+
   //------------------------------------------------------------------------------------------------
-  // future development: connect degrees of freedom for periodic boundary conditions     henke 01/09
+  // connect degrees of freedom for periodic boundary conditions
   //------------------------------------------------------------------------------------------------
+  {
+    cout << "apply periodic boundary conditions for the fluid" << endl;
+    // set elements to 'standard mode' so the parallel redistribution (includes call of FillComplete)
+    // hidden in the construction of periodic boundary condition runs correctly
+    // remark: the 'elementdofmanager' would get lost packing and unpacking the elements
+    ParameterList eleparams;
+    eleparams.set("action","set_standard_mode");
+    discret_->Evaluate(eleparams);
+
+    PeriodicBoundaryConditions pbc(discret_);
+    pbc.UpdateDofsForPeriodicBoundaryConditions();
+    pbcmapmastertoslave_ = pbc.ReturnAllCoupledRowNodes();
+  }
 
   //------------------------------------------------------------------------------------------------
   // prepare XFEM (initial degree of freedom management)
@@ -151,39 +167,24 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // create dummy instance of interfacehandle holding no flamefront and hence no integration cells
   Teuchos::RCP<COMBUST::InterfaceHandleCombust> ihdummy = rcp(new COMBUST::InterfaceHandleCombust(discret_,Teuchos::null,Teuchos::null));
   // create dummy instance of dof manager assigning standard enrichments to all nodes
-  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = rcp(new XFEM::DofManager(ihdummy,physprob_.xfemfieldset_,*physprob_.elementAnsatz_,xparams_));
-
-  // pass dof information to elements (no enrichments yet, standard FEM!)
-  TransferDofInformationToElements(ihdummy, dofmanagerdummy);
+  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = rcp(new XFEM::DofManager(ihdummy,physprob_.xfemfieldset_,*physprob_.elementAnsatz_,xparams_,Teuchos::null));
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanagerdummy;
 
-//  {
-//    ParameterList eleparams;
-//    eleparams.set("action","set_output_mode");
-//    eleparams.set("output_mode",true);
-//    discret_->Evaluate(eleparams);
-//  }
-
+  // pass dof information to elements (no enrichments yet, standard FEM!)
+  TransferDofInformationToElements(ihdummy, dofmanagerdummy);
   // ensure that degrees of freedom in the discretization have been set
   discret_->FillComplete();
 
   output_->WriteMesh(0,0.0);
 
   // store a dofset with the complete fluid unknowns
-  standarddofset_ = Teuchos::rcp(new DRT::DofSet());
+  standarddofset_ = Teuchos::rcp(new PBCDofSet(pbcmapmastertoslave_));
   standarddofset_->Reset();
   standarddofset_->AssignDegreesOfFreedom(*discret_,0,0);
   // split based on complete fluid field
   FLD::UTILS::SetupFluidSplit(*discret_,*standarddofset_,3,velpressplitterForOutput_);
-
-//  {
-//    ParameterList eleparams;
-//    eleparams.set("action","set_output_mode");
-//    eleparams.set("output_mode",false);
-//    discret_->Evaluate(eleparams);
-//  }
 
   //------------------------------------------------------------------------------------------------
   // get dof layout from the discretization to construct vectors and matrices
@@ -348,7 +349,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
     {
       // get starting 'theta' for first time step
       theta_ = params_.get<double>("start theta");
-      cout0_ << "/!\\ warning: first timestep computed with theta =  " << theta_ << endl;
+      cout0_ << "/!\\ first time step computed with theta =  " << theta_ << endl;
     }
     // regular time step
     else if (step_ > 1)
@@ -434,6 +435,40 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
     eleparams.set("delta time",dta_);
     eleparams.set("thsl",theta_*dta_);
 
+
+    if (step_ > 0) //(itnum == 1)
+    {
+      cout0_ << "---  XFEM time integration... " << std::flush;
+      vector<RCP<Epetra_Vector> > newRowVectors;
+      newRowVectors.push_back(state_.velnp_);
+      newRowVectors.push_back(state_.accnp_);
+
+      if(start_val_semilagrange_)
+      {
+        cout0_ << "apply semi-Lagrangian back tracking scheme... " << std::flush;
+        startval_->semiLagrangeBackTracking(newRowVectors,true);
+      }
+      if(start_val_enrichment_)
+      {
+        cout0_ << "compute enrichment values... " << std::flush;
+        enrichmentval_->setEnrichmentValues();
+      }
+
+      enrichmentval_ = Teuchos::null;
+
+      state_.velnp_->Update(1.0,*state_.veln_,0.0);
+      state_.accnp_->Update(1.0,*state_.accn_,0.0);
+      //#ifdef COLLAPSE_FLAME
+      ////        cout << endl << endl << "reference solution symmetry error" << endl;
+      //        EvaluateSymmetryError(state_.veln_);
+      //#endif
+      //#ifdef FLAME_VORTEX
+      ////        cout << endl << endl << "reference solution symmetry error" << endl;
+      //        EvaluateSymmetryError(state_.veln_);
+      //#endif
+      cout0_ << "done" << std::endl;
+    }
+
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("velnp",state_.velnp_);
@@ -475,51 +510,45 @@ void FLD::CombustFluidImplicitTimeInt::TransferDofInformationToElements(
  | after this function, it's ok to do so.                                                    axel |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
-       const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& ih_npip,
-       const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& ih_npi)
+       const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle,
+       const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle_old)
 {
   // information about interface is imported via ADAPTER::FluidCombust::ImportInterface()
   // remark: access to phi vectors required via flamefront
-  if (flamefront_ == Teuchos::null) 
-  {
-    dserror("combustion time integration scheme cannot see flame front");
-  }
-
-  //cout << *(state_.veln_)<< endl;
-  /* momentan gebe ich den ElementAnsatz (Lagrange Multiplier Zeug) nicht an den DofManager weiter,
-   * vielleicht brauche ich es aber. Hängt das hier eigentlich nicht direkt von InputParametern ab? */
-  //const COMBUST::CombustElementAnsatz elementAnsatz;
+  if (flamefront_ == Teuchos::null) dserror("combustion time integration scheme cannot see flame front");
 
   // build instance of DofManager with information about the interface from the interfacehandle
   // remark: DofManager is rebuilt in every inter-field iteration step, because number and position
-  // of enriched degrees of freedom change constantly.
-  const Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(ih_npip,physprob_.xfemfieldset_,*physprob_.elementAnsatz_,xparams_));
+  // of enriched degrees of freedom change in every time step/FG-iteration
+  const Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(
+      interfacehandle,
+      physprob_.xfemfieldset_,
+      *physprob_.elementAnsatz_,
+      xparams_,
+      pbcmapmastertoslave_)
+  );
 
-  //if (true) // INPAR::XFEM::timeintegration_semilagrangian
-  //{
   // temporarely save old dofmanager
   const RCP<XFEM::DofManager> olddofmanager = dofmanagerForOutput_;
-  //}
 
   // save dofmanager to be able to plot Gmsh stuff in Output()
   dofmanagerForOutput_ = dofmanager;
 
-  // tell elements about the dofs and the integration
-  TransferDofInformationToElements(ih_npip, dofmanager);
-
   // print global and element dofmanager to Gmsh
-  std::cout<< "Dofmanager and InterfaceHandle to Gmsh" << std::endl;
   dofmanager->toGmsh(step_);
-  ih_npip->toGmsh(step_);
+  interfacehandle->toGmsh(step_);
 
   // get old dofmaps, compute a new one and get the new one, too
   const Epetra_Map olddofrowmap = *discret_->DofRowMap();
-  //if (true) // INPAR::XFEM::timeintegration_semilagrangian
-  //{
   const Epetra_Map olddofcolmap = *discret_->DofColMap();
   map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID> oldNodalDofColDistrib;
   olddofmanager->fillNodalDofColDistributionMap(oldNodalDofColDistrib);
-  //}
+
+  // -------------------------------------------------------------------
+  // connect degrees of freedom for periodic boundary conditions
+  // -------------------------------------------------------------------
+  // tell elements about the dofs and the integration
+  TransferDofInformationToElements(interfacehandle, dofmanager);
   // assign degrees of freedom
   // remark: - assign degrees of freedom (first slot)
   //         - build geometry for (Neumann) boundary conditions (third slot);
@@ -541,7 +570,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
 
     // create switcher
     const XFEM::DofDistributionSwitcher dofswitch(
-        ih_npip, dofmanager,
+        interfacehandle, dofmanager,
         olddofrowmap, newdofrowmap,
         oldNodalDofDistributionMap, state_.nodalDofDistributionMap_,
         oldElementalDofDistributionMap, state_.elementalDofDistributionMap_
@@ -552,27 +581,18 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
     //---------------------------------------------------------------
     vector<RCP<Epetra_Vector> > oldColStateVectors;
 
-    RCP<Epetra_Vector> accnp = rcp(new Epetra_Vector(olddofcolmap,true));
-    LINALG::Export(*state_.accnp_,*accnp);
-    oldColStateVectors.push_back(accnp);
+    RCP<Epetra_Vector> veln = rcp(new Epetra_Vector(olddofcolmap,true));
+    LINALG::Export(*state_.veln_,*veln);
+    oldColStateVectors.push_back(veln);
 
     RCP<Epetra_Vector> accn = rcp(new Epetra_Vector(olddofcolmap,true));
     LINALG::Export(*state_.accn_,*accn);
     oldColStateVectors.push_back(accn);
 
-    RCP<Epetra_Vector> velnp = rcp(new Epetra_Vector(olddofcolmap,true));
-    LINALG::Export(*state_.velnp_,*velnp);
-    oldColStateVectors.push_back(velnp);
-
-    RCP<Epetra_Vector> veln = rcp(new Epetra_Vector(olddofcolmap,true));
-    LINALG::Export(*state_.veln_,*veln);
-    oldColStateVectors.push_back(veln);
-
     //---------------------------------------------
     // switch state vectors to new dof distribution
     //---------------------------------------------
-    cout0_ << " initialize system vectors...";
-
+    cout0_ << "---  transform state vectors... " << std::flush;
     // quasi-static enrichment strategy for kink enrichments
     // remark: as soon as the XFEM-time-integration works for kinks, this should be removed
     if (combusttype_==INPAR::COMBUST::combusttype_twophaseflow or
@@ -598,22 +618,20 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
       dofswitch.mapVectorToNewDofDistributionCombust(state_.veln_ ,false);
       dofswitch.mapVectorToNewDofDistributionCombust(state_.velnm_,false);
     }
-    cout0_ << " done" << endl;
+    cout0_ << "done" << endl;
 
     // all initial values can be set now; including the enrichment values
     if (step_ == 0)
     {
-      //cout << "/!\\ set enrichment field"<< endl;
-      //SetEnrichmentField(dofmanager,newdofrowmap);
+      SetEnrichmentField(dofmanager,newdofrowmap);
     }
 
     if (step_ > 0)
     {
-      vector<RCP<Epetra_Vector> > newRowStateVectors;
-      newRowStateVectors.push_back(state_.accnp_);
-      newRowStateVectors.push_back(state_.accn_);
-      newRowStateVectors.push_back(state_.velnp_);
+      // vectors to be written by time integration algorithm
+      vector<RCP<Epetra_Vector> > newRowStateVectors; 
       newRowStateVectors.push_back(state_.veln_);
+      newRowStateVectors.push_back(state_.accn_);
 #ifdef DEBUG
       if (oldColStateVectors.size() != newRowStateVectors.size())
         dserror("stateVector sizes are different! Fix this!");
@@ -628,8 +646,8 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
             oldColStateVectors,
             newRowStateVectors,
             flamefront_,
-            ih_npi,
-            ih_npip,
+            interfacehandle,
+            interfacehandle_old,
             olddofcolmap,
             oldNodalDofColDistrib,
             newdofrowmap,
@@ -646,8 +664,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
             newRowStateVectors,
             veln,
             flamefront_,
-            enrichmentval_,
-            ih_npi,
+            interfacehandle_old,
             olddofcolmap,
             oldNodalDofColDistrib,
             newdofrowmap,
@@ -656,8 +673,6 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
             theta_,
             flamespeed_));
       }
-
-      OutputToGmsh("start_field_pres","start_field_vel",Step(), Time());
     }
   } // anonymous namespace for dofswitcher and startvalues
 
@@ -695,12 +710,9 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
   // -------------------------------------------------------------------
   FLD::UTILS::SetupXFluidSplit(*discret_,dofmanager,velpressplitter_);
 
-  // -------------------------------------------------------------------
-  // create empty system matrix --- stiffness and mass are assembled in
-  // one system matrix!
-  // -------------------------------------------------------------------
-  cout0_ << " Initialize system matrix..." << endl;
-
+  // -------------------------------------------------------------------------------------
+  // create empty system matrix --- stiffness and mass are assembled in one system matrix!
+  // -------------------------------------------------------------------------------------
   // initialize system matrix
   sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(newdofrowmap,0,false,true));
 
@@ -861,30 +873,21 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
   {
     itnum++;
 
+    // TODO @Martin Brauchen wir das?
     // recompute standard dofs in critical area where nodes changed the interface side
-    if (step_>0)
-    {
-      // TODO @Martin Haben wir das nicht oben schon mal gebaut?
-      vector<RCP<Epetra_Vector> > newRowVectors;
-      newRowVectors.push_back(state_.velnp_);
-      newRowVectors.push_back(state_.accnp_);
+//    if (step_>0)
+//    {
+//      vector<RCP<Epetra_Vector> > newRowVectors;
+//      newRowVectors.push_back(state_.velnp_);
+//      newRowVectors.push_back(state_.accnp_);
+//
+//      //else if (itnum > 2) // fluid solved first at itnum = 2
+//      //{
+//      //  if(start_val_semilagrange)
+//      //    startval_->semiLagrangeBackTracking(newRowVectors,false);
+//      //}
+//    }
 
-      if (itnum == 1)
-      {
-        if(start_val_semilagrange_)
-          startval_->semiLagrangeBackTracking(newRowVectors,true);
-        if(start_val_enrichment_)
-          enrichmentval_->setEnrichmentValues();
-
-        enrichmentval_ = null;
-      }
-      //else if (itnum > 2) // fluid solved first at itnum = 2
-      //{
-      //  if(start_val_semilagrange)
-      //    startval_->semiLagrangeBackTracking(newRowVectors,false);
-      //}
-    }
-    
 #ifdef SUGRVEL_OUTPUT
       std::cout << "writing gmsh output" << std::endl;
       const bool screen_out = false;
@@ -1233,7 +1236,6 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         }
       }
 
-      // TODO @Martin Ist das nicht das Gleiche wie oben?
 #if 0//#ifdef COMBUST_2D
       // for 2-dimensional problems errors occur because of pseudo 3D code!
       // These error shall be removed with the following modifications
@@ -1373,6 +1375,14 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     //------------------- store nodal increment for element stress update
     oldinc_->Update(1.0,*incvel_,0.0);
   }
+#ifdef COLLAPSE_FLAME
+//  cout << endl << endl << "solution solution symmetry error" << endl;
+  EvaluateSymmetryError(state_.velnp_);
+#endif
+#ifdef FLAME_VORTEX
+//  cout << endl << endl << "solution solution symmetry error" << endl;
+  //EvaluateSymmetryError(state_.velnp_);
+#endif
 
 #ifdef SUGRVEL_OUTPUT
   const bool screen_out = false;
@@ -1746,10 +1756,9 @@ void FLD::CombustFluidImplicitTimeInt::Output()
   }
 
   // write restart
-  // TODO @Florian&Ursula why was this set to 'false'? check this!
-  if (write_restart_data)//(false)
+  if (write_restart_data)
   {
-    std::cout << "Write restart" << std::endl;
+    cout0_ << "---  write restart... " << std::flush;
     //std::cout << state_.velnp_->GlobalLength() << std::endl;
     output_->WriteVector("velnp", state_.velnp_);
     //std::cout << state_.veln_->GlobalLength() << std::endl;
@@ -1760,16 +1769,12 @@ void FLD::CombustFluidImplicitTimeInt::Output()
     output_->WriteVector("accnp", state_.accnp_);
     //std::cout << state_.accn_->GlobalLength() << std::endl;
     output_->WriteVector("accn" , state_.accn_);
+    cout0_ << "done" << std::endl;
   }
 
-  //if (discret_->Comm().NumProc() == 1)
   //if (step_ % 10 == 0 or step_== 1) //write every 5th time step only
   {
     OutputToGmsh("solution_field_pressure","solution_field_velocity",step_, time_);
-#ifdef COMBUST_GMSH_REF_FIELDS
-    // TODO @Martin passe die Funktion fuer deinen Gebrauch an
-    //OutputToGmsh("reference_solution_field_pressure","reference_solution_field_velocity",step_,time_);
-#endif
   }
 
 //  if (step_%upres_ == 0)  //write solution
@@ -1907,14 +1912,24 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
   const bool screen_out = true;
 
   // get a copy on column parallel distribution
-  Teuchos::RCP<const Epetra_Vector> output_col_velnp = DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_);
+  Teuchos::RCP<const Epetra_Vector> output_col_vel;
+  // remark: strcmp returns '0' if 'true'
+  if ((strcmp(presName,"reference_field_pressure")==0) ||
+      (strcmp(presName,"mod_start_field_pres")==0))// explicit names for old field
+  { // 0 means true here!!!
+    output_col_vel = DRT::UTILS::GetColVersionOfRowVector(discret_, state_.veln_);
+  }
+  else // default case
+  {
+    output_col_vel = DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_);
+  }
 
   //------------------------
   // write pressure solution
   //------------------------
   if (gmshdebugout and (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.xfemfieldset_.end()))
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(presName, step, 3, screen_out, discret_->Comm().MyPID());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(presName, step, 5, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
     {
       //---------------------------------
@@ -1937,7 +1952,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
         ele->LocationVector(*(discret_), lm, lmowner, lmstride);
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
+        DRT::UTILS::ExtractMyValues(*output_col_vel, myvelnp, lm);
 
         const int numparam = eledofman.NumDofPerField(XFEM::PHYSICS::Pres);
         const vector<int>& dofpos = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Pres);
@@ -2012,6 +2027,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
       //---------------------------------------
       // write pressure jump at Gaussian points
       //---------------------------------------
+#if 1
       if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion or
           combusttype_ == INPAR::COMBUST::combusttype_twophaseflowjump)
       {
@@ -2041,9 +2057,15 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
             // extract G-function values to element level
             DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp);
 #ifdef DEBUG
+#ifndef COMBUST_HEX20
             if (numnode != 8) dserror("pressure jump output only available for hex8 elements!");
 #endif
+#endif
+#ifndef COMBUST_HEX20
             LINALG::Matrix<8,1> ephi;
+#else
+            LINALG::Matrix<20,1> ephi;
+#endif
             for (size_t iparam=0; iparam<numnode; ++iparam)
               ephi(iparam) = myphinp[iparam];
 
@@ -2059,7 +2081,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
             ele->LocationVector(*(discret_), lm, lmowner, lmstride);
             // extract local values from the global vector
             vector<double> myvelnp(lm.size());
-            DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
+            DRT::UTILS::ExtractMyValues(*output_col_vel, myvelnp, lm);
 
             const size_t numparam = eledofman.NumDofPerField(XFEM::PHYSICS::Pres);
             const vector<int>& dofpos = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Pres);
@@ -2105,7 +2127,9 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 
                 XFEM::ApproxFunc<0,16> shp_jump;
 #ifdef DEBUG
+#ifndef COMBUST_HEX20
                 if (numparam != 16) dserror("pressure jump output only available for fully enriched hex8 elements!");
+#endif
 #endif
                 // fill approximation functions
                 for (std::size_t iparam = 0; iparam < 16; ++iparam)
@@ -2215,6 +2239,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 #endif
       }
       gmshfilecontent << "};\n";
+#endif
     }
     gmshfilecontent.close();
     if (screen_out) std::cout << " done" << endl;
@@ -2245,7 +2270,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
+        DRT::UTILS::ExtractMyValues(*output_col_vel, myvelnp, lm);
 
         const int numparam = eledofman.NumDofPerField(field);
         const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
@@ -2358,7 +2383,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 
         // extract local values from the global vector
         vector<double> myvelnp(lm.size());
-        DRT::UTILS::ExtractMyValues(*output_col_velnp, myvelnp, lm);
+        DRT::UTILS::ExtractMyValues(*output_col_vel, myvelnp, lm);
 
         const int numparam = eledofman.NumDofPerField(field);
         const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
@@ -2528,7 +2553,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
   //------------------------
   if (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Velx) != this->physprob_.xfemfieldset_.end())
   {
-    PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_), velName,"Velocity Solution (Physical) n+1",true, step, time);
+    PlotVectorFieldToGmsh(output_col_vel, velName,"Velocity Solution (Physical) n+1",true, step, time);
     if (timealgo_ != INPAR::FLUID::timeint_stationary)
     {
 //      PlotVectorFieldToGmsh(DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnm_), "solution_field_velocity_nm","Velocity Solution (Physical) n-1",false, step, time);
@@ -3299,8 +3324,6 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
       const int lid = phinp->Map().LID(lnode->Id());
       const double gfuncval = (*phinp)[lid];
 
-//cout << "G-function value " << gfuncval << endl;
-
       // compute preliminary values for both vortices
       double r_squared_left  = ((xyz(0)-xyz0_left(0))*(xyz(0)-xyz0_left(0))
                                +(xyz(1)-xyz0_left(1))*(xyz(1)-xyz0_left(1)))/R_squared;
@@ -3351,14 +3374,15 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
         const int gid = nodedofs[idim];
         //local node id
         int lid = dofrowmap->LID(gid);
-        err += state_.velnp_->ReplaceMyValues(1,&vel(idim),&lid);
-        err += state_.veln_ ->ReplaceMyValues(1,&vel(idim),&lid);
-        err += state_.velnm_->ReplaceMyValues(1,&vel(idim),&lid);
-        if(idim==3)
-        {
+        if(idim==3){ // pressure dof
           err += state_.velnp_->ReplaceMyValues(1,&pres,&lid);
           err += state_.veln_ ->ReplaceMyValues(1,&pres,&lid);
           err += state_.velnm_->ReplaceMyValues(1,&pres,&lid);
+        }
+        else{ // velocity dof
+          err += state_.velnp_->ReplaceMyValues(1,&vel(idim),&lid);
+          err += state_.veln_ ->ReplaceMyValues(1,&vel(idim),&lid);
+          err += state_.velnm_->ReplaceMyValues(1,&vel(idim),&lid);
         }
       }
     } // end loop nodes lnodeid
@@ -3379,17 +3403,8 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
     const Teuchos::RCP<XFEM::DofManager> dofmanager,
     const Epetra_Map dofrowmap)
 {
-//  cout0_ << "==============================================================================================\n";
-//  cout0_ << "----------------Set initial enrichment field manually-------               --------------------\n";
-//  cout0_ << "==============================================================================================\n";
-//
-//  // get G-function value vector on fluid NodeColMap
-//  const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
-
 #ifdef FLAME_VORTEX
-  cout0_ << "==============================================================================================\n";
-  cout0_ << "----------------Set initial enrichment field manually-------               --------------------\n";
-  cout0_ << "==============================================================================================\n";
+  cout0_ << "---  set initial enrichment field for flame-vortex interaction example... " << std::flush;
 
   // get G-function value vector on fluid NodeColMap
   const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
@@ -3410,25 +3425,24 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
           // nothing to do in flame_vortex example
         else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
         {
-          (*state_.veln_)[dofrowmap.LID(dofpos)] = 3.19745;
-          (*state_.velnp_)[dofrowmap.LID(dofpos)] = 3.19745;
+          (*state_.veln_)[dofrowmap.LID(dofpos)] = 3.197452229299363;
+          (*state_.velnp_)[dofrowmap.LID(dofpos)] = 3.197452229299363;
         }
         else if (fieldenr->getField() == XFEM::PHYSICS::Velz);
           // nothing to do in flame_vortex example
         else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
         {
-          (*state_.veln_)[dofrowmap.LID(dofpos)] = 3.712242;
-          (*state_.velnp_)[dofrowmap.LID(dofpos)] = 3.712242;
+          (*state_.veln_)[dofrowmap.LID(dofpos)] = 3.7122420382165605;
+          (*state_.velnp_)[dofrowmap.LID(dofpos)] = 3.7122420382165605;
         }
       } // end if jump enrichment
     } // end loop over fieldenr
   } // end loop over element nodes
+  cout0_ << "done" << std::endl;
 #endif
 
 #ifdef COLLAPSE_FLAME
-  cout0_ << "==============================================================================================\n";
-  cout0_ << "----------------Set initial enrichment field manually-------               --------------------\n";
-  cout0_ << "==============================================================================================\n";
+  cout0_ << "---  set initial enrichment field for collapsing flame example... " << std::flush;
 
   // get G-function value vector on fluid NodeColMap
   const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
@@ -3534,12 +3548,11 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
       }
     } // end loop over fieldenr
   } // end loop over element nodes
+  cout0_ << "done" << std::endl;
 #endif
 
 #ifdef COMBUST_TWO_FLAME_FRONTS
-  cout0_ << "==============================================================================================\n";
-  cout0_ << "----------------Set initial enrichment field manually-------               --------------------\n";
-  cout0_ << "==============================================================================================\n";
+  cout0_ << "---  set initial enrichment field for two approaching flame fronts example... " << std::flush;
 
   // get G-function value vector on fluid NodeColMap
   const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
@@ -3624,8 +3637,510 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
       }
     } // end loop over fieldenr
   } // end loop over element nodes
+  cout0_ << "done" << std::endl;
 #endif
-  OutputToGmsh("mod_start_field_pres","mod_start_field_vel",Step(), Time());
+  //OutputToGmsh("mod_start_field_pres","mod_start_field_vel",Step(), Time());
+}
+
+
+void FLD::CombustFluidImplicitTimeInt::EvaluateSymmetryError(RCP<Epetra_Vector> stateVec)
+{
+  // nodes are ordered through elements. Thus every node row (top-bottom row) is ordered after the last,
+  // despite of the first two node rows coming from the same element. Thus, these cannot be used.
+
+  if (discret_->Comm().NumProc() == 1) // just test with one proc that has all data
+  {
+    const int numnodes = discret_->NumGlobalNodes();
+    const Epetra_Map dofrowmap = *discret_->DofRowMap();
+
+#ifdef COLLAPSE_FLAME
+    const int numnodesperrow = static_cast<int>(2*(sqrt(numnodes/2)));
+    const int numcols = numnodesperrow/2;
+    // square root should be an integer! scaling with since pseudo 2D with one front and one back node
+
+    double maxError = 0.0;
+
+    for (int i=0;i<discret_->NumGlobalNodes();i++)
+    {
+      if ((i >= 2*numnodesperrow) and // don't use first two rows
+          (i%numnodesperrow > 1) and // don't use the two bottom nodes
+          (i%numnodesperrow < numnodesperrow/2) and // down half
+          (i<numnodes/2.0)) // left half
+      {
+//        double TOL = 1.0e-14;
+        int colnumber = (i-i%numnodesperrow)/numnodesperrow;
+        int leftdownid = i;
+        int leftupid;
+        int rightupid;
+        int rightdownid;
+        if (i%2==0)
+        {
+          leftupid = (colnumber+1)*numnodesperrow - leftdownid%numnodesperrow - 2;
+          rightupid = (numcols-colnumber-1+1)*numnodesperrow - leftdownid%numnodesperrow - 2;
+          rightdownid = (numcols-colnumber-1)*numnodesperrow + leftdownid%numnodesperrow;
+        }
+        else
+        {
+          leftupid = (colnumber+1)*numnodesperrow - leftdownid%numnodesperrow;
+          rightupid = (numcols-colnumber-1+1)*numnodesperrow - leftdownid%numnodesperrow;
+          rightdownid = (numcols-colnumber-1)*numnodesperrow + leftdownid%numnodesperrow;
+        }
+
+        const set<XFEM::FieldEnr>& fieldenrset(dofmanagerForOutput_->getNodeDofSet(leftdownid));
+        for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+            fieldenr != fieldenrset.end();++fieldenr)
+        {
+          const XFEM::DofKey<XFEM::onNode> dofkeyld(leftdownid, *fieldenr);
+          const XFEM::DofKey<XFEM::onNode> dofkeylu(leftupid, *fieldenr);
+          const XFEM::DofKey<XFEM::onNode> dofkeyru(rightupid, *fieldenr);
+          const XFEM::DofKey<XFEM::onNode> dofkeyrd(rightdownid, *fieldenr);
+
+          const int dofposld = state_.nodalDofDistributionMap_.find(dofkeyld)->second;
+          const int dofposlu = state_.nodalDofDistributionMap_.find(dofkeylu)->second;
+          const int dofposru = state_.nodalDofDistributionMap_.find(dofkeyru)->second;
+          const int dofposrd = state_.nodalDofDistributionMap_.find(dofkeyrd)->second;
+
+          double valueld = (*stateVec)[dofrowmap.LID(dofposld)];
+          double valuelu = (*stateVec)[dofrowmap.LID(dofposlu)];
+          double valueru = (*stateVec)[dofrowmap.LID(dofposru)];
+          double valuerd = (*stateVec)[dofrowmap.LID(dofposrd)];
+#if 0 // absolute symmetry errors in collapse_flame
+          if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
+          {
+            if (fieldenr->getField() == XFEM::PHYSICS::Velx)
+            {
+              if ((fabs(valueld-valuelu) > maxError) or
+                  (fabs(valueld+valueru) > maxError) or
+                  (fabs(valueld+valuerd) > maxError))
+              {
+                cout << "field: standard - velx, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
+                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
+                cout << "ld-lu: " << fabs(valueld-valuelu)  << "ld-ru: " << fabs(valueld+valueru) << "ld-rd: " << fabs(valueld+valuerd) << endl;
+                maxError = max(fabs(valueld-valuelu),max(fabs(valueld+valueru),fabs(valueld+valuerd)));
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+            {
+              if ((fabs(valueld+valuelu) > maxError) or
+                  (fabs(valueld+valueru) > maxError) or
+                  (fabs(valueld-valuerd) > maxError))
+              {
+                cout << "field: standard - vely, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
+                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
+                cout << "ld-lu: " << fabs(valueld+valuelu)  << "ld-ru: " << fabs(valueld+valueru) << "ld-rd: " << fabs(valueld-valuerd) << endl;
+                maxError = max(fabs(valueld+valuelu),max(fabs(valueld+valueru),fabs(valueld-valuerd)));
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
+            {
+              if ((fabs(valueld-valuelu) > maxError) or
+                  (fabs(valueld-valueru) > maxError) or
+                  (fabs(valueld-valuerd) > maxError))
+              {
+                cout << "field: standard - velz, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
+                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
+                cout << "ld-lu: " << fabs(valueld-valuelu)  << "ld-ru: " << fabs(valueld-valueru) << "ld-rd: " << fabs(valueld-valuerd) << endl;
+                maxError = max(fabs(valueld-valuelu),max(fabs(valueld-valueru),fabs(valueld-valuerd)));
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
+            {
+              if ((fabs(valueld-valuelu) > maxError) or
+                  (fabs(valueld-valueru) > maxError) or
+                  (fabs(valueld-valuerd) > maxError))
+              {
+                cout << "field: standard - pres, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
+                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
+                cout << "ld-lu: " << fabs(valueld-valuelu)  << "ld-ru: " << fabs(valueld-valueru) << "ld-rd: " << fabs(valueld-valuerd) << endl;
+                maxError = max(fabs(valueld-valuelu),max(fabs(valueld-valueru),fabs(valueld-valuerd)));
+              }
+            }
+            else
+              dserror("unknown physical field!");
+          } // end if std enrichment
+          else // (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
+          {
+            if (fieldenr->getField() == XFEM::PHYSICS::Velx)
+            {
+              if ((fabs(valueld-valuelu) > maxError) or
+                  (fabs(valueld+valueru) > maxError) or
+                  (fabs(valueld+valuerd) > maxError))
+              {
+                cout << "field: enriched - velx, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
+                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
+                cout << "ld-lu: " << fabs(valueld-valuelu)  << "ld-ru: " << fabs(valueld+valueru) << "ld-rd: " << fabs(valueld+valuerd) << endl;
+                maxError = max(fabs(valueld-valuelu),max(fabs(valueld+valueru),fabs(valueld+valuerd)));
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+            {
+              if ((fabs(valueld+valuelu) > maxError) or
+                  (fabs(valueld+valueru) > maxError) or
+                  (fabs(valueld-valuerd) > maxError))
+              {
+                cout << "field: enriched - vely, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
+                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
+                cout << "ld-lu: " << fabs(valueld+valuelu)  << "ld-ru: " << fabs(valueld+valueru) << "ld-rd: " << fabs(valueld-valuerd) << endl;
+                maxError = max(fabs(valueld+valuelu),max(fabs(valueld+valueru),fabs(valueld-valuerd)));
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
+            {
+              if ((fabs(valueld-valuelu) > maxError) or
+                  (fabs(valueld-valueru) > maxError) or
+                  (fabs(valueld-valuerd) > maxError))
+              {
+                cout << "field: enriched - velz, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
+                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
+                cout << "ld-lu: " << fabs(valueld-valuelu)  << "ld-ru: " << fabs(valueld-valueru) << "ld-rd: " << fabs(valueld-valuerd) << endl;
+                maxError = max(fabs(valueld-valuelu),max(fabs(valueld-valueru),fabs(valueld-valuerd)));
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
+            {
+              if ((fabs(valueld-valuelu) > maxError) or
+                  (fabs(valueld-valueru) > maxError) or
+                  (fabs(valueld-valuerd) > maxError))
+              {
+                cout << "field: enriched - pres, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
+                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
+                cout << "ld-lu: " << fabs(valueld-valuelu)  << "ld-ru: " << fabs(valueld-valueru) << "ld-rd: " << fabs(valueld-valuerd) << endl;
+                maxError = max(fabs(valueld-valuelu),max(fabs(valueld-valueru),fabs(valueld+-valuerd)));
+              }
+            }
+          } // end if jump enr
+#else // relative symmetry errors in collapse_flame
+          if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
+          {
+            if (fieldenr->getField() == XFEM::PHYSICS::Velx)
+            {
+              if ((fabs(valueld-valuelu)/max(fabs(valueld),1.0) > maxError) or
+                  (fabs(valueld+valueru)/max(fabs(valueld),1.0) > maxError) or
+                  (fabs(valueld+valuerd)/max(fabs(valueld),1.0) > maxError))
+              {
+                cout << "field: standard - velx, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
+                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
+                cout << "ld-lu: " << fabs(valueld-valuelu)/max(fabs(valueld),1.0) << "ld-ru: " << fabs(valueld+valueru)/max(fabs(valueld),1.0) << "ld-rd: " << fabs(valueld+valuerd)/max(fabs(valueld),1.0) << endl;
+                maxError = max(fabs(valueld-valuelu)/max(fabs(valueld),1.0),max(fabs(valueld+valueru)/max(fabs(valueld),1.0),fabs(valueld+valuerd)/max(fabs(valueld),1.0)));
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+            {
+              if ((fabs(valueld+valuelu)/max(fabs(valueld),1.0) > maxError) or
+                  (fabs(valueld+valueru)/max(fabs(valueld),1.0) > maxError) or
+                  (fabs(valueld-valuerd)/max(fabs(valueld),1.0) > maxError))
+              {
+                cout << "field: standard - vely, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
+                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
+                cout << "ld-lu: " << fabs(valueld+valuelu)/max(fabs(valueld),1.0) << "ld-ru: " << fabs(valueld+valueru)/max(fabs(valueld),1.0) << "ld-rd: " << fabs(valueld-valuerd)/max(fabs(valueld),1.0) << endl;
+                maxError = max(fabs(valueld+valuelu)/max(fabs(valueld),1.0),max(fabs(valueld+valueru)/max(fabs(valueld),1.0),fabs(valueld-valuerd)/max(fabs(valueld),1.0)));
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
+            {
+              if ((fabs(valueld-valuelu)/max(fabs(valueld),1.0) > maxError) or
+                  (fabs(valueld-valueru)/max(fabs(valueld),1.0) > maxError) or
+                  (fabs(valueld-valuerd)/max(fabs(valueld),1.0) > maxError))
+              {
+                cout << "field: standard - velz, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
+                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
+                cout << "ld-lu: " << fabs(valueld-valuelu)/max(fabs(valueld),1.0) << "ld-ru: " << fabs(valueld-valueru)/max(fabs(valueld),1.0) << "ld-rd: " << fabs(valueld-valuerd)/max(fabs(valueld),1.0) << endl;
+                maxError = max(fabs(valueld-valuelu)/max(fabs(valueld),1.0),max(fabs(valueld-valueru)/max(fabs(valueld),1.0),fabs(valueld-valuerd)/max(fabs(valueld),1.0)));
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
+            {
+              if ((fabs(valueld-valuelu)/max(fabs(valueld),1.0) > maxError) or
+                  (fabs(valueld-valueru)/max(fabs(valueld),1.0) > maxError) or
+                  (fabs(valueld-valuerd)/max(fabs(valueld),1.0) > maxError))
+              {
+                cout << "field: standard - pres, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
+                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
+                cout << "ld-lu: " << fabs(valueld-valuelu)/max(fabs(valueld),1.0) << "ld-ru: " << fabs(valueld-valueru)/max(fabs(valueld),1.0) << "ld-rd: " << fabs(valueld-valuerd)/max(fabs(valueld),1.0) << endl;
+                maxError = max(fabs(valueld-valuelu)/max(fabs(valueld),1.0),max(fabs(valueld-valueru)/max(fabs(valueld),1.0),fabs(valueld-valuerd)/max(fabs(valueld),1.0)));
+              }
+            }
+            else
+              dserror("unknown physical field!");
+          } // end if std enrichment
+          else // (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
+          {
+            if (fieldenr->getField() == XFEM::PHYSICS::Velx)
+            {
+              if ((fabs(valueld-valuelu)/max(fabs(valueld),1.0) > maxError) or
+                  (fabs(valueld+valueru)/max(fabs(valueld),1.0) > maxError) or
+                  (fabs(valueld+valuerd)/max(fabs(valueld),1.0) > maxError))
+              {
+                cout << "field: enriched - velx, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
+                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
+                cout << "ld-lu: " << fabs(valueld-valuelu)/max(fabs(valueld),1.0) << "ld-ru: " << fabs(valueld+valueru)/max(fabs(valueld),1.0) << "ld-rd: " << fabs(valueld+valuerd)/max(fabs(valueld),1.0) << endl;
+                maxError = max(fabs(valueld-valuelu)/max(fabs(valueld),1.0),max(fabs(valueld+valueru)/max(fabs(valueld),1.0),fabs(valueld+valuerd)/max(fabs(valueld),1.0)));
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+            {
+              if ((fabs(valueld+valuelu) > maxError) or
+                  (fabs(valueld+valueru) > maxError) or
+                  (fabs(valueld-valuerd) > maxError))
+              {
+                cout << "field: enriched - vely, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
+                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
+                cout << "ld-lu: " << fabs(valueld+valuelu)/max(fabs(valueld),1.0) << "ld-ru: " << fabs(valueld+valueru)/max(fabs(valueld),1.0) << "ld-rd: " << fabs(valueld-valuerd)/max(fabs(valueld),1.0) << endl;
+                maxError = max(fabs(valueld+valuelu)/max(fabs(valueld),1.0),max(fabs(valueld+valueru)/max(fabs(valueld),1.0),fabs(valueld-valuerd)/max(fabs(valueld),1.0)));
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
+            {
+              if ((fabs(valueld-valuelu)/max(fabs(valueld),1.0) > maxError) or
+                  (fabs(valueld-valueru)/max(fabs(valueld),1.0) > maxError) or
+                  (fabs(valueld-valuerd)/max(fabs(valueld),1.0) > maxError))
+              {
+                cout << "field: enriched - velz, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
+                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
+                cout << "ld-lu: " << fabs(valueld-valuelu)/max(fabs(valueld),1.0) << "ld-ru: " << fabs(valueld-valueru)/max(fabs(valueld),1.0) << "ld-rd: " << fabs(valueld-valuerd)/max(fabs(valueld),1.0) << endl;
+                maxError = max(fabs(valueld-valuelu)/max(fabs(valueld),1.0),max(fabs(valueld-valueru)/max(fabs(valueld),1.0),fabs(valueld-valuerd)/max(fabs(valueld),1.0)));
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
+            {
+              if ((fabs(valueld-valuelu)/max(fabs(valueld),1.0) > maxError) or
+                  (fabs(valueld-valueru)/max(fabs(valueld),1.0) > maxError) or
+                  (fabs(valueld-valuerd)/max(fabs(valueld),1.0) > maxError))
+              {
+                cout << "field: enriched - pres, nodeids: " << leftdownid << ", " << leftupid << ", " << rightupid << " and " << rightdownid << endl;
+                cout << valueld << ", " << valuelu << ", " << valueru << " and " << valuerd << endl;
+                cout << "ld-lu: " << fabs(valueld-valuelu)/max(fabs(valueld),1.0)  << "ld-ru: " << fabs(valueld-valueru)/max(fabs(valueld),1.0) << "ld-rd: " << fabs(valueld-valuerd)/max(fabs(valueld),1.0) << endl;
+                maxError = max(fabs(valueld-valuelu)/max(fabs(valueld),1.0),max(fabs(valueld-valueru)/max(fabs(valueld),1.0),fabs(valueld+-valuerd)/max(fabs(valueld),1.0)));
+              }
+            }
+          } // end if jump enr
+#endif // relative errors in collapse_flame
+        } // loop over fieldenr
+      } // end if what nodes shall be used
+    }
+#endif
+
+#ifdef FLAME_VORTEX
+    const int numnodespercol = static_cast<int>(2.0*(-1.0+sqrt(1.0+numnodes)));
+    //cout << "numnodespercol: " << 2.0*(1.0+sqrt(1.0+numnodes)) << endl;
+    const int numcols = static_cast<int>(numnodespercol/4.0 +1.0);
+    //cout << "numcols: " << numnodespercol/2.0 << endl;
+
+    // square root should be an integer! scaling since pseudo 2D with one front and one back node
+
+    double maxError = 0.0;
+
+    for (int i=0;i<discret_->NumGlobalNodes();i++)
+    {
+      if ((i >= 2*numnodespercol) and // don't use first two rows
+          (i%numnodespercol > 1) and // don't use the two bottom nodes
+          (i<numnodes/2.0)) // left half
+      {
+//        double TOL = 1.0e-14;
+        int colnumber = (i-i%numnodespercol)/numnodespercol;
+        int leftid = i;
+        int rightid;
+        if (i%2==0)
+          rightid = (numcols-colnumber-1)*numnodespercol + leftid%numnodespercol;
+        else
+          rightid = (numcols-colnumber-1)*numnodespercol + leftid%numnodespercol;
+
+        const set<XFEM::FieldEnr>& fieldenrset(dofmanagerForOutput_->getNodeDofSet(leftid));
+        for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+            fieldenr != fieldenrset.end();++fieldenr)
+        {
+          const XFEM::DofKey<XFEM::onNode> dofkeyleft(leftid, *fieldenr);
+          const XFEM::DofKey<XFEM::onNode> dofkeyright(rightid, *fieldenr);
+
+          const int dofposleft = state_.nodalDofDistributionMap_.find(dofkeyleft)->second;
+          const int dofposright = state_.nodalDofDistributionMap_.find(dofkeyright)->second;
+
+          double valueleft = (*stateVec)[dofrowmap.LID(dofposleft)];
+          double valueright = (*stateVec)[dofrowmap.LID(dofposright)];
+#if 1 // absolute symmetry errors in flame-vortex interaction
+          if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
+          {
+            if (fieldenr->getField() == XFEM::PHYSICS::Velx)
+            {
+              if (fabs(valueleft+valueright) > maxError)
+              {
+                cout << "field: standard - velx, nodeids: " << leftid << " and " << rightid << endl;
+                cout << valueleft << " and " << valueright << endl;
+                cout << fabs(valueleft+valueright) << endl;
+                maxError = fabs(valueleft+valueright);
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+            {
+              if (fabs(valueleft-valueright) > maxError)
+              {
+                cout << "field: standard - vely nodeids: " << leftid << " and " << rightid << endl;
+                cout << valueleft << " and " << valueright << endl;
+                cout << fabs(valueleft-valueright) << endl;
+                maxError = fabs(valueleft-valueright);
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
+            {
+              if (fabs(valueleft-valueright) > maxError)
+              {
+                cout << "field: standard - velz, nodeids: " << leftid << " and " << rightid << endl;
+                cout << valueleft << " and " << valueright << endl;
+                cout << fabs(valueleft-valueright) << endl;
+                maxError = fabs(valueleft-valueright);
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
+            {
+              if (fabs(valueleft-valueright) > maxError)
+              {
+                cout << "field: standard - pres, nodeids: " << leftid << " and " << rightid << endl;
+                cout << valueleft << " and " << valueright << endl;
+                cout << fabs(valueleft-valueright) << endl;
+                maxError = fabs(valueleft-valueright);
+              }
+            }
+            else
+              dserror("unknown physical field!");
+          } // end if std enrichment
+          else // (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
+          {
+            if (fieldenr->getField() == XFEM::PHYSICS::Velx)
+            {
+              if (fabs(valueleft+valueright) > maxError)
+              {
+                cout << "field: enriched - velx, nodeids: " << leftid << " and " << rightid << endl;
+                cout << valueleft << " and " << valueright << endl;
+                cout << fabs(valueleft+valueright) << endl;
+                maxError = fabs(valueleft+valueright);
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+            {
+              if (fabs(valueleft-valueright) > maxError)
+              {
+                cout << "field: enriched - vely, nodeids: " << leftid << " and " << rightid << endl;
+                cout << valueleft << " and " << valueright << endl;
+                cout << fabs(valueleft-valueright) << endl;
+                maxError = fabs(valueleft-valueright);
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
+            {
+              if (fabs(valueleft-valueright) > maxError)
+              {
+                cout << "field: enriched - velz, nodeids: " << leftid << " and " << rightid << endl;
+                cout << valueleft << " and " << valueright << endl;
+                cout << fabs(valueleft-valueright) << endl;
+                maxError = fabs(valueleft-valueright);
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
+            {
+              if (fabs(valueleft-valueright) > maxError)
+              {
+                cout << "field: enriched - pres, nodeids: " << leftid << " and " << rightid << endl;
+                cout << valueleft << " and " << valueright << endl;
+                cout << fabs(valueleft-valueright) << endl;
+                maxError = fabs(valueleft-valueright);
+              }
+            }
+          } // end if jump enr
+#else // relative symmetry errors in flame-vortex interaction
+          if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
+          {
+            if (fieldenr->getField() == XFEM::PHYSICS::Velx)
+            {
+              if (fabs(valueleft+valueright) > maxError)
+              {
+                cout << "field: standard - velx, nodeids: " << leftid << " and " << rightid << endl;
+                cout << valueleft << " and " << valueright << endl;
+                cout << fabs(valueleft+valueright) << endl;
+                maxError = fabs(valueleft+valueright);
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+            {
+              if (fabs(valueleft-valueright) > maxError)
+              {
+                cout << "field: standard - vely, nodeids: " << leftid << " and " << rightid << endl;
+                cout << valueleft << " and " << valueright << endl;
+                cout << fabs(valueleft-valueright) << endl;
+                maxError = fabs(valueleft-valueright);
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
+            {
+              if (fabs(valueleft-valueright) > maxError)
+              {
+                cout << "field: standard - velz, nodeids: " << leftid << " and " << rightid << endl;
+                cout << valueleft << " and " << valueright << endl;
+                cout << fabs(valueleft-valueright) << endl;
+                maxError = fabs(valueleft-valueright);
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
+            {
+              if (fabs(valueleft-valueright) > maxError)
+              {
+                cout << "field: standard - pres, nodeids: " << leftid << " and " << rightid << endl;
+                cout << valueleft << " and " << valueright << endl;
+                cout << fabs(valueleft-valueright) << endl;
+                maxError = fabs(valueleft-valueright);
+              }}
+            }
+            else
+              dserror("unknown physical field!");
+          } // end if std enrichment
+          else // (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeJump)
+          {
+            if (fieldenr->getField() == XFEM::PHYSICS::Velx)
+            {
+              if (fabs(valueleft+valueright) > maxError)
+              {
+                cout << "field: enriched - velx, nodeids: " << leftid << " and " << rightid << endl;
+                cout << valueleft << " and " << valueright << endl;
+                cout << fabs(valueleft+valueright) << endl;
+                maxError = fabs(valueleft+valueright);
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+            {
+              if (fabs(valueleft-valueright) > maxError)
+              {
+                cout << "field: enriched - vely, nodeids: " << leftid << " and " << rightid << endl;
+                cout << valueleft << " and " << valueright << endl;
+                cout << fabs(valueleft-valueright) << endl;
+                maxError = fabs(valueleft-valueright);
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
+            {
+              if (fabs(valueleft-valueright) > maxError)
+              {
+                cout << "field: enriched - velz, nodeids: " << leftid << " and " << rightid << endl;
+                cout << valueleft << " and " << valueright << endl;
+                cout << fabs(valueleft-valueright) << endl;
+                maxError = fabs(valueleft-valueright);
+              }
+            }
+            else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
+            {
+              if (fabs(valueleft-valueright) > maxError)
+              {
+                cout << "field: enriched - pres, nodeids: " << leftid << " and " << rightid << endl;
+                cout << valueleft << " and " << valueright << endl;
+                cout << fabs(valueleft-valueright) << endl;
+                maxError = fabs(valueleft-valueright);
+              }
+            }
+          } // end if jump enr
+#endif // relative errors in flame-vortex interaction
+        } // loop over fieldenr
+      } // end if what nodes shall be used
+    }
+#endif // flame-vortex interaction
+  }
 }
 
 
@@ -3662,6 +4177,12 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
   eleparams.set<double>("L2 integrated grad_pressure domain error", 0.0);
   eleparams.set<double>("L2 integrated weighted pressure domain error", 0.0);
   eleparams.set<double>("Nitsche integrated error", 0.0); // the whole Nitsche error
+  eleparams.set<double>("L2 Divergence integrated error", 0.0);
+  eleparams.set<double>("L2 Divergence error in omega+", 0.0);
+  eleparams.set<double>("L2 Divergence error in omega-", 0.0);
+  eleparams.set<double>("L2 integrated velocity jump interface error Combustion", 0.0);
+  eleparams.set<double>("L2 integrated flux jump interface error Combustion", 0.0);
+  eleparams.set("flamespeed",flamespeed_);
 
   // TODO @Benedikt: check wether H1 pressure norm is needed ????
 
@@ -3681,6 +4202,11 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
   double locGradPresDomErr   = eleparams.get<double>("L2 integrated grad_pressure domain error");
   double locWeightPresDomErr = eleparams.get<double>("L2 integrated weighted pressure domain error");
   double locNitscheErr       = eleparams.get<double>("Nitsche integrated error");
+  double locDivErr           = eleparams.get<double>("L2 Divergence integrated error");
+  double locDivErrPlus       = eleparams.get<double>("L2 Divergence error in omega+");
+  double locDivErrMinus      = eleparams.get<double>("L2 Divergence error in omega-");
+  double locVelJumpErr       = eleparams.get<double>("L2 integrated velocity jump interface error Combustion");
+  double locFluxJumpErr      = eleparams.get<double>("L2 integrated flux jump interface error Combustion");
 
   // initialize global errors
   double VelDomErr        = 0.0;
@@ -3691,6 +4217,11 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
   double GradPresDomErr   = 0.0;
   double WeightPresDomErr = 0.0;
   double NitscheErr       = 0.0;
+  double DivErr           = 0.0;
+  double DivErrPlus       = 0.0;
+  double DivErrMinus      = 0.0;
+  double VelJumpErr       = 0.0;
+  double FluxJumpErr      = 0.0;
 
   // TODO @Benedikt: check wether Comm() works also for interface integrals ? Benedikt: seems so!
   discret_->Comm().SumAll(&locVelDomErr,&VelDomErr,1); // sum over processors, each list (list of a processor) has length 1
@@ -3701,6 +4232,11 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
   discret_->Comm().SumAll(&locGradPresDomErr, &GradPresDomErr,1);
   discret_->Comm().SumAll(&locWeightPresDomErr,&WeightPresDomErr,1);
   discret_->Comm().SumAll(&locNitscheErr,&NitscheErr,1);
+  discret_->Comm().SumAll(&locDivErr,&DivErr,1);
+  discret_->Comm().SumAll(&locDivErrPlus,&DivErrPlus,1);
+  discret_->Comm().SumAll(&locDivErrMinus,&DivErrMinus,1);
+  discret_->Comm().SumAll(&locVelJumpErr,&VelJumpErr,1);
+  discret_->Comm().SumAll(&locFluxJumpErr,&FluxJumpErr,1);
 
 
   // for the norms, we need the square roots
@@ -3712,6 +4248,11 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
   GradPresDomErr   = sqrt(GradPresDomErr);
   WeightPresDomErr = sqrt(WeightPresDomErr);
   NitscheErr       = sqrt(NitscheErr);
+  DivErr           = sqrt(DivErr);
+  DivErrPlus       = sqrt(DivErrPlus);
+  DivErrMinus      = sqrt(DivErrMinus);
+  VelJumpErr       = sqrt(VelJumpErr);
+  FluxJumpErr      = sqrt(FluxJumpErr);
 
   if (myrank_ == 0)
   {
@@ -3726,6 +4267,11 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
     printf("\n  ||grad(p-p_h) ||_L2(Omega1 U Omega2)\t\t\t%15.8e",       GradPresDomErr);
     printf("\n  || 1/sqrt(mu_max) * (p-p_h) ||_L2(Omega)\t\t%15.8e",     WeightPresDomErr);
     printf("\n ||| (u-u_h, p-p_h) |||_Nitsche(Omega)\t\t\t%15.8e",       NitscheErr);
+    printf("\n  || div(u) ||_L2(Omega)\t\t\t\t%15.8e",                     DivErr);
+    printf("\n  || div(u) ||_L2(Omega+)\t\t\t\t%15.8e",                    DivErrPlus);
+    printf("\n  || div(u) ||_L2(Omega-)\t\t\t\t%15.8e",                    DivErrMinus);
+    printf("\n  || [| u |] - ju*n ||_L2(Gamma)\t\t\t%15.8e",             VelJumpErr);
+    printf("\n  || [| sigma*n - jflux*n |] ||_L2(Gamma)\t\t%15.8e",    FluxJumpErr);
     printf("\n======================================================================="
            "\n=======================================================================\n");
   }

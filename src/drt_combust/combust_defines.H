@@ -132,8 +132,7 @@ Maintainer: Florian Henke
 // combustion tolerances
 //----------------------
 //#define COMBUSTCONVTOL 1.0e-12 // just an example
-#define COMBUST_GMSH_NORMALFIELD
-//#define COMBUST_GMSH_REF_FIELDS
+//#define COMBUST_GMSH_NORMALFIELD
 
 //--------------------------
 // multiscale two-phase flow

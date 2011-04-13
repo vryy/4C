@@ -53,7 +53,8 @@ namespace XFEM
           const Teuchos::RCP<COMBUST::InterfaceHandleCombust>& interfacehandle, ///< geometrical interface information
           const std::set<XFEM::PHYSICS::Field>&                fieldset,        ///< physical fields to be enriched
           const XFEM::ElementAnsatz&                           element_ansatz,  ///< element dofs
-          const Teuchos::ParameterList&                        params           ///< XFEM parameters
+          const Teuchos::ParameterList&                        params,          ///< XFEM parameters
+          const RCP<map<int,vector<int> > >                    pbcmap           ///< nodes on periodic boundaries
           );
 
       //! copy constructor
@@ -164,6 +165,9 @@ namespace XFEM
 
       //! pointer to the xfem discretization of which we hold the unknowns
       const Teuchos::RCP<XFEM::InterfaceHandle>         ih_;
+
+      //! connection between master and slave row nodes
+      const Teuchos::RCP<map<int,vector<int> > > pbcmap_;
 
       /*! unknowns for each global node id (gid) on this processor
        * if it does not contain the key, the number of unknowns is supposed to be zero

@@ -155,7 +155,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   pbc_ = rcp(new PeriodicBoundaryConditions (discret_));
   pbc_->UpdateDofsForPeriodicBoundaryConditions();
 
-  pbcmapmastertoslave_ = pbc_->ReturnAllCoupledNodesOnThisProc();
+  pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
 
   discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
 
