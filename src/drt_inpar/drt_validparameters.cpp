@@ -1187,6 +1187,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    //setNumericStringParameter("INPUTFILE_LEVEL_2","filename.dat",
    //                         "filename of.dat file which contains level2 discretization",
    //                       &mlmcp);
+   setStringToIntegralParameter<int>("PROLONGATERES","Yes",
+                                        "Prolongate Displacements to finest Discretization",
+                                        yesnotuple,yesnovalue,&mlmcp);
+   //Parameter for Newton loop to find background element
+   IntParameter("ITENODEINELE",20,"Number iteration in Newton loop to determine background element",&mlmcp);
+   DoubleParameter("CONVTOL",10e-5,"Convergence tolerance for Newton loop",&mlmcp);
+   IntParameter("INITRANDOMSEED",1000,"Radnom seed for first Monte Carlo run",&mlmcp);
+
 ;
 
   Teuchos::ParameterList& scontact = list->sublist("MESHTYING AND CONTACT",false,"");
