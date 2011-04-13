@@ -24,6 +24,7 @@
 void StructureEnsightWriter::WriteAllResults(PostField* field)
 {
   EnsightWriter::WriteResult("displacement", "displacement", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("prolongated_gauss_2PK_stresses_xyz", "prolongated_gauss_2PK_stresses_xyz", nodebased,6);
   //EnsightWriter::WriteResult("velocity", "velocity", dofbased, field->problem()->num_dim());
   //EnsightWriter::WriteResult("acceleration", "acceleration", dofbased, field->problem()->num_dim());
 
