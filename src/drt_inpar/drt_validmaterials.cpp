@@ -441,6 +441,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
+  /*--------------------------------------------------------------------*/
+    // aneurysm wall material according to Raghavan and Vorp [2000]
+    {
+      Teuchos::RCP<MaterialDefinition> m
+        = Teuchos::rcp(new MaterialDefinition("MAT_Struct_AAANeoHookeStopro",
+                                              "aneurysm wall material according to Raghavan and Vorp [2000] with stochastic modelling of beta",
+                                              INPAR::MAT::m_aaaneohooke_stopro));
+
+      AddNamedReal(m,"YOUNG","Young's modulus");
+      AddNamedReal(m,"BETA","2nd parameter");
+      AddNamedReal(m,"NUE","Poisson's ratio");
+      AddNamedReal(m,"DENS","mass density");
+      // Stochastic parameters
+      AddNamedReal(m,"SIGMA","Variance");
+      AddNamedReal(m,"CORRLENGTH","Correlation length");
+
+      AppendMaterialDefinition(matlist,m);
+    }
 
   /*--------------------------------------------------------------------*/
   // AAA thrombus material according to GASSER et. al. [2008]

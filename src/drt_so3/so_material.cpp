@@ -36,6 +36,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/aaaneohooke.H"
+#include "../drt_mat/aaaneohooke_stopro.H"
 #include "../drt_mat/aaagasser.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_mat/aaa_mixedeffects.H"
@@ -119,6 +120,14 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::AAAneohooke* aaa = static_cast <MAT::AAAneohooke*>(mat.get());
       aaa->Evaluate(*glstrain,*cmat,*stress);
       *density = aaa->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_aaaneohooke_stopro: /*-- special case of generalised NeoHookean material see Raghavan, Vorp with stochastic mat parameters*/
+    {
+      MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(mat.get());
+      aaa_stopro->Evaluate(*glstrain,*cmat,*stress);
+      *density = aaa_stopro->Density();
       return;
       break;
     }

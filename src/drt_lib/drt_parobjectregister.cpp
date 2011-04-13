@@ -56,6 +56,7 @@
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/logneohooke.H"
 #include "../drt_mat/aaaneohooke.H"
+#include "../drt_mat/aaaneohooke_stopro.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_mat/aaa_mixedeffects.H"
 #include "../drt_mat/aaagasser.H"
@@ -182,6 +183,7 @@ std::string DRT::ParObjectList()
 #endif
     << MAT::AAAgasserType::Instance().Name() << " "
     << MAT::AAAneohookeType::Instance().Name() << " "
+    << MAT::AAAneohooke_stoproType::Instance().Name() << " "
     << MAT::AAAraghavanvorp_damageType::Instance().Name() << " "
     << MAT::AAA_mixedeffectsType::Instance().Name() << " "
     << MAT::AnisotropicBalzaniType::Instance().Name() << " "

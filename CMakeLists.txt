@@ -399,6 +399,7 @@ set(OBJS_DRT_LIB
 set(OBJS_DRT_MAT_LIB
   src/drt_mat/aaagasser.cpp
   src/drt_mat/aaaneohooke.cpp
+  src/drt_mat/aaaneohooke_stopro.cpp
   src/drt_mat/aaaraghavanvorp_damage.cpp
   src/drt_mat/aaa_mixedeffects.cpp
   src/drt_mat/anisotropic_balzani.cpp
@@ -938,7 +939,8 @@ set(OBJS_INV_ANALYSIS
 )  
 set(OBJS_MLMC
   src/drt_mlmc/mlmc.cpp
-  src/drt_structure/str_mlmc.cpp  
+  src/drt_structure/str_mlmc.cpp 
+  src/drt_mlmc/randomfield.cpp 
 )
 set(OBJS_DRT_MAT
   src/drt_mat/micromaterial_evaluate.cpp
