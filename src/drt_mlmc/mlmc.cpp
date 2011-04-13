@@ -1,14 +1,16 @@
-/*----------------------------------------------------------------------*/
-/*!
- * \file mlmc.cpp
+/*!----------------------------------------------------------------------
+\file  mlmc.cpp
+\brief Class for performing Multi Level Monte Carlo (MLMC)analysis of structure
 
-<pre>
+
+ <pre>
 Maintainer: Jonas Biehler
             biehler@lnm.mw.tum.de
-
+            http://www.lnm.mw.tum.de
+            089 - 289-15276
 </pre>
-*/
-/*----------------------------------------------------------------------*/
+ *!----------------------------------------------------------------------*/
+
 #ifdef CCADISCRET
 
 #include "mlmc.H"
@@ -21,23 +23,8 @@ Maintainer: Jonas Biehler
 #include "../drt_lib/drt_function.H"
 #include "../drt_io/io_hdf.H"
 #include "../drt_mat/material.H"
-#include "../drt_mat/lung_ogden.H"
-#include "../drt_mat/lung_penalty.H"
-#include "../drt_mat/aaaneohooke.H"
-#include "../drt_mat/neohooke.H"
+#include "../drt_mat/aaaneohooke_stopro.H"
 #include "../drt_structure/strtimint_create.H"
-#include "../drt_mat/elasthyper.H"
-#include "../drt_matelast/elast_coupanisoexpotwo.H"
-#include "../drt_matelast/elast_coupanisoneohooketwo.H"
-#include "../drt_matelast/elast_coupblatzko.H"
-#include "../drt_matelast/elast_couplogneohooke.H"
-#include "../drt_matelast/elast_isoexpo.H"
-#include "../drt_matelast/elast_isomooneyrivlin.H"
-#include "../drt_matelast/elast_isoneohooke.H"
-#include "../drt_matelast/elast_isoyeoh.H"
-#include "../drt_matelast/elast_volpenalty.H"
-#include "../drt_matelast/elast_vologden.H"
-#include "../drt_matelast/elast_volsussmanbathe.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
@@ -45,7 +32,7 @@ using namespace std;
 using namespace DRT;
 using namespace MAT;
 
-
+#include "randomfield.H"
 #include "../drt_structure/stru_resulttest.H"
 
 
@@ -64,14 +51,27 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
   reset_out_count_=0;
 
   // input parameters structural dynamics
-  //const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  // get number of timesteps
+  tsteps_ = sdyn.get<int>("NUMSTEP");
   // input parameters multi level monte carlo
-  //const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
+  const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
 
+  // Get number of Newton iterations
+  num_newton_it_ = mlmcp.get<int>("ITENODEINELE");
+  // Get convergence tolerance
+  convtol_    = mlmcp.get<double>("CONVTOL");
   // read material parameters from input file
+
+  // In element critirion xsi_i < 1 + eps  eps = MLMCINELETOL
+  InEleRange_ = 1.0 + 10e-3;
   //ReadInParameters();
+
   // controlling parameter
   numb_run_ =  0;     // counter of how many runs were made monte carlo
+
+
+
 }
 
 
@@ -80,11 +80,15 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
 void STR::MLMC::Integrate()
 {
   //int myrank = discret_->Comm().MyPID();
+  unsigned int random_seed = 1212213;
 
   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
   int numruns = mlmcp.get<int>("NUMRUNS");
   do
   {
+    // setup stoch mat
+
+    SetupStochMat((random_seed+(unsigned int)numb_run_));
     output_->NewResultFile((numb_run_));
 
 
@@ -116,7 +120,7 @@ void STR::MLMC::Integrate()
      }
      numb_run_++;
   } while (numb_run_< numruns);
-  //MapResultsToFinestGrid();
+
   SetupProlongator();
   ProlongateResults();
   return;
@@ -124,17 +128,14 @@ void STR::MLMC::Integrate()
 //---------------------------------------------------------------------------------------------
 void STR::MLMC::SetupProlongator()
 {
-  // This needs to be done only once, on one proc
+  // This functions calculates the prolongtators for the displacement and the nodal stresses
 
   // get the two discretizations
   // Get finest Grid problem instance
-
   Teuchos::RCP<DRT::Discretization> actdis_fine = Teuchos::null;
   actdis_fine = DRT::Problem::Instance(1)->Dis(genprob.numsf, 0);
   // set degrees of freedom in the discretization
   if (not actdis_fine->Filled()) actdis_fine->FillComplete();
-
-  //int num_rows_prolongator = actdis_fine->NumGlobalNodes()*3;
 
   // Get coarse Grid problem instance
   Teuchos::RCP<DRT::Discretization> actdis_coarse = Teuchos::null;
@@ -144,7 +145,8 @@ void STR::MLMC::SetupProlongator()
 
 
   // 3D Problem
-  int num_columns_prolongator = actdis_fine->NumGlobalNodes()*3;
+  int num_columns_prolongator_disp = actdis_fine->NumGlobalNodes()*3;
+  int num_columns_prolongator_stress = actdis_fine->NumGlobalNodes();
 
   double xsi[3] = {0.0, 0.0,0.0};
 
@@ -153,31 +155,33 @@ void STR::MLMC::SetupProlongator()
   int bg_ele_id;
   num_nodes = actdis_fine->NumGlobalNodes();
 
-  // init prolongator
-  prolongator = rcp(new Epetra_MultiVector(*actdis_coarse->DofRowMap(),num_columns_prolongator,true));
+  // init prolongators
+  prolongator_disp_ = rcp(new Epetra_MultiVector(*actdis_coarse->DofRowMap(),num_columns_prolongator_disp,true));
+  prolongator_stress_ = rcp(new Epetra_MultiVector(*actdis_coarse->NodeRowMap(),num_columns_prolongator_stress,true));
   for (int i = 0; i < num_nodes ; i++)
   {
 
     // Get node
     DRT::Node* node = actdis_fine->gNode(i);
-    //node = actdis_fine->gNode(72);
-    // Get backgron element and local coordinates
 
+    // Get background element and local coordinates
     FindBackgroundElement(*node, actdis_coarse, &bg_ele_id, xsi);
     // Get element
     DRT::Element* bg_ele = actdis_coarse->gElement(bg_ele_id);
-    //cout << "Background element" << bg_ele_id << endl;
 
     Epetra_SerialDenseVector shape_fcts(bg_ele->NumNode());
     DRT::UTILS::shape_function_3D(shape_fcts,xsi[0],xsi[1],xsi[2],bg_ele->Shape());
 
-    // add values to prolongator
+    // fill prolongators add values to prolongator
     for (int j = 0; j<3 ; j++)
     {
 
       for (int k=0; k< bg_ele->NumNode(); k ++)
       {
-        (*prolongator)[(i*3)+j][(bg_ele->Nodes()[k]->Id()*3)+j]= shape_fcts[k];
+        //prolongator_disp_ is dof based
+        (*prolongator_disp_)[(i*3)+j][(bg_ele->Nodes()[k]->Id()*3)+j]= shape_fcts[k];
+        // prolongator stress_ is node based
+        (*prolongator_stress_)[i][(bg_ele->Nodes()[k]->Id())]= shape_fcts[k];
       }
     }
   } // End of loop over nodes of fine discretzation
@@ -194,11 +198,10 @@ void STR::MLMC::ProlongateResults()
   //set degrees of freedom in the discretization
    if (not actdis_coarse->Filled()) actdis_coarse->FillComplete();
 
-  int last_step = 10;
   string name = "aaa_run_0";
   // context for output and restart
   // check if bool should be true or false
-  RCP<IO::InputControl> inputcontrol = rcp(new IO::InputControl(name, false));  IO::DiscretizationReader input_coarse(actdis_coarse, inputcontrol,last_step);
+  RCP<IO::InputControl> inputcontrol = rcp(new IO::InputControl(name, false));  IO::DiscretizationReader input_coarse(actdis_coarse, inputcontrol,tsteps_);
   // Vector for displacements
   Teuchos::RCP<Epetra_Vector> dis_coarse = rcp(new Epetra_Vector(*actdis_coarse->DofRowMap(),true));
 
@@ -217,14 +220,14 @@ void STR::MLMC::ProlongateResults()
   if (not actdis_fine->Filled()) actdis_fine->FillComplete();
 
 
-  Teuchos::RCP<Epetra_MultiVector> dis_fine_helper = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse->DofRowMap()),prolongator->NumVectors(),true));
+  Teuchos::RCP<Epetra_MultiVector> dis_fine_helper = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse->DofRowMap()),prolongator_disp_->NumVectors(),true));
   Teuchos::RCP<Epetra_MultiVector> dis_fine = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine->DofRowMap()),1,true));
 
   // Prolongate results
-  dis_fine_helper->Multiply(1,*dis_coarse,*prolongator,1);
+  dis_fine_helper->Multiply(1,*dis_coarse,*prolongator_disp_,1);
   //write standard output into new file
 
-
+  // transfer to Multivector
   for (int n = 0; n< dis_fine_helper->NumVectors(); n++)
   {
     for ( int m =0; m < dis_fine_helper->MyLength(); m ++)
@@ -239,77 +242,156 @@ void STR::MLMC::ProlongateResults()
   output_fine->NewResultFile((23212));
   output_fine->WriteMesh(1, 0.01);
   output_fine->NewStep( 1, 0.01);
-  //cout << " What do we save " << *dis_fine << endl;
+
+  // Write interpolated displacement to file
   output_fine->WriteVector("displacement", dis_fine, output_fine->dofvector);
-}
-//---------------------------------------------------------------------------------------------
-//void STR::MLMC::MapResultsToFinestGrid(Teuchos::RCP<DRT::Discretization> dis_in,
- //                                               Teuchos::RCP<DRT::Discretization> dis_out,
- //                                               int run_id)
-void STR::MLMC::MapResultsToFinestGrid()
-{
-  // Get finest Grid problem instance
-  // access the discretization
-   Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-   actdis = DRT::Problem::Instance(0)->Dis(genprob.numsf, 0);
+  Teuchos::RCP<Epetra_Vector> dis_fine_single = rcp(new Epetra_Vector(*actdis_fine->DofRowMap(),true));
 
-   // set degrees of freedom in the discretization
-   if (not actdis->Filled()) actdis->FillComplete();
-
-   // context for output and restart
-   Teuchos::RCP<IO::DiscretizationWriter> output2
-     = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
-   // write mesh to file
-   output2->NewResultFile((2321));
-   output2->WriteMesh(1, 0.01);
-   //output2->NewResultFile((2321));
-   output2->NewStep( 1, 0.01);
-
-   // Write some vector to file
-   // init vector
-   Teuchos::RCP<Epetra_MultiVector> test_vector = Teuchos::rcp(new Epetra_MultiVector(*(actdis->DofRowMap()),1,true));
-   // fill Vector with arbitrary values for testing
-   for (int i = 0; i< test_vector->MyLength();i++)
-   {
-     (*test_vector)[0][i] = 13.0 ; //->ReplaceMyValue(0,i,13.0);
-
-   }
-   // fill with some data
- //  output2->WriteVector("displacement",test_vector,output2->dofvector);
-
- // cout << "Feine Disketisierung" << actdis<< endl;
- // int num_ele_dis_1 = actdis->NumGlobalElements();
-  //cout << "num_ele_dis_1 "<< num_ele_dis_1 <<endl;
-
-  // test some stuff
-  Teuchos::RCP<Epetra_Vector> element_vector = Teuchos::rcp(new Epetra_Vector(*(actdis->ElementRowMap()),true));
-  // loop over discretization
-  bool inEle = false;
-  for (int i=0; i< element_vector->MyLength() && !inEle ; i++  )
+  // transfer to Epetra_Vector
+  for( int i = 0;i< dis_fine->MyLength(); i++)
   {
-   // cout <<  "Test what is in element vector "<< (*element_vector)[i] << endl;
-    //actdis->ElementRowMap()->Print(std::ostream&);
-   //cout<< *(actdis->ElementRowMap()) << "see what camoes here" << endl;
-    // DRT::Element* ele = actdis->gElement((*element_vector)[i]);
-   //inEle = CheckIfNodeInElement(node, ele);
+    (*dis_fine_single)[i]= (*dis_fine)[0][i];
   }
-  // end of test some stuff
-  //int globel_ele_id= actdis->NodeRowMap()->GID(12);
-  //DRT::Node* node = actdis->gNode(12);
-  //FindBackgroundElement(*node, coarse_dis);
+
+  //#####################################################################################
+  //
+  //                  prolongate stresses based on interpolated displacement field
+  //
+  //#####################################################################################
+
+  // set up parameters for Evaluation
+  double timen         = 0.9;  // params_.get<double>("total time"             ,0.0);
+  double dt            = 0.1; //params_.get<double>("delta time"             ,0.01);
+  double alphaf        = 0.459; // params_.get<double>("alpha f"                ,0.459);
+  INPAR::STR::StressType iostress =INPAR::STR::stress_2pk; //stress_none;
+  INPAR::STR::StrainType iostrain= INPAR::STR::strain_gl; // strain_none;
+  RCP<Epetra_Vector>    zeros_ = rcp(new Epetra_Vector(*actdis_fine->DofRowMap(),true));
+  RCP<Epetra_Vector>    dis_ = dis_fine_single;
+  RCP<Epetra_Vector>    vel_ = rcp(new Epetra_Vector(*actdis_fine->DofRowMap(),true));
+  // create the parameters for the discretization
+   ParameterList p;
+   // action for elements
+   p.set("action","calc_struct_stress");
+   // other parameters that might be needed by the elements
+   p.set("total time",timen);
+   p.set("delta time",dt);
+   p.set("alpha f",alphaf);
+
+   Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
+   Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
+   p.set("stress", stress);
+
+   p.set<int>("iostress", iostress);
+   p.set("strain", strain);
+   p.set<int>("iostrain", iostrain);
+   // set vector values needed by elements
+   p.set<double>("random test",5.0);
+   actdis_fine->ClearState();
+   actdis_fine->SetState("residual displacement",zeros_);
+   actdis_fine->SetState("displacement",dis_);
+   actdis_fine->SetState("velocity",vel_);
+   // Evaluate Stresses based on interpolated displacements
+   actdis_fine->Evaluate(p,null,null,null,null,null);
+   actdis_fine->ClearState();
+   // Write to file
+   output_fine->WriteVector("gauss_2PK_stresses_xyz",*stress,*(actdis_fine->ElementRowMap()));
+
+
+   cout << " Debugging   LINE   " << __LINE__ << endl;
+
+   //#####################################################################################
+   //
+   //                  prolongate stresses based on interpolated nodal stress field
+   //
+   //#####################################################################################
+
+   // use same parameter list as above
+   RCP<Epetra_Vector>    zeros_coarse = rcp(new Epetra_Vector(*actdis_coarse->DofRowMap(),true));
+   //RCP<Epetra_Vector>    dis_ = dis_fine_single;
+   RCP<Epetra_Vector>    vel_coarse = rcp(new Epetra_Vector(*actdis_coarse->DofRowMap(),true));
+   actdis_coarse->ClearState();
+   actdis_coarse->SetState("residual displacement",zeros_coarse);
+   actdis_coarse->SetState("displacement",dis_coarse);
+   actdis_coarse->SetState("velocity",vel_coarse);
+   // Alrigth lets get the nodal stresses
+
+   p.set("action","calc_gobal_gpstresses_map");
+  // cout << " Debugging   LINE   " << __LINE__ << endl;
+   const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap = rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+   p.set("gpstressmap", gpstressmap);
+
+   actdis_coarse->Evaluate(p,null,null,null,null,null);
+   //actdis_coarse->ClearState();
+   //cout << " Debugging   LINE   " << __LINE__ << endl;
+ // const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > data = stress;
+   //p.set("gpstressmap", data);
+   // st action to calc poststresse
+   p.set("action","postprocess_stress");
+   // Multivector to store poststresses
+   RCP<Epetra_MultiVector> poststress =  Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse->NodeRowMap()),6,true));
+   // for fine diskretization as well
+   RCP<Epetra_MultiVector> poststress_fine =  Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine->NodeRowMap()),6,true));
+   p.set("poststress", poststress);
+   p.set("stresstype","ndxyz");
+  // cout << " Debugging   LINE   " << __LINE__ << endl;
+   actdis_coarse->ClearState();
+   actdis_coarse->Evaluate(p,null,null,null,null,null);
+   actdis_coarse->ClearState();
+
+
+    Teuchos::RCP<IO::DiscretizationWriter> output_coarse= Teuchos::rcp(new IO::DiscretizationWriter(actdis_coarse));
+    // somehow the order of these following commands is important DONT CHANGE
+   //output_coarse->NewResultFile((23213));
+   //output_coarse->WriteMesh(1, 0.01);
+   //output_coarse->NewStep( 1, 0.01);
+   //output_coarse->WriteVector("prolongated_gauss_2PK_stresses_xyz", poststress, output_coarse->nodevector);
+   //Teuchos::RCP<Epetra_Vector> dis_fine_single = rcp(new Epetra_Vector(*actdis_fine->DofRowMap(),true));
+
+   Teuchos::RCP<Epetra_MultiVector> poststress_fine_helper = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse->NodeRowMap()),prolongator_stress_->NumVectors(),true));
+  // Teuchos::RCP<Epetra_MultiVector> poststress_fine = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine->NodeRowMap()),6,true));
+
+   // defin poststress coarse helper which stores the ith vector of postress in a new multivector which contains only on vector
+   //Teuchos::RCP<Epetra_MultiVector> poststress_helper = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse->NodeRowMap()),1,true));
+   Epetra_DataAccess CV = View;
+
+   //
+   // Prolongate results
+   //poststress_helper=(*poststress)(0);
+   for(int i = 0; i<6; i++)
+   {
+     Teuchos::RCP<Epetra_MultiVector> poststress_helper = Teuchos::rcp(new Epetra_MultiVector(CV,*poststress,i,1));
+     poststress_fine_helper->Multiply(1,*poststress_helper,*prolongator_stress_,0);
+    // cout << "*prolongator_stress_ "  << *prolongator_stress_ << endl;
+     //cout << "poststress_helper "  << *poststress_helper << endl;
+     //cout << "poststress_fine_helper "  << *poststress_fine_helper << endl;
+     //write standard output into new file
+
+     // transfer to Multivector
+     for (int n = 0; n< poststress_fine_helper->NumVectors(); n++)
+     {
+       for ( int m =0; m < poststress_fine_helper->MyLength(); m ++)
+       {
+            (*poststress_fine)[i][n] += (*poststress_fine_helper)[n][m];
+       }
+     }
+   }
+   //cout << "posttress  " << *poststress <<endl;
+  // cout << "poststress_fine "  << *poststress_fine << endl;
+   output_fine->WriteVector("prolongated_gauss_2PK_stresses_xyz", poststress_fine, output_fine->nodevector);
+
 
 }
 //-----------------------------------------------------------------------------------
 void STR::MLMC::FindBackgroundElement(DRT::Node node, Teuchos::RCP<DRT::Discretization> background_dis, int* bg_ele_id, double* xsi)
 {
-  double tol_inele = 1e-4;
+
   Teuchos::RCP<Epetra_Vector> element_vector = Teuchos::rcp(new Epetra_Vector(*(background_dis->ElementRowMap()),true));
   // loop over discretization
 
   double pseudo_distance = 0.0;
   double min_pseudo_distance = 2.0;
   int back_ground_ele_id = 0;
-  for (int i=0; i< element_vector->MyLength() && min_pseudo_distance > 1.0+tol_inele ; i++  )
+  for (int i=0; i< element_vector->MyLength() && min_pseudo_distance > InEleRange_ ; i++  )
   {
     int globel_ele_id= background_dis->ElementRowMap()->GID(i);
     DRT::Element* ele = background_dis->gElement(globel_ele_id);
@@ -322,11 +404,11 @@ void STR::MLMC::FindBackgroundElement(DRT::Node node, Teuchos::RCP<DRT::Discreti
       back_ground_ele_id = globel_ele_id;
     }
   } // end of loop over elements
-
-  if(min_pseudo_distance < 1.0+tol_inele)
+  // Debug
+  if(min_pseudo_distance < InEleRange_)
   {
-    cout << "found background element Ele ID is " <<  back_ground_ele_id << endl;
-    cout << "Local Coordinates are "<< "xsi_0 " << xsi[0] << " xsi_1 " << xsi[1] << " xsi_2 " << xsi[2] << endl;
+    //cout << "found background element Ele ID is " <<  back_ground_ele_id << endl;
+    //cout << "Local Coordinates are "<< "xsi_0 " << xsi[0] << " xsi_1 " << xsi[1] << " xsi_2 " << xsi[2] << endl;
   }
   else
   {
@@ -340,43 +422,29 @@ void STR::MLMC::FindBackgroundElement(DRT::Node node, Teuchos::RCP<DRT::Discreti
 //-----------------------------------------------------------------------------------
 double STR::MLMC::CheckIfNodeInElement(DRT::Node& node, DRT::Element& ele, double* xsi)
 {
+  // init speudo distance, which is essentially largest values of xsi[i]
+  double pseudo_distance = 0.0;
+  //local/element coordinates
+  xsi[0] = xsi[1] = xsi[2] = 0.0 ;
   // Replace later with problem dimension or element type
   //if (Dim()==3)
 
-  if (true)
+  if (ele.Shape()==DRT::Element::hex8)
     {
-      // start in the element center
-      DRT::Element::DiscretizationType dt = ele.Shape();
-      xsi[0] = xsi[1] = xsi[2] = 0.0 ;
-      //if (dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
-      if (dt!=DRT::Element::hex8)
-      {
-        dserror("CheckIfNodeInElement only implememted for HEX8 Elements");
-      }
-
-
       // function f (vector-valued)
       double f[3] = {0.0, 0.0, 0.0};
       LINALG::Matrix<3,1> b;
       // gradient of f (df/dxsi[0], df/dxsi[1], df/dxsi[2])
       LINALG::Matrix<3,3> df;
-
-      // start iteration
-      int k=0;
-
-      // DEFINE SOME CONSTANT THAT LATER NEED TO GO IN THE INPUTFILE
-      double MLMCCONVTOL = 10e-5;
-      double MLMCNODETOELEMENTITER = 20;
       //convergeence check
       double conv = 0.0;
 
-
-      for (k=0;k<MLMCNODETOELEMENTITER;++k)
+      for (int k=0;k<num_newton_it_;++k)
         {
           EvaluateF(f,node,ele,xsi);
           conv = sqrt(f[0]*f[0]+f[1]*f[1]+f[2]*f[2]);
           //cout << "Iteration " << k << ": -> |f|=" << conv << endl;
-          if (conv <= MLMCCONVTOL) break;
+          if (conv <= convtol_) break;
 
           EvaluateGradF(df,node,ele,xsi);
 
@@ -388,36 +456,17 @@ double STR::MLMC::CheckIfNodeInElement(DRT::Node& node, DRT::Element& ele, doubl
           xsi[0] += -df(0,0)*f[0] - df(1,0)*f[1] - df(2,0)*f[2];
           xsi[1] += -df(0,1)*f[0] - df(1,1)*f[1] - df(2,1)*f[2];
           xsi[2] += -df(0,2)*f[0] - df(1,2)*f[1] - df(2,2)*f[2];
-
-
           //cout << "iteration " << k<< "xsi: " << xsi[0] <<" " << xsi[1] << " "<<  xsi[2]<<endl ;
         }
-      // In element critirion xsi_i < 1 + eps  eps = MLMCINELETOL
-           double InEleTol = 1e-3;
-           double InEleRange = 1.0 + InEleTol;
+
       // Newton iteration unconverged
-      if (conv > MLMCCONVTOL)
+      if (conv > convtol_)
       {
-        cout << "ERROR: CheckIfNodeInElement: Newton unconverged for NodeID" << node.Id()<< " ElementID " <<  ele.Id() <<endl;;
-        ///return 1000.0; // Node not in element
+        dserror("ERROR: CheckIfNodeInElement: Newton unconverged for NodeID %i "
+                   "and ElementID %i", node.Id(), ele.Id());
       }
-
-
-        //dserror("ERROR: CheckIfNodeInElement: Newton unconverged for NodeID %i "
-          //      "and ElementID %i", node.Id(), ele.Id());
-
       // Newton iteration converged
-
-      //perform check wether node in element
-
-      if(fabs(xsi[0])< InEleRange && fabs(xsi[1])< InEleRange && fabs(xsi[2])< InEleRange)
-      {
-        //cout << "xsi_0 " << xsi[0] << " xsi_1 " << xsi[1] << " xsi_2 " << xsi[2] << endl;
-       // return true;
-      }
-      // find largest value of xsi[i]
-      // init speudo distance
-      double pseudo_distance = 0;
+      // find largest value of xsi[i] and return as pseudo_distance
       for (int i = 0; i < 3; i++)
       {
         if (fabs(xsi[i]) > pseudo_distance)
@@ -428,7 +477,11 @@ double STR::MLMC::CheckIfNodeInElement(DRT::Node& node, DRT::Element& ele, doubl
       return pseudo_distance;
 
     }
-     else dserror("CheckIfNodeInElement only implememted for hex8 Elements");
+    else
+    {
+      dserror("CheckIfNodeInElement only implememted for hex8 Elements");
+      return pseudo_distance;
+    }
 }
 //-----------------------------------------------------------------------------------
 bool STR::MLMC::EvaluateF(double* f,DRT::Node& node, DRT::Element& ele,const double* xsi)
@@ -481,49 +534,16 @@ bool STR::MLMC::EvaluateGradF(LINALG::Matrix<3,3>& fgrad,DRT::Node& node, DRT::E
   return true;
 }
 
-
-//-----------------------------------------------------------------------------------
-void STR::MLMC::InterpolateResults(DRT::Node& node, DRT::Element& backgroundele,const double* xsi)
+// Setup Material Parameters in each element based on Random Field
+void STR::MLMC::SetupStochMat(unsigned int random_seed)
 {
-  // Get nodes for interpolation
-  int num_nodes = backgroundele.NumNode();
-  int node_id;
-  // loop over all nodes
-  for(int i = 0 ; i< num_nodes; i++)
-  {
-    node_id = backgroundele.NodeIds()[i];
-  }
-  //backgroundele.
-  // allocate memory
-  //int node_ids[num_nodes];
-  //int backgroundnodes;// = {0, 0, 0, 0,0, 0, 0, 0};
- // *node_ids = backgroundele.NodeIds();
+  // Variables for Random field
+  double sigma =0.0 , corrlength = 0.0, beta = 0.0 ,beta_mean = 0.0;
 
-  //cout << *backgroundnodes << endl;
-  // Get Background Discretization
-  Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numsf, 0);
-  // get rcp to current displacement
-  Teuchos::RCP<Epetra_MultiVector> test_vector = Teuchos::rcp(new Epetra_MultiVector(*(actdis->DofRowMap()),1,true));
-  RCP<const Epetra_Vector> test2 =Teuchos::rcp(new Epetra_Vector(*(actdis->DofRowMap()),true));;
-  //check if there are any displacement
-  cout << "have we dfound displacement vector" << endl;
-  test2 = actdis->GetState("displacement");
-  cout << "test2" << test2<< endl;
-  if(actdis->HasState("dis"))
-  {
-    cout << "displacement Vector found" << endl;
-  }
-
-}
-//-----------------------------------------------------------------------------------
-void STR::MLMC::ReadInParameters()
-{
+  // Get parameters from stochastic matlaw
   const int myrank = discret_->Comm().MyPID();
-
   // loop all materials in problem
   const map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
-
   if (myrank == 0) printf("No. material laws considered : %d\n",(int) mats.size());
   map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
   for (curr=mats.begin(); curr != mats.end(); ++curr)
@@ -531,171 +551,61 @@ void STR::MLMC::ReadInParameters()
     const RCP<MAT::PAR::Material> actmat = curr->second;
     switch(actmat->Type())
     {
-      case INPAR::MAT::m_aaaneohooke:
-      {
-        MAT::PAR::AAAneohooke* params = dynamic_cast<MAT::PAR::AAAneohooke*>(actmat->Parameter());
-        if (!params) dserror("Cannot cast material parameters");
-        const int j = p_.Length();
-        p_.Resize(j+2);
-        p_(j)   = params->youngs_;
-        p_(j+1) = params->beta_;
-        //p_(j+2) = params->nue_; // need also change resize above to invoke nue
-      }
-      break;
-      case INPAR::MAT::m_neohooke:
-      {
-        MAT::PAR::NeoHooke* params = dynamic_cast<MAT::PAR::NeoHooke*>(actmat->Parameter());
-        if (!params) dserror("Cannot cast material parameters");
-        const int j = p_.Length();
-        p_.Resize(j+2);
-        p_(j)   = params->youngs_;
-        p_(j+1) = params->poissonratio_;
-      }
-      break;
-      case INPAR::MAT::m_elasthyper:
-      {
-        MAT::PAR::ElastHyper* params = dynamic_cast<MAT::PAR::ElastHyper*>(actmat->Parameter());
-        if (!params) dserror("Cannot cast material parameters");
-        const int nummat               = params->nummat_;
-        const std::vector<int>* matids = params->matids_;
-        for (int i=0; i<nummat; ++i)
-        {
-          const int id = (*matids)[i];
-          const RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
-          switch (actelastmat->Type())
-          {
-            case INPAR::MAT::mes_isoyeoh:
-            {
-              MAT::ELASTIC::PAR::IsoYeoh* params = dynamic_cast<MAT::ELASTIC::PAR::IsoYeoh*>(actelastmat->Parameter());
-              if (!params) dserror("Cannot cast material parameters");
-              const int j = p_.Length();
-              p_.Resize(j+3);
-              p_(j)   = params->c1_;
-              p_(j+1) = params->c2_;
-              p_(j+2) = params->c3_;
-            }
-            break;
-            case INPAR::MAT::mes_vologden:
-            {
-              MAT::ELASTIC::PAR::VolOgden* params = dynamic_cast<MAT::ELASTIC::PAR::VolOgden*>(actelastmat->Parameter());
-              if (!params) dserror("Cannot cast material parameters");
-              const int j = p_.Length();
-              p_.Resize(j+1);
-              p_(j)   = params->kappa_;
-              // p_(j+1) = params->beta_; // need also change resize above to invoke beta_
-            }
-            break;
-            default:
-              dserror("Unknown type of elasthyper material");
-            break;
-          }
-        }
-      }
-      case INPAR::MAT::mes_isoyeoh: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
-      break;
-      case INPAR::MAT::mes_vologden: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
-      break;
+       case INPAR::MAT::m_aaaneohooke_stopro:
+       {
+         MAT::PAR::AAAneohooke_stopro* params = dynamic_cast<MAT::PAR::AAAneohooke_stopro*>(actmat->Parameter());
+         if (!params) dserror("Cannot cast material parameters");
+         sigma = params->sigma_0_;
+         corrlength = params->corrlength_;
+         beta_mean =params->beta_mean_;
+       }
+       break;
       default:
+      {
         // ignore unknown materials ?
+        cout << "Mat Type   " << actmat->Type() << endl;
         dserror("Unknown type of material");
-      break;
+
+      }
+
     }
-  }
-  return;
-}
-//--------------------------------------------------------------------------------------
-void STR::MLMC::SetParameters(Epetra_SerialDenseVector p_cur)
-{
-  const int myrank = discret_->Comm().MyPID();
+  } // EOF loop over mats
 
-  // parameters are evaluated on proc 0 only? This should not be neccessary....
-  discret_->Comm().Broadcast(&p_cur[0],np_,0);
-
-  // loop all materials in problem
-  const map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
-  int count=0;
-  map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
-  for (curr=mats.begin(); curr != mats.end(); ++curr)
-  {
-    const RCP<MAT::PAR::Material> actmat = curr->second;
-    switch(actmat->Type())
+  // get elements on proc
+  Teuchos::RCP<Epetra_Vector> my_ele = rcp(new Epetra_Vector(*discret_->ElementRowMap(),true));
+  // loop over all elements
+  for (int i=0; i< my_ele->MyLength(); i++)
     {
-      case INPAR::MAT::m_aaaneohooke:
+    if(discret_->gElement(i)->Material()->MaterialType()==INPAR::MAT::m_aaaneohooke_stopro)
       {
-        MAT::PAR::AAAneohooke* params = dynamic_cast<MAT::PAR::AAAneohooke*>(actmat->Parameter());
-        if (!params) dserror("Cannot cast material parameters");
-        // This is a tiny little bit brutal!!!
-        const_cast<double&>(params->youngs_) = p_cur[count];
-        const_cast<double&>(params->beta_)   = p_cur[count+1];
-        //const_cast<double&>(params->nue_)    = p_cur[count+2];
-        if (myrank == 0) printf("MAT::PAR::AAAneohooke %20.15e %20.15e\n",p_cur[count],p_cur[count+1]);
-        count += 2;
-      }
-      break;
-      case INPAR::MAT::m_neohooke:
+      MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(discret_->gElement(i)->Material().get());
+
+      //double sigma = aaa_stopro->Sigma();
+      //double corrlength = aaa_stopro->Corrlength();
+      RandomField field(random_seed,sigma,corrlength);
+      //beta = field.EvalRandomField(0.2,0.2,0.2);
+      // get element centercoords
+      DRT::Node** nodes = discret_->gElement(i)->Nodes();
+      vector<double> ele_center;
+      // init to zero
+      ele_center.push_back(0.0);
+      ele_center.push_back(0.0);
+      ele_center.push_back(0.0);
+
+      for (int i = 0; i < 8; i++ )
       {
-        MAT::PAR::NeoHooke* params = dynamic_cast<MAT::PAR::NeoHooke*>(actmat->Parameter());
-        if (!params) dserror("Cannot cast material parameters");
-        // This is a tiny little bit brutal!!!
-        const_cast<double&>(params->youngs_)       = p_cur[count];
-        const_cast<double&>(params->poissonratio_) = p_cur[count+1];
-        if (myrank == 0) printf("MAT::PAR::NeoHooke %20.15e %20.15e\n",params->youngs_,params->poissonratio_);
-        count += 2;
+        ele_center[0] += nodes[i]->X()[0]/8.;
+        ele_center[1] += nodes[i]->X()[1]/8.;
+        ele_center[2] += nodes[i]->X()[2]/8.;
       }
-      break;
-      case INPAR::MAT::m_elasthyper:
-      {
-        MAT::PAR::ElastHyper* params = dynamic_cast<MAT::PAR::ElastHyper*>(actmat->Parameter());
-        if (!params) dserror("Cannot cast material parameters");
-        const int nummat               = params->nummat_;
-        const std::vector<int>* matids = params->matids_;
-        for (int i=0; i<nummat; ++i)
-        {
-          const int id = (*matids)[i];
-          const RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
-          switch (actelastmat->Type())
-          {
-            case INPAR::MAT::mes_isoyeoh:
-            {
-              MAT::ELASTIC::PAR::IsoYeoh* params = dynamic_cast<MAT::ELASTIC::PAR::IsoYeoh*>(actelastmat->Parameter());
-              if (!params) dserror("Cannot cast material parameters");
-              const_cast<double&>(params->c1_) = p_cur[count];
-              const_cast<double&>(params->c2_) = p_cur[count+1];
-              const_cast<double&>(params->c3_) = p_cur[count+2];
-              if (myrank == 0) printf("MAT::ELASTIC::PAR::IsoYeoh %20.15e %20.15e %20.15e\n",params->c1_,params->c2_,params->c3_);
-              count += 3;
-            }
-            break;
-            case INPAR::MAT::mes_vologden:
-            {
-              MAT::ELASTIC::PAR::VolOgden* params = dynamic_cast<MAT::ELASTIC::PAR::VolOgden*>(actelastmat->Parameter());
-              if (!params) dserror("Cannot cast material parameters");
-              const_cast<double&>(params->kappa_) = p_cur[count];
-              //const_cast<double&>(params->beta_) = p_cur[count+1];
-              if (myrank == 0) printf("MAT::ELASTIC::PAR::VolOgden %20.15e %20.15e\n",params->kappa_,params->beta_);
-              count += 1;
-            }
-            break;
-            default:
-              dserror("Unknown type of elasthyper material");
-            break;
-          }
-        }
+      // beta = beta_mean = beta_mean * random field value
+      beta = beta_mean+beta_mean*field.EvalRandomField(ele_center[0],ele_center[1],ele_center[2]);
+      //vector<double> location = dis->gElement(i)->soh8_ElementCenterRefeCoords();
+
+      aaa_stopro->Init(beta);
       }
-      break;
-      case INPAR::MAT::mes_isoyeoh: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
-      break;
-      case INPAR::MAT::mes_vologden: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
-      break;
-      default:
-        // ignore unknown materials ?
-        dserror("Unknown type of material");
-      break;
+      cout << "beta  " << beta << endl;
     }
-  }
-
-
-  return;
 }
 
 
