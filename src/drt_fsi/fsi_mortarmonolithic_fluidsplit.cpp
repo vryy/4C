@@ -836,11 +836,15 @@ FSI::MortarMonolithicFluidSplit::CreateStatusTest(Teuchos::ParameterList& nlPara
                                          Teuchos::RCP<NOX::Epetra::Group> grp)
 {
   // Create the convergence tests
-  Teuchos::RCP<NOX::StatusTest::Combo> combo       = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
-  Teuchos::RCP<NOX::StatusTest::Combo> converged   = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
+  Teuchos::RCP<NOX::StatusTest::Combo> combo       = 
+      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
+  Teuchos::RCP<NOX::StatusTest::Combo> converged   = 
+      Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
 
-  Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters = Teuchos::rcp(new NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
-  Teuchos::RCP<NOX::StatusTest::FiniteValue> fv    = Teuchos::rcp(new NOX::StatusTest::FiniteValue);
+  Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters = 
+      Teuchos::rcp(new NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
+  Teuchos::RCP<NOX::StatusTest::FiniteValue> fv    = 
+      Teuchos::rcp(new NOX::StatusTest::FiniteValue);
 
   combo->addStatusTest(fv);
   combo->addStatusTest(converged);
