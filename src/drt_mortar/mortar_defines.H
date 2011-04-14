@@ -47,7 +47,7 @@ using namespace std;
 /* Mortar algorithm options                                             */
 /************************************************************************/
 
-// currently none
+//define MORTARNEWCOUPLING     /* flag for new coupling with consistent LM */
 
 /************************************************************************/
 /* Mortar algorithm parameters                                          */
