@@ -270,8 +270,8 @@ void COMBUST::FlameFront::StorePhiVectors(
      * henke 04/11
      */
 
-    DRT::UTILS::PrintParallelDistribution(*fluiddis_);
-    DRT::UTILS::PrintParallelDistribution(*gfuncdis_);
+    //DRT::UTILS::PrintParallelDistribution(*fluiddis_);
+    //DRT::UTILS::PrintParallelDistribution(*gfuncdis_);
 
     // loop all nodes on the processor
     for(int lfluidnodeid=0;lfluidnodeid<fluiddis_->NumMyRowNodes();lfluidnodeid++)
