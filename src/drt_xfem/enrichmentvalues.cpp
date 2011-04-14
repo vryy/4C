@@ -1646,6 +1646,7 @@ void XFEM::Enrichmentvalues::exportEnrichmentData()
     DRT::ParObject::AddtoPack(dataSend,newnode->first);
     DRT::ParObject::AddtoPack(dataSend,failed.coords_);
     DRT::ParObject::AddtoPack(dataSend,failed.dist_);
+    DRT::ParObject::AddtoPack(dataSend,failed.numNearestNodes_);
     DRT::ParObject::AddtoPack(dataSend,failed.jumpAndKinkValues_);
     DRT::ParObject::AddtoPack(dataSend,failed.kinkValues_);
   }
