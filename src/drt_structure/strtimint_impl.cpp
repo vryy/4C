@@ -595,12 +595,12 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying
     // *********** time measurement ***********
     dtcmt_ = timer_->WallTime() - dtcpu;
     // *********** time measurement ***********
-  }
 
-  // visualization of current Newton step
+    // visualization of current Newton step
 #ifdef MORTARGMSH2
-  cmtman_->GetStrategy().VisualizeGmsh(stepn_,iter_);
+    cmtman_->GetStrategy().VisualizeGmsh(stepn_,iter_);
 #endif // #ifdef MORTARGMSH2
+  }
 
   // wotcha
   return;
