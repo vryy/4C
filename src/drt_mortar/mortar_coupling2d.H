@@ -44,6 +44,7 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_mortar.H"
 
 using namespace std;
+using namespace Teuchos;
 
 // forward declarations
 namespace DRT
@@ -63,7 +64,7 @@ class MortarElement;
 
 /*!
 \brief A class representing the framework for mortar coupling of ONE
-       slave element and SEVERAL master elements of a mortar interface in
+       slave element and ONE master element of a mortar interface in
        2D. Concretely, this class controls projection, overlap detection
        and finally integration of the mortar coupling matrices D and M
        and possibly of the weighted gap vector g~.
@@ -71,8 +72,8 @@ class MortarElement;
 \author popp (popp@lnm.mw.tum.de)
 */
 
-class Coupling2d{
-
+class Coupling2d
+{
 public:
 
   /*!
@@ -88,7 +89,7 @@ public:
 
   */
   Coupling2d(DRT::Discretization& idiscret, int dim,
-             MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
+             MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
   
   /*!
   \brief Constructor with shape function specification
@@ -99,7 +100,7 @@ public:
   
   */  
   Coupling2d(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret, int dim,
-             MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
+             MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
   /*!
   \brief Destructor
@@ -125,6 +126,148 @@ public:
   \brief Get coupling slave element
 
   */
+  virtual MORTAR::MortarElement& SlaveElement() const { return sele_; }
+
+  /*!
+  \brief Get coupling master element
+
+  */
+  virtual MORTAR::MortarElement& MasterElement() const { return mele_; }
+
+  /*!
+  \brief Get problem dimension (here: 2D)
+
+  */
+  virtual const int& Dim() {return dim_;};
+
+  /*!
+  \brief Get projection status of the four end nodes
+
+  */
+  virtual const vector<bool>& HasProj() {return hasproj_;}
+
+  /*!
+  \brief Get overlap regions in parameter spaces
+
+  */
+  virtual const vector<double>& XiProj() {return xiproj_;}
+
+  /*!
+  \brief Get overlap status
+
+  */
+  virtual const bool& Overlap() {return overlap_;};
+
+  //@}
+
+  //! @name Evaluation methods
+  
+  /*!
+  \brief Projection of slave / master pair
+
+  This method projects the nodes of the slave MortarElement sele_ onto
+  the master MortarElement mele_ and vice versa. The variable hasproj
+  stores a boolean variable for each of the 4 end nodes, indicating
+  whether a feasible projection was found or not. The local element
+  coordinates of the 4 projection points are stored in xiproj.
+
+  */
+  virtual bool Project();
+
+  /*!
+  \brief Detect overlap of slave / master pair
+
+  This method evaluates the overlap of the current MortarElement pair
+  sele_ / mele_ based on the projection status of the 4 end nodes
+  (hasproj) and the coordinates of the projection points (xiproj).
+  According to the detected overlap case, the integration limits
+  are determined and written into xiproj and the overlap status
+  is stored in the boolean variable overlap.
+
+  */
+  virtual bool DetectOverlap();
+
+  /*!
+  \brief Integrate overlap of slave / master pair
+
+  This method integrates the overlap of the current MortarElement
+  pair sele_ / mele_ based on the integration limits (xiproj). The
+  integration always includes the Mortar matrices D/M and the gap g.
+
+  */
+  virtual bool IntegrateOverlap();
+
+  //@}
+
+
+protected:
+
+    // don't want = operator and cctor
+    Coupling2d operator = (const Coupling2d& old);
+    Coupling2d(const Coupling2d& old);
+    
+    const INPAR::MORTAR::ShapeFcn shapefcn_;  // employed type of shape function set
+    DRT::Discretization&          idiscret_;  // discretization of the contact interface
+    int                           dim_;       // problem dimension (here: 2D)
+    MORTAR::MortarElement&        sele_;      // slave element to perform coupling for
+    MORTAR::MortarElement&        mele_;      // master element to perform coupling for
+
+    vector<bool>                  hasproj_;   // projection status of the four end nodes
+    vector<double>                xiproj_;    // overlap regions in parameter spaces
+    bool                          overlap_;   // overlap status
+
+}; // class Coupling2d
+
+
+/*!
+\brief A class representing the framework for mortar coupling of ONE
+       slave element and SEVERAL master elements of a mortar interface in
+       2D. This class simply stores and manages several Coupling2d objects.
+
+\author popp (popp@lnm.mw.tum.de)
+*/
+
+class Coupling2dManager{
+
+public:
+
+  /*!
+  \brief Standard constructor
+
+  Constructs an instance of this class.<br>
+  Note that this is \b not a collective call as coupling is
+  performed in parallel by individual processes.
+
+  Note: This version of the constructor creates an Coupling2dManager instance with undefined type of
+  shape functions. As a result, no calls to functions relying on the evaluation of shape functions is
+  allowed. To be able to evaluate them, the Coupling2dManager have to be created with the alternative
+  constructor (see below).
+
+  */
+  Coupling2dManager(DRT::Discretization& idiscret, int dim,
+                    MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
+
+  /*!
+  \brief Constructor with shape function specification
+
+  Constructs an instance of this class and enables custom shape function types.<br>
+  Note that this is \b not a collective call as coupling is
+  performed in parallel by individual processes.
+
+  */
+  Coupling2dManager(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret, int dim,
+                    MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~Coupling2dManager() {}
+
+  /*!
+  \brief Get coupling slave element
+
+  */
   virtual MORTAR::MortarElement& SlaveElement() const { return *sele_; }
 
   /*!
@@ -140,55 +283,16 @@ public:
   virtual vector<MORTAR::MortarElement*> MasterElements() const { return mele_; }
 
   /*!
-  \brief Get problem dimension (here: 2D)
+  \brief Get coupling pairs
 
   */
-  virtual const int& Dim() {return dim_;};
-
-  //@}
-
-  //! @name Evlauation methods
+  virtual vector<RCP<MORTAR::Coupling2d> >& Coupling() { return coup_; }
 
   /*!
-  \brief Evaluate coupling (3D)
+  \brief Evaluate coupling pairs
 
   */
   virtual bool EvaluateCoupling();
-  
-  /*!
-  \brief Projection of slave / master pair (2D)
-
-  This method projects the nodes of the slave MortarElement sele_ onto
-  the master MortarElement mele_[k] and vice versa. The parameter hasproj
-  stores a boolean variable for each of the 4 end nodes, indicating
-  whether a feasible projection was found or not. The local element
-  coordinates of the 4 projection points are stored in xiproj.
-
-  */
-  virtual bool Project(int k, vector<bool>& hasproj, vector<double>& xiproj);
-
-  /*!
-  \brief Detect overlap of slave / master pair (2D)
-
-  This method evaluates the overlap of the current MortarElement pair
-  sele_ / mele_[k] based on the projection status of the 4 end nodes
-  (hasproj) and the coordinates of the projection points (xiproj).
-  According to the detected overlap case, the integration limits
-  are determined and written into xiproj and the overlap status
-  is returned by a boolean variable.
-
-  */
-  virtual bool DetectOverlap(int k, vector<bool>& hasproj, vector<double>& xiproj);
-
-  /*!
-  \brief Integrate overlap of slave / master pair (2D)
-
-  This method integrates the overlap of the current MortarElement
-  pair sele_ / mele_[k] based on the integration limits (xiproj). The
-  integration always includes the Mortar matrices D/M and the gap g.
-
-  */
-  virtual bool IntegrateOverlap(int k, vector<double>& xiproj);
 
   //@}
 
@@ -196,18 +300,18 @@ public:
 protected:
 
     // don't want = operator and cctor
-    Coupling2d operator = (const Coupling2d& old);
-    Coupling2d(const Coupling2d& old);
-    
+    Coupling2dManager operator = (const Coupling2dManager& old);
+    Coupling2dManager(const Coupling2dManager& old);
+
     const INPAR::MORTAR::ShapeFcn   shapefcn_;  // employed type of shape function set
     DRT::Discretization&            idiscret_;  // discretization of the contact interface
     int                             dim_;       // problem dimension (here: 2D)
-    MORTAR::MortarElement*          sele_;      // slave element to perform coupling for
-    vector<MORTAR::MortarElement*>  mele_;      // master elements to perform coupling for
+    MORTAR::MortarElement*          sele_;      // slave element
+    vector<MORTAR::MortarElement*>  mele_;      // master elements
+    vector<RCP<Coupling2d> >        coup_;      // coupling pairs
 
-}; // class Coupling2d
+}; // class Coupling2dManager
 }  // namespace MORTAR
-
 
 #endif  // #ifndef MORTAR_COUPLING2D_H
 #endif  // #ifdef CCADISCRET

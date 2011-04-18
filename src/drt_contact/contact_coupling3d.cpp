@@ -1,7 +1,6 @@
 /*!----------------------------------------------------------------------
 \file contact_coupling3d.cpp
-\brief A class for mortar coupling of ONE slave element and ONE master
-       element of a contact interface in 3D.
+\brief Classes for mortar contact coupling in 3D.
 
 <pre>
 -------------------------------------------------------------------------
@@ -1355,5 +1354,67 @@ lmtype_(lmtype)
   
   return;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                             popp 11/08|
+ *----------------------------------------------------------------------*/
+CONTACT::CoCoupling3dManager::CoCoupling3dManager(DRT::Discretization& idiscret, int dim, bool quad,
+                                                  bool auxplane, MORTAR::MortarElement* sele,
+                                                  vector<MORTAR::MortarElement*> mele) :
+shapefcn_(INPAR::MORTAR::shape_undefined),
+idiscret_(idiscret),
+dim_(dim),
+quad_(quad),
+auxplane_(auxplane),
+sele_(sele),
+mele_(mele)
+{
+  // evaluate coupling
+  EvaluateCoupling();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                             popp 06/09|
+ *----------------------------------------------------------------------*/
+CONTACT::CoCoupling3dManager::CoCoupling3dManager(const INPAR::MORTAR::ShapeFcn shapefcn,
+                                                  DRT::Discretization& idiscret, int dim, bool quad,
+                                                  bool auxplane, MORTAR::MortarElement* sele,
+                                                  vector<MORTAR::MortarElement*> mele) :
+shapefcn_(shapefcn),
+idiscret_(idiscret),
+dim_(dim),
+quad_(quad),
+auxplane_(auxplane),
+sele_(sele),
+mele_(mele)
+{
+  // evaluate coupling
+  EvaluateCoupling();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate coupling pairs                                   popp 03/09|
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
+{
+  // loop over all master elements associated with this slave element
+  for (int m=0;m<(int)MasterElements().size();++m)
+  {
+    // create CoCoupling3d object and push back
+    Coupling().push_back(rcp(new CoCoupling3d(shapefcn_,idiscret_,dim_,false,auxplane_,
+                                              SlaveElement(),MasterElement(m))));
+
+    // do coupling
+    Coupling()[m]->EvaluateCoupling();
+  }
+
+  return true;
+}
+
 
 #endif //#ifdef CCADISCRET

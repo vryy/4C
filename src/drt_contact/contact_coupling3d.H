@@ -325,6 +325,104 @@ protected:
     INPAR::MORTAR::LagMultQuad3D&  lmtype_;      // type of LM interpolation and testing
 
 }; // class CoCoupling3dQuad
+
+
+/*!
+\brief A class representing the framework for mortar coupling of ONE
+       slave element and SEVERAL master elements of a contact interface in
+       3D. Concretely, this class simply stores several CoCoupling3d objects.
+
+\author popp (popp@lnm.mw.tum.de)
+*/
+
+class CoCoupling3dManager
+{
+public:
+
+  /*!
+  \brief Standard constructor
+
+  Constructs an instance of this class.<br>
+  Note that this is \b not a collective call as coupling is
+  performed in parallel by individual processes.
+
+  Note: This version of the constructor creates an CoCoupling3dManager instance with undefined type of
+  shape functions. As a result, no calls to functions relying on the evaluation of shape functions is
+  allowed. To be able to evaluate them, the CoCoupling3dManager have to be created with the alternative
+  constructor (see below).
+
+  */
+  CoCoupling3dManager(DRT::Discretization& idiscret,
+                      int dim, bool quad, bool auxplane,
+                      MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
+
+  /*!
+  \brief Constructor with shape function specification
+
+  Constructs an instance of this class and enables custom shape function types.<br>
+  Note that this is \b not a collective call as coupling is
+  performed in parallel by individual processes.
+
+  */
+  CoCoupling3dManager(const INPAR::MORTAR::ShapeFcn shapefcn,
+                      DRT::Discretization& idiscret,
+                      int dim, bool quad, bool auxplane,
+                      MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~CoCoupling3dManager() {}
+
+  /*!
+  \brief Get coupling slave element
+
+  */
+  virtual MORTAR::MortarElement& SlaveElement() const { return *sele_; }
+
+  /*!
+  \brief Get one specific coupling master element
+
+  */
+  virtual MORTAR::MortarElement& MasterElement(int k) const { return *(mele_[k]); }
+
+  /*!
+  \brief Get all coupling master elements
+
+  */
+  virtual vector<MORTAR::MortarElement*> MasterElements() const { return mele_; }
+
+  /*!
+  \brief Get coupling pairs
+
+  */
+  virtual vector<RCP<CONTACT::CoCoupling3d> >& Coupling() { return coup_; }
+
+  /*!
+  \brief Evaluate coupling pairs
+
+  */
+  virtual bool EvaluateCoupling();
+
+  //@}
+
+protected:
+
+    // don't want = operator and cctor
+    CoCoupling3dManager operator = (const CoCoupling3dManager& old);
+    CoCoupling3dManager(const CoCoupling3dManager& old);
+
+    const INPAR::MORTAR::ShapeFcn   shapefcn_;    // employed type of shape function set
+    DRT::Discretization&            idiscret_;    // discretization of the contact interface
+    int                             dim_;         // problem dimension (here: 3D)
+    bool                            quad_;        // flag indicating coupling type (true = quadratic)
+    bool                            auxplane_;    // flag indicating coupling strategy (true = aux. plane)
+    MORTAR::MortarElement*          sele_;        // slave element
+    vector<MORTAR::MortarElement*>  mele_;        // master elements
+    vector<RCP<CoCoupling3d> >      coup_;        // coupling pairs
+
+}; // class CoCoupling3dManager
 }  // namespace CONTACT
 
 

@@ -1,7 +1,6 @@
 /*!----------------------------------------------------------------------
 \file mortar_coupling2d.cpp
-\brief A class for mortar coupling of ONE slave element and SEVERAL
-       master elements of a mortar interface in 2D.
+\brief Classes for mortar coupling in 2D.
 
 <pre>
 -------------------------------------------------------------------------
@@ -51,15 +50,18 @@ Maintainer: Alexander Popp
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
 MORTAR::Coupling2d::Coupling2d(DRT::Discretization& idiscret, int dim,
-                               MORTAR::MortarElement* sele,
-                               vector<MORTAR::MortarElement*> mele) :
+                               MORTAR::MortarElement& sele,
+                               MORTAR::MortarElement& mele) :
 shapefcn_(INPAR::MORTAR::shape_undefined),
 idiscret_(idiscret),
 dim_(dim),
 sele_(sele),
-mele_(mele)
+mele_(mele),
+overlap_(false)
 {
-  // empty constructor
+  // initialize variables
+  hasproj_.resize(4);
+  xiproj_.resize(4);
 
   return;
 }
@@ -69,15 +71,18 @@ mele_(mele)
  *----------------------------------------------------------------------*/
 MORTAR::Coupling2d::Coupling2d(const INPAR::MORTAR::ShapeFcn shapefcn,
                                DRT::Discretization& idiscret, int dim,
-                               MORTAR::MortarElement* sele,
-                               vector<MORTAR::MortarElement*> mele) :
+                               MORTAR::MortarElement& sele,
+                               MORTAR::MortarElement& mele) :
 shapefcn_(shapefcn),
 idiscret_(idiscret),
 dim_(dim),
 sele_(sele),
-mele_(mele)
+mele_(mele),
+overlap_(false)
 {
-  // empty constructor
+  // initialize variables
+  hasproj_.resize(4);
+  xiproj_.resize(4);
   
   return;
 }
@@ -91,96 +96,21 @@ const Epetra_Comm& MORTAR::Coupling2d::Comm() const
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate coupling  (public)                               popp 06/09|
- *----------------------------------------------------------------------*/
-bool MORTAR::Coupling2d::EvaluateCoupling()
-{
-  // prepare overlap integration
-  int msize = (int)(MasterElements().size());
-  vector<vector<bool> > hasproj(msize,vector<bool>(4));
-  vector<vector<double> > xiproj(msize,vector<double>(4));
-  vector<bool> overlap(msize);
-
-  // loop over all master elements
-  for (int k=0;k<(int)(MasterElements().size());++k)
-  {
-    // project the element pair
-    Project(k,hasproj[k],xiproj[k]);
-    
-    // check for element overlap
-    overlap[k] = DetectOverlap(k,hasproj[k],xiproj[k]);
-  }
-  
-#ifdef MORTARNEWCOUPLING
-  //**********************************************************************
-  // find total overlap of slave element with ALL master elements
-  //**********************************************************************
-  double ximin =  1.0e12;
-  double ximax = -1.0e12;
-  int mmin = 0;
-  int mmax = 0;
-  bool totoverlap = false;
-
-  // loop over all master elements
-  for (int k=0;k<(int)(MasterElements().size());++k)
-  {
-    // only check pair if overlap exists
-    if (overlap[k])
-    {
-      // store information that overlap is non-empty
-      totoverlap = true;
-      
-      // check for minimum
-      if (xiproj[k][0] < ximin)
-      {
-        ximin = xiproj[k][0];
-        mmin = k;
-      }
-      
-      // check for maximum
-      if (xiproj[k][1] > ximax)
-      {
-        ximax = xiproj[k][1];
-        mmax = k;
-      }
-    }
-  }
-  
-  // infeasible limits of total overlap region
-  if (ximin < -1.0 || ximax > 1.0)
-    dserror("ERROR: Coupling2d found infeasible total slave / master overlap!");
-  //**********************************************************************
-#endif // #ifdef MORTARNEWCOUPLING
-  
-  // loop over all master elements again
-  for (int k=0;k<(int)(MasterElements().size());++k)
-  {
-    // integrate the element overlap
-    if (overlap[k]) IntegrateOverlap(k,xiproj[k]);
-  }
-  
-  return true;
-}
-
-/*----------------------------------------------------------------------*
  |  Project slave / master element pair (public)              popp 04/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling2d::Project(int k, vector<bool>& hasproj,
-                                 vector<double>& xiproj)
+bool MORTAR::Coupling2d::Project()
 {
   // initialize projection status
-  hasproj[0] = false;   // slave 0 end node
-  hasproj[1] = false;   // slave 1 end node
-  hasproj[2] = false;   // master 0 end node
-  hasproj[3] = false;   // master 1 end node
+  hasproj_[0] = false;   // slave 0 end node
+  hasproj_[1] = false;   // slave 1 end node
+  hasproj_[2] = false;   // master 0 end node
+  hasproj_[3] = false;   // master 1 end node
 
   // get slave and master element nodes
   DRT::Node** mysnodes = SlaveElement().Nodes();
-  if (!mysnodes)
-    dserror("ERROR: IntegrateOverlap: Null pointer for mysnodes!");
-  DRT::Node** mymnodes = MasterElement(k).Nodes();
-  if (!mymnodes)
-    dserror("ERROR: IntegrateOverlap: Null pointer for mymnodes!");
+  if (!mysnodes) dserror("ERROR: IntegrateOverlap: Null pointer for mysnodes!");
+  DRT::Node** mymnodes = MasterElement().Nodes();
+  if (!mymnodes) dserror("ERROR: IntegrateOverlap: Null pointer for mymnodes!");
 
   // create a projector instance of problem dimension Dim()
   MORTAR::MortarProjector projector(Dim());
@@ -190,7 +120,7 @@ bool MORTAR::Coupling2d::Project(int k, vector<bool>& hasproj,
   {
     MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(mysnodes[i]);
     double xi[2] = {0.0, 0.0};
-    projector.ProjectNodalNormal(*snode,MasterElement(k),xi);
+    projector.ProjectNodalNormal(*snode,MasterElement(),xi);
 
     // save projection if it is feasible
     // we need an expanded feasible domain in order to check pathological
@@ -200,8 +130,8 @@ bool MORTAR::Coupling2d::Project(int k, vector<bool>& hasproj,
       // for element overlap only the outer nodes are of interest
       if (i<2)
       {
-        hasproj[i]=true;
-        xiproj[i]=xi[0];
+        hasproj_[i]=true;
+        xiproj_[i]=xi[0];
       }
       // nevertheless we need the inner node projection status later (weighted gap)
       snode->HasProj()=true;
@@ -223,8 +153,8 @@ bool MORTAR::Coupling2d::Project(int k, vector<bool>& hasproj,
       // for element overlap only the outer nodes are of interest
       if (i<2)
       {
-        hasproj[i+2]=true;
-        xiproj[i+2]=xi[0];
+        hasproj_[i+2]=true;
+        xiproj_[i+2]=xi[0];
       }
     }
   }
@@ -235,8 +165,7 @@ bool MORTAR::Coupling2d::Project(int k, vector<bool>& hasproj,
 /*----------------------------------------------------------------------*
  |  Detect overlap of slave / master pair (public)            popp 04/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling2d::DetectOverlap(int k, vector<bool>& hasproj,
-                                       vector<double>& xiproj)
+bool MORTAR::Coupling2d::DetectOverlap()
 {
   /**********************************************************************/
   /* OVERLAP CASES                                                      */
@@ -270,18 +199,18 @@ bool MORTAR::Coupling2d::DetectOverlap(int k, vector<bool>& hasproj,
   double mxib = 0.0;
 
   // local working copies of input variables
-  bool s0hasproj = hasproj[0];
-  bool s1hasproj = hasproj[1];
-  bool m0hasproj = hasproj[2];
-  bool m1hasproj = hasproj[3];
+  bool s0hasproj = hasproj_[0];
+  bool s1hasproj = hasproj_[1];
+  bool m0hasproj = hasproj_[2];
+  bool m1hasproj = hasproj_[3];
 
   vector<double> sprojxi(2);
-  sprojxi[0] = xiproj[0];
-  sprojxi[1] = xiproj[1];
+  sprojxi[0] = xiproj_[0];
+  sprojxi[1] = xiproj_[1];
 
   vector<double> mprojxi(2);
-  mprojxi[0] = xiproj[2];
-  mprojxi[1] = xiproj[3];
+  mprojxi[0] = xiproj_[2];
+  mprojxi[1] = xiproj_[3];
 
 
   /* CASE 1 (NO OVERLAP):
@@ -301,10 +230,10 @@ bool MORTAR::Coupling2d::DetectOverlap(int k, vector<bool>& hasproj,
     if ((-1.0+MORTARPROJTOL<=sprojxi[0]) && (sprojxi[0]<=1.0-MORTARPROJTOL))
     {
       cout << "SElement Node IDs: " << (SlaveElement().Nodes()[0])->Id() << " " << (SlaveElement().Nodes()[1])->Id() << endl;
-      cout << "MElement Node IDs: " << (MasterElement(k).Nodes()[0])->Id() << " " << (MasterElement(k).Nodes()[1])->Id() << endl;
+      cout << "MElement Node IDs: " << (MasterElement().Nodes()[0])->Id() << " " << (MasterElement().Nodes()[1])->Id() << endl;
       cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
       cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
-      dserror("ERROR: IntegrateOverlap: Significant overlap ignored S%i M%i!", SlaveElement().Id(), MasterElement(k).Id());
+      dserror("ERROR: IntegrateOverlap: Significant overlap ignored S%i M%i!", SlaveElement().Id(), MasterElement().Id());
     }
   }
 
@@ -313,10 +242,10 @@ bool MORTAR::Coupling2d::DetectOverlap(int k, vector<bool>& hasproj,
     if ((-1.0+MORTARPROJTOL<=sprojxi[1]) && (sprojxi[1]<=1.0-MORTARPROJTOL))
     {
       cout << "SElement Node IDs: " << (SlaveElement().Nodes()[0])->Id() << " " << (SlaveElement().Nodes()[1])->Id() << endl;
-      cout << "MElement Node IDs: " << (MasterElement(k).Nodes()[0])->Id() << " " << (MasterElement(k).Nodes()[1])->Id() << endl;
+      cout << "MElement Node IDs: " << (MasterElement().Nodes()[0])->Id() << " " << (MasterElement().Nodes()[1])->Id() << endl;
       cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
       cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
-      dserror("ERROR: IntegrateOverlap: Significant overlap ignored S%i M%i!", SlaveElement().Id(), MasterElement(k).Id());
+      dserror("ERROR: IntegrateOverlap: Significant overlap ignored S%i M%i!", SlaveElement().Id(), MasterElement().Id());
     }
   }
 
@@ -325,10 +254,10 @@ bool MORTAR::Coupling2d::DetectOverlap(int k, vector<bool>& hasproj,
     if ((-1.0+MORTARPROJTOL<=mprojxi[0]) && (mprojxi[0]<=1.0-MORTARPROJTOL))
     {
       cout << "SElement Node IDs: " << (SlaveElement().Nodes()[0])->Id() << " " << (SlaveElement().Nodes()[1])->Id() << endl;
-      cout << "MElement Node IDs: " << (MasterElement(k).Nodes()[0])->Id() << " " << (MasterElement(k).Nodes()[1])->Id() << endl;
+      cout << "MElement Node IDs: " << (MasterElement().Nodes()[0])->Id() << " " << (MasterElement().Nodes()[1])->Id() << endl;
       cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
       cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
-      dserror("ERROR: IntegrateOverlap: Significant overlap ignored S%i M%i!", SlaveElement().Id(), MasterElement(k).Id());
+      dserror("ERROR: IntegrateOverlap: Significant overlap ignored S%i M%i!", SlaveElement().Id(), MasterElement().Id());
     }
   }
 
@@ -337,10 +266,10 @@ bool MORTAR::Coupling2d::DetectOverlap(int k, vector<bool>& hasproj,
     if ((-1.0+MORTARPROJTOL<=mprojxi[1]) && (mprojxi[1]<=1.0-MORTARPROJTOL))
     {
       cout << "SElement Node IDs: " << (SlaveElement().Nodes()[0])->Id() << " " << (SlaveElement().Nodes()[1])->Id() << endl;
-      cout << "MElement Node IDs: " << (MasterElement(k).Nodes()[0])->Id() << " " << (MasterElement(k).Nodes()[1])->Id() << endl;
+      cout << "MElement Node IDs: " << (MasterElement().Nodes()[0])->Id() << " " << (MasterElement().Nodes()[1])->Id() << endl;
       cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
       cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
-      dserror("ERROR: IntegrateOverlap: Significant overlap ignored S%i M%i!", SlaveElement().Id(), MasterElement(k).Id());
+      dserror("ERROR: IntegrateOverlap: Significant overlap ignored S%i M%i!", SlaveElement().Id(), MasterElement().Id());
     }
   }
 
@@ -400,9 +329,9 @@ bool MORTAR::Coupling2d::DetectOverlap(int k, vector<bool>& hasproj,
     else
     {
       cout << "MORTAR::Coupling2d::DetectOverlap "<< endl << "has detected '4 projections'-case for Sl./Ma. pair "
-           << SlaveElement().Id() << "/" << MasterElement(k).Id() << endl;
+           << SlaveElement().Id() << "/" << MasterElement().Id() << endl;
       cout << "SElement Node IDs: " << (SlaveElement().Nodes()[0])->Id() << " " << (SlaveElement().Nodes()[1])->Id() << endl;
-      cout << "MElement Node IDs: " << (MasterElement(k).Nodes()[0])->Id() << " " << (MasterElement(k).Nodes()[1])->Id() << endl;
+      cout << "MElement Node IDs: " << (MasterElement().Nodes()[0])->Id() << " " << (MasterElement().Nodes()[1])->Id() << endl;
       cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << endl;
       cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << endl;
       dserror("ERROR: DetectOverlap: Unknown overlap case found in global case 6!");
@@ -552,7 +481,7 @@ bool MORTAR::Coupling2d::DetectOverlap(int k, vector<bool>& hasproj,
   else
   {
     cout << "SElement: " << SlaveElement().NodeIds()[0] << " " << SlaveElement().NodeIds()[1] << endl;
-    cout << "MElement: " << MasterElement(k).NodeIds()[0] << " " << MasterElement(k).NodeIds()[1] << endl;
+    cout << "MElement: " << MasterElement().NodeIds()[0] << " " << MasterElement().NodeIds()[1] << endl;
     cout << "s0: " << s0hasproj << " s1: " << s1hasproj << endl;
     cout << "m0: " << m0hasproj << " m1: " << m1hasproj << endl;
     dserror("ERROR: IntegrateOverlap: Unknown overlap case found!");
@@ -574,19 +503,22 @@ bool MORTAR::Coupling2d::DetectOverlap(int k, vector<bool>& hasproj,
     }
   }
 
-  // update integration limits in xiproj
-  xiproj[0]=sxia;
-  xiproj[1]=sxib;
-  xiproj[2]=mxia;
-  xiproj[3]=mxib;
+  // update integration limits in xiproj_
+  xiproj_[0]=sxia;
+  xiproj_[1]=sxib;
+  xiproj_[2]=mxia;
+  xiproj_[3]=mxib;
 
-  return overlap;
+  // store overlap information
+  overlap_ = overlap;
+
+  return true;
 }
 
 /*----------------------------------------------------------------------*
  |  Integrate slave / master overlap (public)                 popp 04/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling2d::IntegrateOverlap(int k, vector<double>& xiproj)
+bool MORTAR::Coupling2d::IntegrateOverlap()
 {
   // explicitely defined shapefunction type needed
   if (shapefcn_ == INPAR::MORTAR::shape_undefined)
@@ -594,32 +526,35 @@ bool MORTAR::Coupling2d::IntegrateOverlap(int k, vector<double>& xiproj)
   
   /**********************************************************************/
   /* INTEGRATION                                                        */
-  /* Depending on overlap and the xiproj entries integrate the Mortar   */
+  /* Depending on overlap and the xiproj_ entries integrate the Mortar  */
   /* matrices D and M on the overlap of the current sl / ma pair.       */
   /**********************************************************************/
 
+  // no integration if no overlap
+  if (!overlap_) return false;
+
   //local working copies of input variables
-  double sxia = xiproj[0];
-  double sxib = xiproj[1];
-  double mxia = xiproj[2];
-  double mxib = xiproj[3];
+  double sxia = xiproj_[0];
+  double sxib = xiproj_[1];
+  double mxia = xiproj_[2];
+  double mxib = xiproj_[3];
 
   // create an integrator instance with correct NumGP and Dim
   MORTAR::MortarIntegrator integrator(shapefcn_,SlaveElement().Shape());
 
   // do the overlap integration (integrate and linearize both M and gap)
   int nrow = SlaveElement().NumNode();
-  int ncol = MasterElement(k).NumNode();
+  int ncol = MasterElement().NumNode();
   int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
   if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
   RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
   RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
   RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
-  integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(k),mxia,mxib,dseg,mseg,gseg);
+  integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,dseg,mseg,gseg);
 
   // do the two assemblies into the slave nodes
   integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-  integrator.AssembleM(Comm(),SlaveElement(),MasterElement(k),*mseg);
+  integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
 
   /*----------------------------------------------------------------------
   // check for the modification of the M matrix for curved interfaces
@@ -654,10 +589,71 @@ bool MORTAR::Coupling2d::IntegrateOverlap(int k, vector<double>& xiproj)
 
   if (modification)
   {
-    RCP<Epetra_SerialDenseMatrix> mmodseg = integrator.IntegrateMmod2D(SlaveElement(),sxia,sxib,MasterElement(k),mxia,mxib);
-    integrator.AssembleMmod(Comm(),SlaveElement(),MasterElement(k),*mmodseg);
+    RCP<Epetra_SerialDenseMatrix> mmodseg = integrator.IntegrateMmod2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib);
+    integrator.AssembleMmod(Comm(),SlaveElement(),MasterElement(),*mmodseg);
   }
   //--------------------------------------------------------------------*/
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                             popp 11/08|
+ *----------------------------------------------------------------------*/
+MORTAR::Coupling2dManager::Coupling2dManager(DRT::Discretization& idiscret, int dim,
+                                             MORTAR::MortarElement* sele,
+                                             vector<MORTAR::MortarElement*> mele) :
+shapefcn_(INPAR::MORTAR::shape_undefined),
+idiscret_(idiscret),
+dim_(dim),
+sele_(sele),
+mele_(mele)
+{
+  // evaluate coupling
+  EvaluateCoupling();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                             popp 06/09|
+ *----------------------------------------------------------------------*/
+MORTAR::Coupling2dManager::Coupling2dManager(const INPAR::MORTAR::ShapeFcn shapefcn,
+                                             DRT::Discretization& idiscret, int dim,
+                                             MORTAR::MortarElement* sele,
+                                             vector<MORTAR::MortarElement*> mele) :
+shapefcn_(shapefcn),
+idiscret_(idiscret),
+dim_(dim),
+sele_(sele),
+mele_(mele)
+{
+  // evaluate coupling
+  EvaluateCoupling();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Evaluate coupling pairs                                   popp 03/09|
+ *----------------------------------------------------------------------*/
+bool MORTAR::Coupling2dManager::EvaluateCoupling()
+{
+  // loop over all master elements associated with this slave element
+  for (int m=0;m<(int)MasterElements().size();++m)
+  {
+    // create Coupling2d object and push back
+    Coupling().push_back(rcp(new Coupling2d(shapefcn_,idiscret_,dim_,SlaveElement(),MasterElement(m))));
+
+    // project the element pair
+    Coupling()[m]->Project();
+
+    // check for element overlap
+    Coupling()[m]->DetectOverlap();
+
+    // integrate the element overlap
+    Coupling()[m]->IntegrateOverlap();
+  }
 
   return true;
 }

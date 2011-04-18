@@ -52,7 +52,7 @@ namespace CONTACT
 
 /*!
 \brief A class representing the framework for mortar coupling of ONE
-       slave element and SEVERAL master elements of a contact interface in
+       slave element and ONE master element of a contact interface in
        2D. This is a derived class from MORTAR::Coupling2d which does
        the contact-specific stuff for 2d mortar coupling.
 
@@ -76,7 +76,7 @@ public:
 
   */
   CoCoupling2d(DRT::Discretization& idiscret, int dim,
-               MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
+               MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
   
   /*!
   \brief Constructor with shape function specification
@@ -87,7 +87,7 @@ public:
   
   */  
   CoCoupling2d(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret, int dim,
-               MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
+               MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
   
   /*!
   \brief Destructor
@@ -105,11 +105,11 @@ public:
   does integration of the mortar quantity linearizations
   
   This method integrates the overlap of the current MortarElement
-  pair sele_ / mele_[k] based on the integration limits (xiproj).
-  The integration includes the Mortar matrices D/M and the gap g.
+  pair sele_ / mele_ based on the integration limits (xiproj). The
+  integration includes the Mortar matrices D/M and the gap g.
 
   */
-  bool IntegrateOverlap(int k, vector<double>& xiproj);
+  bool IntegrateOverlap();
 
   //@}
 
@@ -123,6 +123,100 @@ protected:
     // no new variables as compared to base class
 
 }; // class CoCoupling2d
+
+/*!
+\brief A class representing the framework for mortar coupling of ONE
+       slave element and SEVERAL master elements of a mortar interface in
+       2D. Concretely, this class simply stores several Coupling2d objects.
+
+\author popp (popp@lnm.mw.tum.de)
+*/
+
+class CoCoupling2dManager
+{
+public:
+
+  /*!
+  \brief Standard constructor
+
+  Constructs an instance of this class.<br>
+  Note that this is \b not a collective call as coupling is
+  performed in parallel by individual processes.
+
+  Note: This version of the constructor creates an CoCoupling2dManager instance with undefined type of
+  shape functions. As a result, no calls to functions relying on the evaluation of shape functions is
+  allowed. To be able to evaluate them, the CoCoupling2dManager have to be created with the alternative
+  constructor (see below).
+
+  */
+  CoCoupling2dManager(DRT::Discretization& idiscret, int dim,
+                      MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
+
+  /*!
+  \brief Constructor with shape function specification
+
+  Constructs an instance of this class and enables custom shape function types.<br>
+  Note that this is \b not a collective call as coupling is
+  performed in parallel by individual processes.
+
+  */
+  CoCoupling2dManager(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret, int dim,
+                      MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~CoCoupling2dManager() {}
+
+  /*!
+  \brief Get coupling slave element
+
+  */
+  virtual MORTAR::MortarElement& SlaveElement() const { return *sele_; }
+
+  /*!
+  \brief Get one specific coupling master element
+
+  */
+  virtual MORTAR::MortarElement& MasterElement(int k) const { return *(mele_[k]); }
+
+  /*!
+  \brief Get all coupling master elements
+
+  */
+  virtual vector<MORTAR::MortarElement*> MasterElements() const { return mele_; }
+
+  /*!
+  \brief Get coupling pairs
+
+  */
+  virtual vector<RCP<CONTACT::CoCoupling2d> >& Coupling() { return coup_; }
+
+  /*!
+  \brief Evaluate coupling pairs
+
+  */
+  virtual bool EvaluateCoupling();
+
+  //@}
+
+
+protected:
+
+    // don't want = operator and cctor
+    CoCoupling2dManager operator = (const CoCoupling2dManager& old);
+    CoCoupling2dManager(const CoCoupling2dManager& old);
+
+    const INPAR::MORTAR::ShapeFcn   shapefcn_;  // employed type of shape function set
+    DRT::Discretization&            idiscret_;  // discretization of the contact interface
+    int                             dim_;       // problem dimension (here: 2D)
+    MORTAR::MortarElement*          sele_;      // slave element
+    vector<MORTAR::MortarElement*>  mele_;      // master elements
+    vector<RCP<CoCoupling2d> >      coup_;      // coupling pairs
+
+}; // class CoCoupling2dManager
+
 }  // namespace CONTACT
 
 
