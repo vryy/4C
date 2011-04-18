@@ -1038,7 +1038,6 @@ set(OBJS_LINALG
   src/linalg/linalg_serialdensematrix.cpp
   src/linalg/linalg_serialdensevector.cpp
   src/linalg/linalg_solver.cpp
-  src/linalg/linalg_solver_spooles.cpp
   src/linalg/linalg_sparsematrix.cpp
   src/linalg/linalg_sparsematrixbase.cpp
   src/linalg/linalg_utils.cpp

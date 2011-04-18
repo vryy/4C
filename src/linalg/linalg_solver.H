@@ -932,67 +932,6 @@ public:
 
 private:
 
-  /*!
-  \brief Solve using spooles
-
-  */
-  virtual void Solve_spooles(const bool reset);
-
-  /*!
-  \brief Solve using superlu
-
-  */
-  virtual void Solve_superlu(const bool reset);
-
-  /*!
-  \brief Solve using klu
-
-  */
-  virtual void Solve_klu(const bool reset);
-
-  /*!
-  \brief Solve using umfpack
-
-  */
-  virtual void Solve_umfpack(const bool reset);
-
-  /*!
-  \brief Solve using lapack
-
-  */
-  virtual void Solve_lapack(const bool reset);
-
-  /*!
-  \brief Solve using aztec. If project==false, system-matrix has to be
-         non-singular. For project==true, the user can specify the
-         matrix kernel and a weight vector to solve the problem
-         iteratively on a residue class modulo the kernel.
-         The representative returned in x_ will be orthogonal to
-         the weighted_basis_mean_w vector.
-
-  \param (i) reset
-             flag indicating whether all data from previous solves
-             should be recalculated including preconditioners
-  \param (i) project
-             flag indicating whether several modes will be projected
-             out of the Krylov space (Aztec only option)
-  \param (i) weighted_basis_mean_w
-             weight vector defining projector for iterative solution
-             of singluar problems using iterative solvers. Required
-             if project!=false.
-             x will be orthogonalized to these weights on output.
-  \param (i) kernel_c
-             Vector of ones in the respective components. Necess
-             if project!=false.
-             Krylov space will be orthogonalized to this basis!
-
-  */
-  virtual void Solve_aztec(
-    const bool                         reset    ,
-    const bool                         project  ,
-    const RCP<LINALG::KrylovProjector> projector
-    );
-
   //! a communicator
   const Epetra_Comm&                    comm_;
   //! (internal) parameter list
@@ -1000,6 +939,7 @@ private:
   //! file to write output to (proc 0 only, can be NULL on input)
   FILE*                                 outfile_;
 
+  /// internal solver strategy
   RCP<SolverType> solver_;
 
 private:
