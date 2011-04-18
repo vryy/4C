@@ -1079,8 +1079,10 @@ void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle,
 #endif
       }
     }
+    Epetra_Map rangemap  = sysmat_->RangeMap();
+    Epetra_Map domainmap = sysmat_->DomainMap();
     sysmat_ = Anew;
-    Complete(sysmat_->DomainMap(),sysmat_->RangeMap());
+    Complete(domainmap,rangemap);
   }
   else
   {
