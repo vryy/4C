@@ -154,8 +154,10 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   FluidField().ImportFlameFront(flamefront_);
 
   FluidField().SetInitialFlowField(initfield, initfuncno);
+
   // output fluid initial state
-  FluidField().Output();
+  if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary)
+    FluidField().Output();
 
   // export interface information to the fluid time integration
   // remark: this is essential here, if DoFluidField() is not called in Timeloop() (e.g. for pure Scatra problems)
@@ -180,8 +182,10 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
       FluidField().DofSet(),
       FluidField().Discretization()
   );
+
   // output G-function initial state
-  ScaTraField().Output();
+  if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary)
+    ScaTraField().Output();
 }
 
 /*------------------------------------------------------------------------------------------------*
