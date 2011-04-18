@@ -1066,17 +1066,16 @@ void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle,
       }
       else
       {
-        double v;
         if (diagonalblock)
-          v = 1.0;
-        else
-          v = 0.0;
+        {
+          double v = 1.0;
 #ifdef DEBUG
-        int err = Anew->InsertGlobalValues(row,1,&v,&row);
-        if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
+          int err = Anew->InsertGlobalValues(row,1,&v,&row);
+          if (err<0) dserror("Epetra_CrsMatrix::InsertGlobalValues returned err=%d",err);
 #else
-        Anew->InsertGlobalValues(row,1,&v,&row);
+          Anew->InsertGlobalValues(row,1,&v,&row);
 #endif
+        }
       }
     }
     Epetra_Map rangemap  = sysmat_->RangeMap();

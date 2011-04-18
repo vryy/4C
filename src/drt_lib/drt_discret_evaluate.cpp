@@ -137,8 +137,8 @@ void DRT::Discretization::Evaluate(
     {
       TEUCHOS_FUNC_TIME_MONITOR("DRT::Discretization::Evaluate assemble");
       int eid = actele->Id();
-      strategy.AssembleMatrix1( eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[row].stride_ );
-      strategy.AssembleMatrix2( eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[row].stride_ );
+      strategy.AssembleMatrix1( eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_ );
+      strategy.AssembleMatrix2( eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_ );
       strategy.AssembleVector1( la[row].lm_, la[row].lmowner_ );
       strategy.AssembleVector2( la[row].lm_, la[row].lmowner_ );
       strategy.AssembleVector3( la[row].lm_, la[row].lmowner_ );
