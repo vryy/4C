@@ -1062,8 +1062,8 @@ void SysmatDomainSigma(
 
             if (isale)
             {
-              for (int iparam = 0; iparam < numparamvelx; ++iparam)
-                for (int isd = 0; isd < nsd; ++isd)
+              for (unsigned int iparam = 0; iparam < numparamvelx; ++iparam)
+                for (unsigned int isd = 0; isd < nsd; ++isd)
                   gridvgp(isd) += egridv(isd,iparam)*shp.d0(iparam);
             }
 
