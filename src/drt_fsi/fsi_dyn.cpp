@@ -13,7 +13,7 @@
 #include "fsi_dirichletneumannslideale.H"
 #include "fsi_robinneumann.H"
 #include "fsi_robin.H"
-#include "fsi_monolithicoverlap.H"
+#include "fsi_monolithicfluidsplit.H"
 #include "fsi_monolithiclagrange.H"
 #include "fsi_monolithicstructuresplit.H"
 #include "fsi_monolithicxfem.H"
@@ -353,7 +353,7 @@ void fsi_ale_drt()
     }
     else if (coupling==fsi_iter_monolithicfluidsplit)
     {
-      fsi = Teuchos::rcp(new FSI::MonolithicOverlap(comm));
+      fsi = Teuchos::rcp(new FSI::MonolithicFluidSplit(comm));
     }
     else if (coupling==fsi_iter_monolithicstructuresplit)
     {
@@ -686,7 +686,7 @@ void fsi_lung_gas()
     }
     else if (coupling==fsi_iter_monolithicfluidsplit)
     {
-      fsi = Teuchos::rcp(new FSI::MonolithicOverlap(comm));
+      fsi = Teuchos::rcp(new FSI::MonolithicFluidSplit(comm));
     }
     else if (coupling==fsi_iter_monolithicstructuresplit)
     {

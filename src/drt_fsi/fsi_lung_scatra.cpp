@@ -3,7 +3,8 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "fsi_dyn.H"
-#include "fsi_monolithicoverlap.H"
+
+#include "fsi_monolithicfluidsplit.H"
 #include "fsi_monolithiclagrange.H"
 #include "fsi_monolithicstructuresplit.H"
 #include "fsi_utils.H"
