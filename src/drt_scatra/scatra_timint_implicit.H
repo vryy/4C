@@ -37,6 +37,11 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_scatra.H"
 
+//TODO: move to cpp??
+#include "../drt_adapter/adapter_coupling_mortar.H"
+#include "../linalg/linalg_mapextractor.H"
+
+
 //forward declarations
 class PeriodicBoundaryConditions;
 namespace DRT
@@ -56,6 +61,11 @@ namespace LINALG
   class MapExtractor;
   class BlockSparseMatrixBase;
   class SparseOperator;
+}
+
+namespace FLD
+{
+  class Meshtying;
 }
 
 using namespace std;
@@ -768,6 +778,12 @@ protected:
   Teuchos::RCP<Epetra_MultiVector> w_;
   /// basis vector for nullspace (vector of ones for each undetermined component)
   Teuchos::RCP<Epetra_MultiVector> c_;
+
+  /// coupling of fluid-fluid at an internal interface
+  RCP<FLD::Meshtying>   meshtying_;
+
+  // options for meshtying
+  int msht_;
 
 }; // class ScaTraTimIntImpl
 

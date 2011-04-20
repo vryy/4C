@@ -38,6 +38,8 @@ Maintainer: Georg Bauer
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Epetra_SerialDenseVector.h>
 
+#include "../drt_fluid/fluid_meshtying.H"
+
 //REINHARD
 #include "../drt_geometry/element_volume.H"
 //end REINHARD
@@ -109,7 +111,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   gstatincrement_(0.0),
   project_(false),
   w_(Teuchos::null),
-  c_(Teuchos::null)
+  c_(Teuchos::null),
+  msht_(DRT::INPUT::IntegralValue<int>(*params,"MESHTYING"))
 {
   // what kind of equations do we actually want to solve?
   // (For the moment, we directly conclude from the problem type, Only ELCH applications
@@ -197,7 +200,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 //    masscalc_     = DRT::INPUT::IntegralValue<INPAR::SCATRA::MassCalculation>(params_->sublist("LEVELSETDONOTUSE"),"MASSCALCULATION");
 //  }
 
-  if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND"))
+  if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND")
+      and msht_ == INPAR::SCATRA::no_meshtying)
   {
     // we need a block sparse matrix here
     if (scatratype_ != INPAR::SCATRA::scatratype_elch_enc)
@@ -212,6 +216,19 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     blocksysmat->SetNumScal(numscal_);
 
     sysmat_ = blocksysmat;
+  }
+  else if(msht_!= INPAR::SCATRA::no_meshtying)
+  {
+    if (msht_!= INPAR::SCATRA::condensed_smat)
+      dserror("In the moment the only option is condensation in a sparse matrix");
+
+    // define parameter list for meshtying
+    ParameterList mshtparams;
+    mshtparams.set("theta", params_->get<double>("THETA"));
+    mshtparams.set<int>("mshtoption", msht_);
+
+    meshtying_ = Teuchos::rcp(new FLD::Meshtying(discret_, mshtparams));
+    sysmat_ = meshtying_->Setup();
   }
   else
   {
@@ -866,7 +883,12 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       // ScaleLinearSystem();  // still experimental (gjb 04/10)
 
       PrepareKrylovSpaceProjection();
-      solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,itnum==1,w_,c_,project_);
+
+      if (msht_!=INPAR::SCATRA::no_meshtying)
+        meshtying_->SolveMeshtying(*solver_, sysmat_, increment_, residual_, itnum, w_, c_, project_);
+      else
+        solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,itnum==1,w_,c_,project_);
+
       solver_->ResetTolerance();
 
       // end time measurement for solver
@@ -1358,6 +1380,11 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
 
   // end time measurement for element
   dtele_=Teuchos::Time::wallTime()-tcpuele;
+
+  if (msht_!=INPAR::SCATRA::no_meshtying)
+  {
+    meshtying_->PrepareMeshtyingSystem(sysmat_, residual_);
+  }
 
   return;
 } // ScaTraTimIntImpl::AssembleMatAndRHS
