@@ -1064,7 +1064,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
 
   // Project fluid nodes onto the struct interface
   //init of search tree
-  Teuchos::RCP<GEO::SearchTree> searchTree = rcp(new GEO::SearchTree(0));
+  Teuchos::RCP<GEO::SearchTree> searchTree = rcp(new GEO::SearchTree(8));
   const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofEles(structreduelements_, currentpositions);
 
   if(dim==2)
@@ -1127,7 +1127,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
     if(dim == 2)
     {
       LINALG::Matrix<3,1> minDistCoords;
-      GEO::nearest2DObjectInNode(rcp(&interfacedis,false), structreduelements_, currentpositions,
+      GEO::nearestObjectInNode(structreduelements_, currentpositions,
           closeeles, alenodecurr, minDistCoords);
       finaldxyz[0] = minDistCoords(0,0) - node->X()[0];
       finaldxyz[1] = minDistCoords(1,0) - node->X()[1];
@@ -1135,7 +1135,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
     else
     {
       LINALG::Matrix<3,1> minDistCoords;
-      GEO::nearest3DObjectInNode(rcp(&interfacedis,false), structreduelements_, currentpositions,
+      GEO::nearestObjectInNode(rcp(&interfacedis,false), structreduelements_, currentpositions,
           closeeles, alenodecurr, minDistCoords);
       finaldxyz[0] = minDistCoords(0,0) - node->X()[0];
       finaldxyz[1] = minDistCoords(1,0) - node->X()[1];
@@ -1229,10 +1229,16 @@ void FSI::UTILS::SlideAleUtils::BuildProjPairs
 
     DRT::Node pairnode(*node);
     double dist = 0.0;
-
-    dist = GEO::nearestNodeInNode(fluiddis, fluidreduelements_, currentpositions,
+    if(dim == 2)
+    {
+      dist = GEO::nearestNodeInNode(fluidreduelements_, currentpositions,
           projnodecoor, pairnode);
-
+    }
+    else
+    {
+      dist = GEO::nearestNodeInNode(fluiddis, fluidreduelements_, currentpositions,
+          projnodecoor, pairnode);
+    }
     fluidpairs_[node->Id()]=pairnode.Id();
 
     if (dist > maxmindist_)
