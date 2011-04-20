@@ -364,11 +364,16 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::ComputeError(
      xyze_ += edispnp;
   }
 
+  // integrations points and weights
+  // more GP than usual due to (possible) cos/exp fcts in analytical solutions
+  // degree 5
+  DRT::UTILS::GaussIntegration intpoints(distype, 5);
+
 //------------------------------------------------------------------
 //                       INTEGRATION LOOP
 //------------------------------------------------------------------
 
-  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad,ele->Id());
@@ -483,7 +488,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::ComputeError(
         // y=0 is located in the middle of the channel
         if (nsd_ == 2)
         {
-          p = 0.0;
+          p = 1.0;
           u(0) = maxvel -((hight*hight)/(2.0*visc)*pressure_gradient*(xyzint(1)/hight)*(xyzint(1)/hight));
           u(1) = 0.0;
         }
@@ -502,10 +507,9 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::ComputeError(
     // add square to L2 error
     for (int isd=0;isd<nsd_;isd++)
     {
-      //elevec1[isd] += deltavel(isd)*deltavel(isd)*fac_;
       elevec1[0] += deltavel(isd)*deltavel(isd)*fac_;
+      //elevec1[isd+2] += deltavel(isd)*deltavel(isd)*fac_;
     }
-    //elevec1[nsd_] += deltap*deltap*fac_;
     elevec1[1] += deltap*deltap*fac_;
   }
 
