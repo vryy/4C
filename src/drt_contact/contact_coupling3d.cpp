@@ -174,6 +174,8 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       // prepare integration of wear 
       int nrow = SlaveElement().NumNode();
       int ncol = MasterElement().NumNode();
+      int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
+      if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
       RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
       RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
       RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
@@ -249,6 +251,8 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       // prepare integration and linearization of M, g (and possibly D) on intcells
       int nrow = SlaveElement().NumNode();
       int ncol = MasterElement().NumNode();
+      int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
+      if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
       RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
       RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
       RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
@@ -283,6 +287,8 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       int nrow = SlaveElement().NumNode();
       int ncol = MasterElement().NumNode();
       int nintrow = SlaveIntElement().NumNode();
+      int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
+      if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
       RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),nrow*Dim()));
       RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nintrow*Dim(),ncol*Dim()));
       RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nintrow));

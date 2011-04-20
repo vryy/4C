@@ -2903,7 +2903,13 @@ bool MORTAR::Coupling3d::IntegrateCells()
       int nrow = SlaveElement().NumNode();
       int ncol = MasterElement().NumNode();
       int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
-      if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
+      
+      // mortar matrix dimensions depend on the actual number of slave / master DOFs
+      // per node, which is NOT always identical to the problem dimension
+      // (e.g. fluid meshtying -> 4 DOFs per node in a 3D problem)
+      // -> thus the following check has been commented out (popp 04/2011) 
+      // if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
+      
       RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
       RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
       RCP<Epetra_SerialDenseVector> gseg = Teuchos::null;

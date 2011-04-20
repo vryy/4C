@@ -42,6 +42,7 @@ Maintainer: Alexander Popp
 #include "contact_integrator.H"
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_element.H"
+#include "../drt_mortar/mortar_node.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 
@@ -103,6 +104,8 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
   // do the overlap integration (integrate and linearize both M and gap and wear)
   int nrow = SlaveElement().NumNode();
   int ncol = MasterElement().NumNode();
+  int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
+  if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
   RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
   RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim()));
   RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
