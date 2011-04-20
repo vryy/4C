@@ -932,18 +932,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
         "no",
         "No",
         "NO",
-        "Current",
-        "Parameter",
-        "CurrentSym",
-        "ParameterSym"),
+        "Symmetric",
+        "Right"),
       tuple<int>(
         INPAR::STR::stc_none,
         INPAR::STR::stc_none,
         INPAR::STR::stc_none,
-        INPAR::STR::stc_curr,
-        INPAR::STR::stc_para,
         INPAR::STR::stc_currsym,
-        INPAR::STR::stc_parasym),
+        INPAR::STR::stc_curr),
       &sdyn);
 
 
@@ -4085,14 +4081,14 @@ bool DRT::INPUT::NeedToPrintEqualSign(const Teuchos::ParameterList& list)
 {
   const std::string printequalsign = PrintEqualSign();
   bool pes = false;
-  try
-  {
-    pes = list.get<bool>(printequalsign);
-  }
-  catch (Teuchos::Exceptions::InvalidParameter)
-  {
-    pes = false;
-  }
+//  try
+//  {
+//    pes = list.get<bool>(printequalsign);
+//  }
+//  catch (Teuchos::Exceptions::InvalidParameter)
+//  {
+//    pes = false;
+//  }
   return pes;
 }
 

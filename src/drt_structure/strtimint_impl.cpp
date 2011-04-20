@@ -1095,9 +1095,8 @@ void STR::TimIntImpl::UzawaLinearNewtonFull()
     {
       //cout<<"scaling constraint matrices"<<endl;
       constrT=LINALG::MLMultiply(*stcmat_,true,*constrT,false,false,false,true);
-      if ((stcscale_ == INPAR::STR::stc_currsym) or (stcscale_ == INPAR::STR::stc_parasym))
+      if (stcscale_ == INPAR::STR::stc_currsym)
       {
-        //cout<<"symmetric scaling constraint matrices"<<endl;
         constr = LINALG::MLMultiply(*stcmat_,true,*constr,false,false,false,true);;
       }
     }
@@ -2057,14 +2056,14 @@ void STR::TimIntImpl::STCPreconditioning()
 
   if(stcscale_!=INPAR::STR::stc_none)
   {
-    if (!stccompl_ or (stcscale_==INPAR::STR::stc_para or stcscale_==INPAR::STR::stc_parasym))
+    if (!stccompl_)
     {
       ComputeSTCMatrix();
       stccompl_=true;
     }
 
     stiff_ = MLMultiply(*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),*stcmat_,false,false,true);
-    if(stcscale_==INPAR::STR::stc_parasym or stcscale_==INPAR::STR::stc_currsym)
+    if(stcscale_==INPAR::STR::stc_currsym)
     {
       stiff_ = MLMultiply(*stcmat_,true,*(Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(stiff_)),false,false,false,true);
       Teuchos::RCP<Epetra_Vector> fressdc = LINALG::CreateVector(*dofrowmap_, true);
@@ -2140,7 +2139,6 @@ void STR::TimIntImpl::ComputeSTCMatrix()
         LINALG::PrintMatrixInMatlabFormat(fname,*((Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tmpstcmat))->EpetraMatrix()));
     }
     #endif
-
 
     stcmat_ = MLMultiply(*tmpstcmat,*stcmat_,false,false,true);
   }

@@ -364,10 +364,8 @@ namespace INPAR
     enum STC_Scale
     {
       stc_none=0, ///< no scaling
-      stc_curr, ///< scale with given factor in current config
-      stc_para, ///< scale with given factor in parameter space
-      stc_currsym,
-      stc_parasym
+      stc_curr,   ///< Non-symmetric STC
+      stc_currsym ///< Symmetric STC
     };
     
     /// map convergence check to enum term
@@ -384,16 +382,9 @@ namespace INPAR
       case stc_curr :
         return "stc_curr";
         break;
-      case stc_para :
-        return "stc_para";
-        break;
       case stc_currsym :
         return "stc_currsym";
         break;
-      case stc_parasym :
-        return "stc_parasym";
-        break;
-
       default :
         dserror("Cannot make string for stc method %d", name);
         return "";
