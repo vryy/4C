@@ -144,19 +144,16 @@ void EnsightWriter::WriteFiles()
   setcounter = 1;
   for (map<string,vector<int> >::const_iterator entry = filesetmap_.begin(); entry != filesetmap_.end(); ++entry)
   {
-    
     string key = entry->first;
-
-    if (entry->first!="geo")
+    if (entry->first=="geo")
     {
-      filesetnumbermap_[key] = setcounter;
+      filesetnumbermap_[key] = 1;
     }
     else
     {
       setcounter++;
-      filesetnumbermap_[key] = 1;
+      filesetnumbermap_[key] = setcounter;
     }
-
   }
 
   ///////////////////////////////////
@@ -1880,12 +1877,38 @@ string EnsightWriter::GetFileSectionStringFromFilesets(
   ) const
 {
   stringstream s;
-
   map<string,vector<int> >::const_iterator fileset;
+
+  // print filesets in increasing numbering, starting with "geo"
+
+  map<string,int>::const_iterator entry = filesetnumbermap_.find("geo");
+  if (entry == filesetnumbermap_.end())
+    dserror("key 'geo' not found!");
+  const int setnumber = entry->second;
+  if (setnumber != 1) dserror ("geometry file must have file set number 1");
+  fileset= filesetmap.find("geo");
+  vector<int> stepsperfile = fileset->second;
+  s << "file set:\t\t"<< setnumber << "\n";
+  if (stepsperfile.size() == 1)
+  {
+    s << "number of steps:\t"<< stepsperfile[0] << "\n\n";
+  }
+  else
+  {
+    for (unsigned int j = 0; j < stepsperfile.size(); ++j)
+    {
+      s << "filename index:\t"<< 1+j << "\n";
+      s << "number of steps:\t"<< stepsperfile[j] << "\n";
+    }
+    s << "\n";
+  }
 
   for (fileset = filesetmap.begin(); fileset != filesetmap.end(); ++fileset)
   {
     string key = fileset->first;
+    // skip geometry file since it was already considered above!
+    if (key=="geo") continue;
+
     map<string,int>::const_iterator entry = filesetnumbermap_.find(key);
     if (entry == filesetnumbermap_.end())
       dserror("key not found!");
