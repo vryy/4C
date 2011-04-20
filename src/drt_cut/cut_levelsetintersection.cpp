@@ -18,9 +18,9 @@ void GEO::CUT::LevelSetIntersection::AddElement( int eid,
 
   for ( int i=0; i<numnode; ++i )
   {
-    if ( lsv[i] <= 0 )
+    if ( lsv[i] <=   TOLERANCE )
       ltz = true;
-    if ( lsv[i] >= 0 )
+    if ( lsv[i] >= - TOLERANCE )
       gtz = true;
   }
 
