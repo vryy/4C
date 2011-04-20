@@ -52,6 +52,8 @@ Maintainer: Peter Gamnitzer
 #include "../drt_io/io_control.H"
 #endif
 
+#include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -170,6 +172,8 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // -------------------------------------------------------------------
   // care for periodic boundary conditions
   // -------------------------------------------------------------------
+
+  // TODO: ??
   pbcmapmastertoslave_ = params_.get<RCP<map<int,vector<int> > > >("periodic bc");
   discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
 
@@ -204,15 +208,21 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // a 'good' estimate
 
   if (not params_.get<int>("Simple Preconditioner",0) && not params_.get<int>("AMG BS Preconditioner",0)
-      && params_.get<int>("Mesh Tying")== INPAR::FLUID::no_meshtying)
+      && params_.get<int>("MESHTYING")== INPAR::FLUID::no_meshtying)
   {
     // initialize standard (stabilized) system matrix
     sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
   }
-  else if(params_.get<int>("Mesh Tying")!= INPAR::FLUID::no_meshtying)
+  else if(params_.get<int>("MESHTYING")!= INPAR::FLUID::no_meshtying)
   {
-    msht_ = params_.get<int>("Mesh Tying");
-    meshtying_ = Teuchos::rcp(new Meshtying(discret_, msht_));
+    msht_ = params_.get<int>("MESHTYING");
+
+    // define parameter list for meshtying
+    ParameterList mshtparams;
+    mshtparams.set("theta",theta_);
+    mshtparams.set<int>("mshtoption", msht_);
+
+    meshtying_ = Teuchos::rcp(new Meshtying(discret_, mshtparams, surfacesplitter_));
     sysmat_ = meshtying_->Setup();
     //meshtying_->OutputSetUp();
   }
@@ -1183,6 +1193,10 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         //----------------------------------------------------------------------
         // apply mixed/hybrid Dirichlet boundary conditions
         //----------------------------------------------------------------------
+        vector<DRT::Condition*> MHDcnd;
+        discret_->GetCondition("SurfaceMixHybDirichlet",MHDcnd);
+
+        if(MHDcnd.size()!=0)
         {
           ParameterList mhdbcparams;
 
@@ -1303,10 +1317,8 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     }
 
     //double dtsysmatsplit_=0.0;
-    if(msht_ == INPAR::FLUID::condensed_bmat or msht_ == INPAR::FLUID::condensed_smat)
-      meshtying_->Condensation(sysmat_, residual_);
-    else if (msht_ == INPAR::FLUID::sps_pc or msht_ == INPAR::FLUID::sps_coupled)
-      meshtying_->ResidualSaddlePointSystem(residual_);
+    if(msht_ != INPAR::FLUID::no_meshtying)
+      meshtying_->PrepareMeshtyingSystem(sysmat_, residual_);
 
     // blank residual DOFs which are on Dirichlet BC
     // We can do this because the values at the dirichlet positions
@@ -3871,22 +3883,21 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
 
     // get (squared) error values
     Teuchos::RCP<Epetra_SerialDenseVector> errors
+#if 0
+      = Teuchos::rcp(new Epetra_SerialDenseVector(numdim_+2));
+#else
       = Teuchos::rcp(new Epetra_SerialDenseVector(2));
-    //= Teuchos::rcp(new Epetra_SerialDenseVector(numdim_+1));
+#endif
 
     // call loop over elements (assemble nothing)
     discret_->EvaluateScalars(eleparams, errors);
     discret_->ClearState();
 
     double velerr = 0.0;
-    //double velerrx = 0.0;
-    //double velerry = 0.0;
     double preerr = 0.0;
 
     // for the L2 norm, we need the square root
     velerr = sqrt((*errors)[0]);
-    //velerrx = sqrt((*errors)[0]);
-    //velerry = sqrt((*errors)[1]);
     preerr = sqrt((*errors)[1]);
 
     if (myrank_ == 0)
@@ -3900,6 +3911,14 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
       // #include "../drt_io/io.H"
       // #include "../drt_io/io_control.H"
 
+      double velerrx = 0.0;
+      double velerry = 0.0;
+      double velerrz = 0.0;
+
+      velerrx = sqrt((*errors)[2]);
+      velerry = sqrt((*errors)[3]);
+      velerrz = sqrt((*errors)[4]);
+
       if ((step_==stepmax_) or (time_==maxtime_))// write results to file
       {
         ostringstream temp;
@@ -3910,7 +3929,7 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
         f << "#| " << simulation << "\n";
         f << "#| Step | Time | L2-error velocity x | L2-error velocity y  | L2-error pressure|\n";
-        f << step_ << " " << time_ << " " << velerrx << " " << velerry << " " << preerr << " " <<"\n";
+        f << step_ << " " << time_ << " " << velerr << " " << velerrx << " " << velerry << " " << velerrz << " " << preerr << " " <<"\n";
         f.flush();
         f.close();
       }
@@ -3923,7 +3942,7 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
       {
         std::ofstream f;
         f.open(fname.c_str());
-        f << step_ << " " << time_ << " " << velerrx << " " << velerry << " " << preerr << " " <<"\n";
+        f << step_ << " " << time_ << " " << velerr << " " << velerrx << " " << velerry << " " << velerrz << " " << preerr << " " <<"\n";
         f.flush();
         f.close();
       }
@@ -3931,7 +3950,7 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
       {
         std::ofstream f;
         f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
-        f << step_ << " " << time_ << " " << velerrx << " " << velerry << " " << preerr << " " <<"\n";
+        f << step_ << " " << time_ << " " << velerr << " " << velerrx << " " << velerry << " " << velerrz << " " << preerr << " " <<"\n";
         f.flush();
         f.close();
       }

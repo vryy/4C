@@ -132,6 +132,16 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     rcp(new LINALG::Solver(DRT::Problem::Instance()->FluidSolverParams(),
                            actdis->Comm(),
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
+
+  if(DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING")==INPAR::FLUID::condensed_bmat)
+  {
+    solver->PutSolverParamsToSubParams("PREC1",
+        DRT::Problem::Instance()->BGSPrecBlock1Params());
+
+    solver->PutSolverParamsToSubParams("PREC2",
+            DRT::Problem::Instance()->BGSPrecBlock2Params());
+  }
+
   if (genprob.probtyp != prb_fsi_xfem and
       genprob.probtyp != prb_fluid_xfem and
       genprob.probtyp != prb_combust)
@@ -240,7 +250,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   fluidtimeparams->set<string> ("Neumann inflow",fdyn.get<string>("NEUMANNINFLOW"));
 
   //--------------------------------------mesh tying for fluid
-  fluidtimeparams->set<int>("Mesh Tying",
+  fluidtimeparams->set<int>("MESHTYING",
       DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"));
 
   //--------------------------------------analytical error evaluation
