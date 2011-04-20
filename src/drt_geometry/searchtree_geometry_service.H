@@ -340,15 +340,24 @@ namespace GEO
   \param point                point to be examined
   \param minDistCoords        Coords of the nearest point
    */
-  void nearestObjectInNode(
+  void nearest3DObjectInNode(
 	  const RCP<DRT::Discretization>              dis,
-	  map<int, RCP<DRT::Element> >&				elements,
-      const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
-      const std::map<int, std::set<int> >&        elementList,
-      const LINALG::Matrix<3,1>&                  point,
-      LINALG::Matrix<3,1>&                        minDistCoords
-      );
-  
+	  map<int, RCP<DRT::Element> >&				        elements,
+	  const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+	  const std::map<int, std::set<int> >&        elementList,
+	  const LINALG::Matrix<3,1>&                  point,
+	  LINALG::Matrix<3,1>&                        minDistCoords
+  );
+
+  void nearest2DObjectInNode(
+    const RCP<DRT::Discretization>              dis,
+    map<int, RCP<DRT::Element> >&               elements,
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+    const std::map<int, std::set<int> >&        elementList,
+    const LINALG::Matrix<3,1>&                  point,
+    LINALG::Matrix<3,1>&                        minDistCoords
+  );
+
   /// returns the nearest node to the querypoint
   double nearestNodeInNode
   (
