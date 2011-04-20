@@ -140,12 +140,23 @@ void EnsightWriter::WriteFiles()
     }
   }
 
-  setcounter = 0;
+  // Paraview wants the geo file to be fileset number one
+  setcounter = 1;
   for (map<string,vector<int> >::const_iterator entry = filesetmap_.begin(); entry != filesetmap_.end(); ++entry)
   {
-    setcounter++;
+    
     string key = entry->first;
-    filesetnumbermap_[key] = setcounter;
+
+    if (entry->first!="geo")
+    {
+      filesetnumbermap_[key] = setcounter;
+    }
+    else
+    {
+      setcounter++;
+      filesetnumbermap_[key] = 1;
+    }
+
   }
 
   ///////////////////////////////////
