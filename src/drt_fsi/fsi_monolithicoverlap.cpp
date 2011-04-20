@@ -249,6 +249,10 @@ void FSI::MonolithicOverlap::SetupRHS(Epetra_Vector& f, bool firstcall)
 #ifdef FLUIDSPLITAMG
     rhs = FluidField().Interface().InsertOtherVector(rhs);
 #endif
+    Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
+    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
+
+
     Extractor().AddVector(*rhs,1,f);
 
     rhs = Teuchos::rcp(new Epetra_Vector(fgg.RowMap()));
@@ -258,6 +262,15 @@ void FSI::MonolithicOverlap::SetupRHS(Epetra_Vector& f, bool firstcall)
 
     rhs = FluidToStruct(rhs);
     rhs = StructureField().Interface().InsertFSICondVector(rhs);
+
+    zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
+    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
+
+    if (StructureField().GetSTCAlgo() == INPAR::STR::stc_currsym)
+    {
+      Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField().GetSTCMat();
+      stcmat->Multiply(true,*rhs,*rhs);
+    }
     Extractor().AddVector(*rhs,0,f);
   }
 
@@ -278,6 +291,13 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
   const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
   const ADAPTER::Coupling& coupsa = StructureAleCoupling();
   const ADAPTER::Coupling& coupfa = FluidAleCoupling();
+
+  // get info about STC feature
+  INPAR::STR::STC_Scale stcalgo = StructureField().GetSTCAlgo();
+  Teuchos::RCP<LINALG::SparseMatrix> stcmat = Teuchos::null;
+  // if STC is to be used, get STC matrix from strucutre field
+  if (stcalgo != INPAR::STR::stc_none)
+    stcmat = StructureField().GetSTCMat();
 
   Teuchos::RCP<LINALG::SparseMatrix> s = StructureField().SystemMatrix();
 
@@ -322,18 +342,55 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
                 true,
                 true);
 
-  mat.Assign(0,0,View,*s);
+  RCP<LINALG::SparseMatrix> lfgi = rcp(new LINALG::SparseMatrix(s->RowMap(),81,false));
   fgitransform_(fgi,
                 scale,
                 ADAPTER::Coupling::SlaveConverter(coupsf),
-                mat.Matrix(0,1));
+                *lfgi);
 
-  figtransform_(blockf->FullRowMap(),
-                blockf->FullColMap(),
-                fig,
-                timescale,
-                ADAPTER::Coupling::SlaveConverter(coupsf),
-                mat.Matrix(1,0));
+  lfgi->Complete(fgi.DomainMap(),s->RangeMap());
+  lfgi->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
+
+  if (stcalgo == INPAR::STR::stc_currsym)
+    lfgi = LINALG::MLMultiply(*stcmat, true, *lfgi, false, true, true, true);
+
+  #ifdef FLUIDSPLITAMG
+    mat.Matrix(0,1).UnComplete();
+    mat.Matrix(0,1).Add(*lfgi,false,1.,0.0);
+  #else
+    mat.Assign(0,1,View,*lfgi);
+  #endif
+
+  if (stcalgo == INPAR::STR::stc_none)
+  {
+    figtransform_(blockf->FullRowMap(),
+                  blockf->FullColMap(),
+                  fig,
+                  timescale,
+                  ADAPTER::Coupling::SlaveConverter(coupsf),
+                  mat.Matrix(1,0));
+  }
+  else
+  {
+    RCP<LINALG::SparseMatrix> lfig = rcp(new LINALG::SparseMatrix(fig.RowMap(),81,false));
+    figtransform_(blockf->FullRowMap(),
+                  blockf->FullColMap(),
+                  fig,
+                  timescale,
+                  ADAPTER::Coupling::SlaveConverter(coupsf),
+                  *lfig);
+
+    lfig->Complete(s->DomainMap(),fig.RangeMap());
+
+    lfig = LINALG::MLMultiply(*lfig,false,*stcmat, false, false, false,true);
+
+    #ifdef FLUIDSPLITAMG
+      mat.Matrix(1,0).UnComplete();
+      mat.Matrix(1,0).Add(*lfig,false,1.,0.0);
+    #else
+      mat.Assign(1,0,View,*lfig);
+    #endif
+  }
 
 #ifdef FLUIDSPLITAMG
   mat.Matrix(1,1).Add(fii,false,1.,0.0);
@@ -343,12 +400,36 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
   mat.Assign(1,1,View,fii);
 #endif
 
-  aigtransform_(a->FullRowMap(),
-                a->FullColMap(),
-                aig,
-                1.,
-                ADAPTER::Coupling::SlaveConverter(coupsa),
-                mat.Matrix(2,0));
+  if (stcalgo == INPAR::STR::stc_none)
+  {
+    aigtransform_(a->FullRowMap(),
+                  a->FullColMap(),
+                  aig,
+                  1.,
+                  ADAPTER::Coupling::SlaveConverter(coupsa),
+                  mat.Matrix(2,0));
+  }
+  else
+  {
+    RCP<LINALG::SparseMatrix> laig = rcp(new LINALG::SparseMatrix(aii.RowMap(),81,false));
+    aigtransform_(a->FullRowMap(),
+                  a->FullColMap(),
+                  aig,
+                  1.,
+                  ADAPTER::Coupling::SlaveConverter(coupsa),
+                  *laig);
+
+    laig->Complete(s->DomainMap(),laig->RangeMap());
+    laig->ApplyDirichlet( *(AleField().GetDBCMapExtractor()->CondMap()),false);
+
+    if (stcalgo != INPAR::STR::stc_none)
+    {
+      laig = LINALG::MLMultiply(*laig,false,*stcmat, false, false, false,true);
+    }
+
+    mat.Assign(2,0,View,*laig);
+  }
+
   mat.Assign(2,2,View,aii);
 
   /*----------------------------------------------------------------------*/
@@ -366,7 +447,9 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
 
     // reuse transform objects to add shape derivative matrices to structural blocks
 
-    figtransform_(blockf->FullRowMap(),
+    if (stcalgo == INPAR::STR::stc_none)
+    {
+      figtransform_(blockf->FullRowMap(),
                   blockf->FullColMap(),
                   fmig,
                   1.,
@@ -374,12 +457,37 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
                   mat.Matrix(1,0),
                   false,
                   true);
+    }
+    else
+    {
+      RCP<LINALG::SparseMatrix> lfmig = rcp(new LINALG::SparseMatrix(fmig.RowMap(),81,false));
+      figtransform_(blockf->FullRowMap(),
+                  blockf->FullColMap(),
+                  fmig,
+                  1.,
+                  ADAPTER::Coupling::SlaveConverter(coupsf),
+                  *lfmig,
+                  false,
+                  true);
+
+
+      lfmig->Complete(s->DomainMap(),fmig.RangeMap());
+
+      lfmig->ApplyDirichlet( *(FluidField().GetDBCMapExtractor()->CondMap()),false);
+
+      if (stcalgo != INPAR::STR::stc_none)
+      {
+        lfmig = LINALG::MLMultiply(*lfmig,false,*stcmat, false, false, false,true);
+      }
+
+      mat.Matrix(1,0).Add(*lfmig,false,1.0,1.0);
+    }
 
     fggtransform_(fmgg,
                   scale,
                   ADAPTER::Coupling::SlaveConverter(coupsf),
                   ADAPTER::Coupling::SlaveConverter(coupsf),
-                  mat.Matrix(0,0),
+                  *s,
                   false,
                   true);
 #endif
@@ -394,14 +502,51 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
                    mat.Matrix(1,2),
                    false);
 
-    fmgitransform_(fmgi,
-                   scale,
-                   ADAPTER::Coupling::SlaveConverter(coupsf),
-                   ADAPTER::Coupling::MasterConverter(coupfa),
-                   mat.Matrix(0,2),
-                   false,
-                   false);
+    {
+      RCP<LINALG::SparseMatrix> lfmgi = rcp(new LINALG::SparseMatrix(s->RowMap(),81,false));
+      fmgitransform_(fmgi,
+                     scale,
+                     ADAPTER::Coupling::SlaveConverter(coupsf),
+                     ADAPTER::Coupling::MasterConverter(coupfa),
+                     *lfmgi,//mat.Matrix(0,2),
+                     false,
+                     false);
+
+      lfmgi->Complete(aii.DomainMap(),s->RangeMap());
+      lfmgi->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),false);
+
+      if (stcalgo == INPAR::STR::stc_currsym)
+        lfmgi = LINALG::MLMultiply(*stcmat, true, *lfmgi, false, true, true, true);
+
+      #ifdef FLUIDSPLITAMG
+        mat.Matrix(0,2).UnComplete();
+        mat.Matrix(0,2).Add(*lfmgi,false,1.,0.0);
+      #else
+        mat.Assign(0,2,View,*lfmgi);
+      #endif
+
+    }
+
   }
+
+  s->Complete();
+
+  s->ApplyDirichlet( *(StructureField().GetDBCMapExtractor()->CondMap()),true);
+
+  //apply STC matrix on block (0,0)
+  if (stcalgo != INPAR::STR::stc_none)
+  {
+    s = LINALG::MLMultiply(*s, false, *stcmat, false, true, true, true);
+    if (stcalgo == INPAR::STR::stc_currsym)
+      s = LINALG::MLMultiply(*stcmat, true, *s, false, true, true, false);
+  }
+  else
+  {
+    s->UnComplete();
+  }
+
+  //finally assign structure block
+  mat.Matrix(0,0).Assign(View,*s);
 
   // done. make sure all blocks are filled.
   mat.Complete();
@@ -490,6 +635,13 @@ void FSI::MonolithicOverlap::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat,
     if (ay->Multiply(1.0, *acolsum_, *ay, 0.0))
       dserror("ale scaling failed");
 
+    // get info about STC feature and unscale solution if necessary
+    INPAR::STR::STC_Scale stcalgo = StructureField().GetSTCAlgo();
+    if (stcalgo != INPAR::STR::stc_none)
+    {
+      StructureField().GetSTCMat()->Multiply(false,*sy,*sy);
+    }
+
     Extractor().InsertVector(*sy,0,x);
     Extractor().InsertVector(*ay,2,x);
 
@@ -500,6 +652,11 @@ void FSI::MonolithicOverlap::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat,
       dserror("structure scaling failed");
     if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0))
       dserror("ale scaling failed");
+
+    if (stcalgo != INPAR::STR::stc_none)
+    {
+      StructureField().GetSTCMat()->Multiply(false,*sx,*sx);
+    }
 
     Extractor().InsertVector(*sx,0,b);
     Extractor().InsertVector(*ax,2,b);
@@ -569,6 +726,9 @@ void FSI::MonolithicOverlap::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat,
 
   Utils()->out().flags(flags);
 #endif
+
+  if (StructureField().GetSTCAlgo() != INPAR::STR::stc_none)
+    StructureField().SystemMatrix()->Reset();
 }
 
 
@@ -596,11 +756,28 @@ void FSI::MonolithicOverlap::SetupVector(Epetra_Vector &f,
     Teuchos::RCP<Epetra_Vector> modsv = StructureField().Interface().InsertFSICondVector(FluidToStruct(fcv));
     modsv->Update(1.0, *sv, fluidscale);
 
+    Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(modsv->Map(),true));
+    LINALG::ApplyDirichlettoSystem(modsv,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
+
+
+    if (StructureField().GetSTCAlgo() == INPAR::STR::stc_currsym)
+    {
+      Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField().GetSTCMat();
+      stcmat->Multiply(true,*modsv,*modsv);
+    }
+
     Extractor().InsertVector(*modsv,0,f);
   }
   else
   {
-    Extractor().InsertVector(*sv,0,f);
+    Teuchos::RCP<Epetra_Vector> modsv =  rcp(new Epetra_Vector(*sv));
+    if (StructureField().GetSTCAlgo() == INPAR::STR::stc_currsym)
+    {
+      Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField().GetSTCMat();
+      stcmat->Multiply(true,*sv,*modsv);
+    }
+
+    Extractor().InsertVector(*modsv,0,f);
   }
 
   Extractor().InsertVector(*fov,1,f);
@@ -808,5 +985,18 @@ void FSI::MonolithicOverlap::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vecto
   ax = a;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::MonolithicOverlap::PrepareTimeStep()
+{
+  IncrementTimeAndStep();
+
+  PrintHeader();
+
+  StructureField().SystemMatrix()->Reset();
+  StructureField().PrepareTimeStep();
+  FluidField().    PrepareTimeStep();
+  AleField().      PrepareTimeStep();
+}
 
 #endif

@@ -84,6 +84,9 @@ namespace FSI
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
 
+    /// start a new time step
+    virtual void PrepareTimeStep();
+
   protected:
 
     /// setup solver for global block system

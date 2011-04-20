@@ -66,6 +66,10 @@ namespace FSI
     /// read restart
     virtual void ReadRestart(int step);
 
+
+    /// start a new time step
+    virtual void PrepareTimeStep();
+
   protected:
 
     virtual void Update();
