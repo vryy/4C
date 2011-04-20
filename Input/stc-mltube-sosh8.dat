@@ -146,7 +146,7 @@ RESEVRYERGY                     0
 RESEVRYSTRS                     1
 RESTARTEVRY                     200
 RESULTDT                        0
-STC_SCALING                     CurrentSym
+STC_SCALING                     Symmetric
 STC_LAYER                       2
 TIMEADAPT                       0
 TIMESTEP                        2.50E-5
