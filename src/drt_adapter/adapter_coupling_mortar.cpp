@@ -366,15 +366,16 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   RCP<MORTAR::MortarInterface> interface = rcp(new MORTAR::MortarInterface(0, comm, dim, input, redundant));
 
   //  Pressure DoF are also transferred to MortarInterface
-  dim = dis.NumDof(dis.lRowNode(0));
+  int dof = dis.NumDof(dis.lRowNode(0));
+  //  Pressure DoF are not transferred to MortarInterface
   //dim = dis.NumDof(dis.lRowNode(0))-1;
 
-  if (dim == genprob.ndim)
+  if (dof == dim)
   {
     if(comm.MyPID()==0)
       cout << "Warning: pressure dof's are NOT coupled!! " << endl << endl;
   }
-  else if (dim == genprob.ndim+1)
+  else if (dof == dim+1)
   {
     if(comm.MyPID()==0)
       cout << "Pressure dof's are coupled!! " << endl << endl;
@@ -385,11 +386,11 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
   {
     DRT::Node* node = nodeiter->second;
-    vector<int> dofids(dim);
-    for (int k=0;k<dim;++k) dofids[k] = dis.Dof(node)[k];
+    vector<int> dofids(dof);
+    for (int k=0;k<dof;++k) dofids[k] = dis.Dof(node)[k];
     RCP<MORTAR::MortarNode> mrtrnode = rcp(
                 new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
-                    dim, dofids, false));
+                    dof, dofids, false));
 
     interface->AddMortarNode(mrtrnode);
   }
@@ -398,11 +399,11 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
   {
     DRT::Node* node = nodeiter->second;
-    vector<int> dofids(dim);
-    for (int k=0;k<dim;++k) dofids[k] = dis.Dof(node)[k];
+    vector<int> dofids(dof);
+    for (int k=0;k<dof;++k) dofids[k] = dis.Dof(node)[k];
     RCP<MORTAR::MortarNode> mrtrnode = rcp(
                 new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
-                    dim, dofids, true));
+                    dof, dofids, true));
 
     interface->AddMortarNode(mrtrnode);
   }
@@ -607,7 +608,7 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   // print warning message to screen
   if (overlap && comm.MyPID()==0)
   {
-    dserror( "Slave boundary and Dirichlet boundary conditions overlap!\n"
+    dserror("Slave boundary and Dirichlet boundary conditions overlap!\n"
         "This leads to over-constraint");
   }
 
