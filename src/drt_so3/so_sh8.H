@@ -307,7 +307,8 @@ protected:
     const INPAR::STR::STC_Scale stc_scaling,
     const int stc_layer,
     vector<int>& lm,
-    DRT::Discretization& discretization
+    DRT::Discretization& discretization,
+    bool calcinverse
   );
 
   //! Find parametric co-ordinate which directs in enforced thickness direction

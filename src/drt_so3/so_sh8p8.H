@@ -919,7 +919,8 @@ private:
     const INPAR::STR::STC_Scale stc_scaling,
     const int stc_layer,
     vector<int>& lm,
-    DRT::Discretization& discretization
+    DRT::Discretization& discretization,
+    bool calcinverse
   );
 }; // class So_sh8p8
 

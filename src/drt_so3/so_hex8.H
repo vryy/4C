@@ -490,12 +490,13 @@ protected:
     prestress_update,
     inversedesign_update,
     inversedesign_switch,
-    multi_readrestart,         //!< multi-scale: read restart on microscale
-    multi_newresultfile,       //!< multi-scale: define new result file (for inverse analysis)
-    calc_potential_stiff,       //!< volume interaction potential
-    calc_stc_matrix,            //! calculate scaled director matrix for thin shell structures
+    multi_readrestart,        //!< multi-scale: read restart on microscale
+    multi_newresultfile,      //!< multi-scale: define new result file (for inverse analysis)
+    calc_potential_stiff,     //!< volume interaction potential
+    calc_stc_matrix,          //! calculate scaled director matrix for thin shell structures
+    calc_stc_matrix_inverse,  //! calculate inverse of scaled director matrix for thin shell structures
     calc_struct_stifftemp,    //!< TSI specific: mechanical-thermal stiffness
-    calc_gobal_gpstresses_map // basically calc_struct_stress but with assembly of global gpstresses map
+    calc_gobal_gpstresses_map //! basically calc_struct_stress but with assembly of global gpstresses map
   };
 
   //! kinematic types of so_hex8 (default: total-lagrangian)

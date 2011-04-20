@@ -67,6 +67,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
   else if (action=="calc_struct_update_istep"  ) act = So_nurbs27::calc_struct_update_istep  ;
   else if (action=="calc_struct_update_imrlike") act = So_nurbs27::calc_struct_update_imrlike;
   else if (action=="calc_stc_matrix"           ) act = So_nurbs27::calc_stc_matrix           ;
+  else if (action=="calc_stc_matrix_inverse"   ) act = So_nurbs27::calc_stc_matrix_inverse   ;
   else if (action=="calc_struct_reset_istep"   ) act = So_nurbs27::calc_struct_reset_istep   ;
   else dserror("Unknown type of action '%s' for So_nurbs27",action.c_str());
   // what should the element do
@@ -222,7 +223,26 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
     }
     break;
 
-  case calc_stc_matrix:
+    case calc_stc_matrix_inverse:
+      {
+        const INPAR::STR::STC_Scale stc_scaling 
+          =
+          DRT::INPUT::get<INPAR::STR::STC_Scale>(params,"stc_scaling");
+        if (stc_scaling==INPAR::STR::stc_none)
+          dserror("To scale or not to scale, that's the query!");
+        else
+        {
+          CalcSTCMatrix(elemat1,
+                        stc_scaling,
+                        params.get<int>("stc_layer"),
+                        lm, 
+                        discretization,
+                        true);
+        }
+      }
+      break;
+
+    case calc_stc_matrix:
     {
       const INPAR::STR::STC_Scale stc_scaling 
         =
@@ -235,7 +255,8 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
                       stc_scaling,
                       params.get<int>("stc_layer"),
                       lm, 
-                      discretization);
+                      discretization,
+                      false);
       }
     }
     break;
@@ -256,7 +277,8 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
     const INPAR::STR::STC_Scale stc_scaling,
     const int                   stc_layer,
     vector<int>&                lm,
-    DRT::Discretization&        discretization
+    DRT::Discretization&        discretization,
+    bool                        do_inverse
 )
 {
 
@@ -478,14 +500,30 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
       ratio=(length_t+length_s)/(2.0*length_r);
     }
 
+  
   double C = 1.0;
-  if (stc_scaling==INPAR::STR::stc_currsym or stc_scaling==INPAR::STR::stc_parasym)
+  if (stc_scaling==INPAR::STR::stc_currsym)
   {
     C = ratio;
   }
   else
   {
     C = ratio*ratio;
+  }
+
+  
+  double fac1=0.0;
+  double fac2=0.0;
+  
+  if(do_inverse)
+  {
+    fac1=(1.0-C);
+    fac2=C;
+  }
+  else
+  {
+    fac1=(C-1.0)/(C);
+    fac2=1.0/C;
   }
   
   LINALG::Matrix<27,1> adjele(true);
@@ -494,12 +532,51 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
     {
       adjele(i,0) = nodes[i]->NumElement();
     }
+/*
+  // loop row midnode
+  for(int i=0; i<9; i++)
+    {
+      int dvi=3*midnodeids[i];
+      int dui=3*topnodeids[i];
+      int dwi=3*botnodeids[i];
+
+      for(int j=0; j<3; j++)
+      {
+        elemat1(dvi+j,dvi+j)+=fac2/adjele(midnodeids[i],0);
+        elemat1(dvi+j,dui+j)+=fac1/adjele(midnodeids[i],0);
+        elemat1(dvi+j,dwi+j)+=fac1/adjele(midnodeids[i],0);
+      }
+    }
+
+  // loop row botnode
+  for(int i=0; i<9; i++)
+    {
+      int dvi=3*botnodeids[i];
+
+      for(int j=0; j<3; j++)
+        {
+          elemat1(dvi+j,dvi+j)+=1.0/adjele(botnodeids[i],0);
+        }
+    }
+
+  // loop row topnode
+  for(int i=0; i<9; i++)
+    {
+      int dvi=3*topnodeids[i];
+      
+      for(int j=0; j<3; j++)
+        {
+          elemat1(dvi+j,dvi+j)+=1.0/adjele(topnodeids[i],0);
+        }
+    }
+
+*/
 
   // loop row midnode
   for(int i=0; i<9; i++)
     {
       int dvi=3*midnodeids[i];
-      
+
       for(int j=0; j<3; j++)
         elemat1(dvi+j,dvi+j)+=1.0/adjele(midnodeids[i],0);
     }
@@ -512,8 +589,8 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
       
       for(int j=0; j<3; j++)
         {
-          elemat1(dvi+j,dvi+j)+=1.0/C*1.0/adjele(botnodeids[i],0);
-          elemat1(dvi+j,dui+j)+=(C-1.0)/C*1.0/adjele(botnodeids[i],0);
+          elemat1(dvi+j,dvi+j)+=fac2*1.0/adjele(botnodeids[i],0);
+          elemat1(dvi+j,dui+j)+=fac1*1.0/adjele(botnodeids[i],0);
         }
     }
 
@@ -525,8 +602,8 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
       
       for(int j=0; j<3; j++)
         {
-          elemat1(dvi+j,dvi+j)+=1.0/C*1.0/adjele(topnodeids[i],0);
-          elemat1(dvi+j,dui+j)+=(C-1.0)/C*1.0/adjele(topnodeids[i],0);
+          elemat1(dvi+j,dvi+j)+=fac2*1.0/adjele(topnodeids[i],0);
+          elemat1(dvi+j,dui+j)+=fac1*1.0/adjele(topnodeids[i],0);
         }
     }
 

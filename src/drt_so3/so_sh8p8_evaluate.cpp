@@ -87,7 +87,8 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
   else if (action=="eas_set_multi")               act = So_hex8::eas_set_multi;
   else if (action=="calc_homog_dens")             act = So_hex8::calc_homog_dens;
   else if (action=="multi_readrestart")           act = So_hex8::multi_readrestart;
-  else if (action=="calc_stc_matrix")            act = So_hex8::calc_stc_matrix;
+  else if (action=="calc_stc_matrix")             act = So_hex8::calc_stc_matrix;
+  else if (action=="calc_stc_matrix_inverse")     act = So_hex8::calc_stc_matrix_inverse;
   else if (action=="calc_potential_stiff")        act = So_hex8::calc_potential_stiff;
   else
     {
@@ -543,9 +544,19 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
         dserror("To scale or not to scale, that's the querry!");
       else
       {
-        CalcSTCMatrix(elemat1,stc_scaling,params.get<int>("stc_layer"),lm, discretization);
+        CalcSTCMatrix(elemat1,stc_scaling,params.get<int>("stc_layer"),lm, discretization,false);
       }
-
+    }
+    break;
+    case calc_stc_matrix_inverse:
+    {
+      const INPAR::STR::STC_Scale stc_scaling = DRT::INPUT::get<INPAR::STR::STC_Scale>(params,"stc_scaling");
+      if (stc_scaling==INPAR::STR::stc_none)
+        dserror("To scale or not to scale, that's the query!");
+      else
+      {
+        CalcSTCMatrix(elemat1,stc_scaling,params.get<int>("stc_layer"),lm, discretization,true);
+      }
     }
     break;
     // compute additional stresses due to intermolecular potential forces
@@ -2319,11 +2330,12 @@ void DRT::ELEMENTS::So_sh8p8::CalcSTCMatrix
   const INPAR::STR::STC_Scale stc_scaling,
   const int stc_layer,
   vector<int>& lm,
-  DRT::Discretization& discretization
+  DRT::Discretization& discretization,
+  bool calcinverse
 )
 {
   double stc_fact=0.0;
-  if (stc_scaling==INPAR::STR::stc_currsym or stc_scaling==INPAR::STR::stc_parasym)
+  if (stc_scaling==INPAR::STR::stc_currsym)
   {
     stc_fact = sqrt(sosh8_calcaspectratio());
   }
@@ -2332,11 +2344,27 @@ void DRT::ELEMENTS::So_sh8p8::CalcSTCMatrix
     stc_fact = sosh8_calcaspectratio();
   }
 
-  if (stc_scaling==INPAR::STR::stc_para or stc_scaling==INPAR::STR::stc_parasym)
+  // Compute different scaling factors for STC or Inv(STC)
+  double factor1=0.0;
+  double factor2=0.0;
+  double factor3=0.0;
+  double factor4=0.0;
+  if (!calcinverse)
   {
-    dserror("STC in material configuration in Sosh8p8 not implemented!");
+    factor1=(1.0/stc_fact+(stc_fact-1.0)/(2.0*stc_fact));
+    factor2=(stc_fact-1.0)/(2.0*stc_fact);
+    factor3=(1.0/stc_fact);
+    factor4=(1.0-1.0/stc_fact);
   }
   else
+  {
+    factor1=(1.0+stc_fact)/2.0;
+    factor2=(1.0-stc_fact)/2.0;
+    factor3=stc_fact;
+    factor4=1-stc_fact;
+  }
+
+  if (stc_scaling==INPAR::STR::stc_curr or stc_scaling==INPAR::STR::stc_currsym)
   {
 
     LINALG::Matrix<NUMDOF_,1> adjele(true);
@@ -2533,6 +2561,8 @@ void DRT::ELEMENTS::So_sh8p8::CalcSTCMatrix
       }
     }
   }
+  else
+    dserror("Chosen STC_SCALING not supported!");
 }
 
 

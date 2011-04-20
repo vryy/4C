@@ -501,6 +501,80 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
                                       actdis->Comm(),
                                       DRT::Problem::Instance()->ErrorFile()->Handle()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
+  
+  if (solver->Params().isSublist("Aztec Parameters") 
+      && 
+//      false &&
+      solver->Params().isSublist("ML Parameters")
+      &&
+      DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(*sdyn,"STC_SCALING")!=INPAR::STR::stc_none) 
+    { 
+      ParameterList& mllist = solver->Params().sublist("ML Parameters");
+      RCP<vector<double> > ns = mllist.get<RCP<vector<double> > >("nullspace");
+      
+      const int size=actdis->DofRowMap()->NumMyElements();
+      
+      // extract the six nullspace vectors corresponding to the modes
+      // trans x
+      // trans y
+      // trans z
+      // rot x
+      // rot y
+      // rot z
+      // Note: We assume 3d here!
+      
+      Teuchos::RCP<Epetra_Vector> nsv1=
+          rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[0])));
+      Teuchos::RCP<Epetra_Vector> nsv2=
+          rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[size])));
+      Teuchos::RCP<Epetra_Vector> nsv3=
+          rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[2*size])));
+      Teuchos::RCP<Epetra_Vector> nsv4=
+          rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[3*size])));
+      Teuchos::RCP<Epetra_Vector> nsv5=
+          rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[4*size])));
+      Teuchos::RCP<Epetra_Vector> nsv6=
+          rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[5*size])));
+      
+     
+      //prepare matrix for scaled thickness business of thin shell structures
+      Teuchos::RCP<LINALG::SparseMatrix> stcinv=
+        Teuchos::rcp(new LINALG::SparseMatrix(*actdis->DofRowMap(), 81, true, true));
+
+      stcinv->Zero();
+      // create the parameters for the discretization
+      Teuchos::ParameterList p;
+      // action for elements
+      const std::string action = "calc_stc_matrix_inverse";
+      p.set("action", action);
+      p.set<int>("stc_scaling",DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(*sdyn,"STC_SCALING"));
+      p.set("stc_layer",1);
+
+      actdis-> Evaluate(p, stcinv, Teuchos::null,  Teuchos::null, Teuchos::null, Teuchos::null);
+
+      stcinv->Complete();
+      
+      //prepare matrix for scaled thickness business of thin shell structures
+      Teuchos::RCP<LINALG::SparseMatrix> stc=
+        Teuchos::rcp(new LINALG::SparseMatrix(*actdis->DofRowMap(), 81, true, true));
+
+      Teuchos::RCP<Epetra_Vector> temp = 
+          LINALG::CreateVector(*(actdis->DofRowMap()),true);
+      
+      stcinv->Multiply(false,*nsv1,*temp);
+      nsv1->Update(1.0,*temp,0.0);
+      stcinv->Multiply(false,*nsv2,*temp);
+      nsv2->Update(1.0,*temp,0.0);
+      stcinv->Multiply(false,*nsv3,*temp);
+      nsv3->Update(1.0,*temp,0.0);
+      stcinv->Multiply(false,*nsv4,*temp);
+      nsv4->Update(1.0,*temp,0.0);
+      stcinv->Multiply(false,*nsv5,*temp);
+      nsv5->Update(1.0,*temp,0.0);
+      stcinv->Multiply(false,*nsv6,*temp);
+      nsv6->Update(1.0,*temp,0.0);
+
+    }
 
   // Checks in case of multi-scale simulations
 
