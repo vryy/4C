@@ -1,7 +1,7 @@
 #ifdef CCADISCRET
 
-#ifndef FSI_MONOLITHICOVERLAP_H
-#define FSI_MONOLITHICOVERLAP_H
+#ifndef FSI_MONOLITHICFLUIDSPLIT_H
+#define FSI_MONOLITHICFLUIDSPLIT_H
 
 #include "fsi_monolithic.H"
 #include "fsi_overlapprec.H"
@@ -44,10 +44,10 @@ namespace FSI
     \author u.kue
     \date 02/08
    */
-  class MonolithicOverlap : public BlockMonolithic
+  class MonolithicFluidSplit : public BlockMonolithic
   {
   public:
-    explicit MonolithicOverlap(Epetra_Comm& comm);
+    explicit MonolithicFluidSplit(Epetra_Comm& comm);
 
     /*! do the setup for the monolithic system
 

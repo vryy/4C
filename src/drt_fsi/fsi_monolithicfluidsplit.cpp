@@ -2,7 +2,7 @@
 
 #include "../drt_lib/standardtypes_cpp.H"
 
-#include "fsi_monolithicoverlap.H"
+#include "fsi_monolithifluidsplit.H"
 #include "fsi_debugwriter.H"
 #include "fsi_statustest.H"
 #include "fsi_nox_linearsystem_bgs.H"
@@ -26,14 +26,14 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::MonolithicOverlap::MonolithicOverlap(Epetra_Comm& comm)
+FSI::MonolithicFluidSplit::MonolithicFluidSplit(Epetra_Comm& comm)
   : BlockMonolithic(comm)
 {
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::SetupSystem()
+void FSI::MonolithicFluidSplit::SetupSystem()
 {
 
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
@@ -217,9 +217,9 @@ void FSI::MonolithicOverlap::SetupSystem()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::SetupRHS(Epetra_Vector& f, bool firstcall)
+void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::SetupRHS");
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFluidSplit::SetupRHS");
 
   SetupVector(f,
               StructureField().RHS(),
@@ -281,9 +281,9 @@ void FSI::MonolithicOverlap::SetupRHS(Epetra_Vector& f, bool firstcall)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
+void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::SetupSystemMatrix");
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFluidSplit::SetupSystemMatrix");
 
   // extract Jacobian matrices and put them into composite system
   // matrix W
@@ -555,9 +555,9 @@ void FSI::MonolithicOverlap::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& ma
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
+void FSI::MonolithicFluidSplit::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::InitialGuess");
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFluidSplit::InitialGuess");
 
   SetupVector(*ig,
               StructureField().InitialGuess(),
@@ -569,7 +569,7 @@ void FSI::MonolithicOverlap::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
+void FSI::MonolithicFluidSplit::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsidyn,"INFNORMSCALING");
@@ -620,7 +620,7 @@ void FSI::MonolithicOverlap::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epe
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
+void FSI::MonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsidyn,"INFNORMSCALING");
@@ -734,7 +734,7 @@ void FSI::MonolithicOverlap::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::SetupVector(Epetra_Vector &f,
+void FSI::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
                                          Teuchos::RCP<const Epetra_Vector> sv,
                                          Teuchos::RCP<const Epetra_Vector> fv,
                                          Teuchos::RCP<const Epetra_Vector> av,
@@ -788,7 +788,7 @@ void FSI::MonolithicOverlap::SetupVector(Epetra_Vector &f,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::LinearSystem>
-FSI::MonolithicOverlap::CreateLinearSystem(ParameterList& nlParams,
+FSI::MonolithicFluidSplit::CreateLinearSystem(ParameterList& nlParams,
                                            NOX::Epetra::Vector& noxSoln,
                                            Teuchos::RCP<NOX::Utils> utils)
 {
@@ -845,7 +845,7 @@ FSI::MonolithicOverlap::CreateLinearSystem(ParameterList& nlParams,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<NOX::StatusTest::Combo>
-FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
+FSI::MonolithicFluidSplit::CreateStatusTest(Teuchos::ParameterList& nlParams,
                                          Teuchos::RCP<NOX::Epetra::Group> grp)
 {
   // Create the convergence tests
@@ -947,12 +947,12 @@ FSI::MonolithicOverlap::CreateStatusTest(Teuchos::ParameterList& nlParams,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+void FSI::MonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
                                                  Teuchos::RCP<const Epetra_Vector>& sx,
                                                  Teuchos::RCP<const Epetra_Vector>& fx,
                                                  Teuchos::RCP<const Epetra_Vector>& ax)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::ExtractFieldVectors");
+  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicFluidSplit::ExtractFieldVectors");
 
   // We have overlap at the interface. Thus we need the interface part of the
   // structure vector and append it to the fluid and ale vector. (With the
@@ -987,7 +987,7 @@ void FSI::MonolithicOverlap::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vecto
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicOverlap::PrepareTimeStep()
+void FSI::MonolithicFluidSplit::PrepareTimeStep()
 {
   IncrementTimeAndStep();
 
