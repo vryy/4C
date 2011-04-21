@@ -2058,19 +2058,19 @@ void StatMechManager::UpdateForceSensors(vector<int>& sensornodes, int oscdir)
 	// loop over DOFs subjected to oscillation (by DBC)
 	for (int i=0; i<(int)sensornodes.size(); i++)
 	{
-		// check if node is on proc (if not, continue)
-		bool havenode = discret_.HaveGlobalNode(sensornodes.at(i));
-		if (!havenode)
-			continue;
-
-		// get the node
-		DRT::Node* actnode = discret_.gNode(sensornodes.at(i));
-		// get the GID of the DOF of the oscillatory motion
-		int gid = discret_.Dof(0, actnode)[oscdir];
-		// now, get the LID
-		int lid = discret_.DofRowMap()->LID(gid);
-		// activate force sensor at lid-th position
-		(*forcesensor_)[lid] = 1.0;
+		/* only sum up force if node is on NodeRowMap(). By this, we can later just
+		 * sum up the single average forces to one global force.*/
+		if(discret_.NodeRowMap()->LID(sensornodes[i])>-0.9)
+		{
+			// get the node
+			DRT::Node* actnode = discret_.gNode(sensornodes.at(i));
+			// get the GID of the DOF of the oscillatory motion
+			int gid = discret_.Dof(0, actnode)[oscdir];
+			// now, get the LID
+			int lid = discret_.DofColMap()->LID(gid);
+			// activate force sensor at lid-th position
+			(*forcesensor_)[lid] = 1.0;
+		}
 	}
 } // StatMechManager::UpdateForceSensors
 
