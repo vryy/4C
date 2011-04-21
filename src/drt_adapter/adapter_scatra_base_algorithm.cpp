@@ -73,14 +73,19 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   const Teuchos::ParameterList& scatradyn =
     DRT::Problem::Instance()->ScalarTransportDynamicParams();
 
-  // print out default parameters of scalar transport parameter list
+  // print out default parameters of scalar transport parameter lists
   if (actdis->Comm().MyPID()==0)
   {
     DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn);
     DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn.sublist("STABILIZATION"));
     DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn.sublist("NONLINEAR"));
-//    DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn.sublist("LEVELSET"));
+    /*
+    const Teuchos::ParameterList& solverparams =
+        DRT::Problem::Instance()->ScalarTransportSolverParams();
+    DRT::INPUT::PrintDefaultParameters(std::cout, solverparams);
+    */
   }
+
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
@@ -149,6 +154,16 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
       // switch to the SIMPLE(R) algorithms
       solver->PutSolverParamsToSubParams("SIMPLER",
          DRT::Problem::Instance()->ScalarTransportElectricPotentialSolverParams());
+
+      // print unused solver parameters to screen
+      /*
+      if (actdis->Comm().MyPID()==0)
+      {
+        const Teuchos::ParameterList& solverparams2
+        = DRT::Problem::Instance()->ScalarTransportElectricPotentialSolverParams();
+        DRT::INPUT::PrintDefaultParameters(std::cout, solverparams2);
+      }
+      */
     }
   }
 
