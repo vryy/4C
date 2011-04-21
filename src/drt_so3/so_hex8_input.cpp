@@ -23,6 +23,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/plasticneohooke.H"
+#include "../drt_mat/plasticlinelast.H"
 #include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -66,6 +67,9 @@ bool DRT::ELEMENTS::So_hex8::ReadElement(const std::string& eletype,
     holzcard->Setup(NUMGPT_SOH8, linedef);
   } else if (Material()->MaterialType() == INPAR::MAT::m_plneohooke){
     MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(Material().get());
+    plastic->Setup(NUMGPT_SOH8);
+  } else if (Material()->MaterialType() == INPAR::MAT::m_pllinelast){
+    MAT::PlasticLinElast* plastic = static_cast <MAT::PlasticLinElast*>(Material().get());
     plastic->Setup(NUMGPT_SOH8);
   } else if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular){
     MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(Material().get());

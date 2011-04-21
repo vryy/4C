@@ -24,6 +24,7 @@ Maintainer: Lena Wiechert
 #include "micromaterial.H"
 #include "neohooke.H"
 #include "plasticneohooke.H"
+#include "plasticlinelast.H"
 #include "aaaneohooke.H"
 #include "aaaneohooke_stopro.H"
 #include "aaagasser.H"
@@ -182,6 +183,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::PlasticNeoHooke(curmat));
     MAT::PAR::PlasticNeoHooke* params = static_cast<MAT::PAR::PlasticNeoHooke*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_pllinelast:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::PlasticLinElast(curmat));
+    MAT::PAR::PlasticLinElast* params = static_cast<MAT::PAR::PlasticLinElast*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_aaaneohooke:

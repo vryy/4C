@@ -426,6 +426,23 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+  /*----------------------------------------------------------------------*/
+  // Plastic linear elastic St.Venant Kirchhoff / von Mises
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_Struct_PlasticLinElast",
+                                            "elastic St.Venant Kirchhoff / plastic von Mises material",
+                                            INPAR::MAT::m_pllinelast));
+
+    AddNamedReal(m,"YOUNG","Young's modulus");
+    AddNamedReal(m,"NUE","Poisson's ratio");
+    AddNamedReal(m,"DENS","mass density");
+    AddNamedReal(m,"YIELD","yield stress");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+
   /*--------------------------------------------------------------------*/
   // aneurysm wall material according to Raghavan and Vorp [2000]
   {

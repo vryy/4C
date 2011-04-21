@@ -45,6 +45,7 @@ namespace INPAR
       m_pl_por_mises,///< porous von Mises material
       m_neohooke,    ///< Neo-Hooke material
       m_plneohooke,  ///< Neo-Hooke elasticy and von Mises plasticity
+      m_pllinelast,  ///< linear elasticy (St.Venant Kirchhoff) and von Mises plasticity
       m_aaaneohooke, ///< quasi Neo-Hooke material for aneurysmatic artery wall
       m_aaaneohooke_stopro, ///< quasi Neo-Hooke material for aneurysmatic artery wall, with stochastic mat params
       m_aaagasser,   ///< ogden-like Gasser material for aaa thrombus

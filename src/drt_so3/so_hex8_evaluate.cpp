@@ -26,6 +26,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_mat/plasticneohooke.H"
+#include "../drt_mat/plasticlinelast.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/growth_ip.H"
@@ -405,6 +406,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
         plastic->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_pllinelast)
+      {
+        MAT::PlasticLinElast* plastic = static_cast <MAT::PlasticLinElast*>(mat.get());
+        plastic->Update();
+      }
       else if (mat->MaterialType() == INPAR::MAT::m_growth)
       {
         MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
@@ -486,6 +492,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
         plastic->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_pllinelast)
+      {
+        MAT::PlasticLinElast* plastic = static_cast <MAT::PlasticLinElast*>(mat.get());
+        plastic->Update();
+      }
       else if (mat->MaterialType() == INPAR::MAT::m_growth)
       {
         MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
@@ -535,6 +546,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       else if (mat->MaterialType() == INPAR::MAT::m_plneohooke)
       {
         MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
+        plastic->Update();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_pllinelast)
+      {
+        MAT::PlasticLinElast* plastic = static_cast <MAT::PlasticLinElast*>(mat.get());
         plastic->Update();
       }
     }

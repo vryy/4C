@@ -223,7 +223,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--REDUCED DIMENSIONAL AIRWAYS SOLVER", *list);
   reader.ReadGidSection("--BGS PRECONDITIONER BLOCK 1", *list);
   reader.ReadGidSection("--BGS PRECONDITIONER BLOCK 2", *list);
-
+  reader.ReadGidSection("--TSI MONOLITHIC SOLVER", *list);
 
   // a special section for condition names that contains a list of key-integer
   // pairs but is not validated since the keys are arbitrary.

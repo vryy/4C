@@ -282,6 +282,7 @@ public:
   const Teuchos::ParameterList& ReducedDAirwaySolverParams() const { return getParameterList()->sublist("REDUCED DIMENSIONAL AIRWAYS SOLVER"); }
   const Teuchos::ParameterList& BGSPrecBlock1Params() const { return getParameterList()->sublist("BGS PRECONDITIONER BLOCK 1"); }
   const Teuchos::ParameterList& BGSPrecBlock2Params() const { return getParameterList()->sublist("BGS PRECONDITIONER BLOCK 2"); }
+  const Teuchos::ParameterList& TSIMonolithicSolverParams() const { return getParameterList()->sublist("TSI MONOLITHIC SOLVER"); }
 
   //@}
 

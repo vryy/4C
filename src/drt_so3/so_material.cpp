@@ -57,6 +57,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/elasthyper.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/plasticneohooke.H"
+#include "../drt_mat/plasticlinelast.H"
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
@@ -456,6 +457,17 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       //if (!plastic->Initialized())
       //  plastic->Setup(NUMGPT_SOH8);
       plastic->Evaluate(defgrd,gp,params,cmat,stress);
+      *density = plastic->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_pllinelast: /*------------- Plastic linear elastic Material */
+    {
+      MAT::PlasticLinElast* plastic = static_cast <MAT::PlasticLinElast*>(mat.get());
+      /* Initialization moved to element input. So we can be sure, that material is initialized. */
+      // if (!plastic->Initialized())
+      //  plastic->Setup(NUMGPT_SOH8);
+      plastic->Evaluate(*glstrain,gp,params,*cmat,*stress);
       *density = plastic->Density();
       return;
       break;
