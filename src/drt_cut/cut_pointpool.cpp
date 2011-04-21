@@ -243,3 +243,23 @@ void GEO::CUT::OctTreeNode::ResetOutsidePoints()
     }
   }
 }
+
+void GEO::CUT::OctTreeNode::Print( int level, std::ostream & stream )
+{
+  if ( not IsLeaf() )
+  {
+    for ( int i=0; i<8; ++i )
+    {
+      nodes_[i]->Print( level+1, stream );
+    }
+  }
+  else
+  {
+    for ( std::set<Teuchos::RCP<Point>, PointPidLess>::iterator i=points_.begin(); i!=points_.end(); ++i )
+    {
+      Point * p = &**i;
+      p->Plot( stream );
+    }
+    stream << "\n";
+  }
+}

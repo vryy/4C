@@ -269,6 +269,7 @@ void cutmesh( GEO::CUT::Mesh & mesh )
 
 
 SimpleWrapper::SimpleWrapper()
+  : side_count_( 0 )
 {
   mesh_ = new GEO::CUT::MeshIntersection;
 }
@@ -524,7 +525,8 @@ void SimpleWrapper::CreateElementSides( DRT::Element::DiscretizationType distype
 
 void SimpleWrapper::CreateSide( DRT::Element::DiscretizationType distype, const Epetra_SerialDenseMatrix & xyze )
 {
-  int & id = side_count_[distype];
+  //int & id = side_count_[distype];
+  int & id = side_count_;
   id += 1;
 
   std::vector<int> nids;

@@ -27,7 +27,7 @@ GEO::CUT::Element* create_tet4( GEO::CUT::Mesh & mesh )
   return create_tet4( mesh, xyze );
 }
 
-GEO::CUT::Side* create_quad4( GEO::CUT::Mesh & mesh, double x, double dx, double dz )
+GEO::CUT::Side* create_quad4( GEO::CUT::Mesh & mesh, double x, double dx, double dz, bool reverse=false )
 {
   Epetra_SerialDenseMatrix xyze( 3, 4 );
 
@@ -46,6 +46,13 @@ GEO::CUT::Side* create_quad4( GEO::CUT::Mesh & mesh, double x, double dx, double
   xyze( 0, 3 ) =  x - dx;
   xyze( 1, 3 ) =  1.5;
   xyze( 2, 3 ) = -0.5 - dz;
+
+  if ( reverse )
+  {
+    std::swap( xyze( 0, 1 ), xyze( 0, 3 ) );
+    std::swap( xyze( 1, 1 ), xyze( 1, 3 ) );
+    std::swap( xyze( 2, 1 ), xyze( 2, 3 ) );
+  }
 
   return create_quad4( mesh, xyze );
 }
@@ -411,7 +418,7 @@ void test_hex8_multiple()
   for ( int i=1; i<10; ++i )
   {
     double x = 0.1*i;
-    GEO::CUT::Side * s = create_quad4( mesh, x, 0.1, 0 );
+    GEO::CUT::Side * s = create_quad4( mesh, x, 0.1, 0, i%2==0 );
 
     //mesh.Status();
 
@@ -899,7 +906,7 @@ void test_hex8_hex8_durchstoss()
 
   w.CreateHex8Sides( xyze );
 
-#if 0
+#if 1
   // add second cut to be able to find nodal positions
 
   xyze( 0, 0 ) = -0.1;
@@ -1142,6 +1149,26 @@ void test_hex8_hex8_sideintersection()
   xyze( 2, 7 ) = 0.5;
 
   w.CreateHex8Sides( xyze );
+
+  // add second cut to be able to find nodal positions
+
+  xyze( 0, 0 ) = -1.1;
+  xyze( 1, 0 ) = -0.9;
+  xyze( 2, 0 ) = -1.1;
+
+  xyze( 0, 1 ) =  1.1;
+  xyze( 1, 1 ) = -0.9;
+  xyze( 2, 1 ) = -1.1;
+
+  xyze( 0, 2 ) =  1.1;
+  xyze( 1, 2 ) = -1.1;
+  xyze( 2, 2 ) = -0.9;
+
+  xyze( 0, 3 ) = -1.1;
+  xyze( 1, 3 ) = -1.1;
+  xyze( 2, 3 ) = -0.9;
+
+  w.CreateQuad4( xyze );
 
   w.Status();
   w.Cut();

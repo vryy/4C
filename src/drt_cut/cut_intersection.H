@@ -72,7 +72,9 @@ public:
 
 private:
 
-  bool ComputeDistance( Point * p );
+  double ComputeDistance( Point * p );
+
+  bool ComputeCut( Edge * e1, Edge * e2 );
 
   /// add cut point that is a node to all edges and sides it touches
   void InsertCut( Node * n, std::set<Point*, PointPidLess> & cuts )
@@ -83,9 +85,14 @@ private:
   /// test if we are on any edge of the cut side and add those edges
   void TestSideEdges( Point * p, const LINALG::Matrix<3,1> & xsi )
   {
+    std::vector<Edge*> edges;
+    TestSideEdges( p, xsi, edges );
+  }
+
+  void TestSideEdges( Point * p, const LINALG::Matrix<3,1> & xsi, std::vector<Edge*> & edges )
+  {
     if ( AtEdge() )
     {
-      std::vector<Edge*> edges;
       side_.EdgeAt( xsi( 0, 0 ), xsi( 1, 0 ), edges );
       for ( std::vector<Edge*>::iterator i=edges.begin(); i!=edges.end(); ++i )
       {
@@ -116,12 +123,17 @@ template <DRT::Element::DiscretizationType edgetype,
 >
 bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect( std::set<Point*, PointPidLess> & cuts )
 {
-  ComputeDistance( edge_.BeginNode()->point() );
-  if ( fabs( xsi_( 2, 0 ) ) < TOLERANCE and SurfaceWithinLimits() )
+  bool begin_within_limits = false;
+  bool end_within_limits = false;
+
+  LINALG::Matrix<3,1> begin_xsi;
+  LINALG::Matrix<3,1> end_xsi;
+
+  if ( ComputeDistance( edge_.BeginNode()->point() ) < TOLERANCE and SurfaceWithinLimits() )
   {
-    LINALG::Matrix<3,1> begin_xsi( xsi_ );
-    ComputeDistance( edge_.EndNode()->point() );
-    if ( fabs( xsi_( 2, 0 ) ) < TOLERANCE and SurfaceWithinLimits() )
+    begin_xsi = xsi_;
+    begin_within_limits = true;
+    if ( ComputeDistance( edge_.EndNode()->point() ) < TOLERANCE and SurfaceWithinLimits() )
     {
       InsertCut( edge_.BeginNode(), cuts );
       InsertCut( edge_.EndNode()  , cuts );
@@ -129,6 +141,11 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect(
       TestSideEdges( edge_.EndNode()  ->point(), xsi_ );
       return true;
     }
+  }
+  else if ( ComputeDistance( edge_.EndNode()->point() ) < TOLERANCE and SurfaceWithinLimits() )
+  {
+    end_xsi = xsi_;
+    end_within_limits = true;
   }
 
   if ( ComputeCurveSurfaceIntersection() )
@@ -168,6 +185,69 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect(
       }
     }
   }
+  else
+  {
+    bool success = false;
+    Point * nodalpoint = NULL;
+
+    if ( begin_within_limits )
+    {
+      InsertCut( edge_.BeginNode(), cuts );
+
+      std::vector<Edge*> cut_edges;
+      nodalpoint = edge_.BeginNode()->point();
+      TestSideEdges( nodalpoint, begin_xsi, cut_edges );
+
+      success = true;
+    }
+    else if ( end_within_limits )
+    {
+      InsertCut( edge_.EndNode(), cuts );
+
+      std::vector<Edge*> cut_edges;
+      nodalpoint = edge_.EndNode()->point();
+      TestSideEdges( nodalpoint, end_xsi, cut_edges );
+
+      success = true;
+    }
+
+    // Search all side edges for a cut. We could cross the side.
+
+    const std::vector<Edge*> & side_edges = side_.Edges();
+    for ( std::vector<Edge*>::const_iterator i=side_edges.begin(); i!=side_edges.end(); ++i )
+    {
+      Edge * e = *i;
+
+      if ( nodalpoint!=NULL and nodalpoint->IsCut( e ) )
+      {
+        // No need to do anything, since the side has a closed cycle of
+        // edges. Any matching nodes will be found.
+        success = true;
+        continue;
+      }
+
+      std::set<Point*> cut_points;
+      edge_.GetCutPoints( e, cut_points );
+      if ( cut_points.size() > 0 )
+      {
+        // Nothing to be done. There are cut points between these edges. We
+        // cannot find new ones.
+      }
+      else if ( ComputeCut( e, &edge_ ) )
+      {
+        Point * p = Point::NewPoint( mesh_, x_.A(), xsi_( 2 ), &edge_, &side_ );
+        p->AddEdge( e );
+        cuts.insert( p );
+        success = true;
+      }
+      else
+      {
+      }
+    }
+
+    return success;
+  }
+
   return false;
 }
 
@@ -349,7 +429,7 @@ template <DRT::Element::DiscretizationType edgetype,
           int numNodesLine,
           int numNodesSurface
 >
-bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeDistance( Point * p )
+double Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeDistance( Point * p )
 {
   LINALG::Matrix<numNodesSurface,1> surfaceFunct;
   LINALG::Matrix<2,numNodesSurface> surfaceDeriv1;
@@ -465,11 +545,11 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeDis
     res.push_back( solres );
 #endif
 
-    if ( ( fabs( solres ) > std::numeric_limits<double>::min() and
-           fabs( residual / solres ) < tol ) or
-         fabs( residual ) < tol )
+    if ( ( solres >= std::numeric_limits<double>::min() and
+           residual / solres < tol ) or
+         residual < tol )
     {
-      return true;
+      return fabs( xsi_( 2, 0 ) );
     }
 
     // solve
@@ -487,13 +567,72 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeDis
     xsi_ += dx;
 
     if ( not SurfaceWithinLimits() )
-      return false;
+      return fabs( xsi_( 2, 0 ) );
   }
 #ifdef DEBUG
   std::copy( res.begin(), res.end(), std::ostream_iterator<double>( std::cout, " " ) );
   std::cout << "\n";
 #endif
   throw std::runtime_error( "Newton scheme did not converge" );
+}
+
+
+template <DRT::Element::DiscretizationType edgetype,
+          DRT::Element::DiscretizationType sidetype,
+          int numNodesLine,
+          int numNodesSurface
+>
+bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCut( Edge * e1, Edge * e2 )
+{
+  LINALG::Matrix<3,1> p1;
+  LINALG::Matrix<3,1> p2;
+  LINALG::Matrix<3,1> u1;
+  LINALG::Matrix<3,1> u2;
+
+  const double * x11 = e1->BeginNode()->point()->X();
+  const double * x12 = e1->EndNode()  ->point()->X();
+  const double * x21 = e2->BeginNode()->point()->X();
+  const double * x22 = e2->EndNode()  ->point()->X();
+
+  for ( int i=0; i<3; ++i )
+  {
+    p1( i ) = .5*( x11[i] + x12[i] );
+    p2( i ) = .5*( x21[i] + x22[i] );
+    u1( i ) = .5*( x12[i] - x11[i] );
+    u2( i ) = .5*( x22[i] - x21[i] );
+  }
+
+  LINALG::Matrix<3,1> w;
+  w.Update( 1, p1, -1, p2, 0 );
+
+  double a = u1.Dot( u1 );
+  double b = u1.Dot( u2 );
+  double c = u2.Dot( u2 );
+  double d = u1.Dot( w );
+  double e = u2.Dot( w );
+
+  double denom = a*c - b*b;
+
+  if ( denom >= std::numeric_limits<double>::min() )
+  {
+    denom = 1./denom;
+    double s = denom * ( b*e-c*d );
+    double t = denom * ( a*e-b*d );
+
+    xsi_( 2 ) = t;
+    x_.Update( 1, p1, s, u1, 0 );
+
+    w.Update( 1, p2, t, u2, 0 );
+    w.Update( 1, x_, -1 );
+    double distance = w.Norm2();
+
+    return ( distance < TOLERANCE and
+             s >= -1-TOLERANCE and
+             s <=  1+TOLERANCE and
+             LineWithinLimits() );
+  }
+
+  return false;
 }
 
 

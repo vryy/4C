@@ -315,3 +315,52 @@ GEO::CUT::Side* GEO::CUT::LineSegment::OnSide( Element * element )
   }
   return NULL;
 }
+
+void GEO::CUT::LineSegmentList::Create( Mesh & mesh, Element * element, Side * side )
+{
+  Create( mesh, element, side, true );
+
+  for ( unsigned i=0; i<segments_.size(); ++i )
+  {
+    if ( segments_[i] != Teuchos::null )
+    {
+      LineSegment & s1 = *segments_[i];
+      for ( unsigned j=i+1; j<segments_.size(); ++j )
+      {
+        if ( segments_[j] != Teuchos::null )
+        {
+          LineSegment & s2 = *segments_[j];
+          if ( s1.Combine( mesh, element, side, s2 ) )
+          {
+            segments_[j] = Teuchos::null;
+          }
+        }
+      }
+    }
+  }
+}
+
+void GEO::CUT::LineSegmentList::Create( Mesh & mesh, Element * element, Side * side, bool inner )
+{
+  std::set<Line*> lines;
+
+  const std::vector<Line*> & cut_lines = side->CutLines();
+  for ( std::vector<Line*>::const_iterator i=cut_lines.begin(); i!=cut_lines.end(); ++i )
+  {
+    Line * l = *i;
+    if ( l->IsCut( element ) )
+    {
+      lines.insert( l );
+    }
+  }
+
+  Create( mesh, element, side, lines, inner );
+}
+
+void GEO::CUT::LineSegmentList::Create( Mesh & mesh, Element * element, Side * side, std::set<Line*> & lines, bool inner )
+{
+  while ( lines.size() )
+  {
+    segments_.push_back( Teuchos::rcp( new LineSegment( mesh, element, side, lines, inner ) ) );
+  }
+}

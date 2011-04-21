@@ -41,6 +41,8 @@ public:
 
   void ResetOutsidePoints();
 
+  void Print( int level, std::ostream & stream );
+
 private:
 
   Teuchos::RCP<Point> CreatePoint( unsigned newid, const double * x, Edge * cut_edge, Side * cut_side );
@@ -82,6 +84,9 @@ public:
 
   void ResetOutsidePoints()
   { tree_.ResetOutsidePoints(); }
+
+  void Print( std::ostream & stream )
+  { tree_.Print( 0, stream ); }
 
 private:
 

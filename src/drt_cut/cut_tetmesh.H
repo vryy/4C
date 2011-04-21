@@ -24,6 +24,7 @@ namespace GEO
   {
     class Point;
     class Facet;
+    class VolumeCell;
 
     /// Mesh of tet elements that is used to triangulate a VolumeCell
     /*!
@@ -264,6 +265,17 @@ namespace GEO
           }
         }
 
+        bool IsCut( const std::vector<Point*> & points, Facet * facet )
+        {
+          for ( int i=0; i<length; ++i )
+          {
+            Point * p = points[handle_[i]];
+            if ( not p->IsCut( facet ) )
+              return false;
+          }
+          return true;
+        }
+
         /// test if this entity belongs entirely to a cut surface
         bool AllOnCutSurface( const std::vector<Point*> & points )
         {
@@ -367,6 +379,125 @@ namespace GEO
         Handle<length> handle_;
         std::vector<Entity<length+1>*> parents_;
         std::vector<Entity<length-1>*> children_;
+      };
+
+      template <int length>
+      class Domain
+      {
+      public:
+
+        bool Empty() const { return members_.size()==0; }
+
+        std::set<Entity<length>*> & Members() { return members_; }
+
+        std::set<Entity<length-1>*> & Border() { return border_; }
+
+        bool Contains( Entity<length> * m ) { return members_.count( m ) > 0; }
+
+        void Add( Entity<length> * m, bool check_done=true )
+        {
+          const typename std::vector<Entity<length-1>*> & bs = m->Children();
+          for ( typename std::vector<Entity<length-1>*>::const_iterator i=bs.begin(); i!=bs.end(); ++i )
+          {
+            Entity<length-1> * b = *i;
+            if ( check_done and done_border_.count( b ) > 0 )
+            {
+              throw std::runtime_error( "border entity has been visited before" );
+            }
+            if ( border_.count( b ) > 0 )
+            {
+              border_.erase( b );
+              done_border_.insert( b );
+            }
+            else
+            {
+              border_.insert( b );
+            }
+          }
+          members_.insert( m );
+        }
+
+        void Fill()
+        {
+          if ( members_.size()==0 )
+          {
+            throw std::runtime_error( "cannot fill without some members" );
+          }
+
+          // mark the external border as done since this will be the domains
+          // boundary
+          for ( typename std::set<Entity<length-1>*>::iterator i=border_.begin(); i!=border_.end(); ++i )
+          {
+            Entity<length-1> * b = *i;
+            bool skip = false;
+            const std::vector<Entity<length>*> & ms = b->Parents();
+            for ( typename std::vector<Entity<length>*>::const_iterator i=ms.begin(); i!=ms.end(); ++i )
+            {
+              Entity<length> * m = *i;
+              if ( Contains( m ) )
+              {
+                skip = true;
+                break;
+              }
+            }
+            if ( not skip )
+            {
+              done_border_.insert( b );
+            }
+          }
+
+          std::set<Entity<length>*> stack;
+
+          for ( typename std::set<Entity<length>*>::iterator i=members_.begin();
+                i!=members_.end();
+                ++i )
+          {
+            Entity<length> * m = *i;
+            PushNewNeighbors( stack, m );
+          }
+
+          while ( stack.size() > 0 )
+          {
+            Entity<length> * m = *stack.begin();
+            stack.erase( m );
+
+            Add( m, false );
+
+            PushNewNeighbors( stack, m );
+          }
+
+          if ( border_.size()!=0 )
+            throw std::runtime_error( "failed to fill domain" );
+        }
+
+      private:
+
+        void PushNewNeighbors( std::set<Entity<length>*> & stack, Entity<length> * m )
+        {
+          const std::vector<Entity<length-1>*> & bs = m->Children();
+          for ( typename std::vector<Entity<length-1>*>::const_iterator i=bs.begin();
+                i!=bs.end();
+                ++i )
+          {
+            Entity<length-1> * b = *i;
+            if ( done_border_.count( b )==0 )
+            {
+              const std::vector<Entity<length>*> & ms = b->Parents();
+              for ( typename std::vector<Entity<length>*>::const_iterator i=ms.begin(); i!=ms.end(); ++i )
+              {
+                Entity<length> * m = *i;
+                if ( not Contains( m ) )
+                {
+                  stack.insert( m );
+                }
+              }
+            }
+          }
+        }
+
+        std::set<Entity<length>*> members_;
+        std::set<Entity<length-1>*> border_;
+        std::set<Entity<length-1>*> done_border_;
       };
 
       /// Representation of one possible triangulation of a facet
@@ -796,6 +927,106 @@ namespace GEO
         }
       };
 
+      /// tracking of cut facet to find its tris
+      class FacetMesh
+      {
+      public:
+
+        bool Fill( TetMesh * tm, Facet * facet )
+        {
+          Domain<3> domain;
+          std::set<Entity<2>*> & lines = domain.Border();
+          if ( FindTrace( tm, facet, lines ) )
+          {
+            while ( lines.size() > 0 )
+            {
+              bool match = false;
+              for ( std::set<Entity<2>*>::iterator i=lines.begin(); i!=lines.end(); ++i )
+              {
+                Entity<2> * l = *i;
+                Entity<3> * tri = FindUniqueTri( tm, facet, domain, l );
+
+                if ( tri!=NULL )
+                {
+                  match = true;
+                  domain.Add( tri );
+                  break;
+                }
+              }
+              if ( not match )
+              {
+                // No way to fill the facet. Sorry.
+                return false;
+              }
+            }
+
+            std::swap( domain.Members(), tris_ );
+
+            return true;
+          }
+          return false;
+        }
+
+        bool FindTrace( TetMesh * tm, Facet * facet, std::set<Entity<2>*> & trace_lines )
+        {
+          std::map<std::pair<Point*, Point*>, std::set<Facet*> > lines;
+          facet->GetLines( lines );
+
+          for ( std::map<std::pair<Point*, Point*>, std::set<Facet*> >::iterator i=lines.begin();
+                i!=lines.end();
+                ++i )
+          {
+            const std::pair<Point*, Point*> & l = i->first;
+            Handle<2> h = tm->MakeHandle( l.first, l.second );
+            std::map<Handle<2>, Entity<2> >::iterator j = tm->tet_lines_.find( h );
+            if ( j!=tm->tet_lines_.end() )
+            {
+              Entity<2> & line = j->second;
+              trace_lines.insert( &line );
+            }
+            else
+            {
+              return false;
+            }
+          }
+          return true;
+        }
+
+        const std::set<Entity<3>*> & SurfaceTris() const { return tris_; }
+
+      private:
+
+        /// Find the tri at the given line that belongs to the facet. If there
+        /// is no such tri (or it is not unique), return NULL.
+        Entity<3> * FindUniqueTri( TetMesh * tm, Facet * facet, Domain<3> & domain, Entity<2> * l )
+        {
+          Entity<3> * tri = NULL;
+          const std::vector<Entity<3>*> & tris = l->Parents();
+          for ( std::vector<Entity<3>*>::const_iterator i=tris.begin(); i!=tris.end(); ++i )
+          {
+            Entity<3> * t = *i;
+            if ( not domain.Contains( t ) )
+            {
+              if ( t->IsCut( tm->points_, facet ) )
+              {
+                if ( tri==NULL )
+                {
+                  tri = t;
+                }
+                else
+                {
+                  //throw std::runtime_error( "double tri on cut facet" );
+                  return NULL;
+                }
+              }
+            }
+          }
+          return tri;
+        }
+
+        std::set<Entity<3>*> tris_;
+      };
+
     public:
 
       /// Construct a tet mesh by calling qhull and selecting all the tets and
@@ -806,6 +1037,13 @@ namespace GEO
       TetMesh( const std::vector<Point*> & points,
                const std::set<Facet*> & facets,
                bool project );
+
+      void CreateElementTets( Mesh & mesh,
+                              Element * element,
+                              const std::set<VolumeCell*> & cells,
+                              const std::set<Side*> & cut_sides );
+
+      void CreateVolumeCellTets();
 
       /// Return the list of tets.
       const std::vector<std::vector<int> > & Tets() const { return tets_; }
@@ -858,7 +1096,9 @@ namespace GEO
 
       void AddBrokenTris( std::map<Facet*, std::vector<Point*> > & sides_xyz );
 
-      void FindProperSides( const std::set<Entity<3>*> & tris, std::vector<std::vector<int> > & sides );
+      void FindProperSides( const std::set<Entity<3>*> & tris,
+                            std::vector<std::vector<int> > & sides,
+                            const std::set<Entity<4>*> * members=NULL );
 
       void CollectCoordinates( const std::vector<std::vector<int> > & sides,
                                std::vector<Point*> & side_coords );
@@ -900,6 +1140,8 @@ namespace GEO
       bool IsValidTet( const std::vector<Point*> & t );
 
       void TestUsedPoints( const std::vector<std::vector<int> > & tets );
+
+      bool FillFacetMesh();
 
       void SwapTetHandle( Entity<4> * tet, const Handle<4> & handle )
       {
@@ -970,6 +1212,42 @@ namespace GEO
         return false;
       }
 
+      bool FillFacet( Facet * f )
+      {
+        FacetMesh & cf = facet_mesh_[f];
+        if ( not cf.Fill( this, f ) )
+        {
+          facet_mesh_.clear();
+          return false;
+        }
+        return true;
+      }
+
+      void SeedDomain( Domain<4> & cell_domain, Facet * f )
+      {
+        if ( not f->OnCutSide() )
+        {
+          FacetMesh & fm = facet_mesh_[f];
+          const std::set<Entity<3>*> & tris = fm.SurfaceTris();
+          for ( std::set<Entity<3>*>::const_iterator i=tris.begin();
+                i!=tris.end();
+                ++i )
+          {
+            Entity<3> * t = *i;
+            const std::vector<Entity<4>*> & tets = t->Parents();
+            if ( tets.size()==1 )
+            {
+              if ( not cell_domain.Contains( tets[0] ) )
+                cell_domain.Add( tets[0] );
+            }
+            else
+            {
+              throw std::runtime_error( "one parent tet at outside tri expected" );
+            }
+          }
+        }
+      }
+
       const std::vector<Point*> & points_;
       const std::set<Facet*> & facets_;
       std::vector<std::vector<int> > tets_;
@@ -991,6 +1269,8 @@ namespace GEO
 
       //std::map<Facet*, std::vector<Entity<3>*> > cutsurface_;
       std::map<Facet*, std::vector<Point*> > sides_xyz_;
+
+      std::map<Facet*, FacetMesh> facet_mesh_;
 
 #ifdef TETMESH_GMSH_DEBUG_OUTPUT
       std::vector<std::vector<int> > surface_tris_;

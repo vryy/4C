@@ -70,7 +70,8 @@ private:
 
   std::map<DRT::Element::DiscretizationType, int> element_count_;
 
-  std::map<DRT::Element::DiscretizationType, int> side_count_;
+  //std::map<DRT::Element::DiscretizationType, int> side_count_;
+  int side_count_;
 
   std::vector<LINALG::Matrix<3,1> > element_points_;
 

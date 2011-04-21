@@ -74,6 +74,11 @@ public:
     return cut_edges_.count( e )>0;
   }
 
+  bool IsCut( Facet* f )
+  {
+    return facets_.count( f )>0;
+  }
+
   bool IsCut( Side* s )
   {
     return cut_sides_.count( s )>0;
@@ -141,7 +146,7 @@ public:
 
   double t( Edge* edge );
 
-  void t( Edge* edge, double pos ) { t_[edge] = pos; }
+  //void t( Edge* edge, double pos ) { t_[edge] = pos; }
 
   unsigned Pid() const { return pid_; }
 

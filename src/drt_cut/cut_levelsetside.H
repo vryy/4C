@@ -22,6 +22,11 @@ public:
     return DRT::Element::dis_none;
   }
 
+  virtual const CellTopologyData * Topology()
+  {
+    throw std::runtime_error( "no topology" );
+  }
+
   virtual void Cut( Mesh & mesh, Edge & edge, std::set<Point*, PointPidLess> & cut_points );
 
   virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges );

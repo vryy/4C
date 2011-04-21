@@ -147,7 +147,7 @@ void GEO::CUT::Hex8Projection::HorizontalCut( Mesh & mesh,
       }
       Tri3BoundaryCell::CreateCell( mesh, cell, f, side );
 
-      Wedge6IntegrationCell::CreateCell( mesh, cell, position, points, integrationcells );
+      cell->NewWedge6Cell( mesh, points );
     }
     else if ( f->Equals( DRT::Element::quad4 ) )
     {
@@ -212,34 +212,15 @@ void GEO::CUT::Hex8Projection::HorizontalCut( Mesh & mesh,
       }
       Quad4BoundaryCell::CreateCell( mesh, cell, f, side );
 
-      Hex8IntegrationCell::CreateCell( mesh, cell, position, points, integrationcells );
+      cell->NewHex8Cell( mesh, points );
     }
     else
 #endif
     {
-      std::vector<Point*> points;
+      std::set<Point*> points;
       const std::vector<Point*> & corner_points = f->CornerPoints();
 
-      if ( f->IsTriangulated() )
-      {
-        const std::vector<std::vector<Point*> > & triangulation = f->Triangulation();
-        std::set<Point*> points_set;
-        for ( std::vector<std::vector<Point*> >::const_iterator i=triangulation.begin();
-              i!=triangulation.end();
-              ++i )
-        {
-          const std::vector<Point*> & tri = *i;
-          std::copy( tri.begin(), tri.end(), std::inserter( points_set, points_set.begin() ) );
-        }
-        points.reserve( points_set.size() + corner_points.size() );
-        points.assign( points_set.begin(), points_set.end() );
-      }
-      else
-      {
-        const std::vector<Point*> & facet_points = f->Points();
-        points.reserve( facet_points.size() + corner_points.size() );
-        points.assign( facet_points.begin(), facet_points.end() );
-      }
+      f->AllPoints( points );
 
       for ( std::vector<Point*>::const_iterator i=corner_points.begin();
             i!=corner_points.end();
@@ -253,16 +234,20 @@ void GEO::CUT::Hex8Projection::HorizontalCut( Mesh & mesh,
           throw std::runtime_error( "inner point missing" );
         }
 
-        points.push_back( projected_points[pos - inner_points.begin()] );
+        points.insert( projected_points[pos - inner_points.begin()] );
       }
+
+      std::vector<Point*> cell_points;
+      cell_points.reserve( points.size() );
+      std::copy( points.begin(), points.end(), std::back_inserter( cell_points ) );
 
       // sort points that go into qhull to obtain the same result independent of
       // pointer values (compiler flags, code structure, memory usage, ...)
-      std::sort( points.begin(), points.end(), PointPidLess() );
+      std::sort( cell_points.begin(), cell_points.end(), PointPidLess() );
 
       std::set<Facet*> cell_facets;
       cell_facets.insert( f );
-      cell->CreateTet4IntegrationCells( mesh, position, points, cell_facets, true );
+      cell->CreateTet4IntegrationCells( mesh, position, cell_points, cell_facets, true );
     }
   }
 }

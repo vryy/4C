@@ -41,6 +41,8 @@ public:
 
   virtual void VolumeCells( std::set<VolumeCell*> & cells ) const = 0;
 
+  virtual void CollectElements( std::set<Element*> & elements ) = 0;
+
   virtual const std::vector<Node*> & Nodes() = 0;
 
   const LINALG::Matrix<3,1> & LocalCoordinates( Point * p )
@@ -120,6 +122,11 @@ public:
     cells = element_->VolumeCells();
   }
 
+  virtual void CollectElements( std::set<Element*> & elements )
+  {
+    elements.insert( element_ );
+  }
+
   virtual const std::vector<Node*> & Nodes()
   {
     return element_->Nodes();
@@ -142,6 +149,11 @@ public:
   virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
 
   virtual void VolumeCells( std::set<VolumeCell*> & cells ) const;
+
+  virtual void CollectElements( std::set<Element*> & elements )
+  {
+    std::copy( subelements_.begin(), subelements_.end(), std::inserter( elements, elements.begin() ) );
+  }
 
   virtual const std::vector<Node*> & Nodes()
   {

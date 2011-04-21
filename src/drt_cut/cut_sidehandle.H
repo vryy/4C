@@ -30,6 +30,8 @@ public:
 
   virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rst ) = 0;
 
+  virtual void CollectSides( std::set<Side*> & sides ) = 0;
+
   template <DRT::Element::DiscretizationType distype>
   Teuchos::RCP<DRT::UTILS::GaussPoints> CreateProjected( BoundaryCell * bc )
   {
@@ -107,6 +109,11 @@ public:
     rs( 1 ) = rst( 1 );
   }
 
+  virtual void CollectSides( std::set<Side*> & sides )
+  {
+    sides.insert( side_ );
+  }
+
 private:
   Side * side_;
 };
@@ -125,6 +132,11 @@ public:
       Node * n = *i;
       n->Coordinates( &xyze( 0, i-nodes_.begin() ) );
     }
+  }
+
+  virtual void CollectSides( std::set<Side*> & sides )
+  {
+    std::copy( subsides_.begin(), subsides_.end(), std::inserter( sides, sides.begin() ) );
   }
 
 protected:

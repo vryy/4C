@@ -45,6 +45,12 @@ public:
 
   void CreateTet4IntegrationCells( Mesh & mesh, Point::PointPosition position, const std::vector<Point*> & points, const std::set<Facet*> & facets, bool project );
 
+  void CreateTet4IntegrationCells( Mesh & mesh, const std::vector<std::vector<Point*> > & tets, const std::map<Facet*, std::vector<Point*> > & sides_xyz );
+
+  bool CreateSimpleShapeIntegrationCell( Mesh & mesh );
+
+  bool CreateSingleElementIntegrationCell( Mesh & mesh );
+
   void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );
 
   const std::set<IntegrationCell*> & IntegrationCells() const { return integrationcells_; }
@@ -57,15 +63,27 @@ public:
 
   const std::vector<int> & NodalDofSet() const { return nodaldofset_; }
 
-  GEO::CUT::Point::PointPosition Position();
+  GEO::CUT::Point::PointPosition Position() const { return position_; }
+
+  void Position( GEO::CUT::Point::PointPosition position );
 
   void Print( std::ostream & stream );
 
   const std::set<Facet*> & Facets() const { return facets_; }
 
-  void NewTri3Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x );
+  void NewIntegrationCell( Mesh & mesh, DRT::Element::DiscretizationType shape, const std::vector<Point*> & x );
 
-//  void NewTri3Cells( Mesh & mesh, Facet * f, const std::vector<Epetra_SerialDenseMatrix> & xyz );
+  void NewHex8Cell( Mesh & mesh, const std::vector<Point*> & x );
+
+  IntegrationCell * NewTet4Cell( Mesh & mesh, const std::vector<Point*> & x );
+
+  void NewWedge6Cell( Mesh & mesh, const std::vector<Point*> & x );
+
+  void NewPyramid5Cell( Mesh & mesh, const std::vector<Point*> & x );
+
+  void NewBoundaryCell( Mesh & mesh, DRT::Element::DiscretizationType shape, Facet * f, const std::vector<Point*> & x );
+
+  void NewTri3Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x );
 
   void NewQuad4Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x );
 
@@ -73,7 +91,19 @@ public:
 
 private:
 
+  void SetTetPoints( const int * totet4,
+                     const std::vector<Point*> & points,
+                     std::vector<Point*> & tet4_points ) const
+  {
+    for ( int i=0; i<4; ++i )
+    {
+      tet4_points[i] = points[totet4[i]];
+    }
+  }
+
   Element * element_;
+
+  GEO::CUT::Point::PointPosition position_;
 
   std::set<Facet*> facets_;
 
@@ -84,6 +114,10 @@ private:
   std::set<BoundaryCell*> bcells_;
 
   std::vector<int> nodaldofset_;
+
+  static int hex8totet4[5][4];
+  static int wedge6totet4[3][4];
+  static int pyramid5totet4[2][4];
 };
 
 }

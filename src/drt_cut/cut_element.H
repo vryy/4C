@@ -20,8 +20,10 @@ public:
 
   Element( int eid,
            const std::vector<Side*> & sides,
-           const std::vector<Node*> & nodes )
+           const std::vector<Node*> & nodes,
+           bool active )
     : eid_( eid ),
+      active_( active ),
       sides_( sides ),
       nodes_( nodes )
   {
@@ -58,6 +60,8 @@ public:
   void MakeFacets( Mesh & mesh );
 
   void MakeVolumeCells( Mesh & mesh );
+
+  void CreateIntegrationCells( Mesh & mesh );
 
   void FindNodePositions();
 
@@ -97,6 +101,8 @@ public:
 
   const std::set<VolumeCell*> & VolumeCells() const { return cells_; }
 
+  const std::set<Facet*> & Facets() const { return facets_; }
+
 protected:
 
   //const std::vector<Side*> & Sides() { return sides_; }
@@ -108,6 +114,8 @@ private:
   bool FindCutLines( Mesh & mesh, Side & side, Side & other );
 
   int eid_;
+
+  bool active_;
 
   std::vector<Side*> sides_;
 
@@ -129,8 +137,9 @@ public:
 
   ConcreteElement<DRT::Element::tet4>( int eid,
                                        const std::vector<Side*> & sides,
-                                       const std::vector<Node*> & nodes )
-    : Element( eid, sides, nodes )
+                                       const std::vector<Node*> & nodes,
+                                       bool active )
+    : Element( eid, sides, nodes, active )
   {}
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tet4; }
@@ -168,8 +177,9 @@ public:
 
   ConcreteElement<DRT::Element::wedge6>( int eid,
                                          const std::vector<Side*> & sides,
-                                         const std::vector<Node*> & nodes )
-    : Element( eid, sides, nodes )
+                                         const std::vector<Node*> & nodes,
+                                         bool active )
+    : Element( eid, sides, nodes, active )
   {}
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::wedge6; }
@@ -207,8 +217,9 @@ public:
 
   ConcreteElement<DRT::Element::pyramid5>( int eid,
                                            const std::vector<Side*> & sides,
-                                           const std::vector<Node*> & nodes )
-    : Element( eid, sides, nodes )
+                                           const std::vector<Node*> & nodes,
+                                           bool active )
+    : Element( eid, sides, nodes, active )
   {}
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::pyramid5; }
@@ -246,8 +257,9 @@ public:
 
   ConcreteElement<DRT::Element::hex8>( int eid,
                                        const std::vector<Side*> & sides,
-                                       const std::vector<Node*> & nodes )
-    : Element( eid, sides, nodes )
+                                       const std::vector<Node*> & nodes,
+                                       bool active )
+    : Element( eid, sides, nodes, active )
   {}
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::hex8; }

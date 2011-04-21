@@ -9,7 +9,7 @@
 #include <string>
 #include <sstream>
 
-//#include <mpi.h>
+#include <mpi.h>
 
 void test_hex8_simple();
 void test_tet4_simple();
@@ -51,6 +51,7 @@ void test_quad4_quad4_simple();
 void test_hex8_quad4_mesh();
 void test_position2d();
 
+void test_quad4_line2();
 void test_hex8_quad4_qhull1();
 void test_hex8_quad4_alex1();
 void test_hex8_quad4_alex2();
@@ -60,6 +61,8 @@ void test_hex8_quad4_alex5();
 void test_hex8_quad4_alex6();
 void test_hex8_quad4_alex7();
 void test_hex8_quad4_alex8();
+void test_tet4_quad4_alex9();
+void test_tet4_quad4_alex10();
 void test_hex8_quad4_axel1();
 void test_hex8_quad4_axel2();
 void test_hex8_quad4_axel3();
@@ -91,6 +94,7 @@ void test_ls_hex8_simple();
 void test_ls_hex8_simple2();
 void test_ls_hex8_simple3();
 void test_ls_hex8_simple4();
+void test_ls_hex8_touch();
 
 void test_quad4_surface_mesh_cut();
 void test_hex8_quad4_double_cut();
@@ -101,7 +105,7 @@ void test_facets_corner_points();
 
 int main( int argc, char ** argv )
 {
-  //MPI_Init( &argc, &argv );
+  MPI_Init( &argc, &argv );
   //MPI::Init( argc, argv );
 
   typedef void ( *testfunct )();
@@ -151,6 +155,7 @@ int main( int argc, char ** argv )
   functable["hex8_quad4_mesh"] = test_hex8_quad4_mesh;
   functable["position2d"] = test_position2d;
 
+  functable["quad4_line2"] = test_quad4_line2;
   functable["hex8_quad4_qhull1"] = test_hex8_quad4_qhull1;
   functable["hex8_quad4_alex1"] = test_hex8_quad4_alex1;
   functable["hex8_quad4_alex2"] = test_hex8_quad4_alex2;
@@ -160,6 +165,8 @@ int main( int argc, char ** argv )
   functable["hex8_quad4_alex6"] = test_hex8_quad4_alex6;
   functable["hex8_quad4_alex7"] = test_hex8_quad4_alex7;
   functable["hex8_quad4_alex8"] = test_hex8_quad4_alex8;
+  functable["tet4_quad4_alex9"] = test_tet4_quad4_alex9;
+  functable["tet4_quad4_alex10"] = test_tet4_quad4_alex10;
   functable["hex8_quad4_axel1"] = test_hex8_quad4_axel1;
   functable["hex8_quad4_axel2"] = test_hex8_quad4_axel2;
   functable["hex8_quad4_axel3"] = test_hex8_quad4_axel3;
@@ -191,6 +198,7 @@ int main( int argc, char ** argv )
   functable["ls_hex8_simple2"] = test_ls_hex8_simple2;
   functable["ls_hex8_simple3"] = test_ls_hex8_simple3;
   //functable["ls_hex8_simple4"] = test_ls_hex8_simple4;
+  functable["ls_hex8_touch"] = test_ls_hex8_touch;
 
   functable["quad4_surface_mesh_cut"] = test_quad4_surface_mesh_cut;
   functable["hex8_quad4_double_cut"] = test_hex8_quad4_double_cut;
@@ -222,12 +230,14 @@ int main( int argc, char ** argv )
     return 0;
   case Teuchos::CommandLineProcessor::PARSE_UNRECOGNIZED_OPTION:
     std::cerr << argv[0] << ": unrecognized option\n";
+    MPI_Finalize();
     return 1;
   }
 
   if ( testname == "(all)" )
   {
     std::vector<std::string> failures;
+    std::vector<std::string> msgs;
 
     for ( std::map<std::string, testfunct>::iterator i=functable.begin(); i!=functable.end(); ++i )
     {
@@ -240,6 +250,7 @@ int main( int argc, char ** argv )
       {
         std::cout << "FAILED: " << err.what() << "\n";
         failures.push_back( i->first );
+        msgs.push_back( err.what() );
       }
     }
 
@@ -248,9 +259,15 @@ int main( int argc, char ** argv )
       std::cout << "\n" << failures.size() << " out of " << functable.size() << " tests failed.\n";
       for ( std::vector<std::string>::iterator i=failures.begin(); i!=failures.end(); ++i )
       {
-        std::cout << "    " << ( *i ) << "\n";
+        std::string & txt = *i;
+        std::cout << "    " << txt;
+        for ( unsigned j=0; j<40-txt.length(); ++j )
+          std::cout << " ";
+        std::cout << "(" << msgs[i-failures.begin()] << ")"
+                  << "\n";
       }
     }
+    MPI_Finalize();
     return failures.size();
   }
   else
@@ -259,11 +276,13 @@ int main( int argc, char ** argv )
     if ( i==functable.end() )
     {
       std::cerr << argv[0] << ": test '" << testname << "' not found\n";
+      MPI_Finalize();
       return 1;
     }
     else
     {
       ( *i->second )();
+      MPI_Finalize();
       return 0;
     }
   }

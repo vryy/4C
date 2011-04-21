@@ -347,10 +347,12 @@ GEO::CUT::Hex20ElementHandle::Hex20ElementHandle( Mesh & mesh, int eid, const st
   // create middle nodes
 
   LINALG::Matrix<3,1> xyz;
+  LINALG::Matrix<1,1> lsv;
 
   std::set<int> node_nids;
 
   LINALG::Matrix<3,8> side_xyze;
+  LINALG::Matrix<1,8> side_lsvs;
   LINALG::Matrix<8,1> side_funct;
   std::vector<Node*> side_nodes( 8 );
 
@@ -362,16 +364,18 @@ GEO::CUT::Hex20ElementHandle::Hex20ElementHandle( Mesh & mesh, int eid, const st
     for ( int i=0; i<8; ++i )
     {
       int localnodeid = DRT::UTILS::eleNodeNumbering_hex27_surfaces[localsideid][i];
-      Node * n = mesh.GetNode( nodes[localnodeid], NULL );
+      Node * n = mesh.GetNode( nodes[localnodeid], static_cast<double*>( NULL ) );
       side_nodes[i] = n;
       node_nids.insert( nodes[localnodeid] );
       n->Coordinates( &side_xyze( 0, i ) );
+      side_lsvs( i ) = n->LSV();
     }
 
     DRT::UTILS::shape_function_2D( side_funct, 0, 0, DRT::Element::quad8 );
     xyz.Multiply( side_xyze, side_funct );
+    lsv.Multiply( side_lsvs, side_funct );
 
-    center_nodes[localsideid] = mesh.GetNode( node_nids, xyz.A() );
+    center_nodes[localsideid] = mesh.GetNode( node_nids, xyz.A(), lsv( 0 ) );
   }
 
   Node* node20 = center_nodes[0];
@@ -393,21 +397,24 @@ GEO::CUT::Hex20ElementHandle::Hex20ElementHandle( Mesh & mesh, int eid, const st
   int node25_id = node25->Id();
 
   LINALG::Matrix<3,20> xyze;
+  LINALG::Matrix<1,20> lsvs;
   nodes_.reserve( 20 );
   for ( int i=0; i<20; ++i )
   {
-    Node * n = mesh.GetNode( nodes[i], NULL );
+    Node * n = mesh.GetNode( nodes[i], static_cast<double*>( NULL ) );
     nodes_.push_back( n );
     n->Coordinates( &xyze( 0,i ) );
+    lsvs( i ) = n->LSV();
   }
 
   LINALG::Matrix<20,1> funct;
   DRT::UTILS::shape_function_3D( funct, 0, 0, 0, DRT::Element::hex20 );
 
   xyz.Multiply( xyze, funct );
+  lsv.Multiply( lsvs, funct );
   node_nids.clear();
   std::copy( nodes.begin(), nodes.end(), std::inserter( node_nids, node_nids.begin() ) );
-  Node* node26 = mesh.GetNode( node_nids, xyz.A() );
+  Node* node26 = mesh.GetNode( node_nids, xyz.A(), lsv( 0 ) );
   int node26_id = node26->Id();
 
 
@@ -504,7 +511,7 @@ GEO::CUT::Hex27ElementHandle::Hex27ElementHandle( Mesh & mesh, int eid, const st
   nodes_.reserve( 27 );
   for ( int i=0; i<27; ++i )
   {
-    Node * n = mesh.GetNode( nodes[i], NULL );
+    Node * n = mesh.GetNode( nodes[i], static_cast<double*>( NULL ) );
     nodes_.push_back( n );
   }
 
@@ -603,7 +610,7 @@ GEO::CUT::Tet10ElementHandle::Tet10ElementHandle( Mesh & mesh, int eid, const st
   nodes_.reserve( 10 );
   for ( int i=0; i<10; ++i )
   {
-    Node * n = mesh.GetNode( nids[i], NULL );
+    Node * n = mesh.GetNode( nids[i], static_cast<double*>( NULL ) );
     nodes_.push_back( n );
   }
 

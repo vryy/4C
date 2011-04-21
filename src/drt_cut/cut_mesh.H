@@ -113,6 +113,8 @@ public:
 
   void FindLSNodePositions();
 
+  void FindFacetPositions();
+
   void FindNodalDOFSets( bool include_inner );
 
   void CreateIntegrationCells();
@@ -131,11 +133,17 @@ public:
 
   void DumpGmshIntegrationCells( std::string name );
 
+  void NewNodesFromPoints( std::map<Point*, Node*> & nodemap );
+
   Node* GetNode( int nid ) const;
 
   Node* GetNode( int nid, const double * xyz, double lsv=0.0 );
 
-  Node* GetNode( const std::set<int> & nids, const double * xyz );
+#if 0
+  Node* GetNode( int nid, Point * p, double lsv=0.0 );
+#endif
+
+  Node* GetNode( const std::set<int> & nids, const double * xyz, double lsv=0.0 );
 
   Edge* GetEdge( Node* begin, Node* end );
 
@@ -147,15 +155,39 @@ public:
                  const std::vector<int> & nids,
                  const CellTopologyData * top_data );
 
+#if 0
+  Side* GetSide( int sid,
+                 const std::vector<Point*> & points,
+                 const CellTopologyData * top_data );
+#endif
+
+  Side* GetSide( int sid,
+                 const std::vector<Node*> & nodes,
+                 const CellTopologyData * top_data );
+
   Element* GetElement( int eid );
 
   Element* GetElement( int eid,
                        const std::vector<int> & nids,
+                       const CellTopologyData & top_data,
+                       bool active=true );
+
+#if 0
+  Element* GetElement( int eid,
+                       const std::vector<Point*> & nids,
                        const CellTopologyData & top_data );
+#endif
+
+  Element* GetElement( int eid,
+                       const std::vector<Node*> & nids,
+                       const CellTopologyData & top_data,
+                       bool active=true );
 
   bool WithinBB( const Epetra_SerialDenseMatrix & xyz );
 
   bool WithinBB( Element & element );
+
+  Teuchos::RCP<PointPool> Points() { return pp_; }
 
 private:
 

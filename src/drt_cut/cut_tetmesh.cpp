@@ -2,7 +2,9 @@
 #include <stack>
 
 #include "cut_tetmesh.H"
+#include "cut_tetmeshintersection.H"
 #include "cut_levelsetside.H"
+#include "cut_volumecell.H"
 
 #ifdef QHULL
 extern "C" {
@@ -80,7 +82,10 @@ GEO::CUT::TetMesh::TetMesh( const std::vector<Point*> & points,
 #ifdef TETMESH_GMSH_DEBUG_OUTPUT
   GmshWriteCells();
 #endif
+}
 
+void GEO::CUT::TetMesh::CreateVolumeCellTets()
+{
   // find the cut surface
 
   FindTriFacets();
@@ -128,6 +133,134 @@ GEO::CUT::TetMesh::TetMesh( const std::vector<Point*> & points,
   // Clear all tets that have been deactivated because they are too small. We
   // might lose some points in rare cases. That is alright.
   ClearExternalTets();
+}
+
+bool GEO::CUT::TetMesh::FillFacetMesh()
+{
+  for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  {
+    Facet * f = *i;
+    if ( not FillFacet( f ) )
+      return false;
+    if ( f->HasHoles() )
+    {
+      const std::set<Facet*> & holes = f->Holes();
+      for ( std::set<Facet*>::const_iterator i=holes.begin(); i!=holes.end(); ++i )
+      {
+        Facet * h = *i;
+        if ( not FillFacet( h ) )
+          return false;
+      }
+    }
+  }
+  return true;
+}
+
+void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
+                                           Element * element,
+                                           const std::set<VolumeCell*> & cells,
+                                           const std::set<Side*> & cut_sides )
+{
+  FixBrokenTets();
+
+  if ( FillFacetMesh() )
+  {
+    for ( std::set<VolumeCell*>::const_iterator i=cells.begin();
+          i!=cells.end();
+          ++i )
+    {
+      VolumeCell * vc = *i;
+
+      Domain<4> cell_domain;
+      std::set<Entity<4>*> & cell_members = cell_domain.Members();
+      std::set<Entity<3>*> & cell_border  = cell_domain.Border();
+
+      const std::set<Facet*> & facets = vc->Facets();
+      for ( std::set<Facet*>::const_iterator i=facets.begin();
+            i!=facets.end();
+            ++i )
+      {
+        Facet * f = *i;
+        FacetMesh & fm = facet_mesh_[f];
+        const std::set<Entity<3>*> & tris = fm.SurfaceTris();
+
+        std::copy( tris.begin(), tris.end(), std::inserter( cell_border, cell_border.begin() ) );
+      }
+
+      for ( std::set<Facet*>::const_iterator i=facets.begin();
+            i!=facets.end();
+            ++i )
+      {
+        Facet * f = *i;
+        SeedDomain( cell_domain, f );
+#if 0
+        if ( f->HasHoles() )
+        {
+          const std::set<Facet*> & holes = f->Holes();
+          for ( std::set<Facet*>::const_iterator i=holes.begin(); i!=holes.end(); ++i )
+          {
+            Facet * h = *i;
+            SeedDomain( cell_domain, h );
+          }
+        }
+#endif
+      }
+
+      if ( cell_domain.Empty() )
+      {
+      }
+
+      cell_domain.Fill();
+
+#ifdef TETMESH_GMSH_DEBUG_OUTPUT
+      GmshWriteTriSet( "cell_border" , cell_border  );
+      GmshWriteTetSet( "cell_members", cell_members );
+#endif
+
+      std::vector<std::vector<Point*> > tets;
+      tets.reserve( cell_members.size() );
+
+      for ( std::set<Entity<4>*>::iterator i=cell_members.begin(); i!=cell_members.end(); ++i )
+      {
+        Entity<4> & t = **i;
+        if ( accept_tets_[t.Id()] )
+        {
+          std::vector<int> & fixedtet = tets_[t.Id()];
+          tets.push_back( std::vector<Point*>( 4 ) );
+          std::vector<Point*> & tet = tets.back();
+          for ( int i=0; i<4; ++i )
+          {
+            tet[i] = points_[fixedtet[i]];
+          }
+        }
+      }
+
+      std::map<Facet*, std::vector<Point*> > sides_xyz;
+
+      for ( std::set<Facet*>::const_iterator i=facets.begin();
+            i!=facets.end();
+            ++i )
+      {
+        Facet * f = *i;
+        if ( f->OnCutSide() )
+        {
+          FacetMesh & fm = facet_mesh_[f];
+          const std::set<Entity<3>*> & tris = fm.SurfaceTris();
+          std::vector<Point*> & side_coords = sides_xyz[f];
+          std::vector<std::vector<int> > sides;
+          FindProperSides( tris, sides, &cell_members );
+          CollectCoordinates( sides, side_coords );
+        }
+      }
+
+      vc->CreateTet4IntegrationCells( mesh, tets, sides_xyz );
+    }
+  }
+  else
+  {
+    TetMeshIntersection intersection( element, tets_, accept_tets_, points_, cut_sides );
+    intersection.Cut( mesh, element, cells );
+  }
 }
 
 void GEO::CUT::TetMesh::Init()
@@ -1773,7 +1906,9 @@ void GEO::CUT::TetMesh::FillCutSides( std::map<Facet*, std::vector<Point*> > & s
   }
 }
 
-void GEO::CUT::TetMesh::FindProperSides( const std::set<Entity<3>*> & tris, std::vector<std::vector<int> > & sides )
+void GEO::CUT::TetMesh::FindProperSides( const std::set<Entity<3>*> & tris,
+                                         std::vector<std::vector<int> > & sides,
+                                         const std::set<Entity<4>*> * members )
 {
   sides.reserve( tris.size() );
   for ( std::set<Entity<3>*>::const_iterator i=tris.begin(); i!=tris.end(); ++i )
@@ -1787,6 +1922,10 @@ void GEO::CUT::TetMesh::FindProperSides( const std::set<Entity<3>*> & tris, std:
           ++i )
     {
       Entity<4> * tet = *i;
+
+      if ( members!=NULL and members->count( tet )==0 )
+        continue;
+
       std::vector<int> & original_tet = tets_[tet->Id()];
 
       if ( original_tet.size() > 0 )

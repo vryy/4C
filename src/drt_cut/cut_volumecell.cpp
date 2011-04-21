@@ -4,12 +4,35 @@
 #include "cut_integrationcell.H"
 #include "cut_facet.H"
 #include "cut_tetmesh.H"
+#include "cut_mesh.H"
+
+
+int GEO::CUT::VolumeCell::hex8totet4[5][4] = {
+  {0, 1, 3, 4},
+  {1, 2, 3, 6},
+  {4, 5, 1, 6},
+  {6, 7, 3, 4},
+  {1, 6, 3, 4}
+};
+
+int GEO::CUT::VolumeCell::wedge6totet4[3][4] = {
+  {0, 1, 2, 3},
+  {3, 4, 1, 5},
+  {1, 5, 2, 3}
+};
+
+
+int GEO::CUT::VolumeCell::pyramid5totet4[2][4] = {
+  {0, 1, 3, 4},
+  {1, 2, 3, 4}
+};
 
 
 GEO::CUT::VolumeCell::VolumeCell( const std::set<Facet*> & facets,
                                   const std::map<std::pair<Point*, Point*>, std::set<Facet*> > & volume_lines,
                                   Element * element )
   : element_( element ),
+    position_( Point::undecided ),
     facets_( facets )
 {
   for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
@@ -78,17 +101,11 @@ void GEO::CUT::VolumeCell::GetAllPoints( Mesh & mesh, std::set<Point*> & cut_poi
 
 void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
 {
-  // determine volume position and fix any facet positions that might still
-  // be undecided (those that have just oncutsurface nodes but do not belong
-  // to any cut surface)
   Point::PointPosition position = Position();
 
   if ( element_->IsCut() )
   {
-    if ( not Tet4IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) and
-         not Hex8IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) and
-         not Wedge6IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) and
-         not Pyramid5IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) and
+    if ( not CreateSimpleShapeIntegrationCell( mesh ) and
          not IntegrationCell::CreateCells( mesh, this, position, facets_, integrationcells_ ) )
     {
       std::set<Point*> cut_points;
@@ -107,29 +124,39 @@ void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
   }
   else
   {
-    bool success;
-    switch ( element_->Shape() )
-    {
-    case DRT::Element::tet4:
-      success = Tet4IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
-      break;
-    case DRT::Element::hex8:
-      success = Hex8IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
-      break;
-    case DRT::Element::wedge6:
-      success = Wedge6IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
-      break;
-    case DRT::Element::pyramid5:
-      success = Pyramid5IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
-      break;
-    default:
-      throw std::runtime_error( "unsupported element shape" );
-    }
-    if ( not success )
-    {
-      throw std::runtime_error( "failed to create element cell" );
-    }
+    CreateSingleElementIntegrationCell( mesh );
   }
+}
+
+bool GEO::CUT::VolumeCell::CreateSimpleShapeIntegrationCell( Mesh & mesh )
+{
+  return ( Tet4IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) or
+           Hex8IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) or
+           Wedge6IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) or
+           Pyramid5IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) );
+}
+
+bool GEO::CUT::VolumeCell::CreateSingleElementIntegrationCell( Mesh & mesh )
+{
+  bool success;
+  switch ( element_->Shape() )
+  {
+  case DRT::Element::tet4:
+    success = Tet4IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
+    break;
+  case DRT::Element::hex8:
+    success = Hex8IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
+    break;
+  case DRT::Element::wedge6:
+    success = Wedge6IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
+    break;
+  case DRT::Element::pyramid5:
+    success = Pyramid5IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
+    break;
+  default:
+    throw std::runtime_error( "unsupported element shape" );
+  }
+  return success;
 }
 
 void GEO::CUT::VolumeCell::CreateTet4IntegrationCells( Mesh & mesh, Point::PointPosition position, const std::vector<Point*> & points, const std::set<Facet*> & facets, bool project )
@@ -148,6 +175,8 @@ void GEO::CUT::VolumeCell::CreateTet4IntegrationCells( Mesh & mesh, Point::Point
 #endif
     TetMesh tetmesh( points, facets, project );
 
+    tetmesh.CreateVolumeCellTets();
+
     const std::vector<std::vector<int> > & tets = tetmesh.Tets();
     const std::map<Facet*, std::vector<Point*> > & sides_xyz = tetmesh.SidesXYZ();
 
@@ -163,8 +192,7 @@ void GEO::CUT::VolumeCell::CreateTet4IntegrationCells( Mesh & mesh, Point::Point
         {
           tet[i] = points[t[i]];
         }
-        IntegrationCell * ic = Tet4IntegrationCell::CreateCell( mesh, this, position, tet );
-        integrationcells_.insert( ic );
+        NewTet4Cell( mesh, tet );
       }
     }
 
@@ -228,6 +256,43 @@ void GEO::CUT::VolumeCell::CreateTet4IntegrationCells( Mesh & mesh, Point::Point
 #endif
 }
 
+void GEO::CUT::VolumeCell::CreateTet4IntegrationCells( Mesh & mesh,
+                                                       const std::vector<std::vector<Point*> > & tets,
+                                                       const std::map<Facet*, std::vector<Point*> > & sides_xyz )
+{
+  for ( std::vector<std::vector<Point*> >::const_iterator i=tets.begin();
+        i!=tets.end();
+        ++i )
+  {
+    const std::vector<Point*> & tet = *i;
+    if ( tet.size()!=4 )
+    {
+      throw std::runtime_error( "tet expected" );
+    }
+    NewTet4Cell( mesh, tet );
+  }
+
+  for ( std::map<Facet*, std::vector<Point*> >::const_iterator i=sides_xyz.begin();
+        i!=sides_xyz.end();
+        ++i )
+  {
+    Facet * f = i->first;
+    const std::vector<Point*> & points = i->second;
+
+    std::size_t length = points.size();
+    if ( length % 3 != 0 )
+      throw std::runtime_error( "expect list of triangles" );
+
+    length /= 3;
+    std::vector<Point*> p( 3 );
+    for ( std::size_t i=0; i<length; ++i )
+    {
+      std::copy( &points[3*i], &points[3*( i+1 )], &p[0] );
+      Tri3BoundaryCell::CreateCell( mesh, this, f, p );
+    }
+  }
+}
+
 void GEO::CUT::VolumeCell::GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells )
 {
   std::copy( integrationcells_.begin(), integrationcells_.end(), std::inserter( cells, cells.begin() ) );
@@ -264,52 +329,62 @@ void GEO::CUT::VolumeCell::ConnectNodalDOFSets( bool include_inner )
   }
 }
 
-GEO::CUT::Point::PointPosition GEO::CUT::VolumeCell::Position()
+// GEO::CUT::Point::PointPosition GEO::CUT::VolumeCell::Position()
+// {
+//   bool haveundecided = false;
+//   bool havecutsurface = false;
+//   GEO::CUT::Point::PointPosition position = GEO::CUT::Point::undecided;
+//   for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
+//   {
+//     Facet * f = *i;
+//     GEO::CUT::Point::PointPosition fp = f->Position();
+//     switch ( fp )
+//     {
+//     case GEO::CUT::Point::undecided:
+//       haveundecided = true;
+//       break;
+//     case GEO::CUT::Point::oncutsurface:
+//       havecutsurface = true;
+//       break;
+//     case GEO::CUT::Point::inside:
+//     case GEO::CUT::Point::outside:
+//       if ( position!=GEO::CUT::Point::undecided and position!=fp )
+//       {
+//         throw std::runtime_error( "mixed facet set" );
+//       }
+//       position = fp;
+//     }
+//   }
+
+//   if ( haveundecided )
+//   {
+//     throw std::runtime_error( "undecided facet position" );
+//   }
+
+//   if ( position == GEO::CUT::Point::undecided )
+//   {
+//     throw std::runtime_error( "undecided volume position" );
+//   }
+
+//   return position;
+// }
+
+void GEO::CUT::VolumeCell::Position( Point::PointPosition position )
 {
-  bool havecutsurface = false;
-  GEO::CUT::Point::PointPosition position = GEO::CUT::Point::undecided;
-  for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  if ( position_ != position )
   {
-    Facet * f = *i;
-    GEO::CUT::Point::PointPosition fp = f->Position();
-    switch ( fp )
+    position_ = position;
+
+    for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
     {
-    case GEO::CUT::Point::undecided:
-      //throw std::runtime_error( "undecided facet position" );
-      break;
-    case GEO::CUT::Point::oncutsurface:
-      havecutsurface = true;
-      break;
-    case GEO::CUT::Point::inside:
-    case GEO::CUT::Point::outside:
-      if ( position!=GEO::CUT::Point::undecided and position!=fp )
+      Facet * f = *i;
+      Point::PointPosition fp = f->Position();
+      if ( fp==Point::undecided )
       {
-        throw std::runtime_error( "mixed facet set" );
+        f->Position( position );
       }
-      position = fp;
     }
   }
-
-  if ( position == GEO::CUT::Point::undecided )
-  {
-    //throw std::runtime_error( "undecided volume position" );
-    if ( havecutsurface )
-      position = GEO::CUT::Point::inside;
-    else
-      position = GEO::CUT::Point::outside;
-  }
-
-  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
-  {
-    Facet * f = *i;
-    GEO::CUT::Point::PointPosition fp = f->Position();
-    if ( fp==GEO::CUT::Point::undecided )
-    {
-      f->Position( position );
-    }
-  }
-
-  return position;
 }
 
 void GEO::CUT::VolumeCell::Print( std::ostream & stream )
@@ -341,6 +416,21 @@ bool GEO::CUT::VolumeCell::Contains( Point * p )
   return false;
 }
 
+void GEO::CUT::VolumeCell::NewBoundaryCell( Mesh & mesh, DRT::Element::DiscretizationType shape, Facet * f, const std::vector<Point*> & x )
+{
+  switch ( shape )
+  {
+  case DRT::Element::tri3:
+    NewTri3Cell( mesh, f, x );
+    break;
+  case DRT::Element::quad4:
+    NewQuad4Cell( mesh, f, x );
+    break;
+  default:
+    throw std::runtime_error( "unknown shape" );
+  }
+}
+
 void GEO::CUT::VolumeCell::NewTri3Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x )
 {
   f->NewTri3Cell( mesh, this, x, bcells_ );
@@ -365,4 +455,78 @@ double GEO::CUT::VolumeCell::Volume()
     volume += ic->Volume();
   }
   return volume;
+}
+
+void GEO::CUT::VolumeCell::NewIntegrationCell( Mesh & mesh, DRT::Element::DiscretizationType shape, const std::vector<Point*> & x )
+{
+  switch ( shape )
+  {
+  case DRT::Element::hex8:
+    NewHex8Cell( mesh, x );
+    break;
+  case DRT::Element::tet4:
+    NewTet4Cell( mesh, x );
+    break;
+  case DRT::Element::wedge6:
+    NewWedge6Cell( mesh, x );
+    break;
+  case DRT::Element::pyramid5:
+    NewPyramid5Cell( mesh, x );
+    break;
+  default:
+    throw std::runtime_error( "unknown shape" );
+  }
+}
+
+void GEO::CUT::VolumeCell::NewHex8Cell( Mesh & mesh, const std::vector<Point*> & points )
+{
+  Point::PointPosition position = Position();
+#if 0
+  integrationcells_.insert( mesh.NewHex8Cell( position, points, this ) );
+#else
+  std::vector<Point*> tet4_points( 4 );
+  for ( int i=0; i<5; ++i )
+  {
+    SetTetPoints( hex8totet4[i], points, tet4_points );
+    integrationcells_.insert( mesh.NewTet4Cell( position, tet4_points, this ) );
+  }
+#endif
+}
+
+GEO::CUT::IntegrationCell * GEO::CUT::VolumeCell::NewTet4Cell( Mesh & mesh, const std::vector<Point*> & points )
+{
+  Point::PointPosition position = Position();
+  IntegrationCell * ic = mesh.NewTet4Cell( position, points, this );
+  integrationcells_.insert( ic );
+  return ic;
+}
+
+void GEO::CUT::VolumeCell::NewWedge6Cell( Mesh & mesh, const std::vector<Point*> & points )
+{
+  Point::PointPosition position = Position();
+#if 0
+  integrationcells_.insert( mesh.NewWedge6Cell( position, points, this ) );
+#else
+  std::vector<Point*> tet4_points( 4 );
+  for ( int i=0; i<3; ++i )
+  {
+    SetTetPoints( wedge6totet4[i], points, tet4_points );
+    integrationcells_.insert( mesh.NewTet4Cell( position, tet4_points, this ) );
+  }
+#endif
+}
+
+void GEO::CUT::VolumeCell::NewPyramid5Cell( Mesh & mesh, const std::vector<Point*> & points )
+{
+  Point::PointPosition position = Position();
+#if 0
+  integrationcells_.insert( mesh.NewPyramid5Cell( position, points, this ) );
+#else
+  std::vector<Point*> tet4_points( 4 );
+  for ( int i=0; i<2; ++i )
+  {
+    SetTetPoints( pyramid5totet4[i], points, tet4_points );
+    integrationcells_.insert( mesh.NewTet4Cell( position, tet4_points, this ) );
+  }
+#endif
 }

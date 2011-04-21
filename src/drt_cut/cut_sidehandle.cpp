@@ -12,7 +12,7 @@ GEO::CUT::Tri6SideHandle::Tri6SideHandle( Mesh & mesh, int sid, const std::vecto
   nodes_.reserve( 4 );
   for ( int i=0; i<4; ++i )
   {
-    Node * n = mesh.GetNode( nodes[i], NULL );
+    Node * n = mesh.GetNode( nodes[i], static_cast<double*>( NULL ) );
     nodes_.push_back( n );
   }
 
@@ -49,7 +49,7 @@ GEO::CUT::Quad8SideHandle::Quad8SideHandle( Mesh & mesh, int sid, const std::vec
   nodes_.reserve( 8 );
   for ( int i=0; i<8; ++i )
   {
-    Node * n = mesh.GetNode( nodes[i], NULL );
+    Node * n = mesh.GetNode( nodes[i], static_cast<double*>( NULL ) );
     nodes_.push_back( n );
     n->Coordinates( &xyze( 0, i ) );
   }
@@ -103,7 +103,7 @@ GEO::CUT::Quad9SideHandle::Quad9SideHandle( Mesh & mesh, int sid, const std::vec
   nodes_.reserve( 9 );
   for ( int i=0; i<9; ++i )
   {
-    Node * n = mesh.GetNode( nodes[i], NULL );
+    Node * n = mesh.GetNode( nodes[i], static_cast<double*>( NULL ) );
     nodes_.push_back( n );
   }
 

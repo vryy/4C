@@ -6,7 +6,11 @@
 
 #include "cut_test_utils.H"
 
+#include "../../src/drt_cut/cut_side.H"
+#include "../../src/drt_cut/cut_intersection.H"
 #include "../../src/drt_cut/cut_meshintersection.H"
+#include "../../src/drt_cut/cut_tetmeshintersection.H"
+
 #include "../../src/drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 #define nxyz( x, y, z ) { if ( nodeids.count( #x#y#z )==0 ) { nodeids[#x#y#z] = nodeids.size(); }}
@@ -15,6 +19,71 @@
 #define nxyz3( x, y, z ) nxyz( x, y, z ); quad4_xyze( 0, 2 )=x; quad4_xyze( 1, 2 )=y; quad4_xyze( 2, 2 )=z; nids[2] = nodeids[#x#y#z];
 #define nxyz4( x, y, z ) nxyz( x, y, z ); quad4_xyze( 0, 3 )=x; quad4_xyze( 1, 3 )=y; quad4_xyze( 2, 3 )=z; nids[3] = nodeids[#x#y#z];
 
+
+void test_quad4_line2( double x1, double y1,
+                       double x2, double y2 )
+{
+  std::cout << "(" << x1 << "," << y1 << ")"
+            << "--"
+            << "(" << x2 << "," << y2 << ")\n";
+  GEO::CUT::Mesh mesh;
+
+  std::vector<double> xyz( 3 );
+
+  xyz[0] = x1;
+  xyz[1] = y1;
+  xyz[2] = 0;
+  GEO::CUT::Node * n1 = mesh.GetNode( 1, &xyz[0] );
+
+  xyz[0] = x2;
+  xyz[1] = y2;
+  GEO::CUT::Node * n2 = mesh.GetNode( 2, &xyz[0] );
+
+  GEO::CUT::Edge * edge = mesh.GetEdge( n1, n2 );
+
+  std::vector<GEO::CUT::Node*> nodes;
+  xyz[0] = 0;
+  xyz[1] = 0;
+  nodes.push_back( mesh.GetNode( 3, &xyz[0] ) );
+  xyz[0] = 1;
+  xyz[1] = 0;
+  nodes.push_back( mesh.GetNode( 4, &xyz[0] ) );
+  xyz[0] = 1;
+  xyz[1] = 1;
+  nodes.push_back( mesh.GetNode( 5, &xyz[0] ) );
+  xyz[0] = 0;
+  xyz[1] = 1;
+  nodes.push_back( mesh.GetNode( 6, &xyz[0] ) );
+
+  GEO::CUT::Side * side = mesh.GetSide( 1, nodes, shards::getCellTopologyData< shards::Quadrilateral<4> >() );
+  GEO::CUT::ConcreteSide<DRT::Element::quad4> * cs = dynamic_cast<GEO::CUT::ConcreteSide<DRT::Element::quad4>*>( side );
+
+  GEO::CUT::Intersection<DRT::Element::line2, DRT::Element::quad4> intersection( mesh, *edge, *cs );
+
+  std::set<GEO::CUT::Point*, GEO::CUT::PointPidLess> cuts;
+  bool does = intersection.Intersect( cuts );
+
+  std::cout << "does intersect: " << does << "  " << cuts.size() << "\n";
+  for ( std::set<GEO::CUT::Point*, GEO::CUT::PointPidLess>::iterator i=cuts.begin(); i!=cuts.end(); ++i )
+  {
+    GEO::CUT::Point * p = *i;
+    p->Plot( std::cout );
+  }
+
+  mesh.Status();
+
+  if ( cuts.size()!=2 )
+    throw std::runtime_error( "two cuts expected" );
+}
+
+void test_quad4_line2()
+{
+  test_quad4_line2(  0.5,  1,   1.5, 1   );
+  test_quad4_line2(  0.5,  0.5, 1.5, 0.5 );
+  test_quad4_line2( -0.5,  0.5, 1.5, 0.5 );
+  test_quad4_line2( -0.5,  0  , 1.5, 0   );
+  test_quad4_line2( -0.5, -0.5, 1.5, 1.5 );
+}
 
 void test_hex8_quad4_qhull1()
 {
@@ -705,6 +774,186 @@ void test_hex8_quad4_alex8()
   intersection.Status();
   intersection.Cut( true );
   intersection.Status();
+}
+
+void test_tet4_quad4_alex9()
+{
+  GEO::CUT::MeshIntersection intersection;
+
+  std::vector<int> nids( 4 );
+
+  Epetra_SerialDenseMatrix quad4_xyze( 3, 4 );
+
+  std::map<std::string, int> nodeids;
+
+  nxyz1(1.1373961924174400551,0.43783278788480001209,0.015000075099999999467);
+  nxyz2(1.1372558011327500438,0.43786377186006097961,1.3891340300000000002e-19);
+  nxyz3(1.1633039901419599538,0.51827976384601803783,0);
+  nxyz4(1.1633580248937700485,0.51825684289835904917,0.015000075099999999467);
+
+  GEO::CUT::SideHandle * s1 = intersection.AddCutSide( 1, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(1.1372558011327500438,0.43786377186006097961,1.3891340300000000002e-19);
+  nxyz2(1.1373961924222799613,0.43783278790287999405,-0.015000075099999999467);
+  nxyz3(1.1633580249045900601,0.5182568428569539476,-0.015000075099999999467);
+  nxyz4(1.1633039901419599538,0.51827976384601803783,0);
+
+  GEO::CUT::SideHandle * s2 = intersection.AddCutSide( 2, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(1.0863570485981299818,0.54164967699933597167,5.1690185600000003046e-19);
+  nxyz2(1.0862518404856800203,0.54179921727229496398,0.015000075099999999467);
+  nxyz3(1.1633580248937700485,0.51825684289835904917,0.015000075099999999467);
+  nxyz4(1.1633039901419599538,0.51827976384601803783,0);
+
+  GEO::CUT::SideHandle * s3 = intersection.AddCutSide( 3, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(1.0862518404756100754,0.54179921727284197086,-0.015000075099999999467);
+  nxyz2(1.0863570485981299818,0.54164967699933597167,5.1690185600000003046e-19);
+  nxyz3(1.1633039901419599538,0.51827976384601803783,0);
+  nxyz4(1.1633580249045900601,0.5182568428569539476,-0.015000075099999999467);
+
+  GEO::CUT::SideHandle * s4 = intersection.AddCutSide( 4, nids, quad4_xyze, DRT::Element::quad4 );
+
+  Epetra_SerialDenseMatrix tet4_xyze( 3, 4 );
+
+  tet4_xyze(0,0) = 1.1271155608629783718;
+  tet4_xyze(1,0) = 0.52928799201809972885;
+  tet4_xyze(2,0) = 0.0050000250499999997558;
+  tet4_xyze(0,1) = 1.1633039901419599538;
+  tet4_xyze(1,1) = 0.51827976384601803783;
+  tet4_xyze(2,1) = 0;
+  tet4_xyze(0,2) = 1.1530126441206562937;
+  tet4_xyze(1,2) = 0.48640879576505308135;
+  tet4_xyze(2,2) = 0.0050000250499999997558;
+  tet4_xyze(0,3) = 1.127115560864781596;
+  tet4_xyze(1,3) = 0.52928799201042275868;
+  tet4_xyze(2,3) = -0.0050000250499999988885;
+
+  nids.clear();
+  for ( int i=0; i<4; ++i )
+    nids.push_back( i );
+
+  GEO::CUT::ElementHandle * e = intersection.AddElement( 1, nids, tet4_xyze, DRT::Element::tet4 );
+
+  std::set<GEO::CUT::Side*> cut_sides;
+  s1->CollectSides( cut_sides );
+  s2->CollectSides( cut_sides );
+  s3->CollectSides( cut_sides );
+  s4->CollectSides( cut_sides );
+
+  std::vector<std::vector<int> > tets( 1 );
+  std::vector<int> & tet = tets.back();
+  tet.reserve( 4 );
+  std::vector<int> accept_tets( 1, true );
+
+  const std::vector<GEO::CUT::Node*> & nodes = e->Nodes();
+  std::vector<GEO::CUT::Point*> points;
+  points.reserve( 4 );
+  for ( std::vector<GEO::CUT::Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+  {
+    GEO::CUT::Node * n = *i;
+    tet.push_back( points.size() );
+    points.push_back( n->point() );
+  }
+
+#if 0
+  GEO::CUT::TetMeshIntersection tmi( tets, accept_tets, points, cut_sides );
+  tmi.Cut();
+#else
+  intersection.Status();
+  intersection.Cut( true );
+  intersection.Status();
+#endif
+}
+
+void test_tet4_quad4_alex10()
+{
+  GEO::CUT::MeshIntersection intersection;
+
+  std::vector<int> nids( 4 );
+
+  Epetra_SerialDenseMatrix quad4_xyze( 3, 4 );
+
+  std::map<std::string, int> nodeids;
+
+  nxyz1(1.1373961924174400551,0.43783278788480001209,0.015000075099999999467);
+  nxyz2(1.1372558011327500438,0.43786377186006097961,1.3891340300000000002e-19);
+  nxyz3(1.1633039901419599538,0.51827976384601803783,0);
+  nxyz4(1.1633580248937700485,0.51825684289835904917,0.015000075099999999467);
+
+  GEO::CUT::SideHandle * s1 = intersection.AddCutSide( 1, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(1.1372558011327500438,0.43786377186006097961,1.3891340300000000002e-19);
+  nxyz2(1.1373961924222799613,0.43783278790287999405,-0.015000075099999999467);
+  nxyz3(1.1633580249045900601,0.5182568428569539476,-0.015000075099999999467);
+  nxyz4(1.1633039901419599538,0.51827976384601803783,0);
+
+  GEO::CUT::SideHandle * s2 = intersection.AddCutSide( 2, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(1.0863570485981299818,0.54164967699933597167,5.1690185600000003046e-19);
+  nxyz2(1.0862518404856800203,0.54179921727229496398,0.015000075099999999467);
+  nxyz3(1.1633580248937700485,0.51825684289835904917,0.015000075099999999467);
+  nxyz4(1.1633039901419599538,0.51827976384601803783,0);
+
+  GEO::CUT::SideHandle * s3 = intersection.AddCutSide( 3, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(1.0862518404756100754,0.54179921727284197086,-0.015000075099999999467);
+  nxyz2(1.0863570485981299818,0.54164967699933597167,5.1690185600000003046e-19);
+  nxyz3(1.1633039901419599538,0.51827976384601803783,0);
+  nxyz4(1.1633580249045900601,0.5182568428569539476,-0.015000075099999999467);
+
+  GEO::CUT::SideHandle * s4 = intersection.AddCutSide( 4, nids, quad4_xyze, DRT::Element::quad4 );
+
+  Epetra_SerialDenseMatrix tet4_xyze( 3, 4 );
+
+  tet4_xyze(0,0) = 1.1530126441231649537;
+  tet4_xyze(1,0) = 0.4864087957581522681;
+  tet4_xyze(2,0) = -0.0050000250499999988885;
+  tet4_xyze(0,1) = 1.127115560864781596;
+  tet4_xyze(1,1) = 0.52928799201042275868;
+  tet4_xyze(2,1) = -0.0050000250499999988885;
+  tet4_xyze(0,2) = 1.0909091200000000654;
+  tet4_xyze(1,2) = 0.45454546800000000806;
+  tet4_xyze(2,2) = -0.010000050099999999512;
+  tet4_xyze(0,3) = 1.1530126441206562937;
+  tet4_xyze(1,3) = 0.48640879576505308135;
+  tet4_xyze(2,3) = 0.0050000250499999997558;
+
+  nids.clear();
+  for ( int i=0; i<4; ++i )
+    nids.push_back( i );
+
+  GEO::CUT::ElementHandle * e = intersection.AddElement( 1, nids, tet4_xyze, DRT::Element::tet4 );
+
+  std::set<GEO::CUT::Side*> cut_sides;
+  s1->CollectSides( cut_sides );
+  s2->CollectSides( cut_sides );
+  s3->CollectSides( cut_sides );
+  s4->CollectSides( cut_sides );
+
+  std::vector<std::vector<int> > tets( 1 );
+  std::vector<int> & tet = tets.back();
+  tet.reserve( 4 );
+  std::vector<int> accept_tets( 1, true );
+
+  const std::vector<GEO::CUT::Node*> & nodes = e->Nodes();
+  std::vector<GEO::CUT::Point*> points;
+  points.reserve( 4 );
+  for ( std::vector<GEO::CUT::Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+  {
+    GEO::CUT::Node * n = *i;
+    tet.push_back( points.size() );
+    points.push_back( n->point() );
+  }
+
+#if 0
+  GEO::CUT::TetMeshIntersection tmi( tets, accept_tets, points, cut_sides );
+  tmi.Cut();
+#else
+  intersection.Status();
+  intersection.Cut( true );
+  intersection.Status();
+#endif
 }
 
 void test_hex8_tri3_ursula1()

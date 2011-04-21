@@ -181,62 +181,6 @@ void GEO::CUT::Side::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcell
   }
 }
 
-void GEO::CUT::Side::CreateLineSegmentList( Mesh & mesh,
-                                                  Element * element,
-                                                  std::vector<Teuchos::RCP<LineSegment> > & segments,
-                                                  bool inner )
-{
-  std::set<Line*> cut_lines;
-
-  for ( std::vector<Line*>::const_iterator i=cut_lines_.begin(); i!=cut_lines_.end(); ++i )
-  {
-    Line * l = *i;
-    if ( l->IsCut( element ) )
-    {
-      cut_lines.insert( l );
-    }
-  }
-
-  while ( cut_lines.size() )
-  {
-    LineSegment * ls = new LineSegment( mesh, element, this, cut_lines, inner );
-    segments.push_back( Teuchos::rcp( ls ) );
-  }
-}
-
-void GEO::CUT::Side::CreateLineSegment( Mesh & mesh, Element * element )
-{
-  std::vector<Teuchos::RCP<LineSegment> > segments;
-
-  CreateLineSegmentList( mesh, element, segments, true );
-
-  for ( unsigned i=0; i<segments.size(); ++i )
-  {
-    if ( segments[i] != Teuchos::null )
-    {
-      LineSegment & s1 = *segments[i];
-      for ( unsigned j=i+1; j<segments.size(); ++j )
-      {
-        if ( segments[j] != Teuchos::null )
-        {
-          LineSegment & s2 = *segments[j];
-          if ( s1.Combine( mesh, element, this, s2 ) )
-          {
-            segments[j] = Teuchos::null;
-          }
-        }
-      }
-    }
-  }
-
-#if 0
-  std::vector<Teuchos::RCP<LineSegment> >::iterator i
-    = std::remove_if( segments.begin(), segments.end(),
-                      std::bind2nd( std::equal_to<Teuchos::RCP<LineSegment> >(), Teuchos::null ) );
-  segments.erase( i, segments.end() );
-#endif
-}
-
 void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & filter, std::set<Facet*> & facets )
 {
   if ( facets_.size()==0 )
@@ -283,8 +227,7 @@ void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & f
 
 void GEO::CUT::Side::MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
 {
-  std::vector<Teuchos::RCP<LineSegment> > segments;
-//   CreateLineSegmentList( mesh, element, segments, false );
+  LineSegmentList lsl;
 
   std::set<Line*> cut_lines;
 
@@ -299,12 +242,10 @@ void GEO::CUT::Side::MakeSideCutFacets( Mesh & mesh, Element * element, std::set
     }
   }
 
-  while ( cut_lines.size() )
-  {
-    segments.push_back( Teuchos::rcp( new LineSegment( mesh, element, this, cut_lines, false ) ) );
-  }
+  lsl.Create( mesh, element, this, cut_lines, false );
 
-  for ( std::vector<Teuchos::RCP<LineSegment> >::iterator i=segments.begin(); i!=segments.end(); ++i )
+  const std::vector<Teuchos::RCP<LineSegment> > & segments = lsl.Segments();
+  for ( std::vector<Teuchos::RCP<LineSegment> >::const_iterator i=segments.begin(); i!=segments.end(); ++i )
   {
     LineSegment & ls = **i;
     if ( ls.IsClosed() )
@@ -328,8 +269,10 @@ void GEO::CUT::Side::MakeSideCutFacets( Mesh & mesh, Element * element, std::set
 
 void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
 {
-  std::vector<Teuchos::RCP<LineSegment> > segments;
-  CreateLineSegmentList( mesh, element, segments, false );
+  LineSegmentList lsl;
+  lsl.Create( mesh, element, this, false );
+
+  const std::vector<Teuchos::RCP<LineSegment> > & segments = lsl.Segments();
 
   for ( unsigned i=0; i<segments.size(); ++i )
   {
@@ -352,6 +295,8 @@ void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, std::se
       if ( f!=NULL )
       {
         f->ExchangeSide( this, true );
+        facets.insert( f );
+        facets_.push_back( f );
       }
       else
       {
@@ -361,6 +306,7 @@ void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, std::se
         // levelset case
         Facet * f = mesh.NewFacet( facet_points, this, true );
         facets.insert( f );
+        facets_.push_back( f );
       }
     }
     else
@@ -369,6 +315,7 @@ void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, std::se
       const std::vector<Point*> & facet_points = ls.Points();
       Facet * f = mesh.NewFacet( facet_points, this, true );
       facets.insert( f );
+      facets_.push_back( f );
     }
   }
 }

@@ -5,11 +5,12 @@
 #include "cut_position.H"
 #include "cut_facet.H"
 #include "cut_volumecell.H"
+#include "cut_tetmesh.H"
+#include "cut_element.H"
+#include "cut_linesegment.H"
 
 #include <string>
 #include <stack>
-
-#include "cut_element.H"
 
 bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side )
 {
@@ -76,7 +77,9 @@ bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side )
   if ( cut )
   {
     // create any remaining cut lines
-    side.CreateLineSegment( mesh, this );
+    //side.CreateLineSegment( mesh, this );
+    LineSegmentList lsl;
+    lsl.Create( mesh, this, &side );
 
     cut_faces_.insert( &side );
     return true;
@@ -297,6 +300,52 @@ void GEO::CUT::Element::GetCutPoints( std::set<Point*> & cut_points )
       side->GetCutPoints( this, *other, cut_points );
     }
   }
+}
+
+void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh )
+{
+  if ( not active_ )
+    return;
+
+#ifdef DEBUGCUTLIBRARY
+  {
+    std::ofstream file( "volume.plot" );
+    for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+    {
+      VolumeCell * vc = *i;
+      vc->Print( file );
+    }
+  }
+#endif
+
+  if ( cells_.size()==1 )
+  {
+    VolumeCell * vc = *cells_.begin();
+    if ( vc->CreateSingleElementIntegrationCell( mesh ) )
+    {
+      return;
+    }
+  }
+
+  std::set<Point*> cut_points;
+
+  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  {
+    Facet * f = *i;
+    f->GetAllPoints( mesh, cut_points );
+  }
+
+  std::vector<Point*> points;
+  points.reserve( cut_points.size() );
+  points.assign( cut_points.begin(), cut_points.end() );
+
+  // sort points that go into qhull to obtain the same result independent of
+  // pointer values (compiler flags, code structure, memory usage, ...)
+  std::sort( points.begin(), points.end(), PointPidLess() );
+
+  TetMesh tetmesh( points, facets_, false );
+
+  tetmesh.CreateElementTets( mesh, this, cells_, cut_faces_ );
 }
 
 void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )

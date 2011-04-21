@@ -430,6 +430,11 @@ void GEO::CUT::Facet::Position( Point::PointPosition pos )
           p->Position( pos );
         }
       }
+      for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+      {
+        VolumeCell * c = *i;
+        c->Position( pos );
+      }
     }
   }
 }
@@ -607,6 +612,23 @@ bool GEO::CUT::Facet::Touches( Facet * f )
   return false;
 }
 
+GEO::CUT::VolumeCell * GEO::CUT::Facet::Neighbor( VolumeCell * cell )
+{
+  if ( cells_.size() > 2 )
+    throw std::runtime_error( "can only have two neighbors" );
+  if ( cells_.count( cell )==0 )
+    throw std::runtime_error( "not my neighbor" );
+  for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+  {
+    VolumeCell * vc = *i;
+    if ( vc != cell )
+    {
+      return vc;
+    }
+  }
+  return NULL;
+}
+
 void GEO::CUT::Facet::Neighbors( Point * p,
                                  const std::set<VolumeCell*> & cells,
                                  const std::set<VolumeCell*> & done,
@@ -719,6 +741,17 @@ unsigned GEO::CUT::Facet::Normal( const std::vector<Point*> & points,
 
   b3.Scale( 1./b3.Norm2() );
   return i;
+}
+
+void GEO::CUT::Facet::TriangulationPoints( std::set<Point*> & points )
+{
+  for ( std::vector<std::vector<Point*> >::const_iterator i=triangulation_.begin();
+        i!=triangulation_.end();
+        ++i )
+  {
+    const std::vector<Point*> & tri = *i;
+    std::copy( tri.begin(), tri.end(), std::inserter( points, points.begin() ) );
+  }
 }
 
 void GEO::CUT::Facet::NewTri3Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, std::set<BoundaryCell*> & bcells )

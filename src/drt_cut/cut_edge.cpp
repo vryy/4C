@@ -18,9 +18,8 @@ bool GEO::CUT::Edge::FindCutPoints( Mesh & mesh,
                                     Side & side,
                                     Side & other )
 {
-#if 1
   bool cut = false;
-  for ( std::set<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
+  for ( std::vector<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
     Point * p = *i;
     if ( p->IsCut( &other ) )
@@ -33,7 +32,6 @@ bool GEO::CUT::Edge::FindCutPoints( Mesh & mesh,
   {
     return true;
   }
-#endif
 
   // test for the cut of edge and side
 
@@ -63,7 +61,7 @@ void GEO::CUT::Edge::GetCutPoints( Element * element,
                                    Side & other,
                                    std::set<Point*> & cuts )
 {
-  for ( std::set<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
+  for ( std::vector<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
     Point * p = *i;
     if ( p->IsCut( &other ) and p->IsCut( element ) )
@@ -73,29 +71,58 @@ void GEO::CUT::Edge::GetCutPoints( Element * element,
   }
 }
 
+void GEO::CUT::Edge::GetCutPoints( Edge * other, std::set<Point*> & cuts )
+{
+  for ( std::vector<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
+  {
+    Point * p = *i;
+    if ( p->IsCut( other ) )
+    {
+      cuts.insert( p );
+    }
+  }
+}
 
 void GEO::CUT::Edge::AddPoint( Point* cut_point )
 {
+  // make sure the position of the point on this edge is known
+  cut_point->t( this );
+
+#if 1
+  std::vector<Point*>::iterator j = std::lower_bound( cut_points_.begin(), cut_points_.end(), cut_point, PointPositionLess( this ) );
+  if ( j==cut_points_.end() or *j!=cut_point )
+  {
+    cut_points_.push_back( cut_point );
+    std::sort( cut_points_.begin(), cut_points_.end(), PointPositionLess( this ) );
+  }
+#else
   cut_points_.insert( cut_point );
+#endif
+#ifdef DEBUGCUTLIBRARY
+  std::set<Point*> cp;
+  std::copy( cut_points_.begin(), cut_points_.end(), std::inserter( cp, cp.begin() ) );
+  if ( cut_points_.size() != cp.size() )
+    throw std::runtime_error( "broken cut points" );
+#endif
 }
 
 void GEO::CUT::Edge::CutPoint( Node* edge_start, Node* edge_end, std::vector<Point*> & edge_points )
 {
   if ( BeginNode()==edge_start and EndNode()==edge_end )
   {
-    std::set<Point*, PointPositionLess>::iterator bi = cut_points_.begin();
-    std::set<Point*, PointPositionLess>::iterator ei = cut_points_.end();
+//     std::set<Point*, PointPositionLess>::iterator bi = cut_points_.begin();
+//     std::set<Point*, PointPositionLess>::iterator ei = cut_points_.end();
 
     edge_points.clear();
-    edge_points.assign( bi, ei );
+    edge_points.assign( cut_points_.begin(), cut_points_.end() );
   }
   else if ( EndNode()==edge_start and BeginNode()==edge_end )
   {
-    std::set<Point*, PointPositionLess>::reverse_iterator bi = cut_points_.rbegin();
-    std::set<Point*, PointPositionLess>::reverse_iterator ei = cut_points_.rend();
+//     std::set<Point*, PointPositionLess>::reverse_iterator bi = cut_points_.rbegin();
+//     std::set<Point*, PointPositionLess>::reverse_iterator ei = cut_points_.rend();
 
     edge_points.clear();
-    edge_points.assign( bi, ei );
+    edge_points.assign( cut_points_.rbegin(), cut_points_.rend() );
   }
   else
   {
@@ -106,7 +133,7 @@ void GEO::CUT::Edge::CutPoint( Node* edge_start, Node* edge_end, std::vector<Poi
 void GEO::CUT::Edge::CutPoints( Side * side, std::set<Point*, PointPidLess> & cut_points )
 {
   SideCutFilter filter( side );
-  for ( std::set<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
+  for ( std::vector<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
     Point * p = *i;
     std::set<Line*> cut_lines;
@@ -120,8 +147,16 @@ void GEO::CUT::Edge::CutPoints( Side * side, std::set<Point*, PointPidLess> & cu
 
 void GEO::CUT::Edge::CutPointsBetween( Point* begin, Point* end, std::vector<Point*> & line )
 {
-  std::set<Point*, PointPositionLess>::iterator bi = cut_points_.find( begin );
-  std::set<Point*, PointPositionLess>::iterator ei = cut_points_.find( end );
+//   std::set<Point*, PointPositionLess>::iterator bi = cut_points_.find( begin );
+//   std::set<Point*, PointPositionLess>::iterator ei = cut_points_.find( end );
+  std::vector<Point*>::iterator bi = std::lower_bound( cut_points_.begin(), cut_points_.end(), begin, PointPositionLess( this ) );
+  std::vector<Point*>::iterator ei = std::lower_bound( cut_points_.begin(), cut_points_.end(), end  , PointPositionLess( this ) );
+
+  if ( *bi != begin )
+    bi = cut_points_.end();
+
+  if ( *ei != end )
+    ei = cut_points_.end();
 
   double bt = begin->t( this );
   double et = end->t( this );
@@ -153,7 +188,7 @@ void GEO::CUT::Edge::CutPointsBetween( Point* begin, Point* end, std::vector<Poi
 
 void GEO::CUT::Edge::CutPointsInside( Element * element, std::vector<Point*> & line )
 {
-  for ( std::set<Point*, PointPositionLess>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
+  for ( std::vector<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
     Point * p = *i;
     if ( p->IsCut( element ) )
@@ -165,7 +200,7 @@ void GEO::CUT::Edge::CutPointsInside( Element * element, std::vector<Point*> & l
 
 bool GEO::CUT::Edge::IsCut( Side * side )
 {
-  for ( std::set<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
+  for ( std::vector<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
     Point * p = *i;
     if ( p->IsCut( side ) )

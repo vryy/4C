@@ -107,6 +107,8 @@ public:
 
   bool Touches( Facet * f );
 
+  VolumeCell * Neighbor( VolumeCell * cell );
+
   void Neighbors( Point * p,
                   const std::set<VolumeCell*> & cells,
                   const std::set<VolumeCell*> & done,
@@ -118,6 +120,20 @@ public:
   const std::vector<Point*> & CornerPoints() const { return corner_points_; }
 
   const std::vector<std::vector<Point*> > & Triangulation() const { return triangulation_; }
+
+  void TriangulationPoints( std::set<Point*> & points );
+
+  void AllPoints( std::set<Point*> & points )
+  {
+    if ( IsTriangulated() )
+    {
+      TriangulationPoints( points );
+    }
+    else
+    {
+      std::copy( points_.begin(), points_.end(), std::inserter( points, points.begin() ) );
+    }
+  }
 
   void NewTri3Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, std::set<BoundaryCell*> & bcells );
 
@@ -138,6 +154,8 @@ public:
   const std::set<Facet*> & Holes() const { return holes_; }
 
   unsigned NumPoints();
+
+  const std::set<VolumeCell*> & Cells() const { return cells_; }
 
 private:
 

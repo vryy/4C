@@ -1,6 +1,9 @@
 #ifndef CUT_SIDE_H
 #define CUT_SIDE_H
 
+#include <Shards_BasicTopologies.hpp>
+#include <Shards_CellTopologyTraits.hpp>
+
 #include "cut_node.H"
 #include "cut_edge.H"
 #include "cut_tolerance.H"
@@ -46,6 +49,8 @@ public:
   }
 
   virtual DRT::Element::DiscretizationType Shape() = 0;
+
+  virtual const CellTopologyData * Topology() = 0;
 
   virtual void Cut( Mesh & mesh, Edge & edge, std::set<Point*, PointPidLess> & cut_points ) = 0;
 
@@ -104,22 +109,21 @@ public:
 
   const std::vector<Node*> & Nodes() const { return nodes_; }
 
-  void CreateLineSegment( Mesh & mesh, Element * element );
-
   bool FindCutPoints( Mesh & mesh, Element * element, Side & other );
 
   bool FindCutLines( Mesh & mesh, Element * element, Side & other );
 
   void GetCutPoints( Element * element, Side & other, std::set<Point*> & cuts );
 
+  const std::vector<Line*> & CutLines() const { return cut_lines_; }
+
+  const std::set<Element*> & Elements() const { return elements_; }
+
+  const std::vector<Facet*> & Facets() const { return facets_; }
+
 protected:
 
   bool AllOnNodes( const std::set<Point*> & points );
-
-  void CreateLineSegmentList( Mesh & mesh,
-                              Element * element,
-                              std::vector<Teuchos::RCP<LineSegment> > & segments,
-                              bool inner=false );
 
   std::vector<Line*> cut_lines_;
 
@@ -153,6 +157,11 @@ public:
   virtual DRT::Element::DiscretizationType Shape()
   {
     return DRT::Element::tri3;
+  }
+
+  virtual const CellTopologyData * Topology()
+  {
+    return shards::getCellTopologyData< shards::Triangle<3> >();
   }
 
   virtual void Cut( Mesh & mesh, Edge & edge, std::set<Point*, PointPidLess> & cut_points )
@@ -190,6 +199,11 @@ public:
   virtual DRT::Element::DiscretizationType Shape()
   {
     return DRT::Element::quad4;
+  }
+
+  virtual const CellTopologyData * Topology()
+  {
+    return shards::getCellTopologyData< shards::Quadrilateral<4> >();
   }
 
   virtual void Cut( Mesh & mesh, Edge & edge, std::set<Point*, PointPidLess> & cut_points )

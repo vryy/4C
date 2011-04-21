@@ -13,7 +13,7 @@ GEO::CUT::Point * GEO::CUT::Point::NewPoint( Mesh & mesh, const double * x, doub
 {
   Point * p = mesh.NewPoint( x, cut_edge, cut_side );
   p->Position( Point::oncutsurface );
-  p->t( cut_edge, t );
+  //p->t( cut_edge, t );
   return p;
 }
 
@@ -171,6 +171,12 @@ double GEO::CUT::Point::t( Edge* edge )
 
     if ( p1==p2 )
       return 0;
+
+    if ( p1==this )
+      return -1;
+
+    if ( p2==this )
+      return 1;
 
     LINALG::Matrix<3, 1> x;
     LINALG::Matrix<3, 1> x1;

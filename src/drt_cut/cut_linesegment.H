@@ -64,6 +64,22 @@ private:
   bool closed_;
 };
 
+class LineSegmentList
+{
+public:
+
+  void Create( Mesh & mesh, Element * element, Side * side );
+
+  void Create( Mesh & mesh, Element * element, Side * side, bool inner );
+
+  void Create( Mesh & mesh, Element * element, Side * side, std::set<Line*> & lines, bool inner );
+
+  const std::vector<Teuchos::RCP<LineSegment> > & Segments() const { return segments_; }
+
+private:
+  std::vector<Teuchos::RCP<LineSegment> > segments_;
+};
+
 }
 }
 

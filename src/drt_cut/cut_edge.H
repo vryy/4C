@@ -76,8 +76,8 @@ class Edge
 public:
 
   explicit Edge( const std::vector<Node*> & nodes )
-    : nodes_( nodes ),
-      cut_points_( PointPositionLess( this ) )
+    : nodes_( nodes )
+      //cut_points_( PointPositionLess( this ) )
   {
     for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
     {
@@ -180,13 +180,19 @@ public:
 
   void GetCutPoints( Element * element, Side & side, Side & other, std::set<Point*> & cuts );
 
+  void GetCutPoints( Edge * other, std::set<Point*> & cuts );
+
+  //const std::set<Point*, PointPositionLess> & CutPoints() const { return cut_points_; }
+  const std::vector<Point*> & CutPoints() const { return cut_points_; }
+
 private:
 
   std::vector<Node*> nodes_;
 
   std::set<Side*> sides_;
 
-  std::set<Point*, PointPositionLess> cut_points_;
+  std::vector<Point*> cut_points_;
+  //std::set<Point*, PointPositionLess> cut_points_;
 };
 
 

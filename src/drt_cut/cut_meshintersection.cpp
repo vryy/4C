@@ -1,10 +1,10 @@
 
 #include "cut_meshintersection.H"
 
-void GEO::CUT::MeshIntersection::AddElement( int eid,
-                                             const std::vector<int> & nids,
-                                             const Epetra_SerialDenseMatrix & xyz,
-                                             DRT::Element::DiscretizationType distype )
+GEO::CUT::ElementHandle * GEO::CUT::MeshIntersection::AddElement( int eid,
+                                                                  const std::vector<int> & nids,
+                                                                  const Epetra_SerialDenseMatrix & xyz,
+                                                                  DRT::Element::DiscretizationType distype )
 {
   for ( std::vector<Teuchos::RCP<MeshHandle> >::iterator i=cut_mesh_.begin();
         i!=cut_mesh_.end();
@@ -33,27 +33,26 @@ void GEO::CUT::MeshIntersection::AddElement( int eid,
       }
 
       // create element
-      mesh_.CreateElement( eid, nids, distype );
-
-      return;
+      return mesh_.CreateElement( eid, nids, distype );
     }
   }
+  return NULL;
 }
 
-void GEO::CUT::MeshIntersection::AddCutSide( int sid,
-                                             const std::vector<int> & nids,
-                                             DRT::Element::DiscretizationType distype,
-                                             int mi )
+GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::AddCutSide( int sid,
+                                                               const std::vector<int> & nids,
+                                                               DRT::Element::DiscretizationType distype,
+                                                               int mi )
 {
   // create side
-  cut_mesh_[mi]->CreateSide( sid, nids, distype );
+  return cut_mesh_[mi]->CreateSide( sid, nids, distype );
 }
 
-void GEO::CUT::MeshIntersection::AddCutSide( int sid,
-                                             const std::vector<int> & nids,
-                                             const Epetra_SerialDenseMatrix & xyz,
-                                             DRT::Element::DiscretizationType distype,
-                                             int mi )
+GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::AddCutSide( int sid,
+                                                               const std::vector<int> & nids,
+                                                               const Epetra_SerialDenseMatrix & xyz,
+                                                               DRT::Element::DiscretizationType distype,
+                                                               int mi )
 {
   Mesh & cut_mesh = CutMesh( mi );
 
@@ -83,7 +82,7 @@ void GEO::CUT::MeshIntersection::AddCutSide( int sid,
 //     return;
 
   // create side
-  cut_mesh_[mi]->CreateSide( sid, nids, distype );
+  return cut_mesh_[mi]->CreateSide( sid, nids, distype );
 }
 
 void GEO::CUT::MeshIntersection::Cut( bool include_inner )
