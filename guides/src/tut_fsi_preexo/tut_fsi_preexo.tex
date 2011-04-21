@@ -218,7 +218,7 @@ details how to work with it and how to get valid input files.
 \label{tut_fsi_preexo:baci}
 To start the solver use the call 
 \begin{center}
-	\verb|./cca_fc6_ser.fast [inputdirectory]/your_example.dat [outputdirectory]/outputprefix|
+	\verb|./baci-release [inputdirectory]/your_example.dat [outputdirectory]/outputprefix|
 \end{center}
 (in the \baci{}-directory). The results are then written to
 the result directory with the prefix you chose.
@@ -267,7 +267,7 @@ Therefore we assign:
  \item \verb|*eb1="ELEMENT"| \qquad the structure elements
  \begin{small} \begin{verbatim}
  sectionname="STRUCTURE"
- description="MAT 1 EAS sosh8 THICKDIR auto"
+ description="MAT 1 EAS sosh8 ANS sosh8 THICKDIR auto"
  elementname="SOLIDSH8"
  \end{verbatim} \end{small}
  \item \verb|*ns1="CONDITION"| \qquad clamping
@@ -318,6 +318,8 @@ description="1 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
 
 \end{itemize}
 
+For Dirichlet conditions the first 6 entries are the flags specifying which degrees of freedom are to be prescribed, where \verb|1| means Dirichlet condition is applied and \verb|0| corresponds to a free degree of freedom. In structure computations the first three flags corresponds to displacements in $x$, $y$ and $z$ direction, respectively. Flags four to six are ignored here. The next six entries of the \verb|description| specify the values of the prescribed displacements. Subsequently six time dependent curve ids can be given, corresponding to the \verb|CURVE| section in the \head. Finally six spatial function ids can be defined, corresponding to the \verb|FUNCT| section in the \head. \verb|CURVE| and \verb|FUNCT| are evaluated and their values are multiplied with the values defined before.
+
 Safe the file under a different name, e.g. 'dc\_struct.bc'.
 
 \subsection{Creating \baci{} Input File and Running the Simulation}
@@ -360,7 +362,7 @@ Safe the file under a different name, e.g. 'dc\_fluid.head'.
 For the pure fluid simulation we assign:
 
 \begin{itemize}
- \item \verb|*eb1="ELEMENT"| \qquad the fluid elements
+ \item \verb|*eb2="ELEMENT"| \qquad the fluid elements
  \begin{small} \begin{verbatim}
 sectionname="FLUID"
 description="MAT 1 NA Euler GP 2 2 2"
@@ -456,8 +458,9 @@ description="1 1 1 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  0
 \begin{small} \begin{verbatim} sectionname="DESIGN POINT DIRICH CONDITIONS"
 description="1 1 1 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  1 none none none none none  0 0 0 0 0 0"
 \end{verbatim} \end{small}
-
 \end{itemize}
+Fluid Dirichlet conditions differ from structure Dirichlet conditions only in the meaning of the first values. Instead of displacements, here velocities (two in 2d, three in 3d) and pressure values can be described. 
+
 Safe the file under a different name, e.g. 'dc\_fluid.bc'.
 
 \subsection{Creating \baci{} Input File and Running the Simulation}
@@ -505,13 +508,13 @@ Safe the file under a different name, e.g. 'dc\_fsi.head'.
 We assume that you merged the 'bc-files', so the following entities have to be changed:
 
 \begin{itemize}
- \item \verb|*eb0="ELEMENT"| \qquad the structure elements with their material
+ \item \verb|*eb1="ELEMENT"| \qquad the structure elements with their material
  \begin{small} \begin{verbatim}
  sectionname="STRUCTURE"
- description="MAT 1 EAS sosh8 THICKDIR auto"
+ description="MAT 1 EAS sosh8 ANS sosh8 THICKDIR auto"
  elementname="SOLIDSH8"
  \end{verbatim} \end{small}
- \item \verb|*eb1="ELEMENT"| \qquad the fluid elements with ALE and their material
+ \item \verb|*eb2="ELEMENT"| \qquad the fluid elements with ALE and their material
  \begin{small} \begin{verbatim}
 sectionname="FLUID"
 description="MAT 2 NA ALE GP 2 2 2"
@@ -539,7 +542,7 @@ description="0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none
  \end{verbatim} \end{small}
 \end{itemize}
 
-Further, you need to apply Dirichlet conditions to the automatically created ALE field. This is done via the corresponding fluid field. Therefore, copy all fluid Dirirchlet conditions, change the \verb|sectionname| to the corresponding \verb|ALE DIRICH|. Also do not forget to erase the FLAG, FUNCTION, and CURVE assignments which represent the moving lid and inflow. As any of them matches an already defined NodeSet it will also match the corresponding 'E-id' in the later \baci{} input file.
+Further, you need to apply Dirichlet conditions to the automatically created ALE field. This is done via the corresponding fluid field. Therefore, copy all fluid Dirirchlet conditions, change the \verb|sectionname| to the corresponding \verb|ALE DIRICH|. Also do not forget to erase the VAL, FUNCTION, and CURVE assignments which represent the moving lid and inflow. Otherwise you would prescribe a displacement to the fluid mesh at the lid and inflow. As any of them matches an already defined NodeSet it will also match the corresponding 'E-id' in the later \baci{} input file.
 
 Safe the file under a different name, e.g. 'dc\_fsi.bc'.
 
