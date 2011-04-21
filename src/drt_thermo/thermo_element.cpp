@@ -66,6 +66,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoType::Create( const int id, cons
 
 void DRT::ELEMENTS::ThermoType::NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
+  numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
+  dimns = numdf;
+  nv = numdf;
 }
 
 void DRT::ELEMENTS::ThermoType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )

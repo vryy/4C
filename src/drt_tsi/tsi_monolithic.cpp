@@ -62,6 +62,23 @@ TSI::MonolithicBase::MonolithicBase(Epetra_Comm& comm)
     dserror("unexpected dof sets in thermo field");
   if (StructureField().Discretization()->AddDofSet(thermodofset)!=1)
     dserror("unexpected dof sets in structure field");
+
+  // access the problem-specific parameter lists
+  const Teuchos::ParameterList& sdyn
+    = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& tdyn
+    = DRT::Problem::Instance()->ThermalDynamicParams();
+
+  // check time integration algo -> currently only one-step-theta scheme supported
+  INPAR::STR::DynamicType structtimealgo
+    = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP");
+  INPAR::THR::DynamicType thermotimealgo
+    = DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP");
+
+  if ( structtimealgo != INPAR::STR::dyna_onesteptheta or
+       thermotimealgo != INPAR::THR::dyna_onesteptheta )
+    dserror("monolithic TSI is limited in functionality (only one-step-theta scheme possible)");
+
 }
 
 
@@ -168,7 +185,70 @@ TSI::Monolithic::Monolithic(
   // velocities V_{n+1} at t_{n+1}
   veln_ = LINALG::CreateVector(*(StructureField().DofRowMap(0)), true);
   veln_->PutScalar(0.0);
+
+  // tsi solver
+#ifdef TSIBLOCKMATRIXMERGE
+  // create a linear solver
+  // get UMFPACK...
+  Teuchos::RCP<Teuchos::ParameterList> solverparams = rcp(new Teuchos::ParameterList);
+  solverparams->set("solver","umfpack");
+
+  solver_ = rcp(new LINALG::Solver(
+                      solverparams,
+                      Comm(),
+                      DRT::Problem::Instance()->ErrorFile()->Handle()
+                      )
+                );
+#else
+  // create a linear solver
+  const Teuchos::ParameterList& tsisolveparams
+    = DRT::Problem::Instance()->TSIMonolithicSolverParams();
+  const int solvertype
+    = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
+        tsisolveparams,
+        "SOLVER"
+        );
+  if (solvertype != INPAR::SOLVER::aztec_msr)
+    dserror("aztec solver expected");
+  const int azprectype
+    = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
+        tsisolveparams,
+        "AZPREC"
+        );
+  if (azprectype != INPAR::SOLVER::azprec_BGS2x2)
+    dserror("Block Gauss-Seidel preconditioner expected");
+
+  solver_ = rcp(new LINALG::Solver(
+                         tsisolveparams,
+                         // ggfs. explizit Comm von STR wie lungscatra
+                         Comm(),
+                         DRT::Problem::Instance()->ErrorFile()->Handle()
+                         )
+                     );
+  solver_->PutSolverParamsToSubParams(
+                "PREC1",
+                DRT::Problem::Instance()->BGSPrecBlock1Params()
+                );
+  solver_->PutSolverParamsToSubParams(
+                "PREC2",
+                DRT::Problem::Instance()->BGSPrecBlock2Params()
+                );
+
+  cout << "solver_->Params()\n" << solver_->Params() << endl;
+
+  // describe rigid body mode
+  StructureField().Discretization()->ComputeNullSpaceIfNecessary(
+                                       solver_->Params()
+                                       );
+//  // TODO maybe using ML 2nd discretisation is necessary, too
+//  ThermoField().Discretization()->ComputeNullSpaceIfNecessary(
+//                                    solver_->Params()
+//                                    );
+
+#endif
+
 }
+
 
 /*----------------------------------------------------------------------*
  | time loop of the monolithic system                        dano 11/10 |
@@ -177,17 +257,6 @@ void TSI::Monolithic::TimeLoop(
   const Teuchos::ParameterList& sdynparams
   )
 {
-  // create a linear solver
-  // get UMFPACK...
-  Teuchos::ParameterList solverparams
-    = DRT::Problem::Instance()->ThermalSolverParams();
-  solver_ = rcp(new LINALG::Solver(
-                      solverparams,
-                      Comm(),
-                      DRT::Problem::Instance()->ErrorFile()->Handle()
-                      )
-                );
-
   // time loop
   while (NotFinished())
   {
@@ -212,8 +281,8 @@ void TSI::Monolithic::TimeLoop(
     cout << "dispn\n" << *(StructureField().Dispn()) << endl;
 #endif // TSIMONOLITHASOUTPUT
 
-  }  // timeloop
-}
+  }  // NotFinished
+}  // TimeLoop
 
 
 /*----------------------------------------------------------------------*
@@ -293,34 +362,7 @@ void TSI::Monolithic::NewtonFull(
 
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
     // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
-
-    //---------------------------------------------- solve linear system
-
-    // Solve for inc_ = [disi_,tempi_]
-    // Solve K_Teffdyn . IncX = -R  ===>  IncX_{n+1} with X=[d,T]
-    // \f$x_{i+1} = x_i + \Delta x_i\f$
-    if (solveradapttol_ and (iter_ > 1))
-    {
-      double worst = normrhs_;
-      double wanted = tolfres_;
-      solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
-    }
-
-    // mere blockmatrix to SparseMatrix and solve
-    // --> very expensive, but ok for development of new code 29.11.10
-    Teuchos::RCP<LINALG::SparseMatrix> m = systemmatrix_->Merge();
-
-    // apply Dirichlet BCs to system of equations
-    iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
-    LINALG::ApplyDirichlettoSystem(m, iterinc_, rhs_, Teuchos::null, zeros_,
-                                   *CombinedDBCMap());
-    cout << " DBC applied to TSI system" << endl;
-
-    // standard solver call
-    solver_->Solve(m->EpetraOperator(), iterinc_, rhs_, true, iter_==1);
-    cout << " Solved" << endl;
-
-    //---------------------------------------------- solve linear system
+    LinearSolve();
 
     // reset solver tolerance
     solver_->ResetTolerance();
@@ -345,7 +387,7 @@ void TSI::Monolithic::NewtonFull(
   iter_ -= 1;
 
   // test whether max iterations was hit
-  if ( (Converged()) and (Comm().MyPID() == 0) )
+  if ( (Converged()) and (Comm().MyPID()==0) )
   {
     PrintNewtonConv();
   }
@@ -439,7 +481,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   Epetra_Time timerthermo(Comm());
 
   // apply current displacements and velocities to the thermo field
-  if (strmethodname_ == INPAR::STR::dyna_statics)
+  if (strmethodname_==INPAR::STR::dyna_statics)
   {
     // calculate velocity V_n+1^k = (D_n+1^k-D_n)/Dt()
     veln_ = CalcVelocity(StructureField().Dispnp());
@@ -566,11 +608,12 @@ void TSI::Monolithic::SetupSystemMatrix(
   systemmatrix_
     = rcp(
         new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-          Extractor(),
-          Extractor(),
-          81,
-          false
-          )
+              Extractor(),
+              Extractor(),
+              81,
+              false,
+              true
+              )
         );
 
   /*----------------------------------------------------------------------*/
@@ -602,13 +645,13 @@ void TSI::Monolithic::SetupSystemMatrix(
   // create empty matrix
   Teuchos::RCP<LINALG::SparseMatrix> k_st = Teuchos::null;
   k_st = Teuchos::rcp(
-                   new LINALG::SparseMatrix(
-                     *(StructureField().Discretization()->DofRowMap(0)),
-                     81,
-                     true,
-                     true
-                     )
-                   );
+           new LINALG::SparseMatrix(
+                 *(StructureField().Discretization()->DofRowMap(0)),
+                 81,
+                 true,
+                 true
+                 )
+           );
 
   // call the element and calculate the matrix block
   ApplyStrCouplMatrix(k_st,sdynparams);
@@ -644,13 +687,13 @@ void TSI::Monolithic::SetupSystemMatrix(
   // create empty matrix
   Teuchos::RCP<LINALG::SparseMatrix> k_ts = Teuchos::null;
   k_ts = Teuchos::rcp(
-                   new LINALG::SparseMatrix(
-                     *(ThermoField().Discretization()->DofRowMap(0)),
-                     81,
-                     true,
-                     true
-                     )
-                   );
+           new LINALG::SparseMatrix(
+                 *(ThermoField().Discretization()->DofRowMap(0)),
+                 81,
+                 true,
+                 true
+                 )
+           );
 
   // call the element and calculate the matrix block
   ApplyThrCouplMatrix(k_ts,sdynparams);
@@ -688,6 +731,77 @@ void TSI::Monolithic::SetupRHS()
     );
 
 }  // SetupRHS()
+
+
+/*----------------------------------------------------------------------*
+ | Solve linear TSI system                                   dano 04/11 |
+ *----------------------------------------------------------------------*/
+void TSI::Monolithic::LinearSolve()
+{
+  // Solve for inc_ = [disi_,tempi_]
+  // Solve K_Teffdyn . IncX = -R  ===>  IncX_{n+1} with X=[d,T]
+  // \f$x_{i+1} = x_i + \Delta x_i\f$
+  if (solveradapttol_ and (iter_ > 1))
+  {
+    double worst = normrhs_;
+    double wanted = tolfres_;
+    solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
+  }
+
+#ifdef TSIBLOCKMATRIXMERGE
+  // merge blockmatrix to SparseMatrix and solve
+  Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
+
+  // apply Dirichlet BCs to system of equations
+  iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
+  LINALG::ApplyDirichlettoSystem(
+    sparse,
+    iterinc_,
+    rhs_,
+    Teuchos::null,
+    zeros_,
+    *CombinedDBCMap()
+    );
+  if ( Comm().MyPID()==0 ) { cout << " DBC applied to TSI system" << endl; }
+
+  // standard solver call
+  solver_->Solve(
+             sparse->EpetraOperator(),
+             iterinc_,
+             rhs_,
+             true,
+             iter_==1
+             );
+  if ( Comm().MyPID()==0 ) { cout << " Solved" << endl; }
+
+#else // use bgs2x2_operator
+
+  // apply Dirichlet BCs to system of equations
+  iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
+  LINALG::ApplyDirichlettoSystem(
+    systemmatrix_, //
+    iterinc_,
+    rhs_,
+    Teuchos::null,
+    zeros_,
+    *CombinedDBCMap()
+    );
+  if ( Comm().MyPID()==0 )
+  { cout << " DBC applied to TSI system on " << Comm().MyPID() << endl; }
+
+  solver_->Solve(
+             systemmatrix_->EpetraOperator(),
+             iterinc_,
+             rhs_,
+             true,
+             iter_==1
+             );
+  if ( Comm().MyPID()==0 ) { cout << " Solved" << endl; }
+
+#endif  // TSIBLOCKMATRIXMERGE
+
+}
+
 
 
 /*----------------------------------------------------------------------*
@@ -757,7 +871,7 @@ bool TSI::Monolithic::Converged()
 
   // combine temperature-like and force-like residuals
   bool conv = false;
-  if (combincfres_ == INPAR::TSI::bop_and)
+  if (combincfres_==INPAR::TSI::bop_and)
      conv = convinc and convfres;
    else
      dserror("Something went terribly wrong with binary operator!");
@@ -776,7 +890,7 @@ void TSI::Monolithic::PrintNewtonIter()
 {
   // print to standard out
   // replace myrank_ here general by Comm().MyPID()
-  if ( (Comm().MyPID() == 0) and printscreen_ and printiter_ )
+  if ( (Comm().MyPID()==0) and printscreen_ and printiter_ )
   {
     if (iter_== 1)
       PrintNewtonIterHeader(stdout);
@@ -835,7 +949,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  if (ofile == NULL)
+  if (ofile==NULL)
     dserror("no ofile available");
   fprintf(ofile, "%s\n", oss.str().c_str());
 
@@ -888,7 +1002,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  if (ofile == NULL)
+  if (ofile==NULL)
     dserror("no ofile available");
   fprintf(ofile, "%s\n", oss.str().c_str());
 
@@ -920,7 +1034,8 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
   const Teuchos::ParameterList& sdynparams
   )
 {
-  cout << " TSI::Monolithic::ApplyStrCouplMatrix()" << endl;
+  if ( Comm().MyPID()==0 )
+    cout << " TSI::Monolithic::ApplyStrCouplMatrix()" << endl;
 
   // create the parameters for the discretization
   Teuchos::ParameterList sparams;
@@ -969,9 +1084,10 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
    // TODO: time factor for genalpha
    case  INPAR::STR::dyna_genalpha :
    {
-//     double alphaf_ = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
-//     double beta_ = sdynparams.sublist("GENALPHA").get<double>("BETA");
-//     double gamma_ = sdynparams.sublist("GENALPHA").get<double>("GAMMA");
+     double alphaf_ = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
+     // K_Teffdyn(T_n+1) = (1-alphaf_) . kst
+     // Lin(dT_n+1-alphaf_/ dT_n+1) = (1-alphaf_)
+     k_st->Scale(1.0 - alphaf_);
    }
    default :
    {
@@ -991,7 +1107,8 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
   const Teuchos::ParameterList& sdynparams
   )
 {
-  cout << " TSI::Monolithic::ApplyThrCouplMatrix()" << endl;
+  if ( Comm().MyPID()==0 )
+    cout << " TSI::Monolithic::ApplyThrCouplMatrix()" << endl;
 
   // create the parameters for the discretization
   Teuchos::ParameterList tparams;

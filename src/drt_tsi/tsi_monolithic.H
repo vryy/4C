@@ -149,6 +149,15 @@ namespace TSI
     /// setup composed system matrix from field solvers
     void SetupSystemMatrix(const Teuchos::ParameterList& sdynparams);
 
+    /// composed system matrix
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const
+    {
+      return systemmatrix_;
+    }
+
+    /// solve linear TSI system
+    void LinearSolve();
+
     //! Evaluate mechanical-thermal system matrix
     void ApplyStrCouplMatrix(
       Teuchos::RCP<LINALG::SparseMatrix> k_st,  //!< mechanical-thermal stiffness matrix
@@ -171,9 +180,6 @@ namespace TSI
     /// extract initial guess from fields
     //! returns \f$\Delta x_{n+1}^{<k>}\f$
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
-
-    /// the composed system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
 
     //! is convergence reached of iterative solution technique?
     //! keep your fingers crossed...

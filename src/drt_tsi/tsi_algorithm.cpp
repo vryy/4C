@@ -64,7 +64,7 @@ TSI::Algorithm::Algorithm(Epetra_Comm& comm)
     DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
   // coupling variable
   displacementcoupling_
-    = tsidyn.get<std::string>("COUPVARIABLE") == "Displacement";
+    = tsidyn.get<std::string>("COUPVARIABLE")=="Displacement";
   if (displacementcoupling_)
     cout << "Coupling variable: displacement" << endl;
   else
@@ -76,7 +76,7 @@ TSI::Algorithm::Algorithm(Epetra_Comm& comm)
   quasistatic_
     = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP")==INPAR::STR::dyna_statics;
 
-  if (method == INPAR::TSI::OneWay)
+  if (method==INPAR::TSI::OneWay)
   {
     if (displacementcoupling_) // (temperature change due to deformation)
     {
@@ -86,9 +86,6 @@ TSI::Algorithm::Algorithm(Epetra_Comm& comm)
       // check if ThermoField has 2 discretizations, so that coupling is possible
       if (ThermoField().Discretization()->AddDofSet(structdofset)!=1)
         dserror("unexpected dof sets in thermo field");
-
-      // build matrices again and now consider displacements in the thermo field
-      ThermoField().TSIMatrix();
     }
 
     else // temperature as coupling variable (deformation due to temperature change)
@@ -99,12 +96,9 @@ TSI::Algorithm::Algorithm(Epetra_Comm& comm)
       // check if StructField has 2 discretizations, so that coupling is possible
       if (StructureField().Discretization()->AddDofSet(thermodofset)!=1)
         dserror("unexpected dof sets in structure field");
-
-      // now build the matrices again and consider the temperature dependence
-      StructureField().TSIMatrix();
     }
   }
-  else if (method == INPAR::TSI::SequStagg || method == INPAR::TSI::IterStagg)
+  else if ( method==INPAR::TSI::SequStagg || method==INPAR::TSI::IterStagg )
   {
     // build a proxy of the structure discretization for the temperature field
     Teuchos::RCP<DRT::DofSet> structdofset
@@ -236,14 +230,14 @@ void TSI::Algorithm::TimeLoop()
       // switch TSI algorithm (synchronous)
       // only the one field knows the 2nd field, that contains the coupling
       // variable
-      if (method == INPAR::TSI::OneWay)
+      if (method==INPAR::TSI::OneWay)
         TimeLoopOneWay();
       // complete volume coupling system
       // sequential staggered scheme
-      else if (method == INPAR::TSI::SequStagg)
+      else if (method==INPAR::TSI::SequStagg)
         TimeLoopSequStagg();
       // iterative staggered scheme
-      else if (method == INPAR::TSI::IterStagg)
+      else if (method==INPAR::TSI::IterStagg)
         TimeLoopFull();
       else
         dserror("desired type of thermo-structure interaction algorithm not supported");
@@ -278,7 +272,7 @@ void TSI::Algorithm::TimeLoop()
       //    with heat transfer over the contacting surface (as a result //
       //    from the structural problem).                               //
       //******************************************************************
-      if(method == INPAR::TSI::OneWay)
+      if(method==INPAR::TSI::OneWay)
       {
         // predict and solve structural system
         StructureField().PrepareTimeStep();
@@ -300,7 +294,7 @@ void TSI::Algorithm::TimeLoop()
       // 2) The structural field is influenced by the thermal field     //
       //    with a temperature dependent material law.                  //
       //******************************************************************
-      else if (method == INPAR::TSI::IterStagg)
+      else if (method==INPAR::TSI::IterStagg)
       {
         // prepare time step
         ThermoField().PrepareTimeStep();
@@ -310,7 +304,7 @@ void TSI::Algorithm::TimeLoop()
         int  itnum = 0;
         bool stopnonliniter = false;
 
-        while (stopnonliniter == false)
+        while (stopnonliniter==false)
         {
           itnum ++;
 
@@ -428,7 +422,11 @@ void TSI::Algorithm::TimeLoopOneWay()
     /// structure field
 
     // pass the current temperatures to the structural field
-    StructureField().ApplyTemperatures(tempnp);
+//    // 08.04.11
+//    if( Step()==0 )
+//      StructureField().ApplyTemperatures(tempnp,ThermoField().Tempn());
+//    else
+      StructureField().ApplyTemperatures(tempnp);
 
     // call the predictor here, because the temperature is now also available
     StructureField().PrepareTimeStep();
@@ -629,7 +627,7 @@ void TSI::Algorithm::OuterIterationLoop()
     // else: use the velocity of the last converged step
 
     // start OUTER ITERATION
-    while (stopnonliniter == false)
+    while (stopnonliniter==false)
     {
       itnum ++;
 
@@ -640,7 +638,7 @@ void TSI::Algorithm::OuterIterationLoop()
 
       // kind of mechanical predictor
       // 1st iteration: get structure variables of old time step (d_n, v_n)
-      if (itnum == 1) dispnp = StructureField().ExtractDispn();
+      if (itnum==1) dispnp = StructureField().ExtractDispn();
       // for itnum>1 use the current solution dispnp of old iteration step
 
       // Begin Nonlinear Solver / Outer Iteration ******************************
@@ -651,7 +649,7 @@ void TSI::Algorithm::OuterIterationLoop()
       ThermoField().ApplyStructVariables(dispnp,veln_);
 
       // prepare time step with coupled variables
-      if (itnum == 1)
+      if (itnum==1)
         ThermoField().PrepareTimeStep();
       // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
       else if (itnum != 1)
@@ -674,7 +672,7 @@ void TSI::Algorithm::OuterIterationLoop()
       StructureField().ApplyTemperatures(tempn_);
 
       // prepare time step with coupled variables
-      if (itnum == 1)
+      if (itnum==1)
         StructureField().PrepareTimeStep();
       // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
       else if (itnum != 1)
@@ -708,11 +706,11 @@ void TSI::Algorithm::OuterIterationLoop()
     tempn_ = ThermoField().ExtractTempn();
 
     // start OUTER ITERATION
-    while (stopnonliniter == false)
+    while (stopnonliniter==false)
     {
       itnum ++;
       // get current temperatures due to solve thermo step, like predictor in FSI
-      if (itnum == 1){ tempn_ = ThermoField().ExtractTempn(); }
+      if (itnum==1){ tempn_ = ThermoField().ExtractTempn(); }
       else { tempn_ = ThermoField().ExtractTempnp(); }
 
       // store temperature from first solution for convergence check (like in
@@ -730,7 +728,7 @@ void TSI::Algorithm::OuterIterationLoop()
       StructureField().ApplyTemperatures(tempn_);
 
       // prepare time step with coupled variables
-      if (itnum == 1)
+      if (itnum==1)
         StructureField().PrepareTimeStep();
       // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
       else if (itnum != 1)
@@ -756,7 +754,7 @@ void TSI::Algorithm::OuterIterationLoop()
       ThermoField().ApplyStructVariables(dispnp,velnp_);
 
       // prepare time step with coupled variables
-      if (itnum == 1)
+      if (itnum==1)
         ThermoField().PrepareTimeStep();
       // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
       else if (itnum != 1)
@@ -867,7 +865,7 @@ bool TSI::Algorithm::ConvergenceCheck(
   if (dispnorm_L2 < 1e-6) dispnorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
-  if (Comm().MyPID() == 0)
+  if (Comm().MyPID()==0)
   {
     cout<<"\n";
     cout<<"***********************************************************************************\n";
@@ -886,7 +884,7 @@ bool TSI::Algorithm::ConvergenceCheck(
       (dispincnorm_L2/dispnorm_L2 <= ittol))
   {
     stopnonliniter = true;
-    if (Comm().MyPID() == 0)
+    if (Comm().MyPID()==0)
     {
       printf("\n");
       printf("|  Outer Iteration loop converged after iteration %3d/%3d !                       |\n", itnum,itmax);
@@ -896,12 +894,12 @@ bool TSI::Algorithm::ConvergenceCheck(
 
   // warn if itemax is reached without convergence, but proceed to next
   // timestep
-  if ((itnum == itmax) and
+  if ((itnum==itmax) and
        ((tempincnorm_L2/tempnorm_L2 > ittol) || (dispincnorm_L2/dispnorm_L2 > ittol))
      )
   {
     stopnonliniter = true;
-    if ((Comm().MyPID() == 0))
+    if ((Comm().MyPID()==0))
     {
       printf("|     >>>>>> not converged in itemax steps!                                       |\n");
       printf("+--------------+------------------------+--------------------+--------------------+\n");
