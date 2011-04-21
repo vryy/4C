@@ -760,16 +760,11 @@ void THR::TimInt::ApplyForceExternalConv(
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->SetState("old temperature", tempn);  // (*temp_)(0)
-  discret_->SetState("temperature", temp);  // tempn_
+  discret_->SetState(0,"old temperature", tempn);  // (*temp_)(0)
+  discret_->SetState(0,"temperature", temp);  // tempn_
   // get load vector
   // use general version of EvaluateCondition(), cf. ScaTra::EvaluateElectrodeKinetics()
   std::string condstring("ThermoConvections");
-
-#ifdef CaroDebug
-  cout << "Prozessor Nummer: " << Comm().MyPID() << endl;
-#endif // CaroDebug
-
   discret_->EvaluateCondition(p,tang,Teuchos::null,fext,Teuchos::null,Teuchos::null,condstring);
   discret_->ClearState();
 

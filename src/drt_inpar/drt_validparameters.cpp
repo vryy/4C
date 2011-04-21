@@ -3491,6 +3491,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& precond2 = list->sublist("BGS PRECONDITIONER BLOCK 2",false,"");
   SetValidSolverParameters(precond2);
 
+  // TSI monolithic solver section
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& tsimonsolver = list->sublist("TSI MONOLITHIC SOLVER",false,"solver parameters for monoltihic tsi");
+  SetValidSolverParameters(tsimonsolver);
+
+
   return list;
 }
 

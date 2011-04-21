@@ -22,7 +22,6 @@ Maintainer: Caroline Danowski
  | headers                                                   dano 08/09 |
  *----------------------------------------------------------------------*/
 #include "../drt_inpar/inpar_thermo.H"
-#include "../drt_inpar/inpar_structure.H"
 
 #include "thermo_ele_impl.H"
 #include "../drt_lib/drt_globalproblem.H"
