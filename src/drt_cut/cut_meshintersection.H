@@ -11,6 +11,7 @@
 
 #include "cut_meshhandle.H"
 #include "cut_pointpool.H"
+#include "cut_options.H"
 
 namespace GEO
 {
@@ -28,14 +29,16 @@ public:
 
   explicit MeshIntersection( int numcutmesh=1 )
     : pp_( Teuchos::rcp( new PointPool ) ),
-      mesh_( 1, pp_, false )
+      mesh_( options_, 1, pp_, false )
   {
     cut_mesh_.reserve( numcutmesh );
     for ( int i=0; i<numcutmesh; ++i )
     {
-      cut_mesh_.push_back( Teuchos::rcp( new MeshHandle( 1, pp_, true ) ) );
+      cut_mesh_.push_back( Teuchos::rcp( new MeshHandle( options_, 1, pp_, true ) ) );
     }
   }
+
+  void SetFindPositions( bool positions ) { options_.SetFindPositions( positions ); }
 
   ElementHandle * AddElement( int eid, const std::vector<int> & nids, const Epetra_SerialDenseMatrix & xyz, DRT::Element::DiscretizationType distype );
 
@@ -61,6 +64,7 @@ private:
 
   Teuchos::RCP<PointPool> pp_;
 
+  Options options_;
   MeshHandle mesh_;
   std::vector<Teuchos::RCP<MeshHandle> > cut_mesh_;
 };

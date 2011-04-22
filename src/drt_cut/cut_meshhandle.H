@@ -20,6 +20,7 @@ namespace CUT
   class LinearElement;
   class QuadraticElement;
   class Mesh;
+  class Options;
 
   class SideHandle;
   class LinearSideHandle;
@@ -33,8 +34,8 @@ class MeshHandle
 {
 public:
 
-  MeshHandle( double norm=1, Teuchos::RCP<PointPool> pp=Teuchos::null, bool cutmesh=false )
-    : mesh_( norm, pp, cutmesh )
+  MeshHandle( const Options & options, double norm=1, Teuchos::RCP<PointPool> pp=Teuchos::null, bool cutmesh=false )
+    : mesh_( options, norm, pp, cutmesh )
   {
   }
 

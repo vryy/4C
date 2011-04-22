@@ -12,6 +12,7 @@ namespace GEO
   {
     class Side;
     class Mesh;
+    class Options;
     class TetMesh;
     class VolumeCell;
 
@@ -19,7 +20,8 @@ namespace GEO
     {
     public:
 
-      TetMeshIntersection( Element * element,
+      TetMeshIntersection( const Options & options,
+                           Element * element,
                            const std::vector<std::vector<int> > & tets,
                            const std::vector<int> & accept_tets,
                            const std::vector<Point*> & points,

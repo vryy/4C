@@ -111,11 +111,14 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner )
   NormalMesh().MakeFacets();
   NormalMesh().MakeVolumeCells();
 
-  // find inside and outside positions of nodes
-  NormalMesh().FindNodePositions();
+  if ( options_.FindPositions() )
+  {
+    // find inside and outside positions of nodes
+    NormalMesh().FindNodePositions();
 
-  // find number and connection of dofsets at nodes from cut volumes
-  NormalMesh().FindNodalDOFSets( include_inner );
+    // find number and connection of dofsets at nodes from cut volumes
+    NormalMesh().FindNodalDOFSets( include_inner );
+  }
 
   //Status();
 

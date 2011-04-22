@@ -8,6 +8,7 @@
 #include "cut_meshhandle.H"
 #include "cut_pointpool.H"
 #include "cut_levelsetside.H"
+#include "cut_options.H"
 
 namespace GEO
 {
@@ -24,7 +25,7 @@ public:
 
   LevelSetIntersection()
     : pp_( Teuchos::rcp( new PointPool ) ),
-      mesh_( 1, pp_, false ),
+      mesh_( options_, 1, pp_, false ),
       side_( 1 )
   {
   }
@@ -45,6 +46,7 @@ private:
 
   Teuchos::RCP<PointPool> pp_;
 
+  Options options_;
   MeshHandle mesh_;
   LevelSetSide side_;
 };

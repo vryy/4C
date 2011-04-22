@@ -83,7 +83,8 @@ XFEM::InterfaceHandleXFSI::InterfaceHandleXFSI(
                        elementalDomainIntCells_,
                        elementalBoundaryIntCells_,
                        labelPerBoundaryElementId_,
-                       MovingFluideleGIDs );
+                       MovingFluideleGIDs,
+                       false );
   }
 
   xfemdis->Comm().Barrier();

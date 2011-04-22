@@ -10,15 +10,17 @@
 #include "cut_integrationcell.H"
 #include "cut_boundarycell.H"
 #include "cut_pointpool.H"
+#include "cut_options.H"
 
-GEO::CUT::TetMeshIntersection::TetMeshIntersection( Element * element,
+GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
+                                                    Element * element,
                                                     const std::vector<std::vector<int> > & tets,
                                                     const std::vector<int> & accept_tets,
                                                     const std::vector<Point*> & points,
                                                     const std::set<Side*> & cut_sides )
   : pp_( Teuchos::rcp( new PointPool ) ),
-    mesh_( 1, pp_ ),
-    cut_mesh_( 1, pp_, true )
+    mesh_( options, 1, pp_ ),
+    cut_mesh_( options, 1, pp_, true )
 {
 
   for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
@@ -235,7 +237,10 @@ void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, 
 
   MapVolumeCells( parent_mesh, element, parent_cells, cellmap );
 
-  mesh_.FindNodePositions();
+  if ( mesh_.CreateOptions().FindPositions() )
+  {
+    mesh_.FindNodePositions();
+  }
 
   mesh_.DumpGmsh( "mesh.pos" );
 
@@ -450,19 +455,22 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
 
   // copy volume cell position
 
-  for ( std::map<VolumeCell*, ChildCell>::iterator i=cellmap.begin(); i!=cellmap.end(); ++i )
+  if ( mesh_.CreateOptions().FindPositions() )
   {
-    VolumeCell * vc = i->first;
-    ChildCell & cc = i->second;
-    std::set<VolumeCell*> & childset = cc.cells_;
-
-    Point::PointPosition pos = vc->Position();
-    if ( pos==Point::undecided )
-      throw std::runtime_error( "undecided volume cell" );
-    for ( std::set<VolumeCell*>::iterator i=childset.begin(); i!=childset.end(); ++i )
+    for ( std::map<VolumeCell*, ChildCell>::iterator i=cellmap.begin(); i!=cellmap.end(); ++i )
     {
-      VolumeCell * c = *i;
-      c->Position( pos );
+      VolumeCell * vc = i->first;
+      ChildCell & cc = i->second;
+      std::set<VolumeCell*> & childset = cc.cells_;
+
+      Point::PointPosition pos = vc->Position();
+      if ( pos==Point::undecided )
+        throw std::runtime_error( "undecided volume cell" );
+      for ( std::set<VolumeCell*>::iterator i=childset.begin(); i!=childset.end(); ++i )
+      {
+        VolumeCell * c = *i;
+        c->Position( pos );
+      }
     }
   }
 }

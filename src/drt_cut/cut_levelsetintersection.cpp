@@ -48,9 +48,11 @@ void GEO::CUT::LevelSetIntersection::Cut( bool include_inner )
   m.MakeFacets();
   m.MakeVolumeCells();
 
-  m.FindLSNodePositions();
-
-  m.FindNodalDOFSets( include_inner );
+  if ( options_.FindPositions() )
+  {
+    m.FindLSNodePositions();
+    m.FindNodalDOFSets( include_inner );
+  }
 
   m.CreateIntegrationCells();
 

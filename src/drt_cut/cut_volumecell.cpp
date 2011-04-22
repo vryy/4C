@@ -5,6 +5,7 @@
 #include "cut_facet.H"
 #include "cut_tetmesh.H"
 #include "cut_mesh.H"
+#include "cut_options.H"
 
 
 int GEO::CUT::VolumeCell::hex8totet4[5][4] = {
@@ -481,16 +482,19 @@ void GEO::CUT::VolumeCell::NewIntegrationCell( Mesh & mesh, DRT::Element::Discre
 void GEO::CUT::VolumeCell::NewHex8Cell( Mesh & mesh, const std::vector<Point*> & points )
 {
   Point::PointPosition position = Position();
-#if 0
-  integrationcells_.insert( mesh.NewHex8Cell( position, points, this ) );
-#else
-  std::vector<Point*> tet4_points( 4 );
-  for ( int i=0; i<5; ++i )
+  if ( mesh.CreateOptions().GenHex8() )
   {
-    SetTetPoints( hex8totet4[i], points, tet4_points );
-    integrationcells_.insert( mesh.NewTet4Cell( position, tet4_points, this ) );
+    integrationcells_.insert( mesh.NewHex8Cell( position, points, this ) );
   }
-#endif
+  else
+  {
+    std::vector<Point*> tet4_points( 4 );
+    for ( int i=0; i<5; ++i )
+    {
+      SetTetPoints( hex8totet4[i], points, tet4_points );
+      integrationcells_.insert( mesh.NewTet4Cell( position, tet4_points, this ) );
+    }
+  }
 }
 
 GEO::CUT::IntegrationCell * GEO::CUT::VolumeCell::NewTet4Cell( Mesh & mesh, const std::vector<Point*> & points )
@@ -504,29 +508,35 @@ GEO::CUT::IntegrationCell * GEO::CUT::VolumeCell::NewTet4Cell( Mesh & mesh, cons
 void GEO::CUT::VolumeCell::NewWedge6Cell( Mesh & mesh, const std::vector<Point*> & points )
 {
   Point::PointPosition position = Position();
-#if 0
-  integrationcells_.insert( mesh.NewWedge6Cell( position, points, this ) );
-#else
-  std::vector<Point*> tet4_points( 4 );
-  for ( int i=0; i<3; ++i )
+  if ( mesh.CreateOptions().GenWedge6() )
   {
-    SetTetPoints( wedge6totet4[i], points, tet4_points );
-    integrationcells_.insert( mesh.NewTet4Cell( position, tet4_points, this ) );
+    integrationcells_.insert( mesh.NewWedge6Cell( position, points, this ) );
   }
-#endif
+  else
+  {
+    std::vector<Point*> tet4_points( 4 );
+    for ( int i=0; i<3; ++i )
+    {
+      SetTetPoints( wedge6totet4[i], points, tet4_points );
+      integrationcells_.insert( mesh.NewTet4Cell( position, tet4_points, this ) );
+    }
+  }
 }
 
 void GEO::CUT::VolumeCell::NewPyramid5Cell( Mesh & mesh, const std::vector<Point*> & points )
 {
   Point::PointPosition position = Position();
-#if 0
-  integrationcells_.insert( mesh.NewPyramid5Cell( position, points, this ) );
-#else
-  std::vector<Point*> tet4_points( 4 );
-  for ( int i=0; i<2; ++i )
+  if ( mesh.CreateOptions().GenPyramid5() )
   {
-    SetTetPoints( pyramid5totet4[i], points, tet4_points );
-    integrationcells_.insert( mesh.NewTet4Cell( position, tet4_points, this ) );
+    integrationcells_.insert( mesh.NewPyramid5Cell( position, points, this ) );
   }
-#endif
+  else
+  {
+    std::vector<Point*> tet4_points( 4 );
+    for ( int i=0; i<2; ++i )
+    {
+      SetTetPoints( pyramid5totet4[i], points, tet4_points );
+      integrationcells_.insert( mesh.NewTet4Cell( position, tet4_points, this ) );
+    }
+  }
 }

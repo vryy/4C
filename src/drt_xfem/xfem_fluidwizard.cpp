@@ -12,7 +12,7 @@
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_node.H"
 
-void XFEM::FluidWizard::Cut(  bool include_inner, const Epetra_Vector & idispcol )
+void XFEM::FluidWizard::Cut(  bool include_inner, const Epetra_Vector & idispcol, bool positions )
 {
 #ifdef QHULL
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut" );
@@ -23,6 +23,7 @@ void XFEM::FluidWizard::Cut(  bool include_inner, const Epetra_Vector & idispcol
   const double t_start = Teuchos::Time::wallTime();
 
   cut_ = Teuchos::rcp( new GEO::CutWizard( backdis_, false, 1 ) );
+  cut_->SetFindPositions( positions );
   GEO::CutWizard & cw = *cut_;
 
   std::vector<int> lm;
@@ -87,7 +88,8 @@ void XFEM::FluidWizard::Cut( const Epetra_Vector & idispcol,
                              std::map< int, GEO::DomainIntCells > & domainintcells,
                              std::map< int, GEO::BoundaryIntCells > & boundaryintcells,
                              const std::map<int,int>& labelPerElementId,
-                             const std::vector<int>& MovingFluideleGIDs )
+                             const std::vector<int>& MovingFluideleGIDs,
+                             bool positions )
 {
 #ifdef QHULL
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut" );
@@ -98,6 +100,7 @@ void XFEM::FluidWizard::Cut( const Epetra_Vector & idispcol,
   const double t_start = Teuchos::Time::wallTime();
 
   cut_ = Teuchos::rcp( new GEO::CutWizard( backdis_, false, 1 ) );
+  cut_->SetFindPositions( positions );
   GEO::CutWizard & cw = *cut_;
 
   std::vector<int> lm;

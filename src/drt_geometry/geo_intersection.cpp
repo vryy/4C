@@ -61,6 +61,11 @@ GEO::CutWizard::CutWizard( DRT::Discretization & dis, bool include_inner, int nu
   mesh_ = Teuchos::rcp( new GEO::CUT::MeshIntersection( numcutmesh ) );
 }
 
+void GEO::CutWizard::SetFindPositions( bool positions )
+{
+  mesh_->SetFindPositions( positions );
+}
+
 void GEO::CutWizard::AddCutSide( int mi, DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze )
 {
   const int numnode = ele->NumNode();

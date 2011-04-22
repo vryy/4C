@@ -31,6 +31,7 @@ class LevelSetSide;
 class Element;
 
 class PointPool;
+class Options;
 
 class Point;
 class Line;
@@ -53,7 +54,7 @@ class Mesh
 {
 public:
 
-  Mesh( double norm=1, Teuchos::RCP<PointPool> pp=Teuchos::null, bool cutmesh=false );
+  Mesh( const Options & options, double norm=1, Teuchos::RCP<PointPool> pp=Teuchos::null, bool cutmesh=false );
 
   Element * CreateElement( int eid, const std::vector<int> & nids, DRT::Element::DiscretizationType distype );
 
@@ -189,6 +190,8 @@ public:
 
   Teuchos::RCP<PointPool> Points() { return pp_; }
 
+  const Options & CreateOptions() const { return options_; }
+
 private:
 
   void DumpGmsh( std::ofstream & file, const std::vector<Node*> & nodes, char elementtype );
@@ -203,6 +206,7 @@ private:
                  const CellTopologyData & side_topology );
 
   bool setup_;
+  const Options & options_;
   double norm_;
   Teuchos::RCP<PointPool> pp_;
   BoundingBox bb_;

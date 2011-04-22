@@ -61,6 +61,8 @@ namespace GEO
 
     CutWizard( DRT::Discretization & dis, bool include_inner, int numcutmesh=1 );
 
+    void SetFindPositions( bool positions );
+
     void AddCutSide( int mi, DRT::Element * ele, const Epetra_SerialDenseMatrix & xyze );
 
     void AddElement( DRT::Element * ele );
