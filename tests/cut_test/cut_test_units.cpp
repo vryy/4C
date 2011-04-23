@@ -1,4 +1,5 @@
 
+#include "../../src/drt_cut/cut_options.H"
 #include "../../src/drt_cut/cut_mesh.H"
 #include "../../src/drt_cut/cut_intersection.H"
 #include "cut_test_utils.H"
@@ -9,7 +10,8 @@ void test_unit_intersection_touch()
   for ( int i=0; i<7; ++i )
   {
     double x = pow( 0.1, i );
-    GEO::CUT::Mesh mesh( x );
+    GEO::CUT::Options options;
+    GEO::CUT::Mesh mesh( options, x );
 
     Epetra_SerialDenseMatrix xyze( 3, 4 );
 

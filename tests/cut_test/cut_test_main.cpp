@@ -267,6 +267,10 @@ int main( int argc, char ** argv )
                   << "\n";
       }
     }
+    else
+    {
+      std::cout << "\nall " << functable.size() << " tests succeeded.\n";
+    }
     MPI_Finalize();
     return failures.size();
   }

@@ -1,4 +1,5 @@
 
+#include "../../src/drt_cut/cut_options.H"
 #include "../../src/drt_cut/cut_mesh.H"
 #include "../../src/drt_cut/cut_element.H"
 #include "../../src/drt_cut/cut_position2d.H"
@@ -59,7 +60,8 @@ GEO::CUT::Side* create_quad4( GEO::CUT::Mesh & mesh, double x, double dx, double
 
 void test_hex8_simple()
 {
-  GEO::CUT::Mesh mesh;
+  GEO::CUT::Options options;
+  GEO::CUT::Mesh mesh(options);
   GEO::CUT::Element * e = create_hex8( mesh );
   GEO::CUT::Side * s = create_quad4( mesh, 0.5, 0.1, 0 );
 
@@ -72,7 +74,8 @@ void test_hex8_simple()
 
 void test_tet4_simple()
 {
-  GEO::CUT::Mesh mesh;
+  GEO::CUT::Options options;
+  GEO::CUT::Mesh mesh(options);
 
   Epetra_SerialDenseMatrix xyze( 3, 4 );
 
@@ -104,7 +107,8 @@ void test_tet4_simple()
 
 void test_pyramid5_simple()
 {
-  GEO::CUT::Mesh mesh;
+  GEO::CUT::Options options;
+  GEO::CUT::Mesh mesh(options);
 
   Epetra_SerialDenseMatrix xyze( 3, 5 );
 
@@ -140,7 +144,8 @@ void test_pyramid5_simple()
 
 void test_wedge6_simple()
 {
-  GEO::CUT::Mesh mesh;
+  GEO::CUT::Options options;
+  GEO::CUT::Mesh mesh(options);
 
   Epetra_SerialDenseMatrix xyze( 3, 6 );
 
@@ -181,7 +186,8 @@ void test_wedge6_simple()
 
 void test_hex8_fullside()
 {
-  GEO::CUT::Mesh mesh;
+  GEO::CUT::Options options;
+  GEO::CUT::Mesh mesh(options);
   GEO::CUT::Element * e = create_hex8( mesh );
   GEO::CUT::Side * s = create_quad4( mesh, 1, 0, 0 );
 
@@ -194,7 +200,8 @@ void test_hex8_fullside()
 
 void test_hex8_diagonal()
 {
-  GEO::CUT::Mesh mesh;
+  GEO::CUT::Options options;
+  GEO::CUT::Mesh mesh(options);
   GEO::CUT::Element * e = create_hex8( mesh );
   GEO::CUT::Side * s = create_quad4( mesh, 0.5, 1, 0 );
 
@@ -380,7 +387,8 @@ void test_hex8_tet4_touch2()
 
 void test_hex8_mesh()
 {
-  GEO::CUT::Mesh mesh;
+  GEO::CUT::Options options;
+  GEO::CUT::Mesh mesh(options);
 
   create_hex8_mesh( mesh, 10, 10, 10 );
 
@@ -397,7 +405,8 @@ void test_hex8_mesh()
 
 void test_hex8_double()
 {
-  GEO::CUT::Mesh mesh;
+  GEO::CUT::Options options;
+  GEO::CUT::Mesh mesh(options);
   GEO::CUT::Element * e = create_hex8( mesh );
   GEO::CUT::Side * s1 = create_quad4( mesh, 0.4, 0.1, 0 );
   GEO::CUT::Side * s2 = create_quad4( mesh, 0.6, 0.1, 0 );
@@ -412,7 +421,8 @@ void test_hex8_double()
 
 void test_hex8_multiple()
 {
-  GEO::CUT::Mesh mesh;
+  GEO::CUT::Options options;
+  GEO::CUT::Mesh mesh(options);
   GEO::CUT::Element * e = create_hex8( mesh );
 
   for ( int i=1; i<10; ++i )
@@ -432,7 +442,8 @@ void test_hex8_multiple()
 
 void test_hex8_bad1()
 {
-  GEO::CUT::Mesh mesh;
+  GEO::CUT::Options options;
+  GEO::CUT::Mesh mesh(options);
 
   Epetra_SerialDenseMatrix xyze( 3, 8 );
 
@@ -497,7 +508,8 @@ void test_hex8_bad1()
 
 void test_hex8_bad2()
 {
-  GEO::CUT::Mesh mesh;
+  GEO::CUT::Options options;
+  GEO::CUT::Mesh mesh(options);
 
   Epetra_SerialDenseMatrix xyze( 3, 8 );
 
@@ -562,7 +574,8 @@ void test_hex8_bad2()
 
 void test_hex8_bad3()
 {
-  GEO::CUT::Mesh mesh;
+  GEO::CUT::Options options;
+  GEO::CUT::Mesh mesh(options);
 
   Epetra_SerialDenseMatrix xyze( 3, 8 );
 
@@ -635,7 +648,8 @@ void test_hex8_bad3()
 
 void test_hex8_bad4()
 {
-  GEO::CUT::Mesh mesh;
+  GEO::CUT::Options options;
+  GEO::CUT::Mesh mesh(options);
 
   double hex8_xyz[24] = {
     0.944444,0,0.05,
@@ -1475,7 +1489,8 @@ void test_quad4_quad4_simple()
 
 void test_hex8_quad4_mesh()
 {
-  GEO::CUT::Mesh mesh;
+  GEO::CUT::Options options;
+  GEO::CUT::Mesh mesh(options);
 
   create_hex8_mesh( mesh, 2, 2, 2 );
 

@@ -10,6 +10,7 @@
 #include "../../src/drt_cut/cut_intersection.H"
 #include "../../src/drt_cut/cut_meshintersection.H"
 #include "../../src/drt_cut/cut_tetmeshintersection.H"
+#include "../../src/drt_cut/cut_options.H"
 
 #include "../../src/drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
@@ -26,7 +27,8 @@ void test_quad4_line2( double x1, double y1,
   std::cout << "(" << x1 << "," << y1 << ")"
             << "--"
             << "(" << x2 << "," << y2 << ")\n";
-  GEO::CUT::Mesh mesh;
+  GEO::CUT::Options options;
+  GEO::CUT::Mesh mesh(options);
 
   std::vector<double> xyz( 3 );
 
