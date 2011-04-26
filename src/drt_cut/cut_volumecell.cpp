@@ -7,6 +7,8 @@
 #include "cut_mesh.H"
 #include "cut_options.H"
 
+#include "../../src/drt_fem_general/drt_utils_gausspoints.H"
+
 
 int GEO::CUT::VolumeCell::hex8totet4[5][4] = {
   {0, 1, 3, 4},
@@ -102,6 +104,7 @@ void GEO::CUT::VolumeCell::GetAllPoints( Mesh & mesh, std::set<Point*> & cut_poi
 
 void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
 {
+#if 0
   Point::PointPosition position = Position();
 
   if ( element_->IsCut() )
@@ -127,37 +130,9 @@ void GEO::CUT::VolumeCell::CreateIntegrationCells( Mesh & mesh )
   {
     CreateSingleElementIntegrationCell( mesh );
   }
-}
-
-bool GEO::CUT::VolumeCell::CreateSimpleShapeIntegrationCell( Mesh & mesh )
-{
-  return ( Tet4IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) or
-           Hex8IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) or
-           Wedge6IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) or
-           Pyramid5IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ ) );
-}
-
-bool GEO::CUT::VolumeCell::CreateSingleElementIntegrationCell( Mesh & mesh )
-{
-  bool success;
-  switch ( element_->Shape() )
-  {
-  case DRT::Element::tet4:
-    success = Tet4IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
-    break;
-  case DRT::Element::hex8:
-    success = Hex8IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
-    break;
-  case DRT::Element::wedge6:
-    success = Wedge6IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
-    break;
-  case DRT::Element::pyramid5:
-    success = Pyramid5IntegrationCell::CreateCell( mesh, this, facets_, integrationcells_ );
-    break;
-  default:
-    throw std::runtime_error( "unsupported element shape" );
-  }
-  return success;
+#else
+  throw std::runtime_error( "old" );
+#endif
 }
 
 void GEO::CUT::VolumeCell::CreateTet4IntegrationCells( Mesh & mesh, Point::PointPosition position, const std::vector<Point*> & points, const std::set<Facet*> & facets, bool project )
@@ -213,7 +188,8 @@ void GEO::CUT::VolumeCell::CreateTet4IntegrationCells( Mesh & mesh, Point::Point
       for ( std::size_t i=0; i<length; ++i )
       {
         std::copy( &points[3*i], &points[3*( i+1 )], &p[0] );
-        Tri3BoundaryCell::CreateCell( mesh, this, f, p );
+        //Tri3BoundaryCell::CreateCell( mesh, this, f, p );
+        NewTri3Cell( mesh, f, p );
       }
     }
 #ifdef DEBUGCUTLIBRARYOUTPUT
@@ -289,7 +265,8 @@ void GEO::CUT::VolumeCell::CreateTet4IntegrationCells( Mesh & mesh,
     for ( std::size_t i=0; i<length; ++i )
     {
       std::copy( &points[3*i], &points[3*( i+1 )], &p[0] );
-      Tri3BoundaryCell::CreateCell( mesh, this, f, p );
+      //Tri3BoundaryCell::CreateCell( mesh, this, f, p );
+      NewTri3Cell( mesh, f, p );
     }
   }
 }
@@ -329,46 +306,6 @@ void GEO::CUT::VolumeCell::ConnectNodalDOFSets( bool include_inner )
     nodaldofset_.push_back( n->DofSetNumber( this ) );
   }
 }
-
-// GEO::CUT::Point::PointPosition GEO::CUT::VolumeCell::Position()
-// {
-//   bool haveundecided = false;
-//   bool havecutsurface = false;
-//   GEO::CUT::Point::PointPosition position = GEO::CUT::Point::undecided;
-//   for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
-//   {
-//     Facet * f = *i;
-//     GEO::CUT::Point::PointPosition fp = f->Position();
-//     switch ( fp )
-//     {
-//     case GEO::CUT::Point::undecided:
-//       haveundecided = true;
-//       break;
-//     case GEO::CUT::Point::oncutsurface:
-//       havecutsurface = true;
-//       break;
-//     case GEO::CUT::Point::inside:
-//     case GEO::CUT::Point::outside:
-//       if ( position!=GEO::CUT::Point::undecided and position!=fp )
-//       {
-//         throw std::runtime_error( "mixed facet set" );
-//       }
-//       position = fp;
-//     }
-//   }
-
-//   if ( haveundecided )
-//   {
-//     throw std::runtime_error( "undecided facet position" );
-//   }
-
-//   if ( position == GEO::CUT::Point::undecided )
-//   {
-//     throw std::runtime_error( "undecided volume position" );
-//   }
-
-//   return position;
-// }
 
 void GEO::CUT::VolumeCell::Position( Point::PointPosition position )
 {
@@ -437,11 +374,6 @@ void GEO::CUT::VolumeCell::NewTri3Cell( Mesh & mesh, Facet * f, const std::vecto
   f->NewTri3Cell( mesh, this, x, bcells_ );
 }
 
-// void GEO::CUT::VolumeCell::NewTri3Cells( Mesh & mesh, Facet * f, const std::vector<Epetra_SerialDenseMatrix> & xyz )
-// {
-//   f->NewTri3Cells( mesh, this, xyz, bcells_ );
-// }
-
 void GEO::CUT::VolumeCell::NewQuad4Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x )
 {
   f->NewQuad4Cell( mesh, this, x, bcells_ );
@@ -456,6 +388,25 @@ double GEO::CUT::VolumeCell::Volume()
     volume += ic->Volume();
   }
   return volume;
+}
+
+int GEO::CUT::VolumeCell::NumGaussPoints( DRT::Element::DiscretizationType shape )
+{
+  int numgp = 0;
+
+  for ( std::set<IntegrationCell*>::const_iterator i=integrationcells_.begin(); i!=integrationcells_.end(); ++i )
+  {
+    IntegrationCell * ic = *i;
+
+    // Create (unmodified) gauss points for integration cell with requested
+    // polynomial order. This is supposed to be fast, since there is a cache.
+    DRT::UTILS::GaussIntegration gi( ic->Shape(), ic->CubatureDegree( shape ) );
+
+    // we just need the number of points per cell
+    numgp += gi.NumPoints();
+  }
+
+  return numgp;
 }
 
 void GEO::CUT::VolumeCell::NewIntegrationCell( Mesh & mesh, DRT::Element::DiscretizationType shape, const std::vector<Point*> & x )
@@ -501,6 +452,10 @@ GEO::CUT::IntegrationCell * GEO::CUT::VolumeCell::NewTet4Cell( Mesh & mesh, cons
 {
   Point::PointPosition position = Position();
   IntegrationCell * ic = mesh.NewTet4Cell( position, points, this );
+
+  // debug
+  ic->Volume();
+
   integrationcells_.insert( ic );
   return ic;
 }

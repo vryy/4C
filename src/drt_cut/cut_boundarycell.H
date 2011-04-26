@@ -63,7 +63,7 @@ public:
   {
   }
 
-  static void CreateCell( Mesh & mesh, VolumeCell * cell, Facet * facet, const std::vector<Point*> & side );
+//   static void CreateCell( Mesh & mesh, VolumeCell * cell, Facet * facet, const std::vector<Point*> & side );
 
 //   static void CollectCoordinates( const std::vector<Point*> & side,
 //                                   std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz );
@@ -88,7 +88,7 @@ public:
   {
   }
 
-  static void CreateCell( Mesh & mesh, VolumeCell * cell, Facet * facet, const std::vector<Point*> & side );
+//   static void CreateCell( Mesh & mesh, VolumeCell * cell, Facet * facet, const std::vector<Point*> & side );
 
 //   static void CollectCoordinates( const std::vector<Point*> & side,
 //                                   std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz );

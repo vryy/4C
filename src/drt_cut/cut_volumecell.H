@@ -18,9 +18,20 @@ namespace CUT
   class Element;
   class BoundaryCell;
   class IntegrationCell;
+  class IntegrationCellCreator;
   class Mesh;
 
+/// a partial volume of a cutted element of any shape
+/*!
+  A volume cell is a partial (or whole) element that is defined by its
+  facets. It knows
 
+  - any number of integration cells (that have simple shapes)
+  - any number of boundary cells (at the cut facets with outward normals)
+  - its position to the cut surface
+  - the dof set number of all element nodes
+
+ */
 class VolumeCell
 {
 public:
@@ -47,21 +58,11 @@ public:
 
   void CreateTet4IntegrationCells( Mesh & mesh, const std::vector<std::vector<Point*> > & tets, const std::map<Facet*, std::vector<Point*> > & sides_xyz );
 
-  bool CreateSimpleShapeIntegrationCell( Mesh & mesh );
-
-  bool CreateSingleElementIntegrationCell( Mesh & mesh );
-
   void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );
-
-  const std::set<IntegrationCell*> & IntegrationCells() const { return integrationcells_; }
-
-  const std::set<BoundaryCell*> & BoundaryCells() const { return bcells_; }
 
   void GetBoundaryCells( std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells );
 
   void ConnectNodalDOFSets( bool include_inner );
-
-  const std::vector<int> & NodalDofSet() const { return nodaldofset_; }
 
   GEO::CUT::Point::PointPosition Position() const { return position_; }
 
@@ -71,6 +72,13 @@ public:
 
   const std::set<Facet*> & Facets() const { return facets_; }
 
+  const std::set<IntegrationCell*> & IntegrationCells() const { return integrationcells_; }
+
+  const std::set<BoundaryCell*> & BoundaryCells() const { return bcells_; }
+
+  const std::vector<int> & NodalDofSet() const { return nodaldofset_; }
+
+  /// create integration cell of specified shape
   void NewIntegrationCell( Mesh & mesh, DRT::Element::DiscretizationType shape, const std::vector<Point*> & x );
 
   void NewHex8Cell( Mesh & mesh, const std::vector<Point*> & x );
@@ -81,13 +89,17 @@ public:
 
   void NewPyramid5Cell( Mesh & mesh, const std::vector<Point*> & x );
 
+  /// create boundary cell of specified shape
   void NewBoundaryCell( Mesh & mesh, DRT::Element::DiscretizationType shape, Facet * f, const std::vector<Point*> & x );
 
   void NewTri3Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x );
 
   void NewQuad4Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x );
 
+  /// calculate cell volume from integration cells
   double Volume();
+
+  int NumGaussPoints( DRT::Element::DiscretizationType shape );
 
 private:
 
@@ -101,24 +113,32 @@ private:
     }
   }
 
+  /// the element this is a part of
   Element * element_;
 
+  /// position relative to cut surface
   GEO::CUT::Point::PointPosition position_;
 
+  /// defining facets
   std::set<Facet*> facets_;
 
+  /// all points of the volume
   std::vector<Point*> points_;
 
+  /// volume preserving simple shaped cells
   std::set<IntegrationCell*> integrationcells_;
 
+  /// boundary cells at cut surface with outward normals
   std::set<BoundaryCell*> bcells_;
 
+  /// dof set number of all element nodes
   std::vector<int> nodaldofset_;
 
   static int hex8totet4[5][4];
   static int wedge6totet4[3][4];
   static int pyramid5totet4[2][4];
 };
+
 
 }
 }

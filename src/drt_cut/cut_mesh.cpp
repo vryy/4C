@@ -657,6 +657,10 @@ GEO::CUT::Tet4IntegrationCell* GEO::CUT::Mesh::NewTet4Cell( Point::PointPosition
   }
   Tet4IntegrationCell * c = new Tet4IntegrationCell( position, xyz, points, cell );
   integrationcells_.push_back( Teuchos::rcp( c ) );
+
+  // debug
+  c->Volume();
+
   return c;
 }
 
@@ -1148,18 +1152,18 @@ void GEO::CUT::Mesh::TestElementVolume( bool fatal )
         ++i )
   {
     Element & e = *i->second;
-    TestElementVolume( e, fatal );
+    TestElementVolume( e.Shape(), e, fatal );
   }
   for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
     Element & e = **i;
-    TestElementVolume( e, fatal );
+    TestElementVolume( e.Shape(), e, fatal );
   }
 }
 
-void GEO::CUT::Mesh::TestElementVolume( Element & e, bool fatal )
+void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, Element & e, bool fatal )
 {
   if ( e.IsCut() )
   {
@@ -1172,18 +1176,21 @@ void GEO::CUT::Mesh::TestElementVolume( Element & e, bool fatal )
 
     double ev = GEO::ElementVolume( e.Shape(), xyze );
 
+    int numgp = 0;
     double cv = 0;
     const std::set<VolumeCell*> & cells = e.VolumeCells();
     for ( std::set<VolumeCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
     {
       VolumeCell * vc = *i;
+      numgp += vc->NumGaussPoints( shape );
       cv += vc->Volume();
     }
 
     double volume_error = ( ev-cv )/ev;
 
 #ifdef DEBUGCUTLIBRARY
-    std::cout << ev << "  "
+    std::cout << numgp << " -- "
+              << ev << "  "
               << cv << "  "
               << ev-cv << "  "
               << volume_error << "\n";

@@ -358,6 +358,65 @@ void test_ls_hex8_florian6()
   lsi.Cut();
 }
 
+void test_ls_hex8_florian7()
+{
+  GEO::CUT::LevelSetIntersection lsi;
+
+  // simple hex8 element
+  std::vector<int> nids( 8 );
+  std::vector<double> lsvs( 8 );
+  Epetra_SerialDenseMatrix xyze( 3, 8 );
+
+  for ( int i=0; i<8; ++i )
+  {
+    nids[i] = i;
+  }
+
+  lsvs[0] = 2.32342;
+  lsvs[1] = 2.32636;
+  lsvs[2] = -0.10882;
+  lsvs[3] = -0.110644;
+  lsvs[4] = 2.96376;
+  lsvs[5] = 2.98289;
+  lsvs[6] = 0;
+  lsvs[7] = -0.00394479;
+
+  xyze( 0, 0 ) = 48.4848;
+  xyze( 1, 0 ) = 129.231;
+  xyze( 2, 0 ) = 1.51515;
+
+  xyze( 0, 1 ) = 48.4848 ;
+  xyze( 1, 1 ) = 129.231 ;
+  xyze( 2, 1 ) = -1.51515;
+
+  xyze( 0, 2 ) = 48.4848 ;
+  xyze( 1, 2 ) = 132.308 ;
+  xyze( 2, 2 ) = -1.51515;
+
+  xyze( 0, 3 ) = 48.4848;
+  xyze( 1, 3 ) = 132.308;
+  xyze( 2, 3 ) = 1.51515;
+
+  xyze( 0, 4 ) = 51.5152;
+  xyze( 1, 4 ) = 129.231;
+  xyze( 2, 4 ) = 1.51515;
+
+  xyze( 0, 5 ) = 51.5152 ;
+  xyze( 1, 5 ) = 129.231 ;
+  xyze( 2, 5 ) = -1.51515;
+
+  xyze( 0, 6 ) = 51.5152 ;
+  xyze( 1, 6 ) = 132.308 ;
+  xyze( 2, 6 ) = -1.51515;
+
+  xyze( 0, 7 ) = 51.5152;
+  xyze( 1, 7 ) = 132.308;
+  xyze( 2, 7 ) = 1.51515;
+
+  lsi.AddElement( 1, nids, xyze, &lsvs[0], DRT::Element::hex8 );
+  lsi.Cut();
+}
+
 void test_ls_hex8_simple()
 {
   GEO::CUT::LevelSetIntersection lsi;

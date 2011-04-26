@@ -122,7 +122,7 @@ public:
 
   void TestElementVolume( bool fatal );
 
-  void TestElementVolume( Element & e, bool fatal );
+  void TestElementVolume( DRT::Element::DiscretizationType shape, Element & e, bool fatal );
 
   void Status();
 

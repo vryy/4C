@@ -19,6 +19,7 @@ namespace CUT
 {
   class Mesh;
   class VolumeCell;
+  class IntegrationCellCreator;
 
 /// Base of integration cells
 class IntegrationCell
@@ -68,8 +69,6 @@ public:
   {
   }
 
-  static bool CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets, std::set<IntegrationCell*> & integrationcells );
-
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::hex8; }
 
   virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const;
@@ -91,8 +90,6 @@ public:
   {
   }
 
-  static bool CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets, std::set<IntegrationCell*> & integrationcells );
-
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tet4; }
 
   virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const;
@@ -111,8 +108,6 @@ public:
     : IntegrationCell( position, xyz, points, cell )
   {
   }
-
-  static bool CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets, std::set<IntegrationCell*> & integrationcells );
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::wedge6; }
 
@@ -133,8 +128,6 @@ public:
     : IntegrationCell( position, xyz, points, cell )
   {
   }
-
-  static bool CreateCell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets, std::set<IntegrationCell*> & integrationcells );
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::pyramid5; }
 

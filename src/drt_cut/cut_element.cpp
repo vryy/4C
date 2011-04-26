@@ -8,6 +8,8 @@
 #include "cut_tetmesh.H"
 #include "cut_element.H"
 #include "cut_linesegment.H"
+#include "cut_options.H"
+#include "cut_integrationcellcreator.H"
 
 #include <string>
 #include <stack>
@@ -321,31 +323,41 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh )
   if ( cells_.size()==1 )
   {
     VolumeCell * vc = *cells_.begin();
-    if ( vc->CreateSingleElementIntegrationCell( mesh ) )
+    if ( IntegrationCellCreator::CreateCell( mesh, Shape(), vc ) )
     {
       return;
     }
   }
 
-  std::set<Point*> cut_points;
+  bool done = false;
 
-  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  if ( mesh.CreateOptions().SimpleShapes() )
   {
-    Facet * f = *i;
-    f->GetAllPoints( mesh, cut_points );
+    done = IntegrationCellCreator::CreateCells( mesh, cells_ );
   }
 
-  std::vector<Point*> points;
-  points.reserve( cut_points.size() );
-  points.assign( cut_points.begin(), cut_points.end() );
+  if ( not done )
+  {
+    std::set<Point*> cut_points;
 
-  // sort points that go into qhull to obtain the same result independent of
-  // pointer values (compiler flags, code structure, memory usage, ...)
-  std::sort( points.begin(), points.end(), PointPidLess() );
+    for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+    {
+      Facet * f = *i;
+      f->GetAllPoints( mesh, cut_points );
+    }
 
-  TetMesh tetmesh( points, facets_, false );
+    std::vector<Point*> points;
+    points.reserve( cut_points.size() );
+    points.assign( cut_points.begin(), cut_points.end() );
 
-  tetmesh.CreateElementTets( mesh, this, cells_, cut_faces_ );
+    // sort points that go into qhull to obtain the same result independent of
+    // pointer values (compiler flags, code structure, memory usage, ...)
+    std::sort( points.begin(), points.end(), PointPidLess() );
+
+    TetMesh tetmesh( points, facets_, false );
+
+    tetmesh.CreateElementTets( mesh, this, cells_, cut_faces_ );
+  }
 }
 
 void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
@@ -369,6 +381,26 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
     Facet * f = *i;
     const std::set<Facet*> holes = f->Holes();
     std::copy( holes.begin(), holes.end(), std::inserter( all_facets, all_facets.begin() ) );
+  }
+
+  // fix for very rare case
+
+  for ( std::map<std::pair<Point*, Point*>, std::set<Facet*> >::iterator li=lines.begin(); li!=lines.end(); )
+  {
+    std::set<Facet*> & fs = li->second;
+    if ( fs.size() < 2 )
+    {
+      for ( std::set<Facet*>::iterator i=fs.begin(); i!=fs.end(); ++i )
+      {
+        Facet * f = *i;
+        all_facets.erase( f );
+      }
+      lines.erase( li++ );
+    }
+    else
+    {
+      ++li;
+    }
   }
 
   // We really need to do the side facets first, since there is now way to
@@ -402,14 +434,10 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
   std::copy( all_facets.begin(), all_facets.end(), std::back_inserter( all_facets_sorted ) );
   all_facets.clear();
 
-#if 0
-  int facet_count = 0;
-#endif
-
   for ( std::vector<Facet*>::iterator i=all_facets_sorted.begin(); i!=all_facets_sorted.end(); ++i )
   {
     Facet * f = *i;
-    if ( facets_done.count( f )==0 and ( OwnedSide( f->ParentSide() ) or OnSide( f ) ) )
+    if ( facets_done.count( f )==0 and ( not f->OnCutSide() or OnSide( f ) ) )
     {
       std::set<std::vector<Facet*>::iterator> new_facets;
       std::set<Facet*> collected_facets;
@@ -418,16 +446,6 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
 
       new_facets.insert( std::find( all_facets_sorted.begin(), all_facets_sorted.end(), f ) );
       f->GetLines( done_lines );
-
-      {
-#if 0
-        std::stringstream str;
-        str << "facet" << ( facet_count++ ) << ".plot";
-        std::ofstream file( str.str().c_str() );
-        f->Print( file );
-        file.close();
-#endif
-      }
 
       while ( new_facets.size() > 0 )
       {
@@ -450,14 +468,14 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
           {
             std::set<Facet*> & facets = lines[line];
 
-            Facet * found_facet = NULL;
+            std::set<Facet*> found_facet;
             for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
             {
               Facet * f = *i;
               if ( collected_facets.count( f )==0 )
               {
                 bool found = false;
-                if ( not OwnedSide( f->ParentSide() ) ) // OnSide( f )
+                if ( f->OnCutSide() ) // OnSide( f )
                 {
                   found = true;
                 }
@@ -469,35 +487,41 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
 
                 if ( found )
                 {
-                  if ( found_facet==NULL )
+                  found_facet.insert( f );
+                }
+              }
+            }
+            if ( found_facet.size() == 2 )
+            {
+              // If there are two possible facets and we come from a side
+              // facet, remove all additional side facets. This might leave us
+              // with one facet only. The one we are looking for.
+              if ( not f->OnCutSide() )
+              {
+                for ( std::set<Facet*>::iterator i=found_facet.begin(); i!=found_facet.end(); )
+                {
+                  Facet * f = *i;
+                  if ( not f->OnCutSide() )
                   {
-                    found_facet = f;
+                    found_facet.erase( i++ );
                   }
                   else
                   {
-                    // undecided. Ignore all matches. Hope we are able to close
-                    // the volume anyway. We should be.
-                    found_facet = NULL;
-                    break;
+                    ++i;
                   }
                 }
               }
             }
-            if ( found_facet!=NULL )
+            if ( found_facet.size() > 1 )
             {
-              new_facets.insert( std::find( all_facets_sorted.begin(), all_facets_sorted.end(), found_facet ) );
-              found_facet->GetLines( done_lines );
-
-              {
-#if 0
-                std::stringstream str;
-                str << "facet" << ( facet_count++ ) << ".plot";
-                std::ofstream file( str.str().c_str() );
-                found_facet->Print( file );
-                file.close();
-#endif
-              }
-
+              // Confusion. Ignore this line and hope for the best.
+              found_facet.clear();
+            }
+            if ( found_facet.size() == 1 )
+            {
+              Facet * f = *found_facet.begin();
+              new_facets.insert( std::find( all_facets_sorted.begin(), all_facets_sorted.end(), f ) );
+              f->GetLines( done_lines );
             }
           }
         }
@@ -542,38 +566,7 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
                  collected_facets.end(),
                  std::inserter( facets_done, facets_done.begin() ) );
 
-      {
-#if 0
-        std::stringstream str;
-        str << "volume" << cells_.size() << ".plot";
-        std::ofstream file( str.str().c_str() );
-        for ( std::set<Facet*>::iterator i=collected_facets.begin();
-              i!=collected_facets.end();
-              ++i )
-        {
-          Facet * f = *i;
-          f->Print( file );
-        }
-        file.close();
-#endif
-      }
-
       cells_.insert( mesh.NewVolumeCell( collected_facets, volume_lines, this ) );
-
-#if 0
-      // create extra volumes for any holes in the wall
-
-      for ( std::set<Facet*>::iterator i=collected_facets.begin(); i!=collected_facets.end(); ++i )
-      {
-        Facet * f = *i;
-        if ( OwnedSide( f->ParentSide() ) )
-        {
-          if ( f->HasHoles() )
-          {
-          }
-        }
-      }
-#endif
     }
   }
 
@@ -648,4 +641,15 @@ void GEO::CUT::ConcreteElement<DRT::Element::pyramid5>::LocalCoordinates( const 
 //     throw std::runtime_error( "global point not within element" );
   }
   rst = pos.LocalCoordinates();
+}
+
+int GEO::CUT::Element::NumGaussPoints( DRT::Element::DiscretizationType shape )
+{
+  int numgp = 0;
+  for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+  {
+    VolumeCell * vc = *i;
+    numgp += vc->NumGaussPoints( shape );
+  }
+  return numgp;
 }

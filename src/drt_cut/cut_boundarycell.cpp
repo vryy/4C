@@ -6,15 +6,15 @@
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 
-void GEO::CUT::Tri3BoundaryCell::CreateCell( Mesh & mesh, VolumeCell * cell, Facet * facet, const std::vector<Point*> & side )
-{
-  cell->NewTri3Cell( mesh, facet, side );
-}
+// void GEO::CUT::Tri3BoundaryCell::CreateCell( Mesh & mesh, VolumeCell * cell, Facet * facet, const std::vector<Point*> & side )
+// {
+//   cell->NewTri3Cell( mesh, facet, side );
+// }
 
-void GEO::CUT::Quad4BoundaryCell::CreateCell( Mesh & mesh, VolumeCell * cell, Facet * facet, const std::vector<Point*> & side )
-{
-  cell->NewQuad4Cell( mesh, facet, side );
-}
+// void GEO::CUT::Quad4BoundaryCell::CreateCell( Mesh & mesh, VolumeCell * cell, Facet * facet, const std::vector<Point*> & side )
+// {
+//   cell->NewQuad4Cell( mesh, facet, side );
+// }
 
 #if 0
 void GEO::CUT::Tri3BoundaryCell::CollectCoordinates( const std::vector<Point*> & side,

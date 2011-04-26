@@ -103,6 +103,8 @@ public:
 
   const std::set<Facet*> & Facets() const { return facets_; }
 
+  int NumGaussPoints( DRT::Element::DiscretizationType shape );
+
 protected:
 
   //const std::vector<Side*> & Sides() { return sides_; }

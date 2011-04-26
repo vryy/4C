@@ -1,6 +1,7 @@
 
 #include "../../src/drt_cut/cut_mesh.H"
 #include "../../src/drt_cut/cut_element.H"
+#include "../../src/drt_fem_general/drt_utils_gausspoints.H"
 #include "cut_test_utils.H"
 
 //#include <boost/program_options.hpp>
@@ -69,6 +70,7 @@ void test_hex8_quad4_axel3();
 void test_hex8_quad4_axel4();
 void test_hex8_quad4_axel5();
 void test_hex8_quad4_axel6();
+void test_hex8_quad4_axel7();
 void test_hex8_quad4_shadan1();
 void test_hex8_quad4_shadan2();
 void test_hex8_quad4_shadan3();
@@ -90,6 +92,7 @@ void test_ls_hex8_florian3();
 void test_ls_hex8_florian4();
 void test_ls_hex8_florian5();
 void test_ls_hex8_florian6();
+void test_ls_hex8_florian7();
 void test_ls_hex8_simple();
 void test_ls_hex8_simple2();
 void test_ls_hex8_simple3();
@@ -103,12 +106,70 @@ void test_unit_intersection_touch();
 
 void test_facets_corner_points();
 
+typedef void ( *testfunct )();
+
+
+int runtests( char ** argv, const std::map<std::string, testfunct> & functable, std::string testname )
+{
+  if ( testname == "(all)" )
+  {
+    std::vector<std::string> failures;
+    std::vector<std::string> msgs;
+
+    for ( std::map<std::string, testfunct>::const_iterator i=functable.begin(); i!=functable.end(); ++i )
+    {
+      std::cout << "Testing " << i->first << " ...\n";
+      try
+      {
+        ( *i->second )();
+      }
+      catch ( std::runtime_error & err )
+      {
+        std::cout << "FAILED: " << err.what() << "\n";
+        failures.push_back( i->first );
+        msgs.push_back( err.what() );
+      }
+    }
+
+    if ( failures.size() > 0 )
+    {
+      std::cout << "\n" << failures.size() << " out of " << functable.size() << " tests failed.\n";
+      for ( std::vector<std::string>::iterator i=failures.begin(); i!=failures.end(); ++i )
+      {
+        std::string & txt = *i;
+        std::cout << "    " << txt;
+        for ( unsigned j=0; j<40-txt.length(); ++j )
+          std::cout << " ";
+        std::cout << "(" << msgs[i-failures.begin()] << ")"
+                  << "\n";
+      }
+    }
+    else
+    {
+      std::cout << "\nall " << functable.size() << " tests succeeded.\n";
+    }
+    return failures.size();
+  }
+  else
+  {
+    std::map<std::string, testfunct>::const_iterator i = functable.find( testname );
+    if ( i==functable.end() )
+    {
+      std::cerr << argv[0] << ": test '" << testname << "' not found\n";
+      return 1;
+    }
+    else
+    {
+      ( *i->second )();
+      return 0;
+    }
+  }
+}
+
 int main( int argc, char ** argv )
 {
   MPI_Init( &argc, &argv );
   //MPI::Init( argc, argv );
-
-  typedef void ( *testfunct )();
 
   std::map<std::string, testfunct> functable;
 
@@ -173,6 +234,7 @@ int main( int argc, char ** argv )
   functable["hex8_quad4_axel4"] = test_hex8_quad4_axel4;
   functable["hex8_quad4_axel5"] = test_hex8_quad4_axel5;
   functable["hex8_quad4_axel6"] = test_hex8_quad4_axel6;
+  functable["hex8_quad4_axel7"] = test_hex8_quad4_axel7;
   functable["hex8_quad4_shadan1"] = test_hex8_quad4_shadan1;
   functable["hex8_quad4_shadan2"] = test_hex8_quad4_shadan2;
   functable["hex8_quad4_shadan3"] = test_hex8_quad4_shadan3;
@@ -194,6 +256,7 @@ int main( int argc, char ** argv )
   functable["ls_hex8_florian4"] = test_ls_hex8_florian4;
   functable["ls_hex8_florian5"] = test_ls_hex8_florian5;
   functable["ls_hex8_florian6"] = test_ls_hex8_florian6;
+  functable["ls_hex8_florian7"] = test_ls_hex8_florian7;
   functable["ls_hex8_simple"] = test_ls_hex8_simple;
   functable["ls_hex8_simple2"] = test_ls_hex8_simple2;
   functable["ls_hex8_simple3"] = test_ls_hex8_simple3;
@@ -234,60 +297,8 @@ int main( int argc, char ** argv )
     return 1;
   }
 
-  if ( testname == "(all)" )
-  {
-    std::vector<std::string> failures;
-    std::vector<std::string> msgs;
-
-    for ( std::map<std::string, testfunct>::iterator i=functable.begin(); i!=functable.end(); ++i )
-    {
-      std::cout << "Testing " << i->first << " ...\n";
-      try
-      {
-        ( *i->second )();
-      }
-      catch ( std::runtime_error & err )
-      {
-        std::cout << "FAILED: " << err.what() << "\n";
-        failures.push_back( i->first );
-        msgs.push_back( err.what() );
-      }
-    }
-
-    if ( failures.size() > 0 )
-    {
-      std::cout << "\n" << failures.size() << " out of " << functable.size() << " tests failed.\n";
-      for ( std::vector<std::string>::iterator i=failures.begin(); i!=failures.end(); ++i )
-      {
-        std::string & txt = *i;
-        std::cout << "    " << txt;
-        for ( unsigned j=0; j<40-txt.length(); ++j )
-          std::cout << " ";
-        std::cout << "(" << msgs[i-failures.begin()] << ")"
-                  << "\n";
-      }
-    }
-    else
-    {
-      std::cout << "\nall " << functable.size() << " tests succeeded.\n";
-    }
-    MPI_Finalize();
-    return failures.size();
-  }
-  else
-  {
-    std::map<std::string, testfunct>::iterator i = functable.find( testname );
-    if ( i==functable.end() )
-    {
-      std::cerr << argv[0] << ": test '" << testname << "' not found\n";
-      MPI_Finalize();
-      return 1;
-    }
-    else
-    {
-      ( *i->second )();
-      MPI_Finalize();
-      return 0;
-    }
-  }
+  int result = runtests( argv, functable, testname );
+  DRT::UTILS::GaussPointCache::Instance().Done();
+  MPI_Finalize();
+  return result;
 }

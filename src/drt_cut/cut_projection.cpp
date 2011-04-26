@@ -18,6 +18,7 @@ void GEO::CUT::Hex8Projection::HorizontalCut( Mesh & mesh,
                                               int axis,
                                               double r )
 {
+#if 0
   std::set<Point*> cut_points;
   cell->GetAllPoints( mesh, cut_points );
 
@@ -250,6 +251,9 @@ void GEO::CUT::Hex8Projection::HorizontalCut( Mesh & mesh,
       cell->CreateTet4IntegrationCells( mesh, position, cell_points, cell_facets, true );
     }
   }
+#else
+  throw std::runtime_error( "old" );
+#endif
 }
 
 bool GEO::CUT::Hex8Projection::EdgeCut( Mesh & mesh,

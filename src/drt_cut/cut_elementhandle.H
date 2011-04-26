@@ -59,6 +59,8 @@ public:
     return rst;
   }
 
+  virtual int NumVolumeCellGaussPoints() = 0;
+
   void VolumeCellGaussPoints( std::set<GEO::CUT::VolumeCell*> & cells,
                               std::vector<DRT::UTILS::GaussIntegration> & intpoints );
 
@@ -132,6 +134,11 @@ public:
     return element_->Nodes();
   }
 
+  virtual int NumVolumeCellGaussPoints()
+  {
+    return element_->NumGaussPoints( Shape() );
+  }
+
 private:
   Element * element_;
 };
@@ -158,6 +165,17 @@ public:
   virtual const std::vector<Node*> & Nodes()
   {
     return nodes_;
+  }
+
+  virtual int NumVolumeCellGaussPoints()
+  {
+    int numgp = 0;
+    for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
+    {
+      Element * e = *i;
+      numgp += e->NumGaussPoints( Shape() );
+    }
+    return numgp;
   }
 
 protected:

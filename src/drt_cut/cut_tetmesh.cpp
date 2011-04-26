@@ -226,6 +226,8 @@ void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
         if ( accept_tets_[t.Id()] )
         {
           std::vector<int> & fixedtet = tets_[t.Id()];
+          if ( fixedtet.size()!=4 )
+            throw std::runtime_error( "confused" );
           tets.push_back( std::vector<Point*>( 4 ) );
           std::vector<Point*> & tet = tets.back();
           for ( int i=0; i<4; ++i )

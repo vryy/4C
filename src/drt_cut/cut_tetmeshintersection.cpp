@@ -500,6 +500,9 @@ void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element,
         std::vector<Point*> parent_points( points );
         ToParent( parent_points );
 
+        // debug
+        ic->Volume();
+
         parent_cell->NewIntegrationCell( parent_mesh, ic->Shape(), parent_points );
       }
       for ( std::set<BoundaryCell*>::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
