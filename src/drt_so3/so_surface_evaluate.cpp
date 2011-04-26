@@ -746,409 +746,401 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 	  }
   }
   break;
+  case calc_struct_constrvol:
+  {
+    //We are not interested in volume of ghosted elements
+    if(Comm.MyPID()==Owner())
+    {
+      // element geometry update
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get state vector 'displacement'");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      const int numdim = 3;
+      LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
+      SpatialConfiguration(xscurr,mydisp);
+      //call submethod for volume evaluation and store rseult in third systemvector
+      double volumeele = ComputeConstrVols(xscurr,NumNode());
+      elevector3[0]= volumeele;
+    }
+  }
+  break;
+  case calc_struct_volconstrstiff:
+  {
+    // element geometry update
+    RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+    if (disp==null) dserror("Cannot get state vector 'displacement'");
+    vector<double> mydisp(lm.size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+    const int numdim =3;
+    LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
+    SpatialConfiguration(xscurr,mydisp);
+    double volumeele;
+    // first partial derivatives
+    RCP<Epetra_SerialDenseVector> Vdiff1 = rcp(new Epetra_SerialDenseVector);
+    // second partial derivatives
+    RCP<Epetra_SerialDenseMatrix> Vdiff2 = rcp(new Epetra_SerialDenseMatrix);
 
+    //get projection method
+    RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
+    const string* projtype = condition->Get<string>("projection");
 
-  	case calc_struct_constrvol:
+    if (projtype != NULL)
+    {
+      //call submethod to compute volume and its derivatives w.r.t. to current displ.
+      if (*projtype == "yz")
       {
-        //We are not interested in volume of ghosted elements
-        if(Comm.MyPID()==Owner())
-        {
-          // element geometry update
-          RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-          if (disp==null) dserror("Cannot get state vector 'displacement'");
-          vector<double> mydisp(lm.size());
-          DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-          const int numdim = 3;
-          LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
-          SpatialConfiguration(xscurr,mydisp);
-          //call submethod for volume evaluation and store rseult in third systemvector
-          double volumeele = ComputeConstrVols(xscurr,NumNode());
-          elevector3[0]= volumeele;
-        }
+        ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2, 0, 0);
       }
-      break;
-      case calc_struct_volconstrstiff:
+      else if (*projtype == "xz")
       {
-        // element geometry update
-        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp==null) dserror("Cannot get state vector 'displacement'");
-        vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        const int numdim =3;
-        LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
-        SpatialConfiguration(xscurr,mydisp);
-        double volumeele;
-        // first partial derivatives
-        RCP<Epetra_SerialDenseVector> Vdiff1 = rcp(new Epetra_SerialDenseVector);
-        // second partial derivatives
-        RCP<Epetra_SerialDenseMatrix> Vdiff2 = rcp(new Epetra_SerialDenseMatrix);
-
-        //get projection method
-        RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
-        const string* projtype = condition->Get<string>("projection");
-
-        if (projtype != NULL)
-        {
-          //call submethod to compute volume and its derivatives w.r.t. to current displ.
-          if (*projtype == "yz")
-          {
-            ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2, 0, 0);
-          }
-          else if (*projtype == "xz")
-          {
-            ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2, 1, 1);
-          }
-          else if (*projtype == "xy")
-          {
-            ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2, 2, 2);
-          }
-          else
-          {
-            ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2);
-          }
-        }
-        else
-          ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2);
-
-        //update rhs vector and corresponding column in "constraint" matrix
-        elevector1 = *Vdiff1;
-        elevector2 = *Vdiff1;
-        elematrix1 = *Vdiff2;
-        //call submethod for volume evaluation and store result in third systemvector
-        elevector3[0]=volumeele;
+        ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2, 1, 1);
       }
-      break;
-      case calc_init_vol:
+      else if (*projtype == "xy")
       {
-        // the reference volume of the RVE (including inner
-        // holes) is calculated by evaluating the following
-        // surface integral:
-        // V = 1/3*int(div(X))dV = 1/3*int(N*X)dA
-        // with X being the reference coordinates and N the
-        // normal vector of the surface element (exploiting the
-        // fact that div(X)=1.0)
+        ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2, 2, 2);
+      }
+      else
+      {
+        ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2);
+      }
+    }
+    else
+      ComputeVolDeriv(xscurr, NumNode(),numdim*NumNode(), volumeele, Vdiff1, Vdiff2);
 
-        // this is intended to be used in the serial case (microstructure)
+    //update rhs vector and corresponding column in "constraint" matrix
+    elevector1 = *Vdiff1;
+    elevector2 = *Vdiff1;
+    elematrix1 = *Vdiff2;
+    //call submethod for volume evaluation and store result in third systemvector
+    elevector3[0]=volumeele;
+  }
+  break;
+  case calc_init_vol:
+  {
+    // the reference volume of the RVE (including inner
+    // holes) is calculated by evaluating the following
+    // surface integral:
+    // V = 1/3*int(div(X))dV = 1/3*int(N*X)dA
+    // with X being the reference coordinates and N the
+    // normal vector of the surface element (exploiting the
+    // fact that div(X)=1.0)
 
-        // NOTE: there must not be any holes penetrating the boundary!
+    // this is intended to be used in the serial case (microstructure)
 
-        double V = params.get<double>("V0", 0.0);
-        double dV = 0.0;
-        const int numnode = NumNode();
-        LINALG::SerialDenseMatrix x(numnode,3);
-        MaterialConfiguration(x);
+    // NOTE: there must not be any holes penetrating the boundary!
 
-        // allocate vector for shape functions and matrix for derivatives
-        LINALG::SerialDenseVector  funct(numnode);
-        LINALG::SerialDenseMatrix  deriv(2,numnode);
+    double V = params.get<double>("V0", 0.0);
+    double dV = 0.0;
+    const int numnode = NumNode();
+    LINALG::SerialDenseMatrix x(numnode,3);
+    MaterialConfiguration(x);
 
-        /*----------------------------------------------------------------------*
+    // allocate vector for shape functions and matrix for derivatives
+    LINALG::SerialDenseVector  funct(numnode);
+    LINALG::SerialDenseMatrix  deriv(2,numnode);
+
+    /*----------------------------------------------------------------------*
          |               start loop over integration points                     |
-         *----------------------------------------------------------------------*/
-        const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+     *----------------------------------------------------------------------*/
+    const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
 
-        for (int gp=0; gp<intpoints.nquad; gp++)
-        {
-          const double e0 = intpoints.qxg[gp][0];
-          const double e1 = intpoints.qxg[gp][1];
+    for (int gp=0; gp<intpoints.nquad; gp++)
+    {
+      const double e0 = intpoints.qxg[gp][0];
+      const double e1 = intpoints.qxg[gp][1];
 
-          // get shape functions and derivatives in the plane of the element
-          DRT::UTILS::shape_function_2D(funct,e0,e1,Shape());
-          DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
+      // get shape functions and derivatives in the plane of the element
+      DRT::UTILS::shape_function_2D(funct,e0,e1,Shape());
+      DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
 
-          vector<double> normal(3);
-          double detA;
-          SurfaceIntegration(detA,normal,x,deriv);
-          const double fac = intpoints.qwgt[gp] * detA;
+      vector<double> normal(3);
+      double detA;
+      SurfaceIntegration(detA,normal,x,deriv);
+      const double fac = intpoints.qwgt[gp] * detA;
 
-          double temp = 0.0;
-          vector<double> X(3,0.);
+      double temp = 0.0;
+      vector<double> X(3,0.);
 
-          for (int i=0; i<numnode; i++)
-          {
-            X[0] += funct[i]*x(i,0);
-            X[1] += funct[i]*x(i,1);
-            X[2] += funct[i]*x(i,2);
-          }
-
-          for (int i=0;i<3;++i)
-          {
-            temp += normal[i]*normal[i];
-          }
-
-          if (temp<0.)
-            dserror("calculation of initial volume failed in surface element");
-          double absnorm = sqrt(temp);
-
-          for (int i=0;i<3;++i)
-          {
-            normal[i] /= absnorm;
-          }
-          for (int i=0;i<3;++i)
-          {
-            dV += 1/3.0*fac*normal[i]*X[i];
-          }
-        }
-        params.set("V0", V+dV);
-      }
-      break;
-
-      case calc_surfstress_stiff:
+      for (int i=0; i<numnode; i++)
       {
-        RefCountPtr<SurfStressManager> surfstressman =
-          params.get<RefCountPtr<SurfStressManager> >("surfstr_man", null);
-
-        if (surfstressman==null)
-          dserror("No SurfStressManager in Solid3 Surface available");
-
-        RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
-        if (cond==null)
-          dserror("Condition not available in Solid3 Surface");
-
-        double time = params.get<double>("total time",-1.0);
-        double dt = params.get<double>("delta time",0.0);
-        bool newstep = params.get<bool>("newstep", false);
-
-        // element geometry update
-
-        const int numnode = NumNode();
-        LINALG::SerialDenseMatrix x(numnode,3);
-
-        RefCountPtr<const Epetra_Vector> dism = discretization.GetState("displacement");
-        if (dism==null) dserror("Cannot get state vector 'displacement'");
-        vector<double> mydism(lm.size());
-        DRT::UTILS::ExtractMyValues(*dism,mydism,lm);
-        SpatialConfiguration(x,mydism);
-
-        const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
-
-        // set up matrices and parameters needed for the evaluation of current
-        // interfacial area and its derivatives w.r.t. the displacements
-
-        int ndof = 3*numnode;                                     // overall number of surface dofs
-        double A;                                                 // interfacial area
-        // first partial derivatives
-        RCP<Epetra_SerialDenseVector> Adiff = rcp(new Epetra_SerialDenseVector);
-        // second partial derivatives
-        RCP<Epetra_SerialDenseMatrix> Adiff2 = rcp(new Epetra_SerialDenseMatrix);
-
-        ComputeAreaDeriv(x, numnode, ndof, A, Adiff, Adiff2);
-
-        if (cond->Type()==DRT::Condition::Surfactant)     // dynamic surfactant model
-        {
-          int curvenum = cond->GetInt("curve");
-          double k1xC = cond->GetDouble("k1xCbulk");
-          double k2 = cond->GetDouble("k2");
-          double m1 = cond->GetDouble("m1");
-          double m2 = cond->GetDouble("m2");
-          double gamma_0 = cond->GetDouble("gamma_0");
-          double gamma_min = cond->GetDouble("gamma_min");
-          double gamma_min_eq = gamma_0-m1;
-          double con_quot_max = (gamma_min_eq-gamma_min)/m2+1.;
-          double con_quot_eq = (k1xC)/(k1xC+k2);
-
-          // element geometry update (n+1)
-          RefCountPtr<const Epetra_Vector> disn = discretization.GetState("new displacement");
-          if (disn==null) dserror("Cannot get state vector 'new displacement'");
-          vector<double> mydisn(lm.size());
-          DRT::UTILS::ExtractMyValues(*disn,mydisn,lm);
-          SpatialConfiguration(x,mydisn);
-
-          // set up matrices and parameters needed for the evaluation of
-          // interfacial area and its first derivative w.r.t. the displacements at (n+1)
-          double Anew = 0.;                                            // interfacial area
-          RCP<Epetra_SerialDenseVector> Adiffnew = rcp(new Epetra_SerialDenseVector);
-
-          ComputeAreaDeriv(x, numnode, ndof, Anew, Adiffnew, null);
-
-          surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, Anew, Adiffnew, elevector1, elematrix1, this->Id(),
-                                                    time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0,
-                                                    gamma_min, gamma_min_eq, con_quot_max,
-                                                    con_quot_eq, newstep);
-        }
-        else if (cond->Type()==DRT::Condition::SurfaceTension) // ideal liquid
-        {
-          int curvenum = cond->GetInt("curve");
-          double const_gamma = cond->GetDouble("gamma");
-          surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, 0., Adiff, elevector1, elematrix1, this->Id(),
-                                                    time, dt, 1, const_gamma, 0.0, 0.0, 0.0, 0.0, 0.0,
-                                                    0.0, 0.0, 0.0, 0.0, newstep);
-        }
-        else
-          dserror("Unknown condition type %d",cond->Type());
+        X[0] += funct[i]*x(i,0);
+        X[1] += funct[i]*x(i,1);
+        X[2] += funct[i]*x(i,2);
       }
-      break;
 
-      // compute additional stresses due to intermolecular potential forces
-      case calc_potential_stiff:
+      for (int i=0;i<3;++i)
       {
-        RefCountPtr<PotentialManager> potentialmanager =
-          params.get<RefCountPtr<PotentialManager> >("pot_man", null);
-        if (potentialmanager==null)
-          dserror("No PotentialManager in Solid3 Surface available");
-
-        RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
-        if (cond==null)
-          dserror("Condition not available in Solid3 Surface");
-
-        if (cond->Type()==DRT::Condition::LJ_Potential_Surface) // Lennard-Jones potential
-        {
-          potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params, lm, elematrix1, elevector1);
-        }
-        if (cond->Type()==DRT::Condition::ElectroRepulsion_Potential_Surface) // Electrostatic potential
-        {
-        	potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1);
-        }
-        if (cond->Type()==DRT::Condition::VanDerWaals_Potential_Surface) // Electrostatic potential
-        {
-          potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1);
-        }
-        if( cond->Type()!=DRT::Condition::LJ_Potential_Surface &&
-            cond->Type()!=DRT::Condition::ElectroRepulsion_Potential_Surface &&
-            cond->Type()!=DRT::Condition::VanDerWaals_Potential_Surface)
-                    dserror("Unknown condition type %d",cond->Type());
+        temp += normal[i]*normal[i];
       }
-      break;
 
-      // compute stochastical forces due to Brownian Motion
-      case calc_brownian_motion:
+      if (temp<0.)
+        dserror("calculation of initial volume failed in surface element");
+      double absnorm = sqrt(temp);
+
+      for (int i=0;i<3;++i)
       {
-        dserror("not commited");
+        normal[i] /= absnorm;
       }
-      break;
-
-      // compute damping matrix due to Brownian Motion
-      case calc_brownian_motion_damping:
+      for (int i=0;i<3;++i)
       {
-          dserror("not yet comitted");
+        dV += 1/3.0*fac*normal[i]*X[i];
       }
-      break;
+    }
+    params.set("V0", V+dV);
+  }
+  break;
+  case calc_surfstress_stiff:
+  {
+    RefCountPtr<SurfStressManager> surfstressman =
+        params.get<RefCountPtr<SurfStressManager> >("surfstr_man", null);
 
-      //compute the area (e.g. for initialization)
-      case calc_struct_monitarea:
+    if (surfstressman==null)
+      dserror("No SurfStressManager in Solid3 Surface available");
+
+    RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+    if (cond==null)
+      dserror("Condition not available in Solid3 Surface");
+
+    double time = params.get<double>("total time",-1.0);
+    double dt = params.get<double>("delta time",0.0);
+    bool newstep = params.get<bool>("newstep", false);
+
+    // element geometry update
+
+    const int numnode = NumNode();
+    LINALG::SerialDenseMatrix x(numnode,3);
+
+    RefCountPtr<const Epetra_Vector> dism = discretization.GetState("displacement");
+    if (dism==null) dserror("Cannot get state vector 'displacement'");
+    vector<double> mydism(lm.size());
+    DRT::UTILS::ExtractMyValues(*dism,mydism,lm);
+    SpatialConfiguration(x,mydism);
+
+    const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+
+    // set up matrices and parameters needed for the evaluation of current
+    // interfacial area and its derivatives w.r.t. the displacements
+
+    int ndof = 3*numnode;                                     // overall number of surface dofs
+    double A;                                                 // interfacial area
+    // first partial derivatives
+    RCP<Epetra_SerialDenseVector> Adiff = rcp(new Epetra_SerialDenseVector);
+    // second partial derivatives
+    RCP<Epetra_SerialDenseMatrix> Adiff2 = rcp(new Epetra_SerialDenseMatrix);
+
+    ComputeAreaDeriv(x, numnode, ndof, A, Adiff, Adiff2);
+
+    if (cond->Type()==DRT::Condition::Surfactant)     // dynamic surfactant model
+    {
+      int curvenum = cond->GetInt("curve");
+      double k1xC = cond->GetDouble("k1xCbulk");
+      double k2 = cond->GetDouble("k2");
+      double m1 = cond->GetDouble("m1");
+      double m2 = cond->GetDouble("m2");
+      double gamma_0 = cond->GetDouble("gamma_0");
+      double gamma_min = cond->GetDouble("gamma_min");
+      double gamma_min_eq = gamma_0-m1;
+      double con_quot_max = (gamma_min_eq-gamma_min)/m2+1.;
+      double con_quot_eq = (k1xC)/(k1xC+k2);
+
+      // element geometry update (n+1)
+      RefCountPtr<const Epetra_Vector> disn = discretization.GetState("new displacement");
+      if (disn==null) dserror("Cannot get state vector 'new displacement'");
+      vector<double> mydisn(lm.size());
+      DRT::UTILS::ExtractMyValues(*disn,mydisn,lm);
+      SpatialConfiguration(x,mydisn);
+
+      // set up matrices and parameters needed for the evaluation of
+      // interfacial area and its first derivative w.r.t. the displacements at (n+1)
+      double Anew = 0.;                                            // interfacial area
+      RCP<Epetra_SerialDenseVector> Adiffnew = rcp(new Epetra_SerialDenseVector);
+
+      ComputeAreaDeriv(x, numnode, ndof, Anew, Adiffnew, null);
+
+      surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, Anew, Adiffnew, elevector1, elematrix1, this->Id(),
+          time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0,
+          gamma_min, gamma_min_eq, con_quot_max,
+          con_quot_eq, newstep);
+    }
+    else if (cond->Type()==DRT::Condition::SurfaceTension) // ideal liquid
+    {
+      int curvenum = cond->GetInt("curve");
+      double const_gamma = cond->GetDouble("gamma");
+      surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, 0., Adiff, elevector1, elematrix1, this->Id(),
+          time, dt, 1, const_gamma, 0.0, 0.0, 0.0, 0.0, 0.0,
+          0.0, 0.0, 0.0, 0.0, newstep);
+    }
+    else
+      dserror("Unknown condition type %d",cond->Type());
+  }
+  break;
+  // compute additional stresses due to intermolecular potential forces
+  case calc_potential_stiff:
+  {
+    RefCountPtr<PotentialManager> potentialmanager =
+        params.get<RefCountPtr<PotentialManager> >("pot_man", null);
+    if (potentialmanager==null)
+      dserror("No PotentialManager in Solid3 Surface available");
+
+    RefCountPtr<DRT::Condition> cond = params.get<RefCountPtr<DRT::Condition> >("condition",null);
+    if (cond==null)
+      dserror("Condition not available in Solid3 Surface");
+
+    if (cond->Type()==DRT::Condition::LJ_Potential_Surface) // Lennard-Jones potential
+    {
+      potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params, lm, elematrix1, elevector1);
+    }
+    if (cond->Type()==DRT::Condition::ElectroRepulsion_Potential_Surface) // Electrostatic potential
+    {
+      potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1);
+    }
+    if (cond->Type()==DRT::Condition::VanDerWaals_Potential_Surface) // Electrostatic potential
+    {
+      potentialmanager->StiffnessAndInternalForcesPotential(this, gaussrule_, params,lm, elematrix1, elevector1);
+    }
+    if( cond->Type()!=DRT::Condition::LJ_Potential_Surface &&
+        cond->Type()!=DRT::Condition::ElectroRepulsion_Potential_Surface &&
+        cond->Type()!=DRT::Condition::VanDerWaals_Potential_Surface)
+      dserror("Unknown condition type %d",cond->Type());
+  }
+  break;
+  // compute stochastical forces due to Brownian Motion
+  case calc_brownian_motion:
+  {
+    dserror("not commited");
+  }
+  break;
+  // compute damping matrix due to Brownian Motion
+  case calc_brownian_motion_damping:
+  {
+    dserror("not yet comitted");
+  }
+  break;
+  //compute the area (e.g. for initialization)
+  case calc_struct_monitarea:
+  {
+    //We are not interested in volume of ghosted elements
+    if(Comm.MyPID()==Owner())
+    {
+      // element geometry update
+      RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==null) dserror("Cannot get state vector 'displacement'");
+      vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      const int numdim = 3;
+      LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
+      SpatialConfiguration(xscurr,mydisp);
+
+      RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
+      const string* projtype = condition->Get<string>("projection");
+
+      // To compute monitored area consider required projection method
+      // and set according coordinates to zero
+      if (*projtype == "yz")
       {
-        //We are not interested in volume of ghosted elements
-        if(Comm.MyPID()==Owner())
-        {
-          // element geometry update
-          RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-          if (disp==null) dserror("Cannot get state vector 'displacement'");
-          vector<double> mydisp(lm.size());
-          DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-          const int numdim = 3;
-          LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
-          SpatialConfiguration(xscurr,mydisp);
-
-          RCP<DRT::Condition> condition = params.get<RefCountPtr<DRT::Condition> >("condition");
-          const string* projtype = condition->Get<string>("projection");
-
-          // To compute monitored area consider required projection method
-          // and set according coordinates to zero
-          if (*projtype == "yz")
-          {
-            xscurr(0,0)=0;
-            xscurr(1,0)=0;
-            xscurr(2,0)=0;
-            xscurr(3,0)=0;
-          }
-          else if (*projtype == "xz")
-          {
-            xscurr(0,1)=0;
-            xscurr(1,1)=0;
-            xscurr(2,1)=0;
-            xscurr(3,1)=0;
-          }
-          else if (*projtype == "xy")
-          {
-            xscurr(0,2)=0;
-            xscurr(1,2)=0;
-            xscurr(2,2)=0;
-            xscurr(3,2)=0;
-          }
-
-          double areaele=0.0;
-          const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
-          // allocate matrix for derivatives of shape functions
-          LINALG::SerialDenseMatrix  deriv(2,NumNode());
-
-          //Compute area
-          for (int gp=0; gp<intpoints.nquad; gp++)
-          {
-            const double e0 = intpoints.qxg[gp][0];
-            const double e1 = intpoints.qxg[gp][1];
-
-            // get shape functions and derivatives in the plane of the element
-            DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
-
-            vector<double> normal(3);
-            double detA;
-            SurfaceIntegration(detA,normal,xscurr,deriv);
-            const double fac = intpoints.qwgt[gp] * detA;
-            areaele += fac;
-
-          }
-
-          //store result in third systemvector
-          elevector3[0]=areaele;
-        }
-
+        xscurr(0,0)=0;
+        xscurr(1,0)=0;
+        xscurr(2,0)=0;
+        xscurr(3,0)=0;
       }
-      break;
-      case calc_struct_constrarea:
+      else if (*projtype == "xz")
       {
-        // element geometry update
-        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp==null) dserror("Cannot get state vector 'displacement'");
-        vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        const int numdim =3;
-        LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
-        SpatialConfiguration(xscurr,mydisp);
-        // initialize variables
-        double elearea;
-        // first partial derivatives
-        RCP<Epetra_SerialDenseVector> Adiff = rcp(new Epetra_SerialDenseVector);
-        // second partial derivatives
-        RCP<Epetra_SerialDenseMatrix> Adiff2 = rcp(new Epetra_SerialDenseMatrix);
-
-        //call submethod
-        ComputeAreaDeriv(xscurr, NumNode(),numdim*NumNode(), elearea, Adiff, Adiff2);
-        // store result
-        elevector3[0] = elearea;
-
+        xscurr(0,1)=0;
+        xscurr(1,1)=0;
+        xscurr(2,1)=0;
+        xscurr(3,1)=0;
       }
-      break;
-      case calc_struct_areaconstrstiff:
+      else if (*projtype == "xy")
       {
-        // element geometry update
-        RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp==null) dserror("Cannot get state vector 'displacement'");
-        vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        const int numdim =3;
-        LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
-        SpatialConfiguration(xscurr,mydisp);
-        // initialize variables
-        double elearea;
-        // first partial derivatives
-        RCP<Epetra_SerialDenseVector> Adiff = rcp(new Epetra_SerialDenseVector);
-        // second partial derivatives
-        RCP<Epetra_SerialDenseMatrix> Adiff2 = rcp(new Epetra_SerialDenseMatrix);
-
-        //call submethod
-        ComputeAreaDeriv(xscurr, NumNode(),numdim*NumNode(), elearea, Adiff, Adiff2);
-        //update elematrices and elevectors
-        elevector1 = *Adiff;
-        elevector1.Scale(-1.0);
-        elevector2 = elevector1;
-        elematrix1 = *Adiff2;
-        elematrix1.Scale(-1.0);
-        elevector3[0] = elearea;
+        xscurr(0,2)=0;
+        xscurr(1,2)=0;
+        xscurr(2,2)=0;
+        xscurr(3,2)=0;
       }
-      break;
-      default:
-        dserror("Unimplemented type of action for StructuralSurface");
 
+      double areaele=0.0;
+      const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+      // allocate matrix for derivatives of shape functions
+      LINALG::SerialDenseMatrix  deriv(2,NumNode());
+
+      //Compute area
+      for (int gp=0; gp<intpoints.nquad; gp++)
+      {
+        const double e0 = intpoints.qxg[gp][0];
+        const double e1 = intpoints.qxg[gp][1];
+
+        // get shape functions and derivatives in the plane of the element
+        DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
+
+        vector<double> normal(3);
+        double detA;
+        SurfaceIntegration(detA,normal,xscurr,deriv);
+        const double fac = intpoints.qwgt[gp] * detA;
+        areaele += fac;
+
+      }
+
+      //store result in third systemvector
+      elevector3[0]=areaele;
+    }
+
+  }
+  break;
+  case calc_struct_constrarea:
+  {
+    // element geometry update
+    RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+    if (disp==null) dserror("Cannot get state vector 'displacement'");
+    vector<double> mydisp(lm.size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+    const int numdim =3;
+    LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
+    SpatialConfiguration(xscurr,mydisp);
+    // initialize variables
+    double elearea;
+    // first partial derivatives
+    RCP<Epetra_SerialDenseVector> Adiff = rcp(new Epetra_SerialDenseVector);
+    // second partial derivatives
+    RCP<Epetra_SerialDenseMatrix> Adiff2 = rcp(new Epetra_SerialDenseMatrix);
+
+    //call submethod
+    ComputeAreaDeriv(xscurr, NumNode(),numdim*NumNode(), elearea, Adiff, Adiff2);
+    // store result
+    elevector3[0] = elearea;
+
+  }
+  break;
+  case calc_struct_areaconstrstiff:
+  {
+    // element geometry update
+    RefCountPtr<const Epetra_Vector> disp = discretization.GetState("displacement");
+    if (disp==null) dserror("Cannot get state vector 'displacement'");
+    vector<double> mydisp(lm.size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+    const int numdim =3;
+    LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
+    SpatialConfiguration(xscurr,mydisp);
+    // initialize variables
+    double elearea;
+    // first partial derivatives
+    RCP<Epetra_SerialDenseVector> Adiff = rcp(new Epetra_SerialDenseVector);
+    // second partial derivatives
+    RCP<Epetra_SerialDenseMatrix> Adiff2 = rcp(new Epetra_SerialDenseMatrix);
+
+    //call submethod
+    ComputeAreaDeriv(xscurr, NumNode(),numdim*NumNode(), elearea, Adiff, Adiff2);
+    //update elematrices and elevectors
+    elevector1 = *Adiff;
+    elevector1.Scale(-1.0);
+    elevector2 = elevector1;
+    elematrix1 = *Adiff2;
+    elematrix1.Scale(-1.0);
+    elevector3[0] = elearea;
+  }
+  break;
+  default:
+    dserror("Unimplemented type of action for StructuralSurface");
   }
   return 0;
   }
