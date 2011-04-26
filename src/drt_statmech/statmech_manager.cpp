@@ -1177,7 +1177,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 			/*a crosslinker is added on each processor which is row node owner of at least one of its nodes;
 			 *the processor which is row map owner of the node with the larger GID will be the owner of the new crosslinker element; on the other processors the new
 			 *crosslinker element will be present as a ghost element only*/
-			if(noderowmap.LID(nodeGID[0]) > -0.9 || noderowmap.LID(nodeGID[1]) > -0.9)
+			if(noderowmap.LID(nodeGID[0]) > -1 || noderowmap.LID(nodeGID[1]) > -1)
 			{
 				//getting current position and rotational status of nodes with GID nodeGID[]
 				// node 1
@@ -2051,25 +2051,23 @@ void StatMechManager::GetElementNodeCoords(DRT::Element* element, RCP<Epetra_Vec
  *----------------------------------------------------------------------*/
 void StatMechManager::UpdateForceSensors(vector<int>& sensornodes, int oscdir)
 {
-	// reinitialize forcesensor_, so that tedious looping
-	// in order to cancel previous force sensor positions is avoided
+	// reinitialize forcesensor_
 	forcesensor_->PutScalar(-1.0);
 
 	// loop over DOFs subjected to oscillation (by DBC)
 	for (int i=0; i<(int)sensornodes.size(); i++)
 	{
-		/* only sum up force if node is on NodeRowMap(). By this, we can later just
-		 * sum up the single average forces to one global force.*/
-		if(discret_.NodeRowMap()->LID(sensornodes[i])>-0.9)
+		// check if node is row node (this ensures processor-wise unique forcesensor_ vectors)
+		if(discret_.NodeRowMap()->LID(sensornodes[i])>-1)
 		{
 			// get the node
 			DRT::Node* actnode = discret_.gNode(sensornodes.at(i));
 			// get the GID of the DOF of the oscillatory motion
-			int gid = discret_.Dof(0, actnode)[oscdir];
+			int dofgid = discret_.Dof(0, actnode)[oscdir];
 			// now, get the LID
-			int lid = discret_.DofColMap()->LID(gid);
+			int collid = discret_.DofColMap()->LID(dofgid);
 			// activate force sensor at lid-th position
-			(*forcesensor_)[lid] = 1.0;
+			(*forcesensor_)[collid] = 1.0;
 		}
 	}
 } // StatMechManager::UpdateForceSensors
@@ -2620,11 +2618,17 @@ void StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
 	}
 
 //---------check/set force sensors anew for each time step
+	// add DOF LID where a force sensor is to be set
   if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
-  	// add DOF LID where a force sensor is to be set
   	UpdateForceSensors(oscillnodes, oscdir);
-  //cout<<"\n=========================================="<<endl;
-  //cout<<"UpdateForceSensors: "<<oscillnodes.size()<< " nodes @ t="<<time<<endl;
+  //if(!discret_.Comm().MyPID())
+  //	cout<<"\n=========================================="<<endl;
+  //for(int pid=0; pid<discret_.Comm().NumProc();pid++)
+  //{
+	//	if(pid==discret_.Comm().MyPID())
+  //		cout<<"UpdateForceSensors_"<<pid<<": "<<oscillnodes.size()<< " nodes @ t="<<time<<endl;
+  //	discret_.Comm().Barrier();
+  //}
   //cout<<"==========================================\n"<<endl;
 
 //------------------------------------set Dirichlet values

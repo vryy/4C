@@ -391,24 +391,23 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
 #endif  // #ifdef DEBUG
         double f = 0;//mean value of force
         double d = 0;//Displacement
-        int count = 0;
 
         for(int i=0; i<forcesensor_->MyLength(); i++)//changed
           if((*forcesensor_)[i]>0.9)
           {
-            count++;
-            f += fint[i];
-            d = dis[i];
+          	// tranlate i to DofRowMap LID
+          	int dofgid = discret_.DofColMap()->GID(i);
+          	int rowid = discret_.DofRowMap()->LID(dofgid);
+            f += fint[rowid];
+            d = dis[rowid];
           }
 
         //f is the sum of all forces at the top on this processor; compute the sum fglob on all processors all together
         double fglob = 0;
         discret_.Comm().SumAll(&f,&fglob,1);
 
-
         if(!discret_.Comm().MyPID())
         {
-
           //pointer to file into which each processor writes the output related with the dof of which it is the row map owner
           FILE* fp = NULL;
 
