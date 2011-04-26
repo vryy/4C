@@ -181,6 +181,44 @@ void fluid_xfem2_drt()
 }
 
 /*----------------------------------------------------------------------*/
+// entry point for Fluid-Fluid based  on XFEM in DRT
+/*----------------------------------------------------------------------*/
+void fluid_fluid_drt()
+{
+#ifdef PARALLEL
+  Epetra_MpiComm comm(MPI_COMM_WORLD);
+#else
+  Epetra_SerialComm comm;
+#endif
+
+  RCP<DRT::Problem> problem = DRT::Problem::Instance();
+
+  RCP<DRT::Discretization> bgfluiddis = problem->Dis(genprob.numff,0);
+  bgfluiddis->FillComplete();
+
+  RCP<DRT::Discretization> embfluiddis = problem->Dis(genprob.numaf,0);
+  embfluiddis->FillComplete();
+
+  // create ale elements if the ale discretization is empty
+  if (embfluiddis->NumGlobalNodes()==0)
+   {
+     {
+       RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
+
+       Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
+       Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
+
+       alecreator->CreateMatchingDiscretization(bgfluiddis,embfluiddis,-1);
+     }
+
+     if (comm.MyPID()==0)
+     {
+       cout << "\n\nCreating ALE discretisation ....\n\n";
+     }
+   }
+}
+
+/*----------------------------------------------------------------------*/
 // entry point for (pure) free surface in DRT
 /*----------------------------------------------------------------------*/
 void fluid_freesurf_drt()

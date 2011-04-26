@@ -296,6 +296,12 @@ void DRT::Problem::InputControl()
     genprob.numaf=2;
     break;
   }
+  case prb_fluid_fluid:
+  {
+    genprob.numff=0;
+    genprob.numaf=1;
+    break;
+  }
   case prb_fluid:
   {
     genprob.numff=0;
@@ -866,6 +872,22 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+
+    nodereader.Read();
+    break;
+  }
+  case prb_fluid_fluid:
+  {
+    fluiddis  = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
+    aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
+
+    AddDis(genprob.numff, fluiddis);
+    AddDis(genprob.numaf, aledis);
+
+    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
+
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
