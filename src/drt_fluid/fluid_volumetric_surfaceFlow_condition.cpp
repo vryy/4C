@@ -313,6 +313,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
   this->CenterOfMassCalculation(cmass,normal);
 
   // get the normal
+  normal_ =  rcp(new vector<double>(*normal));
   string normal_info = *(conditions[surf_numcond])->Get<string>("NORMAL");
   if(normal_info == "self_evaluate_normal")
   {
@@ -320,7 +321,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
     {
       cout<<"Normal is automatically evaluated"<<endl;
     }
-    normal_ =  rcp(new vector<double>(*normal));
+    vnormal_ =  rcp(new vector<double>(*normal));
   }
   else if (normal_info ==  "use_prescribed_normal")
   {
@@ -328,10 +329,10 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
     {
       cout<<"Normal is manually setup"<<endl;
     }
-    normal_ =  rcp(new vector<double>);
-    (*normal_)[0] = (conditions[surf_numcond])->GetInt("n1");
-    (*normal_)[1] = (conditions[surf_numcond])->GetInt("n2");
-    (*normal_)[2] = (conditions[surf_numcond])->GetInt("n3");
+    vnormal_ =  rcp(new vector<double>);
+    (*vnormal_)[0] = (conditions[surf_numcond])->GetInt("n1");
+    (*vnormal_)[1] = (conditions[surf_numcond])->GetInt("n2");
+    (*vnormal_)[2] = (conditions[surf_numcond])->GetInt("n3");
   }
   else
   {
@@ -1221,7 +1222,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(RCP<Epetra_Vec
           dserror("[%s] in cond (%d): No such profile is defined. Please correct the input file ",flowprofile_type_.c_str(),condid_);
         }
 
-        for (unsigned int ldof = 0; ldof< normal_->size(); ldof++)
+        for (unsigned int ldof = 0; ldof< vnormal_->size(); ldof++)
         {
           // get the global dof from using the local one
           int gdof = discret_->Dof(node, ldof);
@@ -1229,7 +1230,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(RCP<Epetra_Vec
           //------------------------------------------------------------
           // Apply the velocity in the normal direction
           //------------------------------------------------------------
-          double Vdof = flow_dir_ * velocity * (*normal_)[ldof];
+          double Vdof = flow_dir_ * velocity * (*vnormal_)[ldof];
 
           bcdof->ReplaceGlobalValues(1,&Vdof,&gdof);
         }
@@ -1516,7 +1517,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate(RCP<Epetra_Vector
                     cond_surfnoderowmap_,
                     local_radii_,
                     border_radii_,
-                    normal_,
+                    vnormal_,
                     params);
 
 

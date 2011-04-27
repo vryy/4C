@@ -353,8 +353,11 @@ private:
   //! center of mass coordinates
   RCP<std::vector<double> >     cmass_;
 
-  //! center of mass coordinates
+  //! avarage normal of the surface
   RCP<std::vector<double> >     normal_;
+
+  //! direction normal of the velocity
+  RCP<std::vector<double> >     vnormal_;
 
   //! a Node row map of the nodes that belong to the current condition
   RCP<Epetra_Map> cond_surfnoderowmap_;

@@ -90,7 +90,9 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
   const Epetra_Map* dofrowmap      = discret_->DofRowMap();
+  const Epetra_Map* dofcolmap      = discret_->DofColMap();
   const Epetra_Map* elementcolmap  = discret_->ElementColMap();
+  const Epetra_Map* elementrowmap  = discret_->ElementRowMap();
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization for a vector which only
@@ -132,22 +134,28 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
 
   qo_nl_np_     = LINALG::CreateVector(*elementcolmap,true);
 
+  // This vector will be used for exportation and restart reasons
+  qexp_         = LINALG::CreateVector(*elementrowmap,true);
+  pexp_         = LINALG::CreateVector(*dofrowmap,true);
+
 
   // Volumetric flow rates at time n+1, n and n-1
   //  qcnp_          = LINALG::CreateVector(*elementrowmap,true);
   //  qcn_           = LINALG::CreateVector(*elementrowmap,true);
   //  qcnm_          = LINALG::CreateVector(*elementrowmap,true);
 
-  // vectors for postprocessing, Element Node Ids and raduis 
+  // vectors for postprocessing, Element Node Ids, radii, generations, etc ...
   nodeIds_      = LINALG::CreateVector(*dofrowmap,true);
   radii_        = LINALG::CreateVector(*dofrowmap,true);
+  generations_  = LINALG::CreateVector(*elementcolmap,true);
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   // This part might be optimized later
   bcval_   = LINALG::CreateVector(*dofrowmap,true);
   dbctog_  = LINALG::CreateVector(*dofrowmap,true);
 
-  //  abc_  = LINALG::CreateVector(*dofrowmap,true);
+  acini_volume_ = LINALG::CreateVector(*dofcolmap,true);
+  acini_bc_     = LINALG::CreateVector(*elementcolmap,true);
 
   // Vectors used for solution process
   // ---------------------------------
@@ -172,8 +180,9 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   //  eleparams.set("qc0n",qcn_);
   //  eleparams.set("qc0nm",qcnm_);
   eleparams.set("radii",radii_);
-
-
+  eleparams.set("generations",generations_);
+  eleparams.set("acini_bc",acini_bc_);
+  eleparams.set("acini_volume",acini_volume_);
   //  eleparams.set("abc",abc_);
   eleparams.set("action","get_initial_state");
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
@@ -199,25 +208,12 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
       int    gid = lm[0];
       double val = gid;
       nodeIds_->ReplaceGlobalValues(1,&val,&gid);
-      //      double val2 = 0.0;
-      //      if (ele->Nodes()[0]->GetCondition("RedLungAcinusCond"))
-      //      {
-      //        double val2 = 1.0+(*abc_)[gid];
-      //        abc_->ReplaceGlobalValues(1,&val2,&gid);
-      //      }
-
     }
     if(myrank_ == (*lmowner)[1])
     {
       int    gid = lm[1];
       double val = gid;
       nodeIds_->ReplaceGlobalValues(1,&val,&gid);
-      //      if (ele->Nodes()[1]->GetCondition("RedLungAcinusCond"))
-      //      {
-      //        double val2 = 1.0+(*abc_)[gid];
-      //        abc_->ReplaceGlobalValues(1,&val2,&gid);
-      //      }
-
     }
   }
 
@@ -312,7 +308,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeLoop(bool CoupledTo3D,
                time_,maxtime_,dta_,step_,stepmax_);
       }
     }
-
 
     // -------------------------------------------------------------------
     //                            Solve
@@ -427,8 +422,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<ParameterList> 
     // Evaluate the L2 norm of the difference
     //------------------------------------------------------------------
     p_nonlin_->Norm2 (&error_norm);
-    error_norm  /= sqrt(double(p_nonlin_->MyLength()));
+    error_norm  /= sqrt(double(p_nonlin_->GlobalLength()));
 
+
+    //    cout<<"Proc: "<<myrank_<<" Norm: "<<error_norm<<" length: "<<p_nonlin_->GlobalLength()<<endl;
+    
     //------------------------------------------------------------------
     // if L2 norm is smaller then tolerance then proceed
     //------------------------------------------------------------------
@@ -442,8 +440,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<ParameterList> 
     
   }
   if (!myrank_)
-    cout<<endl;
-  
+    printf("\n");
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -605,7 +602,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     LINALG::ApplyDirichlettoSystem(sysmat_,pnp_,rhs_,bcval_,dbctog_);
   }
 
-#if 0  // Exporting some values for debugging purposes
+#if 0 // Exporting some values for debugging purposes
 
     {
       cout<<"----------------------- My SYSMAT IS ("<<myrank_<<"-----------------------"<<endl;
@@ -619,6 +616,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
       cout<<"---------------------------------------("<<myrank_<<"------------------------"<<endl;
     }
     cout<<"rhs: "<<*rhs_<<endl;
+
 #endif 
 
   //-------solve for total new velocities and pressures
@@ -656,7 +654,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
   dtsolve_ = Teuchos::Time::wallTime() - tcpusolve;
 
   if (myrank_ == 0)
-  printf("te=%f, ts=%4.7f |",dtele_, dtsolve_);
+  //  printf("te=%f, ts=%4.7f |",dtele_, dtsolve_);
+  printf("ts=%4.7f |", dtsolve_);
   //  cout << "te=" << dtele_ << ", ts=" << dtsolve_ <<" | ";
 
   // find the flow rates
@@ -694,6 +693,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     eleparams.set("qout_n",qout_n_);
     eleparams.set("qin_np",qin_np_);
     eleparams.set("qout_np",qout_np_);
+
+    eleparams.set("acini_volume",acini_volume_);
 
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
@@ -869,20 +870,31 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     output_.WriteElementData();
 
     // write the flow values
-    output_.WriteVector("qin_nm",qin_nm_);
-    output_.WriteVector("qin_n" ,qin_n_ );
-    output_.WriteVector("qin_np",qin_np_);
+    LINALG::Export(*qin_nm_,*qexp_);
+    output_.WriteVector("qin_nm",qexp_);
+    LINALG::Export(*qin_n_ ,*qexp_);
+    output_.WriteVector("qin_n" ,qexp_ );
+    LINALG::Export(*qin_np_,*qexp_);
+    output_.WriteVector("qin_np",qexp_);
 //
-    output_.WriteVector("qout_nm",qout_nm_);
-    output_.WriteVector("qout_n" ,qout_n_);
-    output_.WriteVector("qout_np",qout_np_);
-
+    LINALG::Export(*qout_nm_,*qexp_);
+    output_.WriteVector("qout_nm",qexp_);
+    LINALG::Export(*qout_n_ ,*qexp_);
+    output_.WriteVector("qout_n" ,qexp_);
+    LINALG::Export(*qout_np_,*qexp_);
+    output_.WriteVector("qout_np",qexp_);
+    //
+    LINALG::Export(*acini_volume_,*pexp_);
+    output_.WriteVector("acini_volume",pexp_);
 
     if (step_==upres_)
     {
       output_.WriteVector("NodeIDs",nodeIds_);
       output_.WriteVector("radii",radii_);
-      //      output_.WriteVector("abc",abc_);
+      LINALG::Export(*generations_,*qexp_);
+      output_.WriteVector("generations",qexp_);
+      LINALG::Export(*acini_bc_,*qexp_);
+      output_.WriteVector("acin_bc",qexp_);
     }
 
     // write mesh in each restart step --- the elements are required since
@@ -914,14 +926,24 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     // write domain decomposition for visualization
     output_.WriteElementData();
     
-    // write the flow values
-    output_.WriteVector("qin_nm",qin_nm_);
-    output_.WriteVector("qin_n" ,qin_n_ );
-    output_.WriteVector("qin_np",qin_np_);
 
-    output_.WriteVector("qout_nm",qout_nm_);
-    output_.WriteVector("qout_n" ,qout_n_);
-    output_.WriteVector("qout_np",qout_np_);
+    // write the flow values
+    LINALG::Export(*qin_nm_,*qexp_);
+    output_.WriteVector("qin_nm",qexp_);
+    LINALG::Export(*qin_n_ ,*qexp_);
+    output_.WriteVector("qin_n" ,qexp_ );
+    LINALG::Export(*qin_np_,*qexp_);
+    output_.WriteVector("qin_np",qexp_);
+//
+    LINALG::Export(*qout_nm_,*qexp_);
+    output_.WriteVector("qout_nm",qexp_);
+    LINALG::Export(*qout_n_ ,*qexp_);
+    output_.WriteVector("qout_n" ,qexp_);
+    LINALG::Export(*qout_np_,*qexp_);
+    output_.WriteVector("qout_np",qexp_);
+    //
+    LINALG::Export(*acini_volume_,*pexp_);
+    output_.WriteVector("acini_volume",pexp_);
 
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
@@ -977,18 +999,23 @@ void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step)
   reader.ReadVector(pn_,"pn");
   reader.ReadVector(pnm_,"pnm");
 
-  reader.ReadVector(qin_nm_, "qin_nm");
-  reader.ReadVector(qin_n_ , "qin_n" );
-  reader.ReadVector(qin_np_, "qin_np");
+  reader.ReadVector(qexp_, "qin_nm");
+  LINALG::Export(*qexp_,*qin_nm_);
+  reader.ReadVector(qexp_ , "qin_n" );
+  LINALG::Export(*qexp_,*qin_n_);
+  reader.ReadVector(qexp_, "qin_np");
+  LINALG::Export(*qexp_,*qin_np_);
   
-  reader.ReadVector(qout_nm_, "qout_nm");
-  reader.ReadVector(qout_n_ , "qout_n" );
-  reader.ReadVector(qout_np_, "qout_np");
-  //reader.ReadVector(qcnp_,"qcnp");
-  //reader.ReadVector(qcn_,"qcn");
-  //reader.ReadVector(qcnm_,"qcnm");
+  reader.ReadVector(qexp_, "qout_nm");
+  LINALG::Export(*qexp_,*qout_nm_);
+  reader.ReadVector(qexp_ , "qout_n" );
+  LINALG::Export(*qexp_,*qout_n_);
+  reader.ReadVector(qexp_, "qout_np");
+  LINALG::Export(*qexp_,*qout_np_);
+
   // read the previously written elements including the history data
-  reader.ReadMesh(step_);
+  //reader.ReadMesh(step_);
+
 
 }//RedAirwayImplicitTimeInt::ReadRestart
 

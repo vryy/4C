@@ -66,6 +66,7 @@ void DRT::ELEMENTS::RedAirwayType::SetupElementDefinition( std::map<std::string,
     .AddNamedDouble("AirCompliance")
     .AddNamedDouble("WallThickness")
     .AddNamedDouble("Area")
+    .AddNamedInt("Generation")
     ;
 }
 
@@ -152,6 +153,8 @@ void DRT::ELEMENTS::RedAirway::Pack(DRT::PackBuffer& data) const
     AddtoPack(data,it->second);
   }
 
+  AddtoPack(data,generation_);
+
   return;
 }
 
@@ -198,6 +201,9 @@ void DRT::ELEMENTS::RedAirway::Unpack(const vector<char>& data)
     ExtractfromPack(position,data,val);
     elemParams_[name] = val;
   }
+
+  // extract generation
+  ExtractfromPack(position,data,generation_);
 
   //  cout<<"Var size: "<<elemVars_.size();
   if (position != data.size())
@@ -332,6 +338,24 @@ void DRT::ELEMENTS::RedAirway::getParams(std::string name, double & var)
     exit(1);
   }
   var = elemParams_[name];
+
+}
+
+/*----------------------------------------------------------------------*
+ |  Get element parameters (public)                        ismail 03/11 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::RedAirway::getParams(std::string name, int & var)
+{
+
+  if (name == "Generation")
+  {
+    var = generation_; 
+  }
+  else
+  {
+    dserror ("[%s] is not found with in the element INT variables",name.c_str());
+    exit(1);
+  }
 
 }
 

@@ -50,6 +50,7 @@ Maintainer: Ulrich Kuettler
 #include <cstdlib>
 #include <iostream>
 #include <Sacado.hpp>
+#include <cmath>
 
 #include "drt_parser.H"
 #include "drt_timecurve.H"
@@ -232,6 +233,7 @@ namespace UTILS {
   public:
     BloodTimeSlice(double period,
                    double flowrate,
+                   std::string type_of_interp,
                    int points,
                    std::vector<double>& ArrayLength );
 
@@ -261,6 +263,7 @@ namespace UTILS {
     double flowrate_;
     int points_;
     std::vector<double> ArrayLength_;
+    std::string interp_type_;
   };
 
 
@@ -434,6 +437,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::TimeCurveManager::ValidTimeCurveLine
     .AddNamedInt("CURVE")
     .AddTag("on")
     .AddTag("PhysiologicalWaveform")
+    .AddNamedString("InterpolType")
     .AddNamedDouble("Period")
     .AddNamedDouble("Flowrate")
     .AddNamedInt("Samplingpoints")
@@ -565,13 +569,15 @@ void DRT::UTILS::TimeCurveManager::ReadInput(const DRT::INPUT::DatFileReader& re
         double flowrate;
         int points;
         std::vector<double> Arrayread;
+        std::string type_of_interp;
 
+        curves[j]->ExtractString("InterpolType",type_of_interp);
         curves[j]->ExtractDouble("Period",period);
         curves[j]->ExtractDouble("Flowrate",flowrate);
         curves[j]->ExtractInt("Samplingpoints",points);
         curves[j]->ExtractDoubleVector("Arrayread",Arrayread);
 
-        curve.AddSlice(rcp(new BloodTimeSlice(period, flowrate, points, Arrayread)));
+        curve.AddSlice(rcp(new BloodTimeSlice(period, flowrate,type_of_interp, points, Arrayread)));
       }
       else if (curves[j]->HaveNamed("PeriodicRepetition"))
       {
@@ -914,14 +920,15 @@ std::vector<double> DRT::UTILS::LungTimeSlice::FctDer(const double t,
 /*----------------------------------------------------------------------*/
 DRT::UTILS::BloodTimeSlice::BloodTimeSlice(double period,
                                            double flowrate,
+                                           std::string interp_type,
                                            int points,
                                            std::vector<double>& ArrayLength)
   : TimeSlice(0.,1e100),
     period_(period),
     flowrate_(flowrate),
     points_(points),
-    ArrayLength_(ArrayLength)
-
+    ArrayLength_(ArrayLength),
+    interp_type_(interp_type)
 {
 }
 
@@ -934,47 +941,95 @@ ScalarT DRT::UTILS::BloodTimeSlice::Fct(const ScalarT& t)
   vector<double> SampleNumber;
   vector<double> EvenCoefficient;
   vector<double> OddCoefficient;
-  ScalarT fac;
+  ScalarT fac = 0.0;
   double C = (double)points_;
 
-
-  for (int p=0; p<DataLength; p++)
+  const int pmax = 40;
+  if (interp_type_ == "Fourier")
+  {
+    for (int p=0; p<DataLength; p++)
     {
       SampleNumber.push_back(ArrayLength_[p]*flowrate_);
     }
-
-  for (int p=0; p<=DataLength/2; p++)
+    
+    for (int p=0; p<=DataLength/2; p++)
     {
-	  EvenCoefficient.push_back(0);
-	  OddCoefficient.push_back(0);
+      EvenCoefficient.push_back(0);
+      OddCoefficient.push_back(0);
     }
-
-  for (int p=0; p<=DataLength/2; p++)
-  {
-    EvenCoefficient[p] = 0;
-    OddCoefficient[p] = 0;
-
-    for (int num=0; num<=DataLength-1; num++)
+    
+    for (int p=0; p<=DataLength/2; p++)
     {
-      EvenCoefficient[p] = EvenCoefficient[p]
-                         + 2/C*SampleNumber[num]*cos(2*PI*p*(num+1)/C);
-      OddCoefficient[p] = OddCoefficient[p]
-                        + 2/C*SampleNumber[num]*sin(2*PI*p*(num+1)/C);
+      EvenCoefficient[p] = 0;
+      OddCoefficient[p] = 0;
+      
+      for (int num=0; num<=DataLength-1; num++)
+      {
+        EvenCoefficient[p] = EvenCoefficient[p]
+          + 2/C*SampleNumber[num]*cos(2*PI*p*(num+1)/C);
+        OddCoefficient[p] = OddCoefficient[p]
+          + 2/C*SampleNumber[num]*sin(2*PI*p*(num+1)/C);
+      }
     }
-  }
-
-  EvenCoefficient[DataLength/2] = EvenCoefficient[DataLength/2]/2;
-  OddCoefficient[DataLength/2] = 0;
-  fac = EvenCoefficient[0]/2;
-
-  for (int h=1; h<=DataLength/2; h++)
-  {
-    fac = fac
+    
+    EvenCoefficient[DataLength/2] = EvenCoefficient[DataLength/2]/2;
+    OddCoefficient[DataLength/2] = 0;
+    fac = EvenCoefficient[0]/2;
+    
+    for (int h=1; h<=pmax; h++)
+    {
+      fac = fac
         + (ScalarT)EvenCoefficient[h]*cos(2*PI*h*t/period_)
         + (ScalarT)OddCoefficient[h]*sin(2*PI*h*t/period_);
+    }
   }
+  else if (interp_type_ == "Linear")
+  {
+    // get the time within a period
+    double loc_time = Sacado::Fad::DFad<Sacado::Fad::DFad<double> > (t) .val().val();
 
+    if (loc_time < 0.0)
+    {
+      loc_time += period_;
+    }
 
+    loc_time = fmod(loc_time,period_);
+
+    // get the time step size between to array values
+    double dt = period_/((double)DataLength - 1.0);
+
+    int index_1   = (int)floor(loc_time/dt);
+    double time_1 = double(index_1)*dt;
+    double time_2  = time_1 + dt;
+
+    int index_2;
+
+    // get values the interpolation values
+    double val1 = ArrayLength_[index_1];
+   
+    if (index_1 != DataLength - 1)
+    {
+      index_2 = index_1 + 1;
+    }
+    else
+    {
+      index_2 = 1;
+    }
+    double val2 = ArrayLength_[index_2];
+
+    //    cout<<"time: "<<t<<" loc_time "<<loc_time<<" time1: "<<time_1<<" time2: "<< time_2<<endl;
+    //    cout<<"index_1: "<<index_1<<" index_2: "<<index_2<<" val1: "<<val1<<" val_2: "<<val2<<endl;
+    // calculate the interpolated value
+    fac  =  (time_2 - loc_time)*val1 + (loc_time - time_1)*val2;
+    fac /=  (time_2 - time_1);
+    fac *= flowrate_;
+    
+  }
+  else
+  {
+    dserror("[%s]: \"PhysiologicalWaveform\" can have only \"Fourier\" or \"Linear\" interpolations",interp_type_.c_str());
+  }
+    
   return fac;
 }
 

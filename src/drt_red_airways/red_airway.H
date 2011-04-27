@@ -381,6 +381,9 @@ public:
   //! get element parameters
   void           getParams(std::string name, double & var);
 
+  //! get element parameters
+  void           getParams(std::string name, int    & var);
+
 private:
 
   //! action parameters recognized by airway
@@ -424,6 +427,9 @@ private:
 
   // data
   map<std::string, double>                        elemVars_;
+
+  // element tree generation
+  int                                             generation_;
 
   // internal calculation methods
 

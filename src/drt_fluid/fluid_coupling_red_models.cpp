@@ -352,10 +352,13 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
         {
           dserror("(%s): No such coupling variable on the 3D side is defined yet",variable_str.c_str());
         }
+        if(discret3D_->Comm().MyPID() == 0)
+        {
+          cout<<"3D condition "<<" ["<<condID<<"] returns "<<variable_str<<" "<<(*map3_Dnp_)[CouplingVariable.str()]<<" at time "<<time<<endl;
+        }
         break;
       }
     }
-
   }
 
   // -------------------------------------------------------------------
@@ -1004,7 +1007,7 @@ void FLD::UTILS::Fluid_couplingBc::OutflowBoundary(double pressure, double time,
   eleparams.set("ConvolutedPressure",pressure);
 
   if (myrank_ == 0)
-    printf("3D/reduced-D coupling condition Id: %d Pressure = %f\n",condid,pressure);
+  printf("3D/reduced-D coupling condition Id: %d Pressure %f at time %f\n",condid,pressure,time);
 
 
   couplingbc_->PutScalar(0.0);

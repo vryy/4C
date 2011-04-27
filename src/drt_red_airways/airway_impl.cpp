@@ -194,6 +194,11 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
 
   RCP<Epetra_Vector> radii   = params.get<RCP<Epetra_Vector> >("radii");
 
+  RCP<Epetra_Vector> generations   = params.get<RCP<Epetra_Vector> >("generations");
+  RCP<Epetra_Vector> a_bc          = params.get<RCP<Epetra_Vector> >("acini_bc");
+
+  RCP<Epetra_Vector> a_volume      = params.get<RCP<Epetra_Vector> >("acini_volume");
+
   vector<int>::iterator it = lm.begin();
 
   //vector<int> lmowner;
@@ -236,16 +241,40 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
 
     val = sqrt(A/M_PI);
     radii->ReplaceGlobalValues(1,&val,&gid);
+
+    if(ele->Nodes()[1]->GetCondition("RedLungAcinusCond"))
+    {
+      // find the volume of an acinus condition
+      int    gid2 = lm[1];
+      double VolPerArea = ele->Nodes()[1]->GetCondition("RedLungAcinusCond")->GetDouble("VolumePerArea");
+      double acin_vol = VolPerArea* A;
+      a_volume->ReplaceGlobalValues(1,&acin_vol,&gid2);
+    }
   }
 
   //--------------------------------------------------------------------
-  // initialize the volumetric flow rate vectors
+  // get the generation numbers
   //--------------------------------------------------------------------
   //  if(myrank == ele->Owner())
-  //  {
-  //    int    gid = ele->Id();
-  //  double val = 0.0;
-  //}
+  {
+    int    gid = ele->Id();
+    int    generation = 0;
+    ele->getParams("Generation",generation);
+
+    double val = double(generation);
+    generations->ReplaceGlobalValues(1,&val,&gid);
+  }
+
+  for (int i = 0; i<2; i++)
+  {
+    if(ele->Nodes()[i]->GetCondition("RedLungAcinusCond"))
+    {
+      // find the acinus condition
+      int    gid = ele->Id();
+      double val = 1.0;
+      a_bc->ReplaceGlobalValues(1,&val,&gid);
+    }
+  }
 
 }//AirwayImpl::Initial
 
@@ -327,6 +356,10 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   double q_in    = params.get<double>("qin_n");
   //  double qin_np  = params.get<double>("qin_np");
 
+  // get the generation number
+  int generation = 0;
+  ele->getParams("Generation",generation);
+
   if(ele->type() == "PoiseuilleResistive")
   {
     // get element information
@@ -353,14 +386,78 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     //------------------------------------------------------------
     //               Calculate the System Matrix
     //------------------------------------------------------------
+#if 0
     const double Re= 2.0*fabs(qout_np)/(visc*sqrt(A*PI));
     const double R = 8.0*PI*visc*dens*L/(pow(A,2))*(3.4 + 2.1*0.001*Re);
+  
+    
+#else
+    const double Re = 2.0*fabs(qout_np)/(visc*sqrt(A*PI));
+    const double Rp = 8.0*PI*visc*dens*L/(pow(A,2));
+
+    //    const double R  = 0.21 * ( sqrt(23.0 + 2.5*Re * sqrt(A/PI)*0.5/L)  + 0.005*Re *sqrt(A/PI)*0.5/L) * Rp;
+    //    const double R  = 0.21 * ( sqrt(23.0 + 2.5*Re * sqrt(A/PI)*0.5/L)) * Rp;
+
+    // Gamma defined by pedley
+    double gamma = 0.327;
+    
+    // Gamma from:
+    // Ertbruggen et al
+    // Anatomically based three-dimensional model of airways to simulate flow
+    // and particle transport using computational fluid dynamics
+#if 1
+    switch(generation)
+    {
+    case 0: 
+      gamma = 0.162;
+      break;
+    case 1: 
+      gamma = 0.239;
+      break;
+    case 2: 
+      gamma = 0.244;
+      break;
+    case 3: 
+      gamma = 0.295;
+      break;
+    case 4: 
+      gamma = 0.175;
+      break;
+    case 5: 
+      gamma = 0.303;
+      break;
+    case 6: 
+      gamma = 0.356;
+      break;
+    case 7: 
+      gamma = 0.566;
+      break;
+    default:
+      gamma = 0.327;
+
+    }
+#endif
+
+    //    cout<<"Generation "<< generation << " has gamma = "<<gamma<<endl;
+    //  double R  = 0.62*0.21 * ( sqrt(2.5*Re * sqrt(A/PI)*0.5/L)) * Rp;
+    double R  = gamma* (sqrt(Re * 2.0*sqrt(A/PI)/L)) * Rp;
+
+    if (R < Rp)
+    {
+      R =  Rp;
+    }
+    //    R = Rp *(3.4+2.1e-3 *Re);
+#endif
 
     sysmat(0,0) = -1.0/R  ; sysmat(0,1) =  1.0/R ;
     sysmat(1,0) =  1.0/R  ; sysmat(1,1) = -1.0/R ;
 
     rhs(0) = 0.0;
     rhs(1) = 0.0;
+
+
+
+
 
   }
   else if(ele->type() == "InductoResistive")
@@ -491,12 +588,12 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       //----------------------------------------------------------------
       const double VolPerArea = condition->GetDouble("VolumePerArea");
       const double VolAcinus  = condition->GetDouble("Acinus_Volume");
-      const double E1 = condition->GetDouble("Stiffness1") / VolAcinus;
-      const double E2 = condition->GetDouble("Stiffness2") / VolAcinus;
-      const double B  = condition->GetDouble("Viscosity")  / VolAcinus;
+      const double E1 = condition->GetDouble("Stiffness1");// / VolAcinus;
+      const double E2 = condition->GetDouble("Stiffness2");// / VolAcinus;
+      const double B  = condition->GetDouble("Viscosity");//  / VolAcinus;
       const double NumOfAcini = double(floor(VolPerArea*Area/VolAcinus));
 
-      //      cout<<"Area: "<<Area<<" V/A "<<VolPerArea<<" NumOfAcini: "<< NumOfAcini<<endl;
+      // cout<<"Area: "<<Area<<" V/A "<<VolPerArea<<" NumOfAcini: "<< NumOfAcini<<endl;
       if (NumOfAcini < 1.0)
       {
         dserror("Acinus condition at node (%d) has zero acini",ele->Nodes()[i]->Id());
@@ -516,20 +613,17 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       double pnm = epnm(i);
       double pn  = epn(i);
       
+
       // evaluate the pleural pressure at (t - dt), (t), and (t + dt)
       if((*curve)[0]>=0)
       {
-        Pp_nm = DRT::Problem::Instance()->Curve((*curve)[0]).f(time - dt);
+        Pp_nm = DRT::Problem::Instance()->Curve((*curve)[0]).f(time - 2.0*dt);
         Pp_nm *= (*vals)[0];
-        Pp_n  = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
+        Pp_n  = DRT::Problem::Instance()->Curve((*curve)[0]).f(time -     dt);
         Pp_n  *= (*vals)[0];
-        Pp_np = DRT::Problem::Instance()->Curve((*curve)[0]).f(time + dt);
+        Pp_np = DRT::Problem::Instance()->Curve((*curve)[0]).f(time);
         Pp_np *= (*vals)[0];
-        
-        // Evaluate the pleural contribution
-        pn  -= Pp_n;
-        pnm -= Pp_nm;
-        //        cout<<"pns : "<<pn<<pnm<<p
+
       }
       
       if (i==0)
@@ -541,10 +635,12 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
 
       if (MatType == "NeoHookean")
       {
-        const double K = condition->GetDouble("Stiffness1");
-        
-        sysmat(i,i) += pow(-1.0,i)*(2.0/(K*dt));
-        rhs(i)      += pow(-1.0,i)*(q_out + 2.0/(K*dt)*epn(i));
+        //        cout<<"E1: "<<E1<<" NofAc: "<<NumOfAcini<<endl;
+        const double Kp_np = 1.0/(E1*dt);
+        const double Kp_n  = 1.0/(E1*dt);
+
+        sysmat(i,i) += pow(-1.0,i)*(Kp_np)*NumOfAcini;
+        rhs(i)      += pow(-1.0,i)*(Kp_np*Pp_np + Kp_n*(pn-Pp_n))*NumOfAcini;
       }
       else if (MatType == "KelvinVoigt")
       {
@@ -560,71 +656,18 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       }
       else if (MatType == "ViscoElastic_2dof")
       {
-#if 0
-        const double R  = B;
-        double Kp_np =  (E1+E2)/dt + R/(dt*dt);
-        double Kp_n  = -(E1+E2)/dt - 2.0*R/(dt*dt);
-        double Kp_nm =  (R/(dt*dt));
-        const double Kq_np =  (E1*E2 + R*E1/dt);
-        const double Kq_n  =  (-R*E1/dt);
 
-        Kp_np *= NumOfAcini;
-        Kp_n  *= NumOfAcini;
-        Kp_nm *= NumOfAcini;
-
-        //        double Qeq_n, Qeq_nm;
-        
-        //        Qeq_nm = (-Kp_nm* pnm *NumOfAcini)/Kq_np;
-        //        Qeq_n  = (-Kp_n * pn  *NumOfAcini + Kq_n*qn)/Kq_np;
-        
-        // -------------------------------------------------------------
-        // Evaluate sysmat and rhs
-        // -------------------------------------------------------------
-        sysmat(i,i) += pow(-1.0,i)*(Kp_np/Kq_np);
-        //rhs(i)      += pow(-1.0,i)*(Qeq_n + Qeq_nm + Kp_np/Kq_np*Pp_np*NumOfAcini);
-        rhs(i)      += pow(-1.0,i)*(- Kp_n*pn - Kp_nm*pnm + Kp_np*Pp_np + qn*Kq_n)/Kq_np;
-#endif
-
-#if 0
-        pn  += Pp_n;
-        pnm += Pp_nm;
-        
-        pnm   *= NumOfAcini;
-        pn    *= NumOfAcini;
-        Pp_nm *= NumOfAcini;
-        Pp_n  *= NumOfAcini;
-        Pp_np *= NumOfAcini;
-
-        cout<<"Pn: "<<pn<<" Pnm: "<<pnm<<" Pp_np: "<<Pp_np<<" Pp_n: "<<Pp_n<<" Pp_nm: "<<Pp_nm<<" qn: "<<qn<<" qnm: "<<endl;
-        const double R     = B;
-        const double Kp_np = (R+ E2*dt+E1*dt);
-        const double Kp_n  = 2.0*R* + E2*dt + dt*E1;
-        //        const double Kp_n2 = dt*E1;
-        const double Kp_nm = R;
-        const double Kq_np = dt * E1*R + E2*dt*dt*E1;
-        const double Kq_n  = dt*E1*R;
-        
-        cout<<"r "<<R <<"kpnp "<<Kp_np  <<" "<<Kp_n  <<" "<<Kp_nm  <<" "<<Kq_np<<" "<< Kq_n<< endl;
-        cout<<"Sysmat: "<<sysmat(i,i)<<endl;
-        sysmat(i,i) += pow(-1.0,i)*(Kp_np/Kq_np);
-        cout<<"rhs: "<<rhs(i)<<endl;
-        rhs(i)      += pow(-1.0,i)*(-qn *Kq_n + (pn - Pp_n)*Kp_n - (pnm-Pp_nm)*Kp_nm + Pp_np*Kp_np)/Kq_np;
-        cout<<pow(-1.0,i)<<endl;
-#endif
-
-#if 1
-
+        //        cout<<"NofAcini: "<<NumOfAcini<<endl;
         const double R     = B;
         const double Kp_np = E2/dt + R/(dt*dt);
-        const double Kp_n  = E2*dt + 2*R/(dt*dt);
-        //        const double Kp_n2 = dt*E1;
+        const double Kp_n  = E2/dt + 2.0*R/(dt*dt);
         const double Kp_nm = -R/(dt*dt);
         const double Kq_np = E1*E2 + R*(E1 + E2)/dt;
-        const double Kq_n  = -R*(E1+E2);
+        const double Kq_n  = -R*(E1+E2)/dt;
         
-        sysmat(i,i)+= pow(-1.0,i)*(Kp_np/Kq_np)*NumOfAcini;
-        rhs(i)     += pow(-1.0,i)*((Kp_np*Pp_np + Kp_n*pn + Kp_nm*pnm)*NumOfAcini/Kq_np + Kq_n/Kq_np*qn);
-#endif
+        sysmat(i,i)+= pow(-1.0,i)*( Kp_np/Kq_np)*NumOfAcini;
+        rhs(i)     += pow(-1.0,i)*((Kp_np*Pp_np + Kp_n*(pn-Pp_n) + Kp_nm*(pnm-Pp_nm))*NumOfAcini/Kq_np + Kq_n/Kq_np*qn);
+
       }
       else
       {
@@ -788,7 +831,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
             }
           }
 
-          cout<<"Return ["<<Bc<<"] form 3D problem to 1D POINT of ID["<<ID<<"]: "<<BCin<<endl;
+          //          cout<<"Return ["<<Bc<<"] form 3D problem to 1D POINT of ID["<<ID<<"]: "<<BCin<<endl;
         }
         else
         {
@@ -916,8 +959,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           val = 1;
           dbctog->ReplaceGlobalValues(1,&val,&gid);
 
-          // const double* X = ele->Nodes()[i]->X();
-          // printf("WARNING: node(%d) is free on [%f,%f,%f] \n",gid+1,X[0],X[1],X[2]);
+          //          const double* X = ele->Nodes()[i]->X();
+          //          printf("WARNING: node(%d) is free on [%f,%f,%f] \n",gid+1,X[0],X[1],X[2]);
         }
         #endif
 
@@ -967,11 +1010,13 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
 
   //  const int numnode = iel;
 
-  RefCountPtr<const Epetra_Vector> pnp  = discretization.GetState("pnp");
-  RefCountPtr<Epetra_Vector> qin_np  = params.get<RefCountPtr<Epetra_Vector> >("qin_np");
-  RefCountPtr<Epetra_Vector> qout_np = params.get<RefCountPtr<Epetra_Vector> >("qout_np");
-  RefCountPtr<Epetra_Vector> qin_n  = params.get<RefCountPtr<Epetra_Vector> >("qin_n");
-  RefCountPtr<Epetra_Vector> qout_n = params.get<RefCountPtr<Epetra_Vector> >("qout_n");
+  RefCountPtr<const Epetra_Vector> pnp = discretization.GetState("pnp");
+  RefCountPtr<const Epetra_Vector> pn  = discretization.GetState("pn");
+  RefCountPtr<Epetra_Vector> qin_np    = params.get<RefCountPtr<Epetra_Vector> >("qin_np");
+  RefCountPtr<Epetra_Vector> qout_np   = params.get<RefCountPtr<Epetra_Vector> >("qout_np");
+  RefCountPtr<Epetra_Vector> qin_n     = params.get<RefCountPtr<Epetra_Vector> >("qin_n");
+  RefCountPtr<Epetra_Vector> qout_n    = params.get<RefCountPtr<Epetra_Vector> >("qout_n");
+  RefCountPtr<Epetra_Vector> a_volume  = params.get<RefCountPtr<Epetra_Vector> >("acini_volume");
 
 
   // get time-step size
@@ -1001,17 +1046,25 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
 
   // extract local values from the global vectors
   vector<double> mypnp(lm.size());
+  vector<double> mypn (lm.size());
+  vector<double> mye_acini_voln (lm.size());
   DRT::UTILS::ExtractMyValues(*pnp,mypnp,lm);
+  DRT::UTILS::ExtractMyValues(*pn ,mypn ,lm);
+  DRT::UTILS::ExtractMyValues(*a_volume,mye_acini_voln,lm);
 
   const int numnode = lm.size();
 
   // create objects for element arrays
   //  LINALG::Matrix<numnode,1> epnp;
   Epetra_SerialDenseVector epnp(numnode);
+  Epetra_SerialDenseVector epn(numnode);
+  Epetra_SerialDenseVector e_acini_voln(numnode);
   for (unsigned int i=0;i<lm.size();++i)
   {
     // split area and volumetric flow rate, insert into element arrays
-    epnp(i)    = mypnp[i];
+    epnp(i)         = mypnp[i];
+    epn(i)          = mypn[i];
+    e_acini_voln(i) = mye_acini_voln[i];
   }
 
   // get node coordinates and number of elements per node
@@ -1043,6 +1096,11 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   double Qin_np  = (*qin_np )[ele->LID()];
   double Qout_np = (*qout_np)[ele->LID()];
 
+  // get the generation number
+  int generation = 0;
+  ele->getParams("Generation",generation);
+
+
   if(ele->type() == "PoiseuilleResistive")
   {
     // get element information
@@ -1051,7 +1109,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
 
     const double R = 8.0*PI*visc*dens*L/(pow(A,2));
     Qin_np = Qout_np = qout= qin = (epnp(0)-epnp(1))/R;
-    cout<<"R: "<< R<<endl;
 
   }
   else if(ele->type() == "TurbulentPoiseuilleResistive")
@@ -1060,44 +1117,69 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     double A;
     ele->getParams("Area",A);
 
-    if(params.get<string> ("solver type") == "Nonlinear")
+    // From:
+    // A Non-Linear Multialveolar Model of the Mechanical Behavior of the 
+    // Human Lung (Renotte et la)
+    
+    const double Re = 2.0*fabs(Qout_np)/(visc*sqrt(A*PI));
+    const double Rp = 8.0*PI*visc*dens*L/(pow(A,2));
+    //      const double R  = 0.21 * ( sqrt(23.0 + 2.5*Re * sqrt(A/PI)*0.5/L)+ 0.005*Re *sqrt(A/PI)*0.5/L)*Rp;
+    //      const double R  = 0.21 * ( sqrt(23.0 + 2.5*Re * sqrt(A/PI)*0.5/L))*Rp;
+    
+    // Gamma defined by pedley
+    double gamma = 0.327;
+    
+    // Gamma from:
+    // Ertbruggen et al
+    // Anatomically based three-dimensional model of airways to simulate flow
+    // and particle transport using computational fluid dynamics
+#if 1
+    switch(generation)
     {
-      const int maxitr= 10;
-      for (int itr =0; itr<=maxitr; itr++)
-      {
-        //        const double Re= 2.0*fabs(Qout_np)/(visc*sqrt(A*PI))*1.0;
-        const double K1= 8.0*PI*visc*dens*L/(pow(A,2))*3.4;
-        const double K2= 8.0*PI*visc*dens*L/(pow(A,2))*2.1*0.001*2.0/(visc*sqrt(A*PI));
-        const double R = K1 + K2*fabs(Qout_np);
-        
-        const double df_dq = K1 + 2.0*K2*fabs(Qout_np);
-        const double     f = - (epnp(0)-epnp(1)) + R*Qout_np;
-        qin = -f/df_dq + Qout_np;
-        //      qin = (epnp(0)-epnp(1))/R;
-        
-        if (fabs(Qin_np - qin) <= fabs(1e-6*qin))
-        {
-          Qin_np = Qout_np = qout= qin;
-          break;
-        }
-        if (itr == maxitr)
-        {
-          cout<<"Warning didn't converge: "<< fabs(Qin_np - qin) <<" Q = "<<qout<<endl;
-        }
-        Qin_np = Qout_np = qout= qin;
-      }     
+    case 0: 
+      gamma = 0.162;
+      break;
+    case 1: 
+      gamma = 0.239;
+      break;
+    case 2: 
+      gamma = 0.244;
+      break;
+    case 3: 
+      gamma = 0.295;
+      break;
+    case 4: 
+      gamma = 0.175;
+      break;
+    case 5: 
+      gamma = 0.303;
+      break;
+    case 6: 
+      gamma = 0.356;
+      break;
+    case 7: 
+      gamma = 0.566;
+      break;
+    default:
+      gamma = 0.327;
     }
-    if(params.get<string> ("solver type") == "Linear")
+#endif
+    
+    //    cout<<"Generation "<< generation << " has gamma = "<<gamma<<endl;
+    
+    //  double R  = 0.62*0.21 * ( sqrt(2.5*Re * sqrt(A/PI)*0.5/L)) * Rp;
+    double R  = gamma* (sqrt(Re * 2.0*sqrt(A/PI)/L)) * Rp;
+    
+    if (R < 1.*Rp)
     {
-      //      const double Re= 2.0*fabs(Qout_np)/(visc*sqrt(A*PI))*1.0;
-      const double K1= 8.0*PI*visc*dens*L/(pow(A,2))*3.4;
-      const double K2= 8.0*PI*visc*dens*L/(pow(A,2))*2.1*0.001*2.0/(visc*sqrt(A*PI));
-      const double R = K1 + K2*fabs(Qout_np);
-
-      qin = (epnp(0)-epnp(1))/R;
-      Qin_np = Qout_np = qout= qin;
+      R = Rp;
     }
+    
+    //    R = Rp *(3.4+2.1e-3 *Re);
 
+    Qin_np = (epnp(0)-epnp(1))/R;
+    Qout_np = Qin_np;
+    
   }
   else if(ele->type() == "InductoResistive")
   {
@@ -1192,7 +1274,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
       Qout_np = qout;
     }
 
-   Qin_np = qin  = qout + qcnp_val;
+   Qin_np  = qout + qcnp_val;
     
   }
   else if(ele->type() == "RLC")
@@ -1289,10 +1371,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
       Qout_np = qout;
     }
 
-    Qin_np = qin  = qout + qcnp_val;
+    Qin_np  = qout + qcnp_val;
    
     qout = qlnp;
-    qin  = qout + qcnp_val;
   }
   else if(ele->type() == "SUKI")
   {
@@ -1308,9 +1389,20 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   //  ele->setVars("flow_out",qout);
   int gid = ele->Id();
 
-  qin_np  -> ReplaceGlobalValues(1,&qin,&gid);
-  qout_np -> ReplaceGlobalValues(1,&qout,&gid);
+  qin_np  -> ReplaceGlobalValues(1,&Qin_np,&gid);
+  qout_np -> ReplaceGlobalValues(1,&Qout_np,&gid);
 
+  for (int i = 0; i<2; i++)
+  {
+    if(ele->Nodes()[i]->GetCondition("RedLungAcinusCond"))
+    {
+      double acinus_volume = e_acini_voln[i];
+      acinus_volume +=  (Qin_np)*dt;
+
+      int    gid2 = lm[i];
+      a_volume->ReplaceGlobalValues(1,&acinus_volume,&gid2);
+    }
+  }
 
 }//CalcFlowRates
 
@@ -1433,7 +1525,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
         std::stringstream returnedBCwithId;
         returnedBCwithId << returnedBC <<"_" << ID;
         
-        cout<<"Return ["<<returnedBC<<"] form 1D problem to 3D SURFACE of ID["<<ID<<"]: "<<BC3d<<endl;
+        //        cout<<"Return ["<<returnedBC<<"] form 1D problem to 3D SURFACE of ID["<<ID<<"]: "<<BC3d<<endl;
 
         // -----------------------------------------------------------------
         // Check whether the coupling wrapper has already initialized this

@@ -41,15 +41,18 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(const std::string& eletype,
   if (elemType_ == "PoiseuilleResistive" || elemType_ == "TurbulentPoiseuilleResistive" || elemType_ == "InductoResistive" || elemType_ == "ComplientResistive" || elemType_ == "RLC" || elemType_ == "SUKI")
   {
     double Ew, Ea, tw, A;
+    int generation;
     linedef->ExtractDouble("WallCompliance",Ew);
     linedef->ExtractDouble("AirCompliance",Ea); 
     linedef->ExtractDouble("WallThickness",tw);
     linedef->ExtractDouble("Area",A);
+    linedef->ExtractInt("Generation",generation);
     
     elemParams_["WallCompliance"] = Ew;
     elemParams_["AirCompliance"]  = Ea; 
     elemParams_["WallThickness"]  = tw;
     elemParams_["Area"]           = A;
+    generation_                   = generation;
 
   }
   else

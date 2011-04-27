@@ -224,7 +224,7 @@ protected:
   //! reduced dimensional airway network discretization
   RCP<DRT::Discretization>      discret_;
   LINALG::Solver&               solver_;
-  ParameterList&                params_;
+  ParameterList                 params_;
   IO::DiscretizationWriter&     output_;
   //! the processor ID from the communicator
   int                           myrank_;
@@ -293,6 +293,9 @@ protected:
   RCP<Epetra_Vector>          qout_nm_;
 
   RCP<Epetra_Vector>          qo_nl_np_;
+
+  RCP<Epetra_Vector>          qexp_;
+  RCP<Epetra_Vector>          pexp_;
   //@}
 
   //! @name node Id vector
@@ -303,10 +306,15 @@ protected:
   RCP<Epetra_Vector>          radii_;
   //@}
 
+  //! @name generations vector
+  RCP<Epetra_Vector>          generations_;
+  //@}
+
   //! @name Dirichlet boundary condition vectors
   RCP<Epetra_Vector>          bcval_;
   RCP<Epetra_Vector>          dbctog_;
-  //  RCP<Epetra_Vector>          abc_;
+  RCP<Epetra_Vector>          acini_bc_;
+  RCP<Epetra_Vector>          acini_volume_;
   //@}
 
   //! connection between master and slave nodes on this proc

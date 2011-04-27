@@ -679,16 +679,16 @@ void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
     params.set("total time",time_);
 
     // set the dof vector values 
-    discret_->ClearState();
-    discret_->SetState("qanp",qanp_);
+    //    discret_->ClearState();
+    //    discret_->SetState("qanp",qanp_);
 
     // call the gnuplot writer
-    artgnu_->Write(params);
-    discret_->ClearState();
+    //    artgnu_->Write(params);
+    //    discret_->ClearState();
 
     // Export postpro results
-    this->CalcPostprocessingValues();
-    output_.WriteVector("one_d_artery_flow",qn_);
+    //  this->CalcPostprocessingValues();
+    //  output_.WriteVector("one_d_artery_flow",qn_);
     output_.WriteVector("one_d_artery_pressure",pn_);
     
     if (CoupledTo3D)
@@ -707,9 +707,9 @@ void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
     output_.WriteVector("qanp",qanp_);
 
     // Export postpro results
-    this->CalcPostprocessingValues();
-    output_.WriteVector("one_d_artery_flow",qn_);
-    output_.WriteVector("one_d_artery_pressure",pn_);
+    //  this->CalcPostprocessingValues();
+    //  output_.WriteVector("one_d_artery_flow",qn_);
+    //  output_.WriteVector("one_d_artery_pressure",pn_);
         
     // also write impedance bc information if required
     // Note: this method acts only if there is an impedance BC
@@ -724,12 +724,12 @@ void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
     params.set("total time",time_);
 
     // set the dof vector values 
-    discret_->ClearState();
-    discret_->SetState("qanp",qanp_);
+    //    discret_->ClearState();
+    //    discret_->SetState("qanp",qanp_);
 
     // call the gnuplot writer
-    artgnu_->Write(params);
-    discret_->ClearState();
+    //    artgnu_->Write(params);
+    //    discret_->ClearState();
 
     if (CoupledTo3D)
     {
@@ -801,6 +801,7 @@ ART::ArtNetExplicitTimeInt::~ArtNetExplicitTimeInt()
  *----------------------------------------------------------------------*/
 void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
 {
+  cout<<"On proc("<<myrank_<<"): "<<"postpro values being calculated"<<endl;
 
   // create the parameters for the discretization
   ParameterList eleparams;
@@ -810,18 +811,21 @@ void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
   
   // set vecotr values needed by elements
   discret_->ClearState();
+  cout<<"On proc("<<myrank_<<"): "<<"postpro setting qanp"<<endl;
   discret_->SetState("qanp",qanp_);
+  cout<<"On proc("<<myrank_<<"): "<<"postpro setting wfnp"<<endl;
   discret_->SetState("Wfnp",Wfnp_);
+  cout<<"On proc("<<myrank_<<"): "<<"postpro setting wbnp"<<endl;
   discret_->SetState("Wbnp",Wbnp_);
   
   eleparams.set("time step size",dta_);
   eleparams.set("total time",time_);
   eleparams.set("pressure",pn_);
   eleparams.set("flow",qn_);
-  
+  cout<<"On proc("<<myrank_<<"): "<<"postpro evaluat disc"<<endl;
   // call standard loop over all elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-  
+  cout<<"On proc("<<myrank_<<"): "<<"postpro done "<<endl;
 }//ART::ArtNetExplicitTimeInt::CalcPostprocessingValues
 
 #endif
