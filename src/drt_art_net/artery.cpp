@@ -140,7 +140,7 @@ void DRT::ELEMENTS::Artery::Pack(DRT::PackBuffer& data) const
   // Gaussrule
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   // is_ale_
-  AddtoPack(data,is_ale_);
+  //  AddtoPack(data,is_ale_);
 
 
   // data_
@@ -171,7 +171,7 @@ void DRT::ELEMENTS::Artery::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,gausrule_integer);
   gaussrule_ = GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
   // is_ale_
-  ExtractfromPack(position,data,is_ale_);
+  //  ExtractfromPack(position,data,is_ale_);
 
   // data_
   vector<char> tmp(0);
