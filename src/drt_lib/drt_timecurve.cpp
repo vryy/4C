@@ -944,7 +944,6 @@ ScalarT DRT::UTILS::BloodTimeSlice::Fct(const ScalarT& t)
   ScalarT fac = 0.0;
   double C = (double)points_;
 
-  const int pmax = 40;
   if (interp_type_ == "Fourier")
   {
     for (int p=0; p<DataLength; p++)
@@ -976,7 +975,7 @@ ScalarT DRT::UTILS::BloodTimeSlice::Fct(const ScalarT& t)
     OddCoefficient[DataLength/2] = 0;
     fac = EvenCoefficient[0]/2;
     
-    for (int h=1; h<=pmax; h++)
+    for (int h=1; h<=DataLength/2; h++)
     {
       fac = fac
         + (ScalarT)EvenCoefficient[h]*cos(2*PI*h*t/period_)
