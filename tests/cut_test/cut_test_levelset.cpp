@@ -700,7 +700,7 @@ void ls_hex8_node_value( int element, int node, int & nid, double & x, double & 
   x = xpos[base];
   y = ypos[base];
   z = node / 4 + element;
-  lsv = z - 1;
+  lsv = z - 1 + 0.5*TOLERANCE;
 }
 
 void test_ls_hex8_between()
