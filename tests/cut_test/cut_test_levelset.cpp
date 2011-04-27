@@ -4,6 +4,8 @@
 #include "../../src/drt_cut/cut_levelsetintersection.H"
 #include "cut_test_utils.H"
 
+#include <iterator>
+
 void test_ls_hex8_florian1()
 {
   GEO::CUT::LevelSetIntersection lsi;
@@ -701,26 +703,29 @@ void ls_hex8_node_value( int element, int node, int & nid, double & x, double & 
   y = ypos[base];
   z = node / 4 + element;
   lsv = z - 1 + 0.5*TOLERANCE;
+  //lsv = z - 1 + 0.5;
 }
 
 void test_ls_hex8_between()
 {
-  GEO::CUT::LevelSetIntersection lsi;
-
-  // simple hex8 element
-  std::vector<int> nids( 8 );
-  std::vector<double> lsvs( 8, -1 );
-  Epetra_SerialDenseMatrix xyze( 3, 8 );
-
   for ( int e=0; e<2; ++e )
   {
+    GEO::CUT::LevelSetIntersection lsi;
+
+    // simple hex8 element
+    std::vector<int> nids( 8 );
+    std::vector<double> lsvs( 8, -1 );
+    Epetra_SerialDenseMatrix xyze( 3, 8 );
+
     for ( int i=0; i<8; ++i )
     {
       ls_hex8_node_value( e, i, nids[i], xyze( 0, i ), xyze( 1, i ), xyze( 2, i ), lsvs[i] );
     }
 
-    lsi.AddElement( e, nids, xyze, &lsvs[0], DRT::Element::hex8 );
-  }
+    std::copy( lsvs.begin(), lsvs.end(), std::ostream_iterator<double>( std::cout, " " ) );
+    std::cout << "\n";
 
-  lsi.Cut();
+    lsi.AddElement( e, nids, xyze, &lsvs[0], DRT::Element::hex8 );
+    lsi.Cut();
+  }
 }

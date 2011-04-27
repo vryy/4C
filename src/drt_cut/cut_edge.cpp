@@ -262,6 +262,8 @@ void GEO::CUT::Edge::LevelSetCut( Mesh & mesh, LevelSetSide & side, std::set<Poi
   }
   else
   {
+#if 0
+    // clear version that works for whole mesh cuts
     if ( fabs( blsv ) < std::numeric_limits<double>::min() )
     {
       cuts.insert( Point::InsertCut( this, &side, BeginNode() ) );
@@ -270,5 +272,17 @@ void GEO::CUT::Edge::LevelSetCut( Mesh & mesh, LevelSetSide & side, std::set<Poi
     {
       cuts.insert( Point::InsertCut( this, &side, EndNode() ) );
     }
+#else
+    // version for single element cuts, here we need to watch for tolerances on
+    // nodal cuts
+    if ( fabs( blsv ) <= TOLERANCE )
+    {
+      cuts.insert( Point::InsertCut( this, &side, BeginNode() ) );
+    }
+    if ( fabs( elsv ) <= TOLERANCE )
+    {
+      cuts.insert( Point::InsertCut( this, &side, EndNode() ) );
+    }
+#endif
   }
 }
