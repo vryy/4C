@@ -2104,7 +2104,7 @@ std::vector<int> StatMechManager::Permutation(const int& N)
 /*----------------------------------------------------------------------*
  | Computes current internal energy of discret_ (public)     cyron 12/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double& energy,const double& dt)
+void StatMechManager::ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double& energy,const double& dt, const std::ostringstream& filename)
 {
   ParameterList p;
   p.set("action", "calc_struct_energy");
@@ -2127,6 +2127,19 @@ void StatMechManager::ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double
   discret_.EvaluateScalars(p, energies);
   discret_.ClearState();
   energy = (*energies)(0);
+
+  if(!discret_.Comm().MyPID()==0)
+  {
+    FILE* fp = NULL;
+    fp = fopen(filename.str().c_str(), "a");
+    std::stringstream writetofile;
+    writetofile<<energy;
+    for(int i=0; i<16; i++)
+    	writetofile<<"    "<<0;
+    writetofile<<endl;
+		fprintf(fp, writetofile.str().c_str());
+		fclose(fp);
+  }
 
   return;
 

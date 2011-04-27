@@ -140,10 +140,8 @@ public:
 																		RCP<Epetra_Vector> invtoggle,
 																		Epetra_Vector& deltadbc);
 
-	 /*! \brief map crosslink molecules and filament nodes to the according volume partition and detect nodes in proximity of the molecules
-		 *  \param currentpositions     (in)      column map node positions
-		 *  \param neighbourslid        (in/out)  vector holding the node lids within search proximity of crosslink molecules*/
-	void ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double& energy, const double& dt);
+	//! brief computes the internal energy of the network
+	void ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double& energy, const double& dt, const std::ostringstream& filename);
 
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
@@ -247,6 +245,9 @@ protected:
 
 	//! \brief iterate vector in order to obtain close approximation to actual (structure) vector
 	void DDCorrIterateVector(const Epetra_Vector& discol, LINALG::Matrix<3,1>* vectorj, const int& maxiterations);
+
+	//! \brief simply returns the number of free, one-bonded, and two-bonded crosslink molecules
+	void DDCorrCrosslinkCount(const std::ostringstream& filename);
 
 	//! \brief check whether a crosslink connects two filaments or occupies two binding spots of the same element and therefore is to be visualized differently
 	bool CheckForKinkedVisual(int eleid);

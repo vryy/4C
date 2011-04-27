@@ -2462,13 +2462,16 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   // Compute internal energy
   double internalenergy;
   const RCP<Epetra_Vector> disp = rcp(new Epetra_Vector(disrow));
-  ComputeInternalEnergy(disp, internalenergy,dt);
+  ComputeInternalEnergy(disp, internalenergy,dt, filename);
 
 	//calculcate the distance of crosslinker elements to all crosslinker elements (crosslinkermap)
   // testwise, base centershift upon calculated cog_ (rise in adequacy?)
   LINALG::Matrix<3,1> newcentershift;
   for(int i=0; i<(int)cog.M(); i++)
   	newcentershift(i) = cog(i) - periodlength/2.0;
+
+  // write the numbers of free, one-bonded, and two-bonded crosslink molecules
+  DDCorrCrosslinkCount(filename);
 
   // MultiVector because result vector will be of length 3*ddcorrrowmap_->MyLength()
 	Epetra_MultiVector crosslinksperbinrow(*ddcorrrowmap_,9 , true);
@@ -2527,11 +2530,6 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
     FILE* fp = NULL;
     fp = fopen(filename.str().c_str(), "a");
     std::stringstream histogram;
-    histogram<<internalenergy;
-    for(int i=0; i<16; i++)
-    	histogram<<"    "<<0;
-    histogram<<endl;
-
     // first part of output
     for(int i=0; i<numbins; i++)
     {
@@ -3743,6 +3741,58 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
 				}
 	return;
 }//StatMechManager::DDCorrFunction()
+
+/*------------------------------------------------------------------------------*                                                 |
+ | simply counts the number of free, one-bonded, and two-bonded crosslinkers    |
+ |                                                        (public) mueller 4/11 |
+ *------------------------------------------------------------------------------*/
+void StatMechManager::DDCorrCrosslinkCount(const std::ostringstream& filename)
+{
+	if(discret_.Comm().MyPID()==0)
+	{
+		int free = 0;
+		int onebond = 0;
+		int twobond = 0;
+
+		for(int i=0; i<crosslinkerbond_->MyLength(); i++)
+		{
+			// count number of node IDs in crosslinkerbond_ entry i
+			int numofnodes = 0;
+			for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
+				if((*crosslinkerbond_)[j][i]>-0.9)
+					numofnodes++;
+			// increment according to numofnodes
+			switch(numofnodes)
+			{
+				// free
+				case 0:
+					free++;
+				break;
+				// crosslink with one bond
+				case 1:
+					onebond++;
+				break;
+				// crosslink with two bonds
+				case 2:
+					twobond++;
+				break;
+			}
+		}
+
+		// write to file
+		FILE* fp = NULL;
+		fp = fopen(filename.str().c_str(), "a");
+		std::stringstream ccount;
+		ccount<<free<<"    "<<onebond<<"    "<<twobond<<"    ";
+		for(int i=0; i<13; i++)
+			ccount<<"    0";
+		ccount<<endl;
+		fprintf(fp, ccount.str().c_str());
+		fclose(fp);
+	}
+
+	return;
+}
 
 /*------------------------------------------------------------------------------*                                                 |
  | distribution of spherical coordinates                  (public) mueller 12/10|
