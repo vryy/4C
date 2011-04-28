@@ -139,7 +139,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateTet4Cell( Mesh & mesh, VolumeCell *
     Position2d<DRT::Element::tri3> bot_distance( bot_xyze, top_xyze );
     bot_distance.Compute();
 
-    if ( bot_distance.Distance() > 0 )
+    if ( bot_distance.Distance() >= 0 )
     {
       std::vector<Point*> points;
       points.reserve( 4 );
@@ -160,7 +160,8 @@ bool GEO::CUT::IntegrationCellCreator::CreateTet4Cell( Mesh & mesh, VolumeCell *
       }
 
       //cell->NewTet4Cell( mesh, points );
-      Add( cell, DRT::Element::tet4, points );
+      if ( bot_distance.Distance() > 0 )
+        Add( cell, DRT::Element::tet4, points );
       return true;
     }
     else if ( bot_distance.Distance() < 0 )
@@ -699,7 +700,7 @@ bool GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell( Mesh & mesh, VolumeCe
     Position2d<DRT::Element::quad4> bot_distance( bot_xyze, top_xyze );
     bot_distance.Compute();
 
-    if ( bot_distance.Distance() > 0 )
+    if ( bot_distance.Distance() >= 0 )
     {
       std::vector<Point*> points;
       points.reserve( 5 );
@@ -732,7 +733,8 @@ bool GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell( Mesh & mesh, VolumeCe
       }
 
       //cell->NewPyramid5Cell( mesh, points );
-      Add( cell, DRT::Element::pyramid5, points );
+      if ( bot_distance.Distance() > 0 )
+        Add( cell, DRT::Element::pyramid5, points );
       return true;
     }
     else if ( bot_distance.Distance() < 0 )

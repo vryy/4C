@@ -312,10 +312,10 @@ void GEO::CUT::TetMesh::CallQHull( const std::vector<Point*> & points,
   {
     throw std::runtime_error( "illegal element topology" );
   }
-  if ( n == 4 )
-  {
-    throw std::runtime_error( "no need to triangulate" );
-  }
+//   if ( n == 4 )
+//   {
+//     throw std::runtime_error( "no need to triangulate" );
+//   }
 
   std::vector<double> coordinates( dim*n );
 
@@ -604,11 +604,12 @@ void GEO::CUT::TetMesh::FixBrokenTets()
     nplane012(1) = v01(2)*v02(0) - v01(0)*v02(2);
     nplane012(2) = v01(0)*v02(1) - v01(1)*v02(0);
 
-    // compute norm (area) of plane
-    double norm012 = nplane012.Norm2();
-
     // compute normal distance of point to plane of the three remaining points
     double distance = nplane012.Dot( v03 );
+
+#if 0
+    // compute norm (area) of plane
+    double norm012 = nplane012.Norm2();
 
     double vol_tet = distance / 6.0;
 
@@ -623,6 +624,12 @@ void GEO::CUT::TetMesh::FixBrokenTets()
     {
       accept_tets_[i - tets_.begin()] = false;
     }
+#else
+    if ( distance == 0 )
+    {
+      accept_tets_[i - tets_.begin()] = false;
+    }
+#endif
 
     // tet numbering wrong exchange 1 with 3
     if ( distance < 0 )
