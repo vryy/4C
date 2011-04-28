@@ -64,6 +64,8 @@ void test_hex8_quad4_alex7();
 void test_hex8_quad4_alex8();
 void test_tet4_quad4_alex9();
 void test_tet4_quad4_alex10();
+void test_tet4_quad4_alex11();
+void test_hex8_quad4_alex12();
 void test_hex8_quad4_axel1();
 void test_hex8_quad4_axel2();
 void test_hex8_quad4_axel3();
@@ -235,6 +237,8 @@ int main( int argc, char ** argv )
   functable["hex8_quad4_alex8"] = test_hex8_quad4_alex8;
   functable["tet4_quad4_alex9"] = test_tet4_quad4_alex9;
   functable["tet4_quad4_alex10"] = test_tet4_quad4_alex10;
+  functable["tet4_quad4_alex11"] = test_tet4_quad4_alex11;
+  functable["hex8_quad4_alex12"] = test_hex8_quad4_alex12;
   functable["hex8_quad4_axel1"] = test_hex8_quad4_axel1;
   functable["hex8_quad4_axel2"] = test_hex8_quad4_axel2;
   functable["hex8_quad4_axel3"] = test_hex8_quad4_axel3;

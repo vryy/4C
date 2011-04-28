@@ -5,6 +5,12 @@
 #
 
 import gdb
+import sys
+sys.path.append("/usr/share/gcc-4.5/python/libstdcxx")
+
+from v6.printers import register_libstdcxx_printers
+register_libstdcxx_printers(gdb.current_objfile())
+
 import re
 import numpy
 
