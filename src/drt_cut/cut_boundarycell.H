@@ -10,6 +10,10 @@
 
 #include "../drt_lib/drt_element.H"
 
+#include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_boundary_integration.H"
+
 namespace GEO
 {
 namespace CUT
@@ -38,7 +42,7 @@ public:
 
   virtual void DumpGmsh( std::ofstream & file ) = 0;
 
-  virtual double Area() const = 0;
+  virtual double Area() = 0;
 
   virtual void Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal ) const = 0;
 
@@ -49,6 +53,34 @@ public:
   Facet * GetFacet() { return facet_; }
 
 protected:
+
+  virtual DRT::UTILS::GaussRule2D MySimpleGaussRule() = 0;
+
+  template <DRT::Element::DiscretizationType distype>
+  double MyArea()
+  {
+    const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+    LINALG::Matrix<3,numnodes> xyze( this->xyz_, true );
+    LINALG::Matrix<numnodes,1> funct;
+    LINALG::Matrix<2,numnodes> deriv;
+    LINALG::Matrix<2,2> metrictensor;
+
+    DRT::UTILS::GaussRule2D gaussrule = this->MySimpleGaussRule();
+    DRT::UTILS::IntegrationPoints2D intpoints( gaussrule );
+
+    double area = 0;
+    double drs;
+    for ( int i=0; i<intpoints.nquad; ++i )
+    {
+      double * eta = intpoints.qxg[i];
+      DRT::UTILS::shape_function_2D( funct, eta[0], eta[1], distype );
+      DRT::UTILS::shape_function_2D_deriv1( deriv, eta[0], eta[1], distype );
+      DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>( xyze, deriv, metrictensor, drs, NULL );
+      area += intpoints.qwgt[i] * drs;
+    }
+    return area;
+  }
+
   Epetra_SerialDenseMatrix xyz_;
   Facet * facet_;
   std::vector<Point*> points_;
@@ -74,9 +106,13 @@ public:
 
   virtual void DumpGmsh( std::ofstream & file );
 
-  virtual double Area() const;
+  virtual double Area() { return MyArea<DRT::Element::tri3>(); }
 
   virtual void Normal( const LINALG::Matrix<2,1> & pos, LINALG::Matrix<3,1> & normal ) const;
+
+protected:
+
+  virtual DRT::UTILS::GaussRule2D MySimpleGaussRule() { return DRT::UTILS::intrule_tri_3point; }
 };
 
 class Quad4BoundaryCell : public BoundaryCell
@@ -99,9 +135,13 @@ public:
 
   virtual void DumpGmsh( std::ofstream & file );
 
-  virtual double Area() const;
+  virtual double Area() { return MyArea<DRT::Element::quad4>(); }
 
   virtual void Normal( const LINALG::Matrix<2,1> & pos, LINALG::Matrix<3,1> & normal ) const;
+
+protected:
+
+  virtual DRT::UTILS::GaussRule2D MySimpleGaussRule() { return DRT::UTILS::intrule_quad_4point; }
 };
 
 }

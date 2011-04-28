@@ -110,16 +110,6 @@ void GEO::CUT::Quad4BoundaryCell::CollectCoordinates( const std::vector<Point*> 
 }
 #endif
 
-double GEO::CUT::Tri3BoundaryCell::Area() const
-{
-  throw std::runtime_error( "" );
-}
-
-double GEO::CUT::Quad4BoundaryCell::Area() const
-{
-  throw std::runtime_error( "" );
-}
-
 void GEO::CUT::Tri3BoundaryCell::DumpGmsh( std::ofstream & file )
 {
   file << "ST(";
