@@ -46,6 +46,27 @@ FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(Teuchos::RCP<UTILS::
   else
     alesolver_ = constalesolver_;
 #endif
+
+  // check and fix ml nullspace if neccessary
+  {
+    LINALG::Solver& solver = *(structure.LinearSolver());
+    const Epetra_Map& oldmap = *(structure.Discretization()->DofRowMap());
+    const Epetra_Map& newmap = Matrix(0,0).EpetraMatrix()->RowMap();
+    solver.FixMLNullspace("Structure",oldmap,newmap);
+  }
+  {
+    LINALG::Solver& solver = *(fluid.LinearSolver());
+    const Epetra_Map& oldmap = *(fluid.Discretization()->DofRowMap());
+    const Epetra_Map& newmap = Matrix(1,1).EpetraMatrix()->RowMap();
+    solver.FixMLNullspace("Fluid",oldmap,newmap);
+  }
+  {
+    LINALG::Solver& solver = *(ale.LinearSolver());
+    const Epetra_Map& oldmap = *(ale.Discretization()->DofRowMap());
+    const Epetra_Map& newmap = Matrix(2,2).EpetraMatrix()->RowMap();
+    solver.FixMLNullspace("Ale",oldmap,newmap);
+  }
+
 }
 
 

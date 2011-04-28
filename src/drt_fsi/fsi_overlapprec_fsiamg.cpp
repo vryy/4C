@@ -70,6 +70,7 @@ aiterations_(aiterations)
   if (strategy_!= INPAR::FSI::FSIAMG &&
       strategy_!= INPAR::FSI::PreconditionedKrylov) 
     dserror("Type of LINEARBLOCKSOLVER parameter not recognized by this class");
+    
 }
 
 /*----------------------------------------------------------------------*
