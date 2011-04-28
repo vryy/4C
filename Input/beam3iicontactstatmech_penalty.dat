@@ -72,6 +72,7 @@ MAXITER      25
 APPLICATION    BeamContact
 STRATEGY       Penalty
 PENALTYPARAM   1e+06
+BEAMS_NEWGAP   No
 ----------------------------------------------STATISTICAL MECHANICS
 THERMALBATH         uniform
 GMSHOUTPUT          No
