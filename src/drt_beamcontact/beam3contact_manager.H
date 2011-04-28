@@ -117,12 +117,12 @@ public:
   inline const RCP<Epetra_Map> FullElements() const { return elefullmap_; }
 
   /*!
-	\brief Get list of contact input parameters
+  \brief Get list of contact input parameters
 
-	*/
-	inline const Teuchos::ParameterList& InputParameters() { return scontact_; }
+  */
+  inline const Teuchos::ParameterList& InputParameters() { return scontact_; }
 
-	/*!
+  /*!
   \brief Get current constraint norm
 
   */
@@ -163,9 +163,9 @@ public:
   of each new time step. This is only needed for an augmented Lagrange / Uzawa scheme.
 
   */
-	void ResetAlllmuzawa();
+  void ResetAlllmuzawa();
 
-	/*!
+  /*!
   \brief Update constraint norm
 
   In the penalty case, we only compute the constraint norm and print to screen,
@@ -175,16 +175,34 @@ public:
   */
   void UpdateConstrNorm(const int uzawaiter = 0);
 
+
+
   /*!
-  \brief Update Lagrange multipliers
+  \brief Shift current normal "normal_" vector to old normal vector "normal_old_"
 
-  Update all Lagrange multipliers of each contact pair at the beginning of each
-  new Uzawa time step. This is only needed for an augmented Lagrange / Uzawa scheme.
+  The converged normal vector of the last time step is stored as "normal_old_" to serve
+  as a reference for the modified gap function definition*/
 
-  */
+
+  void ShiftAllNormal();
+
+
+  /*!
+   \brief Check if the modified gapfunction is used or not*/
+
+
+
+
+  /*!
+   \brief Update Lagrange multipliers
+
+   Update all Lagrange multipliers of each contact pair at the beginning of each
+   new Uzawa time step. This is only needed for an augmented Lagrange / Uzawa scheme.*/
+
+
   void UpdateAlllmuzawa(const int& uzawaiter);
 
-	/*!
+  /*!
   \brief Reset penalty parameter
 
   In an augmented Lagrange strategy the penalty parameter might be increased to
@@ -192,9 +210,9 @@ public:
   it has to be reset to the initial value given in the input file.
 
   */
-	void ResetCurrentpp();
+  void ResetCurrentpp();
 
-	/*!
+  /*!
   \brief Create output files for GMSH visualization
 
   Create ASCII-files to visualize beams with GMSH. The circular cross section will
@@ -202,35 +220,35 @@ public:
   method only works safely for the serial case, the parallel case is not yet implemented!
 
   */
-	void GmshOutput(const Epetra_Vector& disrow, const int& timestep,
-	                const int& uzawastep, const int& newtonstep);
+  void GmshOutput(const Epetra_Vector& disrow, const int& timestep,
+                  const int& uzawastep, const int& newtonstep);
 
-	/*!
-	\brief Print active set
+  /*!
+  \brief Print active set
 
-	Print some output data to screen at the end of each time step.
-	Interesting values are:
-		a) IDs of current pairs and their elements
-		b) the residual gap of this pair
-		c) the current (augmented part) Lagrange multiplier of this pair
-		d) the current element coordinates of the contact point
+  Print some output data to screen at the end of each time step.
+  Interesting values are:
+    a) IDs of current pairs and their elements
+    b) the residual gap of this pair
+    c) the current (augmented part) Lagrange multiplier of this pair
+    d) the current element coordinates of the contact point
 
-	NOTE: This method can also be called after each newton-step (e.g. if you want to check
-	convergence problems). In this case, you have to uncomment the #define GMSHNEWTONSTEP
-	flag in 'beam3contactstrugenalpha.h'.
+  NOTE: This method can also be called after each newton-step (e.g. if you want to check
+  convergence problems). In this case, you have to uncomment the #define GMSHNEWTONSTEP
+  flag in 'beam3contactstrugenalpha.h'.
 
-	*/
-	void ConsoleOutput();
+  */
+  void ConsoleOutput();
 
-	/*!
-	\brief Write Bearing Reactions into a csv-file
+  /*!
+  \brief Write Bearing Reactions into a csv-file
 
-	*/
-	void Reactions(const Epetra_Vector& fint,
-	               const Epetra_Vector& dirichtoggle,
-	               const int& timestep);
+  */
+  void Reactions(const Epetra_Vector& fint,
+                 const Epetra_Vector& dirichtoggle,
+                 const int& timestep);
 
-	//@}
+  //@}
 
 private:
 
@@ -259,6 +277,11 @@ private:
 
   //! vector of contact pairs (pairs of elements, which might get in contact)
   vector<RCP<Beam3contact> > pairs_;
+
+  //! 2D-map with pointers on the contact pairs_. This map is necessary, to call a contact pair directly by the two element-iD's of the pair.
+  // It is not needed at the moment due to the direct neigbour determination in the constructor but may be useful for future operations
+  std::map<std::pair<int,int>, RCP<Beam3contact> > contactpairmap_;
+  //std::map<int, RCP<Beam3contact> > contactpairmap_;
 
   //! parameter list for contact
   Teuchos::ParameterList scontact_;
@@ -296,32 +319,32 @@ private:
   \brief Compute the search radius
 
   The search radius will be computed by analyzing the chracteristic length of each
-	element. To guarantee, that each possible contact pair will be detected some
-	empiric criterion will define the search radius, taking into account:
+  element. To guarantee, that each possible contact pair will be detected some
+  empiric criterion will define the search radius, taking into account:
 
-		a) the maximum element radius
-	 	b) the maximum element length
+    a) the maximum element radius
+     b) the maximum element length
 
-	These two characteric lengths will be compared, the larger one is the characteristic
-	length for this processor. Then via a communication among all procs the largest
-	characteristic length in the whole discretization is found. Using this global
-	characteristic length, we can compute a searchradius by multiplying with a constant factor.
-	This method is called only once at the beginning of the simulation. If axial deformation
-	of beam elements was high, it would have to be called more often!
+  These two characteric lengths will be compared, the larger one is the characteristic
+  length for this processor. Then via a communication among all procs the largest
+  characteristic length in the whole discretization is found. Using this global
+  characteristic length, we can compute a searchradius by multiplying with a constant factor.
+  This method is called only once at the beginning of the simulation. If axial deformation
+  of beam elements was high, it would have to be called more often!
 
   */
-	void ComputeSearchRadius();
+  void ComputeSearchRadius();
 
-	/*!
+  /*!
   \brief Get maximum element radius
 
   Finds maximum element radius in the whole discretization for circular cross
   sections. Stores the maximum radius to 'max_ele_radius'.
 
   */
-	void GetMaxEleRadius(double& max_ele_radius);
+  void GetMaxEleRadius(double& max_ele_radius);
 
-	/*!
+  /*!
   \brief Get maximum element length
 
   Finds maximum element radius in the whole discretization for circular cross
@@ -330,64 +353,64 @@ private:
   of the two end nodes is computed. Yet, this is assumed to be accurate enough.
 
   */
-	void GetMaxEleLength(double& max_ele_length);
+  void GetMaxEleLength(double& max_ele_length);
 
-	/*!
+  /*!
   \brief Compute rotation matrix R from given angle theta in 3D
 
   This function computes from a three dimensional rotation angle theta
   (which gives rotation axis and absolute value of rotation angle) the related
-	rotation matrix R. Note that theta is given in radiant.
+  rotation matrix R. Note that theta is given in radiant.
 
   */
-	void TransformAngleToTriad(Epetra_SerialDenseVector& theta,
-	                           Epetra_SerialDenseMatrix& R);
+  void TransformAngleToTriad(Epetra_SerialDenseVector& theta,
+                             Epetra_SerialDenseMatrix& R);
 
-	/*!
+  /*!
   \brief Compute spin
 
   Compute spin matrix according to Crisfield Vol. 2, equation (16.8)
 
   */
-	void ComputeSpin(Epetra_SerialDenseMatrix& spin, Epetra_SerialDenseVector& rotationangle);
+  void ComputeSpin(Epetra_SerialDenseMatrix& spin, Epetra_SerialDenseVector& rotationangle);
 
-	/*!
+  /*!
   \brief Update penalty parameter
 
   In an augmented Lagrangian scheme, the penalty paramter might be increased to accelerate
   convergence of the Uzawa iteration. For doing this, the constraint norms of the previous
   and the current Uzawa step are compared. If the improvemenet is too small, the penalty
   paramter will be increased. Returns bool indicating update. Note that the rule when and
-  by how much the penalty paramter is increased is NOT analytically	derived. It's just
+  by how much the penalty paramter is increased is NOT analytically  derived. It's just
   experience. It moght also be problem-dependent.
 
   */
-	bool UpdateCurrentpp(const double& GlobalConstrNorm, const int& uzawaiter);
+  bool UpdateCurrentpp(const double& GlobalConstrNorm, const int& uzawaiter);
 
-	/*!
-	\brief Set displacment state
+  /*!
+  \brief Set displacment state
 
-	In this context this means that the map of matrices currentpositions is filled with
-	the current nodal positions taken from the global displacement vector.
+  In this context this means that the map of matrices currentpositions is filled with
+  the current nodal positions taken from the global displacement vector.
 
-	*/
-	void SetState(std::map<int,LINALG::Matrix<3,1> >& currentpositions, const Epetra_Vector& disrow);
+  */
+  void SetState(std::map<int,LINALG::Matrix<3,1> >& currentpositions, const Epetra_Vector& disrow);
 
-	/*!
-	\brief Compute coordinates for GMSH-Output for two-noded-elements
+  /*!
+  \brief Compute coordinates for GMSH-Output for two-noded-elements
 
-	*/
-	void GMSH_2_noded(const int& n, const Epetra_SerialDenseMatrix& coord,
-	                  const DRT::Element* thisele, std::stringstream& gmshfilecontent);
+  */
+  void GMSH_2_noded(const int& n, const Epetra_SerialDenseMatrix& coord,
+                    const DRT::Element* thisele, std::stringstream& gmshfilecontent);
 
-	/*!
-	\brief Compute coordinates for GMSH-Output for three-noded-elements
+  /*!
+  \brief Compute coordinates for GMSH-Output for three-noded-elements
 
-	*/
-	void GMSH_3_noded(const int& n, const Epetra_SerialDenseMatrix& allcoord,
-	                  const DRT::Element* thisele, std::stringstream& gmshfilecontent);
+  */
+  void GMSH_3_noded(const int& n, const Epetra_SerialDenseMatrix& allcoord,
+                    const DRT::Element* thisele, std::stringstream& gmshfilecontent);
 
-	//@}
+  //@}
 
 }; // class Beam3cmanager
 } // namespace CONTACT

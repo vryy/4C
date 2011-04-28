@@ -56,6 +56,8 @@ StruGenAlpha(params,dis,solver,output)
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3ContactStruGenAlpha::ConstantPredictor()
 {
+
+
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -245,8 +247,12 @@ void CONTACT::Beam3ContactStruGenAlpha::ConstantPredictor()
   //**********************************************************************
   //**********************************************************************
   // evaluate beam contact
+
+
   beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
   
+
+
 #ifdef GMSHNEWTONSTEPS
   // create gmsh-output to visualize predictor step
   int step  = params_.get<int>("step",0);
@@ -328,6 +334,9 @@ void CONTACT::Beam3ContactStruGenAlpha::ConsistentPredictor()
   // increment time and step
   double timen = time + dt;  // t_{n+1}
   //int istep = step + 1;  // n+1
+
+
+
 
   //--------------------------------------------------- predicting state
   // constant predictor : displacement in domain
@@ -550,11 +559,14 @@ void CONTACT::Beam3ContactStruGenAlpha::ConsistentPredictor()
   fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 #endif
 
+
+
   //**********************************************************************
   //**********************************************************************
   // evaluate beam contact
   beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
   
+
 #ifdef GMSHNEWTONSTEPS
   // create gmsh-output to visualize predictor step
   int step  = params_.get<int>("step",0);
@@ -565,6 +577,8 @@ void CONTACT::Beam3ContactStruGenAlpha::ConsistentPredictor()
   //**********************************************************************
   //**********************************************************************
       
+
+
   // blank residual DOFs that are on Dirichlet BC
   // in the case of local systems we have to rotate forth and back
   {
@@ -593,6 +607,8 @@ void CONTACT::Beam3ContactStruGenAlpha::ConsistentPredictor()
   {
     PrintPredictor(convcheck, fresmnorm);
   }
+
+
 
   return;
 } // StruGenAlpha::ConsistentPredictor()
@@ -1169,7 +1185,6 @@ void CONTACT::Beam3ContactStruGenAlpha::InitializeNewtonUzawa()
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3ContactStruGenAlpha::Integrate()
 {
-
   // some paramaters
   int    step    = params_.get<int>   ("step" ,0);
   int    nstep   = params_.get<int>   ("nstep",5);
@@ -1191,8 +1206,11 @@ void CONTACT::Beam3ContactStruGenAlpha::Integrate()
   
   // decide which solving strategy
   INPAR::CONTACT::SolvingStrategy soltype =
- DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcmanager_->InputParameters(),"STRATEGY");
+  DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcmanager_->InputParameters(),"STRATEGY");
   
+  // decide wether the original or the modified gapfunction definition is used
+  bool newgapfunction =  DRT::INPUT::IntegralValue<int>(beamcmanager_->InputParameters(),"BEAMS_NEWGAP");
+
   //**********************************************************************
   // solving strategy using regularization with penalty method
   // (nonlinear solution approach: ordinary NEWTON)
@@ -1205,12 +1223,34 @@ void CONTACT::Beam3ContactStruGenAlpha::Integrate()
     // LOOP1: time steps
     for (int i=step; i<nstep; ++i)
     {
-    	if      (predictor==1) ConstantPredictor();   
-      else if (predictor==2) ConsistentPredictor(); 
-    	
-    	 // LOOP2: nonlinear iteration (Newton)
+      // set normal vector of last time "normal_" to old normal vector "normal_old_"
+      if (newgapfunction) {beamcmanager_->ShiftAllNormal();}
+
+      if (predictor==1) {
+
+        ConstantPredictor();
+
+
+
+      }
+
+
+      //here
+
+
+
+
+      else if (predictor==2) {
+
+        ConsistentPredictor();
+
+      }
+       // LOOP2: nonlinear iteration (Newton)
+
+
       FullNewton();
       
+
       // update constraint norm
       beamcmanager_->UpdateConstrNorm();
               
@@ -1234,8 +1274,13 @@ void CONTACT::Beam3ContactStruGenAlpha::Integrate()
     // LOOP1: time steps
     for (int i=step; i<nstep; ++i)
     {
-    	// Initialize all lmuzawa to zero at beginning of new time step
-    	beamcmanager_->ResetAlllmuzawa();
+
+
+      // set normal vector of last time step "normal_" to old normal vector "normal_old_"
+      if (newgapfunction) beamcmanager_->ShiftAllNormal();
+
+      // Initialize all lmuzawa to zero at beginning of new time step
+      beamcmanager_->ResetAlllmuzawa();
 
       // predictor step
       if (predictor==1)
@@ -1252,7 +1297,7 @@ void CONTACT::Beam3ContactStruGenAlpha::Integrate()
       do
       {
         // increase iteration index
-      	++uzawaiter_;
+        ++uzawaiter_;
         if (uzawaiter_ > maxuzawaiter)
           dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
 
@@ -1266,9 +1311,9 @@ void CONTACT::Beam3ContactStruGenAlpha::Integrate()
         beamcmanager_->UpdateConstrNorm(uzawaiter_);
         
         // update Uzawa Lagrange multipliers
-  	    beamcmanager_->UpdateAlllmuzawa(uzawaiter_);
+        beamcmanager_->UpdateAlllmuzawa(uzawaiter_);
         
-  	  } while (abs(beamcmanager_->GetConstrNorm()) >= eps);
+      } while (abs(beamcmanager_->GetConstrNorm()) >= eps);
   
       // reset penalty parameter
       beamcmanager_->ResetCurrentpp();

@@ -28,7 +28,7 @@ using namespace std;
 using namespace Teuchos;
 
 // write gmsh output in each time step
-//#define GMSHTIMESTEPS
+#define GMSHTIMESTEPS
 
 // write gmsh and console output in each Newton step
 //#define GMSHNEWTONSTEPS
@@ -39,9 +39,9 @@ using namespace Teuchos;
 // perform finite difference checks
 //#define BEAMCONTACTFDCHECKS
 
-#define BEAMCONTACTMAXITER 50			// max number of steps for local Newton
-#define BEAMCONTACTTOL 1.0e-12	  // conergence tolerance for local Newton
-#define NDIM 3                    // number of spatial dimensions
+#define BEAMCONTACTMAXITER 50     // max number of steps for local Newton
+#define BEAMCONTACTTOL 1.0e-12    // conergence tolerance for local Newton
+#define NDIM 3                   // number of spatial dimensions
 
 namespace CONTACT
 {
@@ -53,6 +53,24 @@ namespace CONTACT
 
  \author popp (popp@lnm.mw.tum.de), cyron (cyron@lnm.mw.tum.de)
  */
+
+
+
+class B3CNeighbor
+{
+public:
+  int  eleId_;      // global ID of the neighbor element
+  bool elementside_;  // is it a neighbor on the element side eta=-1 (--> elementside = true) or a neighbor on the element side eta=1 (--> elementside = false)
+  bool neighborside_;  // is the element on the neighbors side eta=-1 (--> neighborside = true) or a element on the neighbors side eta=1 (--> neighborside = false)
+
+  B3CNeighbor(int eleId, bool elementside, bool neighborside); // parametrized constructor
+
+
+
+}; // class B3CNeighbor
+
+
+
 class Beam3contact 
 {
 public:
@@ -77,39 +95,39 @@ public:
   \param ele2pos (in): nodal coordinates of second element
   
   */
-	Beam3contact(const DRT::Discretization& pdiscret,
-			         const DRT::Discretization& cdiscret,
-			         const int& dofoffset,
-			         DRT::Element* element1,
+  Beam3contact(const DRT::Discretization& pdiscret,
+               const DRT::Discretization& cdiscret,
+               const int& dofoffset,
+               DRT::Element* element1,
                DRT::Element* element2,
                const Epetra_SerialDenseMatrix ele1pos,
                const Epetra_SerialDenseMatrix ele2pos);
 
-	/*!
+  /*!
   \brief Copy Constructor
 
   Makes a deep copy of this contact element pair
   
   */
-	Beam3contact(const Beam3contact& old);
+  Beam3contact(const Beam3contact& old);
 
   /*!
   \brief Destructor
   
   */
-	virtual ~Beam3contact() {};
+  virtual ~Beam3contact() {};
   
   //@}
   
   //! @name Access methods
-	
-	/*!
+  
+  /*!
   \brief Get problem discretization
 
   */
   inline const DRT::Discretization& ProblemDiscret() const { return pdiscret_;};
 
-	/*!
+  /*!
   \brief Get beam contact discretization
 
   */
@@ -122,86 +140,112 @@ public:
   inline const int& DofOffset() const { return dofoffset_;};
 
   /*!
-	\brief Get first element
-	
-	*/
+  \brief Get first element
+  
+  */
   inline const DRT::Element* Element1() { return element1_;};
-	
-	/*!
-	\brief Get first element
-		
-	*/
-	inline const DRT::Element* Element2() { return element2_;};
+  
+  /*!
+  \brief Get first element
+    
+  */
+  inline const DRT::Element* Element2() { return element2_;};
 
-	/*!
-	\brief Get gap of this contact pair
-		
-	*/
-	const double GetGap() { return gap_;};
-	
-	/*!
-	\brief Get current augmented lagrange multiplier 'lmuzawa_'
-	
-	*/
-	const double Getlmuzawa() { return lmuzawa_; };
-	
-	/*! 
+  /*!
+  \brief Get gap of this contact pair
+    
+  */
+  const double GetGap() { return gap_;};
+  
+  /*!
+  \brief Get current augmented lagrange multiplier 'lmuzawa_'
+  
+  */
+  const double Getlmuzawa() { return lmuzawa_; };
+  
+  /*! 
   \brief Get flag ndicating whether contact is active (true) or inactive (false)
   
   */
   bool GetContactFlag() { return contactflag_; };
-	  
-	/*!
-	\brief Get coordinates of contact point of element1 and element2
-	
-	*/
-	const Epetra_SerialDenseVector GetX1() { return x1_; };
-	const Epetra_SerialDenseVector GetX2() { return x2_; };
+    
+  /*!
+  \brief Get coordinates of contact point of element1 and element2
+  
+  */
+  const Epetra_SerialDenseVector GetX1() { return x1_; };
+  const Epetra_SerialDenseVector GetX2() { return x2_; };
 
-	//@}
-	
-	//! @name Public evaluation methods
-	
+  //@}
+  
+  //! @name Public evaluation methods
+  
+
+
+
+
+
+
+
+  /*!
+  \brief Closest Point Projection before Evaluation can start.
+
+  */
+  bool PreEvaluation();
+
+
   /*!
   \brief Evaluate this contact element pair
 
   */
-	bool Evaluate(LINALG::SparseMatrix& stiffmatrix,
-	              Epetra_Vector& fint, double& pp);
-	
-	/*!
-	\brief Reset Uzawa-based Lagrange multiplier
-		
-	*/
-	void Resetlmuzawa();
-	
-	/*!
-	\brief Update Uzawa-based Lagrange multiplier
-		
-	*/
-	void Updatelmuzawa(const double& currentpp);
-	
-	/* 
-	\brief Update nodal coordinates of both elements
-	
-	*/
-	void UpdateElePos(Epetra_SerialDenseMatrix& newele1pos,
-	                  Epetra_SerialDenseMatrix& newele2pos);
-	
-	//@}
+  bool Evaluate(LINALG::SparseMatrix& stiffmatrix,
+                Epetra_Vector& fint, double& pp, bool ngf,
+                std::map<std::pair<int,int>, RCP<Beam3contact> >& contactpairmap);
+  
+  /*!
+  \brief Reset Uzawa-based Lagrange multiplier
+    
+  */
+  void Resetlmuzawa();
+  
+
+
+  /*!
+    \brief Shift current normal vector to old normal vector
+
+  */
+
+  void ShiftNormal();
+
+
+  /*!
+    \brief Update Uzawa-based Lagrange multiplier
+
+    */
+
+  void Updatelmuzawa(const double& currentpp);
+  
+  /* 
+  \brief Update nodal coordinates of both elements
+  
+  */
+  void UpdateElePos(Epetra_SerialDenseMatrix& newele1pos,
+                    Epetra_SerialDenseMatrix& newele2pos);
+  
+  //@}
 
 private:
   
   //! @name member variables
 
-	//! reference to problem discretization
-	const DRT::Discretization& pdiscret_;
+  //! reference to problem discretization
+  const DRT::Discretization& pdiscret_;
 
-	//! reference to beam contact discretization
-	const DRT::Discretization& cdiscret_;
-	
-	//! dof offset between pdiscret and cdiscret
-	const int& dofoffset_;
+  //! reference to beam contact discretization
+  const DRT::Discretization& cdiscret_;
+  
+  //! dof offset between pdiscret and cdiscret
+  const int& dofoffset_;
 
   //! first element of contact pair
   DRT::Element* element1_;
@@ -214,6 +258,12 @@ private:
   Epetra_SerialDenseMatrix ele1pos_;
   Epetra_SerialDenseMatrix ele2pos_;
   
+  //! variable to check if old or modified gap function
+  bool ngf_;
+
+  //! variable to identify first call of a pair (for initializing)
+  bool firstcall_;
+
   //! Uzawa-based Lagrange multiplier
   double lmuzawa_;
   
@@ -223,223 +273,277 @@ private:
   //! flag indicating contact (active/inactive)
   bool contactflag_;
   
+  //! flag indicating if elements are colinear or not
+  bool elementscolinear_;
+
   //! coordinates of contact point on center lines of beams
   Epetra_SerialDenseVector x1_;
   Epetra_SerialDenseVector x2_;
   
+
+  //! parameter values of contact point
+  Epetra_SerialDenseVector xicontact_;
+
+
+  //! vector of neighbor elements of element 1
+
+  vector <RCP<B3CNeighbor> > neighbor1_;
+
+  //! vector of neighbor elements of element 2
+
+  vector <RCP<B3CNeighbor> > neighbor2_;
+
+  //! normal vector of current time step
+  Epetra_SerialDenseVector normal_;
+
+  //! normal vector of last time step
+  Epetra_SerialDenseVector normal_old_;
+
+
+
+
+
+
+
+
+
+
+
   //@}
  
   //! @name Private evaluation methods
   
   /*!
-	\brief Find contact point via closest point projection
-	
-	*/
-  void ClosestPointProjection(vector<double>& XiContact, bool& elementscolinear);
-	
-	/*!
-	\brief Utility method for CPP (evaluate nonlinear function f)
-				 
-	*/
-	void EvaluateNewtonF(vector<double>& f,
-	                     const vector<double>& x1, const vector<double>& x2,
-	                     const vector<double>& dx1, const vector<double>& dx2,
-	                     const double& norm);
-	
-	/*!
-	\brief Utility method for CPP (evaluate Jacobian of nonlinear function f)
-	
-	*/
-	void EvaluateNewtonGradF(LINALG::Matrix<2,2>& df,
-	                         const vector<double>& x1, const vector<double>& x2,
-	                         const vector<double>& dx1, const vector<double>& dx2,
-			                     const vector<double>& ddx1, const vector<double>& ddx2,
-			                     const double& norm);
-	
-	/*!
-	\brief Evaluate and assemble contact forces
-	
-	*/
-	void EvaluateFcContact(const double& pp, const double& gap,
-	                       const vector<double>& normal, Epetra_Vector& fint,
-	                       Epetra_SerialDenseVector funct1, Epetra_SerialDenseVector funct2, 
-			                   const int numnode1, const int numnode2);
-	
-	/*!
-	\brief Evaluate and assemble contact stiffness
-	
-	*/
-	void EvaluateStiffcContact(const double& pp, const double& gap,
-	                           const vector<double>& normal, const double& norm,
-	                           LINALG::SparseMatrix& stiffmatrix,
-	                           const vector<double>& x1, const vector<double>& x2,
-	                           const vector<double>& dx1, const vector<double>& dx2,
-			                       const vector<double>& ddx1, const vector<double>& ddx2, 
-			                       const Epetra_SerialDenseVector& funct1,
-			                       const Epetra_SerialDenseVector& funct2,	
-			                       const Epetra_SerialDenseMatrix& deriv1,
-			                       const Epetra_SerialDenseMatrix& deriv2,	
-			                       const Epetra_SerialDenseMatrix& secondderiv1,
-			                       const Epetra_SerialDenseMatrix& secondderiv2, 
-			                       const int numnode1, const int numnode2,
-			                       const vector<double>& XiContact);
-	
-	/*!
-	\brief Compute normal vector in contact point
-	  	  	
-	*/
-	void ComputeNormal(vector<double>& normal, double& gap, double& norm, 
-										 const vector<double>& x1, const vector<double>& x2);
-	
-	/*!
-	\brief Evaluate gap function
-	  	  	
-	*/
+  \brief Find contact point via closest point projection
+  
+  */
+  void ClosestPointProjection();
+  
+  /*!
+  \brief Utility method for CPP (evaluate nonlinear function f)
+         
+  */
+  void EvaluateNewtonF(vector<double>& f,
+                       const vector<double>& x1, const vector<double>& x2,
+                       const vector<double>& dx1, const vector<double>& dx2,
+                       const double& norm);
+  
+  /*!
+  \brief Utility method for CPP (evaluate Jacobian of nonlinear function f)
+  
+  */
+  void EvaluateNewtonGradF(LINALG::Matrix<2,2>& df,
+                           const vector<double>& x1, const vector<double>& x2,
+                           const vector<double>& dx1, const vector<double>& dx2,
+                           const vector<double>& ddx1, const vector<double>& ddx2,
+                           const double& norm);
+  
+  /*!
+  \brief Evaluate and assemble contact forces
+  
+  */
+  void EvaluateFcContact(const double& pp, const double& gap,
+                         const vector<double>& normal, Epetra_Vector& fint,
+                         Epetra_SerialDenseVector funct1, Epetra_SerialDenseVector funct2, 
+                         const int numnode1, const int numnode2);
+  
+  /*!
+  \brief Evaluate and assemble contact stiffness
+  
+  */
+  void EvaluateStiffcContact(const double& pp, const double& gap,
+                             const vector<double>& normal, const double& norm,
+                             LINALG::SparseMatrix& stiffmatrix,
+                             const vector<double>& x1, const vector<double>& x2,
+                             const vector<double>& dx1, const vector<double>& dx2,
+                             const vector<double>& ddx1, const vector<double>& ddx2, 
+                             const Epetra_SerialDenseVector& funct1,
+                             const Epetra_SerialDenseVector& funct2,  
+                             const Epetra_SerialDenseMatrix& deriv1,
+                             const Epetra_SerialDenseMatrix& deriv2,  
+                             const Epetra_SerialDenseMatrix& secondderiv1,
+                             const Epetra_SerialDenseMatrix& secondderiv2, 
+                             const int numnode1, const int numnode2,
+                             const vector<double>& XiContact);
+  
+
+   /*!
+    \brief determine the neighbour elements of an element
+
+    */
+  void DetermineNeigbours(DRT::Element* element1,
+                          DRT::Element* element2);
+
+
+
+
+  /*!
+  \brief Compute normal vector in contact point
+          
+  */
+  void ComputeNormal(vector<double>& normal, double& gap, double& norm, 
+                     const vector<double>& x1, const vector<double>& x2);
+  
+
+
+  /*!
+  \brief Compute skalar product between old normal vector and new normal vector
+
+  */
+
+  double Computeskalar();
+
+
+
+  /*!
+  \brief Evaluate gap function
+          
+  */
   void ComputeGap(double& gap, const double& norm);
  
   /*!
-	\brief Compute radius of cross section based on moment of inertia
-	  	  	
-	*/
-	void ComputeEleRadius(double& radius, const double& moi);
+  \brief Compute radius of cross section based on moment of inertia
+          
+  */
+  void ComputeEleRadius(double& radius, const double& moi);
 
-	/*!
-	\brief Compute coordinates and their derivatives from the discretization
-	  	  	
-	*/
-	void ComputeCoordsAndDerivs(vector<double>& x1, vector<double>& x2, 
-			                        vector<double>& dx1, vector<double>& dx2,
-			                        vector<double>& ddx1, vector<double>& ddx2,
-			                        const Epetra_SerialDenseVector& funct1,
-			                        const Epetra_SerialDenseVector& funct2,
-			                        const Epetra_SerialDenseMatrix& deriv1,
-			                        const Epetra_SerialDenseMatrix& deriv2,
-			                        const Epetra_SerialDenseMatrix& secondderiv1,
-			                        const Epetra_SerialDenseMatrix& secondderiv2,
-			                        const int& numnode1, const int& numnode2);
-	
-	/*!
-	\brief Get shape functions and their derivatives at eta
-	  	  	
-	*/
-	void GetShapeFunctions(Epetra_SerialDenseVector& funct1,
-	                       Epetra_SerialDenseVector& funct2,
-			                   Epetra_SerialDenseMatrix& deriv1,
-			                   Epetra_SerialDenseMatrix& deriv2,
-			                   Epetra_SerialDenseMatrix& secondderiv1,
-			                   Epetra_SerialDenseMatrix& secondderiv2,
-			                   const vector<double>& eta);
-	
-	/*!
-	\brief Compute linearizations of contact point
-	  	  	
-	*/
-	void ComputeLinXiAndLinEta(vector<double>& delta_xi, vector<double>& delta_eta, 
-			                       const vector<double>& x1, const vector<double>& x2,
-			                       const vector<double>& dx1, const vector<double>& dx2,
-			                       const vector<double>& ddx1, const vector<double>& ddx2,
-			                       const Epetra_SerialDenseVector& funct1,
-			                       const Epetra_SerialDenseVector& funct2, 
-			                       const Epetra_SerialDenseMatrix& deriv1,
-			                       const Epetra_SerialDenseMatrix& deriv2, 
-			                       const vector<double>& normal, const double& norm,
-			                       const int numnode1, const int numnode2,
-			                       const vector<double>& XiContact); 
-	
-	/*!
-	\brief Compute linearization of gap
-	  	  	
-	*/
-	void ComputeLinGap(vector<double>& delta_gap,
-	                   vector<double>& delta_xi, vector<double>& delta_eta,
-	                   const vector<double>& x1, const vector<double>& x2,
-	                   const vector<double>& dx1, const vector<double>& dx2,
-			               const Epetra_SerialDenseVector& funct1,
-			               const Epetra_SerialDenseVector& funct2, 
-			               const double& normdist,
-			               const int& numnode1, const int& numnode2,
-			               const vector<double>& normal, const double& norm,
-			               const double& gap,Epetra_SerialDenseMatrix& delta_x1_minus_x2);
-	
-	/*!
-	\brief Compute linearization of normal
-	  	  	
-	*/
-	void ComputeLinNormal(Epetra_SerialDenseMatrix& delta_n, 
-			                  const vector<double>& x1, const vector<double>& x2,
-			                  const double& norm,
-			                  const int& numnode1, const int& numnode2,
-			                  const Epetra_SerialDenseMatrix& delta_x1_minus_x2,
-			                  const vector<double>& normal, 
-			                  const vector<double>& XiContact);
-	
-	/*!
-	\brief Compute normal contact disctance
-	  	  	
-	*/						  	
-	void ComputeDistance(vector<double>& distance, double& normdist,
-	                     const vector<double>& normal, const double& norm);
-	
-	/*!
-	\brief Check if contact is active and set flag accordingly
-	  
-	*/
-	void CheckContactStatus(double& pp);
+  /*!
+  \brief Compute coordinates and their derivatives from the discretization
+          
+  */
+  void ComputeCoordsAndDerivs(vector<double>& x1, vector<double>& x2, 
+                              vector<double>& dx1, vector<double>& dx2,
+                              vector<double>& ddx1, vector<double>& ddx2,
+                              const Epetra_SerialDenseVector& funct1,
+                              const Epetra_SerialDenseVector& funct2,
+                              const Epetra_SerialDenseMatrix& deriv1,
+                              const Epetra_SerialDenseMatrix& deriv2,
+                              const Epetra_SerialDenseMatrix& secondderiv1,
+                              const Epetra_SerialDenseMatrix& secondderiv2,
+                              const int& numnode1, const int& numnode2);
+  
+  /*!
+  \brief Get shape functions and their derivatives at eta
+          
+  */
+  void GetShapeFunctions(Epetra_SerialDenseVector& funct1,
+                         Epetra_SerialDenseVector& funct2,
+                         Epetra_SerialDenseMatrix& deriv1,
+                         Epetra_SerialDenseMatrix& deriv2,
+                         Epetra_SerialDenseMatrix& secondderiv1,
+                         Epetra_SerialDenseMatrix& secondderiv2,
+                         const vector<double>& eta);
+  
+  /*!
+  \brief Compute linearizations of contact point
+          
+  */
+  void ComputeLinXiAndLinEta(vector<double>& delta_xi, vector<double>& delta_eta, 
+                             const vector<double>& x1, const vector<double>& x2,
+                             const vector<double>& dx1, const vector<double>& dx2,
+                             const vector<double>& ddx1, const vector<double>& ddx2,
+                             const Epetra_SerialDenseVector& funct1,
+                             const Epetra_SerialDenseVector& funct2, 
+                             const Epetra_SerialDenseMatrix& deriv1,
+                             const Epetra_SerialDenseMatrix& deriv2, 
+                             const vector<double>& normal, const double& norm,
+                             const int numnode1, const int numnode2,
+                             const vector<double>& XiContact); 
+  
+  /*!
+  \brief Compute linearization of gap
+          
+  */
+  void ComputeLinGap(vector<double>& delta_gap,
+                     vector<double>& delta_xi, vector<double>& delta_eta,
+                     const vector<double>& x1, const vector<double>& x2,
+                     const vector<double>& dx1, const vector<double>& dx2,
+                     const Epetra_SerialDenseVector& funct1,
+                     const Epetra_SerialDenseVector& funct2, 
+                     const double& normdist,
+                     const int& numnode1, const int& numnode2,
+                     const vector<double>& normal, const double& norm,
+                     const double& gap,Epetra_SerialDenseMatrix& delta_x1_minus_x2);
+  
+  /*!
+  \brief Compute linearization of normal
+          
+  */
+  void ComputeLinNormal(Epetra_SerialDenseMatrix& delta_n, 
+                        const vector<double>& x1, const vector<double>& x2,
+                        const double& norm,
+                        const int& numnode1, const int& numnode2,
+                        const Epetra_SerialDenseMatrix& delta_x1_minus_x2,
+                        const vector<double>& normal, 
+                        const vector<double>& XiContact);
+  
+  /*!
+  \brief Compute normal contact disctance
+          
+  */                
+  void ComputeDistance(vector<double>& distance, double& normdist,
+                       const vector<double>& normal, const double& norm);
+  
+  /*!
+  \brief Check if contact is active and set flag accordingly
+    
+  */
+  void CheckContactStatus(double& pp);
 
-	/*!
-	\brief Get global dofs of a node
+  /*!
+  \brief Get global dofs of a node
 
-	Internally this method first extracts the dofs of the given node
-	in the beam contact discretization (which has its own dofs) and
-	then transfers these dofs to their actual GIDs in the underlying
-	problem discretization by applying the pre-computed dofoffset_.
+  Internally this method first extracts the dofs of the given node
+  in the beam contact discretization (which has its own dofs) and
+  then transfers these dofs to their actual GIDs in the underlying
+  problem discretization by applying the pre-computed dofoffset_.
 
-	*/
-	vector<int> GetGlobalDofs(DRT::Node* node);
+  */
+  vector<int> GetGlobalDofs(DRT::Node* node);
 
-	//@}
-	 
-	//! @name Finite difference checks
-	
-	/*!
-	\brief FD check of closest point projection (delta_xi, delta_eta)
-	  	  	
-	*/						  	
-	void FDCheckCPP(const int& numnode1, const int& numnode2, 
-			            const vector<double>& delta_xi,
-			            const vector<double>& delta_eta,
-			            const vector<double>& XiContact);
-	
-	/*!
-	\brief FD check of of gap function (delta_gap)
-	  	  	
-	*/
-	void FDCheckLinGap(const int& numnode1, const int& numnode2, 
-			               const vector<double>& normal,
-			               const double& norm,
-			               const vector<double>& delta_gap, const double& gap);
-	
-	/*!
-	\brief FD check of contact normal vector (delta_n)
-	  	  	
-	*/
-	void FDCheckLinNormal(const int& numnode1, const int& numnode2, 
-				                const Epetra_SerialDenseMatrix& delta_n,
-				                const vector<double>& normal);
-	
-	/*!
-	\brief FD check of contact stiffness matrices (stiffc1, stiffc2)
-	  	  	
-	*/
-	void FDCheckStiffc(const int& numnode1, const int& numnode2, 
-				             const Epetra_SerialDenseMatrix& stiffc1,
-				             const Epetra_SerialDenseMatrix& stiffc2, 
-				             const double& pp, const vector<double>& normal,
-				             const double& gap,
-				             const Epetra_SerialDenseVector& funct1,
-				             const Epetra_SerialDenseVector& funct2);
+  //@}
+   
+  //! @name Finite difference checks
+  
+  /*!
+  \brief FD check of closest point projection (delta_xi, delta_eta)
+          
+  */                
+  void FDCheckCPP(const int& numnode1, const int& numnode2, 
+                  const vector<double>& delta_xi,
+                  const vector<double>& delta_eta,
+                  const vector<double>& XiContact);
+  
+  /*!
+  \brief FD check of of gap function (delta_gap)
+          
+  */
+  void FDCheckLinGap(const int& numnode1, const int& numnode2, 
+                     const vector<double>& normal,
+                     const double& norm,
+                     const vector<double>& delta_gap, const double& gap);
+  
+  /*!
+  \brief FD check of contact normal vector (delta_n)
+          
+  */
+  void FDCheckLinNormal(const int& numnode1, const int& numnode2, 
+                        const Epetra_SerialDenseMatrix& delta_n,
+                        const vector<double>& normal);
+  
+  /*!
+  \brief FD check of contact stiffness matrices (stiffc1, stiffc2)
+          
+  */
+  void FDCheckStiffc(const int& numnode1, const int& numnode2, 
+                     const Epetra_SerialDenseMatrix& stiffc1,
+                     const Epetra_SerialDenseMatrix& stiffc2, 
+                     const double& pp, const vector<double>& normal,
+                     const double& gap,
+                     const Epetra_SerialDenseVector& funct1,
+                     const Epetra_SerialDenseVector& funct2);
 
-	//@}
+  //@}
 
 }; // class Beam3contact
 } // namespace CONTACT
