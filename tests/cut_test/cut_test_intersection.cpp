@@ -962,12 +962,12 @@ void test_tet4_quad4_alex11()
 {
   GEO::CUT::MeshIntersection intersection;
 
+  std::map<std::string, int> nodeids;
+
   {
     std::vector<int> nids( 4 );
 
     Epetra_SerialDenseMatrix quad4_xyze( 3, 4 );
-
-    std::map<std::string, int> nodeids;
 
     nxyz1(0.89075394384624373423,0.094851207190588718299,0.31907718246312877231);
     nxyz2(0.91085589872612870987,0.09462691177514795382,0.31915342860180828666);
@@ -981,8 +981,6 @@ void test_tet4_quad4_alex11()
     std::vector<int> nids( 3 );
 
     Epetra_SerialDenseMatrix quad4_xyze( 3, 3 );
-
-    std::map<std::string, int> nodeids;
 
     nxyz1(0.90127599046596340582,0.12378087657319215842,0.31909880503242982197);
     nxyz2(0.91110590805399416237,0.11396906901062973938,0.31913932938821898411);
