@@ -629,20 +629,6 @@ namespace GEO
         return Handle<3>( points );
       }
 
-//       bool HasAcceptedTet( const Entity<3> & tri )
-//       {
-//         const std::vector<Entity<4>*> & tets = tri.Parents();
-//         for ( std::vector<Entity<4>*>::const_iterator i=tets.begin(); i!=tets.end(); ++i )
-//         {
-//           Entity<4> * tet = *i;
-//           if ( accept_tets_[tet->Id()] )
-//           {
-//             return true;
-//           }
-//         }
-//         return false;
-//       }
-
       bool FillFacet( Facet * f )
       {
         FacetMesh & cf = facet_mesh_[f];
