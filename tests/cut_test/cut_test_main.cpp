@@ -98,6 +98,7 @@ void test_ls_hex8_simple();
 void test_ls_hex8_simple2();
 void test_ls_hex8_simple3();
 void test_ls_hex8_simple4();
+void test_ls_hex8_simple5();
 void test_ls_hex8_touch();
 void test_ls_hex8_between();
 
@@ -264,6 +265,7 @@ int main( int argc, char ** argv )
   functable["ls_hex8_simple2"] = test_ls_hex8_simple2;
   functable["ls_hex8_simple3"] = test_ls_hex8_simple3;
   //functable["ls_hex8_simple4"] = test_ls_hex8_simple4;
+  functable["ls_hex8_simple5"] = test_ls_hex8_simple5;
   functable["ls_hex8_touch"] = test_ls_hex8_touch;
   functable["ls_hex8_between"] = test_ls_hex8_between;
 
