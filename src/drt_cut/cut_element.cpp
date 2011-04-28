@@ -360,10 +360,17 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, bool levelset )
   {
     std::set<Point*> cut_points;
 
+    // There are never holes in a cut facet. Furthermore, cut facets are
+    // always convex, as all elements and sides are convex. Thus, we are free
+    // to triangulate all cut facets. This needs to be done, so repeated cuts
+    // work in the right way.
+
     for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
     {
       Facet * f = *i;
-      f->GetAllPoints( mesh, cut_points, levelset and f->OnCutSide() );
+      if ( f->OnCutSide() and f->HasHoles() )
+        throw std::runtime_error( "no holes in cut facet possible" );
+      f->GetAllPoints( mesh, cut_points, f->OnCutSide() );
     }
 
     std::vector<Point*> points;

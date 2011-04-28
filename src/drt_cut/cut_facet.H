@@ -83,9 +83,11 @@ public:
     }
   }
 
-  bool Equals( const std::vector<Point*> & facet_points );
+  bool Equals( const std::vector<Point*> & facet_points ) { return Equals( points_, facet_points ); }
 
   bool Equals( DRT::Element::DiscretizationType distype );
+
+  bool CornerEquals( const std::vector<Point*> & facet_points ) { return Equals( corner_points_, facet_points ); }
 
   bool IsCutSide( Side * side );
 
@@ -190,6 +192,7 @@ private:
   void GetLines( const std::vector<Point*> & points,
                  std::map<std::pair<Point*, Point*>, std::set<Facet*> > & lines );
 
+  bool Equals( const std::vector<Point*> & my_points, const std::vector<Point*> & facet_points );
 
   std::vector<Point*> points_;
 
@@ -217,7 +220,7 @@ private:
     for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
     {
       Facet * f = *i;
-      if ( f->Equals( side ) )
+      if ( f->CornerEquals( side ) )
       {
         if ( found==NULL )
         {

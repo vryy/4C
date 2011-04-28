@@ -17,8 +17,7 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
                                                     const std::vector<std::vector<int> > & tets,
                                                     const std::vector<int> & accept_tets,
                                                     const std::vector<Point*> & points,
-                                                    const std::set<Side*> & cut_sides,
-                                                    bool levelset )
+                                                    const std::set<Side*> & cut_sides )
   : pp_( Teuchos::rcp( new PointPool ) ),
     mesh_( options, 1, pp_ ),
     cut_mesh_( options, 1, pp_, true )
@@ -63,27 +62,17 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
       }
     }
 
-    if ( not levelset and facets.size() > 1 )
-      throw std::runtime_error( "more than one facet between element and cut size?" );
-
     for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
     {
       Facet * f = *i;
 
-      if ( levelset or f->IsTriangulated() )
+      triangulated.push_back( f );
+      std::set<Point*> points;
+      f->AllPoints( points );
+      for ( std::set<Point*>::iterator i=points.begin(); i!=points.end(); ++i )
       {
-        triangulated.push_back( f );
-        std::set<Point*> points;
-        f->AllPoints( points );
-        for ( std::set<Point*>::iterator i=points.begin(); i!=points.end(); ++i )
-        {
-          Point *  p = *i;
-          nodemap[ToChild( p )];
-        }
-      }
-      else
-      {
-        CopyCutSide( s, f );
+        Point *  p = *i;
+        nodemap[ToChild( p )];
       }
     }
   }
@@ -122,8 +111,6 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
     }
     else
     {
-      if ( f->HasHoles() )
-        throw std::runtime_error( "no holes in levelset facet possible" );
       const std::vector<Point*> & points = f->Points();
 
       std::vector<Node*> nodes;
@@ -142,14 +129,8 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
         side_parent_to_child_[s].push_back( cs );
         break;
       }
-      case 4:
-      {
-        Side * cs = cut_mesh_.GetSide( s->Id(), nodes, shards::getCellTopologyData< shards::Quadrilateral<4> >() );
-        side_parent_to_child_[s].push_back( cs );
-        break;
-      }
       default:
-        throw std::runtime_error( "levelset facet with too many points" );
+        throw std::runtime_error( "facet with more that three points" );
       }
     }
   }
@@ -624,6 +605,7 @@ void GEO::CUT::TetMeshIntersection::Register( Point * parent_point, Point * chil
   parent_to_child_[parent_point] = child_point;
 }
 
+#if 0
 void GEO::CUT::TetMeshIntersection::CopyCutSide( Side * s, Facet * f )
 {
   const std::vector<Node*> & nodes = s->Nodes();
@@ -728,3 +710,4 @@ void GEO::CUT::TetMeshIntersection::CopyCutSide( Side * s, Facet * f )
     }
   }
 }
+#endif
