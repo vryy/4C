@@ -890,6 +890,17 @@ public:
   }
   //@}
 
+  /*!
+  \brief Fix the nullspace of ML to match a new given map
+
+  The nullspace is looked for in the parameter list. If found, it is assumed that
+  it matches the oldmap. Then it is fixed to match the new map
+
+  \param oldmap (in): row map of nullspace
+  \param newmap (in): row map of nullspace upon exit
+  */
+  void FixMLNullspace(char* field, const Epetra_Map& oldmap,const Epetra_Map& newmap);
+
   //! @name Query methods
 
   /*!
