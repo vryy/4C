@@ -545,29 +545,22 @@ void GEO::CUT::TetMesh::FixBrokenTets()
     // compute normal distance of point to plane of the three remaining points
     double distance = nplane012.Dot( v03 );
 
-#if 0
     // compute norm (area) of plane
-    double norm012 = nplane012.Norm2();
+    //double norm012 = nplane012.Norm2();
 
     double vol_tet = distance / 6.0;
 
     // Deactivate all tets that are too small. We might still need the tet to
     // create a cut surface tri. Afterwards we will discard it.
 
-    if ( fabs( vol_tet ) < 1e-10 )
+    if ( fabs( vol_tet ) < VOLUMETOL )
     {
       accept_tets_[i - tets_.begin()] = false;
     }
-    else if ( fabs( distance / norm012 ) < 1e-7 )
-    {
-      accept_tets_[i - tets_.begin()] = false;
-    }
-#else
-    if ( distance == 0 )
-    {
-      accept_tets_[i - tets_.begin()] = false;
-    }
-#endif
+//     else if ( fabs( distance / norm012 ) < 1e-7 )
+//     {
+//       accept_tets_[i - tets_.begin()] = false;
+//     }
 
     // tet numbering wrong exchange 1 with 3
     if ( distance < 0 )
