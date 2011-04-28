@@ -345,6 +345,7 @@ void GEO::CUT::Hex8Projection::FindNeighborFacets( const std::vector<Point*> & f
 
 void GEO::CUT::Hex8Projection::CreateTetMesh( Mesh & mesh, VolumeCell * cell, Point::PointPosition position, const std::set<Facet*> & myfacets )
 {
+#if 0
   std::set<Point*> mypoints;
   for ( std::set<Facet*>::const_iterator i=myfacets.begin(); i!=myfacets.end(); ++i )
   {
@@ -362,4 +363,5 @@ void GEO::CUT::Hex8Projection::CreateTetMesh( Mesh & mesh, VolumeCell * cell, Po
   std::sort( points.begin(), points.end(), PointPidLess() );
 
   cell->CreateTet4IntegrationCells( mesh, position, points, myfacets, true );
+#endif
 }

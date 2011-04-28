@@ -52,10 +52,6 @@ public:
 
   void GetAllPoints( Mesh & mesh, std::set<Point*> & cut_points );
 
-  void CreateIntegrationCells( Mesh & mesh );
-
-  void CreateTet4IntegrationCells( Mesh & mesh, Point::PointPosition position, const std::vector<Point*> & points, const std::set<Facet*> & facets, bool project );
-
   void CreateTet4IntegrationCells( Mesh & mesh, const std::vector<std::vector<Point*> > & tets, const std::map<Facet*, std::vector<Point*> > & sides_xyz );
 
   void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );

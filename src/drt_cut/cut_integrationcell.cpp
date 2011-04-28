@@ -13,6 +13,7 @@
 #include "../drt_geometry/element_volume.H"
 
 
+#if 0
 bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
                                              VolumeCell * cell,
                                              Point::PointPosition position,
@@ -360,6 +361,7 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
   }
   return false;
 }
+#endif
 
 void GEO::CUT::Hex8IntegrationCell::DumpGmsh( std::ofstream & file )
 {
