@@ -21,58 +21,13 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
                                                     bool levelset )
   : pp_( Teuchos::rcp( new PointPool ) ),
     mesh_( options, 1, pp_ ),
-    cut_mesh_( options, 1, pp_, true ),
-    ls_side_( 1 )
+    cut_mesh_( options, 1, pp_, true )
 {
-
-//   std::vector<double> lsvs;
-//   if ( levelset )
-//   {
-//     const std::vector<Node*> & nodes = element->Nodes();
-//     lsvs.reserve( nodes.size() );
-//     for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
-//     {
-//       Node * n = *i;
-//       lsvs.push_back( n->LSV() );
-//     }
-//   }
-
-  std::map<Point*, Node*> point_nodes;
-  if ( levelset )
-  {
-    const std::vector<Node*> & nodes = element->Nodes();
-    for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
-    {
-      Node * n = *i;
-      point_nodes[n->point()] = n;
-    }
-  }
 
   for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
   {
     Point * p = *i;
-
-//     if ( levelset )
-//     {
-//       LINALG::Matrix<3,1> xyz( p->X() );
-//       LINALG::Matrix<3,1> rst;
-//       element->LocalCoordinates( xyz, rst );
-//       lsv = element->Scalar( lsvs, rst );
-//     }
-
-    double lsv = 0;
-    if ( levelset )
-    {
-      std::map<Point*, Node*>::iterator j = point_nodes.find( p );
-      if ( j!=point_nodes.end() )
-      {
-        Node * n = j->second;
-        lsv = n->LSV();
-      }
-    }
-
-    Node * n = mesh_.GetNode( i - points.begin(), p->X(), lsv );
-
+    Node * n = mesh_.GetNode( i - points.begin(), p->X() );
     Point * np = n->point();
     np->Position( p->Position() );
     Register( p, np );
@@ -97,12 +52,6 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
   {
     Side * s = *i;
 
-    if ( levelset )
-    {
-      side_parent_to_child_[s].push_back( &ls_side_ );
-      continue;
-    }
-
     std::set<Facet*> facets;
     const std::vector<Facet*> & side_facets = s->Facets();
     for ( std::vector<Facet*>::const_iterator i=side_facets.begin(); i!=side_facets.end(); ++i )
@@ -114,14 +63,14 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
       }
     }
 
-    if ( facets.size() > 1 )
+    if ( not levelset and facets.size() > 1 )
       throw std::runtime_error( "more than one facet between element and cut size?" );
 
-    if ( facets.size() == 1 )
+    for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
     {
-      Facet * f = *facets.begin();
+      Facet * f = *i;
 
-      if ( f->IsTriangulated() )
+      if ( levelset or f->IsTriangulated() )
       {
         triangulated.push_back( f );
         std::set<Point*> points;
@@ -134,115 +83,7 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
       }
       else
       {
-        const std::vector<Node*> & nodes = s->Nodes();
-        std::vector<int> nids;
-        nids.reserve( nodes.size() );
-        for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
-        {
-          Node * n = *i;
-          nids.push_back( n->Id() );
-          Point * p = n->point();
-
-//           if ( levelset )
-//           {
-//             LINALG::Matrix<3,1> xyz( p->X() );
-//             LINALG::Matrix<3,1> rst;
-//             element->LocalCoordinates( xyz, rst );
-//             lsv = element->Scalar( lsvs, rst );
-//           }
-
-          Node * new_node = cut_mesh_.GetNode( n->Id(), p->X(), 0 );
-          Point * np = ToChild( p );
-          if ( np != NULL )
-          {
-            if ( new_node->point() != np )
-            {
-              throw std::runtime_error( "did not catch known cut point" );
-            }
-          }
-          else
-          {
-            Register( p, new_node->point() );
-          }
-        }
-
-        Side * cs = cut_mesh_.GetSide( s->Id(), nids, s->Topology() );
-
-        side_parent_to_child_[s].push_back( cs );
-        //side_child_to_parent_[cs] = s;
-
-        // Copy cut point to cut surfaces, since a second cut search could result
-        // in different cut points.
-
-        const std::vector<Edge*> & old_edges =  s->Edges();
-        const std::vector<Edge*> & new_edges = cs->Edges();
-
-        for ( std::vector<Edge*>::const_iterator ei=old_edges.begin(); ei!=old_edges.end(); ++ei )
-        {
-          Edge * e = *ei;
-          Edge * ne = new_edges[ei-old_edges.begin()];
-          const std::vector<Point*> & cutpoints = e->CutPoints();
-          for ( std::vector<Point*>::const_iterator i=cutpoints.begin();
-                i!=cutpoints.end();
-                ++i )
-          {
-            Point *  p = *i;
-            Point * np = Point::NewPoint( mesh_, p->X(), p->t( e ), ne, NULL );
-            np->Position( Point::oncutsurface );
-          }
-        }
-
-        // Copy cut points from facets. If the facets is triangulated, there is a
-        // middle point that needs to be introduces as a cut point.
-
-        std::set<Point*> points;
-        f->AllPoints( points );
-        for ( std::set<Point*>::iterator i=points.begin(); i!=points.end(); ++i )
-        {
-          Point *  p = *i;
-          Point * np = ToChild( p );
-          if ( np!=NULL )
-          {
-            np->AddSide( cs );
-            np->Position( Point::oncutsurface );
-          }
-        }
-
-        // Copy cut lines to cut surfaces, since a second cut search could result
-        // in different cut points.
-
-        const std::vector<Line*> & cutlines = s->CutLines();
-
-        for ( std::vector<Line*>::const_iterator i=cutlines.begin(); i!=cutlines.end(); ++i )
-        {
-          Line * l = *i;
-          Point * p1 = ToChild( l->BeginPoint() );
-          Point * p2 = ToChild( l->EndPoint() );
-
-          if ( p1!=NULL and p2!=NULL )
-          {
-            Line * nl = mesh_.NewLine( p1, p2, cs, NULL, NULL );
-
-            std::set<Edge*> edges;
-            p1->CommonEdge( p2, edges );
-            for ( std::set<Edge*>::iterator i=edges.begin(); i!=edges.end(); ++i )
-            {
-              Edge * e = *i;
-              const std::set<Side*> & sides = e->Sides();
-              for ( std::set<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
-              {
-                Side * s = *i;
-                nl->AddSide( s );
-                const std::set<Element*> & elements = s->Elements();
-                for ( std::set<Element*>::const_iterator i=elements.begin(); i!=elements.end(); ++i )
-                {
-                  Element * e = *i;
-                  nl->AddElement( e );
-                }
-              }
-            }
-          }
-        }
+        CopyCutSide( s, f );
       }
     }
   }
@@ -251,15 +92,15 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
 
   cut_mesh_.NewNodesFromPoints( nodemap );
 
-  if ( not levelset )
+  // do triangulated facets (create extra cut sides)
+
+  for ( std::vector<Facet*>::iterator i=triangulated.begin(); i!=triangulated.end(); ++i )
   {
-    // do triangulated facets (create extra cut sides)
+    Facet * f = *i;
+    Side * s = f->ParentSide();
 
-    for ( std::vector<Facet*>::iterator i=triangulated.begin(); i!=triangulated.end(); ++i )
+    if ( f->IsTriangulated() )
     {
-      Facet * f = *i;
-      Side * s = f->ParentSide();
-
       const std::vector<std::vector<Point*> > & triangulation = f->Triangulation();
       for ( std::vector<std::vector<Point*> >::const_iterator i=triangulation.begin();
             i!=triangulation.end();
@@ -279,24 +120,49 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
         side_parent_to_child_[s].push_back( cs );
       }
     }
+    else
+    {
+      if ( f->HasHoles() )
+        throw std::runtime_error( "no holes in levelset facet possible" );
+      const std::vector<Point*> & points = f->Points();
+
+      std::vector<Node*> nodes;
+      nodes.reserve( points.size() );
+      for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
+      {
+        Point * p = *i;
+        nodes.push_back( nodemap[ToChild( p )] );
+      }
+
+      switch ( points.size() )
+      {
+      case 3:
+      {
+        Side * cs = cut_mesh_.GetSide( s->Id(), nodes, shards::getCellTopologyData< shards::Triangle<3> >() );
+        side_parent_to_child_[s].push_back( cs );
+        break;
+      }
+      case 4:
+      {
+        Side * cs = cut_mesh_.GetSide( s->Id(), nodes, shards::getCellTopologyData< shards::Quadrilateral<4> >() );
+        side_parent_to_child_[s].push_back( cs );
+        break;
+      }
+      default:
+        throw std::runtime_error( "levelset facet with too many points" );
+      }
+    }
   }
 
   Status();
 }
 
-void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, bool levelset )
+void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells )
 {
   mesh_.Status();
 
-  if ( levelset )
-  {
-    mesh_.Cut( ls_side_ );
-  }
-  else
-  {
-    std::set<Element*> elements_done;
-    cut_mesh_.Cut( mesh_, elements_done );
-  }
+  std::set<Element*> elements_done;
+  cut_mesh_.Cut( mesh_, elements_done );
 
   mesh_.Status();
 
@@ -309,23 +175,16 @@ void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, 
 
   if ( mesh_.CreateOptions().FindPositions() )
   {
-    if ( levelset )
-    {
-      mesh_.FindLSNodePositions();
-    }
-    else
-    {
-      mesh_.FindNodePositions();
-    }
+    mesh_.FindNodePositions();
   }
 
 #ifdef DEBUGCUTLIBRARY
   mesh_.DumpGmsh( "mesh.pos" );
 #endif
 
-  mesh_.CreateIntegrationCells( levelset );
+  mesh_.CreateIntegrationCells( false );
 
-  Fill( parent_mesh, element, parent_cells, cellmap, levelset );
+  Fill( parent_mesh, element, parent_cells, cellmap );
 }
 
 void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap )
@@ -554,7 +413,7 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
   }
 }
 
-void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap, bool levelset )
+void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap )
 {
   for ( std::set<VolumeCell*>::const_iterator i=parent_cells.begin();
         i!=parent_cells.end();
@@ -763,4 +622,109 @@ void GEO::CUT::TetMeshIntersection::Register( Point * parent_point, Point * chil
 {
   child_to_parent_[child_point ] = parent_point;
   parent_to_child_[parent_point] = child_point;
+}
+
+void GEO::CUT::TetMeshIntersection::CopyCutSide( Side * s, Facet * f )
+{
+  const std::vector<Node*> & nodes = s->Nodes();
+  std::vector<int> nids;
+  nids.reserve( nodes.size() );
+  for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+  {
+    Node * n = *i;
+    nids.push_back( n->Id() );
+    Point * p = n->point();
+
+    Node * new_node = cut_mesh_.GetNode( n->Id(), p->X() );
+    Point * np = ToChild( p );
+    if ( np != NULL )
+    {
+      if ( new_node->point() != np )
+      {
+        throw std::runtime_error( "did not catch known cut point" );
+      }
+    }
+    else
+    {
+      Register( p, new_node->point() );
+    }
+  }
+
+  Side * cs = cut_mesh_.GetSide( s->Id(), nids, s->Topology() );
+
+  side_parent_to_child_[s].push_back( cs );
+  //side_child_to_parent_[cs] = s;
+
+  // Copy cut point to cut surfaces, since a second cut search could result
+  // in different cut points.
+
+  const std::vector<Edge*> & old_edges =  s->Edges();
+  const std::vector<Edge*> & new_edges = cs->Edges();
+
+  for ( std::vector<Edge*>::const_iterator ei=old_edges.begin(); ei!=old_edges.end(); ++ei )
+  {
+    Edge * e = *ei;
+    Edge * ne = new_edges[ei-old_edges.begin()];
+    const std::vector<Point*> & cutpoints = e->CutPoints();
+    for ( std::vector<Point*>::const_iterator i=cutpoints.begin();
+          i!=cutpoints.end();
+          ++i )
+    {
+      Point *  p = *i;
+      Point * np = Point::NewPoint( mesh_, p->X(), p->t( e ), ne, NULL );
+      np->Position( Point::oncutsurface );
+    }
+  }
+
+  // Copy cut points from facets. If the facets is triangulated, there is a
+  // middle point that needs to be introduces as a cut point.
+
+  std::set<Point*> points;
+  f->AllPoints( points );
+  for ( std::set<Point*>::iterator i=points.begin(); i!=points.end(); ++i )
+  {
+    Point *  p = *i;
+    Point * np = ToChild( p );
+    if ( np!=NULL )
+    {
+      np->AddSide( cs );
+      np->Position( Point::oncutsurface );
+    }
+  }
+
+  // Copy cut lines to cut surfaces, since a second cut search could result
+  // in different cut points.
+
+  const std::vector<Line*> & cutlines = s->CutLines();
+
+  for ( std::vector<Line*>::const_iterator i=cutlines.begin(); i!=cutlines.end(); ++i )
+  {
+    Line * l = *i;
+    Point * p1 = ToChild( l->BeginPoint() );
+    Point * p2 = ToChild( l->EndPoint() );
+
+    if ( p1!=NULL and p2!=NULL )
+    {
+      Line * nl = mesh_.NewLine( p1, p2, cs, NULL, NULL );
+
+      std::set<Edge*> edges;
+      p1->CommonEdge( p2, edges );
+      for ( std::set<Edge*>::iterator i=edges.begin(); i!=edges.end(); ++i )
+      {
+        Edge * e = *i;
+        const std::set<Side*> & sides = e->Sides();
+        for ( std::set<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
+        {
+          Side * s = *i;
+          nl->AddSide( s );
+          const std::set<Element*> & elements = s->Elements();
+          for ( std::set<Element*>::const_iterator i=elements.begin(); i!=elements.end(); ++i )
+          {
+            Element * e = *i;
+            nl->AddElement( e );
+          }
+        }
+      }
+    }
+  }
 }

@@ -41,7 +41,7 @@ public:
 
   virtual bool IsCut();
 
-  virtual bool DoTriangulation() { return true; }
+//   virtual bool DoTriangulation() { return true; }
 
   virtual void AddLine( Line* cut_line );
 
@@ -49,7 +49,9 @@ public:
 
   virtual bool FindLevelSetCutLines( Mesh & mesh, Element * element, Side & side, const std::set<Point*> & cut );
 
+#if 0
   virtual void CreateLineSegmentList( LineSegmentList & lsl, Mesh & mesh, Element * element, bool inner );
+#endif
 
 };
 

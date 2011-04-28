@@ -65,11 +65,7 @@ public:
 
   void CornerCoordinates( double * x );
 
-  void GetAllPoints( Mesh & mesh, std::set<Point*> & cut_points );
-
-#if 0
-  void CreateLinearElements( Mesh & mesh );
-#endif
+  void GetAllPoints( Mesh & mesh, std::set<Point*> & cut_points, bool dotriangulate=false );
 
   void AddHole( Facet * hole );
 
@@ -162,7 +158,7 @@ private:
   Facet( const Facet & );
   Facet & operator=( const Facet & );
 
-  bool IsPlanar( Mesh & mesh );
+  bool IsPlanar( Mesh & mesh, bool dotriangulate );
 
   bool IsPlanar( Mesh & mesh, const std::vector<Point*> & points );
 

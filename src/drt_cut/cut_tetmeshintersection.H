@@ -5,7 +5,6 @@
 #include <set>
 
 #include "cut_mesh.H"
-#include "cut_levelsetside.H"
 
 namespace GEO
 {
@@ -29,7 +28,7 @@ namespace GEO
                            const std::set<Side*> & cut_sides,
                            bool levelset );
 
-      void Cut( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, bool levelset );
+      void Cut( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells );
 
       void Status();
 
@@ -58,7 +57,7 @@ namespace GEO
 
       void MapVolumeCells( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap );
 
-      void Fill( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap, bool levelset );
+      void Fill( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap );
 
       void Fill( VolumeCell * parent_cell, ChildCell & childcell );
 
@@ -82,6 +81,8 @@ namespace GEO
 
       void Register( Point * parent_point, Point * child_point );
 
+      void CopyCutSide( Side * s, Facet * f );
+
       Teuchos::RCP<PointPool> pp_;
 
       Mesh mesh_;
@@ -92,8 +93,6 @@ namespace GEO
 
       std::map<Side*, std::vector<Side*> > side_parent_to_child_;
       //std::map<Side*, Side*> side_child_to_parent_;
-
-      LevelSetSide ls_side_;
     };
   }
 }

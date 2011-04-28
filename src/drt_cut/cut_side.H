@@ -78,7 +78,7 @@ public:
 
   virtual bool IsCut();
 
-  virtual bool DoTriangulation() { return true; }
+//   virtual bool DoTriangulation() { return true; }
 
   //bool FullSideCut() { return cut_lines_.size()==edges_.size() and facets_.size()==1; }
 

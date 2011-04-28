@@ -94,11 +94,15 @@ void test_ls_hex8_florian5();
 void test_ls_hex8_florian6();
 void test_ls_hex8_florian7();
 void test_ls_hex8_florian8();
+void test_ls_hex8_florian9();
+void test_ls_hex8_florian10();
 void test_ls_hex8_simple();
 void test_ls_hex8_simple2();
 void test_ls_hex8_simple3();
 void test_ls_hex8_simple4();
 void test_ls_hex8_simple5();
+void test_ls_hex8_simple6();
+void test_ls_hex8_simple7();
 void test_ls_hex8_touch();
 void test_ls_hex8_between();
 
@@ -261,11 +265,15 @@ int main( int argc, char ** argv )
   functable["ls_hex8_florian6"] = test_ls_hex8_florian6;
   functable["ls_hex8_florian7"] = test_ls_hex8_florian7;
   functable["ls_hex8_florian8"] = test_ls_hex8_florian8;
+  functable["ls_hex8_florian9"] = test_ls_hex8_florian9;
+  functable["ls_hex8_florian10"] = test_ls_hex8_florian10;
   functable["ls_hex8_simple"] = test_ls_hex8_simple;
   functable["ls_hex8_simple2"] = test_ls_hex8_simple2;
   functable["ls_hex8_simple3"] = test_ls_hex8_simple3;
   //functable["ls_hex8_simple4"] = test_ls_hex8_simple4;
   functable["ls_hex8_simple5"] = test_ls_hex8_simple5;
+  functable["ls_hex8_simple6"] = test_ls_hex8_simple6;
+  functable["ls_hex8_simple7"] = test_ls_hex8_simple7;
   functable["ls_hex8_touch"] = test_ls_hex8_touch;
   functable["ls_hex8_between"] = test_ls_hex8_between;
 

@@ -224,6 +224,7 @@ bool GEO::CUT::LevelSetSide::FindLevelSetCutLines( Mesh & mesh, Element * elemen
   }
 }
 
+#if 0
 void GEO::CUT::LevelSetSide::CreateLineSegmentList( LineSegmentList & lsl, Mesh & mesh, Element * element, bool inner )
 {
   bool active_element = false;
@@ -259,3 +260,4 @@ void GEO::CUT::LevelSetSide::CreateLineSegmentList( LineSegmentList & lsl, Mesh 
     }
   }
 }
+#endif

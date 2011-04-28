@@ -319,6 +319,7 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, bool levelset )
   }
 #endif
 
+#if 0
 #ifdef DEBUGCUTLIBRARY
   bool active_element = false;
   const std::vector<Node*> & nodes = Nodes();
@@ -336,6 +337,7 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, bool levelset )
   {
     std::cout << "problem?\n";
   }
+#endif
 #endif
 
   if ( cells_.size()==1 )
@@ -361,7 +363,7 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, bool levelset )
     for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
     {
       Facet * f = *i;
-      f->GetAllPoints( mesh, cut_points );
+      f->GetAllPoints( mesh, cut_points, levelset and f->OnCutSide() );
     }
 
     std::vector<Point*> points;

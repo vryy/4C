@@ -116,9 +116,9 @@ void GEO::CUT::Facet::CornerCoordinates( double * x )
   }
 }
 
-void GEO::CUT::Facet::GetAllPoints( Mesh & mesh, std::set<Point*> & cut_points )
+void GEO::CUT::Facet::GetAllPoints( Mesh & mesh, std::set<Point*> & cut_points, bool dotriangulate )
 {
-  if ( IsPlanar( mesh ) )
+  if ( IsPlanar( mesh, dotriangulate ) )
   {
     std::copy( points_.begin(), points_.end(), std::inserter( cut_points, cut_points.begin() ) );
     for ( std::set<Facet*>::iterator i=holes_.begin(); i!=holes_.end(); ++i )
@@ -140,47 +140,6 @@ void GEO::CUT::Facet::GetAllPoints( Mesh & mesh, std::set<Point*> & cut_points )
   }
 }
 
-#if 0
-void GEO::CUT::Facet::CreateLinearElements( Mesh & mesh )
-{
-  if ( holes_.size()>0 )
-    throw std::runtime_error( "cannot have holes if sub-sides are created" );
-
-  std::vector<int> nids;
-
-  if ( IsPlanar( mesh ) )
-  {
-    switch ( points_.size() )
-    {
-    case 3:
-    {
-      GetNodalIds( mesh, points_, nids );
-      mesh.CreateTri3( SideId(), nids );
-      return;
-    }
-    case 4:
-    {
-      GetNodalIds( mesh, points_, nids );
-      mesh.CreateQuad4( SideId(), nids );
-      return;
-    }
-    default:
-      CreateTriangulation( mesh, points_ );
-    }
-  }
-
-  for ( std::vector<std::vector<Point*> >::iterator i=triangulation_.begin();
-        i!=triangulation_.end();
-        ++i )
-  {
-    const std::vector<Point*> & t = *i;
-    nids.clear();
-    GetNodalIds( mesh, t, nids );
-    mesh.CreateTri3( SideId(), nids );
-  }
-}
-#endif
-
 void GEO::CUT::Facet::AddHole( Facet * hole )
 {
   for ( std::vector<Point*>::iterator i=hole->points_.begin(); i!=hole->points_.end(); ++i )
@@ -191,21 +150,28 @@ void GEO::CUT::Facet::AddHole( Facet * hole )
   holes_.insert( hole );
 }
 
-bool GEO::CUT::Facet::IsPlanar( Mesh & mesh )
+bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, bool dotriangulate )
 {
-  if ( not parentside_->DoTriangulation() )
-    return true;
 
-  if ( triangulation_.size()>0 )
+//   if ( not parentside_->DoTriangulation() )
+//     return true;
+
+  if ( dotriangulate )
   {
-    // if there is a triangulation use it
-    return false;
+    if ( not IsTriangulated() and points_.size() > 3 )
+    {
+      CreateTriangulation( mesh, points_ );
+      planar_known_ = true;
+      planar_ = false;
+    }
   }
+
   if ( not planar_known_ )
   {
     planar_ = IsPlanar( mesh, points_ );
     planar_known_ = true;
   }
+
   return planar_;
 }
 

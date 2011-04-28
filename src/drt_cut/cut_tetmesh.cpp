@@ -262,7 +262,7 @@ void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
   else
   {
     TetMeshIntersection intersection( mesh.CreateOptions(), element, tets_, accept_tets_, points_, cut_sides, levelset );
-    intersection.Cut( mesh, element, cells, levelset );
+    intersection.Cut( mesh, element, cells );
   }
 }
 
