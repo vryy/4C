@@ -122,7 +122,7 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner )
 
   //Status();
 
-  NormalMesh().CreateIntegrationCells();
+  NormalMesh().CreateIntegrationCells( false );
 
   Status();
 

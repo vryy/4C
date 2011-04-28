@@ -49,6 +49,8 @@ public:
 
   virtual bool FindLevelSetCutLines( Mesh & mesh, Element * element, Side & side, const std::set<Point*> & cut );
 
+  virtual void CreateLineSegmentList( LineSegmentList & lsl, Mesh & mesh, Element * element, bool inner );
+
 };
 
   }

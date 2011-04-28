@@ -121,6 +121,11 @@ bool GEO::CUT::Side::FindCutLines( Mesh & mesh, Element * element, Side & other 
   }
 }
 
+void GEO::CUT::Side::CreateLineSegmentList( LineSegmentList & lsl, Mesh & mesh, Element * element, bool inner )
+{
+  lsl.Create( mesh, element, this, inner );
+}
+
 bool GEO::CUT::Side::AllOnNodes( const std::set<Point*> & points )
 {
   const std::vector<Node*> & nodes = Nodes();
@@ -270,7 +275,7 @@ void GEO::CUT::Side::MakeSideCutFacets( Mesh & mesh, Element * element, std::set
 void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
 {
   LineSegmentList lsl;
-  lsl.Create( mesh, element, this, false );
+  CreateLineSegmentList( lsl, mesh, element, false );
 
   const std::vector<Teuchos::RCP<LineSegment> > & segments = lsl.Segments();
 

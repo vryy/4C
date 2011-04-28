@@ -17,16 +17,61 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
                                                     const std::vector<std::vector<int> > & tets,
                                                     const std::vector<int> & accept_tets,
                                                     const std::vector<Point*> & points,
-                                                    const std::set<Side*> & cut_sides )
+                                                    const std::set<Side*> & cut_sides,
+                                                    bool levelset )
   : pp_( Teuchos::rcp( new PointPool ) ),
     mesh_( options, 1, pp_ ),
-    cut_mesh_( options, 1, pp_, true )
+    cut_mesh_( options, 1, pp_, true ),
+    ls_side_( 1 )
 {
+
+//   std::vector<double> lsvs;
+//   if ( levelset )
+//   {
+//     const std::vector<Node*> & nodes = element->Nodes();
+//     lsvs.reserve( nodes.size() );
+//     for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+//     {
+//       Node * n = *i;
+//       lsvs.push_back( n->LSV() );
+//     }
+//   }
+
+  std::map<Point*, Node*> point_nodes;
+  if ( levelset )
+  {
+    const std::vector<Node*> & nodes = element->Nodes();
+    for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+    {
+      Node * n = *i;
+      point_nodes[n->point()] = n;
+    }
+  }
 
   for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
   {
     Point * p = *i;
-    Node * n = mesh_.GetNode( i - points.begin(), p->X() );
+
+//     if ( levelset )
+//     {
+//       LINALG::Matrix<3,1> xyz( p->X() );
+//       LINALG::Matrix<3,1> rst;
+//       element->LocalCoordinates( xyz, rst );
+//       lsv = element->Scalar( lsvs, rst );
+//     }
+
+    double lsv = 0;
+    if ( levelset )
+    {
+      std::map<Point*, Node*>::iterator j = point_nodes.find( p );
+      if ( j!=point_nodes.end() )
+      {
+        Node * n = j->second;
+        lsv = n->LSV();
+      }
+    }
+
+    Node * n = mesh_.GetNode( i - points.begin(), p->X(), lsv );
 
     Point * np = n->point();
     np->Position( p->Position() );
@@ -51,6 +96,12 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
   for ( std::set<Side*>::const_iterator i=cut_sides.begin(); i!=cut_sides.end(); ++i )
   {
     Side * s = *i;
+
+    if ( levelset )
+    {
+      side_parent_to_child_[s].push_back( &ls_side_ );
+      continue;
+    }
 
     std::set<Facet*> facets;
     const std::vector<Facet*> & side_facets = s->Facets();
@@ -91,7 +142,16 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
           Node * n = *i;
           nids.push_back( n->Id() );
           Point * p = n->point();
-          Node * new_node = cut_mesh_.GetNode( n->Id(), p->X() );
+
+//           if ( levelset )
+//           {
+//             LINALG::Matrix<3,1> xyz( p->X() );
+//             LINALG::Matrix<3,1> rst;
+//             element->LocalCoordinates( xyz, rst );
+//             lsv = element->Scalar( lsvs, rst );
+//           }
+
+          Node * new_node = cut_mesh_.GetNode( n->Id(), p->X(), 0 );
           Point * np = ToChild( p );
           if ( np != NULL )
           {
@@ -191,42 +251,52 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
 
   cut_mesh_.NewNodesFromPoints( nodemap );
 
-  // do triangulated facets (create extra cut sides)
-
-  for ( std::vector<Facet*>::iterator i=triangulated.begin(); i!=triangulated.end(); ++i )
+  if ( not levelset )
   {
-    Facet * f = *i;
-    Side * s = f->ParentSide();
+    // do triangulated facets (create extra cut sides)
 
-    const std::vector<std::vector<Point*> > & triangulation = f->Triangulation();
-    for ( std::vector<std::vector<Point*> >::const_iterator i=triangulation.begin();
-          i!=triangulation.end();
-          ++i )
+    for ( std::vector<Facet*>::iterator i=triangulated.begin(); i!=triangulated.end(); ++i )
     {
-      const std::vector<Point*> & tri = *i;
-      if ( tri.size()!=3 )
-        throw std::runtime_error( "tri3 expected" );
-      std::vector<Node*> nodes;
-      nodes.reserve( 3 );
-      for ( std::vector<Point*>::const_iterator i=tri.begin(); i!=tri.end(); ++i )
+      Facet * f = *i;
+      Side * s = f->ParentSide();
+
+      const std::vector<std::vector<Point*> > & triangulation = f->Triangulation();
+      for ( std::vector<std::vector<Point*> >::const_iterator i=triangulation.begin();
+            i!=triangulation.end();
+            ++i )
       {
-        Point * p = *i;
-        nodes.push_back( nodemap[ToChild( p )] );
+        const std::vector<Point*> & tri = *i;
+        if ( tri.size()!=3 )
+          throw std::runtime_error( "tri3 expected" );
+        std::vector<Node*> nodes;
+        nodes.reserve( 3 );
+        for ( std::vector<Point*>::const_iterator i=tri.begin(); i!=tri.end(); ++i )
+        {
+          Point * p = *i;
+          nodes.push_back( nodemap[ToChild( p )] );
+        }
+        Side * cs = cut_mesh_.GetSide( s->Id(), nodes, shards::getCellTopologyData< shards::Triangle<3> >() );
+        side_parent_to_child_[s].push_back( cs );
       }
-      Side * cs = cut_mesh_.GetSide( s->Id(), nodes, shards::getCellTopologyData< shards::Triangle<3> >() );
-      side_parent_to_child_[s].push_back( cs );
     }
   }
 
   Status();
 }
 
-void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells )
+void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, bool levelset )
 {
   mesh_.Status();
 
-  std::set<Element*> elements_done;
-  cut_mesh_.Cut( mesh_, elements_done );
+  if ( levelset )
+  {
+    mesh_.Cut( ls_side_ );
+  }
+  else
+  {
+    std::set<Element*> elements_done;
+    cut_mesh_.Cut( mesh_, elements_done );
+  }
 
   mesh_.Status();
 
@@ -239,14 +309,23 @@ void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, 
 
   if ( mesh_.CreateOptions().FindPositions() )
   {
-    mesh_.FindNodePositions();
+    if ( levelset )
+    {
+      mesh_.FindLSNodePositions();
+    }
+    else
+    {
+      mesh_.FindNodePositions();
+    }
   }
 
+#ifdef DEBUGCUTLIBRARY
   mesh_.DumpGmsh( "mesh.pos" );
+#endif
 
-  mesh_.CreateIntegrationCells();
+  mesh_.CreateIntegrationCells( levelset );
 
-  Fill( parent_mesh, element, parent_cells, cellmap );
+  Fill( parent_mesh, element, parent_cells, cellmap, levelset );
 }
 
 void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap )
@@ -475,7 +554,7 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
   }
 }
 
-void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap )
+void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap, bool levelset )
 {
   for ( std::set<VolumeCell*>::const_iterator i=parent_cells.begin();
         i!=parent_cells.end();

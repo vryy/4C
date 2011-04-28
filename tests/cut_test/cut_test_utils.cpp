@@ -259,7 +259,7 @@ void cutmesh( GEO::CUT::Mesh & mesh )
   mesh.MakeVolumeCells();
   mesh.FindNodePositions();
   mesh.FindNodalDOFSets( true );
-  mesh.CreateIntegrationCells();
+  mesh.CreateIntegrationCells( false );
   mesh.DumpGmshVolumeCells( "volumecells" );
   mesh.DumpGmshIntegrationCells( "integrationcells.pos" );
 #ifdef DEBUGCUTLIBRARY

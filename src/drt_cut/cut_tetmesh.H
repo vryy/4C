@@ -1041,7 +1041,8 @@ namespace GEO
       void CreateElementTets( Mesh & mesh,
                               Element * element,
                               const std::set<VolumeCell*> & cells,
-                              const std::set<Side*> & cut_sides );
+                              const std::set<Side*> & cut_sides,
+                              bool levelset );
 
       void CreateVolumeCellTets();
 

@@ -118,7 +118,7 @@ public:
 
   void FindNodalDOFSets( bool include_inner );
 
-  void CreateIntegrationCells();
+  void CreateIntegrationCells( bool levelset );
 
   void TestElementVolume( bool fatal );
 

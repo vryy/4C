@@ -68,8 +68,6 @@ class LineSegmentList
 {
 public:
 
-  void Create( Mesh & mesh, Element * element, Side * side );
-
   void Create( Mesh & mesh, Element * element, Side * side, bool inner );
 
   void Create( Mesh & mesh, Element * element, Side * side, std::set<Line*> & lines, bool inner );

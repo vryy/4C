@@ -79,9 +79,8 @@ bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side )
   if ( cut )
   {
     // create any remaining cut lines
-    //side.CreateLineSegment( mesh, this );
     LineSegmentList lsl;
-    lsl.Create( mesh, this, &side );
+    side.CreateLineSegmentList( lsl, mesh, this, true );
 
     cut_faces_.insert( &side );
     return true;
@@ -304,7 +303,7 @@ void GEO::CUT::Element::GetCutPoints( std::set<Point*> & cut_points )
   }
 }
 
-void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh )
+void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, bool levelset )
 {
   if ( not active_ )
     return;
@@ -317,6 +316,25 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh )
       VolumeCell * vc = *i;
       vc->Print( file );
     }
+  }
+#endif
+
+#ifdef DEBUGCUTLIBRARY
+  bool active_element = false;
+  const std::vector<Node*> & nodes = Nodes();
+  for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+  {
+    Node * n = *i;
+    double lsv = n->LSV();
+    if ( lsv < -TOLERANCE or lsv > TOLERANCE )
+    {
+      active_element = true;
+      break;
+    }
+  }
+  if ( not active_element )
+  {
+    std::cout << "problem?\n";
   }
 #endif
 
@@ -356,7 +374,7 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh )
 
     TetMesh tetmesh( points, facets_, false );
 
-    tetmesh.CreateElementTets( mesh, this, cells_, cut_faces_ );
+    tetmesh.CreateElementTets( mesh, this, cells_, cut_faces_, levelset );
   }
 }
 

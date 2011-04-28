@@ -1,6 +1,7 @@
 
 #include "cut_line.H"
 #include "cut_side.H"
+#include "cut_element.H"
 
 GEO::CUT::Line::Line( Point * p1, Point * p2, Side * cut_side1, Side * cut_side2, Element * cut_element )
   : p1_( p1 ),
@@ -60,6 +61,50 @@ void GEO::CUT::Line::AddElement( Element * cut_element )
 {
   if ( cut_element!=NULL )
   {
+#if 0
+#ifdef DEBUGCUTLIBRARY
+    Node * n1 = NULL;
+    Node * n2 = NULL;
+    const std::vector<Node*> & nodes = cut_element->Nodes();
+    for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+    {
+      Node * n = *i;
+      if ( n->point()==p1_ )
+      {
+        n1 = n;
+      }
+      if ( n->point()==p2_ )
+      {
+        n2 = n;
+      }
+    }
+    if ( n1!=NULL and n2!=NULL )
+    {
+      std::set<Edge *> edges;
+      p1_->CommonEdge( p2_, edges );
+      if ( edges.size()!=1 )
+        throw std::runtime_error( "line does not belong to element" );
+      Edge * e = *edges.begin();
+
+      const std::set<Side*> & edge_sides = e->Sides();
+      const std::vector<Side*> & element_sides = cut_element->Sides();
+
+      bool found = false;
+      for ( std::vector<Side*>::const_iterator i=element_sides.begin(); i!=element_sides.end(); ++i )
+      {
+        Side * s = *i;
+        if ( edge_sides.count( s )>0 )
+        {
+          found = true;
+        }
+      }
+      if ( not found )
+      {
+        throw std::runtime_error( "line does not belong to element" );
+      }
+    }
+#endif
+#endif
     cut_elements_.insert( cut_element );
   }
 }

@@ -72,13 +72,37 @@ bool GEO::CUT::LevelSetSide::FindLevelSetCutLines( Mesh & mesh, Element * elemen
           edge_points.push_back( p );
         }
       }
-      if ( edge_points.size()!=2 )
+      if ( edge_points.size()==2 )
       {
-        throw std::runtime_error( "expect two edge points" );
+        mesh.NewLine( edge_points[0], edge_points[1], &side, this, element );
+        std::cout << "WARNING: levelset cut on node not defined\n";
+        return true;
       }
-      mesh.NewLine( edge_points[0], edge_points[1], &side, this, element );
-      std::cout << "WARNING: levelset cut on node not defined\n";
-      return true;
+      else if ( edge_points.size()==0 )
+      {
+        const std::vector<Edge*> & edges = side.Edges();
+        for ( std::vector<Edge*>::const_iterator i=edges.begin(); i!=edges.end(); ++i )
+        {
+          Edge * e = *i;
+          Point * p1 = e->BeginNode()->point();
+          Point * p2 = e->EndNode()->point();
+
+          if ( cut.count( p1 ) > 0 and cut.count( p2 )==0 )
+          {
+            edge_points.push_back( p1 );
+          }
+          else if ( cut.count( p1 )==0 and cut.count( p2 ) > 0 )
+          {
+            edge_points.push_back( p2 );
+          }
+        }
+        if ( edge_points.size()==2 )
+        {
+          mesh.NewLine( edge_points[0], edge_points[1], &side, this, element );
+          return true;
+        }
+      }
+      throw std::runtime_error( "expect two edge points" );
     }
     case 4:
     {
@@ -197,5 +221,41 @@ bool GEO::CUT::LevelSetSide::FindLevelSetCutLines( Mesh & mesh, Element * elemen
   }
   default:
     throw std::runtime_error( "unsupported side shape" );
+  }
+}
+
+void GEO::CUT::LevelSetSide::CreateLineSegmentList( LineSegmentList & lsl, Mesh & mesh, Element * element, bool inner )
+{
+  bool active_element = false;
+  const std::vector<Node*> & nodes = element->Nodes();
+  for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+  {
+    Node * n = *i;
+    double lsv = n->LSV();
+    if ( lsv < -TOLERANCE or lsv > TOLERANCE )
+    {
+      active_element = true;
+      break;
+    }
+  }
+  if ( active_element )
+  {
+    Side::CreateLineSegmentList( lsl, mesh, element, inner );
+  }
+  else
+  {
+    const std::vector<Side*> & sides = element->Sides();
+    for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
+    {
+      Side * s = *i;
+      const std::vector<Edge*> & edges = s->Edges();
+      for ( std::vector<Edge*>::const_iterator i=edges.begin(); i!=edges.end(); ++i )
+      {
+        Edge * e = *i;
+        Point * p1 = e->BeginNode()->point();
+        Point * p2 = e->EndNode()  ->point();
+        mesh.NewLine( p1, p2, s, NULL, element );
+      }
+    }
   }
 }

@@ -55,13 +55,15 @@ public:
 
   virtual void GlobalCoordinates( const LINALG::Matrix<3,1> & rst, LINALG::Matrix<3,1> & xyz ) = 0;
 
+  virtual double Scalar( const std::vector<double> & ns, const LINALG::Matrix<3,1> & rst ) = 0;
+
   bool Cut( Mesh & mesh, Side & side );
 
   void MakeFacets( Mesh & mesh );
 
   void MakeVolumeCells( Mesh & mesh );
 
-  void CreateIntegrationCells( Mesh & mesh );
+  void CreateIntegrationCells( Mesh & mesh, bool levelset );
 
   void FindNodePositions();
 
@@ -166,6 +168,18 @@ public:
     }
   }
 
+  virtual double Scalar( const std::vector<double> & ns, const LINALG::Matrix<3,1> & rst )
+  {
+    const int numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement;
+    LINALG::Matrix<numNodesElement,1> funct;
+    DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::tet4 );
+
+    LINALG::Matrix<numNodesElement,1> scalar( &ns[0] );
+    LINALG::Matrix<1,1> res;
+    res.MultiplyTN( funct, scalar );
+    return res( 0 );
+  }
+
   void Coordinates( LINALG::Matrix<3, 4> & xyze )
   { Element::Coordinates( xyze.A() ); }
 
@@ -204,6 +218,18 @@ public:
       LINALG::Matrix<3,1> x( nodes[i]->point()->X() );
       xyz.Update( funct( i ), x, 1 );
     }
+  }
+
+  virtual double Scalar( const std::vector<double> & ns, const LINALG::Matrix<3,1> & rst )
+  {
+    const int numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement;
+    LINALG::Matrix<numNodesElement,1> funct;
+    DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::wedge6 );
+
+    LINALG::Matrix<numNodesElement,1> scalar( &ns[0] );
+    LINALG::Matrix<1,1> res;
+    res.MultiplyTN( funct, scalar );
+    return res( 0 );
   }
 
   void Coordinates( LINALG::Matrix<3, 6> & xyze )
@@ -246,6 +272,17 @@ public:
     }
   }
 
+  virtual double Scalar( const std::vector<double> & ns, const LINALG::Matrix<3,1> & rst )
+  {
+    const int numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::pyramid5>::numNodePerElement;
+    LINALG::Matrix<numNodesElement,1> funct;
+    DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::pyramid5 );
+
+    LINALG::Matrix<numNodesElement,1> scalar( &ns[0] );
+    LINALG::Matrix<1,1> res;
+    res.MultiplyTN( funct, scalar );
+    return res( 0 );
+  }
   void Coordinates( LINALG::Matrix<3, 5> & xyze )
   { Element::Coordinates( xyze.A() ); }
 
@@ -284,6 +321,18 @@ public:
       LINALG::Matrix<3,1> x( nodes[i]->point()->X() );
       xyz.Update( funct( i ), x, 1 );
     }
+  }
+
+  virtual double Scalar( const std::vector<double> & ns, const LINALG::Matrix<3,1> & rst )
+  {
+    const int numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+    LINALG::Matrix<numNodesElement,1> funct;
+    DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex8 );
+
+    LINALG::Matrix<numNodesElement,1> scalar( &ns[0] );
+    LINALG::Matrix<1,1> res;
+    res.MultiplyTN( funct, scalar );
+    return res( 0 );
   }
 
   void Coordinates( LINALG::Matrix<3, 8> & xyze )

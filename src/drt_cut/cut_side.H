@@ -15,6 +15,7 @@ namespace CUT
   class Facet;
   class LineSegment;
   class BoundaryCell;
+  class LineSegmentList;
 
 class Side
 {
@@ -98,6 +99,8 @@ public:
   virtual bool FindLevelSetCutLines( Mesh & mesh, Element * element, Side & side, const std::set<Point*> & cut );
 
   virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
+
+  virtual void CreateLineSegmentList( LineSegmentList & lsl, Mesh & mesh, Element * element, bool inner );
 
   void Print();
 
