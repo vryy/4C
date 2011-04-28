@@ -814,7 +814,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
     gmshfilecontent << " \" {" << endl;
     
     // loop over all column elements on this processor
-    for (int i=0;i<ColNodes()->NumMyElements();++i)
+    for (int i=0;i<ColElements()->NumMyElements();++i)
     {
       // get pointer onto current beam element
       DRT::Element* element = ContactDiscret().lColElement(i);
