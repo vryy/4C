@@ -1167,11 +1167,15 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, 
     double ev = GEO::ElementVolume( e.Shape(), xyze );
 
     int numgp = 0;
+    int numic = 0;
+    int numbc = 0;
     double cv = 0;
     const std::set<VolumeCell*> & cells = e.VolumeCells();
     for ( std::set<VolumeCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
     {
       VolumeCell * vc = *i;
+      numic += vc->IntegrationCells().size();
+      numbc += vc->BoundaryCells().size();
       numgp += vc->NumGaussPoints( shape );
       cv += vc->Volume();
     }
@@ -1179,7 +1183,11 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, 
     double volume_error = ( ev-cv )/ev;
 
 #ifdef DEBUGCUTLIBRARY
-    std::cout << numgp << " -- "
+    std::cout << "#vc=" << cells.size()
+              << " #ic=" << numic
+              << " #bc=" << numbc
+              << " #gp=" << numgp
+              << " \t-- "
               << ev << "  "
               << cv << "  "
               << ev-cv << "  "
