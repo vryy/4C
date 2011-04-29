@@ -16,6 +16,7 @@ Maintainer: Florian Henke
 
 #include "../drt_xfem/interface.H"
 #include "combust_flamefront.H"
+#include "combust_defines.H"
 
 namespace COMBUST
 {
@@ -56,23 +57,19 @@ namespace COMBUST
     //! output of domain and boundary integration cells to Gmsh!
     void toGmsh(const int step) const;
 
-    //! implement this function if needed for combustion!
-    int PositionWithinConditionNP(const LINALG::Matrix<3,1>& x_in) const;
+#ifdef COMBUST_CUT
+    //! tell me, whether the element has a whole touched face and lies in the plus domain or not
+    bool ElementTouched(const int xfemeleid) const;
 
-    //! implement this function if needed for combustion!
-    int PositionWithinConditionN(const LINALG::Matrix<3,1>& x_in) const;
+    //! tell me, whether the element is bisected or not
+    bool ElementBisected(const int xfemeleid) const;
 
-    //! implement this function if needed for combustion!
-    int PositionWithinConditionNP(const LINALG::Matrix<3,1>&     x_in,
-                                  GEO::NearestObject&  nearestobject) const;
+    //! tell me, whether the element is trisected or not
+    bool ElementTrisected(const int xfemeleid) const;
+#endif
+    //! tell me, whether the element is trisected or not
+    COMBUST::FlameFront::CutStatus ElementCutStatus(const int xfemeleid) const;
 
-    //! implement this function if needed for combustion!
-    int PositionWithinConditionN(const LINALG::Matrix<3,1>&     x_in,
-                                 GEO::NearestObject&  nearestobject) const;
-
-    //! determine which part of the domain (separated by level set function) an integration cell belongs to
-    bool GetIntCellPosition(const GEO::DomainIntCell& intcell,
-                            const DRT::Element*       xfemele);
 
   private:
 
@@ -87,6 +84,9 @@ namespace COMBUST
 
     /// pointer to the flame front
     const Teuchos::RCP<const COMBUST::FlameFront> flamefront_;
+
+    /// map holding status of elements with respect to the interface
+    std::map<int,COMBUST::FlameFront::CutStatus > elementcutstatus_;
 
   }; // class InterfaceHandleCombust
 } // namespace COMBUST

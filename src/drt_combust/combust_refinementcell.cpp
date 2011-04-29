@@ -88,8 +88,9 @@ void COMBUST::RefinementCell::SetGfuncValues(std::vector<double> gfuncvalues)
     dserror("G-function value vectors don't have same length");
 
   gfuncvalues_ = gfuncvalues;
-
+#ifndef COMBUST_CUT
   IdentifyIntersectionStatus();
+#endif
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -220,7 +221,7 @@ void COMBUST::RefinementCell::IdentifyIntersectionStatus()
   if (distype_ == DRT::Element::hex20)
   {
     // TODO complete the algortihm
-    dserror("read comment first!");
+    //dserror("read comment first!");
     //-------------------------------------------------------------------------------------------
     // Im urspruenglichen, ersten Teil werden nur die die Vorzeichen der Konten des Elements
     // auf einen Vorzeichenwechsel hin ueberprueft. Das ist fuer Hex8 absolut ok, reicht aber fuer

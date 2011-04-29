@@ -1079,7 +1079,7 @@ void Nitsche_BuildDomainIntegratedErrors(
     // we only need to integrate u_h and p_h exact,
     // if the exact solution is smoother we wont get a better
     // order of convergence because u_h and p_h approximates u and p only with this order of convergence
-    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Intersected(), cell->Shape());
+    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Bisected(), cell->Shape());
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
 
 

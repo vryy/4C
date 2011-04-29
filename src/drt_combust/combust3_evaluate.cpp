@@ -149,9 +149,41 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // remark: initialization call of fluid time integration scheme will also end up here: The initial
       //         flame front has not been incorporated into the fluid field -> no XFEM dofs, yet!
       this->bisected_      = false;
-      this->touched_plus_  = false;
-      this->touched_minus_ = false;
+      this->trisected_     = false;
+      this->touched_  = false;
 
+#ifdef COMBUST_CUT
+      if (ih_->FlameFront() != Teuchos::null) // not the initial call
+      {
+        const COMBUST::FlameFront::CutStatus cutstat = ih_->ElementCutStatus(this->Id());
+
+        if (cutstat == COMBUST::FlameFront::uncut)
+        {// nothing to do
+        }
+        else if (cutstat == COMBUST::FlameFront::bisected)
+        {
+          this->bisected_ = true;
+          // regular element (numdomaincells==1 and numboundarycells==0)
+//          std::size_t numDomainCells = ih_->GetNumDomainIntCells(this);
+//          cout << "number of domain cells " << numDomainCells << endl;
+//          std::size_t numBoundaryCells = ih_->GetNumBoundaryIntCells(this);
+//          cout << "number of boundary cells " << numBoundaryCells << endl;
+        }
+        else if (cutstat == COMBUST::FlameFront::trisected)
+          this->trisected_ = true;
+        else if (cutstat == COMBUST::FlameFront::touched)
+        {
+          this->touched_ = true;
+          cout << "touched" << endl;
+          std::size_t numDomainCells = ih_->GetNumDomainIntCells(this);
+          cout << "number of domain cells " << numDomainCells << endl;
+          std::size_t numBoundaryCells = ih_->GetNumBoundaryIntCells(this);
+          cout << "number of boundary cells " << numBoundaryCells << endl;
+        }
+        else
+          dserror("cut status not available for element % ",this->Id());
+      }
+#else
       if (ih_->FlameFront() != Teuchos::null) // not the initial call
       {
         // more than one domain integration cell -> element bisected
@@ -159,10 +191,10 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
           this->bisected_ = true;
         // one domain and one plus boundary integration cell -> element touched plus
         else if(ih_->ElementTouchedPlus(this))
-          this->touched_plus_ = true;
+          this->touched_ = true;
         // one domain and one minus boundary integration cell -> element touched minus
         else if(ih_->ElementTouchedMinus(this))
-          this->touched_minus_ = true;
+          this->touched_ = true;
         else // regular element (numdomaincells==1 and numboundarycells==0)
         {
 // TODO @Florian uncomment DEBUG flag
@@ -178,6 +210,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         }
 //#endif
       }
+#endif
 
       //----------------------------------
       // hand over global dofs to elements
@@ -228,7 +261,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       //----------------------------------------------------------------------------
       // TODO @Florian implement eleDofs for touched elements
       // schott Aug 3, 2010
-      if (this->bisected_ || this->touched_plus_ || this->touched_minus_)
+      if (this->bisected_ || this->trisected_ || this->touched_)
       {
         // create empty set of enrichment fields
         std::set<XFEM::FieldEnr> elementFieldEnrSet;
@@ -240,9 +273,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         // remark: This procedure must give the same result as the element enrichment procedure in
         //         createDofMapCombust(). The element dof manager has to be consistent with the
         //         global dof manager!
-        skipped_elem_enr = ApplyElementEnrichmentCombust(this, element_ansatz_filled,
-                                                         elementFieldEnrSet, *ih_,
-                                                         params.get<double>("boundaryRatioLimit"));
+        ApplyElementEnrichmentCombust(this, element_ansatz_filled, elementFieldEnrSet, *ih_);
 
         // add node dofs and element dofs (stress unknowns) for this element
         eleDofManager_uncondensed_ = rcp(new XFEM::ElementDofManager(*this, eleDofManager_->getNodalDofSet(), elementFieldEnrSet, element_ansatz_filled));
@@ -326,7 +357,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
 #ifdef COMBUST_STRESS_BASED
       // integrate and assemble all unknowns
-      if (not this->bisected_ or
+      if ((not this->bisected_ and not this->trisected_) or
           not params.get<bool>("DLM_condensation"))
       {
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
@@ -452,7 +483,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
 #ifdef COMBUST_STRESS_BASED
       // integrate and assemble all unknowns
-      if (not this->bisected_ or
+      if ((not this->bisected_ and not this->trisected) or
           not params.get<bool>("DLM_condensation"))
       {
         if (ih_->GetNumBoundaryIntCells(this) > 0)

@@ -29,7 +29,6 @@ namespace XFEM
   bool ApplyJumpEnrichment(
       const DRT::Element*                       xfemele,
       const std::set<XFEM::PHYSICS::Field>&     fieldset,
-      const double                              volumeRatioLimit,
       std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap
       );
   
@@ -39,7 +38,6 @@ namespace XFEM
       const COMBUST::InterfaceHandleCombust&    ih,
       const DRT::Element*                       xfemele,
       const std::set<XFEM::PHYSICS::Field>&     fieldset,
-      const double                              volumeRatioLimit,
       std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap
       );
 
@@ -47,7 +45,6 @@ namespace XFEM
   bool ApplyKinkEnrichment(
       const DRT::Element*                       xfemele,
       const std::set<XFEM::PHYSICS::Field>&     fieldset,
-      const double                              volumeRatioLimit,
       std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap
       );
   
@@ -56,7 +53,6 @@ namespace XFEM
   bool ApplyKinkJumpEnrichment(
       const DRT::Element*                       xfemele,
       const std::set<XFEM::PHYSICS::Field>&     fieldset,
-      const double                              volumeRatioLimit,
       std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap
       );
   
@@ -66,7 +62,6 @@ namespace XFEM
       const COMBUST::InterfaceHandleCombust&    ih,
       const DRT::Element*                       xfemele,
       const std::set<XFEM::PHYSICS::Field>&     fieldset,
-      const double                              volumeRatioLimit,
       std::map<int, std::set<XFEM::FieldEnr> >& nodeDofMap
       );
 
@@ -97,20 +92,18 @@ namespace XFEM
    * \brief apply standard dofs to nodes
    * \note preliminary split-off function from applyStandardEnrichment() for combustion problems
    */
-  bool ApplyElementEnrichmentCombust(
+  void ApplyElementEnrichmentCombust(
       const DRT::Element*                                                xfemele,           ///<
       const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz,    ///< element dofs
       std::map<int, std::set<XFEM::FieldEnr> >&                          elementDofMap,     ///<
-      const COMBUST::InterfaceHandleCombust&                             ih,                ///<
-      const double                                                       boundaryRatioLimit ///<
+      const COMBUST::InterfaceHandleCombust&                             ih                 ///<
       );
 
-  bool ApplyElementEnrichmentCombust(
+  void ApplyElementEnrichmentCombust(
       const DRT::Element*                                                xfemele,
       const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz,
       std::set<XFEM::FieldEnr>&                                          elementFieldEnrSet,
-      const COMBUST::InterfaceHandleCombust&                             ih,
-      const double                                                       boundaryRatioLimit
+      const COMBUST::InterfaceHandleCombust&                             ih
       );
 
 } // namespace XFEM

@@ -14,11 +14,12 @@ Maintainer: Florian Henke
 #ifndef COMBUST_FLAMEFRONT_H
 #define COMBUST_FLAMEFRONT_H
 
-#include "../drt_lib/drt_globalproblem.H"
 #include "combust_refinementcell.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_geometry/intersection.H"
 #include "../drt_geometry/integrationcell.H"
 #include "../drt_inpar/inpar_combust.H"
+#include "../drt_cut/cut_elementhandle.H"
 
 namespace COMBUST
 {
@@ -64,6 +65,15 @@ namespace COMBUST
     /// destructor
     ~FlameFront();
 
+    enum CutStatus
+    {
+      undefined, ///< element has no idea what happened to it
+      uncut,     ///< element is not intersected
+      touched,   ///< element in plus domain is touched by the interface on a 2D face (surface)
+      bisected,  ///< element is intersected (two subdomains)
+      trisected, ///< element is double intersected (three subdomains)
+    };
+
     /// remote access method to vector on fluid NodeColMap holding G-function values at n
     const Teuchos::RCP<Epetra_Vector> Phin() const { return phin_; }
     /// remote access method to vector on fluid NodeColMap holding G-function values at n+1
@@ -74,6 +84,7 @@ namespace COMBUST
 
     const std::map<int,GEO::DomainIntCells> DomainIntCells() const {return myelementintcells_;}
     const std::map<int,GEO::BoundaryIntCells> BoundaryIntCells() const {return myboundaryintcells_;}
+    const std::map<int,CutStatus> ElementCutStatus() const {return myelementcutstatus_;}
 
     /// update the flame front
     void UpdateFlameFront(
@@ -133,7 +144,7 @@ namespace COMBUST
     void RefineFlameFront(const Teuchos::RCP<COMBUST::RefinementCell> cell,
                           const Teuchos::RCP<const Epetra_Vector> phi);
 
-    /// find the flame front within a refinement cell according to G-function field
+    /// interpolate G-function field for a refinement cell
     void FindFlameFront(const Teuchos::RCP<COMBUST::RefinementCell> cell,
                         const Teuchos::RCP<const Epetra_Vector> phi);
 
@@ -165,6 +176,12 @@ namespace COMBUST
 
     /// generate flame front geometry
     void CaptureFlameFront(const Teuchos::RCP<const COMBUST::RefinementCell> cell);
+
+    /// identify status of a domain integration cell based on its cut data
+    void IdentifyDomainIntegrationCellStatus(GEO::DomainIntCell& cell, const GEO::CUT::ElementHandle& e);
+
+    /// identify status of a boundary integration cell based on its cut data
+    void IdentifyBoundaryIntegrationCellStatus(GEO::BoundaryIntCell& cell, const GEO::CUT::ElementHandle& e);
 
     /// not documented yet
     void TriangulateFlameFront(
@@ -230,6 +247,26 @@ namespace COMBUST
         GEO::BoundaryIntCells& boundaryintcelllist
     );
 
+    /// store a set of domain integration cells
+    bool StoreDomainIntegrationCells(
+        GEO::CUT::ElementHandle * ehandle,
+        GEO::DomainIntCells& domainintcelllist,
+        LINALG::SerialDenseMatrix& xyze
+    );
+
+    /// store a list of boundary integration cells
+    bool StoreBoundaryIntegrationCells(
+        GEO::CUT::ElementHandle * ehandle,
+        GEO::BoundaryIntCells& boundaryintcelllist,
+        LINALG::SerialDenseMatrix& xyze
+    );
+
+    /// store the cut status of an element
+    void StoreElementCutStatus(
+        const CutStatus cellstat,
+        CutStatus&      elestat
+    );
+
 #if 0
     /// call external program TetGen to generate tetrahedral domain integration cells
     void CallTetGen(
@@ -278,11 +315,10 @@ namespace COMBUST
             );
 
     /// output to Gmsh
-    void FlamefrontToGmsh(
-    const COMBUST::RefinementCell*              cell,
-    const std::vector<std::vector<double> >&    pointlist,
-    const std::multimap<int,std::vector<int> >& segmentlist,
-    const std::vector<std::vector<int> >&       trianglelist
+    void FlameFrontToGmsh(
+    const COMBUST::RefinementCell* cell,
+    const GEO::BoundaryIntCells&   boundaryintcelllist,
+    const GEO::DomainIntCells&     domainintcelllist
     );
 
     /// pointer to fluid discretization
@@ -310,10 +346,12 @@ namespace COMBUST
     /// variable defining the type of the domain integration cells for intersected elements
     INPAR::COMBUST::XFEMIntegration xfeminttype_;
 
-    // integration cells for each element
+    /// domain integration cells for each element
     std::map<int,GEO::DomainIntCells> myelementintcells_;
-    // boundary integration cells
+    /// boundary integration cells for each element
     std::map<int,GEO::BoundaryIntCells> myboundaryintcells_;
+    /// status of each elements with respect to the interface
+    std::map<int,COMBUST::FlameFront::CutStatus > myelementcutstatus_;
 
   }; // class FlameFront
 } // namespace COMBUST

@@ -140,8 +140,8 @@ DRT::Element(id,owner),
 eleDofManager_(Teuchos::null),
 standard_mode_(false),
 bisected_(false),
-touched_plus_(false),
-touched_minus_(false)
+trisected_(false),
+touched_(false)
 {
     return;
 }
@@ -155,8 +155,8 @@ DRT::Element(old),
 eleDofManager_(old.eleDofManager_),
 standard_mode_(old.standard_mode_),
 bisected_(old.bisected_),
-touched_plus_(old.touched_plus_),
-touched_minus_(old.touched_minus_)
+trisected_(old.trisected_),
+touched_(old.touched_)
 {
     return;
 }
@@ -210,8 +210,8 @@ void DRT::ELEMENTS::Combust3::Pack(DRT::PackBuffer& data) const
 
   AddtoPack(data,standard_mode_);
   AddtoPack(data,bisected_);
-  AddtoPack(data,touched_plus_);
-  AddtoPack(data,touched_minus_);
+  AddtoPack(data,trisected_);
+  AddtoPack(data,touched_);
 
   return;
 }
@@ -235,8 +235,8 @@ void DRT::ELEMENTS::Combust3::Unpack(const std::vector<char>& data)
 
   standard_mode_ = ExtractInt(position,data);
   bisected_ = ExtractInt(position,data);
-  touched_plus_ = ExtractInt(position,data);
-  touched_minus_ = ExtractInt(position,data);
+  trisected_ = ExtractInt(position,data);
+  touched_ = ExtractInt(position,data);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -361,7 +361,7 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
     // extract local (element level) G-function values from global vector
     // only if element is intersected; only adjacent nodal values are calculated
 #ifndef COMBUST_NORMAL_ENRICHMENT
-    if(ele->Intersected() == true || ele->Touched_Plus() == true || ele->Touched_Minus() == true)
+    if(ele->Bisected() or ele->Touched() )
     {
 #endif
       // remark: - for the normal enrichment strategy all enriched elements are needed here

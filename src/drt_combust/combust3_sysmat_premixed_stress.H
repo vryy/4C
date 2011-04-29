@@ -403,7 +403,7 @@ void SysmatDomainStress(
   const bool epsilonele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Epsilonxx, 0) > 0);
   const bool sigmaele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxx, 0) > 0);
   const bool discpres_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 0) > 0);
-  if (ele->Intersected())
+  if (ele->Bisected())
   {
 #ifdef COMBUST_EPSPRES_BASED
     dsassert(epsilonele_unknowns_present == true, "there are no element stress unknowns!");
@@ -466,7 +466,7 @@ void SysmatDomainStress(
     //----------------------------------------------
     // get Gaussian points for this integration cell
     //----------------------------------------------
-    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Intersected(), cell->Shape());
+    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Bisected(), cell->Shape());
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
     //--------------------------------------
     // integration loop over Gaussian points

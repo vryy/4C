@@ -141,7 +141,7 @@ void SysmatDomainNitscheNormal(
     //----------------------------------------------
     // get Gaussian points for this integration cell
     //----------------------------------------------
-    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Intersected(), cell->Shape());
+    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Bisected(), cell->Shape());
     //const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_tet_4point;
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
     //--------------------------------------
@@ -719,7 +719,7 @@ void SysmatDomainNitscheNormal(
 
 //      if (ASSTYPE== XFEM::xfem_assembly)
 //      {
-//        if(ele->Intersected())
+//        if(ele->Bisected())
 //        {
 //          cout << "eprenp " << eprenp << endl;
 //          cout << "evelnp " << evelnp << endl;
@@ -2358,7 +2358,7 @@ void SysmatBoundaryNitscheNormal(
   double kappa_plus  = ele_meas_plus/ele_meas;
   double kappa_minus = ele_meas_minus/ele_meas;
 
-  if(ele->Touched_Plus() == true)
+  if(ele->Touched() == true)
   {
     // weights are chosen inversly -> touched element as a limit case of an intersected element
     // with ele_meas_plus -> 0

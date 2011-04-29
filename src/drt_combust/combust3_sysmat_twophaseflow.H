@@ -105,7 +105,7 @@ void SysmatTwoPhaseFlow(
   // different enrichments for pressure and velocity possible
   const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
   const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
-  //    std::cout << "element " << ele->Intersected() << std::endl;
+  //    std::cout << "element " << ele->Bisected() << std::endl;
   //    std::cout << "velocity dofs " << numparamvelx << std::endl;
   //    std::cout << "pressure dofs " << numparampres << std::endl;
 
@@ -141,7 +141,7 @@ void SysmatTwoPhaseFlow(
 
     // special getXFEMGaussruleKinkEnr for kink enrichment is called as parabolic shape functions are obtained
     // after multipying N and Psi
-    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussruleKinkEnr<DISTYPE>(ele, xyze, ele->Intersected(),cell->Shape());
+    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussruleKinkEnr<DISTYPE>(ele, xyze, ele->Bisected(),cell->Shape());
 
     // gaussian points
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
@@ -731,7 +731,7 @@ void SysmatTwoPhaseFlow(
 //      if (ele->Id()==2076) //ele->Id()==1857
 //      {
 ////         std::cout << ele->Id() << std::endl;
-////         std::cout << ele->Intersected() << std::endl;
+////         std::cout << ele->Bisected() << std::endl;
 ////         std::cout << cell->getDomainPlus() << std::endl;
 ////         std::cout << vdiv << std::endl;
 //         for (std::size_t i = 0; i<nsd; i++)

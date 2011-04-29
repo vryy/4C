@@ -41,51 +41,7 @@ COMBUST::InterfaceHandleCombust::InterfaceHandleCombust(
         gfuncdis_(gfuncdis),
         flamefront_(flamefront)
 {
-  //if (fluiddis->Comm().MyPID() == 0)
-  //  std::cout << "Construct InterfaceHandleCombust" << std::endl;
-
-  //URSULA
-  /*
-   * die DomainIntCells für alle Element werden jetzt in der FlameFront berechnet
-   * das InterfaceHandle wird im Moment in der Sysmat verwendet um die Intergrationszellen
-   * zu bekommen (aus ih->elementalDomainIntCells_) und um über die FlameFront die phi-Werte
-   * zur Berechnung der Enrichmentfunction zu erhalten
-   * das heißt: InterfaceHandle ist nur Verbindung zwischen FlameFront() und Sysmat und daher
-   * eigentlich nicht zwingend notwendig
-   *
-   * dennoch könnte man das InterfaceHandle weiter verwenden
-   * um bei der Sysmat nichts ändern zu müssen
-   * dazu müssen die Integrationszellen von der FlameFront an das InterfaceHandle übergeben werden
-   * elementalDomainIntCells_ = flamefront_->DomainIntCells();
-   * und zwar immer dann nachdem ProcessFlameFront() aufgerufen wurde
-   * daher wäre es auch besser ProcessFlameFront nur über das InterfaceHandle aufzurufen
-   * und nicht wie bisher direkt im Combust-Algorithm
-   * für den Konstruktor heißt das dann
-   * elementalDomainIntCells_.clear();
-   * flamefront_->ProcessFlameFront();
-   * elementalDomainIntCells_ = flamefront_->DomainIntCells();
-   * und die Funktion UpdateInterfaceHandle() erledigt das auch mit
-   * anstelle das extra Aufrufs (ebenfalls in Combust-Algorithm)
-   * elementalDomainIntCells_.clear();
-   * flamefront_->ProcessFlameFront();
-   * elementalDomainIntCells_ = flamefront_->DomainIntCells();
-   */
-  //NEIN, da in Constructor Fluidimpl... als Dummy verwendet
-//  elementalDomainIntCells_.clear();
-//  //flamefront_->ProcessFlameFront();
-//  elementalDomainIntCells_ = flamefront_->DomainIntCells();
-  //URSULA
-
-  // Dinge, die hier passieren müssen, sind in diesen Funktionen zu finden:
-  // computeIntersection
-  // computePLC
-  // computeCDT
-  // Aufpassen! Die FlameFront enthält Infos über alle Fluid Col Elemente auf einem Proc!
-  // Die Triangulierung sollte aber Row-mässig, d.h. eindeutig durchgeführt werden!
-  // computeAverageGfuncValuePerIntCell   so wird bestimmt auf welcher Seite die Zelle liegt
-
-  //if (fluiddis->Comm().MyPID() == 0)
-  //  std::cout << "Construct InterfaceHandleCombust done" << std::endl;
+  elementcutstatus_.clear();
 }
 /*------------------------------------------------------------------------------------------------*
  | destructor                                                                         henke 10/08 |
@@ -146,10 +102,10 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
         for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
         {
           const LINALG::SerialDenseMatrix& cellpos = cell->CellNodalPosXYZ();
-          const LINALG::Matrix<3,1> cellcenterpos(cell->GetPhysicalCenterPosition());
+          //const LINALG::Matrix<3,1> cellcenterpos(cell->GetPhysicalCenterPosition());
           int domain_id = 0;
           if (cell->getDomainPlus())
-        	  domain_id = 1;
+            domain_id = 1;
           //const double color = domain_id*100000+(closestElementId);
           const double color = domain_id;
           gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(), color, cellpos) << endl;
@@ -247,13 +203,11 @@ void COMBUST::InterfaceHandleCombust::UpdateInterfaceHandle()
 {
   elementalDomainIntCells_.clear();
   elementalBoundaryIntCells_.clear();
-  //uebergebe combustdyn und phinp an UpdateInterfaceHandle
-  //rufe von dort ProcessFlameFront() und lasse die maps
-  //elementalDomainIntCells_ und elementalBoundaryIntCells füllen
-  //flamefront_->ProcessFlameFront(combustdyn, phinp, elementalDomainIntCells_, elementalBoundaryIntCells_);
-  //flamefront_->ProcessFlameFront();
+  elementcutstatus_.clear();
+
   elementalDomainIntCells_ = flamefront_->DomainIntCells();
   elementalBoundaryIntCells_ = flamefront_->BoundaryIntCells();
+  elementcutstatus_ = flamefront_->ElementCutStatus();
   return;
 }
 
@@ -281,35 +235,75 @@ const double COMBUST::InterfaceHandleCombust::ComputeVolumeMinus()
   return volume;
 }
 
-
-//! implement this function if needed for combustion!
-int COMBUST::InterfaceHandleCombust::PositionWithinConditionNP(const LINALG::Matrix<3,1>& x_in) const
+#ifdef COMBUST_CUT
+// return whether the element has a whole touched face and lies in the plus domain or not
+bool COMBUST::InterfaceHandleCombust::ElementTouched(const int xfemeleid) const
 {
-  dserror("not implemented");
-  return 0;
+  bool touched = false;
+
+  std::map<int,COMBUST::FlameFront::CutStatus>::const_iterator iter = elementcutstatus_.find(xfemeleid);
+  if (iter != elementcutstatus_.end())
+  {
+    if (iter->second == COMBUST::FlameFront::touched)
+      touched  = true;
+  }
+  else
+    dserror("cut status not available for ths element");
+
+  return touched;
+}
+#endif
+
+#ifdef COMBUST_CUT
+// return whether the element is bisected or not
+bool COMBUST::InterfaceHandleCombust::ElementBisected(const int xfemeleid) const
+{
+  bool bisected = false;
+
+  std::map<int,COMBUST::FlameFront::CutStatus>::const_iterator iter = elementcutstatus_.find(xfemeleid);
+  if (iter != elementcutstatus_.end())
+  {
+    if (iter->second == COMBUST::FlameFront::bisected)
+      bisected = true;
+  }
+  else
+    dserror("cut status not available for this element");
+
+  return bisected;
+}
+#endif
+
+#ifdef COMBUST_CUT
+// return whether the element is trisected or not
+bool COMBUST::InterfaceHandleCombust::ElementTrisected(const int xfemeleid) const
+{
+  bool trisected = false;
+
+  std::map<int,COMBUST::FlameFront::CutStatus>::const_iterator iter = elementcutstatus_.find(xfemeleid);
+  if (iter != elementcutstatus_.end())
+  {
+    if (iter->second == COMBUST::FlameFront::trisected)
+      trisected = true;
+  }
+  else
+    dserror("cut status not available for ths element");
+
+  return trisected;
+}
+#endif
+
+// return whether the element is trisected or not
+COMBUST::FlameFront::CutStatus COMBUST::InterfaceHandleCombust::ElementCutStatus(const int xfemeleid) const
+{
+  COMBUST::FlameFront::CutStatus cutstat = COMBUST::FlameFront::undefined;
+
+  std::map<int,COMBUST::FlameFront::CutStatus>::const_iterator iter = elementcutstatus_.find(xfemeleid);
+  if (iter != elementcutstatus_.end())
+    cutstat = iter->second;
+
+  return cutstat;
 }
 
-//! implement this function if needed for combustion!
-int COMBUST::InterfaceHandleCombust::PositionWithinConditionN(const LINALG::Matrix<3,1>& x_in) const
-{
-  dserror("not implemented");
-  return 0;
-}
 
-//! implement this function if needed for combustion!
-int COMBUST::InterfaceHandleCombust::PositionWithinConditionNP(const LINALG::Matrix<3,1>&     x_in,
-                              GEO::NearestObject&  nearestobject) const
-{
-  dserror("not implemented");
-  return 0;
-}
-
-//! implement this function if needed for combustion!
-int COMBUST::InterfaceHandleCombust::PositionWithinConditionN(const LINALG::Matrix<3,1>&     x_in,
-                             GEO::NearestObject&  nearestobject) const
-{
-  dserror("not implemented");
-  return 0;
-}
 
 #endif // #ifdef CCADISCRET

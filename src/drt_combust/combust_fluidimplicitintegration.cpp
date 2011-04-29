@@ -497,7 +497,6 @@ void FLD::CombustFluidImplicitTimeInt::TransferDofInformationToElements(
   eleparams.set("action","store_xfem_info");
   eleparams.set("dofmanager",dofmanager);
   eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
-  eleparams.set("boundaryRatioLimit",xparams_.get<double>("boundaryRatioLimit"));
   eleparams.set("interfacehandle",interfacehandle);
   discret_->Evaluate(eleparams);
 }
@@ -2027,7 +2026,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
       //---------------------------------------
       // write pressure jump at Gaussian points
       //---------------------------------------
-#if 1
+#if 0
       if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion or
           combusttype_ == INPAR::COMBUST::combusttype_twophaseflowjump)
       {
@@ -2716,7 +2715,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         }
       }
       gmshfilecontent << "};\n";
-#if 1
+#if 0
       //---------------------------------------
       // write velocity jump at Gaussian points
       //---------------------------------------

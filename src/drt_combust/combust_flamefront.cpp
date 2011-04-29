@@ -36,16 +36,17 @@ Maintainer: Florian Henke
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/intersection_service_templates.H"
 
+#include "../drt_cut/cut_levelsetintersection.H"
+#include "../drt_cut/cut_meshintersection.H"
+#include "../drt_cut/cut_elementhandle.H"
+#include "../drt_cut/cut_integrationcell.H"
+#include "../drt_cut/cut_volumecell.H"
+
 #ifdef PARALLEL
 #include <Epetra_MpiComm.h>
 #else
 #include <Epetra_SerialComm.h>
 #endif
-
-#include "../drt_cut/cut_levelsetintersection.H"
-#include "../drt_cut/cut_meshintersection.H"
-#include "../drt_cut/cut_elementhandle.H"
-#include "../drt_cut/cut_integrationcell.H"
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -90,7 +91,7 @@ void COMBUST::FlameFront::UpdateFlameFront(
   // rearrange and store phi vectors
   StorePhiVectors(phin, phinp);
   // modify phi vectors nearly zero
-  ModifyPhiVector(combustdyn, ReinitModifyPhi);
+  //ModifyPhiVector(combustdyn, ReinitModifyPhi);
 
   // generate the interface geometry based on the G-function (level set field)
   // remark: must be called after StorePhiVectors, since it relies on phinp_
@@ -1727,7 +1728,7 @@ void COMBUST::FlameFront::RefineFlameFront(const Teuchos::RCP<COMBUST::Refinemen
         rekursiver Aufruf: RefineFlamefront() (RefineCell())
    */
 
-  // get G-Function values of refinement cell and determine, if it is intersected
+  // get G-Function values of refinement cell
   FindFlameFront(cell,phi);
   // is maximal refinement level already reached?
   if (cell->RefinementLevel() < maxRefinementLevel_) //->No
@@ -1747,7 +1748,7 @@ void COMBUST::FlameFront::RefineFlameFront(const Teuchos::RCP<COMBUST::Refinemen
 
 
 /*------------------------------------------------------------------------------------------------*
- | find the flame front within a refinement cell according to G-function field        henke 10/08 |
+ | interpolate G-function field for a refinement cell                                 henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::FlameFront::FindFlameFront(
     const Teuchos::RCP<COMBUST::RefinementCell> cell,
@@ -2024,6 +2025,7 @@ void COMBUST::FlameFront::FindFlameFront(
   //------------------------------------------------------------------------------------------------
   // find intersection points of G-function (zero level set) with refinement cell edges
   //------------------------------------------------------------------------------------------------
+#ifndef COMBUST_CUT
   if(cell->Bisected() == true)
   {
     FindIntersectionPoints(cell);
@@ -2032,6 +2034,7 @@ void COMBUST::FlameFront::FindFlameFront(
   {
     // done (-> next fluid element)
   }
+#endif
 
   return;
 }
@@ -2357,6 +2360,9 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
   // list of boundary integration cells
   GEO::BoundaryIntCells listBoundaryIntCellsperEle;
 
+  // set element cut status to default value 'undefined'
+  COMBUST::FlameFront::CutStatus cutstat = COMBUST::FlameFront::undefined;
+
   // get vector of G-function values of root cell
   const std::vector<double>& gfuncvaluesrootcell = rootcell->GetGfuncValues();
 
@@ -2370,38 +2376,289 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
   case INPAR::COMBUST::xfemintegration_tetgen:
   {
     // loop over all refinement cells attached to root cell
-    // remark: this covers the whole domain of the root cell
-    for (std::size_t icell = 0; icell < RefinementCells.size(); icell++)
+    // remark: this is a partition of the root cell
+    for (std::size_t irefcell = 0; irefcell < RefinementCells.size(); irefcell++)
     {
-#ifdef DEBUG
+#ifdef COMBUST_CUT
+      //-----------------------
+      // use GEO::Cut algorithm
+      //-----------------------
+      const DRT::Element::DiscretizationType distype_cell = RefinementCells[irefcell]->Shape();
 #ifndef COMBUST_HEX20
       // check if distype of cell correct (hex8)
-      const DRT::Element::DiscretizationType distype = RefinementCells[icell]->Shape();
-      if(distype != DRT::Element::hex8) dserror("hex8 refinement cell expected");
+      if(distype_cell != DRT::Element::hex8) dserror("hex8 refinement cell expected");
 #endif
+      int numnode_cell = DRT::UTILS::getNumberOfElementNodes(distype_cell);
+      std::vector<int> nids;
+      nids.reserve(numnode_cell);
+      for ( int i=0; i<numnode_cell; ++i )
+      {
+        nids.push_back(i);
+      }
+#if 0
+      // Use the existing cut triangles and preserve the surface that way (enables use of projectMidpoint)
+
+      // use element local coordinates since we want to avoid roundoff errors
+
+      GEO::CUT::MeshIntersection intersection;
+
+      LINALG::SerialDenseMatrix trianglecoord(3,3); // 3 directions, 3 nodes
+
+      for ( unsigned i=0; i!=trianglelist.size(); ++i )
+      {
+        const std::vector<int> & t = trianglelist[i];
+        for (int inode=0; inode<3; inode++)
+        {
+          std::copy( pointlist[t[inode]].begin(),
+              pointlist[t[inode]].end(),
+              &trianglecoord(0,inode) );
+        }
+
+        intersection.AddCutSide( i+1, t, trianglecoord, DRT::Element::tri3, 0 );
+      }
+
+      //TODO check, if numvertex should be used instead of numnode_cell; code crashes here for hex20
+      //#ifdef COMBUST_HEX20
+      LINALG::SerialDenseMatrix cellcoord(3,numnode_cell);
+
+      // get vertex coordinates (local fluid element coordinates) from refinement cell
+      const std::vector<std::vector<double> >& vertexcoord = RefinementCells[irefcell]->GetVertexCoord();
+
+      for (int ivert=0; ivert<numnode_cell; ivert++)
+      {
+        std::copy(vertexcoord[ivert].begin(),
+            vertexcoord[ivert].end(),
+            &cellcoord(0,ivert));
+      }
+
+      intersection.AddElement( 1, nids, cellcoord, distype_cell );
+
+      intersection.Cut( true );
+
+      GEO::CUT::ElementHandle * e = intersection.GetElement( 1 );
+
+      if ( e!=NULL and e->IsCut() )
+      {
+        std::set<GEO::CUT::IntegrationCell*> cells;
+        e->GetIntegrationCells( cells );
+
+        //std::set<GEO::CUT::BoundaryCell*> bcells;
+        //e->GetBoundaryCells( bcells );
+
+        LINALG::Matrix<3,1> physCoordCorner;
+        LINALG::Matrix<3,1> eleCoordDomainCorner;
+
+        for ( std::set<GEO::CUT::IntegrationCell*>::iterator i=cells.begin(); i!=cells.end(); ++i )
+        {
+          GEO::CUT::IntegrationCell * ic = *i;
+          DRT::Element::DiscretizationType distype = ic->Shape();
+          int numnodes = DRT::UTILS::getNumberOfElementNodes( distype );
+
+          LINALG::SerialDenseMatrix physCoord( 3, numnodes );
+          LINALG::SerialDenseMatrix coord = ic->Coordinates();
+
+          for (int ivert=0; ivert<numnodes; ivert++)
+          {
+            LINALG::Matrix<3,1> vertcoord;
+
+            std::copy(&coord(0,ivert),
+                &coord(0,ivert)+3,
+                vertcoord.A());
+
+            // transform vertex from local (element) coordinates to global (physical) coordinates
+            GEO::elementToCurrentCoordinatesInPlace(distype_cell, xyze, vertcoord);
+
+            std::copy(vertcoord.A(),
+                vertcoord.A()+3,
+                &physCoord(0,ivert));
+          }
+
+          // if degenerated don't store
+          if ( distype==DRT::Element::tet4 )
+            if(GEO::checkDegenerateTet(numnodes, coord, physCoord))
+              continue;
+
+          bool inGplus = GetIntCellDomainInElement(coord, gfuncvalues, DRT::Element::hex8, distype);
+
+          domainintcelllist.push_back( GEO::DomainIntCell( distype, coord, physCoord, inGplus ) );
+        }
+      }
+      else
+      {
+        dserror("cut expected");
+      }
+#else
+      // get G-function values at vertices from cell
+      const std::vector<double>& gfuncvalues = RefinementCells[irefcell]->GetGfuncValues();
+
+      //------------------------
+      // call GEO::Cut algorithm
+      //------------------------
+      GEO::CUT::LevelSetIntersection levelset;
+
+//cout << globalcellcoord << endl;
+//for (int i=0;i<gfuncvalues.size();i++)
+//  cout << gfuncvalues[i] << endl;
+//cout << distype_cell << endl;
+
+    const std::vector<std::vector<double> >& vertexcoord = RefinementCells[irefcell]->GetVertexCoord();
+      LINALG::SerialDenseMatrix cellcoord(3,numnode_cell);
+      for (int ivert=0; ivert<numnode_cell; ivert++)
+      {
+        std::copy(vertexcoord[ivert].begin(), vertexcoord[ivert].end(), &cellcoord(0,ivert));
+      }
+
+      // check if this refinement cell is cut, according to its G-function values -> add it to 'levelset'
+      levelset.AddElement( 1, nids, cellcoord, &gfuncvalues[0], distype_cell );
+
+      try
+      {
+        levelset.Cut();
+      }
+      catch ( std::runtime_error & err )
+      {
+        std::cerr << "failed to cut element\n"
+                  << "coordinates:\n"
+            ;
+        cellcoord.Print( std::cerr );
+        std::cerr << "g-function values:\n";
+        std::copy( gfuncvalues.begin(), gfuncvalues.end(), std::ostream_iterator<double>( std::cerr, ", " ) );
+        std::cerr << "\n";
+        throw;
+      }
+
+      //-----------------
+      // process cut data
+      //-----------------
+      GEO::CUT::ElementHandle * ehandle= levelset.GetElement( 1 );
+
+      // cell is in cantact with the interface (cut or touched)
+      if (ehandle!=NULL)
+      {
+        // get global coordinates of element this cell belongs to
+        const DRT::Element* xfemele = rootcell->Ele();
+        const int numnode_ele = xfemele->NumNode();
+
+        LINALG::SerialDenseMatrix xyze(3,numnode_ele);
+        for(int inode=0;inode<numnode_ele;inode++)
+        {
+          const DRT::Node* node = xfemele->Nodes()[inode];
+          xyze(0,inode) = node->X()[0];
+          xyze(1,inode) = node->X()[1];
+          xyze(2,inode) = node->X()[2];
+        }
+
+        std::set<GEO::CUT::VolumeCell*> volcells;
+        ehandle->GetVolumeCells( volcells );
+        const int numvolcells = volcells.size();
+
+        //--------------------------------------------------------
+        // cell is touched (interface aligned with a cell surface)
+        //--------------------------------------------------------
+        // remark: this is unusual, since the
+        if (numvolcells==1)
+        {
+//cout << "element " << rootcell->Ele()->Id() << " is really touched" << endl;
+          // store domain integration cells
+          //StoreDomainIntegrationCells(ehandle,listDomainIntCellsperEle,xyze);
+          StoreDomainIntegrationCell(RefinementCells[irefcell],listDomainIntCellsperEle);
+          // store boundary integration cells
+          const bool storedbound = StoreBoundaryIntegrationCells(ehandle,listBoundaryIntCellsperEle,xyze);
+
+          if (!storedbound)
+            StoreElementCutStatus(COMBUST::FlameFront::uncut, cutstat);
+          else
+            StoreElementCutStatus(COMBUST::FlameFront::touched, cutstat);
+        }
+        //-----------------
+        // cell is bisected
+        //-----------------
+        else if (numvolcells==2)
+        {
+//cout << "element " << rootcell->Ele()->Id() << " is really bisected" << endl;
+          // store domain integration cells
+          const bool storedvol = StoreDomainIntegrationCells(ehandle,listDomainIntCellsperEle,xyze);
+          // store boundary integration cells
+          const bool storedbound = StoreBoundaryIntegrationCells(ehandle,listBoundaryIntCellsperEle,xyze);
+
+          // all volume cells and boundary cells have been stored
+          if (storedvol and storedbound)
+          {
+            StoreElementCutStatus(COMBUST::FlameFront::bisected, cutstat);
+            //cout << "element " << rootcell->Ele()->Id() << " is bisected" << endl;
+          }
+          // a volume cell has been deleted, because is was too small
+          else if (!storedvol and storedbound)
+          {
+            StoreElementCutStatus(COMBUST::FlameFront::touched, cutstat);
+            //cout << "element " << rootcell->Ele()->Id() << " is touched" << endl;
+          }
+          // a volume cell and all boundary cells have been deleted, because they were too small
+          else if (!storedvol and !storedbound)
+          {
+            StoreElementCutStatus(COMBUST::FlameFront::uncut, cutstat);
+            //cout << "element " << rootcell->Ele()->Id() << " is uncut" << endl;
+          }
+          // something went wrong
+          else
+            dserror("flame front for bisected element %d could not be captured",rootcell->Ele()->Id());
+        }
+        //------------------
+        // cell is trisected
+        //------------------
+        else if (numvolcells==3)
+        {
+cout << "element " << rootcell->Ele()->Id() << " is trisected" << endl;
+          // update cut status of root cell (element)
+          StoreElementCutStatus(COMBUST::FlameFront::trisected, cutstat);
+          // store domain integration cells
+          StoreDomainIntegrationCells(ehandle,listDomainIntCellsperEle,xyze);
+          // store boundary integration cells
+          StoreBoundaryIntegrationCells(ehandle,listBoundaryIntCellsperEle,xyze);
+        }
+        else
+          dserror("cut status could not be determined");
+      }
+      //--------------
+      // cell is uncut
+      //--------------
+      else
+      {
+//cout << "element is uncut" << endl;
+        // update cut status of root cell (element)
+        StoreElementCutStatus(COMBUST::FlameFront::uncut, cutstat);
+        // store refinement cell in list of domain integration cells
+        StoreDomainIntegrationCell(RefinementCells[irefcell],listDomainIntCellsperEle);
+        // remark: no boundary integration cell required
+      }
+
 #endif
+
+#else
       // for cut cells
-      if(RefinementCells[icell]->Bisected())
+      if(RefinementCells[irefcell]->Bisected())
       {
         // - build piecewise linear complex (PLC)
         // - store triangles as boundary integration cells
         // - create tetrahedral domain integration cell using TetGen
-        buildPLC(RefinementCells[icell],gfuncvaluesrootcell,listDomainIntCellsperEle,listBoundaryIntCellsperEle);
+        buildPLC(RefinementCells[irefcell],gfuncvaluesrootcell,listDomainIntCellsperEle,listBoundaryIntCellsperEle);
       }
       // the cell is touched (interface aligned with a cell surface)
-      else if(RefinementCells[icell]->Touched())
+      else if(RefinementCells[irefcell]->Touched())
       {
         // store hex8 domain integration cell
-        StoreDomainIntegrationCell(RefinementCells[icell],listDomainIntCellsperEle);
+        StoreDomainIntegrationCell(RefinementCells[irefcell],listDomainIntCellsperEle);
         // store quad4 boundary integration cell
-        StoreBoundaryIntegrationCell(RefinementCells[icell],listBoundaryIntCellsperEle);
+        StoreBoundaryIntegrationCell(RefinementCells[irefcell],listBoundaryIntCellsperEle);
       }
       else // (not bisected) and (not touched)
       {
         // store hex8 domain integration cell
-        StoreDomainIntegrationCell(RefinementCells[icell],listDomainIntCellsperEle);
+        StoreDomainIntegrationCell(RefinementCells[irefcell],listDomainIntCellsperEle);
         // no boundary integration cell required
       }
+#endif
+
     } // end loop over all refinement cells
     break;
   }
@@ -2412,32 +2669,32 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
   {
     // loop over all refinement cells attached to root cell
     // remark: this covers the whole domain of the root cell
-    for (std::size_t icell = 0; icell < RefinementCells.size(); icell++)
+    for (std::size_t irefcell = 0; irefcell < RefinementCells.size(); irefcell++)
     {
 #ifdef DEBUG
 #ifndef COMBUST_HEX20
       // check if distype of cell correct (hex8)
-      const DRT::Element::DiscretizationType distype = RefinementCells[icell]->Shape();
+      const DRT::Element::DiscretizationType distype = RefinementCells[irefcell]->Shape();
       if(distype != DRT::Element::hex8) dserror("hex8 refinement cell expected");
 #endif
 #endif
 
-      if(RefinementCells[icell]->Bisected())
+      if(RefinementCells[irefcell]->Bisected())
       {
-        GEO::TetrahedraDecomposition decomposition(RefinementCells[icell], listBoundaryIntCellsperEle, listDomainIntCellsperEle);
+        GEO::TetrahedraDecomposition decomposition(RefinementCells[irefcell], listBoundaryIntCellsperEle, listDomainIntCellsperEle);
       }
       // the cell is touched (interface aligned with a cell surface)
-      else if(RefinementCells[icell]->Touched())
+      else if(RefinementCells[irefcell]->Touched())
       {
         // store hex8 domain integration cell
-        StoreDomainIntegrationCell(RefinementCells[icell],listDomainIntCellsperEle);
+        StoreDomainIntegrationCell(RefinementCells[irefcell],listDomainIntCellsperEle);
         // store quad4 boundary integration cell
-        StoreBoundaryIntegrationCell(RefinementCells[icell],listBoundaryIntCellsperEle);
+        StoreBoundaryIntegrationCell(RefinementCells[irefcell],listBoundaryIntCellsperEle);
       }
       else // (not bisected) and (not touched)
       {
         // store hex8 domain integration cell
-        StoreDomainIntegrationCell(RefinementCells[icell],listDomainIntCellsperEle);
+        StoreDomainIntegrationCell(RefinementCells[irefcell],listDomainIntCellsperEle);
         // no boundary integration cell required
       }
 
@@ -2461,10 +2718,10 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
     {
       // loop over all refinement cells attached to root cell and create hex8 domain integration cells
       // remark: this covers the whole domain of the root cell
-      for (std::size_t icell = 0; icell < RefinementCells.size(); icell++)
+      for (std::size_t irefcell = 0; irefcell < RefinementCells.size(); irefcell++)
       {
         // store hex8 domain integration cell
-        StoreDomainIntegrationCell(RefinementCells[icell],listDomainIntCellsperEle);
+        StoreDomainIntegrationCell(RefinementCells[irefcell],listDomainIntCellsperEle);
       } // end loop over all refinement cells
 
       // create triangular boundary integration cells for the root cell
@@ -2500,14 +2757,47 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
   default: dserror("unknown type of XFEM integration");
   }
 
-  //-----------------------------------------------------------
+  //------------------------------------------------------
+  // store flame front information per element (root cell)
+  //------------------------------------------------------
   // store list of integration cells per element in flame front
-  //-----------------------------------------------------------
-  myelementintcells_[rootcell->Ele()->Id()] = listDomainIntCellsperEle;
+  const int eleid = rootcell->Ele()->Id();
+  myelementintcells_[eleid] = listDomainIntCellsperEle;
   // if there exist boundary integration cells
   if(listBoundaryIntCellsperEle.size() > 0)
-    myboundaryintcells_[rootcell->Ele()->Id()] = listBoundaryIntCellsperEle;
+    myboundaryintcells_[eleid] = listBoundaryIntCellsperEle;
 
+  // add cut status for this root cell
+  myelementcutstatus_[eleid] = cutstat;
+
+  //if (cutstat == COMBUST::FlameFront::bisected)
+  //{
+  if(rootcell->Bisected())
+    FlameFrontToGmsh(rootcell->ReturnRootCell(),listBoundaryIntCellsperEle,listDomainIntCellsperEle);
+  //}
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | identify status of a domain integration cell based on its cut data                 henke 04/11 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::FlameFront::IdentifyDomainIntegrationCellStatus(
+    GEO::DomainIntCell& cell,
+    const GEO::CUT::ElementHandle& e)
+{
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | identify status of a boundary integration cell based on its cut data               henke 04/11 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::FlameFront::IdentifyBoundaryIntegrationCellStatus(
+    GEO::BoundaryIntCell& cell,
+    const GEO::CUT::ElementHandle& e)
+{
   return;
 }
 
@@ -3867,8 +4157,9 @@ void COMBUST::FlameFront::StoreDomainIntegrationCell(
     for(int  dim=0; dim<3; dim++)
       globalcellcoord(dim,ivert) = vertcoord(dim);
 #ifdef DEBUG
-    // if cell == element, globalcellcoord == xyze!
-    // TODO we could use a check here
+    // if cell = element -> globalcellcoord = xyze
+    //if (DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENT") == false)
+    //  if (globalcellcoord != xyze) dserror("coordinates should be identical");
 #endif
   }
 
@@ -3891,7 +4182,7 @@ void COMBUST::FlameFront::StoreDomainIntegrationCell(
   //------------------------
   // create an integration cell and add it to the list of integration cells per element
   // remark: for now, this is restricted to hex8 integration cells
-  domainintcelllist.push_back(GEO::DomainIntCell(DRT::Element::hex8, cellcoord, globalcellcoord, inGplus));
+  domainintcelllist.push_back(GEO::DomainIntCell(cell->Shape(), cellcoord, globalcellcoord, inGplus));
 
   return;
 }
@@ -4064,12 +4355,12 @@ void COMBUST::FlameFront::buildPLC(
 
   if (xfeminttype_ == INPAR::COMBUST::xfemintegration_tetgen)
   {
-    DRT::Element::DiscretizationType cell_distype = cell->Shape();
+    DRT::Element::DiscretizationType distype_cell = cell->Shape();
 
     // get vertex coordinates (local fluid element coordinates) from refinement cell
     const std::vector<std::vector<double> >& vertexcoord = cell->GetVertexCoord();
 
-    int numnode = DRT::UTILS::getNumberOfElementNodes( cell_distype );
+    int numnode = DRT::UTILS::getNumberOfElementNodes( distype_cell );
 
     std::vector<int> nids;
     nids.reserve(numnode);
@@ -4111,7 +4402,7 @@ void COMBUST::FlameFront::buildPLC(
           &cellcoord(0,ivert));
     }
 
-    intersection.AddElement( 1, nids, cellcoord, cell_distype );
+    intersection.AddElement( 1, nids, cellcoord, distype_cell );
 
     intersection.Cut( true );
 
@@ -4146,7 +4437,7 @@ void COMBUST::FlameFront::buildPLC(
               vertcoord.A());
 
           // transform vertex from local (element) coordinates to global (physical) coordinates
-          GEO::elementToCurrentCoordinatesInPlace(cell_distype, xyze, vertcoord);
+          GEO::elementToCurrentCoordinatesInPlace(distype_cell, xyze, vertcoord);
 
           std::copy(vertcoord.A(),
               vertcoord.A()+3,
@@ -4183,7 +4474,7 @@ void COMBUST::FlameFront::buildPLC(
           vertcoord.A());
 
       // transform vertex from local (element) coordinates to global (physical) coordinates
-      GEO::elementToCurrentCoordinatesInPlace(cell_distype, xyze, vertcoord);
+      GEO::elementToCurrentCoordinatesInPlace(distype_cell, xyze, vertcoord);
 
       std::copy(vertcoord.A(),
           vertcoord.A()+3,
@@ -4197,7 +4488,7 @@ void COMBUST::FlameFront::buildPLC(
 
     GEO::CUT::LevelSetIntersection levelset;
 
-    levelset.AddElement( 1, nids, globalcellcoord, &gfuncvalues[0], cell_distype );
+    levelset.AddElement( 1, nids, globalcellcoord, &gfuncvalues[0], distype_cell );
 
     try
     {
@@ -4379,13 +4670,241 @@ void COMBUST::FlameFront::StoreBoundaryIntegrationCell(
       }
 
       // Determine which domain the domain integration cell belongs to - the corresponding boundary
-      // integration cell will always belont to the same domain.
+      // integration cell will always belong to the same domain.
       bool inGplus = GetIntCellDomain(cellcoord, gfuncvaluescell,celldistype);
       //store boundary integration cells in boundaryintcelllist
       boundaryintcelllist.push_back(GEO::BoundaryIntCell(DRT::Element::quad4, -1, quadcoord,
           Teuchos::null, physquadcoord,inGplus));
     }
   }
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | store domain integration cell (only for hex8 cells at present)                     henke 08/10 |
+ *------------------------------------------------------------------------------------------------*/
+bool COMBUST::FlameFront::StoreDomainIntegrationCells(
+    GEO::CUT::ElementHandle* ehandle,
+    GEO::DomainIntCells& domainintcelllist,
+    LINALG::SerialDenseMatrix& xyze
+)
+{
+  bool storedvol = false;
+
+  // get volume cells
+  std::set<GEO::CUT::VolumeCell*> volcells;
+  ehandle->GetVolumeCells( volcells );
+
+  //--------------------------------------------
+  // compute volume of refinement cell (element)
+  //--------------------------------------------
+  // define tolerances
+  const double voltol = 1.0E-3;
+  double volele = 0.0;
+  for ( std::set<GEO::CUT::VolumeCell*>::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
+  {
+    GEO::CUT::VolumeCell * volcell = *ivolcell;
+    volele += volcell->Volume();
+  }
+
+  //-------------------------------------
+  // add domain integration cells to list
+  //-------------------------------------
+  size_t volcellcount = 0;
+  size_t domcellcount = 0;
+
+  for ( std::set<GEO::CUT::VolumeCell*>::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
+  {
+    GEO::CUT::VolumeCell * volcell = *ivolcell;
+
+//cout << "volumen "  << setw(24)<< std::setprecision(20) << volcell->Volume() << endl;
+//cout << "volumenverhaeltnis " << volcell->Volume()/volele << endl;
+
+    if (volcell->Volume()/volele >= voltol) // volume cell is large enough
+    {
+      // get boundary integration cells
+      const std::set<GEO::CUT::IntegrationCell*> cells = volcell->IntegrationCells();
+
+      // loop domain integration cells
+      for ( std::set<GEO::CUT::IntegrationCell*>::iterator icell=cells.begin(); icell!=cells.end(); ++icell )
+      {
+        GEO::CUT::IntegrationCell * ic = *icell;
+        DRT::Element::DiscretizationType distype = ic->Shape();
+        int numnode = DRT::UTILS::getNumberOfElementNodes( distype );
+
+        LINALG::SerialDenseMatrix physCoord(3,numnode);
+        LINALG::SerialDenseMatrix coord = ic->Coordinates();
+
+        for (int ivert=0; ivert<numnode; ivert++)
+        {
+          // write 'coord' to fixed size matrix format
+          LINALG::Matrix<3,1> vertcoord;
+          std::copy(&coord(0,ivert), &coord(0,ivert)+3, vertcoord.A());
+
+          // transform vertex from local (element) coordinates to global (physical) coordinates
+          GEO::elementToCurrentCoordinatesInPlace(ehandle->Shape(), xyze, vertcoord);
+
+          // write as 'physCoord'
+          std::copy(vertcoord.A(), vertcoord.A()+3, &physCoord(0,ivert));
+        }
+
+        bool inGplus = false;
+        if (ic->Position() == GEO::CUT::Point::outside) // volume cell is in G-plus domain (G>0)
+          inGplus = true;
+
+        if (distype != DRT::Element::hex8 and
+            distype != DRT::Element::tet4)
+        {
+          cout << "distype " << distype << endl;
+          dserror("unexpected type of domain integration cell");
+        }
+        if (ic->Volume() > 1.0E-8)
+        {
+          domainintcelllist.push_back( GEO::DomainIntCell( distype, coord, physCoord, inGplus ) );
+          domcellcount += 1;
+        }
+        else
+        {
+          //cout << "small domain cell not stored" << endl;
+          //cout << "volume" << ic->Volume() << endl;
+        }
+      }
+      volcellcount += 1;
+//cout << "volvellcount" << volcellcount << endl;
+    }
+  }
+  // all volume cells have been stored
+  if ( volcells.size() == volcellcount and volcells.size() != 0 and domcellcount != 0)
+    storedvol = true;
+
+  return storedvol;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | store a list of boundary integration cells                                         henke 04/11 |
+ *------------------------------------------------------------------------------------------------*/
+bool COMBUST::FlameFront::StoreBoundaryIntegrationCells(
+    GEO::CUT::ElementHandle * ehandle,
+    GEO::BoundaryIntCells& boundaryintcelllist,
+    LINALG::SerialDenseMatrix& xyze
+)
+{
+  bool storedbound = false;
+
+  // get volume cells
+  std::set<GEO::CUT::VolumeCell*> volcells;
+  ehandle->GetVolumeCells( volcells );
+
+  //-----------------------------------------------------
+  // compute volume and area of refinement cell (element)
+  //-----------------------------------------------------
+  // define tolerances
+  const double voltol = 1.0E-3;
+  const double areatol = pow(voltol,2.0/3.0);
+  double volele = 0.0;
+  for ( std::set<GEO::CUT::VolumeCell*>::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
+  {
+    GEO::CUT::VolumeCell * volcell = *ivolcell;
+    volele += volcell->Volume();
+  }
+  // compute equivalent area of element: A = V^(2/3)
+  const double areaele = pow(volele,2.0/3.0);
+
+  //---------------------------------------
+  // add boundary integration cells to list
+  //---------------------------------------
+  // temporary vectors
+  LINALG::Matrix<3,1> physCoordVertex;
+  LINALG::Matrix<3,1> eleCoordVertex;
+
+  for ( std::set<GEO::CUT::VolumeCell*>::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
+  {
+    GEO::CUT::VolumeCell * volcell = *ivolcell;
+
+    if (volcell->Position() == GEO::CUT::Point::outside) // volume cell is in G-plus domain (G>0)
+    {
+      // get boundary integration cells
+      const std::set<GEO::CUT::BoundaryCell*> & bcells = volcell->BoundaryCells();
+
+      const double volume = volcell->Volume();
+      size_t bcellcount = 0;
+
+      for ( std::set<GEO::CUT::BoundaryCell*>::iterator ibcell=bcells.begin(); ibcell!=bcells.end(); ++ibcell )
+      {
+        GEO::CUT::BoundaryCell * bcell = *ibcell;
+
+        DRT::Element::DiscretizationType distype = bcell->Shape();
+        int numnode = DRT::UTILS::getNumberOfElementNodes( distype );
+
+        if (distype != DRT::Element::tri3 and
+            distype != DRT::Element::quad4)
+        {
+          cout << "distype " << distype << endl;
+          dserror("unexpected type of boundary integration cell");
+        }
+
+        // get physical coordinates of this cell
+        LINALG::SerialDenseMatrix physCoord(3,numnode);
+        // local coordinates of this cell
+        LINALG::SerialDenseMatrix coord = bcell->Coordinates();
+
+        for (int ivert=0; ivert<numnode; ivert++)
+        {
+          // write 'coord' to fixed size matrix format
+          LINALG::Matrix<3,1> vertcoord;
+          std::copy(&coord(0,ivert), &coord(0,ivert)+3, vertcoord.A());
+
+          // transform vertex from local (element) coordinates to global (physical) coordinates
+          GEO::elementToCurrentCoordinatesInPlace(ehandle->Shape(), xyze, vertcoord);
+
+          // write as 'physCoord'
+          std::copy(vertcoord.A(), vertcoord.A()+3, &physCoord(0,ivert));
+        }
+
+        if ( (volume/volele < voltol) and (bcell->Area()/areaele < areatol) )
+        {
+          // do not store boundary cells for small volumes, but do store large boundary cells for
+          // small volumes -> this will be a touched element, we have to keep its boundary cell
+          //cout << "small boundary cell not stored" << endl;
+          //cout << "volumen "  << setw(24)<< std::setprecision(20) << volume << endl;
+          //cout << "flaeche "  << setw(24)<< std::setprecision(20) << bcell->Area() << endl;
+        }
+        else if (bcell->Area()/areaele < 1.0E-8)
+        {
+          // do not store this small boundary cell
+        }
+        else
+        {
+          boundaryintcelllist.push_back(GEO::BoundaryIntCell(distype, -1, coord, Teuchos::null, physCoord, true));
+          bcellcount += 1;
+          //cout << "bcellcount " << bcellcount << endl;
+        }
+      }
+      // all boundary cells belonging to this (outside) volume cell have been stored
+      // remark: if an element is touched at a point or line, the ehandle it will not have boundary
+      //         cells ( bcells.size()==0 -> 'storedbound' = false )
+      if (bcellcount != 0 and bcells.size() != 0)
+      //if ( bcells.size() == bcellcount and bcells.size() != 0)
+        storedbound = true;
+    }
+
+  }
+
+  return storedbound;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | store the cut status of an element                                                 henke 04/11 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::FlameFront::StoreElementCutStatus(
+    const CutStatus cellstat,
+    CutStatus&      elestat
+)
+{
+  if (cellstat > elestat)
+    elestat = cellstat;
 }
 
 #if 0
@@ -4607,7 +5126,7 @@ bool COMBUST::FlameFront::GetIntCellDomainInElementAtCenter(
     const LINALG::SerialDenseMatrix        IntCellCoord,
     const std::vector<double>&             gfuncvalues_ele,
     const DRT::Element::DiscretizationType xfem_distype,
-    const DRT::Element::DiscretizationType cell_distype
+    const DRT::Element::DiscretizationType distype_cell
 )
 {
   /*------------------------------------------------------------------------------
@@ -4620,7 +5139,7 @@ bool COMBUST::FlameFront::GetIntCellDomainInElementAtCenter(
   Epetra_SerialDenseVector  cellcenter(3);
 
   int numcellnodes = 0;
-  switch(cell_distype)
+  switch(distype_cell)
   {
   //    case DRT::Element::tet4:
   //    {
@@ -4684,7 +5203,7 @@ bool COMBUST::FlameFront::GetIntCellDomainInElementAtCenter(
 bool COMBUST::FlameFront::GetIntCellDomain(
     const LINALG::SerialDenseMatrix        IntCellCoord,
     const std::vector<double>&             gfuncvalues_cell,
-    const DRT::Element::DiscretizationType cell_distype
+    const DRT::Element::DiscretizationType distype_cell
 )
 {
   /*------------------------------------------------------------------------------
@@ -4697,7 +5216,7 @@ bool COMBUST::FlameFront::GetIntCellDomain(
   bool inGplus = false;
 
   int numcellnodes = 0;
-  switch(cell_distype)
+  switch(distype_cell)
   {
   case DRT::Element::tet4:
   {
@@ -4747,7 +5266,7 @@ bool COMBUST::FlameFront::GetIntCellDomainInElement(
     const LINALG::SerialDenseMatrix        IntCellCoord,
     const std::vector<double>&             gfuncvalues_ele,
     const DRT::Element::DiscretizationType xfem_distype,
-    const DRT::Element::DiscretizationType cell_distype
+    const DRT::Element::DiscretizationType distype_cell
 )
 {
   /*------------------------------------------------------------------------------
@@ -4760,7 +5279,7 @@ bool COMBUST::FlameFront::GetIntCellDomainInElement(
   bool inGplus = false;
 
   int numcellnodes = 0;
-  switch(cell_distype)
+  switch(distype_cell)
   {
   case DRT::Element::tet4:
   {
@@ -5086,15 +5605,15 @@ void COMBUST::FlameFront::unpackBoundaryIntCells(
 /*----------------------------------------------------------------------------------*
  |output to gmsh                                                     rasthofer 05/10|
  *----------------------------------------------------------------------------------*/
-void COMBUST::FlameFront::FlamefrontToGmsh(
+void COMBUST::FlameFront::FlameFrontToGmsh(
     const COMBUST::RefinementCell* cell,
-    const std::vector<std::vector<double> >& pointlist,
-    const std::multimap<int,std::vector<int> >& segmentlist,
-    const std::vector<std::vector<int> >& trianglelist)
+    const GEO::BoundaryIntCells&   boundaryintcelllist,
+    const GEO::DomainIntCells&     domainintcelllist
+)
 {
   const bool screen_out = false;
 
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("Flamefront", 999, 5, screen_out, 0);
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("Flamefront", cell->Ele()->Id(), 200, screen_out, 0);
   std::ofstream gmshfilecontent(filename.c_str());
   {
     gmshfilecontent << "View \" " << "Cell \" {\n";
@@ -5114,50 +5633,28 @@ void COMBUST::FlameFront::FlamefrontToGmsh(
     gmshfilecontent << "};\n";
   }
   {
-    gmshfilecontent << "View \" " << "Intersectionpoints \" {\n";
-    const std::multimap<int,std::vector<double> > intersectionpoints = cell->intersectionpoints_;
-    for(std::multimap<int,std::vector<double> >::const_iterator iter = intersectionpoints.begin(); iter != intersectionpoints.end(); ++iter)
+    gmshfilecontent << "View \" " << "BoundaryIntCells \" {\n";
+    for(std::size_t icell = 0; icell < boundaryintcelllist.size(); icell++)
     {
-      const int id = iter->first;
-      const std::vector<double> point = iter->second;
-      LINALG::Matrix<3,1> pos;
-      for (size_t k=0; k<point.size(); k++)
-        pos(k) = point[k];
+      GEO::BoundaryIntCell cell = boundaryintcelllist[icell];
+      const LINALG::SerialDenseMatrix& cellpos = cell.CellNodalPosXiDomain();//cell.CellNodalPosXYZ();
+      const double color = 5;
+      gmshfilecontent << IO::GMSH::cellWithScalarToString(cell.Shape(), color, cellpos) << endl;
+    }
+    gmshfilecontent << "};\n";
+  }
+  {
+    gmshfilecontent << "View \" " << "DomainIntCells \" {\n";
+    for(std::size_t icell = 0; icell < domainintcelllist.size(); icell++)
+    {
+      GEO::DomainIntCell cell = domainintcelllist[icell];
+      const LINALG::SerialDenseMatrix& cellpos = cell.CellNodalPosXiDomain();//cell.CellNodalPosXYZ();
 
-      IO::GMSH::cellWithScalarToStream(DRT::Element::point1, id, pos, gmshfilecontent);
-    }
-    gmshfilecontent << "};\n";
-  }
-  {
-    gmshfilecontent << "View \" " << "Segments \" {\n";
-    const std::multimap<int,std::vector<double> > intersectionpoints = cell->intersectionpoints_;
-    for(std::multimap<int,std::vector<int> >::const_iterator iter = segmentlist.begin(); iter != segmentlist.end(); ++iter)
-    {
-      const int id = iter->first;
-      const std::vector<int> segmentpoints = iter->second;
-      LINALG::Matrix<3,2> pos;
-      for (int k=0; k<2; k++)
-      {
-        for (int i=0; i<3; i++)
-          pos(i,k) = pointlist[segmentpoints[k]][i];
-      }
-      IO::GMSH::cellWithScalarToStream(DRT::Element::line2, id, pos, gmshfilecontent);
-    }
-    gmshfilecontent << "};\n";
-  }
-  {
-    gmshfilecontent << "View \" " << "Tiangles \" {\n";
-    const std::multimap<int,std::vector<double> > intersectionpoints = cell->intersectionpoints_;
-    for (size_t l=0; l<trianglelist.size(); l++)
-    {
-      const std::vector<int> trianglepoints = trianglelist[l];
-      LINALG::Matrix<3,3> pos;
-      for (int k=0; k<3; k++)
-      {
-        for (int i=0; i<3; i++)
-          pos(i,k) = pointlist[trianglepoints[k]][i];
-      }
-      IO::GMSH::cellWithScalarToStream(DRT::Element::tri3, 1, pos, gmshfilecontent);
+      int domain_id = 0;
+      if (cell.getDomainPlus())
+        domain_id = 1;
+      const double color = domain_id;
+      gmshfilecontent << IO::GMSH::cellWithScalarToString(cell.Shape(), color, cellpos) << endl;
     }
     gmshfilecontent << "};\n";
   }

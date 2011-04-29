@@ -150,11 +150,9 @@ private:
 
         virtual void Unpack(const std::vector<char>& data);
 
-        virtual bool Intersected() const { return bisected_; };
+        virtual bool Bisected() const { return bisected_; };
 
-        virtual bool Touched_Plus() const { return touched_plus_; };
-
-        virtual bool Touched_Minus() const { return touched_minus_; };
+        virtual bool Touched() const { return touched_; };
 
         virtual COMBUST::InterfaceHandleCombust* InterfaceHandle() const { return ih_; };
 
@@ -330,14 +328,14 @@ private:
         //! store information about the interface handle
         COMBUST::InterfaceHandleCombust* ih_;
 
-        //! boolean indicating whether element is intersected by the interface
+        //! boolean indicating whether element is bisected by the interface
         bool bisected_;
 
-        //! boolean indicating whether element is touched by the interface at a whole 2D face
-        bool touched_plus_;
+        //! boolean indicating whether element is trisected by the interface
+        bool trisected_;
 
         //! boolean indicating whether element is touched by the interface at a whole 2D face
-        bool touched_minus_;
+        bool touched_;
 
         //! store element stress info and corresponding matrices used during condensation
         class DLMInfo

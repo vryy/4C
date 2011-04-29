@@ -564,7 +564,7 @@ void Sysmat(
 #else
         LINALG::Matrix<3,numnode> egradphi(true);
      // boundary integrals are only added for intersected elements (fully enriched elements)
-//    if (ele->Intersected() == true)
+//    if (ele->Bisected() == true)
 //    {
       COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi);
 //    }
@@ -579,7 +579,7 @@ void Sysmat(
     // get smoothed gradient of phi for surface tension applications
     LINALG::Matrix<3,numnode> egradphi(true);
      // boundary integrals are only added for intersected elements (fully enriched elements)
-//    if (ele->Intersected() == true)
+//    if (ele->Bisected() == true)
 //    {
       COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi);
 //    }
@@ -606,7 +606,7 @@ void Sysmat(
 #ifndef COMBUST_DECOUPLEDXFEM
 #ifdef COMBUST_NITSCHE
     // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
-    if (ele->Intersected() == true || ele->Touched_Plus() == true )
+    if (ele->Bisected() or ele->Touched() )
     {
       // get smoothed gradient of phi for surface tension applications
       LINALG::Matrix<3,numnode> egradphi;
@@ -628,7 +628,7 @@ void Sysmat(
     }
 #endif
     // boundary integrals are only added for intersected elements (fully enriched elements)
-    if (ele->Intersected() == true)
+    if (ele->Bisected() or ele->Touched() )
     {
 #ifdef COMBUST_STRESS_BASED
       // get smoothed gradient of phi for surface tension applications
@@ -678,7 +678,7 @@ void Sysmat(
         ele_meas_plus, ele_meas_minus);
 
     // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
-    if (ele->Intersected() == true || ele->Touched_Plus() == true )
+    if (ele->Bisected() or ele->Touched() )
     {
       // get smoothed gradient of phi for surface tension applications
       LINALG::Matrix<3,numnode> egradphi;
@@ -705,7 +705,7 @@ void Sysmat(
         ele_meas_plus, ele_meas_minus);
 
     // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
-    if (ele->Intersected() == true || ele->Touched_Plus() == true )
+    if (ele->Bisected() or ele->Touched() )
     {
       // get smoothed gradient of phi for surface tension applications
       LINALG::Matrix<3,numnode> egradphi;
@@ -729,43 +729,43 @@ void Sysmat(
   // symmetry check for element matrix
   // TODO: remove symmetry check
   //----------------------------------
-//if(ele->Id()==2)
+//if(ele->Id()==118)
 //{
-//  //cout << endl << "stiffness matrix of element: " << ele->Id() << " columns " << estif.N() << " rows " << estif.M() << endl << endl;
+//  cout << endl << "stiffness matrix of element: " << ele->Id() << " columns " << estif.N() << " rows " << estif.M() << endl << endl;
 //  bool sym = true;
 //  int counter = 0;
 //  for (int row=0; row<estif.M(); ++row)
 //  {
 //    for (int col=0; col<estif.N(); ++col)
 //    {
-//      //    cout << estif(row,col);
-//      cout << " " << setw(4)<< std::setprecision(1) << estif(row,col);
-//      double diff = estif(row,col)-estif(col,row);
-//      if (!((diff>-1.0E-9) and (diff<+1.0E-9)))
+//      //cout << estif(row,col);
+//      cout << " " << setw(16)<< std::setprecision(10) << estif(row,col);
+//      double diff = estif(row,col);//-estif(col,row);
+//      //if (!((diff>-1.0E-9) and (diff<+1.0E-9)))
 //      {
-//        cout << endl << counter << " difference of entry " << "Zeile "<< row << "Spalte " << col << " is not 0.0, but " << diff << endl;
+//        //cout << endl << counter << " difference of entry " << "Zeile "<< row << "Spalte " << col << " is not 0.0, but " << diff << endl;
 //        sym = false;
 //      }//std::setw(18) <<  << std::scientific
 //      counter++;
 //    }
 //    cout << endl;
 //  }
-//  cout << "counter " << counter << endl;
-//  if (sym==false) cout << "nicht symmetrisch"<<endl;
-//  if (sym==true) cout << "symmetrisch"<<endl;
+//  //cout << "counter " << counter << endl;
+//  //if (sym==false) cout << "nicht symmetrisch"<<endl;
+//  //if (sym==true) cout << "symmetrisch"<<endl;
 //  //dserror("STOP after middle element matrix");
-//}
-
+//
 //  for (int i = 0; i < eforce.Length(); i++)
 //  {
-//    if (std::isnan(eforce[i]))
+//    //if (std::isnan(eforce[i]))
 //    {
-//      cout << "Laenge Vektor fuer element " << eforce.Length() << endl;
-//      cout << "NaN in dof " << i << "of element " << ele->Id() << endl;
+//      cout << setw(16)<< std::setprecision(10) << eforce[i] << endl;
+//      //cout << "Laenge Vektor fuer element " << eforce.Length() << endl;
+//      //cout << "NaN in dof " << i << "of element " << ele->Id() << endl;
 //      //dserror("NaNs detected! Quitting...");
-//cout << egradphi << endl;
 //    }
 //  }
+//}
 
 
 }
@@ -963,7 +963,7 @@ void NitscheErrors(
   COMBUST::Nitsche_BuildDomainIntegratedErrors<DISTYPE,ASSTYPE,NUMDOF>(
       eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, material, ele_meas_plus, ele_meas_minus);
 
-  if (ele->Intersected() == true || ele->Touched_Plus() == true)
+  if (ele->Bisected() or ele->Touched() )
   {
     LINALG::Matrix<3,numnode> egradphi;
     egradphi.Clear();

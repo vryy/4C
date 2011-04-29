@@ -140,7 +140,7 @@ void SysmatDomainNitsche(
     //----------------------------------------------
     // get Gaussian points for this integration cell
     //----------------------------------------------
-    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Intersected(), cell->Shape());
+    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussrule<DISTYPE>(ele, xyze, ele->Bisected(), cell->Shape());
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
     //--------------------------------------
     // integration loop over Gaussian points
@@ -477,7 +477,7 @@ void SysmatDomainNitsche(
 
       if (ASSTYPE== XFEM::xfem_assembly)
       {
-        if(ele->Intersected())
+        if(ele->Bisected())
         {
 //          cout << "funct" << funct << endl;
 //          cout << "evelnp " << evelnp << endl;
@@ -1606,18 +1606,9 @@ void SysmatBoundaryNitsche(
   //-----------------------------------------------------------------------------------------
 
   double ele_meas = ele_meas_plus + ele_meas_minus;
-  if(ele_meas == 0.0) dserror("element measure is zero!!! Weighted average operators can not get defined!");
+//  if(ele_meas == 0.0) dserror("element measure is zero!!! Weighted average operators can not get defined!");
   double kappa_plus  = ele_meas_plus/ele_meas;
   double kappa_minus = ele_meas_minus/ele_meas;
-
-  if(ele->Touched_Plus() == true)
-  {
-    // weights are chosen inversly -> touched element as a limit case of an intersected element
-    // with ele_meas_plus -> 0
-    // remark: interface belongs to Omega(+)
-    kappa_plus = 0.0;
-    kappa_minus= 1.0;
-  }
 
   // flag for higher order elements
   const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
@@ -1657,9 +1648,8 @@ void SysmatBoundaryNitsche(
       );
       break;
     case DRT::Element::quad4:
-      // TODO check this intrule !!!
       COMBUST::Nitsche_SysmatBoundaryCell<DISTYPE,DRT::Element::quad4,ASSTYPE,NUMDOF>(
-          *cell, DRT::UTILS::intrule_quad_9point , xyze, ele, higher_order_ele,
+          *cell, DRT::UTILS::intrule_quad_25point , xyze, ele, higher_order_ele,
           evelnp, eprenp, ephi, egradphi,
           ju_n, jflux_n,
           timefac, assembler,
