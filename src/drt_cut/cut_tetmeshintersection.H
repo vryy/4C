@@ -67,13 +67,22 @@ namespace GEO
       void ToParent( std::vector<Point*> & points ) { SwapPoints( child_to_parent_, points ); }
       void ToChild ( std::vector<Point*> & points ) { SwapPoints( parent_to_child_, points ); }
 
+      void ToParent( Mesh & mesh, std::vector<Point*> & points ) { SwapPoints( mesh, child_to_parent_, points ); }
+      void ToChild ( Mesh & mesh, std::vector<Point*> & points ) { SwapPoints( mesh, parent_to_child_, points ); }
+
       void ToParent( std::set<Point*> & points ) { SwapPoints( child_to_parent_, points ); }
       void ToChild ( std::set<Point*> & points ) { SwapPoints( parent_to_child_, points ); }
 
       Point * ToParent( Point * point ) { return SwapPoint( child_to_parent_, point ); }
       Point * ToChild ( Point * point ) { return SwapPoint( parent_to_child_, point ); }
 
+      /// convert points between meshes and create points if not found
+      void SwapPoints( Mesh & mesh, const std::map<Point*, Point*> & pointmap, std::vector<Point*> & points );
+
+      /// convert points between meshes and raise error if point not found
       void SwapPoints( const std::map<Point*, Point*> & pointmap, std::vector<Point*> & points );
+
+      /// convert points between meshes and raise error if point not found
       void SwapPoints( const std::map<Point*, Point*> & pointmap, std::set<Point*> & points );
 
       Point * SwapPoint( const std::map<Point*, Point*> & pointmap, Point * point );

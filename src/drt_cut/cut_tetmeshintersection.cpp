@@ -417,10 +417,7 @@ void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element,
         const std::vector<Point*> & points = ic->Points();
 
         std::vector<Point*> parent_points( points );
-        ToParent( parent_points );
-
-        // debug
-        ic->Volume();
+        ToParent( parent_mesh, parent_points );
 
         parent_cell->NewIntegrationCell( parent_mesh, ic->Shape(), parent_points );
       }
@@ -430,7 +427,7 @@ void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element,
         const std::vector<Point*> & points = bc->Points();
 
         std::vector<Point*> parent_points( points );
-        ToParent( parent_points );
+        ToParent( parent_mesh, parent_points );
 
         Facet * parent_facet = NULL;
         Facet * child_facet = bc->GetFacet();
@@ -553,6 +550,27 @@ void GEO::CUT::TetMeshIntersection::FindVolumeCell( Point * p, std::set<VolumeCe
 //   if ( cells.size()!=1 )
 //     throw std::runtime_error( "expect one volume at nodal point" );
 //   return *cells.begin();
+}
+
+void GEO::CUT::TetMeshIntersection::SwapPoints( Mesh & mesh, const std::map<Point*, Point*> & pointmap, std::vector<Point*> & points )
+{
+  std::vector<Point*> new_points;
+  new_points.reserve( points.size() );
+  for ( std::vector<Point*>::iterator i=points.begin(); i!=points.end(); ++i )
+  {
+    Point * p = *i;
+    std::map<Point*, Point*>::const_iterator j = pointmap.find( p );
+    if ( j==pointmap.end() )
+    {
+      Point * np = mesh.NewPoint( p->X(), NULL, NULL );
+      new_points.push_back( np );
+    }
+    else
+    {
+      new_points.push_back( j->second );
+    }
+  }
+  std::swap( new_points, points );
 }
 
 void GEO::CUT::TetMeshIntersection::SwapPoints( const std::map<Point*, Point*> & pointmap, std::vector<Point*> & points )

@@ -321,10 +321,6 @@ GEO::CUT::IntegrationCell * GEO::CUT::VolumeCell::NewTet4Cell( Mesh & mesh, cons
 {
   Point::PointPosition position = Position();
   IntegrationCell * ic = mesh.NewTet4Cell( position, points, this );
-
-  // debug
-  ic->Volume();
-
   integrationcells_.insert( ic );
   return ic;
 }

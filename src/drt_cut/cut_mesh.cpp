@@ -659,7 +659,7 @@ GEO::CUT::Tet4IntegrationCell* GEO::CUT::Mesh::NewTet4Cell( Point::PointPosition
   integrationcells_.push_back( Teuchos::rcp( c ) );
 
   // debug
-  c->Volume();
+  //c->Volume();
 
   return c;
 }
