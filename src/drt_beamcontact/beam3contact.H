@@ -28,7 +28,7 @@ using namespace std;
 using namespace Teuchos;
 
 // write gmsh output in each time step
-#define GMSHTIMESTEPS
+//#define GMSHTIMESTEPS
 
 // write gmsh and console output in each Newton step
 //#define GMSHNEWTONSTEPS
