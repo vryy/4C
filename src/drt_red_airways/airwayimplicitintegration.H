@@ -69,6 +69,14 @@ using namespace std;
 using namespace Teuchos;
 using namespace MLAPI;
 
+// forward declarations
+namespace DRT
+{
+  class ResultTest;
+  class RedAirwayResultTest;
+}
+
+
 /// airway algorithms
 namespace AIRWAY
 {
@@ -180,6 +188,9 @@ public:
 
   */
   void ReadRestart(int step);
+
+  Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+
 
   //! @name access methods for composite algorithms
 

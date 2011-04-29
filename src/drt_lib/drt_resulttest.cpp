@@ -117,6 +117,7 @@ void ResultTestManager::TestAll(const Epetra_Comm& comm)
   for (unsigned i=0; i<results_.size(); ++i)
   {
     DRT::INPUT::LineDefinition& res = *results_[i];
+
     for (unsigned j=0; j<fieldtest_.size(); ++j)
     {
       if (fieldtest_[j]->Match(res))
@@ -230,6 +231,17 @@ Teuchos::RCP<DRT::INPUT::Lines> ResultTestManager::ValidResultLines()
     .AddNamedDouble("TOLERANCE")
     ;
 
+  DRT::INPUT::LineDefinition red_airway;
+  red_airway
+    .AddTag("RED_AIRWAY")
+    .AddNamedInt("DIS")
+    .AddNamedInt("NODE")
+    .AddNamedString("POSITION")
+    .AddNamedString("NAME")
+    .AddNamedDouble("VALUE")
+    .AddNamedDouble("TOLERANCE")
+    ;
+
   Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("RESULT DESCRIPTION"));
   lines->Add(structure);
   lines->Add(fluid);
@@ -237,6 +249,7 @@ Teuchos::RCP<DRT::INPUT::Lines> ResultTestManager::ValidResultLines()
   lines->Add(ale);
   lines->Add(thermal);
   lines->Add(scatra);
+  lines->Add(red_airway);
   return lines;
 }
 

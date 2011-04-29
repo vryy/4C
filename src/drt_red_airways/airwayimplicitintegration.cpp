@@ -333,7 +333,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeLoop(bool CoupledTo3D,
     //                         update solution
     //        current solution becomes old solution of next timestep
     // -------------------------------------------------------------------
-    TimeUpdate();
+    if (!CoupledTo3D)
+    {
+      TimeUpdate();
+    }
 
     // -------------------------------------------------------------------
     //  lift'n'drag forces, statistics time sample and output of solution
@@ -675,18 +678,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     discret_->SetState("pn" ,pn_ );
     discret_->SetState("pnm",pnm_);
 
-    //    discret_->SetState("qcn" ,qcn_ );
-
-
-    //    discret_->SetState("qin_np",qin_np_);
-    //    discret_->SetState("qin_n" ,qin_n_ );
-    //    discret_->SetState("qin_nm",qin_nm_);
-
-    //    discret_->SetState("qout_np",qout_np_);
-    //    discret_->SetState("qout_n" ,qout_n_ );
-    //    discret_->SetState("qout_nm",qout_nm_);
-
-    //    eleparams.set("qcnp",qcnp_);
     eleparams.set("time step size",dta_);
     eleparams.set("total time",time_);
     eleparams.set("qin_n",qin_n_);
@@ -712,18 +703,16 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     // set vecotr values needed by elements
     discret_->ClearState();
     discret_->SetState("pnp",pnp_);
-    //    discret_->SetState("qcn" ,qcn_ );
+
 
     eleparams.set("qin_np",qin_np_);
     eleparams.set("qin_n",qin_n_);
-    //    discret_->SetState("qin_n" ,qin_n_ );
-    //    discret_->SetState("qin_nm",qin_nm_);
+
 
     eleparams.set("qout_np",qout_np_);
     eleparams.set("qout_n" ,qout_n_ );
-    //    discret_->SetState("qout_nm",qout_nm_);
 
-    //    eleparams.set("qcnp",qcnp_);
+
     eleparams.set("time step size",dta_);
     eleparams.set("total time",time_);
 
@@ -1019,6 +1008,16 @@ void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step)
 
 }//RedAirwayImplicitTimeInt::ReadRestart
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+#if 0
+Teuchos::RCP<DRT::ResultTest>
+AIRWAY::RedAirwayImplicitTimeInt::CreateFieldTest()
+{
+  return Teuchos::rcp(new AIRWAY::RedAirwayResultTest(*this));
+}
+#endif
 
 /*----------------------------------------------------------------------*
  | Destructor dtor (public)                                 ismail 01/10|

@@ -25,6 +25,7 @@ Maintainer: Mahmoud Ismail
 #include <mpi.h>
 #endif
 
+#include "red_airway_resulttest.H"
 #include "red_airways_dyn_drt.H"
 #include "airwayimplicitintegration.H"
 #include "../drt_lib/drt_resulttest.H"
@@ -174,6 +175,11 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
     // call time-integration (or stationary) scheme
     RCP<ParameterList> param_temp;
     airwayimplicit->Integrate();
+
+    Teuchos::RCP<DRT::ResultTest> resulttest 
+      = Teuchos::rcp(new AIRWAY::RedAirwayResultTest(*airwayimplicit));
+    DRT::Problem::Instance()->AddFieldTest(resulttest);
+    DRT::Problem::Instance()->TestAll(actdis->Comm());
 
     return airwayimplicit;
     //    return  Teuchos::null;
