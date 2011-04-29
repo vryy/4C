@@ -86,6 +86,8 @@ public:
     std::swap( sides, intersection );
   }
 
+  const std::set<Side*> & CutSides() const { return cut_sides_; }
+
 private:
 
   Point* p1_;

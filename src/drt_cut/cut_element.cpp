@@ -40,54 +40,60 @@ bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side )
   }
 
   const std::vector<Side*> & sides = Sides();
-
   for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
   {
     Side * s = *i;
-    FindCutPoints( mesh, *s, side );
-  }
-
-  for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
-  {
-    Side * s = *i;
-    if ( FindCutLines( mesh, *s, side ) )
+    if ( FindCutPoints( mesh, *s, side ) )
     {
       cut = true;
     }
   }
 
-  // find lines inside the element
-  const std::vector<Edge*> & side_edges = side.Edges();
-  for ( std::vector<Edge*>::const_iterator i=side_edges.begin(); i!=side_edges.end(); ++i )
-  {
-    Edge * e = *i;
-    std::vector<Point*> line;
-    e->CutPointsInside( this, line );
-    std::vector<Point*>::iterator i = line.begin();
-    if ( i!=line.end() )
-    {
-      Point * bp = *i;
-      for ( ++i; i!=line.end(); ++i )
-      {
-        Point * ep = *i;
-        mesh.NewLine( bp, ep, &side, NULL, this );
-        bp = ep;
-      }
-    }
-  }
-
   if ( cut )
   {
-    // create any remaining cut lines
-    LineSegmentList lsl;
-    side.CreateLineSegmentList( lsl, mesh, this, true );
-
     cut_faces_.insert( &side );
     return true;
   }
   else
   {
     return false;
+  }
+}
+
+void GEO::CUT::Element::MakeCutLines( Mesh & mesh )
+{
+  for ( std::set<Side*>::iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
+  {
+    Side & side = **i;
+
+    bool cut = false;
+
+    const std::vector<Side*> & sides = Sides();
+    for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
+    {
+      Side * s = *i;
+      if ( FindCutLines( mesh, *s, side ) )
+      {
+        cut = true;
+      }
+    }
+
+    // find lines inside the element
+    const std::vector<Edge*> & side_edges = side.Edges();
+    for ( std::vector<Edge*>::const_iterator i=side_edges.begin(); i!=side_edges.end(); ++i )
+    {
+      Edge * e = *i;
+      std::vector<Point*> line;
+      e->CutPointsInside( this, line );
+      mesh.NewLinesBetween( line, &side, NULL, this );
+    }
+
+    if ( cut )
+    {
+      // create any remaining cut lines
+      LineSegmentList lsl;
+      side.CreateLineSegmentList( lsl, mesh, this, true );
+    }
   }
 }
 

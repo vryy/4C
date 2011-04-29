@@ -59,6 +59,8 @@ public:
 
   bool Cut( Mesh & mesh, Side & side );
 
+  void MakeCutLines( Mesh & mesh );
+
   void MakeFacets( Mesh & mesh );
 
   void MakeVolumeCells( Mesh & mesh );

@@ -38,6 +38,25 @@ GEO::CUT::Point::Point( unsigned pid, const double * x, Edge * cut_edge, Side * 
 {
   std::copy( x, x+3, x_ );
 
+#if 0
+#ifdef DEBUGCUTLIBRARY
+  double x1[] = {1.1076013170420673237,0.25620398122276971664,3.8158834299999999373e-19};
+  double x2[] = {1.0992740341033049312,0.23760272423331274538,0.0050000250500000006232};
+
+  LINALG::Matrix<3,1> px( x_ );
+  LINALG::Matrix<3,1> px1( x1 );
+  LINALG::Matrix<3,1> px2( x2 );
+
+  px1.Update( 1, px, -1 );
+  px2.Update( 1, px, -1 );
+
+  if ( px1.Norm2() < 1e-12 or px2.Norm2() < 1e-12 )
+  {
+    std::cout << "offending point: " << px;
+  }
+#endif
+#endif
+
   if ( cut_edge!=NULL )
   {
     cut_edges_.insert( cut_edge );

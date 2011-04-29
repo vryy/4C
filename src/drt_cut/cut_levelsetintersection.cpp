@@ -45,6 +45,7 @@ void GEO::CUT::LevelSetIntersection::Cut( bool include_inner )
 
   m.Status();
 
+  m.MakeCutLines();
   m.MakeFacets();
   m.MakeVolumeCells();
 

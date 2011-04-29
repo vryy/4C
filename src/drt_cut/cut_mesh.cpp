@@ -230,6 +230,33 @@ GEO::CUT::Edge* GEO::CUT::Mesh::GetEdge( const std::set<int> & nids, const std::
   {
     return &*i->second;
   }
+
+  // Search for edges between those points from an other mesh. This might
+  // happen if mesh and cut mesh use the same nodes and thus the same
+  // edges. This will happen with double cuts.
+
+  Point * p1 = nodes[0]->point();
+  Point * p2 = nodes[1]->point();
+
+  std::set<Edge*> edges;
+  p1->CommonEdge( p2, edges );
+  for ( std::set<Edge*>::iterator i=edges.begin(); i!=edges.end(); ++i )
+  {
+    Edge * e = *i;
+    Point * ep1 = e->BeginNode()->point();
+    Point * ep2 = e->EndNode()  ->point();
+    if ( p1==ep1 and p2==ep2 )
+    {
+      edges_[nids] = Teuchos::rcp( e, false );
+      return e;
+    }
+    if ( p1==ep2 and p2==ep1 )
+    {
+      edges_[nids] = Teuchos::rcp( e, false );
+      return e;
+    }
+  }
+
   Edge * e = NULL;
   switch ( edge_topology.key )
   {
@@ -524,7 +551,35 @@ GEO::CUT::Point* GEO::CUT::Mesh::NewPoint( const double * x, Edge * cut_edge, Si
   return p;
 }
 
-GEO::CUT::Line* GEO::CUT::Mesh::NewLine( Point* p1, Point* p2, Side * cut_side1, Side * cut_side2, Element * cut_element )
+void GEO::CUT::Mesh::NewLine( Point* p1, Point* p2, Side * cut_side1, Side * cut_side2, Element * cut_element, std::vector<Line*> * newlines )
+{
+  if ( p1==p2 )
+    throw std::runtime_error( "no line between same point" );
+
+  // If there is a line between those points already, return it. Otherwise
+  // create a new one.
+  Line * line = p1->CommonLine( p2 );
+  if ( line==NULL )
+  {
+    std::set<Edge*> edges;
+    p1->CommonEdge( p2, edges );
+    for ( std::set<Edge*>::iterator i=edges.begin(); i!=edges.end(); ++i )
+    {
+      Edge * e = *i;
+      std::vector<Point*> line_points;
+      e->CutPointsIncluding( p1, p2, line_points );
+
+      NewLinesBetween( line_points, cut_side1, cut_side2, cut_element, newlines );
+    }
+
+    if ( edges.size()==0 )
+      NewLineInternal( p1, p2, cut_side1, cut_side2, cut_element );
+  }
+
+  //return line;
+}
+
+GEO::CUT::Line * GEO::CUT::Mesh::NewLineInternal( Point* p1, Point* p2, Side * cut_side1, Side * cut_side2, Element * cut_element )
 {
   if ( p1==p2 )
     throw std::runtime_error( "no line between same point" );
@@ -554,6 +609,26 @@ GEO::CUT::Line* GEO::CUT::Mesh::NewLine( Point* p1, Point* p2, Side * cut_side1,
       line->AddElement( cut_element );
   }
   return line;
+}
+
+bool GEO::CUT::Mesh::NewLinesBetween( const std::vector<Point*> & line, Side * cut_side1, Side * cut_side2, Element * cut_element, std::vector<Line*> * newlines )
+{
+  bool hasnewlines = false;
+  std::vector<Point*>::const_iterator i = line.begin();
+  if ( i!=line.end() )
+  {
+    Point * bp = *i;
+    for ( ++i; i!=line.end(); ++i )
+    {
+      Point * ep = *i;
+      Line * l = NewLineInternal( bp, ep, cut_side1, cut_side2, cut_element );
+      if ( newlines!=NULL )
+        newlines->push_back( l );
+      bp = ep;
+    }
+    hasnewlines = true;
+  }
+  return hasnewlines;
 }
 
 GEO::CUT::Facet* GEO::CUT::Mesh::NewFacet( const std::vector<Point*> & points, Side * side, bool cutsurface )
@@ -793,6 +868,8 @@ void GEO::CUT::Mesh::Cut( Side & side, const std::set<Element*> & done, std::set
   std::set<Element*> elements;
   pp_->CollectElements( sidebox, elements );
 
+//   std::map<Side*, std::vector<Element*> > side_cuts;
+
   for ( std::set<Element*>::iterator i=elements.begin(); i!=elements.end(); ++i )
   {
     Element * e = *i;
@@ -801,9 +878,30 @@ void GEO::CUT::Mesh::Cut( Side & side, const std::set<Element*> & done, std::set
       if ( e->Cut( *this, side ) )
       {
         elements_done.insert( e );
+//         side_cuts[&side].push_back( e );
       }
     }
   }
+
+#if 0
+  // create cut lines
+
+  for ( std::map<Side*, std::vector<Element*> >::iterator i=side_cuts.begin();
+        i!=side_cuts.end();
+        ++i )
+  {
+    Side * s = i->first;
+    std::vector<Element*> & elements = i->second;
+    for ( std::vector<Element*>::iterator i=elements.begin(); i!=elements.end(); ++i )
+    {
+      Element * e = *i;
+
+      // create any remaining cut lines
+      LineSegmentList lsl;
+      s->CreateLineSegmentList( lsl, *this, e, true );
+    }
+  }
+#endif
 }
 
 void GEO::CUT::Mesh::Cut( LevelSetSide & side )
@@ -821,6 +919,24 @@ void GEO::CUT::Mesh::Cut( LevelSetSide & side )
   {
     Element & e = **i;
     e.Cut( *this, side );
+  }
+}
+
+void GEO::CUT::Mesh::MakeCutLines()
+{
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();
+        ++i )
+  {
+    Element & e = *i->second;
+    e.MakeCutLines( *this );
+  }
+  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+        i!=shadow_elements_.end();
+        ++i )
+  {
+    Element & e = **i;
+    e.MakeCutLines( *this );
   }
 }
 

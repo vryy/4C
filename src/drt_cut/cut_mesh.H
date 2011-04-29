@@ -76,7 +76,9 @@ public:
 
   Point* NewPoint( const double * x, Edge * cut_edge, Side * cut_side );
 
-  Line* NewLine( Point* p1, Point* p2, Side * cut_side1, Side * cut_side2, Element * cut_element );
+  void NewLine( Point* p1, Point* p2, Side * cut_side1, Side * cut_side2, Element * cut_element, std::vector<Line*> * newlines=NULL );
+
+  bool NewLinesBetween( const std::vector<Point*> & line, Side * cut_side1, Side * cut_side2, Element * cut_element, std::vector<Line*> * newlines=NULL );
 
   Facet* NewFacet( const std::vector<Point*> & points, Side * side, bool cutsurface );
 
@@ -105,6 +107,8 @@ public:
   void Cut( Side & side, const std::set<Element*> & done, std::set<Element*> & elements_done );
 
   void Cut( LevelSetSide & side );
+
+  void MakeCutLines();
 
   void MakeFacets();
 
@@ -204,6 +208,8 @@ private:
                  const std::vector<Node*> & nodes,
                  const std::vector<Edge*> & edges,
                  const CellTopologyData & side_topology );
+
+  GEO::CUT::Line * NewLineInternal( Point* p1, Point* p2, Side * cut_side1, Side * cut_side2, Element * cut_element );
 
   bool setup_;
   const Options & options_;

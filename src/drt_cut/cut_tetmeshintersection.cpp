@@ -36,7 +36,8 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
   {
     const std::vector<int> & tet = *i;
     unsigned id = i-tets.begin();
-    mesh_.GetElement( id, tet, *shards::getCellTopologyData< shards::Tetrahedron<4> >(), accept_tets[id] );
+    if ( accept_tets[id] )
+      mesh_.GetElement( id, tet, *shards::getCellTopologyData< shards::Tetrahedron<4> >(), accept_tets[id] );
   }
 
   const std::set<Facet*> & element_facets = element->Facets();
@@ -147,6 +148,7 @@ void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, 
 
   mesh_.Status();
 
+  mesh_.MakeCutLines();
   mesh_.MakeFacets();
   mesh_.MakeVolumeCells();
 

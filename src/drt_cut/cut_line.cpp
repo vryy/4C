@@ -35,6 +35,38 @@ GEO::CUT::Line::Line( Point * p1, Point * p2, Side * cut_side1, Side * cut_side2
   }
 
 #if 0
+#ifdef DEBUGCUTLIBRARY
+  double x1[] = { 1.0571400000000001906, 0.49999999999999994449, -0.024639335281227081609 };
+  double x2[] = { 1.0571400000000001906, 0.49999999999999994449, -0.050000000000000009714 };
+
+  LINALG::Matrix<3,1> px1( p1_->X() );
+  LINALG::Matrix<3,1> px2( p2_->X() );
+
+  LINALG::Matrix<3,1> mx1( x1 );
+  LINALG::Matrix<3,1> mx2( x2 );
+
+  LINALG::Matrix<3,1> d1;
+  LINALG::Matrix<3,1> d2;
+
+  d1.Update( 1, px1, -1, mx1, 0 );
+  d2.Update( 1, px2, -1, mx2, 0 );
+
+  if ( d1.Norm2() < 1e-12 and d2.Norm2() < 1e-12 )
+  {
+    std::cout << "offending line 1\n";
+  }
+
+  d1.Update( 1, px1, -1, mx2, 0 );
+  d2.Update( 1, px2, -1, mx1, 0 );
+
+  if ( d1.Norm2() < 1e-12 and d2.Norm2() < 1e-12 )
+  {
+    std::cout << "offending line 2\n";
+  }
+#endif
+#endif
+
+#if 0
   std::vector<GEO::CUT::Edge*> edges = p1->CutEdges( p2 );
   for ( std::vector<GEO::CUT::Edge*>::iterator i=edges.begin(); i!=edges.end(); ++i )
   {

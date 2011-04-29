@@ -154,6 +154,8 @@ public:
 
   void CutPointsBetween( Point* begin, Point* end, std::vector<Point*> & line );
 
+  void CutPointsIncluding( Point* begin, Point* end, std::vector<Point*> & line );
+
   void CutPointsInside( Element * element, std::vector<Point*> & line );
 
   bool IsCut( Side * side );

@@ -108,19 +108,15 @@ void GEO::CUT::Edge::AddPoint( Point* cut_point )
 
 void GEO::CUT::Edge::CutPoint( Node* edge_start, Node* edge_end, std::vector<Point*> & edge_points )
 {
-  if ( BeginNode()==edge_start and EndNode()==edge_end )
+  Point * bp = BeginNode()->point();
+  Point * ep = EndNode()  ->point();
+  if ( bp==edge_start->point() and ep==edge_end->point() )
   {
-//     std::set<Point*, PointPositionLess>::iterator bi = cut_points_.begin();
-//     std::set<Point*, PointPositionLess>::iterator ei = cut_points_.end();
-
     edge_points.clear();
     edge_points.assign( cut_points_.begin(), cut_points_.end() );
   }
-  else if ( EndNode()==edge_start and BeginNode()==edge_end )
+  else if ( ep==edge_start->point() and bp==edge_end->point() )
   {
-//     std::set<Point*, PointPositionLess>::reverse_iterator bi = cut_points_.rbegin();
-//     std::set<Point*, PointPositionLess>::reverse_iterator ei = cut_points_.rend();
-
     edge_points.clear();
     edge_points.assign( cut_points_.rbegin(), cut_points_.rend() );
   }
@@ -186,16 +182,60 @@ void GEO::CUT::Edge::CutPointsBetween( Point* begin, Point* end, std::vector<Poi
   }
 }
 
+void GEO::CUT::Edge::CutPointsIncluding( Point* begin, Point* end, std::vector<Point*> & line )
+{
+  std::vector<Point*>::iterator bi = std::lower_bound( cut_points_.begin(), cut_points_.end(), begin, PointPositionLess( this ) );
+  std::vector<Point*>::iterator ei = std::lower_bound( cut_points_.begin(), cut_points_.end(), end  , PointPositionLess( this ) );
+
+  if ( *bi != begin )
+    throw std::runtime_error( "begin point not on edge" );
+
+  if ( *ei != end )
+    throw std::runtime_error( "end point not on edge" );
+
+  double bt = begin->t( this );
+  double et = end->t( this );
+
+  if ( bt < et )
+  {
+    ++ei;
+    std::copy( bi, ei, std::back_inserter( line ) );
+  }
+  else if ( bt > et )
+  {
+    ++bi;
+    std::copy( ei, bi, std::inserter( line, line.begin() ) );
+  }
+  else
+  {
+    if ( begin!=end )
+    {
+      throw std::runtime_error( "different points at the same place" );
+    }
+  }
+}
+
 void GEO::CUT::Edge::CutPointsInside( Element * element, std::vector<Point*> & line )
 {
+  Point * first = NULL;
+  Point * last = NULL;
   for ( std::vector<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
     Point * p = *i;
     if ( p->IsCut( element ) )
     {
-      line.push_back( p );
+      if ( first == NULL )
+      {
+        first = last = p;
+      }
+      else
+      {
+        last = p;
+      }
     }
   }
+  if ( first!=NULL and first!=last )
+    CutPointsIncluding( first, last, line );
 }
 
 bool GEO::CUT::Edge::IsCut( Side * side )

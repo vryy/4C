@@ -233,9 +233,14 @@ void GEO::CUT::LineSegment::InsertLines( Mesh & mesh,
 {
   for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
   {
-    facet_lines_.insert( facet_lines_.begin(),
-                         mesh.NewLine( facet_points_.front(), *i, side, NULL, element ) );
-    facet_points_.insert( facet_points_.begin(), *i );
+    std::vector<Line*> newlines;
+    mesh.NewLine( facet_points_.front(), *i, side, NULL, element, &newlines );
+    for ( std::vector<Line*>::iterator i=newlines.begin(); i!=newlines.end(); ++i )
+    {
+      Line * l = *i;
+      facet_lines_.insert( facet_lines_.begin(), l );
+      facet_points_.insert( facet_points_.begin(), l->EndPoint() );
+    }
   }
 }
 
@@ -246,15 +251,22 @@ void GEO::CUT::LineSegment::InsertLinesReversed( Mesh & mesh,
 {
   for ( std::vector<Point*>::const_reverse_iterator i=points.rbegin(); i!=points.rend(); ++i )
   {
-    facet_lines_.insert( facet_lines_.begin(),
-                         mesh.NewLine( facet_points_.front(), *i, side, NULL, element ) );
-    facet_points_.insert( facet_points_.begin(), *i );
+    std::vector<Line*> newlines;
+    mesh.NewLine( facet_points_.front(), *i, side, NULL, element, &newlines );
+    for ( std::vector<Line*>::iterator i=newlines.begin(); i!=newlines.end(); ++i )
+    {
+      Line * l = *i;
+      facet_lines_.insert( facet_lines_.begin(), l );
+      facet_points_.insert( facet_points_.begin(), l->EndPoint() );
+    }
   }
 }
 
 void GEO::CUT::LineSegment::CloseGap( Mesh & mesh, Element * element, Side * side, Point * end )
 {
-  facet_lines_.push_back( mesh.NewLine( facet_points_.back(), end, side, NULL, element ) );
+  std::vector<Line*> newlines;
+  mesh.NewLine( facet_points_.back(), end, side, NULL, element, &newlines );
+  std::copy( newlines.begin(), newlines.end(), std::back_inserter( facet_lines_ ) );
 }
 
 bool GEO::CUT::LineSegment::Combine( Mesh & mesh, Element * element, Side * side, LineSegment & other )
@@ -319,6 +331,7 @@ GEO::CUT::Side* GEO::CUT::LineSegment::OnSide( Element * element )
 void GEO::CUT::LineSegmentList::Create( Mesh & mesh, Element * element, Side * side, bool inner )
 {
   std::set<Line*> lines;
+//   std::map<Point*, std::vector<Line*> > cut_points;
 
   const std::vector<Line*> & cut_lines = side->CutLines();
   for ( std::vector<Line*>::const_iterator i=cut_lines.begin(); i!=cut_lines.end(); ++i )
@@ -327,10 +340,60 @@ void GEO::CUT::LineSegmentList::Create( Mesh & mesh, Element * element, Side * s
     if ( l->IsCut( element ) )
     {
       lines.insert( l );
+#if 0
+      cut_points[l->BeginPoint()].push_back( l );
+      cut_points[l->EndPoint()  ].push_back( l );
+#endif
     }
   }
 
+#if 0
+  int fork = 0;
+  std::set<Side*> cutted_sides;
+
+  for ( std::map<Point*, std::vector<Line*> >::iterator i=cut_points.begin(); i!=cut_points.end(); ++i )
+  {
+    //Point * p = i->first;
+    std::vector<Line*> & ls = i->second;
+    if ( ls.size() > 2 )
+    {
+      for ( std::vector<Line*>::iterator j = ls.begin(); j!=ls.end(); ++j )
+      {
+        Line * l = *j;
+
+        std::set<Side*> es;
+        std::copy( element->Sides().begin(), element->Sides().end(), std::inserter( es, es.begin() ) );
+        l->Intersection( es );
+        std::copy( es.begin(), es.end(), std::inserter( cutted_sides, cutted_sides.begin() ) );
+      }
+      fork += 1;
+    }
+  }
+
+  if ( fork > 0 )
+  {
+    // This is a degenerated case. Do nothing. (?!)
+    return;
+#if 0
+    for ( std::set<Side*>::iterator i=cutted_sides.begin(); i!=cutted_sides.end(); ++i )
+    {
+      Side * s = *i;
+    }
+
+    std::cout << "fork " << fork << " with " << cutted_sides.size() << " sides\n";
+    throw std::runtime_error( "fork in the road" );
+#endif
+  }
+  else
+  {
+    // normal case
+    Create( mesh, element, side, lines, inner );
+  }
+#else
+
   Create( mesh, element, side, lines, inner );
+
+#endif
 
   if ( inner )
   {

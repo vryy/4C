@@ -89,12 +89,7 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner )
 {
   Status();
 
-//   std::vector<Teuchos::RCP<CellGenerator> > cutgens;
-//   for ( int i=cut_mesh_.size()-1; i>0; --i )
-//   {
-//     cutgens.push_back( Teuchos::rcp( new TetCutGenerator( *this, generator, CutMesh( i ), pp_ ) ) );
-//     generator = &*cutgens.back();
-//   }
+  Mesh & m = NormalMesh();
 
   std::set<Element*> elements_done;
 
@@ -105,29 +100,30 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner )
   {
     MeshHandle & cut_mesh_handle = **i;
     Mesh & cut_mesh = cut_mesh_handle.LinearMesh();
-    cut_mesh.Cut( NormalMesh(), elements_done );
+    cut_mesh.Cut( m, elements_done );
   }
 
-  NormalMesh().MakeFacets();
-  NormalMesh().MakeVolumeCells();
+  m.MakeCutLines();
+  m.MakeFacets();
+  m.MakeVolumeCells();
 
   if ( options_.FindPositions() )
   {
     // find inside and outside positions of nodes
-    NormalMesh().FindNodePositions();
+    m.FindNodePositions();
 
     // find number and connection of dofsets at nodes from cut volumes
-    NormalMesh().FindNodalDOFSets( include_inner );
+    m.FindNodalDOFSets( include_inner );
   }
 
   //Status();
 
-  NormalMesh().CreateIntegrationCells( false );
+  m.CreateIntegrationCells( false );
 
   Status();
 
 #ifdef DEBUGCUTLIBRARY
-  NormalMesh().TestElementVolume( false );
+  m.TestElementVolume( false );
 #endif
 }
 
