@@ -449,7 +449,7 @@ double Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeD
 
   xsi_ = 0;
 
-  const double tol = LINSOLVETOL; // / scale_;
+  const double tol = LINSOLVETOL / scale_;
 
 #ifdef DEBUG
   std::vector<double> res;

@@ -236,6 +236,47 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
     }
   }
 
+  if ( nonnodecells > 0 )
+  {
+    std::map<Point*, std::vector<VolumeCell*> > parent_point_cells;
+    for ( std::set<VolumeCell*>::const_iterator i=parent_cells.begin();
+          i!=parent_cells.end();
+          ++i )
+    {
+      VolumeCell * vc = *i;
+      std::set<Point*> cut_points;
+      vc->GetAllPoints( parent_mesh, cut_points );
+      for ( std::set<Point*>::iterator i=cut_points.begin(); i!=cut_points.end(); ++i )
+      {
+        Point * p = *i;
+        parent_point_cells[p].push_back( vc );
+      }
+    }
+    for ( std::map<Point*, std::vector<VolumeCell*> >::iterator i=parent_point_cells.begin();
+          i!=parent_point_cells.end();
+          ++i )
+    {
+      Point * p = i->first;
+      std::vector<VolumeCell*> & vcs = i->second;
+      if ( vcs.size()==1 )
+      {
+        VolumeCell * vc = vcs[0];
+        Point * np = ToChild( p );
+        ChildCell & cc = cellmap[vc];
+        if ( not cc.done_ )
+        {
+          std::set<VolumeCell*> & childset = cc.cells_;
+          FindVolumeCell( np, childset );
+          if ( childset.size() > 0 )
+          {
+            Fill( vc, cc );
+            nonnodecells -= 1;
+          }
+        }
+      }
+    }
+  }
+
   while ( nonnodecells > 0 )
   {
     int backup = nonnodecells;
@@ -278,83 +319,129 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
           }
 
           // If there are less than two volumes at this cut, we have a touch
-          // at a boundary. This is of little use here.
+          // at a boundary.
 
-          if ( parent_cell_info.size() != 2 )
+          if ( parent_cell_info.size() == 1 )
           {
-            continue;
-          }
-
-          // Only useful if one volume is already done and the other one is not.
-
-          int doneindex = -1;
-          int otherindex = -1;
-          if ( parent_cell_info[0]->done_ and not parent_cell_info[1]->done_ )
-          {
-            doneindex = 0;
-            otherindex = 1;
-          }
-          else if ( parent_cell_info[1]->done_ and not parent_cell_info[0]->done_ )
-          {
-            doneindex = 1;
-            otherindex = 0;
-          }
-
-          if ( doneindex > -1 )
-          {
-            // There are many child facets on the child side. But those facets
-            // match the one parent facet. There must be no other facet
-            // outside that region.
-
-            const std::vector<Facet*> & child_facets = child_side->Facets();
-            for ( std::vector<Facet*>::const_iterator i=child_facets.begin();
-                  i!=child_facets.end();
-                  ++i )
+            if ( not parent_cell_info[0]->done_ )
             {
-              Facet * f = *i;
-              const std::set<VolumeCell*> & child_cells = f->Cells();
-              if ( child_cells.size()==2 )
+              const std::vector<Facet*> & child_facets = child_side->Facets();
+              for ( std::vector<Facet*>::const_iterator i=child_facets.begin();
+                    i!=child_facets.end();
+                    ++i )
               {
-                std::vector<VolumeCell*> child_cell_vector;
-                child_cell_vector.reserve( 2 );
-                child_cell_vector.assign( child_cells.begin(), child_cells.end() );
-                if ( parent_cell_info[doneindex]->ContainsChild( child_cell_vector[0] ) )
+                Facet * f = *i;
+                const std::set<VolumeCell*> & child_cells = f->Cells();
+                if ( child_cells.size()==1 )
                 {
-                  parent_cell_info[otherindex]->cells_.insert( child_cell_vector[1] );
+                  VolumeCell * c = *child_cells.begin();
+                  if ( not parent_cell_info[0]->ContainsChild( c ) )
+                  {
+                    parent_cell_info[0]->cells_.insert( c );
+                  }
                 }
-                else if ( parent_cell_info[doneindex]->ContainsChild( child_cell_vector[1] ) )
+                else if ( child_cells.size()==2 )
                 {
-                  parent_cell_info[otherindex]->cells_.insert( child_cell_vector[0] );
+                  // odd.
+                  throw std::runtime_error( "illegal number of neighbouring volume cells" );
                 }
                 else
                 {
-                  throw std::runtime_error( "child must be part of done parent cell" );
+                  throw std::runtime_error( "illegal number of neighbouring volume cells" );
                 }
               }
-              else if ( child_cells.size()==1 )
-              {
-                VolumeCell * c = *child_cells.begin();
-                if ( not parent_cell_info[doneindex]->ContainsChild( c ) )
-                {
-                  parent_cell_info[otherindex]->cells_.insert( c );
-                }
-              }
-              else
-              {
-                throw std::runtime_error( "illegal number of neighbouring volume cells" );
-              }
+
+              ChildCell & cc = *parent_cell_info[0];
+              Fill( cc.parent_, cc );
+              nonnodecells -= 1;
+            }
+          }
+          else if ( parent_cell_info.size() == 2 )
+          {
+            // Only useful if one volume is already done and the other one is not.
+
+            int doneindex = -1;
+            int otherindex = -1;
+            if ( parent_cell_info[0]->done_ and not parent_cell_info[1]->done_ )
+            {
+              doneindex = 0;
+              otherindex = 1;
+            }
+            else if ( parent_cell_info[1]->done_ and not parent_cell_info[0]->done_ )
+            {
+              doneindex = 1;
+              otherindex = 0;
             }
 
-            ChildCell & cc = *parent_cell_info[otherindex];
-            Fill( cc.parent_, cc );
-            nonnodecells -= 1;
+            if ( doneindex > -1 )
+            {
+              // There are many child facets on the child side. But those facets
+              // match the one parent facet. There must be no other facet
+              // outside that region.
+
+              const std::vector<Facet*> & child_facets = child_side->Facets();
+              for ( std::vector<Facet*>::const_iterator i=child_facets.begin();
+                    i!=child_facets.end();
+                    ++i )
+              {
+                Facet * f = *i;
+                const std::set<VolumeCell*> & child_cells = f->Cells();
+                if ( child_cells.size()==2 )
+                {
+                  std::vector<VolumeCell*> child_cell_vector;
+                  child_cell_vector.reserve( 2 );
+                  child_cell_vector.assign( child_cells.begin(), child_cells.end() );
+                  if ( parent_cell_info[doneindex]->ContainsChild( child_cell_vector[0] ) )
+                  {
+                    parent_cell_info[otherindex]->cells_.insert( child_cell_vector[1] );
+                  }
+                  else if ( parent_cell_info[doneindex]->ContainsChild( child_cell_vector[1] ) )
+                  {
+                    parent_cell_info[otherindex]->cells_.insert( child_cell_vector[0] );
+                  }
+                  else
+                  {
+                    throw std::runtime_error( "child must be part of done parent cell" );
+                  }
+                }
+                else if ( child_cells.size()==1 )
+                {
+                  VolumeCell * c = *child_cells.begin();
+                  if ( not parent_cell_info[doneindex]->ContainsChild( c ) )
+                  {
+                    parent_cell_info[otherindex]->cells_.insert( c );
+                  }
+                }
+                else
+                {
+                  throw std::runtime_error( "illegal number of neighbouring volume cells" );
+                }
+              }
+
+              ChildCell & cc = *parent_cell_info[otherindex];
+              Fill( cc.parent_, cc );
+              nonnodecells -= 1;
+            }
+            else
+            {
+//               std::cout << "parent_cell_info[0]->done_=" << parent_cell_info[0]->done_ << "  "
+//                         << "parent_cell_info[1]->done_=" << parent_cell_info[1]->done_ << "\n";
+            }
           }
+          else
+          {
+//             std::cout << "parent_cell_info.size()=" << parent_cell_info.size() << "\n";
+          }
+        }
+        else
+        {
+//           std::cout << "parent_facets.size()=" << parent_facets.size() << "\n";
         }
       }
     }
 
     if ( backup == nonnodecells )
-      throw std::runtime_error( "no progress" );
+      throw std::runtime_error( "no progress in child cell--parent cell mapping" );
   }
 
   for ( std::map<VolumeCell*, ChildCell>::iterator i=cellmap.begin(); i!=cellmap.end(); ++i )
@@ -538,7 +625,6 @@ void GEO::CUT::TetMeshIntersection::Status()
 
 void GEO::CUT::TetMeshIntersection::FindVolumeCell( Point * p, std::set<VolumeCell*> & childset )
 {
-//   std::set<VolumeCell*> cells;
   const std::set<Facet*> & facets = p->Facets();
   for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
   {
@@ -547,9 +633,6 @@ void GEO::CUT::TetMeshIntersection::FindVolumeCell( Point * p, std::set<VolumeCe
     const std::set<VolumeCell*> & facet_cells = f->Cells();
     std::copy( facet_cells.begin(), facet_cells.end(), std::inserter( childset, childset.begin() ) );
   }
-//   if ( cells.size()!=1 )
-//     throw std::runtime_error( "expect one volume at nodal point" );
-//   return *cells.begin();
 }
 
 void GEO::CUT::TetMeshIntersection::SwapPoints( Mesh & mesh, const std::map<Point*, Point*> & pointmap, std::vector<Point*> & points )

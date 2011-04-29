@@ -62,6 +62,7 @@ namespace GEO
 
       void RegisterNewPoints( Mesh & parent_mesh, const std::set<VolumeCell*> & childset );
 
+      /// put all volume cells at point to cell set
       void FindVolumeCell( Point * p, std::set<VolumeCell*> & childset );
 
       void ToParent( std::vector<Point*> & points ) { SwapPoints( child_to_parent_, points ); }
