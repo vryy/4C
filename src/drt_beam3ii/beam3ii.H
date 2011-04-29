@@ -118,7 +118,8 @@ public:
   friend StatMechTime::StatMechTime(ParameterList& params,DRT::Discretization& dis,LINALG::Solver& solver,IO::DiscretizationWriter& output);
 #ifdef D_BEAM3
 #ifdef D_BEAM3II
-  friend bool StatMechManager::CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2,1>& LID);
+  friend bool StatMechManager::CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2,1>& LID, RCP<double> phifil);
+  friend void StatMechManager::NumLinkerSpotsAndOrientation(const Epetra_Vector& disrow, const int &istep);
 #endif
 #endif
 

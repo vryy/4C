@@ -33,6 +33,7 @@ Maintainer: Christian Cyron
 #endif
 #ifdef D_TRUSS3
 #include "../drt_truss3/truss3.H"
+//#include "../drt_trusslm/trusslm.H"
 #endif
 
 #include "../drt_torsion3/torsion3.H"
@@ -680,6 +681,53 @@ void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element)
 #endif
 }
 
+/*------------------------------------------------------------------------*
+ | This function loops through all the elements of the discretization and |
+ | tests whether truss3 are broken by periodic boundary conditions in the |
+ | reference configuration; if yes initial values of jacobi determinants  |
+ | are adapted in a proper way                                 cyron 03/10|
+ *-----------------------------------------------------------------------*/
+/*void StatMechManager::PeriodicBoundaryTrussLmInit(DRT::Element* element)
+{
+
+#ifdef D_TRUSS3
+
+	DRT::ELEMENTS::TrussLm* truss = dynamic_cast<DRT::ELEMENTS::TrussLm*> (element);
+
+	//3D beam elements are embeddet into R^3:
+	const int ndim = 3;
+
+	//get reference configuration of truss3 element in proper format for later call of SetUpReferenceGeometry
+	vector<double> xrefe(truss->NumNode() * ndim, 0);
+
+	for (int i=0; i<truss->NumNode(); i++)
+		for (int dof = 0; dof < ndim; dof++)
+			xrefe[3* i + dof] = truss->Nodes()[i]->X()[dof];
+
+	// loop through all nodes except for the first node which remains fixed as reference node; all other nodes are
+	// shifted due to periodic boundary conditions if required
+	for (int i=1; i<truss->NumNode(); i++)
+	{
+		for (int dof = 0; dof < ndim; dof++)
+		{
+			//if the distance in some coordinate direction between some node and the first node becomes smaller by adding or subtracting
+			// the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
+			// back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
+			// is smaller than half the periodic length
+			if (fabs((truss->Nodes()[i]->X()[dof]) + statmechparams_.get<double> ("PeriodLength", 0.0) - (truss->Nodes()[0]->X()[dof])) < fabs((truss->Nodes()[i]->X()[dof]) - (truss->Nodes()[0]->X()[dof])))
+				xrefe[3* i + dof] += statmechparams_.get<double> ("PeriodLength", 0.0);
+
+			if (fabs((truss->Nodes()[i]->X()[dof]) - statmechparams_.get<double> ("PeriodLength", 0.0) - (truss->Nodes()[0]->X()[dof])) < fabs((truss->Nodes()[i]->X()[dof]) - (truss->Nodes()[0]->X()[dof])))
+				xrefe[3* i + dof] -= statmechparams_.get<double> ("PeriodLength", 0.0);
+		}
+	}
+
+	//note that the third argument "true" is necessary as all truss elements have already been initialized once upon reading input file
+	truss->SetUpReferenceGeometry(xrefe, true);
+
+#endif
+}*/
+
 /*----------------------------------------------------------------------*
  | Assign crosslink molecules and nodes to volume partitions            |
  |																								(public) mueller 08/10|
@@ -799,6 +847,9 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
 		if(crosslinkpartitions[0][part]<-0.9)
 			continue;
 		// determine search radius in accordance to bonding status
+		// reason for this: we set the crosslinker position of molecules with numbond>0 on a node, i.e. on a binding spot of a filement/linker
+		// So, the maximal radius is now R_LINK-DeltaR_LINK assuming the linker can bond in any direction.
+		// When numbond==0 -> crosslinker position is thought to be in the center of a sphere with the adjusted search radii rmin and rmax.
 		double rmin, rmax;
 		if ((int)numbond[part]<0.1)
 		{
@@ -1258,6 +1309,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 				else
 				{
 					RCP<DRT::ELEMENTS::Truss3> newcrosslinker = rcp(new DRT::ELEMENTS::Truss3(newcrosslinkerGID, (discret_.gNode(GID1))->Owner() ) );
+					//RCP<DRT::ELEMENTS::TrussLm> newcrosslinker = rcp(new DRT::ELEMENTS::TrussLm(newcrosslinkerGID, (discret_.gNode(GID1))->Owner() ) );
 
 					newcrosslinker->SetNodeIds(2,globalnodeids);
 					newcrosslinker->BuildNodalPointers(&nodes[0]);
@@ -1818,6 +1870,8 @@ void StatMechManager::WriteRestart(IO::DiscretizationWriter& output)
 	numcrossnodesrow->Export(*numcrossnodes_,exporter,Insert);
 	output.WriteVector("numcrossnodes",numcrossnodesrow,IO::DiscretizationWriter::nodevector);
 
+  output.WriteRedundantDoubleVector("startindex",startindex_);
+
   WriteRestartRedundantMultivector(output,"crosslinkerbond",crosslinkerbond_);
   WriteRestartRedundantMultivector(output,"crosslinkerpositions",crosslinkerpositions_);
   WriteRestartRedundantMultivector(output,"numbond",numbond_);
@@ -1884,6 +1938,7 @@ void StatMechManager::ReadRestart(IO::DiscretizationReader& reader)
 
 
 	//Read redundant Epetra_Multivectors and STL vectors
+	reader.ReadRedundantDoubleVector(startindex_,"startindex");
 	ReadRestartRedundantMultivector(reader,"crosslinkerbond",crosslinkerbond_);
 	ReadRestartRedundantMultivector(reader,"crosslinkerpositions",crosslinkerpositions_);
 	ReadRestartRedundantMultivector(reader,"numbond",numbond_);
@@ -2150,7 +2205,7 @@ void StatMechManager::ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double
  |                                                  (public) cyron 06/10|
  *----------------------------------------------------------------------*/
 
-bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2, 1>& LID)
+bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2, 1>& LID, RCP<double> phifil)
 {
 
   //if orientation is not to be checked explicitly, this function always returns true
@@ -2187,6 +2242,9 @@ bool StatMechManager::CheckOrientation(const LINALG::Matrix<3, 1> direction, con
   //Phi should be the acute angle between 0° and 90° between the filament axes
   if(Phi > M_PI/2.0)
     Phi = M_PI - Phi;
+
+  if(phifil!=Teuchos::null)
+  	*phifil = Phi;
 
   DeltaPhi = Phi - statmechparams_.get<double> ("PHI0",0.0);
 
@@ -2360,6 +2418,7 @@ void StatMechManager::CrosslinkerMoleculeInit()
 	// crosslinker column and row map
 	crosslinkermap_ = rcp(new Epetra_Map(-1, ncrosslink, &gids[0], 0, discret_.Comm()));
 	transfermap_    = rcp(new Epetra_Map(ncrosslink, 0, discret_.Comm()));
+	startindex_ = rcp(new std::vector<double>);
 
 	// create density-density-correlation-function map with
 	if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr ||
@@ -2376,7 +2435,71 @@ void StatMechManager::CrosslinkerMoleculeInit()
 		for(int i=0; i<trafo_->M(); i++)
 			(*trafo_)(i,i) = 1.0;
 		cog_.PutScalar(periodlength/2.0);
+
+		// start indices for parallel handling of orientation correlation etc in NumLinkerSpotsAndOrientation()
+		// calculation of start indices for each processor
+		// number of overall independent combinations
+		int numnodes = discret_.NodeColMap()->NumMyElements();
+		int numcombinations = (numnodes*numnodes-numnodes)/2;
+		// combinations on each processor
+		int combinationsperproc = (int)floor((double)numcombinations/(double)discret_.Comm().NumProc());
+		int remainder = numcombinations%combinationsperproc;
+
+		// get starting index tuples for later use
+		startindex_->assign(2*discret_.Comm().NumProc(), 0.0);
+
+		for(int mypid=0; mypid<discret_.Comm().NumProc()-1; mypid++)
+		{
+			std::vector<int> start(2,0);
+			bool continueloop = false;
+			bool quitloop = false;
+			int counter = 0;
+			int appendix = 0;
+			if(mypid==discret_.Comm().NumProc()-1)
+				appendix = remainder;
+
+			// loop over crosslinker pairs
+			for(int i=0; i<discret_.NodeColMap()->NumMyElements(); i++)
+			{
+				for(int j=0; j<discret_.NodeColMap()->NumMyElements(); j++)
+				{
+					if(i==(*startindex_)[2*mypid] && j==(*startindex_)[2*mypid+1])
+						continueloop = true;
+					if(j>i && continueloop)
+					{
+						if(counter<combinationsperproc+appendix)
+							counter++;
+						else
+						{
+							// new start index j
+							if(j==discret_.NodeColMap()->NumMyElements()-1)
+								start[1] = 0;
+							else
+								start[1] = j;
+							quitloop = true;
+							break;
+						}
+					}
+				}
+				if(quitloop)
+				{
+					// new start index i
+					if(start[1]==0)
+						start[0] = i+1;
+					else
+						start[0] = i;
+					// new start tuple
+					(*startindex_)[2*(mypid+1)] = (double)(start[0]);
+					(*startindex_)[2*(mypid+1)+1] = (double)(start[1]);
+					break;
+				}
+			}
+		}
 	}
+	/*cout<<"start indices: ";
+	for(int i=0; i<(int)startindex_->size(); i++)
+		cout<<(*startindex_)[i]<<" ";
+	cout<<endl;*/
 
 	double upperbound = 0.0;
 	// handling both cases: with and without periodic boundary conditions

@@ -117,11 +117,17 @@ public:
   //! \brief Initializes truss3 elements in case of perioddic boundary conditions
   void PeriodicBoundaryTruss3Init(DRT::Element* element);
 
+  //! \brief Initializes trusslm elements in case of perioddic boundary conditions
+  //void PeriodicBoundaryTrussLmInit(DRT::Element* element);
+
   //! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
   void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, const double &dt);
 
   //! \brief checks orientation of crosslinker relative to linked filaments
-  bool CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2,1>& LID);
+  bool CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2,1>& LID, RCP<double> phifil = Teuchos::null);
+
+	//! \brief counts the number of possible crosslinking spots and does an Orientation Check
+	void NumLinkerSpotsAndOrientation(const Epetra_Vector& disrow, const int &istep);
 
   /*! \brief adjusted DBC evaluation for periodic case
    *  \param params					 a parameter list*/
@@ -247,7 +253,7 @@ protected:
 	void DDCorrIterateVector(const Epetra_Vector& discol, LINALG::Matrix<3,1>* vectorj, const int& maxiterations);
 
 	//! \brief simply returns the number of free, one-bonded, and two-bonded crosslink molecules
-	void DDCorrCrosslinkCount(const std::ostringstream& filename);
+	void CrosslinkCount(const std::ostringstream& filename);
 
 	//! \brief check whether a crosslink connects two filaments or occupies two binding spots of the same element and therefore is to be visualized differently
 	bool CheckForKinkedVisual(int eleid);
@@ -389,6 +395,8 @@ protected:
 	RCP<Epetra_MultiVector> visualizepositions_;
 	// \brief a vector holding information on whether or not a crosslink molecule searches for neighbours
 	RCP<Epetra_Vector> searchforneighbours_;
+	// \brief a vector holding indices used in DensityDensityCorrOutput()
+	RCP<std::vector<double> > startindex_;
 
 	//the following variables are necessary only for repeating a time step with different random numbers after its having failed one time
 

@@ -1455,6 +1455,7 @@ void StatMechManager::GMSH_2_noded(const int& n,
 		else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
 			radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(thisele))->Izz()) / M_PI));
 		else
+			//radius = 0.003;
 			dserror("thisele is not a line element providing its radius.");
 #endif
 #endif
@@ -2471,7 +2472,9 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   	newcentershift(i) = cog(i) - periodlength/2.0;
 
   // write the numbers of free, one-bonded, and two-bonded crosslink molecules
-  DDCorrCrosslinkCount(filename);
+  CrosslinkCount(filename);
+  // write the numbers of free, one-bonded, and two-bonded crosslink molecules
+  NumLinkerSpotsAndOrientation(disrow, istep);
 
   // MultiVector because result vector will be of length 3*ddcorrrowmap_->MyLength()
 	Epetra_MultiVector crosslinksperbinrow(*ddcorrrowmap_,9 , true);
@@ -3746,7 +3749,7 @@ void StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Ep
  | simply counts the number of free, one-bonded, and two-bonded crosslinkers    |
  |                                                        (public) mueller 4/11 |
  *------------------------------------------------------------------------------*/
-void StatMechManager::DDCorrCrosslinkCount(const std::ostringstream& filename)
+void StatMechManager::CrosslinkCount(const std::ostringstream& filename)
 {
 	if(discret_.Comm().MyPID()==0)
 	{
@@ -3793,6 +3796,243 @@ void StatMechManager::DDCorrCrosslinkCount(const std::ostringstream& filename)
 
 	return;
 }
+
+/*------------------------------------------------------------------------------*                                                 |
+ | linker spot counter and check of interfilament orient. (public) mueller 12/10|
+ *------------------------------------------------------------------------------*/
+void StatMechManager::NumLinkerSpotsAndOrientation(const Epetra_Vector& disrow, const int &istep)
+{
+	/* what this does:
+	 * 1) orientation correlation function for all proximal binding spot pairs (regardless of orientation)
+	 * 2) count the number of overall possible binding spots for crosslinkers (proximal and correctly oriented)
+	 * 3) order parameter
+	 */
+	if (DRT::INPUT::IntegralValue<int>(statmechparams_, "CHECKORIENT"))
+	{
+		std::ostringstream orientfilename;
+		orientfilename << "./LinkerSpotsOrCorr_"<<std::setw(6) << setfill('0') << istep <<".dat";
+
+		// current node positions (column map)
+		std::map<int, LINALG::Matrix<3, 1> > currentpositions;
+		currentpositions.clear();
+
+		Epetra_Vector discol(*discret_.DofColMap(), true);
+
+		LINALG::Export(disrow, discol);
+
+		for (int i=0; i<discret_.NumMyColNodes(); ++i)
+		{
+			//get pointer at a node
+			const DRT::Node* node = discret_.lColNode(i);
+
+			//get GIDs of this node's degrees of freedom
+			std::vector<int> dofnode = discret_.Dof(node);
+
+			LINALG::Matrix<3, 1> currpos;
+			LINALG::Matrix<3, 1> currrot;
+
+			currpos(0) = node->X()[0] + discol[discret_.DofColMap()->LID(dofnode[0])];
+			currpos(1) = node->X()[1] + discol[discret_.DofColMap()->LID(dofnode[1])];
+			currpos(2) = node->X()[2] + discol[discret_.DofColMap()->LID(dofnode[2])];
+
+			currentpositions[node->LID()] = currpos;
+		}
+
+		// NODAL TRIAD UPDATE
+		//first get triads at all row nodes
+		Epetra_MultiVector nodaltriadsrow(*(discret_.NodeRowMap()), 4, true);
+		Epetra_MultiVector nodaltriadscol(*(discret_.NodeColMap()),4,true);
+		Epetra_Import importer(*(discret_.NodeColMap()),*(discret_.NodeRowMap()));
+
+		for (int i=0; i<discret_.NodeRowMap()->NumMyElements(); i++)
+		{
+			//lowest GID of any connected element (the related element cannot be a crosslinker, but has to belong to the actual filament discretization)
+			int lowestid(((discret_.lRowNode(i)->Elements())[0])->Id());
+			int lowestidele(0);
+			for (int j=0; j<discret_.lRowNode(i)->NumElement(); j++)
+				if (((discret_.lRowNode(i)->Elements())[j])->Id() < lowestid)
+				{
+					lowestid = ((discret_.lRowNode(i)->Elements())[j])->Id();
+					lowestidele = j;
+				}
+
+			//check type of element (orientation triads are not for all elements available in the same way
+			DRT::ElementType & eot = ((discret_.lRowNode(i)->Elements())[lowestidele])->ElementType();
+			//if element is of type beam3ii get nodal triad
+			if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
+			{
+				DRT::ELEMENTS::Beam3ii* filele = NULL;
+				filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (discret_.lRowNode(i)->Elements()[lowestidele]);
+
+				//check whether crosslinker is connected to first or second node of that element
+				int nodenumber = 0;
+				if(discret_.lRowNode(i)->Id() == ((filele->Nodes())[1])->Id() )
+					nodenumber = 1;
+
+				//save nodal triad of this node in nodaltriadrow
+				for(int j=0; j<4; j++)
+					nodaltriadsrow[j][i] = (filele->Qnew_[nodenumber])(j);
+			}
+			else if (eot == DRT::ELEMENTS::Beam3Type::Instance())
+			{
+				DRT::ELEMENTS::Beam3* filele = NULL;
+				filele = dynamic_cast<DRT::ELEMENTS::Beam3*> (discret_.lRowNode(i)->Elements()[lowestidele]);
+
+				//approximate nodal triad by triad at the central element Gauss point (assuming 2-noded beam elements)
+				for(int j=0; j<4; j++)
+					nodaltriadsrow[j][i] = (filele->Qnew_[0])(j);
+			}
+			else
+				dserror("Filaments have to be discretized with beam3ii elements for orientation check!!!");
+
+
+		}
+		//export nodaltriadsrow to col map variable
+		nodaltriadscol.Import(nodaltriadsrow,importer,Insert);
+
+		// distance and orientation checks
+		int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
+		// max. distance between two binding spots
+		double maxdist = statmechparams_.get<double>("PeriodLength", 0.0)*sqrt(3.0);
+		// max. angle
+		double maxangle = M_PI/2.0;
+		// minimal and maximal linker search radii
+		double rmin = statmechparams_.get<double>("R_LINK",0.0)-statmechparams_.get<double>("DeltaR_LINK",0.0);
+		double rmax = statmechparams_.get<double>("R_LINK",0.0)+statmechparams_.get<double>("DeltaR_LINK",0.0);
+		// number of overall independent combinations
+		int numnodes = discret_.NodeColMap()->NumMyElements();
+		int numcombinations = (numnodes*numnodes-numnodes)/2;
+		// combinations on each processor
+		int combinationsperproc = (int)floor((double)numcombinations/(double)discret_.Comm().NumProc());
+		int remainder = numcombinations%combinationsperproc;
+
+		int bindingspots = 0;
+		int combicount = 0;
+		Epetra_Vector anglesrow(*ddcorrrowmap_, true);
+		Epetra_MultiVector orderparameterbinsrow(*ddcorrrowmap_,2, true);
+		// loop over crosslinkermap_ (column map, same for all procs: maps all crosslink molecules)
+		for(int mypid=0; mypid<discret_.Comm().NumProc(); mypid++)
+		{
+			bool quitloop = false;
+			if(mypid==discret_.Comm().MyPID())
+			{
+				bool continueloop = false;
+				int appendix = 0;
+				if(mypid==discret_.Comm().NumProc()-1)
+					appendix = remainder;
+
+				for(int i=0; i<discret_.NodeColMap()->NumMyElements(); i++)
+				{
+					for(int j=0; j<discret_.NodeColMap()->NumMyElements(); j++)
+					{
+						// start adding crosslink from here
+						if(i==(*startindex_)[2*mypid] && j==(*startindex_)[2*mypid+1])
+							continueloop = true;
+						// only entries above main diagonal and within limits of designated number of crosslink molecules per processor
+						if(j>i && continueloop)
+							if(combicount<combinationsperproc+appendix)
+							{
+								combicount++;
+
+								LINALG::Matrix<2,1> LID;
+								LID(0) = i;
+								LID(1) = j;
+
+								LINALG::Matrix<3,1> distance((currentpositions.find((int)LID(0)))->second);
+								distance -= (currentpositions.find((int)LID(1)))->second;
+
+								// current distance bin
+								int currdistbin = (int)floor(distance.Norm2()/maxdist*numbins);
+								// reduce bin if distance == maxdist
+								if(currdistbin==numbins)
+									currdistbin--;
+
+								// direction between currently considered two nodes
+								LINALG::Matrix<3,1> direction(distance);
+								direction.Scale(1.0/direction.Norm2());
+								RCP<double> phifil = rcp(new double(0.0));
+								bool orientation = CheckOrientation(direction,nodaltriadscol,LID,phifil);
+
+								// increment count for that bin
+								orderparameterbinsrow[0][currdistbin] += 1.0;
+								// order parameter
+								orderparameterbinsrow[1][currdistbin] += (3.0*cos((*phifil))*cos((*phifil))-1)/2.0;
+
+								// proximity check
+								if(distance.Norm2()>rmin && distance.Norm2()<rmax)
+								{
+									// if angular constraints are met, increase binding spot count
+									if(orientation)
+										bindingspots++;
+
+									// determine the bin
+									int	curranglebin = (int)floor((*phifil)/maxangle*numbins);
+									// in case the distance is exactly periodlength*sqrt(3)
+									if(curranglebin==numbins)
+										curranglebin--;
+									anglesrow[curranglebin] += 1.0;
+								}
+							}
+							else
+							{
+								quitloop = true;
+								break;
+							}
+					}
+					if(quitloop)
+						break;
+				}
+				if(quitloop)
+					break;
+			}
+			else
+				continue;
+		}
+		// Export
+		// add up binding spots
+		int bspotsglob = 0;
+		discret_.Comm().SumAll(&bindingspots,&bspotsglob,1);
+
+		Epetra_Vector anglescol(*ddcorrcolmap_, true);
+		Epetra_MultiVector orderparameterbinscol(*ddcorrcolmap_,2, true);
+		Epetra_Import ddcorrimporter(*ddcorrcolmap_, *ddcorrrowmap_);
+		anglescol.Import(anglesrow, ddcorrimporter, Insert);
+		orderparameterbinscol.Import(orderparameterbinsrow,ddcorrimporter,Insert);
+
+		// Add the processor-specific data up
+		std::vector<int> angles(numbins, 0);
+		std::vector<std::vector<double> > orderparameter(numbins, std::vector<double>(2,0.0));
+		for(int i=0; i<numbins; i++)
+			for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
+			{
+				angles[i] += (int)anglescol[pid*numbins+i];
+				orderparameter[i][0] += orderparameterbinscol[0][pid*numbins+i];
+				orderparameter[i][1] += orderparameterbinscol[1][pid*numbins+i];
+			}
+
+		// average values
+		for(int i=0; i<numbins; i++)
+			if(orderparameter[i][0]>0.0) // i.e. >0
+				orderparameter[i][1] /= orderparameter[i][0];
+			else
+				orderparameter[i][1] = -99.0;
+
+		// write data to file
+		if(!discret_.Comm().MyPID())
+		{
+			FILE* fp = NULL;
+			fp = fopen(orientfilename.str().c_str(), "w");
+			std::stringstream histogram;
+
+			histogram<<bspotsglob<<"    "<<-99<<"    "<<-99<<endl;
+			for(int i=0; i<numbins; i++)
+				histogram<<i+1<<"    "<<angles[i]<<"    "<<orderparameter[i][1]<<endl;
+			//write content into file and close it
+			fprintf(fp, histogram.str().c_str());
+			fclose(fp);
+		}
+	}
+}//NumLinkerSpotsAndOrientation()
 
 /*------------------------------------------------------------------------------*                                                 |
  | distribution of spherical coordinates                  (public) mueller 12/10|
