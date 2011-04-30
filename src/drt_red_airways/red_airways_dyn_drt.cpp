@@ -55,6 +55,7 @@ void dyn_red_airways_drt()
 
 Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool CoupledTo3D)
 {
+#ifdef D_RED_AIRWAYS
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
@@ -153,8 +154,8 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   //------------------------------------------------------------------
 
 
-  Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> airwayimplicit 
-    = 
+  Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> airwayimplicit
+    =
     Teuchos::rcp(new AIRWAY::RedAirwayImplicitTimeInt(actdis,*solver,airwaystimeparams,*output));
   // initial field from restart or calculated by given function
 
@@ -176,7 +177,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
     RCP<ParameterList> param_temp;
     airwayimplicit->Integrate();
 
-    Teuchos::RCP<DRT::ResultTest> resulttest 
+    Teuchos::RCP<DRT::ResultTest> resulttest
       = Teuchos::rcp(new AIRWAY::RedAirwayResultTest(*airwayimplicit));
     DRT::Problem::Instance()->AddFieldTest(resulttest);
     DRT::Problem::Instance()->TestAll(actdis->Comm());
@@ -189,7 +190,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
     return airwayimplicit;
   }
 
-
+#endif
 } // end of dyn_red_airways_drt()
 
 #endif // #ifdef CCADISCRET
