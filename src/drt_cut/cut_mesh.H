@@ -122,7 +122,7 @@ public:
 
   void FindNodalDOFSets( bool include_inner );
 
-  void CreateIntegrationCells( bool levelset );
+  void CreateIntegrationCells( int count );
 
   void TestElementVolume( bool fatal );
 
@@ -195,6 +195,8 @@ public:
   Teuchos::RCP<PointPool> Points() { return pp_; }
 
   const Options & CreateOptions() const { return options_; }
+
+  const std::list<Teuchos::RCP<VolumeCell> > & VolumeCells() const { return cells_; }
 
 private:
 

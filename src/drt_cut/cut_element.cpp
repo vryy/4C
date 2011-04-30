@@ -309,14 +309,16 @@ void GEO::CUT::Element::GetCutPoints( std::set<Point*> & cut_points )
   }
 }
 
-void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, bool levelset )
+void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count )
 {
   if ( not active_ )
     return;
 
 #ifdef DEBUGCUTLIBRARY
   {
-    std::ofstream file( "volume.plot" );
+    std::stringstream str;
+    str << "volume-" << count << ".plot";
+    std::ofstream file( str.str().c_str() );
     for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
     {
       VolumeCell * vc = *i;
@@ -389,7 +391,7 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, bool levelset )
 
     TetMesh tetmesh( points, facets_, false );
 
-    tetmesh.CreateElementTets( mesh, this, cells_, cut_faces_, levelset );
+    tetmesh.CreateElementTets( mesh, this, cells_, cut_faces_, count );
   }
 }
 

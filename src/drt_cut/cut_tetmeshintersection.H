@@ -27,7 +27,7 @@ namespace GEO
                            const std::vector<Point*> & points,
                            const std::set<Side*> & cut_sides );
 
-      void Cut( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells );
+      void Cut( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, int count );
 
       void Status();
 

@@ -55,7 +55,7 @@ void GEO::CUT::LevelSetIntersection::Cut( bool include_inner )
     m.FindNodalDOFSets( include_inner );
   }
 
-  m.CreateIntegrationCells( true );
+  m.CreateIntegrationCells( 0 );
 
 #ifdef DEBUGCUTLIBRARY
   m.DumpGmsh( "mesh.pos" );

@@ -255,12 +255,13 @@ void cutmesh( GEO::CUT::Mesh & mesh )
 {
   mesh.Status();
 
+  mesh.MakeCutLines();
   mesh.MakeFacets();
   mesh.MakeVolumeCells();
   mesh.FindNodePositions();
   mesh.FindNodalDOFSets( true );
-  mesh.CreateIntegrationCells( false );
-  mesh.DumpGmshVolumeCells( "volumecells" );
+  mesh.CreateIntegrationCells( 0 );
+  //mesh.DumpGmshVolumeCells( "volumecells" );
   mesh.DumpGmshIntegrationCells( "integrationcells.pos" );
 #ifdef DEBUGCUTLIBRARY
   mesh.TestElementVolume( false );

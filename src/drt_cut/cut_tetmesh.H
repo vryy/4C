@@ -517,7 +517,7 @@ namespace GEO
                               Element * element,
                               const std::set<VolumeCell*> & cells,
                               const std::set<Side*> & cut_sides,
-                              bool levelset );
+                              int count );
 
       void CreateVolumeCellTets();
 

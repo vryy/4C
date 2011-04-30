@@ -421,23 +421,26 @@ void test_hex8_double()
 
 void test_hex8_multiple()
 {
-  GEO::CUT::Options options;
-  GEO::CUT::Mesh mesh(options);
-  GEO::CUT::Element * e = create_hex8( mesh );
-
-  for ( int i=1; i<10; ++i )
+  for ( int step=0; step<2; ++step )
   {
-    double x = 0.1*i;
-    GEO::CUT::Side * s = create_quad4( mesh, x, 0.1, 0, i%2==0 );
+    GEO::CUT::Options options( true, step!=0 );
+    GEO::CUT::Mesh mesh(options);
+    GEO::CUT::Element * e = create_hex8( mesh );
 
-    //mesh.Status();
+    for ( int i=1; i<10; ++i )
+    {
+      double x = 0.1*i;
+      GEO::CUT::Side * s = create_quad4( mesh, x, 0.1, 0, i%2==0 );
 
-    e->Cut( mesh, *( s ) );
+      //mesh.Status();
 
-    //mesh.Status();
+      e->Cut( mesh, *( s ) );
+
+      //mesh.Status();
+    }
+
+    cutmesh( mesh );
   }
-
-  cutmesh( mesh );
 }
 
 void test_hex8_bad1()

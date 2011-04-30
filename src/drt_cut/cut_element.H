@@ -65,7 +65,7 @@ public:
 
   void MakeVolumeCells( Mesh & mesh );
 
-  void CreateIntegrationCells( Mesh & mesh, bool levelset );
+  void CreateIntegrationCells( Mesh & mesh, int count );
 
   void FindNodePositions();
 
