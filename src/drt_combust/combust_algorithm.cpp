@@ -184,7 +184,8 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   );
 
   // output G-function initial state
-  if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary)
+  if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary and
+      DRT::INPUT::IntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == false )
     ScaTraField().Output();
 }
 
@@ -1210,8 +1211,8 @@ void COMBUST::Algorithm::Restart(int step)
   LINALG::Export(*phinrow,*phincol);
 
   // reconstruct old flame front
-  //flamefrontOld->ProcessFlameFront(combustdyn_,ScaTraField().Phin());
-  flamefrontOld->ProcessFlameFront(combustdyn_,phincol);
+  //flamefrontOld->ProcessFlameFront(ScaTraField().Phin());
+  flamefrontOld->ProcessFlameFront(phincol);
 
   Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle =
       rcp(new COMBUST::InterfaceHandleCombust(fluiddis,gfuncdis,flamefrontOld));
@@ -1313,7 +1314,7 @@ void COMBUST::Algorithm::RestartNew(int step)
   interfacehandle_->UpdateInterfaceHandle();
 
   // reconstruct old flame front
-  //flamefrontOld->ProcessFlameFront(combustdyn_,phincol);
+  //flamefrontOld->ProcessFlameFront(phincol);
 
   // build interfacehandle using old flame front
   // TODO @Martin Test + Kommentar

@@ -95,10 +95,7 @@ namespace COMBUST
     );
 
     /// generate the interface geometry based on the G-function (level set field)
-    void ProcessFlameFront(
-        const Teuchos::ParameterList& combustdyn,
-        const Teuchos::RCP<const Epetra_Vector> phi
-    );
+    void ProcessFlameFront(const Teuchos::RCP<const Epetra_Vector> phi);
 
     /// export boundary integration cells from this proc to parallel distribution
     void ExportFlameFront(std::map<int, GEO::BoundaryIntCells>& myflamefront);
@@ -347,6 +344,8 @@ namespace COMBUST
     /// pointer to vector on fluid NodeColMap holding smoothed values of the gradient of the G-function at n+1
     Teuchos::RCP<Epetra_MultiVector> gradphi_;
 
+    /// boolean indicating whether refinement strategy is turned on/off
+    bool refinement_;
     /// variable holding the number of refinement steps
     int maxRefinementLevel_;
 

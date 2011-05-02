@@ -64,6 +64,7 @@ phinm_(Teuchos::null),
 phin_(Teuchos::null),
 phinp_(Teuchos::null),
 gradphi_(Teuchos::null),
+refinement_(false),
 maxRefinementLevel_(0),
 xfeminttype_(INPAR::COMBUST::xfemintegration_tetgen)
 {
@@ -88,14 +89,21 @@ void COMBUST::FlameFront::UpdateFlameFront(
     bool ReinitModifyPhi
 )
 {
+  // get
+  refinement_ = DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENT");
+  maxRefinementLevel_ = Teuchos::getIntParameter(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENTLEVEL");
+  // get type of cut algorithm
+  xfeminttype_ = DRT::INPUT::IntegralValue<INPAR::COMBUST::XFEMIntegration>(combustdyn.sublist("COMBUSTION FLUID"),"XFEMINTEGRATION");
+
   // rearrange and store phi vectors
   StorePhiVectors(phin, phinp);
+
   // modify phi vectors nearly zero
   //ModifyPhiVector(combustdyn, ReinitModifyPhi);
 
   // generate the interface geometry based on the G-function (level set field)
   // remark: must be called after StorePhiVectors, since it relies on phinp_
-  ProcessFlameFront(combustdyn, phinp_);
+  ProcessFlameFront(phinp_);
 
   // compute smoothed gradient of G-function field
   // remark: must be called after ProcessFlameFront, since it relies on the new interface position
@@ -111,9 +119,7 @@ void COMBUST::FlameFront::UpdateFlameFront(
 /*------------------------------------------------------------------------------------------------*
  | public: generate the interface geometry based on the G-function (level set field)  henke 10/08 |
  *------------------------------------------------------------------------------------------------*/
-void COMBUST::FlameFront::ProcessFlameFront(
-    const Teuchos::ParameterList& combustdyn,
-    const Teuchos::RCP<const Epetra_Vector> phi)
+void COMBUST::FlameFront::ProcessFlameFront(const Teuchos::RCP<const Epetra_Vector> phi)
 {
   /* This function is accessible from outside the FlameFront class. It can be called e.g. by the
    * interface handle constructor. If the FlameFront class will always do the same thing, this
@@ -134,9 +140,6 @@ void COMBUST::FlameFront::ProcessFlameFront(
   myelementintcells_.clear();
   myboundaryintcells_.clear();
 
-  // get type of integrationcells
-  xfeminttype_ = DRT::INPUT::IntegralValue<INPAR::COMBUST::XFEMIntegration>(combustdyn.sublist("COMBUSTION FLUID"),"XFEMINTEGRATION");
-
   // loop over fluid (combustion) column elements
   // remark: loop over row elements would be sufficient, but enrichment is done in column loop
   for (int iele=0; iele<fluiddis_->NumMyColElements(); ++iele)
@@ -156,10 +159,9 @@ void COMBUST::FlameFront::ProcessFlameFront(
     const Teuchos::RCP<COMBUST::RefinementCell> rootcell = rcp(new COMBUST::RefinementCell(ele));
 
     // refinement strategy is turned on
-    if (DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENT") == true)
+    if (refinement_)
     {
       //std::cout << "starting refinement ..." << std::endl;
-      maxRefinementLevel_ = Teuchos::getIntParameter(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENTLEVEL");
       //std::cout << "maximal refinement level " << maxRefinementLevel_ << std::endl;
       if (maxRefinementLevel_ < 0)
         dserror("maximal refinement level not defined");
@@ -180,7 +182,7 @@ void COMBUST::FlameFront::ProcessFlameFront(
     // should not be necessary
 #if 0
     // delete all refinement cells of root cell
-    if (DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REFINEMENT") == true)
+    if (refinement_ == true)
     {
       rootcell->Clear();
     }
@@ -2496,11 +2498,6 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
       //------------------------
       GEO::CUT::LevelSetIntersection levelset;
 
-//cout << globalcellcoord << endl;
-//for (int i=0;i<gfuncvalues.size();i++)
-//  cout << gfuncvalues[i] << endl;
-//cout << distype_cell << endl;
-
     const std::vector<std::vector<double> >& vertexcoord = RefinementCells[irefcell]->GetVertexCoord();
       LINALG::SerialDenseMatrix cellcoord(3,numnode_cell);
       for (int ivert=0; ivert<numnode_cell; ivert++)
@@ -2583,6 +2580,9 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
           // store boundary integration cells
           const bool storedbound = StoreBoundaryIntegrationCells(ehandle,listBoundaryIntCellsperEle,xyze);
 
+          //cout << "storedvol " << storedvol << endl;
+          //cout << "storedbound " << storedbound << endl;
+
           // all volume cells and boundary cells have been stored
           if (storedvol and storedbound)
           {
@@ -2593,13 +2593,13 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
           else if (!storedvol and storedbound)
           {
             StoreElementCutStatus(COMBUST::FlameFront::touched, cutstat);
-            //cout << "element " << rootcell->Ele()->Id() << " is touched" << endl;
+            cout << "element " << rootcell->Ele()->Id() << " is touched" << endl;
           }
           // a volume cell and all boundary cells have been deleted, because they were too small
           else if (!storedvol and !storedbound)
           {
             StoreElementCutStatus(COMBUST::FlameFront::uncut, cutstat);
-            //cout << "element " << rootcell->Ele()->Id() << " is uncut" << endl;
+            cout << "element " << rootcell->Ele()->Id() << " is uncut" << endl;
           }
           // something went wrong
           else
@@ -2624,7 +2624,6 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
       //--------------
       else
       {
-//cout << "element is uncut" << endl;
         // update cut status of root cell (element)
         StoreElementCutStatus(COMBUST::FlameFront::uncut, cutstat);
         // store refinement cell in list of domain integration cells
@@ -2757,6 +2756,22 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
   default: dserror("unknown type of XFEM integration");
   }
 
+  // Abfrage fuer zwei getouchte Verfeinerungszellen -> bisected, falls alle domains gleich
+  if (refinement_ and cutstat == COMBUST::FlameFront::touched)
+  {
+    // get domain of first domain integration cell
+    const bool firstcellplus = listDomainIntCellsperEle[0].getDomainPlus();
+    for(GEO::DomainIntCells::const_iterator itercell = listDomainIntCellsperEle.begin(); itercell != listDomainIntCellsperEle.end(); ++itercell )
+    {
+      // if any domain integration cell belongs to the other domain, the element is bisected
+      if (itercell->getDomainPlus() != firstcellplus)
+      {
+        cutstat = COMBUST::FlameFront::bisected;
+        break;
+      }
+    }
+  }
+
   //------------------------------------------------------
   // store flame front information per element (root cell)
   //------------------------------------------------------
@@ -2770,11 +2785,8 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
   // add cut status for this root cell
   myelementcutstatus_[eleid] = cutstat;
 
-  //if (cutstat == COMBUST::FlameFront::bisected)
-  //{
-  if(rootcell->Bisected())
+  if (cutstat == COMBUST::FlameFront::touched)
     FlameFrontToGmsh(rootcell->ReturnRootCell(),listBoundaryIntCellsperEle,listDomainIntCellsperEle);
-  //}
 
   return;
 }
@@ -4699,7 +4711,7 @@ bool COMBUST::FlameFront::StoreDomainIntegrationCells(
   // compute volume of refinement cell (element)
   //--------------------------------------------
   // define tolerances
-  const double voltol = 1.0E-3;
+  const double voltol = 1.0E-4;
   double volele = 0.0;
   for ( std::set<GEO::CUT::VolumeCell*>::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
   {
@@ -4809,8 +4821,8 @@ bool COMBUST::FlameFront::StoreDomainIntegrationCellsTrisected(
   if ( pluscounter != 1 or pluscounter != 2 ) dserror("there should be one or two volume cells on either side for a trisected element");
 
   bool inGplus = false;
-  if (pluscounter == 1) // volume cell in the middle is G-plus
-    inGplus = true;
+  if (pluscounter == 2) // volume cell at at the sides are G-plus
+    inGplus = true;     // -> the whole cell is set G-plus
 
   //-------------------------------------
   // add domain integration cells to list
@@ -4898,8 +4910,8 @@ bool COMBUST::FlameFront::StoreBoundaryIntegrationCells(
   // compute volume and area of refinement cell (element)
   //-----------------------------------------------------
   // define tolerances
-  const double voltol = 1.0E-3;
-  const double areatol = pow(voltol,2.0/3.0);
+  const double voltol = 1.0E-4;
+  const double areatol = 2.0*pow(voltol,2.0/3.0);
   double volele = 0.0;
   for ( std::set<GEO::CUT::VolumeCell*>::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
   {
@@ -4960,7 +4972,8 @@ bool COMBUST::FlameFront::StoreBoundaryIntegrationCells(
           std::copy(vertcoord.A(), vertcoord.A()+3, &physCoord(0,ivert));
         }
 
-        if ( (volume/volele < voltol) and (bcell->Area()/areaele < areatol) )
+        if ( (volume/volele < voltol) or (volume/volele > (1-voltol)) and
+             (bcell->Area()/areaele < areatol) )
         {
           // do not store boundary cells for small volumes, but do store large boundary cells for
           // small volumes -> this will be a touched element, we have to keep its boundary cell
