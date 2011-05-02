@@ -515,6 +515,7 @@ set(OBJS_DRT_RED_AIRWAYS_LIB
   src/drt_red_airways/airway_impl.cpp
   src/drt_red_airways/red_airway.cpp
   src/drt_red_airways/red_airway_input.cpp
+  src/drt_red_airways/red_airway_resulttest.cpp
 )
 set(OBJS_DRT_INPAR
   src/drt_inpar/drt_boolifyparameters.cpp
