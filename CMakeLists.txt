@@ -546,6 +546,7 @@ set(OBJS_INTERSECTION
   src/drt_xfem/xfem_fluiddofset.cpp
   src/drt_xfem/xfem_fluidwizard.cpp
   src/drt_geometry/geo_intersection.cpp
+  src/drt_combust/combust_interface.cpp
 )
 set(OBJS_POST_DRT_MONITOR
   src/post_monitor/post_drt_monitor.cpp
@@ -568,7 +569,7 @@ set(OBJS_DRT_COMBUST
   src/drt_combust/combust_flamefront.cpp
   src/drt_combust/combust_fluidimplicitintegration.cpp
   src/drt_combust/combust_fluidresulttest.cpp
-  src/drt_combust/combust_interface.cpp
+#  src/drt_combust/combust_interface.cpp
   src/drt_combust/combust_refinementcell.cpp
   src/drt_combust/combust_reinitializer.cpp
   src/drt_combust/combust_utils.cpp
