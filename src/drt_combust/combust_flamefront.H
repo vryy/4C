@@ -254,6 +254,13 @@ namespace COMBUST
         LINALG::SerialDenseMatrix& xyze
     );
 
+    /// store a set of domain integration cells for a trisected element
+    bool StoreDomainIntegrationCellsTrisected(
+        GEO::CUT::ElementHandle * ehandle,
+        GEO::DomainIntCells& domainintcelllist,
+        LINALG::SerialDenseMatrix& xyze
+    );
+
     /// store a list of boundary integration cells
     bool StoreBoundaryIntegrationCells(
         GEO::CUT::ElementHandle * ehandle,

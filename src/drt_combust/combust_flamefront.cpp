@@ -2558,24 +2558,26 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
         // remark: this is unusual, since the
         if (numvolcells==1)
         {
-//cout << "element " << rootcell->Ele()->Id() << " is really touched" << endl;
+          //cout << "element " << rootcell->Ele()->Id() << " is really touched" << endl;
           // store domain integration cells
-          //StoreDomainIntegrationCells(ehandle,listDomainIntCellsperEle,xyze);
-          StoreDomainIntegrationCell(RefinementCells[irefcell],listDomainIntCellsperEle);
+          const bool storedvol = StoreDomainIntegrationCells(ehandle,listDomainIntCellsperEle,xyze);
+          //StoreDomainIntegrationCell(RefinementCells[irefcell],listDomainIntCellsperEle);
           // store boundary integration cells
           const bool storedbound = StoreBoundaryIntegrationCells(ehandle,listBoundaryIntCellsperEle,xyze);
 
-          if (!storedbound)
+          if (storedvol and !storedbound)
             StoreElementCutStatus(COMBUST::FlameFront::uncut, cutstat);
-          else
+          else if (storedvol and storedbound)
             StoreElementCutStatus(COMBUST::FlameFront::touched, cutstat);
+          else
+            dserror("there should be a volume cell for a touched element");
         }
         //-----------------
         // cell is bisected
         //-----------------
         else if (numvolcells==2)
         {
-//cout << "element " << rootcell->Ele()->Id() << " is really bisected" << endl;
+          //cout << "element " << rootcell->Ele()->Id() << " is really bisected" << endl;
           // store domain integration cells
           const bool storedvol = StoreDomainIntegrationCells(ehandle,listDomainIntCellsperEle,xyze);
           // store boundary integration cells
@@ -2608,13 +2610,11 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
         //------------------
         else if (numvolcells==3)
         {
-cout << "element " << rootcell->Ele()->Id() << " is trisected" << endl;
-          // update cut status of root cell (element)
-          StoreElementCutStatus(COMBUST::FlameFront::trisected, cutstat);
+          cout << "\n element " << rootcell->Ele()->Id() << " is trisected" << endl;
           // store domain integration cells
-          StoreDomainIntegrationCells(ehandle,listDomainIntCellsperEle,xyze);
-          // store boundary integration cells
-          StoreBoundaryIntegrationCells(ehandle,listBoundaryIntCellsperEle,xyze);
+          StoreDomainIntegrationCellsTrisected(ehandle,listDomainIntCellsperEle,xyze);
+          // update cut status of root cell (element)
+          StoreElementCutStatus(COMBUST::FlameFront::uncut, cutstat);
         }
         else
           dserror("cut status could not be determined");
@@ -4681,7 +4681,7 @@ void COMBUST::FlameFront::StoreBoundaryIntegrationCell(
 
 
 /*------------------------------------------------------------------------------------------------*
- | store domain integration cell (only for hex8 cells at present)                     henke 08/10 |
+ | store domain integration cell                                                      henke 04/11 |
  *------------------------------------------------------------------------------------------------*/
 bool COMBUST::FlameFront::StoreDomainIntegrationCells(
     GEO::CUT::ElementHandle* ehandle,
@@ -4722,7 +4722,7 @@ bool COMBUST::FlameFront::StoreDomainIntegrationCells(
 
     if (volcell->Volume()/volele >= voltol) // volume cell is large enough
     {
-      // get boundary integration cells
+      // get domain integration cells
       const std::set<GEO::CUT::IntegrationCell*> cells = volcell->IntegrationCells();
 
       // loop domain integration cells
@@ -4774,7 +4774,105 @@ bool COMBUST::FlameFront::StoreDomainIntegrationCells(
     }
   }
   // all volume cells have been stored
-  if ( volcells.size() == volcellcount and volcells.size() != 0 and domcellcount != 0)
+  if ( volcells.size() == volcellcount and domcellcount != 0)
+    storedvol = true;
+
+  return storedvol;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | store domain integration cells for a trisected element                             henke 05/11 |
+ *------------------------------------------------------------------------------------------------*/
+bool COMBUST::FlameFront::StoreDomainIntegrationCellsTrisected(
+    GEO::CUT::ElementHandle* ehandle,
+    GEO::DomainIntCells& domainintcelllist,
+    LINALG::SerialDenseMatrix& xyze
+)
+{
+  bool storedvol = false;
+
+  // get volume cells
+  std::set<GEO::CUT::VolumeCell*> volcells;
+  ehandle->GetVolumeCells( volcells );
+
+  //-------------------------------------------------------
+  // determine which side the middle volume cell belongs to
+  //-------------------------------------------------------
+  unsigned pluscounter = 0;
+  for ( std::set<GEO::CUT::VolumeCell*>::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
+  {
+    GEO::CUT::VolumeCell * volcell = *ivolcell;
+    if (volcell->Position() == GEO::CUT::Point::outside) // volume cell is in G-plus domain (G>0)
+      pluscounter += 1;
+  }
+  if ( pluscounter != 1 or pluscounter != 2 ) dserror("there should be one or two volume cells on either side for a trisected element");
+
+  bool inGplus = false;
+  if (pluscounter == 1) // volume cell in the middle is G-plus
+    inGplus = true;
+
+  //-------------------------------------
+  // add domain integration cells to list
+  //-------------------------------------
+  size_t volcellcount = 0;
+  size_t domcellcount = 0;
+
+  for ( std::set<GEO::CUT::VolumeCell*>::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
+  {
+    GEO::CUT::VolumeCell * volcell = *ivolcell;
+
+    //cout << "volumen "  << setw(24)<< std::setprecision(20) << volcell->Volume() << endl;
+    //cout << "volumenverhaeltnis " << volcell->Volume()/volele << endl;
+
+    // get boundary integration cells
+    const std::set<GEO::CUT::IntegrationCell*> cells = volcell->IntegrationCells();
+
+    // loop domain integration cells
+    for ( std::set<GEO::CUT::IntegrationCell*>::iterator icell=cells.begin(); icell!=cells.end(); ++icell )
+    {
+      GEO::CUT::IntegrationCell * ic = *icell;
+      DRT::Element::DiscretizationType distype = ic->Shape();
+      int numnode = DRT::UTILS::getNumberOfElementNodes( distype );
+
+      LINALG::SerialDenseMatrix physCoord(3,numnode);
+      LINALG::SerialDenseMatrix coord = ic->Coordinates();
+
+      for (int ivert=0; ivert<numnode; ivert++)
+      {
+        // write 'coord' to fixed size matrix format
+        LINALG::Matrix<3,1> vertcoord;
+        std::copy(&coord(0,ivert), &coord(0,ivert)+3, vertcoord.A());
+
+        // transform vertex from local (element) coordinates to global (physical) coordinates
+        GEO::elementToCurrentCoordinatesInPlace(ehandle->Shape(), xyze, vertcoord);
+
+        // write as 'physCoord'
+        std::copy(vertcoord.A(), vertcoord.A()+3, &physCoord(0,ivert));
+      }
+
+      if (distype != DRT::Element::hex8 and
+          distype != DRT::Element::tet4)
+      {
+        cout << "distype " << distype << endl;
+        dserror("unexpected type of domain integration cell");
+      }
+      if (ic->Volume() > 1.0E-8)
+      {
+        domainintcelllist.push_back( GEO::DomainIntCell( distype, coord, physCoord, inGplus ) );
+        domcellcount += 1;
+      }
+      else
+      {
+        //cout << "small domain cell not stored" << endl;
+        //cout << "volume" << ic->Volume() << endl;
+      }
+    }
+    volcellcount += 1;
+    //cout << "volvellcount" << volcellcount << endl;
+  }
+  // all volume cells have been stored
+  if ( volcells.size() == volcellcount and domcellcount != 0)
     storedvol = true;
 
   return storedvol;

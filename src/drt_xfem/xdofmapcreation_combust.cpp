@@ -109,6 +109,7 @@ bool XFEM::ApplyJumpEnrichmentToTouched(
     
     if((int)phinp_.size() != numnodes) dserror("phinp_ - vector has not the same length as numnodes");
     
+    unsigned nodecount = 0;
     // enrich only nodes which are touched, that means nodes which have Gfunc ~ 0.0
     for (int inode = 0; inode<numnodes; ++inode)
     {
@@ -123,8 +124,13 @@ bool XFEM::ApplyJumpEnrichmentToTouched(
           nodeDofMap[nodeid].insert(XFEM::FieldEnr(*field, jumpenr));
           //std::cout << "additional Jump Enrichment applied for node " << nodeid << std::endl;
         }
+        nodecount += 1;
       }
-    };
+    }
+    if (nodecount < 4)
+      dserror("number of enriched nodes of touched element less than four %d ", nodecount);
+    if (nodecount != 4)
+      cout << "/!\\ touched element " << xfemele->Id() << " has " << nodecount << " enriched nodes" << endl;
 
   return skipped_element;
 }

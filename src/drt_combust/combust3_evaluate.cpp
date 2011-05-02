@@ -17,7 +17,6 @@ Maintainer: Florian Henke
 #include "combust3.H"
 #include "combust3_sysmat.H"
 #include "combust3_interpolation.H"
-#include "combust_flamefront.H"
 #include "combust_defines.H"
 
 #include "../linalg/linalg_utils.H"
@@ -164,22 +163,12 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         else if (cutstat == COMBUST::FlameFront::bisected)
         {
           this->bisected_ = true;
-          // regular element (numdomaincells==1 and numboundarycells==0)
-//          std::size_t numDomainCells = ih_->GetNumDomainIntCells(this);
-//          cout << "number of domain cells " << numDomainCells << endl;
-//          std::size_t numBoundaryCells = ih_->GetNumBoundaryIntCells(this);
-//          cout << "number of boundary cells " << numBoundaryCells << endl;
         }
         else if (cutstat == COMBUST::FlameFront::trisected)
           this->trisected_ = true;
         else if (cutstat == COMBUST::FlameFront::touched)
         {
           this->touched_ = true;
-          cout << "touched" << endl;
-          std::size_t numDomainCells = ih_->GetNumDomainIntCells(this);
-          cout << "number of domain cells " << numDomainCells << endl;
-          std::size_t numBoundaryCells = ih_->GetNumBoundaryIntCells(this);
-          cout << "number of boundary cells " << numBoundaryCells << endl;
         }
         else
           dserror("cut status not available for element % ",this->Id());
