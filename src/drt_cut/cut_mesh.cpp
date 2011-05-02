@@ -911,14 +911,38 @@ void GEO::CUT::Mesh::Cut( LevelSetSide & side )
         ++i )
   {
     Element & e = *i->second;
-    e.Cut( *this, side );
+#ifndef DEBUGCUTLIBRARY
+    try
+    {
+#endif
+      e.Cut( *this, side );
+#ifndef DEBUGCUTLIBRARY
+    }
+    catch ( std::runtime_error & err )
+    {
+      e.DebugDump();
+      throw;
+    }
+#endif
   }
   for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
     Element & e = **i;
-    e.Cut( *this, side );
+#ifndef DEBUGCUTLIBRARY
+    try
+    {
+#endif
+      e.Cut( *this, side );
+#ifndef DEBUGCUTLIBRARY
+    }
+    catch ( std::runtime_error & err )
+    {
+      e.DebugDump();
+      throw;
+    }
+#endif
   }
 }
 
@@ -929,14 +953,38 @@ void GEO::CUT::Mesh::MakeCutLines()
         ++i )
   {
     Element & e = *i->second;
-    e.MakeCutLines( *this );
+#ifndef DEBUGCUTLIBRARY
+    try
+    {
+#endif
+      e.MakeCutLines( *this );
+#ifndef DEBUGCUTLIBRARY
+    }
+    catch ( std::runtime_error & err )
+    {
+      e.DebugDump();
+      throw;
+    }
+#endif
   }
   for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
     Element & e = **i;
-    e.MakeCutLines( *this );
+#ifndef DEBUGCUTLIBRARY
+    try
+    {
+#endif
+      e.MakeCutLines( *this );
+#ifndef DEBUGCUTLIBRARY
+    }
+    catch ( std::runtime_error & err )
+    {
+      e.DebugDump();
+      throw;
+    }
+#endif
   }
 }
 
@@ -947,14 +995,38 @@ void GEO::CUT::Mesh::MakeFacets()
         ++i )
   {
     Element & e = *i->second;
-    e.MakeFacets( *this );
+#ifndef DEBUGCUTLIBRARY
+    try
+    {
+#endif
+      e.MakeFacets( *this );
+#ifndef DEBUGCUTLIBRARY
+    }
+    catch ( std::runtime_error & err )
+    {
+      e.DebugDump();
+      throw;
+    }
+#endif
   }
   for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
     Element & e = **i;
-    e.MakeFacets( *this );
+#ifndef DEBUGCUTLIBRARY
+    try
+    {
+#endif
+      e.MakeFacets( *this );
+#ifndef DEBUGCUTLIBRARY
+    }
+    catch ( std::runtime_error & err )
+    {
+      e.DebugDump();
+      throw;
+    }
+#endif
   }
 }
 
@@ -965,14 +1037,38 @@ void GEO::CUT::Mesh::MakeVolumeCells()
         ++i )
   {
     Element & e = *i->second;
-    e.MakeVolumeCells( *this );
+#ifndef DEBUGCUTLIBRARY
+    try
+    {
+#endif
+      e.MakeVolumeCells( *this );
+#ifndef DEBUGCUTLIBRARY
+    }
+    catch ( std::runtime_error & err )
+    {
+      e.DebugDump();
+      throw;
+    }
+#endif
   }
   for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
     Element & e = **i;
-    e.MakeVolumeCells( *this );
+#ifndef DEBUGCUTLIBRARY
+    try
+    {
+#endif
+      e.MakeVolumeCells( *this );
+#ifndef DEBUGCUTLIBRARY
+    }
+    catch ( std::runtime_error & err )
+    {
+      e.DebugDump();
+      throw;
+    }
+#endif
   }
 }
 
@@ -988,14 +1084,38 @@ void GEO::CUT::Mesh::FindNodePositions()
         ++i )
   {
     Element & e = *i->second;
-    e.FindNodePositions();
+#ifndef DEBUGCUTLIBRARY
+    try
+    {
+#endif
+      e.FindNodePositions();
+#ifndef DEBUGCUTLIBRARY
+    }
+    catch ( std::runtime_error & err )
+    {
+      e.DebugDump();
+      throw;
+    }
+#endif
   }
   for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
     Element & e = **i;
-    e.FindNodePositions();
+#ifndef DEBUGCUTLIBRARY
+    try
+    {
+#endif
+      e.FindNodePositions();
+#ifndef DEBUGCUTLIBRARY
+    }
+    catch ( std::runtime_error & err )
+    {
+      e.DebugDump();
+      throw;
+    }
+#endif
   }
 
   FindFacetPositions();
@@ -1240,14 +1360,38 @@ void GEO::CUT::Mesh::CreateIntegrationCells( int count )
         ++i )
   {
     Element & e = *i->second;
-    e.CreateIntegrationCells( *this, count+1 );
+#ifndef DEBUGCUTLIBRARY
+    try
+    {
+#endif
+      e.CreateIntegrationCells( *this, count+1 );
+#ifndef DEBUGCUTLIBRARY
+    }
+    catch ( std::runtime_error & err )
+    {
+      e.DebugDump();
+      throw;
+    }
+#endif
   }
   for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
         i!=shadow_elements_.end();
         ++i )
   {
     Element & e = **i;
-    e.CreateIntegrationCells( *this, count+1 );
+#ifndef DEBUGCUTLIBRARY
+    try
+    {
+#endif
+      e.CreateIntegrationCells( *this, count+1 );
+#ifndef DEBUGCUTLIBRARY
+    }
+    catch ( std::runtime_error & err )
+    {
+      e.DebugDump();
+      throw;
+    }
+#endif
   }
 }
 

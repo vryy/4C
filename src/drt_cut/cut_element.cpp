@@ -688,3 +688,23 @@ int GEO::CUT::Element::NumGaussPoints( DRT::Element::DiscretizationType shape )
   }
   return numgp;
 }
+
+void GEO::CUT::Element::DebugDump()
+{
+  std::cout << "Problem in element " << Id() << " of shape " << Shape() << ":\n";
+  const std::vector<Node*> & nodes = Nodes();
+  for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+  {
+    Node * n = *i;
+    n->Print();
+    std::cout << "\n";
+  }
+  std::cout << "\n";
+  const std::set<Side*> & cutsides = CutSides();
+  for ( std::set<Side*>::const_iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+  {
+    Side * s = *i;
+    s->Print();
+    std::cout << "\n";
+  }
+}

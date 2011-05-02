@@ -109,6 +109,8 @@ public:
 
   int NumGaussPoints( DRT::Element::DiscretizationType shape );
 
+  void DebugDump();
+
 protected:
 
   //const std::vector<Side*> & Sides() { return sides_; }
