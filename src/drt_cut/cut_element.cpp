@@ -327,27 +327,6 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count )
   }
 #endif
 
-#if 0
-#ifdef DEBUGCUTLIBRARY
-  bool active_element = false;
-  const std::vector<Node*> & nodes = Nodes();
-  for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
-  {
-    Node * n = *i;
-    double lsv = n->LSV();
-    if ( lsv < -TOLERANCE or lsv > TOLERANCE )
-    {
-      active_element = true;
-      break;
-    }
-  }
-  if ( not active_element )
-  {
-    std::cout << "problem?\n";
-  }
-#endif
-#endif
-
   if ( cells_.size()==1 )
   {
     VolumeCell * vc = *cells_.begin();
@@ -357,42 +336,40 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count )
     }
   }
 
-  bool done = false;
-
   if ( mesh.CreateOptions().SimpleShapes() )
   {
-    done = IntegrationCellCreator::CreateCells( mesh, cells_ );
-  }
-
-  if ( not done )
-  {
-    std::set<Point*> cut_points;
-
-    // There are never holes in a cut facet. Furthermore, cut facets are
-    // always convex, as all elements and sides are convex. Thus, we are free
-    // to triangulate all cut facets. This needs to be done, so repeated cuts
-    // work in the right way.
-
-    for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+    if ( IntegrationCellCreator::CreateCells( mesh, this, cells_ ) )
     {
-      Facet * f = *i;
-      if ( f->OnCutSide() and f->HasHoles() )
-        throw std::runtime_error( "no holes in cut facet possible" );
-      f->GetAllPoints( mesh, cut_points, f->OnCutSide() );
+      return;
     }
-
-    std::vector<Point*> points;
-    points.reserve( cut_points.size() );
-    points.assign( cut_points.begin(), cut_points.end() );
-
-    // sort points that go into qhull to obtain the same result independent of
-    // pointer values (compiler flags, code structure, memory usage, ...)
-    std::sort( points.begin(), points.end(), PointPidLess() );
-
-    TetMesh tetmesh( points, facets_, false );
-
-    tetmesh.CreateElementTets( mesh, this, cells_, cut_faces_, count );
   }
+
+  std::set<Point*> cut_points;
+
+  // There are never holes in a cut facet. Furthermore, cut facets are
+  // always convex, as all elements and sides are convex. Thus, we are free
+  // to triangulate all cut facets. This needs to be done, so repeated cuts
+  // work in the right way.
+
+  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  {
+    Facet * f = *i;
+    if ( f->OnCutSide() and f->HasHoles() )
+      throw std::runtime_error( "no holes in cut facet possible" );
+    f->GetAllPoints( mesh, cut_points, f->OnCutSide() );
+  }
+
+  std::vector<Point*> points;
+  points.reserve( cut_points.size() );
+  points.assign( cut_points.begin(), cut_points.end() );
+
+  // sort points that go into qhull to obtain the same result independent of
+  // pointer values (compiler flags, code structure, memory usage, ...)
+  std::sort( points.begin(), points.end(), PointPidLess() );
+
+  TetMesh tetmesh( points, facets_, false );
+
+  tetmesh.CreateElementTets( mesh, this, cells_, cut_faces_, count );
 }
 
 void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )

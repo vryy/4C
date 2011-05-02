@@ -1,6 +1,8 @@
 #ifndef CUT_INTEGRATIONCELLCREATOR_H
 #define CUT_INTEGRATIONCELLCREATOR_H
 
+#include <map>
+
 #include "cut_volumecell.H"
 
 namespace GEO
@@ -13,7 +15,7 @@ class IntegrationCellCreator
 {
 public:
 
-  static bool CreateCells( Mesh & mesh, const std::set<VolumeCell*> & cells );
+  static bool CreateCells( Mesh & mesh, Element * element, const std::set<VolumeCell*> & cells );
 
   static bool CreateCell( Mesh & mesh, DRT::Element::DiscretizationType shape, VolumeCell * cell );
 
@@ -25,12 +27,23 @@ private:
   bool CreateHex8Cell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets );
   bool CreateWedge6Cell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets );
   bool CreatePyramid5Cell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets );
+  bool CreateSpecialCases( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets );
+
+  bool Hex8HorizontalCut( Mesh & mesh,
+                          Element * element,
+                          VolumeCell * cell,
+                          const std::set<Facet*> & facets,
+                          int axis,
+                          double r );
 
   void Add( VolumeCell * vc,
             DRT::Element::DiscretizationType shape,
             const std::vector<Point*> & points )
   {
-    ic & cell = cells_[vc];
+    volume & v = cells_[vc];
+    std::vector<ic> & cells = v.domain_;
+    cells.push_back( ic() );
+    ic & cell = cells.back();
     cell.shape_ = shape;
     cell.points_.reserve( points.size() );
     cell.points_.assign( points.begin(), points.end() );
@@ -41,7 +54,7 @@ private:
                 DRT::Element::DiscretizationType shape,
                 const std::vector<Point*> & side )
   {
-    ic & cell = cells_[vc];
+    volume & cell = cells_[vc];
     std::vector<bc> & bcells = cell.boundary_;
     bcells.push_back( bc() );
     bc & bcell = bcells.back();
@@ -67,8 +80,6 @@ private:
   {
     DRT::Element::DiscretizationType shape_;
     std::vector<Point*> points_;
-    //VolumeCell * cell_;
-    std::vector<bc> boundary_;
 
     void Execute( Mesh & mesh, VolumeCell * vc )
     {
@@ -76,7 +87,27 @@ private:
     }
   };
 
-  std::map<VolumeCell*, ic> cells_;
+  struct volume
+  {
+    std::vector<ic> domain_;
+    std::vector<bc> boundary_;
+
+    void Execute( Mesh & mesh, VolumeCell * vc )
+    {
+      for ( std::vector<ic>::iterator i=domain_.begin(); i!=domain_.end(); ++i )
+      {
+        ic & cell = *i;
+        cell.Execute( mesh, vc );
+      }
+      for ( std::vector<bc>::iterator i=boundary_.begin(); i!=boundary_.end(); ++i )
+      {
+        bc & bcell = *i;
+        bcell.Execute( mesh, vc );
+      }
+    }
+  };
+
+  std::map<VolumeCell*, volume> cells_;
 };
 
 }

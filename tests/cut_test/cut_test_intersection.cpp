@@ -472,6 +472,7 @@ void test_hex8_quad4_alex4()
   intersection.Status();
   intersection.Cut( true );
   intersection.Status();
+  intersection.PrintCellStats();
 }
 
 void test_hex8_quad4_alex5()

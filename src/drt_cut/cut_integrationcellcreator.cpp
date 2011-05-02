@@ -8,7 +8,7 @@
 #include "cut_element.H"
 
 
-bool GEO::CUT::IntegrationCellCreator::CreateCells( Mesh & mesh, const std::set<VolumeCell*> & cells )
+bool GEO::CUT::IntegrationCellCreator::CreateCells( Mesh & mesh, Element * element, const std::set<VolumeCell*> & cells )
 {
   IntegrationCellCreator creator;
 
@@ -17,7 +17,8 @@ bool GEO::CUT::IntegrationCellCreator::CreateCells( Mesh & mesh, const std::set<
     VolumeCell * cell = *i;
     bool found = ( creator.CreateTet4Cell( mesh, cell, cell->Facets() ) or
                    creator.CreateHex8Cell( mesh, cell, cell->Facets() ) or
-                   creator.CreateWedge6Cell( mesh, cell, cell->Facets() ) );
+                   creator.CreateWedge6Cell( mesh, cell, cell->Facets() ) or
+                   creator.CreateSpecialCases( mesh, cell, cell->Facets() ) );
 
     // pyramids are not save right now.
     // Pyramid5IntegrationCell::CreateCell( mesh, this, facets_, creator ) );
@@ -66,16 +67,11 @@ bool GEO::CUT::IntegrationCellCreator::CreateCell( Mesh & mesh,
 
 void GEO::CUT::IntegrationCellCreator::Execute( Mesh & mesh )
 {
-  for ( std::map<VolumeCell*, ic>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+  for ( std::map<VolumeCell*, volume>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
   {
     VolumeCell * vc = i->first;
-    ic & cell = i->second;
+    volume & cell = i->second;
     cell.Execute( mesh, vc );
-    for ( std::vector<bc>::iterator i=cell.boundary_.begin(); i!=cell.boundary_.end(); ++i )
-    {
-      bc & bcell = *i;
-      bcell.Execute( mesh, vc );
-    }
   }
 }
 
@@ -779,5 +775,384 @@ bool GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell( Mesh & mesh, VolumeCe
     }
   }
   return false;
+}
+
+bool GEO::CUT::IntegrationCellCreator::CreateSpecialCases( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets )
+{
+  for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+  {
+    Facet * f = *i;
+    if ( f->HasHoles() )
+    {
+      return false;
+    }
+  }
+
+  Element * parent = cell->ParentElement();
+  const std::vector<Side*> & sides = parent->Sides();
+
+  switch( parent->Shape() )
+  {
+  case DRT::Element::hex8:
+  {
+
+    // find how many element sides are touched by this volume cell and how
+    // often those sides are touched.
+    std::vector<int> touched( 6, 0 );
+    for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+    {
+      Facet * f = *i;
+      if ( not f->OnCutSide() )
+      {
+        Side * s = f->ParentSide();
+        std::vector<Side*>::const_iterator pos = std::find( sides.begin(), sides.end(), s );
+        if ( pos != sides.end() )
+        {
+          touched[ pos - sides.begin() ] += 1;
+        }
+      }
+    }
+
+    int touched_size = 0;
+    for ( std::vector<int>::iterator i=touched.begin(); i!=touched.end(); ++i )
+    {
+      if ( *i > 0 )
+      {
+        touched_size += 1;
+      }
+      if ( *i > 1 )
+      {
+        return false;
+      }
+    }
+
+    int uncutcount = 0;
+    std::vector<int> cut;
+    cut.reserve( 6 );
+    const std::vector<Side*> & sides = parent->Sides();
+    for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
+    {
+      Side * s = *i;
+      cut.push_back( s->IsCut() );
+      if ( not cut.back() )
+        uncutcount += 1;
+    }
+
+    if ( uncutcount == 2 )
+    {
+      double r = 0.;
+      int axis = -1;
+
+      // We use shards face numbering. Be careful.
+      if ( not cut[4] and not cut[5] )
+      {
+        if ( touched_size != 5 )
+        {
+          return false;
+        }
+
+        axis = 2;
+        if ( touched[5] > 0 )
+        {
+          r = 1;
+        }
+        else
+        {
+          r = -1;
+        }
+        return Hex8HorizontalCut( mesh, parent, cell, facets, axis, r );
+      }
+      else if ( not cut[0] and not cut[2] )
+      {
+        if ( touched_size != 5 )
+        {
+          return false;
+        }
+
+        axis = 1;
+        if ( touched[2] > 0 )
+        {
+          r = 1;
+        }
+        else
+        {
+          r = -1;
+        }
+        return Hex8HorizontalCut( mesh, parent, cell, facets, axis, r );
+      }
+      else if ( not cut[1] and not cut[3] )
+      {
+        if ( touched_size != 5 )
+        {
+          return false;
+        }
+
+        axis = 0;
+        if ( touched[1] > 0 )
+        {
+          r = 1;
+        }
+        else
+        {
+          r = -1;
+        }
+        return Hex8HorizontalCut( mesh, parent, cell, facets, axis, r );
+      }
+    }
+    return false;
+  }
+  default:
+    break;
+  }
+  return false;
+}
+
+bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
+                                                          Element * element,
+                                                          VolumeCell * cell,
+                                                          const std::set<Facet*> & facets,
+                                                          int axis,
+                                                          double r )
+{
+  Point::PointPosition position = cell->Position();
+
+  std::set<Point*> cut_points;
+  cell->GetAllPoints( mesh, cut_points );
+
+  std::vector<Point*> points;
+  points.reserve( cut_points.size() );
+  points.assign( cut_points.begin(), cut_points.end() );
+
+  //std::cout << "hex8 projection along axis " << axis << " to " << r << "\n";
+
+  // find all inner points that need projecting
+
+  std::set<Point*> inner;
+
+  std::vector<Facet*> inner_facets;
+
+  for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+  {
+    Facet * f = *i;
+    if ( f->OnCutSide() )
+    {
+      inner_facets.push_back( f );
+      const std::vector<Point*> & points = f->CornerPoints();
+      std::copy( points.begin(), points.end(), std::inserter( inner, inner.begin() ) );
+    }
+  }
+
+  std::vector<Point*> inner_points;
+  std::vector<Point*> projected_points;
+
+  inner_points.reserve( inner.size() );
+  std::copy( inner.begin(), inner.end(), std::back_inserter( inner_points ) );
+
+  // project along given axis to r
+
+  LINALG::Matrix<3,1> rst;
+
+  std::vector<LINALG::Matrix<3,1> > local_points;
+  local_points.reserve( inner_points.size() );
+  projected_points.reserve( inner_points.size() );
+
+  for ( std::vector<Point*>::iterator i=inner_points.begin(); i!=inner_points.end(); ++i )
+  {
+    Point * p = *i;
+    LINALG::Matrix<3,1> xyz;
+    p->Coordinates( xyz.A() );
+    element->LocalCoordinates( xyz, rst );
+
+    local_points.push_back( rst );
+
+    // projection
+    rst( axis ) = r;
+
+    // create new points
+    element->GlobalCoordinates( rst, xyz );
+    projected_points.push_back( mesh.NewPoint( xyz.A(), NULL, NULL ) );
+    projected_points.back()->Position( position );
+  }
+
+  // create integration cells
+
+  for ( std::vector<Facet*>::iterator i=inner_facets.begin();
+        i!=inner_facets.end();
+        ++i )
+  {
+    Facet * f = *i;
+    if ( f->Equals( DRT::Element::tri3 ) )
+    {
+      std::vector<Point*> points;
+      points.reserve( 6 );
+
+      const std::vector<Point*> & corner_points = f->CornerPoints();
+
+      // find facet orientation in local coordinates
+      double drs = 0;
+      LINALG::Matrix<3,3> xyze;
+      LINALG::Matrix<3,1> normal;
+      LINALG::Matrix<2,3> deriv;
+      LINALG::Matrix<2,2> metrictensor;
+
+      double * x = xyze.A();
+
+      int sidepos = -1;
+      if ( r > 0 )
+      {
+        sidepos = 0;
+        std::copy( corner_points.begin(), corner_points.end(), std::back_inserter( points ) );
+      }
+
+      for ( std::vector<Point*>::const_iterator i=corner_points.begin();
+            i!=corner_points.end();
+            ++i )
+      {
+        Point * p = *i;
+
+        std::vector<Point*>::iterator pos = std::find( inner_points.begin(), inner_points.end(), p );
+        if ( pos==inner_points.end() )
+        {
+          throw std::runtime_error( "inner point missing" );
+        }
+
+        points.push_back( projected_points[pos - inner_points.begin()] );
+
+        const LINALG::Matrix<3,1> & rst = local_points[pos - inner_points.begin()];
+        x = std::copy( rst.A(), rst.A()+3, x );
+      }
+
+      if ( r < 0 )
+      {
+        sidepos = 1;
+        std::copy( corner_points.begin(), corner_points.end(), std::back_inserter( points ) );
+      }
+
+      DRT::UTILS::shape_function_2D_deriv1( deriv, 0., 0., DRT::Element::tri3 );
+      DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::tri3>( xyze, deriv, metrictensor, drs, &normal );
+
+      if ( normal( axis ) < 0 )
+      {
+        std::swap( points[1], points[2] );
+        std::swap( points[4], points[5] );
+      }
+
+      std::vector<Point*> side( 3 );
+      for ( int j=0; j<3; ++j )
+      {
+        side[j] = points[DRT::UTILS::eleNodeNumbering_wedge15_trisurfaces[sidepos][j]];
+      }
+      //Tri3BoundaryCell::CreateCell( mesh, cell, f, side );
+      AddSide( cell, f, DRT::Element::tri3, side );
+
+      //cell->NewWedge6Cell( mesh, points );
+      Add( cell, DRT::Element::wedge6, points );
+    }
+    else if ( f->Equals( DRT::Element::quad4 ) )
+    {
+      std::vector<Point*> points;
+      points.reserve( 8 );
+
+      const std::vector<Point*> & corner_points = f->CornerPoints();
+
+      // find facet orientation in local coordinates
+      double drs = 0;
+      LINALG::Matrix<3,4> xyze;
+      LINALG::Matrix<3,1> normal;
+      LINALG::Matrix<2,4> deriv;
+      LINALG::Matrix<2,2> metrictensor;
+
+      double * x = xyze.A();
+
+      int sidepos = -1;
+      if ( r > 0 )
+      {
+        sidepos = 0;
+        std::copy( corner_points.begin(), corner_points.end(), std::back_inserter( points ) );
+      }
+
+      for ( std::vector<Point*>::const_iterator i=corner_points.begin();
+            i!=corner_points.end();
+            ++i )
+      {
+        Point * p = *i;
+
+        std::vector<Point*>::iterator pos = std::find( inner_points.begin(), inner_points.end(), p );
+        if ( pos==inner_points.end() )
+        {
+          throw std::runtime_error( "inner point missing" );
+        }
+
+        points.push_back( projected_points[pos - inner_points.begin()] );
+
+        const LINALG::Matrix<3,1> & rst = local_points[pos - inner_points.begin()];
+        x = std::copy( rst.A(), rst.A()+3, x );
+      }
+
+      if ( r < 0 )
+      {
+        sidepos = 5;
+        std::copy( corner_points.begin(), corner_points.end(), std::back_inserter( points ) );
+      }
+
+      DRT::UTILS::shape_function_2D_deriv1( deriv, 0., 0., DRT::Element::quad4 );
+      DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad4>( xyze, deriv, metrictensor, drs, &normal );
+
+      if ( normal( axis ) < 0 )
+      {
+        std::swap( points[1], points[3] );
+        std::swap( points[5], points[7] );
+      }
+
+      std::vector<Point*> side( 4 );
+      for ( int j=0; j<4; ++j )
+      {
+        side[j] = points[DRT::UTILS::eleNodeNumbering_hex27_surfaces[sidepos][j]];
+      }
+      //Quad4BoundaryCell::CreateCell( mesh, cell, f, side );
+      AddSide( cell, f, DRT::Element::quad4, side );
+
+      //cell->NewHex8Cell( mesh, points );
+      Add( cell, DRT::Element::hex8, points );
+    }
+    else
+    {
+#if 0
+      std::set<Point*> points;
+      const std::vector<Point*> & corner_points = f->CornerPoints();
+
+      f->AllPoints( points );
+
+      for ( std::vector<Point*>::const_iterator i=corner_points.begin();
+            i!=corner_points.end();
+            ++i )
+      {
+        Point * p = *i;
+
+        std::vector<Point*>::iterator pos = std::find( inner_points.begin(), inner_points.end(), p );
+        if ( pos==inner_points.end() )
+        {
+          throw std::runtime_error( "inner point missing" );
+        }
+
+        points.insert( projected_points[pos - inner_points.begin()] );
+      }
+
+      std::vector<Point*> cell_points;
+      cell_points.reserve( points.size() );
+      std::copy( points.begin(), points.end(), std::back_inserter( cell_points ) );
+
+      // sort points that go into qhull to obtain the same result independent of
+      // pointer values (compiler flags, code structure, memory usage, ...)
+      std::sort( cell_points.begin(), cell_points.end(), PointPidLess() );
+
+      std::set<Facet*> cell_facets;
+      cell_facets.insert( f );
+      cell->CreateTet4IntegrationCells( mesh, position, cell_points, cell_facets, true );
+#endif
+      return false;
+    }
+  }
+  return true;
 }
 

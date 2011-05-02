@@ -1480,8 +1480,9 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, 
 
 void GEO::CUT::Mesh::PrintCellStats()
 {
+  const int vectorlength = 21;
   unsigned cutted = 0;
-  std::vector<int> numvc( 11, 0 );
+  std::vector<int> numvc( vectorlength, 0 );
   std::map<DRT::Element::DiscretizationType, std::vector<int> > numcells;
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
@@ -1516,7 +1517,7 @@ void GEO::CUT::Mesh::PrintCellStats()
           std::map<DRT::Element::DiscretizationType, std::vector<int> >::iterator j = numcells.find( shape );
           if ( j==numcells.end() )
           {
-            numcells[shape] = std::vector<int>( 21, 0 );
+            numcells[shape] = std::vector<int>( vectorlength, 0 );
           }
           numcells[shape][std::min( static_cast<int>( numcells[shape].size()-1 ), count-1 )] += 1;
         }
@@ -1556,7 +1557,7 @@ void GEO::CUT::Mesh::PrintCellStats()
           std::map<DRT::Element::DiscretizationType, std::vector<int> >::iterator j = numcells.find( shape );
           if ( j==numcells.end() )
           {
-            numcells[shape] = std::vector<int>( 21, 0 );
+            numcells[shape] = std::vector<int>( vectorlength, 0 );
           }
           numcells[shape][std::min( static_cast<int>( numcells[shape].size()-1 ), count-1 )] += 1;
         }
@@ -1570,12 +1571,20 @@ void GEO::CUT::Mesh::PrintCellStats()
   //std::copy( numvc.begin(), numvc.end(), std::ostream_iterator<int>( std::cout, " " ) );
   for ( std::vector<int>::iterator i=numvc.begin(); i!=numvc.end(); ++i )
   {
-    std::cout << std::setw( 4 ) << ( *i ) << " ";
+    int c = *i;
+    if ( c != 0 )
+    {
+      std::cout << std::setw( 4 ) << c << " ";
+    }
+    else
+    {
+      std::cout << "     ";
+    }
   }
   std::cout << "\n";
 
   std::cout << "               ";
-  for ( unsigned i=1; i<21; ++i )
+  for ( int i=1; i<vectorlength; ++i )
   {
     std::cout << std::setw( 4 ) << i << " ";
   }
@@ -1589,7 +1598,15 @@ void GEO::CUT::Mesh::PrintCellStats()
     //std::copy( nc.begin(), nc.end(), std::ostream_iterator<int>( std::cout, " " ) );
     for ( std::vector<int>::iterator i=nc.begin(); i!=nc.end(); ++i )
     {
-      std::cout << std::setw( 4 ) << ( *i ) << " ";
+      int c = *i;
+      if ( c != 0 )
+      {
+        std::cout << std::setw( 4 ) << c << " ";
+      }
+      else
+      {
+        std::cout << "     ";
+      }
     }
     std::cout << "\n";
   }
