@@ -3859,6 +3859,8 @@ void StatMechManager::NumLinkerSpotsAndOrientation(const Epetra_Vector& disrow, 
 			//check type of element (orientation triads are not for all elements available in the same way
 			DRT::ElementType & eot = ((discret_.lRowNode(i)->Elements())[lowestidele])->ElementType();
 			//if element is of type beam3ii get nodal triad
+#ifdef D_BEAM3
+#ifdef D_BEAM3II
 			if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
 			{
 				DRT::ELEMENTS::Beam3ii* filele = NULL;
@@ -3884,8 +3886,8 @@ void StatMechManager::NumLinkerSpotsAndOrientation(const Epetra_Vector& disrow, 
 			}
 			else
 				dserror("Filaments have to be discretized with beam3ii elements for orientation check!!!");
-
-
+#endif
+#endif
 		}
 		//export nodaltriadsrow to col map variable
 		nodaltriadscol.Import(nodaltriadsrow,importer,Insert);
