@@ -531,6 +531,7 @@ std::map<string,string> FSI::UTILS::AleFluidCloneStrategy::ConditionsToCopy()
   conditions_to_copy.insert(pair<string,string>("LinePeriodic","LinePeriodic"));
   conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
   conditions_to_copy.insert(pair<string,string>("ElectrodeKinetics","ElectrodeKinetics"));
+  conditions_to_copy.insert(pair<string,string>("XFEMCoupling","XFEMCoupling"));
 
   return conditions_to_copy;
 }

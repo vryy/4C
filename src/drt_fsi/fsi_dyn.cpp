@@ -33,6 +33,7 @@
 #include "fs_monolithic.H"
 
 #include "../drt_fluid/xfluid.H"
+#include "../drt_fluid/xfluidfluid.H"
 
 #include "../drt_scatra/scatra_utils.H"
 
@@ -196,26 +197,117 @@ void fluid_fluid_drt()
   RCP<DRT::Discretization> bgfluiddis = problem->Dis(genprob.numff,0);
   bgfluiddis->FillComplete();
 
-  RCP<DRT::Discretization> embfluiddis = problem->Dis(genprob.numaf,0);
+  RCP<DRT::Discretization> embfluiddis = problem->Dis(genprob.numff,1);
   embfluiddis->FillComplete();
 
+  // copy  bgfluid to embfluid
+  const int numcolele = bgfluiddis->NumMyColElements();
+  for (int i=0; i<numcolele; ++i)
+  {
+    DRT::Element* ele = bgfluiddis->lColElement(i);
+    const DRT::Node*const* elenodes = ele->Nodes();
+    RCP<DRT::Element> newele = rcp(ele->Clone());
+    embfluiddis->AddElement(newele);
+    for (int inode=0; inode < ele->NumNode(); ++inode)
+    {
+      RCP<DRT::Node> newnode = rcp(elenodes[inode]->Clone());
+      embfluiddis->AddNode(newnode);
+    }
+  }
+
+  embfluiddis->FillComplete();
+
+  vector<string> conditions_to_copy_mf;
+  conditions_to_copy_mf.push_back("MovingFluid");
+  Teuchos::RCP<DRT::Discretization> MovingFluiddis = DRT::UTILS::CreateDiscretizationFromCondition(bgfluiddis, "MovingFluid",
+           "MovingFluid", "VELE3", conditions_to_copy_mf);
+
+  // delete embedded fluid's node and elements from the background fluid
+  vector<int> MovingFluideleGIDs;
+  for (int iele=0; iele< MovingFluiddis->NumMyColElements(); ++iele)
+  {
+    DRT::Element* MovingFluidele = MovingFluiddis->lColElement(iele);
+    MovingFluideleGIDs.push_back(MovingFluidele->Id());
+  }
+
+  vector<int> MovingFluidNodeGIDs;
+  for (int node=0; node<MovingFluiddis->NumMyColNodes(); node++)
+  {
+    DRT::Node*  MovingFluidnode = MovingFluiddis->lColNode(node);
+    MovingFluidNodeGIDs.push_back(MovingFluidnode->Id());
+  }
+
+  vector<int> NonMovingFluideleGIDs;
+  vector<int> NonMovingFluidNodeGIDs;
+  for (int iele=0; iele< bgfluiddis->NumMyColElements(); ++iele)
+  {
+    DRT::Element* bgele = bgfluiddis->lColElement(iele);
+    vector<int>::iterator eleiter = find(MovingFluideleGIDs.begin(), MovingFluideleGIDs.end(),bgele->Id() );
+    if (eleiter == MovingFluideleGIDs.end())
+    {
+      NonMovingFluideleGIDs.push_back(bgele->Id());
+      int numnode = bgele->NumNode();
+      const DRT::Node*const* bgelenodes = bgele->Nodes();
+      for (int inode=0; inode <numnode; ++inode)
+        NonMovingFluidNodeGIDs.push_back(bgele->Nodes()[inode]->Id());
+    }
+  }
+
+  // copy the conditions to the embedded fluid discretization
+  vector<DRT::Condition*> cond;
+  bgfluiddis->GetCondition("XFEMCoupling", cond);
+  for (std::size_t i=0; i<cond.size(); ++i)
+  {
+    // We use the same nodal ids and therefore we can just copy the
+    // conditions.
+    embfluiddis->SetCondition("XFEMCoupling", rcp(new DRT::Condition(*cond[i])));
+  }
+
+  // delete element and nodes
+  for(int mv=0; mv<MovingFluideleGIDs.size(); ++mv)
+    bgfluiddis->DeleteElement(MovingFluideleGIDs.at(mv));
+
+  for(int mv=0; mv<MovingFluidNodeGIDs.size(); ++mv)
+    bgfluiddis->DeleteNode(MovingFluidNodeGIDs.at(mv));
+
+  bgfluiddis->FillComplete();
+
+  for(int nmv=0; nmv<NonMovingFluideleGIDs.size(); ++nmv)
+    embfluiddis->DeleteElement(NonMovingFluideleGIDs.at(nmv));
+
+  for(int nmv=0; nmv<NonMovingFluidNodeGIDs.size(); ++nmv)
+    embfluiddis->DeleteNode(NonMovingFluidNodeGIDs.at(nmv));
+
+  embfluiddis->FillComplete();
+
+  RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
+
   // create ale elements if the ale discretization is empty
-  if (embfluiddis->NumGlobalNodes()==0)
+  if (aledis->NumGlobalNodes()==0)
    {
      {
-       RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
-
        Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
 
-       alecreator->CreateMatchingDiscretization(bgfluiddis,embfluiddis,-1);
+       alecreator->CreateMatchingDiscretization(embfluiddis,aledis,-1);
      }
-
      if (comm.MyPID()==0)
      {
        cout << "\n\nCreating ALE discretisation ....\n\n";
      }
    }
+
+  aledis->FillComplete();
+
+  // -------------------------------------------------------------------
+  // create a solver
+  // -------------------------------------------------------------------
+  Teuchos::RCP<LINALG::Solver> solver =
+    Teuchos::rcp(new LINALG::Solver(problem->FluidSolverParams(),
+                                    bgfluiddis->Comm(),
+                                    problem->ErrorFile()->Handle()));
+  FLD::XFluidFluid fluid(bgfluiddis,embfluiddis,*solver,problem->FluidDynamicParams());
+  fluid.IntegrateFluidFluid();
 }
 
 /*----------------------------------------------------------------------*/

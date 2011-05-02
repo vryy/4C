@@ -274,6 +274,77 @@ void FLD::UTILS::SetupFluidXFluidVelPresSplit(const DRT::Discretization& fluiddi
   extractor.Setup(*fullmap, presrowmap, velrowmap);
 }
 
+//----------------------------------------------------------------------*/
+//----------------------------------------------------------------------*/
+void FLD::UTILS::SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis,int ndim,
+                                             const DRT::Discretization& alefluiddis,
+                                             LINALG::MapExtractor& extractor,
+                                             Teuchos::RCP<Epetra_Map> fullmap)
+{
+  std::set<int> veldofset;
+  std::set<int> presdofset;
+
+  // for fluid elements
+  int numfluidrownodes = fluiddis.NumMyRowNodes();
+  for (int i=0; i<numfluidrownodes; ++i)
+  {
+    DRT::Node* fluidnode = fluiddis.lRowNode(i);
+
+    std::vector<int> fluiddof = fluiddis.Dof(fluidnode);
+    for (unsigned j=0; j<fluiddof.size(); ++j)
+    {
+      // test for dof position
+      if (j<static_cast<unsigned>(ndim))
+      {
+        veldofset.insert(fluiddof[j]);
+      }
+      else
+      {
+        presdofset.insert(fluiddof[j]);
+      }
+     }
+   }
+
+  // for ale_fluid elements
+  int numalefluidrownodes = alefluiddis.NumMyRowNodes();
+  for (int i=0; i<numalefluidrownodes; ++i)
+  {
+    DRT::Node* alefluidnode = alefluiddis.lRowNode(i);
+
+    std::vector<int> alefluiddof = alefluiddis.Dof(alefluidnode);
+    for (unsigned j=0; j<alefluiddof.size(); ++j)
+    {
+      // test for dof position
+      if (j<static_cast<unsigned>(ndim))
+      {
+        veldofset.insert(alefluiddof[j]);
+      }
+      else
+      {
+        presdofset.insert(alefluiddof[j]);
+      }
+     }
+   }
+
+  std::vector<int> veldofmapvec;
+  veldofmapvec.reserve(veldofset.size());
+  veldofmapvec.assign(veldofset.begin(), veldofset.end());
+  veldofset.clear();
+  RCP<Epetra_Map> velrowmap = rcp(new Epetra_Map(-1,
+                                  veldofmapvec.size(),&veldofmapvec[0],0,
+                                  fluiddis.Comm()));
+  veldofmapvec.clear();
+
+  std::vector<int> presdofmapvec;
+  presdofmapvec.reserve(presdofset.size());
+  presdofmapvec.assign(presdofset.begin(), presdofset.end());
+  presdofset.clear();
+  RCP<Epetra_Map> presrowmap = rcp(new Epetra_Map(-1,
+                                  presdofmapvec.size(),&presdofmapvec[0],0,
+                                  alefluiddis.Comm()));
+  extractor.Setup(*fullmap, presrowmap, velrowmap);
+}
+
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
 void FLD::UTILS::SetupEnrichmentSplit(

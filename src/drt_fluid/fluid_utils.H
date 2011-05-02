@@ -397,9 +397,14 @@ void SetupXFluidSplit(
         );
 
 
-void SetupFluidXFluidVelPresSplit(const DRT::Discretization& fluiddis, int ndim, 
+void SetupFluidXFluidVelPresSplit(const DRT::Discretization& fluiddis, int ndim,
                        const DRT::Discretization& xfluiddis, const RCP<XFEM::DofManager> dofman,
                        LINALG::MapExtractor& extractor, Teuchos::RCP<Epetra_Map> fullmap);
+
+void SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis,int ndim,
+                                 const DRT::Discretization& alefluiddis,
+                                 LINALG::MapExtractor& extractor,
+                                 Teuchos::RCP<Epetra_Map> fullmap);
 
 /*!
 

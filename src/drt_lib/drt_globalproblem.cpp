@@ -299,6 +299,7 @@ void DRT::Problem::InputControl()
   case prb_fluid_fluid:
   {
     genprob.numff=0;
+    genprob.numff=1;
     genprob.numaf=1;
     break;
   }
