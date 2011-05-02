@@ -351,12 +351,15 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
             ChildCell & cc = cellmap[parent_vc];
             if ( cc.done_ )
             {
-              throw std::runtime_error( "free child cell to done parent cell?" );
+              //throw std::runtime_error( "free child cell to done parent cell?" );
             }
-            std::set<VolumeCell*> & childset = cc.cells_;
-            childset.insert( child_vc );
-            Fill( parent_vc, cc );
-            nonnodecells -= 1;
+            else
+            {
+              std::set<VolumeCell*> & childset = cc.cells_;
+              childset.insert( child_vc );
+              Fill( parent_vc, cc );
+              nonnodecells -= 1;
+            }
           }
         }
         else
