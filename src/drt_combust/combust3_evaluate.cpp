@@ -17,6 +17,7 @@ Maintainer: Florian Henke
 #include "combust3.H"
 #include "combust3_sysmat.H"
 #include "combust3_interpolation.H"
+#include "combust_flamefront.H"
 #include "combust_defines.H"
 
 #include "../linalg/linalg_utils.H"
