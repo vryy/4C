@@ -79,6 +79,8 @@ void XFEM::FluidWizard::Cut(  bool include_inner, const Epetra_Vector & idispcol
     std::cout << " Success (" << t_end  <<  " secs)\n";
   }
 
+  cw.PrintCellStats();
+
 #else
   dserror( "QHULL needs to be defined to cut elements" );
 #endif
@@ -190,6 +192,8 @@ void XFEM::FluidWizard::Cut( const Epetra_Vector & idispcol,
     std::cout << " Success (" << t_end  <<  " secs), intersected elements: " << globalcells;
     std::cout << endl;
   }
+
+  cw.PrintCellStats();
 
 #else
   dserror( "QHULL needs to be defined to cut elements" );

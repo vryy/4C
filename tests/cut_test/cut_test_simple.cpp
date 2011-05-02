@@ -440,6 +440,7 @@ void test_hex8_multiple()
     }
 
     cutmesh( mesh );
+    mesh.PrintCellStats();
   }
 }
 
