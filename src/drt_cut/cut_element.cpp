@@ -681,7 +681,14 @@ void GEO::CUT::Element::DebugDump()
   for ( std::set<Side*>::const_iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
   {
     Side * s = *i;
-    s->Print();
+    //s->Print();
+    const std::vector<Node*> & side_nodes = s->Nodes();
+    for ( std::vector<Node*>::const_iterator i=side_nodes.begin(); i!=side_nodes.end(); ++i )
+    {
+      Node * n = *i;
+      n->Print();
+      std::cout << "\n";
+    }
     std::cout << "\n";
   }
 }
