@@ -128,6 +128,8 @@ public:
 
   void TestElementVolume( DRT::Element::DiscretizationType shape, Element & e, bool fatal );
 
+  void PrintCellStats();
+
   void Status();
 
   void PrintFacets();

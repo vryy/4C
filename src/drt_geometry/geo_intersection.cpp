@@ -243,10 +243,10 @@ void GEO::CutWizard::Cut( std::map< int, DomainIntCells >& domainintcells,
   cutelementmap_ = Teuchos::rcp( new Epetra_Map( -1, cutelements.size(), &cutelements[0], 0, dis_.Comm() ) );
 }
 
-// Teuchos::RCP<GEO::CutDofSet> GEO::CutWizard::CreateDofSet()
-// {
-//   return Teuchos::rcp( new CutDofSet( &*mesh_, include_inner_ ) );
-// }
+void GEO::CutWizard::PrintCellStats()
+{
+  mesh_->PrintCellStats();
+}
 
 #if 0
 Teuchos::RCP<Epetra_CrsGraph> GEO::CutWizard::MatrixGraph( const CutDofSet & dofset, const Epetra_Map & dbcmap )
@@ -468,6 +468,8 @@ void GEO::computeIntersection( const Teuchos::RCP<DRT::Discretization> xfemdis,
     std::cout << " Success (" << t_end  <<  " secs), intersected elements: " << globalcells;
     std::cout << endl;
   }
+
+  wizard.PrintCellStats();
 }
 
 #endif

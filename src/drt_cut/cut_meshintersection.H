@@ -54,6 +54,8 @@ public:
 
   SideHandle * GetCutSide( int sid, int mi=0 ) const;
 
+  void PrintCellStats();
+
   void Status();
 
   Mesh & NormalMesh() { return mesh_.LinearMesh(); }

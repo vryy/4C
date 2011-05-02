@@ -84,6 +84,8 @@ namespace GEO
 
     GEO::CUT::MeshIntersection & Mesh() { return *mesh_; }
 
+    void PrintCellStats();
+
   private:
 
     DRT::Discretization & dis_;

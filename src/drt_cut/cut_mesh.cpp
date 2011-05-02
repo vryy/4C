@@ -1478,6 +1478,65 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, 
   }
 }
 
+void GEO::CUT::Mesh::PrintCellStats()
+{
+  unsigned cutted = 0;
+  std::vector<int> numvc( 11, 0 );
+  std::vector<int> numic( 31, 0 );
+  std::vector<int> numbc( 31, 0 );
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();
+        ++i )
+  {
+    Element & e = *i->second;
+    if ( e.IsCut() )
+    {
+      cutted += 1;
+      const std::set<VolumeCell*> & volumecells = e.VolumeCells();
+      numvc[std::min( static_cast<int>( volumecells.size() ), 10 )] += 1;
+      for ( std::set<VolumeCell*>::const_iterator i=volumecells.begin(); i!=volumecells.end(); ++i )
+      {
+        VolumeCell * vc = *i;
+        const std::set<IntegrationCell*> & cells = vc->IntegrationCells();
+        numic[std::min( static_cast<int>( cells.size() ), 10 )] += 1;
+        const std::set<BoundaryCell*> & bcells = vc->BoundaryCells();
+        numbc[std::min( static_cast<int>( bcells.size() ), 10 )] += 1;
+      }
+    }
+  }
+  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+        i!=shadow_elements_.end();
+        ++i )
+  {
+    Element & e = **i;
+    if ( e.IsCut() )
+    {
+      cutted += 1;
+      const std::set<VolumeCell*> & volumecells = e.VolumeCells();
+      numvc[std::min( static_cast<int>( volumecells.size() ), 10 )] += 1;
+      for ( std::set<VolumeCell*>::const_iterator i=volumecells.begin(); i!=volumecells.end(); ++i )
+      {
+        VolumeCell * vc = *i;
+        const std::set<IntegrationCell*> & cells = vc->IntegrationCells();
+        numic[std::min( static_cast<int>( cells.size() ), 10 )] += 1;
+        const std::set<BoundaryCell*> & bcells = vc->BoundaryCells();
+        numbc[std::min( static_cast<int>( bcells.size() ), 10 )] += 1;
+      }
+    }
+  }
+
+  std::cout << "#elements = " << cutted << " of " << ( elements_.size() + shadow_elements_.size() ) << " total\n";
+  std::cout << "     volume cells: { ";
+  std::copy( numvc.begin(), numvc.end(), std::ostream_iterator<int>( std::cout, ", " ) );
+  std::cout << "}\n";
+  std::cout << "integration cells: { ";
+  std::copy( numic.begin(), numic.end(), std::ostream_iterator<int>( std::cout, ", " ) );
+  std::cout << "}\n";
+  std::cout << "   boundary cells: { ";
+  std::copy( numbc.begin(), numbc.end(), std::ostream_iterator<int>( std::cout, ", " ) );
+  std::cout << "}\n";
+}
+
 void GEO::CUT::Mesh::Status()
 {
 #if 0

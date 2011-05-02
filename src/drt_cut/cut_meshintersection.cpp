@@ -142,6 +142,11 @@ GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::GetCutSide( int sid, int mi )
   return cut_mesh_[mi]->GetSide( sid );
 }
 
+void GEO::CUT::MeshIntersection::PrintCellStats()
+{
+  NormalMesh().PrintCellStats();
+}
+
 void GEO::CUT::MeshIntersection::Status()
 {
 #ifdef DEBUG
