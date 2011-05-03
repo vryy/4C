@@ -261,6 +261,29 @@ void test_hex8_touch()
 
   w.CreateHex8();
   w.CreateHex8Sides( 1, 0, 0 );
+
+  Epetra_SerialDenseMatrix xyze( 3, 4 );
+
+  // add second cut to be able to find nodal positions
+
+  xyze( 0, 0 ) =  0.1;
+  xyze( 1, 0 ) = -0.1;
+  xyze( 2, 0 ) = -0.1;
+
+  xyze( 0, 1 ) =  0.1;
+  xyze( 1, 1 ) =  1.1;
+  xyze( 2, 1 ) = -0.1;
+
+  xyze( 0, 2 ) = -0.1;
+  xyze( 1, 2 ) =  1.1;
+  xyze( 2, 2 ) =  0.1;
+
+  xyze( 0, 3 ) = -0.1;
+  xyze( 1, 3 ) = -0.1;
+  xyze( 2, 3 ) =  0.1;
+
+  w.CreateQuad4( xyze );
+
   w.Status();
   w.Cut();
 }
