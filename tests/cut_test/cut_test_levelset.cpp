@@ -1188,8 +1188,8 @@ void test_ls_hex8_between()
       ls_hex8_node_value( e, i, nids[i], xyze( 0, i ), xyze( 1, i ), xyze( 2, i ), lsvs[i] );
     }
 
-    std::copy( lsvs.begin(), lsvs.end(), std::ostream_iterator<double>( std::cout, " " ) );
-    std::cout << "\n";
+    //std::copy( lsvs.begin(), lsvs.end(), std::ostream_iterator<double>( std::cout, " " ) );
+    //std::cout << "\n";
 
     lsi.AddElement( e, nids, xyze, &lsvs[0], DRT::Element::hex8 );
     lsi.Cut();
