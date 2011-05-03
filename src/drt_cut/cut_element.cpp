@@ -674,7 +674,7 @@ void GEO::CUT::Element::DebugDump()
   {
     Node * n = *i;
     n->Print();
-    std::cout << "\n";
+    std::cout << "  " << n->LSV() << "\n";
   }
   std::cout << "\n";
   const std::set<Side*> & cutsides = CutSides();
