@@ -284,45 +284,38 @@ void GEO::CUT::Edge::LevelSetCut( Mesh & mesh, LevelSetSide & side, std::set<Poi
   double blsv = BeginNode()->LSV();
   double elsv = EndNode()  ->LSV();
 
-  if ( ( blsv < 0.0 and elsv > 0.0 ) or
-       ( blsv > 0.0 and elsv < 0.0 ) )
+  bool cutfound = false;
+
+  // version for single element cuts, here we need to watch for tolerances on
+  // nodal cuts
+  if ( fabs( blsv ) <= TOLERANCE )
   {
-    double t = blsv / ( blsv-elsv );
-
-    LINALG::Matrix<3,1> x1;
-    LINALG::Matrix<3,1> x2;
-    BeginNode()->Coordinates( x1.A() );
-    EndNode()  ->Coordinates( x2.A() );
-
-    LINALG::Matrix<3,1> x;
-    x.Update( -1., x1, 1., x2, 0. );
-    x.Update( 1., x1, t );
-    Point * p = Point::NewPoint( mesh, x.A(), 2.*t-1., this, &side );
-    cuts.insert( p );
+    cuts.insert( Point::InsertCut( this, &side, BeginNode() ) );
+    cutfound = true;
   }
-  else
+  if ( fabs( elsv ) <= TOLERANCE )
   {
-#if 0
-    // clear version that works for whole mesh cuts
-    if ( fabs( blsv ) < std::numeric_limits<double>::min() )
+    cuts.insert( Point::InsertCut( this, &side, EndNode() ) );
+    cutfound = true;
+  }
+
+  if ( not cutfound )
+  {
+    if ( ( blsv < 0.0 and elsv > 0.0 ) or
+         ( blsv > 0.0 and elsv < 0.0 ) )
     {
-      cuts.insert( Point::InsertCut( this, &side, BeginNode() ) );
+      double t = blsv / ( blsv-elsv );
+
+      LINALG::Matrix<3,1> x1;
+      LINALG::Matrix<3,1> x2;
+      BeginNode()->Coordinates( x1.A() );
+      EndNode()  ->Coordinates( x2.A() );
+
+      LINALG::Matrix<3,1> x;
+      x.Update( -1., x1, 1., x2, 0. );
+      x.Update( 1., x1, t );
+      Point * p = Point::NewPoint( mesh, x.A(), 2.*t-1., this, &side );
+      cuts.insert( p );
     }
-    if ( fabs( elsv ) < std::numeric_limits<double>::min() )
-    {
-      cuts.insert( Point::InsertCut( this, &side, EndNode() ) );
-    }
-#else
-    // version for single element cuts, here we need to watch for tolerances on
-    // nodal cuts
-    if ( fabs( blsv ) <= TOLERANCE )
-    {
-      cuts.insert( Point::InsertCut( this, &side, BeginNode() ) );
-    }
-    if ( fabs( elsv ) <= TOLERANCE )
-    {
-      cuts.insert( Point::InsertCut( this, &side, EndNode() ) );
-    }
-#endif
   }
 }
