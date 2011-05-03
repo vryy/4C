@@ -88,15 +88,15 @@ E 3 - flow -0.257 1
 //DNODE 4 leftinf
 E 4 - flow -0.216 1
 --------------------------------------------------REDUCED D AIRWAYS ELEMENTS
-1 RED_AIRWAY LINE2 1 2 MAT 1 TYPE TurbulentPoiseuilleResistive WallCompliance 0.0 AirCompliance 0.0 WallThickness 0.0 Area 194.8000000000 Generation 0
-2 RED_AIRWAY LINE2 2 3 MAT 1 TYPE TurbulentPoiseuilleResistive WallCompliance 0.0 AirCompliance 0.0 WallThickness 0.0 Area 171.0000000000 Generation 1
-3 RED_AIRWAY LINE2 3 4 MAT 1 TYPE TurbulentPoiseuilleResistive WallCompliance 0.0 AirCompliance 0.0 WallThickness 0.0 Area 52.3400000000 Generation 2
-4 RED_AIRWAY LINE2 3 7 MAT 1 TYPE TurbulentPoiseuilleResistive WallCompliance 0.0 AirCompliance 0.0 WallThickness 0.0 Area 73.5000000000 Generation 2
-5 RED_AIRWAY LINE2 7 9 MAT 1 TYPE TurbulentPoiseuilleResistive WallCompliance 0.0 AirCompliance 0.0 WallThickness 0.0 Area 21.4000000000 Generation 3
-6 RED_AIRWAY LINE2 7 10 MAT 1 TYPE TurbulentPoiseuilleResistive WallCompliance 0.0 AirCompliance 0.0 WallThickness 0.0 Area 35.8700000000 Generation 3
-7 RED_AIRWAY LINE2 2 5 MAT 1 TYPE TurbulentPoiseuilleResistive WallCompliance 0.0 AirCompliance 0.0 WallThickness 0.0 Area 102.0000000000 Generation 1
-8 RED_AIRWAY LINE2 5 6 MAT 1 TYPE TurbulentPoiseuilleResistive WallCompliance 0.0 AirCompliance 0.0 WallThickness 0.0 Area 49.7000000000 Generation 2
-9 RED_AIRWAY LINE2 5 8 MAT 1 TYPE TurbulentPoiseuilleResistive WallCompliance 0.0 AirCompliance 0.0 WallThickness 0.0 Area 54.1300000000 Generation 2
+1 RED_AIRWAY LINE2 1 2 MAT 1 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 0.0 Area 194.8000000000 Generation 0
+2 RED_AIRWAY LINE2 2 3 MAT 1 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 0.0 Area 171.0000000000 Generation 1
+3 RED_AIRWAY LINE2 3 4 MAT 1 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 0.0 Area 52.3400000000 Generation 2
+4 RED_AIRWAY LINE2 3 7 MAT 1 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 0.0 Area 73.5000000000 Generation 2
+5 RED_AIRWAY LINE2 7 9 MAT 1 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 0.0 Area 21.4000000000 Generation 3
+6 RED_AIRWAY LINE2 7 10 MAT 1 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 0.0 Area 35.8700000000 Generation 3
+7 RED_AIRWAY LINE2 2 5 MAT 1 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 0.0 Area 102.0000000000 Generation 1
+8 RED_AIRWAY LINE2 5 6 MAT 1 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 0.0 Area 49.7000000000 Generation 2
+9 RED_AIRWAY LINE2 5 8 MAT 1 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0 AirCompliance 0.0 WallThickness 0.0 Area 54.1300000000 Generation 2
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 193.300 -546.7000 32.1400
 NODE 2 COORD 183.000 -517.0000 -68.0000
