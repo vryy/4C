@@ -296,9 +296,10 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
 
   x2.Scale( 1./points.size() );
 
-  Point * p1 = mesh.NewPoint( x2.A(), NULL, NULL /*ParentSide()*/ );
+  Point * p1 = mesh.NewPoint( x2.A(), NULL, ParentSide() );
   p1->Position( Position() );
   p1->Register( this );
+  //p1->Register( parentside_ );
   triangulation_.clear();
 
   for ( std::vector<std::vector<Point*> >::iterator i=lines.begin(); i!=lines.end(); ++i )

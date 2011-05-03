@@ -28,7 +28,7 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
     Point * p = *i;
     Node * n = mesh_.GetNode( i - points.begin(), p->X() );
     Point * np = n->point();
-    np->Position( p->Position() );
+    //np->Position( p->Position() );
     Register( p, np );
   }
 
@@ -108,6 +108,11 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
         }
         Side * cs = cut_mesh_.GetSide( s->Id(), nodes, shards::getCellTopologyData< shards::Triangle<3> >() );
         side_parent_to_child_[s].push_back( cs );
+        for ( std::vector<Node*>::iterator i=nodes.begin(); i!=nodes.end(); ++i )
+        {
+          Node * n = *i;
+          Point::InsertCut( NULL, cs, n );
+        }
       }
     }
     else
@@ -128,6 +133,11 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
       {
         Side * cs = cut_mesh_.GetSide( s->Id(), nodes, shards::getCellTopologyData< shards::Triangle<3> >() );
         side_parent_to_child_[s].push_back( cs );
+        for ( std::vector<Node*>::iterator i=nodes.begin(); i!=nodes.end(); ++i )
+        {
+          Node * n = *i;
+          Point::InsertCut( NULL, cs, n );
+        }
         break;
       }
       default:
@@ -142,6 +152,19 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
 void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, int count )
 {
   mesh_.Status();
+
+#ifdef DEBUGCUTLIBRARY
+  {
+    std::stringstream str;
+    str << "tetmesh" << count << ".pos";
+    mesh_.DumpGmsh( str.str().c_str() );
+  }
+  {
+    std::stringstream str;
+    str << "tetcutmesh" << count << ".pos";
+    cut_mesh_.DumpGmsh( str.str().c_str() );
+  }
+#endif
 
   std::set<Element*> elements_done;
   cut_mesh_.Cut( mesh_, elements_done );
@@ -475,6 +498,11 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
               bool found = false;
 
               const std::vector<Facet*> & child_facets = child_side->Facets();
+//               if ( child_facets.size()==0 )
+//               {
+//                 throw std::runtime_error( "Wo sind die facets?" );
+//               }
+
               for ( std::vector<Facet*>::const_iterator i=child_facets.begin();
                     i!=child_facets.end();
                     ++i )
@@ -522,21 +550,25 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
                 Fill( cc.parent_, cc );
                 nonnodecells -= 1;
               }
+              else
+              {
+                //std::cout << "not found after " << child_facets.size() << " facets from " << child_side << "\n";
+              }
             }
             else
             {
-//               std::cout << "parent_cell_info[0]->done_=" << parent_cell_info[0]->done_ << "  "
-//                         << "parent_cell_info[1]->done_=" << parent_cell_info[1]->done_ << "\n";
+              //std::cout << "parent_cell_info[0]->done_=" << parent_cell_info[0]->done_ << "  "
+              //          << "parent_cell_info[1]->done_=" << parent_cell_info[1]->done_ << "\n";
             }
           }
           else
           {
-//             std::cout << "parent_cell_info.size()=" << parent_cell_info.size() << "\n";
+            //std::cout << "parent_cell_info.size()=" << parent_cell_info.size() << "\n";
           }
         }
         else
         {
-//           std::cout << "parent_facets.size()=" << parent_facets.size() << "\n";
+          //std::cout << "parent_facets.size()=" << parent_facets.size() << "\n";
         }
       }
     }
@@ -604,6 +636,44 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
         // probably too small.
         cc.done_ = true;
         nonnodecells -= 1;
+      }
+    }
+
+    if ( nonnodecells > 0 )
+    {
+      // test if there are any volume cells left
+
+      std::set<VolumeCell*> done_child_cells;
+      for ( std::map<VolumeCell*, ChildCell>::iterator i=cellmap.begin(); i!=cellmap.end(); ++i )
+      {
+        ChildCell & cc = i->second;
+        std::copy( cc.cells_.begin(), cc.cells_.end(),
+                   std::inserter( done_child_cells, done_child_cells.begin() ) );
+      }
+
+      bool found = false;
+      const std::list<Teuchos::RCP<VolumeCell> > & all_child_cells = mesh_.VolumeCells();
+      for ( std::list<Teuchos::RCP<VolumeCell> >::const_iterator i=all_child_cells.begin();
+            i!=all_child_cells.end();
+            ++i )
+      {
+        VolumeCell * child_vc = &**i;
+        if ( done_child_cells.count( child_vc )==0 )
+        {
+          found = true;
+          break;
+        }
+      }
+
+      if ( not found )
+      {
+        // Done. There are a few empty parent cells. We do not mind.
+        nonnodecells = 0;
+        for ( std::map<VolumeCell*, ChildCell>::iterator i=cellmap.begin(); i!=cellmap.end(); ++i )
+        {
+          ChildCell & cc = i->second;
+          cc.done_ = true;
+        }
       }
     }
 
@@ -796,7 +866,6 @@ void GEO::CUT::TetMeshIntersection::FindVolumeCell( Point * p, std::set<VolumeCe
   for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
   {
     Facet * f = *i;
-    std::set<Point*> facet_points;
     const std::set<VolumeCell*> & facet_cells = f->Cells();
     std::copy( facet_cells.begin(), facet_cells.end(), std::inserter( childset, childset.begin() ) );
   }

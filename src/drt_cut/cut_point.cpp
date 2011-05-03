@@ -26,8 +26,10 @@ GEO::CUT::Point * GEO::CUT::Point::InsertCut( Edge * cut_edge, Side * cut_side, 
     Edge * e = *i;
     p->AddEdge( e );
   }
-  p->AddEdge( cut_edge );
-  p->AddSide( cut_side );
+  if ( cut_edge!=NULL )
+    p->AddEdge( cut_edge );
+  if ( cut_side!=NULL )
+    p->AddSide( cut_side );
   p->Position( Point::oncutsurface );
   return p;
 }
@@ -78,9 +80,25 @@ void GEO::CUT::Point::AddEdge( Edge* cut_edge )
   // revers add
   cut_edge->AddPoint( this );
 
-  // copy all sides at the edge to the set of cutted sides
-  std::copy( cut_edge->Sides().begin(), cut_edge->Sides().end(),
-             std::inserter( cut_sides_, cut_sides_.begin() ) );
+  const std::set<Side*> & edge_sides = cut_edge->Sides();
+  for ( std::set<Side*>::const_iterator i=edge_sides.begin();
+        i!=edge_sides.end();
+        ++i )
+  {
+    Side * s = *i;
+    AddSide( s );
+  }
+}
+
+void GEO::CUT::Point::AddSide( Side* s )
+{
+  cut_sides_.insert( s );
+  const std::set<Element*> & elements = s->Elements();
+  for ( std::set<Element*>::const_iterator i=elements.begin(); i!=elements.end(); ++i )
+  {
+    Element * e = *i;
+    AddElement( e );
+  }
 }
 
 void GEO::CUT::Point::CommonEdge( Point * other, std::set<Edge *> & edges )

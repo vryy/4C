@@ -65,7 +65,7 @@ public:
 
   void AddEdge( Edge* e );
 
-  void AddSide( Side* s ) { cut_sides_.insert( s ); }
+  void AddSide( Side* s );
 
   void AddElement( Element* e ) { if ( e!=NULL ) { cut_elements_.insert( e ); } }
 
