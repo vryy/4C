@@ -1247,7 +1247,6 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_tetmesh.cpp
   src/drt_cut/cut_tetmeshintersection.cpp
   src/drt_cut/cut_volumecell.cpp
-  src/drt_cut/cut_projection.cpp
 )
 set(OBJS_CUT_TEST
   tests/cut_test/cut_test_double.cpp

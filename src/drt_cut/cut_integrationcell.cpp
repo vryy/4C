@@ -6,7 +6,6 @@
 #include "cut_boundarycell.H"
 #include "cut_element.H"
 #include "cut_volumecell.H"
-#include "cut_projection.H"
 
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
