@@ -75,7 +75,10 @@ GEO::CUT::TetMesh::TetMesh( const std::vector<Point*> & points,
     }
   }
 
+#if 0
+  // if this is not the first cut, it might be fine not to have all points
   TestUsedPoints( tets_ );
+#endif
 
   Init();
 
