@@ -360,52 +360,50 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   int generation = 0;
   ele->getParams("Generation",generation);
 
-  if(ele->type() == "PoiseuilleResistive")
+  double R = -1.0;
+
+  // get element information
+  double A;
+  ele->getParams("Area",A);
+  // evaluate Poiseuille resistance
+  double Rp = 8.0*PI*visc*dens*L/(pow(A,2));    
+  // evaluate the Reynolds number
+  const double Re = 2.0*fabs(qout_np)/(visc*sqrt(A*PI));
+
+  if (ele->Resistance() == "Poiseuille")
   {
-    // get element information
-    double A;
-    ele->getParams("Area",A);
-
-    //------------------------------------------------------------
-    //               Calculate the System Matrix
-    //------------------------------------------------------------
-    const double R = 8.0*PI*visc*dens*L/(pow(A,2));
-    sysmat(0,0) = -1.0/R  ; sysmat(0,1) =  1.0/R ;
-    sysmat(1,0) =  1.0/R  ; sysmat(1,1) = -1.0/R ;
-
-    rhs(0) = 0.0;
-    rhs(1) = 0.0;
+    R = Rp;
+  }
+  else if (ele->Resistance() == "Pedley")
+  {
+    //-----------------------------------------------------------------
+    // resistance evaluated using Pedley's model from :
+    // Pedley et al (1970)
+    //-----------------------------------------------------------------
+    double gamma = 0.327;
+    R  = gamma* (sqrt(Re * 2.0*sqrt(A/PI)/L)) * Rp;
+    
+    //-----------------------------------------------------------------
+    // Correct any resistance smaller than Poiseuille's one
+    //-----------------------------------------------------------------
+    //    if (R < Rp)
+    //    {
+    //      R = Rp;
+    //    }
+    double alfa = sqrt(2.0*sqrt(A/PI)/L);
+    double Rep  = 1.0/((gamma*alfa)*(gamma*alfa));
+    double k    = 0.50;
+    double st   = 1.0/(1.0+exp(-2*k*(Re-Rep)));
+    
+    R = R*st + Rp*(1.0-st);
 
   }
-  else if(ele->type() == "TurbulentPoiseuilleResistive")
+  else if (ele->Resistance() == "Generation_Dependent_Pedley")
   {
-    // get element information
-    double A;
-    ele->getParams("Area",A);
-
-    //------------------------------------------------------------
-    //               Calculate the System Matrix
-    //------------------------------------------------------------
-#if 0
-    const double Re= 2.0*fabs(qout_np)/(visc*sqrt(A*PI));
-    const double R = 8.0*PI*visc*dens*L/(pow(A,2))*(3.4 + 2.1*0.001*Re);
-  
-    
-#else
-    const double Re = 2.0*fabs(qout_np)/(visc*sqrt(A*PI));
-    const double Rp = 8.0*PI*visc*dens*L/(pow(A,2));
-
-    //    const double R  = 0.21 * ( sqrt(23.0 + 2.5*Re * sqrt(A/PI)*0.5/L)  + 0.005*Re *sqrt(A/PI)*0.5/L) * Rp;
-    //    const double R  = 0.21 * ( sqrt(23.0 + 2.5*Re * sqrt(A/PI)*0.5/L)) * Rp;
-
-    // Gamma defined by pedley
+    //-----------------------------------------------------------------
+    // Gamma is taken from Ertbruggen et al
+    //-----------------------------------------------------------------
     double gamma = 0.327;
-    
-    // Gamma from:
-    // Ertbruggen et al
-    // Anatomically based three-dimensional model of airways to simulate flow
-    // and particle transport using computational fluid dynamics
-#if 1
     switch(generation)
     {
     case 0: 
@@ -434,20 +432,36 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       break;
     default:
       gamma = 0.327;
-
     }
-#endif
-
-    //    cout<<"Generation "<< generation << " has gamma = "<<gamma<<endl;
-    //  double R  = 0.62*0.21 * ( sqrt(2.5*Re * sqrt(A/PI)*0.5/L)) * Rp;
-    double R  = gamma* (sqrt(Re * 2.0*sqrt(A/PI)/L)) * Rp;
-
+    //-----------------------------------------------------------------
+    // resistance evaluated using Pedley's model from :
+    // Pedley et al (1970)
+    //-----------------------------------------------------------------
+    R  = gamma* (sqrt(Re * 2.0*sqrt(A/PI)/L)) * Rp;
+    
+    //-----------------------------------------------------------------
+    // Correct any resistance smaller than Poiseuille's one
+    //-----------------------------------------------------------------
     if (R < Rp)
     {
-      R =  Rp;
+      R = Rp;
     }
-    //    R = Rp *(3.4+2.1e-3 *Re);
-#endif
+  }
+  else if (ele->Resistance() == "Reynolds")
+  {
+    R = Rp *(3.4+2.1e-3 *Re);
+  }
+  else
+  {
+    dserror("[%s] is not a defined resistance model",ele->Resistance().c_str());
+  }
+
+  if(ele->Type() == "Resistive")
+  {
+    
+    //------------------------------------------------------------
+    //               Calculate the System Matrix
+    //------------------------------------------------------------
 
     sysmat(0,0) = -1.0/R  ; sysmat(0,1) =  1.0/R ;
     sysmat(1,0) =  1.0/R  ; sysmat(1,1) = -1.0/R ;
@@ -455,30 +469,20 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     rhs(0) = 0.0;
     rhs(1) = 0.0;
 
-
-
-
-
   }
-  else if(ele->type() == "InductoResistive")
+  else if(ele->Type() == "InductoResistive")
   {
 
   }
-  else if(ele->type() == "ComplientResistive")
+  else if(ele->Type() == "ComplientResistive")
   {
     // get element information
-    double A, Ew, tw;
-    ele->getParams("Area",A);
+    double Ew, tw;
     ele->getParams("WallCompliance",Ew);
     ele->getParams("WallThickness",tw);
 
-    // find Resistance 
-    const double Re= 2.0*fabs(qout_np)/(visc*sqrt(A*PI));
-    const double R = 8.0*PI*visc*dens*L/(pow(A,2))*(3.4 + 2.1*0.001*Re);
-
     // find Capacitance C
     const double C = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
-
 
     //------------------------------------------------------------
     //               Calculate the System Matrix
@@ -500,17 +504,12 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     //    q_out = (epnp(0)-epnp(1))/R;
     
   }
-  else if(ele->type() == "RLC")
+  else if(ele->Type() == "RLC")
   {
     // get element information
-    double A, Ew, tw;
-    ele->getParams("Area",A);
+    double Ew, tw;
     ele->getParams("WallCompliance",Ew);
     ele->getParams("WallThickness",tw);
-
-    // find Resistance 
-    const double Re= 2.0*fabs(qout_np)/(visc*sqrt(A*PI));
-    const double R = 8.0*PI*visc*dens*L/(pow(A,2))*(3.4 + 2.1*0.001*Re);
 
     // find Capacitance C
     const double C = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
@@ -527,11 +526,19 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     //    sysmat(2,0) =  0.0                 ; sysmat(2,1) =  1.0/R            ; sysmat(2,2) = -1.0/R ;
 
 
+#if 1
+    // Implcit integration
+    sysmat(0,0) = -C/dt -dt/(I); sysmat(0,1) =  0.0   ; sysmat(0,2) =  dt/(I)       ;
+    sysmat(1,0) =  0.0         ; sysmat(1,1) = -1.0/R ; sysmat(1,2) =  1.0/R        ;
+    sysmat(2,0) =  dt/(I)      ; sysmat(2,1) =  1.0/R ; sysmat(2,2) = -dt/(I)-1.0/R ;
+
+#else
+    // crack nicolson
     sysmat(0,0) = -2.0*C/dt -dt/(2.0*I); sysmat(0,1) =  0.0   ; sysmat(0,2) =  dt/(2.0*I)       ;
     sysmat(1,0) =  0.0                 ; sysmat(1,1) = -1.0/R ; sysmat(1,2) =  1.0/R            ;
     sysmat(2,0) =  dt/(2.0*I)          ; sysmat(2,1) =  1.0/R ; sysmat(2,2) = -dt/(2.0*I)-1.0/R ;
 
-
+#endif
 
     // get element information from the previous time step
     double qcn, qln;
@@ -543,20 +550,27 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     //------------------------------------------------------------
     //               Calculate the right hand side
     //------------------------------------------------------------
+#if 1
+    rhs(0) = - epn(0)*C/dt + qln ;
+    rhs(1) =  0.0;
+    rhs(2) = -qln;
+#else
     rhs(0) = -qcn - epn(0)*2.0*C/dt + qln + dt/(2.0*I)*(epn(0)-epn(2));
     rhs(1) = 0.0;
     rhs(2) = -qln - dt/(2.0*I)*(epn(0)-epn(2));
+#endif
+
 
     // calculate out flow at the current time step
     //    q_out = (epnp(2)-epnp(1))/R;
   }
-  else if(ele->type() == "SUKI")
+  else if(ele->Type() == "SUKI")
   {
 
   }
   else
   {
-    dserror("[%s] is not an implimented elements yet",(ele->type()).c_str());
+    dserror("[%s] is not an implimented elements yet",(ele->Type()).c_str());
     exit(1);
   }
 
@@ -635,7 +649,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
 
       if (MatType == "NeoHookean")
       {
-        //        cout<<"E1: "<<E1<<" NofAc: "<<NumOfAcini<<endl;
         const double Kp_np = 1.0/(E1*dt);
         const double Kp_n  = 1.0/(E1*dt);
 
@@ -648,16 +661,11 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         const double Kp_np = 2.0/(E1*dt) + 1.0/R;
         const double Kp_n  = 2.0/(E1*dt) - 1.0/R;
 
-        //        cout<<"KS: "<<Kp_np<<"  "<<Kp_n<<"  "<<R<<endl;
         sysmat(i,i) += pow(-1.0,i)*(Kp_np*NumOfAcini);
-        //        cout<<"SYSmat: "<<pow(-1.0,i)*(Kp_np*NumOfAcini)<<endl;
         rhs(i)      += pow(-1.0,i)*(q_out + pn*NumOfAcini * Kp_n + Pp_np*NumOfAcini * Kp_np);
-        //        cout<<"rhs: "<<pow(-1.0,i)*(q_out + epn(i)*NumOfAcini * Kp_n + Pp_np*NumOfAcini * Kp_np)<<endl;
       }
       else if (MatType == "ViscoElastic_2dof")
       {
-
-        //        cout<<"NofAcini: "<<NumOfAcini<<endl;
         const double R     = B;
         const double Kp_np = E2/dt + R/(dt*dt);
         const double Kp_n  = E2/dt + 2.0*R/(dt*dt);
@@ -1067,6 +1075,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     e_acini_voln(i) = mye_acini_voln[i];
   }
 
+
   // get node coordinates and number of elements per node
   DRT::Node** nodes = ele->Nodes();
 
@@ -1079,7 +1088,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     xyze(2,inode) = x[2];
   }
 
-  // check here, if we really have an airway !!
 
   // Calculate the length of airway element
   const double L=sqrt(
@@ -1089,51 +1097,60 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
 
 
   //--------------------------------------------------------------
-  //               Calculate flowrates
+  //               Get the elements flow in/out
   //--------------------------------------------------------------
-  double qin = (*qin_n )[ele->LID()];
-  double qout= (*qout_n)[ele->LID()];
-  double Qin_np  = (*qin_np )[ele->LID()];
-  double Qout_np = (*qout_np)[ele->LID()];
+  double eqin_n   = (*qin_n  )[ele->LID()];
+  double eqout_n  = (*qout_n )[ele->LID()];
+  double eqin_np  = (*qin_np )[ele->LID()];
+  double eqout_np = (*qout_np)[ele->LID()];
 
   // get the generation number
   int generation = 0;
   ele->getParams("Generation",generation);
 
+  double R = -1.0;
 
-  if(ele->type() == "PoiseuilleResistive")
+  // get element information
+  double A;
+  ele->getParams("Area",A);
+  // evaluate Poiseuille resistance
+  double Rp = 8.0*PI*visc*dens*L/(pow(A,2));    
+  // evaluate the Reynolds number
+  const double Re = 2.0*fabs(eqout_np)/(visc*sqrt(A*PI));
+  if (ele->Resistance() == "Poiseuille")
   {
-    // get element information
-    double A;
-    ele->getParams("Area",A);
-
-    const double R = 8.0*PI*visc*dens*L/(pow(A,2));
-    Qin_np = Qout_np = qout= qin = (epnp(0)-epnp(1))/R;
+    R = Rp;
+  }
+  else if (ele->Resistance() == "Pedley")
+  {
+    //-----------------------------------------------------------------
+    // resistance evaluated using Pedley's model from :
+    // Pedley et al (1970)
+    //-----------------------------------------------------------------
+    double gamma = 0.327;
+    R  = gamma* (sqrt(Re * 2.0*sqrt(A/PI)/L)) * Rp;
+    
+    //-----------------------------------------------------------------
+    // Correct any resistance smaller than Poiseuille's one
+    //-----------------------------------------------------------------
+    //  if (R < Rp)
+    //    {
+    //      R = Rp;
+    //    }
+    double alfa = sqrt(2.0*sqrt(A/PI)/L);
+    double Rep  = 1.0/((gamma*alfa)*(gamma*alfa));
+    double k    = 0.50;
+    double st   = 1.0/(1.0+exp(-2*k*(Re-Rep)));
+    
+    R = R*st + Rp*(1.0-st);
 
   }
-  else if(ele->type() == "TurbulentPoiseuilleResistive")
+  else if (ele->Resistance() == "Generation_Dependent_Pedley")
   {
-    // get element information
-    double A;
-    ele->getParams("Area",A);
-
-    // From:
-    // A Non-Linear Multialveolar Model of the Mechanical Behavior of the 
-    // Human Lung (Renotte et la)
-    
-    const double Re = 2.0*fabs(Qout_np)/(visc*sqrt(A*PI));
-    const double Rp = 8.0*PI*visc*dens*L/(pow(A,2));
-    //      const double R  = 0.21 * ( sqrt(23.0 + 2.5*Re * sqrt(A/PI)*0.5/L)+ 0.005*Re *sqrt(A/PI)*0.5/L)*Rp;
-    //      const double R  = 0.21 * ( sqrt(23.0 + 2.5*Re * sqrt(A/PI)*0.5/L))*Rp;
-    
-    // Gamma defined by pedley
+    //-----------------------------------------------------------------
+    // Gamma is taken from Ertbruggen et al
+    //-----------------------------------------------------------------
     double gamma = 0.327;
-    
-    // Gamma from:
-    // Ertbruggen et al
-    // Anatomically based three-dimensional model of airways to simulate flow
-    // and particle transport using computational fluid dynamics
-#if 1
     switch(generation)
     {
     case 0: 
@@ -1163,131 +1180,74 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     default:
       gamma = 0.327;
     }
-#endif
+    //-----------------------------------------------------------------
+    // resistance evaluated using Pedley's model from :
+    // Pedley et al (1970)
+    //-----------------------------------------------------------------
+    R  = gamma* (sqrt(Re * 2.0*sqrt(A/PI)/L)) * Rp;
     
-    //    cout<<"Generation "<< generation << " has gamma = "<<gamma<<endl;
-    
-    //  double R  = 0.62*0.21 * ( sqrt(2.5*Re * sqrt(A/PI)*0.5/L)) * Rp;
-    double R  = gamma* (sqrt(Re * 2.0*sqrt(A/PI)/L)) * Rp;
-    
-    if (R < 1.*Rp)
+    //-----------------------------------------------------------------
+    // Correct any resistance smaller than Poiseuille's one
+    //-----------------------------------------------------------------
+    if (R < Rp)
     {
       R = Rp;
     }
-    
-    //    R = Rp *(3.4+2.1e-3 *Re);
-
-    Qin_np = (epnp(0)-epnp(1))/R;
-    Qout_np = Qin_np;
-    
   }
-  else if(ele->type() == "InductoResistive")
+  else if (ele->Resistance() == "Reynolds")
+  {
+    R = Rp *(3.4+2.1e-3 *Re);
+  }
+  else
+  {
+    dserror("[%s] is not a defined resistance model",ele->Resistance().c_str());
+  }
+  
+  // ------------------------------------------------------------------
+  // Find the airway type
+  // ------------------------------------------------------------------
+  if(ele->Type() == "Resistive")
+  {
+    eqin_np = eqout_np = (epnp(0)-epnp(1))/R;
+  }
+  else if(ele->Type() == "InductoResistive")
   {
     // get element information
-    double A, Ew, tw;
-    ele->getParams("Area",A);
+    double  Ew, tw;
+    ele->getParams("WallCompliance",Ew);
+    ele->getParams("WallThickness",tw);
+  }
+  else if(ele->Type() == "ComplientResistive")
+  {
+    // get element information
+    double Ew, tw;
     ele->getParams("WallCompliance",Ew);
     ele->getParams("WallThickness",tw);
 
-  }
-  else if(ele->type() == "ComplientResistive")
-  {
-    // get element information
-    double A, Ew, tw;
-    ele->getParams("Area",A);
-    ele->getParams("WallCompliance",Ew);
-    ele->getParams("WallThickness",tw);
-
-    // find Resistance 
-    //    const double R    = 8.0*PI*visc*dens*L/(pow(A,2))*3.4;
  
     // find Capacitance C
     const double C    = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
 
-
     // get element information from the previous time step
-    double qcn =  qin - qout;
-    //    ele->getVars("capacitor_flow",qcn);
-
-    RefCountPtr<const Epetra_Vector> pn   = discretization.GetState("pn");
-    //    RefCountPtr<const Epetra_Vector> qcn  = discretization.GetState("qcn");
-    //    RCP<Epetra_Vector>               qcnp = params.get<RCP<Epetra_Vector> >("qcnp");
-
-
-    // extract local values from the global vectors
-    vector<double> mypn(lm.size());
-    DRT::UTILS::ExtractMyValues(*pn,mypn,lm);
-    
-    // create objects for element arrays
-    LINALG::Matrix<iel,1> epn;
-    for (int i=0;i<numnode;++i)
-    {
-      // split area and volumetric flow rate, insert into element arrays
-      epn(i)    = mypn[i];
-    }
+    double qcn =  eqin_n - eqout_n;
 
     // -----------------------------------------------------------
     // calculate capacitance flow at time step n+1
     // -----------------------------------------------------------
     double qcnp_val = (2.0*C/dt)*(epnp(0)-epn(0)) - qcn;
-    ele->setVars("capacitor_flow",qcnp_val);
-    //    int    gid = ele->LID();
-    //    double qcnp_val = (2.0*C/dt)*(epnp(0)-epn(0)) - (*qcn)[gid];
-    //    qcnp->ReplaceGlobalValues(1,&qcnp_val,&gid);
 
+    eqout_np = (epnp(0)-epnp(1))/R;
 
-    if(params.get<string> ("solver type") == "Nonlinear")
-    {
-      const int maxitr= 10;
-      for (int itr =0; itr<=maxitr; itr++)
-      {
-        //        const double Re= 2.0*fabs(Qout_np)/(visc*sqrt(A*PI))*1.0;
-        const double K1= 8.0*PI*visc*dens*L/(pow(A,2))*3.4;
-        const double K2= 8.0*PI*visc*dens*L/(pow(A,2))*2.1*0.001*2.0/(visc*sqrt(A*PI));
-        const double R = K1 + K2*fabs(Qout_np);
-        
-        const double df_dq = K1 + 2.0*K2*fabs(Qout_np);
-        const double     f = - (epnp(0)-epnp(1)) + R*Qout_np;
-        qout = -f/df_dq + Qout_np;
-        //      qin = (epnp(0)-epnp(1))/R;
-      
-        if (fabs(Qout_np - qout) <= fabs(1e-6*qout))
-        {
-          Qout_np = qout;
-          break;
-        }
-        if (itr == maxitr)
-        {
-          cout<<"Warning didn't converge: "<< fabs(Qout_np - qout) <<" Q = "<<qout<<endl;
-        }
-        Qout_np = qout;
-      }     
-    }
-    if(params.get<string> ("solver type") == "Linear")
-    {
-      //      const double Re= 2.0*fabs(Qout_np)/(visc*sqrt(A*PI))*1.0;
-      const double K1= 8.0*PI*visc*dens*L/(pow(A,2))*3.4;
-      const double K2= 8.0*PI*visc*dens*L/(pow(A,2))*2.1*0.001*2.0/(visc*sqrt(A*PI));
-      const double R = K1 + K2*fabs(Qout_np);
-
-      qout = (epnp(0)-epnp(1))/R;
-      Qout_np = qout;
-    }
-
-   Qin_np  = qout + qcnp_val;
+    eqin_np  = eqout_np + qcnp_val;
     
   }
-  else if(ele->type() == "RLC")
+  else if(ele->Type() == "RLC")
   {
     // get element information
-    double A, Ew, tw;
-    ele->getParams("Area",A);
+    double Ew, tw;
     ele->getParams("WallCompliance",Ew);
     ele->getParams("WallThickness",tw);
 
-    // find Resistance 
-    const double R    = 8.0*PI*visc*dens*L/(pow(A,2))*3.4;
- 
     // find Capacitance C
     const double C    = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
 
@@ -1296,92 +1256,36 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
 
     // get element information from the previous time step
     double qcn,qln;
-    qcn = qin - qout;
-    //    ele->getVars("capacitor_flow",qcn);
-    
-
-    // get pressure values at n+1
-    RefCountPtr<const Epetra_Vector> pn   = discretization.GetState("pn");
-
-    // extract local values from the global vectors
-    vector<double> mypn(lm.size());
-    DRT::UTILS::ExtractMyValues(*pn,mypn,lm);
-    
-    // create objects for element arrays
-    Epetra_SerialDenseVector epn(numnode);
-    //  LINALG::Matrix<numnode,1> epn;
-    for (int i=0;i<numnode;++i)
-    {
-      // split area and volumetric flow rate, insert into element arrays
-      epn(i)    = mypn[i];
-    }
+    qcn = eqin_n - eqout_n;
 
     // -----------------------------------------------------------
     // calculate the inductance flow at time step n and n+1
     // qln = qRn (qRn: flow in resistor at n)
     // -----------------------------------------------------------
     double qlnp = 0.0;
-    qln  = ( epn(2) -  epn(1))/R;
-    qlnp = (epnp(2) - epnp(1))/R;//((epnp(0) - epnp(2))+(epn(0) - epn(2)))*dt/(2.0*I) + qln;
+    qln  = eqout_n;
+    qlnp = (epnp(2) - epnp(1))/R;
 
     // -----------------------------------------------------------
     // calculate capacitance flow at time step n+1
     // -----------------------------------------------------------
+#if 1
+    double qcnp_val = (C/dt)*(epnp(0)-epn(0));
+#else
     double qcnp_val = (2.0*C/dt)*(epnp(0)-epn(0)) - qcn;
+#endif
 
-    //    int    gid = ele->LID();
-    //    double qcnp_val = (2.0*C/dt)*(epnp(0)-epn(0)) - (*qcn)[gid];
-    //    qcnp->ReplaceGlobalValues(1,&qcnp_val,&gid);
-
-    if(params.get<string> ("solver type") == "Nonlinear")
-    {
-      const int maxitr= 10;
-      for (int itr =0; itr<=maxitr; itr++)
-      {
-        //        const double Re= 2.0*fabs(Qout_np)/(visc*sqrt(A*PI))*1.0;
-        const double K1= 8.0*PI*visc*dens*L/(pow(A,2))*3.4;
-        const double K2= 8.0*PI*visc*dens*L/(pow(A,2))*2.1*0.001*2.0/(visc*sqrt(A*PI));
-        const double R = K1 + K2*fabs(Qout_np);
-        
-        const double df_dq = K1 + 2.0*K2*fabs(Qout_np);
-        const double     f = - (epnp(0)-epnp(1)) + R*Qout_np;
-        qout = -f/df_dq + Qout_np;
-
-  
-        if (fabs(Qout_np - qout) <= fabs(1e-6*qout))
-        {
-          Qout_np = qout;
-          break;
-        }
-        if (itr == maxitr)
-        {
-          cout<<"Warning didn't converge: "<< fabs(Qout_np - qout) <<" Q = "<<qout<<endl;
-        }
-        Qout_np = qout;
-      }     
-    }
-    if(params.get<string> ("solver type") == "Linear")
-    {
-      //      const double Re= 2.0*fabs(Qout_np)/(visc*sqrt(A*PI))*1.0;
-      const double K1= 8.0*PI*visc*dens*L/(pow(A,2))*3.4;
-      const double K2= 8.0*PI*visc*dens*L/(pow(A,2))*2.1*0.001*2.0/(visc*sqrt(A*PI));
-      const double R = K1 + K2*fabs(Qout_np);
-
-      qout = (epnp(0)-epnp(1))/R;
-      Qout_np = qout;
-    }
-
-    Qin_np  = qout + qcnp_val;
-   
-    qout = qlnp;
+    
+    eqout_np = qlnp;
+    eqin_np  = eqout_np + qcnp_val;
   }
-  else if(ele->type() == "SUKI")
+  else if(ele->Type() == "SUKI")
   {
     
   }
   else
   {
-    dserror("[%s] is not an implimented elements yet",(ele->type()).c_str());
+    dserror("[%s] is not an implimented elements yet",(ele->Type()).c_str());
     exit(1);
   }
 
@@ -1389,15 +1293,15 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   //  ele->setVars("flow_out",qout);
   int gid = ele->Id();
 
-  qin_np  -> ReplaceGlobalValues(1,&Qin_np,&gid);
-  qout_np -> ReplaceGlobalValues(1,&Qout_np,&gid);
+  qin_np  -> ReplaceGlobalValues(1,&eqin_np ,&gid);
+  qout_np -> ReplaceGlobalValues(1,&eqout_np,&gid);
 
   for (int i = 0; i<2; i++)
   {
     if(ele->Nodes()[i]->GetCondition("RedLungAcinusCond"))
     {
       double acinus_volume = e_acini_voln[i];
-      acinus_volume +=  (Qin_np)*dt;
+      acinus_volume +=  (eqin_np)*dt;
 
       int    gid2 = lm[i];
       a_volume->ReplaceGlobalValues(1,&acinus_volume,&gid2);
@@ -1456,7 +1360,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
   // ---------------------------------------------------------------------------------
   // Resolve the BCs
   // ---------------------------------------------------------------------------------
-
   for(int i = 0; i<ele->NumNode(); i++)
   {
     if (ele->Nodes()[i]->Owner()== myrank)
@@ -1507,10 +1410,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
         double BC3d = 0.0;
         if (returnedBC  == "flow")
         {
-          if (i==0)
-            ele->getVars("flow_in", BC3d);
-          else
-            ele->getVars("flow_out", BC3d);
+          // MUST BE DONE
         }
         else if (returnedBC == "pressure")
         {

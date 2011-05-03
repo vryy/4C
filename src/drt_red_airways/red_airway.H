@@ -349,8 +349,10 @@ public:
   //@}
 
   //! @name Other
-  std::string type(){return elemType_;}
+  std::string Type(){return elemType_;}
 
+  //! @name Other
+  std::string Resistance(){return resistance_;}
 
   //@}
 
@@ -371,12 +373,6 @@ public:
 
   //! set qout
   //  void           setqout(double Qout){ qout_ = Qout;}
-
-  //! get element variables
-  void           getVars(std::string name, double & var);
-
-  //! get element variables
-  void           setVars(std::string name, double var);
 
   //! get element parameters
   void           getParams(std::string name, double & var);
@@ -401,32 +397,16 @@ private:
   //! Element Type
   std::string                                     elemType_;
 
+  //! Resistance Type
+  std::string                                     resistance_;
+
   //! container containing all kind of airway thisandthat
   DRT::Container                                  data_;
 
-  //! Wall Compliance
-  //  double                                          Ew_;
-
-  //! Air Compliance
-  //  double                                          Ea_;
-
-  //! Wall Thickness
-  //  double                                          tw_;
-
-  //! cross-sectional area
-  //  double                                          A_;
-
-  //! flow in
-  //  double                                          qin_;
-
-  //! flow out
-  //  double                                          qout_;
 
   // data
   map<std::string, double>                        elemParams_;
 
-  // data
-  map<std::string, double>                        elemVars_;
 
   // element tree generation
   int                                             generation_;
@@ -451,19 +431,6 @@ private:
 
 }; // class RedAirway
 
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
-
-
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
 
 
 } // namespace ELEMENTS

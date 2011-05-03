@@ -38,8 +38,9 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(const std::string& eletype,
   SetMaterial(material);
 
   linedef->ExtractString("TYPE",elemType_);
-  if (elemType_ == "PoiseuilleResistive" || elemType_ == "TurbulentPoiseuilleResistive" || elemType_ == "InductoResistive" || elemType_ == "ComplientResistive" || elemType_ == "RLC" || elemType_ == "SUKI")
+  if (elemType_ == "Resistive" || elemType_ == "InductoResistive" || elemType_ == "ComplientResistive" || elemType_ == "RLC" || elemType_ == "SUKI")
   {
+    linedef->ExtractString("Resistance",resistance_);
     double Ew, Ea, tw, A;
     int generation;
     linedef->ExtractDouble("WallCompliance",Ew);
@@ -60,38 +61,6 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(const std::string& eletype,
     dserror("Reading type of RED_AIRWAY element failed: ComplientResistive/PoiseuilleResistive/TurbulentPoiseuilleResistive/InductoResistive/RLC/SUKI");
     exit(1);
   }
-
-  // build the elemParams Vector (This will be ommited later)
-  elemVars_["flow_in"]  = 0.0;
-  elemVars_["flow_out"] = 0.0;
-  if (elemType_ ==  "PoiseuilleResistive")
-  {
-    
-  }
-  else if (elemType_ == "InductoResistive")
-  {
-    elemVars_["inductor_pressure"]  = 0.0;
-    elemVars_["inductor_flow"]      = 0.0;
-  }
-  else if (elemType_ == "ComplientResistive")
-  {
-    elemVars_["capacitor_pressure"] = 0.0;
-    elemVars_["capacitor_flow"]     = 0.0;
-  }
-  else if (elemType_ == "RLC")
-  {
-    elemVars_["capacitor_pressure"] = 0.0;
-    elemVars_["capacitor_flow"]     = 0.0;
-    elemVars_["inductor_pressure"]  = 0.0;
-    elemVars_["inductor_flow"]      = 0.0;
-  }
-  else if (elemType_ == "SUKI")
-  {
-  }
-  else
-  {
-  }
-  
 
   return true;
 }

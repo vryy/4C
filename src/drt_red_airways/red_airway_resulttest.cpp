@@ -14,7 +14,7 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*/
 
 #ifdef CCADISCRET
-#ifdef RED_AIRWAY
+#ifdef D_RED_AIRWAYS
 
 #include "airwayimplicitintegration.H"
 #include "red_airway_resulttest.H"
@@ -84,6 +84,6 @@ bool AIRWAY::RedAirwayResultTest::Match(DRT::INPUT::LineDefinition& res)
   return res.HaveNamed("RED_AIRWAY");
 }
 
-#endif //#ifdef RED_AIRWAY
+#endif //#ifdef D_RED_AIRWAYS
 #endif /* CCADISCRET       */
 

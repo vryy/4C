@@ -62,6 +62,7 @@ void DRT::ELEMENTS::RedAirwayType::SetupElementDefinition( std::map<std::string,
     .AddIntVector("LINE2",2)
     .AddNamedInt("MAT")
     .AddNamedString("TYPE")
+    .AddNamedString("Resistance")
     .AddNamedDouble("WallCompliance")
     .AddNamedDouble("AirCompliance")
     .AddNamedDouble("WallThickness")
@@ -137,14 +138,9 @@ void DRT::ELEMENTS::RedAirway::Pack(DRT::PackBuffer& data) const
   Element::Pack(data);
 
   AddtoPack(data,elemType_);
+  AddtoPack(data,resistance_);
 
   map<std::string,double>::const_iterator it;
-  AddtoPack(data,(int)(elemVars_.size()));
-  for (it = elemVars_.begin(); it!= elemVars_.end(); it++)
-  {
-    AddtoPack(data,it->first);
-    AddtoPack(data,it->second);
-  }
 
   AddtoPack(data,(int)(elemParams_.size()));
   for (it = elemParams_.begin(); it!= elemParams_.end(); it++)
@@ -177,19 +173,9 @@ void DRT::ELEMENTS::RedAirway::Unpack(const vector<char>& data)
   Element::Unpack(basedata);
 
   ExtractfromPack(position,data,elemType_);
-
+  ExtractfromPack(position,data,resistance_);
   map<std::string,double> it;
   int n = 0;
-  ExtractfromPack(position,data,n);
-
-  for (int i = 0; i<n; i++)
-  {
-    std::string name;
-    double val;
-    ExtractfromPack(position,data,name);
-    ExtractfromPack(position,data,val);
-    elemVars_[name] = val;
-  }
 
   ExtractfromPack(position,data,n);
 
@@ -205,7 +191,6 @@ void DRT::ELEMENTS::RedAirway::Unpack(const vector<char>& data)
   // extract generation
   ExtractfromPack(position,data,generation_);
 
-  //  cout<<"Var size: "<<elemVars_.size();
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
 
@@ -266,62 +251,8 @@ bool DRT::ELEMENTS::RedAirway::VisData(const string& name, vector<double>& data)
   // Put the owner of this element into the file (use base class method for this)
   if(DRT::Element::VisData(name,data))
     return true;
-
-#if 0
-  if ( (name == "flow_in") )
-  {
-    if ((int)data.size()!=1) dserror("size mismatch");
-    const double value = elemVars_[name];
-    data[0] = value;
-    return true;
-  }
-  else if ( (name == "flow_out") )
-  {
-    if ((int)data.size()!=1) dserror("size mismatch");
-    const double value = elemVars_[name];
-    data[0] = value;
-    return true;
-  }
-  else
-  {
-    return false;
-  }
-#endif
 }
 
-/*----------------------------------------------------------------------*
- |  Get element variable  (public)                         ismail 04/10 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirway::getVars(std::string name, double & var)
-{
-
-  map<std::string,double>::iterator it;
-  it = elemVars_.find(name);
-  if (it == elemVars_.end())
-  {
-    dserror ("[%s] is not found with in the element variables",name.c_str());
-    exit(1);
-  }
-  var = elemVars_[name];
-
-}
-
-/*----------------------------------------------------------------------*
- |  Set element variable  (public)                         ismail 04/10 |
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirway::setVars(std::string name, double var)
-{
-
-  map<std::string,double>::iterator it;
-  it = elemVars_.find(name);
-  if (it == elemVars_.end())
-  {
-    dserror ("[%s] is not found with in the element variables",name.c_str());
-    exit(1);
-  }
-  elemVars_[name] = var;
-
-}
 
 
 /*----------------------------------------------------------------------*
