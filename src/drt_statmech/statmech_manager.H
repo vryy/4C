@@ -118,7 +118,7 @@ public:
   void PeriodicBoundaryTruss3Init(DRT::Element* element);
 
   //! \brief Initializes trusslm elements in case of perioddic boundary conditions
-  //void PeriodicBoundaryTrussLmInit(DRT::Element* element);
+  void PeriodicBoundaryTrussLmInit(DRT::Element* element);
 
   //! \brief Shifts current position of nodes so that they comply with periodic boundary conditions
   void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, const double &dt);
@@ -127,7 +127,7 @@ public:
   bool CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const LINALG::Matrix<2,1>& LID, RCP<double> phifil = Teuchos::null);
 
 	//! \brief counts the number of possible crosslinking spots and does an Orientation Check
-	void NumLinkerSpotsAndOrientation(const Epetra_Vector& disrow, const int &istep);
+	void OrientationCorrelation(const Epetra_Vector& disrow, const int &istep);
 
   /*! \brief adjusted DBC evaluation for periodic case
    *  \param params					 a parameter list*/
@@ -231,7 +231,7 @@ protected:
 	void DDCorrShift(LINALG::Matrix<3,1>* boxcenter, LINALG::Matrix<3,1>* centershift, std::vector<int>* crosslinkerentries);
 
 	//! \brief obtain radial crosslinker density distribution
-	void RadialDensityDistribution(Epetra_Vector& radialdistancesrow, LINALG::Matrix<3,1>* cog,  LINALG::Matrix<3,1>* centershift, std::vector<int>* crosslinkerentries);
+	void RadialDensityDistribution(Epetra_Vector& radialdistancesrow, LINALG::Matrix<3,1>* cog, std::vector<int>* crosslinkerentries);
 
 	/*! \brief determine the current network structure
 	 * 	\param disrow  (in) displacement in row format
@@ -254,6 +254,9 @@ protected:
 
 	//! \brief simply returns the number of free, one-bonded, and two-bonded crosslink molecules
 	void CrosslinkCount(const std::ostringstream& filename);
+
+	//! \brief returns polymer length per unit volume with respect to radial distance to COG of the network
+	void ComputeLocalMeshSize(const Epetra_Vector& disrow, LINALG::Matrix<3,1>* cog, const int &istep);
 
 	//! \brief check whether a crosslink connects two filaments or occupies two binding spots of the same element and therefore is to be visualized differently
 	bool CheckForKinkedVisual(int eleid);

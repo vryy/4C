@@ -2474,7 +2474,9 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   // write the numbers of free, one-bonded, and two-bonded crosslink molecules
   CrosslinkCount(filename);
   // write the numbers of free, one-bonded, and two-bonded crosslink molecules
-  NumLinkerSpotsAndOrientation(disrow, istep);
+  OrientationCorrelation(disrow, istep);
+  // Compute the the network mesh size in dependency to the radial distance to a given COG
+  ComputeLocalMeshSize(disrow, &cog, istep);
 
   // MultiVector because result vector will be of length 3*ddcorrrowmap_->MyLength()
 	Epetra_MultiVector crosslinksperbinrow(*ddcorrrowmap_,9 , true);
@@ -2488,7 +2490,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   SphericalCoordsDistribution(disrow, phibinsrow, thetabinsrow, costhetabinsrow);
 
   Epetra_Vector radialdistancesrow(*ddcorrrowmap_, true);
-  RadialDensityDistribution(radialdistancesrow, &cog, &newcentershift, &crosslinkerentries);
+  RadialDensityDistribution(radialdistancesrow, &cog, &crosslinkerentries);
 
   // Import
   Epetra_MultiVector crosslinksperbincol(*ddcorrcolmap_,crosslinksperbinrow.NumVectors() , true);
@@ -3800,7 +3802,7 @@ void StatMechManager::CrosslinkCount(const std::ostringstream& filename)
 /*------------------------------------------------------------------------------*                                                 |
  | linker spot counter and check of interfilament orient. (public) mueller 12/10|
  *------------------------------------------------------------------------------*/
-void StatMechManager::NumLinkerSpotsAndOrientation(const Epetra_Vector& disrow, const int &istep)
+void StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const int &istep)
 {
 	/* what this does:
 	 * 1) orientation correlation function for all proximal binding spot pairs (regardless of orientation)
@@ -3829,11 +3831,9 @@ void StatMechManager::NumLinkerSpotsAndOrientation(const Epetra_Vector& disrow, 
 			std::vector<int> dofnode = discret_.Dof(node);
 
 			LINALG::Matrix<3, 1> currpos;
-			LINALG::Matrix<3, 1> currrot;
 
-			currpos(0) = node->X()[0] + discol[discret_.DofColMap()->LID(dofnode[0])];
-			currpos(1) = node->X()[1] + discol[discret_.DofColMap()->LID(dofnode[1])];
-			currpos(2) = node->X()[2] + discol[discret_.DofColMap()->LID(dofnode[2])];
+			for(int j=0; j<(int)currpos.M(); j++)
+				currpos(j) = node->X()[j] + discol[discret_.DofColMap()->LID(dofnode[j])];
 
 			currentpositions[node->LID()] = currpos;
 		}
@@ -4037,6 +4037,160 @@ void StatMechManager::NumLinkerSpotsAndOrientation(const Epetra_Vector& disrow, 
 }//NumLinkerSpotsAndOrientation()
 
 /*------------------------------------------------------------------------------*                                                 |
+ | computes the mesh size of the network dep. on distance to cog                |
+ |                                                        (public) mueller 12/10|
+ *------------------------------------------------------------------------------*/
+void StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow, LINALG::Matrix<3,1>* cog, const int &istep)
+{
+	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
+	double maxdist = periodlength/2.0*sqrt(3.0);
+	int numbins = statmechparams_.get<int>("HISTOGRAMBINS",1);
+
+	std::ostringstream filename;
+	filename << "./LocalMeshSize_"<<std::setw(6) << setfill('0') << istep <<".dat";
+
+	// distances of nodes to COG
+	std::vector<LINALG::Matrix<3,1> > disttocog;
+	disttocog.clear();
+
+	// row node positions shifted first and then stored with respect to COG
+	for (int i=0; i<discret_.NumMyRowNodes(); i++)
+	{
+		//get pointer at a node
+		const DRT::Node* node = discret_.lRowNode(i);
+
+		//get GIDs of this node's degrees of freedom
+		std::vector<int> dofnode = discret_.Dof(node);
+
+		LINALG::Matrix<3, 1> dtocog;
+
+		for(int j=0; j<(int)dtocog.M(); j++)
+		{
+			// 1. get the global node positions
+			dtocog(j) = node->X()[j] + disrow[discret_.DofRowMap()->LID(dofnode[j])];
+			// shift the j-th component according to new center COG
+			if (dtocog(j) > periodlength+(*cog)(j))
+				dtocog(j) -= periodlength;
+			if (dtocog(j) < (*cog)(j))
+				dtocog(j) += periodlength;
+		}
+
+		dtocog -= *cog;
+
+		disttocog.push_back(dtocog);
+	}
+
+	Epetra_Vector fillengthrow(*ddcorrrowmap_, true);
+	// calculate sqrt(DV/DL)
+	for(int i=1; i<discret_.NumMyRowNodes(); i++)
+	{
+		// column map LID of the two nodes in question
+		int collid0 = discret_.NodeColMap()->LID(discret_.NodeRowMap()->GID(i-1));
+		int collid1 = discret_.NodeColMap()->LID(discret_.NodeRowMap()->GID(i));
+		// make sure both nodes lie on the same filament
+		if((*filamentnumber_)[collid0] == (*filamentnumber_)[collid1])
+		{
+			int bin0 = (int)floor(disttocog[i-1].Norm2()/maxdist*numbins);
+			int bin1 = (int)floor(disttocog[i].Norm2()/maxdist*numbins);
+			if(bin0 == numbins)
+				bin0--;
+			if(bin1 == numbins)
+				bin1--;
+			// case: the two nodes lie within different bins: add length portions binwise
+			if(bin0 != bin1)
+			{
+				// set bigger bin as bin1
+				int i0 = i-1;
+				int i1 = i;
+				if(bin1<bin0)
+				{
+					int tmp = bin0;
+					bin0 = bin1;
+					bin1 = tmp;
+					i0 = i;
+					i1 = i-1;
+				}
+
+				// directional unit vector
+				LINALG::Matrix<3,1> dirvec =disttocog[bin1];
+				dirvec -= disttocog[bin0];
+				dirvec.Scale(1.0/dirvec.Norm2());
+
+				// number of bin intersections
+				int numisecs = abs(bin1-bin0);
+				std::vector<double> binlims(numisecs, 0.0);
+				LINALG::Matrix<3,1> previsec;
+				for(int j=0; j<numisecs; j++)
+				{
+					// j-th bin limit
+					binlims[j] = (double)(bin1-numisecs+j+1)/(double)numbins*maxdist;
+					// line parameter mu for intersection of line with spherical shell:
+					// note: we take the solution that is >=0 since we chose the directional vector accordingly
+					LINALG::Matrix<3,1> r0 = disttocog[i0];
+					// if there is more than one intersection, set the current r0 to the lower bin limit
+					if(numisecs>1)
+						r0 = previsec;
+
+					double a = 0.0;
+					for(int k=0; k<(int)r0.M(); k++)
+						a += r0(k)/dirvec(k);
+					double b = sqrt(a*a-r0.Norm2()+binlims[j]*binlims[j]);
+					double mu = -a + b;
+					// intersection of the line with the spherical shell
+					LINALG::Matrix<3,1> isection = dirvec;
+					isection.Scale(mu);
+					isection += r0;
+
+					// calculate element (filament) portions added to the respective bin
+					LINALG::Matrix<3,1> l0 = isection;
+					LINALG::Matrix<3,1> l1 = isection;
+					l0 -= r0;
+					fillengthrow[bin0] += l0.Norm2();
+					// distinction between one and several possible intersections
+					if(j==numisecs-1)
+					{
+						l1 -= disttocog[i1];
+						fillengthrow[bin1] += l1.Norm2();
+					}
+					// store current intersection in case there are more than one
+					previsec = isection;
+				}
+			}
+			else // just add the entire element length
+			{
+				LINALG::Matrix<3,1> elength = disttocog[i-1];
+				elength -= disttocog[i];
+				fillengthrow[bin0] += elength.Norm2();
+			}
+		}
+	}
+
+	Epetra_Vector fillengthcol(*(ddcorrcolmap_),true);
+	Epetra_Import importer(*(ddcorrcolmap_), *(ddcorrrowmap_));
+	fillengthcol.Import(fillengthrow,importer,Insert);
+
+	// Add the processor-specific data up
+	std::vector<double> fillength(numbins, 0.0);
+	for(int i=0; i<numbins; i++)
+		for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
+			fillength[i] += fillengthcol[pid*numbins+i];
+
+	// Proc 0 section
+	if(discret_.Comm().MyPID()==0)
+	{
+		FILE* fp = NULL;
+		fp = fopen(filename.str().c_str(), "w");
+		std::stringstream histogram;
+
+		for(int i=0; i<numbins; i++)
+			histogram<<i+1<<"    "<<fillength[i]<<endl;
+		//write content into file and close it
+		fprintf(fp, histogram.str().c_str());
+		fclose(fp);
+	}
+}
+
+/*------------------------------------------------------------------------------*                                                 |
  | distribution of spherical coordinates                  (public) mueller 12/10|
  *------------------------------------------------------------------------------*/
 void StatMechManager::SphericalCoordsDistribution(const Epetra_Vector& disrow,
@@ -4111,11 +4265,11 @@ void StatMechManager::SphericalCoordsDistribution(const Epetra_Vector& disrow,
 /*------------------------------------------------------------------------------*
  | radial crosslinker density distribution                (public) mueller 12/10|
  *------------------------------------------------------------------------------*/
-void StatMechManager::RadialDensityDistribution(Epetra_Vector& radialdistancesrow, LINALG::Matrix<3,1>* cog, LINALG::Matrix<3,1>* centershift, std::vector<int>* crosslinkerentries)
+void StatMechManager::RadialDensityDistribution(Epetra_Vector& radialdistancesrow, LINALG::Matrix<3,1>* cog, std::vector<int>* crosslinkerentries)
 {
 		// simpler version taking into account only the original boundary volume
 	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
-	double maxdistance = periodlength*sqrt(3.0);
+	double maxdistance = periodlength/2.0*sqrt(3.0);
 	int numbins = statmechparams_.get<int>("HISTOGRAMBINS", 1);
 
 	// Export to transfer map format
@@ -4147,9 +4301,9 @@ void StatMechManager::RadialDensityDistribution(Epetra_Vector& radialdistancesro
 			for(int j=0; j<crosslinkerpositionstrans.NumVectors(); j++)
 			{
 				distance(j) = crosslinkerpositionstrans[j][i];
-				if (distance(j) > periodlength+(*centershift)(j))
+				if (distance(j) > periodlength+(*cog)(j))
 					distance(j) -= periodlength;
-				if (distance(j) < 0.0+(*centershift)(j))
+				if (distance(j) < 0.0+(*cog)(j))
 					distance(j) += periodlength;
 			}
 			distance -= (*cog);
