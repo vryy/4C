@@ -12,6 +12,7 @@
 #include "../drt_beam3ii/beam3ii.H"
 #include "../drt_smoothrod/smoothrod.H"
 #include "../drt_truss3/truss3.H"
+#include "../drt_trusslm/trusslm.H"
 #include "../drt_truss2/truss2.H"
 #include "../drt_torsion3/torsion3.H"
 #include "../drt_torsion2/torsion2.H"
@@ -126,6 +127,7 @@ std::string DRT::ParObjectList()
 #endif
 #ifdef D_TRUSS3
     << DRT::ELEMENTS::Truss3Type::Instance().Name() << " "
+    << DRT::ELEMENTS::TrussLmType::Instance().Name() << " "
 #endif
 #ifdef D_TRUSS2
     << DRT::ELEMENTS::Truss2Type::Instance().Name() << " "

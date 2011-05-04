@@ -1144,6 +1144,11 @@ set(OBJS_DRT_T3_LIB
   src/drt_truss3/truss3_evaluate.cpp
   src/drt_truss3/truss3_input.cpp
 )
+set(OBJS_DRT_TLM_LIB
+  src/drt_trusslm/trusslm.cpp
+  src/drt_trusslm/trusslm_evaluate.cpp
+  src/drt_trusslm/trusslm_input.cpp
+)
 set(OBJS_DRT_ALEALG
   src/drt_ale/ale.cpp
   src/drt_ale/ale_dyn.cpp
@@ -1385,6 +1390,7 @@ add_library(ele_scatra ${OBJS_DRT_SCATRA_LIB})
 add_library(ele_so ${OBJS_SOH8_LIB})
 add_library(ele_t2 ${OBJS_DRT_T2_LIB})
 add_library(ele_t3 ${OBJS_DRT_T3_LIB})
+add_library(ele_tlm ${OBJS_DRT_TLM_LIB})
 add_library(ele_thermo ${OBJS_DRT_THERMO_LIB})
 add_library(ele_to2 ${OBJS_DRT_TO2_LIB})
 add_library(ele_to3 ${OBJS_DRT_TO3_LIB})
@@ -1406,6 +1412,7 @@ set(ELEMENT_LIBRARIES
   ele_so
   ele_t2
   ele_t3
+  ele_tlm
   ele_thermo
   ele_to2
   ele_to3
