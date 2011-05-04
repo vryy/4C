@@ -1234,6 +1234,7 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_element.cpp
   src/drt_cut/cut_elementhandle.cpp
   src/drt_cut/cut_facet.cpp
+  src/drt_cut/cut_graph.cpp
   src/drt_cut/cut_integrationcell.cpp
   src/drt_cut/cut_integrationcellcreator.cpp
   src/drt_cut/cut_levelsetintersection.cpp

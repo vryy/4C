@@ -196,10 +196,19 @@ void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & f
 
     for ( PointGraph::iterator i=point_graph.begin(); i!=point_graph.end(); ++i )
     {
-      const std::vector<Point*> & facet_points = *i;
+      const std::vector<int> & facet_points = *i;
       if ( facet_points.size() > 2 )
       {
-        Facet * f = mesh.NewFacet( facet_points, this, IsCutSide() );
+        std::vector<Point*> points;
+        points.reserve( facet_points.size() );
+        for ( std::vector<int>::const_iterator i=facet_points.begin(); i!=facet_points.end(); ++i )
+        {
+          points.push_back( point_graph.GetPoint( *i ) );
+        }
+
+        Facet * f = mesh.NewFacet( points, this, IsCutSide() );
+        if ( f==NULL )
+          throw std::runtime_error( "failed to create facet" );
         facets_.push_back( f );
         //f->Print( std::cout );
       }
