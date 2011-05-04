@@ -2498,7 +2498,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
       //------------------------
       GEO::CUT::LevelSetIntersection levelset;
 
-    const std::vector<std::vector<double> >& vertexcoord = RefinementCells[irefcell]->GetVertexCoord();
+      const std::vector<std::vector<double> >& vertexcoord = RefinementCells[irefcell]->GetVertexCoord();
       LINALG::SerialDenseMatrix cellcoord(3,numnode_cell);
       for (int ivert=0; ivert<numnode_cell; ivert++)
       {
@@ -2515,8 +2515,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
       catch ( std::runtime_error & err )
       {
         std::cerr << "failed to cut element\n"
-                  << "coordinates:\n"
-            ;
+                  << "coordinates:\n";
         cellcoord.Print( std::cerr );
         std::cerr << "g-function values:\n";
         std::copy( gfuncvalues.begin(), gfuncvalues.end(), std::ostream_iterator<double>( std::cerr, ", " ) );
@@ -2555,10 +2554,9 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
         // remark: this is unusual, since the
         if (numvolcells==1)
         {
-          //cout << "element " << rootcell->Ele()->Id() << " is really touched" << endl;
+          cout << "element " << rootcell->Ele()->Id() << " is really touched" << endl;
           // store domain integration cells
           const bool storedvol = StoreDomainIntegrationCells(ehandle,listDomainIntCellsperEle,xyze);
-          //StoreDomainIntegrationCell(RefinementCells[irefcell],listDomainIntCellsperEle);
           // store boundary integration cells
           const bool storedbound = StoreBoundaryIntegrationCells(ehandle,listBoundaryIntCellsperEle,xyze);
 
@@ -2574,7 +2572,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
         //-----------------
         else if (numvolcells==2)
         {
-          //cout << "element " << rootcell->Ele()->Id() << " is really bisected" << endl;
+          cout << "element " << rootcell->Ele()->Id() << " is really bisected" << endl;
           // store domain integration cells
           const bool storedvol = StoreDomainIntegrationCells(ehandle,listDomainIntCellsperEle,xyze);
           // store boundary integration cells
@@ -2756,7 +2754,8 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
   default: dserror("unknown type of XFEM integration");
   }
 
-  // Abfrage fuer zwei getouchte Verfeinerungszellen -> bisected, falls alle domains gleich
+  // a refined element consisting of touched refinement cells is actually bisected, if there exist
+  // refinement cells in both domains
   if (refinement_ and cutstat == COMBUST::FlameFront::touched)
   {
     // get domain of first domain integration cell
@@ -4818,10 +4817,10 @@ bool COMBUST::FlameFront::StoreDomainIntegrationCellsTrisected(
     if (volcell->Position() == GEO::CUT::Point::outside) // volume cell is in G-plus domain (G>0)
       pluscounter += 1;
   }
-  if ( pluscounter != 1 or pluscounter != 2 ) dserror("there should be one or two volume cells on either side for a trisected element");
+  if ( pluscounter != 1 and pluscounter != 2 ) dserror("there should be one or two volume cells on either side for a trisected element");
 
   bool inGplus = false;
-  if (pluscounter == 2) // volume cell at at the sides are G-plus
+  if (pluscounter == 1) // volume cell at at the sides are G-plus
     inGplus = true;     // -> the whole cell is set G-plus
 
   //-------------------------------------
@@ -4972,8 +4971,8 @@ bool COMBUST::FlameFront::StoreBoundaryIntegrationCells(
           std::copy(vertcoord.A(), vertcoord.A()+3, &physCoord(0,ivert));
         }
 
-        if ( (volume/volele < voltol) or (volume/volele > (1-voltol)) and
-             (bcell->Area()/areaele < areatol) )
+        if ( ( volume/volele<voltol or (1-volume/volele)<voltol )
+            and ( bcell->Area()/areaele<areatol ) )
         {
           // do not store boundary cells for small volumes, but do store large boundary cells for
           // small volumes -> this will be a touched element, we have to keep its boundary cell
