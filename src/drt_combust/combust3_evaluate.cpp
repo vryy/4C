@@ -473,7 +473,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
 #ifdef COMBUST_STRESS_BASED
       // integrate and assemble all unknowns
-      if ((not this->bisected_ and not this->trisected) or
+      if ((not this->bisected_ and not this->trisected_) or
           not params.get<bool>("DLM_condensation"))
       {
         if (ih_->GetNumBoundaryIntCells(this) > 0)

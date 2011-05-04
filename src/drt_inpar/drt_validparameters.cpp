@@ -2995,14 +2995,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::COMBUST::combusttype_twophaseflowjump),
               &combustcontrolfluid);
 
-  setStringToIntegralParameter<int>("XFEMINTEGRATION","Tetgen",
+  setStringToIntegralParameter<int>("XFEMINTEGRATION","Cut",
       "Type of integration strategy for intersected elements",
       tuple<std::string>(
-          "Tetgen",
+          "Cut",
           "Tetrahedra",
           "Hexahedra"),
           tuple<int>(
-              INPAR::COMBUST::xfemintegration_tetgen,
+              INPAR::COMBUST::xfemintegration_cut,
               INPAR::COMBUST::xfemintegration_tetrahedra,
               INPAR::COMBUST::xfemintegration_hexahedra),
               &combustcontrolfluid);

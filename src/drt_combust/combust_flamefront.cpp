@@ -66,7 +66,7 @@ phinp_(Teuchos::null),
 gradphi_(Teuchos::null),
 refinement_(false),
 maxRefinementLevel_(0),
-xfeminttype_(INPAR::COMBUST::xfemintegration_tetgen)
+xfeminttype_(INPAR::COMBUST::xfemintegration_cut)
 {
 }
 
@@ -2375,7 +2375,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
   // use Constrained Delaunay Tetrahedralization (CDT) of TetGen to create tetrahedral
   // domain integration cells
   //----------------------------------------------------------------------------------
-  case INPAR::COMBUST::xfemintegration_tetgen:
+  case INPAR::COMBUST::xfemintegration_cut:
   {
     // loop over all refinement cells attached to root cell
     // remark: this is a partition of the root cell
@@ -4362,9 +4362,7 @@ void COMBUST::FlameFront::buildPLC(
         Teuchos::null, phystrianglecoord, true));
   }
 
-#if 1 // use Uli's new cut algorithm
-
-  if (xfeminttype_ == INPAR::COMBUST::xfemintegration_tetgen)
+  if (xfeminttype_ == INPAR::COMBUST::xfemintegration_cut)
   {
     DRT::Element::DiscretizationType distype_cell = cell->Shape();
 
@@ -4565,29 +4563,6 @@ void COMBUST::FlameFront::buildPLC(
     }
 #endif
   }
-
-#else
-  //------------------------------------------------------------------------------------
-  // call external program TetGen based on CDT (Constrained Delaunay Tetrahedralization)
-  //------------------------------------------------------------------------------------
-  // only called if XEFM integratiuon es performed using TetGen
-  if (xfeminttype_ == INPAR::COMBUST::xfemintegration_tetgen)
-  {
-    // the node IDs of each surface are used as point IDs for TetGen
-    const std::vector<std::vector<int> >& xfemsurfacelist = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
-#ifdef QHULL
-    //------------------------------------------------------------------------------
-    // create domain integration cells with TetGen for a cell/element and store them
-    //------------------------------------------------------------------------------
-    // remark: if cell is cut, tetrahedra have to be created serving as integration cells
-    CallTetGen(pointlist, segmentlist, xfemsurfacelist, trianglelist, domainintcelllist, xyze,
-        gfuncvaluesrootcell);
-#else
-    dserror("Set QHULL flag to use Tetgen!");
-#endif
-  }
-
-#endif
   // Gmsh output for flame front
   // FlamefrontToGmsh(cell, pointlist, segmentlist, trianglelist);
 }

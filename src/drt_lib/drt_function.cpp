@@ -514,6 +514,18 @@ namespace UTILS {
     double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
   };
 
+  /// special implementation for a xfem test function
+  class LevelSetCutTestFunction : public Function
+  {
+  public:
+
+    /// ctor
+    LevelSetCutTestFunction();
+
+    /// evaluate function at given position in space
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+  };
+
 }
 }
 
@@ -633,6 +645,12 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddTag("ZALESAKSDISK")
     ;
 
+  DRT::INPUT::LineDefinition levelsetcuttest;
+  levelsetcuttest
+    .AddNamedInt("FUNCT")
+    .AddTag("LEVELSETCUTTEST")
+    ;
+
   DRT::INPUT::LineDefinition componentexpr;
   componentexpr
     .AddNamedInt("FUNCT")
@@ -664,6 +682,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(localwomersley);
   lines->Add(cylinder3d);
   lines->Add(zalesaksdisk);
+  lines->Add(levelsetcuttest);
   lines->Add(componentexpr);
   lines->Add(expr);
   return lines;
@@ -876,6 +895,10 @@ void DRT::UTILS::FunctionManager::ReadInput(const DRT::INPUT::DatFileReader& rea
       else if (function->HaveNamed("ZALESAKSDISK"))
       {
         functions_.push_back(rcp(new ZalesaksDiskFunction()));
+      }
+      else if (function->HaveNamed("LEVELSETCUTTEST"))
+      {
+        functions_.push_back(rcp(new LevelSetCutTestFunction()));
       }
       else if (function->HaveNamed("EXPR"))
       {
@@ -2092,6 +2115,81 @@ double DRT::UTILS::ZalesaksDiskFunction::Evaluate(int index, const double* xp, d
   distance = sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15;
 
   return distance;
+}
+/*----------------------------------------------------------------------*
+ | constructor                                              henke 05/11 |
+ *----------------------------------------------------------------------*/
+DRT::UTILS::LevelSetCutTestFunction::LevelSetCutTestFunction() :
+Function()
+{
+}
+
+/*----------------------------------------------------------------------*
+ | evaluation of level set test function "Zalesak's disk"   henke 05/11 |
+ *----------------------------------------------------------------------*/
+double DRT::UTILS::LevelSetCutTestFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  //here calculation of phi (sign is already taken in consideration)
+  double phi = 0;
+
+  // column of nodes (x < -0.7)
+  if (xp[0] < -0.75)
+    phi = xp[0]+0.6;
+  // column of nodes (x = -0.7)
+  else if ((xp[0] > -0.75) and (xp[0] < -0.65))
+    phi = -0.1;
+  // column of nodes (x = -0.6)
+  else if ((xp[0] > -0.65) and (xp[0] < -0.55))
+    phi = 0.0 +1.0E-4;
+  // column of nodes (x = -0.5)
+  else if ((xp[0] > -0.55) and (xp[0] < -0.45))
+    phi = 0.1;
+  // column of nodes (x = -0.4)
+  else if ((xp[0] > -0.45) and (xp[0] < -0.35))
+    phi = 0.0 +1.0E-5;
+  // column of nodes (x = -0.3)
+  else if ((xp[0] > -0.35) and (xp[0] < -0.25))
+    phi = -0.1;
+  // column of nodes (x = -0.2)
+  else if ((xp[0] > -0.25) and (xp[0] < -0.15))
+    phi = 0.0 +1.0E-12;
+  // column of nodes (x = -0.1)
+  else if ((xp[0] > -0.15) and (xp[0] < -0.05))
+    phi = 0.1;
+  // column of nodes (x = 0.0)
+  else if ((xp[0] > -0.05) and (xp[0] < 0.05))
+    phi = 0.0;
+  // column of nodes (x = 0.1)
+  else if ((xp[0] > 0.05) and (xp[0] < 0.15))
+    phi = -0.1;
+  // column of nodes (x = 0.2)
+  else if ((xp[0] > 0.15) and (xp[0] < 0.25))
+    phi = 0.0 -1.0E-12;
+  // column of nodes (x = 0.3)
+  else if ((xp[0] > 0.25) and (xp[0] < 0.35))
+    phi = 0.1;
+  // column of nodes (x = 0.4)
+  else if ((xp[0] > 0.35) and (xp[0] < 0.45))
+    phi = 0.0 -1.0E-5;
+  // column of nodes (x = 0.5)
+  else if ((xp[0] > 0.45) and (xp[0] < 0.55))
+    phi = -0.1;
+  // column of nodes (x = 0.6)
+  else if ((xp[0] > 0.55) and (xp[0] < 0.65))
+    phi = 0.0 -1.0E-4;
+  // column of nodes (x = 0.7)
+  else if ((xp[0] > 0.65) and (xp[0] < 0.75))
+    phi = 0.1;
+  // column of nodes (x > 0.7)
+  else if (xp[0] > 0.75)
+    phi = xp[0]-0.6;
+  // something went wrong
+  else
+  {
+    cout << xp[0] << endl;
+   dserror("this node does not exist");
+  }
+  return phi;
 }
 
 /*----------------------------------------------------------------------*/

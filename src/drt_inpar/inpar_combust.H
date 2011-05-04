@@ -44,7 +44,7 @@ namespace INPAR
     /// type of reinitialization for level set function (G-function)
     enum XFEMIntegration
     {
-      xfemintegration_tetgen,
+      xfemintegration_cut,
       xfemintegration_tetrahedra,
       xfemintegration_hexahedra
     };
