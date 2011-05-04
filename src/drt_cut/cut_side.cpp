@@ -6,6 +6,7 @@
 #include "cut_intersection.H"
 #include "cut_facet.H"
 #include "cut_point_impl.H"
+#include "cut_pointgraph.H"
 #include "cut_pointcycle.H"
 #include "cut_linesegment.H"
 
@@ -190,6 +191,21 @@ void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & f
 {
   if ( facets_.size()==0 )
   {
+    PointGraph point_graph( this );
+    //point_graph.Print();
+
+    for ( PointGraph::iterator i=point_graph.begin(); i!=point_graph.end(); ++i )
+    {
+      const std::vector<Point*> & facet_points = *i;
+      if ( facet_points.size() > 2 )
+      {
+        Facet * f = mesh.NewFacet( facet_points, this, IsCutSide() );
+        facets_.push_back( f );
+        //f->Print( std::cout );
+      }
+    }
+
+#if 0
     std::vector<Point*> facet_points;
 
     int end_pos = 0;
@@ -225,6 +241,7 @@ void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & f
 
       facets_.push_back( mesh.NewFacet( facet_points, this, false ) );
     }
+#endif
   }
 
   std::copy( facets_.begin(), facets_.end(), std::inserter( facets, facets.begin() ) );

@@ -42,6 +42,8 @@ public:
   // debug only
   void SetId( int sid ) { sid_ = sid; }
 
+  bool IsCutSide() { return sid_ > -1; }
+
   void Register( Element * element ) { elements_.insert( element ); }
 
   void CollectElements( std::set<Element*> & elements )

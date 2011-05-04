@@ -1246,6 +1246,7 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_node.cpp
   src/drt_cut/cut_point.cpp
   src/drt_cut/cut_pointcycle.cpp
+  src/drt_cut/cut_pointgraph.cpp
   src/drt_cut/cut_pointpool.cpp
   src/drt_cut/cut_side.cpp
   src/drt_cut/cut_sidehandle.cpp
