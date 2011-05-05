@@ -206,6 +206,7 @@ class StrategyBase
     virtual bool Friction() = 0;
     virtual bool Wear() = 0;
     virtual void VisualizeGmsh(const int step, const int iter = 0) = 0;
+    virtual const RCP<Epetra_Map> SlipRowNodes() = 0;
  
     //@}
 

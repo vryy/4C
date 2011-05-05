@@ -749,8 +749,9 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
 #endif // #ifdef CONTACTFDMORTARM
   }
 
-  // modify gap vector towards wear
-  if (wear_) g_->Update(1.0,*wearvector_,1.0);
+  // modify gap vector towards wear, only if no structure with ale is applied
+  if (wear_ and DRT::Problem::Instance()->ProblemType()=="struct_ale")
+    g_->Update(1.0,*wearvector_,1.0);
 
   // FillComplete() global Mortar matrices
   dmatrix_->Complete();
@@ -1072,7 +1073,11 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
             {
               FriNode* frinode = static_cast<FriNode*>(cnode);
               double wearcoeff = Params().get<double>("WEARCOEFF", 0.0);
-              frinode->FriData().Wear() += wearcoeff*frinode->FriData().DeltaWear();
+              
+              if(DRT::Problem::Instance()->ProblemType()=="struct_ale")
+                frinode->FriData().Wear() += wearcoeff*frinode->FriData().DeltaWear();
+              else
+                frinode->FriData().Wear() = wearcoeff*frinode->FriData().DeltaWear(); 
             }
           break;
         }

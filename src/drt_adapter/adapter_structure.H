@@ -317,6 +317,17 @@ namespace ADAPTER {
     virtual void PreparePartitionStep() = 0;
 
     //@}
+    
+    //! @name Structure with ale specific methods
+    //@{
+
+    /// material displacements (structure with ale)
+    virtual Teuchos::RCP<Epetra_Vector> DispMat() = 0;
+
+    /// apply material displacements to structure field (structure with ale)
+    virtual void ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat) = 0;
+    
+    //@}
 
     /// create result test for encapulated structure algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;

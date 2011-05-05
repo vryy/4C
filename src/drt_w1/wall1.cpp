@@ -167,10 +167,11 @@ gaussrule_(DRT::UTILS::intrule2D_undefined),
 wtype_(plane_none),
 stresstype_(w1_none),
 iseas_(false),
-eastype_(eas_vague)
-
+eastype_(eas_vague),
+structale_(false)
 {
-//  tsi_couptyp_ = tsi_coup_none;
+  if(DRT::Problem::Instance()->ProblemType() == "structure_ale")
+    structale_ = true;
   return;
 }
 
@@ -186,7 +187,8 @@ gaussrule_(old.gaussrule_),
 wtype_(old.wtype_),
 stresstype_(old.stresstype_),
 iseas_(old.iseas_),
-eastype_(old.eas_vague)
+eastype_(old.eas_vague),
+structale_ (old.structale_)
 // tsi_couptyp_(old.tsi_couptyp_)
 
 {
@@ -252,8 +254,8 @@ void DRT::ELEMENTS::Wall1::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,iseas_);
   // eas type
   AddtoPack(data,eastype_);
-//  //tsi
-//  AddtoPack(data,tsi_couptyp_);
+  // structale
+  AddtoPack(data,structale_);
   //data
   AddtoPack(data,data_);
 
@@ -292,8 +294,8 @@ void DRT::ELEMENTS::Wall1::Unpack(const vector<char>& data)
   iseas_ = ExtractInt(position,data);
   // eastype_
   eastype_ = static_cast<EasType>( ExtractInt(position,data) );
-//  // tsi_couptype
-//  ExtractfromPack(position,data,tsi_couptyp_);
+  // structale_
+  structale_ = ExtractInt(position,data);
   //data
   vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);

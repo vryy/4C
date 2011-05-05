@@ -1271,6 +1271,11 @@ set(OBJS_CUT_TEST
   src/drt_fem_general/drt_utils_fem_shapefunctions.cpp
   src/drt_fem_general/drt_utils_integration.cpp
 )
+set(OBJS_DRT_STRU_ALE
+  src/drt_stru_ale/stru_ale_algorithm.cpp  
+  src/drt_stru_ale/stru_ale_dyn.cpp
+  src/drt_stru_ale/stru_ale_utils.cpp
+)  
 ###------------------------------------------------------------------ Element flags
 
 #   all possible elements
@@ -1426,6 +1431,7 @@ add_library(alg_elch ${OBJS_DRT_ELCH})
 add_library(alg_fsi ${OBJS_DRT_FSI})
 add_library(alg_loma ${OBJS_DRT_LOMA})
 add_library(alg_tsi ${OBJS_DRT_TSI})
+add_library(alg_stru_ale ${OBJS_DRT_STRU_ALE})
 
 add_library(alg_stk_fsi ${OBJS_STK_FSI})
 
@@ -1435,6 +1441,7 @@ set(MULTIFIELD_LIBRARIES
   alg_loma
   alg_tsi
   alg_stk_fsi
+  alg_stru_ale
   )
 
 # the adapter layer

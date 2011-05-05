@@ -27,6 +27,7 @@ Maintainer: Michael Gee
 #include "../drt_tsi/tsi_dyn.H"
 #include "../drt_art_net/art_net_dyn_drt.H"
 #include "../drt_red_airways/red_airways_dyn_drt.H"
+#include "../drt_stru_ale/stru_ale_dyn.H"
 
 #include "../drt_stk/stk_adaptive_main.H"
 
@@ -145,6 +146,10 @@ void ntacal()
       break;
 #endif /* D_RED_AIRWAYS */
 
+    case prb_struct_ale:
+      stru_ale_dyn_drt(genprob.numsf,genprob.numaf,genprob.restart);
+      break;
+      
     default:
       dserror("solution of unknown problemtyp %d requested", genprob.probtyp);
       break;

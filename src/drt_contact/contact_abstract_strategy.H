@@ -107,6 +107,12 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     const RCP<Epetra_Map> SlaveRowNodes() { return gsnoderowmap_; }
     
     /*!
+    \brief Return global slip node row map
+
+    */
+    const RCP<Epetra_Map> SlipRowNodes() { return gslipnodes_; }
+    
+    /*!
     \brief Return global slave dof row map
 
     */

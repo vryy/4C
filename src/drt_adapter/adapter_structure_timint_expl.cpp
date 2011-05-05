@@ -404,6 +404,25 @@ void ADAPTER::StructureTimIntExpl::ApplyTemperatures(
   dserror("not implemented");
 }
 
+/*----------------------------------------------------------------------*
+ | Current material displacements (structure with ale)       mgit 05/11 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntExpl::DispMat()
+{
+  dserror("not implemented");
+  return null;
+}
+
+/*----------------------------------------------------------------------*
+ | Apply material displacements to                           mgit 05/11 |
+ | structure field (structure with ale)                                 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::StructureTimIntExpl::ApplyDisMat(
+  Teuchos::RCP<Epetra_Vector> dismat
+  )
+{
+  dserror("not implemented");
+}
 
 /*----------------------------------------------------------------------*/
 /* prepare partition step                                    dano 12/10 */

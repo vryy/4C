@@ -583,5 +583,24 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntImpl::ExtractVelaf()
   return structure_->Velaf();
 }
 
+/*----------------------------------------------------------------------*
+ | Current material displacements (structure with ale)       mgit 05/11 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureTimIntImpl::DispMat()
+{
+  return structure_->DispMat();
+}
+
+/*----------------------------------------------------------------------*
+ | Apply material displacements to                           mgit 05/11 |
+ | structure field (structure with ale)                                 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::StructureTimIntImpl::ApplyDisMat(
+  Teuchos::RCP<Epetra_Vector> dismat
+  )
+{
+  structure_->ApplyDisMat(dismat);
+}
+
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

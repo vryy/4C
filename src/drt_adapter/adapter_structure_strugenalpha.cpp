@@ -688,4 +688,25 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::ExtractVelaf()
   return structure_->Velaf();
 }
 
+/*----------------------------------------------------------------------*
+ | Current material displacements (structure with ale)       mgit 05/11 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::StructureGenAlpha::DispMat()
+{
+  dserror("Structure with ale only in new time integration.");
+  return null;
+}
+
+/*----------------------------------------------------------------------*
+ | Apply material displacements to                           mgit 05/11 |
+ | structure field (structure with ale)                                 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::StructureGenAlpha::ApplyDisMat(
+  Teuchos::RCP< Epetra_Vector> dismat
+  )
+{
+  dserror("Structure with ale only in new time integration.");
+  return;
+}
+
 #endif

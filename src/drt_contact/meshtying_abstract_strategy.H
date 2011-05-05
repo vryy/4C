@@ -453,6 +453,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     void EvaluateReferenceState (int step,const RCP<Epetra_Vector> vec){}
     void EvaluateRelMov() {}
     void EvaluateRelMovPredict() {}
+    const RCP<Epetra_Map> SlipRowNodes() {return Teuchos::null;}
     
     //@}
         

@@ -984,6 +984,12 @@ src/drt_statmech/statmech_manager.H
 src/drt_statmech/statmech_manager.cpp
 src/drt_statmech/statmech_time.H
 src/drt_statmech/statmech_time.cpp
+src/drt_stru_ale/stru_ale_algorithm.H
+src/drt_stru_ale/stru_ale_algorithm.cpp
+src/drt_stru_ale/stru_ale_dyn.H
+src/drt_stru_ale/stru_ale_dyn.cpp
+src/drt_stru_ale/stru_ale_utils.H
+src/drt_stru_ale/stru_ale_utils.cpp
 src/drt_stru_multi/convert_mat.cpp
 src/drt_stru_multi/microstatic.H
 src/drt_stru_multi/microstatic.cpp
@@ -1057,6 +1063,7 @@ src/drt_thermo/thrtimint.cpp
 src/drt_thermo/thrtimint_genalpha.H
 src/drt_thermo/thrtimint_genalpha.cpp
 src/drt_thermo/thrtimint_impl.H
+src/drt_thermo/thrtimint_impl_contact.cpp
 src/drt_thermo/thrtimint_impl.cpp
 src/drt_thermo/thrtimint_ost.H
 src/drt_thermo/thrtimint_ost.cpp

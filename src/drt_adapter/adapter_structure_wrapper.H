@@ -119,6 +119,10 @@ namespace ADAPTER
     { return structure_->ExtractVelnp(); }
     virtual Teuchos::RCP<Epetra_Vector> ExtractVelaf()
     { return structure_->ExtractVelaf(); }
+    virtual void ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat)
+    { structure_->ApplyDisMat(dismat); }
+    virtual Teuchos::RCP<Epetra_Vector> DispMat()
+    { return structure_->DispMat(); }
 
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest()
     { return structure_->CreateFieldTest(); }

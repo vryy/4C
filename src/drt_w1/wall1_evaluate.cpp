@@ -134,7 +134,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      w1_nlnstiffmass(lm,mydisp,myres,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
+      vector<double> mydispmat(lm.size());
+      for (int i=0; i<(int)mydispmat.size(); ++i) mydispmat[i] = 0.0;
+      w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
                       INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
@@ -149,7 +151,13 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      w1_nlnstiffmass(lm,mydisp,myres,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
+      vector<double> mydispmat(lm.size());
+      if (structale_)
+      {
+        RefCountPtr<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
+        DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
+      }  
+      w1_nlnstiffmass(lm,mydisp,mydispmat,myres,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
                       INPAR::STR::stress_none,INPAR::STR::strain_none);
       if (act==calc_struct_nlnstifflmass) w1_lumpmass(&elemat2);
     }
@@ -165,7 +173,13 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      w1_nlnstiffmass(lm,mydisp,myres,myknots,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
+      vector<double> mydispmat(lm.size());
+      if (structale_)
+      {
+        RefCountPtr<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
+        DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
+      }  
+      w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
                       INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
@@ -183,7 +197,13 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       // This matrix is not utterly useless. It is used to apply EAS-stuff in a linearised manner
       // onto the internal force vector.
       Epetra_SerialDenseMatrix myemat(lm.size(),lm.size());
-      w1_nlnstiffmass(lm,mydisp,myres,myknots,&myemat,NULL,&elevec1,NULL,NULL,actmat,
+      vector<double> mydispmat(lm.size());
+      if (structale_)
+      {
+        RefCountPtr<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
+        DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
+      }  
+      w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,&myemat,NULL,&elevec1,NULL,NULL,actmat,
                       INPAR::STR::stress_none,INPAR::STR::strain_none);
     }
     break;
@@ -262,12 +282,18 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
         vector<double> myres(lm.size());
         DRT::UTILS::ExtractMyValues(*res,myres,lm);
+        vector<double> mydispmat(lm.size());
+        if (structale_)
+        {
+          RefCountPtr<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
+          DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
+        }  
         const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
         Epetra_SerialDenseMatrix stress(intpoints.nquad,Wall1::numstr_);
         Epetra_SerialDenseMatrix strain(intpoints.nquad,Wall1::numstr_);
         INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
-        w1_nlnstiffmass(lm,mydisp,myres,myknots,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
+        w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
 
         {
           DRT::PackBuffer data;
@@ -555,6 +581,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
   const vector<int>                    & lm         ,
   const vector<double>                 & disp       ,
   const vector<double>                 & residual   ,
+  const vector<double>                 & dispmat   ,
   std::vector<Epetra_SerialDenseVector>& myknots    ,
   Epetra_SerialDenseMatrix             * stiffmatrix,
   Epetra_SerialDenseMatrix             * massmatrix ,
@@ -613,6 +640,23 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
   Epetra_SerialDenseMatrix* oldKaainv=NULL; // EAS history
   Epetra_SerialDenseMatrix* oldKda   =NULL;    // EAS history
 
+  // arrays for structure with ale (fractional step strategy)   
+  Epetra_SerialDenseMatrix xmat;
+  Epetra_SerialDenseMatrix xjmmat;
+  Epetra_SerialDenseMatrix boplinmat;
+  Epetra_SerialDenseVector Fmat;
+  Epetra_SerialDenseVector FFmatinv;
+  double detmat;
+  
+  if(structale_ == true)
+  {
+    xmat.Shape(2,numnode);
+    xjmmat.Shape(2,2);
+    boplinmat.Shape(4,2*numnode);
+    Fmat.Size(4);
+    FFmatinv.Size(4);
+  }
+  
   // ------------------------------------ check calculation of mass matrix
   double density = 0.0;
   if (massmatrix) density = Density(material);
@@ -630,8 +674,14 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
     xrefe(1,k) = Nodes()[k]->X()[1];
     xcure(0,k) = xrefe(0,k) + disp[k*numdf+0];
     xcure(1,k) = xrefe(1,k) + disp[k*numdf+1];
+    
+    // material displacements for structure with ale
+    if(structale_ == true)
+    {
+      xmat(0,k)  = xrefe(0,k) + dispmat[k*numdf+0];
+      xmat(1,k)  = xrefe(1,k) + dispmat[k*numdf+1];
+    }
   }
-
 
   /*--------------------------------- get node weights for nurbs elements */
   Epetra_SerialDenseVector weights(numnode);
@@ -758,6 +808,24 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
     /*------------ calculate defgrad F^u, Green-Lagrange-strain E^u --*/
     w1_defgrad(F,strain,xrefe,xcure,boplin,numnode);
 
+    // modifications for structural approch with ale
+    if(structale_ == true)
+    {
+      /* -calculate defgrad F^mat, correct Green-Lagrange-strain E^u -*/   
+      w1_defgradmat(F,Fmat,FFmatinv,strain,xrefe,xmat,boplin,numnode);
+    
+      /*---------- compute jacobian Matrix (material configuration) --*/
+      w1_jacobianmatrix(xmat,deriv,xjmmat,&detmat,numnode);
+
+      /*---------- calculate operator Blin (material configuration) --*/
+      w1_boplin(boplinmat,deriv,xjmmat,detmat,numnode);
+    
+      /* -----------------------------replace factors and operators --*/
+      fac = wgt * detmat * thickness_;
+      boplin = boplinmat;
+      F = FFmatinv;
+    }
+      
     /*-calculate defgrad F in matrix notation and Blin in current conf.*/
     w1_boplin_cure(b_cure,boplin,F,numeps,nd);
 
@@ -1055,6 +1123,69 @@ void DRT::ELEMENTS::Wall1::w1_defgrad(Epetra_SerialDenseVector& F,
 
 /* DRT::ELEMENTS::Wall1::w1_defgrad */
 
+/*----------------------------------------------------------------------*
+ | Deformation gradient Fmat and Green-Langrange strain       mgit 04/11| 
+ | due to structure with ale approach (fractional step method)        
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Wall1::w1_defgradmat(Epetra_SerialDenseVector& F,
+                           Epetra_SerialDenseVector& Fmat,
+                           Epetra_SerialDenseVector& FFmatinv,
+                           Epetra_SerialDenseVector& strain,
+                           const Epetra_SerialDenseMatrix& xrefe,
+                           const Epetra_SerialDenseMatrix& xmat,
+                           Epetra_SerialDenseMatrix& boplin,
+                           const int iel)
+{
+  /*------------------calculate defgrad --------- (Summenschleife->+=) ---*
+  defgrad looks like:
+
+        |  1 + Ux,X  |
+        |  1 + Uy,Y  |
+        |      Ux,Y  |
+        |      Uy,X  |
+  */
+
+  memset(Fmat.A(),0,Fmat.N()*Fmat.M()*sizeof(double));
+  
+  Fmat[0] = 1;
+  Fmat[1] = 1;
+  
+  for (int inode=0; inode<iel; inode++)
+  {
+     Fmat[0] += boplin(0,2*inode)   * (xmat(0,inode) - xrefe(0,inode));  // F_11
+     Fmat[1] += boplin(1,2*inode+1) * (xmat(1,inode) - xrefe(1,inode));  // F_22
+     Fmat[2] += boplin(2,2*inode)   * (xmat(0,inode) - xrefe(0,inode));  // F_12
+     Fmat[3] += boplin(3,2*inode+1) * (xmat(1,inode) - xrefe(1,inode));  // F_21
+  } /* end of loop over nodes */
+  
+  // determinant of deformation gradient Fmat
+  double detFmat = Fmat[0]*Fmat[1]-Fmat[2]*Fmat[3];
+
+  Epetra_SerialDenseVector Fmatinv;
+  Fmatinv.Size(4);
+  
+  // inverse of Fmat
+  Fmatinv[0]=1/detFmat*Fmat[1];
+  Fmatinv[1]=1/detFmat*Fmat[0];
+  Fmatinv[2]=-1/detFmat*Fmat[2];
+  Fmatinv[3]=-1/detFmat*Fmat[3];
+  
+  // F.Fmatinv
+  FFmatinv[0]=F[0]*Fmatinv[0]+F[2]*Fmatinv[3];
+  FFmatinv[1]=F[3]*Fmatinv[2]+F[1]*Fmatinv[1];
+  FFmatinv[2]=F[0]*Fmatinv[2]+F[2]*Fmatinv[1];
+  FFmatinv[3]=F[3]*Fmatinv[0]+F[1]*Fmatinv[3];
+  
+  /*-----------------------calculate Green-Lagrange strain E -------------*/
+  
+  strain[0] = 0.5 * (FFmatinv[0] * FFmatinv[0] + FFmatinv[3] * FFmatinv[3] - 1.0);  // E_11
+  strain[1] = 0.5 * (FFmatinv[2] * FFmatinv[2] + FFmatinv[1] * FFmatinv[1] - 1.0);  // E_22
+  strain[2] = 0.5 * (FFmatinv[0] * FFmatinv[2] + FFmatinv[3] * FFmatinv[1]);        // E_12
+  strain[3] = strain[2];                                                            // E_21
+
+  return;
+}
+/* DRT::ELEMENTS::Wall1::w1_defgradmat */
 
 /*----------------------------------------------------------------------*
  | Deformation gradient F in matrix notation and B in
@@ -1386,6 +1517,136 @@ void DRT::ELEMENTS::Wall1::Energy(
   }  // end loop Gauss points
 
   // bye
+  return;
+}
+
+/*----------------------------------------------------------------------*
+| evaluate material coordinates from spatial coordinates      mgit 05/11|
+*-----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Wall1::AdvectionMapElement(double* XMat1,
+                                               double* XMat2,
+                                               double* XMesh1,
+                                               double* XMesh2,
+                                               RefCountPtr<const Epetra_Vector> disp,
+                                               RefCountPtr<const Epetra_Vector> dispmat,
+                                               LocationArray& la,
+                                               bool& found)
+{
+    // arrays  
+    const int numnode = NumNode();
+    Epetra_SerialDenseVector funct(numnode);
+    Epetra_SerialDenseMatrix xcure(2,numnode);
+    
+    // spatial displacements
+    vector<double> mydisp(la[0].lm_.size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
+    
+    // material displacements
+    vector<double> mydispmat(la[0].lm_.size());
+    DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,la[0].lm_);
+    
+    for (int k=0; k<numnode; ++k)
+    {
+      xcure(0,k) = Nodes()[k]->X()[0]+ mydisp[k*2+0];
+      xcure(1,k) = Nodes()[k]->X()[1]+ mydisp[k*2+1];
+    }  
+    
+    // material coordinates
+    double e1,e2;
+    e1=0.0;
+    e2=0.0;
+    
+    // converged
+    bool converged = false;
+    
+    int j = 0;
+    
+    while (!converged and j<10)
+    {  
+      // shape functions and derivatives 
+      Epetra_SerialDenseMatrix deriv;
+      deriv.Shape(2,numnode);
+      DRT::UTILS::shape_function_2D       (funct,e1,e2,Shape());
+      DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,Shape());
+  
+      // jacobian matrix (lhs of linearized equation)
+      Epetra_SerialDenseMatrix xjm;
+      xjm.Shape(2,2);
+      double det;
+      w1_jacobianmatrix(xcure,deriv,xjm,&det,numnode);
+      
+      // rhs of (linearized equation)
+      double rhs[2];
+      rhs[0]=-(*XMesh1);
+      rhs[1]=-(*XMesh2);
+      for (int k=0; k<numnode; ++k)
+      {
+        rhs[0]+=funct(k)*xcure(0,k);
+        rhs[1]+=funct(k)*xcure(1,k);
+      }  
+
+      // solve equation
+      Epetra_SerialDenseMatrix A;
+      A.Shape(2,2);
+      
+      A(0,0)=-xjm(0,0);
+      A(0,1)=-xjm(1,0);
+      A(1,0)=-xjm(0,1);
+      A(1,1)=-xjm(1,1);
+      
+      double detA = A(0,0)*A(1,1)-A(0,1)*A(1,0);
+        
+      Epetra_SerialDenseMatrix Ainv;
+      Ainv.Shape(2,2);
+  
+      Ainv(0,0)=1/detA*A(1,1);
+      Ainv(0,1)=-1/detA*A(0,1);
+      Ainv(1,0)=-1/detA*A(1,0);
+      Ainv(1,1)=1/detA*A(0,0);
+      
+      // delta xi, delta eta
+      double deltae1=Ainv(0,0)*rhs[0]+Ainv(0,1)*rhs[1];
+      double deltae2=Ainv(1,0)*rhs[0]+Ainv(1,1)*rhs[1];
+  
+      // incremental update
+      e1 = e1 + deltae1;
+      e2 = e2 + deltae2;
+      
+      // L2 norm
+      if (sqrt(deltae1*deltae1+deltae2*deltae2)<1e-12)
+        converged = true;  
+      
+      j=j+1;
+      
+    }
+    
+    if(!converged)
+      dserror("Evaluation of element coordinates not converged!");
+    
+    // if material parameters are within the element, evaluate material 
+    // coordinates
+    if (e1>=-1-1e-8 and e1<=1+1e-8 and e2>=-1-1e-8 and e2<=1+1e-8)
+    {
+
+      found = true;
+   
+      double xmat1=0;
+      double xmat2=0;
+         
+      // gaussian points
+      const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+      
+      DRT::UTILS::shape_function_2D       (funct,e1,e2,Shape());
+      
+      for (int k=0; k<numnode; ++k)
+      {
+        xmat1 += funct(k) * (Nodes()[k]->X()[0] + mydispmat[k*2+0]);
+        xmat2 += funct(k) * (Nodes()[k]->X()[1] + mydispmat[k*2+1]);
+      }
+      
+      *XMat1 = xmat1;
+      *XMat2 = xmat2;
+  }
   return;
 }
 

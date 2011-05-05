@@ -377,6 +377,13 @@ void DRT::Problem::InputControl()
     genprob.numawf = 0;  /* reduced airway network field index */
     break;
   }
+  case prb_struct_ale:
+  {
+    genprob.numsf = 0;  /* structural field index */
+    genprob.numaf = 1;  /* ale field index */
+    break;
+  }
+
   default:
     dserror("problem type %d unknown", genprob.probtyp);
   }
@@ -1199,6 +1206,20 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
     break;
   } // end of else if (genprob.probtyp==prb_red_airways)
+  case prb_struct_ale: // structure with ale
+  {
+    structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
+    aledis  = Teuchos::rcp(new DRT::Discretization("ale"   ,reader.Comm()));
+
+    AddDis(genprob.numsf, structdis);
+    AddDis(genprob.numaf, aledis);
+
+    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
+
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
+    nodereader.Read();
+    break;
+  } // end of else if (genprob.probtyp==prb_struct_ale)
   default:
     dserror("Type of problem unknown");
   }

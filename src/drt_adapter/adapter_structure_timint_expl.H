@@ -297,6 +297,17 @@ namespace ADAPTER {
     ///
     /// \note This is not yet the most efficient implementation.
     virtual void ApplyTemperatures(Teuchos::RCP<const Epetra_Vector> temp);
+    
+    //! @name Structure with ale specific methods
+    //@{
+    
+    /// material displacements (structure with ale)
+    virtual Teuchos::RCP<Epetra_Vector> DispMat();
+    
+    /// apply material displacements to structure field (structure with ale)
+    virtual void ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat);
+    
+    //@}
 
     //! specific method for iterative staggered partitioned TSI
 

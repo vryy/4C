@@ -28,6 +28,7 @@ Maintainer: Markus Gitterle
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_inpar/inpar_structure.H"
 
@@ -280,6 +281,17 @@ public:
       Epetra_SerialDenseMatrix& stresses, ///< gp stresses
       Epetra_MultiVector&       expolstress ///< expol stresses
   );
+  
+  /// Evaluates Material coordinates from spatial coordinates
+  /// \author mgit \date 04/07
+  void AdvectionMapElement(double* XMat1,
+                           double* XMat2,
+                           double* XMesh1,
+                           double* XMesh2,
+                           RefCountPtr<const Epetra_Vector> disp,
+                           RefCountPtr<const Epetra_Vector> dispmat,
+                           LocationArray& la,
+                           bool& found);
 
   //@}
 
@@ -352,6 +364,8 @@ private:
   bool iseas_;
   /// EAS type
   enum EasType eastype_;
+  /// struct_ale
+  bool structale_;
 
   /// @name Internal calculation methods
   //@{
@@ -362,6 +376,7 @@ private:
     const std::vector<int>               & lm         , ///< location vector
     const std::vector<double>            & disp       , ///< element displacements
     const std::vector<double>            & residual   , ///< residual displacements
+    const std::vector<double>            & dispmat    , ///< residual displacements
     std::vector<Epetra_SerialDenseVector>& myknots    , ///< knot vector for nurbs elements
     Epetra_SerialDenseMatrix             * stiffmatrix, ///< element stiffness matrix
     Epetra_SerialDenseMatrix             * massmatrix , ///< element mass matrix
@@ -415,7 +430,22 @@ private:
     Epetra_SerialDenseMatrix& boplin,  ///< linear B-operator
     const int iel  ///< number of element nodes
   );
-
+  
+  /// Deformation gradient, measures distortion of the mesh of the 
+  /// material configuration with respect to the referential configuration
+  /// in structure with ale approaches (fractional step method)
+  /// \author mgit \date 04/11
+  void w1_defgradmat(
+    Epetra_SerialDenseVector& F,  ///< deformation gradient (mesh distortion of material configuration)  
+    Epetra_SerialDenseVector& Fmat,  ///< deformation gradient (mesh distortion of spatial configuration)
+    Epetra_SerialDenseVector& FFmatinv,  ///< product of F and Fmat(inv)
+    Epetra_SerialDenseVector& strain,  ///< GL strain \f$E^T=[E_{11} \; E_{22} \; E_{12}]\f$
+    const Epetra_SerialDenseMatrix& xrefe,  ///< reference coordinates of element nodes
+    const Epetra_SerialDenseMatrix& xmat, ///< material coordinates of element nodes
+    Epetra_SerialDenseMatrix& boplin,  ///< linear B-operator
+    const int iel  ///< number of element nodes
+  );
+  
   /// Non-linear B-operator in reference configuration
   /// \author mgit \date 04/07
   void w1_boplin_cure(

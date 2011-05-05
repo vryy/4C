@@ -558,6 +558,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     Teuchos::Array<std::string> name;
     Teuchos::Array<int> label;
     name.push_back("Structure");                                   label.push_back(prb_structure);
+    name.push_back("Structure_Ale");                               label.push_back(prb_struct_ale);
     name.push_back("Fluid");                                       label.push_back(prb_fluid);
     name.push_back("Fluid_XFEM");                                  label.push_back(prb_fluid_xfem);
     name.push_back("Fluid_XFEM2");                                 label.push_back(prb_fluid_xfem2);
