@@ -102,7 +102,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::TestClosed()
     std::set<int> & row = i->second;
     if ( row.size() < 2 )
     {
-      throw std::runtime_error( "open point in graph" );
+      throw std::runtime_error( "open point in colored graph" );
     }
   }
 }

@@ -117,7 +117,7 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
     }
     else
     {
-      const std::vector<Point*> & points = f->Points();
+      const std::vector<Point*> & points = f->CornerPoints();
 
       std::vector<Node*> nodes;
       nodes.reserve( points.size() );

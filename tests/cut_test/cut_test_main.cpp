@@ -10,6 +10,8 @@
 #include <string>
 #include <sstream>
 
+#include <fenv.h>
+
 #include <mpi.h>
 
 void test_hex8_simple();
@@ -193,6 +195,8 @@ int main( int argc, char ** argv )
 {
   MPI_Init( &argc, &argv );
   //MPI::Init( argc, argv );
+
+  //feenableexcept( FE_INVALID | FE_DIVBYZERO );
 
   std::map<std::string, testfunct> functable;
 

@@ -5,6 +5,7 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <cmath>
 
 #include <Epetra_SerialDenseMatrix.h>
 
@@ -76,7 +77,8 @@ protected:
       DRT::UTILS::shape_function_2D( funct, eta[0], eta[1], distype );
       DRT::UTILS::shape_function_2D_deriv1( deriv, eta[0], eta[1], distype );
       DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>( xyze, deriv, metrictensor, drs, NULL );
-      area += intpoints.qwgt[i] * drs;
+      if ( not std::isnan( drs ) )
+        area += intpoints.qwgt[i] * drs;
     }
     return area;
   }
