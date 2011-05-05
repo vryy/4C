@@ -216,7 +216,9 @@ protected:
     prestress_readrestart,
     calc_brownian_motion,
     calc_brownian_motion_damping,
-    calc_struct_centerdisp
+    calc_struct_centerdisp,
+    calc_struct_rotation,
+    calc_undo_struct_rotation
   };
 
   // don't want = operator
