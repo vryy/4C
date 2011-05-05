@@ -256,7 +256,7 @@ protected:
 	void CrosslinkCount(const std::ostringstream& filename);
 
 	//! \brief returns polymer length per unit volume with respect to radial distance to COG of the network
-	void ComputeLocalMeshSize(const Epetra_Vector& disrow, LINALG::Matrix<3,1>* cog, const int &istep);
+	void ComputeLocalMeshSize(const Epetra_Vector& disrow, LINALG::Matrix<3,1>& centershift, const int &istep);
 
 	//! \brief check whether a crosslink connects two filaments or occupies two binding spots of the same element and therefore is to be visualized differently
 	bool CheckForKinkedVisual(int eleid);

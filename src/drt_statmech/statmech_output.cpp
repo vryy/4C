@@ -1623,72 +1623,101 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 			// either cluster or homogeneous network
 			case 0:
 			{
-				//cluster
-				if(characlength_<periodlength)
-				{
-					cout<<"Cluster"<<endl;
-					// draw three octagons/hexadecagon lying in the base planes
-					for(int i=0; i<3; i++)//spatial comp i
-						for(int j=0; j<3; j++)//spatial comp j
-							if(j<i)
-								for(int k=0; k<3; k++)//spatial comp k perp. to the others
-									if(k!=i && k!=j)
+				cout<<"Cluster"<<endl;
+				// draw three octagons/hexadecagon lying in the base planes
+				for(int i=0; i<3; i++)//spatial comp i
+					for(int j=0; j<3; j++)//spatial comp j
+						if(j<i)
+							for(int k=0; k<3; k++)//spatial comp k perp. to the others
+								if(k!=i && k!=j)
+								{
+									double radius = characlength_/2.0;
+									// some local variables
+									LINALG::SerialDenseMatrix edge(3,2,true);
+									LINALG::Matrix<3,1> radiusvec1;
+									LINALG::Matrix<3,1> radiusvec2;
+									LINALG::Matrix<3,1> auxvec;
+									LINALG::Matrix<3,1> theta;
+									LINALG::Matrix<3,3> R;
+
+									// compute three dimensional angle theta
+									// unit vector perpendicular to jk-plane
+									LINALG::Matrix<3,1> axis;
+									for (int l=0;l<3;++l)
+										if(l==k)
+											axis(l) = 1.0;
+										else
+											axis(l) = 0.0;
+									for (int l=0;l<3;++l)
+										theta(l) = axis(l) * 2 * M_PI / n;
+
+									// Compute rotation matrix R from rotation angle theta
+									angletotriad(theta,R);
+
+									// compute radius vector for first surface node of first edges
+									auxvec.Clear();
+									for (int l=0;l<3;++l)
+										if(l==j)
+											auxvec(l) = 1.0;
+
+									// radiusvector for point on surface
+									radiusvec1(0) = auxvec(1)*axis(2) - auxvec(2)*axis(1);
+									radiusvec1(1) = auxvec(2)*axis(0) - auxvec(0)*axis(2);
+									radiusvec1(2) = auxvec(0)*axis(1) - auxvec(1)*axis(0);
+
+									// initialize all edge points to nodes
+									for (int l=0;l<3;++l)
 									{
-										double radius = characlength_/2.0;
-										// some local variables
-										LINALG::SerialDenseMatrix edge(3,2,true);
-										LINALG::Matrix<3,1> radiusvec1;
-										LINALG::Matrix<3,1> radiusvec2;
-										LINALG::Matrix<3,1> auxvec;
-										LINALG::Matrix<3,1> theta;
-										LINALG::Matrix<3,3> R;
+										edge(l,0) = cog_(l);
+										edge(l,1) = cog_(l);
+									}
 
-										// compute three dimensional angle theta
-										// unit vector perpendicular to jk-plane
-										LINALG::Matrix<3,1> axis;
-										for (int l=0;l<3;++l)
-											if(l==k)
-												axis(l) = 1.0;
-											else
-												axis(l) = 0.0;
-										for (int l=0;l<3;++l)
-											theta(l) = axis(l) * 2 * M_PI / n;
+									// get first point on surface for node1 and node2
+									for (int l=0;l<3;++l)
+										edge(l,0) += radiusvec1(l) / radiusvec1.Norm2() * radius;
 
-										// Compute rotation matrix R from rotation angle theta
-										angletotriad(theta,R);
 
-										// compute radius vector for first surface node of first edges
-										auxvec.Clear();
-										for (int l=0;l<3;++l)
-											if(l==j)
-												auxvec(l) = 1.0;
+									// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
+									radiusvec2.Multiply(R,radiusvec1);
 
-										// radiusvector for point on surface
-										radiusvec1(0) = auxvec(1)*axis(2) - auxvec(2)*axis(1);
-										radiusvec1(1) = auxvec(2)*axis(0) - auxvec(0)*axis(2);
-										radiusvec1(2) = auxvec(0)*axis(1) - auxvec(1)*axis(0);
+									// get second point on surface for node1 and node2
+									for(int l=0;l<3;l++)
+										edge(l,1) += radiusvec2(l) / radiusvec2.Norm2() * radius;
 
-										// initialize all edge points to nodes
+									// shift the coordinates according to periodic boundary conditions
+									LINALG::SerialDenseMatrix edgeshift = edge;
+									for(int l=0; l<(int)edge.M(); l++)
+										for(int m=0; m<(int)edge.N(); m++)
+										{
+											if(edge(l,m)>periodlength)
+												edgeshift(l,m) -= periodlength;
+											else if(edge(l,m)<0.0)
+												edgeshift(l,m) += periodlength;
+										}
+									// write only the edge of the triangle (i.e. the line connecting two corners of the octagon/hexadecagon)
+									GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_.lRowElement(0)->Id(),true);
+
+									// now the other edges will be computed
+									for (int sector=0;sector<n-1;++sector)
+									{
+										// initialize for next edge
 										for (int l=0;l<3;++l)
 										{
-											edge(l,0) = cog_(l);
-											edge(l,1) = cog_(l);
+											edge(l,0)=edge(l,1);
+											edge(l,1)=cog_(l);
 										}
 
-										// get first point on surface for node1 and node2
-										for (int l=0;l<3;++l)
-											edge(l,0) += radiusvec1(l) / radiusvec1.Norm2() * radius;
-
+										// old radiusvec2 is now radiusvec1; radiusvec2 is set to zero
+										radiusvec1 = radiusvec2;
+										radiusvec2.Clear();
 
 										// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
 										radiusvec2.Multiply(R,radiusvec1);
 
 										// get second point on surface for node1 and node2
-										for(int l=0;l<3;l++)
+										for (int l=0;l<3;++l)
 											edge(l,1) += radiusvec2(l) / radiusvec2.Norm2() * radius;
-
-										// shift the coordinates according to periodic boundary conditions
-										LINALG::SerialDenseMatrix edgeshift = edge;
+										edgeshift = edge;
 										for(int l=0; l<(int)edge.M(); l++)
 											for(int m=0; m<(int)edge.N(); m++)
 											{
@@ -1697,45 +1726,10 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
 												else if(edge(l,m)<0.0)
 													edgeshift(l,m) += periodlength;
 											}
-										// write only the edge of the triangle (i.e. the line connecting two corners of the octagon/hexadecagon)
+
 										GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_.lRowElement(0)->Id(),true);
-
-										// now the other edges will be computed
-										for (int sector=0;sector<n-1;++sector)
-										{
-											// initialize for next edge
-											for (int l=0;l<3;++l)
-											{
-												edge(l,0)=edge(l,1);
-												edge(l,1)=cog_(l);
-											}
-
-											// old radiusvec2 is now radiusvec1; radiusvec2 is set to zero
-											radiusvec1 = radiusvec2;
-											radiusvec2.Clear();
-
-											// compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-											radiusvec2.Multiply(R,radiusvec1);
-
-											// get second point on surface for node1 and node2
-											for (int l=0;l<3;++l)
-												edge(l,1) += radiusvec2(l) / radiusvec2.Norm2() * radius;
-											edgeshift = edge;
-											for(int l=0; l<(int)edge.M(); l++)
-												for(int m=0; m<(int)edge.N(); m++)
-												{
-													if(edge(l,m)>periodlength)
-														edgeshift(l,m) -= periodlength;
-													else if(edge(l,m)<0.0)
-														edgeshift(l,m) += periodlength;
-												}
-
-											GmshOutputPeriodicBoundary(edgeshift, color, gmshfilecontent, discret_.lRowElement(0)->Id(),true);
-										}
 									}
-				}
-				else
-					cout<<"Homogeneous network"<<endl;
+								}
 			}
 			break;
 			// bundle network
@@ -1941,6 +1935,9 @@ void StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& g
                         gmshfilecontent << ")" << "{" << scientific << color-0.25 << ","<< color-0.25 << "};" << endl;
                       }
 			}
+			break;
+			case 3:
+				cout<<"Homogeneous network"<<endl;
 			break;
 		}
 	}
@@ -2476,8 +2473,7 @@ void StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostri
   // write the numbers of free, one-bonded, and two-bonded crosslink molecules
   OrientationCorrelation(disrow, istep);
   // Compute the the network mesh size in dependency to the radial distance to a given COG
-  ComputeLocalMeshSize(disrow, &cog, istep);
-
+  ComputeLocalMeshSize(disrow, newcentershift, istep);
   // MultiVector because result vector will be of length 3*ddcorrrowmap_->MyLength()
 	Epetra_MultiVector crosslinksperbinrow(*ddcorrrowmap_,9 , true);
 	Epetra_MultiVector crosslinksperbinrotrow(*ddcorrrowmap_,3 , true);
@@ -3811,8 +3807,6 @@ void StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const 
 	 */
 	if (DRT::INPUT::IntegralValue<int>(statmechparams_, "CHECKORIENT"))
 	{
-		std::ostringstream orientfilename;
-		orientfilename << "./LinkerSpotsOrCorr_"<<std::setw(6) << setfill('0') << istep <<".dat";
 
 		// current node positions (column map)
 		std::map<int, LINALG::Matrix<3, 1> > currentpositions;
@@ -4022,6 +4016,9 @@ void StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const 
 		// write data to file
 		if(!discret_.Comm().MyPID())
 		{
+			std::ostringstream orientfilename;
+			orientfilename << "./LinkerSpotsOrCorr_"<<std::setw(6) << setfill('0') << istep <<".dat";
+
 			FILE* fp = NULL;
 			fp = fopen(orientfilename.str().c_str(), "w");
 			std::stringstream histogram;
@@ -4040,44 +4037,41 @@ void StatMechManager::OrientationCorrelation(const Epetra_Vector& disrow, const 
  | computes the mesh size of the network dep. on distance to cog                |
  |                                                        (public) mueller 12/10|
  *------------------------------------------------------------------------------*/
-void StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow, LINALG::Matrix<3,1>* cog, const int &istep)
+void StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow, LINALG::Matrix<3,1>& centershift, const int &istep)
 {
 	double periodlength = statmechparams_.get<double>("PeriodLength", 0.0);
 	double maxdist = periodlength/2.0*sqrt(3.0);
 	int numbins = statmechparams_.get<int>("HISTOGRAMBINS",1);
+	// center of gravity
+	LINALG::Matrix<3,1> cog;
+  for(int i=0; i<(int)cog.M(); i++)
+  	cog(i) = centershift(i) + periodlength/2.0;
 
-	std::ostringstream filename;
-	filename << "./LocalMeshSize_"<<std::setw(6) << setfill('0') << istep <<".dat";
-
-	// distances of nodes to COG
-	std::vector<LINALG::Matrix<3,1> > disttocog;
-	disttocog.clear();
-
-	// row node positions shifted first and then stored with respect to COG
+	// 1. set up of a row map vector containing the global node positions
+	std::vector<LINALG::Matrix<3,1> > xrelnodes;
+	xrelnodes.clear();
 	for (int i=0; i<discret_.NumMyRowNodes(); i++)
 	{
 		//get pointer at a node
 		const DRT::Node* node = discret_.lRowNode(i);
-
 		//get GIDs of this node's degrees of freedom
 		std::vector<int> dofnode = discret_.Dof(node);
+		// global position and shift according to new centershift
+		LINALG::Matrix<3, 1> xglob;
 
-		LINALG::Matrix<3, 1> dtocog;
-
-		for(int j=0; j<(int)dtocog.M(); j++)
+		// shift according to given center (cog)
+		for(int j=0; j<(int)xglob.M(); j++)
 		{
-			// 1. get the global node positions
-			dtocog(j) = node->X()[j] + disrow[discret_.DofRowMap()->LID(dofnode[j])];
-			// shift the j-th component according to new center COG
-			if (dtocog(j) > periodlength+(*cog)(j))
-				dtocog(j) -= periodlength;
-			if (dtocog(j) < (*cog)(j))
-				dtocog(j) += periodlength;
+			// get the global node position
+			xglob(j) = node->X()[j] + disrow[discret_.DofRowMap()->LID(dofnode[j])];
+			// shift the j-th component according to new center
+			if (xglob(j) > periodlength+centershift(j))
+				xglob(j) -= periodlength;
+			if (xglob(j) < centershift(j))
+				xglob(j) += periodlength;
 		}
-
-		dtocog -= *cog;
-
-		disttocog.push_back(dtocog);
+		xglob -= cog;
+		xrelnodes.push_back(xglob);
 	}
 
 	Epetra_Vector fillengthrow(*ddcorrrowmap_, true);
@@ -4085,90 +4079,123 @@ void StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow, LINALG::
 	for(int i=1; i<discret_.NumMyRowNodes(); i++)
 	{
 		// column map LID of the two nodes in question
-		int collid0 = discret_.NodeColMap()->LID(discret_.NodeRowMap()->GID(i-1));
-		int collid1 = discret_.NodeColMap()->LID(discret_.NodeRowMap()->GID(i));
+		int gid0 = discret_.NodeRowMap()->GID(i-1);
+		int gid1 = discret_.NodeRowMap()->GID(i);
+		int collid0 = discret_.NodeColMap()->LID(gid0);
+		int collid1 = discret_.NodeColMap()->LID(gid1);
+
 		// make sure both nodes lie on the same filament
 		if((*filamentnumber_)[collid0] == (*filamentnumber_)[collid1])
 		{
-			int bin0 = (int)floor(disttocog[i-1].Norm2()/maxdist*numbins);
-			int bin1 = (int)floor(disttocog[i].Norm2()/maxdist*numbins);
+			// calculate node bins
+			int index0 = i-1;
+			int index1 = i;
+			int bin0 = (int)floor(xrelnodes[i-1].Norm2()/maxdist*numbins);
+			int bin1 = (int)floor(xrelnodes[i].Norm2()/maxdist*numbins);
 			if(bin0 == numbins)
 				bin0--;
 			if(bin1 == numbins)
 				bin1--;
-			// case: the two nodes lie within different bins: add length portions binwise
+
+			// case: the two nodes lie within different bins: add length segments binwise
 			if(bin0 != bin1)
 			{
-				// set bigger bin as bin1
-				int i0 = i-1;
-				int i1 = i;
+				// switch in order to follow convention
 				if(bin1<bin0)
 				{
-					int tmp = bin0;
-					bin0 = bin1;
-					bin1 = tmp;
-					i0 = i;
-					i1 = i-1;
+					index0 = i;
+					index1 = i-1;
+					bin0 = (int)floor(xrelnodes[i].Norm2()/maxdist*numbins);
+					bin1 = (int)floor(xrelnodes[i-1].Norm2()/maxdist*numbins);
 				}
 
+				// check, if element is broken and unshift in order to obtain correct directional vector
+				// calculate directional vector between nodes
+				LINALG::Matrix<3,1> unshift = xrelnodes[index1];
+
+				for(int j=0; j<(int)xrelnodes[index0].M(); j++)
+				{
+					// check for periodic boundary shift and correct accordingly
+					if (fabs(xrelnodes[index1](j) - periodlength - xrelnodes[index0](j)) < fabs(xrelnodes[index1](j) - xrelnodes[index0](j)))
+						unshift(j) -= periodlength;
+					else if (fabs(xrelnodes[index1](j) + periodlength - xrelnodes[index0](j)) < fabs(xrelnodes[index1](j) - xrelnodes[index0](j)))
+						unshift(j) += periodlength;
+				}
+
+
+				LINALG::Matrix<3,1> dirvec = unshift;
+				dirvec -= xrelnodes[index0];
 				// directional unit vector
-				LINALG::Matrix<3,1> dirvec =disttocog[bin1];
-				dirvec -= disttocog[bin0];
 				dirvec.Scale(1.0/dirvec.Norm2());
 
 				// number of bin intersections
 				int numisecs = abs(bin1-bin0);
-				std::vector<double> binlims(numisecs, 0.0);
-				LINALG::Matrix<3,1> previsec;
+				// starting point
+				LINALG::Matrix<3,1> xstartj = xrelnodes[index0];
+
+				/*-----------------------------------
+				 * short example:
+				 *    bin:   16    17    18    19
+				 *         |  o--|-----|-----|--o  |
+				 * abslim: 16    17    18    19    20
+				 * binlim:       0     1     2
+				  -----------------------------------*/
+				//cout<<"numisecs = "<<numisecs<<endl;
 				for(int j=0; j<numisecs; j++)
 				{
-					// j-th bin limit
-					binlims[j] = (double)(bin1-numisecs+j+1)/(double)numbins*maxdist;
-					// line parameter mu for intersection of line with spherical shell:
-					// note: we take the solution that is >=0 since we chose the directional vector accordingly
-					LINALG::Matrix<3,1> r0 = disttocog[i0];
-					// if there is more than one intersection, set the current r0 to the lower bin limit
-					if(numisecs>1)
-						r0 = previsec;
+					// all segments except last segment
+					if(j<=numisecs-1)
+					{
+						int currbin = bin0+j;
+						// j-th bin limit
+						double nextbinlimit = (double)(currbin+1)/(double)numbins*maxdist;
 
-					double a = 0.0;
-					for(int k=0; k<(int)r0.M(); k++)
-						a += r0(k)/dirvec(k);
-					double b = sqrt(a*a-r0.Norm2()+binlims[j]*binlims[j]);
-					double mu = -a + b;
-					// intersection of the line with the spherical shell
-					LINALG::Matrix<3,1> isection = dirvec;
-					isection.Scale(mu);
-					isection += r0;
+						// line parameter mu for intersection of line with spherical shell:
+						// note: we take the solution that is (may be?) >=0 since we chose the directional vector accordingly
 
-					// calculate element (filament) portions added to the respective bin
-					LINALG::Matrix<3,1> l0 = isection;
-					LINALG::Matrix<3,1> l1 = isection;
-					l0 -= r0;
-					fillengthrow[bin0] += l0.Norm2();
-					// distinction between one and several possible intersections
+						//cout<<"  j="<<j<<", xstartj: "<<xstartj(0)<<" "<<xstartj(1)<<" "<<xstartj(2)<<endl;
+						double a = xstartj.Dot(dirvec);
+						double b = sqrt(a*a-xstartj.Norm2()*xstartj.Norm2()+nextbinlimit*nextbinlimit);
+						double mu = -a + b;
+
+						//cout<<"  mu("<<j<<") = "<<mu<<endl;
+
+						// intersection of the line with the spherical shell
+						LINALG::Matrix<3,1> isection = dirvec;
+						isection.Scale(mu);
+						isection += xstartj;
+						// calculate element (filament) segment added to the respective bin
+						LINALG::Matrix<3,1> segment = isection;
+						segment -= xstartj;
+						fillengthrow[currbin] += segment.Norm2();
+						// store current intersection in case there is more than one
+						xstartj = isection;
+						//if(numisecs>0)
+						//	cout<<"    j="<<j+1<<", previs: "<<xstartj(0)<<" "<<xstartj(1)<<" "<<xstartj(2)<<endl;
+					}
+					// last segment
 					if(j==numisecs-1)
 					{
-						l1 -= disttocog[i1];
-						fillengthrow[bin1] += l1.Norm2();
+						//cout<<"  xfinale: "<<xstartj(0)<<" "<<xstartj(1)<<" "<<xstartj(2)<<endl;
+						LINALG::Matrix<3,1> segment = xrelnodes[index1];
+						segment -= xstartj;
+						fillengthrow[bin1] += segment.Norm2();
+						xstartj.Clear();
 					}
-					// store current intersection in case there are more than one
-					previsec = isection;
 				}
 			}
 			else // just add the entire element length
 			{
-				LINALG::Matrix<3,1> elength = disttocog[i-1];
-				elength -= disttocog[i];
+				LINALG::Matrix<3,1> elength = xrelnodes[i];
+				elength -= xrelnodes[i-1];
 				fillengthrow[bin0] += elength.Norm2();
 			}
 		}
 	}
 
-	Epetra_Vector fillengthcol(*(ddcorrcolmap_),true);
-	Epetra_Import importer(*(ddcorrcolmap_), *(ddcorrrowmap_));
+	Epetra_Vector fillengthcol(*ddcorrcolmap_,true);
+	Epetra_Import importer(*ddcorrcolmap_, *ddcorrrowmap_);
 	fillengthcol.Import(fillengthrow,importer,Insert);
-
 	// Add the processor-specific data up
 	std::vector<double> fillength(numbins, 0.0);
 	for(int i=0; i<numbins; i++)
@@ -4178,12 +4205,16 @@ void StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow, LINALG::
 	// Proc 0 section
 	if(discret_.Comm().MyPID()==0)
 	{
+		std::ostringstream filename;
+		filename << "./LocalMeshSize_"<<std::setw(6) << setfill('0') << istep <<".dat";
+
 		FILE* fp = NULL;
 		fp = fopen(filename.str().c_str(), "w");
 		std::stringstream histogram;
 
 		for(int i=0; i<numbins; i++)
-			histogram<<i+1<<"    "<<fillength[i]<<endl;
+			histogram<<i+1<<"    "<<std::setprecision(12)<<fillength[i]<<endl;
+
 		//write content into file and close it
 		fprintf(fp, histogram.str().c_str());
 		fclose(fp);
