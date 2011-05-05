@@ -136,7 +136,7 @@ void GEO::CUT::GRAPH::Cycle::Split( Graph & graph, Graph & used, CycleList & cyc
 
           for ( std::vector<int>::iterator i=connection.begin(); i!=connection.end(); ++i )
           {
-            int p;
+            int p = *i;
             free.erase( p );
           }
 

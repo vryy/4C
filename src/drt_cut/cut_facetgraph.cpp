@@ -161,12 +161,17 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const std::s
 
 void GEO::CUT::FacetGraph::CreateVolumeCells( Mesh & mesh, Element * element, std::set<VolumeCell*> & cells )
 {
-  std::vector<int> debug_counter( all_facets_.size(), 0 );
+  std::vector<std::set<Facet*> > volumes;
+  volumes.reserve( cycle_list_.size() );
+
+  std::vector<int> counter( all_facets_.size(), 0 );
+
   for ( COLOREDGRAPH::CycleList::iterator i=cycle_list_.begin(); i!=cycle_list_.end(); ++i )
   {
     COLOREDGRAPH::Graph & g = *i;
 
-    std::set<Facet*> collected_facets;
+    volumes.push_back( std::set<Facet*>() );
+    std::set<Facet*> & collected_facets = volumes.back();
 
     for ( COLOREDGRAPH::Graph::const_iterator i=g.begin(); i!=g.end(); ++i )
     {
@@ -176,8 +181,23 @@ void GEO::CUT::FacetGraph::CreateVolumeCells( Mesh & mesh, Element * element, st
         break;
       }
       collected_facets.insert( all_facets_[p] );
-      debug_counter[p] += 1;
+      counter[p] += 1;
     }
+  }
+
+  for ( std::vector<int>::iterator i=counter.begin(); i!=counter.end(); ++i )
+  {
+    int p = *i;
+    if ( p > 2 )
+    {
+      // assume this is a degenerated cell we do not need to build
+      return;
+    }
+  }
+
+  for ( std::vector<std::set<Facet*> >::iterator i=volumes.begin(); i!=volumes.end(); ++i )
+  {
+    std::set<Facet*> & collected_facets = *i;
 
     std::map<std::pair<Point*, Point*>, std::set<Facet*> > volume_lines;
     for ( std::set<Facet*>::iterator i=collected_facets.begin();
@@ -194,14 +214,19 @@ void GEO::CUT::FacetGraph::CreateVolumeCells( Mesh & mesh, Element * element, st
 #endif
   }
 
+#if 0
   for ( std::vector<int>::iterator i=debug_counter.begin(); i!=debug_counter.end(); ++i )
   {
     int p = *i;
     if ( p > 2 )
     {
+#ifdef DEBUGCUTLIBRARY
+      PrintAllCollected();
+#endif
       throw std::runtime_error( "failed to split graph properly" );
     }
   }
+#endif
 }
 
 #ifdef DEBUGCUTLIBRARY

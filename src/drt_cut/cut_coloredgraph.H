@@ -185,6 +185,8 @@ namespace GEO
 
         void Print();
 
+        unsigned size() const { return cycles_.size(); }
+
         CycleListIterator begin() { return CycleListIterator( cycles_, cycles_.begin() ); }
 
         CycleListIterator end()   { return CycleListIterator( cycles_, cycles_.end() ); }
