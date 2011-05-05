@@ -212,14 +212,8 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
       break;
     }
 
-    // set up sliding ale if necessary
-    switch(aleproj_)
+    if(aleproj_ != INPAR::FSI::ALEprojection_none)
     {
-    case INPAR::FSI::ALEprojection_none:
-      break;
-    case INPAR::FSI::ALEprojection_curr:
-    case INPAR::FSI::ALEprojection_ref:
-
       // set up sliding ale utils
       slideale_ = rcp(new FSI::UTILS::SlideAleUtils(StructureField().Discretization(),
                                                     FluidField().Discretization(),
@@ -229,11 +223,6 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
 
       iprojdispinc_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_.SlaveDofRowMap(),true));
       iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_.SlaveDofRowMap(),true));
-
-      break;
-    default:
-      dserror("Strange things happen with ALE projection");
-      break;
     }
     notsetup_=false;
   }
@@ -265,9 +254,8 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     if (aleproj_!= INPAR::FSI::ALEprojection_none)
     {
       Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
-      LINALG::SparseMatrix& aig = a->Matrix(0,1);
 
-      rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
+      rhs = Teuchos::rcp(new Epetra_Vector(a->Matrix(0,1).RowMap()));
       a->Matrix(0,1).Apply(*icoupfa_.MasterToSlave(iprojdispinc_),*rhs);
       rhs->Scale(-1.);
 
@@ -974,8 +962,8 @@ void FSI::MortarMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
   // process ale unknowns based on fluid displacements
   Teuchos::RCP<Epetra_Vector> acx =  icoupfa_.MasterToSlave(fcx);
 
-  if (aleproj_!= INPAR::FSI::ALEprojection_none)
-    acx->Update(1.0,*icoupfa_.MasterToSlave(iprojdispinc_),1.0);
+//  if (aleproj_!= INPAR::FSI::ALEprojection_none)
+//    acx->Update(1.0,*icoupfa_.MasterToSlave(iprojdispinc_),1.0);
 
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
 
@@ -1008,7 +996,7 @@ void FSI::MortarMonolithicFluidSplit::Update()
   {
     iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_.SlaveDofRowMap(),true));
     Teuchos::RCP<Epetra_Vector> idispale =
-        AleField().Interface().ExtractFSICondVector(AleField().ExtractDisplacement());
+        icoupfa_.SlaveToMaster(AleField().Interface().ExtractFSICondVector(AleField().ExtractDisplacement()));
 
     slideale_->Remeshing(StructureField(),
                         FluidField().Discretization(),
@@ -1048,6 +1036,21 @@ void FSI::MortarMonolithicFluidSplit::Output()
 
   AleField().      Output();
   FluidField().LiftDrag();
+  // update history variables for sliding ale
+  if (aleproj_!= INPAR::FSI::ALEprojection_none)
+  {
+    Teuchos::RCP<Epetra_Vector> fcx = LINALG::CreateVector(*FluidField().Interface().FSICondMap());
+
+    Teuchos::RCP<Epetra_Vector> acx = icoupfa_.MasterToSlave(iprojdisp_);
+    AleField().ApplyInterfaceDisplacements(acx);
+    FluidField().ApplyMeshDisplacement(AleToFluid(AleField().ExtractDisplacement()));
+
+    FluidField().DisplacementToVelocity(iprojdisp_);
+    FluidField().ApplyInterfaceVelocities(iprojdisp_);
+
+    FluidField().Update();
+    AleField().Update();
+  }
 }
 
 void FSI::MortarMonolithicFluidSplit::ReadRestart(int step)
