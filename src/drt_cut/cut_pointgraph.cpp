@@ -39,7 +39,9 @@ GEO::CUT::PointGraph::PointGraph( Side * side )
     }
   }
 
-  graph_.TestClosed();
+  graph_.FixSinglePoints();
+
+//  graph_.TestClosed();
 
   std::set<int> free;
   graph_.GetAll( free );

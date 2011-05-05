@@ -84,6 +84,8 @@ namespace GEO
 
         void GetAll( std::set<int> & all );
 
+        void FixSinglePoints();
+
         void TestClosed();
 
         void Print();
