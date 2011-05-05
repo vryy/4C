@@ -147,6 +147,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       genprob.probtyp != prb_combust)
   {
     actdis->ComputeNullSpaceIfNecessary(solver->Params(),true);
+
+    if (DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING")==INPAR::FLUID::condensed_bmat)
+    {
+      actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("PREC1"),true);
+      actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("PREC2"),true);
+    }
   }
 
   // -------------------------------------------------------------------

@@ -222,7 +222,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     mshtparams.set("theta",theta_);
     mshtparams.set<int>("mshtoption", msht_);
 
-    meshtying_ = Teuchos::rcp(new Meshtying(discret_, mshtparams, surfacesplitter_));
+    meshtying_ = Teuchos::rcp(new Meshtying(discret_, solver_, mshtparams, surfacesplitter_));
     sysmat_ = meshtying_->Setup();
     //meshtying_->OutputSetUp();
   }

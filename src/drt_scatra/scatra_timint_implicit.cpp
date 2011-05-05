@@ -227,7 +227,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     mshtparams.set("theta", params_->get<double>("THETA"));
     mshtparams.set<int>("mshtoption", msht_);
 
-    meshtying_ = Teuchos::rcp(new FLD::Meshtying(discret_, mshtparams));
+    meshtying_ = Teuchos::rcp(new FLD::Meshtying(discret_, *solver_, mshtparams));
     sysmat_ = meshtying_->Setup();
   }
   else

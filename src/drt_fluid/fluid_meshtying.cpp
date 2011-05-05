@@ -27,9 +27,11 @@ Maintainer: Andreas Ehrl
 
 
 FLD::Meshtying::Meshtying(RCP<DRT::Discretization>      dis,
+                          LINALG::Solver&               solver,
                           ParameterList&                params,
                           const UTILS::MapExtractor*    surfacesplitter):
   discret_(dis),
+  solver_(solver),
   msht_(params.get<int>("mshtoption")),
   surfacesplitter_(surfacesplitter),
   dofrowmap_(discret_->DofRowMap()),
@@ -132,6 +134,27 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
     Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > matsolve
       = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> (dommapext,rowmapext,1,false,true));
     sysmatsolve_ = matsolve;
+
+    //RCP<vector<double> > test1 = solver.Params().sublist("PREC1").sublist("ML Parameters").get<RCP<vector<double> > >("nullspace");
+    //cout << "Length of null space before  " << test1->size() << endl;
+    //cout << "address  " << test1 << endl;
+
+    //RCP<vector<double> > test2 = solver.Params().sublist("PREC2").sublist("ML Parameters").get<RCP<vector<double> > >("nullspace");
+    //cout << "Length of null space before  " << test2->size() << endl;
+    //cout << "address  " << test2 << endl;
+
+    // fixing length of PREC1 nullspace
+    {
+      const Epetra_Map& oldmap = *(dofrowmap_);
+      const Epetra_Map& newmap = matsolve->Matrix(0,0).EpetraMatrix()->RowMap();
+      solver_.FixMLNullspace("PREC1",oldmap, newmap, solver_.Params().sublist("PREC1"));
+    }
+    // fixing length of PREC2 nullspace
+    {
+      const Epetra_Map& oldmap = *(dofrowmap_);
+      const Epetra_Map& newmap = matsolve->Matrix(1,1).EpetraMatrix()->RowMap();
+      solver_.FixMLNullspace("PREC2",oldmap, newmap, solver_.Params().sublist("PREC2"));
+    }
 
     return mat;
   }
@@ -292,7 +315,7 @@ void FLD::Meshtying::SolveMeshtying(
 
     {
       TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.2)   - Solve");
-      solver.Solve(mergedsysmat->EpetraOperator(),mergedincvel,mergedresidual,true,itnum==1, w, c, project);
+      solver_.Solve(mergedsysmat->EpetraOperator(),mergedincvel,mergedresidual,true,itnum==1, w, c, project);
     }
 
     UpdateSaddlePointSystem(incvel,mergedincvel);
@@ -318,12 +341,10 @@ void FLD::Meshtying::SolveMeshtying(
     // make solver SIMPLER-ready
     {
       TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.2)   - Solve");
-      solver.PutSolverParamsToSubParams("SIMPLER", DRT::Problem::Instance()->FluidPressureSolverParams());
-      solver.Params().sublist("SIMPLER").set<bool>("MESHTYING",true);
-      solver.Solve(blocksysmat->EpetraOperator(),mergedincvel,mergedresidual,true,itnum==1);
+      solver_.PutSolverParamsToSubParams("SIMPLER", DRT::Problem::Instance()->FluidPressureSolverParams());
+      solver_.Params().sublist("SIMPLER").set<bool>("MESHTYING",true);
+      solver_.Solve(blocksysmat->EpetraOperator(),mergedincvel,mergedresidual,true,itnum==1);
     }
-
-    //dserror("");
 
     UpdateSaddlePointSystem(incvel,mergedincvel);
   }
@@ -354,7 +375,7 @@ void FLD::Meshtying::SolveMeshtying(
       sysmatsolve->Assign(1,1, View, sysmatnew->Matrix(1,1));
       sysmatsolve->Complete();
 
-      solver.Solve(sysmatsolve->EpetraOperator(),inc,res,true,itnum==1, w, c, project);
+      solver_.Solve(sysmatsolve->EpetraOperator(),inc,res,true,itnum==1, w, c, project);
 
       // Export the computed increment to the global increment
       LINALG::Export(*inc,*incvel);
@@ -367,7 +388,7 @@ void FLD::Meshtying::SolveMeshtying(
     {
       {
         TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.2)   - Solve");
-        solver.Solve(sysmat->EpetraOperator(),incvel,residual,true,itnum==1, w, c, project);
+        solver_.Solve(sysmat->EpetraOperator(),incvel,residual,true,itnum==1, w, c, project);
       }
       // compute and update slave dof's
       UpdateSlaveDOF(incvel);
