@@ -31,6 +31,10 @@ namespace GEO
 
         bool operator()( int point );
 
+      private:
+
+        bool BackToCycle( int from, int p, unsigned count );
+
         Graph & graph_;
         Graph & used_;
         const std::vector<int> & cycle_;
@@ -93,6 +97,8 @@ namespace GEO
         std::map<int, std::set<int> >::const_iterator begin() const { return graph_.begin(); }
 
         std::map<int, std::set<int> >::const_iterator end()   const { return graph_.end(); }
+
+        unsigned size() const { return graph_.size(); }
 
       private:
 

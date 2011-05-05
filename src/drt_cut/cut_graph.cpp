@@ -15,12 +15,46 @@ bool GEO::CUT::GRAPH::ForkFinder::operator()( int point )
       if ( used_row.count( p ) == 0 )
       {
         if ( free_.count( p ) > 0 )
-          return true;
-        if ( std::find( cycle_.begin(), cycle_.end(), p )!=cycle_.end() )
+        {
+          if ( BackToCycle( point, p, 0 ) )
+            return true;
+        }
+        else if ( std::find( cycle_.begin(), cycle_.end(), p )!=cycle_.end() )
           return true;
       }
     }
     return false;
+  }
+  return false;
+}
+
+bool GEO::CUT::GRAPH::ForkFinder::BackToCycle( int from, int p, unsigned count )
+{
+  if ( count >= graph_.size() )
+  {
+    throw std::runtime_error( "circular connected free points, need more history to handle that" );
+  }
+
+  std::set<int> & row = graph_[p];
+  std::set<int> & used_row = used_[p];
+  for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
+  {
+    int p1 = *i;
+    if ( used_row.count( p1 ) == 0 )
+    {
+      if ( p1 != from )
+      {
+        if ( free_.count( p1 ) > 0 )
+        {
+          if ( BackToCycle( p, p1, count+1 ) )
+          {
+            return true;
+          }
+        }
+        else if ( std::find( cycle_.begin(), cycle_.end(), p1 )!=cycle_.end() )
+          return true;
+      }
+    }
   }
   return false;
 }
