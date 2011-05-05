@@ -14,6 +14,7 @@ Maintainer: Florian Henke
 #ifdef CCADISCRET
 
 #include "combust_refinementcell.H"
+#include "combust_defines.H"
 
 #include "../drt_io/io_gmsh.H"
 
@@ -88,9 +89,10 @@ void COMBUST::RefinementCell::SetGfuncValues(std::vector<double> gfuncvalues)
     dserror("G-function value vectors don't have same length");
 
   gfuncvalues_ = gfuncvalues;
-#ifndef COMBUST_CUT
+//#ifndef COMBUST_CUT
+  // needed for refinement
   IdentifyIntersectionStatus();
-#endif
+//#endif
 }
 
 /*------------------------------------------------------------------------------------------------*

@@ -172,16 +172,20 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   // delete fluid's memory of flame front; it should never have seen it in the first place!
   FluidField().ImportFlameFront(Teuchos::null);
 
-  // extract convection velocity from fluid solution
-  const Teuchos::RCP<Epetra_Vector> convel = FluidField().ExtractInterfaceVeln();
-  ScaTraField().SetVelocityField(
-      //OverwriteFluidVel(),
-      //FluidField().ExtractInterfaceVeln(),
-      ComputeFlameVel(convel,FluidField().DofSet()),
-      Teuchos::null,
-      FluidField().DofSet(),
-      FluidField().Discretization()
-  );
+  if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion)
+  {
+    // extract convection velocity from fluid solution
+    const Teuchos::RCP<Epetra_Vector> convel = FluidField().ExtractInterfaceVeln();
+    ScaTraField().SetVelocityField(
+        //OverwriteFluidVel(),
+        //FluidField().ExtractInterfaceVeln(),
+        ComputeFlameVel(convel,FluidField().DofSet()),
+        Teuchos::null,
+        FluidField().DofSet(),
+        FluidField().Discretization()
+    );
+  }
+
 
   // output G-function initial state
   if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary and

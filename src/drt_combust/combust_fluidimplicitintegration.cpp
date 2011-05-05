@@ -438,20 +438,24 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
 
     if (step_ > 0) //(itnum == 1)
     {
-      cout0_ << "---  XFEM time integration... " << std::flush;
-      vector<RCP<Epetra_Vector> > newRowVectors;
-      newRowVectors.push_back(state_.velnp_);
-      newRowVectors.push_back(state_.accnp_);
+      if (start_val_semilagrange_ or start_val_enrichment_)
+      {
+        cout0_ << "---  XFEM time integration based on semi-Lagrangian back tracking scheme... " << std::flush;
+        vector<RCP<Epetra_Vector> > newRowVectors;
+        newRowVectors.push_back(state_.velnp_);
+        newRowVectors.push_back(state_.accnp_);
 
-      if(start_val_semilagrange_)
-      {
-        cout0_ << "apply semi-Lagrangian back tracking scheme... " << std::flush;
-        startval_->semiLagrangeBackTracking(newRowVectors,true);
-      }
-      if(start_val_enrichment_)
-      {
-        cout0_ << "compute enrichment values... " << std::flush;
-        enrichmentval_->setEnrichmentValues();
+        if(start_val_semilagrange_)
+        {
+          cout0_ << "apply semi-Lagrangian back tracking scheme... " << std::flush;
+          startval_->semiLagrangeBackTracking(newRowVectors,true);
+        }
+        if(start_val_enrichment_)
+        {
+          cout0_ << "compute enrichment values... " << std::flush;
+          enrichmentval_->setEnrichmentValues();
+        }
+        cout0_ << "done" << std::endl;
       }
 
       enrichmentval_ = Teuchos::null;
@@ -466,7 +470,6 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
       ////        cout << endl << endl << "reference solution symmetry error" << endl;
       //        EvaluateSymmetryError(state_.veln_);
       //#endif
-      cout0_ << "done" << std::endl;
     }
 
     // set vector values needed by elements
@@ -598,6 +601,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
         combusttype_==INPAR::COMBUST::combusttype_twophaseflow_surf)
     {
       const bool quasi_static_enr = true;
+      cout0_ << "\n... quasi-static enrichment for two-phase flow problems ..." << std::endl;
 
       // accelerations at time n+1 and n
       dofswitch.mapVectorToNewDofDistributionCombust(state_.accnp_,quasi_static_enr);
@@ -617,7 +621,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
       dofswitch.mapVectorToNewDofDistributionCombust(state_.veln_ ,false);
       dofswitch.mapVectorToNewDofDistributionCombust(state_.velnm_,false);
     }
-    cout0_ << "done" << endl;
+    cout0_ << "... done  ---" << endl;
 
     // all initial values can be set now; including the enrichment values
     if (step_ == 0)
@@ -627,18 +631,20 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
 
     if (step_ > 0)
     {
-      // vectors to be written by time integration algorithm
-      vector<RCP<Epetra_Vector> > newRowStateVectors; 
-      newRowStateVectors.push_back(state_.veln_);
-      newRowStateVectors.push_back(state_.accn_);
+      if (start_val_enrichment_ or start_val_enrichment_)
+      {
+        // vectors to be written by time integration algorithm
+        vector<RCP<Epetra_Vector> > newRowStateVectors;
+        newRowStateVectors.push_back(state_.veln_);
+        newRowStateVectors.push_back(state_.accn_);
 #ifdef DEBUG
-      if (oldColStateVectors.size() != newRowStateVectors.size())
-        dserror("stateVector sizes are different! Fix this!");
+        if (oldColStateVectors.size() != newRowStateVectors.size())
+          dserror("stateVector sizes are different! Fix this!");
 #endif
 
-      if(start_val_enrichment_)
-      {
-        enrichmentval_ = rcp(new XFEM::Enrichmentvalues(
+        if(start_val_enrichment_)
+        {
+          enrichmentval_ = rcp(new XFEM::Enrichmentvalues(
             discret_,
             olddofmanager,
             dofmanager,
@@ -651,11 +657,11 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
             oldNodalDofColDistrib,
             newdofrowmap,
             state_.nodalDofDistributionMap_));
-      }
+        }
 
-      if(start_val_semilagrange_)
-      {
-        startval_ = rcp(new XFEM::Startvalues(
+        if(start_val_semilagrange_)
+        {
+          startval_ = rcp(new XFEM::Startvalues(
             discret_,
             olddofmanager,
             dofmanager,
@@ -671,6 +677,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
             dta_,
             theta_,
             flamespeed_));
+        }
       }
     }
   } // anonymous namespace for dofswitcher and startvalues
@@ -2236,8 +2243,8 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
         const double avpresjump = sqrt(presjumpnorm/area);
         cout << "avpresjump " << avpresjump << endl;
 #endif
+        gmshfilecontent << "};\n";
       }
-      gmshfilecontent << "};\n";
 #endif
     }
     gmshfilecontent.close();
@@ -2249,7 +2256,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
   //---------------------------
   if (gmshdebugout and (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Temp) != this->physprob_.xfemfieldset_.end()) )
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_temperature", step, 5, screen_out, discret_->Comm().MyPID());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_temperature", step, 10, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
 
     {
@@ -2583,7 +2590,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
   if (gmshdebugout)
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, step, 3, screen_out, discret_->Comm().MyPID());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, step, 10, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
 
     {
@@ -3007,8 +3014,8 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         const double avveljump = sqrt(veljumpnormsquare/area);
         cout << "avveljump " << avveljump << endl;
 #endif
+        gmshfilecontent << "};\n";
       }
-      gmshfilecontent << "};\n";
 #endif
     }
     gmshfilecontent.close();

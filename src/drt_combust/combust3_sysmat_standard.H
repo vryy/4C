@@ -47,7 +47,8 @@ template <DRT::Element::DiscretizationType DISTYPE,
           size_t shpVecSize>
 void BuildStandardDomainIntegrals(
     COMBUST::LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>& assembler,
-    const XFEM::ApproxFunc<2,shpVecSize>& shp,         // shape functions and their derivatives
+    const XFEM::ApproxFunc<2,shpVecSize>& shpvel,          // shape functions and their derivatives (velocity)
+    const XFEM::ApproxFunc<2,shpVecSize>& shppres,         // shape functions and their derivatives (pressure)
     const double& fac,                                 // factor for integration in space
     const double& timefac,                             // factor for integration in time
     const double& timefacfac,                          // overall integration factor
@@ -61,6 +62,7 @@ void BuildStandardDomainIntegrals(
     const LINALG::Matrix<3,1>& res_old,                // residual at GP at n
     const LINALG::Matrix<3,1>& visc_old,               // viscous term at GP at n
     const LINALG::Matrix<shpVecSize,1>& enr_conv_c,    // convective term at GP at n
+    const LINALG::Matrix<shpVecSize,1>& enr_conv_c_sg,    // convective term at GP at n
     const COMBUST::EnrViscs2<shpVecSize>& enr_viscs2,  // viscous term (second derivatves) at GP at n
     const bool instationary,                           // turn on/off instationary problem
     const bool newton,                                 // turn on/off linearization of convective term
@@ -80,143 +82,144 @@ void BuildStandardDomainIntegrals(
   if (instationary)
   {
     // inertia term (contribution to mass matrix)
-    /*
-                           /        \
-                          |          |
-                          |  v , Du  |
-                          |          |
-                           \        /
-     */
-    assembler.template Matrix<Velx,Velx>(shp.d0, densfac, shp.d0);
-    assembler.template Matrix<Vely,Vely>(shp.d0, densfac, shp.d0);
-    assembler.template Matrix<Velz,Velz>(shp.d0, densfac, shp.d0);
+      /*
+                                   /           \
+                                  |             |
+                                  | roh Du , v  |
+                                  |             |
+                                   \           /
+       */
+    assembler.template Matrix<Velx,Velx>(shpvel.d0, densfac, shpvel.d0);
+    assembler.template Matrix<Vely,Vely>(shpvel.d0, densfac, shpvel.d0);
+    assembler.template Matrix<Velz,Velz>(shpvel.d0, densfac, shpvel.d0);
 
-    assembler.template Vector<Velx>(shp.d0, -densfac*velnp(0));
-    assembler.template Vector<Vely>(shp.d0, -densfac*velnp(1));
-    assembler.template Vector<Velz>(shp.d0, -densfac*velnp(2));
+    assembler.template Vector<Velx>(shpvel.d0, -densfac*velnp(0));
+    assembler.template Vector<Vely>(shpvel.d0, -densfac*velnp(1));
+    assembler.template Vector<Velz>(shpvel.d0, -densfac*velnp(2));
   }
 #endif
 
 #ifdef COMBUST_DOM_CONVECTION
   // convection term, convective part
+  /* convection, convective part */
   /*
-               /                       \
-              |      / n+1       \      |
-              | v , | u   o nabla | Du  |
-              |      \ (i)       /      |
-               \                       /
+                     /                                                      \
+                    |         / n+1       \                                  |
+                    | v , roh| u   o nabla | Du - rho*(tau_M*R_M o nabla) Du |
+                    |         \ (i)       /          subgrid velocity        |
+                     \                            cross-stress              /
    */
   const double denstimefacfac = densaf * timefacfac;
-  assembler.template Matrix<Velx,Velx>(shp.d0, denstimefacfac, enr_conv_c);
-  assembler.template Matrix<Vely,Vely>(shp.d0, denstimefacfac, enr_conv_c);
-  assembler.template Matrix<Velz,Velz>(shp.d0, denstimefacfac, enr_conv_c);
+  assembler.template Matrix<Velx,Velx>(shpvel.d0, denstimefacfac, enr_conv_c_sg);
+  assembler.template Matrix<Vely,Vely>(shpvel.d0, denstimefacfac, enr_conv_c_sg);
+  assembler.template Matrix<Velz,Velz>(shpvel.d0, denstimefacfac, enr_conv_c_sg);
 
-  assembler.template Vector<Velx>(shp.d0, -denstimefacfac*(velnp(0)*vderxy(0,0)
+  assembler.template Vector<Velx>(shpvel.d0, -denstimefacfac*(velnp(0)*vderxy(0,0)
                                                           +velnp(1)*vderxy(0,1)
                                                           +velnp(2)*vderxy(0,2)));
-  assembler.template Vector<Vely>(shp.d0, -denstimefacfac*(velnp(0)*vderxy(1,0)
+  assembler.template Vector<Vely>(shpvel.d0, -denstimefacfac*(velnp(0)*vderxy(1,0)
                                                           +velnp(1)*vderxy(1,1)
                                                           +velnp(2)*vderxy(1,2)));
-  assembler.template Vector<Velz>(shp.d0, -denstimefacfac*(velnp(0)*vderxy(2,0)
+  assembler.template Vector<Velz>(shpvel.d0, -denstimefacfac*(velnp(0)*vderxy(2,0)
                                                           +velnp(1)*vderxy(2,1)
                                                           +velnp(2)*vderxy(2,2)));
 
   if (newton)
   {
     // convection term, reactive part
-    /*
-             /                         \
-            |      /          \   n+1   |
-            | v , | Du o nabla | u      |
-            |      \          /   (i)   |
-             \                         /
-     */
-    assembler.template Matrix<Velx,Velx>(shp.d0, denstimefacfac*vderxy(0,0), shp.d0);
-    assembler.template Matrix<Velx,Vely>(shp.d0, denstimefacfac*vderxy(0,1), shp.d0);
-    assembler.template Matrix<Velx,Velz>(shp.d0, denstimefacfac*vderxy(0,2), shp.d0);
-    assembler.template Matrix<Vely,Velx>(shp.d0, denstimefacfac*vderxy(1,0), shp.d0);
-    assembler.template Matrix<Vely,Vely>(shp.d0, denstimefacfac*vderxy(1,1), shp.d0);
-    assembler.template Matrix<Vely,Velz>(shp.d0, denstimefacfac*vderxy(1,2), shp.d0);
-    assembler.template Matrix<Velz,Velx>(shp.d0, denstimefacfac*vderxy(2,0), shp.d0);
-    assembler.template Matrix<Velz,Vely>(shp.d0, denstimefacfac*vderxy(2,1), shp.d0);
-    assembler.template Matrix<Velz,Velz>(shp.d0, denstimefacfac*vderxy(2,2), shp.d0);
+      /*
+                     /                             \
+                    |         /          \   n+1   |
+                    | v ,roh | Du o nabla | u      |
+                    |         \          /   (i)   |
+                     \                             /
+       */
+    assembler.template Matrix<Velx,Velx>(shpvel.d0, denstimefacfac*vderxy(0,0), shpvel.d0);
+    assembler.template Matrix<Velx,Vely>(shpvel.d0, denstimefacfac*vderxy(0,1), shpvel.d0);
+    assembler.template Matrix<Velx,Velz>(shpvel.d0, denstimefacfac*vderxy(0,2), shpvel.d0);
+    assembler.template Matrix<Vely,Velx>(shpvel.d0, denstimefacfac*vderxy(1,0), shpvel.d0);
+    assembler.template Matrix<Vely,Vely>(shpvel.d0, denstimefacfac*vderxy(1,1), shpvel.d0);
+    assembler.template Matrix<Vely,Velz>(shpvel.d0, denstimefacfac*vderxy(1,2), shpvel.d0);
+    assembler.template Matrix<Velz,Velx>(shpvel.d0, denstimefacfac*vderxy(2,0), shpvel.d0);
+    assembler.template Matrix<Velz,Vely>(shpvel.d0, denstimefacfac*vderxy(2,1), shpvel.d0);
+    assembler.template Matrix<Velz,Velz>(shpvel.d0, denstimefacfac*vderxy(2,2), shpvel.d0);
   }
 #endif
 
 #ifdef COMBUST_DOM_DIFFUSION
   // viscous term
   /*
-                /                                 \
-               |       / \                  /  \   |
-               |  eps | v | , 2\mu epsilon | Du |  |
-               |       \ /                  \  /   |
-                \                                 /
+                      /                                 \
+                     |       / \                  /  \   |
+                     |  eps | v | , 2\mu epsilon | Du |  |
+                     |       \ /                  \  /   |
+                      \                                 /
    */
-  assembler.template Matrix<Velx,Velx>(shp.dx, 2.0*dynvisc*timefacfac, shp.dx);
-  assembler.template Matrix<Velx,Velx>(shp.dy,     dynvisc*timefacfac, shp.dy);
-  assembler.template Matrix<Velx,Vely>(shp.dy,     dynvisc*timefacfac, shp.dx);
-  assembler.template Matrix<Velx,Velx>(shp.dz,     dynvisc*timefacfac, shp.dz);
-  assembler.template Matrix<Velx,Velz>(shp.dz,     dynvisc*timefacfac, shp.dx);
+  assembler.template Matrix<Velx,Velx>(shpvel.dx, 2.0*dynvisc*timefacfac, shpvel.dx);
+  assembler.template Matrix<Velx,Velx>(shpvel.dy,     dynvisc*timefacfac, shpvel.dy);
+  assembler.template Matrix<Velx,Vely>(shpvel.dy,     dynvisc*timefacfac, shpvel.dx);
+  assembler.template Matrix<Velx,Velx>(shpvel.dz,     dynvisc*timefacfac, shpvel.dz);
+  assembler.template Matrix<Velx,Velz>(shpvel.dz,     dynvisc*timefacfac, shpvel.dx);
 
-  assembler.template Matrix<Vely,Vely>(shp.dx,     dynvisc*timefacfac, shp.dx);
-  assembler.template Matrix<Vely,Velx>(shp.dx,     dynvisc*timefacfac, shp.dy);
-  assembler.template Matrix<Vely,Vely>(shp.dy, 2.0*dynvisc*timefacfac, shp.dy);
-  assembler.template Matrix<Vely,Vely>(shp.dz,     dynvisc*timefacfac, shp.dz);
-  assembler.template Matrix<Vely,Velz>(shp.dz,     dynvisc*timefacfac, shp.dy);
+  assembler.template Matrix<Vely,Vely>(shpvel.dx,     dynvisc*timefacfac, shpvel.dx);
+  assembler.template Matrix<Vely,Velx>(shpvel.dx,     dynvisc*timefacfac, shpvel.dy);
+  assembler.template Matrix<Vely,Vely>(shpvel.dy, 2.0*dynvisc*timefacfac, shpvel.dy);
+  assembler.template Matrix<Vely,Vely>(shpvel.dz,     dynvisc*timefacfac, shpvel.dz);
+  assembler.template Matrix<Vely,Velz>(shpvel.dz,     dynvisc*timefacfac, shpvel.dy);
 
-  assembler.template Matrix<Velz,Velz>(shp.dx,     dynvisc*timefacfac, shp.dx);
-  assembler.template Matrix<Velz,Velx>(shp.dx,     dynvisc*timefacfac, shp.dz);
-  assembler.template Matrix<Velz,Velz>(shp.dy,     dynvisc*timefacfac, shp.dy);
-  assembler.template Matrix<Velz,Vely>(shp.dy,     dynvisc*timefacfac, shp.dz);
-  assembler.template Matrix<Velz,Velz>(shp.dz, 2.0*dynvisc*timefacfac, shp.dz);
+  assembler.template Matrix<Velz,Velz>(shpvel.dx,     dynvisc*timefacfac, shpvel.dx);
+  assembler.template Matrix<Velz,Velx>(shpvel.dx,     dynvisc*timefacfac, shpvel.dz);
+  assembler.template Matrix<Velz,Velz>(shpvel.dy,     dynvisc*timefacfac, shpvel.dy);
+  assembler.template Matrix<Velz,Vely>(shpvel.dy,     dynvisc*timefacfac, shpvel.dz);
+  assembler.template Matrix<Velz,Velz>(shpvel.dz, 2.0*dynvisc*timefacfac, shpvel.dz);
 
-  assembler.template Vector<Velx>(shp.dx,     -dynvisc*timefacfac*(vderxy(0, 0) + vderxy(0, 0)));
-  assembler.template Vector<Velx>(shp.dy,     -dynvisc*timefacfac*(vderxy(0, 1) + vderxy(1, 0)));
-  assembler.template Vector<Velx>(shp.dz,     -dynvisc*timefacfac*(vderxy(0, 2) + vderxy(2, 0)));
+  assembler.template Vector<Velx>(shpvel.dx,     -dynvisc*timefacfac*(vderxy(0, 0) + vderxy(0, 0)));
+  assembler.template Vector<Velx>(shpvel.dy,     -dynvisc*timefacfac*(vderxy(0, 1) + vderxy(1, 0)));
+  assembler.template Vector<Velx>(shpvel.dz,     -dynvisc*timefacfac*(vderxy(0, 2) + vderxy(2, 0)));
 
-  assembler.template Vector<Vely>(shp.dx,     -dynvisc*timefacfac*(vderxy(1, 0) + vderxy(0, 1)));
-  assembler.template Vector<Vely>(shp.dy,     -dynvisc*timefacfac*(vderxy(1, 1) + vderxy(1, 1)));
-  assembler.template Vector<Vely>(shp.dz,     -dynvisc*timefacfac*(vderxy(1, 2) + vderxy(2, 1)));
+  assembler.template Vector<Vely>(shpvel.dx,     -dynvisc*timefacfac*(vderxy(1, 0) + vderxy(0, 1)));
+  assembler.template Vector<Vely>(shpvel.dy,     -dynvisc*timefacfac*(vderxy(1, 1) + vderxy(1, 1)));
+  assembler.template Vector<Vely>(shpvel.dz,     -dynvisc*timefacfac*(vderxy(1, 2) + vderxy(2, 1)));
 
-  assembler.template Vector<Velz>(shp.dx,     -dynvisc*timefacfac*(vderxy(2, 0) + vderxy(0, 2)));
-  assembler.template Vector<Velz>(shp.dy,     -dynvisc*timefacfac*(vderxy(2, 1) + vderxy(1, 2)));
-  assembler.template Vector<Velz>(shp.dz,     -dynvisc*timefacfac*(vderxy(2, 2) + vderxy(2, 2)));
+  assembler.template Vector<Velz>(shpvel.dx,     -dynvisc*timefacfac*(vderxy(2, 0) + vderxy(0, 2)));
+  assembler.template Vector<Velz>(shpvel.dy,     -dynvisc*timefacfac*(vderxy(2, 1) + vderxy(1, 2)));
+  assembler.template Vector<Velz>(shpvel.dz,     -dynvisc*timefacfac*(vderxy(2, 2) + vderxy(2, 2)));
 #endif
 
 #ifdef COMBUST_DOM_PRESSURE
   // pressure term
   /*
-                  /                \
-                 |                  |
-               - |  nabla o v , Dp  |
-                 |                  |
-                  \                /
+                        /                \
+                       |                  |
+                     - |  nabla o v , Dp  |
+                       |                  |
+                        \                /
    */
-  assembler.template Matrix<Velx,Pres>(shp.dx, -timefacfac, shp.d0);
-  assembler.template Matrix<Vely,Pres>(shp.dy, -timefacfac, shp.d0);
-  assembler.template Matrix<Velz,Pres>(shp.dz, -timefacfac, shp.d0);
+  assembler.template Matrix<Velx,Pres>(shpvel.dx, -timefacfac, shppres.d0);
+  assembler.template Matrix<Vely,Pres>(shpvel.dy, -timefacfac, shppres.d0);
+  assembler.template Matrix<Velz,Pres>(shpvel.dz, -timefacfac, shppres.d0);
 
-  assembler.template Vector<Velx>(shp.dx, timefacfac*pres);
-  assembler.template Vector<Vely>(shp.dy, timefacfac*pres);
-  assembler.template Vector<Velz>(shp.dz, timefacfac*pres);
+  assembler.template Vector<Velx>(shpvel.dx, timefacfac*pres);
+  assembler.template Vector<Vely>(shpvel.dy, timefacfac*pres);
+  assembler.template Vector<Velz>(shpvel.dz, timefacfac*pres);
 #endif
 
 #ifdef COMBUST_DOM_CONTINUITY
   // cout << "/!\\ warning === sign of continuity term has been changed to make formulation symmetric" << endl;
   // solenoidality term - continuity equation
   /*
-                 /              \
-                |                |
-                | q , nabla o Du |
-                |                |
-                 \              /
+                       /              \
+                      |                |
+                      | q , nabla o Du |
+                      |                |
+                       \              /
    */
-  assembler.template Matrix<Pres,Velx>(shp.d0, timefacfac, shp.dx);
-  assembler.template Matrix<Pres,Vely>(shp.d0, timefacfac, shp.dy);
-  assembler.template Matrix<Pres,Velz>(shp.d0, timefacfac, shp.dz);
+  assembler.template Matrix<Pres,Velx>(shppres.d0, timefacfac, shpvel.dx);
+  assembler.template Matrix<Pres,Vely>(shppres.d0, timefacfac, shpvel.dy);
+  assembler.template Matrix<Pres,Velz>(shppres.d0, timefacfac, shpvel.dz);
 
   const double trace_gamma = (vderxy(0,0) + vderxy(1,1) + vderxy(2,2));
-  assembler.template Vector<Pres>(shp.d0, -timefacfac*trace_gamma);
+  assembler.template Vector<Pres>(shppres.d0, -timefacfac*trace_gamma);
 #endif
 
 #ifdef COMBUST_DOM_RHS
@@ -228,9 +231,9 @@ void BuildStandardDomainIntegrals(
                  |      |
                   \    /
    */
-  assembler.template Vector<Velx>(shp.d0, fac*rhsint(0));
-  assembler.template Vector<Vely>(shp.d0, fac*rhsint(1));
-  assembler.template Vector<Velz>(shp.d0, fac*rhsint(2));
+  assembler.template Vector<Velx>(shpvel.d0, fac*rhsint(0));
+  assembler.template Vector<Vely>(shpvel.d0, fac*rhsint(1));
+  assembler.template Vector<Velz>(shpvel.d0, fac*rhsint(2));
 #endif
 
   //----------------------------------------------------------------------
@@ -244,15 +247,15 @@ void BuildStandardDomainIntegrals(
     {
       /* pressure stabilisation: inertia */
       /*
-                      /              \
-                     |                |
-                     |  Du , nabla q  |
-                     |                |
-                      \              /
-       */
-      assembler.template Matrix<Pres,Velx>(shp.dx, denstauMp, shp.d0);
-      assembler.template Matrix<Pres,Vely>(shp.dy, denstauMp, shp.d0);
-      assembler.template Matrix<Pres,Velz>(shp.dz, denstauMp, shp.d0);
+                              /                 \
+                             |                   |
+                             | roh Du , nabla q  |
+                             |                   |
+                              \                 /
+      */
+      assembler.template Matrix<Pres,Velx>(shppres.dx, denstauMp, shpvel.d0);
+      assembler.template Matrix<Pres,Vely>(shppres.dy, denstauMp, shpvel.d0);
+      assembler.template Matrix<Pres,Velz>(shppres.dz, denstauMp, shpvel.d0);
     }
 #endif
 
@@ -260,36 +263,36 @@ void BuildStandardDomainIntegrals(
 #ifdef COMBUST_PSPG_CONVECTION
     /* pressure stabilisation: convection, convective part */
     /*
-                /                             \
-               |             / n+1       \     |
-               | nabla q ,  | u   o nabla | Du |
-               |             \ i         /     |
-                \                             /
+                      /                                \
+                     |                / n+1       \     |
+                     | nabla q ,roh  | u   o nabla | Du |
+                     |                \ i         /     |
+                      \                                /
      */
-    assembler.template Matrix<Pres,Velx>(shp.dx, denstimetauMp, enr_conv_c);
-    assembler.template Matrix<Pres,Vely>(shp.dy, denstimetauMp, enr_conv_c);
-    assembler.template Matrix<Pres,Velz>(shp.dz, denstimetauMp, enr_conv_c);
+    assembler.template Matrix<Pres,Velx>(shppres.dx, denstimetauMp, enr_conv_c);
+    assembler.template Matrix<Pres,Vely>(shppres.dy, denstimetauMp, enr_conv_c);
+    assembler.template Matrix<Pres,Velz>(shppres.dz, denstimetauMp, enr_conv_c);
 
     if (newton)
     {
-      /*  pressure stabilisation: convection, reactive part
-                /                             \
-               |           /          \   n+1  |
-               | grad q , | Du o nabla | u     |
-               |           \          /   (i)  |
-                \                             /
-       */
-      assembler.template Matrix<Pres,Velx>(shp.dx, denstimetauMp*vderxy(0,0), shp.d0);
-      assembler.template Matrix<Pres,Velx>(shp.dy, denstimetauMp*vderxy(1,0), shp.d0);
-      assembler.template Matrix<Pres,Velx>(shp.dz, denstimetauMp*vderxy(2,0), shp.d0);
+        /*  pressure stabilisation: convection, reactive part
+                        /                                \
+                       |              /          \   n+1  |
+                       | grad q , roh| Du o nabla | u     |
+                       |              \          /   (i)  |
+                        \                                /
+         */
+      assembler.template Matrix<Pres,Velx>(shppres.dx, denstimetauMp*vderxy(0,0), shpvel.d0);
+      assembler.template Matrix<Pres,Velx>(shppres.dy, denstimetauMp*vderxy(1,0), shpvel.d0);
+      assembler.template Matrix<Pres,Velx>(shppres.dz, denstimetauMp*vderxy(2,0), shpvel.d0);
 
-      assembler.template Matrix<Pres,Vely>(shp.dx, denstimetauMp*vderxy(0,1), shp.d0);
-      assembler.template Matrix<Pres,Vely>(shp.dy, denstimetauMp*vderxy(1,1), shp.d0);
-      assembler.template Matrix<Pres,Vely>(shp.dz, denstimetauMp*vderxy(2,1), shp.d0);
+      assembler.template Matrix<Pres,Vely>(shppres.dx, denstimetauMp*vderxy(0,1), shpvel.d0);
+      assembler.template Matrix<Pres,Vely>(shppres.dy, denstimetauMp*vderxy(1,1), shpvel.d0);
+      assembler.template Matrix<Pres,Vely>(shppres.dz, denstimetauMp*vderxy(2,1), shpvel.d0);
 
-      assembler.template Matrix<Pres,Velz>(shp.dx, denstimetauMp*vderxy(0,2), shp.d0);
-      assembler.template Matrix<Pres,Velz>(shp.dy, denstimetauMp*vderxy(1,2), shp.d0);
-      assembler.template Matrix<Pres,Velz>(shp.dz, denstimetauMp*vderxy(2,2), shp.d0);
+      assembler.template Matrix<Pres,Velz>(shppres.dx, denstimetauMp*vderxy(0,2), shpvel.d0);
+      assembler.template Matrix<Pres,Velz>(shppres.dy, denstimetauMp*vderxy(1,2), shpvel.d0);
+      assembler.template Matrix<Pres,Velz>(shppres.dz, denstimetauMp*vderxy(2,2), shpvel.d0);
     }
 #endif
 
@@ -297,23 +300,23 @@ void BuildStandardDomainIntegrals(
 #ifdef COMBUST_PSPG_DIFFUSION
     /* pressure stabilisation: viscosity (-L_visc_u) */
     /*
-                 /                             \
-                |                         /  \  |
-              - |  nabla q , nabla o tau | Du | |
-                |                         \  /  |
-                 \                             /
+                       /                                      \
+                      |                                  /  \  |
+                    - |  nabla q , nabla o 2/mu epsilon | Du | |
+                      |                                  \  /  |
+                       \                                      /
      */
-    assembler.template Matrix<Pres,Velx>(shp.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xx);
-    assembler.template Matrix<Pres,Vely>(shp.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xy);
-    assembler.template Matrix<Pres,Velz>(shp.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xz);
+    assembler.template Matrix<Pres,Velx>(shppres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xx);
+    assembler.template Matrix<Pres,Vely>(shppres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xy);
+    assembler.template Matrix<Pres,Velz>(shppres.dx, -2.0*dynvisc*timetauMp, enr_viscs2.xz);
 
-    assembler.template Matrix<Pres,Velx>(shp.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yx);
-    assembler.template Matrix<Pres,Vely>(shp.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yy);
-    assembler.template Matrix<Pres,Velz>(shp.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yz);
+    assembler.template Matrix<Pres,Velx>(shppres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yx);
+    assembler.template Matrix<Pres,Vely>(shppres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yy);
+    assembler.template Matrix<Pres,Velz>(shppres.dy, -2.0*dynvisc*timetauMp, enr_viscs2.yz);
 
-    assembler.template Matrix<Pres,Velx>(shp.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zx);
-    assembler.template Matrix<Pres,Vely>(shp.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zy);
-    assembler.template Matrix<Pres,Velz>(shp.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zz);
+    assembler.template Matrix<Pres,Velx>(shppres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zx);
+    assembler.template Matrix<Pres,Vely>(shppres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zy);
+    assembler.template Matrix<Pres,Velz>(shppres.dz, -2.0*dynvisc*timetauMp, enr_viscs2.zz);
 #endif
 
 #ifdef COMBUST_PSPG_PRESSURE
@@ -325,16 +328,16 @@ void BuildStandardDomainIntegrals(
                |                      |
                 \                    /
      */
-    assembler.template Matrix<Pres,Pres>(shp.dx, timetauMp, shp.dx);
-    assembler.template Matrix<Pres,Pres>(shp.dy, timetauMp, shp.dy);
-    assembler.template Matrix<Pres,Pres>(shp.dz, timetauMp, shp.dz);
+    assembler.template Matrix<Pres,Pres>(shppres.dx, timetauMp, shppres.dx);
+    assembler.template Matrix<Pres,Pres>(shppres.dy, timetauMp, shppres.dy);
+    assembler.template Matrix<Pres,Pres>(shppres.dz, timetauMp, shppres.dz);
 #endif
 
 #ifdef COMBUST_PSPG_RHS
     // pressure stabilization
-    assembler.template Vector<Pres>(shp.dx, -tauMp*res_old(0));
-    assembler.template Vector<Pres>(shp.dy, -tauMp*res_old(1));
-    assembler.template Vector<Pres>(shp.dz, -tauMp*res_old(2));
+    assembler.template Vector<Pres>(shppres.dx, -tauMp*res_old(0));
+    assembler.template Vector<Pres>(shppres.dy, -tauMp*res_old(1));
+    assembler.template Vector<Pres>(shppres.dz, -tauMp*res_old(2));
 #endif
   }
 
@@ -350,35 +353,36 @@ void BuildStandardDomainIntegrals(
     {
       /* supg stabilisation: inertia  */
       /*
-                    /                       \
-                   |   / n+1       \         |
-                   |  | u   o nabla | v, Du  |
-                   |   \ (i)       /         |
-                    \                       /
-       */
-      assembler.template Matrix<Velx,Velx>(enr_conv_c, densdenstauMu, shp.d0);
-      assembler.template Matrix<Vely,Vely>(enr_conv_c, densdenstauMu, shp.d0);
-      assembler.template Matrix<Velz,Velz>(enr_conv_c, densdenstauMu, shp.d0);
+                             /                                                        \
+                            |              / n+1       \                               |
+                            | roh Du , roh| u   o nabla | v - rho*(tau_M*R_M o nabla)v |
+                            |              \ (i)       /           subgrid velocity    |
+                             \                                    reynolds-stress     /
+      */
+      assembler.template Matrix<Velx,Velx>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
+      assembler.template Matrix<Vely,Vely>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
+      assembler.template Matrix<Velz,Velz>(enr_conv_c_sg, densdenstauMu, shpvel.d0);
 
       if (newton)
       {
         /* supg stabilisation: inertia, linearisation of testfunction  */
-        /*
-                         /                           \
-                        |   n+1      /          \     |
-                        |  u      , | Du o nabla | v  |
-                        |   (i)      \          /     |
-                         \                           /
-         */
-        assembler.template Matrix<Velx,Velx>(shp.dx, densdenstauMu*velnp(0), shp.d0);
-        assembler.template Matrix<Velx,Vely>(shp.dy, densdenstauMu*velnp(0), shp.d0);
-        assembler.template Matrix<Velx,Velz>(shp.dz, densdenstauMu*velnp(0), shp.d0);
-        assembler.template Matrix<Vely,Velx>(shp.dx, densdenstauMu*velnp(1), shp.d0);
-        assembler.template Matrix<Vely,Vely>(shp.dy, densdenstauMu*velnp(1), shp.d0);
-        assembler.template Matrix<Vely,Velz>(shp.dz, densdenstauMu*velnp(1), shp.d0);
-        assembler.template Matrix<Velz,Velx>(shp.dx, densdenstauMu*velnp(2), shp.d0);
-        assembler.template Matrix<Velz,Vely>(shp.dy, densdenstauMu*velnp(2), shp.d0);
-        assembler.template Matrix<Velz,Velz>(shp.dz, densdenstauMu*velnp(2), shp.d0);
+          /*
+                                 /                                  \
+                                |      n+1          /          \     |
+                                | roh u      , roh | Du o nabla | v  |
+                                |      (i)          \          /     |
+                                 \                                   /
+
+           */
+        assembler.template Matrix<Velx,Velx>(shpvel.dx, densdenstauMu*velnp(0), shpvel.d0);
+        assembler.template Matrix<Velx,Vely>(shpvel.dy, densdenstauMu*velnp(0), shpvel.d0);
+        assembler.template Matrix<Velx,Velz>(shpvel.dz, densdenstauMu*velnp(0), shpvel.d0);
+        assembler.template Matrix<Vely,Velx>(shpvel.dx, densdenstauMu*velnp(1), shpvel.d0);
+        assembler.template Matrix<Vely,Vely>(shpvel.dy, densdenstauMu*velnp(1), shpvel.d0);
+        assembler.template Matrix<Vely,Velz>(shpvel.dz, densdenstauMu*velnp(1), shpvel.d0);
+        assembler.template Matrix<Velz,Velx>(shpvel.dx, densdenstauMu*velnp(2), shpvel.d0);
+        assembler.template Matrix<Velz,Vely>(shpvel.dy, densdenstauMu*velnp(2), shpvel.d0);
+        assembler.template Matrix<Velz,Velz>(shpvel.dz, densdenstauMu*velnp(2), shpvel.d0);
       }
     }
 #endif
@@ -388,51 +392,51 @@ void BuildStandardDomainIntegrals(
 #ifdef COMBUST_SUPG_CONVECTION
     /* supg stabilisation: convective part ( L_conv_u) */
     /*
-           /                                          \
-          |  / n+1        \        / n+1        \      |
-          | | u    o nabla | v ,  | u    o nabla | Du  |
-          |  \ (i)        /        \ (i)        /      |
-           \                                          /
+                 /                                                                           \
+                |     / n+1        \                                      / n+1        \      |
+                | roh| u    o nabla | v - rho*(tau_M*R_M o nabla)v , roh | u    o nabla | Du  |
+                |     \ (i)        /         subgrid velocity             \ (i)        /      |
+                 \                           reynolds-stress                                 /
      */
-    assembler.template Matrix<Velx,Velx>(enr_conv_c, densdenstimetauMu, enr_conv_c);
-    assembler.template Matrix<Vely,Vely>(enr_conv_c, densdenstimetauMu, enr_conv_c);
-    assembler.template Matrix<Velz,Velz>(enr_conv_c, densdenstimetauMu, enr_conv_c);
+    assembler.template Matrix<Velx,Velx>(enr_conv_c_sg, densdenstimetauMu, enr_conv_c);
+    assembler.template Matrix<Vely,Vely>(enr_conv_c_sg, densdenstimetauMu, enr_conv_c);
+    assembler.template Matrix<Velz,Velz>(enr_conv_c_sg, densdenstimetauMu, enr_conv_c);
 #endif
 
 #ifdef COMBUST_SUPG_PRESSURE
     /* supg stabilisation: pressure part  ( L_pres_p) */
     /*
-                /                             \
-               |   / n+1       \               |
-               |  | u   o nabla | v , nabla Dp |
-               |   \ (i)       /               |
-                \                             /
+                      /                                                           \
+                     |      / n+1       \                                          |
+                     | roh | u   o nabla | v - rho*(tau_M*R_M o nabla)v , nabla Dp |
+                     |      \ (i)       /         subgrid velocity                 |
+                      \                            reynolds-stress                /
      */
-    assembler.template Matrix<Velx,Pres>(enr_conv_c, denstimetauMu, shp.dx);
-    assembler.template Matrix<Vely,Pres>(enr_conv_c, denstimetauMu, shp.dy);
-    assembler.template Matrix<Velz,Pres>(enr_conv_c, denstimetauMu, shp.dz);
+    assembler.template Matrix<Velx,Pres>(enr_conv_c_sg, denstimetauMu, shppres.dx);
+    assembler.template Matrix<Vely,Pres>(enr_conv_c_sg, denstimetauMu, shppres.dy);
+    assembler.template Matrix<Velz,Pres>(enr_conv_c_sg, denstimetauMu, shppres.dz);
 #endif
 
 #ifdef COMBUST_SUPG_DIFFUSION
     /* supg stabilisation: viscous part  (-L_visc_u) */
     /*
-            /                                        \
-           |               /  \    / n+1        \     |
-         - |  nabla o eps | Du |, | u    o nabla | v  |
-           |               \  /    \ (i)        /     |
-            \                                        /
+                  /                                                                     \
+                 |               /  \       / n+1        \                               |
+               - |  nabla o eps | Du |, roh| u    o nabla | v - rho*(tau_M*R_M o nabla)v |
+                 |               \  /       \ (i)        /      subgrid velocity         |
+                  \                                             reynolds-stress         /
      */
-    assembler.template Matrix<Velx,Velx>(enr_conv_c, -2.0*dynvisc*denstimetauMu, enr_viscs2.xx);
-    assembler.template Matrix<Velx,Vely>(enr_conv_c, -2.0*dynvisc*denstimetauMu, enr_viscs2.xy);
-    assembler.template Matrix<Velx,Velz>(enr_conv_c, -2.0*dynvisc*denstimetauMu, enr_viscs2.xz);
+    assembler.template Matrix<Velx,Velx>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.xx);
+    assembler.template Matrix<Velx,Vely>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.xy);
+    assembler.template Matrix<Velx,Velz>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.xz);
 
-    assembler.template Matrix<Vely,Velx>(enr_conv_c, -2.0*dynvisc*denstimetauMu, enr_viscs2.yx);
-    assembler.template Matrix<Vely,Vely>(enr_conv_c, -2.0*dynvisc*denstimetauMu, enr_viscs2.yy);
-    assembler.template Matrix<Vely,Velz>(enr_conv_c, -2.0*dynvisc*denstimetauMu, enr_viscs2.yz);
+    assembler.template Matrix<Vely,Velx>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.yx);
+    assembler.template Matrix<Vely,Vely>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.yy);
+    assembler.template Matrix<Vely,Velz>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.yz);
 
-    assembler.template Matrix<Velz,Velx>(enr_conv_c, -2.0*dynvisc*denstimetauMu, enr_viscs2.zx);
-    assembler.template Matrix<Velz,Vely>(enr_conv_c, -2.0*dynvisc*denstimetauMu, enr_viscs2.zy);
-    assembler.template Matrix<Velz,Velz>(enr_conv_c, -2.0*dynvisc*denstimetauMu, enr_viscs2.zz);
+    assembler.template Matrix<Velz,Velx>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.zx);
+    assembler.template Matrix<Velz,Vely>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.zy);
+    assembler.template Matrix<Velz,Velz>(enr_conv_c_sg, -2.0*dynvisc*denstimetauMu, enr_viscs2.zz);
 #endif
 
     if (newton)
@@ -442,117 +446,118 @@ void BuildStandardDomainIntegrals(
       /*
                      /                                           \
                     |    /          \   n+1    / n+1        \     |
-                    |   | Du o nabla | u    , | u    o nabla | v  |  \\ change order in documentation!
+                    |roh| Du o nabla | u  ,roh| u    o nabla | v  |  \\ change order in documentation!
                     |    \          /   (i)    \ (i)        /     |
                      \                                           /
        */
-      assembler.template Matrix<Velx,Velx>(enr_conv_c, densdenstimetauMu*vderxy(0,0), shp.d0);
-      assembler.template Matrix<Velx,Vely>(enr_conv_c, densdenstimetauMu*vderxy(0,1), shp.d0);
-      assembler.template Matrix<Velx,Velz>(enr_conv_c, densdenstimetauMu*vderxy(0,2), shp.d0);
+      assembler.template Matrix<Velx,Velx>(enr_conv_c, densdenstimetauMu*vderxy(0,0), shpvel.d0);
+      assembler.template Matrix<Velx,Vely>(enr_conv_c, densdenstimetauMu*vderxy(0,1), shpvel.d0);
+      assembler.template Matrix<Velx,Velz>(enr_conv_c, densdenstimetauMu*vderxy(0,2), shpvel.d0);
 
-      assembler.template Matrix<Vely,Velx>(enr_conv_c, densdenstimetauMu*vderxy(1,0), shp.d0);
-      assembler.template Matrix<Vely,Vely>(enr_conv_c, densdenstimetauMu*vderxy(1,1), shp.d0);
-      assembler.template Matrix<Vely,Velz>(enr_conv_c, densdenstimetauMu*vderxy(1,2), shp.d0);
+      assembler.template Matrix<Vely,Velx>(enr_conv_c, densdenstimetauMu*vderxy(1,0), shpvel.d0);
+      assembler.template Matrix<Vely,Vely>(enr_conv_c, densdenstimetauMu*vderxy(1,1), shpvel.d0);
+      assembler.template Matrix<Vely,Velz>(enr_conv_c, densdenstimetauMu*vderxy(1,2), shpvel.d0);
 
-      assembler.template Matrix<Velz,Velx>(enr_conv_c, densdenstimetauMu*vderxy(2,0), shp.d0);
-      assembler.template Matrix<Velz,Vely>(enr_conv_c, densdenstimetauMu*vderxy(2,1), shp.d0);
-      assembler.template Matrix<Velz,Velz>(enr_conv_c, densdenstimetauMu*vderxy(2,2), shp.d0);
+      assembler.template Matrix<Velz,Velx>(enr_conv_c, densdenstimetauMu*vderxy(2,0), shpvel.d0);
+      assembler.template Matrix<Velz,Vely>(enr_conv_c, densdenstimetauMu*vderxy(2,1), shpvel.d0);
+      assembler.template Matrix<Velz,Velz>(enr_conv_c, densdenstimetauMu*vderxy(2,2), shpvel.d0);
 
       /*
                    /                                           \
                   |    / n+1        \   n+1    /          \     |
-                  |   | u    o nabla | u    , | Du o nabla | v  |
+                  |roh| u    o nabla | u  ,roh| Du o nabla | v  |
                   |    \ (i)        /   (i)    \          /     |
                    \                                           /
        */
       const double con0 = densdenstimetauMu*(velnp(0)*vderxy(0,0) + velnp(1)*vderxy(0,1) + velnp(2)*vderxy(0,2));
-      assembler.template Matrix<Velx,Velx>(shp.dx, con0, shp.d0);
-      assembler.template Matrix<Velx,Vely>(shp.dy, con0, shp.d0);
-      assembler.template Matrix<Velx,Velz>(shp.dz, con0, shp.d0);
+      assembler.template Matrix<Velx,Velx>(shpvel.dx, con0, shpvel.d0);
+      assembler.template Matrix<Velx,Vely>(shpvel.dy, con0, shpvel.d0);
+      assembler.template Matrix<Velx,Velz>(shpvel.dz, con0, shpvel.d0);
 
       const double con1 = densdenstimetauMu*(velnp(0)*vderxy(1,0) + velnp(1)*vderxy(1,1) + velnp(2)*vderxy(1,2));
-      assembler.template Matrix<Vely,Velx>(shp.dx, con1, shp.d0);
-      assembler.template Matrix<Vely,Vely>(shp.dy, con1, shp.d0);
-      assembler.template Matrix<Vely,Velz>(shp.dz, con1, shp.d0);
+      assembler.template Matrix<Vely,Velx>(shpvel.dx, con1, shpvel.d0);
+      assembler.template Matrix<Vely,Vely>(shpvel.dy, con1, shpvel.d0);
+      assembler.template Matrix<Vely,Velz>(shpvel.dz, con1, shpvel.d0);
 
       const double con2 = densdenstimetauMu*(velnp(0)*vderxy(2,0) + velnp(1)*vderxy(2,1) + velnp(2)*vderxy(2,2));
-      assembler.template Matrix<Velz,Velx>(shp.dx, con2, shp.d0);
-      assembler.template Matrix<Velz,Vely>(shp.dy, con2, shp.d0);
-      assembler.template Matrix<Velz,Velz>(shp.dz, con2, shp.d0);
+      assembler.template Matrix<Velz,Velx>(shpvel.dx, con2, shpvel.d0);
+      assembler.template Matrix<Velz,Vely>(shpvel.dy, con2, shpvel.d0);
+      assembler.template Matrix<Velz,Velz>(shpvel.dz, con2, shpvel.d0);
 #endif
 
 #ifdef COMBUST_SUPG_PRESSURE
       /* supg stabilisation: pressure part, linearisation of test function  ( L_pres_p) */
       /*
-                          /                               \
-                         |         n+1    /          \     |
-                         |  nabla p    , | Du o nabla | v  |
-                         |         (i)    \          /     |
-                          \                               /
+                                /                                  \
+                               |         n+1       /          \     |
+                               |  nabla p    ,roh | Du o nabla | v  |
+                               |         (i)       \          /     |
+                                \                                  /
        */
-      assembler.template Matrix<Velx,Velx>(shp.dx, denstimetauMu*gradp(0), shp.d0);
-      assembler.template Matrix<Velx,Vely>(shp.dy, denstimetauMu*gradp(0), shp.d0);
-      assembler.template Matrix<Velx,Velz>(shp.dz, denstimetauMu*gradp(0), shp.d0);
+      assembler.template Matrix<Velx,Velx>(shpvel.dx, denstimetauMu*gradp(0), shpvel.d0);
+      assembler.template Matrix<Velx,Vely>(shpvel.dy, denstimetauMu*gradp(0), shpvel.d0);
+      assembler.template Matrix<Velx,Velz>(shpvel.dz, denstimetauMu*gradp(0), shpvel.d0);
 
-      assembler.template Matrix<Vely,Velx>(shp.dx, denstimetauMu*gradp(1), shp.d0);
-      assembler.template Matrix<Vely,Vely>(shp.dy, denstimetauMu*gradp(1), shp.d0);
-      assembler.template Matrix<Vely,Velz>(shp.dz, denstimetauMu*gradp(1), shp.d0);
+      assembler.template Matrix<Vely,Velx>(shpvel.dx, denstimetauMu*gradp(1), shpvel.d0);
+      assembler.template Matrix<Vely,Vely>(shpvel.dy, denstimetauMu*gradp(1), shpvel.d0);
+      assembler.template Matrix<Vely,Velz>(shpvel.dz, denstimetauMu*gradp(1), shpvel.d0);
 
-      assembler.template Matrix<Velz,Velx>(shp.dx, denstimetauMu*gradp(2), shp.d0);
-      assembler.template Matrix<Velz,Vely>(shp.dy, denstimetauMu*gradp(2), shp.d0);
-      assembler.template Matrix<Velz,Velz>(shp.dz, denstimetauMu*gradp(2), shp.d0);
+      assembler.template Matrix<Velz,Velx>(shpvel.dx, denstimetauMu*gradp(2), shpvel.d0);
+      assembler.template Matrix<Velz,Vely>(shpvel.dy, denstimetauMu*gradp(2), shpvel.d0);
+      assembler.template Matrix<Velz,Velz>(shpvel.dz, denstimetauMu*gradp(2), shpvel.d0);
 #endif
 
 #ifdef COMBUST_SUPG_DIFFUSION
       /* supg stabilisation: viscous part, linearisation of test function  (-L_visc_u) */
       /*
-                    /                                         \
-                   |               / n+1 \    /          \     |
-                 - |  nabla o eps | u     |, | Du o nabla | v  |
-                   |               \ (i) /    \          /     |
-                    \                                         /
+                          /                                            \
+                         |               / n+1 \       /          \     |
+                       - |  nabla o eps | u     |,roh | Du o nabla | v  |
+                         |               \ (i) /       \          /     |
+                          \                                            /
        */
-      assembler.template Matrix<Velx,Velx>(shp.dx, -2.0*dynvisc*denstimetauMu*visc_old(0), shp.d0);
-      assembler.template Matrix<Velx,Vely>(shp.dy, -2.0*dynvisc*denstimetauMu*visc_old(0), shp.d0);
-      assembler.template Matrix<Velx,Velz>(shp.dz, -2.0*dynvisc*denstimetauMu*visc_old(0), shp.d0);
+      assembler.template Matrix<Velx,Velx>(shpvel.dx, -2.0*dynvisc*denstimetauMu*visc_old(0), shpvel.d0);
+      assembler.template Matrix<Velx,Vely>(shpvel.dy, -2.0*dynvisc*denstimetauMu*visc_old(0), shpvel.d0);
+      assembler.template Matrix<Velx,Velz>(shpvel.dz, -2.0*dynvisc*denstimetauMu*visc_old(0), shpvel.d0);
 
-      assembler.template Matrix<Vely,Velx>(shp.dx, -2.0*dynvisc*denstimetauMu*visc_old(1), shp.d0);
-      assembler.template Matrix<Vely,Vely>(shp.dy, -2.0*dynvisc*denstimetauMu*visc_old(1), shp.d0);
-      assembler.template Matrix<Vely,Velz>(shp.dz, -2.0*dynvisc*denstimetauMu*visc_old(1), shp.d0);
+      assembler.template Matrix<Vely,Velx>(shpvel.dx, -2.0*dynvisc*denstimetauMu*visc_old(1), shpvel.d0);
+      assembler.template Matrix<Vely,Vely>(shpvel.dy, -2.0*dynvisc*denstimetauMu*visc_old(1), shpvel.d0);
+      assembler.template Matrix<Vely,Velz>(shpvel.dz, -2.0*dynvisc*denstimetauMu*visc_old(1), shpvel.d0);
 
-      assembler.template Matrix<Velz,Velx>(shp.dx, -2.0*dynvisc*denstimetauMu*visc_old(2), shp.d0);
-      assembler.template Matrix<Velz,Vely>(shp.dy, -2.0*dynvisc*denstimetauMu*visc_old(2), shp.d0);
-      assembler.template Matrix<Velz,Velz>(shp.dz, -2.0*dynvisc*denstimetauMu*visc_old(2), shp.d0);
+      assembler.template Matrix<Velz,Velx>(shpvel.dx, -2.0*dynvisc*denstimetauMu*visc_old(2), shpvel.d0);
+      assembler.template Matrix<Velz,Vely>(shpvel.dy, -2.0*dynvisc*denstimetauMu*visc_old(2), shpvel.d0);
+      assembler.template Matrix<Velz,Velz>(shpvel.dz, -2.0*dynvisc*denstimetauMu*visc_old(2), shpvel.d0);
 #endif
 
 #ifdef COMBUST_SUPG_BODYFORCE
       /* supg stabilisation: bodyforce part, linearisation of test function */
       /*
-                        /                             \
-                       |              /          \     |
-                     - |  rhsint   , | Du o nabla | v  |
-                       |              \          /     |
-                        \                             /
+                              /                                \
+                             |                 /          \     |
+                           - |  rhsint   , roh| Du o nabla | v  |
+                             |                 \          /     |
+                              \                                /
+
        */
-      assembler.template Matrix<Velx,Velx>(shp.dx, -denstauMu*rhsint(0), shp.d0);
-      assembler.template Matrix<Velx,Vely>(shp.dy, -denstauMu*rhsint(0), shp.d0);
-      assembler.template Matrix<Velx,Velz>(shp.dz, -denstauMu*rhsint(0), shp.d0);
+      assembler.template Matrix<Velx,Velx>(shpvel.dx, -denstauMu*rhsint(0), shpvel.d0);
+      assembler.template Matrix<Velx,Vely>(shpvel.dy, -denstauMu*rhsint(0), shpvel.d0);
+      assembler.template Matrix<Velx,Velz>(shpvel.dz, -denstauMu*rhsint(0), shpvel.d0);
 
-      assembler.template Matrix<Vely,Velx>(shp.dx, -denstauMu*rhsint(1), shp.d0);
-      assembler.template Matrix<Vely,Vely>(shp.dy, -denstauMu*rhsint(1), shp.d0);
-      assembler.template Matrix<Vely,Velz>(shp.dz, -denstauMu*rhsint(1), shp.d0);
+      assembler.template Matrix<Vely,Velx>(shpvel.dx, -denstauMu*rhsint(1), shpvel.d0);
+      assembler.template Matrix<Vely,Vely>(shpvel.dy, -denstauMu*rhsint(1), shpvel.d0);
+      assembler.template Matrix<Vely,Velz>(shpvel.dz, -denstauMu*rhsint(1), shpvel.d0);
 
-      assembler.template Matrix<Velz,Velx>(shp.dx, -denstauMu*rhsint(2), shp.d0);
-      assembler.template Matrix<Velz,Vely>(shp.dy, -denstauMu*rhsint(2), shp.d0);
-      assembler.template Matrix<Velz,Velz>(shp.dz, -denstauMu*rhsint(2), shp.d0);
+      assembler.template Matrix<Velz,Velx>(shpvel.dx, -denstauMu*rhsint(2), shpvel.d0);
+      assembler.template Matrix<Velz,Vely>(shpvel.dy, -denstauMu*rhsint(2), shpvel.d0);
+      assembler.template Matrix<Velz,Velz>(shpvel.dz, -denstauMu*rhsint(2), shpvel.d0);
 #endif
     } // if newton
 
 #ifdef COMBUST_SUPG_RHS
     // supg stabilisation
-    assembler.template Vector<Velx>(enr_conv_c, -denstauMu*res_old(0));
-    assembler.template Vector<Vely>(enr_conv_c, -denstauMu*res_old(1));
-    assembler.template Vector<Velz>(enr_conv_c, -denstauMu*res_old(2));
+    assembler.template Vector<Velx>(enr_conv_c_sg, -denstauMu*res_old(0));
+    assembler.template Vector<Vely>(enr_conv_c_sg, -denstauMu*res_old(1));
+    assembler.template Vector<Velz>(enr_conv_c_sg, -denstauMu*res_old(2));
 #endif
   }
 
@@ -572,21 +577,21 @@ void BuildStandardDomainIntegrals(
               |                          |
                \                        /
      */
-    assembler.template Matrix<Velx,Velx>(shp.dx, timefac_tau_C, shp.dx);
-    assembler.template Matrix<Velx,Vely>(shp.dx, timefac_tau_C, shp.dy);
-    assembler.template Matrix<Velx,Velz>(shp.dx, timefac_tau_C, shp.dz);
+    assembler.template Matrix<Velx,Velx>(shpvel.dx, timefac_tau_C, shpvel.dx);
+    assembler.template Matrix<Velx,Vely>(shpvel.dx, timefac_tau_C, shpvel.dy);
+    assembler.template Matrix<Velx,Velz>(shpvel.dx, timefac_tau_C, shpvel.dz);
 
-    assembler.template Matrix<Vely,Velx>(shp.dy, timefac_tau_C, shp.dx);
-    assembler.template Matrix<Vely,Vely>(shp.dy, timefac_tau_C, shp.dy);
-    assembler.template Matrix<Vely,Velz>(shp.dy, timefac_tau_C, shp.dz);
+    assembler.template Matrix<Vely,Velx>(shpvel.dy, timefac_tau_C, shpvel.dx);
+    assembler.template Matrix<Vely,Vely>(shpvel.dy, timefac_tau_C, shpvel.dy);
+    assembler.template Matrix<Vely,Velz>(shpvel.dy, timefac_tau_C, shpvel.dz);
 
-    assembler.template Matrix<Velz,Velx>(shp.dz, timefac_tau_C, shp.dx);
-    assembler.template Matrix<Velz,Vely>(shp.dz, timefac_tau_C, shp.dy);
-    assembler.template Matrix<Velz,Velz>(shp.dz, timefac_tau_C, shp.dz);
+    assembler.template Matrix<Velz,Velx>(shpvel.dz, timefac_tau_C, shpvel.dx);
+    assembler.template Matrix<Velz,Vely>(shpvel.dz, timefac_tau_C, shpvel.dy);
+    assembler.template Matrix<Velz,Velz>(shpvel.dz, timefac_tau_C, shpvel.dz);
 
-    assembler.template Vector<Velx>(shp.dx, -timefac_tau_C_divunp);
-    assembler.template Vector<Vely>(shp.dy, -timefac_tau_C_divunp);
-    assembler.template Vector<Velz>(shp.dz, -timefac_tau_C_divunp);
+    assembler.template Vector<Velx>(shpvel.dx, -timefac_tau_C_divunp);
+    assembler.template Vector<Vely>(shpvel.dy, -timefac_tau_C_divunp);
+    assembler.template Vector<Velz>(shpvel.dz, -timefac_tau_C_divunp);
 #endif
   } // endif cstab
 }

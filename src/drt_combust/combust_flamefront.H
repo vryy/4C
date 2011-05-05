@@ -258,6 +258,13 @@ namespace COMBUST
         LINALG::SerialDenseMatrix& xyze
     );
 
+    /// store a set of domain integration cells for a trisected element
+    bool StoreDomainIntegrationCellsTrisectedAlternative(
+        GEO::CUT::ElementHandle * ehandle,
+        GEO::DomainIntCells& domainintcelllist,
+        LINALG::SerialDenseMatrix& xyze
+    );
+
     /// store a list of boundary integration cells
     bool StoreBoundaryIntegrationCells(
         GEO::CUT::ElementHandle * ehandle,
@@ -323,6 +330,14 @@ namespace COMBUST
     const COMBUST::RefinementCell* cell,
     const GEO::BoundaryIntCells&   boundaryintcelllist,
     const GEO::DomainIntCells&     domainintcelllist
+    );
+
+    void FlamefrontToGmsh(
+    const COMBUST::RefinementCell*              cell,
+    const std::vector<std::vector<double> >&    pointlist,
+    const std::multimap<int,std::vector<int> >& segmentlist,
+    const std::vector<std::vector<int> >&       trianglelist,
+    const GEO::DomainIntCells&                  domainintcelllist
     );
 
     /// pointer to fluid discretization

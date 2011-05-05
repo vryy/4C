@@ -575,8 +575,8 @@ void SysmatDomainNitsche(
       // build stiffness matrix standard entries
       //----------------------------------------
       COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
-          assembler, shp, fac, timefac, timefacfac, densaf, dynvisc,
-          gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_viscs2,
+          assembler, shp, shp, fac, timefac, timefacfac, densaf, dynvisc,
+          gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_conv_c, enr_viscs2,
           instationary, newton, pstab, supg, cstab,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
     } // end loop over gauss points

@@ -313,9 +313,15 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const double nitschepres = params.get<double>("nitschepres");
 
       // stabilization terms
-      const bool pstab = true;
-      const bool supg  = true;
-      const bool cstab = true;
+      bool pstab = true;
+      bool supg  = true;
+      bool cstab = true;
+      if (DRT::INPUT::IntegralValue<INPAR::FLUID::SUPG>(params.sublist("STABILIZATION"),"SUPG") == INPAR::FLUID::convective_stab_none)
+         supg = false;
+      if (DRT::INPUT::IntegralValue<INPAR::FLUID::PSPG>(params.sublist("STABILIZATION"),"PSPG") == INPAR::FLUID::pstab_assume_inf_sup_stable)
+         pstab = false;
+      if (DRT::INPUT::IntegralValue<INPAR::FLUID::CStab>(params.sublist("STABILIZATION"),"CSTAB") == INPAR::FLUID::continuity_stab_none)
+         cstab = false;
       // stabilization parameters
       const INPAR::FLUID::TauType tautype = DRT::INPUT::IntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"DEFINITION_TAU");
       // check if stabilization parameter definition can be handled by combust3 element
@@ -444,9 +450,15 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       const bool smoothed_boundary_integration = params.get<bool>("smoothed_bound_integration");
 
       // stabilization terms
-      const bool pstab = true;
-      const bool supg  = true;
-      const bool cstab = true;
+      bool pstab = true;
+      bool supg  = true;
+      bool cstab = true;
+      if (DRT::INPUT::IntegralValue<INPAR::FLUID::SUPG>(params.sublist("STABILIZATION"),"SUPG") == INPAR::FLUID::convective_stab_none)
+         supg = false;
+      if (DRT::INPUT::IntegralValue<INPAR::FLUID::PSPG>(params.sublist("STABILIZATION"),"PSPG") == INPAR::FLUID::pstab_assume_inf_sup_stable)
+         pstab = false;
+      if (DRT::INPUT::IntegralValue<INPAR::FLUID::CStab>(params.sublist("STABILIZATION"),"CSTAB") == INPAR::FLUID::continuity_stab_none)
+         cstab = false;
       // stabilization parameters
       const INPAR::FLUID::TauType tautype = DRT::INPUT::IntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"DEFINITION_TAU");
       // check if stabilization parameter definition can be handled by combust3 element

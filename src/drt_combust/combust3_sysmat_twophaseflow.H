@@ -115,7 +115,6 @@ void SysmatTwoPhaseFlow(
 
   // information about domain integration cells
   const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
-  //    cout << "element "<< ele->Id() << ": ";
 
   //std::cout << "number of IntCells " <<  domainIntCells.size() << std::endl;
   // loop over integration cells
@@ -530,12 +529,6 @@ void SysmatTwoPhaseFlow(
           instationary, dynvisc, densaf, vel_norm, hk, hk, mk, timefac, dt, tautype,
           tau_stab_M, tau_stab_Mp, tau_stab_C); //tautype_franca_barrenechea_valentin_wall
 
-      // modify stabilization
-      // TODO: does this have to be modified with respect to the density, as it was before?
-      tau_stab_M  /= timefac;
-      tau_stab_Mp /= timefac;
-      tau_stab_C /= timefac;
-
       // integration factors and coefficients of single terms
       const double timefacfac = timefac * fac;
 
@@ -556,7 +549,7 @@ void SysmatTwoPhaseFlow(
       // remark: unit has to be acceleration (not density weighted)
       //std::cout << "BodyForce" << std::endl;
       //bodyforce(0) = 0.0;
-      //bodyforce(1) = -10.0;
+      //bodyforce(1) = -9.81;
       //bodyforce(0) = 0.5/densaf;
       // scale body force: body force * density^{n+1}
       //std::cout << "BodyForce " << std::endl;
@@ -641,26 +634,6 @@ void SysmatTwoPhaseFlow(
         enr_viscs2.zy(iparam) = 0.5 *  shpvel.dzdy(iparam);
         enr_viscs2.zz(iparam) = 0.5 * (shpvel.dxdx(iparam) + shpvel.dydy(iparam) + 2.0 * shpvel.dzdz(iparam));
       }
-
-
-      //            std::cout << "----Berechnung der Matrixteile----" << std::endl;
-      //////////////////////////////////////
-      // now build single stiffness terms //
-      //////////////////////////////////////
-
-      //            const DRT::Element::DiscretizationType stressdistype = COMBUST::StressInterpolation3D<DISTYPE>::distype;
-      //            const size_t shpVecSizeStress = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<stressdistype>::numNodePerElement;
-      //            static LINALG::Matrix<shpVecSizeStress,1> shp_epsilon;
-      //            static LINALG::Matrix<nsd,nsd> epsilon;
-      //            const bool epsilonele_unknowns_present = false;
-      //
-                    // build stiffness matrix standard entries
-      //            COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
-      //                assembler, shpvel, shp_epsilon, fac, timefac, timefacfac, densaf, dynvisc,
-      //                gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, epsilon,
-      //                enr_conv_c_, enr_viscs2,
-      //                epsilonele_unknowns_present, instationary, newton, pstab, supg, cstab,
-      //                tau_stab_M, tau_stab_Mp, tau_stab_C);
 
       //-------------------------------------------------------------------
       //           CROSS-/REYNODSSTRESS
@@ -759,6 +732,22 @@ void SysmatTwoPhaseFlow(
       // Note: linearisation of sub-grid scale is taken into accout only in convective part
       //----------------------------------------------------------------------
 
+#if 1
+      //----------------------------------------
+      // build stiffness matrix standard entries
+      //----------------------------------------
+      COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
+         assembler, shpvel, shppres, fac, timefac, timefacfac, densaf, dynvisc,
+         gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c_, enr_conv_c_sg, enr_viscs2,
+         instationary, newton, pstab, supg, cstab,
+         tau_stab_M, tau_stab_Mp, tau_stab_C);
+#else
+
+      // modify stabilization
+      // TODO: does this have to be modified with respect to the density, as it was before?
+      tau_stab_M  /= timefac;
+      tau_stab_Mp /= timefac;
+      tau_stab_C /= timefac;
 
       //----------------------------------------------------------------------
       //                            GALERKIN PART
@@ -1236,6 +1225,7 @@ void SysmatTwoPhaseFlow(
         assembler.template Vector<Vely>(shpvel.dy, -timefac_timefac_tau_C_divunp);
         assembler.template Vector<Velz>(shpvel.dz, -timefac_timefac_tau_C_divunp);
       } // endif cstab
+#endif
 
     } // end loop over gauss points
   } // end loop over integration cells
