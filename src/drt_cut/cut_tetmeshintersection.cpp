@@ -129,6 +129,12 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
 
       switch ( points.size() )
       {
+      case 2:
+        // Degenerated nonsense. Why does that happen?
+
+        // make sure the mapping entry exists
+        side_parent_to_child_[s];
+        break;
       case 3:
       {
         Side * cs = cut_mesh_.GetSide( s->Id(), nodes, shards::getCellTopologyData< shards::Triangle<3> >() );
