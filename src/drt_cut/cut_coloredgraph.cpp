@@ -36,6 +36,14 @@ void GEO::CUT::COLOREDGRAPH::Graph::Add( int row, int col )
   graph_[col].insert( row );
 }
 
+void GEO::CUT::COLOREDGRAPH::Graph::Add( int p, const std::set<int> & row )
+{
+  for ( std::set<int>::const_iterator i=row.begin(); i!=row.end(); ++i )
+  {
+    Add( p, *i );
+  }
+}
+
 int GEO::CUT::COLOREDGRAPH::Graph::FindNext( Graph & used, int point, Graph & cycle, const std::set<int> & free )
 {
   std::set<int> & row      = graph_[point];
@@ -60,6 +68,30 @@ void GEO::CUT::COLOREDGRAPH::Graph::GetAll( std::set<int> & all )
   {
     int p = i->first;
     all.insert( p );
+  }
+}
+
+void GEO::CUT::COLOREDGRAPH::Graph::FixSingleLines()
+{
+  for ( ;; )
+  {
+    std::map<int, std::set<int> >::iterator j = std::find_if( graph_.begin(), graph_.end(), SingeLineFinder() );
+    if ( j==graph_.end() )
+    {
+      return;
+    }
+
+    int p1 = j->first;
+    std::set<int> & row = j->second;
+    for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
+    {
+      int p2 = *i;
+      std::set<int> & row2 = graph_[p2];
+      row2.erase( p1 );
+      if ( row2.size()==0 )
+        graph_.erase( p2 );
+    }
+    graph_.erase( j );
   }
 }
 
@@ -161,6 +193,9 @@ void GEO::CUT::COLOREDGRAPH::Cycle::Split( Graph & graph, Graph & used, CycleLis
   }
   else
   {
+#ifdef DEBUGCUTLIBRARY
+    cycle_.TestClosed();
+#endif
     active_ = true;
   }
 }
@@ -202,6 +237,58 @@ void GEO::CUT::COLOREDGRAPH::Graph::Split( Graph & connection, Graph & c1, Graph
   Fill( split_trace, connection, *i, c1 );
   ++i;
   Fill( split_trace, connection, *i, c2 );
+
+  for ( std::set<int>::iterator i=split_trace.begin(); i!=split_trace.end(); ++i )
+  {
+    int p = *i;
+    unsigned c1rowlen = c1[p].size();
+    unsigned c2rowlen = c2[p].size();
+
+    Graph * fine = NULL;
+    Graph * open = NULL;
+
+    if ( c1rowlen>1 and c2rowlen>1 )
+    {
+      // fine
+    }
+    else if ( c1rowlen==1 and c2rowlen>1 )
+    {
+      fine = &c2;
+      open = &c1;
+    }
+    else if ( c1rowlen>1 and c2rowlen==1 )
+    {
+      fine = &c1;
+      open = &c2;
+    }
+    else
+    {
+      throw std::runtime_error( "open line after graph split" );
+    }
+
+    if ( open!=NULL )
+    {
+      std::set<int> & row = at( p );
+      if ( row.size()!=2 )
+        throw std::runtime_error( "expect two facets at line" );
+      std::set<int>::iterator i = row.begin();
+      int f1 = *i;
+      ++i;
+      int f2 = *i;
+      if ( fine->count( f1 ) > 0 )
+      {
+        open->Add( f2, at( f2 ) );
+      }
+      else if ( fine->count( f2 ) > 0 )
+      {
+        open->Add( f1, at( f1 ) );
+      }
+      else
+      {
+        throw std::runtime_error( "confused" );
+      }
+    }
+  }
 }
 
 void GEO::CUT::COLOREDGRAPH::Graph::Fill( const std::set<int> & split_trace, Graph & connection, int seed, Graph & c )
@@ -240,13 +327,9 @@ void GEO::CUT::COLOREDGRAPH::Graph::Fill( const std::set<int> & split_trace, Gra
 
   for ( Graph::const_iterator i=connection.begin(); i!=connection.end(); ++i )
   {
-    int p1 = i->first;
+    int p = i->first;
     const std::set<int> & row = i->second;
-    for ( std::set<int>::const_iterator i=row.begin(); i!=row.end(); ++i )
-    {
-      int p2 = *i;
-      c.Add( p1, p2 );
-    }
+    c.Add( p, row );
   }
 }
 

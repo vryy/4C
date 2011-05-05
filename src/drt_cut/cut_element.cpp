@@ -376,9 +376,7 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count )
 
 void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
 {
-//   LineGraph lg( sides_, facets_ );
-//   lg.Print();
-
+#if 1
   FacetGraph fg( sides_, facets_ );
   //fg.Print();
 
@@ -390,7 +388,9 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
 
 //   }
 
-#if 0
+#else
+  int cellcount = 0;
+
   std::map<std::pair<Point*, Point*>, std::set<Facet*> > lines;
   for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
@@ -595,12 +595,36 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
                  collected_facets.end(),
                  std::inserter( facets_done, facets_done.begin() ) );
 
+      if ( not fg.InCollectedFacets( collected_facets ) )
+      {
+        fg.PrintAllCollected();
+
+        std::ofstream file( "nv.plot" );
+
+        for ( std::set<Facet*>::iterator i=collected_facets.begin(); i!=collected_facets.end(); ++i )
+        {
+          Facet * f = *i;
+          f->Print( file );
+        }
+
+        file.close();
+
+        throw std::runtime_error( "different volumes" );
+      }
+
+#if 0
       cells_.insert( mesh.NewVolumeCell( collected_facets, volume_lines, this ) );
+#else
+      cellcount += 1;
+#endif
     }
   }
 
   if ( facets_done.size() != all_facets_sorted.size() )
     throw std::runtime_error( "unhandled facets" );
+
+  if ( cellcount != cells_.size() )
+    throw std::runtime_error( "different number of volumes" );
 #endif
 }
 

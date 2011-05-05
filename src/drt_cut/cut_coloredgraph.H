@@ -37,6 +37,17 @@ namespace GEO
         const std::set<int> & free_;
       };
 
+      class SingeLineFinder
+      {
+      public:
+
+        bool operator()( const std::pair<const int, std::set<int> > & row )
+        {
+          return row.second.size() < 2;
+        }
+
+      };
+
       class Graph
       {
       public:
@@ -49,9 +60,13 @@ namespace GEO
 
         void Add( int row, int col );
 
+        void Add( int p, const std::set<int> & row );
+
         int FindNext( Graph & used, int p, Graph & cycle, const std::set<int> & free );
 
         void GetAll( std::set<int> & all );
+
+        void FixSingleLines();
 
         void TestClosed();
 
@@ -74,6 +89,8 @@ namespace GEO
         }
 
         int Split() { return color_split_; }
+
+        void SetSplit( int color_split ) { color_split_ = color_split; }
 
 //         void Split( int color_split ) { color_split_ = color_split; }
 

@@ -30,6 +30,13 @@ public:
 
   void CreateVolumeCells( Mesh & mesh, Element * element, std::set<VolumeCell*> & cells );
 
+#ifdef DEBUGCUTLIBRARY
+  bool InCollectedFacets( const std::set<Facet*> & collected_facets );
+
+  void PrintAllCollected();
+
+#endif
+
 private:
 
 //   void Add( GRAPH::Graph & graph,
@@ -46,6 +53,9 @@ private:
   COLOREDGRAPH::CycleList cycle_list_;
   std::vector<Facet*> all_facets_;
   std::vector<std::pair<Point*, Point*> > all_lines_;
+#ifdef DEBUGCUTLIBRARY
+  std::vector<std::set<Facet*> > all_collected_facets_;
+#endif
 };
 
 }
