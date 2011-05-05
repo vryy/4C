@@ -137,7 +137,6 @@ public:
     FSICoupling,
     FSICouplingNoSlide,
     FSICouplingCenterDisp,
-    FSICouplingSlideProj,
     FREESURFCoupling,
     SurfaceTension,
     Surfactant,

@@ -52,7 +52,9 @@ namespace INPAR
     {
       ALEprojection_none,
       ALEprojection_curr,
-      ALEprojection_ref
+      ALEprojection_ref,
+      ALEprojection_rot_z,
+      ALEprojection_rot_zsphere
     };
 
     /// Preconditioner for constraint fsi problem

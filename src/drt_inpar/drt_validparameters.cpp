@@ -3393,11 +3393,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("SLIDEALEPROJ","None",
                                  "Projection method to use for sliding FSI.",
-                                 tuple<std::string>("None","Curr","Ref"),
+                                 tuple<std::string>("None","Curr","Ref","RotZ","RotZSphere"),
                                  tuple<int>(
                                      INPAR::FSI::ALEprojection_none,
                                      INPAR::FSI::ALEprojection_curr,
-                                     INPAR::FSI::ALEprojection_ref),
+                                     INPAR::FSI::ALEprojection_ref,
+                                     INPAR::FSI::ALEprojection_rot_z,
+                                     INPAR::FSI::ALEprojection_rot_zsphere),
                                  &fsidyn);
 
   /*----------------------------------------------------------------------*/

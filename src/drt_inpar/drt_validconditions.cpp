@@ -851,27 +851,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surffsicd);
 
   /*--------------------------------------------------------------------*/
-  // FSI without sliding
-
-  Teuchos::RCP<ConditionDefinition> linefsiproj =
-    Teuchos::rcp(new ConditionDefinition("DESIGN FSI COUPLING PROJECTION LINE CONDITIONS",
-                                         "SlideALEProjection",
-                                         "FSI Coupling Sliding ALE Proj Base",
-                                         DRT::Condition::FSICouplingSlideProj,
-                                         true,
-                                         DRT::Condition::Line));
-  Teuchos::RCP<ConditionDefinition> surffsiproj =
-    Teuchos::rcp(new ConditionDefinition("DESIGN FSI COUPLING PROJECTION SURF CONDITIONS",
-                                         "SlideALEProjection",
-                                         "FSI Coupling Sliding ALE Proj Base",
-                                         DRT::Condition::FSICouplingSlideProj,
-                                         true,
-                                         DRT::Condition::Surface));
-
-  condlist.push_back(linefsiproj);
-  condlist.push_back(surffsiproj);
-
-  /*--------------------------------------------------------------------*/
   // FREESURF
 
   std::vector<Teuchos::RCP<ConditionComponent> > freesurfcomponents;
