@@ -299,8 +299,9 @@ namespace XFEM
         {
           //rule = getOptimalVelocityGaussrule(celldistype);
           //rule = DRT::UTILS::intrule_hex_1point;
-          rule = DRT::UTILS::intrule_hex_8point;
-          //rule = DRT::UTILS::intrule_hex_27point;
+          //rule = DRT::UTILS::intrule_hex_8point;
+          rule = DRT::UTILS::intrule_hex_27point;
+          //rule = DRT::UTILS::intrule_hex_64point;
           break;
         }
         default:

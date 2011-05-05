@@ -408,13 +408,13 @@ void XFEM::createDofMapCombust(
       else if( ih.ElementTouchedPlus(xfemele) or ih.ElementTouchedMinus(xfemele) )
 #endif
       {
-        std::cout << "\n---  element "<< xfemele->Id() << " is touched";
         const INPAR::COMBUST::CombustionType combusttype = DRT::INPUT::get<INPAR::COMBUST::CombustionType>(params, "combusttype");
         // build a DofMap holding dofs for all nodes including additional dofs of enriched nodes
         switch(combusttype)
         {
         case INPAR::COMBUST::combusttype_premixedcombustion:
         {
+          std::cout << "\n---  element "<< xfemele->Id() << " is touched at a face and nodes with G=0.0 get additionally enriched";
           // TODO: implementation of  additional degrees of freedom for touched elements for premixed combustion STRESS BASED!!!
 #ifdef COMBUST_STRESS_BASED
           // apply element stress enrichments to an intersected element
@@ -433,12 +433,14 @@ void XFEM::createDofMapCombust(
         break;
         case INPAR::COMBUST::combusttype_twophaseflow_surf:
         {
+          //std::cout << "\n---  element "<< xfemele->Id() << " is touched at a face and nodes with G=0.0 get additionally enriched";
           // apply kink enrichments to all nodes for velocity field and jumps to pressure field of an intersected element
           skipped_node_enr += ApplyKinkJumpEnrichmentToTouched(ih, xfemele, fieldset, nodeDofMap);
         }
         break;
         case INPAR::COMBUST::combusttype_twophaseflowjump:
         {
+          std::cout << "\n---  element "<< xfemele->Id() << " is touched at a face and nodes with G=0.0 get additionally enriched";
           // apply additional jump enrichments for pressure to all nodes with Gfunc = 0.0 of a touched element
           skipped_node_enr += ApplyJumpEnrichmentToTouched(ih, xfemele, fieldset, nodeDofMap);
         }
