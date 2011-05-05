@@ -273,10 +273,7 @@ STR::TimInt::TimInt
   
   // check for structural problem with ale
   if(DRT::Problem::Instance()->ProblemType() == "structure_ale")
-  {
-    structale_ = true;
     dismatn_ = LINALG::CreateVector(*(discret_->DofRowMap(0)),true);
-  }
 
   // stay with us
   return;
@@ -908,7 +905,7 @@ void STR::TimInt::OutputStressStrain
   {
     discret_->SetState(1,"temperature",tempn_);
   }
-  if(structale_)
+  if(dismatn_!= null)
     discret_->SetState(0,"material displacement",dismatn_);
 
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
@@ -1361,7 +1358,7 @@ void STR::TimInt::ApplyForceStiffInternal
   // set the temperature for the coupled problem
   if(tempn_!=Teuchos::null)
     discret_->SetState(1,"temperature",tempn_);
-  if(structale_)
+  if(dismatn_!=null)
     discret_->SetState(0,"material displacement",dismatn_);
   discret_->Evaluate(p, stiff, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();

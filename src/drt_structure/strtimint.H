@@ -687,7 +687,6 @@ namespace STR
     //! @name Structure with ale specific stuff
     //@{
     
-    bool structale_;
     Teuchos::RCP<Epetra_Vector> dismatn_; //!< global material displacements
                                           //!< (structure with ale)
     //@}
