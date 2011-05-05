@@ -179,10 +179,17 @@ void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, 
 
   MapVolumeCells( parent_mesh, element, parent_cells, cellmap );
 
+#ifdef DEBUGCUTLIBRARY
+  mesh_.DumpGmsh( "mesh.pos" );
+#endif
+
+#if 0
+  // Not needed on this level.
   if ( mesh_.CreateOptions().FindPositions() )
   {
     mesh_.FindNodePositions();
   }
+#endif
 
 #ifdef DEBUGCUTLIBRARY
   mesh_.DumpGmsh( "mesh.pos" );
