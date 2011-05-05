@@ -270,6 +270,13 @@ STR::TimInt::TimInt
       FLD::UTILS::SetupFluidSplit(*discret_, ndim, *pressure_);
     }
   }
+  
+  // check for structural problem with ale
+  if(DRT::Problem::Instance()->ProblemType() == "structure_ale")
+  {
+    structale_ = true;
+    dismatn_ = LINALG::CreateVector(*(discret_->DofRowMap(0)),true);
+  }
 
   // stay with us
   return;
@@ -901,6 +908,9 @@ void STR::TimInt::OutputStressStrain
   {
     discret_->SetState(1,"temperature",tempn_);
   }
+  if(structale_)
+    discret_->SetState(0,"material displacement",dismatn_);
+
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();
@@ -1351,6 +1361,8 @@ void STR::TimInt::ApplyForceStiffInternal
   // set the temperature for the coupled problem
   if(tempn_!=Teuchos::null)
     discret_->SetState(1,"temperature",tempn_);
+  if(structale_)
+    discret_->SetState(0,"material displacement",dismatn_);
   discret_->Evaluate(p, stiff, Teuchos::null, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();
 
@@ -1459,6 +1471,30 @@ void STR::TimInt::ApplyTemperatures(
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/* apply the new material displacements                      mgit 05/11 */
+void STR::TimInt::ApplyDisMat(
+  Teuchos::RCP<Epetra_Vector> dismat  
+  )
+{
+  // FIXGIT: This is done only for nonzero entries
+  // These values are replaced because here, the new absolute material
+  // displacement has been evaluated (not the increment)
+  
+  // loop over all row nodes 
+   for (int k=0;k<discret_->NumMyRowNodes();++k)
+   {
+     int gid = discret_->NodeRowMap()->GID(k);
+     int locid = (dismat->Map()).LID(2*gid);
+     
+     if ((*dismat)[locid]!=0.0)
+       (*dismatn_)[locid] = (*dismat)[locid];
+
+     if ((*dismat)[locid+1]!=0.0)
+       (*dismatn_)[locid+1] = (*dismat)[locid+1];
+   }
+   return;
+ }
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

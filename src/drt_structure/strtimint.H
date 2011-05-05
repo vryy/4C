@@ -557,6 +557,17 @@ namespace STR
     Teuchos::RCP<MORTAR::ManagerBase> ContactManager() {return cmtman_;}
 
     //@}
+    
+    //! @name Structure with ale specific methods
+    //@{
+    
+    //! material displacements (structure with ale)
+   Teuchos::RCP<Epetra_Vector> DispMat() { return dismatn_; }
+    
+    //! apply material displacements to structure field (structure with ale)
+    void ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat);
+   
+    //@}
 
   protected:
 
@@ -672,7 +683,16 @@ namespace STR
                                         //!< \f${T}_{n+1}\f$
                                         //!< at \f$t_{n+1}\f$
     //@}
-
+    
+    //! @name Structure with ale specific stuff
+    //@{
+    
+    bool structale_;
+    Teuchos::RCP<Epetra_Vector> dismatn_; //!< global material displacements
+                                          //!< (structure with ale)
+    //@}
+    
+    
     //! @name System matrices
     //@{
     //! holds eventually effective stiffness
