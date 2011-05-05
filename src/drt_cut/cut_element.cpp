@@ -10,6 +10,8 @@
 #include "cut_linesegment.H"
 #include "cut_options.H"
 #include "cut_integrationcellcreator.H"
+//#include "cut_linegraph.H"
+#include "cut_facetgraph.H"
 
 #include <string>
 #include <stack>
@@ -374,6 +376,21 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count )
 
 void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
 {
+//   LineGraph lg( sides_, facets_ );
+//   lg.Print();
+
+  FacetGraph fg( sides_, facets_ );
+  //fg.Print();
+
+  fg.CreateVolumeCells( mesh, this, cells_ );
+
+//   for ( FacetGraph::iterator i=fg.begin(); i!=fg.end(); ++i )
+//   {
+//     //cells_.insert( mesh.NewVolumeCell( collected_facets, volume_lines, this ) );
+
+//   }
+
+#if 0
   std::map<std::pair<Point*, Point*>, std::set<Facet*> > lines;
   for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
@@ -584,6 +601,7 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
 
   if ( facets_done.size() != all_facets_sorted.size() )
     throw std::runtime_error( "unhandled facets" );
+#endif
 }
 
 bool GEO::CUT::ConcreteElement<DRT::Element::tet4>::PointInside( Point* p )

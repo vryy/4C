@@ -195,6 +195,8 @@ void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, 
 
 void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap )
 {
+  SeedCells( parent_mesh, parent_cells, cellmap );
+
   int nonnodecells = 0;
 
   for ( std::set<VolumeCell*>::const_iterator i=parent_cells.begin();
@@ -203,21 +205,7 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
   {
     VolumeCell * vc = *i;
     ChildCell & cc = cellmap[vc];
-    cc.parent_ = vc;
     std::set<VolumeCell*> & childset = cc.cells_;
-
-    std::set<Point*> volume_points;
-    vc->GetAllPoints( parent_mesh, volume_points );
-
-    for ( std::set<Point*>::iterator i=volume_points.begin(); i!=volume_points.end(); ++i )
-    {
-      Point * p = *i;
-      if ( p->Position()!=Point::oncutsurface )
-      {
-        Point * np = ToChild( p );
-        FindVolumeCell( np, childset );
-      }
-    }
 
     if ( childset.size() > 0 )
     {
@@ -228,6 +216,8 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
       nonnodecells += 1;
     }
   }
+
+  // build surface cell map
 
   for ( std::map<VolumeCell*, ChildCell>::iterator i=cellmap.begin(); i!=cellmap.end(); ++i )
   {
@@ -261,137 +251,7 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
     }
   }
 
-  if ( nonnodecells > 0 )
-  {
-    std::map<Point*, std::vector<VolumeCell*> > parent_point_cells;
-    for ( std::set<VolumeCell*>::const_iterator i=parent_cells.begin();
-          i!=parent_cells.end();
-          ++i )
-    {
-      VolumeCell * vc = *i;
-      std::set<Point*> cut_points;
-      vc->GetAllPoints( parent_mesh, cut_points );
-      for ( std::set<Point*>::iterator i=cut_points.begin(); i!=cut_points.end(); ++i )
-      {
-        Point * p = *i;
-        parent_point_cells[p].push_back( vc );
-      }
-    }
-    for ( std::map<Point*, std::vector<VolumeCell*> >::iterator i=parent_point_cells.begin();
-          i!=parent_point_cells.end();
-          ++i )
-    {
-      Point * p = i->first;
-      std::vector<VolumeCell*> & vcs = i->second;
-      if ( vcs.size()==1 )
-      {
-        VolumeCell * vc = vcs[0];
-        Point * np = ToChild( p );
-        ChildCell & cc = cellmap[vc];
-        if ( not cc.done_ )
-        {
-          std::set<VolumeCell*> & childset = cc.cells_;
-          FindVolumeCell( np, childset );
-          if ( childset.size() > 0 )
-          {
-            Fill( vc, cc );
-            nonnodecells -= 1;
-          }
-        }
-      }
-    }
-  }
-
-  if ( nonnodecells > 0 )
-  {
-    // look at all points of each free child volume cell and see if there is a
-    // unique parent volume cell to these points
-
-    std::set<VolumeCell*> done_child_cells;
-
-    for ( std::map<VolumeCell*, ChildCell>::iterator i=cellmap.begin(); i!=cellmap.end(); ++i )
-    {
-      //VolumeCell * vc = i->first;
-      ChildCell & cc = i->second;
-      std::copy( cc.cells_.begin(), cc.cells_.end(),
-                 std::inserter( done_child_cells, done_child_cells.begin() ) );
-    }
-
-    const std::list<Teuchos::RCP<VolumeCell> > & all_child_cells = mesh_.VolumeCells();
-    for ( std::list<Teuchos::RCP<VolumeCell> >::const_iterator i=all_child_cells.begin();
-          i!=all_child_cells.end();
-          ++i )
-    {
-      VolumeCell * child_vc = &**i;
-      if ( done_child_cells.count( child_vc )==0 )
-      {
-        std::set<Point*> child_cut_points;
-        child_vc->GetAllPoints( mesh_, child_cut_points );
-
-        // Remove all points that are new in the child mesh. Those do not at
-        // all help to find the parent cell.
-        for ( std::set<Point*>::iterator i=child_cut_points.begin(); i!=child_cut_points.end(); )
-        {
-          Point * p = *i;
-          if ( child_to_parent_.count( p )==0 )
-          {
-            child_cut_points.erase( i++ );
-          }
-          else
-          {
-            ++i;
-          }
-        }
-
-        if ( child_cut_points.size() > 0 )
-        {
-          std::set<VolumeCell*> used_parent_cells;
-
-          std::set<Point*>::iterator j = child_cut_points.begin();
-          Point * p = *j;
-          FindVolumeCell( ToParent( p ), used_parent_cells );
-
-          for ( ++j; j!=child_cut_points.end(); ++j )
-          {
-            Point * p = *j;
-            std::set<VolumeCell*> upc;
-            FindVolumeCell( ToParent( p ), upc );
-
-            std::set<VolumeCell*> intersection;
-            std::set_intersection( used_parent_cells.begin(), used_parent_cells.end(),
-                                   upc.begin(), upc.end(),
-                                   std::inserter( intersection, intersection.begin() ) );
-
-            std::swap( used_parent_cells, intersection );
-
-            if ( used_parent_cells.size()==0 )
-              throw std::runtime_error( "no possible parent cell" );
-          }
-
-          if ( used_parent_cells.size()==1 )
-          {
-            VolumeCell * parent_vc = *used_parent_cells.begin();
-            ChildCell & cc = cellmap[parent_vc];
-            if ( cc.done_ )
-            {
-              //throw std::runtime_error( "free child cell to done parent cell?" );
-            }
-            else
-            {
-              std::set<VolumeCell*> & childset = cc.cells_;
-              childset.insert( child_vc );
-              Fill( parent_vc, cc );
-              nonnodecells -= 1;
-            }
-          }
-        }
-        else
-        {
-          throw std::runtime_error( "child cell with all new points?" );
-        }
-      }
-    }
-  }
+  // emergency seed cell filling
 
   while ( nonnodecells > 0 )
   {
@@ -713,6 +573,148 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
       {
         VolumeCell * c = *i;
         c->Position( pos );
+      }
+    }
+  }
+}
+
+void GEO::CUT::TetMeshIntersection::SeedCells( Mesh & parent_mesh,
+                                               const std::set<VolumeCell*> & parent_cells,
+                                               std::map<VolumeCell*, ChildCell> & cellmap )
+{
+  std::map<Point*, std::vector<VolumeCell*> > parent_point_cells;
+
+  for ( std::set<VolumeCell*>::const_iterator i=parent_cells.begin();
+        i!=parent_cells.end();
+        ++i )
+  {
+    VolumeCell * vc = *i;
+    ChildCell & cc = cellmap[vc];
+    cc.parent_ = vc;
+    std::set<VolumeCell*> & childset = cc.cells_;
+
+    std::set<Point*> volume_points;
+    vc->GetAllPoints( parent_mesh, volume_points );
+
+    // seed cells at parent element nodes (if unique)
+
+    for ( std::set<Point*>::iterator i=volume_points.begin(); i!=volume_points.end(); ++i )
+    {
+      Point * p = *i;
+      if ( p->Position()!=Point::oncutsurface )
+      {
+        Point * np = ToChild( p );
+        FindVolumeCell( np, childset );
+      }
+    }
+
+    for ( std::set<Point*>::iterator i=volume_points.begin(); i!=volume_points.end(); ++i )
+    {
+      Point * p = *i;
+      parent_point_cells[p].push_back( vc );
+    }
+  }
+
+  // seed cells with unique point
+
+  for ( std::map<Point*, std::vector<VolumeCell*> >::iterator i=parent_point_cells.begin();
+        i!=parent_point_cells.end();
+        ++i )
+  {
+    Point * p = i->first;
+    std::vector<VolumeCell*> & vcs = i->second;
+    if ( vcs.size()==1 )
+    {
+      VolumeCell * vc = vcs[0];
+      Point * np = ToChild( p );
+      ChildCell & cc = cellmap[vc];
+      std::set<VolumeCell*> & childset = cc.cells_;
+      FindVolumeCell( np, childset );
+    }
+  }
+
+  // look at all points of each free child volume cell and see if there is a
+  // unique parent volume cell to these points
+
+  std::set<VolumeCell*> done_child_cells;
+
+  for ( std::map<VolumeCell*, ChildCell>::iterator i=cellmap.begin(); i!=cellmap.end(); ++i )
+  {
+    //VolumeCell * vc = i->first;
+    ChildCell & cc = i->second;
+    std::copy( cc.cells_.begin(), cc.cells_.end(),
+               std::inserter( done_child_cells, done_child_cells.begin() ) );
+  }
+
+  const std::list<Teuchos::RCP<VolumeCell> > & all_child_cells = mesh_.VolumeCells();
+  for ( std::list<Teuchos::RCP<VolumeCell> >::const_iterator i=all_child_cells.begin();
+        i!=all_child_cells.end();
+        ++i )
+  {
+    VolumeCell * child_vc = &**i;
+    if ( done_child_cells.count( child_vc )==0 )
+    {
+      std::set<Point*> child_cut_points;
+      child_vc->GetAllPoints( mesh_, child_cut_points );
+
+      // Remove all points that are new in the child mesh. Those do not at
+      // all help to find the parent cell.
+      for ( std::set<Point*>::iterator i=child_cut_points.begin(); i!=child_cut_points.end(); )
+      {
+        Point * p = *i;
+        if ( child_to_parent_.count( p )==0 )
+        {
+          child_cut_points.erase( i++ );
+        }
+        else
+        {
+          ++i;
+        }
+      }
+
+      if ( child_cut_points.size() > 0 )
+      {
+        std::set<VolumeCell*> used_parent_cells;
+
+        std::set<Point*>::iterator j = child_cut_points.begin();
+        Point * p = *j;
+        FindVolumeCell( ToParent( p ), used_parent_cells );
+
+        for ( ++j; j!=child_cut_points.end(); ++j )
+        {
+          Point * p = *j;
+          std::set<VolumeCell*> upc;
+          FindVolumeCell( ToParent( p ), upc );
+
+          std::set<VolumeCell*> intersection;
+          std::set_intersection( used_parent_cells.begin(), used_parent_cells.end(),
+                                 upc.begin(), upc.end(),
+                                 std::inserter( intersection, intersection.begin() ) );
+
+          std::swap( used_parent_cells, intersection );
+
+          if ( used_parent_cells.size()==0 )
+            throw std::runtime_error( "no possible parent cell" );
+        }
+
+        if ( used_parent_cells.size()==1 )
+        {
+          VolumeCell * parent_vc = *used_parent_cells.begin();
+          ChildCell & cc = cellmap[parent_vc];
+          if ( cc.done_ )
+          {
+            //throw std::runtime_error( "free child cell to done parent cell?" );
+          }
+          else
+          {
+            std::set<VolumeCell*> & childset = cc.cells_;
+            childset.insert( child_vc );
+          }
+        }
+      }
+      else
+      {
+        throw std::runtime_error( "child cell with all new points?" );
       }
     }
   }

@@ -158,7 +158,8 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, bool dotriangulate )
 
   if ( dotriangulate )
   {
-    if ( not IsTriangulated() and points_.size() > 3 )
+    //if ( not IsTriangulated() and points_.size() > 3 )
+    if ( not IsTriangulated() and corner_points_.size() > 3 )
     {
       CreateTriangulation( mesh, points_ );
       planar_known_ = true;

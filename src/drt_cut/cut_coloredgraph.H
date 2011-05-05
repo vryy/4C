@@ -1,5 +1,5 @@
-#ifndef CUT_GRAPH_H
-#define CUT_GRAPH_H
+#ifndef CUT_COLOREDGRAPH_H
+#define CUT_COLOREDGRAPH_H
 
 #include <map>
 #include <set>
@@ -11,7 +11,7 @@ namespace GEO
 {
   namespace CUT
   {
-    namespace GRAPH
+    namespace COLOREDGRAPH
     {
 
       class Graph;
@@ -21,7 +21,7 @@ namespace GEO
       class ForkFinder
       {
       public:
-        ForkFinder( Graph & graph, Graph & used, const std::vector<int> & cycle, const std::set<int> & free )
+        ForkFinder( Graph & graph, Graph & used, Graph & cycle, const std::set<int> & free )
           : graph_( graph ),
             used_( used ),
             cycle_( cycle ),
@@ -29,41 +29,12 @@ namespace GEO
         {
         }
 
-        bool operator()( int point );
+        bool operator()( const std::pair<const int, std::set<int> > & point );
 
         Graph & graph_;
         Graph & used_;
-        const std::vector<int> & cycle_;
+        Graph & cycle_;
         const std::set<int> & free_;
-      };
-
-      class Cycle
-      {
-        friend class CycleListIterator;
-      public:
-
-        Cycle()
-          : active_( true )
-        {
-        }
-
-        void Assign( const std::vector<int> & cycle )
-        {
-          cycle_.reserve( cycle.size() );
-          cycle_.assign( cycle.begin(), cycle.end() );
-        }
-
-        void Split( Graph & graph, Graph & used, CycleList & cycles, std::set<int> & free );
-
-        void Print();
-
-        bool Active() const { return active_; }
-
-      private:
-
-        bool active_;
-
-        std::vector<int> cycle_;
       };
 
       class Graph
@@ -72,11 +43,13 @@ namespace GEO
 
         typedef std::map<int, std::set<int> >::const_iterator const_iterator;
 
+        explicit Graph( int color_split )
+          : color_split_( color_split )
+        {}
+
         void Add( int row, int col );
 
-        void AddCycle( const std::vector<int> & cycle );
-
-        int FindNext( Graph & used, int p, const std::vector<int> & cycle, const std::set<int> & free );
+        int FindNext( Graph & used, int p, Graph & cycle, const std::set<int> & free );
 
         void GetAll( std::set<int> & all );
 
@@ -94,9 +67,53 @@ namespace GEO
 
         std::map<int, std::set<int> >::const_iterator end()   const { return graph_.end(); }
 
+        void Swap( Graph & other )
+        {
+          std::swap( graph_, other.graph_ );
+          std::swap( color_split_, other.color_split_ );
+        }
+
+        int Split() { return color_split_; }
+
+//         void Split( int color_split ) { color_split_ = color_split; }
+
+        void Split( Graph & connection, Graph & c1, Graph & c2 );
+
       private:
 
+        void Fill( const std::set<int> & split_trace, Graph & connection, int seed, Graph & c );
+
         std::map<int, std::set<int> > graph_;
+        int color_split_;
+      };
+
+      class Cycle
+      {
+        friend class CycleListIterator;
+      public:
+
+        explicit Cycle( int color_split )
+          : active_( true ),
+            cycle_( color_split )
+        {
+        }
+
+        void Assign( Graph & cycle )
+        {
+          cycle_.Swap( cycle );
+        }
+
+        void Split( Graph & graph, Graph & used, CycleList & cycles, std::set<int> & free );
+
+        void Print();
+
+        bool Active() const { return active_; }
+
+      private:
+
+        bool active_;
+
+        Graph cycle_;
       };
 
       class CycleListIterator
@@ -127,7 +144,7 @@ namespace GEO
           return *this;
         }
 
-        const std::vector<int> & operator*()
+        Graph & operator*()
         {
           return i_->cycle_;
         }
@@ -145,8 +162,9 @@ namespace GEO
       class CycleList
       {
       public:
+        typedef CycleListIterator iterator;
 
-        void AddPoints( Graph & graph, Graph & used, std::vector<int> & cycle, std::set<int> & free );
+        void AddPoints( Graph & graph, Graph & used, Graph & cycle, std::set<int> & free );
 
         void Print();
 

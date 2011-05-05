@@ -54,11 +54,24 @@ namespace GEO
         std::map<Side*, std::vector<Facet*> > facetsonsurface_;
       };
 
+      /// find the mapping between child VolumeCells and parent VolumeCells.
       void MapVolumeCells( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap );
 
+      /// Generate IntegrationCells and BoundaryCells within the parent VolumeCell
       void Fill( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap );
 
+      /// Fill a parent cell with its child cells by means of the child cell topology.
+      /*!
+        - needs some seed child cells to start with
+        - fails if there a flat rats that isolate different regions of the
+          parent cell
+       */
       void Fill( VolumeCell * parent_cell, ChildCell & childcell );
+
+      /// find some (most) of the child cells for each parent cell
+      void SeedCells( Mesh & parent_mesh,
+                      const std::set<VolumeCell*> & parent_cells,
+                      std::map<VolumeCell*, ChildCell> & cellmap );
 
       void RegisterNewPoints( Mesh & parent_mesh, const std::set<VolumeCell*> & childset );
 

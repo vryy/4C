@@ -150,6 +150,9 @@ void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
 
       if ( cell_domain.Empty() )
       {
+        // Assume the volume cell in question is degenerated and does not
+        // contain any tets.
+        continue;
       }
 
       cell_domain.Fill();
