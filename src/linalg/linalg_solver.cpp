@@ -295,20 +295,21 @@ void LINALG::Solver::Solve(
 /*----------------------------------------------------------------------*
  |  fix an ML nullspace to match a new map  (public)          mwgee 5/11|
  *----------------------------------------------------------------------*/
-void LINALG::Solver::FixMLNullspace(char* field, 
+void LINALG::Solver::FixMLNullspace(char* field,
                                     const Epetra_Map& oldmap,
-                                    const Epetra_Map& newmap)
+                                    const Epetra_Map& newmap,
+                                    Teuchos::ParameterList& solveparams)
 {
   // there is no ML list, do nothing
-  if (!Params().isSublist("ML Parameters")) 
-    return; 
-  
-  Teuchos::ParameterList& params = Params().sublist("ML Parameters");
-  
+  if (!solveparams.isSublist("ML Parameters"))
+    return;
+
+  Teuchos::ParameterList& params = solveparams.sublist("ML Parameters");
+
   const int ndim = params.get("null space: dimension",-1);
   if (ndim==-1) dserror("List does not contain nullspace dimension");
-  
-  RCP<vector<double> > ns = 
+
+  RCP<vector<double> > ns =
         params.get<RCP<vector<double> > >("nullspace",Teuchos::null);
   if (ns==Teuchos::null) dserror("List does not contain nullspace");
   double* ons = &((*ns)[0]);
@@ -318,12 +319,12 @@ void LINALG::Solver::FixMLNullspace(char* field,
     dserror("Nullspace does not match old map length");
 
   const int nlength = newmap.NumMyElements();
-  
+
   if (olength==nlength) return; // everything should be ok, do nothing
-  
+
   if (nlength > olength)
     dserror("New problem size larger than old - full rebuild of nullspace neccessary");
-  
+
   // Allocate a new nullspace and fill it
   RCP<vector<double> > nsnew = rcp(new vector<double>(nlength*ndim,0.0));
   double* nns = &((*nsnew)[0]);
@@ -333,7 +334,7 @@ void LINALG::Solver::FixMLNullspace(char* field,
     int gid = newmap.GID(i);
     int olid = oldmap.LID(gid);
     if (olid==-1) continue;
-    
+
     // transfer entries for this dof to new nullspace vector
     for (int j=0; j<ndim; ++j)
       nns[j*ndim+i] = ons[j*ndim+olid];

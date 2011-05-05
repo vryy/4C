@@ -52,19 +52,19 @@ FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(Teuchos::RCP<UTILS::
     LINALG::Solver& solver = *(structure.LinearSolver());
     const Epetra_Map& oldmap = *(structure.Discretization()->DofRowMap());
     const Epetra_Map& newmap = Matrix(0,0).EpetraMatrix()->RowMap();
-    solver.FixMLNullspace("Structure",oldmap,newmap);
+    solver.FixMLNullspace("Structure",oldmap,newmap, solver.Params());
   }
   {
     LINALG::Solver& solver = *(fluid.LinearSolver());
     const Epetra_Map& oldmap = *(fluid.Discretization()->DofRowMap());
     const Epetra_Map& newmap = Matrix(1,1).EpetraMatrix()->RowMap();
-    solver.FixMLNullspace("Fluid",oldmap,newmap);
+    solver.FixMLNullspace("Fluid",oldmap,newmap, solver.Params());
   }
   {
     LINALG::Solver& solver = *(ale.LinearSolver());
     const Epetra_Map& oldmap = *(ale.Discretization()->DofRowMap());
     const Epetra_Map& newmap = Matrix(2,2).EpetraMatrix()->RowMap();
-    solver.FixMLNullspace("Ale",oldmap,newmap);
+    solver.FixMLNullspace("Ale",oldmap,newmap, solver.Params());
   }
 
 }

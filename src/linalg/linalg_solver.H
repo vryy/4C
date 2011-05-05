@@ -898,8 +898,12 @@ public:
 
   \param oldmap (in): row map of nullspace
   \param newmap (in): row map of nullspace upon exit
+  \param solveparams (in): parameterlist including nullspace vector
   */
-  void FixMLNullspace(char* field, const Epetra_Map& oldmap,const Epetra_Map& newmap);
+  void FixMLNullspace(char* field,
+                      const Epetra_Map& oldmap,
+                      const Epetra_Map& newmap,
+                      Teuchos::ParameterList& solveparams);
 
   //! @name Query methods
 
