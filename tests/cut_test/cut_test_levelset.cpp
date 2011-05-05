@@ -714,6 +714,124 @@ void test_ls_hex8_ursula2()
   lsi.Cut();
 }
 
+void test_ls_hex8_ursula3()
+{
+  GEO::CUT::LevelSetIntersection lsi;
+
+  // simple hex8 element
+  std::vector<int> nids( 8 );
+  std::vector<double> lsvs( 8 );
+  Epetra_SerialDenseMatrix xyze( 3, 8 );
+
+  for ( int i=0; i<8; ++i )
+  {
+    nids[i] = i;
+  }
+
+  lsvs[0] = 0.0201562;
+  lsvs[1] = 4.33333e-09;
+  lsvs[2] = -0.0307418;
+  lsvs[3] = -0.0084524;
+  lsvs[4] = -0.0084524;
+  lsvs[5] = -0.0307418;
+  lsvs[6] = -0.0654792;
+  lsvs[7] = -0.0401924;
+
+  xyze( 0, 0 ) = -1;
+  xyze( 1, 0 ) = -1;
+  xyze( 2, 0 ) = -1;
+
+  xyze( 0, 1 ) =  1;
+  xyze( 1, 1 ) = -1;
+  xyze( 2, 1 ) = -1;
+
+  xyze( 0, 2 ) =  1;
+  xyze( 1, 2 ) =  1;
+  xyze( 2, 2 ) = -1;
+
+  xyze( 0, 3 ) = -1;
+  xyze( 1, 3 ) =  1;
+  xyze( 2, 3 ) = -1;
+
+  xyze( 0, 4 ) = -1;
+  xyze( 1, 4 ) = -1;
+  xyze( 2, 4 ) =  1;
+
+  xyze( 0, 5 ) =  1;
+  xyze( 1, 5 ) = -1;
+  xyze( 2, 5 ) =  1;
+
+  xyze( 0, 6 ) =  1;
+  xyze( 1, 6 ) =  1;
+  xyze( 2, 6 ) =  1;
+
+  xyze( 0, 7 ) = -1;
+  xyze( 1, 7 ) =  1;
+  xyze( 2, 7 ) =  1;
+
+  lsi.AddElement( 1, nids, xyze, &lsvs[0], DRT::Element::hex8 );
+  lsi.Cut();
+}
+
+void test_ls_hex8_ursula4()
+{
+  GEO::CUT::LevelSetIntersection lsi;
+
+  // simple hex8 element
+  std::vector<int> nids( 8 );
+  std::vector<double> lsvs( 8 );
+  Epetra_SerialDenseMatrix xyze( 3, 8 );
+
+  for ( int i=0; i<8; ++i )
+  {
+    nids[i] = i;
+  }
+
+  lsvs[0] = -0.0307418;
+  lsvs[1] = -0.0654792;
+  lsvs[2] = -0.0307418;
+  lsvs[3] = 4.33333e-09;
+  lsvs[4] = -0.0084524;
+  lsvs[5] = -0.0401924;
+  lsvs[6] = -0.0084524;
+  lsvs[7] = 0.0201562;
+
+  xyze( 0, 0 ) = -1;
+  xyze( 1, 0 ) = -1;
+  xyze( 2, 0 ) = -1;
+
+  xyze( 0, 1 ) =  1;
+  xyze( 1, 1 ) = -1;
+  xyze( 2, 1 ) = -1;
+
+  xyze( 0, 2 ) =  1;
+  xyze( 1, 2 ) =  1;
+  xyze( 2, 2 ) = -1;
+
+  xyze( 0, 3 ) = -1;
+  xyze( 1, 3 ) =  1;
+  xyze( 2, 3 ) = -1;
+
+  xyze( 0, 4 ) = -1;
+  xyze( 1, 4 ) = -1;
+  xyze( 2, 4 ) =  1;
+
+  xyze( 0, 5 ) =  1;
+  xyze( 1, 5 ) = -1;
+  xyze( 2, 5 ) =  1;
+
+  xyze( 0, 6 ) =  1;
+  xyze( 1, 6 ) =  1;
+  xyze( 2, 6 ) =  1;
+
+  xyze( 0, 7 ) = -1;
+  xyze( 1, 7 ) =  1;
+  xyze( 2, 7 ) =  1;
+
+  lsi.AddElement( 1, nids, xyze, &lsvs[0], DRT::Element::hex8 );
+  lsi.Cut();
+}
+
 void test_ls_hex8_simple()
 {
   GEO::CUT::LevelSetIntersection lsi;
