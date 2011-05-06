@@ -39,7 +39,7 @@ bool GEO::CUT::GRAPH::ForkFinder::BackToCycle( std::vector<int> & history, int p
     if ( used_row.count( p1 ) == 0 )
     {
       std::vector<int>::iterator h = std::find( history.begin(), history.end(), p1 );
-      if ( h != history.end() )
+      if ( h == history.end() )
       {
         if ( free_.count( p1 ) > 0 )
         {
