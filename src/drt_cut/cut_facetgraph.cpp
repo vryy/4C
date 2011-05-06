@@ -88,7 +88,10 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const std::s
     for ( std::set<Facet*>::const_iterator i=fs.begin(); i!=fs.end(); ++i )
     {
       Facet * f = *i;
-      graph_.Add( FacetId( f ), current );
+      if ( all_facets.count( f ) > 0 )
+      {
+        graph_.Add( FacetId( f ), current );
+      }
     }
   }
 

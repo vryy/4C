@@ -33,7 +33,7 @@ namespace GEO
 
       private:
 
-        bool BackToCycle( int from, int p, unsigned count );
+        bool BackToCycle( std::vector<int> & history, int p );
 
         Graph & graph_;
         Graph & used_;

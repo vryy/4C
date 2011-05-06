@@ -16,7 +16,8 @@ bool GEO::CUT::GRAPH::ForkFinder::operator()( int point )
       {
         if ( free_.count( p ) > 0 )
         {
-          if ( BackToCycle( point, p, 0 ) )
+          std::vector<int> history( 1, point );
+          if ( BackToCycle( history, p ) )
             return true;
         }
         else if ( std::find( cycle_.begin(), cycle_.end(), p )!=cycle_.end() )
@@ -28,13 +29,8 @@ bool GEO::CUT::GRAPH::ForkFinder::operator()( int point )
   return false;
 }
 
-bool GEO::CUT::GRAPH::ForkFinder::BackToCycle( int from, int p, unsigned count )
+bool GEO::CUT::GRAPH::ForkFinder::BackToCycle( std::vector<int> & history, int p )
 {
-  if ( count >= graph_.size() )
-  {
-    throw std::runtime_error( "circular connected free points, need more history to handle that" );
-  }
-
   std::set<int> & row = graph_[p];
   std::set<int> & used_row = used_[p];
   for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
@@ -42,17 +38,24 @@ bool GEO::CUT::GRAPH::ForkFinder::BackToCycle( int from, int p, unsigned count )
     int p1 = *i;
     if ( used_row.count( p1 ) == 0 )
     {
-      if ( p1 != from )
+      std::vector<int>::iterator h = std::find( history.begin(), history.end(), p1 );
+      if ( h != history.end() )
       {
         if ( free_.count( p1 ) > 0 )
         {
-          if ( BackToCycle( p, p1, count+1 ) )
+          history.push_back( p );
+          if ( BackToCycle( history, p1 ) )
           {
             return true;
           }
+          history.resize( history.size()-1 );
         }
         else if ( std::find( cycle_.begin(), cycle_.end(), p1 )!=cycle_.end() )
           return true;
+      }
+      else if ( h!=history.end()-1 )
+      {
+        return true;
       }
     }
   }
@@ -198,6 +201,38 @@ void GEO::CUT::GRAPH::Cycle::Split( Graph & graph, Graph & used, CycleList & cyc
           std::copy( start, end, std::back_inserter( c2 ) );
           c2.push_back( *end );
           std::copy( connection.rbegin(), connection.rend(), std::back_inserter( c2 ) );
+
+          for ( std::vector<int>::iterator i=connection.begin(); i!=connection.end(); ++i )
+          {
+            int p = *i;
+            free.erase( p );
+          }
+
+          cycles.AddPoints( graph, used, c1, free );
+          cycles.AddPoints( graph, used, c2, free );
+
+          active_ = false;
+
+          p1 = -1;
+        }
+        else if ( ( end = std::find( connection.begin(), connection.end(), p2 ) )!=connection.end() )
+        {
+          // loop
+
+          std::vector<int> c1;
+          std::vector<int> c2;
+
+          std::copy( cycle_.begin(), start, std::back_inserter( c1 ) );
+          c1.push_back( *start );
+          std::copy( connection.begin(), connection.end(), std::back_inserter( c1 ) );
+          for ( std::vector<int>::iterator i=end; i!=connection.begin(); --i )
+          {
+            c1.push_back( *i );
+          }
+          c1.push_back( *connection.begin() );
+          std::copy( start, cycle_.end(), std::back_inserter( c1 ) );
+
+          std::copy( end, connection.end(), std::back_inserter( c2 ) );
 
           for ( std::vector<int>::iterator i=connection.begin(); i!=connection.end(); ++i )
           {

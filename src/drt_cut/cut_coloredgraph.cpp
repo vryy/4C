@@ -32,6 +32,10 @@ bool GEO::CUT::COLOREDGRAPH::ForkFinder::operator()( const std::pair<const int, 
 
 void GEO::CUT::COLOREDGRAPH::Graph::Add( int row, int col )
 {
+  if ( row >= color_split_ and col >= color_split_ )
+    throw std::runtime_error( "two lines connected" );
+  if ( row < color_split_ and col < color_split_ )
+    throw std::runtime_error( "two facets connected" );
   graph_[row].insert( col );
   graph_[col].insert( row );
 }
