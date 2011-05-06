@@ -78,6 +78,8 @@ namespace GEO
 
         void Add( int row, int col );
 
+        void Erase( int p );
+
         void AddCycle( const std::vector<int> & cycle );
 
         int FindNext( Graph & used, int p, const std::vector<int> & cycle, const std::set<int> & free );
@@ -156,11 +158,17 @@ namespace GEO
 
         void AddPoints( Graph & graph, Graph & used, std::vector<int> & cycle, std::set<int> & free );
 
+        void AddFreePoints( Graph & graph, Graph & used, std::set<int> & free );
+
         void Print();
 
         CycleListIterator begin() { return CycleListIterator( cycles_, cycles_.begin() ); }
 
         CycleListIterator end()   { return CycleListIterator( cycles_, cycles_.end() ); }
+
+        unsigned size() { return cycles_.size(); }
+
+        unsigned ActiveCount();
 
       private:
         std::list<Cycle> cycles_;

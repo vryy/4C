@@ -1,4 +1,6 @@
 
+#include <iterator>
+
 #include "cut_linesegment.H"
 #include "cut_line.H"
 #include "cut_point.H"
@@ -338,13 +340,19 @@ GEO::CUT::Side* GEO::CUT::LineSegment::OnSide( Element * element )
 void GEO::CUT::LineSegmentList::Create( Mesh & mesh, Element * element, Side * side, bool inner )
 {
 #if 1
-  PointGraph pg( side );
+  PointGraph pg( element, side );
+  //pg.Print();
 
   for ( PointGraph::iterator i=pg.begin(); i!=pg.end(); ++i )
   {
     const std::vector<int> & facet_points = *i;
     if ( facet_points.size() > 2 )
     {
+//       if ( inner )
+//       {
+//         std::copy( facet_points.begin(), facet_points.end(), std::ostream_iterator<int>( std::cout, " " ) );
+//         std::cout << "\n";
+//       }
       bool found = true;
       std::vector<Point*> points;
       points.reserve( facet_points.size() );
@@ -353,6 +361,8 @@ void GEO::CUT::LineSegmentList::Create( Mesh & mesh, Element * element, Side * s
         Point * p = pg.GetPoint( *i );
         if ( not p->IsCut( element ) )
         {
+//           if ( inner )
+//             std::cout << "failed at point " << p->Id() << "\n";
           found = false;
           break;
         }
@@ -363,6 +373,57 @@ void GEO::CUT::LineSegmentList::Create( Mesh & mesh, Element * element, Side * s
         segments_.push_back( Teuchos::rcp( new LineSegment( mesh, element, side, points ) ) );
     }
   }
+
+#if 0
+  if ( inner )
+  {
+    std::set<Line*> lines;
+
+    const std::vector<Line*> & cut_lines = side->CutLines();
+    for ( std::vector<Line*>::const_iterator i=cut_lines.begin(); i!=cut_lines.end(); ++i )
+    {
+      Line * l = *i;
+      if ( l->IsCut( element ) )
+      {
+        lines.insert( l );
+      }
+    }
+
+    std::vector<Teuchos::RCP<LineSegment> > segments;
+
+    while ( lines.size() )
+    {
+      segments.push_back( Teuchos::rcp( new LineSegment( mesh, element, side, lines, inner ) ) );
+    }
+
+    std::cout << "segment list " << segments_.size() << ", " << segments.size()
+              << " vs " << pg.size() << ", " << pg.ActiveCount()
+              << "\n\n";
+
+    {
+      for ( std::vector<Teuchos::RCP<LineSegment> >::iterator i=segments_.begin(); i!=segments_.end(); ++i )
+      {
+        LineSegment & ls = **i;
+        std::copy( ls.Points().begin(), ls.Points().end(), std::ostream_iterator<Point*>( std::cout, " " ) );
+        std::cout << "\n";
+      }
+      unsigned s = segments.size();
+      for ( std::vector<Teuchos::RCP<LineSegment> >::iterator i=segments.begin(); i!=segments.end(); ++i )
+      {
+        LineSegment & ls = **i;
+        if ( ls.Points().size() < 3 )
+          s -= 1;
+        std::copy( ls.Points().begin(), ls.Points().end(), std::ostream_iterator<Point*>( std::cout, " " ) );
+        std::cout << "\n";
+      }
+      std::cout << "\n";
+
+      if ( segments_.size() != s )
+        throw std::runtime_error( "what a difference" );
+    }
+  }
+#endif
+
 #else
   std::set<Line*> lines;
 

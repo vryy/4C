@@ -194,9 +194,17 @@ void GEO::CUT::FacetGraph::CreateVolumeCells( Mesh & mesh, Element * element, st
     if ( p > 2 )
     {
       // assume this is a degenerated cell we do not need to build
+      std::cout << "degenerated?\n";
       return;
     }
   }
+
+//   std::cout << "generated volumes " << volumes.size() << " vs " << cycle_list_.size() << "\n";
+
+//   if ( cycle_list_.size()==1 )
+//   {
+//     graph_.Print();
+//   }
 
   for ( std::vector<std::set<Facet*> >::iterator i=volumes.begin(); i!=volumes.end(); ++i )
   {

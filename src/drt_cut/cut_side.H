@@ -72,7 +72,7 @@ public:
     }
   }
 
-  virtual void MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & filter, std::set<Facet*> & facets );
+  virtual void MakeOwnedSideFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
 
   virtual void MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
 

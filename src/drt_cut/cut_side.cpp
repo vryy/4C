@@ -187,11 +187,11 @@ void GEO::CUT::Side::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcell
   }
 }
 
-void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & filter, std::set<Facet*> & facets )
+void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
 {
   if ( facets_.size()==0 )
   {
-    PointGraph point_graph( this );
+    PointGraph point_graph( element, this );
     //point_graph.Print();
 
     for ( PointGraph::iterator i=point_graph.begin(); i!=point_graph.end(); ++i )

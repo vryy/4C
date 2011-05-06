@@ -20,9 +20,9 @@ bool GEO::CUT::LevelSetSide::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, 
   throw std::runtime_error( "no local coordinates on level set cut surface" );
 }
 
-void GEO::CUT::LevelSetSide::MakeOwnedSideFacets( Mesh & mesh, const PointLineFilter & filter, std::set<Facet*> & facets )
+void GEO::CUT::LevelSetSide::MakeOwnedSideFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
 {
-  Side::MakeOwnedSideFacets( mesh, filter, facets );
+  Side::MakeOwnedSideFacets( mesh, element, facets );
 }
 
 void GEO::CUT::LevelSetSide::MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )

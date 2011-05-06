@@ -59,6 +59,16 @@ GEO::CUT::Point::Point( unsigned pid, const double * x, Edge * cut_edge, Side * 
 #endif
 #endif
 
+#if 1
+  if ( cut_edge!=NULL )
+  {
+    AddEdge( cut_edge );
+  }
+  if ( cut_side!=NULL )
+  {
+    AddSide( cut_side );
+  }
+#else
   if ( cut_edge!=NULL )
   {
     cut_edges_.insert( cut_edge );
@@ -71,6 +81,7 @@ GEO::CUT::Point::Point( unsigned pid, const double * x, Edge * cut_edge, Side * 
   {
     cut_sides_.insert( cut_side );
   }
+#endif
 }
 
 void GEO::CUT::Point::AddEdge( Edge* cut_edge )

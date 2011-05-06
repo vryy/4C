@@ -68,6 +68,22 @@ void GEO::CUT::GRAPH::Graph::Add( int row, int col )
   graph_[col].insert( row );
 }
 
+void GEO::CUT::GRAPH::Graph::Erase( int p )
+{
+  std::set<int> & row = graph_[p];
+  for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
+  {
+    int p2 = *i;
+    std::set<int> & row2 = graph_[p2];
+    row2.erase( p );
+    if ( row2.size()==0 )
+    {
+      graph_.erase( p2 );
+    }
+  }
+  graph_.erase( p );
+}
+
 void GEO::CUT::GRAPH::Graph::AddCycle( const std::vector<int> & cycle )
 {
   unsigned size = cycle.size();
@@ -285,6 +301,63 @@ void GEO::CUT::GRAPH::CycleList::AddPoints( Graph & graph, Graph & used, std::ve
   c.Split( graph, used, *this, free );
 }
 
+void GEO::CUT::GRAPH::CycleList::AddFreePoints( Graph & graph, Graph & used, std::set<int> & free )
+{
+  while ( free.size() > 0 )
+  {
+    std::vector<int> cycle;
+
+    int p1 = *free.begin();
+    free.erase( p1 );
+    cycle.push_back( p1 );
+    while ( p1 != -1 )
+    {
+      int p2 = graph.FindNext( used, p1, cycle, free );
+      if ( p2 > -1 )
+      {
+        used.Add( p1, p2 );
+        std::vector<int>::iterator end = std::find( cycle.begin(), cycle.end(), p2 );
+        if ( end!=cycle.end() )
+        {
+          std::vector<int> c2;
+          if ( end==cycle.begin() )
+          {
+            std::swap( cycle, c2 );
+          }
+          else
+          {
+            for ( std::vector<int>::iterator i=cycle.begin(); i!=end; ++i )
+            {
+              int p3 = *i;
+              free.insert( p3 );
+              used.Erase( p3 );
+            }
+            c2.reserve( cycle.end()-end );
+            std::copy( end, cycle.end(), std::back_inserter( c2 ) );
+          }
+
+          if ( c2.size() < 3 )
+            throw std::runtime_error( "degenerated inner cycle" );
+
+          AddPoints( graph, used, c2, free );
+
+          p1 = -1;
+        }
+        else
+        {
+          free.erase( p2 );
+          cycle.push_back( p2 );
+          p1 = p2;
+        }
+      }
+      else
+      {
+        throw std::runtime_error( "failed to find next point in inner cycle" );
+      }
+    }
+  }
+}
+
 void GEO::CUT::GRAPH::CycleList::Print()
 {
   for ( std::list<Cycle>::iterator i=cycles_.begin(); i!=cycles_.end(); ++i )
@@ -292,5 +365,15 @@ void GEO::CUT::GRAPH::CycleList::Print()
     Cycle & c = *i;
     c.Print();
   }
+}
+
+unsigned GEO::CUT::GRAPH::CycleList::ActiveCount()
+{
+  unsigned count = 0;
+  for ( CycleListIterator i=begin(); i!=end(); ++i )
+  {
+    count += 1;
+  }
+  return count;
 }
 

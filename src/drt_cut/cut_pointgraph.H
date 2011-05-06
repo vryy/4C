@@ -10,6 +10,7 @@ namespace CUT
   class Point;
   class Line;
   class Side;
+  class Element;
 
 class PointGraph
 {
@@ -17,7 +18,7 @@ class PointGraph
   {
   public:
 
-    void AddAll( Side * side, Point * p1, Point * p2 );
+    void AddAll( Point * p1, Point * p2 );
 
     Point * GetPoint( int i ) { return all_points_[i]; }
 
@@ -30,11 +31,15 @@ public:
 
   typedef GRAPH::CycleListIterator iterator;
 
-  PointGraph( Side * side );
+  PointGraph( Element * element, Side * side );
 
   iterator begin() { return facet_cycles_.begin(); }
 
   iterator end()   { return facet_cycles_.end(); }
+
+  unsigned size() { return facet_cycles_.size(); }
+
+  unsigned ActiveCount() { return facet_cycles_.ActiveCount(); }
 
   Point * GetPoint( int i ) { return graph_.GetPoint( i ); }
 

@@ -6,7 +6,7 @@
 #include "cut_line.H"
 #include "cut_side.H"
 
-GEO::CUT::PointGraph::PointGraph( Side * side )
+GEO::CUT::PointGraph::PointGraph( Element * element, Side * side )
   : side_( side )
 {
   std::vector<int> cycle;
@@ -28,14 +28,24 @@ GEO::CUT::PointGraph::PointGraph( Side * side )
     {
       Point * p1 = edge_points[i-1];
       Point * p2 = edge_points[i];
-      graph_.AddAll( side_, p1, p2 );
-      graph_.AddAll( side_, p2, p1 );
+      graph_.AddAll( p1, p2 );
+//       graph_.AddAll( side_, p2, p1 );
     }
 
     for ( std::vector<Point*>::iterator i=edge_points.begin()+1; i!=edge_points.end(); ++i )
     {
       Point * p = *i;
       cycle.push_back( p->Id() );
+    }
+  }
+
+  const std::vector<Line*> & cut_lines = side->CutLines();
+  for ( std::vector<Line*>::const_iterator i=cut_lines.begin(); i!=cut_lines.end(); ++i )
+  {
+    Line * l = *i;
+    if ( l->IsCut( element ) )
+    {
+      graph_.AddAll( l->BeginPoint(), l->EndPoint() );
     }
   }
 
@@ -61,13 +71,20 @@ void GEO::CUT::PointGraph::AddFacetPoints( std::vector<int> & cycle, std::set<in
   used.AddCycle( cycle );
 
   facet_cycles_.AddPoints( graph_, used, cycle, free );
+  if ( free.size() > 0 )
+  {
+    facet_cycles_.AddFreePoints( graph_, used, free );
+  }
 }
 
-void GEO::CUT::PointGraph::Graph::AddAll( Side * side, Point * p1, Point * p2 )
+void GEO::CUT::PointGraph::Graph::AddAll( Point * p1, Point * p2 )
 {
   all_points_[p1->Id()] = p1;
   all_points_[p2->Id()] = p2;
 
+  Add( p1->Id(), p2->Id() );
+
+#if 0
   std::set<int> & row = at( p1->Id() );
   if ( row.count( p2->Id() )==0 )
   {
@@ -85,4 +102,5 @@ void GEO::CUT::PointGraph::Graph::AddAll( Side * side, Point * p1, Point * p2 )
       }
     }
   }
+#endif
 }
