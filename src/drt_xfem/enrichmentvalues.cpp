@@ -37,8 +37,8 @@ XFEM::Enrichmentvalues::Enrichmentvalues(
     vector<RCP<Epetra_Vector> > oldVectors,
     vector<RCP<Epetra_Vector> > newVectors,
     const RCP<COMBUST::FlameFront> flamefront,
-    const RCP<InterfaceHandle> interfacehandle,
-    const RCP<InterfaceHandle> interfacehandle_old,
+    const RCP<COMBUST::InterfaceHandleCombust> interfacehandle,
+    const RCP<COMBUST::InterfaceHandleCombust> interfacehandle_old,
     const Epetra_Map& olddofcolmap,
     const map<DofKey<onNode>, DofGID>& oldNodalDofColDistrib,
     const Epetra_Map& newdofrowmap,
@@ -154,8 +154,11 @@ void XFEM::Enrichmentvalues::oldValues(
   for (int iele=0;iele<discret_->NumMyColElements();iele++)
   {
     const DRT::Element* ele = discret_->lColElement(iele); // current element
-
+#ifdef COMBUST_CUT
+    if (interfacehandle_old_->ElementBisected(ele->Id()) || interfacehandle_old_->ElementTouchedMinus(ele)) // element is intersected
+#else
     if (interfacehandle_old_->ElementBisected(ele) || interfacehandle_old_->ElementTouchedMinus(ele)) // element is intersected
+#endif
     {
       bool allEleNodesOnProc = true; // true if all nodes of an element are on current proc
       LINALG::Matrix<1,numnode> dmin(true); // distances from node to interface
@@ -194,7 +197,11 @@ void XFEM::Enrichmentvalues::oldJumpAndKinkValues(
   const int numnode = 8; // number of element nodes
 
 #ifndef ENR_VEL_JUMP_SCALAR
+#ifdef COMBUST_CUT
+  if (interfacehandle_old_->ElementBisected(ele->Id())) // compute jump and kink in bisected ele
+#else
   if (interfacehandle_old_->ElementBisected(ele)) // compute jump and kink in bisected ele
+#endif
   {
     // compute the kink and jump height at the interface in this element
     // a least squares approach is used for the computation
@@ -278,7 +285,7 @@ void XFEM::Enrichmentvalues::oldJumpAndKinkValues(
     eleJumpsAndKinks_.insert(make_pair(ele->Id(),eleJumpAndKinks));
   } // end if element touchedminus
 #else
-  if (interfacehandle_old_->ElementBisected(ele)) // compute jump and kink in bisected ele
+  if (interfacehandle_old_->ElementBisected(ele->Id())) // compute jump and kink in bisected ele
   {
     // compute the kink and jump height at the interface in this element
     // a least squares approach is used for the computation
@@ -414,7 +421,11 @@ void XFEM::Enrichmentvalues::oldKinkValues(
 #endif
 #endif
 
+#ifdef COMBUST_CUT
+  if (interfacehandle_old_->ElementBisected(ele->Id())) // compute kink in bisected ele
+#else
   if (interfacehandle_old_->ElementBisected(ele)) // compute kink in bisected ele
+#endif
   {
     double enrSum; // sum of enrichment values of element nodes
     LINALG::Matrix<1,nsd+1> currKinks(true); // kink values for all enrichments of current node
@@ -473,12 +484,17 @@ void XFEM::Enrichmentvalues::computeNewEnrichments(
       {
         const int elegid = eles[iele]->Id(); // global id of current element
 
+#ifdef COMBUST_CUT
+        if (interfacehandle_old_->ElementBisected(eles[iele]->Id()) || interfacehandle_old_->ElementTouchedMinus(eles[iele])) // element intersected
+
+#else
         if (interfacehandle_old_->ElementBisected(eles[iele]) || interfacehandle_old_->ElementTouchedMinus(eles[iele])) // element intersected
-        {
+#endif
+         {
           numOldIntersectedEle++;
 
           currJumpsAndKinks = eleJumpsAndKinks_.find(elegid)->second;
-          currKinks = eleKinks_.find(elegid)->second;
+//          currKinks = eleKinks_.find(elegid)->second;
 
           for (size_t ivector=0;ivector<newVectors_.size();ivector++)
           {
@@ -511,6 +527,7 @@ void XFEM::Enrichmentvalues::computeNewEnrichments(
             vector<LINALG::Matrix<1,4> >(newVectors_.size(),LINALG::Matrix<1,4>(true)));
         failed_.insert(make_pair(currnode->Id(),failed));
       }
+
     } // end if node is enriched
   } // end loop over row nodes
 }// end function computeNewEnrichments
@@ -589,12 +606,16 @@ void XFEM::Enrichmentvalues::handleFailedNodes(
           {
             const int elegid = eles[iele]->Id(); // global id of current element
 
+#ifdef COMBUST_CUT
+            if (interfacehandle_old_->ElementBisected(eles[iele]->Id()) || interfacehandle_old_->ElementTouchedMinus(eles[iele])) // element intersected
+#else
             if (interfacehandle_old_->ElementBisected(eles[iele]) || interfacehandle_old_->ElementTouchedMinus(eles[iele])) // element intersected
+#endif
             {
               numOldIntersectedEle++;
 
               currJumpsAndKinks=eleJumpsAndKinks_.find(elegid)->second;
-              currKinks=eleKinks_.find(elegid)->second;
+              //currKinks=eleKinks_.find(elegid)->second;
 
               for(size_t ivector=0;ivector<oldVectors_.size();ivector++)
               {
@@ -641,12 +662,17 @@ void XFEM::Enrichmentvalues::handleFailedNodes(
           {
             const int elegid = eles[iele]->Id(); // global id of current element
 
+#ifdef COMBUST_CUT
+            if (interfacehandle_old_->ElementBisected(eles[iele]->Id()) || interfacehandle_old_->ElementTouchedMinus(eles[iele])) // element intersected
+
+#else
             if (interfacehandle_old_->ElementBisected(eles[iele]) || interfacehandle_old_->ElementTouchedMinus(eles[iele])) // element intersected
+#endif
             {
               numOldIntersectedEle++;
 
               currJumpsAndKinks=eleJumpsAndKinks_.find(elegid)->second;
-              currKinks=eleKinks_.find(elegid)->second;
+              //currKinks=eleKinks_.find(elegid)->second;
 
               for(size_t ivector=0;ivector<oldVectors_.size();ivector++)
               {
@@ -695,7 +721,7 @@ void XFEM::Enrichmentvalues::handleFailedNodes(
       newnode->second.kinkValues_[ivector].Scale(1.0/static_cast<double>(newnode->second.numNearestNodes_));
     }
     computeJumpEnrichmentValues(discret_->gNode(newnode->first),newnode->second.jumpAndKinkValues_);
-    computeKinkEnrichmentValues(discret_->gNode(newnode->first),newnode->second.kinkValues_);
+    //computeKinkEnrichmentValues(discret_->gNode(newnode->first),newnode->second.kinkValues_);
   } // end loop over failed nodes
 } // end function handleFailedNodes
 
@@ -713,7 +739,11 @@ void XFEM::Enrichmentvalues::computeJumpEnrichmentValues(
 
   for (int iele=0;iele<node->NumElement();iele++) // loop over elements around enriched node
   {
+#ifdef COMBUST_CUT
+    if (interfacehandle_->ElementBisected(eles[iele]->Id()) || interfacehandle_->ElementTouchedMinus(eles[iele])) // element intersected
+#else
     if (interfacehandle_->ElementBisected(eles[iele]) || interfacehandle_->ElementTouchedMinus(eles[iele])) // element intersected
+#endif
     {
       numNewIntersectedEle++;
       double dist = 0.0; // minimal distance from node to interface segment of current element
@@ -782,7 +812,11 @@ void XFEM::Enrichmentvalues::computeKinkEnrichmentValues(
 
   for (int iele=0;iele<node->NumElement();iele++) // loop over elements around enriched node
   {
+#ifdef COMBUST_CUT
+    if (interfacehandle_->ElementBisected(eles[iele]->Id())) // element intersected
+#else
     if (interfacehandle_->ElementBisected(eles[iele])) // element intersected
+#endif
     {
       numNewIntersectedEle++;
 
@@ -953,7 +987,11 @@ void XFEM::Enrichmentvalues::analyseEnrichments(
   }
 
   // handle bisected elements
+#ifdef COMBUST_CUT
+  else if (interfacehandle_old_->ElementBisected(element->Id()))
+#else
   else if (interfacehandle_old_->ElementBisected(element))
+#endif
   {
     // sort out nodes far away since their enrichment values are critical
     // but guarantee that both interface sides still give entries
@@ -1063,7 +1101,11 @@ bool XFEM::Enrichmentvalues::newEnrValueNeeded(
 
       for (int iele=0;iele<node->NumElement();iele++) // loop over elements around node
       {
+#ifdef COMBUST_CUT
+        if (interfacehandle_old_->ElementBisected(eles[iele]->Id())) // element intersected
+#else
         if (interfacehandle_old_->ElementBisected(eles[iele])) // element intersected
+#endif
         {
           if (domainPlus) // when node is in plus domain, support of enrichment is the minus part of the element
           {
@@ -1121,7 +1163,11 @@ void XFEM::Enrichmentvalues::getCritCutElements(
   {
     currEle = discret_->lColElement(iele);
 
+#ifdef COMBUST_CUT
+    if (interfacehandle_old_->ElementBisected(currEle->Id())) // element bisected
+#else
     if (interfacehandle_old_->ElementBisected(currEle)) // element bisected
+#endif
     {
       plusVol = 0.0;
       minusVol = 0.0;

@@ -17,6 +17,7 @@ Maintainer: Florian Henke
 
 
 #include "../drt_combust/combust_defines.H"
+#include "../drt_combust/combust_interface.H"
 #include "../drt_lib/drt_exporter.H"
 
 
@@ -39,8 +40,8 @@ namespace XFEM
         vector<RCP<Epetra_Vector> > oldVectors,
         vector<RCP<Epetra_Vector> > newVectors,
         const RCP<COMBUST::FlameFront> flamefront,
-        const RCP<XFEM::InterfaceHandle> interfacehandle,
-        const RCP<XFEM::InterfaceHandle> interfacehandle_old,
+        const RCP<COMBUST::InterfaceHandleCombust> interfacehandle,
+        const RCP<COMBUST::InterfaceHandleCombust> interfacehandle_old,
         const Epetra_Map& olddofcolmap,
         const map<DofKey<onNode>, DofGID>& oldNodalDofColDistrib,
         const Epetra_Map& newdofrowmap,
@@ -277,8 +278,8 @@ namespace XFEM
     RCP<Epetra_Vector> phinpip_; // phi^n+1,i+1
     vector<RCP<Epetra_Vector> > oldVectors_; // global vectors at last iteration
     vector<RCP<Epetra_Vector> > newVectors_; // global vectors at new iteration
-    const RCP<InterfaceHandle> interfacehandle_; // Gamma^n+1,i+1
-    const RCP<InterfaceHandle> interfacehandle_old_; // Gamma^n+1,i or Gamma^n
+    const RCP<COMBUST::InterfaceHandleCombust> interfacehandle_; // Gamma^n+1,i+1
+    const RCP<COMBUST::InterfaceHandleCombust> interfacehandle_old_; // Gamma^n+1,i or Gamma^n
     
     
     // data accessing
