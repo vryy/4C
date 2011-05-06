@@ -6,7 +6,7 @@
 #include "cut_line.H"
 #include "cut_side.H"
 
-GEO::CUT::PointGraph::PointGraph( Element * element, Side * side )
+GEO::CUT::PointGraph::PointGraph( Element * element, Side * side, bool inner )
   : side_( side )
 {
   std::vector<int> cycle;
@@ -62,16 +62,16 @@ GEO::CUT::PointGraph::PointGraph( Element * element, Side * side )
     free.erase( p );
   }
 
-  AddFacetPoints( cycle, free );
+  AddFacetPoints( cycle, free, inner );
 }
 
-void GEO::CUT::PointGraph::AddFacetPoints( std::vector<int> & cycle, std::set<int> & free )
+void GEO::CUT::PointGraph::AddFacetPoints( std::vector<int> & cycle, std::set<int> & free, bool inner )
 {
   GRAPH::Graph used;
   used.AddCycle( cycle );
 
   facet_cycles_.AddPoints( graph_, used, cycle, free );
-  if ( free.size() > 0 )
+  if ( not inner and free.size() > 0 )
   {
     facet_cycles_.AddFreePoints( graph_, used, free );
   }

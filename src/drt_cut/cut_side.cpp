@@ -191,7 +191,7 @@ void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, Element * element, std::s
 {
   if ( facets_.size()==0 )
   {
-    PointGraph point_graph( element, this );
+    PointGraph point_graph( element, this, true );
     //point_graph.Print();
 
     for ( PointGraph::iterator i=point_graph.begin(); i!=point_graph.end(); ++i )

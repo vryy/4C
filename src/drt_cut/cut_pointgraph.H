@@ -31,7 +31,7 @@ public:
 
   typedef GRAPH::CycleListIterator iterator;
 
-  PointGraph( Element * element, Side * side );
+  PointGraph( Element * element, Side * side, bool inner );
 
   iterator begin() { return facet_cycles_.begin(); }
 
@@ -51,7 +51,7 @@ public:
 
 private:
 
-  void AddFacetPoints( std::vector<int> & cycle, std::set<int> & free );
+  void AddFacetPoints( std::vector<int> & cycle, std::set<int> & free, bool inner );
 
   Side * side_;
   Graph graph_;
