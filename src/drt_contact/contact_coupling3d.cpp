@@ -1395,7 +1395,8 @@ dim_(dim),
 quad_(quad),
 auxplane_(auxplane),
 sele_(sele),
-mele_(mele)
+mele_(mele),
+ncells_(0)
 {
   // evaluate coupling
   EvaluateCoupling();
@@ -1417,6 +1418,9 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
 
     // do coupling
     Coupling()[m]->EvaluateCoupling();
+
+    // store number of intcells
+    ncells_ += (int)(Coupling()[m]->Cells()).size();
   }
 
   return true;

@@ -724,6 +724,11 @@ void CONTACT::CoInterface::Initialize()
     }
   }
 
+  // reset s/m pairs and intcell counters
+  smpairs_    = 0;
+  smintpairs_ = 0;
+  intcells_   = 0;
+  
   return;
 }
 
@@ -1172,6 +1177,9 @@ bool CONTACT::CoInterface::IntegrateSlave(MORTAR::MortarElement& sele)
 bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
                                              vector<MORTAR::MortarElement*> mele)
 {
+  // increase counter of slave/master pairs
+  smpairs_ += (int)mele.size();
+
   // *********************************************************************
   // do interface coupling within a new class
   // (projection slave and master, overlap detection, integration and
@@ -1186,6 +1194,10 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
     
     // create CoCoupling2dManager
     CONTACT::CoCoupling2dManager coup(shapefcn_,Discret(),Dim(),sele,mele);
+
+    // increase counter of slave/master integration pairs and intcells
+    smintpairs_ += (int)mele.size();
+    intcells_   += (int)mele.size();
   }
   // ************************************************************** 3D ***
   else if (Dim()==3)
@@ -1206,6 +1218,10 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
     {
       // create CoCoupling3dManager
       CONTACT::CoCoupling3dManager coup(shapefcn_,Discret(),Dim(),false,auxplane,sele,mele);
+
+      // increase counter of slave/master integration pairs and intcells
+      smintpairs_ += (int)mele.size();
+      intcells_   += coup.IntegrationCells();
     }
 
     // ************************************************** quadratic 3D ***
@@ -1234,6 +1250,10 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
                            *sele,*mele[m],*sauxelements[i],*mauxelements[j],lmtype);
             // do coupling
             coup.EvaluateCoupling();
+
+            // increase counter of slave/master integration pairs and intcells
+            smintpairs_ += 1;
+            intcells_   += (int)coup.Cells().size();
           } // for maux
         } // for saux
       } // for m

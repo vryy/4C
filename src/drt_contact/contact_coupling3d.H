@@ -400,6 +400,12 @@ public:
   virtual vector<RCP<CONTACT::CoCoupling3d> >& Coupling() { return coup_; }
 
   /*!
+  \brief Get number of integration cells
+
+  */
+  virtual const int& IntegrationCells() { return ncells_; }
+
+  /*!
   \brief Evaluate coupling pairs
 
   */
@@ -421,6 +427,7 @@ protected:
     MORTAR::MortarElement*          sele_;        // slave element
     vector<MORTAR::MortarElement*>  mele_;        // master elements
     vector<RCP<CoCoupling3d> >      coup_;        // coupling pairs
+    int                             ncells_;      // total number of integration cells
 
 }; // class CoCoupling3dManager
 }  // namespace CONTACT

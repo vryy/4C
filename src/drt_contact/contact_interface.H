@@ -179,6 +179,24 @@ public:
     else dserror("CONTACT::Interface::FillComplete was not called");
     exit(EXIT_FAILURE); // calm down the compiler
   }
+  
+  /*!
+  \brief Get number of slave / master pairs of this interface (proc local)
+
+  */
+  virtual const int& SlaveMasterPairs() { return smpairs_;}
+  
+  /*!
+  \brief Get number of slave / master integration pairs of this interface (proc local)
+
+  */
+  virtual const int& SlaveMasterIntPairs() { return smintpairs_;}
+  
+  /*!
+  \brief Get number of integration cells of this interface (proc local)
+
+  */
+  virtual const int& IntegrationCells() { return intcells_;}
 
   //@}
 
@@ -602,6 +620,10 @@ protected:
 
   RCP<SelfBinaryTree>         binarytreeself_; // binary tree for self contact search
 
+  int                         smpairs_;        // proc local number of slave/master pairs
+  int                         smintpairs_;     // proc local number of slave/master integration pairs
+  int                         intcells_;       // proc local number of integration cells
+  
 }; // class CoInterface
 } // namespace CONTACT
 

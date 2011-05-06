@@ -693,6 +693,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     RCP<Epetra_Map> glmdofrowmap_;  // global Lagrange mult. dof row map (of all interfaces)
     RCP<Epetra_Map> gsnoderowmap_;  // global slave node row map (of all interfaces)
+    RCP<Epetra_Map> gmnoderowmap_;  // global master node row map (of all interfaces)
     RCP<Epetra_Map> gsdofrowmap_;   // global slave dof row map (of all interfaces)
     RCP<Epetra_Map> gmdofrowmap_;   // global master dof row map (of all interfaces)
     RCP<Epetra_Map> gndofrowmap_;   // global internal dof row map

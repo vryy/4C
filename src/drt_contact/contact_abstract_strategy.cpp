@@ -292,6 +292,7 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   glmdofrowmap_ = Teuchos::null;
   gdisprowmap_  = Teuchos::null;
   gsnoderowmap_ = Teuchos::null;
+  gmnoderowmap_ = Teuchos::null;
   gactivenodes_ = Teuchos::null;
   gactivedofs_  = Teuchos::null;
   gactiven_     = Teuchos::null;
@@ -321,6 +322,7 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
         
     // merge interface master, slave maps to global master, slave map
     gsnoderowmap_ = LINALG::MergeMap(gsnoderowmap_, interface_[i]->SlaveRowNodes());
+    gmnoderowmap_ = LINALG::MergeMap(gmnoderowmap_, interface_[i]->MasterRowNodes());
     gsdofrowmap_ = LINALG::MergeMap(gsdofrowmap_, interface_[i]->SlaveRowDofs());
     gmdofrowmap_ = LINALG::MergeMap(gmdofrowmap_, interface_[i]->MasterRowDofs());
   
@@ -556,101 +558,145 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
   //**********************************************************************
   // PARALLEL REDISTRIBUTION
   //**********************************************************************
-  // get out of here if parallel redistribution is switched off
+  // don't do this if parallel redistribution is switched off
   // or if this is a single processor (serial) job
-  if (!ParRedist() || Comm().NumProc()==1) return;
-
-  // collect information about participation in coupling evaluation
-  // and in parallel distribution of the individual interfaces
-  vector<int> numloadele((int)interface_.size());
-  vector<int> numcrowele((int)interface_.size());
-  for (int i=0; i<(int)interface_.size(); ++i)
-    interface_[i]->CollectDistributionData(numloadele[i],numcrowele[i]);
-  
-  // time measurement (on each processor)
-  double t_end_for_minall = Teuchos::Time::wallTime()-t_start;
-  double t_end_for_maxall = t_end_for_minall;
-
-  // restrict time measurement to procs that own at least some part
-  // of the "close" slave interface section(s) on the global level,
-  // i.e. restrict to procs that actually have to do some work
-  int gnumloadele = 0;
-  for (int i=0; i<(int)numloadele.size(); ++i)
-    gnumloadele += numloadele[i];
-  
-  // for non-loaded procs, set time measurement to values 0.0 / 1.0e12,
-  // which do not affect the maximum and minimum identification
-  if (gnumloadele==0)
+  if (ParRedist() && Comm().NumProc()>1)
   {
-    t_end_for_minall =  1.0e12;
-    t_end_for_maxall =  0.0;
-  }
-  
-  // store time indicator for parallel redistribution
-  // (indicator is the maximum local processor time
-  // divided by the minimum local processor time)
-  double maxall = 0.0;
-  double minall = 0.0;
-  Comm().MaxAll(&t_end_for_maxall,&maxall,1);
-  Comm().MinAll(&t_end_for_minall,&minall,1);
-  
-  // check for plausibility before storing
-  if (maxall==0.0 && minall==1.0e12) tunbalance_.push_back(1.0);
-  else                               tunbalance_.push_back(maxall/minall);
-  
-  // obtain info whether there is an unbalance in element distribution
-  bool eleunbalance = false;
-  for (int i=0; i<(int)interface_.size(); ++i)
-  {
-    // find out how many close slave elements in total
-    int totrowele = 0;
-    Comm().SumAll(&numcrowele[i],&totrowele,1);
-    
-    // find out how many procs have work on this interface
-    int lhascrowele = 0;
-    int ghascrowele = 0;
-    if (numcrowele[i]>0) lhascrowele=1;
-    Comm().SumAll(&lhascrowele,&ghascrowele,1);
+    // collect information about participation in coupling evaluation
+    // and in parallel distribution of the individual interfaces
+    vector<int> numloadele((int)interface_.size());
+    vector<int> numcrowele((int)interface_.size());
+    for (int i=0; i<(int)interface_.size(); ++i)
+      interface_[i]->CollectDistributionData(numloadele[i],numcrowele[i]);
 
-    // minimum number of elements per proc
-    int minele = Params().get<int>("MIN_ELEPROC");
-    int numproc = Comm().NumProc();
+    // time measurement (on each processor)
+    double t_end_for_minall = Teuchos::Time::wallTime()-t_start;
+    double t_end_for_maxall = t_end_for_minall;
+  
+    // restrict time measurement to procs that own at least some part
+    // of the "close" slave interface section(s) on the global level,
+    // i.e. restrict to procs that actually have to do some work
+    int gnumloadele = 0;
+    for (int i=0; i<(int)numloadele.size(); ++i)
+      gnumloadele += numloadele[i];
+
+    // for non-loaded procs, set time measurement to values 0.0 / 1.0e12,
+    // which do not affect the maximum and minimum identification
+    if (gnumloadele==0)
+    {
+      t_end_for_minall =  1.0e12;
+      t_end_for_maxall =  0.0;
+    }
+
+    // store time indicator for parallel redistribution
+    // (indicator is the maximum local processor time
+    // divided by the minimum local processor time)
+    double maxall = 0.0;
+    double minall = 0.0;
+    Comm().MaxAll(&t_end_for_maxall,&maxall,1);
+    Comm().MinAll(&t_end_for_minall,&minall,1);
     
-    //--------------------------------------------------------------------
-    // check if there is an element unbalance
-    //--------------------------------------------------------------------
-    // CASE 0: if minimum number of elements per proc is zero, but
-    // further procs are still available and more than numproc elements
-    if ( (minele == 0) && (totrowele > numproc) && (ghascrowele < numproc) )
-      eleunbalance = true;
+    // check for plausibility before storing
+    if (maxall==0.0 && minall==1.0e12) tunbalance_.push_back(1.0);
+    else                               tunbalance_.push_back(maxall/minall);
     
-    // CASE 1: in total too few close slave elements but more than one
-    // proc is active (otherwise, i.e. if interface small, we have no choice)
-    if ( (minele > 0) && (totrowele < ghascrowele * minele) && (ghascrowele > 1) )
-      eleunbalance = true;
+    // obtain info whether there is an unbalance in element distribution
+    bool eleunbalance = false;
+    for (int i=0; i<(int)interface_.size(); ++i)
+    {
+      // find out how many close slave elements in total
+      int totrowele = 0;
+      Comm().SumAll(&numcrowele[i],&totrowele,1);
+
+      // find out how many procs have work on this interface
+      int lhascrowele = 0;
+      int ghascrowele = 0;
+      if (numcrowele[i]>0) lhascrowele=1;
+      Comm().SumAll(&lhascrowele,&ghascrowele,1);
+
+      // minimum number of elements per proc
+      int minele = Params().get<int>("MIN_ELEPROC");
+      int numproc = Comm().NumProc();
+
+      //--------------------------------------------------------------------
+      // check if there is an element unbalance
+      //--------------------------------------------------------------------
+      // CASE 0: if minimum number of elements per proc is zero, but
+      // further procs are still available and more than numproc elements
+      if ( (minele == 0) && (totrowele > numproc) && (ghascrowele < numproc) )
+        eleunbalance = true;
+
+      // CASE 1: in total too few close slave elements but more than one
+      // proc is active (otherwise, i.e. if interface small, we have no choice)
+      if ( (minele > 0) && (totrowele < ghascrowele * minele) && (ghascrowele > 1) )
+        eleunbalance = true;
+
+      // CASE 2: in total too many close slave elements, but further procs
+      // are still available for redsitribution
+      if ( (minele > 0) && (totrowele >= (ghascrowele+1)*minele) && (ghascrowele < numproc) )
+        eleunbalance = true;
+    }
     
-    // CASE 2: in total too many close slave elements, but further procs
-    // are still available for redsitribution
-    if ( (minele > 0) && (totrowele >= (ghascrowele+1)*minele) && (ghascrowele < numproc) )
-      eleunbalance = true;
+    // obtain global info on element unbalance
+    int geleunbalance = 0;
+    int leleunbalance = (int)(eleunbalance);
+    Comm().SumAll(&leleunbalance,&geleunbalance,1);
+    if (geleunbalance>0) eunbalance_.push_back(1);
+    else                 eunbalance_.push_back(0);
+    
+    // debugging output
+    //cout << "PROC: " << Comm().MyPID() << "\t LOADELE: " << numloadele[0] << "\t ROWELE: " << numcrowele[0]
+    //     << "\t MIN: " << minall << "\t MAX: " << maxall
+    //     << "\t tmin: " << t_end_for_minall << "\t tmax: " << t_end_for_maxall
+    //     << "\t TUNBALANCE: " << tunbalance_[(int)tunbalance_.size()-1]
+    //     << "\t EUNBALANCE: " << eunbalance_[(int)eunbalance_.size()-1] << endl;
   }
-  
-  // obtain global info on element unbalance
-  int geleunbalance = 0;
-  int leleunbalance = (int)(eleunbalance);
-  Comm().SumAll(&leleunbalance,&geleunbalance,1);
-  if (geleunbalance>0) eunbalance_.push_back(1);
-  else                 eunbalance_.push_back(0);
-  
-  // debugging output
-  //cout << "PROC: " << Comm().MyPID() << "\t LOADELE: " << numloadele[0] << "\t ROWELE: " << numcrowele[0]
-  //     << "\t MIN: " << minall << "\t MAX: " << maxall
-  //     << "\t tmin: " << t_end_for_minall << "\t tmax: " << t_end_for_maxall
-  //     << "\t TUNBALANCE: " << tunbalance_[(int)tunbalance_.size()-1]
-  //     << "\t EUNBALANCE: " << eunbalance_[(int)eunbalance_.size()-1] << endl;
-  
   //**********************************************************************
   
+  //**********************************************************************
+  // OVERVIEW OF PARALLEL MORTAR COUPLING STATUS
+  //**********************************************************************
+#ifdef CONTACTSTATUS
+  // total numbers per processor
+  vector<int> smpairs(1);
+  vector<int> smintpairs(1);
+  vector<int> intcells(1);
+
+  // add numbers of all interfaces
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    smpairs[0]    += interface_[i]->SlaveMasterPairs();
+    smintpairs[0] += interface_[i]->SlaveMasterIntPairs();
+    intcells[0]   += interface_[i]->IntegrationCells();
+  }
+
+  // vector containing all proc ids
+  const int numproc = Comm().NumProc();
+  vector<int> allproc(numproc);
+  for (int i=0; i<numproc; ++i) allproc[i] = i;
+
+  // global numbers
+  vector<int> gsmpairs, gsmintpairs, gintcells;
+  LINALG::Gather<int>(smpairs,gsmpairs,numproc,&allproc[0],Comm());
+  LINALG::Gather<int>(smintpairs,gsmintpairs,numproc,&allproc[0],Comm());
+  LINALG::Gather<int>(intcells,gintcells,numproc,&allproc[0],Comm());
+
+  // output to screen
+  if (Comm().MyPID()==0)
+  {
+    cout << "--------------------------------------------------------------------------------" << endl;
+    cout << setw(10) << "proc ID" << setw(16) << "# s/m pairs"
+         << setw(16) << "# s/m intpairs" << setw(16) << "# intcells" << endl;
+    for (int i=0; i<numproc; ++i)
+    {
+      cout << setw(10) << i << setw(16) << gsmpairs[i] << setw(16)
+           << gsmintpairs[i] << setw(16) << gintcells[i] << endl;
+    }
+    cout << "--------------------------------------------------------------------------------" << endl;
+  }
+#endif // #ifdef CONTACTSTATUS
+  //**********************************************************************
+
   return;
 }
 

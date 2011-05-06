@@ -57,6 +57,7 @@ Maintainer: Alexander Popp
 //#define CONTACTASOUTPUT           /* flag for detailed active set output */
 //#define CONTACTFORCEOUTPUT        /* flag for output of contact forces */
 //#define CONTACTTIME               /* flag for contact time measurement */
+//#define CONTACTSTATUS             /* flag for contact segmentation measurement */
 //#define CONTACTEIG                /* flag for eigenvalue+condition analysis */
 //#define CONTACTFORCEREFCONFIG     /* flag for evaluation of forces in ref. config. */
 //#define CONTACTBASISTRAFO         /* flag for basis trafo of dual LM system */
