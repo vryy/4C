@@ -114,7 +114,8 @@ bool GEO::CUT::IntegrationCellCreator::CreateTet4Cell( Mesh & mesh, VolumeCell *
           }
           else if ( top_point!=p )
           {
-            throw std::runtime_error( "illegal tet4 cell" );
+            //throw std::runtime_error( "illegal tet4 cell" );
+            return false;
           }
         }
       }
