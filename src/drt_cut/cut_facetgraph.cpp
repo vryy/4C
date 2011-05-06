@@ -194,7 +194,6 @@ void GEO::CUT::FacetGraph::CreateVolumeCells( Mesh & mesh, Element * element, st
     if ( p > 2 )
     {
       // assume this is a degenerated cell we do not need to build
-      std::cout << "degenerated?\n";
       return;
     }
   }

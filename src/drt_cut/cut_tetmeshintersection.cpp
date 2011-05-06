@@ -332,11 +332,13 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
                 else if ( child_cells.size()==2 )
                 {
                   // odd.
-                  throw std::runtime_error( "illegal number of neighbouring volume cells" );
+                  throw std::runtime_error( "illegal number of neighbouring volume cells: child_cells.size()==2" );
                 }
                 else
                 {
-                  throw std::runtime_error( "illegal number of neighbouring volume cells" );
+                  std::stringstream str;
+                  str << "illegal number of neighbouring volume cells: child_cells.size()==" << child_cells.size();
+                  throw std::runtime_error( str.str() );
                 }
               }
 
@@ -411,9 +413,19 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
                     found = true;
                   }
                 }
+#if 0
+                else if ( child_cells.size()==0 )
+                {
+                  // Ignore. There is a child facet that is not connected to
+                  // anything. Oh, well.
+                  f->Print();
+                }
+#endif
                 else
                 {
-                  throw std::runtime_error( "illegal number of neighbouring volume cells" );
+                  std::stringstream str;
+                  str << "illegal number of neighbouring volume cells: child_cells.size() == " << child_cells.size();
+                  throw std::runtime_error( str.str() );
                 }
               }
 
