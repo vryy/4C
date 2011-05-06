@@ -231,7 +231,7 @@ protected:
 	void DDCorrShift(LINALG::Matrix<3,1>* boxcenter, LINALG::Matrix<3,1>* centershift, std::vector<int>* crosslinkerentries);
 
 	//! \brief obtain radial crosslinker density distribution
-	void RadialDensityDistribution(Epetra_Vector& radialdistancesrow, LINALG::Matrix<3,1>* cog, std::vector<int>* crosslinkerentries);
+	void RadialDensityDistribution(Epetra_Vector& radialdistancesrow, LINALG::Matrix<3,1>& centershift);
 
 	/*! \brief determine the current network structure
 	 * 	\param disrow  (in) displacement in row format
