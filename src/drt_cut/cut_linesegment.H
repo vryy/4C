@@ -22,6 +22,8 @@ public:
 
   LineSegment( Mesh & mesh, Element * element, Side * side, std::set<Line*> & cut_lines, bool inner );
 
+  LineSegment( Mesh & mesh, Element * element, Side * side, const std::vector<Point*> & points );
+
   bool Combine( Mesh & mesh, Element * element, Side * side, LineSegment & other );
 
   bool IsClosed() const { return closed_; }
