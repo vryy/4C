@@ -12,37 +12,21 @@
 -------------------------------------------------------------TITLE
 description test case:
 - check if cut algorithm and enrichment strategy work together properly
-- check functionality for some special cuts close to element boundaries (*)
+- check functionality for a almost horizontal cut close to element boundaries
 - only the nodes marked enriched (+) must be enriched
   -> check Gmsh file 'numdof_coupled_system.pos'
-- domain integration cells belonging to plus and minus domain must only be created for bisected elements (cut 1,7 and 8)
+- domain integration cells belonging to plus and minus domain must only be created for bisected elements
   -> check Gmsh file 'domains.pos'
-- check if left and right elements for each cut get the correct cut status (uncut (u), touched (t), bisected (b))
+- check if upper and lower elements for each position get the correct cut status (uncut, touched, bisected)
 
 6x20 elements, enriched nodes (+)
 x=-1                                    x=0                                     x=1
- |---|---|---+---+---|---+---|---+---|---+---|---+---|---+---+---+---+---+---|---
- |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   | b |   | b |   |   |
- |---|---|---+---+---|---+---|---+---|---+---|---+---|---+---+---+---+---+---|---|
- |   |   |   | b |   | u | t | t | t | t | t | t | t | t | u | t | u | t | u |   |
- |---|---|---+---+---|---+---|---+---|---+---|---+---|---+---+---+---|---+---|---|
- |   |   |   | b |   | u | t | t | t | t | t | t | t | t | u | u | t | u | t |   |
- |---|---|---+---+---|---+---|---+---|---+---|---+---|---+---|---+---+---+---+---|
- |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   | b |   | b |   |
- |---|---|---+---+---|---+---|---+---|---+---|---+---|---+---|---+---+---+---+---|
-               *        *        *       *       *        *      *       *
-               1        2        3       4       5        6      7       8
-cut number (1-8) / interface position (*) / left element / right element / explanation
-1 / x = -0.6+1.0E-4   / uncut (u)         /  bisected (b)     / regular cut right element 
-2 / x = -0.4-1.0E-5   / bisected->touched / uncut             / small plus volume in left element -> throw away volume + keep boundary cell
-3 / x = -0.2-1.0E-12  / touched (t)       / touched           / interface almost (left) on element boundary (within point tolerance)
-4 / x = 0.0           / touched           / touched           / interface exactly on element boundary
-5 / x = 0.2+1.0E-12   / touched           / touched           / interface almost (right) on element boundary (within point tolerance)
-6 / x = 0.4+1.0E-5    / uncut             / bisected->touched / small minus volume in right element -> throw away volume + take boundary cell from large plus volume
-7 / x = 0.6-y*0.0001  / bisected->touched / touched->uncut    / upper row: almost vertical cut (node in middle plane is cut) -> elements touched in one node become uncut
-                      / touched->uncut    / bisected->touched / lower row:
-8 / x = 0.6-y*0.0001  / bisected->touched / bisected->uncut   / upper row: almost vertical cut shifted up -> bisected (corner cut off,small volume) element becomes uncut
-                      / uncut             / bisected->touched / lower row:  
+ +---+---+---+---+---+---+---+---+---|---|---|---|---|---|---|---|---|---|---|---|
+ | b | b | b | b | b | b | b | b | t | t | t | u | u | u | u | u | u | u | u | u |
+ +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+ | u | u | u | u | u | u | u | u | u | t | t | t | b | b | b | b | b | b | b | b |
+ |---|---|---|---|---|---|---|---|---|---|---|---+---+---+---+---+---+---+---+---+
+   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19  20
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS  120
 NODES     294
@@ -200,8 +184,8 @@ CURVE1 on Explicit FUNC f(t)=(sin(PI(t:C1-0.5))+1)*0.5 c1 1.0 c2 1.0  // sin cur
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
-------------------------------------------------------------FUNCT1 // G-function field
-FUNCT1 LEVELSETCUTTEST
+------------------------------------------------------------FUNCT1 // initial G-function field
+FUNCT1 EXPR 0 0.0 0 FUNCTION y+x*0.00005 // almost horizontal cut
 ------------------------------------------------------------FUNCT2
 ------------------------------------------------------------FUNCT3
 ------------------------------------------------------------FUNCT4
@@ -217,51 +201,51 @@ NDVOL   0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 // surface outflow
-E 4 - none 1 1 1 0 0 0  -4.0 0.0 0.0 0.0 0.0 0.0  Mid  0 0 0 0 0 0
+E 1 - none 1 1 1 0 0 0  0.0 -4.0 0.0 0.0 0.0 0.0  Mid  0 0 0 0 0 0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 4
 // top inflow points
-E 1 - 1 1 1 0 0 0  2.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 1 - 1 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // bottom inflow points
-E 2 - 1 1 1 0 0 0  2.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 2 - 1 1 1 0 0 0  0.0 2.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // top outflow points
-E 3 - 0 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 3 - 1 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // bottom outflow points
-E 4 - 0 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 4 - 1 1 1 0 0 0  0.0 2.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // midplane points
 //E 5 - 0 0 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE  6 // 10
+DLINE  9 // 10
 // line inflow top
-E 1 - 1 1 1 0 0 0  2.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 1 - 1 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // line inflow front
-E 2 - 1 1 1 0 0 0  2.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 2 - 1 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // line inflow bottom
-E 3 - 1 1 1 0 0 0  2.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 3 - 1 1 1 0 0 0  0.0 2.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // line inflow back
-E 4 - 1 1 1 0 0 0  2.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 4 - 1 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // line outflow top
-//E 5 - 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 5 - 1 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // line outflow front
-//E 6 - 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 6 - 1 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // line outflow bottom
-//E 7 - 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 7 - 1 1 1 0 0 0  0.0 2.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // line outflow back
-//E 8 - 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 8 - 1 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // top edges side walls
-E 9 - 0 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+//E 9 - 0 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // bottom edges side walls
-E 10 - 0 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 10 - 1 1 1 0 0 0  0.0 2.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  5 // 6
 // surface top
-E 1 - 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+//E 1 - 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // surface bottom
-E 2 - 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 2 - 1 1 1 0 0 0  0.0 2.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // surface inflow
-E 3 - 1 1 1 0 0 0  2.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 3 - 1 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // surface outflow
-//E 4 - 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 4 - 1 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // surface front
 E 5 - 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // surface back
@@ -1227,37 +1211,37 @@ NODE 294  	COORD	1.00000000e+00	3.00000012e-01	5.00000007e-02
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 7   POSITION velx NAME velx VALUE  2.0e+00  TOLERANCE 1e-8
-FLUID DIS 1 NODE 69  POSITION velx NAME velx VALUE  3.0e+00  TOLERANCE 1e-7
-FLUID DIS 1 NODE 63  POSITION vely NAME vely VALUE  0.0e+00  TOLERANCE 1e-7
-FLUID DIS 1 NODE 77  POSITION velx NAME velx VALUE  3.0e+00  TOLERANCE 1e-4
-FLUID DIS 1 NODE 91  POSITION velx NAME velx VALUE  3.0e+00  TOLERANCE 1e-4
-FLUID DIS 1 NODE 105 POSITION velx NAME velx VALUE  4.0e+00  TOLERANCE 1e-4
-FLUID DIS 1 NODE 118 POSITION velx NAME velx VALUE  5.0e+00  TOLERANCE 1e-3
-FLUID DIS 1 NODE 133 POSITION velx NAME velx VALUE  5.0e+00  TOLERANCE 1e-3
-FLUID DIS 1 NODE 147 POSITION velx NAME velx VALUE  5.0e+00  TOLERANCE 1e-3
-FLUID DIS 1 NODE 161 POSITION velx NAME velx VALUE  6.0e+00  TOLERANCE 1e-3
-FLUID DIS 1 NODE 175 POSITION velx NAME velx VALUE  6.0e+00  TOLERANCE 1e-3
-FLUID DIS 1 NODE 189 POSITION velx NAME velx VALUE  7.0e+00  TOLERANCE 1e-3
-FLUID DIS 1 NODE 203 POSITION velx NAME velx VALUE  8.0e+00  TOLERANCE 1e-3
-FLUID DIS 1 NODE 218 POSITION velx NAME velx VALUE  8.0e+00  TOLERANCE 1e-3
-FLUID DIS 1 NODE 231 POSITION velx NAME velx VALUE  9.0e+00  TOLERANCE 1e-3
-FLUID DIS 1 NODE 255 POSITION velx NAME velx VALUE  9.0e+00  TOLERANCE 1e-3
-FLUID DIS 1 NODE 7   POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 69  POSITION pressure NAME pressure VALUE  6.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 63  POSITION pressure NAME pressure VALUE  6.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 77  POSITION pressure NAME pressure VALUE  6.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 91  POSITION pressure NAME pressure VALUE  6.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 105 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 118 POSITION pressure NAME pressure VALUE  6.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 133 POSITION pressure NAME pressure VALUE  6.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 147 POSITION pressure NAME pressure VALUE  6.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 161 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 175 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 189 POSITION pressure NAME pressure VALUE  6.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 203 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 218 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 231 POSITION pressure NAME pressure VALUE  6.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 255 POSITION pressure NAME pressure VALUE  6.0e+00  TOLERANCE 1e-3
+FLUID DIS 1 NODE 7   POSITION vely NAME vely VALUE  2.0e+00  TOLERANCE 1e-5
+FLUID DIS 1 NODE 69  POSITION velx NAME velx VALUE  0.0e+00  TOLERANCE 1e-4
+FLUID DIS 1 NODE 63  POSITION vely NAME vely VALUE  2.0e+00  TOLERANCE 1e-5
+FLUID DIS 1 NODE 77  POSITION vely NAME vely VALUE  2.0e+00  TOLERANCE 1e-5
+FLUID DIS 1 NODE 91  POSITION vely NAME vely VALUE  2.0e+00  TOLERANCE 1e-5
+FLUID DIS 1 NODE 105 POSITION vely NAME vely VALUE  2.0e+00  TOLERANCE 1e-5
+FLUID DIS 1 NODE 118 POSITION vely NAME vely VALUE  2.0e+00  TOLERANCE 1e-5
+FLUID DIS 1 NODE 133 POSITION vely NAME vely VALUE  2.0e+00  TOLERANCE 1e-4
+FLUID DIS 1 NODE 147 POSITION vely NAME vely VALUE  3.0e+00  TOLERANCE 1e-4
+FLUID DIS 1 NODE 161 POSITION vely NAME vely VALUE  3.0e+00  TOLERANCE 1e-4
+FLUID DIS 1 NODE 175 POSITION vely NAME vely VALUE  3.0e+00  TOLERANCE 1e-5
+FLUID DIS 1 NODE 189 POSITION vely NAME vely VALUE  3.0e+00  TOLERANCE 1e-5
+FLUID DIS 1 NODE 203 POSITION vely NAME vely VALUE  3.0e+00  TOLERANCE 1e-5
+FLUID DIS 1 NODE 218 POSITION vely NAME vely VALUE  3.0e+00  TOLERANCE 1e-5
+FLUID DIS 1 NODE 231 POSITION vely NAME vely VALUE  3.0e+00  TOLERANCE 1e-5
+FLUID DIS 1 NODE 255 POSITION vely NAME vely VALUE  2.0e+00  TOLERANCE 1e-5
+FLUID DIS 1 NODE 7   POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-4
+FLUID DIS 1 NODE 69  POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-4
+FLUID DIS 1 NODE 63  POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-4
+FLUID DIS 1 NODE 77  POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-4
+FLUID DIS 1 NODE 91  POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-3
+FLUID DIS 1 NODE 105 POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-3
+FLUID DIS 1 NODE 118 POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-4
+FLUID DIS 1 NODE 133 POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-3
+FLUID DIS 1 NODE 147 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-3
+FLUID DIS 1 NODE 161 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-3
+FLUID DIS 1 NODE 175 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-3
+FLUID DIS 1 NODE 189 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-4
+FLUID DIS 1 NODE 203 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-4
+FLUID DIS 1 NODE 218 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-4
+FLUID DIS 1 NODE 231 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-4
+FLUID DIS 1 NODE 255 POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-4
 ---------------------------------------------------------------END
 // END

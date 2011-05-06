@@ -2571,9 +2571,15 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
           const bool storedbound = StoreBoundaryIntegrationCells(ehandle,listBoundaryIntCellsperEle,xyze);
 
           if (storedvol and !storedbound)
+          {
             StoreElementCutStatus(COMBUST::FlameFront::uncut, cutstat);
+            //cout << "element " << rootcell->Ele()->Id() << " is uncut" << endl;
+          }
           else if (storedvol and storedbound)
+          {
             StoreElementCutStatus(COMBUST::FlameFront::touched, cutstat);
+            //cout << "element " << rootcell->Ele()->Id() << " is touched" << endl;
+          }
           else
             dserror("there should be a volume cell for a touched element");
         }

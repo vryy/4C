@@ -2033,7 +2033,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
       //---------------------------------------
       // write pressure jump at Gaussian points
       //---------------------------------------
-#if 0
+#if 1
       if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion or
           combusttype_ == INPAR::COMBUST::combusttype_twophaseflowjump)
       {
@@ -2109,9 +2109,16 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
             const GEO::BoundaryIntCells& boundaryintcells = dofmanagerForOutput_->getInterfaceHandle()->GetBoundaryIntCells(ele->Id());
             for (GEO::BoundaryIntCells::const_iterator cell = boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
             {
-              if (cell->Shape() != DRT::Element::tri3) dserror("Not implemented for this cell type");
-              // choose an arbitrary number of Gaussian points for the output
-              const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_3point);
+              // choose an (arbitrary) number of Gaussian points for the output
+              DRT::UTILS::GaussRule2D intrule2D = DRT::UTILS::intrule2D_undefined;
+              if(cell->Shape() == DRT::Element::tri3)
+                intrule2D = DRT::UTILS::intrule_tri_3point;
+              else if(cell->Shape() == DRT::Element::quad4)
+                intrule2D = DRT::UTILS::intrule_quad_4point;
+              else
+                dserror("Not implemented for this cell type");
+              DRT::UTILS::IntegrationPoints2D intpoints(intrule2D);
+
               // loop over Gaussian points
               for (int iquad=0; iquad<intpoints.nquad; ++iquad)
               {
@@ -2157,10 +2164,14 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
                 // write data to Gmsh file
                 IO::GMSH::ScalarToStream(posXYZDomain, presjump, gmshfilecontent);
 
+#if 0
                 // compute average pressure jump
                 {
                   // here, a triangular boundary integration cell is assumed (numvertices = 3)
+                  if (cell->Shape() != DRT::Element::tri3) dserror("computation of average pressure jump not implemented for this boundary cell distype");
                   const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
+                  //const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
+
                   LINALG::SerialDenseMatrix cellXiDomaintmp = cell->CellNodalPosXiDomain();
                   const LINALG::Matrix<3,numvertices> cellXiDomain(cellXiDomaintmp);
 
@@ -2219,7 +2230,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
                   //cout << "fac " << fac << endl;
                   presjumpnorm += fac*presjump*presjump;
                 }
-
+#endif // computation average pressure
               }
             }
           }
@@ -2722,7 +2733,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         }
       }
       gmshfilecontent << "};\n";
-#if 0
+#if 1
       //---------------------------------------
       // write velocity jump at Gaussian points
       //---------------------------------------
@@ -2829,9 +2840,17 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             const GEO::BoundaryIntCells& boundaryintcells = dofmanagerForOutput_->getInterfaceHandle()->GetBoundaryIntCells(ele->Id());
             for (GEO::BoundaryIntCells::const_iterator cell = boundaryintcells.begin(); cell != boundaryintcells.end(); ++cell)
             {
-              if (cell->Shape() != DRT::Element::tri3) dserror("Not implemented for this cell type");
-              // choose an arbitrary number of Gaussian points for the output
-              const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_3point);
+              // choose an (arbitrary) number of Gaussian points for the output
+              DRT::UTILS::GaussRule2D intrule2D = DRT::UTILS::intrule2D_undefined;
+              if(cell->Shape() == DRT::Element::tri3)
+                intrule2D = DRT::UTILS::intrule_tri_3point;
+              else if(cell->Shape() == DRT::Element::quad4)
+                intrule2D = DRT::UTILS::intrule_quad_4point;
+              else
+                dserror("Not implemented for this cell type");
+              // choose an (arbitrary) number of Gaussian points for the output
+              const DRT::UTILS::IntegrationPoints2D intpoints(intrule2D);
+
               // loop over Gaussian points
               for (int iquad=0; iquad<intpoints.nquad; ++iquad)
               {
@@ -2928,10 +2947,14 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
                 //IO::GMSH::VectorToStream(posXYZDomain, veljump, gmshfilecontent);
                 IO::GMSH::ScalarToStream(posXYZDomain, veljumpnorm, gmshfilecontent);
 
+#if 0
                 // compute average velocity jump
                 {
                   // here, a triangular boundary integration cell is assumed (numvertices = 3)
+                  if (cell->Shape() != DRT::Element::tri3) dserror("Not implemented for this cell type");
                   const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
+                  const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
+
                   LINALG::SerialDenseMatrix cellXiDomaintmp = cell->CellNodalPosXiDomain();
                   const LINALG::Matrix<3,numvertices> cellXiDomain(cellXiDomaintmp);
 
@@ -2990,7 +3013,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
                   veljumpnormsquare += fac*veljumpnorm;
                 }
-
+#endif // computation averae velocity jump
               }
             }
           }

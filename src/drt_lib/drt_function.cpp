@@ -2176,19 +2176,22 @@ double DRT::UTILS::LevelSetCutTestFunction::Evaluate(int index, const double* xp
     phi = -0.1;
   // column of nodes (x = 0.6)
   else if ((xp[0] > 0.55) and (xp[0] < 0.65))
-    phi = 0.0 -1.0E-4;
+    phi = 0.0 +xp[1]*0.0001;
   // column of nodes (x = 0.7)
   else if ((xp[0] > 0.65) and (xp[0] < 0.75))
     phi = 0.1;
-  // column of nodes (x > 0.7)
-  else if (xp[0] > 0.75)
-    phi = xp[0]-0.6;
+  // column of nodes (x = 0.8)
+  else if ((xp[0] > 0.75) and (xp[0] < 0.85))
+    phi = 0.0 -(xp[1]-0.001)*0.0001;
+  // column of nodes (x = 0.9)
+  else if ((xp[0] > 0.85) and (xp[0] < 0.95))
+    phi = -0.1;
+  // column of nodes (x = 1.0)
+  else if (xp[0] > 0.95)
+    phi = -0.2;
   // something went wrong
   else
-  {
-    cout << xp[0] << endl;
    dserror("this node does not exist");
-  }
   return phi;
 }
 
