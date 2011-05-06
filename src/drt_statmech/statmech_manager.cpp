@@ -2183,7 +2183,7 @@ void StatMechManager::ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double
   discret_.ClearState();
   energy = (*energies)(0);
 
-  if(!discret_.Comm().MyPID()==0)
+  if(!discret_.Comm().MyPID())
   {
     FILE* fp = NULL;
     fp = fopen(filename.str().c_str(), "a");
