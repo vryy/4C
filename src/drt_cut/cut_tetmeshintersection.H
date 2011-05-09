@@ -25,9 +25,10 @@ namespace GEO
                            const std::vector<std::vector<int> > & tets,
                            const std::vector<int> & accept_tets,
                            const std::vector<Point*> & points,
-                           const std::set<Side*> & cut_sides );
+                           const std::set<Side*> & cut_sides,
+                           bool levelset );
 
-      void Cut( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, int count );
+      void Cut( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, int count, bool levelset );
 
       void Status();
 
@@ -104,9 +105,7 @@ namespace GEO
 
       void Register( Point * parent_point, Point * child_point );
 
-#if 0
       void CopyCutSide( Side * s, Facet * f );
-#endif
 
       Teuchos::RCP<PointPool> pp_;
 

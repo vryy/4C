@@ -173,7 +173,7 @@ void GEO::CUT::COLOREDGRAPH::Cycle::Split( Graph & graph, Graph & used, CycleLis
           {
             int p = i->first;
 
-            std::set<int> & row = graph[p];
+            std::set<int> & row = connection[p];
             for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
             {
               int p = *i;

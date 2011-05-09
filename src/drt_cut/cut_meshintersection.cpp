@@ -118,7 +118,7 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner )
 
   //Status();
 
-  m.CreateIntegrationCells( 0 );
+  m.CreateIntegrationCells( 0, false );
 
   Status();
 

@@ -17,7 +17,8 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
                                                     const std::vector<std::vector<int> > & tets,
                                                     const std::vector<int> & accept_tets,
                                                     const std::vector<Point*> & points,
-                                                    const std::set<Side*> & cut_sides )
+                                                    const std::set<Side*> & cut_sides,
+                                                    bool levelset )
   : pp_( Teuchos::rcp( new PointPool ) ),
     mesh_( options, 1, pp_ ),
     cut_mesh_( options, 1, pp_, true )
@@ -67,13 +68,20 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
     {
       Facet * f = *i;
 
-      triangulated.push_back( f );
-      std::set<Point*> points;
-      f->AllPoints( points );
-      for ( std::set<Point*>::iterator i=points.begin(); i!=points.end(); ++i )
+      if ( levelset or f->IsTriangulated() )
       {
-        Point *  p = *i;
-        nodemap[ToChild( p )];
+        triangulated.push_back( f );
+        std::set<Point*> points;
+        f->AllPoints( points );
+        for ( std::set<Point*>::iterator i=points.begin(); i!=points.end(); ++i )
+        {
+          Point *  p = *i;
+          nodemap[ToChild( p )];
+        }
+      }
+      else
+      {
+        CopyCutSide( s, f );
       }
     }
   }
@@ -155,7 +163,7 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
   Status();
 }
 
-void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, int count )
+void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, int count, bool levelset )
 {
   mesh_.Status();
 
@@ -201,7 +209,7 @@ void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, 
   mesh_.DumpGmsh( "mesh.pos" );
 #endif
 
-  mesh_.CreateIntegrationCells( count );
+  mesh_.CreateIntegrationCells( count, levelset );
 
   Fill( parent_mesh, element, parent_cells, cellmap );
 }
@@ -1023,7 +1031,6 @@ void GEO::CUT::TetMeshIntersection::Register( Point * parent_point, Point * chil
   parent_to_child_[parent_point] = child_point;
 }
 
-#if 0
 void GEO::CUT::TetMeshIntersection::CopyCutSide( Side * s, Facet * f )
 {
   const std::vector<Node*> & nodes = s->Nodes();
@@ -1105,7 +1112,8 @@ void GEO::CUT::TetMeshIntersection::CopyCutSide( Side * s, Facet * f )
 
     if ( p1!=NULL and p2!=NULL )
     {
-      Line * nl = mesh_.NewLine( p1, p2, cs, NULL, NULL );
+      std::vector<Line*> newlines;
+      mesh_.NewLine( p1, p2, cs, NULL, NULL, &newlines );
 
       std::set<Edge*> edges;
       p1->CommonEdge( p2, edges );
@@ -1116,16 +1124,23 @@ void GEO::CUT::TetMeshIntersection::CopyCutSide( Side * s, Facet * f )
         for ( std::set<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
         {
           Side * s = *i;
-          nl->AddSide( s );
+          for ( std::vector<Line*>::iterator i=newlines.begin(); i!=newlines.end(); ++i )
+          {
+            Line * nl = *i;
+            nl->AddSide( s );
+          }
           const std::set<Element*> & elements = s->Elements();
           for ( std::set<Element*>::const_iterator i=elements.begin(); i!=elements.end(); ++i )
           {
             Element * e = *i;
-            nl->AddElement( e );
+            for ( std::vector<Line*>::iterator i=newlines.begin(); i!=newlines.end(); ++i )
+            {
+              Line * nl = *i;
+              nl->AddElement( e );
+            }
           }
         }
       }
     }
   }
 }
-#endif

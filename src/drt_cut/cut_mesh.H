@@ -122,7 +122,7 @@ public:
 
   void FindNodalDOFSets( bool include_inner );
 
-  void CreateIntegrationCells( int count );
+  void CreateIntegrationCells( int count, bool levelset );
 
   void TestElementVolume( bool fatal );
 

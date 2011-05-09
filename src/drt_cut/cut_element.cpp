@@ -310,7 +310,7 @@ void GEO::CUT::Element::GetCutPoints( std::set<Point*> & cut_points )
   }
 }
 
-void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count )
+void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count, bool levelset )
 {
   if ( not active_ )
     return;
@@ -357,7 +357,8 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count )
     Facet * f = *i;
     if ( f->OnCutSide() and f->HasHoles() )
       throw std::runtime_error( "no holes in cut facet possible" );
-    f->GetAllPoints( mesh, cut_points, f->OnCutSide() );
+    //f->GetAllPoints( mesh, cut_points, f->OnCutSide() );
+    f->GetAllPoints( mesh, cut_points, levelset and f->OnCutSide() );
   }
 
   std::vector<Point*> points;
@@ -369,8 +370,7 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count )
   std::sort( points.begin(), points.end(), PointPidLess() );
 
   TetMesh tetmesh( points, facets_, false );
-
-  tetmesh.CreateElementTets( mesh, this, cells_, cut_faces_, count );
+  tetmesh.CreateElementTets( mesh, this, cells_, cut_faces_, count, levelset );
 }
 
 void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )

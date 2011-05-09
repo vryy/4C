@@ -1353,7 +1353,7 @@ void GEO::CUT::Mesh::FindNodalDOFSets( bool include_inner )
   }
 }
 
-void GEO::CUT::Mesh::CreateIntegrationCells( int count )
+void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool levelset )
 {
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
@@ -1364,7 +1364,7 @@ void GEO::CUT::Mesh::CreateIntegrationCells( int count )
     try
     {
 #endif
-      e.CreateIntegrationCells( *this, count+1 );
+      e.CreateIntegrationCells( *this, count+1, levelset );
 #ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
@@ -1383,7 +1383,7 @@ void GEO::CUT::Mesh::CreateIntegrationCells( int count )
     try
     {
 #endif
-      e.CreateIntegrationCells( *this, count+1 );
+      e.CreateIntegrationCells( *this, count+1, levelset );
 #ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
