@@ -145,6 +145,19 @@ private:
   std::set<Element*> elements_;
 };
 
+  inline std::ostream & operator<<( std::ostream & stream, Side & s )
+  {
+    stream << "side: {";
+    const std::vector<Node*> & nodes = s.Nodes();
+    for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+    {
+      Node * n = *i;
+      n->point()->Print( stream );
+      stream << ",";
+    }
+    stream << "}";
+    return stream;
+  }
 
 template <>
 class ConcreteSide<DRT::Element::tri3> : public Side

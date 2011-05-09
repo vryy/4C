@@ -71,7 +71,8 @@ namespace GEO
       /// find some (most) of the child cells for each parent cell
       void SeedCells( Mesh & parent_mesh,
                       const std::set<VolumeCell*> & parent_cells,
-                      std::map<VolumeCell*, ChildCell> & cellmap );
+                      std::map<VolumeCell*, ChildCell> & cellmap,
+                      std::set<VolumeCell*> & done_child_cells );
 
       void RegisterNewPoints( Mesh & parent_mesh, const std::set<VolumeCell*> & childset );
 

@@ -86,20 +86,24 @@ void GEO::CUT::VolumeCell::Neighbors( Point * p,
 
 void GEO::CUT::VolumeCell::GetAllPoints( Mesh & mesh, std::set<Point*> & cut_points )
 {
-  if ( points_.size()==0 )
+  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
-    for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+    Facet * f = *i;
+    f->GetAllPoints( mesh, cut_points );
+  }
+}
+
+bool GEO::CUT::VolumeCell::Contains( Point * p )
+{
+  for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  {
+    Facet * f = *i;
+    if ( f->Contains( p ) )
     {
-      Facet * f = *i;
-      f->GetAllPoints( mesh, cut_points );
+      return true;
     }
-    points_.reserve( cut_points.size() );
-    std::copy( cut_points.begin(), cut_points.end(), std::back_inserter( points_ ) );
   }
-  else
-  {
-    std::copy( points_.begin(), points_.end(), std::inserter( cut_points, cut_points.begin() ) );
-  }
+  return false;
 }
 
 void GEO::CUT::VolumeCell::CreateTet4IntegrationCells( Mesh & mesh,
@@ -201,26 +205,6 @@ void GEO::CUT::VolumeCell::Print( std::ostream & stream )
     Facet * f = *i;
     f->Print( stream );
   }
-}
-
-bool GEO::CUT::VolumeCell::Contains( Point * p )
-{
-  if ( points_.size() > 0 )
-  {
-    return std::binary_search( points_.begin(), points_.end(), p );
-  }
-  else
-  {
-    for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
-    {
-      Facet * f = *i;
-      if ( f->Contains( p ) )
-      {
-        return true;
-      }
-    }
-  }
-  return false;
 }
 
 void GEO::CUT::VolumeCell::NewBoundaryCell( Mesh & mesh, DRT::Element::DiscretizationType shape, Facet * f, const std::vector<Point*> & x )

@@ -213,6 +213,49 @@ private:
   std::set<VolumeCell*> cells_;
 };
 
+  inline std::ostream & operator<<( std::ostream & stream, Facet & f )
+  {
+    stream << "facet: {";
+    if ( f.IsTriangulated() )
+    {
+      const std::vector<std::vector<Point*> > & triangulation = f.Triangulation();
+      for ( std::vector<std::vector<Point*> >::const_iterator i=triangulation.begin();
+            i!=triangulation.end();
+            ++i )
+      {
+        const std::vector<Point*> & tri = *i;
+        stream << "{";
+        for ( std::vector<Point*>::const_iterator i=tri.begin(); i!=tri.end(); ++i )
+        {
+          Point * p = *i;
+          p->Print( stream );
+          stream << ",";
+        }
+        stream << "},";
+      }
+    }
+    else
+    {
+      const std::vector<Point*> & points = f.Points();
+      for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
+      {
+        Point * p = *i;
+        p->Print( stream );
+        stream << ",";
+      }
+      if ( f.HasHoles() )
+      {
+        const std::set<Facet*> & holes = f.Holes();
+        for ( std::set<Facet*>::const_iterator i=holes.begin(); i!=holes.end(); ++i )
+        {
+          Facet & h = **i;
+          stream << h;
+        }
+      }
+    }
+    stream << "}";
+    return stream;
+  }
 
   inline Facet * FindFacet( const std::set<Facet*> & facets, const std::vector<Point*> & side )
   {

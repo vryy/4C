@@ -118,9 +118,6 @@ private:
   /// defining facets
   std::set<Facet*> facets_;
 
-  /// all points of the volume
-  std::vector<Point*> points_;
-
   /// volume preserving simple shaped cells
   std::set<IntegrationCell*> integrationcells_;
 
