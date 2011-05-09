@@ -667,6 +667,12 @@ set(OBJS_POST_DRT_ENSIGHT
   src/post_ensight/post_drt_ensight_writer.cpp
   src/post_ensight/post_drt_ensight_writer_nurbs.cpp
 )
+set(OBJS_POST_DRT_GENERIC
+  src/post_generic/post_drt_generic.cpp
+  src/post_generic/post_drt_generic_single_field_writers.cpp
+  src/post_generic/post_drt_generic_structure_stress.cpp
+  src/post_generic/post_drt_generic_writer.cpp
+)
 set(OBJS_DRT_ELCH
   src/drt_elch/elch_algorithm.cpp
   src/drt_elch/elch_dyn.cpp
@@ -1556,6 +1562,7 @@ add_executable (${baciname} ${OBJS_BACI_MAIN})
 
 add_executable (post_drt_gid     ${OBJS_POST_DRT_GID} ${OBJS_POST_GID_TXT})
 add_executable (post_drt_ensight ${OBJS_POST_DRT_ENSIGHT})
+add_executable (post_drt_generic ${OBJS_POST_DRT_GENERIC})
 add_executable (post_drt_monitor ${OBJS_POST_DRT_MONITOR})
 add_executable (post_drt_s8convert ${OBJS_POST_DRT_S8CONVERT})
 
@@ -1589,9 +1596,9 @@ set(FILTER_LIBRARIES
 
 target_link_libraries (post_drt_gid ${FILTER_LIBRARIES})
 target_link_libraries (post_drt_ensight ${FILTER_LIBRARIES})
+target_link_libraries (post_drt_generic ${FILTER_LIBRARIES})
 target_link_libraries (post_drt_monitor ${FILTER_LIBRARIES})
 target_link_libraries (post_drt_s8convert ${FILTER_LIBRARIES})
-
 target_link_libraries (pre_curve ${FILTER_LIBRARIES})
 
 option (D_EXODUS "exodus filter" OFF)
