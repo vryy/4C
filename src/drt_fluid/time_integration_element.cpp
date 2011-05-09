@@ -30,39 +30,40 @@ LINALG::Matrix<3,1> FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
     const LINALG::Matrix<3,1>&                 velnm,
     const LINALG::Matrix<3,1>&                 accn,
     const INPAR::FLUID::TimeIntegrationScheme  timealgo,
-    const double                        dta,
-    const double                        theta
+    const double                               dta,
+    const double                               theta
 )
 {
   LINALG::Matrix<3,1> hist;
   switch (timealgo)
   {
-  case INPAR::FLUID::timeint_stationary:
-  {
-    hist = 0.0;
-    break;
-  }
-  case INPAR::FLUID::timeint_one_step_theta:
-  {
-    const int nsd = 3;
-    for(int isd = 0; isd < nsd; ++isd)
+    case INPAR::FLUID::timeint_stationary:
+    case INPAR::FLUID::timeint_afgenalpha:
     {
-      hist(isd) = veln(isd) + dta*(1.0-theta)*accn(isd);
+      hist = 0.0;
+      break;
     }
-    break;
-  }
-  case INPAR::FLUID::timeint_bdf2:
-  {
-    const int nsd = 3;
-    for(int isd = 0; isd < nsd; ++isd)
+    case INPAR::FLUID::timeint_one_step_theta:
     {
-      hist(isd) = (4.0/3.0)*veln(isd) - (1.0/3.0)*velnm(isd);
+      const int nsd = 3;
+      for(int isd = 0; isd < nsd; ++isd)
+      {
+        hist(isd) = veln(isd) + dta*(1.0-theta)*accn(isd);
+      }
+      break;
     }
-    break;
-  }
-  default:
-    dserror("Time integration scheme unknown!");
-    exit(1);
+    case INPAR::FLUID::timeint_bdf2:
+    {
+      const int nsd = 3;
+      for(int isd = 0; isd < nsd; ++isd)
+      {
+        hist(isd) = (4.0/3.0)*veln(isd) - (1.0/3.0)*velnm(isd);
+      }
+      break;
+    }
+    default:
+      dserror("Time integration scheme unknown!");
+      exit(1);
   }
   return hist;
 }
@@ -70,29 +71,30 @@ LINALG::Matrix<3,1> FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(
-    const INPAR::FLUID::TimeIntegrationScheme timealgo,
-    const double               dt,
-    const double               theta
+    const INPAR::FLUID::TimeIntegrationScheme  timealgo,
+    const double                               dt,
+    const double                               theta
   )
 {
   double timefac;
   switch (timealgo)
   {
-  case INPAR::FLUID::timeint_stationary:
-    timefac = 1.0;
-    break;
+    case INPAR::FLUID::timeint_stationary:
+      timefac = 1.0;
+      break;
 
-  case INPAR::FLUID::timeint_one_step_theta:
-    timefac = theta*dt;
-    break;
+    case INPAR::FLUID::timeint_one_step_theta:
+    case INPAR::FLUID::timeint_afgenalpha:
+      timefac = theta*dt;
+      break;
 
-  case INPAR::FLUID::timeint_bdf2:
-    timefac = 2.0/3.0 * dt;
-    break;
+    case INPAR::FLUID::timeint_bdf2:
+      timefac = 2.0/3.0 * dt;
+      break;
 
-  default:
-    dserror("Time integration scheme unknown!");
-    exit(1);
+    default:
+      dserror("Time integration scheme unknown!");
+      exit(1);
   }
   return timefac;
 }
