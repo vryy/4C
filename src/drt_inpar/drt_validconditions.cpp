@@ -2358,7 +2358,29 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surfthermoconvect);
 
   /*--------------------------------------------------------------------*/
+ 
+  // Embedding Tissue
 
+  Teuchos::RCP<ConditionDefinition> embeddingtissuecond =
+    Teuchos::rcp(new ConditionDefinition("DESIGN EMBEDDING TISSUE CONDITIONS",
+                                         "EmbeddingTissue",
+                                         "Embedding Tissue",
+                                         DRT::Condition::EmbeddingTissue,
+                                         true,
+                                         DRT::Condition::Surface));
+  
+  
+  AddNamedReal(embeddingtissuecond,"stiff");
+  AddNamedReal(embeddingtissuecond,"offset");
+  embeddingtissuecond->AddComponent(Teuchos::rcp(new StringConditionComponent("model", "lin",
+                                                                                       Teuchos::tuple<std::string>("lin","nonlin"),
+                                                                                       Teuchos::tuple<std::string>("lin","nonlin"),
+                                                                                       true)));
+  
+  condlist.push_back(embeddingtissuecond);
+  //embeddingtissuecond->Print(cout, NULL, "");
+ 
+ 
 
   return vc;
 
