@@ -16,13 +16,14 @@
 #include <Teuchos_ParameterList.hpp>
 
 #include "../drt_lib/drt_discret.H"
+#include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_inpar/inpar_fsi.H"
 
 //forward declarations
 namespace ADAPTER
 {
-  class CouplingMortar;
+//  class CouplingMortar;
   class FluidMovingBoundary;
   class Structure;
   class Fluid;
@@ -139,6 +140,20 @@ namespace FSI
           ADAPTER::CouplingMortar& coupsf          ///< mortar adapter
       );
       
+      /// Compute new coupling matrices D and M
+      void EvaluateFluidMortar
+      (
+          Teuchos::RCP<Epetra_Vector> idispma, ///< displacement of structure
+          Teuchos::RCP<Epetra_Vector> idispsl    ///< (proj.) displacement of ale
+      );
+
+      /*----------------------------------------------------------------------*/
+      /*----------------------------------------------------------------------*/
+      Teuchos::RCP<Epetra_Vector> InterpolateFluid
+      (
+          Teuchos::RCP<const Epetra_Vector> uold
+      );
+
       /// write history vectors for restart
       void OutputRestart
       (
@@ -203,14 +218,6 @@ namespace FSI
           const Epetra_Comm& comm
       );
 
-
-//      /// Compute pairs of projection nodes and sliding nodes
-//      void BuildProjPairs
-//      (
-//          Teuchos::RCP<DRT::Discretization> fluiddis,
-//          DRT::Discretization& interfacedis
-//      );
-
     private:  
     
       const INPAR::FSI::SlideALEProj aletype_;
@@ -229,8 +236,6 @@ namespace FSI
       map<int, Teuchos::RCP<DRT::Element> > fluidreduelements_;
       map<int, Teuchos::RCP<DRT::Element> > structreduelements_;
 
-//      map<int,int> fluidpairs_;
-
       Teuchos::RCP<Epetra_Map> structdofrowmap_;
       Teuchos::RCP<Epetra_Map> fluiddofrowmap_;
       Teuchos::RCP<Epetra_Map> structfullnodemap_;
@@ -243,6 +248,9 @@ namespace FSI
       
       bool structcoupmaster_; ///< is structure master of coupling?
       
+      /// coupling of fluid before and fluid after the sliding
+      ADAPTER::CouplingMortar               coupff_;
+
     }; // class SlideAleUtils
     
   }

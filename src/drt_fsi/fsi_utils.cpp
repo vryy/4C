@@ -780,8 +780,7 @@ slideeleredmap_(null)
 
   maxmindist_ = 1.0e-1;
 
-//  BuildProjPairs(fluiddis,coupsf.Interface()->Discret());
-
+  coupff_.Setup(*fluiddis);
 }
 
 /*----------------------------------------------------------------------*/
@@ -867,8 +866,34 @@ void FSI::UTILS::SlideAleUtils::EvaluateMortar
   idispms_ -> Import(*ifluid,*slimpo,Add);
 
   //new D,M,Dinv out of disp of struct and fluid side
-  coupsf.Evaluate(idispms_);
+  //coupsf.Evaluate(idispms_);
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FSI::UTILS::SlideAleUtils::EvaluateFluidMortar
+(
+    Teuchos::RCP<Epetra_Vector> ima,
+    Teuchos::RCP<Epetra_Vector> isl
+)
+{
+  //new D,M,Dinv out of fluid disp before and after sliding
+  coupff_.Evaluate(ima,isl);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::UTILS::SlideAleUtils::InterpolateFluid
+(
+    Teuchos::RCP<const Epetra_Vector> uold
+)
+{
+  Teuchos::RCP<Epetra_Vector> unew = coupff_.MasterToSlave(uold);
+  unew->ReplaceMap(uold->Map());
+
+  return unew;
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1068,10 +1093,17 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
   //calculate structural interface center of gravity
   vector<double> centerdisp = Centerdisp(structure, comm);
 
-  Teuchos::RCP<Epetra_Vector> rotfull = LINALG::CreateVector(*coupsf.MasterDofRowMap(),true);
+  Teuchos::RCP<Epetra_Vector> frotfull = LINALG::CreateVector(*fluiddofrowmap_,true);
   if (aletype_==INPAR::FSI::ALEprojection_rot_z || aletype_==INPAR::FSI::ALEprojection_rot_zsphere)
+  {
+    if (!structcoupmaster_)
+      dserror("Sliding ALE with RotZ and RotZSphere not possible with structure split!");
+
+    Teuchos::RCP<Epetra_Vector> rotfull = LINALG::CreateVector(*coupsf.MasterDofRowMap(),true);
     Rotation(structure, comm, rotrat, rotfull);
-  Teuchos::RCP<Epetra_Vector> frotfull = coupsf.MasterToSlave(rotfull);
+    frotfull = coupsf.MasterToSlave(rotfull);
+  }
+
   // Project fluid nodes onto the struct interface
   //init of search tree
   Teuchos::RCP<GEO::SearchTree> searchTree = rcp(new GEO::SearchTree(0));
@@ -1176,12 +1208,14 @@ void FSI::UTILS::SlideAleUtils::RedundantElements
   // Furthermore we need the current position of the structnodes on every processor.
   // Elements provided by interface discretization, necessary maps provided by interface.
 
+  int offset = 0;
   if (structcoupmaster_)
   {
     structfullnodemap_ =  LINALG::AllreduceEMap(*(coupsf.Interface()->MasterRowDofs()));
     structfullelemap_ =  LINALG::AllreduceEMap(*(coupsf.Interface()->MasterRowElements()));
     fluidfullnodemap_ =  LINALG::AllreduceEMap(*(coupsf.Interface()->SlaveRowDofs()));
     fluidfullelemap_ =  LINALG::AllreduceEMap(*(coupsf.Interface()->SlaveRowElements()));
+    offset= 0;
   }
   else
   {
@@ -1189,6 +1223,7 @@ void FSI::UTILS::SlideAleUtils::RedundantElements
     fluidfullelemap_ =  LINALG::AllreduceEMap(*(coupsf.Interface()->MasterRowElements()));
     structfullnodemap_ =  LINALG::AllreduceEMap(*(coupsf.Interface()->SlaveRowDofs()));
     structfullelemap_ =  LINALG::AllreduceEMap(*(coupsf.Interface()->SlaveRowElements()));
+    offset = structfullelemap_->MinMyGID();
   }
 
   DRT::Discretization& interfacedis = coupsf.Interface()->Discret();
@@ -1212,7 +1247,7 @@ void FSI::UTILS::SlideAleUtils::RedundantElements
   for (int eleind = 0; eleind<redmstruslideleids.NumMyElements(); eleind++)
   {
     {
-      DRT::Element* tmpele = interfacedis.gElement(redmstruslideleids.GID(eleind));
+      DRT::Element* tmpele = interfacedis.gElement(redmstruslideleids.GID(eleind)+offset);
       if (dim == 3)
       {
         structreduelements_[tmpele->Id()]= rcp(new DRT::ELEMENTS::StructuralSurface(

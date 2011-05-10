@@ -72,6 +72,9 @@ namespace ADAPTER
                 int meshtyingoption,
                 bool structslave = false);
 
+    /// setup the machinery
+    void Setup( DRT::Discretization& dis );
+
     /// perform mesh initialization
     void MeshInit( DRT::Discretization& masterdis,
                    DRT::Discretization& slavedis,
@@ -81,8 +84,11 @@ namespace ADAPTER
                    Epetra_Comm& comm,
                    bool structslave);
 
-    ///filling matrices
+    ///filling matrices (standard case)
     void Evaluate(RCP<Epetra_Vector> idisp);
+
+    ///filling matrices (case of transferring same dofs on two different meshes)
+    void Evaluate(RCP<Epetra_Vector> idispma, RCP<Epetra_Vector> idispsl);
 
     RefCountPtr<Epetra_Vector> MasterToSlave
     (
@@ -133,6 +139,9 @@ namespace ADAPTER
 
 
   private:
+
+    ///filling matrices by using mortar interface
+    void Evaluate();
 
     RCP<MORTAR::MortarInterface>  interface_;        ///< interface
     RefCountPtr<Epetra_Map>       masterdofrowmap_;  ///< map of master row dofs

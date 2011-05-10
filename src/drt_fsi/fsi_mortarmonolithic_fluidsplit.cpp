@@ -257,7 +257,6 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
       rhs = Teuchos::rcp(new Epetra_Vector(a->Matrix(0,1).RowMap()));
       a->Matrix(0,1).Apply(*icoupfa_.MasterToSlave(iprojdispinc_),*rhs);
-      rhs->Scale(-1.);
 
       Extractor().AddVector(*rhs,2,f);
     }
@@ -962,8 +961,14 @@ void FSI::MortarMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
   // process ale unknowns based on fluid displacements
   Teuchos::RCP<Epetra_Vector> acx =  icoupfa_.MasterToSlave(fcx);
 
+<<<<<<< HEAD
+  //To uncomment
+  //if (aleproj_!= INPAR::FSI::ALEprojection_none)
+  //  acx->Update(1.0,*icoupfa_.MasterToSlave(iprojdispinc_),1.0);
+=======
 //  if (aleproj_!= INPAR::FSI::ALEprojection_none)
 //    acx->Update(1.0,*icoupfa_.MasterToSlave(iprojdispinc_),1.0);
+>>>>>>> 9153c3e34c5ffbbb133c59144aaab859ec19d41f
 
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
 
@@ -1005,10 +1010,10 @@ void FSI::MortarMonolithicFluidSplit::Update()
                         coupsfm_,
                         Comm());
 
-    iprojdispinc_->Update(1.0,*iprojdisp_,-1.0,*idispale,0.0);
+    iprojdispinc_->Update(-1.0,*iprojdisp_,1.0,*idispale,0.0);
 
     slideale_->EvaluateMortar(StructureField().ExtractInterfaceDispnp(), iprojdisp_, coupsfm_);
-
+    slideale_->EvaluateFluidMortar(idispale,iprojdisp_);
   }
 
   StructureField().Update();
@@ -1039,14 +1044,12 @@ void FSI::MortarMonolithicFluidSplit::Output()
   // update history variables for sliding ale
   if (aleproj_!= INPAR::FSI::ALEprojection_none)
   {
-    Teuchos::RCP<Epetra_Vector> fcx = LINALG::CreateVector(*FluidField().Interface().FSICondMap());
-
     Teuchos::RCP<Epetra_Vector> acx = icoupfa_.MasterToSlave(iprojdisp_);
     AleField().ApplyInterfaceDisplacements(acx);
     FluidField().ApplyMeshDisplacement(AleToFluid(AleField().ExtractDisplacement()));
 
-    FluidField().DisplacementToVelocity(iprojdisp_);
-    FluidField().ApplyInterfaceVelocities(iprojdisp_);
+    Teuchos::RCP<Epetra_Vector> unew = slideale_->InterpolateFluid(FluidField().ExtractInterfaceFluidVelocity());
+    FluidField().ApplyInterfaceVelocities(unew);
 
     FluidField().Update();
     AleField().Update();
