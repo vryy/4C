@@ -190,6 +190,8 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
     return airwayimplicit;
   }
 
+#else
+  return Teuchos::null;
 #endif
 } // end of dyn_red_airways_drt()
 
