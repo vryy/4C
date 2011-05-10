@@ -568,6 +568,19 @@ bool GEO::CUT::Facet::Contains( const std::vector<Point*> & side ) const
   return true;
 }
 
+bool GEO::CUT::Facet::ContainsSome( const std::vector<Point*> & side ) const
+{
+  for ( std::vector<Point*>::const_iterator i=side.begin(); i!=side.end(); ++i )
+  {
+    Point * p = *i;
+    if ( Contains( p ) )
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool GEO::CUT::Facet::Touches( Facet * f )
 {
   for ( std::vector<Point*>::iterator i=points_.begin(); i!=points_.end(); ++i )

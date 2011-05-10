@@ -103,6 +103,8 @@ public:
 
   bool Contains( const std::vector<Point*> & side ) const;
 
+  bool ContainsSome( const std::vector<Point*> & side ) const;
+
   bool Touches( Facet * f );
 
   VolumeCell * Neighbor( VolumeCell * cell );

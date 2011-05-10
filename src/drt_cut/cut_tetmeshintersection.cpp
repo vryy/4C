@@ -789,14 +789,12 @@ void GEO::CUT::TetMeshIntersection::SeedCells( Mesh & parent_mesh,
 
 void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap )
 {
-  for ( std::set<VolumeCell*>::const_iterator i=parent_cells.begin();
-        i!=parent_cells.end();
-        ++i )
+  for ( std::map<VolumeCell*, ChildCell>::iterator i=cellmap.begin(); i!=cellmap.end(); ++i )
   {
-    VolumeCell * parent_cell = *i;
-    std::set<VolumeCell*> & childset = cellmap[parent_cell].cells_;
-
-    std::map<Side*, std::vector<Facet*> > & facetsonsurface = cellmap[parent_cell].facetsonsurface_;
+    VolumeCell * parent_cell = i->first;
+    ChildCell & cc = i->second;
+    std::set<VolumeCell*> & childset = cc.cells_;
+    std::map<Side*, std::vector<Facet*> > & facetsonsurface = cc.facetsonsurface_;
 
     for ( std::set<VolumeCell*>::iterator i=childset.begin(); i!=childset.end(); ++i )
     {
@@ -846,7 +844,32 @@ void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element,
         }
         else if ( facets.size()>1 )
         {
-          throw std::runtime_error( "Multiple parts of a cut side? Hard to believe." );
+          // this can happen with levelset
+
+          // get facet points in case those differ from boundary cell points
+          std::vector<Point*> facet_points = child_facet->Points();
+          ToParent( parent_mesh, facet_points );
+
+          // search for matching parent facet
+          for ( std::vector<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
+          {
+            Facet * f = *i;
+            if ( f->ContainsSome( facet_points ) )
+            {
+              if ( parent_facet==NULL )
+              {
+                parent_facet = f;
+              }
+              else
+              {
+                throw std::runtime_error( "parent facet not unique" );
+              }
+            }
+          }
+          if ( parent_facet==NULL )
+          {
+            throw std::runtime_error( "no parent facet found" );
+          }
         }
         else
         {
