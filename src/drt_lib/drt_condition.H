@@ -205,7 +205,8 @@ public:
     VolumetricFlowBorderNodes,
     ThermoConvections,
     ScaTraFluxCalc,
-    ScaTraCoupling
+    ScaTraCoupling,
+    EmbeddingTissue
   };
 
   /*!
