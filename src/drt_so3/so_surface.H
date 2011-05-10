@@ -161,6 +161,10 @@ public:
   virtual DRT::ElementType & ElementType() const
   { return StructuralSurfaceType::Instance(); }
 
+  virtual vector<RCP<DRT::Element> > Lines();
+  
+  virtual int NumLine() const {return DRT::UTILS::getNumberOfElementLines(Shape());}
+
   /*!
   \brief Evaluate a Neumann boundary condition
 
@@ -192,10 +196,6 @@ public:
                        Epetra_SerialDenseVector& elevector2,
                        Epetra_SerialDenseVector& elevector3);
 
-  virtual vector<RCP<DRT::Element> > Lines();
-  
-  virtual int NumLine() const {return DRT::UTILS::getNumberOfElementLines(Shape());}
-  
 
 protected:
 
@@ -218,7 +218,8 @@ protected:
     calc_brownian_motion_damping,
     calc_struct_centerdisp,
     calc_struct_rotation,
-    calc_undo_struct_rotation
+    calc_undo_struct_rotation,
+    calc_struct_area
   };
 
   // don't want = operator

@@ -399,11 +399,42 @@ void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(vector<double>& normal
   return;
 }
 
+/*----------------------------------------------------------------------*
+ * Evaluate sqrt of determinant of metric at gp (private)      gee 04/08|
+ * ---------------------------------------------------------------------*/
+void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(double& detA,
+                                                          vector<double>& normal,
+                                                          const Epetra_SerialDenseMatrix& x,
+                                                          const Epetra_SerialDenseMatrix& deriv)
+{
+
+  // compute dXYZ / drs
+  LINALG::SerialDenseMatrix dxyzdrs(2,3);
+  dxyzdrs.Multiply('N','N',1.0,deriv,x,0.0);
+
+  /* compute covariant metric tensor G for surface element
+  **                        | g11   g12 |
+  **                    G = |           |
+  **                        | g12   g22 |
+  ** where (o denotes the inner product, xyz a vector)
+  **
+  **       dXYZ   dXYZ          dXYZ   dXYZ          dXYZ   dXYZ
+  ** g11 = ---- o ----    g12 = ---- o ----    g22 = ---- o ----
+  **        dr     dr            dr     ds            ds     ds
+  */
+  LINALG::SerialDenseMatrix metrictensor(2,2);
+  metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
+  detA = sqrt( metrictensor(0,0)*metrictensor(1,1)-metrictensor(0,1)*metrictensor(1,0) );
+  normal[0] = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
+  normal[1] = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
+  normal[2] = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(0,1) * dxyzdrs(1,0);
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  * Calculates dnormal/dx_j with Saccado  DFAD            holfelder 04/09|
  * ---------------------------------------------------------------------*/
-
 void DRT::ELEMENTS::StructuralSurface::FAD_DFAD_DSurfaceIntegration(
                                                           Epetra_SerialDenseMatrix& d_normal,
                                                           const Epetra_SerialDenseMatrix& x,
@@ -610,38 +641,6 @@ void DRT::ELEMENTS::StructuralSurface::	FiniteDiff_DSurfaceIntegration(Epetra_Se
 
   return;
 }
-/*----------------------------------------------------------------------*
- * Evaluate sqrt of determinant of metric at gp (private)      gee 04/08|
- * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(double& detA,
-                                                          vector<double>& normal,
-                                                          const Epetra_SerialDenseMatrix& x,
-                                                          const Epetra_SerialDenseMatrix& deriv)
-{
-
-  // compute dXYZ / drs
-  LINALG::SerialDenseMatrix dxyzdrs(2,3);
-  dxyzdrs.Multiply('N','N',1.0,deriv,x,0.0);
-
-  /* compute covariant metric tensor G for surface element
-  **                        | g11   g12 |
-  **                    G = |           |
-  **                        | g12   g22 |
-  ** where (o denotes the inner product, xyz a vector)
-  **
-  **       dXYZ   dXYZ          dXYZ   dXYZ          dXYZ   dXYZ
-  ** g11 = ---- o ----    g12 = ---- o ----    g22 = ---- o ----
-  **        dr     dr            dr     ds            ds     ds
-  */
-  LINALG::SerialDenseMatrix metrictensor(2,2);
-  metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
-  detA = sqrt( metrictensor(0,0)*metrictensor(1,1)-metrictensor(0,1)*metrictensor(1,0) );
-  normal[0] = dxyzdrs(0,1) * dxyzdrs(1,2) - dxyzdrs(0,2) * dxyzdrs(1,1);
-  normal[1] = dxyzdrs(0,2) * dxyzdrs(1,0) - dxyzdrs(0,0) * dxyzdrs(1,2);
-  normal[2] = dxyzdrs(0,0) * dxyzdrs(1,1) - dxyzdrs(0,1) * dxyzdrs(1,0);
-
-  return;
-}
 
 /*----------------------------------------------------------------------*
  * Evaluate method for StructuralSurface-Elements               tk 10/07*
@@ -674,6 +673,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   else if (action=="calc_struct_centerdisp") 	     act = StructuralSurface::calc_struct_centerdisp;
   else if (action=="calc_struct_rotation")         act = StructuralSurface::calc_struct_rotation;
   else if (action=="calc_undo_struct_rotation")    act = StructuralSurface::calc_undo_struct_rotation;
+  else if (action=="calc_struct_area") 	           act = StructuralSurface::calc_struct_area;
   else
   {
     cout << action << endl;
@@ -1290,6 +1290,30 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
     elematrix1 = *Adiff2;
     elematrix1.Scale(-1.0);
     elevector3[0] = elearea;
+  }
+  break;
+  case calc_struct_area:
+  {
+    const int numnode = NumNode();
+    LINALG::SerialDenseMatrix x(numnode,3);
+    MaterialConfiguration(x);
+    //LINALG::SerialDenseVector  funct(numnode);
+    LINALG::SerialDenseMatrix  deriv(2,numnode);
+    const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+    double a = 0.0;
+    for (int gp=0; gp<intpoints.nquad; gp++)
+    {
+      const double e0 = intpoints.qxg[gp][0];
+      const double e1 = intpoints.qxg[gp][1];
+      DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
+      vector<double> normal(3);
+      double detA;
+      SurfaceIntegration(detA,normal,x,deriv);
+      a += (intpoints.qwgt[gp] * detA);
+    }
+    double atmp = params.get("area",-1.0);
+    a += atmp;
+    params.set("area",a);
   }
   break;
   default:
