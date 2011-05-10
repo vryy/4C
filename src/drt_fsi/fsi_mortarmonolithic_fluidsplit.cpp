@@ -961,15 +961,6 @@ void FSI::MortarMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
   // process ale unknowns based on fluid displacements
   Teuchos::RCP<Epetra_Vector> acx =  icoupfa_.MasterToSlave(fcx);
 
-<<<<<<< HEAD
-  //To uncomment
-  //if (aleproj_!= INPAR::FSI::ALEprojection_none)
-  //  acx->Update(1.0,*icoupfa_.MasterToSlave(iprojdispinc_),1.0);
-=======
-//  if (aleproj_!= INPAR::FSI::ALEprojection_none)
-//    acx->Update(1.0,*icoupfa_.MasterToSlave(iprojdispinc_),1.0);
->>>>>>> 9153c3e34c5ffbbb133c59144aaab859ec19d41f
-
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
 
   Teuchos::RCP<Epetra_Vector> a = AleField().Interface().InsertOtherVector(aox);
