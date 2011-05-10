@@ -160,6 +160,41 @@ void GEO::CUT::OctTreeNode::AddPoint( const double * x, Teuchos::RCP<Point> p )
   bb_.AddPoint( x );
 }
 
+void GEO::CUT::OctTreeNode::CollectEdges( const BoundingBox & edgebox, std::set<Edge*> & edges )
+{
+  if ( not IsLeaf() )
+  {
+    if ( edgebox.Within( norm_, bb_ ) )
+    {
+      for ( int i=0; i<8; ++i )
+      {
+        nodes_[i]->CollectEdges( edgebox, edges );
+      }
+    }
+  }
+  else
+  {
+    BoundingBox sbox;
+    for ( std::set<Teuchos::RCP<Point>, PointPidLess>::iterator i=points_.begin(); i!=points_.end(); ++i )
+    {
+      Point * p = &**i;
+      const std::set<Edge*> & sds = p->CutEdges();
+      for ( std::set<Edge*>::iterator i=sds.begin(); i!=sds.end(); ++i )
+      {
+        Edge * s = *i;
+        if ( edges.count( s )==0 )
+        {
+          sbox.Assign( *s );
+          if ( sbox.Within( norm_, edgebox ) )
+          {
+            edges.insert( s );
+          }
+        }
+      }
+    }
+  }
+}
+
 void GEO::CUT::OctTreeNode::CollectSides( const BoundingBox & sidebox, std::set<Side*> & sides )
 {
   if ( not IsLeaf() )

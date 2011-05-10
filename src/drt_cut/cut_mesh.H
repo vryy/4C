@@ -200,6 +200,8 @@ public:
 
   const std::list<Teuchos::RCP<VolumeCell> > & VolumeCells() const { return cells_; }
 
+  const std::map<std::set<int>, Teuchos::RCP<Edge> > & Edges() const { return edges_; }
+
 private:
 
   void DumpGmsh( std::ofstream & file, const std::vector<Node*> & nodes, char elementtype );

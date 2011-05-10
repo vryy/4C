@@ -251,6 +251,60 @@ bool GEO::CUT::Edge::IsCut( Side * side )
   return false;
 }
 
+bool GEO::CUT::Edge::ComputeCut( Edge * other, double & pos, LINALG::Matrix<3,1> & x )
+{
+  LINALG::Matrix<3,1> p1;
+  LINALG::Matrix<3,1> p2;
+  LINALG::Matrix<3,1> u1;
+  LINALG::Matrix<3,1> u2;
+
+  const double * x11 = other->BeginNode()->point()->X();
+  const double * x12 = other->EndNode()  ->point()->X();
+  const double * x21 =  this->BeginNode()->point()->X();
+  const double * x22 =  this->EndNode()  ->point()->X();
+
+  for ( int i=0; i<3; ++i )
+  {
+    p1( i ) = .5*( x11[i] + x12[i] );
+    p2( i ) = .5*( x21[i] + x22[i] );
+    u1( i ) = .5*( x12[i] - x11[i] );
+    u2( i ) = .5*( x22[i] - x21[i] );
+  }
+
+  LINALG::Matrix<3,1> w;
+  w.Update( 1, p1, -1, p2, 0 );
+
+  double a = u1.Dot( u1 );
+  double b = u1.Dot( u2 );
+  double c = u2.Dot( u2 );
+  double d = u1.Dot( w );
+  double e = u2.Dot( w );
+
+  double denom = a*c - b*b;
+
+  if ( denom >= std::numeric_limits<double>::min() )
+  {
+    denom = 1./denom;
+    double s = denom * ( b*e-c*d );
+    double t = denom * ( a*e-b*d );
+
+    pos = t;
+    x.Update( 1, p1, s, u1, 0 );
+
+    w.Update( 1, p2, t, u2, 0 );
+    w.Update( 1, x, -1 );
+    double distance = w.Norm2();
+
+    return ( distance < TOLERANCE and
+             s >= -1-TOLERANCE and
+             s <=  1+TOLERANCE and
+             t >= -1-TOLERANCE and
+             t <=  1+TOLERANCE );
+  }
+
+  return false;
+}
+
 GEO::CUT::Point* GEO::CUT::Edge::NodeInElement( Element * element, Point * other )
 {
   Point * p = BeginNode()->point();

@@ -2,15 +2,16 @@
 #include <Shards_BasicTopologies.hpp>
 #include <Shards_CellTopologyTraits.hpp>
 
-#include "cut_tetmeshintersection.H"
-#include "cut_side.H"
-#include "cut_node.H"
-#include "cut_facet.H"
-#include "cut_volumecell.H"
-#include "cut_integrationcell.H"
 #include "cut_boundarycell.H"
-#include "cut_pointpool.H"
+#include "cut_boundingbox.H"
+#include "cut_facet.H"
+#include "cut_integrationcell.H"
+#include "cut_node.H"
 #include "cut_options.H"
+#include "cut_pointpool.H"
+#include "cut_side.H"
+#include "cut_tetmeshintersection.H"
+#include "cut_volumecell.H"
 
 GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
                                                     Element * element,
@@ -163,6 +164,64 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
   Status();
 }
 
+void GEO::CUT::TetMeshIntersection::FindEdgeCuts()
+{
+  std::set<Edge*> cut_edges;
+  const std::map<std::set<int>, Teuchos::RCP<Edge> > & c_edges = mesh_.Edges();
+  for ( std::map<std::set<int>, Teuchos::RCP<Edge> >::const_iterator i=c_edges.begin();
+        i!=c_edges.end();
+        ++i )
+  {
+    Edge * e = &*i->second;
+    cut_edges.insert( e );
+  }
+
+#if 0
+  std::set<Edge*> mesh_edges;
+  const std::map<std::set<int>, Teuchos::RCP<Edge> > & m_edges = mesh_.Edges();
+  for ( std::map<std::set<int>, Teuchos::RCP<Edge> >::const_iterator i=m_edges.begin();
+        i!=m_edges.end();
+        ++i )
+  {
+    Edge * e = &*i->second;
+    Node * n1 = e->BeginNode();
+    Node * n2 = e->EndNode();
+    if ( n1->Position()==Point::oncutsurface and n2->Position()==Point::oncutsurface )
+    {
+      mesh_edges.insert( e );
+    }
+  }
+#endif
+
+  for ( std::set<Edge*>::iterator i=cut_edges.begin(); i!=cut_edges.end(); ++i )
+  {
+    Edge * ce = *i;
+    BoundingBox edgebox( *ce );
+    std::set<Edge*> edges;
+    pp_->CollectEdges( edgebox, edges );
+    //edges.erase( ce );
+
+    double pos;
+    LINALG::Matrix<3,1> x;
+
+    for ( std::set<Edge*>::iterator i=edges.begin(); i!=edges.end(); ++i )
+    {
+      Edge * e = *i;
+      if ( cut_edges.count( e )==0 )
+      {
+        // Find cut points between edges. Some might be new.
+
+        bool iscut = e->ComputeCut( ce, pos, x );
+        if ( iscut )
+        {
+          Point * p = Point::NewPoint( mesh_, x.A(), pos, ce, NULL );
+          p->AddEdge( e );
+        }
+      }
+    }
+  }
+}
+
 void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, int count, bool levelset )
 {
   mesh_.Status();
@@ -179,6 +238,8 @@ void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, 
     cut_mesh_.DumpGmsh( str.str().c_str() );
   }
 #endif
+
+  FindEdgeCuts();
 
   std::set<Element*> elements_done;
   cut_mesh_.Cut( mesh_, elements_done );
@@ -282,7 +343,6 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
   {
     int backup = nonnodecells;
 
-#if 1
     for ( std::map<VolumeCell*, ChildCell>::iterator i=cellmap.begin(); i!=cellmap.end(); ++i )
     {
       //VolumeCell * vc = i->first;
@@ -493,7 +553,6 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
         }
       }
     }
-#endif
 
     if ( nonnodecells==1 )
     {

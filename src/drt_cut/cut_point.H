@@ -122,6 +122,8 @@ public:
 
   //std::vector<Edge*> CutEdges( Point * other );
 
+  const std::set<Edge*> & CutEdges() { return cut_edges_; }
+
   const std::set<Side*> & CutSides() { return cut_sides_; }
 
   Side * CutSide( Side * side, Point * other );

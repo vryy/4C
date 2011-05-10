@@ -160,6 +160,8 @@ public:
 
   bool IsCut( Side * side );
 
+  bool ComputeCut( Edge * other, double & pos, LINALG::Matrix<3,1> & x );
+
   Node* BeginNode() { return nodes_.front(); }
 
   Node* MiddleNode()

@@ -55,6 +55,8 @@ namespace GEO
         std::map<Side*, std::vector<Facet*> > facetsonsurface_;
       };
 
+      void FindEdgeCuts();
+
       /// find the mapping between child VolumeCells and parent VolumeCells.
       void MapVolumeCells( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap );
 

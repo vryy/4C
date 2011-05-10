@@ -29,6 +29,8 @@ public:
 
   explicit BoundingBox( Element & element );
 
+  void Assign( Edge & edge );
+
   void Assign( Side & side );
 
   void Assign( Element & element );

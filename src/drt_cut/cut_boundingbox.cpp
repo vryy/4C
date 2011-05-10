@@ -34,6 +34,13 @@ void GEO::CUT::BoundingBox::Assign( Side & side )
   AddPoints( nodes );
 }
 
+void GEO::CUT::BoundingBox::Assign( Edge & edge )
+{
+  empty_ = true;
+  const std::vector<Node*> & nodes = edge.Nodes();
+  AddPoints( nodes );
+}
+
 void GEO::CUT::BoundingBox::Assign( Element & element )
 {
   empty_ = true;
