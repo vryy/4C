@@ -19,7 +19,6 @@ Maintainer: Michael Gee
 #include "../drt_lib/global_inp_control2.H"
 #include <iostream>
 
-
 using namespace std;
 
 
@@ -68,6 +67,77 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis)
   }
   //-------------------------------------------------------------------------
   
+
+
+  //------------test discretization of presence of embedding tissue condition
+  vector<DRT::Condition*> embedcond;
+  dis.GetCondition("EmbeddingTissue",embedcond);
+  if ((int)embedcond.size())
+  {
+    if (!dis.Comm().MyPID()) cout << "Computing area for embedding tissue...\n";
+
+    // loop all embedding tissue conditions
+    for (int cond=0; cond<(int)embedcond.size(); ++cond)
+    {
+      // a vector for all row nodes to hold element area contributions
+      Epetra_Vector nodalarea(*dis.NodeRowMap(),true);
+      
+      //cout << *embedcond[cond];
+      map<int,RCP<DRT::Element> >& geom = embedcond[cond]->Geometry();
+      map<int,RCP<DRT::Element> >::iterator ele;
+      for (ele=geom.begin(); ele != geom.end(); ++ele)
+      {
+        DRT::Element* element = ele->second.get();
+        LINALG::SerialDenseMatrix x(element->NumNode(),3);
+        for (int i=0; i<element->NumNode(); ++i)
+        {
+          x(i,0) = element->Nodes()[i]->X()[0];
+          x(i,1) = element->Nodes()[i]->X()[1];
+          x(i,2) = element->Nodes()[i]->X()[2];
+        }
+        Teuchos::ParameterList params;
+        params.set("action","calc_struct_area");
+        params.set("area",0.0);
+        vector<int> lm;
+        vector<int> lmowner;
+        vector<int> lmstride;
+        element->LocationVector(dis,lm,lmowner,lmstride);
+        Epetra_SerialDenseMatrix dummat(0,0);
+        Epetra_SerialDenseVector dumvec(0);
+        element->Evaluate(params,dis,lm,dummat,dummat,dumvec,dumvec,dumvec);
+        double a = params.get("area",-1.0);
+        //printf("Ele %d a %10.5e\n",element->Id(),a);
+        
+        // loop over all nodes of the element an share the area
+        // do only contribute to my own row nodes
+        const double apernode = a / element->NumNode();
+        for (int i=0; i<element->NumNode(); ++i)
+        {
+          int gid = element->Nodes()[i]->Id();
+          if (!dis.NodeRowMap()->MyGID(gid)) continue;
+          nodalarea[dis.NodeRowMap()->LID(gid)] += apernode;
+        }
+      } // for (ele=geom.begin(); ele != geom.end(); ++ele)
+      
+      // now we have the area per node, put it in a vector that is equal to the nodes vector
+      // consider only my row nodes
+      const vector<int>* nodes = embedcond[cond]->Nodes();
+      vector<double> apern(nodes->size(),0.0);
+      for (int i=0; i<(int)nodes->size(); ++i)
+      {
+        int gid = (*nodes)[i];
+        if (!nodalarea.Map().MyGID(gid)) continue;
+        apern[i] = nodalarea[nodalarea.Map().LID(gid)];
+      }
+      // set this vector to the condition
+      (*embedcond[cond]).Add("areapernode",apern);
+      //cout << *embedcond[cond];
+      
+      
+    } // for (int cond=0; cond<(int)embedcond.size(); ++cond)
+    
+  } // if ((int)embedcond.size())
+  //-------------------------------------------------------------------------
   
   
   
@@ -77,6 +147,7 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis)
     cout << "Leaving patient specific structural preprocessing (PATSPEC)\n";
     cout << "____________________________________________________________\n";
   }
+
 
   return;
 }
@@ -433,7 +504,86 @@ void PATSPEC::GetLocalRadius(const int eleid,
   
 }
 
+/*----------------------------------------------------------------------*
+ |                                                              gee 4/11|
+ *----------------------------------------------------------------------*/
+void PATSPEC::CheckEmbeddingTissue(DRT::Discretization& discret,
+                            Teuchos::RCP<LINALG::SparseOperator> stiff,
+                            Teuchos::RCP<Epetra_Vector> fint)
+{
+  RCP<const Epetra_Vector> disp = discret.GetState("displacement");  
+  if (disp==Teuchos::null) dserror("Cannot find displacement state in discretization");
+  
+  vector<DRT::Condition*> embedcond;
+  discret.GetCondition("EmbeddingTissue",embedcond);
+  
+  const Epetra_Map* nodemap = discret.NodeRowMap();
+  Epetra_IntVector nodevec = Epetra_IntVector(*nodemap, true);
+  
 
+  int dnodecount = 0;
+  for (int i=0; i<(int)embedcond.size(); ++i)
+  {
+    const vector<int>* nodes = embedcond[i]->Nodes();
+    double springstiff = embedcond[i]->GetDouble("stiff");
+    const string* model = embedcond[i]->Get<string>("model");
+    double offset = embedcond[i]->GetDouble("offset");
+   
+    
+    const vector<int>& nds = *nodes;
+    for (int j=0; j<(int)nds.size(); ++j)
+    {
+    	
+      if (nodemap->MyGID(nds[j]))
+      {
+	int gid = nds[j];
+        DRT::Node* node = discret.gNode(gid);
+	
 
+        if (!node) dserror("Cannot find global node %d",gid);
+       
+        if (nodevec[nodemap->LID(gid)]==0)
+        {
+          nodevec[nodemap->LID(gid)] = 1;
+        }
+        else if (nodevec[nodemap->LID(gid)]==1) 
+        {
+          dnodecount += 1;
+          continue;
+        }
+     
+        int numdof = discret.NumDof(node);
+        vector<int> dofs = discret.Dof(node);
+     
+        assert (numdof==3);
+      
+        vector<double> u(numdof);
+        for (int k=0; k<numdof; ++k)
+        {
+          u[k] = (*disp)[disp->Map().LID(dofs[k])];
+        }
+      
+        for (int k=0; k<numdof; ++k)
+        {
+	   if (gid==4834 && k==0)
+	   {
+	     //cout << "found" << endl;
+	     double val = springstiff*u[k];
+	     double dval = springstiff;
+	     fint->SumIntoGlobalValues(1,&val,&dofs[k]);
+	     stiff->Assemble(springstiff,dofs[k],dofs[k]); 
+           }
+	} //loop of dofs
+      
+      } //node owned by processor?
 
+    } //loop over nodes
+    
+  } //loop over conditions
+
+  return;
+}                            
+
+																					
 #endif
+											    	    			

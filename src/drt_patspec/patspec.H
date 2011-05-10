@@ -15,7 +15,9 @@ Maintainer: Michael Gee
 #ifndef PATSPEC_H
 #define PATSPEC_H
 
-//#include "../drt_lib/drt_discret.H"
+#include <Teuchos_RefCountPtr.hpp>
+
+class Epetra_Vector;
 
 namespace DRT
 {
@@ -25,6 +27,11 @@ namespace DRT
 namespace Teuchos
 {
   class ParameterList;
+}
+
+namespace LINALG
+{
+  class SparseOperator;
 }
 
 namespace PATSPEC
@@ -43,6 +50,10 @@ namespace PATSPEC
   void GetLocalRadius(const int eleid, 
                       Teuchos::ParameterList& params, 
                       DRT::Discretization& dis);
+                      
+  void CheckEmbeddingTissue(DRT::Discretization& discret,
+                            Teuchos::RCP<LINALG::SparseOperator> stiff,
+                            Teuchos::RCP<Epetra_Vector> fint);
 
 }
 #endif /* PATSPEC_H */
