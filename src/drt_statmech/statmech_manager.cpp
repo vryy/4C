@@ -382,7 +382,7 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
 		}
 
 
-		// Set a certain percentage of double-bonded crosslinkers free
+		// actions taken when reaching STARTTIMEACT
 		if(fabs(time_-statmechparams_.get<double>("STARTTIMEACT",0.0))<(dt/1e3))
 		{
 			if(!discret_.Comm().MyPID())
@@ -391,7 +391,10 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
 				cout<<"-- "<<crosslinkermap_->NumMyElements()<<" crosslink molecules in volume"<<endl;
 				cout<<"-- removing "<<statmechparams_.get<int>("REDUCECROSSLINKSBY",0)<<" crosslinkers...\n"<<endl;
 			}
+			// 1) Set a certain number of double-bonded crosslinkers free
 			ReduceNumOfCrosslinkersBy(statmechparams_.get<int>("REDUCECROSSLINKSBY",0));
+			// 2) reset thermal energy to new value (simple value change for now, maybe Load Curve later on)
+			statmechparams_.set("KT",statmechparams_.get<double>("KTACT",statmechparams_.get<double>("KT",0.0)));
 			if(!discret_.Comm().MyPID())
 			{
 				cout<<"\n-- "<<crosslinkermap_->NumMyElements()<<" crosslink molecules left in volume"<<endl;

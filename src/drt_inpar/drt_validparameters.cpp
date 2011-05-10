@@ -1471,6 +1471,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("ETA",0.0,"viscosity",&statmech);
   //Reading double parameter for thermal energy in background fluid (temperature * Boltzmann constant)
   DoubleParameter("KT",0.0,"thermal energy",&statmech);
+  //Reading double parameter for thermal energy in background fluid (temperature * Boltzmann constant)
+  DoubleParameter("KTACT",0.0,"thermal energy for t>=STARTTIMEACT",&statmech);
   //Reading double parameter for crosslinker on-rate at the beginning
   DoubleParameter("K_ON_start",0.0,"crosslinker on-rate at the end",&statmech);
   //Reading double parameter for crosslinker on-rate at the end
@@ -1554,7 +1556,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("FIXEDSEED","No","If chosen fixed seed for random numbers in each time step is applied",
                                yesnotuple,yesnovalue,&statmech);
   //Reading whether beam contact is switched on or not
-  setStringToIntegralParameter<int>("BEAMCONTACT","No","If chosen beam contact is incalculated",yesnotuple,yesnovalue,&statmech);
+  setStringToIntegralParameter<int>("BEAMCONTACT","No","If chosen beam contact is calculated",yesnotuple,yesnovalue,&statmech);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& tdyn = list->sublist("THERMAL DYNAMIC",false,"");
 
