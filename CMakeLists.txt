@@ -2273,4 +2273,4 @@ baci_test(xfsi_multibody_hex8_monolithic 1 "")
 baci_test(xfsi_shooter_thin 1 "")
 
 # remove any output files from our tests
-add_test(NAME test_cleanup COMMAND rm -f xxx* core.*)
+add_test(NAME test_cleanup COMMAND sh -c "rm -v xxx* core.*")
