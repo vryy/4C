@@ -22,6 +22,7 @@ Maintainer: Michael Gee
 #include "../drt_constraint/constraint_manager.H"
 #include "../drt_constraint/constraintsolver.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "../drt_patspec/patspec.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 03/07|
@@ -207,6 +208,7 @@ fsisurface_(NULL)
   fvisc_ = LINALG::CreateVector(*dofrowmap,true);
   // external force vector F_ext at last times
   fext_ = LINALG::CreateVector(*dofrowmap,true);
+
   // external mid-force vector F_{ext;n+1-alpha_f}
   fextm_ = LINALG::CreateVector(*dofrowmap,true);
   // external force vector F_{n+1} at new time
@@ -1073,6 +1075,7 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
   // disp==Teuchos::null. Then we just finished one of our predictors,
   // than contains the element loop, so we can fast forward and finish
   // up the linear system.
+  const Teuchos::ParameterList& patspec  = DRT::Problem::Instance()->PatSpecParams();
 
   if (disp!=Teuchos::null)
   {
@@ -1167,6 +1170,13 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
       fint_->PutScalar(0.0);  // initialise internal force vector
       discret_.Evaluate(p,stiff_,fint_);
 #endif
+
+      // test for patient specific needs
+      if (DRT::INPUT::IntegralValue<int>(patspec,"PATSPEC"))
+      {
+        PATSPEC::CheckEmbeddingTissue(discret_,stiff_,fint_);
+      }
+
       discret_.ClearState();
 
       // some of the managers do need end-displacement
@@ -1306,6 +1316,7 @@ void StruGenAlpha::FullNewton()
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
+  const Teuchos::ParameterList& patspec  = DRT::Problem::Instance()->PatSpecParams();
 
   // check whether mass and damping are present
   // note: the stiffness matrix might be filled already
@@ -1502,6 +1513,14 @@ void StruGenAlpha::FullNewton()
       fint_->PutScalar(0.0);  // initialise internal force vector
       discret_.Evaluate(p,stiff_,null,fint_,null,null);
 #endif
+
+      // test for patient specific needs
+      if (DRT::INPUT::IntegralValue<int>(patspec,"PATSPEC"))
+      {        
+        PATSPEC::CheckEmbeddingTissue(discret_,stiff_,fint_);
+      }
+
+
       discret_.ClearState();
 
       if (surf_stress_man_->HaveSurfStress())
