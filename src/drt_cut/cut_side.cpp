@@ -43,7 +43,7 @@ bool GEO::CUT::Side::FindCutPoints( Mesh & mesh, Element * element, Side & other
   return cut;
 }
 
-bool GEO::CUT::Side::FindCutLines( Mesh & mesh, Element * element, Side & other, std::vector<std::set<Point*> > & ambiguous )
+bool GEO::CUT::Side::FindCutLines( Mesh & mesh, Element * element, Side & other )
 {
 #if 1
   bool cut = false;
@@ -117,92 +117,8 @@ bool GEO::CUT::Side::FindCutLines( Mesh & mesh, Element * element, Side & other,
       }
       return true;
     }
-    return other.FindAmbiguousCutLines( mesh, element, *this, cuts, ambiguous );
+    return other.FindAmbiguousCutLines( mesh, element, *this, cuts );
   }
-  }
-}
-
-void GEO::CUT::Side::CloseAmbiguousGap( Mesh & mesh, Element * element, const std::vector<std::set<Point*> > & ambiguous )
-{
-  for ( std::vector<std::set<Point*> >::const_iterator i=ambiguous.begin(); i!=ambiguous.end(); ++i )
-  {
-    const std::set<Point*> & cuts = *i;
-    std::vector<Point*> cut_points;
-    cut_points.reserve( cuts.size() );
-    cut_points.assign( cuts.begin(), cuts.end() );
-
-    std::vector<int> linecount;
-    linecount.reserve( cuts.size() );
-
-    std::copy( cuts.begin(), cuts.end(), std::ostream_iterator<Point*>( std::cout, " " ) );
-    std::cout << "\n";
-
-    for ( std::vector<Point*>::const_iterator i=cut_points.begin(); i!=cut_points.end(); ++i )
-    {
-      Point * p = *i;
-      std::set<Line*> cut_lines;
-      p->CutLines( this, cut_lines );
-      linecount.push_back( cut_lines.size() );
-    }
-
-    std::vector<int> openpoints[2];
-
-    for ( int open=0; open<2; ++open )
-    {
-      for ( std::vector<int>::iterator i=linecount.begin(); i!=linecount.end(); ++i )
-      {
-        i = std::find( i, linecount.end(), open );
-        if ( i!=linecount.end() )
-        {
-          openpoints[open].push_back( i - linecount.begin() );
-        }
-        else
-        {
-          break;
-        }
-      }
-    }
-
-    switch ( openpoints[1].size() )
-    {
-    case 0:
-      // already done?!
-      break;
-    case 2:
-    {
-      if ( openpoints[0].size()==0 )
-      {
-        mesh.NewLine( cut_points[openpoints[1][0]],
-                      cut_points[openpoints[1][1]], this, NULL, element );
-      }
-      else if ( openpoints[0].size()==1 )
-      {
-#if 0
-        mesh.NewLine( cut_points[openpoints[1][0]],
-                      cut_points[openpoints[0][0]], this, NULL, element );
-        mesh.NewLine( cut_points[openpoints[0][0]],
-                      cut_points[openpoints[1][1]], this, NULL, element );
-#endif
-      }
-      else
-      {
-#if 0
-        std::stringstream str;
-        str << openpoints[0].size() << " points with zero lines out of " << cut_points.size();
-        throw std::runtime_error( str.str() );
-#endif
-      }
-      break;
-    }
-    default:
-    {
-#if 0
-      std::stringstream str;
-      str << openpoints[1].size() << " open points out of " << cut_points.size();
-      throw std::runtime_error( str.str() );
-#endif
-    }
-    }
   }
 }
 
@@ -256,14 +172,9 @@ GEO::CUT::Facet * GEO::CUT::Side::FindFacet( const std::vector<Point*> & facet_p
   return NULL;
 }
 
-bool GEO::CUT::Side::FindAmbiguousCutLines( Mesh & mesh, Element * element, Side & side, const std::set<Point*> & cut, std::vector<std::set<Point*> > & ambiguous )
+bool GEO::CUT::Side::FindAmbiguousCutLines( Mesh & mesh, Element * element, Side & side, const std::set<Point*> & cut )
 {
-  std::cout << "ambiguous: ";
-  std::copy( cut.begin(), cut.end(), std::ostream_iterator<Point*>( std::cout, " " ) );
-  std::cout << "\n";
-
-  ambiguous.push_back( cut );
-  return true;
+  return false;
 }
 
 void GEO::CUT::Side::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )

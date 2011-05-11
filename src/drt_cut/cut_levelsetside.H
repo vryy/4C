@@ -47,7 +47,7 @@ public:
 
   virtual Facet * FindFacet( const std::vector<Point*> & facet_points );
 
-  virtual bool FindAmbiguousCutLines( Mesh & mesh, Element * element, Side & side, const std::set<Point*> & cut, std::vector<std::set<Point*> > & ambiguous );
+  virtual bool FindAmbiguousCutLines( Mesh & mesh, Element * element, Side & side, const std::set<Point*> & cut );
 
 #if 0
   virtual void CreateLineSegmentList( LineSegmentList & lsl, Mesh & mesh, Element * element, bool inner );

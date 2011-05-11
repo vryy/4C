@@ -50,7 +50,7 @@ GEO::CUT::Facet * GEO::CUT::LevelSetSide::FindFacet( const std::vector<Point*> &
   return Side::FindFacet( facet_points );
 }
 
-bool GEO::CUT::LevelSetSide::FindAmbiguousCutLines( Mesh & mesh, Element * element, Side & side, const std::set<Point*> & cut, std::vector<std::set<Point*> > & ambiguous )
+bool GEO::CUT::LevelSetSide::FindAmbiguousCutLines( Mesh & mesh, Element * element, Side & side, const std::set<Point*> & cut )
 {
   switch ( side.Shape() )
   {

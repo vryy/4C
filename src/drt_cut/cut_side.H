@@ -98,7 +98,7 @@ public:
 
   virtual Facet * FindFacet( const std::vector<Point*> & facet_points );
 
-  virtual bool FindAmbiguousCutLines( Mesh & mesh, Element * element, Side & side, const std::set<Point*> & cut, std::vector<std::set<Point*> > & ambiguous );
+  virtual bool FindAmbiguousCutLines( Mesh & mesh, Element * element, Side & side, const std::set<Point*> & cut );
 
   virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
 
@@ -116,9 +116,7 @@ public:
 
   bool FindCutPoints( Mesh & mesh, Element * element, Side & other );
 
-  bool FindCutLines( Mesh & mesh, Element * element, Side & other, std::vector<std::set<Point*> > & ambiguous );
-
-  void CloseAmbiguousGap( Mesh & mesh, Element * element, const std::vector<std::set<Point*> > & ambiguous );
+  bool FindCutLines( Mesh & mesh, Element * element, Side & other );
 
   void GetCutPoints( Element * element, Side & other, std::set<Point*> & cuts );
 

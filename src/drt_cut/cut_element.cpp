@@ -64,8 +64,6 @@ bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side )
 
 void GEO::CUT::Element::MakeCutLines( Mesh & mesh )
 {
-  std::vector<std::set<Point*> > ambiguous;
-
   for ( std::set<Side*>::iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
   {
     Side & side = **i;
@@ -76,14 +74,11 @@ void GEO::CUT::Element::MakeCutLines( Mesh & mesh )
     for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
     {
       Side * s = *i;
-      if ( FindCutLines( mesh, *s, side, ambiguous ) )
+      if ( FindCutLines( mesh, *s, side ) )
       {
         cut = true;
       }
     }
-
-    side.CloseAmbiguousGap( mesh, this, ambiguous );
-    ambiguous.clear();
 
     // find lines inside the element
     const std::vector<Edge*> & side_edges = side.Edges();
@@ -111,10 +106,10 @@ bool GEO::CUT::Element::FindCutPoints( Mesh & mesh, Side & side, Side & other )
   return cut or reverse_cut;
 }
 
-bool GEO::CUT::Element::FindCutLines( Mesh & mesh, Side & side, Side & other, std::vector<std::set<Point*> > & ambiguous )
+bool GEO::CUT::Element::FindCutLines( Mesh & mesh, Side & side, Side & other )
 {
-  bool cut = side.FindCutLines( mesh, this, other, ambiguous );
-  bool reverse_cut = other.FindCutLines( mesh, this, side, ambiguous );
+  bool cut = side.FindCutLines( mesh, this, other );
+  bool reverse_cut = other.FindCutLines( mesh, this, side );
   return cut or reverse_cut;
 }
 
