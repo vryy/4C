@@ -95,18 +95,9 @@ void FSI::DirichletNeumannSlideale::Remeshing()
 	
 	slideale_->EvaluateMortar(
 	    StructureField().ExtractInterfaceDispnp(),islave_,StructureFluidCouplingMortar());
+	slideale_->EvaluateFluidMortar(idisptotal,islave_);
 	
-	RCP<Epetra_Map> masterdofrowmap = StructureFluidCouplingMortar().MasterDofRowMap();
-	
-	//interface velocity for fluid
-	RCP<Epetra_Vector> ivel = LINALG::CreateVector(*masterdofrowmap,true);
-	ivel->Update(1./Dt(), *idispstep, 0.0);
-	
-	Teuchos::RCP<Epetra_Vector> ivelfluid = StructToFluid(ivel);
-	//solve ale and fluid again with known correct solution
-	MBFluidField().NonlinearSolve(islave_,ivelfluid); 
-	//solve of structure not needed because no changes were applied
-
+	Teuchos::RCP<Epetra_Vector> unew = slideale_->InterpolateFluid(MBFluidField().ExtractInterfaceFluidVelocity());
 }
 
 

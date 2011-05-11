@@ -1005,6 +1005,13 @@ void FSI::MortarMonolithicFluidSplit::Update()
 
     slideale_->EvaluateMortar(StructureField().ExtractInterfaceDispnp(), iprojdisp_, coupsfm_);
     slideale_->EvaluateFluidMortar(idispale,iprojdisp_);
+    
+    Teuchos::RCP<Epetra_Vector> acx = icoupfa_.MasterToSlave(iprojdisp_);
+    AleField().ApplyInterfaceDisplacements(acx);
+    FluidField().ApplyMeshDisplacement(AleToFluid(AleField().ExtractDisplacement()));
+
+    Teuchos::RCP<Epetra_Vector> unew = slideale_->InterpolateFluid(FluidField().ExtractInterfaceFluidVelocity());
+    FluidField().ApplyInterfaceVelocities(unew);
   }
 
   StructureField().Update();
@@ -1032,19 +1039,7 @@ void FSI::MortarMonolithicFluidSplit::Output()
 
   AleField().      Output();
   FluidField().LiftDrag();
-  // update history variables for sliding ale
-  if (aleproj_!= INPAR::FSI::ALEprojection_none)
-  {
-    Teuchos::RCP<Epetra_Vector> acx = icoupfa_.MasterToSlave(iprojdisp_);
-    AleField().ApplyInterfaceDisplacements(acx);
-    FluidField().ApplyMeshDisplacement(AleToFluid(AleField().ExtractDisplacement()));
-
-    Teuchos::RCP<Epetra_Vector> unew = slideale_->InterpolateFluid(FluidField().ExtractInterfaceFluidVelocity());
-    FluidField().ApplyInterfaceVelocities(unew);
-
-    FluidField().Update();
-    AleField().Update();
-  }
+  
 }
 
 void FSI::MortarMonolithicFluidSplit::ReadRestart(int step)
