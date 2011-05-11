@@ -53,6 +53,8 @@ public:
 
   void Status();
 
+  void AssumeVolumeCells( unsigned num );
+
 private:
 
   void CreateElement( DRT::Element::DiscretizationType distype, const Epetra_SerialDenseMatrix & xyze );

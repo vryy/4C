@@ -18,6 +18,7 @@ bool GEO::CUT::Edge::FindCutPoints( Mesh & mesh,
                                     Side & side,
                                     Side & other )
 {
+#if 1
   bool cut = false;
   for ( std::vector<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
@@ -32,6 +33,7 @@ bool GEO::CUT::Edge::FindCutPoints( Mesh & mesh,
   {
     return true;
   }
+#endif
 
   // test for the cut of edge and side
 

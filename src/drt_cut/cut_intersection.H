@@ -43,6 +43,9 @@ public:
     edge_.Coordinates( xyze_lineElement_ );
     side_.Coordinates( xyze_surfaceElement_ );
 
+#if 1
+    scale_ = 1;
+#else
     scale_ = 0;
     LINALG::Matrix<3,1> d;
     for ( int i=0; i<numNodesSurface; ++i )
@@ -56,6 +59,7 @@ public:
 
     xyze_lineElement_.Scale( 1./scale_ );
     xyze_surfaceElement_.Scale( 1./scale_ );
+#endif
   }
 
   bool Intersect( std::set<Point*, PointPidLess> & cuts );
@@ -330,8 +334,16 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCur
     double det = LINALG::gaussElimination<true, 3>( A, b, dx );
     if ( fabs( det ) < tol )
     {
-      // There is no solution. The line is parallel to the surface.
-      return false;
+      if ( iter==0 )
+      {
+        // try a different start point
+        dx = 1;
+      }
+      else
+      {
+        // There is no solution. The line is parallel to the surface.
+        return false;
+      }
     }
 
     // update

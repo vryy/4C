@@ -119,7 +119,7 @@ private:
 
   bool FindCutPoints( Mesh & mesh, Side & side, Side & other );
 
-  bool FindCutLines( Mesh & mesh, Side & side, Side & other );
+  bool FindCutLines( Mesh & mesh, Side & side, Side & other, std::vector<std::set<Point*> > & ambiguous );
 
   int eid_;
 

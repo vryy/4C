@@ -505,6 +505,21 @@ bool GEO::CUT::TetMesh::IsValidTet( const std::vector<Point*> & t )
       return true;
     }
   }
+
+  std::set<Facet*> facets;
+  FindCommonFacets( t, facets );
+  if ( facets.size()==0 )
+  {
+    return true;
+  }
+  for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
+  {
+    Facet * f = *i;
+    if ( f->IsTriangulated() )
+    {
+      return true;
+    }
+  }
   return false;
 }
 

@@ -328,6 +328,37 @@ void test_hex8_schraeg()
   w.Cut();
 }
 
+void test_hex8_quad4_woelbung()
+{
+  SimpleWrapper w;
+
+  w.CreateHex8();
+
+  Epetra_SerialDenseMatrix xyze( 3, 4 );
+
+  xyze( 0, 0 ) = -0.5;
+  xyze( 1, 0 ) = -0.5;
+  xyze( 2, 0 ) = -1.5;
+
+  xyze( 0, 1 ) =  2.5;
+  xyze( 1, 1 ) = -0.5;
+  xyze( 2, 1 ) =  1.5;
+
+  xyze( 0, 2 ) =  2.5;
+  xyze( 1, 2 ) =  1.5;
+  xyze( 2, 2 ) = -1.5;
+
+  xyze( 0, 3 ) = -0.5;
+  xyze( 1, 3 ) =  1.5;
+  xyze( 2, 3 ) =  1.5;
+
+  w.CreateQuad4( xyze );
+
+  w.Status();
+  w.Cut();
+  w.AssumeVolumeCells( 2 );
+}
+
 void test_hex8_tet4_touch()
 {
   SimpleWrapper w;

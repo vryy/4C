@@ -123,7 +123,7 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner )
   Status();
 
 #ifdef DEBUGCUTLIBRARY
-  m.TestElementVolume( false );
+  m.TestElementVolume( true );
 #endif
 }
 

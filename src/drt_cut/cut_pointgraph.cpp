@@ -49,9 +49,11 @@ GEO::CUT::PointGraph::PointGraph( Element * element, Side * side, bool inner )
     }
   }
 
+#if 1
   graph_.FixSinglePoints();
-
-//  graph_.TestClosed();
+#else
+  graph_.TestClosed();
+#endif
 
   std::set<int> free;
   graph_.GetAll( free );

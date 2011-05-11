@@ -410,6 +410,17 @@ void SimpleWrapper::CreateQuad4Mesh( int rows, int cols )
   }
 }
 
+void SimpleWrapper::AssumeVolumeCells( unsigned num )
+{
+  unsigned numvc = mesh_->NormalMesh().VolumeCells().size();
+  if ( numvc != num )
+  {
+    std::stringstream str;
+    str << "expected " << num << " volume cells, but got " << numvc;
+    throw std::runtime_error( str.str() );
+  }
+}
+
 void SimpleWrapper::Status()
 {
   mesh_->Status();

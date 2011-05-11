@@ -125,6 +125,28 @@ void GEO::CUT::GRAPH::Graph::GetAll( std::set<int> & all )
 
 void GEO::CUT::GRAPH::Graph::FixSinglePoints()
 {
+#if 0
+  std::vector<int> sp;
+  for ( std::map<int, std::set<int> >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
+  {
+    int p = i->first;
+    std::set<int> & row = i->second;
+    if ( row.size() < 2 )
+    {
+      sp.push_back( p );
+    }
+  }
+  if ( sp.size()==0 )
+  {
+    return;
+  }
+  if ( sp.size()==2 )
+  {
+    Add( sp[0], sp[1] );
+    return;
+  }
+  throw std::runtime_error( "cannot close gap in line cycle" );
+#else
   for ( ;; )
   {
     bool found = false;
@@ -152,6 +174,7 @@ void GEO::CUT::GRAPH::Graph::FixSinglePoints()
       return;
     }
   }
+#endif
 }
 
 void GEO::CUT::GRAPH::Graph::TestClosed()

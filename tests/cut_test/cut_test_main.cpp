@@ -25,6 +25,7 @@ void test_hex8_hex8();
 void test_hex8_touch();
 void test_hex8_touch2();
 void test_hex8_schraeg();
+void test_hex8_quad4_woelbung();
 void test_hex8_tet4_touch();
 void test_hex8_tet4_touch2();
 void test_hex8_mesh();
@@ -223,6 +224,7 @@ int main( int argc, char ** argv )
   functable["hex8_touch"] = test_hex8_touch;
   functable["hex8_touch2"] = test_hex8_touch2;
   functable["hex8_schraeg"] = test_hex8_schraeg;
+  functable["hex8_quad4_woelbung"] = test_hex8_quad4_woelbung;
   functable["hex8_tet4_touch"] = test_hex8_tet4_touch;
   functable["hex8_tet4_touch2"] = test_hex8_tet4_touch2;
   functable["hex8_mesh"] = test_hex8_mesh;

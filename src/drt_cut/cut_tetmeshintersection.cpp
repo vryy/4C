@@ -30,7 +30,7 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
     Point * p = *i;
     Node * n = mesh_.GetNode( i - points.begin(), p->X() );
     Point * np = n->point();
-    //np->Position( p->Position() );
+    np->Position( p->Position() );
     Register( p, np );
   }
 
@@ -201,6 +201,10 @@ void GEO::CUT::TetMeshIntersection::FindEdgeCuts()
     pp_->CollectEdges( edgebox, edges );
     //edges.erase( ce );
 
+    std::set<Point*> cp;
+    cp.insert( ce->BeginNode()->point() );
+    cp.insert( ce->EndNode()->point() );
+
     double pos;
     LINALG::Matrix<3,1> x;
 
@@ -211,11 +215,15 @@ void GEO::CUT::TetMeshIntersection::FindEdgeCuts()
       {
         // Find cut points between edges. Some might be new.
 
-        bool iscut = e->ComputeCut( ce, pos, x );
-        if ( iscut )
+        if ( cp.count( e->BeginNode()->point() )==0 and
+             cp.count( e->EndNode()->point() )==0 )
         {
-          Point * p = Point::NewPoint( mesh_, x.A(), pos, ce, NULL );
-          p->AddEdge( e );
+          bool iscut = e->ComputeCut( ce, pos, x );
+          if ( iscut )
+          {
+            Point * p = Point::NewPoint( mesh_, x.A(), pos, ce, NULL );
+            p->AddEdge( e );
+          }
         }
       }
     }
