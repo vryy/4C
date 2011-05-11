@@ -98,6 +98,8 @@ void FSI::DirichletNeumannSlideale::Remeshing()
 	slideale_->EvaluateFluidMortar(idisptotal,islave_);
 	
 	Teuchos::RCP<Epetra_Vector> unew = slideale_->InterpolateFluid(MBFluidField().ExtractInterfaceFluidVelocity());
+	MBFluidField().ApplyInterfaceValues(islave_,unew);
+
 }
 
 
