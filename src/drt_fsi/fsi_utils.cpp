@@ -1279,9 +1279,7 @@ void FSI::UTILS::SlideAleUtils::Rotation
   Teuchos::RCP<Epetra_Vector> idispstep = structure.ExtractInterfaceDispn();
   idispstep->Update(1.0, *idispnp, -1.0);
 
-  const int dim = genprob.ndim;
   // get structure and fluid discretizations  and set stated for element evaluation
-
   const Teuchos::RCP<Epetra_Vector> idispstepcol = LINALG::CreateVector(*structdis->DofColMap(),false);
   LINALG::Export(*idispstep,*idispstepcol);
   const Teuchos::RCP<Epetra_Vector> idispnpcol = LINALG::CreateVector(*structdis->DofColMap(),false);
