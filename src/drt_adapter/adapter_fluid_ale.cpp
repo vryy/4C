@@ -159,6 +159,35 @@ void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidAle::ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> idisp,
+                                       Teuchos::RCP<Epetra_Vector> ivel)
+{
+
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+  if (idisp!=Teuchos::null)
+  {
+    // if we have values at the interface we need to apply them
+    AleField().ApplyInterfaceDisplacements(FluidToAle(idisp));
+    if (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO") != fsi_pseudo_structureale)
+    {
+      FluidField().ApplyInterfaceVelocities(ivel);
+    }
+  }
+
+  if (FluidField().Interface().FSCondRelevant())
+  {
+    Teuchos::RCP<const Epetra_Vector> dispnp = FluidField().Dispnp();
+    Teuchos::RCP<Epetra_Vector> fsdispnp = FluidField().Interface().ExtractFSCondVector(dispnp);
+    AleField().ApplyFreeSurfaceDisplacements(fscoupfa_.MasterToSlave(fsdispnp));
+  }
+
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField().ExtractDisplacement());
+  FluidField().ApplyMeshDisplacement(fluiddisp);
+
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

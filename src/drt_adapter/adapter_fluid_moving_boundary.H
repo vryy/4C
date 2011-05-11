@@ -80,6 +80,13 @@ namespace ADAPTER
     /// nonlinear solve
     virtual void NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp=Teuchos::null,
                                 Teuchos::RCP<Epetra_Vector> ivel=Teuchos::null) = 0;
+    
+    /// nonlinear solve
+    virtual void ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> idisp=Teuchos::null,
+                                Teuchos::RCP<Epetra_Vector> ivel=Teuchos::null)
+    {
+      dserror("Not implemented in base class");
+    }
 
     virtual void RobinNonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
 				     Teuchos::RCP<Epetra_Vector> ivel,
