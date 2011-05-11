@@ -435,8 +435,8 @@ void ADAPTER::CouplingMortar::Setup
   // in order to get initial D_ and M_
 
   // interface displacement (=0) has to be merged from slave and master discretization
-//  RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(masterdofrowmap_,slavedofrowmap_, false);
-  RCP<Epetra_Vector> dispn = LINALG::CreateVector(*masterdofrowmap_, true);
+  RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(masterdofrowmap_,slavedofrowmap_, false);
+  RCP<Epetra_Vector> dispn = LINALG::CreateVector(*dofrowmap, true);
 
   // set displacement state in mortar interface
   interface->SetState("displacement", dispn);
