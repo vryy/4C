@@ -1460,6 +1460,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("STARTTIMEACT",0.0,"Time after which certain action in simulation is started",&statmech);
   //time after which certain action in simulation (e.g. DBCs in viscoelastic simulations) are started
   DoubleParameter("EQUILIBTIME",0.0,"Time until which no crosslinkers are set",&statmech);
+  //time after which certain action in simulation (e.g. DBCs in viscoelastic simulations) are started
+  DoubleParameter("KTSWITCHTIME",0.0,"Time when KT value is changed to KTACT",&statmech);
   //alternative post-STARTTIME time step size
   DoubleParameter("DELTA_T_NEW",0.0,"A new time step size that comes into play once DBCs are have been activated",&statmech);
   //Reading whether dynamics remodelling of cross linker distribution takes place
