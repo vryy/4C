@@ -16,6 +16,7 @@ namespace CUT
   class LineSegment;
   class BoundaryCell;
   class LineSegmentList;
+  class Creator;
 
 class Side
 {
@@ -102,7 +103,7 @@ public:
 
   virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
 
-  virtual void CreateLineSegmentList( LineSegmentList & lsl, Mesh & mesh, Element * element, bool inner );
+  void CreateMissingLines( Creator & creator, Element * element );
 
   void Print();
 

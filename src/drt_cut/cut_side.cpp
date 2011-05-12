@@ -9,6 +9,7 @@
 #include "cut_pointgraph.H"
 #include "cut_pointcycle.H"
 #include "cut_linesegment.H"
+#include "cut_creator.H"
 
 #include <string>
 #include <stack>
@@ -122,9 +123,87 @@ bool GEO::CUT::Side::FindCutLines( Mesh & mesh, Element * element, Side & other 
   }
 }
 
-void GEO::CUT::Side::CreateLineSegmentList( LineSegmentList & lsl, Mesh & mesh, Element * element, bool inner )
+void GEO::CUT::Side::CreateMissingLines( Creator & creator, Element * element )
 {
-  lsl.Create( mesh, element, this, inner );
+  std::map<Point*, std::set<Point*> > pg;
+
+  const std::vector<Line*> & cut_lines = CutLines();
+  for ( std::vector<Line*>::const_iterator i=cut_lines.begin(); i!=cut_lines.end(); ++i )
+  {
+    Line * l = *i;
+    if ( l->IsCut( element ) )
+    {
+      Point * p1 = l->BeginPoint();
+      Point * p2 = l->EndPoint();
+      pg[p1].insert( p2 );
+      pg[p2].insert( p1 );
+    }
+  }
+
+  if ( pg.size() > 2 )
+  {
+    // Needs to be a proper cycle. No gaps, no forks.
+
+    std::vector<Point*> open;
+
+    for ( std::map<Point*, std::set<Point*> >::iterator i=pg.begin();
+          i!=pg.end();
+          ++i )
+    {
+      Point * p = i->first;
+      std::set<Point*> & row = i->second;
+      if ( row.size() < 2 )
+      {
+        open.push_back( p );
+      }
+      else if ( row.size() > 2 )
+      {
+        throw std::runtime_error( "fork in line cycle" );
+      }
+    }
+
+    if ( open.size() > 0 )
+    {
+      std::set<Point*> done;
+
+      std::vector<Point*> open_side_points;
+      open_side_points.reserve( 2 );
+
+      const std::vector<Side*> & sides = element->Sides();
+      for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
+      {
+        Side * s = *i;
+        open_side_points.clear();
+
+        for ( std::vector<Point*>::iterator i=open.begin(); i!=open.end(); ++i )
+        {
+          Point * p = *i;
+          if ( p->IsCut( s ) )
+          {
+            open_side_points.push_back( p );
+          }
+        }
+
+        if ( open_side_points.size()==2 )
+        {
+          creator.NewLine( open_side_points[0], open_side_points[1], s, this, element );
+          done.insert( open_side_points[0] );
+          done.insert( open_side_points[1] );
+        }
+#if 0
+        else if ( open_side_points.size() > 0 )
+        {
+          throw std::runtime_error( "illegal number of open points on element side" );
+        }
+#endif
+      }
+
+      if ( done.size() != open.size() )
+      {
+        throw std::runtime_error( "failed to close open points" );
+      }
+    }
+  }
 }
 
 bool GEO::CUT::Side::AllOnNodes( const std::set<Point*> & points )
@@ -300,7 +379,7 @@ void GEO::CUT::Side::MakeSideCutFacets( Mesh & mesh, Element * element, std::set
 void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
 {
   LineSegmentList lsl;
-  CreateLineSegmentList( lsl, mesh, element, false );
+  lsl.Create( mesh, element, this, false );
 
   const std::vector<Teuchos::RCP<LineSegment> > & segments = lsl.Segments();
 

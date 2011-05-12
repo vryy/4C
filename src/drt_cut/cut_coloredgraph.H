@@ -41,11 +41,25 @@ namespace GEO
       {
       public:
 
-        bool operator()( const std::pair<const int, std::set<int> > & row )
+        SingeLineFinder( int color_split )
+          : color_split_( color_split )
+        {}
+
+        bool operator()( const std::pair<const int, std::set<int> > & i )
         {
-          return row.second.size() < 2;
+          int p = i.first;
+          if ( p < color_split_ )
+          {
+            return i.second.size() < 3;
+          }
+          else
+          {
+            return i.second.size() < 2;
+          }
         }
 
+      private:
+        int color_split_;
       };
 
       class Graph
@@ -69,6 +83,10 @@ namespace GEO
         void FixSingleLines();
 
         void TestClosed();
+
+        void TestSplit();
+
+        void TestFacets();
 
         void Print();
 

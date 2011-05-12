@@ -64,6 +64,13 @@ GEO::CUT::Facet::Facet( Mesh & mesh, const std::vector<Point*> & points, Side * 
   }
 }
 
+void GEO::CUT::Facet::Register( VolumeCell * cell )
+{
+  cells_.insert( cell );
+  if ( cells_.size() > 2 )
+    throw std::runtime_error( "too many volume cells at facet" );
+}
+
 int GEO::CUT::Facet::SideId()
 {
   return parentside_->Id();
@@ -597,7 +604,19 @@ bool GEO::CUT::Facet::Touches( Facet * f )
 GEO::CUT::VolumeCell * GEO::CUT::Facet::Neighbor( VolumeCell * cell )
 {
   if ( cells_.size() > 2 )
+  {
+#ifdef DEBUGCUTLIBRARY
+    {
+      std::ofstream file( "volumes.plot" );
+      for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+      {
+        VolumeCell * vc = *i;
+        vc->Print( file );
+      }
+    }
+#endif
     throw std::runtime_error( "can only have two neighbors" );
+  }
   if ( cells_.count( cell )==0 )
     throw std::runtime_error( "not my neighbor" );
   for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
@@ -773,6 +792,9 @@ void GEO::CUT::Facet::FindCornerPoints()
 {
   if ( corner_points_.size()==0 )
   {
+#if 1
+    corner_points_ = points_;
+#else
     LINALG::Matrix<3,1> x1;
     LINALG::Matrix<3,1> x2;
     LINALG::Matrix<3,1> x3;
@@ -789,6 +811,7 @@ void GEO::CUT::Facet::FindCornerPoints()
         break;
       corner_points_.push_back( p );
     }
+#endif
   }
 }
 

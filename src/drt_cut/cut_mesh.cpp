@@ -5,6 +5,7 @@
 
 #include "cut_mesh.H"
 
+#include "cut_creator.H"
 #include "cut_pointpool.H"
 #include "cut_point.H"
 #include "cut_point_impl.H"
@@ -653,6 +654,10 @@ GEO::CUT::Facet* GEO::CUT::Mesh::NewFacet( const std::vector<Point*> & points, S
     Facet * f = *j;
     if ( f->Equals( points ) )
     {
+      if ( side->IsCutSide() )
+      {
+        f->ExchangeSide( side, true );
+      }
       return f;
     }
   }
@@ -868,8 +873,6 @@ void GEO::CUT::Mesh::Cut( Side & side, const std::set<Element*> & done, std::set
   std::set<Element*> elements;
   pp_->CollectElements( sidebox, elements );
 
-//   std::map<Side*, std::vector<Element*> > side_cuts;
-
   for ( std::set<Element*>::iterator i=elements.begin(); i!=elements.end(); ++i )
   {
     Element * e = *i;
@@ -878,30 +881,9 @@ void GEO::CUT::Mesh::Cut( Side & side, const std::set<Element*> & done, std::set
       if ( e->Cut( *this, side ) )
       {
         elements_done.insert( e );
-//         side_cuts[&side].push_back( e );
       }
     }
   }
-
-#if 0
-  // create cut lines
-
-  for ( std::map<Side*, std::vector<Element*> >::iterator i=side_cuts.begin();
-        i!=side_cuts.end();
-        ++i )
-  {
-    Side * s = i->first;
-    std::vector<Element*> & elements = i->second;
-    for ( std::vector<Element*>::iterator i=elements.begin(); i!=elements.end(); ++i )
-    {
-      Element * e = *i;
-
-      // create any remaining cut lines
-      LineSegmentList lsl;
-      s->CreateLineSegmentList( lsl, *this, e, true );
-    }
-  }
-#endif
 }
 
 void GEO::CUT::Mesh::Cut( LevelSetSide & side )
@@ -948,6 +930,7 @@ void GEO::CUT::Mesh::Cut( LevelSetSide & side )
 
 void GEO::CUT::Mesh::MakeCutLines()
 {
+  Creator creator;
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
         ++i )
@@ -957,7 +940,7 @@ void GEO::CUT::Mesh::MakeCutLines()
     try
     {
 #endif
-      e.MakeCutLines( *this );
+      e.MakeCutLines( *this, creator );
 #ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
@@ -976,7 +959,7 @@ void GEO::CUT::Mesh::MakeCutLines()
     try
     {
 #endif
-      e.MakeCutLines( *this );
+      e.MakeCutLines( *this, creator );
 #ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
@@ -986,6 +969,8 @@ void GEO::CUT::Mesh::MakeCutLines()
     }
 #endif
   }
+
+  creator.Execute( *this );
 }
 
 void GEO::CUT::Mesh::MakeFacets()

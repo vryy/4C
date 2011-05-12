@@ -23,7 +23,7 @@ class PointGraph
 
     Point * GetPoint( int i ) { return all_points_[i]; }
 
-    void FindSideLines( Mesh & mesh, Element * element, Side * side );
+//     void FindSideLines( Mesh & mesh, Element * element, Side * side );
 
   private:
 
@@ -53,6 +53,8 @@ public:
   }
 
 private:
+
+  void FillGraph( Element * element, Side * side, std::vector<int> & cycle );
 
   void AddFacetPoints( std::vector<int> & cycle, std::set<int> & free, bool inner );
 

@@ -95,7 +95,12 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const std::s
     }
   }
 
+#if 0
+  graph_.Print();
   graph_.FixSingleLines();
+#else
+  graph_.TestClosed();
+#endif
 
   COLOREDGRAPH::Graph cycle( all_facets_.size() );
   //COLOREDGRAPH::Graph holes( all_facets_.size() );
@@ -172,6 +177,10 @@ void GEO::CUT::FacetGraph::CreateVolumeCells( Mesh & mesh, Element * element, st
   for ( COLOREDGRAPH::CycleList::iterator i=cycle_list_.begin(); i!=cycle_list_.end(); ++i )
   {
     COLOREDGRAPH::Graph & g = *i;
+
+#ifdef DEBUGCUTLIBRARY
+    g.TestSplit();
+#endif
 
     volumes.push_back( std::set<Facet*>() );
     std::set<Facet*> & collected_facets = volumes.back();

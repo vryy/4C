@@ -37,7 +37,7 @@ public:
 
   Facet( Mesh & mesh, const std::vector<Point*> & points, Side * side, bool cutsurface );
 
-  void Register( VolumeCell * cell ) { cells_.insert( cell ); }
+  void Register( VolumeCell * cell );
 
   void Print()
   {

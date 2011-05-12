@@ -62,7 +62,7 @@ bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side )
   }
 }
 
-void GEO::CUT::Element::MakeCutLines( Mesh & mesh )
+void GEO::CUT::Element::MakeCutLines( Mesh & mesh, Creator & creator )
 {
   for ( std::set<Side*>::iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
   {
@@ -93,8 +93,7 @@ void GEO::CUT::Element::MakeCutLines( Mesh & mesh )
     if ( cut )
     {
       // create any remaining cut lines
-      LineSegmentList lsl;
-      side.CreateLineSegmentList( lsl, mesh, this, true );
+      side.CreateMissingLines( creator, this );
     }
   }
 }

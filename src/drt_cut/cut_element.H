@@ -13,6 +13,7 @@ namespace CUT
   class VolumeCell;
   class IntegrationCell;
   class BoundaryCell;
+  class Creator;
 
 class Element
 {
@@ -59,7 +60,7 @@ public:
 
   bool Cut( Mesh & mesh, Side & side );
 
-  void MakeCutLines( Mesh & mesh );
+  void MakeCutLines( Mesh & mesh, Creator & creator );
 
   void MakeFacets( Mesh & mesh );
 

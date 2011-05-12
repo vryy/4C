@@ -34,6 +34,23 @@ GEO::CUT::Line::Line( Point * p1, Point * p2, Side * cut_side1, Side * cut_side2
     AddSide( s );
   }
 
+  // self-register at all elements
+
+  const std::set<Element*> & cut_elements1 = p1->Elements();
+  const std::set<Element*> & cut_elements2 = p2->Elements();
+
+  std::set<Element*> elements;
+
+  std::set_intersection( cut_elements1.begin(), cut_elements1.end(),
+                         cut_elements2.begin(), cut_elements2.end(),
+                         std::inserter( elements, elements.begin() ) );
+
+  for ( std::set<Element*>::iterator i=elements.begin(); i!=elements.end(); ++i )
+  {
+    Element * s = *i;
+    AddElement( s );
+  }
+
 #if 0
 #ifdef DEBUGCUTLIBRARY
   double x1[] = { 1.0571400000000001906, 0.49999999999999994449, -0.024639335281227081609 };
@@ -64,20 +81,6 @@ GEO::CUT::Line::Line( Point * p1, Point * p2, Side * cut_side1, Side * cut_side2
     std::cout << "offending line 2\n";
   }
 #endif
-#endif
-
-#if 0
-  std::vector<GEO::CUT::Edge*> edges = p1->CutEdges( p2 );
-  for ( std::vector<GEO::CUT::Edge*>::iterator i=edges.begin(); i!=edges.end(); ++i )
-  {
-    Edge * e = *i;
-    const std::set<Side*> & edge_sides = e->Sides();
-    for ( std::set<Side*>::const_iterator i=edge_sides.begin(); i!=edge_sides.end(); ++i )
-    {
-      Side * s = *i;
-      AddSide( s );
-    }
-  }
 #endif
 }
 

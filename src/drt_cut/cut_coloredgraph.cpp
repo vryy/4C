@@ -79,7 +79,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::FixSingleLines()
 {
   for ( ;; )
   {
-    std::map<int, std::set<int> >::iterator j = std::find_if( graph_.begin(), graph_.end(), SingeLineFinder() );
+    std::map<int, std::set<int> >::iterator j = std::find_if( graph_.begin(), graph_.end(), SingeLineFinder( color_split_ ) );
     if ( j==graph_.end() )
     {
       return;
@@ -107,6 +107,38 @@ void GEO::CUT::COLOREDGRAPH::Graph::TestClosed()
     if ( row.size() < 2 )
     {
       throw std::runtime_error( "open point in colored graph" );
+    }
+  }
+}
+
+void GEO::CUT::COLOREDGRAPH::Graph::TestSplit()
+{
+  for ( std::map<int, std::set<int> >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
+  {
+    int p = i->first;
+    if ( p >= color_split_ )
+    {
+      std::set<int> & row = i->second;
+      if ( row.size() > 2 )
+      {
+        throw std::runtime_error( "colored graph not properly split" );
+      }
+    }
+  }
+}
+
+void GEO::CUT::COLOREDGRAPH::Graph::TestFacets()
+{
+  for ( std::map<int, std::set<int> >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
+  {
+    int p = i->first;
+    if ( p < color_split_ )
+    {
+      std::set<int> & row = i->second;
+      if ( row.size() < 3 )
+      {
+        throw std::runtime_error( "facets need at least three lines" );
+      }
     }
   }
 }
