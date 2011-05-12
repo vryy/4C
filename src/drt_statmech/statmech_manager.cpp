@@ -1002,8 +1002,9 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 	//get current on-rate for crosslinkers
 	double kon = 0;
 	double starttime = statmechparams_.get<double>("STARTTIMEACT", 0.0);
+	double ktswitchtime = statmechparams_.get<double>("KTSWITCHTIME", starttime);
 
-	if(time_ <= starttime || (time_>starttime && fabs(time_-starttime) < dt/1e4))
+	if(time_ <= ktswitchtime || (time_>ktswitchtime && fabs(time_-ktswitchtime) < dt/1e4))
 		kon = statmechparams_.get<double>("K_ON_start",0.0);
 	else
 		kon = statmechparams_.get<double>("K_ON_end",0.0);
