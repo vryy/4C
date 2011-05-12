@@ -340,7 +340,7 @@ GEO::CUT::Side* GEO::CUT::LineSegment::OnSide( Element * element )
 void GEO::CUT::LineSegmentList::Create( Mesh & mesh, Element * element, Side * side, bool inner )
 {
 #if 1
-  PointGraph pg( element, side, inner );
+  PointGraph pg( mesh, element, side, inner );
   //pg.Print();
 
   for ( PointGraph::iterator i=pg.begin(); i!=pg.end(); ++i )

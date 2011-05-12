@@ -11,6 +11,7 @@ namespace CUT
   class Line;
   class Side;
   class Element;
+  class Mesh;
 
 class PointGraph
 {
@@ -22,6 +23,8 @@ class PointGraph
 
     Point * GetPoint( int i ) { return all_points_[i]; }
 
+    void FindSideLines( Mesh & mesh, Element * element, Side * side );
+
   private:
 
     std::map<int, Point*> all_points_;
@@ -31,7 +34,7 @@ public:
 
   typedef GRAPH::CycleListIterator iterator;
 
-  PointGraph( Element * element, Side * side, bool inner );
+  PointGraph( Mesh & mesh, Element * element, Side * side, bool inner );
 
   iterator begin() { return facet_cycles_.begin(); }
 

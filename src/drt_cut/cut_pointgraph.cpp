@@ -5,8 +5,10 @@
 #include "cut_point.H"
 #include "cut_line.H"
 #include "cut_side.H"
+#include "cut_element.H"
+#include "cut_mesh.H"
 
-GEO::CUT::PointGraph::PointGraph( Element * element, Side * side, bool inner )
+GEO::CUT::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, bool inner )
   : side_( side )
 {
   std::vector<int> cycle;
@@ -48,6 +50,8 @@ GEO::CUT::PointGraph::PointGraph( Element * element, Side * side, bool inner )
       graph_.AddAll( l->BeginPoint(), l->EndPoint() );
     }
   }
+
+  graph_.FindSideLines( mesh, element, side );
 
 #if 1
   graph_.FixSinglePoints();
@@ -105,4 +109,56 @@ void GEO::CUT::PointGraph::Graph::AddAll( Point * p1, Point * p2 )
     }
   }
 #endif
+}
+
+void GEO::CUT::PointGraph::Graph::FindSideLines( Mesh & mesh, Element * element, Side * side )
+{
+  std::vector<int> side_position;
+  std::vector<Point*> side_points;
+  side_position.reserve( 2 );
+  side_points.reserve( 2 );
+
+  std::vector<int> open;
+
+  const std::vector<Side*> & sides = element->Sides();
+  for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
+  {
+    Side * s = *i;
+
+    side_position.clear();
+    side_points.clear();
+
+    for ( std::map<int, Point*>::iterator i=all_points_.begin(); i!=all_points_.end(); ++i )
+    {
+      Point * p = i->second;
+      if ( p->IsCut( s ) )
+      {
+        side_position.push_back( i->first );
+        side_points.push_back( p );
+      }
+    }
+
+    // find if there is a new line needed and create
+
+    if ( side_position.size() > 2 )
+    {
+      open.clear();
+
+      for ( std::vector<int>::iterator i=side_position.begin(); i!=side_position.end(); ++i )
+      {
+        int p = *i;
+        std::set<int> & row = at( p );
+        if ( row.size() < 2 )
+        {
+          open.push_back( i-side_position.begin() );
+        }
+      }
+
+      if ( open.size()==2 )
+      {
+        mesh.NewLine( side_points[open[0]], side_points[open[1]], s, side, element );
+        Add( side_position[open[0]], side_position[open[1]] );
+      }
+    }
+  }
 }
