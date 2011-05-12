@@ -177,6 +177,19 @@ void GEO::CUT::GRAPH::Graph::FixSinglePoints()
 #endif
 }
 
+bool GEO::CUT::GRAPH::Graph::HasSinglePoints()
+{
+  for ( std::map<int, std::set<int> >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
+  {
+    std::set<int> & row = i->second;
+    if ( row.size() < 2 )
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
 void GEO::CUT::GRAPH::Graph::TestClosed()
 {
   for ( std::map<int, std::set<int> >::iterator i=graph_.begin(); i!=graph_.end(); ++i )

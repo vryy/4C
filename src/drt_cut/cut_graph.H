@@ -88,6 +88,8 @@ namespace GEO
 
         void FixSinglePoints();
 
+        bool HasSinglePoints();
+
         void TestClosed();
 
         void Print();

@@ -51,13 +51,16 @@ GEO::CUT::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, b
     }
   }
 
-  graph_.FindSideLines( mesh, element, side );
+  if ( graph_.HasSinglePoints() )
+  {
+    graph_.FindSideLines( mesh, element, side );
 
 #if 1
-  graph_.FixSinglePoints();
+    graph_.FixSinglePoints();
 #else
-  graph_.TestClosed();
+    graph_.TestClosed();
 #endif
+  }
 
   std::set<int> free;
   graph_.GetAll( free );
