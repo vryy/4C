@@ -508,7 +508,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   
   if (solver->Params().isSublist("Aztec Parameters") 
       && 
-//      false &&
       solver->Params().isSublist("ML Parameters")
       &&
       DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(*sdyn,"STC_SCALING")!=INPAR::STR::stc_none) 
@@ -519,12 +518,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
       const int size=actdis->DofRowMap()->NumMyElements();
       
       // extract the six nullspace vectors corresponding to the modes
-      // trans x
-      // trans y
-      // trans z
-      // rot x
-      // rot y
-      // rot z
+      // trans x, trans y, trans z, rot x, rot y, rot z
       // Note: We assume 3d here!
       
       Teuchos::RCP<Epetra_Vector> nsv1=
@@ -558,12 +552,24 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
 
       stcinv->Complete();
       
-      //prepare matrix for scaled thickness business of thin shell structures
-      Teuchos::RCP<LINALG::SparseMatrix> stc=
-        Teuchos::rcp(new LINALG::SparseMatrix(*actdis->DofRowMap(), 81, true, true));
+      for (int lay = 2; lay <= sdyn->get<int>("STC_LAYER"); ++lay)
+      {
+        Teuchos::ParameterList pe;
+
+        p.set("stc_layer", lay);
+
+        Teuchos::RCP<LINALG::SparseMatrix> tmpstcmat=
+          Teuchos::rcp(new LINALG::SparseMatrix(*actdis->DofRowMap(),81,true,true));
+        tmpstcmat->Zero();
+
+        actdis-> Evaluate(p, tmpstcmat, Teuchos::null,  Teuchos::null, Teuchos::null, Teuchos::null);
+        tmpstcmat->Complete();
+
+        stcinv = MLMultiply(*stcinv,*tmpstcmat,false,false,true);
+      }
 
       Teuchos::RCP<Epetra_Vector> temp = 
-          LINALG::CreateVector(*(actdis->DofRowMap()),true);
+          LINALG::CreateVector(*(actdis->DofRowMap()),false);
       
       stcinv->Multiply(false,*nsv1,*temp);
       nsv1->Update(1.0,*temp,0.0);
