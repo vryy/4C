@@ -1399,8 +1399,9 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 	//get current off-rate for crosslinkers
 	double koff = 0;
 	double starttime = statmechparams_.get<double>("STARTTIMEACT", 0.0);
+	double ktswitchtime = statmechparams_.get<double>("KTSWITCHTIME", starttime);
 
-	if (time_ <= starttime || (time_>starttime && fabs(time_-starttime)<dt/1e4))
+	if (time_ <= ktswitchtime || (time_>ktswitchtime && fabs(time_-ktswitchtime)<dt/1e4))
 		koff = statmechparams_.get<double> ("K_OFF_start", 0.0);
 	else
 		koff = statmechparams_.get<double> ("K_OFF_end", 0.0);
