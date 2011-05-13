@@ -468,11 +468,6 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
 
   	if (usedmethod == INPAR::FSI::DirichletNeumannSlideale)
     {
-      if (Comm().MyPID()==0)
-      {
-        cout << endl <<"Remeshing operation for sliding fluid interface!" << endl;
-        cout << "Additional Fluid Operator:" << endl;
-      }
     	Remeshing();
     }
 
