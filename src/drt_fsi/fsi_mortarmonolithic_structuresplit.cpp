@@ -1074,7 +1074,8 @@ void FSI::MortarMonolithicStructureSplit::ReadRestart(int step)
 
   SetTimeStep(FluidField().Time(),FluidField().Step());
 
-  slideale_->EvaluateMortar(StructureField().ExtractInterfaceDispn(), iprojdisp_, coupsfm_);
+  if (aleproj_!= INPAR::FSI::ALEprojection_none)
+    slideale_->EvaluateMortar(StructureField().ExtractInterfaceDispn(), iprojdisp_, coupsfm_);
 }
 
 #endif
