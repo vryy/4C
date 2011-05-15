@@ -4,29 +4,18 @@
 //             http://www.lnm.mw.tum.de
 //             089 - 289-15265
 //
-// necessary defines: CCADISCRET D_FLUID3
+// necessary defines: CCADISCRET D_FLUID3 QHULL BINIO COMBUST_TESTCOUETTEFLOW
 //
 ==================================================================
-        General Data File CCARAT
+                        General Data File CCARAT
 ==================================================================
 -------------------------------------------------------------TITLE
-description test case:
-- check if cut algorithm and enrichment strategy work together properly
-- check functionality for a almost horizontal cut close to element boundaries
-- only the nodes marked enriched (+) must be enriched
-  -> check Gmsh file 'numdof_coupled_system.pos'
-- domain integration cells belonging to plus and minus domain must only be created for bisected elements
-  -> check Gmsh file 'domains.pos'
-- check if upper and lower elements for each position get the correct cut status (uncut, touched, bisected)
-
-6x20 elements, enriched nodes (+)
-x=-1                                    x=0                                     x=1
- +---+---+---+---+---+---+---+---+---|---|---|---|---|---|---|---|---|---|---|---|
- | b | b | b | b | b | b | b | b | t | t | t | u | u | u | u | u | u | u | u | u |
- +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
- | u | u | u | u | u | u | u | u | u | t | t | t | b | b | b | b | b | b | b | b |
- |---|---|---|---|---|---|---|---|---|---|---|---+---+---+---+---+---+---+---+---+
-   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19  20
+- COMBUST3 element
+- instationary Couette flow (shear flow)
+- coupled at inclined flame front (45° angle)
+- combustion interface conditions (varying density and viscosity)
+- Neumann outflow condition
+- XFEM Dirichlet conditions
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS  120
 NODES     294
@@ -34,11 +23,11 @@ DIM       3
 MATERIALS 5
 NUMDF     6
 --------------------------------------------------------PROBLEM TYP
-ALGEBRA                         Trilinos
-NUMFIELD                        2
 PROBLEMTYP                      Combustion
-RESTART                         0
+NUMFIELD                        2
 TIMETYP                         Dynamic
+ALGEBRA                         Trilinos
+RESTART                         0
 ----------------------------------------------------------------IO
 OUTPUT_OUT             No
 OUTPUT_GID             No
@@ -55,43 +44,36 @@ THERM_TEMPERATURE      No
 THERM_HEATFLUX         No
 FILESTEPS              1000
 -------------------------------------------------COMBUSTION CONTROL
-CONVTOL                         1e-08
+CONVTOL                         1e-05
 ITEMAX                          1
-MAXTIME                         1.0
-NUMSTEP                         4
+MAXTIME                         5.0
+NUMSTEP                         20
 RESTARTEVRY                     20
-TIMEINT                         Stationary
-TIMESTEP                        1.0
+TIMEINT                         One_Step_Theta
+TIMESTEP                        0.25
 UPRES                           1
 -----------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Premixed_Combustion
-START_VAL_SEMILAGRANGE          Yes
-START_VAL_ENRICHMENT            Yes
-INITSTATSOL                     No
-NITSCHE_VELOCITY                10
-NITSCHE_PRESSURE                0
-VELOCITY_JUMP_TYPE              vel_jump_premixed_combustion
-FLUX_JUMP_TYPE                  flux_jump_premixed_combustion
 LAMINAR_FLAMESPEED              1.0
 MARKSTEIN_LENGTH                0.0
-CONNECTED_INTERFACE             No
+NITSCHE_VELOCITY                100000
 SMOOTHGRADPHI                   smooth_grad_phi_meanvalue
-SMOOTHED_BOUNDARY_INTEGRATION   Yes
+VELOCITY_JUMP_TYPE              vel_jump_premixed_combustion
+FLUX_JUMP_TYPE                  flux_jump_premixed_combustion
 XFEMINTEGRATION                 Cut
 -----------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 REFINEMENT                      No
-REINITFUNCNO                    -1
-REINITIALIZATION                None // Signed_Distance_Function
-REINITINTERVAL                  2
+REINITFUNCNO                    2
+REINITIALIZATION                None
+REINITINTERVAL                  10
 -----------------------------------------------------FLUID DYNAMIC
 INITIALFIELD     zero_field
 STARTFUNCNO      -1
-TIMEINTEGR       Stationary
-NONLINITER       Newton // fixed_point_like
-ITEMAX           20
-INITSTATITEMAX   20
+TIMEINTEGR       One_Step_Theta
+NONLINITER       Newton
+ITEMAX           10 // 20
 CONVCHECK        L_2_norm
-CONVTOL          1.0E-8
+CONVTOL          1.0E-5
 STEADYCHECK      L_2_norm
 STEADYSTEP       -1
 STEADYTOL        1.0E-6
@@ -101,22 +83,23 @@ UPRES            1
 RESTARTEVRY      10
 NUMSTASTEPS      0
 THETA            0.5
-START_THETA      1.0
-ALPHA_F          1.00
-ALPHA_M          1.00
+START_THETA      0.66
+ALPHA_F          -1.00
+ALPHA_M          -1.00
 LIFTDRAG         no
 ADAPTCONV        Yes
 ADAPTCONV_BETTER 0.1
 FSSUGRVISC       No
 SIMPLER          No
+PHYSICAL_TYPE    Incompressible
 CONVFORM         convective
-GAMMA            1
+GAMMA            -1
 GRIDVEL          1
 PREDICTOR        steady_state_predictor
 RESSTEP          0
-MAXTIME          1.0
-NUMSTEP          30
-TIMESTEP         0.01
+MAXTIME          3333
+NUMSTEP          33
+TIMESTEP         0.333
 NEUMANNINFLOW    no
 ---------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE              residual_based
@@ -130,16 +113,16 @@ CSTAB                 cstab_qs
 CROSS-STRESS          no_cross
 REYNOLDS-STRESS       no_reynolds
 -----------------------------SCALAR TRANSPORT DYNAMIC
-SCATRATYPE                      Undefined
+SCATRATYPE                      LevelSet
 SOLVERTYPE                      nonlinear
-INITFUNCNO                      1
+INITFUNCNO                      2
 INITIALFIELD                    field_by_function
-MAXTIME                         1.0
-NUMSTEP                         30
+MAXTIME                         20.0
+NUMSTEP                         20
 RESTARTEVRY                     20
 THETA                           0.5
-TIMEINTEGR                      Stationary
-TIMESTEP                        0.01
+TIMEINTEGR                      One_Step_Theta
+TIMESTEP                        0.2
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 NEUMANNINFLOW                   no
@@ -152,9 +135,8 @@ CALCERROR                       No
 CONVFORM                        convective
 GAMMA                           0.5
 MATID                           2
-OUTPUT_GMSH                     Yes
 -----------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-CONVTOL                         1e-10
+CONVTOL                         1e-5
 ITEMAX                          20
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
@@ -167,7 +149,6 @@ MASSCALCULATION                 Interpolated
 REINITIALIZATION                None
 -------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  Yes
-DLM_CONDENSATION                Yes // No
 -------------------------------------------------------FLUID SOLVER
 SOLVER         UMFPACK
 -------------------------------------------SCALAR TRANSPORT SOLVER
@@ -175,81 +156,88 @@ SOLVER         UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT       1 MAT_matlist  NUMMAT 2 MATIDS 3 4
 MAT       2 MAT_scatra  DIFFUSIVITY 0.000000001 // 1*10E-9
-MAT       3 MAT_fluid   VISCOSITY 1.0 DENSITY 1.0 // plus/burnt side (right)
-MAT       4 MAT_fluid   VISCOSITY 1.0 DENSITY 2.0 // minus/unburnt side (left)
+MAT       3 MAT_fluid   VISCOSITY 0.3 DENSITY 0.6 // plus/burnt side (right)
+MAT       4 MAT_fluid   VISCOSITY 6.0 DENSITY 2.0 // minus/unburnt side (left)
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Explicit FUNC f(t)=(sin(PI(t:C1-0.5))+1)*0.5 c1 1.0 c2 1.0  // sin curve with zero derivatives
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
-------------------------------------------------------------FUNCT1 // initial G-function field
-FUNCT1 EXPR 0 0.0 0 FUNCTION y+x*0.00005 // almost horizontal cut
-------------------------------------------------------------FUNCT2
+------------------------------------------------------------FUNCT1 // inflow profile velocity
+FUNCT1 EXPR 0 0.0 0 FUNCTION 10/3*(5-4.5)*y+4.5 // shear flow; top 5.0, bottom 4.0 
+------------------------------------------------------------FUNCT2 // initial G-function field
+FUNCT2 EXPR 0 0.0 0 FUNCTION x+y+0.05
 ------------------------------------------------------------FUNCT3
+FUNCT3 EXPR 0 0.0 0 FUNCTION 10/3*(7-6.5)*y+6.5 // shear flow; top 7.0, bottom 6.0 
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4
-NDLINE  10
-NDSURF  6
+NDLINE  8
+NDSURF  10
 NDVOL   0
 -----------------------------------------------------DESIGN POINTS
 ------------------------------------------------------DESIGN LINES
 ---------------------------------------------------DESIGN SURFACES
 ----------------------------------------------------DESIGN VOLUMES
+-----------------------------------DESIGN POINT NEUMANN CONDITIONS
+DPOINT 0
+------------------------------------DESIGN LINE NEUMANN CONDITIONS
+DLINE  0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
-DSURF 1
+DSURF 1 // 1
 // surface outflow
-E 1 - none 1 1 1 0 0 0  0.0 -4.0 0.0 0.0 0.0 0.0  Mid  0 0 0 0 0 0
+E 4 - none 1 1 1 0 0 0  9.0 0.5 0.0 0.0 0.0 0.0  Mid  0 0 0 0 0 0
+-------------------------------------DESIGN VOL NEUMANN CONDITIONS
+DVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 4
 // top inflow points
-E 1 - 1 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 1 - 1 1 1 0 0 0  5.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // bottom inflow points
-E 2 - 1 1 1 0 0 0  0.0 2.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 2 - 1 1 1 0 0 0  4.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // top outflow points
-E 3 - 1 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 3 - 1 1 1 0 0 0  7.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // bottom outflow points
-E 4 - 1 1 1 0 0 0  0.0 2.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
-// midplane points
-//E 5 - 0 0 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 4 - 1 1 1 0 0 0  6.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE  9 // 10
+DLINE  6 // 8
 // line inflow top
-E 1 - 1 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 1 - 1 1 1 0 0 0  5.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // line inflow front
-E 2 - 1 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 2 - 1 1 1 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  1 0 0 0 0 0
 // line inflow bottom
-E 3 - 1 1 1 0 0 0  0.0 2.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 3 - 1 1 1 0 0 0  4.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // line inflow back
-E 4 - 1 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 4 - 1 1 1 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  1 0 0 0 0 0
 // line outflow top
-E 5 - 1 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 5 - 0 1 1 0 0 0  7.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // line outflow front
-E 6 - 1 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+//E 6 - 0 1 1 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  3 0 0 0 0 0
 // line outflow bottom
-E 7 - 1 1 1 0 0 0  0.0 2.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 7 - 0 1 1 0 0 0  6.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // line outflow back
-E 8 - 1 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
-// top edges side walls
-//E 9 - 0 1 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
-// bottom edges side walls
-E 10 - 1 1 1 0 0 0  0.0 2.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+//E 8 - 0 1 1 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  3 0 0 0 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF  5 // 6
-// surface top
-//E 1 - 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
-// surface bottom
-E 2 - 1 1 1 0 0 0  0.0 2.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+DSURF  7 // 8
 // surface inflow
-E 3 - 1 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+E 3 - 1 1 1 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  1 0 0 0 0 0
 // surface outflow
-E 4 - 1 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+//E 4 - 0 1 1 0 0 0  1.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  3 0 0 0 0 0
 // surface front
 E 5 - 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 // surface back
 E 6 - 0 0 1 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+// surface top left
+E 7 - 1 1 1 0 0 0  5.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+// surface top right
+E 8 - 1 1 1 0 0 0  7.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+// surface bottom left
+E 9 - 1 1 1 0 0 0  4.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
+// surface bottom right
+E 10 - 1 1 1 0 0 0  6.0 0.0 0.0 0.0 0.0 0.0  none none none none none none  0 0 0 0 0 0
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
+DVOL   0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    25 DNODE 1
 NODE    26 DNODE 1
@@ -296,90 +284,6 @@ NODE    287 DLINE 8
 NODE    289 DLINE 8
 NODE    291 DLINE 8
 NODE    293 DLINE 8
-NODE    25 DLINE 9
-NODE    26 DLINE 9
-NODE    27 DLINE 9
-NODE    28 DLINE 9
-NODE    41 DLINE 9
-NODE    42 DLINE 9
-NODE    55 DLINE 9
-NODE    56 DLINE 9
-NODE    69 DLINE 9
-NODE    70 DLINE 9
-NODE    83 DLINE 9
-NODE    84 DLINE 9
-NODE    97 DLINE 9
-NODE    98 DLINE 9
-NODE    111 DLINE 9
-NODE    112 DLINE 9
-NODE    125 DLINE 9
-NODE    126 DLINE 9
-NODE    139 DLINE 9
-NODE    140 DLINE 9
-NODE    153 DLINE 9
-NODE    154 DLINE 9
-NODE    167 DLINE 9
-NODE    168 DLINE 9
-NODE    181 DLINE 9
-NODE    182 DLINE 9
-NODE    195 DLINE 9
-NODE    196 DLINE 9
-NODE    209 DLINE 9
-NODE    210 DLINE 9
-NODE    223 DLINE 9
-NODE    224 DLINE 9
-NODE    237 DLINE 9
-NODE    238 DLINE 9
-NODE    251 DLINE 9
-NODE    252 DLINE 9
-NODE    265 DLINE 9
-NODE    266 DLINE 9
-NODE    279 DLINE 9
-NODE    280 DLINE 9
-NODE    293 DLINE 9
-NODE    294 DLINE 9
-NODE    1 DLINE 10
-NODE    2 DLINE 10
-NODE    5 DLINE 10
-NODE    6 DLINE 10
-NODE    29 DLINE 10
-NODE    30 DLINE 10
-NODE    43 DLINE 10
-NODE    44 DLINE 10
-NODE    57 DLINE 10
-NODE    58 DLINE 10
-NODE    71 DLINE 10
-NODE    72 DLINE 10
-NODE    85 DLINE 10
-NODE    86 DLINE 10
-NODE    99 DLINE 10
-NODE    100 DLINE 10
-NODE    113 DLINE 10
-NODE    114 DLINE 10
-NODE    127 DLINE 10
-NODE    128 DLINE 10
-NODE    141 DLINE 10
-NODE    142 DLINE 10
-NODE    155 DLINE 10
-NODE    156 DLINE 10
-NODE    169 DLINE 10
-NODE    170 DLINE 10
-NODE    183 DLINE 10
-NODE    184 DLINE 10
-NODE    197 DLINE 10
-NODE    198 DLINE 10
-NODE    211 DLINE 10
-NODE    212 DLINE 10
-NODE    225 DLINE 10
-NODE    226 DLINE 10
-NODE    239 DLINE 10
-NODE    240 DLINE 10
-NODE    253 DLINE 10
-NODE    254 DLINE 10
-NODE    267 DLINE 10
-NODE    268 DLINE 10
-NODE    281 DLINE 10
-NODE    282 DLINE 10
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    25 DSURFACE 1
 NODE    26 DSURFACE 1
@@ -787,6 +691,90 @@ NODE    287 DSURFACE 6
 NODE    289 DSURFACE 6
 NODE    291 DSURFACE 6
 NODE    293 DSURFACE 6
+NODE    25 DSURFACE 7
+NODE    26 DSURFACE 7
+NODE    27 DSURFACE 7
+NODE    28 DSURFACE 7
+NODE    41 DSURFACE 7
+NODE    42 DSURFACE 7
+NODE    55 DSURFACE 7
+NODE    56 DSURFACE 7
+NODE    69 DSURFACE 7
+NODE    70 DSURFACE 7
+NODE    83 DSURFACE 7
+NODE    84 DSURFACE 7
+NODE    97 DSURFACE 7
+NODE    98 DSURFACE 7
+NODE    111 DSURFACE 8
+NODE    112 DSURFACE 8
+NODE    125 DSURFACE 8
+NODE    126 DSURFACE 8
+NODE    139 DSURFACE 8
+NODE    140 DSURFACE 8
+NODE    153 DSURFACE 8
+NODE    154 DSURFACE 8
+NODE    167 DSURFACE 8
+NODE    168 DSURFACE 8
+NODE    181 DSURFACE 8
+NODE    182 DSURFACE 8
+NODE    195 DSURFACE 8
+NODE    196 DSURFACE 8
+NODE    209 DSURFACE 8
+NODE    210 DSURFACE 8
+NODE    223 DSURFACE 8
+NODE    224 DSURFACE 8
+NODE    237 DSURFACE 8
+NODE    238 DSURFACE 8
+NODE    251 DSURFACE 8
+NODE    252 DSURFACE 8
+NODE    265 DSURFACE 8
+NODE    266 DSURFACE 8
+NODE    279 DSURFACE 8
+NODE    280 DSURFACE 8
+NODE    293 DSURFACE 8
+NODE    294 DSURFACE 8
+NODE    1 DSURFACE 9
+NODE    2 DSURFACE 9
+NODE    5 DSURFACE 9
+NODE    6 DSURFACE 9
+NODE    29 DSURFACE 9
+NODE    30 DSURFACE 9
+NODE    43 DSURFACE 9
+NODE    44 DSURFACE 9
+NODE    57 DSURFACE 9
+NODE    58 DSURFACE 9
+NODE    71 DSURFACE 9
+NODE    72 DSURFACE 9
+NODE    85 DSURFACE 9
+NODE    86 DSURFACE 9
+NODE    99 DSURFACE 9
+NODE    100 DSURFACE 9
+NODE    113 DSURFACE 9
+NODE    114 DSURFACE 9
+NODE    127 DSURFACE 9
+NODE    128 DSURFACE 9
+NODE    141 DSURFACE 9
+NODE    142 DSURFACE 9
+NODE    155 DSURFACE 9
+NODE    156 DSURFACE 9
+NODE    169 DSURFACE 9
+NODE    170 DSURFACE 9
+NODE    183 DSURFACE 10
+NODE    184 DSURFACE 10
+NODE    197 DSURFACE 10
+NODE    198 DSURFACE 10
+NODE    211 DSURFACE 10
+NODE    212 DSURFACE 10
+NODE    225 DSURFACE 10
+NODE    226 DSURFACE 10
+NODE    239 DSURFACE 10
+NODE    240 DSURFACE 10
+NODE    253 DSURFACE 10
+NODE    254 DSURFACE 10
+NODE    267 DSURFACE 10
+NODE    268 DSURFACE 10
+NODE    281 DSURFACE 10
+NODE    282 DSURFACE 10
 ------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE 1  	COORD	-1.00000000e+00	-3.00000012e-01	5.00000007e-02	
@@ -1210,37 +1198,13 @@ NODE 294  	COORD	1.00000000e+00	3.00000012e-01	5.00000007e-02
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 7   POSITION vely NAME vely VALUE  2.0e+00  TOLERANCE 1e-5
-FLUID DIS 1 NODE 69  POSITION velx NAME velx VALUE  0.0e+00  TOLERANCE 1e-4
-FLUID DIS 1 NODE 63  POSITION vely NAME vely VALUE  2.0e+00  TOLERANCE 1e-5
-FLUID DIS 1 NODE 77  POSITION vely NAME vely VALUE  2.0e+00  TOLERANCE 1e-5
-FLUID DIS 1 NODE 91  POSITION vely NAME vely VALUE  2.0e+00  TOLERANCE 1e-5
-FLUID DIS 1 NODE 105 POSITION vely NAME vely VALUE  2.0e+00  TOLERANCE 1e-5
-FLUID DIS 1 NODE 118 POSITION vely NAME vely VALUE  2.0e+00  TOLERANCE 1e-5
-FLUID DIS 1 NODE 133 POSITION vely NAME vely VALUE  2.0e+00  TOLERANCE 1e-4
-FLUID DIS 1 NODE 147 POSITION vely NAME vely VALUE  3.0e+00  TOLERANCE 1e-4
-FLUID DIS 1 NODE 161 POSITION vely NAME vely VALUE  3.0e+00  TOLERANCE 1e-4
-FLUID DIS 1 NODE 175 POSITION vely NAME vely VALUE  3.0e+00  TOLERANCE 1e-5
-FLUID DIS 1 NODE 189 POSITION vely NAME vely VALUE  3.0e+00  TOLERANCE 1e-5
-FLUID DIS 1 NODE 203 POSITION vely NAME vely VALUE  3.0e+00  TOLERANCE 1e-5
-FLUID DIS 1 NODE 218 POSITION vely NAME vely VALUE  3.0e+00  TOLERANCE 1e-5
-FLUID DIS 1 NODE 231 POSITION vely NAME vely VALUE  3.0e+00  TOLERANCE 1e-5
-FLUID DIS 1 NODE 255 POSITION vely NAME vely VALUE  2.0e+00  TOLERANCE 1e-5
-FLUID DIS 1 NODE 7   POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-4
-FLUID DIS 1 NODE 69  POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-4
-FLUID DIS 1 NODE 63  POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-4
-FLUID DIS 1 NODE 77  POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-4
-FLUID DIS 1 NODE 91  POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-3
-FLUID DIS 1 NODE 105 POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-3
-FLUID DIS 1 NODE 118 POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-4
-FLUID DIS 1 NODE 133 POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-3
-FLUID DIS 1 NODE 147 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-3
-FLUID DIS 1 NODE 161 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-3
-FLUID DIS 1 NODE 175 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-3
-FLUID DIS 1 NODE 189 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-4
-FLUID DIS 1 NODE 203 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-4
-FLUID DIS 1 NODE 218 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-4
-FLUID DIS 1 NODE 231 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-4
-FLUID DIS 1 NODE 255 POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-4
+// node 134: just to the left of the interface on the center plane; analytical solution: 4.5
+// node 147: just to the right of the interface on the center plane; analytical solution: 6.5
+// node 110: just to the left of the interface one element away from the top; analytical solution: -25.0/6.0
+// node 171: just to the right of the interface one element away from the bottom; analytical solution: -9.0
+FLUID DIS 1 NODE 134 POSITION velx     NAME velx     VALUE  4.505404196e+00 TOLERANCE 1e-9
+FLUID DIS 1 NODE 147 POSITION velx     NAME velx     VALUE  6.502139756e+00 TOLERANCE 1e-9
+FLUID DIS 1 NODE 110 POSITION pressure NAME pressure VALUE -3.980746763e+01 TOLERANCE 1e-9
+FLUID DIS 1 NODE 171 POSITION pressure NAME pressure VALUE -2.754382471e+01 TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END

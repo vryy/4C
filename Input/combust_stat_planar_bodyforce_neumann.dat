@@ -69,7 +69,6 @@ REINITINTERVAL                  100
 INITIALFIELD     zero_field // field_by_function
 STARTFUNCNO      -1
 TIMEINTEGR       Stationary // One_Step_Theta
-STARTINGALGO     One_Step_Theta
 NONLINITER       Newton // fixed_point_like
 ITEMAX           20
 CONVCHECK        L_2_norm

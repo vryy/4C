@@ -69,7 +69,6 @@ REINITINTERVAL                  10
 INITIALFIELD     zero_field
 STARTFUNCNO      -1
 TIMEINTEGR       One_Step_Theta
-STARTINGALGO     One_Step_Theta
 NONLINITER       Newton
 ITEMAX           10 // 20
 CONVCHECK        L_2_norm
