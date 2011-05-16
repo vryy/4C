@@ -113,9 +113,9 @@ namespace FSI
       (
           Teuchos::RCP<DRT::Discretization> structdis,   ///< structure discretization
           Teuchos::RCP<DRT::Discretization> fluiddis,    ///< fluid discretization
-          ADAPTER::CouplingMortar& coupsf,      ///< mortar adapter
-          bool structcoupmaster,                ///< is structure master of adapter coupling?
-          INPAR::FSI::SlideALEProj aleproj      ///< projection enum
+          ADAPTER::CouplingMortar& coupsf,               ///< mortar adapter
+          bool structcoupmaster,                         ///< is structure master of adapter coupling?
+          INPAR::FSI::SlideALEProj aleproj               ///< projection enum
       );
 
       /// empty destructor
@@ -124,12 +124,12 @@ namespace FSI
       /// remesh ALE corresponding
       void Remeshing
       (
-          ADAPTER::Structure& structure,          ///< structure adapter
-          Teuchos::RCP<DRT::Discretization> fluiddis,      ///< fluid discretization
-          Teuchos::RCP<Epetra_Vector> idispale,   ///< standard ALE interface displacement
-          Teuchos::RCP<Epetra_Vector> iprojdispale,     ///< projected ALE interface displacement
-          ADAPTER::CouplingMortar& coupsf,        ///< mortar adapter
-          const Epetra_Comm& comm                ///< communicator
+          ADAPTER::Structure& structure,                  ///< structure adapter
+          Teuchos::RCP<DRT::Discretization> fluiddis,     ///< fluid discretization
+          Teuchos::RCP<Epetra_Vector> idispale,           ///< standard ALE interface displacement
+          Teuchos::RCP<Epetra_Vector> iprojdispale,       ///< projected ALE interface displacement
+          ADAPTER::CouplingMortar& coupsf,                ///< mortar adapter
+          const Epetra_Comm& comm                         ///< communicator
       );
 
       /// Compute new coupling matrices D and M
@@ -143,15 +143,14 @@ namespace FSI
       /// Compute new coupling matrices D and M
       void EvaluateFluidMortar
       (
-          Teuchos::RCP<Epetra_Vector> idispma, ///< displacement of structure
+          Teuchos::RCP<Epetra_Vector> idispma,   ///< displacement of structure
           Teuchos::RCP<Epetra_Vector> idispsl    ///< (proj.) displacement of ale
       );
 
-      /*----------------------------------------------------------------------*/
-      /*----------------------------------------------------------------------*/
+      /// use fluid-fluid mortar interface to interpolate between fluid quantities before and after sliding
       Teuchos::RCP<Epetra_Vector> InterpolateFluid
       (
-          Teuchos::RCP<const Epetra_Vector> uold
+          Teuchos::RCP<const Epetra_Vector> uold   ///< fluid velocity in configuration before sliding
       );
 
       /// write history vectors for restart
@@ -172,16 +171,17 @@ namespace FSI
       vector<double> Centerdisp
       (
           ADAPTER::Structure& structure,          ///< structure adapter
-          const Epetra_Comm& comm                  ///< communicator
+          const Epetra_Comm& comm                 ///< communicator
       );
 
-      /// compute approximate interface rotation
+      /// compute approximate interface rotation (structuresplit)
       void Rotation
       (
-          ADAPTER::Structure& structure,          ///< structure adapter
-          const Epetra_Comm& comm,                ///< communicator
-        double& rotrat,                           ///< rotation ratio of tangential displacements
-          Teuchos::RCP<Epetra_Vector> rotfull    ///< vector of full displacements in tangential directions
+          DRT::Discretization& mtrdis,              ///< mtr interface  discretization
+          Teuchos::RCP<Epetra_Vector> idispale,     ///< vector of ALE displacements
+          const Epetra_Comm& comm,                  ///< communicator
+          double& rotrat,                           ///< rotation ratio of tangential displacements
+          Teuchos::RCP<Epetra_Vector> rotfull       ///< vector of full displacements in tangential directions
       );
 
 
@@ -193,25 +193,21 @@ namespace FSI
           double& maxz
       );
       
-      /// calculate reference position of fluid interface nodes
-      std::map<int,LINALG::Matrix<3,1> > RefFluidPos
-      (
-          DRT::Discretization& interfacedis
-      );
 
       /// project ALE nodes onto the structure surface
       void SlideProjection
       (
-          ADAPTER::Structure& structure,          ///< structure adapter
-          Teuchos::RCP<DRT::Discretization> fluiddis,      ///< fluid discretization
-          Teuchos::RCP<Epetra_Vector> idispale,   ///< standard ALE interface displacement
+          ADAPTER::Structure& structure,                ///< structure adapter
+          Teuchos::RCP<DRT::Discretization> fluiddis,   ///< fluid discretization
+          Teuchos::RCP<Epetra_Vector> idispale,         ///< standard ALE interface displacement
           Teuchos::RCP<Epetra_Vector> iprojdispale,     ///< projected ALE interface displacement
-          ADAPTER::CouplingMortar& coupsf,        ///< mortar adapter
-          const Epetra_Comm& comm                ///< communicator
+          ADAPTER::CouplingMortar& coupsf,              ///< mortar adapter
+          const Epetra_Comm& comm                       ///< communicator
      );
       
       /// Build full redundant structure and fluid elements.
-      /// Necessary for search-trees since MORTAR elements do not know about their facets and edges...
+      /// Necessary for search-trees since MORTAR elements do not know about their facets and edges.
+      /// Furthermore, this function builds StructuralSurface elements from the fluid outer surface for rotation.
       void RedundantElements
       (
           ADAPTER::CouplingMortar& coupsf,
@@ -233,7 +229,9 @@ namespace FSI
       map<int, DRT::Node*> ifluidslidnodes_;          ///< sliding fluid nodes in the interface
       map<int, DRT::Node*> ifluidconfnodes_;          ///< sticking fluid nodes in the interface
       
-      map<int, Teuchos::RCP<DRT::Element> > fluidreduelements_;
+      map<int, Teuchos::RCP<DRT::Element> > ifluidslideles_;
+      map<int, Teuchos::RCP<DRT::Element> > ifluidslidstructeles_;
+
       map<int, Teuchos::RCP<DRT::Element> > structreduelements_;
 
       Teuchos::RCP<Epetra_Map> structdofrowmap_;

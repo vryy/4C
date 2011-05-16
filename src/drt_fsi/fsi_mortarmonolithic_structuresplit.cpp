@@ -220,9 +220,6 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     break;
     }
 
-    if(aleproj_ == INPAR::FSI::ALEprojection_rot_z || aleproj_ == INPAR::FSI::ALEprojection_rot_zsphere)
-      dserror("Sliding ALE with RotZ and RotZSphere not possible with structure split!");
-
     // set up sliding ale if necessary
     if(aleproj_ != INPAR::FSI::ALEprojection_none)
     {
