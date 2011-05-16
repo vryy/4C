@@ -114,7 +114,6 @@ bool XFEM::ApplyJumpEnrichmentToTouched(
     for (int inode = 0; inode<numnodes; ++inode)
     {
       const int nodeid = nodeidptrs[inode];
-      
       // to avoid phi-values near zero and bad conditioned element matrices, we enrich only
       // the nodes with phi-value approximative 0.0
       if (fabs(phinp_[inode]) < 0.1*hk_eleDiam)//1.0E-10)
@@ -341,11 +340,7 @@ void XFEM::createDofMapCombust(
       //----------------------------------------
       // find out whether an element is bisected
       //----------------------------------------
-#ifdef COMBUST_CUT
       if (ih.ElementBisected(xfemele->Id()))
-#else
-        if (ih.ElementBisected(xfemele))
-#endif
       {
         //std::cout << "Element "<< xfemele->Id() << " ist geschnitten und Knoten werden angereichert" << std::endl;
         const INPAR::COMBUST::CombustionType combusttype = DRT::INPUT::get<INPAR::COMBUST::CombustionType>(params, "combusttype");
@@ -402,11 +397,7 @@ void XFEM::createDofMapCombust(
       //---------------------------------------
       // find out whether an element is touched
       //---------------------------------------
-#ifdef COMBUST_CUT
       else if( ih.ElementTouched(xfemele->Id()))
-#else
-      else if( ih.ElementTouchedPlus(xfemele) or ih.ElementTouchedMinus(xfemele) )
-#endif
       {
         const INPAR::COMBUST::CombustionType combusttype = DRT::INPUT::get<INPAR::COMBUST::CombustionType>(params, "combusttype");
         // build a DofMap holding dofs for all nodes including additional dofs of enriched nodes

@@ -245,28 +245,14 @@ namespace COMBUST
     );
 
     /// store a set of domain integration cells
-    bool StoreDomainIntegrationCells(
-        GEO::CUT::ElementHandle * ehandle,
-        GEO::DomainIntCells& domainintcelllist,
-        LINALG::SerialDenseMatrix& xyze
-    );
-
-    /// store a set of domain integration cells for a trisected element
-    bool StoreDomainIntegrationCellsTrisected(
-        GEO::CUT::ElementHandle * ehandle,
-        GEO::DomainIntCells& domainintcelllist,
-        LINALG::SerialDenseMatrix& xyze
-    );
-
-    /// store a set of domain integration cells for a trisected element
-    bool StoreDomainIntegrationCellsTrisectedAlternative(
+    size_t StoreDomainIntegrationCells(
         GEO::CUT::ElementHandle * ehandle,
         GEO::DomainIntCells& domainintcelllist,
         LINALG::SerialDenseMatrix& xyze
     );
 
     /// store a list of boundary integration cells
-    bool StoreBoundaryIntegrationCells(
+    size_t StoreBoundaryIntegrationCells(
         GEO::CUT::ElementHandle * ehandle,
         GEO::BoundaryIntCells& boundaryintcelllist,
         LINALG::SerialDenseMatrix& xyze

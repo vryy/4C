@@ -57,7 +57,6 @@ namespace COMBUST
     //! output of domain and boundary integration cells to Gmsh!
     void toGmsh(const int step) const;
 
-#ifdef COMBUST_CUT
     //! tell me, whether the element has a whole touched face and lies in the plus domain or not
     bool ElementTouched(const int xfemeleid) const;
 
@@ -66,7 +65,7 @@ namespace COMBUST
 
     //! tell me, whether the element is trisected or not
     bool ElementTrisected(const int xfemeleid) const;
-#endif
+
     //! tell me, whether the element is trisected or not
     COMBUST::FlameFront::CutStatus ElementCutStatus(const int xfemeleid) const;
 

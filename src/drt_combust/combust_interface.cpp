@@ -235,7 +235,6 @@ const double COMBUST::InterfaceHandleCombust::ComputeVolumeMinus()
   return volume;
 }
 
-#ifdef COMBUST_CUT
 // return whether the element has a whole touched face and lies in the plus domain or not
 bool COMBUST::InterfaceHandleCombust::ElementTouched(const int xfemeleid) const
 {
@@ -252,9 +251,7 @@ bool COMBUST::InterfaceHandleCombust::ElementTouched(const int xfemeleid) const
 
   return touched;
 }
-#endif
 
-#ifdef COMBUST_CUT
 // return whether the element is bisected or not
 bool COMBUST::InterfaceHandleCombust::ElementBisected(const int xfemeleid) const
 {
@@ -271,9 +268,7 @@ bool COMBUST::InterfaceHandleCombust::ElementBisected(const int xfemeleid) const
 
   return bisected;
 }
-#endif
 
-#ifdef COMBUST_CUT
 // return whether the element is trisected or not
 bool COMBUST::InterfaceHandleCombust::ElementTrisected(const int xfemeleid) const
 {
@@ -290,7 +285,6 @@ bool COMBUST::InterfaceHandleCombust::ElementTrisected(const int xfemeleid) cons
 
   return trisected;
 }
-#endif
 
 // return whether the element is trisected or not
 COMBUST::FlameFront::CutStatus COMBUST::InterfaceHandleCombust::ElementCutStatus(const int xfemeleid) const
