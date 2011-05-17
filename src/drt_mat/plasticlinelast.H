@@ -156,24 +156,75 @@ private:
 
     /// Evaluate material
     void Evaluate(
-      const LINALG::Matrix<6,1>& strain,
+      const LINALG::Matrix<6,1>& linstrain,
       const int gp,  ///< current Gaus point
       Teuchos::ParameterList& params,  ///< parameter list for communication
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,  ///< material stiffness matrix
       LINALG::Matrix<NUM_STRESS_3D,1>& stress  ///< 2nd PK-stress
       );
 
+    // computes stress
+    void Stress(
+      const double p,  //!< volumetric stress tensor
+      const LINALG::Matrix<6,1>& devstress,  //!< deviatoric stress tensor
+      LINALG::Matrix<NUM_STRESS_3D,1>& stress //!< 2nd PK-stress
+      );
+
     /// computes isotropic elasticity tensor in matrix notion for 3d
     void SetupCmat(LINALG::Matrix<6,6>& cmat);
+
+    /// computes isotropic elastoplastic tensor in matrix notion for 3d
+    void SetupCmatElastoPlastic(
+      LINALG::Matrix<6,6>& cmat,
+      double Dgamma,
+      double G,
+      double q,
+      const LINALG::Matrix<6,1> flowvector,
+      double heaviside
+      );
+
+    /// computes isotropic elastoplastic tensor in matrix notion for 3d
+    void SetupCmatElastoPlastic2(
+      LINALG::Matrix<6,6>& cmat,
+      double Dgamma,
+      double q,
+      LINALG::Matrix<6,1> unitflow
+      );
+
+    void SetupContinuumCmatElastoPlastic(
+      LINALG::Matrix<6,6>& cmat,
+      double Dgamma,
+      double q,
+      LINALG::Matrix<6,1> unitflow
+      );
 
     /// Return density
     double Density() const { return params_->density_; }
 
     /// Check if history variables are already initialized
-    bool Initialized() const { return (isinit_ && (strain_np!=Teuchos::null)); }
+    bool Initialized() const
+    {
+      return ( isinit_ && (strainplcurr_!=Teuchos::null) );
+    }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+
+    /// Finite difference check for debugging purposes
+    void FDCheck(
+      const LINALG::Matrix<6,1>& strain,  //!< elastic strain vector
+      double Dgamma,  //!< plastic multiplier
+      double G,  //!< shear modulus
+      double kappa, //!< bulk modulus
+      const LINALG::Matrix<6,1>& N, // flow vector
+      double heaviside,  //!< Heaviside function
+      double p,  //!< volumetric stress
+      LINALG::Matrix<6,1>& stress  //!< updated stress sigma_n+1
+      );
+
+    /// Check implementation of material tangent for debugging purposes
+    void CheckImpl();
+
 
   private:
 
@@ -181,20 +232,10 @@ private:
     MAT::PAR::PlasticLinElast* params_;
 
     /// plastic history deformation
-    // history
-    // old total strain at t_n
-    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strain_n;  //!< \f${\varepsilon}_{n}\f$
     // old plastic strain at t_n
-    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainp_n;  //!< \f${\varepsilon}^p_{n}\f$
-    // old elastic strain at t_n
-    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > straine_n;  //!< \f${\varepsilon}^e_{n}\f$
-
-    // current total strain at t_n+1
-    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strain_np;  //!< \f${\varepsilon}_{n+1}\f$
+    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainpllast_;  //!< \f${\varepsilon}^p_{n}\f$
     // current plastic strain at t_n+1
-    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainp_np;  //!< \f${\varepsilon}^p_{n+1}\f$
-    // current elastic strain at t_n+1
-    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > straine_np;  //!< \f${\varepsilon}^e_{n+1}\f$
+    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
 
     /// indicator if #Initialize routine has been called
     bool isinit_;
@@ -203,5 +244,8 @@ private:
 }  // namespace MAT
 
 
+/*----------------------------------------------------------------------*/
 #endif  // CCADISCRET
 #endif  // PLASTICLINELAST_H_
+
+
