@@ -759,6 +759,9 @@ void MAT::PlasticLinElast::FDCheck(
 
     } // loop stresses
 
+    // undisturb the respective strain quantities
+    disturbstrain(k) -= delta;
+
   } // loop strains
 
   return;
