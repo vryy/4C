@@ -131,7 +131,7 @@ NUMSTEP      200
 MAXTIME      5.0
 NUM_INITSTEP 0
 ALE_TYPE     classic_lin
-RESEVRYDISP  1
+RESULTSEVRY  1
 QUALITY      none
 -------------------------------------------------------TSI DYNAMIC
 ------------------------------------------------COMBUSTION DYNAMIC

@@ -54,8 +54,7 @@ STEPSIZE     1.0
 //IARC         No
 //ARCSCL       1.0
 //SIGNCHCSP    No
-RESEVRYDISP  1
-RESEVRYSTRS  1
+RESULTSEVRY  1
 RESTARTEVRY  1
 //
 -----------------------------------------------EIGENVALUE ANALYSIS

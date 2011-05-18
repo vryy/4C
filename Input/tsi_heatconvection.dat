@@ -142,9 +142,8 @@ NORM_PRES                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         200
 PREDICT                         ConstDis  // TangDis
-RESEVRYDISP                     1
+RESULTSEVRY                     1
 RESEVRYERGY                     0
-RESEVRYSTRS                     1
 RESTARTEVRY                     1
 RESULTDT                        0
 STC_SCALING                     no

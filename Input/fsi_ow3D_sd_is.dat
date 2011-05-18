@@ -60,8 +60,7 @@ LINEAR
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 EIGEN        0
-RESEVRYDISP  1
-RESEVRYSTRS  1
+RESULTSEVRY  1
 RESTARTEVRY  20
 TIMESTEP     0.05
 NUMSTEP      200
@@ -170,7 +169,7 @@ NUMSTEP      200
 MAXTIME      5.0
 NUM_INITSTEP 0
 ALE_TYPE     classic_lin
-RESEVRYDISP  1
+RESULTSEVRY  1
 QUALITY      none
 -------------------------------------------------------TSI DYNAMIC
 KIND         thermal_static_structure_genalpha

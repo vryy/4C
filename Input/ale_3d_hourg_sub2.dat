@@ -53,7 +53,7 @@ NUMSTEP      31
 MAXTIME      3.0
 ALE_TYPE     classic_lin
 NUM_INITSTEP 0
-RESEVRYDISP  1
+RESULTSEVRY  1
 QUALITY      none
 ------------------------------------------------------FLUID SOLVER
 -----------------------------------------------------STRUCT SOLVER

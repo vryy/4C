@@ -56,16 +56,14 @@ STEPSIZE     0.03
 //IARC         No
 //ARCSCL       1.0
 //SIGNCHCSP    No
-RESEVRYDISP  1
-RESEVRYSTRS  1
+RESULTSEVRY  1
 RESTARTEVRY  20
 //
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   GenAlpha
 EIGEN        0
-RESEVRYDISP  1
-RESEVRYSTRS  1
+RESULTSEVRY  1
 RESTARTEVRY  10
 NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP     0.03

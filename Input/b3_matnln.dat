@@ -46,8 +46,7 @@ ARCSCL       1.0
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 EIGEN        0
-RESEVRYDISP  10
-RESEVRYSTRS  20
+RESULTSEVRY  10
 RESTARTEVRY  20
 TIMESTEP     0.05
 NUMSTEP      200

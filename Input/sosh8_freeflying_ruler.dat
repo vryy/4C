@@ -76,8 +76,7 @@ NLNSOL                          fullnewton
 //NUMSTEP                         2000
 NUMSTEP                         10
 PREDICT                         ConstDisVelAcc
-RESEVRYDISP                     1
-RESEVRYSTRS                     1
+RESULTSEVRY                     1
 RESTARTEVRY                     100
 RESULTDT                        0
 TIMEADAPT                       0
@@ -103,8 +102,7 @@ STEPSIZE     1.0
 //IARC         No
 //ARCSCL       1.0
 //SIGNCHCSP    No
-RESEVRYDISP  1
-RESEVRYSTRS  1
+RESULTSEVRY  1
 RESTARTEVRY  200
 //
 ---------------------------------------------------------MATERIALS

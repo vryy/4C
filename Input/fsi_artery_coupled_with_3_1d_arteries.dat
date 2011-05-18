@@ -40,8 +40,7 @@ UPRES        20
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      Static  // Gen_Alfa Static
 EIGEN                           0
-RESEVRYDISP                     1
-RESEVRYSTRS                     1
+RESULTSEVRY                     1
 RESTARTEVRY                     10
 NLNSOL                          fullnewton         // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP                        0.001
@@ -106,7 +105,7 @@ NUMSTEP                         41
 MAXTIME                         4.0
 ALE_TYPE                        springs
 NUM_INITSTEP                    0
-RESEVRYDISP                     1
+RESULTSEVRY                     1
 QUALITY                         none
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         9.0

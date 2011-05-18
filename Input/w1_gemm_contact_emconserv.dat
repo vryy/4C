@@ -49,8 +49,7 @@ LINEAR
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_EMM
 EIGEN        0
-RESEVRYDISP  1
-RESEVRYSTRS  20
+RESULTSEVRY  1
 RESTARTEVRY  20
 TIMESTEP     0.001
 NUMSTEP      50
@@ -133,7 +132,7 @@ TIMESTEP     0.1
 NUMSTEP      200
 MAXTIME      5.0
 ALE_TYPE     classic_lin
-RESEVRYDISP  10
+RESULTSEVRY  10
 ------------------------------------------------------FLUID SOLVER
 SOLVER         Aztec_MSR
 AZSOLVE        BiCGSTAB

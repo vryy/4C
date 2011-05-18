@@ -50,8 +50,7 @@ PRESTRESSTIME                   0.05
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      Static                          // Gen_Alfa Static
 EIGEN                           0
-RESEVRYDISP                     1
-RESEVRYSTRS                     1
+RESULTSEVRY                     1
 RESTARTEVRY                     1
 NLNSOL                          fullnewton                      // ptc fullnewton lsnewton modnewton matfreenewton nlncg
 TIMESTEP                        0.01

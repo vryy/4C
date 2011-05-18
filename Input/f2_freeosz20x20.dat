@@ -46,8 +46,7 @@ GEOLINEAR
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 EIGEN        0
-RESEVRYDISP  10
-RESEVRYSTRS  20
+RESULTSEVRY  10
 RESTARTEVRY  20
 TIMESTEP     0.05
 NUMSTEP      200
@@ -121,7 +120,7 @@ NUMSTEP      200
 MAXTIME      5.0
 ALE_TYPE     classic_lin
 NUM_INITSTEP 0
-RESEVRYDISP  1
+RESULTSEVRY  1
 Quality      min_J
 ------------------------------------------------------FLUID SOLVER
 SOLVER         UMFPACK

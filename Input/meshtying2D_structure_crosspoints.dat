@@ -51,8 +51,7 @@ FILESTEPS         1000
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Statics
 EIGEN        0
-RESEVRYDISP  1
-RESEVRYSTRS  1
+RESULTSEVRY  1
 RESTARTEVRY  2
 NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
 TIMESTEP     0.1

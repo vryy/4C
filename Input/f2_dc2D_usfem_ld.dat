@@ -93,7 +93,7 @@ MAXTIME      5.0
 NUM_INITSTEP 0
 //ALE_TYPE     springs
 ALE_TYPE     two_step
-RESEVRYDISP  10
+RESULTSEVRY  10
 QUALITY      none
 ------------------------------------------------------OPTIMIZATION
 ------------------------------------------------------FLUID SOLVER

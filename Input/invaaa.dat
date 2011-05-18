@@ -56,8 +56,7 @@ INV_ANA_MAX_RUN	10                   // max iterations
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP             Static                 // Gen_Alfa Static
 EIGEN                  0
-RESEVRYDISP            1
-RESEVRYSTRS            1
+RESULTSEVRY            1
 RESTARTEVRY            1
 NLNSOL                 fullnewton                 // fullnewton lsnewton modnewton matfreenewton nlncg ptc
 TIMESTEP               0.02

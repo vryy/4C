@@ -59,8 +59,7 @@ LINEAR
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 EIGEN        0
-RESEVRYDISP  1
-RESEVRYSTRS  1
+RESULTSEVRY  1
 RESTARTEVRY  2
 TIMESTEP     0.05
 NUMSTEP      2
@@ -139,7 +138,7 @@ NUMSTEP      2
 MAXTIME      5.0
 NUM_INITSTEP 0
 ALE_TYPE     classic_lin
-RESEVRYDISP  1
+RESULTSEVRY  1
 QUALITY      none
 ------------------------------------------------------FLUID SOLVER
 SOLVER         Aztec_MSR

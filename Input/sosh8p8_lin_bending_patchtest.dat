@@ -204,9 +204,8 @@ M_DAMP                          0.5
 NLNSOL                          fullnewton
 NUMSTEP                         1
 PREDICT                         TangDis
-RESEVRYDISP                     1
+RESULTSEVRY                     1
 RESEVRYERGY                     0
-RESEVRYSTRS                     1
 RESTARTEVRY                     1
 RESULTDT                        0
 TIMEADAPT                       0

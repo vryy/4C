@@ -47,8 +47,7 @@ FILESTEPS              1000
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Statics
 EIGEN        0
-RESEVRYDISP  1
-RESEVRYSTRS  1
+RESULTSEVRY  1
 RESTARTEVRY  20
 TIMESTEP     0.025
 NUMSTEP      200

@@ -51,16 +51,14 @@ STEPSIZE                        0.5
 //IARC                            Yes
 //ARCSCL                          1.0
 //SIGNCHCSP                       Yes
-RESEVRYDISP                     1
-RESEVRYSTRS                     1
+RESULTSEVRY                     1
 RESTARTEVRY                     1
 //
 ---------------------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 EIGEN        0
-RESEVRYDISP  1
-RESEVRYSTRS  1
+RESULTSEVRY  1
 RESTARTEVRY  4
 TIMESTEP     0.1
 NUMSTEP      20
@@ -121,7 +119,7 @@ NUMSTEP      41
 MAXTIME      4.0
 ALE_TYPE     springs
 NUM_INITSTEP 0
-RESEVRYDISP  1
+RESULTSEVRY  1
 QUALITY      none
 -------------------------------------------------------FSI DYNAMIC
 MAXTIME      1000.0

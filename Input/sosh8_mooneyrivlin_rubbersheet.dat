@@ -81,8 +81,7 @@ M_DAMP                          0.5
 NLNSOL                          fullnewton
 NUMSTEP                         200
 PREDICT                         ConstDis
-RESEVRYDISP                     1
-RESEVRYSTRS                     1
+RESULTSEVRY                     1
 RESTARTEVRY                     1
 RESULTDT                        0
 TIMEADAPT                       0
@@ -109,8 +108,7 @@ STEPSIZE     0.01
 //IARC         No
 //ARCSCL       1.0
 //SIGNCHCSP    No
-RESEVRYDISP  1
-RESEVRYSTRS  1
+RESULTSEVRY  1
 RESTARTEVRY  400
 //
 ---------------------------------------------------------MATERIALS

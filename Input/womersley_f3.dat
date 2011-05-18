@@ -39,8 +39,7 @@ PRESTRESS                       mulf                            // mulf id none
 PRESTRESSTIME                   2.1395 
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      Gen_Alfa                      // Gen_Alfa Static
-RESEVRYDISP                     5
-RESEVRYSTRS                     5
+RESULTSEVRY                     5
 RESTARTEVRY                     10
 NLNSOL                          fullnewton                      // ptc fullnewton lsnewton modnewton matfreenewton nlncg
 TIMESTEP                        0.0005
@@ -120,7 +119,7 @@ SECONDORDER                     yes                             // Second order 
 INFNORMSCALING                  yes
 -----------------------------------------------------------------ALE DYNAMIC
 ALE_TYPE                        classic_lin                     // classic_lin,incr_lin,springs
-RESEVRYDISP                     1
+RESULTSEVRY                     1
 ---------------------------------------------------------------STRUCT SOLVER
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                               // output every so often, 0 no output

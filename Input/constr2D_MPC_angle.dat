@@ -112,9 +112,8 @@ NLNSOL                          newtonlinuzawa
 //NLNSOL                          fullnewton
 NUMSTEP                         10
 PREDICT                         ConstDis
-RESEVRYDISP                     1
+RESULTSEVRY                     1
 RESEVRYERGY                     1
-RESEVRYSTRS                     1
 RESTARTEVRY                     1
 RESULTDT                        1
 TIMEADAPT                       0

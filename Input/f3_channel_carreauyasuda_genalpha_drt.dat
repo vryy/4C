@@ -24,7 +24,7 @@ MAXTIME                         4
 NUMSTEP                         41
 NUM_INITSTEP                    0
 QUALITY                         none
-RESEVRYDISP                     1
+RESULTSEVRY                     1
 TIMESTEP                        0.1
 ---------------------------------------------------------ALE SOLVER
 AZBDIAG                         0
@@ -301,8 +301,7 @@ M_DAMP                          0.5
 NLNSOL                          fullnewton
 NUMSTEP                         200
 PREDICT                         ConstDis
-RESEVRYDISP                     1
-RESEVRYSTRS                     1
+RESULTSEVRY                     1
 RESTARTEVRY                     1
 RESULTDT                        0
 TIMEADAPT                       0

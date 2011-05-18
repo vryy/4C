@@ -37,8 +37,7 @@ PARALLEL_REDIST                 No
 ---------------------------------------------------------EIGENVALUE ANALYSIS
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      OneStepTheta
-RESEVRYDISP                     1
-RESEVRYSTRS                     1
+RESULTSEVRY                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.2
 NUMSTEP                         100
@@ -151,7 +150,7 @@ NUMSTEP                         200
 MAXTIME                         5.0
 NUM_INITSTEP                    0
 ALE_TYPE                        laplace
-RESEVRYDISP                     1
+RESULTSEVRY                     1
 QUALITY                         none
 ---------------------------------------------------------------STRUCT SOLVER
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

@@ -41,8 +41,7 @@ GEOLINEAR
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 EIGEN        0
-RESEVRYDISP  10
-RESEVRYSTRS  20
+RESULTSEVRY  10
 RESTARTEVRY  20
 TIMESTEP     0.05
 NUMSTEP      200
@@ -109,7 +108,7 @@ NUMSTEP      20            // only valid for pure ale problem
 MAXTIME      9.0           // only valid for pure ale problem
 ALE_TYPE     min_Je_stiff  // flag how is ale element stiffness obtained
 NUM_INITSTEP 0             // only used for ALE_TYPE min_Je_stiff
-RESEVRYDISP  1             // how often are results saved
+RESULTSEVRY  1             // how often are results saved
 QUALITY      min_Je        // which measure of ale element quality to monitore
 ------------------------------------------------------FLUID SOLVER
 SOLVER         Aztec_MSR

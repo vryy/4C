@@ -48,8 +48,7 @@ IARC         No
 ARCSCL       1.0
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
-RESEVRYDISP  10
-RESEVRYSTRS  20
+RESULTSEVRY  10
 RESTARTEVRY  20
 TIMESTEP     0.05
 NUMSTEP      200

@@ -42,8 +42,7 @@ FILESTEPS                       1000
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   GenAlpha
 EIGEN        0
-RESEVRYDISP  1
-RESEVRYSTRS  20
+RESULTSEVRY  1
 RESTARTEVRY  20
 TIMESTEP     0.1
 NUMSTEP      25

@@ -51,16 +51,14 @@ STEPSIZE                        0.5
 //IARC                            Yes
 //ARCSCL                          1.0
 //SIGNCHCSP                       Yes
-RESEVRYDISP                     1
-RESEVRYSTRS                     1
+RESULTSEVRY                     1
 RESTARTEVRY                     1
 //
 ---------------------------------------------------------EIGENVALUE ANALYSIS
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      Gen_Alfa
 EIGEN                           0
-RESEVRYDISP                     1
-RESEVRYSTRS                     1
+RESULTSEVRY                     1
 RESTARTEVRY                     2
 TIMESTEP                        0.01
 NUMSTEP                         10

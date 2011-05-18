@@ -51,8 +51,7 @@ FILESTEPS              1000
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   GenAlpha
 EIGEN        0
-RESEVRYDISP  1
-RESEVRYSTRS  1
+RESULTSEVRY  1
 RESTARTEVRY  1
 NLNSOL       fullnewton // fullnewton modnewton nlncg ptc
 TIMESTEP     0.2
@@ -186,7 +185,7 @@ NUMSTEP      200
 MAXTIME      5.0
 NUM_INITSTEP 0
 ALE_TYPE     classic_lin
-RESEVRYDISP  1
+RESULTSEVRY  1
 QUALITY      none
 -------------------------------------------------------TSI DYNAMIC
 ------------------------------------------------------FLUID SOLVER

@@ -61,7 +61,7 @@ ALE_TYPE     classic_lin   // flag how is ale element stiffness obtained
 //ALE_TYPE     laplace
 //ALE_TYPE     LAS
 NUM_INITSTEP 0             // only used for ALE_TYPE min_Je_stiff
-RESEVRYDISP  1             // how often are results saved
+RESULTSEVRY  1             // how often are results saved
 QUALITY      min_Je        // which measure of ale element quality to monitore
 ------------------------------------------------------FLUID SOLVER
 -----------------------------------------------------STRUCT SOLVER

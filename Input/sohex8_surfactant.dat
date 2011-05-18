@@ -43,8 +43,7 @@ ALE_DISP          No
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   GenAlpha
 EIGEN        0
-RESEVRYDISP  1
-RESEVRYSTRS  1
+RESULTSEVRY  1
 RESTARTEVRY  10
 NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
 PREDICT      ConstDis

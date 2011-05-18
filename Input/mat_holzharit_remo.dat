@@ -64,9 +64,8 @@ MAXTIME                         5
 NLNSOL                          fullnewton
 NUMSTEP                         10
 PREDICT                         ConstDis
-RESEVRYDISP                     1
+RESULTSEVRY                     1
 RESEVRYERGY                     0
-RESEVRYSTRS                     1
 RESTARTEVRY                     10
 TIMESTEP                        0.1
 TOLCONSTR                       1e-04
@@ -97,8 +96,7 @@ STEPSIZE     0.1
 //IARC         No
 //ARCSCL       1.0
 //SIGNCHCSP    No
-RESEVRYDISP  1
-RESEVRYSTRS  1
+RESULTSEVRY  1
 RESTARTEVRY  20
 //
 -----------------------------------------------------THERMAL SOLVER

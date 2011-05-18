@@ -54,8 +54,7 @@ LINEAR
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 EIGEN        0
-RESEVRYDISP  10
-RESEVRYSTRS  20
+RESULTSEVRY  10
 RESTARTEVRY  20
 TIMESTEP     0.05
 NUMSTEP      200
@@ -143,7 +142,7 @@ NUMSTEP      200
 MAXTIME      5.0
 NUM_INITSTEP 0
 ALE_TYPE     classic_lin
-RESEVRYDISP  10
+RESULTSEVRY  10
 QUALITY      none
 ------------------------------------------------------OPTIMIZATION
 OPT_NUMITER   10 total number of iteration steps

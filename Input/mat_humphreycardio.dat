@@ -64,8 +64,7 @@ STEPSIZE     1.0
 //IARC         No
 //ARCSCL       1.0
 //SIGNCHCSP    No
-RESEVRYDISP  1
-RESEVRYSTRS  1
+RESULTSEVRY  1
 RESTARTEVRY  20
 //
 ------------------------------------------------------STRUCT SOLVER
@@ -107,9 +106,8 @@ NORM_PRES                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         10
 PREDICT                         ConstDis
-RESEVRYDISP                     1
+RESULTSEVRY                     1
 RESEVRYERGY                     0
-RESEVRYSTRS                     1
 RESTARTEVRY                     0
 RESULTDT                        0
 TIMEADAPT                       0

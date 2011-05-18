@@ -33,8 +33,7 @@ DYNAMICTYP   GenAlpha
 NLNSOL       fullnewton
 PREDICT      ConstDis
 EIGEN        0
-RESEVRYDISP  1
-RESEVRYSTRS  20
+RESULTSEVRY  1
 RESTARTEVRY  20
 TIMESTEP     0.05
 NUMSTEP      200
@@ -91,7 +90,7 @@ NUMSTEP      41
 MAXTIME      4.0
 ALE_TYPE     classic_lin
 NUM_INITSTEP 0
-RESEVRYDISP  1
+RESULTSEVRY  1
 QUALITY      none
 -------------------------------------------------------FSI DYNAMIC
 MAXTIME      1000.0

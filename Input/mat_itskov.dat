@@ -59,9 +59,8 @@ NLNSOL                          fullnewton
 NUMSTEP                         20
 TIMESTEP                        0.05
 PREDICT                         TangDis // ConstDis
-RESEVRYDISP                     1
+RESULTSEVRY                     1
 RESEVRYERGY                     0
-RESEVRYSTRS                     1
 RESTARTEVRY                     10
 TOLCONSTR                       1e-10
 TOLDISP                         1e-10

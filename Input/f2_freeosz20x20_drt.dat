@@ -26,8 +26,7 @@ GEOLINEAR
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      Gen_Alfa
 EIGEN                           0
-RESEVRYDISP                     10
-RESEVRYSTRS                     20
+RESULTSEVRY                     10
 RESTARTEVRY                     20
 TIMESTEP                        0.05
 NUMSTEP                         200
@@ -97,7 +96,7 @@ TIMESTEP                        0.05
 NUMSTEP                         200
 MAXTIME                         5.0
 ALE_TYPE                        classic_lin
-RESEVRYDISP                     1
+RESULTSEVRY                     1
 ----------------------------------------------------------------FLUID SOLVER
 SOLVER                          UMFPACK
 PARTITION                       Cut_Elements

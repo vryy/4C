@@ -47,8 +47,7 @@ FILESTEPS              1000
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   GenAlpha
 EIGEN        0
-RESEVRYDISP  10
-RESEVRYSTRS  10
+RESULTSEVRY  10
 RESTARTEVRY  11
 NLNSOL       fullnewton // fullnewton modnewton nlncg ptc
 TIMESTEP     50

@@ -139,7 +139,7 @@ NUMSTEP      21
 MAXTIME      0.02
 ALE_TYPE     classic_lin
 NUM_INITSTEP 0
-RESEVRYDISP  1
+RESULTSEVRY  1
 -------------------------------------------------------SSI DYNAMIC
 -------------------------------------------------------TSI DYNAMIC
 ------------------------------------------------------FLUID SOLVER

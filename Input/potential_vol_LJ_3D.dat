@@ -102,9 +102,8 @@ M_DAMP                          0.5
 NLNSOL                          fullnewton
 NUMSTEP                         30
 PREDICT                         ConstDis
-RESEVRYDISP                     3
+RESULTSEVRY                     3
 RESEVRYERGY                     0
-RESEVRYSTRS                     3
 RESTARTEVRY                     1000
 RESULTDT                        0
 TIMEADAPT                       0

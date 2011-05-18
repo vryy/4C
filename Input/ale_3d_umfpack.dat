@@ -40,8 +40,7 @@ GEOLINEAR
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
-RESEVRYDISP  10
-RESEVRYSTRS  20
+RESULTSEVRY  10
 RESTARTEVRY  20
 TIMESTEP     0.1
 NUMSTEP      30
@@ -88,7 +87,7 @@ NUMSTEP      31
 MAXTIME      3.0
 ALE_TYPE     classic_lin
 NUM_INITSTEP 0
-RESEVRYDISP  1
+RESULTSEVRY  1
 QUALITY      none
 ------------------------------------------------------FLUID SOLVER
 SOLVER         Aztec_MSR

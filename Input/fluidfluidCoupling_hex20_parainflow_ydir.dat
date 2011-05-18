@@ -62,8 +62,7 @@ M_DAMP                          0.000001
 NLNSOL                          fullnewton
 NUMSTEP                         200
 PREDICT                         ConstDis
-RESEVRYDISP                     1
-RESEVRYSTRS                     1
+RESULTSEVRY                     1
 RESTARTEVRY                     20
 TIMESTEP                        0.025
 TOLCONSTR                       1e-06
