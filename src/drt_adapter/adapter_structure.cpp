@@ -456,9 +456,15 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   sdyn->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
   
   if(genprob.probtyp == prb_struct_ale)
+  {
     sdyn->set<int>("RESEVRYDISP", prbdyn.get<int>("RESEVRYDISP"));
+    sdyn->set<int>("RESEVRYSTRS", prbdyn.get<int>("RESEVRYSTRS"));
+  }
   else
-    sdyn->set<int>("RESEVRYDISP", prbdyn.get<int>("UPRES"));        
+  {
+    sdyn->set<int>("RESEVRYDISP", prbdyn.get<int>("UPRES"));
+    sdyn->set<int>("RESEVRYSTRS", prbdyn.get<int>("UPPSS"));
+  }
 
   // sanity checks and default flags
   if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_fsi_lung_gas)
