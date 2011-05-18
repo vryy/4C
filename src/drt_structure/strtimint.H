@@ -601,8 +601,7 @@ namespace STR
     int writerestartevery_;  //!< write restart every given step;
                              //!< if 0, restart is not written
     bool writestate_;  //!< write state on/off
-    int writestateevery_;  //!< write state every given step
-    int writestrevery_;  //!< write stress/strain every given step
+    int writeresultsevery_;  //!< write state/stress/strain every given step
     INPAR::STR::StressType writestress_;  //!< stress output type
     INPAR::STR::StrainType writestrain_;  //!< strain output type
     int writeenergyevery_;  //!< write system energy every given step

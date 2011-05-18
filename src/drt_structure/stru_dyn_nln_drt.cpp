@@ -113,10 +113,6 @@ void dyn_nlnstructural_drt()
 {
 
 #if 1
-  // the adapter expects a couple of variables that do not exist in the StructuralDynamicParams()
-  // list so rename them here to the expected name
-  int upres = DRT::Problem::Instance()->StructuralDynamicParams().get<int>("RESEVRYDISP");
-  const_cast<Teuchos::ParameterList&>(DRT::Problem::Instance()->StructuralDynamicParams()).set<int>("UPRES",upres);
 
   // create an adapterbase and adapter
   ADAPTER::StructureBaseAlgorithm adapterbase(DRT::Problem::Instance()->StructuralDynamicParams());
@@ -257,7 +253,7 @@ void dyn_nlnstructural_drt()
       genalphaparams.set<int>   ("UZAWAMAXITER",sdyn.get<int>("UZAWAMAXITER"));
       genalphaparams.set<int>("UZAWAALGO",DRT::INPUT::IntegralValue<INPAR::STR::ConSolveAlgo>(sdyn,"UZAWAALGO"));
       genalphaparams.set<bool>  ("io structural disp",DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_DISP"));
-      genalphaparams.set<int>   ("io disp every nstep",sdyn.get<int>("RESEVRYDISP"));
+      genalphaparams.set<int>   ("io disp every nstep",sdyn.get<int>("RESULTSEVRY"));
 
       genalphaparams.set<bool>  ("ADAPTCONV",DRT::INPUT::IntegralValue<int>(sdyn,"ADAPTCONV")==1);
       genalphaparams.set<double>("ADAPTCONV_BETTER",sdyn.get<double>("ADAPTCONV_BETTER"));
@@ -265,7 +261,7 @@ void dyn_nlnstructural_drt()
       INPAR::STR::StressType iostress = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
       genalphaparams.set<int>("io structural stress", iostress);
 
-      genalphaparams.set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
+      genalphaparams.set<int>   ("io stress every nstep",sdyn.get<int>("RESULTSEVRY"));
 
       INPAR::STR::StrainType iostrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
       genalphaparams.set<int>("io structural strain", iostrain);

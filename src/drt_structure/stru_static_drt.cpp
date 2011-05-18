@@ -51,8 +51,8 @@ void stru_static_drt()
   int maxiter = params.get<int>("MAXITER");
   int nstep = params.get<int>("NUMSTEP");
   int resevery_restart = params.get<int>("RESTARTEVRY");
-  int resevry_disp = params.get<int>("RESEVRYDISP");
-  int resevry_stress = params.get<int>("RESEVRYSTRS");
+  int resevry_disp = params.get<int>("RESULTSEVRY");
+  int resevry_stress = params.get<int>("RESULTSEVRY");
 
   // -------------------------------------------------------------------
   // access the discretization

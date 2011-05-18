@@ -735,8 +735,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   IntParameter("MAXITER",0,"",&stat);
   IntParameter("NUMSTEP",0,"",&stat);
-  IntParameter("RESEVRYDISP",1,"",&stat);
-  IntParameter("RESEVRYSTRS",1,"",&stat);
+  IntParameter("RESULTSEVRY",1,"",&stat);
   IntParameter("RESTARTEVRY",20,"",&stat);
 
   DoubleParameter("TOLDISP",0.0,"",&stat);
@@ -785,8 +784,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // Output type
   IntParameter("EIGEN",0,"EIGEN make eigenanalysis of the initial dynamic system",&sdyn);
-  IntParameter("RESEVRYDISP",1,"save displacements and contact forces every RESEVRYDISP steps",&sdyn);
-  IntParameter("RESEVRYSTRS",1,"save stresses every RESEVRYSTRS steps",&sdyn);
+  IntParameter("RESULTSEVRY",1,"save displacements and contact forces every RESULTSEVRY steps",&sdyn);
   IntParameter("RESEVRYERGY",0,"write system energies every requested step",&sdyn);
   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&sdyn);
   // Time loop control
@@ -2504,7 +2502,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                           ALE_DYNAMIC::springs_fixed_ref),
                                &adyn);
   IntParameter("NUM_INITSTEP",0,"",&adyn);
-  IntParameter("RESEVRYDISP",1,"",&adyn);
+  IntParameter("RESULTSEVRY",1,"",&adyn);
 
   setStringToIntegralParameter<int>("QUALITY","none","unused",
                                tuple<std::string>("none","NONE"),

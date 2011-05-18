@@ -540,7 +540,7 @@ void stru_genalpha_drt()
     time += dt;  // time t_n := t_{n+1} = t_n + Delta t
 
     //----------------------------------------------------- output results
-    int mod_disp   = istep % sdyn.get<int>("RESEVRYDISP");
+    int mod_disp   = istep % sdyn.get<int>("RESULTSEVRY");
     if (!mod_disp && ioflags.struct_disp==1)
     {
       output.NewStep(istep, time);
@@ -550,7 +550,7 @@ void stru_genalpha_drt()
     }
 
     //---------------------------------------------- do stress calculation
-    int mod_stress = istep % sdyn.get<int>("RESEVRYSTRS");
+    int mod_stress = istep % sdyn.get<int>("RESULTSEVRY");
     if (!mod_stress && ioflags.struct_stress==1)
     {
       // create the parameters for the discretization

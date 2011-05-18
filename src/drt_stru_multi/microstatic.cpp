@@ -122,10 +122,10 @@ V0_(V0)
   restart_ = probtype.get<int>("RESTART");
   restartevry_ = sdyn_macro.get<int>("RESTARTEVRY");
   iodisp_ = DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_DISP");
-  resevrydisp_ = sdyn_micro.get<int>("RESEVRYDISP");
+  resevrydisp_ = sdyn_micro.get<int>("RESULTSEVRY");
   INPAR::STR::StressType iostress = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
   iostress_ = iostress;
-  resevrystrs_ = sdyn_micro.get<int>("RESEVRYSTRS");
+  resevrystrs_ = sdyn_micro.get<int>("RESULTSEVRY");
   INPAR::STR::StrainType iostrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
   iostrain_ = iostrain;
   iosurfactant_ = DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_SURFACTANT");

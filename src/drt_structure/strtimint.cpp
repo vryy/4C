@@ -84,8 +84,7 @@ STR::TimInt::TimInt
   printiter_(true),  // ADD INPUT PARAMETER
   writerestartevery_(sdynparams.get<int>("RESTARTEVRY")),
   writestate_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_DISP")),
-  writestateevery_(sdynparams.get<int>("RESEVRYDISP")),
-  writestrevery_(sdynparams.get<int>("RESEVRYSTRS")),
+  writeresultsevery_(sdynparams.get<int>("RESULTSEVRY")),
   writestress_(DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams,"STRUCT_STRESS")),
   writestrain_(DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams,"STRUCT_STRAIN")),
   writeenergyevery_(sdynparams.get<int>("RESEVRYERGY")),
@@ -743,17 +742,17 @@ void STR::TimInt::OutputStep()
 
   // output results (not necessary if restart in same step)
   if ( writestate_
-       and writestateevery_ and (step_%writestateevery_ == 0)
+       and writeresultsevery_ and (step_%writeresultsevery_ == 0)
        and (not datawritten) )
   {
     OutputState(datawritten);
   }
 
   // output stress & strain
-  if ( writestrevery_
+  if ( writeresultsevery_
        and ( (writestress_ != INPAR::STR::stress_none)
              or (writestrain_ != INPAR::STR::strain_none) )
-       and (step_%writestrevery_ == 0) )
+       and (step_%writeresultsevery_ == 0) )
   {
     OutputStressStrain(datawritten);
   }

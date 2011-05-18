@@ -213,14 +213,14 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   genalphaparams->set<int>("UZAWAALGO",DRT::INPUT::IntegralValue<INPAR::STR::ConSolveAlgo>(sdyn,"UZAWAALGO"));
 
   genalphaparams->set<bool>  ("io structural disp",DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_DISP"));
-  genalphaparams->set<int>   ("io disp every nstep",prbdyn.get<int>("UPRES"));
+  genalphaparams->set<int>   ("io disp every nstep",prbdyn.get<int>("RESULTSEVRY"));
 
   genalphaparams->set<bool>  ("ADAPTCONV",DRT::INPUT::IntegralValue<int>(sdyn,"ADAPTCONV")==1);
   genalphaparams->set<double>("ADAPTCONV_BETTER",sdyn.get<double>("ADAPTCONV_BETTER"));
 
   INPAR::STR::StressType iostress = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
   genalphaparams->set<int>("io structural stress", iostress);
-  genalphaparams->set<int>   ("io stress every nstep",sdyn.get<int>("RESEVRYSTRS"));
+  genalphaparams->set<int>   ("io stress every nstep",sdyn.get<int>("RESULTSEVRY"));
 
   INPAR::STR::StrainType iostrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
   genalphaparams->set<int>("io structural strain", iostrain);
@@ -457,13 +457,11 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   
   if(genprob.probtyp == prb_struct_ale)
   {
-    sdyn->set<int>("RESEVRYDISP", prbdyn.get<int>("RESEVRYDISP"));
-    sdyn->set<int>("RESEVRYSTRS", prbdyn.get<int>("RESEVRYSTRS"));
+    sdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
   }
   else
   {
-    sdyn->set<int>("RESEVRYDISP", prbdyn.get<int>("UPRES"));
-    sdyn->set<int>("RESEVRYSTRS", prbdyn.get<int>("UPPSS"));
+    sdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("UPRES"));
   }
 
   // sanity checks and default flags

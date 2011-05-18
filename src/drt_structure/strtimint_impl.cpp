@@ -2105,7 +2105,7 @@ void STR::TimIntImpl::ComputeSTCMatrix()
 
   stcmat_->Complete();
 
-  #if 1
+  #ifdef DEBUG
   if (iter_==1&& step_==0)
   {
     const std::string fname = "stcmatrix1.mtl";
