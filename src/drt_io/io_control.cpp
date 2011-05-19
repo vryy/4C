@@ -291,10 +291,54 @@ void IO::OutputControl::NewResultFile(int numb_run)
                << "\n";
 
   controlfile_ << std::flush;
-
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::OutputControl::NewResultFile(string name_appendix, int numb_run)
+{
+  std::stringstream name;
+  name  << name_appendix;
+  name << "_run_"<< numb_run;
+  filename_ = name.str();
+  name << ".control";
 
+  controlfile_.close();
+  bool b = controlfile_.fail();
+  cout << b << endl;
+  controlfile_.open(name.str().c_str(),std::ios_base::out);
+  if (not controlfile_)
+    dserror("could not open control file '%s' for writing", name.str().c_str());
+
+  time_t time_value;
+  time_value = time(NULL);
+
+  char hostname[31];
+  struct passwd *user_entry;
+#ifndef WIN_MUENCH
+  user_entry = getpwuid(getuid());
+  gethostname(hostname, 30);
+#else
+  strcpy(hostname, "unknown host");
+#endif
+
+  controlfile_ << "# baci output control file\n"
+               << "# created by "
+#if !defined(WIN_MUENCH) && !defined(HPUX_GNU)
+               << user_entry->pw_name
+#else
+               << "unknown"
+#endif
+               << " on " << hostname << " at " << ctime(&time_value)
+               << "# using code revision " << (CHANGEDREVISION+0) << " \n\n"
+               << "input_file = \"" << inputfile_ << "\"\n"
+               << "problem_type = \"" << problemtype_ << "\"\n"
+               << "spatial_approximation = \"" << "Polynomial" << "\"\n"
+               << "ndim = " << ndim_ << "\n"
+               << "\n";
+
+  controlfile_ << std::flush;
+}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::InputControl::InputControl(std::string filename, const bool serial)

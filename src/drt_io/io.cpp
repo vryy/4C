@@ -433,6 +433,31 @@ IO::DiscretizationWriter::~DiscretizationWriter()
   }
   if (resultfile_ != -1)
   {
+    // apparently H5Fclose(resultfile_); does not close the file, if there are still
+    // some open groups or datasets, so close them first
+
+   	// Get the number of open groups
+    int num_og = H5Fget_obj_count(resultfile_, H5F_OBJ_GROUP);
+
+    // get pointer to store ids of open groups
+    hid_t      *oid_list;
+    oid_list = (hid_t*)calloc((size_t)num_og, sizeof(hid_t));
+
+    if(oid_list != NULL)
+    {
+      herr_t status = H5Fget_obj_ids(resultfile_,H5F_OBJ_GROUP,num_og,oid_list);
+      if (status < 0)
+         dserror("Failed to get id's of open groups in resultfile");
+
+      // loop over open groups
+      for( int i = 0; i < num_og; i++ )
+      {
+        const herr_t status_g = H5Gclose(oid_list[i]);
+            if (status_g < 0)
+              dserror("Failed to close HDF-group in resultfile");
+      }
+    }
+    //now close the result file
     const herr_t status = H5Fclose(resultfile_);
     if (status < 0)
     {
@@ -544,6 +569,16 @@ void IO::DiscretizationWriter::NewResultFile(int numb_run)
 	meshfile_changed_ = -1;
 	output_->NewResultFile(numb_run);
 }
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationWriter::NewResultFile(string name_appendix, int numb_run)
+{
+  resultfile_changed_ = -1;
+  meshfile_changed_ = -1;
+  output_->NewResultFile(name_appendix, numb_run);
+  }
+
+
 
 
 /*----------------------------------------------------------------------*/

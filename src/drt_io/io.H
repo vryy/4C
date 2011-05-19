@@ -150,6 +150,8 @@ public:
     elementvector
   };
 
+  // hack put output control into publeic
+  //Teuchos::RCP<OutputControl> output_;
   /// Writer constructor always needs a discretization
   DiscretizationWriter(Teuchos::RCP<DRT::Discretization> dis,
                        Teuchos::RCP<OutputControl> output);
@@ -255,6 +257,10 @@ public:
 
     // creating new result files for the inverse analysis
   void NewResultFile(int numb_run);
+  // creating new result files for the mlmc
+  void NewResultFile(string name_appendix, int numb_run);
+
+
 
   //@}
 
