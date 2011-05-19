@@ -1313,7 +1313,10 @@ void DRT::Problem::ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reade
   if(Teuchos::getIntegralValue<int>(mlmcp,"MLMC")!= false)
   {
     // get the number of levels
-    int num_levels = mlmcp.get<int>("NUMLEVELS");
+    //int num_levels = mlmcp.get<int>("NUMLEVELS");
+    string second_input_file = mlmcp.get<std::string>("DISCRETIZATION_FOR_PROLONGATION");
+    /*
+    // Currently not in use
     //loop over all levels and read in a discretization for each
     for (int i = 0; i < num_levels ;i++)
     {
@@ -1341,7 +1344,7 @@ void DRT::Problem::ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reade
 
       multilevel_problem->AddDis(genprob.numsf, structdis_multilevel);
       multilevel_problem->ReadParameter(multilevel_reader);
-      /* input of not mesh or time based problem data  */
+      // input of not mesh or time based problem data
       //multilevel_problem->InputControl();
       // Read in Materials
       DRT::Problem::Instance()->materials_->SetReadFromProblem(dislevelnum);
@@ -1361,7 +1364,42 @@ void DRT::Problem::ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reade
 
       // set the problem number from which to call materials again to zero
       materials_->SetReadFromProblem(0);
-    }
+    }*/
+    RCP<DRT::Problem> multilevel_problem = DRT::Problem::Instance(1);
+    #ifdef PARALLEL
+          RCP<Epetra_MpiComm> serialcomm = rcp(new Epetra_MpiComm(MPI_COMM_SELF));
+    #else
+          RCP<Epetra_SerialComm> serialcomm = rcp(new Epetra_SerialComm());
+    #endif
+
+    // Read in other level
+    DRT::INPUT::DatFileReader multilevel_reader(second_input_file, serialcomm, 1);
+
+    RCP<DRT::Discretization> structdis_multilevel = rcp(new DRT::Discretization("structure", multilevel_reader.Comm()));
+
+    multilevel_problem->AddDis(genprob.numsf, structdis_multilevel);
+    multilevel_problem->ReadParameter(multilevel_reader);
+    /* input of not mesh or time based problem data  */
+    //multilevel_problem->InputControl();
+    // Read in Materials
+    DRT::Problem::Instance()->materials_->SetReadFromProblem(1);
+    multilevel_problem->ReadMaterials(multilevel_reader);
+    // Read in Nodes and Elements
+    DRT::INPUT::NodeReader multilevelnodereader(multilevel_reader, "--NODE COORDS");
+    multilevelnodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis_multilevel, multilevel_reader, "--STRUCTURE ELEMENTS")));
+    multilevelnodereader.Read();
+
+    // read conditions of other levels
+    // -> note that no time curves and spatial functions can be read!
+    multilevel_problem->ReadConditions(multilevel_reader);
+
+    // At this point, everything for the other levels is read,
+    // subsequent reading is only for level 0
+    structdis_multilevel->FillComplete();
+
+    // set the problem number from which to call materials again to zero
+    materials_->SetReadFromProblem(0);
+
     materials_->ResetReadFromProblem();
   }
 }
