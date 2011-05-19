@@ -82,6 +82,9 @@ namespace COMBUST
     /// remote access method to vector on fluid NodeRowMap holding smoothed gradient of G-function at n+1
     const Teuchos::RCP<Epetra_MultiVector> GradPhi() const { return gradphi_; }
 
+    /// remote access method to vector on fluid NodeRowMap holding smoothed gradient of G-function at n+1
+    const Teuchos::RCP<Epetra_Vector> Curvature() const { return curvature_; }
+
     const std::map<int,GEO::DomainIntCells> DomainIntCells() const {return myelementintcells_;}
     const std::map<int,GEO::BoundaryIntCells> BoundaryIntCells() const {return myboundaryintcells_;}
     const std::map<int,CutStatus> ElementCutStatus() const {return myelementcutstatus_;}
@@ -132,6 +135,9 @@ namespace COMBUST
 
     /// call template of member function SmoothGradPhi() to compute smoothed gradient field of G-function
     void CallSmoothGradPhi(const Teuchos::ParameterList& combustdyn);
+
+    /// compute curvature based on G-function
+    void ComputeCurvature(const Teuchos::ParameterList& combustdyn);
 
     /// compute smoothed gradient field of G-function
     template<const size_t nsd_real>
@@ -246,15 +252,15 @@ namespace COMBUST
 
     /// store a set of domain integration cells
     size_t StoreDomainIntegrationCells(
-        GEO::CUT::ElementHandle * ehandle,
-        GEO::DomainIntCells& domainintcelllist,
+        GEO::CUT::Element*         element,
+        GEO::DomainIntCells&       domainintcelllist,
         LINALG::SerialDenseMatrix& xyze
     );
 
     /// store a list of boundary integration cells
     size_t StoreBoundaryIntegrationCells(
-        GEO::CUT::ElementHandle * ehandle,
-        GEO::BoundaryIntCells& boundaryintcelllist,
+        GEO::CUT::Element*         element,
+        GEO::BoundaryIntCells&     boundaryintcelllist,
         LINALG::SerialDenseMatrix& xyze
     );
 
@@ -344,6 +350,9 @@ namespace COMBUST
 
     /// pointer to vector on fluid NodeColMap holding smoothed values of the gradient of the G-function at n+1
     Teuchos::RCP<Epetra_MultiVector> gradphi_;
+
+    /// pointer to vector on fluid NodeColMap holding smoothed values of the curvature at n+1
+    Teuchos::RCP<Epetra_Vector> curvature_;
 
     /// boolean indicating whether refinement strategy is turned on/off
     bool refinement_;
