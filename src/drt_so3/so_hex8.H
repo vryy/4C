@@ -496,7 +496,7 @@ protected:
     calc_stc_matrix,          //! calculate scaled director matrix for thin shell structures
     calc_stc_matrix_inverse,  //! calculate inverse of scaled director matrix for thin shell structures
     calc_struct_stifftemp,    //!< TSI specific: mechanical-thermal stiffness
-    calc_gobal_gpstresses_map //! basically calc_struct_stress but with assembly of global gpstresses map
+    calc_global_gpstresses_map //! basically calc_struct_stress but with assembly of global gpstresses map
   };
 
   //! kinematic types of so_hex8 (default: total-lagrangian)

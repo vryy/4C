@@ -95,7 +95,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
   else if (action=="calc_struct_prestress_update")                act = So_hex8::prestress_update;
   else if (action=="calc_struct_inversedesign_update")            act = So_hex8::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch")            act = So_hex8::inversedesign_switch;
-  else if (action=="calc_gobal_gpstresses_map")                   act = So_hex8::calc_gobal_gpstresses_map;
+  else if (action=="calc_global_gpstresses_map")                   act = So_hex8::calc_global_gpstresses_map;
   else dserror("Unknown type of action for So_hex8");
 
   // check for patient specific data
@@ -994,7 +994,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     break;
     //==================================================================================
     // evaluate stresses and strains at gauss points and store gpstresses in map <EleId, gpstresses >
-    case calc_gobal_gpstresses_map:
+    case calc_global_gpstresses_map:
     {
       // nothing to do for ghost elements
       if (discretization.Comm().MyPID()==Owner())
@@ -1009,7 +1009,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
                 params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
         if (gpstressmap==null)
-          dserror("no gp stress/strain map available for writing gpstresses");
+          dserror("no gp stress map available for writing gpstresses");
+        const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap=
+                        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstrainmap",null);
+        if (gpstrainmap==null)
+                  dserror("no gp strain map available for writing gpstrains");
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
         vector<double> myres(lm.size());
@@ -1047,8 +1051,22 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
           }
         }
 
+        //strains
+        RCP<Epetra_SerialDenseMatrix> gpstrain = rcp(new Epetra_SerialDenseMatrix);
+        gpstrain->Shape(NUMGPT_SOH8,NUMSTR_SOH8);
+
+        //move stresses to serial dense matrix
+        for(int i=0;i<NUMGPT_SOH8;i++)
+        {
+          for(int j=0;j<NUMSTR_SOH8;j++)
+          {
+            (*gpstrain)(i,j)=strain(i,j);
+          }
+        }
+
         //add to map
         (*gpstressmap)[gid]=gpstress;
+        (*gpstrainmap)[gid]=gpstrain;
 
         {
           DRT::PackBuffer data;
@@ -1578,15 +1596,15 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       if (elestress == NULL) dserror("stress data not available");
       for (int i = 0; i < NUMSTR_SOH8; ++i)
         (*elestress)(gp,i) = stress(i);
-      RCP<MAT::Material> mat = Material();
+        /*RCP<MAT::Material> mat = Material();
         if (mat->MaterialType()==INPAR::MAT::m_aaaneohooke_stopro)
-          {
+        {
           MAT::AAAneohooke_stopro* aaa_stopro= static_cast <MAT::AAAneohooke_stopro*>(Material().get());
           // Get stochastic mat parameter beta
           double beta = aaa_stopro->Beta();
           // and write it into stress tensor FOR TESTING ONLY !!!!
           (*elestress)(gp,0)=beta;
-        }
+        }*/
 
     }
     break;
