@@ -742,7 +742,7 @@ slideeleredmap_(null)
 
   //initialize struct objects in interface
   DRT::UTILS::FindConditionObjects(*fluiddis, fluidnodes, fluidgnodes, fluidelements,"FSICoupling");
-  DRT::UTILS::FindConditionObjects(*fluiddis, fluidnodes, fluidmnodes, fluidmelements,"FSICouplingNoSlide");
+  DRT::UTILS::FindConditionObjects(*fluiddis, fluidmnodes, fluidgnodes, fluidmelements,"FSICouplingNoSlide");
   ifluidconfnodes_ = fluidmnodes;
   ifluidslidnodes_ = fluidnodes;
   ifluidslideles_ = fluidelements;
@@ -874,7 +874,7 @@ void FSI::UTILS::SlideAleUtils::EvaluateMortar
   idispms_ -> Import(*ifluid,*slimpo,Add);
 
   //new D,M,Dinv out of disp of struct and fluid side
-  //coupsf.Evaluate(idispms_);
+  coupsf.Evaluate(idispms_);
 }
 
 /*----------------------------------------------------------------------*/
