@@ -48,7 +48,7 @@ Maintainer: Florian Henke
 #include <Epetra_SerialComm.h>
 #endif
 
-#define VOLTOL 1e-3
+#define VOLTOL 1e-4
 
 /*------------------------------------------------------------------------------------------------*
  | constructor                                                                        henke 10/08 |
