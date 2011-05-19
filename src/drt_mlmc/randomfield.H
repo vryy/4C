@@ -47,15 +47,24 @@ class RandomField {
 
 private:
   // some variables
-
+  int dim_; // dimension of stochastic field
   double pi_;// = M_PI;
   double d_; //correlation length
   // set variance to 0.25 by default
   double sigma_0_; //= 0.25;
+
   int N_;
   double dkappa_;
   unsigned int  seed_;
-  vector<double>  Phi_ ;
+  vector<double>  Phi_0_ ;
+  vector<double>  Phi_1_ ;
+  vector<double>  Phi_2_ ;
+  vector<double>  Phi_3_ ;
+
+  //double Phi_Array_0_ [80][80][80];
+  //double Phi_Array_1_ [80][80][80];
+  //double Phi_Array_2_ [80][80][80];
+  //double Phi_Array_3_ [80][80][80];
 
   //! \brief generates uniformly distributed random numbers in interval [0;1], taken from statmech
    ranlib::UniformClosed<double> uniformclosedgen_;
@@ -66,11 +75,17 @@ public:
   // Standard constructor
   RandomField(unsigned int seed,double sigma_0, double corr_length);
 
+  // generates new random Phase vector Phi_
+  void CreateNewSample(unsigned int seed);
+
   // Evaluate RandomField at specific location
-  double EvalRandomField( double x, double y, double z);
+  double EvalRandomField2D( double x, double y, double z);
+  double EvalRandomField3D( double x, double y, double z);
+  //double EvalQuadrantRandomField( double x, double y, double z);
 
   // Calculate Power Spectral Density
-  double  PowerSpectralDensity( double kappa_x, double kappa_y, double kappa_z );
+  double  PowerSpectralDensity2D( double kappa_x, double kappa_y );
+  double  PowerSpectralDensity3D( double kappa_x, double kappa_y, double kappa_z );
 
 }; // class RandomField
 

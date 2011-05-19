@@ -22,7 +22,7 @@ Maintainer: Jonas Biehler
 // this was included in stopro cc
 #include <cmath>
 // boost currently not in use, use blitz instead
-//#include <boost/random.hpp>
+#include <boost/random.hpp>
 
 
 using namespace DRT;
@@ -34,53 +34,142 @@ using namespace DRT;
 RandomField::RandomField(unsigned int  seed,double sigma, double corr_length)
 {
   // Init the necessesary stuff
+
+  const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
+  // Dimension
+  dim_ = mlmcp.get<int>("RANDOM_FIELD_DIMENSION");
+  if(dim_!=3&&dim_!=2)
+      dserror("Dimension of random field must be 2 or 3, fix your input file");
+  N_= mlmcp.get<int>("NUM_COS_TERMS");
   seed_ = seed;
   d_ = corr_length;
   sigma_0_ = sigma;
   pi_=M_PI;
+
   // The StoPro will have a period of 2*pi / Deltakappa == 2*pi*N*d / 6.
   // We want this to be >= 200.
   // ceil:= return next largest integer
-  N_ = (int)ceil( 600.0 / ( pi_ * d_ ) );
-  //cout << " N  " << N << endl;
-
-   // Heuristic: PSD is of `insignificant magnitude' for
+  //N_ = (int)ceil( 600.0 / ( pi_ * d_ ) );
+// Heuristic: PSD is of `insignificant magnitude' for
    //   abs(kappa) <= 6/d
-   dkappa_ = 6.0 / (d_ * N_);
-   //std::cout << "bug after line"  <<  __LINE__ << std::endl;
-   //std::cout << "N ="  << N  << std::endl;
-   //std::cout << "max_size of Phi  " << Phi.max_size() << std::endl;
-   Phi_.reserve( N_ * N_ * N_ );
+
+  dkappa_ = 2*pi_/mlmcp.get<double>("PERIODICITY");
+
    // Boost random number generator (currently not in use
    //-------------------------------------------------------------------
-
-   /*// This defines a random number genrator
+  // This defines a random number genrator
    boost::mt19937 mt;
    // Defines random number generator for numbers between 0 and 2pi
    boost::uniform_real<double> random( 0, 2*pi_ );
-
-   // set seed of random number generator
-   // same seed produces same string of random numbers
    mt.seed(seed_);
-   //try out time in seconds since janaury 1970
-   //seed =(time(NULL)); */
 
    // Blitz random number generator
    //--------------------------------------------------------------------
    uniformclosedgen_.seed(seed_ );
+   //ofstream File("OutputPhi.csv");
 
-   for ( int k = 0; k < N_ * N_ * N_; ++k )
+   switch(dim_){
+   case 3:
+     Phi_0_.reserve( N_ * N_ * N_ );
+     Phi_1_.reserve( N_ * N_ * N_ );
+     Phi_2_.reserve( N_ * N_ * N_ );
+     Phi_3_.reserve( N_ * N_ * N_ );
+
+     for ( int k5 = 0; k5 < N_ * N_ * N_; ++k5 )
      {
-         //Phi_.push_back( random( mt ) );
-         Phi_.push_back( uniformclosedgen_.random()*2*pi_ );
-
+       Phi_0_.push_back( random( mt ) );
+       Phi_1_.push_back( random( mt ) );
+       Phi_2_.push_back( random( mt ) );
+       Phi_3_.push_back( random( mt ) );
      }
+     break;
+   case 2:
+        Phi_0_.reserve( N_ * N_ );
+        Phi_1_.reserve( N_ * N_ );
+        for ( int k5 = 0; k5 < N_ * N_; ++k5 )
+        {
+          Phi_0_.push_back( random( mt ) );
+          Phi_1_.push_back( random( mt ) );
+        }
+        break;
+   default:
+     dserror("Dimension of random field must be 2 or 3, fix your input file");
+     break;
+   }
 
 
 }
-
-double RandomField::EvalRandomField( double x, double y, double z)
+void RandomField::CreateNewSample(unsigned int seed)
 {
+
+  // This defines a random number genrator
+  boost::mt19937 mt;
+  // Defines random number generator for numbers between 0 and 2pi
+  boost::uniform_real<double> random( 0, 2*pi_ );
+
+  // set seed of random number generator
+  // same seed produces same string of random numbers
+  mt.seed(seed);
+  //try out time in seconds since janaury
+  uniformclosedgen_.seed(seed);
+  switch (dim_){
+
+  case 3:
+    Phi_0_.clear();
+    Phi_1_.clear();
+    Phi_2_.clear();
+    Phi_3_.clear();
+
+    for ( int k5 = 0; k5 < N_ * N_ * N_; ++k5 )
+      {
+        Phi_0_.push_back( random( mt ) );
+        Phi_1_.push_back( random( mt ) );
+        Phi_2_.push_back( random( mt ) );
+        Phi_3_.push_back( random( mt ) );
+      }
+    break;
+  case 2:
+    Phi_0_.clear();
+    Phi_1_.clear();
+    for ( int k5 = 0; k5 < N_ * N_ ; ++k5 )
+         {
+           Phi_0_.push_back( random( mt ) );
+           Phi_1_.push_back( random( mt ) );
+         }
+    break;
+  default:
+    dserror("Dimension of random field must be 2 or 3, fix your input file");
+    break;
+  }
+
+}
+
+double RandomField::EvalRandomField2D( double x, double y, double z)
+
+{
+  double result = 0;
+    for ( int k0 = 0; k0 < N_; ++k0 )
+    {
+      for ( int k1 = 0; k1 < N_; ++k1 )
+      {
+       /* result += sqrt( 2*PowerSpectralDensity2D( (k0+1) * dkappa_, (k1+1) * dkappa_) * pow( dkappa_, 2 ) ) *
+                  (cos( (k0+1) * dkappa_ * x  + (k1+1) * dkappa_ * y  + Phi_0_[k0 + k1*N_])+
+                      cos( (k0+1) * dkappa_ * x  - (k1+1) * dkappa_ * y  + Phi_1_[k0 + k1*N_]) );*/
+        // test forsumm from k=0
+        result += sqrt( 2*PowerSpectralDensity2D( (k0) * dkappa_, (k1) * dkappa_) * pow( dkappa_, 2 ) ) *
+                          (cos( (k0) * dkappa_ * x  + (k1) * dkappa_ * y  + Phi_0_[k0 + k1*N_])+
+                              cos( (k0) * dkappa_ * x  - (k1) * dkappa_ * y  + Phi_1_[k0 + k1*N_]) );
+      }
+    }
+
+    return sqrt( 2 ) * result;
+}
+
+
+double RandomField::EvalRandomField3D( double x, double y, double z)
+
+{
+  //ofstream File("OutputPhiIndex.csv");
   double result = 0;
     for ( int k0 = 0; k0 < N_; ++k0 )
     {
@@ -88,20 +177,29 @@ double RandomField::EvalRandomField( double x, double y, double z)
       {
         for ( int k2 = 0; k2 < N_; ++k2 )
         {
-          result += sqrt( 2 *PowerSpectralDensity( k0 * dkappa_, k1 * dkappa_, k2 * dkappa_ ) * pow( dkappa_, 3 ) ) *
-          cos( k0 * dkappa_ * x  + k1 * dkappa_ * y + k2 * dkappa_ * z +
-          Phi_[k0 + k1*N_ + k2*N_*N_] );
+          // This tiny little formular is from Shinozuka1996, page 46 Simulation of quadrant fields
+          result += sqrt( 2*PowerSpectralDensity3D( (k0+1) * dkappa_, (k1+1) * dkappa_, (k2+1) * dkappa_ ) * pow( dkappa_, 3 ) ) *
+                    (cos( (k0+1) * dkappa_ * x  + (k1+1) * dkappa_ * y + (k2+1) * dkappa_ * z + Phi_0_[k0 + k1*N_ + k2*N_*N_])+
+                        cos( (k0+1) * dkappa_ * x  + (k1+1) * dkappa_ * y - (k2+1) * dkappa_ * z + Phi_1_[k0 + k1*N_ + k2*N_*N_])+
+                        cos( (k0+1) * dkappa_ * x  - (k1+1) * dkappa_ * y - (k2+1) * dkappa_ * z + Phi_2_[k0 + k1*N_ + k2*N_*N_])+
+                        cos( (k0+1) * dkappa_ * x  - (k1+1) * dkappa_ * y + (k2+1) * dkappa_ * z + Phi_3_ [k0 + k1*N_ + k2*N_*N_] )
+                        );
         }
       }
     }
     return sqrt( 2 ) * result;
 }
-
 // compute power spectral density
 
-double  RandomField::PowerSpectralDensity( double kappa_x, double kappa_y, double kappa_z )
+double  RandomField::PowerSpectralDensity3D( double kappa_x, double kappa_y, double kappa_z )
 {
-  //const double pi = M_PI;
-  const static double coeff = pow( sigma_0_, 2 ) * pow( d_, 3 ) / pow( 2 * sqrt( pi_ ), 3 );
+  const static double coeff = pow( sigma_0_, 2 ) * pow( d_, 3 ) / pow( (2 * sqrt( pi_ )), 3 );
   return coeff * exp( - pow( d_ * kappa_x / 2, 2 ) - pow( d_ * kappa_y / 2, 2 ) - pow( d_ * kappa_z / 2, 2 ) );
 }
+
+double  RandomField::PowerSpectralDensity2D( double kappa_x, double kappa_y)
+{
+  const static double coeff = pow( sigma_0_, 2 ) * pow( d_, 2 ) / pow( (2 * sqrt( pi_ )), 2 );
+  return coeff * exp( - pow( d_ * kappa_x / 2, 2 ) - pow( d_ * kappa_y / 2, 2 ) );
+}
+
