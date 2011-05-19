@@ -213,14 +213,24 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   genalphaparams->set<int>("UZAWAALGO",DRT::INPUT::IntegralValue<INPAR::STR::ConSolveAlgo>(sdyn,"UZAWAALGO"));
 
   genalphaparams->set<bool>  ("io structural disp",DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_DISP"));
-  genalphaparams->set<int>   ("io disp every nstep",prbdyn.get<int>("RESULTSEVRY"));
+  if(genprob.probtyp == prb_struct_ale || genprob.probtyp == prb_struct_multi || genprob.probtyp == prb_structure)
+  {
+    cout<<"version1"<<endl;
+    genalphaparams->set<int>   ("io disp every nstep",sdyn.get<int>("RESULTSEVRY"));
+    genalphaparams->set<int>   ("io stress every nstep",prbdyn.get<int>("RESULTSEVRY"));
+  }
+  else
+  {
+    cout<<"version2"<<endl;
+    genalphaparams->set<int>   ("io disp every nstep",prbdyn.get<int>("UPRES"));
+    genalphaparams->set<int>   ("io stress every nstep",prbdyn.get<int>("UPRES"));
+  }
 
   genalphaparams->set<bool>  ("ADAPTCONV",DRT::INPUT::IntegralValue<int>(sdyn,"ADAPTCONV")==1);
   genalphaparams->set<double>("ADAPTCONV_BETTER",sdyn.get<double>("ADAPTCONV_BETTER"));
 
   INPAR::STR::StressType iostress = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
   genalphaparams->set<int>("io structural stress", iostress);
-  genalphaparams->set<int>   ("io stress every nstep",sdyn.get<int>("RESULTSEVRY"));
 
   INPAR::STR::StrainType iostrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
   genalphaparams->set<int>("io structural strain", iostrain);
@@ -454,8 +464,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   sdyn->set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
   sdyn->set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
   sdyn->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
-  
-  if(genprob.probtyp == prb_struct_ale)
+  if(genprob.probtyp == prb_struct_ale || genprob.probtyp == prb_struct_multi || genprob.probtyp == prb_structure)
   {
     sdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
   }
@@ -463,7 +472,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   {
     sdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("UPRES"));
   }
-
   // sanity checks and default flags
   if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_fsi_lung_gas)
   {
