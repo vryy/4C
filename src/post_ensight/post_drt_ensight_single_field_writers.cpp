@@ -25,10 +25,30 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
 {
   EnsightWriter::WriteResult("displacement", "displacement", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("prolongated_gauss_2PK_stresses_xyz", "prolongated_gauss_2PK_stresses_xyz", nodebased,6);
+  EnsightWriter::WriteResult("prolongated_gauss_GL_strains_xyz", "prolongated_gauss_GL_strains_xyz", nodebased,6);
   //EnsightWriter::WriteResult("velocity", "velocity", dofbased, field->problem()->num_dim());
   //EnsightWriter::WriteResult("acceleration", "acceleration", dofbased, field->problem()->num_dim());
+  // Statistical Output from MLMC
+  EnsightWriter::WriteResult("mean_displacements", "mean_displacement", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("variance_displacements", "variance_displacement", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("mean_gauss_2PK_stresses_xyz", "mean_gauss_2PK_stresses_xyz", nodebased,6);
+  EnsightWriter::WriteResult("variance_gauss_2PK_stresses_xyz", "variance_gauss_2PK_stresses_xyz", nodebased,6);
+  EnsightWriter::WriteResult("mean_gauss_GL_strain_xyz", "mean_gauss_GL_strain_xyz", nodebased,6);
+  EnsightWriter::WriteResult("variance_gauss_GL_strain_xyz", "variance_gauss_GL_strain_xyz", nodebased,6);
 
-  // contact and meshtying results
+  EnsightWriter::WriteResult("diff_to_ll_displacement", "diff_to_ll_displacement", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("diff_to_ll_prolongated_gauss_2PK_stresses_xyz", "diff_to_ll_prolongated_gauss_2PK_stresses_xyz", nodebased,6);
+  EnsightWriter::WriteResult("diff_to_ll_prolongated_gauss_GL_strains_xyz", "diff_to_ll_prolongated_gauss_GL_strains_xyz", nodebased,6);
+
+  EnsightWriter::WriteResult("diff_mean_displacements", "diff_mean_displacement", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("diff_variance_displacements", "diff_variance_displacement", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("diff_mean_gauss_2PK_stresses_xyz", "diff_mean_gauss_2PK_stresses_xyz", nodebased,6);
+  EnsightWriter::WriteResult("diff_variance_gauss_2PK_stresses_xyz", "diff_variance_gauss_2PK_stresses_xyz", nodebased,6);
+  EnsightWriter::WriteResult("diff_mean_gauss_GL_strain_xyz", "diff_mean_gauss_GL_strain_xyz", nodebased,6);
+  EnsightWriter::WriteResult("diff_variance_gauss_GL_strain_xyz", "diff_variance_gauss_GL_strain_xyz", nodebased,6);
+
+
+   // contact and meshtying results
   EnsightWriter::WriteResult("norcontactstress", "norcontactstress", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("tancontactstress", "tancontactstress", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("interfacetraction", "interfacetraction", dofbased, field->problem()->num_dim());
