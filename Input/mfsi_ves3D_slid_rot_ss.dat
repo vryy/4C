@@ -114,7 +114,7 @@ LIFTDRAG                        no
 FSIAMGANALYZE                   No
 MAXTIME                         1000000.0
 TIMESTEP                        .5
-NUMSTEP                         10
+NUMSTEP                         2
 UPPSS                           1
 UPRES                           1
 RESTARTEVRY                     10
@@ -139,8 +139,8 @@ ENERGYCHECK                     no
 TOLENCHECK                      1.0E-6
 RELAX                           1.0
 ITEMAX                          10
-CONVTOL                         1.0E-6
-BASETOL                         1.0E-7
+CONVTOL                         1.0E-9
+BASETOL                         1.0E-12
 SHAPEDERIVATIVES                Yes
 SECONDORDER                     Yes
 SLIDEALEPROJ                    RotZSphere
@@ -150,11 +150,7 @@ NUMSTEP                         200
 MAXTIME                         5.0
 NUM_INITSTEP                    0
 ALE_TYPE                        laplace
-<<<<<<< HEAD
 RESULTSEVRY                     1
-=======
-RESEVRYDISP                     1
->>>>>>> c9c39da2fd4516353eff6bf8ddbc8d3b238258bd
 QUALITY                         none
 ---------------------------------------------------------------STRUCT SOLVER
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -6118,10 +6114,10 @@ NODE  2393  COORD  1.2437880660728e-07  2.9000000000000e+00  0.0000000000000e+00
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 1521 POSITION velx NAME velx VALUE 6.500374006e-04 TOLERANCE 1e-8
-FLUID DIS 1 NODE 960  POSITION velx NAME velx VALUE -6.500398185e-04 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 2271 POSITION dispx NAME dispx VALUE 1.175470762e-03 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 2031 POSITION dispx NAME dispx VALUE -1.175473908e-03 TOLERANCE 1e-8
+FLUID DIS 1 NODE 1521 POSITION velx NAME velx VALUE 3.361265000e-05 TOLERANCE 1e-10
+FLUID DIS 1 NODE 960  POSITION velx NAME velx VALUE -3.361265053e-05 TOLERANCE 1e-10
+STRUCTURE DIS 1 NODE 2271 POSITION dispx NAME dispx VALUE 1.271284048e-05 TOLERANCE 1e-10
+STRUCTURE DIS 1 NODE 2031 POSITION dispx NAME dispx VALUE -1.271284218e-05 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
 //                              END
 // END
