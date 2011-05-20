@@ -252,7 +252,7 @@ bool MORTAR::MortarProjector::ProjectGaussPoint(MORTAR::MortarElement& gpele,
     if(!mynodes) dserror("ERROR: ProjectGaussPoint: Null pointer!");
 
     // get shape function values and derivatives at gpeta
-    ele.EvaluateShape(gpeta, val, deriv, nnodes);
+    gpele.EvaluateShape(gpeta, val, deriv, nnodes);
 
     // get interpolated GP normal and GP coordinates
     double gpn[3] = {0.0, 0.0, 0.0};
