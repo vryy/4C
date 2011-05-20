@@ -142,31 +142,7 @@ void LINALG::BlockSparseMatrixBase::Complete()
     }
   }
 
-  // FIXME: We already know the full range map from the MapExtractor. Here
-  // we build it again and call it row map. Maybe we need the distinction
-  // between row and range maps for block matrices one day. Right now it is
-  // not supported but still there different maps for a start... (The worst of
-  // both worlds.)
-
-  if (fullrowmap_==Teuchos::null)
-  {
-    // build full row map
-    int rowmaplength = 0;
-    for (int r=0; r<Rows(); ++r)
-    {
-      rowmaplength += Matrix(r,0).RowMap().NumMyElements();
-    }
-    std::vector<int> rowmapentries;
-    rowmapentries.reserve(rowmaplength);
-    for (int r=0; r<Rows(); ++r)
-    {
-      const Epetra_Map& rowmap = Matrix(r,0).RowMap();
-      copy(rowmap.MyGlobalElements(),
-           rowmap.MyGlobalElements()+rowmap.NumMyElements(),
-           back_inserter(rowmapentries));
-    }
-    fullrowmap_ = Teuchos::rcp(new Epetra_Map(-1,rowmapentries.size(),&rowmapentries[0],0,Comm()));
-  }
+  fullrowmap_ = rcp(new Epetra_Map(*(rangemaps_.FullMap())));
 
   if (fullcolmap_==Teuchos::null)
   {
