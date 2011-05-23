@@ -679,7 +679,7 @@ bool STR::TimIntImpl::Converged()
 
     // only do this convergence check for semi-smooth Lagrange multiplier contact
     if (apptype == INPAR::CONTACT::app_mortarcontact && stype == INPAR::CONTACT::solution_lagmult && semismooth)
-      ccontact = cmtman_->GetStrategy().ActiveSetConverged();
+      ccontact = cmtman_->GetStrategy().ActiveSetSemiSmoothConverged();
   }
 
   //pressure related stuff
@@ -1245,7 +1245,7 @@ void STR::TimIntImpl::CmtNonlinearSolve()
     //********************************************************************
     // 1) SEMI-SMOOTH NEWTON FOR CONTACT
     // The search for the correct active set (=contact nonlinearity) and
-    // the large deformstion linearization (=geometrical nonlinearity) are
+    // the large deformation linearization (=geometrical nonlinearity) are
     // merged into one semi-smooth Newton method and solved within ONE
     // iteration loop (which is then basically a standard Newton).
     //********************************************************************
