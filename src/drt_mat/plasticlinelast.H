@@ -219,7 +219,8 @@ private:
       const LINALG::Matrix<6,1>& N, // flow vector
       double heaviside,  //!< Heaviside function
       double p,  //!< volumetric stress
-      LINALG::Matrix<6,1>& stress  //!< updated stress sigma_n+1
+      LINALG::Matrix<6,1>& stress,  //!< updated stress sigma_n+1
+      LINALG::Matrix<6,6>& cmatFD //!< material tangent calculated with FD of stresses
       );
 
     /// Check implementation of material tangent for debugging purposes

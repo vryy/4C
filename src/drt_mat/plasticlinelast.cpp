@@ -451,6 +451,12 @@ void MAT::PlasticLinElast::Evaluate(
       // Dgamma = Dgamma - Phi / Phi'
       Dgamma -= Res/ResTan;
 
+#ifdef DEBUG
+      cout << "local Newton: Res " << Res << endl;
+      cout << "local Newton: ResTan " << ResTan << endl;
+      cout << "local Newton: Dgamma " << Dgamma << endl;
+#endif  // #ifdef DEBUG
+
     }  // end of local Newton iteration
 
     // ----------------------------------------------------------- update
@@ -478,11 +484,18 @@ void MAT::PlasticLinElast::Evaluate(
     strain_e.Update( (-Dgamma), N, 1.0);
 
     // strain^p_{n+1} = strain^p_n + Dgamma . N
-    strain_p.Update( (-Dgamma), N, 1.0);
+    strain_p.Update( Dgamma, N, 1.0);
 
     // --------------------------------------------------- update history
     // strain^p_n+1 = strain^(p,trial)_n+1 + Dgamma . N
     strainplcurr_->at(gp) = strain_p;
+
+#ifdef DEBUG    // 23.05.11
+    cout << "Dgamma " << Dgamma << endl;
+    cout << "flow vector " << N << endl;
+    cout << "end strain_p " << strain_p << endl;
+    cout << "end strainplcurr_->at(gp) " << strainplcurr_->at(gp) << endl;
+#endif //ifdef DEBUG
 
   }  // plastic corrector
 
@@ -490,6 +503,17 @@ void MAT::PlasticLinElast::Evaluate(
   SetupCmatElastoPlastic(cmat, Dgamma, G, q, N, heaviside);
 
 #ifdef DEBUG
+  cout << "Ende Setup Cep\n" << endl;
+  cout << " Dgamma " << Dgamma << endl;
+  cout << " G " << G << endl;
+  cout << " q " << q << endl;
+  cout << " flowvector " << N << endl;
+  cout << " heaviside " << heaviside << endl;
+  cout << "total cmat " << cmat << endl;
+
+  // build the elasto-plastic tangent modulus
+  LINALG::Matrix<6,6> cmatFD(true);
+
   // build a finite difference check
   FDCheck(
     strain_e,  //!< elastic strain vector
@@ -499,8 +523,16 @@ void MAT::PlasticLinElast::Evaluate(
     N, // flow vector
     heaviside,  //!< Heaviside function
     p,  //!< volumetric stress
-    stress  //!< updated stress sigma_n+1
+    stress,  //!< updated stress sigma_n+1
+    cmatFD //!< material tangent calculated with FD of stresses
     );
+
+  // error: cmat - cmatFD
+  LINALG::Matrix<6,6> cmatdiff;
+  cmatdiff.Update(1.0, cmat, 0.0);
+  cmatdiff.Update(-1.0, cmatFD, 1.0);
+  cout << "cmatFD " << cmatFD << endl;
+  cout << "error between two material tangents" << cmatdiff << endl;
 #endif // #ifdef DEBUG
 
   return;
@@ -625,7 +657,7 @@ void MAT::PlasticLinElast::SetupCmatElastoPlastic(
   // elastic trial von Mises effective stress
   if (q != 0.0)
   {
-    epfac = heaviside * Dgamma * 6 * G * G / q;
+    epfac = (-1) * heaviside * Dgamma * 6 * G * G / q;
     epfac2 = heaviside * 6 * G * G * ( Dgamma / q - 1.0 / (3 * G) );
   }
   // constitutive tensor
@@ -636,12 +668,12 @@ void MAT::PlasticLinElast::SetupCmatElastoPlastic(
   double epfac1 = 0.0;
   epfac1 = epfac / (-3.0);
   cmat.MultiplyNT(epfac1, id2, id2, 1.0);
-
   // contribution: N \otimes N
   cmat.MultiplyNT(epfac2, flowvector, flowvector, 1.0);
 
 #ifdef DEBUG
-  cout << "Ende SetupCep\n" << " Dgamma " << Dgamma << endl;
+  cout << "Ende Setup" << endl;
+  cout << "Cep\n" << " Dgamma " << Dgamma << endl;
   cout << " G " << G << endl;
   cout << " q " << q << endl;
   cout << " flowvector " << flowvector << endl;
@@ -667,7 +699,8 @@ void MAT::PlasticLinElast::FDCheck(
   const LINALG::Matrix<6,1>& N, // flow vector
   double heaviside,  //!< Heaviside function
   double p,  //!< volumetric stress
-  LINALG::Matrix<6,1>& stress  //!< updated stress sigma_n+1
+  LINALG::Matrix<6,1>& stress,  //!< updated stress sigma_n+1
+  LINALG::Matrix<6,6>& cmatFD //!< material tangent calculated with FD of stresses
   )
 {
   // *******************************************************************
@@ -682,9 +715,6 @@ void MAT::PlasticLinElast::FDCheck(
   LINALG::Matrix<NUM_STRESS_3D,1> devdisturbstress(true);
   // initialize disturbed total stresses
   LINALG::Matrix<6,1> disturbstress(true);
-
-  // build the elasto-plastic tangent modulus
-  LINALG::Matrix<6,6> cmatFD;
 
   // second order identity
   LINALG::Matrix<6,1> id2(true);
@@ -747,8 +777,7 @@ void MAT::PlasticLinElast::FDCheck(
     for (int i=3; i<6; ++i) devdisturbstress(i) *= 0.5;
 
     // total disturb stress
-    disturbstress.Update(1.0, devdisturbstress, 0.0);
-    disturbstress.Update(p, id2, 1.0);
+    Stress(p, devdisturbstress, disturbstress);
 
     // ---------------------------------------------------------- tangent
     // loop stresses (rows)
@@ -757,12 +786,33 @@ void MAT::PlasticLinElast::FDCheck(
       // build the finite difference tangent
       cmatFD(i,k) = disturbstress(i)/(delta) - stress(i)/(delta);
 
+#ifdef DEBUG
+      cout << "  stress(" << i << ")/(delta)= " << stress(i)/(delta) << endl;
+      cout << "  disturbstress(" << i << ")/(delta)= " << disturbstress(i)/(delta) << endl;
+#endif
+
     } // loop stresses
 
-    // undisturb the respective strain quantities
+    // undisturb the respective strain quantities (disturbstrain=strain)
     disturbstrain(k) -= delta;
 
   } // loop strains
+
+#ifdef DEBUG
+  cout << " end of FDCheck!!" << endl;
+  cout << "  devdisturbstress\n " << devdisturbstress << endl;
+  cout << "  p " << p << endl;
+  cout << "  stress\n " << stress << endl;
+  cout << "  disturbstress\n " << disturbstress << endl;
+  cout << "  strain\n " << strain << endl;
+  cout << "  disturbstrain\n " << disturbstrain << endl;
+  for (int i=0; i<6; ++i)
+  {
+    cout << "  Difference between strains at position " << i << " "<<  strain(i)-disturbstrain(i) << endl;
+    cout << "  Difference between stresses at position " << i << " "<< stress(i)-disturbstress(i) << endl;
+  }
+  cout << "cmatFD \n " << cmatFD << endl;
+#endif
 
   return;
 
