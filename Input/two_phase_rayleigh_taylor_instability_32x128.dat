@@ -50,6 +50,7 @@ COMBUSTTYPE                     Two_Phase_Flow
 LAMINAR_FLAMESPEED              1
 MARKSTEIN_LENGTH                1
 XFEMINTEGRATION                 Cut
+SMOOTHED_BOUNDARY_INTEGRATION   No
 SMOOTHGRADPHI                   smooth_grad_phi_none
 ----------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 REFINEMENT                      no

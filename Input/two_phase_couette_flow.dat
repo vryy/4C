@@ -120,6 +120,7 @@ UPRES                           1
 COMBUSTTYPE                     Two_Phase_Flow
 LAMINAR_FLAMESPEED              1
 MARKSTEIN_LENGTH                1
+SMOOTHED_BOUNDARY_INTEGRATION   No
 SMOOTHGRADPHI                   smooth_grad_phi_none
 XFEMINTEGRATION                 Cut
 ----------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION

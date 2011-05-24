@@ -66,6 +66,7 @@ SURFTENSAPPROX	                surface_tension_approx_divgrad
                                 // surface_tension_approx_laplacebeltrami
                                 // surface_tension_approx_laplacebeltrami_smoothed
 CONNECTED_INTERFACE             Yes
+SMOOTHED_BOUNDARY_INTEGRATION   Yes
 SMOOTHGRADPHI                   smooth_grad_phi_leastsquares_3D 
                                 //grad_phi_meanvalue
                                 // grad_phi_none
