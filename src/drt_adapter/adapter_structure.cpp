@@ -215,13 +215,11 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   genalphaparams->set<bool>  ("io structural disp",DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_DISP"));
   if(genprob.probtyp == prb_struct_ale || genprob.probtyp == prb_struct_multi || genprob.probtyp == prb_structure)
   {
-    cout<<"version1"<<endl;
     genalphaparams->set<int>   ("io disp every nstep",sdyn.get<int>("RESULTSEVRY"));
     genalphaparams->set<int>   ("io stress every nstep",prbdyn.get<int>("RESULTSEVRY"));
   }
   else
   {
-    cout<<"version2"<<endl;
     genalphaparams->set<int>   ("io disp every nstep",prbdyn.get<int>("UPRES"));
     genalphaparams->set<int>   ("io stress every nstep",prbdyn.get<int>("UPRES"));
   }
