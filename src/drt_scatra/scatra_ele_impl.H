@@ -610,8 +610,6 @@ public:
     double vdiv_;
     //! the stabilisation parameters (one per transported scalar)
     vector<double> tau_;
-    //! corner stabilisation parameters (one per transported scalar)
-    vector<double> tau_corner_;
     //! all-scale or fine-scale subgrid diffusivities (one per transported scalar)
     vector<double> sgdiff_;
     //! 2nd derivatives of coord.-functions w.r.t r,s,t

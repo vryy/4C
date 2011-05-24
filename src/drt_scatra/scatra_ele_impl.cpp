@@ -52,8 +52,6 @@ Maintainer: Georg Bauer
 //#define PRINT_ELCH_DEBUG
 // use effective diffusion coefficient for stabilization
 #define ACTIVATEBINARYELECTROLYTE
-// nodally exact solution for line3 elements
-// #define LINE3EXACTSTAB
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -218,7 +216,6 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     migvelint_(true),
     vdiv_(0.0),
     tau_(numscal_),
-    tau_corner_(numscal_),
     sgdiff_(numscal_),
     xder2_(true),
     conv_(true),
@@ -2834,10 +2831,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       // get characteristic element length
       double h = pow(vol,(1.0/dim)); // equals streamlength in 1D
 
-#ifdef LINE3EXACTSTAB
-      if (distype == DRT::Element::line3)
-        h *= 0.5; // for quadratic shape functions h = 0.5* elementlength
-#endif
       // get Euclidean norm of (weighted) velocity at element center
       double vel_norm(0.0);
 
@@ -2861,26 +2854,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
         // compute optimal stabilization parameter
         tau_[k] = 0.5*h*xi/vel_norm;
 
-#ifdef LINE3EXACTSTAB
-        if (distype==DRT::Element::line3)
-        { // Donea A. and Huerta: Stabilized finite element methods
-          double betac = ((2.0*epe-1.0)+(-6.0*epe+7.0)*exp(-2.0*epe)+(-6.0*epe-7.0)*exp(-4.0*epe)+(2.0*epe+1.0)*exp(-6.0*epe))/((epe+3.0)+(-7.0*epe-3.0)*exp(-2.0*epe)+(7.0*epe-3.0)*exp(-4.0*epe)-(epe+3.0)*exp(-6.0*epe));
-        // Donea, other formulation given at p.56
-        // double coshepe = (pp+pm);
-        // double coth2epe = (exp(2.0*epe) + exp(-2.0*epe))/(exp(2.0*epe) - exp(-2.0*epe));
-        // betac = (xi - (coshepe*coshepe)*(coth2epe - (1.0/(2.0*epe))))/(1.0-(0.5*coshepe*coshepe));
-        tau_corner_[k]= 0.5*h*betac/vel_norm;
-        }
-        else
-#endif
-          tau_corner_[k]= 0.0;
-
 #if 0
         cout<<"epe = "<<epe<<endl;
         cout<<"xi_opt  = "<<xi<<endl;
         cout<<"vel_norm  = "<<vel_norm<<endl;
         cout<<"tau_opt = "<<tau_[k]<<endl<<endl;
-        cout<<"tau_corner = "<<tau_corner_[k]<<endl<<endl;
 #endif
       }
       else tau_[k] = 0.0;
@@ -4725,10 +4703,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
         conv_eff_vi += diffus_valence_k*migconv_(vi);
       }
 
-#ifdef LINE3EXACTSTAB
-      if (distype==DRT::Element::line3 && vi!=2 && timetaufac > 0)
-        timetaufac_conv_eff_vi *= tau_corner_[k]/tau_[k];
-#endif
       const double timefacfac_funct_vi = timefacfac*funct_(vi);
       const double timefacfac_diffus_valence_k_mig_vi = timefacfac*diffus_valence_k*migconv_(vi);
       const double valence_k_fac_funct_vi = valence_[k]*fac*funct_(vi);
@@ -4776,9 +4750,8 @@ if (k != ilcs)
         // migration convective stabilization of convective term
         if (migrationinresidual_)
         emat(fvi, fui) += timetaufac*conv_eff_vi*diffus_valence_k*migconv_(ui);
-        // partial derivative w.r.t potential
 
-        // linearization w.r.t potential phi
+        // partial derivative w.r.t potential
         // convective stabilization of migration term (checked!!!)
         double val_ui; GetLaplacianWeakFormRHS(val_ui, derxy_,gradphi_,ui);
         if (migrationinresidual_)
@@ -4786,7 +4759,7 @@ if (k != ilcs)
 
         if (migrationintau_)
         {
-          // derivative of tau (Bazilevs) with respect to electric potential
+          // derivative of tau (only effective for Taylor_Hughes_Zarins) with respect to electric potential
           const double conv_ephinp_k = conv_.Dot(ephinp_[k]);
           const double Dkzk_mig_ephinp_k = diffus_valence_k*(migconv_.Dot(ephinp_[k]));
           const double tauderiv_ui = ((tauderpot_[k])(ui,0));
@@ -4835,10 +4808,6 @@ if (k != ilcs)
       {
         const int fvi = vi*numdofpernode_+k;
         double timetaufac_conv_eff_vi = timetaufac*(conv_(vi)+diffus_valence_k*migconv_(vi));
-#ifdef LINE3EXACTSTAB
-        if (distype==DRT::Element::line3 && vi!=2 && tau_[k] > 0)
-          timetaufac_conv_eff_vi *= tau_corner_[k]/ tau_[k];
-#endif
 
         for (int ui=0; ui<nen_; ++ui)
         {
@@ -4850,29 +4819,20 @@ if (k != ilcs)
           emat(fvi, fui) += -timetaufac_conv_eff_vi*diff_(ui) ;
 
           // migration term (reactive part)
+          // derivative with respect to concentration_k
           emat(fvi, fui) += -timetaufac_conv_eff_vi*migrea_(ui) ;
+          if (migrationinresidual_)
+          {
+            // derivative with respect to potential
+            // ToDo
+            // emat(fvi, ui*numdofpernode_+numscal_) += -timetaufac_conv_eff_vi*diff_(ui) ;
+          }
 
           /* 2) diffusive stabilization */
-/*
-          // convective term
-          emat(fvi, fui) -= diffreastafac_*timetaufac*diff_(vi)*(conv_(ui)+diffus_valence_k*migconv_(ui));
+          // not implemented. Only stabilization of SUPG type
 
-          // diffusive term
-          emat(fvi, fui) += diffreastafac_*timetaufac*diff_(vi)*diff_(ui) ;
-
-          // migration term (reactive part)
-          emat(fvi, fui) -= diffreastafac_*timetaufac*diff_(vi)*migrea_(ui) ;
-*/
           /* 3) reactive stabilization (reactive part of migration term) */
-
-          // convective terms
-          //emat(fvi, ui*numdofpernode_+k) -= diffreastafac_*timetaufac*migrea_(vi)*(conv_(ui)+diffus_valence_k*migconv_(ui));
-
-          // diffusive term
-          //emat(fvi, ui*numdofpernode_+k) += diffreastafac_*timetaufac*migrea_(vi)*diff_(ui) ;
-
-          // migration term (reactive part)
-          //emat(fvi, ui*numdofpernode_+k) -= diffreastafac_*timetaufac*migrea_(vi)*migrea_(ui) ;
+          // not implemented. Only stabilization of SUPG type
 
         } // for ui
       } // for vi
@@ -4922,6 +4882,7 @@ else
     }
 #endif
     } // betterconsistency
+
     if (!is_stationary_) // add transient term to the residual
     {
       if (is_genalpha_)
@@ -4977,21 +4938,16 @@ else
 
       // 0) transient stabilization
       // not implemented
-      double adjust (1.0);
-#ifdef LINE3EXACTSTAB
-      if (distype==DRT::Element::line3 && vi!=2 && tau_[k] > 0)
-        adjust *= tau_corner_[k] / tau_[k];
-#endif
 
       // 1) convective stabilization
 #ifdef SUBSCALE_ENC
       if (k != ilcs)
       {
 #endif
-      erhs[fvi] += rhsfac*conv_(vi)* taufacresidual *adjust;
+      erhs[fvi] += rhsfac*conv_(vi)* taufacresidual;
       if (migrationstab_)
       {
-        erhs[fvi] +=  rhsfac*diffus_valence_k*migconv_(vi) * taufacresidual*adjust;
+        erhs[fvi] +=  rhsfac*diffus_valence_k*migconv_(vi) * taufacresidual;
       }
 #ifdef SUBSCALE_ENC
       const double myfactor = (-valence_[k]/valence_[ilcs]);
@@ -5006,25 +4962,12 @@ else
 
     } // for vi
 
-    if (use2ndderiv_)
-    {
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        //const int fvi = vi*numdofpernode_+k;
+    // 2) diffusive stabilization
+    // not implemented. Only stabilization of SUPG type
 
-        //double adjust (1.0);
-#ifdef LINE3EXACTSTAB
-        //if (distype==DRT::Element::line3 && vi!=2 && tau_[k] > 0)
-        //  adjust *= tau_corner_[k] / tau_[k];
-#endif
+    // 3) reactive stabilization (reactive part of migration term)
+    // not implemented. Only stabilization of SUPG type
 
-        // 2) diffusive stabilization
-  //      erhs[fvi] -= diffreastafac_*diff_(vi)*taufacresidual*adjust ;
-
-        /* 3) reactive stabilization (reactive part of migration term) */
-
-      } // for vi
-    } // use2ndderiv
 
     // -----------------------------------INSTATIONARY TERMS
     if (!is_stationary_)
@@ -5049,20 +4992,21 @@ else
             emat(fvi, fui) += taufac*diffus_valence_k*migconv_(vi)*funct_(ui);
           }
 
-          if (use2ndderiv_)
-          {
-            /* 2) diffusive stabilization */
-            /* transient term */
-            emat(fvi, fui) -= diffreastafac_*taufac*diff_(vi)*funct_(ui);
-          }
+          /* 2) diffusive stabilization */
+          /* transient term */
+          // not implemented. Only stabilization of SUPG type
+
+          /* 3) reactive stabilization (reactive part of migration term) */
+          /* transient term */
+          // not implemented. Only stabilization of SUPG type
+
         } // for ui
 
-        // residuum on RHS:
-
+        // for residuum on RHS:
         if (not is_genalpha_)
         {
           /* Standard Galerkin terms: */
-          /* transient term */
+          /* transient term*/
           erhs[fvi] -= fac_funct_vi*conint_[k];
         }
 
@@ -5109,12 +5053,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   {
   case INPAR::SCATRA::calcerror_Kwok_Wu:
   {
-    //------------------------------------------------- Kwok et Wu,1995
-    //   Reference:
+    //   References:
     //   Kwok, Yue-Kuen and Wu, Charles C. K.
     //   "Fractional step algorithm for solving a multi-dimensional diffusion-migration equation"
     //   Numerical Methods for Partial Differential Equations
     //   1995, Vol 11, 389-397
+
+    //   G. Bauer, V. Gravemeier, W.A. Wall,
+    //   A 3D finite element approach for the coupled numerical simulation of
+    //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339–1359.
 
     // working arrays
     double                  potint(0.0);
@@ -5196,6 +5143,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   case INPAR::SCATRA::calcerror_cylinder:
   {
     // two-ion system with Butler-Volmer kinetics between two concentric cylinders
+    //   G. Bauer, V. Gravemeier, W.A. Wall,
+    //   A 3D finite element approach for the coupled numerical simulation of
+    //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339–1359.
 
     // working arrays
     LINALG::Matrix<2,1>     conint(true);
@@ -5623,22 +5573,23 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
   )
 {
   // magnitude of dof perturbation
-  const double epsilon=1e-8;
+  const double epsilon=1e-6; // 1.e-8 seems already too small!
 
   // make a copy of all input parameters potentially modified by Sysmat
   // call --- they are not intended to be modified
-  //double copy_Cs         =Cs;
-  //Teuchos::RCP<const MAT::Material> copy_material=material;
 
   // alloc the vectors that will store the original, non-perturbed values
   vector<LINALG::Matrix<nen_,1> > origephinp(numscal_);
   LINALG::Matrix<nen_,1>          origepotnp(true);
+  vector<LINALG::Matrix<nen_,1> > origehist(numscal_);
+
   // copy original concentrations and potentials to these storage arrays
   for (int i=0;i<nen_;++i)
   {
     for (int k = 0; k< numscal_; ++k)
     {
       origephinp[k](i,0) = ephinp_[k](i,0);
+      origehist[k](i,0)  = ehist_[k](i,0);
     }
     origepotnp(i) = epotnp_(i);
   } // for i
@@ -5678,18 +5629,21 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
         for (int k = 0; k< numscal_; ++k)
         {
           ephinp_[k](i,0) = origephinp[k](i,0);
+          ehist_[k](i,0)  = origehist[k](i,0);
         }
         epotnp_(i) = origepotnp(i);
       } // for i
 
-      // perturb the respective elemental quantities
-      if(rr==(numdofpernode_-1))
+      // now perturb the respective elemental quantities
+      if((iselch_) and (rr==(numdofpernode_-1)))
       {
         printf("potential dof (%d). eps=%g\n",nn,epsilon);
 
         if (is_genalpha_)
         {
-          //checkepreaf(nn)+=f3Parameter_->alphaF_*epsilon;
+          // we want to disturb phi(n+1) with epsilon
+          // => we have to disturb phi(n+alphaF) with alphaF*epsilon
+          epotnp_(nn)+=(alphaF*epsilon);
         }
         else
         {
@@ -5702,8 +5656,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
 
         if (is_genalpha_)
         {
-          //checkevelaf(rr,nn)+=f3Parameter_->alphaF_*epsilon;
-          //checkeaccam(rr,nn)+=f3Parameter_->alphaM_/(f3Parameter_->gamma_*f3Parameter_->dt_)*epsilon;
+          // perturbation of phi(n+1) in phi(n+alphaF) => additional factor alphaF
+          ephinp_[rr](nn,0)+=(alphaF*epsilon);
+
+          // perturbation of solution variable phi(n+1) for gen.alpha
+          // leads to perturbation of phidtam (stored in ehist_)
+          // with epsilon*alphaM/(gamma*dt)
+          const double factor = alphaF/timefac; // = alphaM/(gamma*dt)
+          ehist_[rr](nn,0)+=(factor*epsilon);
+
         }
         else
         {
@@ -5739,29 +5700,21 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
       // note that it makes more sense to compare these quantities
       // than to compare the matrix entry to the difference of the
       // the right hand sides --- the latter causes numerical problems
-      // do to deletion
+      // do to deletion //gammi
+
+      // however, matrix entries delivered from the element are compared
+      // with the finite-difference suggestion, too. It works surprisingly well
+      // for epsilon set to 1e-6 (all displayed digits nearly correct)
+      // and allows a more obvious comparison!
+      // when matrix entries are small, lin. and nonlin. approximation
+      // look identical, although the matrix entry may be rubbish!
+      // gjb
 
       for(int mm=0;mm<(numdofpernode_*nen_);++mm)
       {
-        double val;
-        double lin;
-        double nonlin;
-
-        // For af-generalized-alpha scheme, the residual vector for the
-        // solution rhs is scaled on the time-integration level...
-        if (is_genalpha_)
-        {
-          dserror("Do not use this");
-          //val   =-(eforce(mm)   /(epsilon))*(f3Parameter_->gamma_*f3Parameter_->dt_)/(f3Parameter_->alphaM_);
-          //lin   =-(eforce(mm)   /(epsilon))*(f3Parameter_->gamma_*f3Parameter_->dt_)/(f3Parameter_->alphaM_)+estif(mm,dof);
-          //nonlin=-(checkvec1(mm)/(epsilon))*(f3Parameter_->gamma_*f3Parameter_->dt_)/(f3Parameter_->alphaM_);
-        }
-        else
-        {
-          val   =-residual(mm)/epsilon;
-          lin   =-residual(mm)/epsilon+sys_mat(mm,dof);
-          nonlin=-checkvec1(mm)/epsilon;
-        }
+        double val   =-residual(mm)/epsilon;
+        double lin   =-residual(mm)/epsilon+sys_mat(mm,dof);
+        double nonlin=-checkvec1(mm)/epsilon;
 
         double norm=abs(lin);
         if(norm<1e-12)
@@ -5771,17 +5724,21 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
         }
 
         // output to screen
-        printf("relerr  %+12.5e   ",(lin-nonlin)/norm);
-        printf("abserr  %+12.5e   ",lin-nonlin);
-        printf("orig. value  %+12.5e   ",val);
-        printf("lin. approx. %+12.5e   ",lin);
-        printf("nonlin. funct.  %+12.5e   ",nonlin);
-        printf("matrix[%d,%d]  %+12.5e   ",mm,dof,sys_mat(mm,dof));
-        printf("FD suggestion  %+12.5e ",((residual(mm)/epsilon)-(checkvec1(mm)/epsilon)) );
-        printf("\n");
+        {
+          printf("relerr  %+12.5e   ",(lin-nonlin)/norm);
+          printf("abserr  %+12.5e   ",lin-nonlin);
+          printf("orig. value  %+12.5e   ",val);
+          printf("lin. approx. %+12.5e   ",lin);
+          printf("nonlin. funct.  %+12.5e   ",nonlin);
+          printf("matrix[%d,%d]  %+12.5e   ",mm,dof,sys_mat(mm,dof));
+          // finite difference approximation (FIRST divide by epsilon and THEN subtract!)
+          // ill-conditioned operation has to be done as late as possible!
+          printf("FD suggestion  %+12.5e ",((residual(mm)/epsilon)-(checkvec1(mm)/epsilon)) );
+          printf("\n");
+        }
       }
     }
-  }
+  } // loop nodes
 
   // undo changes in state variables
   for (int i=0;i<nen_;++i)
@@ -5789,6 +5746,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
     for (int k = 0; k< numscal_; ++k)
     {
       ephinp_[k](i,0) = origephinp[k](i,0);
+      ehist_[k](i,0)  = origehist[k](i,0);
     }
     epotnp_(i) = origepotnp(i);
   } // for i
