@@ -862,6 +862,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 
   // before we can export to NodeColMap we need reconstruction with a NodeRowMap
   const Teuchos::RCP<Epetra_MultiVector> gradphirow = rcp(new Epetra_MultiVector(*fluiddis_->NodeRowMap(),nsd));
+  gradphirow->PutScalar(0.0);
 
   // map of pointers to nodes which must be reconstructed by this processor <local id, node>
   std::map<int, const DRT::Node*> nodesToReconstruct;
@@ -876,11 +877,11 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
     // get element from fluid discretization
     const DRT::Element *actele = fluiddis_->lColElement(iele);
     // get global Id of element
-    int actele_GID = actele->Id();
+    //int actele_GID = actele->Id();
     // get vector of all integration cells of this element
-    GEO::DomainIntCells IntCells = myelementintcells_[actele_GID];
+    //GEO::DomainIntCells IntCells = myelementintcells_[actele_GID];
     // get vector of all boundary integration cells of this element -> also touched elements need reconstruction
-    GEO::BoundaryIntCells BoundIntCells = myboundaryintcells_[actele_GID];
+    //GEO::BoundaryIntCells BoundIntCells = myboundaryintcells_[actele_GID];
     //    cout << "actele->ID()" << actele->Id() << endl;
     //    cout << actele->Id() << "\t" << IntCells.size() << endl;
     //    cout << actele->Id() << "\t" <<BoundIntCells.size() << endl;
@@ -1062,8 +1063,20 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
         {
           nodeID_adj[inode] = ptToNodeIds_adj[inode];
           // get local number of node actnode in ele_adj
-          if(ptToNode->Id() == ptToNodeIds_adj[inode]) ID_param_space = inode;
+          if(nodegid == ptToNodeIds_adj[inode]) ID_param_space = inode;
         }
+        // node not found in this element -> must be a pbc element
+        if (ID_param_space < 0)
+        {
+          // check if coupled pbc node is found instead
+          for (size_t inode=0; inode < numnode; inode++)
+          {
+            nodeID_adj[inode] = ptToNodeIds_adj[inode];
+            // get local number of node actnode in ele_adj
+            if(coupnodegid == ptToNodeIds_adj[inode]) ID_param_space = inode;
+          }
+        }
+        if (ID_param_space < 0) dserror("node not found in element");
 
         // extract the phi-values of adjacent element with local ids from global vector *phinp
         // get pointer to vector holding G-function values at the fluid nodes
@@ -1163,9 +1176,9 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
       PHI_SMOOTHED_3D(2,0) = 0.0;
 #endif
 
-
       // weight sum of nodal_grad_tmp 1/number_of_vectors to get an average value
       PHI_SMOOTHED_3D.Scale(1.0/numberOfElements);
+
     } // end of average (mean value) reconstruction
     else // least squares reconstruction
     {
@@ -1204,9 +1217,20 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
         for (size_t inode=0; inode < numnode; inode++){
           nodeID_adj[inode] = ptToNodeIds_adj[inode];
           // get local number of node actnode in ele_adj
-          if(ptToNode->Id() == ptToNodeIds_adj[inode]) ID_param_space = inode;
+          if(nodegid == ptToNodeIds_adj[inode]) ID_param_space = inode;
         }
-        if (ID_param_space == -1) dserror ("node in current adjacent not found!!!");
+        // node not found in this element -> must be a pbc element
+        if (ID_param_space < 0)
+        {
+          // check if coupled pbc node is found instead
+          for (size_t inode=0; inode < numnode; inode++)
+          {
+            nodeID_adj[inode] = ptToNodeIds_adj[inode];
+            // get local number of node actnode in ele_adj
+            if(coupnodegid == ptToNodeIds_adj[inode]) ID_param_space = inode;
+          }
+        }
+        if (ID_param_space < 0) dserror ("node in current adjacent not found!!!");
 
         // extract the phi-values of adjacent element with local ids from global vector *phinp
         // get pointer to vector holding G-function values at the fluid nodes
@@ -1337,8 +1361,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
 
     // get local processor id according to global node id
     const int lid = (*gradphirow).Map().LID(GID);
-
-    if (lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*gradphi_).Comm().MyPID(),GID);
+    if (lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*gradphirow).Comm().MyPID(),GID);
 
     const int numcol = (*gradphirow).NumVectors();
     if( numcol != (int)nsd) dserror("number of columns in Epetra_MultiVector is not identically to nsd");
@@ -1348,7 +1371,6 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
     {
       // get columns vector of multivector
       double* globalcolumn = (*gradphirow)[col];
-
 
       // set smoothed gradient entry of phi into column of global multivector
       globalcolumn[lid] = PHI_SMOOTHED_3D(col,0);
@@ -2779,6 +2801,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
             {
               StoreElementCutStatus(COMBUST::FlameFront::touched, cutstat);
               cout << "element " << rootcell->Ele()->Id() << " is touched" << endl;
+              FlameFrontToGmsh(rootcell->ReturnRootCell(),listBoundaryIntCellsperEle,listDomainIntCellsperEle);
             }
             // a volume cell and all boundary cells have been deleted, because they were too small
             else if (numstoredvol==1 and numstoredbound==0)
@@ -2813,23 +2836,26 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
               // update cut status of root cell (element)
               //StoreElementCutStatus(COMBUST::FlameFront::trisected, cutstat);
               StoreElementCutStatus(COMBUST::FlameFront::bisected, cutstat);
+              cout << "element " << rootcell->Ele()->Id() << " is bisected" << endl;
             }
 
             // one outer volume cell is large enough, the other outer volume cell is too small
             // -> stored the larger outer and the middle volume cell and the corresponding boundary cells
             else if ( (numstoredvol==2 and numstoredbound==2) or
-                (numstoredvol==2 and numstoredbound==1) )
+                      (numstoredvol==2 and numstoredbound==1) )
             {
               // update cut status of root cell (element)
               StoreElementCutStatus(COMBUST::FlameFront::bisected, cutstat);
+              cout << "element " << rootcell->Ele()->Id() << " is bisected" << endl;
             }
             // both outer volume cells are too small, but the boundary cells are not small
             // -> element is touched or double touched; stored boundary
             else if ( (numstoredvol==1 and numstoredbound==2) or
-                (numstoredvol==1 and numstoredbound==1) )
+                      (numstoredvol==1 and numstoredbound==1) )
             {
               // update cut status of root cell (element)
               StoreElementCutStatus(COMBUST::FlameFront::touched, cutstat);
+              cout << "element " << rootcell->Ele()->Id() << " is touched" << endl;
             }
             // both outer volume cells are too small
             // -> stored the middle volume cell
@@ -2837,6 +2863,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
             {
               // update cut status of root cell (element)
               StoreElementCutStatus(COMBUST::FlameFront::uncut, cutstat);
+              cout << "element " << rootcell->Ele()->Id() << " is uncut" << endl;
             }
             else
               dserror("flame front for bisected element %d could not be captured",rootcell->Ele()->Id());
@@ -5133,6 +5160,8 @@ size_t COMBUST::FlameFront::StoreBoundaryIntegrationCells(
         GEO::CUT::BoundaryCell * bcell = *ibcell;
         boundarea += bcell->Area();
       }
+      //cout << "refarea " << refarea << endl;
+      //cout << "boundarea " << boundarea << endl;
       // check if there is a small boundary integration cell for a small volume
       // remark: if there is a large boundary integration cell for a small volume, we want to keep it
       bool smallvolbound = false;
