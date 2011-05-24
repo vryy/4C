@@ -73,12 +73,15 @@ shapefcn_(shapefcn)
  *----------------------------------------------------------------------*/
 void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType eletype)
 {
-  //*********************************************************************
+  //**********************************************************************
   // Create integration points according to eletype!
   // Note that our standard Gauss rules are:
-  // 5 points: for integrals on 1D lines                 (1,2,3,4,5)
-  // 7 points: for integrals on 2D triangles             (1,3,6,7,12,37)
-  // 9 points: for integrals on 2D quadrilaterals        (1,4,9)
+  // 5 points: for integrals on 1D lines            (1,2,3,4,5,6,7,8,9,10)
+  //           -> degree of precision: 9
+  // 7 points: for integrals on 2D triangles        (1,3,6,7,12,37,64)
+  //           -> degree of precision: 5
+  // 9 points: for integrals on 2D quadrilaterals   (1,4,9,16,25,36,49,64)
+  //           -> degree of precision: 5
   //**********************************************************************
   switch(eletype)
   {
