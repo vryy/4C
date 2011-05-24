@@ -66,6 +66,7 @@ comm_(comm),
 dim_(dim),
 icontact_(icontact),
 shapefcn_(INPAR::MORTAR::shape_undefined),
+quadslave2d_(false),
 quadslave3d_(false),
 redundant_(redundant),
 maxdofglobal_(-1)
@@ -220,6 +221,10 @@ void MORTAR::MortarInterface::AddMortarNode(RCP<MORTAR::MortarNode> mrtrnode)
  *----------------------------------------------------------------------*/
 void MORTAR::MortarInterface::AddMortarElement(RCP<MORTAR::MortarElement> mrtrele)
 {
+  // check for quadratic 2d slave elements to be modified
+  if (mrtrele->IsSlave() && (mrtrele->Shape()==DRT::Element::line3))
+    quadslave2d_=true;
+
   // check for quadratic 3d slave elements to be modified
   if (mrtrele->IsSlave() && (mrtrele->Shape()==DRT::Element::quad8 || mrtrele->Shape()==DRT::Element::tri6))
     quadslave3d_=true;
@@ -552,12 +557,18 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
     mele->InitializeDataContainer();
   }
 
-  // communicate quadslave3d status among ALL processors
+  // communicate quadslave2d/3d status among ALL processors
   // (not only those participating in interface)
-  int localstatus = (int)(quadslave3d_);
-  int globalstatus = 0;
-  Comm().SumAll(&localstatus,&globalstatus,1);
-  quadslave3d_ = (bool)(globalstatus);
+  int localstatus2d = (int)(quadslave2d_);
+  int globalstatus2d = 0;
+  Comm().SumAll(&localstatus2d,&globalstatus2d,1);
+  quadslave2d_ = (bool)(globalstatus2d);
+  int localstatus3d = (int)(quadslave3d_);
+  int globalstatus3d = 0;
+  Comm().SumAll(&localstatus3d,&globalstatus3d,1);
+  quadslave3d_ = (bool)(globalstatus3d);
+
+
 
   return;
 }

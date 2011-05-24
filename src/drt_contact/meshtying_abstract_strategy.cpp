@@ -353,6 +353,33 @@ void CONTACT::MtAbstractStrategy::RestrictMeshtyingZone()
     fflush(stdout);
   }
 
+  //**********************************************************************
+  // check for infeasible discretization types and LM types     popp 05/11
+  // (currently RMZ only for 1st order slave elements and standard LM)
+  //**********************************************************************
+  // Currently, we need strictly positive LM shape functions for RMZ
+  // to work properly. This is only satisfied for 1st order interpolation
+  // with standard Lagrange multipliers. As soon as we have implemented
+  // the modified biorthogonality (only defined on projecting slave part),
+  // the 1st order interpolation case with dual Lagrange multiplier will
+  // work, too. All 2nd order interpolation cases are difficult, since
+  // we would require strictly positive displacement shape functions, which
+  // is only possible via a proper basis transformation.
+  //**********************************************************************
+  bool quadratic = false;
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    quadratic += interface_[i]->Quadslave2d();
+    quadratic += interface_[i]->Quadslave3d();
+  }
+  if (quadratic)
+    dserror("ERROR: RestrictMeshtyingZone only implemented for first-order elements");
+
+  INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+  if (shapefcn == INPAR::MORTAR::shape_dual)
+    dserror("ERROR: RestrictMeshtyingZone only implemented for standard LM");
+
+
   // Step 2: restrict slave node/dof sets of all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
     interface_[i]->RestrictSlaveSets();
