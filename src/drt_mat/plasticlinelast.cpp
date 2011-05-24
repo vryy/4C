@@ -311,6 +311,9 @@ void MAT::PlasticLinElast::Evaluate(
   for (int i=0; i<6; i++)
     strain_p(i,0) = strainpllast_->at(gp)(i,0);
 
+  // 23.05.11
+  cout << "old strain_p " << strain_p << endl;
+
   // ----------------------------------------------- elastic trial strain
   // strain^{e,trial}_{n+1} = strain_n+1 - strain^p_n
   LINALG::Matrix<NUM_STRESS_3D,1> trialstrain_e(true);
@@ -364,12 +367,12 @@ void MAT::PlasticLinElast::Evaluate(
   // initialize
   // if trial state is violated, there are 2 possible states:
   double heaviside;
-  // if trial state is violated, there are 2 possible states:
-  // elastic unloading --> C == C_e
-  if (Phi_trial > 0.0)
-    heaviside = 1.0;
-  // plastic loading --> C == C_ep
-  else heaviside = 0.0;
+//  // if trial state is violated, there are 2 possible states:
+//  // elastic unloading --> C == C_e
+//  if (Phi_trial > 0.0)
+//    heaviside = 1.0;
+//  // plastic loading --> C == C_ep
+//  else heaviside = 0.0;
 
   // incremental plastic multiplier Delta gamma
   double Dgamma;
@@ -490,33 +493,40 @@ void MAT::PlasticLinElast::Evaluate(
     // strain^p_n+1 = strain^(p,trial)_n+1 + Dgamma . N
     strainplcurr_->at(gp) = strain_p;
 
-#ifdef DEBUG    // 23.05.11
-    cout << "Dgamma " << Dgamma << endl;
-    cout << "flow vector " << N << endl;
+#ifdef DEBUG
     cout << "end strain_p " << strain_p << endl;
     cout << "end strainplcurr_->at(gp) " << strainplcurr_->at(gp) << endl;
 #endif //ifdef DEBUG
 
   }  // plastic corrector
 
+  // if trial state is violated, there are 2 possible states:
+  // elastic unloading --> C == C_e
+  if (Dgamma == 0.0)
+    heaviside = 0.0;
+  // plastic loading --> C == C_ep
+  else heaviside = 1.0;
+
   // --------------------------- consistent elastoplastic tangent modulus
+  // using an associative flow rule: C_ep is symmetric
+  // ( generally C_ep is nonsymmetric )
   SetupCmatElastoPlastic(cmat, Dgamma, G, q, N, heaviside);
 
 #ifdef DEBUG
-  cout << "Ende Setup Cep\n" << endl;
+  cout << "Nach SetupCep\n" << endl;
   cout << " Dgamma " << Dgamma << endl;
   cout << " G " << G << endl;
   cout << " q " << q << endl;
   cout << " flowvector " << N << endl;
   cout << " heaviside " << heaviside << endl;
-  cout << "total cmat " << cmat << endl;
 
   // build the elasto-plastic tangent modulus
   LINALG::Matrix<6,6> cmatFD(true);
 
   // build a finite difference check
   FDCheck(
-    strain_e,  //!< elastic strain vector
+    // 24.05.11 insert trialstrain
+    trialstrain_e, //strain_e,  //!< elastic strain vector
     Dgamma,  //!< plastic multiplier
     G,  //!< shear modulus
     kappa, //!< bulk modulus
@@ -531,6 +541,7 @@ void MAT::PlasticLinElast::Evaluate(
   LINALG::Matrix<6,6> cmatdiff;
   cmatdiff.Update(1.0, cmat, 0.0);
   cmatdiff.Update(-1.0, cmatFD, 1.0);
+  cout << "cmat " << cmat << endl;
   cout << "cmatFD " << cmatFD << endl;
   cout << "error between two material tangents" << cmatdiff << endl;
 #endif // #ifdef DEBUG
@@ -610,7 +621,7 @@ void MAT::PlasticLinElast::SetupCmatElastoPlastic(
   double Dgamma,  //!< plastic multiplier
   double G,  //!< shear modulus
   double q,  //!< elastic trial von Mises effective stress
-  const LINALG::Matrix<6,1> flowvector,  //!< unit flow vector
+  LINALG::Matrix<6,1> flowvector,  //!< unit flow vector
   double heaviside  //!< Heaviside function
   )
 {
@@ -622,7 +633,7 @@ void MAT::PlasticLinElast::SetupCmatElastoPlastic(
   // depending on the flow vector Cmat_ep can be a fully-occupied matrix
 
   // C_ep = C_e - ( H^ . Dgamma . 6 . G^2 ) / q . I_d +
-  //        +  H^ . 6 . G^2 ( Dgamma/q - 1/(3 G) ) N \otimes N
+  //        +  H^ . 6 . G^2 ( Dgamma/q - 1/(3 G) ) N* \otimes N*
   //
   // I_d = I_s - 1/3 I . I
   // I_d in Voigt-notation applied to symmetric problem, like stress calculation
@@ -646,6 +657,12 @@ void MAT::PlasticLinElast::SetupCmatElastoPlastic(
   LINALG::Matrix<6,6> id4sharp(true);
   for (int i=0; i<3; i++) id4sharp(i,i) = 1.0;
   for (int i=3; i<6; i++) id4sharp(i,i) = 0.5;
+
+  // cf. de Souza Neto (7.117)
+  // N* = sqrt(2/3) . N
+  double flowfac = 0.0;
+  flowfac = sqrt(2.0/3.0);
+  flowvector.Scale(flowfac);
 
   // add standard isotropic elasticity tensor C_e first
   SetupCmat(cmat);
@@ -696,7 +713,7 @@ void MAT::PlasticLinElast::FDCheck(
   double Dgamma,  //!< plastic multiplier
   double G,  //!< shear modulus
   double kappa,  //!< bulk modulus
-  const LINALG::Matrix<6,1>& N, // flow vector
+  LINALG::Matrix<6,1>& N, // flow vector
   double heaviside,  //!< Heaviside function
   double p,  //!< volumetric stress
   LINALG::Matrix<6,1>& stress,  //!< updated stress sigma_n+1
@@ -799,19 +816,18 @@ void MAT::PlasticLinElast::FDCheck(
   } // loop strains
 
 #ifdef DEBUG
-  cout << " end of FDCheck!!" << endl;
-  cout << "  devdisturbstress\n " << devdisturbstress << endl;
-  cout << "  p " << p << endl;
-  cout << "  stress\n " << stress << endl;
-  cout << "  disturbstress\n " << disturbstress << endl;
-  cout << "  strain\n " << strain << endl;
-  cout << "  disturbstrain\n " << disturbstrain << endl;
+  cout << "devdisturbstress\n " << devdisturbstress << endl;
+  cout << "p " << p << endl;
+//  cout << "disturbstress\n " << disturbstress << endl;
+//  cout << "stress\n " << stress << endl;
+//  cout << "  strain\n " << strain << endl;
+//  cout << "  disturbstrain\n " << disturbstrain << endl;
   for (int i=0; i<6; ++i)
   {
     cout << "  Difference between strains at position " << i << " "<<  strain(i)-disturbstrain(i) << endl;
     cout << "  Difference between stresses at position " << i << " "<< stress(i)-disturbstress(i) << endl;
   }
-  cout << "cmatFD \n " << cmatFD << endl;
+  cout << "end of FDCheck!!\n" << endl;
 #endif
 
   return;

@@ -216,7 +216,7 @@ private:
       double Dgamma,  //!< plastic multiplier
       double G,  //!< shear modulus
       double kappa, //!< bulk modulus
-      const LINALG::Matrix<6,1>& N, // flow vector
+      LINALG::Matrix<6,1>& N, // flow vector
       double heaviside,  //!< Heaviside function
       double p,  //!< volumetric stress
       LINALG::Matrix<6,1>& stress,  //!< updated stress sigma_n+1
