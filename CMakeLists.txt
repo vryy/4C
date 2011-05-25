@@ -1628,7 +1628,7 @@ target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuc
 add_test(NAME run_cut_test COMMAND $<TARGET_FILE:cut_test>)
 
 add_executable(graph_test ${OBJS_GRAPH_TEST})
-target_link_libraries(graph_test drt_lib_cut ${Boost_LIBRARIES})
+target_link_libraries(graph_test ${Boost_LIBRARIES})
 
 if (STKADAPTIVE)
 

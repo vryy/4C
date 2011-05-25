@@ -32,7 +32,7 @@ typedef boost::property_map<Graph, boost::vertex_color_t>::type color_map_t;
 typedef boost::property_map<Graph, boost::vertex_index_t>::type vertex_index_map_t;
 typedef boost::property_map<Graph, boost::edge_index_t>::type edge_index_map_t;
 
-typedef boost::color_traits<typename boost::property_traits<color_map_t>::value_type> color_t;
+typedef boost::color_traits<boost::property_traits<color_map_t>::value_type> color_t;
 
 typedef std::vector<vertex_t> cycle_t;
 
