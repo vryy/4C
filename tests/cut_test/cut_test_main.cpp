@@ -123,6 +123,7 @@ void test_ls_hex8_florian8();
 void test_ls_hex8_florian9();
 void test_ls_hex8_florian10();
 void test_ls_hex8_florian11();
+void test_ls_hex8_florian12();
 void test_ls_hex8_ursula1();
 void test_ls_hex8_ursula2();
 void test_ls_hex8_ursula3();
@@ -146,6 +147,7 @@ void test_facets_corner_points();
 
 void test_colored_graph();
 void test_graph();
+void test_graph2();
 
 typedef void ( *testfunct )();
 
@@ -328,6 +330,7 @@ int main( int argc, char ** argv )
   functable["ls_hex8_florian9"] = test_ls_hex8_florian9;
   functable["ls_hex8_florian10"] = test_ls_hex8_florian10;
   functable["ls_hex8_florian11"] = test_ls_hex8_florian11;
+  functable["ls_hex8_florian12"] = test_ls_hex8_florian12;
   functable["ls_hex8_ursula1"] = test_ls_hex8_ursula1;
   functable["ls_hex8_ursula2"] = test_ls_hex8_ursula2;
   functable["ls_hex8_ursula3"] = test_ls_hex8_ursula3;
@@ -351,6 +354,7 @@ int main( int argc, char ** argv )
 
   functable["colored_graph"] = test_colored_graph;
   functable["graph"] = test_graph;
+  functable["graph2"] = test_graph2;
 
   Teuchos::CommandLineProcessor clp( false );
 

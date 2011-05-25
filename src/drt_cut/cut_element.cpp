@@ -733,3 +733,29 @@ void GEO::CUT::Element::DebugDump()
   }
 }
 
+void GEO::CUT::Element::GnuplotDump()
+{
+  std::stringstream str;
+  str << "element" << Id() << ".plot";
+  std::ofstream file( str.str().c_str() );
+
+  std::set<Edge*> all_edges;
+
+  const std::vector<Side*> & sides = Sides();
+  for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
+  {
+    Side * s = *i;
+    const std::vector<Edge*> & edges = s->Edges();
+
+    std::copy( edges.begin(), edges.end(), std::inserter( all_edges, all_edges.begin() ) );
+  }
+
+  for ( std::set<Edge*>::iterator i=all_edges.begin(); i!=all_edges.end(); ++i )
+  {
+    Edge * e = *i;
+    e->BeginNode()->point()->Plot( file );
+    e->EndNode()  ->point()->Plot( file );
+    file << "\n\n";
+  }
+}
+

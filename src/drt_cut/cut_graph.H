@@ -84,6 +84,15 @@ namespace GEO
 
         int FindNext( Graph & used, int p, const std::vector<int> & cycle, const std::set<int> & free );
 
+//         bool Contained( const std::vector<int> & cycle, const std::set<int> & free, int f );
+
+        void SplitFreePoints( const std::vector<int> & c1,
+                              const std::vector<int> & c2,
+                              const std::set<int> & border,
+                              std::set<int> & free,
+                              std::set<int> & free1,
+                              std::set<int> & free2 );
+
         void GetAll( std::set<int> & all );
 
         void FixSinglePoints();
@@ -92,7 +101,7 @@ namespace GEO
 
         void TestClosed();
 
-        void Print();
+        void Print( std::ostream & stream=std::cout );
 
         std::set<int> & at( int p ) { return graph_[p]; }
 
@@ -107,6 +116,8 @@ namespace GEO
         unsigned size() const { return graph_.size(); }
 
       private:
+
+//         bool Contained( const std::vector<int> & cycle, const std::set<int> & free, std::set<int> & done, int f );
 
         std::map<int, std::set<int> > graph_;
       };

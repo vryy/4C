@@ -1200,6 +1200,17 @@ void GEO::CUT::TetMeshIntersection::CopyCutSide( Side * s, Facet * f )
     Point * p1 = ToChild( l->BeginPoint() );
     Point * p2 = ToChild( l->EndPoint() );
 
+    if ( p1!=NULL )
+    {
+      p1->AddSide( cs );
+    }
+
+    if ( p2!=NULL )
+    {
+      p2->AddSide( cs );
+    }
+
+#if 0
     if ( p1!=NULL and p2!=NULL )
     {
       std::vector<Line*> newlines;
@@ -1232,5 +1243,6 @@ void GEO::CUT::TetMeshIntersection::CopyCutSide( Side * s, Facet * f )
         }
       }
     }
+#endif
   }
 }

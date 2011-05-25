@@ -24,7 +24,9 @@ class PointGraph
 
     Point * GetPoint( int i ) { return all_points_[i]; }
 
-    void PlotAllPoints();
+    void PlotAllPoints( std::ostream & stream=std::cout );
+
+    void PlotPoints( Element * element );
 
   private:
 
@@ -54,6 +56,8 @@ public:
 
     const std::vector<Point*> & operator*()
     {
+      if ( points_.size() == 0 )
+        throw std::runtime_error( "empty point list" );
       return points_;
     }
 

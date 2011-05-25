@@ -48,7 +48,45 @@ GEO::CUT::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, b
     free.erase( p );
   }
 
+#ifdef DEBUGCUTLIBRARY
+  {
+    std::ofstream f( "all_points.plot" );
+    graph_.PlotAllPoints( f );
+  }
+  {
+    std::ofstream f( "graph.txt" );
+    graph_.Print( f );
+  }
+#endif
+
   AddFacetPoints( cycle, free, inner );
+
+#if 0
+  std::cout << "GEO::CUT::PointGraph::PointGraph()\n";
+  graph_.Print();
+  std::copy( cycle.begin(), cycle.end(), std::ostream_iterator<int>( std::cout, " " ) );
+  std::cout << "\n";
+  graph_.PlotAllPoints();
+  std::cout << "\n";
+  graph_.PlotPoints( element );
+  std::cout << "\n";
+
+  for ( GRAPH::CycleListIterator i=facet_cycles_.begin(); i!=facet_cycles_.end(); ++i )
+  {
+    const std::vector<int> & points = *i;
+    std::copy( points.begin(), points.end(), std::ostream_iterator<int>( std::cout, " " ) );
+    std::cout << "\n";
+  }
+
+  std::cout << "\n";
+
+  for ( iterator i=begin(); i!=end(); ++i )
+  {
+    const std::vector<Point*> & points = *i;
+    std::copy( points.begin(), points.end(), std::ostream_iterator<Point*>( std::cout, " " ) );
+    std::cout << "\n";
+  }
+#endif
 }
 
 
@@ -74,6 +112,8 @@ void GEO::CUT::PointGraph::Graph::AddAll( Point * p1, Point * p2 )
 }
 
 #if 0
+
+// old version
 void GEO::CUT::PointGraph::FillGraph( Element * element, Side * side, std::vector<int> & cycle )
 {
   const std::vector<Node*> & nodes = side->Nodes();
@@ -110,11 +150,15 @@ void GEO::CUT::PointGraph::FillGraph( Element * element, Side * side, std::vecto
     if ( l->IsCut( element ) )
     {
       graph_.AddAll( l->BeginPoint(), l->EndPoint() );
+      if ( not l->BeginPoint()->IsCut( element ) or not l->EndPoint()->IsCut( element ) )
+        throw std::runtime_error( "point-line inconsistency" );
     }
   }
 }
-#endif
 
+#else
+
+// current version
 void GEO::CUT::PointGraph::FillGraph( Element * element, Side * side, std::vector<int> & cycle )
 {
   const std::vector<Node*> & nodes = side->Nodes();
@@ -145,17 +189,97 @@ void GEO::CUT::PointGraph::FillGraph( Element * element, Side * side, std::vecto
   }
 
   const std::vector<Line*> & cut_lines = side->CutLines();
+
+  std::vector<Line*> otherlines;
+
+#if 0
+  if ( side->Shape()==DRT::Element::quad4 )
+  {
+    const std::vector<Node*> & nodes = side->Nodes();
+    int found = 0;
+
+    for ( std::vector<Line*>::const_iterator i=cut_lines.begin(); i!=cut_lines.end(); ++i )
+    {
+      Line * l = *i;
+      Point * p1 = l->BeginPoint();
+      Point * p2 = l->EndPoint();
+      if ( ( p1==nodes[0]->point() and p2==nodes[2]->point() ) or
+           ( p1==nodes[2]->point() and p2==nodes[0]->point() ) or
+           ( p1==nodes[1]->point() and p2==nodes[3]->point() ) or
+           ( p1==nodes[3]->point() and p2==nodes[1]->point() ) )
+      {
+        found += 1;
+      }
+    }
+
+    if ( found > 1 )
+      throw std::runtime_error( "cut line crossing" );
+  }
+#endif
   for ( std::vector<Line*>::const_iterator i=cut_lines.begin(); i!=cut_lines.end(); ++i )
   {
     Line * l = *i;
     graph_.AddAll( l->BeginPoint(), l->EndPoint() );
+    if ( not l->IsCut( element ) )
+    {
+      otherlines.push_back( l );
+    }
+    else
+    {
+      Point * p1 = l->BeginPoint();
+      Point * p2 = l->EndPoint();
+      if ( not p1->IsCut( element ) or
+           not p2->IsCut( element ) )
+      {
+        throw std::runtime_error( "point-line inconsistency" );
+      }
+    }
   }
+
+#if 0
+  if ( otherlines.size() > 0 )
+  {
+    element->GnuplotDump();
+    std::cout << "for element " << element->Id() << "\n";
+    graph_.Print();
+    std::copy( cycle.begin(), cycle.end(), std::ostream_iterator<int>( std::cout, " " ) );
+    std::cout << "\n";
+    graph_.PlotAllPoints();
+    std::cout << "\n";
+    for ( std::vector<Line*>::const_iterator i=otherlines.begin(); i!=otherlines.end(); ++i )
+    {
+      Line * l = *i;
+      Point * p1 = l->BeginPoint();
+      Point * p2 = l->EndPoint();
+      //std::cout << "(" << p1->Id() << "," << p2->Id() << ") ";
+      std::cout << "(" << p1->Id()
+                << "," << p2->Id()
+                << "," << p1->IsCut( element )
+                << "," << p2->IsCut( element )
+                << "," << l->IsCut( element )
+                << ") ";
+    }
+    std::cout << "\n";
+  }
+#endif
 }
 
-void GEO::CUT::PointGraph::Graph::PlotAllPoints()
+#endif
+
+void GEO::CUT::PointGraph::Graph::PlotAllPoints( std::ostream & stream )
 {
   for ( std::map<int, Point*>::iterator i=all_points_.begin(); i!=all_points_.end(); ++i )
   {
-    i->second->Plot( std::cout );
+    i->second->Plot( stream );
   }
+}
+
+void GEO::CUT::PointGraph::Graph::PlotPoints( Element * element )
+{
+  for ( std::map<int, Point*>::iterator i=all_points_.begin(); i!=all_points_.end(); ++i )
+  {
+    Point * p = i->second;
+    std::cout << p->Id() << "(" << p->IsCut( element ) << ") ";
+  }
+  std::cout << "\n";
 }

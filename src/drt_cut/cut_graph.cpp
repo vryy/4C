@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <stack>
 #include "cut_graph.H"
 
 bool GEO::CUT::GRAPH::ForkFinder::operator()( int point )
@@ -202,21 +203,21 @@ void GEO::CUT::GRAPH::Graph::TestClosed()
   }
 }
 
-void GEO::CUT::GRAPH::Graph::Print()
+void GEO::CUT::GRAPH::Graph::Print( std::ostream & stream )
 {
   for ( std::map<int, std::set<int> >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
   {
     int p = i->first;
     std::set<int> & row = i->second;
-    std::cout << p << ": ";
+    stream << p << ": ";
     for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
     {
       int p = *i;
-      std::cout << p << " ";
+      stream << p << " ";
     }
-    std::cout << "\n";
+    stream << "\n";
   }
-  std::cout << "\n";
+  stream << "\n";
 }
 
 void GEO::CUT::GRAPH::Cycle::Split( Graph & graph, Graph & used, CycleList & cycles, std::set<int> & free )
@@ -254,14 +255,24 @@ void GEO::CUT::GRAPH::Cycle::Split( Graph & graph, Graph & used, CycleList & cyc
           c2.push_back( *end );
           std::copy( connection.rbegin(), connection.rend(), std::back_inserter( c2 ) );
 
+          std::set<int> border;
+          border.insert( *start );
+          border.insert( *end );
+          std::copy( connection.begin(), connection.end(), std::inserter( border, border.begin() ) );
+
           for ( std::vector<int>::iterator i=connection.begin(); i!=connection.end(); ++i )
           {
             int p = *i;
             free.erase( p );
           }
 
-          cycles.AddPoints( graph, used, c1, free );
-          cycles.AddPoints( graph, used, c2, free );
+          std::set<int> free1;
+          std::set<int> free2;
+
+          graph.SplitFreePoints( c1, c2, border, free, free1, free2 );
+
+          cycles.AddPoints( graph, used, c1, free1 );
+          cycles.AddPoints( graph, used, c2, free2 );
 
           active_ = false;
 
@@ -286,14 +297,22 @@ void GEO::CUT::GRAPH::Cycle::Split( Graph & graph, Graph & used, CycleList & cyc
 
           std::copy( end, connection.end(), std::back_inserter( c2 ) );
 
+          std::set<int> border;
+          std::copy( end, connection.end(), std::inserter( border, border.begin() ) );
+
           for ( std::vector<int>::iterator i=connection.begin(); i!=connection.end(); ++i )
           {
             int p = *i;
             free.erase( p );
           }
 
-          cycles.AddPoints( graph, used, c1, free );
-          cycles.AddPoints( graph, used, c2, free );
+          std::set<int> free1;
+          std::set<int> free2;
+
+          graph.SplitFreePoints( c1, c2, border, free, free1, free2 );
+
+          cycles.AddPoints( graph, used, c1, free1 );
+          cycles.AddPoints( graph, used, c2, free2 );
 
           active_ = false;
 
@@ -314,6 +333,135 @@ void GEO::CUT::GRAPH::Cycle::Split( Graph & graph, Graph & used, CycleList & cyc
   else
   {
     active_ = true;
+  }
+}
+
+#if 0
+bool GEO::CUT::GRAPH::Graph::Contained( const std::vector<int> & cycle, const std::set<int> & free, int f )
+{
+  std::set<int> done;
+  return Contained( cycle, free, done, f );
+}
+
+bool GEO::CUT::GRAPH::Graph::Contained( const std::vector<int> & cycle, const std::set<int> & free, std::set<int> & done, int f )
+{
+  const std::set<int> & row = at( f );
+  for ( std::set<int>::const_iterator i=row.begin(); i!=row.end(); ++i )
+  {
+    int p = *i;
+    if ( done.count( p )==0 )
+    {
+      if ( free.count( p )==0 )
+      {
+        if ( std::find( cycle.begin(), cycle.end(), p )==cycle.end() )
+          return false;
+      }
+      else
+      {
+        done.insert( f );
+        if ( not Contained( cycle, free, done, p ) )
+          return false;
+        done.erase( f );
+      }
+    }
+  }
+  return true;
+}
+#endif
+
+void GEO::CUT::GRAPH::Graph::SplitFreePoints( const std::vector<int> & c1,
+                                              const std::vector<int> & c2,
+                                              const std::set<int> & border,
+                                              std::set<int> & free,
+                                              std::set<int> & free1,
+                                              std::set<int> & free2 )
+{
+  if ( c1.size()==border.size() and c2.size()==border.size() )
+    throw std::runtime_error( "no side larger than border" );
+
+  std::set<int> done;
+  while ( free.size() > 0 )
+  {
+    std::set<int> * freeset = NULL;
+    std::set<int> newfree;
+    std::stack<int> free_stack;
+
+    int f = *free.begin();
+    free_stack.push( f );
+
+    while ( not free_stack.empty() )
+    {
+      int p = free_stack.top();
+      free_stack.pop();
+
+      newfree.insert( p );
+      done.insert( p );
+      free.erase( p );
+
+      std::set<int> & row = at( p );
+      for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
+      {
+        int p = *i;
+        if ( done.count( p )==0 )
+        {
+          if ( free.count( p )==0 )
+          {
+            if ( border.count( p )==0 )
+            {
+              if ( std::find( c1.begin(), c1.end(), p )!=c1.end() )
+              {
+                if ( freeset!=NULL and freeset!=&free1 )
+                  throw std::runtime_error( "side contradiction" );
+                freeset = &free1;
+              }
+              else if ( std::find( c2.begin(), c2.end(), p )!=c2.end() )
+              {
+                if ( freeset!=NULL and freeset!=&free2 )
+                  throw std::runtime_error( "side contradiction" );
+                freeset = &free2;
+              }
+              else
+              {
+                throw std::runtime_error( "non-free point on neither side" );
+              }
+            }
+            else
+            {
+              // ignore, since there is no information about the side
+            }
+          }
+          else
+          {
+            free_stack.push( p );
+          }
+        }
+      }
+    }
+
+    if ( freeset==NULL )
+    {
+      if ( c1.size()==border.size() )
+      {
+        freeset = &free1;
+      }
+      else if ( c2.size()==border.size() )
+      {
+        freeset = &free2;
+      }
+      else
+      {
+        throw std::runtime_error( "undecided free set" );
+      }
+    }
+
+    if ( freeset->size()==0 )
+    {
+      std::swap( *freeset, newfree );
+    }
+    else
+    {
+      std::copy( newfree.begin(), newfree.end(), std::inserter( *freeset, freeset->begin() ) );
+    }
   }
 }
 

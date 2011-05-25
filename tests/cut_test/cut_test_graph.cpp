@@ -74,6 +74,64 @@ void test_graph()
   }
 }
 
+void test_graph2()
+{
+  GEO::CUT::GRAPH::Graph g;
+
+  g.Add( 0, 10 );
+  g.Add( 0, 11 );
+  g.Add( 0, 23 );
+
+  g.Add( 9, 10 );
+  g.Add( 9, 11 );
+  g.Add( 9, 23 );
+
+  g.Add( 10, 20 );
+  g.Add( 10, 23 );
+
+  g.Add( 11, 21 );
+  g.Add( 11, 23 );
+
+  g.Add( 20, 22 );
+
+  g.Add( 21, 22 );
+
+  g.Print();
+
+  std::vector<int> cycle;
+  cycle.push_back( 10 );
+  cycle.push_back(  0 );
+  cycle.push_back( 11 );
+  cycle.push_back( 21 );
+  cycle.push_back( 22 );
+  cycle.push_back( 20 );
+
+  std::set<int> free;
+  g.GetAll( free );
+
+  for ( std::vector<int>::iterator i=cycle.begin(); i!=cycle.end(); ++i )
+  {
+    int p = *i;
+    free.erase( p );
+  }
+
+  GEO::CUT::GRAPH::Graph used;
+  used.AddCycle( cycle );
+
+  GEO::CUT::GRAPH::CycleList facet_cycles;
+
+  facet_cycles.AddPoints( g, used, cycle, free );
+
+  for ( GEO::CUT::GRAPH::CycleListIterator i=facet_cycles.begin();
+        i!=facet_cycles.end();
+        ++i )
+  {
+    const std::vector<int> & c = *i;
+    std::copy( c.begin(), c.end(), std::ostream_iterator<int>( std::cout, " " ) );
+    std::cout << "\n";
+  }
+}
+
 void test_colored_graph()
 {
   GEO::CUT::COLOREDGRAPH::Graph g( 7 );
