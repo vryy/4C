@@ -122,11 +122,13 @@ void GEO::CUT::Element::MakeFacets( Mesh & mesh )
       Side & side = **i;
       side.MakeOwnedSideFacets( mesh, this, facets_ );
     }
+#if 0
     for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
     {
       Side & side = **i;
       side.MakeSideCutFacets( mesh, this, facets_ );
     }
+#endif
     for ( std::set<Side*>::iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
     {
       Side & cut_side = **i;

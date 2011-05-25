@@ -35,7 +35,7 @@ public:
 
   virtual void MakeOwnedSideFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
 
-  virtual void MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
+//   virtual void MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
 
   virtual void MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
 

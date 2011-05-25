@@ -25,10 +25,12 @@ void GEO::CUT::LevelSetSide::MakeOwnedSideFacets( Mesh & mesh, Element * element
   Side::MakeOwnedSideFacets( mesh, element, facets );
 }
 
+#if 0
 void GEO::CUT::LevelSetSide::MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
 {
   Side::MakeSideCutFacets( mesh, element, facets );
 }
+#endif
 
 void GEO::CUT::LevelSetSide::MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
 {

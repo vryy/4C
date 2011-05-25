@@ -269,9 +269,9 @@ void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, Element * element, std::s
 {
   if ( facets_.size()==0 )
   {
-    PointGraph point_graph( mesh, element, this, true );
+    PointGraph pg( mesh, element, this, true );
 
-    for ( PointGraph::iterator i=point_graph.begin(); i!=point_graph.end(); ++i )
+    for ( PointGraph::facet_iterator i=pg.fbegin(); i!=pg.fend(); ++i )
     {
       const std::vector<Point*> & points = *i;
 
@@ -280,11 +280,32 @@ void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, Element * element, std::s
         throw std::runtime_error( "failed to create facet" );
       facets_.push_back( f );
     }
+
+    for ( PointGraph::hole_iterator i=pg.hbegin(); i!=pg.hend(); ++i )
+    {
+      const std::vector<std::vector<Point*> > & hole = *i;
+
+      // If we have a hole and multiple cuts we have to test which facet the
+      // hole belongs to. Not supported now.
+      if ( facets_.size()!=1 )
+      {
+        throw std::runtime_error( "expect side with one (uncut) facet" );
+      }
+
+      for ( std::vector<std::vector<Point*> >::const_iterator i=hole.begin(); i!=hole.end(); ++i )
+      {
+        const std::vector<Point*> & points = *i;
+
+        Facet * h = mesh.NewFacet( points, this, false );
+        facets_[0]->AddHole( h );
+      }
+    }
   }
 
   std::copy( facets_.begin(), facets_.end(), std::inserter( facets, facets.begin() ) );
 }
 
+#if 0
 void GEO::CUT::Side::MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
 {
   LineSegmentList lsl;
@@ -326,57 +347,84 @@ void GEO::CUT::Side::MakeSideCutFacets( Mesh & mesh, Element * element, std::set
     }
   }
 }
+#endif
 
 void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
 {
-  LineSegmentList lsl;
-  lsl.Create( mesh, element, this, false );
-
-  const std::vector<Teuchos::RCP<LineSegment> > & segments = lsl.Segments();
-
-  for ( unsigned i=0; i<segments.size(); ++i )
+  PointGraph pg( mesh, element, this, false );
+  for ( PointGraph::facet_iterator i=pg.fbegin(); i!=pg.fend(); ++i )
   {
-    LineSegment & ls = *segments[i];
-
-    if ( not ls.IsClosed() )
+    const std::vector<Point*> & points = *i;
+    MakeInternalFacets( mesh, element, points, facets );
+  }
+  for ( PointGraph::hole_iterator i=pg.hbegin(); i!=pg.hend(); ++i )
+  {
+    const std::vector<std::vector<Point*> > & hole = *i;
+    for ( std::vector<std::vector<Point*> >::const_iterator i=hole.begin(); i!=hole.end(); ++i )
     {
-      //throw std::runtime_error( "expect one closed cut" );
+      const std::vector<Point*> & points = *i;
+      MakeInternalFacets( mesh, element, points, facets );
+    }
+  }
+}
 
-      // Assume this is a cut along one of our edges. So this side is not
-      // responsible.
+void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, const std::vector<Point*> & points, std::set<Facet*> & facets )
+{
+  // ignore cycles with points outside the current element
+  for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
+  {
+    Point * p = *i;
+    if ( not p->IsCut( element ) )
+    {
       return;
     }
+  }
 
-    Side * s = ls.OnSide( element );
-    if ( s!=NULL )
-    {
-      const std::vector<Point*> & facet_points = ls.Points();
-      Facet * f = s->FindFacet( facet_points );
-      if ( f!=NULL )
-      {
-        f->ExchangeSide( this, true );
-        facets.insert( f );
-        facets_.push_back( f );
-      }
-      else
-      {
-        //throw std::runtime_error( "must have matching facet on side" );
+  Side * s = NULL;
 
-        // multiple facets on one cut side within one elemenet: this is a
-        // levelset case
-        Facet * f = mesh.NewFacet( facet_points, this, true );
-        facets.insert( f );
-        facets_.push_back( f );
-      }
-    }
-    else
+  std::set<Side*> sides( element->Sides().begin(), element->Sides().end() );
+
+  for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
+  {
+    Point * p = *i;
+    p->Intersection( sides );
+    if ( sides.size()==0 )
+      break;
+  }
+  if ( sides.size()>1 )
+  {
+    throw std::runtime_error( "can touch exactly one element side" );
+  }
+  else if ( sides.size()==1 )
+  {
+    s = *sides.begin();
+  }
+
+  if ( s!=NULL )
+  {
+    Facet * f = s->FindFacet( points );
+    if ( f!=NULL )
     {
-      // insert new internal facet
-      const std::vector<Point*> & facet_points = ls.Points();
-      Facet * f = mesh.NewFacet( facet_points, this, true );
+      f->ExchangeSide( this, true );
       facets.insert( f );
       facets_.push_back( f );
     }
+    else
+    {
+      //throw std::runtime_error( "must have matching facet on side" );
+
+      // multiple facets on one cut side within one element
+      Facet * f = mesh.NewFacet( points, this, true );
+      facets.insert( f );
+      facets_.push_back( f );
+    }
+  }
+  else
+  {
+    // insert new internal facet
+    Facet * f = mesh.NewFacet( points, this, true );
+    facets.insert( f );
+    facets_.push_back( f );
   }
 }
 

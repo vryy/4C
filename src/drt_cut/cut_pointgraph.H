@@ -15,10 +15,8 @@ namespace CUT
 
 class PointGraph
 {
-  class Graph
+  struct Graph
   {
-  public:
-
     void AddEdge( int row, int col );
 
     void AddEdge( Point * p1, Point * p2 );
@@ -31,29 +29,37 @@ class PointGraph
 
     void PlotPoints( Element * element );
 
-    void FindCycles( const std::vector<int> & cycle, std::vector<std::vector<Point*> > & cycles, bool inner );
+    void FindCycles( std::vector<Point*> & cycle );
+
+    template <typename graph_t>
+    bool FindCycles( graph_t & g, std::vector<Point*> & cycle, std::vector<std::vector<Point*> > & cycles );
 
     void FixSinglePoints();
 
     bool HasSinglePoints();
 
-  private:
+    bool Equals( const std::vector<Point*> & sorted, const std::vector<Point*> & test );
 
     std::map<int, std::set<int> > graph_;
     std::map<int, Point*> all_points_;
+    std::vector<std::vector<Point*> > main_cycles_;
+    std::vector<std::vector<std::vector<Point*> > > hole_cycles_;
   };
 
 public:
 
-  typedef std::vector<std::vector<Point*> >::iterator iterator;
+  typedef std::vector<std::vector<Point*> >::iterator facet_iterator;
+  typedef std::vector<std::vector<std::vector<Point*> > >::iterator hole_iterator;
 
   PointGraph( Mesh & mesh, Element * element, Side * side, bool inner );
 
-  iterator begin() { return cycles_.begin(); }
+  facet_iterator fbegin() { return graph_.main_cycles_.begin(); }
 
-  iterator end()   { return cycles_.end(); }
+  facet_iterator fend()   { return graph_.main_cycles_.end(); }
 
-  unsigned size() { return cycles_.size(); }
+  hole_iterator hbegin() { return graph_.hole_cycles_.begin(); }
+
+  hole_iterator hend()   { return graph_.hole_cycles_.end(); }
 
   void Print()
   {
@@ -62,14 +68,13 @@ public:
 
 private:
 
-  void FillGraph( Element * element, Side * side, std::vector<int> & cycle );
+  void FillGraph( Element * element, Side * side, std::vector<Point*> & cycle );
 
   void AddFacetPoints( std::vector<int> & cycle, std::set<int> & free, bool inner );
 
   Element * element_;
   Side * side_;
   Graph graph_;
-  std::vector<std::vector<Point*> > cycles_;
 };
 
 }
