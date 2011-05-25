@@ -44,6 +44,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_cut/cut_position.H"
 
 #include "../linalg/linalg_fixedsizeblockmatrix.H"
+#include "../linalg/linalg_sparsematrix.H"
 
 #define TAU_SUBGRID_IN_RES_MOM
 
@@ -6904,6 +6905,377 @@ namespace DRT
 {
   namespace ELEMENTS
   {
+    namespace XFLUID
+    {
+
+      template<DRT::Element::DiscretizationType distype>
+      class SideInterface
+      {
+      public:
+
+
+        static const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+        static Teuchos::RCP<SideInterface<distype> > Impl(DRT::Element * side,
+                                                          Epetra_SerialDenseMatrix & C_uiu,
+                                                          Epetra_SerialDenseMatrix & C_uui,
+                                                          Epetra_SerialDenseMatrix & rhC_ui,
+                                                          Epetra_SerialDenseMatrix & Gsui,
+                                                          Epetra_SerialDenseMatrix & Guis
+                                                          );
+
+
+        virtual ~SideInterface() {}
+
+        virtual void Evaluate(Epetra_SerialDenseMatrix & side_xyze,
+                              const LINALG::Matrix<2,1> & eta,
+                              LINALG::Matrix<3,1> & x,
+                              LINALG::Matrix<3,1> & normal,
+                              double & drs) = 0;
+
+        virtual void eivel(const DRT::Discretization &  cutdis,
+                           const std::string            state,
+                           const vector<int>&           lm) = 0;
+
+        virtual void buildCouplingMatrices(LINALG::Matrix<3,1> & normal,
+                                           const double          fac,
+                                           LINALG::Matrix<nen,1>  & funct,
+                                           LINALG::BlockMatrix<LINALG::Matrix<nen,  1>,6,1> &  rhs
+                                           ) = 0;
+
+        virtual void buildFinalCouplingMatrices(LINALG::BlockMatrix<LINALG::Matrix<nen,nen>,6,6> &  invK_ss,
+                                                LINALG::BlockMatrix<LINALG::Matrix<nen,nen>,4,6> &  K_iK,
+                                                LINALG::BlockMatrix<LINALG::Matrix<nen,nen>,6,4> &  K_su,
+                                                LINALG::BlockMatrix<LINALG::Matrix<nen,  1>,6,1> &  rhs
+                                                ) = 0;
+
+      };
+
+      template<DRT::Element::DiscretizationType distype,
+               DRT::Element::DiscretizationType side_distype>
+      class SideImpl : public SideInterface<distype>
+      {
+      public:
+
+        //! nen_: number of element nodes (P. Hughes: The Finite Element Method)
+        static const int side_nen = DRT::UTILS::DisTypeToNumNodePerEle<side_distype>::numNodePerElement;
+        static const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+        SideImpl(DRT::Element * side,
+                 Epetra_SerialDenseMatrix & C_uiu,
+                 Epetra_SerialDenseMatrix & C_uui,
+                 Epetra_SerialDenseMatrix & rhC_ui,
+                 Epetra_SerialDenseMatrix & Gsui,
+                 Epetra_SerialDenseMatrix & Guis
+                 )
+          : C_uiu_(C_uiu.A(),true),
+            C_uui_(C_uui.A(),true),
+            rhC_ui_(rhC_ui.A(),true),
+            K_sui_(Gsui.A(),true),
+            K_uis_(Guis.A(),true)
+        {
+        }
+
+        virtual void Evaluate(Epetra_SerialDenseMatrix  & side_xyze,
+                              const LINALG::Matrix<2,1> & eta,
+                              LINALG::Matrix<3,1>       & x,
+                              LINALG::Matrix<3,1>       & normal,
+                              double                    & drs
+                              )
+        {
+          LINALG::Matrix<3,side_nen> xyze( side_xyze, true );
+          LINALG::Matrix<2,side_nen> deriv;
+          LINALG::Matrix<2,2> metrictensor;
+          DRT::UTILS::shape_function_2D( side_funct_, eta( 0 ), eta( 1 ), side_distype );
+          DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), side_distype );
+          DRT::UTILS::ComputeMetricTensorForBoundaryEle<side_distype>( xyze, deriv, metrictensor, drs, &normal );
+          x.Multiply( xyze, side_funct_ );
+        }
+
+        virtual void eivel(const DRT::Discretization &  cutdis,
+                           const std::string            state,
+                           const vector<int>&           lm)
+        {
+          // get state of the global vector
+          Teuchos::RCP<const Epetra_Vector> matrix_state = cutdis.GetState(state);
+          if(matrix_state == null)
+            dserror("Cannot get state vector %s", state.c_str());
+
+          // extract local values of the global vectors
+          std::vector<double> mymatrix(lm.size());
+          DRT::UTILS::ExtractMyValues(*matrix_state,mymatrix,lm);
+
+          for (int inode=0; inode<side_nen; ++inode)  // number of nodes
+          {
+            for(int idim=0; idim<3; ++idim) // number of dimensions
+            {
+              (eivel_)(idim,inode) = mymatrix[idim+(inode*3)];
+            }
+          }
+        }
+
+        virtual void buildCouplingMatrices(LINALG::Matrix<3,1>       & normal,
+                                            const double                fac,
+                                            LINALG::Matrix<nen,1>     & funct,
+                                            LINALG::BlockMatrix<LINALG::Matrix<nen,  1>,6,1> &  rhs
+                                            )
+        {
+          LINALG::Matrix<nen,side_nen> bKi_ss;
+          LINALG::Matrix<side_nen,nen> bKiT_ss;
+
+          // interface velocity vector in gausspoint
+          LINALG::Matrix<3,1> ivelint;
+
+          const unsigned Sigmaxx = 0;
+          const unsigned Sigmaxy = 1;
+          const unsigned Sigmaxz = 2;
+          const unsigned Sigmayx = 1;
+          const unsigned Sigmayy = 3;
+          const unsigned Sigmayz = 4;
+          const unsigned Sigmazx = 2;
+          const unsigned Sigmazy = 4;
+          const unsigned Sigmazz = 5;
+
+          const unsigned Velxi = 0;
+          const unsigned Velyi = 1;
+          const unsigned Velzi = 2;
+
+          // get velocity at integration point
+          // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+          ivelint.Multiply(eivel_,side_funct_);
+
+          for(int i=0;i<nen;++i)
+          {
+            for(int j=0;j<side_nen;++j)
+            {
+              bKi_ss(i,j) = funct(i)*side_funct_(j);
+            }
+          }
+
+          // G_sui
+          BK_sui_( Sigmaxx, Velxi )->Update( fac*normal(0), bKi_ss, 1.0 );
+          BK_sui_( Sigmaxy, Velxi )->Update( fac*normal(1), bKi_ss, 1.0 );
+          BK_sui_( Sigmaxz, Velxi )->Update( fac*normal(2), bKi_ss, 1.0 );
+          BK_sui_( Sigmayx, Velyi )->Update( fac*normal(0), bKi_ss, 1.0 );
+          BK_sui_( Sigmayy, Velyi )->Update( fac*normal(1), bKi_ss, 1.0 );
+          BK_sui_( Sigmayz, Velyi )->Update( fac*normal(2), bKi_ss, 1.0 );
+          BK_sui_( Sigmazx, Velzi )->Update( fac*normal(0), bKi_ss, 1.0 );
+          BK_sui_( Sigmazy, Velzi )->Update( fac*normal(1), bKi_ss, 1.0 );
+          BK_sui_( Sigmazz, Velzi )->Update( fac*normal(2), bKi_ss, 1.0 );
+
+
+          rhs( Sigmaxx, 0 )->Update( -fac*normal(0)*ivelint(0), funct, 1.0 );
+          rhs( Sigmaxy, 0 )->Update( -fac*normal(1)*ivelint(0), funct, 1.0 );
+          rhs( Sigmaxz, 0 )->Update( -fac*normal(2)*ivelint(0), funct, 1.0 );
+          rhs( Sigmayx, 0 )->Update( -fac*normal(0)*ivelint(1), funct, 1.0 );
+          rhs( Sigmayy, 0 )->Update( -fac*normal(1)*ivelint(1), funct, 1.0 );
+          rhs( Sigmayz, 0 )->Update( -fac*normal(2)*ivelint(1), funct, 1.0 );
+          rhs( Sigmazx, 0 )->Update( -fac*normal(0)*ivelint(2), funct, 1.0 );
+          rhs( Sigmazy, 0 )->Update( -fac*normal(1)*ivelint(2), funct, 1.0 );
+          rhs( Sigmazz, 0 )->Update( -fac*normal(2)*ivelint(2), funct, 1.0 );
+
+
+          bKiT_ss.UpdateT(bKi_ss);
+
+          // G_uis
+          BK_uis_( Velxi, Sigmaxx )->Update( fac*normal(0), bKiT_ss, 1.0 );
+          BK_uis_( Velxi, Sigmaxy )->Update( fac*normal(1), bKiT_ss, 1.0 );
+          BK_uis_( Velxi, Sigmaxz )->Update( fac*normal(2), bKiT_ss, 1.0 );
+          BK_uis_( Velyi, Sigmayx )->Update( fac*normal(0), bKiT_ss, 1.0 );
+          BK_uis_( Velyi, Sigmayy )->Update( fac*normal(1), bKiT_ss, 1.0 );
+          BK_uis_( Velyi, Sigmayz )->Update( fac*normal(2), bKiT_ss, 1.0 );
+          BK_uis_( Velzi, Sigmazx )->Update( fac*normal(0), bKiT_ss, 1.0 );
+          BK_uis_( Velzi, Sigmazy )->Update( fac*normal(1), bKiT_ss, 1.0 );
+          BK_uis_( Velzi, Sigmazz )->Update( fac*normal(2), bKiT_ss, 1.0 );
+
+        }
+
+        virtual void buildFinalCouplingMatrices(LINALG::BlockMatrix<LINALG::Matrix<nen,nen>,6,6> &  BinvK_ss,
+                                                LINALG::BlockMatrix<LINALG::Matrix<nen,nen>,4,6> &  K_iK,
+                                                LINALG::BlockMatrix<LINALG::Matrix<nen,nen>,6,4> &  K_su,
+                                                LINALG::BlockMatrix<LINALG::Matrix<nen,  1>,6,1> &  rhs
+                                               )
+        {
+          LINALG::BlockMatrix<LINALG::Matrix<side_nen,nen>,3,6>      BKi_iK;    //G_uis*Inv(K_ss)
+          LINALG::BlockMatrix<LINALG::Matrix<nen,side_nen>,4,3>      BCuui;    //K_iK*G_sui
+          LINALG::BlockMatrix<LINALG::Matrix<side_nen,nen>,3,4>      BCuiu;    //Ki_iK*K_su
+          LINALG::BlockMatrix<LINALG::Matrix<side_nen,side_nen>,3,3> BCuiui;   //Ki_iK*G_sui
+          LINALG::BlockMatrix<LINALG::Matrix<side_nen, 1>,3,1>       extrhsi;  //G_uis*Inv(K_ss)*rhs
+
+
+
+           BCuui  .Multiply( K_iK, BK_sui_ );
+           BKi_iK  .Multiply( BK_uis_, BinvK_ss );
+           BCuiu  .Multiply( BKi_iK, K_su );
+           BCuiui .Multiply( BKi_iK, BK_sui_ );
+           extrhsi.Multiply( BKi_iK, rhs );
+
+          // build C_uiu
+           for ( unsigned icb=0; icb<4; ++icb )
+           {
+             for ( unsigned irb=0; irb<3; ++irb )
+             {
+               if ( BCuiu.IsUsed( irb, icb ) )
+               {
+                 LINALG::Matrix<side_nen,nen> & local_BCuiu = *BCuiu( irb, icb );
+                 for ( int ic=0; ic<nen; ++ic )
+                 {
+                   int c = ( 4 )*ic + icb;
+                   for ( int ir=0; ir<side_nen; ++ir )
+                   {
+                     int r = ( 3 )*ir + irb;
+                     C_uiu_( r, c ) -= local_BCuiu( ir, ic );
+                   }
+                 }
+               }
+             }
+           }
+
+           // build C_uui
+           for ( unsigned icb=0; icb<3; ++icb )
+           {
+             for ( unsigned irb=0; irb<4; ++irb )
+             {
+               if ( BCuui.IsUsed( irb, icb ) )
+               {
+                 LINALG::Matrix<nen,side_nen> & local_BCuui = *BCuui( irb, icb );
+                 for ( int ic=0; ic<side_nen; ++ic )
+                 {
+                   int c = ( 3 )*ic + icb;
+                   for ( int ir=0; ir<nen; ++ir )
+                   {
+                     int r = ( 4 )*ir + irb;
+                     C_uui_( r, c ) -= local_BCuui( ir, ic );
+                   }
+                 }
+               }
+             }
+           }
+
+
+           // build C_ui (right hand side)
+           for ( unsigned irb=0; irb<3; ++irb )
+           {
+             if ( extrhsi.IsUsed( irb, 0 ) )
+             {
+               LINALG::Matrix<side_nen,1> & local_extrhsi = *extrhsi( irb, 0 );
+               for ( int ir=0; ir<side_nen; ++ir )
+               {
+                 unsigned r = 3*ir + irb;
+                 rhC_ui_( r, 0 ) -= local_extrhsi( ir, 0 );
+               }
+             }
+           }
+
+           // build K_sui_
+           // icb und irb: Richtungen
+            for ( unsigned icb=0; icb<3; ++icb )
+            {
+              for ( unsigned irb=0; irb<6; ++irb )
+              {
+                if ( BK_sui_.IsUsed( irb, icb ) )
+                {
+                  LINALG::Matrix<nen,side_nen> & local_BK_sui = *BK_sui_( irb, icb );
+                  for ( int ic=0; ic<side_nen; ++ic )
+                  {
+                    int c = ( 3 )*ic + icb;
+                    for ( int ir=0; ir<nen; ++ir )
+                    {
+                      int r = ( 6 )*ir + irb;
+                      K_sui_( r, c ) = local_BK_sui( ir, ic );
+                    }
+                  }
+                }
+              }
+            }
+
+            // build K_uis_
+            for ( unsigned icb=0; icb<6; ++icb )
+            {
+              for ( unsigned irb=0; irb<3; ++irb )
+              {
+                if ( BK_uis_.IsUsed( irb, icb ) )
+                {
+                  LINALG::Matrix<side_nen,nen> & local_BK_uis = *BK_uis_( irb, icb );
+                  for ( int ic=0; ic<nen; ++ic )
+                  {
+                    int c = ( 6 )*ic + icb;
+                    for ( int ir=0; ir<side_nen; ++ir )
+                    {
+                      int r = ( 3 )*ir + irb;
+                      K_uis_( r, c ) = local_BK_uis( ir, ic );
+                    }
+                  }
+                }
+              }
+           }
+
+        }
+
+        LINALG::BlockMatrix<LINALG::Matrix<nen,side_nen>,6,3> BK_sui_;
+        LINALG::BlockMatrix<LINALG::Matrix<nen,   1>,6,1>     rhsi_;
+        LINALG::BlockMatrix<LINALG::Matrix<side_nen,nen>,3,6> BK_uis_;
+
+        LINALG::Matrix<3*side_nen,4*nen>       C_uiu_;
+        LINALG::Matrix<4*nen,3*side_nen>       C_uui_;
+        LINALG::Matrix<3*side_nen,1>           rhC_ui_;
+        LINALG::Matrix<side_nen,1>             side_funct_;
+        LINALG::Matrix<6*nen,3*side_nen>       K_sui_;
+        LINALG::Matrix<3*side_nen,6*nen>       K_uis_;
+        LINALG::Matrix<3,side_nen>             eivel_;
+      };
+
+      template<DRT::Element::DiscretizationType distype>
+      Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(DRT::Element * side,
+                                                                         Epetra_SerialDenseMatrix &  C_uiu,
+                                                                         Epetra_SerialDenseMatrix &  C_uui,
+                                                                         Epetra_SerialDenseMatrix &  rhC_ui,
+                                                                         Epetra_SerialDenseMatrix &  Gsui,
+                                                                         Epetra_SerialDenseMatrix &  Guis
+                                                                         )
+      {
+        SideInterface * si = NULL;
+        switch ( side->Shape() )
+        {
+         case DRT::Element::tri3:
+         {
+           typedef SideImpl<distype,DRT::Element::tri3> SideImplType;
+           si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis);
+           break;
+         }
+         case DRT::Element::tri6:
+         {
+           typedef SideImpl<distype,DRT::Element::tri6> SideImplType;
+           si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis);
+           break;
+         }
+         case DRT::Element::quad4:
+         {
+           typedef SideImpl<distype,DRT::Element::quad4> SideImplType;
+//            C_uiu->Reshape(SideImplType::side_nen*3,SideImplType::nen*4);
+//            C_uui->Reshape(SideImplType::nen*4,SideImplType::side_nen*3);
+//            C_uiui->Reshape(SideImplType::side_nen*3,SideImplType::side_nen*3);
+           si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis);
+           break;
+         }
+         case DRT::Element::quad8:
+         {
+           typedef SideImpl<distype,DRT::Element::quad8> SideImplType;
+           si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis);
+           break;
+         }
+         case DRT::Element::quad9:
+         {
+           typedef SideImpl<distype,DRT::Element::quad9> SideImplType;
+           si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis);
+           break;
+         }
+        default:
+          dserror( "unsupported side shape %d", side->Shape() );
+        }
+        return Teuchos::rcp(si);
+      }
+    }
 
 /*--------------------------------------------------------------------------------
  *--------------------------------------------------------------------------------*/
@@ -6916,14 +7288,17 @@ void Fluid3Impl<distype>::ElementXfemInterface(
   DRT::Discretization & cutdis,
   const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
   const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
   Teuchos::ParameterList&    params,
   Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
   )
 {
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
+
 
   // get node coordinates
   GEO::fillInitialPositionArray< distype, nsd_, LINALG::Matrix<nsd_,nen_> >( ele, xyze_ );
@@ -6960,10 +7335,15 @@ void Fluid3Impl<distype>::ElementXfemInterface(
   LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,6,6>        invK_ss;
   LINALG::BlockMatrix<LINALG::Matrix<nen_,   1>,6,1>        rhs;
 
+
   const unsigned Velx = 0;
   const unsigned Vely = 1;
   const unsigned Velz = 2;
   const unsigned Pres = 3;
+
+  const unsigned Velxi = 0;
+  const unsigned Velyi = 1;
+  const unsigned Velzi = 2;
 
   const unsigned Sigmaxx = 0;
   const unsigned Sigmaxy = 1;
@@ -7030,6 +7410,7 @@ void Fluid3Impl<distype>::ElementXfemInterface(
 
     bK_ss.MultiplyNT( funct_, funct_ );
 
+
     conv_x.MultiplyNT( funct_, dx );
     conv_y.MultiplyNT( funct_, dy );
     conv_z.MultiplyNT( funct_, dz );
@@ -7089,11 +7470,57 @@ void Fluid3Impl<distype>::ElementXfemInterface(
 
   // integrate surface
 
-  //DRT::Element::LocationArray cutla( 1 );
+  DRT::Element::LocationArray cutla( 1 );
 
   LINALG::Matrix<3,1> normal;
-  LINALG::Matrix<3,1> x;
+  LINALG::Matrix<3,1> x_side;
 
+  bool fluidfluidcoupling = false;
+
+  std::map<int, Teuchos::RCP<XFLUID::SideInterface<distype> > > side_impl;
+  Teuchos::RCP<XFLUID::SideInterface<distype> > si;
+
+  // find all the intersecting elements of actele
+  std::set<int> begids;
+  for (std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
+       bc!=bcells.end(); ++bc )
+  {
+    int sid = bc->first;
+    begids.insert(sid);
+  }
+
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > Cuiui_coupling;
+
+  // lm vector of all intersecting elements
+  std::vector<int> patchelementslmv;
+  std::vector<int> patchelementslmowner;
+  for (std::set<int>::const_iterator bgid=begids.begin(); bgid!=begids.end(); ++bgid)
+  {
+    DRT::Element * side = cutdis.gElement(*bgid);
+    vector<int> patchlm;
+    vector<int> patchlmowner;
+    vector<int> patchlmstride;
+    side->LocationVector(cutdis, patchlm, patchlmowner, patchlmstride);
+
+    patchelementslmv.reserve( patchelementslmv.size() + patchlm.size());
+    patchelementslmv.insert(patchelementslmv.end(), patchlm.begin(), patchlm.end());
+
+    patchelementslmowner.reserve( patchelementslmowner.size() + patchlmowner.size());
+    patchelementslmowner.insert( patchelementslmowner.end(), patchlmowner.begin(), patchlmowner.end());
+
+    std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = Cuiui_coupling[*bgid];
+
+    Cuiui_matrices.resize(2);
+    Cuiui_matrices[0].Reshape(nen_*6,patchlm.size()); //Gsui
+    Cuiui_matrices[1].Reshape(patchlm.size(),nen_*6); //Guis
+  }
+
+  Epetra_SerialDenseMatrix Gsui(nen_*6,patchelementslmv.size());
+  Epetra_SerialDenseMatrix Guis(patchelementslmv.size(),nen_*6);
+  Epetra_SerialDenseMatrix InvKss(nen_*6,nen_*6);
+  Epetra_SerialDenseMatrix GuisInvKss(patchelementslmv.size(),nen_*6);
+
+  // map of side-element id and Guass points
   for ( std::map<int, std::vector<DRT::UTILS::GaussIntegration> >::const_iterator i=bintpoints.begin();
         i!=bintpoints.end();
         ++i )
@@ -7110,7 +7537,7 @@ void Fluid3Impl<distype>::ElementXfemInterface(
       dserror( "boundary cell integration rules mismatch" );
 
     DRT::Element * side = cutdis.gElement( sid );
-    //side->LocationVector(cutdis,cutla,false);
+    side->LocationVector(cutdis,cutla,false);
 
     const int numnodes = side->NumNode();
     DRT::Node ** nodes = side->Nodes();
@@ -7120,6 +7547,29 @@ void Fluid3Impl<distype>::ElementXfemInterface(
       const double * x = nodes[i]->X();
       std::copy( x, x+3, &side_xyze( 0, i ) );
     }
+
+    std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c = side_coupling.find( sid );
+
+    std::vector<Epetra_SerialDenseMatrix> & side_matrices = c->second;
+    Epetra_SerialDenseMatrix & C_uiu  = side_matrices[0];
+    Epetra_SerialDenseMatrix & C_uui  = side_matrices[1];
+    Epetra_SerialDenseMatrix & rhC_ui = side_matrices[2];
+
+    if ( side_matrices.size()==3 )
+      fluidfluidcoupling = true;
+
+    std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c2 = Cuiui_coupling.find( sid );
+    std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = c2->second;
+    Epetra_SerialDenseMatrix & eleGsui = Cuiui_matrices[0];
+    Epetra_SerialDenseMatrix & eleGuis = Cuiui_matrices[1];
+    Epetra_SerialDenseMatrix  eleGuisKssInv;
+
+    si = XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleGsui,eleGuis);
+    side_impl[sid] = si;
+
+    // get velocity at integration point of boundary dis
+    if ( fluidfluidcoupling )
+      si->eivel(cutdis,"ivelnp",cutla[0].lm_);
 
     for ( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=cutintpoints.begin();
           i!=cutintpoints.end();
@@ -7136,81 +7586,12 @@ void Fluid3Impl<distype>::ElementXfemInterface(
 
         double drs = 0;
 
-        switch ( side->Shape() )
-        {
-        case DRT::Element::tri3:
-        {
-          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
-          LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
-          LINALG::Matrix<numnodes,1> funct;
-          LINALG::Matrix<2,numnodes> deriv;
-          LINALG::Matrix<2,2> metrictensor;
-          DRT::UTILS::shape_function_2D( funct, eta( 0 ), eta( 1 ), DRT::Element::tri3 );
-          DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::tri3 );
-          DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::tri3>( xyze, deriv, metrictensor, drs, &normal );
-          x.Multiply( xyze, funct );
-          break;
-        }
-        case DRT::Element::tri6:
-        {
-          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri6>::numNodePerElement;
-          LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
-          LINALG::Matrix<numnodes,1> funct;
-          LINALG::Matrix<2,numnodes> deriv;
-          LINALG::Matrix<2,2> metrictensor;
-          DRT::UTILS::shape_function_2D( funct, eta( 0 ), eta( 1 ), DRT::Element::tri6 );
-          DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::tri6 );
-          DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::tri6>( xyze, deriv, metrictensor, drs, &normal );
-          x.Multiply( xyze, funct );
-          break;
-        }
-        case DRT::Element::quad4:
-        {
-          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
-          LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
-          LINALG::Matrix<numnodes,1> funct;
-          LINALG::Matrix<2,numnodes> deriv;
-          LINALG::Matrix<2,2> metrictensor;
-          DRT::UTILS::shape_function_2D( funct, eta( 0 ), eta( 1 ), DRT::Element::quad4 );
-          DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::quad4 );
-          DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad4>( xyze, deriv, metrictensor, drs, &normal );
-          x.Multiply( xyze, funct );
-          break;
-        }
-        case DRT::Element::quad8:
-        {
-          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement;
-          LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
-          LINALG::Matrix<numnodes,1> funct;
-          LINALG::Matrix<2,numnodes> deriv;
-          LINALG::Matrix<2,2> metrictensor;
-          DRT::UTILS::shape_function_2D( funct, eta( 0 ), eta( 1 ), DRT::Element::quad8 );
-          DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::quad8 );
-          DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad8>( xyze, deriv, metrictensor, drs, &normal );
-          x.Multiply( xyze, funct );
-          break;
-        }
-        case DRT::Element::quad9:
-        {
-          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement;
-          LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
-          LINALG::Matrix<numnodes,1> funct;
-          LINALG::Matrix<2,numnodes> deriv;
-          LINALG::Matrix<2,2> metrictensor;
-          DRT::UTILS::shape_function_2D( funct, eta( 0 ), eta( 1 ), DRT::Element::quad9 );
-          DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::quad9 );
-          DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad9>( xyze, deriv, metrictensor, drs, &normal );
-          x.Multiply( xyze, funct );
-          break;
-        }
-        default:
-          dserror( "unsupported side shape %d", side->Shape() );
-        }
+        si->Evaluate(side_xyze,eta,x_side,normal,drs);
 
         const double fac = drs*iquad.Weight();
 
         // find element local position of gauss point at interface
-        GEO::CUT::Position<distype> pos( xyze_, x );
+        GEO::CUT::Position<distype> pos( xyze_, x_side );
         pos.Compute();
         const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
 
@@ -7266,7 +7647,6 @@ void Fluid3Impl<distype>::ElementXfemInterface(
                \               */
 
         // G_us
-
         K_us( Velx, Sigmaxx )->Update( -fac*normal(0), bK_ss, 1.0 );
         K_us( Velx, Sigmaxy )->Update( -fac*normal(1), bK_ss, 1.0 );
         K_us( Velx, Sigmaxz )->Update( -fac*normal(2), bK_ss, 1.0 );
@@ -7276,7 +7656,6 @@ void Fluid3Impl<distype>::ElementXfemInterface(
         K_us( Velz, Sigmazx )->Update( -fac*normal(0), bK_ss, 1.0 );
         K_us( Velz, Sigmazy )->Update( -fac*normal(1), bK_ss, 1.0 );
         K_us( Velz, Sigmazz )->Update( -fac*normal(2), bK_ss, 1.0 );
-
 
 #if 0
               /*                      \
@@ -7321,6 +7700,9 @@ void Fluid3Impl<distype>::ElementXfemInterface(
           patchassembler.template Matrix<Sigmazz,Dispziface>(*couplmats.GNsdi_uncond, shp_tau.d0, -facvelz, normalderiv.dnzdz);
         }
 #endif
+
+        if ( fluidfluidcoupling )
+          si->buildCouplingMatrices(normal,fac,funct_,rhs);
 
 //         if (monolithic_FSI)
 //         {
@@ -7379,7 +7761,8 @@ void Fluid3Impl<distype>::ElementXfemInterface(
         patchassembler.template Vector<Velziface>(*(couplmats.rhsui_uncond), shp_iface_d0, -fac*disctau_times_nf(2));
 
         // here the interface force is integrated
-        // this is done using test shape functions of the boundary mesh
+        // this is done using test
+        // shape functions of the boundary mesh
         // hence, we can't use the local assembler here
         for (size_t inode = 0; inode < numnode_boundary; ++inode)
         {
@@ -7400,41 +7783,41 @@ void Fluid3Impl<distype>::ElementXfemInterface(
 
   // DEBUG
 
-  LINALG::Matrix<nen_,nen_> two_invbK_ss( true );
-  two_invbK_ss.Update( 2, invbK_ss, 0.0 );
-  LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,6,6> K_ss;
+   LINALG::Matrix<nen_,nen_> two_invbK_ss( true );
+   two_invbK_ss.Update( 2, invbK_ss, 0.0 );
+   LINALG::BlockMatrix<LINALG::Matrix<nen_,nen_>,6,6> K_ss;
 
-  K_ss.AddView( Sigmaxx, Sigmaxx,     invbK_ss );
-  K_ss.AddView( Sigmaxy, Sigmaxy, two_invbK_ss );
-  K_ss.AddView( Sigmaxz, Sigmaxz, two_invbK_ss );
-  K_ss.AddView( Sigmayy, Sigmayy,     invbK_ss );
-  K_ss.AddView( Sigmayz, Sigmayz, two_invbK_ss );
-  K_ss.AddView( Sigmazz, Sigmazz,     invbK_ss );
+   K_ss.AddView( Sigmaxx, Sigmaxx,     invbK_ss );
+   K_ss.AddView( Sigmaxy, Sigmaxy, two_invbK_ss );
+   K_ss.AddView( Sigmaxz, Sigmaxz, two_invbK_ss );
+   K_ss.AddView( Sigmayy, Sigmayy,     invbK_ss );
+   K_ss.AddView( Sigmayz, Sigmayz, two_invbK_ss );
+   K_ss.AddView( Sigmazz, Sigmazz,     invbK_ss );
 
-  LINALG::Matrix<4*nen_, 6*nen_> real_K_us( true );
-  LINALG::Matrix<6*nen_, 4*nen_> real_K_su( true );
-  LINALG::Matrix<6*nen_, 6*nen_> real_K_ss( true );
+   LINALG::Matrix<4*nen_, 6*nen_> real_K_us( true );
+   LINALG::Matrix<6*nen_, 4*nen_> real_K_su( true );
+   LINALG::Matrix<6*nen_, 6*nen_> real_K_ss( true );
 
-  K_us.template AssembleTo<4*nen_, 6*nen_>( real_K_us, 1. );
-  K_su.template AssembleTo<6*nen_, 4*nen_>( real_K_su, 1. );
-  K_ss.template AssembleTo<6*nen_, 6*nen_>( real_K_ss, 1. );
+   K_us.template AssembleTo<4*nen_, 6*nen_>( real_K_us, 1. );
+   K_su.template AssembleTo<6*nen_, 4*nen_>( real_K_su, 1. );
+   K_ss.template AssembleTo<6*nen_, 6*nen_>( real_K_ss, 1. );
 
-  std::cout << real_K_us << "*\n" << real_K_su << "*\n" << real_K_ss << "***\n";
+   std::cout << real_K_us << "*\n" << real_K_su << "*\n" << real_K_ss << "***\n";
 
-  LINALG::FixedSizeSerialDenseSolver<6*nen_,6*nen_> solver;
-  solver.SetMatrix( real_K_ss );
-  solver.Invert();
+   LINALG::FixedSizeSerialDenseSolver<6*nen_,6*nen_> solver;
+   solver.SetMatrix( real_K_ss );
+   solver.Invert();
 
-  LINALG::Matrix<(nsd_+1)*nen_,6*nen_> K_iK( true );
-  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> extK( true );
-  //LINALG::Matrix<(nsd_+1)*nen_,   1> extrhs;
+   LINALG::Matrix<(nsd_+1)*nen_,6*nen_> K_iK( true );
+   LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> extK( true );
+   //LINALG::Matrix<(nsd_+1)*nen_,   1> extrhs;
 
-  K_iK  .Multiply( real_K_us, real_K_ss );
-  extK  .Multiply( K_iK, real_K_su );
-  //extrhs.Multiply( K_iK, rhs );
+   K_iK  .Multiply( real_K_us, real_K_ss );
+   extK  .Multiply( K_iK, real_K_su );
+   //extrhs.Multiply( K_iK, rhs );
 
-  elemat1.Update( -1, extK, 1 );
-  //elevec1.Update( -1, extrhs, 1 );
+   elemat1.Update( -1, extK, 1 );
+   //elevec1.Update( -1, extrhs, 1 );
 
 #else
 
@@ -7493,6 +7876,66 @@ void Fluid3Impl<distype>::ElementXfemInterface(
     }
   }
 
+  if ( fluidfluidcoupling )
+  {
+    // build fluid-fluid matrices
+    for (typename std::map<int, Teuchos::RCP<XFLUID::SideInterface<distype> > >::iterator i=side_impl.begin();  i!=side_impl.end(); ++i)
+    {
+      XFLUID::SideInterface<distype> * si = &*i->second;
+      si->buildFinalCouplingMatrices(invK_ss,K_iK,K_su,rhs);
+    }
+
+    // build InvKss
+    for ( unsigned icb=0; icb<6; ++icb )
+    {
+      for ( unsigned irb=0; irb<6; ++irb )
+      {
+        if ( invK_ss.IsUsed( irb, icb ) )
+        {
+          LINALG::Matrix<nen_,nen_> & local_invK_ss = *invK_ss( irb, icb );
+          for ( int ic=0; ic<nen_; ++ic )
+          {
+            int c = ( 6 )*ic + icb;
+            for ( int ir=0; ir<nen_; ++ir )
+            {
+              int r = ( 6 )*ir + irb;
+              InvKss( r, c ) -= local_invK_ss( ir, ic );
+            }
+          }
+        }
+      }
+    }
+
+   // build Gsui and Guis
+    int ipatchsizesbefore = 0;
+    for (std::map<int, std::vector<Epetra_SerialDenseMatrix> >::const_iterator m=Cuiui_coupling.begin();
+         m!=Cuiui_coupling.end(); ++m)
+    {
+      int bid = m->first;
+      std::vector<Epetra_SerialDenseMatrix> & Cuiui_mats = Cuiui_coupling[bid];
+      // assemble Gsui
+      for ( unsigned icb=0; icb<Cuiui_mats[0].N(); ++icb )
+      {
+        for ( unsigned irb=0; irb<6*nen_; ++irb )
+        {
+          Gsui(irb,icb+ipatchsizesbefore) = Cuiui_mats[0](irb,icb);
+        }
+      }
+      // assemble Guis
+      for ( unsigned icb=0; icb<6*nen_; ++icb )
+      {
+        for ( unsigned irb=0; irb<Cuiui_mats[1].M(); ++irb )
+        {
+        Guis(irb+ipatchsizesbefore,icb) = Cuiui_mats[1](irb,icb);
+        }
+      }
+      ipatchsizesbefore += Cuiui_mats[0].N();
+    }
+
+    GuisInvKss.Multiply('N','N',1.0,Guis,InvKss,1.0);
+    Cuiui.Multiply('N','N',1.0,GuisInvKss,Gsui,1.0);
+  }
+
 #endif
 
 //   std::cout << elemat1;
@@ -7512,9 +7955,12 @@ void Fluid3Impl<DRT::Element::tri3>::ElementXfemInterface(
   DRT::Discretization & cutdis,
   const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
   const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+  //std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
   Teuchos::ParameterList&    params,
   Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
   )
 {
   dserror( "distype not supported" );
@@ -7531,9 +7977,12 @@ void Fluid3Impl<DRT::Element::tri6>::ElementXfemInterface(
   DRT::Discretization & cutdis,
   const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
   const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+//  std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
   Teuchos::ParameterList&    params,
   Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
   )
 {
   dserror( "distype not supported" );
@@ -7550,9 +7999,12 @@ void Fluid3Impl<DRT::Element::quad4>::ElementXfemInterface(
   DRT::Discretization & cutdis,
   const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
   const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+//  std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
   Teuchos::ParameterList&    params,
   Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
   )
 {
   dserror( "distype not supported" );
@@ -7569,9 +8021,12 @@ void Fluid3Impl<DRT::Element::quad8>::ElementXfemInterface(
   DRT::Discretization & cutdis,
   const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
   const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+  //std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
   Teuchos::ParameterList&    params,
   Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
   )
 {
   dserror( "distype not supported" );
@@ -7588,9 +8043,12 @@ void Fluid3Impl<DRT::Element::quad9>::ElementXfemInterface(
   DRT::Discretization & cutdis,
   const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
   const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+  //std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
   Teuchos::ParameterList&    params,
   Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
   )
 {
   dserror( "distype not supported" );
@@ -7607,9 +8065,12 @@ void Fluid3Impl<DRT::Element::nurbs9>::ElementXfemInterface(
   DRT::Discretization & cutdis,
   const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
   const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+//  std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
   Teuchos::ParameterList&    params,
   Epetra_SerialDenseMatrix&  elemat1_epetra,
-  Epetra_SerialDenseVector&  elevec1_epetra
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
   )
 {
   dserror( "distype not supported" );

@@ -77,22 +77,20 @@ namespace FLD
 
       explicit XFluidFluidState( XFluidFluid & xfluid );
 
-      void Evaluate( Teuchos::ParameterList & eleparams,
-                     DRT::Discretization & discret,
-                     DRT::Discretization & cutdiscret,
-                     int itnum );
 
       void EvaluateFluidFluid( Teuchos::ParameterList & eleparams,
-                               DRT::Discretization & discret,
-                               DRT::Discretization & cutdiscret,
-                               DRT::Discretization & alediscret,
+                               DRT::Discretization    & bgdis,
+                               DRT::Discretization    & cutdiscret,
+                               DRT::Discretization    & embdis,
                                int itnum );
 
-      void GmshOutput( DRT::Discretization & discret,
+      void GmshOutput( DRT::Discretization & bgdis,
+                       DRT::Discretization & embdis,
                        DRT::Discretization & cutdiscret,
                        const std::string & name,
                        int count,
-                       Teuchos::RCP<Epetra_Vector> vel );
+                       Teuchos::RCP<Epetra_Vector> vel,
+                       Teuchos::RCP<Epetra_Vector> alevel);
 
       /// (standard) system matrix
       Teuchos::RCP<LINALG::SparseOperator> sysmat_;
@@ -196,6 +194,17 @@ namespace FLD
       // Extractor used for splitting fluid and ale_fluid
       FLD::UTILS::FluidXFluidMapExtractor fluidfluidsplitter_;
 
+      // fluid-fluid Coupling matrices
+      Teuchos::RCP<LINALG::SparseMatrix> Cuiu_;
+      Teuchos::RCP<LINALG::SparseMatrix> Cuui_;
+      Teuchos::RCP<LINALG::SparseMatrix> Cuiui_;
+      Teuchos::RCP<Epetra_Vector>        rhC_ui_;
+
+      // dof-row maps
+      const Epetra_Map* fluiddofrowmap_;
+      const Epetra_Map* aledofrowmap_;
+      const Epetra_Map* boundarydofrowmap_;
+
       void GenAlphaIntermediateValues();
       void GenAlphaUpdateAcceleration();
 
@@ -230,14 +239,11 @@ namespace FLD
   public:
 
     XFluidFluid( Teuchos::RCP<DRT::Discretization>  actdis,
-            Teuchos::RCP<DRT::Discretization>  soliddis,
-            LINALG::Solver &                   solver,
-            const Teuchos::ParameterList &     params,
-            bool                               alefluid=false
+                 Teuchos::RCP<DRT::Discretization>  embdis,
+                 LINALG::Solver &                   solver,
+                 const Teuchos::ParameterList &     params,
+                 bool                               alefluid=false
       );
-
-    /// start time loop for startingalgo, normal problems and restarts
-    void Integrate();
 
     /// start time loop for startingalgo, normal problems and restarts
     /// of Fluid-Fluid problems
@@ -247,17 +253,12 @@ namespace FLD
     void TimeLoop();
 
     /// Solve stationary problem
-    void SolveStationaryProblem();
-
-    /// Solve stationary problem
     void SolveStationaryProblemFluidFluid();
 
     /// setup the variables to do a new time step
     void PrepareTimeStep();
 
     /// do nonlinear iteration, e.g. full Newton, Newton like or Fixpoint iteration
-    void NonlinearSolve();
-
     void NonlinearSolveFluidFluid();
 
     /// solve linearised fluid
@@ -344,8 +345,8 @@ namespace FLD
 
     //! @name general algorithm parameters
     //! fluid discretization
-    Teuchos::RCP<DRT::Discretization>      discret_;
-    Teuchos::RCP<DRT::Discretization>      soliddis_;
+    Teuchos::RCP<DRT::Discretization>      bgdis_;
+    Teuchos::RCP<DRT::Discretization>      embdis_;
     Teuchos::RCP<DRT::Discretization>      boundarydis_;
     LINALG::Solver&               solver_;
 //     //! project nullspace (useful for completely Dirichlet bounded problems)

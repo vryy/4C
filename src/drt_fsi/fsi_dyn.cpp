@@ -254,16 +254,24 @@ void fluid_fluid_drt()
   }
 
   // copy the conditions to the embedded fluid discretization
-  vector<DRT::Condition*> cond;
-  bgfluiddis->GetCondition("XFEMCoupling", cond);
-  for (std::size_t i=0; i<cond.size(); ++i)
-  {
-    // We use the same nodal ids and therefore we can just copy the
-    // conditions.
-    embfluiddis->SetCondition("XFEMCoupling", rcp(new DRT::Condition(*cond[i])));
-  }
+  vector<string>          conditions_to_copy;
+  conditions_to_copy.push_back("Dirichlet");
+  conditions_to_copy.push_back("XFEMCoupling");
 
-  // delete element and nodes
+  // copy selected conditions to the new discretization
+  for (vector<string>::const_iterator conditername = conditions_to_copy.begin();
+       conditername != conditions_to_copy.end(); ++conditername)
+ {
+     vector<DRT::Condition*> conds;
+     bgfluiddis->GetCondition(*conditername, conds);
+     for (unsigned i=0; i<conds.size(); ++i)
+     {
+       // We use the same nodal ids and therefore we can just copy the conditions.
+       embfluiddis->SetCondition(*conditername, rcp(new DRT::Condition(*conds[i])));
+     }
+   }
+
+  // delete elements and nodes
   for(int mv=0; mv<MovingFluideleGIDs.size(); ++mv)
     bgfluiddis->DeleteElement(MovingFluideleGIDs.at(mv));
 

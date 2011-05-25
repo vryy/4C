@@ -237,7 +237,9 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
               std::map<int, std::vector<DRT::UTILS::GaussIntegration> > bintpoints;
               e->BoundaryCellGaussPoints( wizard_.CutWizard().Mesh(), 0, bcells, bintpoints );
 
-              // all boundary cells that belong to one cut element
+              // needed for fluid-fluid Coupling
+              std::map<int, std::vector<Epetra_SerialDenseMatrix> >  side_coupling;
+              Epetra_SerialDenseMatrix  Cuiui(1,1);
 
               impl->ElementXfemInterface( ele,
                                           discret,
@@ -246,9 +248,11 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                           cutdiscret,
                                           bcells,
                                           bintpoints,
+                                          side_coupling,
                                           eleparams,
                                           strategy.Elematrix1(),
-                                          strategy.Elevector1() );
+                                          strategy.Elevector1(),
+                                          Cuiui);
             }
 
             int eid = actele->Id();
