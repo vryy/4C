@@ -105,7 +105,7 @@ public:
 
   virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
 
-  void CreateMissingLines( Creator & creator, Element * element );
+  virtual void CreateMissingLines( Creator & creator, Element * element );
 
   void Print();
 

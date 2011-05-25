@@ -49,6 +49,7 @@ public:
 
   virtual bool FindAmbiguousCutLines( Mesh & mesh, Element * element, Side & side, const std::set<Point*> & cut );
 
+  virtual void CreateMissingLines( Creator & creator, Element * element );
 };
 
   }

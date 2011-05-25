@@ -83,8 +83,6 @@ private:
 
   void FillGraph( Element * element, Side * side, std::vector<Point*> & cycle, Strategy strategy );
 
-  void AddFacetPoints( std::vector<int> & cycle, std::set<int> & free, bool inner );
-
   Element * element_;
   Side * side_;
   Graph graph_;
