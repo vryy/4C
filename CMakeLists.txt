@@ -185,8 +185,10 @@ find_package(Trilinos REQUIRED)
 
 #find_package(Blitz)
 
-set(Boost_USE_STATIC_LIBS ON) 
-set(Boost_USE_MULTITHREAD OFF) 
+#set(Boost_USE_STATIC_LIBS ON) 
+#set(Boost_DETAILED_FAILURE_MSG ON)
+#set(Boost_USE_MULTITHREAD OFF) 
+#set(Boost_DEBUG ON)
 #FIND_PACKAGE( Boost COMPONENTS date_time filesystem iostreams program_options )
 find_package( Boost COMPONENTS graph program_options )
 
@@ -196,6 +198,8 @@ if (Boost_FOUND)
     ${Boost_LIBRARIES}
     ${LIBRARIES}
     )
+else()
+ message(FATAL_ERROR ${Boost_ERROR_REASON})
 endif()
 
 # trilinos libraries
