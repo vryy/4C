@@ -213,7 +213,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   genalphaparams->set<int>("UZAWAALGO",DRT::INPUT::IntegralValue<INPAR::STR::ConSolveAlgo>(sdyn,"UZAWAALGO"));
 
   genalphaparams->set<bool>  ("io structural disp",DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_DISP"));
-  if(genprob.probtyp == prb_struct_ale || genprob.probtyp == prb_struct_multi || genprob.probtyp == prb_structure)
+  if(genprob.probtyp == prb_struct_ale || genprob.probtyp == prb_structure)
   {
     genalphaparams->set<int>   ("io disp every nstep",sdyn.get<int>("RESULTSEVRY"));
     genalphaparams->set<int>   ("io stress every nstep",prbdyn.get<int>("RESULTSEVRY"));
@@ -462,7 +462,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   sdyn->set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
   sdyn->set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
   sdyn->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
-  if(genprob.probtyp == prb_struct_ale || genprob.probtyp == prb_struct_multi || genprob.probtyp == prb_structure)
+  if(genprob.probtyp == prb_struct_ale || genprob.probtyp == prb_structure)
   {
     sdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
   }
@@ -515,22 +515,22 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
                                       actdis->Comm(),
                                       DRT::Problem::Instance()->ErrorFile()->Handle()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
-  
-  if (solver->Params().isSublist("Aztec Parameters") 
-      && 
+
+  if (solver->Params().isSublist("Aztec Parameters")
+      &&
       solver->Params().isSublist("ML Parameters")
       &&
-      DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(*sdyn,"STC_SCALING")!=INPAR::STR::stc_none) 
-    { 
+      DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(*sdyn,"STC_SCALING")!=INPAR::STR::stc_none)
+    {
       ParameterList& mllist = solver->Params().sublist("ML Parameters");
       RCP<vector<double> > ns = mllist.get<RCP<vector<double> > >("nullspace");
-      
+
       const int size=actdis->DofRowMap()->NumMyElements();
-      
+
       // extract the six nullspace vectors corresponding to the modes
       // trans x, trans y, trans z, rot x, rot y, rot z
       // Note: We assume 3d here!
-      
+
       Teuchos::RCP<Epetra_Vector> nsv1=
           rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[0])));
       Teuchos::RCP<Epetra_Vector> nsv2=
@@ -543,8 +543,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
           rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[4*size])));
       Teuchos::RCP<Epetra_Vector> nsv6=
           rcp(new Epetra_Vector(View,*(actdis->DofRowMap()),&((*ns)[5*size])));
-      
-     
+
+
       //prepare matrix for scaled thickness business of thin shell structures
       Teuchos::RCP<LINALG::SparseMatrix> stcinv=
         Teuchos::rcp(new LINALG::SparseMatrix(*actdis->DofRowMap(), 81, true, true));
@@ -561,7 +561,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
       actdis-> Evaluate(p, stcinv, Teuchos::null,  Teuchos::null, Teuchos::null, Teuchos::null);
 
       stcinv->Complete();
-      
+
       for (int lay = 2; lay <= sdyn->get<int>("STC_LAYER"); ++lay)
       {
         Teuchos::ParameterList pe;
@@ -578,9 +578,9 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
         stcinv = MLMultiply(*stcinv,*tmpstcmat,false,false,true);
       }
 
-      Teuchos::RCP<Epetra_Vector> temp = 
+      Teuchos::RCP<Epetra_Vector> temp =
           LINALG::CreateVector(*(actdis->DofRowMap()),false);
-      
+
       stcinv->Multiply(false,*nsv1,*temp);
       nsv1->Update(1.0,*temp,0.0);
       stcinv->Multiply(false,*nsv2,*temp);

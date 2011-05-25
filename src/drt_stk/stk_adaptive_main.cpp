@@ -30,20 +30,6 @@ void adaptive_main()
       }
       break;
 
-    case prb_struct_multi:
-    {
-      switch (genprob.timetyp)
-      {
-        case time_dynamic:
-          //break;
-        case time_static:
-          dserror("structural multi-scale algorithm only implemented for dynamic problems");
-        default:
-          dserror("Unspecified time handling");
-      }
-    }
-    break;
-
     case prb_fluid_pm:
     case prb_fluid:
     {

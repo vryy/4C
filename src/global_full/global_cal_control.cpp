@@ -60,21 +60,6 @@ void ntacal()
       }
       break;
 
-    case prb_struct_multi:
-    {
-      switch (genprob.timetyp)
-      {
-        case time_dynamic:
-          caldyn_drt();
-          break;
-        case time_static:
-          dserror("structural multi-scale algorithm only implemented for dynamic problems");
-        default:
-          dserror("Unspecified time handling");
-      }
-    }
-    break;
-
     case prb_fluid_pm:
     case prb_fluid:
       dyn_fluid_drt(genprob.restart);
@@ -149,7 +134,7 @@ void ntacal()
     case prb_struct_ale:
       stru_ale_dyn_drt(genprob.numsf,genprob.numaf,genprob.restart);
       break;
-      
+
     default:
       dserror("solution of unknown problemtyp %d requested", genprob.probtyp);
       break;
