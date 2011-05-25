@@ -140,7 +140,8 @@ bool GEO::CUT::IntegrationCellCreator::CreateTet4Cell( Mesh & mesh, VolumeCell *
     {
       std::vector<Point*> points;
       points.reserve( 4 );
-      std::copy( bot_points.begin(), bot_points.end(), std::back_inserter( points ) );
+      //std::copy( bot_points.begin(), bot_points.end(), std::back_inserter( points ) );
+      points.assign( bot_points.begin(), bot_points.end() );
       points.push_back( top_point );
 
       for ( int i=0; i<4; ++i )
@@ -165,7 +166,8 @@ bool GEO::CUT::IntegrationCellCreator::CreateTet4Cell( Mesh & mesh, VolumeCell *
     {
       std::vector<Point*> points;
       points.reserve( 4 );
-      std::copy( bot_points.rbegin(), bot_points.rend(), std::back_inserter( points ) );
+      //std::copy( bot_points.rbegin(), bot_points.rend(), std::back_inserter( points ) );
+      points.assign( bot_points.rbegin(), bot_points.rend() );
       points.push_back( top_point );
 
       for ( int i=0; i<4; ++i )
@@ -701,7 +703,8 @@ bool GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell( Mesh & mesh, VolumeCe
     {
       std::vector<Point*> points;
       points.reserve( 5 );
-      std::copy( bot_points.begin(), bot_points.end(), std::back_inserter( points ) );
+      //std::copy( bot_points.begin(), bot_points.end(), std::back_inserter( points ) );
+      points.assign( bot_points.begin(), bot_points.end() );
       points.push_back( top_point );
 
       for ( int i=0; i<4; ++i )
@@ -738,7 +741,8 @@ bool GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell( Mesh & mesh, VolumeCe
     {
       std::vector<Point*> points;
       points.reserve( 5 );
-      std::copy( bot_points.rbegin(), bot_points.rend(), std::back_inserter( points ) );
+      //std::copy( bot_points.rbegin(), bot_points.rend(), std::back_inserter( points ) );
+      points.assign( bot_points.rbegin(), bot_points.rend() );
       points.push_back( top_point );
 
       for ( int i=0; i<4; ++i )
@@ -947,7 +951,8 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
   std::vector<Point*> projected_points;
 
   inner_points.reserve( inner.size() );
-  std::copy( inner.begin(), inner.end(), std::back_inserter( inner_points ) );
+  //std::copy( inner.begin(), inner.end(), std::back_inserter( inner_points ) );
+  inner_points.assign( inner.begin(), inner.end() );
 
   // project along given axis to r
 
@@ -1002,7 +1007,8 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
       if ( r > 0 )
       {
         sidepos = 0;
-        std::copy( corner_points.begin(), corner_points.end(), std::back_inserter( points ) );
+        //std::copy( corner_points.begin(), corner_points.end(), std::back_inserter( points ) );
+        points.assign( corner_points.begin(), corner_points.end() );
       }
 
       for ( std::vector<Point*>::const_iterator i=corner_points.begin();
@@ -1026,7 +1032,8 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
       if ( r < 0 )
       {
         sidepos = 1;
-        std::copy( corner_points.begin(), corner_points.end(), std::back_inserter( points ) );
+        //std::copy( corner_points.begin(), corner_points.end(), std::back_inserter( points ) );
+        points.insert( points.end(), corner_points.begin(), corner_points.end() );
       }
 
       DRT::UTILS::shape_function_2D_deriv1( deriv, 0., 0., DRT::Element::tri3 );
@@ -1069,7 +1076,8 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
       if ( r > 0 )
       {
         sidepos = 0;
-        std::copy( corner_points.begin(), corner_points.end(), std::back_inserter( points ) );
+        //std::copy( corner_points.begin(), corner_points.end(), std::back_inserter( points ) );
+        points.assign( corner_points.begin(), corner_points.end() );
       }
 
       for ( std::vector<Point*>::const_iterator i=corner_points.begin();
@@ -1093,7 +1101,8 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
       if ( r < 0 )
       {
         sidepos = 5;
-        std::copy( corner_points.begin(), corner_points.end(), std::back_inserter( points ) );
+        //std::copy( corner_points.begin(), corner_points.end(), std::back_inserter( points ) );
+        points.insert( points.end(), corner_points.begin(), corner_points.end() );
       }
 
       DRT::UTILS::shape_function_2D_deriv1( deriv, 0., 0., DRT::Element::quad4 );
@@ -1141,7 +1150,8 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
 
       std::vector<Point*> cell_points;
       cell_points.reserve( points.size() );
-      std::copy( points.begin(), points.end(), std::back_inserter( cell_points ) );
+      //std::copy( points.begin(), points.end(), std::back_inserter( cell_points ) );
+      cell_points.assign( points.begin(), points.end() );
 
       // sort points that go into qhull to obtain the same result independent of
       // pointer values (compiler flags, code structure, memory usage, ...)
