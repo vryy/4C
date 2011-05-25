@@ -1244,7 +1244,6 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_facet.cpp
   src/drt_cut/cut_facetgraph.cpp
   src/drt_cut/cut_find_cycles.cpp
-  src/drt_cut/cut_graph.cpp
   src/drt_cut/cut_coloredgraph.cpp
   src/drt_cut/cut_integrationcell.cpp
   src/drt_cut/cut_integrationcellcreator.cpp
