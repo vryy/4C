@@ -18,6 +18,8 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "strtimint_ab2.H"
+#include "../drt_mortar/mortar_manager_base.H"
+#include "../drt_mortar/mortar_strategy_base.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -44,6 +46,7 @@ STR::TimIntAB2::TimIntAB2
   fextn_(Teuchos::null),
   fintn_(Teuchos::null),
   fviscn_(Teuchos::null),
+  fcmtn_(Teuchos::null),
   frimpn_(Teuchos::null)
 {
   // info to user : AB2 --- your federal highway "Warschauer Allee"
@@ -60,9 +63,10 @@ STR::TimIntAB2::TimIntAB2
   ResizeMStep();
 
   // allocate force vectors
-  fextn_ = LINALG::CreateVector(*dofrowmap_, true);
-  fintn_ = LINALG::CreateVector(*dofrowmap_, true);
+  fextn_  = LINALG::CreateVector(*dofrowmap_, true);
+  fintn_  = LINALG::CreateVector(*dofrowmap_, true);
   fviscn_ = LINALG::CreateVector(*dofrowmap_, true);
+  fcmtn_  = LINALG::CreateVector(*dofrowmap_, true);
   frimpn_ = LINALG::CreateVector(*dofrowmap_, true);
 
   // let it rain
@@ -88,6 +92,9 @@ void STR::TimIntAB2::ResizeMStep()
 /* Integrate step */
 void STR::TimIntAB2::IntegrateStep()
 {
+  // time this step
+  timer_->ResetStartTime();
+
   const double dt = (*dt_)[0];  // \f$\Delta t_{n}\f$
   const double dto = (*dt_)[-1];  // \f$\Delta t_{n-1}\f$
 
@@ -110,6 +117,9 @@ void STR::TimIntAB2::IntegrateStep()
   fextn_->PutScalar(0.0);
   ApplyForceExternal(timen_, disn_, veln_, fextn_);
 
+  // TIMING
+  //double dtcpu = timer_->WallTime();
+
   // initialise internal forces
   fintn_->PutScalar(0.0);
 
@@ -127,24 +137,44 @@ void STR::TimIntAB2::IntegrateStep()
                        fintn_);
   }
 
+  // TIMING
+  //if (!myrank_) cout << "\nT_internal: " << timer_->WallTime() -dtcpu << endl;
+
   // viscous forces due Rayleigh damping
   if (damping_ == INPAR::STR::damp_rayleigh)
   {
     damp_->Multiply(false, *veln_, *fviscn_);
   }
 
+  // TIMING
+  //dtcpu = timer_->WallTime();
+
+  // contact or meshtying forces
+  if (cmtman_ != Teuchos::null)
+  {
+    fcmtn_->PutScalar(0.0);
+    cmtman_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fcmtn_,false);
+  }
+
+  // TIMING
+  //if (!myrank_) cout << "T_contact:  " << timer_->WallTime() - dtcpu  << endl;
+  
   // determine time derivative of linear momentum vector,
   // ie \f$\dot{P} = M \dot{V}_{n=1}\f$
   frimpn_->Update(1.0, *fextn_, -1.0, *fintn_, 0.0);
-//   double some, more, less;
-//some = STR::AUX::CalculateVectorNorm(iternorm_, frimpn_);
-//more = STR::AUX::CalculateVectorNorm(iternorm_, fextn_);
-//less = STR::AUX::CalculateVectorNorm(iternorm_, fintn_);
-//   cout << some << " " << more << " " << less << endl;
+
   if (damping_ == INPAR::STR::damp_rayleigh)
   {
     frimpn_->Update(-1.0, *fviscn_, 1.0);
   }
+  
+  if (cmtman_ != Teuchos::null)
+  {
+    frimpn_->Update(1.0, *fcmtn_, 1.0);
+  }
+
+  // TIMING
+  //dtcpu = timer_->WallTime();
 
   // obtain new accelerations \f$A_{n+1}\f$
   {
@@ -158,6 +188,9 @@ void STR::TimIntAB2::IntegrateStep()
     // in TimInt::DetermineMassDampConsistAccel
     solver_->Solve(mass_->EpetraOperator(), accn_, frimpn_, false, true);
   }
+
+  // TIMING
+  //if (!myrank_) cout << "T_linsolve: " << timer_->WallTime() - dtcpu << endl;
 
   // apply Dirichlet BCs on accelerations
   ApplyDirichletBC(timen_, Teuchos::null, Teuchos::null, accn_, false);

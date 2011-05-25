@@ -22,6 +22,9 @@ Maintainer: Burkhard Bornemann
 #include "strtimint.H"
 #include "strtimint_expl.H"
 #include "../drt_constraint/constraint_manager.H"
+#include "../drt_mortar/mortar_manager_base.H"
+#include "../drt_mortar/mortar_strategy_base.H"
+#include "../drt_inpar/inpar_contact.H"
 
 /*----------------------------------------------------------------------*/
 /* constructor */
@@ -48,9 +51,14 @@ STR::TimIntExpl:: TimIntExpl
   if (conman_->HaveConstraint())
     dserror("Explicit TIS cannot handle constraints");
 
-  // explicit time integrators cannot handle contact / meshtying
+  // explicit time integrators can only handle penalty contact / meshtying
   if (cmtman_ != Teuchos::null)
-    dserror("Explicit TIS cannot handle contact / meshtying");
+  {
+    INPAR::CONTACT::SolvingStrategy soltype =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
+    if (soltype != INPAR::CONTACT::solution_penalty)
+      dserror("Explicit TIS can only handle penalty contact / meshtying");
+  }
 
   // cannot handle rotated DOFs
   if (locsysman_ != Teuchos::null)
@@ -91,8 +99,9 @@ void STR::TimIntExpl::PrintStepText
           " | nstep %6d"
           " | time %-14.8E"
           " | dt %-14.8E"
-          " | numiter %3d\n",
-          step_, stepmax_, (*time_)[0], (*dt_)[0], 0);
+          " | numiter %3d"
+          " | wct %-14.8E\n",
+          step_, stepmax_, (*time_)[0], (*dt_)[0], 0, timer_->ElapsedTime());
   // print a beautiful line made exactly of 80 dashes
   fprintf(ofile,
           "--------------------------------------------------------------"

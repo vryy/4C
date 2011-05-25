@@ -154,12 +154,14 @@ namespace STR
                                          //!< \f$F_{int;n+1}\f$
     Teuchos::RCP<Epetra_Vector> fintn_;  //!< internal force
                                          //!< \f$F_{int;n+1}\f$
-    Teuchos::RCP<Epetra_Vector> fviscn_;  //!< Rayleigh viscous forces
-                                          //!< \f$C \cdot V_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> frimpn_;  //!< time derivative of
-                                          //!< linear momentum
-                                          //!< (temporal rate of impulse)
-                                          //!< \f$\dot{P}_{n+1} = M \cdot \dot{V}_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> fviscn_; //!< Rayleigh viscous forces
+                                         //!< \f$C \cdot V_{n+1}\f$
+    Teuchos::RCP<Epetra_Vector> fcmtn_;  //!< contact or meshtying forces
+                                         //!< \f$F_{cmt;n+1}\f$
+    Teuchos::RCP<Epetra_Vector> frimpn_; //!< time derivative of
+                                         //!< linear momentum
+                                         //!< (temporal rate of impulse)
+                                         //!< \f$\dot{P}_{n+1} = M \cdot \dot{V}_{n+1}\f$
     //@}
 
   };  // class TimIntAB2
