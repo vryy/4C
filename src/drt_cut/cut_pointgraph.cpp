@@ -345,8 +345,6 @@ bool FindCycles( graph_t & g, std::vector<Point*> & cycle, std::map<vertex_t, LI
   face_visitor vis( name_map, cycles );
   boost::planar_face_traversal( g, &embedding[0], vis );
 
-//   std::vector<std::vector<Point*> > backup = cycles;
-
   bool save_first = cycles.size()==2;
 
   int erase_count = 0;
@@ -426,86 +424,94 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Side * side, std::vector<Point*> &
     }
   }
 
-  // find local coordinates
-
-  std::map<vertex_t, LINALG::Matrix<3,1> > local;
-
-  vertex_iterator vi, vi_end;
-  for ( boost::tie( vi, vi_end )=boost::vertices( g ); vi!=vi_end; ++vi )
+  if ( boost::num_vertices( g )==cycle.size() )
   {
-    Point * p = name_map[*vi];
-    LINALG::Matrix<3,1> xyz( p->X() );
-    side->LocalCoordinates( xyz, local[*vi] );
-  }
-
-  // find unconnected components (main facet(s) and holes)
-
-  std::vector<int> component( boost::num_vertices( g ) );
-
-  int num_comp =
-    boost::connected_components( g,
-                                 boost::make_iterator_property_map( component.begin(),
-                                                                    boost::get( boost::vertex_index, g ) ) );
-
-  // find cycles on each component
-
-  std::sort( cycle.begin(), cycle.end() );
-
-  if ( num_comp == 1 )
-  {
-    bool main_cycle = GEO::CUT::FindCycles( g, cycle, local, main_cycles_ );
-    if ( inner and not main_cycle )
-    {
-      GnuplotDumpCycles( "cycles", main_cycles_ );
-      boost::print_graph( g, boost::get( boost::vertex_name, g ) );
-
-      // Output the graph in DOT format
-      boost::dynamic_properties dp;
-      dp.property( "label", boost::get( boost::vertex_index, g ) );
-      std::ofstream out( "side-graph.dot" );
-      boost::write_graphviz( out, g, dp, std::string(), boost::get( boost::vertex_index, g ) );
-
-      throw std::runtime_error( "cycle needs to contain side edges" );
-    }
-  }
-  else if ( num_comp > 1 )
-  {
-    for ( int i=0; i<num_comp; ++i )
-    {
-      typedef boost::filtered_graph<graph_t,edge_filter> filtered_graph_t;
-      edge_filter filter( g, component, i );
-      filtered_graph_t fg( g, filter );
-
-      std::vector<std::vector<Point*> > filtered_cycles;
-
-      graph_t cg;
-      boost::copy_graph( fg, cg );
-
-      bool main_cycle = GEO::CUT::FindCycles( cg, cycle, local, filtered_cycles );
-
-      if ( main_cycle )
-      {
-        if ( main_cycles_.size()!=0 )
-        {
-          throw std::runtime_error( "one set of main cycles only" );
-        }
-        std::swap( main_cycles_, filtered_cycles );
-      }
-      else
-      {
-        hole_cycles_.push_back( std::vector<std::vector<Point*> >() );
-        std::swap( hole_cycles_.back(), filtered_cycles );
-      }
-    }
-
-    if ( inner and main_cycles_.size()==0 )
-    {
-      throw std::runtime_error( "cycle needs to contain side edges" );
-    }
+    throw std::runtime_error( "simple topology case" );
   }
   else
   {
-    throw std::runtime_error( "empty graph discovered" );
+
+    // find local coordinates
+
+    std::map<vertex_t, LINALG::Matrix<3,1> > local;
+
+    vertex_iterator vi, vi_end;
+    for ( boost::tie( vi, vi_end )=boost::vertices( g ); vi!=vi_end; ++vi )
+    {
+      Point * p = name_map[*vi];
+      LINALG::Matrix<3,1> xyz( p->X() );
+      side->LocalCoordinates( xyz, local[*vi] );
+    }
+
+    // find unconnected components (main facet(s) and holes)
+
+    std::vector<int> component( boost::num_vertices( g ) );
+
+    int num_comp =
+      boost::connected_components( g,
+                                   boost::make_iterator_property_map( component.begin(),
+                                                                      boost::get( boost::vertex_index, g ) ) );
+
+    // find cycles on each component
+
+    std::sort( cycle.begin(), cycle.end() );
+
+    if ( num_comp == 1 )
+    {
+      bool main_cycle = GEO::CUT::FindCycles( g, cycle, local, main_cycles_ );
+      if ( inner and not main_cycle )
+      {
+        GnuplotDumpCycles( "cycles", main_cycles_ );
+        boost::print_graph( g, boost::get( boost::vertex_name, g ) );
+
+        // Output the graph in DOT format
+        boost::dynamic_properties dp;
+        dp.property( "label", boost::get( boost::vertex_index, g ) );
+        std::ofstream out( "side-graph.dot" );
+        boost::write_graphviz( out, g, dp, std::string(), boost::get( boost::vertex_index, g ) );
+
+        throw std::runtime_error( "cycle needs to contain side edges" );
+      }
+    }
+    else if ( num_comp > 1 )
+    {
+      for ( int i=0; i<num_comp; ++i )
+      {
+        typedef boost::filtered_graph<graph_t,edge_filter> filtered_graph_t;
+        edge_filter filter( g, component, i );
+        filtered_graph_t fg( g, filter );
+
+        std::vector<std::vector<Point*> > filtered_cycles;
+
+        graph_t cg;
+        boost::copy_graph( fg, cg );
+
+        bool main_cycle = GEO::CUT::FindCycles( cg, cycle, local, filtered_cycles );
+
+        if ( main_cycle )
+        {
+          if ( main_cycles_.size()!=0 )
+          {
+            throw std::runtime_error( "one set of main cycles only" );
+          }
+          std::swap( main_cycles_, filtered_cycles );
+        }
+        else
+        {
+          hole_cycles_.push_back( std::vector<std::vector<Point*> >() );
+          std::swap( hole_cycles_.back(), filtered_cycles );
+        }
+      }
+
+      if ( inner and main_cycles_.size()==0 )
+      {
+        throw std::runtime_error( "cycle needs to contain side edges" );
+      }
+    }
+    else
+    {
+      throw std::runtime_error( "empty graph discovered" );
+    }
   }
 }
 
