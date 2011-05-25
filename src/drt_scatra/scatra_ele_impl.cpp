@@ -619,7 +619,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         scatratype);
 #if 0
     // for debugging of matrix entries
-    if(ele->Id()==9 and (time < 3 or time > 99.0))
+    if(ele->Id()==2) // and (time < 3 or time > 99.0))
     {
       FDcheck(
           ele,
@@ -4624,12 +4624,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
   for (int k=0;k<nsd_;++k)
   {cout<<"gradpot_["<<k<<"] = "<<gradpot_(k)<<endl;}
 #endif
-  // some 'working doubles'
-  double rhsint;  // rhs at int. point
-  // integration factors and coefficients of single terms
-  double timefacfac;
-  double timetaufac;
-  double rhsfac;
 
 #ifdef SUBSCALE_ENC
   int ilcs(0);
@@ -4642,37 +4636,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
   for (int k = 0; k < numscal_;++k) // loop over all transported scalars
   {
-    // get values of all transported scalars at integration point
+    // get value of transported scalar k at integration point
     conint_[k] = funct_.Dot(ephinp_[k]);
-
-    // stabilization parameters
-    const double taufac = tau_[k]*fac;
-
-    if (is_stationary_)
-    {
-      timefacfac  = fac;
-      timetaufac  = taufac;
-      rhsfac= 1.0;
-      rhsint = rhs_[k]; // set rhs at integration point
-    }
-    else
-    {
-      if (is_genalpha_)
-      {
-        timefacfac  = timefac * fac;
-        timetaufac  = timefac * taufac;
-        rhsfac= 1.0/alphaF;
-        // in hist_ we receive the time derivative at step n+alpha_F !!
-        rhsint = (-hist_[k] + rhs_[k])*timefac;
-      }
-      else
-      {
-        timefacfac  = timefac * fac;
-        timetaufac  = timefac * taufac;
-        rhsfac= 1.0;
-        rhsint = hist_[k] + rhs_[k]*timefac; // set rhs at integration point
-      }
-    }
 
     // compute gradient of scalar k at integration point
     gradphi_.Multiply(derxy_,ephinp_[k]);
@@ -4680,23 +4645,162 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     // factor D_k * z_k
     const double diffus_valence_k = diffusvalence_[k];
 
-    if (use2ndderiv_)
+    double diff_ephinp_k(0.0);
+    double migrea_k(0.0);
+    if (use2ndderiv_) // only necessary for higher order elements
     {
-      // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
+      // diffusive part:  diffus_k * ( N,xx  +  N,yy +  N,zz )
       diff_.Update(diffus_[k],laplace_);
 
-      // get Laplacian of el. potential at integration point
+      // get Laplacian of electric potential at integration point
       double lappot = laplace_.Dot(epotnp_);
       // reactive part of migration term
       migrea_.Update(-frt*diffus_valence_k*lappot,funct_);
+
+      diff_ephinp_k = diff_.Dot(ephinp_[k]);   // diffusion
+      migrea_k      = migrea_.Dot(ephinp_[k]); // reactive part of migration term
     }
+
+    // further short cuts and definitions
+    const double conv_ephinp_k = conv_.Dot(ephinp_[k]);
+    const double Dkzk_mig_ephinp_k = diffus_valence_k*(migconv_.Dot(ephinp_[k]));
+    const double conv_eff_k = conv_ephinp_k + Dkzk_mig_ephinp_k;
+
+    const double taufac = tau_[k]*fac;  // corresponding stabilization parameter
+    double rhsint       = rhs_[k]; // source/sink terms at int. point
+    double residual     = 0.0;
+    double timefacfac   = 0.0;
+    double timetaufac   = 0.0;
+    double rhsfac       = 0.0;
+    double rhstaufac    = 0.0;
+
+    // perform time-integration specific actions
+    if (is_stationary_)
+    {
+      timefacfac  = fac;     // do not inlcude any timefac for stationary calculations!
+      timetaufac  = taufac;
+
+      if (migrationinresidual_)
+        residual  = conv_eff_k - diff_ephinp_k + migrea_k - rhsint;
+      else
+        residual  = conv_ephinp_k - diff_ephinp_k - rhsint;
+
+      rhsfac      = fac;
+      rhstaufac   = taufac;
+    }
+    else
+    {
+      timefacfac  = timefac * fac;
+      timetaufac  = timefac * taufac;
+
+      if (is_genalpha_)
+      {
+        // note: in hist_ we receive the time derivative phidtam at time t_{n+alpha_M} !!
+        if (migrationinresidual_)
+          residual  = hist_[k] + conv_eff_k - diff_ephinp_k + migrea_k - rhsint;
+        else
+          residual  = hist_[k] + conv_ephinp_k - diff_ephinp_k - rhsint;
+        rhsfac    = timefacfac/alphaF;
+        rhstaufac = timetaufac/alphaF;
+        rhsint   *= (timefac/alphaF);  // not nice, but necessary !
+
+        // rhs contribution due to incremental formulation (phidtam)
+        const double vtrans = rhsfac*hist_[k];
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const int fvi = vi*numdofpernode_+k;
+
+          erhs[fvi] -= vtrans*funct_(vi);
+        }
+
+        // ToDo: conservative form!!!!
+
+      }
+      else
+      {
+        rhsint = hist_[k] + (rhs_[k]*timefac); // contributions from t_n and \theta*dt*bodyforce(t_{n+1})
+
+        if (migrationinresidual_)
+          residual  = conint_[k] + timefac*(conv_eff_k - diff_ephinp_k + migrea_k) - rhsint;
+        else
+          residual  = conint_[k] + timefac*(conv_ephinp_k - diff_ephinp_k) - rhsint;
+
+        rhsfac    = timefacfac;
+        rhstaufac = taufac;
+
+        // rhs contribution due to incremental formulation (phinp)
+        const double vtrans = fac*conint_[k];
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const int fvi = vi*numdofpernode_+k;
+
+          erhs[fvi] -= vtrans*funct_(vi);
+        }
+
+        // ToDo: conservative form!!!!
+
+      }
+    }
+
+    //-----------------------------------------------------------------
+    // residual of strong form (evaluated at current integration point)
+    //-----------------------------------------------------------------
+
+
+    // compute residual of strong form for residual-based stabilization
+    double taufacresidual(0.0);
+    if ( not betterconsistency_)
+    {
+      if (not migrationinresidual_)
+        ; //taufacresidual = taufac*rhsint - timetaufac*(conv_ephinp_k - diff_ephinp_k); // excluded: (Dkzk_mig_ephinp_k  + migrea_k);
+      else
+        ; //taufacresidual = taufac*rhsint - timetaufac*(conv_eff_k - diff_ephinp_k + migrea_k);
+#if 0
+      cout<<"taufacresidual = "<<taufacresidual<<endl;
+      cout<<"residual = "<<taufacresidual/taufac<<endl;
+      cout<<"complete taufacresidual = "<<taufac*rhsint - timetaufac*(conv_eff_k - diff_ephinp_k + migrea_k)<<endl;
+#endif
+    }
+    else
+    {
+      double fdiv(0.0); // we get the negative(!) reconstructed flux from outside!
+      // compute divergence of approximated diffusive and migrative fluxes
+      GetDivergence(fdiv,efluxreconstr_[k],derxy_);
+      taufacresidual = taufac*rhsint - timetaufac*(conv_ephinp_k + fdiv);
+#if 0
+      if (eleid_>7000000)
+      {
+        cout<<"conv_ephinp_k = "<<conv_ephinp_k<<" fdiv = "<<fdiv<<endl;
+        cout<<"taufacresidual (consistency) = "<<taufacresidual<<endl;
+        cout<<"taufacresidual (classical)   = "<<taufac*rhsint - timetaufac*(conv_eff_k - diff_ephinp_k + migrea_k)<<endl;
+      }
+#endif
+    } // betterconsistency
+
+#ifdef PRINT_ELCH_DEBUG
+    cout<<"tau["<<k<<"]    = "<<tau_[k]<<endl;
+    cout<<"taufac["<<k<<"] = "<<taufac<<endl;
+    if (tau_[k] != 0.0)
+      cout<<"residual["<<k<<"] = "<< taufacresidual/taufac<<endl;
+    cout<<"conv_eff_k    = "<<conv_eff_k<<endl;
+    cout<<"conv_ephinp_k  = "<<conv_ephinp_k<<endl;
+    cout<<"Dkzk_mig_ephinp_k = "<<Dkzk_mig_ephinp_k<<endl;
+    cout<<"diff_ephinp_k = "<<diff_ephinp_k<<endl;
+    cout<<"migrea_k      = "<<migrea_k <<endl;
+    cout<<endl;
+#endif
+
 
     const double frt_timefacfac_diffus_valence_k_conint_k = frt*timefacfac*diffus_valence_k*conint_[k];
 
-    // ----------------------------------------matrix entries
+    //----------------------------------------------------------------
+    // 1) element matrix: stationary terms
+    //----------------------------------------------------------------
     for (int vi=0; vi<nen_; ++vi)
     {
       const int    fvi = vi*numdofpernode_+k;
+
+      // compute effective convective stabilization operator
       double conv_eff_vi = conv_(vi);
       if (migrationstab_)
       {
@@ -4710,6 +4814,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       for (int ui=0; ui<nen_; ++ui)
       {
         const int fui = ui*numdofpernode_+k;
+
+        //----------------------------------------------------------------
+        // standard Galerkin terms
+        //----------------------------------------------------------------
 
         /* Standard Galerkin terms: */
         /* convective term */
@@ -4727,8 +4835,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
         GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
         emat(fvi, fui) += timefacfac*diffus_[k]*laplawf;
 
-        /* migration term (directional derivatives) */
+        /* migration term */
+        // a) derivative w.r.t concentration c_k
         emat(fvi, fui) -= timefacfac_diffus_valence_k_mig_vi*funct_(ui);
+        // b) derivative w.r.t electric potential
         emat(fvi,ui*numdofpernode_+numscal_) += frt_timefacfac_diffus_valence_k_conint_k*laplawf;
 
         /* electroneutrality condition */
@@ -4760,10 +4870,10 @@ if (k != ilcs)
         if (migrationintau_)
         {
           // derivative of tau (only effective for Taylor_Hughes_Zarins) with respect to electric potential
-          const double conv_ephinp_k = conv_.Dot(ephinp_[k]);
-          const double Dkzk_mig_ephinp_k = diffus_valence_k*(migconv_.Dot(ephinp_[k]));
           const double tauderiv_ui = ((tauderpot_[k])(ui,0));
           emat(fvi,ui*numdofpernode_+numscal_) += timefacfac*conv_eff_vi*tauderiv_ui*(conv_ephinp_k + Dkzk_mig_ephinp_k);
+          //emat(fvi,ui*numdofpernode_+numscal_) += timefacfac*tauderiv_ui*conv_eff_vi*residual;
+          // hier muss aber das volle residuum hin!!!!!
         }
         if (migrationstab_)
         {
@@ -4819,13 +4929,12 @@ if (k != ilcs)
           emat(fvi, fui) += -timetaufac_conv_eff_vi*diff_(ui) ;
 
           // migration term (reactive part)
-          // derivative with respect to concentration_k
-          emat(fvi, fui) += -timetaufac_conv_eff_vi*migrea_(ui) ;
           if (migrationinresidual_)
           {
-            // derivative with respect to potential
-            // ToDo
-            // emat(fvi, ui*numdofpernode_+numscal_) += -timetaufac_conv_eff_vi*diff_(ui) ;
+            // derivative w.r.t. concentration_k
+            emat(fvi, fui) += -timetaufac_conv_eff_vi*migrea_(ui) ;
+            // derivative w.r.t. electric potential
+            emat(fvi, ui*numdofpernode_+numscal_) += -timetaufac_conv_eff_vi*diff_(ui) ;
           }
 
           /* 2) diffusive stabilization */
@@ -4839,96 +4948,34 @@ if (k != ilcs)
 
     } // use2ndderiv
 
-    //----------------------------------------------------------------
-    // element right hand side vector (neg. residuum of nonlinear problem)
-    //----------------------------------------------------------------
-    const double conv_ephinp_k = conv_.Dot(ephinp_[k]);
-    const double Dkzk_mig_ephinp_k = diffus_valence_k*(migconv_.Dot(ephinp_[k]));
-    const double conv_eff_k = conv_ephinp_k + Dkzk_mig_ephinp_k;
-    double diff_ephinp_k(0.0);
-    double migrea_k(0.0);
-    if (use2ndderiv_)
-    { // only necessary for higher order elements
-      diff_ephinp_k = diff_.Dot(ephinp_[k]);   // diffusion
-      migrea_k      = migrea_.Dot(ephinp_[k]); // reactive part of migration term
-    }
-
-    // compute residual of strong form for residual-based stabilization
-    double taufacresidual(0.0);
-if ( not betterconsistency_)
-{
-  if (not migrationinresidual_)
-    taufacresidual = taufac*rhsint - timetaufac*conv_ephinp_k;// (conv_eff_k - diff_ephinp_k + migrea_k);
-  else
-    taufacresidual = taufac*rhsint - timetaufac*(conv_eff_k - diff_ephinp_k + migrea_k);
-#if 0
-    cout<<"taufacresidual = "<<taufacresidual<<endl;
-    cout<<"residual = "<<taufacresidual/taufac<<endl;
-    cout<<"complete taufacresidual = "<<taufac*rhsint - timetaufac*(conv_eff_k - diff_ephinp_k + migrea_k)<<endl;
-#endif
-}
-else
-{
-    double fdiv(0.0); // we get the negative(!) reconstructed flux from outside!
-    // compute divergence of approximated diffusive and migrative fluxes
-    GetDivergence(fdiv,efluxreconstr_[k],derxy_);
-    taufacresidual = taufac*rhsint - timetaufac*(conv_ephinp_k + fdiv);
-#if 0
-    if (eleid_>7000000)
-    {
-    cout<<"conv_ephinp_k = "<<conv_ephinp_k<<" fdiv = "<<fdiv<<endl;
-    cout<<"taufacresidual (consistency) = "<<taufacresidual<<endl;
-    cout<<"taufacresidual (classical)   = "<<taufac*rhsint - timetaufac*(conv_eff_k - diff_ephinp_k + migrea_k)<<endl;
-    }
-#endif
-    } // betterconsistency
-
-    if (!is_stationary_) // add transient term to the residual
-    {
-      if (is_genalpha_)
-        ; // do nothing (instationary term already included via rhsint)
-      else
-        taufacresidual -= taufac*conint_[k];
-    }
-#ifdef PRINT_ELCH_DEBUG
-    cout<<"tau["<<k<<"]    = "<<tau_[k]<<endl;
-    cout<<"taufac["<<k<<"] = "<<taufac<<endl;
-    if (tau_[k] != 0.0)
-      cout<<"residual["<<k<<"] = "<< taufacresidual/taufac<<endl;
-    cout<<"conv_eff_k    = "<<conv_eff_k<<endl;
-    cout<<"conv_ephinp_k  = "<<conv_ephinp_k<<endl;
-    cout<<"Dkzk_mig_ephinp_k = "<<Dkzk_mig_ephinp_k<<endl;
-    cout<<"diff_ephinp_k = "<<diff_ephinp_k<<endl;
-    cout<<"migrea_k      = "<<migrea_k <<endl;
-    cout<<endl;
-#endif
-
-    //------------residual formulation (Newton iteration)
+    //--------------------------------------------------------------------
+    // element right hand side vector (neg. residual of nonlinear problem)
+    //--------------------------------------------------------------------
     for (int vi=0; vi<nen_; ++vi)
     {
       const int fvi = vi*numdofpernode_+k;
 
       // RHS source term
-      erhs[fvi] += fac*rhsfac*funct_(vi)*rhsint ;
+      erhs[fvi] += fac*funct_(vi)*rhsint ;
 
       // nonlinear migration term
-      erhs[fvi] += conint_[k]*rhsfac*timefacfac*diffus_valence_k*migconv_(vi);
+      erhs[fvi] += conint_[k]*rhsfac*diffus_valence_k*migconv_(vi);
 
       // convective term
-      erhs[fvi] -= rhsfac*timefacfac*funct_(vi)*conv_ephinp_k;
+      erhs[fvi] -= rhsfac*funct_(vi)*conv_ephinp_k;
 
       // addition to convective term for conservative form
       // (not included in residual)
       if (conservative_)
       {
         // convective term in conservative form
-        erhs[fvi] -= rhsfac*timefacfac*funct_(vi)*conint_[k]*vdiv_;
+        erhs[fvi] -= rhsfac*funct_(vi)*conint_[k]*vdiv_;
       }
 
       // diffusive term
       double laplawf(0.0);
       GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
-      erhs[fvi] -= rhsfac*timefacfac*diffus_[k]*laplawf;
+      erhs[fvi] -= rhsfac*diffus_[k]*laplawf;
 
       // electroneutrality condition
       // for incremental formulation, there is the residuum on the rhs! : 0-ENC*phi_i
@@ -4944,11 +4991,13 @@ else
       if (k != ilcs)
       {
 #endif
-      erhs[fvi] += rhsfac*conv_(vi)* taufacresidual;
+
+      erhs[fvi] -= rhstaufac*conv_(vi)*residual;
       if (migrationstab_)
       {
-        erhs[fvi] +=  rhsfac*diffus_valence_k*migconv_(vi) * taufacresidual;
+        erhs[fvi] -=  rhstaufac*diffus_valence_k*migconv_(vi)*residual;
       }
+
 #ifdef SUBSCALE_ENC
       const double myfactor = (-valence_[k]/valence_[ilcs]);
       // valence_[k] prevents undesired influence on neutral species automatically
@@ -4960,56 +5009,48 @@ else
       } // if       if (k != ilcs)
 #endif
 
+      // 2) diffusive stabilization
+      // not implemented. Only stabilization of SUPG type
+
+      // 3) reactive stabilization (reactive part of migration term)
+      // not implemented. Only stabilization of SUPG type
+
     } // for vi
 
-    // 2) diffusive stabilization
-    // not implemented. Only stabilization of SUPG type
-
-    // 3) reactive stabilization (reactive part of migration term)
-    // not implemented. Only stabilization of SUPG type
-
-
-    // -----------------------------------INSTATIONARY TERMS
+    //----------------------------------------------------------------
+    // 2) element matrix: instationary terms
+    //----------------------------------------------------------------
     if (!is_stationary_)
     {
       for (int vi=0; vi<nen_; ++vi)
       {
         const int fvi = vi*numdofpernode_+k;
         const double fac_funct_vi = fac*funct_(vi);
+
+        // compute effective convective stabilization operator
+        double conv_eff_vi = conv_(vi);
+        if (migrationstab_)
+        {
+          conv_eff_vi += diffus_valence_k*migconv_(vi);
+        }
+
         for (int ui=0; ui<nen_; ++ui)
         {
          const int fui = ui*numdofpernode_+k;
 
-          /* Standard Galerkin terms: */
-          /* transient term */
+          /* Standard Galerkin term: */
           emat(fvi, fui) += fac_funct_vi*funct_(ui) ;
 
-          /* 1) convective stabilization */
-          /* transient term */
-          emat(fvi, fui) += taufac*conv_(vi)*funct_(ui);
-          if (migrationstab_)
-          {
-            emat(fvi, fui) += taufac*diffus_valence_k*migconv_(vi)*funct_(ui);
-          }
+          /* 1) convective stabilization of transient term*/
+          emat(fvi, fui) += taufac*conv_eff_vi*funct_(ui);
 
           /* 2) diffusive stabilization */
-          /* transient term */
           // not implemented. Only stabilization of SUPG type
 
           /* 3) reactive stabilization (reactive part of migration term) */
-          /* transient term */
           // not implemented. Only stabilization of SUPG type
 
         } // for ui
-
-        // for residuum on RHS:
-        if (not is_genalpha_)
-        {
-          /* Standard Galerkin terms: */
-          /* transient term*/
-          erhs[fvi] -= fac_funct_vi*conint_[k];
-        }
-
       } // for vi
     } // instationary case
 
