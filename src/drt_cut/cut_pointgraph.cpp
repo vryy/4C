@@ -2,6 +2,8 @@
 #include <iostream>
 #include <iterator>
 
+#include <cmath>
+
 #include "cut_pointgraph.H"
 #include "cut_point.H"
 #include "cut_line.H"
@@ -49,7 +51,7 @@ GEO::CUT::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, b
 #endif
 #endif
 
-  graph_.FindCycles( cycle, inner );
+  graph_.FindCycles( side, cycle, inner );
 }
 
 void GEO::CUT::PointGraph::FillGraph( Element * element, Side * side, std::vector<Point*> & cycle )
@@ -168,6 +170,7 @@ namespace GEO
     typedef boost::graph_traits<graph_t>::vertex_iterator vertex_iterator;
     typedef boost::graph_traits<graph_t>::edge_iterator edge_iterator;
     typedef boost::graph_traits<graph_t>::adjacency_iterator adjacency_iterator;
+    typedef boost::graph_traits<graph_t>::out_edge_iterator out_edge_iterator;
 
     typedef boost::property_map<graph_t, boost::vertex_name_t>::type name_map_t;
     typedef boost::property_map<graph_t, boost::vertex_color_t>::type color_map_t;
@@ -244,10 +247,142 @@ namespace GEO
       const std::vector<int> * component_;
       int c_;
     };
+
+bool Equals( const std::vector<Point*> & sorted, const std::vector<Point*> & test )
+{
+  if ( sorted.size()!=test.size() )
+  {
+    return false;
+  }
+
+  for ( std::vector<Point*>::const_iterator i=test.begin(); i!=test.end(); ++i )
+  {
+    Point * p = *i;
+    if ( not std::binary_search( sorted.begin(), sorted.end(), p ) )
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool FindCycles( graph_t & g, std::vector<Point*> & cycle, std::map<vertex_t, LINALG::Matrix<3,1> > & local, std::vector<std::vector<Point*> > & cycles )
+{
+  name_map_t name_map = boost::get( boost::vertex_name, g );
+
+  // Initialize the interior edge index
+  edge_index_map_t e_index = boost::get( boost::edge_index, g );
+  boost::graph_traits<graph_t>::edges_size_type edge_count = 0;
+  boost::graph_traits<graph_t>::edge_iterator ei, ei_end;
+  for ( boost::tie( ei, ei_end ) = boost::edges( g ); ei != ei_end; ++ei )
+    boost::put( e_index, *ei, edge_count++ );
+
+  typedef std::vector<edge_t> vec_t;
+  std::vector<vec_t> embedding( boost::num_vertices( g ) );
+
+#if 1
+  vertex_iterator vi, vi_end;
+  for ( boost::tie( vi, vi_end )=boost::vertices( g ); vi!=vi_end; ++vi )
+  {
+    const LINALG::Matrix<3,1> & pos = local[*vi];
+
+    std::map<double, vertex_t> arcs;
+
+    adjacency_iterator ai, ai_end;
+    for ( boost::tie( ai, ai_end )=boost::adjacent_vertices( *vi, g ); ai!=ai_end; ++ai )
+    {
+      LINALG::Matrix<3,1> d = local[*ai];
+      d.Update( -1, pos, 1 );
+
+      double arc = std::atan2( d( 1 ), d( 0 ) );
+
+      std::map<double, vertex_t>::iterator j = arcs.find( arc );
+      if ( j!=arcs.end() )
+      {
+        throw std::runtime_error( "numeric error: double arc" );
+      }
+
+      arcs[arc] = *ai;
+    }
+
+    vec_t & em = embedding[*vi];
+
+    for ( std::map<double, vertex_t>::iterator i=arcs.begin(); i!=arcs.end(); ++i )
+    {
+      out_edge_iterator oi, oi_end;
+      for ( boost::tie( oi, oi_end )=boost::out_edges( *vi, g ); oi!=oi_end; ++oi )
+      {
+        edge_t e = *oi;
+        if ( boost::target( e, g )==i->second )
+        {
+          em.push_back( e );
+          break;
+        }
+      }
+    }
+  }
+
+#else
+  if ( not boost::boyer_myrvold_planarity_test( boost::boyer_myrvold_params::graph = g,
+                                                boost::boyer_myrvold_params::embedding = &embedding[0] ) )
+  {
+    throw std::runtime_error( "input graph is not planar" );
+  }
+#endif
+
+#if 0
+#ifdef DEBUGCUTLIBRARY
+  std::cout << "embedding:\n";
+  for ( std::vector<vec_t>::iterator i=embedding.begin(); i!=embedding.end(); ++i )
+  {
+    vec_t & em = *i;
+    std::copy( em.begin(), em.end(), std::ostream_iterator<edge_t>( std::cout, " " ) );
+    std::cout << "\n";
+  }
+#endif
+#endif
+
+  face_visitor vis( name_map, cycles );
+  boost::planar_face_traversal( g, &embedding[0], vis );
+
+//   std::vector<std::vector<Point*> > backup = cycles;
+
+  bool save_first = cycles.size()==2;
+
+  int erase_count = 0;
+  for ( std::vector<std::vector<Point*> >::iterator i=cycles.begin(); i!=cycles.end(); )
+  {
+    std::vector<Point*> & c = *i;
+    if ( Equals( cycle, c ) )
+    {
+      if ( save_first and erase_count == 0 )
+      {
+        ++i;
+      }
+      else
+      {
+        cycles.erase( i );
+      }
+      erase_count += 1;
+    }
+    else
+    {
+      ++i;
+    }
+  }
+
+  if ( erase_count > ( save_first ? 2 : 1 ) )
+  {
+    throw std::runtime_error( "more than one back facet" );
+  }
+
+  return erase_count != 0;
+}
+
   }
 }
 
-void GEO::CUT::PointGraph::Graph::FindCycles( std::vector<Point*> & cycle, bool inner )
+void GEO::CUT::PointGraph::Graph::FindCycles( Side * side, std::vector<Point*> & cycle, bool inner )
 {
   graph_t g;
 
@@ -291,6 +426,18 @@ void GEO::CUT::PointGraph::Graph::FindCycles( std::vector<Point*> & cycle, bool 
     }
   }
 
+  // find local coordinates
+
+  std::map<vertex_t, LINALG::Matrix<3,1> > local;
+
+  vertex_iterator vi, vi_end;
+  for ( boost::tie( vi, vi_end )=boost::vertices( g ); vi!=vi_end; ++vi )
+  {
+    Point * p = name_map[*vi];
+    LINALG::Matrix<3,1> xyz( p->X() );
+    side->LocalCoordinates( xyz, local[*vi] );
+  }
+
   // find unconnected components (main facet(s) and holes)
 
   std::vector<int> component( boost::num_vertices( g ) );
@@ -306,7 +453,7 @@ void GEO::CUT::PointGraph::Graph::FindCycles( std::vector<Point*> & cycle, bool 
 
   if ( num_comp == 1 )
   {
-    bool main_cycle = FindCycles( g, cycle, main_cycles_ );
+    bool main_cycle = GEO::CUT::FindCycles( g, cycle, local, main_cycles_ );
     if ( inner and not main_cycle )
     {
       GnuplotDumpCycles( "cycles", main_cycles_ );
@@ -330,14 +477,11 @@ void GEO::CUT::PointGraph::Graph::FindCycles( std::vector<Point*> & cycle, bool 
       filtered_graph_t fg( g, filter );
 
       std::vector<std::vector<Point*> > filtered_cycles;
-#if 1
-      bool main_cycle = FindCycles<filtered_graph_t>( fg, cycle, filtered_cycles );
-#else
+
       graph_t cg;
       boost::copy_graph( fg, cg );
 
-      bool main_cycle = FindCycles( cg, cycle, filtered_cycles );
-#endif
+      bool main_cycle = GEO::CUT::FindCycles( cg, cycle, local, filtered_cycles );
 
       if ( main_cycle )
       {
@@ -363,59 +507,6 @@ void GEO::CUT::PointGraph::Graph::FindCycles( std::vector<Point*> & cycle, bool 
   {
     throw std::runtime_error( "empty graph discovered" );
   }
-}
-
-template <typename graph_t>
-bool GEO::CUT::PointGraph::Graph::FindCycles( graph_t & g, std::vector<Point*> & cycle, std::vector<std::vector<Point*> > & cycles )
-{
-  // Test for planarity - we know it is planar, we just want to compute the
-  // planar embedding as a side-effect
-
-  typedef std::vector<edge_t> vec_t;
-  std::vector<vec_t> embedding( boost::num_vertices( g ) );
-  if ( not boost::boyer_myrvold_planarity_test( boost::boyer_myrvold_params::graph = g,
-                                                boost::boyer_myrvold_params::embedding = &embedding[0] ) )
-  {
-    throw std::runtime_error( "input graph is not planar" );
-  }
-
-  name_map_t name_map = boost::get( boost::vertex_name, g );
-
-  face_visitor vis( name_map, cycles );
-  boost::planar_face_traversal( g, &embedding[0], vis );
-
-//   std::vector<std::vector<Point*> > backup = cycles;
-
-  bool save_first = cycles.size()==2;
-
-  int erase_count = 0;
-  for ( std::vector<std::vector<Point*> >::iterator i=cycles.begin(); i!=cycles.end(); )
-  {
-    std::vector<Point*> & c = *i;
-    if ( Equals( cycle, c ) )
-    {
-      if ( save_first and erase_count == 0 )
-      {
-        ++i;
-      }
-      else
-      {
-        cycles.erase( i );
-      }
-      erase_count += 1;
-    }
-    else
-    {
-      ++i;
-    }
-  }
-
-  if ( erase_count > ( save_first ? 2 : 1 ) )
-  {
-    throw std::runtime_error( "more than one back facet" );
-  }
-
-  return erase_count != 0;
 }
 
 void GEO::CUT::PointGraph::Graph::FixSinglePoints()
@@ -460,24 +551,6 @@ bool GEO::CUT::PointGraph::Graph::HasSinglePoints()
     }
   }
   return false;
-}
-
-bool GEO::CUT::PointGraph::Graph::Equals( const std::vector<Point*> & sorted, const std::vector<Point*> & test )
-{
-  if ( sorted.size()!=test.size() )
-  {
-    return false;
-  }
-
-  for ( std::vector<Point*>::const_iterator i=test.begin(); i!=test.end(); ++i )
-  {
-    Point * p = *i;
-    if ( not std::binary_search( sorted.begin(), sorted.end(), p ) )
-    {
-      return false;
-    }
-  }
-  return true;
 }
 
 void GEO::CUT::PointGraph::Graph::GnuplotDumpCycles( const std::string & filename, const std::vector<std::vector<Point*> > & cycles )
