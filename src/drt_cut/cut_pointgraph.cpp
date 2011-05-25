@@ -48,7 +48,7 @@ GEO::CUT::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, b
 #endif
 #endif
 
-  graph_.FindCycles( cycle );
+  graph_.FindCycles( cycle, inner );
 }
 
 void GEO::CUT::PointGraph::FillGraph( Element * element, Side * side, std::vector<Point*> & cycle )
@@ -246,7 +246,7 @@ namespace GEO
   }
 }
 
-void GEO::CUT::PointGraph::Graph::FindCycles( std::vector<Point*> & cycle )
+void GEO::CUT::PointGraph::Graph::FindCycles( std::vector<Point*> & cycle, bool inner )
 {
   graph_t g;
 
@@ -306,8 +306,10 @@ void GEO::CUT::PointGraph::Graph::FindCycles( std::vector<Point*> & cycle )
   if ( num_comp == 1 )
   {
     bool main_cycle = FindCycles( g, cycle, main_cycles_ );
-    if ( not main_cycle )
+    if ( inner and not main_cycle )
     {
+      GnuplotDumpCycles( "cycles", main_cycles_ );
+      boost::print_graph( g, boost::get( boost::vertex_name, g ) );
       throw std::runtime_error( "cycle needs to contain side edges" );
     }
   }
@@ -342,6 +344,11 @@ void GEO::CUT::PointGraph::Graph::FindCycles( std::vector<Point*> & cycle )
         hole_cycles_.push_back( std::vector<std::vector<Point*> >() );
         std::swap( hole_cycles_.back(), filtered_cycles );
       }
+    }
+
+    if ( inner and main_cycles_.size()==0 )
+    {
+      throw std::runtime_error( "cycle needs to contain side edges" );
     }
   }
   else
@@ -463,5 +470,31 @@ bool GEO::CUT::PointGraph::Graph::Equals( const std::vector<Point*> & sorted, co
     }
   }
   return true;
+}
+
+void GEO::CUT::PointGraph::Graph::GnuplotDumpCycles( const std::string & filename, const std::vector<std::vector<Point*> > & cycles )
+{
+  int counter = 0;
+  for ( std::vector<std::vector<Point*> >::const_iterator i=cycles.begin(); i!=cycles.end(); ++i )
+  {
+    const std::vector<Point*> & points = *i;
+
+    std::stringstream str;
+    str << filename << counter << ".plot";
+    std::cout << str.str() << "\n";
+    std::ofstream file( str.str().c_str() );
+
+    for ( unsigned i=0; i!=points.size(); ++i )
+    {
+      Point * p1 = points[i];
+      Point * p2 = points[( i+1 ) % points.size()];
+
+      p1->Plot( file );
+      p2->Plot( file );
+      file << "\n\n";
+    }
+
+    counter += 1;
+  }
 }
 
