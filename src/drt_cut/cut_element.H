@@ -114,8 +114,6 @@ public:
 
   void GnuplotDump();
 
-  void DumpFacets();
-
 protected:
 
   //const std::vector<Side*> & Sides() { return sides_; }

@@ -376,12 +376,7 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count, bool lev
 
 void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
 {
-#ifdef DEBUGCUTLIBRARY
-  DumpFacets();
-#endif
-
 #if 1
-
   FacetGraph fg( sides_, facets_ );
   //fg.Print();
 
@@ -763,19 +758,6 @@ void GEO::CUT::Element::GnuplotDump()
     e->BeginNode()->point()->Plot( file );
     e->EndNode()  ->point()->Plot( file );
     file << "\n\n";
-  }
-}
-
-void GEO::CUT::Element::DumpFacets()
-{
-  std::stringstream str;
-  str << "facets" << Id() << ".plot";
-  std::ofstream file( str.str().c_str() );
-
-  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
-  {
-    Facet * f = *i;
-    f->Print( file );
   }
 }
 
