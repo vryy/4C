@@ -1247,14 +1247,11 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_levelsetintersection.cpp
   src/drt_cut/cut_levelsetside.cpp
   src/drt_cut/cut_line.cpp
-#  src/drt_cut/cut_linegraph.cpp
-  src/drt_cut/cut_linesegment.cpp
   src/drt_cut/cut_mesh.cpp
   src/drt_cut/cut_meshhandle.cpp
   src/drt_cut/cut_meshintersection.cpp
   src/drt_cut/cut_node.cpp
   src/drt_cut/cut_point.cpp
-  src/drt_cut/cut_pointcycle.cpp
   src/drt_cut/cut_pointgraph.cpp
   src/drt_cut/cut_pointpool.cpp
   src/drt_cut/cut_side.cpp

@@ -7,8 +7,6 @@
 #include "cut_facet.H"
 #include "cut_point_impl.H"
 #include "cut_pointgraph.H"
-#include "cut_pointcycle.H"
-#include "cut_linesegment.H"
 #include "cut_creator.H"
 
 #include <string>

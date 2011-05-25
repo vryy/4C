@@ -7,7 +7,6 @@
 #include "cut_volumecell.H"
 #include "cut_tetmesh.H"
 #include "cut_element.H"
-#include "cut_linesegment.H"
 #include "cut_options.H"
 #include "cut_integrationcellcreator.H"
 //#include "cut_linegraph.H"
