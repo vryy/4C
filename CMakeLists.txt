@@ -188,7 +188,7 @@ find_package(Trilinos REQUIRED)
 set(Boost_USE_STATIC_LIBS ON) 
 set(Boost_USE_MULTITHREAD OFF) 
 #FIND_PACKAGE( Boost COMPONENTS date_time filesystem iostreams program_options )
-find_package( Boost COMPONENTS graph )
+find_package( Boost COMPONENTS graph program_options )
 
 if (Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
@@ -1279,6 +1279,13 @@ set(OBJS_CUT_TEST
   src/drt_fem_general/drt_utils_fem_shapefunctions.cpp
   src/drt_fem_general/drt_utils_integration.cpp
 )
+set(OBJS_GRAPH_TEST
+  tests/graph_test/graph_test_main.cpp
+  tests/graph_test/graph_test_read.cpp
+  tests/graph_test/graph_test_gnuplot.cpp
+  tests/graph_test/graph_test_output.cpp
+  tests/graph_test/graph_test_find_cycles.cpp
+)
 set(OBJS_DRT_STRU_ALE
   src/drt_stru_ale/stru_ale_algorithm.cpp  
   src/drt_stru_ale/stru_ale_dyn.cpp
@@ -1615,9 +1622,11 @@ include(CTest)
 ###------------------------------------------------------------------ Unit Tests
 
 add_executable(cut_test ${OBJS_CUT_TEST})
-#target_link_libraries(cut_test drt_lib_cut ${LIBRARIES})
 target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuchos ${LAPACK_LIBRARIES})
 add_test(NAME run_cut_test COMMAND $<TARGET_FILE:cut_test>)
+
+add_executable(graph_test ${OBJS_GRAPH_TEST})
+target_link_libraries(graph_test drt_lib_cut ${Boost_LIBRARIES})
 
 if (STKADAPTIVE)
 
