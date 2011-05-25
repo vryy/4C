@@ -145,6 +145,7 @@ void test_unit_intersection_touch();
 void test_facets_corner_points();
 
 void test_colored_graph();
+void test_graph();
 
 typedef void ( *testfunct )();
 
@@ -349,6 +350,7 @@ int main( int argc, char ** argv )
   functable["facets_corner_points"] = test_facets_corner_points;
 
   functable["colored_graph"] = test_colored_graph;
+  functable["graph"] = test_graph;
 
   Teuchos::CommandLineProcessor clp( false );
 

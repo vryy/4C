@@ -345,33 +345,8 @@ void GEO::CUT::LineSegmentList::Create( Mesh & mesh, Element * element, Side * s
 
   for ( PointGraph::iterator i=pg.begin(); i!=pg.end(); ++i )
   {
-    const std::vector<int> & facet_points = *i;
-    if ( facet_points.size() > 2 )
-    {
-//       if ( inner )
-//       {
-//         std::copy( facet_points.begin(), facet_points.end(), std::ostream_iterator<int>( std::cout, " " ) );
-//         std::cout << "\n";
-//       }
-      bool found = true;
-      std::vector<Point*> points;
-      points.reserve( facet_points.size() );
-      for ( std::vector<int>::const_iterator i=facet_points.begin(); i!=facet_points.end(); ++i )
-      {
-        Point * p = pg.GetPoint( *i );
-        if ( not p->IsCut( element ) )
-        {
-//           if ( inner )
-//             std::cout << "failed at point " << p->Id() << "\n";
-          found = false;
-          break;
-        }
-        points.push_back( p );
-      }
-
-      if ( found )
-        segments_.push_back( Teuchos::rcp( new LineSegment( mesh, element, side, points ) ) );
-    }
+    const std::vector<Point*> & points = *i;
+    segments_.push_back( Teuchos::rcp( new LineSegment( mesh, element, side, points ) ) );
   }
 
 #if 0

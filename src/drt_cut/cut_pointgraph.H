@@ -2,6 +2,7 @@
 #define CUT_POINTGRAPH_H
 
 #include "cut_graph.H"
+#include "cut_point.H"
 
 namespace GEO
 {
@@ -23,7 +24,7 @@ class PointGraph
 
     Point * GetPoint( int i ) { return all_points_[i]; }
 
-//     void FindSideLines( Mesh & mesh, Element * element, Side * side );
+    void PlotAllPoints();
 
   private:
 
@@ -32,13 +33,84 @@ class PointGraph
 
 public:
 
-  typedef GRAPH::CycleListIterator iterator;
+  class PointGraphIterator
+  {
+  public:
+    PointGraphIterator( Graph & graph, GRAPH::CycleList & facet_cycles, const GRAPH::CycleListIterator & i, Element * element )
+      : graph_( graph ),
+        facet_cycles_( facet_cycles ),
+        i_( i ),
+        element_( element )
+    {
+      NextActive();
+    }
+
+    PointGraphIterator & operator++()
+    {
+      ++i_;
+      NextActive();
+      return *this;
+    }
+
+    const std::vector<Point*> & operator*()
+    {
+      return points_;
+    }
+
+    bool operator!=( const PointGraphIterator & other )
+    {
+      return i_ != other.i_;
+    }
+
+  private:
+
+    void NextActive()
+    {
+      while ( i_ != facet_cycles_.end() )
+      {
+        if ( FillPoints() )
+        {
+          return;
+        }
+        ++i_;
+      }
+    }
+
+    bool FillPoints()
+    {
+      points_.clear();
+      const std::vector<int> & facet_points = *i_;
+      if ( facet_points.size() > 2 )
+      {
+        points_.reserve( facet_points.size() );
+        for ( std::vector<int>::const_iterator i=facet_points.begin(); i!=facet_points.end(); ++i )
+        {
+          points_.push_back( graph_.GetPoint( *i ) );
+          if ( not points_.back()->IsCut( element_ ) )
+          {
+            points_.clear();
+            return false;
+          }
+        }
+        return true;
+      }
+      return false;
+    }
+
+    Graph & graph_;
+    GRAPH::CycleList & facet_cycles_;
+    GRAPH::CycleListIterator i_;
+    Element * element_;
+    std::vector<Point*> points_;
+  };
+
+  typedef PointGraphIterator iterator;
 
   PointGraph( Mesh & mesh, Element * element, Side * side, bool inner );
 
-  iterator begin() { return facet_cycles_.begin(); }
+  iterator begin() { return PointGraphIterator( graph_, facet_cycles_, facet_cycles_.begin(), element_ ); }
 
-  iterator end()   { return facet_cycles_.end(); }
+  iterator end()   { return PointGraphIterator( graph_, facet_cycles_, facet_cycles_.end(), element_ ); }
 
   unsigned size() { return facet_cycles_.size(); }
 
@@ -58,6 +130,7 @@ private:
 
   void AddFacetPoints( std::vector<int> & cycle, std::set<int> & free, bool inner );
 
+  Element * element_;
   Side * side_;
   Graph graph_;
   GRAPH::CycleList facet_cycles_;

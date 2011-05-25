@@ -270,65 +270,16 @@ void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, Element * element, std::s
   if ( facets_.size()==0 )
   {
     PointGraph point_graph( mesh, element, this, true );
-    //point_graph.Print();
 
     for ( PointGraph::iterator i=point_graph.begin(); i!=point_graph.end(); ++i )
     {
-      const std::vector<int> & facet_points = *i;
-      if ( facet_points.size() > 2 )
-      {
-        std::vector<Point*> points;
-        points.reserve( facet_points.size() );
-        for ( std::vector<int>::const_iterator i=facet_points.begin(); i!=facet_points.end(); ++i )
-        {
-          points.push_back( point_graph.GetPoint( *i ) );
-        }
+      const std::vector<Point*> & points = *i;
 
-        Facet * f = mesh.NewFacet( points, this, IsCutSide() );
-        if ( f==NULL )
-          throw std::runtime_error( "failed to create facet" );
-        facets_.push_back( f );
-        //f->Print( std::cout );
-      }
+      Facet * f = mesh.NewFacet( points, this, IsCutSide() );
+      if ( f==NULL )
+        throw std::runtime_error( "failed to create facet" );
+      facets_.push_back( f );
     }
-
-#if 0
-    std::vector<Point*> facet_points;
-
-    int end_pos = 0;
-    for ( std::vector<Edge*>::const_iterator i=Edges().begin(); i!=Edges().end(); ++i )
-    {
-      Edge * e = *i;
-
-      int begin_pos = end_pos;
-      end_pos = ( end_pos + 1 ) % Nodes().size();
-
-      std::vector<Point*> edge_points;
-      e->CutPoint( Nodes()[begin_pos], Nodes()[end_pos], edge_points );
-
-      std::copy( edge_points.begin()+1, edge_points.end(), std::back_inserter( facet_points ) );
-    }
-
-    std::set<Point*, PointPidLess> cut_points;
-    for ( std::vector<Edge*>::const_iterator i=Edges().begin(); i!=Edges().end(); ++i )
-    {
-      Edge * e = *i;
-      e->CutPoints( this, cut_points );
-    }
-
-    if ( cut_points.size()>0 )
-    {
-      PointCycleList pcl( filter, this, facet_points, cut_points );
-      pcl.CreateFacets( mesh, this, facets_ );
-    }
-    else
-    {
-      // Just a normal side. There might be cut points at the edges that do
-      // not concern this side. We have to copy them anyway.
-
-      facets_.push_back( mesh.NewFacet( facet_points, this, false ) );
-    }
-#endif
   }
 
   std::copy( facets_.begin(), facets_.end(), std::inserter( facets, facets.begin() ) );

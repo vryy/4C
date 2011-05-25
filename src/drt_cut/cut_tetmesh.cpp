@@ -129,6 +129,10 @@ void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
       std::set<Entity<4>*> & cell_members = cell_domain.Members();
       std::set<Entity<3>*> & cell_border  = cell_domain.Border();
 
+#ifdef DEBUGCUTLIBRARY
+      std::vector<Side*> facet_sides;
+#endif
+
       const std::set<Facet*> & facets = vc->Facets();
       for ( std::set<Facet*>::const_iterator i=facets.begin();
             i!=facets.end();
@@ -137,6 +141,8 @@ void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
         Facet * f = *i;
         FacetMesh & fm = facet_mesh_[f];
         const std::set<Entity<3>*> & tris = fm.SurfaceTris();
+
+        facet_sides.push_back( f->ParentSide() );
 
         std::copy( tris.begin(), tris.end(), std::inserter( cell_border, cell_border.begin() ) );
       }
