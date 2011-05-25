@@ -31,14 +31,9 @@ class PointGraph
 
     void FindCycles( std::vector<Point*> & cycle, bool inner );
 
-    template <typename graph_t>
-    bool FindCycles( graph_t & g, std::vector<Point*> & cycle, std::vector<std::vector<Point*> > & cycles );
-
     void FixSinglePoints();
 
     bool HasSinglePoints();
-
-    bool Equals( const std::vector<Point*> & sorted, const std::vector<Point*> & test );
 
     void GnuplotDumpCycles( const std::string & filename, const std::vector<std::vector<Point*> > & cycles );
 
