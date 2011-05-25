@@ -398,11 +398,13 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Side * side, std::vector<Point*> &
         GnuplotDumpCycles( "cycles", main_cycles_ );
         boost::print_graph( g, boost::get( boost::vertex_name, g ) );
 
+#if 0
         // Output the graph in DOT format
         boost::dynamic_properties dp;
         dp.property( "label", boost::get( boost::vertex_index, g ) );
         std::ofstream out( "side-graph.dot" );
         boost::write_graphviz( out, g, dp, std::string(), boost::get( boost::vertex_index, g ) );
+#endif
 
         throw std::runtime_error( "cycle needs to contain side edges" );
       }
