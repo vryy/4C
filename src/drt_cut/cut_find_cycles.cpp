@@ -156,11 +156,14 @@ namespace GEO
         cycle1.reserve( p1-cycle_to_split->begin() + 1 + cycle_to_split->end()-p2 );
         cycle2.reserve( p2-p1 + 1 );
 
-        std::copy( cycle_to_split->begin(), p1, std::back_inserter( cycle1 ) );
+        //std::copy( cycle_to_split->begin(), p1, std::back_inserter( cycle1 ) );
+        cycle1.insert( cycle1.end(), cycle_to_split->begin(), p1 );
         cycle1.push_back( u );
-        std::copy( p2, cycle_to_split->end(), std::back_inserter( cycle1 ) );
+        //std::copy( p2, cycle_to_split->end(), std::back_inserter( cycle1 ) );
+        cycle1.insert( cycle1.end(), p2, cycle_to_split->end() );
 
-        std::copy( p1, p2, std::back_inserter( cycle2 ) );
+        //std::copy( p1, p2, std::back_inserter( cycle2 ) );
+        cycle2.insert( cycle2.end(), p1, p2 );
         cycle2.push_back( v );
       }
 

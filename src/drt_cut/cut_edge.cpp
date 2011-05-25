@@ -165,7 +165,8 @@ void GEO::CUT::Edge::CutPointsBetween( Point* begin, Point* end, std::vector<Poi
     {
       ++bi;
     }
-    std::copy( bi, ei, std::back_inserter( line ) );
+    //std::copy( bi, ei, std::back_inserter( line ) );
+    line.insert( line.end(), bi, ei );
   }
   else if ( bt > et )
   {
@@ -173,7 +174,8 @@ void GEO::CUT::Edge::CutPointsBetween( Point* begin, Point* end, std::vector<Poi
     {
       ++ei;
     }
-    std::copy( ei, bi, std::back_inserter( line ) );
+    //std::copy( ei, bi, std::back_inserter( line ) );
+    line.insert( line.end(), ei, bi );
   }
   else
   {
@@ -201,12 +203,14 @@ void GEO::CUT::Edge::CutPointsIncluding( Point* begin, Point* end, std::vector<P
   if ( bt < et )
   {
     ++ei;
-    std::copy( bi, ei, std::back_inserter( line ) );
+    //std::copy( bi, ei, std::back_inserter( line ) );
+    line.insert( line.end(), bi, ei );
   }
   else if ( bt > et )
   {
     ++bi;
-    std::copy( ei, bi, std::inserter( line, line.begin() ) );
+    //std::copy( ei, bi, std::inserter( line, line.begin() ) );
+    line.insert( line.begin(), ei, bi );
   }
   else
   {
