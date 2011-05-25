@@ -131,10 +131,6 @@ protected:
 
   bool AllOnNodes( const std::set<Point*> & points );
 
-  std::vector<Line*> cut_lines_;
-
-  std::vector<Facet*> facets_;
-
 private:
 
   int sid_;
@@ -144,6 +140,10 @@ private:
   std::vector<Edge*> edges_;
 
   std::set<Element*> elements_;
+
+  std::vector<Line*> cut_lines_;
+
+  std::vector<Facet*> facets_;
 };
 
   inline std::ostream & operator<<( std::ostream & stream, Side & s )
