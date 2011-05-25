@@ -8,34 +8,6 @@ namespace GEO
     namespace
     {
 
-      class SpanningTreeCreator : public boost::default_bfs_visitor
-      {
-      public:
-
-        SpanningTreeCreator( graph_t & st )
-          : st_( st )
-        {
-        }
-
-        void tree_edge( edge_t e, const graph_t & g )
-        {
-          vertex_t u = boost::source( e, g );
-          vertex_t v = boost::target( e, g );
-
-          if ( u > v )
-          {
-            std::swap( u, v );
-          }
-
-          // assume same vertex ids
-          boost::add_edge( u, v, st_ );
-        }
-
-      private:
-        graph_t & st_;
-      };
-
-
       void create_spanning_tree( graph_t & g, graph_t & st )
       {
         name_map_t g_name_map = boost::get( boost::vertex_name, g );
@@ -80,49 +52,6 @@ namespace GEO
 
         throw std::runtime_error( "more than one cycle in common" );
       }
-
-
-      class SpanningTreePathFinder : public boost::default_dfs_visitor
-      {
-      public:
-
-        SpanningTreePathFinder( vertex_t v, std::vector<vertex_t> & path )
-          : done_( false ),
-            v_( v ),
-            path_( path )
-        {}
-
-        void discover_vertex( vertex_t u, const graph_t & g )
-        {
-          if ( not done_ )
-          {
-            if ( u==v_ )
-              done_ = true;
-            path_.push_back( u );
-          }
-        }
-
-        bool operator()( vertex_t u, const graph_t & g )
-        {
-          return done_;
-        }
-
-        void finish_vertex( vertex_t u, const graph_t & g )
-        {
-          if ( not done_ )
-          {
-            if ( path_.back()!=u )
-              throw std::runtime_error( "confused" );
-            path_.pop_back();
-          }
-        }
-
-      private:
-        bool done_;
-        vertex_t v_;
-        std::vector<vertex_t> & path_;
-      };
-
 
       cycle_t * find_path( vertex_t u, vertex_t v, graph_t & st )
       {

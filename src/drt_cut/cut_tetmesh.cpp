@@ -142,7 +142,9 @@ void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
         FacetMesh & fm = facet_mesh_[f];
         const std::set<Entity<3>*> & tris = fm.SurfaceTris();
 
+#ifdef DEBUGCUTLIBRARY
         facet_sides.push_back( f->ParentSide() );
+#endif
 
         std::copy( tris.begin(), tris.end(), std::inserter( cell_border, cell_border.begin() ) );
       }
