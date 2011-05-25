@@ -15,6 +15,22 @@ namespace CUT
 
 class PointGraph
 {
+public:
+
+  enum Location
+  {
+    element_side,
+    cut_side
+  };
+
+  enum Strategy
+  {
+    all_lines,
+    own_lines
+  };
+
+private:
+
   struct Graph
   {
     void AddEdge( int row, int col );
@@ -29,7 +45,7 @@ class PointGraph
 
     void PlotPoints( Element * element );
 
-    void FindCycles( Side * side, std::vector<Point*> & cycle, bool inner );
+    void FindCycles( Side * side, std::vector<Point*> & cycle, Location location, Strategy strategy );
 
     void FixSinglePoints();
 
@@ -48,7 +64,7 @@ public:
   typedef std::vector<std::vector<Point*> >::iterator facet_iterator;
   typedef std::vector<std::vector<std::vector<Point*> > >::iterator hole_iterator;
 
-  PointGraph( Mesh & mesh, Element * element, Side * side, bool inner );
+  PointGraph( Mesh & mesh, Element * element, Side * side, Location location, Strategy strategy );
 
   facet_iterator fbegin() { return graph_.main_cycles_.begin(); }
 
@@ -65,7 +81,7 @@ public:
 
 private:
 
-  void FillGraph( Element * element, Side * side, std::vector<Point*> & cycle );
+  void FillGraph( Element * element, Side * side, std::vector<Point*> & cycle, Strategy strategy );
 
   void AddFacetPoints( std::vector<int> & cycle, std::set<int> & free, bool inner );
 

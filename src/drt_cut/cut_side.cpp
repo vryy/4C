@@ -269,7 +269,7 @@ void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, Element * element, std::s
 {
   if ( facets_.size()==0 )
   {
-    PointGraph pg( mesh, element, this, true );
+    PointGraph pg( mesh, element, this, PointGraph::element_side, PointGraph::all_lines );
 
     for ( PointGraph::facet_iterator i=pg.fbegin(); i!=pg.fend(); ++i )
     {
@@ -351,7 +351,7 @@ void GEO::CUT::Side::MakeSideCutFacets( Mesh & mesh, Element * element, std::set
 
 void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
 {
-  PointGraph pg( mesh, element, this, false );
+  PointGraph pg( mesh, element, this, PointGraph::cut_side, PointGraph::all_lines );
   for ( PointGraph::facet_iterator i=pg.fbegin(); i!=pg.fend(); ++i )
   {
     const std::vector<Point*> & points = *i;

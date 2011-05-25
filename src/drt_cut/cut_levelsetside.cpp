@@ -2,6 +2,7 @@
 #include "cut_levelsetside.H"
 #include "cut_mesh.H"
 #include "cut_element.H"
+#include "cut_pointgraph.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
@@ -34,7 +35,12 @@ void GEO::CUT::LevelSetSide::MakeSideCutFacets( Mesh & mesh, Element * element, 
 
 void GEO::CUT::LevelSetSide::MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
 {
-  Side::MakeInternalFacets( mesh, element, facets );
+  PointGraph pg( mesh, element, this, PointGraph::cut_side, PointGraph::own_lines );
+  for ( PointGraph::facet_iterator i=pg.fbegin(); i!=pg.fend(); ++i )
+  {
+    const std::vector<Point*> & points = *i;
+    Side::MakeInternalFacets( mesh, element, points, facets );
+  }
 }
 
 bool GEO::CUT::LevelSetSide::IsCut()

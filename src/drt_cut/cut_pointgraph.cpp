@@ -23,12 +23,12 @@
 #include <boost/graph/filtered_graph.hpp>
 #include <boost/graph/graphviz.hpp>
 
-GEO::CUT::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, bool inner )
+GEO::CUT::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, Location location, Strategy strategy )
   : element_( element ),
     side_( side )
 {
   std::vector<Point*> cycle;
-  FillGraph( element, side, cycle );
+  FillGraph( element, side, cycle, strategy );
 
   if ( graph_.HasSinglePoints() )
   {
@@ -52,10 +52,10 @@ GEO::CUT::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, b
 #endif
 #endif
 
-  graph_.FindCycles( side, cycle, inner );
+  graph_.FindCycles( side, cycle, location, strategy );
 }
 
-void GEO::CUT::PointGraph::FillGraph( Element * element, Side * side, std::vector<Point*> & cycle )
+void GEO::CUT::PointGraph::FillGraph( Element * element, Side * side, std::vector<Point*> & cycle, Strategy strategy )
 {
   const std::vector<Node*> & nodes = side->Nodes();
   const std::vector<Edge*> & edges = side->Edges();
@@ -89,8 +89,10 @@ void GEO::CUT::PointGraph::FillGraph( Element * element, Side * side, std::vecto
   for ( std::vector<Line*>::const_iterator i=cut_lines.begin(); i!=cut_lines.end(); ++i )
   {
     Line * l = *i;
-    graph_.AddEdge( l->BeginPoint(), l->EndPoint() );
-    if ( l->IsCut( element ) )
+    bool element_cut = l->IsCut( element );
+    if ( strategy==all_lines or element_cut )
+      graph_.AddEdge( l->BeginPoint(), l->EndPoint() );
+    if ( element_cut )
     {
       Point * p1 = l->BeginPoint();
       Point * p2 = l->EndPoint();
@@ -292,7 +294,7 @@ bool FindCycles( graph_t & g, std::vector<Point*> & cycle, std::map<vertex_t, LI
   }
 }
 
-void GEO::CUT::PointGraph::Graph::FindCycles( Side * side, std::vector<Point*> & cycle, bool inner )
+void GEO::CUT::PointGraph::Graph::FindCycles( Side * side, std::vector<Point*> & cycle, Location location, Strategy strategy )
 {
   graph_t g;
 
@@ -336,7 +338,7 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Side * side, std::vector<Point*> &
     }
   }
 
-  if ( boost::num_vertices( g )==cycle.size() )
+  if ( strategy==own_lines or boost::num_vertices( g )==cycle.size() )
   {
     std::set<cycle_t*> base_cycles;
     find_cycles( g, base_cycles );
@@ -391,7 +393,7 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Side * side, std::vector<Point*> &
     if ( num_comp == 1 )
     {
       bool main_cycle = GEO::CUT::FindCycles( g, cycle, local, main_cycles_ );
-      if ( inner and not main_cycle )
+      if ( location==element_side and not main_cycle )
       {
         GnuplotDumpCycles( "cycles", main_cycles_ );
         boost::print_graph( g, boost::get( boost::vertex_name, g ) );
@@ -435,7 +437,7 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Side * side, std::vector<Point*> &
         }
       }
 
-      if ( inner and main_cycles_.size()==0 )
+      if ( location==element_side and main_cycles_.size()==0 )
       {
         throw std::runtime_error( "cycle needs to contain side edges" );
       }
