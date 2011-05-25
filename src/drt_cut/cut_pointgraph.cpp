@@ -18,6 +18,7 @@
 #include <boost/graph/connected_components.hpp>
 //#include <boost/graph/subgraph.hpp>
 #include <boost/graph/filtered_graph.hpp>
+#include <boost/graph/graphviz.hpp>
 
 GEO::CUT::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, bool inner )
   : element_( element ),
@@ -310,6 +311,13 @@ void GEO::CUT::PointGraph::Graph::FindCycles( std::vector<Point*> & cycle, bool 
     {
       GnuplotDumpCycles( "cycles", main_cycles_ );
       boost::print_graph( g, boost::get( boost::vertex_name, g ) );
+
+      // Output the graph in DOT format
+      boost::dynamic_properties dp;
+      dp.property( "label", boost::get( boost::vertex_index, g ) );
+      std::ofstream out( "side-graph.dot" );
+      boost::write_graphviz( out, g, dp, std::string(), boost::get( boost::vertex_index, g ) );
+
       throw std::runtime_error( "cycle needs to contain side edges" );
     }
   }
