@@ -588,6 +588,17 @@ void STR::TimInt::UpdateStepTime()
 }
 
 /*----------------------------------------------------------------------*/
+/* Update contact and meshtying */
+void STR::TimInt::UpdateStepContactMeshtying()
+{
+   if (cmtman_ != Teuchos::null)
+     cmtman_->GetStrategy().Update(stepn_,disn_);
+
+   // ciao
+   return;
+}
+
+/*----------------------------------------------------------------------*/
 /* Reset configuration after time step */
 void STR::TimInt::ResetStep()
 {

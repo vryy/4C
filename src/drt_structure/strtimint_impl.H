@@ -455,9 +455,6 @@ namespace STR
     //! Update step for constraints
     void UpdateStepConstraint();
 
-    //! Update step for contact / meshtying
-    void UpdateStepContactMeshtying();
-
     //! @name Output
     //@{
 

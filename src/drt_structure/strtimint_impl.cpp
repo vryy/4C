@@ -1000,13 +1000,6 @@ void STR::TimIntImpl::UzawaNonLinearNewtonFull()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::TimIntImpl::UpdateStepContactMeshtying()
-{
-	 if (cmtman_ != Teuchos::null) cmtman_->GetStrategy().Update(stepn_,disn_);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void STR::TimIntImpl::UpdateStepConstraint()
 {
   if (conman_ -> HaveConstraint()) conman_->Update();

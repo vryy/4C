@@ -212,6 +212,9 @@ namespace STR
     //! Update time and step counter
     void UpdateStepTime();
 
+    //! Update step for contact / meshtying
+    void UpdateStepContactMeshtying();
+
     //! Reset configuration after time step
     //!
     //! Thus the last converged state is copied back on the predictor

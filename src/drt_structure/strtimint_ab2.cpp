@@ -213,6 +213,9 @@ void STR::TimIntAB2::UpdateStepState()
   //    A_{n} := A_{n+1}, A_{n-1} := A_{n}
   acc_->UpdateSteps(*accn_);
 
+  // update contact and meshtying
+  UpdateStepContactMeshtying();
+
   // bye
   return;
 }
