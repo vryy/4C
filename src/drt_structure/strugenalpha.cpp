@@ -3207,6 +3207,8 @@ void StruGenAlpha::Output()
   int    numiter       = params_.get<int>   ("num iterations"         ,-1);
 
   bool   iodisp        = params_.get<bool>  ("io structural disp"     ,true);
+  bool   iose          = params_.get<bool>  ("io structural strain energy",false);
+
   int    updevrydisp   = params_.get<int>   ("io disp every nstep"    ,10);
   INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params_, "io structural stress",INPAR::STR::stress_none);
   int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
@@ -3342,6 +3344,25 @@ void StruGenAlpha::Output()
       break;
     default:
       dserror("requested strain type not supported");
+    }
+  
+    if (iose) // output of strain energy
+    {
+      ParameterList pse;
+      pse.set("action","calc_struct_energy");
+      pse.set("total time",timen);
+      pse.set("delta time",dt);
+      pse.set("alpha f",alphaf);
+      Teuchos::RCP<Epetra_MultiVector> se = rcp(new Epetra_MultiVector(*discret_.ElementRowMap(),1,true));
+      //pse.set<Teuchos::RCP<Epetra_MultiVector> >("strain energy",se);
+      discret_.ClearState();
+      discret_.SetState("residual displacement",zeros_);
+      discret_.SetState("displacement",dis_);
+      discret_.SetState("velocity",vel_);
+      discret_.EvaluateScalars(pse,se);
+      //se->Scale(-1.0); // strain energy returns all negative ??
+      discret_.ClearState();
+      output_.WriteVector("struct_strain_energy",se,IO::DiscretizationWriter::elementvector);
     }
   }
 
