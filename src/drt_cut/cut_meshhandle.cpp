@@ -6,7 +6,7 @@ GEO::CUT::SideHandle * GEO::CUT::MeshHandle::CreateSide( int sid, const std::vec
 {
   switch ( distype )
   {
-  case DRT::Element::quad4:
+//  case DRT::Element::quad4:
   case DRT::Element::tri3:
   {
     std::map<int, LinearSideHandle>::iterator i = linearsides_.find( sid );
@@ -20,6 +20,7 @@ GEO::CUT::SideHandle * GEO::CUT::MeshHandle::CreateSide( int sid, const std::vec
     lsh = LinearSideHandle( s );
     return &lsh;
   }
+  case DRT::Element::quad4:
   case DRT::Element::quad8:
   case DRT::Element::quad9:
   case DRT::Element::tri6:
@@ -33,6 +34,11 @@ GEO::CUT::SideHandle * GEO::CUT::MeshHandle::CreateSide( int sid, const std::vec
     QuadraticSideHandle * qsh = NULL;
     switch ( distype )
     {
+    case DRT::Element::quad4:
+    {
+      qsh = new Quad4SideHandle( mesh_, sid, nids );
+      break;
+    }
     case DRT::Element::quad8:
     {
       qsh = new Quad8SideHandle( mesh_, sid, nids );

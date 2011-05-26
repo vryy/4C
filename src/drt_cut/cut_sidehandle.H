@@ -158,6 +158,20 @@ public:
   virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rst );
 };
 
+class Quad4SideHandle : public QuadraticSideHandle
+{
+public:
+
+  Quad4SideHandle( Mesh & mesh, int sid, const std::vector<int> & nids );
+
+  virtual DRT::Element::DiscretizationType Shape()
+  {
+    return DRT::Element::quad4;
+  }
+
+  virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rst );
+};
+
 class Quad8SideHandle : public QuadraticSideHandle
 {
 public:

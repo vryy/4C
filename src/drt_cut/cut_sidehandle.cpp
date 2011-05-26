@@ -41,6 +41,57 @@ GEO::CUT::Tri6SideHandle::Tri6SideHandle( Mesh & mesh, int sid, const std::vecto
   subsides_.push_back( mesh.GetSide( sid, nids, top_data ) );
 }
 
+GEO::CUT::Quad4SideHandle::Quad4SideHandle( Mesh & mesh, int sid, const std::vector<int> & nodes )
+{
+  subsides_.reserve( 4 );
+
+  LINALG::Matrix<3,4> xyze;
+  nodes_.reserve( 4 );
+  for ( int i=0; i<4; ++i )
+  {
+    Node * n = mesh.GetNode( nodes[i], static_cast<double*>( NULL ) );
+    nodes_.push_back( n );
+    n->Coordinates( &xyze( 0, i ) );
+  }
+
+  const CellTopologyData * top_data = shards::getCellTopologyData< shards::Triangle<3> >();
+
+  // create middle node
+
+  LINALG::Matrix<4,1> funct;
+  DRT::UTILS::shape_function_2D( funct, 0, 0, DRT::Element::quad4 );
+
+  LINALG::Matrix<3,1> xyz;
+  xyz.Multiply( xyze, funct );
+
+  std::set<int> node_nids;
+  node_nids.insert( nodes.begin(), nodes.end() );
+  Node* middle = mesh.GetNode( node_nids, xyz.A() );
+  int middle_id = middle->Id();
+
+  std::vector<int> nids( 3 );
+
+  nids[0] = nodes[0];
+  nids[1] = nodes[1];
+  nids[2] = middle_id;
+  subsides_.push_back( mesh.GetSide( sid, nids, top_data ) );
+
+  nids[0] = nodes[1];
+  nids[1] = nodes[2];
+  nids[2] = middle_id;
+  subsides_.push_back( mesh.GetSide( sid, nids, top_data ) );
+
+  nids[0] = nodes[2];
+  nids[1] = nodes[3];
+  nids[2] = middle_id;
+  subsides_.push_back( mesh.GetSide( sid, nids, top_data ) );
+
+  nids[0] = nodes[3];
+  nids[1] = nodes[0];
+  nids[2] = middle_id;
+  subsides_.push_back( mesh.GetSide( sid, nids, top_data ) );
+}
+
 GEO::CUT::Quad8SideHandle::Quad8SideHandle( Mesh & mesh, int sid, const std::vector<int> & nodes )
 {
   subsides_.reserve( 4 );
@@ -147,6 +198,24 @@ void GEO::CUT::Tri6SideHandle::LocalCoordinates( const LINALG::Matrix<3,1> & xyz
   }
 
   Position2d<DRT::Element::tri6> pos( xyze, xyz );
+  bool success = pos.Compute();
+  if ( not success )
+  {
+  }
+  pos.LocalCoordinates( rst );
+}
+
+void GEO::CUT::Quad4SideHandle::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rst )
+{
+  LINALG::Matrix<3,4> xyze;
+
+  for ( int i=0; i<4; ++i )
+  {
+    Node * n = nodes_[i];
+    n->Coordinates( &xyze( 0, i ) );
+  }
+
+  Position2d<DRT::Element::quad4> pos( xyze, xyz );
   bool success = pos.Compute();
   if ( not success )
   {
