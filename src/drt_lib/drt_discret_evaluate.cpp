@@ -1575,5 +1575,64 @@ void DRT::Discretization::EvaluateScalars(
   return;
 }  // DRT::Discretization::EvaluateScalars
 
+/*----------------------------------------------------------------------*
+ |  evaluate/assemble scalars across elements (public)         gee 05/11|
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::EvaluateScalars(
+  Teuchos::ParameterList& params,
+  Teuchos::RCP<Epetra_MultiVector> scalars
+)
+{
+  if (!Filled()) dserror("FillComplete() was not called");
+  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+
+  Epetra_MultiVector& sca = *(scalars.get());
+
+  // number of scalars
+  const int numscalars = scalars->NumVectors();
+  if (numscalars <= 0) dserror("scalars vector of interest has size <=0");
+
+  // define element matrices and vectors
+  // -- which are empty and unused, just to satisfy element Evaluate()
+  Epetra_SerialDenseMatrix elematrix1;
+  Epetra_SerialDenseMatrix elematrix2;
+  Epetra_SerialDenseVector elevector2;
+  Epetra_SerialDenseVector elevector3;
+
+  // loop over _row_ elements
+  const int numrowele = NumMyRowElements();
+  for (int i=0; i<numrowele; ++i)
+  {
+    // pointer to current element
+    DRT::Element* actele = lRowElement(i);
+    
+    if (!scalars->Map().MyGID(actele->Id())) 
+      dserror("Proc does not have global element %d",actele->Id());
+
+    // get element location vector
+    Element::LocationArray la(dofsets_.size());
+    actele->LocationVector(*this,la,false);
+
+    // define element vector
+    Epetra_SerialDenseVector elescalars(numscalars);
+
+    // call the element evaluate method
+    {
+      int err = actele->Evaluate(params,*this,la,
+                                 elematrix1,elematrix2,elescalars,elevector2,elevector3);
+      if (err) dserror("Proc %d: Element %d returned err=%d",Comm().MyPID(),actele->Id(),err);
+    }
+
+    for (int j=0; j<numscalars; ++j)
+    {
+      (*sca(j))[i] = elescalars(j);
+    }
+    
+  } // for (int i=0; i<numrowele; ++i)
+
+
+  // bye
+  return;
+}  // DRT::Discretization::EvaluateScalars
 
 #endif  // #ifdef CCADISCRET

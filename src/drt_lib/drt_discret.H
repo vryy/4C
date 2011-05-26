@@ -1654,6 +1654,22 @@ public:
                        Teuchos::RCP<Epetra_SerialDenseVector> scalars  /*!< (out) scalars */
   );
 
+  /*!
+   * \brief Assemble scalar quantities for each element separately
+   *
+   * Every element is only called \b once by its owning processor. (We are
+   * parsing the element row map.) At this call the element return its value,
+   * i.e. its scalar. The scalar is put in a Epetra_Vector called "element scalar" 
+   * iun the parameter list
+   *
+   * Example: strain energy in structures
+   *
+   * \author gee \date 05/11
+   */
+  void EvaluateScalars(Teuchos::ParameterList& params,            /*!< parameters */
+                       Teuchos::RCP<Epetra_MultiVector> scalars   /*!< output element-wise scalar quantities */
+  );
+
   //@}
 
   //! @name IO methods
