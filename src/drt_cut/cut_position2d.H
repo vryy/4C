@@ -227,7 +227,20 @@ bool Position2d<elementtype,numNodesElement>::Compute()
     double det = LINALG::gaussElimination<true, 3>( A, b, dx );
     if ( fabs( det ) < tol )
     {
-      throw std::runtime_error( "no side-point distance?" );
+      if ( iter==0 )
+      {
+        // The side is a line. The points is not on a line.
+        return false;
+      }
+
+      std::stringstream str;
+      str << "position2d:\n"
+          << "xyz=" << xyze_
+          << "p=" << px_
+          << "xsi=" << xsi_
+          << "scale=" << scale_
+        ;
+      throw std::runtime_error( str.str() );
     }
 
     // update

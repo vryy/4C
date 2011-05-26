@@ -571,7 +571,7 @@ double Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeD
     //if ( fabs( det ) < LINSOLVETOL )
     if ( det==0 )
     {
-      throw std::runtime_error( "no side-point distance?" );
+      throw std::runtime_error( "intersection: no side-point distance?" );
     }
 
     // update
