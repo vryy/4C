@@ -1724,8 +1724,10 @@ void FLD::XFluidFluid::XFluidFluidState::GenAlphaUpdateAcceleration()
 }
 
 FLD::XFluidFluidResultTest2::XFluidFluidResultTest2( XFluidFluid * xfluid )
-  : discret_( *xfluid->bgdis_ ),
-    velnp_( xfluid->state_->velnp_ )
+  : bgdis_( *xfluid->bgdis_ ),
+    embdis_(*xfluid->embdis_ ),
+    velnp_( xfluid->state_->velnp_ ),
+    alevelnp_( xfluid->state_->alevelnp_ )
 {
 }
 
@@ -1740,11 +1742,11 @@ void FLD::XFluidFluidResultTest2::TestNode(DRT::INPUT::LineDefinition& res, int&
   res.ExtractInt("NODE",node);
   node -= 1;
 
-  if (discret_.HaveGlobalNode(node))
+  if (bgdis_.HaveGlobalNode(node))
   {
-    DRT::Node* actnode = discret_.gNode(node);
+    DRT::Node* actnode = bgdis_.gNode(node);
 
-    if (actnode->Owner() != discret_.Comm().MyPID())
+    if (actnode->Owner() != bgdis_.Comm().MyPID())
       return;
 
     double result = 0.;
@@ -1755,19 +1757,56 @@ void FLD::XFluidFluidResultTest2::TestNode(DRT::INPUT::LineDefinition& res, int&
     res.ExtractString("POSITION",position);
     if (position=="velx")
     {
-      result = (*velnp_)[velnpmap.LID(discret_.Dof(actnode,0))];
+      result = (*velnp_)[velnpmap.LID(bgdis_.Dof(actnode,0))];
     }
     else if (position=="vely")
     {
-      result = (*velnp_)[velnpmap.LID(discret_.Dof(actnode,1))];
+      result = (*velnp_)[velnpmap.LID(bgdis_.Dof(actnode,1))];
     }
     else if (position=="velz")
     {
-      result = (*velnp_)[velnpmap.LID(discret_.Dof(actnode,2))];
+      result = (*velnp_)[velnpmap.LID(bgdis_.Dof(actnode,2))];
     }
     else if (position=="pressure")
     {
-      result = (*velnp_)[velnpmap.LID(discret_.Dof(actnode,3))];
+      result = (*velnp_)[velnpmap.LID(bgdis_.Dof(actnode,3))];
+    }
+    else
+    {
+      dserror("position '%s' not supported in ale testing", position.c_str());
+    }
+
+    nerr += CompareValues(result, res);
+    test_count++;
+  }
+  else if(embdis_.HaveGlobalNode(node))
+  {
+        DRT::Node* actnode = embdis_.gNode(node);
+
+    if (actnode->Owner() != embdis_.Comm().MyPID())
+      return;
+
+    double result = 0.;
+
+    const Epetra_BlockMap& velnpmap = alevelnp_->Map();
+
+    std::string position;
+    res.ExtractString("POSITION",position);
+    if (position=="velx")
+    {
+      result = (*alevelnp_)[velnpmap.LID(embdis_.Dof(actnode,0))];
+    }
+    else if (position=="vely")
+    {
+      result = (*alevelnp_)[velnpmap.LID(embdis_.Dof(actnode,1))];
+    }
+    else if (position=="velz")
+    {
+      result = (*alevelnp_)[velnpmap.LID(embdis_.Dof(actnode,2))];
+    }
+    else if (position=="pressure")
+    {
+      result = (*alevelnp_)[velnpmap.LID(embdis_.Dof(actnode,3))];
     }
     else
     {

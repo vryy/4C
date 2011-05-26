@@ -62,8 +62,10 @@ namespace FLD
     virtual bool Match(DRT::INPUT::LineDefinition& res);
 
   private:
-    DRT::Discretization & discret_;
+    DRT::Discretization & bgdis_;
+    DRT::Discretization & embdis_;
     Teuchos::RCP<Epetra_Vector> velnp_;
+    Teuchos::RCP<Epetra_Vector> alevelnp_;
   };
 
   class XFluidFluid

@@ -316,6 +316,8 @@ void fluid_fluid_drt()
                                     problem->ErrorFile()->Handle()));
   FLD::XFluidFluid fluid(bgfluiddis,embfluiddis,*solver,problem->FluidDynamicParams());
   fluid.IntegrateFluidFluid();
+  DRT::Problem::Instance()->AddFieldTest(Teuchos::rcp(new FLD::XFluidFluidResultTest2(&fluid)));
+  DRT::Problem::Instance()->TestAll(comm);
 }
 
 /*----------------------------------------------------------------------*/
