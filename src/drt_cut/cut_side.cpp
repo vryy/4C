@@ -368,6 +368,9 @@ void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, std::se
 
 void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, const std::vector<Point*> & points, std::set<Facet*> & facets )
 {
+  if ( points.size() < 3 )
+    return;
+
   // ignore cycles with points outside the current element
   for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
   {
@@ -391,7 +394,10 @@ void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, const s
   }
   if ( sides.size()>1 )
   {
-    throw std::runtime_error( "can touch exactly one element side" );
+    std::stringstream str;
+    str << "can touch exactly one element side: ";
+    std::copy( points.begin(), points.end(), std::ostream_iterator<Point*>( str, " " ) );
+    throw std::runtime_error( str.str() );
   }
   else if ( sides.size()==1 )
   {

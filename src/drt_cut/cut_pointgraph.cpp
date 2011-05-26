@@ -39,7 +39,7 @@ GEO::CUT::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, L
 #endif
   }
 
-#if 0
+#if 1
 #ifdef DEBUGCUTLIBRARY
   {
     std::ofstream f( "all_points.plot" );
@@ -52,7 +52,7 @@ GEO::CUT::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, L
 #endif
 #endif
 
-  graph_.FindCycles( side, cycle, location, strategy );
+  graph_.FindCycles( element, side, cycle, location, strategy );
 }
 
 void GEO::CUT::PointGraph::FillGraph( Element * element, Side * side, std::vector<Point*> & cycle, Strategy strategy )
@@ -294,7 +294,7 @@ bool FindCycles( graph_t & g, std::vector<Point*> & cycle, std::map<vertex_t, LI
   }
 }
 
-void GEO::CUT::PointGraph::Graph::FindCycles( Side * side, std::vector<Point*> & cycle, Location location, Strategy strategy )
+void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, std::vector<Point*> & cycle, Location location, Strategy strategy )
 {
   graph_t g;
 
@@ -309,9 +309,13 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Side * side, std::vector<Point*> &
   {
     int n = i->first;
 
-    vertex_t u = add_vertex( g );
-    name_map[u] = GetPoint( n );
-    vertex_map[n] = u;
+    Point * p = GetPoint( n );
+//     if ( location==element_side or p->IsCut( element ) )
+    {
+      vertex_t u = add_vertex( g );
+      name_map[u] = p;
+      vertex_map[n] = u;
+    }
   }
 
   int counter = 0;
@@ -319,26 +323,35 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Side * side, std::vector<Point*> &
   for ( std::map<int, std::set<int> >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
   {
     int u = i->first;
-    std::set<int> & row = i->second;
 
-    for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
+    Point * p1 = GetPoint( u );
+//     if ( location==element_side or p1->IsCut( element ) )
     {
-      int v = *i;
-      if ( u < v )
+      std::set<int> & row = i->second;
+
+      for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
       {
-        edge_t e;
-        bool inserted;
-        boost::tie( e, inserted ) = boost::add_edge( vertex_map[u], vertex_map[v], g );
-        if ( inserted )
+        int v = *i;
+        Point * p2 = GetPoint( v );
+//         if ( location==element_side or p2->IsCut( element ) )
         {
-          edge_index_map[e] = counter;
-          counter += 1;
+          if ( u < v )
+          {
+            edge_t e;
+            bool inserted;
+            boost::tie( e, inserted ) = boost::add_edge( vertex_map[u], vertex_map[v], g );
+            if ( inserted )
+            {
+              edge_index_map[e] = counter;
+              counter += 1;
+            }
+          }
         }
       }
     }
   }
 
-  if ( strategy==own_lines or boost::num_vertices( g )==cycle.size() )
+  if ( strategy==own_lines )
   {
     std::set<cycle_t*> base_cycles;
     find_cycles( g, base_cycles );
@@ -446,7 +459,8 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Side * side, std::vector<Point*> &
     }
     else
     {
-      throw std::runtime_error( "empty graph discovered" );
+      if ( location==element_side )
+        throw std::runtime_error( "empty graph discovered" );
     }
   }
 }

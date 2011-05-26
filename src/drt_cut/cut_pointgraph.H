@@ -45,7 +45,7 @@ private:
 
     void PlotPoints( Element * element );
 
-    void FindCycles( Side * side, std::vector<Point*> & cycle, Location location, Strategy strategy );
+    void FindCycles( Element * element, Side * side, std::vector<Point*> & cycle, Location location, Strategy strategy );
 
     void FixSinglePoints();
 

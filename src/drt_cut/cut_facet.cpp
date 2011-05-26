@@ -314,10 +314,12 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
   {
     std::vector<Point*> & line = *i;
     triangulation_.push_back( std::vector<Point*>() );
-    triangulation_.back().push_back( p1 );
 
-    std::copy( line.begin(), line.end(), std::back_inserter( triangulation_.back() ) );
-    //triangulation_.back().insert( triangulation_.back().end(), line.begin(), line.end() );
+    std::vector<Point*> & newtri = triangulation_.back();
+    newtri.push_back( p1 );
+
+    //std::copy( line.begin(), line.end(), std::back_inserter( triangulation_.back() ) );
+    newtri.insert( newtri.end(), line.begin(), line.end() );
 
     //std::copy( line.begin(), line.end(), std::ostream_iterator<Point*>( std::cout, "; " ) );
     //std::cout << "\n";

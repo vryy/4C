@@ -2888,6 +2888,338 @@ void test_hex8_quad4_alex32()
   intersection.Status();
 }
 
+void test_hex8_quad4_alex33()
+{
+  GEO::CUT::MeshIntersection intersection;
+
+  std::vector<int> nids( 4 );
+
+  Epetra_SerialDenseMatrix quad4_xyze( 3, 4 );
+
+  std::map<std::string, int> nodeids;
+
+  nxyz1(9.498530e-01,4.279690e-01,2.565073e-01);
+  nxyz2(9.496624e-01,4.278901e-01,2.244228e-01);
+  nxyz3(9.452894e-01,4.592464e-01,2.244288e-01);
+  nxyz4(9.454342e-01,4.593227e-01,2.565221e-01);
+
+  intersection.AddCutSide( 1, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(9.452894e-01,4.592464e-01,2.244288e-01);
+  nxyz2(9.451478e-01,4.591754e-01,1.923355e-01);
+  nxyz3(9.408188e-01,4.905113e-01,1.923740e-01);
+  nxyz4(9.409217e-01,4.905776e-01,2.244782e-01);
+
+  intersection.AddCutSide( 2, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(9.496624e-01,4.278901e-01,2.244228e-01);
+  nxyz2(9.494806e-01,4.278134e-01,1.923335e-01);
+  nxyz3(9.451478e-01,4.591754e-01,1.923355e-01);
+  nxyz4(9.452894e-01,4.592464e-01,2.244288e-01);
+
+  intersection.AddCutSide( 3, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(9.454342e-01,4.593227e-01,2.565221e-01);
+  nxyz2(9.452894e-01,4.592464e-01,2.244288e-01);
+  nxyz3(9.409217e-01,4.905776e-01,2.244782e-01);
+  nxyz4(9.410197e-01,4.906515e-01,2.565843e-01);
+
+  intersection.AddCutSide( 4, nids, quad4_xyze, DRT::Element::quad4 );
+
+  Epetra_SerialDenseMatrix hex8_xyze( 3, 8 );
+
+  hex8_xyze(0,0) = 9.552239e-01;
+  hex8_xyze(1,0) = 4.444444e-01;
+  hex8_xyze(2,0) = 2.058824e-01;
+  hex8_xyze(0,1) = 9.552239e-01;
+  hex8_xyze(1,1) = 4.592593e-01;
+  hex8_xyze(2,1) = 2.058824e-01;
+  hex8_xyze(0,2) = 9.402985e-01;
+  hex8_xyze(1,2) = 4.592593e-01;
+  hex8_xyze(2,2) = 2.058824e-01;
+  hex8_xyze(0,3) = 9.402985e-01;
+  hex8_xyze(1,3) = 4.444444e-01;
+  hex8_xyze(2,3) = 2.058824e-01;
+  hex8_xyze(0,4) = 9.552239e-01;
+  hex8_xyze(1,4) = 4.444444e-01;
+  hex8_xyze(2,4) = 2.352941e-01;
+  hex8_xyze(0,5) = 9.552239e-01;
+  hex8_xyze(1,5) = 4.592593e-01;
+  hex8_xyze(2,5) = 2.352941e-01;
+  hex8_xyze(0,6) = 9.402985e-01;
+  hex8_xyze(1,6) = 4.592593e-01;
+  hex8_xyze(2,6) = 2.352941e-01;
+  hex8_xyze(0,7) = 9.402985e-01;
+  hex8_xyze(1,7) = 4.444444e-01;
+  hex8_xyze(2,7) = 2.352941e-01;
+
+  nids.clear();
+  for ( int i=0; i<8; ++i )
+    nids.push_back( i );
+
+  intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
+
+  intersection.Status();
+  intersection.Cut( true );
+  intersection.Status();
+}
+
+void test_hex8_quad4_alex34()
+{
+  GEO::CUT::MeshIntersection intersection;
+
+  std::vector<int> nids( 4 );
+
+  Epetra_SerialDenseMatrix quad4_xyze( 3, 4 );
+
+  std::map<std::string, int> nodeids;
+
+  nxyz1(9.654395e-01,3.724018e-01,1.929025e-01);
+  nxyz2(9.658465e-01,3.723620e-01,2.249979e-01);
+  nxyz3(9.896019e-01,3.601832e-01,2.247724e-01);
+  nxyz4(9.892369e-01,3.603100e-01,1.926747e-01);
+
+  intersection.AddCutSide( 1, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(9.513290e-01,3.441290e-01,2.249951e-01);
+  nxyz2(9.658465e-01,3.723620e-01,2.249979e-01);
+  nxyz3(9.654395e-01,3.724018e-01,1.929025e-01);
+  nxyz4(9.510218e-01,3.441215e-01,1.929042e-01);
+
+  intersection.AddCutSide( 2, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(9.658465e-01,3.723620e-01,2.249979e-01);
+  nxyz2(9.662598e-01,3.723388e-01,2.571007e-01);
+  nxyz3(9.899602e-01,3.600738e-01,2.568700e-01);
+  nxyz4(9.896019e-01,3.601832e-01,2.247724e-01);
+
+  intersection.AddCutSide( 3, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(9.516350e-01,3.441686e-01,2.570851e-01);
+  nxyz2(9.662598e-01,3.723388e-01,2.571007e-01);
+  nxyz3(9.658465e-01,3.723620e-01,2.249979e-01);
+  nxyz4(9.513290e-01,3.441290e-01,2.249951e-01);
+
+  intersection.AddCutSide( 4, nids, quad4_xyze, DRT::Element::quad4 );
+
+  Epetra_SerialDenseMatrix hex8_xyze( 3, 8 );
+
+  hex8_xyze(0,0) = 9.750000e-01;
+  hex8_xyze(1,0) = 3.750000e-01;
+  hex8_xyze(2,0) = 2.250000e-01;
+  hex8_xyze(0,1) = 9.750000e-01;
+  hex8_xyze(1,1) = 3.500000e-01;
+  hex8_xyze(2,1) = 2.250000e-01;
+  hex8_xyze(0,2) = 9.500000e-01;
+  hex8_xyze(1,2) = 3.500000e-01;
+  hex8_xyze(2,2) = 2.250000e-01;
+  hex8_xyze(0,3) = 9.500000e-01;
+  hex8_xyze(1,3) = 3.750000e-01;
+  hex8_xyze(2,3) = 2.250000e-01;
+  hex8_xyze(0,4) = 9.750000e-01;
+  hex8_xyze(1,4) = 3.750000e-01;
+  hex8_xyze(2,4) = 2.000000e-01;
+  hex8_xyze(0,5) = 9.750000e-01;
+  hex8_xyze(1,5) = 3.500000e-01;
+  hex8_xyze(2,5) = 2.000000e-01;
+  hex8_xyze(0,6) = 9.500000e-01;
+  hex8_xyze(1,6) = 3.500000e-01;
+  hex8_xyze(2,6) = 2.000000e-01;
+  hex8_xyze(0,7) = 9.500000e-01;
+  hex8_xyze(1,7) = 3.750000e-01;
+  hex8_xyze(2,7) = 2.000000e-01;
+
+  nids.clear();
+  for ( int i=0; i<8; ++i )
+    nids.push_back( i );
+
+  intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
+
+  intersection.Status();
+  intersection.Cut( true );
+  intersection.Status();
+}
+
+void test_hex8_quad4_alex35()
+{
+  GEO::CUT::MeshIntersection intersection;
+
+  std::vector<int> nids( 4 );
+
+  Epetra_SerialDenseMatrix quad4_xyze( 3, 4 );
+
+  std::map<std::string, int> nodeids;
+
+  nxyz1(9.557365e-01,3.428832e-01,1.286608e-01);
+  nxyz2(9.705318e-01,3.709260e-01,1.286612e-01);
+  nxyz3(9.702512e-01,3.709883e-01,9.650093e-02);
+  nxyz4(9.555130e-01,3.429299e-01,9.650103e-02);
+
+  intersection.AddCutSide( 1, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(9.409015e-01,3.147291e-01,1.286048e-01);
+  nxyz2(9.557365e-01,3.428832e-01,1.286608e-01);
+  nxyz3(9.555130e-01,3.429299e-01,9.650103e-02);
+  nxyz4(9.407246e-01,3.147650e-01,9.646085e-02);
+
+  intersection.AddCutSide( 2, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(9.555130e-01,3.429299e-01,9.650103e-02);
+  nxyz2(9.702512e-01,3.709883e-01,9.650093e-02);
+  nxyz3(9.700342e-01,3.710408e-01,6.431592e-02);
+  nxyz4(9.553374e-01,3.429723e-01,6.431625e-02);
+
+  intersection.AddCutSide( 3, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(9.407246e-01,3.147650e-01,9.646085e-02);
+  nxyz2(9.555130e-01,3.429299e-01,9.650103e-02);
+  nxyz3(9.553374e-01,3.429723e-01,6.431625e-02);
+  nxyz4(9.405818e-01,3.148011e-01,6.429014e-02);
+
+  intersection.AddCutSide( 4, nids, quad4_xyze, DRT::Element::quad4 );
+
+  Epetra_SerialDenseMatrix hex8_xyze( 3, 8 );
+
+  hex8_xyze(0,0) = 9.615385e-01;
+  hex8_xyze(1,0) = 3.809524e-01;
+  hex8_xyze(2,0) = 1.111111e-01;
+  hex8_xyze(0,1) = 9.615385e-01;
+  hex8_xyze(1,1) = 3.428571e-01;
+  hex8_xyze(2,1) = 1.111111e-01;
+  hex8_xyze(0,2) = 9.230769e-01;
+  hex8_xyze(1,2) = 3.428571e-01;
+  hex8_xyze(2,2) = 1.111111e-01;
+  hex8_xyze(0,3) = 9.230769e-01;
+  hex8_xyze(1,3) = 3.809524e-01;
+  hex8_xyze(2,3) = 1.111111e-01;
+  hex8_xyze(0,4) = 9.615385e-01;
+  hex8_xyze(1,4) = 3.809524e-01;
+  hex8_xyze(2,4) = 8.333333e-02;
+  hex8_xyze(0,5) = 9.615385e-01;
+  hex8_xyze(1,5) = 3.428571e-01;
+  hex8_xyze(2,5) = 8.333333e-02;
+  hex8_xyze(0,6) = 9.230769e-01;
+  hex8_xyze(1,6) = 3.428571e-01;
+  hex8_xyze(2,6) = 8.333333e-02;
+  hex8_xyze(0,7) = 9.230769e-01;
+  hex8_xyze(1,7) = 3.809524e-01;
+  hex8_xyze(2,7) = 8.333333e-02;
+
+  nids.clear();
+  for ( int i=0; i<8; ++i )
+    nids.push_back( i );
+
+  intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
+
+  intersection.Status();
+  intersection.Cut( true );
+  intersection.Status();
+}
+
+void test_hex8_quad4_alex36()
+{
+  GEO::CUT::MeshIntersection intersection;
+
+  std::vector<int> nids( 4 );
+
+  Epetra_SerialDenseMatrix quad4_xyze( 3, 4 );
+
+  std::map<std::string, int> nodeids;
+
+  nxyz1(1.013108e+00,4.491975e-01,1.927528e-01);
+  nxyz2(1.012861e+00,4.490732e-01,1.606404e-01);
+  nxyz3(1.035538e+00,4.631656e-01,1.605541e-01);
+  nxyz4(1.035744e+00,4.633647e-01,1.926876e-01);
+
+  intersection.AddCutSide( 1, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(1.012861e+00,4.490732e-01,1.606404e-01);
+  nxyz2(1.012618e+00,4.489440e-01,1.285139e-01);
+  nxyz3(1.035330e+00,4.629754e-01,1.284178e-01);
+  nxyz4(1.035538e+00,4.631656e-01,1.605541e-01);
+
+  intersection.AddCutSide( 2, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(1.058235e+00,4.772966e-01,1.604059e-01);
+  nxyz2(1.058066e+00,4.770501e-01,1.282692e-01);
+  nxyz3(1.041395e+00,5.038824e-01,1.282505e-01);
+  nxyz4(1.041505e+00,5.040821e-01,1.603877e-01);
+
+  intersection.AddCutSide( 3, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(1.041505e+00,5.040821e-01,1.603877e-01);
+  nxyz2(1.041395e+00,5.038824e-01,1.282505e-01);
+  nxyz3(1.024790e+00,5.306275e-01,1.282941e-01);
+  nxyz4(1.024853e+00,5.307872e-01,1.604537e-01);
+
+  intersection.AddCutSide( 4, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(1.035744e+00,4.633647e-01,1.926876e-01);
+  nxyz2(1.035538e+00,4.631656e-01,1.605541e-01);
+  nxyz3(1.058235e+00,4.772966e-01,1.604059e-01);
+  nxyz4(1.058396e+00,4.775672e-01,1.925550e-01);
+
+  intersection.AddCutSide( 5, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(1.035538e+00,4.631656e-01,1.605541e-01);
+  nxyz2(1.035330e+00,4.629754e-01,1.284178e-01);
+  nxyz3(1.058066e+00,4.770501e-01,1.282692e-01);
+  nxyz4(1.058235e+00,4.772966e-01,1.604059e-01);
+
+  intersection.AddCutSide( 6, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(1.058396e+00,4.775672e-01,1.925550e-01);
+  nxyz2(1.058235e+00,4.772966e-01,1.604059e-01);
+  nxyz3(1.041505e+00,5.040821e-01,1.603877e-01);
+  nxyz4(1.041586e+00,5.042994e-01,1.925434e-01);
+
+  intersection.AddCutSide( 7, nids, quad4_xyze, DRT::Element::quad4 );
+
+  nxyz1(1.041586e+00,5.042994e-01,1.925434e-01);
+  nxyz2(1.041505e+00,5.040821e-01,1.603877e-01);
+  nxyz3(1.024853e+00,5.307872e-01,1.604537e-01);
+  nxyz4(1.024866e+00,5.309578e-01,1.926398e-01);
+
+  intersection.AddCutSide( 8, nids, quad4_xyze, DRT::Element::quad4 );
+
+  Epetra_SerialDenseMatrix hex8_xyze( 3, 8 );
+
+  hex8_xyze(0,0) = 1.063830e+00;
+  hex8_xyze(1,0) = 5.052632e-01;
+  hex8_xyze(2,0) = 1.875000e-01;
+  hex8_xyze(0,1) = 1.063830e+00;
+  hex8_xyze(1,1) = 4.631579e-01;
+  hex8_xyze(2,1) = 1.875000e-01;
+  hex8_xyze(0,2) = 1.021277e+00;
+  hex8_xyze(1,2) = 4.631579e-01;
+  hex8_xyze(2,2) = 1.875000e-01;
+  hex8_xyze(0,3) = 1.021277e+00;
+  hex8_xyze(1,3) = 5.052632e-01;
+  hex8_xyze(2,3) = 1.875000e-01;
+  hex8_xyze(0,4) = 1.063830e+00;
+  hex8_xyze(1,4) = 5.052632e-01;
+  hex8_xyze(2,4) = 1.562500e-01;
+  hex8_xyze(0,5) = 1.063830e+00;
+  hex8_xyze(1,5) = 4.631579e-01;
+  hex8_xyze(2,5) = 1.562500e-01;
+  hex8_xyze(0,6) = 1.021277e+00;
+  hex8_xyze(1,6) = 4.631579e-01;
+  hex8_xyze(2,6) = 1.562500e-01;
+  hex8_xyze(0,7) = 1.021277e+00;
+  hex8_xyze(1,7) = 5.052632e-01;
+  hex8_xyze(2,7) = 1.562500e-01;
+
+  nids.clear();
+  for ( int i=0; i<8; ++i )
+    nids.push_back( i );
+
+  intersection.AddElement( 1, nids, hex8_xyze, DRT::Element::hex8 );
+
+  intersection.Status();
+  intersection.Cut( true );
+  intersection.Status();
+}
+
 void test_hex8_tri3_ursula1()
 {
   GEO::CUT::MeshIntersection intersection;
