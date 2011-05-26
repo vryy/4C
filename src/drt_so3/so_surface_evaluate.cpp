@@ -162,14 +162,10 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   // Now do the nurbs specific stuff
   bool nurbsele=false;
 
-  DRT::NURBS::NurbsDiscretization* nurbsdis
-    =
+  DRT::NURBS::NurbsDiscretization* nurbsdis =
     dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-  if(nurbsdis!=NULL)
-  {
-    nurbsele=true;
-  }
+  if(nurbsdis!=NULL) nurbsele=true;
 
   // factor for surface orientation
   double normalfac=1.0;
@@ -188,10 +184,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   {
     // --------------------------------------------------
     // get knotvector
-
-
     RCP<DRT::NURBS::Knotvector> knots=(*nurbsdis).GetKnotVector();
-
     bool zero_size=knots->GetBoundaryEleAndParentKnots(mypknots     ,
                                                        myknots      ,
                                                        normalfac    ,
@@ -200,19 +193,14 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
     // elements that have zero size in knotspan are skipped
     // (only required to enforce interpolation at certain points
     //  using repeated knots)
-    if(zero_size)
-    {
-      return 0;
-    }
+    if(zero_size) return 0;
 
     // --------------------------------------------------
     // get node weights for nurbs elements
     for (int inode=0; inode<numnode; inode++)
     {
-      DRT::NURBS::ControlPoint* cp
-        =
+      DRT::NURBS::ControlPoint* cp =
         dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
-
       weights(inode) = cp->W();
     }
   }
@@ -243,12 +231,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
     else
     {
       DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
-        (funct  ,
-         deriv  ,
-         e      ,
-         myknots,
-         weights,
-         nurbs9);
+        (funct,deriv,e,myknots,weights,nurbs9);
     }
 
     //Stuff to get spatial Neumann
@@ -346,7 +329,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
       val_curvefac_functfac = curvefac*functfac;
 
 
-      const double fac = intpoints.qwgt[gp] * val_curvefac_functfac* ortho_value * normalfac;
+      const double fac = intpoints.qwgt[gp] * val_curvefac_functfac * ortho_value * normalfac;
       for (int node=0; node < numnode; ++node)
         for(int dim=0 ; dim<3; dim++)
           elevec1[node*numdf+dim] += funct[node] * normal[dim] * fac;
