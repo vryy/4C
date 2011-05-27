@@ -472,6 +472,7 @@ void DRT::ELEMENTS::So_weg6::InitJacobianMapping()
 
     invJ_[gp].Multiply(deriv_gp,xrefe);
     detJ_[gp] = invJ_[gp].Invert();
+    if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0",detJ_[gp]);
 
     if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
       if (!(prestress_->IsInit()))

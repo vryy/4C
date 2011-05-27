@@ -284,13 +284,13 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
 
     case calc_struct_reset_istep:
     {
-    	// Update of history for plastic material
-			RCP<MAT::Material> mat = Material();
-			if (mat->MaterialType() == INPAR::MAT::m_plneohooke)
-			{
-				MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
-				plastic->Update();
-			}
+      // Update of history for plastic material
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_plneohooke)
+      {
+	MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
+	plastic->Update();
+      }
     }
     break;
 
@@ -375,6 +375,7 @@ void DRT::ELEMENTS::So_hex8fbar::InitJacobianMapping()
     //invJ_[gp].Shape(NUMDIM_SOH8,NUMDIM_SOH8);
     invJ_[gp].Multiply(derivs[gp],xrefe);
     detJ_[gp] = invJ_[gp].Invert();
+    if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0",detJ_[gp]);
 
     if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
       if (!(prestress_->IsInit()))
@@ -673,30 +674,30 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
       // rewriting Green-Lagrange strains in matrix format
       LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> gl_bar;
       gl_bar(0,0) = glstrain_bar(0);
-			gl_bar(0,1) = 0.5*glstrain_bar(3);
-			gl_bar(0,2) = 0.5*glstrain_bar(5);
-			gl_bar(1,0) = gl_bar(0,1);
-			gl_bar(1,1) = glstrain_bar(1);
-			gl_bar(1,2) = 0.5*glstrain_bar(4);
-			gl_bar(2,0) = gl_bar(0,2);
-			gl_bar(2,1) = gl_bar(1,2);
-			gl_bar(2,2) = glstrain_bar(2);
+      gl_bar(0,1) = 0.5*glstrain_bar(3);
+      gl_bar(0,2) = 0.5*glstrain_bar(5);
+      gl_bar(1,0) = gl_bar(0,1);
+      gl_bar(1,1) = glstrain_bar(1);
+      gl_bar(1,2) = 0.5*glstrain_bar(4);
+      gl_bar(2,0) = gl_bar(0,2);
+      gl_bar(2,1) = gl_bar(1,2);
+      gl_bar(2,2) = glstrain_bar(2);
 
-	    // inverse of fbar deformation gradient
-			LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> invdefgrd_bar;
-			invdefgrd_bar.Invert(defgrd_bar);
+      // inverse of fbar deformation gradient
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> invdefgrd_bar;
+      invdefgrd_bar.Invert(defgrd_bar);
 
-			LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> temp;
-			LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> euler_almansi_bar;
-			temp.Multiply(gl_bar,invdefgrd_bar);
-			euler_almansi_bar.MultiplyTN(invdefgrd_bar,temp);
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> temp;
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> euler_almansi_bar;
+      temp.Multiply(gl_bar,invdefgrd_bar);
+      euler_almansi_bar.MultiplyTN(invdefgrd_bar,temp);
 
-			(*elestrain)(gp,0) = euler_almansi_bar(0,0);
-			(*elestrain)(gp,1) = euler_almansi_bar(1,1);
-			(*elestrain)(gp,2) = euler_almansi_bar(2,2);
-			(*elestrain)(gp,3) = euler_almansi_bar(0,1);
-			(*elestrain)(gp,4) = euler_almansi_bar(1,2);
-			(*elestrain)(gp,5) = euler_almansi_bar(0,2);
+      (*elestrain)(gp,0) = euler_almansi_bar(0,0);
+      (*elestrain)(gp,1) = euler_almansi_bar(1,1);
+      (*elestrain)(gp,2) = euler_almansi_bar(2,2);
+      (*elestrain)(gp,3) = euler_almansi_bar(0,1);
+      (*elestrain)(gp,4) = euler_almansi_bar(1,2);
+      (*elestrain)(gp,5) = euler_almansi_bar(0,2);
     }
     break;
     case INPAR::STR::strain_none:
@@ -776,27 +777,27 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
       const double detF_bar = defgrd_bar.Determinant();
 
       LINALG::Matrix<3,3> pkstress_bar;
-			pkstress_bar(0,0) = stress_bar(0);
-			pkstress_bar(0,1) = stress_bar(3);
-			pkstress_bar(0,2) = stress_bar(5);
-			pkstress_bar(1,0) = pkstress_bar(0,1);
-			pkstress_bar(1,1) = stress_bar(1);
-			pkstress_bar(1,2) = stress_bar(4);
-			pkstress_bar(2,0) = pkstress_bar(0,2);
-			pkstress_bar(2,1) = pkstress_bar(1,2);
-			pkstress_bar(2,2) = stress_bar(2);
+      pkstress_bar(0,0) = stress_bar(0);
+      pkstress_bar(0,1) = stress_bar(3);
+      pkstress_bar(0,2) = stress_bar(5);
+      pkstress_bar(1,0) = pkstress_bar(0,1);
+      pkstress_bar(1,1) = stress_bar(1);
+      pkstress_bar(1,2) = stress_bar(4);
+      pkstress_bar(2,0) = pkstress_bar(0,2);
+      pkstress_bar(2,1) = pkstress_bar(1,2);
+      pkstress_bar(2,2) = stress_bar(2);
 
-			LINALG::Matrix<3,3> temp;
-			LINALG::Matrix<3,3> cauchystress_bar;
-			temp.Multiply(1.0/detF_bar,defgrd_bar,pkstress_bar,0.0);
-			cauchystress_bar.MultiplyNT(temp,defgrd_bar);
+      LINALG::Matrix<3,3> temp;
+      LINALG::Matrix<3,3> cauchystress_bar;
+      temp.Multiply(1.0/detF_bar,defgrd_bar,pkstress_bar,0.0);
+      cauchystress_bar.MultiplyNT(temp,defgrd_bar);
 
-			(*elestress)(gp,0) = cauchystress_bar(0,0);
-			(*elestress)(gp,1) = cauchystress_bar(1,1);
-			(*elestress)(gp,2) = cauchystress_bar(2,2);
-			(*elestress)(gp,3) = cauchystress_bar(0,1);
-			(*elestress)(gp,4) = cauchystress_bar(1,2);
-			(*elestress)(gp,5) = cauchystress_bar(0,2);
+      (*elestress)(gp,0) = cauchystress_bar(0,0);
+      (*elestress)(gp,1) = cauchystress_bar(1,1);
+      (*elestress)(gp,2) = cauchystress_bar(2,2);
+      (*elestress)(gp,3) = cauchystress_bar(0,1);
+      (*elestress)(gp,4) = cauchystress_bar(1,2);
+      (*elestress)(gp,5) = cauchystress_bar(0,2);
     }
     break;
     case INPAR::STR::stress_none:
@@ -840,40 +841,40 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
       } // end of integrate `geometric' stiffness******************************
 
       // integrate additional fbar matrix
-			LINALG::Matrix<NUMSTR_SOH8,1> cauchygreenvector;
-			cauchygreenvector(0) = cauchygreen(0,0);
-			cauchygreenvector(1) = cauchygreen(1,1);
-			cauchygreenvector(2) = cauchygreen(2,2);
-			cauchygreenvector(3) = 2*cauchygreen(0,1);
-			cauchygreenvector(4) = 2*cauchygreen(1,2);
-			cauchygreenvector(5) = 2*cauchygreen(2,0);
+     LINALG::Matrix<NUMSTR_SOH8,1> cauchygreenvector;
+     cauchygreenvector(0) = cauchygreen(0,0);
+     cauchygreenvector(1) = cauchygreen(1,1);
+     cauchygreenvector(2) = cauchygreen(2,2);
+     cauchygreenvector(3) = 2*cauchygreen(0,1);
+     cauchygreenvector(4) = 2*cauchygreen(1,2);
+     cauchygreenvector(5) = 2*cauchygreen(2,0);
 
-			LINALG::Matrix<NUMSTR_SOH8,1> ccg;
-			ccg.Multiply(cmat,cauchygreenvector);
+     LINALG::Matrix<NUMSTR_SOH8,1> ccg;
+     ccg.Multiply(cmat,cauchygreenvector);
 
-			LINALG::Matrix<NUMDOF_SOH8,1> bopccg(false); // auxiliary integrated stress
-			bopccg.MultiplyTN(detJ_w*f_bar_factor/3.0,bop,ccg);
+     LINALG::Matrix<NUMDOF_SOH8,1> bopccg(false); // auxiliary integrated stress
+     bopccg.MultiplyTN(detJ_w*f_bar_factor/3.0,bop,ccg);
 
-			double htensor[NUMDOF_SOH8];
-			for(int n=0;n<NUMDOF_SOH8;n++)
-			{
-				htensor[n]=0;
-				for(int i=0;i<NUMDIM_SOH8;i++)
-					{
-						htensor[n] += invdefgrd_0(i,n%3)*N_XYZ_0(i,n/3)-invdefgrd(i,n%3)*N_XYZ(i,n/3);
-					}
-			}
+     double htensor[NUMDOF_SOH8];
+     for(int n=0;n<NUMDOF_SOH8;n++)
+     {
+       htensor[n]=0;
+       for(int i=0;i<NUMDIM_SOH8;i++)
+       {
+         htensor[n] += invdefgrd_0(i,n%3)*N_XYZ_0(i,n/3)-invdefgrd(i,n%3)*N_XYZ(i,n/3);
+       }
+     }
 
-			LINALG::Matrix<NUMDOF_SOH8,1> bops(false); // auxiliary integrated stress
-			bops.MultiplyTN(-detJ_w/f_bar_factor/3.0,bop,stress_bar);
-			for(int i=0;i<NUMDOF_SOH8;i++)
-			{
-				for (int j=0;j<NUMDOF_SOH8;j++)
-					{
-						(*stiffmatrix)(i,j) += htensor[j]*(bops(i,0)+bopccg(i,0));
-					}
-			} // end of integrate additional `fbar' stiffness**********************
-	  }
+     LINALG::Matrix<NUMDOF_SOH8,1> bops(false); // auxiliary integrated stress
+     bops.MultiplyTN(-detJ_w/f_bar_factor/3.0,bop,stress_bar);
+     for(int i=0;i<NUMDOF_SOH8;i++)
+     {
+       for (int j=0;j<NUMDOF_SOH8;j++)
+       {
+         (*stiffmatrix)(i,j) += htensor[j]*(bops(i,0)+bopccg(i,0));
+       }
+     } // end of integrate additional `fbar' stiffness**********************
+    }
 
     if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
     {

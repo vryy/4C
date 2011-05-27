@@ -753,6 +753,7 @@ void DRT::ELEMENTS::So_tet4::InitJacobianMapping()
       jac(row+1,col)= xrefe(col,row);
   // volume of the element
   V_ = jac.Determinant()/6.0;
+  if (V_ <= 0.0) dserror("Element volume %10.5e <= 0.0",V_);
 
   //nxyz_.resize(NUMGPT_SOTET4);
   const static vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs = so_tet4_1gp_derivs();

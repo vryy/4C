@@ -656,7 +656,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
           // compute GP contribution to internal energy
           intenergy += 0.5 * fac * stress.Dot(glstrain);
         }
-
+        
         // return result
         elevec1_epetra(0) = intenergy;
 
@@ -1217,6 +1217,7 @@ void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
     //invJ_[gp].Shape(NUMDIM_SOH8,NUMDIM_SOH8);
     invJ_[gp].Multiply(derivs[gp],xrefe);
     detJ_[gp] = invJ_[gp].Invert();
+    if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0",detJ_[gp]);
 
     if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
       if (!(prestress_->IsInit()))
