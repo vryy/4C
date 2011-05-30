@@ -736,16 +736,18 @@ void LINALG::ApplyDirichlettoSystem(RCP<Epetra_Vector>&            b,
       int gid = mygids[i];
 
       int dbcvlid = dbcvmap.LID(gid);
-      
+
       int blid = bmap.LID(gid);
       // Note:
       // if gid is not found in vector b, just continue
       // b might only be a subset of a larger field vector
       if (blid>=0)
+      {
         if (dbcvlid<0)
           dserror("illegal Dirichlet map");
         else
           B[blid] = dbcv[dbcvlid];
+      }
     }
   }
 }

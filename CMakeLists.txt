@@ -1274,6 +1274,14 @@ set(OBJS_CUT_TEST
   tests/cut_test/cut_test_simple.cpp
   tests/cut_test/cut_test_units.cpp
   tests/cut_test/cut_test_utils.cpp
+  tests/cut_test/cut_test_alex_39.cpp
+  tests/cut_test/cut_test_alex_40.cpp
+  tests/cut_test/cut_test_alex_41.cpp
+  tests/cut_test/cut_test_alex_42.cpp
+  tests/cut_test/cut_test_alex_43.cpp
+  tests/cut_test/cut_test_alex_44.cpp
+  tests/cut_test/cut_test_alex_45.cpp
+  tests/cut_test/cut_test_alex_46.cpp
   tests/cut_test/drt_dserror.cpp
   tests/cut_test/drt_singletondestruction.cpp
   src/drt_fem_general/drt_utils_gausspoints.cpp
