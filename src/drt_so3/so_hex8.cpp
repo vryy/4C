@@ -23,6 +23,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/elasthyper.H"
+#include "../drt_mat/aaaneohooke_stopro.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/growth_ip.H"
@@ -579,6 +580,11 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
     fiber = "Fiber2";
     names[fiber] = 3; // 3-dim vector
   }
+  if (Material()->MaterialType() == INPAR::MAT::m_aaaneohooke_stopro)
+    {
+        string fiber = "beta";
+        names[fiber] = 1; // scalar
+    }
 
   return;
 }
@@ -851,6 +857,14 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
       return false;
     }
   }
+  if (Material()->MaterialType() == INPAR::MAT::m_aaaneohooke_stopro){
+    MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(Material().get());
+      if (name=="beta"){
+        if ((int)data.size()!=1) dserror("size mismatch");
+        data[0] = aaa_stopro->Beta();
+      }
+  }
+
 
   return true;
 }
