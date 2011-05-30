@@ -110,6 +110,7 @@ void test_hex8_quad4_axel4();
 void test_hex8_quad4_axel5();
 void test_hex8_quad4_axel6();
 void test_hex8_quad4_axel7();
+void test_axel8();
 void test_hex8_quad4_shadan1();
 void test_hex8_quad4_shadan2();
 void test_hex8_quad4_shadan3();
@@ -332,6 +333,7 @@ int main( int argc, char ** argv )
   functable["hex8_quad4_axel5"] = test_hex8_quad4_axel5;
   functable["hex8_quad4_axel6"] = test_hex8_quad4_axel6;
   functable["hex8_quad4_axel7"] = test_hex8_quad4_axel7;
+  functable["axel8"] = test_axel8;
   functable["hex8_quad4_shadan1"] = test_hex8_quad4_shadan1;
   functable["hex8_quad4_shadan2"] = test_hex8_quad4_shadan2;
   functable["hex8_quad4_shadan3"] = test_hex8_quad4_shadan3;
