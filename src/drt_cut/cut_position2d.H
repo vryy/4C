@@ -157,6 +157,9 @@ bool Position2d<elementtype,numNodesElement>::Compute()
 
     // norm normal direction
     double cnorm = cross.Norm2();
+    if ( cnorm == 0 )
+      return false;
+
     double fact1 = 1./cnorm;
     //double fact2 = -0.5/( cnorm*sqrt( cnorm ) );
     cross.Scale( fact1 );

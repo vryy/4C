@@ -678,9 +678,7 @@ bool GEO::CUT::Facet::Equals( DRT::Element::DiscretizationType distype )
           corner_points_[( i+3 )%4]->Coordinates( &xyz( 0, 0 ) );
 
           Position2d<DRT::Element::tri3> pos( xyze, xyz );
-          pos.Compute();
-          //std::cout << pos.LocalCoordinates() << " ";
-          if ( pos.WithinLimits() )
+          if ( pos.Compute() )
           {
             return false;
           }
