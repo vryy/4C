@@ -1282,6 +1282,7 @@ set(OBJS_CUT_TEST
   tests/cut_test/cut_test_alex_44.cpp
   tests/cut_test/cut_test_alex_45.cpp
   tests/cut_test/cut_test_alex_46.cpp
+  tests/cut_test/cut_test_alex_47.cpp
   tests/cut_test/cut_test_axel_8.cpp
   tests/cut_test/drt_dserror.cpp
   tests/cut_test/drt_singletondestruction.cpp
