@@ -99,7 +99,11 @@ void GEO::CUT::PointGraph::FillGraph( Element * element, Side * side, std::vecto
       if ( not p1->IsCut( element ) or
            not p2->IsCut( element ) )
       {
-        throw std::runtime_error( "point-line inconsistency" );
+        std::stringstream str;
+        str << "line between " << ( *p1 ) << " and " << ( *p2 ) << " is cut by element, but point cuts are: "
+            << p1->IsCut( element ) << " and "
+            << p2->IsCut( element );
+        throw std::runtime_error( str.str() );
       }
     }
   }
