@@ -40,26 +40,6 @@ GEO::CUT::Point::Point( unsigned pid, const double * x, Edge * cut_edge, Side * 
 {
   std::copy( x, x+3, x_ );
 
-#if 0
-#ifdef DEBUGCUTLIBRARY
-  double x1[] = {1.1076013170420673237,0.25620398122276971664,3.8158834299999999373e-19};
-  double x2[] = {1.0992740341033049312,0.23760272423331274538,0.0050000250500000006232};
-
-  LINALG::Matrix<3,1> px( x_ );
-  LINALG::Matrix<3,1> px1( x1 );
-  LINALG::Matrix<3,1> px2( x2 );
-
-  px1.Update( 1, px, -1 );
-  px2.Update( 1, px, -1 );
-
-  if ( px1.Norm2() < 1e-12 or px2.Norm2() < 1e-12 )
-  {
-    std::cout << "offending point: " << px;
-  }
-#endif
-#endif
-
-#if 1
   if ( cut_edge!=NULL )
   {
     AddEdge( cut_edge );
@@ -68,20 +48,6 @@ GEO::CUT::Point::Point( unsigned pid, const double * x, Edge * cut_edge, Side * 
   {
     AddSide( cut_side );
   }
-#else
-  if ( cut_edge!=NULL )
-  {
-    cut_edges_.insert( cut_edge );
-
-    // copy all sides at the edge to the set of cutted sides
-    std::copy( cut_edge->Sides().begin(), cut_edge->Sides().end(),
-               std::inserter( cut_sides_, cut_sides_.begin() ) );
-  }
-  if ( cut_side!=NULL )
-  {
-    cut_sides_.insert( cut_side );
-  }
-#endif
 }
 
 void GEO::CUT::Point::AddEdge( Edge* cut_edge )
@@ -123,20 +89,6 @@ void GEO::CUT::Point::CommonEdge( Point * other, std::set<Edge *> & edges )
     }
   }
 }
-
-// std::vector<GEO::CUT::Edge*> GEO::CUT::Point::CutEdges( Point * other )
-// {
-//   std::vector<Edge*> matches;
-//   for ( std::set<Edge*>::iterator i=cut_edges_.begin(); i!=cut_edges_.end(); ++i )
-//   {
-//     Edge * e = *i;
-//     if ( other->IsCut( e ) )
-//     {
-//       matches.push_back( e );
-//     }
-//   }
-//   return matches;
-// }
 
 void GEO::CUT::Point::CutEdge( Side * side, Line * other_line, std::vector<Edge*> & matches )
 {

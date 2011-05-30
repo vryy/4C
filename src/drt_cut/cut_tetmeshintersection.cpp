@@ -28,7 +28,7 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
   for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
   {
     Point * p = *i;
-    Node * n = mesh_.GetNode( i - points.begin(), p->X() );
+    Node * n = mesh_.GetNode( std::distance( points.begin(), i ), p->X() );
     Point * np = n->point();
     np->Position( p->Position() );
     Register( p, np );
@@ -37,9 +37,17 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
   for ( std::vector<std::vector<int> >::const_iterator i=tets.begin(); i!=tets.end(); ++i )
   {
     const std::vector<int> & tet = *i;
-    unsigned id = i-tets.begin();
+    unsigned id = std::distance( tets.begin(), i );
     if ( accept_tets[id] )
-      mesh_.GetElement( id, tet, *shards::getCellTopologyData< shards::Tetrahedron<4> >(), accept_tets[id] );
+    {
+      Element * e = mesh_.GetElement( id, tet, *shards::getCellTopologyData< shards::Tetrahedron<4> >(), accept_tets[id] );
+      const std::vector<Node*> & nodes = e->Nodes();
+      for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+      {
+        Node * n = *i;
+        n->RegisterCuts();
+      }
+    }
   }
 
   const std::set<Facet*> & element_facets = element->Facets();
@@ -76,7 +84,7 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
         f->AllPoints( points );
         for ( std::set<Point*>::iterator i=points.begin(); i!=points.end(); ++i )
         {
-          Point *  p = *i;
+          Point * p = *i;
           nodemap[ToChild( p )];
         }
       }
@@ -120,7 +128,7 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
         for ( std::vector<Node*>::iterator i=nodes.begin(); i!=nodes.end(); ++i )
         {
           Node * n = *i;
-          Point::InsertCut( NULL, cs, n );
+          n->RegisterCuts();
         }
       }
     }
@@ -151,7 +159,7 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
         for ( std::vector<Node*>::iterator i=nodes.begin(); i!=nodes.end(); ++i )
         {
           Node * n = *i;
-          Point::InsertCut( NULL, cs, n );
+          n->RegisterCuts();
         }
         break;
       }
@@ -1150,7 +1158,6 @@ void GEO::CUT::TetMeshIntersection::CopyCutSide( Side * s, Facet * f )
   Side * cs = cut_mesh_.GetSide( s->Id(), nids, s->Topology() );
 
   side_parent_to_child_[s].push_back( cs );
-  //side_child_to_parent_[cs] = s;
 
   // Copy cut point to cut surfaces, since a second cut search could result
   // in different cut points.
@@ -1161,15 +1168,26 @@ void GEO::CUT::TetMeshIntersection::CopyCutSide( Side * s, Facet * f )
   for ( std::vector<Edge*>::const_iterator ei=old_edges.begin(); ei!=old_edges.end(); ++ei )
   {
     Edge * e = *ei;
-    Edge * ne = new_edges[ei-old_edges.begin()];
+    Edge * ne = new_edges[std::distance( old_edges.begin(), ei )];
     const std::vector<Point*> & cutpoints = e->CutPoints();
     for ( std::vector<Point*>::const_iterator i=cutpoints.begin();
           i!=cutpoints.end();
           ++i )
     {
       Point *  p = *i;
-      Point * np = Point::NewPoint( mesh_, p->X(), p->t( e ), ne, NULL );
-      np->Position( Point::oncutsurface );
+      Point * np = ToChild( p );
+
+      if ( np != NULL )
+      {
+        np->AddEdge( ne );
+        np->Position( Point::oncutsurface );
+      }
+      else
+      {
+        np = Point::NewPoint( mesh_, p->X(), p->t( e ), ne, NULL );
+        np->Position( Point::oncutsurface );
+        Register( p, np );
+      }
     }
   }
 
@@ -1189,8 +1207,8 @@ void GEO::CUT::TetMeshIntersection::CopyCutSide( Side * s, Facet * f )
     }
   }
 
-  // Copy cut lines to cut surfaces, since a second cut search could result
-  // in different cut points.
+  // Copy cut points from cut lines to cut surfaces. We cannot copy cut lines
+  // here, since there might be additional cut points.
 
   const std::vector<Line*> & cutlines = s->CutLines();
 

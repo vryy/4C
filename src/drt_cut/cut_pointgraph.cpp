@@ -325,7 +325,7 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, st
     int u = i->first;
 
     Point * p1 = GetPoint( u );
-//     if ( location==element_side or p1->IsCut( element ) )
+    if ( location==element_side or p1->IsCut( element ) )
     {
       std::set<int> & row = i->second;
 
@@ -333,7 +333,7 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, st
       {
         int v = *i;
         Point * p2 = GetPoint( v );
-//         if ( location==element_side or p2->IsCut( element ) )
+        if ( location==element_side or p2->IsCut( element ) )
         {
           if ( u < v )
           {

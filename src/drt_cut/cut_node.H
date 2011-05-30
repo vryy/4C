@@ -27,6 +27,8 @@ public:
 
   void Register( Element* element ) { point_->AddElement( element ); }
 
+  void RegisterCuts();
+
   const std::set<Edge*> & Edges() { return edges_; }
 
   void Coordinates( double * x )

@@ -3,6 +3,19 @@
 #include "cut_volumecell.H"
 #include "cut_node.H"
 
+
+void GEO::CUT::Node::RegisterCuts()
+{
+  if ( Position()==Point::oncutsurface )
+  {
+    for ( std::set<Edge*>::iterator i=edges_.begin(); i!=edges_.end(); ++i )
+    {
+      Edge * e = *i;
+      point_->AddEdge( e );
+    }
+  }
+}
+
 void GEO::CUT::Node::FindDOFSets( bool include_inner )
 {
   const std::set<Element*> & elements = Elements();
