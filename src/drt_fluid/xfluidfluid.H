@@ -170,10 +170,6 @@ namespace FLD
       //@}
 
       //! @name displacemets at time n+1, n and n-1
-      Teuchos::RCP<Epetra_Vector>    dispnp_;
-      Teuchos::RCP<Epetra_Vector>    dispn_;
-      Teuchos::RCP<Epetra_Vector>    dispnm_;
-
       Teuchos::RCP<Epetra_Vector>    aledispnp_;
       Teuchos::RCP<Epetra_Vector>    aledispn_;
       Teuchos::RCP<Epetra_Vector>    aledispnm_;
@@ -181,7 +177,6 @@ namespace FLD
 
       /// grid velocity (set from the adapter!)
       Teuchos::RCP<Epetra_Vector>    gridv_;
-      Teuchos::RCP<Epetra_Vector>    alegridv_;
 
       /// histvector --- a linear combination of velnm, veln (BDF)
       ///                or veln, accn (One-Step-Theta)
