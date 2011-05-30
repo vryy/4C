@@ -970,27 +970,105 @@ void GEO::CUT::TetMeshIntersection::Fill( VolumeCell * parent_cell, ChildCell & 
 
   while ( child_cells.size() > 0 )
   {
-    for ( std::set<VolumeCell*>::iterator i=child_cells.begin(); i!=child_cells.end(); ++i )
+    std::set<Facet*> open_facets;
+
+    while ( child_cells.size() > 0 )
     {
-      VolumeCell * vc = *i;
-      if ( done_child_cells.count( vc )==0 )
+      for ( std::set<VolumeCell*>::iterator i=child_cells.begin(); i!=child_cells.end(); ++i )
       {
-        child_cells.erase( vc );
-        done_child_cells.insert( vc );
-        const std::set<Facet*> & facets = vc->Facets();
-        for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+        VolumeCell * vc = *i;
+        if ( done_child_cells.count( vc )==0 )
         {
-          Facet * f = *i;
-          if ( not f->OnCutSide() )
+          child_cells.erase( vc );
+          done_child_cells.insert( vc );
+          const std::set<Facet*> & facets = vc->Facets();
+          for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
           {
-            VolumeCell * nc = f->Neighbor( vc );
-            if ( nc!=NULL and done_child_cells.count( nc )==0 )
+            Facet * f = *i;
+            if ( not f->OnCutSide() )
             {
-              child_cells.insert( nc );
+              VolumeCell * nc = f->Neighbor( vc );
+              if ( nc!=NULL )
+              {
+                if ( done_child_cells.count( nc )==0 )
+                {
+                  child_cells.insert( nc );
+                }
+              }
+              else
+              {
+                if ( not f->HasHoles() and not f->IsTriangulated() and f->Points().size()==3 )
+                {
+                  open_facets.insert( f );
+                }
+              }
+            }
+          }
+          break;
+        }
+      }
+    }
+
+    // search for four point parent "facets" that are split by a flat tet
+
+    if ( open_facets.size() > 0 )
+    {
+      FacetMesh facet_mesh;
+
+      for ( std::set<Facet*>::iterator i=open_facets.begin(); i!=open_facets.end(); ++i )
+      {
+        Facet * f = *i;
+        facet_mesh.Add( f );
+      }
+
+      for ( std::map<std::pair<Point*, Point*>, std::vector<Facet*> >::iterator i=facet_mesh.facet_mesh_.begin();
+            i!=facet_mesh.facet_mesh_.end();
+            ++i )
+      {
+        const std::pair<Point*, Point*> & line = i->first;
+        const std::vector<Facet*> & facets = i->second;
+
+        if ( facets.size()==2 )
+        {
+          Facet * f1 = facets[0];
+          Facet * f2 = facets[1];
+
+          Point * p1 = f1->OtherPoint( line.first, line.second );
+          Point * p2 = f2->OtherPoint( line.first, line.second );
+
+          std::set<Facet*> facets1;
+          std::set<Facet*> facets2;
+
+          FindCommonFacets( p1, p2, line.first , facets1 );
+          FindCommonFacets( p1, p2, line.second, facets2 );
+
+          if ( facets1.size()==1 and facets2.size()==1 )
+          {
+            Facet * f3 = *facets1.begin();
+            Facet * f4 = *facets2.begin();
+
+            if ( not f3->OnCutSide() and not f4->OnCutSide() )
+            {
+              const std::set<VolumeCell*> & cells3 = f3->Cells();
+              const std::set<VolumeCell*> & cells4 = f4->Cells();
+
+              if ( cells3.size()==1 and cells4.size()==1 )
+              {
+                VolumeCell * vc3 = *cells3.begin();
+                VolumeCell * vc4 = *cells4.begin();
+
+                if ( done_child_cells.count( vc3 )==0 and done_child_cells.count( vc4 )==0 )
+                {
+                  child_cells.insert( vc3 );
+                  child_cells.insert( vc4 );
+
+                  facet_mesh.Erase( f1 );
+                  facet_mesh.Erase( f2 );
+                }
+              }
             }
           }
         }
-        break;
       }
     }
   }

@@ -157,6 +157,8 @@ public:
 
   const std::set<VolumeCell*> & Cells() const { return cells_; }
 
+  Point * OtherPoint( Point * p1, Point * p2 );
+
 private:
 
   Facet( const Facet & );

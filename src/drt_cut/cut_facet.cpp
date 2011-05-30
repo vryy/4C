@@ -971,3 +971,31 @@ unsigned GEO::CUT::Facet::NumPoints()
   }
   return numpoints;
 }
+
+GEO::CUT::Point * GEO::CUT::Facet::OtherPoint( Point * p1, Point * p2 )
+{
+  Point * result = NULL;
+  if ( not HasHoles() and not IsTriangulated() and Points().size()==3 )
+  {
+    for ( std::vector<Point*>::iterator i=points_.begin(); i!=points_.end(); ++i )
+    {
+      Point * p = *i;
+      if ( p != p1 and p != p2 )
+      {
+        if ( result == NULL )
+        {
+          result = p;
+        }
+        else
+        {
+          throw std::runtime_error( "point not unique" );
+        }
+      }
+    }
+  }
+  else
+  {
+    throw std::runtime_error( "plain triangular facet required" );
+  }
+  return result;
+}

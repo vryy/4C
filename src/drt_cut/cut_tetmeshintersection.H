@@ -55,6 +55,44 @@ namespace GEO
         std::map<Side*, std::vector<Facet*> > facetsonsurface_;
       };
 
+      struct FacetMesh
+      {
+        void Add( Facet * f )
+        {
+          const std::vector<Point*> & points = f->Points();
+          for ( unsigned i=0; i!=points.size(); ++i )
+          {
+            Point * p1 = points[i];
+            Point * p2 = points[( i+1 ) % points.size()];
+
+            if ( p1 > p2 )
+              std::swap( p1, p2 );
+
+            facet_mesh_[std::make_pair( p1, p2 )].push_back( f );
+          }
+        }
+
+        void Erase( Facet * f )
+        {
+          const std::vector<Point*> & points = f->Points();
+          for ( unsigned i=0; i!=points.size(); ++i )
+          {
+            Point * p1 = points[i];
+            Point * p2 = points[( i+1 ) % points.size()];
+
+            if ( p1 > p2 )
+              std::swap( p1, p2 );
+
+            std::vector<Facet*> & facets = facet_mesh_[std::make_pair( p1, p2 )];
+            std::vector<Facet*>::iterator j = std::find( facets.begin(), facets.end(), f );
+            if ( j != facets.end() )
+              facets.erase( j );
+          }
+        }
+
+        std::map<std::pair<Point*, Point*>, std::vector<Facet*> > facet_mesh_;
+      };
+
       void FindEdgeCuts();
 
       /// find the mapping between child VolumeCells and parent VolumeCells.
