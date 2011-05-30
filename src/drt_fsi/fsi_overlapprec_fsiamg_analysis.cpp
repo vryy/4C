@@ -1699,7 +1699,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_SV(
   double t1=0.0;
   double t2=0.0;
   double t3=0.0;
-  
+
   for (int i=1; i<=sweeps; ++i)
   {
     //--------------------- structure block
