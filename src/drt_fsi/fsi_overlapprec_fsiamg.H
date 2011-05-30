@@ -509,6 +509,7 @@ namespace FSI
     int                                  arun_;
     
     int                                  minnlevel_; /// min of the below nlevel_
+    int                                  maxnlevel_; /// max of the below nlevel_
     int                                  analyze_;   /// run analysis of FSIAMG
     INPAR::FSI::LinearBlockSolver        strategy_; /// type of preocnidtioner  to run: BGS(AMG) or AMG(BGS)
     vector<double>                       pcomega_;

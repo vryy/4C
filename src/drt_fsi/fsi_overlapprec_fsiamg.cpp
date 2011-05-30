@@ -152,59 +152,80 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     // min of number of grids over fields
     minnlevel_ = min(snlevel_,fnlevel_);
     minnlevel_ = min(minnlevel_,anlevel_);
+    // max of number of grids over fields
+    maxnlevel_ = max(snlevel_,fnlevel_);
+    maxnlevel_ = max(maxnlevel_,anlevel_);
   }
-  else minnlevel_=1;
+  else 
+  {
+    minnlevel_=1;
+    maxnlevel_=1;
+  }
 
   if (!myrank) printf("       -----------------------------------------------------------------------\n");
   if (!myrank && strategy_==INPAR::FSI::FSIAMG)
   {
-    printf("       Setting up AMG(BGS)/BGS(AMG): snlevel %d fnlevel %d anlevel %d minnlevel %d\n",
-           snlevel_,fnlevel_,anlevel_,minnlevel_);
+    printf("       Setting up AMG(BGS): snlevel %d fnlevel %d anlevel %d minnlevel %d maxnlevel %d\n",
+           snlevel_,fnlevel_,anlevel_,minnlevel_,maxnlevel_);
     fflush(stdout);
   }
   else if (!myrank && strategy_==INPAR::FSI::PreconditionedKrylov)
   {
-    printf("       Setting up PreconditionedKrylov: snlevel %d fnlevel %d anlevel %d minnlevel %d\n",
-           snlevel_,fnlevel_,anlevel_,minnlevel_);
+    printf("       Setting up BGS(AMG): snlevel %d fnlevel %d anlevel %d minnlevel %d maxnlevel %d\n",
+           snlevel_,fnlevel_,anlevel_,minnlevel_,maxnlevel_);
     fflush(stdout);
   }
 
   // check whether we have enough iteration and damping factors
-  if ((int)pciter_.size() < minnlevel_ ||
-      (int)pcomega_.size() < minnlevel_)
-    dserror("You need at least %d values of PCITER and PCOMEGA in input file",minnlevel_);
-  if (strategy_==INPAR::FSI::PreconditionedKrylov)
+  if (strategy_==INPAR::FSI::FSIAMG)
+  {
+    if ((int)pciter_.size() < maxnlevel_ ||
+        (int)pcomega_.size() < maxnlevel_)
+      dserror("You need at least %d values of PCITER and PCOMEGA in input file",maxnlevel_);
+    if ((int)siterations_.size() < maxnlevel_ ||
+        (int)somega_.size() < maxnlevel_)
+      dserror("You need at least %d values of STRUCTPCITER and STRUCTPCOMEGA in input file",maxnlevel_);
+    if ((int)fiterations_.size() < maxnlevel_ ||
+        (int)fomega_.size() < maxnlevel_)
+      dserror("You need at least %d values of FLUIDPCITER and FLUIDPCOMEGA in input file",maxnlevel_);
+    if ((int)aiterations_.size() < maxnlevel_ ||
+        (int)aomega_.size() < maxnlevel_)
+      dserror("You need at least %d values of ALEPCITER and ALEPCOMEGA in input file",maxnlevel_);
+  }
+  else
+  {
     if ((int)pciter_.size() < 3 || (int)pcomega_.size() < 3)
       dserror("You need at least 3 values of PCITER and PCOMEGA in input file");
-  if ((int)siterations_.size() < snlevel_ ||
-      (int)somega_.size() < snlevel_)
-    dserror("You need at least %d values of STRUCTPCITER and STRUCTPCOMEGA in input file",snlevel_);
-  if ((int)fiterations_.size() < fnlevel_ ||
-      (int)fomega_.size() < fnlevel_)
-    dserror("You need at least %d values of FLUIDPCITER and FLUIDPCOMEGA in input file",fnlevel_);
-  if ((int)aiterations_.size() < anlevel_ ||
-      (int)aomega_.size() < anlevel_)
-    dserror("You need at least %d values of ALEPCITER and ALEPCOMEGA in input file",anlevel_);
+    if ((int)siterations_.size() < snlevel_ ||
+        (int)somega_.size() < snlevel_)
+      dserror("You need at least %d values of STRUCTPCITER and STRUCTPCOMEGA in input file",snlevel_);
+    if ((int)fiterations_.size() < fnlevel_ ||
+        (int)fomega_.size() < fnlevel_)
+      dserror("You need at least %d values of FLUIDPCITER and FLUIDPCOMEGA in input file",fnlevel_);
+    if ((int)aiterations_.size() < anlevel_ ||
+        (int)aomega_.size() < anlevel_)
+      dserror("You need at least %d values of ALEPCITER and ALEPCOMEGA in input file",anlevel_);
+  }
+  
+  Ass_.resize(max(maxnlevel_,snlevel_));
+  Pss_.resize(max(maxnlevel_,snlevel_)-1);
+  Rss_.resize(max(maxnlevel_,snlevel_)-1);
+  Sss_.resize(max(maxnlevel_,snlevel_));
 
-  Ass_.resize(snlevel_);
-  Pss_.resize(snlevel_-1);
-  Rss_.resize(snlevel_-1);
-  Sss_.resize(snlevel_);
+  Aff_.resize(max(maxnlevel_,fnlevel_));
+  Pff_.resize(max(maxnlevel_,fnlevel_)-1);
+  Rff_.resize(max(maxnlevel_,fnlevel_)-1);
+  Sff_.resize(max(maxnlevel_,fnlevel_));
 
-  Aff_.resize(fnlevel_);
-  Pff_.resize(fnlevel_-1);
-  Rff_.resize(fnlevel_-1);
-  Sff_.resize(fnlevel_);
+  Aaa_.resize(max(maxnlevel_,anlevel_));
+  Paa_.resize(max(maxnlevel_,anlevel_)-1);
+  Raa_.resize(max(maxnlevel_,anlevel_)-1);
+  Saa_.resize(max(maxnlevel_,anlevel_));
 
-  Aaa_.resize(anlevel_);
-  Paa_.resize(anlevel_-1);
-  Raa_.resize(anlevel_-1);
-  Saa_.resize(anlevel_);
-
-  ASF_.resize(minnlevel_);
-  AFS_.resize(minnlevel_);
-  AFA_.resize(minnlevel_);
-  AAF_.resize(minnlevel_);
+  ASF_.resize(maxnlevel_);
+  AFS_.resize(maxnlevel_);
+  AFA_.resize(maxnlevel_);
+  AAF_.resize(maxnlevel_);
 
   //---------------------------------------------------------- timing
   Epetra_Time etime(Matrix(0,0).Comm());
@@ -235,7 +256,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
         R = MLAPI::GetTranspose(P);
       Pss_[i-1] = P;
       Rss_[i-1] = R;
-    }
+    }    
     // extract matrix A from ML
     MLAPI::Space space;
     for (int i=0; i<snlevel_; ++i)
@@ -255,7 +276,15 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
         Ass_[i] = A;
       }
     }
-  }
+    for (int i=snlevel_; i<maxnlevel_; ++i)
+    {
+      Ass_[i] = Ass_[i-1];
+      fspace = Ass_[i-1].GetRangeSpace();
+      Pss_[i-1] = GetIdentity(fspace,fspace);
+      Rss_[i-1] = Pss_[i-1];
+    }
+    
+  } 
 
   //------------------------------------------------------- Fluid
   {
@@ -305,6 +334,13 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
         MLAPI::Operator A(space,space,fluidInnerOp.EpetraMatrix().get(),false);
         Aff_[i] = A;
       }
+    }
+    for (int i=fnlevel_; i<maxnlevel_; ++i)
+    {
+      Aff_[i] = Aff_[i-1];
+      fspace = Aff_[i-1].GetRangeSpace();
+      Pff_[i-1] = GetIdentity(fspace,fspace);
+      Rff_[i-1] = Pff_[i-1];
     }
   }
 
@@ -356,6 +392,14 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
         Aaa_[i] = A;
       }
     }
+    for (int i=anlevel_; i<maxnlevel_; ++i)
+    {
+      Aaa_[i] = Aaa_[i-1];
+      fspace = Aaa_[i-1].GetRangeSpace();
+      Paa_[i-1] = GetIdentity(fspace,fspace);
+      Raa_[i-1] = Paa_[i-1];
+    }
+    
   }
 
   //-----------------------------------------------------------------
@@ -425,10 +469,17 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
         Sss_[i] = S;
       }
     }
+    
     // structure coarse grid:
     S = rcp(new MLAPI::InverseOperator());
     S->Reshape(Ass_[snlevel_-1],"Amesos-KLU");
     Sss_[snlevel_-1] = S;
+    
+    // dummy coarser then coarse grids
+    for (int i=snlevel_; i<maxnlevel_; ++i)
+    {
+      Sss_[i] = Sss_[i-1];
+    }
   }
   else
   {
@@ -469,6 +520,11 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     S = rcp(new MLAPI::InverseOperator());
     S->Reshape(Aff_[fnlevel_-1],"Amesos-KLU");
     Sff_[fnlevel_-1] = S;
+    // dummy coarser then coarse grids
+    for (int i=fnlevel_; i<maxnlevel_; ++i)
+    {
+      Sff_[i] = Sff_[i-1];
+    }
   }
   else
   {
@@ -512,6 +568,11 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     S = rcp(new MLAPI::InverseOperator());
     S->Reshape(Aaa_[anlevel_-1],"Amesos-KLU");
     Saa_[anlevel_-1] = S;
+    // dummy coarser then coarse grids
+    for (int i=anlevel_; i<maxnlevel_; ++i)
+    {
+      Saa_[i] = Saa_[i-1];
+    }
   }
   else
   {
@@ -523,6 +584,19 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     arun_ = 1; // a first solve has been performed
   }
   
+  //---------------------------------------------------------------------
+  // in case we do FSIAMG now switch the minnlevel to maxnlevel since
+  // we have set up dummy coarser then coarse grids for the smaller hierarchies
+#if 1
+  minnlevel_ = maxnlevel_;
+  if (strategy_==INPAR::FSI::FSIAMG)
+  {
+    snlevel_ = maxnlevel_;
+    anlevel_ = maxnlevel_;
+    fnlevel_ = maxnlevel_;
+  }
+#endif
+
   //-------------------------------------------------------------- timing
   if (!myrank) 
   {
@@ -551,7 +625,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
  *----------------------------------------------------------------------*/
 void FSI::OverlappingBlockMatrixFSIAMG::RAPoffdiagonals()
 {
-  for (int i=0; i<minnlevel_-1; ++i)
+  for (int i=0; i<maxnlevel_-1; ++i)
   {
     //------ Asf (trouble maker)
     if (!i) RAPfine(ASF_[i+1],Rss_[i],Matrix(0,1).EpetraMatrix(),Pff_[i]);
