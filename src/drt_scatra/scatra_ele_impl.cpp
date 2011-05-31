@@ -522,6 +522,10 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     double frt(0.0);
     if (iselch_)
     {
+      // safety check - only stabilization of SUPG-type available
+      if ((stabinp !=INPAR::SCATRA::stabtype_no_stabilization) and (stabinp !=INPAR::SCATRA::stabtype_SUPG))
+        dserror("Only SUPG-type stabilization available for ELCH.");
+
       // get values for el. potential at element nodes
       for (int i=0;i<nen_;++i)
       {
@@ -4603,10 +4607,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     const double                          fac
 )
 {
-  // get gradient of el. potential at integration point
+  // get gradient of electric potential at integration point
   gradpot_.Multiply(derxy_,epotnp_);
 
-  // migration term (convective part):   -F/RT\grad{\Phi}\grad
+  // migration term (convective part without z_k D_k): -F/RT\grad{\Phi}\grad
   migconv_.MultiplyTN(-frt,derxy_,gradpot_);
 
   // Laplacian of shape functions at integration point
@@ -4748,6 +4752,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
           erhs[fvi] -= vtrans*funct_(vi);
         }
+
 
         // ToDo: conservative form!!!!
 
@@ -4908,8 +4913,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
             GetLaplacianWeakForm(laplacewf, derxy_,ui,vi);
             emat(fvi,ui*numdofpernode_+numscal_) -= timetaufac*residual*diffus_valence_k*frt*laplacewf;
 
-            //emat(fvi,ui*numdofpernode_+numscal_) -= timetaufac*conv_eff_vi*diffus_valence_k*frt*val_ui;
-
             // migration convective stabilization of convective term
             //emat(fvi,ui*numdofpernode_+numscal_) -= timetaufac*conv_(vi)*diffus_valence_k*frt*val_ui;
             // migration convective stabilization of migration term
@@ -4922,7 +4925,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
           {
             // derivative of tau (only effective for Taylor_Hughes_Zarins) w.r.t. electric potential
             const double tauderiv_ui = ((tauderpot_[k])(ui,0));
-            //emat(fvi,ui*numdofpernode_+numscal_) += timefacfac*conv_eff_vi*tauderiv_ui*(conv_ephinp_k + Dkzk_mig_ephinp_k);
             emat(fvi,ui*numdofpernode_+numscal_) += timefacfac*tauderiv_ui*conv_eff_vi*residual;
           }
 
@@ -4971,26 +4973,28 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
         {
           const int fui = ui*numdofpernode_+k;
 
-          /* 1) convective stabilization */
+          // 1) convective stabilization
 
           // diffusive term
           // derivative w.r.t. concentration c_k
           emat(fvi, fui) -= timetaufac*conv_eff_vi*diff_(ui) ;
 
-          // migration term (reactive part)
+          // reactive part of migration term
           if (migrationinresidual_)
           {
             // a) derivative w.r.t. concentration_k
-            emat(fvi, fui) += timetaufac*conv_eff_vi*migrea_(ui) ; // migrea_ already contains  diffus_valence!!!
+            emat(fvi, fui) += timetaufac*conv_eff_vi*migrea_(ui) ;
+            // note: migrea_ already contains frt*diffus_valence!!!
+
             // b) derivative w.r.t. electric potential
             emat(fvi, ui*numdofpernode_+numscal_) -= timetaufac*conv_eff_vi*conint_[k]*frt*valence_[k]*diff_(ui);
             // note: diff_ already includes factor D_k
           }
 
-          /* 2) diffusive stabilization */
+          // 2) diffusive stabilization
           // not implemented. Only stabilization of SUPG type
 
-          /* 3) reactive stabilization (reactive part of migration term) */
+          // 3) reactive stabilization (reactive part of migration term)
           // not implemented. Only stabilization of SUPG type
 
         } // for ui
