@@ -68,7 +68,19 @@ void GEO::CUT::Facet::Register( VolumeCell * cell )
 {
   cells_.insert( cell );
   if ( cells_.size() > 2 )
+  {
+#ifdef DEBUGCUTLIBRARY
+    {
+      std::ofstream file( "volumecells.plot" );
+      for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+      {
+        VolumeCell * vc = *i;
+        vc->Print( file );
+      }
+    }
+#endif
     throw std::runtime_error( "too many volume cells at facet" );
+  }
 }
 
 int GEO::CUT::Facet::SideId()

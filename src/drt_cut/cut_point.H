@@ -106,6 +106,8 @@ public:
 
   void CommonEdge( Point * other, std::set<Edge *> & edges );
 
+  void CommonSide( Point * other, std::set<Side *> & sides );
+
   Line * CommonLine( Point * other );
 
   Line * CutLine( Side * side, bool unique=true );

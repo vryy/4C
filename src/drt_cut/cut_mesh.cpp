@@ -928,6 +928,17 @@ void GEO::CUT::Mesh::Cut( LevelSetSide & side )
   }
 }
 
+void GEO::CUT::Mesh::RectifyCutNumerics()
+{
+  for ( std::map<std::set<int>, Teuchos::RCP<Edge> >::iterator i=edges_.begin();
+        i!=edges_.end();
+        ++i )
+  {
+    Edge * e = &*i->second;
+    e->RectifyCutNumerics();
+  }
+}
+
 void GEO::CUT::Mesh::MakeCutLines()
 {
   Creator creator;

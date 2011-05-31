@@ -90,6 +90,18 @@ void GEO::CUT::Point::CommonEdge( Point * other, std::set<Edge *> & edges )
   }
 }
 
+void GEO::CUT::Point::CommonSide( Point * other, std::set<Side *> & sides )
+{
+  for ( std::set<Side*>::iterator i=cut_sides_.begin(); i!=cut_sides_.end(); ++i )
+  {
+    Side * e = *i;
+    if ( other->IsCut( e ) )
+    {
+      sides.insert( e );
+    }
+  }
+}
+
 void GEO::CUT::Point::CutEdge( Side * side, Line * other_line, std::vector<Edge*> & matches )
 {
   for ( std::set<Edge*>::iterator i=cut_edges_.begin(); i!=cut_edges_.end(); ++i )

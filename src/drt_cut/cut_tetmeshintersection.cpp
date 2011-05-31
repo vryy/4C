@@ -260,6 +260,9 @@ void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, 
   std::set<Element*> elements_done;
   cut_mesh_.Cut( mesh_, elements_done );
 
+  cut_mesh_.RectifyCutNumerics();
+  mesh_.RectifyCutNumerics();
+
   mesh_.Status();
 
   mesh_.MakeCutLines();

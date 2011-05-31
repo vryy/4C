@@ -141,6 +141,16 @@ void GEO::CUT::Line::AddElement( Element * cut_element )
 #endif
 #endif
     cut_elements_.insert( cut_element );
+#if 1
+    if ( not p1_->IsCut( cut_element ) or
+         not p2_->IsCut( cut_element ) )
+    {
+      throw std::runtime_error( "cut line between non-cut points" );
+    }
+#else
+    p1_->AddElement( cut_element );
+    p2_->AddElement( cut_element );
+#endif
   }
 }
 

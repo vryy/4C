@@ -189,6 +189,8 @@ public:
   //const std::set<Point*, PointPositionLess> & CutPoints() const { return cut_points_; }
   const std::vector<Point*> & CutPoints() const { return cut_points_; }
 
+  void RectifyCutNumerics();
+
 private:
 
   std::vector<Node*> nodes_;

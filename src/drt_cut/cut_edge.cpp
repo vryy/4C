@@ -241,7 +241,30 @@ void GEO::CUT::Edge::CutPointsInside( Element * element, std::vector<Point*> & l
     }
   }
   if ( first!=NULL and first!=last )
+  {
     CutPointsIncluding( first, last, line );
+#if 0
+    // Rectify numerical problems that occationally occur. There might be
+    // middle points that do not know their position on an element side.
+    if ( line.size() > 2 )
+    {
+      std::set<Side*> common;
+      first->CommonSide( last, common );
+      if ( common.size() > 0 )
+      {
+        for ( std::vector<Point*>::iterator i=line.begin(); i!=line.end(); ++i )
+        {
+          Point * p = *i;
+          for ( std::set<Side*>::iterator i=common.begin(); i!=common.end(); ++i )
+          {
+            Side * s = *i;
+            p->AddSide( s );
+          }
+        }
+      }
+    }
+#endif
+  }
 }
 
 bool GEO::CUT::Edge::IsCut( Side * side )
@@ -376,6 +399,46 @@ void GEO::CUT::Edge::LevelSetCut( Mesh & mesh, LevelSetSide & side, std::set<Poi
       x.Update( 1., x1, t );
       Point * p = Point::NewPoint( mesh, x.A(), 2.*t-1., this, &side );
       cuts.insert( p );
+    }
+  }
+}
+
+void GEO::CUT::Edge::RectifyCutNumerics()
+{
+  if ( cut_points_.size() > 2 )
+  {
+    // Rectify numerical problems that occationally occur. There might be middle
+    // points that do not know their position on an element side.
+    //
+    // This assumes linear sides. There might be a problem with quad4
+    // sides. Those are actually not supported.
+
+    std::map<Side*, std::vector<Point*>::iterator> sidecuts;
+    for ( std::vector<Point*>::iterator pi=cut_points_.begin(); pi!=cut_points_.end(); ++pi )
+    {
+      Point * p = *pi;
+      const std::set<Side*> & cutsides = p->CutSides();
+      for ( std::set<Side*>::const_iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+      {
+        Side * s = *i;
+        std::map<Side*, std::vector<Point*>::iterator>::iterator j = sidecuts.find( s );
+        if ( j!=sidecuts.end() )
+        {
+          //if ( std::distance( j->second, pi ) > 1 )
+          {
+            for ( std::vector<Point*>::iterator i=j->second+1; i!=pi; ++i )
+            {
+              Point * p = *i;
+              p->AddSide( s );
+            }
+          }
+          j->second = pi;
+        }
+        else
+        {
+          sidecuts[s] = pi;
+        }
+      }
     }
   }
 }

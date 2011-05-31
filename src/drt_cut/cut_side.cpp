@@ -123,6 +123,7 @@ bool GEO::CUT::Side::FindCutLines( Mesh & mesh, Element * element, Side & other 
 
 void GEO::CUT::Side::CreateMissingLines( Creator & creator, Element * element )
 {
+#if 0
   std::map<Point*, std::set<Point*> > pg;
 
   const std::vector<Line*> & cut_lines = CutLines();
@@ -202,6 +203,7 @@ void GEO::CUT::Side::CreateMissingLines( Creator & creator, Element * element )
       }
     }
   }
+#endif
 }
 
 bool GEO::CUT::Side::AllOnNodes( const std::set<Point*> & points )

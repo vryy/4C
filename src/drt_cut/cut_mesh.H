@@ -108,6 +108,8 @@ public:
 
   void Cut( LevelSetSide & side );
 
+  void RectifyCutNumerics();
+
   void MakeCutLines();
 
   void MakeFacets();
