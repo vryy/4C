@@ -1937,7 +1937,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
         if (numdofpernode == 1) // one passive scalar (Scalar_Transport problem)
           coldofset.insert(lm[inode]+offset);
         else // result for electric potential (ELCH problem)
-          coldofset.insert(lm[inode*numdofpernode + (numdofpernode - 2)]+offset);
+          coldofset.insert(lm[inode*numdofpernode + (numdofpernode - 1)]+offset);
       }
       else if(name.substr(0,2) == "c_")  // c_1, c_2 ,...
       {
@@ -2113,7 +2113,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
         if (numdofpernode == 1) // one passive scalar (Scalar_Transport problem)
           my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*numdofpernode]+offset)];
         else // result for electric potential (ELCH problem)
-          my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*numdofpernode+(numdofpernode-2)]+offset)];
+          my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*numdofpernode+(numdofpernode-1)]+offset)];
       }
     }
     else if(name.substr(0,2) == "c_")  // c_1, c_2 ,...
