@@ -63,6 +63,15 @@ void DRT::ELEMENTS::TransportType::NodalBlockInformation( DRT::Element * dwele, 
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
   dimns = numdf;
   nv = numdf;
+
+  if (DRT::Problem::Instance(0)->ProblemType() == "elch")
+  {
+    if (nv > 1) // only when we have more than 1 dof per node!
+    {
+      nv -= 1; // ion concentrations
+      np = 1;  // electric potential
+    }
+  }
 }
 
 void DRT::ELEMENTS::TransportType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )

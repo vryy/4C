@@ -45,14 +45,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   int np=0; // number of pressure dofs
 #if 1
   dwele->ElementType().NodalBlockInformation( dwele, numdf, dimns, nv, np );
-  if (DRT::Problem::Instance(0)->ProblemType() == "elch")
-  {
-    if (nv > 1) // only when we have more than 1 dof per node!
-    {
-      nv -= 1;
-      np = 1;
-    }
-  }
+
 #else
   switch (dwele->Type())
   {
