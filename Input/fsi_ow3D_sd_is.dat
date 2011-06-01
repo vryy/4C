@@ -1,5 +1,5 @@
 //
-// Maintainer: Ulrich Küttler
+// Maintainer: Ulrich Kï¿½ttler
 //             kuettler@lnm.mw.tum.de
 //             http://www.lnm.mw.tum.de/Members/kuettler
 //             089 - 289-15238
@@ -3054,7 +3054,7 @@ NODE          375     COORD 1.000000000000000e+00     1.000000000000000e+00     
      28 ALE3 HEX27     331    353    339    303    223    269    225    183    343    350    313    318    277    306    279    243    231    250    204    209    328    291    298    262    265    220    274 MAT       2 GP 2 2 2 JAC 0
 --------------------------------------------------THERMAL ELEMENTS
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_fluid  VISCOSITY 0.01 DENSITY 1.0 GAMMA 1.0
+MAT       1 MAT_fluid  DYNVISCOSITY 0.01 DENSITY 1.0 GAMMA 1.0
 MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 250.0 NUE 0.0 DENS 500.0 THEXPANS 0.0
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE

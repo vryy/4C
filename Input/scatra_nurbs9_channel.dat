@@ -458,7 +458,7 @@ NODE 144 DLINE 4
 100 FLUID2 NURBS9   118   119   120   130   131   132   142   143   144  MAT 1   NA Euler     GP 3 3
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_fluid  VISCOSITY 0.1 DENSITY 1.0
+MAT       1 MAT_fluid  DYNVISCOSITY 0.1 DENSITY 1.0
 MAT       2 MAT_scatra  DIFFUSIVITY 0.05
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES

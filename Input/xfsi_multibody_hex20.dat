@@ -144,7 +144,7 @@ DLM_CONDENSATION                Yes
 GMSH_DEBUG_OUT                  Yes
 volumeRatioLimit                1.0e-2
 ---------------------------------------------------------MATERIALS
-MAT 1 MAT_fluid VISCOSITY 1.000 DENSITY 1.0 GAMMA 1.0
+MAT 1 MAT_fluid DYNVISCOSITY 1.000 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff  YOUNG 10000.0 NUE 0.3 DENS 0.001 THEXPANS 0.0
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1

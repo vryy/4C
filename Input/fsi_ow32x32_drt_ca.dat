@@ -6363,7 +6363,7 @@ NODE         2244     COORD 0.000000000000000e+000     -2.000000000000000e-003  
    1024 FLUID2 QUAD4       6      2      5      8 MAT       1 NA ALE
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_fluid  VISCOSITY 0.01 DENSITY 1.0
+MAT       1 MAT_fluid  DYNVISCOSITY 0.01 DENSITY 1.0
 MAT       2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0.0
 MAT       3 MAT_Struct_StVenantKirchhoff YOUNG 250.0 NUE 0.0 DENS 500.0
 ------------------------------------------------------CONTROL NODE

@@ -769,7 +769,7 @@ NODE 64  COORD 0.500000  0.500000  -0.500000
      27 XFLUID3 HEX8      27     30     36     35      9     15     19     14 MAT       1       NA Euler
 ------------------------------------------------------ALE ELEMENTS                             
 ---------------------------------------------------------MATERIALS                             
-MAT       1 MAT_fluid  VISCOSITY 1.0 DENSITY 1.0                                               
+MAT       1 MAT_fluid  DYNVISCOSITY 1.0 DENSITY 1.0                                               
 MAT 2 MAT_Struct_StVenantKirchhoff  YOUNG 10000 NUE 0.3 DENS 0.0 THEXPANS 0.0                  
 ------------------------------------------------------CONTROL NODE                             
 -------------------------------------------------------LOAD CURVES                             

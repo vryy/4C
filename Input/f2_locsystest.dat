@@ -227,7 +227,7 @@ YE3                0.0
 RDT                0.005
 EPSILON            0.025
 ------------------------------------------LS_MATERIAL_SECOND_PHASE
-MAT       2 MAT_fluid VISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
+MAT       2 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 ------------------------------------------------------FLUID SOLVER
 SOLVER         UMFPACK
 PARTITION      Cut_Elements
@@ -942,7 +942,7 @@ NODE           85     COORD 1.000000000000000e+01     1.000000000000000e+00     
 ------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------LEVELSET ELEMENTS
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_fluid  VISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
+MAT       1 MAT_fluid  DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES

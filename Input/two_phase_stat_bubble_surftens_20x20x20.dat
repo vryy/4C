@@ -231,8 +231,8 @@ PARTITION         Cut_Elements
 ----------------------------------------------------------MATERIALS
 MAT       1 MAT_matlist  NUMMAT 2 MATIDS 3 4
 MAT       2 MAT_scatra  DIFFUSIVITY 0.000000001 // 1*10E-9
-MAT       3 MAT_fluid   VISCOSITY 1.0 DENSITY 1.0 GAMMA 0.07 // plus side 
-MAT       4 MAT_fluid   VISCOSITY 1.0 DENSITY 1.0 GAMMA 0.07 // minus side 
+MAT       3 MAT_fluid   DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 0.07 // plus side 
+MAT       4 MAT_fluid   DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 0.07 // minus side 
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 ------------------------------------------------------------CURVE2

@@ -105,7 +105,7 @@ UZAWAMAXSTEPS                   10
 -------------------------------------------------------FLUID SOLVER
 SOLVER         UMFPACK          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_fluid  VISCOSITY 1.0 DENSITY 1.0
+MAT       1 MAT_fluid  DYNVISCOSITY 1.0 DENSITY 1.0
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0.5*(sin((t*pi/1)-(pi/2)))+0.5  t1 0.0 t2 1.0

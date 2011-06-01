@@ -414,7 +414,7 @@ PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 -------------------------------------------------------XFEM GENERAL
 ---------------------------------------------------------MATERIALS
-MAT  1  MAT_fluid  VISCOSITY 18 DENSITY 1.0E-3
+MAT  1  MAT_fluid  DYNVISCOSITY 0.018 DENSITY 1.0E-3
 MAT  2  MAT_Struct_StVenantKirchhoff  YOUNG  1.E1  NUE  0.3  DENS  1E-0 
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1

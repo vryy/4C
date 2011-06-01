@@ -1730,7 +1730,7 @@ NODE          275     COORD 0.000000000000000e+000     0.000000000000000e+000   
      80 FLUID3_FAST HEX8     222    245    252    230    182    203    216    190 MAT       1 NA ALE GP 2 2 2 CA 1
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_fluid  VISCOSITY 0.01 DENSITY 1.0 GAMMA 1.0
+MAT       1 MAT_fluid  DYNVISCOSITY 0.01 DENSITY 1.0 GAMMA 1.0
 MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 250.0 NUE 0.0 DENS 500.0
 MAT       3 MAT_Struct_StVenantKirchhoff  YOUNG 1.0 NUE 0.0 DENS 0.0
 ----------------------------------------------MULTILAYER MATERIALS

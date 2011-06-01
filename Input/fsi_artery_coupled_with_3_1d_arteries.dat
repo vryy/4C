@@ -271,7 +271,7 @@ ML_DAMPMED                      1.0                             // damping med g
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 PARTITION                       Cut_Elements
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_fluid VISCOSITY 4.0 DENSITY 0.001 GAMMA 1.0
+MAT 1 MAT_fluid DYNVISCOSITY 0.004 DENSITY 0.001 GAMMA 1.0
 MAT 2 MAT_Struct_NeoHooke YOUNG 2.4E6 NUE 0.499 DENS 1.0
 MAT 3 MAT_CNST_ART  VISCOSITY 0.004 DENS 0.001 YOUNG 2.4E6 NUE 0.5 DIAM 19.8350956 TH 0.5 PEXT1 0.0 PEXT2 0.0
 MAT 4 MAT_CNST_ART  VISCOSITY 0.004 DENS 0.001 YOUNG 1.4E6 NUE 0.5 DIAM 6.00000000 TH 0.2 PEXT1 0.0 PEXT2 0.0

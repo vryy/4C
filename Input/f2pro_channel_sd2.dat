@@ -5422,7 +5422,7 @@ NODE         2121     COORD 0.000000000000000e+00     1.000000000000000e+00     
     500 FLUID2_PRO QUAD9       5      1      6      9      2      3      8      7      4 MAT       1 NA Euler GP 3 3 TURBULENCE No
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_fluid  VISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
+MAT       1 MAT_fluid  DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES

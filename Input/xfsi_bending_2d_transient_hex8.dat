@@ -112,7 +112,7 @@ CONDEST                         No
 DLM_CONDENSATION                Yes
 GMSH_DEBUG_OUT                  YES
 ---------------------------------------------------------MATERIALS
-MAT 1 MAT_fluid VISCOSITY 0.5 DENSITY 1.0 GAMMA 1.0
+MAT 1 MAT_fluid DYNVISCOSITY 0.5 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_NeoHooke YOUNG 400 NUE 0.3  DENS 100.0
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1

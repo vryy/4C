@@ -2810,7 +2810,7 @@ NODE          275     COORD 0.000000000000000e+000     0.000000000000000e+000   
     143 ALE3 HEX8     229    250    258    246    189    215    228    212 MAT       3 GP 2 2 2 JAC 0
     144 ALE3 HEX8     221    242    250    229    180    204    215    189 MAT       3 GP 2 2 2 JAC 0
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_fluid  VISCOSITY 0.01 DENSITY 1.0 GAMMA 1.0
+MAT       1 MAT_fluid  DYNVISCOSITY 0.01 DENSITY 1.0 GAMMA 1.0
 MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 250.0 NUE 0.0 DENS 500.0
 MAT       3 MAT_Struct_StVenantKirchhoff  YOUNG 1.0 NUE 0.0 DENS 0.0
 ----------------------------------------------MULTILAYER MATERIALS

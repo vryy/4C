@@ -1573,7 +1573,7 @@ NODE          225     COORD 0.000000000000000e+00     0.000000000000000e+00     
     128 FLUID3_PRO HEX8       1      2     26     25      3      4     28     27 MAT       1 NA Euler GP 2 2 2
 ------------------------------------------------------ALE ELEMENTS
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_fluid  VISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
+MAT       1 MAT_fluid  DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES

@@ -2404,7 +2404,7 @@ NODE          765     COORD 0.000000000000000e+00     0.000000000000000e+00     
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------------MATERIALS
 // MAT_fluid
-MAT       1 MAT_fluid  VISCOSITY 10.0 DENSITY 1.0 GAMMA 1.0
+MAT       1 MAT_fluid  DYNVISCOSITY 10.0 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES

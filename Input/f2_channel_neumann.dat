@@ -1,5 +1,5 @@
 //
-// Maintainer: Ulrich Küttler
+// Maintainer: Ulrich Kï¿½ttler
 //             kuettler@lnm.mw.tum.de
 //             http://www.lnm.mw.tum.de/Members/kuettler
 //             089 - 289-15238
@@ -1685,7 +1685,7 @@ NODE          451     COORD 5.000000000000000e+00     1.000000000000000e+00     
 ------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------LEVELSET ELEMENTS
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_fluid  VISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
+MAT       1 MAT_fluid  DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------MULTILAYER MATERIALS
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES

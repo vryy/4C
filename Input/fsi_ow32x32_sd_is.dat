@@ -1,5 +1,5 @@
 //
-// Maintainer: Ulrich Küttler
+// Maintainer: Ulrich Kï¿½ttler
 //             kuettler@lnm.mw.tum.de
 //             http://www.lnm.mw.tum.de/Members/kuettler
 //             089 - 289-15238
@@ -5862,7 +5862,7 @@ NODE         2244     COORD 0.000000000000000e+000     -2.000000000000000e-003  
     511 ALE2 QUAD9      41      17      10      32      27      15      19      36      23 MAT       2 GP 3 3  JAC 0
     512 ALE2 QUAD9      17       9       1      10      13       3       4      15       7 MAT       2 GP 3 3  JAC 0
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_fluid  VISCOSITY 0.01 DENSITY 1.0
+MAT       1 MAT_fluid  DYNVISCOSITY 0.01 DENSITY 1.0
 MAT       2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0.0
 MAT       3 MAT_Struct_StVenantKirchhoff YOUNG 250.0 NUE 0.0 DENS 500.0
 ------------------------------------------------------CONTROL NODE

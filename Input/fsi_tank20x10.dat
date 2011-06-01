@@ -2068,7 +2068,7 @@ NODE          504     COORD 0.000000000000000e+000     -2.000000000000000e-001  
     399 ALE2 QUAD4     123    120     96    102 MAT       4
     400 ALE2 QUAD4     150    139    120    123 MAT       5
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_fluid  VISCOSITY 9.0 DENSITY 1.0
+MAT       1 MAT_fluid  DYNVISCOSITY 9.0 DENSITY 1.0
 MAT       2 MAT_Struct_StVenantKirchhoff YOUNG 840000.0 NUE 0.0 DENS 500.0
 MAT       3 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0.0
 MAT       4 MAT_Struct_StVenantKirchhoff YOUNG 2.0 NUE 0.0 DENS 0.0

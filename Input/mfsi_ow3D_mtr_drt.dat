@@ -279,7 +279,7 @@ SOLVER                          UMFPACK
 -------------------------------------------------------XFEM GENERAL
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_NeoHooke YOUNG 250.0 NUE 0.3 DENS 500
-MAT 2 MAT_fluid VISCOSITY 0.01 DENSITY 1.0
+MAT 2 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0
 MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 500
 
 -------------------------------------------------------LOAD CURVES

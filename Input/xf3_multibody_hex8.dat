@@ -30159,7 +30159,7 @@ NODE         7219     COORD 1.000000000000000e+00     0.000000000000000e+00     
 ------------------------------------------------TRANSPORT ELEMENTS                           
 ---------------------------------------------------------MATERIALS                           
 // MAT_fluid                                                                                 
-MAT       1 MAT_fluid  VISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0                                   
+MAT       1 MAT_fluid  DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0                                   
 // MAT_Struct_StVenantKirchhoff                                                              
 MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 100000000000.0 NUE 0.0 DENS 0.0 THEXPANS 0.0 
 ----------------------------------------------MULTILAYER MATERIALS                           

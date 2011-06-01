@@ -229,7 +229,7 @@ YE3                0.0
 RDT                0.005
 EPSILON            0.025
 ------------------------------------------LS_MATERIAL_SECOND_PHASE
-MAT       2 MAT_fluid VISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
+MAT       2 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 ------------------------------------------------------FLUID SOLVER
 SOLVER         Aztec_MSR
 AZSOLVE        BiCGSTAB
@@ -2192,7 +2192,7 @@ NODE          252     COORD 1.000000000000000e+01     0.000000000000000e+00     
     125 ALE3 HEX8     247    249    239    234    235    237    207    206 MAT       2 GP 2 2 2 JAC 0
 -------------------------------------------------LEVELSET ELEMENTS
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_fluid  VISCOSITY 9.0 DENSITY 1.0 GAMMA 1.0
+MAT       1 MAT_fluid  DYNVISCOSITY 9.0 DENSITY 1.0 GAMMA 1.0
 MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 1.0 NUE 0.0 DENS 0.0
 MAT       3 MAT_Struct_StVenantKirchhoff  YOUNG 840000.0 NUE 0.0 DENS 500.0
 ----------------------------------------------MULTILAYER MATERIALS

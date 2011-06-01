@@ -3128,7 +3128,7 @@ NODE          882     COORD 5.000000000000000e-001     1.000000000000000e+000   
     799 ALE2 QUAD4     607    672    677    612 MAT       2
     800 ALE2 QUAD4     601    666    672    607 MAT       2
 ---------------------------------------------------------MATERIALS
-MAT       1 MAT_fluid  VISCOSITY 0.01 DENSITY 1.0 GAMMA 73.1
+MAT       1 MAT_fluid  DYNVISCOSITY 0.01 DENSITY 1.0 GAMMA 73.1
 MAT       2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0.0
 ------------------------------------------------------CONTROL NODE
 -------------------------------------------------------LOAD CURVES

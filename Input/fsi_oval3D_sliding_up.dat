@@ -363,7 +363,7 @@ THETA                           0.5
 -----------------------------------------------------THERMAL SOLVER
 -------------------------------------------------------XFEM GENERAL
 ---------------------------------------------------------MATERIALS
-MAT  1  MAT_fluid  VISCOSITY 18 DENSITY 1.0E-6
+MAT  1  MAT_fluid  DYNVISCOSITY 1.8E-5 DENSITY 1.0E-6
 MAT  2  MAT_Struct_StVenantKirchhoff  YOUNG  1.E3  NUE  0.3  DENS  1E-1 
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
@@ -7473,7 +7473,8 @@ NODE 2482  	COORD	-8.43445003e-01	8.05823207e-01	-2.62499988e-01
 ------------------------------------------------RESULT DESCRIPTION
 FLUID DIS 1 NODE 824 POSITION velx NAME velx VALUE 8.003965123e-01 TOLERANCE 1e-8
 FLUID DIS 1 NODE 824 POSITION vely NAME vely VALUE -1.870633508e-02 TOLERANCE 1e-8
-FLUID DIS 1 NODE 824 POSITION pressure NAME pressure VALUE 8.028597912e-01 TOLERANCE 1e-8
+//FLUID DIS 1 NODE 824 POSITION pressure NAME pressure VALUE 8.028597912e-01 TOLERANCE 1e-8
+FLUID DIS 1 NODE 824 POSITION pressure NAME pressure VALUE 8.028597912e-07 TOLERANCE 1e-12
 STRUCTURE DIS 1 NODE 1963 POSITION dispx NAME dispx VALUE 5.312508004e-02 TOLERANCE 1e-8
 STRUCTURE DIS 1 NODE 1963 POSITION dispy NAME dispy VALUE -4.520795272e-02 TOLERANCE 1e-8
 STRUCTURE DIS 1 NODE 1963 POSITION dispz NAME dispz VALUE 0.000000000e00 TOLERANCE 1e-8
