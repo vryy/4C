@@ -117,7 +117,7 @@ void COMBUST::FlameFront::UpdateFlameFront(
   if( smoothed_boundary_integration and smoothgradphi!=INPAR::COMBUST::smooth_grad_phi_none )
   {
     CallSmoothGradPhi(combustdyn);
-    //ComputeCurvature(combustdyn);
+    ComputeCurvature(combustdyn);
   }
 
   return;
@@ -2813,25 +2813,29 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
             else
               dserror("flame front for bisected element %d could not be captured",rootcell->Ele()->Id());
           }
-          //------------------
-          // cell is trisected
-          //------------------
-          else if (numvolcells==3)
+          //---------------------------------------
+          // cell is trisected (multi-sected in 3D)
+          //---------------------------------------
+          else if (numvolcells==3 or
+                   numvolcells==4 or
+                   numvolcells==5)
           {
             // there are three volume cells:
             // - an inner (middle) volume cell (belongs to one domain (e.g. plus))
             // - two outer volume cells separated by the inner cell (belong to the other domain (e.g. minus))
-            cout << "element " << rootcell->Ele()->Id() << " is really trisected" << endl;
+            cout << "element " << rootcell->Ele()->Id() << " is really trisected and consists of " << numvolcells << " volume cells" << endl;
 
             // store domain integration cells
             const size_t numstoredvol = StoreDomainIntegrationCells(cutele,listDomainIntCellsperEle,xyze);
+            cout << "number of stored volumes " << numstoredvol << endl;
             // store boundary integration cells
             const size_t numstoredbound = StoreBoundaryIntegrationCells(cutele,listBoundaryIntCellsperEle,xyze);
+            cout << "number of stored boundaries " << numstoredbound << endl;
 
-            //cout << "storedvol " << storedvol << endl;
-            //cout << "storedbound " << storedbound << endl
-
-            if (numstoredvol==3 and numstoredbound==2)
+            // regular cases: one volume more than boundaries
+            if ( (numstoredvol==3 and numstoredbound==2) or // trisected in 2D
+                 (numstoredvol==4 and numstoredbound==3) or // multi-sected in 3D
+                 (numstoredvol==5 and numstoredbound==4) )  // multi-sected in 3D
             {
               // update cut status of root cell (element)
               //StoreElementCutStatus(COMBUST::FlameFront::trisected, cutstat);
@@ -2841,8 +2845,22 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
 
             // one outer volume cell is large enough, the other outer volume cell is too small
             // -> stored the larger outer and the middle volume cell and the corresponding boundary cells
-            else if ( (numstoredvol==2 and numstoredbound==2) or
-                      (numstoredvol==2 and numstoredbound==1) )
+            else if ( (numstoredvol==2 and numstoredbound==1) or   // numvolcells==3; neglected small volume and boundary
+                      (numstoredvol==2 and numstoredbound==2) or   // numvolcells==3; neglected small volume but large boundary
+                      //(numstoredvol==3 and numstoredbound==2) or // numvolcells==4; neglected small volume and boundary
+                      (numstoredvol==3 and numstoredbound==3) or   // numvolcells==4; neglected small volume but large boundary
+                      (numstoredvol==2 and numstoredbound==1) or   // numvolcells==4; neglected 2 small volumes and 2 boundaries
+                      //(numstoredvol==2 and numstoredbound==2) or // numvolcells==4; neglected 2 small volumes and 1 boundary (1 large boundary)
+                      (numstoredvol==2 and numstoredbound==3) or   // numvolcells==4; neglected 2 small volumes but 2 large boundaries
+                      //(numstoredvol==4 and numstoredbound==3) or // numvolcells==5; neglected small volume and boundary
+                      (numstoredvol==4 and numstoredbound==4) or   // numvolcells==5; neglected small volume but large boundary
+                      //(numstoredvol==3 and numstoredbound==2) or // numvolcells==5; neglected 2 small volumes and 2 boundaries
+                      //(numstoredvol==3 and numstoredbound==3) or // numvolcells==5; neglected 2 small volumes and 1 boundary (1 large boundary)
+                      (numstoredvol==3 and numstoredbound==4) or   // numvolcells==5; neglected 2 small volumes but 2 large boundaries
+                      //(numstoredvol==2 and numstoredbound==1) or // numvolcells==5; neglected 3 small volumes and 3 boundaries
+                      //(numstoredvol==2 and numstoredbound==2) or // numvolcells==5; neglected 3 small volumes and 2 boundaries (1 large boundary)
+                      //(numstoredvol==2 and numstoredbound==3) or // numvolcells==5; neglected 3 small volumes and 1 boundary (2 large boundaries)
+                      (numstoredvol==2 and numstoredbound==4) )    // numvolcells==5; neglected 3 small volumes but 3 large boundaries
             {
               // update cut status of root cell (element)
               StoreElementCutStatus(COMBUST::FlameFront::bisected, cutstat);
@@ -2850,8 +2868,16 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
             }
             // both outer volume cells are too small, but the boundary cells are not small
             // -> element is touched or double touched; stored boundary
-            else if ( (numstoredvol==1 and numstoredbound==2) or
-                      (numstoredvol==1 and numstoredbound==1) )
+            else if ( (numstoredvol==1 and numstoredbound==2) or   // numvolcells==3; 2 large boundaries
+                      (numstoredvol==1 and numstoredbound==1) or   // numvolcells==3; 1 large boundary
+                      (numstoredvol==1 and numstoredbound==3) or   // numvolcells==4; 3 large boundaries
+                      //(numstoredvol==1 and numstoredbound==2) or // numvolcells==4; 2 large boundaries
+                      //(numstoredvol==1 and numstoredbound==1) or // numvolcells==4; 1 large boundary
+                      (numstoredvol==1 and numstoredbound==4)      // numvolcells==5; 4 large boundaries
+                      //(numstoredvol==1 and numstoredbound==3) or // numvolcells==5; 3 large boundaries
+                      //(numstoredvol==1 and numstoredbound==2) or // numvolcells==5; 2 large boundaries
+                      //(numstoredvol==1 and numstoredbound==1)    // numvolcells==5; 1 large boundary
+                    )
             {
               // update cut status of root cell (element)
               StoreElementCutStatus(COMBUST::FlameFront::touched, cutstat);
@@ -2870,8 +2896,16 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
 
             FlameFrontToGmsh(rootcell->ReturnRootCell(),listBoundaryIntCellsperEle,listDomainIntCellsperEle);
           }
-          else
+          else if (numvolcells>5)
+          {
+            const size_t numstoredvol = StoreDomainIntegrationCells(cutele,listDomainIntCellsperEle,xyze);
+            const size_t numstoredbound = StoreBoundaryIntegrationCells(cutele,listBoundaryIntCellsperEle,xyze);
+            cout << "element Id " << rootcell->Ele()->Id() << endl;
+            cout << "number of stored volumes " << numstoredvol << endl;
+            cout << "number of stored boundaries " << numstoredbound << endl;
+            FlameFrontToGmsh(rootcell->ReturnRootCell(),listBoundaryIntCellsperEle,listDomainIntCellsperEle);
             dserror("cut status could not be determined");
+          }
         }
       }
       //--------------
