@@ -672,7 +672,7 @@ namespace FLD
         if(statistics_bfs_==null)
           dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step at low Mach number");
 
-        if (params_.get<INPAR::FLUID::PhysicalType>("Physical Type") == INPAR::FLUID::incompressible)
+        if (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type") == INPAR::FLUID::incompressible)
             statistics_bfs_->DoTimeSample(myvelnp_);
         else
             statistics_bfs_->DoLomaTimeSample(myvelnp_,myscanp_,eosfac);
@@ -928,7 +928,7 @@ namespace FLD
         if(statistics_bfs_==null)
           dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step at low Mach number");
 
-        if (params_.get<INPAR::FLUID::PhysicalType>("Physical Type") == INPAR::FLUID::incompressible)
+        if (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type") == INPAR::FLUID::incompressible)
         {
           if(outputformat == write_single_record)
             statistics_bfs_->DumpStatistics(step);

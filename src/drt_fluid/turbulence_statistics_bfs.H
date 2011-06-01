@@ -167,6 +167,11 @@ private:
   //! number of locations in x1- and x2-direction for statistical evaluation
   int  numx1statlocations_;
   int  numx2statlocations_;
+  int  numx1supplocations_;
+
+  //! bounds for extension of backward-facing step in x2-direction
+  double  x2min_;
+  double  x2max_;
 
   //! bounds for extension of backward-facing step in x3-direction
   double  x3min_;
@@ -200,6 +205,10 @@ private:
 
   //! coordinates of supplementary locations in x2-direction for velocity derivative
   LINALG::Matrix<2,1>  x2supplocations_;
+
+  //! coordinates of supplementary locations in x1-direction for statistical evaluation
+  //! (check of inflow profile)
+  LINALG::Matrix<10,1>  x1supplocations_;
 
   //! matrices containing values
   RCP<Epetra_SerialDenseMatrix>     x1sumu_;

@@ -70,6 +70,9 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   togglew_      = LINALG::CreateVector(*dofrowmap,true);
   togglep_      = LINALG::CreateVector(*dofrowmap,true);
 
+  // bounds for extension of flow domain in x2-direction
+  x2min_ = +10e+19;
+  x2max_ = -10e+19;
   // bounds for extension of flow domain in x3-direction
   x3min_ = +10e+19;
   x3max_ = -10e+19;
@@ -103,7 +106,8 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
     }
     else if (geotype_ == TurbulenceStatisticsBfs::geometry_DNS_incomp_flow)
     {
-      if (node->X()[1]<0.2050002 && node->X()[1]>0.2049998)
+      //if (node->X()[1]<0.2050002 && node->X()[1]>0.2049998)
+      if (node->X()[1]<2e-9 && node->X()[1]>-2e-9)
         x1avcoords.insert(node->X()[0]);
       if (node->X()[0]<2e-9 && node->X()[0]>-2e-9)
         x2avcoords.insert(node->X()[1]);
@@ -111,18 +115,30 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
     else
       dserror("Unknown geometry of backward facing step!");
 
+    if (x2min_>node->X()[1]) x2min_=node->X()[1];
+    if (x2max_<node->X()[1]) x2max_=node->X()[1];
+
     if (x3min_>node->X()[2]) x3min_=node->X()[2];
     if (x3max_<node->X()[2]) x3max_=node->X()[2];
   }
 
-  // communicate x3mins and x3maxs
-  double min;
-  discret_->Comm().MinAll(&x3min_,&min,1);
-  x3min_=min;
+  // communicate x2mins and x2maxs
+  double min2;
+  discret_->Comm().MinAll(&x2min_,&min2,1);
+  x2min_=min2;
 
-  double max;
-  discret_->Comm().MaxAll(&x3max_,&max,1);
-  x3max_=max;
+  double max2;
+  discret_->Comm().MaxAll(&x2max_,&max2,1);
+  x2max_=max2;
+
+  // communicate x3mins and x3maxs
+  double min3;
+  discret_->Comm().MinAll(&x3min_,&min3,1);
+  x3min_=min3;
+
+  double max3;
+  discret_->Comm().MaxAll(&x3max_,&max3,1);
+  x3max_=max3;
 
   //--------------------------------------------------------------------
   // round robin loop to communicate coordinates to all procs
@@ -137,7 +153,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
     vector<char> rblock;
 
 #ifdef PARALLEL
-    // create an exporter for point to point comunication
+    // create an exporter for point to point communication
     DRT::Exporter exporter(discret_->Comm());
 #endif
 
@@ -320,60 +336,27 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   // number of locations in x1-direction for statistical evaluation
   //----------------------------------------------------------------------
   numx1statlocations_ = 21;
+  numx1supplocations_ = 0;
 
   //----------------------------------------------------------------------
   // define locations in x1-direction for statistical evaluation
   // (coarse discretization)
   //----------------------------------------------------------------------
-  if (numx1coor_ < 80)
-  {
-    x1statlocations_(0)  = 0.0;
-    x1statlocations_(1)  = 0.040169;
-    x1statlocations_(2)  = 0.081119;
-    x1statlocations_(3)  = 0.12255;
-    x1statlocations_(4)  = 0.15677;
-    x1statlocations_(5)  = 0.19741;
-    x1statlocations_(6)  = 0.2457;
-    x1statlocations_(7)  = 0.27316;
-    x1statlocations_(8)  = 0.3357;
-    x1statlocations_(9)  = 0.37125;
-    x1statlocations_(10) = 0.41;
-    x1statlocations_(11) = 0.451;
-    x1statlocations_(12) = 0.492;
-    x1statlocations_(13) = 0.533;
-    x1statlocations_(14) = 0.574;
-    x1statlocations_(15) = 0.615;
-    x1statlocations_(16) = 0.656;
-    x1statlocations_(17) = 0.697;
-    x1statlocations_(18) = 0.738;
-    x1statlocations_(19) = 0.779;
-    x1statlocations_(20) = 0.82;
+  // compute step height
+  double h = (x2max_ - x2min_)/6;
 
-    //----------------------------------------------------------------------
-    // define supplementary locations in x2-direction for statistical
-    // evaluation of velocity derivative at wall
-    // (first nodes off lower and upper wall, respectively, coarse discret.)
-    //----------------------------------------------------------------------
-    if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating)
-    {
-      x2supplocations_(0) = -0.0389218666;
-      x2supplocations_(1) = 0.080080628;
-    }
-    else if (geotype_ == TurbulenceStatisticsBfs::geometry_DNS_incomp_flow)
-    {
-      x2supplocations_(0) = -0.0389218666;
-      x2supplocations_(1) = 1.0e+9; //not needed here, upper wall is slip wall
-    }
-    else
-      dserror("Unknown geometry of backward facing step!");
-  }
-  else
+  if (geotype_ == TurbulenceStatisticsBfs::geometry_DNS_incomp_flow)
   {
-    //----------------------------------------------------------------------
-    // define locations in x1-direction for statistical evaluation
-    // (fine discretization)
-    //----------------------------------------------------------------------
     x1statlocations_(0)  = 0.0;
+//    x1statlocations_(1)  = 1.0 * h;
+//    x1statlocations_(2)  = 2.0 * h;
+//    x1statlocations_(3)  = 3.0 * h;
+//    x1statlocations_(4)  = 4.0 * h;
+//    x1statlocations_(5)  = 5.0 * h;
+//    x1statlocations_(6)  = 6.0 * h;
+//    x1statlocations_(7)  = 7.0 * h;
+//    x1statlocations_(8)  = 8.0 * h;
+//    x1statlocations_(9)  = 9.0 * h;
     x1statlocations_(1)  = 0.039237;
     x1statlocations_(2)  = 0.079599;
     x1statlocations_(3)  = 0.1207;
@@ -383,41 +366,112 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
     x1statlocations_(7)  = 0.28633;
     x1statlocations_(8)  = 0.33471;
     x1statlocations_(9)  = 0.3707;
-    x1statlocations_(10) = 0.41;
-    x1statlocations_(11) = 0.451;
-    x1statlocations_(12) = 0.492;
-    x1statlocations_(13) = 0.533;
-    x1statlocations_(14) = 0.574;
-    x1statlocations_(15) = 0.615;
-    x1statlocations_(16) = 0.656;
-    x1statlocations_(17) = 0.697;
-    x1statlocations_(18) = 0.738;
-    x1statlocations_(19) = 0.779;
-    x1statlocations_(20) = 0.82;
+    x1statlocations_(10) = 10.0 * h;
+    x1statlocations_(11) = 11.0 * h;
+    x1statlocations_(12) = 12.0 * h;
+    x1statlocations_(13) = 13.0 * h;
+    x1statlocations_(14) = 14.0 * h;
+    x1statlocations_(15) = 15.0 * h;
+    x1statlocations_(16) = 16.0 * h;
+    x1statlocations_(17) = 17.0 * h;
+    x1statlocations_(18) = 18.0 * h;
+    x1statlocations_(19) = 19.0 * h;
+    x1statlocations_(20) = 20.0 * h;
 
-    //----------------------------------------------------------------------
-    // define supplementary locations in x2-direction for statistical
-    // evaluation of velocity derivative at wall
-    // (first nodes off lower and upper wall, respectively, fine discret.)
-    //----------------------------------------------------------------------
-    if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating)
+    numx1supplocations_ = 10;
+    numx1statlocations_ += numx1supplocations_;
+    x1supplocations_(0) = -10.0 * h;
+    x1supplocations_(1) = -9.0 * h;
+    x1supplocations_(2) = -8.0 * h;
+    x1supplocations_(3) = -7.0 * h;
+    x1supplocations_(4) = -6.0 * h;
+    x1supplocations_(5) = -5.0 * h;
+    x1supplocations_(6) = -4.0 * h;
+    x1supplocations_(7) = -3.0 * h;
+    x1supplocations_(8) = -2.0 * h;
+    x1supplocations_(9) = -0.043144;
+
+    x2supplocations_(0) = x2coordinates_->at(1);
+    x2supplocations_(1) = 1.0e+9; //not needed here, upper wall is slip wall
+  }
+
+  if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating)
+  {
+    if (numx1coor_ < 80)
     {
+      x1statlocations_(0)  = 0.0;
+      x1statlocations_(1)  = 0.040169;
+      x1statlocations_(2)  = 0.081119;
+      x1statlocations_(3)  = 0.12255;
+      x1statlocations_(4)  = 0.15677;
+      x1statlocations_(5)  = 0.19741;
+      x1statlocations_(6)  = 0.2457;
+      x1statlocations_(7)  = 0.27316;
+      x1statlocations_(8)  = 0.3357;
+      x1statlocations_(9)  = 0.37125;
+      x1statlocations_(10) = 0.41;
+      x1statlocations_(11) = 0.451;
+      x1statlocations_(12) = 0.492;
+      x1statlocations_(13) = 0.533;
+      x1statlocations_(14) = 0.574;
+      x1statlocations_(15) = 0.615;
+      x1statlocations_(16) = 0.656;
+      x1statlocations_(17) = 0.697;
+      x1statlocations_(18) = 0.738;
+      x1statlocations_(19) = 0.779;
+      x1statlocations_(20) = 0.82;
+
+      //----------------------------------------------------------------------
+      // define supplementary locations in x2-direction for statistical
+      // evaluation of velocity derivative at wall
+      // (first nodes off lower and upper wall, respectively, coarse discret.)
+      //----------------------------------------------------------------------
+      x2supplocations_(0) = -0.0389218666;
+      x2supplocations_(1) = 0.080080628;
+    }
+    else
+    {
+      //----------------------------------------------------------------------
+      // define locations in x1-direction for statistical evaluation
+      // (fine discretization)
+      //----------------------------------------------------------------------
+      x1statlocations_(0)  = 0.0;
+      x1statlocations_(1)  = 0.039237;
+      x1statlocations_(2)  = 0.079599;
+      x1statlocations_(3)  = 0.1207;
+      x1statlocations_(4)  = 0.1643;
+      x1statlocations_(5)  = 0.20678;
+      x1statlocations_(6)  = 0.24393;
+      x1statlocations_(7)  = 0.28633;
+      x1statlocations_(8)  = 0.33471;
+      x1statlocations_(9)  = 0.3707;
+      x1statlocations_(10) = 0.41;
+      x1statlocations_(11) = 0.451;
+      x1statlocations_(12) = 0.492;
+      x1statlocations_(13) = 0.533;
+      x1statlocations_(14) = 0.574;
+      x1statlocations_(15) = 0.615;
+      x1statlocations_(16) = 0.656;
+      x1statlocations_(17) = 0.697;
+      x1statlocations_(18) = 0.738;
+      x1statlocations_(19) = 0.779;
+      x1statlocations_(20) = 0.82;
+
+      //----------------------------------------------------------------------
+      // define supplementary locations in x2-direction for statistical
+      // evaluation of velocity derivative at wall
+      // (first nodes off lower and upper wall, respectively, fine discret.)
+      //----------------------------------------------------------------------
       x2supplocations_(0) = -0.040752954;
       x2supplocations_(1) = 0.081752896;
     }
-    else if (geotype_ == TurbulenceStatisticsBfs::geometry_DNS_incomp_flow)
-    {
-      x2supplocations_(0) = -0.040752954;
-      x2supplocations_(1) = 1.0e+9; //not needed here, upper wall is slip wall
-    }
-    else
-      dserror("Unknown geometry of backward facing step!");
   }
 
   //----------------------------------------------------------------------
   // define locations in x2-direction for statistical evaluation
   // (lower and upper wall)
   //----------------------------------------------------------------------
+  //TODO: replace by x2min_ and x2max_
   if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating)
   {
     numx2statlocations_ = 2;
@@ -427,8 +481,8 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   else if (geotype_ == TurbulenceStatisticsBfs::geometry_DNS_incomp_flow)
   {
     numx2statlocations_ = 1;
-    x2statlocations_(0) = -0.041;
-    x2statlocations_(1) =  1.0e+9; //not needed here
+    x2statlocations_(0) = x2min_; //-0.041;
+    x2statlocations_(1) = x2max_; //1.0e+9; //not needed here
   }
   else
     dserror("Unknown geometry of backward facing step!");
@@ -657,7 +711,17 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
   for (int x1nodnum=0;x1nodnum<numx1statlocations_;++x1nodnum)
   {
     // current x1-coordinate
-    double x1c = x1statlocations_(x1nodnum);
+    // caution: if there are supplementary locations in x1-direction, we loop
+    //          them first (only DNS geometry)
+    double x1c = 1.0e20;
+    if (x1nodnum < numx1supplocations_)
+    {
+      x1c = x1supplocations_(x1nodnum);
+    }
+    else
+    {
+      x1c = x1statlocations_(x1nodnum - numx1supplocations_);
+    }
 
     int x2nodnum = -1;
     //----------------------------------------------------------------------
@@ -991,10 +1055,10 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
     (*log) << "# Statistics for turbulent incompressible flow over a backward-facing step (first- and second-order moments)";
     (*log) << "\n\n";
     (*log) << "# Statistics record ";
-    (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+    (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n\n\n";
     (*log) << scientific;
 
-    (*log) << "\n";
+    (*log) << "\n\n\n";
     (*log) << "# lower wall behind step\n";
     (*log) << "#     x1";
     (*log) << "           duxdy         pmean\n";
@@ -1019,7 +1083,7 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
 
     if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating)
     {
-      (*log) << "\n";
+      (*log) << "\n\n\n";
       (*log) << "# upper wall\n";
       (*log) << "#     x1";
       (*log) << "           duxdy         pmean\n";
@@ -1042,8 +1106,21 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
 
     for (int i=0; i<numx1statlocations_; ++i)
     {
-      (*log) << "\n";
-      (*log) << "# line in x2-direction at x1 = " << setw(11) << setprecision(4) << x1statlocations_(i) << "\n";
+      // current x1-coordinate
+      // caution: if there are supplementary locations in x1-direction, we loop
+      //          them first (only DNS geometry)
+      double x1 = 1.0e20;
+      if (i < numx1supplocations_)
+      {
+        x1 = x1supplocations_(i);
+      }
+      else
+      {
+        x1 = x1statlocations_(i - numx1supplocations_);
+      }
+
+      (*log) << "\n\n\n";
+      (*log) << "# line in x2-direction at x1 = " << setw(11) << setprecision(4) << x1 << "\n";
       (*log) << "#     x2";
       (*log) << "           umean         vmean         wmean         pmean";
       (*log) << "         urms          vrms          wrms          prms";
@@ -1105,7 +1182,7 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
     (*log) << "# Statistics for turbulent variable-density flow over a backward-facing step at low Mach number (first- and second-order moments)";
     (*log) << "\n\n";
     (*log) << "# Statistics record ";
-    (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+    (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n\n\n";
     (*log) << scientific;
 
     (*log) << "\n";
