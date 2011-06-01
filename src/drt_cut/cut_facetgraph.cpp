@@ -96,7 +96,6 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const std::s
   }
 
 #if 0
-  graph_.Print();
   graph_.FixSingleLines();
 #else
   graph_.TestClosed();
@@ -147,8 +146,15 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const std::s
     }
   }
 
-//   std::cout << "cycle:\n";
-//   cycle.Print();
+#if 0
+#ifdef DEBUGCUTLIBRARY
+  std::cout << "graph:\n";
+  graph_.Print();
+
+  std::cout << "cycle:\n";
+  cycle.Print();
+#endif
+#endif
 
   std::set<int> free;
   graph_.GetAll( free );
@@ -159,9 +165,23 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const std::s
     free.erase( p );
   }
 
-//   std::cout << "free: ";
-//   std::copy( free.begin(), free.end(), std::ostream_iterator<int>( std::cout, " " ) );
-//   std::cout << "\n";
+#if 0
+#ifdef DEBUGCUTLIBRARY
+  std::cout << "free: ";
+  std::copy( free.begin(), free.end(), std::ostream_iterator<int>( std::cout, " " ) );
+  std::cout << "\n";
+
+  for ( std::vector<Facet*>::iterator i=all_facets_.begin(); i!=all_facets_.end(); ++i )
+  {
+    Facet * f = *i;
+    std::stringstream str;
+    str << "facet-" << std::distance( all_facets_.begin(), i ) << ".plot";
+    std::cout << str.str() << "\n";
+    std::ofstream file( str.str().c_str() );
+    f->Print( file );
+  }
+#endif
+#endif
 
   COLOREDGRAPH::Graph used( cycle );
   cycle_list_.AddPoints( graph_, used, cycle, free );

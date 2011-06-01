@@ -927,7 +927,12 @@ void GEO::CUT::Facet::Print( std::ostream & stream )
       x.Update( 1, middle, 1 );
       stream << std::setprecision( 10 ) << x( 0, 0 ) << " "
              << std::setprecision( 10 ) << x( 1, 0 ) << " "
-             << std::setprecision( 10 ) << x( 2, 0 ) << "\n";
+             << std::setprecision( 10 ) << x( 2, 0 ) << " "
+             << std::setprecision( 10 ) << p->X()[0] << " "
+             << std::setprecision( 10 ) << p->X()[1] << " "
+             << std::setprecision( 10 ) << p->X()[2] << " "
+             << "# " << p->Id()
+             << "\n";
     }
     stream << "\n\n";
 

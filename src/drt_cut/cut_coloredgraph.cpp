@@ -160,110 +160,103 @@ void GEO::CUT::COLOREDGRAPH::Graph::Print()
   std::cout << "\n";
 }
 
-void GEO::CUT::COLOREDGRAPH::Cycle::Split( Graph & graph, Graph & used, CycleList & cycles, std::set<int> & free )
+void GEO::CUT::COLOREDGRAPH::Graph::FindFreeFacets( Graph & graph, Graph & used, std::set<int> & free )
 {
-  Graph::const_iterator start = std::find_if( cycle_.begin(), cycle_.end(), ForkFinder( graph, used, cycle_, free ) );
-  if ( start!=cycle_.end() )
+  int free_facet = *free.begin();
+  if ( free_facet >= Split() )
   {
-    Graph connection( graph.Split() );
-    std::set<int> open;
+    throw std::runtime_error( "no free facet but free lines" );
+  }
 
-    int p1 = start->first;
-    while ( p1 > -1 )
+  std::stack<int> stack;
+  stack.push( free_facet );
+
+  while ( not stack.empty() )
+  {
+    int facet = stack.top();
+    stack.pop();
+
+    std::set<int> & row = graph[facet];
+    for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
     {
-      int p2 = graph.FindNext( used, p1, cycle_, free );
-      if ( p2 > -1 )
+      int line = *i;
+
+      if ( used.count( line ) == 0 and free.count( line ) > 0 )
       {
-        std::set<int> & row = graph[p2];
+        std::set<int> & row = graph[line];
         for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
         {
-          int p3 = *i;
-
-          if ( used.count( p3 ) == 0 )
-            open.insert( p3 );
-          else
-            open.erase( p3 );
-
-          used.Add( p3, p2 );
-          connection.Add( p3, p2 );
-        }
-
-        if ( open.size() > 0 )
-        {
-          p1 = *open.begin();
-        }
-        else
-        {
-          // split graph:
-
-          Graph c1( graph.Split() );
-          Graph c2( graph.Split() );
-
-          cycle_.Split( connection, c1, c2 );
-
-          for ( Graph::const_iterator i=connection.begin(); i!=connection.end(); ++i )
+          int f = *i;
+          if ( f != facet and used.count( f ) == 0 and free.count( f ) > 0 )
           {
-            int p = i->first;
+            stack.push( f );
 
-            std::set<int> & row = connection[p];
-            for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
-            {
-              int p = *i;
-              free.erase( p );
-            }
-            free.erase( p );
+            // We can never have more than one new facet per line. This will
+            // not work in very extreme cases, when many internal lines have
+            // multiple choices.
+            break;
           }
-
-          cycles.AddPoints( graph, used, c1, free );
-          cycles.AddPoints( graph, used, c2, free );
-
-          active_ = false;
-          p1 = -1;
         }
       }
-      else
+
+      used.Add( line, facet );
+      Add( line, facet );
+    }
+  }
+
+  for ( Graph::const_iterator i=begin(); i!=end(); ++i )
+  {
+    int p = i->first;
+
+    const std::set<int> & row = i->second;
+    for ( std::set<int>::const_iterator i=row.begin(); i!=row.end(); ++i )
+    {
+      int p = *i;
+      free.erase( p );
+    }
+    free.erase( p );
+  }
+}
+
+void GEO::CUT::COLOREDGRAPH::Graph::FindSplitTrace( std::vector<int> & split_trace )
+{
+  for ( Graph::const_iterator i=begin(); i!=end(); ++i )
+  {
+    int p = i->first;
+    const std::set<int> & row = i->second;
+    if ( p >= Split() )
+    {
+      if ( row.size()==1 )
       {
-        throw std::runtime_error( "failed to find next point" );
+        split_trace.push_back( p );
       }
     }
   }
-  else
+}
+
+bool GEO::CUT::COLOREDGRAPH::Graph::ContainsTrace( const std::vector<int> & split_trace )
+{
+  for ( std::vector<int>::const_iterator i=split_trace.begin(); i!=split_trace.end(); ++i )
   {
-#ifdef DEBUGCUTLIBRARY
-    cycle_.TestClosed();
-#endif
-    active_ = true;
+    int p = *i;
+    if ( count( p )==0 )
+      return false;
   }
+  return true;
 }
 
 void GEO::CUT::COLOREDGRAPH::Cycle::Print()
 {
-  std::cout << "Cycle: " << active_ << "\n";
+  std::cout << "Cycle:\n";
   cycle_.Print();
   std::cout << "\n";
 }
 
-void GEO::CUT::COLOREDGRAPH::Graph::Split( Graph & connection, Graph & c1, Graph & c2 )
+void GEO::CUT::COLOREDGRAPH::Graph::Split( Graph & connection, const std::vector<int> & split_trace, Graph & c1, Graph & c2 )
 {
-  // find split trace
-
-  std::set<int> split_trace;
-  for ( Graph::const_iterator i=connection.begin(); i!=connection.end(); ++i )
-  {
-    int p = i->first;
-    const std::set<int> & row = i->second;
-    if ( p >= connection.Split() )
-    {
-      if ( row.size()==1 )
-      {
-        split_trace.insert( p );
-      }
-    }
-  }
-
   // find lhs and rhs starting from split trace
 
-  int p = *split_trace.begin();
+  int p = split_trace.front();
   std::set<int> & row = at( p );
 
   if ( row.size()!=2 )
@@ -274,7 +267,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::Split( Graph & connection, Graph & c1, Graph
   ++i;
   Fill( split_trace, connection, *i, c2 );
 
-  for ( std::set<int>::iterator i=split_trace.begin(); i!=split_trace.end(); ++i )
+  for ( std::vector<int>::const_iterator i=split_trace.begin(); i!=split_trace.end(); ++i )
   {
     int p = *i;
     unsigned c1rowlen = c1[p].size();
@@ -327,9 +320,10 @@ void GEO::CUT::COLOREDGRAPH::Graph::Split( Graph & connection, Graph & c1, Graph
   }
 }
 
-void GEO::CUT::COLOREDGRAPH::Graph::Fill( const std::set<int> & split_trace, Graph & connection, int seed, Graph & c )
+void GEO::CUT::COLOREDGRAPH::Graph::Fill( const std::vector<int> & split_trace, Graph & connection, int seed, Graph & c )
 {
-  std::set<int> done( split_trace );
+  std::set<int> done;
+  done.insert( split_trace.begin(), split_trace.end() );
   std::stack<int> stack;
 
   stack.push( seed );
@@ -371,11 +365,50 @@ void GEO::CUT::COLOREDGRAPH::Graph::Fill( const std::set<int> & split_trace, Gra
 
 void GEO::CUT::COLOREDGRAPH::CycleList::AddPoints( Graph & graph, Graph & used, Graph & cycle, std::set<int> & free )
 {
-  cycles_.push_back( Cycle( graph.Split() ) );
-  Cycle & c = cycles_.back();
-  c.Assign( cycle );
+  PushBack( cycle );
 
-  c.Split( graph, used, *this, free );
+  while ( free.size() > 0 )
+  {
+    Graph connection( graph.Split() );
+    connection.FindFreeFacets( graph, used, free );
+
+    std::vector<int> split_trace;
+    connection.FindSplitTrace( split_trace );
+
+    bool found = false;
+    for ( std::list<Cycle>::iterator i=cycles_.begin(); i!=cycles_.end(); ++i )
+    {
+      Cycle & c = *i;
+
+      // There can be just one graph that contains the trace. This prohibits self-cuts.
+      if ( c.ContainsTrace( split_trace ) )
+      {
+        Graph c1( graph.Split() );
+        Graph c2( graph.Split() );
+
+        c.Split( connection, split_trace, c1, c2 );
+
+        cycles_.erase( i );
+
+        PushBack( c1 );
+        PushBack( c2 );
+
+        found = true;
+        break;
+      }
+    }
+    if ( not found )
+    {
+      throw std::runtime_error( "did not find volume that contains split facets" );
+    }
+  }
+}
+
+void GEO::CUT::COLOREDGRAPH::CycleList::PushBack( Graph & g )
+{
+  cycles_.push_back( Cycle( g.Split() ) );
+  Cycle & c = cycles_.back();
+  c.Assign( g );
 }
 
 void GEO::CUT::COLOREDGRAPH::CycleList::Print()

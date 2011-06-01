@@ -78,6 +78,10 @@ namespace GEO
 
         int FindNext( Graph & used, int p, Graph & cycle, const std::set<int> & free );
 
+        void FindFreeFacets( Graph & graph, Graph & used, std::set<int> & free );
+
+        void FindSplitTrace( std::vector<int> & split_trace );
+
         void GetAll( std::set<int> & all );
 
         void FixSingleLines();
@@ -112,11 +116,13 @@ namespace GEO
 
 //         void Split( int color_split ) { color_split_ = color_split; }
 
-        void Split( Graph & connection, Graph & c1, Graph & c2 );
+        void Split( Graph & connection, const std::vector<int> & split_trace, Graph & c1, Graph & c2 );
+
+        bool ContainsTrace( const std::vector<int> & split_trace );
 
       private:
 
-        void Fill( const std::set<int> & split_trace, Graph & connection, int seed, Graph & c );
+        void Fill( const std::vector<int> & split_trace, Graph & connection, int seed, Graph & c );
 
         std::map<int, std::set<int> > graph_;
         int color_split_;
@@ -128,8 +134,7 @@ namespace GEO
       public:
 
         explicit Cycle( int color_split )
-          : active_( true ),
-            cycle_( color_split )
+          : cycle_( color_split )
         {
         }
 
@@ -138,15 +143,15 @@ namespace GEO
           cycle_.Swap( cycle );
         }
 
-        void Split( Graph & graph, Graph & used, CycleList & cycles, std::set<int> & free );
-
         void Print();
 
-        bool Active() const { return active_; }
+        void Split( Graph & connection, const std::vector<int> & split_trace, Graph & c1, Graph & c2 )
+        { cycle_.Split( connection, split_trace, c1, c2 ); }
+
+        bool ContainsTrace( const std::vector<int> & split_trace )
+        { return cycle_.ContainsTrace( split_trace ); }
 
       private:
-
-        bool active_;
 
         Graph cycle_;
       };
@@ -164,12 +169,6 @@ namespace GEO
 
         void NextActive()
         {
-          while ( i_ != cycles_.end() )
-          {
-            if ( i_->Active() )
-              break;
-            ++i_;
-          }
         }
 
         CycleListIterator & operator++()
@@ -210,6 +209,9 @@ namespace GEO
         CycleListIterator end()   { return CycleListIterator( cycles_, cycles_.end() ); }
 
       private:
+
+        void PushBack( Graph & g );
+
         std::list<Cycle> cycles_;
       };
 

@@ -105,3 +105,106 @@ void test_colored_graph()
     g.TestSplit();
   }
 }
+
+
+void test_colored_graph2()
+{
+  GEO::CUT::COLOREDGRAPH::Graph g( 10 );
+
+  g.Add( 0, 17 );
+  g.Add( 0, 18 );
+  g.Add( 0, 19 );
+  g.Add( 0, 20 );
+  g.Add( 0, 21 );
+
+  g.Add( 1, 16 );
+  g.Add( 1, 18 );
+  g.Add( 1, 21 );
+
+  g.Add( 2, 15 );
+  g.Add( 2, 17 );
+  g.Add( 2, 20 );
+
+  g.Add( 3, 10 );
+  g.Add( 3, 11 );
+  g.Add( 3, 15 );
+
+  g.Add( 4, 11 );
+  g.Add( 4, 12 );
+  g.Add( 4, 19 );
+
+  g.Add( 5, 10 );
+  g.Add( 5, 12 );
+  g.Add( 5, 16 );
+
+  g.Add( 6, 10 );
+  g.Add( 6, 13 );
+  g.Add( 6, 17 );
+
+  g.Add( 7, 12 );
+  g.Add( 7, 14 );
+  g.Add( 7, 21 );
+
+  g.Add( 8, 10 );
+  g.Add( 8, 14 );
+  g.Add( 8, 18 );
+
+  g.Add( 9, 11 );
+  g.Add( 9, 13 );
+  g.Add( 9, 20 );
+
+  g.TestClosed();
+
+  GEO::CUT::COLOREDGRAPH::Graph c( 10 );
+
+  c.Add( 0, 17 );
+  c.Add( 0, 18 );
+  c.Add( 0, 19 );
+  c.Add( 0, 20 );
+  c.Add( 0, 21 );
+
+  c.Add( 1, 16 );
+  c.Add( 1, 18 );
+  c.Add( 1, 21 );
+
+  c.Add( 2, 15 );
+  c.Add( 2, 17 );
+  c.Add( 2, 20 );
+
+  c.Add( 3, 10 );
+  c.Add( 3, 11 );
+  c.Add( 3, 15 );
+
+  c.Add( 4, 11 );
+  c.Add( 4, 12 );
+  c.Add( 4, 19 );
+
+  c.Add( 5, 10 );
+  c.Add( 5, 12 );
+  c.Add( 5, 16 );
+
+  c.TestClosed();
+
+  std::set<int> free;
+  g.GetAll( free );
+
+  for ( GEO::CUT::COLOREDGRAPH::Graph::const_iterator i=c.begin(); i!=c.end(); ++i )
+  {
+    int p = i->first;
+    free.erase( p );
+  }
+
+  GEO::CUT::COLOREDGRAPH::Graph used( c );
+
+  GEO::CUT::COLOREDGRAPH::CycleList cycle_list;
+  cycle_list.AddPoints( g, used, c, free );
+
+  for ( GEO::CUT::COLOREDGRAPH::CycleList::iterator i=cycle_list.begin(); i!=cycle_list.end(); ++i )
+  {
+    GEO::CUT::COLOREDGRAPH::Graph & g = *i;
+
+    g.Print();
+    g.TestClosed();
+    g.TestSplit();
+  }
+}

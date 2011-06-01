@@ -37,7 +37,7 @@ private:
 
     void AddEdge( Point * p1, Point * p2 );
 
-    Point * GetPoint( int i ) { return all_points_[i]; }
+    Point * GetPoint( int i );
 
     void Print( std::ostream & stream=std::cout );
 

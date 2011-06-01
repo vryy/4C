@@ -69,6 +69,30 @@ GEO::CUT::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, L
 #endif
 #endif
 
+#if 0
+  if ( std::find( cycle.begin(), cycle.end(), graph_.GetPoint( 0 ) )!=cycle.end() )
+  {
+    int hit = 0;
+    if ( std::find( cycle.begin(), cycle.end(), graph_.GetPoint( 9 ) )!=cycle.end() )
+      hit += 1;
+    if ( std::find( cycle.begin(), cycle.end(), graph_.GetPoint( 15 ) )!=cycle.end() )
+      hit += 1;
+    if ( std::find( cycle.begin(), cycle.end(), graph_.GetPoint( 26 ) )!=cycle.end() )
+      hit += 1;
+
+    if ( hit > 1 )
+    {
+      if ( cycle.size()==3 )
+      {
+        std::cout << "*";
+      }
+      std::cout << "  >>>  ";
+      std::copy( cycle.begin(), cycle.end(), std::ostream_iterator<Point*>( std::cout, " " ) );
+      std::cout << " <<<  \n";
+    }
+  }
+#endif
+
   graph_.FindCycles( element, side, cycle, location, strategy );
 }
 
@@ -588,5 +612,13 @@ void GEO::CUT::PointGraph::Graph::GnuplotDumpCycles( const std::string & filenam
 
     counter += 1;
   }
+}
+
+GEO::CUT::Point * GEO::CUT::PointGraph::Graph::GetPoint( int i )
+{
+  std::map<int, Point*>::iterator j = all_points_.find( i );
+  if ( j!=all_points_.end() )
+    return j->second;
+  return NULL;
 }
 
