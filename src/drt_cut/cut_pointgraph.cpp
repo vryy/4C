@@ -30,10 +30,27 @@ GEO::CUT::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, L
   std::vector<Point*> cycle;
   FillGraph( element, side, cycle, strategy );
 
+#if 0
+#ifdef DEBUGCUTLIBRARY
+  {
+    std::ofstream f( "all_points0.plot" );
+    graph_.PlotAllPoints( f );
+  }
+  {
+    std::ofstream f( "graph0.txt" );
+    graph_.Print( f );
+  }
+  {
+    std::ofstream f( "cycle0.txt" );
+    std::copy( cycle.begin(), cycle.end(), std::ostream_iterator<Point*>( f, "\n" ) );
+  }
+#endif
+#endif
+
   if ( graph_.HasSinglePoints() )
   {
 #if 1
-    graph_.FixSinglePoints();
+    graph_.FixSinglePoints( cycle );
 #else
     graph_.TestClosed();
 #endif
@@ -469,7 +486,7 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, st
   }
 }
 
-void GEO::CUT::PointGraph::Graph::FixSinglePoints()
+void GEO::CUT::PointGraph::Graph::FixSinglePoints( std::vector<Point*> & cycle )
 {
   for ( ;; )
   {
@@ -490,6 +507,40 @@ void GEO::CUT::PointGraph::Graph::FixSinglePoints()
             graph_.erase( p2 );
         }
         graph_.erase( p );
+
+        // There are degenerated cases. A very sharp triangle with one and the
+        // same cut point on two edges close to the sharp node. In this case
+        // the node will be dropped. The cycle will contain the cut point
+        // twice. This needs to be fixed.
+
+        std::vector<Point*>::iterator j = std::find( cycle.begin(), cycle.end(), GetPoint( p ) );
+        if ( j!=cycle.end() )
+        {
+          std::vector<Point*>::iterator prev = j==cycle.begin() ? cycle.end() : j;
+          std::advance( prev, -1 );
+          std::vector<Point*>::iterator next = j;
+          std::advance( next, 1 );
+          if ( next==cycle.end() )
+            next = cycle.begin();
+          if ( *prev == *next )
+          {
+            if ( next > j )
+            {
+              cycle.erase( next );
+              cycle.erase( j );
+            }
+            else
+            {
+              cycle.erase( j );
+              cycle.erase( next );
+            }
+          }
+          else
+          {
+            cycle.erase( j );
+          }
+        }
+
         break;
       }
     }

@@ -317,13 +317,16 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count, bool lev
 
 #ifdef DEBUGCUTLIBRARY
   {
-    std::stringstream str;
-    str << "volume-" << count << ".plot";
-    std::ofstream file( str.str().c_str() );
+    int volume_count = 0;
     for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
     {
       VolumeCell * vc = *i;
+
+      std::stringstream str;
+      str << "volume-" << count << "-" << volume_count << ".plot";
+      std::ofstream file( str.str().c_str() );
       vc->Print( file );
+      volume_count += 1;
     }
   }
 #endif

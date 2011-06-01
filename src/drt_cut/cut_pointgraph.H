@@ -47,7 +47,7 @@ private:
 
     void FindCycles( Element * element, Side * side, std::vector<Point*> & cycle, Location location, Strategy strategy );
 
-    void FixSinglePoints();
+    void FixSinglePoints( std::vector<Point*> & cycle );
 
     bool HasSinglePoints();
 

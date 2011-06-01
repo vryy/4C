@@ -900,6 +900,10 @@ unsigned GEO::CUT::Facet::FindNextCornerPoint( const std::vector<Point*> & point
 
 void GEO::CUT::Facet::Print( std::ostream & stream )
 {
+  stream << "# Facet: " << points_.size()
+         << "\n# ";
+  std::copy( points_.begin(), points_.end(), std::ostream_iterator<Point*>( stream, " " ) );
+  stream << "\n";
   if ( points_.size() > 0 )
   {
     LINALG::Matrix<3,1> middle;
@@ -921,7 +925,9 @@ void GEO::CUT::Facet::Print( std::ostream & stream )
       x.Update( -1, middle, 1 );
       x.Scale( 0.8 );
       x.Update( 1, middle, 1 );
-      stream << x( 0, 0 ) << " " << x( 1, 0 ) << " " << x( 2, 0 ) << "\n";
+      stream << std::setprecision( 10 ) << x( 0, 0 ) << " "
+             << std::setprecision( 10 ) << x( 1, 0 ) << " "
+             << std::setprecision( 10 ) << x( 2, 0 ) << "\n";
     }
     stream << "\n\n";
 

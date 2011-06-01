@@ -200,6 +200,12 @@ void GEO::CUT::VolumeCell::Position( Point::PointPosition position )
 
 void GEO::CUT::VolumeCell::Print( std::ostream & stream )
 {
+  stream << "# VolumeCell: "
+         << position_ << " "
+         << facets_.size() << " "
+         << integrationcells_.size() << " "
+         << bcells_.size()
+         << "\n";
   for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
     Facet * f = *i;

@@ -143,9 +143,9 @@ public:
 
   void Plot( std::ostream & f )
   {
-    f << x_[0] << " "
-      << x_[1] << " "
-      << x_[2] << " "
+    f << std::setprecision( 10 ) << x_[0] << " "
+      << std::setprecision( 10 ) << x_[1] << " "
+      << std::setprecision( 10 ) << x_[2] << " "
       << pid_
       << "\n";
   }
