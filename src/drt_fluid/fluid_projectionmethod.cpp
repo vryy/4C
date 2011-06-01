@@ -171,14 +171,8 @@ FLD::FluidProjectionMethod::FluidProjectionMethod(RefCountPtr<DRT::Discretizatio
     // residual vector (only needed for partitioned FSI)
     trueresidual_ = LINALG::CreateVector(*dofrowmap,true);
 
-    // get constant density variable for incompressible flow
     // set scalar vector to 1.0
     {
-      ParameterList eleparams;
-      eleparams.set("action","get_density");
-      discret_->Evaluate(eleparams,null,null,null,null,null);
-      density_ = eleparams.get("density", 1.0);
-      if (density_ < EPS15) dserror("received zero or negative density value");
       scanp_->PutScalar(1.0);
     }
     }
@@ -524,7 +518,6 @@ void FLD::FluidProjectionMethod::Output()
 
         // (hydrodynamic) pressure
         Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(velnp_);
-        pressure->Scale(density_);
         output_.WriteVector("pressure", pressure);
 
         //output_.WriteVector("residual", trueresidual_);

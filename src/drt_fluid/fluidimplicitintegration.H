@@ -318,10 +318,10 @@ public:
 
   double ResidualScaling() const
   { if (TimIntScheme()==INPAR::FLUID::timeint_stationary)
-         return density_;
+         return 1.0;
     else if (TimIntScheme()==INPAR::FLUID::timeint_afgenalpha)
-         return density_*alphaM_/(gamma_*dta_);
-    else return density_/(theta_*dta_);}
+         return alphaM_/(gamma_*dta_);
+    else return 1.0/(theta_*dta_);}
   double Dt() const { return dta_; }
 
   double Time() const { return time_; }
@@ -470,10 +470,6 @@ protected:
 
   /// time algorithm flag
   INPAR::FLUID::TimeIntegrationScheme timealgo_;
-
-  /// constant density extracted from element material for incompressible flow
-  /// (set to 1.0 for low-Mach-number flow)
-  double density_;
 
   /// for low-Mach-number flow solver: thermodynamic pressure at n+alpha_F/n+1
   /// and at n+alpha_M/n as well as its time derivative at n+alpha_M/n

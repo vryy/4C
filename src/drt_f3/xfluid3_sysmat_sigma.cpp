@@ -814,7 +814,7 @@ void SysmatDomainSigma(
     const MAT::NewtonianFluid* actmat = dynamic_cast<const MAT::NewtonianFluid*>(material.get());
     const double dens = actmat->Density();
     // dynamic viscosity \mu
-    const double dynvisc = actmat->Viscosity() * dens;
+    const double dynvisc = actmat->Viscosity();
 
     // flag for higher order elements
     const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();

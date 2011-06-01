@@ -310,7 +310,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     // get density
     dens = actmat->Density();
     
-    // get kinetic viscosity
+    // get dynamic viscosity
     visc = actmat->Viscosity();
   }
   else
@@ -366,9 +366,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   double A;
   ele->getParams("Area",A);
   // evaluate Poiseuille resistance
-  double Rp = 8.0*PI*visc*dens*L/(pow(A,2));    
+  double Rp = 8.0*PI*visc*L/(pow(A,2));
   // evaluate the Reynolds number
-  const double Re = 2.0*fabs(qout_np)/(visc*sqrt(A*PI));
+  const double Re = 2.0*fabs(qout_np)/(visc/dens*sqrt(A*PI));
 
   if (ele->Resistance() == "Poiseuille")
   {
@@ -1041,7 +1041,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     // get density
     dens = actmat->Density();
     
-    // get kinetic viscosity
+    // get dynamic viscosity
     visc = actmat->Viscosity();
   }
   else
@@ -1114,9 +1114,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   double A;
   ele->getParams("Area",A);
   // evaluate Poiseuille resistance
-  double Rp = 8.0*PI*visc*dens*L/(pow(A,2));    
+  double Rp = 8.0*PI*visc*L/(pow(A,2));
   // evaluate the Reynolds number
-  const double Re = 2.0*fabs(eqout_np)/(visc*sqrt(A*PI));
+  const double Re = 2.0*fabs(eqout_np)/(visc/dens*sqrt(A*PI));
   if (ele->Resistance() == "Poiseuille")
   {
     R = Rp;

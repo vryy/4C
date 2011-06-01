@@ -22,7 +22,7 @@ MAT::PAR::PermeableFluid::PermeableFluid(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
-  viscosity_(matdata->GetDouble("VISCOSITY")),
+  viscosity_(matdata->GetDouble("DYNVISCOSITY")),
   density_(matdata->GetDouble("DENSITY")),
   permeability_(matdata->GetDouble("PERMEABILITY"))
 {

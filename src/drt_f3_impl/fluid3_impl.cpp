@@ -403,8 +403,8 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::ComputeError(
         {
           const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
 
-          // get constant viscosity
-          visc_ = actmat->Viscosity();
+          // get constant kinematic viscosity
+          visc_ = actmat->Viscosity()/actmat->Density();
         }
         else dserror("Material is not Newtonian Fluid");
 
@@ -2040,7 +2040,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetMaterialParams(
 )
 {
 // initially set density values and values with respect to continuity rhs
-// -> will only be changed for low-Mach-number flow "material" below
 densam_        = 1.0;
 densaf_        = 1.0;
 densn_         = 1.0;
@@ -2053,7 +2052,7 @@ if (material->MaterialType() == INPAR::MAT::m_fluid)
 {
   const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
 
-  // get constant viscosity
+  // get constant dynamic viscosity
   visc_ = actmat->Viscosity();
 
   // Varying Density
@@ -2073,10 +2072,21 @@ if (material->MaterialType() == INPAR::MAT::m_fluid)
 
     deltadens_ =  (funct_.Dot(escaaf)- density_0)/ density_0;
   }
+  // incompressible flow (standard case)
+  else
+  {
+    densaf_ = actmat->Density();
+    densam_ = densaf_;
+    densn_  = densaf_;
+  }
 }
 else if (material->MaterialType() == INPAR::MAT::m_carreauyasuda)
 {
   const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(material.get());
+
+  densaf_ = actmat->Density();
+  densam_ = densaf_;
+  densn_  = densaf_;
 
   double nu_0   = actmat->Nu0();    // parameter for zero-shear viscosity
   double nu_inf = actmat->NuInf();  // parameter for infinite-shear viscosity
@@ -2091,11 +2101,18 @@ else if (material->MaterialType() == INPAR::MAT::m_carreauyasuda)
   // compute viscosity according to the Carreau-Yasuda model for shear-thinning fluids
   // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
   const double tmp = pow(lambda*rateofstrain,b);
+  // kinematic viscosity
   visc_ = nu_inf + ((nu_0 - nu_inf)/pow((1 + tmp),a));
+  // dynamic viscosity
+  visc_ *= densaf_;
 }
 else if (material->MaterialType() == INPAR::MAT::m_modpowerlaw)
 {
   const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(material.get());
+
+  densaf_ = actmat->Density();
+  densam_ = densaf_;
+  densn_  = densaf_;
 
   // get material parameters
   double m     = actmat->MCons();     // consistency constant
@@ -2108,7 +2125,10 @@ else if (material->MaterialType() == INPAR::MAT::m_modpowerlaw)
 
   // compute viscosity according to a modified power law model for shear-thinning fluids
   // see Dhruv Arora, Computational Hemodynamics: Hemolysis and Viscoelasticity,PhD, 2005
+  // kinematic viscosity
   visc_ = m * pow((delta + rateofstrain), (-1)*a);
+  // dynamic viscosity
+  visc_ *= densaf_;
 }
 else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
 {
@@ -2307,6 +2327,10 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
 else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
 {
   const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(material.get());
+
+  densaf_ = actmat->Density();
+  densam_ = densaf_;
+  densn_  = densaf_;
 
   // get constant viscosity
   visc_ = actmat->Viscosity();
@@ -6501,6 +6525,10 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::CalcDissipation(
 
     // get constant viscosity
     visc_ = actmat->Viscosity();
+    // get constant density
+    densaf_ = actmat->Density();
+    densam_ = densaf_;
+    densn_  = densaf_;
   }
   else dserror("Only material m_fluid supported");
   densaf_ = 1.0;

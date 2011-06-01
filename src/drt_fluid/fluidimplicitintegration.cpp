@@ -600,9 +600,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // ---------------------------------------------------------------------
   if (physicaltype_ == INPAR::FLUID::loma or physicaltype_ == INPAR::FLUID::varying_density)
   {
-    // set density variable to 1.0 for low-Mach-number flow
-    density_ = 1.0;
-
     // get gas constant
     ParameterList eleparams;
     eleparams.set("action","get_gas_constant");
@@ -616,14 +613,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   {
     // set gas constant to 1.0 for incompressible flow
     gasconstant_ = 1.0;
-
-    // get constant density variable for incompressible flow
-    ParameterList eleparams;
-    eleparams.set("action","get_density");
-    eleparams.set<int>("Physical Type", physicaltype_);
-    discret_->Evaluate(eleparams,null,null,null,null,null);
-    density_ = eleparams.get("density", 1.0);
-    if (density_ < EPS15) dserror("received zero or negative density value");
   }
 
   // initialize all thermodynamic pressure values and its time derivative
@@ -2837,7 +2826,6 @@ void FLD::FluidImplicitTimeInt::Output()
 
     // (hydrodynamic) pressure
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(velnp_);
-    pressure->Scale(density_);
     output_.WriteVector("pressure", pressure);
 
     //output_.WriteVector("residual", trueresidual_);

@@ -1239,7 +1239,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::ArteryImpedance(int k,
   //*************************************************************
   double compliance = 1.5*area / ( k1_ * exp(k2_*radius) + k3_ );
 
-  double sqrdwo = radius*radius*omega/viscosity;  // square of Womersley number
+  double sqrdwo = radius*radius*omega/(viscosity/density);  // square of Womersley number
   double wonu = sqrt(sqrdwo);                     // Womersley number itself
 
   if (wonu > 4.0)
@@ -1292,7 +1292,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCArteryImpedance(int generat
   double lscale = 50.0; // length to radius ratio
   double alpha = 0.50;   // right daughter vessel ratio
   double beta = 0.85;    // left daughter vessel ratio
-  double mu = viscosity * density; // dynamic (physical) viscosity
+  double mu = viscosity; // dynamic (physical) viscosity
 
   // terminal resistance is assumed zero
   complex<double> zterminal (0,0);
@@ -1448,7 +1448,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
   // ... and compute impedance at my upstream end!
   //*************************************************************
 
-    double sqrdwo = radius*radius*omega/viscosity;  // square of Womersley number
+    double sqrdwo = radius*radius*omega/(viscosity/density);  // square of Womersley number
     double wonu = sqrt(sqrdwo);                     // Womersley number itself
 
     if (wonu > 4.0)
@@ -1506,7 +1506,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCLungImpedance(int generatio
   double alpha = 0.876;   // right daughter vessel ratio
   double beta = 0.686;    // left daughter vessel ratio
 
-  double mu = viscosity * density; // dynamic (physical) viscosity
+  double mu = viscosity; // dynamic (physical) viscosity
   generation++;
   // terminal resistance is assumed zero
   complex<double> zterminal (0,0);

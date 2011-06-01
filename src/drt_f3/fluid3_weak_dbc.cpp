@@ -443,7 +443,10 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   if(mat->MaterialType() == INPAR::MAT::m_fluid)
   {
     const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
-    visc = actmat->Viscosity();
+    // we need the kinematic viscosity here
+    visc = actmat->Viscosity()/actmat->Density();
+    if (actmat->Density() != 1.0)
+      dserror("density 1.0 expected");
   }
   else
   {
@@ -2340,7 +2343,10 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   if(mat->MaterialType() == INPAR::MAT::m_fluid)
   {
     const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
-    visc = actmat->Viscosity();
+    // we need the kinematic viscosity here
+    visc = actmat->Viscosity()/actmat->Density();
+    if (actmat->Density() != 1.0)
+      dserror("density 1.0 expected");
   }
   else
   {

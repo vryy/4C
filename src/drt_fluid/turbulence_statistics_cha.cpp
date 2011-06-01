@@ -80,7 +80,10 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     {
       const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
       const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
-      visc_ = actmat->viscosity_;
+      // we need the kinematic viscosity here
+      visc_ = actmat->viscosity_/actmat->density_;
+      if (actmat->density_ != 1.0)
+        dserror("density 1.0 expected");
     }
   }
 

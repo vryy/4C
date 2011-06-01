@@ -1660,7 +1660,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::WomersleyVelocity(double r,
   //--------------------------------------------------------------------
 
   // Womersley number
-  double          alpha = R*sqrt(2.0*M_PI*double(n)/viscosity_);
+  double          alpha = R*sqrt(2.0*M_PI*double(n)/(viscosity_/density_));
 
 
   // Bessel variable

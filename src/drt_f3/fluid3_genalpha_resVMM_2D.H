@@ -9356,7 +9356,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetElementData_2D
   if(material->MaterialType() == INPAR::MAT::m_fluid)
   {
     const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
-    visc = actmat->Viscosity();
+    // kinematic viscosity
+    visc = actmat->Viscosity()/actmat->Density();
   }
   // initialise visceff to visc
   visceff=visc;

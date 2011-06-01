@@ -89,7 +89,7 @@ public:
   void SetSurfaceSplitter(const UTILS::MapExtractor* surfacesplitter) { surfacesplitter_ = surfacesplitter; }
 
 
-    double ResidualScaling() const { return density_/dta_/theta_; }
+    double ResidualScaling() const { return 1.0/dta_/theta_; }
     double Theta() const {return theta_; }
     double Dt() const { return dta_; }
 
@@ -183,8 +183,6 @@ protected:
 
     // MapExtractor velocity <-> pressure
     LINALG::MapExtractor      velpressplitter_;
-
-    double density_;
 
     // matrices
     RCP<LINALG::SparseMatrix> pressmat_;

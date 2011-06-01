@@ -1549,6 +1549,9 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalc
   {
     const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
     densaf_ = actmat->Density();
+    //TODO: clearify this
+    //it should now be one
+    //densaf_ = 1.0;
   }
   else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
   {
@@ -2197,7 +2200,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
     // Computation of nurb specific stuff is not activated here
     EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
 
-    const double fac_thsl_pres_inve = fac_ * thsl * pressure * invdensity;
+    const double fac_thsl_pres_inve = fac_ * thsl * pressure;
 
     for (int inode=0;inode<bdrynen_;++inode)
       for(int idim=0;idim<nsd_;++idim)
@@ -2347,6 +2350,8 @@ if (material->MaterialType() == INPAR::MAT::m_fluid)
   // Boussinesq approximation: Calculation of delta rho
   else if (f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
     dserror("Boussinesq approximation not yet supported for boundary terms!");
+  else
+    densaf_ = actmat->Density();
 }
 else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
 {
@@ -2452,7 +2457,10 @@ template <DRT::Element::DiscretizationType bndydistype,
   if(mat->MaterialType()== INPAR::MAT::m_fluid)
   {
     const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
-    visc_ = actmat->Viscosity();
+    // we need the kinematic viscosity here
+    visc_ = actmat->Viscosity()/actmat->Density();
+    if (actmat->Density() != 1.0)
+      dserror("density 1.0 expected");
   }
   else
     dserror("other material expected but got type %d", mat->MaterialType());

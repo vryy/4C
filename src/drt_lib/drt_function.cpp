@@ -1418,7 +1418,9 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
     MAT::PAR::NewtonianFluid* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
     if (!fparams)
       dserror("Material does not cast to Newtonian fluid");
-    viscosity_ = fparams->viscosity_;
+    //viscosity_ = fparams->viscosity_;
+    // get kinematic viscosity
+    viscosity_ = fparams->viscosity_ / fparams->density_;
     fbase_ = 1.0;
     tnminus1_ = -1.0;
 

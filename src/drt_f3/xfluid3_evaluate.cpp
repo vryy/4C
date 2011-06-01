@@ -975,18 +975,16 @@ void DRT::ELEMENTS::XFluid3::f3_int_beltrami_err(
   const double d      = M_PI/2.0;
 
   // get viscosity
-  double  kinvisc = 0.0;
+  double  dynvisc = 0.0;
   double  dens = 0.0;
   if(material->MaterialType() == INPAR::MAT::m_fluid)
   {
     const MAT::NewtonianFluid* actmat = dynamic_cast<const MAT::NewtonianFluid*>(material.get());
-    kinvisc = actmat->Viscosity();
+    dynvisc = actmat->Viscosity();
     dens = actmat->Density();
   }
   else
     dserror("Cannot handle material of type %d", material->MaterialType());
-
-  const double dynvisc = kinvisc * dens;
 
   double         preint;
   vector<double> velint  (3);

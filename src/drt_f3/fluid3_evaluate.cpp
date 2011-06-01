@@ -545,27 +545,28 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       {
         // This is a very poor way to transport the density to the
         // outside world. Is there a better one?
+        // only used for elch with natural convection
         if(mat->MaterialType()== INPAR::MAT::m_fluid)
         {
           const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
           params.set("density", actmat->Density());
         }
-        else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
-        {
-          const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(mat.get());
-          params.set("density", actmat->Density());
-        }
-        else if(mat->MaterialType()== INPAR::MAT::m_modpowerlaw)
-        {
-          const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
-          params.set("density", actmat->Density());
-        }
-        else if(mat->MaterialType()== INPAR::MAT::m_permeable_fluid)
-        {
-          const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(mat.get());
-          params.set("density", actmat->Density());
-        }
-        else dserror("no constant density, material appears to be incorrect");
+//        else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
+//        {
+//          const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(mat.get());
+//          params.set("density", actmat->Density());
+//        }
+//        else if(mat->MaterialType()== INPAR::MAT::m_modpowerlaw)
+//        {
+//          const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
+//          params.set("density", actmat->Density());
+//        }
+//        else if(mat->MaterialType()== INPAR::MAT::m_permeable_fluid)
+//        {
+//          const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(mat.get());
+//          params.set("density", actmat->Density());
+//        }
+        else dserror("material appears to be incorrect");
       }
       break;
       case get_gas_constant:

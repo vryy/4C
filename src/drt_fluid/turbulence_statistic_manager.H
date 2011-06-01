@@ -130,7 +130,7 @@ private:
   double                               gamma_;
 
   //! reference to material density to rescale pressure
-  double &                             density_;
+  double                             density_;
 
   //! parameters for sampling/dumping period
   //! start of sampling at step samstart

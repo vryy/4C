@@ -730,7 +730,8 @@ ScalarT DRT::UTILS::ExplicitTimeSlice::Fct(const ScalarT& T)
     if (id==-1) dserror("Newtonian fluid material could not be found");
     const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
     const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
-    ScalarT visc = (ScalarT) actmat->viscosity_;
+    // get kinematic viscosity
+    ScalarT visc = (ScalarT) actmat->viscosity_ / actmat->density_;
     ScalarT d = M_PI/2.;
     ScalarT val1 = -c1_*visc*d*d*T;
     fac = exp(val1);
@@ -742,7 +743,8 @@ ScalarT DRT::UTILS::ExplicitTimeSlice::Fct(const ScalarT& T)
     if (id==-1) dserror("Newtonian fluid material could not be found");
     const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
     const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
-    ScalarT visc = (ScalarT) actmat->viscosity_;
+    // get kinematic viscosity
+    ScalarT visc = (ScalarT) actmat->viscosity_ / actmat->density_;
     ScalarT a = 2.0;
     ScalarT val1 = -c1_*a*a*M_PI*M_PI*visc*T;
     fac = exp(val1);

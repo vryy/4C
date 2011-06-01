@@ -190,7 +190,9 @@ STK::FLD::FluidEvaluateHelper::FluidEvaluateHelper( STK::Discretization & dis,
   if ( mat->MaterialType() != INPAR::MAT::m_fluid )
     dserror( "newtonian fluid material expected but got type %d", mat->MaterialType() );
 
-  nu_ = static_cast<MAT::NewtonianFluid*>( &*mat )->Viscosity();
+  double mu = static_cast<MAT::NewtonianFluid*>( &*mat )->Viscosity();
+  double dens = static_cast<MAT::NewtonianFluid*>( &*mat )->Density();
+  nu_ = mu/dens;
 }
 
 

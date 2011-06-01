@@ -244,7 +244,7 @@ namespace FLD
     alphaM_          (0.0                  ),
     alphaF_          (0.0                  ),
     gamma_           (0.0                  ),
-    density_         (fluid.density_       ),
+    density_         (1.0                  ),
     discret_         (fluid.discret_       ),
     params_          (fluid.params_        ),
     alefluid_        (fluid.alefluid_      ),
