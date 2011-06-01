@@ -13,6 +13,7 @@ Maintainer: Alexander Popp, Christian Cyron
 #define BEAM3C_MANAGER_H
 
 #include "beam3contact.H"
+#include "beam3contact_octtree.H"
 #include "Teuchos_RefCountPtr.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
@@ -274,6 +275,9 @@ private:
   RCP<Epetra_Map> elerowmap_;
   RCP<Epetra_Map> elecolmap_;
   RCP<Epetra_Map> elefullmap_;
+  
+  //! occtree for contact search
+  RCP<Beam3ContactOctTree> tree_;
 
   //! vector of contact pairs (pairs of elements, which might get in contact)
   vector<RCP<Beam3contact> > pairs_;
