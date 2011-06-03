@@ -2164,107 +2164,25 @@ void FLD::XFluidFluid::XFluidFluidState::GenAlphaUpdateAcceleration()
   // copy back into global vector
   LINALG::Export(*onlyaccnp,*accnp_);
 }
+//---------------------------------------------------------------
+// Teuchos::RCP<Epetra_Vector> FLD::XFluidFluid::calcStresses()
+// {
+//   string condstring("FluidStressCalc");
 
-FLD::XFluidFluidResultTest2::XFluidFluidResultTest2( XFluidFluid * xfluid )
-  : bgdis_( *xfluid->bgdis_ ),
-    embdis_(*xfluid->embdis_ ),
-    velnp_( xfluid->state_->velnp_ ),
-    alevelnp_( xfluid->state_->alevelnp_ )
-{
-}
-//----------------------------------------------------------------------------
-//
-//----------------------------------------------------------------------------
-void FLD::XFluidFluidResultTest2::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
-{
-  int dis;
-  res.ExtractInt("DIS",dis);
-  if (dis != 1)
-    dserror("fix me: only one ale discretization supported for testing");
+//   Teuchos::RCP<Epetra_Vector> integratedshapefunc = IntegrateInterfaceShape(condstring);
 
-  int node;
-  res.ExtractInt("NODE",node);
-  node -= 1;
+//   // compute traction values at specified nodes; otherwise do not touch the zero values
+//   for (int i=0;i<integratedshapefunc->MyLength();i++)
+//   {
+//     if ((*integratedshapefunc)[i] != 0.0)
+//     {
+//       // overwrite integratedshapefunc values with the calculated traction coefficients,
+//       // which are reconstructed out of the nodal forces (trueresidual_) using the
+//       // same shape functions on the boundary as for velocity and pressure.
+//       (*integratedshapefunc)[i] = (*fluidtrueresidual_)[i]/(*integratedshapefunc)[i];
+//     }
+//   }
 
-  if (bgdis_.HaveGlobalNode(node))
-  {
-    DRT::Node* actnode = bgdis_.gNode(node);
+//   return integratedshapefunc;
+//}
 
-    if (actnode->Owner() != bgdis_.Comm().MyPID())
-      return;
-
-    double result = 0.;
-
-    const Epetra_BlockMap& velnpmap = velnp_->Map();
-
-    std::string position;
-    res.ExtractString("POSITION",position);
-    if (position=="velx")
-    {
-      result = (*velnp_)[velnpmap.LID(bgdis_.Dof(actnode,0))];
-    }
-    else if (position=="vely")
-    {
-      result = (*velnp_)[velnpmap.LID(bgdis_.Dof(actnode,1))];
-    }
-    else if (position=="velz")
-    {
-      result = (*velnp_)[velnpmap.LID(bgdis_.Dof(actnode,2))];
-    }
-    else if (position=="pressure")
-    {
-      result = (*velnp_)[velnpmap.LID(bgdis_.Dof(actnode,3))];
-    }
-    else
-    {
-      dserror("position '%s' not supported in ale testing", position.c_str());
-    }
-
-    nerr += CompareValues(result, res);
-    test_count++;
-  }
-  else if(embdis_.HaveGlobalNode(node))
-  {
-        DRT::Node* actnode = embdis_.gNode(node);
-
-    if (actnode->Owner() != embdis_.Comm().MyPID())
-      return;
-
-    double result = 0.;
-
-    const Epetra_BlockMap& velnpmap = alevelnp_->Map();
-
-    std::string position;
-    res.ExtractString("POSITION",position);
-    if (position=="velx")
-    {
-      result = (*alevelnp_)[velnpmap.LID(embdis_.Dof(actnode,0))];
-    }
-    else if (position=="vely")
-    {
-      result = (*alevelnp_)[velnpmap.LID(embdis_.Dof(actnode,1))];
-    }
-    else if (position=="velz")
-    {
-      result = (*alevelnp_)[velnpmap.LID(embdis_.Dof(actnode,2))];
-    }
-    else if (position=="pressure")
-    {
-      result = (*alevelnp_)[velnpmap.LID(embdis_.Dof(actnode,3))];
-    }
-    else
-    {
-      dserror("position '%s' not supported in ale testing", position.c_str());
-    }
-
-    nerr += CompareValues(result, res);
-    test_count++;
-  }
-}
-//----------------------------------------------------------------------------
-//
-//----------------------------------------------------------------------------
-bool FLD::XFluidFluidResultTest2::Match(DRT::INPUT::LineDefinition& res)
-{
-  return res.HaveNamed("FLUID");
-}

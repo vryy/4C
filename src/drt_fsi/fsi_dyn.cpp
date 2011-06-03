@@ -309,16 +309,19 @@ void fluid_fluid_ale_drt()
   Teuchos::RCP<FSI::FluidAleAlgorithm> alefluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(comm));
   alefluid->Timeloop();
 
+  DRT::Problem::Instance()->AddFieldTest(alefluid->MBFluidField().CreateFieldTest());
+  DRT::Problem::Instance()->TestAll(comm);
+
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  Teuchos::RCP<LINALG::Solver> solver =
-    Teuchos::rcp(new LINALG::Solver(problem->FluidSolverParams(),
-                                    bgfluiddis->Comm(),
-                                    problem->ErrorFile()->Handle()));
+//   Teuchos::RCP<LINALG::Solver> solver =
+//     Teuchos::rcp(new LINALG::Solver(problem->FluidSolverParams(),
+//                                     bgfluiddis->Comm(),
+//                                     problem->ErrorFile()->Handle()));
 //   FLD::XFluidFluid fluid(bgfluiddis,embfluiddis,*solver,problem->FluidDynamicParams());
 //   fluid.IntegrateFluidFluid();
-//   DRT::Problem::Instance()->AddFieldTest(Teuchos::rcp(new FLD::XFluidFluidResultTest2(&fluid)));
+//   DRT::Problem::Instance()->AddFieldTest(Teuchos::rcp(new FLD::XFluidFluidResultTest(&fluid)));
 //   DRT::Problem::Instance()->TestAll(comm);
 }
 

@@ -413,7 +413,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFluidImpl::IntegrateInterfaceShape()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidFluidImpl::CreateFieldTest()
 {
-  return Teuchos::rcp(new FLD::XFluidFluidResultTest2(&fluid_));
+  return Teuchos::rcp(new FLD::XFluidFluidResultTest(fluid_));
 }
 
 
