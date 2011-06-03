@@ -889,7 +889,8 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/fluid_volumetric_surfaceFlow_condition.cpp
   src/drt_fluid/fluidimplicitintegration.cpp
   src/drt_fluid/fluidxfluidimplicitintegration.cpp
-  src/drt_fluid/fluidxfluidresulttest.cpp	
+  src/drt_fluid/fluidxfluidresulttest.cpp
+  src/drt_fluid/xfluidfluidresulttest.cpp
   src/drt_fluid/fluidresulttest.cpp
   src/drt_fluid/time_integration_scheme.cpp
   src/drt_fluid/turbulence_statistic_manager.cpp
