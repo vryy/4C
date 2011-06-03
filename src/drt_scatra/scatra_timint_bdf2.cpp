@@ -498,6 +498,9 @@ void SCATRA::TimIntBDF2::ReadRestart(int step)
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 
+  if (myrank_==0)
+    cout<<"Reading ScaTra restart data (time="<<time_<<" ; step="<<step_<<")"<<endl;
+
   // read state vectors that are needed for BDF2 restart
   reader.ReadVector(phinp_,"phinp");
   reader.ReadVector(phin_, "phin");

@@ -501,6 +501,9 @@ void SCATRA::TimIntGenAlpha::ReadRestart(int step)
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
 
+  if (myrank_==0)
+    cout<<"Reading ScaTra restart data (time="<<time_<<" ; step="<<step_<<")"<<endl;
+
   // read state vectors that are needed for generalized-alpha restart
   reader.ReadVector(phinp_,  "phinp");
   reader.ReadVector(phin_,   "phin");

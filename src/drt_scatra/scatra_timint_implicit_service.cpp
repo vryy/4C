@@ -2173,6 +2173,9 @@ void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues()
   // action only for ELCH applications
   if (scatratype_== INPAR::SCATRA::scatratype_elch_enc)
   {
+    // this option can be helpful in some rare situations
+    bool makepositive(false);
+
     vector<int> numfound(numscal_,0);
 
     for (int i = 0; i < discret_->NumMyRowNodes(); i++)
@@ -2185,7 +2188,11 @@ void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues()
       {
         const int lid = discret_->DofRowMap()->LID(dofs[k]);
         if (((*phinp_)[lid]) < EPS15 )
+        {
           numfound[k]++;
+          if (makepositive)
+            ((*phinp_)[lid]) = EPS15;
+        }
       }
     }
 
@@ -2194,7 +2201,11 @@ void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues()
     {
       if (numfound[k] > 0)
         cout<<"WARNING: PROC "<<myrank_<<" has "<<numfound[k]<<
-        " nodes with zero/neg. concentration values for species "<<k<<endl;
+        " nodes with zero/neg. concentration values for species "<<k;
+      if (makepositive)
+        cout<<"-> were made positive (set to 1.0e-15)"<<endl;
+      else
+        cout<<endl;
     }
   }
   return;
