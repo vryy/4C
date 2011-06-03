@@ -505,6 +505,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_thermo_timint.cpp
   src/drt_adapter/adapter_xfluid_impl.cpp
   src/drt_adapter/adapter_fluid_xfluid_impl.cpp	
+  src/drt_adapter/adapter_fluid_fluid_impl.cpp
 )
 set(OBJS_DRT_CONTACT_LIB
   src/drt_contact/contact_element.cpp
