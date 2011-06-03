@@ -34,6 +34,7 @@ Maintainer: Ulrich Kuettler
 #include "adapter_fluid_combust.H"
 #include "adapter_fluid_lung.H"
 #include "adapter_fluid_xfluid_impl.H"
+#include "adapter_fluid_fluid_impl.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -109,7 +110,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     rcp(new IO::DiscretizationWriter(actdis));
   if (genprob.probtyp != prb_fsi_xfem and
       genprob.probtyp != prb_fluid_xfem and
-      genprob.probtyp != prb_combust)
+      genprob.probtyp != prb_combust and
+      genprob.probtyp != prb_fluid_fluid_ale)
   {
     output->WriteMesh(0,0.0);
   }
@@ -182,7 +184,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma)
   fluidtimeparams->set<int>("Physical Type",
       DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE"));
-
 
   // -------------------------------------------------- time integration
   // note: here, the values are taken out of the problem-dependent ParameterList prbdyn
@@ -395,7 +396,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER"));
   }
-
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective
   // time-integration (or stationary) scheme
@@ -422,7 +422,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->set<int>              ("order gridvel"            ,fdyn.get<int>("GRIDVEL"));
 
     fluidtimeparams->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
-
     bool dirichletcond = true;
     if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_fsi_lung_gas)
     {
@@ -467,6 +466,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     else if (genprob.probtyp == prb_combust)
     {
       fluid_ = rcp(new ADAPTER::FluidCombust(actdis, solver, fluidtimeparams, output));
+    }
+    else if (genprob.probtyp == prb_fluid_fluid_ale)
+    {
+      RCP<DRT::Discretization> embfluiddis  =  DRT::Problem::Instance()->Dis(genprob.numff,1);
+         fluid_ = rcp(new ADAPTER::FluidFluidImpl(embfluiddis,actdis,solver,fdyn,output,isale,dirichletcond));
     }
     else
     {
@@ -545,7 +549,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     }
     fluid_->SetInitialFlowField(initfield,startfuncno);
   }
-
   return;
 }
 

@@ -260,17 +260,18 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
   discret.SetState("scaaf",scaaf_);
   discret.SetState("scaam",scaam_);
 
-  if (xfluid_.alefluid_)
-  {
-    alediscret.SetState("dispnp", aledispnp_);
-    alediscret.SetState("gridv", gridv_);
-  }
   // set general vector values needed by elements
   alediscret.ClearState();
   alediscret.SetState("hist" ,alehist_ );
   alediscret.SetState("accam",aleaccam_);
   alediscret.SetState("scaaf",alescaaf_);
   alediscret.SetState("scaam",alescaam_);
+
+  if (xfluid_.alefluid_)
+  {
+    alediscret.SetState("dispnp", aledispnp_);
+    alediscret.SetState("gridv", gridv_);
+  }
 
   // set general vector values of boundarydis needed by elements
   cutdiscret.SetState("ivelnp",ivelnp_);
@@ -367,7 +368,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                         strategy.Elevector2(),
                                         strategy.Elevector3(),
                                         intpoints[count] );
-
               if (err)
                 dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
             }
@@ -484,7 +484,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
       else
       {
         TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluidFluid::XFluidFluidState::Evaluate normal" );
-
         // get element location vector, dirichlet flags and ownerships
         actele->LocationVector(discret,la,false);
 
@@ -581,7 +580,8 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
   cutdiscret.ClearState();
 
   // scaling to get true residual vector
-  //trouble_->Update(xfluid_.ResidualScaling(),*residual_,0.0);
+  aletrueresidual_->Update(xfluid_.ResidualScaling(),*aleresidual_,0.0);
+
 
   // finalize the complete matrices
   alesysmat_->Complete();
@@ -952,6 +952,7 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
                      Teuchos::RCP<DRT::Discretization> embdis,
                      LINALG::Solver & solver,
                      const Teuchos::ParameterList & params,
+                     IO::DiscretizationWriter& output,
                      bool alefluid )
   : bgdis_(actdis),
     embdis_(embdis),
@@ -959,7 +960,8 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
     params_(params),
     alefluid_(alefluid),
     time_(0.0),
-    step_(0)
+    step_(0),
+    output_(output)
 {
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
@@ -976,23 +978,24 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   newton_       = DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(params_,"NONLINITER");
   convform_     = params_.get<string>("CONVFORM");
   fssgv_        = params_.get<string>("FSSUGRVISC","No");
+  upres_        = params_.get<int>("write solution every", -1);
 
   numdim_       = genprob.ndim; //params_.get<int>("DIM");
+
+  emboutput_ = rcp(new IO::DiscretizationWriter(embdis_));
+  emboutput_->WriteMesh(0,0.0);
 
   // ensure that degrees of freedom in the discretization have been set
   if ( not bgdis_->Filled() or not actdis->HaveDofs() )
     bgdis_->FillComplete();
 
-
   std::vector<std::string> conditions_to_copy;
-  conditions_to_copy.push_back("FSICoupling");
   conditions_to_copy.push_back("XFEMCoupling");
-  boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(embdis, "FSICoupling", "boundary", "BELE3", conditions_to_copy);
+  boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(embdis, "XFEMCoupling", "boundary", "BELE3", conditions_to_copy);
 
   if (boundarydis_->NumGlobalNodes() == 0)
   {
-    std::cout << "Empty boundary discretization detected. No FSI coupling will be performed...\n";
-    boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(embdis, "XFEMCoupling", "boundary", "BELE3", conditions_to_copy);
+    std::cout << "Empty XFEM-boundary discretization detected!\n";
   }
 
   RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentDofSet(embdis));
@@ -1282,7 +1285,9 @@ void FLD::XFluidFluid::PrepareTimeStep()
     bgdis_->ClearState();
   }
 }
-
+///////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////
 void FLD::XFluidFluid::NonlinearSolveFluidFluid()
 {
   // ---------------------------------------------- nonlinear iteration
@@ -1349,7 +1354,7 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
       state_->EvaluateFluidFluid( eleparams, *bgdis_, *boundarydis_, *embdis_,  itnum );
 
       // debug output
-      state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "residual", itnum, state_->residual_ ,state_->aleresidual_);
+      //state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "residual", itnum, state_->residual_ ,state_->aleresidual_);
 
       // end time measurement for element
       dtele_=Teuchos::Time::wallTime()-tcpu;
@@ -1562,8 +1567,6 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
     LINALG::Export(*(state_->alevelnp_),*(state_->ivelnp_));
     boundarydis_->SetState("ivelnp",state_->ivelnp_);
 
-    // debug output
-    state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "result", itnum, state_->velnp_ , state_->alevelnp_);
 
     // -------------------------------------------------------------------
     // For af-generalized-alpha: update accelerations
@@ -1581,6 +1584,8 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
       GenAlphaIntermediateValues();
     }
   }
+  // debug output
+  state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "result", step_, state_->velnp_ , state_->alevelnp_);
 }
 
 void FLD::XFluidFluid::LinearSolve()
@@ -1598,13 +1603,61 @@ void FLD::XFluidFluid::MultiCorrector()
 
 }
 
+// -------------------------------------------------------------------
+//
+// -------------------------------------------------------------------
 void FLD::XFluidFluid::Evaluate(
   Teuchos::RCP<const Epetra_Vector> stepinc ///< solution increment between time step n and n+1
   )
 {
 
 }
+// -------------------------------------------------------------------
+//
+// -------------------------------------------------------------------
+void FLD::XFluidFluid::UpdateGridv()
+{
+  // get order of accuracy of grid velocity determination
+  // from input file data
+  //const int order  = params_.get<int>("order gridvel");
+  const int order  = params_.get<int>("GRIDVEL");
 
+  switch (order)
+  {
+    case 1:
+      /* get gridvelocity from BE time discretisation of mesh motion:
+           -> cheap
+           -> easy
+           -> limits FSI algorithm to first order accuracy in time
+
+                  x^n+1 - x^n
+             uG = -----------
+                    Delta t                        */
+      state_->gridv_->Update(1/dta_, *state_->aledispnp_, -1/dta_, *state_->aledispn_, 0.0);
+    break;
+    case 2:
+      /* get gridvelocity from BDF2 time discretisation of mesh motion:
+           -> requires one more previous mesh position or displacemnt
+           -> somewhat more complicated
+           -> allows second order accuracy for the overall flow solution  */
+      state_->gridv_->Update(1.5/dta_, *state_->aledispnp_, -2.0/dta_, *state_->aledispn_, 0.0);
+      state_->gridv_->Update(0.5/dta_, *state_->aledispnm_, 1.0);
+    break;
+  }
+}
+
+// -------------------------------------------------------------------
+//
+// -------------------------------------------------------------------
+void FLD::XFluidFluid::AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd)
+{
+  std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
+  condmaps.push_back(maptoadd);
+  condmaps.push_back(state_->aledbcmaps_->CondMap());
+  Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
+  *(state_->aledbcmaps_) = LINALG::MapExtractor(*(embdis_->DofRowMap()), condmerged);
+  return;
+}
 // -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
@@ -1744,13 +1797,209 @@ void FLD::XFluidFluid::TimeUpdate()
 
 void FLD::XFluidFluid::StatisticsAndOutput()
 {
+  // time measurement: output and statistics
+  TEUCHOS_FUNC_TIME_MONITOR("      + output and statistics");
 
+  // -------------------------------------------------------------------
+  //          calculate lift'n'drag forces from the residual
+  // -------------------------------------------------------------------
+  //LiftDrag();
+
+  // compute equation-of-state factor
+  //const double eosfac = thermpressaf_/gasconstant_;
+  // store subfilter stresses for additional output
+//   if (scale_similarity_)
+//   {
+//     RCP<Epetra_Vector> stress12 = CalcSFS(1,2);
+//     statisticsmanager_->StoreNodalValues(step_, stress12);
+//   }
+  // -------------------------------------------------------------------
+  //   add calculated velocity to mean value calculation (statistics)
+  // -------------------------------------------------------------------
+//  statisticsmanager_->DoTimeSample(step_,time_,eosfac);
+
+  // -------------------------------------------------------------------
+  //                        compute flow rates
+  // -------------------------------------------------------------------
+//  ComputeFlowRates();
+
+  // -------------------------------------------------------------------
+  //                         output of solution
+  // -------------------------------------------------------------------
+  Output();
+
+  // -------------------------------------------------------------------
+  //          dumping of turbulence statistics if required
+  // -------------------------------------------------------------------
+  //statisticsmanager_->DoOutput(output_,step_,eosfac);
+
+  return;
 }
 
 void FLD::XFluidFluid::Output()
 {
+  //  ART_exp_timeInt_->Output();
+  // output of solution
+  if (step_%upres_ == 0)
+  {
+    // step number and time
+    output_.NewStep(step_,time_);
 
-}
+    // velocity/pressure vector
+    output_.WriteVector("velnp",state_->velnp_);
+
+    // (hydrodynamic) pressure
+    Teuchos::RCP<Epetra_Vector> pressure = state_->velpressplitter_.ExtractCondVector(state_->velnp_);
+    pressure->Scale(density_);
+    output_.WriteVector("pressure", pressure);
+
+    //output_.WriteVector("residual", trueresidual_);
+    if (alefluid_) output_.WriteVector("dispnp", state_->aledispnp_);
+
+//     //only perform stress calculation when output is needed
+//     if (writestresses_)
+//     {
+//       RCP<Epetra_Vector> traction = CalcStresses();
+//       output_.WriteVector("traction",traction);
+//       if (myrank_==0)
+//         cout<<"Writing stresses"<<endl;
+//       //only perform wall shear stress calculation when output is needed
+//       if (write_wall_shear_stresses_)
+//       {
+//         RCP<Epetra_Vector> wss = CalcWallShearStresses();
+//         output_.WriteVector("wss",wss);
+//       }
+//     }
+
+
+    // write domain decomposition for visualization (only once!)
+    //if (step_==upres_) output_.WriteElementData();
+
+//     if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
+//     {
+//       // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
+//       output_.WriteVector("accnp",accnp_);
+//       output_.WriteVector("accn", accn_);
+//       output_.WriteVector("veln", veln_);
+//       output_.WriteVector("velnm",velnm_);
+
+//       if (alefluid_)
+//       {
+//         output_.WriteVector("dispn", dispn_);
+//         output_.WriteVector("dispnm",dispnm_);
+//       }
+
+//       // also write impedance bc information if required
+//       // Note: this method acts only if there is an impedance BC
+//       impedancebc_->WriteRestart(output_);
+
+//       Wk_optimization_->WriteRestart(output_);
+//     }
+
+//    vol_surf_flow_bc_->Output(output_);
+
+  }
+//   // write restart also when uprestart_ is not a integer multiple of upres_
+//   else if (uprestart_ != 0 && step_%uprestart_ == 0)
+//   {
+//     // step number and time
+//     output_.NewStep(step_,time_);
+
+//     // velocity/pressure vector
+//     output_.WriteVector("velnp",velnp_);
+
+//     //output_.WriteVector("residual", trueresidual_);
+//     if (alefluid_)
+//     {
+//       output_.WriteVector("dispnp", dispnp_);
+//       output_.WriteVector("dispn", dispn_);
+//       output_.WriteVector("dispnm",dispnm_);
+//     }
+
+//     //only perform stress calculation when output is needed
+//     if (writestresses_)
+//     {
+//       RCP<Epetra_Vector> traction = CalcStresses();
+//       output_.WriteVector("traction",traction);
+//       //only perform wall shear stress calculation when output is needed
+//       if (write_wall_shear_stresses_)
+//       {
+//         RCP<Epetra_Vector> wss = CalcWallShearStresses();
+//         output_.WriteVector("wss",wss);
+//       }
+//     }
+
+//     // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
+//     output_.WriteVector("accnp",accnp_);
+//     output_.WriteVector("accn", accn_);
+//     output_.WriteVector("veln", veln_);
+//     output_.WriteVector("velnm",velnm_);
+
+//     // also write impedance bc information if required
+//     // Note: this method acts only if there is an impedance BC
+//     impedancebc_->WriteRestart(output_);
+
+//     Wk_optimization_->WriteRestart(output_);
+//     vol_surf_flow_bc_->Output(output_);
+//   }
+
+
+//#define PRINTALEDEFORMEDNODECOORDS // flag for printing all ALE nodes and xspatial in current configuration - only works for 1 processor  devaal 02.2011
+
+// output ALE nodes and xspatial in current configuration - devaal 02.2011
+#ifdef PRINTALEDEFORMEDNODECOORDS
+
+    if (discret_->Comm().NumProc() != 1)
+	dserror("The flag PRINTALEDEFORMEDNODECOORDS has been switched on, and only works for 1 processor");
+
+    cout << "ALE DISCRETIZATION IN THE DEFORMED CONFIGURATIONS" << endl;
+    // does discret_ exist here?
+    //cout << "discret_->NodeRowMap()" << discret_->NodeRowMap() << endl;
+
+    //RCP<Epetra_Vector> mynoderowmap = rcp(new Epetra_Vector(discret_->NodeRowMap()));
+    //RCP<Epetra_Vector> noderowmap_ = rcp(new Epetra_Vector(discret_->NodeRowMap()));
+    //dofrowmap_  = rcp(new discret_->DofRowMap());
+    const Epetra_Map* noderowmap = discret_->NodeRowMap();
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    for (int lid=0; lid<noderowmap->NumGlobalPoints(); lid++)
+	{
+	    int gid;
+	    // get global id of a node
+	    gid = noderowmap->GID(lid);
+	    // get the node
+	    DRT::Node * node = discret_->gNode(gid);
+	    // get the coordinates of the node
+	    const double * X = node->X();
+	    // get degrees of freedom of a node
+	    vector<int> gdofs = discret_->Dof(node);
+	    //cout << "for node:" << *node << endl;
+	    //cout << "this is my gdof vector" << gdofs[0] << " " << gdofs[1] << " " << gdofs[2] << endl;
+
+	    // get displacements of a node
+	    vector<double> mydisp (3,0.0);
+	    for (int ldof = 0; ldof<3; ldof ++)
+	    {
+	    	int displid = dofrowmap->LID(gdofs[ldof]);
+	    	//cout << "displacement local id - in the rowmap" << displid << endl;
+	    	mydisp[ldof] = (*dispnp_)[displid];
+	    	//make zero if it is too small
+	    	if (abs(mydisp[ldof]) < 0.00001)
+	    	    {
+			mydisp[ldof] = 0.0;
+	    	    }
+	    }
+	    // Export disp, X
+	    double newX = mydisp[0]+X[0];
+	    double newY = mydisp[1]+X[1];
+	    double newZ = mydisp[2]+X[2];
+	    //cout << "NODE " << gid << "  COORD  " << newX << " " << newY << " " << newZ << endl;
+	    cout << gid << " " << newX << " " << newY << " " << newZ << endl;
+	}
+#endif //PRINTALEDEFORMEDNODECOORDS
+
+  return;
+}// XFluidFluid::Output
 
 // -------------------------------------------------------------------
 // set general fluid parameter (AE 01/2011)
@@ -1826,22 +2075,30 @@ void FLD::XFluidFluid::SetElementTimeParameter()
   dserror("D_FLUID3 required");
 #endif
 }
-
+//----------------------------------------------------------------------------
+//
+//----------------------------------------------------------------------------
 void FLD::XFluidFluid::GenAlphaIntermediateValues()
 {
   state_->GenAlphaIntermediateValues();
 }
-
+//----------------------------------------------------------------------------
+//
+//----------------------------------------------------------------------------
 void FLD::XFluidFluid::AssembleMatAndRHS()
 {
 
 }
-
+//----------------------------------------------------------------------------
+//
+//----------------------------------------------------------------------------
 void FLD::XFluidFluid::GenAlphaUpdateAcceleration()
 {
   state_->GenAlphaUpdateAcceleration();
 }
-
+//----------------------------------------------------------------------------
+//
+//----------------------------------------------------------------------------
 void FLD::XFluidFluid::XFluidFluidState::GenAlphaIntermediateValues()
 {
   //       n+alphaM                n+1                      n
@@ -1915,7 +2172,9 @@ FLD::XFluidFluidResultTest2::XFluidFluidResultTest2( XFluidFluid * xfluid )
     alevelnp_( xfluid->state_->alevelnp_ )
 {
 }
-
+//----------------------------------------------------------------------------
+//
+//----------------------------------------------------------------------------
 void FLD::XFluidFluidResultTest2::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   int dis;
@@ -2002,7 +2261,9 @@ void FLD::XFluidFluidResultTest2::TestNode(DRT::INPUT::LineDefinition& res, int&
     test_count++;
   }
 }
-
+//----------------------------------------------------------------------------
+//
+//----------------------------------------------------------------------------
 bool FLD::XFluidFluidResultTest2::Match(DRT::INPUT::LineDefinition& res)
 {
   return res.HaveNamed("FLUID");

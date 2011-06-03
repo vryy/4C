@@ -14,6 +14,9 @@
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_xfem/xfem_fluidwizard.H"
 
+#include "../drt_io/io_ostream0.H"
+#include "../drt_io/io.H"
+
 #include "../drt_lib/drt_resulttest.H"
 #include "fluid_utils_mapextractor.H"
 
@@ -191,6 +194,9 @@ namespace FLD
       // Extractor used for splitting fluid and ale_fluid
       FLD::UTILS::FluidXFluidMapExtractor fluidfluidsplitter_;
 
+      // row dof map extractor
+      const UTILS::MapExtractor* surfacesplitter_;
+
       // fluid-fluid Coupling matrices
       Teuchos::RCP<LINALG::SparseMatrix> Cuiu_;
       Teuchos::RCP<LINALG::SparseMatrix> Cuui_;
@@ -239,6 +245,7 @@ namespace FLD
                  Teuchos::RCP<DRT::Discretization>  embdis,
                  LINALG::Solver &                   solver,
                  const Teuchos::ParameterList &     params,
+                 IO::DiscretizationWriter&          output,
                  bool                               alefluid=false
       );
 
@@ -281,14 +288,61 @@ namespace FLD
     /// statistics
     void StatisticsAndOutput();
 
+    /// determine grid velocity
+    void UpdateGridv();
+
+    /*!
+      \brief Access output object
+    */
+    IO::DiscretizationWriter& DiscWriter()
+    {
+      return *emboutput_;
+    }
+
     /// update configuration and output to file/screen
     void Output();
+
+    Teuchos::RCP<Epetra_Vector> InitialGuess() { return state_->aleincvel_; }
+    Teuchos::RCP<Epetra_Vector> Residual() { return state_->aleresidual_; }
+    Teuchos::RCP<Epetra_Vector> TrueResidual() { return state_->aletrueresidual_; }
+    Teuchos::RCP<Epetra_Vector> Velnp() { return state_->alevelnp_; }
+    Teuchos::RCP<Epetra_Vector> Velaf() { return state_->alevelaf_; }
+    Teuchos::RCP<Epetra_Vector> Veln() { return state_->aleveln_; }
+    Teuchos::RCP<Epetra_Vector> GridVel() { return state_->gridv_; }
+
+    Teuchos::RCP<Epetra_Vector> Dispnp() { return state_->aledispnp_; }
+    Teuchos::RCP<Epetra_Vector> Dispn() { return state_->aledispn_; }
+
+    /// provide access to the Dirichlet map
+    const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return state_->aledbcmaps_; }
+
+    /// Expand the Dirichlet DOF set
+    ///
+    /// The method expands the DOF set (map) which contains the DOFs
+    /// subjected to Dirichlet boundary conditions. For instance, the method is
+    /// called by the staggered FSI in which the velocities on the FSI
+    /// interface are prescribed by the other fields.
+    void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
+
+    Teuchos::RCP<DRT::Discretization> Discretization() { return embdis_; }
+
+    /// introduce surface split extractor object
+    /*!
+      This method must (and will) be called during setup with a properly
+      initialized extractor object iff we are on an ale mesh.
+    */
+    void SetSurfaceSplitter(const UTILS::MapExtractor* surfacesplitter) { state_->surfacesplitter_ = surfacesplitter; }
 
     /*!
       \brief return type of time integration scheme
 
     */
     const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
+
+    double Dt() const { return dta_; }
+
+    double Time() const { return time_; }
+    int Step() const { return step_; }
 
     double ResidualScaling() const
     {
@@ -352,8 +406,9 @@ namespace FLD
 //     Teuchos::RCP<Epetra_Vector>   w_;
 //     //! basis vector for nullspace (vector of ones in the pressure component)
 //     Teuchos::RCP<Epetra_Vector>   c_;
-    Teuchos::ParameterList params_;
-//     IO::DiscretizationWriter&     output_;
+    Teuchos::ParameterList        params_;
+    IO::DiscretizationWriter&     output_;
+    Teuchos::RCP<IO::DiscretizationWriter>     emboutput_;
     //! the processor ID from the communicator
     int                           myrank_;
     //! do we move the fluid mesh and calculate the fluid on this moving mesh?
@@ -390,6 +445,11 @@ namespace FLD
 
     /// flag for physical type of fluid flow (standard: incompressible)
     enum INPAR::FLUID::PhysicalType physicaltype_;
+
+
+    //! @name restart variables
+    int upres_;
+    //@}
 
     //! @name time step sizes
     double dta_;

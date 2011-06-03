@@ -73,10 +73,12 @@ void ntacal()
     case prb_fluid_xfem2:
       fluid_xfem2_drt();
       break;
+    case prb_fluid_fluid_ale:
+      fluid_fluid_ale_drt();
+      break;
     case prb_fluid_fluid:
       fluid_fluid_drt();
       break;
-
     case prb_fluid_ale:
       fluid_ale_drt();
       break;

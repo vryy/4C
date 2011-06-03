@@ -184,7 +184,7 @@ void fluid_xfem2_drt()
 /*----------------------------------------------------------------------*/
 // entry point for Fluid-Fluid based  on XFEM in DRT
 /*----------------------------------------------------------------------*/
-void fluid_fluid_drt()
+void fluid_fluid_ale_drt()
 {
 #ifdef PARALLEL
   Epetra_MpiComm comm(MPI_COMM_WORLD);
@@ -292,20 +292,22 @@ void fluid_fluid_drt()
 
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0)
-   {
-     {
-       Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
-       Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
+  {
+    {
+      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
+        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
 
-       alecreator->CreateMatchingDiscretization(embfluiddis,aledis,-1);
-     }
-     if (comm.MyPID()==0)
-     {
-       cout << "\n\nCreating ALE discretisation ....\n\n";
-     }
-   }
+      alecreator->CreateMatchingDiscretization(embfluiddis,aledis,-1);
+    }
+    if (comm.MyPID()==0)
+    {
+      cout << "\n\nCreating ALE discretisation ....\n\n";
+    }
+  }
 
   aledis->FillComplete();
+  Teuchos::RCP<FSI::FluidAleAlgorithm> alefluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(comm));
+  alefluid->Timeloop();
 
   // -------------------------------------------------------------------
   // create a solver
@@ -314,10 +316,10 @@ void fluid_fluid_drt()
     Teuchos::rcp(new LINALG::Solver(problem->FluidSolverParams(),
                                     bgfluiddis->Comm(),
                                     problem->ErrorFile()->Handle()));
-  FLD::XFluidFluid fluid(bgfluiddis,embfluiddis,*solver,problem->FluidDynamicParams());
-  fluid.IntegrateFluidFluid();
-  DRT::Problem::Instance()->AddFieldTest(Teuchos::rcp(new FLD::XFluidFluidResultTest2(&fluid)));
-  DRT::Problem::Instance()->TestAll(comm);
+//   FLD::XFluidFluid fluid(bgfluiddis,embfluiddis,*solver,problem->FluidDynamicParams());
+//   fluid.IntegrateFluidFluid();
+//   DRT::Problem::Instance()->AddFieldTest(Teuchos::rcp(new FLD::XFluidFluidResultTest2(&fluid)));
+//   DRT::Problem::Instance()->TestAll(comm);
 }
 
 /*----------------------------------------------------------------------*/

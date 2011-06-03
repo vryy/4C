@@ -562,6 +562,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     name.push_back("Fluid");                                       label.push_back(prb_fluid);
     name.push_back("Fluid_XFEM");                                  label.push_back(prb_fluid_xfem);
     name.push_back("Fluid_XFEM2");                                 label.push_back(prb_fluid_xfem2);
+    name.push_back("Fluid_Fluid_Ale");                             label.push_back(prb_fluid_fluid_ale);
     name.push_back("Fluid_Fluid");                                 label.push_back(prb_fluid_fluid);
     name.push_back("Fluid_Ale");                                   label.push_back(prb_fluid_ale);
     name.push_back("Fluid_Freesurface");                           label.push_back(prb_freesurf);

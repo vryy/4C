@@ -55,6 +55,7 @@ extern "C"
 
 /* headers and prototypes of functions also acessible from c */
 void dyn_fluid_drt(const int restart);
+void fluid_fluid_drt();
 
 
 
