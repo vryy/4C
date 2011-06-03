@@ -811,7 +811,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     itnum++;
 
     // check for negative/zero concentration values (in case of ELCH only)
-    CheckConcentrationValues();
+    CheckConcentrationValues(phinp_);
 
     // -------------------------------------------------------------------
     // call elements to calculate system matrix and rhs and assemble

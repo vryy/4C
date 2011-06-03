@@ -2168,7 +2168,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
 /*----------------------------------------------------------------------*
  | check for zero/negative concentration values               gjb 01/10 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues()
+void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues(RCP<Epetra_Vector> vec)
 {
   // action only for ELCH applications
   if (scatratype_== INPAR::SCATRA::scatratype_elch_enc)
@@ -2187,11 +2187,11 @@ void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues()
       for (int k = 0; k < numscal_; k++)
       {
         const int lid = discret_->DofRowMap()->LID(dofs[k]);
-        if (((*phinp_)[lid]) < EPS15 )
+        if (((*vec)[lid]) < EPS15 )
         {
           numfound[k]++;
           if (makepositive)
-            ((*phinp_)[lid]) = EPS15;
+            ((*vec)[lid]) = EPS15;
         }
       }
     }

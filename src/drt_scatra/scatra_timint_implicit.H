@@ -523,7 +523,7 @@ protected:
   bool ApplyGalvanostaticControl();
 
   /// check for negative values of concentrations (ELCH)
-  void CheckConcentrationValues();
+  void CheckConcentrationValues(RCP<Epetra_Vector> vec);
 
   //! compute outward pointing unit normal vectors at given bc's
   RCP<Epetra_MultiVector> ComputeNormalVectors(const vector<string>& condnames);
