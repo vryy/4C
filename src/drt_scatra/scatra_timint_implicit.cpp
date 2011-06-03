@@ -532,12 +532,15 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
   // write out initial state
   // Output();
 
-  // provide information about initial state
-  OutputElectrodeInfo();
-  OutputMeanScalars();
+  // provide information about initial field (do not do for restarts!)
+  if (Step()==0)
+  {
+    OutputElectrodeInfo();
+    OutputMeanScalars();
 
-  // compute error for problems with analytical solution (initial field!)
-  EvaluateErrorComparedToAnalyticalSol();
+    // compute error for problems with analytical solution (initial field!)
+    EvaluateErrorComparedToAnalyticalSol();
+  }
 
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:  + time loop");

@@ -59,12 +59,15 @@ void ELCH::Algorithm::TimeLoop()
   // write out initial state
   // Output();
 
-  // provide information about initial state
-  ScaTraField().OutputElectrodeInfo();
-  ScaTraField().OutputMeanScalars();
+  // provide information about initial field (do not do for restarts!)
+  if (Step()==0)
+  {
+    ScaTraField().OutputElectrodeInfo();
+    ScaTraField().OutputMeanScalars();
 
-  // compute error for problems with analytical solution (initial field!)
-  ScaTraField().EvaluateErrorComparedToAnalyticalSol();
+    // compute error for problems with analytical solution (initial field!)
+    ScaTraField().EvaluateErrorComparedToAnalyticalSol();
+  }
 
   // switch ELCH algorithm
   if (natconv_ == false)
