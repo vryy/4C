@@ -13,6 +13,12 @@
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
+#define CUT_USE_SORTED_VECTOR
+
+#ifdef CUT_USE_SORTED_VECTOR
+#include "sorted_vector.H"
+#endif
+
 namespace GEO
 {
 namespace CUT
@@ -230,7 +236,6 @@ public:
 };
 
 typedef EntityIdLess<Point> PointPidLess;
-typedef std::set<Point*, PointPidLess> PointSet;
 
 class PointPositionLess
 {
@@ -256,7 +261,27 @@ private:
   Edge* edge_;
 };
 
+#ifdef CUT_USE_SORTED_VECTOR
+typedef sorted_vector<Point*, true, PointPidLess> PointSet;
+typedef sorted_vector<Point*, true, PointPositionLess> PointPositionSet;
+
+inline PointSet::iterator erase( PointSet & ps, PointSet::iterator i )
+{
+  ps.erase( i );
+  return i;
+}
+
+#else
+typedef std::set<Point*, PointPidLess> PointSet;
 typedef std::set<Point*, PointPositionLess> PointPositionSet;
+
+inline PointSet::iterator erase( PointSet & ps, PointSet::iterator i )
+{
+  ps.erase( i++ );
+  return i;
+}
+
+#endif
 
 class ExcludeLineFilter : public PointLineFilter
 {

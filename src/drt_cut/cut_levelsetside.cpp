@@ -127,7 +127,8 @@ bool GEO::CUT::LevelSetSide::FindAmbiguousCutLines( Mesh & mesh, Element * eleme
           if ( p->IsCut( e ) )
           {
             edge_points.push_back( p );
-            cut_points.erase( i++ );
+            //cut_points.erase( i++ );
+            i = erase( cut_points, i );
             break;
           }
           else

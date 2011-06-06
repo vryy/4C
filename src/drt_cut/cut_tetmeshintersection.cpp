@@ -772,9 +772,7 @@ void GEO::CUT::TetMeshIntersection::SeedCells( Mesh & parent_mesh,
         Point * p = *i;
         if ( child_to_parent_.count( p )==0 )
         {
-          child_cut_points.erase( i++ );
-          //child_cut_points.clear();
-          //break;
+          i = erase( child_cut_points, i );
         }
         else
         {

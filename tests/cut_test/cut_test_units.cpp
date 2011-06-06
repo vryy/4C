@@ -65,10 +65,10 @@ void test_unit_intersection_touch()
                     *( e ),
                     *dynamic_cast<GEO::CUT::ConcreteSide<DRT::Element::quad4>*>( s1 ) );
 
-    std::set<GEO::CUT::Point*, GEO::CUT::PointPidLess> cuts;
+    GEO::CUT::PointSet cuts;
     intersection.Intersect( cuts );
 
-    for ( std::set<GEO::CUT::Point*, GEO::CUT::PointPidLess>::iterator i=cuts.begin();
+    for ( GEO::CUT::PointSet::iterator i=cuts.begin();
           i!=cuts.end();
           ++i )
     {

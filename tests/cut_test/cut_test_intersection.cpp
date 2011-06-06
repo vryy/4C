@@ -62,11 +62,11 @@ void test_quad4_line2( double x1, double y1,
 
   GEO::CUT::Intersection<DRT::Element::line2, DRT::Element::quad4> intersection( mesh, *edge, *cs );
 
-  std::set<GEO::CUT::Point*, GEO::CUT::PointPidLess> cuts;
+  GEO::CUT::PointSet cuts;
   bool does = intersection.Intersect( cuts );
 
   std::cout << "does intersect: " << does << "  " << cuts.size() << "\n";
-  for ( std::set<GEO::CUT::Point*, GEO::CUT::PointPidLess>::iterator i=cuts.begin(); i!=cuts.end(); ++i )
+  for ( GEO::CUT::PointSet::iterator i=cuts.begin(); i!=cuts.end(); ++i )
   {
     GEO::CUT::Point * p = *i;
     p->Plot( std::cout );
