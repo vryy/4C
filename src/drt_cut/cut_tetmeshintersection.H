@@ -115,6 +115,8 @@ namespace GEO
                       std::map<VolumeCell*, ChildCell> & cellmap,
                       std::set<VolumeCell*> & done_child_cells );
 
+      void BuildSurfaceCellMap( VolumeCell * vc, ChildCell & cc );
+
       void RegisterNewPoints( Mesh & parent_mesh, const std::set<VolumeCell*> & childset );
 
       /// put all volume cells at point to cell set

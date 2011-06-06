@@ -322,40 +322,6 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
     }
   }
 
-  // build surface cell map
-
-  for ( std::map<VolumeCell*, ChildCell>::iterator i=cellmap.begin(); i!=cellmap.end(); ++i )
-  {
-    VolumeCell * vc = i->first;
-    ChildCell & cc = i->second;
-    //std::set<VolumeCell*> & childset = cc.cells_;
-
-    // find parent facets on cut surface
-
-    std::map<Side*, std::vector<Facet*> > & facetsonsurface = cc.facetsonsurface_;
-
-    const std::set<Facet*> & parent_facets = vc->Facets();
-    for ( std::set<Facet*>::const_iterator i=parent_facets.begin();
-          i!=parent_facets.end();
-          ++i )
-    {
-      Facet * f = *i;
-      if ( f->OnCutSide() )
-      {
-        Side * s = f->ParentSide();
-        std::map<Side*, std::vector<Side*> >::iterator j = side_parent_to_child_.find( s );
-        if ( j==side_parent_to_child_.end() )
-          throw std::runtime_error( "unknown parent cut facet" );
-        std::vector<Side*> & side_vector = j->second;
-        for ( std::vector<Side*>::iterator i=side_vector.begin(); i!=side_vector.end(); ++i )
-        {
-          Side * cs = *i;
-          facetsonsurface[cs].push_back( f );
-        }
-      }
-    }
-  }
-
   // emergency seed cell filling
 
   while ( nonnodecells > 0 )
@@ -865,6 +831,34 @@ void GEO::CUT::TetMeshIntersection::SeedCells( Mesh & parent_mesh,
   }
 }
 
+void GEO::CUT::TetMeshIntersection::BuildSurfaceCellMap( VolumeCell * vc, ChildCell & cc )
+{
+  // find parent facets on cut surface
+
+  std::map<Side*, std::vector<Facet*> > & facetsonsurface = cc.facetsonsurface_;
+
+  const std::set<Facet*> & parent_facets = vc->Facets();
+  for ( std::set<Facet*>::const_iterator i=parent_facets.begin();
+        i!=parent_facets.end();
+        ++i )
+  {
+    Facet * f = *i;
+    if ( f->OnCutSide() )
+    {
+      Side * s = f->ParentSide();
+      std::map<Side*, std::vector<Side*> >::iterator j = side_parent_to_child_.find( s );
+      if ( j==side_parent_to_child_.end() )
+        throw std::runtime_error( "unknown parent cut facet" );
+      std::vector<Side*> & side_vector = j->second;
+      for ( std::vector<Side*>::iterator i=side_vector.begin(); i!=side_vector.end(); ++i )
+      {
+        Side * cs = *i;
+        facetsonsurface[cs].push_back( f );
+      }
+    }
+  }
+}
+
 void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap )
 {
   for ( std::map<VolumeCell*, ChildCell>::iterator i=cellmap.begin(); i!=cellmap.end(); ++i )
@@ -907,6 +901,12 @@ void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element,
         std::map<Side*, std::vector<Facet*> >::iterator j = facetsonsurface.find( child_facet->ParentSide() );
         if ( j==facetsonsurface.end() )
         {
+#ifdef DEBUGCUTLIBRARY
+          {
+            std::ofstream f( "parentvolume.plot" );
+            vc->Print( f );
+          }
+#endif
           std::stringstream str;
           str << ( *child_facet )
               << "\non boundary cell "
@@ -1078,6 +1078,8 @@ void GEO::CUT::TetMeshIntersection::Fill( VolumeCell * parent_cell, ChildCell & 
 
   std::swap( child_cells, done_child_cells );
   childcell.done_ = true;
+
+  BuildSurfaceCellMap( parent_cell, childcell );
 }
 
 void GEO::CUT::TetMeshIntersection::RegisterNewPoints( Mesh & parent_mesh, const std::set<VolumeCell*> & childset )
