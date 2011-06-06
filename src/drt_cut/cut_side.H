@@ -56,7 +56,7 @@ public:
 
   virtual const CellTopologyData * Topology() = 0;
 
-  virtual void Cut( Mesh & mesh, Edge & edge, std::set<Point*, PointPidLess> & cut_points ) = 0;
+  virtual void Cut( Mesh & mesh, Edge & edge, PointSet & cut_points ) = 0;
 
   virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges ) = 0;
 
@@ -87,7 +87,7 @@ public:
 
   //bool FullSideCut() { return cut_lines_.size()==edges_.size() and facets_.size()==1; }
 
-  bool OnSide( const std::set<Point*, PointPidLess> & points );
+  bool OnSide( const PointSet & points );
 
   bool OnEdge( Point * point );
 
@@ -101,7 +101,7 @@ public:
 
   virtual Facet * FindFacet( const std::vector<Point*> & facet_points );
 
-  virtual bool FindAmbiguousCutLines( Mesh & mesh, Element * element, Side & side, const std::set<Point*> & cut );
+  virtual bool FindAmbiguousCutLines( Mesh & mesh, Element * element, Side & side, const PointSet & cut );
 
   virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
 
@@ -121,7 +121,7 @@ public:
 
   bool FindCutLines( Mesh & mesh, Element * element, Side & other );
 
-  void GetCutPoints( Element * element, Side & other, std::set<Point*> & cuts );
+  void GetCutPoints( Element * element, Side & other, PointSet & cuts );
 
   const std::vector<Line*> & CutLines() const { return cut_lines_; }
 
@@ -131,7 +131,7 @@ public:
 
 protected:
 
-  bool AllOnNodes( const std::set<Point*> & points );
+  bool AllOnNodes( const PointSet & points );
 
 private:
 
@@ -185,7 +185,7 @@ public:
     return shards::getCellTopologyData< shards::Triangle<3> >();
   }
 
-  virtual void Cut( Mesh & mesh, Edge & edge, std::set<Point*, PointPidLess> & cut_points )
+  virtual void Cut( Mesh & mesh, Edge & edge, PointSet & cut_points )
   {
     return edge.Cut( mesh, *this, cut_points );
   }
@@ -227,7 +227,7 @@ public:
     return shards::getCellTopologyData< shards::Quadrilateral<4> >();
   }
 
-  virtual void Cut( Mesh & mesh, Edge & edge, std::set<Point*, PointPidLess> & cut_points )
+  virtual void Cut( Mesh & mesh, Edge & edge, PointSet & cut_points )
   {
     return edge.Cut( mesh, *this, cut_points );
   }

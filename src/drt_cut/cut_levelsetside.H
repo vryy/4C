@@ -27,7 +27,7 @@ public:
     throw std::runtime_error( "no topology" );
   }
 
-  virtual void Cut( Mesh & mesh, Edge & edge, std::set<Point*, PointPidLess> & cut_points );
+  virtual void Cut( Mesh & mesh, Edge & edge, PointSet & cut_points );
 
   virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges );
 
@@ -47,7 +47,7 @@ public:
 
   virtual Facet * FindFacet( const std::vector<Point*> & facet_points );
 
-  virtual bool FindAmbiguousCutLines( Mesh & mesh, Element * element, Side & side, const std::set<Point*> & cut );
+  virtual bool FindAmbiguousCutLines( Mesh & mesh, Element * element, Side & side, const PointSet & cut );
 
   virtual void CreateMissingLines( Creator & creator, Element * element );
 };

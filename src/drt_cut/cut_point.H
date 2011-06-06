@@ -230,6 +230,7 @@ public:
 };
 
 typedef EntityIdLess<Point> PointPidLess;
+typedef std::set<Point*, PointPidLess> PointSet;
 
 class PointPositionLess
 {
@@ -254,6 +255,8 @@ public:
 private:
   Edge* edge_;
 };
+
+typedef std::set<Point*, PointPositionLess> PointPositionSet;
 
 class ExcludeLineFilter : public PointLineFilter
 {

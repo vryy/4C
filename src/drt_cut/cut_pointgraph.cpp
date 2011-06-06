@@ -315,7 +315,7 @@ bool FindCycles( graph_t & g, std::vector<Point*> & cycle, std::map<vertex_t, LI
   for ( std::vector<std::vector<Point*> >::iterator i=cycles.begin(); i!=cycles.end(); ++i )
   {
     std::vector<Point*> & c = *i;
-    std::set<Point*> c_copy;
+    PointSet c_copy;
     c_copy.insert( c.begin(), c.end() );
     if ( c.size()!=c_copy.size() )
       throw std::runtime_error( "double point in cycle" );

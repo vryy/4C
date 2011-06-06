@@ -62,7 +62,7 @@ public:
 #endif
   }
 
-  bool Intersect( std::set<Point*, PointPidLess> & cuts );
+  bool Intersect( PointSet & cuts );
 
   bool ComputeCurveSurfaceIntersection();
 
@@ -81,7 +81,7 @@ private:
   bool ComputeCut( Edge * e1, Edge * e2 );
 
   /// add cut point that is a node to all edges and sides it touches
-  void InsertCut( Node * n, std::set<Point*, PointPidLess> & cuts )
+  void InsertCut( Node * n, PointSet & cuts )
   {
     cuts.insert( Point::InsertCut( &edge_, &side_, n ) );
   }
@@ -125,7 +125,7 @@ template <DRT::Element::DiscretizationType edgetype,
           int numNodesLine,
           int numNodesSurface
 >
-bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect( std::set<Point*, PointPidLess> & cuts )
+bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect( PointSet & cuts )
 {
   bool begin_within_limits = false;
   bool end_within_limits = false;
@@ -230,7 +230,7 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::Intersect(
         continue;
       }
 
-      std::set<Point*> cut_points;
+      PointSet cut_points;
       edge_.GetCutPoints( e, cut_points );
       if ( cut_points.size() > 0 )
       {

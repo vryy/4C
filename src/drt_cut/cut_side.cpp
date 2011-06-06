@@ -62,7 +62,7 @@ bool GEO::CUT::Side::FindCutLines( Mesh & mesh, Element * element, Side & other 
   }
 #endif
 
-  std::set<Point*> cuts;
+  PointSet cuts;
   GetCutPoints( element, other, cuts );
 
   switch ( cuts.size() )
@@ -71,7 +71,7 @@ bool GEO::CUT::Side::FindCutLines( Mesh & mesh, Element * element, Side & other 
     return false;
   case 1:
   {
-    std::set<Point*> reverse_cuts;
+    PointSet reverse_cuts;
     other.GetCutPoints( element, *this, reverse_cuts );
     reverse_cuts.erase( *cuts.begin() );
     if ( reverse_cuts.size()==1 )
@@ -124,7 +124,7 @@ bool GEO::CUT::Side::FindCutLines( Mesh & mesh, Element * element, Side & other 
 void GEO::CUT::Side::CreateMissingLines( Creator & creator, Element * element )
 {
 #if 0
-  std::map<Point*, std::set<Point*> > pg;
+  std::map<Point*, PointSet > pg;
 
   const std::vector<Line*> & cut_lines = CutLines();
   for ( std::vector<Line*>::const_iterator i=cut_lines.begin(); i!=cut_lines.end(); ++i )
@@ -145,12 +145,12 @@ void GEO::CUT::Side::CreateMissingLines( Creator & creator, Element * element )
 
     std::vector<Point*> open;
 
-    for ( std::map<Point*, std::set<Point*> >::iterator i=pg.begin();
+    for ( std::map<Point*, PointSet >::iterator i=pg.begin();
           i!=pg.end();
           ++i )
     {
       Point * p = i->first;
-      std::set<Point*> & row = i->second;
+      PointSet & row = i->second;
       if ( row.size() < 2 )
       {
         open.push_back( p );
@@ -163,7 +163,7 @@ void GEO::CUT::Side::CreateMissingLines( Creator & creator, Element * element )
 
     if ( open.size() > 0 )
     {
-      std::set<Point*> done;
+      PointSet done;
 
       std::vector<Point*> open_side_points;
       open_side_points.reserve( 2 );
@@ -206,10 +206,10 @@ void GEO::CUT::Side::CreateMissingLines( Creator & creator, Element * element )
 #endif
 }
 
-bool GEO::CUT::Side::AllOnNodes( const std::set<Point*> & points )
+bool GEO::CUT::Side::AllOnNodes( const PointSet & points )
 {
   const std::vector<Node*> & nodes = Nodes();
-  for ( std::set<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
+  for ( PointSet::const_iterator i=points.begin(); i!=points.end(); ++i )
   {
     Point * p = *i;
     if ( not p->NodalPoint( nodes ) )
@@ -220,7 +220,7 @@ bool GEO::CUT::Side::AllOnNodes( const std::set<Point*> & points )
   return true;
 }
 
-void GEO::CUT::Side::GetCutPoints( Element * element, Side & other, std::set<Point*> & cuts )
+void GEO::CUT::Side::GetCutPoints( Element * element, Side & other, PointSet & cuts )
 {
   const std::vector<Edge*> & edges = Edges();
   for ( std::vector<Edge*>::const_iterator i=edges.begin(); i!=edges.end(); ++i )
@@ -251,7 +251,7 @@ GEO::CUT::Facet * GEO::CUT::Side::FindFacet( const std::vector<Point*> & facet_p
   return NULL;
 }
 
-bool GEO::CUT::Side::FindAmbiguousCutLines( Mesh & mesh, Element * element, Side & side, const std::set<Point*> & cut )
+bool GEO::CUT::Side::FindAmbiguousCutLines( Mesh & mesh, Element * element, Side & side, const PointSet & cut )
 {
   return false;
 }
@@ -434,7 +434,7 @@ void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, const s
   }
 }
 
-bool GEO::CUT::Side::OnSide( const std::set<Point*, PointPidLess> & points )
+bool GEO::CUT::Side::OnSide( const PointSet & points )
 {
   if ( nodes_.size()==points.size() )
   {

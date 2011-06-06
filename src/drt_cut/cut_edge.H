@@ -109,11 +109,11 @@ public:
 
   const std::set<Side*> & Sides() { return sides_; }
 
-  void Cut( Mesh & mesh, ConcreteSide<DRT::Element::tri3> & side, std::set<Point*, PointPidLess> & cuts );
+  void Cut( Mesh & mesh, ConcreteSide<DRT::Element::tri3> & side, PointSet & cuts );
 
-  void Cut( Mesh & mesh, ConcreteSide<DRT::Element::quad4> & side, std::set<Point*, PointPidLess> & cuts );
+  void Cut( Mesh & mesh, ConcreteSide<DRT::Element::quad4> & side, PointSet & cuts );
 
-  void LevelSetCut( Mesh & mesh, LevelSetSide & side, std::set<Point*, PointPidLess> & cuts );
+  void LevelSetCut( Mesh & mesh, LevelSetSide & side, PointSet & cuts );
 
   void AddPoint( Point* cut_point );
 
@@ -150,7 +150,7 @@ public:
 
   void CutPoint( Node* edge_start, Node* edge_end, std::vector<Point*> & edge_points );
 
-  void CutPoints( Side * side, std::set<Point*, PointPidLess> & cut_points );
+  void CutPoints( Side * side, PointSet & cut_points );
 
   void CutPointsBetween( Point* begin, Point* end, std::vector<Point*> & line );
 
@@ -182,11 +182,11 @@ public:
 
   bool FindCutPoints( Mesh & mesh, Element * element, Side & side, Side & other );
 
-  void GetCutPoints( Element * element, Side & side, Side & other, std::set<Point*> & cuts );
+  void GetCutPoints( Element * element, Side & side, Side & other, PointSet & cuts );
 
-  void GetCutPoints( Edge * other, std::set<Point*> & cuts );
+  void GetCutPoints( Edge * other, PointSet & cuts );
 
-  //const std::set<Point*, PointPositionLess> & CutPoints() const { return cut_points_; }
+  //const PointPositionLess & CutPoints() const { return cut_points_; }
   const std::vector<Point*> & CutPoints() const { return cut_points_; }
 
   void RectifyCutNumerics();
@@ -198,7 +198,7 @@ private:
   std::set<Side*> sides_;
 
   std::vector<Point*> cut_points_;
-  //std::set<Point*, PointPositionLess> cut_points_;
+  //PointPositionLess cut_points_;
 };
 
 

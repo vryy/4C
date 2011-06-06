@@ -135,7 +135,7 @@ void GEO::CUT::Facet::CornerCoordinates( double * x )
   }
 }
 
-void GEO::CUT::Facet::GetAllPoints( Mesh & mesh, std::set<Point*> & cut_points, bool dotriangulate )
+void GEO::CUT::Facet::GetAllPoints( Mesh & mesh, PointSet & cut_points, bool dotriangulate )
 {
   if ( IsPlanar( mesh, dotriangulate ) )
   {
@@ -759,7 +759,7 @@ unsigned GEO::CUT::Facet::Normal( const std::vector<Point*> & points,
   return i;
 }
 
-void GEO::CUT::Facet::TriangulationPoints( std::set<Point*> & points )
+void GEO::CUT::Facet::TriangulationPoints( PointSet & points )
 {
   for ( std::vector<std::vector<Point*> >::const_iterator i=triangulation_.begin();
         i!=triangulation_.end();

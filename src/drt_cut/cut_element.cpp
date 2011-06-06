@@ -258,7 +258,7 @@ bool GEO::CUT::Element::OnSide( const std::vector<Point*> & facet_points )
     }
   }
 
-  std::set<Point*, PointPidLess> points;
+  PointSet points;
   std::copy( facet_points.begin(), facet_points.end(),
              std::inserter( points, points.begin() ) );
 
@@ -296,7 +296,7 @@ void GEO::CUT::Element::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bc
   }
 }
 
-void GEO::CUT::Element::GetCutPoints( std::set<Point*> & cut_points )
+void GEO::CUT::Element::GetCutPoints( PointSet & cut_points )
 {
   for ( std::vector<Side*>::const_iterator i=Sides().begin(); i!=Sides().end(); ++i )
   {
@@ -348,7 +348,7 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count, bool lev
     }
   }
 
-  std::set<Point*> cut_points;
+  PointSet cut_points;
 
   // There are never holes in a cut facet. Furthermore, cut facets are
   // always convex, as all elements and sides are convex. Thus, we are free

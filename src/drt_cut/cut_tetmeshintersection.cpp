@@ -80,9 +80,9 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
       if ( levelset or f->IsTriangulated() )
       {
         triangulated.push_back( f );
-        std::set<Point*> points;
+        PointSet points;
         f->AllPoints( points );
-        for ( std::set<Point*>::iterator i=points.begin(); i!=points.end(); ++i )
+        for ( PointSet::iterator i=points.begin(); i!=points.end(); ++i )
         {
           Point * p = *i;
           nodemap[ToChild( p )];
@@ -209,7 +209,7 @@ void GEO::CUT::TetMeshIntersection::FindEdgeCuts()
     pp_->CollectEdges( edgebox, edges );
     //edges.erase( ce );
 
-    std::set<Point*> cp;
+    PointSet cp;
     cp.insert( ce->BeginNode()->point() );
     cp.insert( ce->EndNode()->point() );
 
@@ -701,12 +701,12 @@ void GEO::CUT::TetMeshIntersection::SeedCells( Mesh & parent_mesh,
     cc.parent_ = vc;
     std::set<VolumeCell*> & childset = cc.cells_;
 
-    std::set<Point*> volume_points;
+    PointSet volume_points;
     vc->GetAllPoints( parent_mesh, volume_points );
 
     // seed cells at parent element nodes (if unique)
 
-    for ( std::set<Point*>::iterator i=volume_points.begin(); i!=volume_points.end(); ++i )
+    for ( PointSet::iterator i=volume_points.begin(); i!=volume_points.end(); ++i )
     {
       Point * p = *i;
       if ( p->Position()!=Point::oncutsurface )
@@ -716,7 +716,7 @@ void GEO::CUT::TetMeshIntersection::SeedCells( Mesh & parent_mesh,
       }
     }
 
-    for ( std::set<Point*>::iterator i=volume_points.begin(); i!=volume_points.end(); ++i )
+    for ( PointSet::iterator i=volume_points.begin(); i!=volume_points.end(); ++i )
     {
       Point * p = *i;
       parent_point_cells[p].push_back( vc );
@@ -762,12 +762,12 @@ void GEO::CUT::TetMeshIntersection::SeedCells( Mesh & parent_mesh,
     VolumeCell * child_vc = &**i;
     if ( done_child_cells.count( child_vc )==0 )
     {
-      std::set<Point*> child_cut_points;
+      PointSet child_cut_points;
       child_vc->GetAllPoints( mesh_, child_cut_points );
 
       // Remove all points that are new in the child mesh. Those do not at
       // all help to find the parent cell.
-      for ( std::set<Point*>::iterator i=child_cut_points.begin(); i!=child_cut_points.end(); )
+      for ( PointSet::iterator i=child_cut_points.begin(); i!=child_cut_points.end(); )
       {
         Point * p = *i;
         if ( child_to_parent_.count( p )==0 )
@@ -786,7 +786,7 @@ void GEO::CUT::TetMeshIntersection::SeedCells( Mesh & parent_mesh,
       {
         std::set<VolumeCell*> used_parent_cells;
 
-        std::set<Point*>::iterator j = child_cut_points.begin();
+        PointSet::iterator j = child_cut_points.begin();
         Point * p = *j;
         FindVolumeCell( ToParent( p ), used_parent_cells );
 
@@ -1093,9 +1093,9 @@ void GEO::CUT::TetMeshIntersection::RegisterNewPoints( Mesh & parent_mesh, const
       Facet * f = *i;
       if ( f->OnCutSide() )
       {
-        std::set<Point*> points;
+        PointSet points;
         f->AllPoints( points );
-        for ( std::set<Point*>::iterator i=points.begin(); i!=points.end(); ++i )
+        for ( PointSet::iterator i=points.begin(); i!=points.end(); ++i )
         {
           Point * p = *i;
           if ( child_to_parent_.count( p )==0 )
@@ -1179,10 +1179,10 @@ void GEO::CUT::TetMeshIntersection::SwapPoints( const std::map<Point*, Point*> &
   std::swap( new_points, points );
 }
 
-void GEO::CUT::TetMeshIntersection::SwapPoints( const std::map<Point*, Point*> & pointmap, std::set<Point*> & points )
+void GEO::CUT::TetMeshIntersection::SwapPoints( const std::map<Point*, Point*> & pointmap, PointSet & points )
 {
-  std::set<Point*> new_points;
-  for ( std::set<Point*>::iterator i=points.begin(); i!=points.end(); ++i )
+  PointSet new_points;
+  for ( PointSet::iterator i=points.begin(); i!=points.end(); ++i )
   {
     Point * p = *i;
     std::map<Point*, Point*>::const_iterator j = pointmap.find( p );
@@ -1277,9 +1277,9 @@ void GEO::CUT::TetMeshIntersection::CopyCutSide( Side * s, Facet * f )
   // Copy cut points from facets. If the facets is triangulated, there is a
   // middle point that needs to be introduces as a cut point.
 
-  std::set<Point*> points;
+  PointSet points;
   f->AllPoints( points );
-  for ( std::set<Point*>::iterator i=points.begin(); i!=points.end(); ++i )
+  for ( PointSet::iterator i=points.begin(); i!=points.end(); ++i )
   {
     Point *  p = *i;
     Point * np = ToChild( p );

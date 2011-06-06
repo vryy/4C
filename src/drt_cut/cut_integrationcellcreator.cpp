@@ -921,7 +921,7 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
 {
   Point::PointPosition position = cell->Position();
 
-  std::set<Point*> cut_points;
+  PointSet cut_points;
   cell->GetAllPoints( mesh, cut_points );
 
   std::vector<Point*> points;
@@ -932,7 +932,7 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
 
   // find all inner points that need projecting
 
-  std::set<Point*> inner;
+  PointSet inner;
 
   std::vector<Facet*> inner_facets;
 
@@ -1128,7 +1128,7 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
     else
     {
 #if 0
-      std::set<Point*> points;
+      PointSet points;
       const std::vector<Point*> & corner_points = f->CornerPoints();
 
       f->AllPoints( points );

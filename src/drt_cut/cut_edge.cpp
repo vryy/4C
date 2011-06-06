@@ -37,9 +37,9 @@ bool GEO::CUT::Edge::FindCutPoints( Mesh & mesh,
 
   // test for the cut of edge and side
 
-  std::set<Point*, PointPidLess> cut_points;
+  PointSet cut_points;
   other.Cut( mesh, *this, cut_points );
-  for ( std::set<Point*, PointPidLess>::iterator i=cut_points.begin();
+  for ( PointSet::iterator i=cut_points.begin();
         i!=cut_points.end();
         ++i )
   {
@@ -61,7 +61,7 @@ bool GEO::CUT::Edge::FindCutPoints( Mesh & mesh,
 void GEO::CUT::Edge::GetCutPoints( Element * element,
                                    Side & side,
                                    Side & other,
-                                   std::set<Point*> & cuts )
+                                   PointSet & cuts )
 {
   for ( std::vector<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
@@ -73,7 +73,7 @@ void GEO::CUT::Edge::GetCutPoints( Element * element,
   }
 }
 
-void GEO::CUT::Edge::GetCutPoints( Edge * other, std::set<Point*> & cuts )
+void GEO::CUT::Edge::GetCutPoints( Edge * other, PointSet & cuts )
 {
   for ( std::vector<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
@@ -101,7 +101,7 @@ void GEO::CUT::Edge::AddPoint( Point* cut_point )
   cut_points_.insert( cut_point );
 #endif
 #ifdef DEBUGCUTLIBRARY
-  std::set<Point*> cp;
+  PointSet cp;
   std::copy( cut_points_.begin(), cut_points_.end(), std::inserter( cp, cp.begin() ) );
   if ( cut_points_.size() != cp.size() )
     throw std::runtime_error( "broken cut points" );
@@ -128,7 +128,7 @@ void GEO::CUT::Edge::CutPoint( Node* edge_start, Node* edge_end, std::vector<Poi
   }
 }
 
-void GEO::CUT::Edge::CutPoints( Side * side, std::set<Point*, PointPidLess> & cut_points )
+void GEO::CUT::Edge::CutPoints( Side * side, PointSet & cut_points )
 {
   SideCutFilter filter( side );
   for ( std::vector<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
@@ -145,8 +145,8 @@ void GEO::CUT::Edge::CutPoints( Side * side, std::set<Point*, PointPidLess> & cu
 
 void GEO::CUT::Edge::CutPointsBetween( Point* begin, Point* end, std::vector<Point*> & line )
 {
-//   std::set<Point*, PointPositionLess>::iterator bi = cut_points_.find( begin );
-//   std::set<Point*, PointPositionLess>::iterator ei = cut_points_.find( end );
+//   PointPositionLess::iterator bi = cut_points_.find( begin );
+//   PointPositionLess::iterator ei = cut_points_.find( end );
   std::vector<Point*>::iterator bi = std::lower_bound( cut_points_.begin(), cut_points_.end(), begin, PointPositionLess( this ) );
   std::vector<Point*>::iterator ei = std::lower_bound( cut_points_.begin(), cut_points_.end(), end  , PointPositionLess( this ) );
 
@@ -350,19 +350,19 @@ GEO::CUT::Point* GEO::CUT::Edge::NodeInElement( Element * element, Point * other
 }
 
 
-void GEO::CUT::Edge::Cut( Mesh & mesh, ConcreteSide<DRT::Element::tri3> & side, std::set<Point*, PointPidLess> & cuts )
+void GEO::CUT::Edge::Cut( Mesh & mesh, ConcreteSide<DRT::Element::tri3> & side, PointSet & cuts )
 {
   Intersection<DRT::Element::line2, DRT::Element::tri3> inter( mesh, *this, side );
   inter.Intersect( cuts );
 }
 
-void GEO::CUT::Edge::Cut( Mesh & mesh, ConcreteSide<DRT::Element::quad4> & side, std::set<Point*, PointPidLess> & cuts )
+void GEO::CUT::Edge::Cut( Mesh & mesh, ConcreteSide<DRT::Element::quad4> & side, PointSet & cuts )
 {
   Intersection<DRT::Element::line2, DRT::Element::quad4> inter( mesh, *this, side );
   inter.Intersect( cuts );
 }
 
-void GEO::CUT::Edge::LevelSetCut( Mesh & mesh, LevelSetSide & side, std::set<Point*, PointPidLess> & cuts )
+void GEO::CUT::Edge::LevelSetCut( Mesh & mesh, LevelSetSide & side, PointSet & cuts )
 {
   double blsv = BeginNode()->LSV();
   double elsv = EndNode()  ->LSV();

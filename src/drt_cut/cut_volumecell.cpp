@@ -84,7 +84,7 @@ void GEO::CUT::VolumeCell::Neighbors( Point * p,
   }
 }
 
-void GEO::CUT::VolumeCell::GetAllPoints( Mesh & mesh, std::set<Point*> & cut_points )
+void GEO::CUT::VolumeCell::GetAllPoints( Mesh & mesh, PointSet & cut_points )
 {
   for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {

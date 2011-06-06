@@ -6,7 +6,7 @@
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
-void GEO::CUT::LevelSetSide::Cut( Mesh & mesh, Edge & edge, std::set<Point*, PointPidLess> & cut_points )
+void GEO::CUT::LevelSetSide::Cut( Mesh & mesh, Edge & edge, PointSet & cut_points )
 {
   edge.LevelSetCut( mesh, *this, cut_points );
 }
@@ -58,7 +58,7 @@ GEO::CUT::Facet * GEO::CUT::LevelSetSide::FindFacet( const std::vector<Point*> &
   return Side::FindFacet( facet_points );
 }
 
-bool GEO::CUT::LevelSetSide::FindAmbiguousCutLines( Mesh & mesh, Element * element, Side & side, const std::set<Point*> & cut )
+bool GEO::CUT::LevelSetSide::FindAmbiguousCutLines( Mesh & mesh, Element * element, Side & side, const PointSet & cut )
 {
   switch ( side.Shape() )
   {
@@ -72,7 +72,7 @@ bool GEO::CUT::LevelSetSide::FindAmbiguousCutLines( Mesh & mesh, Element * eleme
     {
       std::vector<Point*> edge_points;
       edge_points.reserve( 2 );
-      for ( std::set<Point*>::const_iterator i=cut.begin(); i!=cut.end(); ++i )
+      for ( PointSet::const_iterator i=cut.begin(); i!=cut.end(); ++i )
       {
         Point * p = *i;
         if ( not p->NodalPoint( element->Nodes() ) )
@@ -117,11 +117,11 @@ bool GEO::CUT::LevelSetSide::FindAmbiguousCutLines( Mesh & mesh, Element * eleme
       std::vector<Point*> edge_points;
       edge_points.reserve( 4 );
       const std::vector<Edge*> & edges = side.Edges();
-      std::set<Point*> cut_points( cut );
+      PointSet cut_points( cut );
       for ( std::vector<Edge*>::const_iterator i=edges.begin(); i!=edges.end(); ++i )
       {
         Edge * e = *i;
-        for ( std::set<Point*>::iterator i=cut_points.begin(); i!=cut_points.end(); )
+        for ( PointSet::iterator i=cut_points.begin(); i!=cut_points.end(); )
         {
           Point * p = *i;
           if ( p->IsCut( e ) )

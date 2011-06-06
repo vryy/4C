@@ -62,7 +62,7 @@ GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::AddCutSide( int sid,
     throw std::runtime_error( "node coordiante number mismatch" );
   }
 
-//   std::set<Point*> nodalpoints;
+//   PointSet nodalpoints;
 
   // make sure all nodes are there
   for ( int i=0; i<numnode; ++i )

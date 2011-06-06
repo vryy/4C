@@ -50,7 +50,7 @@ public:
 
   Element * ParentElement() { return element_; }
 
-  void GetAllPoints( Mesh & mesh, std::set<Point*> & cut_points );
+  void GetAllPoints( Mesh & mesh, PointSet & cut_points );
 
   void CreateTet4IntegrationCells( Mesh & mesh, const std::vector<std::vector<Point*> > & tets, const std::map<Facet*, std::vector<Point*> > & sides_xyz );
 

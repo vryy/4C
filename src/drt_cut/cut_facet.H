@@ -65,7 +65,7 @@ public:
 
   void CornerCoordinates( double * x );
 
-  void GetAllPoints( Mesh & mesh, std::set<Point*> & cut_points, bool dotriangulate=false );
+  void GetAllPoints( Mesh & mesh, PointSet & cut_points, bool dotriangulate=false );
 
   void AddHole( Facet * hole );
 
@@ -121,9 +121,9 @@ public:
 
   const std::vector<std::vector<Point*> > & Triangulation() const { return triangulation_; }
 
-  void TriangulationPoints( std::set<Point*> & points );
+  void TriangulationPoints( PointSet & points );
 
-  void AllPoints( std::set<Point*> & points )
+  void AllPoints( PointSet & points )
   {
     if ( IsTriangulated() )
     {
