@@ -20,7 +20,7 @@ bool GEO::CUT::Edge::FindCutPoints( Mesh & mesh,
 {
 #if 1
   bool cut = false;
-  for ( std::vector<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
+  for ( PointPositionSet::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
     Point * p = *i;
     if ( p->IsCut( &other ) )
@@ -63,7 +63,7 @@ void GEO::CUT::Edge::GetCutPoints( Element * element,
                                    Side & other,
                                    PointSet & cuts )
 {
-  for ( std::vector<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
+  for ( PointPositionSet::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
     Point * p = *i;
     if ( p->IsCut( &other ) and p->IsCut( element ) )
@@ -75,7 +75,7 @@ void GEO::CUT::Edge::GetCutPoints( Element * element,
 
 void GEO::CUT::Edge::GetCutPoints( Edge * other, PointSet & cuts )
 {
-  for ( std::vector<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
+  for ( PointPositionSet::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
     Point * p = *i;
     if ( p->IsCut( other ) )
@@ -90,7 +90,7 @@ void GEO::CUT::Edge::AddPoint( Point* cut_point )
   // make sure the position of the point on this edge is known
   cut_point->t( this );
 
-#if 1
+#if 0
   std::vector<Point*>::iterator j = std::lower_bound( cut_points_.begin(), cut_points_.end(), cut_point, PointPositionLess( this ) );
   if ( j==cut_points_.end() or *j!=cut_point )
   {
@@ -100,11 +100,14 @@ void GEO::CUT::Edge::AddPoint( Point* cut_point )
 #else
   cut_points_.insert( cut_point );
 #endif
+
+#if 0
 #ifdef DEBUGCUTLIBRARY
   PointSet cp;
   std::copy( cut_points_.begin(), cut_points_.end(), std::inserter( cp, cp.begin() ) );
   if ( cut_points_.size() != cp.size() )
     throw std::runtime_error( "broken cut points" );
+#endif
 #endif
 }
 

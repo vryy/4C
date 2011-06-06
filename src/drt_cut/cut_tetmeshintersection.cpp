@@ -1250,8 +1250,8 @@ void GEO::CUT::TetMeshIntersection::CopyCutSide( Side * s, Facet * f )
   {
     Edge * e = *ei;
     Edge * ne = new_edges[std::distance( old_edges.begin(), ei )];
-    const std::vector<Point*> & cutpoints = e->CutPoints();
-    for ( std::vector<Point*>::const_iterator i=cutpoints.begin();
+    const PointPositionSet & cutpoints = e->CutPoints();
+    for ( PointPositionSet::const_iterator i=cutpoints.begin();
           i!=cutpoints.end();
           ++i )
     {
