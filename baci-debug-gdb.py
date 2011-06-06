@@ -234,9 +234,14 @@ class Epetra_SerialDenseMatrixPrinter:
 
 
 def point(p):
-    x = p['x_']
-    x = (float(x[0]),float(x[1]),float(x[2]),)
-    return "(%.20g,%.20g,%.20g)" % x
+    if 1:
+        x = p['x_']
+        pid = p['pid_']
+        return "%.20g %.20g %.20g # % 3d" % (float(x[0]),float(x[1]),float(x[2]),pid,)
+    else:
+        pid = p['pid_']
+        position = p['position_']
+        return "%d(%d)" % (pid,position)
 
 def node(n):
     p = n['point_']

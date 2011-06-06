@@ -30,7 +30,7 @@ GEO::CUT::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, L
   std::vector<Point*> cycle;
   FillGraph( element, side, cycle, strategy );
 
-#if 0
+#if 1
 #ifdef DEBUGCUTLIBRARY
   {
     std::ofstream f( "all_points0.plot" );
@@ -65,6 +65,10 @@ GEO::CUT::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, L
   {
     std::ofstream f( "graph.txt" );
     graph_.Print( f );
+  }
+  {
+    std::ofstream f( "cycle.txt" );
+    std::copy( cycle.begin(), cycle.end(), std::ostream_iterator<Point*>( f, "\n" ) );
   }
 #endif
 #endif
@@ -240,6 +244,9 @@ bool FindCycles( graph_t & g, std::vector<Point*> & cycle, std::map<vertex_t, LI
   std::vector<vec_t> embedding( boost::num_vertices( g ) );
 
 #if 1
+
+  // Use geometry to build embedding. The only save way to do it.
+
   vertex_iterator vi, vi_end;
   for ( boost::tie( vi, vi_end )=boost::vertices( g ); vi!=vi_end; ++vi )
   {
@@ -304,6 +311,17 @@ bool FindCycles( graph_t & g, std::vector<Point*> & cycle, std::map<vertex_t, LI
   face_visitor vis( name_map, cycles );
   boost::planar_face_traversal( g, &embedding[0], vis );
 
+#ifdef DEBUGCUTLIBRARY
+  for ( std::vector<std::vector<Point*> >::iterator i=cycles.begin(); i!=cycles.end(); ++i )
+  {
+    std::vector<Point*> & c = *i;
+    std::set<Point*> c_copy;
+    c_copy.insert( c.begin(), c.end() );
+    if ( c.size()!=c_copy.size() )
+      throw std::runtime_error( "double point in cycle" );
+  }
+#endif
+
   bool save_first = cycles.size()==2;
 
   int erase_count = 0;
@@ -355,7 +373,7 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, st
     int n = i->first;
 
     Point * p = GetPoint( n );
-//     if ( location==element_side or p->IsCut( element ) )
+    if ( location==element_side or p->IsCut( element ) )
     {
       vertex_t u = add_vertex( g );
       name_map[u] = p;
@@ -396,8 +414,16 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, st
     }
   }
 
+  // All vertices are connected. If there is no cycle, done.
+  if ( boost::num_vertices( g ) > boost::num_edges( g ) )
+    return;
+
   if ( strategy==own_lines )
   {
+    // If just the lines owned by the element are here, use a "simpler"
+    // algorithm that does not depend on geometry. This is required for
+    // levelset cut sides than do not posses geometrical information.
+
     std::set<cycle_t*> base_cycles;
     find_cycles( g, base_cycles );
 
@@ -422,6 +448,7 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, st
   }
   else
   {
+    // Use geometry to find the right embedding and find the cycles.
 
     // find local coordinates
 
