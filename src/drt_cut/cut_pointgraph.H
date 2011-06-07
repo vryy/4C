@@ -2,6 +2,7 @@
 #define CUT_POINTGRAPH_H
 
 #include "cut_point.H"
+#include "cut_cycle.H"
 
 namespace GEO
 {
@@ -45,24 +46,24 @@ private:
 
     void PlotPoints( Element * element );
 
-    void FindCycles( Element * element, Side * side, std::vector<Point*> & cycle, Location location, Strategy strategy );
+    void FindCycles( Element * element, Side * side, Cycle & cycle, Location location, Strategy strategy );
 
-    void FixSinglePoints( std::vector<Point*> & cycle );
+    void FixSinglePoints( Cycle & cycle );
 
     bool HasSinglePoints();
 
-    void GnuplotDumpCycles( const std::string & filename, const std::vector<std::vector<Point*> > & cycles );
+    void GnuplotDumpCycles( const std::string & filename, const std::vector<Cycle> & cycles );
 
     std::map<int, std::set<int> > graph_;
     std::map<int, Point*> all_points_;
-    std::vector<std::vector<Point*> > main_cycles_;
-    std::vector<std::vector<std::vector<Point*> > > hole_cycles_;
+    std::vector<Cycle> main_cycles_;
+    std::vector<std::vector<Cycle> > hole_cycles_;
   };
 
 public:
 
-  typedef std::vector<std::vector<Point*> >::iterator facet_iterator;
-  typedef std::vector<std::vector<std::vector<Point*> > >::iterator hole_iterator;
+  typedef std::vector<Cycle>::iterator facet_iterator;
+  typedef std::vector<std::vector<Cycle> >::iterator hole_iterator;
 
   PointGraph( Mesh & mesh, Element * element, Side * side, Location location, Strategy strategy );
 
@@ -81,7 +82,7 @@ public:
 
 private:
 
-  void FillGraph( Element * element, Side * side, std::vector<Point*> & cycle, Strategy strategy );
+  void FillGraph( Element * element, Side * side, Cycle & cycle, Strategy strategy );
 
   Element * element_;
   Side * side_;

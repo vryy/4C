@@ -17,6 +17,7 @@ namespace CUT
   class BoundaryCell;
   class LineSegmentList;
   class Creator;
+  class Cycle;
 
 class Side
 {
@@ -79,7 +80,7 @@ public:
 
   virtual void MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
 
-  virtual void MakeInternalFacets( Mesh & mesh, Element * element, const std::vector<Point*> & points, std::set<Facet*> & facets );
+  virtual void MakeInternalFacets( Mesh & mesh, Element * element, const Cycle & points, std::set<Facet*> & facets );
 
   virtual bool IsCut();
 

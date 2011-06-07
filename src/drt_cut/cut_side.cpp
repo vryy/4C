@@ -8,6 +8,7 @@
 #include "cut_point_impl.H"
 #include "cut_pointgraph.H"
 #include "cut_creator.H"
+#include "cut_cycle.H"
 
 #include <string>
 #include <stack>
@@ -273,9 +274,9 @@ void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, Element * element, std::s
 
     for ( PointGraph::facet_iterator i=pg.fbegin(); i!=pg.fend(); ++i )
     {
-      const std::vector<Point*> & points = *i;
+      const Cycle & points = *i;
 
-      Facet * f = mesh.NewFacet( points, this, IsCutSide() );
+      Facet * f = mesh.NewFacet( points(), this, IsCutSide() );
       if ( f==NULL )
         throw std::runtime_error( "failed to create facet" );
       facets_.push_back( f );
@@ -283,7 +284,7 @@ void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, Element * element, std::s
 
     for ( PointGraph::hole_iterator i=pg.hbegin(); i!=pg.hend(); ++i )
     {
-      const std::vector<std::vector<Point*> > & hole = *i;
+      const std::vector<Cycle> & hole = *i;
 
       // If we have a hole and multiple cuts we have to test which facet the
       // hole belongs to. Not supported now.
@@ -292,11 +293,11 @@ void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, Element * element, std::s
         throw std::runtime_error( "expect side with one (uncut) facet" );
       }
 
-      for ( std::vector<std::vector<Point*> >::const_iterator i=hole.begin(); i!=hole.end(); ++i )
+      for ( std::vector<Cycle>::const_iterator i=hole.begin(); i!=hole.end(); ++i )
       {
-        const std::vector<Point*> & points = *i;
+        const Cycle & points = *i;
 
-        Facet * h = mesh.NewFacet( points, this, false );
+        Facet * h = mesh.NewFacet( points(), this, false );
         facets_[0]->AddHole( h );
       }
     }
@@ -354,71 +355,38 @@ void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, std::se
   PointGraph pg( mesh, element, this, PointGraph::cut_side, PointGraph::all_lines );
   for ( PointGraph::facet_iterator i=pg.fbegin(); i!=pg.fend(); ++i )
   {
-    const std::vector<Point*> & points = *i;
+    const Cycle & points = *i;
     MakeInternalFacets( mesh, element, points, facets );
   }
   for ( PointGraph::hole_iterator i=pg.hbegin(); i!=pg.hend(); ++i )
   {
-    const std::vector<std::vector<Point*> > & hole = *i;
-    for ( std::vector<std::vector<Point*> >::const_iterator i=hole.begin(); i!=hole.end(); ++i )
+    const std::vector<Cycle> & hole = *i;
+    for ( std::vector<Cycle>::const_iterator i=hole.begin(); i!=hole.end(); ++i )
     {
-      const std::vector<Point*> & points = *i;
+      const Cycle & points = *i;
       MakeInternalFacets( mesh, element, points, facets );
     }
   }
 }
 
-void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, const std::vector<Point*> & points, std::set<Facet*> & facets )
+void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, const Cycle & points, std::set<Facet*> & facets )
 {
-  if ( points.size() < 3 )
-    return;
-
-  // ignore cycles with points outside the current element
-  for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
-  {
-    Point * p = *i;
-    if ( not p->IsCut( element ) )
-    {
-      return;
-    }
-  }
-
   // ignore cycles with all points on one and the same edge
-  {
-    std::vector<Point*>::const_iterator i = points.begin();
-    std::set<Edge*> edges = ( *i )->CutEdges();
-    for ( ++i; i!=points.end(); ++i )
-    {
-      Point * p = *i;
-      p->Intersection( edges );
-      if ( edges.size()==0 )
-      {
-        break;
-      }
-    }
-    if ( edges.size() > 0 )
-    {
-      return;
-    }
-  }
+  // ignore cycles with points outside the current element
+  if ( not points.IsValid() or not points.IsCut( element ) )
+    return;
 
   Side * s = NULL;
 
   std::set<Side*> sides( element->Sides().begin(), element->Sides().end() );
+  points.Intersection( sides );
 
-  for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
-  {
-    Point * p = *i;
-    p->Intersection( sides );
-    if ( sides.size()==0 )
-      break;
-  }
   if ( sides.size()>1 )
   {
     std::stringstream str;
-    str << "can touch exactly one element side: ";
-    std::copy( points.begin(), points.end(), std::ostream_iterator<Point*>( str, " " ) );
-    str << "\nfound sides:\n";
+    str << "can touch exactly one element side: "
+        << points
+        << "found sides:\n";
     std::copy( sides.begin(), sides.end(), std::ostream_iterator<Side*>( str, "\n" ) );
     throw std::runtime_error( str.str() );
   }
@@ -429,7 +397,7 @@ void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, const s
 
   if ( s!=NULL )
   {
-    Facet * f = s->FindFacet( points );
+    Facet * f = s->FindFacet( points() );
     if ( f!=NULL )
     {
       f->ExchangeSide( this, true );
@@ -441,7 +409,7 @@ void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, const s
       //throw std::runtime_error( "must have matching facet on side" );
 
       // multiple facets on one cut side within one element
-      Facet * f = mesh.NewFacet( points, this, true );
+      Facet * f = mesh.NewFacet( points(), this, true );
       facets.insert( f );
       facets_.push_back( f );
     }
@@ -449,7 +417,7 @@ void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, const s
   else
   {
     // insert new internal facet
-    Facet * f = mesh.NewFacet( points, this, true );
+    Facet * f = mesh.NewFacet( points(), this, true );
     facets.insert( f );
     facets_.push_back( f );
   }

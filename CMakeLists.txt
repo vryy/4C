@@ -1241,6 +1241,7 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_boundarycell.cpp
   src/drt_cut/cut_boundingbox.cpp
   src/drt_cut/cut_creator.cpp
+  src/drt_cut/cut_cycle.cpp
   src/drt_cut/cut_edge.cpp
   src/drt_cut/cut_element.cpp
   src/drt_cut/cut_elementhandle.cpp

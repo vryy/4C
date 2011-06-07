@@ -11,6 +11,7 @@
 #include "cut_element.H"
 #include "cut_mesh.H"
 #include "cut_find_cycles.H"
+#include "cut_cycle.H"
 
 #include <boost/graph/copy.hpp>
 #include <boost/graph/adjacency_list.hpp>
@@ -27,7 +28,7 @@ GEO::CUT::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, L
   : element_( element ),
     side_( side )
 {
-  std::vector<Point*> cycle;
+  Cycle cycle;
   FillGraph( element, side, cycle, strategy );
 
 #if 1
@@ -42,7 +43,7 @@ GEO::CUT::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, L
   }
   {
     std::ofstream f( "cycle0.txt" );
-    std::copy( cycle.begin(), cycle.end(), std::ostream_iterator<Point*>( f, "\n" ) );
+    f << cycle;
   }
 #endif
 #endif
@@ -68,39 +69,15 @@ GEO::CUT::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, L
   }
   {
     std::ofstream f( "cycle.txt" );
-    std::copy( cycle.begin(), cycle.end(), std::ostream_iterator<Point*>( f, "\n" ) );
+    f << cycle;
   }
 #endif
-#endif
-
-#if 0
-  if ( std::find( cycle.begin(), cycle.end(), graph_.GetPoint( 0 ) )!=cycle.end() )
-  {
-    int hit = 0;
-    if ( std::find( cycle.begin(), cycle.end(), graph_.GetPoint( 9 ) )!=cycle.end() )
-      hit += 1;
-    if ( std::find( cycle.begin(), cycle.end(), graph_.GetPoint( 15 ) )!=cycle.end() )
-      hit += 1;
-    if ( std::find( cycle.begin(), cycle.end(), graph_.GetPoint( 26 ) )!=cycle.end() )
-      hit += 1;
-
-    if ( hit > 1 )
-    {
-      if ( cycle.size()==3 )
-      {
-        std::cout << "*";
-      }
-      std::cout << "  >>>  ";
-      std::copy( cycle.begin(), cycle.end(), std::ostream_iterator<Point*>( std::cout, " " ) );
-      std::cout << " <<<  \n";
-    }
-  }
 #endif
 
   graph_.FindCycles( element, side, cycle, location, strategy );
 }
 
-void GEO::CUT::PointGraph::FillGraph( Element * element, Side * side, std::vector<Point*> & cycle, Strategy strategy )
+void GEO::CUT::PointGraph::FillGraph( Element * element, Side * side, Cycle & cycle, Strategy strategy )
 {
   const std::vector<Node*> & nodes = side->Nodes();
   const std::vector<Edge*> & edges = side->Edges();
@@ -210,26 +187,7 @@ namespace GEO
   namespace CUT
   {
 
-
-bool Equals( const std::vector<Point*> & sorted, const std::vector<Point*> & test )
-{
-  if ( sorted.size()!=test.size() )
-  {
-    return false;
-  }
-
-  for ( std::vector<Point*>::const_iterator i=test.begin(); i!=test.end(); ++i )
-  {
-    Point * p = *i;
-    if ( not std::binary_search( sorted.begin(), sorted.end(), p ) )
-    {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool FindCycles( graph_t & g, std::vector<Point*> & cycle, std::map<vertex_t, LINALG::Matrix<3,1> > & local, std::vector<std::vector<Point*> > & cycles )
+bool FindCycles( graph_t & g, Cycle & cycle, std::map<vertex_t, LINALG::Matrix<3,1> > & local, std::vector<Cycle> & cycles )
 {
   name_map_t name_map = boost::get( boost::vertex_name, g );
 
@@ -312,23 +270,20 @@ bool FindCycles( graph_t & g, std::vector<Point*> & cycle, std::map<vertex_t, LI
   boost::planar_face_traversal( g, &embedding[0], vis );
 
 #ifdef DEBUGCUTLIBRARY
-  for ( std::vector<std::vector<Point*> >::iterator i=cycles.begin(); i!=cycles.end(); ++i )
+  for ( std::vector<Cycle>::iterator i=cycles.begin(); i!=cycles.end(); ++i )
   {
-    std::vector<Point*> & c = *i;
-    PointSet c_copy;
-    c_copy.insert( c.begin(), c.end() );
-    if ( c.size()!=c_copy.size() )
-      throw std::runtime_error( "double point in cycle" );
+    Cycle & c = *i;
+    c.TestUnique();
   }
 #endif
 
   bool save_first = cycles.size()==2;
 
   int erase_count = 0;
-  for ( std::vector<std::vector<Point*> >::iterator i=cycles.begin(); i!=cycles.end(); )
+  for ( std::vector<Cycle>::iterator i=cycles.begin(); i!=cycles.end(); )
   {
-    std::vector<Point*> & c = *i;
-    if ( Equals( cycle, c ) )
+    Cycle & c = *i;
+    if ( cycle.Equals( c ) )
     {
       if ( save_first and erase_count == 0 )
       {
@@ -357,7 +312,7 @@ bool FindCycles( graph_t & g, std::vector<Point*> & cycle, std::map<vertex_t, LI
   }
 }
 
-void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, std::vector<Point*> & cycle, Location location, Strategy strategy )
+void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, Cycle & cycle, Location location, Strategy strategy )
 {
   graph_t g;
 
@@ -433,8 +388,8 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, st
     {
       cycle_t * c = *i;
 
-      main_cycles_.push_back( std::vector<Point*>() );
-      std::vector<Point*> & pc = main_cycles_.back();
+      main_cycles_.push_back( Cycle() );
+      Cycle & pc = main_cycles_.back();
       pc.reserve( c->size() );
 
       for ( cycle_t::iterator i=c->begin(); i!=c->end(); ++i )
@@ -473,8 +428,6 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, st
 
     // find cycles on each component
 
-    std::sort( cycle.begin(), cycle.end() );
-
     if ( num_comp == 1 )
     {
       bool main_cycle = GEO::CUT::FindCycles( g, cycle, local, main_cycles_ );
@@ -502,7 +455,7 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, st
         edge_filter filter( g, component, i );
         filtered_graph_t fg( g, filter );
 
-        std::vector<std::vector<Point*> > filtered_cycles;
+        std::vector<Cycle> filtered_cycles;
 
         graph_t cg;
         boost::copy_graph( fg, cg );
@@ -519,7 +472,7 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, st
         }
         else
         {
-          hole_cycles_.push_back( std::vector<std::vector<Point*> >() );
+          hole_cycles_.push_back( std::vector<Cycle>() );
           std::swap( hole_cycles_.back(), filtered_cycles );
         }
       }
@@ -537,7 +490,7 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, st
   }
 }
 
-void GEO::CUT::PointGraph::Graph::FixSinglePoints( std::vector<Point*> & cycle )
+void GEO::CUT::PointGraph::Graph::FixSinglePoints( Cycle & cycle )
 {
   for ( ;; )
   {
@@ -564,33 +517,7 @@ void GEO::CUT::PointGraph::Graph::FixSinglePoints( std::vector<Point*> & cycle )
         // the node will be dropped. The cycle will contain the cut point
         // twice. This needs to be fixed.
 
-        std::vector<Point*>::iterator j = std::find( cycle.begin(), cycle.end(), GetPoint( p ) );
-        if ( j!=cycle.end() )
-        {
-          std::vector<Point*>::iterator prev = j==cycle.begin() ? cycle.end() : j;
-          std::advance( prev, -1 );
-          std::vector<Point*>::iterator next = j;
-          std::advance( next, 1 );
-          if ( next==cycle.end() )
-            next = cycle.begin();
-          if ( *prev == *next )
-          {
-            if ( next > j )
-            {
-              cycle.erase( next );
-              cycle.erase( j );
-            }
-            else
-            {
-              cycle.erase( j );
-              cycle.erase( next );
-            }
-          }
-          else
-          {
-            cycle.erase( j );
-          }
-        }
+        cycle.DropPoint( GetPoint( p ) );
 
         break;
       }
@@ -615,27 +542,18 @@ bool GEO::CUT::PointGraph::Graph::HasSinglePoints()
   return false;
 }
 
-void GEO::CUT::PointGraph::Graph::GnuplotDumpCycles( const std::string & filename, const std::vector<std::vector<Point*> > & cycles )
+void GEO::CUT::PointGraph::Graph::GnuplotDumpCycles( const std::string & filename, const std::vector<Cycle> & cycles )
 {
   int counter = 0;
-  for ( std::vector<std::vector<Point*> >::const_iterator i=cycles.begin(); i!=cycles.end(); ++i )
+  for ( std::vector<Cycle>::const_iterator i=cycles.begin(); i!=cycles.end(); ++i )
   {
-    const std::vector<Point*> & points = *i;
+    const Cycle & points = *i;
 
     std::stringstream str;
     str << filename << counter << ".plot";
     std::cout << str.str() << "\n";
     std::ofstream file( str.str().c_str() );
-
-    for ( unsigned i=0; i!=points.size(); ++i )
-    {
-      Point * p1 = points[i];
-      Point * p2 = points[( i+1 ) % points.size()];
-
-      p1->Plot( file );
-      p2->Plot( file );
-      file << "\n\n";
-    }
+    points.GnuplotDump( file );
 
     counter += 1;
   }

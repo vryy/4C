@@ -17,6 +17,8 @@
 #include <boost/graph/graph_utility.hpp>
 #include <boost/graph/planar_face_traversal.hpp>
 
+#include "cut_cycle.H"
+
 namespace GEO
 {
   namespace CUT
@@ -114,7 +116,7 @@ namespace GEO
 
     struct face_visitor : public boost::planar_face_traversal_visitor
     {
-      face_visitor( name_map_t name_map, std::vector<std::vector<Point*> > & cycles )
+      face_visitor( name_map_t name_map, std::vector<Cycle> & cycles )
         : name_map_( name_map ),
           cycles_( cycles )
       {
@@ -127,7 +129,7 @@ namespace GEO
 
       void end_face()
       {
-        cycles_.push_back( std::vector<Point*>() );
+        cycles_.push_back( Cycle() );
         std::swap( cycles_.back(), cycle );
       }
 
@@ -143,8 +145,8 @@ namespace GEO
       }
 
       name_map_t name_map_;
-      std::vector<Point*> cycle;
-      std::vector<std::vector<Point*> > & cycles_;
+      Cycle cycle;
+      std::vector<Cycle> & cycles_;
     };
 
     struct edge_filter

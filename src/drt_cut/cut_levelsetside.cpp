@@ -38,7 +38,7 @@ void GEO::CUT::LevelSetSide::MakeInternalFacets( Mesh & mesh, Element * element,
   PointGraph pg( mesh, element, this, PointGraph::cut_side, PointGraph::own_lines );
   for ( PointGraph::facet_iterator i=pg.fbegin(); i!=pg.fend(); ++i )
   {
-    const std::vector<Point*> & points = *i;
+    const Cycle & points = *i;
     Side::MakeInternalFacets( mesh, element, points, facets );
   }
 }
