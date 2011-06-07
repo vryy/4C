@@ -179,7 +179,8 @@ namespace ADAPTER {
     virtual void SetTimeLomaFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
                                    const double             thermpressnp,
                                    Teuchos::RCP<const Epetra_Vector> scatraresidual,
-                                   Teuchos::RCP<DRT::Discretization> scatradis) = 0;
+                                   Teuchos::RCP<DRT::Discretization> scatradis,
+                                   const int                whichscalar = -1) = 0;
 
     //@}
 

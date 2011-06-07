@@ -260,7 +260,8 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidProjection::ConvectiveVel()
                          RCP<const Epetra_Vector> scalarnp,
                          const double             thermpressnp,
                          RCP<const Epetra_Vector> scatraresidual,
-                         Teuchos::RCP<DRT::Discretization> scatradis)
+                         Teuchos::RCP<DRT::Discretization> scatradis,
+                         const int                whichscalar)
         {
             dserror("not implemented"); return;
         }

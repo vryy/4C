@@ -711,7 +711,8 @@ public:
 
   void SetScalarField(
      RCP<const Epetra_Vector> scalarnp,
-     Teuchos::RCP<DRT::Discretization> scatradis);
+     Teuchos::RCP<DRT::Discretization> scatradis,
+     const int whichscalar = -1);
 
 private:
 

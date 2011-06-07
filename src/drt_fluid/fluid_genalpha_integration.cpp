@@ -3246,7 +3246,8 @@ const Teuchos::RCP<const Epetra_Vector> FLD::FluidGenAlphaIntegration::InvDirich
  *----------------------------------------------------------------------*/
 void FLD::FluidGenAlphaIntegration::SetScalarField(
    RCP<const Epetra_Vector> scalarnp,
-   Teuchos::RCP<DRT::Discretization> scatradis)
+   Teuchos::RCP<DRT::Discretization> scatradis,
+   const int whichscalar)
 {
   // initializations
   int err(0);
@@ -3264,7 +3265,17 @@ void FLD::FluidGenAlphaIntegration::SetScalarField(
 
     // find out the global dof id of the last(!) dof at the scatra node
     const int numscatradof = scatradis->NumDof(lscatranode);
-    const int globalscatradofid = scatradis->Dof(lscatranode,numscatradof-1);
+    int globalscatradofid(-1);
+    if (whichscalar == (-1))
+    {
+      // default: always take the last scatra dof for each node
+      globalscatradofid = scatradis->Dof(lscatranode,numscatradof-1);
+    }
+    else
+    {
+      // respect the wish of the user
+      globalscatradofid = scatradis->Dof(lscatranode,whichscalar);
+    }
     const int localscatradofid = scalarnp->Map().LID(globalscatradofid);
     if (localscatradofid < 0)
       dserror("localdofid not found in map for given globaldofid");

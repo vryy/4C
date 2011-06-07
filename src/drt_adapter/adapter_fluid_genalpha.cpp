@@ -525,9 +525,10 @@ void ADAPTER::FluidGenAlpha::SetTimeLomaFields(
     RCP<const Epetra_Vector> scalarnp,
     const double             thermpressnp,
     RCP<const Epetra_Vector> scatraresidual,
-    Teuchos::RCP<DRT::Discretization> scatradis)
+    Teuchos::RCP<DRT::Discretization> scatradis,
+    const int whichscalar)
 {
-    fluid_.SetScalarField(scalarnp,scatradis);
+    fluid_.SetScalarField(scalarnp,scatradis, whichscalar);
     return;
 };
 

@@ -61,8 +61,9 @@ namespace ADAPTER
     virtual void SetTimeLomaFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
                                    const double             thermpressnp,
                                    Teuchos::RCP<const Epetra_Vector> scatraresidual,
-                                   Teuchos::RCP<DRT::Discretization> scatradis)
-    { return fluid_->SetTimeLomaFields(scalarnp, thermpressnp, scatraresidual, scatradis); }
+                                   Teuchos::RCP<DRT::Discretization> scatradis,
+                                   const int whichscalar = -1)
+    { return fluid_->SetTimeLomaFields(scalarnp, thermpressnp, scatraresidual, scatradis, whichscalar); }
     virtual void TimeLoop()
     { return fluid_->TimeLoop(); }
     virtual void PrepareTimeStep()

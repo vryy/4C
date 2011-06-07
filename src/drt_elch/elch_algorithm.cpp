@@ -372,13 +372,15 @@ void ELCH::Algorithm::Output()
 
   if ((Step()>=samstart_) and (Step()<=samstop_))
   {
-  // if statistics for one-way coupled problems is performed, provide
-  // the field for the first scalar!
-  FluidField().SetTimeLomaFields(
-      ScaTraField().Phinp(),
-      0.0,
-      Teuchos::null,
-      ScaTraField().Discretization());
+    // if statistics for one-way coupled problems is performed, provide
+    // the field for the first scalar!
+    FluidField().SetTimeLomaFields(
+        ScaTraField().Phinp(),
+        0.0,
+        Teuchos::null,
+        ScaTraField().Discretization(),
+        0 // do statistics for FIRST dof at every node!!
+    );
   }
 
   FluidField().StatisticsAndOutput();
