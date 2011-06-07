@@ -2910,7 +2910,7 @@ void FLD::FluidImplicitTimeInt::Output()
 
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
-  else if (uprestart_ != 0 && step_%uprestart_ == 0)
+  else if (uprestart_ > 0 && step_%uprestart_ == 0)
   {
     // step number and time
     output_.NewStep(step_,time_);
