@@ -142,9 +142,9 @@ public:
   {
     stream << "("
            << pid_ << "; "
-           << x_[0] << ","
-           << x_[1] << ","
-           << x_[2] << ")";
+           << std::setprecision( 10 ) << x_[0] << ","
+           << std::setprecision( 10 ) << x_[1] << ","
+           << std::setprecision( 10 ) << x_[2] << ")";
   }
 
   void Plot( std::ostream & f )

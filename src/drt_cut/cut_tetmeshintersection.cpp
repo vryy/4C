@@ -896,9 +896,13 @@ void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element,
         if ( not child_facet->OnCutSide() )
           throw std::runtime_error( "boundary cell not on cut surface" );
 
+        std::vector<Facet*> facets;
+        std::stringstream str;
+
         std::map<Side*, std::vector<Facet*> >::iterator j = facetsonsurface.find( child_facet->ParentSide() );
         if ( j==facetsonsurface.end() )
         {
+#if 0
 #ifdef DEBUGCUTLIBRARY
           {
             std::ofstream f( "parentvolume.plot" );
@@ -911,9 +915,48 @@ void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element,
               << ( *child_facet->ParentSide() )
               << "\non unknown cut surface";
           throw std::runtime_error( str.str() );
+#else
+
+          // Parent side not included in facetsonsurface. This might be a
+          // numerical problem. This might be a real bug.
+
+          str << ( *child_facet )
+              << "\non boundary cell "
+              << ( *child_facet->ParentSide() )
+              << "\non unknown cut surface: ";
+
+          // Try to recover.
+          if ( not child_facet->HasHoles() and not child_facet->IsTriangulated() )
+          {
+            for ( std::map<Side*, std::vector<Side*> >::iterator i=side_parent_to_child_.begin();
+                  i!=side_parent_to_child_.end();
+                  ++i )
+            {
+              Side * parent_side = i->first;
+              std::vector<Side*> & children = i->second;
+              if ( std::find( children.begin(), children.end(), child_facet->ParentSide() )!=children.end() )
+              {
+                const std::vector<Facet*> & fs = parent_side->Facets();
+                for ( std::vector<Facet*>::const_iterator i=fs.begin(); i!=fs.end(); ++i )
+                {
+                  Facet * f = *i;
+                  //if ( f->Equals( child_facet->Points() ) )
+
+                  if ( parent_cell->Facets().count( f ) > 0 )
+                  {
+                    facets.push_back( f );
+                  }
+                }
+              }
+            }
+          }
+#endif
+        }
+        else
+        {
+          facets = j->second;
         }
 
-        std::vector<Facet*> & facets = j->second;
         if ( facets.size()==1 )
         {
           parent_facet = facets[0];
@@ -938,18 +981,21 @@ void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element,
               }
               else
               {
-                throw std::runtime_error( "parent facet not unique" );
+                str << "parent facet not unique";
+                throw std::runtime_error( str.str() );
               }
             }
           }
           if ( parent_facet==NULL )
           {
-            throw std::runtime_error( "no parent facet found" );
+            str << "no parent facet found";
+            throw std::runtime_error( str.str() );
           }
         }
         else
         {
-          throw std::runtime_error( "empty list bug" );
+          str << "empty list bug";
+          throw std::runtime_error( str.str() );
         }
 
         parent_cell->NewBoundaryCell( parent_mesh, bc->Shape(), parent_facet, parent_points );
