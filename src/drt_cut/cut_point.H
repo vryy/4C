@@ -166,6 +166,8 @@ public:
 
   Node * CutNode();
 
+  void Intersection( std::set<Edge*> & edges );
+
   void Intersection( std::set<Side*> & sides );
 
   void Intersection( std::set<Facet*> & facets );

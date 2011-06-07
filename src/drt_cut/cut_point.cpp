@@ -224,6 +224,15 @@ double GEO::CUT::Point::t( Edge* edge )
   return i->second;
 }
 
+void GEO::CUT::Point::Intersection( std::set<Edge*> & edges )
+{
+  std::set<Edge*> intersection;
+  std::set_intersection( cut_edges_.begin(), cut_edges_.end(),
+                         edges.begin(), edges.end(),
+                         std::inserter( intersection, intersection.begin() ) );
+  std::swap( edges, intersection );
+}
+
 void GEO::CUT::Point::Intersection( std::set<Side*> & sides )
 {
   std::set<Side*> intersection;

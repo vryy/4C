@@ -383,6 +383,25 @@ void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, const s
     }
   }
 
+  // ignore cycles with all points on one and the same edge
+  {
+    std::vector<Point*>::const_iterator i = points.begin();
+    std::set<Edge*> edges = ( *i )->CutEdges();
+    for ( ++i; i!=points.end(); ++i )
+    {
+      Point * p = *i;
+      p->Intersection( edges );
+      if ( edges.size()==0 )
+      {
+        break;
+      }
+    }
+    if ( edges.size() > 0 )
+    {
+      return;
+    }
+  }
+
   Side * s = NULL;
 
   std::set<Side*> sides( element->Sides().begin(), element->Sides().end() );
@@ -399,6 +418,8 @@ void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, const s
     std::stringstream str;
     str << "can touch exactly one element side: ";
     std::copy( points.begin(), points.end(), std::ostream_iterator<Point*>( str, " " ) );
+    str << "\nfound sides:\n";
+    std::copy( sides.begin(), sides.end(), std::ostream_iterator<Side*>( str, "\n" ) );
     throw std::runtime_error( str.str() );
   }
   else if ( sides.size()==1 )
