@@ -22,6 +22,8 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
                                                     ALE::Ale& ale,
                                                     bool structuresplit,
                                                     int symmetric,
+                                                    vector<string>& blocksmoother,
+                                                    vector<double>& schuromega,
                                                     vector<double>& omega,
                                                     vector<int>& iterations,
                                                     vector<double>& somega,
@@ -58,6 +60,8 @@ arun_(0),
 minnlevel_(0),
 analyze_(analyze),
 strategy_(strategy),
+blocksmoother_(blocksmoother),
+schuromega_(schuromega),
 pcomega_(omega),
 pciter_(iterations),
 somega_(somega),
@@ -191,6 +195,10 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     if ((int)aiterations_.size() < maxnlevel_ ||
         (int)aomega_.size() < maxnlevel_)
       dserror("You need at least %d values of ALEPCITER and ALEPCOMEGA in input file",maxnlevel_);
+    if ((int)blocksmoother_.size() < maxnlevel_)
+      dserror("You need at least %d values of BLOCKSMOOTHER in input file",maxnlevel_);
+    if ((int)schuromega_.size() < maxnlevel_)
+      dserror("You need at least %d values of SCHUROMEGA in input file",maxnlevel_);
   }
   else
   {
@@ -205,6 +213,9 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     if ((int)aiterations_.size() < anlevel_ ||
         (int)aomega_.size() < anlevel_)
       dserror("You need at least %d values of ALEPCITER and ALEPCOMEGA in input file",anlevel_);
+    if ((int)blocksmoother_.size() < 1)
+      dserror("You need at least 1 value of BLOCKSMOOTHER in input file");
+    if (blocksmoother_[0]=="Schur") dserror("Schur(AMG) not implemented");
   }
   
   Ass_.resize(max(maxnlevel_,snlevel_));
@@ -216,6 +227,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   Pff_.resize(max(maxnlevel_,fnlevel_)-1);
   Rff_.resize(max(maxnlevel_,fnlevel_)-1);
   Sff_.resize(max(maxnlevel_,fnlevel_));
+  Schurff_.resize(max(maxnlevel_,fnlevel_));
 
   Aaa_.resize(max(maxnlevel_,anlevel_));
   Paa_.resize(max(maxnlevel_,anlevel_)-1);
@@ -503,22 +515,45 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
       Teuchos::ParameterList& subp = fparams_.sublist("smoother: list "+(string)levelstr);
       string type = "";
       SelectMLAPISmoother(type,i,subp,p,pushlist);
-      if (type=="ILU") 
+      if (blocksmoother_[i] == "Schur") // Schur Complement block smoother
       {
-        lbS = rcp(new MLAPI::LoadBalanceInverseOperator());
-        WrapILUSmoother(fml,Aff_[i],*lbS,i);
-        Sff_[i] = lbS;
-      }
-      else             
-      {
+        SchurComplementOperator(Schurff_[i],
+                                Ass_[i],Aff_[i],Aaa_[i],ASF_[i],AFS_[i],AFA_[i],AAF_[i],
+                                schuromega_[i],structuresplit_);
         S = rcp(new MLAPI::InverseOperator());
-        S->Reshape(Aff_[i],type,p,&pushlist);
+        S->Reshape(Schurff_[i],type,p,&pushlist);
         Sff_[i] = S;
+      }
+      else // BGS Smoother
+      {
+        if (type=="ILU") // wrap existing ILU decomp from ML hierarchy
+        {
+          lbS = rcp(new MLAPI::LoadBalanceInverseOperator());
+          WrapILUSmoother(fml,Aff_[i],*lbS,i);
+          Sff_[i] = lbS;
+        }
+        else // build new smoother
+        {
+          S = rcp(new MLAPI::InverseOperator());
+          S->Reshape(Aff_[i],type,p,&pushlist);
+          Sff_[i] = S;
+        }
       }
     }
     // fluid coarse grid:
     S = rcp(new MLAPI::InverseOperator());
-    S->Reshape(Aff_[fnlevel_-1],"Amesos-KLU");
+    if (blocksmoother_[fnlevel_-1] == "Schur")
+    {
+      const int i = fnlevel_-1;
+      SchurComplementOperator(Schurff_[i],
+                              Ass_[i],Aff_[i],Aaa_[i],ASF_[i],AFS_[i],AFA_[i],AAF_[i],
+                              schuromega_[i],structuresplit_);
+      S->Reshape(Schurff_[fnlevel_-1],"Amesos-KLU");
+    }
+    else
+    {
+      S->Reshape(Aff_[fnlevel_-1],"Amesos-KLU");
+    }
     Sff_[fnlevel_-1] = S;
     // dummy coarser then coarse grids
     for (int i=fnlevel_; i<maxnlevel_; ++i)
@@ -587,7 +622,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   //---------------------------------------------------------------------
   // in case we do FSIAMG now switch the minnlevel to maxnlevel since
   // we have set up dummy coarser then coarse grids for the smaller hierarchies
-#if 1
   minnlevel_ = maxnlevel_;
   if (strategy_==INPAR::FSI::FSIAMG)
   {
@@ -595,13 +629,12 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     anlevel_ = maxnlevel_;
     fnlevel_ = maxnlevel_;
   }
-#endif
 
   //-------------------------------------------------------------- timing
   if (!myrank) 
   {
     printf("       -----------------------------------------------------------------------\n");
-    printf("       Additional AMG(BGS)/BGS(AMG) setup time %10.5e [s]\n",etime.ElapsedTime());
+    printf("       Additional AMG(BGS/Schur)/ BGS(AMG) setup time %10.5e [s]\n",etime.ElapsedTime());
   }
 
   //---------------------------------- preconditioner analysis if desired
@@ -620,6 +653,122 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void FSI::OverlappingBlockMatrixFSIAMG::SchurComplementOperator(
+                                 MLAPI::Operator& Schur,
+                                 MLAPI::Operator& Ass,
+                                 MLAPI::Operator& Aff,
+                                 MLAPI::Operator& Aaa,
+                                 MLAPI::Operator& Asf,
+                                 MLAPI::Operator& Afs,
+                                 MLAPI::Operator& Afa,
+                                 MLAPI::Operator& Aaf,
+                                 const double omega,
+                                 const bool structuresplit)
+{
+  MLAPI::Operator FSSinvSF; // structure contribution 
+  Epetra_CrsMatrix* diagSinv;
+  const Epetra_Map& rmaps = Ass.GetRCPRowMatrix()->OperatorRangeMap();
+  const Epetra_Map& dmaps = Ass.GetRCPRowMatrix()->OperatorDomainMap();
+  {
+    Epetra_Vector invdiagS(Ass.GetRCPRowMatrix()->OperatorRangeMap());
+    Ass.GetRCPRowMatrix()->ExtractDiagonalCopy(invdiagS);
+    int err = invdiagS.Reciprocal(invdiagS);
+    if (err) dserror("Inverse of diagonal of S returned %d",err);
+    diagSinv = new Epetra_CrsMatrix(::Copy,rmaps,1,true);
+    for (int j=0; j<rmaps.NumMyElements(); ++j)
+    {
+      int gid = rmaps.GID(j);
+      err = diagSinv->InsertGlobalValues(gid,1,&invdiagS[j],&gid);
+      if (err) dserror("Epetra_CrsMatrix::InsertGlobalValues returned %d",err);
+    }
+    diagSinv->FillComplete();
+  }
+  
+  MLAPI::Operator FAAinvAF; // ale contribution 
+  Epetra_CrsMatrix* diagAinv;
+  const Epetra_Map& rmapa = Aaa.GetRCPRowMatrix()->OperatorRangeMap();
+  const Epetra_Map& dmapa = Aaa.GetRCPRowMatrix()->OperatorDomainMap();
+  {
+    Epetra_Vector invdiagA(Aaa.GetRCPRowMatrix()->OperatorRangeMap());
+    Aaa.GetRCPRowMatrix()->ExtractDiagonalCopy(invdiagA);
+    int err = invdiagA.Reciprocal(invdiagA);
+    if (err) dserror("Inverse of diagonal of A returned %d",err);
+    diagAinv = new Epetra_CrsMatrix(::Copy,rmapa,1,true);
+    for (int j=0; j<rmapa.NumMyElements(); ++j)
+    {
+      int gid = rmapa.GID(j);
+      err = diagAinv->InsertGlobalValues(gid,1,&invdiagA[j],&gid);
+      if (err) dserror("Epetra_CrsMatrix::InsertGlobalValues returned %d",err);
+    }
+    diagAinv->FillComplete();
+  }
+  
+  if (structuresplit)
+  {
+    {
+      diagSinv->Scale(omega);
+      MLAPI::Space rspace(rmaps);
+      MLAPI::Space dspace(dmaps);
+      MLAPI::Operator S(dspace,rspace,diagSinv);
+      MLAPI::Operator tmp;
+      tmp = S * Asf;
+      FSSinvSF = Afs * tmp;
+    }
+    {
+      diagAinv->Scale(omega);
+      MLAPI::Space rspace(rmapa);
+      MLAPI::Space dspace(dmapa);
+      MLAPI::Operator A(dspace,rspace,diagAinv);
+      MLAPI::Operator tmp;
+      tmp = A * Aaf;
+      FAAinvAF = Afa * tmp;
+    }
+    Schur = Aff - FSSinvSF;
+    Schur = Schur - FAAinvAF;
+  }
+  else // fluidsplit
+  {
+    {
+      MLAPI::Space rspace_s(rmaps);
+      MLAPI::Space dspace_s(dmaps);
+      MLAPI::Operator S(dspace_s,rspace_s,diagSinv,false); // need this again
+
+      diagAinv->Scale(omega);
+      MLAPI::Space rspace_a(rmapa);
+      MLAPI::Space dspace_a(dmapa);
+      MLAPI::Operator A(dspace_a,rspace_a,diagAinv);
+
+      MLAPI::Operator tmp1;
+      tmp1 = S * Asf;
+
+      MLAPI::Operator tmp2;
+      tmp2 = A * Aaf;
+      
+      MLAPI::Operator tmp3;
+      tmp3 = tmp2 * tmp1;
+
+      FAAinvAF = Afa * tmp3;
+    }
+    {
+      diagSinv->Scale(omega);
+      MLAPI::Space rspace_s(rmaps);
+      MLAPI::Space dspace_s(dmaps);
+      MLAPI::Operator S(dspace_s,rspace_s,diagSinv);
+      MLAPI::Operator tmp;
+      tmp = S * Asf;
+      FSSinvSF = Afs * tmp;
+    }
+    Schur = Aff - FSSinvSF;
+    Schur = Schur + FAAinvAF;
+  }
+
+  return;
+}
+
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1304,7 +1453,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
     mlsy = 0.0;
     mlfy = 0.0;
     mlay = 0.0;
-    Richardson_BlockV(myrank,1,1.0,Vsweeps,Vdamps,blocksweeps,blockdamps,
+    Richardson_BlockV(myrank,1,1.0,Vsweeps,Vdamps,blocksweeps,blockdamps,blocksmoother_,
                       shierachy,fhierachy,ahierachy,mlsy,mlfy,mlay,mlsx,mlfx,mlax,
                       Ass_,const_cast<vector<MLAPI::Operator>& >(Pss_),const_cast<vector<MLAPI::Operator>& >(Rss_),
                       Aff_,const_cast<vector<MLAPI::Operator>& >(Pff_),const_cast<vector<MLAPI::Operator>& >(Rff_),
@@ -1445,9 +1594,34 @@ void FSI::OverlappingBlockMatrixFSIAMG::Vcycle(const int level,
 const char* FSI::OverlappingBlockMatrixFSIAMG::Label() const
 {
   if (strategy_==INPAR::FSI::FSIAMG)
-    return "AMG(BGS) / FSIAMG";
+  {
+    string blocksmooth = blocksmoother_[0];
+    bool equal = true;
+    for (int i=0; i<(int)blocksmoother_.size(); ++i)
+      if (blocksmooth==blocksmoother_[i]) continue;
+      else {equal = false; break;}
+    if      (blocksmooth=="Schur" && equal) 
+    {
+      if (structuresplit_) return " structuresplit AMG(Schur) / FSIAMG";
+      else                 return " fluidsplit AMG(Schur) / FSIAMG";
+    }
+    else if (blocksmooth=="BGS" && equal)   
+    {
+      if (structuresplit_) return "structuresplit AMG(BGS) / FSIAMG";
+      else                 return "fluidsplit AMG(BGS) / FSIAMG";
+    }
+    else                                    
+    {
+      if (structuresplit_) return "structuresplit AMG(BGS/Schur) / FSIAMG";
+      else                 return "fluidsplit AMG(BGS/Schur) / FSIAMG";
+    }
+    return "FSIAMG";
+  }
   if (strategy_==INPAR::FSI::PreconditionedKrylov)
-    return "BGS(AMG) / PreconditionedKrylov";
+  {
+    if (structuresplit_) return "structuresplit BGS(AMG) / PreconditionedKrylov";
+    else                 return "fluidsplit BGS(AMG) / PreconditionedKrylov";
+  }
   return "Unknown strategy in FSI::OverlappingBlockMatrixFSIAMG";
 }
 

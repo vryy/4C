@@ -137,6 +137,8 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   vector<double> fpcomega;
   vector<int> apciter;
   vector<double> apcomega;
+  vector<string> blocksmoother;
+  vector<double> schuromega;
   {
     int    word1;
     double word2;
@@ -172,6 +174,17 @@ void FSI::MonolithicStructureSplit::SetupSystem()
       while (pcomegastream >> word2)
         apcomega.push_back(word2);
     }
+    {
+      string word;
+      std::istringstream blocksmootherstream(Teuchos::getNumericStringParameter(fsidyn,"BLOCKSMOOTHER"));
+      while (blocksmootherstream >> word)
+        blocksmoother.push_back(word);
+    }
+    {
+      std::istringstream blocksmootherstream(Teuchos::getNumericStringParameter(fsidyn,"SCHUROMEGA"));
+      while (blocksmootherstream >> word2)
+        schuromega.push_back(word2);
+    }
   }
 
   // enable debugging
@@ -192,6 +205,8 @@ void FSI::MonolithicStructureSplit::SetupSystem()
                                                           AleField(),
                                                           true,
                                                           DRT::INPUT::IntegralValue<int>(fsidyn,"SYMMETRICPRECOND"),
+                                                          blocksmoother,
+                                                          schuromega,
                                                           pcomega,
                                                           pciter,
                                                           spcomega,

@@ -597,10 +597,10 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
   // "r0", "rhs", "norm", "no scaling", "sol"
   lsParams.set<std::string>("Convergence Test","r0");
 
-  lsParams.set<int>("Size of Krylov Subspace",25);
-  lsParams.set<int>("Max Iterations",250);
+  lsParams.set<int>("Size of Krylov Subspace",50);
+  lsParams.set<int>("Max Iterations",1000);
   lsParams.set<std::string>("Preconditioner","User Defined");
-  lsParams.set<int>("Output Frequency",20);
+  lsParams.set<int>("Output Frequency",10);
   lsParams.set<bool>("Output Solver Details",true);
 
   // adaptive tolerance settings

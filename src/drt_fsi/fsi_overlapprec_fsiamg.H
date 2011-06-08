@@ -29,6 +29,8 @@ namespace FSI
                                  ALE::Ale& ale,
                                  bool structuresplit,
                                  int symmetric,
+                                 vector<string>& blocksmoother,
+                                 vector<double>& schuromega,
                                  vector<double>& omega,
                                  vector<int>& iterations,
                                  vector<double>& somega,
@@ -139,7 +141,21 @@ namespace FSI
                    const MLAPI::Operator& A,
                    const MLAPI::Operator& P);
 
+    /// build off-diagonal coupling blocks for FSIAMG
     void RAPoffdiagonals();
+
+    /// build Schur Complement operator from fluid block
+    void SchurComplementOperator(MLAPI::Operator& Schur,
+                                 MLAPI::Operator& Ass,
+                                 MLAPI::Operator& Aff,
+                                 MLAPI::Operator& Aaa,
+                                 MLAPI::Operator& Asf,
+                                 MLAPI::Operator& Afs,
+                                 MLAPI::Operator& Afa,
+                                 MLAPI::Operator& Aaf,
+                                 const double omega,
+                                 const bool structuresplit);
+
 
     // methods for performance analysis of FSIAMG preconditioner
     inline bool Analyze() { return (bool)analyze_; }
@@ -430,6 +446,72 @@ namespace FSI
                             bool silent=false
                             ) const;
     
+    // Richardson iteration with Schurcomplement preconditioner 
+    // for structure split case
+    double RichardsonSchurStructureSplit_S(
+                            const int myrank,
+                            const int sweeps,
+                            const double damp,
+                            vector<int>* blocksweeps,
+                            vector<double>* blockdamps,
+                            const int level,
+                            AnalyzeBest& sbest,
+                            AnalyzeBest& fbest,
+                            AnalyzeBest& abest,
+                            MLAPI::MultiVector& sy,
+                            MLAPI::MultiVector& fy,
+                            MLAPI::MultiVector& ay,
+                            const MLAPI::MultiVector& sf,
+                            const MLAPI::MultiVector& ff,
+                            const MLAPI::MultiVector& af,  
+                            vector<MLAPI::Operator>& Ass,
+                            vector<MLAPI::Operator>& Pss, vector<MLAPI::Operator>& Rss,
+                            vector<MLAPI::Operator>& Aff,
+                            vector<MLAPI::Operator>& Pff, vector<MLAPI::Operator>& Rff,
+                            vector<MLAPI::Operator>& Aaa,
+                            vector<MLAPI::Operator>& Paa, vector<MLAPI::Operator>& Raa,
+                            MLAPI::Operator& Asf,
+                            MLAPI::Operator& Afs,
+                            MLAPI::Operator& Afa,
+                            MLAPI::Operator& Aaf,
+                            bool initiguesszero=false,
+                            bool analysis=false,
+                            bool silent=false
+                            ) const;
+
+    // Richardson iteration with Schurcomplement preconditioner 
+    // for fluid split case
+    double RichardsonSchurFluidSplit_S(
+                            const int myrank,
+                            const int sweeps,
+                            const double damp,
+                            vector<int>* blocksweeps,
+                            vector<double>* blockdamps,
+                            const int level,
+                            AnalyzeBest& sbest,
+                            AnalyzeBest& fbest,
+                            AnalyzeBest& abest,
+                            MLAPI::MultiVector& sy,
+                            MLAPI::MultiVector& fy,
+                            MLAPI::MultiVector& ay,
+                            const MLAPI::MultiVector& sf,
+                            const MLAPI::MultiVector& ff,
+                            const MLAPI::MultiVector& af,  
+                            vector<MLAPI::Operator>& Ass,
+                            vector<MLAPI::Operator>& Pss, vector<MLAPI::Operator>& Rss,
+                            vector<MLAPI::Operator>& Aff,
+                            vector<MLAPI::Operator>& Pff, vector<MLAPI::Operator>& Rff,
+                            vector<MLAPI::Operator>& Aaa,
+                            vector<MLAPI::Operator>& Paa, vector<MLAPI::Operator>& Raa,
+                            MLAPI::Operator& Asf,
+                            MLAPI::Operator& Afs,
+                            MLAPI::Operator& Afa,
+                            MLAPI::Operator& Aaf,
+                            bool initiguesszero=false,
+                            bool analysis=false,
+                            bool silent=false
+                            ) const;
+
     // AMG(BGS) Richardson iteration with block V cycle for FSI
     double Richardson_BlockV(
                              const int myrank,
@@ -439,6 +521,7 @@ namespace FSI
                              vector<double>& Vdamps,
                              vector<int>* blocksweeps,
                              vector<double>* blockdamps,
+                             const vector<string>& blocksmoother,
                              AnalyzeBest& sbest,
                              AnalyzeBest& fbest,
                              AnalyzeBest& abest,
@@ -472,6 +555,7 @@ namespace FSI
                      vector<double>& Vdamps,
                      vector<int>* blocksweeps,
                      vector<double>* blockdamps,
+                     const vector<string>& blocksmoother,
                      const int level,
                      const int minnlevel,
                      AnalyzeBest& sbest,
@@ -512,6 +596,8 @@ namespace FSI
     int                                  maxnlevel_; /// max of the below nlevel_
     int                                  analyze_;   /// run analysis of FSIAMG
     INPAR::FSI::LinearBlockSolver        strategy_; /// type of preocnidtioner  to run: BGS(AMG) or AMG(BGS)
+    vector<string>                       blocksmoother_; /// type of inter-field block smoother
+    vector<double>                       schuromega_; /// damping factor for construction of Schur complement
     vector<double>                       pcomega_;
     vector<int>                          pciter_;
     vector<double>                       somega_;
@@ -532,6 +618,7 @@ namespace FSI
     Teuchos::ParameterList               fparams_;
     mutable vector<MLAPI::Operator>      Aff_;
     vector<RCP<MLAPI::InverseOperator> > Sff_;
+    mutable vector<MLAPI::Operator>      Schurff_;
     vector<MLAPI::Operator>              Pff_;
     vector<MLAPI::Operator>              Rff_;
 
