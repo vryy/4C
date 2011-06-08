@@ -408,11 +408,16 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     {
     case INPAR::SOLVER::azsolv_CG:       azlist.set("AZ_solver",AZ_cg);       break;
     case INPAR::SOLVER::azsolv_GMRES:    azlist.set("AZ_solver",AZ_gmres);    break;
+    case INPAR::SOLVER::azsolv_GMRESR:   azlist.set("AZ_solver",AZ_GMRESR);   break;
     case INPAR::SOLVER::azsolv_CGS:      azlist.set("AZ_solver",AZ_cgs);      break;
     case INPAR::SOLVER::azsolv_BiCGSTAB: azlist.set("AZ_solver",AZ_bicgstab); break;
     case INPAR::SOLVER::azsolv_LU:       azlist.set("AZ_solver",AZ_lu);       break;
     case INPAR::SOLVER::azsolv_TFQMR:    azlist.set("AZ_solver",AZ_tfqmr);    break;
-    default: dserror("Unknown solver for AztecOO");            break;
+    default: 
+    {
+      cout << "flag " << DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE") << endl;
+      dserror("Unknown solver for AztecOO");            break;
+    }
     }
     //------------------------------------- set type of preconditioner
     const int azprectyp = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(inparams,"AZPREC");
@@ -1597,7 +1602,7 @@ void LINALG::Solver::KrylovSolver::Solve()
   double tol = azlist.get("AZ_tol",1.0e-6);
 
   // This hurts! It supresses error messages. This needs to be fixed.
-#if 1
+#if 0
   // create an aztec convergence test as combination of
   // L2-norm and Inf-Norm to be both satisfied where we demand
   // L2 < tol and Linf < 10*tol
@@ -1613,7 +1618,7 @@ void LINALG::Solver::KrylovSolver::Solve()
                                  AztecOO_StatusTestResNorm::TwoNorm);
     aztest_norm2_->DefineScaleForm(AztecOO_StatusTestResNorm::NormOfInitRes,
                                    AztecOO_StatusTestResNorm::TwoNorm);
-    // Linf norm (demanded to be 10 times L2-norm now, to become an input parameter)
+    // Linf norm (demanded to be 1.0 times L2-norm now, to become an input parameter?)
     aztest_norminf_ = rcp(new AztecOO_StatusTestResNorm(*op,*lhs,*rhs,1.0*tol));
     aztest_norminf_->DefineResForm(AztecOO_StatusTestResNorm::Implicit,
                                    AztecOO_StatusTestResNorm::InfNorm);
@@ -1645,28 +1650,38 @@ void LINALG::Solver::KrylovSolver::Solve()
 
   // check status of solution process
   const double* status = aztec.GetAztecStatus();
-  if (status[AZ_why] != AZ_normal)
+#if 0
+  AztecOO_StatusType stat = aztest_combo2_->GetStatus();
+  if (stat!=Converged)
   {
     bool resolve = false;
+    if (stat==Unconverged)
+    {
+      if (comm_.MyPID()==0) printf("Max iterations reached in AztecOO\n");
+    }
+    else if (stat==Failed || stat==NaN || stat==PartialFailed)
+    {
+      if (comm_.MyPID()==0) printf("Numerical breakdown in AztecOO\n");
+    }
+    else dserror("Aztec returned unknown nonzero status %d",(int)stat);
+  }
+#else  
+  if (status[AZ_why] != AZ_normal)
+  {
     if (status[AZ_why] == AZ_breakdown)
     {
-      if (comm_.MyPID()==0)
-        printf("Numerical breakdown in AztecOO\n");
-      resolve = true;
+      if (comm_.MyPID()==0) printf("Numerical breakdown in AztecOO\n");
     }
     else if (status[AZ_why] == AZ_ill_cond)
     {
-      if (comm_.MyPID()==0)
-        printf("Problem is near singular in AztecOO\n");
-      resolve = true;
+      if (comm_.MyPID()==0) printf("Problem is near singular in AztecOO\n");
     }
     else if (status[AZ_why] == AZ_maxits)
     {
-      if (comm_.MyPID()==0)
-        printf("Max iterations reached in AztecOO\n");
-      resolve = true;
+      if (comm_.MyPID()==0) printf("Max iterations reached in AztecOO\n");
     }
   } // if (status[AZ_why] != AZ_normal)
+#endif
 
 #ifdef WRITEOUTSTATISTICS
     if(outfile_)
