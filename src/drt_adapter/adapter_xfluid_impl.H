@@ -196,6 +196,10 @@ namespace ADAPTER {
                                    Teuchos::RCP<DRT::Discretization> scatradis,
                                    const int                whichscalar = -1);
 
+    /// provide access to the turbulence statistic manager
+    virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
+       {dserror("not implemented"); return Teuchos::null;}
+
   private:
 
     void PrepareBoundaryDis();

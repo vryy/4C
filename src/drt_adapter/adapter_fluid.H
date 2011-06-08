@@ -51,6 +51,7 @@ namespace IO
 
 namespace FLD
 {
+  class TurbulenceStatisticManager;
   namespace UTILS
   {
     class MapExtractor;
@@ -181,6 +182,9 @@ namespace ADAPTER {
                                    Teuchos::RCP<const Epetra_Vector> scatraresidual,
                                    Teuchos::RCP<DRT::Discretization> scatradis,
                                    const int                whichscalar = -1) = 0;
+
+    /// provide access to the turbulence statistic manager
+    virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager() = 0;
 
     //@}
 

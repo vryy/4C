@@ -160,6 +160,10 @@ namespace ADAPTER
                                    const int                whichscalar = -1)
     { dserror("not implemented!");return; };
 
+    /// provide access to the turbulence statistic manager
+    virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
+       {dserror("not implemented"); return Teuchos::null;}
+
     /*--------------------------------------------------------------------------------------------*
      * group member functions which are implemented and used
      *

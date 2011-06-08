@@ -64,6 +64,8 @@ namespace ADAPTER
                                    Teuchos::RCP<DRT::Discretization> scatradis,
                                    const int whichscalar = -1)
     { return fluid_->SetTimeLomaFields(scalarnp, thermpressnp, scatraresidual, scatradis, whichscalar); }
+    virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
+    { return fluid_->TurbulenceStatisticManager();}
     virtual void TimeLoop()
     { return fluid_->TimeLoop(); }
     virtual void PrepareTimeStep()
