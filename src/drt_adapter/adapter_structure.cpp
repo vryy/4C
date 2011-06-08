@@ -230,6 +230,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   INPAR::STR::StressType iostress = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
   genalphaparams->set<int>("io structural stress", iostress);
 
+  genalphaparams->set<bool>  ("io structural strain energy",DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_SE"));
+
   INPAR::STR::StrainType iostrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
   genalphaparams->set<int>("io structural strain", iostrain);
 
