@@ -5450,3 +5450,54 @@ void test_tet4_quad4_double()
   intersection.Cut( true );
   intersection.Status();
 }
+
+void test_tet4_tri3_double()
+{
+  GEO::CUT::MeshIntersection intersection;
+
+  std::vector<int> nids( 3 );
+
+  Epetra_SerialDenseMatrix quad4_xyze( 3, 3 );
+
+  std::map<std::string, int> nodeids;
+
+  nxyz1(0,0,0);
+  nxyz2(1,0.5,0.9);
+  nxyz3(0,0.5,0.9);
+
+  //GEO::CUT::SideHandle * s1 =
+  intersection.AddCutSide( 1, nids, quad4_xyze, DRT::Element::tri3 );
+
+  nxyz1(0,0.5,0.9);
+  nxyz2(1,0.5,0.9);
+  nxyz3(0,1,0);
+
+  //GEO::CUT::SideHandle * s2 =
+  intersection.AddCutSide( 2, nids, quad4_xyze, DRT::Element::tri3 );
+
+  Epetra_SerialDenseMatrix tet4_xyze( 3, 4 );
+
+  tet4_xyze(0,0) = 0;
+  tet4_xyze(1,0) = 0;
+  tet4_xyze(2,0) = 0;
+  tet4_xyze(0,1) = 1;
+  tet4_xyze(1,1) = 0.5;
+  tet4_xyze(2,1) = 0;
+  tet4_xyze(0,2) = 0;
+  tet4_xyze(1,2) = 1;
+  tet4_xyze(2,2) = 0;
+  tet4_xyze(0,3) = 0.5;
+  tet4_xyze(1,3) = 0.52;
+  tet4_xyze(2,3) = 1;
+
+  nids.clear();
+  for ( int i=0; i<4; ++i )
+    nids.push_back( i );
+
+  //GEO::CUT::ElementHandle * e =
+  intersection.AddElement( 1, nids, tet4_xyze, DRT::Element::tet4 );
+
+  intersection.Status();
+  intersection.Cut( true );
+  intersection.Status();
+}
