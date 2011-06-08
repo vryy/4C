@@ -3393,6 +3393,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                             "Number of Richardson iterations on whole MFSI block preconditioner",
                             &fsidyn);
 
+  setNumericStringParameter("BLOCKSMOOTHER","BGS BGS BGS",
+                            "Type of block smoother, can be BGS or Schur",
+                            &fsidyn);
+
+  setNumericStringParameter("SCHUROMEGA","0.001 0.01 0.1",
+                            "Damping factor for Schur complement construction",
+                            &fsidyn);
+
   //DoubleParameter("PCOMEGA",1.,
   //                "Relaxation factor for Richardson iteration on whole MFSI block preconditioner",
   //                &fsidyn);
@@ -3556,16 +3564,18 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     "Type of linear solver algorithm to use.",
     tuple<std::string>("CG",
                        "GMRES",
+                       "GMRESR",
                        "CGS",
                        "TFQMR",
                        "BiCGSTAB",
                        "LU"),
     tuple<int>(INPAR::SOLVER::azsolv_CG,
-                                       INPAR::SOLVER::azsolv_GMRES,
-                                       INPAR::SOLVER::azsolv_CGS,
-                                       INPAR::SOLVER::azsolv_TFQMR,
-                                       INPAR::SOLVER::azsolv_BiCGSTAB,
-                                       INPAR::SOLVER::azsolv_LU),
+               INPAR::SOLVER::azsolv_GMRES,
+               INPAR::SOLVER::azsolv_GMRESR,
+               INPAR::SOLVER::azsolv_CGS,
+               INPAR::SOLVER::azsolv_TFQMR,
+               INPAR::SOLVER::azsolv_BiCGSTAB,
+               INPAR::SOLVER::azsolv_LU),
     &list
     );
 

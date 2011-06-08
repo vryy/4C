@@ -63,6 +63,7 @@ namespace INPAR
     {
       azsolv_CG,            ///< cg-solver
       azsolv_GMRES,         ///< gmres-solver
+      azsolv_GMRESR,         ///< restarted gmres-solver
       azsolv_CGS,           ///< cg-squared-solver (can handle unsymmetric problems)
       azsolv_BiCGSTAB,      ///< bicgstab-solver
       azsolv_LU,            ///< LU-solver (I think this doesn't work for some reasons)
