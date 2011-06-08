@@ -124,8 +124,7 @@ bool GEO::CUT::Side::FindCutLines( Mesh & mesh, Element * element, Side & other 
 
 void GEO::CUT::Side::CreateMissingLines( Creator & creator, Element * element )
 {
-#if 0
-  std::map<Point*, PointSet > pg;
+  std::map<Point*, PointSet> pg;
 
   const std::vector<Line*> & cut_lines = CutLines();
   for ( std::vector<Line*>::const_iterator i=cut_lines.begin(); i!=cut_lines.end(); ++i )
@@ -161,6 +160,26 @@ void GEO::CUT::Side::CreateMissingLines( Creator & creator, Element * element )
         throw std::runtime_error( "fork in line cycle" );
       }
     }
+
+#if 0
+    if ( open.size() == 2 )
+    {
+      // handle simple triangle
+
+      Point * p1 = open[0];
+      Point * p2 = open[1];
+
+      PointSet & ps1 = pg[p1];
+      PointSet & ps2 = pg[p2];
+
+      if ( ps1.size()==1 and ps1.count( p2 )==0 and
+           ps2.size()==1 and ps2.count( p1 )==0 )
+      {
+        creator.NewLine( p1, p2, this, NULL, element );
+        open.clear();
+      }
+    }
+#endif
 
     if ( open.size() > 0 )
     {
@@ -200,11 +219,41 @@ void GEO::CUT::Side::CreateMissingLines( Creator & creator, Element * element )
 
       if ( done.size() != open.size() )
       {
-        throw std::runtime_error( "failed to close open points" );
+#ifdef DEBUGCUTLIBRARY
+        element->GnuplotDump();
+        element->DumpFacets();
+
+        std::vector<Point*> dummy;
+        for ( std::map<Point*, PointSet>::iterator i=pg.begin(); i!=pg.end(); ++i )
+        {
+          dummy.push_back( i->first );
+        }
+#endif
+
+        std::stringstream str;
+        str << "failed to close open points\npg:\n";
+        for ( std::map<Point*, PointSet>::iterator i=pg.begin(); i!=pg.end(); ++i )
+        {
+          Point * p = i->first;
+          PointSet & ps = i->second;
+          str << ( *p ) << " : ";
+          std::copy( ps.begin(), ps.end(), std::ostream_iterator<Point*>( str, " " ) );
+          str << "\n";
+        }
+        str << "done: ";
+        std::copy( done.begin(), done.end(), std::ostream_iterator<Point*>( str, " " ) );
+        str << "\n";
+        str << "open: ";
+        std::copy( open.begin(), open.end(), std::ostream_iterator<Point*>( str, " " ) );
+        str << "\n";
+        str << "open_side_points: ";
+        std::copy( open_side_points.begin(), open_side_points.end(), std::ostream_iterator<Point*>( str, " " ) );
+        str << "\n";
+
+        throw std::runtime_error( str.str() );
       }
     }
   }
-#endif
 }
 
 bool GEO::CUT::Side::AllOnNodes( const PointSet & points )
@@ -305,50 +354,6 @@ void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, Element * element, std::s
 
   std::copy( facets_.begin(), facets_.end(), std::inserter( facets, facets.begin() ) );
 }
-
-#if 0
-void GEO::CUT::Side::MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
-{
-  LineSegmentList lsl;
-
-  std::set<Line*> cut_lines;
-
-  for ( std::vector<Line*>::const_iterator i=cut_lines_.begin(); i!=cut_lines_.end(); ++i )
-  {
-    Line * l = *i;
-    if ( l->IsCut( element ) and
-         not OnEdge( l->BeginPoint() ) and
-         not OnEdge( l->EndPoint() ) )
-    {
-      cut_lines.insert( l );
-    }
-  }
-
-  lsl.Create( mesh, element, this, cut_lines, false );
-
-  const std::vector<Teuchos::RCP<LineSegment> > & segments = lsl.Segments();
-  for ( std::vector<Teuchos::RCP<LineSegment> >::const_iterator i=segments.begin(); i!=segments.end(); ++i )
-  {
-    LineSegment & ls = **i;
-    if ( ls.IsClosed() )
-    {
-      const std::vector<Point*> & facet_points = ls.Points();
-      Facet * f = FindFacet( facet_points );
-      if ( f==NULL )
-      {
-        // If we have a hole and multiple cuts we have to test which facet the
-        // hole belongs to. Not supported now.
-        if ( facets_.size()!=1 )
-        {
-          throw std::runtime_error( "expect side with one (uncut) facet" );
-        }
-        Facet * hole = mesh.NewFacet( facet_points, this, false );
-        facets_[0]->AddHole( hole );
-      }
-    }
-  }
-}
-#endif
 
 void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
 {

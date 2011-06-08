@@ -902,20 +902,20 @@ void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element,
         std::map<Side*, std::vector<Facet*> >::iterator j = facetsonsurface.find( child_facet->ParentSide() );
         if ( j==facetsonsurface.end() )
         {
-#if 0
 #ifdef DEBUGCUTLIBRARY
           {
             std::ofstream f( "parentvolume.plot" );
+            parent_cell->Print( f );
+          }
+          {
+            std::ofstream f( "childvolume.plot" );
             vc->Print( f );
           }
+
+          element->GnuplotDump();
+          element->DumpFacets();
+
 #endif
-          std::stringstream str;
-          str << ( *child_facet )
-              << "\non boundary cell "
-              << ( *child_facet->ParentSide() )
-              << "\non unknown cut surface";
-          throw std::runtime_error( str.str() );
-#else
 
           // Parent side not included in facetsonsurface. This might be a
           // numerical problem. This might be a real bug.
@@ -928,6 +928,9 @@ void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element,
           // Try to recover.
           if ( not child_facet->HasHoles() and not child_facet->IsTriangulated() )
           {
+#ifdef DEBUGCUTLIBRARY
+            std::ofstream file( "parentfacets.plot" );
+#endif
             for ( std::map<Side*, std::vector<Side*> >::iterator i=side_parent_to_child_.begin();
                   i!=side_parent_to_child_.end();
                   ++i )
@@ -940,7 +943,10 @@ void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element,
                 for ( std::vector<Facet*>::const_iterator i=fs.begin(); i!=fs.end(); ++i )
                 {
                   Facet * f = *i;
-                  //if ( f->Equals( child_facet->Points() ) )
+
+#ifdef DEBUGCUTLIBRARY
+                  f->Print( file );
+#endif
 
                   if ( parent_cell->Facets().count( f ) > 0 )
                   {
@@ -950,7 +956,8 @@ void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element,
               }
             }
           }
-#endif
+
+//           continue;
         }
         else
         {
