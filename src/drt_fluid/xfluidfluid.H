@@ -23,6 +23,8 @@
 #include "fluid_utils.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
+#include "../drt_cut/cut_boundingbox.H"
+
 namespace DRT
 {
   class Discretization;
@@ -58,8 +60,7 @@ namespace FLD
     {
     public:
 
-      explicit XFluidFluidState( XFluidFluid & xfluid );
-
+      explicit XFluidFluidState( XFluidFluid & xfluid, Epetra_Vector & idispcol );
 
       void EvaluateFluidFluid( Teuchos::ParameterList & eleparams,
                                DRT::Discretization    & bgdis,
@@ -269,6 +270,23 @@ namespace FLD
     /// determine grid velocity
     void UpdateGridv();
 
+    void SetNewStatevector(map<int, vector<int> > stdnoden,
+                           Teuchos::RCP<Epetra_Vector> statevn,
+                           Teuchos::RCP<Epetra_Vector> statevnp);
+
+    void SetNewStatevectorAndProjectEmbToBg(map<int, vector<int> > stdnoden,
+                                            std::map<int,GEO::CUT::BoundingBox> & patchboxes,
+                                            Teuchos::RCP<Epetra_Vector> statevn,
+                                            Teuchos::RCP<Epetra_Vector> statevnp,
+                                            Teuchos::RCP<Epetra_Vector> fluidstate_vector_n);
+
+    void CreatePatchBoxes(std::map<int, GEO::CUT::BoundingBox> & patchboxes);
+
+    bool ComputeSpacialToElementCoordAndProject(DRT::Element*           pele,
+                                                LINALG::Matrix<3,1>&    x,  // background node's coordinates (x,y,z)
+                                                LINALG::Matrix<4,1>&    interpolatedvec,
+                                                RCP<Epetra_Vector>       fluidstate_vector_n);
+
     /*!
       \brief Access output object
     */
@@ -459,6 +477,7 @@ namespace FLD
     double  dtsolve_;
 
     Teuchos::RCP<XFluidFluidState> state_;
+    Teuchos::RCP<XFluidFluidState> staten_;
   };
 }
 
