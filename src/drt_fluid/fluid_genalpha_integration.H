@@ -714,6 +714,9 @@ public:
      Teuchos::RCP<DRT::Discretization> scatradis,
      const int whichscalar = -1);
 
+  /// provide access to turbulence statistics manager
+  Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager();
+
 private:
 
   //@}
@@ -856,7 +859,7 @@ private:
   string                      outflow_stab_;
 
   //! manager for turbulence statistics
-  RCP<TurbulenceStatisticManager> statisticsmanager_;
+  RCP<FLD::TurbulenceStatisticManager> statisticsmanager_;
 
   //@}
 

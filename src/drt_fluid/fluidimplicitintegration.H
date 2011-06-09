@@ -358,6 +358,9 @@ public:
                          Teuchos::RCP<DRT::Discretization> scatradis,
                          const int                whichscalar = -1);
 
+  /// provide access to turbulence statistics manager
+  Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager();
+
   /// introduce surface split extractor object
   /*!
     This method must (and will) be called during setup with a properly
@@ -617,7 +620,7 @@ protected:
 
 
   //! manager for turbulence statistics
-  RCP<TurbulenceStatisticManager> statisticsmanager_;
+  RCP<FLD::TurbulenceStatisticManager> statisticsmanager_;
 
   //! @name Dynamic Smagorinsky model: methods and variables
   //        -------------------------

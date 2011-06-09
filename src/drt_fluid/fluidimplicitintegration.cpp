@@ -589,7 +589,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // initialize turbulence-statistics evaluation
   // -------------------------------------------------------------------
   //
-  statisticsmanager_=rcp(new TurbulenceStatisticManager(*this));
+  statisticsmanager_=rcp(new FLD::TurbulenceStatisticManager(*this));
   // parameter for sampling/dumping period
   if (special_flow_ != "no")
     samstart_ = modelparams->get<int>("SAMPLING_START",1);
@@ -4691,6 +4691,12 @@ void FLD::FluidImplicitTimeInt::SetElementTimeParameter()
   discret_->Evaluate(eleparams,null,null,null,null,null);
   return;
 }
+
+// -------------------------------------------------------------------
+// provide access to turbulence statistics manager (gjb 06/2011)
+// -------------------------------------------------------------------
+Teuchos::RCP<FLD::TurbulenceStatisticManager> FLD::FluidImplicitTimeInt::TurbulenceStatisticManager()
+  {return statisticsmanager_;};
 
 
 #endif /* CCADISCRET       */

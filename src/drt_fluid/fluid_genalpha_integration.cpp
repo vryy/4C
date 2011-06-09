@@ -271,7 +271,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   special_flow_ = modelparams->get<string>("CANONICAL_FLOW","no");
 
   // all averaging is done in this statistics manager
-  statisticsmanager_=rcp(new TurbulenceStatisticManager(*this));
+  statisticsmanager_=rcp(new FLD::TurbulenceStatisticManager(*this));
 
   if (special_flow_ != "no")
   {
@@ -3354,5 +3354,11 @@ void FLD::FluidGenAlphaIntegration::SetElementTimeParameter()
   discret_->Evaluate(eleparams,null,null,null,null,null);
   return;
 }
+
+// -------------------------------------------------------------------
+// provide access to turbulence statistics manager (gjb 06/2011)
+// -------------------------------------------------------------------
+Teuchos::RCP<FLD::TurbulenceStatisticManager> FLD::FluidGenAlphaIntegration::TurbulenceStatisticManager()
+  {return statisticsmanager_;};
 
 #endif
