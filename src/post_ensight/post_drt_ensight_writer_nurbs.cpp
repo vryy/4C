@@ -1930,7 +1930,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
         // offset should be equal to dim for pressure case!
         coldofset.insert(lm[inode*(dim+1)+dim]+offset);
       }
-      else if(name == "phi")
+      else if((name == "phi") or (name == "averaged_phi"))
       {
         DRT::Node* n = nurbsdis->lRowNode(inode);
         int numdofpernode = actele->NumDofPerNode(*n);
@@ -1939,14 +1939,14 @@ void EnsightWriter::WriteDofResultStepForNurbs(
         else // result for electric potential (ELCH problem)
           coldofset.insert(lm[inode*numdofpernode + (numdofpernode - 1)]+offset);
       }
-      else if(name.substr(0,2) == "c_")  // c_1, c_2 ,...
+      else if(name.substr(0,2) == "c_" or name.substr(0,11) == "averaged_c_")  // c_1, c_2 ,...
       {
         int k(0);
-        if (name=="c_1") k=0;
-        else if (name=="c_2") k=1;
-        else if (name=="c_3") k=2;
-        else if (name=="c_4") k=3;
-        else if (name=="c_5") k=4;
+        if ((name=="c_1") or (name=="averaged_c_1")) k=0;
+        else if ((name=="c_2") or (name=="averaged_c_2")) k=1;
+        else if ((name=="c_3") or (name=="averaged_c_3")) k=2;
+        else if ((name=="c_4") or (name=="averaged_c_4")) k=3;
+        else if ((name=="c_5") or (name=="averaged_c_5")) k=4;
         else
           dserror("Up to now, I'm not able to write a field named %s\n",name.c_str());
 
@@ -2102,7 +2102,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
         my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*(dim+1)+dim]+offset)];
       }
     }
-    else if(name == "phi")
+    else if((name == "phi") or (name == "averaged_phi"))
     {
       my_data.resize(numnp);
 
@@ -2116,16 +2116,15 @@ void EnsightWriter::WriteDofResultStepForNurbs(
           my_data[inode]=(*coldata)[(*coldata).Map().LID(lm[inode*numdofpernode+(numdofpernode-1)]+offset)];
       }
     }
-    else if(name.substr(0,2) == "c_")  // c_1, c_2 ,...
+    else if(name.substr(0,2) == "c_" or name.substr(0,11) == "averaged_c_")  // c_1, c_2 ,...
     {
       my_data.resize(numnp);
-
       int k(0);
-      if (name=="c_1") k=0;
-      else if (name=="c_2") k=1;
-      else if (name=="c_3") k=2;
-      else if (name=="c_4") k=3;
-      else if (name=="c_5") k=4;
+      if ((name=="c_1") or (name=="averaged_c_1")) k=0;
+      else if ((name=="c_2") or (name=="averaged_c_2")) k=1;
+      else if ((name=="c_3") or (name=="averaged_c_3")) k=2;
+      else if ((name=="c_4") or (name=="averaged_c_4")) k=3;
+      else if ((name=="c_5") or (name=="averaged_c_5")) k=4;
       else
         dserror("Up to now, I'm not able to write a field named %s\n",name.c_str());
 

@@ -110,6 +110,26 @@ public:
   */
   void Restart(IO::DiscretizationReader& reader,int step);
 
+  /*!
+  \brief Restart scatra-specific collection of statistics
+
+  */
+  void RestartScaTra(IO::DiscretizationReader& scatrareader,int step);
+
+  /*!
+  \brief Add results from scalar transport fields to statistics
+
+  */
+  void AddScaTraResults(
+      RCP<DRT::Discretization> scatradis,
+      RCP<Epetra_Vector> myphinp);
+
+  /*!
+  \brief   Write (dump) the scatra-specific mean fields to the result file
+
+  */
+  void DoOutputForScaTra(IO::DiscretizationWriter& output, int step);
+
   //@}
 
 private:
@@ -130,7 +150,7 @@ private:
   double                               gamma_;
 
   //! reference to material density to rescale pressure
-  double                             density_;
+  double                               density_;
 
   //! parameters for sampling/dumping period
   //! start of sampling at step samstart
@@ -141,8 +161,10 @@ private:
   //! records (0)
   int                                  dumperiod_  ;
 
-  //! the discretization
+  //! the fluid discretization
   RCP<DRT::Discretization>             discret_    ;
+  //! the scatra discretization
+  RCP<DRT::Discretization>             scatradis_  ;
 
   //! parameterlist of the discretization including time params,
   //! stabilization params and turbulence sublist
@@ -164,7 +186,9 @@ private:
   RCP<Epetra_Vector>                   myveln_     ;
   RCP<Epetra_Vector>                   myvelaf_    ;
 
-  RCP<Epetra_Vector>                   myscanp_   ;
+  RCP<Epetra_Vector>                   myscanp_    ;
+  //! scatra result vector (defined on the scatra dofrowmap!)
+  RCP<Epetra_Vector>                   myfullphinp_;
 
   RCP<Epetra_Vector>                   mydispnp_   ;
   RCP<Epetra_Vector>                   mydispn_    ;

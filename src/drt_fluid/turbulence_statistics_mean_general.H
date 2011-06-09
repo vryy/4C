@@ -75,7 +75,8 @@ public:
   */
   void AddToCurrentTimeAverage(const double             dt ,
                                const RCP<Epetra_Vector> vec,
-                               const RCP<Epetra_Vector> scavec = Teuchos::null);
+                               const RCP<Epetra_Vector> scavec = Teuchos::null,
+                               const RCP<Epetra_Vector> scatravec = Teuchos::null);
 
   /*!
   \brief Perform a averaging of the current, already time averaged
@@ -104,6 +105,15 @@ public:
 
 
   /*!
+  \brief Read previous scatra statistics from a file (for restart)
+
+  \param (in) input reader to allow restart
+
+  */
+  void ReadOldStatisticsScaTra(IO::DiscretizationReader&  input);
+
+
+  /*!
   \brief Write the statistics to a file
 
   \param (in) output context
@@ -126,12 +136,33 @@ public:
   */
   void ResetComplete();
 
+  /*!
+  \brief Add results from scalar transport field solver to statistics
+
+  */
+  void AddScaTraResults(
+      RCP<DRT::Discretization> scatradis,
+      RCP<Epetra_Vector> myphinp);
+
+  /*!
+  \brief Do output of ScaTra mean field for visualization/restart
+         (statistics was already written during call of DoOutput())
+
+  */
+  void
+  DoOutputForScaTra(
+      IO::DiscretizationWriter& output,
+      int                       step);
+
   //@}
 
 private:
 
-  //! the discretization
+  //! the fluid discretization
   RCP<DRT::Discretization>     discret_        ;
+
+  //! the scatra discretization
+  RCP<DRT::Discretization>     scatradis_      ;
 
   //! reference to material density to rescale pressure
   double &                     density_;
@@ -163,6 +194,10 @@ private:
   RCP<Epetra_Vector>           prev_avg_sca_   ;
   //! current scalar field averages, done in time and space
   RCP<Epetra_Vector>           curr_avg_sca_   ;
+  //! previous scalar field averages, done in time and space
+  RCP<Epetra_Vector>           prev_avg_scatra_;
+  //! current scalar field averages, done in time and space
+  RCP<Epetra_Vector>           curr_avg_scatra_;
 
   //! compare operator for doubles up to a precision of 1e-8
   struct doublecomp {

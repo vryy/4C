@@ -93,10 +93,12 @@ public:
 
   /*!
   \brief Compute the in-shell mean values of first and second order
-  moments for velocities, pressure .
+  moments for velocities, pressure (and transported scalar fields).
   */
-  void DoTimeSample(Teuchos::RefCountPtr<Epetra_Vector> velnp,
-      Teuchos::RefCountPtr<Epetra_Vector> scanp);
+  void DoTimeSample(
+      Teuchos::RefCountPtr<Epetra_Vector> velnp,
+      Teuchos::RefCountPtr<Epetra_Vector> scanp,
+      Teuchos::RefCountPtr<Epetra_Vector> fullphinp);
 
 
   /*!
@@ -147,6 +149,10 @@ public:
 
   //@}
 
+  // Add results from scalar transport field solver to statistics
+  void AddScaTraResults(
+      RCP<DRT::Discretization> scatradis,
+      RCP<Epetra_Vector> phinp);
 
 protected:
 
@@ -185,6 +191,9 @@ private:
 
   //! The discretisation (required for nodes, dofs etc;)
   RefCountPtr<DRT::Discretization> discret_;
+
+  //! the scatra discretization
+  RefCountPtr<DRT::Discretization> scatradis_;
 
   //! flag for ale discretisation
   bool                             alefluid_;
@@ -246,13 +255,24 @@ private:
   //! flag for mass transport statistics
   const bool                       withscatra_;
 
+  //! number of scatra dofs per node
+  int                              numscatradofpernode_;
+
   //! pointer to mean scalar field
   RefCountPtr<Epetra_Vector>       meanscanp_;
+
+  //! pointer to mean field of all scatra results
+  RefCountPtr<Epetra_Vector>       meanfullphinp_;
 
   //! sum over c (over one plane in each component)
   RefCountPtr<vector<double> >     pointsumc_;
   //! sum over c^2 (over one plane in each component)
   RefCountPtr<vector<double> >     pointsumcc_;
+
+  //! sum over c (over one plane in each component)
+  RefCountPtr<Epetra_SerialDenseMatrix>     pointsumphi_;
+  //! sum over c^2 (over one plane in each component)
+  RefCountPtr<Epetra_SerialDenseMatrix>     pointsumphiphi_;
 
 };
 

@@ -90,7 +90,8 @@ FLD::TurbulenceStatisticsGeneralMean::~TurbulenceStatisticsGeneralMean()
 void FLD::TurbulenceStatisticsGeneralMean::AddToCurrentTimeAverage(
   const double             dt ,
   const RCP<Epetra_Vector> vec,
-  const RCP<Epetra_Vector> scavec)
+  const RCP<Epetra_Vector> scavec,
+  const RCP<Epetra_Vector> scatravec)
 {
   // remember time included in this average
   const double old_time = curr_avg_time_;
@@ -114,10 +115,15 @@ void FLD::TurbulenceStatisticsGeneralMean::AddToCurrentTimeAverage(
 
   if(withscatra_)
   {
-    if ( curr_avg_sca_ != Teuchos::null)
+    if ((curr_avg_sca_ != Teuchos::null) and (scavec != Teuchos::null))
       curr_avg_sca_->Update(incfac,*scavec,oldfac);
     else
       dserror("curr_avg_sca_ is Teuchos::null");
+
+    if ((curr_avg_scatra_ != Teuchos::null) and (scatravec != Teuchos::null))
+    {
+      curr_avg_scatra_->Update(incfac,*scatravec,oldfac);
+    }
   }
 
   // increase number of steps included in this sample
@@ -994,6 +1000,11 @@ void FLD::TurbulenceStatisticsGeneralMean::AddToTotalTimeAverage()
   if(withscatra_)
   {
     prev_avg_sca_->Update(incfac,*curr_avg_sca_,oldfac);
+
+    if ((prev_avg_scatra_ != Teuchos::null) and (curr_avg_scatra_ != Teuchos::null))
+    {
+      prev_avg_scatra_->Update(incfac,*curr_avg_scatra_,oldfac);
+    }
   }
 
   // increase number of steps included in this sample
@@ -1024,6 +1035,25 @@ void FLD::TurbulenceStatisticsGeneralMean::ReadOldStatistics(
 
   return;
 } // FLD::TurbulenceStatisticsGeneralMean::ReadOldStatistics
+
+
+//----------------------------------------------------------------------
+//
+//      Read previous scatra statistics from a file (for restart)
+//
+//----------------------------------------------------------------------
+void FLD::TurbulenceStatisticsGeneralMean::ReadOldStatisticsScaTra(
+  IO::DiscretizationReader&  input
+  )
+{
+  if(withscatra_)
+  {
+    // read previous averaged vector. That's all
+    input.ReadVector(prev_avg_scatra_,"averaged_phinp");
+  }
+
+  return;
+} // FLD::TurbulenceStatisticsGeneralMean::ReadOldStatisticsScaTra
 
 
 //----------------------------------------------------------------------
@@ -1083,6 +1113,13 @@ void FLD::TurbulenceStatisticsGeneralMean::TimeReset()
   {
     curr_avg_sca_     = Teuchos::null;
     curr_avg_sca_     = LINALG::CreateVector(*dofrowmap,true);
+
+    if (scatradis_ != Teuchos::null)
+    {
+      const Epetra_Map* scatradofrowmap = scatradis_->DofRowMap();
+      curr_avg_scatra_     = Teuchos::null;
+      curr_avg_scatra_     = LINALG::CreateVector(*scatradofrowmap,true);
+    }
   }
 
   curr_n_       = 0;
@@ -1119,12 +1156,75 @@ void FLD::TurbulenceStatisticsGeneralMean::ResetComplete()
     curr_avg_sca_     = LINALG::CreateVector(*dofrowmap,true);
     prev_avg_sca_     = Teuchos::null;
     prev_avg_sca_     = LINALG::CreateVector(*dofrowmap,true);
+
+    if (scatradis_ != Teuchos::null)
+    {
+      const Epetra_Map* scatradofrowmap = scatradis_->DofRowMap();
+      curr_avg_scatra_     = Teuchos::null;
+      curr_avg_scatra_     = LINALG::CreateVector(*scatradofrowmap,true);
+      prev_avg_scatra_     = Teuchos::null;
+      prev_avg_scatra_     = LINALG::CreateVector(*scatradofrowmap,true);
+    }
   }
 
   return;
 } // FLD::TurbulenceStatisticsGeneralMean::ResetComplete
 
 
+/*----------------------------------------------------------------------
+
+Add results from scalar transport field solver to statistics
+
+----------------------------------------------------------------------*/
+void FLD::TurbulenceStatisticsGeneralMean::AddScaTraResults(
+    RCP<DRT::Discretization> scatradis,
+    RCP<Epetra_Vector> phinp
+)
+{
+  if (withscatra_)
+  {
+    scatradis_ = scatradis;
+    const Epetra_Map* scatradofrowmap = scatradis_->DofRowMap();
+
+    curr_avg_scatra_     = Teuchos::null;
+    curr_avg_scatra_     = LINALG::CreateVector(*scatradofrowmap,true);
+    prev_avg_scatra_     = Teuchos::null;
+    prev_avg_scatra_     = LINALG::CreateVector(*scatradofrowmap,true);
+  }
+
+  return;
+} // FLD::TurbulenceStatisticsGeneralMean::AddScaTraResults
+
+
+/*----------------------------------------------------------------------
+
+  Write (dump) the scatra-specific mean field to the result file
+
+----------------------------------------------------------------------*/
+void  FLD::TurbulenceStatisticsGeneralMean::DoOutputForScaTra(
+    IO::DiscretizationWriter& output,
+    int                       step)
+{
+  if(withscatra_)
+  {
+    // statistics was written already during DoOutput()
+    // Here, for visualization/restart we have to care for the mean field only!
+    if(prev_avg_scatra_ != Teuchos::null)
+      output.WriteVector("averaged_phinp",prev_avg_scatra_);
+    else
+      dserror("Could not write vector to result file");
+
+    if(discret_->Comm().MyPID()==0)
+    {
+      cout << "XXXXXXXXXXXXXXXXXXXXX           ";
+      cout << " Wrote averaged scatra vector         ";
+      cout << "XXXXXXXXXXXXXXXXXXXXX";
+      cout << "\n\n";
+    }
+  }
+
+  return;
+}
 
 
 #endif

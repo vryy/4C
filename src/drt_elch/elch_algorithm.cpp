@@ -17,6 +17,7 @@ Maintainer: Georg Bauer
 
 #include "elch_algorithm.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include "../drt_fluid/turbulence_statistic_manager.H"
 // Output after each Outer Iteration step
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
@@ -40,6 +41,14 @@ ELCH::Algorithm::Algorithm(
    samstart_(prbdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START")),
    samstop_(prbdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_STOP"))
 {
+//  // Now, the statistics manager has pointers
+//  // to ScaTra discretization and result vector and can access relevant data
+//  if (FluidField().TurbulenceStatisticManager() != Teuchos::null)
+//  {
+//    FluidField().TurbulenceStatisticManager()
+//          ->AddScaTraResults(ScaTraField().Discretization(),ScaTraField().Phinp());
+//  }
+
   return;
 }
 
@@ -385,6 +394,11 @@ void ELCH::Algorithm::Output()
 
   FluidField().StatisticsAndOutput();
   ScaTraField().Output();
+
+  // we have to call the output of averaged fields for scatra separately
+  if (  FluidField().TurbulenceStatisticManager() != Teuchos::null)
+    FluidField().TurbulenceStatisticManager()
+        ->DoOutputForScaTra(ScaTraField().DiscWriter(),ScaTraField().Step());
 
   return;
 }

@@ -708,7 +708,7 @@ namespace FLD
         if(statistics_ccy_==null)
           dserror("need statistics_ccy_ to do a time sample for a flow in a rotating circular cylinder");
 
-        statistics_ccy_->DoTimeSample(myvelnp_,Teuchos::null);
+        statistics_ccy_->DoTimeSample(myvelnp_,Teuchos::null,Teuchos::null);
         break;
       }
       case rotating_circular_cylinder_nurbs_scatra:
@@ -717,7 +717,7 @@ namespace FLD
         if(statistics_ccy_==null)
           dserror("need statistics_ccy_ to do a time sample for a flow in a rotating circular cylinder");
 
-        statistics_ccy_->DoTimeSample(myvelnp_,myscanp_);
+        statistics_ccy_->DoTimeSample(myvelnp_,myscanp_,myfullphinp_);
         break;
       }
       default:
@@ -821,9 +821,9 @@ namespace FLD
 
       // add vector to general mean value computation
       if(flow_==rotating_circular_cylinder_nurbs_scatra)
-        statistics_general_mean_->AddToCurrentTimeAverage(dt_,myvelnp_,myscanp_);
+        statistics_general_mean_->AddToCurrentTimeAverage(dt_,myvelnp_,myscanp_,myfullphinp_);
       else
-        statistics_general_mean_->AddToCurrentTimeAverage(dt_,myvelnp_);
+        statistics_general_mean_->AddToCurrentTimeAverage(dt_,myvelnp_); // no scatra field present
 
     } // end step in sampling period
 
@@ -991,6 +991,67 @@ namespace FLD
     return;
   } // DoOutput
 
+
+  /*----------------------------------------------------------------------
+
+  Add results from scalar transport fields to statistics
+
+  ----------------------------------------------------------------------*/
+  void TurbulenceStatisticManager::AddScaTraResults(
+      RCP<DRT::Discretization> scatradis,
+      RCP<Epetra_Vector> phinp
+  )
+  {
+    if(discret_->Comm().MyPID()==0)
+    {
+      cout<<endl<<"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
+      cout<<"TurbulenceStatisticManager: added access to ScaTra results"<<endl;
+      cout<<"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
+    }
+
+    // store the relevant pointers to provide access
+    scatradis_   = scatradis;
+    myfullphinp_ = phinp;
+
+    if (statistics_general_mean_!=Teuchos::null)
+      statistics_general_mean_->AddScaTraResults(scatradis, phinp);
+
+    if (statistics_ccy_!=Teuchos::null)
+      statistics_ccy_->AddScaTraResults(scatradis, phinp);
+
+    return;
+  }
+
+
+  /*----------------------------------------------------------------------
+
+  Write (dump) the scatra-specific mean fields to the result file
+
+  ----------------------------------------------------------------------*/
+  void TurbulenceStatisticManager::DoOutputForScaTra(
+      IO::DiscretizationWriter& output,
+      int                       step)
+  {
+    // sampling takes place only in the sampling period
+    if(step>=samstart_ && step<=samstop_ && flow_ != no_special_flow)
+    {
+      // statistics for scatra fields was already written during DoOutput()
+      // Thus, we have to care for the mean field only:
+
+      // dump general mean value output for scatra results
+      // in combination with a restart/output
+      int upres    =params_.get("write solution every", -1);
+      int uprestart=params_.get("write restart every" , -1);
+
+      if(step%upres == 0 || step%uprestart == 0)
+      {
+        statistics_general_mean_->DoOutputForScaTra(output,step);
+      }
+    }
+    return;
+  }
+
+
   /*----------------------------------------------------------------------
 
   Restart statistics collection
@@ -1020,6 +1081,38 @@ namespace FLD
 
     return;
   } // Restart
+
+
+  /*----------------------------------------------------------------------
+
+  Restart for scatra mean fields (statistics was restarted via Restart() )
+
+  ----------------------------------------------------------------------*/
+  void TurbulenceStatisticManager::RestartScaTra(
+    IO::DiscretizationReader& scatrareader,
+    int                       step
+  )
+  {
+    // we have only to read in the mean field.
+    // The rest of the restart was already done during the Restart() call
+    if(statistics_general_mean_!=Teuchos::null)
+    {
+      if(samstart_<step && step<=samstop_)
+      {
+        if(discret_->Comm().MyPID()==0)
+        {
+          cout << "XXXXXXXXXXXXXXXXXXXXX        ";
+          cout << "Read general mean values for ScaTra      ";
+          cout << "XXXXXXXXXXXXXXXXXXXXX";
+          cout << "\n\n";
+        }
+
+        statistics_general_mean_->ReadOldStatisticsScaTra(scatrareader);
+      }
+    }
+
+    return;
+  } // RestartScaTra
 
 
   /*----------------------------------------------------------------------

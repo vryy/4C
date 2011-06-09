@@ -17,6 +17,7 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "adapter_scatra_fluid_coupling_algorithm.H"
+#include "../drt_fluid/turbulence_statistic_manager.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -72,6 +73,18 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   default:
     dserror("Fluid and Scatra time integration schemes do not match");
   }
+
+  // if applicable, provide scatra data to the turbulence statistics
+  if (FluidField().TurbulenceStatisticManager() != Teuchos::null)
+  {
+    // Now, the statistics manager has pointers
+    // to ScaTra discretization and result vectors and can access relevant data
+    FluidField().TurbulenceStatisticManager()
+          ->AddScaTraResults(ScaTraField().Discretization(),ScaTraField().Phinp());
+  }
+
+  return;
+
 }
 
 
@@ -88,6 +101,14 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::ReadRestart(int step)
   FluidField().ReadRestart(step);
   ScaTraField().ReadRestart(step);
   SetTimeStep(FluidField().Time(),step);
+
+  // read scatra-specific restart data for turbulence statistics
+  if (FluidField().TurbulenceStatisticManager() != Teuchos::null)
+  {
+    IO::DiscretizationReader reader(ScaTraField().Discretization(),step);
+    FluidField().TurbulenceStatisticManager()->RestartScaTra(reader,step);
+  }
+
   return;
 }
 

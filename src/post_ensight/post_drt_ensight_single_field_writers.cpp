@@ -213,6 +213,7 @@ void ScaTraEnsightWriter::WriteAllResults(PostField* field)
   if (numdofpernode == 1)
   {
     EnsightWriter::WriteResult("phinp","phi",dofbased,1);
+    EnsightWriter::WriteResult("averaged_phinp","averaged_phi",dofbased,1);
     EnsightWriter::WriteResult("normalflux","normalflux",dofbased,1);
     // write flux vectors (always 3D)
     EnsightWriter::WriteResult("flux", "flux", nodebased, 3);
@@ -225,6 +226,7 @@ void ScaTraEnsightWriter::WriteAllResults(PostField* field)
       temp << k;
       string name = "phi_"+temp.str();
       EnsightWriter::WriteResult("phinp", name, dofbased, 1,k-1);
+      EnsightWriter::WriteResult("averaged_phinp", "averaged_"+name, dofbased, 1,k-1);
       // intermediate work-around for nurbs discretizations (no normal vectors applied)
       EnsightWriter::WriteResult("normalflux","normalflux"+name,dofbased,1,k-1);
       // write flux vectors (always 3D)
@@ -259,7 +261,11 @@ void ElchEnsightWriter::WriteAllResults(PostField* field)
       EnsightWriter::WriteResult("phinp", name, dofbased, 1, 0);
       // write flux vectors (always 3D)
       EnsightWriter::WriteResult("flux", "flux", nodebased, 3);
-    // there is no electric potential in this special case
+
+      // there is no electric potential in this special case
+
+      // temporal mean field from turbulent statistics (if present)
+      EnsightWriter::WriteResult("averaged_phinp", "averaged_"+name, dofbased, 1, 0);
   }
   else
   {
@@ -272,9 +278,14 @@ void ElchEnsightWriter::WriteAllResults(PostField* field)
       EnsightWriter::WriteResult("phinp", name, dofbased, 1,k-1);
       // write flux vectors (always 3D)
       EnsightWriter::WriteResult("flux_phi_"+temp.str(), "flux_"+name, nodebased, 3);
+
+      // temporal mean field from turbulent statistics (if present)
+      EnsightWriter::WriteResult("averaged_phinp", "averaged_"+name, dofbased, 1, k-1);
     }
     // finally, handle the electric potential
     EnsightWriter::WriteResult("phinp", "phi", dofbased, 1,numdofpernode-1);
+    // temporal mean field from turbulent statistics (if present)
+    EnsightWriter::WriteResult("averaged_phinp", "averaged_phi", dofbased, 1,numdofpernode-1);
   }
 
   // write velocity field (always 3D)
