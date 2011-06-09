@@ -74,53 +74,42 @@ namespace FLD
                        const std::string & name,
                        int count,
                        Teuchos::RCP<Epetra_Vector> vel,
-                       Teuchos::RCP<Epetra_Vector> alevel);
+                       Teuchos::RCP<Epetra_Vector> alevel,
+                       Teuchos::RCP<Epetra_Vector> disptotal );
 
       /// (standard) system matrix
+
       Teuchos::RCP<LINALG::SparseOperator> sysmat_;
-      Teuchos::RCP<LINALG::SparseOperator> alesysmat_;
-      Teuchos::RCP<LINALG::SparseOperator> fluidfluidsysmat_;
 
       /// maps for extracting Dirichlet and free DOF sets
       Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
-      Teuchos::RCP<LINALG::MapExtractor> aledbcmaps_;
 
       /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
       Teuchos::RCP<Epetra_Vector>    zeros_;
-      Teuchos::RCP<Epetra_Vector>    alezeros_;
-      Teuchos::RCP<Epetra_Vector>    fluidfluidzeros_;
+      //Teuchos::RCP<Epetra_Vector>    alezeros_;
+//      Teuchos::RCP<Epetra_Vector>    fluidfluidzeros_;
 
       /// the vector containing body and surface forces
       Teuchos::RCP<Epetra_Vector>    neumann_loads_;
 
       /// (standard) residual vector (rhs for the incremental form),
       Teuchos::RCP<Epetra_Vector>    residual_;
-      Teuchos::RCP<Epetra_Vector>    aleresidual_;
-      Teuchos::RCP<Epetra_Vector>    fluidfluidresidual_;
 
       /// rhs: right hand side vector for linearised flow solution
       Teuchos::RCP<Epetra_Vector>    rhs_;
-      Teuchos::RCP<Epetra_Vector>    alerhs_;
 
       /// true (rescaled) residual vector without zeros at dirichlet positions
       Teuchos::RCP<Epetra_Vector>    trueresidual_;
-      Teuchos::RCP<Epetra_Vector>    aletrueresidual_;
 
       /// Nonlinear iteration increment vector
       Teuchos::RCP<Epetra_Vector>    incvel_;
       Teuchos::RCP<Epetra_Vector>    aleincvel_;
-      Teuchos::RCP<Epetra_Vector>    fluidfluidincvel_;
 
 
       //! @name acceleration/(scalar time derivative) at time n+1, n and n+alpha_M/(n+alpha_M/n)
       Teuchos::RCP<Epetra_Vector>    accnp_;
       Teuchos::RCP<Epetra_Vector>    accn_;
       Teuchos::RCP<Epetra_Vector>    accam_;
-
-      Teuchos::RCP<Epetra_Vector>    aleaccnp_;
-      Teuchos::RCP<Epetra_Vector>    aleaccn_;
-      Teuchos::RCP<Epetra_Vector>    aleaccam_;
-      //@}
 
 
       //! @name velocity and pressure at time n+1, n, n-1 and n+alpha_F
@@ -129,33 +118,11 @@ namespace FLD
       Teuchos::RCP<Epetra_Vector>    velnm_;
       Teuchos::RCP<Epetra_Vector>    velaf_;
 
-      Teuchos::RCP<Epetra_Vector>    alevelnp_;
-      Teuchos::RCP<Epetra_Vector>    aleveln_;
-      Teuchos::RCP<Epetra_Vector>    alevelnm_;
-      Teuchos::RCP<Epetra_Vector>    alevelaf_;
-
-      Teuchos::RCP<Epetra_Vector>    fluidfluidvelnp_;
-      //@}
-
-       //! @name boundary-dis state vectors
-      Teuchos::RCP<Epetra_Vector>    ivelnp_;
-      Teuchos::RCP<Epetra_Vector>    iveln_;
-      Teuchos::RCP<Epetra_Vector>    ivelnm_;
-      //@}
 
       //! @name scalar at time n+alpha_F/n+1 and n+alpha_M/n
       Teuchos::RCP<Epetra_Vector>    scaaf_;
       Teuchos::RCP<Epetra_Vector>    scaam_;
 
-      Teuchos::RCP<Epetra_Vector>    alescaaf_;
-      Teuchos::RCP<Epetra_Vector>    alescaam_;
-      //@}
-
-      //! @name displacemets at time n+1, n and n-1
-      Teuchos::RCP<Epetra_Vector>    aledispnp_;
-      Teuchos::RCP<Epetra_Vector>    aledispn_;
-      Teuchos::RCP<Epetra_Vector>    aledispnm_;
-      //@}
 
       /// grid velocity (set from the adapter!)
       Teuchos::RCP<Epetra_Vector>    gridv_;
@@ -163,15 +130,9 @@ namespace FLD
       /// histvector --- a linear combination of velnm, veln (BDF)
       ///                or veln, accn (One-Step-Theta)
       Teuchos::RCP<Epetra_Vector>    hist_;
-      Teuchos::RCP<Epetra_Vector>    alehist_;
 
       //! Extractor used for convergence check
       LINALG::MapExtractor      velpressplitter_;
-      LINALG::MapExtractor      alevelpressplitter_;
-      LINALG::MapExtractor      fluidfluidvelpressplitter_;
-
-      // Extractor used for splitting fluid and ale_fluid
-      FLD::UTILS::FluidXFluidMapExtractor fluidfluidsplitter_;
 
       // row dof map extractor
       const UTILS::MapExtractor* surfacesplitter_;
@@ -184,8 +145,25 @@ namespace FLD
 
       // dof-row maps
       const Epetra_Map* fluiddofrowmap_;
-      const Epetra_Map* aledofrowmap_;
-      const Epetra_Map* boundarydofrowmap_;
+//      const Epetra_Map* aledofrowmap_;
+//      const Epetra_Map* boundarydofrowmap_;
+
+      // fluid-fluid
+      Teuchos::RCP<LINALG::SparseOperator> fluidfluidsysmat_;
+
+      /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
+      Teuchos::RCP<Epetra_Vector>    fluidfluidzeros_;
+
+      /// (standard) residual vector (rhs for the incremental form),
+      Teuchos::RCP<Epetra_Vector>    fluidfluidresidual_;
+
+      Teuchos::RCP<Epetra_Vector>    fluidfluidvelnp_;
+      Teuchos::RCP<Epetra_Vector>    fluidfluidincvel_;
+
+      // Extractor used for splitting fluid and ale_fluid
+      FLD::UTILS::FluidXFluidMapExtractor fluidfluidsplitter_;
+
+      LINALG::MapExtractor      fluidfluidvelpressplitter_;
 
       void GenAlphaIntermediateValues();
       void GenAlphaUpdateAcceleration();
@@ -212,6 +190,14 @@ namespace FLD
                                    DRT::Element * actele,
                                    GEO::CUT::ElementHandle * e,
                                    GEO::CUT::VolumeCell * vc );
+
+
+      void GmshOutputElementEmb( DRT::Discretization & discret,
+                                 std::ofstream & vel_f,
+                                 std::ofstream & press_f,
+                                 DRT::Element * actele,
+                                 Teuchos::RCP<Epetra_Vector> vel,
+                                 Teuchos::RCP<Epetra_Vector> disp);
 
       XFluidFluid & xfluid_;
       XFEM::FluidWizard wizard_;
@@ -298,19 +284,19 @@ namespace FLD
     /// update configuration and output to file/screen
     void Output();
 
-    Teuchos::RCP<Epetra_Vector> InitialGuess() { return state_->aleincvel_; }
-    Teuchos::RCP<Epetra_Vector> Residual() { return state_->aleresidual_; }
-    Teuchos::RCP<Epetra_Vector> TrueResidual() { return state_->aletrueresidual_; }
-    Teuchos::RCP<Epetra_Vector> Velnp() { return state_->alevelnp_; }
-    Teuchos::RCP<Epetra_Vector> Velaf() { return state_->alevelaf_; }
-    Teuchos::RCP<Epetra_Vector> Veln() { return state_->aleveln_; }
-    Teuchos::RCP<Epetra_Vector> GridVel() { return state_->gridv_; }
+    Teuchos::RCP<Epetra_Vector> InitialGuess() { return aleincvel_; }
+    Teuchos::RCP<Epetra_Vector> Residual() { return aleresidual_; }
+    Teuchos::RCP<Epetra_Vector> TrueResidual() { return aletrueresidual_; }
+    Teuchos::RCP<Epetra_Vector> Velnp() { return alevelnp_; }
+    Teuchos::RCP<Epetra_Vector> Velaf() { return alevelaf_; }
+    Teuchos::RCP<Epetra_Vector> Veln() { return aleveln_; }
+    Teuchos::RCP<Epetra_Vector> GridVel() { return gridv_; }
 
-    Teuchos::RCP<Epetra_Vector> Dispnp() { return state_->aledispnp_; }
-    Teuchos::RCP<Epetra_Vector> Dispn() { return state_->aledispn_; }
+    Teuchos::RCP<Epetra_Vector> Dispnp() { return aledispnp_; }
+    Teuchos::RCP<Epetra_Vector> Dispn() { return aledispn_; }
 
     /// provide access to the Dirichlet map
-    const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return state_->aledbcmaps_; }
+    const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return aledbcmaps_; }
 
     /// Expand the Dirichlet DOF set
     ///
@@ -350,6 +336,70 @@ namespace FLD
         return density_/(theta_*dta_);
     }
     //Teuchos::RCP<Epetra_Vector> calcStresses();
+
+    // embedded fluid state vectors
+    Teuchos::RCP<LINALG::SparseOperator> alesysmat_;
+
+    /// maps for extracting Dirichlet and free DOF sets
+    Teuchos::RCP<LINALG::MapExtractor> aledbcmaps_;
+
+    /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
+    Teuchos::RCP<Epetra_Vector>    alezeros_;
+
+    /// (standard) residual vector (rhs for the incremental form),
+    Teuchos::RCP<Epetra_Vector>    aleresidual_;
+
+    /// rhs: right hand side vector for linearised flow solution
+    Teuchos::RCP<Epetra_Vector>    alerhs_;
+
+    /// true (rescaled) residual vector without zeros at dirichlet positions
+    Teuchos::RCP<Epetra_Vector>    aletrueresidual_;
+
+    /// Nonlinear iteration increment vector
+    Teuchos::RCP<Epetra_Vector>    aleincvel_;
+
+    //! @name acceleration/(scalar time derivative) at time n+1, n and n+alpha_M/(n+alpha_M/n)
+    Teuchos::RCP<Epetra_Vector>    aleaccnp_;
+    Teuchos::RCP<Epetra_Vector>    aleaccn_;
+    Teuchos::RCP<Epetra_Vector>    aleaccam_;
+     //@}
+
+    Teuchos::RCP<Epetra_Vector>    alevelnp_;
+    Teuchos::RCP<Epetra_Vector>    aleveln_;
+    Teuchos::RCP<Epetra_Vector>    alevelnm_;
+    Teuchos::RCP<Epetra_Vector>    alevelaf_;
+
+
+    //! @name scalar at time n+alpha_F/n+1 and n+alpha_M/n
+    Teuchos::RCP<Epetra_Vector>    alescaaf_;
+    Teuchos::RCP<Epetra_Vector>    alescaam_;
+    //@}
+
+    //! @name displacemets at time n+1, n and n-1
+    Teuchos::RCP<Epetra_Vector>    aledispnp_;
+    Teuchos::RCP<Epetra_Vector>    aledispn_;
+    Teuchos::RCP<Epetra_Vector>    aledispnm_;
+    //@}
+
+    /// grid velocity (set from the adapter!)
+    Teuchos::RCP<Epetra_Vector>    gridv_;
+
+    /// histvector --- a linear combination of velnm, veln (BDF)
+    ///                or veln, accn (One-Step-Theta)
+    Teuchos::RCP<Epetra_Vector>    alehist_;
+
+    //! Extractor used for convergence check
+    LINALG::MapExtractor      alevelpressplitter_;
+
+    // dof-row maps
+    const Epetra_Map* aledofrowmap_;
+    const Epetra_Map* boundarydofrowmap_;
+
+
+    //! @name boundary-dis state vectors
+    Teuchos::RCP<Epetra_Vector>    ivelnp_;
+    Teuchos::RCP<Epetra_Vector>    iveln_;
+    Teuchos::RCP<Epetra_Vector>    ivelnm_;
 
   private:
 
@@ -397,6 +447,9 @@ namespace FLD
     Teuchos::RCP<DRT::Discretization>      bgdis_;
     Teuchos::RCP<DRT::Discretization>      embdis_;
     Teuchos::RCP<DRT::Discretization>      boundarydis_;
+
+    Teuchos::RCP<Epetra_Vector>   aledispntotal_;
+
     LINALG::Solver&               solver_;
 //     //! project nullspace (useful for completely Dirichlet bounded problems)
 //     bool                          project_;
