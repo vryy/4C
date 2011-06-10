@@ -189,7 +189,7 @@ private:
   double                       curr_avg_time_  ;
 
   //! flag for additional averaging of scalar field
-  const bool                   withscatra_     ;
+  bool                         withscatra_     ;
   //! previous scalar field averages, done in time and space
   RCP<Epetra_Vector>           prev_avg_sca_   ;
   //! current scalar field averages, done in time and space

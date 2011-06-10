@@ -118,7 +118,7 @@ void FLD::TurbulenceStatisticsGeneralMean::AddToCurrentTimeAverage(
     if ((curr_avg_sca_ != Teuchos::null) and (scavec != Teuchos::null))
       curr_avg_sca_->Update(incfac,*scavec,oldfac);
     else
-      dserror("curr_avg_sca_ is Teuchos::null");
+      dserror("curr_avg_sca_ or scavec is Teuchos::null");
 
     if ((curr_avg_scatra_ != Teuchos::null) and (scatravec != Teuchos::null))
     {
@@ -1181,16 +1181,12 @@ void FLD::TurbulenceStatisticsGeneralMean::AddScaTraResults(
     RCP<Epetra_Vector> phinp
 )
 {
-  if (withscatra_)
-  {
-    scatradis_ = scatradis;
-    const Epetra_Map* scatradofrowmap = scatradis_->DofRowMap();
+    withscatra_=true; // now it is clear: we have scatra results as well!
 
-    curr_avg_scatra_     = Teuchos::null;
-    curr_avg_scatra_     = LINALG::CreateVector(*scatradofrowmap,true);
-    prev_avg_scatra_     = Teuchos::null;
-    prev_avg_scatra_     = LINALG::CreateVector(*scatradofrowmap,true);
-  }
+    scatradis_ = scatradis;
+
+    // we allocate and reset everything again (but including scatra now)
+    ResetComplete();
 
   return;
 } // FLD::TurbulenceStatisticsGeneralMean::AddScaTraResults

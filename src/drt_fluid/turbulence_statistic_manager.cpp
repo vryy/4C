@@ -819,11 +819,9 @@ namespace FLD
         cout << "\n";
       }
 
-      // add vector to general mean value computation
-      if(flow_==rotating_circular_cylinder_nurbs_scatra)
-        statistics_general_mean_->AddToCurrentTimeAverage(dt_,myvelnp_,myscanp_,myfullphinp_);
-      else
-        statistics_general_mean_->AddToCurrentTimeAverage(dt_,myvelnp_); // no scatra field present
+      // add vector(s) to general mean value computation
+      // scatra vectors may be Teuchos::null
+      statistics_general_mean_->AddToCurrentTimeAverage(dt_,myvelnp_,myscanp_,myfullphinp_);
 
     } // end step in sampling period
 
