@@ -629,6 +629,20 @@ void CONTACT::CoManager::ReadRestart(IO::DiscretizationReader& reader,
  *----------------------------------------------------------------------*/
 void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
 {
+  // *********************************************************************
+  // active contact set and slip set
+  // *********************************************************************
+  RCP<Epetra_Vector> activeset = rcp(new Epetra_Vector(*GetStrategy().ActiveRowNodes()));
+  activeset->PutScalar(1.0);
+  if (GetStrategy().Friction())
+  {
+    RCP<Epetra_Vector> slipset = rcp(new Epetra_Vector(*GetStrategy().SlipRowNodes()));
+    slipset->PutScalar(1.0);
+    RCP<Epetra_Vector> slipsetexp = rcp(new Epetra_Vector(*GetStrategy().ActiveRowNodes()));
+    LINALG::Export(*slipset, *slipsetexp);
+    activeset->Update(1.0,*slipsetexp,1.0);
+  }
+  output.WriteVector("activeset",activeset);
 
   // *********************************************************************
   // contact tractions
