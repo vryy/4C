@@ -66,6 +66,8 @@ namespace MAT
       const double density_;
       /// yield stress (constant for perfect plasticity)
       const double yield_;
+      // tolerance for local Newton iteration
+      const double abstol_;
 
       //@}
 
@@ -180,6 +182,7 @@ private:
       double G,
       double q,
       const LINALG::Matrix<6,1> flowvector,
+      const LINALG::Matrix<6,1> devstress,
       double heaviside
       );
 
@@ -215,6 +218,7 @@ private:
       const LINALG::Matrix<6,1>& strain,  //!< elastic strain vector
       double Dgamma,  //!< plastic multiplier
       double G,  //!< shear modulus
+      double q,  //!< elastic trial von Mises effective stress
       double kappa, //!< bulk modulus
       LINALG::Matrix<6,1>& N, // flow vector
       double heaviside,  //!< Heaviside function
