@@ -15,6 +15,7 @@ Maintainer: Alexander Popp, Christian Cyron, Christoph Meier
 
 #include "beam3contact.H"
 #include "beamcontact_utilitis.H"
+#include "../drt_inpar/inpar_contact.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
@@ -51,15 +52,17 @@ contactflag_(false)
 {
   // initialize augmented lagrange multiplier to zero
   lmuzawa_ = 0.0;
+  gap_=0.0;
+  oldgap_=0.0;
   
+  neighbor1_ = rcp(new CONTACT::B3CNeighbor());
+  neighbor2_ = rcp(new CONTACT::B3CNeighbor());
+
   // initialize class variables for contact point coordinates
   x1_.Size(NDIM);
   x2_.Size(NDIM);
   normal_.Size(NDIM);
   normal_old_.Size(NDIM);
-  neighbor1_.resize(0);
-  neighbor2_.resize(0);
-  CONTACT::B3CNeighbor Testvar (1, true, true);
   for(int i=0;i<NDIM;i++)
   {
     x1_[i]=0.0;
@@ -68,6 +71,7 @@ contactflag_(false)
     normal_old_[i]=0.0;
     firstcall_ = true;
   }
+
 
 
   //For both elements the neighbor elements are determined and saved in the B3CNeighbor-Class variables neighbor1_ and neighbor2_
@@ -106,11 +110,12 @@ neighbor2_(old.neighbor2_)
 /*----------------------------------------------------------------------*
  |  constructor for class B3CNeighbor (public)                meier 12/10|
  *----------------------------------------------------------------------*/
-CONTACT::B3CNeighbor::B3CNeighbor(int eleId, bool elementside, bool neighborside)
+CONTACT::B3CNeighbor::B3CNeighbor()
 {
-  eleId_=eleId;
-  elementside_ = elementside;
-  neighborside_ = neighborside;
+  left_neighbor_ = NULL;
+  right_neighbor_ = NULL;
+  connecting_node_left_ = -1;
+  connecting_node_right_ = -1;
 }
 /*----------------------------------------------------------------------*
  |  end: constructor for class B3CNeighbor
@@ -120,7 +125,7 @@ CONTACT::B3CNeighbor::B3CNeighbor(int eleId, bool elementside, bool neighborside
 /*----------------------------------------------------------------------*
  |  Determine closest Point before pair evaluation (public)  meier 12/10|
  *----------------------------------------------------------------------*/
-bool CONTACT::Beam3contact::PreEvaluation()
+bool CONTACT::Beam3contact::PreEvaluation(int beams_smoothing, std::map<int,LINALG::Matrix<3,1> >& currentpositions)
 {    //*****************************************************************
     //                Closest Point Projection
     //*****************************************************************
@@ -133,9 +138,15 @@ bool CONTACT::Beam3contact::PreEvaluation()
 
   xicontact_.Size(2);
   elementscolinear_ = false;
+  //Test:
+    if (beams_smoothing != INPAR::CONTACT::bsm_none)
+    {
+         CalculateNodalTangents(currentpositions);
+    }
+
 
   // call function for closest point projection
-  ClosestPointProjection();
+  ClosestPointProjection(beams_smoothing);
 
   return true;
 }
@@ -149,7 +160,7 @@ bool CONTACT::Beam3contact::PreEvaluation()
  *----------------------------------------------------------------------*/
 bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
                                      Epetra_Vector& fint, double& pp, bool ngf,
-                                     std::map<std::pair<int,int>, RCP<Beam3contact> >& contactpairmap)
+                                     std::map<std::pair<int,int>, RCP<Beam3contact> >& contactpairmap, int beams_smoothing)
 {
   //**********************************************************************
   // Evaluation of contact forces and stiffness
@@ -215,7 +226,7 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   // calculate normal vector for all neighbor elements --> TODO:now the neighbour-elements are known explicitly,
   //so the following if-condition can be replaced by a direct evaluation of the neighbour elements
 
-  if (abs(XiContact[0])< 3 && abs(XiContact[1]) < 3 && elementscolinear == false)
+  if (abs(XiContact[0])< NEIGHBORTOL && abs(XiContact[1]) < NEIGHBORTOL && elementscolinear == false)
   {
 
     // call function to fill variables for shape functions and their derivatives
@@ -237,7 +248,7 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   }
 
 
-  if (abs(XiContact[0])< 1.0001 && abs(XiContact[1]) < 1.0001 && elementscolinear == false)
+  if (abs(XiContact[0])< (1.0 + XIETATOL) && abs(XiContact[1]) < (1.0 + XIETATOL) && elementscolinear == false)
     { cout << "Auswertung von Paar:" << element1_->Id() << "/" << element2_->Id() << endl;
 
     }
@@ -285,7 +296,7 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   // call function to evaluate and assemble contact stiffness
   EvaluateStiffcContact(pp,gap,normal,norm,stiffmatrix,x1,x2,dx1,dx2,
                         ddx1,ddx2,funct1,funct2,deriv1,deriv2,
-                        secondderiv1,secondderiv2,numnode1,numnode2,XiContact);
+                        secondderiv1,secondderiv2,numnode1,numnode2,XiContact, beams_smoothing);
   
   return true;
 }
@@ -294,156 +305,30 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   *----------------------------------------------------------------------*/
 
 
-/*----------------------------------------------------------------------*
- |  Determine Neighbor Elements                                 meier 04/11|
- *----------------------------------------------------------------------*/
-void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,
-    DRT::Element* element2)
-{
-
-
-
-  int numnode = element1->NumNode();
-
-  // n_right is the local node-ID of the elements right node (at xi = 1) whereas the elements left node (at xi = -1) allways has the local ID 1
-  int n_right=0;
-  if (numnode==2) {n_right=1;}
-  else {n_right=numnode-2;}
-
-
-  int globalneighborId=0;
-  int globalnodeId=0;
-
-  // local node 1 of element1 --> xi(element1)=-1 --> elementside = true
-  globalnodeId = *element1->NodeIds();
-
-  //loop over all elements adjacent to the left node of element 1
-  for (int y=0; y<(**(element1->Nodes())).NumElement ();++y)
-  {
-    globalneighborId = (*((**(element1->Nodes())).Elements()+y))->Id();
-
-
-   if (globalneighborId!=element1->Id())
-   {
-
-     // if node 1 of neighbor y is the connecting node (xi(neighbor y) = -1) --> neighborside = true
-     if (*((*((**(element1->Nodes())).Elements()+y))->NodeIds())==globalnodeId)
-        {neighbor1_.push_back(rcp (new CONTACT::B3CNeighbor(globalneighborId, true, true)));}
-
-     // otherwise node n_right of neighbor y is the connecting node (xi(neighbor y) = 1) --> neighborside = false
-     else {neighbor1_.push_back(rcp (new CONTACT::B3CNeighbor(globalneighborId, true, false)));}
-
-   }
-  }
-
-
-  // local node 2 of element1 --> xi(element1)=1 --> elementside = false
-  globalnodeId = *(element1->NodeIds()+n_right);
-
-  //loop over all elements adjacent to the right node of element 1
-  for (int y=0; y<(**(element1->Nodes()+n_right)).NumElement ();++y)
-  {
-    globalneighborId = (*((**(element1->Nodes()+1)).Elements()+y))->Id();
-
-   if (globalneighborId!=element1->Id())
-   {
-
-     // if node 1 of neighbor y is the connecting node (xi(neighbor y) = -1) --> neighborside = true
-     if (*((*((**(element1->Nodes()+n_right)).Elements()+y))->NodeIds())==globalnodeId)
-        {neighbor1_.push_back(rcp (new CONTACT::B3CNeighbor(globalneighborId, false, true)));}
-
-     // otherwise node n_right of neighbor y is the connecting node (xi(neighbor y) = 1) --> neighborside = false
-     else {neighbor1_.push_back(rcp (new CONTACT::B3CNeighbor(globalneighborId, false, false)));}
-
-
-   }
-  }
-
-
-  numnode = element2->NumNode();
-
-  // n_right is the local node-ID of the elements right node (at eta = 1) whereas the elements left node (at eta = -1) allways has the local ID 1
-  if (numnode==2) {n_right=1;}
-  else {n_right=numnode-2;}
-
-
-
-  // local node 1 of element2 --> eta(element2)=-1 --> elementside = true
-  globalnodeId = *element2->NodeIds();
-
-  //loop over all elements adjacent to the left node of element 2
-  for (int y=0; y<(**(element2->Nodes())).NumElement ();++y)
-  {
-    globalneighborId = (*((**(element2->Nodes())).Elements()+y))->Id();
-
-   if (globalneighborId!=element2->Id())
-   {
-
-     // if node 1 of neighbor y is the connecting node (eta(neighbor y) = -1) --> neighborside = true
-     if (*((*((**(element2->Nodes())).Elements()+y))->NodeIds())==globalnodeId)
-        {neighbor2_.push_back(rcp (new CONTACT::B3CNeighbor(globalneighborId, true, true)));}
-
-     // otherwise node n_right of neighbor y is the connecting node (eta(neighbor y) = 1) --> neighborside = false
-     else {neighbor2_.push_back(rcp (new CONTACT::B3CNeighbor(globalneighborId, true, false)));}
-
-   }
-  }
-
-  // local node 2 of element2 --> eta(element2)=1 --> elementside = false
-  globalnodeId = *(element2->NodeIds()+n_right);
-
-  //loop over all elements adjacent to the right node of element 2
-  for (int y=0; y<(**(element2->Nodes()+n_right)).NumElement ();++y)
-  {
-    globalneighborId = (*((**(element2->Nodes()+n_right)).Elements()+y))->Id();
-
-   if (globalneighborId!=element2->Id())
-   {
-
-     // if node 1 of neighbor y is the connecting node (eta(neighbor y) = -1) --> neighborside = true
-     if (*((*((**(element2->Nodes()+n_right)).Elements()+y))->NodeIds())==globalnodeId)
-        {neighbor2_.push_back(rcp (new CONTACT::B3CNeighbor(globalneighborId, false, true)));}
-
-     // otherwise node n_right of neighbor y is the connecting node (eta(neighbor y) = 1) --> neighborside = false
-     else {neighbor2_.push_back(rcp (new CONTACT::B3CNeighbor(globalneighborId, false, false)));}
-
-   }
-  }
-
-  //****************Uncomment the following to check if neighbor detection works properly*************************
-//  cout << "Nachbarn Element 1:" << neighbor1_.size() << endl;
-//
-//  for (unsigned int y=0; y<neighbor1_.size();++y)
-//  {
-//    cout  << ", E1: " << Element1()->Id() << ", Nachbarnummer1: " <<  y  << ", Nachbar-ID: " <<  neighbor1_[y]-> eleId_ << " elementside1: " << neighbor1_[y]->elementside_ <<  " neighborside1: " << neighbor1_[y]->neighborside_ << endl;
-//  }
-//
-//  cout << "Nachbarn Element 2:" << neighbor2_.size() << endl;
-//
-//  for (unsigned int y=0; y<neighbor2_.size();++y)
-//  {
-//    cout << "E2: " << Element2()->Id() << ", Nachbarnummer2: " <<  y  << ", Nachbar-ID: " <<  neighbor2_[y]-> eleId_ << " elementside2: " << neighbor2_[y]->elementside_ <<  " neighborside2: " << neighbor2_[y]->neighborside_ << endl;
-//  }
-  //****************end: Uncomment the following to check if neighbor detection works properly*************************
-
- return;
-}
-/*----------------------------------------------------------------------*
- |  end: Determine Neighbor Elements
- *----------------------------------------------------------------------*/
-
-
-/*----------------------------------------------------------------------*
+  /*----------------------------------------------------------------------*
    |  Closest point projection                                  popp 04/10|
    *----------------------------------------------------------------------*/
-  void CONTACT::Beam3contact::ClosestPointProjection()
+  void CONTACT::Beam3contact::ClosestPointProjection(int beams_smoothing)
   {
+
+
     // local variables for element coordinates
     vector<double> eta(2);
+
 
     // number of nodes of each element
     const int numnode1 = Element1()->NumNode();
     const int numnode2 = Element2()->NumNode();
+
+    // determine boundary node of element1
+    int n_right1=0;
+    if (numnode1==2) {n_right1=1;}
+    else {n_right1=numnode1-2;}
+
+    // determine boundary node of element2
+    int n_right2=0;
+    if (numnode2==2) {n_right2=1;}
+    else {n_right2=numnode2-2;}
 
     // vectors for shape functions and their derivatives
     Epetra_SerialDenseVector funct1(numnode1);          // = N1
@@ -460,6 +345,10 @@ void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,
     vector<double> dx2(NDIM);                           // = x2,eta
     vector<double> ddx1(NDIM);                          // = x1,xixi
     vector<double> ddx2(NDIM);                          // = x2,etaeta
+    vector<double> t1(NDIM);                            // = t1
+    vector<double> t2(NDIM);                            // = t2
+    vector<double> dt1(NDIM);                           // = t1,xi
+    vector<double> dt2(NDIM);                           // = t2,eta
 
     // initialize function f and Jacobian df for Newton iteration
     vector<double> f(2);
@@ -467,6 +356,10 @@ void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,
 
     // initial scalar residual (L2-norm of f)
     double residual = 0.0;
+
+
+
+
 
     //**********************************************************************
     // local Newton iteration
@@ -488,27 +381,73 @@ void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,
       ComputeCoordsAndDerivs(x1,x2,dx1,dx2,ddx1,ddx2,funct1,funct2,deriv1,deriv2,
                              secondderiv1,secondderiv2,numnode1,numnode2);
 
+      // some trial output
+      //cout << "Paar: " << Element1()->Id() << " / " << Element2()->Id() << endl;
+      //cout << "Xi/Eta: " << eta[0] << " / " << eta[1] << endl;
+      // update contact point tangents and their derivatives
+
+      if (beams_smoothing != INPAR::CONTACT::bsm_none)
+      {ComputeTangentsAndDerivs(t1,t2,dt1,dt2,funct1,funct2,deriv1,deriv2,numnode1, numnode2);
+
+      // some trial output
+      //cout << "Kontakttangente1: " << t1 << " Kontakttangente2: " << t2 << endl;
+      //cout << "Kontakttangente1 / Kontakttangente2: " << endl;
+        //    for (int i=0;i<3;i++)
+          //    cout << t1[i] << " / " << t2[i] << endl;
+     // cout << "Ableitung Kontakttangente1 / Ableitung Kontakttangente2: " << endl;
+      //for (int i=0;i<3;i++)
+        //cout << dt1[i] << " / " << dt2[i] << endl;
+      }
+
+
+
       // compute norm of difference vector to scale the equations
       // (this yields better conditioning)
       double norm = sqrt((x1[0]-x2[0])*(x1[0]-x2[0])
                        + (x1[1]-x2[1])*(x1[1]-x2[1])
                        + (x1[2]-x2[2])*(x1[2]-x2[2]));
 
+
       // the closer the beams get, the smaller is norm
       // norm is not allowed to be too small, else numerical problems occur
-      if (norm < 1e-12) norm=1.0;
+      if (norm < NORMTOL)
+      {
+        norm=1.0;
+        for (int i=0; i<numnode1; i++)
+          for (int j=0; j<3; j++)
+            {
+              ele1pos_(j,i) = ele1pos_(j,i) - SHIFTVALUE * normal_old_[j];
+            }
+      }
+
+      else
+      {
 
       // evaluate f at current eta[i]
-      EvaluateNewtonF(f,x1,x2,dx1,dx2,norm);
+      EvaluateNewtonF(f,x1,x2,dx1,dx2,t1,t2,norm, beams_smoothing);
 
-      // compute the scalar redisuum
+
+
+      // compute the scalar residuum
       residual = sqrt(f[0]*f[0] + f[1]*f[1]);
 
       // check if Newton iteration has converged
       if (residual < BEAMCONTACTTOL) break;
 
       // evaluate Jacobian of f at current eta[i]
-      EvaluateNewtonGradF(df,x1,x2,dx1,dx2,ddx1,ddx2,norm);
+      EvaluateNewtonGradF(df,x1,x2,dx1,dx2,ddx1,ddx2,t1,t2,dt1,dt2,norm, beams_smoothing);
+
+
+
+      //*******************Uncomment the following to lines for FD-Check of the local Newton iteration*************************
+
+//      cout << "Lokale Jakobimatrix für CCP: " << df << endl;
+//
+//      FDCheckNewtonCPP( numnode1, numnode2, eta, beams_smoothing);
+
+      //*******************end: Uncomment the following to lines for FD-Check of the local Newton iteration*************************
+
+
 
       // Inverting (2x2) matrix df' by hard coded formula, so that it is
       // possible to handle colinear vectors, because they lead to det=0
@@ -526,7 +465,7 @@ void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,
       // before creating the contact object. This is not yet implemented.
       //********************************************************************
       // singular df
-      if (sqrt(det_df*det_df)<1e-12)
+      if (sqrt(det_df*det_df)<COLINEARTOL)
       {
         // sort out
         elementscolinear_ = true;
@@ -552,7 +491,7 @@ void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,
       }
 
 
-
+      }
     }
     //**********************************************************************
 
@@ -566,6 +505,7 @@ void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,
     // store and return final result
     xicontact_[0]=eta[0];
     xicontact_[1]=eta[1];
+
 
 
     //show the closest point parameter coordinates of the contact pairs
@@ -582,7 +522,8 @@ void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,
  |  Evaluate function f in CPP                                popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3contact::EvaluateNewtonF(vector<double>& f, const vector<double>& x1, 
-     const vector<double>& x2,  const vector<double>& dx1, const vector<double>& dx2, const double& norm)
+     const vector<double>& x2,  const vector<double>& dx1, const vector<double>& dx2,
+     const vector<double>& t1, const vector<double>& t2, const double& norm, int beams_smoothing)
 {
   // reset f
   f[0]=0;
@@ -590,11 +531,28 @@ void CONTACT::Beam3contact::EvaluateNewtonF(vector<double>& f, const vector<doub
   
   // evaluate f
   // see Wriggers, Computational Contact Mechanics, equation (12.5)
+
+
+
+  if (beams_smoothing == INPAR::CONTACT::bsm_none)
+    {
   for (int i=0;i<NDIM;i++)
   {
     f[0] += (x1[i]-x2[i])*dx1[i] / norm;
-    f[1] += (x1[i]-x2[i])*dx2[i] / norm;
+    f[1] += (x2[i]-x1[i])*dx2[i] / norm;
   }
+    }
+  else{
+    for (int i=0;i<NDIM;i++)
+      {
+        f[0] += (x1[i]-x2[i])*t1[i] / norm;
+        f[1] += (x2[i]-x1[i])*t2[i] / norm;
+      }
+      cout << "smoothed tangent field" << endl;
+  }
+
+
+
   
   return;
 }
@@ -608,7 +566,9 @@ void CONTACT::Beam3contact::EvaluateNewtonF(vector<double>& f, const vector<doub
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3contact::EvaluateNewtonGradF(LINALG::Matrix<2,2>& df, const vector<double>& x1,
      const vector<double>& x2, const vector<double>& dx1, const vector<double>& dx2,
-     const vector<double>& ddx1, const vector<double>& ddx2, const double& norm)
+     const vector<double>& ddx1, const vector<double>& ddx2, const vector<double>& t1, const vector<double>& t2,
+     const vector<double>& dt1, const vector<double>& dt2,const double& norm, int beams_smoothing)
+
 {
   // reset df
   df(0,0)=0;
@@ -618,12 +578,25 @@ void CONTACT::Beam3contact::EvaluateNewtonGradF(LINALG::Matrix<2,2>& df, const v
   
   // evaluate df
   // see Wriggers, Computational Contact Mechanics, equation (12.7)
-  for(int i=0;i<NDIM;i++)
+  if (beams_smoothing == INPAR::CONTACT::bsm_none)
+      {
+        for(int i=0;i<NDIM;i++)
+        {
+          df(0,0) += (dx1[i]*dx1[i] + (x1[i]-x2[i])*ddx1[i]) / norm;
+          df(0,1) += -dx1[i]*dx2[i] / norm;
+          df(1,0) += -dx2[i]*dx1[i] / norm;
+          df(1,1) += (dx2[i]*dx2[i] + (x2[i]-x1[i])*ddx2[i]) / norm;
+        }
+      }
+  else
   {
-    df(0,0) += (dx1[i]*dx1[i] + (x1[i]-x2[i])*ddx1[i]) / norm;
-    df(0,1) += dx1[i]*dx2[i] / norm; //?
-    df(1,0) += -dx2[i]*dx1[i] / norm;
-    df(1,1) += (-dx2[i]*dx2[i] + (x1[i]-x2[i])*ddx2[i]) / norm; //?
+    for(int i=0;i<NDIM;i++)
+            {
+              df(0,0) += (dx1[i]*t1[i] + (x1[i]-x2[i])*dt1[i]) / norm;
+              df(0,1) += -dx2[i]*t1[i] / norm;
+              df(1,0) += -dx1[i]*t2[i] / norm;
+              df(1,1) += (dx2[i]*t2[i] + (x2[i]-x1[i])*dt2[i]) / norm;
+            }
   }
   
   return;  
@@ -710,8 +683,9 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
 
 
     // decide wether the modified gap function will be apllied or not
-    if (ngf_) sgn_skalar = sgn(Computeskalar());
-
+    if (ngf_)
+      {sgn_skalar = sgn(Computeskalar());
+      }
 
 
     //********************************************************************
@@ -799,7 +773,7 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
      const Epetra_SerialDenseVector& funct1, const Epetra_SerialDenseVector& funct2,  
      const Epetra_SerialDenseMatrix& deriv1,  const Epetra_SerialDenseMatrix& deriv2,  
      const Epetra_SerialDenseMatrix& secondderiv1,const Epetra_SerialDenseMatrix& secondderiv2, 
-     const int numnode1, const int numnode2, const vector<double>& XiContact)
+     const int numnode1, const int numnode2, const vector<double>& XiContact, int beams_smoothing)
 {
   // temporary matrices for stiffness and vectors for DOF-GIDs and owning procs 
   Epetra_SerialDenseMatrix stiffc1(NDIM*numnode1,NDIM*(numnode1+numnode2));
@@ -850,17 +824,17 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
     //********************************************************************
     // linearization of contact point
     ComputeLinXiAndLinEta(delta_xi,delta_eta,x1,x2,dx1,dx2,ddx1,ddx2,funct1,funct2,
-                          deriv1,deriv2,normal,norm,numnode1,numnode2,XiContact);
+                          deriv1,deriv2,normal,norm,numnode1,numnode2,XiContact, beams_smoothing);
     
     // evaluation of distance
     ComputeDistance(distance, normdist, normal, norm);
     
     // linearization of gap function which is equal to delta d
     ComputeLinGap(delta_gap,delta_xi,delta_eta,x1,x2,dx1,dx2,funct1,funct2,normdist,
-                  numnode1,numnode2,normal,norm,gap,delta_x1_minus_x2);
+                  numnode1,numnode2,normal,norm,gap,delta_x1_minus_x2, beams_smoothing);
     
     // linearization of normal vector
-    ComputeLinNormal(delta_n,x1,x2,norm,numnode1,numnode2,delta_x1_minus_x2,normal,XiContact);
+    ComputeLinNormal(delta_n,x1,x2,norm,numnode1,numnode2,delta_x1_minus_x2,normal,XiContact, beams_smoothing);
     
     //********************************************************************
     // prepare assembly
@@ -1093,7 +1067,7 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
     // finite difference check of stiffc
     //********************************************************************
 #ifdef BEAMCONTACTFDCHECKS    
-    FDCheckStiffc(numnode1,numnode2,stiffc1,stiffc2,pp,normal,gap,funct1,funct2);
+    FDCheckStiffc(numnode1,numnode2,stiffc1,stiffc2,pp,normal,gap,funct1,funct2, beams_smoothing);
 #endif
   }
 
@@ -1149,14 +1123,14 @@ void CONTACT::Beam3contact::ComputeNormal(vector<double>& normal, double& gap,
     double& norm, const vector<double>& x1, const vector<double>& x2)
 {
 
-
+    cout << "Compute Normal" << endl;
 
   // compute non-unit normal
   for (int i=0;i<NDIM;i++) normal[i] = x1[i]-x2[i];    
 
   // compute length of normal
   norm = sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2]);
-  if (norm < 0.000000000001) dserror("ERROR: Normal of length zero! --> change time step!");
+  if (norm < 0.1*NORMTOL) dserror("ERROR: Normal of length zero! --> change time step!");
   
 
   // compute unit normal
@@ -1241,9 +1215,11 @@ void CONTACT::Beam3contact::ComputeGap(double& gap, const double& norm)
 
   double normalold_normal=0;
   normalold_normal = Computeskalar();
-  if ((normalold_normal*normalold_normal) < 0.1) dserror("ERROR: Rotation to large! --> Choose smaller Time step!");
+  if ((normalold_normal*normalold_normal) < NORMALTOL) dserror("ERROR: Rotation to large! --> Choose smaller Time step!");
   gapnew = sgn(normalold_normal)*norm - radius_ele1 - radius_ele2;
 
+
+  oldgap_ = gap;
 
   if (ngf_) gap = gapnew;
   cout << "new gap:" << gap << "\n";
@@ -1266,14 +1242,41 @@ void CONTACT::Beam3contact::ComputeGap(double& gap, const double& norm)
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3contact::ComputeEleRadius(double& radius, const double& moi)
 {
-  // fixed formula for circular cross sections
-  radius =  sqrt(sqrt(4 * moi / M_PI));
+  // fixed formula for circular cross sections: the factor f can be used to manipulate the geometrical radius if not equal to 1
+  radius = MANIPULATERADIUS * sqrt(sqrt(4 * moi / M_PI));
   
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- | compute nodal coordinates and their derivatives            popp 04/10|
+ |  compute right boundary node of an element                meier 05/11|
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3contact::GetBoundaryNode(int& nright, int nnode)
+{
+
+  if (nnode==2) {nright=1;}
+  else {nright=nnode-2;}
+
+}
+
+
+/*----------------------------------------------------------------------*
+ |  compute element length                                   meier 05/11|
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3contact::GetEleLength(Epetra_SerialDenseMatrix& elepos, int& nright, double& length)
+{
+
+  length = 0;
+  for (int i=0;i<3;i++)
+  {
+    length += (elepos(i,nright) - elepos(i,0))*(elepos(i,nright) - elepos(i,0));
+  }
+  length = sqrt(length);
+}
+
+/*----------------------------------------------------------------------*
+ | compute contact point coordinates and their derivatives     popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3contact::ComputeCoordsAndDerivs(vector<double>& x1,
      vector<double>& x2, vector<double>& dx1, vector<double>& dx2,
@@ -1326,7 +1329,105 @@ void CONTACT::Beam3contact::ComputeCoordsAndDerivs(vector<double>& x1,
   return;
 }
 /*----------------------------------------------------------------------*
- |  end: compute radius from moment of inertia
+ | end: compute contact point coordinates and their derivatives         |
+ *----------------------------------------------------------------------*/
+
+
+/*----------------------------------------------------------------------*
+ | compute contact point tangents and their derivatives      meier 05/11|
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3contact::ComputeTangentsAndDerivs
+   (vector<double>& t1, vector<double>& t2,
+    vector<double>& dt1, vector<double>& dt2,
+    const Epetra_SerialDenseVector& funct1,
+    const Epetra_SerialDenseVector& funct2,
+    const Epetra_SerialDenseMatrix& deriv1,
+    const Epetra_SerialDenseMatrix& deriv2,
+    const int& numnode1, const int& numnode2)
+{
+  // reset input variables
+  for (int i=0;i<NDIM;i++)
+  {
+    t1[i]   = 0.0;
+    t2[i]   = 0.0;
+    dt1[i]  = 0.0;
+    dt2[i]  = 0.0;
+  }
+
+  // auxialiary variables for the nodal coordinates
+  Epetra_SerialDenseMatrix nodetangent1(NDIM,numnode1);
+  Epetra_SerialDenseMatrix nodetangent2(NDIM,numnode2);
+
+  // full coord1 and coord2
+  for (int i=0;i<NDIM;i++)
+    for (int j=0;j<numnode1;j++)
+      nodetangent1(i,j)=ele1tangent_(i,j);
+  for (int i=0;i<NDIM;i++)
+    for (int j=0;j<numnode2;j++)
+      nodetangent2(i,j)=ele2tangent_(i,j);
+
+  // compute output variable
+  for (int i=0;i<NDIM;i++)
+  {
+    for (int j=0;j<numnode1;j++)
+      t1[i] += funct1[j] * nodetangent1(i,j);              // t1 = N1 * t~1
+    for (int j=0;j<numnode2;j++)
+      t2[i] += funct2[j] * nodetangent2(i,j);              // t2 = N2 * t~2
+    for (int j=0;j<numnode1;j++)
+      dt1[i] += deriv1(0,j) * nodetangent1(i,j);          // dt1 = N1,xi * t~1
+    for (int j=0;j<numnode2;j++)
+      dt2[i] += deriv2(0,j) * nodetangent2(i,j);          // dt2 = N2,eta * t~2
+  }
+
+  return;
+}
+/*----------------------------------------------------------------------*
+ | end: compute contact point tangents and their derivatives            |
+ *----------------------------------------------------------------------*/
+
+
+
+/*----------------------------------------------------------------------*
+ |  evaluate shape functions and derivatives                 meier 05/11|
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3contact::GetNodalDerivatives(
+     Epetra_SerialDenseMatrix& deriv1,
+     int node,
+     const int nnode,
+     double length,
+     const DRT::Element::DiscretizationType distype
+     )
+{
+
+  if (node==nnode)
+  {
+    DRT::UTILS::shape_function_1D_deriv1(deriv1, -1 + 2/(nnode-1), distype);
+  }
+  else
+  {
+    if (node==1)
+    {
+      DRT::UTILS::shape_function_1D_deriv1(deriv1, -1, distype);
+    }
+    else
+    {
+      DRT::UTILS::shape_function_1D_deriv1(deriv1, -1 + node*2/(nnode-1), distype);
+    }
+  }
+
+
+  for (int i=0;i<nnode;i++)
+  {
+   deriv1(0,i)=2*deriv1(0,i)/length;
+  }
+
+
+
+
+  return;
+}
+/*----------------------------------------------------------------------*
+ |  end: evaluate shape functions and derivatives
  *----------------------------------------------------------------------*/
 
 
@@ -1368,7 +1469,7 @@ void CONTACT::Beam3contact::ComputeLinXiAndLinEta(
     const Epetra_SerialDenseVector& funct1, const Epetra_SerialDenseVector& funct2, 
     const Epetra_SerialDenseMatrix& deriv1,  const Epetra_SerialDenseMatrix& deriv2, 
     const vector<double>& normal, const double& norm,
-    const int numnode1, const int numnode2, const vector<double>& XiContact) 
+    const int numnode1, const int numnode2, const vector<double>& XiContact, int beams_smoothing)
 {
   //**********************************************************************
   // we have to solve the following system of equations:
@@ -1461,7 +1562,7 @@ void CONTACT::Beam3contact::ComputeLinXiAndLinEta(
 
   // finite difference check
 #ifdef BEAMCONTACTFDCHECKS
-  FDCheckCPP(numnode1, numnode2, delta_xi, delta_eta,XiContact);
+  FDCheckCPP(numnode1, numnode2, delta_xi, delta_eta,XiContact, beams_smoothing);
 #endif
   
   return;
@@ -1502,7 +1603,7 @@ void CONTACT::Beam3contact::ComputeLinGap(vector<double>& delta_gap,
       const Epetra_SerialDenseVector& funct1, const Epetra_SerialDenseVector& funct2, 
       const double& normdist, const int& numnode1, const int& numnode2,
       const vector<double>& normal, const double& norm, const double& gap,
-      Epetra_SerialDenseMatrix& delta_x1_minus_x2)
+      Epetra_SerialDenseMatrix& delta_x1_minus_x2, int beams_smoothing)
 {
   // index vectors for access to shape function vectors and matrices
   vector<int> index1(NDIM*(numnode1+numnode2));
@@ -1552,7 +1653,7 @@ void CONTACT::Beam3contact::ComputeLinGap(vector<double>& delta_gap,
   
   // finite difference check
 #ifdef BEAMCONTACTFDCHECKS
-  FDCheckLinGap(numnode1,numnode2,normal,norm,delta_gap,gap,nfg);
+   FDCheckLinGap(numnode1,numnode2,normal,norm,delta_gap,gap,nfg, beams_smoothing);
 #endif
   
   return;  
@@ -1569,7 +1670,7 @@ void CONTACT::Beam3contact::ComputeLinNormal(Epetra_SerialDenseMatrix& delta_n,
      const vector<double>& x1, const vector<double>& x2,
      const double& norm,const int& numnode1, const int& numnode2,
      const Epetra_SerialDenseMatrix& delta_x1_minus_x2, const vector<double>& normal, 
-     const vector<double>& XiContact)
+     const vector<double>& XiContact, int beams_smoothing)
 {
   // local vectors for shape functions and their derivatives
   Epetra_SerialDenseVector funct1(numnode1);
@@ -1600,7 +1701,7 @@ void CONTACT::Beam3contact::ComputeLinNormal(Epetra_SerialDenseMatrix& delta_n,
   
   // finite difference check
 #ifdef BEAMCONTACTFDCHECKS
-  FDCheckLinNormal(numnode1,numnode2,delta_n,normal);
+  FDCheckLinNormal(numnode1,numnode2,delta_n,normal,beams_smoothing);
 #endif  
   
   return;
@@ -1635,6 +1736,35 @@ void CONTACT::Beam3contact::ShiftNormal()
 }
 /*----------------------------------------------------------------------*
  |  end: Shift current normal vector to old normal vector
+ *----------------------------------------------------------------------*/
+
+
+/*----------------------------------------------------------------------*
+ |  Check if there is a difference of old and new gap       meier 06/2011|
+ *----------------------------------------------------------------------*/
+bool CONTACT::Beam3contact::GetNewGapStatus()
+{
+  if (abs(gap_-oldgap_) < GAPTOL)
+     return false;
+
+  else
+    return true;
+}
+/*----------------------------------------------------------------------*
+ |  end: Check if there is a difference of old and new gap               |
+ *----------------------------------------------------------------------*/
+
+
+/*----------------------------------------------------------------------*
+ |  Change the sign of the normal vector                   meier 06/2011|
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3contact::InvertNormal()
+{
+  for (int i=0; i<3;i++)
+    normal_[i] = -normal_[i];
+}
+/*----------------------------------------------------------------------*
+ |  end: Change the sign of the old normal vector                       |
  *----------------------------------------------------------------------*/
 
 
@@ -1685,12 +1815,632 @@ void CONTACT::Beam3contact::UpdateElePos(Epetra_SerialDenseMatrix& newele1pos,
  *----------------------------------------------------------------------*/
 
 
+
+/*----------------------------------------------------------------------*
+ |  Determine Neighbor Elements                                 meier 04/11|
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,DRT::Element* element2)
+{
+
+  //NEIGHBORS OF ELEMENT 1
+  //number of nodes element1
+  int numnode = element1->NumNode();
+
+  // n_right is the local node-ID of the elements right node (at xi = 1) whereas the elements left node (at xi = -1) allways has the local ID 1
+  // For documentation of the node numbering see also the file beam3.H
+  int n_right=0;
+  if (numnode==2) {n_right=1;}
+  else {n_right=numnode-2;}
+
+
+  int globalneighborId=0;
+  int globalnodeId=0;
+
+      //*******************local node 1 of element1 --> xi(element1)=-1 --> left neighbor******************
+      globalnodeId = *element1->NodeIds();
+
+      //loop over all elements adjacent to the left node of element 1
+      for (int y=0; y<(**(element1->Nodes())).NumElement ();++y)
+      {
+
+        //only one neighbor element on each side of the considered element is allowed
+        if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
+
+        globalneighborId = (*((**(element1->Nodes())).Elements()+y))->Id();
+
+       if (globalneighborId!=element1->Id())
+       {
+         neighbor1_->left_neighbor_ = (*((**(element1->Nodes())).Elements()+y));
+
+         // if node 1 of the left neighbor is the connecting node:
+         if (*((*((**(element1->Nodes())).Elements()+y))->NodeIds())==globalnodeId)
+          {neighbor1_->connecting_node_left_=0;}
+
+         // otherwise node n_right of the left neighbor is the connecting node
+         else
+          {neighbor1_->connecting_node_left_=n_right;}
+         }
+        }
+        //*************************************************************************************************
+
+
+        //*******************************local node n_right of element1 --> xi(element1)=1 --> right neighbor*******************
+        globalnodeId = *(element1->NodeIds()+n_right);
+
+        //loop over all elements adjacent to the right node of element 1
+        for (int y=0; y<(**(element1->Nodes()+n_right)).NumElement ();++y)
+        {
+
+          //only one neighbor element on each side of the considered element is allowed
+          if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
+
+          globalneighborId = (*((**(element1->Nodes()+n_right)).Elements()+y))->Id();
+
+         if (globalneighborId!=element1->Id())
+         {
+           neighbor1_->right_neighbor_ = (*((**(element1->Nodes()+n_right)).Elements()+y));
+
+           // if node 1 of the right neighbor is the connecting node:
+           if (*((*((**(element1->Nodes()+n_right)).Elements()+y))->NodeIds())==globalnodeId)
+               {neighbor1_->connecting_node_right_=0;}
+
+           // otherwise node n_right of the right neighbor is the connecting node
+           else
+               {neighbor1_->connecting_node_right_=n_right;}
+           }
+          }
+        //********************************************************************************************************
+
+
+  //NEIGHBORS OF ELEMENT 2
+  //number of nodes element2
+  numnode = element2->NumNode();
+
+  // n_right is the local node-ID of element2's right node (at eta = 1) whereas the elements left node (at eta = -1) allways has the local ID 1
+  if (numnode==2) {n_right=1;}
+  else {n_right=numnode-2;}
+
+
+  //*******************local node 1 of element2 --> xi(element2)=-1 --> left neighbor******************
+  globalnodeId = *element2->NodeIds();
+
+  //loop over all elements adjacent to the left node of element 2
+  for (int y=0; y<(**(element2->Nodes())).NumElement ();++y)
+  {
+
+    //only one neighbor element on each side of the considered element is allowed
+    if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
+
+    globalneighborId = (*((**(element2->Nodes())).Elements()+y))->Id();
+
+   if (globalneighborId!=element2->Id())
+   {
+
+     neighbor2_->left_neighbor_ = (*((**(element2->Nodes())).Elements()+y));
+
+     // if node 1 the left neighbor is the connecting node (eta(neighbor y) = -1)
+     if (*((*((**(element2->Nodes())).Elements()+y))->NodeIds())==globalnodeId)
+     {neighbor2_->connecting_node_left_=0;}
+
+     // otherwise node n_right of the left neighbor is the connecting node
+     else
+     {neighbor2_->connecting_node_left_=n_right;}
+
+   }
+  }
+  //*********************************************************************************************************
+
+
+  //*******************local node n_right of element2 --> xi(element2)=1 --> right neighbor******************
+  globalnodeId = *(element2->NodeIds()+n_right);
+
+  //loop over all elements adjacent to the right node of element 2
+  for (int y=0; y<(**(element2->Nodes()+n_right)).NumElement ();++y)
+  {
+    //only one neighbor element on each side of the considered element is allowed
+    if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
+
+    globalneighborId = (*((**(element2->Nodes()+n_right)).Elements()+y))->Id();
+
+   if (globalneighborId!=element2->Id())
+   {
+     neighbor2_->right_neighbor_ = (*((**(element2->Nodes()+n_right)).Elements()+y));
+
+     // if node 1 of neighbor y is the connecting node (eta(neighbor y) = -1) --> neighborside = true
+     if (*((*((**(element2->Nodes()+n_right)).Elements()+y))->NodeIds())==globalnodeId)
+       {neighbor2_->connecting_node_right_=0;}
+
+     // otherwise node n_right of neighbor y is the connecting node (eta(neighbor y) = 1) --> neighborside = false
+     else
+     {neighbor2_->connecting_node_right_=n_right;}
+   }
+  }
+  //*********************************************************************************************************
+
+
+
+
+  //****************Uncomment the following to check if neighbor detection works properly*************************
+
+
+//  cout << "Nachbarn Element 1:" << endl;
+//
+//  if (neighbor1_->left_neighbor_ != NULL)
+//  cout  << "E1-ID: " << Element1()->Id() << ", linker Nachbar, Nachbar-ID: " <<  neighbor1_->left_neighbor_->Id() << "lokaler Knoten des linken Nachbarn: " << neighbor1_->connecting_node_left_ << endl;
+//  else
+//  cout  << "E1-ID: " << Element1()->Id() << ", linker Nachbar, Nachbar-ID: " <<  " kein linker Nachbar!!! " << "lokaler Knoten des linken Nachbarn: " << neighbor1_->connecting_node_left_ << endl;
+//
+//  if (neighbor1_->right_neighbor_ != NULL)
+//  cout  << "E1-ID: " << Element1()->Id() << ", rechter Nachbar, Nachbar-ID: " <<  neighbor1_->right_neighbor_->Id() << "lokaler Knoten des rechten Nachbarn: " << neighbor1_->connecting_node_right_ << endl;
+//  else
+//    cout  << "E1-ID: " << Element1()->Id() << ", rechter Nachbar, Nachbar-ID: " <<  " kein rechter Nachbar!!! " << "lokaler Knoten des rechten Nachbarn: " << neighbor1_->connecting_node_right_ << endl;
+//
+//
+//
+//  cout << "Nachbarn Element 2:" << endl;
+//  if (neighbor2_->left_neighbor_ != NULL)
+//  cout  << "E2-ID: " << Element2()->Id() << ", linker Nachbar, Nachbar-ID: " <<  neighbor2_->left_neighbor_->Id() << "lokaler Knoten des linken Nachbarn: " << neighbor2_->connecting_node_left_ << endl;
+//  else
+//  cout  << "E2-ID: " << Element2()->Id() << ", linker Nachbar, Nachbar-ID: " <<  " kein linker Nachbar!!! " << "lokaler Knoten des linken Nachbarn: " << neighbor2_->connecting_node_left_ << endl;
+//
+//  if (neighbor2_->right_neighbor_ != NULL)
+//  cout  << "E2-ID: " << Element2()->Id() << ", rechter Nachbar, Nachbar-ID: " <<  neighbor2_->right_neighbor_->Id() << "lokaler Knoten des rechten Nachbarn: " << neighbor2_->connecting_node_right_ << endl;
+//  else
+//  cout  << "E2-ID: " << Element2()->Id() << ", rechter Nachbar, Nachbar-ID: " <<  " kein rechter Nachbar!!! " << "lokaler Knoten des rechten Nachbarn: " << neighbor2_->connecting_node_right_ << endl;
+  //****************end: Uncomment the following to check if neighbor detection works properly*************************
+
+ return;
+}
+/*----------------------------------------------------------------------*
+ |  end: Determine Neighbor Elements
+ *----------------------------------------------------------------------*/
+
+
+  /*----------------------------------------------------------------------*
+   |  Determine nodal tangents                                 meier 05/11|
+   *----------------------------------------------------------------------*/
+void CONTACT::Beam3contact::CalculateNodalTangents(std::map<int,LINALG::Matrix<3,1> >& currentpositions)
+{
+
+
+     // number of nodes of each element
+     const int numnode1 = Element1()->NumNode();
+     const int numnode2 = Element2()->NumNode();
+
+     // determine boundary node of element1
+     int n_right1=0;
+     GetBoundaryNode(n_right1, numnode1);
+
+     // determine boundary node of element2
+     int n_right2=0;
+     GetBoundaryNode(n_right2, numnode2);
+
+
+     // vectors for shape functions and their derivatives
+     Epetra_SerialDenseMatrix node_tangent1(3,numnode1);          // = vector of element1's node tangents
+     Epetra_SerialDenseMatrix node_tangent2(3,numnode2);        // = vector of element2's node tangents
+     Epetra_SerialDenseMatrix deriv1(1,numnode1); // = matrix for derivatives of shape functions of element1
+     Epetra_SerialDenseMatrix deriv2(1,numnode2); // = matrix for derivatives of shape functions of element1
+     double length_ele1 = 0;
+     GetEleLength(ele1pos_,n_right1,length_ele1);
+     double length_ele2 = 0;
+     GetEleLength(ele2pos_,n_right2,length_ele2);
+
+
+    const DRT::Element::DiscretizationType distype1 = element1_->Shape();
+    const DRT::Element::DiscretizationType distype2 = element2_->Shape();
+
+
+    //******************************contribution of element 1*****************************************
+     for (int node=1;node<numnode1 + 1;node++)
+     {
+         // calculate nodal derivatives
+         GetNodalDerivatives(deriv1,node,numnode1,length_ele1, distype1);
+
+         for (int k=0;k<3;k++)
+         { for (int j=0;j<numnode1;j++)
+             {
+             node_tangent1(k,node-1) += deriv1(0,j) * ele1pos_(k,j);}
+         }
+     }
+
+     //******************************end: contribution of element 1*****************************************
+
+     //****************************** contribution of left neighbor of element 1*****************************************
+     if (neighbor1_->left_neighbor_ != NULL)
+     {
+
+
+       DRT::Element::DiscretizationType distype_ele1l = neighbor1_->left_neighbor_->Shape();
+       int numnode_ele1l = neighbor1_->left_neighbor_->NumNode();
+       Epetra_SerialDenseMatrix deriv_neighbors_ele1l(1,numnode_ele1l); // =matrix for derivatives of shape functions for neighbors
+       int node_ele1l = neighbor1_->connecting_node_left_ +1;
+
+
+       Epetra_SerialDenseMatrix temppos (3,numnode_ele1l);
+
+       for (int j=0;j<numnode_ele1l;j++)
+                     {
+                         int tempGID = (neighbor1_->left_neighbor_->NodeIds())[j];
+                         LINALG::Matrix<3,1> tempposvector = currentpositions[tempGID];
+                         for (int i=0;i<3;i++)
+                         temppos(i,j) = tempposvector(i);
+                     }
+
+
+       int n_boundary=0;
+       GetBoundaryNode(n_boundary, numnode_ele1l);
+       double length_ele1l = 0;
+       GetEleLength(temppos,n_boundary,length_ele1l);
+
+       GetNodalDerivatives(deriv_neighbors_ele1l,node_ele1l,numnode_ele1l, length_ele1l,distype_ele1l);
+
+       for (int j=0;j<numnode_ele1l;j++)
+       {
+         int tempGID = (neighbor1_->left_neighbor_->NodeIds())[j];
+         LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+
+
+         for (int k=0;k<3;k++)
+         {
+
+           node_tangent1(k,0) += deriv_neighbors_ele1l(0,j) * temppos(k);
+
+         }
+       }
+
+       for (int k=0;k<3;k++)
+       {
+         node_tangent1(k,0) = 0.5*node_tangent1(k,0);
+       }
+
+
+     }
+     //******************************end: contribution of left neighbor of element 1*****************************************
+
+
+
+//******************************contribution of right neighbor of element 1*****************************************
+     if (neighbor1_->right_neighbor_ != NULL)
+     {
+
+     DRT::Element::DiscretizationType distype_ele1r = neighbor1_->right_neighbor_->Shape();
+     int numnode_ele1r = neighbor1_->right_neighbor_->NumNode();
+     Epetra_SerialDenseMatrix deriv_neighbors_ele1r(1,numnode_ele1r); // =matrix for derivatives of shape functions for neighbors
+     int node_ele1r = neighbor1_->connecting_node_right_ +1;
+
+
+     Epetra_SerialDenseMatrix temppos (3,numnode_ele1r);
+
+
+            for (int j=0;j<numnode_ele1r;j++)
+                          {
+                              int tempGID = (neighbor1_->right_neighbor_->NodeIds())[j];
+                              LINALG::Matrix<3,1> tempposvector = currentpositions[tempGID];
+                              for (int i=0;i<3;i++)
+                              temppos(i,j) = tempposvector(i);
+                          }
+
+            int n_boundary=0;
+            GetBoundaryNode(n_boundary, numnode_ele1r);
+            double length_ele1r = 0;
+            GetEleLength(temppos,n_boundary,length_ele1r);
+
+
+         GetNodalDerivatives(deriv_neighbors_ele1r,node_ele1r,numnode_ele1r, length_ele1r, distype_ele1r);
+
+
+
+
+         for (int j=0;j<numnode_ele1r;j++)
+                 {
+                   int tempGID = (neighbor1_->right_neighbor_->NodeIds())[j];
+                   LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+
+
+                   for (int k=0;k<3;k++)
+                   {
+                     node_tangent1(k,n_right1) += deriv_neighbors_ele1r(0,j) * temppos(k);
+                   }
+                 }
+
+
+         for (int k=0;k<3;k++)
+         {
+           node_tangent1(k,n_right1) = 0.5*node_tangent1(3*n_right1 +k,0);
+         }
+
+
+     }
+     //******************************end: contribution of right neighbor of element 1*****************************************
+         ele1tangent_ = node_tangent1;
+
+
+
+
+         //****************************** contribution of element 2*****************************************
+         for (int node=1;node<numnode2 + 1;node++)
+         {
+             // calculate nodal derivatives
+             GetNodalDerivatives(deriv2,node,numnode2, length_ele2, distype2);
+
+
+
+
+             for (int k=0;k<3;k++)
+             { for (int j=0;j<numnode2;j++)
+                 node_tangent2(k,node-1) += deriv2(0,j) * ele2pos_(k,j);
+             }
+         }
+         //******************************end: contribution of element 2*****************************************
+
+
+         //******************************contribution of left neighbor of element 2*****************************************
+
+         if (neighbor2_->left_neighbor_ != NULL)
+         {
+           DRT::Element::DiscretizationType distype_ele2l = neighbor2_->left_neighbor_->Shape();
+           int numnode_ele2l = neighbor2_->left_neighbor_->NumNode();
+           Epetra_SerialDenseMatrix deriv_neighbors_ele2l(1,numnode_ele2l); // =matrix for derivatives of shape functions for neighbors
+           int node_ele2l = neighbor2_->connecting_node_left_ +1;
+
+
+           Epetra_SerialDenseMatrix temppos (3,numnode_ele2l);
+
+           for (int j=0;j<numnode_ele2l;j++)
+                         {
+                             int tempGID = (neighbor2_->left_neighbor_->NodeIds())[j];
+                             LINALG::Matrix<3,1> tempposvector = currentpositions[tempGID];
+                             for (int i=0;i<3;i++)
+                             temppos(i,j) = tempposvector(i);
+                         }
+
+           int n_boundary=0;
+           GetBoundaryNode(n_boundary, numnode_ele2l);
+           double length_ele2l = 0;
+           GetEleLength(temppos,n_boundary,length_ele2l);
+
+
+           GetNodalDerivatives(deriv_neighbors_ele2l,node_ele2l,numnode_ele2l, length_ele2l,distype_ele2l);
+
+
+           for (int j=0;j<numnode_ele2l;j++)
+                        {
+                          int tempGID = (neighbor2_->left_neighbor_->NodeIds())[j];
+                          LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+
+
+                          for (int k=0;k<3;k++)
+                            {node_tangent2(k,0) += deriv_neighbors_ele2l(0,j) * temppos(k);
+                            }
+                        }
+
+
+           for (int k=0;k<3;k++)
+                       {
+                         node_tangent2(k,0) = 0.5*node_tangent2(k,0);
+                       }
+
+         }
+         //******************************end: contribution of left neighbor of element 2*****************************************
+
+
+         //******************************contribution of right neighbor of element 2*****************************************
+
+         if (neighbor2_->right_neighbor_ != NULL)
+          {
+
+         DRT::Element::DiscretizationType distype_ele2r = neighbor2_->right_neighbor_->Shape();
+
+         int numnode_ele2r = neighbor2_->right_neighbor_->NumNode();
+
+         Epetra_SerialDenseMatrix deriv_neighbors_ele2r(1,numnode_ele2r); // =matrix for derivatives of shape functions for neighbors
+
+         int node_ele2r = neighbor2_->connecting_node_right_ +1;
+
+
+
+         Epetra_SerialDenseMatrix temppos (3,numnode_ele2r);
+
+
+                     for (int j=0;j<numnode_ele2r;j++)
+                                   {
+                                       int tempGID = (neighbor2_->right_neighbor_->NodeIds())[j];
+                                       LINALG::Matrix<3,1> tempposvector = currentpositions[tempGID];
+                                       for (int i=0;i<3;i++)
+                                       temppos(i,j) = tempposvector(i);
+                                   }
+
+                     int n_boundary=0;
+                     GetBoundaryNode(n_boundary, numnode_ele2r);
+                     double length_ele2r = 0;
+                     GetEleLength(temppos,n_boundary,length_ele2r);
+
+
+
+                  // calculate nodal derivatives
+                  GetNodalDerivatives(deriv_neighbors_ele2r,node_ele2r,numnode_ele2r, length_ele2r, distype_ele2r);
+
+
+             for (int j=0;j<numnode_ele2r;j++)
+                     {
+                       int tempGID = (neighbor2_->right_neighbor_->NodeIds())[j];
+                       LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
+
+
+                       for (int k=0;k<3;k++)
+                       {
+                         node_tangent2(k,n_right2) += deriv_neighbors_ele2r(0,j) * temppos(k);
+
+                       }
+                     }
+
+             for (int k=0;k<3;k++)
+                                    {
+               node_tangent2(k,n_right2) = 0.5*node_tangent2(3*n_right2 +k,0);
+                                    }
+
+          }
+         //******************************end: contribution of right neighbor of element 2*****************************************
+
+             ele2tangent_ = node_tangent2;
+
+//***************** Uncomment this output to check the tangent calculation*************************
+//             cout << "nodal tangents Element " << element1_->Id() << " : " << ele1tangent_ << endl;
+//             cout << "nodal tangents Element " << element2_->Id() << " : " << ele2tangent_ << endl;
+
+}
+
+  /*----------------------------------------------------------------------*
+   |  end: Determine nodal tangents
+   *----------------------------------------------------------------------*/
+
+
+
+
+
+
+/*----------------------------------------------------------------------*
+ |  FD check local Newton CCP                                 meier 05/11
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3contact::FDCheckNewtonCPP(const int& numnode1, const int& numnode2,
+     const vector<double>& eta,int beams_smoothing)
+{
+
+
+  // vectors for shape functions and their derivatives
+  Epetra_SerialDenseVector funct1(numnode1);          // = N1
+  Epetra_SerialDenseVector funct2(numnode2);          // = N2
+  Epetra_SerialDenseMatrix deriv1(1,numnode1);        // = N1,xi
+  Epetra_SerialDenseMatrix deriv2(1,numnode2);        // = N2,eta
+  Epetra_SerialDenseMatrix secondderiv1(1,numnode1);  // = N1,xixi
+  Epetra_SerialDenseMatrix secondderiv2(1,numnode2);  // = N2,etaeta
+
+  // coords and derivatives of the two contacting points
+  vector<double> x1(NDIM);                            // = x1
+  vector<double> x2(NDIM);                            // = x2
+  vector<double> dx1(NDIM);                           // = x1,xi
+  vector<double> dx2(NDIM);                           // = x2,eta
+  vector<double> ddx1(NDIM);                          // = x1,xixi
+  vector<double> ddx2(NDIM);                          // = x2,etaeta
+  vector<double> t1(NDIM);                            // = t1
+  vector<double> t2(NDIM);                            // = t2
+  vector<double> dt1(NDIM);                           // = t1,xi
+  vector<double> dt2(NDIM);                           // = t2,eta
+
+  // initialize function f and Jacobian df for Newton iteration
+  vector<double> f(2);
+  vector<double> f1(2);
+  vector<double> f2(2);
+  vector<double> eta1(2);
+  vector<double> eta2(2);
+  LINALG::Matrix<2,2> dfFD;
+  double delta = 0.01;
+
+  eta1[0]=eta[0] + delta;
+  eta1[1]=eta[1];
+  eta2[0]=eta[0];
+  eta2[1]=eta[1] + delta;
+
+
+
+  for (int j=0;j<numnode1;j++) funct1[j]=0;
+        for (int j=0;j<numnode2;j++) funct2[j]=0;
+        for (int j=0;j<numnode1;j++) deriv1(0,j)=0;
+        for (int j=0;j<numnode2;j++) deriv2(0,j)=0;
+        for (int j=0;j<numnode1;j++) secondderiv1(0,j)=0;
+        for (int j=0;j<numnode2;j++) secondderiv2(0,j)=0;
+
+        // update shape functions and their derivatives
+        GetShapeFunctions(funct1,funct2,deriv1,deriv2,secondderiv1,secondderiv2,eta1);
+
+        // update coordinates and derivatives of contact points
+        ComputeCoordsAndDerivs(x1,x2,dx1,dx2,ddx1,ddx2,funct1,funct2,deriv1,deriv2,
+                               secondderiv1,secondderiv2,numnode1,numnode2);
+
+
+
+        // compute norm of difference vector to scale the equations
+              // (this yields better conditioning)
+              double norm = sqrt((x1[0]-x2[0])*(x1[0]-x2[0])
+                               + (x1[1]-x2[1])*(x1[1]-x2[1])
+                               + (x1[2]-x2[2])*(x1[2]-x2[2]));
+
+              // the closer the beams get, the smaller is norm
+              // norm is not allowed to be too small, else numerical problems occur
+              if (norm < NORMTOL) norm=1.0;
+
+              // evaluate f at current eta[i]
+              EvaluateNewtonF(f1,x1,x2,dx1,dx2,t1,t2,norm, beams_smoothing);
+
+
+              for (int j=0;j<numnode1;j++) funct1[j]=0;
+                    for (int j=0;j<numnode2;j++) funct2[j]=0;
+                    for (int j=0;j<numnode1;j++) deriv1(0,j)=0;
+                    for (int j=0;j<numnode2;j++) deriv2(0,j)=0;
+                    for (int j=0;j<numnode1;j++) secondderiv1(0,j)=0;
+                    for (int j=0;j<numnode2;j++) secondderiv2(0,j)=0;
+
+                    // update shape functions and their derivatives
+                    GetShapeFunctions(funct1,funct2,deriv1,deriv2,secondderiv1,secondderiv2,eta2);
+
+                    // update coordinates and derivatives of contact points
+                    ComputeCoordsAndDerivs(x1,x2,dx1,dx2,ddx1,ddx2,funct1,funct2,deriv1,deriv2,
+                    secondderiv1,secondderiv2,numnode1,numnode2);
+
+                    // evaluate f at current eta[i]
+                    EvaluateNewtonF(f2,x1,x2,dx1,dx2,t1,t2,norm, beams_smoothing);
+
+
+
+                    for (int j=0;j<numnode1;j++) funct1[j]=0;
+                                         for (int j=0;j<numnode2;j++) funct2[j]=0;
+                                         for (int j=0;j<numnode1;j++) deriv1(0,j)=0;
+                                         for (int j=0;j<numnode2;j++) deriv2(0,j)=0;
+                                         for (int j=0;j<numnode1;j++) secondderiv1(0,j)=0;
+                                         for (int j=0;j<numnode2;j++) secondderiv2(0,j)=0;
+
+                                         // update shape functions and their derivatives
+                                         GetShapeFunctions(funct1,funct2,deriv1,deriv2,secondderiv1,secondderiv2,eta);
+
+                                         // update coordinates and derivatives of contact points
+                                         ComputeCoordsAndDerivs(x1,x2,dx1,dx2,ddx1,ddx2,funct1,funct2,deriv1,deriv2,
+                                         secondderiv1,secondderiv2,numnode1,numnode2);
+
+                                         // evaluate f at current eta[i]
+                                         EvaluateNewtonF(f,x1,x2,dx1,dx2,t1,t2,norm, beams_smoothing);
+
+
+
+                    cout << "f: " << f[0] << "," << f[1] << endl;
+
+                    cout << "f1: " << f1[0] << "," << f1[1] << endl;
+
+                    cout << "f2: " << f2[0] << "," << f2[1] << endl;
+
+                    dfFD(0,0) = (f1[0]-f[0])/delta;
+                    dfFD(1,0) = (f1[1]-f[1])/delta;
+                    dfFD(0,1) = (f2[0]-f[0])/delta;
+                    dfFD(1,1) = (f2[1]-f[1])/delta;
+
+
+    cout << "FD-Check der lokalen Jakobimatrix für CCP: " << dfFD << endl;
+
+  return;
+}
+/*----------------------------------------------------------------------*
+ |  end: FD check local Newton CCP
+ *----------------------------------------------------------------------*/
+
+
+
+
 /*----------------------------------------------------------------------*
  |  FD check for closest point projection                     popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3contact::FDCheckCPP(const int& numnode1, const int& numnode2, 
      const vector<double>& delta_xi,  const vector<double>& delta_eta, 
-     const vector<double>& XiContact)
+     const vector<double>& XiContact, int beams_smoothing)
 {
   // local boolean to detect whether two elements are colinear
   bool FD_elementscolinear = false;
@@ -1719,7 +2469,7 @@ void CONTACT::Beam3contact::FDCheckCPP(const int& numnode1, const int& numnode2,
       ele1pos_(j,i) += eps; 
       
       // do the closest point projection for the new set
-      ClosestPointProjection();
+      ClosestPointProjection(beams_smoothing);
       FD_XiContact[0]=xicontact_[0];
       FD_XiContact[1]=xicontact_[1];
       FD_elementscolinear=elementscolinear_;
@@ -1746,7 +2496,7 @@ void CONTACT::Beam3contact::FDCheckCPP(const int& numnode1, const int& numnode2,
       ele2pos_(j,i) += eps; 
       
       // do the closest point projection for the new set
-      ClosestPointProjection();
+      ClosestPointProjection(beams_smoothing);
       FD_XiContact[0]=xicontact_[0];
       FD_XiContact[1]=xicontact_[1];
       FD_elementscolinear=elementscolinear_;
@@ -1818,7 +2568,7 @@ void CONTACT::Beam3contact::FDCheckCPP(const int& numnode1, const int& numnode2,
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3contact::FDCheckLinGap(const int& numnode1, const int& numnode2, 
      const vector<double>& normal, const double& norm,
-     const vector<double>& delta_gap, const double& gap)
+     const vector<double>& delta_gap, const double& gap, int beams_smoothing)
 {
   // local auxiliary variables for FD-approximations of delta_gap
   vector<double> FD_delta_gap(NDIM*(numnode1+numnode2));
@@ -1859,7 +2609,7 @@ void CONTACT::Beam3contact::FDCheckLinGap(const int& numnode1, const int& numnod
       ele1pos_(j,i) += eps; 
   
       // Get CPP-Solution for new set
-      ClosestPointProjection();
+      ClosestPointProjection(beams_smoothing);
       FD_XiContact[0]=xicontact_[0];
       FD_XiContact[1]=xicontact_[1];
       FD_elementscolinear=elementscolinear_;
@@ -1892,7 +2642,7 @@ void CONTACT::Beam3contact::FDCheckLinGap(const int& numnode1, const int& numnod
       ele2pos_(j,i) += eps; 
       
       // Get CPP-Solution for new set
-      ClosestPointProjection();
+      ClosestPointProjection(beams_smoothing);
       FD_XiContact[0]=xicontact_[0];
       FD_XiContact[1]=xicontact_[1];
       FD_elementscolinear=elementscolinear_;
@@ -1958,7 +2708,7 @@ void CONTACT::Beam3contact::FDCheckLinGap(const int& numnode1, const int& numnod
  |  FD check for normal vector                                popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& numnode2, 
-     const Epetra_SerialDenseMatrix& delta_n, const vector<double>& normal)
+     const Epetra_SerialDenseMatrix& delta_n, const vector<double>& normal, int beams_smoothing)
 {
   // local auxiliary variables for FD-approximations of delta_n
   Epetra_SerialDenseMatrix FD_delta_n(NDIM, NDIM*(numnode1+numnode2));
@@ -2003,7 +2753,7 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
 //      cout<<"ele1pos_"<<ele1pos_<<endl;
   
       // Get CPP-Solution for new set
-      ClosestPointProjection();
+      ClosestPointProjection(beams_smoothing);
       FD_XiContact[0]=xicontact_[0];
       FD_XiContact[1]=xicontact_[1];
       FD_elementscolinear=elementscolinear_;
@@ -2056,7 +2806,7 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
 //      cout<<"ele2pos_"<<ele2pos_<<endl;
       
       // Get CPP-Solution for new set
-      ClosestPointProjection();
+      ClosestPointProjection(beams_smoothing);
       FD_XiContact[0]=xicontact_[0];
       FD_XiContact[1]=xicontact_[1];
       FD_elementscolinear=elementscolinear_;
@@ -2152,7 +2902,7 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
 void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnode2, 
      const Epetra_SerialDenseMatrix& stiffc1, const Epetra_SerialDenseMatrix& stiffc2,
      const double& pp, const vector<double>& normal, const double& gap,
-     const Epetra_SerialDenseVector& funct1, const Epetra_SerialDenseVector& funct2)
+     const Epetra_SerialDenseVector& funct1, const Epetra_SerialDenseVector& funct2, int beams_smoothing)
 {
   // local auxiliary variables for FD-approximations of stiffc1 and stiffc2
   vector<double> FD_delta_gap(NDIM*(numnode1+numnode2));
@@ -2251,7 +3001,7 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
 //      cout<<"ele1pos_:"<<endl<<ele1pos_<<endl;
             
       // do the closest point projection for the new set
-      ClosestPointProjection();
+      ClosestPointProjection(beams_smoothing);
       FD_XiContact[0]=xicontact_[0];
       FD_XiContact[1]=xicontact_[1];
       FD_elementscolinear=elementscolinear_;
@@ -2311,7 +3061,7 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
 //      cout<<"ele2pos_:"<<endl<<ele2pos_<<endl;
       
       // do the closest point projection for the new set
-      ClosestPointProjection();
+      ClosestPointProjection(beams_smoothing);
       FD_XiContact[0]=xicontact_[0];
       FD_XiContact[1]=xicontact_[1];
       FD_elementscolinear=elementscolinear_;

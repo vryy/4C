@@ -1211,6 +1211,13 @@ void CONTACT::Beam3ContactStruGenAlpha::Integrate()
   // decide wether the original or the modified gapfunction definition is used
   bool newgapfunction =  DRT::INPUT::IntegralValue<int>(beamcmanager_->InputParameters(),"BEAMS_NEWGAP");
 
+  // decide wether the tangent field should be smoothed or not
+  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Smoothing>(scontact,"BEAMS_SMOOTHING") == INPAR::CONTACT::bsm_none)
+  {
+    //cout << "Test BEAMS_SMOOTHING" << INPAR::CONTACT::bsm_none << endl;
+  }
+
   //**********************************************************************
   // solving strategy using regularization with penalty method
   // (nonlinear solution approach: ordinary NEWTON)
@@ -1230,15 +1237,9 @@ void CONTACT::Beam3ContactStruGenAlpha::Integrate()
 
         ConstantPredictor();
 
-
-
       }
 
-
       //here
-
-
-
 
       else if (predictor==2) {
 

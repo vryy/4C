@@ -14,6 +14,7 @@ Maintainer: Alexander Popp, Christian Cyron
 
 #include "beam3contact_manager.H"
 #include "beam3contact.H"
+#include "beam3contact_octtree.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -300,6 +301,20 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   }
 
 
+
+  // decide wether the tangent field should be smoothed or not
+  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Smoothing>(scontact,"BEAMS_SMOOTHING") == INPAR::CONTACT::bsm_none)
+  {
+    //cout << "Test BEAMS_SMOOTHING 2" << INPAR::CONTACT::bsm_none << endl;
+  }
+  int beams_smoothing = DRT::INPUT::IntegralValue<INPAR::CONTACT::Smoothing>(scontact,"BEAMS_SMOOTHING");
+
+
+
+
+
+
   // Loop over all pairs
   for (int i=0;i<(int)pairs_.size();++i)
   {
@@ -312,7 +327,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     
     // evaluate additional contact forces and stiffness
     if (firstisincolmap || secondisincolmap) 
-      pairs_[i]->PreEvaluation();
+      pairs_[i]->PreEvaluation(beams_smoothing, currentpositions);
   }
 
 
@@ -332,7 +347,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     if (firstisincolmap || secondisincolmap)
     {
       bool newgapfunction = DRT::INPUT::IntegralValue<int>(InputParameters(),"BEAMS_NEWGAP");
-      pairs_[i]->Evaluate(stiffmatrix,*fc_,currentpp_,newgapfunction,contactpairmap_);
+      pairs_[i]->Evaluate(stiffmatrix,*fc_,currentpp_,newgapfunction,contactpairmap_,beams_smoothing);
     }
   }
 
@@ -775,7 +790,7 @@ void CONTACT::Beam3cmanager::GetMaxEleRadius(double& maxeleradius)
 
     
     // if current radius is larger than maximum radius -> update
-    if (eleradius > maxeleradius) maxeleradius = eleradius;     
+    if (eleradius > maxeleradius) maxeleradius = eleradius;
   }
   
   return;
@@ -1085,6 +1100,12 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(const int uzawaiter)
     // only relevant if current pair is active
     if (pairs_[i]->GetContactFlag() == true)
     {
+
+      if (pairs_[i]->GetNewGapStatus() == true)
+      { pairs_[i]->InvertNormal();
+        cout << "Penetration to large, choose higher penalty parameter!" << endl;
+      }
+
       gapvector[j] = pairs_[i]->GetGap();
       j++;
     }

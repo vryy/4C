@@ -106,6 +106,16 @@ namespace INPAR
       output_both     ///< print to screen and file
     };
 
+    /// Application of a smoothed tangent field
+    /// (this enum represents the input file parameter BEAMS_SMOOTHING)
+    enum Smoothing
+    {
+      bsm_none,         ///< no smoothing
+      bsm_smoothed,     ///< smoothing for all pairs
+      bsm_partially,    ///< smoothing only for pairs which are not found with "no smoothing"
+      bsm_cpp           ///< smoothing only for the closest point projection; element evaluation without smoothing"
+    };
+
   }  // namespace CONTACT
 
 }  // namespace INPAR

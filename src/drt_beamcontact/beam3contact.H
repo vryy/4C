@@ -20,9 +20,11 @@ Maintainer: Alexander Popp, Christian Cyron
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_element.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_sparsematrix.H"
+
 
 using namespace std;
 using namespace Teuchos;
@@ -40,8 +42,16 @@ using namespace Teuchos;
 //#define BEAMCONTACTFDCHECKS
 
 #define BEAMCONTACTMAXITER 50     // max number of steps for local Newton
-#define BEAMCONTACTTOL 1.0e-12    // conergence tolerance for local Newton
-#define NDIM 3                   // number of spatial dimensions
+#define BEAMCONTACTTOL 1.0e-12    // convergence tolerance for local Newton
+#define NDIM 3                    // number of spatial dimensions
+#define XIETATOL 1.0e-9            // tolerance for valid vaulues of beam parameters Xi and Eta (e.g. Xi \in [-1 - XIETATOL; 1 + XIETATOL])
+#define NORMTOL  1.0e-9           // tolerance when the to contact points are to close and one beam has to be shifted artificially
+#define SHIFTVALUE 1.0e-7         // value, one contact point will be shiftet, if contact points are to close
+#define COLINEARTOL 1.0e-12       // tolerance when two elements are almost colinear
+#define NORMALTOL 0.1             // tolerance how small the scalar product of normal_old and normal is allowed to be
+#define MANIPULATERADIUS 1     // with this parameter the geometrical radius used for contact evaluation can be choosen different from the physical radius appearing in the bending stiffness
+#define NEIGHBORTOL 2             // parameter that allows to also evaluate the contact normal of neighbor elements which is need for the new gap function. It has proofed to be useful that NEIGHBORTOL \in [1 ; 3]
+#define GAPTOL 1.0e-12            // tolerance for the allowable difference between old and new gap definition which should be identical in the converged state
 
 namespace CONTACT
 {
@@ -59,11 +69,17 @@ namespace CONTACT
 class B3CNeighbor
 {
 public:
-  int  eleId_;      // global ID of the neighbor element
-  bool elementside_;  // is it a neighbor on the element side eta=-1 (--> elementside = true) or a neighbor on the element side eta=1 (--> elementside = false)
-  bool neighborside_;  // is the element on the neighbors side eta=-1 (--> neighborside = true) or a element on the neighbors side eta=1 (--> neighborside = false)
+  DRT::Element* left_neighbor_;      // pointer to the Element on the left side (eta=-1)
+  DRT::Element* right_neighbor_;      // pointer to the Element on the right side (eta=1)
+  int connecting_node_left_;  // local node-ID of the connecting node of the left neighbor
+  int connecting_node_right_;  // local node-ID of the connecting node of the right neighbor
 
-  B3CNeighbor(int eleId, bool elementside, bool neighborside); // parametrized constructor
+
+  B3CNeighbor(); // standard constructor
+
+
+   virtual ~B3CNeighbor() {}; // destructor
+
 
 
 
@@ -191,7 +207,7 @@ public:
   \brief Closest Point Projection before Evaluation can start.
 
   */
-  bool PreEvaluation();
+  bool PreEvaluation(int beams_smoothing, std::map<int,LINALG::Matrix<3,1> >& currentpositions);
 
 
   /*!
@@ -200,7 +216,7 @@ public:
   */
   bool Evaluate(LINALG::SparseMatrix& stiffmatrix,
                 Epetra_Vector& fint, double& pp, bool ngf,
-                std::map<std::pair<int,int>, RCP<Beam3contact> >& contactpairmap);
+                std::map<std::pair<int,int>, RCP<Beam3contact> >& contactpairmap, int beams_smoothing);
   
   /*!
   \brief Reset Uzawa-based Lagrange multiplier
@@ -209,6 +225,31 @@ public:
   void Resetlmuzawa();
   
 
+  /*!
+    \brief Change the sign of the normal vector
+
+    */
+    void InvertNormal();
+
+
+
+  /*!
+    \brief Get local ID of the right boundary node
+
+  */
+
+  void GetBoundaryNode(int& nright, int nnode);
+
+
+
+  /*!
+    \brief Get length of an element
+
+  */
+
+  void GetEleLength(Epetra_SerialDenseMatrix& elepos, int& nright, double& length);
+
+
 
   /*!
     \brief Shift current normal vector to old normal vector
@@ -216,6 +257,15 @@ public:
   */
 
   void ShiftNormal();
+
+
+  /*!
+    \Check if there is a difference between new and old gap definition e.g. if the beams centerlines have allready passed or not
+
+  */
+
+  bool GetNewGapStatus();
+
 
 
   /*!
@@ -258,6 +308,11 @@ private:
   Epetra_SerialDenseMatrix ele1pos_;
   Epetra_SerialDenseMatrix ele2pos_;
   
+  //! current node tangents of both elements
+  Epetra_SerialDenseMatrix ele1tangent_;
+  Epetra_SerialDenseMatrix ele2tangent_;
+
+
   //! variable to check if old or modified gap function
   bool ngf_;
 
@@ -267,6 +322,9 @@ private:
   //! Uzawa-based Lagrange multiplier
   double lmuzawa_;
   
+  //! gap function
+ double oldgap_;
+
   //! gap function
   double gap_;
   
@@ -285,13 +343,13 @@ private:
   Epetra_SerialDenseVector xicontact_;
 
 
-  //! vector of neighbor elements of element 1
+  //! neighbor elements of element 1
 
-  vector <RCP<B3CNeighbor> > neighbor1_;
+  RCP<B3CNeighbor> neighbor1_;
 
-  //! vector of neighbor elements of element 2
+  //! neighbor elements of element 2
 
-  vector <RCP<B3CNeighbor> > neighbor2_;
+  RCP<B3CNeighbor> neighbor2_;
 
   //! normal vector of current time step
   Epetra_SerialDenseVector normal_;
@@ -317,7 +375,15 @@ private:
   \brief Find contact point via closest point projection
   
   */
-  void ClosestPointProjection();
+  void ClosestPointProjection(int beams_smoothing);
+
+  /*!
+   \brief determine the interpolated nodal tangent vectors of both elements for smoothing
+
+   */
+
+  void CalculateNodalTangents(std::map<int,LINALG::Matrix<3,1> >& currentpositions);
+
   
   /*!
   \brief Utility method for CPP (evaluate nonlinear function f)
@@ -326,7 +392,8 @@ private:
   void EvaluateNewtonF(vector<double>& f,
                        const vector<double>& x1, const vector<double>& x2,
                        const vector<double>& dx1, const vector<double>& dx2,
-                       const double& norm);
+                       const vector<double>& t1, const vector<double>& t2,
+                       const double& norm, int beams_smoothing);
   
   /*!
   \brief Utility method for CPP (evaluate Jacobian of nonlinear function f)
@@ -336,7 +403,9 @@ private:
                            const vector<double>& x1, const vector<double>& x2,
                            const vector<double>& dx1, const vector<double>& dx2,
                            const vector<double>& ddx1, const vector<double>& ddx2,
-                           const double& norm);
+                           const vector<double>& t1, const vector<double>& t2,
+                           const vector<double>& dt1, const vector<double>& dt2,
+                           const double& norm, int beams_smoothing);
   
   /*!
   \brief Evaluate and assemble contact forces
@@ -364,7 +433,8 @@ private:
                              const Epetra_SerialDenseMatrix& secondderiv1,
                              const Epetra_SerialDenseMatrix& secondderiv2, 
                              const int numnode1, const int numnode2,
-                             const vector<double>& XiContact);
+                             const vector<double>& XiContact,
+                             int beams_smoothing);
   
 
    /*!
@@ -373,7 +443,6 @@ private:
     */
   void DetermineNeigbours(DRT::Element* element1,
                           DRT::Element* element2);
-
 
 
 
@@ -422,6 +491,33 @@ private:
                               const Epetra_SerialDenseMatrix& secondderiv2,
                               const int& numnode1, const int& numnode2);
   
+
+  /*!
+  \brief Compute contact point tangents and their derivatives
+
+  */
+  void ComputeTangentsAndDerivs(vector<double>& t1, vector<double>& t2,
+                              vector<double>& dt1, vector<double>& dt2,
+                              const Epetra_SerialDenseVector& funct1,
+                              const Epetra_SerialDenseVector& funct2,
+                              const Epetra_SerialDenseMatrix& deriv1,
+                              const Epetra_SerialDenseMatrix& deriv2,
+                              const int& numnode1, const int& numnode2);
+
+
+
+  /*!
+  \brief Get derivatives of shape functions at the nodes
+
+  */
+
+  void GetNodalDerivatives(Epetra_SerialDenseMatrix& deriv1,
+                           int node,
+                           const int nnode,
+                           double length,
+                           const DRT::Element::DiscretizationType distype);
+
+
   /*!
   \brief Get shape functions and their derivatives at eta
           
@@ -448,7 +544,8 @@ private:
                              const Epetra_SerialDenseMatrix& deriv2, 
                              const vector<double>& normal, const double& norm,
                              const int numnode1, const int numnode2,
-                             const vector<double>& XiContact); 
+                             const vector<double>& XiContact,
+                             int beams_smoothing);
   
   /*!
   \brief Compute linearization of gap
@@ -463,7 +560,8 @@ private:
                      const double& normdist,
                      const int& numnode1, const int& numnode2,
                      const vector<double>& normal, const double& norm,
-                     const double& gap,Epetra_SerialDenseMatrix& delta_x1_minus_x2);
+                     const double& gap,Epetra_SerialDenseMatrix& delta_x1_minus_x2,
+                     int beams_smoothing);
   
   /*!
   \brief Compute linearization of normal
@@ -475,7 +573,8 @@ private:
                         const int& numnode1, const int& numnode2,
                         const Epetra_SerialDenseMatrix& delta_x1_minus_x2,
                         const vector<double>& normal, 
-                        const vector<double>& XiContact);
+                        const vector<double>& XiContact,
+                        int beams_smoothing);
   
   /*!
   \brief Compute normal contact disctance
@@ -512,8 +611,21 @@ private:
   void FDCheckCPP(const int& numnode1, const int& numnode2, 
                   const vector<double>& delta_xi,
                   const vector<double>& delta_eta,
-                  const vector<double>& XiContact);
+                  const vector<double>& XiContact,
+                  int beams_smoothing);
   
+
+
+
+  /*!
+  \brief FD check of local Newton Iteration for CCP
+
+  */
+  void FDCheckNewtonCPP(const int& numnode1, const int& numnode2,
+         const vector<double>& eta,int beams_smoothing);
+
+
+
   /*!
   \brief FD check of of gap function (delta_gap)
           
@@ -521,7 +633,9 @@ private:
   void FDCheckLinGap(const int& numnode1, const int& numnode2, 
                      const vector<double>& normal,
                      const double& norm,
-                     const vector<double>& delta_gap, const double& gap);
+                     const vector<double>& delta_gap,
+                     const double& gap,
+                     int beams_smoothing);
   
   /*!
   \brief FD check of contact normal vector (delta_n)
@@ -529,7 +643,8 @@ private:
   */
   void FDCheckLinNormal(const int& numnode1, const int& numnode2, 
                         const Epetra_SerialDenseMatrix& delta_n,
-                        const vector<double>& normal);
+                        const vector<double>& normal,
+                        int beams_smoothing);
   
   /*!
   \brief FD check of contact stiffness matrices (stiffc1, stiffc2)
@@ -541,7 +656,8 @@ private:
                      const double& pp, const vector<double>& normal,
                      const double& gap,
                      const Epetra_SerialDenseVector& funct1,
-                     const Epetra_SerialDenseVector& funct2);
+                     const Epetra_SerialDenseVector& funct2,
+                     int beams_smoothing);
 
   //@}
 
