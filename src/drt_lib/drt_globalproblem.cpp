@@ -1335,6 +1335,8 @@ void DRT::Problem::ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reade
 {
   // check whether multilvel monte carlo is on
   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
+  // should not read in second discretization if not needed
+  // if(Teuchos::getIntegralValue<int>(mlmcp,"MLMC")!= false && Teuchos::getIntegralValue<int>(mlmcp,"PROLONGATERES")!=false)
   if(Teuchos::getIntegralValue<int>(mlmcp,"MLMC")!= false)
   {
     // get the number of levels
