@@ -27,6 +27,7 @@ Maintainer: Jonas Biehler
 #include "../drt_structure/strtimint_create.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_io/io_control.H"
 
 using namespace std;
 using namespace DRT;
@@ -64,8 +65,7 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
   //int myrank = dis->Comm().MyPID();
 
   reset_out_count_=0;
-  // get filename of controlfile hak in iocontrol (made Filename public)
-    //filename_ = output_->output_->FileName();
+
     filename_ = DRT::Problem::Instance()->OutputControlFile()->FileName();
   // seee if we can chagen output for coarse dis here
   //output_control_coarse_ = rcp(new IO::OutputControl(actdis_coarse_->Comm(), "structure", "Polynomial", filename_, filename_, 3, 0, 20));
@@ -82,8 +82,7 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
   num_newton_it_ = mlmcp.get<int>("ITENODEINELE");
   // Get convergence tolerance
   convtol_    = mlmcp.get<double>("CONVTOL");
-  // get level number
-  level_number_ = mlmcp.get<int>("LEVELNUMBER");
+
   // calculate difference to lower level yes/no
   calc_diff_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"DIFF_TO_LOWER_LEVEL");
 
@@ -96,14 +95,16 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
   // get name of lower level outputfiles
   filename_lower_level_ =  mlmcp.get<std::string>("OUTPUT_FILE_OF_LOWER_LEVEL");
 
-
+  // get numerb of current level
+  num_level_ = mlmcp.get<int>("LEVELNUMBER");
 
   // In element critirion xsi_i < 1 + eps  eps = MLMCINELETOL
   InEleRange_ = 1.0 + 10e-3;
   //ReadInParameters();
 
   // controlling parameter
-  numb_run_ =  0;     // counter of how many runs were made monte carlo
+  start_run_ = mlmcp.get<int>("START_RUN");
+  numb_run_ =  start_run_;     // counter of how many runs were made monte carlo
 
 
 
@@ -166,7 +167,7 @@ void STR::MLMC::Integrate()
 {
 
   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
-  int numruns = mlmcp.get<int>("NUMRUNS");
+  int numruns = mlmcp.get<int>("NUMRUNS")+start_run_;
   // get initial random seed from inputfile
   unsigned int random_seed= mlmcp.get<int>("INITRANDOMSEED");
   do
@@ -203,7 +204,8 @@ void STR::MLMC::Integrate()
      }
      if (numb_run_ == 0 &&  prolongate_res_)
      {
-       SetupProlongator();
+       //SetupProlongator();
+       SetupProlongatorParallel();
      }
      if (calc_diff_)
       {
@@ -231,24 +233,149 @@ void STR::MLMC::Integrate()
   return;
 }
 //---------------------------------------------------------------------------------------------
+void STR::MLMC::SetupProlongatorParallel()
+{
+  // number of outliers
+  int num_outliers = 0;
+  const Epetra_Map* rmap_disp = NULL;
+  const Epetra_Map* dmap_disp = NULL;
+  const Epetra_Map* rmap_stress = NULL;
+  const Epetra_Map* dmap_stress = NULL;
+  rmap_disp= (actdis_fine_->DofRowMap());
+  dmap_disp=(actdis_coarse_->DofRowMap());
+
+  //maps for stress prolongator
+  rmap_stress = (actdis_fine_->NodeRowMap());
+  dmap_stress = (actdis_coarse_->NodeRowMap());
+  int bg_ele_id;
+  // store location of node
+  double xsi[3] = {0.0, 0.0,0.0};
+  prolongator_disp_crs_ = rcp(new Epetra_FECrsMatrix(::Copy,*rmap_disp,*dmap_disp,8,false));
+  prolongator_stress_crs_ = rcp(new Epetra_FECrsMatrix(::Copy,*rmap_stress,*dmap_stress,8,false));
+
+  //loop over nodes of fine discretization on this proc
+  Teuchos::RCP<Epetra_Vector> node_vector = Teuchos::rcp(new Epetra_Vector(*(actdis_fine_->NodeRowMap()),true));
+  // loop over dofs
+  for (int i=0; i< actdis_fine_->NumMyRowNodes(); i++  )
+  //  for (int i=0; i<2; i++  )
+  {
+    // Get node
+    DRT::Node* node = actdis_fine_->lRowNode(i);
+    // Get background element and local coordinates
+   num_outliers += FindBackgroundElement(*node, actdis_coarse_, &bg_ele_id, xsi);
+
+    // Get element
+    DRT::Element* bg_ele = actdis_coarse_->gElement(bg_ele_id);
+
+    Epetra_SerialDenseVector shape_fcts(bg_ele->NumNode());
+    DRT::UTILS::shape_function_3D(shape_fcts,xsi[0],xsi[1],xsi[2],bg_ele->Shape());
+
+    //
+    //cout << "haveBackground element  "<< endl;
+    //cout << "shape funciton " << shape_fcts << endl;
+    //if(xsi[0]>1.001)
+    //{
+    //  cout << "no Background element  "<< endl;
+     // cout << "shape funciton " << shape_fcts << endl;
+      //dserror("stop right here");
+     // cout << "sxi_0 " << xsi[0] << cout << "sxi_1 " << xsi[1] << cout << "sxi_0 " << xsi[2] << endl;
+     // xsi[0]=1.0;
+     // DRT::UTILS::shape_function_3D(shape_fcts,xsi[0],xsi[1],xsi[2],bg_ele->Shape());
+     // cout << "shape funcitons fixed??  " << shape_fcts << endl;
+      //dserror("stop right here");
+   // }
+
+    //
+     int* rows = NULL;
+     int* cols = NULL;
+     double* values = NULL;
+
+    int numColumns = bg_ele->NumNode();
+    // insert rows dof wise
+    int numRows   = 1;
+
+    // get some space
+    cols = new int[numColumns];
+    rows = new int[numRows];
+    values = new double[numColumns];
+
+    // fill prolongators
+    //
+    // DIM = 3
+    for (int j = 0; j<3 ; j++)
+    {
+      int index = 0;
+      for (int k=0; k< bg_ele->NumNode(); k ++)
+      {
+        // store global indices in cols
+        cols[index]=dmap_disp->GID((bg_ele->Nodes()[k]->Id()*3)+j);
+        rows[0]=i*3+j;
+        values[index]=shape_fcts[k];
+        index++;
+      }
+      int err=  prolongator_disp_crs_->InsertGlobalValues(1,rows,8,cols,values,Epetra_FECrsMatrix::COLUMN_MAJOR);
+      if (err != 0)
+      {
+        dserror("Could not insert global values");
+      }
+
+    } // loop j
+
+    // stress prolongator
+    for (int k=0; k< bg_ele->NumNode(); k ++)
+    {
+      // store global indices in cols
+      cols[k]=dmap_stress->GID(bg_ele->Nodes()[k]->Id());
+      values[k]=shape_fcts[k];
+    }
+    rows[0]=i;
+    int err=  prolongator_stress_crs_->InsertGlobalValues(1,rows,8,cols,values,Epetra_FECrsMatrix::COLUMN_MAJOR);
+    if (err != 0)
+    {
+      dserror("Could not insert global values");
+    }
+
+
+    delete [] cols;
+    delete [] rows;
+    delete [] values;
+
+    rows = NULL;
+    cols = NULL;
+    values = NULL;
+
+  } // End of loop over nodes of fine discretzation
+
+  // Assembly
+  prolongator_disp_crs_->GlobalAssemble(*dmap_disp,*rmap_disp,true);
+  prolongator_stress_crs_->GlobalAssemble(*dmap_stress,*rmap_stress,true);
+  cout << "################################################### " << endl;
+  cout << "   SUCCESSFULLY INITIALIZED  PROLONGATOR" << endl;
+  cout <<  num_outliers << " Nodes do not lie within a background element " << endl;
+  cout << "################################################### " << endl;
+}
+//---------------------------------------------------------------------------------------------
 void STR::MLMC::SetupProlongator()
 {
   // This functions calculates the prolongtators for the displacement and the nodal stresses
-
+  cout << "debugging in  LINE "<<  __LINE__<< endl;
   // 3D Problem
   int num_columns_prolongator_disp = actdis_fine_->NumGlobalNodes()*3;
   int num_columns_prolongator_stress = actdis_fine_->NumGlobalNodes();
 
   double xsi[3] = {0.0, 0.0,0.0};
-
+  cout << "debugging in  LINE "<<  __LINE__<< endl;
   // loop over nodes of fine dis
   int num_nodes;
   int bg_ele_id;
   num_nodes = actdis_fine_->NumGlobalNodes();
-
+  cout << "debugging in  LINE "<<  __LINE__<< endl;
   // init prolongators
+  cout << "num_columns proongator "  << num_columns_prolongator_disp << endl;
+  cout << "num_columns proongator stress  "  << num_columns_prolongator_stress << endl;
   prolongator_disp_ = rcp(new Epetra_MultiVector(*actdis_coarse_->DofRowMap(),num_columns_prolongator_disp,true));
   prolongator_stress_ = rcp(new Epetra_MultiVector(*actdis_coarse_->NodeRowMap(),num_columns_prolongator_stress,true));
+  cout << "debugging in  LINE "<<  __LINE__<< endl;
   for (int i = 0; i < num_nodes ; i++)
   {
 
@@ -281,29 +408,16 @@ void STR::MLMC::SetupProlongator()
 //---------------------------------------------------------------------------------------------
 void STR::MLMC::ProlongateResults()
 {
-    cout << "beginning of ProlongateResuts " << endl;
+    cout << "Prolongating Resuts " << endl;
   // To avoid messing with the timeintegration we read in the results of the coarse discretization here
   // Get coarse Grid problem instance
-  // access the discretization
-  //Teuchos::RCP<DRT::Discretization> actdis_coarse = Teuchos::null;
-  //actdis_coarse = DRT::Problem::Instance(0)->Dis(genprob.numsf, 0);
-  //set degrees of freedom in the discretization
-  // if (not actdis_coarse->Filled()) actdis_coarse->FillComplete();
-
-  //string name = "aaa_run_0aaa_run_0";
-  //string name = "aaa";
-  // get name of inputfile, works only because i set output_ to public
-  //string filename_ = output_->output_->FileName();
- // cout << "filename to read from "<< filename_ << endl;
-  // we need to add the run_xx number o get the act
-
 
    std::stringstream name;
    string filename_helper;
    name << filename_ << "_run_"<< numb_run_;
 
    filename_helper = name.str();
-    //cout << "filename to read from "<< filename_ << endl;
+
 
   RCP<IO::InputControl> inputcontrol = rcp(new IO::InputControl(filename_helper, false));
 
@@ -313,41 +427,17 @@ void STR::MLMC::ProlongateResults()
 
   // read in displacements
   input_coarse.ReadVector(dis_coarse, "displacement");
-  //cout << "chech what we read in " << *dis_coarse << endl;
 
-  // creae multivector
-  Teuchos::RCP<Epetra_MultiVector> dis_coarse_mv = rcp(new Epetra_MultiVector(*actdis_coarse_->DofRowMap(),1,true));
-  // access the fine discretization
-
-  //Teuchos::RCP<DRT::Discretization> actdis_fine = Teuchos::null;
-  //actdis_fine = DRT::Problem::Instance(1)->Dis(genprob.numsf, 0);
-
-  //set degrees of freedom in the discretization
-  //if (not actdis_fine_->Filled()) actdis_fine->FillComplete();
-
-
-  Teuchos::RCP<Epetra_MultiVector> dis_fine_helper = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->DofRowMap()),prolongator_disp_->NumVectors(),true));
   Teuchos::RCP<Epetra_MultiVector> dis_fine = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
 
-  // Prolongate results
-  dis_fine_helper->Multiply(1,*dis_coarse,*prolongator_disp_,1);
-  //write standard output into new file
+  // Try new and shiny prolongator based on crs Matrix
+   int error = prolongator_disp_crs_->Multiply(false,*dis_coarse,*dis_fine);
+   if(error!=0)
+   {
+     dserror("stuff went wrong");
+   }
 
-  // transfer to Multivector
-  for (int n = 0; n< dis_fine_helper->NumVectors(); n++)
-  {
-    for ( int m =0; m < dis_fine_helper->MyLength(); m ++)
-    {
-         (*dis_fine)[0][n] += (*dis_fine_helper)[n][m];
-    }
-  }
 
-  // init writer
-  //Teuchos::RCP<IO::DiscretizationWriter> output_fine_ ;
- // output_fine_ = Teuchos::rcp(new IO::DiscretizationWriter(actdis_fine_));
-  // somehow the order of these following commands is important DONT CHANGE
-  //if (numb_run_== 0)
-  //{
     // create new resultfile for prolongated results
     std::stringstream name_prolong;
     string filename_helper_prolong;
@@ -374,7 +464,7 @@ void STR::MLMC::ProlongateResults()
   // transfer to Epetra_Vector
   for( int i = 0;i< dis_fine->MyLength(); i++)
   {
-    (*dis_fine_single)[i]= (*dis_fine)[0][i];
+   (*dis_fine_single)[i]= (*dis_fine)[0][i];
   }
 
   //#####################################################################################
@@ -395,6 +485,7 @@ void STR::MLMC::ProlongateResults()
   // create the parameters for the discretization
    ParameterList p;
    // action for elements
+
    p.set("action","calc_struct_stress");
    // other parameters that might be needed by the elements
    p.set("total time",timen);
@@ -414,12 +505,13 @@ void STR::MLMC::ProlongateResults()
    actdis_fine_->SetState("residual displacement",zeros_);
    actdis_fine_->SetState("displacement",dis_);
    actdis_fine_->SetState("velocity",vel_);
+
    // Evaluate Stresses based on interpolated displacements
-   actdis_fine_->Evaluate(p,null,null,null,null,null);
-   actdis_fine_->ClearState();
+   //actdis_fine_->Evaluate(p,null,null,null,null,null);
+   //actdis_fine_->ClearState();
    // Write to file
    // interpolated stresses from disp field
-   output_fine_->WriteVector("gauss_2PK_stresses_xyz",*stress,*(actdis_fine_->ElementRowMap()));
+   //output_fine_->WriteVector("gauss_2PK_stresses_xyz",*stress,*(actdis_fine_->ElementRowMap()));
 
 
 
@@ -478,42 +570,18 @@ void STR::MLMC::ProlongateResults()
     actdis_coarse_->ClearState();
 
 
-
-    //Teuchos::RCP<IO::DiscretizationWriter> output_coarse= Teuchos::rcp(new IO::DiscretizationWriter(actdis_coarse_));
-    // somehow the order of these following commands is important DONT CHANGE
-   //output_coarse->NewResultFile((23213));
-   //output_coarse->WriteMesh(1, 0.01);
-   //output_coarse->NewStep( 1, 0.01);
-   //output_coarse->WriteVector("prolongated_gauss_2PK_stresses_xyz", poststress, output_coarse->nodevector);
-   //Teuchos::RCP<Epetra_Vector> dis_fine_single = rcp(new Epetra_Vector(*actdis_fine->DofRowMap(),true));
-    Teuchos::RCP<Epetra_MultiVector> poststress_fine_helper = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->NodeRowMap()),prolongator_stress_->NumVectors(),true));
-   Teuchos::RCP<Epetra_MultiVector> poststrain_fine_helper = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->NodeRowMap()),prolongator_stress_->NumVectors(),true));
-  // Teuchos::RCP<Epetra_MultiVector> poststress_fine = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine->NodeRowMap()),6,true));
-
-   // defin poststress coarse helper which stores the ith vector of postress in a new multivector which contains only on vector
-   //Teuchos::RCP<Epetra_MultiVector> poststress_helper = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse->NodeRowMap()),1,true));
-   Epetra_DataAccess CV = View;
-
-   //
-   // Prolongate results
-   //poststress_helper=(*poststress)(0);
-   for(int i = 0; i<6; i++)
+   // try new and shiny crs prolongator
+   int error2 = prolongator_stress_crs_->Multiply(false,*poststress,*poststress_fine);
+   if(error2!=0)
    {
-     Teuchos::RCP<Epetra_MultiVector> poststress_helper = Teuchos::rcp(new Epetra_MultiVector(CV,*poststress,i,1));
-     Teuchos::RCP<Epetra_MultiVector> poststrain_helper = Teuchos::rcp(new Epetra_MultiVector(CV,*poststrain,i,1));
-     poststress_fine_helper->Multiply(1,*poststress_helper,*prolongator_stress_,0);
-     poststrain_fine_helper->Multiply(1,*poststrain_helper,*prolongator_stress_,0);
-
-     // transfer to Multivector
-     for (int n = 0; n< poststress_fine_helper->NumVectors(); n++)
-     {
-       for ( int m =0; m < poststress_fine_helper->MyLength(); m ++)
-       {
-            (*poststress_fine)[i][n] += (*poststress_fine_helper)[n][m];
-            (*poststrain_fine)[i][n] += (*poststrain_fine_helper)[n][m];
-       }
-     }
+     dserror("stuff went wrong");
    }
+   // strains as well
+   int error3 = prolongator_stress_crs_->Multiply(false,*poststrain,*poststrain_fine);
+      if(error3!=0)
+      {
+        dserror("stuff went wrong");
+      }
 
    cout << " before prolongated gauss 2pk stresses " << endl;
    output_fine_->WriteVector("prolongated_gauss_2PK_stresses_xyz", poststress_fine, output_fine_->nodevector);
@@ -529,34 +597,37 @@ void STR::MLMC::ProlongateResults()
    }
    CalcStatStressDisp(poststress_fine,poststrain_fine, dis_fine);
    // write some output to another file
-   HelperFunctionOutput(poststress_fine,poststrain_fine,dis_fine);
-
-
-
+   HelperFunctionOutputTube(poststress_fine,poststrain_fine,dis_fine);
 
 
 }
 //-----------------------------------------------------------------------------------
-void STR::MLMC::FindBackgroundElement(DRT::Node node, Teuchos::RCP<DRT::Discretization> background_dis, int* bg_ele_id, double* xsi)
+int STR::MLMC::FindBackgroundElement(DRT::Node node, Teuchos::RCP<DRT::Discretization> background_dis, int* bg_ele_id, double* xsi)
 {
-
+  bool outlier = false;
   Teuchos::RCP<Epetra_Vector> element_vector = Teuchos::rcp(new Epetra_Vector(*(background_dis->ElementRowMap()),true));
   // loop over discretization
 
   double pseudo_distance = 0.0;
   double min_pseudo_distance = 2.0;
   int back_ground_ele_id = 0;
+  double background_xsi[3] = {0,0,0};
+  //for (int i=0; i< 2 && min_pseudo_distance > InEleRange_ ; i++  )
   for (int i=0; i< element_vector->MyLength() && min_pseudo_distance > InEleRange_ ; i++  )
   {
     int globel_ele_id= background_dis->ElementRowMap()->GID(i);
     DRT::Element* ele = background_dis->gElement(globel_ele_id);
     //inEle = CheckIfNodeInElement(node, *ele);
     pseudo_distance = CheckIfNodeInElement(node, *ele, xsi);
+    //cout << " pseudo_distance  " << pseudo_distance  << endl;
     // check if node is in Element
     if (pseudo_distance < min_pseudo_distance)
     {
       min_pseudo_distance = pseudo_distance;
       back_ground_ele_id = globel_ele_id;
+      background_xsi[0]=xsi[0];
+      background_xsi[1]=xsi[1];
+      background_xsi[2]=xsi[2];
     }
   } // end of loop over elements
   // Debug
@@ -564,13 +635,22 @@ void STR::MLMC::FindBackgroundElement(DRT::Node node, Teuchos::RCP<DRT::Discreti
   {
     //cout << "found background element Ele ID is " <<  back_ground_ele_id << endl;
     //cout << "Local Coordinates are "<< "xsi_0 " << xsi[0] << " xsi_1 " << xsi[1] << " xsi_2 " << xsi[2] << endl;
+
   }
   else
   {
-    cout << "did not find background element, closet element is: Ele ID: " << back_ground_ele_id << endl;
-    cout << "Local Coordinates are "<< "xsi_0 " << xsi[0] << " xsi_1 " << xsi[1] << " xsi_2 " << xsi[2] << endl;
+   //cout << "did not find background element, closest element is: Ele ID: " << back_ground_ele_id << endl;
+   //cout << "Local Coordinates are "<< "xsi_0 " << background_xsi[0] << " xsi_1 " << background_xsi[1] << " xsi_2 " << background_xsi[2] << endl;
+   // dserror("stop right here");
+   // write closest element xsi* into  pointer
+    xsi[0]=background_xsi[0];
+    xsi[1]=background_xsi[1];
+    xsi[2]=background_xsi[2];
+    outlier =true;
   }
   *bg_ele_id = back_ground_ele_id;
+  return outlier;
+
 
 }
 
@@ -692,7 +772,10 @@ bool STR::MLMC::EvaluateGradF(LINALG::Matrix<3,3>& fgrad,DRT::Node& node, DRT::E
 void STR::MLMC::ReadResultsFromLowerLevel()
 {
   std::stringstream name_helper;
-  name_helper << filename_lower_level_ <<"_prolongated"<< "_run_" << numb_run_ ;
+  // assamble filename and pathfor cluster jobs
+  name_helper << "../../level"<<num_level_-1<< "/START_RUN_"<< start_run_ <<"/"<<filename_lower_level_<<"_prolongated"<< "_run_" << numb_run_ ;
+
+  //name_helper << filename_lower_level_ <<"_prolongated"<< "_run_" << numb_run_ ;
   string name_ll = name_helper.str();
   // check if bool should be true or false
   RCP<IO::InputControl> inputcontrol = rcp(new IO::InputControl(name_ll, false));
@@ -783,46 +866,33 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
         ele_center[2] += nodes[i]->X()[2]/8.;
       }
       // beta = beta_mean = beta_mean * random field value
-      beta = beta_mean+beta_mean*field.EvalRandomField2D(ele_center[0],ele_center[1],ele_center[2]);
+      //beta = beta_mean+beta_mean*field.EvalRandomField(ele_center[0],ele_center[1],ele_center[2]);
+      // HACK instead of circular field use pseudo 3D Field
+      beta = beta_mean+beta_mean*field.EvalRandomFieldCylinder(ele_center[0],ele_center[1],ele_center[2]);
+
       //vector<double> location = dis->gElement(i)->soh8_ElementCenterRefeCoords();
       // for now we need a quick check wether beta> 0.22 because thats the cutoff value right now
       if(beta<0.22)
         beta = 0.22;
 
       aaa_stopro->Init(beta);
+      //aaa_stopro->Init(2.1);
+      //cout << RED_LIGHT << "HACK IN USE:SET BETA TO 2.1" END_COLOR << endl;
       }
-      cout << "beta  " << beta << endl;
-    }
+      //cout << "beta  " << beta << endl;
+    } // EOF loop elements
+  cout << RED_LIGHT << "HACK IN USE: PROBLEM SPECIFIC INPUT NEEDED FOR EVALUATION OF RANDOM FIELD" END_COLOR << endl;
+  //cout << "\n" GREEN_LIGHT "OK (" << count << ")" END_COLOR "\n";
 }
 
 // calculate some statistics
 void STR::MLMC::CalcStatStressDisp(RCP< Epetra_MultiVector> curr_stress,RCP< Epetra_MultiVector> curr_strain,RCP<Epetra_MultiVector> curr_disp)
 {
-  /*double fac_mean = numb_run_/(numb_run_+1.0);
-  double fac_curr = 1/(numb_run_+1.0);
-
-  // init mean
-  if (numb_run_==0)
-  {
-    mean_disp_->Update(1.0,*curr_disp,1.0);
-    mean_stress_->Update(1.0,*curr_stress,1.0);
-    //cout << " mean stresses after init " << *mean_stress_ << endl;
-    //cout << " stress vectro " << *curr_stress << endl;
-  }
-
-  // update mean disp
-  else
-  {
-  mean_disp_->Update(fac_curr,*curr_disp,fac_mean);
-  // same for mean_stresses
-  mean_stress_->Update(fac_curr,*curr_stress,fac_mean);
-  }
-  // to be extended for variance and standard deviation
   // in order to avoid saving the stresses and displacements for each step an online
   // algorithm to compute the std deviation is needed .
-   *
+
   // Such an algorithm can be found here:
-   *
+
   // http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
 
   // This it how it goes
@@ -890,7 +960,7 @@ void STR::MLMC::CalcStatStressDisp(RCP< Epetra_MultiVector> curr_stress,RCP< Epe
 void STR::MLMC::WriteStatOutput()
 {  //
   std::stringstream name_helper;
-  name_helper << filename_ << "_statistics";
+  name_helper << "statistics/"<< filename_ << "_statistics";
   output_fine_->NewResultFile(name_helper.str(),numb_run_);
   output_fine_->WriteMesh(1, 0.01);
   output_fine_->NewStep( 1, 0.01);
@@ -973,11 +1043,11 @@ void STR::MLMC::HelperFunctionOutput(RCP< Epetra_MultiVector> stress,RCP< Epetra
 {
   // assamble name for outputfil
   std::stringstream outputfile;
-  outputfile << filename_ << "_statistics_output.txt";
+  outputfile << filename_ << "_statistics_output_" << start_run_ << ".txt";
   string name = outputfile.str();;
   /// file to write output
   ofstream File;
-  if (numb_run_ == 0)
+  if (numb_run_ == 0 || numb_run_ == start_run_)
   {
     File.open(name.c_str(),ios::out);
     File << "run id   "<< "xdisp node 24 " << "S_xx node 436 "<< endl;
@@ -988,5 +1058,52 @@ void STR::MLMC::HelperFunctionOutput(RCP< Epetra_MultiVector> stress,RCP< Epetra
   File << numb_run_ << "    "<< (*disp)[0][72]<< "    " << (*stress)[0][435] << endl;
   File.close();
 }
+void STR::MLMC::HelperFunctionOutputTube(RCP< Epetra_MultiVector> stress,RCP< Epetra_MultiVector> strain, RCP<Epetra_MultiVector> disp)
+{
+  int error;
+  // assamble name for outputfil
+  std::stringstream outputfile;
+  outputfile << "statistics/" <<filename_ << "_statistics_output_" << start_run_ << ".txt";
+  string name = outputfile.str();;
+  /// file to write output
+  // paraview ids of nodes
+  int node[5] = {566, 1764, 3402,5194,6510};
+  double disp_mag[5];
+  double stress_mag[5];
+  double strain_mag[5];
+  ofstream File;
+  if (numb_run_ == 0 || numb_run_ == start_run_)
+  {
+    File.open(name.c_str(),ios::out);
+    if (File.is_open())
+    {
+      //if(error == -1)
+      //dserror("Unable to open Statistics output Filename");
+      File << "run id   "<< "disp mag node   " << node[0] << "S_mag node   " << node[0] << "disp mag node   " << node[1] << "S_mag node   " << node[1]
+       << "disp mag node   " << node[2] << "S_mag node   " << node[2] << "disp mag node   " << node[3] << "S_mag node   "
+       << node[3] << "disp mag node   " << node[4] << "S_mag node   " << node[4]<< endl;
+      File.close();
+    }
+    //
+    else
+    {
+    dserror("Unable to open statistics output file");
+    }
+  }
+  for(int i =0; i<5 ; i++)
+  {
+    //calc mag disp
+    disp_mag[i]=sqrt(pow((*disp)[0][node[i]*3],2)+pow((*disp)[0][node[i]*3+1],2)+pow((*disp)[0][node[i]*3+2],2));
+    stress_mag[i]=sqrt(pow((*stress)[0][node[i]],2)+pow((*stress)[1][node[i]],2)+ pow((*stress)[2][node[i]],2)+ pow((*stress)[3][node[i]],2)+
+        pow((*stress)[4][node[i]],2)+pow((*stress)[5][node[i]],2));
+
+  }
+  // reopen in append mode
+  File.open(name.c_str(),ios::app);
+  File << numb_run_ << "    "<< disp_mag[0]<< "    " << stress_mag[0] << "    "<< disp_mag[1]<< "    " << stress_mag[1] << "    "<< disp_mag[2]<< "    " << stress_mag[2]
+    << "    "<< disp_mag[3]<< "    " << stress_mag[3] << "    "<< disp_mag[4]<< "    " << stress_mag[4] <<  endl;
+  File.close();
+}
+
 
 #endif

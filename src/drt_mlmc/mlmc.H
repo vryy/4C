@@ -52,6 +52,10 @@ private:
   // for stresses
   Teuchos::RCP<Epetra_MultiVector> prolongator_stress_;
 
+  // prolongators based on crs
+   RCP<Epetra_FECrsMatrix> prolongator_disp_crs_;
+   RCP<Epetra_FECrsMatrix> prolongator_stress_crs_;
+
   // Vetors to store mean stresses and disp
   Teuchos::RCP<Epetra_MultiVector> mean_stress_;
   Teuchos::RCP<Epetra_MultiVector> mean_strain_;
@@ -95,8 +99,7 @@ private:
   Teuchos::RCP<Epetra_MultiVector> disp_lower_level_;
 
 
-  // which level
-  int level_number_;
+
   // filename of standard control file
   string filename_ ;
   // Parameters from input file
@@ -115,11 +118,14 @@ private:
 
    // number of run in MLMC
   int numb_run_;
-
+  int start_run_;
   // starting random seed
   int start_random_seed_;
   // output filename of lower level
   string filename_lower_level_;
+
+  // number of current level
+  int num_level_;
 
   int reset_out_count_;
 
@@ -145,13 +151,14 @@ public:
 
   // Setup prolongator to transfer results to finest grid
   void SetupProlongator();
+  void SetupProlongatorParallel();
   // Map results from one Discretization to another using the prolongator
   void ProlongateResults();
   ///
   void Integrate();
 
   // Find backgroundelement of a node
-  void FindBackgroundElement(DRT::Node node, Teuchos::RCP<DRT::Discretization> background_dis, int* bg_ele_id, double* xsi);
+  int FindBackgroundElement(DRT::Node node, Teuchos::RCP<DRT::Discretization> background_dis, int* bg_ele_id, double* xsi);
 
   // check if a node lies within an element
   // returns double based on minimum value of local coordinates abscissa
@@ -175,6 +182,7 @@ public:
 
   // Funtion that writes the disp and sigma values of specific DOF to a seperate outputfile
   void HelperFunctionOutput(RCP< Epetra_MultiVector> stress,RCP< Epetra_MultiVector> strain, RCP<Epetra_MultiVector> disp);
+  void HelperFunctionOutputTube(RCP< Epetra_MultiVector> stress,RCP< Epetra_MultiVector> strain, RCP<Epetra_MultiVector> disp);
 
 };  // class MLMC
 

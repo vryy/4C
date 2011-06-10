@@ -77,10 +77,13 @@ public:
 
   // generates new random Phase vector Phi_
   void CreateNewSample(unsigned int seed);
-
+  // funtion to call EvalRandomfield depending on dimension
+  double EvalRandomField(double x, double y, double z);
   // Evaluate RandomField at specific location
   double EvalRandomField2D( double x, double y, double z);
   double EvalRandomField3D( double x, double y, double z);
+
+  double EvalRandomFieldCylinder( double x,double y, double z);
   //double EvalQuadrantRandomField( double x, double y, double z);
 
   // Calculate Power Spectral Density

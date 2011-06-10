@@ -159,6 +159,23 @@ void RandomField::CreateNewSample(unsigned int seed)
 
 }
 
+// Wrapper to decide wether we are 2D or 3D
+double RandomField::EvalRandomField(double x, double y, double z)
+{
+  double result=0;
+  switch (dim_)
+  {
+  case 3:
+    result=EvalRandomField3D(x,y,z);
+    break;
+  case 2:
+    result=EvalRandomField2D(x,y,z);
+    break;
+  }
+  return result;
+}
+
+
 double RandomField::EvalRandomField2D( double x, double y, double z)
 
 {
@@ -204,6 +221,32 @@ double RandomField::EvalRandomField3D( double x, double y, double z)
     }
     return sqrt( 2 ) * result;
 }
+
+double RandomField::EvalRandomFieldCylinder( double x,double y, double z)
+{
+  // Instead of calculating a true 3D random field calculate
+  // s = r *theta , the curvelength on the circle
+
+  // define centerline/centerpoint of circel
+  double x_center = 0;
+  double y_center = 0;
+
+  // calc r vector
+  vector <double> r;
+
+  r.push_back(x-x_center);
+  r.push_back(y-y_center);
+
+  //calc angel theta
+  double theta =acos(r[0]/sqrt(pow(r[0],2)+pow(r[1],2)));
+  double s = theta*sqrt(pow(r[0],2)+pow(r[1],2));
+  double result = EvalRandomField2D(s, z, z);
+  return result;
+
+
+}
+
+
 // compute power spectral density
 
 double  RandomField::PowerSpectralDensity3D( double kappa_x, double kappa_y, double kappa_z )
