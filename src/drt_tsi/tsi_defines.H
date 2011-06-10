@@ -29,8 +29,9 @@ Maintainer: Caroline Danowski
 //#define TSIASOUTPUT          /* flag for detailed active set output */
 //#define TSIMONOLITHASOUTPUT  /* flag for detailed output in monolithic TSI */
 //#define TSIBLOCKMATRIXMERGE  /* flag to activate merge of systemmatrix in monolithic TSI */
-//#define TSIPARALLEL      /* flag for detailed active set output */
-//#define THRASOUTPUT      /* flag for detailed active set output */
+//#define TSIPARALLEL          /* flag for parallel TSI */
+//#define THRASOUTPUT          /* flag for output in the thermal field */
+//#define DEBUGMATERIAL        /* flag for material debug output */
 
 
 #endif  // #ifndef TSI_DEFINES_H
