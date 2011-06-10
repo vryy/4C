@@ -202,7 +202,7 @@ void STR::MLMC::Integrate()
      default:
        dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
      }
-     if (numb_run_ == 0 &&  prolongate_res_)
+     if (numb_run_-start_run_== 0 &&  prolongate_res_)
      {
        //SetupProlongator();
        SetupProlongatorParallel();
@@ -411,13 +411,11 @@ void STR::MLMC::ProlongateResults()
     cout << "Prolongating Resuts " << endl;
   // To avoid messing with the timeintegration we read in the results of the coarse discretization here
   // Get coarse Grid problem instance
-
    std::stringstream name;
    string filename_helper;
    name << filename_ << "_run_"<< numb_run_;
 
    filename_helper = name.str();
-
 
   RCP<IO::InputControl> inputcontrol = rcp(new IO::InputControl(filename_helper, false));
 
@@ -910,8 +908,8 @@ void STR::MLMC::CalcStatStressDisp(RCP< Epetra_MultiVector> curr_stress,RCP< Epe
      // variance_n = M2/n
      /// variance = M2/(n - 1)
     //  return variance*/
-
-  int n = numb_run_+1;
+  // since numb_run_ does not start from zero anymore we need
+  int n = numb_run_-start_run_+1;
   // calc mean and variance for displacement
   delta_disp_->Update(1.0,*curr_disp,-1.0,*mean_disp_,0.0);
   mean_disp_->Update(1.0/n,*delta_disp_,1.0);
@@ -960,7 +958,7 @@ void STR::MLMC::CalcStatStressDisp(RCP< Epetra_MultiVector> curr_stress,RCP< Epe
 void STR::MLMC::WriteStatOutput()
 {  //
   std::stringstream name_helper;
-  name_helper << "statistics/"<< filename_ << "_statistics";
+  name_helper << filename_ << "_statistics";
   output_fine_->NewResultFile(name_helper.str(),numb_run_);
   output_fine_->WriteMesh(1, 0.01);
   output_fine_->NewStep( 1, 0.01);
@@ -1060,17 +1058,17 @@ void STR::MLMC::HelperFunctionOutput(RCP< Epetra_MultiVector> stress,RCP< Epetra
 }
 void STR::MLMC::HelperFunctionOutputTube(RCP< Epetra_MultiVector> stress,RCP< Epetra_MultiVector> strain, RCP<Epetra_MultiVector> disp)
 {
-  int error;
+
   // assamble name for outputfil
   std::stringstream outputfile;
-  outputfile << "statistics/" <<filename_ << "_statistics_output_" << start_run_ << ".txt";
+  outputfile <<filename_ << "_statistics_output_" << start_run_ << ".txt";
   string name = outputfile.str();;
   /// file to write output
   // paraview ids of nodes
   int node[5] = {566, 1764, 3402,5194,6510};
   double disp_mag[5];
   double stress_mag[5];
-  double strain_mag[5];
+  //double strain_mag[5];
   ofstream File;
   if (numb_run_ == 0 || numb_run_ == start_run_)
   {
