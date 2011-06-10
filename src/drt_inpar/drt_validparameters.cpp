@@ -1180,10 +1180,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      yesnotuple,yesnovalue,&mlmcp);
    IntParameter("NUMRUNS",200,"Number of Monte Carlo runs",&mlmcp);
 
-   IntParameter("NUMLEVELS",2,"Number of levels",&mlmcp);
+   //IntParameter("NUMLEVELS",2,"Number of levels",&mlmcp);
    setStringToIntegralParameter<int>("DIFF_TO_LOWER_LEVEL","no","calculate difference to next lower level",yesnotuple,yesnovalue,&mlmcp);
    IntParameter("START_RUN",0,"Run to start calculating the difference to lower level", &mlmcp);
-   IntParameter("END_RUN",0,"Run to stop calculating the difference to lower level", &mlmcp);
+   //IntParameter("END_RUN",0,"Run to stop calculating the difference to lower level", &mlmcp);
    // NUMLEVEL additional inputfiles are read name must be standard_inputfilename+_level_i.dat
    setNumericStringParameter("DISCRETIZATION_FOR_PROLONGATION","filename.dat",
                           "filename of.dat file which contains discretization to which the results are prolongated",
@@ -1198,7 +1198,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    IntParameter("ITENODEINELE",20,"Number iteration in Newton loop to determine background element",&mlmcp);
    DoubleParameter("CONVTOL",10e-5,"Convergence tolerance for Newton loop",&mlmcp);
    IntParameter("INITRANDOMSEED",1000,"Random seed for first Monte Carlo run",&mlmcp);
-   IntParameter("LEVELNUMBER",1,"Level number for Multi Level Monte Carlo", &mlmcp);
+   IntParameter("LEVELNUMBER",0,"Level number for Multi Level Monte Carlo", &mlmcp);
    // Parameters to simulate random field
    IntParameter("RANDOM_FIELD_DIMENSION",3,"Dimension of Random Field 2 or 3",&mlmcp);
    DoubleParameter("PERIODICITY",3000,"Period length of Random Field",&mlmcp);
