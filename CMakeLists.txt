@@ -181,7 +181,8 @@ endif (NOT Trilinos_DIR)
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 #find_package(MPI REQUIRED)
-find_package(Trilinos REQUIRED)
+#find_package(Trilinos REQUIRED)
+find_package(Trilinos REQUIRED CONFIGS TrilinosConfig_install.cmake)
 
 #find_package(Blitz)
 
