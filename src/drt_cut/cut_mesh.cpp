@@ -813,7 +813,7 @@ bool GEO::CUT::Mesh::DetectSelfCut()
         if ( not std::binary_search( mysides.begin(), mysides.end(), s ) or
              side.HaveCommonNode( *s ) )
         {
-          sides.erase( i++ );
+          set_erase( sides, i );
         }
         else
         {
@@ -1302,7 +1302,7 @@ void GEO::CUT::Mesh::FindFacetPositions()
       }
       if ( done )
       {
-        undecided.erase( ui++ );
+        set_erase( undecided, ui );
       }
       else
       {

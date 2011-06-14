@@ -179,7 +179,7 @@ void GEO::CUT::OctTreeNode::CollectEdges( const BoundingBox & edgebox, plain_edg
     {
       Point * p = &**i;
       const plain_edge_set & sds = p->CutEdges();
-      for ( plain_edge_set::iterator i=sds.begin(); i!=sds.end(); ++i )
+      for ( plain_edge_set::const_iterator i=sds.begin(); i!=sds.end(); ++i )
       {
         Edge * s = *i;
         if ( edges.count( s )==0 )
@@ -214,7 +214,7 @@ void GEO::CUT::OctTreeNode::CollectSides( const BoundingBox & sidebox, plain_sid
     {
       Point * p = &**i;
       const plain_side_set & sds = p->CutSides();
-      for ( plain_side_set::iterator i=sds.begin(); i!=sds.end(); ++i )
+      for ( plain_side_set::const_iterator i=sds.begin(); i!=sds.end(); ++i )
       {
         Side * s = *i;
         if ( sides.count( s )==0 )
@@ -249,7 +249,7 @@ void GEO::CUT::OctTreeNode::CollectElements( const BoundingBox & sidebox, plain_
     {
       Point * p = &**i;
       const plain_element_set & els = p->Elements();
-      for ( plain_element_set::iterator i=els.begin(); i!=els.end(); ++i )
+      for ( plain_element_set::const_iterator i=els.begin(); i!=els.end(); ++i )
       {
         Element * e = *i;
         if ( elements.count( e )==0 )

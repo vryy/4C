@@ -144,10 +144,10 @@ void GEO::CUT::Element::FindNodePositions()
     {
       bool done = false;
       const plain_facet_set & facets = p->Facets();
-      for ( plain_facet_set::iterator i=facets.begin(); i!=facets.end(); ++i )
+      for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
       {
         Facet * f = *i;
-        for ( plain_side_set::iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
+        for ( plain_side_set::const_iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
         {
           Side * s = *i;
 
@@ -202,7 +202,7 @@ void GEO::CUT::Element::FindNodePositions()
       // facets are already set, this will not have much effect anyway. But on
       // multiple cuts we avoid unset facets this way.
       const plain_facet_set & facets = p->Facets();
-      for ( plain_facet_set::iterator i=facets.begin(); i!=facets.end(); ++i )
+      for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
       {
         Facet * f = *i;
         f->Position( pos );

@@ -82,7 +82,7 @@ void test_colored_graph()
 
   c.TestClosed();
 
-  std::set<int> free;
+  GEO::CUT::plain_int_set free;
   g.GetAll( free );
 
   for ( GEO::CUT::COLOREDGRAPH::Graph::const_iterator i=c.begin(); i!=c.end(); ++i )
@@ -185,7 +185,7 @@ void test_colored_graph2()
 
   c.TestClosed();
 
-  std::set<int> free;
+  GEO::CUT::plain_int_set free;
   g.GetAll( free );
 
   for ( GEO::CUT::COLOREDGRAPH::Graph::const_iterator i=c.begin(); i!=c.end(); ++i )

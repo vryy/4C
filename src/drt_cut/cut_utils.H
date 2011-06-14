@@ -7,6 +7,13 @@
 #include <set>
 #include <cstring>
 
+#define CUT_USE_SORTED_VECTOR
+
+#ifdef CUT_USE_SORTED_VECTOR
+#include "sorted_vector.H"
+#endif
+
+
 namespace GEO
 {
   namespace CUT
@@ -25,6 +32,31 @@ namespace GEO
     class IntegrationCell;
 
     class Mesh;
+
+#ifdef CUT_USE_SORTED_VECTOR
+
+    typedef sorted_vector<int>         plain_int_set;
+
+    typedef sorted_vector<Node*>       plain_node_set;
+    typedef sorted_vector<Edge*>       plain_edge_set;
+    typedef sorted_vector<Side*>       plain_side_set;
+    typedef sorted_vector<Element*>    plain_element_set;
+
+    typedef sorted_vector<Point*>      plain_point_set;
+    typedef sorted_vector<Line*>       plain_line_set;
+    typedef sorted_vector<Facet*>      plain_facet_set;
+    typedef sorted_vector<VolumeCell*> plain_volumecell_set;
+
+    typedef sorted_vector<BoundaryCell*>    plain_boundarycell_set;
+    typedef sorted_vector<IntegrationCell*> plain_integrationcell_set;
+
+    template <class set>
+    void set_erase( set & s, typename set::iterator & i )
+    {
+      s.ierase( i );
+    }
+
+#else
 
     typedef std::set<int>         plain_int_set;
 
@@ -46,6 +78,8 @@ namespace GEO
     {
       s.erase( i++ );
     }
+
+#endif
 
     inline void DumpDoubles( std::ostream & stream, const double * data, int length )
     {

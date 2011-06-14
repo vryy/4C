@@ -296,7 +296,7 @@ inline void RemoveNonmatchingTriangulatedFacets( const std::vector<Point*> & sid
       {
         if ( not f->IsTriangulatedSide( side ) )
         {
-          facets.erase( i++ );
+          set_erase( facets, i );
         }
         else
         {

@@ -772,7 +772,7 @@ void GEO::CUT::TetMeshIntersection::SeedCells( Mesh & parent_mesh,
         Point * p = *i;
         if ( child_to_parent_.count( p )==0 )
         {
-          i = erase( child_cut_points, i );
+          set_erase( child_cut_points, i );
         }
         else
         {
@@ -1135,7 +1135,7 @@ void GEO::CUT::TetMeshIntersection::Fill( VolumeCell * parent_cell, ChildCell & 
 
 void GEO::CUT::TetMeshIntersection::RegisterNewPoints( Mesh & parent_mesh, const plain_volumecell_set & childset )
 {
-  for ( plain_volumecell_set::iterator i=childset.begin(); i!=childset.end(); ++i )
+  for ( plain_volumecell_set::const_iterator i=childset.begin(); i!=childset.end(); ++i )
   {
     VolumeCell * vc = *i;
     const plain_facet_set & facets = vc->Facets();

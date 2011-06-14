@@ -27,6 +27,7 @@
 #include <vector>
 #include <utility>
 #include <functional>
+#include <stdexcept>
 
 #include <boost/operators.hpp>
 
@@ -35,7 +36,7 @@ namespace GEO
 namespace CUT
 {
 
-  template <class K, bool bNoDuplicates = false, class Pr = std::less<K>, class A = std::allocator<K> >
+  template <class K, bool bNoDuplicates = true, class Pr = std::less<K>, class A = std::allocator<K> >
   class sorted_vector : public boost::less_than_comparable<sorted_vector<K, bNoDuplicates, Pr, A> >,
                                boost::equality_comparable<sorted_vector<K, bNoDuplicates, Pr, A> >
   {
@@ -213,7 +214,7 @@ namespace CUT
       }
     }
 
-    iterator erase( iterator p )
+    iterator ierase( iterator p )
     {
       return vec_.erase( p );
     }
@@ -325,12 +326,12 @@ namespace CUT
       }
     }
 
-    bool operator==( const sorted_vector<K,bNoDuplicates,Pr,A> & other )
+    bool operator==( const sorted_vector<K,bNoDuplicates,Pr,A> & other ) const
     {
       return Eq( other );
     }
 
-    bool operator<( const sorted_vector<K,bNoDuplicates,Pr,A> & other )
+    bool operator<( const sorted_vector<K,bNoDuplicates,Pr,A> & other ) const
     {
       return Lt( other );
     }

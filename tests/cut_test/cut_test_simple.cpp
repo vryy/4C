@@ -450,8 +450,8 @@ void test_hex8_mesh()
 
   mesh.Status();
 
-  std::set<GEO::CUT::Element*> done;
-  std::set<GEO::CUT::Element*> elements_done;
+  GEO::CUT::plain_element_set done;
+  GEO::CUT::plain_element_set elements_done;
   mesh.Cut( *( s ), done, elements_done );
 
   cutmesh( mesh );
@@ -1560,8 +1560,8 @@ void test_hex8_quad4_mesh()
   for ( std::vector<GEO::CUT::Side*>::iterator i=sides.begin(); i!=sides.end(); ++i )
   {
     GEO::CUT::Side* quad4 = *i;
-    std::set<GEO::CUT::Element*> done;
-    std::set<GEO::CUT::Element*> elements_done;
+    GEO::CUT::plain_element_set done;
+    GEO::CUT::plain_element_set elements_done;
     mesh.Cut( *( quad4 ), done, elements_done );
   }
 

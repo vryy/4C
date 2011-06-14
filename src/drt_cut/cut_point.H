@@ -15,12 +15,6 @@
 
 #include "cut_utils.H"
 
-#define CUT_USE_SORTED_VECTOR
-
-#ifdef CUT_USE_SORTED_VECTOR
-#include "sorted_vector.H"
-#endif
-
 namespace GEO
 {
 namespace CUT
@@ -262,23 +256,11 @@ typedef sorted_vector<Point*, true, PointPositionLess> PointPositionSet;
 
 typedef std::set<Teuchos::RCP<Point>, PointPidLess> RCPPointSet;
 
-inline PointSet::iterator erase( PointSet & ps, PointSet::iterator i )
-{
-  ps.erase( i );
-  return i;
-}
-
 #else
 typedef std::set<Point*, PointPidLess> PointSet;
 typedef std::set<Point*, PointPositionLess> PointPositionSet;
 
 typedef std::set<Teuchos::RCP<Point>, PointPidLess> RCPPointSet;
-
-inline PointSet::iterator erase( PointSet & ps, PointSet::iterator i )
-{
-  ps.erase( i++ );
-  return i;
-}
 
 #endif
 

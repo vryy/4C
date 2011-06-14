@@ -850,7 +850,7 @@ void test_tet4_quad4_alex9()
 
   GEO::CUT::ElementHandle * e = intersection.AddElement( 1, nids, tet4_xyze, DRT::Element::tet4 );
 
-  std::set<GEO::CUT::Side*> cut_sides;
+  GEO::CUT::plain_side_set cut_sides;
   s1->CollectSides( cut_sides );
   s2->CollectSides( cut_sides );
   s3->CollectSides( cut_sides );
@@ -940,7 +940,7 @@ void test_tet4_quad4_alex10()
 
   GEO::CUT::ElementHandle * e = intersection.AddElement( 1, nids, tet4_xyze, DRT::Element::tet4 );
 
-  std::set<GEO::CUT::Side*> cut_sides;
+  GEO::CUT::plain_side_set cut_sides;
   s1->CollectSides( cut_sides );
   s2->CollectSides( cut_sides );
   s3->CollectSides( cut_sides );

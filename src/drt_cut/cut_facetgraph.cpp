@@ -127,7 +127,7 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const plain_
       if ( f->HasHoles() )
       {
         const plain_facet_set & hs = f->Holes();
-        for ( plain_facet_set::iterator i=hs.begin(); i!=hs.end(); ++i )
+        for ( plain_facet_set::const_iterator i=hs.begin(); i!=hs.end(); ++i )
         {
           Facet * h = *i;
 
@@ -135,7 +135,7 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const plain_
           {
             int p1 = FacetId( h );
             plain_int_set & row = graph_[p1];
-            for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
+            for ( plain_int_set::const_iterator i=row.begin(); i!=row.end(); ++i )
             {
               int p2 = *i;
               cycle.Add( p1, p2 );
