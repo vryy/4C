@@ -554,7 +554,7 @@ namespace GEO
           off_count_ = 0;
 
           residual_ = 0;
-          incr_ = 0;
+          incr_ = 1;
 
           // Newton steps are supposed to converge within the side. Provide a
           // maximum legal step size. Larger steps are supposed to diverge.
@@ -569,6 +569,9 @@ namespace GEO
 
         bool TestConverged( int iter )
         {
+//           if ( iter==0 )
+//             return false;
+
           const double tol = LINSOLVETOL; // / scale_;
 
           residual_ = b_.Norm2();

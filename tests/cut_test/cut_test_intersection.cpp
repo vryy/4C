@@ -24,9 +24,12 @@
 void test_quad4_line2( double x1, double y1,
                        double x2, double y2 )
 {
+#if 0
   std::cout << "(" << x1 << "," << y1 << ")"
             << "--"
             << "(" << x2 << "," << y2 << ")\n";
+#endif
+
   GEO::CUT::Options options;
   GEO::CUT::Mesh mesh(options);
 
@@ -62,20 +65,29 @@ void test_quad4_line2( double x1, double y1,
 
   GEO::CUT::Intersection<DRT::Element::line2, DRT::Element::quad4> intersection( mesh, *edge, *cs );
 
+#if 0
   GEO::CUT::PointSet cuts;
   bool does = intersection.Intersect( cuts );
-
   std::cout << "does intersect: " << does << "  " << cuts.size() << "\n";
   for ( GEO::CUT::PointSet::iterator i=cuts.begin(); i!=cuts.end(); ++i )
   {
     GEO::CUT::Point * p = *i;
     p->Plot( std::cout );
   }
+#else
+  GEO::CUT::PointSet cuts;
+  intersection.Intersect( cuts );
+#endif
 
   mesh.Status();
 
   if ( cuts.size()!=2 )
-    throw std::runtime_error( "two cuts expected" );
+  {
+    std::stringstream str;
+    str << "two cuts expected but got " << cuts.size() << ": ";
+    std::copy( cuts.begin(), cuts.end(), std::ostream_iterator<GEO::CUT::Point*>( str, " " ) );
+    throw std::runtime_error( str.str() );
+  }
 }
 
 void test_quad4_line2()
