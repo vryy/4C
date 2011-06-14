@@ -390,7 +390,8 @@ namespace GEO
         }
       };
 
-      template <DRT::Element::DiscretizationType edgetype,
+      template <bool debug,
+                DRT::Element::DiscretizationType edgetype,
                 DRT::Element::DiscretizationType sidetype,
                 int numNodesLine    = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
                 int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement
@@ -411,7 +412,7 @@ namespace GEO
           px_ = &px;
         }
 
-        double Distance() { return xsi_( 2 ); }
+        double Distance() { return fabs( xsi_( 2 ) ); }
 
         const LINALG::Matrix<3,1> & LocalCoordinates() { return xsi_; }
 
@@ -428,12 +429,29 @@ namespace GEO
 
           DistanceSystem( surfaceDeriv2_, surfaceDeriv1_, surfaceFunct_,
                           *xyze_surface_, *px_,
-                          Distance(),
+                          xsi_( 2 ),
                           A_, B_, C_, cross_, b_ );
         }
 
         bool TestConverged( int iter )
         {
+          if ( debug )
+          {
+            std::cout << "  " << this->SurfaceWithinLimits( xsi_ )
+                      << "  " << xsi_.Norm2()
+                      << "  " << b_.Norm2()
+                      << "  " << ( b_.Norm2() / xsi_.Norm2() )
+                      << "\n"
+                      << "  " << xsi_
+                      << "  " << b_;
+          }
+
+          if ( iter > 0 and not this->SurfaceWithinLimits( xsi_ ) )
+          {
+            // if we are outside our side, just go
+            return true;
+          }
+
           double solres = xsi_.Norm2();
           double residual = b_.Norm2();
 
@@ -460,7 +478,13 @@ namespace GEO
 
         bool NewtonFailed()
         {
-          throw std::runtime_error( "Newton scheme did not converge" );
+          std::stringstream str;
+          str << "ComputeDistance: Newton scheme did not converge:\n"
+              << ( *xyze_surface_ )
+              << ( *px_ )
+              << xsi_
+            ;
+          throw std::runtime_error( str.str() );
         }
 
       private:
@@ -481,14 +505,14 @@ namespace GEO
       };
 
 
-      template <DRT::Element::DiscretizationType edgetype,
+      template <class Strategy,
+                DRT::Element::DiscretizationType edgetype,
                 DRT::Element::DiscretizationType sidetype,
                 int numNodesLine    = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
                 int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement
       >
-      class ComputeDistance : NewtonSolve<ComputeDistanceStrategy<edgetype,sidetype> >
+      class GenericComputeDistance : Strategy
       {
-        typedef NewtonSolve<ComputeDistanceStrategy<edgetype,sidetype> > Base;
       public:
 
         bool operator()( const LINALG::Matrix<3,numNodesSurface> & xyze_surface,
@@ -506,14 +530,32 @@ namespace GEO
 
         const LINALG::Matrix<3,1> & LocalCoordinates()
         {
-          return Base::LocalCoordinates();
+          return Strategy::LocalCoordinates();
         }
 
         bool SurfaceWithinLimits()
         {
-          return Base::SurfaceWithinLimits( LocalCoordinates() );
+          return Strategy::SurfaceWithinLimits( LocalCoordinates() );
         }
       };
+
+      template <DRT::Element::DiscretizationType edgetype,
+                DRT::Element::DiscretizationType sidetype,
+                int numNodesLine    = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
+                int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement
+      >
+      class ComputeDistance : public GenericComputeDistance<NewtonSolve<ComputeDistanceStrategy<false,edgetype,sidetype> >,
+                                                            edgetype,sidetype>
+      {};
+
+      template <DRT::Element::DiscretizationType edgetype,
+                DRT::Element::DiscretizationType sidetype,
+                int numNodesLine    = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
+                int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement
+      >
+      class DebugComputeDistance : public GenericComputeDistance<NewtonSolve<DebugNewtonStrategy<ComputeDistanceStrategy<true,edgetype,sidetype> > >,
+                                                                 edgetype,sidetype>
+      {};
 
 
       template <bool debug,
@@ -569,9 +611,6 @@ namespace GEO
 
         bool TestConverged( int iter )
         {
-//           if ( iter==0 )
-//             return false;
-
           const double tol = LINSOLVETOL; // / scale_;
 
           residual_ = b_.Norm2();

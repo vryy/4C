@@ -494,6 +494,23 @@ template <DRT::Element::DiscretizationType edgetype,
 >
 double Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeDistance( Point * p )
 {
+#if 1
+
+  KERNEL::ComputeDistance<edgetype, sidetype> cd;
+  //KERNEL::DebugComputeDistance<edgetype, sidetype> cd;
+  LINALG::Matrix<3,1> point( p->X() );
+
+  double dist;
+  if ( not cd( xyze_surfaceElement_, point, dist ) )
+  {
+    throw std::runtime_error( "failed to calculate side--point distance" );
+  }
+
+  xsi_ = cd.LocalCoordinates();
+
+  return dist;
+
+#else
   LINALG::Matrix<numNodesSurface,1> surfaceFunct;
   LINALG::Matrix<2,numNodesSurface> surfaceDeriv1;
   LINALG::Matrix<3,numNodesSurface> surfaceDeriv2;
@@ -637,6 +654,7 @@ double Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeD
   std::cout << "\n";
 #endif
   throw std::runtime_error( "Newton scheme did not converge" );
+#endif
 }
 
 
