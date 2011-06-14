@@ -3,6 +3,7 @@
 
 #include "cut_kernel.H"
 
+#if 0
 bool GEO::CUT::KERNEL::Intersection::operator()( const LINALG::Matrix<3,3> & tri3, const LINALG::Matrix<3,2> & line )
 {
   ComputeDistance<DRT::Element::line2, DRT::Element::tri3> cd;
@@ -45,3 +46,4 @@ bool GEO::CUT::KERNEL::Intersection::operator()( const LINALG::Matrix<3,4> & qua
 
   return false;
 }
+#endif

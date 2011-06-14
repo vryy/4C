@@ -6,6 +6,7 @@
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "cut_element.H"
 #include "cut_tolerance.H"
+#include "cut_kernel.H"
 
 namespace GEO
 {
@@ -83,6 +84,18 @@ template <DRT::Element::DiscretizationType elementtype,
 >
 bool Position<elementtype,numNodesElement>::Compute()
 {
+#if 1
+
+  KERNEL::ComputePosition<elementtype> cp;
+  if ( cp( xyze_, px_ ) )
+  {
+    xsi_ = cp.LocalCoordinates();
+    return WithinLimits();
+  }
+
+  return false;
+
+#else
   LINALG::Matrix<numNodesElement,1> funct;
   LINALG::Matrix<3,numNodesElement> deriv1;
 
@@ -155,6 +168,7 @@ bool Position<elementtype,numNodesElement>::Compute()
     }
   }
   return false;
+#endif
 }
 
 

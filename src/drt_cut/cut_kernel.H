@@ -280,7 +280,7 @@ namespace GEO
         }
       };
 
-
+      /// generic Newton algorithm
       template <class Strategy, int maxiter=20>
       class NewtonSolve : public Strategy
       {
@@ -315,6 +315,7 @@ namespace GEO
 
       };
 
+      /// empty strategy for generic Newton algorithm
       class EmptyNewtonStrategy
       {
       public:
@@ -344,6 +345,7 @@ namespace GEO
         }
       };
 
+      /// Debug helper strategy for generic Newton algorithm
       template <class Strategy>
       class DebugNewtonStrategy : public Strategy
       {
@@ -390,6 +392,142 @@ namespace GEO
         }
       };
 
+      /// strategy for position of point within element
+      template <bool debug,
+                DRT::Element::DiscretizationType elementtype,
+                int numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<elementtype>::numNodePerElement
+      >
+      class ComputePositionStrategy : public EmptyNewtonStrategy
+      {
+      public:
+
+        ComputePositionStrategy()
+          : xyze_( NULL ), px_( NULL )
+        {
+        }
+
+        void Setup( const LINALG::Matrix<3, numNodesElement> & xyze,
+                    const LINALG::Matrix<3,1> & px )
+        {
+          xyze_ = &xyze;
+          px_ = &px;
+        }
+
+        const LINALG::Matrix<3,1> & LocalCoordinates() { return xsi_; }
+
+        void SetupSolve()
+        {
+          xsi_ = 0;
+        }
+
+        void SetupStep( int iter )
+        {
+          DRT::UTILS::shape_function_3D( funct_, xsi_( 0 ), xsi_( 1 ), xsi_( 2 ), elementtype );
+
+          b_ = *px_;
+          b_.Multiply( -1, *xyze_, funct_, 1 );
+        }
+
+        bool TestConverged( int iter )
+        {
+          double residual = b_.Norm2();
+          return fabs( residual ) < TOLERANCE;
+        }
+
+        bool LinearSolve( int iter )
+        {
+          DRT::UTILS::shape_function_3D_deriv1( deriv1_, xsi_( 0 ), xsi_( 1 ), xsi_( 2 ), elementtype );
+
+          A_.MultiplyNT( *xyze_, deriv1_ );
+
+          dx_ = 0;
+          double det = LINALG::gaussElimination<true, 3>( A_, b_, dx_ );
+          return fabs( det ) >= LINSOLVETOL;
+        }
+
+        bool Update( int iter )
+        {
+          xsi_ += dx_;
+          return true;
+        }
+
+        bool NewtonFailed()
+        {
+#if 1
+          return false;
+#else
+          std::stringstream str;
+          str << "ComputePosition: Newton scheme did not converge:\n"
+              << ( *xyze_ )
+              << ( *px_ )
+              << xsi_
+            ;
+          throw std::runtime_error( str.str() );
+#endif
+        }
+
+      private:
+        const LINALG::Matrix<3, numNodesElement> * xyze_;
+        const LINALG::Matrix<3,1> * px_;
+
+        LINALG::Matrix<numNodesElement,1> funct_;
+        LINALG::Matrix<3,numNodesElement> deriv1_;
+
+        LINALG::Matrix<3,3> A_;
+        LINALG::Matrix<3,1> b_;
+        LINALG::Matrix<3,1> dx_;
+
+        LINALG::Matrix<3,1> xsi_;
+      };
+
+
+      /// distance between side and point
+      template <class Strategy,
+                DRT::Element::DiscretizationType elementtype,
+                int numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<elementtype>::numNodePerElement
+      >
+      class GenericComputePosition : Strategy
+      {
+      public:
+
+        bool operator()( const LINALG::Matrix<3, numNodesElement> & xyze,
+                         const LINALG::Matrix<3,1> & px )
+        {
+          Setup( xyze, px );
+          if ( this->Solve() )
+          {
+            return true;
+          }
+          return false;
+        }
+
+        const LINALG::Matrix<3,1> & LocalCoordinates()
+        {
+          return Strategy::LocalCoordinates();
+        }
+
+//         bool SurfaceWithinLimits()
+//         {
+//           return Strategy::SurfaceWithinLimits( LocalCoordinates() );
+//         }
+      };
+
+      template <DRT::Element::DiscretizationType elementtype,
+                int numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<elementtype>::numNodePerElement
+      >
+      class ComputePosition : public GenericComputePosition<NewtonSolve<ComputePositionStrategy<false,elementtype,numNodesElement> >,
+                                                            elementtype>
+      {};
+
+      template <DRT::Element::DiscretizationType elementtype,
+                int numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<elementtype>::numNodePerElement
+      >
+      class DebugComputePosition : public GenericComputePosition<NewtonSolve<DebugNewtonStrategy<ComputePositionStrategy<true,elementtype,numNodesElement> > >,
+                                                                 elementtype>
+      {};
+
+
+      /// strategy for distance between side and point
       template <bool debug,
                 DRT::Element::DiscretizationType edgetype,
                 DRT::Element::DiscretizationType sidetype,
@@ -505,6 +643,7 @@ namespace GEO
       };
 
 
+      /// distance between side and point
       template <class Strategy,
                 DRT::Element::DiscretizationType edgetype,
                 DRT::Element::DiscretizationType sidetype,
@@ -558,6 +697,7 @@ namespace GEO
       {};
 
 
+      /// strategy for intersection of side and line
       template <bool debug,
                 DRT::Element::DiscretizationType edgetype,
                 DRT::Element::DiscretizationType sidetype,
@@ -751,6 +891,7 @@ namespace GEO
         int off_count_;
       };
 
+      /// intersection of side and line
       template <class Strategy,
                 DRT::Element::DiscretizationType edgetype,
                 DRT::Element::DiscretizationType sidetype,
@@ -758,8 +899,6 @@ namespace GEO
                 int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement
       >
       class GenericComputeIntersection : Strategy
-                                         //: NewtonSolve<ComputeIntersectionStrategy<false, edgetype,sidetype> >
-          //: NewtonSolve<DebugNewtonStrategy<ComputeIntersectionStrategy<true, edgetype,sidetype> > >
       {
       public:
 
@@ -810,6 +949,7 @@ namespace GEO
       {};
 
 
+#if 0
       class Intersection
       {
       public:
@@ -819,7 +959,7 @@ namespace GEO
         bool operator()( const LINALG::Matrix<3,4> & quad4, const LINALG::Matrix<3,2> & line );
 
       };
-
+#endif
     }
   }
 }
