@@ -456,7 +456,19 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCur
   // Failed to converge Newton loop! This is bad. We have probably a very slow
   // cut here. But lets assume we are as close to the solution as possible and
   // use it further.
-  return true;
+  //return true;
+
+#if 0
+  std::stringstream str;
+  str << "newton failed to converge:\n"
+      << xyze_surfaceElement_
+      << xyze_lineElement_
+    ;
+  throw std::runtime_error( str.str() );
+#endif
+
+  // Since stagnation is taken care of, assume singularity.
+  return false;
 }
 
 

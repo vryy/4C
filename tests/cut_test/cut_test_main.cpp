@@ -174,6 +174,8 @@ void test_colored_graph2();
 void test_graph();
 void test_graph2();
 
+void test_geometry();
+
 typedef void ( *testfunct )();
 
 
@@ -405,6 +407,8 @@ int main( int argc, char ** argv )
   functable["colored_graph2"] = test_colored_graph2;
   functable["graph"] = test_graph;
   functable["graph2"] = test_graph2;
+
+  functable["geometry"] = test_geometry;
 
   Teuchos::CommandLineProcessor clp( false );
 

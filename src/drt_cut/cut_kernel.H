@@ -1,0 +1,734 @@
+#ifndef CUT_KERNEL_H
+#define CUT_KERNEL_H
+
+#include "cut_tolerance.H"
+
+#include "../drt_lib/drt_element.H"
+
+#include "../linalg/linalg_gauss.H"
+
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+
+namespace GEO
+{
+  namespace CUT
+  {
+    namespace KERNEL
+    {
+
+
+      template <DRT::Element::DiscretizationType edgetype,
+                DRT::Element::DiscretizationType sidetype,
+                int numNodesLine    = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
+                int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement
+      >
+      class Kernel
+      {
+      public:
+
+        template <int points>
+        double FindL2Scaling( LINALG::Matrix<3,points> & xyze )
+        {
+          double scale = 0;
+          LINALG::Matrix<3,1> d;
+          for ( int i=0; i<points; ++i )
+          {
+            LINALG::Matrix<3,1> x1( &xyze( 0, i ), true );
+            LINALG::Matrix<3,1> x2( &xyze( 0, ( i+1 )%points ), true );
+            d.Update( 1, x2, -1, x1, 0 );
+            scale += d.Norm2();
+          }
+          scale /= points;
+          return scale;
+        }
+
+        void ShapeFunctions( const LINALG::Matrix<3,1> & xsi,
+                             LINALG::Matrix<numNodesSurface,1> & surface,
+                             LINALG::Matrix<numNodesLine,1> & line )
+        {
+          DRT::UTILS::shape_function_2D( surface, xsi( 0 ), xsi( 1 ), sidetype );
+          DRT::UTILS::shape_function_1D( line, xsi( 2 ), edgetype );
+        }
+
+        void ShapeDeriv1( const LINALG::Matrix<3,1> & xsi,
+                          LINALG::Matrix<2,numNodesSurface> & surfaceDeriv1,
+                          LINALG::Matrix<1,numNodesLine> & lineDeriv1 )
+        {
+          DRT::UTILS::shape_function_2D_deriv1( surfaceDeriv1, xsi( 0 ), xsi( 1 ), sidetype );
+          DRT::UTILS::shape_function_1D_deriv1( lineDeriv1, xsi( 2 ), edgetype );
+        }
+
+        void ShapeDeriv2( const LINALG::Matrix<3,1> & xsi,
+                          LINALG::Matrix<3,numNodesSurface> & surfaceDeriv2,
+                          LINALG::Matrix<1,numNodesLine> & lineDeriv2 )
+        {
+          DRT::UTILS::shape_function_2D_deriv2( surfaceDeriv2, xsi( 0 ), xsi( 1 ), sidetype );
+          DRT::UTILS::shape_function_1D_deriv2( lineDeriv2, xsi( 2 ), edgetype );
+        }
+
+        void ShapeFunctions( const LINALG::Matrix<3,1> & xsi,
+                             LINALG::Matrix<numNodesLine,1> & line )
+        {
+          DRT::UTILS::shape_function_1D( line, xsi( 2 ), edgetype );
+        }
+
+        void ShapeDeriv1( const LINALG::Matrix<3,1> & xsi,
+                          LINALG::Matrix<1,numNodesLine> & lineDeriv1 )
+        {
+          DRT::UTILS::shape_function_1D_deriv1( lineDeriv1, xsi( 2 ), edgetype );
+        }
+
+        void ShapeDeriv2( const LINALG::Matrix<3,1> & xsi,
+                          LINALG::Matrix<1,numNodesLine> & lineDeriv2 )
+        {
+          DRT::UTILS::shape_function_1D_deriv2( lineDeriv2, xsi( 2 ), edgetype );
+        }
+
+        void ShapeFunctions( const LINALG::Matrix<3,1> & xsi,
+                             LINALG::Matrix<numNodesSurface,1> & surface )
+        {
+          DRT::UTILS::shape_function_2D( surface, xsi( 0 ), xsi( 1 ), sidetype );
+        }
+
+        void ShapeDeriv1( const LINALG::Matrix<3,1> & xsi,
+                          LINALG::Matrix<2,numNodesSurface> & surfaceDeriv1 )
+        {
+          DRT::UTILS::shape_function_2D_deriv1( surfaceDeriv1, xsi( 0 ), xsi( 1 ), sidetype );
+        }
+
+        void ShapeDeriv2( const LINALG::Matrix<3,1> & xsi,
+                          LINALG::Matrix<3,numNodesSurface> & surfaceDeriv2 )
+        {
+          DRT::UTILS::shape_function_2D_deriv2( surfaceDeriv2, xsi( 0 ), xsi( 1 ), sidetype );
+        }
+
+        void IntersectionRHS( const LINALG::Matrix<numNodesSurface,1> & surface,
+                              const LINALG::Matrix<numNodesLine,1> & line,
+                              const LINALG::Matrix<3,numNodesSurface> & xyze_surface,
+                              const LINALG::Matrix<3,numNodesLine> & xyze_line,
+                              LINALG::Matrix<3,1> & b )
+        {
+          b.Multiply( xyze_line, line );
+          b.Multiply( -1, xyze_surface, surface, 1 );
+        }
+
+        void IntersectionLHS( const LINALG::Matrix<2,numNodesSurface> & surfaceDeriv1,
+                              const LINALG::Matrix<1,numNodesLine> & lineDeriv1,
+                              const LINALG::Matrix<3,numNodesSurface> & xyze_surface,
+                              const LINALG::Matrix<3,numNodesLine> & xyze_line,
+                              LINALG::Matrix<3,3> & A )
+        {
+          A = 0;
+
+          for ( int inode=0; inode<numNodesSurface; ++inode )
+            for( int isd=0; isd<3; ++isd )
+            {
+              A(isd,0) += xyze_surface(isd,inode) * surfaceDeriv1(0,inode);
+              A(isd,1) += xyze_surface(isd,inode) * surfaceDeriv1(1,inode);
+            }
+
+          for ( int inode=0; inode<numNodesLine; ++inode )
+            for ( int isd=0; isd<3; ++isd )
+            {
+              A(isd,2) -= xyze_line(isd,inode) * lineDeriv1(0,inode);
+            }
+        }
+
+        void DistanceSystem( const LINALG::Matrix<3,numNodesSurface> & surfaceDeriv2,
+                             const LINALG::Matrix<2,numNodesSurface> & surfaceDeriv1,
+                             const LINALG::Matrix<numNodesSurface,1> & surface,
+                             const LINALG::Matrix<3,numNodesSurface> & xyze_surface,
+                             const LINALG::Matrix<3,1> & px,
+                             double distance,
+                             LINALG::Matrix<3,3> & A,
+                             LINALG::Matrix<3,3> & B,
+                             LINALG::Matrix<3,3> & C,
+                             LINALG::Matrix<3,1> & cross,
+                             LINALG::Matrix<3,1> & b )
+        {
+          b = px;
+          b.Multiply( -1, xyze_surface, surface, 1 );
+
+          A = 0;
+
+          for ( int inode=0; inode<numNodesSurface; ++inode )
+            for( int isd=0; isd<3; ++isd )
+            {
+              A(isd,0) += xyze_surface(isd,inode) * surfaceDeriv1(0,inode);
+              A(isd,1) += xyze_surface(isd,inode) * surfaceDeriv1(1,inode);
+            }
+
+          // cross product to get the normal at the point
+          cross( 0 ) = A( 1, 0 )*A( 2, 1 ) - A( 2, 0 )*A( 1, 1 );
+          cross( 1 ) = A( 2, 0 )*A( 0, 1 ) - A( 0, 0 )*A( 2, 1 );
+          cross( 2 ) = A( 0, 0 )*A( 1, 1 ) - A( 1, 0 )*A( 0, 1 );
+
+          // norm normal direction
+          double cnorm = cross.Norm2();
+          double fact1 = 1./cnorm;
+          //double fact2 = -0.5/( cnorm*sqrt( cnorm ) );
+          cross.Scale( fact1 );
+
+          C = 0;
+
+          for ( int inode=0; inode<numNodesSurface; ++inode )
+            for( int isd=0; isd<3; ++isd )
+            {
+              C(isd,0) += xyze_surface(isd,inode) * surfaceDeriv2(0,inode);
+              C(isd,1) += xyze_surface(isd,inode) * surfaceDeriv2(1,inode);
+              C(isd,2) += xyze_surface(isd,inode) * surfaceDeriv2(2,inode);
+            }
+
+          b( 0 ) -= cross( 0 )*distance;
+          b( 1 ) -= cross( 1 )*distance;
+          b( 2 ) -= cross( 2 )*distance;
+
+          A( 0, 2 ) = cross( 0 );
+          A( 1, 2 ) = cross( 1 );
+          A( 2, 2 ) = cross( 2 );
+
+          B = 0;
+
+          B( 0, 0 ) = ( C( 1, 0 )*A( 2, 1 )+A( 1, 0 )*C( 2, 2 ) - ( C( 2, 0 )*A( 1, 1 )+A( 2, 0 )*C( 1, 2 ) ) )*distance;
+          B( 0, 1 ) = ( C( 1, 2 )*A( 2, 1 )+A( 1, 0 )*C( 2, 1 ) - ( C( 2, 2 )*A( 1, 1 )+A( 2, 0 )*C( 1, 1 ) ) )*distance;
+
+          B( 1, 0 ) = ( C( 2, 0 )*A( 0, 1 )+A( 2, 0 )*C( 0, 2 ) - ( C( 0, 0 )*A( 2, 1 )+A( 0, 0 )*C( 2, 2 ) ) )*distance;
+          B( 1, 1 ) = ( C( 2, 2 )*A( 0, 1 )+A( 2, 0 )*C( 0, 1 ) - ( C( 0, 2 )*A( 2, 1 )+A( 0, 0 )*C( 2, 1 ) ) )*distance;
+
+          B( 2, 0 ) = ( C( 0, 0 )*A( 1, 1 )+A( 0, 0 )*C( 1, 2 ) - ( C( 1, 0 )*A( 0, 1 )+A( 1, 0 )*C( 0, 2 ) ) )*distance;
+          B( 2, 1 ) = ( C( 0, 2 )*A( 1, 1 )+A( 0, 0 )*C( 1, 1 ) - ( C( 1, 2 )*A( 0, 1 )+A( 1, 0 )*C( 0, 1 ) ) )*distance;
+
+          // product rule for normed cross product
+
+          B( 0, 0 ) *= fact1; //+ fact2 * A( 0, 2 );
+          B( 0, 1 ) *= fact1; //+ fact2 * A( 0, 2 );
+
+          B( 1, 0 ) *= fact1; //+ fact2 * A( 1, 2 );
+          B( 1, 1 ) *= fact1; //+ fact2 * A( 1, 2 );
+
+          B( 2, 0 ) *= fact1; //+ fact2 * A( 2, 2 );
+          B( 2, 1 ) *= fact1; //+ fact2 * A( 2, 2 );
+
+          A.Update( 1, B, 1 );
+        }
+
+        bool AtEdge( const LINALG::Matrix<3,1> & xsi )
+        {
+          switch ( sidetype )
+          {
+          case DRT::Element::quad4:
+          case DRT::Element::quad8:
+          case DRT::Element::quad9:
+          {
+            return ( fabs( xsi( 0 )+1 )<TOLERANCE or fabs( xsi( 1 )+1 )<TOLERANCE or
+                     fabs( xsi( 0 )-1 )<TOLERANCE or fabs( xsi( 1 )-1 )<TOLERANCE );
+          }
+          case DRT::Element::tri3:
+          case DRT::Element::tri6:
+          {
+            return ( fabs( xsi( 0 )+0 )<TOLERANCE or fabs( xsi( 1 )+0 )<TOLERANCE or
+                     fabs( xsi( 1 )+xsi( 0 )-1 )<TOLERANCE );
+          }
+          default:
+            throw std::runtime_error( "unsupported side type" );
+          }
+        }
+
+        bool SurfaceWithinLimits( const LINALG::Matrix<3,1> & xsi )
+        {
+          bool intersects = false;
+          switch ( sidetype )
+          {
+          case DRT::Element::quad4:
+          case DRT::Element::quad8:
+          case DRT::Element::quad9:
+          {
+            intersects = ( xsi( 0 ) >= -1-TOLERANCE and xsi( 1 ) >= -1-TOLERANCE and
+                           xsi( 0 ) <=  1+TOLERANCE and xsi( 1 ) <=  1+TOLERANCE );
+            break;
+          }
+          case DRT::Element::tri3:
+          case DRT::Element::tri6:
+          {
+            intersects = ( xsi( 0 ) >= 0-TOLERANCE and xsi( 1 ) >= 0-TOLERANCE and
+                           xsi( 0 ) <= 1+TOLERANCE and xsi( 1 ) <= 1+TOLERANCE and
+                           xsi( 1 ) <= ( 1 - xsi( 0 ) )+TOLERANCE );
+            break;
+          }
+          default:
+            throw std::runtime_error( "unsupported side type" );
+          }
+          return intersects;
+        }
+
+        bool LineWithinLimits( const LINALG::Matrix<3,1> & xsi )
+        {
+          return xsi( 2 ) >= -1-TOLERANCE and xsi( 2 ) <=  1+TOLERANCE;
+        }
+
+      };
+
+
+      template <class Strategy, int maxiter=20>
+      class NewtonSolve : public Strategy
+      {
+      public:
+
+        bool Solve()
+        {
+          this->SetupSolve();
+
+          for ( int iter = 0; iter < maxiter; ++iter )
+          {
+            this->SetupStep( iter );
+
+            if ( this->TestConverged( iter ) )
+            {
+              return true;
+            }
+
+            if ( not this->LinearSolve( iter ) )
+            {
+              return false;
+            }
+
+            if ( not this->Update( iter ) )
+            {
+              return false;
+            }
+          }
+
+          return this->NewtonFailed();
+        }
+
+      };
+
+      class EmptyNewtonStrategy
+      {
+      public:
+
+        void SetupSolve() {}
+
+        void SetupStep( int iter ) {}
+
+        bool TestConverged( int iter )
+        {
+          return false;
+        }
+
+        bool LinearSolve( int iter )
+        {
+          return true;
+        }
+
+        bool Update( int iter )
+        {
+          return true;
+        }
+
+        bool NewtonFailed()
+        {
+          return false;
+        }
+      };
+
+      template <class Strategy>
+      class DebugNewtonStrategy : public Strategy
+      {
+      public:
+
+        void SetupSolve()
+        {
+          std::cout << "SetupSolve()\n";
+          Strategy::SetupSolve();
+        }
+
+        void SetupStep( int iter )
+        {
+          std::cout << "SetupStep( " << iter << " )\n";
+          Strategy::SetupStep( iter );
+        }
+
+        bool TestConverged( int iter )
+        {
+          bool res = Strategy::TestConverged( iter );
+          std::cout << "TestConverged( " << iter << " ) = " << res << "\n";
+          return res;
+        }
+
+        bool LinearSolve( int iter )
+        {
+          bool res = Strategy::LinearSolve( iter );
+          std::cout << "LinearSolve( " << iter << " ) = " << res << "\n";
+          return res;
+        }
+
+        bool Update( int iter )
+        {
+          bool res = Strategy::Update( iter );
+          std::cout << "Update( " << iter << " ) = " << res << "\n";
+          return res;
+        }
+
+        bool NewtonFailed()
+        {
+          bool res = Strategy::NewtonFailed();
+          std::cout << "NewtonFailed() = " << res << "\n";
+          return res;
+        }
+      };
+
+      template <DRT::Element::DiscretizationType edgetype,
+                DRT::Element::DiscretizationType sidetype,
+                int numNodesLine    = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
+                int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement
+      >
+      class ComputeDistanceStrategy : public EmptyNewtonStrategy, Kernel<edgetype,sidetype>
+      {
+      public:
+
+        ComputeDistanceStrategy()
+          : xyze_surface_( NULL ), px_( NULL )
+        {
+        }
+
+        void Setup( const LINALG::Matrix<3,numNodesSurface> & xyze_surface,
+                    const LINALG::Matrix<3,1> & px )
+        {
+          xyze_surface_ = &xyze_surface;
+          px_ = &px;
+        }
+
+        double Distance() { return xsi_( 2 ); }
+
+        const LINALG::Matrix<3,1> & LocalCoordinates() { return xsi_; }
+
+        void SetupSolve()
+        {
+          xsi_ = 0;
+        }
+
+        void SetupStep( int iter )
+        {
+          ShapeFunctions( xsi_, surfaceFunct_ );
+          ShapeDeriv1( xsi_, surfaceDeriv1_ );
+          ShapeDeriv2( xsi_, surfaceDeriv2_ );
+
+          DistanceSystem( surfaceDeriv2_, surfaceDeriv1_, surfaceFunct_,
+                          *xyze_surface_, *px_,
+                          Distance(),
+                          A_, B_, C_, cross_, b_ );
+        }
+
+        bool TestConverged( int iter )
+        {
+          double solres = xsi_.Norm2();
+          double residual = b_.Norm2();
+
+          const double tol = LINSOLVETOL; // / scale_;
+
+          return ( ( solres >= std::numeric_limits<double>::min() and
+                     residual / solres < tol ) or
+                   residual < tol );
+        }
+
+        bool LinearSolve( int iter )
+        {
+          dx_ = 0;
+          double det = LINALG::gaussElimination<true, 3>( A_, b_, dx_ );
+          return det != 0;
+        }
+
+        bool Update( int iter )
+        {
+          xsi_ += dx_;
+          //return SurfaceWithinLimits( xsi_ );
+          return true;
+        }
+
+        bool NewtonFailed()
+        {
+          throw std::runtime_error( "Newton scheme did not converge" );
+        }
+
+      private:
+        const LINALG::Matrix<3,numNodesSurface> * xyze_surface_;
+        const LINALG::Matrix<3,1> * px_;
+
+        LINALG::Matrix<numNodesSurface,1> surfaceFunct_;
+        LINALG::Matrix<2,numNodesSurface> surfaceDeriv1_;
+        LINALG::Matrix<3,numNodesSurface> surfaceDeriv2_;
+
+        LINALG::Matrix<3,3> A_;
+        LINALG::Matrix<3,3> B_;
+        LINALG::Matrix<3,3> C_;
+        LINALG::Matrix<3,1> b_;
+        LINALG::Matrix<3,1> dx_;
+        LINALG::Matrix<3,1> cross_;
+        LINALG::Matrix<3,1> xsi_;
+      };
+
+
+      template <DRT::Element::DiscretizationType edgetype,
+                DRT::Element::DiscretizationType sidetype,
+                int numNodesLine    = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
+                int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement
+      >
+      class ComputeDistance : NewtonSolve<ComputeDistanceStrategy<edgetype,sidetype> >
+      {
+        typedef NewtonSolve<ComputeDistanceStrategy<edgetype,sidetype> > Base;
+      public:
+
+        bool operator()( const LINALG::Matrix<3,numNodesSurface> & xyze_surface,
+                         const LINALG::Matrix<3,1> & px,
+                         double & distance )
+        {
+          Setup( xyze_surface, px );
+          if ( this->Solve() )
+          {
+            distance = this->Distance();
+            return true;
+          }
+          return false;
+        }
+
+        const LINALG::Matrix<3,1> & LocalCoordinates()
+        {
+          return Base::LocalCoordinates();
+        }
+
+        bool SurfaceWithinLimits()
+        {
+          return Base::SurfaceWithinLimits( LocalCoordinates() );
+        }
+      };
+
+
+      template <bool debug,
+                DRT::Element::DiscretizationType edgetype,
+                DRT::Element::DiscretizationType sidetype,
+                int numNodesLine    = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
+                int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement
+      >
+      class ComputeIntersectionStrategy : public EmptyNewtonStrategy, Kernel<edgetype,sidetype>
+      {
+      public:
+
+        ComputeIntersectionStrategy()
+          :  xyze_surface_( NULL ),
+             xyze_line_( NULL )
+        {
+        }
+
+        void Setup( const LINALG::Matrix<3,numNodesSurface> & xyze_surface,
+                    const LINALG::Matrix<3,numNodesLine> & xyze_line )
+        {
+          xyze_surface_ = &xyze_surface;
+          xyze_line_    = &xyze_line;
+
+          if ( debug )
+          {
+            std::cout << std::setprecision( 15 ) << xyze_surface << xyze_line;
+          }
+        }
+
+        const LINALG::Matrix<3,1> & LocalCoordinates() { return xsi_; }
+
+        void SetupSolve()
+        {
+          xsi_ = 0;
+          dx_ = 0;
+          old_b_ = 0;
+//           oldres_ = 0;
+//           oldincr_ = 0;
+          off_count_ = 0;
+        }
+
+        void SetupStep( int iter )
+        {
+          ShapeFunctions( xsi_, surfaceFunct_, lineFunct_ );
+          IntersectionRHS( surfaceFunct_, lineFunct_, *xyze_surface_, *xyze_line_, b_ );
+        }
+
+        bool TestConverged( int iter )
+        {
+          const double tol = LINSOLVETOL; // / scale_;
+
+          double residual = b_.Norm2();
+          double incr = dx_.Norm2();
+
+          if ( debug )
+            std::cout << "  residual=" << std::setprecision( 15 ) << residual
+                      << "  incr=" << std::setprecision( 15 ) << incr
+//                       << "  dresidual=" << std::setprecision( 15 ) << fabs( residual-oldres_ )
+//                       << "  dincr=" << std::setprecision( 15 ) << fabs( incr-oldincr_ )
+                      << "\n";
+
+          if ( residual < tol and incr < tol )
+          {
+            return true;
+          }
+          if ( iter > 0 and off_count_ == 0 )
+          {
+            // test for stagnation
+            old_b_.Update( 1, b_, -1 );
+            //if ( fabs( residual-oldres_ ) < tol ) // and fabs( incr-oldincr_ ) < tol )
+            if ( old_b_.Norm2() < tol )
+            {
+              return true;
+            }
+          }
+          old_b_ = b_;
+//           oldres_ = residual;
+//           oldincr_ = incr;
+          return false;
+        }
+
+        bool LinearSolve( int iter )
+        {
+          ShapeDeriv1( xsi_, surfaceDeriv1_, lineDeriv1_ );
+          IntersectionLHS( surfaceDeriv1_, lineDeriv1_,
+                           *xyze_surface_, *xyze_line_,
+                           A_ );
+
+          dx_ = 0;
+          double det = LINALG::gaussElimination<true, 3>( A_, b_, dx_ );
+
+          if ( debug )
+            std::cout << "  det=" << std::setprecision( 15 ) << det << "\n";
+
+          if ( fabs( det ) == 0 )
+          {
+            if ( iter < 3 )
+            {
+              // try a different start point
+              dx_( ( 0+iter ) % 3 ) = .1;
+              dx_( ( 1+iter ) % 3 ) = .12;
+              dx_( ( 2+iter ) % 3 ) = .09;
+            }
+            else
+            {
+              // There is no solution. The line is parallel to the surface.
+              return false;
+            }
+          }
+          return true;
+        }
+
+        bool Update( int iter )
+        {
+          xsi_ += dx_;
+          if ( debug )
+          {
+            std::cout << "  xsi=" << xsi_;
+
+            LINALG::Matrix<numNodesSurface,1> surface;
+            LINALG::Matrix<numNodesLine,1> line;
+            ShapeFunctions( xsi_, surface, line );
+
+            LINALG::Matrix<3,1> x1;
+            LINALG::Matrix<3,1> x2;
+
+            x1.Multiply( *xyze_surface_, surface );
+            x2.Multiply( *xyze_line_, line );
+
+            std::cout << "  x1 =" << x1;
+            std::cout << "  x2 =" << x2;
+
+            x2.Update( 1, x1, -1 );
+            std::cout << "  dx =" << x2;
+          }
+          if ( not this->SurfaceWithinLimits( xsi_ ) or not this->LineWithinLimits( xsi_ ) )
+          {
+            off_count_ += 1;
+            if ( off_count_==3 )
+              return false;
+          }
+          else
+          {
+            off_count_ = 0;
+          }
+          return true;
+        }
+
+        bool NewtonFailed()
+        {
+          throw std::runtime_error( "Newton scheme did not converge" );
+        }
+
+      private:
+
+        const LINALG::Matrix<3,numNodesSurface> * xyze_surface_;
+        const LINALG::Matrix<3,numNodesLine> * xyze_line_;
+
+        LINALG::Matrix<numNodesSurface,1> surfaceFunct_;
+        LINALG::Matrix<numNodesLine,1> lineFunct_;
+        LINALG::Matrix<2,numNodesSurface> surfaceDeriv1_;
+        LINALG::Matrix<1,numNodesLine> lineDeriv1_;
+
+        LINALG::Matrix<3,3> A_;
+        LINALG::Matrix<3,1> b_;
+        LINALG::Matrix<3,1> dx_;
+        LINALG::Matrix<3,1> xsi_;
+
+        LINALG::Matrix<3,1> old_b_;
+
+//         double oldres_;
+//         double oldincr_;
+        int off_count_;
+      };
+
+      template <DRT::Element::DiscretizationType edgetype,
+                DRT::Element::DiscretizationType sidetype,
+                int numNodesLine    = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
+                int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement
+      >
+      class ComputeIntersection : NewtonSolve<DebugNewtonStrategy<ComputeIntersectionStrategy<true, edgetype,sidetype> > >
+      {
+        //typedef NewtonSolve<ComputeIntersectionStrategy<edgetype,sidetype> > Base;
+        typedef NewtonSolve<DebugNewtonStrategy<ComputeIntersectionStrategy<true, edgetype,sidetype> > > Base;
+      public:
+
+        bool operator()( const LINALG::Matrix<3,numNodesSurface> & xyze_surface,
+                         const LINALG::Matrix<3,numNodesLine> & xyze_line )
+        {
+          Setup( xyze_surface, xyze_line );
+          if ( this->Solve() )
+          {
+            return true;
+          }
+          return false;
+        }
+
+        const LINALG::Matrix<3,1> & LocalCoordinates()
+        {
+          return Base::LocalCoordinates();
+        }
+
+        bool SurfaceWithinLimits()
+        {
+          return Base::SurfaceWithinLimits( LocalCoordinates() );
+        }
+
+        bool LineWithinLimits()
+        {
+          return Base::LineWithinLimits( LocalCoordinates() );
+        }
+      };
+
+      class Intersection
+      {
+      public:
+
+        bool operator()( const LINALG::Matrix<3,3> & tri3, const LINALG::Matrix<3,2> & line );
+
+        bool operator()( const LINALG::Matrix<3,4> & quad4, const LINALG::Matrix<3,2> & line );
+
+      };
+
+    }
+  }
+}
+
+#endif

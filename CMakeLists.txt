@@ -1243,6 +1243,7 @@ set(OBJS_DRT_STK
 set(OBJS_DRT_CUT
   src/drt_cut/cut_boundarycell.cpp
   src/drt_cut/cut_boundingbox.cpp
+  src/drt_cut/cut_coloredgraph.cpp
   src/drt_cut/cut_creator.cpp
   src/drt_cut/cut_cycle.cpp
   src/drt_cut/cut_edge.cpp
@@ -1251,9 +1252,9 @@ set(OBJS_DRT_CUT
   src/drt_cut/cut_facet.cpp
   src/drt_cut/cut_facetgraph.cpp
   src/drt_cut/cut_find_cycles.cpp
-  src/drt_cut/cut_coloredgraph.cpp
   src/drt_cut/cut_integrationcell.cpp
   src/drt_cut/cut_integrationcellcreator.cpp
+  src/drt_cut/cut_kernel.cpp
   src/drt_cut/cut_levelsetintersection.cpp
   src/drt_cut/cut_levelsetside.cpp
   src/drt_cut/cut_line.cpp
@@ -1275,6 +1276,7 @@ set(OBJS_CUT_TEST
   tests/cut_test/cut_test_facets.cpp
   tests/cut_test/cut_test_graph.cpp
   tests/cut_test/cut_test_generator.cpp
+  tests/cut_test/cut_test_geometry.cpp
   tests/cut_test/cut_test_intersection.cpp
   tests/cut_test/cut_test_levelset.cpp
   tests/cut_test/cut_test_main.cpp
