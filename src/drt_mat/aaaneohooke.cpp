@@ -148,7 +148,8 @@ void MAT::AAAneohooke::Unpack(const vector<char>& data)
  where
 
  K    .. bulk modulus
- beta2 = 9.0 a parameter according to Holzapfel
+ beta2 =  -2.0 a parameter according to Doll and Schweizerhof; 9.0 according to Holzapfel, alternatively;
+ numerical stability parameter
  J    .. det(F) determinante of the Jacobian matrix
 
 
@@ -177,7 +178,7 @@ void MAT::AAAneohooke::Evaluate(
   const double alpha    = youngs*0.1666666666666666667;       // E = alpha * 6..
 
   // material parameters for volumetric part
-  const double beta2 = -2.0;                                   // parameter from Holzapfel
+  const double beta2 = -2.0;                                                   // parameter from Holzapfel
   const double komp  = (nue!=0.5) ? 2.0*alpha / (1.0-2.0*nue) : 0.0;              // bulk modulus
 
   //--------------------------------------------------------------------------------------
@@ -336,8 +337,9 @@ void MAT::AAAneohooke::Evaluate(
 
  where
 
- K    .. bulk modulus
- beta2 = 9.0 a parameter according to Holzapfel
+ K    .. bulk modulus 
+ beta2 =  -2.0 a parameter according to Doll and Schweizerhof; 9.0 according to Holzapfel, alternatively;
+ numerical stability parameter
  J    .. det(F) determinante of the Jacobian matrix
 
 
@@ -371,7 +373,7 @@ void MAT::AAAneohooke::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
   double alpha    = youngs*0.1666666666666666667;       // E = alpha * 6..
 
   // material parameters for volumetric part
-  double beta2 = 9.0;                                   // parameter from Holzapfel
+  double beta2 = -2.0;                                   // numerical parameter
   double komp  = 2.0*alpha / (1.0-2.0*nue);              // bulk modulus
 
   //--------------------------------------------------------------------------------------
