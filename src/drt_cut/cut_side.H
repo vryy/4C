@@ -94,6 +94,8 @@ public:
 
   bool OnEdge( Line * line );
 
+  bool HaveCommonNode( Side & side );
+
   bool HaveCommonEdge( Side & side );
 
 //   virtual void ExchangeFacetSide( Side * side, bool cutsurface ) = 0;

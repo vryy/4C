@@ -12,7 +12,7 @@
 #include "../../src/drt_cut/cut_options.H"
 
 #include "../../src/drt_fem_general/drt_utils_local_connectivity_matrices.H"
-        
+
 void test_alex53()
 {
   GEO::CUT::MeshIntersection intersection;
@@ -846,7 +846,12 @@ void test_alex53()
 
 
   intersection.Status();
-  intersection.Cut( true );
-  intersection.Status();
+//   intersection.Cut( true );
+//   intersection.Status();
+
+  if ( not intersection.CutMesh().DetectSelfCut() )
+  {
+    throw std::runtime_error( "self cut expected" );
+  }
 }
 

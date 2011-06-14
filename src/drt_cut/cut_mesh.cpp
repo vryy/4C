@@ -782,6 +782,61 @@ GEO::CUT::Pyramid5IntegrationCell* GEO::CUT::Mesh::NewPyramid5Cell( Point::Point
   return c;
 }
 
+bool GEO::CUT::Mesh::DetectSelfCut()
+{
+  std::vector<Side*> mysides;
+  mysides.reserve( sides_.size() );
+
+  for ( std::map<std::set<int>, Teuchos::RCP<Side> >::iterator i=sides_.begin();
+        i!=sides_.end();
+        ++i )
+  {
+    Side * side = &*i->second;
+    mysides.push_back( side );
+  }
+
+  std::sort( mysides.begin(), mysides.end() );
+
+  for ( std::map<std::set<int>, Teuchos::RCP<Side> >::iterator i=sides_.begin();
+        i!=sides_.end();
+        ++i )
+  {
+    Side & side = *i->second;
+    {
+      BoundingBox sidebox( side );
+      std::set<Side*> sides;
+      pp_->CollectSides( sidebox, sides );
+      sides.erase( &side );
+      for ( std::set<Side*>::iterator i=sides.begin(); i!=sides.end(); )
+      {
+        Side * s = *i;
+        if ( not std::binary_search( mysides.begin(), mysides.end(), s ) or
+             side.HaveCommonNode( *s ) )
+        {
+          sides.erase( i++ );
+        }
+        else
+        {
+          ++i;
+        }
+      }
+      for ( std::set<Side*>::iterator i=sides.begin(); i!=sides.end(); ++i )
+      {
+        Side * s = *i;
+        {
+          bool normal_cut  = side.FindCutPoints( *this, NULL, *s );
+          bool reverse_cut = s->FindCutPoints( *this, NULL, side );
+          if ( normal_cut or reverse_cut )
+          {
+            //std::cout << side << "\n" << ( *s ) << "\n";
+            return true;
+          }
+        }
+      }
+    }
+  }
+  return false;
+}
 
 #if 0
 void GEO::CUT::Mesh::SelfCut()
@@ -852,6 +907,9 @@ void GEO::CUT::Mesh::SelfCut()
 
 void GEO::CUT::Mesh::Cut( Mesh & mesh, std::set<Element*> & elements_done )
 {
+  if ( DetectSelfCut() )
+    throw std::runtime_error( "cut surface with self cut not supported" );
+
   std::set<Element*> my_elements_done;
 
   for ( std::map<std::set<int>, Teuchos::RCP<Side> >::iterator i=sides_.begin();

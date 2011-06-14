@@ -499,6 +499,20 @@ bool GEO::CUT::Side::OnEdge( Line * line )
   return false;
 }
 
+bool GEO::CUT::Side::HaveCommonNode( Side & side )
+{
+  const std::vector<Node*> & other_nodes = side.Nodes();
+  for ( std::vector<Node*>::const_iterator i=nodes_.begin(); i!=nodes_.end(); ++i )
+  {
+    Node * e = *i;
+    if ( std::find( other_nodes.begin(), other_nodes.end(), e )!=other_nodes.end() )
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool GEO::CUT::Side::HaveCommonEdge( Side & side )
 {
   const std::vector<Edge*> & other_edges = side.Edges();

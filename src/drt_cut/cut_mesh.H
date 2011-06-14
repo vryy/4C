@@ -100,7 +100,7 @@ public:
 
   Pyramid5IntegrationCell* NewPyramid5Cell( Point::PointPosition position, const std::vector<Point*> & points, VolumeCell * cell );
 
-//   void SelfCut();
+  bool DetectSelfCut();
 
   void Cut( Mesh & mesh, std::set<Element*> & elements_done );
 
