@@ -218,7 +218,13 @@ double GEO::CUT::Point::t( Edge* edge )
     x.Update( -z, x2, 1 );
     if ( x.Norm2() > MINIMALTOL )
     {
-      throw std::runtime_error( "point not on edge, no edge position" );
+      std::stringstream str;
+      str << "point not on edge, no edge position: "
+          << x.Norm2() << "\n"
+          << x
+          << x1
+          << x2;
+      throw std::runtime_error( str.str() );
     }
 
     double t = 2*z - 1;
