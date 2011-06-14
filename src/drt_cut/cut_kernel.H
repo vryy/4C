@@ -46,66 +46,6 @@ namespace GEO
           return scale;
         }
 
-        void ShapeFunctions( const LINALG::Matrix<3,1> & xsi,
-                             LINALG::Matrix<numNodesSurface,1> & surface,
-                             LINALG::Matrix<numNodesLine,1> & line )
-        {
-          DRT::UTILS::shape_function_2D( surface, xsi( 0 ), xsi( 1 ), sidetype );
-          DRT::UTILS::shape_function_1D( line, xsi( 2 ), edgetype );
-        }
-
-        void ShapeDeriv1( const LINALG::Matrix<3,1> & xsi,
-                          LINALG::Matrix<2,numNodesSurface> & surfaceDeriv1,
-                          LINALG::Matrix<1,numNodesLine> & lineDeriv1 )
-        {
-          DRT::UTILS::shape_function_2D_deriv1( surfaceDeriv1, xsi( 0 ), xsi( 1 ), sidetype );
-          DRT::UTILS::shape_function_1D_deriv1( lineDeriv1, xsi( 2 ), edgetype );
-        }
-
-        void ShapeDeriv2( const LINALG::Matrix<3,1> & xsi,
-                          LINALG::Matrix<3,numNodesSurface> & surfaceDeriv2,
-                          LINALG::Matrix<1,numNodesLine> & lineDeriv2 )
-        {
-          DRT::UTILS::shape_function_2D_deriv2( surfaceDeriv2, xsi( 0 ), xsi( 1 ), sidetype );
-          DRT::UTILS::shape_function_1D_deriv2( lineDeriv2, xsi( 2 ), edgetype );
-        }
-
-        void ShapeFunctions( const LINALG::Matrix<3,1> & xsi,
-                             LINALG::Matrix<numNodesLine,1> & line )
-        {
-          DRT::UTILS::shape_function_1D( line, xsi( 2 ), edgetype );
-        }
-
-        void ShapeDeriv1( const LINALG::Matrix<3,1> & xsi,
-                          LINALG::Matrix<1,numNodesLine> & lineDeriv1 )
-        {
-          DRT::UTILS::shape_function_1D_deriv1( lineDeriv1, xsi( 2 ), edgetype );
-        }
-
-        void ShapeDeriv2( const LINALG::Matrix<3,1> & xsi,
-                          LINALG::Matrix<1,numNodesLine> & lineDeriv2 )
-        {
-          DRT::UTILS::shape_function_1D_deriv2( lineDeriv2, xsi( 2 ), edgetype );
-        }
-
-        void ShapeFunctions( const LINALG::Matrix<3,1> & xsi,
-                             LINALG::Matrix<numNodesSurface,1> & surface )
-        {
-          DRT::UTILS::shape_function_2D( surface, xsi( 0 ), xsi( 1 ), sidetype );
-        }
-
-        void ShapeDeriv1( const LINALG::Matrix<3,1> & xsi,
-                          LINALG::Matrix<2,numNodesSurface> & surfaceDeriv1 )
-        {
-          DRT::UTILS::shape_function_2D_deriv1( surfaceDeriv1, xsi( 0 ), xsi( 1 ), sidetype );
-        }
-
-        void ShapeDeriv2( const LINALG::Matrix<3,1> & xsi,
-                          LINALG::Matrix<3,numNodesSurface> & surfaceDeriv2 )
-        {
-          DRT::UTILS::shape_function_2D_deriv2( surfaceDeriv2, xsi( 0 ), xsi( 1 ), sidetype );
-        }
-
         void IntersectionRHS( const LINALG::Matrix<numNodesSurface,1> & surface,
                               const LINALG::Matrix<numNodesLine,1> & line,
                               const LINALG::Matrix<3,numNodesSurface> & xyze_surface,
@@ -216,59 +156,6 @@ namespace GEO
           A.Update( 1, B, 1 );
         }
 
-        bool AtEdge( const LINALG::Matrix<3,1> & xsi )
-        {
-          switch ( sidetype )
-          {
-          case DRT::Element::quad4:
-          case DRT::Element::quad8:
-          case DRT::Element::quad9:
-          {
-            return ( fabs( xsi( 0 )+1 )<TOLERANCE or fabs( xsi( 1 )+1 )<TOLERANCE or
-                     fabs( xsi( 0 )-1 )<TOLERANCE or fabs( xsi( 1 )-1 )<TOLERANCE );
-          }
-          case DRT::Element::tri3:
-          case DRT::Element::tri6:
-          {
-            return ( fabs( xsi( 0 )+0 )<TOLERANCE or fabs( xsi( 1 )+0 )<TOLERANCE or
-                     fabs( xsi( 1 )+xsi( 0 )-1 )<TOLERANCE );
-          }
-          default:
-            throw std::runtime_error( "unsupported side type" );
-          }
-        }
-
-        bool SurfaceWithinLimits( const LINALG::Matrix<3,1> & xsi )
-        {
-          bool intersects = false;
-          switch ( sidetype )
-          {
-          case DRT::Element::quad4:
-          case DRT::Element::quad8:
-          case DRT::Element::quad9:
-          {
-            intersects = ( xsi( 0 ) >= -1-TOLERANCE and xsi( 1 ) >= -1-TOLERANCE and
-                           xsi( 0 ) <=  1+TOLERANCE and xsi( 1 ) <=  1+TOLERANCE );
-            break;
-          }
-          case DRT::Element::tri3:
-          case DRT::Element::tri6:
-          {
-            intersects = ( xsi( 0 ) >= 0-TOLERANCE and xsi( 1 ) >= 0-TOLERANCE and
-                           xsi( 0 ) <= 1+TOLERANCE and xsi( 1 ) <= 1+TOLERANCE and
-                           xsi( 1 ) <= ( 1 - xsi( 0 ) )+TOLERANCE );
-            break;
-          }
-          default:
-            throw std::runtime_error( "unsupported side type" );
-          }
-          return intersects;
-        }
-
-        bool LineWithinLimits( const LINALG::Matrix<3,1> & xsi )
-        {
-          return xsi( 2 ) >= -1-TOLERANCE and xsi( 2 ) <=  1+TOLERANCE;
-        }
 
         void Dump( std::ostream & stream, const double * data, int length )
         {
@@ -279,6 +166,99 @@ namespace GEO
           stream << "};\n";
         }
       };
+
+
+      template <DRT::Element::DiscretizationType sidetype>
+      bool AtEdge( const LINALG::Matrix<3,1> & xsi )
+      {
+        switch ( sidetype )
+        {
+        case DRT::Element::quad4:
+        case DRT::Element::quad8:
+        case DRT::Element::quad9:
+        {
+          return ( fabs( xsi( 0 )+1 )<TOLERANCE or fabs( xsi( 1 )+1 )<TOLERANCE or
+                   fabs( xsi( 0 )-1 )<TOLERANCE or fabs( xsi( 1 )-1 )<TOLERANCE );
+        }
+        case DRT::Element::tri3:
+        case DRT::Element::tri6:
+        {
+          return ( fabs( xsi( 0 )+0 )<TOLERANCE or fabs( xsi( 1 )+0 )<TOLERANCE or
+                   fabs( xsi( 1 )+xsi( 0 )-1 )<TOLERANCE );
+        }
+        default:
+          throw std::runtime_error( "unsupported side type" );
+        }
+      }
+
+
+      template <DRT::Element::DiscretizationType sidetype>
+      bool SurfaceWithinLimits( const LINALG::Matrix<3,1> & xsi )
+      {
+        bool intersects = false;
+        switch ( sidetype )
+        {
+        case DRT::Element::quad4:
+        case DRT::Element::quad8:
+        case DRT::Element::quad9:
+        {
+          intersects = ( xsi( 0 ) >= -1-TOLERANCE and xsi( 1 ) >= -1-TOLERANCE and
+                         xsi( 0 ) <=  1+TOLERANCE and xsi( 1 ) <=  1+TOLERANCE );
+          break;
+        }
+        case DRT::Element::tri3:
+        case DRT::Element::tri6:
+        {
+          intersects = ( xsi( 0 ) >= 0-TOLERANCE and xsi( 1 ) >= 0-TOLERANCE and
+                         xsi( 0 ) <= 1+TOLERANCE and xsi( 1 ) <= 1+TOLERANCE and
+                         xsi( 1 ) <= ( 1 - xsi( 0 ) )+TOLERANCE );
+          break;
+        }
+        default:
+          throw std::runtime_error( "unsupported side type" );
+        }
+        return intersects;
+      }
+
+
+      inline bool LineWithinLimits( const LINALG::Matrix<3,1> & xsi )
+      {
+        return xsi( 2 ) >= -1-TOLERANCE and xsi( 2 ) <=  1+TOLERANCE;
+      }
+
+
+      template <DRT::Element::DiscretizationType elementtype>
+      bool WithinLimits( const LINALG::Matrix<3,1> & xsi )
+      {
+        switch ( elementtype )
+        {
+        case DRT::Element::hex8:
+        case DRT::Element::hex20:
+        case DRT::Element::hex27:
+          return ( xsi( 0 ) >= -1-TOLERANCE and xsi( 1 ) >= -1-TOLERANCE and xsi( 2 ) >= -1-TOLERANCE and
+                   xsi( 0 ) <=  1+TOLERANCE and xsi( 1 ) <=  1+TOLERANCE and xsi( 2 ) <=  1+TOLERANCE );
+        case DRT::Element::tet4:
+        case DRT::Element::tet10:
+          return ( xsi( 0 ) >=   -TOLERANCE and xsi( 1 ) >=   -TOLERANCE and xsi( 2 ) >=   -TOLERANCE and
+                   xsi( 0 )+xsi( 1 )+xsi( 2 ) <= 1+TOLERANCE );
+        case DRT::Element::pyramid5:
+          return ( xsi( 0 ) >= -1-TOLERANCE and xsi( 1 ) >= -1-TOLERANCE and xsi( 2 ) >=   -TOLERANCE and
+                   xsi( 0 ) <=  1+TOLERANCE and xsi( 1 ) <=  1+TOLERANCE and
+                   ( fabs( xsi( 0 ) ) > fabs( xsi( 1 ) ) ?
+                     ( xsi( 2 )+fabs( xsi( 0 ) ) <= 1+TOLERANCE ) :
+                     ( xsi( 2 )+fabs( xsi( 1 ) ) <= 1+TOLERANCE ) )
+            );
+        case DRT::Element::wedge6:
+        case DRT::Element::wedge15:
+          return ( xsi( 0 ) >=   -TOLERANCE and xsi( 1 ) >=   -TOLERANCE and xsi( 2 ) >= -1-TOLERANCE and
+                   xsi( 2 ) <=  1+TOLERANCE and
+                   xsi( 0 )+xsi( 1 ) <= 1+TOLERANCE );
+        default:
+          throw std::runtime_error( "unsupported element type" );
+        }
+        return false;
+      }
+
 
       /// generic Newton algorithm
       template <class Strategy, int maxiter=20>
@@ -561,9 +541,9 @@ namespace GEO
 
         void SetupStep( int iter )
         {
-          ShapeFunctions( xsi_, surfaceFunct_ );
-          ShapeDeriv1( xsi_, surfaceDeriv1_ );
-          ShapeDeriv2( xsi_, surfaceDeriv2_ );
+          DRT::UTILS::shape_function_2D( surfaceFunct_, xsi_( 0 ), xsi_( 1 ), sidetype );
+          DRT::UTILS::shape_function_2D_deriv1( surfaceDeriv1_, xsi_( 0 ), xsi_( 1 ), sidetype );
+          DRT::UTILS::shape_function_2D_deriv2( surfaceDeriv2_, xsi_( 0 ), xsi_( 1 ), sidetype );
 
           DistanceSystem( surfaceDeriv2_, surfaceDeriv1_, surfaceFunct_,
                           *xyze_surface_, *px_,
@@ -575,7 +555,7 @@ namespace GEO
         {
           if ( debug )
           {
-            std::cout << "  " << this->SurfaceWithinLimits( xsi_ )
+            std::cout << "  " << SurfaceWithinLimits<sidetype>( xsi_ )
                       << "  " << xsi_.Norm2()
                       << "  " << b_.Norm2()
                       << "  " << ( b_.Norm2() / xsi_.Norm2() )
@@ -584,7 +564,7 @@ namespace GEO
                       << "  " << b_;
           }
 
-          if ( iter > 0 and not this->SurfaceWithinLimits( xsi_ ) )
+          if ( iter > 0 and not SurfaceWithinLimits<sidetype>( xsi_ ) )
           {
             // if we are outside our side, just go
             return true;
@@ -610,7 +590,6 @@ namespace GEO
         bool Update( int iter )
         {
           xsi_ += dx_;
-          //return SurfaceWithinLimits( xsi_ );
           return true;
         }
 
@@ -674,7 +653,7 @@ namespace GEO
 
         bool SurfaceWithinLimits()
         {
-          return Strategy::SurfaceWithinLimits( LocalCoordinates() );
+          return SurfaceWithinLimits<sidetype>( LocalCoordinates() );
         }
       };
 
@@ -745,7 +724,8 @@ namespace GEO
 
         void SetupStep( int iter )
         {
-          ShapeFunctions( xsi_, surfaceFunct_, lineFunct_ );
+          DRT::UTILS::shape_function_2D( surfaceFunct_, xsi_( 0 ), xsi_( 1 ), sidetype );
+          DRT::UTILS::shape_function_1D( lineFunct_, xsi_( 2 ), edgetype );
           IntersectionRHS( surfaceFunct_, lineFunct_, *xyze_surface_, *xyze_line_, b_ );
         }
 
@@ -779,7 +759,8 @@ namespace GEO
 
         bool LinearSolve( int iter )
         {
-          ShapeDeriv1( xsi_, surfaceDeriv1_, lineDeriv1_ );
+          DRT::UTILS::shape_function_2D_deriv1( surfaceDeriv1_, xsi_( 0 ), xsi_( 1 ), sidetype );
+          DRT::UTILS::shape_function_1D_deriv1( lineDeriv1_, xsi_( 2 ), edgetype );
           IntersectionLHS( surfaceDeriv1_, lineDeriv1_,
                            *xyze_surface_, *xyze_line_,
                            A_ );
@@ -822,14 +803,16 @@ namespace GEO
           if ( debug )
           {
             std::cout << "  off_count=" << off_count_
-                      << "  " << this->SurfaceWithinLimits( xsi_ )
-                      << "  " << this->LineWithinLimits( xsi_ )
+                      << "  " << SurfaceWithinLimits<sidetype>( xsi_ )
+                      << "  " << LineWithinLimits( xsi_ )
                       << "\n";
             std::cout << "  xsi=" << xsi_;
 
             LINALG::Matrix<numNodesSurface,1> surface;
             LINALG::Matrix<numNodesLine,1> line;
-            ShapeFunctions( xsi_, surface, line );
+
+            DRT::UTILS::shape_function_2D( surface, xsi_( 0 ), xsi_( 1 ), sidetype );
+            DRT::UTILS::shape_function_1D( line, xsi_( 2 ), edgetype );
 
             LINALG::Matrix<3,1> x1;
             LINALG::Matrix<3,1> x2;
@@ -843,7 +826,7 @@ namespace GEO
             x2.Update( 1, x1, -1 );
             std::cout << "  dx =" << x2;
           }
-          if ( not this->SurfaceWithinLimits( xsi_ ) or not this->LineWithinLimits( xsi_ ) )
+          if ( not SurfaceWithinLimits<sidetype>( xsi_ ) or not LineWithinLimits( xsi_ ) )
           {
             off_count_ += 1;
             if ( off_count_==3 )
@@ -920,12 +903,12 @@ namespace GEO
 
         bool SurfaceWithinLimits()
         {
-          return Strategy::SurfaceWithinLimits( LocalCoordinates() );
+          return SurfaceWithinLimits<sidetype>( LocalCoordinates() );
         }
 
         bool LineWithinLimits()
         {
-          return Strategy::LineWithinLimits( LocalCoordinates() );
+          return LineWithinLimits( LocalCoordinates() );
         }
       };
 
