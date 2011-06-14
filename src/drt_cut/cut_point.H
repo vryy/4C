@@ -254,7 +254,7 @@ private:
 typedef sorted_vector<Point*, true, PointPidLess> PointSet;
 typedef sorted_vector<Point*, true, PointPositionLess> PointPositionSet;
 
-typedef std::set<Teuchos::RCP<Point>, PointPidLess> RCPPointSet;
+typedef sorted_vector<Teuchos::RCP<Point>, true, PointPidLess> RCPPointSet;
 
 #else
 typedef std::set<Point*, PointPidLess> PointSet;

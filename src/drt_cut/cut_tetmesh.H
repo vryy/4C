@@ -283,10 +283,17 @@ namespace GEO
         std::vector<Entity<length-1>*> children_;
       };
 
+#ifdef CUT_USE_SORTED_VECTOR
+      template <int length>
+      class PlainEntitySet : public sorted_vector<Entity<length>*>
+      {
+      };
+#else
       template <int length>
       class PlainEntitySet : public std::set<Entity<length>*>
       {
       };
+#endif
 
       template <int length>
       class Domain
