@@ -13,6 +13,8 @@
 
 #include "../linalg/linalg_fixedsizematrix.H"
 
+#include "cut_utils.H"
+
 #define CUT_USE_SORTED_VECTOR
 
 #ifdef CUT_USE_SORTED_VECTOR
@@ -151,9 +153,10 @@ public:
   {
     f << std::setprecision( 10 ) << x_[0] << " "
       << std::setprecision( 10 ) << x_[1] << " "
-      << std::setprecision( 10 ) << x_[2] << " "
-      << pid_
-      << "\n";
+      << std::setprecision( 10 ) << x_[2] << " # "
+      << pid_;
+    DumpDoubles( f, X(), 3 );
+    f << "\n";
   }
 
   double t( Edge* edge );

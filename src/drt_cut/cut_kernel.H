@@ -5,6 +5,7 @@
 #include <iterator>
 
 #include "cut_tolerance.H"
+#include "cut_utils.H"
 
 #include "../drt_lib/drt_element.H"
 
@@ -34,16 +35,6 @@ namespace GEO
         }
         scale /= points;
         return scale;
-      }
-
-
-      inline void Dump( std::ostream & stream, const double * data, int length )
-      {
-        std::vector<int> c( length*sizeof( double ) / sizeof( int ) );
-        memcpy( &c[0], data, c.size()*sizeof( int ) );
-        stream << "  {";
-        std::copy( c.begin(), c.end(), std::ostream_iterator<int>( stream, "," ) );
-        stream << "};\n";
       }
 
 
@@ -873,8 +864,10 @@ namespace GEO
               << ( *xyze_surface_ )
               << ( *xyze_line_ )
             ;
-          Dump( str, xyze_surface_->A(), xyze_surface_->M()*xyze_surface_->N() );
-          Dump( str, xyze_line_   ->A(), xyze_line_   ->M()*xyze_line_   ->N() );
+          DumpDoubles( str, xyze_surface_->A(), xyze_surface_->M()*xyze_surface_->N() );
+          str << "\n";
+          DumpDoubles( str, xyze_line_   ->A(), xyze_line_   ->M()*xyze_line_   ->N() );
+          str << "\n";
           throw std::runtime_error( str.str() );
         }
 

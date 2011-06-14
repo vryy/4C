@@ -36,12 +36,12 @@ public:
 
   Point::PointPosition Position() const { return point_->Position(); }
 
-  void Print()
+  void Print( std::ostream & f=std::cout )
   {
     point_->Print();
   }
 
-  void Plot( std::ofstream & f )
+  void Plot( std::ostream & f )
   {
     point_->Plot( f );
   }
