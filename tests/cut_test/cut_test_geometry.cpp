@@ -3,7 +3,7 @@
 
 #include "../../src/drt_cut/cut_kernel.H"
 
-void test_geometry()
+void test_geometry_schleifend1()
 {
   LINALG::Matrix<3,3> tri3;
 
@@ -34,14 +34,42 @@ void test_geometry()
   line( 1, 1 ) = 0.66678706244096386246;
   line( 2, 1 ) = 0.49999999999999994449;
 
-  GEO::CUT::KERNEL::Intersection inter;
+  //GEO::CUT::KERNEL::DebugComputeIntersection<DRT::Element::line2, DRT::Element::tri3> ci;
+  GEO::CUT::KERNEL::ComputeIntersection<DRT::Element::line2, DRT::Element::tri3> ci;
 
-  if ( inter( tri3, line ) )
+  if ( ci( tri3, line ) )
   {
-    std::cout << "intersected\n";
   }
   else
   {
-    std::cout << "not intersected\n";
+    throw std::runtime_error( "not intersected" );
   }
+}
+
+void test_geometry_parallel1()
+{
+  int s[] = {0,1072693248,-1717986918,1070176665,-858993459,1071959244,0,1072693248,-858993459,1071959244,-1717986918,1070176665,-2,1072693247,-1717986918,1072273817,1717986919,1071015526};
+  int l[] = {0,-1075838976,-1717986918,1072273817,-1717986918,1070176665,0,-1075838976,-1717986918,1072273817,-1717986918,1072273817,};
+
+  LINALG::Matrix<3,3> tri3( reinterpret_cast<double*>( s ) );
+  LINALG::Matrix<3,2> line( reinterpret_cast<double*>( l ) );
+
+  //std::cout << tri3 << line;
+
+  //GEO::CUT::KERNEL::DebugComputeIntersection<DRT::Element::line2, DRT::Element::tri3> ci;
+  GEO::CUT::KERNEL::ComputeIntersection<DRT::Element::line2, DRT::Element::tri3> ci;
+
+  if ( ci( tri3, line ) )
+  {
+    throw std::runtime_error( "intersected" );
+  }
+  else
+  {
+  }
+}
+
+void test_geometry()
+{
+  test_geometry_schleifend1();
+  test_geometry_parallel1();
 }

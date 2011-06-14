@@ -1,6 +1,9 @@
 #ifndef CUT_KERNEL_H
 #define CUT_KERNEL_H
 
+#include <iostream>
+#include <iterator>
+
 #include "cut_tolerance.H"
 
 #include "../drt_lib/drt_element.H"
@@ -267,6 +270,14 @@ namespace GEO
           return xsi( 2 ) >= -1-TOLERANCE and xsi( 2 ) <=  1+TOLERANCE;
         }
 
+        void Dump( std::ostream & stream, const double * data, int length )
+        {
+          std::vector<int> c( length*sizeof( double ) / sizeof( int ) );
+          memcpy( &c[0], data, c.size()*sizeof( int ) );
+          stream << "  {";
+          std::copy( c.begin(), c.end(), std::ostream_iterator<int>( stream, "," ) );
+          stream << "};\n";
+        }
       };
 
 
@@ -540,9 +551,14 @@ namespace GEO
           xsi_ = 0;
           dx_ = 0;
           old_b_ = 0;
-//           oldres_ = 0;
-//           oldincr_ = 0;
           off_count_ = 0;
+
+          residual_ = 0;
+          incr_ = 0;
+
+          // Newton steps are supposed to converge within the side. Provide a
+          // maximum legal step size. Larger steps are supposed to diverge.
+          maxincr_ = 10 * xyze_surface_->Norm2();
         }
 
         void SetupStep( int iter )
@@ -555,17 +571,14 @@ namespace GEO
         {
           const double tol = LINSOLVETOL; // / scale_;
 
-          double residual = b_.Norm2();
-          double incr = dx_.Norm2();
+          residual_ = b_.Norm2();
 
           if ( debug )
-            std::cout << "  residual=" << std::setprecision( 15 ) << residual
-                      << "  incr=" << std::setprecision( 15 ) << incr
-//                       << "  dresidual=" << std::setprecision( 15 ) << fabs( residual-oldres_ )
-//                       << "  dincr=" << std::setprecision( 15 ) << fabs( incr-oldincr_ )
+            std::cout << "  residual=" << std::setprecision( 15 ) << residual_
+                      << "  incr=" << std::setprecision( 15 ) << incr_
                       << "\n";
 
-          if ( residual < tol and incr < tol )
+          if ( residual_ < tol and incr_ < tol )
           {
             return true;
           }
@@ -573,15 +586,12 @@ namespace GEO
           {
             // test for stagnation
             old_b_.Update( 1, b_, -1 );
-            //if ( fabs( residual-oldres_ ) < tol ) // and fabs( incr-oldincr_ ) < tol )
             if ( old_b_.Norm2() < tol )
             {
               return true;
             }
           }
           old_b_ = b_;
-//           oldres_ = residual;
-//           oldincr_ = incr;
           return false;
         }
 
@@ -613,6 +623,14 @@ namespace GEO
               return false;
             }
           }
+
+          // beware of large steps that diverge
+          incr_ = dx_.Norm2();
+          if ( incr_ > maxincr_ )
+          {
+            return false;
+          }
+
           return true;
         }
 
@@ -621,6 +639,10 @@ namespace GEO
           xsi_ += dx_;
           if ( debug )
           {
+            std::cout << "  off_count=" << off_count_
+                      << "  " << this->SurfaceWithinLimits( xsi_ )
+                      << "  " << this->LineWithinLimits( xsi_ )
+                      << "\n";
             std::cout << "  xsi=" << xsi_;
 
             LINALG::Matrix<numNodesSurface,1> surface;
@@ -654,7 +676,14 @@ namespace GEO
 
         bool NewtonFailed()
         {
-          throw std::runtime_error( "Newton scheme did not converge" );
+          std::stringstream str;
+          str << "Newton scheme did not converge:\n  "
+              << ( *xyze_surface_ )
+              << ( *xyze_line_ )
+            ;
+          Dump( str, xyze_surface_->A(), xyze_surface_->M()*xyze_surface_->N() );
+          Dump( str, xyze_line_   ->A(), xyze_line_   ->M()*xyze_line_   ->N() );
+          throw std::runtime_error( str.str() );
         }
 
       private:
@@ -674,20 +703,22 @@ namespace GEO
 
         LINALG::Matrix<3,1> old_b_;
 
-//         double oldres_;
-//         double oldincr_;
+        double residual_;
+        double incr_;
+        double maxincr_;
         int off_count_;
       };
 
-      template <DRT::Element::DiscretizationType edgetype,
+      template <class Strategy,
+                DRT::Element::DiscretizationType edgetype,
                 DRT::Element::DiscretizationType sidetype,
                 int numNodesLine    = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
                 int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement
       >
-      class ComputeIntersection : NewtonSolve<DebugNewtonStrategy<ComputeIntersectionStrategy<true, edgetype,sidetype> > >
+      class GenericComputeIntersection : Strategy
+                                         //: NewtonSolve<ComputeIntersectionStrategy<false, edgetype,sidetype> >
+          //: NewtonSolve<DebugNewtonStrategy<ComputeIntersectionStrategy<true, edgetype,sidetype> > >
       {
-        //typedef NewtonSolve<ComputeIntersectionStrategy<edgetype,sidetype> > Base;
-        typedef NewtonSolve<DebugNewtonStrategy<ComputeIntersectionStrategy<true, edgetype,sidetype> > > Base;
       public:
 
         bool operator()( const LINALG::Matrix<3,numNodesSurface> & xyze_surface,
@@ -703,19 +734,39 @@ namespace GEO
 
         const LINALG::Matrix<3,1> & LocalCoordinates()
         {
-          return Base::LocalCoordinates();
+          return Strategy::LocalCoordinates();
         }
 
         bool SurfaceWithinLimits()
         {
-          return Base::SurfaceWithinLimits( LocalCoordinates() );
+          return Strategy::SurfaceWithinLimits( LocalCoordinates() );
         }
 
         bool LineWithinLimits()
         {
-          return Base::LineWithinLimits( LocalCoordinates() );
+          return Strategy::LineWithinLimits( LocalCoordinates() );
         }
       };
+
+
+      template <DRT::Element::DiscretizationType edgetype,
+                DRT::Element::DiscretizationType sidetype,
+                int numNodesLine    = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
+                int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement
+      >
+      class ComputeIntersection : public GenericComputeIntersection<NewtonSolve<ComputeIntersectionStrategy<false,edgetype,sidetype> >,
+                                                                    edgetype,sidetype>
+      {};
+
+      template <DRT::Element::DiscretizationType edgetype,
+                DRT::Element::DiscretizationType sidetype,
+                int numNodesLine    = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
+                int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement
+      >
+      class DebugComputeIntersection : public GenericComputeIntersection<NewtonSolve<DebugNewtonStrategy<ComputeIntersectionStrategy<true,edgetype,sidetype> > >,
+                                                                         edgetype,sidetype>
+      {};
+
 
       class Intersection
       {

@@ -15,6 +15,7 @@
 #include "cut_edge.H"
 #include "cut_side.H"
 #include "cut_mesh.H"
+#include "cut_kernel.H"
 
 namespace GEO
 {
@@ -263,6 +264,19 @@ template <DRT::Element::DiscretizationType edgetype,
 >
 bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCurveSurfaceIntersection()
 {
+#if 1
+
+  KERNEL::ComputeIntersection<edgetype, sidetype> ci;
+
+  if ( ci( xyze_surfaceElement_, xyze_lineElement_ ) )
+  {
+    xsi_ = ci.LocalCoordinates();
+    return true;
+  }
+
+  return false;
+
+#else
   LINALG::Matrix<numNodesSurface,1> surfaceFunct;
   LINALG::Matrix<numNodesLine,1> lineFunct;
   LINALG::Matrix<2,numNodesSurface> surfaceDeriv1;
@@ -469,6 +483,7 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCur
 
   // Since stagnation is taken care of, assume singularity.
   return false;
+#endif
 }
 
 
