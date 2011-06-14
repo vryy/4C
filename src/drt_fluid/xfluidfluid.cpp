@@ -363,12 +363,12 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
       GEO::CUT::ElementHandle * e = wizard_.GetElement( actele );
       if ( e!=NULL )
       {
-        std::set<GEO::CUT::VolumeCell*> cells;
+        GEO::CUT::plain_volumecell_set cells;
         std::vector<DRT::UTILS::GaussIntegration> intpoints;
         e->VolumeCellGaussPoints( cells, intpoints );
 
         int count = 0;
-        for ( std::set<GEO::CUT::VolumeCell*>::iterator i=cells.begin(); i!=cells.end(); ++i )
+        for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
         {
           GEO::CUT::VolumeCell * vc = *i;
           std::map<int, std::vector<Epetra_SerialDenseMatrix> > side_coupling;
@@ -662,12 +662,12 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
     GEO::CUT::ElementHandle * e = wizard_.GetElement( actele );
     if ( e!=NULL )
     {
-      std::set<GEO::CUT::VolumeCell*> cells;
+      GEO::CUT::plain_volumecell_set cells;
       std::vector<DRT::UTILS::GaussIntegration> intpoints;
       e->VolumeCellGaussPoints( cells, intpoints );
 
       int count = 0;
-      for ( std::set<GEO::CUT::VolumeCell*>::iterator i=cells.begin(); i!=cells.end(); ++i )
+      for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
       {
         GEO::CUT::VolumeCell * vc = *i;
         if ( vc->Position()==GEO::CUT::Point::outside )
@@ -853,8 +853,8 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputVolumeCell( DRT::Discretizati
     press( 0, i ) = m[4*i+3];
   }
 
-  const std::set<GEO::CUT::IntegrationCell*> & intcells = vc->IntegrationCells();
-  for ( std::set<GEO::CUT::IntegrationCell*>::const_iterator i=intcells.begin();
+  const GEO::CUT::plain_integrationcell_set & intcells = vc->IntegrationCells();
+  for ( GEO::CUT::plain_integrationcell_set::const_iterator i=intcells.begin();
         i!=intcells.end();
         ++i )
   {

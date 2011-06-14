@@ -125,10 +125,10 @@ void GEO::CutWizard::Cut( std::map< int, DomainIntCells >& domainintcells,
     {
       cutelements.push_back( eid );
 
-      std::set<GEO::CUT::IntegrationCell*> cells;
+      GEO::CUT::plain_integrationcell_set cells;
       e->GetIntegrationCells( cells );
 
-      std::set<GEO::CUT::BoundaryCell*> bcells;
+      GEO::CUT::plain_boundarycell_set bcells;
       e->GetBoundaryCells( bcells );
 
       BoundaryIntCells & bics = boundaryintcells[eid];
@@ -138,7 +138,7 @@ void GEO::CutWizard::Cut( std::map< int, DomainIntCells >& domainintcells,
       LINALG::Matrix<3,1> eleCoordDomainCorner;
       LINALG::Matrix<3,1> eleCoordBoundaryCorner;
 
-      for ( std::set<GEO::CUT::BoundaryCell*>::iterator i=bcells.begin();
+      for ( GEO::CUT::plain_boundarycell_set::iterator i=bcells.begin();
             i!=bcells.end();
             ++i )
       {
@@ -167,7 +167,7 @@ void GEO::CutWizard::Cut( std::map< int, DomainIntCells >& domainintcells,
         bics.push_back( BoundaryIntCell( distype, s->Id(), eleDomainCoord, eleBoundaryCoord, physDomainCoord ) );
       }
 
-      for ( std::set<GEO::CUT::IntegrationCell*>::iterator i=cells.begin(); i!=cells.end(); ++i )
+      for ( GEO::CUT::plain_integrationcell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
       {
         GEO::CUT::IntegrationCell * ic = *i;
         DRT::Element::DiscretizationType distype = ic->Shape();

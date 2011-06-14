@@ -2716,7 +2716,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
           xyze(2,inode) = node->X()[2];
         }
 
-        std::set<GEO::CUT::Element*> cuteles;
+        GEO::CUT::plain_element_set cuteles;
         ehandle->CollectElements( cuteles );
 
         switch(distype_cell)
@@ -2742,12 +2742,12 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
         // compute volume of refinement cell (element)
         //--------------------------------------------
 
-        for ( std::set<GEO::CUT::Element*>::const_iterator icutele=cuteles.begin(); icutele!=cuteles.end(); ++icutele )
+        for ( GEO::CUT::plain_element_set::const_iterator icutele=cuteles.begin(); icutele!=cuteles.end(); ++icutele )
         {
           // get pointer to cut element
           GEO::CUT::Element* cutele = *icutele;
 
-          std::set<GEO::CUT::VolumeCell*> volcells;
+          GEO::CUT::plain_volumecell_set volcells;
           volcells = cutele->VolumeCells();
           const int numvolcells = volcells.size();
 
@@ -4893,7 +4893,7 @@ void COMBUST::FlameFront::buildPLC(
 
     if ( e!=NULL and e->IsCut() )
     {
-      std::set<GEO::CUT::IntegrationCell*> cells;
+      GEO::CUT::plain_integrationcell_set cells;
       e->GetIntegrationCells( cells );
 
       //std::set<GEO::CUT::BoundaryCell*> bcells;
@@ -4902,7 +4902,7 @@ void COMBUST::FlameFront::buildPLC(
       LINALG::Matrix<3,1> physCoordCorner;
       LINALG::Matrix<3,1> eleCoordDomainCorner;
 
-      for ( std::set<GEO::CUT::IntegrationCell*>::iterator i=cells.begin(); i!=cells.end(); ++i )
+      for ( GEO::CUT::plain_integrationcell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
       {
         GEO::CUT::IntegrationCell * ic = *i;
         DRT::Element::DiscretizationType distype = ic->Shape();
@@ -5053,7 +5053,7 @@ size_t COMBUST::FlameFront::StoreDomainIntegrationCells(
   size_t numstoredvol = 0;
 
   // get volume cells
-  std::set<GEO::CUT::VolumeCell*> volcells;
+  GEO::CUT::plain_volumecell_set volcells;
   volcells = element->VolumeCells();
 
   //--------------------------------------------
@@ -5062,7 +5062,7 @@ size_t COMBUST::FlameFront::StoreDomainIntegrationCells(
   // define tolerances
   const double voltol = VOLTOL;
   double refvol = 0.0;
-  for ( std::set<GEO::CUT::VolumeCell*>::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
+  for ( GEO::CUT::plain_volumecell_set::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
   {
     GEO::CUT::VolumeCell * volcell = *ivolcell;
     refvol += volcell->Volume();
@@ -5073,7 +5073,7 @@ size_t COMBUST::FlameFront::StoreDomainIntegrationCells(
   //-------------------------------------
   size_t domcellcount = 0;
 
-  for ( std::set<GEO::CUT::VolumeCell*>::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
+  for ( GEO::CUT::plain_volumecell_set::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
   {
     GEO::CUT::VolumeCell * volcell = *ivolcell;
     //cout << "volumen " << setw(24)<< std::setprecision(20) << volcell->Volume() << endl;
@@ -5081,10 +5081,10 @@ size_t COMBUST::FlameFront::StoreDomainIntegrationCells(
     if (volcell->Volume()/refvol >= voltol) // volume cell is large enough
     {
       // get domain integration cells
-      const std::set<GEO::CUT::IntegrationCell*> cells = volcell->IntegrationCells();
+      const GEO::CUT::plain_integrationcell_set cells = volcell->IntegrationCells();
 
       // loop domain integration cells
-      for ( std::set<GEO::CUT::IntegrationCell*>::iterator icell=cells.begin(); icell!=cells.end(); ++icell )
+      for ( GEO::CUT::plain_integrationcell_set::const_iterator icell=cells.begin(); icell!=cells.end(); ++icell )
       {
         GEO::CUT::IntegrationCell * ic = *icell;
         DRT::Element::DiscretizationType distype = ic->Shape();
@@ -5151,7 +5151,7 @@ size_t COMBUST::FlameFront::StoreBoundaryIntegrationCells(
   size_t numstoredbound = 0;
 
   // get volume cells
-  std::set<GEO::CUT::VolumeCell*> volcells;
+  GEO::CUT::plain_volumecell_set volcells;
   volcells = element->VolumeCells();
   const int numvolcells = volcells.size();
 
@@ -5162,7 +5162,7 @@ size_t COMBUST::FlameFront::StoreBoundaryIntegrationCells(
   const double voltol = VOLTOL;
   const double areatol = 1.0E-1;//2.0*pow(voltol,2.0/3.0);
   double refvol = 0.0;
-  for ( std::set<GEO::CUT::VolumeCell*>::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
+  for ( GEO::CUT::plain_volumecell_set::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
   {
     GEO::CUT::VolumeCell * volcell = *ivolcell;
     refvol += volcell->Volume();
@@ -5177,19 +5177,19 @@ size_t COMBUST::FlameFront::StoreBoundaryIntegrationCells(
   LINALG::Matrix<3,1> physCoordVertex;
   LINALG::Matrix<3,1> eleCoordVertex;
 
-  for ( std::set<GEO::CUT::VolumeCell*>::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
+  for ( GEO::CUT::plain_volumecell_set::const_iterator ivolcell=volcells.begin(); ivolcell!=volcells.end(); ++ivolcell )
   {
     GEO::CUT::VolumeCell * volcell = *ivolcell;
 
     if (volcell->Position() == GEO::CUT::Point::outside) // volume cell is in G-plus domain (G>0)
     {
       // get boundary integration cells
-      const std::set<GEO::CUT::BoundaryCell*> & bcells = volcell->BoundaryCells();
+      const GEO::CUT::plain_boundarycell_set & bcells = volcell->BoundaryCells();
 
       size_t bcellcount = 0;
       const double volume = volcell->Volume();
       double boundarea = 0.0;
-      for ( std::set<GEO::CUT::BoundaryCell*>::iterator ibcell=bcells.begin(); ibcell!=bcells.end(); ++ibcell )
+      for ( GEO::CUT::plain_boundarycell_set::const_iterator ibcell=bcells.begin(); ibcell!=bcells.end(); ++ibcell )
       {
         GEO::CUT::BoundaryCell * bcell = *ibcell;
         boundarea += bcell->Area();
@@ -5202,7 +5202,7 @@ size_t COMBUST::FlameFront::StoreBoundaryIntegrationCells(
       if (( volume/refvol<voltol or (1-volume/refvol)<voltol ) and ( boundarea/refarea<areatol ))
         smallvolbound = true;
 
-      for ( std::set<GEO::CUT::BoundaryCell*>::iterator ibcell=bcells.begin(); ibcell!=bcells.end(); ++ibcell )
+      for ( GEO::CUT::plain_boundarycell_set::const_iterator ibcell=bcells.begin(); ibcell!=bcells.end(); ++ibcell )
       {
         GEO::CUT::BoundaryCell * bcell = *ibcell;
 
@@ -5263,8 +5263,8 @@ size_t COMBUST::FlameFront::StoreBoundaryIntegrationCells(
           //         them. The middle volume cell has two facets which are boundaries. If the middle
           //         volume cell belongs to the 'outside' the two facets stand for two non-connected
           //         boundaries.
-          std::set<GEO::CUT::Facet*> facets = volcell->Facets();
-          for ( std::set<GEO::CUT::Facet*>::const_iterator ifacet=facets.begin(); ifacet!=facets.end(); ++ifacet )
+          GEO::CUT::plain_facet_set facets = volcell->Facets();
+          for ( GEO::CUT::plain_facet_set::const_iterator ifacet=facets.begin(); ifacet!=facets.end(); ++ifacet )
           {
             if ((*ifacet)->OnCutSide())
               numstoredbound += 1;
