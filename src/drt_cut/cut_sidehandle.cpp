@@ -64,7 +64,7 @@ GEO::CUT::Quad4SideHandle::Quad4SideHandle( Mesh & mesh, int sid, const std::vec
   LINALG::Matrix<3,1> xyz;
   xyz.Multiply( xyze, funct );
 
-  std::set<int> node_nids;
+  plain_int_set node_nids;
   node_nids.insert( nodes.begin(), nodes.end() );
   Node* middle = mesh.GetNode( node_nids, xyz.A() );
   int middle_id = middle->Id();
@@ -115,7 +115,7 @@ GEO::CUT::Quad8SideHandle::Quad8SideHandle( Mesh & mesh, int sid, const std::vec
   LINALG::Matrix<3,1> xyz;
   xyz.Multiply( xyze, funct );
 
-  std::set<int> node_nids;
+  plain_int_set node_nids;
   std::copy( nodes.begin(), nodes.end(), std::inserter( node_nids, node_nids.begin() ) );
   Node* middle = mesh.GetNode( node_nids, xyz.A() );
   int middle_id = middle->Id();

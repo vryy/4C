@@ -33,11 +33,11 @@ public:
 
   virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
 
-  virtual void MakeOwnedSideFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
+  virtual void MakeOwnedSideFacets( Mesh & mesh, Element * element, plain_facet_set & facets );
 
-//   virtual void MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
+//   virtual void MakeSideCutFacets( Mesh & mesh, Element * element, plain_facet_set & facets );
 
-  virtual void MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
+  virtual void MakeInternalFacets( Mesh & mesh, Element * element, plain_facet_set & facets );
 
   virtual bool IsCut();
 

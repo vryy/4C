@@ -7,6 +7,8 @@
 #include <list>
 #include <algorithm>
 
+#include "cut_utils.H"
+
 namespace GEO
 {
   namespace CUT
@@ -21,7 +23,7 @@ namespace GEO
       class ForkFinder
       {
       public:
-        ForkFinder( Graph & graph, Graph & used, Graph & cycle, const std::set<int> & free )
+        ForkFinder( Graph & graph, Graph & used, Graph & cycle, const plain_int_set & free )
           : graph_( graph ),
             used_( used ),
             cycle_( cycle ),
@@ -29,12 +31,12 @@ namespace GEO
         {
         }
 
-        bool operator()( const std::pair<const int, std::set<int> > & point );
+        bool operator()( const std::pair<const int, plain_int_set > & point );
 
         Graph & graph_;
         Graph & used_;
         Graph & cycle_;
-        const std::set<int> & free_;
+        const plain_int_set & free_;
       };
 
       class SingeLineFinder
@@ -45,7 +47,7 @@ namespace GEO
           : color_split_( color_split )
         {}
 
-        bool operator()( const std::pair<const int, std::set<int> > & i )
+        bool operator()( const std::pair<const int, plain_int_set > & i )
         {
           int p = i.first;
           if ( p < color_split_ )
@@ -66,7 +68,7 @@ namespace GEO
       {
       public:
 
-        typedef std::map<int, std::set<int> >::const_iterator const_iterator;
+        typedef std::map<int, plain_int_set >::const_iterator const_iterator;
 
         explicit Graph( int color_split )
           : color_split_( color_split )
@@ -74,15 +76,15 @@ namespace GEO
 
         void Add( int row, int col );
 
-        void Add( int p, const std::set<int> & row );
+        void Add( int p, const plain_int_set & row );
 
-        int FindNext( Graph & used, int p, Graph & cycle, const std::set<int> & free );
+        int FindNext( Graph & used, int p, Graph & cycle, const plain_int_set & free );
 
-        void FindFreeFacets( Graph & graph, Graph & used, std::set<int> & free );
+        void FindFreeFacets( Graph & graph, Graph & used, plain_int_set & free );
 
         void FindSplitTrace( std::vector<int> & split_trace );
 
-        void GetAll( std::set<int> & all );
+        void GetAll( plain_int_set & all );
 
         void FixSingleLines();
 
@@ -94,15 +96,15 @@ namespace GEO
 
         void Print();
 
-        std::set<int> & at( int p ) { return graph_[p]; }
+        plain_int_set & at( int p ) { return graph_[p]; }
 
-        std::set<int> & operator[]( int p ) { return graph_[p]; }
+        plain_int_set & operator[]( int p ) { return graph_[p]; }
 
         unsigned count( int p ) { return graph_.count( p ); }
 
-        std::map<int, std::set<int> >::const_iterator begin() const { return graph_.begin(); }
+        std::map<int, plain_int_set >::const_iterator begin() const { return graph_.begin(); }
 
-        std::map<int, std::set<int> >::const_iterator end()   const { return graph_.end(); }
+        std::map<int, plain_int_set >::const_iterator end()   const { return graph_.end(); }
 
         void Swap( Graph & other )
         {
@@ -124,7 +126,7 @@ namespace GEO
 
         void Fill( const std::vector<int> & split_trace, Graph & connection, int seed, Graph & c );
 
-        std::map<int, std::set<int> > graph_;
+        std::map<int, plain_int_set > graph_;
         int color_split_;
       };
 
@@ -198,7 +200,7 @@ namespace GEO
       public:
         typedef CycleListIterator iterator;
 
-        void AddPoints( Graph & graph, Graph & used, Graph & cycle, std::set<int> & free );
+        void AddPoints( Graph & graph, Graph & used, Graph & cycle, plain_int_set & free );
 
         void Print();
 

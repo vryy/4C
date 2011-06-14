@@ -35,11 +35,11 @@ public:
 
   void AddPoint( const double * x, Teuchos::RCP<Point> p );
 
-  void CollectEdges( const BoundingBox & edgebox, std::set<Edge*> & edges );
+  void CollectEdges( const BoundingBox & edgebox, plain_edge_set & edges );
 
-  void CollectSides( const BoundingBox & sidebox, std::set<Side*> & sides );
+  void CollectSides( const BoundingBox & sidebox, plain_side_set & sides );
 
-  void CollectElements( const BoundingBox & sidebox, std::set<Element*> & elements );
+  void CollectElements( const BoundingBox & sidebox, plain_element_set & elements );
 
   void ResetOutsidePoints();
 
@@ -55,7 +55,7 @@ private:
 
   Teuchos::RCP<OctTreeNode> nodes_[8];
 
-  std::set<Teuchos::RCP<Point>, PointPidLess> points_;
+  RCPPointSet points_;
 
   BoundingBox bb_;
 
@@ -78,13 +78,13 @@ public:
 
   unsigned size() const { return tree_.size(); }
 
-  void CollectEdges( const BoundingBox & edgebox, std::set<Edge*> & edges )
+  void CollectEdges( const BoundingBox & edgebox, plain_edge_set & edges )
   { tree_.CollectEdges( edgebox, edges ); }
 
-  void CollectSides( const BoundingBox & sidebox, std::set<Side*> & sides )
+  void CollectSides( const BoundingBox & sidebox, plain_side_set & sides )
   { tree_.CollectSides( sidebox, sides ); }
 
-  void CollectElements( const BoundingBox & sidebox, std::set<Element*> & elements )
+  void CollectElements( const BoundingBox & sidebox, plain_element_set & elements )
   { tree_.CollectElements( sidebox, elements ); }
 
   void ResetOutsidePoints()

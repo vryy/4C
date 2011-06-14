@@ -26,16 +26,6 @@ namespace GEO
 namespace CUT
 {
 
-class Node;
-class Edge;
-class Side;
-class Element;
-
-class Line;
-class Facet;
-
-class Mesh;
-
 class PointLineFilter
 {
 public:
@@ -112,9 +102,9 @@ public:
     facets_.insert( facet );
   }
 
-  void CommonEdge( Point * other, std::set<Edge *> & edges );
+  void CommonEdge( Point * other, plain_edge_set & edges );
 
-  void CommonSide( Point * other, std::set<Side *> & sides );
+  void CommonSide( Point * other, plain_side_set & sides );
 
   Line * CommonLine( Point * other );
 
@@ -126,15 +116,15 @@ public:
 
   Line * CutLine( Line * line, const PointLineFilter & filter, bool unique=true );
 
-  void CutLines( const PointLineFilter & filter, std::set<Line*> & cut_lines );
+  void CutLines( const PointLineFilter & filter, plain_line_set & cut_lines );
 
-  void CutLines( Side * side, std::set<Line*> & cut_lines );
+  void CutLines( Side * side, plain_line_set & cut_lines );
 
   //std::vector<Edge*> CutEdges( Point * other );
 
-  const std::set<Edge*> & CutEdges() { return cut_edges_; }
+  const plain_edge_set & CutEdges() { return cut_edges_; }
 
-  const std::set<Side*> & CutSides() { return cut_sides_; }
+  const plain_side_set & CutSides() { return cut_sides_; }
 
   Side * CutSide( Side * side, Point * other );
 
@@ -169,15 +159,15 @@ public:
 
   Node * CutNode();
 
-  void Intersection( std::set<Edge*> & edges );
+  void Intersection( plain_edge_set & edges );
 
-  void Intersection( std::set<Side*> & sides );
+  void Intersection( plain_side_set & sides );
 
-  void Intersection( std::set<Facet*> & facets );
+  void Intersection( plain_facet_set & facets );
 
-  const std::set<Element*> & Elements() const { return cut_elements_; }
+  const plain_element_set & Elements() const { return cut_elements_; }
 
-  const std::set<Facet*> & Facets() const { return facets_; }
+  const plain_facet_set & Facets() const { return facets_; }
 
   Edge * CommonCutEdge( Side * side );
 
@@ -188,7 +178,7 @@ private:
   Line * Find( Filter & filter, bool unique=true );
 
   template <class Filter>
-  void Find( Filter & filter, std::set<Line*> & cut_lines );
+  void Find( Filter & filter, plain_line_set & cut_lines );
 
   unsigned pid_;
   PointPosition position_;
@@ -196,12 +186,12 @@ private:
   double x_[3];
   std::map<Edge*, double> t_;
 
-  std::set<Edge*> cut_edges_;
-  std::set<Side*> cut_sides_;
-  std::set<Element*> cut_elements_;
+  plain_edge_set cut_edges_;
+  plain_side_set cut_sides_;
+  plain_element_set cut_elements_;
 
-  std::set<Line*> lines_;
-  std::set<Facet*> facets_;
+  plain_line_set lines_;
+  plain_facet_set facets_;
 };
 
 inline std::ostream & operator<<( std::ostream & stream, Point & point )
@@ -270,6 +260,8 @@ private:
 typedef sorted_vector<Point*, true, PointPidLess> PointSet;
 typedef sorted_vector<Point*, true, PointPositionLess> PointPositionSet;
 
+typedef std::set<Teuchos::RCP<Point>, PointPidLess> RCPPointSet;
+
 inline PointSet::iterator erase( PointSet & ps, PointSet::iterator i )
 {
   ps.erase( i );
@@ -279,6 +271,8 @@ inline PointSet::iterator erase( PointSet & ps, PointSet::iterator i )
 #else
 typedef std::set<Point*, PointPidLess> PointSet;
 typedef std::set<Point*, PointPositionLess> PointPositionSet;
+
+typedef std::set<Teuchos::RCP<Point>, PointPidLess> RCPPointSet;
 
 inline PointSet::iterator erase( PointSet & ps, PointSet::iterator i )
 {
@@ -357,7 +351,7 @@ private:
   Side * side2_;
 };
 
-inline void FindCommonSides( const std::vector<Point*> & side, std::set<Side*> & sides )
+inline void FindCommonSides( const std::vector<Point*> & side, plain_side_set & sides )
 {
   std::vector<Point*>::const_iterator is = side.begin();
   sides = ( *is )->CutSides();
@@ -372,14 +366,14 @@ inline void FindCommonSides( const std::vector<Point*> & side, std::set<Side*> &
   }
 }
 
-inline void FindCommonSides( Point * p1, Point * p2, Point * p3, std::set<Side*> & sides )
+inline void FindCommonSides( Point * p1, Point * p2, Point * p3, plain_side_set & sides )
 {
   sides = p1->CutSides();
   p2->Intersection( sides );
   p3->Intersection( sides );
 }
 
-inline void FindCommonSides( Point * p1, Point * p2, Point * p3, Point * p4, std::set<Side*> & sides )
+inline void FindCommonSides( Point * p1, Point * p2, Point * p3, Point * p4, plain_side_set & sides )
 {
   sides = p1->CutSides();
   p2->Intersection( sides );

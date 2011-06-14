@@ -63,7 +63,7 @@ template <class Filter>
 Line * Point::Find( Filter & filter, bool unique )
 {
   Line * line_found = NULL;
-  for ( std::set<Line*>::iterator i=lines_.begin(); i!=lines_.end(); ++i )
+  for ( plain_line_set::iterator i=lines_.begin(); i!=lines_.end(); ++i )
   {
     Line * line = *i;
     if ( filter( line ) )

@@ -19,16 +19,16 @@ GEO::CUT::Line::Line( Point * p1, Point * p2, Side * cut_side1, Side * cut_side2
 
   // self-register at all sides
 
-  const std::set<Side*> & cut_sides1 = p1->CutSides();
-  const std::set<Side*> & cut_sides2 = p2->CutSides();
+  const plain_side_set & cut_sides1 = p1->CutSides();
+  const plain_side_set & cut_sides2 = p2->CutSides();
 
-  std::set<Side*> sides;
+  plain_side_set sides;
 
   std::set_intersection( cut_sides1.begin(), cut_sides1.end(),
                          cut_sides2.begin(), cut_sides2.end(),
                          std::inserter( sides, sides.begin() ) );
 
-  for ( std::set<Side*>::iterator i=sides.begin(); i!=sides.end(); ++i )
+  for ( plain_side_set::iterator i=sides.begin(); i!=sides.end(); ++i )
   {
     Side * s = *i;
     AddSide( s );
@@ -36,16 +36,16 @@ GEO::CUT::Line::Line( Point * p1, Point * p2, Side * cut_side1, Side * cut_side2
 
   // self-register at all elements
 
-  const std::set<Element*> & cut_elements1 = p1->Elements();
-  const std::set<Element*> & cut_elements2 = p2->Elements();
+  const plain_element_set & cut_elements1 = p1->Elements();
+  const plain_element_set & cut_elements2 = p2->Elements();
 
-  std::set<Element*> elements;
+  plain_element_set elements;
 
   std::set_intersection( cut_elements1.begin(), cut_elements1.end(),
                          cut_elements2.begin(), cut_elements2.end(),
                          std::inserter( elements, elements.begin() ) );
 
-  for ( std::set<Element*>::iterator i=elements.begin(); i!=elements.end(); ++i )
+  for ( plain_element_set::iterator i=elements.begin(); i!=elements.end(); ++i )
   {
     Element * s = *i;
     AddElement( s );
@@ -115,13 +115,13 @@ void GEO::CUT::Line::AddElement( Element * cut_element )
     }
     if ( n1!=NULL and n2!=NULL )
     {
-      std::set<Edge *> edges;
+      plain_edge_set edges;
       p1_->CommonEdge( p2_, edges );
       if ( edges.size()!=1 )
         throw std::runtime_error( "line does not belong to element" );
       Edge * e = *edges.begin();
 
-      const std::set<Side*> & edge_sides = e->Sides();
+      const plain_side_set & edge_sides = e->Sides();
       const std::vector<Side*> & element_sides = cut_element->Sides();
 
       bool found = false;

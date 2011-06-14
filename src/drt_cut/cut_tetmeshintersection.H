@@ -25,10 +25,10 @@ namespace GEO
                            const std::vector<std::vector<int> > & tets,
                            const std::vector<int> & accept_tets,
                            const std::vector<Point*> & points,
-                           const std::set<Side*> & cut_sides,
+                           const plain_side_set & cut_sides,
                            bool levelset );
 
-      void Cut( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, int count, bool levelset );
+      void Cut( Mesh & parent_mesh, Element * element, const plain_volumecell_set & parent_cells, int count, bool levelset );
 
       void Status();
 
@@ -51,7 +51,7 @@ namespace GEO
 
         bool done_;
         VolumeCell * parent_;
-        std::set<VolumeCell*> cells_;
+        plain_volumecell_set cells_;
         std::map<Side*, std::vector<Facet*> > facetsonsurface_;
       };
 
@@ -96,10 +96,10 @@ namespace GEO
       void FindEdgeCuts();
 
       /// find the mapping between child VolumeCells and parent VolumeCells.
-      void MapVolumeCells( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap );
+      void MapVolumeCells( Mesh & parent_mesh, Element * element, const plain_volumecell_set & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap );
 
       /// Generate IntegrationCells and BoundaryCells within the parent VolumeCell
-      void Fill( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap );
+      void Fill( Mesh & parent_mesh, Element * element, const plain_volumecell_set & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap );
 
       /// Fill a parent cell with its child cells by means of the child cell topology.
       /*!
@@ -111,16 +111,16 @@ namespace GEO
 
       /// find some (most) of the child cells for each parent cell
       void SeedCells( Mesh & parent_mesh,
-                      const std::set<VolumeCell*> & parent_cells,
+                      const plain_volumecell_set & parent_cells,
                       std::map<VolumeCell*, ChildCell> & cellmap,
-                      std::set<VolumeCell*> & done_child_cells );
+                      plain_volumecell_set & done_child_cells );
 
       void BuildSurfaceCellMap( VolumeCell * vc, ChildCell & cc );
 
-      void RegisterNewPoints( Mesh & parent_mesh, const std::set<VolumeCell*> & childset );
+      void RegisterNewPoints( Mesh & parent_mesh, const plain_volumecell_set & childset );
 
       /// put all volume cells at point to cell set
-      void FindVolumeCell( Point * p, std::set<VolumeCell*> & childset );
+      void FindVolumeCell( Point * p, plain_volumecell_set & childset );
 
       void ToParent( std::vector<Point*> & points ) { SwapPoints( child_to_parent_, points ); }
       void ToChild ( std::vector<Point*> & points ) { SwapPoints( parent_to_child_, points ); }

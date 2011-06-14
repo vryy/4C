@@ -38,7 +38,7 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected( 
   return gp;
 }
 
-void GEO::CUT::ElementHandle::VolumeCellGaussPoints( std::set<GEO::CUT::VolumeCell*> & cells,
+void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cells,
                                                      std::vector<DRT::UTILS::GaussIntegration> & intpoints )
 {
   GetVolumeCells( cells );
@@ -46,15 +46,15 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPoints( std::set<GEO::CUT::VolumeCe
   intpoints.clear();
   intpoints.reserve( cells.size() );
 
-  for ( std::set<GEO::CUT::VolumeCell*>::iterator i=cells.begin(); i!=cells.end(); ++i )
+  for ( plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
   {
     GEO::CUT::VolumeCell * vc = *i;
 
     Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
       Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );
 
-    const std::set<GEO::CUT::IntegrationCell*> & cells = vc->IntegrationCells();
-    for ( std::set<GEO::CUT::IntegrationCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+    const plain_integrationcell_set & cells = vc->IntegrationCells();
+    for ( plain_integrationcell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
     {
       GEO::CUT::IntegrationCell * ic = *i;
       switch ( ic->Shape() )
@@ -136,7 +136,7 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPoints( std::set<GEO::CUT::VolumeCe
 //   if ( not include_inner )
 //   {
 //     int count = 0;
-//     for ( std::set<GEO::CUT::VolumeCell*>::iterator i=cells.begin(); i!=cells.end(); ++i )
+//     for ( plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
 //     {
 //       GEO::CUT::VolumeCell * vc = *i;
 //       if ( vc->Position()==Point::inside )
@@ -278,9 +278,9 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPoints( LevelSetIntersection & me
 #endif
 }
 
-void GEO::CUT::LinearElementHandle::GetVolumeCells( std::set<GEO::CUT::VolumeCell*> & cells )
+void GEO::CUT::LinearElementHandle::GetVolumeCells( plain_volumecell_set & cells )
 {
-  const std::set<VolumeCell*> & cs = element_->VolumeCells();
+  const plain_volumecell_set & cs = element_->VolumeCells();
   std::copy( cs.begin(), cs.end(), std::inserter( cells, cells.begin() ) );
 }
 
@@ -298,17 +298,17 @@ bool GEO::CUT::QuadraticElementHandle::IsCut()
   return false;
 }
 
-void GEO::CUT::QuadraticElementHandle::GetVolumeCells( std::set<GEO::CUT::VolumeCell*> & cells )
+void GEO::CUT::QuadraticElementHandle::GetVolumeCells( plain_volumecell_set & cells )
 {
   for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
   {
     Element * e = *i;
-    const std::set<VolumeCell*> & cs = e->VolumeCells();
+    const plain_volumecell_set & cs = e->VolumeCells();
     std::copy( cs.begin(), cs.end(), std::inserter( cells, cells.begin() ) );
   }
 }
 
-void GEO::CUT::QuadraticElementHandle::GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells )
+void GEO::CUT::QuadraticElementHandle::GetIntegrationCells( plain_integrationcell_set & cells )
 {
   for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
   {
@@ -317,7 +317,7 @@ void GEO::CUT::QuadraticElementHandle::GetIntegrationCells( std::set<GEO::CUT::I
   }
 }
 
-void GEO::CUT::QuadraticElementHandle::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )
+void GEO::CUT::QuadraticElementHandle::GetBoundaryCells( plain_boundarycell_set & bcells )
 {
   for ( std::vector<Element*>::iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
   {
@@ -326,12 +326,12 @@ void GEO::CUT::QuadraticElementHandle::GetBoundaryCells( std::set<GEO::CUT::Boun
   }
 }
 
-void GEO::CUT::QuadraticElementHandle::VolumeCells( std::set<VolumeCell*> & cells ) const
+void GEO::CUT::QuadraticElementHandle::VolumeCells( plain_volumecell_set & cells ) const
 {
   for ( std::vector<Element*>::const_iterator i=subelements_.begin(); i!=subelements_.end(); ++i )
   {
     Element * e = *i;
-    const std::set<VolumeCell*> & ecells = e->VolumeCells();
+    const plain_volumecell_set & ecells = e->VolumeCells();
     std::copy( ecells.begin(), ecells.end(), std::inserter( cells, cells.begin() ) );
   }
 }
@@ -349,7 +349,7 @@ GEO::CUT::Hex20ElementHandle::Hex20ElementHandle( Mesh & mesh, int eid, const st
   LINALG::Matrix<3,1> xyz;
   LINALG::Matrix<1,1> lsv;
 
-  std::set<int> node_nids;
+  plain_int_set node_nids;
 
   LINALG::Matrix<3,8> side_xyze;
   LINALG::Matrix<1,8> side_lsvs;

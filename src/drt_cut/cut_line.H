@@ -77,25 +77,25 @@ public:
     f << "\n\n";
   }
 
-  void Intersection( std::set<Side*> & sides )
+  void Intersection( plain_side_set & sides )
   {
-    std::set<Side*> intersection;
+    plain_side_set intersection;
     std::set_intersection( cut_sides_.begin(), cut_sides_.end(),
                            sides.begin(), sides.end(),
                            std::inserter( intersection, intersection.begin() ) );
     std::swap( sides, intersection );
   }
 
-  const std::set<Side*> & CutSides() const { return cut_sides_; }
+  const plain_side_set & CutSides() const { return cut_sides_; }
 
 private:
 
   Point* p1_;
   Point* p2_;
 
-  std::set<Side*> cut_sides_;
+  plain_side_set cut_sides_;
 
-  std::set<Element*> cut_elements_;
+  plain_element_set cut_elements_;
 };
 
 }

@@ -8,11 +8,11 @@
 #include "cut_element.H"
 
 
-bool GEO::CUT::IntegrationCellCreator::CreateCells( Mesh & mesh, Element * element, const std::set<VolumeCell*> & cells )
+bool GEO::CUT::IntegrationCellCreator::CreateCells( Mesh & mesh, Element * element, const plain_volumecell_set & cells )
 {
   IntegrationCellCreator creator;
 
-  for ( std::set<VolumeCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+  for ( plain_volumecell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
   {
     VolumeCell * cell = *i;
     bool found = ( creator.CreateTet4Cell( mesh, cell, cell->Facets() ) or
@@ -75,11 +75,11 @@ void GEO::CUT::IntegrationCellCreator::Execute( Mesh & mesh )
   }
 }
 
-bool GEO::CUT::IntegrationCellCreator::CreateTet4Cell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets )
+bool GEO::CUT::IntegrationCellCreator::CreateTet4Cell( Mesh & mesh, VolumeCell * cell, const plain_facet_set & facets )
 {
   if ( facets.size()==4 )
   {
-    for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+    for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
     {
       Facet * f = *i;
       if ( not f->Equals( DRT::Element::tri3 ) )
@@ -90,7 +90,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateTet4Cell( Mesh & mesh, VolumeCell *
 
     // So we have a tet4 here. Create it.
 
-    std::set<Facet*>::const_iterator i=facets.begin();
+    plain_facet_set::const_iterator i=facets.begin();
     Facet * bot = *i;
 
     const std::vector<Point*> & bot_points = bot->CornerPoints();
@@ -121,7 +121,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateTet4Cell( Mesh & mesh, VolumeCell *
       }
     }
 
-//     for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+//     for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
 //     {
 //       Facet * f = *i;
 //       f->NewTri3Cell( mesh );
@@ -195,11 +195,11 @@ bool GEO::CUT::IntegrationCellCreator::CreateTet4Cell( Mesh & mesh, VolumeCell *
   return false;
 }
 
-bool GEO::CUT::IntegrationCellCreator::CreateHex8Cell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets )
+bool GEO::CUT::IntegrationCellCreator::CreateHex8Cell( Mesh & mesh, VolumeCell * cell, const plain_facet_set & facets )
 {
   if ( facets.size()==6 )
   {
-    for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+    for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
     {
       Facet * f = *i;
       if ( not f->Equals( DRT::Element::quad4 ) )
@@ -215,7 +215,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateHex8Cell( Mesh & mesh, VolumeCell *
     // Find two sides that do not share a common point, find positive
     // directions for both, and find the edges between those sides.
 
-    std::set<Facet*>::const_iterator i=facets.begin();
+    plain_facet_set::const_iterator i=facets.begin();
     Facet * bot = *i;
     Facet * top = NULL;
     for ( ++i; i!=facets.end(); ++i )
@@ -241,7 +241,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateHex8Cell( Mesh & mesh, VolumeCell *
 
     std::vector<Point*>::iterator end = points.begin()+4;
 
-    for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+    for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
     {
       Facet * f = *i;
       if ( f!=bot and f!=top )
@@ -392,14 +392,14 @@ bool GEO::CUT::IntegrationCellCreator::CreateHex8Cell( Mesh & mesh, VolumeCell *
   return false;
 }
 
-bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets )
+bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh, VolumeCell * cell, const plain_facet_set & facets )
 {
   if ( facets.size()==5 )
   {
     std::vector<Facet*> tris;
     std::vector<Facet*> quads;
 
-    for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+    for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
     {
       Facet * f = *i;
       if ( f->Equals( DRT::Element::tri3 ) )
@@ -618,14 +618,14 @@ bool GEO::CUT::IntegrationCellCreator::CreateWedge6Cell( Mesh & mesh, VolumeCell
   return false;
 }
 
-bool GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets )
+bool GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell( Mesh & mesh, VolumeCell * cell, const plain_facet_set & facets )
 {
   if ( facets.size()==5 )
   {
     std::vector<Facet*> tris;
     std::vector<Facet*> quads;
 
-    for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+    for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
     {
       Facet * f = *i;
       if ( f->Equals( DRT::Element::tri3 ) )
@@ -782,9 +782,9 @@ bool GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell( Mesh & mesh, VolumeCe
   return false;
 }
 
-bool GEO::CUT::IntegrationCellCreator::CreateSpecialCases( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets )
+bool GEO::CUT::IntegrationCellCreator::CreateSpecialCases( Mesh & mesh, VolumeCell * cell, const plain_facet_set & facets )
 {
-  for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+  for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
   {
     Facet * f = *i;
     if ( f->HasHoles() )
@@ -804,7 +804,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateSpecialCases( Mesh & mesh, VolumeCe
     // find how many element sides are touched by this volume cell and how
     // often those sides are touched.
     std::vector<int> touched( 6, 0 );
-    for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+    for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
     {
       Facet * f = *i;
       if ( not f->OnCutSide() )
@@ -915,7 +915,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateSpecialCases( Mesh & mesh, VolumeCe
 bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
                                                           Element * element,
                                                           VolumeCell * cell,
-                                                          const std::set<Facet*> & facets,
+                                                          const plain_facet_set & facets,
                                                           int axis,
                                                           double r )
 {
@@ -936,7 +936,7 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
 
   std::vector<Facet*> inner_facets;
 
-  for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+  for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
   {
     Facet * f = *i;
     if ( f->OnCutSide() )
@@ -1157,7 +1157,7 @@ bool GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut( Mesh & mesh,
       // pointer values (compiler flags, code structure, memory usage, ...)
       std::sort( cell_points.begin(), cell_points.end(), PointPidLess() );
 
-      std::set<Facet*> cell_facets;
+      plain_facet_set cell_facets;
       cell_facets.insert( f );
       cell->CreateTet4IntegrationCells( mesh, position, cell_points, cell_facets, true );
 #endif

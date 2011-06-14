@@ -25,7 +25,7 @@ void GEO::CUT::Tri3BoundaryCell::CollectCoordinates( const std::vector<Point*> &
     throw std::runtime_error( "wrong number of points" );
   }
 
-  std::set<Facet*> facets;
+  plain_facet_set facets;
   FindCommonFacets( side[0], side[1], side[2], facets );
 
   Facet * f;
@@ -36,7 +36,7 @@ void GEO::CUT::Tri3BoundaryCell::CollectCoordinates( const std::vector<Point*> &
   else
   {
     Facet * found = NULL;
-    for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
+    for ( plain_facet_set::iterator i=facets.begin(); i!=facets.end(); ++i )
     {
       Facet * f = *i;
       if ( f->IsTriangle( side ) )
@@ -84,7 +84,7 @@ void GEO::CUT::Quad4BoundaryCell::CollectCoordinates( const std::vector<Point*> 
     throw std::runtime_error( "wrong number of points" );
   }
 
-  std::set<Facet*> facets;
+  plain_facet_set facets;
   FindCommonFacets( side[0], side[1], side[2], side[3], facets );
 
   if ( facets.size()!=1 )

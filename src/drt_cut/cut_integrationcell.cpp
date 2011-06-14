@@ -16,10 +16,10 @@
 bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
                                              VolumeCell * cell,
                                              Point::PointPosition position,
-                                             const std::set<Facet*> & facets,
-                                             std::set<IntegrationCell*> & integrationcells )
+                                             const plain_facet_set & facets,
+                                             plain_integrationcell_set & integrationcells )
 {
-  for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+  for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
   {
     Facet * f = *i;
     if ( f->HasHoles() )
@@ -39,7 +39,7 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
     // find how many element sides are touched by this volume cell and how
     // often those sides are touched.
     std::vector<int> touched( 6, 0 );
-    for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+    for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
     {
       Facet * f = *i;
       if ( not f->OnCutSide() )

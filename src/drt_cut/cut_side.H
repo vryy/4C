@@ -48,7 +48,7 @@ public:
 
   void Register( Element * element ) { elements_.insert( element ); }
 
-  void CollectElements( std::set<Element*> & elements )
+  void CollectElements( plain_element_set & elements )
   {
     std::copy( elements_.begin(), elements_.end(), std::inserter( elements, elements.begin() ) );
   }
@@ -74,13 +74,13 @@ public:
     }
   }
 
-  virtual void MakeOwnedSideFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
+  virtual void MakeOwnedSideFacets( Mesh & mesh, Element * element, plain_facet_set & facets );
 
-//   virtual void MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
+//   virtual void MakeSideCutFacets( Mesh & mesh, Element * element, plain_facet_set & facets );
 
-  virtual void MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets );
+  virtual void MakeInternalFacets( Mesh & mesh, Element * element, plain_facet_set & facets );
 
-  virtual void MakeInternalFacets( Mesh & mesh, Element * element, const Cycle & points, std::set<Facet*> & facets );
+  virtual void MakeInternalFacets( Mesh & mesh, Element * element, const Cycle & points, plain_facet_set & facets );
 
   virtual bool IsCut();
 
@@ -108,7 +108,7 @@ public:
 
   virtual bool FindAmbiguousCutLines( Mesh & mesh, Element * element, Side & side, const PointSet & cut );
 
-  virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
+  virtual void GetBoundaryCells( plain_boundarycell_set & bcells );
 
   virtual void CreateMissingLines( Creator & creator, Element * element );
 
@@ -132,7 +132,7 @@ public:
 
   const std::vector<Line*> & CutLines() const { return cut_lines_; }
 
-  const std::set<Element*> & Elements() const { return elements_; }
+  const plain_element_set & Elements() const { return elements_; }
 
   const std::vector<Facet*> & Facets() const { return facets_; }
 
@@ -148,7 +148,7 @@ private:
 
   std::vector<Edge*> edges_;
 
-  std::set<Element*> elements_;
+  plain_element_set elements_;
 
   std::vector<Line*> cut_lines_;
 

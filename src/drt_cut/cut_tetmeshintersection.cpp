@@ -18,7 +18,7 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
                                                     const std::vector<std::vector<int> > & tets,
                                                     const std::vector<int> & accept_tets,
                                                     const std::vector<Point*> & points,
-                                                    const std::set<Side*> & cut_sides,
+                                                    const plain_side_set & cut_sides,
                                                     bool levelset )
   : pp_( Teuchos::rcp( new PointPool ) ),
     mesh_( options, 1, pp_ ),
@@ -50,7 +50,7 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
     }
   }
 
-  const std::set<Facet*> & element_facets = element->Facets();
+  const plain_facet_set & element_facets = element->Facets();
 
   // Triangulated cut facets need to be converted to tri cut sides. This is
   // done after the normal cut sides.
@@ -58,11 +58,11 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
   std::vector<Facet*> triangulated;
   std::map<Point*, Node*> nodemap;
 
-  for ( std::set<Side*>::const_iterator i=cut_sides.begin(); i!=cut_sides.end(); ++i )
+  for ( plain_side_set::const_iterator i=cut_sides.begin(); i!=cut_sides.end(); ++i )
   {
     Side * s = *i;
 
-    std::set<Facet*> facets;
+    plain_facet_set facets;
     const std::vector<Facet*> & side_facets = s->Facets();
     for ( std::vector<Facet*>::const_iterator i=side_facets.begin(); i!=side_facets.end(); ++i )
     {
@@ -73,7 +73,7 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
       }
     }
 
-    for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
+    for ( plain_facet_set::iterator i=facets.begin(); i!=facets.end(); ++i )
     {
       Facet * f = *i;
 
@@ -174,9 +174,9 @@ GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
 
 void GEO::CUT::TetMeshIntersection::FindEdgeCuts()
 {
-  std::set<Edge*> cut_edges;
-  const std::map<std::set<int>, Teuchos::RCP<Edge> > & c_edges = mesh_.Edges();
-  for ( std::map<std::set<int>, Teuchos::RCP<Edge> >::const_iterator i=c_edges.begin();
+  plain_edge_set cut_edges;
+  const std::map<plain_int_set, Teuchos::RCP<Edge> > & c_edges = mesh_.Edges();
+  for ( std::map<plain_int_set, Teuchos::RCP<Edge> >::const_iterator i=c_edges.begin();
         i!=c_edges.end();
         ++i )
   {
@@ -185,9 +185,9 @@ void GEO::CUT::TetMeshIntersection::FindEdgeCuts()
   }
 
 #if 0
-  std::set<Edge*> mesh_edges;
-  const std::map<std::set<int>, Teuchos::RCP<Edge> > & m_edges = mesh_.Edges();
-  for ( std::map<std::set<int>, Teuchos::RCP<Edge> >::const_iterator i=m_edges.begin();
+  plain_edge_set mesh_edges;
+  const std::map<plain_int_set, Teuchos::RCP<Edge> > & m_edges = mesh_.Edges();
+  for ( std::map<plain_int_set, Teuchos::RCP<Edge> >::const_iterator i=m_edges.begin();
         i!=m_edges.end();
         ++i )
   {
@@ -201,11 +201,11 @@ void GEO::CUT::TetMeshIntersection::FindEdgeCuts()
   }
 #endif
 
-  for ( std::set<Edge*>::iterator i=cut_edges.begin(); i!=cut_edges.end(); ++i )
+  for ( plain_edge_set::iterator i=cut_edges.begin(); i!=cut_edges.end(); ++i )
   {
     Edge * ce = *i;
     BoundingBox edgebox( *ce );
-    std::set<Edge*> edges;
+    plain_edge_set edges;
     pp_->CollectEdges( edgebox, edges );
     //edges.erase( ce );
 
@@ -216,7 +216,7 @@ void GEO::CUT::TetMeshIntersection::FindEdgeCuts()
     double pos;
     LINALG::Matrix<3,1> x;
 
-    for ( std::set<Edge*>::iterator i=edges.begin(); i!=edges.end(); ++i )
+    for ( plain_edge_set::iterator i=edges.begin(); i!=edges.end(); ++i )
     {
       Edge * e = *i;
       if ( cut_edges.count( e )==0 )
@@ -238,7 +238,7 @@ void GEO::CUT::TetMeshIntersection::FindEdgeCuts()
   }
 }
 
-void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, int count, bool levelset )
+void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, const plain_volumecell_set & parent_cells, int count, bool levelset )
 {
   mesh_.Status();
 
@@ -257,7 +257,7 @@ void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, 
 
   FindEdgeCuts();
 
-  std::set<Element*> elements_done;
+  plain_element_set elements_done;
   cut_mesh_.Cut( mesh_, elements_done );
 
   cut_mesh_.RectifyCutNumerics();
@@ -294,21 +294,21 @@ void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, 
   Fill( parent_mesh, element, parent_cells, cellmap );
 }
 
-void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap )
+void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element * element, const plain_volumecell_set & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap )
 {
-  std::set<VolumeCell*> done_child_cells;
+  plain_volumecell_set done_child_cells;
 
   SeedCells( parent_mesh, parent_cells, cellmap, done_child_cells );
 
   int nonnodecells = 0;
 
-  for ( std::set<VolumeCell*>::const_iterator i=parent_cells.begin();
+  for ( plain_volumecell_set::const_iterator i=parent_cells.begin();
         i!=parent_cells.end();
         ++i )
   {
     VolumeCell * vc = *i;
     ChildCell & cc = cellmap[vc];
-    std::set<VolumeCell*> & childset = cc.cells_;
+    plain_volumecell_set & childset = cc.cells_;
 
     if ( childset.size() > 0 )
     {
@@ -332,7 +332,7 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
     {
       //VolumeCell * vc = i->first;
       ChildCell & cc = i->second;
-      //std::set<VolumeCell*> & childset = cc.cells_;
+      //plain_volumecell_set & childset = cc.cells_;
       std::map<Side*, std::vector<Facet*> > & facetsonsurface = cc.facetsonsurface_;
 
       // match parent and child volumes at cut surface
@@ -350,10 +350,10 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
         if ( parent_facets.size()==1 )
         {
           Facet * facet = parent_facets[0];
-          const std::set<VolumeCell*> & parent_cells = facet->Cells();
+          const plain_volumecell_set & parent_cells = facet->Cells();
           std::vector<ChildCell*> parent_cell_info;
           parent_cell_info.reserve( 2 );
-          for ( std::set<VolumeCell*>::const_iterator i=parent_cells.begin();
+          for ( plain_volumecell_set::const_iterator i=parent_cells.begin();
                 i!=parent_cells.end();
                 ++i )
           {
@@ -379,7 +379,7 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
                     ++i )
               {
                 Facet * f = *i;
-                const std::set<VolumeCell*> & child_cells = f->Cells();
+                const plain_volumecell_set & child_cells = f->Cells();
                 if ( child_cells.size()==1 )
                 {
                   VolumeCell * c = *child_cells.begin();
@@ -448,7 +448,7 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
                     ++i )
               {
                 Facet * f = *i;
-                const std::set<VolumeCell*> & child_cells = f->Cells();
+                const plain_volumecell_set & child_cells = f->Cells();
                 if ( child_cells.size()==2 )
                 {
                   std::vector<VolumeCell*> child_cell_vector;
@@ -566,9 +566,9 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
       }
 
       ChildCell & cc = *child_cells;
-      std::set<VolumeCell*> & childset = cc.cells_;
+      plain_volumecell_set & childset = cc.cells_;
 
-      std::set<VolumeCell*> done_child_cells;
+      plain_volumecell_set done_child_cells;
 
       for ( std::map<VolumeCell*, ChildCell>::iterator i=cellmap.begin(); i!=cellmap.end(); ++i )
       {
@@ -609,7 +609,7 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
     {
       // test if there are any volume cells left
 
-      std::set<VolumeCell*> done_child_cells;
+      plain_volumecell_set done_child_cells;
       for ( std::map<VolumeCell*, ChildCell>::iterator i=cellmap.begin(); i!=cellmap.end(); ++i )
       {
         ChildCell & cc = i->second;
@@ -651,7 +651,7 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
   {
     VolumeCell * vc = i->first;
     ChildCell & cc = i->second;
-    std::set<VolumeCell*> & childset = cc.cells_;
+    plain_volumecell_set & childset = cc.cells_;
 
     if ( not cc.done_ )
     {
@@ -670,13 +670,13 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
     {
       VolumeCell * vc = i->first;
       ChildCell & cc = i->second;
-      std::set<VolumeCell*> & childset = cc.cells_;
+      plain_volumecell_set & childset = cc.cells_;
 
       Point::PointPosition pos = vc->Position();
 //       if ( pos==Point::undecided )
 //         throw std::runtime_error( "undecided volume cell" );
       if ( pos!=Point::undecided )
-      for ( std::set<VolumeCell*>::iterator i=childset.begin(); i!=childset.end(); ++i )
+      for ( plain_volumecell_set::iterator i=childset.begin(); i!=childset.end(); ++i )
       {
         VolumeCell * c = *i;
         c->Position( pos );
@@ -686,20 +686,20 @@ void GEO::CUT::TetMeshIntersection::MapVolumeCells( Mesh & parent_mesh, Element 
 }
 
 void GEO::CUT::TetMeshIntersection::SeedCells( Mesh & parent_mesh,
-                                               const std::set<VolumeCell*> & parent_cells,
+                                               const plain_volumecell_set & parent_cells,
                                                std::map<VolumeCell*, ChildCell> & cellmap,
-                                               std::set<VolumeCell*> & done_child_cells )
+                                               plain_volumecell_set & done_child_cells )
 {
   std::map<Point*, std::vector<VolumeCell*> > parent_point_cells;
 
-  for ( std::set<VolumeCell*>::const_iterator i=parent_cells.begin();
+  for ( plain_volumecell_set::const_iterator i=parent_cells.begin();
         i!=parent_cells.end();
         ++i )
   {
     VolumeCell * vc = *i;
     ChildCell & cc = cellmap[vc];
     cc.parent_ = vc;
-    std::set<VolumeCell*> & childset = cc.cells_;
+    plain_volumecell_set & childset = cc.cells_;
 
     PointSet volume_points;
     vc->GetAllPoints( parent_mesh, volume_points );
@@ -736,7 +736,7 @@ void GEO::CUT::TetMeshIntersection::SeedCells( Mesh & parent_mesh,
       VolumeCell * vc = vcs[0];
       Point * np = ToChild( p );
       ChildCell & cc = cellmap[vc];
-      std::set<VolumeCell*> & childset = cc.cells_;
+      plain_volumecell_set & childset = cc.cells_;
       FindVolumeCell( np, childset );
     }
   }
@@ -746,7 +746,7 @@ void GEO::CUT::TetMeshIntersection::SeedCells( Mesh & parent_mesh,
   for ( std::map<VolumeCell*, ChildCell>::iterator i=cellmap.begin(); i!=cellmap.end(); ++i )
   {
     ChildCell & cc = i->second;
-    std::set<VolumeCell*> & childset = cc.cells_;
+    plain_volumecell_set & childset = cc.cells_;
     std::copy( childset.begin(), childset.end(),
                std::inserter( done_child_cells, done_child_cells.begin() ) );
   }
@@ -782,7 +782,7 @@ void GEO::CUT::TetMeshIntersection::SeedCells( Mesh & parent_mesh,
 
       if ( child_cut_points.size() > 0 )
       {
-        std::set<VolumeCell*> used_parent_cells;
+        plain_volumecell_set used_parent_cells;
 
         PointSet::iterator j = child_cut_points.begin();
         Point * p = *j;
@@ -791,10 +791,10 @@ void GEO::CUT::TetMeshIntersection::SeedCells( Mesh & parent_mesh,
         for ( ++j; j!=child_cut_points.end(); ++j )
         {
           Point * p = *j;
-          std::set<VolumeCell*> upc;
+          plain_volumecell_set upc;
           FindVolumeCell( ToParent( p ), upc );
 
-          std::set<VolumeCell*> intersection;
+          plain_volumecell_set intersection;
           std::set_intersection( used_parent_cells.begin(), used_parent_cells.end(),
                                  upc.begin(), upc.end(),
                                  std::inserter( intersection, intersection.begin() ) );
@@ -815,7 +815,7 @@ void GEO::CUT::TetMeshIntersection::SeedCells( Mesh & parent_mesh,
           }
           else
           {
-            std::set<VolumeCell*> & childset = cc.cells_;
+            plain_volumecell_set & childset = cc.cells_;
             childset.insert( child_vc );
             done_child_cells.insert( child_vc );
           }
@@ -835,8 +835,8 @@ void GEO::CUT::TetMeshIntersection::BuildSurfaceCellMap( VolumeCell * vc, ChildC
 
   std::map<Side*, std::vector<Facet*> > & facetsonsurface = cc.facetsonsurface_;
 
-  const std::set<Facet*> & parent_facets = vc->Facets();
-  for ( std::set<Facet*>::const_iterator i=parent_facets.begin();
+  const plain_facet_set & parent_facets = vc->Facets();
+  for ( plain_facet_set::const_iterator i=parent_facets.begin();
         i!=parent_facets.end();
         ++i )
   {
@@ -857,22 +857,22 @@ void GEO::CUT::TetMeshIntersection::BuildSurfaceCellMap( VolumeCell * vc, ChildC
   }
 }
 
-void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element, const std::set<VolumeCell*> & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap )
+void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element, const plain_volumecell_set & parent_cells, std::map<VolumeCell*, ChildCell> & cellmap )
 {
   for ( std::map<VolumeCell*, ChildCell>::iterator i=cellmap.begin(); i!=cellmap.end(); ++i )
   {
     VolumeCell * parent_cell = i->first;
     ChildCell & cc = i->second;
-    std::set<VolumeCell*> & childset = cc.cells_;
+    plain_volumecell_set & childset = cc.cells_;
     std::map<Side*, std::vector<Facet*> > & facetsonsurface = cc.facetsonsurface_;
 
-    for ( std::set<VolumeCell*>::iterator i=childset.begin(); i!=childset.end(); ++i )
+    for ( plain_volumecell_set::iterator i=childset.begin(); i!=childset.end(); ++i )
     {
       VolumeCell * vc = *i;
-      const std::set<IntegrationCell*> & cells = vc->IntegrationCells();
-      const std::set<BoundaryCell*> & bcells = vc->BoundaryCells();
+      const plain_integrationcell_set & cells = vc->IntegrationCells();
+      const plain_boundarycell_set & bcells = vc->BoundaryCells();
 
-      for ( std::set<IntegrationCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+      for ( plain_integrationcell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
       {
         IntegrationCell * ic = *i;
         const std::vector<Point*> & points = ic->Points();
@@ -882,7 +882,7 @@ void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element,
 
         parent_cell->NewIntegrationCell( parent_mesh, ic->Shape(), parent_points );
       }
-      for ( std::set<BoundaryCell*>::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
+      for ( plain_boundarycell_set::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
       {
         BoundaryCell * bc = *i;
         const std::vector<Point*> & points = bc->Points();
@@ -1013,30 +1013,30 @@ void GEO::CUT::TetMeshIntersection::Fill( Mesh & parent_mesh, Element * element,
 
 void GEO::CUT::TetMeshIntersection::Fill( VolumeCell * parent_cell, ChildCell & childcell )
 {
-  std::set<VolumeCell*> & child_cells = childcell.cells_;
+  plain_volumecell_set & child_cells = childcell.cells_;
 
   if ( child_cells.size()==0 )
   {
     throw std::runtime_error( "failed to find seed cells" );
   }
 
-  std::set<VolumeCell*> done_child_cells;
+  plain_volumecell_set done_child_cells;
 
   while ( child_cells.size() > 0 )
   {
-    std::set<Facet*> open_facets;
+    plain_facet_set open_facets;
 
     while ( child_cells.size() > 0 )
     {
-      for ( std::set<VolumeCell*>::iterator i=child_cells.begin(); i!=child_cells.end(); ++i )
+      for ( plain_volumecell_set::iterator i=child_cells.begin(); i!=child_cells.end(); ++i )
       {
         VolumeCell * vc = *i;
         if ( done_child_cells.count( vc )==0 )
         {
           child_cells.erase( vc );
           done_child_cells.insert( vc );
-          const std::set<Facet*> & facets = vc->Facets();
-          for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+          const plain_facet_set & facets = vc->Facets();
+          for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
           {
             Facet * f = *i;
             if ( not f->OnCutSide() )
@@ -1069,7 +1069,7 @@ void GEO::CUT::TetMeshIntersection::Fill( VolumeCell * parent_cell, ChildCell & 
     {
       FacetMesh facet_mesh;
 
-      for ( std::set<Facet*>::iterator i=open_facets.begin(); i!=open_facets.end(); ++i )
+      for ( plain_facet_set::iterator i=open_facets.begin(); i!=open_facets.end(); ++i )
       {
         Facet * f = *i;
         facet_mesh.Add( f );
@@ -1090,8 +1090,8 @@ void GEO::CUT::TetMeshIntersection::Fill( VolumeCell * parent_cell, ChildCell & 
           Point * p1 = f1->OtherPoint( line.first, line.second );
           Point * p2 = f2->OtherPoint( line.first, line.second );
 
-          std::set<Facet*> facets1;
-          std::set<Facet*> facets2;
+          plain_facet_set facets1;
+          plain_facet_set facets2;
 
           FindCommonFacets( p1, p2, line.first , facets1 );
           FindCommonFacets( p1, p2, line.second, facets2 );
@@ -1103,8 +1103,8 @@ void GEO::CUT::TetMeshIntersection::Fill( VolumeCell * parent_cell, ChildCell & 
 
             if ( not f3->OnCutSide() and not f4->OnCutSide() )
             {
-              const std::set<VolumeCell*> & cells3 = f3->Cells();
-              const std::set<VolumeCell*> & cells4 = f4->Cells();
+              const plain_volumecell_set & cells3 = f3->Cells();
+              const plain_volumecell_set & cells4 = f4->Cells();
 
               if ( cells3.size()==1 and cells4.size()==1 )
               {
@@ -1133,13 +1133,13 @@ void GEO::CUT::TetMeshIntersection::Fill( VolumeCell * parent_cell, ChildCell & 
   BuildSurfaceCellMap( parent_cell, childcell );
 }
 
-void GEO::CUT::TetMeshIntersection::RegisterNewPoints( Mesh & parent_mesh, const std::set<VolumeCell*> & childset )
+void GEO::CUT::TetMeshIntersection::RegisterNewPoints( Mesh & parent_mesh, const plain_volumecell_set & childset )
 {
-  for ( std::set<VolumeCell*>::iterator i=childset.begin(); i!=childset.end(); ++i )
+  for ( plain_volumecell_set::iterator i=childset.begin(); i!=childset.end(); ++i )
   {
     VolumeCell * vc = *i;
-    const std::set<Facet*> & facets = vc->Facets();
-    for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+    const plain_facet_set & facets = vc->Facets();
+    for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
     {
       Facet * f = *i;
       if ( f->OnCutSide() )
@@ -1168,20 +1168,20 @@ void GEO::CUT::TetMeshIntersection::Status()
 #endif
 }
 
-void GEO::CUT::TetMeshIntersection::FindVolumeCell( Point * p, std::set<VolumeCell*> & childset )
+void GEO::CUT::TetMeshIntersection::FindVolumeCell( Point * p, plain_volumecell_set & childset )
 {
-  const std::set<Facet*> & facets = p->Facets();
-  for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+  const plain_facet_set & facets = p->Facets();
+  for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
   {
     Facet * f = *i;
-    const std::set<VolumeCell*> & facet_cells = f->Cells();
+    const plain_volumecell_set & facet_cells = f->Cells();
     std::copy( facet_cells.begin(), facet_cells.end(), std::inserter( childset, childset.begin() ) );
   }
 
 #ifdef DEBUGCUTLIBRARY
   if ( facets.size() > 0 )
   {
-    for ( std::set<VolumeCell*>::const_iterator i=childset.begin(); i!=childset.end(); ++i )
+    for ( plain_volumecell_set::const_iterator i=childset.begin(); i!=childset.end(); ++i )
     {
       VolumeCell * vc = *i;
       if ( vc->Contains( p ) )
@@ -1368,13 +1368,13 @@ void GEO::CUT::TetMeshIntersection::CopyCutSide( Side * s, Facet * f )
       std::vector<Line*> newlines;
       mesh_.NewLine( p1, p2, cs, NULL, NULL, &newlines );
 
-      std::set<Edge*> edges;
+      plain_edge_set edges;
       p1->CommonEdge( p2, edges );
-      for ( std::set<Edge*>::iterator i=edges.begin(); i!=edges.end(); ++i )
+      for ( plain_edge_set::iterator i=edges.begin(); i!=edges.end(); ++i )
       {
         Edge * e = *i;
-        const std::set<Side*> & sides = e->Sides();
-        for ( std::set<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
+        const plain_side_set & sides = e->Sides();
+        for ( plain_side_set::const_iterator i=sides.begin(); i!=sides.end(); ++i )
         {
           Side * s = *i;
           for ( std::vector<Line*>::iterator i=newlines.begin(); i!=newlines.end(); ++i )
@@ -1382,8 +1382,8 @@ void GEO::CUT::TetMeshIntersection::CopyCutSide( Side * s, Facet * f )
             Line * nl = *i;
             nl->AddSide( s );
           }
-          const std::set<Element*> & elements = s->Elements();
-          for ( std::set<Element*>::const_iterator i=elements.begin(); i!=elements.end(); ++i )
+          const plain_element_set & elements = s->Elements();
+          for ( plain_element_set::const_iterator i=elements.begin(); i!=elements.end(); ++i )
           {
             Element * e = *i;
             for ( std::vector<Line*>::iterator i=newlines.begin(); i!=newlines.end(); ++i )

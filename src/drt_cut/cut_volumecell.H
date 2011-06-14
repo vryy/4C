@@ -36,17 +36,17 @@ class VolumeCell
 {
 public:
 
-  VolumeCell( const std::set<Facet*> & facets,
-              const std::map<std::pair<Point*, Point*>, std::set<Facet*> > & volume_lines,
+  VolumeCell( const plain_facet_set & facets,
+              const std::map<std::pair<Point*, Point*>, plain_facet_set > & volume_lines,
               Element * element );
 
   bool Contains( Point * p );
 
   void Neighbors( Point * p,
-                  const std::set<VolumeCell*> & cells,
-                  const std::set<VolumeCell*> & done,
-                  std::set<VolumeCell*> & connected,
-                  std::set<Element*> & elements );
+                  const plain_volumecell_set & cells,
+                  const plain_volumecell_set & done,
+                  plain_volumecell_set & connected,
+                  plain_element_set & elements );
 
   Element * ParentElement() { return element_; }
 
@@ -54,7 +54,7 @@ public:
 
   void CreateTet4IntegrationCells( Mesh & mesh, const std::vector<std::vector<Point*> > & tets, const std::map<Facet*, std::vector<Point*> > & sides_xyz );
 
-  void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );
+  void GetIntegrationCells( plain_integrationcell_set & cells );
 
   void GetBoundaryCells( std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells );
 
@@ -66,11 +66,11 @@ public:
 
   void Print( std::ostream & stream );
 
-  const std::set<Facet*> & Facets() const { return facets_; }
+  const plain_facet_set & Facets() const { return facets_; }
 
-  const std::set<IntegrationCell*> & IntegrationCells() const { return integrationcells_; }
+  const plain_integrationcell_set & IntegrationCells() const { return integrationcells_; }
 
-  const std::set<BoundaryCell*> & BoundaryCells() const { return bcells_; }
+  const plain_boundarycell_set & BoundaryCells() const { return bcells_; }
 
   const std::vector<int> & NodalDofSet() const { return nodaldofset_; }
 
@@ -116,13 +116,13 @@ private:
   GEO::CUT::Point::PointPosition position_;
 
   /// defining facets
-  std::set<Facet*> facets_;
+  plain_facet_set facets_;
 
   /// volume preserving simple shaped cells
-  std::set<IntegrationCell*> integrationcells_;
+  plain_integrationcell_set integrationcells_;
 
   /// boundary cells at cut surface with outward normals
-  std::set<BoundaryCell*> bcells_;
+  plain_boundarycell_set bcells_;
 
   /// dof set number of all element nodes
   std::vector<int> nodaldofset_;

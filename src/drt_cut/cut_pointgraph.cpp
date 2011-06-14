@@ -149,12 +149,12 @@ void GEO::CUT::PointGraph::Graph::AddEdge( Point * p1, Point * p2 )
 
 void GEO::CUT::PointGraph::Graph::Print( std::ostream & stream)
 {
-  for ( std::map<int, std::set<int> >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
+  for ( std::map<int, plain_int_set >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
   {
     int p = i->first;
-    std::set<int> & row = i->second;
+    plain_int_set & row = i->second;
     stream << p << ": ";
-    for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
+    for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
     {
       int p = *i;
       stream << p << " ";
@@ -323,7 +323,7 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, Cy
 
   std::map<int, vertex_t> vertex_map;
 
-  for ( std::map<int, std::set<int> >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
+  for ( std::map<int, plain_int_set >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
   {
     int n = i->first;
 
@@ -338,16 +338,16 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, Cy
 
   int counter = 0;
 
-  for ( std::map<int, std::set<int> >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
+  for ( std::map<int, plain_int_set >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
   {
     int u = i->first;
 
     Point * p1 = GetPoint( u );
     if ( location==element_side or p1->IsCut( element ) )
     {
-      std::set<int> & row = i->second;
+      plain_int_set & row = i->second;
 
-      for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
+      for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
       {
         int v = *i;
         Point * p2 = GetPoint( v );
@@ -391,12 +391,12 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, Cy
     // algorithm that does not depend on geometry. This is required for
     // levelset cut sides than do not posses geometrical information.
 
-    std::set<cycle_t*> base_cycles;
+    plain_cycle_set base_cycles;
     find_cycles( g, base_cycles );
 
     main_cycles_.reserve( base_cycles.size() );
 
-    for ( std::set<cycle_t*>::iterator i=base_cycles.begin(); i!=base_cycles.end(); ++i )
+    for ( plain_cycle_set::iterator i=base_cycles.begin(); i!=base_cycles.end(); ++i )
     {
       cycle_t * c = *i;
 
@@ -507,17 +507,17 @@ void GEO::CUT::PointGraph::Graph::FixSinglePoints( Cycle & cycle )
   for ( ;; )
   {
     bool found = false;
-    for ( std::map<int, std::set<int> >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
+    for ( std::map<int, plain_int_set >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
     {
       int p = i->first;
-      std::set<int> & row = i->second;
+      plain_int_set & row = i->second;
       if ( row.size() < 2 )
       {
         found = true;
-        for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
+        for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
         {
           int p2 = *i;
-          std::set<int> & row2 = graph_[p2];
+          plain_int_set & row2 = graph_[p2];
           row2.erase( p );
           if ( row2.size()==0 )
             graph_.erase( p2 );
@@ -543,9 +543,9 @@ void GEO::CUT::PointGraph::Graph::FixSinglePoints( Cycle & cycle )
 
 bool GEO::CUT::PointGraph::Graph::HasSinglePoints()
 {
-  for ( std::map<int, std::set<int> >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
+  for ( std::map<int, plain_int_set >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
   {
-    std::set<int> & row = i->second;
+    plain_int_set & row = i->second;
     if ( row.size() < 2 )
     {
       return true;

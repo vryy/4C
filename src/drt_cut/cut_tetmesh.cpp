@@ -48,7 +48,7 @@ namespace GEO
 
 
 GEO::CUT::TetMesh::TetMesh( const std::vector<Point*> & points,
-                            const std::set<Facet*> & facets,
+                            const plain_facet_set & facets,
                             bool project )
   : points_( points ),
     facets_( facets )
@@ -89,15 +89,15 @@ GEO::CUT::TetMesh::TetMesh( const std::vector<Point*> & points,
 
 bool GEO::CUT::TetMesh::FillFacetMesh()
 {
-  for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  for ( plain_facet_set::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
     Facet * f = *i;
     if ( not FillFacet( f ) )
       return false;
     if ( f->HasHoles() )
     {
-      const std::set<Facet*> & holes = f->Holes();
-      for ( std::set<Facet*>::const_iterator i=holes.begin(); i!=holes.end(); ++i )
+      const plain_facet_set & holes = f->Holes();
+      for ( plain_facet_set::const_iterator i=holes.begin(); i!=holes.end(); ++i )
       {
         Facet * h = *i;
         if ( not FillFacet( h ) )
@@ -110,8 +110,8 @@ bool GEO::CUT::TetMesh::FillFacetMesh()
 
 void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
                                            Element * element,
-                                           const std::set<VolumeCell*> & cells,
-                                           const std::set<Side*> & cut_sides,
+                                           const plain_volumecell_set & cells,
+                                           const plain_side_set & cut_sides,
                                            int count,
                                            bool levelset )
 {
@@ -119,28 +119,28 @@ void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
 
   if ( FillFacetMesh() )
   {
-    for ( std::set<VolumeCell*>::const_iterator i=cells.begin();
+    for ( plain_volumecell_set::const_iterator i=cells.begin();
           i!=cells.end();
           ++i )
     {
       VolumeCell * vc = *i;
 
       Domain<4> cell_domain;
-      std::set<Entity<4>*> & cell_members = cell_domain.Members();
-      std::set<Entity<3>*> & cell_border  = cell_domain.Border();
+      PlainEntitySet<4> & cell_members = cell_domain.Members();
+      PlainEntitySet<3> & cell_border  = cell_domain.Border();
 
 #ifdef DEBUGCUTLIBRARY
       std::vector<Side*> facet_sides;
 #endif
 
-      const std::set<Facet*> & facets = vc->Facets();
-      for ( std::set<Facet*>::const_iterator i=facets.begin();
+      const plain_facet_set & facets = vc->Facets();
+      for ( plain_facet_set::const_iterator i=facets.begin();
             i!=facets.end();
             ++i )
       {
         Facet * f = *i;
         FacetMesh & fm = facet_mesh_[f];
-        const std::set<Entity<3>*> & tris = fm.SurfaceTris();
+        const PlainEntitySet<3> & tris = fm.SurfaceTris();
 
 #ifdef DEBUGCUTLIBRARY
         facet_sides.push_back( f->ParentSide() );
@@ -149,7 +149,7 @@ void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
         std::copy( tris.begin(), tris.end(), std::inserter( cell_border, cell_border.begin() ) );
       }
 
-      for ( std::set<Facet*>::const_iterator i=facets.begin();
+      for ( plain_facet_set::const_iterator i=facets.begin();
             i!=facets.end();
             ++i )
       {
@@ -174,7 +174,7 @@ void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
       std::vector<std::vector<Point*> > tets;
       tets.reserve( cell_members.size() );
 
-      for ( std::set<Entity<4>*>::iterator i=cell_members.begin(); i!=cell_members.end(); ++i )
+      for ( PlainEntitySet<4>::iterator i=cell_members.begin(); i!=cell_members.end(); ++i )
       {
         Entity<4> & t = **i;
         if ( accept_tets_[t.Id()] )
@@ -193,7 +193,7 @@ void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
 
       std::map<Facet*, std::vector<Point*> > sides_xyz;
 
-      for ( std::set<Facet*>::const_iterator i=facets.begin();
+      for ( plain_facet_set::const_iterator i=facets.begin();
             i!=facets.end();
             ++i )
       {
@@ -201,7 +201,7 @@ void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
         if ( f->OnCutSide() )
         {
           FacetMesh & fm = facet_mesh_[f];
-          const std::set<Entity<3>*> & tris = fm.SurfaceTris();
+          const PlainEntitySet<3> & tris = fm.SurfaceTris();
           std::vector<Point*> & side_coords = sides_xyz[f];
           std::vector<std::vector<int> > sides;
           FindProperSides( tris, sides, &cell_members );
@@ -443,7 +443,7 @@ void GEO::CUT::TetMesh::CallQHull( const std::vector<Point*> & points,
 
     if ( tets.size() > 0 )
     {
-      std::set<int> used_points;
+      plain_int_set used_points;
       for ( std::vector<std::vector<int> >::iterator i=tets.begin(); i!=tets.end(); ++i )
       {
         std::vector<int> & t = *i;
@@ -486,17 +486,17 @@ void GEO::CUT::TetMesh::CallQHull( const std::vector<Point*> & points,
 
 bool GEO::CUT::TetMesh::IsValidTet( const std::vector<Point*> & t )
 {
-  std::set<Side*> sides;
+  plain_side_set sides;
   FindCommonSides( t, sides );
   if ( sides.size()==0 )
   {
-    std::set<Facet*> facets;
+    plain_facet_set facets;
     FindCommonFacets( t, facets );
     if ( facets.size()==0 )
     {
       return true;
     }
-    for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
+    for ( plain_facet_set::iterator i=facets.begin(); i!=facets.end(); ++i )
     {
       Facet * f = *i;
       if ( not f->IsTriangulated() )
@@ -514,13 +514,13 @@ bool GEO::CUT::TetMesh::IsValidTet( const std::vector<Point*> & t )
     }
   }
 
-  std::set<Facet*> facets;
+  plain_facet_set facets;
   FindCommonFacets( t, facets );
   if ( facets.size()==0 )
   {
     return true;
   }
-  for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
+  for ( plain_facet_set::iterator i=facets.begin(); i!=facets.end(); ++i )
   {
     Facet * f = *i;
     if ( f->IsTriangulated() )
@@ -533,7 +533,7 @@ bool GEO::CUT::TetMesh::IsValidTet( const std::vector<Point*> & t )
 
 void GEO::CUT::TetMesh::TestUsedPoints( const std::vector<std::vector<int> > & tets )
 {
-  std::set<int> used_points;
+  plain_int_set used_points;
   for ( std::vector<std::vector<int> >::const_iterator i=tets.begin(); i!=tets.end(); ++i )
   {
     const std::vector<int> & t = *i;
@@ -603,12 +603,12 @@ void GEO::CUT::TetMesh::FixBrokenTets()
   }
 }
 
-void GEO::CUT::TetMesh::FindProperSides( const std::set<Entity<3>*> & tris,
+void GEO::CUT::TetMesh::FindProperSides( const PlainEntitySet<3> & tris,
                                          std::vector<std::vector<int> > & sides,
-                                         const std::set<Entity<4>*> * members )
+                                         const PlainEntitySet<4> * members )
 {
   sides.reserve( tris.size() );
-  for ( std::set<Entity<3>*>::const_iterator i=tris.begin(); i!=tris.end(); ++i )
+  for ( PlainEntitySet<3>::const_iterator i=tris.begin(); i!=tris.end(); ++i )
   {
     Entity<3> * tri = *i;
 
@@ -746,12 +746,12 @@ void GEO::CUT::TetMesh::GmshWriteSurfaceTris()
   file << "};\n";
 }
 
-void GEO::CUT::TetMesh::GmshWriteTriSet( const std::string & name, const std::set<Entity<3>*> & tris )
+void GEO::CUT::TetMesh::GmshWriteTriSet( const std::string & name, const PlainEntitySet<3> & tris )
 {
   std::string filename = name + ".pos";
   std::ofstream file( filename.c_str() );
   file << "View \"" << name << "\" {\n";
-  for ( std::set<Entity<3>*>::const_iterator i=tris.begin(); i!=tris.end(); ++i )
+  for ( PlainEntitySet<3>::const_iterator i=tris.begin(); i!=tris.end(); ++i )
   {
     Entity<3> & tri = **i;
     std::vector<int> t( tri(), tri()+3 );
@@ -760,12 +760,12 @@ void GEO::CUT::TetMesh::GmshWriteTriSet( const std::string & name, const std::se
   file << "};\n";
 }
 
-void GEO::CUT::TetMesh::GmshWriteTetSet( const std::string & name, const std::set<Entity<4>*> & tets )
+void GEO::CUT::TetMesh::GmshWriteTetSet( const std::string & name, const PlainEntitySet<4> & tets )
 {
   std::string filename = name + ".pos";
   std::ofstream file( filename.c_str() );
   file << "View \"" << name << "\" {\n";
-  for ( std::set<Entity<4>*>::const_iterator i=tets.begin(); i!=tets.end(); ++i )
+  for ( PlainEntitySet<4>::const_iterator i=tets.begin(); i!=tets.end(); ++i )
   {
     Entity<4> & tet = **i;
     std::vector<int> t( tet(), tet()+4 );

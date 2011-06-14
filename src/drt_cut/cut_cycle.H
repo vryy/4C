@@ -7,6 +7,8 @@
 #include <vector>
 #include <set>
 
+#include "cut_utils.H"
+
 namespace GEO
 {
   namespace CUT
@@ -29,11 +31,11 @@ namespace GEO
         return points_;
       }
 
-      void CommonEdges( std::set<Edge*> & edges ) const;
+      void CommonEdges( plain_edge_set & edges ) const;
 
-      void CommonSides( std::set<Side*> & sides ) const;
+      void CommonSides( plain_side_set & sides ) const;
 
-      void Intersection( std::set<Side*> & sides ) const;
+      void Intersection( plain_side_set & sides ) const;
 
       bool Equals( const Cycle & other );
 

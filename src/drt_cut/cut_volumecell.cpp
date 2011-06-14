@@ -31,14 +31,14 @@ int GEO::CUT::VolumeCell::pyramid5totet4[2][4] = {
 };
 
 
-GEO::CUT::VolumeCell::VolumeCell( const std::set<Facet*> & facets,
-                                  const std::map<std::pair<Point*, Point*>, std::set<Facet*> > & volume_lines,
+GEO::CUT::VolumeCell::VolumeCell( const plain_facet_set & facets,
+                                  const std::map<std::pair<Point*, Point*>, plain_facet_set > & volume_lines,
                                   Element * element )
   : element_( element ),
     position_( Point::undecided ),
     facets_( facets )
 {
-  for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  for ( plain_facet_set::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
     Facet * f = *i;
     f->Register( this );
@@ -46,10 +46,10 @@ GEO::CUT::VolumeCell::VolumeCell( const std::set<Facet*> & facets,
 }
 
 void GEO::CUT::VolumeCell::Neighbors( Point * p,
-                                      const std::set<VolumeCell*> & cells,
-                                      const std::set<VolumeCell*> & done,
-                                      std::set<VolumeCell*> & connected,
-                                      std::set<Element*> & elements )
+                                      const plain_volumecell_set & cells,
+                                      const plain_volumecell_set & done,
+                                      plain_volumecell_set & connected,
+                                      plain_element_set & elements )
 {
   if ( done.count( this )==0 )
   {
@@ -61,7 +61,7 @@ void GEO::CUT::VolumeCell::Neighbors( Point * p,
     // right volumes (the ones attached to the point), if there are multiple
     // connections possible (we are faced with a thin structure cut.)
 
-    for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
+    for ( plain_facet_set::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
     {
       Facet * f = *i;
       if ( p==NULL or f->Contains( p ) )
@@ -72,7 +72,7 @@ void GEO::CUT::VolumeCell::Neighbors( Point * p,
 
     if ( p!=NULL )
     {
-      for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
+      for ( plain_facet_set::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
       {
         Facet * f = *i;
         if ( not f->Contains( p ) )
@@ -86,7 +86,7 @@ void GEO::CUT::VolumeCell::Neighbors( Point * p,
 
 void GEO::CUT::VolumeCell::GetAllPoints( Mesh & mesh, PointSet & cut_points )
 {
-  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
     Facet * f = *i;
     f->GetAllPoints( mesh, cut_points );
@@ -95,7 +95,7 @@ void GEO::CUT::VolumeCell::GetAllPoints( Mesh & mesh, PointSet & cut_points )
 
 bool GEO::CUT::VolumeCell::Contains( Point * p )
 {
-  for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  for ( plain_facet_set::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
     Facet * f = *i;
     if ( f->Contains( p ) )
@@ -144,14 +144,14 @@ void GEO::CUT::VolumeCell::CreateTet4IntegrationCells( Mesh & mesh,
   }
 }
 
-void GEO::CUT::VolumeCell::GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells )
+void GEO::CUT::VolumeCell::GetIntegrationCells( plain_integrationcell_set & cells )
 {
   std::copy( integrationcells_.begin(), integrationcells_.end(), std::inserter( cells, cells.begin() ) );
 }
 
 void GEO::CUT::VolumeCell::GetBoundaryCells( std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells )
 {
-  for ( std::set<BoundaryCell*>::iterator i=bcells_.begin(); i!=bcells_.end(); ++i )
+  for ( plain_boundarycell_set::iterator i=bcells_.begin(); i!=bcells_.end(); ++i )
   {
     BoundaryCell * bc = *i;
     Facet * f = bc->GetFacet();
@@ -186,7 +186,7 @@ void GEO::CUT::VolumeCell::Position( Point::PointPosition position )
   {
     position_ = position;
 
-    for ( std::set<Facet*>::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
+    for ( plain_facet_set::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
     {
       Facet * f = *i;
       Point::PointPosition fp = f->Position();
@@ -206,7 +206,7 @@ void GEO::CUT::VolumeCell::Print( std::ostream & stream )
          << integrationcells_.size() << " "
          << bcells_.size()
          << "\n";
-  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
     Facet * f = *i;
     f->Print( stream );
@@ -241,7 +241,7 @@ void GEO::CUT::VolumeCell::NewQuad4Cell( Mesh & mesh, Facet * f, const std::vect
 double GEO::CUT::VolumeCell::Volume()
 {
   double volume = 0;
-  for ( std::set<IntegrationCell*>::iterator i=integrationcells_.begin(); i!=integrationcells_.end(); ++i )
+  for ( plain_integrationcell_set::iterator i=integrationcells_.begin(); i!=integrationcells_.end(); ++i )
   {
     IntegrationCell * ic = *i;
     volume += ic->Volume();
@@ -253,7 +253,7 @@ int GEO::CUT::VolumeCell::NumGaussPoints( DRT::Element::DiscretizationType shape
 {
   int numgp = 0;
 
-  for ( std::set<IntegrationCell*>::const_iterator i=integrationcells_.begin(); i!=integrationcells_.end(); ++i )
+  for ( plain_integrationcell_set::const_iterator i=integrationcells_.begin(); i!=integrationcells_.end(); ++i )
   {
     IntegrationCell * ic = *i;
 

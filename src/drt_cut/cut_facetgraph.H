@@ -4,6 +4,7 @@
 #include <algorithm>
 
 #include "cut_coloredgraph.H"
+#include "cut_utils.H"
 
 namespace GEO
 {
@@ -20,7 +21,7 @@ class FacetGraph
 {
 public:
 
-  FacetGraph( const std::vector<Side*> & sides, const std::set<Facet*> & facets );
+  FacetGraph( const std::vector<Side*> & sides, const plain_facet_set & facets );
 
   void Print()
   {
@@ -28,10 +29,10 @@ public:
     cycle_list_.Print();
   }
 
-  void CreateVolumeCells( Mesh & mesh, Element * element, std::set<VolumeCell*> & cells );
+  void CreateVolumeCells( Mesh & mesh, Element * element, plain_volumecell_set & cells );
 
 #ifdef DEBUGCUTLIBRARY
-  bool InCollectedFacets( const std::set<Facet*> & collected_facets );
+  bool InCollectedFacets( const plain_facet_set & collected_facets );
 
   void PrintAllCollected();
 
@@ -41,7 +42,7 @@ private:
 
 //   void Add( GRAPH::Graph & graph,
 //             std::map<std::pair<Point*, Point*>, int> & all_facets,
-//             std::map<std::pair<Point*, Point*>, std::set<Facet*> > & facets
+//             std::map<std::pair<Point*, Point*>, plain_facet_set> & facets
 //             );
 
   int FacetId( Facet * f )
@@ -54,7 +55,7 @@ private:
   std::vector<Facet*> all_facets_;
   std::vector<std::pair<Point*, Point*> > all_lines_;
 #ifdef DEBUGCUTLIBRARY
-  std::vector<std::set<Facet*> > all_collected_facets_;
+  std::vector<plain_facet_set> all_collected_facets_;
 #endif
 };
 

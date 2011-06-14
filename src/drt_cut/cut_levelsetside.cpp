@@ -21,19 +21,19 @@ bool GEO::CUT::LevelSetSide::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, 
   throw std::runtime_error( "no local coordinates on level set cut surface" );
 }
 
-void GEO::CUT::LevelSetSide::MakeOwnedSideFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
+void GEO::CUT::LevelSetSide::MakeOwnedSideFacets( Mesh & mesh, Element * element, plain_facet_set & facets )
 {
   Side::MakeOwnedSideFacets( mesh, element, facets );
 }
 
 #if 0
-void GEO::CUT::LevelSetSide::MakeSideCutFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
+void GEO::CUT::LevelSetSide::MakeSideCutFacets( Mesh & mesh, Element * element, plain_facet_set & facets )
 {
   Side::MakeSideCutFacets( mesh, element, facets );
 }
 #endif
 
-void GEO::CUT::LevelSetSide::MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
+void GEO::CUT::LevelSetSide::MakeInternalFacets( Mesh & mesh, Element * element, plain_facet_set & facets )
 {
   PointGraph pg( mesh, element, this, PointGraph::cut_side, PointGraph::own_lines );
   for ( PointGraph::facet_iterator i=pg.fbegin(); i!=pg.fend(); ++i )

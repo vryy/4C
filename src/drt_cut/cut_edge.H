@@ -107,7 +107,7 @@ public:
 
   //virtual bool HasPoint( Point * p ) = 0;
 
-  const std::set<Side*> & Sides() { return sides_; }
+  const plain_side_set & Sides() { return sides_; }
 
   void Cut( Mesh & mesh, ConcreteSide<DRT::Element::tri3> & side, PointSet & cuts );
 
@@ -195,7 +195,7 @@ private:
 
   std::vector<Node*> nodes_;
 
-  std::set<Side*> sides_;
+  plain_side_set sides_;
 
   //std::vector<Point*> cut_points_;
   PointPositionSet cut_points_;

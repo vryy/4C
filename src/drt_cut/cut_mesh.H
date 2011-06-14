@@ -82,8 +82,8 @@ public:
 
   Facet* NewFacet( const std::vector<Point*> & points, Side * side, bool cutsurface );
 
-  VolumeCell* NewVolumeCell( const std::set<Facet*> & facets,
-                             const std::map<std::pair<Point*, Point*>, std::set<Facet*> > & volume_lines,
+  VolumeCell* NewVolumeCell( const plain_facet_set & facets,
+                             const std::map<std::pair<Point*, Point*>, plain_facet_set> & volume_lines,
                              Element * element );
 
   Tri3BoundaryCell* NewTri3Cell( VolumeCell * volume, Facet * facet, const std::vector<Point*> & points );
@@ -102,9 +102,9 @@ public:
 
   bool DetectSelfCut();
 
-  void Cut( Mesh & mesh, std::set<Element*> & elements_done );
+  void Cut( Mesh & mesh, plain_element_set & elements_done );
 
-  void Cut( Side & side, const std::set<Element*> & done, std::set<Element*> & elements_done );
+  void Cut( Side & side, const plain_element_set & done, plain_element_set & elements_done );
 
   void Cut( LevelSetSide & side );
 
@@ -152,13 +152,13 @@ public:
   Node* GetNode( int nid, Point * p, double lsv=0.0 );
 #endif
 
-  Node* GetNode( const std::set<int> & nids, const double * xyz, double lsv=0.0 );
+  Node* GetNode( const plain_int_set & nids, const double * xyz, double lsv=0.0 );
 
   Edge* GetEdge( Node* begin, Node* end );
 
   const std::vector<GEO::CUT::Side*> & GetSides( int sid );
 
-  Side* GetSide( const std::set<int> & nids );
+  Side* GetSide( const plain_int_set & nids );
 
   Side* GetSide( int sid,
                  const std::vector<int> & nids,
@@ -202,17 +202,17 @@ public:
 
   const std::list<Teuchos::RCP<VolumeCell> > & VolumeCells() const { return cells_; }
 
-  const std::map<std::set<int>, Teuchos::RCP<Edge> > & Edges() const { return edges_; }
+  const std::map<plain_int_set, Teuchos::RCP<Edge> > & Edges() const { return edges_; }
 
 private:
 
   void DumpGmsh( std::ofstream & file, const std::vector<Node*> & nodes, char elementtype );
 
-  Edge* GetEdge( const std::set<int> & nids,
+  Edge* GetEdge( const plain_int_set & nids,
                  const std::vector<Node*> & nodes,
                  const CellTopologyData & edge_topology );
   Side* GetSide( int sid,
-                 const std::set<int> & nids,
+                 const plain_int_set & nids,
                  const std::vector<Node*> & nodes,
                  const std::vector<Edge*> & edges,
                  const CellTopologyData & side_topology );
@@ -234,12 +234,12 @@ private:
   std::list<Teuchos::RCP<IntegrationCell> > integrationcells_;
 
   std::map<int, Teuchos::RCP<Node> > nodes_;
-  std::map<std::set<int>, Teuchos::RCP<Edge> > edges_;
-  std::map<std::set<int>, Teuchos::RCP<Side> > sides_;
+  std::map<plain_int_set, Teuchos::RCP<Edge> > edges_;
+  std::map<plain_int_set, Teuchos::RCP<Side> > sides_;
   std::map<int, std::vector<Side*> > cut_sides_;
   std::map<int, Teuchos::RCP<Element> > elements_;
 
-  std::map<std::set<int>, Node*> shadow_nodes_;
+  std::map<plain_int_set, Node*> shadow_nodes_;
   std::list<Teuchos::RCP<Element> > shadow_elements_;
 };
 

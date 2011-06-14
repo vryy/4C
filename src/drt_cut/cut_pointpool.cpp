@@ -38,7 +38,7 @@ GEO::CUT::Point* GEO::CUT::OctTreeNode::GetPoint( const double * x, Edge * cut_e
 
     double tol = tolerance*norm_;
 
-    for ( std::set<Teuchos::RCP<Point>, PointPidLess>::iterator i=points_.begin(); i!=points_.end(); ++i )
+    for ( RCPPointSet::iterator i=points_.begin(); i!=points_.end(); ++i )
     {
       Point * p = &**i;
 
@@ -105,7 +105,7 @@ void GEO::CUT::OctTreeNode::Split( int level )
     LINALG::Matrix<3,1> x;
     bool first = true;
 
-    for ( std::set<Teuchos::RCP<Point>, PointPidLess>::iterator i=points_.begin(); i!=points_.end(); ++i )
+    for ( RCPPointSet::iterator i=points_.begin(); i!=points_.end(); ++i )
     {
       Point * p = &**i;
       if ( first )
@@ -139,7 +139,7 @@ void GEO::CUT::OctTreeNode::Split( int level )
       Leaf( x )->bb_.AddPoint( x );
     }
 
-    for ( std::set<Teuchos::RCP<Point>, PointPidLess>::iterator i=points_.begin(); i!=points_.end(); ++i )
+    for ( RCPPointSet::iterator i=points_.begin(); i!=points_.end(); ++i )
     {
       Teuchos::RCP<Point> p = *i;
       double x[3];
@@ -160,7 +160,7 @@ void GEO::CUT::OctTreeNode::AddPoint( const double * x, Teuchos::RCP<Point> p )
   bb_.AddPoint( x );
 }
 
-void GEO::CUT::OctTreeNode::CollectEdges( const BoundingBox & edgebox, std::set<Edge*> & edges )
+void GEO::CUT::OctTreeNode::CollectEdges( const BoundingBox & edgebox, plain_edge_set & edges )
 {
   if ( not IsLeaf() )
   {
@@ -175,11 +175,11 @@ void GEO::CUT::OctTreeNode::CollectEdges( const BoundingBox & edgebox, std::set<
   else
   {
     BoundingBox sbox;
-    for ( std::set<Teuchos::RCP<Point>, PointPidLess>::iterator i=points_.begin(); i!=points_.end(); ++i )
+    for ( RCPPointSet::iterator i=points_.begin(); i!=points_.end(); ++i )
     {
       Point * p = &**i;
-      const std::set<Edge*> & sds = p->CutEdges();
-      for ( std::set<Edge*>::iterator i=sds.begin(); i!=sds.end(); ++i )
+      const plain_edge_set & sds = p->CutEdges();
+      for ( plain_edge_set::iterator i=sds.begin(); i!=sds.end(); ++i )
       {
         Edge * s = *i;
         if ( edges.count( s )==0 )
@@ -195,7 +195,7 @@ void GEO::CUT::OctTreeNode::CollectEdges( const BoundingBox & edgebox, std::set<
   }
 }
 
-void GEO::CUT::OctTreeNode::CollectSides( const BoundingBox & sidebox, std::set<Side*> & sides )
+void GEO::CUT::OctTreeNode::CollectSides( const BoundingBox & sidebox, plain_side_set & sides )
 {
   if ( not IsLeaf() )
   {
@@ -210,11 +210,11 @@ void GEO::CUT::OctTreeNode::CollectSides( const BoundingBox & sidebox, std::set<
   else
   {
     BoundingBox sbox;
-    for ( std::set<Teuchos::RCP<Point>, PointPidLess>::iterator i=points_.begin(); i!=points_.end(); ++i )
+    for ( RCPPointSet::iterator i=points_.begin(); i!=points_.end(); ++i )
     {
       Point * p = &**i;
-      const std::set<Side*> & sds = p->CutSides();
-      for ( std::set<Side*>::iterator i=sds.begin(); i!=sds.end(); ++i )
+      const plain_side_set & sds = p->CutSides();
+      for ( plain_side_set::iterator i=sds.begin(); i!=sds.end(); ++i )
       {
         Side * s = *i;
         if ( sides.count( s )==0 )
@@ -230,7 +230,7 @@ void GEO::CUT::OctTreeNode::CollectSides( const BoundingBox & sidebox, std::set<
   }
 }
 
-void GEO::CUT::OctTreeNode::CollectElements( const BoundingBox & sidebox, std::set<Element*> & elements )
+void GEO::CUT::OctTreeNode::CollectElements( const BoundingBox & sidebox, plain_element_set & elements )
 {
   if ( not IsLeaf() )
   {
@@ -245,11 +245,11 @@ void GEO::CUT::OctTreeNode::CollectElements( const BoundingBox & sidebox, std::s
   else
   {
     BoundingBox elementbox;
-    for ( std::set<Teuchos::RCP<Point>, PointPidLess>::iterator i=points_.begin(); i!=points_.end(); ++i )
+    for ( RCPPointSet::iterator i=points_.begin(); i!=points_.end(); ++i )
     {
       Point * p = &**i;
-      const std::set<Element*> & els = p->Elements();
-      for ( std::set<Element*>::iterator i=els.begin(); i!=els.end(); ++i )
+      const plain_element_set & els = p->Elements();
+      for ( plain_element_set::iterator i=els.begin(); i!=els.end(); ++i )
       {
         Element * e = *i;
         if ( elements.count( e )==0 )
@@ -267,7 +267,7 @@ void GEO::CUT::OctTreeNode::CollectElements( const BoundingBox & sidebox, std::s
 
 void GEO::CUT::OctTreeNode::ResetOutsidePoints()
 {
-  for ( std::set<Teuchos::RCP<Point>, PointPidLess>::iterator i=points_.begin();
+  for ( RCPPointSet::iterator i=points_.begin();
         i!=points_.end();
         ++i )
   {
@@ -290,7 +290,7 @@ void GEO::CUT::OctTreeNode::Print( int level, std::ostream & stream )
   }
   else
   {
-    for ( std::set<Teuchos::RCP<Point>, PointPidLess>::iterator i=points_.begin(); i!=points_.end(); ++i )
+    for ( RCPPointSet::iterator i=points_.begin(); i!=points_.end(); ++i )
     {
       Point * p = &**i;
       p->Plot( stream );

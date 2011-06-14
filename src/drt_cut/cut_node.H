@@ -29,7 +29,7 @@ public:
 
   void RegisterCuts();
 
-  const std::set<Edge*> & Edges() { return edges_; }
+  const plain_edge_set & Edges() { return edges_; }
 
   void Coordinates( double * x )
   { point_->Coordinates( x ); }
@@ -50,30 +50,30 @@ public:
 
   double LSV() const { return lsv_; }
 
-  const std::set<Element*> & Elements() const { return point_->Elements(); }
+  const plain_element_set & Elements() const { return point_->Elements(); }
 
   void FindDOFSets( bool include_inner );
 
   int DofSetNumber( VolumeCell * cell );
 
-  const std::vector<std::set<VolumeCell*> > & DofSets() const { return dofsets_; }
+  const std::vector<plain_volumecell_set> & DofSets() const { return dofsets_; }
 
   int NumDofSets() const { return DofSets().size(); }
 
 private:
 
   void BuildDOFCellSets( Point * p,
-                         const std::set<VolumeCell*> & cells,
-                         const std::set<VolumeCell*> & nodal_cells,
-                         std::set<VolumeCell*> & done );
+                         const plain_volumecell_set & cells,
+                         const plain_volumecell_set & nodal_cells,
+                         plain_volumecell_set & done );
 
   int nid_;
   Point* point_;
   double lsv_;
 
-  std::set<Edge*> edges_;
+  plain_edge_set edges_;
 
-  std::vector<std::set<VolumeCell*> > dofsets_;
+  std::vector<plain_volumecell_set> dofsets_;
 };
 
 }

@@ -63,7 +63,7 @@ bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side )
 
 void GEO::CUT::Element::MakeCutLines( Mesh & mesh, Creator & creator )
 {
-  for ( std::set<Side*>::iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
+  for ( plain_side_set::iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
   {
     Side & side = **i;
 
@@ -121,7 +121,7 @@ void GEO::CUT::Element::MakeFacets( Mesh & mesh )
       Side & side = **i;
       side.MakeOwnedSideFacets( mesh, this, facets_ );
     }
-    for ( std::set<Side*>::iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
+    for ( plain_side_set::iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
     {
       Side & cut_side = **i;
       cut_side.MakeInternalFacets( mesh, this, facets_ );
@@ -143,11 +143,11 @@ void GEO::CUT::Element::FindNodePositions()
     if ( pos==Point::undecided )
     {
       bool done = false;
-      const std::set<Facet*> & facets = p->Facets();
-      for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
+      const plain_facet_set & facets = p->Facets();
+      for ( plain_facet_set::iterator i=facets.begin(); i!=facets.end(); ++i )
       {
         Facet * f = *i;
-        for ( std::set<Side*>::iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
+        for ( plain_side_set::iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
         {
           Side * s = *i;
 
@@ -201,8 +201,8 @@ void GEO::CUT::Element::FindNodePositions()
       // The nodal position is already known. Set it to my facets. If the
       // facets are already set, this will not have much effect anyway. But on
       // multiple cuts we avoid unset facets this way.
-      const std::set<Facet*> & facets = p->Facets();
-      for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
+      const plain_facet_set & facets = p->Facets();
+      for ( plain_facet_set::iterator i=facets.begin(); i!=facets.end(); ++i )
       {
         Facet * f = *i;
         f->Position( pos );
@@ -268,18 +268,18 @@ bool GEO::CUT::Element::OnSide( const std::vector<Point*> & facet_points )
 }
 
 
-void GEO::CUT::Element::GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells )
+void GEO::CUT::Element::GetIntegrationCells( plain_integrationcell_set & cells )
 {
-  for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+  for ( plain_volumecell_set::iterator i=cells_.begin(); i!=cells_.end(); ++i )
   {
     VolumeCell * vc = *i;
     vc->GetIntegrationCells( cells );
   }
 }
 
-void GEO::CUT::Element::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )
+void GEO::CUT::Element::GetBoundaryCells( plain_boundarycell_set & bcells )
 {
-  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
     Facet * f = *i;
     if ( cut_faces_.count( f->ParentSide() )!= 0 )
@@ -295,7 +295,7 @@ void GEO::CUT::Element::GetCutPoints( PointSet & cut_points )
   {
     Side * side = *i;
 
-    for ( std::set<Side*>::iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
+    for ( plain_side_set::iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
     {
       Side * other = *i;
       side->GetCutPoints( this, *other, cut_points );
@@ -311,7 +311,7 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count, bool lev
 #ifdef DEBUGCUTLIBRARY
   {
     int volume_count = 0;
-    for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+    for ( plain_volumecell_set::iterator i=cells_.begin(); i!=cells_.end(); ++i )
     {
       VolumeCell * vc = *i;
 
@@ -348,7 +348,7 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count, bool lev
   // to triangulate all cut facets. This needs to be done, so repeated cuts
   // work in the right way.
 
-  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
     Facet * f = *i;
     if ( f->OnCutSide() and f->HasHoles() )
@@ -455,7 +455,7 @@ void GEO::CUT::ConcreteElement<DRT::Element::pyramid5>::LocalCoordinates( const 
 int GEO::CUT::Element::NumGaussPoints( DRT::Element::DiscretizationType shape )
 {
   int numgp = 0;
-  for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+  for ( plain_volumecell_set::iterator i=cells_.begin(); i!=cells_.end(); ++i )
   {
     VolumeCell * vc = *i;
     numgp += vc->NumGaussPoints( shape );
@@ -474,8 +474,8 @@ void GEO::CUT::Element::DebugDump()
     n->Plot( std::cout );
   }
   std::cout << "\n";
-  const std::set<Side*> & cutsides = CutSides();
-  for ( std::set<Side*>::const_iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+  const plain_side_set & cutsides = CutSides();
+  for ( plain_side_set::const_iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
   {
     Side * s = *i;
     //s->Print();
@@ -495,7 +495,7 @@ void GEO::CUT::Element::GnuplotDump()
   str << "element" << Id() << ".plot";
   std::ofstream file( str.str().c_str() );
 
-  std::set<Edge*> all_edges;
+  plain_edge_set all_edges;
 
   const std::vector<Side*> & sides = Sides();
   for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
@@ -506,7 +506,7 @@ void GEO::CUT::Element::GnuplotDump()
     std::copy( edges.begin(), edges.end(), std::inserter( all_edges, all_edges.begin() ) );
   }
 
-  for ( std::set<Edge*>::iterator i=all_edges.begin(); i!=all_edges.end(); ++i )
+  for ( plain_edge_set::iterator i=all_edges.begin(); i!=all_edges.end(); ++i )
   {
     Edge * e = *i;
     e->BeginNode()->point()->Plot( file );
@@ -524,7 +524,7 @@ void GEO::CUT::Element::DumpFacets()
   std::cout << "write '" << name << "'\n";
   std::ofstream file( name.c_str() );
 
-  for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
     Facet * f = *i;
     f->Print( file );

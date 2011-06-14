@@ -49,8 +49,6 @@ public:
 
   const Epetra_SerialDenseMatrix & Coordinates() const { return xyz_; }
 
-//   static bool CreateCells( Mesh & mesh, VolumeCell * cell, Point::PointPosition position, const std::set<Facet*> & facets, std::set<IntegrationCell*> & integrationcells );
-
 protected:
 
   Point::PointPosition position_;

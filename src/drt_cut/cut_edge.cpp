@@ -137,7 +137,7 @@ void GEO::CUT::Edge::CutPoints( Side * side, PointSet & cut_points )
   for ( std::vector<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
     Point * p = *i;
-    std::set<Line*> cut_lines;
+    plain_line_set cut_lines;
     p->CutLines( filter, cut_lines );
     if ( cut_lines.size()>0 )
     {
@@ -251,14 +251,14 @@ void GEO::CUT::Edge::CutPointsInside( Element * element, std::vector<Point*> & l
     // middle points that do not know their position on an element side.
     if ( line.size() > 2 )
     {
-      std::set<Side*> common;
+      plain_side_set common;
       first->CommonSide( last, common );
       if ( common.size() > 0 )
       {
         for ( std::vector<Point*>::iterator i=line.begin(); i!=line.end(); ++i )
         {
           Point * p = *i;
-          for ( std::set<Side*>::iterator i=common.begin(); i!=common.end(); ++i )
+          for ( plain_side_set::iterator i=common.begin(); i!=common.end(); ++i )
           {
             Side * s = *i;
             p->AddSide( s );
@@ -420,8 +420,8 @@ void GEO::CUT::Edge::RectifyCutNumerics()
     for ( std::vector<Point*>::iterator pi=cut_points_.begin(); pi!=cut_points_.end(); ++pi )
     {
       Point * p = *pi;
-      const std::set<Side*> & cutsides = p->CutSides();
-      for ( std::set<Side*>::const_iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
+      const plain_side_set & cutsides = p->CutSides();
+      for ( plain_side_set::const_iterator i=cutsides.begin(); i!=cutsides.end(); ++i )
       {
         Side * s = *i;
         std::map<Side*, std::vector<Point*>::iterator>::iterator j = sidecuts.find( s );

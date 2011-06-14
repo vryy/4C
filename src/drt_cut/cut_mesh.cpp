@@ -191,9 +191,9 @@ GEO::CUT::Node* GEO::CUT::Mesh::GetNode( int nid, Point * p, double lsv )
 }
 #endif
 
-GEO::CUT::Node* GEO::CUT::Mesh::GetNode( const std::set<int> & nids, const double * xyz, double lsv )
+GEO::CUT::Node* GEO::CUT::Mesh::GetNode( const plain_int_set & nids, const double * xyz, double lsv )
 {
-  std::map<std::set<int>, Node*>::iterator i=shadow_nodes_.find( nids );
+  std::map<plain_int_set, Node*>::iterator i=shadow_nodes_.find( nids );
   if ( i!=shadow_nodes_.end() )
   {
     return &*i->second;
@@ -213,7 +213,7 @@ GEO::CUT::Edge* GEO::CUT::Mesh::GetEdge( Node* begin, Node* end )
   if ( begin->point()==end->point() )
     throw std::runtime_error( "edge between same point" );
 
-  std::set<int> nids;
+  plain_int_set nids;
   nids.insert( begin->Id() );
   nids.insert( end->Id() );
 
@@ -224,9 +224,9 @@ GEO::CUT::Edge* GEO::CUT::Mesh::GetEdge( Node* begin, Node* end )
   return GetEdge( nids, nodes, *shards::getCellTopologyData< shards::Line<2> >() );
 }
 
-GEO::CUT::Edge* GEO::CUT::Mesh::GetEdge( const std::set<int> & nids, const std::vector<Node*> & nodes, const CellTopologyData & edge_topology )
+GEO::CUT::Edge* GEO::CUT::Mesh::GetEdge( const plain_int_set & nids, const std::vector<Node*> & nodes, const CellTopologyData & edge_topology )
 {
-  std::map<std::set<int>, Teuchos::RCP<Edge> >::iterator i = edges_.find( nids );
+  std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator i = edges_.find( nids );
   if ( i != edges_.end() )
   {
     return &*i->second;
@@ -239,9 +239,9 @@ GEO::CUT::Edge* GEO::CUT::Mesh::GetEdge( const std::set<int> & nids, const std::
   Point * p1 = nodes[0]->point();
   Point * p2 = nodes[1]->point();
 
-  std::set<Edge*> edges;
+  plain_edge_set edges;
   p1->CommonEdge( p2, edges );
-  for ( std::set<Edge*>::iterator i=edges.begin(); i!=edges.end(); ++i )
+  for ( plain_edge_set::iterator i=edges.begin(); i!=edges.end(); ++i )
   {
     Edge * e = *i;
     Point * ep1 = e->BeginNode()->point();
@@ -283,9 +283,9 @@ const std::vector<GEO::CUT::Side*> & GEO::CUT::Mesh::GetSides( int sid )
   throw std::runtime_error( "no side with given id" );
 }
 
-GEO::CUT::Side* GEO::CUT::Mesh::GetSide( const std::set<int> & nids )
+GEO::CUT::Side* GEO::CUT::Mesh::GetSide( const plain_int_set & nids )
 {
-  std::map<std::set<int>, Teuchos::RCP<Side> >::iterator i = sides_.find( nids );
+  std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i = sides_.find( nids );
   if ( i != sides_.end() )
   {
     return &*i->second;
@@ -333,7 +333,7 @@ GEO::CUT::Side* GEO::CUT::Mesh::GetSide( int sid,
   std::vector<Edge*> edges;
   edges.reserve( ec );
 
-  std::set<int> nidset;
+  plain_int_set nidset;
 
   for ( unsigned i=0; i<ec; ++i )
   {
@@ -341,7 +341,7 @@ GEO::CUT::Side* GEO::CUT::Mesh::GetSide( int sid,
     const CellTopologyData & edge_topology = *edge.topology;
 
     std::vector<Node*> edge_nodes;
-    std::set<int> edge_nids;
+    plain_int_set edge_nids;
     edge_nodes.reserve( edge_topology.node_count );
     for ( unsigned j=0; j<edge_topology.node_count; ++j )
     {
@@ -360,12 +360,12 @@ GEO::CUT::Side* GEO::CUT::Mesh::GetSide( int sid,
 }
 
 GEO::CUT::Side* GEO::CUT::Mesh::GetSide( int sid,
-                                         const std::set<int> & nids,
+                                         const plain_int_set & nids,
                                          const std::vector<Node*> & nodes,
                                          const std::vector<Edge*> & edges,
                                          const CellTopologyData & side_topology )
 {
-  std::map<std::set<int>, Teuchos::RCP<Side> >::iterator i = sides_.find( nids );
+  std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i = sides_.find( nids );
   if ( i != sides_.end() )
   {
     return &*i->second;
@@ -489,7 +489,7 @@ GEO::CUT::Element* GEO::CUT::Mesh::GetElement( int eid,
       const CellTopologyData & edge_topology = *edge.topology;
 
       std::vector<Node*> edge_nodes;
-      std::set<int> edge_nids;
+      plain_int_set edge_nids;
       edge_nodes.reserve( edge_topology.node_count );
       for ( unsigned j=0; j<edge_topology.node_count; ++j )
       {
@@ -500,7 +500,7 @@ GEO::CUT::Element* GEO::CUT::Mesh::GetElement( int eid,
       side_edges.push_back( GetEdge( edge_nids, edge_nodes, edge_topology ) );
     }
 
-    std::set<int> side_nidset;
+    plain_int_set side_nidset;
     std::copy( side_nids.begin(), side_nids.end(),
                std::inserter( side_nidset, side_nidset.begin() ) );
     sides.push_back( GetSide( -1, side_nidset, side_nodes, side_edges, side_topology ) );
@@ -562,9 +562,9 @@ void GEO::CUT::Mesh::NewLine( Point* p1, Point* p2, Side * cut_side1, Side * cut
   Line * line = p1->CommonLine( p2 );
   if ( line==NULL )
   {
-    std::set<Edge*> edges;
+    plain_edge_set edges;
     p1->CommonEdge( p2, edges );
-    for ( std::set<Edge*>::iterator i=edges.begin(); i!=edges.end(); ++i )
+    for ( plain_edge_set::iterator i=edges.begin(); i!=edges.end(); ++i )
     {
       Edge * e = *i;
       std::vector<Point*> line_points;
@@ -638,7 +638,7 @@ GEO::CUT::Facet* GEO::CUT::Mesh::NewFacet( const std::vector<Point*> & points, S
     throw std::runtime_error( "empty facet" );
 
   std::vector<Point*>::const_iterator i=points.begin();
-  std::set<Facet*> facets = ( *i )->Facets();
+  plain_facet_set facets = ( *i )->Facets();
   for ( ++i; i!=points.end(); ++i )
   {
     Point * p = *i;
@@ -649,7 +649,7 @@ GEO::CUT::Facet* GEO::CUT::Mesh::NewFacet( const std::vector<Point*> & points, S
     }
   }
 
-  for ( std::set<Facet*>::iterator j=facets.begin(); j!=facets.end(); ++j )
+  for ( plain_facet_set::iterator j=facets.begin(); j!=facets.end(); ++j )
   {
     Facet * f = *j;
     if ( f->Equals( points ) )
@@ -677,8 +677,8 @@ GEO::CUT::Facet* GEO::CUT::Mesh::NewFacet( const std::vector<Point*> & points, S
   return f;
 }
 
-GEO::CUT::VolumeCell* GEO::CUT::Mesh::NewVolumeCell( const std::set<Facet*> & facets,
-                                                     const std::map<std::pair<Point*, Point*>, std::set<Facet*> > & volume_lines,
+GEO::CUT::VolumeCell* GEO::CUT::Mesh::NewVolumeCell( const plain_facet_set & facets,
+                                                     const std::map<std::pair<Point*, Point*>, plain_facet_set > & volume_lines,
                                                      Element * element )
 {
   VolumeCell * c = new VolumeCell( facets, volume_lines, element );
@@ -787,7 +787,7 @@ bool GEO::CUT::Mesh::DetectSelfCut()
   std::vector<Side*> mysides;
   mysides.reserve( sides_.size() );
 
-  for ( std::map<std::set<int>, Teuchos::RCP<Side> >::iterator i=sides_.begin();
+  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=sides_.begin();
         i!=sides_.end();
         ++i )
   {
@@ -797,17 +797,17 @@ bool GEO::CUT::Mesh::DetectSelfCut()
 
   std::sort( mysides.begin(), mysides.end() );
 
-  for ( std::map<std::set<int>, Teuchos::RCP<Side> >::iterator i=sides_.begin();
+  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=sides_.begin();
         i!=sides_.end();
         ++i )
   {
     Side & side = *i->second;
     {
       BoundingBox sidebox( side );
-      std::set<Side*> sides;
+      plain_side_set sides;
       pp_->CollectSides( sidebox, sides );
       sides.erase( &side );
-      for ( std::set<Side*>::iterator i=sides.begin(); i!=sides.end(); )
+      for ( plain_side_set::iterator i=sides.begin(); i!=sides.end(); )
       {
         Side * s = *i;
         if ( not std::binary_search( mysides.begin(), mysides.end(), s ) or
@@ -820,7 +820,7 @@ bool GEO::CUT::Mesh::DetectSelfCut()
           ++i;
         }
       }
-      for ( std::set<Side*>::iterator i=sides.begin(); i!=sides.end(); ++i )
+      for ( plain_side_set::iterator i=sides.begin(); i!=sides.end(); ++i )
       {
         Side * s = *i;
         {
@@ -841,18 +841,18 @@ bool GEO::CUT::Mesh::DetectSelfCut()
 #if 0
 void GEO::CUT::Mesh::SelfCut()
 {
-  std::set<Facet*> facets;
-  for ( std::map<std::set<int>, Teuchos::RCP<Side> >::iterator i=sides_.begin();
+  plain_facet_set facets;
+  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=sides_.begin();
         i!=sides_.end();
         ++i )
   {
     Side & side = *i->second;
     {
       BoundingBox sidebox( side );
-      std::set<Side*> sides;
+      plain_side_set sides;
       pp_->CollectSides( sidebox, sides );
       sides.erase( &side );
-      for ( std::set<Side*>::iterator i=sides.begin(); i!=sides.end(); )
+      for ( plain_side_set::iterator i=sides.begin(); i!=sides.end(); )
       {
         Side * s = *i;
         if ( side.HaveCommonEdge( *s ) )
@@ -864,7 +864,7 @@ void GEO::CUT::Mesh::SelfCut()
           ++i;
         }
       }
-      for ( std::set<Side*>::iterator i=sides.begin(); i!=sides.end(); ++i )
+      for ( plain_side_set::iterator i=sides.begin(); i!=sides.end(); ++i )
       {
         Side * s = *i;
         {
@@ -873,7 +873,7 @@ void GEO::CUT::Mesh::SelfCut()
         }
       }
       bool cut = false;
-      for ( std::set<Side*>::iterator i=sides.begin(); i!=sides.end(); ++i )
+      for ( plain_side_set::iterator i=sides.begin(); i!=sides.end(); ++i )
       {
         Side * s = *i;
         {
@@ -885,7 +885,7 @@ void GEO::CUT::Mesh::SelfCut()
       }
       if ( cut )
       {
-        for ( std::set<Side*>::iterator i=sides.begin(); i!=sides.end(); ++i )
+        for ( plain_side_set::iterator i=sides.begin(); i!=sides.end(); ++i )
         {
           Side * s = *i;
           {
@@ -897,7 +897,7 @@ void GEO::CUT::Mesh::SelfCut()
       }
     }
   }
-  for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); ++i )
+  for ( plain_facet_set::iterator i=facets.begin(); i!=facets.end(); ++i )
   {
     Facet * f = *i;
     f->CreateLinearElements( *this );
@@ -905,14 +905,14 @@ void GEO::CUT::Mesh::SelfCut()
 }
 #endif
 
-void GEO::CUT::Mesh::Cut( Mesh & mesh, std::set<Element*> & elements_done )
+void GEO::CUT::Mesh::Cut( Mesh & mesh, plain_element_set & elements_done )
 {
   if ( DetectSelfCut() )
     throw std::runtime_error( "cut surface with self cut not supported" );
 
-  std::set<Element*> my_elements_done;
+  plain_element_set my_elements_done;
 
-  for ( std::map<std::set<int>, Teuchos::RCP<Side> >::iterator i=sides_.begin();
+  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=sides_.begin();
         i!=sides_.end();
         ++i )
   {
@@ -925,13 +925,13 @@ void GEO::CUT::Mesh::Cut( Mesh & mesh, std::set<Element*> & elements_done )
              std::inserter( elements_done, elements_done.begin() ) );
 }
 
-void GEO::CUT::Mesh::Cut( Side & side, const std::set<Element*> & done, std::set<Element*> & elements_done )
+void GEO::CUT::Mesh::Cut( Side & side, const plain_element_set & done, plain_element_set & elements_done )
 {
   BoundingBox sidebox( side );
-  std::set<Element*> elements;
+  plain_element_set elements;
   pp_->CollectElements( sidebox, elements );
 
-  for ( std::set<Element*>::iterator i=elements.begin(); i!=elements.end(); ++i )
+  for ( plain_element_set::iterator i=elements.begin(); i!=elements.end(); ++i )
   {
     Element * e = *i;
     if ( done.count( e )==0 )
@@ -988,7 +988,7 @@ void GEO::CUT::Mesh::Cut( LevelSetSide & side )
 
 void GEO::CUT::Mesh::RectifyCutNumerics()
 {
-  for ( std::map<std::set<int>, Teuchos::RCP<Edge> >::iterator i=edges_.begin();
+  for ( std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator i=edges_.begin();
         i!=edges_.end();
         ++i )
   {
@@ -1206,19 +1206,19 @@ void GEO::CUT::Mesh::FindLSNodePositions()
 
 void GEO::CUT::Mesh::FindFacetPositions()
 {
-  std::set<VolumeCell*> undecided;
+  plain_volumecell_set undecided;
 
   for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin(); i!=cells_.end(); ++i )
   {
     VolumeCell * c = &**i;
     if ( c->Position()==Point::undecided )
     {
-      const std::set<Facet*> & facets = c->Facets();
+      const plain_facet_set & facets = c->Facets();
 
       bool haveundecided = false;
       //bool havecutsurface = false;
       Point::PointPosition position = Point::undecided;
-      for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+      for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
       {
         Facet * f = *i;
         Point::PointPosition fp = f->Position();
@@ -1264,12 +1264,12 @@ void GEO::CUT::Mesh::FindFacetPositions()
   while ( undecided.size() > 0 )
   {
     unsigned size = undecided.size();
-    for ( std::set<VolumeCell*>::iterator ui=undecided.begin(); ui!=undecided.end(); )
+    for ( plain_volumecell_set::iterator ui=undecided.begin(); ui!=undecided.end(); )
     {
       VolumeCell * c = *ui;
       bool done = false;
-      const std::set<Facet*> & facets = c->Facets();
-      for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+      const plain_facet_set & facets = c->Facets();
+      for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
       {
         Facet * f = *i;
         {
@@ -1318,12 +1318,12 @@ void GEO::CUT::Mesh::FindFacetPositions()
 //   for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin(); i!=cells_.end(); ++i )
 //   {
 //     VolumeCell * c = &**i;
-//     const std::set<Facet*> & facets = c->Facets();
+//     const plain_facet_set & facets = c->Facets();
 
 //     bool haveundecided = false;
 //     bool havecutsurface = false;
 //     GEO::CUT::Point::PointPosition position = GEO::CUT::Point::undecided;
-//     for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+//     for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
 //     {
 //       Facet * f = *i;
 //       GEO::CUT::Point::PointPosition fp = f->Position();
@@ -1359,7 +1359,7 @@ void GEO::CUT::Mesh::FindFacetPositions()
 
 //     if ( haveundecided and position != GEO::CUT::Point::undecided )
 //     {
-//       for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+//       for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
 //       {
 //         Facet * f = *i;
 //         GEO::CUT::Point::PointPosition fp = f->Position();
@@ -1485,17 +1485,17 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, 
     int numbc = 0;
     double cv = 0;
     double ba = 0;
-    const std::set<VolumeCell*> & cells = e.VolumeCells();
-    for ( std::set<VolumeCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+    const plain_volumecell_set & cells = e.VolumeCells();
+    for ( plain_volumecell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
     {
       VolumeCell * vc = *i;
       numic += vc->IntegrationCells().size();
       numgp += vc->NumGaussPoints( shape );
       cv += vc->Volume();
 
-      const std::set<BoundaryCell*> & bcells = vc->BoundaryCells();
+      const plain_boundarycell_set & bcells = vc->BoundaryCells();
       numbc += bcells.size();
-      for ( std::set<BoundaryCell*>::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
+      for ( plain_boundarycell_set::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
       {
         BoundaryCell * bc = *i;
         ba += bc->Area();
@@ -1546,20 +1546,20 @@ void GEO::CUT::Mesh::PrintCellStats()
     if ( e.IsCut() )
     {
       cutted += 1;
-      const std::set<VolumeCell*> & volumecells = e.VolumeCells();
+      const plain_volumecell_set & volumecells = e.VolumeCells();
       numvc[std::min( static_cast<int>( volumecells.size()-1 ), static_cast<int>( numvc.size()-1 ) )] += 1;
-      for ( std::set<VolumeCell*>::const_iterator i=volumecells.begin(); i!=volumecells.end(); ++i )
+      for ( plain_volumecell_set::const_iterator i=volumecells.begin(); i!=volumecells.end(); ++i )
       {
         VolumeCell * vc = *i;
         std::map<DRT::Element::DiscretizationType, int> cell_count;
-        const std::set<IntegrationCell*> & cells = vc->IntegrationCells();
-        for ( std::set<IntegrationCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+        const plain_integrationcell_set & cells = vc->IntegrationCells();
+        for ( plain_integrationcell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
         {
           IntegrationCell * cell = *i;
           cell_count[cell->Shape()] += 1;
         }
-        const std::set<BoundaryCell*> & bcells = vc->BoundaryCells();
-        for ( std::set<BoundaryCell*>::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
+        const plain_boundarycell_set & bcells = vc->BoundaryCells();
+        for ( plain_boundarycell_set::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
         {
           BoundaryCell * bcell = *i;
           cell_count[bcell->Shape()] += 1;
@@ -1586,20 +1586,20 @@ void GEO::CUT::Mesh::PrintCellStats()
     if ( e.IsCut() )
     {
       cutted += 1;
-      const std::set<VolumeCell*> & volumecells = e.VolumeCells();
+      const plain_volumecell_set & volumecells = e.VolumeCells();
       numvc[std::min( static_cast<int>( volumecells.size()-1 ), static_cast<int>( numvc.size()-1 ) )] += 1;
-      for ( std::set<VolumeCell*>::const_iterator i=volumecells.begin(); i!=volumecells.end(); ++i )
+      for ( plain_volumecell_set::const_iterator i=volumecells.begin(); i!=volumecells.end(); ++i )
       {
         VolumeCell * vc = *i;
         std::map<DRT::Element::DiscretizationType, int> cell_count;
-        const std::set<IntegrationCell*> & cells = vc->IntegrationCells();
-        for ( std::set<IntegrationCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+        const plain_integrationcell_set & cells = vc->IntegrationCells();
+        for ( plain_integrationcell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
         {
           IntegrationCell * cell = *i;
           cell_count[cell->Shape()] += 1;
         }
-        const std::set<BoundaryCell*> & bcells = vc->BoundaryCells();
-        for ( std::set<BoundaryCell*>::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
+        const plain_boundarycell_set & bcells = vc->BoundaryCells();
+        for ( plain_boundarycell_set::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
         {
           BoundaryCell * bcell = *i;
           cell_count[bcell->Shape()] += 1;
@@ -1685,11 +1685,11 @@ void GEO::CUT::Mesh::Status()
 //   std::cout << "\n";
 
   std::cout << "edges: {\n";
-  for ( std::map<std::set<int>, Teuchos::RCP<Edge> >::iterator i=edges_.begin();
+  for ( std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator i=edges_.begin();
         i!=edges_.end();
         ++i )
   {
-    const std::set<int> & s = i->first;
+    const plain_int_set & s = i->first;
     std::cout << "  ";
     std::copy( s.begin(), s.end(), std::ostream_iterator<int>( std::cout, " " ) );
     std::cout << "\n";
@@ -1723,7 +1723,7 @@ void GEO::CUT::Mesh::Status()
   std::string edgefile = name + "_edge.plot";
   std::ofstream ef( edgefile.c_str() );
 
-  for ( std::map<std::set<int>, Teuchos::RCP<Edge> >::iterator i=edges_.begin();
+  for ( std::map<plain_int_set, Teuchos::RCP<Edge> >::iterator i=edges_.begin();
         i!=edges_.end();
         ++i )
   {
@@ -1810,7 +1810,7 @@ void GEO::CUT::Mesh::DumpGmsh( std::string name )
   }
   else
   {
-    for ( std::map<std::set<int>, Teuchos::RCP<Side> >::iterator i=sides_.begin();
+    for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=sides_.begin();
           i!=sides_.end();
           ++i )
     {
@@ -1875,8 +1875,8 @@ void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name )
     std::ofstream file( filename.str().c_str() );
 
     file << "View \"IntegrationCells\" {\n";
-    const std::set<IntegrationCell*> & integrationcells = vc->IntegrationCells();
-    for ( std::set<IntegrationCell*>::const_iterator i=integrationcells.begin();
+    const plain_integrationcell_set & integrationcells = vc->IntegrationCells();
+    for ( plain_integrationcell_set::const_iterator i=integrationcells.begin();
           i!=integrationcells.end();
           ++i )
     {
@@ -1886,8 +1886,8 @@ void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name )
     file << "};\n";
 
     file << "View \"BoundaryCells\" {\n";
-    const std::set<BoundaryCell*> & boundarycells = vc->BoundaryCells();
-    for ( std::set<BoundaryCell*>::const_iterator i=boundarycells.begin();
+    const plain_boundarycell_set & boundarycells = vc->BoundaryCells();
+    for ( plain_boundarycell_set::const_iterator i=boundarycells.begin();
           i!=boundarycells.end();
           ++i )
     {

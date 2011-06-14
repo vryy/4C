@@ -332,7 +332,7 @@ bool GEO::CUT::Side::FindAmbiguousCutLines( Mesh & mesh, Element * element, Side
   return false;
 }
 
-void GEO::CUT::Side::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )
+void GEO::CUT::Side::GetBoundaryCells( plain_boundarycell_set & bcells )
 {
   for ( std::vector<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
@@ -341,7 +341,7 @@ void GEO::CUT::Side::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcell
   }
 }
 
-void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
+void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, Element * element, plain_facet_set & facets )
 {
   if ( facets_.size()==0 )
   {
@@ -381,7 +381,7 @@ void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, Element * element, std::s
   std::copy( facets_.begin(), facets_.end(), std::inserter( facets, facets.begin() ) );
 }
 
-void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, std::set<Facet*> & facets )
+void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, plain_facet_set & facets )
 {
   PointGraph pg( mesh, element, this, PointGraph::cut_side, PointGraph::all_lines );
   for ( PointGraph::facet_iterator i=pg.fbegin(); i!=pg.fend(); ++i )
@@ -400,7 +400,7 @@ void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, std::se
   }
 }
 
-void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, const Cycle & points, std::set<Facet*> & facets )
+void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, const Cycle & points, plain_facet_set & facets )
 {
   // ignore cycles with all points on one and the same edge
   // ignore cycles with points outside the current element
@@ -409,7 +409,7 @@ void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, const C
 
   Side * s = NULL;
 
-  std::set<Side*> sides( element->Sides().begin(), element->Sides().end() );
+  plain_side_set sides( element->Sides().begin(), element->Sides().end() );
   points.Intersection( sides );
 
   if ( sides.size()>1 )

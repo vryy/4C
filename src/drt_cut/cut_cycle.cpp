@@ -11,7 +11,7 @@ bool GEO::CUT::Cycle::IsValid() const
 
   // ignore cycles with all points on one and the same edge
   {
-    std::set<Edge*> edges;
+    plain_edge_set edges;
     CommonEdges( edges );
     if ( edges.size() > 0 )
     {
@@ -35,7 +35,7 @@ bool GEO::CUT::Cycle::IsCut( Element * element ) const
   return true;
 }
 
-void GEO::CUT::Cycle::CommonEdges( std::set<Edge*> & edges ) const
+void GEO::CUT::Cycle::CommonEdges( plain_edge_set & edges ) const
 {
   std::vector<Point*>::const_iterator i = points_.begin();
   if ( i!=points_.end() )
@@ -57,7 +57,7 @@ void GEO::CUT::Cycle::CommonEdges( std::set<Edge*> & edges ) const
   }
 }
 
-void GEO::CUT::Cycle::CommonSides( std::set<Side*> & sides ) const
+void GEO::CUT::Cycle::CommonSides( plain_side_set & sides ) const
 {
   std::vector<Point*>::const_iterator i = points_.begin();
   if ( i!=points_.end() )
@@ -79,7 +79,7 @@ void GEO::CUT::Cycle::CommonSides( std::set<Side*> & sides ) const
   }
 }
 
-void GEO::CUT::Cycle::Intersection( std::set<Side*> & sides ) const
+void GEO::CUT::Cycle::Intersection( plain_side_set & sides ) const
 {
   for ( std::vector<Point*>::const_iterator i=points_.begin(); i!=points_.end(); ++i )
   {

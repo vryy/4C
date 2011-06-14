@@ -95,7 +95,7 @@ public:
 
   void Position( Point::PointPosition p );
 
-  void GetLines( std::map<std::pair<Point*, Point*>, std::set<Facet*> > & lines );
+  void GetLines( std::map<std::pair<Point*, Point*>, plain_facet_set> & lines );
 
   bool IsLine( Point * p1, Point * p2 );
 
@@ -110,10 +110,10 @@ public:
   VolumeCell * Neighbor( VolumeCell * cell );
 
   void Neighbors( Point * p,
-                  const std::set<VolumeCell*> & cells,
-                  const std::set<VolumeCell*> & done,
-                  std::set<VolumeCell*> & connected,
-                  std::set<Element*> & elements );
+                  const plain_volumecell_set & cells,
+                  const plain_volumecell_set & done,
+                  plain_volumecell_set & connected,
+                  plain_element_set & elements );
 
   const std::vector<Point*> & Points() const { return points_; }
 
@@ -135,13 +135,13 @@ public:
     }
   }
 
-  void NewTri3Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, std::set<BoundaryCell*> & bcells );
+  void NewTri3Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, plain_boundarycell_set & bcells );
 
-//  void NewTri3Cells( Mesh & mesh, VolumeCell * volume, const std::vector<Epetra_SerialDenseMatrix> & xyz, std::set<BoundaryCell*> & bcells );
+//  void NewTri3Cells( Mesh & mesh, VolumeCell * volume, const std::vector<Epetra_SerialDenseMatrix> & xyz, plain_boundarycell_set & bcells );
 
-  void NewQuad4Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, std::set<BoundaryCell*> & bcells );
+  void NewQuad4Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, plain_boundarycell_set & bcells );
 
-  void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
+  void GetBoundaryCells( plain_boundarycell_set & bcells );
 
   bool IsTriangle( const std::vector<Point*> & tri ) const;
 
@@ -151,11 +151,11 @@ public:
 
   bool HasHoles() const { return holes_.size() > 0; }
 
-  const std::set<Facet*> & Holes() const { return holes_; }
+  const plain_facet_set & Holes() const { return holes_; }
 
   unsigned NumPoints();
 
-  const std::set<VolumeCell*> & Cells() const { return cells_; }
+  const plain_volumecell_set & Cells() const { return cells_; }
 
   Point * OtherPoint( Point * p1, Point * p2 );
 
@@ -194,7 +194,7 @@ private:
   bool IsLine( const std::vector<Point*> & points, Point * p1, Point * p2 );
 
   void GetLines( const std::vector<Point*> & points,
-                 std::map<std::pair<Point*, Point*>, std::set<Facet*> > & lines );
+                 std::map<std::pair<Point*, Point*>, plain_facet_set> & lines );
 
   bool Equals( const std::vector<Point*> & my_points, const std::vector<Point*> & facet_points );
 
@@ -202,7 +202,7 @@ private:
 
   std::vector<Point*> corner_points_;
 
-  std::set<Facet*> holes_;
+  plain_facet_set holes_;
 
   std::vector<std::vector<Point*> > triangulation_;
 
@@ -214,7 +214,7 @@ private:
 
   Point::PointPosition position_;
 
-  std::set<VolumeCell*> cells_;
+  plain_volumecell_set cells_;
 };
 
   inline std::ostream & operator<<( std::ostream & stream, Facet & f )
@@ -249,8 +249,8 @@ private:
       }
       if ( f.HasHoles() )
       {
-        const std::set<Facet*> & holes = f.Holes();
-        for ( std::set<Facet*>::const_iterator i=holes.begin(); i!=holes.end(); ++i )
+        const plain_facet_set & holes = f.Holes();
+        for ( plain_facet_set::const_iterator i=holes.begin(); i!=holes.end(); ++i )
         {
           Facet & h = **i;
           stream << h;
@@ -261,10 +261,10 @@ private:
     return stream;
   }
 
-  inline Facet * FindFacet( const std::set<Facet*> & facets, const std::vector<Point*> & side )
+  inline Facet * FindFacet( const plain_facet_set & facets, const std::vector<Point*> & side )
   {
     Facet * found = NULL;
-    for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+    for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
     {
       Facet * f = *i;
       if ( f->CornerEquals( side ) )
@@ -285,11 +285,11 @@ private:
 //inline int EntityId( const Facet & f ) { return f.InternalId(); }
 //inline int EntityId( const Facet & f ) { return reinterpret_cast<int>( &f ); }
 
-inline void RemoveNonmatchingTriangulatedFacets( const std::vector<Point*> & side, std::set<Facet*> & facets )
+inline void RemoveNonmatchingTriangulatedFacets( const std::vector<Point*> & side, plain_facet_set & facets )
 {
   if ( side.size()==3 )
   {
-    for ( std::set<Facet*>::iterator i=facets.begin(); i!=facets.end(); )
+    for ( plain_facet_set::iterator i=facets.begin(); i!=facets.end(); )
     {
       Facet * f = *i;
       if ( f->IsTriangulated() )
@@ -311,7 +311,7 @@ inline void RemoveNonmatchingTriangulatedFacets( const std::vector<Point*> & sid
   }
 }
 
-inline void FindCommonFacets( const std::vector<Point*> & side, std::set<Facet*> & facets )
+inline void FindCommonFacets( const std::vector<Point*> & side, plain_facet_set & facets )
 {
   std::vector<Point*>::const_iterator is = side.begin();
   facets = ( *is )->Facets();
@@ -327,7 +327,7 @@ inline void FindCommonFacets( const std::vector<Point*> & side, std::set<Facet*>
   RemoveNonmatchingTriangulatedFacets( side, facets );
 }
 
-inline void FindCommonFacets( Point * p1, Point * p2, Point * p3, std::set<Facet*> & facets )
+inline void FindCommonFacets( Point * p1, Point * p2, Point * p3, plain_facet_set & facets )
 {
   facets = p1->Facets();
   p2->Intersection( facets );
@@ -340,7 +340,7 @@ inline void FindCommonFacets( Point * p1, Point * p2, Point * p3, std::set<Facet
   RemoveNonmatchingTriangulatedFacets( side, facets );
 }
 
-inline void FindCommonFacets( Point * p1, Point * p2, Point * p3, Point * p4, std::set<Facet*> & facets )
+inline void FindCommonFacets( Point * p1, Point * p2, Point * p3, Point * p4, plain_facet_set & facets )
 {
   facets = p1->Facets();
   p2->Intersection( facets );

@@ -5,16 +5,16 @@
 
 #include "cut_coloredgraph.H"
 
-bool GEO::CUT::COLOREDGRAPH::ForkFinder::operator()( const std::pair<const int, std::set<int> > & point )
+bool GEO::CUT::COLOREDGRAPH::ForkFinder::operator()( const std::pair<const int, plain_int_set > & point )
 {
   if ( point.first < graph_.Split() )
     return false;
 
-  std::set<int> & row = graph_[point.first];
+  plain_int_set & row = graph_[point.first];
   if ( row.size() > 2 )
   {
-    std::set<int> & used_row = used_[point.first];
-    for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
+    plain_int_set & used_row = used_[point.first];
+    for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
     {
       int p = *i;
       if ( used_row.count( p ) == 0 )
@@ -40,19 +40,19 @@ void GEO::CUT::COLOREDGRAPH::Graph::Add( int row, int col )
   graph_[col].insert( row );
 }
 
-void GEO::CUT::COLOREDGRAPH::Graph::Add( int p, const std::set<int> & row )
+void GEO::CUT::COLOREDGRAPH::Graph::Add( int p, const plain_int_set & row )
 {
-  for ( std::set<int>::const_iterator i=row.begin(); i!=row.end(); ++i )
+  for ( plain_int_set::const_iterator i=row.begin(); i!=row.end(); ++i )
   {
     Add( p, *i );
   }
 }
 
-int GEO::CUT::COLOREDGRAPH::Graph::FindNext( Graph & used, int point, Graph & cycle, const std::set<int> & free )
+int GEO::CUT::COLOREDGRAPH::Graph::FindNext( Graph & used, int point, Graph & cycle, const plain_int_set & free )
 {
-  std::set<int> & row      = graph_[point];
-  std::set<int> & used_row = used[point];
-  for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
+  plain_int_set & row      = graph_[point];
+  plain_int_set & used_row = used[point];
+  for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
   {
     int p = *i;
     if ( used_row.count( p ) == 0 )
@@ -66,9 +66,9 @@ int GEO::CUT::COLOREDGRAPH::Graph::FindNext( Graph & used, int point, Graph & cy
   return -1;
 }
 
-void GEO::CUT::COLOREDGRAPH::Graph::GetAll( std::set<int> & all )
+void GEO::CUT::COLOREDGRAPH::Graph::GetAll( plain_int_set & all )
 {
-  for ( std::map<int, std::set<int> >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
+  for ( std::map<int, plain_int_set >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
   {
     int p = i->first;
     all.insert( p );
@@ -79,18 +79,18 @@ void GEO::CUT::COLOREDGRAPH::Graph::FixSingleLines()
 {
   for ( ;; )
   {
-    std::map<int, std::set<int> >::iterator j = std::find_if( graph_.begin(), graph_.end(), SingeLineFinder( color_split_ ) );
+    std::map<int, plain_int_set >::iterator j = std::find_if( graph_.begin(), graph_.end(), SingeLineFinder( color_split_ ) );
     if ( j==graph_.end() )
     {
       return;
     }
 
     int p1 = j->first;
-    std::set<int> & row = j->second;
-    for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
+    plain_int_set & row = j->second;
+    for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
     {
       int p2 = *i;
-      std::set<int> & row2 = graph_[p2];
+      plain_int_set & row2 = graph_[p2];
       row2.erase( p1 );
       if ( row2.size()==0 )
         graph_.erase( p2 );
@@ -101,9 +101,9 @@ void GEO::CUT::COLOREDGRAPH::Graph::FixSingleLines()
 
 void GEO::CUT::COLOREDGRAPH::Graph::TestClosed()
 {
-  for ( std::map<int, std::set<int> >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
+  for ( std::map<int, plain_int_set >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
   {
-    std::set<int> & row = i->second;
+    plain_int_set & row = i->second;
     if ( row.size() < 2 )
     {
       throw std::runtime_error( "open point in colored graph" );
@@ -113,12 +113,12 @@ void GEO::CUT::COLOREDGRAPH::Graph::TestClosed()
 
 void GEO::CUT::COLOREDGRAPH::Graph::TestSplit()
 {
-  for ( std::map<int, std::set<int> >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
+  for ( std::map<int, plain_int_set >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
   {
     int p = i->first;
     if ( p >= color_split_ )
     {
-      std::set<int> & row = i->second;
+      plain_int_set & row = i->second;
       if ( row.size() > 2 )
       {
         throw std::runtime_error( "colored graph not properly split" );
@@ -129,12 +129,12 @@ void GEO::CUT::COLOREDGRAPH::Graph::TestSplit()
 
 void GEO::CUT::COLOREDGRAPH::Graph::TestFacets()
 {
-  for ( std::map<int, std::set<int> >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
+  for ( std::map<int, plain_int_set >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
   {
     int p = i->first;
     if ( p < color_split_ )
     {
-      std::set<int> & row = i->second;
+      plain_int_set & row = i->second;
       if ( row.size() < 3 )
       {
         throw std::runtime_error( "facets need at least three lines" );
@@ -145,12 +145,12 @@ void GEO::CUT::COLOREDGRAPH::Graph::TestFacets()
 
 void GEO::CUT::COLOREDGRAPH::Graph::Print()
 {
-  for ( std::map<int, std::set<int> >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
+  for ( std::map<int, plain_int_set >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
   {
     int p = i->first;
-    std::set<int> & row = i->second;
+    plain_int_set & row = i->second;
     std::cout << p << ": ";
-    for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
+    for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
     {
       int p = *i;
       std::cout << p << " ";
@@ -160,7 +160,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::Print()
   std::cout << "\n";
 }
 
-void GEO::CUT::COLOREDGRAPH::Graph::FindFreeFacets( Graph & graph, Graph & used, std::set<int> & free )
+void GEO::CUT::COLOREDGRAPH::Graph::FindFreeFacets( Graph & graph, Graph & used, plain_int_set & free )
 {
   int free_facet = *free.begin();
   if ( free_facet >= Split() )
@@ -176,15 +176,15 @@ void GEO::CUT::COLOREDGRAPH::Graph::FindFreeFacets( Graph & graph, Graph & used,
     int facet = stack.top();
     stack.pop();
 
-    std::set<int> & row = graph[facet];
-    for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
+    plain_int_set & row = graph[facet];
+    for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
     {
       int line = *i;
 
       if ( used.count( line ) == 0 and free.count( line ) > 0 )
       {
-        std::set<int> & row = graph[line];
-        for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
+        plain_int_set & row = graph[line];
+        for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
         {
           int f = *i;
           if ( f != facet and used.count( f ) == 0 and free.count( f ) > 0 )
@@ -208,8 +208,8 @@ void GEO::CUT::COLOREDGRAPH::Graph::FindFreeFacets( Graph & graph, Graph & used,
   {
     int p = i->first;
 
-    const std::set<int> & row = i->second;
-    for ( std::set<int>::const_iterator i=row.begin(); i!=row.end(); ++i )
+    const plain_int_set & row = i->second;
+    for ( plain_int_set::const_iterator i=row.begin(); i!=row.end(); ++i )
     {
       int p = *i;
       free.erase( p );
@@ -223,7 +223,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::FindSplitTrace( std::vector<int> & split_tra
   for ( Graph::const_iterator i=begin(); i!=end(); ++i )
   {
     int p = i->first;
-    const std::set<int> & row = i->second;
+    const plain_int_set & row = i->second;
     if ( p >= Split() )
     {
       if ( row.size()==1 )
@@ -257,12 +257,12 @@ void GEO::CUT::COLOREDGRAPH::Graph::Split( Graph & connection, const std::vector
   // find lhs and rhs starting from split trace
 
   int p = split_trace.front();
-  std::set<int> & row = at( p );
+  plain_int_set & row = at( p );
 
   if ( row.size()!=2 )
     throw std::runtime_error( "expect two facets at line" );
 
-  std::set<int>::iterator i = row.begin();
+  plain_int_set::iterator i = row.begin();
   Fill( split_trace, connection, *i, c1 );
   ++i;
   Fill( split_trace, connection, *i, c2 );
@@ -297,10 +297,10 @@ void GEO::CUT::COLOREDGRAPH::Graph::Split( Graph & connection, const std::vector
 
     if ( open!=NULL )
     {
-      std::set<int> & row = at( p );
+      plain_int_set & row = at( p );
       if ( row.size()!=2 )
         throw std::runtime_error( "expect two facets at line" );
-      std::set<int>::iterator i = row.begin();
+      plain_int_set::iterator i = row.begin();
       int f1 = *i;
       ++i;
       int f2 = *i;
@@ -322,7 +322,7 @@ void GEO::CUT::COLOREDGRAPH::Graph::Split( Graph & connection, const std::vector
 
 void GEO::CUT::COLOREDGRAPH::Graph::Fill( const std::vector<int> & split_trace, Graph & connection, int seed, Graph & c )
 {
-  std::set<int> done;
+  plain_int_set done;
   done.insert( split_trace.begin(), split_trace.end() );
   std::stack<int> stack;
 
@@ -335,15 +335,15 @@ void GEO::CUT::COLOREDGRAPH::Graph::Fill( const std::vector<int> & split_trace, 
 
     done.insert( f );
 
-    std::set<int> & row = at( f );
-    for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
+    plain_int_set & row = at( f );
+    for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
     {
       int p = *i;
       c.Add( f, p );
       if ( done.count( p )==0 )
       {
-        std::set<int> & row = at( p );
-        for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
+        plain_int_set & row = at( p );
+        for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
         {
           int f = *i;
           if ( done.count( f )==0 )
@@ -358,12 +358,12 @@ void GEO::CUT::COLOREDGRAPH::Graph::Fill( const std::vector<int> & split_trace, 
   for ( Graph::const_iterator i=connection.begin(); i!=connection.end(); ++i )
   {
     int p = i->first;
-    const std::set<int> & row = i->second;
+    const plain_int_set & row = i->second;
     c.Add( p, row );
   }
 }
 
-void GEO::CUT::COLOREDGRAPH::CycleList::AddPoints( Graph & graph, Graph & used, Graph & cycle, std::set<int> & free )
+void GEO::CUT::COLOREDGRAPH::CycleList::AddPoints( Graph & graph, Graph & used, Graph & cycle, plain_int_set & free )
 {
   PushBack( cycle );
 

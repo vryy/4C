@@ -91,7 +91,7 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner )
 
   Mesh & m = NormalMesh();
 
-  std::set<Element*> elements_done;
+  plain_element_set elements_done;
 
   // loop cut sides and cut against elements at the same position in space
   for ( std::vector<Teuchos::RCP<MeshHandle> >::iterator i=cut_mesh_.begin();

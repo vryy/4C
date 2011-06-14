@@ -34,9 +34,9 @@ namespace GEO
         }
       }
 
-      cycle_t * intersect( std::set<cycle_t*> & u, std::set<cycle_t*> & v )
+      cycle_t * intersect( plain_cycle_set & u, plain_cycle_set & v )
       {
-        std::set<cycle_t*> intersection;
+        plain_cycle_set intersection;
         std::set_intersection( u.begin(), u.end(),
                                v.begin(), v.end(),
                                std::inserter( intersection, intersection.begin() ) );
@@ -71,7 +71,7 @@ namespace GEO
         return path;
       }
 
-      void add_edges( const cycle_t & path, std::set<std::pair<vertex_t, vertex_t> > & edges )
+      void add_edges( const cycle_t & path, plain_graph_edge_set & edges )
       {
         for ( unsigned i=0; i!=path.size(); ++i )
         {
@@ -92,20 +92,20 @@ namespace GEO
         }
       }
 
-      cycle_t * substract( cycle_t * path, const std::set<cycle_t*> & partial )
+      cycle_t * substract( cycle_t * path, const plain_cycle_set & partial )
       {
-        std::set<std::pair<vertex_t, vertex_t> > edges;
+        plain_graph_edge_set edges;
 
         add_edges( *path, edges );
 
-        for ( std::set<cycle_t*>::const_iterator i=partial.begin(); i!=partial.end(); ++i )
+        for ( plain_cycle_set::const_iterator i=partial.begin(); i!=partial.end(); ++i )
         {
           cycle_t * c = *i;
           add_edges( *c, edges );
         }
 
-        std::set<vertex_t> vertices;
-        for ( std::set<std::pair<vertex_t, vertex_t> >::iterator i=edges.begin(); i!=edges.end(); ++i )
+        plain_vertix_set vertices;
+        for ( plain_graph_edge_set::iterator i=edges.begin(); i!=edges.end(); ++i )
         {
           vertices.insert( i->first );
           vertices.insert( i->second );
@@ -126,7 +126,7 @@ namespace GEO
         return newpath;
       }
 
-      bool issuperset( const std::set<vertex_t> & pathset, const cycle_t & c )
+      bool issuperset( const plain_vertix_set & pathset, const cycle_t & c )
       {
         for ( cycle_t::const_iterator i=c.begin(); i!=c.end(); ++i )
         {
@@ -169,10 +169,10 @@ namespace GEO
 
     }
 
-    void find_cycles( graph_t & g, std::set<cycle_t*> & base_cycles )
+    void find_cycles( graph_t & g, plain_cycle_set & base_cycles )
     {
       graph_t st( boost::num_vertices( g ) );
-      std::set<std::pair<vertex_t, vertex_t> > st_edges;
+      plain_graph_edge_set st_edges;
 
       create_spanning_tree( g, st );
 
@@ -191,7 +191,7 @@ namespace GEO
         st_edges.insert( std::make_pair( u, v ) );
       }
 
-      std::vector<std::set<cycle_t*> > cycles( boost::num_vertices( g ) );
+      std::vector<plain_cycle_set > cycles( boost::num_vertices( g ) );
 
       for ( boost::tie( ei, ei_end )=boost::edges( g ); ei!=ei_end; ++ei )
       {
@@ -212,19 +212,19 @@ namespace GEO
         {
           cycle_t * path = find_path( u, v, st );
 
-          std::set<cycle_t*> known;
+          plain_cycle_set known;
           for ( cycle_t::iterator i=path->begin(); i!=path->end(); ++i )
           {
             vertex_t n = *i;
-            std::set<cycle_t*> & c = cycles[n];
+            plain_cycle_set & c = cycles[n];
             std::copy( c.begin(), c.end(), std::inserter( known, known.begin() ) );
           }
 
-          std::set<vertex_t> pathset;
+          plain_vertix_set pathset;
           std::copy( path->begin(), path->end(), std::inserter( pathset, pathset.begin() ) );
 
-          std::set<cycle_t*> partial;
-          for ( std::set<cycle_t*>::iterator i=known.begin(); i!=known.end(); ++i )
+          plain_cycle_set partial;
+          for ( plain_cycle_set::iterator i=known.begin(); i!=known.end(); ++i )
           {
             cycle_t * c = *i;
             if ( issuperset( pathset, *c ) )
@@ -241,7 +241,7 @@ namespace GEO
           for ( cycle_t::iterator i=path->begin(); i!=path->end(); ++i )
           {
             vertex_t n = *i;
-            std::set<cycle_t*> & c = cycles[n];
+            plain_cycle_set & c = cycles[n];
             c.insert( path );
           }
         }
@@ -253,7 +253,7 @@ namespace GEO
           for ( cycle_t::iterator i=cycle_to_split->begin(); i!=cycle_to_split->end(); ++i )
           {
             vertex_t n = *i;
-            std::set<cycle_t*> & c = cycles[n];
+            plain_cycle_set & c = cycles[n];
             c.erase( cycle_to_split );
             if ( std::find( cycle1->begin(), cycle1->end(), n )!=cycle1->end() )
             {
@@ -268,10 +268,10 @@ namespace GEO
         }
       }
 
-      for ( std::vector<std::set<cycle_t*> >::iterator i=cycles.begin(); i!=cycles.end(); ++i )
+      for ( std::vector<plain_cycle_set >::iterator i=cycles.begin(); i!=cycles.end(); ++i )
       {
-        std::set<cycle_t*> & cs = *i;
-        for ( std::set<cycle_t*>::iterator i=cs.begin(); i!=cs.end(); ++i )
+        plain_cycle_set & cs = *i;
+        for ( plain_cycle_set::iterator i=cs.begin(); i!=cs.end(); ++i )
         {
           cycle_t * c = *i;
           base_cycles.insert( c );

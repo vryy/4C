@@ -76,9 +76,9 @@ public:
 
   bool OnSide( const std::vector<Point*> & facet_points );
 
-  void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );
+  void GetIntegrationCells( plain_integrationcell_set & cells );
 
-  void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
+  void GetBoundaryCells( plain_boundarycell_set & bcells );
 
   const std::vector<Side*> & Sides() { return sides_; }
 
@@ -100,13 +100,13 @@ public:
 
   const std::vector<Node*> & Nodes() { return nodes_; }
 
-  const std::set<Side*> & CutSides() const { return cut_faces_; }
+  const plain_side_set & CutSides() const { return cut_faces_; }
 
   void GetCutPoints( PointSet & cut_points );
 
-  const std::set<VolumeCell*> & VolumeCells() const { return cells_; }
+  const plain_volumecell_set & VolumeCells() const { return cells_; }
 
-  const std::set<Facet*> & Facets() const { return facets_; }
+  const plain_facet_set & Facets() const { return facets_; }
 
   int NumGaussPoints( DRT::Element::DiscretizationType shape );
 
@@ -134,12 +134,12 @@ private:
 
   std::vector<Node*> nodes_;
 
-  std::set<Side*> cut_faces_;
+  plain_side_set cut_faces_;
 
-  std::set<Facet*> facets_;
+  plain_facet_set facets_;
 
   //Teuchos::RCP<GEO::CELL::Cell> cell_;
-  std::set<VolumeCell*> cells_;
+  plain_volumecell_set cells_;
 };
 
 

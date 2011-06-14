@@ -31,17 +31,17 @@ public:
 
   virtual DRT::Element::DiscretizationType Shape() = 0;
 
-  virtual void GetVolumeCells( std::set<GEO::CUT::VolumeCell*> & cells ) = 0;
+  virtual void GetVolumeCells( plain_volumecell_set & cells ) = 0;
 
-  virtual void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells ) = 0;
+  virtual void GetIntegrationCells( plain_integrationcell_set & cells ) = 0;
 
-  virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells ) = 0;
+  virtual void GetBoundaryCells( plain_boundarycell_set & bcells ) = 0;
 
   virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst ) = 0;
 
-  virtual void VolumeCells( std::set<VolumeCell*> & cells ) const = 0;
+  virtual void VolumeCells( plain_volumecell_set & cells ) const = 0;
 
-  virtual void CollectElements( std::set<Element*> & elements ) = 0;
+  virtual void CollectElements( plain_element_set & elements ) = 0;
 
   virtual const std::vector<Node*> & Nodes() = 0;
 
@@ -61,7 +61,7 @@ public:
 
   virtual int NumVolumeCellGaussPoints() = 0;
 
-  void VolumeCellGaussPoints( std::set<GEO::CUT::VolumeCell*> & cells,
+  void VolumeCellGaussPoints( plain_volumecell_set & cells,
                               std::vector<DRT::UTILS::GaussIntegration> & intpoints );
 
   void BoundaryCellGaussPoints( const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
@@ -102,14 +102,14 @@ public:
 
   virtual DRT::Element::DiscretizationType Shape() { return element_->Shape(); }
 
-  virtual void GetVolumeCells( std::set<GEO::CUT::VolumeCell*> & cells );
+  virtual void GetVolumeCells( plain_volumecell_set & cells );
 
-  virtual void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells )
+  virtual void GetIntegrationCells( plain_integrationcell_set & cells )
   {
     element_->GetIntegrationCells( cells );
   }
 
-  virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )
+  virtual void GetBoundaryCells( plain_boundarycell_set & bcells )
   {
     element_->GetBoundaryCells( bcells );
   }
@@ -119,12 +119,12 @@ public:
     element_->LocalCoordinates( xyz, rst );
   }
 
-  virtual void VolumeCells( std::set<VolumeCell*> & cells ) const
+  virtual void VolumeCells( plain_volumecell_set & cells ) const
   {
     cells = element_->VolumeCells();
   }
 
-  virtual void CollectElements( std::set<Element*> & elements )
+  virtual void CollectElements( plain_element_set & elements )
   {
     elements.insert( element_ );
   }
@@ -149,15 +149,15 @@ public:
 
   virtual bool IsCut();
 
-  virtual void GetVolumeCells( std::set<GEO::CUT::VolumeCell*> & cells );
+  virtual void GetVolumeCells( plain_volumecell_set & cells );
 
-  virtual void GetIntegrationCells( std::set<GEO::CUT::IntegrationCell*> & cells );
+  virtual void GetIntegrationCells( plain_integrationcell_set & cells );
 
-  virtual void GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells );
+  virtual void GetBoundaryCells( plain_boundarycell_set & bcells );
 
-  virtual void VolumeCells( std::set<VolumeCell*> & cells ) const;
+  virtual void VolumeCells( plain_volumecell_set & cells ) const;
 
-  virtual void CollectElements( std::set<Element*> & elements )
+  virtual void CollectElements( plain_element_set & elements )
   {
     std::copy( subelements_.begin(), subelements_.end(), std::inserter( elements, elements.begin() ) );
   }

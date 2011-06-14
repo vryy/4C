@@ -20,8 +20,8 @@ GEO::CUT::Point * GEO::CUT::Point::NewPoint( Mesh & mesh, const double * x, doub
 GEO::CUT::Point * GEO::CUT::Point::InsertCut( Edge * cut_edge, Side * cut_side, Node * n )
 {
   Point * p = n->point();
-  const std::set<Edge*> & edges = n->Edges();
-  for ( std::set<Edge*>::const_iterator i=edges.begin(); i!=edges.end(); ++i )
+  const plain_edge_set & edges = n->Edges();
+  for ( plain_edge_set::const_iterator i=edges.begin(); i!=edges.end(); ++i )
   {
     Edge * e = *i;
     p->AddEdge( e );
@@ -57,8 +57,8 @@ void GEO::CUT::Point::AddEdge( Edge* cut_edge )
   // revers add
   cut_edge->AddPoint( this );
 
-  const std::set<Side*> & edge_sides = cut_edge->Sides();
-  for ( std::set<Side*>::const_iterator i=edge_sides.begin();
+  const plain_side_set & edge_sides = cut_edge->Sides();
+  for ( plain_side_set::const_iterator i=edge_sides.begin();
         i!=edge_sides.end();
         ++i )
   {
@@ -74,17 +74,17 @@ void GEO::CUT::Point::AddSide( Side* s )
   // revers add
   s->AddPoint( this );
 
-  const std::set<Element*> & elements = s->Elements();
-  for ( std::set<Element*>::const_iterator i=elements.begin(); i!=elements.end(); ++i )
+  const plain_element_set & elements = s->Elements();
+  for ( plain_element_set::const_iterator i=elements.begin(); i!=elements.end(); ++i )
   {
     Element * e = *i;
     AddElement( e );
   }
 }
 
-void GEO::CUT::Point::CommonEdge( Point * other, std::set<Edge *> & edges )
+void GEO::CUT::Point::CommonEdge( Point * other, plain_edge_set & edges )
 {
-  for ( std::set<Edge*>::iterator i=cut_edges_.begin(); i!=cut_edges_.end(); ++i )
+  for ( plain_edge_set::iterator i=cut_edges_.begin(); i!=cut_edges_.end(); ++i )
   {
     Edge * e = *i;
     if ( other->IsCut( e ) )
@@ -94,9 +94,9 @@ void GEO::CUT::Point::CommonEdge( Point * other, std::set<Edge *> & edges )
   }
 }
 
-void GEO::CUT::Point::CommonSide( Point * other, std::set<Side *> & sides )
+void GEO::CUT::Point::CommonSide( Point * other, plain_side_set & sides )
 {
-  for ( std::set<Side*>::iterator i=cut_sides_.begin(); i!=cut_sides_.end(); ++i )
+  for ( plain_side_set::iterator i=cut_sides_.begin(); i!=cut_sides_.end(); ++i )
   {
     Side * e = *i;
     if ( other->IsCut( e ) )
@@ -108,7 +108,7 @@ void GEO::CUT::Point::CommonSide( Point * other, std::set<Side *> & sides )
 
 void GEO::CUT::Point::CutEdge( Side * side, Line * other_line, std::vector<Edge*> & matches )
 {
-  for ( std::set<Edge*>::iterator i=cut_edges_.begin(); i!=cut_edges_.end(); ++i )
+  for ( plain_edge_set::iterator i=cut_edges_.begin(); i!=cut_edges_.end(); ++i )
   {
     Edge * e = *i;
     if ( e->AtSide( side ) )
@@ -131,7 +131,7 @@ void GEO::CUT::Point::CutEdge( Side * side, Line * other_line, std::vector<Edge*
 GEO::CUT::Line * GEO::CUT::Point::CutLine( const PointLineFilter & filter, bool unique )
 {
   Line * line_found = NULL;
-  for ( std::set<Line*>::iterator i=lines_.begin(); i!=lines_.end(); ++i )
+  for ( plain_line_set::iterator i=lines_.begin(); i!=lines_.end(); ++i )
   {
     Line * line = *i;
     if ( filter( line ) )
@@ -159,9 +159,9 @@ GEO::CUT::Line * GEO::CUT::Point::CutLine( Line * line, const PointLineFilter & 
   return CutLine( f, unique );
 }
 
-void GEO::CUT::Point::CutLines( const PointLineFilter & filter, std::set<Line*> & cut_lines )
+void GEO::CUT::Point::CutLines( const PointLineFilter & filter, plain_line_set & cut_lines )
 {
-  for ( std::set<Line*>::iterator i=lines_.begin(); i!=lines_.end(); ++i )
+  for ( plain_line_set::iterator i=lines_.begin(); i!=lines_.end(); ++i )
   {
     Line * line = *i;
     if ( filter( line ) )
@@ -171,7 +171,7 @@ void GEO::CUT::Point::CutLines( const PointLineFilter & filter, std::set<Line*> 
   }
 }
 
-void GEO::CUT::Point::CutLines( Side * side, std::set<Line*> & cut_lines )
+void GEO::CUT::Point::CutLines( Side * side, plain_line_set & cut_lines )
 {
   SideCutFilter filter( side );
   CutLines( filter, cut_lines );
@@ -234,27 +234,27 @@ double GEO::CUT::Point::t( Edge* edge )
   return i->second;
 }
 
-void GEO::CUT::Point::Intersection( std::set<Edge*> & edges )
+void GEO::CUT::Point::Intersection( plain_edge_set & edges )
 {
-  std::set<Edge*> intersection;
+  plain_edge_set intersection;
   std::set_intersection( cut_edges_.begin(), cut_edges_.end(),
                          edges.begin(), edges.end(),
                          std::inserter( intersection, intersection.begin() ) );
   std::swap( edges, intersection );
 }
 
-void GEO::CUT::Point::Intersection( std::set<Side*> & sides )
+void GEO::CUT::Point::Intersection( plain_side_set & sides )
 {
-  std::set<Side*> intersection;
+  plain_side_set intersection;
   std::set_intersection( cut_sides_.begin(), cut_sides_.end(),
                          sides.begin(), sides.end(),
                          std::inserter( intersection, intersection.begin() ) );
   std::swap( sides, intersection );
 }
 
-void GEO::CUT::Point::Intersection( std::set<Facet*> & facets )
+void GEO::CUT::Point::Intersection( plain_facet_set & facets )
 {
-  std::set<Facet*> intersection;
+  plain_facet_set intersection;
   std::set_intersection( facets_.begin(), facets_.end(),
                          facets.begin(), facets.end(),
                          std::inserter( intersection, intersection.begin() ) );
@@ -276,7 +276,7 @@ bool GEO::CUT::Point::NodalPoint( const std::vector<Node*> & nodes ) const
 
 GEO::CUT::Node * GEO::CUT::Point::CutNode()
 {
-  for ( std::set<Edge*>::iterator i=cut_edges_.begin(); i!=cut_edges_.end(); ++i )
+  for ( plain_edge_set::iterator i=cut_edges_.begin(); i!=cut_edges_.end(); ++i )
   {
     Edge * e = *i;
     const std::vector<Node*> & nodes = e->Nodes();
@@ -299,7 +299,7 @@ void GEO::CUT::Point::Position( Point::PointPosition pos )
     position_ = pos;
     if ( pos==Point::outside or pos==Point::inside )
     {
-      for ( std::set<Facet*>::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+      for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
       {
         Facet * f = *i;
         f->Position( pos );
@@ -311,7 +311,7 @@ void GEO::CUT::Point::Position( Point::PointPosition pos )
 GEO::CUT::Side * GEO::CUT::Point::CutSide( Side * side, Point * other )
 {
   Side * found_side = NULL;
-  for ( std::set<Side*>::iterator i=cut_sides_.begin(); i!=cut_sides_.end(); ++i )
+  for ( plain_side_set::iterator i=cut_sides_.begin(); i!=cut_sides_.end(); ++i )
   {
     Side * s = *i;
     if ( s != side and other->IsCut( s ) )
@@ -347,7 +347,7 @@ bool GEO::CUT::SideSideCutFilter::operator()( Line * line ) const
 
 GEO::CUT::Edge * GEO::CUT::Point::CommonCutEdge( Side * side )
 {
-  for ( std::set<Edge*>::iterator i=cut_edges_.begin(); i!=cut_edges_.end(); ++i )
+  for ( plain_edge_set::iterator i=cut_edges_.begin(); i!=cut_edges_.end(); ++i )
   {
     Edge * e = *i;
     if ( e->IsCut( side ) )

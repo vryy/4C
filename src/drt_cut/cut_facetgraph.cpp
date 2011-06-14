@@ -7,12 +7,12 @@
 #include "cut_mesh.H"
 #include "cut_element.H"
 
-GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const std::set<Facet*> & facets )
+GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const plain_facet_set & facets )
   : graph_( facets.size() )
 {
 
-  std::map<std::pair<Point*, Point*>, std::set<Facet*> > lines;
-  for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+  std::map<std::pair<Point*, Point*>, plain_facet_set > lines;
+  for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
   {
     Facet * f = *i;
     f->GetLines( lines );
@@ -21,15 +21,15 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const std::s
 
     if ( f->HasHoles() )
     {
-      const std::set<Facet*> & holes = f->Holes();
+      const plain_facet_set & holes = f->Holes();
 
-      std::map<std::pair<Point*, Point*>, std::set<Facet*> > hole_lines;
-      for ( std::set<Facet*>::const_iterator i=holes.begin(); i!=holes.end(); ++i )
+      std::map<std::pair<Point*, Point*>, plain_facet_set > hole_lines;
+      for ( plain_facet_set::const_iterator i=holes.begin(); i!=holes.end(); ++i )
       {
         Facet * h = *i;
         h->GetLines( hole_lines );
       }
-      for ( std::map<std::pair<Point*, Point*>, std::set<Facet*> >::iterator i=hole_lines.begin();
+      for ( std::map<std::pair<Point*, Point*>, plain_facet_set >::iterator i=hole_lines.begin();
             i!=hole_lines.end();
             ++i )
       {
@@ -39,25 +39,25 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const std::s
     }
   }
 
-  std::set<Facet*> all_facets = facets;
-  for ( std::set<Facet*>::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+  plain_facet_set all_facets = facets;
+  for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
   {
     Facet * f = *i;
     if ( f->HasHoles() )
     {
-      const std::set<Facet*> & holes = f->Holes();
+      const plain_facet_set & holes = f->Holes();
       std::copy( holes.begin(), holes.end(), std::inserter( all_facets, all_facets.begin() ) );
     }
   }
 
   // fix for very rare case
 
-  for ( std::map<std::pair<Point*, Point*>, std::set<Facet*> >::iterator li=lines.begin(); li!=lines.end(); )
+  for ( std::map<std::pair<Point*, Point*>, plain_facet_set >::iterator li=lines.begin(); li!=lines.end(); )
   {
-    std::set<Facet*> & fs = li->second;
+    plain_facet_set & fs = li->second;
     if ( fs.size() < 2 )
     {
-      for ( std::set<Facet*>::iterator i=fs.begin(); i!=fs.end(); ++i )
+      for ( plain_facet_set::iterator i=fs.begin(); i!=fs.end(); ++i )
       {
         Facet * f = *i;
         all_facets.erase( f );
@@ -77,15 +77,15 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const std::s
 
   all_lines_.reserve( lines.size() );
 
-  for ( std::map<std::pair<Point*, Point*>, std::set<Facet*> >::iterator i=lines.begin(); i!=lines.end(); ++i )
+  for ( std::map<std::pair<Point*, Point*>, plain_facet_set >::iterator i=lines.begin(); i!=lines.end(); ++i )
   {
     const std::pair<Point*, Point*> & l = i->first;
-    const std::set<Facet*> & fs = i->second;
+    const plain_facet_set & fs = i->second;
 
     int current = all_facets_.size() + all_lines_.size();
     all_lines_.push_back( l );
 
-    for ( std::set<Facet*>::const_iterator i=fs.begin(); i!=fs.end(); ++i )
+    for ( plain_facet_set::const_iterator i=fs.begin(); i!=fs.end(); ++i )
     {
       Facet * f = *i;
       if ( all_facets.count( f ) > 0 )
@@ -116,8 +116,8 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const std::s
       if ( all_facets.count( f ) > 0 )
       {
         int p1 = FacetId( f );
-        std::set<int> & row = graph_[p1];
-        for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
+        plain_int_set & row = graph_[p1];
+        for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
         {
           int p2 = *i;
           cycle.Add( p1, p2 );
@@ -126,16 +126,16 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const std::s
 
       if ( f->HasHoles() )
       {
-        const std::set<Facet*> & hs = f->Holes();
-        for ( std::set<Facet*>::iterator i=hs.begin(); i!=hs.end(); ++i )
+        const plain_facet_set & hs = f->Holes();
+        for ( plain_facet_set::iterator i=hs.begin(); i!=hs.end(); ++i )
         {
           Facet * h = *i;
 
           if ( all_facets.count( h ) > 0 )
           {
             int p1 = FacetId( h );
-            std::set<int> & row = graph_[p1];
-            for ( std::set<int>::iterator i=row.begin(); i!=row.end(); ++i )
+            plain_int_set & row = graph_[p1];
+            for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
             {
               int p2 = *i;
               cycle.Add( p1, p2 );
@@ -156,7 +156,7 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const std::s
 #endif
 #endif
 
-  std::set<int> free;
+  plain_int_set free;
   graph_.GetAll( free );
 
   for ( COLOREDGRAPH::Graph::const_iterator i=cycle.begin(); i!=cycle.end(); ++i )
@@ -187,9 +187,9 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const std::s
   cycle_list_.AddPoints( graph_, used, cycle, free );
 }
 
-void GEO::CUT::FacetGraph::CreateVolumeCells( Mesh & mesh, Element * element, std::set<VolumeCell*> & cells )
+void GEO::CUT::FacetGraph::CreateVolumeCells( Mesh & mesh, Element * element, plain_volumecell_set & cells )
 {
-  std::vector<std::set<Facet*> > volumes;
+  std::vector<plain_facet_set> volumes;
   volumes.reserve( cycle_list_.size() );
 
   std::vector<int> counter( all_facets_.size(), 0 );
@@ -202,8 +202,8 @@ void GEO::CUT::FacetGraph::CreateVolumeCells( Mesh & mesh, Element * element, st
     g.TestSplit();
 #endif
 
-    volumes.push_back( std::set<Facet*>() );
-    std::set<Facet*> & collected_facets = volumes.back();
+    volumes.push_back( plain_facet_set() );
+    plain_facet_set & collected_facets = volumes.back();
 
     for ( COLOREDGRAPH::Graph::const_iterator i=g.begin(); i!=g.end(); ++i )
     {
@@ -234,12 +234,12 @@ void GEO::CUT::FacetGraph::CreateVolumeCells( Mesh & mesh, Element * element, st
 //     graph_.Print();
 //   }
 
-  for ( std::vector<std::set<Facet*> >::iterator i=volumes.begin(); i!=volumes.end(); ++i )
+  for ( std::vector<plain_facet_set>::iterator i=volumes.begin(); i!=volumes.end(); ++i )
   {
-    std::set<Facet*> & collected_facets = *i;
+    plain_facet_set & collected_facets = *i;
 
-    std::map<std::pair<Point*, Point*>, std::set<Facet*> > volume_lines;
-    for ( std::set<Facet*>::iterator i=collected_facets.begin();
+    std::map<std::pair<Point*, Point*>, plain_facet_set> volume_lines;
+    for ( plain_facet_set::iterator i=collected_facets.begin();
           i!=collected_facets.end();
           ++i )
     {
@@ -270,7 +270,7 @@ void GEO::CUT::FacetGraph::CreateVolumeCells( Mesh & mesh, Element * element, st
 
 #ifdef DEBUGCUTLIBRARY
 
-bool GEO::CUT::FacetGraph::InCollectedFacets( const std::set<Facet*> & collected_facets )
+bool GEO::CUT::FacetGraph::InCollectedFacets( const plain_facet_set & collected_facets )
 {
   return std::find( all_collected_facets_.begin(), all_collected_facets_.end(), collected_facets )!=all_collected_facets_.end();
 }
@@ -278,9 +278,9 @@ bool GEO::CUT::FacetGraph::InCollectedFacets( const std::set<Facet*> & collected
 void GEO::CUT::FacetGraph::PrintAllCollected()
 {
   int count = 0;
-  for ( std::vector<std::set<Facet*> >::iterator i=all_collected_facets_.begin(); i!=all_collected_facets_.end(); ++i )
+  for ( std::vector<plain_facet_set>::iterator i=all_collected_facets_.begin(); i!=all_collected_facets_.end(); ++i )
   {
-    std::set<Facet*> & v = *i;
+    plain_facet_set & v = *i;
 
     count += 1;
 
@@ -288,7 +288,7 @@ void GEO::CUT::FacetGraph::PrintAllCollected()
     str << "gv-" << count << ".plot";
     std::ofstream file( str.str().c_str() );
 
-    for ( std::set<Facet*>::iterator i=v.begin(); i!=v.end(); ++i )
+    for ( plain_facet_set::iterator i=v.begin(); i!=v.end(); ++i )
     {
       Facet * f = *i;
       f->Print( file );

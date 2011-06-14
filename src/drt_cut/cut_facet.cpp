@@ -72,7 +72,7 @@ void GEO::CUT::Facet::Register( VolumeCell * cell )
 #ifdef DEBUGCUTLIBRARY
     {
       std::ofstream file( "volumecells.plot" );
-      for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+      for ( plain_volumecell_set::iterator i=cells_.begin(); i!=cells_.end(); ++i )
       {
         VolumeCell * vc = *i;
         vc->Print( file );
@@ -140,7 +140,7 @@ void GEO::CUT::Facet::GetAllPoints( Mesh & mesh, PointSet & cut_points, bool dot
   if ( IsPlanar( mesh, dotriangulate ) )
   {
     std::copy( points_.begin(), points_.end(), std::inserter( cut_points, cut_points.begin() ) );
-    for ( std::set<Facet*>::iterator i=holes_.begin(); i!=holes_.end(); ++i )
+    for ( plain_facet_set::iterator i=holes_.begin(); i!=holes_.end(); ++i )
     {
       Facet * h = *i;
       h->GetAllPoints( mesh, cut_points );
@@ -346,7 +346,7 @@ void GEO::CUT::Facet::GetNodalIds( Mesh & mesh, const std::vector<Point*> & poin
     Node * n = p->CutNode();
     if ( n==NULL )
     {
-      std::set<int> point_id;
+      plain_int_set point_id;
       point_id.insert( p->Id() );
       n = mesh.GetNode( point_id, p->X() );
     }
@@ -423,7 +423,7 @@ void GEO::CUT::Facet::Position( Point::PointPosition pos )
           p->Position( pos );
         }
       }
-      for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+      for ( plain_volumecell_set::iterator i=cells_.begin(); i!=cells_.end(); ++i )
       {
         VolumeCell * c = *i;
         c->Position( pos );
@@ -432,7 +432,7 @@ void GEO::CUT::Facet::Position( Point::PointPosition pos )
   }
 }
 
-void GEO::CUT::Facet::GetLines( std::map<std::pair<Point*, Point*>, std::set<Facet*> > & lines )
+void GEO::CUT::Facet::GetLines( std::map<std::pair<Point*, Point*>, plain_facet_set > & lines )
 {
 #if 0
   // We are interested in the surrounding lines of the facet. Thus the
@@ -454,7 +454,7 @@ void GEO::CUT::Facet::GetLines( std::map<std::pair<Point*, Point*>, std::set<Fac
     GetLines( points_, lines );
 
     // add hole lines but do not connect with parent facet
-    for ( std::set<Facet*>::iterator i=holes_.begin(); i!=holes_.end(); ++i )
+    for ( plain_facet_set::iterator i=holes_.begin(); i!=holes_.end(); ++i )
     {
       Facet * hole = *i;
       hole->GetLines( lines );
@@ -463,7 +463,7 @@ void GEO::CUT::Facet::GetLines( std::map<std::pair<Point*, Point*>, std::set<Fac
 }
 
 void GEO::CUT::Facet::GetLines( const std::vector<Point*> & points,
-                                std::map<std::pair<Point*, Point*>, std::set<Facet*> > & lines )
+                                std::map<std::pair<Point*, Point*>, plain_facet_set > & lines )
 {
   unsigned length = points.size();
   for ( unsigned i=0; i<length; ++i )
@@ -501,7 +501,7 @@ bool GEO::CUT::Facet::IsLine( Point * p1, Point * p2 )
   {
     if ( IsLine( points_, p1, p2 ) )
       return true;
-    for ( std::set<Facet*>::iterator i=holes_.begin(); i!=holes_.end(); ++i )
+    for ( plain_facet_set::iterator i=holes_.begin(); i!=holes_.end(); ++i )
     {
       Facet * hole = *i;
       if ( hole->IsLine( p1, p2 ) )
@@ -569,7 +569,7 @@ bool GEO::CUT::Facet::Contains( Point * p ) const
   {
     if ( std::find( points_.begin(), points_.end(), p ) != points_.end() )
       return true;
-    for ( std::set<Facet*>::const_iterator i=holes_.begin(); i!=holes_.end(); ++i )
+    for ( plain_facet_set::const_iterator i=holes_.begin(); i!=holes_.end(); ++i )
     {
       Facet * hole = *i;
       if ( hole->Contains( p ) )
@@ -625,7 +625,7 @@ GEO::CUT::VolumeCell * GEO::CUT::Facet::Neighbor( VolumeCell * cell )
 #ifdef DEBUGCUTLIBRARY
     {
       std::ofstream file( "volumes.plot" );
-      for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+      for ( plain_volumecell_set::iterator i=cells_.begin(); i!=cells_.end(); ++i )
       {
         VolumeCell * vc = *i;
         vc->Print( file );
@@ -636,7 +636,7 @@ GEO::CUT::VolumeCell * GEO::CUT::Facet::Neighbor( VolumeCell * cell )
   }
   if ( cells_.count( cell )==0 )
     throw std::runtime_error( "not my neighbor" );
-  for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+  for ( plain_volumecell_set::iterator i=cells_.begin(); i!=cells_.end(); ++i )
   {
     VolumeCell * vc = *i;
     if ( vc != cell )
@@ -648,12 +648,12 @@ GEO::CUT::VolumeCell * GEO::CUT::Facet::Neighbor( VolumeCell * cell )
 }
 
 void GEO::CUT::Facet::Neighbors( Point * p,
-                                 const std::set<VolumeCell*> & cells,
-                                 const std::set<VolumeCell*> & done,
-                                 std::set<VolumeCell*> & connected,
-                                 std::set<Element*> & elements )
+                                 const plain_volumecell_set & cells,
+                                 const plain_volumecell_set & done,
+                                 plain_volumecell_set & connected,
+                                 plain_element_set & elements )
 {
-  for ( std::set<VolumeCell*>::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+  for ( plain_volumecell_set::iterator i=cells_.begin(); i!=cells_.end(); ++i )
   {
     VolumeCell * c = *i;
     if ( cells.count( c )>0 )
@@ -770,28 +770,28 @@ void GEO::CUT::Facet::TriangulationPoints( PointSet & points )
   }
 }
 
-void GEO::CUT::Facet::NewTri3Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, std::set<BoundaryCell*> & bcells )
+void GEO::CUT::Facet::NewTri3Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, plain_boundarycell_set & bcells )
 {
   BoundaryCell * bc = mesh.NewTri3Cell( volume, this, points );
   bcells.insert( bc );
 }
 
 
-void GEO::CUT::Facet::NewQuad4Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, std::set<BoundaryCell*> & bcells )
+void GEO::CUT::Facet::NewQuad4Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, plain_boundarycell_set & bcells )
 {
   BoundaryCell * bc = mesh.NewQuad4Cell( volume, this, points );
   bcells.insert( bc );
 }
 
-void GEO::CUT::Facet::GetBoundaryCells( std::set<GEO::CUT::BoundaryCell*> & bcells )
+void GEO::CUT::Facet::GetBoundaryCells( plain_boundarycell_set & bcells )
 {
   if ( cells_.size()==0 )
     throw std::runtime_error( "no volume cells" );
 
   VolumeCell * vc = *cells_.begin();
 
-  const std::set<BoundaryCell*> & vbcells = vc->BoundaryCells();
-  for ( std::set<BoundaryCell*>::const_iterator i=vbcells.begin();
+  const plain_boundarycell_set & vbcells = vc->BoundaryCells();
+  for ( plain_boundarycell_set::const_iterator i=vbcells.begin();
         i!=vbcells.end();
         ++i )
   {
@@ -936,7 +936,7 @@ void GEO::CUT::Facet::Print( std::ostream & stream )
     }
     stream << "\n\n";
 
-    for ( std::set<Facet*>::iterator i=holes_.begin(); i!=holes_.end(); ++i )
+    for ( plain_facet_set::iterator i=holes_.begin(); i!=holes_.end(); ++i )
     {
       Facet * hole = *i;
       hole->Print( stream );
@@ -985,7 +985,7 @@ unsigned GEO::CUT::Facet::NumPoints()
   unsigned numpoints = points_.size();
   if ( IsTriangulated() )
     return numpoints + 1;
-  for ( std::set<Facet*>::iterator i=holes_.begin(); i!=holes_.end(); ++i )
+  for ( plain_facet_set::iterator i=holes_.begin(); i!=holes_.end(); ++i )
   {
     Facet * hole = *i;
     numpoints += hole->NumPoints();

@@ -284,15 +284,20 @@ namespace GEO
       };
 
       template <int length>
+      class PlainEntitySet : public std::set<Entity<length>*>
+      {
+      };
+
+      template <int length>
       class Domain
       {
       public:
 
         bool Empty() const { return members_.size()==0; }
 
-        std::set<Entity<length>*> & Members() { return members_; }
+        PlainEntitySet<length> & Members() { return members_; }
 
-        std::set<Entity<length-1>*> & Border() { return border_; }
+        PlainEntitySet<length-1> & Border() { return border_; }
 
         bool Contains( Entity<length> * m ) { return members_.count( m ) > 0; }
 
@@ -328,7 +333,7 @@ namespace GEO
 
           // mark the external border as done since this will be the domains
           // boundary
-          for ( typename std::set<Entity<length-1>*>::iterator i=border_.begin(); i!=border_.end(); ++i )
+          for ( typename PlainEntitySet<length-1>::iterator i=border_.begin(); i!=border_.end(); ++i )
           {
             Entity<length-1> * b = *i;
             bool skip = false;
@@ -348,9 +353,9 @@ namespace GEO
             }
           }
 
-          std::set<Entity<length>*> stack;
+          PlainEntitySet<length> stack;
 
-          for ( typename std::set<Entity<length>*>::iterator i=members_.begin();
+          for ( typename PlainEntitySet<length>::iterator i=members_.begin();
                 i!=members_.end();
                 ++i )
           {
@@ -374,7 +379,7 @@ namespace GEO
 
       private:
 
-        void PushNewNeighbors( std::set<Entity<length>*> & stack, Entity<length> * m )
+        void PushNewNeighbors( PlainEntitySet<length> & stack, Entity<length> * m )
         {
           const std::vector<Entity<length-1>*> & bs = m->Children();
           for ( typename std::vector<Entity<length-1>*>::const_iterator i=bs.begin();
@@ -397,9 +402,9 @@ namespace GEO
           }
         }
 
-        std::set<Entity<length>*> members_;
-        std::set<Entity<length-1>*> border_;
-        std::set<Entity<length-1>*> done_border_;
+        PlainEntitySet<length>   members_;
+        PlainEntitySet<length-1> border_;
+        PlainEntitySet<length-1> done_border_;
       };
 
       /// tracking of cut facet to find its tris
@@ -410,13 +415,13 @@ namespace GEO
         bool Fill( TetMesh * tm, Facet * facet )
         {
           Domain<3> domain;
-          std::set<Entity<2>*> & lines = domain.Border();
+          PlainEntitySet<2> & lines = domain.Border();
           if ( FindTrace( tm, facet, lines ) )
           {
             while ( lines.size() > 0 )
             {
               bool match = false;
-              for ( std::set<Entity<2>*>::iterator i=lines.begin(); i!=lines.end(); ++i )
+              for ( PlainEntitySet<2>::iterator i=lines.begin(); i!=lines.end(); ++i )
               {
                 Entity<2> * l = *i;
                 Entity<3> * tri = FindUniqueTri( tm, facet, domain, l );
@@ -442,12 +447,12 @@ namespace GEO
           return false;
         }
 
-        bool FindTrace( TetMesh * tm, Facet * facet, std::set<Entity<2>*> & trace_lines )
+        bool FindTrace( TetMesh * tm, Facet * facet, PlainEntitySet<2> & trace_lines )
         {
-          std::map<std::pair<Point*, Point*>, std::set<Facet*> > lines;
+          std::map<std::pair<Point*, Point*>, plain_facet_set > lines;
           facet->GetLines( lines );
 
-          for ( std::map<std::pair<Point*, Point*>, std::set<Facet*> >::iterator i=lines.begin();
+          for ( std::map<std::pair<Point*, Point*>, plain_facet_set >::iterator i=lines.begin();
                 i!=lines.end();
                 ++i )
           {
@@ -467,7 +472,7 @@ namespace GEO
           return true;
         }
 
-        const std::set<Entity<3>*> & SurfaceTris() const { return tris_; }
+        const PlainEntitySet<3> & SurfaceTris() const { return tris_; }
 
       private:
 
@@ -499,7 +504,7 @@ namespace GEO
           return tri;
         }
 
-        std::set<Entity<3>*> tris_;
+        PlainEntitySet<3> tris_;
       };
 
     public:
@@ -510,13 +515,13 @@ namespace GEO
         This is where the work is done.
        */
       TetMesh( const std::vector<Point*> & points,
-               const std::set<Facet*> & facets,
+               const plain_facet_set & facets,
                bool project );
 
       void CreateElementTets( Mesh & mesh,
                               Element * element,
-                              const std::set<VolumeCell*> & cells,
-                              const std::set<Side*> & cut_sides,
+                              const plain_volumecell_set & cells,
+                              const plain_side_set & cut_sides,
                               int count,
                               bool levelset );
 
@@ -532,9 +537,9 @@ namespace GEO
 
       void FixBrokenTets();
 
-      void FindProperSides( const std::set<Entity<3>*> & tris,
+      void FindProperSides( const PlainEntitySet<3> & tris,
                             std::vector<std::vector<int> > & sides,
-                            const std::set<Entity<4>*> * members=NULL );
+                            const PlainEntitySet<4> * members=NULL );
 
       void CollectCoordinates( const std::vector<std::vector<int> > & sides,
                                std::vector<Point*> & side_coords );
@@ -549,9 +554,9 @@ namespace GEO
 
       void GmshWriteSurfaceTris();
 
-      void GmshWriteTriSet( const std::string & name, const std::set<Entity<3>*> & tris );
+      void GmshWriteTriSet( const std::string & name, const PlainEntitySet<3> & tris );
 
-      void GmshWriteTetSet( const std::string & name, const std::set<Entity<4>*> & tets );
+      void GmshWriteTetSet( const std::string & name, const PlainEntitySet<4> & tets );
 
       void GmshWriteTri( std::ostream & file, int eid, const std::vector<int> & t );
 
@@ -646,8 +651,8 @@ namespace GEO
         if ( not f->OnCutSide() )
         {
           FacetMesh & fm = facet_mesh_[f];
-          const std::set<Entity<3>*> & tris = fm.SurfaceTris();
-          for ( std::set<Entity<3>*>::const_iterator i=tris.begin();
+          const PlainEntitySet<3> & tris = fm.SurfaceTris();
+          for ( PlainEntitySet<3>::const_iterator i=tris.begin();
                 i!=tris.end();
                 ++i )
           {
@@ -691,7 +696,7 @@ namespace GEO
       }
 
       const std::vector<Point*> & points_;
-      const std::set<Facet*> & facets_;
+      const plain_facet_set & facets_;
       std::vector<std::vector<int> > tets_;
 
       std::vector<int> accept_tets_;

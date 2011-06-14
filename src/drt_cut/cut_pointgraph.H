@@ -54,7 +54,7 @@ private:
 
     void GnuplotDumpCycles( const std::string & filename, const std::vector<Cycle> & cycles );
 
-    std::map<int, std::set<int> > graph_;
+    std::map<int, plain_int_set> graph_;
     std::map<int, Point*> all_points_;
     std::vector<Cycle> main_cycles_;
     std::vector<std::vector<Cycle> > hole_cycles_;

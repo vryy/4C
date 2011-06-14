@@ -8,7 +8,7 @@ void GEO::CUT::Node::RegisterCuts()
 {
   if ( Position()==Point::oncutsurface )
   {
-    for ( std::set<Edge*>::iterator i=edges_.begin(); i!=edges_.end(); ++i )
+    for ( plain_edge_set::iterator i=edges_.begin(); i!=edges_.end(); ++i )
     {
       Edge * e = *i;
       point_->AddEdge( e );
@@ -18,23 +18,23 @@ void GEO::CUT::Node::RegisterCuts()
 
 void GEO::CUT::Node::FindDOFSets( bool include_inner )
 {
-  const std::set<Element*> & elements = Elements();
+  const plain_element_set & elements = Elements();
 
-  std::map<Node*, std::set<VolumeCell*> > nodal_cells;
-  std::set<VolumeCell*> cells;
+  std::map<Node*, plain_volumecell_set > nodal_cells;
+  plain_volumecell_set cells;
 
-  for ( std::set<Element*>::const_iterator i=elements.begin(); i!=elements.end(); ++i )
+  for ( plain_element_set::const_iterator i=elements.begin(); i!=elements.end(); ++i )
   {
     Element * e = *i;
     {
-      const std::set<VolumeCell*> & element_cells = e->VolumeCells();
+      const plain_volumecell_set & element_cells = e->VolumeCells();
       if ( include_inner )
       {
         std::copy( element_cells.begin(), element_cells.end(), std::inserter( cells, cells.begin() ) );
       }
       else
       {
-        for ( std::set<VolumeCell*>::const_iterator i=element_cells.begin(); i!=element_cells.end(); ++i )
+        for ( plain_volumecell_set::const_iterator i=element_cells.begin(); i!=element_cells.end(); ++i )
         {
           VolumeCell * vc = *i;
           if ( vc->Position()==Point::outside )
@@ -50,7 +50,7 @@ void GEO::CUT::Node::FindDOFSets( bool include_inner )
             ++i )
       {
         Node * n = *i;
-        for ( std::set<VolumeCell*>::const_iterator i=element_cells.begin(); i!=element_cells.end(); ++i )
+        for ( plain_volumecell_set::const_iterator i=element_cells.begin(); i!=element_cells.end(); ++i )
         {
           VolumeCell * cell = *i;
 
@@ -76,18 +76,18 @@ void GEO::CUT::Node::FindDOFSets( bool include_inner )
   // this loop has one pass only. But if the node is cut, there will be more
   // than one set of cells that are attached to this node.
 
-  std::set<VolumeCell*> done;
+  plain_volumecell_set done;
 
   BuildDOFCellSets( point(), cells, nodal_cells[this], done );
 
   nodal_cells.erase( this );
 
-  for ( std::map<Node*, std::set<VolumeCell*> >::iterator i=nodal_cells.begin();
+  for ( std::map<Node*, plain_volumecell_set >::iterator i=nodal_cells.begin();
         i!=nodal_cells.end();
         ++i )
   {
     Node * n = i->first;
-    std::set<VolumeCell*> & cellset = i->second;
+    plain_volumecell_set & cellset = i->second;
     BuildDOFCellSets( n->point(), cells, cellset, done );
   }
 
@@ -103,19 +103,19 @@ void GEO::CUT::Node::FindDOFSets( bool include_inner )
 }
 
 void GEO::CUT::Node::BuildDOFCellSets( Point * p,
-                                       const std::set<VolumeCell*> & cells,
-                                       const std::set<VolumeCell*> & nodal_cells,
-                                       std::set<VolumeCell*> & done )
+                                       const plain_volumecell_set & cells,
+                                       const plain_volumecell_set & nodal_cells,
+                                       plain_volumecell_set & done )
 {
-  for ( std::set<VolumeCell*>::const_iterator i=nodal_cells.begin();
+  for ( plain_volumecell_set::const_iterator i=nodal_cells.begin();
         i!=nodal_cells.end();
         ++i )
   {
     VolumeCell * cell = *i;
     if ( done.count( cell )==0 )
     {
-      std::set<VolumeCell*> connected;
-      std::set<Element*> elements;
+      plain_volumecell_set connected;
+      plain_element_set elements;
       cell->Neighbors( p, cells, done, connected, elements );
 
       if ( connected.size()>0 )
@@ -133,7 +133,7 @@ int GEO::CUT::Node::DofSetNumber( VolumeCell * cell )
   int dofset = -1;
   for ( unsigned i=0; i<dofsets_.size(); ++i )
   {
-    std::set<VolumeCell*> & cells = dofsets_[i];
+    plain_volumecell_set & cells = dofsets_[i];
     if ( cells.count( cell ) > 0 )
     {
       if ( dofset==-1 )
@@ -163,13 +163,13 @@ int GEO::CUT::Node::NumDofSets( bool include_inner )
   else
   {
     int numdofsets = 0;
-    for ( std::vector<std::set<VolumeCell*> >::iterator i=dofsets_.begin();
+    for ( std::vector<plain_volumecell_set >::iterator i=dofsets_.begin();
           i!=dofsets_.end();
           ++i )
     {
-      std::set<VolumeCell*> & cells = *i;
+      plain_volumecell_set & cells = *i;
       GEO::CUT::Point::PointPosition position = GEO::CUT::Point::undecided;
-      for ( std::set<VolumeCell*>::iterator i=cells.begin(); i!=cells.end(); ++i )
+      for ( plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
       {
         VolumeCell * c = *i;
         GEO::CUT::Point::PointPosition cp = c->Position();

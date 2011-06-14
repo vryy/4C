@@ -15,7 +15,7 @@ class IntegrationCellCreator
 {
 public:
 
-  static bool CreateCells( Mesh & mesh, Element * element, const std::set<VolumeCell*> & cells );
+  static bool CreateCells( Mesh & mesh, Element * element, const plain_volumecell_set & cells );
 
   static bool CreateCell( Mesh & mesh, DRT::Element::DiscretizationType shape, VolumeCell * cell );
 
@@ -23,16 +23,16 @@ private:
 
   void Execute( Mesh & mesh );
 
-  bool CreateTet4Cell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets );
-  bool CreateHex8Cell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets );
-  bool CreateWedge6Cell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets );
-  bool CreatePyramid5Cell( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets );
-  bool CreateSpecialCases( Mesh & mesh, VolumeCell * cell, const std::set<Facet*> & facets );
+  bool CreateTet4Cell( Mesh & mesh, VolumeCell * cell, const plain_facet_set & facets );
+  bool CreateHex8Cell( Mesh & mesh, VolumeCell * cell, const plain_facet_set & facets );
+  bool CreateWedge6Cell( Mesh & mesh, VolumeCell * cell, const plain_facet_set & facets );
+  bool CreatePyramid5Cell( Mesh & mesh, VolumeCell * cell, const plain_facet_set & facets );
+  bool CreateSpecialCases( Mesh & mesh, VolumeCell * cell, const plain_facet_set & facets );
 
   bool Hex8HorizontalCut( Mesh & mesh,
                           Element * element,
                           VolumeCell * cell,
-                          const std::set<Facet*> & facets,
+                          const plain_facet_set & facets,
                           int axis,
                           double r );
 
