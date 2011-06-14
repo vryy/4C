@@ -98,6 +98,8 @@ public:
 
 //   virtual void ExchangeFacetSide( Side * side, bool cutsurface ) = 0;
 
+  virtual void AddPoint( Point * cut_point );
+
   virtual void AddLine( Line* cut_line );
 
   virtual Facet * FindFacet( const std::vector<Point*> & facet_points );
@@ -124,6 +126,8 @@ public:
 
   void GetCutPoints( Element * element, Side & other, PointSet & cuts );
 
+  const PointSet & CutPoints() const { return cut_points_; }
+
   const std::vector<Line*> & CutLines() const { return cut_lines_; }
 
   const std::set<Element*> & Elements() const { return elements_; }
@@ -145,6 +149,8 @@ private:
   std::set<Element*> elements_;
 
   std::vector<Line*> cut_lines_;
+
+  PointSet cut_points_;
 
   std::vector<Facet*> facets_;
 };

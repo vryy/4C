@@ -7,13 +7,12 @@
 #include "cut_test_utils.H"
 
 #include "../../src/drt_cut/cut_side.H"
-#include "../../src/drt_cut/cut_intersection.H"
 #include "../../src/drt_cut/cut_meshintersection.H"
 #include "../../src/drt_cut/cut_tetmeshintersection.H"
 #include "../../src/drt_cut/cut_options.H"
 
 #include "../../src/drt_fem_general/drt_utils_local_connectivity_matrices.H"
-        
+
 void test_alex45()
 {
   GEO::CUT::MeshIntersection intersection;

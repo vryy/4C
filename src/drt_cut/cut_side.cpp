@@ -223,6 +223,27 @@ void GEO::CUT::Side::CreateMissingLines( Creator & creator, Element * element )
         element->GnuplotDump();
         element->DumpFacets();
 
+#if 1
+  {
+    // see if there are any unconnected cut points on any element side
+
+    const std::vector<Side*> & sides = element->Sides();
+    for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
+    {
+      Side * s = *i;
+      const PointSet & cutpoints = s->CutPoints();
+      for ( PointSet::const_iterator i=cutpoints.begin(); i!=cutpoints.end(); ++i )
+      {
+        Point * p = *i;
+        if ( p->IsCut( this ) )
+        {
+          pg[p];
+        }
+      }
+    }
+  }
+#endif
+
         std::vector<Point*> dummy;
         for ( std::map<Point*, PointSet>::iterator i=pg.begin(); i!=pg.end(); ++i )
         {
@@ -278,6 +299,11 @@ void GEO::CUT::Side::GetCutPoints( Element * element, Side & other, PointSet & c
     Edge * e = *i;
     e->GetCutPoints( element, *this, other, cuts );
   }
+}
+
+void GEO::CUT::Side::AddPoint( Point * cut_point )
+{
+  cut_points_.insert( cut_point );
 }
 
 void GEO::CUT::Side::AddLine( Line* cut_line )

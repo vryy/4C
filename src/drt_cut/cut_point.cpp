@@ -70,6 +70,10 @@ void GEO::CUT::Point::AddEdge( Edge* cut_edge )
 void GEO::CUT::Point::AddSide( Side* s )
 {
   cut_sides_.insert( s );
+
+  // revers add
+  s->AddPoint( this );
+
   const std::set<Element*> & elements = s->Elements();
   for ( std::set<Element*>::const_iterator i=elements.begin(); i!=elements.end(); ++i )
   {

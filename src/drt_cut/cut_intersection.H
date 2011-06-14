@@ -281,6 +281,9 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCur
 
   const double tol = LINSOLVETOL; // / scale_;
 
+  double oldres = 0;
+  double oldincr = 0;
+
 // #ifdef DEBUG
 //   std::vector<double> res;
 //   res.push_back( tol );
@@ -292,6 +295,7 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCur
 
   b = 0;
 
+#if 0
   for ( int inode=0; inode<numNodesSurface; ++inode )
     for( int isd=0; isd<3; ++isd )
     {
@@ -303,6 +307,10 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCur
     {
       b(isd) += xyze_lineElement_(isd,inode) * lineFunct(inode);
     }
+#else
+  b.Multiply( -1, xyze_surfaceElement_, surfaceFunct, 1 );
+  b.Multiply( 1, xyze_lineElement_, lineFunct, 1 );
+#endif
 
   for ( int iter = 0; iter < 20; ++iter )
   {
@@ -332,7 +340,8 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCur
 
     dx = 0;
     double det = LINALG::gaussElimination<true, 3>( A, b, dx );
-    if ( fabs( det ) < tol )
+    //if ( fabs( det ) < tol )
+    if ( fabs( det ) == 0 )
     {
       if ( iter==0 )
       {
@@ -368,6 +377,7 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCur
 
     b = 0;
 
+#if 0
     for ( int inode=0; inode<numNodesSurface; ++inode )
       for( int isd=0; isd<3; ++isd )
       {
@@ -379,6 +389,10 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCur
       {
         b(isd) += xyze_lineElement_(isd,inode) * lineFunct(inode);
       }
+#else
+    b.Multiply( -1, xyze_surfaceElement_, surfaceFunct, 1 );
+    b.Multiply( 1, xyze_lineElement_, lineFunct, 1 );
+#endif
 
     // test
 
@@ -395,6 +409,16 @@ bool Intersection<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCur
     {
       return true;
     }
+    if ( iter > 0 and off_count == 0 )
+    {
+      // test for stagnation
+      if ( fabs( residual-oldres ) < tol and fabs( incr-oldincr ) < tol )
+      {
+        return true;
+      }
+    }
+    oldres = residual;
+    oldincr = incr;
   }
 
 //   std::cout << "============\n";
