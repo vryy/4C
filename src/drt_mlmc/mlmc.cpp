@@ -172,6 +172,10 @@ void STR::MLMC::Integrate()
   unsigned int random_seed= mlmcp.get<int>("INITRANDOMSEED");
   do
   {
+    cout << "################################################### " << endl;
+    cout << "   MULTILEVEL MONTE CARLO " << endl;
+    cout <<  "RUN: " << numb_run_ << "of " << numruns  << endl;
+     cout << "################################################### " << endl;
     SetupStochMat((random_seed+(unsigned int)numb_run_));
     output_->NewResultFile(filename_,(numb_run_));
 
@@ -838,6 +842,8 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
 
   // get elements on proc
   Teuchos::RCP<Epetra_Vector> my_ele = rcp(new Epetra_Vector(*discret_->ElementRowMap(),true));
+
+  RandomField field(random_seed,sigma,corrlength);
   // loop over all elements
   for (int i=0; i< my_ele->MyLength(); i++)
     {
@@ -847,7 +853,7 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
 
       //double sigma = aaa_stopro->Sigma();
       //double corrlength = aaa_stopro->Corrlength();
-      RandomField field(random_seed,sigma,corrlength);
+
       //beta = field.EvalRandomField(0.2,0.2,0.2);
       // get element centercoords
       DRT::Node** nodes = discret_->gElement(i)->Nodes();
@@ -866,8 +872,8 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
       // beta = beta_mean = beta_mean * random field value
       //beta = beta_mean+beta_mean*field.EvalRandomField(ele_center[0],ele_center[1],ele_center[2]);
       // HACK instead of circular field use pseudo 3D Field
-      beta = beta_mean+beta_mean*field.EvalRandomFieldCylinder(ele_center[0],ele_center[1],ele_center[2]);
-
+      beta = beta_mean+field.EvalRandomFieldCylinder(ele_center[0],ele_center[1],ele_center[2]);
+      //cout << "value filed " << field.EvalRandomFieldCylinder(ele_center[0],ele_center[1],ele_center[2]) << endl;
       //vector<double> location = dis->gElement(i)->soh8_ElementCenterRefeCoords();
       // for now we need a quick check wether beta> 0.22 because thats the cutoff value right now
       if(beta<0.22)
@@ -1061,7 +1067,7 @@ void STR::MLMC::HelperFunctionOutputTube(RCP< Epetra_MultiVector> stress,RCP< Ep
 
   // assamble name for outputfil
   std::stringstream outputfile;
-  outputfile <<filename_ << "_statistics_output_" << start_run_ << ".txt";
+  outputfile << filename_ << "_statistics_output_" << start_run_ << ".txt";
   string name = outputfile.str();;
   /// file to write output
   // paraview ids of nodes
