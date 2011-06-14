@@ -1295,6 +1295,8 @@ set(OBJS_CUT_TEST
   tests/cut_test/cut_test_alex_48.cpp
   tests/cut_test/cut_test_alex_49.cpp
   tests/cut_test/cut_test_alex_50.cpp
+  tests/cut_test/cut_test_alex_51.cpp
+  tests/cut_test/cut_test_alex_52.cpp
   tests/cut_test/cut_test_axel_8.cpp
   tests/cut_test/cut_test_axel_9.cpp
   tests/cut_test/cut_test_axel_10.cpp
