@@ -34,8 +34,10 @@ void test_geometry_schleifend1()
   line( 1, 1 ) = 0.66678706244096386246;
   line( 2, 1 ) = 0.49999999999999994449;
 
+  LINALG::Matrix<3,1> xsi;
+
   //GEO::CUT::KERNEL::DebugComputeIntersection<DRT::Element::line2, DRT::Element::tri3> ci;
-  GEO::CUT::KERNEL::ComputeIntersection<DRT::Element::line2, DRT::Element::tri3> ci;
+  GEO::CUT::KERNEL::ComputeIntersection<DRT::Element::line2, DRT::Element::tri3> ci( xsi );
 
   if ( ci( tri3, line ) )
   {
@@ -56,8 +58,10 @@ void test_geometry_parallel1()
 
   //std::cout << tri3 << line;
 
+  LINALG::Matrix<3,1> xsi;
+
   //GEO::CUT::KERNEL::DebugComputeIntersection<DRT::Element::line2, DRT::Element::tri3> ci;
-  GEO::CUT::KERNEL::ComputeIntersection<DRT::Element::line2, DRT::Element::tri3> ci;
+  GEO::CUT::KERNEL::ComputeIntersection<DRT::Element::line2, DRT::Element::tri3> ci( xsi );
 
   if ( ci( tri3, line ) )
   {

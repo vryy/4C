@@ -20,76 +20,31 @@ namespace GEO
     namespace KERNEL
     {
 
-
-      template <DRT::Element::DiscretizationType edgetype,
-                DRT::Element::DiscretizationType sidetype,
-                int numNodesLine    = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
-                int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement
-      >
-      class Kernel
+      template <int points>
+      double FindL2Scaling( LINALG::Matrix<3,points> & xyze )
       {
-      public:
-
-        template <int points>
-        double FindL2Scaling( LINALG::Matrix<3,points> & xyze )
+        double scale = 0;
+        LINALG::Matrix<3,1> d;
+        for ( int i=0; i<points; ++i )
         {
-          double scale = 0;
-          LINALG::Matrix<3,1> d;
-          for ( int i=0; i<points; ++i )
-          {
-            LINALG::Matrix<3,1> x1( &xyze( 0, i ), true );
-            LINALG::Matrix<3,1> x2( &xyze( 0, ( i+1 )%points ), true );
-            d.Update( 1, x2, -1, x1, 0 );
-            scale += d.Norm2();
-          }
-          scale /= points;
-          return scale;
+          LINALG::Matrix<3,1> x1( &xyze( 0, i ), true );
+          LINALG::Matrix<3,1> x2( &xyze( 0, ( i+1 )%points ), true );
+          d.Update( 1, x2, -1, x1, 0 );
+          scale += d.Norm2();
         }
+        scale /= points;
+        return scale;
+      }
 
-#if 0
-        void IntersectionRHS( const LINALG::Matrix<numNodesSurface,1> & surface,
-                              const LINALG::Matrix<numNodesLine,1> & line,
-                              const LINALG::Matrix<3,numNodesSurface> & xyze_surface,
-                              const LINALG::Matrix<3,numNodesLine> & xyze_line,
-                              LINALG::Matrix<3,1> & b )
-        {
-          b.Multiply( xyze_line, line );
-          b.Multiply( -1, xyze_surface, surface, 1 );
-        }
 
-        void IntersectionLHS( const LINALG::Matrix<2,numNodesSurface> & surfaceDeriv1,
-                              const LINALG::Matrix<1,numNodesLine> & lineDeriv1,
-                              const LINALG::Matrix<3,numNodesSurface> & xyze_surface,
-                              const LINALG::Matrix<3,numNodesLine> & xyze_line,
-                              LINALG::Matrix<3,3> & A )
-        {
-          A = 0;
-
-          for ( int inode=0; inode<numNodesSurface; ++inode )
-            for( int isd=0; isd<3; ++isd )
-            {
-              A(isd,0) += xyze_surface(isd,inode) * surfaceDeriv1(0,inode);
-              A(isd,1) += xyze_surface(isd,inode) * surfaceDeriv1(1,inode);
-            }
-
-          for ( int inode=0; inode<numNodesLine; ++inode )
-            for ( int isd=0; isd<3; ++isd )
-            {
-              A(isd,2) -= xyze_line(isd,inode) * lineDeriv1(0,inode);
-            }
-        }
-
-#endif
-
-        void Dump( std::ostream & stream, const double * data, int length )
-        {
-          std::vector<int> c( length*sizeof( double ) / sizeof( int ) );
-          memcpy( &c[0], data, c.size()*sizeof( int ) );
-          stream << "  {";
-          std::copy( c.begin(), c.end(), std::ostream_iterator<int>( stream, "," ) );
-          stream << "};\n";
-        }
-      };
+      inline void Dump( std::ostream & stream, const double * data, int length )
+      {
+        std::vector<int> c( length*sizeof( double ) / sizeof( int ) );
+        memcpy( &c[0], data, c.size()*sizeof( int ) );
+        stream << "  {";
+        std::copy( c.begin(), c.end(), std::ostream_iterator<int>( stream, "," ) );
+        stream << "};\n";
+      }
 
 
       template <DRT::Element::DiscretizationType sidetype>
@@ -190,6 +145,11 @@ namespace GEO
       {
       public:
 
+        NewtonSolve( LINALG::Matrix<3,1> & xsi )
+          : Strategy( xsi )
+        {
+        }
+
         bool Solve()
         {
           this->SetupSolve();
@@ -255,6 +215,11 @@ namespace GEO
       {
       public:
 
+        DebugNewtonStrategy( LINALG::Matrix<3,1> & xsi )
+          : Strategy( xsi )
+        {
+        }
+
         void SetupSolve()
         {
           std::cout << "SetupSolve()\n";
@@ -305,8 +270,10 @@ namespace GEO
       {
       public:
 
-        ComputePositionStrategy()
-          : xyze_( NULL ), px_( NULL )
+        ComputePositionStrategy( LINALG::Matrix<3,1> & xsi )
+          : xsi_( xsi ),
+            xyze_( NULL ),
+            px_( NULL )
         {
         }
 
@@ -371,6 +338,9 @@ namespace GEO
         }
 
       private:
+
+        LINALG::Matrix<3,1> & xsi_;
+
         const LINALG::Matrix<3, numNodesElement> * xyze_;
         const LINALG::Matrix<3,1> * px_;
 
@@ -380,8 +350,6 @@ namespace GEO
         LINALG::Matrix<3,3> A_;
         LINALG::Matrix<3,1> b_;
         LINALG::Matrix<3,1> dx_;
-
-        LINALG::Matrix<3,1> xsi_;
       };
 
 
@@ -393,6 +361,11 @@ namespace GEO
       class GenericComputePosition : Strategy
       {
       public:
+
+        GenericComputePosition( LINALG::Matrix<3,1> & xsi )
+          : Strategy( xsi )
+        {
+        }
 
         bool operator()( const LINALG::Matrix<3, numNodesElement> & xyze,
                          const LINALG::Matrix<3,1> & px )
@@ -409,11 +382,6 @@ namespace GEO
         {
           return Strategy::LocalCoordinates();
         }
-
-//         bool SurfaceWithinLimits()
-//         {
-//           return Strategy::SurfaceWithinLimits( LocalCoordinates() );
-//         }
       };
 
       template <DRT::Element::DiscretizationType elementtype,
@@ -421,14 +389,30 @@ namespace GEO
       >
       class ComputePosition : public GenericComputePosition<NewtonSolve<ComputePositionStrategy<false,elementtype,numNodesElement> >,
                                                             elementtype>
-      {};
+      {
+      public:
+
+        ComputePosition( LINALG::Matrix<3,1> & xsi )
+          : GenericComputePosition<NewtonSolve<ComputePositionStrategy<false,elementtype,numNodesElement> >,
+                                   elementtype>( xsi )
+        {
+        }
+      };
 
       template <DRT::Element::DiscretizationType elementtype,
                 int numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<elementtype>::numNodePerElement
       >
       class DebugComputePosition : public GenericComputePosition<NewtonSolve<DebugNewtonStrategy<ComputePositionStrategy<true,elementtype,numNodesElement> > >,
                                                                  elementtype>
-      {};
+      {
+      public:
+
+        DebugComputePosition( LINALG::Matrix<3,1> & xsi )
+          : GenericComputePosition<NewtonSolve<DebugNewtonStrategy<ComputePositionStrategy<true,elementtype,numNodesElement> > >,
+                                   elementtype>( xsi )
+        {
+        }
+      };
 
 
       /// strategy for distance between side and point
@@ -438,12 +422,14 @@ namespace GEO
                 int numNodesLine    = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
                 int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement
       >
-      class ComputeDistanceStrategy : public EmptyNewtonStrategy, Kernel<edgetype,sidetype>
+      class ComputeDistanceStrategy : public EmptyNewtonStrategy
       {
       public:
 
-        ComputeDistanceStrategy()
-          : xyze_surface_( NULL ), px_( NULL )
+        ComputeDistanceStrategy( LINALG::Matrix<3,1> & xsi )
+          : xsi_( xsi ),
+            xyze_surface_( NULL ),
+            px_( NULL )
         {
         }
 
@@ -608,6 +594,8 @@ namespace GEO
           A.Update( 1, B, 1 );
         }
 
+        LINALG::Matrix<3,1> & xsi_;
+
         const LINALG::Matrix<3,numNodesSurface> * xyze_surface_;
         const LINALG::Matrix<3,1> * px_;
 
@@ -621,7 +609,6 @@ namespace GEO
         LINALG::Matrix<3,1> b_;
         LINALG::Matrix<3,1> dx_;
         LINALG::Matrix<3,1> cross_;
-        LINALG::Matrix<3,1> xsi_;
       };
 
 
@@ -635,6 +622,11 @@ namespace GEO
       class GenericComputeDistance : Strategy
       {
       public:
+
+        GenericComputeDistance( LINALG::Matrix<3,1> & xsi )
+          : Strategy( xsi )
+        {
+        }
 
         bool operator()( const LINALG::Matrix<3,numNodesSurface> & xyze_surface,
                          const LINALG::Matrix<3,1> & px,
@@ -667,7 +659,15 @@ namespace GEO
       >
       class ComputeDistance : public GenericComputeDistance<NewtonSolve<ComputeDistanceStrategy<false,edgetype,sidetype> >,
                                                             edgetype,sidetype>
-      {};
+      {
+      public:
+
+        ComputeDistance( LINALG::Matrix<3,1> & xsi )
+          : GenericComputeDistance<NewtonSolve<ComputeDistanceStrategy<false,edgetype,sidetype> >,
+                                   edgetype,sidetype>( xsi )
+        {
+        }
+      };
 
       template <DRT::Element::DiscretizationType edgetype,
                 DRT::Element::DiscretizationType sidetype,
@@ -676,7 +676,15 @@ namespace GEO
       >
       class DebugComputeDistance : public GenericComputeDistance<NewtonSolve<DebugNewtonStrategy<ComputeDistanceStrategy<true,edgetype,sidetype> > >,
                                                                  edgetype,sidetype>
-      {};
+      {
+      public:
+
+        DebugComputeDistance( LINALG::Matrix<3,1> & xsi )
+          : GenericComputeDistance<NewtonSolve<DebugNewtonStrategy<ComputeDistanceStrategy<true,edgetype,sidetype> > >,
+                                   edgetype,sidetype>( xsi )
+        {
+        }
+      };
 
 
       /// strategy for intersection of side and line
@@ -686,12 +694,13 @@ namespace GEO
                 int numNodesLine    = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
                 int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement
       >
-      class ComputeIntersectionStrategy : public EmptyNewtonStrategy, Kernel<edgetype,sidetype>
+      class ComputeIntersectionStrategy : public EmptyNewtonStrategy
       {
       public:
 
-        ComputeIntersectionStrategy()
-          :  xyze_surface_( NULL ),
+        ComputeIntersectionStrategy( LINALG::Matrix<3,1> & xsi )
+          :  xsi_( xsi ),
+             xyze_surface_( NULL ),
              xyze_line_( NULL )
         {
         }
@@ -871,6 +880,8 @@ namespace GEO
 
       private:
 
+        LINALG::Matrix<3,1> & xsi_;
+
         const LINALG::Matrix<3,numNodesSurface> * xyze_surface_;
         const LINALG::Matrix<3,numNodesLine> * xyze_line_;
 
@@ -882,7 +893,6 @@ namespace GEO
         LINALG::Matrix<3,3> A_;
         LINALG::Matrix<3,1> b_;
         LINALG::Matrix<3,1> dx_;
-        LINALG::Matrix<3,1> xsi_;
 
         LINALG::Matrix<3,1> old_b_;
 
@@ -902,6 +912,11 @@ namespace GEO
       class GenericComputeIntersection : Strategy
       {
       public:
+
+        GenericComputeIntersection( LINALG::Matrix<3,1> & xsi )
+          : Strategy( xsi )
+        {
+        }
 
         bool operator()( const LINALG::Matrix<3,numNodesSurface> & xyze_surface,
                          const LINALG::Matrix<3,numNodesLine> & xyze_line )
@@ -938,7 +953,15 @@ namespace GEO
       >
       class ComputeIntersection : public GenericComputeIntersection<NewtonSolve<ComputeIntersectionStrategy<false,edgetype,sidetype> >,
                                                                     edgetype,sidetype>
-      {};
+      {
+      public:
+
+        ComputeIntersection( LINALG::Matrix<3,1> & xsi )
+          : GenericComputeIntersection<NewtonSolve<ComputeIntersectionStrategy<false,edgetype,sidetype> >,
+                                       edgetype,sidetype>( xsi )
+        {
+        }
+      };
 
       template <DRT::Element::DiscretizationType edgetype,
                 DRT::Element::DiscretizationType sidetype,
@@ -947,20 +970,16 @@ namespace GEO
       >
       class DebugComputeIntersection : public GenericComputeIntersection<NewtonSolve<DebugNewtonStrategy<ComputeIntersectionStrategy<true,edgetype,sidetype> > >,
                                                                          edgetype,sidetype>
-      {};
-
-
-#if 0
-      class Intersection
       {
       public:
 
-        bool operator()( const LINALG::Matrix<3,3> & tri3, const LINALG::Matrix<3,2> & line );
-
-        bool operator()( const LINALG::Matrix<3,4> & quad4, const LINALG::Matrix<3,2> & line );
-
+        DebugComputeIntersection( LINALG::Matrix<3,1> & xsi )
+          : GenericComputeIntersection<NewtonSolve<DebugNewtonStrategy<ComputeIntersectionStrategy<true,edgetype,sidetype> > >,
+                                       edgetype,sidetype>( xsi )
+        {
+        }
       };
-#endif
+
     }
   }
 }

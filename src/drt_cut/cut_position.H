@@ -84,91 +84,13 @@ template <DRT::Element::DiscretizationType elementtype,
 >
 bool Position<elementtype,numNodesElement>::Compute()
 {
-#if 1
-
-  KERNEL::ComputePosition<elementtype> cp;
+  KERNEL::ComputePosition<elementtype> cp( xsi_ );
   if ( cp( xyze_, px_ ) )
   {
-    xsi_ = cp.LocalCoordinates();
     return WithinLimits();
   }
 
   return false;
-
-#else
-  LINALG::Matrix<numNodesElement,1> funct;
-  LINALG::Matrix<3,numNodesElement> deriv1;
-
-  LINALG::Matrix<3,3> A;
-  LINALG::Matrix<3,1> b;
-  LINALG::Matrix<3,1> dx;
-
-  xsi_ = 0;
-
-  // calculate rhs
-
-  DRT::UTILS::shape_function_3D( funct, xsi_( 0 ), xsi_( 1 ), xsi_( 2 ), elementtype );
-
-  b = px_;
-
-  for ( int inode=0; inode<numNodesElement; ++inode )
-    for( int isd=0; isd<3; ++isd )
-    {
-      b(isd) -= xyze_(isd,inode) * funct(inode);
-    }
-
-  for ( int iter = 0; iter < 20; ++iter )
-  {
-    // calculate system matrix
-
-    A = 0;
-
-    DRT::UTILS::shape_function_3D_deriv1( deriv1, xsi_( 0 ), xsi_( 1 ), xsi_( 2 ), elementtype );
-
-    for ( int inode=0; inode<numNodesElement; ++inode )
-      for( int isd=0; isd<3; ++isd )
-      {
-        A(isd,0) += xyze_(isd,inode) * deriv1(0,inode);
-        A(isd,1) += xyze_(isd,inode) * deriv1(1,inode);
-        A(isd,2) += xyze_(isd,inode) * deriv1(2,inode);
-      }
-
-    // solve
-
-    dx = 0;
-    double det = LINALG::gaussElimination<true, 3>( A, b, dx );
-    if ( fabs( det ) < LINSOLVETOL )
-    {
-      return false;
-    }
-
-    // update
-
-    xsi_ += dx;
-
-    // calculate rhs
-
-    DRT::UTILS::shape_function_3D( funct, xsi_( 0 ), xsi_( 1 ), xsi_( 2 ), elementtype );
-
-    b = px_;
-
-    for ( int inode=0; inode<numNodesElement; ++inode )
-      for( int isd=0; isd<3; ++isd )
-      {
-        b(isd) -= xyze_(isd,inode) * funct(inode);
-      }
-
-    // test
-
-    double residual = b.Norm2();
-
-    if ( fabs( residual ) < TOLERANCE )
-    {
-      return WithinLimits();
-    }
-  }
-  return false;
-#endif
 }
 
 
