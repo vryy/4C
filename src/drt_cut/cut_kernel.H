@@ -46,6 +46,7 @@ namespace GEO
           return scale;
         }
 
+#if 0
         void IntersectionRHS( const LINALG::Matrix<numNodesSurface,1> & surface,
                               const LINALG::Matrix<numNodesLine,1> & line,
                               const LINALG::Matrix<3,numNodesSurface> & xyze_surface,
@@ -78,84 +79,7 @@ namespace GEO
             }
         }
 
-        void DistanceSystem( const LINALG::Matrix<3,numNodesSurface> & surfaceDeriv2,
-                             const LINALG::Matrix<2,numNodesSurface> & surfaceDeriv1,
-                             const LINALG::Matrix<numNodesSurface,1> & surface,
-                             const LINALG::Matrix<3,numNodesSurface> & xyze_surface,
-                             const LINALG::Matrix<3,1> & px,
-                             double distance,
-                             LINALG::Matrix<3,3> & A,
-                             LINALG::Matrix<3,3> & B,
-                             LINALG::Matrix<3,3> & C,
-                             LINALG::Matrix<3,1> & cross,
-                             LINALG::Matrix<3,1> & b )
-        {
-          b = px;
-          b.Multiply( -1, xyze_surface, surface, 1 );
-
-          A = 0;
-
-          for ( int inode=0; inode<numNodesSurface; ++inode )
-            for( int isd=0; isd<3; ++isd )
-            {
-              A(isd,0) += xyze_surface(isd,inode) * surfaceDeriv1(0,inode);
-              A(isd,1) += xyze_surface(isd,inode) * surfaceDeriv1(1,inode);
-            }
-
-          // cross product to get the normal at the point
-          cross( 0 ) = A( 1, 0 )*A( 2, 1 ) - A( 2, 0 )*A( 1, 1 );
-          cross( 1 ) = A( 2, 0 )*A( 0, 1 ) - A( 0, 0 )*A( 2, 1 );
-          cross( 2 ) = A( 0, 0 )*A( 1, 1 ) - A( 1, 0 )*A( 0, 1 );
-
-          // norm normal direction
-          double cnorm = cross.Norm2();
-          double fact1 = 1./cnorm;
-          //double fact2 = -0.5/( cnorm*sqrt( cnorm ) );
-          cross.Scale( fact1 );
-
-          C = 0;
-
-          for ( int inode=0; inode<numNodesSurface; ++inode )
-            for( int isd=0; isd<3; ++isd )
-            {
-              C(isd,0) += xyze_surface(isd,inode) * surfaceDeriv2(0,inode);
-              C(isd,1) += xyze_surface(isd,inode) * surfaceDeriv2(1,inode);
-              C(isd,2) += xyze_surface(isd,inode) * surfaceDeriv2(2,inode);
-            }
-
-          b( 0 ) -= cross( 0 )*distance;
-          b( 1 ) -= cross( 1 )*distance;
-          b( 2 ) -= cross( 2 )*distance;
-
-          A( 0, 2 ) = cross( 0 );
-          A( 1, 2 ) = cross( 1 );
-          A( 2, 2 ) = cross( 2 );
-
-          B = 0;
-
-          B( 0, 0 ) = ( C( 1, 0 )*A( 2, 1 )+A( 1, 0 )*C( 2, 2 ) - ( C( 2, 0 )*A( 1, 1 )+A( 2, 0 )*C( 1, 2 ) ) )*distance;
-          B( 0, 1 ) = ( C( 1, 2 )*A( 2, 1 )+A( 1, 0 )*C( 2, 1 ) - ( C( 2, 2 )*A( 1, 1 )+A( 2, 0 )*C( 1, 1 ) ) )*distance;
-
-          B( 1, 0 ) = ( C( 2, 0 )*A( 0, 1 )+A( 2, 0 )*C( 0, 2 ) - ( C( 0, 0 )*A( 2, 1 )+A( 0, 0 )*C( 2, 2 ) ) )*distance;
-          B( 1, 1 ) = ( C( 2, 2 )*A( 0, 1 )+A( 2, 0 )*C( 0, 1 ) - ( C( 0, 2 )*A( 2, 1 )+A( 0, 0 )*C( 2, 1 ) ) )*distance;
-
-          B( 2, 0 ) = ( C( 0, 0 )*A( 1, 1 )+A( 0, 0 )*C( 1, 2 ) - ( C( 1, 0 )*A( 0, 1 )+A( 1, 0 )*C( 0, 2 ) ) )*distance;
-          B( 2, 1 ) = ( C( 0, 2 )*A( 1, 1 )+A( 0, 0 )*C( 1, 1 ) - ( C( 1, 2 )*A( 0, 1 )+A( 1, 0 )*C( 0, 1 ) ) )*distance;
-
-          // product rule for normed cross product
-
-          B( 0, 0 ) *= fact1; //+ fact2 * A( 0, 2 );
-          B( 0, 1 ) *= fact1; //+ fact2 * A( 0, 2 );
-
-          B( 1, 0 ) *= fact1; //+ fact2 * A( 1, 2 );
-          B( 1, 1 ) *= fact1; //+ fact2 * A( 1, 2 );
-
-          B( 2, 0 ) *= fact1; //+ fact2 * A( 2, 2 );
-          B( 2, 1 ) *= fact1; //+ fact2 * A( 2, 2 );
-
-          A.Update( 1, B, 1 );
-        }
-
+#endif
 
         void Dump( std::ostream & stream, const double * data, int length )
         {
@@ -605,6 +529,85 @@ namespace GEO
         }
 
       private:
+
+        void DistanceSystem( const LINALG::Matrix<3,numNodesSurface> & surfaceDeriv2,
+                             const LINALG::Matrix<2,numNodesSurface> & surfaceDeriv1,
+                             const LINALG::Matrix<numNodesSurface,1> & surface,
+                             const LINALG::Matrix<3,numNodesSurface> & xyze_surface,
+                             const LINALG::Matrix<3,1> & px,
+                             double distance,
+                             LINALG::Matrix<3,3> & A,
+                             LINALG::Matrix<3,3> & B,
+                             LINALG::Matrix<3,3> & C,
+                             LINALG::Matrix<3,1> & cross,
+                             LINALG::Matrix<3,1> & b )
+        {
+          b = px;
+          b.Multiply( -1, xyze_surface, surface, 1 );
+
+          A = 0;
+
+          for ( int inode=0; inode<numNodesSurface; ++inode )
+            for( int isd=0; isd<3; ++isd )
+            {
+              A(isd,0) += xyze_surface(isd,inode) * surfaceDeriv1(0,inode);
+              A(isd,1) += xyze_surface(isd,inode) * surfaceDeriv1(1,inode);
+            }
+
+          // cross product to get the normal at the point
+          cross( 0 ) = A( 1, 0 )*A( 2, 1 ) - A( 2, 0 )*A( 1, 1 );
+          cross( 1 ) = A( 2, 0 )*A( 0, 1 ) - A( 0, 0 )*A( 2, 1 );
+          cross( 2 ) = A( 0, 0 )*A( 1, 1 ) - A( 1, 0 )*A( 0, 1 );
+
+          // norm normal direction
+          double cnorm = cross.Norm2();
+          double fact1 = 1./cnorm;
+          //double fact2 = -0.5/( cnorm*sqrt( cnorm ) );
+          cross.Scale( fact1 );
+
+          C = 0;
+
+          for ( int inode=0; inode<numNodesSurface; ++inode )
+            for( int isd=0; isd<3; ++isd )
+            {
+              C(isd,0) += xyze_surface(isd,inode) * surfaceDeriv2(0,inode);
+              C(isd,1) += xyze_surface(isd,inode) * surfaceDeriv2(1,inode);
+              C(isd,2) += xyze_surface(isd,inode) * surfaceDeriv2(2,inode);
+            }
+
+          b( 0 ) -= cross( 0 )*distance;
+          b( 1 ) -= cross( 1 )*distance;
+          b( 2 ) -= cross( 2 )*distance;
+
+          A( 0, 2 ) = cross( 0 );
+          A( 1, 2 ) = cross( 1 );
+          A( 2, 2 ) = cross( 2 );
+
+          B = 0;
+
+          B( 0, 0 ) = ( C( 1, 0 )*A( 2, 1 )+A( 1, 0 )*C( 2, 2 ) - ( C( 2, 0 )*A( 1, 1 )+A( 2, 0 )*C( 1, 2 ) ) )*distance;
+          B( 0, 1 ) = ( C( 1, 2 )*A( 2, 1 )+A( 1, 0 )*C( 2, 1 ) - ( C( 2, 2 )*A( 1, 1 )+A( 2, 0 )*C( 1, 1 ) ) )*distance;
+
+          B( 1, 0 ) = ( C( 2, 0 )*A( 0, 1 )+A( 2, 0 )*C( 0, 2 ) - ( C( 0, 0 )*A( 2, 1 )+A( 0, 0 )*C( 2, 2 ) ) )*distance;
+          B( 1, 1 ) = ( C( 2, 2 )*A( 0, 1 )+A( 2, 0 )*C( 0, 1 ) - ( C( 0, 2 )*A( 2, 1 )+A( 0, 0 )*C( 2, 1 ) ) )*distance;
+
+          B( 2, 0 ) = ( C( 0, 0 )*A( 1, 1 )+A( 0, 0 )*C( 1, 2 ) - ( C( 1, 0 )*A( 0, 1 )+A( 1, 0 )*C( 0, 2 ) ) )*distance;
+          B( 2, 1 ) = ( C( 0, 2 )*A( 1, 1 )+A( 0, 0 )*C( 1, 1 ) - ( C( 1, 2 )*A( 0, 1 )+A( 1, 0 )*C( 0, 1 ) ) )*distance;
+
+          // product rule for normed cross product
+
+          B( 0, 0 ) *= fact1; //+ fact2 * A( 0, 2 );
+          B( 0, 1 ) *= fact1; //+ fact2 * A( 0, 2 );
+
+          B( 1, 0 ) *= fact1; //+ fact2 * A( 1, 2 );
+          B( 1, 1 ) *= fact1; //+ fact2 * A( 1, 2 );
+
+          B( 2, 0 ) *= fact1; //+ fact2 * A( 2, 2 );
+          B( 2, 1 ) *= fact1; //+ fact2 * A( 2, 2 );
+
+          A.Update( 1, B, 1 );
+        }
+
         const LINALG::Matrix<3,numNodesSurface> * xyze_surface_;
         const LINALG::Matrix<3,1> * px_;
 
@@ -726,7 +729,9 @@ namespace GEO
         {
           DRT::UTILS::shape_function_2D( surfaceFunct_, xsi_( 0 ), xsi_( 1 ), sidetype );
           DRT::UTILS::shape_function_1D( lineFunct_, xsi_( 2 ), edgetype );
-          IntersectionRHS( surfaceFunct_, lineFunct_, *xyze_surface_, *xyze_line_, b_ );
+
+          b_.Multiply( *xyze_line_, lineFunct_ );
+          b_.Multiply( -1, *xyze_surface_, surfaceFunct_, 1 );
         }
 
         bool TestConverged( int iter )
@@ -761,9 +766,22 @@ namespace GEO
         {
           DRT::UTILS::shape_function_2D_deriv1( surfaceDeriv1_, xsi_( 0 ), xsi_( 1 ), sidetype );
           DRT::UTILS::shape_function_1D_deriv1( lineDeriv1_, xsi_( 2 ), edgetype );
-          IntersectionLHS( surfaceDeriv1_, lineDeriv1_,
-                           *xyze_surface_, *xyze_line_,
-                           A_ );
+
+          A_ = 0;
+
+          for ( int inode=0; inode<numNodesSurface; ++inode )
+            for( int isd=0; isd<3; ++isd )
+            {
+              A_(isd,0) += ( *xyze_surface_ )(isd,inode) * surfaceDeriv1_(0,inode);
+              A_(isd,1) += ( *xyze_surface_ )(isd,inode) * surfaceDeriv1_(1,inode);
+            }
+
+          for ( int inode=0; inode<numNodesLine; ++inode )
+            for ( int isd=0; isd<3; ++isd )
+            {
+              A_(isd,2) -= ( *xyze_line_ )(isd,inode) * lineDeriv1_(0,inode);
+            }
+
 
           dx_ = 0;
           double det = LINALG::gaussElimination<true, 3>( A_, b_, dx_ );
