@@ -8,6 +8,7 @@
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "cut_side.H"
 #include "cut_tolerance.H"
+#include "cut_kernel.H"
 
 namespace GEO
 {
@@ -102,6 +103,22 @@ template <DRT::Element::DiscretizationType elementtype,
 >
 bool Position2d<elementtype,numNodesElement>::Compute()
 {
+#if 1
+
+  KERNEL::ComputeDistance<DRT::Element::line2, elementtype> cd;
+  //KERNEL::DebugComputeDistance<edgetype, sidetype> cd;
+
+  double dist;
+  if ( not cd( xyze_, px_, dist ) )
+  {
+    throw std::runtime_error( "failed to calculate side--point distance" );
+  }
+
+  xsi_ = cd.LocalCoordinates();
+
+  return WithinLimits();
+
+#else
   LINALG::Matrix<numNodesElement,1> surfaceFunct;
   LINALG::Matrix<2,numNodesElement> surfaceDeriv1;
   LINALG::Matrix<3,numNodesElement> surfaceDeriv2;
@@ -271,6 +288,7 @@ bool Position2d<elementtype,numNodesElement>::Compute()
   // cut here. But lets assume we are as close to the solution as possible and
   // use it further.
   return true;
+#endif
 }
 
 
