@@ -98,6 +98,9 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
   // get numerb of current level
   num_level_ = mlmcp.get<int>("LEVELNUMBER");
 
+  //write statistics every write_stat_ steps
+  write_stats_ = mlmcp.get<int>("WRITESTATS");
+
   // In element critirion xsi_i < 1 + eps  eps = MLMCINELETOL
   InEleRange_ = 1.0 + 10e-3;
   //ReadInParameters();
@@ -219,7 +222,7 @@ void STR::MLMC::Integrate()
      {
        ProlongateResults();
        // write statoutput evey now and then
-       if(numb_run_% 1000 == 0)
+       if(numb_run_% write_stats_ == 0)
          WriteStatOutput();
      }
 

@@ -1204,6 +1204,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    DoubleParameter("PERIODICITY",3000,"Period length of Random Field",&mlmcp);
    //DoubleParameter("CorrLength",3000,"Correlation length of Random Field",&mlmcp);
    IntParameter("NUM_COS_TERMS",200,"Number of terms in geometric row ",&mlmcp);
+   IntParameter("WRITESTATS",1000,"Write statistics to file every WRITESTAT runs ",&mlmcp);
 
   Teuchos::ParameterList& scontact = list->sublist("MESHTYING AND CONTACT",false,"");
 

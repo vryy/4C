@@ -127,6 +127,8 @@ private:
   // number of current level
   int num_level_;
 
+  int write_stats_;
+
   int reset_out_count_;
 
   bool calc_diff_;
