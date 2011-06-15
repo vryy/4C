@@ -125,6 +125,7 @@ void test_hex8_quad4_shadan2();
 void test_hex8_quad4_shadan3();
 void test_hex8_quad4_shadan4();
 void test_hex8_quad4_shadan5();
+void test_shadan6();
 void test_hex8_tri3_ursula1();
 void test_hex8_quad4_mesh_many();
 void test_hex8_quad4_mesh_edgecut();
@@ -362,6 +363,7 @@ int main( int argc, char ** argv )
   functable["hex8_quad4_shadan3"] = test_hex8_quad4_shadan3;
   functable["hex8_quad4_shadan4"] = test_hex8_quad4_shadan4;
   functable["hex8_quad4_shadan5"] = test_hex8_quad4_shadan5;
+  functable["shadan6"] = test_shadan6;
   //functable["hex8_tri3_ursula1"] = test_hex8_tri3_ursula1;
   functable["hex8_quad4_mesh_edgecut"] = test_hex8_quad4_mesh_edgecut;
   functable["hex8_quad4_mesh_edgecut2"] = test_hex8_quad4_mesh_edgecut2;
