@@ -31,6 +31,20 @@ void test_shadan6()
     tri3_xyze(0,2) = 1.1768406985e-01;
     tri3_xyze(1,2) = 4.5691998024e-01;
     tri3_xyze(2,2) = -1.5000000000e-02;
+
+    {
+      int data[] = {-997849845,1069523109,1969820200,1071521894,-343597384,-1080117167};
+      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+    }
+    {
+      int data[] = {1509476261,1069326448,614046558,1071406068,-343597384,-1080117167};
+      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+    }
+    {
+      int data[] = {255813208,1069424779,1291933380,1071463981,-343597384,-1081165743};
+      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+    }
+
     nids.clear();
     nids.push_back( 18 );
     nids.push_back( 15 );
@@ -49,6 +63,20 @@ void test_shadan6()
     tri3_xyze(0,2) = 1.1768406985e-01;
     tri3_xyze(1,2) = 4.5691998024e-01;
     tri3_xyze(2,2) = -1.5000000000e-02;
+
+    {
+      int data[] = {1509476261,1069326448,614046558,1071406068,-343597384,-1080117167};
+      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+    }
+    {
+      int data[] = {1509476261,1069326448,614046558,1071406068,0,0};
+      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+    }
+    {
+      int data[] = {255813208,1069424779,1291933380,1071463981,-343597384,-1081165743};
+      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+    }
+
     nids.clear();
     nids.push_back( 15 );
     nids.push_back( 14 );
@@ -67,6 +95,20 @@ void test_shadan6()
     tri3_xyze(0,2) = 9.4240202136e-02;
     tri3_xyze(1,2) = 4.0168968903e-01;
     tri3_xyze(2,2) = -1.5000000000e-02;
+
+    {
+      int data[] = {-278164929,1069129786,-741727082,1071290241,-343597384,-1080117167};
+      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+    }
+    {
+      int data[] = {-2065806119,1068933125,-2097500724,1071174415,-343597384,-1080117167};
+      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+    }
+    {
+      int data[] = {975498124,1069031456,-1419613903,1071232328,-343597384,-1081165743};
+      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+    }
+
     nids.clear();
     nids.push_back( 9 );
     nids.push_back( 2 );
@@ -85,6 +127,20 @@ void test_shadan6()
     tri3_xyze(0,2) = 9.4240202136e-02;
     tri3_xyze(1,2) = 4.0168968903e-01;
     tri3_xyze(2,2) = -1.5000000000e-02;
+
+    {
+      int data[] = {-278164929,1069129786,-741727082,1071290241,0,0};
+      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+    }
+    {
+      int data[] = {-278164929,1069129786,-741727082,1071290241,-343597384,-1080117167};
+      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+    }
+    {
+      int data[] = {975498124,1069031456,-1419613903,1071232328,-343597384,-1081165743};
+      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+    }
+
     nids.clear();
     nids.push_back( 8 );
     nids.push_back( 9 );
@@ -103,6 +159,20 @@ void test_shadan6()
     tri3_xyze(0,2) = 1.0596213599e-01;
     tri3_xyze(1,2) = 4.2930483464e-01;
     tri3_xyze(2,2) = -1.5000000000e-02;
+
+    {
+      int data[] = {1509476261,1069326448,614046558,1071406068,-343597384,-1080117167};
+      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+    }
+    {
+      int data[] = {-278164929,1069129786,-741727082,1071290241,-343597384,-1080117167};
+      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+    }
+    {
+      int data[] = {-1531827982,1069228117,-63840262,1071348154,-343597384,-1081165743};
+      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+    }
+
     nids.clear();
     nids.push_back( 15 );
     nids.push_back( 9 );
@@ -121,6 +191,20 @@ void test_shadan6()
     tri3_xyze(0,2) = 1.0596213599e-01;
     tri3_xyze(1,2) = 4.2930483464e-01;
     tri3_xyze(2,2) = -1.5000000000e-02;
+
+    {
+      int data[] = {-278164929,1069129786,-741727082,1071290241,-343597384,-1080117167};
+      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+    }
+    {
+      int data[] = {-278164929,1069129786,-741727082,1071290241,0,0};
+      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+    }
+    {
+      int data[] = {-1531827982,1069228117,-63840262,1071348154,-343597384,-1081165743};
+      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+    }
+
     nids.clear();
     nids.push_back( 9 );
     nids.push_back( 8 );
@@ -139,6 +223,20 @@ void test_shadan6()
     tri3_xyze(0,2) = 1.0596213599e-01;
     tri3_xyze(1,2) = 4.2930483464e-01;
     tri3_xyze(2,2) = -1.5000000000e-02;
+
+    {
+      int data[] = {1509476261,1069326448,614046558,1071406068,0,0};
+      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+    }
+    {
+      int data[] = {1509476261,1069326448,614046558,1071406068,-343597384,-1080117167};
+      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+    }
+    {
+      int data[] = {-1531827982,1069228117,-63840262,1071348154,-343597384,-1081165743};
+      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+    }
+
     nids.clear();
     nids.push_back( 14 );
     nids.push_back( 15 );
@@ -157,6 +255,20 @@ void test_shadan6()
     tri3_xyze(0,2) = 9.4240202136e-02;
     tri3_xyze(1,2) = 4.0168968903e-01;
     tri3_xyze(2,2) = -1.5000000000e-02;
+
+    {
+      int data[] = {-2065806119,1068933125,-2097500724,1071174415,-343597384,-1080117167};
+      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+    }
+    {
+      int data[] = {-2065806119,1068933125,-2097500724,1071174415,0,0};
+      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+    }
+    {
+      int data[] = {975498124,1069031456,-1419613903,1071232328,-343597384,-1081165743};
+      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+    }
+
     nids.clear();
     nids.push_back( 2 );
     nids.push_back( 1 );
@@ -175,6 +287,20 @@ void test_shadan6()
     tri3_xyze(0,2) = 1.1768406985e-01;
     tri3_xyze(1,2) = 4.5691998024e-01;
     tri3_xyze(2,2) = -1.5000000000e-02;
+
+    {
+      int data[] = {1509476261,1069326448,614046558,1071406068,0,0};
+      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+    }
+    {
+      int data[] = {-997849845,1069523109,1969820200,1071521894,0,0};
+      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+    }
+    {
+      int data[] = {255813208,1069424779,1291933380,1071463981,-343597384,-1081165743};
+      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+    }
+
     nids.clear();
     nids.push_back( 14 );
     nids.push_back( 17 );
@@ -193,6 +319,20 @@ void test_shadan6()
     tri3_xyze(0,2) = 9.4240202136e-02;
     tri3_xyze(1,2) = 4.0168968903e-01;
     tri3_xyze(2,2) = -1.5000000000e-02;
+
+    {
+      int data[] = {-2065806119,1068933125,-2097500724,1071174415,0,0};
+      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+    }
+    {
+      int data[] = {-278164929,1069129786,-741727082,1071290241,0,0};
+      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+    }
+    {
+      int data[] = {975498124,1069031456,-1419613903,1071232328,-343597384,-1081165743};
+      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+    }
+
     nids.clear();
     nids.push_back( 1 );
     nids.push_back( 8 );
@@ -211,6 +351,20 @@ void test_shadan6()
     tri3_xyze(0,2) = 1.0596213599e-01;
     tri3_xyze(1,2) = 4.2930483464e-01;
     tri3_xyze(2,2) = -1.5000000000e-02;
+
+    {
+      int data[] = {-278164929,1069129786,-741727082,1071290241,0,0};
+      std::memcpy(&tri3_xyze(0,0),data,3*sizeof(double));
+    }
+    {
+      int data[] = {1509476261,1069326448,614046558,1071406068,0,0};
+      std::memcpy(&tri3_xyze(0,1),data,3*sizeof(double));
+    }
+    {
+      int data[] = {-1531827982,1069228117,-63840262,1071348154,-343597384,-1081165743};
+      std::memcpy(&tri3_xyze(0,2),data,3*sizeof(double));
+    }
+
     nids.clear();
     nids.push_back( 8 );
     nids.push_back( 14 );
@@ -243,6 +397,39 @@ void test_shadan6()
   hex8_xyze(0,7) = 1.1428571429e-01;
   hex8_xyze(1,7) = 4.5714285714e-01;
   hex8_xyze(2,7) = 0.0000000000e+00;
+
+  {
+    int data[] = {490853408,1068319188,-1717986918,1071225241,0,0};
+    std::memcpy(&hex8_xyze(0,0),data,3*sizeof(double));
+  }
+  {
+    int data[] = {490853408,1068319188,-1717986918,1071225241,-343597384,-1080117167};
+    std::memcpy(&hex8_xyze(0,1),data,3*sizeof(double));
+  }
+  {
+    int data[] = {490853408,1068319188,490853405,1071464916,-343597385,-1080117167};
+    std::memcpy(&hex8_xyze(0,2),data,3*sizeof(double));
+  }
+  {
+    int data[] = {490853408,1068319188,490853405,1071464916,0,0};
+    std::memcpy(&hex8_xyze(0,3),data,3*sizeof(double));
+  }
+  {
+    int data[] = {490853408,1069367764,-1717986918,1071225241,0,0};
+    std::memcpy(&hex8_xyze(0,4),data,3*sizeof(double));
+  }
+  {
+    int data[] = {490853408,1069367764,-1717986918,1071225241,-343597384,-1080117167};
+    std::memcpy(&hex8_xyze(0,5),data,3*sizeof(double));
+  }
+  {
+    int data[] = {490853408,1069367764,490853406,1071464916,-343597384,-1080117167};
+    std::memcpy(&hex8_xyze(0,6),data,3*sizeof(double));
+  }
+  {
+    int data[] = {490853408,1069367764,490853406,1071464916,0,0};
+    std::memcpy(&hex8_xyze(0,7),data,3*sizeof(double));
+  }
 
   nids.clear();
   for ( int i=0; i<8; ++i )
