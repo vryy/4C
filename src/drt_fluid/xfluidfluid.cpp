@@ -42,14 +42,13 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   : xfluid_( xfluid ),
     wizard_( *xfluid.bgdis_, *xfluid.boundarydis_ )
 {
-
   // cut and find the fluid dofset
   wizard_.Cut( false, idispcol );
 
   dofset_ = wizard_.DofSet();
 
-  xfluid.bgdis_->ReplaceDofSet( dofset_ );
-  xfluid.bgdis_->FillComplete();
+  xfluid_.bgdis_->ReplaceDofSet( dofset_ );
+  xfluid_.bgdis_->FillComplete();
 
   FLD::UTILS::SetupFluidSplit(*xfluid.bgdis_,xfluid.numdim_,velpressplitter_);
 
@@ -779,9 +778,6 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputElementEmb( DRT::Discretizati
   std::vector<double> dis(la[0].lm_.size());
   DRT::UTILS::ExtractMyValues(*disp,dis,la[0].lm_);
 
-  for (int t=0;t<dis.size();++t)
-    cout <<" dis" <<  dis.at(t) << endl;
-
   switch ( actele->Shape() )
   {
   case DRT::Element::hex8:
@@ -1043,7 +1039,7 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
                      Teuchos::RCP<DRT::Discretization> embdis,
                      LINALG::Solver & solver,
                      const Teuchos::ParameterList & params,
-                     IO::DiscretizationWriter& output,
+                               //IO::DiscretizationWriter& output,
                      bool alefluid )
   : bgdis_(actdis),
     embdis_(embdis),
@@ -1051,8 +1047,8 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
     params_(params),
     alefluid_(alefluid),
     time_(0.0),
-    step_(0),
-    output_(output)
+    step_(0)
+    //output_(output)
 {
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
@@ -1080,6 +1076,9 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   if ( not bgdis_->Filled() or not actdis->HaveDofs() )
     bgdis_->FillComplete();
 
+  //output_ = rcp(new IO::DiscretizationWriter(bgdis_));
+  //output_->WriteMesh(0,0.0);
+
   std::vector<std::string> conditions_to_copy;
   conditions_to_copy.push_back("XFEMCoupling");
   boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(embdis, "XFEMCoupling", "boundary", "BELE3", conditions_to_copy);
@@ -1105,6 +1104,13 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   Epetra_Vector idispcol( *boundarydis_->DofColMap() );
   idispcol.PutScalar( 0. );
   state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
+
+  if ( not bgdis_->Filled() or not actdis->HaveDofs() )
+    bgdis_->FillComplete();
+
+  output_ = rcp(new IO::DiscretizationWriter(bgdis_));
+  output_->WriteMesh(0,0.0);
+
 
   // embedded fluid state vectors
   FLD::UTILS::SetupFluidSplit(*embdis_,numdim_,alevelpressplitter_);
@@ -1170,8 +1176,6 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
 
     alezeros_->PutScalar(0.0); // just in case of change
   }
-
-  aledispntotal_ = LINALG::CreateVector(*aledofrowmap_,true);
 
   //--------------------------------------------------------
   // FluidFluid-Boundary Vectros passes to element
@@ -1274,6 +1278,7 @@ void FLD::XFluidFluid::TimeLoop()
     //                     solve nonlinear equation
     // -----------------------------------------------------------------
     NonlinearSolveFluidFluid();
+
 
     // -------------------------------------------------------------------
     //                         update solution
@@ -1388,6 +1393,7 @@ void FLD::XFluidFluid::SolveStationaryProblemFluidFluid()
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::PrepareTimeStep()
 {
+  cout << "PrepareTimeStep " << endl;
   // -------------------------------------------------------------------
   //              set time dependent parameters
   // -------------------------------------------------------------------
@@ -1408,6 +1414,7 @@ void FLD::XFluidFluid::PrepareTimeStep()
   // BDF2: for constant time step:    hist_ = 4/3 veln_  - 1/3 velnm_
   //
   // -------------------------------------------------------------------
+
 
 
   TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(state_->veln_,state_->velnm_, state_->accn_,
@@ -1758,7 +1765,9 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
     }
   }
   // debug output
-  state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "result", step_, state_->velnp_ , alevelnp_, aledispntotal_);
+
+  state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "result", step_, state_->velnp_ , alevelnp_, aledispn_);
+
 }
 
 void FLD::XFluidFluid::LinearSolve()
@@ -1977,34 +1986,35 @@ void FLD::XFluidFluid::TimeUpdate()
   // save the old state vector
   staten_ = state_;
 
-  // new cut for the next time step
-  Epetra_Vector idispcol( *boundarydis_->DofColMap() );
-  idispcol.PutScalar( 0. );
-  LINALG::Export(*aledispnp_,idispcol);
-  state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
-
-  if (alefluid_)
-    aledispntotal_->Update(1.0,*aledispn_,1.0);
-
-  // set and/or project state vectors
-  SetNewStatevector(stdnoden,staten_->velnp_,state_->velnp_);
-  SetNewStatevector(stdnoden,staten_->accnp_,state_->accnp_);
-
-  if (alefluid_)
+  cout << " step_ " << step_ << " < " << stepmax_ << "stepmax_" << endl;
+  if (step_ < stepmax_)
   {
-    SetNewStatevectorAndProjectEmbToBg(stdnoden,patchboxes,staten_->veln_,state_->veln_,aleveln_);
-    SetNewStatevectorAndProjectEmbToBg(stdnoden,patchboxes,staten_->velnm_,state_->velnm_,alevelnm_);
-    SetNewStatevectorAndProjectEmbToBg(stdnoden,patchboxes,staten_->accn_,state_->accn_,aleaccn_);
-  }
-  else
-  {
-    SetNewStatevector(stdnoden,staten_->veln_,state_->veln_);
-    SetNewStatevector(stdnoden,staten_->velnm_,state_->velnm_);
-    SetNewStatevector(stdnoden,staten_->accn_,state_->accn_);
-  }
+    // new cut for the next time step
+    Epetra_Vector idispcol( *boundarydis_->DofColMap() );
+    idispcol.PutScalar( 0. );
+    LINALG::Export(*aledispnp_,idispcol);
+    state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
 
-  // debug output
-  state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "after_intr", step_, state_->veln_ , aleveln_, aledispn_);
+    // set and/or project state vectors
+    SetNewStatevector(stdnoden,staten_->velnp_,state_->velnp_);
+    SetNewStatevector(stdnoden,staten_->accnp_,state_->accnp_);
+
+    if (alefluid_)
+    {
+      SetNewStatevectorAndProjectEmbToBg(stdnoden,patchboxes,staten_->veln_,state_->veln_,aleveln_);
+      SetNewStatevectorAndProjectEmbToBg(stdnoden,patchboxes,staten_->velnm_,state_->velnm_,alevelnm_);
+      SetNewStatevectorAndProjectEmbToBg(stdnoden,patchboxes,staten_->accn_,state_->accn_,aleaccn_);
+    }
+    else
+    {
+      SetNewStatevector(stdnoden,staten_->veln_,state_->veln_);
+      SetNewStatevector(stdnoden,staten_->velnm_,state_->velnm_);
+      SetNewStatevector(stdnoden,staten_->accn_,state_->accn_);
+    }
+
+    // debug output
+    state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "after_intr", step_, state_->veln_ , aleveln_, aledispn_);
+  }
 
   // -------------------------------------------------------------------
   // treat impedance BC
@@ -2277,26 +2287,29 @@ void FLD::XFluidFluid::StatisticsAndOutput()
 
   return;
 }
-
+// -------------------------------------------------------------------
+//
+// -------------------------------------------------------------------
 void FLD::XFluidFluid::Output()
 {
   //  ART_exp_timeInt_->Output();
   // output of solution
   if (step_%upres_ == 0)
   {
+    cout << "Output() " << step_%upres_ << endl;
+    //  output_->WriteMesh(step_,time_);
     // step number and time
-    output_.NewStep(step_,time_);
+    output_->NewStep(step_,time_);
 
     // velocity/pressure vector
-    output_.WriteVector("velnp",state_->velnp_);
+    output_->WriteVector("velnp",state_->velnp_);
 
     // (hydrodynamic) pressure
     Teuchos::RCP<Epetra_Vector> pressure = state_->velpressplitter_.ExtractCondVector(state_->velnp_);
     pressure->Scale(density_);
-    output_.WriteVector("pressure", pressure);
+    output_->WriteVector("pressure", pressure);
 
     //output_.WriteVector("residual", trueresidual_);
-    if (alefluid_) output_.WriteVector("dispnp", aledispnp_);
 
 //     //only perform stress calculation when output is needed
 //     if (writestresses_)
@@ -2315,9 +2328,9 @@ void FLD::XFluidFluid::Output()
 
 
     // write domain decomposition for visualization (only once!)
-    //if (step_==upres_) output_.WriteElementData();
+    if (step_==upres_) output_->WriteElementData();
 
-//     if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
+//    if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
 //     {
 //       // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
 //       output_.WriteVector("accnp",accnp_);
@@ -2340,6 +2353,26 @@ void FLD::XFluidFluid::Output()
 
 //    vol_surf_flow_bc_->Output(output_);
 
+  }
+
+  // embedded fluid output
+   if (step_%upres_ == 0)
+  {
+    // step number and time
+    emboutput_->NewStep(step_,time_);
+
+    // velocity/pressure vector
+    emboutput_->WriteVector("velnp",alevelnp_);
+
+    // (hydrodynamic) pressure
+    Teuchos::RCP<Epetra_Vector> pressure = alevelpressplitter_.ExtractCondVector(alevelnp_);
+    pressure->Scale(density_);
+    emboutput_->WriteVector("pressure", pressure);
+
+    //output_.WriteVector("residual", trueresidual_);
+    if (alefluid_) emboutput_->WriteVector("dispnp", aledispnp_);
+
+    if (step_==upres_) emboutput_->WriteElementData();
   }
 //   // write restart also when uprestart_ is not a integer multiple of upres_
 //   else if (uprestart_ != 0 && step_%uprestart_ == 0)

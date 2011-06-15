@@ -111,6 +111,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   if (genprob.probtyp != prb_fsi_xfem and
       genprob.probtyp != prb_fluid_xfem and
       genprob.probtyp != prb_combust and
+      genprob.probtyp != prb_fluid_fluid and
       genprob.probtyp != prb_fluid_fluid_ale)
   {
     output->WriteMesh(0,0.0);
@@ -468,10 +469,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       fluid_ = rcp(new ADAPTER::FluidCombust(actdis, solver, fluidtimeparams, output));
     }
     else if (genprob.probtyp == prb_fluid_fluid_ale
-      or genprob.probtyp == prb_fluid_fluid)
+             or genprob.probtyp == prb_fluid_fluid)
     {
       RCP<DRT::Discretization> embfluiddis  =  DRT::Problem::Instance()->Dis(genprob.numff,1);
-         fluid_ = rcp(new ADAPTER::FluidFluidImpl(embfluiddis,actdis,solver,fdyn,output,isale,dirichletcond));
+      fluid_ = rcp(new ADAPTER::FluidFluidImpl(embfluiddis,actdis,solver,fdyn,isale,dirichletcond));
     }
     else
     {

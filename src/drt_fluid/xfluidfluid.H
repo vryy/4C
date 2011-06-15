@@ -77,6 +77,7 @@ namespace FLD
                        Teuchos::RCP<Epetra_Vector> alevel,
                        Teuchos::RCP<Epetra_Vector> disptotal );
 
+
       /// (standard) system matrix
 
       Teuchos::RCP<LINALG::SparseOperator> sysmat_;
@@ -210,7 +211,7 @@ namespace FLD
                  Teuchos::RCP<DRT::Discretization>  embdis,
                  LINALG::Solver &                   solver,
                  const Teuchos::ParameterList &     params,
-                 IO::DiscretizationWriter&          output,
+                 //IO::DiscretizationWriter&          output,
                  bool                               alefluid=false
       );
 
@@ -273,13 +274,13 @@ namespace FLD
                                                 LINALG::Matrix<4,1>&    interpolatedvec,
                                                 RCP<Epetra_Vector>       fluidstate_vector_n);
 
-    /*!
-      \brief Access output object
-    */
-    IO::DiscretizationWriter& DiscWriter()
-    {
-      return *emboutput_;
-    }
+     /*!
+       \brief Access output object
+     */
+     IO::DiscretizationWriter& DiscWriter()
+     {
+       return *output_;
+     }
 
     /// update configuration and output to file/screen
     void Output();
@@ -448,8 +449,6 @@ namespace FLD
     Teuchos::RCP<DRT::Discretization>      embdis_;
     Teuchos::RCP<DRT::Discretization>      boundarydis_;
 
-    Teuchos::RCP<Epetra_Vector>   aledispntotal_;
-
     LINALG::Solver&               solver_;
 //     //! project nullspace (useful for completely Dirichlet bounded problems)
 //     bool                          project_;
@@ -458,8 +457,10 @@ namespace FLD
 //     //! basis vector for nullspace (vector of ones in the pressure component)
 //     Teuchos::RCP<Epetra_Vector>   c_;
     Teuchos::ParameterList        params_;
-    IO::DiscretizationWriter&     output_;
+
     Teuchos::RCP<IO::DiscretizationWriter>     emboutput_;
+    Teuchos::RCP<IO::DiscretizationWriter>     output_;
+
     //! the processor ID from the communicator
     int                           myrank_;
     //! do we move the fluid mesh and calculate the fluid on this moving mesh?

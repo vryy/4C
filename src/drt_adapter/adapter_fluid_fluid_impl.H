@@ -37,7 +37,7 @@ namespace ADAPTER {
              Teuchos::RCP<DRT::Discretization> bgfluiddis,
              Teuchos::RCP<LINALG::Solver> solver,
              const Teuchos::ParameterList &     params,
-             Teuchos::RCP<IO::DiscretizationWriter> output,
+                  //Teuchos::RCP<IO::DiscretizationWriter> output,
              bool isale,
              bool dirichletcond);
 
@@ -66,7 +66,7 @@ namespace ADAPTER {
     virtual void Update();
     virtual void StatisticsAndOutput();
     virtual void Output();
-    virtual IO::DiscretizationWriter& DiscWriter() {return *output_;}
+    virtual IO::DiscretizationWriter& DiscWriter() {return fluid_.DiscWriter();}
 
     virtual void NonlinearSolve();
     virtual void Predictor() {dserror("not implemented!");}

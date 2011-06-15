@@ -24,15 +24,16 @@ ADAPTER::FluidFluidImpl::FluidFluidImpl(
         Teuchos::RCP<DRT::Discretization> bgfluiddis,
         Teuchos::RCP<LINALG::Solver> solver,
         const Teuchos::ParameterList &     params,
-        Teuchos::RCP<IO::DiscretizationWriter> output,
+        //Teuchos::RCP<IO::DiscretizationWriter> output,
         bool isale,
         bool dirichletcond)
-  : fluid_( bgfluiddis,embfluiddis, *solver, params, *output, isale),
+//: fluid_( bgfluiddis,embfluiddis, *solver, params, *output, isale),
+  : fluid_( bgfluiddis,embfluiddis, *solver, params,  isale),
     embfluiddis_(embfluiddis),
     bgfluiddis_(bgfluiddis),
     solver_(solver),
-    params_(params),
-    output_(output)
+    params_(params)
+    //output_(output)
 {
 
   interface_.Setup(*embfluiddis);
@@ -52,7 +53,6 @@ ADAPTER::FluidFluidImpl::FluidFluidImpl(
     // mark all interface velocities as dirichlet values
     fluid_.AddDirichCond(interface_.FSICondMap());
   }
-
 }
 
 
