@@ -469,6 +469,8 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_vologden.cpp
   src/drt_matelast/elast_volpenalty.cpp
   src/drt_matelast/elast_volsussmanbathe.cpp
+  src/drt_matelast/elast_isovolaaagasser.cpp
+  src/drt_matelast/elast_isovolHUdependentneohooke.cpp
   src/drt_patspec/patspec.cpp
 )
 set(OBJS_DRT_STATMECH

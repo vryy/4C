@@ -99,6 +99,8 @@ namespace INPAR
       mes_couplogneohooke,  ///< logarithmic Neo-Hooke material as hyperelastic potential summand
       mes_coupblatzko,  ///< Blatz and Ko  material as hyperelastic potential summand
       mes_isoneohooke,  ///< isochoric Neo-Hooke hyperelastic potential summand
+      mes_isovolHUdependentneohooke,  ///< isochoric and volumetric summands for HU dependent material
+      mes_isovolaaagasser,  ///< isochoric and volumetric summands for thrombus material (varible stiffness)
       mes_varisoneohooke,  ///< var isochoric Neo-Hooke hyperelastic potential summand
       mes_isoexpo,  ///< isochoric exponential hyperelastic potential summand
       mes_varisoexpo,  ///< var isochoric exponential hyperelastic potential summand
