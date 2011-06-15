@@ -145,7 +145,7 @@ void GEO::CUT::Side::CreateMissingLines( Creator & creator, Element * element )
 
     std::vector<Point*> open;
 
-    for ( std::map<Point*, PointSet >::iterator i=pg.begin();
+    for ( std::map<Point*, PointSet>::iterator i=pg.begin();
           i!=pg.end();
           ++i )
     {
@@ -157,7 +157,19 @@ void GEO::CUT::Side::CreateMissingLines( Creator & creator, Element * element )
       }
       else if ( row.size() > 2 )
       {
-        throw std::runtime_error( "fork in line cycle" );
+        std::stringstream str;
+        str << "Fork in line cycle. Maybe one intersection point was not found:\n"
+            << "row.size()=" << row.size() << "\n"
+          ;
+        for ( std::map<Point*, PointSet>::iterator i=pg.begin();
+              i!=pg.end();
+              ++i )
+        {
+          str << "  " << ( *i->first ) << " : ";
+          std::copy( i->second.begin(), i->second.end(), std::ostream_iterator<Point*>( str, " " ) );
+          str << "\n";
+        }
+        throw std::runtime_error( str.str() );
       }
     }
 
