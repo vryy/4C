@@ -117,12 +117,6 @@ namespace ADAPTER
 
     virtual void UseBlockMatrix(bool splitmatrix)  { dserror("not implemented!"); return; };
 
-    /// predictor
-    virtual void Predictor(){ dserror("not implemented!"); return; };
-
-    /// (multiple) corrector
-    virtual void MultiCorrector(){ dserror("not implemented!"); return; };
-
     /// linear fluid solve with just a interface load
     /*!
       The very special solve done in steepest descent relaxation
@@ -162,7 +156,10 @@ namespace ADAPTER
 
     /// provide access to the turbulence statistic manager
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
-       {dserror("not implemented"); return Teuchos::null;}
+      {
+        return Teuchos::null;
+        //return fluid_.TurbulenceStatisticManager();
+      }
 
     /*--------------------------------------------------------------------------------------------*
      * group member functions which are implemented and used
@@ -189,6 +186,11 @@ namespace ADAPTER
     virtual IO::DiscretizationWriter& DiscWriter() { return fluid_.DiscWriter();}
 
     virtual void NonlinearSolve();
+    /// predictor
+    virtual void Predictor();
+    /// (multiple) corrector
+    virtual void MultiCorrector();
+
     /// get the linear solver object used for this field
     virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 
