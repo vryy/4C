@@ -16,10 +16,15 @@ Maintainer: Georg Bauer
 
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_lib/drt_element.H"
+#include "../drt_inpar/inpar_scatra.H"
 
 
 namespace SCATRA
 {
+
+  //! does the given scatratype belong to the ELCH group of problems?
+  bool IsElchProblem(const enum INPAR::SCATRA::ScaTraType scatratype);
+
   /*!
   \brief Decide, whether second derivatives are needed  (template version)
    *  In convection-diffusion problems, ONLY N,xx , N,yy and N,zz are needed

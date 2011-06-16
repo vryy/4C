@@ -17,7 +17,6 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "scatra_ele_impl.H"
-#include "scatra_utils.H"
 #include "../drt_mat/scatra_mat.H"
 #include "../drt_mat/mixfrac.H"
 #include "../drt_mat/sutherland.H"

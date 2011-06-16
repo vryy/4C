@@ -16,6 +16,7 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "elch_algorithm.H"
+#include "../drt_scatra/scatra_utils.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_fluid/turbulence_statistic_manager.H"
 // Output after each Outer Iteration step
@@ -41,13 +42,8 @@ ELCH::Algorithm::Algorithm(
    samstart_(prbdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START")),
    samstop_(prbdyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_STOP"))
 {
-//  // Now, the statistics manager has pointers
-//  // to ScaTra discretization and result vector and can access relevant data
-//  if (FluidField().TurbulenceStatisticManager() != Teuchos::null)
-//  {
-//    FluidField().TurbulenceStatisticManager()
-//          ->AddScaTraResults(ScaTraField().Discretization(),ScaTraField().Phinp());
-//  }
+  // Setup of TurbulenceStatisticManager is performed in the
+  // constructor of class ScaTraFluidCouplingAlgorithm
 
   return;
 }
@@ -525,7 +521,7 @@ bool ELCH::Algorithm::ConvergenceCheck( int itnum,
   // tempincnp_ = 1.0 * phinp_ - 1.0 * phin_
 
   conpotincnp_->Update(1.0,*ScaTraField().Phinp(),-1.0);
-  if (ScaTraField().ScaTraType() == INPAR::SCATRA::scatratype_elch_enc)
+  if (SCATRA::IsElch(ScaTraField().ScaTraType()))
   {
   Teuchos::RCP<Epetra_Vector> onlycon = conpotsplitter->ExtractOtherVector(conpotincnp_);
   onlycon->Norm2(&conincnorm_L2);

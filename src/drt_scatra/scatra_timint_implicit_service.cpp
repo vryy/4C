@@ -14,6 +14,7 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "scatra_timint_implicit.H"
+#include "scatra_utils.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -107,7 +108,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
     // other parameters that are needed by the elements
     eleparams.set("incremental solver",incremental_);
     eleparams.set<int>("form of convective term",convform_);
-    if (scatratype_==INPAR::SCATRA::scatratype_elch_enc)
+    if (IsElch(scatratype_))
       eleparams.set("frt",frt_); // factor F/RT
     else if (scatratype_==INPAR::SCATRA::scatratype_loma)
     {
@@ -185,7 +186,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtSolve()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::CalcInitialPotentialField()
 {
-  if (scatratype_==INPAR::SCATRA::scatratype_elch_enc)
+  if (IsElch(scatratype_))
   {
     if (DRT::INPUT::IntegralValue<int>(*params_,"INITPOTCALC"))
     {
@@ -2171,7 +2172,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
 void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues(RCP<Epetra_Vector> vec)
 {
   // action only for ELCH applications
-  if (scatratype_== INPAR::SCATRA::scatratype_elch_enc)
+  if (IsElch(scatratype_))
   {
     // this option can be helpful in some rare situations
     bool makepositive(false);

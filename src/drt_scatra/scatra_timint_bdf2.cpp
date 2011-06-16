@@ -15,6 +15,7 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "scatra_timint_bdf2.H"
+#include "scatra_utils.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_inpar/inpar_elch.H"
@@ -447,7 +448,7 @@ void SCATRA::TimIntBDF2::OutputRestart()
   output_->WriteVector("phinm", phinm_);
 
   // write additional restart data for galvanostatic applications
-  if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
+  if (IsElch(scatratype_))
   {
     if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
@@ -507,7 +508,7 @@ void SCATRA::TimIntBDF2::ReadRestart(int step)
   reader.ReadVector(phinm_,"phinm");
 
   // restart for galvanostatic applications
-  if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
+  if (IsElch(scatratype_))
   {
     if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
@@ -568,7 +569,7 @@ void SCATRA::TimIntBDF2::PrepareFirstTimeStep()
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::ElectrodeKineticsTimeUpdate(const bool init)
 {
-  if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
+  if (IsElch(scatratype_))
   {
     if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
@@ -599,7 +600,7 @@ void SCATRA::TimIntBDF2::ElectrodeKineticsTimeUpdate(const bool init)
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::ElectrodeKineticsSetOldPartOfRHS()
 {
-  if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
+  if (IsElch(scatratype_))
   {
     if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {

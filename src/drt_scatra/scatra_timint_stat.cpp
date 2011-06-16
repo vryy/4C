@@ -15,6 +15,7 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "scatra_timint_stat.H"
+#include "scatra_utils.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include "../drt_io/io.H"
@@ -148,7 +149,7 @@ void SCATRA::TimIntStationary::ReadRestart(int step)
   reader.ReadVector(phinp_, "phinp");
 
   // restart for galvanostatic applications
-  if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
+  if (IsElch(scatratype_))
   {
     if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
@@ -213,7 +214,7 @@ void SCATRA::TimIntStationary::OutputRestart()
   output_->WriteVector("phidtn", zeros_); // for OST
 
   // write additional restart data for galvanostatic applications
-  if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
+  if (IsElch(scatratype_))
   {
     if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {

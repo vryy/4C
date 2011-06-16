@@ -176,7 +176,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // create empty system matrix (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
   numscal_ = discret_->NumDof(discret_->lRowNode(0));
-  if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
+  if (IsElch(scatratype_))
   {
     if (numscal_ > 1) // we have at least two ion species + el. potential
     {
@@ -204,7 +204,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       and msht_ == INPAR::SCATRA::no_meshtying)
   {
     // we need a block sparse matrix here
-    if (scatratype_ != INPAR::SCATRA::scatratype_elch_enc)
+    if (not IsElch(scatratype_))
       dserror("Block-Preconditioning is only for ELCH problems");
     // initial guess for non-zeros per row: 27 neighboring nodes for hex8
     // this is enough! A higher guess would require too much memory!
@@ -429,7 +429,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   SetupElchNatConv();
 
   // screen output (has to come after SetInitialField)
-  if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
+  if (IsElch(scatratype_))
   {
     // a safety check for the solver type
     if ((numscal_ > 1) && (solvtype_!=INPAR::SCATRA::solvertype_nonlinear))
@@ -947,7 +947,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
   double conresnorm(0.0);
   double potresnorm(0.0);
 
-  if (scatratype_ == INPAR::SCATRA::scatratype_elch_enc)
+  if (IsElch(scatratype_))
   {
     Teuchos::RCP<Epetra_Vector> onlycon = splitter_->ExtractOtherVector(residual_);
     onlycon->Norm2(&conresnorm);
@@ -3196,7 +3196,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ScaleLinearSystem()
 {
-  if (scatratype_==INPAR::SCATRA::scatratype_elch_enc)
+  if (IsElch(scatratype_))
   {
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> A = BlockSystemMatrix();
     if (A != Teuchos::null)
@@ -3249,6 +3249,12 @@ void SCATRA::ScaTraTimIntImpl::ScaleLinearSystem()
     // insert values into the whole rhs vector
     splitter_->InsertOtherVector(onlyconc,residual_);
 
+    Teuchos::RCP<Epetra_Vector> onlypot = splitter_->ExtractCondVector(residual_);
+    //Multiply a Epetra_MultiVector with another, element-by-element.
+    onlypot->Multiply(1.0,*onlypot,*scalefactorsENC,0.0);
+    // insert values into the whole rhs vector
+    splitter_->InsertCondVector(onlypot,residual_);
+
 #if 0
     cout<<"modified onlyconc:\n";
     onlyconc->Print(cout);
@@ -3272,8 +3278,11 @@ void SCATRA::ScaTraTimIntImpl::ScaleLinearSystem()
       }
     }
      */
-
+    if (myrank_==0)
     cout<<"Pre-Scaling of Linear System done."<<endl;
+
+    //scalefactors->Print(cout);
+
     }
   } // pre-scale equation system for ELCH applications
 
