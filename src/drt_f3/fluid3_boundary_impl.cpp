@@ -222,7 +222,7 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
         IntegratedPressureParameterCalculation(ele, params,discretization,lm);
       break;
     }
-    // general action to calculate the flow rate (replaces flowratecalc soon)
+    // general action to calculate the flow rate
     case calc_flowrate:
     {
         ComputeFlowRate(ele, params,discretization,lm, elevec1);
