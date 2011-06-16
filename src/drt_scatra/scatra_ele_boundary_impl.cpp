@@ -27,7 +27,6 @@ Maintainer: Georg Bauer
 #include "scatra_ele_boundary_impl.H"
 #include "scatra_ele_impl.H"
 #include "scatra_element.H"
-//#include "scatra_utils.H"
 #include "scatra_ele_impl_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
@@ -281,7 +280,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
     // get control parameter from parameter list
     bool iselch(true);
-    if (scatratype != INPAR::SCATRA::scatratype_elch_enc)
+    if (not SCATRA::IsElchProblem(scatratype))
       iselch = false;
     const bool   is_stationary = params.get<bool>("using stationary formulation");
     const double time = params.get<double>("total time");
