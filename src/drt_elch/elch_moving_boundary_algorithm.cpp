@@ -49,11 +49,18 @@ ELCH::MovingBoundaryAlgorithm::~MovingBoundaryAlgorithm()
 /*----------------------------------------------------------------------*/
 void ELCH::MovingBoundaryAlgorithm::TimeLoop()
 {
-  // write out initial state
-  Output(); // do this to have ConditionID at all boundary conditions
+  // provide information about initial field (do not do for restarts!)
+  if (Step()==0)
+  {
+    // write out initial state
+    //Output(); // do this to have ConditionID at all boundary conditions
 
-  // compute error for problems with analytical solution
-  ScaTraField().EvaluateErrorComparedToAnalyticalSol();
+    ScaTraField().OutputElectrodeInfo();
+    ScaTraField().OutputMeanScalars();
+
+    // compute error for problems with analytical solution (initial field!)
+    ScaTraField().EvaluateErrorComparedToAnalyticalSol();
+  }
 
   // time loop
   while (NotFinished())
