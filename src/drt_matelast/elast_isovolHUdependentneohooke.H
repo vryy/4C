@@ -123,9 +123,9 @@ namespace ELASTIC
     /// Add principal calcified coefficients for IsoVolHUDependentNeoHooke material.
     void AddCoefficientsPrincCalcified(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
+	double HU,   ///< the element Hounsfield Unit
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
         LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
-        LINALG::Matrix<3,1>& matparam,
         const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
     );
 

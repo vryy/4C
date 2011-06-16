@@ -135,6 +135,17 @@ namespace MAT
         const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
         ) = 0;
 
+      virtual void AddCoefficientsPrincCalcified(
+        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
+	double HU, ///< Hounsfield units (HU) of the respective element
+        LINALG::Matrix<3,1>& gamma,  ///< same as for AddCoefficientsPrincipal()
+        LINALG::Matrix<8,1>& delta,  ///< dito
+        const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
+        )
+      {
+	havecoefficients = havecoefficients or false;
+      };
+
       /// retrieve coefficients of first and second derivative
       /// of summand (decoupled form) with respect to modified invariants
       ///

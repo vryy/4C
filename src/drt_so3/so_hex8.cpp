@@ -96,6 +96,7 @@ void DRT::ELEMENTS::So_hex8Type::SetupElementDefinition( std::map<std::string,st
     .AddOptionalNamedDoubleVector("AXI",3)
     .AddOptionalNamedDoubleVector("CIR",3)
     .AddOptionalNamedDouble("STRENGTH")
+    .AddOptionalNamedDouble("HU")
     ;
 }
 

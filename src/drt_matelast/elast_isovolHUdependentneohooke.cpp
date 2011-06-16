@@ -66,31 +66,42 @@ MAT::ELASTIC::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke(MAT::ELASTIC:
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoVolHUDependentNeoHooke::AddCoefficientsPrincCalcified(
   bool& havecoefficients,
+  double HU,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<8,1>& delta,
-  LINALG::Matrix<3,1>& matparam,
   const LINALG::Matrix<3,1>& prinv
   )
 {
   havecoefficients = havecoefficients or true;
+
+  double alpha = 0.;
  
-  matparam(0) = params_->alphamax_;
-  matparam(1) = params_->ctmin_;
-  matparam(2) = params_->ctmax_;
+  if (HU <= params_->ctmin_)
+  { 
+    alpha = 0.0; 
+  } 
+  else if (HU >= params_->ctmax_) 
+  { 
+    alpha = params_->alphamax_; 
+  } 
+  else 
+  { 
+    alpha = 0.5*params_->alphamax_*(tanh(6.907*(HU - 0.5*(params_->ctmin_ +params_->ctmax_))/(params_->ctmax_ - params_->ctmin_)) + 1.0);
+  } 
 
 
   // principal coefficients
-  gamma(0) += 2.*1.*pow(prinv(2),-1./3.);
+  gamma(0) += alpha * (2.*1.*pow(prinv(2),-1./3.));
   gamma(1) += 0.;
-  gamma(2) += -(2./3.)*1.*prinv(0)*pow(prinv(2),-1./3.) + (2./(1.-2.*params_->nue_))*1.*(1.-pow(prinv(2),-params_->beta_/2.))/params_->beta_;
+  gamma(2) += alpha * (-(2./3.)*1.*prinv(0)*pow(prinv(2),-1./3.) + (2./(1.-2.*params_->nue_))*1.*(1.-pow(prinv(2),-params_->beta_/2.))/params_->beta_);
 
   delta(0) += 0.;
   delta(1) += 0.;
-  delta(2) += -(4./3.)*1.*pow(prinv(2),-1./3.);
+  delta(2) += alpha * (-(4./3.)*1.*pow(prinv(2),-1./3.));
   delta(3) += 0.;
   delta(4) += 0.;
-  delta(5) += (4./9.)*1.*prinv(0)*pow(prinv(2),-1./3.) + (2./(1.-2.*params_->nue_))*1.*pow(prinv(2),-params_->beta_/2.);
-  delta(6) += (4./3.)*1.*prinv(0)*pow(prinv(2),-1./3.) + (2./(1.-2.*params_->nue_))*1.*2.*(pow(prinv(2),-params_->beta_/2.)-1.)/params_->beta_;
+  delta(5) += alpha * ((4./9.)*1.*prinv(0)*pow(prinv(2),-1./3.) + (2./(1.-2.*params_->nue_))*1.*pow(prinv(2),-params_->beta_/2.));
+  delta(6) += alpha * ((4./3.)*1.*prinv(0)*pow(prinv(2),-1./3.) + (2./(1.-2.*params_->nue_))*1.*2.*(pow(prinv(2),-params_->beta_/2.)-1.)/params_->beta_);
   delta(7) += 0.;
 
   return;

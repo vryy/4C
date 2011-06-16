@@ -225,6 +225,13 @@ double MAT::ElastHyper::ShearMod() const
 /*----------------------------------------------------------------------*/
 void MAT::ElastHyper::Setup(DRT::INPUT::LineDefinition* linedef)
 {
+  haveHU_ = false;
+  if (linedef->HaveNamed("HU"))
+  {
+    haveHU_= true;
+    linedef->ExtractDouble("HU",HU_);
+  }
+
   anisotropic_ = true;
   // fibers aligned in local element cosy with gamma_i around circumferential direction
   vector<double> rad;
@@ -236,48 +243,50 @@ void MAT::ElastHyper::Setup(DRT::INPUT::LineDefinition* linedef)
   {
     //dserror("Reading of element local cosy failed");
     anisotropic_=false;
-    return;
   }
-  // read local (cylindrical) cosy-directions at current element
-  linedef->ExtractDoubleVector("RAD",rad);
-  linedef->ExtractDoubleVector("AXI",axi);
-  linedef->ExtractDoubleVector("CIR",cir);
-  Epetra_SerialDenseMatrix locsys(3,3);
-  // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
-  double radnorm=0.; double axinorm=0.; double cirnorm=0.;
-  for (int i = 0; i < 3; ++i) {
-     radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
-   }
-   radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
-  for (int i=0; i<3; ++i)
+
+  else
   {
-    locsys(i,0) = rad[i]/radnorm;
-    locsys(i,1) = axi[i]/axinorm;
-    locsys(i,2) = cir[i]/cirnorm;
-  }
-
-  // alignment angles gamma_i are read from first entry of then unnecessary vectors a1 and a2
-  const double gamma = (params_->gamma_*PI)/180.; //convert
-
-  for (int i = 0; i < 3; ++i) {
-    // a1 = cos gamma e3 + sin gamma e2
-    a1_(i) = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
-    // a2 = cos gamma e3 - sin gamma e2
-    a2_(i) = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
-  }
-  for (int i = 0; i < 3; ++i) {
-    A1_(i) = a1_(i)*a1_(i);
-    A2_(i) = a2_(i)*a2_(i);
-    for (int j=0; j<3; j++)
-    {
-      A1A2_(j,i) = a1_(j)*a2_(i);
+    // read local (cylindrical) cosy-directions at current element
+    linedef->ExtractDoubleVector("RAD",rad);
+    linedef->ExtractDoubleVector("AXI",axi);
+    linedef->ExtractDoubleVector("CIR",cir);
+    Epetra_SerialDenseMatrix locsys(3,3);
+    // basis is local cosy with third vec e3 = circumferential dir and e2 = axial dir
+    double radnorm=0.; double axinorm=0.; double cirnorm=0.;
+    for (int i = 0; i < 3; ++i) {
+      radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
     }
+    radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
+    for (int i=0; i<3; ++i)
+    {
+      locsys(i,0) = rad[i]/radnorm;
+      locsys(i,1) = axi[i]/axinorm;
+      locsys(i,2) = cir[i]/cirnorm;
+    }
+    
+    // alignment angles gamma_i are read from first entry of then unnecessary vectors a1 and a2
+    const double gamma = (params_->gamma_*PI)/180.; //convert
+    
+    for (int i = 0; i < 3; ++i) {
+      // a1 = cos gamma e3 + sin gamma e2
+      a1_(i) = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
+      // a2 = cos gamma e3 - sin gamma e2
+      a2_(i) = cos(gamma)*locsys(i,2) - sin(gamma)*locsys(i,1);
+    }
+    for (int i = 0; i < 3; ++i) {
+      A1_(i) = a1_(i)*a1_(i);
+      A2_(i) = a2_(i)*a2_(i);
+      for (int j=0; j<3; j++)
+      {
+	  A1A2_(j,i) = a1_(j)*a2_(i);
+      }
+    }
+    A1_(3) = a1_(0)*a1_(1); A1_(4) = a1_(1)*a1_(2); A1_(5) = a1_(0)*a1_(2);
+    A2_(3) = a2_(0)*a2_(1); A2_(4) = a2_(1)*a2_(2); A2_(5) = a2_(0)*a2_(2);
   }
-  A1_(3) = a1_(0)*a1_(1); A1_(4) = a1_(1)*a1_(2); A1_(5) = a1_(0)*a1_(2);
-  A2_(3) = a2_(0)*a2_(1); A2_(4) = a2_(1)*a2_(2); A2_(5) = a2_(0)*a2_(2);
   return;
 }
-
 
 
 /*----------------------------------------------------------------------*/
@@ -492,7 +501,17 @@ void MAT::ElastHyper::Evaluate(
     {
       p->second->AddCoefficientsPrincipal(havecoeffprinc,gamma,delta,prinv);
     }
+  }
 
+  //Do all the HU dependency (medical images) stuff!
+  if (haveHU_)
+  {
+    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
+    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
+    for (p=pot.begin(); p!=pot.end(); ++p)
+    {
+      p->second->AddCoefficientsPrincCalcified(havecoeffprinc,HU_,gamma,delta,prinv);
+    }
   }
 
   // principal invariants of right Cauchy-Green strain
@@ -639,6 +658,9 @@ void MAT::ElastHyper::Evaluate(
   if (havecoeffstrpr or havecoeffstrmod) {
     ResponseStretches(cmat,stress,rcg,havecoeffstrpr,havecoeffstrmod);
   }
+
+
+
 
   /*----------------------------------------------------------------------*/
   //Do all the anisotropic stuff!

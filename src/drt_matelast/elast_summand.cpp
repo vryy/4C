@@ -38,6 +38,7 @@ Maintainer: Burkhard Bornemann
 #include "elast_coupanisoneohooketwo.H"
 #include "elast_coupvarga.H"
 #include "elast_isovarga.H"
+#include "elast_isovolHUdependentneohooke.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 
@@ -147,6 +148,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::IsoMooneyRivlin(curmat));
     MAT::ELASTIC::PAR::IsoMooneyRivlin* params = static_cast<MAT::ELASTIC::PAR::IsoMooneyRivlin*>(curmat->Parameter());
     return Teuchos::rcp(new IsoMooneyRivlin(params));
+  }
+  case INPAR::MAT::mes_isovolHUdependentneohooke:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke(curmat));
+    MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke* params = static_cast<MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke*>(curmat->Parameter());
+    return Teuchos::rcp(new IsoVolHUDependentNeoHooke(params));
   }
   case INPAR::MAT::mes_volsussmanbathe:
   {

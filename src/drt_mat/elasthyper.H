@@ -334,6 +334,10 @@ private:
     /// Am I anisotropic?
     bool anisotropic_;
 
+    /// Is there information about HU from medical image data?
+    bool haveHU_;
+    double HU_;
+
     /// structural tensors in voigt notation for anisotropy
     LINALG::Matrix<6,1>  A1_;
     LINALG::Matrix<6,1>  A2_;
