@@ -28,7 +28,6 @@ Maintainer: Georg Bauer
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_scatra/scatra_element.H"
 #include "../drt_lib/drt_element.H"
-#include "../drt_inpar/inpar_scatra.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -62,8 +61,6 @@ std::map<string,string> SCATRA::ScatraFluidCloneStrategy::ConditionsToCopy()
 
   // for coupled scalar transport fields
   conditions_to_copy.insert(pair<string,string>("ScaTraCoupling","ScaTraCoupling"));
-
-  conditions_to_copy.insert(pair<string,string>("ALEDirichlet","Dirichlet"));
 
   return conditions_to_copy;
 }
@@ -162,6 +159,7 @@ int SCATRA::GetScaTraMatID(const Teuchos::ParameterList& scatradyn)
 
   return matlist[0];
 }
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -23,8 +23,6 @@ Maintainer: Georg Bauer
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "../drt_inpar/inpar_scatra.H"
 
-
-
 using namespace std;
 using namespace Teuchos;
 
