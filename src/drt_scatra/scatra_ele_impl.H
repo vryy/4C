@@ -299,7 +299,8 @@ public:
         const double                 frt,    ///< factor F/RT
         const double                 timefac,///< time discretization factor
         const double                 alphaF, ///< factor for gen. alpha time integration
-        const double                 fac     ///< integration factor
+        const double                 fac,    ///< integration factor
+        const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
     );
 
     //! calculate error compared to analytical solutions

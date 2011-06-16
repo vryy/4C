@@ -21,6 +21,9 @@ Maintainer: Georg Bauer
 #include "../linalg/linalg_blocksparsematrix.H"
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include "../drt_inpar/inpar_scatra.H"
+
+
 
 using namespace std;
 using namespace Teuchos;
@@ -365,6 +368,10 @@ private:
 
   /// get material (list) ID (in case of single ScaTra field)
   int GetScaTraMatID(const ParameterList& scatradyn);
+
+  /// does the given scatratype belong to the ELCH group of problems?
+  bool IsElch(const enum INPAR::SCATRA::ScaTraType scatratype);
+
 }
 
 #endif

@@ -27,6 +27,8 @@ Maintainer: Georg Bauer
 #include "scatra_ele_boundary_impl.H"
 #include "scatra_ele_impl.H"
 #include "scatra_element.H"
+//#include "scatra_utils.H"
+#include "scatra_ele_impl_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_utils.H"
@@ -58,7 +60,7 @@ DRT::ELEMENTS::ScaTraBoundaryImplInterface* DRT::ELEMENTS::ScaTraBoundaryImplInt
   // the discretization and does not change during the computations
   const int numdofpernode = ele->NumDofPerNode(*(ele->Nodes()[0]));
   int numscal = numdofpernode;
-  if (scatratype == INPAR::SCATRA::scatratype_elch_enc)
+  if (SCATRA::IsElchProblem(scatratype))
     numscal -= 1;
 
   switch (ele->Shape())

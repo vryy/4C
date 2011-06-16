@@ -17,6 +17,7 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "scatra_ele_impl.H"
+#include "scatra_utils.H"
 #include "../drt_mat/scatra_mat.H"
 #include "../drt_mat/mixfrac.H"
 #include "../drt_mat/sutherland.H"
@@ -63,7 +64,7 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(
   // the discretization and does not change during the computations
   const int numdofpernode = ele->NumDofPerNode(*(ele->Nodes()[0]));
   int numscal = numdofpernode;
-  if (scatratype == INPAR::SCATRA::scatratype_elch_enc)
+  if (SCATRA::IsElchProblem(scatratype))
     numscal -= 1;
 
   switch (ele->Shape())
@@ -699,7 +700,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
 
     double frt(0.0);
-    if(scatratype ==INPAR::SCATRA::scatratype_elch_enc)
+    if(SCATRA::IsElchProblem(scatratype))
     {
       for (int i=0;i<nen_;++i)
       {
@@ -792,7 +793,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     double frt(0.0);
 
     // set values for ELCH
-    if (scatratype ==INPAR::SCATRA::scatratype_elch_enc)
+    if (SCATRA::IsElchProblem(scatratype))
     {
       // get values for el. potential at element nodes
       for (int i=0;i<nen_;++i)
@@ -1240,10 +1241,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 
       // safety check
       if (!is_incremental_)
-        dserror("ELCH problems are always in incrmental formulation");
+        dserror("ELCH problems are always in incremental formulation");
 
       // compute matrix and rhs for electrochemistry problem
-      CalMatElch(sys_mat,residual,frt,timefac,alphaF,fac);
+      CalMatElch(sys_mat,residual,frt,timefac,alphaF,fac,scatratype);
     }
 
   }
@@ -4604,7 +4605,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     const double                          frt,
     const double                          timefac,
     const double                          alphaF,
-    const double                          fac
+    const double                          fac,
+    const enum INPAR::SCATRA::ScaTraType  scatratype
 )
 {
   // get gradient of electric potential at integration point
@@ -4864,8 +4866,34 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
         // b) derivative w.r.t. electric potential
         emat(fvi,ui*numdofpernode_+numscal_) += frt*timefacfac*diffus_valence_k*conint_[k]*laplawf;
 
-        // electroneutrality condition
-        emat(vi*numdofpernode_+numscal_, fui) += alphaF*valence_k_fac_funct_vi*funct_(ui);
+        // what's the governing equation for the electric potential field ?
+        if (scatratype==INPAR::SCATRA::scatratype_elch_enc)
+        {
+          // electroneutrality condition (only derivative w.r.t. concentration c_k)
+          emat(vi*numdofpernode_+numscal_, fui) += alphaF*valence_k_fac_funct_vi*funct_(ui);
+        }
+        else if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde)
+        { // use 2nd order pde derived from electroneutrality condition
+          // a) derivative w.r.t. concentration c_k
+          emat(vi*numdofpernode_+numscal_, fui) -= valence_[k]*(timefacfac_diffus_valence_k_mig_vi*funct_(ui));
+          emat(vi*numdofpernode_+numscal_, fui) += valence_[k]*(timefacfac*diffus_[k]*laplawf);
+
+          // b) derivative w.r.t. electric potential
+          emat(vi*numdofpernode_+numscal_, ui*numdofpernode_+numscal_) -= valence_[k]*(frt*timefacfac*diffus_valence_k*conint_[k]*laplawf);
+
+
+          // ENC
+          const double beta=1.0;
+          emat(vi*numdofpernode_+numscal_, fui) += beta*alphaF*valence_k_fac_funct_vi*funct_(ui);
+
+        }
+      //    else if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+      //    const double diffus_m = 1.0;
+      //    const double valence_m = 1.0;
+          else if (scatratype==INPAR::SCATRA::scatratype_elch_poisson)
+            ;
+          else
+            dserror ("How did you reach this point?");
 
         //----------------------------------------------------------------
         // Stabilization terms
@@ -4893,9 +4921,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
           {
             // a) derivative w.r.t. concentration_k
             emat(fvi, fui) += timetaufac*conv_eff_vi*diffus_valence_k*migconv_(ui);
-            // partial derivative w.r.t potential
-            // convective stabilization of migration term (checked!!!)
-           //   emat(fvi,ui*numdofpernode_+numscal_) -= timetaufac*conv_(vi)*diffus_valence_k*frt*val_ui;
+
             // b) derivative w.r.t. electric potential
             emat(fvi,ui*numdofpernode_+numscal_) -= timetaufac*conv_eff_vi*diffus_valence_k*frt*val_ui;
 
@@ -5036,9 +5062,27 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
       erhs[fvi] -= rhsfac*diffus_[k]*laplawf;
 
-      // electroneutrality condition
-      // for incremental formulation, there is the residuum on the rhs! : 0-sum(z_k c_k)
-      erhs[vi*numdofpernode_+numscal_] -= valence_[k]*fac*funct_(vi)*conint_[k];
+      // what's the governing equation for the electric potential field ?
+      if (scatratype==INPAR::SCATRA::scatratype_elch_enc)
+      {
+        // electroneutrality condition
+        // for incremental formulation, there is the residuum on the rhs! : 0-sum(z_k c_k)
+        erhs[vi*numdofpernode_+numscal_] -= valence_[k]*fac*funct_(vi)*conint_[k];
+      }
+      else if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde)
+      {
+        // use 2nd order pde derived from electroneutrality condition
+        erhs[vi*numdofpernode_+numscal_] -= rhsfac*valence_[k]*((diffus_valence_k*conint_[k]*migconv_(vi))+(diffus_[k]*laplawf));
+        const double beta=1.0;
+        erhs[vi*numdofpernode_+numscal_] -= beta*valence_[k]*fac*funct_(vi)*conint_[k];
+      }
+  //    else if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+  //    const double diffus_m = 1.0;
+  //    const double valence_m = 1.0;
+      else if (scatratype==INPAR::SCATRA::scatratype_elch_poisson)
+        ;
+      else
+        dserror ("How did you reach this point?");
 
       //----------------------------------------------------------------
       // Stabilization terms
