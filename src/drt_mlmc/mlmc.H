@@ -102,6 +102,10 @@ private:
 
   // filename of standard control file
   string filename_ ;
+  // meshfilename name which is written to controlfiel every run
+  // this should be the name of meshfile of first run
+  string meshfilename_;
+
   // Parameters from input file
   // Get number of Newton iterations
    int num_newton_it_;

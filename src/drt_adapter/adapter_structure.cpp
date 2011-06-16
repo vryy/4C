@@ -435,8 +435,14 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   // context for output and restart
   Teuchos::RCP<IO::DiscretizationWriter> output
     = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
-  output->WriteMesh(0, 0.0);
-
+  // for multilevel monte carlo we do not need to write mesh in every run
+  Teuchos::RCP<Teuchos::ParameterList> mlmcp
+      = rcp(new Teuchos::ParameterList (DRT::Problem::Instance()->MultiLevelMonteCarloParams()));
+  bool perform_mlmc = Teuchos::getIntegralValue<int>((*mlmcp),"MLMC");
+    if (perform_mlmc!=true)
+    {
+      output->WriteMesh(0, 0.0);
+    }
   // get input parameter lists and copy them, because a few parameters are overwritten
   //const Teuchos::ParameterList& probtype
   //  = DRT::Problem::Instance()->ProblemTypeParams();
@@ -449,6 +455,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   Teuchos::RCP<Teuchos::ParameterList> snox
     = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->StructuralNoxParams()));
 
+
   // show default parameters
   if ((actdis->Comm()).MyPID()==0)
     DRT::INPUT::PrintDefaultParameters(std::cout, *sdyn);
@@ -459,6 +466,9 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   xparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
   Teuchos::ParameterList& nox = xparams->sublist("NOX");
   nox = *snox;
+  // Parameter to determinen wether MLMC is on/off
+  // Needed to for reduced restart output
+  xparams->set<int>("MLMC",Teuchos::getIntegralValue<int>((*mlmcp),"MLMC"));
 
   // overrule certain parameters
   sdyn->set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));

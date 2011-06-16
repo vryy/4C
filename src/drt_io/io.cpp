@@ -991,6 +991,60 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void IO::DiscretizationWriter::WriteMesh(const int step, const double time, string name_base_file )
+{
+#ifdef BINIO
+
+  // ... write other mesh informations
+  if (dis_->Comm().MyPID() == 0)
+  {
+    output_->ControlFile()
+      << "field:\n"
+      << "    field = \"" << dis_->Name() << "\"\n"
+      << "    time = " << time << "\n"
+      << "    step = " << step << "\n\n"
+      << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
+      << "    num_ele = " << dis_->NumGlobalElements() << "\n"
+      << "    num_dof = " << dis_->DofRowMap(0)->NumGlobalElements() << "\n\n"
+      ;
+
+    //WriteCondition("SurfacePeriodic");
+    //WriteCondition("LinePeriodic");
+
+    // knotvectors for nurbs-discretisation
+    //WriteKnotvector();
+    // create name for meshfile as in createmeshfile which is not called here
+    ostringstream meshname;
+
+    meshname << name_base_file
+               << ".mesh."
+               << dis_->Name()
+               << ".s" << step
+        ;
+      meshfilename_ = meshname.str();
+
+      if (dis_->Comm().NumProc() > 1)
+      {
+        output_->ControlFile()
+          << "    num_output_proc = " << dis_->Comm().NumProc() << "\n";
+      }
+      string filename;
+      string::size_type pos = meshfilename_.find_last_of('/');
+      if (pos==string::npos)
+        filename = meshfilename_;
+      else
+        filename = meshfilename_.substr(pos+1);
+      output_->ControlFile()
+        << "    mesh_file = \"" << filename << "\"\n\n";
+       // << "    mesh_file = \"" << name_base_file << "\"\n\n";
+
+    output_->ControlFile() << std::flush;
+  }
+
+#endif
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::WriteElementData()
 {
 #ifdef BINIO

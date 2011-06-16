@@ -603,6 +603,7 @@ namespace STR
     bool printiter_;  //!< print intermediate iterations during solution
     int writerestartevery_;  //!< write restart every given step;
                              //!< if 0, restart is not written
+    int writereducedrestart_; // Write reduced Restart Data i.e no mesh for mlmc purposes
     bool writestate_;  //!< write state on/off
     int writeresultsevery_;  //!< write state/stress/strain every given step
     INPAR::STR::StressType writestress_;  //!< stress output type

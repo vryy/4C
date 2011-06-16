@@ -1204,7 +1204,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    DoubleParameter("PERIODICITY",3000,"Period length of Random Field",&mlmcp);
    //DoubleParameter("CorrLength",3000,"Correlation length of Random Field",&mlmcp);
    IntParameter("NUM_COS_TERMS",200,"Number of terms in geometric row ",&mlmcp);
-   IntParameter("WRITESTATS",1000,"Write statistics to file every WRITESTAT runs ",&mlmcp);
+   IntParameter("WRITESTATS",1000,"Write statistics to file every WRITESTATS ",&mlmcp);
 
   Teuchos::ParameterList& scontact = list->sublist("MESHTYING AND CONTACT",false,"");
 
@@ -1356,18 +1356,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("BEAMS_NEWGAP","No","choose between original or enhanced gapfunction",
                                 yesnotuple,yesnovalue,&scontact);
-
-  setStringToIntegralParameter<int>("BEAMS_SMOOTHING","None","Application of smoothed tangent field",
-         tuple<std::string>("None","none",
-                            "Smoothed","smoothed",
-                            "Partially","partially",
-                            "Cpp", "cpp"),
-         tuple<int>(
-                    INPAR::CONTACT::bsm_none,INPAR::CONTACT::bsm_none,
-                    INPAR::CONTACT::bsm_smoothed,INPAR::CONTACT::bsm_smoothed,
-                    INPAR::CONTACT::bsm_partially,INPAR::CONTACT::bsm_partially,
-                    INPAR::CONTACT::bsm_cpp,INPAR::CONTACT::bsm_cpp),
-         &scontact);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& interaction_potential = list->sublist("INTERACTION POTENTIAL",false,"");

@@ -83,6 +83,7 @@ STR::TimInt::TimInt
   printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
   printiter_(true),  // ADD INPUT PARAMETER
   writerestartevery_(sdynparams.get<int>("RESTARTEVRY")),
+  writereducedrestart_(xparams.get<int>("MLMC")),
   writestate_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_DISP")),
   writeresultsevery_(sdynparams.get<int>("RESULTSEVRY")),
   writestress_(DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams,"STRUCT_STRESS")),
@@ -797,15 +798,28 @@ void STR::TimInt::OutputRestart
 {
   // Yes, we are going to write...
   datawritten = true;
+  // for multilevel monte carlo we do not need to write mesh in every run
+  if (writereducedrestart_==true)
+  {
+    // write restart output, please
+    //output_->WriteMesh(step_, (*time_)[0]);
+    output_->NewStep(step_, (*time_)[0]);
+    output_->WriteVector("displacement", (*dis_)(0));
+    output_->WriteElementData();
+  }
+  else
+  {
+    // write restart output, please
 
-  // write restart output, please
-  output_->WriteMesh(step_, (*time_)[0]);
-  output_->NewStep(step_, (*time_)[0]);
-  output_->WriteVector("displacement", (*dis_)(0));
-  output_->WriteVector("velocity", (*vel_)(0));
-  output_->WriteVector("acceleration", (*acc_)(0));
-  output_->WriteVector("fexternal", Fext());
-  output_->WriteElementData();
+    output_->WriteMesh(step_, (*time_)[0]);
+    output_->NewStep(step_, (*time_)[0]);
+    output_->WriteVector("displacement", (*dis_)(0));
+    output_->WriteVector("velocity", (*vel_)(0));
+    output_->WriteVector("acceleration", (*acc_)(0));
+    output_->WriteVector("fexternal", Fext());
+    output_->WriteElementData();
+  }
+
 
   // surface stress
   if (surfstressman_->HaveSurfStress())

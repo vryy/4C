@@ -242,6 +242,8 @@ public:
 
   //! write new "field" group to control file including node and element chunks
   virtual void WriteMesh(const int step, const double time);
+  // for MLMC purposes do not write new meshfile but write name of base mesh file to controlfile
+  virtual void WriteMesh(const int step, const double time, string name_base_file );
 
   //! write element data to file
   virtual void WriteElementData();

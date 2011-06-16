@@ -109,7 +109,17 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
   start_run_ = mlmcp.get<int>("START_RUN");
   numb_run_ =  start_run_;     // counter of how many runs were made monte carlo
 
-
+  // meshfiel name to be written to controlfile in prolongated results
+  std::stringstream meshfilename_helper1;
+  string meshfilename_helper2;
+  meshfilename_helper1 << filename_ << "_prolongated_run_" << start_run_ ;
+  meshfilename_helper2 = meshfilename_helper1.str();
+  // strip path from name
+  string::size_type pos = meshfilename_helper2.find_last_of('/');
+      if (pos==string::npos)
+              meshfilename_ = meshfilename_helper2;
+       else
+              meshfilename_ = meshfilename_helper2.substr(pos+1);
 
   // context for output and restart
   // make ew output control
@@ -450,16 +460,15 @@ void STR::MLMC::ProlongateResults()
     filename_helper_prolong = name_prolong.str();
 
     output_fine_->NewResultFile(filename_helper_prolong ,(numb_run_));
-    //output_fine_->NewResultFile((2000+numb_run_));
 
-    output_fine_->WriteMesh(1, 0.01);
-    //cout << " outputfilename fine"<<  output_fine_->output_->FileName() << endl ;
-    //cout << " outputfilename coarse"<<  output_->output_->FileName() << endl ;
-  //}
-  //cout << " was steht in output_fine  " << *output_fine << endl;
+
+    output_fine_->WriteMesh(1, 0.01, meshfilename_);
+    // exception for first run
+    if(numb_run_==start_run_)
+      output_fine_->WriteMesh(1, 0.01);
+
     output_fine_->NewStep( 1, 0.01);
-  // use numb_run_ as timestepp and time
-  //output_fine_->NewStep(numb_run_, numb_run_);
+
 
   // Write interpolated displacement to file
   cout << " before displacement  " << endl;
@@ -778,9 +787,9 @@ void STR::MLMC::ReadResultsFromLowerLevel()
 {
   std::stringstream name_helper;
   // assamble filename and pathfor cluster jobs
-  name_helper << "../../level"<<num_level_-1<< "/START_RUN_"<< start_run_ <<"/"<<filename_lower_level_<<"_prolongated"<< "_run_" << numb_run_ ;
+  //name_helper << "../../level"<<num_level_-1<< "/START_RUN_"<< start_run_ <<"/"<<filename_lower_level_<<"_prolongated"<< "_run_" << numb_run_ ;
 
-  //name_helper << filename_lower_level_ <<"_prolongated"<< "_run_" << numb_run_ ;
+  name_helper << filename_lower_level_ <<"_prolongated"<< "_run_" << numb_run_ ;
   string name_ll = name_helper.str();
   // check if bool should be true or false
   RCP<IO::InputControl> inputcontrol = rcp(new IO::InputControl(name_ll, false));
@@ -800,8 +809,6 @@ void STR::MLMC::CalcDifferenceToLowerLevel(RCP< Epetra_MultiVector> stress, RCP<
   disp_lower_level_->Update(1.0,*disp,-1.0);
   stress_lower_level_->Update(1.0,*stress,-1.0);
   strain_lower_level_->Update(1.0,*strain,-1.0);
-  //cout << *stress_lower_level_ << "stress_lower_level_" << endl;
-  //dserror("stop right here");
 
 }
 
