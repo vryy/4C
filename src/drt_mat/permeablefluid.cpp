@@ -3,7 +3,10 @@
 \file permeablefluid.cpp
 
 <pre>
-Maintainer: ???
+Maintainer: Volker Gravemeier
+            vgravem@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15245
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -22,6 +25,7 @@ MAT::PAR::PermeableFluid::PermeableFluid(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
+  type_(matdata->Get<string>("TYPE")),
   viscosity_(matdata->GetDouble("DYNVISCOSITY")),
   density_(matdata->GetDouble("DENSITY")),
   permeability_(matdata->GetDouble("PERMEABILITY"))
@@ -108,6 +112,33 @@ void MAT::PermeableFluid::Unpack(const vector<char>& data)
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::PermeableFluid::ComputeReactionCoeff() const
+{
+  // check for zero or negative viscosity
+  if (Viscosity() < EPS15) dserror("zero or negative viscosity");
+
+  // check for zero or negative permeability
+  if (Permeability() < EPS15) dserror("zero or negative permeability");
+
+  // viscosity divided by permeability
+  double reacoeff = Viscosity()/Permeability();
+
+  return reacoeff;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double MAT::PermeableFluid::SetViscosity() const
+{
+  // set zero viscosity and only modify it for Darcy-Stokes problems
+  double viscosity = 0.0;
+  if (Type() == "Darcy-Stokes") viscosity = Viscosity();
+
+  return viscosity;
 }
 
 #endif

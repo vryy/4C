@@ -138,6 +138,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "permeability for flow in porous media",
                                             INPAR::MAT::m_permeable_fluid));
 
+    AddNamedString(m,"TYPE","Problem type: Darcy or Darcy-Stokes","Darcy-Stokes");
     AddNamedReal(m,"DYNVISCOSITY","dynamic viscosity");
     AddNamedReal(m,"DENSITY","density");
     AddNamedReal(m,"PERMEABILITY","permeability of medium");

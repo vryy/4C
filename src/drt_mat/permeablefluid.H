@@ -3,7 +3,10 @@
 \file permeablefluid.H
 
 <pre>
-Maintainer: ???
+Maintainer: Volker Gravemeier
+            vgravem@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15245
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -41,6 +44,8 @@ namespace MAT
       /// @name material parameters
       //@{
 
+      /// problem type: Darcy or Darcy-Stokes
+      const string* type_;
       /// kinematic or dynamic viscosity
       const double viscosity_;
       /// density
@@ -130,11 +135,20 @@ private:
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new PermeableFluid( *this ) ); }
 
-    /// return viscosity
-    double Viscosity() const { return params_->viscosity_; }
+    /// compute reaction coefficient
+    double ComputeReactionCoeff() const;
+
+    /// set viscosity (zero for Darcy and greater than zero for Darcy-Stokes)
+    double SetViscosity() const;
+
+    /// return type
+    string Type() const { return *params_->type_; }
 
     /// return density
     double Density() const { return params_->density_; }
+
+    /// return viscosity
+    double Viscosity() const { return params_->viscosity_; }
 
     /// return permeability
     double Permeability() const { return params_->permeability_; }

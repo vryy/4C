@@ -2332,22 +2332,26 @@ else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
   densam_ = densaf_;
   densn_  = densaf_;
 
-  // get constant viscosity
-  visc_ = actmat->Viscosity();
-
-  // check whether there is zero or negative permeability
-  if (actmat->Permeability() < EPS15) dserror("zero or negative permeability");
-
   // calculate reaction coefficient
-  reacoeff_ = visc_/actmat->Permeability();
+  reacoeff_ = actmat->ComputeReactionCoeff();
+
+  // get constant viscosity (zero for Darcy and greater than zero for Darcy-Stokes)
+  visc_ = actmat->SetViscosity();
 
   // set reaction flag to true
   f3Parameter_->reaction_ = true;
+
+  // check stabilization parameter definition for permeable fluid
+  if (not (f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin or
+           f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_wo_dt))
+    dserror("incorrect definition of stabilization parameter for Darcy or Darcy-Stokes problem");
 }
 else dserror("Material type is not supported");
 
 // check whether there is zero or negative (physical) viscosity
-if (visc_ < EPS15) dserror("zero or negative (physical) diffusivity");
+// (expect for permeable fluid)
+if (visc_ < EPS15 and not material->MaterialType() == INPAR::MAT::m_permeable_fluid)
+  dserror("zero or negative (physical) diffusivity");
 
 return;
 } // Fluid3Impl::GetMaterialParams
@@ -2986,7 +2990,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
     /*
 
     This stabilization parameter is only intended to be used for
-    viscous-reactive problems such as Darcy-Stokes/Brinkman problems.
+    (viscous-)reactive problems such as Darcy(-Stokes/Brinkman) problems.
 
     literature:
        L.P. Franca, A.L. Madureira, F. Valentin, Towards multiscale
@@ -3180,7 +3184,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
     /*
 
     This stabilization parameter is only intended to be used for
-    viscous-reactive problems such as Darcy-Stokes/Brinkman problems.
+    (viscous-)reactive problems such as Darcy(-Stokes/Brinkman) problems.
     The stabilization parameter tau_C is set to zero for such problems,
     for the time being.
 

@@ -1461,7 +1461,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::AreaCaculation(
   {
     const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(mat.get());
     densaf_ = actmat->Density();
-    visc_   = actmat->Viscosity();
+    visc_   = actmat->SetViscosity();
   }
   else
     dserror("Fluid material expected but got type %d", mat->MaterialType());
@@ -1567,7 +1567,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::IntegratedPressureParameterCalc
   {
     const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(mat.get());
     densaf_ = actmat->Density();
-    visc_   = actmat->Viscosity();
+    visc_   = actmat->SetViscosity();
   }
   else
     dserror("Fluid material expected but got type %d", mat->MaterialType());
@@ -2417,7 +2417,7 @@ else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
   const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(material.get());
 
   // get constant viscosity
-  visc_ = actmat->Viscosity();
+  visc_ = actmat->SetViscosity();
 }
 else dserror("Material type is not supported for boundary element!");
 
