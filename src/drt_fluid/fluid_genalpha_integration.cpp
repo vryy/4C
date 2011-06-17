@@ -1186,7 +1186,11 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
 
       // write mesh in each restart step --- the elements are required since
       // they contain history variables (the time dependent subscales)
-      output_.WriteMesh(step_,time_);
+      // But never do this for step 0 (visualization of initial field) since
+      // it would lead to writing the mesh twice for step 0
+      // (FluidBaseAlgorithm already wrote the mesh) -> HDF5 writer will claim!
+      if (step_!=0)
+        output_.WriteMesh(step_,time_);
     }
 
   }
@@ -1219,7 +1223,11 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
 
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
-    output_.WriteMesh(step_,time_);
+    // But never do this for step 0 (visualization of initial field) since
+    // it would lead to writing the mesh twice for step 0
+    // (FluidBaseAlgorithm already wrote the mesh) -> HDF5 writer will claim!
+    if (step_!=0)
+      output_.WriteMesh(step_,time_);
   }
 
   return;
