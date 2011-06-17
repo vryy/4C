@@ -119,6 +119,8 @@ namespace FLD
       Teuchos::RCP<Epetra_Vector>    velnm_;
       Teuchos::RCP<Epetra_Vector>    velaf_;
 
+      Teuchos::RCP<Epetra_Vector>    velnpoutput_;
+
 
       //! @name scalar at time n+alpha_F/n+1 and n+alpha_M/n
       Teuchos::RCP<Epetra_Vector>    scaaf_;
@@ -146,6 +148,7 @@ namespace FLD
 
       // dof-row maps
       const Epetra_Map* fluiddofrowmap_;
+      Teuchos::RCP<const Epetra_Map> outputfluiddofrowmap_;
 //      const Epetra_Map* aledofrowmap_;
 //      const Epetra_Map* boundarydofrowmap_;
 
@@ -381,6 +384,9 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector>    aledispn_;
     Teuchos::RCP<Epetra_Vector>    aledispnm_;
     //@}
+
+    Teuchos::RCP<Epetra_Vector>    aletotaldispnp_;
+    Teuchos::RCP<Epetra_Vector>    aletotaldispn_;
 
     /// grid velocity (set from the adapter!)
     Teuchos::RCP<Epetra_Vector>    gridv_;
