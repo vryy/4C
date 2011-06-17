@@ -87,6 +87,7 @@ void DRT::ELEMENTS::So_weg6Type::SetupElementDefinition( std::map<std::string,st
     .AddOptionalNamedDoubleVector("RAD",3)
     .AddOptionalNamedDoubleVector("AXI",3)
     .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDouble("HU")
     ;
 }
 

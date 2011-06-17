@@ -136,6 +136,9 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,A1_);
   AddtoPack(data,A2_);
   AddtoPack(data,A1A2_);
+  AddtoPack(data,haveHU_);
+  AddtoPack(data,HU_);
+  
 }
 
 
@@ -165,6 +168,7 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
     }
 
   int anisotropic;
+  int haveHU_;
   ExtractfromPack(position,data,anisotropic);
   anisotropic_ = anisotropic != 0;
 
@@ -173,6 +177,8 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,A1_);
   ExtractfromPack(position,data,A2_);
   ExtractfromPack(position,data,A1A2_);
+  ExtractfromPack(position,data,haveHU_);
+  ExtractfromPack(position,data,HU_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);

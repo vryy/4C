@@ -75,7 +75,7 @@ void MAT::ELASTIC::IsoVolHUDependentNeoHooke::AddCoefficientsPrincCalcified(
   havecoefficients = havecoefficients or true;
 
   double alpha = 0.;
- 
+
   if (HU <= params_->ctmin_)
   { 
     alpha = 0.0; 

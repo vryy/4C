@@ -86,6 +86,7 @@ void DRT::ELEMENTS::So_tet4Type::SetupElementDefinition( std::map<std::string,st
     .AddOptionalNamedDoubleVector("RAD",3)
     .AddOptionalNamedDoubleVector("AXI",3)
     .AddOptionalNamedDoubleVector("CIR",3)
+    .AddOptionalNamedDouble("HU")
     ;
 }
 
