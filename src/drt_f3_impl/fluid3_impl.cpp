@@ -3412,10 +3412,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetResidualMomentumEq(
       // in the case of a Boussinesq approximation: f = (rho - rho_0)/rho_0 *g
       // else:                                      f = rho * g
       if (f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
-        rhsmom_.Update((densn_/f3Parameter_->dt_),histmom_,deltadens_*f3Parameter_->theta_,bodyforce_);
+        //rhsmom_.Update((densn_/f3Parameter_->dt_),histmom_,deltadens_*f3Parameter_->theta_,bodyforce_);
+        rhsmom_.Update((densn_/f3Parameter_->dt_/f3Parameter_->theta_),histmom_,deltadens_,bodyforce_);
       else
         //rhsmom_.Update((densn_/f3Parameter_->dt_),histmom_,densaf_*f3Parameter_->theta_,bodyforce_);
-		rhsmom_.Update((densn_/f3Parameter_->dt_/f3Parameter_->theta_),histmom_,densaf_,bodyforce_);
+        rhsmom_.Update((densn_/f3Parameter_->dt_/f3Parameter_->theta_),histmom_,densaf_,bodyforce_);
 
       // compute instationary momentum residual:
       // momres_old = u_(n+1)/dt + theta ( ... ) - histmom_/dt - theta*bodyforce_
