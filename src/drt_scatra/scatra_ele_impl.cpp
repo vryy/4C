@@ -139,11 +139,11 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(
   case DRT::Element::line2:
   {
     return ScaTraImpl<DRT::Element::line2>::Instance(numdofpernode,numscal);
-  }/*
+  }
   case DRT::Element::line3:
   {
     return ScaTraImpl<DRT::Element::line3>::Instance(numdofpernode,numscal);
-  }*/
+  }
   default:
     dserror("Element shape %s not activated. Just do it.",DRT::DistypeToString(ele->Shape()).c_str());
   }
@@ -4865,6 +4865,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
         // b) derivative w.r.t. electric potential
         emat(fvi,ui*numdofpernode_+numscal_) += frt*timefacfac*diffus_valence_k*conint_[k]*laplawf;
 
+        // electroneutrality condition
+        emat(vi*numdofpernode_+numscal_, fui) += alphaF*valence_k_fac_funct_vi*funct_(ui);
+/*
+
         // what's the governing equation for the electric potential field ?
         if (scatratype==INPAR::SCATRA::scatratype_elch_enc)
         {
@@ -4893,6 +4897,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
             ;
           else
             dserror ("How did you reach this point?");
+            */
 
         //----------------------------------------------------------------
         // Stabilization terms
@@ -5061,6 +5066,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
       erhs[fvi] -= rhsfac*diffus_[k]*laplawf;
 
+      // electroneutrality condition
+      // for incremental formulation, there is the residuum on the rhs! : 0-sum(z_k c_k)
+      erhs[vi*numdofpernode_+numscal_] -= valence_[k]*fac*funct_(vi)*conint_[k];
+
+      /*
       // what's the governing equation for the electric potential field ?
       if (scatratype==INPAR::SCATRA::scatratype_elch_enc)
       {
@@ -5082,6 +5092,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
         ;
       else
         dserror ("How did you reach this point?");
+      */
 
       //----------------------------------------------------------------
       // Stabilization terms
