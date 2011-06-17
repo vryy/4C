@@ -2647,7 +2647,7 @@ template <DRT::Element::DiscretizationType bndydistype,
         normvel+=pevel(idim,inode)*pevel(idim,inode);
       }
       normvel=sqrt(normvel);
-      
+
       if(normvel>maxvel)
       {
         maxvel=normvel;
@@ -2893,7 +2893,7 @@ template <DRT::Element::DiscretizationType bndydistype,
         temp(2)=fac*pvderxy(2,2);
         temp(3)=fac*(pvderxy(0,1)+pvderxy(1,0));
         temp(4)=fac*(pvderxy(0,2)+pvderxy(2,0));
-        temp(5)=fac*(pvderxy(1,2)+pvderxy(2,1));      
+        temp(5)=fac*(pvderxy(1,2)+pvderxy(2,1));
 
         for(int A=0;A<piel;++A)
         {
@@ -3192,10 +3192,10 @@ template <DRT::Element::DiscretizationType bndydistype,
         {
           printf("traction (%12.5e,%12.5e,%12.5e)\n",traction(0),traction(1),traction(2));
         }
-        
+
         //             /
         //            |
-        // || t ||  = | sqrt ( t_1**2 + t_2**2 + t_3**2 ) dOmega 
+        // || t ||  = | sqrt ( t_1**2 + t_2**2 + t_3**2 ) dOmega
         //            |
         //           / Omega
         normtraction+=fac*sqrt(traction(0)*traction(0)+traction(1)*traction(1)+traction(2)*traction(2));
@@ -3476,11 +3476,11 @@ template <DRT::Element::DiscretizationType bndydistype,
             mat_v_sigma_o_n(A*nsd  ,B*numstressdof_  )-=tempA(0)*pfunct(B);
             mat_v_sigma_o_n(A*nsd  ,B*numstressdof_+3)-=tempA(1)*pfunct(B);
             mat_v_sigma_o_n(A*nsd  ,B*numstressdof_+4)-=tempA(2)*pfunct(B);
-                                                                                                                                
+
             mat_v_sigma_o_n(A*nsd+1,B*numstressdof_+3)-=tempA(0)*pfunct(B);
             mat_v_sigma_o_n(A*nsd+1,B*numstressdof_+1)-=tempA(1)*pfunct(B);
             mat_v_sigma_o_n(A*nsd+1,B*numstressdof_+5)-=tempA(2)*pfunct(B);
-                                                                                                                                
+
             mat_v_sigma_o_n(A*nsd+2,B*numstressdof_+4)-=tempA(0)*pfunct(B);
             mat_v_sigma_o_n(A*nsd+2,B*numstressdof_+5)-=tempA(1)*pfunct(B);
             mat_v_sigma_o_n(A*nsd+2,B*numstressdof_+2)-=tempA(2)*pfunct(B);
@@ -3512,7 +3512,7 @@ template <DRT::Element::DiscretizationType bndydistype,
           // get velocity norm
           double normu = velint.Norm2();
 
-#if 0          
+#if 0
           if((*hixhybdbc_cond).GetDouble("u_C")<0)
             {
               normu=u_C;
@@ -3601,7 +3601,7 @@ template <DRT::Element::DiscretizationType bndydistype,
 
       const double eleRey=u_C*h/visc_;
 
-      double tau_normal=1.0+2.0*eleRey;    
+      double tau_normal=1.0+2.0*eleRey;
 
       const double C1=tau_tangential;
 
@@ -3650,7 +3650,7 @@ template <DRT::Element::DiscretizationType bndydistype,
       {
         LINALG::Matrix<nsd,1> temp;
         LINALG::Matrix<nsd,1> tempA;
-        
+
         for(int dim=0;dim<nsd;++dim)
         {
           temp(dim)=fac*C1*unitnormal(dim);
@@ -3663,19 +3663,19 @@ template <DRT::Element::DiscretizationType bndydistype,
           {
             tempA(dim)=temp(dim)*pfunct(A);
           }
-        
+
           for(int B=0;B<piel;++B)
           {
             mat_r_o_n_u(A*numstressdof_  ,B*nsd  )-=tempA(0)*pfunct(B);
             mat_r_o_n_u(A*numstressdof_+1,B*nsd+1)-=tempA(1)*pfunct(B);
             mat_r_o_n_u(A*numstressdof_+2,B*nsd+2)-=tempA(2)*pfunct(B);
-                                                                                                                           
+
             mat_r_o_n_u(A*numstressdof_+3,B*nsd  )-=tempA(1)*pfunct(B);
             mat_r_o_n_u(A*numstressdof_+3,B*nsd+1)-=tempA(0)*pfunct(B);
-                                                                                                                           
+
             mat_r_o_n_u(A*numstressdof_+4,B*nsd  )-=tempA(2)*pfunct(B);
             mat_r_o_n_u(A*numstressdof_+4,B*nsd+2)-=tempA(0)*pfunct(B);
-                                                                                                                           
+
             mat_r_o_n_u(A*numstressdof_+5,B*nsd+1)-=tempA(2)*pfunct(B);
             mat_r_o_n_u(A*numstressdof_+5,B*nsd+2)-=tempA(1)*pfunct(B);
           }
@@ -3772,23 +3772,23 @@ template <DRT::Element::DiscretizationType bndydistype,
             mat_r_o_n_u(A*numstressdof_  ,B*nsd  )-=tempA(0,0)*pfunct(B);
             mat_r_o_n_u(A*numstressdof_  ,B*nsd+1)-=tempA(0,1)*pfunct(B);
             mat_r_o_n_u(A*numstressdof_  ,B*nsd+2)-=tempA(0,2)*pfunct(B);
-                                                             
+
             mat_r_o_n_u(A*numstressdof_+1,B*nsd  )-=tempA(1,0)*pfunct(B);
             mat_r_o_n_u(A*numstressdof_+1,B*nsd+1)-=tempA(1,1)*pfunct(B);
             mat_r_o_n_u(A*numstressdof_+1,B*nsd+2)-=tempA(1,2)*pfunct(B);
-                                                             
+
             mat_r_o_n_u(A*numstressdof_+2,B*nsd  )-=tempA(2,0)*pfunct(B);
             mat_r_o_n_u(A*numstressdof_+2,B*nsd+1)-=tempA(2,1)*pfunct(B);
             mat_r_o_n_u(A*numstressdof_+2,B*nsd+2)-=tempA(2,2)*pfunct(B);
-                                                             
+
             mat_r_o_n_u(A*numstressdof_+3,B*nsd  )-=tempA(3,0)*pfunct(B);
             mat_r_o_n_u(A*numstressdof_+3,B*nsd+1)-=tempA(3,1)*pfunct(B);
             mat_r_o_n_u(A*numstressdof_+3,B*nsd+2)-=tempA(3,2)*pfunct(B);
-                                                             
+
             mat_r_o_n_u(A*numstressdof_+4,B*nsd  )-=tempA(4,0)*pfunct(B);
             mat_r_o_n_u(A*numstressdof_+4,B*nsd+1)-=tempA(4,1)*pfunct(B);
             mat_r_o_n_u(A*numstressdof_+4,B*nsd+2)-=tempA(4,2)*pfunct(B);
-                                                             
+
             mat_r_o_n_u(A*numstressdof_+5,B*nsd  )-=tempA(5,0)*pfunct(B);
             mat_r_o_n_u(A*numstressdof_+5,B*nsd+1)-=tempA(5,1)*pfunct(B);
             mat_r_o_n_u(A*numstressdof_+5,B*nsd+2)-=tempA(5,2)*pfunct(B);
@@ -3827,12 +3827,13 @@ template <DRT::Element::DiscretizationType bndydistype,
   // BDF2:                      timefacmat_u = 2/3 * dt
   // af-generalized-alpha:      timefacmat_u = (alphaF/alpha_M) * gamma * dt
   // Peters-generalized-alpha:  timefacmat_u = alphaF* gamma * dt
-  double timefacmat_u= f3Parameter_->afgdt_;
+  double timefacmat_u= f3Parameter_->timefac_;
   // One-step-Theta:            timefacmat_p = theta*dt
   // BDF2:                      timefacmat_p = 2/3 * dt
   // af-generalized-alpha:      timefacmat_p = (alphaF/alpha_M) * gamma * dt
   // Peters-generalized-alpha:  timefacmat_p = gamma * dt
-  double timefacmat_p= f3Parameter_->timefacmat_p_;
+  //double timefacmat_p= f3Parameter_->timefacmat_p_;
+  double timefacmat_p= f3Parameter_->timefacpre_;
 
   // --------------------------------
   // rearrange to pattern uvwp uvwp ...
