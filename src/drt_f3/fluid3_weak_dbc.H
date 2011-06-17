@@ -31,6 +31,7 @@ Maintainer: Peter Gamnitzer
 #define FLUID3_WEAKDBC_H
 
 #include "fluid3.H"
+#include "../drt_f3_impl/fluid3_impl_parameter.H"
 
 namespace DRT
 {
@@ -162,6 +163,9 @@ namespace DRT
 
     private:
 
+      //! pointer to parameter list
+      DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter_;
+
       // nodal arrays
       // ------------
       //! node coordinates of parent element
@@ -272,6 +276,9 @@ namespace DRT
          Epetra_SerialDenseVector&  elevec_epetra );
 
      private:
+
+        //! pointer to parameter list
+        DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter_;
 
        // nodal arrays
        // ------------

@@ -454,6 +454,7 @@ namespace ELEMENTS
         LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,      ///< block (weighting function v x pressure)
         LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
         const double &                            timefacfac,     ///< = timefac x fac
+        const double &                            timefacfacpre,
         const double &                            rhsfac,         ///< right-hand-side factor
         const double &                            press           ///< pressure at integration point
         );
@@ -503,6 +504,7 @@ namespace ELEMENTS
         LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
         const double &                            fac3,           ///< factor for residual in current subgrid velocities
         const double &                            timefacfac,     ///< = timefac x fac
+        const double &                            timefacfacpre,
         const double &                            rhsresfac       ///< right-hand-side factor for residuals
         );
 
@@ -514,6 +516,7 @@ namespace ELEMENTS
         LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
         const double &                            fac3,           ///< factor for residual in current subgrid velocities
         const double &                            timefacfac,     ///< = timefac x fac
+        const double &                            timefacfacpre,
         const double &                            rhsresfac       ///< right-hand-side factor for residuals
         );
 
@@ -524,6 +527,7 @@ namespace ELEMENTS
         LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
         LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
         const double &                            timefacfac,     ///< = timefac x fac
+        const double &                            timefacfacpre,  ///< = timefacpre x fac
         const double &                            rhsresfac,      ///< right-hand-side factor for residuals
         const double &                            fac3            ///< factor for residual in current subgrid velocities
         );
@@ -535,6 +539,7 @@ namespace ELEMENTS
         LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
         LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
         const double &                            timefacfac,     ///< = timefac x fac
+        const double &                            timefacfacpre,     ///< = timefac x fac
         const double &                            rhsresfac,      ///< right-hand-side factor for residuals
         const double &                            fac3            ///< factor for residual in current subgrid velocities
         );
@@ -546,6 +551,7 @@ namespace ELEMENTS
         LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
         LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
         const double &                            timefacfac,     ///< = timefac x fac
+        const double &                            timefacfacpre,
         const double &                            rhsresfac,      ///< right-hand-side factor for residuals
         const double &                            fac3            ///< factor for residual in current subgrid velocities
         );
@@ -556,6 +562,7 @@ namespace ELEMENTS
         LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,      ///< block (weighting function v x p)
         LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
         const double &                            timefacfac,     ///< timefac x fac
+        const double &                            timefacfacpre,
         const double &                            fac3            ///< factor for residual in current subgrid velocities
         );
 

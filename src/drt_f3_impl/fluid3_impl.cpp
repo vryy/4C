@@ -1141,8 +1141,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     // (two right-hand-side factors: general and for residuals)
     //----------------------------------------------------------------------
     const double timefacfac = f3Parameter_->timefac_ * fac_;
-    double rhsfac           = timefacfac;
-    double rhsresfac        = fac_;
+    const double timefacfacpre = f3Parameter_->timefacpre_ * fac_;
+
+    //double rhsfac           = timefacfac;
+    const double rhsfac           = f3Parameter_->timefacrhs_ * fac_;
+    //double rhsresfac        = fac_;
+    const double rhsresfac        = f3Parameter_->rhsresfac_ * fac_;
+
+/*
     // modify integration factors for right-hand side such that they
     // are identical in case of generalized-alpha time integration:
     if (f3Parameter_->is_genalpha_)
@@ -1154,7 +1160,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     {
       // modify residual integration factor for right-hand side in instat. case:
       if (not f3Parameter_->is_stationary_) rhsresfac *= f3Parameter_->dt_;
-    }
+    }*/
 
     //----------------------------------------------------------------------
     // computation of various residuals and residual-based values such as
@@ -1258,6 +1264,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     PressureGalPart(estif_p_v,
                     velforce,
                     timefacfac,
+                    timefacfacpre,
                     rhsfac,
                     press);
 
@@ -1306,6 +1313,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
            lin_resM_Du,
            fac3,
            timefacfac,
+           timefacfacpre,
            rhsresfac);
     }
 
@@ -1319,6 +1327,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
            lin_resM_Du,
            fac3,
            timefacfac,
+           timefacfacpre,
            rhsresfac);
     }
 
@@ -1330,6 +1339,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
                velforce,
                lin_resM_Du,
                timefacfac,
+               timefacfacpre,
                rhsresfac,
                fac3);
    }
@@ -1343,6 +1353,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
                velforce,
                lin_resM_Du,
                timefacfac,
+               timefacfacpre,
                rhsresfac,
                fac3);
     }
@@ -1357,6 +1368,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
                       velforce,
                       lin_resM_Du,
                       timefacfac,
+                      timefacfacpre,
                       rhsresfac,
                       fac3);
     }
@@ -1370,6 +1382,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
                          estif_p_v,
                          lin_resM_Du,
                          timefacfac,
+                         timefacfacpre,
                          fac3);
     }
 
@@ -3401,15 +3414,19 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetResidualMomentumEq(
       if (f3Parameter_->physicaltype_ == INPAR::FLUID::boussinesq)
         rhsmom_.Update((densn_/f3Parameter_->dt_),histmom_,deltadens_*f3Parameter_->theta_,bodyforce_);
       else
-        rhsmom_.Update((densn_/f3Parameter_->dt_),histmom_,densaf_*f3Parameter_->theta_,bodyforce_);
+        //rhsmom_.Update((densn_/f3Parameter_->dt_),histmom_,densaf_*f3Parameter_->theta_,bodyforce_);
+		rhsmom_.Update((densn_/f3Parameter_->dt_/f3Parameter_->theta_),histmom_,densaf_,bodyforce_);
 
       // compute instationary momentum residual:
       // momres_old = u_(n+1)/dt + theta ( ... ) - histmom_/dt - theta*bodyforce_
       for (int rr=0;rr<nsd_;++rr)
       {
-        momres_old_(rr) = densaf_*velint_(rr)/f3Parameter_->dt_
+        /*momres_old_(rr) = densaf_*velint_(rr)/f3Parameter_->dt_
+                           +f3Parameter_->theta_*(densaf_*conv_old_(rr)+gradp_(rr)
+                           -2*visceff_*visc_old_(rr)+reacoeff_*velint_(rr))-rhsmom_(rr);*/
+        momres_old_(rr) = ((densaf_*velint_(rr)/f3Parameter_->dt_
                          +f3Parameter_->theta_*(densaf_*conv_old_(rr)+gradp_(rr)
-                         -2*visceff_*visc_old_(rr)+reacoeff_*velint_(rr))-rhsmom_(rr);
+                         -2*visceff_*visc_old_(rr)+reacoeff_*velint_(rr)))/f3Parameter_->theta_)-rhsmom_(rr);
 #ifdef TAU_SUBGRID_IN_RES_MOM
         if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
            or f3Parameter_->turb_mod_action_ == INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model)
@@ -3473,7 +3490,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::UpdateSubscaleVelocity(
      *                                                                 *
      *-----------------------------------------------------------------*/
     // compute subgrid-scale velocity
-    sgvelint_.Update(-tau_(1),momres_old_,0.0);
+    //if(f3Parameter_->is_genalpha_)
+      sgvelint_.Update(-tau_(1),momres_old_,0.0);
+    //else
+    //  sgvelint_.Update(-tau_(1)*f3Parameter_->dt_,momres_old_,0.0);
 
   } // end quasi-static subgrid closure
   else
@@ -3660,7 +3680,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetResidualContinuityEq(
     if (not f3Parameter_->is_stationary_)
     {
       // multiply "incompressible" part of continuity residual by theta
-      conres_old_ *= f3Parameter_->theta_;
+      //conres_old_ *= f3Parameter_->theta_;
 
       if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma or f3Parameter_->physicaltype_ == INPAR::FLUID::varying_density)
       {
@@ -3706,10 +3726,14 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetResidualContinuityEq(
         }*/
 
         // rhs of continuity equation (only relevant for low-Mach-number flow)
-        rhscon_ = scadtfac_*(scaaf-scan)/f3Parameter_->dt_ +
+        /*rhscon_ = scadtfac_*(scaaf-scan)/f3Parameter_->dt_ +
                   f3Parameter_->theta_*scaconvfacaf_*conv_scaaf_ +
                   f3Parameter_->omtheta_*(scaconvfacn_*conv_scan_-vdivn) +
-                  thermpressadd_;
+                  thermpressadd_;*/
+        rhscon_ = (scadtfac_*(scaaf-scan)/f3Parameter_->dt_ +
+                          f3Parameter_->theta_*scaconvfacaf_*conv_scaaf_ +
+                          f3Parameter_->omtheta_*(scaconvfacn_*conv_scan_-vdivn) +
+                          thermpressadd_)/f3Parameter_->theta_;
       }
     }
     // stationary case
@@ -3838,8 +3862,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LinGalMomResU(
 
   if(f3Parameter_->cross_==INPAR::FLUID::cross_stress_stab)
   {
+	 //const double rhsresfac_densaf=rhsresfac*densaf_;
     for (int ui=0; ui<nen_; ++ui)
     {
+      //const double v=rhsresfac_densaf*sgconv_c_(ui);
       const double v=timefacfac_densaf*sgconv_c_(ui);
 
       for (int idim = 0; idim <nsd_; ++idim)
@@ -4268,12 +4294,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PressureGalPart(
     LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
     LINALG::Matrix<nsd_,nen_> &               velforce,
     const double &                            timefacfac,
+    const double &                            timefacfacpre,
     const double &                            rhsfac,
     const double &                            press)
 {
   for (int ui=0; ui<nen_; ++ui)
   {
-    const double v = -timefacfac*funct_(ui);
+    const double v = -timefacfacpre*funct_(ui);
     for (int vi=0; vi<nen_; ++vi)
     {
       const int fvi = nsd_*vi;
@@ -4769,6 +4796,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PSPG(
     LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
     const double &                            fac3,
     const double &                            timefacfac,
+    const double &                            timefacfacpre,
     const double &                            rhsresfac)
 {
   // conservative, stabilization terms are neglected (Hughes)
@@ -4881,7 +4909,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PSPG(
     {
       for (int idim = 0; idim <nsd_; ++idim)
       {
-        const double v=timefacfac*derxy_(idim,ui)*scal_grad_q;
+        const double v=timefacfacpre*derxy_(idim,ui)*scal_grad_q;
 
         for (int vi=0; vi<nen_; ++vi)
         {
@@ -4920,6 +4948,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(
     LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
     const double &                            fac3,
     const double &                            timefacfac,
+    const double &                            timefacfacpre,
     const double &                            rhsresfac)
 {
   /*
@@ -4947,7 +4976,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(
      {
        for (int vi=0; vi<nen_; ++vi)
        {
-         supg_test(vi)+=supgfac*sgconv_c_(vi);
+    	   //if(f3Parameter_->is_genalpha_)
+    		   supg_test(vi)+=supgfac*sgconv_c_(vi);
+    	   //else
+    		   //supg_test(vi)+=supgfac*sgconv_c_(vi)/f3Parameter_->theta_;
        }
      }
 
@@ -5044,7 +5076,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(
      */
      for (int vi=0; vi<nen_; ++vi)
      {
-       const double v = timefacfac*supg_test(vi);
+       const double v = timefacfacpre*supg_test(vi);
 
        for (int idim = 0; idim <nsd_; ++idim)
        {
@@ -5111,7 +5143,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(
        {
          for(int jdim=0;jdim<nsd_;++jdim)
          {
-           temp(jdim)=(f3Parameter_->timefac_)*rhsresfac*supgfac*momres_old_(jdim);
+           //temp(jdim)=(f3Parameter_->timefac_)*rhsresfac*supgfac*momres_old_(jdim);
+           //temp(jdim)=rhsresfac*supgfac*momres_old_(jdim);
+           temp(jdim)=timefacfac*supgfac*momres_old_(jdim);
          }
        }
        else
@@ -5141,7 +5175,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SUPG(
            } // vi
          } // ui
        } //idim
-     }
+     }  // end if Newton
 
      if(f3Parameter_->tds_==INPAR::FLUID::subscales_quasistatic)
      {
@@ -5177,6 +5211,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ReacStab(
     LINALG::Matrix<nsd_,nen_> &               velforce,
     LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
     const double &                            timefacfac,
+    const double &                            timefacfacpre,
     const double &                            rhsresfac,
     const double &                            fac3)
 {
@@ -5284,10 +5319,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ReacStab(
              |                      |
               \                    /
    */
-   const double reac_tau_timefacfac = reac_tau*timefacfac;
+   const double reac_tau_timefacfacpre = reac_tau*timefacfacpre;
    for (int vi=0; vi<nen_; ++vi)
    {
-     const double v = reac_tau_timefacfac*funct_(vi);
+     const double v = reac_tau_timefacfacpre*funct_(vi);
 
      for (int idim = 0; idim <nsd_; ++idim)
      {
@@ -5322,6 +5357,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ViscStab(
     LINALG::Matrix<nsd_,nen_> &               velforce,
     LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
     const double &                            timefacfac,
+    const double &                            timefacfacpre,
     const double &                            rhsresfac,
     const double &                            fac3)
 {
@@ -5402,7 +5438,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ViscStab(
              |                          |
               \                        /
   */
-  const double two_visc_tau_timefacfac = two_visc_tau*timefacfac;
+  const double two_visc_tau_timefacfacpre = two_visc_tau*timefacfacpre;
   for (int idim=0;idim<nsd_; ++idim)
   {
     for (int ui=0; ui<nen_; ++ui)
@@ -5411,7 +5447,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ViscStab(
       {
         for(int jdim=0;jdim<nsd_;++jdim)
         {
-          estif_p_v(vi*nsd_+idim,ui) += two_visc_tau_timefacfac*derxy_(jdim, ui)*viscs2_(jdim+(idim*nsd_),vi);
+          estif_p_v(vi*nsd_+idim,ui) += two_visc_tau_timefacfacpre*derxy_(jdim, ui)*viscs2_(jdim+(idim*nsd_),vi);
         }
       }
     }
@@ -5442,6 +5478,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CrossStressStab(
     LINALG::Matrix<nsd_,nen_> &               velforce,
     LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
     const double &                            timefacfac,
+    const double &                            timefacfacpre,
     const double &                            rhsresfac,
     const double &                            fac3)
 {
@@ -5449,9 +5486,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CrossStressStab(
                                this part is linearised in
                               combination with the standard
                                   Galerkin term above
-                                          +----+    LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
-    LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
-    LINALG::Matrix<nsd_,nen_> &               velforce,
+                                          +----+
                                           |    |
                     /                                \
                    |   /    ~n+af       \   n+af      |
@@ -5548,7 +5583,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CrossStressStab(
            {
              for(int kdim=0;kdim<nsd_;++kdim)
              {
-               estif_p_v(fvi,ui) -= crossfac*timefacfac*vderxy_(idim,kdim)*derxy_(kdim,ui)*funct_(vi);
+               estif_p_v(fvi,ui) -= crossfac*timefacfacpre*vderxy_(idim,kdim)*derxy_(kdim,ui)*funct_(vi);
              }
            }
          }  // end for(idim)
@@ -5586,6 +5621,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ReynoldsStressStab(
     LINALG::Matrix<nen_*nsd_,nen_> &          estif_p_v,
     LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,
     const double &                            timefacfac,
+    const double &                            timefacfacpre,
     const double &                            fac3)
 {
   /*
@@ -5609,7 +5645,12 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ReynoldsStressStab(
 
   double reyfac;
   if (f3Parameter_->tds_==INPAR::FLUID::subscales_quasistatic)
-       reyfac=densaf_*tau_(1);
+  {
+	  //if(f3Parameter_->is_genalpha_)
+		  reyfac=densaf_*tau_(1);
+	  //else
+      // reyfac=densaf_*tau_(1)/f3Parameter_->theta_;
+  }
   else reyfac=densaf_*f3Parameter_->alphaF_*fac3;
 
   /*
@@ -5661,7 +5702,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ReynoldsStressStab(
 
           for(int kdim=0;kdim<nsd_;++kdim)
           {
-            estif_u(fvi_p_idim,fui_p_jdim) += reyfac*lin_resM_Du(nsd_*kdim+jdim,ui)*sgvelint_(idim)*derxy_(idim,vi);
+            estif_u(fvi_p_idim,fui_p_jdim) += reyfac*lin_resM_Du(nsd_*kdim+jdim,ui)*sgvelint_(idim)*derxy_(kdim,vi);
           }
         } // jdim
       } // vi
@@ -5679,13 +5720,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ReynoldsStressStab(
   {
     for (int idim = 0; idim <nsd_; ++idim)
     {
-      const int fvi   = nsd_*vi + idim;
+      const int fvi_p_idim   = nsd_*vi + idim;
 
       for (int ui=0; ui<nen_; ++ui)
       {
         for(int kdim=0;kdim<nsd_;++kdim)
         {
-          estif_p_v(fvi,ui) += reyfac*timefacfac*sgvelint_(idim)*derxy_(kdim,ui)*derxy_(kdim,vi);
+          estif_p_v(fvi_p_idim,ui) += reyfac*timefacfac*sgvelint_(idim)*derxy_(kdim,ui)*derxy_(kdim,vi);
         }
       }
     }  // end for(idim)
@@ -7373,9 +7414,10 @@ void Fluid3Impl<distype>::ElementXfemInterface(
   const unsigned Velz = 2;
   const unsigned Pres = 3;
 
-  const unsigned Velxi = 0;
-  const unsigned Velyi = 1;
-  const unsigned Velzi = 2;
+  // unused variable
+  //const unsigned Velxi = 0;
+  //const unsigned Velyi = 1;
+  //const unsigned Velzi = 2;
 
   const unsigned Sigmaxx = 0;
   const unsigned Sigmaxy = 1;
@@ -7946,7 +7988,7 @@ void Fluid3Impl<distype>::ElementXfemInterface(
       int bid = m->first;
       std::vector<Epetra_SerialDenseMatrix> & Cuiui_mats = Cuiui_coupling[bid];
       // assemble Gsui
-      for ( unsigned icb=0; icb<Cuiui_mats[0].N(); ++icb )
+      for ( int icb=0; icb<Cuiui_mats[0].N(); ++icb )
       {
         for ( unsigned irb=0; irb<6*nen_; ++irb )
         {
@@ -7956,7 +7998,7 @@ void Fluid3Impl<distype>::ElementXfemInterface(
       // assemble Guis
       for ( unsigned icb=0; icb<6*nen_; ++icb )
       {
-        for ( unsigned irb=0; irb<Cuiui_mats[1].M(); ++irb )
+        for ( int irb=0; irb<Cuiui_mats[1].M(); ++irb )
         {
         Guis(irb+ipatchsizesbefore,icb) = Cuiui_mats[1](irb,icb);
         }

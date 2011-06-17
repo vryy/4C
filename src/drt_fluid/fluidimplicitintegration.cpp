@@ -744,6 +744,10 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
         printf("TIME: %11.4E/%11.4E  DT = %11.4E  Generalized-Alpha  STEP = %4d/%4d \n",
                time_,maxtime_,dta_,step_,stepmax_);
         break;
+      case INPAR::FLUID::timeint_gen_alpha_fluid:
+        printf("TIME: %11.4E/%11.4E  DT = %11.4E  Generalized-Alpha-pressure  STEP = %4d/%4d \n",
+               time_,maxtime_,dta_,step_,stepmax_);
+        break;
       case INPAR::FLUID::timeint_bdf2:
         printf("TIME: %11.4E/%11.4E  DT = %11.4E       BDF2          STEP = %4d/%4d \n",
                time_,maxtime_,dta_,step_,stepmax_);
@@ -864,7 +868,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   //  prescribed Dirichlet values for generalized-alpha time
   //  integration and values at intermediate time steps
   // -------------------------------------------------------------------
-  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+  if (timealgo_==INPAR::FLUID::timeint_afgenalpha or timealgo_==INPAR::FLUID::timeint_gen_alpha_fluid)
   {
     // starting algorithm
     if (startalgo_)
@@ -956,7 +960,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
     discret_->ClearState();
   }
 
-  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+  if (timealgo_==INPAR::FLUID::timeint_afgenalpha or timealgo_==INPAR::FLUID::timeint_gen_alpha_fluid)
   {
     // --------------------------------------------------
     // adjust accnp according to Dirichlet values of velnp
@@ -1135,8 +1139,10 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       }
 
       // set scheme-specific element parameters and vector values
-      if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+      if (timealgo_==INPAR::FLUID::timeint_afgenalpha or timealgo_==INPAR::FLUID::timeint_gen_alpha_fluid)
+      {
            discret_->SetState("velaf",velaf_);
+      }
       else discret_->SetState("velaf",velnp_);
 
       //----------------------------------------------------------------------
@@ -1178,6 +1184,61 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           discret_->ClearState();
         }
         //---------------------------end of surface tension update
+
+        //----------------------------------------------------------------------
+        // apply weak Dirichlet boundary conditions to sysmat_ and residual_
+        //----------------------------------------------------------------------
+        {
+          // vector containing weak dirichlet loads
+
+          RefCountPtr<Epetra_Vector> wdbcloads = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+
+          ParameterList weakdbcparams;
+
+          // set action for elements
+          weakdbcparams.set("action"    ,"enforce_weak_dbc");
+          //weakdbcparams.set("gdt"       ,gamma_*dta_        );
+          //weakdbcparams.set("afgdt"     ,alphaF_*gamma_*dta_);
+          //weakdbcparams.set("total time",time_             );
+
+          // set the only required state vectors
+          if (timealgo_==INPAR::FLUID::timeint_afgenalpha or timealgo_==INPAR::FLUID::timeint_gen_alpha_fluid)
+            discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
+          else
+            discret_->SetState("u and p (n+alpha_F,trial)",velnp_);
+
+          if (alefluid_)
+          {
+            discret_->SetState("dispnp"    , dispnp_   );
+            discret_->SetState("gridvelaf" , gridv_);
+          }
+
+          // evaluate all line weak Dirichlet boundary conditions
+          discret_->EvaluateConditionUsingParentData
+            (weakdbcparams      ,
+             sysmat_            ,
+             Teuchos::null      ,
+             wdbcloads          ,
+             Teuchos::null      ,
+             Teuchos::null      ,
+             "LineWeakDirichlet");
+
+          // evaluate all surface weak Dirichlet boundary conditions
+          discret_->EvaluateConditionUsingParentData
+            (weakdbcparams      ,
+             sysmat_            ,
+             Teuchos::null      ,
+             wdbcloads          ,
+             Teuchos::null      ,
+             Teuchos::null      ,
+             "SurfaceWeakDirichlet");
+
+          // clear state
+          discret_->ClearState();
+
+          // update the residual
+          residual_->Update(1.0,*wdbcloads,1.0);
+        }
 
         //----------------------------------------------------------------------
         // apply mixed/hybrid Dirichlet boundary conditions
@@ -1240,7 +1301,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           // set vector values needed by elements
           discret_->ClearState();
           discret_->SetState("scaaf",scaaf_);
-          if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+          if (timealgo_==INPAR::FLUID::timeint_afgenalpha or timealgo_==INPAR::FLUID::timeint_gen_alpha_fluid)
                discret_->SetState("velaf",velaf_);
           else discret_->SetState("velaf",velnp_);
 
@@ -1642,7 +1703,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     // need the velocities at n+alpha_F in a potential coupling
     // algorithm, for instance.
     // -------------------------------------------------------------------
-    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha or timealgo_==INPAR::FLUID::timeint_gen_alpha_fluid)
     {
       GenAlphaUpdateAcceleration();
 
@@ -2072,7 +2133,7 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
     // need the velocities at n+alpha_F in a potential coupling
     // algorithm, for instance.
     // -------------------------------------------------------------------
-    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha or timealgo_==INPAR::FLUID::timeint_gen_alpha_fluid)
     {
       GenAlphaUpdateAcceleration();
 
@@ -2228,6 +2289,25 @@ void FLD::FluidImplicitTimeInt::GenAlphaIntermediateValues()
   // not implicit treatment as for the genalpha according to Whiting
   velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
 
+  if (timealgo_==INPAR::FLUID::timeint_gen_alpha_fluid)
+  {
+	// set intermediate values for velocity
+	//
+	//       n+alphaF              n+1                   n
+	//      u         = alpha_F * u     + (1-alpha_F) * u
+	//       (i)                   (i)
+	//
+	// and pressure
+	//
+	//       n+1
+	//      p
+	//       (i)
+	//
+	// note that its af-genalpha with mid-point treatment of the pressure,
+	// not implicit treatment as for the genalpha according to Whiting
+    Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(velnp_);
+    LINALG::Export(*onlypre, *velaf_);
+  }
 } // FluidImplicitTimeInt::GenAlphaIntermediateValues
 
 
@@ -2324,7 +2404,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   }
 
   // set scheme-specific element parameters and vector values
-  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+  if (timealgo_==INPAR::FLUID::timeint_afgenalpha or timealgo_==INPAR::FLUID::timeint_gen_alpha_fluid)
        discret_->SetState("velaf",velaf_);
   else discret_->SetState("velaf",velnp_);
 
@@ -2352,7 +2432,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("scaaf",scaaf_);
-    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha or timealgo_==INPAR::FLUID::timeint_gen_alpha_fluid)
          discret_->SetState("velaf",velaf_);
     else discret_->SetState("velaf",velnp_);
 
@@ -2494,7 +2574,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   }
 
   // set scheme-specific element parameters and vector values
-  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+  if (timealgo_==INPAR::FLUID::timeint_afgenalpha or timealgo_==INPAR::FLUID::timeint_gen_alpha_fluid)
        discret_->SetState("velaf",velaf_);
   else discret_->SetState("velaf",velnp_);
 
@@ -2617,7 +2697,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     eleparams.set("action","time update for subscales");
 
     // update time paramters
-    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha or timealgo_==INPAR::FLUID::timeint_gen_alpha_fluid)
     {
       eleparams.set("gamma"  ,gamma_);
     }
@@ -3202,7 +3282,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   }
 
   // set scheme-specific element parameters and vector values
-  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+  if (timealgo_==INPAR::FLUID::timeint_afgenalpha or timealgo_==INPAR::FLUID::timeint_gen_alpha_fluid)
        discret_->SetState("velaf",velaf_);
   else discret_->SetState("velaf",velnp_);
 
@@ -3286,7 +3366,7 @@ void FLD::FluidImplicitTimeInt::AVM3Separation()
   TEUCHOS_FUNC_TIME_MONITOR("           + avm3");
 
   // get fine-scale part of velocity at time n+alpha_F or n+1
-  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+  if (timealgo_==INPAR::FLUID::timeint_afgenalpha or timealgo_==INPAR::FLUID::timeint_gen_alpha_fluid)
     Sep_->Multiply(false,*velaf_,*fsvelaf_);
   else
     Sep_->Multiply(false,*velnp_,*fsvelaf_);
@@ -4229,7 +4309,7 @@ void FLD::FluidImplicitTimeInt::ApplyFilterForClassicalLES()
   {
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = Dirichlet();
     // call only filtering
-    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha or timealgo_==INPAR::FLUID::timeint_gen_alpha_fluid)
     {
       DynSmag_->ApplyFilter(velaf_,dirichtoggle);
     }
@@ -4386,7 +4466,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
 
     eleparams.set("action","calc_fluid_systemmat_and_residual");
     // set scheme-specific element parameters and vector values
-    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha or timealgo_==INPAR::FLUID::timeint_gen_alpha_fluid)
          discret_->SetState("velaf",velaf_);
     else discret_->SetState("velaf", velnp_);
 
@@ -4675,7 +4755,7 @@ void FLD::FluidImplicitTimeInt::SetElementTimeParameter()
   {
     eleparams.set("total time",time_);
   }
-  else if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+  else if (timealgo_==INPAR::FLUID::timeint_afgenalpha or timealgo_==INPAR::FLUID::timeint_gen_alpha_fluid)
   {
     eleparams.set("total time",time_-(1-alphaF_)*dta_);
     eleparams.set("alphaF",alphaF_);

@@ -128,6 +128,9 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype>
 DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::Fluid3SurfaceWeakDBC()
 {
+  // pointer to class Fluid3ImplParameter (access to the general parameter)
+  f3Parameter_ = DRT::ELEMENTS::Fluid3ImplParameter::Instance();
+
   return;
 }
 
@@ -215,7 +218,8 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
   // find out whether we will use a time curve
   bool usetime = true;
-  const double time = params.get("total time",-1.0);
+  //const double time = params.get("total time",-1.0);
+  const double time = f3Parameter_->time_;
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
@@ -289,9 +293,19 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   }
 
   // get time integration parameter
-  const double afgdt = params.get<double>("afgdt");
-  const double gdt   = params.get<double>("gdt");
+  //const double afgdt = params.get<double>("afgdt");
+  //const double gdt   = params.get<double>("gdt");
 
+  const double timefac = f3Parameter_->timefac_;
+  const double timefacpre   = f3Parameter_->timefacpre_;
+  const double timefacrhs   = f3Parameter_->timefacrhs_;
+
+  double timefaccont= 0.0;
+  // continuity equation is evaluated at different times
+  if(params.get("using p^{n+1} generalized-alpha time integration",false))
+    timefaccont   = f3Parameter_->timefacpre_;
+  else
+    timefaccont   = f3Parameter_->timefac_;
 
   //--------------------------------------------------
   // get parent elements location vector and ownerships
@@ -328,24 +342,28 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     =
     discretization.GetState("u and p (n+alpha_F,trial)");
   if (velaf==null)
-  {
     dserror("Cannot get state vector 'velaf'");
-  }
 
   vector<double> mypvelaf((*plm).size());
   DRT::UTILS::ExtractMyValues(*velaf,mypvelaf,*plm);
 
-  // velocities (intermediate time step, n+1)
-  RefCountPtr<const Epetra_Vector> velnp
-    =
-    discretization.GetState("u and p (n+1      ,trial)");
-  if (velnp==null)
-  {
-    dserror("Cannot get state vector 'velnp'");
-  }
-
+  // velocities n+1
   vector<double> mypvelnp((*plm).size());
-  DRT::UTILS::ExtractMyValues(*velnp,mypvelnp,*plm);
+
+  if(params.get("using p^{n+1} generalized-alpha time integration",false))
+  {
+    // velocities (intermediate time step, n+1)
+    RefCountPtr<const Epetra_Vector> velnp
+      =
+      discretization.GetState("u and p (n+1      ,trial)");
+    if (velnp==null)
+      dserror("Cannot get state vector 'velnp'");
+
+    DRT::UTILS::ExtractMyValues(*velnp,mypvelnp,*plm);
+  }
+  // mypvelnp = mypvelaf
+  else
+    DRT::UTILS::ExtractMyValues(*velaf,mypvelnp,*plm);
 
   vector<double> myedispnp ((lm  ).size());
   vector<double> mypedispnp((*plm).size());
@@ -1118,17 +1136,17 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     {
       for (int vi=0; vi<piel; ++vi)
       {
-        elemat(vi*4  ,ui*4+3) += fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(0);
-        elemat(vi*4+1,ui*4+3) += fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(1);
-        elemat(vi*4+2,ui*4+3) += fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(2);
+        elemat(vi*4  ,ui*4+3) += fac*timefacpre*pfunct_(vi)*pfunct_(ui)*n_(0);
+        elemat(vi*4+1,ui*4+3) += fac*timefacpre*pfunct_(vi)*pfunct_(ui)*n_(1);
+        elemat(vi*4+2,ui*4+3) += fac*timefacpre*pfunct_(vi)*pfunct_(ui)*n_(2);
       }
     }
 
     for (int vi=0; vi<piel; ++vi)
     {
-      elevec(vi*4    ) -= fac*pfunct_(vi)*n_(0)*prenp_;
-      elevec(vi*4 + 1) -= fac*pfunct_(vi)*n_(1)*prenp_;
-      elevec(vi*4 + 2) -= fac*pfunct_(vi)*n_(2)*prenp_;
+      elevec(vi*4    ) -= fac*timefacrhs*pfunct_(vi)*n_(0)*prenp_;
+      elevec(vi*4 + 1) -= fac*timefacrhs*pfunct_(vi)*n_(1)*prenp_;
+      elevec(vi*4 + 2) -= fac*timefacrhs*pfunct_(vi)*n_(2)*prenp_;
     }
 
     //--------------------------------------------------
@@ -1147,9 +1165,9 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     {
       for (int vi=0; vi<piel; ++vi)
       {
-        elemat(vi*4+3,ui*4  ) -= fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(0);
-        elemat(vi*4+3,ui*4+1) -= fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(1);
-        elemat(vi*4+3,ui*4+2) -= fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(2);
+        elemat(vi*4+3,ui*4  ) -= fac*timefaccont*pfunct_(vi)*pfunct_(ui)*n_(0);
+        elemat(vi*4+3,ui*4+1) -= fac*timefaccont*pfunct_(vi)*pfunct_(ui)*n_(1);
+        elemat(vi*4+3,ui*4+2) -= fac*timefaccont*pfunct_(vi)*pfunct_(ui)*n_(2);
       }
     }
 
@@ -1165,7 +1183,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     */
     for (int vi=0; vi<piel; ++vi)
     {
-      elevec(vi*4+3) += fac*pfunct_(vi)*
+      elevec(vi*4+3) += fac*timefacrhs*pfunct_(vi)*
         ((velintnp_(0)-(*val)[0]*functionfac(0)*curvefac)*n_(0)
          +
          (velintnp_(1)-(*val)[1]*functionfac(1)*curvefac)*n_(1)
@@ -1180,7 +1198,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     //---------------------------------------------------------------------
     if(!onlynormal)
     {
-      const double timefacnu=fac*2.0*visc*afgdt;
+      const double timefacnu=fac*2.0*visc*timefac;
 
       //--------------------------------------------------
       // partially integrated viscous term
@@ -1253,7 +1271,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
       {
         double nabla_u_o_n[3];
-        nabla_u_o_n[0]=fac*2.0*visc*
+        nabla_u_o_n[0]=fac*timefacrhs*2.0*visc*
           (                     vderxyaf_(0,0) *n_(0)
            +0.5*(vderxyaf_(0,1)+vderxyaf_(1,0))*n_(1)
            +0.5*(vderxyaf_(0,2)+vderxyaf_(2,0))*n_(2));
@@ -1277,7 +1295,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       //--------------------------------------------------
       // (adjoint) consistency term, viscous part
 
-      const double consistencytimefac=fac*2.0*visc*wd_gamma*afgdt;
+      const double consistencytimefac=fac*2.0*visc*wd_gamma*timefac;
 
 
       /*
@@ -1335,7 +1353,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
       for (int vi=0; vi<piel; ++vi)
       {
-        elevec(vi*4    ) += fac*2.0*visc*wd_gamma*(
+        elevec(vi*4    ) += fac*timefacrhs*2.0*visc*wd_gamma*(
           n_(0)*bvres(0)*(    pderxy_(0,vi))
           +
           n_(1)*bvres(0)*(0.5*pderxy_(1,vi))
@@ -1346,7 +1364,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
           +
           n_(0)*bvres(2)*(0.5*pderxy_(2,vi)));
 
-        elevec(vi*4 + 1) += fac*2.0*visc*wd_gamma*(
+        elevec(vi*4 + 1) += fac*timefacrhs*2.0*visc*wd_gamma*(
           n_(1)*bvres(0)*(0.5*pderxy_(0,vi))
           +
           n_(0)*bvres(1)*(0.5*pderxy_(0,vi))
@@ -1357,7 +1375,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
           +
           n_(1)*bvres(2)*(0.5*pderxy_(2,vi)));
 
-        elevec(vi*4 + 2) += fac*2.0*visc*wd_gamma*(
+        elevec(vi*4 + 2) += fac*timefacrhs*2.0*visc*wd_gamma*(
           n_(2)*bvres(0)*(0.5*pderxy_(0,vi))
           +
           n_(2)*bvres(1)*(0.5*pderxy_(1,vi))
@@ -1389,23 +1407,22 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
           //    \                             / boundaryele, inflow
           //
           */
-          const double timefac=fac*afgdt;
 
           for (int ui=0; ui<piel; ++ui)
           {
             for (int vi=0; vi<piel; ++vi)
             {
-              elemat(vi*4    ,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*bvres(0);
-              elemat(vi*4    ,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*bvres(0);
-              elemat(vi*4    ,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*bvres(0);
+              elemat(vi*4    ,ui*4    ) -= fac*timefac*pfunct_(vi)*n_(0)*bvres(0);
+              elemat(vi*4    ,ui*4 + 1) -= fac*timefac*pfunct_(vi)*n_(1)*bvres(0);
+              elemat(vi*4    ,ui*4 + 2) -= fac*timefac*pfunct_(vi)*n_(2)*bvres(0);
 
-              elemat(vi*4 + 1,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*bvres(1);
-              elemat(vi*4 + 1,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*bvres(1);
-              elemat(vi*4 + 1,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*bvres(1);
+              elemat(vi*4 + 1,ui*4    ) -= fac*timefac*pfunct_(vi)*n_(0)*bvres(1);
+              elemat(vi*4 + 1,ui*4 + 1) -= fac*timefac*pfunct_(vi)*n_(1)*bvres(1);
+              elemat(vi*4 + 1,ui*4 + 2) -= fac*timefac*pfunct_(vi)*n_(2)*bvres(1);
 
-              elemat(vi*4 + 2,ui*4    ) -= timefac*pfunct_(vi)*n_(0)*bvres(2);
-              elemat(vi*4 + 2,ui*4 + 1) -= timefac*pfunct_(vi)*n_(1)*bvres(2);
-              elemat(vi*4 + 2,ui*4 + 2) -= timefac*pfunct_(vi)*n_(2)*bvres(2);
+              elemat(vi*4 + 2,ui*4    ) -= fac*timefac*pfunct_(vi)*n_(0)*bvres(2);
+              elemat(vi*4 + 2,ui*4 + 1) -= fac*timefac*pfunct_(vi)*n_(1)*bvres(2);
+              elemat(vi*4 + 2,ui*4 + 2) -= fac*timefac*pfunct_(vi)*n_(2)*bvres(2);
             }
           }
 
@@ -1421,7 +1438,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
           //           <0
           */
 
-          const double fluxtimefac =fac*afgdt*flux;
+          const double fluxtimefac =fac*timefac*flux;
 
           for (int ui=0; ui<piel; ++ui)
           {
@@ -1434,7 +1451,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
           }
         } // end if full_linearisation
 
-        const double fluxfac =fac*flux;
+        const double fluxfac =fac*flux*timefacrhs;
 
         /*
         // factor: 1
@@ -1469,7 +1486,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       //
       */
 
-      const double penaltytimefac=afgdt*tau_B*fac;
+      const double penaltytimefac=timefac*tau_B*fac;
 
       for (int ui=0; ui<piel; ++ui)
       {
@@ -1483,7 +1500,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
         }
       }
 
-      const double penaltyfac=tau_B*fac;
+      const double penaltyfac=tau_B*fac*timefacrhs;
 
       /*
       // factor: nu*Cb/h
@@ -1513,7 +1530,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       //--------------------------------------------------
       // partially integrated viscous term
 
-      const double timefacnu=fac*2.0*visc*afgdt;
+      const double timefacnu=fac*2.0*visc*timefac;
 
       /*
       // factor: 2*nu
@@ -1570,15 +1587,15 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
       for (int vi=0; vi<piel; ++vi)
       {
-        elevec(vi*4    ) += fac*2.0*visc*wd_gamma*pfunct_(vi)*n_(0)*n_o_nabla_u_o_n;
-        elevec(vi*4 + 1) += fac*2.0*visc*wd_gamma*pfunct_(vi)*n_(1)*n_o_nabla_u_o_n;
-        elevec(vi*4 + 2) += fac*2.0*visc*wd_gamma*pfunct_(vi)*n_(2)*n_o_nabla_u_o_n;
+        elevec(vi*4    ) += fac*timefacrhs*2.0*visc*wd_gamma*pfunct_(vi)*n_(0)*n_o_nabla_u_o_n;
+        elevec(vi*4 + 1) += fac*timefacrhs*2.0*visc*wd_gamma*pfunct_(vi)*n_(1)*n_o_nabla_u_o_n;
+        elevec(vi*4 + 2) += fac*timefacrhs*2.0*visc*wd_gamma*pfunct_(vi)*n_(2)*n_o_nabla_u_o_n;
       }
 
       //--------------------------------------------------
       // (adjoint) consistency term, viscous part
 
-      const double consistencytimefac=fac*2.0*visc*wd_gamma*afgdt;
+      const double consistencytimefac=fac*2.0*visc*wd_gamma*timefac;
 
       /*
       // factor: 2*nu*gamma_wd
@@ -1627,15 +1644,15 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       {
         double aux=(pderxy_(0,vi)*n_(0)+pderxy_(1,vi)*n_(1)+pderxy_(2,vi)*n_(2));
 
-        elevec(vi*4    ) += fac*2.0*visc*wd_gamma*aux*n_(0)*bvres_o_n;
-        elevec(vi*4 + 1) += fac*2.0*visc*wd_gamma*aux*n_(1)*bvres_o_n;
-        elevec(vi*4 + 2) += fac*2.0*visc*wd_gamma*aux*n_(2)*bvres_o_n;
+        elevec(vi*4    ) += fac*timefacrhs*2.0*visc*wd_gamma*aux*n_(0)*bvres_o_n;
+        elevec(vi*4 + 1) += fac*timefacrhs*2.0*visc*wd_gamma*aux*n_(1)*bvres_o_n;
+        elevec(vi*4 + 2) += fac*timefacrhs*2.0*visc*wd_gamma*aux*n_(2)*bvres_o_n;
       }
 
       //--------------------------------------------------
       // penalty term
 
-      const double penaltytimefac=afgdt*tau_B*fac;
+      const double penaltytimefac=timefac*tau_B*fac;
 
       /*
       // factor: nu*Cb/h*afgdt
@@ -1665,7 +1682,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
         }
       }
 
-      const double penaltyfac=tau_B*fac;
+      const double penaltyfac=tau_B*fac*timefacrhs;
 
       /*
       // factor: nu*Cb/h
@@ -1705,27 +1722,26 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
           //    \                                              / boundaryele, inflow
           //
           */
-          const double timefac=fac*afgdt;
 
           for (int ui=0; ui<piel; ++ui)
           {
             for (int vi=0; vi<piel; ++vi)
             {
-              elemat(vi*4    ,ui*4    ) -= timefac*bvres_o_n*pfunct_(vi)*n_(0)*n_(0)*pfunct_(ui);
-              elemat(vi*4    ,ui*4 + 1) -= timefac*bvres_o_n*pfunct_(vi)*n_(0)*n_(1)*pfunct_(ui);
-              elemat(vi*4    ,ui*4 + 2) -= timefac*bvres_o_n*pfunct_(vi)*n_(0)*n_(2)*pfunct_(ui);
+              elemat(vi*4    ,ui*4    ) -= fac*timefac*bvres_o_n*pfunct_(vi)*n_(0)*n_(0)*pfunct_(ui);
+              elemat(vi*4    ,ui*4 + 1) -= fac*timefac*bvres_o_n*pfunct_(vi)*n_(0)*n_(1)*pfunct_(ui);
+              elemat(vi*4    ,ui*4 + 2) -= fac*timefac*bvres_o_n*pfunct_(vi)*n_(0)*n_(2)*pfunct_(ui);
 
-              elemat(vi*4 + 1,ui*4    ) -= timefac*bvres_o_n*pfunct_(vi)*n_(1)*n_(0)*pfunct_(ui);
-              elemat(vi*4 + 1,ui*4 + 1) -= timefac*bvres_o_n*pfunct_(vi)*n_(1)*n_(1)*pfunct_(ui);
-              elemat(vi*4 + 1,ui*4 + 2) -= timefac*bvres_o_n*pfunct_(vi)*n_(1)*n_(2)*pfunct_(ui);
+              elemat(vi*4 + 1,ui*4    ) -= fac*timefac*bvres_o_n*pfunct_(vi)*n_(1)*n_(0)*pfunct_(ui);
+              elemat(vi*4 + 1,ui*4 + 1) -= fac*timefac*bvres_o_n*pfunct_(vi)*n_(1)*n_(1)*pfunct_(ui);
+              elemat(vi*4 + 1,ui*4 + 2) -= fac*timefac*bvres_o_n*pfunct_(vi)*n_(1)*n_(2)*pfunct_(ui);
 
-              elemat(vi*4 + 2,ui*4    ) -= timefac*bvres_o_n*pfunct_(vi)*n_(2)*n_(0)*pfunct_(ui);
-              elemat(vi*4 + 2,ui*4 + 1) -= timefac*bvres_o_n*pfunct_(vi)*n_(2)*n_(1)*pfunct_(ui);
-              elemat(vi*4 + 2,ui*4 + 2) -= timefac*bvres_o_n*pfunct_(vi)*n_(2)*n_(2)*pfunct_(ui);
+              elemat(vi*4 + 2,ui*4    ) -= fac*timefac*bvres_o_n*pfunct_(vi)*n_(2)*n_(0)*pfunct_(ui);
+              elemat(vi*4 + 2,ui*4 + 1) -= fac*timefac*bvres_o_n*pfunct_(vi)*n_(2)*n_(1)*pfunct_(ui);
+              elemat(vi*4 + 2,ui*4 + 2) -= fac*timefac*bvres_o_n*pfunct_(vi)*n_(2)*n_(2)*pfunct_(ui);
             }
           }
 
-          const double fluxtimefac =fac*afgdt*flux;
+          const double fluxtimefac =fac*timefac*flux;
 
           /*
           // factor: afgdt
@@ -1758,7 +1774,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
         } // end complete_linearisation
 
-        const double fluxfac =fac*flux;
+        const double fluxfac =fac*flux*timefacrhs;
 
         /*
         // factor: 1
@@ -2063,6 +2079,9 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype>
 DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::Fluid3LineWeakDBC()
 {
+  // pointer to class Fluid3ImplParameter (access to the general parameter)
+  f3Parameter_ = DRT::ELEMENTS::Fluid3ImplParameter::Instance();
+
   return;
 }
 
@@ -2137,9 +2156,12 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
   // find out whether we will use a time curve
   bool usetime = true;
-  const double time = params.get("total time",-1.0);
+  //const double time = params.get("total time",-1.0);
+  //TODO: apply time curve at (n+1) or (n+alphaF)??
+  const double time = f3Parameter_->time_;
   if (time<0.0) usetime = false;
 
+  //TODO: Apply time curve (usetime)??
   // find out whether we will use a time curve and get the factor
   const vector<int>* curve  = (*wdbc_cond).Get<vector<int> >("curve");
   int curvenum = -1;
@@ -2195,10 +2217,19 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   const vector<double>* val = (*wdbc_cond).Get<vector<double> >("val");
 
   // get time integration parameter
-  const double afgdt = params.get<double>("afgdt");
-  const double gdt   = params.get<double>("gdt");
+  //const double afgdt = params.get<double>("afgdt");
+  //const double gdt   = params.get<double>("gdt");
 
+  const double timefac = f3Parameter_->timefac_;
+  const double timefacpre   = f3Parameter_->timefacpre_;
+  const double timefacrhs   = f3Parameter_->timefacrhs_;
 
+  double timefaccont= 0.0;
+  // continuity equation is evaluated at different times
+  if(params.get("using p^{n+1} generalized-alpha time integration",false))
+    timefaccont   = f3Parameter_->timefacpre_;
+  else
+    timefaccont   = f3Parameter_->timefac_;
   //--------------------------------------------------
   // get parent elements location vector and ownerships
 
@@ -2234,24 +2265,28 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     =
     discretization.GetState("u and p (n+alpha_F,trial)");
   if (velaf==null)
-  {
     dserror("Cannot get state vector 'velaf'");
-  }
 
   vector<double> mypvelaf((*plm).size());
   DRT::UTILS::ExtractMyValues(*velaf,mypvelaf,*plm);
 
-  // velocities (intermediate time step, n+1)
-  RefCountPtr<const Epetra_Vector> velnp
-    =
-    discretization.GetState("u and p (n+1      ,trial)");
-  if (velnp==null)
-  {
-    dserror("Cannot get state vector 'velnp'");
-  }
-
+  // velocities n+1
   vector<double> mypvelnp((*plm).size());
-  DRT::UTILS::ExtractMyValues(*velnp,mypvelnp,*plm);
+
+  if(params.get("using p^{n+1} generalized-alpha time integration",false))
+  {
+    // velocities (intermediate time step, n+1)
+    RefCountPtr<const Epetra_Vector> velnp
+      =
+      discretization.GetState("u and p (n+1      ,trial)");
+    if (velnp==null)
+      dserror("Cannot get state vector 'velnp'");
+
+    DRT::UTILS::ExtractMyValues(*velnp,mypvelnp,*plm);
+  }
+  // mypvelnp = mypvelaf
+  else
+    DRT::UTILS::ExtractMyValues(*velaf,mypvelnp,*plm);
 
   vector<double> myedispnp ((lm  ).size());
   vector<double> mypedispnp((*plm).size());
@@ -2936,15 +2971,15 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     {
       for (int vi=0; vi<piel; ++vi)
       {
-        elemat(vi*3  ,ui*3+2) += fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(0);
-        elemat(vi*3+1,ui*3+2) += fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(1);
+        elemat(vi*3  ,ui*3+2) += fac*timefacpre*pfunct_(vi)*pfunct_(ui)*n_(0);
+        elemat(vi*3+1,ui*3+2) += fac*timefacpre*pfunct_(vi)*pfunct_(ui)*n_(1);
       }
     }
 
     for (int vi=0; vi<piel; ++vi)
     {
-      elevec(vi*3    ) -= fac*pfunct_(vi)*n_(0)*prenp_;
-      elevec(vi*3 + 1) -= fac*pfunct_(vi)*n_(1)*prenp_;
+      elevec(vi*3    ) -= fac*timefacrhs*pfunct_(vi)*n_(0)*prenp_;
+      elevec(vi*3 + 1) -= fac*timefacrhs*pfunct_(vi)*n_(1)*prenp_;
     }
 
     //--------------------------------------------------
@@ -2963,8 +2998,8 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     {
       for (int vi=0; vi<piel; ++vi)
       {
-        elemat(vi*3+2,ui*3  ) -= fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(0);
-        elemat(vi*3+2,ui*3+1) -= fac*gdt*pfunct_(vi)*pfunct_(ui)*n_(1);
+        elemat(vi*3+2,ui*3  ) -= fac*timefaccont*pfunct_(vi)*pfunct_(ui)*n_(0);
+        elemat(vi*3+2,ui*3+1) -= fac*timefaccont*pfunct_(vi)*pfunct_(ui)*n_(1);
       }
     }
 
@@ -2980,7 +3015,7 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     */
     for (int vi=0; vi<piel; ++vi)
     {
-      elevec(vi*3+2) += fac*pfunct_(vi)*
+      elevec(vi*3+2) += fac*timefacrhs*pfunct_(vi)*
         ((velintnp_(0)-(*val)[0]*functionfac(0)*curvefac)*n_(0)
          +
          (velintnp_(1)-(*val)[1]*functionfac(1)*curvefac)*n_(1));
@@ -2993,7 +3028,7 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     //---------------------------------------------------------------------
     if(!onlynormal)
     {
-      const double timefacnu=fac*2.0*visc*afgdt;
+      const double timefacnu=fac*2.0*visc*timefac;
 
       //--------------------------------------------------
       // partially integrated viscous term
@@ -3046,8 +3081,8 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
       {
         double nabla_u_o_n[2];
-        nabla_u_o_n[0]=fac*2.0*visc*(vderxyaf_(0,0)*n_(0)+0.5*(vderxyaf_(0,1)+vderxyaf_(1,0))*n_(1));
-        nabla_u_o_n[1]=fac*2.0*visc*(0.5*(vderxyaf_(1,0)+vderxyaf_(0,1))*n_(0)+vderxyaf_(1,1) *n_(1));
+        nabla_u_o_n[0]=fac*timefacrhs*2.0*visc*(vderxyaf_(0,0)*n_(0)+0.5*(vderxyaf_(0,1)+vderxyaf_(1,0))*n_(1));
+        nabla_u_o_n[1]=fac*timefacrhs*2.0*visc*(0.5*(vderxyaf_(1,0)+vderxyaf_(0,1))*n_(0)+vderxyaf_(1,1) *n_(1));
 
         for (int vi=0; vi<piel; ++vi)
         {
@@ -3059,7 +3094,7 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       //--------------------------------------------------
       // (adjoint) consistency term, viscous part
 
-      const double consistencytimefac=fac*2.0*visc*wd_gamma*afgdt;
+      const double consistencytimefac=fac*2.0*visc*wd_gamma*timefac;
 
 
       /*
@@ -3105,14 +3140,14 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
       for (int vi=0; vi<piel; ++vi)
       {
-        elevec(vi*3    ) += fac*2.0*visc*wd_gamma*(
+        elevec(vi*3    ) += fac*timefacrhs*2.0*visc*wd_gamma*(
           n_(0)*bvres(0)*(    pderxy_(0,vi))
           +
           n_(1)*bvres(0)*(0.5*pderxy_(1,vi))
           +
           n_(0)*bvres(1)*(0.5*pderxy_(1,vi)));
 
-        elevec(vi*3 + 1) += fac*2.0*visc*wd_gamma*(
+        elevec(vi*3 + 1) += fac*timefacrhs*2.0*visc*wd_gamma*(
           n_(1)*bvres(0)*(0.5*pderxy_(0,vi))
           +
           n_(0)*bvres(1)*(0.5*pderxy_(0,vi))
@@ -3140,17 +3175,16 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
           //    \                             / boundaryele, inflow
           //
           */
-          const double timefac=fac*afgdt;
 
           for (int ui=0; ui<piel; ++ui)
           {
             for (int vi=0; vi<piel; ++vi)
             {
-              elemat(vi*3    ,ui*3    ) -= timefac*pfunct_(vi)*n_(0)*bvres(0);
-              elemat(vi*3    ,ui*3 + 1) -= timefac*pfunct_(vi)*n_(1)*bvres(0);
+              elemat(vi*3    ,ui*3    ) -= fac*timefac*pfunct_(vi)*n_(0)*bvres(0);
+              elemat(vi*3    ,ui*3 + 1) -= fac*timefac*pfunct_(vi)*n_(1)*bvres(0);
 
-              elemat(vi*3 + 1,ui*3    ) -= timefac*pfunct_(vi)*n_(0)*bvres(1);
-              elemat(vi*3 + 1,ui*3 + 1) -= timefac*pfunct_(vi)*n_(1)*bvres(1);
+              elemat(vi*3 + 1,ui*3    ) -= fac*timefac*pfunct_(vi)*n_(0)*bvres(1);
+              elemat(vi*3 + 1,ui*3 + 1) -= fac*timefac*pfunct_(vi)*n_(1)*bvres(1);
             }
           }
 
@@ -3166,7 +3200,7 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
           //           <0
           */
 
-          const double fluxtimefac =fac*afgdt*flux;
+          const double fluxtimefac =fac*timefac*flux;
 
           for (int ui=0; ui<piel; ++ui)
           {
@@ -3178,7 +3212,7 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
           }
         } // end if full_linearisation
 
-        const double fluxfac =fac*flux;
+        const double fluxfac =fac*timefacrhs*flux;
 
         /*
         // factor: 1
@@ -3212,7 +3246,7 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       //
       */
 
-      const double penaltytimefac=afgdt*tau_B*fac;
+      const double penaltytimefac=timefac*tau_B*fac;
 
       for (int ui=0; ui<piel; ++ui)
       {
@@ -3225,7 +3259,7 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
         }
       }
 
-      const double penaltyfac=tau_B*fac;
+      const double penaltyfac=tau_B*fac*timefacrhs;
 
       /*
       // factor: nu*Cb/h
@@ -3254,7 +3288,7 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       //--------------------------------------------------
       // partially integrated viscous term
 
-      const double timefacnu=fac*2.0*visc*afgdt;
+      const double timefacnu=fac*2.0*visc*timefac;
 
       /*
       // factor: 2*nu
@@ -3299,14 +3333,14 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
       for (int vi=0; vi<piel; ++vi)
       {
-        elevec(vi*3    ) += fac*2.0*visc*wd_gamma*pfunct_(vi)*n_(0)*n_o_nabla_u_o_n;
-        elevec(vi*3 + 1) += fac*2.0*visc*wd_gamma*pfunct_(vi)*n_(1)*n_o_nabla_u_o_n;
+        elevec(vi*3    ) += fac*timefacrhs*2.0*visc*wd_gamma*pfunct_(vi)*n_(0)*n_o_nabla_u_o_n;
+        elevec(vi*3 + 1) += fac*timefacrhs*2.0*visc*wd_gamma*pfunct_(vi)*n_(1)*n_o_nabla_u_o_n;
       }
 
       //--------------------------------------------------
       // (adjoint) consistency term, viscous part
 
-      const double consistencytimefac=fac*2.0*visc*wd_gamma*afgdt;
+      const double consistencytimefac=fac*2.0*visc*wd_gamma*timefac;
 
       /*
       // factor: 2*nu*gamma_wd
@@ -3349,14 +3383,14 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
       {
         double aux=(pderxy_(0,vi)*n_(0)+pderxy_(1,vi)*n_(1));
 
-        elevec(vi*3    ) += fac*2.0*visc*wd_gamma*aux*n_(0)*bvres_o_n;
-        elevec(vi*3 + 1) += fac*2.0*visc*wd_gamma*aux*n_(1)*bvres_o_n;
+        elevec(vi*3    ) += fac*timefacrhs*2.0*visc*wd_gamma*aux*n_(0)*bvres_o_n;
+        elevec(vi*3 + 1) += fac*timefacrhs*2.0*visc*wd_gamma*aux*n_(1)*bvres_o_n;
       }
 
       //--------------------------------------------------
       // penalty term
 
-      const double penaltytimefac=afgdt*tau_B*fac;
+      const double penaltytimefac=timefac*tau_B*fac;
 
       /*
       // factor: nu*Cb/h*afgdt
@@ -3380,7 +3414,7 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
         }
       }
 
-      const double penaltyfac=tau_B*fac;
+      const double penaltyfac=tau_B*fac*timefacrhs;
 
       /*
       // factor: nu*Cb/h
@@ -3419,21 +3453,20 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
           //    \                                              / boundaryele, inflow
           //
           */
-          const double timefac=fac*afgdt;
 
           for (int ui=0; ui<piel; ++ui)
           {
             for (int vi=0; vi<piel; ++vi)
             {
-              elemat(vi*3    ,ui*3    ) -= timefac*bvres_o_n*pfunct_(vi)*n_(0)*n_(0)*pfunct_(ui);
-              elemat(vi*3    ,ui*3 + 1) -= timefac*bvres_o_n*pfunct_(vi)*n_(0)*n_(1)*pfunct_(ui);
+              elemat(vi*3    ,ui*3    ) -= fac*timefac*bvres_o_n*pfunct_(vi)*n_(0)*n_(0)*pfunct_(ui);
+              elemat(vi*3    ,ui*3 + 1) -= fac*timefac*bvres_o_n*pfunct_(vi)*n_(0)*n_(1)*pfunct_(ui);
 
-              elemat(vi*3 + 1,ui*3    ) -= timefac*bvres_o_n*pfunct_(vi)*n_(1)*n_(0)*pfunct_(ui);
-              elemat(vi*3 + 1,ui*3 + 1) -= timefac*bvres_o_n*pfunct_(vi)*n_(1)*n_(1)*pfunct_(ui);
+              elemat(vi*3 + 1,ui*3    ) -= fac*timefac*bvres_o_n*pfunct_(vi)*n_(1)*n_(0)*pfunct_(ui);
+              elemat(vi*3 + 1,ui*3 + 1) -= fac*timefac*bvres_o_n*pfunct_(vi)*n_(1)*n_(1)*pfunct_(ui);
             }
           }
 
-          const double fluxtimefac =fac*afgdt*flux;
+          const double fluxtimefac =fac*timefac*flux;
 
           /*
           // factor: afgdt
@@ -3460,7 +3493,7 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
         } // end complete_linearisation
 
-        const double fluxfac =fac*flux;
+        const double fluxfac =fac*timefacrhs*flux;
 
         /*
         // factor: 1

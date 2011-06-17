@@ -76,7 +76,8 @@ DRT::ELEMENTS::Fluid3ImplParameter::Fluid3ImplParameter()
   alphaM_(0.0),
   afgdt_(1.0),
   timefacrhs_(1.0),
-  timefacmat_p_(1.0),
+  timefacpre_(1.0),
+  rhsresfac_(1.0),
   viscreastabfac_(0.0),
   Cs_(0.0),
   l_tau_(0.0)
@@ -109,6 +110,11 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementGeneralFluidParameter( Teucho
     is_stationary_ = true;
   }
   else if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+  {
+    is_genalpha_ = true;
+    is_stationary_ = false;
+  }
+  else if (timealgo_==INPAR::FLUID::timeint_gen_alpha_fluid)
   {
     is_genalpha_ = true;
     is_stationary_ = false;
@@ -353,6 +359,19 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTimeParameter( Teuchos::Param
     // generalized-alpha: timefac = (alpha_F/alpha_M) * gamma * dt
     // (For BDF2 and generalized-alpha, theta was already computed
     //  accordingly in FLD::FluidImplicitTimeInt::PrepareTimeStep().)
+
+    //-------------------------------------------------------------------------------------------
+    //       |          timefac         |  timefacpre     |    timefacrhs   |  rhsresfac         |
+    // -------------------------------------------------------------------------------------------
+    // OST   |                        dt*theta                              | dt (see momresold) |
+    //--------------------------------------------------------------------------------------------
+    // BDF2  |                        2/3 * dt                              |       dt           |
+    //--------------------------------------------------------------------------------------------
+    // Af GA |          alphaF*gamma*dt/alphaM            | gamma*dt/alphaM |  gamma*dt/alphaM   |
+    //--------------------------------------------------------------------------------------------
+ // GA-Fluid | alphaF*gamma*dt/alphaM   | gamma*dt/alphaM | gamma*dt/alphaM |  gamma*dt/alphaM   |
+    //-------------------------------------------------------------------------------------------
+
     timefac_ = theta_*dt_;
 
     // compute generalized-alpha-related values and set them appropriately
@@ -374,24 +393,49 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTimeParameter( Teuchos::Param
     // Peter's generalized alpha: timefacmat_u_ for velocity terms
     afgdt_=alphaF_*gamma_*dt_;
 
-    if (timealgo_ == INPAR::FLUID::timeint_gen_alpha)
+    // timeint_gen_alpha = p(n+1) (Peter's genalpha)
+    if (timealgo_ == INPAR::FLUID::timeint_gen_alpha_fluid)
     {
       // if not generalized-alpha: timefacrhs_=theta * dt_ = timefac_
+      //timefacrhs_ = 1.0;
+      //timefacmat_p_ = gamma_*dt_;
+      timefacpre_ = gamma_/alphaM_*dt_;
+      timefacrhs_ = gamma_/alphaM_*dt_;
+      rhsresfac_ =  gamma_/alphaM_*dt_;
+    }
+    else if (timealgo_ == INPAR::FLUID::timeint_gen_alpha)
+    {
+      timefac_ = alphaF_*gamma_*dt_;
+      timefacpre_ = gamma_*dt_;
       timefacrhs_ = 1.0;
-      timefacmat_p_ = gamma_*dt_;
+      // not used
+      rhsresfac_ =  1.0;
+
+      // work around for weak dirichlet BC
+      time_ = time_+(1-alphaF_)*dt_;
+    }
+    else if(timealgo_ == INPAR::FLUID::timeint_afgenalpha)
+    {
+      timefacpre_ = gamma_*alphaF_/alphaM_*dt_;
+      timefacrhs_ = gamma_/alphaM_*dt_;
+      rhsresfac_ =  gamma_/alphaM_*dt_;
     }
     else
     {
-      // if not generalized-alpha: timefacrhs_=theta * dt_ = timefac_
-      timefacrhs_ = gamma_/alphaM_*dt_;
       // if not generalized-alpha: timefacmat_p_=theta * dt_ = timefac_
-      timefacmat_p_ = alphaF_*gamma_/alphaM_*dt_;
+      timefacpre_ = gamma_*alphaF_/alphaM_*dt_;
+      // if not generalized-alpha: timefacrhs_=theta * dt_ = timefac_
+      timefacrhs_ = gamma_*alphaF_/alphaM_*dt_;
+      //rhsresfac_ = dt_;
+      rhsresfac_ = gamma_*alphaF_/alphaM_*dt_;
     }
   }
   else // is_stationary == true
   {
     // set timefactor for stationary case to 1.0
-    timefac_ = 1.0;
+	timefac_ = 1.0;
+	timefacrhs_ = 1.0;
+	rhsresfac_ = 1.0;
   }
 
   if (dt_ < 0.0 or theta_ < 0.0 or time_ < 0.0 or omtheta_ < 0.0 or gamma_ < 0.0
@@ -470,7 +514,7 @@ void DRT::ELEMENTS::Fluid3ImplParameter::PrintFluidParameter()
     //! time integration factor for the right hand side (boundary elements)
     cout << "|    time factor rhs:   " << timefacrhs_ << endl;
     //! time integration factor for the left hand side (pressure)
-    cout << "|    time factor mat_p:   " << timefacmat_p_ << endl;
+    cout << "|    time factor mat_p:   " << timefacpre_ << endl;
     cout << "|---------------------------------------------------------------------------" << endl;
 
     cout << endl << "|---------------------------------------------------------------------------" << endl;

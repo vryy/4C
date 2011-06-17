@@ -1456,6 +1456,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     weakdbcparams.set("gdt"       ,gamma_*dt_        );
     weakdbcparams.set("afgdt"     ,alphaF_*gamma_*dt_);
     weakdbcparams.set("total time",time_             );
+    weakdbcparams.set("using p^{n+1} generalized-alpha time integration",true);
 
     // set the only required state vectors
     discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
@@ -1499,7 +1500,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   //----------------------------------------------------------------------
   vector<DRT::Condition*> MHDcnd;
   discret_->GetCondition("SurfaceMixHybDirichlet",MHDcnd);
-  
+
   if(MHDcnd.size()!=0)
   {
 
@@ -1525,7 +1526,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
        Teuchos::null        ,
        Teuchos::null        ,
        "LineMixHybDirichlet");
-    
+
     // clear state
     discret_->ClearState();
 
@@ -2506,7 +2507,7 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidGenAlphaIntegration::EvaluateErrorComparedToAnalyticalSol()
 {
-  INPAR::FLUID::InitialField calcerr = DRT::INPUT::get<INPAR::FLUID::InitialField>(params_, "eval err for analyt sol");
+  INPAR::FLUID::CalcError calcerr = DRT::INPUT::get<INPAR::FLUID::CalcError>(params_,"calculate error");
 
   //------------------------------------------------------- beltrami flow
   switch (calcerr)

@@ -119,7 +119,9 @@ public:
   //! time integration factor for the right hand side (boundary elements)
   double timefacrhs_;
   //! time integration factor for the left hand side (pressure)
-  double timefacmat_p_;
+  double timefacpre_;
+  //! rhs residual factor
+  double rhsresfac_;
 
   /// parameter for stabilization
   //! (sign) factor for viscous and reactive stabilization terms
