@@ -1485,11 +1485,189 @@ You will be prompted to enter the workspace directory. Leave it as recommended a
 
 \item Happy development...
 
-
-
 \end{itemize}
-BACI is now checked out and ready to use.
 
 \subsubsection{Usage}
 
 Refer to the experienced and friendly Eclipse community at LNM or the help in Eclipse and the web.
+
+\newpage
+
+\subsection{Checkout student version of BACI (version controlled: git)}
+
+\subsubsection{git}
+
+\paragraph{In your home directory}
+
+\begin{enumerate}
+  \item check out a svn version with git (in a new folder): \\
+  git svn clone -r (Revision number) svn://gauss/trunk/ccarat Baci \\
+  Revision number: actual Baci reversion number ($\rightarrow $ entire Baci is checked out without this number)
+  \item clone the git version which you have just checked out into a new folder e.g. Baci\_stud/ (execute the command in the new folder): \\
+  git clone Baci Baci\_stud
+  \item generate a new branch (you can have as many branches as students): \\
+  git branch student\_name
+  \item change to new branch: \\
+  git checkout student\_name
+\end{enumerate}
+
+\paragraph{Important}
+
+\begin{itemize}
+  \item show connections: \\
+  git config -$\,$-list
+  \item git pull cannot be executed in branch student\_name: \\
+  git config branch.student\_name.merge refs/heads/master ??\\
+  git config  branch.student\_name.remote origin 
+\end{itemize}
+
+
+\paragraph{In students home directory}
+
+\begin{enumerate}
+  \item open $\sim$/.bashrc: \\
+  add \texttt{module load openmpi-i386} to the end of the file \\
+  add \texttt{alias eclipse="/lnm/programs/eclipse\_cdt6/eclipse"} $ \rightarrow $ eclipse can be executed by \texttt{eclipse} in the shell
+  \item close actual shell and open a new shell
+  \item clone the repository Baci\_stud: \\
+  git clone $ ~$ -$\,$-bare -b student\_name myname@mycomputer.lnm.mw.tum.de:/myDirectory/Baci\_stud Baci\_bare
+  \item delete master branch (if there is one): \\
+  git branch $\rightarrow $ list all branches in the actual clone \\
+  git branch -d master \\
+\end{enumerate}
+
+\paragraph{On the local hard drive /scratch}
+
+\begin{enumerate}
+  \item generate your own folder structure:
+\begin{itemize}
+  \item mkdir student\_name
+  \item cd student\_name
+  \item mkdir workspace
+  \item cd workspace
+\end{itemize}
+  \item clone baci\_bare to this folder (it will be your future workspace): \\
+  git clone -b student\_name $\sim$/Baci\_bare baci
+\end{enumerate}
+
+\paragraph{Important}
+
+Including this framework the student can work on different computers allways connected to an actual version. Therefore, they must update Baci\_bare in their home directory each day.
+
+\begin{itemize}
+  \item git pull cannot be executed from baci\_bare $\rightarrow$ update Baci\_bare: \\
+  git push $\sim$ /student/Baci\_bare $\rightarrow$ update Baci\_bare
+  \item getting actual version from Baci\_bare: \\
+  git pull $\sim$/bBaci\_bare $\rightarrow$ update Baci\_bare 
+\end{itemize}
+
+\paragraph{Usefull commands}
+
+\begin{itemize}
+  \item git diff \$ * | kompare - \\
+  compare the files in kompare
+  \item git diff branch\_name \$ * | kompare - \\
+  compare actual branch to branch\_name in kompare
+  \item update baci version of the student
+  \begin{enumerate}
+    \item git svn rebase \\
+    get actual version from the svn repository
+    \item git pull $\sim$/Baci (in folder Baci\_stud) \\
+    pull the actual version to Baci\_stud (only the active branch is updated)
+    \item pull student@red??.stud:$\sim$/Baci\_stud\\
+    this command is necessary to get the actual version of the student (merge student version with version Baci\_stud) \\
+    possible conflicts need to be resolved
+    \item push ehrl@red??.stud:$\sim$/Baci\_bare
+  \end{enumerate}
+  \item resolve conflicts
+\end{itemize}
+
+
+\subsubsection{Eclipse version: Galileo}
+
+\begin{enumerate}
+\item execute \texttt{eclipse} (see paragraph: In students home directory) to start eclipse
+
+\item browse to your \texttt{workspace}: \texttt{/scratch/student\_name/workspace} and press Ok
+
+\item If you are not already there, choose "Workbench"
+
+\item \texttt{File -> New -> C++ Project...}
+
+\item project name need to be identical to the folder \texttt{baci} generated with git
+\begin{itemize}
+  \item \texttt{Project name: baci} 
+  \item choose \texttt{Executable $\rightarrow$ empty project} 
+  \item press \texttt{Finish}
+  \item your folder structure should show up in the tab \texttt{Project Explorer} 
+\end{itemize}
+
+\item Change to the shell and configure BACI as usual:
+\begin{itemize}
+  \item \texttt{mkdir baci\_debug}
+  \item \texttt{cd baci\_debug}
+  \item \texttt{kate ../do-configure-f12}
+  \item change line \texttt{BUILD\_TYPE="Release"} to \texttt{BUILD\_TYPE="Debug"}
+  \item change line \texttt{-D DEBUG:BOOL=OFF} to \texttt{-D DEBUG:BOOL=ON}
+  \item \texttt{../do-configure-f12}
+  \item it will take some seconds
+\end{itemize}
+
+\item Now go back to eclipse
+
+\item If you are not already there, choose "Workbench".
+
+\item Right-Click on BACI in the Project Explorer and Choose \texttt{Properties}
+
+\item \texttt{C/C++ Build} $ \rightarrow $ tab \texttt{Builder Settings}:
+\begin{itemize}
+ \item De-Select \texttt{Generate Makefiles automatically}
+ \item \texttt{Build directory}: browse via \texttt{File system} to your folder \\
+ /scratch/student\_name/workspace/baci/baci\_debug
+\end{itemize}
+
+\item \texttt{C/C++ Build} $ \rightarrow $ tab \texttt{Behaviour}:
+\begin{itemize}
+  \item Activate \texttt{Use parallel build} on 2 processors
+  \item remove "all" from \texttt{Build on resource save (Auto build)}
+  \item remove "all" from \texttt{Build (Incremental build)}
+\end{itemize}
+
+\item Open subitem of \texttt{C/C++ Build} named \texttt{Discovery Options}
+\begin{itemize}
+ \item \texttt{Discover Profile Options}: browse to your previously created Makefile
+ \item press \texttt{Load} to load all defines flag from your Makefile (Baci\_debug/Makefile)
+\end{itemize}
+
+\item Open subitem of \texttt{C/C++ General} named \texttt{Path and Symbols}
+\begin{itemize}
+  \item tab \texttt{Includes}, add: Directory $\rightarrow$ Max and select \texttt{Add to all configurations}, \texttt{Add to all language} (\texttt{Is a workspace path} need to be deselected)
+  \item Under \texttt{Symbols}, add: Name $\rightarrow$ Moritz and select \texttt{Add to all configurations}, \texttt{Add to all language}
+\end{itemize}
+
+\item Restart eclipse!
+
+\item compile project by \texttt{Project} $\rightarrow$ \texttt{Build all}
+\end{enumerate}
+
+\subsubsection{Debugging in eclipse}
+
+\begin{itemize}
+
+\item Add debug configuration (small bug in the bar): double click on \texttt{C/C++ local application}
+
+\item Configure debug configuration: (identical to command \texttt{./baci-debug (Inputfile) (Outputfile)} in the shell):
+
+\begin{itemize}
+\item Under \texttt{Main}
+\item choose your project
+\item choose your application (Baci\_debug/baci-debug)
+\item Under \texttt{Arguments}
+\item add \texttt{\$ \{file\_prompt\} XXX} to box
+\item choose your working direction (all data are saved in this folder)
+\end{itemize}
+
+\end{itemize}
+
+BACI is now checked out and ready to use.
+
