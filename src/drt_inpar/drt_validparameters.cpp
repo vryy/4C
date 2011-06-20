@@ -1357,6 +1357,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("BEAMS_NEWGAP","No","choose between original or enhanced gapfunction",
                                 yesnotuple,yesnovalue,&scontact);
 
+  setStringToIntegralParameter<int>("BEAMS_SMOOTHING","None","Application of smoothed tangent field",
+       tuple<std::string>("None","none",
+                          "Smoothed","smoothed",
+                          "Partially","partially",
+                          "Cpp", "cpp"),
+       tuple<int>(
+                  INPAR::CONTACT::bsm_none,INPAR::CONTACT::bsm_none,
+                  INPAR::CONTACT::bsm_smoothed,INPAR::CONTACT::bsm_smoothed,
+                  INPAR::CONTACT::bsm_partially,INPAR::CONTACT::bsm_partially,
+                  INPAR::CONTACT::bsm_cpp,INPAR::CONTACT::bsm_cpp),
+       &scontact);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& interaction_potential = list->sublist("INTERACTION POTENTIAL",false,"");
 
