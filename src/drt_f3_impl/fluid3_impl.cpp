@@ -2355,8 +2355,8 @@ else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
   f3Parameter_->reaction_ = true;
 
   // check stabilization parameter definition for permeable fluid
-  if (not (f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin or
-           f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_wo_dt))
+  if (not (f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
+           f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
     dserror("incorrect definition of stabilization parameter for Darcy or Darcy-Stokes problem");
 }
 else dserror("Material type is not supported");
@@ -2687,6 +2687,10 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
   //    -> differentiating tau_Mu and tau_Mp for this definition
   // D) definition according to Codina (1998)
   //    -> differentiating tau_Mu and tau_Mp for this definition
+  // E) definition according to Franca et al. (2005) as well as Badia
+  //    and Codina (2010)
+  //    -> only for Darcy or Darcy-Stokes/Brinkman flow, hence only
+  //       tau_Mp for this definition
   //---------------------------------------------------------------------
   // get element-type constant for tau
   const double mk = DRT::ELEMENTS::MK<distype>();
@@ -2997,8 +3001,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
   }
   break;
 
-  case INPAR::FLUID::tau_franca_madureira_valentin:
-  case INPAR::FLUID::tau_franca_madureira_valentin_wo_dt:
+  case INPAR::FLUID::tau_franca_madureira_valentin_badia_codina:
+  case INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt:
   {
     /*
 
@@ -3006,16 +3010,19 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
     (viscous-)reactive problems such as Darcy(-Stokes/Brinkman) problems.
 
     literature:
-       L.P. Franca, A.L. Madureira, F. Valentin, Towards multiscale
+    1) L.P. Franca, A.L. Madureira, F. Valentin, Towards multiscale
        functions: enriching finite element spaces with local but not
        bubble-like functions, Comput. Methods Appl. Mech. Engrg. 194
        (2005) 3006-3021.
+    2) S. Badia, R. Codina, Stabilized continuous and discontinuous
+       Galerkin techniques for Darcy flow, Comput. Methods Appl.
+       Mech. Engrg. 199 (2010) 1654-1667.
 
     */
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient
     double sigma_tot = reacoeff_;
-    if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin)
+    if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
       sigma_tot += 1.0/f3Parameter_->timefac_;
 
     // calculate characteristic element length
@@ -3028,9 +3035,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
     // respective "switching" parameter
     const double xi11 = DMAX(re11,1.0);
 
+    // constant c_u as suggested in Badia and Codina (2010), method A
+    // (set to be 4.0 in Badia and Codina (2010), 1.0 in Franca et al. (2005))
+    const double c_u = 4.0;
+
     // tau_Mu not required
     tau_(0) = 0.0;
-    tau_(1) = DSQR(hk)/(DSQR(hk)*densaf_*sigma_tot*xi11+(2.0*visceff_/mk));
+    tau_(1) = DSQR(hk)/(c_u*DSQR(hk)*densaf_*sigma_tot*xi11+(2.0*visceff_/mk));
   }
   break;
 
@@ -3045,6 +3056,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
   // C) scaled version of definition according to Taylor et al. (1998)
   // D) definition according to Wall (1999)
   // E) definition according to Codina (2002)
+  // F) definition according to Badia and Codina (2010)
+  //    (only for Darcy or Darcy-Stokes/Brinkman flow)
   //---------------------------------------------------------------------
   // computation depending on which parameter definition is used
   switch (f3Parameter_->whichtau_)
@@ -3191,19 +3204,26 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcStabParameter(const double vol)
   }
   break;
 
-  case INPAR::FLUID::tau_franca_madureira_valentin:
-  case INPAR::FLUID::tau_franca_madureira_valentin_wo_dt:
+  case INPAR::FLUID::tau_franca_madureira_valentin_badia_codina:
+  case INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt:
   {
     /*
 
     This stabilization parameter is only intended to be used for
     (viscous-)reactive problems such as Darcy(-Stokes/Brinkman) problems.
-    The stabilization parameter tau_C is set to zero for such problems,
-    for the time being.
+
+    literature:
+       S. Badia, R. Codina, Stabilized continuous and discontinuous
+       Galerkin techniques for Darcy flow, Comput. Methods Appl.
+       Mech. Engrg. 199 (2010) 1654-1667.
 
     */
 
-    tau_(2) = 0.0;
+    // constant c_p as suggested in Badia and Codina (2010), method A
+    // (set to be 4.0 in Badia and Codina (2010))
+    const double c_p = 4.0;
+
+    tau_(2) = c_p*DSQR(hk)*reacoeff_;
   }
   break;
 

@@ -181,8 +181,8 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementGeneralFluidParameter( Teucho
                        INPAR::FLUID::tau_shakib_hughes_codina_wo_dt or
                        INPAR::FLUID::tau_codina or
                        INPAR::FLUID::tau_codina_wo_dt or
-                       INPAR::FLUID::tau_franca_madureira_valentin or
-                       INPAR::FLUID::tau_franca_madureira_valentin_wo_dt))
+                       INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
+                       INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
     dserror("Definition of Tau cannot be handled by the element");
 
   // set correct stationary definition of stabilization parameter automatically
@@ -200,8 +200,8 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementGeneralFluidParameter( Teucho
       whichtau_ = INPAR::FLUID::tau_shakib_hughes_codina_wo_dt;
     else if (whichtau_ == INPAR::FLUID::tau_codina)
       whichtau_ = INPAR::FLUID::tau_codina_wo_dt;
-    else if (whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin)
-      whichtau_ = INPAR::FLUID::tau_franca_madureira_valentin_wo_dt;
+    else if (whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
+      whichtau_ = INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt;
   }
 
   // overrule higher_order_ele if input-parameter is set
@@ -433,9 +433,9 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTimeParameter( Teuchos::Param
   else // is_stationary == true
   {
     // set timefactor for stationary case to 1.0
-	timefac_ = 1.0;
-	timefacrhs_ = 1.0;
-	rhsresfac_ = 1.0;
+    timefac_ = 1.0;
+    timefacrhs_ = 1.0;
+    rhsresfac_ = 1.0;
   }
 
   if (dt_ < 0.0 or theta_ < 0.0 or time_ < 0.0 or omtheta_ < 0.0 or gamma_ < 0.0
