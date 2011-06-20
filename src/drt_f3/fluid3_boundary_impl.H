@@ -603,6 +603,8 @@ private:
   double visc_;
   //! density at t_(n+alpha_F) or t_(n+1)
   double densaf_;
+  //! density factor for Neumann boundary conditions (set according to problem type)
+  double densfac_;
 
   };  // end class fluid3boundaryImpl
 

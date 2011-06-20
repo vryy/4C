@@ -503,7 +503,7 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
     // (evaluation always at integration point, in contrast to parent element)
     GetMaterialParams(material,escaaf,thermpressaf);
 
-    const double fac_curvefac_timefac_dens = fac_*curvefac*timefac*densaf_;
+    const double fac_curve_time_dens = fac_*curvefac*timefac*densfac_;
 
     // factor given by spatial function
     double functfac = 1.0;
@@ -528,10 +528,9 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
             // evaluate function at current gauss point
             functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(idim,coordgpref,time,NULL);
           }
-          else
-            functfac = 1.0;
+          else functfac = 1.0;
         }
-        const double valfac = (*val)[idim]*fac_curvefac_timefac_dens*functfac;
+        const double valfac = (*val)[idim]*fac_curve_time_dens*functfac;
 
         for(int inode=0; inode < bdrynen_; ++inode )
         {
@@ -2334,8 +2333,10 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::GetMaterialParams(
   const double                         thermpressaf
 )
 {
-// initially set density value to 1.0
-densaf_ = 1.0;
+// initially set density and density factor for Neumann boundary conditions to 1.0
+// (the latter only changed for low-Mach-number flow/combustion problems)
+densaf_  = 1.0;
+densfac_ = 1.0;
 
 if (material->MaterialType() == INPAR::MAT::m_fluid)
 {
@@ -2365,6 +2366,9 @@ else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
 
   // compute density at n+alpha_F or n+1 based on mixture fraction
   densaf_ = actmat->ComputeDensity(mixfracaf);
+
+  // set density factor for Neumann boundary conditions to density for present material
+  densfac_ = densaf_;
 }
 else if (material->MaterialType() == INPAR::MAT::m_sutherland)
 {
@@ -2379,6 +2383,9 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
   // compute density at n+alpha_F or n+1 based on temperature
   // and thermodynamic pressure
   densaf_ = actmat->ComputeDensity(tempaf,thermpressaf);
+
+  // set density factor for Neumann boundary conditions to density for present material
+  densfac_ = densaf_;
 }
 else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
 {
@@ -2395,6 +2402,9 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
 
   // compute density at n+alpha_F or n+1 based on progress variable
   densaf_ = actmat->ComputeDensity(provaraf);
+
+  // set density factor for Neumann boundary conditions to density for present material
+  densfac_ = densaf_;
 }
 else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
 {
@@ -2411,6 +2421,9 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
 
   // compute density at n+alpha_F or n+1 based on progress variable
   densaf_ = actmat->ComputeDensity(provaraf);
+
+  // set density factor for Neumann boundary conditions to density for present material
+  densfac_ = densaf_;
 }
 else if (material->MaterialType() == INPAR::MAT::m_permeable_fluid)
 {
