@@ -168,7 +168,7 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
     }
 
   int anisotropic;
-  int haveHU_;
+
   ExtractfromPack(position,data,anisotropic);
   anisotropic_ = anisotropic != 0;
 
@@ -177,7 +177,9 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,A1_);
   ExtractfromPack(position,data,A2_);
   ExtractfromPack(position,data,A1A2_);
-  ExtractfromPack(position,data,haveHU_);
+  int haveHU;
+  ExtractfromPack(position,data,haveHU);
+  haveHU_ = haveHU != 0;
   ExtractfromPack(position,data,HU_);
 
   if (position != data.size())
@@ -519,7 +521,7 @@ void MAT::ElastHyper::Evaluate(
       p->second->AddCoefficientsPrincCalcified(havecoeffprinc,HU_,gamma,delta,prinv);
     }
   }
-
+  cout << havecoeffprinc << endl;
   // principal invariants of right Cauchy-Green strain
   LINALG::Matrix<3,1> modinv;
   InvariantsModified(modinv, prinv);

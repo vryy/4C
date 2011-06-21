@@ -42,7 +42,7 @@ Teuchos::RCP<MAT::Material> MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke::Create
 
 
 /*----------------------------------------------------------------------*
- |  Constructor                                   (public) AMaier 04/09 |
+ |  Constructor                                   (public) AMaier 06/11 |
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke()
   : Summand(),
@@ -52,7 +52,7 @@ MAT::ELASTIC::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke()
 
 
 /*----------------------------------------------------------------------*
- |  Constructor                                 (public)   AMaier 04/09 |
+ |  Constructor                                 (public)   AMaier 06/11 |
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke(MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke* params)
   : params_(params)
@@ -88,7 +88,6 @@ void MAT::ELASTIC::IsoVolHUDependentNeoHooke::AddCoefficientsPrincCalcified(
   { 
     alpha = 0.5*params_->alphamax_*(tanh(6.907*(HU - 0.5*(params_->ctmin_ +params_->ctmax_))/(params_->ctmax_ - params_->ctmin_)) + 1.0);
   } 
-
 
   // principal coefficients
   gamma(0) += alpha * (2.*1.*pow(prinv(2),-1./3.));
