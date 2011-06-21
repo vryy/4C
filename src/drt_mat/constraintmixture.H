@@ -4,8 +4,9 @@
 This file contains routines for constraint mixture growth and remodeling.
 example input line
 MAT 1 MAT_ConstraintMixture DENS 0.001 MUE 1.0E3 PHIE 0.08 PREELA 1.0
-K1 1.0 K2 1.0 PRECOLL 1.0 KAPPA 1.0E4 LIFETIME 5.0
-HOMSTR 0.0 GROWTHFAC 0.0 STARTTIME 100.0 EXPLICIT 1 TOL 1.0E-8
+K1 1.0 K2 1.0 PRECOLL 1.0 KAPPA 1.0E4 LIFETIME 5.0 HOMSTR 0.0
+GROWTHFAC 0.0 STARTTIME 100.0 INTEGRATION Explicit TOL 1.0E-8
+GROWTHFORCE Single
 
 Here an approach for growth and remodeling of an artery is modeled.
 For a detailed description see:
@@ -79,10 +80,12 @@ namespace MAT
       const double growthfactor_;
       // at this time turnover of collagen starts
       const double starttime_;
-      // wether explicit or implicit time integration scheme
-      const bool explicit_;
+      // time integration scheme (Explicit,Implicit)
+      const string* integration_;
       // tolerance for local Newton iteration
       const double abstol_;
+      // driving force of growth (Single,All)
+      const string* growthforce_;
       //@}
 
       /// create material instance of matching type with my parameters
@@ -111,6 +114,7 @@ namespace MAT
   /// Wrapper for history of constraint mixture material
   class ConstraintMixtureHistory : public DRT::ParObject
   {
+    friend class ConstraintMixture;
   public:
     /// construct empty history object
     ConstraintMixtureHistory(){;}
@@ -126,6 +130,7 @@ namespace MAT
     /// Setup
     void Setup(const int ngp, const double massprodbasal);
 
+  private:
     // communicate time variables to the outside
     void SetTime(double deptime, double dt) {depositiontime_ = deptime; dt_ = dt;};
     void GetTime(double* deptime, double* dt) {*deptime = depositiontime_; *dt = dt_;};
@@ -141,7 +146,6 @@ namespace MAT
     // return number of gausspoints
     int NumGP() const { return numgp_;}
 
-  private:
     /// deposition time of collagen fibers
     double depositiontime_;
     /// time step at this time
@@ -271,7 +275,7 @@ namespace MAT
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
     /// Return variables for visualization
-    double GetVis(int gp) const {return vismassstress_->at(gp);}
+    LINALG::Matrix<3,1> GetVis(int gp) const {return vismassstress_->at(gp);}
 
     Teuchos::RCP<vector<LINALG::Matrix<3,1> > > Geta1() const {return a1_;}
     Teuchos::RCP<vector<LINALG::Matrix<3,1> > > Geta2() const {return a2_;}
@@ -286,7 +290,7 @@ namespace MAT
     MAT::PAR::ConstraintMixture* params_;
 
     /// temporary for visualization
-    Teuchos::RCP<vector<double> > vismassstress_;
+    Teuchos::RCP<vector<LINALG::Matrix<3,1> > > vismassstress_;
     /// basal rate of mass production
     double massprodbasal_;
 
@@ -315,8 +319,23 @@ namespace MAT
       double time  ///< time
     );
 
+    /// elastic response for one collagen fiber family
+    void EvaluateFiberFamily
+    (
+      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
+      const int gp,  ///< current Gauss point
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
+      LINALG::Matrix<3,1> a,  ///< fiber vector
+      double* currmassdens,  ///< current massdensity
+      const int firstiter,  ///< iteration index, different for explicit and implicit integration
+      double dt,  ///< delta time
+      double time,  ///< time
+      const int idfiber  ///< number of fiber family 0,1,2,3
+     );
+
     /// elastic response for one collagen fiber
-    void EvaluateFiber
+    void EvaluateSingleFiber
     (
       const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
@@ -343,16 +362,26 @@ namespace MAT
       double refMassDens  ///< initial mass density
     );
 
-    /// computes mass production rates
+    /// computes mass production rates for all fiber families
     void MassProduction
     (
       const int gp,  ///< current Gauss point
       LINALG::Matrix<NUM_STRESS_3D,1> C,  ///< cauchy green strain
-      LINALG::Matrix<3,3>* Cmatrix,
       LINALG::Matrix<NUM_STRESS_3D,1> S,  ///< 2nd PK-stress
-      LINALG::Matrix<3,3>* Smatrix,
       LINALG::Matrix<4,1>* massstress,  ///< growth stress measure
       LINALG::Matrix<4,1>* massprodcomp  ///< mass production rate
+    );
+
+    /// computes mass production rate for one fiber family
+    void MassProductionSingleFiber
+    (
+      const int gp,  ///< current Gauss point
+      LINALG::Matrix<NUM_STRESS_3D,1> C,  ///< cauchy green strain
+      LINALG::Matrix<NUM_STRESS_3D,1> S,  ///< 2nd PK-stress
+      double* massstress,  ///< growth stress measure
+      double* massprodcomp,  ///< mass production rate
+      LINALG::Matrix<3,1> a,  ///< fiber vector
+      const int idfiber  ///< number of fiber family 0,1,2,3
     );
 
     /// returns how much collagen has been degraded
@@ -364,6 +393,71 @@ namespace MAT
         *degr = 0.0;
       }
     }
+
+    /// compute stress and cmat for implicit integration with whole stress as driving force
+    void EvaluateImplicitAll
+    (
+      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
+      const int gp,  ///< current Gauss point
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
+      double dt,  ///< delta time
+      double time,  ///< time
+      LINALG::Matrix<4,1> massprodcomp,  ///< mass production rate
+      LINALG::Matrix<4,1> massstress  ///< growth stress measure
+    );
+
+    /// compute stress and cmat for implicit integration with fiber stress as driving force
+    void EvaluateImplicitSingle
+    (
+      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
+      const int gp,  ///< current Gauss point
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
+      double dt,  ///< delta time
+      double time,  ///< time
+      LINALG::Matrix<4,1> massprodcomp,  ///< mass production rate
+      LINALG::Matrix<4,1> massstress  ///< growth stress measure
+    );
+
+    /// derivative of stress with respect to massproduction of a single fiber family
+    void GradStressDMass
+    (
+      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
+      LINALG::Matrix<NUM_STRESS_3D,1>* derivative,  ///< result
+      LINALG::Matrix<NUM_STRESS_3D,1> Cinv,  ///< inverse cauchy green strain
+      LINALG::Matrix<3,1> a,  ///< fiber vector
+      double stretch,  ///< prestretch / stretch at deposition time
+      double J,  ///< determinant of F
+      double dt,  ///< delta time
+      bool option  ///< which driving force
+    );
+
+    /// derivative of massproduction of a single fiber family with respect to stress
+    void GradMassDStress
+    (
+      LINALG::Matrix<NUM_STRESS_3D,1>* derivative,  ///< result
+      LINALG::Matrix<3,3> Cmatrix,  ///< cauchy green strain in matrix notation
+      LINALG::Matrix<3,3> Smatrix,  ///< 2nd PK-stress in matrix notation
+      LINALG::Matrix<3,1> a,  ///< fiber vector
+      double J,  ///< determinant of F
+      double massstress,  ///< growth stress measure
+      double actcollstretch  ///< actual collagen stretch
+    );
+
+    /// derivative of massproduction of a single fiber family with respect to stretch
+    void GradMassDStretch
+    (
+      LINALG::Matrix<NUM_STRESS_3D,1>* derivative,  ///< result
+      LINALG::Matrix<3,3> Cmatrix,  ///< cauchy green strain in matrix notation
+      LINALG::Matrix<3,3> Smatrix,  ///< 2nd PK-stress in matrix notation
+      LINALG::Matrix<NUM_STRESS_3D,1> Cinv,
+      LINALG::Matrix<3,1> a,  ///< fiber vector
+      double J,  ///< determinant of F
+      double massstress,  ///< growth stress measure
+      double actcollstretch,  ///< actual collagen stretch
+      double dt  ///< delta time
+    );
 
   };
 
