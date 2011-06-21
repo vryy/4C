@@ -521,7 +521,7 @@ void MAT::ElastHyper::Evaluate(
       p->second->AddCoefficientsPrincCalcified(havecoeffprinc,HU_,gamma,delta,prinv);
     }
   }
-  cout << havecoeffprinc << endl;
+
   // principal invariants of right Cauchy-Green strain
   LINALG::Matrix<3,1> modinv;
   InvariantsModified(modinv, prinv);
