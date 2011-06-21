@@ -286,6 +286,7 @@ Epetra_SerialDenseVector STR::InvAnalysis::CalcCvector()
     = DRT::Problem::Instance()->StructuralDynamicParams();
   Teuchos::ParameterList xparams;
   xparams.set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
+  xparams.set<int>("MLMC",0);
 
   // create time integrator
   sti_ = TimIntCreate(ioflags, sdyn, xparams, discret_, solver_, output_);
