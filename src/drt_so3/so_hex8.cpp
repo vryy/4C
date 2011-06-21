@@ -575,7 +575,7 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
   if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
   {
     string fiber = "MassStress";
-    names[fiber] = 1;
+    names[fiber] = 3;
     fiber = "Fiber1";
     names[fiber] = 3; // 3-dim vector
     fiber = "Fiber2";
@@ -843,9 +843,9 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
   if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture){
     MAT::ConstraintMixture* cons = static_cast <MAT::ConstraintMixture*>(Material().get());
     if (name == "MassStress"){
-      double temp = 0.0;
-      for (int iter=0; iter<NUMGPT_SOH8; iter++) temp += cons->GetVis(iter);
-      data[0] = temp/NUMGPT_SOH8;
+      LINALG::Matrix<3,1> temp(true);
+      for (int iter=0; iter<NUMGPT_SOH8; iter++) temp.Update(1.0,cons->GetVis(iter),1.0);
+      data[0] = temp(0)/NUMGPT_SOH8; data[1] = temp(1)/NUMGPT_SOH8; data[2] = temp(2)/NUMGPT_SOH8;
     } else if (name == "Fiber1"){
       if ((int)data.size()!=3) dserror("size mismatch");
       LINALG::Matrix<3,1> a1 = cons->Geta1()->at(0);  // get a1 of first gp

@@ -1500,8 +1500,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"HOMSTR","homeostatic target value of scalar stress measure");
     AddNamedReal(m,"GROWTHFAC","growth factor");
     AddNamedReal(m,"STARTTIME","at this time turnover of collagen starts");
-    AddNamedInt(m,"EXPLICIT","wether explicit or implicit time integration scheme");
+    AddNamedString(m,"INTEGRATION","time integration scheme (Explicit,Implicit)","Explicit");
     AddNamedReal(m,"TOL","tolerance for local Newton iteration");
+    AddNamedString(m,"GROWTHFORCE","driving force of growth (Single,All)","Single");
 
     AppendMaterialDefinition(matlist,m);
   }
