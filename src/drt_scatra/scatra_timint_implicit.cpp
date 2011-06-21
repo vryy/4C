@@ -63,6 +63,14 @@ Maintainer: Georg Bauer
 //#include "../drt_io/io_gmsh.H"
 
 /*----------------------------------------------------------------------*
+ |                                                       m.gee 06/01    |
+ | general problem data                                                 |
+ | global variable GENPROB genprob is defined in global_control.c       |
+ *----------------------------------------------------------------------*/
+extern struct _GENPROB     genprob;
+
+
+/*----------------------------------------------------------------------*
  |  Constructor (public)                                        vg 05/07|
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
@@ -1581,8 +1589,8 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
     else // ask a different dofset e.g. for a XFEM fluid
       fluidnodedofs = (*dofset).Dof(fluidlnode);
 
-    // determine number of space dimensions (numdof - pressure dof)
-    const int numdim = ((int) fluidnodedofs.size()) -1;
+    // determine number of space dimensions
+    const int numdim = genprob.ndim;
 
     // now we transfer velocity dofs only
     for(int index=0;index < numdim; ++index)
@@ -1684,8 +1692,8 @@ void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(
       DRT::Node* fluidlnode = fluiddis->lRowNode(lnodeid);
       // get the degrees of freedom associated with this fluid node
       vector<int> fluidnodedofs = fluiddis->Dof(fluidlnode);
-      // determine number of space dimensions (numdof - pressure dof)
-      const int numdim = ((int) fluidnodedofs.size()) -1;
+      // determine number of space dimensions
+      const int numdim = genprob.ndim;
 
       // now we transfer velocity dofs only
       for(int index=0;index < numdim; ++index)

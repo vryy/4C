@@ -252,8 +252,6 @@ void FSI::LungScatra::DoScatraStep()
   bool stopnonliniter=false;
   int itnum = 0;
 
-  SetMeshDisp();
-  SetVelocityFields();
   PrepareTimeStep();
 
   while (stopnonliniter==false)
@@ -283,6 +281,7 @@ void FSI::LungScatra::DoScatraStep()
 /*----------------------------------------------------------------------*/
 void FSI::LungScatra::PrepareTimeStep()
 {
+  SetMeshDisp();
   SetVelocityFields();
 
   for (unsigned i=0; i<scatravec_.size(); ++i)
@@ -512,6 +511,7 @@ void FSI::LungScatra::ExtractScatraFieldVectors(Teuchos::RCP<const Epetra_Vector
   Teuchos::RCP<Epetra_Vector> vec1_boundary = scatrafieldexvec_[0].ExtractVector(vec1,1);
   Teuchos::RCP<const Epetra_Vector> vec2_inner = scatraglobalex_.ExtractVector(globalvec,1);
   Teuchos::RCP<Epetra_Vector> vec2_boundary = Scatra1ToScatra2(vec1_boundary);
+  //vec2_boundary->Scale(1.0);
 
   Teuchos::RCP<Epetra_Vector> vec2_temp = scatrafieldexvec_[1].InsertVector(vec2_inner,0);
   scatrafieldexvec_[1].InsertVector(vec2_boundary,1,vec2_temp);
@@ -531,8 +531,9 @@ void FSI::LungScatra::SetupCoupledScatraMatrix()
   if (scatra2==Teuchos::null)
     dserror("expect structure scatra block matrix");
 
-  // fluid scatra
-  scatrasystemmatrix_->Assign(0,0,View,*scatra1);
+  // Uncomplete system matrix to be able to deal with slightly defective
+  // interface meshes.
+  scatra1->UnComplete();
 
   // structure scatra
   // first split the matrix into 2x2 blocks (boundary vs. inner dofs)
@@ -547,17 +548,20 @@ void FSI::LungScatra::SetupCoupledScatraMatrix()
                 1.0,
                 ADAPTER::Coupling::SlaveConverter(scatracoup_),
                 scatrasystemmatrix_->Matrix(1,0));
-  sbbtransform_(blockscatra2->Matrix(1,1),
-                1.0,
-                ADAPTER::Coupling::SlaveConverter(scatracoup_),
-                ADAPTER::Coupling::SlaveConverter(scatracoup_),
-                scatrasystemmatrix_->Matrix(0,0),
-                true,
-                true);
   sbitransform_(blockscatra2->Matrix(1,0),
                 1.0,
                 ADAPTER::Coupling::SlaveConverter(scatracoup_),
                 scatrasystemmatrix_->Matrix(0,1));
+  sbbtransform_(blockscatra2->Matrix(1,1),
+                1.0,
+                ADAPTER::Coupling::SlaveConverter(scatracoup_),
+                ADAPTER::Coupling::SlaveConverter(scatracoup_),
+                *scatra1,
+                true,
+                true);
+
+  // fluid scatra
+  scatrasystemmatrix_->Assign(0,0,View,*scatra1);
 
   scatrasystemmatrix_->Complete();
 }
