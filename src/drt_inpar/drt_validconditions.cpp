@@ -366,6 +366,64 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(volthermodirichlet);
 
   /*--------------------------------------------------------------------*/
+  // Initial fields
+
+  std::vector<Teuchos::RCP<ConditionComponent> > initfieldscomponents;
+
+  initfieldscomponents.push_back(
+    Teuchos::rcp(
+      new StringConditionComponent(
+        "Field","Undefined",
+        Teuchos::tuple<std::string>("Undefined","Velocity","Pressure","Temperature"),
+        Teuchos::tuple<std::string>("Undefined","Velocity","Pressure","Temperature"))));
+
+  // give function id - always one single integer
+  // (for initial vector fields, use the COMPONENT option of our functions)
+  initfieldscomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("funct",1)));
+
+  Teuchos::RCP<ConditionDefinition> pointinitfields =
+    Teuchos::rcp(new ConditionDefinition("DESIGN POINT INITIAL FIELD CONDITIONS",
+                                         "Initfield",
+                                         "Point Initfield",
+                                         DRT::Condition::PointInitfield,
+                                         false,
+                                         DRT::Condition::Point));
+  Teuchos::RCP<ConditionDefinition> lineinitfields =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE INITIAL FIELD CONDITIONS",
+                                         "Initfield",
+                                         "Line Initfield",
+                                         DRT::Condition::LineInitfield,
+                                         false,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfinitfields =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF INITIAL FIELD CONDITIONS",
+                                         "Initfield",
+                                         "Surface Initfield",
+                                         DRT::Condition::SurfaceInitfield,
+                                         false,
+                                         DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> volinitfields =
+    Teuchos::rcp(new ConditionDefinition("DESIGN VOL INITIAL FIELD CONDITIONS",
+                                         "Initfield",
+                                         "Volume Initfield",
+                                         DRT::Condition::VolumeInitfield,
+                                         false,
+                                         DRT::Condition::Volume));
+
+  for (unsigned i=0; i<initfieldscomponents.size(); ++i)
+  {
+    pointinitfields->AddComponent(initfieldscomponents[i]);
+    lineinitfields->AddComponent(initfieldscomponents[i]);
+    surfinitfields->AddComponent(initfieldscomponents[i]);
+    volinitfields->AddComponent(initfieldscomponents[i]);
+  }
+
+  condlist.push_back(pointinitfields);
+  condlist.push_back(lineinitfields);
+  condlist.push_back(surfinitfields);
+  condlist.push_back(volinitfields);
+
+  /*--------------------------------------------------------------------*/
   // contact
 
   std::vector<Teuchos::RCP<ConditionComponent> > contactcomponents;

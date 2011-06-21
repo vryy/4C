@@ -193,6 +193,9 @@ STR::TimInt::TimInt
   if (damping_ == INPAR::STR::damp_rayleigh)
     damp_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
 
+  // set initial fields
+  SetInitialFields();
+
   // initialize constraint manager
   conman_ = Teuchos::rcp(new UTILS::ConstrManager(discret_,
                                                   (*dis_)(0),
@@ -276,6 +279,27 @@ STR::TimInt::TimInt
     dismatn_ = LINALG::CreateVector(*(discret_->DofRowMap(0)),true);
 
   // stay with us
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Set intitial fields in structure (e.g. initial velocities */
+void STR::TimInt::SetInitialFields()
+{
+  //***************************************************
+  // Data that needs to be handed into discretization:
+  // - string field: name of initial field to be set
+  // - vector<int> localdofs: local dof ids affected
+  //***************************************************
+
+  // set initial velocity field if existing
+  const string field = "Velocity";
+  vector<int> localdofs;
+  localdofs.push_back(0);
+  localdofs.push_back(1);
+  localdofs.push_back(2);
+  discret_->EvaluateInitialField(field,(*vel_)(0),localdofs);
+
   return;
 }
 

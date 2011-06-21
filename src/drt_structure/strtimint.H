@@ -222,6 +222,9 @@ namespace STR
     //! quantities
     void ResetStep();
 
+    //! Set initial fields in structure (e.g. initial velocities)
+    void SetInitialFields();
+
     //@}
 
     //! @name Output
