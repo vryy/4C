@@ -1502,7 +1502,7 @@ Refer to the experienced and friendly Eclipse community at LNM or the help in Ec
 \begin{enumerate}
   \item check out a svn version with git (in a new folder): \\
   git svn clone -r (Revision number) svn://gauss/trunk/ccarat Baci \\
-  Revision number: actual Baci reversion number ($\rightarrow $ entire Baci is checked out without this number)
+  Revision number: actual Baci reversion number ($\rightarrow $ entire Baci starting from revision 0 is checked out without this number)
   \item clone the git version which you have just checked out into a new folder e.g. Baci\_stud/ (execute the command in the new folder): \\
   git clone Baci Baci\_stud
   \item generate a new branch (you can have as many branches as students): \\
@@ -1517,7 +1517,7 @@ Refer to the experienced and friendly Eclipse community at LNM or the help in Ec
   \item show connections: \\
   git config -$\,$-list
   \item git pull cannot be executed in branch student\_name: \\
-  git config branch.student\_name.merge refs/heads/master ??\\
+  git config branch.student\_name.merge refs/heads/master \\
   git config  branch.student\_name.remote origin 
 \end{itemize}
 
@@ -1550,24 +1550,31 @@ Refer to the experienced and friendly Eclipse community at LNM or the help in Ec
   git clone -b student\_name $\sim$/Baci\_bare baci
 \end{enumerate}
 
-\paragraph{Important}
-
-Including this framework the student can work on different computers allways connected to an actual version. Therefore, they must update Baci\_bare in their home directory each day.
-
-\begin{itemize}
-  \item git pull cannot be executed from baci\_bare $\rightarrow$ update Baci\_bare: \\
-  git push $\sim$ /student/Baci\_bare $\rightarrow$ update Baci\_bare
-  \item getting actual version from Baci\_bare: \\
-  git pull $\sim$/bBaci\_bare $\rightarrow$ update Baci\_bare 
-\end{itemize}
 
 \paragraph{Usefull commands}
 
 \begin{itemize}
-  \item git diff \$ * | kompare - \\
+  \item git branch \\ 
+  list all branches in the actual clone
+  \item git diff \$*$\mid$ kompare - \\
   compare the files in kompare
-  \item git diff branch\_name \$ * | kompare - \\
+  \item git diff branch\_name \$*$\mid$ kompare - \\
   compare actual branch to branch\_name in kompare
+  \item Before you can update your version in your home directory, you need to commit your modifications on the branch student\_name (scratch). Commands are executed in /scratch/student\_name/workspace/Baci:
+  \begin{itemize}
+    \item git commit -a \\
+    After commiting the modifications the command 'git diff' does not show anymore any differences in the files. Now, the git version in the branch student\_name on scratch matches the version on your computer 
+    \item git add 'file' \\
+    git commit -a \\
+    a new file is added to the version control
+  \end{itemize}
+  \item At different computers the student has allways access to the actual baci version stored in his home directory (Baci\_bare). Therefore, Baci\_bare need to be updated regularly.
+  \begin{itemize}
+    \item git pull cannot be executed from baci\_bare $\rightarrow$ update Baci\_bare: \\
+    git push $\sim$ /student/Baci\_bare $\rightarrow$ update Baci\_bare
+    \item getting actual version from Baci\_bare: \\
+    git pull $\sim$/bBaci\_bare $\rightarrow$ update Baci\_bare
+  \end{itemize}
   \item update baci version of the student
   \begin{enumerate}
     \item git svn rebase \\
@@ -1579,8 +1586,10 @@ Including this framework the student can work on different computers allways con
     possible conflicts need to be resolved
     \item push ehrl@red??.stud:$\sim$/Baci\_bare
   \end{enumerate}
-  \item resolve conflicts
+  \item gitk \\
+  graphical representation of the history
 \end{itemize}
+
 
 
 \subsubsection{Eclipse version: Galileo}
