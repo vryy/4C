@@ -47,6 +47,7 @@ DRT::ELEMENTS::Fluid3ImplParameter::Fluid3ImplParameter()
   :
   set_general_fluid_parameter_(false),
   is_genalpha_(false),
+  is_genalpha_np_(false),
   is_conservative_(false),
   is_stationary_(false),
   is_newton_(false),
@@ -77,7 +78,6 @@ DRT::ELEMENTS::Fluid3ImplParameter::Fluid3ImplParameter()
   afgdt_(1.0),
   timefacrhs_(1.0),
   timefacpre_(1.0),
-  rhsresfac_(1.0),
   viscreastabfac_(0.0),
   Cs_(0.0),
   l_tau_(0.0)
@@ -108,26 +108,31 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementGeneralFluidParameter( Teucho
   {
     is_genalpha_ = false;
     is_stationary_ = true;
+    is_genalpha_np_ = false;
   }
   else if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
   {
     is_genalpha_ = true;
     is_stationary_ = false;
+    is_genalpha_np_ = false;
   }
-  else if (timealgo_==INPAR::FLUID::timeint_gen_alpha_fluid)
+  else if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
   {
     is_genalpha_ = true;
     is_stationary_ = false;
+    is_genalpha_np_ = true;
   }
   else if (timealgo_==INPAR::FLUID::timeint_gen_alpha)
   {
     is_genalpha_ = true;
     is_stationary_ = false;
+    is_genalpha_np_ = false;
   }
   else
   {
     is_genalpha_ = false;
     is_stationary_ = false;
+    is_genalpha_np_ = false;
   }
 
   // set flag for type of linearization (fixed-point-like or Newton)
@@ -146,6 +151,12 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementGeneralFluidParameter( Teucho
   if (((physicaltype_ != INPAR::FLUID::boussinesq) and (physicaltype_ != INPAR::FLUID::incompressible))
       and (is_stationary_ == true))
     dserror("physical type is not supported in stationary FLUID implementation.");
+
+  if (is_genalpha_np_ and physicaltype_ == INPAR::FLUID::loma)
+    dserror("the combination Np_Gen_Alpha and loma is not supported");
+
+  if (is_genalpha_np_ and is_conservative_)
+    dserror("the combination Np_Gen_Alpha and conservative flow is not supported");
 
 // ---------------------------------------------------------------------
 // get control parameters for stabilization and higher-order elements
@@ -360,17 +371,17 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTimeParameter( Teuchos::Param
     // (For BDF2 and generalized-alpha, theta was already computed
     //  accordingly in FLD::FluidImplicitTimeInt::PrepareTimeStep().)
 
-    //-------------------------------------------------------------------------------------------
-    //       |          timefac         |  timefacpre     |    timefacrhs   |  rhsresfac         |
-    // -------------------------------------------------------------------------------------------
-    // OST   |                        dt*theta                              | dt (see momresold) |
-    //--------------------------------------------------------------------------------------------
-    // BDF2  |                        2/3 * dt                              |       dt           |
-    //--------------------------------------------------------------------------------------------
-    // Af GA |          alphaF*gamma*dt/alphaM            | gamma*dt/alphaM |  gamma*dt/alphaM   |
-    //--------------------------------------------------------------------------------------------
- // GA-Fluid | alphaF*gamma*dt/alphaM   | gamma*dt/alphaM | gamma*dt/alphaM |  gamma*dt/alphaM   |
-    //-------------------------------------------------------------------------------------------
+    //-----------------------------------------------------------------------
+    //       |          timefac         |  timefacpre     |    timefacrhs   |
+    // ----------------------------------------------------------------------
+    // OST   |                        dt*theta                              |
+    //-----------------------------------------------------------------------
+    // BDF2  |                        2/3 * dt                              |
+    //-----------------------------------------------------------------------
+    // Af GA |          alphaF*gamma*dt/alphaM            | gamma*dt/alphaM |
+    //----------------------------------------------------------------------
+ // GA-Fluid | alphaF*gamma*dt/alphaM   | gamma*dt/alphaM | gamma*dt/alphaM |
+    //-----------------------------------------------------------------------
 
     timefac_ = theta_*dt_;
 
@@ -394,14 +405,13 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTimeParameter( Teuchos::Param
     afgdt_=alphaF_*gamma_*dt_;
 
     // timeint_gen_alpha = p(n+1) (Peter's genalpha)
-    if (timealgo_ == INPAR::FLUID::timeint_gen_alpha_fluid)
+    if (timealgo_ == INPAR::FLUID::timeint_npgenalpha)
     {
       // if not generalized-alpha: timefacrhs_=theta * dt_ = timefac_
       //timefacrhs_ = 1.0;
       //timefacmat_p_ = gamma_*dt_;
       timefacpre_ = gamma_/alphaM_*dt_;
       timefacrhs_ = gamma_/alphaM_*dt_;
-      rhsresfac_ =  gamma_/alphaM_*dt_;
     }
     else if (timealgo_ == INPAR::FLUID::timeint_gen_alpha)
     {
@@ -409,7 +419,6 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTimeParameter( Teuchos::Param
       timefacpre_ = gamma_*dt_;
       timefacrhs_ = 1.0;
       // not used
-      rhsresfac_ =  1.0;
 
       // work around for weak dirichlet BC
       time_ = time_+(1-alphaF_)*dt_;
@@ -418,7 +427,6 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTimeParameter( Teuchos::Param
     {
       timefacpre_ = gamma_*alphaF_/alphaM_*dt_;
       timefacrhs_ = gamma_/alphaM_*dt_;
-      rhsresfac_ =  gamma_/alphaM_*dt_;
     }
     else
     {
@@ -426,8 +434,6 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTimeParameter( Teuchos::Param
       timefacpre_ = gamma_*alphaF_/alphaM_*dt_;
       // if not generalized-alpha: timefacrhs_=theta * dt_ = timefac_
       timefacrhs_ = gamma_*alphaF_/alphaM_*dt_;
-      //rhsresfac_ = dt_;
-      rhsresfac_ = gamma_*alphaF_/alphaM_*dt_;
     }
   }
   else // is_stationary == true
@@ -435,7 +441,6 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTimeParameter( Teuchos::Param
     // set timefactor for stationary case to 1.0
     timefac_ = 1.0;
     timefacrhs_ = 1.0;
-    rhsresfac_ = 1.0;
   }
 
   if (dt_ < 0.0 or theta_ < 0.0 or time_ < 0.0 or omtheta_ < 0.0 or gamma_ < 0.0

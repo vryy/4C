@@ -152,6 +152,7 @@ namespace ELEMENTS
                  LINALG::Matrix<(nsd_+1)*nen_,            1> & elevec1,
                  const LINALG::Matrix<nsd_,nen_> & evelaf,
                  const LINALG::Matrix<nen_,1>    & epreaf,
+                 const LINALG::Matrix<nsd_,nen_> & evelnp,
                  const LINALG::Matrix<nen_,1>    & escaaf,
                  const LINALG::Matrix<nsd_,nen_> & emhist,
                  const LINALG::Matrix<nsd_,nen_> & eaccam,
@@ -201,6 +202,7 @@ namespace ELEMENTS
       \param ele              (i) the element those matrix is calculated
       \param evelaf           (i) nodal velocities at n+alpha_F/n+1
       \param eveln            (i) nodal velocities at n
+      \param evelnp           (i) nodal velocities at n+1 (np_genalpha)
       \param fsevelaf         (i) fine-scale nodal velocities at n+alpha_F/n+1
       \param epreaf           (i) nodal pressure at n+alpha_F/n+1
       \param            (i) nodal accelerations at n+alpha_M
@@ -242,6 +244,7 @@ namespace ELEMENTS
                 const LINALG::Matrix<nsd_,nen_> & edeadaf,
                 const LINALG::Matrix<nsd_,nen_>&               evelaf,
                 const LINALG::Matrix<nsd_,nen_>&               eveln,
+                const LINALG::Matrix<nsd_,nen_> &              evelnp,
                 const LINALG::Matrix<nsd_,nen_>&               fsevelaf,
                 const LINALG::Matrix<nsd_,nen_>&               evel_hat,
                 const LINALG::Matrix<nsd_*nsd_,nen_>&          ereynoldsstress_hat,
@@ -380,8 +383,6 @@ namespace ELEMENTS
     void GetResidualMomentumEq(
         const LINALG::Matrix<nsd_,nen_>&              eaccam,     ///< acceleration at time n+alpha_a / n
         const double &                                timefac     ///< time factor
-//        double &                                      rhsfac,     ///< right-hand-side factor
-//        double &                                      rhsresfac   ///< right-hand-side factor for residuals
         );
 
     //! update the subscale velocity
@@ -445,8 +446,8 @@ namespace ELEMENTS
         LINALG::Matrix<nsd_,nsd_> &               viscstress,     ///< viscous stresses
         const double &                            timefac,        ///< time factor
         const double &                            timefacfac,     ///< = timefac x fac
-        const double &                            rhsfac,         ///< right-hand-side factor
-        const double &                            rhsresfac       ///< right-hand-side factor for residuals
+        const double &                            timefacfacpre,     ///< = timefac x fac
+        const double &                            rhsfac         ///< right-hand-side factor
         );
 
     //! Compute element matrix entries: pressure terms of the Garlerkin part and rhs
@@ -464,13 +465,14 @@ namespace ELEMENTS
         LINALG::Matrix<nen_, nen_*nsd_> &         estif_q_u,    ///< block (weighting function q x u)
         LINALG::Matrix<nen_,1> &                  preforce,     ///< rhs forces pressure
         const double &                            timefacfac,   ///< = timefac x fac
+        const double &                            timefacfacpre,
         const double &                            rhsfac        ///< right-hand-side factor
         );
 
     //! Compute element matrix entries: body force terms on rhs
     void BodyForceRhsTerm(
         LINALG::Matrix<nsd_,nen_> &               velforce,     ///< rhs forces velocity
-        const double &                            rhsresfac     ///< right-hand-side factor for residuals
+        const double &                            rhsfac     ///< right-hand-side factor for residuals
         );
 
     //TODO: look over it
@@ -487,7 +489,7 @@ namespace ELEMENTS
         LINALG::Matrix<nen_, nen_*nsd_> &       estif_q_u,      ///< block (weighting function q x u)
         LINALG::Matrix<nen_,1> &                preforce,       ///< rhs forces pressure
         const double &                          timefacfac,     ///< = timefac x fac
-        const double &                          rhsresfac       ///< right-hand-side factor for residuals
+        const double &                          rhsfac       ///< right-hand-side factor for residuals
         );
 
     //! Provide linearization of stabilization residual with respect to the velocities
@@ -505,7 +507,7 @@ namespace ELEMENTS
         const double &                            fac3,           ///< factor for residual in current subgrid velocities
         const double &                            timefacfac,     ///< = timefac x fac
         const double &                            timefacfacpre,
-        const double &                            rhsresfac       ///< right-hand-side factor for residuals
+        const double &                            rhsfac       ///< right-hand-side factor for residuals
         );
 
     //! Compute element matrix entries: SUPG
@@ -517,7 +519,7 @@ namespace ELEMENTS
         const double &                            fac3,           ///< factor for residual in current subgrid velocities
         const double &                            timefacfac,     ///< = timefac x fac
         const double &                            timefacfacpre,
-        const double &                            rhsresfac       ///< right-hand-side factor for residuals
+        const double &                            rhsfac       ///< right-hand-side factor for residuals
         );
 
     //! Compute element matrix entries: reactive stabilization
@@ -528,7 +530,7 @@ namespace ELEMENTS
         LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
         const double &                            timefacfac,     ///< = timefac x fac
         const double &                            timefacfacpre,  ///< = timefacpre x fac
-        const double &                            rhsresfac,      ///< right-hand-side factor for residuals
+        const double &                            rhsfac,      ///< right-hand-side factor for residuals
         const double &                            fac3            ///< factor for residual in current subgrid velocities
         );
 
@@ -540,7 +542,7 @@ namespace ELEMENTS
         LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
         const double &                            timefacfac,     ///< = timefac x fac
         const double &                            timefacfacpre,     ///< = timefac x fac
-        const double &                            rhsresfac,      ///< right-hand-side factor for residuals
+        const double &                            rhsfac,      ///< right-hand-side factor for residuals
         const double &                            fac3            ///< factor for residual in current subgrid velocities
         );
 
@@ -552,7 +554,7 @@ namespace ELEMENTS
         LINALG::Matrix<nsd_*nsd_,nen_> &          lin_resM_Du,    ///< linearisation of the stabilization residual
         const double &                            timefacfac,     ///< = timefac x fac
         const double &                            timefacfacpre,
-        const double &                            rhsresfac,      ///< right-hand-side factor for residuals
+        const double &                            rhsfac,      ///< right-hand-side factor for residuals
         const double &                            fac3            ///< factor for residual in current subgrid velocities
         );
 
@@ -695,6 +697,7 @@ namespace ELEMENTS
           (*vectortofill)(inode,0) = mymatrix[nsd_+(inode*numdofpernode_)];
       }
     }
+
 
 
     //! node coordinates

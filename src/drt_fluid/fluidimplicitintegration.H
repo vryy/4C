@@ -474,6 +474,8 @@ protected:
 
   /// time algorithm flag
   INPAR::FLUID::TimeIntegrationScheme timealgo_;
+  // genalpha integration scheme (afgenalpha or npgenalpha)
+  bool is_genalpha_;
 
   /// for low-Mach-number flow solver: thermodynamic pressure at n+alpha_F/n+1
   /// and at n+alpha_M/n as well as its time derivative at n+alpha_M/n

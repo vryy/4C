@@ -61,7 +61,7 @@ void FLD::TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
   {
     case INPAR::FLUID::timeint_stationary: /* Stationary algorithm */
     case INPAR::FLUID::timeint_afgenalpha: /* Af-generalized-alpha time integration */
-    case INPAR::FLUID::timeint_gen_alpha_fluid:
+    case INPAR::FLUID::timeint_npgenalpha:
       hist->PutScalar(0.0);
       break;
 
@@ -113,7 +113,7 @@ void FLD::TIMEINT_THETA_BDF2::ExplicitPredictor(
       // do nothing
       break;
     case INPAR::FLUID::timeint_afgenalpha: /* Generalized-alpha time integration */
-    case INPAR::FLUID::timeint_gen_alpha_fluid:
+    case INPAR::FLUID::timeint_npgenalpha:
     {
       message="do nothing";
       // do nothing for the time being, that is, steady-state predictor
@@ -334,7 +334,7 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
         break;
       }
       case INPAR::FLUID::timeint_afgenalpha: /* Af-generalized-alpha time integration */
-      case INPAR::FLUID::timeint_gen_alpha_fluid:
+      case INPAR::FLUID::timeint_npgenalpha:
       {
         // do nothing: new acceleration is calculated at beginning of next time step
         break;

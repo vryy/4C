@@ -131,7 +131,7 @@ namespace INPAR
     {
       timeint_stationary,
       timeint_one_step_theta,
-      timeint_gen_alpha_fluid,   // fluid3's implementation (solving for velocity increment)
+      timeint_npgenalpha, // fluid3's implementation (solving for velocity increment)
       timeint_gen_alpha,  // Peter's implementation (solving for acceleration increment)
       timeint_afgenalpha,
       timeint_bdf2,

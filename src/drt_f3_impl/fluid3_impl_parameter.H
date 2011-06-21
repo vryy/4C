@@ -53,6 +53,9 @@ public:
   /// Flags to switch on/off the different fluid formulations
   //! flag to (de)activate generalized-alpha time-integration scheme
   bool is_genalpha_;
+  /// Flags to switch on/off the different fluid formulations
+  //! flag to (de)activate generalized-alpha-np1 time-integration scheme
+  bool is_genalpha_np_;
   //! flag to (de)activate conservative formulation
   bool is_conservative_;
   //! flag to (de)activate stationary formulation
@@ -120,8 +123,6 @@ public:
   double timefacrhs_;
   //! time integration factor for the left hand side (pressure)
   double timefacpre_;
-  //! rhs residual factor
-  double rhsresfac_;
 
   /// parameter for stabilization
   //! (sign) factor for viscous and reactive stabilization terms

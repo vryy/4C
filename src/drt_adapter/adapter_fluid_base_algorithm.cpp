@@ -405,7 +405,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
      timeint == INPAR::FLUID::timeint_one_step_theta or
      timeint == INPAR::FLUID::timeint_bdf2 or
      timeint == INPAR::FLUID::timeint_afgenalpha or
-     timeint == INPAR::FLUID::timeint_gen_alpha_fluid
+     timeint == INPAR::FLUID::timeint_npgenalpha
     )
   {
     // -----------------------------------------------------------------
