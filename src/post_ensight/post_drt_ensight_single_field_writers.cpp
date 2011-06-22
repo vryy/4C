@@ -60,7 +60,7 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("normasterforce", "normasterforce", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("tanmasterforce", "tanmasterforce", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("wear", "wear", dofbased, field->problem()->num_dim());
- 
+
   // thermo results
   EnsightWriter::WriteResult("temperature", "temperature", nodebased, 1);
   
@@ -97,6 +97,9 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
     // Green-Lagrange _or_ Euler-Almansi strains are written during simulation!
     PostStress("gauss_GL_strains_xyz", straintype_);
     PostStress("gauss_EA_strains_xyz", straintype_);
+    // the same for plastic strains
+    PostStress("gauss_pl_GL_strains_xyz", straintype_);
+    PostStress("gauss_pl_EA_strains_xyz", straintype_);
   }
 }
 

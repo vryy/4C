@@ -120,6 +120,16 @@ void StructureEnsightWriter::WriteNodalStress(const string groupname,
     name="nodal_EA_strains_xyz";
     out="Euler-Almansi strains";
   }
+  else if (groupname=="gauss_pl_GL_strains_xyz")
+  {
+    name="nodal_pl_GL_strains_xyz";
+    out="Plastic Green-Lagrange strains";
+  }
+  else if (groupname=="gauss_pl_EA_strains_xyz")
+  {
+    name="nodal_pl_EA_strains_xyz";
+    out="Plastic Euler-Almansi strains";
+  }
   else
   {
     dserror("trying to write something that is not a stress or a strain");
@@ -289,6 +299,16 @@ void StructureEnsightWriter::WriteElementCenterStress(const string groupname,
   {
     name="element_EA_strains_xyz";
     out="Euler-Almansi strains";
+  }
+  else if (groupname=="gauss_pl_GL_strains_xyz")
+  {
+    name="element_pl_GL_strains_xyz";
+    out="Plastic Green-Lagrange strains";
+  }
+  else if (groupname=="gauss_pl_EA_strains_xyz")
+  {
+    name="element_pl_EA_strains_xyz";
+    out="Plastic Euler-Almansi strains";
   }
   else
   {
@@ -516,6 +536,26 @@ void StructureEnsightWriter::WriteNodalEigenStress(const string groupname,
     name[4]="nodal_EA_strains_eigenvec2";
     name[5]="nodal_EA_strains_eigenvec3";
     out="principal Euler-Almansi strains";
+  }
+  else if (groupname=="gauss_pl_GL_strains_xyz")
+  {
+    name[0]="nodal_pl_GL_strains_eigenval1";
+    name[1]="nodal_pl_GL_strains_eigenval2";
+    name[2]="nodal_pl_GL_strains_eigenval3";
+    name[3]="nodal_pl_GL_strains_eigenvec1";
+    name[4]="nodal_pl_GL_strains_eigenvec2";
+    name[5]="nodal_pl_GL_strains_eigenvec3";
+    out="principal plastic Green-Lagrange strains";
+  }
+  else if (groupname=="gauss_pl_EA_strains_xyz")
+  {
+    name[0]="nodal_pl_EA_strains_eigenval1";
+    name[1]="nodal_pl_EA_strains_eigenval2";
+    name[2]="nodal_pl_EA_strains_eigenval3";
+    name[3]="nodal_pl_EA_strains_eigenvec1";
+    name[4]="nodal_pl_EA_strains_eigenvec2";
+    name[5]="nodal_pl_EA_strains_eigenvec3";
+    out="principal plastic Euler-Almansi strains";
   }
   else
   {
@@ -849,6 +889,26 @@ void StructureEnsightWriter::WriteElementCenterEigenStress(const string groupnam
     name[4]="element_EA_strains_eigenvec2";
     name[5]="element_EA_strains_eigenvec3";
     out="principal Euler-Almansi strains";
+  }
+  else if (groupname=="gauss_pl_GL_strains_xyz")
+  {
+    name[0]="element_pl_GL_strains_eigenval1";
+    name[1]="element_pl_GL_strains_eigenval2";
+    name[2]="element_pl_GL_strains_eigenval3";
+    name[3]="element_pl_GL_strains_eigenvec1";
+    name[4]="element_pl_GL_strains_eigenvec2";
+    name[5]="element_pl_GL_strains_eigenvec3";
+    out="principal plastic Green-Lagrange strains";
+  }
+  else if (groupname=="gauss_pl_EA_strains_xyz")
+  {
+    name[0]="element_pl_EA_strains_eigenval1";
+    name[1]="element_pl_EA_strains_eigenval2";
+    name[2]="element_pl_EA_strains_eigenval3";
+    name[3]="element_pl_EA_strains_eigenvec1";
+    name[4]="element_pl_EA_strains_eigenvec2";
+    name[5]="element_pl_EA_strains_eigenvec3";
+    out="principal plastic Euler-Almansi strains";
   }
   else
   {
