@@ -560,23 +560,21 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
   LINALG::Matrix<(nsd_+1)*nen_,            1> elevec1(elevec1_epetra,true);
   // elevec2 and elevec3 are currently not in use
 
+  // ---------------------------------------------------------------------
+  // call routine for calculation of body force in element nodes
+  // (evaluation at time n+alpha_F for generalized-alpha scheme,
+  //  and at time n+1 otherwise)
+  // ---------------------------------------------------------------------
   LINALG::Matrix<nsd_,nen_> edeadaf(true);
   BodyForce(ele, f3Parameter_, edeadaf);
 
-  // ---------------------------------------------------------------------
-  // call routine for calculation of body force in element nodes
-  // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
-  // ---------------------------------------------------------------------
+  // if not available, the arrays for the subscale quantities have to be
+  // resized and initialised to zero
   double * saccn = NULL;
   double * sveln = NULL;
   double * svelnp = NULL;
-
-  // if not available, the arrays for the subscale quantities have to be
-  // resized and initialised to zero
-  if ( f3Parameter_->tds_==INPAR::FLUID::subscales_time_dependent )
-  {
+  if (f3Parameter_->tds_==INPAR::FLUID::subscales_time_dependent)
     ele->ActivateTDS( intpoints.NumPoints(), nsd_, &saccn, &sveln, &svelnp );
-  }
 
   // ---------------------------------------------------------------------
   // get all general state vectors: velocity/pressure, scalar,
@@ -1160,17 +1158,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       }
     }
 
-    //cout << iquad << ":    " << vdiv_ << endl;
-
     //----------------------------------------------------------------------
     // set time-integration factors for left- and right-hand side
-    // (two right-hand-side factors: general and for residuals)
     //----------------------------------------------------------------------
-    const double timefacfac = f3Parameter_->timefac_ * fac_;
+    const double timefacfac    = f3Parameter_->timefac_    * fac_;
     const double timefacfacpre = f3Parameter_->timefacpre_ * fac_;
-
+    const double rhsfac        = f3Parameter_->timefacrhs_ * fac_;
     //double rhsfac           = timefacfac;
-    const double rhsfac           = f3Parameter_->timefacrhs_ * fac_;
     //double rhsresfac        = fac_;
 
 /*
@@ -1192,8 +1186,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     // the subgrid-scale velocity
     //----------------------------------------------------------------------
     // compute rhs for momentum equation and momentum residual
-    // as well as potential modification of time-integration factors
-    // for right-hand side
     // -> different for generalized-alpha and other time-integration schemes
     GetResidualMomentumEq(eaccam,
                           f3Parameter_->timefac_);
@@ -1234,8 +1226,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     resM_Du.Clear();
 
     // compute first version of velocity-based momentum residual containing
-    // inertia term, convection term (convective and reactive part) and
-    // cross-stress term
+    // inertia term, convection term (convective and reactive part),
+    // reaction term and cross-stress term
     LinGalMomResU(lin_resM_Du,
                   timefacfac);
 
@@ -2070,12 +2062,12 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::GetMaterialParams(
   Teuchos::RCP<const MAT::Material>  material,
-  const LINALG::Matrix<nsd_,nen_>&       evelaf,
-  const LINALG::Matrix<nen_,1>&       escaaf,
-  const LINALG::Matrix<nen_,1>&       escaam,
-  const double                        thermpressaf,
-  const double                        thermpressam,
-  const double                        thermpressdtam
+  const LINALG::Matrix<nsd_,nen_>&   evelaf,
+  const LINALG::Matrix<nen_,1>&      escaaf,
+  const LINALG::Matrix<nen_,1>&      escaam,
+  const double                       thermpressaf,
+  const double                       thermpressam,
+  const double                       thermpressdtam
 )
 {
 // initially set density values and values with respect to continuity rhs
@@ -4296,7 +4288,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ContStab_and_ViscousTermRhs(
   */
   for (int ui=0; ui<nen_; ++ui)
   {
-    const int fui   = nsd_*ui;
+    const int fui = nsd_*ui;
 
     for (int idim = 0; idim <nsd_; ++idim)
     {
@@ -4304,7 +4296,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ContStab_and_ViscousTermRhs(
       const double v0 = conti_stab_and_vol_visc_fac*derxy_(idim,ui);
       for (int vi=0; vi<nen_; ++vi)
       {
-        const int fvi   = nsd_*vi;
+        const int fvi = nsd_*vi;
 
         for(int jdim=0;jdim<nsd_;++jdim)
         {
@@ -4396,7 +4388,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ContinuityGalPart(
     const double v = timefacfacpre*funct_(vi);
     for (int ui=0; ui<nen_; ++ui)
     {
-      const int fui   = nsd_*ui;
+      const int fui = nsd_*ui;
 
       for (int idim = 0; idim <nsd_; ++idim)
       {
@@ -8201,6 +8193,740 @@ void Fluid3Impl<DRT::Element::nurbs9>::ElementXfemInterface(
 
   }
 }
+
+
+/*----------------------------------------------------------------------*
+ * evaluation of system matrix and residual for porous flow (1)
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::Fluid3Impl<distype>::PoroEvaluate(DRT::ELEMENTS::Fluid3*       ele,
+                                                     DRT::Discretization & discretization,
+                                                     const std::vector<int> &     lm,
+                                                     Teuchos::ParameterList&       params,
+                                                     Teuchos::RCP<MAT::Material> & mat,
+                                                     Epetra_SerialDenseMatrix&  elemat1_epetra,
+                                                     Epetra_SerialDenseMatrix&  elemat2_epetra,
+                                                     Epetra_SerialDenseVector&  elevec1_epetra,
+                                                     Epetra_SerialDenseVector&  elevec2_epetra,
+                                                     Epetra_SerialDenseVector&  elevec3_epetra )
+{
+  return PoroEvaluate(ele,discretization,lm,params,mat,elemat1_epetra,elemat2_epetra,
+                      elevec1_epetra,elevec2_epetra,elevec3_epetra,intpoints_);
+}
+
+/*----------------------------------------------------------------------*
+ * evaluation of system matrix and residual for porous flow (2)
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::Fluid3Impl<distype>::PoroEvaluate(DRT::ELEMENTS::Fluid3*       ele,
+                                                     DRT::Discretization & discretization,
+                                                     const std::vector<int> &     lm,
+                                                     Teuchos::ParameterList&       params,
+                                                     Teuchos::RCP<MAT::Material> & mat,
+                                                     Epetra_SerialDenseMatrix&  elemat1_epetra,
+                                                     Epetra_SerialDenseMatrix&  elemat2_epetra,
+                                                     Epetra_SerialDenseVector&  elevec1_epetra,
+                                                     Epetra_SerialDenseVector&  elevec2_epetra,
+                                                     Epetra_SerialDenseVector&  elevec3_epetra,
+                                                     const DRT::UTILS::GaussIntegration & intpoints )
+{
+  // rotationally symmetric periodic bc's: do setup for current element
+  // (only required to be set up for routines "ExtractValuesFromGlobalVector")
+  rotsymmpbc_->Setup(ele);
+
+  // construct views
+  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> elemat1(elemat1_epetra,true);
+  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> elemat2(elemat2_epetra,true);
+  LINALG::Matrix<(nsd_+1)*nen_,            1> elevec1(elevec1_epetra,true);
+  // elevec2 and elevec3 are currently not in use
+
+  // ---------------------------------------------------------------------
+  // call routine for calculation of body force in element nodes
+  // (evaluation at time n+alpha_F for generalized-alpha scheme,
+  //  and at time n+1 otherwise)
+  // ---------------------------------------------------------------------
+  LINALG::Matrix<nsd_,nen_> edeadaf(true);
+  BodyForce(ele,f3Parameter_,edeadaf);
+
+  // ---------------------------------------------------------------------
+  // get all general state vectors: velocity/pressure, acceleration
+  // and history
+  // velocity/pressure values are at time n+alpha_F/n+alpha_M for
+  // generalized-alpha scheme and at time n+1/n for all other schemes
+  // acceleration values are at time n+alpha_M for
+  // generalized-alpha scheme and at time n+1 for all other schemes
+  // ---------------------------------------------------------------------
+  // fill the local element vector/matrix with the global values
+  // af_genalpha: velocity/pressure at time n+alpha_F
+  // np_genalpha: velocity at time n+alpha_F, pressure at time n+1
+  // ost:         velocity/pressure at time n+1
+  LINALG::Matrix<nsd_,nen_> evelaf(true);
+  LINALG::Matrix<nen_,1>    epreaf(true);
+  ExtractValuesFromGlobalVector(discretization,lm,*rotsymmpbc_,&evelaf,&epreaf,"velaf");
+
+  // np_genalpha: additional vector for velocity at time n+1
+  LINALG::Matrix<nsd_,nen_> evelnp(true);
+  if (f3Parameter_->is_genalpha_np_)
+    ExtractValuesFromGlobalVector(discretization,lm,*rotsymmpbc_,&evelnp,NULL,"velnp");
+
+  LINALG::Matrix<nsd_,nen_> emhist(true);
+  ExtractValuesFromGlobalVector(discretization,lm,*rotsymmpbc_,&emhist,NULL,"hist");
+
+  LINALG::Matrix<nsd_,nen_> eaccam(true);
+  ExtractValuesFromGlobalVector(discretization,lm,*rotsymmpbc_,&eaccam,NULL,"accam");
+
+  if (not f3Parameter_->is_genalpha_) eaccam.Clear();
+
+  // ---------------------------------------------------------------------
+  // get additional state vectors for ALE case: grid displacement and vel.
+  // ---------------------------------------------------------------------
+  LINALG::Matrix<nsd_, nen_> edispnp(true);
+  LINALG::Matrix<nsd_, nen_> egridv(true);
+  if (ele->IsAle())
+  {
+    ExtractValuesFromGlobalVector(discretization,lm,*rotsymmpbc_,&edispnp,NULL,"dispnp");
+    ExtractValuesFromGlobalVector(discretization,lm,*rotsymmpbc_,&egridv,NULL,"gridv");
+  }
+
+  // get node coordinates and number of elements per node
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+  // call inner evaluate (does not know about DRT element or discretization object)
+  int result = PoroEvaluate(
+    ele->Id(),
+    params,
+    edeadaf,
+    elemat1,
+    elemat2,
+    elevec1,
+    evelaf,
+    epreaf,
+    evelnp,
+    emhist,
+    eaccam,
+    edispnp,
+    egridv,
+    mat,
+    ele->IsAle(),
+    intpoints);
+
+  return result;
+}
+
+
+/*----------------------------------------------------------------------*
+ * evaluation of system matrix and residual for porous flow (3)
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::Fluid3Impl<distype>::PoroEvaluate(
+  int                                           eid,
+  Teuchos::ParameterList&                       params,
+  const LINALG::Matrix<nsd_,nen_> &             edeadaf,
+  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat1,
+  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat2,
+  LINALG::Matrix<(nsd_+1)*nen_,            1> & elevec1,
+  const LINALG::Matrix<nsd_,nen_> &             evelaf,
+  const LINALG::Matrix<nen_,1>    &             epreaf,
+  const LINALG::Matrix<nsd_,nen_> &             evelnp,
+  const LINALG::Matrix<nsd_,nen_> &             emhist,
+  const LINALG::Matrix<nsd_,nen_> &             eaccam,
+  const LINALG::Matrix<nsd_,nen_> &             edispnp,
+  const LINALG::Matrix<nsd_,nen_> &             egridv,
+  Teuchos::RCP<MAT::Material>                   mat,
+  bool                                          isale,
+  const DRT::UTILS::GaussIntegration &          intpoints)
+{
+  // flag for higher order elements
+  is_higher_order_ele_ = IsHigherOrder<distype>::ishigherorder;
+  // overrule higher_order_ele if input-parameter is set
+  // this might be interesting for fast (but slightly
+  // less accurate) computations
+  if (f3Parameter_->is_inconsistent_ == true) is_higher_order_ele_ = false;
+
+  // stationary formulation does not support ALE formulation
+  if (isale and f3Parameter_->is_stationary_)
+    dserror("No ALE support within stationary fluid solver.");
+
+  // ---------------------------------------------------------------------
+  // call routine for calculating element matrix and right hand side
+  // ---------------------------------------------------------------------
+  PoroSysmat(eid,
+             edeadaf,
+             evelaf,
+             evelnp,
+             epreaf,
+             eaccam,
+             emhist,
+             edispnp,
+             egridv,
+             elemat1,
+             elemat2,  // -> emesh
+             elevec1,
+             mat,
+             isale,
+             intpoints);
+
+  return 0;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  calculate element matrix and rhs for porous flow           vg 06/11 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3Impl<distype>::PoroSysmat(
+  int                                           eid,
+  const LINALG::Matrix<nsd_,nen_>&              edeadaf,
+  const LINALG::Matrix<nsd_,nen_>&              evelaf,
+  const LINALG::Matrix<nsd_,nen_>&              evelnp,
+  const LINALG::Matrix<nen_,1>&                 epreaf,
+  const LINALG::Matrix<nsd_,nen_>&              eaccam,
+  const LINALG::Matrix<nsd_,nen_>&              emhist,
+  const LINALG::Matrix<nsd_,nen_>&              edispnp,
+  const LINALG::Matrix<nsd_,nen_>&              egridv,
+  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  estif,
+  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&  emesh,
+  LINALG::Matrix<(nsd_+1)*nen_,1>&              eforce,
+  Teuchos::RCP<const MAT::Material>             material,
+  bool                                          isale,
+  const DRT::UTILS::GaussIntegration &          intpoints
+  )
+{
+  //------------------------------------------------------------------------
+  //  preliminary definitions and evaluations
+  //------------------------------------------------------------------------
+  // definition of matrices
+  LINALG::Matrix<nen_*nsd_,nen_*nsd_>  estif_u(true);
+  LINALG::Matrix<nen_*nsd_,nen_>       estif_p_v(true);
+  LINALG::Matrix<nen_, nen_*nsd_>      estif_q_u(true);
+  LINALG::Matrix<nen_,nen_>            ppmat(true);
+
+  // definition of vectors
+  LINALG::Matrix<nen_,1>     preforce(true);
+  LINALG::Matrix<nsd_,nen_>  velforce(true);
+
+  // definition of velocity-based momentum residual vectors
+  LINALG::Matrix<nsd_*nsd_,nen_>  lin_resM_Du(true);
+  LINALG::Matrix<nsd_,1>          resM_Du(true);
+
+  // add displacement when fluid nodes move in the ALE case
+  if (isale) xyze_ += edispnp;
+
+  //------------------------------------------------------------------------
+  // potential evaluation of material parameters, subgrid viscosity
+  // and/or stabilization parameters at element center
+  //------------------------------------------------------------------------
+  // evaluate shape functions and derivatives at element center
+  EvalShapeFuncAndDerivsAtEleCenter(eid);
+
+  // set element area or volume
+  const double vol = fac_;
+
+  // get material parameters at element center
+  if (not f3Parameter_->mat_gp_ or not f3Parameter_->tau_gp_)
+  {
+    const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(material.get());
+
+    // set density at n+alpha_F/n+1 and n+alpha_M/n+1
+    densaf_ = actmat->Density();
+    densam_ = densaf_;
+
+    // calculate reaction coefficient
+    reacoeff_ = actmat->ComputeReactionCoeff();
+  }
+
+  // calculate stabilization parameters at element center
+  if (not f3Parameter_->tau_gp_)
+  {
+    // check stabilization parameter definition for porous flow
+    if (not (f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
+             f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
+      dserror("incorrect definition of stabilization parameter for porous flow");
+
+    // total reaction coefficient sigma_tot: sum of "artificial" reaction
+    // due to time factor and reaction coefficient
+    double sigma_tot = reacoeff_;
+    if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
+      sigma_tot += 1.0/f3Parameter_->timefac_;
+
+    // calculate characteristic element length
+    double strle  = 0.0;
+    double hk     = 0.0;
+    CalcCharEleLength(vol,0.0,strle,hk);
+
+    // constants c_u and c_p as suggested in Badia and Codina (2010), method A
+    const double c_u = 4.0;
+    const double c_p = 4.0;
+
+    // tau_Mu not required for porous flow
+    tau_(0) = 0.0;
+    tau_(1) = 1.0/(c_u*densaf_*sigma_tot);
+    tau_(2) = c_p*DSQR(hk)*reacoeff_;
+  }
+
+  // get Gaussian integration points
+  //const DRT::UTILS::IntegrationPoints3D intpoints(ele->gaussrule_);
+  //const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+
+  //------------------------------------------------------------------------
+  //  start loop over integration points
+  //------------------------------------------------------------------------
+  //for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+
+  for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
+  {
+    // evaluate shape functions and derivatives at integration point
+    EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+
+    //----------------------------------------------------------------------
+    //  evaluation of various values at integration point:
+    //  1) velocity (including derivatives and grid velocity)
+    //  2) pressure (including derivatives)
+    //  3) body-force vector
+    //  4) "history" vector for momentum equation
+    //----------------------------------------------------------------------
+    // get velocity at integration point
+    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    velint_.Multiply(evelaf,funct_);
+
+    // get velocity derivatives at integration point
+    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    vderxy_.MultiplyNT(evelaf,derxy_);
+
+    // get convective velocity at integration point
+    // (ALE case handled implicitly here using the (potential
+    //  mesh-movement-dependent) convective velocity, avoiding
+    //  various ALE terms used to be calculated before)
+    convvelint_.Update(velint_);
+    if (isale) convvelint_.Multiply(-1.0, egridv, funct_, 1.0);
+
+    // get pressure at integration point
+    // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    double press = funct_.Dot(epreaf);
+
+    // get pressure gradient at integration point
+    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    gradp_.Multiply(derxy_,epreaf);
+
+    // get bodyforce at integration point
+    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    bodyforce_.Multiply(edeadaf,funct_);
+
+    // get momentum history data at integration point
+    // (only required for one-step-theta and BDF2 time-integration schemes)
+    histmom_.Multiply(emhist,funct_);
+
+    //----------------------------------------------------------------------
+    // potential evaluation of material parameters and/or stabilization
+    // parameters at integration point
+    //----------------------------------------------------------------------
+    // get material parameters at integration point
+    if (f3Parameter_->mat_gp_)
+    {
+      const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(material.get());
+
+      // set density at n+alpha_F/n+1 and n+alpha_M/n+1
+      densaf_ = actmat->Density();
+      densam_ = densaf_;
+
+      // calculate reaction coefficient
+      reacoeff_ = actmat->ComputeReactionCoeff();
+    }
+
+    // calculate stabilization parameters at integration point
+    if (f3Parameter_->tau_gp_)
+    {
+      // check stabilization parameter definition for porous flow
+      if (not (f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
+               f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
+        dserror("incorrect definition of stabilization parameter for porous flow");
+
+      // total reaction coefficient sigma_tot: sum of "artificial" reaction
+      // due to time factor and reaction coefficient
+      double sigma_tot = reacoeff_;
+      if (f3Parameter_->whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
+        sigma_tot += 1.0/f3Parameter_->timefac_;
+
+      // calculate characteristic element length
+      double strle  = 0.0;
+      double hk     = 0.0;
+      CalcCharEleLength(vol,0.0,strle,hk);
+
+      // constants c_u and c_p as suggested in Badia and Codina (2010), method A
+      const double c_u = 4.0;
+      const double c_p = 4.0;
+
+      // tau_Mu not required for porous flow
+      tau_(0) = 0.0;
+      tau_(1) = 1.0/(c_u*densaf_*sigma_tot);
+      tau_(2) = c_p*DSQR(hk)*reacoeff_;
+    }
+
+    //----------------------------------------------------------------------
+    //  evaluation of various partial operators at integration point
+    //  1) convective term from previous iteration (mandatorily set to zero)
+    //  2) viscous term from previous iteration and viscous operator
+    //  3) divergence of velocity from previous iteration
+    //----------------------------------------------------------------------
+    // set convective term from previous iteration to zero (required for
+    // using routine for evaluation of momentum rhs/residual as given)
+    conv_old_.Clear();
+
+    // set viscous term from previous iteration to zero (required for
+    // using routine for evaluation of momentum rhs/residual as given)
+    visc_old_.Clear();
+
+    // compute divergence of velocity from previous iteration
+    vdiv_ = 0.0;
+    if (not f3Parameter_->is_genalpha_np_)
+    {
+      for (int idim = 0; idim <nsd_; ++idim)
+      {
+        vdiv_ += vderxy_(idim, idim);
+      }
+    }
+    else
+    {
+      for (int idim = 0; idim <nsd_; ++idim)
+      {
+        //get vdiv at time n+1 for np_genalpha,
+        LINALG::Matrix<nsd_,nsd_> vderxy(true);
+        vderxy.MultiplyNT(evelnp,derxy_);
+        vdiv_ += vderxy(idim, idim);
+      }
+    }
+
+    //----------------------------------------------------------------------
+    // set time-integration factors for left- and right-hand side
+    //----------------------------------------------------------------------
+    const double timefacfac    = f3Parameter_->timefac_    * fac_;
+    const double timefacfacpre = f3Parameter_->timefacpre_ * fac_;
+    const double rhsfac        = f3Parameter_->timefacrhs_ * fac_;
+
+    //----------------------------------------------------------------------
+    // computation of various residuals and residual-based values such as
+    // the subgrid-scale velocity
+    //----------------------------------------------------------------------
+    // compute rhs for momentum equation and momentum residual
+    // -> different for generalized-alpha and other time-integration schemes
+    GetResidualMomentumEq(eaccam,f3Parameter_->timefac_);
+
+    // compute subgrid-scale velocity
+    sgvelint_.Update(-tau_(1),momres_old_,0.0);
+
+    // compute residual for continuity equation
+    // (for porous flow, residual contains velocity divergence only)
+    conres_old_ = vdiv_;
+
+    // set velocity-based momentum residual vectors to zero
+    lin_resM_Du.Clear();
+    resM_Du.Clear();
+
+    // compute first version of velocity-based momentum residual containing
+    // inertia and reaction term
+    int idim_nsd_p_idim[nsd_];
+    for (int idim = 0; idim <nsd_; ++idim)
+    {
+      idim_nsd_p_idim[idim]=idim*nsd_+idim;
+    }
+
+    if (f3Parameter_->is_stationary_ == false)
+    {
+      const double fac_densam=fac_*densam_;
+
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const double v=fac_densam*funct_(ui);
+
+        for (int idim = 0; idim <nsd_; ++idim)
+        {
+          lin_resM_Du(idim_nsd_p_idim[idim],ui)+=v;
+        }
+      }
+    }
+
+    const double fac_reac=timefacfac*reacoeff_;
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      const double v=fac_reac*funct_(ui);
+
+      for (int idim = 0; idim <nsd_; ++idim)
+      {
+        lin_resM_Du(idim_nsd_p_idim[idim],ui)+=v;
+      }
+    }
+
+    //----------------------------------------------------------------------
+    // computation of standard Galerkin and stabilization contributions to
+    // element matrix and right-hand-side vector
+    //----------------------------------------------------------------------
+    // 1) standard Galerkin inertia and reaction terms
+    /* inertia (contribution to mass matrix) if not is_stationary */
+    /*
+            /              \
+           |                |
+           |    rho*Du , v  |
+           |                |
+            \              /
+    */
+    /*  reaction */
+    /*
+            /                \
+           |                  |
+           |    sigma*Du , v  |
+           |                  |
+            \                /
+    */
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      const int fui   = nsd_*ui;
+
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi   = nsd_*vi;
+
+        for (int idim = 0; idim <nsd_; ++idim)
+        {
+          estif_u(fvi+idim,fui+idim) += funct_(vi)*lin_resM_Du(idim*nsd_+idim,ui);
+        } // end for (idim)
+      } //vi
+    } // ui
+
+    // inertia terms on the right hand side for instationary fluids
+    if (not f3Parameter_->is_stationary_)
+    {
+      for (int idim = 0; idim <nsd_; ++idim)
+      {
+        if (f3Parameter_->is_genalpha_) resM_Du(idim)+=rhsfac*densam_*accint_(idim);
+        else                            resM_Du(idim)+=fac_*densaf_*velint_(idim);
+      }
+    }  // end if (not stationary)
+
+    for (int idim = 0; idim <nsd_; ++idim)
+    {
+      resM_Du(idim) += rhsfac*reacoeff_*velint_(idim);
+    }
+
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      for(int idim = 0; idim <nsd_; ++idim)
+      {
+        velforce(idim,vi)-=resM_Du(idim)*funct_(vi);
+      }
+    }
+
+    // 2) stabilization of continuity equation
+    if (f3Parameter_->cstab_ == INPAR::FLUID::continuity_stab_yes)
+    {
+      LINALG::Matrix<nsd_,nsd_> contstab(true);
+      const double conti_stab_fac = timefacfacpre*tau_(2);
+      const double conti_stab_rhs = rhsfac*tau_(2)*conres_old_;
+
+      /* continuity stabilisation on left hand side */
+      /*
+                  /                        \
+                |                          |
+           tauC | nabla o Du  , nabla o v  |
+                |                          |
+                 \                        /
+      */
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const int fui = nsd_*ui;
+
+        for (int idim = 0; idim <nsd_; ++idim)
+        {
+          const int fui_p_idim = fui+idim;
+          const double v0 = conti_stab_fac*derxy_(idim,ui);
+          for (int vi=0; vi<nen_; ++vi)
+          {
+            const int fvi = nsd_*vi;
+
+            for(int jdim=0;jdim<nsd_;++jdim)
+            {
+              estif_u(fvi+jdim,fui_p_idim) += v0*derxy_(jdim, vi) ;
+            }
+          }
+        } // end for(idim)
+      }
+
+      for(int idim=0;idim<nsd_;++idim)
+      {
+        contstab(idim,idim)-=conti_stab_rhs;
+      }
+
+      // computation of right-hand-side term
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        for (int idim = 0; idim < nsd_; ++idim)
+        {
+          for (int jdim = 0; jdim < nsd_; ++jdim)
+          {
+            velforce(idim,vi)-= contstab(idim,jdim)*derxy_(jdim,vi);
+          }
+        }
+      }
+    }
+
+    // 3) standard Galerkin pressure term
+    PressureGalPart(estif_p_v,
+                    velforce,
+                    timefacfac,
+                    timefacfacpre,
+                    rhsfac,
+                    press);
+
+    // 4) standard Galerkin continuity term
+    ContinuityGalPart(estif_q_u,
+                      preforce,
+                      timefacfac,
+                      timefacfacpre,
+                      rhsfac);
+
+    // 5) standard Galerkin bodyforce term on right-hand side
+    BodyForceRhsTerm(velforce,
+                     rhsfac);
+
+    // 6) PSPG term
+    if (f3Parameter_->pspg_ == INPAR::FLUID::pstab_use_pspg)
+    {
+      PSPG(estif_q_u,
+           ppmat,
+           preforce,
+           lin_resM_Du,
+           0.0,
+           timefacfac,
+           timefacfacpre,
+           rhsfac);
+    }
+
+    // 7) reactive stabilization term
+    if (f3Parameter_->rstab_ != INPAR::FLUID::reactive_stab_none)
+    {
+      ReacStab(estif_u,
+               estif_p_v,
+               velforce,
+               lin_resM_Du,
+               timefacfac,
+               timefacfacpre,
+               rhsfac,
+               0.0);
+    }
+
+    // linearization wrt mesh motion
+    if (emesh.IsInitialized())
+    {
+      if (nsd_ == 3)
+        LinMeshMotion_3D(emesh,
+                        evelaf,
+                        press,
+                        f3Parameter_->timefac_,
+                        timefacfac);
+      else if(nsd_ == 2)
+        LinMeshMotion_2D(emesh,
+                         evelaf,
+                         press,
+                         f3Parameter_->timefac_,
+                         timefacfac);
+      else
+        dserror("Linearization of the mesh motion is not available in 1D");
+    }
+  }
+  //------------------------------------------------------------------------
+  //  end loop over integration points
+  //------------------------------------------------------------------------
+
+  //------------------------------------------------------------------------
+  //  add contributions to element matrix and right-hand-side vector
+  //------------------------------------------------------------------------
+  // add pressure part to right-hand-side vector
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    eforce(numdofpernode_*vi+nsd_)+=preforce(vi);
+  }
+
+  // add velocity part to right-hand-side vector
+  for (int vi=0; vi<nen_; ++vi)
+  {
+    for (int idim=0; idim<nsd_; ++idim)
+    {
+      eforce(numdofpernode_*vi+idim)+=velforce(idim,vi);
+    }
+  }
+
+  // add pressure-pressure part to matrix
+  for (int ui=0; ui<nen_; ++ui)
+  {
+    const int fuippp = numdofpernode_*ui+nsd_;
+
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const int numdof_vi_p_nsd = numdofpernode_*vi+nsd_;
+
+      estif(numdof_vi_p_nsd,fuippp)+=ppmat(vi,ui);
+    }
+  }
+
+  // add velocity-velocity part to matrix
+  for (int ui=0; ui<nen_; ++ui)
+  {
+    const int numdof_ui = numdofpernode_*ui;
+    const int nsd_ui = nsd_*ui;
+
+    for (int jdim=0; jdim < nsd_;++jdim)
+    {
+      const int numdof_ui_jdim = numdof_ui+jdim;
+      const int nsd_ui_jdim = nsd_ui+jdim;
+
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int numdof_vi = numdofpernode_*vi;
+        const int nsd_vi = nsd_*vi;
+
+        for (int idim=0; idim <nsd_; ++idim)
+        {
+          estif(numdof_vi+idim, numdof_ui_jdim) += estif_u(nsd_vi+idim, nsd_ui_jdim);
+        }
+      }
+    }
+  }
+
+  // add velocity-pressure part to matrix
+  for (int ui=0; ui<nen_; ++ui)
+  {
+    const int numdof_ui_nsd = numdofpernode_*ui + nsd_;
+
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const int nsd_vi = nsd_*vi;
+      const int numdof_vi = numdofpernode_*vi;
+
+      for (int idim=0; idim <nsd_; ++idim)
+      {
+        estif(numdof_vi+idim, numdof_ui_nsd) += estif_p_v(nsd_vi+idim, ui);
+      }
+    }
+  }
+
+  // add pressure-velocity part to matrix
+  for (int ui=0; ui<nen_; ++ui)
+  {
+    const int numdof_ui = numdofpernode_*ui;
+    const int nsd_ui = nsd_*ui;
+
+    for (int jdim=0; jdim < nsd_;++jdim)
+    {
+      const int numdof_ui_jdim = numdof_ui+jdim;
+      const int nsd_ui_jdim = nsd_ui+jdim;
+
+      for (int vi=0; vi<nen_; ++vi)
+        estif(numdofpernode_*vi+nsd_, numdof_ui_jdim) += estif_q_u(vi, nsd_ui_jdim);
+    }
+  }
+
+  return;
+}
+
 
 #endif
 #endif

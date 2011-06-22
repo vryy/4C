@@ -673,18 +673,7 @@ void FLD::FluidImplicitTimeInt::Integrate()
     cout << "Stabilization type         : " << stabparams->get<string>("STABTYPE") << "\n";
     cout << "                             " << stabparams->get<string>("TDS")<< "\n";
     cout << "\n";
-
-    if (timealgo_!=INPAR::FLUID::timeint_stationary)
-          cout <<  "                             " << "Tau Type        = " << stabparams->get<string>("DEFINITION_TAU") <<"\n";
-    else
-    {
-      if(stabparams->get<string>("DEFINITION_TAU") == "Barrenechea_Franca_Valentin_Wall" or
-          stabparams->get<string>("DEFINITION_TAU") == "Barrenechea_Franca_Valentin_Wall_wo_dt")
-        cout <<  "                             " << "Tau             = " << "Barrenechea_Franca_Valentin_Wall_wo_dt" << "\n";
-      else if (stabparams->get<string>("DEFINITION_TAU") == "Bazilevs_wo_dt" or
-          stabparams->get<string>("DEFINITION_TAU") == "Bazilevs")
-        cout <<  "                             " << "Tau             = " << "Bazilevs_wo_dt" << "\n";
-    }
+    cout << "                             " << "Tau Type        = " << stabparams->get<string>("DEFINITION_TAU") <<"\n";
     cout << "\n";
 
     if(stabparams->get<string>("TDS") == "quasistatic")
@@ -706,7 +695,7 @@ void FLD::FluidImplicitTimeInt::Integrate()
 
   // distinguish stationary and instationary case
   if (timealgo_==INPAR::FLUID::timeint_stationary) SolveStationaryProblem();
-  else TimeLoop();
+  else                                             TimeLoop();
 
   // print the results of time measurements
   //cout<<endl<<endl;
@@ -1115,8 +1104,9 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         }
       }
 
-      // Set action type
+      // set action type
       eleparams.set("action","calc_fluid_systemmat_and_residual");
+      //eleparams.set("action","calc_porousflow_sysmat_and_residual");
 
       // parameters for turbulent approach
       eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");

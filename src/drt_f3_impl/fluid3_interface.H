@@ -79,6 +79,35 @@ namespace ELEMENTS
                          Epetra_SerialDenseVector&  elevec3_epetra,
                          const DRT::UTILS::GaussIntegration & intpoints ) = 0;
 
+    /// Evaluate the element for porous flow
+    /*!
+       This class does not provide a definition for this function, it
+       must be defined in Fluid3Impl.
+     */
+    virtual int PoroEvaluate(DRT::ELEMENTS::Fluid3*        ele,
+                             DRT::Discretization &         discretization,
+                             const std::vector<int> &      lm,
+                             Teuchos::ParameterList&       params,
+                             Teuchos::RCP<MAT::Material> & mat,
+                             Epetra_SerialDenseMatrix&     elemat1_epetra,
+                             Epetra_SerialDenseMatrix&     elemat2_epetra,
+                             Epetra_SerialDenseVector&     elevec1_epetra,
+                             Epetra_SerialDenseVector&     elevec2_epetra,
+                             Epetra_SerialDenseVector&     elevec3_epetra ) = 0;
+
+    /// Evaluate the element at specified gauss points for porous flow
+    virtual int PoroEvaluate(DRT::ELEMENTS::Fluid3*               ele,
+                             DRT::Discretization &                discretization,
+                             const std::vector<int> &             lm,
+                             Teuchos::ParameterList&              params,
+                             Teuchos::RCP<MAT::Material> &        mat,
+                             Epetra_SerialDenseMatrix&            elemat1_epetra,
+                             Epetra_SerialDenseMatrix&            elemat2_epetra,
+                             Epetra_SerialDenseVector&            elevec1_epetra,
+                             Epetra_SerialDenseVector&            elevec2_epetra,
+                             Epetra_SerialDenseVector&            elevec3_epetra,
+                             const DRT::UTILS::GaussIntegration & intpoints ) = 0;
+
     /// Integrate shape function
     /*!
       This class does not provide a definition for this function, it

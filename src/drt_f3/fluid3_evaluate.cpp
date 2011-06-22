@@ -67,6 +67,8 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
   DRT::ELEMENTS::Fluid3::ActionType act = Fluid3::none;
   if (action == "calc_fluid_systemmat_and_residual")
     act = Fluid3::calc_fluid_systemmat_and_residual;
+  else if (action == "calc_porousflow_sysmat_and_residual")
+    act = Fluid3::calc_porousflow_sysmat_and_residual;
   else if (action == "calc_fluid_genalpha_sysmat_and_residual")
     act = Fluid3::calc_fluid_genalpha_sysmat_and_residual;
   else if (action == "time update for subscales")
@@ -158,10 +160,8 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
   switch(act)
   {
       //-----------------------------------------------------------------------
-      //-----------------------------------------------------------------------
-      // the standard one-step-theta + BDF2 implementation as well as
-      // generalized-alpha implementation with continuity equation at n+alpha_F
-      //-----------------------------------------------------------------------
+      // standard implementation enabling time-integration schemes such as
+      // one-step-theta, BDF2, and generalized-alpha (n+alpha_F and n+1)
       //-----------------------------------------------------------------------
       case calc_fluid_systemmat_and_residual:
       {
@@ -178,10 +178,28 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
                elevec3 );
       }
       break;
+      //-----------------------------------------------------------------------
+      // standard implementation enabling time-integration schemes such as
+      // one-step-theta, BDF2, and generalized-alpha (n+alpha_F and n+1)
+      // for the particular case of porous flow
+      //-----------------------------------------------------------------------
+      case calc_porousflow_sysmat_and_residual:
+      {
+        return DRT::ELEMENTS::Fluid3ImplInterface::Impl(Shape())->PoroEvaluate(
+               this,
+               discretization,
+               lm,
+               params,
+               mat,
+               elemat1,
+               elemat2,
+               elevec1,
+               elevec2,
+               elevec3 );
+      }
+      break;
       //--------------------------------------------------
-      //--------------------------------------------------
-      // the generalized-alpha implementation
-      //--------------------------------------------------
+      // previous generalized-alpha (n+1) implementation
       //--------------------------------------------------
       case calc_fluid_genalpha_sysmat_and_residual:
       {

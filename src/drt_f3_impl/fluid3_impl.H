@@ -194,18 +194,68 @@ namespace ELEMENTS
                                        Epetra_SerialDenseMatrix&  Cuiui
       );
 
+    /// Evaluate the element for porous flow
+    /*!
+      Generic virtual interface function. Called via base pointer.
+     */
+    virtual int PoroEvaluate(DRT::ELEMENTS::Fluid3*        ele,
+                             DRT::Discretization &         discretization,
+                             const std::vector<int> &      lm,
+                             Teuchos::ParameterList&       params,
+                             Teuchos::RCP<MAT::Material> & mat,
+                             Epetra_SerialDenseMatrix&     elemat1_epetra,
+                             Epetra_SerialDenseMatrix&     elemat2_epetra,
+                             Epetra_SerialDenseVector&     elevec1_epetra,
+                             Epetra_SerialDenseVector&     elevec2_epetra,
+                             Epetra_SerialDenseVector&     elevec3_epetra );
+
+    /// Evaluate the element at specified gauss points for porous flow
+    virtual int PoroEvaluate(DRT::ELEMENTS::Fluid3*               ele,
+                             DRT::Discretization &                discretization,
+                             const std::vector<int> &             lm,
+                             Teuchos::ParameterList&              params,
+                             Teuchos::RCP<MAT::Material> &        mat,
+                             Epetra_SerialDenseMatrix&            elemat1_epetra,
+                             Epetra_SerialDenseMatrix&            elemat2_epetra,
+                             Epetra_SerialDenseVector&            elevec1_epetra,
+                             Epetra_SerialDenseVector&            elevec2_epetra,
+                             Epetra_SerialDenseVector&            elevec3_epetra,
+                             const DRT::UTILS::GaussIntegration & intpoints );
+
+    /*!
+      \brief evaluate function for Fluid3 element for porous flow
+
+      Specific evaluate function without any knowledge about DRT objects. This
+      way the element evaluation is independent of the specific mesh storage.
+     */
+    int PoroEvaluate(int                                           eid,
+                     Teuchos::ParameterList&                       params,
+                     const LINALG::Matrix<nsd_,nen_> &             edeadaf,
+                     LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat1,
+                     LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat2,
+                     LINALG::Matrix<(nsd_+1)*nen_,            1> & elevec1,
+                     const LINALG::Matrix<nsd_,nen_> &             evelaf,
+                     const LINALG::Matrix<nen_,1>    &             epreaf,
+                     const LINALG::Matrix<nsd_,nen_> &             evelnp,
+                     const LINALG::Matrix<nsd_,nen_> &             emhist,
+                     const LINALG::Matrix<nsd_,nen_> &             eaccam,
+                     const LINALG::Matrix<nsd_,nen_> &             edispnp,
+                     const LINALG::Matrix<nsd_,nen_> &             egridv,
+                     Teuchos::RCP<MAT::Material>                   mat,
+                     bool                                          isale,
+                     const DRT::UTILS::GaussIntegration &          intpoints);
+
     /*!
       \brief calculate element matrix and rhs
 
-      2D/3D mixed sysmat
-
-      \param ele              (i) the element those matrix is calculated
+      \param eid              (i) element id
+      \param edeadaf          (i) body force at n+alpha_F/n+1
       \param evelaf           (i) nodal velocities at n+alpha_F/n+1
       \param eveln            (i) nodal velocities at n
       \param evelnp           (i) nodal velocities at n+1 (np_genalpha)
       \param fsevelaf         (i) fine-scale nodal velocities at n+alpha_F/n+1
       \param epreaf           (i) nodal pressure at n+alpha_F/n+1
-      \param            (i) nodal accelerations at n+alpha_M
+      \param eaccam           (i) nodal accelerations at n+alpha_M
       \param escaaf           (i) nodal scalar at n+alpha_F/n+1
       \param escaam           (i) nodal scalar at n+alpha_M/n
       \param escadtam         (i) nodal scalar derivatives at n+alpha_M/n+1
@@ -215,33 +265,17 @@ namespace ELEMENTS
       \param estif            (o) element matrix to calculate
       \param emesh            (o) linearization wrt mesh motion
       \param eforce           (o) element rhs to calculate
+      \param thermpressaf     (i) thermodynamic pressure at n+alpha_F/n+1
+      \param thermpressam     (i) thermodynamic pressure at n+alpha_M/n+1
+      \param thermpressdtam   (i) thermodynamic pressure derivative at n+alpha_M/n+1
       \param material         (i) fluid material
-      \param time             (i) current simulation time
-      \param timefac          (i) time discretization factor
-      \param newton           (i) boolean flag for linearisation
-      \param loma             (i) boolean flag for potential low-Mach-number solver
-      \param conservative     (i) boolean flag for conservative form
-      \param is_genalpha      (i) boolean flag for generalized-alpha time integration
-      \param higher_order_ele (i) keep or drop second derivatives
-      \param fssgv            (i) flag for type of fine-scale subgrid viscosity
-      \param pspg             (i) boolean flag for stabilisation
-      \param supg             (i) boolean flag for stabilisation
-      \param vstab            (i) boolean flag for stabilisation
-      \param cstab            (i) boolean flag for stabilisation
-      \param cross            (i) boolean flag for stabilisation
-      \param reynolds         (i) boolean flag for stabilisation
-      \param whichtau         (i) selecting available tau definition
-      \param turb_mod_action  (i) selecting turbulence model (none, Smagorisky,
-                                  dynamic Smagorinsky, Smagorinsky with van Driest
-                                  damping for channel flows)
-      \param Cs               (i) Smagorinsky model parameter
-      \param Cs_delta_sq      (i) Model parameter computed by dynamic Smagorinsky
-                                  approach (Cs*h*h)
-      \param l_tau            (i) viscous length scale, required for van driest
-                                  damping function and defined on input
+      \param Cs_delta_sq      (i) parameter for dynamic Smagorinsky model (Cs*h*h)
+      \param isale            (i) ALE flag
+      \param intpoints        (i) Gaussian integration points
+
       */
-    void Sysmat(int                                        eid,
-                const LINALG::Matrix<nsd_,nen_> & edeadaf,
+    void Sysmat(int                                            eid,
+                const LINALG::Matrix<nsd_,nen_> &              edeadaf,
                 const LINALG::Matrix<nsd_,nen_>&               evelaf,
                 const LINALG::Matrix<nsd_,nen_>&               eveln,
                 const LINALG::Matrix<nsd_,nen_> &              evelnp,
@@ -265,10 +299,46 @@ namespace ELEMENTS
                 Teuchos::RCP<const MAT::Material>              material,
                 double&                                        Cs_delta_sq,
                 bool                                           isale,
-                double * saccn,
-                double * sveln,
-                double * svelnp,
-                const DRT::UTILS::GaussIntegration & intpoints);
+                double *                                       saccn,
+                double *                                       sveln,
+                double *                                       svelnp,
+                const DRT::UTILS::GaussIntegration &           intpoints);
+
+    /*!
+      \brief calculate element matrix and rhs for porous flow
+
+      \param eid              (i) element id
+      \param edeadaf          (i) body force at n+alpha_F/n+1
+      \param evelaf           (i) nodal velocities at n+alpha_F/n+1
+      \param evelnp           (i) nodal velocities at n+1 (np_genalpha)
+      \param epreaf           (i) nodal pressure at n+alpha_F/n+1
+      \param eaccam           (i) nodal accelerations at n+alpha_M
+      \param emhist           (i) time rhs for momentum equation
+      \param edispnp          (i) nodal displacements (on moving mesh)
+      \param egridv           (i) grid velocity (on moving mesh)
+      \param estif            (o) element matrix to calculate
+      \param emesh            (o) linearization wrt mesh motion
+      \param eforce           (o) element rhs to calculate
+      \param material         (i) fluid material
+      \param isale            (i) ALE flag
+      \param intpoints        (i) Gaussian integration points
+
+      */
+    void PoroSysmat(int                                            eid,
+                    const LINALG::Matrix<nsd_,nen_> &              edeadaf,
+                    const LINALG::Matrix<nsd_,nen_>&               evelaf,
+                    const LINALG::Matrix<nsd_,nen_> &              evelnp,
+                    const LINALG::Matrix<nen_,1>&                  epreaf,
+                    const LINALG::Matrix<nsd_,nen_>&               eaccam,
+                    const LINALG::Matrix<nsd_,nen_>&               emhist,
+                    const LINALG::Matrix<nsd_,nen_>&               edispnp,
+                    const LINALG::Matrix<nsd_,nen_>&               egridv,
+                    LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&   estif,
+                    LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_>&   emesh,
+                    LINALG::Matrix<(nsd_+1)*nen_,    1>&           eforce,
+                    Teuchos::RCP<const MAT::Material>              material,
+                    bool                                           isale,
+                    const DRT::UTILS::GaussIntegration &           intpoints);
 
     /*!
       \brief FD-check for debugging
