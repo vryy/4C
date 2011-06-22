@@ -482,7 +482,8 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(
     double density = 0.0;
     LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
     LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
-    soh8_mat_sel(&stress,&cmat,&density,&mod_glstrain,&mod_defgrd,gp,params);
+    LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
+    soh8_mat_sel(&stress,&cmat,&density,&mod_glstrain,&plglstrain,&mod_defgrd,gp,params);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1183,7 +1184,8 @@ void DRT::ELEMENTS::So_Hex8P1J1::test_stiffmat(
       double density = 0.0;
       LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
       LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
-      soh8_mat_sel(&stress,&cmat,&density,&mod_glstrain,&mod_defgrd,gp,params);
+      LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
+      soh8_mat_sel(&stress,&cmat,&density,&mod_glstrain,&plglstrain,&mod_defgrd,gp,params);
 
       // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 

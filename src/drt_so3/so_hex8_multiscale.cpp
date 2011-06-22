@@ -95,8 +95,9 @@ void DRT::ELEMENTS::So_hex8::soh8_homog(ParameterList&  params)
     */
     LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
     LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
+    LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
     double density;
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&plglstrain,&defgrd,gp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     double integrationfactor = detJ * (*weights)(gp);

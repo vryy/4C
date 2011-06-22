@@ -394,7 +394,7 @@ void DRT::ELEMENTS::So_hex8fbar::InitJacobianMapping()
       invJ_0.Invert();
       prestress_->MatrixtoStorage(NUMGPT_SOH8,invJ_0,prestress_->JHistory());
     }
-  
+
 
   if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
     prestress_->IsInit() = true;
@@ -539,7 +539,7 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
     invJ_0.Multiply(N_rst_0,xrefe);
     invJ_0.Invert();
     //material derivatives at centroid
-    N_XYZ_0.Multiply(invJ_0,N_rst_0); 
+    N_XYZ_0.Multiply(invJ_0,N_rst_0);
   }
   
   if (pstype_==INPAR::STR::prestress_mulf)
@@ -758,7 +758,8 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
     double density = 0.0;
     LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
     LINALG::Matrix<NUMSTR_SOH8,1> stress_bar(true);
-    soh8_mat_sel(&stress_bar,&cmat,&density,&glstrain_bar,&defgrd_bar,gp,params);
+    LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
+    soh8_mat_sel(&stress_bar,&cmat,&density,&glstrain_bar,&plglstrain,&defgrd_bar,gp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses
@@ -956,7 +957,7 @@ void DRT::ELEMENTS::So_hex8fbar::DefGradient(const vector<double>& disp,
 
     prestress.MatrixtoStorage(gp,defgrd,gpdefgrd);
   }
-  
+
   {
     // get Jacobian mapping wrt to the stored deformed configuration
     LINALG::Matrix<3,3> invJdef;
@@ -974,8 +975,8 @@ void DRT::ELEMENTS::So_hex8fbar::DefGradient(const vector<double>& disp,
     defgrd(2,2) += 1.0;
 
     prestress.MatrixtoStorage(NUMGPT_SOH8,defgrd,gpdefgrd);
-  }  
-  
+  }
+
   return;
 }
 

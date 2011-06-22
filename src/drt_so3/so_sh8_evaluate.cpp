@@ -98,8 +98,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
       } else {
-        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
-                          INPAR::STR::stress_none,INPAR::STR::strain_none);
+        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
     }
     break;
@@ -119,8 +119,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
       } else {
-        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
-                          INPAR::STR::stress_none,INPAR::STR::strain_none);
+        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
     }
     break;
@@ -142,8 +142,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         sosh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
       } else {
-        soh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
-                          INPAR::STR::stress_none,INPAR::STR::strain_none);
+        soh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
     }
     break;
@@ -169,8 +169,8 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         sosh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                            INPAR::STR::stress_none,INPAR::STR::strain_none);
       } else {
-        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
-                          INPAR::STR::stress_none,INPAR::STR::strain_none);
+        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
       // lump mass
       if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
@@ -187,24 +187,28 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         RefCountPtr<const Epetra_Vector> res  = discretization.GetState("residual displacement");
         RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
         RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
+        RCP<vector<char> > plstraindata = params.get<RCP<vector<char> > >("plstrain", null);
         if (disp==null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata==null) dserror("Cannot get stress 'data'");
         if (straindata==null) dserror("Cannot get strain 'data'");
+        if (plstraindata==null) dserror("Cannot get plastic strain 'data'");
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
         vector<double> myres(lm.size());
         DRT::UTILS::ExtractMyValues(*res,myres,lm);
         LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
         LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
+        LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> plstrain;
 
         INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+        INPAR::STR::StrainType ioplstrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
 
         // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
         if (eastype_ != DRT::ELEMENTS::So_hex8::soh8_easmild){
           sosh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
         } else {
-          soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+          soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
         }
         {
           DRT::PackBuffer data;
@@ -219,6 +223,13 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
           data.StartPacking();
           AddtoPack(data, strain);
           std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
+        }
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, plstrain);
+          data.StartPacking();
+          AddtoPack(data, plstrain);
+          std::copy(data().begin(),data().end(),std::back_inserter(*plstraindata));
         }
       }
     }
@@ -825,7 +836,8 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
     //
     LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
     LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
+    LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&plglstrain,&defgrd,gp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses if necessary

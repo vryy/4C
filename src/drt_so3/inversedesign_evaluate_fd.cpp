@@ -572,8 +572,9 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
 
     Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
     Epetra_SerialDenseVector stress(NUMSTR_SOH8);
+    LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
     double density;
-    ele->soh8_mat_sel(&stress,&cmat,&density,&glstrain,&F,gp,params);
+    ele->soh8_mat_sel(&stress,&cmat,&density,&glstrain,&plglstrain,&F,gp,params);
 
     cstress.Multiply('N','N',detf,IF,stress,0.0);
     //cout << "unperm cstress\n" << cstress;
@@ -627,7 +628,8 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
       Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
       Epetra_SerialDenseVector stress(NUMSTR_SOH8);
       double density;
-      ele->soh8_mat_sel(&stress,&cmat,&density,&glstrain,&F,gp,params);
+      LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
+      ele->soh8_mat_sel(&stress,&cmat,&density,&glstrain,&plglstrain,&F,gp,params);
 
       Epetra_SerialDenseVector cstressperm(NUMSTR_SOH8);
       cstressperm.Multiply('N','N',detf,IF,stress,0.0);
@@ -792,8 +794,9 @@ void DRT::ELEMENTS::InvDesign::FD_dISdX(Epetra_SerialDenseMatrix& stiff,
     glstrain(5) = cauchygreen(2,0);
 
     Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
+    LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
     double density;
-    ele->soh8_mat_sel(&stress,&cmat,&density,&glstrain,&F,gp,params);
+    ele->soh8_mat_sel(&stress,&cmat,&density,&glstrain,&plglstrain,&F,gp,params);
 
     cstress.Multiply('N','N',detf,IF,stress,0.0);
     //cout << "unperm cstress\n" << cstress;

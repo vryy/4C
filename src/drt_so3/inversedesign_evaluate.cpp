@@ -762,7 +762,8 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
     double density = 0.0;
     LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
     LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
-    ele->soh8_mat_sel(&stress,&cmat,&density,&glstrain,&F,gp,params);
+    LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
+    ele->soh8_mat_sel(&stress,&cmat,&density,&glstrain,&plglstrain,&F,gp,params);
 
     //------------------------------------------- compute cauchy stresses
     LINALG::Matrix<NUMSTR_SOH8,1> cstress;

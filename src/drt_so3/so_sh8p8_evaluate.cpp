@@ -1153,7 +1153,8 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(
     double density = 0.0;
     LINALG::Matrix<NUMSTR_,1> stress(true);  // 2nd PK stress
     LINALG::Matrix<NUMSTR_,NUMSTR_> cmat(true);
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrad,gp,params);
+    LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&plglstrain,&defgrad,gp,params);
     if (iso_ == iso_enforced) {
       LINALG::Matrix<NUMSTR_,1> pk2gen(stress);  // may contain non-isochoric material response
       LINALG::Matrix<NUMSTR_,NUMSTR_> cgen(cmat);  // may contain non-isochoric material response
