@@ -48,13 +48,19 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis)
       break;
     }
 
-
     if (type == INPAR::MAT::m_aaa_mixedeffects)
     {
       lfoundit = 1;
       break;
     }
+  
+    if (type == INPAR::MAT::m_elasthyper)
+    {
+      lfoundit = 1;
+      break;
+    }
   }
+
   int gfoundit = 0;
   dis.Comm().SumAll(&lfoundit,&gfoundit,1);
   if (gfoundit)

@@ -109,7 +109,7 @@ namespace ELASTIC
     //@}
 
     /// Add principal coefficients.
-    /// Nothing to do for this (decoupled) material!
+    /// Nothing to do for this material if no HUs!
     void AddCoefficientsPrincipal(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
@@ -121,25 +121,13 @@ namespace ELASTIC
     };
     
     /// Add principal calcified coefficients for IsoVolHUDependentNeoHooke material.
-    void AddCoefficientsPrincCalcified(
+    void AddCoefficientsPrincipal(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
 	double HU,   ///< the element Hounsfield Unit
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
         LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
         const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
     );
-
-    /// Add principal coefficients for IsoVolAAAGasser material.
-    void AddCoefficientsPrincGasser(
-        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
-        LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
-        LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
-        LINALG::Matrix<3,1>& matparam,
-        const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
-    )
-    {
-      havecoefficients = havecoefficients or false;
-    };
 
     /// Add modified coefficients.
     void AddCoefficientsModified(

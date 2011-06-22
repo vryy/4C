@@ -64,7 +64,7 @@ MAT::ELASTIC::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke(MAT::ELASTIC:
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoVolHUDependentNeoHooke::AddCoefficientsPrincCalcified(
+void MAT::ELASTIC::IsoVolHUDependentNeoHooke::AddCoefficientsPrincipal(
   bool& havecoefficients,
   double HU,
   LINALG::Matrix<3,1>& gamma,
@@ -73,6 +73,8 @@ void MAT::ELASTIC::IsoVolHUDependentNeoHooke::AddCoefficientsPrincCalcified(
   )
 {
   havecoefficients = havecoefficients or true;
+
+  if (HU==-999.0) dserror("Failed to get HU for at least one element!");
 
   double alpha = 0.;
 

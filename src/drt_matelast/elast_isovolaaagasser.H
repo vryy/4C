@@ -124,12 +124,12 @@ namespace ELASTIC
     
    
     /// Add principal coefficients for IsoVolAAAGasser material.
-    void AddCoefficientsPrincGasser(
+    void AddCoefficientsPrincipal(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
         LINALG::Matrix<8,1>& delta,  ///< necessary coefficients for second derivative
-        LINALG::Matrix<3,1>& matparam,
-        const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
+        const LINALG::Matrix<3,1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
+	double normdist
     );
 
     /// Add modified coefficients.

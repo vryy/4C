@@ -14,8 +14,6 @@ Maintainer: Burkhard Bornemann
 /*----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
-#include "../drt_lib/drt_globalproblem.H"
-
 #include "../drt_mat/matpar_parameter.H"
 #include "../drt_mat/material.H"
 #include "../drt_mat/elasthyper.H"
@@ -39,6 +37,7 @@ Maintainer: Burkhard Bornemann
 #include "elast_coupvarga.H"
 #include "elast_isovarga.H"
 #include "elast_isovolHUdependentneohooke.H"
+#include "elast_isovolaaagasser.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 
@@ -155,6 +154,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       curmat->SetParameter(new MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke(curmat));
     MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke* params = static_cast<MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke*>(curmat->Parameter());
     return Teuchos::rcp(new IsoVolHUDependentNeoHooke(params));
+  }
+  case INPAR::MAT::mes_isovolaaagasser:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::IsoVolAAAGasser(curmat));
+    MAT::ELASTIC::PAR::IsoVolAAAGasser* params = static_cast<MAT::ELASTIC::PAR::IsoVolAAAGasser*>(curmat->Parameter());
+    return Teuchos::rcp(new IsoVolAAAGasser(params));
   }
   case INPAR::MAT::mes_volsussmanbathe:
   {

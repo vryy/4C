@@ -387,6 +387,7 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_coupvarga:
   case INPAR::MAT::mes_isovarga:
   case INPAR::MAT::mes_isovolHUdependentneohooke:
+  case INPAR::MAT::mes_isovolaaagasser:
   {
     return Teuchos::null;
   }

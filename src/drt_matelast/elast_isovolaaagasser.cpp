@@ -65,33 +65,38 @@ MAT::ELASTIC::IsoVolAAAGasser::IsoVolAAAGasser(MAT::ELASTIC::PAR::IsoVolAAAGasse
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoVolAAAGasser::AddCoefficientsPrincGasser(
+void MAT::ELASTIC::IsoVolAAAGasser::AddCoefficientsPrincipal(
   bool& havecoefficients,
   LINALG::Matrix<3,1>& gamma,
   LINALG::Matrix<8,1>& delta,
-  LINALG::Matrix<3,1>& matparam,
-  const LINALG::Matrix<3,1>& prinv
+  const LINALG::Matrix<3,1>& prinv,
+  double normdist
   )
 {
   havecoefficients = havecoefficients or true;
+  
+  if (normdist==-999.0) dserror("Aneurysm mean ilt distance not found. Did you switch on 'PATSPEC'? (besides other possible errors of course)");
 
-  matparam(0) = params_->clum_;
-  matparam(1) = params_->cmed_;
-  matparam(2) = params_->cablum_;
+  double cele;
+  if (0.0 <= normdist <= 0.5)
+    cele = ((normdist - 0.5)/(-0.5))* params_->clum_ + (normdist/0.5)*params_->cmed_;
+  else if(0.5 < normdist <= 1.0)
+    cele = ((normdist - 1.0)/(-0.5))*params_->cmed_ + ((normdist - 0.5)/0.5)*params_->cablum_;
+  else
+    dserror("Unable to calculate valid stiffness parameter in material AAAGasser");
 
   // principal coefficients
   gamma(0) += 0.;
-  gamma(1) += 4.*1.*pow(prinv(2),-2./3.);
-  gamma(2) += -(4./3.)*1.*pow(prinv(2),-2./3.)*(prinv(0)*prinv(0) - 2.*prinv(1)) + (2./(1.-2.*params_->nue_))*4.*1.*(1.-pow(prinv(2),-params_->beta_/2.))/params_->beta_;;
-
+  gamma(1) += cele * 4.*pow(prinv(2),-2./3.);
+  gamma(2) += cele * (-(4./3.)*pow(prinv(2),-2./3.)*(prinv(0)*prinv(0) - 2.*prinv(1)) + (2./(1.-2.*params_->nue_))*4.*(1.-pow(prinv(2),-params_->beta_/2.))/params_->beta_);
   delta(0) += 0.0;
   delta(1) += 0.0;
   delta(2) += 0.0;
   delta(3) += 0.0;
-  delta(4) += -(16./3.)*1.*pow(prinv(2),-2./3.);
-  delta(5) += (16./9.)*1.*pow(prinv(2),-2./3.)*(prinv(0)*prinv(0) - 2.*prinv(1)) + (2./(1.-2.*params_->nue_))*4.*1.*pow(prinv(2),-params_->beta_/2.);
-  delta(6) += (8./3.)*1.*pow(prinv(2),-2./3.)*(prinv(0)*prinv(0) - 2.*prinv(1)) + (2./(1.-2.*params_->nue_))*4.*1.*2.*(pow(prinv(2),-params_->beta_/2.)-1.)/params_->beta_;
-  delta(7) += 8.*1.*pow(prinv(2),-2./3.);
+  delta(4) += cele * (-16./3.)*pow(prinv(2),-2./3.);
+  delta(5) += cele * ((16./9.)*pow(prinv(2),-2./3.)*(prinv(0)*prinv(0) - 2.*prinv(1)) + (2./(1.-2.*params_->nue_))*4.*pow(prinv(2),-params_->beta_/2.));
+  delta(6) += cele * ((8./3.)*pow(prinv(2),-2./3.)*(prinv(0)*prinv(0) - 2.*prinv(1)) + (2./(1.-2.*params_->nue_))*4.*2.*(pow(prinv(2),-params_->beta_/2.)-1.)/params_->beta_);
+  delta(7) += cele * 8.*pow(prinv(2),-2./3.);
 
   return;
 }

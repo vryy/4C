@@ -396,6 +396,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
+      hyper-> SetupILTthickness(params);
       hyper->Evaluate(*glstrain,*cmat,*stress);
       *density = hyper->Density();
       return;
@@ -610,9 +611,10 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       return;
       break;
     }
-    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic material */
+    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
+      hyper-> SetupILTthickness(params);
       hyper->Evaluate(*glstrain,*cmat,*stress);
       *density = hyper->Density();
       return;
@@ -910,9 +912,10 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
       return;
       break;
     }
-    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic material */
+    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
+      hyper-> SetupILTthickness(params);
       hyper->Evaluate(*glstrain,*cmat,*stress);
       *density = hyper->Density();
       return;
@@ -1138,9 +1141,10 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
       return;
       break;
     }
-    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic material */
+    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
+      hyper-> SetupILTthickness(params);
       hyper->Evaluate(*glstrain,*cmat,*stress);
       *density = hyper->Density();
       return;
@@ -1271,9 +1275,10 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
       return;
       break;
     }
-    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic material */
+    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
+      hyper-> SetupILTthickness(params);
       hyper->Evaluate(*glstrain,*cmat,*stress);
       *density = hyper->Density();
       return;
@@ -1391,9 +1396,10 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       return;
       break;
     }
-    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic material */
+    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
+      hyper-> SetupILTthickness(params);
       hyper->Evaluate(*glstrain,*cmat,*stress);
       *density = hyper->Density();
       return;
@@ -1516,9 +1522,10 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
       return;
       break;
     }
-    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic material */
+    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
+      //hyper-> SetupILTthickness(params);
       hyper->Evaluate(*glstrain,*cmat,*stress);
       *density = hyper->Density();
       return;

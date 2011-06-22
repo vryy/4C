@@ -135,7 +135,20 @@ namespace MAT
         const LINALG::Matrix<3,1>& prinv  ///< principal invariants of right Cauchy-Green tensor
         ) = 0;
 
-      virtual void AddCoefficientsPrincCalcified(
+      /// for special type of patient-specific AAA ilt material
+      virtual void AddCoefficientsPrincipal(
+        bool& havecoefficients,  ///< non-zero coefficients of this type are provided
+        LINALG::Matrix<3,1>& gamma,  ///< see above
+        LINALG::Matrix<8,1>& delta,  ///< see above
+        const LINALG::Matrix<3,1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
+	double normdist  ///< AAA specific stuff from PATSPEC: normalized ILT thickness
+        )
+      {
+	havecoefficients = havecoefficients or false;
+      };
+
+      /// For HU dependent material (Hounsfield Units - form medical images)
+      virtual void AddCoefficientsPrincipal(
         bool& havecoefficients,  ///< non-zero coefficients of this type are provided
 	double HU, ///< Hounsfield units (HU) of the respective element
         LINALG::Matrix<3,1>& gamma,  ///< same as for AddCoefficientsPrincipal()
@@ -145,6 +158,7 @@ namespace MAT
       {
 	havecoefficients = havecoefficients or false;
       };
+
 
       /// retrieve coefficients of first and second derivative
       /// of summand (decoupled form) with respect to modified invariants

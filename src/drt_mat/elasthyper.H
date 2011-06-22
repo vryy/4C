@@ -20,6 +20,9 @@ Maintainer: Burkhard Bornemann
 #include "material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_matelast/elast_summand.H"
+#include <Teuchos_ParameterList.hpp>
+
+using namespace Teuchos;
 
 namespace MAT
 {
@@ -204,6 +207,7 @@ private:
       );
 
     void Setup(DRT::INPUT::LineDefinition* linedef);
+    void SetupILTthickness(Teuchos::ParameterList& params);
 
     /// return if anisotropic
     bool Anisotropic() const { return anisotropic_;}
@@ -334,9 +338,11 @@ private:
     /// Am I anisotropic?
     bool anisotropic_;
 
-    /// Is there information about HU from medical image data?
-    bool haveHU_;
+    /// information about HU from medical image data?
     double HU_;
+
+    /// for Gasser AAA-ILT material
+    double normdist_;
 
     /// structural tensors in voigt notation for anisotropy
     LINALG::Matrix<6,1>  A1_;

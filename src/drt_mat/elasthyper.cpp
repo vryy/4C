@@ -16,7 +16,6 @@ Maintainer: Burkhard Bornemann
 #include <vector>
 #include "elasthyper.H"
 #include "../drt_matelast/elast_summand.H"
-
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -136,9 +135,8 @@ void MAT::ElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,A1_);
   AddtoPack(data,A2_);
   AddtoPack(data,A1A2_);
-  AddtoPack(data,haveHU_);
   AddtoPack(data,HU_);
-  
+  AddtoPack(data,normdist_);
 }
 
 
@@ -177,10 +175,8 @@ void MAT::ElastHyper::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,A1_);
   ExtractfromPack(position,data,A2_);
   ExtractfromPack(position,data,A1A2_);
-  int haveHU;
-  ExtractfromPack(position,data,haveHU);
-  haveHU_ = haveHU != 0;
   ExtractfromPack(position,data,HU_);
+  ExtractfromPack(position,data,normdist_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
@@ -231,13 +227,23 @@ double MAT::ElastHyper::ShearMod() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void MAT::ElastHyper::SetupILTthickness(Teuchos::ParameterList& params)
+{
+  normdist_ = params.get("iltthick meanvalue",-999.0);
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::ElastHyper::Setup(DRT::INPUT::LineDefinition* linedef)
 {
-  haveHU_ = false;
   if (linedef->HaveNamed("HU"))
   {
-    haveHU_= true;
     linedef->ExtractDouble("HU",HU_);
+  }
+  else
+  {
+    HU_ = -999.0;
   }
 
   anisotropic_ = true;
@@ -508,19 +514,12 @@ void MAT::ElastHyper::Evaluate(
     for (p=pot.begin(); p!=pot.end(); ++p)
     {
       p->second->AddCoefficientsPrincipal(havecoeffprinc,gamma,delta,prinv);
+      p->second->AddCoefficientsPrincipal(havecoeffprinc,gamma,delta,prinv,normdist_);
+      //Do all the HU dependency (medical images) stuff!
+      p->second->AddCoefficientsPrincipal(havecoeffprinc,HU_,gamma,delta,prinv);
     }
   }
 
-  //Do all the HU dependency (medical images) stuff!
-  if (haveHU_)
-  {
-    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >& pot = params_->potsum_;
-    std::map<int,Teuchos::RCP<MAT::ELASTIC::Summand> >::iterator p;
-    for (p=pot.begin(); p!=pot.end(); ++p)
-    {
-      p->second->AddCoefficientsPrincCalcified(havecoeffprinc,HU_,gamma,delta,prinv);
-    }
-  }
 
   // principal invariants of right Cauchy-Green strain
   LINALG::Matrix<3,1> modinv;
