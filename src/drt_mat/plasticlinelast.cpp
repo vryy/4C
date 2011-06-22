@@ -265,6 +265,7 @@ void MAT::PlasticLinElast::Reset()
  *----------------------------------------------------------------------*/
 void MAT::PlasticLinElast::Evaluate(
   const LINALG::Matrix<6,1>& linstrain,  //!< linear strain vector
+  LINALG::Matrix<6,1>& plstrain,  //!< linear strain vector
   const int gp, //!< current Gauss point
   Teuchos::ParameterList& params,  //!< parameter list for communication & HISTORY
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat, //!< material stiffness matrix
@@ -407,6 +408,9 @@ void MAT::PlasticLinElast::Evaluate(
     // no plastic yielding
     Dgamma = 0.0;
 
+    // pass the current plastic strains to the element (for visualisation)
+    plstrain.Update(1.0, strain_p, 0.0);
+
   }  // elastic step
 
   //-------------------------------------------------------------------
@@ -509,6 +513,9 @@ void MAT::PlasticLinElast::Evaluate(
     // compute converged engineering strain components (Voigt-notation)
     for (int i=3; i<6; ++i) strain_e(i) *= 2.0;
     for (int i=3; i<6; ++i) strain_p(i) *= 2.0;
+
+    // pass the current plastic strains to the element (for visualisation)
+    plstrain.Update(1.0, strain_p, 0.0);
 
     // --------------------------------------------------- update history
     // strain^p_n+1 = strain^(p,trial)_n+1 + Dgamma . N

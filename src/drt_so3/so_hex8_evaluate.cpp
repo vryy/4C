@@ -114,8 +114,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       for (unsigned i=0; i<mydisp.size(); ++i) mydisp[i] = 0.0;
       vector<double> myres(lm.size());
       for (unsigned i=0; i<myres.size(); ++i) myres[i] = 0.0;
-      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
-                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+      soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,NULL,params,
+                        INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -137,8 +137,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       // special case: geometric linear
       if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
       {
-        soh8_linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
-                          INPAR::STR::stress_none,INPAR::STR::strain_none);
+        soh8_linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
@@ -148,8 +148,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
                                         INPAR::STR::stress_none,INPAR::STR::strain_none);
 
         else // standard analysis
-          soh8_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
-                            INPAR::STR::stress_none,INPAR::STR::strain_none);
+          soh8_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
+                            INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
 
     }
@@ -173,13 +173,13 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       // special case: geometric linear
       if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
       {
-        soh8_linstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
-          INPAR::STR::stress_none,INPAR::STR::strain_none);
+        soh8_linstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
+          INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
-        soh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
-                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+        soh8_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
+                        INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -197,8 +197,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
       // standard analysis
-      soh8_linstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
-                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+      soh8_linstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
+                        INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
     }
     break;
 
@@ -218,8 +218,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
 
       // special case: geometric linear
       if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
-        soh8_linstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
-                          INPAR::STR::stress_none,INPAR::STR::strain_none);
+        soh8_linstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
@@ -227,8 +227,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
           invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                                         INPAR::STR::stress_none,INPAR::STR::strain_none);
         else // standard analysis
-        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
-                          INPAR::STR::stress_none,INPAR::STR::strain_none);
+        soh8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
 
       if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
       }
@@ -247,21 +247,25 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
         RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
         RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
+        RCP<vector<char> > plstraindata = params.get<RCP<vector<char> > >("plstrain", null);
         if (disp==null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata==null) dserror("Cannot get 'stress' data");
         if (straindata==null) dserror("Cannot get 'strain' data");
+        if (plstraindata==null) dserror("Cannot get 'plastic strain' data");
         vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
         vector<double> myres(lm.size());
         DRT::UTILS::ExtractMyValues(*res,myres,lm);
         LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
         LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
+        LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> plstrain;
         INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+        INPAR::STR::StrainType ioplstrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
 
         // if a linear analysis is desired
         if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
-          soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+          soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
         // standard is: geometrically non-linear with Total Lagrangean approach
         else
         {
@@ -269,7 +273,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
             invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
 
           else // standard analysis
-            soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+            soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
         }
 
         {
@@ -286,6 +290,14 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
           data.StartPacking();
           AddtoPack(data, strain);
           std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
+        }
+
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, plstrain);
+          data.StartPacking();
+          AddtoPack(data, plstrain);
+          std::copy(data().begin(),data().end(),std::back_inserter(*plstraindata));
         }
       }
     }
@@ -647,16 +659,20 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
           glstrain(4) = cauchygreen(1,2);
           glstrain(5) = cauchygreen(2,0);
 
+          // Plastic Green-Lagrange strains matrix E_p = 0.5 * (Cauchygreen_p - Identity)
+          // Plastic GL strain vector glstrain={E_p11,E_p22,E_p33,2*E_p12,2*E_p23,2*E_p31}
+          LINALG::Matrix<NUMSTR_SOH8,1> plglstrain;
+
           // compute Second Piola Kirchhoff Stress Vector and Constitutive Matrix
           double density = 0.0;
           LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
           LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
-          soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
+          soh8_mat_sel(&stress,&cmat,&density,&glstrain,&plglstrain,&defgrd,gp,params);
 
           // compute GP contribution to internal energy
           intenergy += 0.5 * fac * stress.Dot(glstrain);
         }
-        
+
         // return result
         elevec1_epetra(0) = intenergy;
 
@@ -838,7 +854,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
           double density = 0.0;
           LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
           LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
-          soh8_mat_sel(&stress,&cmat,&density,&strainerror,&defgrd,gp,params);
+          LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
+          soh8_mat_sel(&stress,&cmat,&density,&strainerror,&plglstrain,&defgrd,gp,params);
 
           // compute GP contribution to energy error norm
           energynorm += fac * stress.Dot(strainerror);
@@ -1003,9 +1020,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
         RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
         RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
+        RCP<vector<char> > plstraindata = params.get<RCP<vector<char> > >("plstrain", null);
         if (disp==null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata==null) dserror("Cannot get 'stress' data");
         if (straindata==null) dserror("Cannot get 'strain' data");
+        if (plstraindata==null) dserror("Cannot get 'plastic strain' data");
         const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
                 params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
         if (gpstressmap==null)
@@ -1020,13 +1039,15 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         DRT::UTILS::ExtractMyValues(*res,myres,lm);
         LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
         LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
+        LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> plstrain;
         INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+        INPAR::STR::StrainType ioplstrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
         //
 
         // if a linear analysis is desired
         if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
-          soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+          soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
         // standard is: geometrically non-linear with Total Lagrangean approach
         else
         {
@@ -1034,7 +1055,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
             invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
 
           else // standard analysis
-            soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+            soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
         }
         // add stresses to global map
         //get EleID Id()
@@ -1082,6 +1103,14 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
           data.StartPacking();
           AddtoPack(data, strain);
           std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
+        }
+
+        {
+          DRT::PackBuffer data;
+          AddtoPack(data, plstrain);
+          data.StartPacking();
+          AddtoPack(data, plstrain);
+          std::copy(data().begin(),data().end(),std::back_inserter(*plstraindata));
         }
       }
     }
@@ -1253,9 +1282,11 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       LINALG::Matrix<NUMDOF_SOH8,1>* force,                 // element internal force vector
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,   // stresses at GP
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,   // strains at GP
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* eleplstrain, // plastic strains at GP
       ParameterList&            params,         // algorithmic parameters e.g. time
       const INPAR::STR::StressType   iostress,  // stress output option
-      const INPAR::STR::StrainType   iostrain)  // strain output option
+      const INPAR::STR::StrainType   iostrain,  // strain output option
+      const INPAR::STR::StrainType   ioplstrain)  // plastic strain output option
 {
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
@@ -1586,8 +1617,59 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
     double density = 0.0;
     LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
     LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
+    LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&plglstrain,&defgrd,gp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+
+    // return gp plastic strains (only in case of plastic strain output)
+     switch (ioplstrain)
+     {
+     case INPAR::STR::strain_gl:
+     {
+       if (eleplstrain == NULL) dserror("plastic strain data not available");
+       for (int i = 0; i < 3; ++i)
+         (*eleplstrain)(gp,i) = plglstrain(i);
+       for (int i = 3; i < 6; ++i)
+         (*eleplstrain)(gp,i) = 0.5 * plglstrain(i);
+     }
+     break;
+     case INPAR::STR::strain_ea:
+     {
+       if (eleplstrain == NULL) dserror("plastic strain data not available");
+       // rewriting Green-Lagrange strains in matrix format
+       LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> gl;
+       gl(0,0) = plglstrain(0);
+       gl(0,1) = 0.5*plglstrain(3);
+       gl(0,2) = 0.5*plglstrain(5);
+       gl(1,0) = gl(0,1);
+       gl(1,1) = plglstrain(1);
+       gl(1,2) = 0.5*plglstrain(4);
+       gl(2,0) = gl(0,2);
+       gl(2,1) = gl(1,2);
+       gl(2,2) = plglstrain(2);
+
+       // inverse of deformation gradient
+       LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> invdefgrd;
+       invdefgrd.Invert(defgrd);
+
+       LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> temp;
+       LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> euler_almansi;
+       temp.Multiply(gl,invdefgrd);
+       euler_almansi.MultiplyTN(invdefgrd,temp);
+
+       (*eleplstrain)(gp,0) = euler_almansi(0,0);
+       (*eleplstrain)(gp,1) = euler_almansi(1,1);
+       (*eleplstrain)(gp,2) = euler_almansi(2,2);
+       (*eleplstrain)(gp,3) = euler_almansi(0,1);
+       (*eleplstrain)(gp,4) = euler_almansi(1,2);
+       (*eleplstrain)(gp,5) = euler_almansi(0,2);
+     }
+     break;
+     case INPAR::STR::strain_none:
+       break;
+     default:
+       dserror("requested plastic strain type not available");
+     }
 
     // return gp stresses
     switch (iostress)
@@ -2216,7 +2298,8 @@ void DRT::ELEMENTS::So_hex8::soh8_remodel(
     double density = 0.0;
     LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
     LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
-    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
+    LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
+    soh8_mat_sel(&stress,&cmat,&density,&glstrain,&plglstrain,&defgrd,gp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // Cauchy stress

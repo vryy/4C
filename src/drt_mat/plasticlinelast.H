@@ -159,6 +159,7 @@ private:
     /// Evaluate material
     void Evaluate(
       const LINALG::Matrix<6,1>& linstrain,
+      LINALG::Matrix<6,1>& plstrain, ///< return the plastic strains to the element
       const int gp,  ///< current Gaus point
       Teuchos::ParameterList& params,  ///< parameter list for communication
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,  ///< material stiffness matrix

@@ -563,16 +563,16 @@ namespace STR
     Teuchos::RCP<MORTAR::ManagerBase> ContactManager() {return cmtman_;}
 
     //@}
-    
+
     //! @name Structure with ale specific methods
     //@{
-    
+
     //! material displacements (structure with ale)
    Teuchos::RCP<Epetra_Vector> DispMat() { return dismatn_; }
-    
+
     //! apply material displacements to structure field (structure with ale)
     void ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat);
-   
+
     //@}
 
   protected:
@@ -611,6 +611,7 @@ namespace STR
     int writeresultsevery_;  //!< write state/stress/strain every given step
     INPAR::STR::StressType writestress_;  //!< stress output type
     INPAR::STR::StrainType writestrain_;  //!< strain output type
+    INPAR::STR::StrainType writeplstrain_;  //!< plastic strain output type
     int writeenergyevery_;  //!< write system energy every given step
     bool writesurfactant_;  //!< write surfactant output
     std::ofstream* energyfile_;  //!< outputfile for energy
@@ -689,15 +690,15 @@ namespace STR
                                         //!< \f${T}_{n+1}\f$
                                         //!< at \f$t_{n+1}\f$
     //@}
-    
+
     //! @name Structure with ale specific stuff
     //@{
-    
+
     Teuchos::RCP<Epetra_Vector> dismatn_; //!< global material displacements
                                           //!< (structure with ale)
     //@}
-    
-    
+
+
     //! @name System matrices
     //@{
     //! holds eventually effective stiffness

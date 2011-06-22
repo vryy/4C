@@ -88,6 +88,7 @@ STR::TimInt::TimInt
   writeresultsevery_(sdynparams.get<int>("RESULTSEVRY")),
   writestress_(DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams,"STRUCT_STRESS")),
   writestrain_(DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams,"STRUCT_STRAIN")),
+  writeplstrain_(DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams,"STRUCT_PLASTIC_STRAIN")),
   writeenergyevery_(sdynparams.get<int>("RESEVRYERGY")),
   writesurfactant_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_SURFACTANT")),
   energyfile_(NULL),
@@ -787,7 +788,8 @@ void STR::TimInt::OutputStep()
   // output stress & strain
   if ( writeresultsevery_
        and ( (writestress_ != INPAR::STR::stress_none)
-             or (writestrain_ != INPAR::STR::strain_none) )
+             or (writestrain_ != INPAR::STR::strain_none)
+             or (writeplstrain_ != INPAR::STR::strain_none) )
        and (step_%writeresultsevery_ == 0) )
   {
     OutputStressStrain(datawritten);
@@ -943,6 +945,12 @@ void STR::TimInt::OutputStressStrain
   p.set("strain", straindata);
   p.set<int>("iostrain", writestrain_);
 
+  // plastic strain
+  Teuchos::RCP<std::vector<char> > plstraindata
+    = Teuchos::rcp(new std::vector<char>());
+  p.set("plstrain", plstraindata);
+  p.set<int>("ioplstrain", writeplstrain_);
+
   // set vector values needed by elements
   discret_->ClearState();
   // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
@@ -950,9 +958,7 @@ void STR::TimInt::OutputStressStrain
   discret_->SetState(0,"displacement", (*dis_)(0));
   // set the temperature for the coupled problem
   if(tempn_!=Teuchos::null)
-  {
     discret_->SetState(1,"temperature",tempn_);
-  }
   if(dismatn_!= null)
     discret_->SetState(0,"material displacement",dismatn_);
 
@@ -1004,6 +1010,26 @@ void STR::TimInt::OutputStressStrain
       dserror("requested strain type not supported");
     }
     output_->WriteVector(straintext, *straindata,
+                         *(discret_->ElementRowMap()));
+  }
+
+  // write plastic strain
+  if (writeplstrain_ != INPAR::STR::strain_none)
+  {
+    std::string plstraintext = "";
+    if (writeplstrain_ == INPAR::STR::strain_ea)
+    {
+      plstraintext = "gauss_pl_EA_strains_xyz";
+    }
+    else if (writeplstrain_ == INPAR::STR::strain_gl)
+    {
+      plstraintext = "gauss_pl_GL_strains_xyz";
+    }
+    else
+    {
+      dserror("requested plastic strain type not supported");
+    }
+    output_->WriteVector(plstraintext, *plstraindata,
                          *(discret_->ElementRowMap()));
   }
 
@@ -1502,7 +1528,7 @@ void STR::TimInt::Integrate()
 /*----------------------------------------------------------------------*/
 /* get the temperature from the temperature discretization   dano 03/10 */
 void STR::TimInt::ApplyTemperatures(
-  Teuchos::RCP<const Epetra_Vector> temp  ///< the current temperature
+  Teuchos::RCP<const Epetra_Vector> temp  ///< current temperature T_n+1
   )
 {
   if(temp != Teuchos::null)
@@ -1519,19 +1545,19 @@ void STR::TimInt::ApplyTemperatures(
 /*----------------------------------------------------------------------*/
 /* apply the new material displacements                      mgit 05/11 */
 void STR::TimInt::ApplyDisMat(
-  Teuchos::RCP<Epetra_Vector> dismat  
+  Teuchos::RCP<Epetra_Vector> dismat
   )
 {
   // FIXGIT: This is done only for nonzero entries
   // These values are replaced because here, the new absolute material
   // displacement has been evaluated (not the increment)
-  
-  // loop over all row nodes 
+
+  // loop over all row nodes
    for (int k=0;k<discret_->NumMyRowNodes();++k)
    {
      int gid = discret_->NodeRowMap()->GID(k);
      int locid = (dismat->Map()).LID(2*gid);
-     
+
      if ((*dismat)[locid]!=0.0)
        (*dismatn_)[locid] = (*dismat)[locid];
 

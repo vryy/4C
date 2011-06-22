@@ -664,6 +664,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                              INPAR::STR::strain_ea,INPAR::STR::strain_ea,
                                                              INPAR::STR::strain_gl,INPAR::STR::strain_gl),
                                &io);
+  setStringToIntegralParameter<int>("STRUCT_PLASTIC_STRAIN","No","",
+                               tuple<std::string>("No","no","NO",
+                                                  "Yes","yes","YES",
+                                                  "EA","ea",
+                                                  "GL", "gl"),
+                               tuple<int>(INPAR::STR::strain_none,INPAR::STR::strain_none,INPAR::STR::strain_none,
+                                                             INPAR::STR::strain_gl,INPAR::STR::strain_gl,INPAR::STR::strain_gl,
+                                                             INPAR::STR::strain_ea,INPAR::STR::strain_ea,
+                                                             INPAR::STR::strain_gl,INPAR::STR::strain_gl),
+                               &io);
   setStringToIntegralParameter<int>("STRUCT_SURFACTANT","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("STRUCT_SM_DISP","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("FLUID_SOL","Yes","",yesnotuple,yesnovalue,&io);

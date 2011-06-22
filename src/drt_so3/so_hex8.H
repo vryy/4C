@@ -579,9 +579,11 @@ protected:
       LINALG::Matrix<NUMDOF_SOH8,1>* force,          ///< element internal force vector
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
-      ParameterList&            params,         ///< algorithmic parameters e.g. time
-      const INPAR::STR::StressType   iostress,  ///< stress output option
-      const INPAR::STR::StrainType   iostrain); ///< strain output option
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* eleplstrain,    ///< plastic strains at GP
+      ParameterList&            params,           ///< algorithmic parameters e.g. time
+      const INPAR::STR::StressType   iostress,    ///< stress output option
+      const INPAR::STR::StrainType   iostrain,    ///< strain output option
+      const INPAR::STR::StrainType   ioplstrain); ///< plastic strain output option
 
   //! Lump mass matrix (bborn 07/08)
   void soh8_lumpmass(LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* emass);
@@ -627,6 +629,7 @@ protected:
    * \param *cmat (out): Elasticity matrix at current gp
    * \param *density (out): density of material
    * \param *glstrain (in): Voigt-Vector of GL-strains at current gp
+   * \param *plglstrain (in): Voigt-Vector of plastic GL-strains at current gp
    * \param *defgrd (in): F at current gp, CAUTION! only for disp-based soh8
    * \param gp (in): current gp
    * \param params (in): parameterlist to access time, etc. in materials
@@ -636,6 +639,7 @@ protected:
                     LINALG::Matrix<6,6>* cmat,
                     double* density,
                     LINALG::Matrix<6,1>* glstrain,
+                    LINALG::Matrix<6,1>* plglstrain,
                     LINALG::Matrix<3,3>* defgrd,
                     const int gp,
                     ParameterList&  params);
@@ -650,22 +654,23 @@ protected:
       LINALG::Matrix<NUMDOF_SOH8,1>* force,  ///< element internal force vector
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  ///< stresses at GP
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain, ///< strains at GP
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* eleplstrain, // plastic strains at GP
       ParameterList& params,  ///< algorithmic parameters e.g. time
       const INPAR::STR::StressType iostress,  ///< stress output option
-      const INPAR::STR::StrainType iostrain); ///< strain output option
+      const INPAR::STR::StrainType iostrain, ///< strain output option
+      const INPAR::STR::StrainType ioplstrain); ///< plastic strain output option
 
 
   //! @name TSI related stuff
 
   // for so_hex8_thermo_evaluate.cpp
   //! Calculate nonlinear stiffness and mass matrix with temperature fraction
-  virtual void soh8_nlnstiffmasstemp(
+  virtual void soh8_nlnstifftemp(
     DRT::Element::LocationArray& la,  // location array
     vector<double>& disp,  // current displacements
     vector<double>& residual,  // current residual displ
     vector<double>& temp, // current temperature
     LINALG::Matrix<NUMDOF_SOH8,1>* tempstiffmatrix, // coupling stiffness matrix
-    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  // element mass matrix
     LINALG::Matrix<NUMDOF_SOH8,1>* force,  // element internal force vector
     LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  // stresses at GP
     LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,  // strains at GP
@@ -674,7 +679,7 @@ protected:
     const INPAR::STR::StrainType iostrain  // strain output option
     );
 
-  //! Calculate temperature coupling term for the internal force
+  //! Calculate temperature coupling term for the internal force (geometric linear)
   virtual void soh8_finttemp(
     DRT::Element::LocationArray& la,  // location array
     vector<double>& disp,  // current displacements
@@ -686,6 +691,19 @@ protected:
     Teuchos::ParameterList& params,  // algorithmic parameters e.g. time
     const INPAR::STR::StressType iostress,  // stress output option
     const INPAR::STR::StrainType iostrain  // strain output option
+    );
+
+  /*!
+   * \brief Calculate mechanical thermal stiffness term needed for monolithic TSI
+   *
+   * \param *nlnstiffmatrixtemp (out): mechanical thermal stiffness term at current gp
+   * \param &disp (in): current displacement
+   * \param &temp (in): current temperatures
+   * */
+  virtual void soh8_nlnstifftemp(
+    DRT::Element::LocationArray& la,
+    vector<double>& disp,
+    LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8>* stiffmatrixnlncoupl  // element mechanical thermal stiffness matrix
     );
 
   /*!

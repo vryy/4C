@@ -73,6 +73,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
                     LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
                     double* density,
                     LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
+                    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* plglstrain,
                     LINALG::Matrix<3,3>* defgrd,
                     const int gp,
                     ParameterList&  params)
@@ -467,7 +468,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       /* Initialization moved to element input. So we can be sure, that material is initialized. */
       // if (!plastic->Initialized())
       //  plastic->Setup(NUMGPT_SOH8);
-      plastic->Evaluate(*glstrain,gp,params,*cmat,*stress);
+      plastic->Evaluate(*glstrain,*plglstrain,gp,params,*cmat,*stress);
       *density = plastic->Density();
       return;
       break;
