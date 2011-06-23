@@ -174,6 +174,10 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementGeneralFluidParameter( Teucho
   cross_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stablist,"CROSS-STRESS");
   reynolds_ = DRT::INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stablist,"REYNOLDS-STRESS");
 
+  if (is_genalpha_np_ and
+      (tds_ == INPAR::FLUID::subscales_time_dependent or transient_ != INPAR::FLUID::inertia_stab_drop))
+    dserror("time dependent subscales does not work for ost/afgenalpha/npgenalpha. \nOne need to look for bugs");
+
 //-------------------------------
 // get tau definition
 //-------------------------------
@@ -380,7 +384,9 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTimeParameter( Teuchos::Param
     //-----------------------------------------------------------------------
     // Af GA |          alphaF*gamma*dt/alphaM            | gamma*dt/alphaM |
     //----------------------------------------------------------------------
- // GA-Fluid | alphaF*gamma*dt/alphaM   | gamma*dt/alphaM | gamma*dt/alphaM |
+    // NP GA | alphaF*gamma*dt/alphaM   | gamma*dt/alphaM | gamma*dt/alphaM |
+    //-----------------------------------------------------------------------
+    //   GA  |      alphaF*gamma*dt     |    gamma*dt     |        1        |
     //-----------------------------------------------------------------------
 
     timefac_ = theta_*dt_;
@@ -408,20 +414,15 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTimeParameter( Teuchos::Param
     if (timealgo_ == INPAR::FLUID::timeint_npgenalpha)
     {
       // if not generalized-alpha: timefacrhs_=theta * dt_ = timefac_
-      //timefacrhs_ = 1.0;
-      //timefacmat_p_ = gamma_*dt_;
       timefacpre_ = gamma_/alphaM_*dt_;
       timefacrhs_ = gamma_/alphaM_*dt_;
     }
     else if (timealgo_ == INPAR::FLUID::timeint_gen_alpha)
     {
+      // used for weak boundary conditions and mixid hybrid
       timefac_ = alphaF_*gamma_*dt_;
       timefacpre_ = gamma_*dt_;
       timefacrhs_ = 1.0;
-      // not used
-
-      // work around for weak dirichlet BC
-      time_ = time_+(1-alphaF_)*dt_;
     }
     else if(timealgo_ == INPAR::FLUID::timeint_afgenalpha)
     {

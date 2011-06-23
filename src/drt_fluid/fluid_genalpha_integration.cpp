@@ -1459,8 +1459,8 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     weakdbcparams.set("using p^{n+1} generalized-alpha time integration",true);
 
     // set the only required state vectors
-    discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
-    discret_->SetState("u and p (n+1      ,trial)",velnp_);
+    discret_->SetState("velaf",velaf_);
+    discret_->SetState("velnp",velnp_);
     if (alefluid_)
     {
       discret_->SetState("dispnp"    , dispnp_   );
@@ -1515,8 +1515,8 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     mhdbcparams.set("using p^{n+1} generalized-alpha time integration",true);
 
     // set the required state vectors
-    discret_->SetState("u and p (trial)"    ,velaf_);
-    discret_->SetState("u and p (trial,n+1)",velnp_);
+    discret_->SetState("velaf"    ,velaf_);
+    discret_->SetState("velnp",velnp_);
 
     discret_->EvaluateConditionUsingParentData
       (mhdbcparams          ,

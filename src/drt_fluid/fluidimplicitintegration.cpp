@@ -178,7 +178,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // care for periodic boundary conditions
   // -------------------------------------------------------------------
 
-  // TODO: ??
   pbcmapmastertoslave_ = params_.get<RCP<map<int,vector<int> > > >("periodic bc");
   discret_->ComputeNullSpaceIfNecessary(solver_.Params(),true);
 
@@ -735,11 +734,11 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
               time_,maxtime_,dta_,theta_,step_,stepmax_);
         break;
       case INPAR::FLUID::timeint_afgenalpha:
-        printf("TIME: %11.4E/%11.4E  DT = %11.4E  Generalized-Alpha  STEP = %4d/%4d \n",
+        printf("TIME: %11.4E/%11.4E  DT = %11.4E  Af-Generalized-Alpha  STEP = %4d/%4d \n",
                time_,maxtime_,dta_,step_,stepmax_);
         break;
       case INPAR::FLUID::timeint_npgenalpha:
-        printf("TIME: %11.4E/%11.4E  DT = %11.4E  Generalized-Alpha-pressure  STEP = %4d/%4d \n",
+        printf("TIME: %11.4E/%11.4E  DT = %11.4E  Np-Generalized-Alpha  STEP = %4d/%4d \n",
                time_,maxtime_,dta_,step_,stepmax_);
         break;
       case INPAR::FLUID::timeint_bdf2:
@@ -1134,14 +1133,11 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       }
 
       // set scheme-specific element parameters and vector values
-      if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
-      {
-           discret_->SetState("velaf",velaf_);
-      }
-      else if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
+      if (is_genalpha_)
       {
         discret_->SetState("velaf",velaf_);
-        discret_->SetState("velnp",velnp_);
+        if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
+          discret_->SetState("velnp",velnp_);
       }
       else discret_->SetState("velaf",velnp_);
 
@@ -1202,11 +1198,13 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           //weakdbcparams.set("total time",time_             );
 
           // set the only required state vectors
-          //TODO
           if (is_genalpha_)
-            discret_->SetState("u and p (n+alpha_F,trial)",velaf_);
-          else
-            discret_->SetState("u and p (n+alpha_F,trial)",velnp_);
+          {
+            discret_->SetState("velaf",velaf_);
+            if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
+              discret_->SetState("velnp",velnp_);
+          }
+          else discret_->SetState("velaf",velnp_);
 
           if (alefluid_)
           {
@@ -1244,10 +1242,12 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         //----------------------------------------------------------------------
         // apply mixed/hybrid Dirichlet boundary conditions
         //----------------------------------------------------------------------
-        vector<DRT::Condition*> MHDcnd;
-        discret_->GetCondition("SurfaceMixHybDirichlet",MHDcnd);
+        vector<DRT::Condition*> MHDcndSurf;
+        discret_->GetCondition("SurfaceMixHybDirichlet",MHDcndSurf);
+        vector<DRT::Condition*> MHDcndLine;
+        discret_->GetCondition("LineMixHybDirichlet",MHDcndLine);
 
-        if(MHDcnd.size()!=0)
+        if(MHDcndSurf.size()!=0 or MHDcndLine.size()!=0)
         {
           ParameterList mhdbcparams;
 
@@ -1255,11 +1255,13 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           mhdbcparams.set("action"    ,"MixedHybridDirichlet");
 
           // set the only required state vectors
-          if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+          if (is_genalpha_)
           {
-            discret_->SetState("u and p (trial)",velaf_);
+            discret_->SetState("velaf",velaf_);
+            if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
+              discret_->SetState("velnp",velnp_);
           }
-          else discret_->SetState("u and p (trial)",velnp_);
+          else discret_->SetState("velaf",velnp_);
 
           // evaluate all mixed hybrid Dirichlet boundary conditions
           discret_->EvaluateConditionUsingParentData
@@ -1302,9 +1304,12 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           // set vector values needed by elements
           discret_->ClearState();
           discret_->SetState("scaaf",scaaf_);
-          //TODO
+          // set scheme-specific element parameters and vector values
           if (is_genalpha_)
-               discret_->SetState("velaf",velaf_);
+            discret_->SetState("velaf",velaf_);
+            // there is't any contribution of the pressure or the continuity equation
+            // in the case of Neumann inflow
+            // -> there is no difference between af_genalpha and np_genalpha
           else discret_->SetState("velaf",velnp_);
 
           std::string condstring("FluidNeumannInflow");
@@ -2406,9 +2411,12 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   }
 
   // set scheme-specific element parameters and vector values
-  //TODO
   if (is_genalpha_)
-       discret_->SetState("velaf",velaf_);
+  {
+    discret_->SetState("velaf",velaf_);
+    if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
+      discret_->SetState("velnp",velnp_);
+  }
   else discret_->SetState("velaf",velnp_);
 
   //----------------------------------------------------------------------
@@ -2435,9 +2443,12 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("scaaf",scaaf_);
-    //TODO
+    // set scheme-specific element parameters and vector values
     if (is_genalpha_)
-         discret_->SetState("velaf",velaf_);
+      discret_->SetState("velaf",velaf_);
+      // there is't any contribution of the pressure or the continuity equation
+      // in the case of Neumann inflow
+      // -> there is no difference between af_genalpha and np_genalpha
     else discret_->SetState("velaf",velnp_);
 
     std::string condstring("FluidNeumannInflow");
@@ -2577,10 +2588,13 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     discret_->SetState("gridv", gridv_);
   }
 
-  // set scheme-specific element parameters and vector values
-  //TODO
+  // set the only required state vectors
   if (is_genalpha_)
-       discret_->SetState("velaf",velaf_);
+  {
+    discret_->SetState("velaf",velaf_);
+    if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
+      discret_->SetState("velnp",velnp_);
+  }
   else discret_->SetState("velaf",velnp_);
 
   // call loop over elements
@@ -2702,7 +2716,6 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     eleparams.set("action","time update for subscales");
 
     // update time paramters
-    //TODO
     if (is_genalpha_)
     {
       eleparams.set("gamma"  ,gamma_);
@@ -3288,9 +3301,13 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   }
 
   // set scheme-specific element parameters and vector values
-  //TODO
+  // set the only required state vectors
   if (is_genalpha_)
-       discret_->SetState("velaf",velaf_);
+  {
+    discret_->SetState("velaf",velaf_);
+    if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
+      discret_->SetState("velnp",velnp_);
+  }
   else discret_->SetState("velaf",velnp_);
 
   // element evaluation for getting system matrix
@@ -4316,7 +4333,6 @@ void FLD::FluidImplicitTimeInt::ApplyFilterForClassicalLES()
   {
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = Dirichlet();
     // call only filtering
-    //TODO
     if (is_genalpha_)
     {
       DynSmag_->ApplyFilter(velaf_,dirichtoggle);
@@ -4474,10 +4490,13 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
 
     eleparams.set("action","calc_fluid_systemmat_and_residual");
     // set scheme-specific element parameters and vector values
-    //TODO
     if (is_genalpha_)
-         discret_->SetState("velaf",velaf_);
-    else discret_->SetState("velaf", velnp_);
+    {
+      discret_->SetState("velaf",velaf_);
+      if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
+        discret_->SetState("velnp",velnp_);
+    }
+    else discret_->SetState("velaf",velnp_);
 
     // call loop over elements
     discret_->Evaluate(eleparams,sysmat_,meshmatrix_,residual_,null,null);

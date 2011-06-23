@@ -218,9 +218,12 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
   // find out whether we will use a time curve
   bool usetime = true;
-  //const double time = params.get("total time",-1.0);
-  const double time = f3Parameter_->time_;
+  // apply time curve at (n+1) for all time integration schemes (dirichlet condition)
+  // time_ in fluid3_parameter is time(n+alphaF) in the case of genalpha
+  // therefore, it need to be reset to time(n+1)
+  const double time = f3Parameter_->time_+(1-f3Parameter_->alphaF_)*f3Parameter_->dt_;
   if (time<0.0) usetime = false;
+
 
   // find out whether we will use a time curve and get the factor
   const vector<int>* curve  = (*wdbc_cond).Get<vector<int> >("curve");
@@ -300,13 +303,6 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   const double timefacpre   = f3Parameter_->timefacpre_;
   const double timefacrhs   = f3Parameter_->timefacrhs_;
 
-  double timefaccont= 0.0;
-  // continuity equation is evaluated at different times
-  if(params.get("using p^{n+1} generalized-alpha time integration",false))
-    timefaccont   = f3Parameter_->timefacpre_;
-  else
-    timefaccont   = f3Parameter_->timefac_;
-
   //--------------------------------------------------
   // get parent elements location vector and ownerships
 
@@ -340,7 +336,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // velocities (intermediate time step, n+alpha_F)
   RefCountPtr<const Epetra_Vector> velaf
     =
-    discretization.GetState("u and p (n+alpha_F,trial)");
+    discretization.GetState("velaf");
   if (velaf==null)
     dserror("Cannot get state vector 'velaf'");
 
@@ -350,12 +346,13 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // velocities n+1
   vector<double> mypvelnp((*plm).size());
 
-  if(params.get("using p^{n+1} generalized-alpha time integration",false))
+  if((f3Parameter_->timealgo_==INPAR::FLUID::timeint_gen_alpha) or
+      (f3Parameter_->timealgo_==INPAR::FLUID::timeint_npgenalpha))
   {
     // velocities (intermediate time step, n+1)
     RefCountPtr<const Epetra_Vector> velnp
       =
-      discretization.GetState("u and p (n+1      ,trial)");
+      discretization.GetState("velnp");
     if (velnp==null)
       dserror("Cannot get state vector 'velnp'");
 
@@ -464,7 +461,7 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     // we need the kinematic viscosity here
     visc = actmat->Viscosity()/actmat->Density();
     if (actmat->Density() != 1.0)
-      dserror("density 1.0 expected");
+      dserror("density 1.0 expected: the density need to be included in the linearization terms");
   }
   else
   {
@@ -1165,9 +1162,9 @@ int DRT::ELEMENTS::Fluid3SurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     {
       for (int vi=0; vi<piel; ++vi)
       {
-        elemat(vi*4+3,ui*4  ) -= fac*timefaccont*pfunct_(vi)*pfunct_(ui)*n_(0);
-        elemat(vi*4+3,ui*4+1) -= fac*timefaccont*pfunct_(vi)*pfunct_(ui)*n_(1);
-        elemat(vi*4+3,ui*4+2) -= fac*timefaccont*pfunct_(vi)*pfunct_(ui)*n_(2);
+        elemat(vi*4+3,ui*4  ) -= fac*timefacpre*pfunct_(vi)*pfunct_(ui)*n_(0);
+        elemat(vi*4+3,ui*4+1) -= fac*timefacpre*pfunct_(vi)*pfunct_(ui)*n_(1);
+        elemat(vi*4+3,ui*4+2) -= fac*timefacpre*pfunct_(vi)*pfunct_(ui)*n_(2);
       }
     }
 
@@ -2156,12 +2153,12 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
   // find out whether we will use a time curve
   bool usetime = true;
-  //const double time = params.get("total time",-1.0);
-  //TODO: apply time curve at (n+1) or (n+alphaF)??
-  const double time = f3Parameter_->time_;
+  // apply time curve at (n+1) for all time integration schemes (dirichlet condition)
+  // time_ in fluid3_parameter is time(n+alphaF) in the case of genalpha
+  // therefore, it need to be reset to time(n+1)
+  const double time = f3Parameter_->time_+(1-f3Parameter_->alphaF_)*f3Parameter_->dt_;
   if (time<0.0) usetime = false;
 
-  //TODO: Apply time curve (usetime)??
   // find out whether we will use a time curve and get the factor
   const vector<int>* curve  = (*wdbc_cond).Get<vector<int> >("curve");
   int curvenum = -1;
@@ -2224,12 +2221,6 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   const double timefacpre   = f3Parameter_->timefacpre_;
   const double timefacrhs   = f3Parameter_->timefacrhs_;
 
-  double timefaccont= 0.0;
-  // continuity equation is evaluated at different times
-  if(params.get("using p^{n+1} generalized-alpha time integration",false))
-    timefaccont   = f3Parameter_->timefacpre_;
-  else
-    timefaccont   = f3Parameter_->timefac_;
   //--------------------------------------------------
   // get parent elements location vector and ownerships
 
@@ -2263,7 +2254,7 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // velocities (intermediate time step, n+alpha_F)
   RefCountPtr<const Epetra_Vector> velaf
     =
-    discretization.GetState("u and p (n+alpha_F,trial)");
+    discretization.GetState("velaf");
   if (velaf==null)
     dserror("Cannot get state vector 'velaf'");
 
@@ -2273,12 +2264,13 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // velocities n+1
   vector<double> mypvelnp((*plm).size());
 
-  if(params.get("using p^{n+1} generalized-alpha time integration",false))
+  if((f3Parameter_->timealgo_==INPAR::FLUID::timeint_gen_alpha) or
+      (f3Parameter_->timealgo_==INPAR::FLUID::timeint_npgenalpha))
   {
     // velocities (intermediate time step, n+1)
     RefCountPtr<const Epetra_Vector> velnp
       =
-      discretization.GetState("u and p (n+1      ,trial)");
+      discretization.GetState("velnp");
     if (velnp==null)
       dserror("Cannot get state vector 'velnp'");
 
@@ -2381,7 +2373,7 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     // we need the kinematic viscosity here
     visc = actmat->Viscosity()/actmat->Density();
     if (actmat->Density() != 1.0)
-      dserror("density 1.0 expected");
+      dserror("density 1.0 expected: the density need to be included in the linearization terms");
   }
   else
   {
@@ -2998,8 +2990,8 @@ int DRT::ELEMENTS::Fluid3LineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     {
       for (int vi=0; vi<piel; ++vi)
       {
-        elemat(vi*3+2,ui*3  ) -= fac*timefaccont*pfunct_(vi)*pfunct_(ui)*n_(0);
-        elemat(vi*3+2,ui*3+1) -= fac*timefaccont*pfunct_(vi)*pfunct_(ui)*n_(1);
+        elemat(vi*3+2,ui*3  ) -= fac*timefacpre*pfunct_(vi)*pfunct_(ui)*n_(0);
+        elemat(vi*3+2,ui*3+1) -= fac*timefacpre*pfunct_(vi)*pfunct_(ui)*n_(1);
       }
     }
 

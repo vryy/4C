@@ -171,8 +171,6 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
         act = Fluid3Boundary::calc_node_curvature;
     else if (action == "calc_surface_tension")
         act = Fluid3Boundary::calc_surface_tension;
-    //TODO: weak Dirichlet boundary condition:
-    //There is still a 2D and a 3D implementation
     else if (action == "enforce_weak_dbc")
         act = Fluid3Boundary::enforce_weak_dbc;
     else if (action == "MixedHybridDirichlet")
@@ -557,6 +555,12 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ConservativeOutflowConsistency(
     Epetra_SerialDenseMatrix&       elemat1_epetra,
     Epetra_SerialDenseVector&       elevec1_epetra)
 {
+  if(f3Parameter_->timealgo_== INPAR::FLUID::timeint_afgenalpha or
+       f3Parameter_->timealgo_== INPAR::FLUID::timeint_npgenalpha or
+       f3Parameter_->timealgo_== INPAR::FLUID::timeint_one_step_theta)
+       dserror("The boundary condition ConservativeOutflowConsistency is not supported by ost/afgenalpha/npgenalpha!!\n"
+               "the convective term is not partially integrated!");
+
   // ------------------------------------
   //     GET TIME INTEGRATION DATA
   // ------------------------------------
@@ -790,15 +794,17 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::NeumannInflow(
   // get timefactor for left-hand side
   // One-step-Theta:    timefac = theta*dt
   // BDF2:              timefac = 2/3 * dt
-  // generalized-alpha: timefac = (alpha_F/alpha_M) * gamma * dt
-  // Peter: generalized-alpha: timefacrhs = (alpha_F/alpha_M) * gamma * dt
+  // af-genalpha: timefac = (alpha_F/alpha_M) * gamma * dt
+  // np-genalpha: timefac = (alpha_F/alpha_M) * gamma * dt
+  // genalpha:    timefac =  alpha_F * gamma * dt
   const double timefac = f3Parameter_->timefac_;
 
   // get timefactor for right-hand side
   // One-step-Theta:            timefacrhs = theta*dt
   // BDF2:                      timefacrhs = 2/3 * dt
-  // af-generalized-alpha:      timefacrhs = (1/alpha_M) * gamma * dt
-  // Peter's generalized-alpha: timefacrhs = 1.0
+  // af-genalpha:               timefacrhs = (1/alpha_M) * gamma * dt
+  // np-genalpha:               timefacrhs = (1/alpha_M) * gamma * dt
+  // genalpha:                  timefacrhs = 1.0
   double timefacrhs = f3Parameter_->timefacrhs_;
 
   // set flag for type of linearization to default value (fixed-point-like)
@@ -1052,8 +1058,6 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementNodeNormal(
                                                      Epetra_SerialDenseVector&        elevec1,
                                                      const std::vector<double>&       edispnp)
 {
-  // TODO: double check
-  // get status of Ale
   const bool isale = ele->ParentElement()->IsAle();
 
   //get gaussrule
@@ -1295,8 +1299,9 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ElementSurfaceTension(
   // get timefactor for left-hand side
   // One-step-Theta:    timefac = theta*dt
   // BDF2:              timefac = 2/3 * dt
-  // generalized-alpha: timefac = (alpha_F/alpha_M) * gamma * dt
-  // Peter: generalized-alpha: timefacrhs = (alpha_F/alpha_M) * gamma * dt
+  // af-genalpha: timefac = (alpha_F/alpha_M) * gamma * dt
+  // np-genalpha: timefac = (alpha_F/alpha_M) * gamma * dt
+  // genalpha:    timefac =  alpha_F * gamma * dt
   const double timefac = f3Parameter_->timefac_;
 
   // isotropic and isothermal surface tension coefficient
@@ -2237,7 +2242,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvalShapeFuncAtBouIntPoint(
   // only for NURBS!!!
   else
   {
-    if (bdrynsd_==2)  // TODO: Nurbs for 2D and 3D
+    if (bdrynsd_==2)
     {
       // this is just a temporary work-around
       Epetra_SerialDenseVector gp(2);
@@ -2492,6 +2497,11 @@ template <DRT::Element::DiscretizationType bndydistype,
   // number of internal stress dofs is equivalent to number of second derivatives
   static const int numstressdof_= DRT::UTILS::DisTypeToNumDeriv2<pdistype>::numderiv2;
 
+  if(f3Parameter_->timealgo_== INPAR::FLUID::timeint_afgenalpha or
+       f3Parameter_->timealgo_== INPAR::FLUID::timeint_npgenalpha or
+       f3Parameter_->timealgo_== INPAR::FLUID::timeint_one_step_theta)
+       dserror("The use of mixed hybrid boundary conditions and ost/aggenalpha/npgenalpha is buggy??\n One need to check!!");
+
   // --------------------------------------------------
   // Reshape element matrices and vectors and init to zero, construct views
   const int peledim = (nsd +1)*piel;
@@ -2514,6 +2524,7 @@ template <DRT::Element::DiscretizationType bndydistype,
   //
   const int myid = (*((*hixhybdbc_cond).Nodes()))[0];
 
+  //TODO: which time (n+1) or (n+alphaF)
   // find out whether we will use a time curve
   const double time = f3Parameter_->time_;
 
@@ -2632,14 +2643,15 @@ template <DRT::Element::DiscretizationType bndydistype,
   LINALG::Matrix<nsd ,piel>    pevel (true);
   LINALG::Matrix<piel,   1>    pepres(true);
 
-  RCP<const Epetra_Vector> vel = discretization.GetState("u and p (trial)");
-  if (vel==null) dserror("Cannot get state vector 'u and p (trial)'");
+  RCP<const Epetra_Vector> vel = discretization.GetState("velaf");
+  if (vel==null) dserror("Cannot get state vector 'velaf'");
 
   // extract local node values for pressure and velocities from global vectors
-  if(params.get("using p^{n+1} generalized-alpha time integration",false))
+  if((f3Parameter_->timealgo_==INPAR::FLUID::timeint_gen_alpha) or
+      (f3Parameter_->timealgo_==INPAR::FLUID::timeint_npgenalpha))
   {
-    RCP<const Epetra_Vector> velnp = discretization.GetState("u and p (trial,n+1)");
-    if (velnp==null) dserror("Cannot get state vector 'u and p (trial,n+1)'");
+    RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+    if (velnp==null) dserror("Cannot get state vector 'velnp'");
 
     double maxvel=0;
 

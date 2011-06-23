@@ -488,9 +488,12 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         // on the fly, not stored on the element
         /*
                      ~n+1   ~n
-             ~ n     u    - u     ~ n   / 1.0-gamma \
-            acc  <-  --------- - acc * |  ---------  |
-                     gamma*dt           \   gamma   /
+             ~ n+1     u    - u     ~ n   / 1.0-gamma \
+            acc    =   --------- - acc * |  ---------  |
+                       gamma*dt           \   gamma   /
+
+             ~ n       ~ n+1   / 1.0-gamma \
+            acc    =    acc * |  ---------  |
         */
 
         const double dt     = params.get<double>("dt");

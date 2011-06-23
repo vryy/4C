@@ -5766,7 +5766,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ReynoldsStressStab(
       {
         for(int kdim=0;kdim<nsd_;++kdim)
         {
-          estif_p_v(fvi_p_idim,ui) += reyfac*timefacfac*sgvelint_(idim)*derxy_(kdim,ui)*derxy_(kdim,vi);
+          estif_p_v(fvi_p_idim,ui) += reyfac*timefacfacpre*sgvelint_(idim)*derxy_(kdim,ui)*derxy_(kdim,vi);
         }
       }
     }  // end for(idim)
