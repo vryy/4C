@@ -143,7 +143,7 @@ void stru_static_drt()
   const double dt = stepsize;
   int istep = 0;
   double time = 0.0;  // we should add an input parameter
-  double timen = 0.0; 
+  double timen = 0.0;
 
   // -------------------------------------------------------------------
   // context for output and restart
@@ -208,6 +208,7 @@ void stru_static_drt()
   int mod_stress = istep % resevry_stress;
   INPAR::STR::StressType iostress = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
   INPAR::STR::StrainType iostrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
+  INPAR::STR::StrainType ioplstrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_PLASTIC_STRAIN");
 
   if (!mod_stress && iostress!=INPAR::STR::stress_none)
   {
@@ -220,10 +221,13 @@ void stru_static_drt()
     p.set("delta time",dt);
     Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
     Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
+    Teuchos::RCP<std::vector<char> > plstrain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
     p.set("strain", strain);
+    p.set("plstrain", plstrain);
     p.set<int>("iostress", iostress);
     p.set<int>("iostrain", iostrain);
+    p.set<int>("ioplstrain", ioplstrain);
     // set vector values needed by elements
     actdis->ClearState();
     actdis->SetState("residual displacement",zeros);
@@ -257,6 +261,20 @@ void stru_static_drt()
       break;
     default:
       dserror ("requested strain type not supported");
+    }
+
+    switch (ioplstrain)
+    {
+    case INPAR::STR::strain_ea:
+      output.WriteVector("gauss_pl_EA_strains_xyz",*plstrain,*(actdis->ElementRowMap()));
+      break;
+    case INPAR::STR::strain_gl:
+      output.WriteVector("gauss_pl_GL_strains_xyz",*plstrain,*(actdis->ElementRowMap()));
+      break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror("requested plastic strain type not supported");
     }
   }
 
@@ -458,6 +476,7 @@ void stru_static_drt()
     int mod_stress = istep % resevry_stress;
     INPAR::STR::StressType iostress = DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioflags,"STRUCT_STRESS");
     INPAR::STR::StrainType iostrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
+    INPAR::STR::StrainType ioplstrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_PLASTIC_STRAIN");
 
     if (!mod_stress && iostress!=INPAR::STR::stress_none)
     {
@@ -470,10 +489,13 @@ void stru_static_drt()
       p.set("delta time",dt);
       Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
       Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
+      Teuchos::RCP<std::vector<char> > plstrain = Teuchos::rcp(new std::vector<char>());
       p.set("stress", stress);
       p.set("strain", strain);
+      p.set("plstrain", plstrain);
       p.set<int>("iostress", iostress);
       p.set<int>("iostrain", iostrain);
+      p.set<int>("ioplstrain", ioplstrain);
       // set vector values needed by elements
       actdis->ClearState();
       actdis->SetState("residual displacement",zeros);
@@ -507,6 +529,20 @@ void stru_static_drt()
       case INPAR::STR::strain_none:
       default:
         break;
+      }
+
+      switch (ioplstrain)
+      {
+      case INPAR::STR::strain_ea:
+        output.WriteVector("gauss_pl_EA_strains_xyz",*plstrain,*(actdis->ElementRowMap()));
+        break;
+      case INPAR::STR::strain_gl:
+        output.WriteVector("gauss_pl_GL_strains_xyz",*plstrain,*(actdis->ElementRowMap()));
+        break;
+      case INPAR::STR::strain_none:
+        break;
+      default:
+        dserror("requested plastic strain type not supported");
       }
     }
 

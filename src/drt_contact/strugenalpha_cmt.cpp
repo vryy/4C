@@ -2839,6 +2839,7 @@ void CONTACT::CmtStruGenAlpha::Output()
   INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params_, "io structural stress",INPAR::STR::stress_none);
   int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
   INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params_, "io structural strain",INPAR::STR::strain_none);
+  INPAR::STR::StrainType ioplstrain = DRT::INPUT::get<INPAR::STR::StrainType>(params_, "io structural plastic strain",INPAR::STR::strain_none);
 
   int    writeresevry  = params_.get<int>   ("write restart every"    ,0);
 
@@ -2907,10 +2908,13 @@ void CONTACT::CmtStruGenAlpha::Output()
     p.set("alpha f",alphaf);
     Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
     Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
+    Teuchos::RCP<std::vector<char> > plstrain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
     p.set("strain", strain);
+    p.set("plstrain", plstrain);
     p.set<int>("iostress", iostress);
     p.set<int>("iostrain", iostrain);
+    p.set<int>("ioplstrain", ioplstrain);
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("residual displacement",zeros_);
@@ -2947,6 +2951,20 @@ void CONTACT::CmtStruGenAlpha::Output()
     default:
       dserror ("requested strain type not supported");
     }
+
+    switch (ioplstrain)
+    {
+    case INPAR::STR::strain_ea:
+      output_.WriteVector("gauss_pl_EA_strains_xyz",*plstrain,*discret_.ElementRowMap());
+      break;
+    case INPAR::STR::strain_gl:
+      output_.WriteVector("gauss_pl_GL_strains_xyz",*plstrain,*discret_.ElementRowMap());
+      break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror("requested plastic strain type not supported");
+    }
   }
 
   // THIS IS FOR DEBUGGING ONLY!!!
@@ -2982,25 +3000,25 @@ void CONTACT::CmtStruGenAlpha::Output()
       fflush(errfile);
     }
 #ifdef PRINTSTRUCTDEFORMEDNODECOORDS
-    
+
     /////////////////////////////////////////////////////////////////
     // from here I want to output my ale displacements - devaal 14.12.2010
     /////////////////////////////////////////////////////////////////
-            
+
     if (discret_.Comm().NumProc() != 1)
 	dserror("The flag PRINTSTRUCTDEFORMEDNODECOORDS is on and only works with 1 processor");
-    
+
     cout << "STRUCT DISCRETIZATION IN THE DEFORMED CONFIGURATIONS" << endl;
     // does discret_ exist here?
     //cout << "discret_->NodeRowMap()" << discret_->NodeRowMap() << endl;
-    
+
     //RCP<Epetra_Vector> mynoderowmap = rcp(new Epetra_Vector(discret_->NodeRowMap()));
     //RCP<Epetra_Vector> noderowmap_ = rcp(new Epetra_Vector(discret_->NodeRowMap()));
     //dofrowmap_  = rcp(new discret_->DofRowMap());
     const Epetra_Map* noderowmap = discret_.NodeRowMap();
     const Epetra_Map* dofrowmap = discret_.DofRowMap();
-    
-    
+
+
     for (int lid=0; lid<noderowmap->NumGlobalPoints(); lid++)
     {
 	int gid;
@@ -3009,21 +3027,21 @@ void CONTACT::CmtStruGenAlpha::Output()
 	// get the node
 	DRT::Node * node = discret_.gNode(gid);
 	//cout<<"mynode"<<*node<<endl;
-	
+
 	// get the coordinates of the node
 	const double * X = node->X();
 	// get degrees of freedom of a node
-	
+
 	vector<int> gdofs = discret_.Dof(node);
-	//cout << "for node:" << *node << endl; 
+	//cout << "for node:" << *node << endl;
 	//cout << "this is my gdof vector" << gdofs[0] << " " << gdofs[1] << " " << gdofs[2] << endl;
-	
+
 	// get displacements of a node
 	vector<double> mydisp (3,0.0);
 	for (int ldof = 0; ldof<3; ldof ++)
 	{
 	    int displid = dofrowmap->LID(gdofs[ldof]);
-	    
+
 	    //cout << "displacement local id - in the rowmap" << displid << endl;
 	    mydisp[ldof] = (*dis_)[displid];
 	    //cout << "at node" << gid << "mydisplacement in each direction" << mydisp[ldof] << endl;
@@ -3033,16 +3051,16 @@ void CONTACT::CmtStruGenAlpha::Output()
 		    mydisp[ldof] = 0.0;
 		}
 	}
-	
+
 	// Export disp, X
 	double newX = mydisp[0]+X[0];
 	double newY = mydisp[1]+X[1];
 	double newZ = mydisp[2]+X[2];
 	//cout << "NODE " << gid << "  COORD  " << newX << " " << newY << " " << newZ << endl;
 	cout << gid << " " << newX << " " << newY << " " << newZ << endl;
-	
+
     }
-    
+
 #endif //PRINTSTRUCTDEFORMEDNODECOORDS
   }
 } // CmtStruGenAlpha::Output()

@@ -1516,7 +1516,7 @@ void StruGenAlpha::FullNewton()
 
       // test for patient specific needs
       if (DRT::INPUT::IntegralValue<int>(patspec,"PATSPEC"))
-      {        
+      {
         PATSPEC::CheckEmbeddingTissue(discret_,stiff_,fint_);
       }
 
@@ -3213,6 +3213,7 @@ void StruGenAlpha::Output()
   INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params_, "io structural stress",INPAR::STR::stress_none);
   int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
   INPAR::STR::StrainType iostrain      = DRT::INPUT::get<INPAR::STR::StrainType>(params_, "io structural strain",INPAR::STR::strain_none);
+  INPAR::STR::StrainType ioplstrain    = DRT::INPUT::get<INPAR::STR::StrainType>(params_, "io structural plastic strain",INPAR::STR::strain_none);
   bool   iosurfactant  = params_.get<bool>  ("io surfactant"          ,false);
 
   int    writeresevry  = params_.get<int>   ("write restart every"    ,0);
@@ -3304,10 +3305,13 @@ void StruGenAlpha::Output()
     p.set("alpha f",alphaf);
     Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
     Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
+    Teuchos::RCP<std::vector<char> > plstrain = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
     p.set<int>("iostress", iostress);
     p.set("strain", strain);
     p.set<int>("iostrain", iostrain);
+    p.set("plstrain", plstrain);
+    p.set<int>("ioplstrain", ioplstrain);
     // set vector values needed by elements
     discret_.ClearState();
     discret_.SetState("residual displacement",zeros_);
@@ -3345,7 +3349,21 @@ void StruGenAlpha::Output()
     default:
       dserror("requested strain type not supported");
     }
-  
+
+    switch (ioplstrain)
+    {
+    case INPAR::STR::strain_ea:
+      output_.WriteVector("gauss_pl_EA_strains_xyz",*plstrain,*discret_.ElementRowMap());
+      break;
+    case INPAR::STR::strain_gl:
+      output_.WriteVector("gauss_pl_GL_strains_xyz",*plstrain,*discret_.ElementRowMap());
+      break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror("requested plastic strain type not supported");
+    }
+
     if (iose) // output of strain energy
     {
       ParameterList pse;
@@ -3668,6 +3686,7 @@ void StruGenAlpha::SetDefaults(ParameterList& params)
   params.set<int>("io structural stress",INPAR::STR::stress_none);
   params.set<int>   ("io disp every nstep"    ,10);
   params.set<int>("io structural strain",INPAR::STR::strain_none);
+  params.set<int>("io structural plastic strain",INPAR::STR::strain_none);
   params.set<bool>  ("io surfactant",false);
   params.set<int>   ("restart"                ,0);
   params.set<int>   ("write restart every"    ,0);
