@@ -126,6 +126,23 @@ namespace FLD
       // the flow under consideration
       statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_,"geometry_DNS_incomp_flow"));
     }
+    else if(fluid.special_flow_=="combust_oracles")
+    {
+      flow_=combust_oracles;
+
+      if(discret_->Comm().MyPID()==0)
+        std::cout << "---  setting up turbulence statistics manager for ORACLES ..." << std::flush;
+
+      // do the time integration independent setup
+      Setup();
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_oracles_ = rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,params_,"geometry_ORACLES"));
+
+      if(discret_->Comm().MyPID()==0)
+        std::cout << " done" << std::endl;
+    }
     else if(fluid.special_flow_=="loma_backward_facing_step")
     {
       flow_=loma_backward_facing_step;
@@ -336,6 +353,23 @@ namespace FLD
       // the flow under consideration
       statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_,"geometry_DNS_incomp_flow"));
     }
+    else if(fluid.special_flow_=="combust_oracles")
+    {
+      flow_=combust_oracles;
+
+      if(discret_->Comm().MyPID()==0)
+        std::cout << "---  setting up turbulence statistics manager for ORACLES ..." << std::flush;
+
+      // do the time integration independent setup
+      Setup();
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_oracles_ = rcp(new COMBUST::TurbulenceStatisticsORACLES(discret_,params_,"geometry_ORACLES"));
+
+      if(discret_->Comm().MyPID()==0)
+        std::cout << " done" << std::endl;
+    }
     else if(fluid.special_flow_=="loma_backward_facing_step")
     {
       flow_=loma_backward_facing_step;
@@ -539,6 +573,21 @@ namespace FLD
       }
     }
 
+    if(discret_->Comm().MyPID()==0)
+    {
+      if (flow_ == combust_oracles)
+      {
+        samstart_  = modelparams->get<int>("SAMPLING_START",1);
+        samstop_   = modelparams->get<int>("SAMPLING_STOP", 1000000000);
+        dumperiod_ = 0; // used as switch for the multi-record statistic output
+
+        string homdir = modelparams->get<string>("HOMDIR","not_specified");
+        if(homdir!="not_specified")
+          dserror("there is no homogeneous direction for the ORACLES problem\n");
+
+      }
+    }
+
     return;
   }
 
@@ -667,6 +716,16 @@ namespace FLD
         statistics_bfs_->DoTimeSample(myvelnp_);
         break;
       }
+      case combust_oracles:
+      {
+        subgrid_dissipation_ = false;
+
+        if(statistics_oracles_==null)
+          dserror("need statistics_oracles_ to do a time sample for an ORACLES flow step");
+
+        statistics_oracles_->DoTimeSample(myvelnp_,myforce_);
+        break;
+      }
       case loma_backward_facing_step:
       {
         if(statistics_bfs_==null)
@@ -726,13 +785,12 @@ namespace FLD
       }
       }
 
-      if(discret_->Comm().MyPID()==0)
-      {
-        cout << "Computing statistics: mean values, fluctuations, ";
-        cout << "boundary forces etc.             (";
-        printf("%10.4E",Teuchos::Time::wallTime()-tcpu);
-        cout << ")\n";
-      }
+//      if(discret_->Comm().MyPID()==0)
+//      {
+//        cout << "Computed statistics: mean values, fluctuations, boundary forces etc.             (";
+//        printf("%10.4E",Teuchos::Time::wallTime()-tcpu);
+//        cout << ")";
+//      }
 
       //--------------------------------------------------
       // do averaging of residuals, dissipation rates etc
@@ -863,9 +921,12 @@ namespace FLD
         int uprestart=params_.get("write restart every" , -1);
 
         // dump in combination with a restart/output
-        if((step%upres == 0 || step%uprestart == 0) && step>samstart_)
+        if((step%upres == 0 || ( uprestart > 0 && step%uprestart == 0) ) && step>=samstart_)
           outputformat=write_multiple_records;
       }
+
+      if (discret_->Comm().MyPID()==0 && outputformat != do_not_write )
+        std::cout << "---  writing statistics record ... " << std::flush;
 
       // do actual output (time averaging)
       switch(flow_)
@@ -921,6 +982,23 @@ namespace FLD
           statistics_bfs_->DumpStatistics(step);
         break;
       }
+      case combust_oracles:
+      {
+        if(statistics_oracles_==null)
+          dserror("need statistics_oracles_ to do a time sample for an ORACLES flow step");
+
+        if(outputformat == write_multiple_records)
+        {
+//cout << "ORACLES TimeAverageStatistics" << endl;
+          statistics_oracles_->TimeAverageStatistics();
+//cout << "ORACLES OutputStatistics" << endl;
+          statistics_oracles_->OutputStatistics(step);
+//cout << "ORACLES ClearStatistics" << endl;
+          statistics_oracles_->ClearStatistics();
+        }
+
+        break;
+      }
       case loma_backward_facing_step:
       {
         if(statistics_bfs_==null)
@@ -964,24 +1042,23 @@ namespace FLD
       }
       }
 
-
-      if(discret_->Comm().MyPID()==0 && outputformat != do_not_write)
-      {
-        cout << "XXXXXXXXXXXXXXXXXXXXX              ";
-        cout << "wrote statistics record            ";
-        cout << "XXXXXXXXXXXXXXXXXXXXX";
-        cout << "\n\n";
-      }
-
+      if (discret_->Comm().MyPID()==0 && outputformat != do_not_write )
+        std::cout << "done" << std::endl;
 
       // dump general mean value output in combination with a restart/output
       {
         int upres    =params_.get("write solution every", -1);
         int uprestart=params_.get("write restart every" , -1);
 
-        if(step%upres == 0 || step%uprestart == 0)
+        if(step%upres == 0 || (uprestart > 0 && step%uprestart == 0) )
         {
+          if (discret_->Comm().MyPID()==0)
+            std::cout << "---  writing averaged vector ... " << std::flush;
+
           statistics_general_mean_->WriteOldAverageVec(output);
+
+          if (discret_->Comm().MyPID()==0)
+            std::cout << "done" << std::endl;
         }
       }
     } // end step is in sampling period
@@ -1133,6 +1210,7 @@ namespace FLD
     case lid_driven_cavity:
     case loma_lid_driven_cavity:
     case backward_facing_step:
+    case combust_oracles:
     case loma_backward_facing_step:
     case square_cylinder:
     {

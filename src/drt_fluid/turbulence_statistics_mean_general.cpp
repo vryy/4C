@@ -1074,14 +1074,6 @@ void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(
 
   AddToTotalTimeAverage();
 
-  if(discret_->Comm().MyPID()==0)
-  {
-    cout << "XXXXXXXXXXXXXXXXXXXXX              ";
-    cout << " Wrote averaged vector             ";
-    cout << "XXXXXXXXXXXXXXXXXXXXX";
-    cout << "\n\n";
-  }
-
   output.WriteInt   ("num_steps_in_sample", prev_n_       );
   output.WriteDouble("sampling_time"      , prev_avg_time_);
 

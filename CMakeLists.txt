@@ -900,6 +900,7 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/time_integration_scheme.cpp
   src/drt_fluid/turbulence_statistic_manager.cpp
   src/drt_fluid/turbulence_statistics_bfs.cpp
+  src/drt_fluid/turbulence_statistics_oracles.cpp
   src/drt_fluid/turbulence_statistics_ccy.cpp
   src/drt_fluid/turbulence_statistics_cha.cpp
   src/drt_fluid/turbulence_statistics_ldc.cpp

@@ -30,6 +30,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_fluid/turbulence_statistics_cha.H"
 #include "../drt_fluid/turbulence_statistics_ldc.H"
 #include "../drt_fluid/turbulence_statistics_bfs.H"
+#include "../drt_fluid/turbulence_statistics_oracles.H"
 #include "../drt_fluid/turbulence_statistics_sqc.H"
 
 
@@ -212,6 +213,7 @@ private:
     loma_lid_driven_cavity          ,
     backward_facing_step            ,
     loma_backward_facing_step       ,
+    combust_oracles                 ,
     square_cylinder                 ,
     square_cylinder_nurbs           ,
     rotating_circular_cylinder_nurbs,
@@ -246,6 +248,9 @@ private:
 
   //! turbulence statistics for backward-facing step
   RCP<TurbulenceStatisticsBfs>         statistics_bfs_;
+
+  //! turbulence statistics for ORACLES
+  RCP<COMBUST::TurbulenceStatisticsORACLES> statistics_oracles_;
 
   //! turbulence statistics for square cylinder
   RCP<TurbulenceStatisticsSqc>         statistics_sqc_;
