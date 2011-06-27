@@ -523,7 +523,7 @@ void UTILS::MPConstraint3Penalty::EvaluateError
 
       if (actdisc_->Comm().MyPID()==0 && (!(activecons_.find(condID)->second)))
       {
-        cout << "Encountered a new active condition (Id = " << condID << ")  at time t = "<< time << endl;
+        cout << "Encountered a new active penalty mp condition (Id = " << condID << ")  at time t = "<< time << endl;
       }
     }
     
