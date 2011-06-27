@@ -1301,6 +1301,15 @@ set(OBJS_CUT_TEST
   tests/cut_test/cut_test_alex_51.cpp
   tests/cut_test/cut_test_alex_52.cpp
   tests/cut_test/cut_test_alex_53.cpp
+  tests/cut_test/cut_test_alex_54.cpp
+  tests/cut_test/cut_test_alex_55.cpp
+  tests/cut_test/cut_test_alex_56.cpp
+  tests/cut_test/cut_test_alex_57.cpp
+  tests/cut_test/cut_test_alex_58.cpp
+  tests/cut_test/cut_test_alex_59.cpp
+  tests/cut_test/cut_test_alex_60.cpp
+  tests/cut_test/cut_test_alex_61.cpp
+  tests/cut_test/cut_test_alex_62.cpp
   tests/cut_test/cut_test_axel_8.cpp
   tests/cut_test/cut_test_axel_9.cpp
   tests/cut_test/cut_test_axel_10.cpp
