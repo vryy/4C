@@ -1456,7 +1456,7 @@ void GEO::CUT::Mesh::SimplifyIntegrationCells()
         ++i )
   {
     VolumeCell * vc = &**i;
-    vc->SimplifyIntegrationCells();
+    vc->SimplifyIntegrationCells( *this );
   }
 }
 
@@ -1903,7 +1903,8 @@ void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name )
           ++i )
     {
       BoundaryCell * bc = *i;
-      bc->DumpGmsh( file );
+      if ( bc->IsValid() )
+        bc->DumpGmsh( file );
     }
     file << "};\n";
 
@@ -1930,7 +1931,8 @@ void GEO::CUT::Mesh::DumpGmshIntegrationCells( std::string name )
         ++i )
   {
     BoundaryCell * bc = &**i;
-    bc->DumpGmsh( file );
+    if ( bc->IsValid() )
+      bc->DumpGmsh( file );
   }
   file << "};\n";
 }

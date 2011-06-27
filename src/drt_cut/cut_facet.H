@@ -182,15 +182,6 @@ private:
 
   void FindCornerPoints();
 
-  unsigned FindNextCornerPoint( const std::vector<Point*> & points,
-                                LINALG::Matrix<3,1> & x1,
-                                LINALG::Matrix<3,1> & x2,
-                                LINALG::Matrix<3,1> & x3,
-                                LINALG::Matrix<3,1> & b1,
-                                LINALG::Matrix<3,1> & b2,
-                                LINALG::Matrix<3,1> & b3,
-                                unsigned i );
-
   bool IsLine( const std::vector<Point*> & points, Point * p1, Point * p2 );
 
   void GetLines( const std::vector<Point*> & points,

@@ -87,7 +87,15 @@ void GEO::CUT::Cycle::Add( point_line_set & lines ) const
     }
     else
     {
-      lines.insert( line );
+      std::pair<Point*, Point*> reverse_line = std::make_pair( p2, p1 );
+      if ( lines.count( reverse_line ) > 0 )
+      {
+        lines.erase( reverse_line );
+      }
+      else
+      {
+        lines.insert( line );
+      }
     }
   }
 }

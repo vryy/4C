@@ -23,6 +23,26 @@ namespace GEO
     namespace KERNEL
     {
 
+      void FindCornerPoints( const std::vector<Point*> & points,
+                             std::vector<Point*> & corner_points );
+
+      unsigned FindNextCornerPoint( const std::vector<Point*> & points,
+                                    LINALG::Matrix<3,1> & x1,
+                                    LINALG::Matrix<3,1> & x2,
+                                    LINALG::Matrix<3,1> & x3,
+                                    LINALG::Matrix<3,1> & b1,
+                                    LINALG::Matrix<3,1> & b2,
+                                    LINALG::Matrix<3,1> & b3,
+                                    unsigned i );
+
+      inline bool IsValidTri3( const std::vector<Point*> & points )
+      { return points.size()==3; }
+
+      bool IsValidQuad4( const std::vector<Point*> & points );
+
+      DRT::Element::DiscretizationType CalculateShape( const std::vector<Point*> & points,
+                                                       std::vector<Point*> & line_points );
+
       template <int points>
       double FindL2Scaling( LINALG::Matrix<3,points> & xyze )
       {

@@ -57,6 +57,10 @@ public:
 
   Facet * GetFacet() { return facet_; }
 
+  void Clear() { points_.clear(); }
+
+  bool IsValid() const { return points_.size() > 0; }
+
 protected:
 
   virtual DRT::UTILS::GaussRule2D MySimpleGaussRule() = 0;
