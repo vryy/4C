@@ -18,9 +18,26 @@ namespace GEO
     class Side;
     class Element;
 
+#ifdef CUT_USE_SORTED_VECTOR
+    typedef sorted_vector<std::pair<Point*, Point*> > point_line_set;
+#else
+    typedef std::set<std::pair<Point*, Point*> > point_line_set;
+#endif
+
     class Cycle
     {
     public:
+
+      Cycle()
+      {
+      }
+
+      Cycle( const std::vector<Point*> & points )
+        : points_( points )
+      {
+      }
+
+      static bool MakeCycle( const point_line_set & lines, Cycle & cycle );
 
       bool IsValid() const;
 
@@ -30,6 +47,8 @@ namespace GEO
       {
         return points_;
       }
+
+      void Add( point_line_set & lines ) const;
 
       void CommonEdges( plain_edge_set & edges ) const;
 

@@ -6,16 +6,6 @@
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 
-// void GEO::CUT::Tri3BoundaryCell::CreateCell( Mesh & mesh, VolumeCell * cell, Facet * facet, const std::vector<Point*> & side )
-// {
-//   cell->NewTri3Cell( mesh, facet, side );
-// }
-
-// void GEO::CUT::Quad4BoundaryCell::CreateCell( Mesh & mesh, VolumeCell * cell, Facet * facet, const std::vector<Point*> & side )
-// {
-//   cell->NewQuad4Cell( mesh, facet, side );
-// }
-
 #if 0
 void GEO::CUT::Tri3BoundaryCell::CollectCoordinates( const std::vector<Point*> & side,
                                                      std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz )
@@ -126,7 +116,7 @@ void GEO::CUT::Tri3BoundaryCell::DumpGmsh( std::ofstream & file )
   {
     if ( i > 0 )
       file << ",";
-    file << -1;
+    file << facet_->SideId();
   }
   file << "};\n";
 }
@@ -147,7 +137,7 @@ void GEO::CUT::Quad4BoundaryCell::DumpGmsh( std::ofstream & file )
   {
     if ( i > 0 )
       file << ",";
-    file << -1;
+    file << facet_->SideId();
   }
   file << "};\n";
 }

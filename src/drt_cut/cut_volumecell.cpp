@@ -350,3 +350,49 @@ void GEO::CUT::VolumeCell::NewPyramid5Cell( Mesh & mesh, const std::vector<Point
     }
   }
 }
+
+void GEO::CUT::VolumeCell::SimplifyIntegrationCells()
+{
+  // do whatever can be done to get simpler cells
+  //
+  // right now this code has no effect
+
+#if 0
+  for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  {
+    Facet * f = *i;
+    if ( f->OnCutSide() )
+    {
+      if ( f->Equals( DRT::Element::tri3 ) or
+           f->Equals( DRT::Element::quad4 ) )
+      {
+        int numbc = 0;
+        sorted_vector<std::pair<Point*, Point*> > lines;
+        for ( plain_boundarycell_set::iterator i=bcells_.begin(); i!=bcells_.end(); ++i )
+        {
+          BoundaryCell * bc = *i;
+          if ( bc->GetFacet()==f )
+          {
+            const Cycle & cycle = bc->PointCycle();
+            cycle.Add( lines );
+            numbc += 1;
+          }
+        }
+        if ( numbc > 1 )
+        {
+          Cycle cycle;
+          if ( Cycle::MakeCycle( lines, cycle ) )
+          {
+            std::stringstream str;
+            str << "found cycle with " << cycle.size()
+                << " points on cut facet with " << f->Points().size()
+                << " points out of " << numbc
+                << " boundary cells\n";
+            throw std::runtime_error( str.str() );
+          }
+        }
+      }
+    }
+  }
+#endif
+}

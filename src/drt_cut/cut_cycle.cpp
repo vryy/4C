@@ -4,6 +4,44 @@
 #include "cut_edge.H"
 
 
+bool GEO::CUT::Cycle::MakeCycle( const point_line_set & lines, Cycle & cycle )
+{
+  cycle.clear();
+  std::vector<Point*> frompoints;
+  std::vector<Point*> topoints;
+  frompoints.reserve( lines.size() );
+  topoints.reserve( lines.size() );
+  for ( point_line_set::const_iterator i=lines.begin(); i!=lines.end(); ++i )
+  {
+    frompoints.push_back( i->first );
+    topoints.push_back( i->second );
+  }
+
+  cycle.reserve( lines.size() );
+
+  std::vector<int> done( lines.size(), false );
+
+  unsigned pos = 0;
+  while ( not done[pos] )
+  {
+    cycle.push_back( frompoints[pos] );
+    done[pos] = true;
+    std::vector<Point*>::iterator i = std::find( frompoints.begin(), frompoints.end(), topoints[pos] );
+    if ( i==frompoints.end() )
+    {
+      throw std::runtime_error( "no cycle: to point not in from list" );
+    }
+    pos = std::distance( frompoints.begin(), i );
+  }
+
+  if ( cycle.size()!=lines.size() )
+  {
+    cycle.clear();
+    return false;
+  }
+  return true;
+}
+
 bool GEO::CUT::Cycle::IsValid() const
 {
   if ( points_.size() < 3 )
@@ -33,6 +71,25 @@ bool GEO::CUT::Cycle::IsCut( Element * element ) const
     }
   }
   return true;
+}
+
+void GEO::CUT::Cycle::Add( point_line_set & lines ) const
+{
+  for ( unsigned i=0; i!=points_.size(); ++i )
+  {
+    Point * p1 = points_[i];
+    Point * p2 = points_[( i+1 ) % points_.size()];
+
+    std::pair<Point*, Point*> line = std::make_pair( p1, p2 );
+    if ( lines.count( line ) > 0 )
+    {
+      lines.erase( line );
+    }
+    else
+    {
+      lines.insert( line );
+    }
+  }
 }
 
 void GEO::CUT::Cycle::CommonEdges( plain_edge_set & edges ) const

@@ -126,6 +126,8 @@ public:
 
   void CreateIntegrationCells( int count, bool levelset );
 
+  void SimplifyIntegrationCells();
+
   void TestElementVolume( bool fatal );
 
   void TestElementVolume( DRT::Element::DiscretizationType shape, Element & e, bool fatal );

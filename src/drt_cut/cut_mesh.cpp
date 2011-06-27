@@ -1449,6 +1449,17 @@ void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool levelset )
   }
 }
 
+void GEO::CUT::Mesh::SimplifyIntegrationCells()
+{
+  for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin();
+        i!=cells_.end();
+        ++i )
+  {
+    VolumeCell * vc = &**i;
+    vc->SimplifyIntegrationCells();
+  }
+}
+
 void GEO::CUT::Mesh::TestElementVolume( bool fatal )
 {
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();

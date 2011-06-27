@@ -9,6 +9,8 @@
 
 #include <Epetra_SerialDenseMatrix.h>
 
+#include "cut_cycle.H"
+
 #include "../drt_lib/drt_element.H"
 
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -47,7 +49,9 @@ public:
 
   virtual void Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal ) const = 0;
 
-  const std::vector<Point*> & Points() const { return points_; }
+  const Cycle & PointCycle() const { return points_; }
+
+  const std::vector<Point*> & Points() const { return points_(); }
 
   const Epetra_SerialDenseMatrix & Coordinates() const { return xyz_; }
 
@@ -85,7 +89,7 @@ protected:
 
   Epetra_SerialDenseMatrix xyz_;
   Facet * facet_;
-  std::vector<Point*> points_;
+  Cycle points_;
 };
 
 class Tri3BoundaryCell : public BoundaryCell

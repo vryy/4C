@@ -92,6 +92,8 @@ public:
 
   void NewQuad4Cell( Mesh & mesh, Facet * f, const std::vector<Point*> & x );
 
+  void SimplifyIntegrationCells();
+
   /// calculate cell volume from integration cells
   double Volume();
 
