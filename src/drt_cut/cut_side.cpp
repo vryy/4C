@@ -155,6 +155,7 @@ void GEO::CUT::Side::CreateMissingLines( Creator & creator, Element * element )
       {
         open.push_back( p );
       }
+#if 0
       else if ( row.size() > 2 )
       {
         std::stringstream str;
@@ -171,6 +172,7 @@ void GEO::CUT::Side::CreateMissingLines( Creator & creator, Element * element )
         }
         throw std::runtime_error( str.str() );
       }
+#endif
     }
 
 #if 0
