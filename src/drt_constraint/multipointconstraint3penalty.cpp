@@ -502,7 +502,7 @@ void UTILS::MPConstraint3Penalty::EvaluateError
 
       if (absconstraint_.find(condID)->second && init)
       {
-        elevector3[0]  = constrcond_[i]->GetDouble("amplitude");
+        elevector3[0]  = cond->GetDouble("amplitude");
       }
       else
       {
