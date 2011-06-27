@@ -331,32 +331,27 @@ void UTILS::ConstraintSolver::SolveDirect
   const RCP<Epetra_Vector> rhsconstr
 )
 {
-  cout << "direct Solcer line " << __LINE__ << endl;
   // define maps of standard dofs and additional lagrange multipliers
   RCP<Epetra_Map> standrowmap = rcp(new Epetra_Map(stiff->RowMap()));
   RCP<Epetra_Map> conrowmap = rcp(new Epetra_Map(constr->DomainMap()));
   // merge maps to one large map
   RCP<Epetra_Map> mergedmap = LINALG::MergeMap(standrowmap,conrowmap,false);
-  cout << "direct Solcer line " << __LINE__ << endl;
   // define MapExtractor
   LINALG::MapExtractor mapext(*mergedmap,standrowmap,conrowmap);
-  cout << "direct Solcer line " << __LINE__ << endl;
+
   // initialize large Sparse Matrix and Epetra_Vectors
   RCP<LINALG::SparseMatrix> mergedmatrix = rcp(new LINALG::SparseMatrix(*mergedmap,81));
   RCP<Epetra_Vector> mergedrhs = rcp(new Epetra_Vector(*mergedmap));
   RCP<Epetra_Vector> mergedsol = rcp(new Epetra_Vector(*mergedmap));
-  cout << "direct Solcer line " << __LINE__ << endl;
   // ONLY compatability
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
   if (dirichtoggle_ != Teuchos::null)
     dbcmaps_ = LINALG::ConvertDirichletToggleVectorToMaps(dirichtoggle_);
-  cout << "direct Solcer line " << __LINE__ << endl;
   // fill merged matrix using Add
   mergedmatrix -> Add(*stiff,false,1.0,1.0);
   mergedmatrix -> Add(*constr,false,1.0,1.0);
   mergedmatrix -> Add(*constrT,true,1.0,1.0);
   mergedmatrix -> Complete(*mergedmap,*mergedmap);
-  cout << "direct Solcer line " << __LINE__ << endl;
   // fill merged vectors using Export
   LINALG::Export(*rhsconstr,*mergedrhs);
   mergedrhs -> Scale(-1.0);
