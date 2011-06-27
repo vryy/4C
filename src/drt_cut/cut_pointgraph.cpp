@@ -24,7 +24,7 @@
 #include <boost/graph/filtered_graph.hpp>
 #include <boost/graph/graphviz.hpp>
 
-GEO::CUT::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, Location location, Strategy strategy )
+GEO::CUT::IMPL::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, Location location, Strategy strategy )
   : element_( element ),
     side_( side )
 {
@@ -77,7 +77,7 @@ GEO::CUT::PointGraph::PointGraph( Mesh & mesh, Element * element, Side * side, L
   graph_.FindCycles( element, side, cycle, location, strategy );
 }
 
-void GEO::CUT::PointGraph::FillGraph( Element * element, Side * side, Cycle & cycle, Strategy strategy )
+void GEO::CUT::IMPL::PointGraph::FillGraph( Element * element, Side * side, Cycle & cycle, Strategy strategy )
 {
   const std::vector<Node*> & nodes = side->Nodes();
   const std::vector<Edge*> & edges = side->Edges();
@@ -132,14 +132,14 @@ void GEO::CUT::PointGraph::FillGraph( Element * element, Side * side, Cycle & cy
 }
 
 
-void GEO::CUT::PointGraph::Graph::AddEdge( int row, int col )
+void GEO::CUT::IMPL::PointGraph::Graph::AddEdge( int row, int col )
 {
   graph_[row].insert( col );
   graph_[col].insert( row );
 }
 
 
-void GEO::CUT::PointGraph::Graph::AddEdge( Point * p1, Point * p2 )
+void GEO::CUT::IMPL::PointGraph::Graph::AddEdge( Point * p1, Point * p2 )
 {
   all_points_[p1->Id()] = p1;
   all_points_[p2->Id()] = p2;
@@ -147,7 +147,7 @@ void GEO::CUT::PointGraph::Graph::AddEdge( Point * p1, Point * p2 )
   AddEdge( p1->Id(), p2->Id() );
 }
 
-void GEO::CUT::PointGraph::Graph::Print( std::ostream & stream)
+void GEO::CUT::IMPL::PointGraph::Graph::Print( std::ostream & stream)
 {
   for ( std::map<int, plain_int_set >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
   {
@@ -164,7 +164,7 @@ void GEO::CUT::PointGraph::Graph::Print( std::ostream & stream)
   stream << "\n";
 }
 
-void GEO::CUT::PointGraph::Graph::PlotAllPoints( std::ostream & stream )
+void GEO::CUT::IMPL::PointGraph::Graph::PlotAllPoints( std::ostream & stream )
 {
   for ( std::map<int, Point*>::iterator i=all_points_.begin(); i!=all_points_.end(); ++i )
   {
@@ -172,7 +172,7 @@ void GEO::CUT::PointGraph::Graph::PlotAllPoints( std::ostream & stream )
   }
 }
 
-void GEO::CUT::PointGraph::Graph::PlotPoints( Element * element )
+void GEO::CUT::IMPL::PointGraph::Graph::PlotPoints( Element * element )
 {
   for ( std::map<int, Point*>::iterator i=all_points_.begin(); i!=all_points_.end(); ++i )
   {
@@ -185,6 +185,8 @@ void GEO::CUT::PointGraph::Graph::PlotPoints( Element * element )
 namespace GEO
 {
   namespace CUT
+  {
+  namespace IMPL
   {
 
 bool FindCycles( graph_t & g, Cycle & cycle, std::map<vertex_t, LINALG::Matrix<3,1> > & local, std::vector<Cycle> & cycles )
@@ -310,9 +312,10 @@ bool FindCycles( graph_t & g, Cycle & cycle, std::map<vertex_t, LINALG::Matrix<3
 }
 
   }
+  }
 }
 
-void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, Cycle & cycle, Location location, Strategy strategy )
+void GEO::CUT::IMPL::PointGraph::Graph::FindCycles( Element * element, Side * side, Cycle & cycle, Location location, Strategy strategy )
 {
   graph_t g;
 
@@ -442,7 +445,7 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, Cy
 
     if ( num_comp == 1 )
     {
-      bool main_cycle = GEO::CUT::FindCycles( g, cycle, local, main_cycles_ );
+      bool main_cycle = GEO::CUT::IMPL::FindCycles( g, cycle, local, main_cycles_ );
       if ( location==element_side and not main_cycle )
       {
         GnuplotDumpCycles( "cycles", main_cycles_ );
@@ -472,7 +475,7 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, Cy
         graph_t cg;
         boost::copy_graph( fg, cg );
 
-        bool main_cycle = GEO::CUT::FindCycles( cg, cycle, local, filtered_cycles );
+        bool main_cycle = GEO::CUT::IMPL::FindCycles( cg, cycle, local, filtered_cycles );
 
         if ( main_cycle )
         {
@@ -502,7 +505,7 @@ void GEO::CUT::PointGraph::Graph::FindCycles( Element * element, Side * side, Cy
   }
 }
 
-void GEO::CUT::PointGraph::Graph::FixSinglePoints( Cycle & cycle )
+void GEO::CUT::IMPL::PointGraph::Graph::FixSinglePoints( Cycle & cycle )
 {
   for ( ;; )
   {
@@ -541,7 +544,7 @@ void GEO::CUT::PointGraph::Graph::FixSinglePoints( Cycle & cycle )
   }
 }
 
-bool GEO::CUT::PointGraph::Graph::HasSinglePoints()
+bool GEO::CUT::IMPL::PointGraph::Graph::HasSinglePoints()
 {
   for ( std::map<int, plain_int_set >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
   {
@@ -554,7 +557,7 @@ bool GEO::CUT::PointGraph::Graph::HasSinglePoints()
   return false;
 }
 
-void GEO::CUT::PointGraph::Graph::GnuplotDumpCycles( const std::string & filename, const std::vector<Cycle> & cycles )
+void GEO::CUT::IMPL::PointGraph::Graph::GnuplotDumpCycles( const std::string & filename, const std::vector<Cycle> & cycles )
 {
   int counter = 0;
   for ( std::vector<Cycle>::const_iterator i=cycles.begin(); i!=cycles.end(); ++i )
@@ -571,7 +574,7 @@ void GEO::CUT::PointGraph::Graph::GnuplotDumpCycles( const std::string & filenam
   }
 }
 
-GEO::CUT::Point * GEO::CUT::PointGraph::Graph::GetPoint( int i )
+GEO::CUT::Point * GEO::CUT::IMPL::PointGraph::Graph::GetPoint( int i )
 {
   std::map<int, Point*>::iterator j = all_points_.find( i );
   if ( j!=all_points_.end() )

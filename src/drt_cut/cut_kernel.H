@@ -18,6 +18,8 @@ namespace GEO
 {
   namespace CUT
   {
+
+    /// core geometric operations: intersection, distance calculation
     namespace KERNEL
     {
 

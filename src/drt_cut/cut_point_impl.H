@@ -8,6 +8,8 @@ namespace GEO
 {
 namespace CUT
 {
+namespace IMPL
+{
 
 class LineBetweenFilter
 {
@@ -59,6 +61,8 @@ private:
   Element * element_;
 };
 
+}
+
 template <class Filter>
 Line * Point::Find( Filter & filter, bool unique )
 {
@@ -87,19 +91,19 @@ Line * Point::Find( Filter & filter, bool unique )
 
 inline Line * Point::CommonLine( Point * other )
 {
-  LineBetweenFilter filter( this, other );
+  IMPL::LineBetweenFilter filter( this, other );
   return Find( filter, true );
 }
 
 inline Line * Point::CutLine( Side * side, bool unique )
 {
-  LineHasSideFilter filter( side );
+  IMPL::LineHasSideFilter filter( side );
   return Find( filter, unique );
 }
 
 inline Line * Point::CutLine( Line * line, Side * side, Element * element )
 {
-  NextLineOnElementCutFilter filter( line, side, element );
+  IMPL::NextLineOnElementCutFilter filter( line, side, element );
   return Find( filter, true );
 }
 

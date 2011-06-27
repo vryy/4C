@@ -20,6 +20,9 @@ namespace GEO
 namespace CUT
 {
 
+namespace IMPL
+{
+
 class PointLineFilter
 {
 public:
@@ -28,6 +31,8 @@ public:
 
   virtual bool operator()( Line * line ) const = 0;
 };
+
+}
 
 class Point
 {
@@ -106,11 +111,11 @@ public:
 
   Line * CutLine( Line * line, Side * side, Element * element );
 
-  Line * CutLine( const PointLineFilter & filter, bool unique=true );
+  Line * CutLine( const IMPL::PointLineFilter & filter, bool unique=true );
 
-  Line * CutLine( Line * line, const PointLineFilter & filter, bool unique=true );
+  Line * CutLine( Line * line, const IMPL::PointLineFilter & filter, bool unique=true );
 
-  void CutLines( const PointLineFilter & filter, plain_line_set & cut_lines );
+  void CutLines( const IMPL::PointLineFilter & filter, plain_line_set & cut_lines );
 
   void CutLines( Side * side, plain_line_set & cut_lines );
 
@@ -264,6 +269,9 @@ typedef std::set<Teuchos::RCP<Point>, PointPidLess> RCPPointSet;
 
 #endif
 
+namespace IMPL
+{
+
 class ExcludeLineFilter : public PointLineFilter
 {
 public:
@@ -332,6 +340,8 @@ private:
   Side * side1_;
   Side * side2_;
 };
+
+}
 
 inline void FindCommonSides( const std::vector<Point*> & side, plain_side_set & sides )
 {

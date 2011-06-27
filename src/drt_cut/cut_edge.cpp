@@ -133,7 +133,7 @@ void GEO::CUT::Edge::CutPoint( Node* edge_start, Node* edge_end, std::vector<Poi
 
 void GEO::CUT::Edge::CutPoints( Side * side, PointSet & cut_points )
 {
-  SideCutFilter filter( side );
+  IMPL::SideCutFilter filter( side );
   for ( std::vector<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
     Point * p = *i;

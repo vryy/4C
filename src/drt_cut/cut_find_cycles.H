@@ -25,6 +25,8 @@ namespace GEO
   {
     class Point;
 
+  namespace IMPL
+  {
     typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::undirectedS,
                                   boost::property<boost::vertex_name_t, Point*,
                                                   boost::property<boost::vertex_color_t, boost::default_color_type,
@@ -198,6 +200,7 @@ namespace GEO
 
     void find_cycles( graph_t & g, plain_cycle_set & base_cycles );
 
+  }
   }
 }
 

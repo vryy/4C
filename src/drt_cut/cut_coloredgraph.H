@@ -13,6 +13,8 @@ namespace GEO
 {
   namespace CUT
   {
+
+    /// graph to construct volume cells from facets and lines
     namespace COLOREDGRAPH
     {
 

@@ -35,8 +35,8 @@ void GEO::CUT::LevelSetSide::MakeSideCutFacets( Mesh & mesh, Element * element, 
 
 void GEO::CUT::LevelSetSide::MakeInternalFacets( Mesh & mesh, Element * element, plain_facet_set & facets )
 {
-  PointGraph pg( mesh, element, this, PointGraph::cut_side, PointGraph::own_lines );
-  for ( PointGraph::facet_iterator i=pg.fbegin(); i!=pg.fend(); ++i )
+  IMPL::PointGraph pg( mesh, element, this, IMPL::PointGraph::cut_side, IMPL::PointGraph::own_lines );
+  for ( IMPL::PointGraph::facet_iterator i=pg.fbegin(); i!=pg.fend(); ++i )
   {
     const Cycle & points = *i;
     Side::MakeInternalFacets( mesh, element, points, facets );

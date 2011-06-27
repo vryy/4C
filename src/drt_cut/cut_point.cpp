@@ -128,7 +128,7 @@ void GEO::CUT::Point::CutEdge( Side * side, Line * other_line, std::vector<Edge*
   }
 }
 
-GEO::CUT::Line * GEO::CUT::Point::CutLine( const PointLineFilter & filter, bool unique )
+GEO::CUT::Line * GEO::CUT::Point::CutLine( const IMPL::PointLineFilter & filter, bool unique )
 {
   Line * line_found = NULL;
   for ( plain_line_set::iterator i=lines_.begin(); i!=lines_.end(); ++i )
@@ -153,13 +153,13 @@ GEO::CUT::Line * GEO::CUT::Point::CutLine( const PointLineFilter & filter, bool 
   return line_found;
 }
 
-GEO::CUT::Line * GEO::CUT::Point::CutLine( Line * line, const PointLineFilter & filter, bool unique )
+GEO::CUT::Line * GEO::CUT::Point::CutLine( Line * line, const IMPL::PointLineFilter & filter, bool unique )
 {
-  ExcludeLineFilter f( line, filter );
+  IMPL::ExcludeLineFilter f( line, filter );
   return CutLine( f, unique );
 }
 
-void GEO::CUT::Point::CutLines( const PointLineFilter & filter, plain_line_set & cut_lines )
+void GEO::CUT::Point::CutLines( const IMPL::PointLineFilter & filter, plain_line_set & cut_lines )
 {
   for ( plain_line_set::iterator i=lines_.begin(); i!=lines_.end(); ++i )
   {
@@ -173,7 +173,7 @@ void GEO::CUT::Point::CutLines( const PointLineFilter & filter, plain_line_set &
 
 void GEO::CUT::Point::CutLines( Side * side, plain_line_set & cut_lines )
 {
-  SideCutFilter filter( side );
+  IMPL::SideCutFilter filter( side );
   CutLines( filter, cut_lines );
 }
 
@@ -329,18 +329,18 @@ GEO::CUT::Side * GEO::CUT::Point::CutSide( Side * side, Point * other )
   return found_side;
 }
 
-bool GEO::CUT::SideCutFilter::operator()( Line * line ) const
+bool GEO::CUT::IMPL::SideCutFilter::operator()( Line * line ) const
 {
   return line->IsInternalCut( side_ );
 }
 
-bool GEO::CUT::SideElementCutFilter::operator()( Line * line ) const
+bool GEO::CUT::IMPL::SideElementCutFilter::operator()( Line * line ) const
 {
   //return line->IsCut( side_ ) and line->IsCut( element_ );
   return line->IsInternalCut( side_ ) and line->IsCut( element_ );
 }
 
-bool GEO::CUT::SideSideCutFilter::operator()( Line * line ) const
+bool GEO::CUT::IMPL::SideSideCutFilter::operator()( Line * line ) const
 {
   return line->IsCut( side1_ ) and line->IsCut( side2_ );
 }

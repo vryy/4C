@@ -5,6 +5,8 @@ namespace GEO
 {
   namespace CUT
   {
+  namespace IMPL
+  {
     namespace
     {
 
@@ -281,5 +283,6 @@ namespace GEO
       cycles.clear();
     }
 
+  }
   }
 }

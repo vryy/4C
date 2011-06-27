@@ -359,9 +359,9 @@ void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, Element * element, plain_
 {
   if ( facets_.size()==0 )
   {
-    PointGraph pg( mesh, element, this, PointGraph::element_side, PointGraph::all_lines );
+    IMPL::PointGraph pg( mesh, element, this, IMPL::PointGraph::element_side, IMPL::PointGraph::all_lines );
 
-    for ( PointGraph::facet_iterator i=pg.fbegin(); i!=pg.fend(); ++i )
+    for ( IMPL::PointGraph::facet_iterator i=pg.fbegin(); i!=pg.fend(); ++i )
     {
       const Cycle & points = *i;
 
@@ -371,7 +371,7 @@ void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, Element * element, plain_
       facets_.push_back( f );
     }
 
-    for ( PointGraph::hole_iterator i=pg.hbegin(); i!=pg.hend(); ++i )
+    for ( IMPL::PointGraph::hole_iterator i=pg.hbegin(); i!=pg.hend(); ++i )
     {
       const std::vector<Cycle> & hole = *i;
 
@@ -397,13 +397,13 @@ void GEO::CUT::Side::MakeOwnedSideFacets( Mesh & mesh, Element * element, plain_
 
 void GEO::CUT::Side::MakeInternalFacets( Mesh & mesh, Element * element, plain_facet_set & facets )
 {
-  PointGraph pg( mesh, element, this, PointGraph::cut_side, PointGraph::all_lines );
-  for ( PointGraph::facet_iterator i=pg.fbegin(); i!=pg.fend(); ++i )
+  IMPL::PointGraph pg( mesh, element, this, IMPL::PointGraph::cut_side, IMPL::PointGraph::all_lines );
+  for ( IMPL::PointGraph::facet_iterator i=pg.fbegin(); i!=pg.fend(); ++i )
   {
     const Cycle & points = *i;
     MakeInternalFacets( mesh, element, points, facets );
   }
-  for ( PointGraph::hole_iterator i=pg.hbegin(); i!=pg.hend(); ++i )
+  for ( IMPL::PointGraph::hole_iterator i=pg.hbegin(); i!=pg.hend(); ++i )
   {
     const std::vector<Cycle> & hole = *i;
     for ( std::vector<Cycle>::const_iterator i=hole.begin(); i!=hole.end(); ++i )

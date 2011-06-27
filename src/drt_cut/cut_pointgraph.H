@@ -14,6 +14,10 @@ namespace CUT
   class Element;
   class Mesh;
 
+/// implementation details
+namespace IMPL
+{
+
 class PointGraph
 {
 public:
@@ -89,6 +93,7 @@ private:
   Graph graph_;
 };
 
+}
 }
 }
 
