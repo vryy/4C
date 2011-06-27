@@ -54,6 +54,11 @@ public:
 
 private:
 
+  bool LinePointDistance( const LINALG::Matrix<3,1> & p1,
+                          const LINALG::Matrix<3,1> & p2,
+                          const LINALG::Matrix<3,1> & p3,
+                          double & distance );
+
   void Scale()
   {
     scale_ = 0;
@@ -104,15 +109,96 @@ template <DRT::Element::DiscretizationType elementtype,
 bool Position2d<elementtype,numNodesElement>::Compute()
 {
   KERNEL::ComputeDistance<DRT::Element::line2, elementtype> cd( xsi_ );
-  //KERNEL::DebugComputeDistance<edgetype, sidetype> cd;
+  //KERNEL::DebugComputeDistance<DRT::Element::line2, elementtype> cd( xsi_ );
 
   double dist;
   if ( not cd( xyze_, px_, dist ) )
   {
+    switch ( elementtype )
+    {
+    case DRT::Element::quad4:
+    {
+      LINALG::Matrix<3,1> p1( &xyze_( 0, 0 ), true );
+      LINALG::Matrix<3,1> p2( &xyze_( 0, 1 ), true );
+      LINALG::Matrix<3,1> p3( &xyze_( 0, 2 ), true );
+      LINALG::Matrix<3,1> p4( &xyze_( 0, 3 ), true );
+      double d1, d2, d3, d4;
+      if ( LinePointDistance( p1, p2, px_, d1 ) and
+           LinePointDistance( p2, p3, px_, d2 ) and
+           LinePointDistance( p3, p4, px_, d3 ) and
+           LinePointDistance( p4, p1, px_, d4 ) )
+      {
+        dist = std::min( d1, std::min( d2, std::min( d3, d4 ) ) );
+        // The local coordinates are wrong. But can there be right ones here?
+        // Do we need them?
+        xsi_ = 0;
+        xsi_( 2 ) = dist;
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    }
+    case DRT::Element::tri3:
+    {
+      LINALG::Matrix<3,1> p1( &xyze_( 0, 0 ), true );
+      LINALG::Matrix<3,1> p2( &xyze_( 0, 1 ), true );
+      LINALG::Matrix<3,1> p3( &xyze_( 0, 2 ), true );
+      double d1, d2, d3;
+      if ( LinePointDistance( p1, p2, px_, d1 ) and
+           LinePointDistance( p1, p3, px_, d2 ) and
+           LinePointDistance( p2, p3, px_, d3 ) )
+      {
+        dist = std::min( d1, std::min( d2, d3 ) );
+        // The local coordinates are wrong. But can there be right ones here?
+        // Do we need them?
+        xsi_ = 0;
+        xsi_( 2 ) = dist;
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+    }
+    default:
+      throw std::runtime_error( "unsupported side type in position computation" );
+    }
     throw std::runtime_error( "failed to calculate side--point distance" );
   }
 
   return WithinLimits();
+}
+
+
+template <DRT::Element::DiscretizationType elementtype,
+          int numNodesElement
+>
+bool Position2d<elementtype,numNodesElement>::LinePointDistance( const LINALG::Matrix<3,1> & p1,
+                                                                 const LINALG::Matrix<3,1> & p2,
+                                                                 const LINALG::Matrix<3,1> & p3,
+                                                                 double & distance )
+{
+  LINALG::Matrix<3,1> n;
+  n.Update( 1, p2, -1, p1, 0 );
+
+  LINALG::Matrix<3,1> m;
+  m.Update( 1, p3, -1, p1, 0 );
+
+  double a = m.Dot( n );
+  double b = n.Dot( n );
+  double c = a/b;
+
+  if ( c < 0 or c > 1 )
+    return false;
+
+  LINALG::Matrix<3,1> d;
+  d.Update( 1, p1, c, n, 0 );
+  d.Update( -1, p3, 1 );
+
+  distance = d.Norm2();
+  return true;
 }
 
 

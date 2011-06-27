@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "../../src/drt_cut/cut_kernel.H"
+#include "../../src/drt_cut/cut_position2d.H"
 
 void test_geometry_schleifend1()
 {
@@ -72,8 +73,25 @@ void test_geometry_parallel1()
   }
 }
 
+void test_geometry_distance()
+{
+  double xyze_data[] = {0.90999999999999992, 0.069230769230768999, 0.31212930977131004,
+                      0.90999999999999992, 0.061656666666666672, 0.2943944262758405,
+                      0.90999999999999992, 0.061538461538461306, 0.29411764705882476};
+  double xyz_data[] = {0.91044776119402959, 0.061538461538461306, 0.29411764705882476};
+
+  LINALG::Matrix<3,3> xyze( xyze_data );
+  LINALG::Matrix<3,1> xyz( xyz_data );
+
+  GEO::CUT::Position2d<DRT::Element::tri3> pos( xyze, xyz );
+  if ( pos.Compute() )
+  {
+  }
+}
+
 void test_geometry()
 {
   test_geometry_schleifend1();
   test_geometry_parallel1();
+  test_geometry_distance();
 }
