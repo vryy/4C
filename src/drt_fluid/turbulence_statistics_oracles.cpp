@@ -32,20 +32,24 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
   discret_    (discret),
   params_     (params),
   h_          (0.0299),
-  x1min_      (-5.0*h_),
-  x1max_      (16.0*h_),
-  x2min_      (-0.0653),
-  x2max_      (+0.0653),
+  x1min_      (-9.0*h_),//(-5.0*h_),
+  x1max_      (-6.0*h_),//(16.0*h_),
+  x2min_      (0.010/2.),//(-0.0653),
+  x2max_      (0.0708/2.),//(+0.0653),
   x2inflowmin_(-0.0708/2.),
   x2inflowmax_(+0.0708/2.),
-  x3min_      (-0.07525/2.),
-  x3max_      (+0.07525/2.),
+  x2inflowchannelmin_(0.010/2.),
+  x2inflowchannelmax_(0.0708/2.),
+  x3min_      (-0.1505/2.),//(-0.07525/2.),
+  x3max_      (+0.1505/2.),//(+0.07525/2.),
   midupchan_  (0.0855),
   midlowchan_ (0.0451),
   midchamber_ (0.0653),
-  x2first_    (0.0),
+  x2first_    (0.00005),
   x2max_first_(x2max_-x2first_),
   x2min_first_(x2min_+x2first_),
+  x2inflowchannelmax_first_(x2inflowchannelmax_-x2first_),
+  x2inflowchannelmin_first_(x2inflowchannelmin_+x2first_),
   x3position_ (0.0)
 {
   // assumptions
@@ -215,6 +219,7 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
   set<double,LineSortCriterion> x1_midchamber;
   set<double,LineSortCriterion> x1_walltopchamber;
   set<double,LineSortCriterion> x1_wallbottomchamber;
+  set<double,LineSortCriterion> x1_wallinflowchannel;
 
   set<double,LineSortCriterion> x2_inflow;
   set<double,LineSortCriterion> x2_0h;
@@ -237,10 +242,12 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
       x1_midlowerchannel.insert(x(0));
     if (x(1) > midchamber_-NODETOL and x(1) < midchamber_+NODETOL and x(0) > -NODETOL)
       x1_midchamber.insert(x(0));
-    if (x(1) > x2max_first_-NODETOL    and x(1) < x2max_first_+NODETOL    and x(0) > -NODETOL)
+    if (x(1) > x2max_-NODETOL and x(1) < x2max_+NODETOL and x(0) > -NODETOL)
       x1_walltopchamber.insert(x(0));
-    if (x(1) > x2min_first_-NODETOL and x(1) < x2min_first_+NODETOL and x(0) > -NODETOL)
+    if (x(1) > x2min_-NODETOL and x(1) < x2min_+NODETOL and x(0) > -NODETOL)
       x1_wallbottomchamber.insert(x(0));
+    if (x(1) > x2inflowchannelmax_-NODETOL and x(1) < x2inflowchannelmax_+NODETOL and x(0) < -6.0*h_+NODETOL)
+      x1_wallinflowchannel.insert(x(0));
 
 
     if (x(0) > x1min_-NODETOL and x(0) < x1min_+NODETOL) // x1 = -5h
@@ -261,6 +268,7 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
   ExportLocation(x1_midchamber);
   ExportLocation(x1_walltopchamber);
   ExportLocation(x1_wallbottomchamber);
+  ExportLocation(x1_wallinflowchannel);
 
   ExportLocation(x2_inflow);
   ExportLocation(x2_0h);
@@ -277,6 +285,7 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
     x1_midlowerchannel_ = rcp(new vector<double> ); // x1-coordinates of nodes at y = 45.1mm = 1.51h (mid line lower channel)
     x1_midchamber_      = rcp(new vector<double> ); // x1-coordinates of nodes at y = 65.3mm = 2.18h (mid line chamber)
     x1_wallchamber_     = rcp(new vector<double> ); // x1-coordinates of nodes at the walls
+    x1_wallinflowchannel_ = rcp(new vector<double> ); // x1-coordinates of nodes at the walls
 
     // vertical line vectors
     x2_inflow_ = rcp(new vector<double> ); // x2-coordinates of nodes at x =-5h (both inflow channels)
@@ -295,6 +304,8 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
     //if (x1_walltopchamber.size() != x1_wallbottomchamber.size()) dserror("grid mismatch between top and bottom wall");
     for(set<double,LineSortCriterion>::const_iterator coorditer=x1_walltopchamber.begin(); coorditer!=x1_walltopchamber.end(); ++coorditer)
       x1_wallchamber_->push_back(*coorditer);
+    for(set<double,LineSortCriterion>::const_iterator coorditer=x1_wallinflowchannel.begin(); coorditer!=x1_wallinflowchannel.end(); ++coorditer)
+      x1_wallinflowchannel_->push_back(*coorditer);
 
     Teuchos::RCP<vector<double> > x1_wallchamberbottom;
     x1_wallchamberbottom = rcp(new vector<double> );
@@ -329,11 +340,13 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
     numx1_midinflowchannel_ = numx1_midupperchannel;
     numx1_midchamber_ = x1_midchamber_->size();
     numx1_wallchamber_ = x1_wallchamber_->size();
+    numx1_wallinflowchannel_ = x1_wallinflowchannel_->size();
 
     numx2_inflow_ = x2_inflow_->size();
     numx2_0h_ = x2_0h_->size();
     // number of nodes at inflows -1 = number of nodes at expansion, since two nodes coincide at edge of splitter plate
-    if (numx2_inflow_-1 != numx2_0h_) dserror("structured grid expected between inflow and expansion");
+//TODO put check back in
+    //    if (numx2_inflow_-1 != numx2_0h_) dserror("structured grid expected between inflow and expansion");
 
     const size_t numx2_1h = x2_1h_->size();
     const size_t numx2_2h = x2_2h_->size();
@@ -352,6 +365,14 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
   wallvelu_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallchamber_->size(),true));
   wallvelv_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallchamber_->size(),true));
   wallvelw_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallchamber_->size(),true));
+
+  wallinflowchannelforceu_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallinflowchannel_->size(),true));
+  wallinflowchannelforcev_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallinflowchannel_->size(),true));
+  wallinflowchannelforcew_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallinflowchannel_->size(),true));
+
+  wallinflowchannelvelu_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallinflowchannel_->size(),true));
+  wallinflowchannelvelv_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallinflowchannel_->size(),true));
+  wallinflowchannelvelw_ = rcp(new LINALG::SerialDenseMatrix(2,x1_wallinflowchannel_->size(),true));
 
   //------------------------------------------------------------------
   // allocate arrays holding time mean profiles of first order moments
@@ -499,21 +520,21 @@ void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
     //xzplanesinflow[1] = x2inflowmax_;
     //int dim = 1; // x2-coordinate
 
-    Teuchos::RCP<vector<double> > locforceu = rcp(new vector<double>(numx1_wallchamber_,0.0));
-    Teuchos::RCP<vector<double> > locforcev = rcp(new vector<double>(numx1_wallchamber_,0.0));
-    Teuchos::RCP<vector<double> > locforcew = rcp(new vector<double>(numx1_wallchamber_,0.0));
+    vector<double> locforceu(numx1_wallchamber_);
+    vector<double> locforcev(numx1_wallchamber_);
+    vector<double> locforcew(numx1_wallchamber_);
 
-    Teuchos::RCP<vector<double> > globforceu = rcp(new vector<double>(numx1_wallchamber_,0.0));
-    Teuchos::RCP<vector<double> > globforcev = rcp(new vector<double>(numx1_wallchamber_,0.0));
-    Teuchos::RCP<vector<double> > globforcew = rcp(new vector<double>(numx1_wallchamber_,0.0));
+    vector<double> globforceu(numx1_wallchamber_);
+    vector<double> globforcev(numx1_wallchamber_);
+    vector<double> globforcew(numx1_wallchamber_);
 
-    Teuchos::RCP<vector<double> > locvelu = rcp(new vector<double>(numx1_wallchamber_,0.0));
-    Teuchos::RCP<vector<double> > locvelv = rcp(new vector<double>(numx1_wallchamber_,0.0));
-    Teuchos::RCP<vector<double> > locvelw = rcp(new vector<double>(numx1_wallchamber_,0.0));
+    vector<double> locvelu(numx1_wallchamber_);
+    vector<double> locvelv(numx1_wallchamber_);
+    vector<double> locvelw(numx1_wallchamber_);
 
-    Teuchos::RCP<vector<double> > globvelu = rcp(new vector<double>(numx1_wallchamber_,0.0));
-    Teuchos::RCP<vector<double> > globvelv = rcp(new vector<double>(numx1_wallchamber_,0.0));
-    Teuchos::RCP<vector<double> > globvelw = rcp(new vector<double>(numx1_wallchamber_,0.0));
+    vector<double> globvelu(numx1_wallchamber_);
+    vector<double> globvelv(numx1_wallchamber_);
+    vector<double> globvelw(numx1_wallchamber_);
 
     for (size_t iplane=0; iplane<numplanes; ++iplane)
     {
@@ -522,21 +543,22 @@ void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
       togglev_->PutScalar(0.0);
       togglew_->PutScalar(0.0);
 
-      locforceu->clear();
-      locforcev->clear();
-      locforcew->clear();
+      for (unsigned i=0;i<numx1_wallchamber_;++i)
+      {
+        locforceu[i] = 0.0;
+        locforcev[i] = 0.0;
+        locforcew[i] = 0.0;
+        globforceu[i]= 0.0;
+        globforcev[i]= 0.0;
+        globforcew[i]= 0.0;
 
-      globforceu->clear();
-      globforcev->clear();
-      globforcew->clear();
-
-      locvelu->clear();
-      locvelv->clear();
-      locvelw->clear();
-
-      globvelu->clear();
-      globvelv->clear();
-      globvelw->clear();
+        locvelu[i] = 0.0;
+        locvelv[i] = 0.0;
+        locvelw[i] = 0.0;
+        globvelu[i]= 0.0;
+        globvelv[i]= 0.0;
+        globvelw[i]= 0.0;
+      }
 
       for (size_t ipos=0; ipos<numx1_wallchamber_; ++ipos)
       {
@@ -557,9 +579,9 @@ void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
                 vector<double> myforce(dof.size());
                 DRT::UTILS::ExtractMyValues(*force_, myforce, dof);
 
-                (*locforceu)[ipos]+=myforce[0];
-                (*locforcev)[ipos]+=myforce[1];
-                (*locforcew)[ipos]+=myforce[2];
+                locforceu[ipos]+=myforce[0];
+                locforcev[ipos]+=myforce[1];
+                locforcew[ipos]+=myforce[2];
 
                 double      one = 1.0;
                 toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -568,16 +590,15 @@ void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
               }
               else if ( node->X()[dim] > velplanes[iplane]-NODETOL and node->X()[dim]<velplanes[iplane]+NODETOL )
               {
-cout << "wall velocity "<< endl;
                 vector<int> dof = discret_->Dof(node);
 
                 // extract local values from the global vector
                 vector<double> myvel(dof.size());
                 DRT::UTILS::ExtractMyValues(*vel_, myvel, dof);
 
-                (*locvelu)[ipos]+=myvel[0];
-                (*locvelv)[ipos]+=myvel[1];
-                (*locvelw)[ipos]+=myvel[2];
+                locvelu[ipos]+=myvel[0];
+                locvelv[ipos]+=myvel[1];
+                locvelw[ipos]+=myvel[2];
               }
             }
           }
@@ -585,36 +606,179 @@ cout << "wall velocity "<< endl;
       }
 
       // TODO comment out safety check
-      double inc=0.0;
-      {
-        double local_inc=0.0;
-        for(int rr=0;rr<(*toggleu_).MyLength();++rr)
-        {
-          local_inc+=(*toggleu_)[rr]*(*toggleu_)[rr];
-        }
-        discret_->Comm().SumAll(&local_inc,&inc,1);
+//      double inc=0.0;
+//      {
+//        double local_inc=0.0;
+//        for(int rr=0;rr<(*toggleu_).MyLength();++rr)
+//        {
+//          local_inc+=(*toggleu_)[rr]*(*toggleu_)[rr];
+//        }
+//        discret_->Comm().SumAll(&local_inc,&inc,1);
+//
+//        if(abs(inc)<1.0E-9)
+//          dserror("there are no forced nodes on the boundary\n");
+//      }
 
-        if(abs(inc)<1.0E-9)
-          dserror("there are no forced nodes on the boundary\n");
-      }
+      discret_->Comm().SumAll(&(locforceu[0]),&(globforceu[0]),numx1_wallchamber_);
+      discret_->Comm().SumAll(&(locforcev[0]),&(globforcev[0]),numx1_wallchamber_);
+      discret_->Comm().SumAll(&(locforcew[0]),&(globforcew[0]),numx1_wallchamber_);
 
-      discret_->Comm().SumAll(&((*locforceu)[0]),&((*globforceu)[0]),numx1_wallchamber_);
-      discret_->Comm().SumAll(&((*locforcev)[0]),&((*globforcev)[0]),numx1_wallchamber_);
-      discret_->Comm().SumAll(&((*locforcew)[0]),&((*globforcew)[0]),numx1_wallchamber_);
-
-      discret_->Comm().SumAll(&((*locvelu)[0]),&((*globvelu)[0]),numx1_wallchamber_);
-      discret_->Comm().SumAll(&((*locvelv)[0]),&((*globvelv)[0]),numx1_wallchamber_);
-      discret_->Comm().SumAll(&((*locvelw)[0]),&((*globvelw)[0]),numx1_wallchamber_);
+      discret_->Comm().SumAll(&(locvelu[0]),&(globvelu[0]),numx1_wallchamber_);
+      discret_->Comm().SumAll(&(locvelv[0]),&(globvelv[0]),numx1_wallchamber_);
+      discret_->Comm().SumAll(&(locvelw[0]),&(globvelw[0]),numx1_wallchamber_);
 
       for (size_t ipos=0; ipos<numx1_wallchamber_; ++ipos)
       {
-        (*wallforceu_)(iplane,ipos) += (*globforceu)[ipos];
-        (*wallforcev_)(iplane,ipos) += (*globforcev)[ipos];
-        (*wallforcew_)(iplane,ipos) += (*globforcew)[ipos];
+        (*wallforceu_)(iplane,ipos) += globforceu[ipos];
+        (*wallforcev_)(iplane,ipos) += globforcev[ipos];
+        (*wallforcew_)(iplane,ipos) += globforcew[ipos];
 
-        (*wallvelu_)(iplane,ipos) += (*globvelu)[ipos];
-        (*wallvelv_)(iplane,ipos) += (*globvelv)[ipos];
-        (*wallvelw_)(iplane,ipos) += (*globvelw)[ipos];
+        (*wallvelu_)(iplane,ipos) += globvelu[ipos];
+        (*wallvelv_)(iplane,ipos) += globvelv[ipos];
+        (*wallvelw_)(iplane,ipos) += globvelw[ipos];
+      }
+    }
+  }
+
+  //----------------------------------------------------------
+  // compute forces on top and bottom walls of inflow channels
+  //----------------------------------------------------------
+  {
+    // top and bottom planes in chamber
+    const size_t numplanes = 2;
+
+    vector<double> forceplanes(2);
+    forceplanes[0] = x2inflowchannelmin_;
+    forceplanes[1] = x2inflowchannelmax_;
+
+    vector<double> velplanes(2);
+    velplanes[0] = x2inflowchannelmin_first_;
+    velplanes[1] = x2inflowchannelmax_first_;
+
+    const int dim = 1; // x2-coordinate
+
+    //// top and bottom planes in inflow zone
+    //vector<double> xzplanesinflow(2);
+    //xzplanesinflow[0] = x2inflowmin_;
+    //xzplanesinflow[1] = x2inflowmax_;
+    //int dim = 1; // x2-coordinate
+
+    vector<double> locforceu(numx1_wallinflowchannel_);
+    vector<double> locforcev(numx1_wallinflowchannel_);
+    vector<double> locforcew(numx1_wallinflowchannel_);
+
+    vector<double> globforceu(numx1_wallinflowchannel_);
+    vector<double> globforcev(numx1_wallinflowchannel_);
+    vector<double> globforcew(numx1_wallinflowchannel_);
+
+    vector<double> locvelu(numx1_wallinflowchannel_);
+    vector<double> locvelv(numx1_wallinflowchannel_);
+    vector<double> locvelw(numx1_wallinflowchannel_);
+
+    vector<double> globvelu(numx1_wallinflowchannel_);
+    vector<double> globvelv(numx1_wallinflowchannel_);
+    vector<double> globvelw(numx1_wallinflowchannel_);
+
+    for (size_t iplane=0; iplane<numplanes; ++iplane)
+    {
+      // toggle vectors are one in the position of a dof in this plane, else 0
+      toggleu_->PutScalar(0.0);
+      togglev_->PutScalar(0.0);
+      togglew_->PutScalar(0.0);
+
+      for (unsigned i=0;i<numx1_wallinflowchannel_;++i)
+      {
+        locforceu[i] = 0.0;
+        locforcev[i] = 0.0;
+        locforcew[i] = 0.0;
+        globforceu[i]= 0.0;
+        globforcev[i]= 0.0;
+        globforcew[i]= 0.0;
+
+        locvelu[i] = 0.0;
+        locvelv[i] = 0.0;
+        locvelw[i] = 0.0;
+        globvelu[i]= 0.0;
+        globvelv[i]= 0.0;
+        globvelw[i]= 0.0;
+      }
+
+      for (size_t ipos=0; ipos<numx1_wallinflowchannel_; ++ipos)
+      {
+        for (int inode=0; inode<discret_->NumMyRowNodes(); ++inode)
+        {
+          DRT::Node* node = discret_->lRowNode(inode);
+
+          if ( node->X()[2] < x3position_+NODETOL and node->X()[2] > x3position_-NODETOL )
+          {
+            if (node->X()[0]>(*x1_wallinflowchannel_)[ipos]-NODETOL and node->X()[0]<(*x1_wallinflowchannel_)[ipos]+NODETOL)
+            {
+              // this node belongs to the plane under consideration
+              if ( node->X()[dim] > forceplanes[iplane]-NODETOL and node->X()[dim]<forceplanes[iplane]+NODETOL )
+              {
+                vector<int> dof = discret_->Dof(node);
+
+                // extract local values from the global vector
+                vector<double> myforce(dof.size());
+                DRT::UTILS::ExtractMyValues(*force_, myforce, dof);
+
+                locforceu[ipos]+=myforce[0];
+                locforcev[ipos]+=myforce[1];
+                locforcew[ipos]+=myforce[2];
+
+                double      one = 1.0;
+                toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
+                //togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
+                //togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
+              }
+              else if ( node->X()[dim] > velplanes[iplane]-NODETOL and node->X()[dim]<velplanes[iplane]+NODETOL )
+              {
+                vector<int> dof = discret_->Dof(node);
+
+                // extract local values from the global vector
+                vector<double> myvel(dof.size());
+                DRT::UTILS::ExtractMyValues(*vel_, myvel, dof);
+
+                locvelu[ipos]+=myvel[0];
+                locvelv[ipos]+=myvel[1];
+                locvelw[ipos]+=myvel[2];
+              }
+            }
+          }
+        }
+      }
+
+      // TODO comment out safety check
+//      double inc=0.0;
+//      {
+//        double local_inc=0.0;
+//        for(int rr=0;rr<(*toggleu_).MyLength();++rr)
+//        {
+//          local_inc+=(*toggleu_)[rr]*(*toggleu_)[rr];
+//        }
+//        discret_->Comm().SumAll(&local_inc,&inc,1);
+//
+//        if(abs(inc)<1.0E-9)
+//          dserror("there are no forced nodes on the boundary\n");
+//      }
+
+      discret_->Comm().SumAll(&(locforceu[0]),&(globforceu[0]),numx1_wallinflowchannel_);
+      discret_->Comm().SumAll(&(locforcev[0]),&(globforcev[0]),numx1_wallinflowchannel_);
+      discret_->Comm().SumAll(&(locforcew[0]),&(globforcew[0]),numx1_wallinflowchannel_);
+
+      discret_->Comm().SumAll(&(locvelu[0]),&(globvelu[0]),numx1_wallinflowchannel_);
+      discret_->Comm().SumAll(&(locvelv[0]),&(globvelv[0]),numx1_wallinflowchannel_);
+      discret_->Comm().SumAll(&(locvelw[0]),&(globvelw[0]),numx1_wallinflowchannel_);
+
+      for (size_t ipos=0; ipos<numx1_wallinflowchannel_; ++ipos)
+      {
+        (*wallinflowchannelforceu_)(iplane,ipos) += globforceu[ipos];
+        (*wallinflowchannelforcev_)(iplane,ipos) += globforcev[ipos];
+        (*wallinflowchannelforcew_)(iplane,ipos) += globforcew[ipos];
+
+        (*wallinflowchannelvelu_)(iplane,ipos) += globvelu[ipos];
+        (*wallinflowchannelvelv_)(iplane,ipos) += globvelv[ipos];
+        (*wallinflowchannelvelw_)(iplane,ipos) += globvelw[ipos];
       }
     }
   }
@@ -842,6 +1006,14 @@ void COMBUST::TurbulenceStatisticsORACLES::TimeAverageStatistics()
   (*wallvelv_).Scale(avfac);
   (*wallvelw_).Scale(avfac);
 
+  (*wallinflowchannelforceu_).Scale(avfac);
+  (*wallinflowchannelforcev_).Scale(avfac);
+  (*wallinflowchannelforcew_).Scale(avfac);
+
+  (*wallinflowchannelvelu_).Scale(avfac);
+  (*wallinflowchannelvelv_).Scale(avfac);
+  (*wallinflowchannelvelw_).Scale(avfac);
+
   //! first order momentum
   (*vertinflowu_).Scale(avfac);
   (*vertinflowv_).Scale(avfac);
@@ -949,7 +1121,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
 //      // use average length in x1-direction (mean of left and right position)
 //      area(0,ix1pos) = (x3max_-x3min_) * meanfac*((*x1_wallchamber_)[rightpos]-(*x1_wallchamber_)[leftpos]);
 //    }
-    const double area = (x3max_-x3min_) * (x1max_-0.0);
+    const double area = 1.0;//(x3max_-x3min_) * (x1max_-0.0);
 
     // nonzero forces (tractions) only expected in the streamwise (x1) direction
 
@@ -989,9 +1161,9 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       }
     }
 
-    //-------------------------------
-    // write horizontal ltau profiles
-    //-------------------------------
+    //---------------------------------------
+    // write horizontal ltau profiles chamber
+    //---------------------------------------
     {
       std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       // define file name suffix
@@ -1000,7 +1172,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       // output to log-file
       Teuchos::RCP<std::ofstream> log;
       log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
-      (*log) << "\n";
+      (*log) << "\n\n\n";
       (*log) << "# Statistics record " << countrecord_;
       (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
@@ -1052,6 +1224,69 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       }
       log->flush();
     }
+    //-----------------------------------------------
+    // write horizontal ltau profiles inflow channels
+    //-----------------------------------------------
+    {
+      std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      // define file name suffix
+      s.append(".flow_statistics_inflowchannel_horiz");
+
+      // output to log-file
+      Teuchos::RCP<std::ofstream> log;
+      log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
+      (*log) << "\n\n\n";
+      (*log) << "# Statistics record " << countrecord_;
+      (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+
+      (*log) << "\n";
+      (*log) << "# (u_tau)^2 = tau_W/rho at bottom wall \n";
+      for(size_t ix1pos=0; ix1pos<numx1_wallinflowchannel_; ++ix1pos)
+      {
+        (*log) <<  " "  << setw(11) << setprecision(4) << (*x1_wallinflowchannel_)[ix1pos];
+        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelforceu_)(0,ix1pos)/area/dens_;
+        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelforcev_)(0,ix1pos)/area/dens_;
+        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelforcew_)(0,ix1pos)/area/dens_;
+        (*log) << &endl;
+      }
+      log->flush();
+
+      (*log) << "\n";
+      (*log) << "# (u_tau)^2 = tau_W/rho at top wall \n";
+      for(size_t ix1pos=0; ix1pos<numx1_wallinflowchannel_; ++ix1pos)
+      {
+        (*log) <<  " "  << setw(11) << setprecision(4) << (*x1_wallinflowchannel_)[ix1pos];
+        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelforceu_)(1,ix1pos)/area/dens_;
+        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelforcev_)(1,ix1pos)/area/dens_;
+        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelforcew_)(1,ix1pos)/area/dens_;
+        (*log) << &endl;
+      }
+      log->flush();
+
+      (*log) << "\n";
+      (*log) << "# u first node away from bottom wall \n";
+      for(size_t ix1pos=0; ix1pos<numx1_wallinflowchannel_; ++ix1pos)
+      {
+        (*log) <<  " "  << setw(11) << setprecision(4) << (*x1_wallinflowchannel_)[ix1pos];
+        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelvelu_)(0,ix1pos)/area/dens_;
+        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelvelv_)(0,ix1pos)/area/dens_;
+        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelvelw_)(0,ix1pos)/area/dens_;
+        (*log) << &endl;
+      }
+      log->flush();
+
+      (*log) << "\n";
+      (*log) << "# u first node away from top wall \n";
+      for(size_t ix1pos=0; ix1pos<numx1_wallinflowchannel_; ++ix1pos)
+      {
+        (*log) <<  " "  << setw(11) << setprecision(4) << (*x1_wallinflowchannel_)[ix1pos];
+        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelvelu_)(1,ix1pos)/area/dens_;
+        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelvelv_)(1,ix1pos)/area/dens_;
+        (*log) << "   " << setw(11) << setprecision(4) << (*wallinflowchannelvelw_)(1,ix1pos)/area/dens_;
+        (*log) << &endl;
+      }
+      log->flush();
+    }
     //-------------------------------
     // write vertical inflow profiles
     //-------------------------------
@@ -1062,7 +1297,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       // output to log-file
       Teuchos::RCP<std::ofstream> log;
       log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
-      (*log) << "\n";
+      (*log) << "\n\n\n";
       (*log) << "# Statistics record " << countrecord_;
       (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
@@ -1114,7 +1349,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       // output to log-file
       Teuchos::RCP<std::ofstream> log;
       log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
-      (*log) << "\n";
+      (*log) << "\n\n\n";
       (*log) << "# Statistics record " << countrecord_;
       (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
@@ -1166,7 +1401,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       // output to log-file
       Teuchos::RCP<std::ofstream> log;
       log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
-      (*log) << "\n";
+      (*log) << "\n\n\n";
       (*log) << "# Statistics record " << countrecord_;
       (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
@@ -1218,7 +1453,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       // output to log-file
       Teuchos::RCP<std::ofstream> log;
       log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
-      (*log) << "\n";
+      (*log) << "\n\n\n";
       (*log) << "# Statistics record " << countrecord_;
       (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
@@ -1270,7 +1505,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       // output to log-file
       Teuchos::RCP<std::ofstream> log;
       log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
-      (*log) << "\n";
+      (*log) << "\n\n\n";
       (*log) << "# Statistics record " << countrecord_;
       (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
@@ -1342,6 +1577,14 @@ void COMBUST::TurbulenceStatisticsORACLES::ClearStatistics()
   (*wallvelu_).Zero();
   (*wallvelv_).Zero();
   (*wallvelw_).Zero();
+
+  (*wallinflowchannelforceu_).Zero();
+  (*wallinflowchannelforcev_).Zero();
+  (*wallinflowchannelforcew_).Zero();
+
+  (*wallinflowchannelvelu_).Zero();
+  (*wallinflowchannelvelv_).Zero();
+  (*wallinflowchannelvelw_).Zero();
 
   //! first order momentum
   (*vertinflowu_).Zero();

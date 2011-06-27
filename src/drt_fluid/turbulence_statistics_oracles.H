@@ -141,6 +141,9 @@ private:
   //! bounds of ORACLES domain in x2-direction
   const double x2inflowmin_; //  29.9mm
   const double x2inflowmax_; // 100.7mm
+  //!
+  const double x2inflowchannelmin_;
+  const double x2inflowchannelmax_;
   //! bounds of ORACLES domain in x3-direction
   const double x3min_; // -75.25mm
   const double x3max_; //  75.25mm
@@ -151,6 +154,8 @@ private:
   const double x2first_;     // x2-coordinate first node away from wall
   const double x2max_first_; // x2-coordinate first node away from top wall of chamber
   const double x2min_first_; // x2-coordinate first node away from bottom wall of chamber
+  const double x2inflowchannelmax_first_; // x2-coordinate first node away from top wall of upper inflow channel
+  const double x2inflowchannelmin_first_; // x2-coordinate first node away from bottom wall of upper inflow channel
 
   // coordinates of nodes in x2-direction
   Teuchos::RCP<vector<double> > x2_inflow_; // x2-coordinates of nodes at x =-5h (both inflow channels)
@@ -164,14 +169,16 @@ private:
   size_t numx2_chamber_;
 
   // coordinates of nodes in x1-direction
-  Teuchos::RCP<vector<double> > x1_midupperchannel_; // x1-coordinates of nodes at y = 85.5mm = 2.86h (mid line upper channel)
-  Teuchos::RCP<vector<double> > x1_midlowerchannel_; // x1-coordinates of nodes at y = 45.1mm = 1.51h (mid line lower channel)
-  Teuchos::RCP<vector<double> > x1_midchamber_;      // x1-coordinates of nodes at y = 65.3mm = 2.18h (mid line chamber)
-  Teuchos::RCP<vector<double> > x1_wallchamber_;     // x1-coordinates of nodes at wall of chamber
+  Teuchos::RCP<vector<double> > x1_midupperchannel_;   // x1-coordinates of nodes at y = 85.5mm = 2.86h (mid line upper channel)
+  Teuchos::RCP<vector<double> > x1_midlowerchannel_;   // x1-coordinates of nodes at y = 45.1mm = 1.51h (mid line lower channel)
+  Teuchos::RCP<vector<double> > x1_midchamber_;        // x1-coordinates of nodes at y = 65.3mm = 2.18h (mid line chamber)
+  Teuchos::RCP<vector<double> > x1_wallchamber_;       // x1-coordinates of nodes at wall of chamber
+  Teuchos::RCP<vector<double> > x1_wallinflowchannel_; // x1-coordinates of nodes at wall of inflow channels
   // number of nodes in x1-direction
   size_t numx1_midinflowchannel_;
   size_t numx1_midchamber_;
   size_t numx1_wallchamber_;
+  size_t numx1_wallinflowchannel_;
 
 
   //! coordinates of locations in x1-, x2 and x3-direction for statistical evaluation
@@ -192,6 +199,14 @@ private:
   Teuchos::RCP<LINALG::SerialDenseMatrix> wallvelu_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> wallvelv_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> wallvelw_;
+
+  Teuchos::RCP<LINALG::SerialDenseMatrix> wallinflowchannelforceu_;
+  Teuchos::RCP<LINALG::SerialDenseMatrix> wallinflowchannelforcev_;
+  Teuchos::RCP<LINALG::SerialDenseMatrix> wallinflowchannelforcew_;
+
+  Teuchos::RCP<LINALG::SerialDenseMatrix> wallinflowchannelvelu_;
+  Teuchos::RCP<LINALG::SerialDenseMatrix> wallinflowchannelvelv_;
+  Teuchos::RCP<LINALG::SerialDenseMatrix> wallinflowchannelvelw_;
 
   //! first order momentum
   Teuchos::RCP<LINALG::SerialDenseMatrix> vertinflowu_;
