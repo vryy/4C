@@ -6,7 +6,7 @@
  *----------------------------------------------------------------------*/
 void DRT::UTILS::ComputeStructure3DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
-  const Epetra_Map* rowmap = dis.DofRowMap();
+  const Epetra_Map* rowmap = dis.DofRowMap(0);
   const int lrows = rowmap->NumMyElements();
   double* mode[6];
   for (int i=0; i<dimns; ++i) mode[i] = &(ns[i*lrows]);
@@ -69,7 +69,7 @@ void DRT::UTILS::ComputeStructure3DNullSpace( DRT::Discretization & dis, std::ve
     {
       DRT::Node* actnode = dis.lRowNode(i);
       const double* x = actnode->X();
-      vector<int> dofs = dis.Dof(actnode);
+      vector<int> dofs = dis.Dof(0,actnode);  // use current dofset
       for (unsigned j=0; j<dofs.size(); ++j)
       {
         const int dof = dofs[j];
@@ -141,7 +141,7 @@ void DRT::UTILS::ComputeStructure3DNullSpace( DRT::Discretization & dis, std::ve
  *----------------------------------------------------------------------*/
 void DRT::UTILS::ComputeStructure2DNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
-  const Epetra_Map* rowmap = dis.DofRowMap();
+  const Epetra_Map* rowmap = dis.DofRowMap(0);
   const int lrows = rowmap->NumMyElements();
   double* mode[6];
   for (int i=0; i<dimns; ++i) mode[i] = &(ns[i*lrows]);
@@ -154,7 +154,7 @@ void DRT::UTILS::ComputeStructure2DNullSpace( DRT::Discretization & dis, std::ve
     {
       DRT::Node* actnode = dis.lRowNode(i);
       const double* x = actnode->X();
-      vector<int> dofs = dis.Dof(actnode);
+      vector<int> dofs = dis.Dof(0,actnode);
       for (unsigned j=0; j<dofs.size(); ++j)
       {
         const int dof = dofs[j];

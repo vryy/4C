@@ -156,7 +156,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   mllist.set<RCP<vector<double> > >("nullspace",null);
   // ML would not tolerate this rcp-ptr in its list otherwise
   mllist.set<bool>("ML validate parameter list",false);
-  const Epetra_Map* rowmap = DofRowMap();
+  const Epetra_Map* rowmap = DofRowMap(0);
 
 #if 0
   // get the first element of the discretization
@@ -267,7 +267,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   for (int i=0; i<NumMyRowNodes(); ++i)
     for (int j=0; j<3; ++j) x0send[j] += lRowNode(i)->X()[j];
   Comm().SumAll(x0send,x0,3);
-  for (int i=0; i<3; ++i) x0[i] /= NumGlobalNodes();
+  for (int i=0; i<3; ++i)
+      x0[i] /= NumGlobalNodes();
 
   dwele->ElementType().ComputeNullSpace( *this, *ns, x0, numdf, dimns );
 }

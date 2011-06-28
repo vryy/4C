@@ -236,14 +236,15 @@ TSI::Monolithic::Monolithic(
 
   cout << "solver_->Params()\n" << solver_->Params() << endl;
 
+  // TODO handling of flip flag???
   // describe rigid body mode
   StructureField().Discretization()->ComputeNullSpaceIfNecessary(
-                                       solver_->Params()
+                                       solver_->Params().sublist("PREC1")
                                        );
-//  // TODO maybe using ML 2nd discretisation is necessary, too
-//  ThermoField().Discretization()->ComputeNullSpaceIfNecessary(
-//                                    solver_->Params()
-//                                    );
+  // TODO maybe using ML 2nd discretisation is necessary, too
+  ThermoField().Discretization()->ComputeNullSpaceIfNecessary(
+                                    solver_->Params().sublist("PREC2")
+                                    );
 
 #endif
 
