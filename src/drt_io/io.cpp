@@ -657,8 +657,12 @@ void IO::DiscretizationWriter::WriteDouble(const string name, const double value
 
   if (dis_->Comm().MyPID() == 0)
   {
-    output_->ControlFile()
-      << "    " << name << " = " << value << "\n\n" << std::flush;
+    // using a local stringstream we make sure that we do not change
+    // the output formatting of control file permanently
+    stringstream s;
+     s<< "    " << name << " = " << std::scientific << std::setprecision(16)
+      << value << "\n\n" << std::flush;
+    output_->ControlFile()<<s.str() << std::flush;
   }
 
 #endif
