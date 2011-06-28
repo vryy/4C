@@ -206,6 +206,8 @@ public:
 
   const std::map<plain_int_set, Teuchos::RCP<Edge> > & Edges() const { return edges_; }
 
+  void CreateSideIds();
+
 private:
 
   void DumpGmsh( std::ofstream & file, const std::vector<Node*> & nodes, char elementtype );
@@ -221,28 +223,55 @@ private:
 
   GEO::CUT::Line * NewLineInternal( Point* p1, Point* p2, Side * cut_side1, Side * cut_side2, Element * cut_element );
 
+  /// setup phase flag
   bool setup_;
+
+  /// options container
   const Options & options_;
+
+  /// mesh dependent point lookup norm
   double norm_;
+
+  /// shared point storage with geometry based access (octtree)
   Teuchos::RCP<PointPool> pp_;
+
+  /// bounding box of this mesh
   BoundingBox bb_;
+
+  /// (output) flag for cut mesh
   bool cutmesh_;
 
-  //std::list<Teuchos::RCP<Point> > points_;
+  //! @name Containers that hold all those mesh objects
+  /// Plain pointers are used within the library. Memory management is done here.
+
   std::list<Teuchos::RCP<Line > > lines_;
   std::list<Teuchos::RCP<Facet> > facets_;
   std::list<Teuchos::RCP<VolumeCell> > cells_;
   std::list<Teuchos::RCP<BoundaryCell> > boundarycells_;
   std::list<Teuchos::RCP<IntegrationCell> > integrationcells_;
 
+  /// nodes by unique id
   std::map<int, Teuchos::RCP<Node> > nodes_;
+
+  /// edges by set of nodal ids
   std::map<plain_int_set, Teuchos::RCP<Edge> > edges_;
+
+  /// sides by set of nodal ids
   std::map<plain_int_set, Teuchos::RCP<Side> > sides_;
+
+  /// cut side with (non-unique) side id > -1
   std::map<int, std::vector<Side*> > cut_sides_;
+
+  /// elements by unique id
   std::map<int, Teuchos::RCP<Element> > elements_;
 
+  /// internally generated nodes by nodal ids of element nodes
   std::map<plain_int_set, Node*> shadow_nodes_;
+
+  /// internally generated element (quadratic to linear conversation)
   std::list<Teuchos::RCP<Element> > shadow_elements_;
+
+  //@}
 };
 
 

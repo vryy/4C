@@ -1946,3 +1946,45 @@ bool GEO::CUT::Mesh::WithinBB( Element & element )
 {
   return bb_.Within( norm_, element );
 }
+
+void GEO::CUT::Mesh::CreateSideIds()
+{
+#if 0
+  int localmaxid = cut_sides_.rbegin()->first;
+  int globalmaxid;
+
+  int err = MPI_Allreduce( &localmaxid, &globalmaxid, 1, MPI_INT, MPI_MAX, comm );
+  if ( err!=0 )
+    throw std::runtime_error( "mpi error" );
+
+  int myrank;
+  int numproc;
+  MPI_Comm_rank( comm, &myrank );
+  MPI_Comm_size( comm, &numproc );
+
+  //std::vector<int>
+#endif
+
+  int lastid = 0;
+  if ( cut_sides_.size() > 0 )
+  {
+    lastid = cut_sides_.rbegin()->first;
+  }
+
+  //int numelementsides = sides_.size() - cut_sides_.size();
+
+  for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=sides_.begin();
+        i!=sides_.end();
+        ++i )
+  {
+    Side * s = &*i->second;
+    if ( s->Id() < 0 )
+    {
+      lastid += 1;
+      s->SetId( lastid );
+      cut_sides_[lastid].push_back( s );
+    }
+  }
+
+  cutmesh_ = true;
+}

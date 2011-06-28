@@ -41,7 +41,6 @@ public:
 
   int Id() const { return sid_; }
 
-  // debug only
   void SetId( int sid ) { sid_ = sid; }
 
   bool IsCutSide() { return sid_ > -1; }
