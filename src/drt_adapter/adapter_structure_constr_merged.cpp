@@ -139,10 +139,12 @@ RCP<const Epetra_Map> ADAPTER::StructureConstrMerged::DofRowMap()
 RCP<LINALG::SparseMatrix> ADAPTER::StructureConstrMerged::SystemMatrix()
 {
   //create empty large matrix and get small ones from structure and constraints
-  RCP<LINALG::SparseMatrix> mergedmatrix = rcp(new LINALG::SparseMatrix(*dofrowmap_,dofrowmap_->NumMyElements()));
+  RCP<LINALG::SparseMatrix> mergedmatrix = rcp(new LINALG::SparseMatrix(*dofrowmap_, 81));
   RCP<LINALG::SparseMatrix> strustiff = structure_->SystemMatrix();
+  strustiff->Complete();
   
   RCP<LINALG::SparseOperator> constiff = structure_->GetConstraintManager()->GetConstrMatrix();
+  constiff->Complete();
 
   // Add matrices together
   mergedmatrix -> Add(*strustiff,false,1.0,0.0);

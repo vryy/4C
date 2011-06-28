@@ -1008,7 +1008,8 @@ void FSI::MonolithicFluidSplit::PrepareTimeStep()
 
   PrintHeader();
 
-  StructureField().SystemMatrix()->Reset();
+  if (StructureField().GetSTCAlgo() != INPAR::STR::stc_none)
+    StructureField().SystemMatrix()->Reset();
   StructureField().PrepareTimeStep();
   FluidField().    PrepareTimeStep();
   AleField().      PrepareTimeStep();
