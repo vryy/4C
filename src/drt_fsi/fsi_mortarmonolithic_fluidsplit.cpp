@@ -1020,8 +1020,10 @@ void FSI::MortarMonolithicFluidSplit::Update()
 
     slideale_->EvaluateMortar(StructureField().ExtractInterfaceDispnp(), iprojdisp_, coupsfm_);
     slideale_->EvaluateFluidMortar(idispale,iprojdisp_);
-    
-    Teuchos::RCP<Epetra_Vector> acx = icoupfa_.MasterToSlave(iprojdisp_);
+
+    RCP<Epetra_Vector> temp = rcp(new Epetra_Vector(*iprojdisp_));
+    temp->ReplaceMap(idispale->Map());
+    Teuchos::RCP<Epetra_Vector> acx = icoupfa_.MasterToSlave(temp);
     AleField().ApplyInterfaceDisplacements(acx);
     FluidField().ApplyMeshDisplacement(AleToFluid(AleField().ExtractDisplacement()));
 
@@ -1089,7 +1091,8 @@ void FSI::MortarMonolithicFluidSplit::PrepareTimeStep()
 
   PrintHeader();
 
-  StructureField().SystemMatrix()->Reset();
+  if (aleproj_!= INPAR::FSI::ALEprojection_none)
+    StructureField().SystemMatrix()->Reset();
   StructureField().PrepareTimeStep();
   FluidField().    PrepareTimeStep();
   AleField().      PrepareTimeStep();
