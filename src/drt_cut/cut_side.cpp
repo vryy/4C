@@ -541,6 +541,23 @@ bool GEO::CUT::Side::HaveCommonEdge( Side & side )
   return false;
 }
 
+GEO::CUT::Element * GEO::CUT::Side::CommonElement( Side * other )
+{
+  plain_element_set intersection;
+  std::set_intersection( elements_.begin(), elements_.end(),
+                         other->elements_.begin(), other->elements_.end(),
+                         std::inserter( intersection, intersection.begin() ) );
+  switch ( intersection.size() )
+  {
+  case 0:
+    return NULL;
+  case 1:
+    return *intersection.begin();
+  default:
+    throw std::runtime_error( "sides with more than one element in common" );
+  }
+}
+
 void GEO::CUT::Side::Print()
 {
   std::cout << "[ ";

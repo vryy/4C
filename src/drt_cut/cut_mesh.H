@@ -208,6 +208,8 @@ public:
 
   void CreateSideIds();
 
+  void AssignOtherVolumeCells( const Mesh & other );
+
 private:
 
   void DumpGmsh( std::ofstream & file, const std::vector<Node*> & nodes, char elementtype );

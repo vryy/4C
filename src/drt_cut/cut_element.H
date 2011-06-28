@@ -116,6 +116,8 @@ public:
 
   void DumpFacets();
 
+  void AssignOtherVolumeCell( VolumeCell * vc ) { cells_.insert( vc ); }
+
 protected:
 
   //const std::vector<Side*> & Sides() { return sides_; }

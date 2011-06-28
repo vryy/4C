@@ -3,6 +3,8 @@
 #include <iostream>
 #include <iterator>
 
+#include <boost/bind.hpp>
+
 #include "cut_mesh.H"
 
 #include "cut_creator.H"
@@ -1987,4 +1989,50 @@ void GEO::CUT::Mesh::CreateSideIds()
   }
 
   cutmesh_ = true;
+}
+
+void GEO::CUT::Mesh::AssignOtherVolumeCells( const Mesh & other )
+{
+  const std::list<Teuchos::RCP<VolumeCell> > & other_cells = other.VolumeCells();
+  plain_volumecell_set cells;
+  for ( std::list<Teuchos::RCP<VolumeCell> >::const_iterator i=other_cells.begin();
+        i!=other_cells.end();
+        ++i )
+  {
+    VolumeCell * vc = &**i;
+
+    const plain_facet_set & facets = vc->Facets();
+    plain_facet_set cut_facets;
+    std::remove_copy_if( facets.begin(), facets.end(),
+                         std::inserter( cut_facets, cut_facets.begin() ),
+                         not boost::bind( &Facet::OnCutSide, _1 ) );
+
+    plain_side_set cut_sides;
+    std::transform( cut_facets.begin(), cut_facets.end(),
+                    std::inserter( cut_sides, cut_sides.begin() ),
+                    boost::bind( &Facet::ParentSide, _1 ) );
+
+    if ( cut_sides.size() > 1 )
+    {
+      plain_side_set::iterator i = cut_sides.begin();
+      Side * s1 = *i;
+      ++i;
+      Side * s2 = *i;
+      Element * e = s1->CommonElement( s2 );
+      if ( e==NULL )
+        throw std::runtime_error( "no common element on cut sides" );
+      e->AssignOtherVolumeCell( vc );
+    }
+    else
+    {
+      cells.insert( vc );
+    }
+  }
+
+  if ( cells.size() > 0 )
+  {
+    std::stringstream str;
+    str << cells.size() << " volume cells left. Need to handle those.";
+    throw std::runtime_error( str.str() );
+  }
 }

@@ -33,4 +33,6 @@ void test_cut_volumes()
   mesh2.Cut( mesh1, elements_done );
 
   cutmesh( mesh1 );
+
+  mesh2.AssignOtherVolumeCells( mesh1 );
 }

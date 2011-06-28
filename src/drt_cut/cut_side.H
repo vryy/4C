@@ -97,6 +97,8 @@ public:
 
   bool HaveCommonEdge( Side & side );
 
+  Element * CommonElement( Side * other );
+
 //   virtual void ExchangeFacetSide( Side * side, bool cutsurface ) = 0;
 
   virtual void AddPoint( Point * cut_point );
