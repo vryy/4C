@@ -17,6 +17,7 @@ Maintainer: Michael Gee
 
 #include <Teuchos_RefCountPtr.hpp>
 
+
 class Epetra_Vector;
 
 namespace DRT
@@ -34,14 +35,27 @@ namespace LINALG
   class SparseOperator;
 }
 
+namespace IO
+{
+  class DiscretizationWriter;
+}
+
 namespace PATSPEC
 {
 
-  void PatientSpecificGeometry(DRT::Discretization& dis);
+  void PatientSpecificGeometry(DRT::Discretization& dis,
+			       Teuchos::RCP<IO::DiscretizationWriter> output);
 
-  void ComputeEleNormalizedLumenDistance(DRT::Discretization& dis);
+  void ComputeEleNormalizedLumenDistance(DRT::Discretization& dis,
+					 Teuchos::RCP<IO::DiscretizationWriter> output);
 
-  void ComputeEleLocalRadius(DRT::Discretization& dis);
+  void ComputeEleLocalRadius(DRT::Discretization& dis,
+			     Teuchos::RCP<IO::DiscretizationWriter> output);
+
+  std::vector<double> GetCenterline(std::string filename);
+
+  void ComputeEleStrength(DRT::Discretization& dis, 
+			  Teuchos::RCP<IO::DiscretizationWriter> output);
 
   void GetILTDistance(const int eleid, 
                       Teuchos::ParameterList& params, 
@@ -54,6 +68,8 @@ namespace PATSPEC
   void CheckEmbeddingTissue(DRT::Discretization& discret,
                             Teuchos::RCP<LINALG::SparseOperator> stiff,
                             Teuchos::RCP<Epetra_Vector> fint);
+
+
 
 }
 #endif /* PATSPEC_H */

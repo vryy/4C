@@ -633,6 +633,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                             "filename of file containing centerline points",
                             &ps);
 
+  setStringToIntegralParameter<int>("CALCSTRENGTH","No","Calculate strength on/off",yesnotuple,yesnovalue,&ps);
+  DoubleParameter("AAA_SUBRENDIA",22.01,"subrenal diameter of the AAA",&ps);
+  setStringToIntegralParameter<int>("FAMILYHIST","No","Does the patient have AAA family history",yesnotuple,yesnovalue,&ps);
+  setStringToIntegralParameter<int>("MALE_PATIENT","Yes","Is the patient a male?",yesnotuple,yesnovalue,&ps);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& io = list->sublist("IO",false,"");

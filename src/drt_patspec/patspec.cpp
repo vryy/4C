@@ -18,6 +18,7 @@ Maintainer: Michael Gee
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/global_inp_control2.H"
 #include <iostream>
+#include "../drt_io/io.H"
 
 using namespace std;
 
@@ -25,7 +26,8 @@ using namespace std;
 /*----------------------------------------------------------------------*
  |                                                             gee 03/10|
  *----------------------------------------------------------------------*/
-void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis)
+void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis,
+				      RCP<IO::DiscretizationWriter> output)
 {
   if (!dis.Comm().MyPID())
   {
@@ -63,13 +65,26 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis)
 
   int gfoundit = 0;
   dis.Comm().SumAll(&lfoundit,&gfoundit,1);
-  if (gfoundit)
+
+  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+
+  int calc_strength  = DRT::INPUT::IntegralValue<int>(pslist,"CALCSTRENGTH");
+
+  output->NewStep(0, 0.0);
+  if (gfoundit or calc_strength)
   {
     if (!dis.Comm().MyPID())
       cout << "Computing distance functions...\n";
-    PATSPEC::ComputeEleNormalizedLumenDistance(dis);
-    PATSPEC::ComputeEleLocalRadius(dis);
+    PATSPEC::ComputeEleNormalizedLumenDistance(dis, output);
+    PATSPEC::ComputeEleLocalRadius(dis, output);
 
+  }
+
+  if (calc_strength)
+  {
+    if (!dis.Comm().MyPID())
+      cout << "Computing strength model...\n";
+    PATSPEC::ComputeEleStrength(dis, output);
   }
   //-------------------------------------------------------------------------
   
@@ -159,11 +174,115 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis)
 }
 
 
+/*----------------------------------------------------------------------*
+ |                                                          amaier 07/11|
+ *----------------------------------------------------------------------*/
+void PATSPEC::ComputeEleStrength(DRT::Discretization& dis,  
+				 RCP<IO::DiscretizationWriter> output)
+{
+  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+  double subrendia = pslist.get<double>("AAA_SUBRENDIA");
+  int is_male  = DRT::INPUT::IntegralValue<int>(pslist,"MALE_PATIENT");
+  int has_familyhist  = DRT::INPUT::IntegralValue<int>(pslist,"FAMILYHIST");
+  double spatialconst = 922000.0; //spatial constant strength contrib
+				 //acc. Vande Geest [Pa]
+
+  if (!dis.Comm().MyPID())
+  {
+    if (subrendia == 22.01) cout << "Subrenal diameter not specified, taking default value (22mm).\n";
+    else printf("Subrenal diameter %4.2f mm \n", subrendia);
+    
+    if (is_male) printf("Male patient.\n");
+    else printf("Female patient.\n");
+    
+    if (!has_familyhist) printf("No AAA familiy history.\n");
+    else printf("Patient has AAA family history!!!\n");
+  }
+
+ 
+  if (has_familyhist) spatialconst -= 213000;
+  if (!is_male) spatialconst -= 193000;
+
+  RCP<Epetra_Vector> elestrength = LINALG::CreateVector(*(dis.ElementRowMap()),true);
+
+  vector<DRT::Condition*> mypatspeccond;
+  dis.GetCondition("PatientSpecificData", mypatspeccond);
+
+  if (!mypatspeccond.size()) dserror("Cannot find the Patient Specific Data Conditions :-(");
+
+
+  for(unsigned int i=0; i<mypatspeccond.size(); ++i)
+  {
+    const Epetra_Vector* ilt = mypatspeccond[i]->Get<Epetra_Vector>("normalized ilt thickness");
+    if (ilt)
+    {
+      for (int j=0; j<elestrength->MyLength(); ++j)
+      {
+	(*elestrength)[j] = spatialconst - 379000 * (pow(((*ilt)[ilt->Map().LID(dis.ElementRowMap()->GID(j))]/10),0.5) - 0.81); //from Vande Geest strength formula
+      }
+    }
+  }
+  
+  for(unsigned int i=0; i<mypatspeccond.size(); ++i)
+  {
+    const Epetra_Vector* locrad = mypatspeccond[i]->Get<Epetra_Vector>("local radius");
+    if (locrad)
+    {
+      for (int j=0; j< elestrength->MyLength(); ++j)
+      {
+	(*elestrength)[j] -= 15600 * ( 2 * (*locrad)[locrad->Map().LID(dis.ElementRowMap()->GID(j))]/subrendia - 2.46); //from Vande Geeststrength formula
+      }
+    }
+  }
+
+  /*  // sort elements
+  RCP<Epetra_Vector> strength = LINALG::CreateVector(*(dis.ElementRowMap()),true);
+  for (int i=0; i<dis.ElementRowMap()->NumMyElements(); ++i)
+  {
+    (*strength)[i] = (*elestrength)[dis.ElementRowMap()->GID(i)];
+    }*/
+
+  RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis.ElementColMap()),true);
+  LINALG::Export(*elestrength,*tmp);
+  elestrength = tmp;
+
+
+  // put this column vector of element strength in a condition and store in
+  // discretization
+  Teuchos::RCP<DRT::Condition> cond = Teuchos::rcp(
+    new DRT::Condition(0,DRT::Condition::PatientSpecificData,false,DRT::Condition::Volume));
+  cond->Add("elestrength",*elestrength);
+
+  // check whether discretization has been filled before putting ocndition to dis
+  bool filled = dis.Filled();
+  dis.SetCondition("PatientSpecificData",cond);
+  if (filled && !dis.Filled()) dis.FillComplete();
+  
+  // do the strength output
+  IO::DiscretizationWriter::VectorType vt= IO::DiscretizationWriter::elementvector;
+  output->WriteVector("strength", elestrength, vt);
+
+  // output of the eleID
+  RCP<Epetra_Vector> eleID = LINALG::CreateVector(*(dis.ElementRowMap()),true);
+  for (int i=0; i<eleID->MyLength(); ++i)
+  {
+    (*eleID)[i] = (dis.ElementRowMap()->GID(i))+1;
+  }
+  LINALG::Export(*eleID,*tmp);
+  eleID = tmp;
+  output->WriteVector("eleID", eleID, vt);
+  
+  if (!dis.Comm().MyPID())
+    printf("Strength calculation completed.\n"); 
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |                                                             gee 03/10|
  *----------------------------------------------------------------------*/
-void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis)
+void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis,
+						RCP<IO::DiscretizationWriter> output)
 {
   // find out whether we have a orthopressure or FSI condition
   vector<DRT::Condition*> conds;
@@ -202,21 +321,6 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis)
       allnodes.insert((*nodes)[j]);
   }
   
-/*
-  for (int i=0; i<dis.Comm().NumProc(); ++i)
-  {
-    if (i == dis.Comm().MyPID())
-    {
-      set<int>::iterator fool;
-      for (fool=allnodes.begin(); fool != allnodes.end(); ++fool)
-        cout << "Proc " << i << " Node " << *fool << endl;
-      cout << "Proc " << i << " sizeof allnodes " << (int)allnodes.size() << endl;
-      fflush(stdout);
-    }
-    dis.Comm().Barrier();
-  }
-*/
-
   // create coordinates for all these nodes
   const int nnodes = (int)allnodes.size();
   vector<double> lcoords(nnodes*3,0.0);
@@ -239,19 +343,6 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis)
   dis.Comm().SumAll(&lcoords[0],&gcoords[0],nnodes*3);
   lcoords.clear();
   allnodes.clear();
-
-/*  
-  for (int i=0; i<dis.Comm().NumProc(); ++i)
-  {
-    if (i == dis.Comm().MyPID())
-    {
-      for (int j=0; j<gcoords.size(); ++j)
-        printf("Proc %d Coord %15.10e\n",i,gcoords[j]);
-      fflush(stdout);
-    }
-    dis.Comm().Barrier();
-  }
-*/
 
   // compute distance of all of my nodes to these nodes
   // create vector for nodal values of ilt thickness
@@ -298,6 +389,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis)
     mean /= actele->NumNode();
     (*iltele)[i] = mean;
   }
+
   tmp = LINALG::CreateVector(*(dis.ElementColMap()),true);
   LINALG::Export(*iltele,*tmp);
   iltele = tmp;
@@ -315,11 +407,14 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis)
   bool filled = dis.Filled();
   dis.SetCondition("PatientSpecificData",cond);
   if (filled && !dis.Filled()) dis.FillComplete();
-    
+ 
+  IO::DiscretizationWriter::VectorType vt= IO::DiscretizationWriter::elementvector;
+  output->WriteVector("thrombus_thickness", iltele, vt); 
   
   if (!dis.Comm().MyPID())
     printf("Normalized ILT thickness computed in %10.5e sec\n",timer.ElapsedTime());
   
+
   return;
 }
 
@@ -328,11 +423,12 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |                                                           maier 11/10|
  *----------------------------------------------------------------------*/
-void PATSPEC::ComputeEleLocalRadius(DRT::Discretization& dis)
+void PATSPEC::ComputeEleLocalRadius(DRT::Discretization& dis,
+				    RCP<IO::DiscretizationWriter> output)
 {
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
   string filename = pslist.get<string>("CENTERLINEFILE");
-  //cout << filename << endl;
+
   if (filename=="name.txt") 
   {
     if (!dis.Comm().MyPID())
@@ -359,32 +455,7 @@ void PATSPEC::ComputeEleLocalRadius(DRT::Discretization& dis)
     return;
   }
 
-  ifstream file (filename.c_str());
-  if (file == NULL) dserror ("Error opening centerline file");
-  string sLine;
-  char buffer[1000];
-  vector<double> clcoords;
-  while (getline(file, sLine))
-  {
-    if (sLine.size() != 0) 
-    {
-      strcpy(buffer,sLine.c_str());
-      char * pEnd;
-    //only get values if first occurence of line is double number
-      if (strtod(buffer, &pEnd) != 0.0)
-      {
-	//store x,y,z corrdinates
-	clcoords.push_back(strtod(buffer, &pEnd));
-	clcoords.push_back(strtod(pEnd, &pEnd));
-	clcoords.push_back(strtod(pEnd, NULL));
-      }
-    }
-  }
-  //  for (int i=0; i<(clcoords.size()/3); ++i) cout << clcoords[i*3] << " " << clcoords[i*3+1] << " " << clcoords[i*3+2] << " " << endl;
-
-  // measure time as there is a brute force search in here
-  Epetra_Time timer(dis.Comm());
-  timer.ResetStartTime();
+  vector<double> clcoords = PATSPEC::GetCenterline(filename);
 
   // compute distance of all of my nodes to the clpoints
   // create vector for nodal values of ilt thickness
@@ -444,13 +515,45 @@ void PATSPEC::ComputeEleLocalRadius(DRT::Discretization& dis)
   bool filled = dis.Filled();
   dis.SetCondition("PatientSpecificData",cond);
   if (filled && !dis.Filled()) dis.FillComplete();
+ 
+  IO::DiscretizationWriter::VectorType vt= IO::DiscretizationWriter::elementvector;
+  output->WriteVector("loc_radius", locradele, vt); 
 
   if (!dis.Comm().MyPID())
-    printf("Local radii computed in %10.5e sec\n",timer.ElapsedTime());
+    printf("Local radii computed.\n");
   
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |                                                           maier 06/11|
+ *----------------------------------------------------------------------*/
+vector<double> PATSPEC::GetCenterline(string filename)
+{
+
+  ifstream file (filename.c_str());
+  if (file == NULL) dserror ("Error opening centerline file");
+  string sLine;
+  char buffer[1000];
+  vector<double> clcoords;
+  while (getline(file, sLine))
+  {
+    if (sLine.size() != 0) 
+    {
+      strcpy(buffer,sLine.c_str());
+      char * pEnd;
+    //only get values if first occurence of line is double number
+      if (strtod(buffer, &pEnd) != 0.0)
+      {
+	//store x,y,z corrdinates
+	clcoords.push_back(strtod(buffer, &pEnd));
+	clcoords.push_back(strtod(pEnd, &pEnd));
+	clcoords.push_back(strtod(pEnd, NULL));
+      }
+    }
+  }
+  return clcoords;
+}
 
 /*----------------------------------------------------------------------*
  |                                                             gee 03/10|
@@ -532,8 +635,8 @@ void PATSPEC::CheckEmbeddingTissue(DRT::Discretization& discret,
   {
     const vector<int>* nodes = embedcond[i]->Nodes();
     double springstiff = embedcond[i]->GetDouble("stiff");
-    const string* model = embedcond[i]->Get<string>("model");
-    double offset = embedcond[i]->GetDouble("offset");
+    //const string* model = embedcond[i]->Get<string>("model");
+    //double offset = embedcond[i]->GetDouble("offset");
    
     
     const vector<int>& nds = *nodes;
@@ -575,7 +678,7 @@ void PATSPEC::CheckEmbeddingTissue(DRT::Discretization& discret,
 	   {
 	     //cout << "found" << endl;
 	     double val = springstiff*u[k];
-	     double dval = springstiff;
+	     //double dval = springstiff;
 	     fint->SumIntoGlobalValues(1,&val,&dofs[k]);
 	     stiff->Assemble(springstiff,dofs[k],dofs[k]); 
            }
