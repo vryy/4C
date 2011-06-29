@@ -152,7 +152,7 @@ AZREUSE        0                  // how often to recompute some preconditioners
 AZDROP         0.0                // drop tolerance for ILUT
 IFPACKFILL         1.0                // fill-in for ILUT
 IFPACKGFILL        0                  // graph fill for ILU
-AZTOL          1.0E-5             // tolerance in (un)scaled residual
+AZTOL          1.0E-8             // tolerance in (un)scaled residual
 AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER         1000               // max iterations
 AZSUB          40                 // size of krylov space for gmres
@@ -187,7 +187,7 @@ AZREUSE        0                  // how often to recompute some preconditioners
 AZDROP         0.0                // drop tolerance for ILUT
 IFPACKFILL         1.0                // fill-in for ILUT
 IFPACKGFILL        0                  // graph fill for ILU
-AZTOL          1.0E-6             // tolerance in (un)scaled residual
+AZTOL          1.0E-8             // tolerance in (un)scaled residual
 AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER         1000               // max iterations
 AZSUB          40                 // size of krylov space for gmres
@@ -277,14 +277,14 @@ FLUID  DIS 1 NODE 1 POSITION vely   NAME vely    VALUE -1.296035381e-02 TOLERANC
 FLUID  DIS 1 NODE 1 POSITION velz   NAME velz    VALUE  0.000000000e+00 TOLERANCE 1e-9
 FLUID  DIS 1 NODE 1 POSITION pressure   NAME pressure    VALUE  2.532671097e-02 TOLERANCE 1e-5
 SCATRA DIS 1 NODE 1 POSITION fluxx   NAME fluxx    VALUE  0.000000000e+00 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 1 POSITION fluxy   NAME fluxy    VALUE  1.296036332e-03 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 1 POSITION fluxy   NAME fluxy    VALUE  1.296035156e-03 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 1 POSITION fluxz   NAME fluxz    VALUE  0.0000000000000 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 1 POSITION phi1    NAME phi1     VALUE  3.490164264e-01 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 1 POSITION phi2    NAME phi2     VALUE  2.408568737e+00 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 1 POSITION phi3    NAME phi3     VALUE  4.119104621e+00 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 1 POSITION phi4    NAME phi4     VALUE  1.406960471e-04 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 1 POSITION phi4    NAME phi4     VALUE  1.406947320e-04 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 28 POSITION phi1   NAME phi1     VALUE  3.470234073e-01 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 28 POSITION phi4   NAME phi4     VALUE  1.297152597e-04 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 28 POSITION phi4   NAME phi4     VALUE  1.297139211e-04 TOLERANCE 1e-9
 ALE    DIS 1 NODE 1 POSITION dispx   NAME dispx    VALUE  0.000000000e+00 TOLERANCE 1e-11
 ALE    DIS 1 NODE 1 POSITION dispy   NAME dispy    VALUE  2.584662641e-05 TOLERANCE 1e-11
 ALE    DIS 1 NODE 1 POSITION dispz   NAME dispz    VALUE  0.000000000e+00 TOLERANCE 1e-11
