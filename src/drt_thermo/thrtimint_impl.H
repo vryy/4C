@@ -319,6 +319,13 @@ namespace THR
                                     LINALG::SparseMatrix& amatrix,
                                     RCP<Epetra_Map> activedofs,
                                     RCP<Epetra_Map> masterdofs);
+    
+    //! recover thermal lagrange multipliers from temperature
+    void InitializeThermLM(RCP<Epetra_Map> sthermdofs);
+    
+    //! recover thermal lagrange multipliers from temperature
+    void Recover(RCP<Epetra_Vector> tempi);
+    
     //@}
 
     //! @name Access methods

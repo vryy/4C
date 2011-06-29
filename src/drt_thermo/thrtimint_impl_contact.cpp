@@ -263,9 +263,16 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
     thermcontLM->Complete(*sdofs,*adofs);
     thermcontTEMP->Complete(*smdofs,*adofs);
     
+    // store thermcondLM (needed for monolithic tsi with contact)
+    thermcondLM_ = thermcontLM;
+    
     // assemble mechanical dissipation for master side
-    RCP<Epetra_Vector> mechdissrate = LINALG::CreateVector(*mdofs,true);
-    AssembleMechDissMaster(*mechdissrate);
+    RCP<Epetra_Vector> mechdissrate;
+    if(cmtman_->GetStrategy().Friction())
+    {  
+      mechdissrate = LINALG::CreateVector(*mdofs,true);
+      AssembleMechDissMaster(*mechdissrate);
+    }  
   
     /**********************************************************************/
     /* Modification of the stiff matrix and rhs towards thermo contact    */
@@ -291,8 +298,6 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
   
     // re-insert inverted diagonal into invd
     err = invd->ReplaceDiagonalValues(*diag);
-    // we cannot use this check, as we deliberately replaced zero entries
-    //if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
   
     // do the multiplication M^ = inv(D) * M
     RCP<LINALG::SparseMatrix> mhatmatrix;
@@ -366,6 +371,13 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
     RCP<LINALG::SparseMatrix> invda,mhata;
     LINALG::SplitMatrix2x2(invd,sdofs,tmpmap,adofs,idofs,invda,tmp1,tmp2,tmp3);
     LINALG::SplitMatrix2x2(mhatmatrix,adofs,idofs,mdofs,tmpmap,mhata,tmp1,tmp2,tmp3);
+    
+    // store some stuff for static condensation of LM
+    fs_   = fs;
+    invd_ = invd;
+    ksn_  = ksn;
+    ksm_  = ksm;
+    kss_  = kss;
   
     /**********************************************************************/
     /* Build the final K and f blocks                                     */
@@ -499,12 +511,15 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
     RCP<Epetra_Vector> fmmodexp = rcp(new Epetra_Vector(*problemrowmap));
     LINALG::Export(*fmmod,*fmmodexp);
     feffnew->Update(1.0,*fmmodexp,1.0);
-  
-    // add mechanical dissipation to feffnew
-    RCP<Epetra_Vector> mechdissrateexp = rcp(new Epetra_Vector(*problemrowmap));
-    LINALG::Export(*mechdissrate,*mechdissrateexp);
-    feffnew->Update(-1.0,*mechdissrateexp,1.0);
-  
+
+    // add mechanical dissipation to feffnew, only in frictional case
+    if (cmtman_->GetStrategy().Friction())
+    {  
+      RCP<Epetra_Vector> mechdissrateexp = rcp(new Epetra_Vector(*problemrowmap));
+      LINALG::Export(*mechdissrate,*mechdissrateexp);
+      feffnew->Update(-1.0,*mechdissrateexp,1.0);
+    }
+      
     // add i subvector to feffnew
     RCP<Epetra_Vector> fiexp;
     if (iset)
@@ -823,7 +838,7 @@ void THR::TimIntImpl::TransformA(LINALG::SparseMatrix& amatrix,
   
   /****************************************************** A-matrix ******/
   
-  // mortar matrix D in structural dofs 
+  // matrix A in structural dofs 
   RCP<Epetra_CrsMatrix> astruct = (cstrategy.AMatrix())->EpetraMatrix();
   
   // row and column map of mortar matrices
@@ -1172,8 +1187,11 @@ void THR::TimIntImpl::AssembleThermContCondition(LINALG::SparseMatrix& thermcont
   double delta = heattranss/(heattranss+heattransm);
 
   // with respect to Lagrange multipliers
-  thermcontLM.Add(amatrix,false,1.0,1.0);
-
+  if (cmtman_->GetStrategy().Friction())
+    thermcontLM.Add(amatrix,false,1.0,1.0);
+  else
+    thermcontLM.Add(dmatrix,false,1.0,1.0);
+    
   // with respect to temperature
   thermcontTEMP.Add(dmatrix,false,-beta,1.0);
   thermcontTEMP.Add(mmatrix,false,+beta,1.0);
@@ -1193,40 +1211,142 @@ void THR::TimIntImpl::AssembleThermContCondition(LINALG::SparseMatrix& thermcont
   mmatrix.Multiply(false,*fm,*MdotTemp);
   thermcontRHS.Update(+beta,*MdotTemp,1.0);
 
-  // loop over all interfaces
-  for (int m=0; m<(int)interface.size(); ++m)
-  {
-    // slave nodes (full map)
-    const RCP<Epetra_Map> slavenodes = interface[m]->SlaveRowNodes();
-
-    // loop over all slave nodes of the interface
-    for (int i=0;i<slavenodes->NumMyElements();++i)
+  // add mechanical dissipation only in the frictional case
+  if (cmtman_->GetStrategy().Friction())
+  {  
+    // loop over all interfaces
+    for (int m=0; m<(int)interface.size(); ++m)
     {
-      int gid = slavenodes->GID(i);
-      DRT::Node* node    = (interface[m]->Discret()).gNode(gid);
-      DRT::Node* nodeges = discretstruct_->gNode(gid);
-
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(node);
-
-      // row dof of temperature
-      int rowtemp = 0;
-      if(Comm().MyPID()==cnode->Owner())
-        rowtemp = discretstruct_->Dof(1,nodeges)[0];
-
-      Epetra_SerialDenseVector mechdissiprate(1);
-      vector<int> dof(1);
-      vector<int> owner(1);
-
-      mechdissiprate(0) = delta/dt*cnode->MechDiss();
-      dof[0] = rowtemp;
-      owner[0] = cnode->Owner();
-
-      // do assembly
-      if(abs(mechdissiprate(0)>1e-12 and cnode->Active()))
-        LINALG::Assemble(thermcontRHS, mechdissiprate, dof, owner);
+      // slave nodes (full map)
+      const RCP<Epetra_Map> slavenodes = interface[m]->SlaveRowNodes();
+  
+      // loop over all slave nodes of the interface
+      for (int i=0;i<slavenodes->NumMyElements();++i)
+      {
+        int gid = slavenodes->GID(i);
+        DRT::Node* node    = (interface[m]->Discret()).gNode(gid);
+        DRT::Node* nodeges = discretstruct_->gNode(gid);
+  
+        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+        CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(node);
+  
+        // row dof of temperature
+        int rowtemp = 0;
+        if(Comm().MyPID()==cnode->Owner())
+          rowtemp = discretstruct_->Dof(1,nodeges)[0];
+  
+        Epetra_SerialDenseVector mechdissiprate(1);
+        vector<int> dof(1);
+        vector<int> owner(1);
+  
+        mechdissiprate(0) = delta/dt*cnode->MechDiss();
+        dof[0] = rowtemp;
+        owner[0] = cnode->Owner();
+  
+        // do assembly
+        if(abs(mechdissiprate(0)>1e-12 and cnode->Active()))
+          LINALG::Assemble(thermcontRHS, mechdissiprate, dof, owner);
+      }
     }
   }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Initialize thermal LM                                       mgit 05/11|
+ *----------------------------------------------------------------------*/
+void THR::TimIntImpl::InitializeThermLM(RCP<Epetra_Map> sthermdofs)
+{
+ 
+  // initialize thermal LM
+  z_ = rcp(new Epetra_Vector(*sthermdofs));
+  
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | Recovery method                                            mgit 05/11|
+ *----------------------------------------------------------------------*/
+void THR::TimIntImpl::Recover(RCP<Epetra_Vector> tempi)
+{
+ 
+  // only in the case of contact
+  if(cmtman_==Teuchos::null)
+    return;
+  
+  // check if contact contributions are present,
+  // if not we can skip this routine to speed things up
+  // static cast of mortar strategy to contact strategy
+  MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
+  CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
+ 
+  if (!cstrategy.IsInContact() && !cstrategy.WasInContact() && !cstrategy.WasInContactLastTimeStep())
+    return;
+
+  // necessary maps 
+  // convert maps (from structure discretization to thermo discretization)
+  // slave-, active-, inactive-, master-, activemaster-, n- smdofs
+  RCP<Epetra_Map> sdofs,adofs,idofs,mdofs,amdofs,ndofs,smdofs;
+  ConvertMaps (sdofs,adofs,mdofs);
+ 
+  // check if contact contributions are present,
+  // speed up in the case of no contact
+  if(!(adofs->NumGlobalElements()))
+    return;
+
+  smdofs = LINALG::MergeMap(sdofs,mdofs,false);
+ 
+  // row map of thermal problem
+  RCP<Epetra_Map> problemrowmap = rcp(new Epetra_Map(*(discret_->DofRowMap())));
+
+  // split problemrowmap in n+am
+  ndofs = LINALG::SplitMap(*problemrowmap,*smdofs);
+
+    // double-check if this is a dual LM system
+    //if (shapefcn!=INPAR::MORTAR::shape_dual) dserror("Condensation only for dual LM");
+        
+    // extract slave temperatures from tempi
+    RCP<Epetra_Vector> tempis = rcp(new Epetra_Vector(*sdofs));
+    if (sdofs->NumGlobalElements()) LINALG::Export(*tempi, *tempis);
+
+   // extract master displacements from disi
+    RCP<Epetra_Vector> tempim = rcp(new Epetra_Vector(*mdofs));
+    if (mdofs->NumGlobalElements()) LINALG::Export(*tempi, *tempim);
+
+    // extract other displacements from disi
+    RCP<Epetra_Vector> tempin = rcp(new Epetra_Vector(*ndofs));
+    if (ndofs->NumGlobalElements()) LINALG::Export(*tempi,*tempin);
+
+    // condensation has been performed for active LM only,
+    // thus we construct a modified invd matrix here which
+    // only contains the active diagonal block
+    // (this automatically renders the incative LM to be zero)
+    RCP<LINALG::SparseMatrix> invda;
+    RCP<Epetra_Map> tempmap;
+    RCP<LINALG::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;
+    LINALG::SplitMatrix2x2(invd_,adofs,tempmap,adofs,tempmap,invda,tempmtx1,tempmtx2,tempmtx3);
+    RCP<LINALG::SparseMatrix> invdmod = rcp(new LINALG::SparseMatrix(*sdofs,10));
+    invdmod->Add(*invda,false,1.0,1.0);
+    invdmod->Complete();
+
+    /**********************************************************************/
+    /* Update Lagrange multipliers z_n+1                                  */
+    /**********************************************************************/
+
+    // full update
+    z_->Update(1.0,*fs_,0.0);
+    RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*sdofs));
+    kss_->Multiply(false,*tempis,*mod);
+    z_->Update(-1.0,*mod,1.0);
+    ksm_->Multiply(false,*tempim,*mod);
+    z_->Update(-1.0,*mod,1.0);
+    ksn_->Multiply(false,*tempin,*mod);
+    z_->Update(-1.0,*mod,1.0);
+    RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
+    invdmod->Multiply(true,*zcopy,*z_);
+    
   return;
 }
 

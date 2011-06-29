@@ -98,6 +98,13 @@ namespace ADAPTER
     {
       return thermo_->GetDBCMapExtractor();
     }
+    
+    /// thermal Lagrange multiplier (tsi with contact)
+    Teuchos::RCP<Epetra_Vector> ThermLM();
+  
+    /// matrix from thermal contact condition,
+    /// linearization with respect to LM (tsi with contact)
+    Teuchos::RCP<LINALG::SparseMatrix> ThermCondLMMatrix();
 
     /// External force at t_{n+1} (corresponds in structure to FExtn())
     Teuchos::RCP<const Epetra_Vector> FExtnp();
@@ -136,6 +143,12 @@ namespace ADAPTER
       Teuchos::RCP<MORTAR::ManagerBase> cmtman,
       Teuchos::RCP<DRT::Discretization> discretstruct
       );
+
+    /// Initialize thermal LM
+    void InitializeThermLM(Teuchos::RCP<Epetra_Map> sthermdofs);
+    
+    /// Recover thermal LM
+    void RecoverThermLM(Teuchos::RCP<Epetra_Vector> titerinc);
 
     /// update temperature increment after Newton step
     void UpdateNewton(

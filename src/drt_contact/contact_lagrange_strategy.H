@@ -220,6 +220,12 @@ class CoLagrangeStrategy : public CoAbstractStrategy
       return;
     }
     
+    /*!
+    \brief Return matrix T
+
+    */
+    RCP<LINALG::SparseMatrix> TMatrix() { return tmatrix_; }
+    
     //@}
     
     //! @name Empty methods

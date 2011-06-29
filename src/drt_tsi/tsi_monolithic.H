@@ -261,7 +261,54 @@ namespace TSI
 
     //! extractor to communicate between full monolithic map and block maps
     const LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
+    
+    //! apply contact to off diagonal block k_st
+    /*!
+    Within the condensation process of Lagrange multipliers, the structural 
+    LM are expressed in terms of the displacements, and, in the TSI case,
+    also in terms of the temperatures. This results in modification in the
+    off diagonal block k_st
+    */
+    void ApplyStructContact(Teuchos::RCP<LINALG::SparseMatrix>& k_st);
 
+    //! apply contact to off diagonal block k_ts
+    /*!
+    The contribution to the energy equation form thermal contact and the 
+    thermal contact condition both depend on displacement dofs (deformed 
+    configuration). This leads to additional entries in k_ts. Additionally,
+    the condensation process of thermal LM leads to contributions to k_ts.
+    */
+    void ApplyThermContact(Teuchos::RCP<LINALG::SparseMatrix>& k_ts );
+    
+    //! entries from linearized mortar matrices D and M in energy
+    //! equation (with respect to displacements)
+    void AssembleLinDM(LINALG::SparseMatrix& lindglobal,
+                       LINALG::SparseMatrix& linmglobal);
+    
+    //! entries from linearized thermal contact condition
+    //! (with respect to displacements)
+    void AssembleThermContCondition(LINALG::SparseMatrix& lindisglobal);
+
+    //! recover structural and thermal Lagrange multipliers
+    // this calls the separate fields
+    // plus takes into account the dependence on off diagonal blocks
+    void RecoverStructThermLM();
+
+    // convert maps form structure discretization to thermo discretization
+    // FIXGIT (this is twice)
+    void ConvertMaps(RCP<Epetra_Map>& slavedofs,
+                     RCP<Epetra_Map>& activedofs,
+                     RCP<Epetra_Map>& masterdofs);
+    
+    //! transform mortar matrices from structure dofs in thermo dofs
+    // This needs
+    // 1. Reduction of mortar matrices
+    // 2. Transformation into thermo dofs
+    // FIXGIT (this is twice)
+    void TransformDM(LINALG::SparseMatrix& dmatrix,
+                     LINALG::SparseMatrix& mmatrix,
+                     RCP<Epetra_Map>& slavedofs,
+                     RCP<Epetra_Map>& masterdofs);
     //@}
 
     //! @name General purpose algorithm members
@@ -331,6 +378,18 @@ namespace TSI
     Teuchos::RCP<Epetra_Vector> veln_;  //!< global velocities
                                         //!< \f${V}_{n+1}\f$
                                         //!< at \f$t_{n+1}\f$
+    
+    // contact manager
+    RCP<MORTAR::ManagerBase> cmtman_;
+    
+    RCP<Epetra_Vector> zstruct_ ;
+    RCP<Epetra_Vector> ztherm_;
+    RCP<LINALG::SparseMatrix> kst_;  // stiffness block K_ss (needed for LM)
+    RCP<LINALG::SparseMatrix> invd_;  // stiffness block K_ss (needed for LM)
+    RCP<LINALG::SparseMatrix> kts_;  // stiffness block K_ss (needed for LM)
+    RCP<LINALG::SparseMatrix> invdtherm_;  // stiffness block K_ss (needed for LM)
+    
+    
     //@}
 
   }; // Monolithic

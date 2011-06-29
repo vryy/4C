@@ -203,6 +203,21 @@ void ADAPTER::ThermoTimInt::TSIMatrix()
   thermo_->TSIMatrix();
 }
 
+/*----------------------------------------------------------------------*
+ | thermal LM                                                mgit 06/11 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ADAPTER::ThermoTimInt::ThermLM()
+{
+  return thermo_->ThermLM();
+}
+
+/*----------------------------------------------------------------------*
+ | matrix from linearized thermal contact condition           mgit 06/11 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::ThermoTimInt::ThermCondLMMatrix()
+{
+  return thermo_->ThermCondLMMatrix();
+}
 
 /*----------------------------------------------------------------------*
  | get discretisation                                       bborn 08/09 |
@@ -374,12 +389,30 @@ void ADAPTER::ThermoTimInt::ReadRestart(const int step)
 }
 
 /*----------------------------------------------------------------------*
- | Set structural contact                                     mgit 09/10 |
+ | set structural contact                                    mgit 09/10 |
  *----------------------------------------------------------------------*/
 void ADAPTER::ThermoTimInt:: SetStructContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
                                                Teuchos::RCP<DRT::Discretization> discretstruct)
 {
   thermo_->SetStructContact(cmtman,discretstruct);
+}
+
+/*----------------------------------------------------------------------*
+ | initialize thermal lagrange multiplier                    mgit 06/11 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::ThermoTimInt:: InitializeThermLM(Teuchos::RCP<Epetra_Map> sthermdofs)
+{
+  thermo_->InitializeThermLM(sthermdofs);
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | recover thermal lagrange multiplier                       mgit 06/11 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::ThermoTimInt:: RecoverThermLM(Teuchos::RCP<Epetra_Vector> titerinc)
+{
+  thermo_->Recover(titerinc);
+  return;
 }
 
 /*----------------------------------------------------------------------*

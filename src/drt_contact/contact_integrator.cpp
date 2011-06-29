@@ -51,6 +51,7 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_inpar/inpar_contact.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 08/08|
@@ -1985,15 +1986,18 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   if (cell==null)
     dserror("ERROR: IntegrateDerivCell3DAuxPlane called without integration cell");
   
-  // flag for thermo-structure-interaction with contact
+  // flags for thermo-structure-interaction with contact
   bool tsi = false;
     if (DRT::Problem::Instance()->ProblemType()=="tsi") tsi=true;
+  bool friction = false;     // friction 
+  bool thermolagmult = true; // thermal contact with or without LM
 
-  // thermal contact with or without LM  
-  bool thermolagmult = true;
   if(tsi)
   {
     const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
+
+    if(DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none)
+      friction = true;
     if (DRT::INPUT::IntegralValue<int>(input,"THERMOLAGMULT")==false)
       thermolagmult = false;
   }
@@ -2031,7 +2035,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
   RCP<LINALG::SerialDenseMatrix> lagmult;
   
   // get them in the case of tsi
-  if (tsi or wear)
+  if ((tsi and friction) or wear)
   {
     scoordold = rcp(new LINALG::SerialDenseMatrix(3,sele.NumNode()));
     sele.GetNodalCoordsOld(*scoordold);
@@ -2218,7 +2222,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     
     // evaluate matrix A for thermo-structure-interaction
     // in the case of using thermal lagrange multipliers
-    if (tsi and thermolagmult == true)
+    if ((tsi and friction) and thermolagmult == true)
     {
       // loop over all aseg matrix entries
       // !!! nrow represents the slave Lagrange multipliers !!!
@@ -2246,7 +2250,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
 
     // evaluate matrix B for thermo-structure-interaction
     // in the case of NOT using thermal lagrange multipliers
-    if (tsi and thermolagmult == false)
+    if ((tsi and friction) and thermolagmult == false)
     {
       // loop over all bseg matrix entries
       // !!! nrow represents the master shape functions     !!!
@@ -2319,7 +2323,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     double mechdiss = 0;
     double wearval = 0.0;
     
-    if(tsi or wear)
+    if((tsi and friction) or wear)
     {
       // tangent plane  
       Epetra_SerialDenseMatrix tanplane(3,3);
@@ -2375,7 +2379,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
       lmtan.Multiply('N','N',1,tanplane,lm,0.0);
 
       // evaluate mechanical dissipation
-      if (tsi)
+      if (tsi and friction)
       {  
         for (int i=0;i<3;i++)
           mechdiss += lmtan(i,0)*jumptan(i,0);
@@ -2577,7 +2581,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(
     // compute cell gap vector *******************************************
     
     // tsi with contact
-    if(tsi)
+    if(tsi and friction)
     {
       // compute cell mechanical dissipation / slave *********************
       // loop over all mdisssegs vector entries

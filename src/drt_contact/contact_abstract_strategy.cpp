@@ -764,8 +764,8 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
     // assemble wear vector
     if (wear_) interface_[i]->AssembleWear(*wearvector_);
     
-    // assemble matrix A for tsi with contact
-    if (tsi_)  interface_[i]->AssembleA(*amatrix_);
+    // assemble matrix A for tsi with frictional contact
+    if (tsi_ and friction_) interface_[i]->AssembleA(*amatrix_);
     
 #ifdef CONTACTFDNORMAL
     // FD check of normal derivatives

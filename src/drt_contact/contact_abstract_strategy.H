@@ -123,6 +123,24 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     */
     const RCP<Epetra_Map> SlaveRowDofs() { return gsdofrowmap_; }
+    
+    /*!
+    \brief Return global active dof row map
+
+    */
+    const RCP<Epetra_Map> ActiveRowDofs() { return gactivedofs_; }
+    
+    /*!
+    \brief Return global master dof row map
+
+    */
+    const RCP<Epetra_Map> MasterRowDofs() { return gmdofrowmap_; }
+    
+    /*!
+    \brief Return global slave dof row map
+
+    */
+    const RCP<Epetra_Map> SlaveMasterRowDofs() { return gsmdofrowmap_; }
 
     /*!
     \brief Return Lagrange multiplier vector (t_n+1)
@@ -269,6 +287,12 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     */
     RCP<LINALG::SparseMatrix> AMatrix() { return amatrix_; }
+
+    /*!
+    \brief Return matrix T
+
+    */
+    virtual RCP<LINALG::SparseMatrix> TMatrix() { return null; }
 
     //@}
 

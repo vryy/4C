@@ -48,6 +48,7 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_inpar/inpar_contact.H"
 
 
 /*----------------------------------------------------------------------*
@@ -213,10 +214,14 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
       // and matrix A and B
       if (DRT::Problem::Instance()->ProblemType()=="tsi")
       {  
-        integrator.AssembleMechDissSlave(Comm(),SlaveElement(),*mdisssegs);
-        integrator.AssembleMechDissMaster(Comm(),MasterElement(),*mdisssegm);
-        integrator.AssembleA(Comm(),SlaveElement(),*aseg);
-        integrator.AssembleB(Comm(),MasterElement(),*bseg);
+        const Teuchos::ParameterList& input = DRT::Problem::Instance()->MeshtyingAndContactParams();
+        if(DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(input,"FRICTION") != INPAR::CONTACT::friction_none)
+        {        
+          integrator.AssembleMechDissSlave(Comm(),SlaveElement(),*mdisssegs);
+          integrator.AssembleMechDissMaster(Comm(),MasterElement(),*mdisssegm);
+          integrator.AssembleA(Comm(),SlaveElement(),*aseg);
+          integrator.AssembleB(Comm(),MasterElement(),*bseg);
+        }
         
         // dserror 
         if (!CouplingInAuxPlane()) 
