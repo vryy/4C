@@ -392,6 +392,12 @@ namespace THR
     //! (SystemMatrix()/stiff_ in STR)
     Teuchos::RCP<LINALG::SparseMatrix> Tang() { return tang_; }
 
+    //! Return thermal Lagrange multiplier
+    Teuchos::RCP<Epetra_Vector> ThermLM() { return z_; }
+    
+    //! Return thermcondLM matrix
+    Teuchos::RCP<LINALG::SparseMatrix> ThermCondLMMatrix() { return thermcondLM_; }
+
     //! Return domain map
     const Epetra_Map& GetDomainMap() { return tang_->DomainMap(); }
 
@@ -516,7 +522,18 @@ namespace THR
     Teuchos::RCP<LINALG::SparseMatrix> tang_;
     //! capacity matrix (constant)
     //Teuchos::RCP<LINALG::SparseMatrix> capa_;
-
+    
+    // some RCP's needed for contact,
+    // will be moved to seperate class soon!
+    RCP<LINALG::SparseMatrix> thermcondLM_; // stiffness of thermal condition
+                                            // with respect to Lagrange multipliers
+    RCP<Epetra_Vector> z_;                  // thermal Lagrange multipliers
+    RCP<Epetra_Vector> fs_;                 // slave side effective heat fluxes (needed for LM)
+    RCP<LINALG::SparseMatrix> invd_;        // inverse of Mortar matrix D (needed for LM)
+    RCP<LINALG::SparseMatrix> ksn_;         // stiffness block K_sn (needed for LM)
+    RCP<LINALG::SparseMatrix> ksm_;         // stiffness block K_sm (needed for LM)
+    RCP<LINALG::SparseMatrix> kss_;         // stiffness block K_ss (needed for LM)
+    
     //@}
 
   };  // TimInt
