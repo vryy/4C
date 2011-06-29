@@ -439,6 +439,10 @@ void SCATRA::TimIntOneStepTheta::OutputRestart()
      output_->WriteVector("phinm", phinm_);
   }
 
+  // for elch problems with moving boundary
+  if (isale_)
+    output_->WriteVector("trueresidual", trueresidual_);
+
   // write additional restart data for galvanostatic applications
   if (IsElch(scatratype_))
   {
@@ -498,6 +502,10 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
   reader.ReadVector(phinp_, "phinp");
   reader.ReadVector(phin_,  "phin");
   reader.ReadVector(phidtn_,"phidtn");
+
+  // for elch problems with moving boundary
+  if(isale_)
+    reader.ReadVector(trueresidual_, "trueresidual");
 
   // phinm is needed for restart of level set problems
   if (scatratype_ == INPAR::SCATRA::scatratype_levelset)

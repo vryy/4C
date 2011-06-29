@@ -2085,7 +2085,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
           {
             cout<<"\nGALVANOSTATIC MODE:\n";
             cout<<"iteration "<<gstatnumite_<<" / "<<gstatitemax<<endl;
-            cout<<"  actual reaction current = "<<actualcurrent<<endl;
+            cout<<"  actual reaction current = "<<scientific<<actualcurrent<<endl;
             cout<<"  required total current  = "<<targetcurrent<<endl;
             cout<<"  negative residual (rhs) = "<<newtonrhs<<endl<<endl;
           }

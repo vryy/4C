@@ -66,6 +66,11 @@ namespace ADAPTER
         int step ///< step number where the calculation is continued
         );
 
+    /// provide access to algorithm parameters
+    virtual const Teuchos::ParameterList& AlgoParameters(){
+        return params_;
+    }
+
   private:
 
     /// problem-specific parameter list

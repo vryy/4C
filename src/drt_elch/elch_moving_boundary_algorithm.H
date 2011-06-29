@@ -52,6 +52,9 @@ namespace ELCH
     /// outer level ELCH time loop
     void TimeLoop();
 
+    /// read restart data
+    void ReadRestart(int step);
+
   protected:
 
     /// start a new time step

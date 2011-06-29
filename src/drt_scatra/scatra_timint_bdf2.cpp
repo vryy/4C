@@ -447,6 +447,10 @@ void SCATRA::TimIntBDF2::OutputRestart()
   output_->WriteVector("phin", phin_);
   output_->WriteVector("phinm", phinm_);
 
+  // for elch problems with moving boundary
+  if (isale_)
+    output_->WriteVector("trueresidual", trueresidual_);
+
   // write additional restart data for galvanostatic applications
   if (IsElch(scatratype_))
   {
@@ -506,6 +510,10 @@ void SCATRA::TimIntBDF2::ReadRestart(int step)
   reader.ReadVector(phinp_,"phinp");
   reader.ReadVector(phin_, "phin");
   reader.ReadVector(phinm_,"phinm");
+
+  // for elch problems with moving boundary
+  if(isale_)
+    reader.ReadVector(trueresidual_, "trueresidual");
 
   // restart for galvanostatic applications
   if (IsElch(scatratype_))

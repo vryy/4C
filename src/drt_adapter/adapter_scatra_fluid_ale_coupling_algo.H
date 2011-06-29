@@ -54,10 +54,10 @@ namespace ADAPTER
     /// virtual destructor to support polymorph destruction
     virtual ~ScaTraFluidAleCouplingAlgorithm();
 
-    /// read restart data
+    /// read restart data (pure virtual)
     virtual void ReadRestart(
         int step ///< step number where the calculation is continued
-        );
+        ) = 0;
 
     /// solve fluid-ale
     virtual void FluidAleNonlinearSolve(

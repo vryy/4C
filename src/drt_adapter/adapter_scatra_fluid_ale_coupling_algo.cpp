@@ -76,16 +76,6 @@ ADAPTER::ScaTraFluidAleCouplingAlgorithm::~ScaTraFluidAleCouplingAlgorithm()
 {
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void ADAPTER::ScaTraFluidAleCouplingAlgorithm::ReadRestart(int step)
-{
-  ScaTraFluidCouplingAlgorithm::ReadRestart(step);
-  AleField().ReadRestart(step); // add reading of ALE restart data
-
-  return;
-}
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

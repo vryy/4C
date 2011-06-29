@@ -458,6 +458,10 @@ void SCATRA::TimIntGenAlpha::OutputRestart()
   output_->WriteVector("phidtn", phidtn_);
   output_->WriteVector("phin",   phin_);
 
+  // for elch problems with moving boundary
+  if (isale_)
+    output_->WriteVector("trueresidual", trueresidual_);
+
   // write additional restart data for galvanostatic applications
   if (IsElch(scatratype_))
   {
@@ -510,6 +514,10 @@ void SCATRA::TimIntGenAlpha::ReadRestart(int step)
   reader.ReadVector(phin_,   "phin");
   reader.ReadVector(phidtnp_,"phidtnp");
   reader.ReadVector(phidtn_, "phidtn");
+
+  // for elch problems with moving boundary
+  if(isale_)
+    reader.ReadVector(trueresidual_, "trueresidual");
 
   // restart for galvanostatic applications
   if (IsElch(scatratype_))

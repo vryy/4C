@@ -53,7 +53,7 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
   if (Step()==0)
   {
     // write out initial state
-    //Output(); // do this to have ConditionID at all boundary conditions
+    Output();
 
     ScaTraField().OutputElectrodeInfo();
     ScaTraField().OutputMeanScalars();
@@ -61,6 +61,20 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
     // compute error for problems with analytical solution (initial field!)
     ScaTraField().EvaluateErrorComparedToAnalyticalSol();
   }
+
+
+  // transfer convective velocity = fluid velocity - grid velocity
+  ScaTraField().SetVelocityField(
+      FluidField().ConvectiveVel(), // = velnp - grid velocity
+      FluidField().Hist(),
+      Teuchos::null,
+      FluidField().Discretization()
+  );
+  // transfer moving mesh data
+  ScaTraField().ApplyMeshMovement(
+      FluidField().Dispnp(),
+      FluidField().Discretization()
+  );
 
   // time loop
   while (NotFinished())
@@ -229,6 +243,13 @@ void ELCH::MovingBoundaryAlgorithm::Output()
   // the discretizations, which in turn defines the dof number ordering of the
   // discretizations.
   FluidField().StatisticsAndOutput();
+  // additional vector needed for restarts:
+  int uprestart = AlgoParameters().get<int>("RESTARTEVRY");
+  if (uprestart != 0 && FluidField().Step() % uprestart == 0)
+  {
+    FluidField().DiscWriter().WriteVector("idispn",idispnp_);
+  }
+  // now the other physical fiels
   ScaTraField().Output();
   AleField().Output();
 
@@ -292,6 +313,23 @@ void ELCH::MovingBoundaryAlgorithm::ComputeInterfaceVectors(
   // id^{n+1} = id^{n} + \delta t vel_i
   idispnp->Update(1.0,*idispn_,0.0);
   idispnp->Update(Dt(),*iveln_,1.0);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ELCH::MovingBoundaryAlgorithm::ReadRestart(int step)
+{
+  ScaTraFluidCouplingAlgorithm::ReadRestart(step);
+
+  AleField().ReadRestart(step); // add reading of ALE restart data
+
+  // finally read isdispn which was written to the fluid restart data
+  IO::DiscretizationReader reader(FluidField().Discretization(),step);
+  reader.ReadVector(idispn_ ,"idispn");
+  reader.ReadVector(idispnp_,"idispn");
 
   return;
 }
