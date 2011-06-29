@@ -30,6 +30,8 @@ Maintainer: Caroline Danowski
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_material.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/material.H"
+#include "../drt_mat/matpar_parameter.H"
 #include "../drt_thermo/thermo_element.H"
 
 #ifdef PARALLEL
@@ -83,15 +85,18 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
   // have a pointer to that vector. Too bad.
   // So we search for a Fourier material and take the first one we find.
   // => matid from outside remains unused!
-  const int matnr =
-    DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_th_fourier_iso);
-  if (matnr==-1)
-    dserror("No isotropic Fourier material defined. Cannot generate thermo mesh.");
+  //const int matnr =
+  //  DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_th_fourier_iso);
+  //if (matnr==-1)
+  //  dserror("No isotropic Fourier material defined. Cannot generate thermo mesh.");
 
   // We need to set material and possibly other things to complete element setup.
   // This is again really ugly as we have to extract the actual
   // element type in order to access the material property
 
+  RCP<MAT::Material > mat = oldele->Material();
+  const int matnr = (mat->Parameter()->Id())+1;
+  
   // note: SetMaterial() was reimplemented by the thermo element!
 #if defined(D_THERMO)
       DRT::ELEMENTS::Thermo* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(newele.get());
