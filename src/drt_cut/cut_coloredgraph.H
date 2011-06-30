@@ -66,6 +66,7 @@ namespace GEO
         int color_split_;
       };
 
+      /// facet-line graph
       class Graph
       {
       public:
@@ -120,20 +121,31 @@ namespace GEO
 
         void SetSplit( int color_split ) { color_split_ = color_split; }
 
-//         void Split( int color_split ) { color_split_ = color_split; }
-
         void Split( Graph & connection, const std::vector<int> & split_trace, Graph & c1, Graph & c2 );
 
         bool ContainsTrace( const std::vector<int> & split_trace );
+
+        bool operator==( const Graph & other ) const
+        {
+          return color_split_ == other.color_split_ and graph_ == other.graph_;
+        }
+
+        bool operator!=( const Graph & other ) const
+        {
+          return not ( *this == other );
+        }
 
       private:
 
         void Fill( const std::vector<int> & split_trace, Graph & connection, int seed, Graph & c );
 
-        std::map<int, plain_int_set > graph_;
+        std::map<int, plain_int_set> graph_;
+
+        /// position where lines start
         int color_split_;
       };
 
+      /// One graph that represents the outside facets of one ore more volumes
       class Cycle
       {
         friend class CycleListIterator;
@@ -156,6 +168,8 @@ namespace GEO
 
         bool ContainsTrace( const std::vector<int> & split_trace )
         { return cycle_.ContainsTrace( split_trace ); }
+
+        Graph & operator()() { return cycle_; }
 
       private:
 
@@ -199,6 +213,7 @@ namespace GEO
         std::list<Cycle>::iterator i_;
       };
 
+      /// list of cycles
       class CycleList
       {
       public:

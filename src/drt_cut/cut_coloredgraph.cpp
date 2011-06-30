@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <fstream>
 #include <stdexcept>
 #include <stack>
 #include <queue>
@@ -112,22 +113,6 @@ void GEO::CUT::COLOREDGRAPH::Graph::TestClosed()
   }
 }
 
-void GEO::CUT::COLOREDGRAPH::Graph::TestSplit()
-{
-  for ( std::map<int, plain_int_set >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
-  {
-    int p = i->first;
-    if ( p >= color_split_ )
-    {
-      plain_int_set & row = i->second;
-      if ( row.size() > 2 )
-      {
-        throw std::runtime_error( "colored graph not properly split" );
-      }
-    }
-  }
-}
-
 void GEO::CUT::COLOREDGRAPH::Graph::TestFacets()
 {
   for ( std::map<int, plain_int_set >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
@@ -175,6 +160,40 @@ namespace GEO
 
       int FindFirstFreeFacet( Graph & graph, Graph & used, plain_int_set & free )
       {
+#if 0
+        for ( Graph::const_iterator i=cycle.begin(); i!=cycle.end(); ++i )
+        {
+          int f = i->first;
+          if ( f >= cycle.Split() )
+          {
+            break;
+          }
+          std::vector<int> cycle_wall;
+          std::vector<int> inside;
+
+          plain_int_set & row = graph[f];
+          for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
+          {
+            int line = *i;
+            plain_int_set & row = graph[line];
+            for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
+            {
+              int f = *i;
+              if ( cycle.count( f ) > 0 )
+              {
+                cycle_wall.push_back( f );
+              }
+              else if ( IsFree( used, free, f ) )
+              {
+                // This might be might also be outside the cycle. We cannot
+                // know that here.
+                inside.push_back( f );
+              }
+            }
+          }
+        }
+#endif
+
         for ( plain_int_set::iterator i=free.begin(); i!=free.end(); ++i )
         {
           int facet = *i;
@@ -267,11 +286,12 @@ namespace GEO
                           plain_int_set & free,
                           int facet,
                           std::vector<int> & visited,
-                          int & num_split_lines )
+                          std::vector<int> & split_trace )
       {
         std::vector<int> facet_stack;
         facet_stack.push_back( facet );
 
+        int num_split_lines = 0;
         std::vector<int> facet_color( graph.size(), 0 );
 
         while ( not facet_stack.empty() )
@@ -293,6 +313,28 @@ namespace GEO
               // test for success: only non-free lines are open
               if ( num_split_lines==0 )
               {
+                // build split_trace
+                for ( std::vector<int>::iterator i=visited.begin() + graph.Split();
+                      i!=visited.end();
+                      ++i )
+                {
+                  if ( *i == 1 )
+                  {
+                    int line = i - visited.begin();
+                    if ( not IsFree( used, free, line ) )
+                    {
+                      split_trace.push_back( line );
+                    }
+                  }
+                }
+                if ( split_trace.size()==0 )
+                {
+                  throw std::runtime_error( "no split trace" );
+                }
+
+                // See if those split lines form one loop. Just one.
+                // How?
+
                 return true;
               }
 
@@ -357,6 +399,21 @@ namespace GEO
         return false;
       }
 
+#ifdef DEBUGCUTLIBRARY
+
+      void DumpGraphPython( const std::string & name, Graph & g )
+      {
+        std::ofstream file( name.c_str() );
+        file << "color_split = " << g.Split() << "\n";
+        file << "graph = [";
+        for ( Graph::const_iterator i=g.begin(); i!=g.end(); ++i )
+        {
+          file << i->first << ",";
+        }
+        file << "]\n";
+      }
+
+#endif
     }
   }
 }
@@ -370,29 +427,11 @@ void GEO::CUT::COLOREDGRAPH::Graph::FindFreeFacets( Graph & graph,
 
   std::vector<int> visited( graph.size(), 0 );
 
-  int num_split_lines = 0;
-  if ( not VisitFacetDFS( graph, used, free, free_facet, visited, num_split_lines ) )
+  if ( not VisitFacetDFS( graph, used, free, free_facet, visited, split_trace ) )
   {
     throw std::runtime_error( "failed to find volume split" );
   }
 
-  for ( std::vector<int>::iterator i=visited.begin() + graph.Split();
-        i!=visited.end();
-        ++i )
-  {
-    if ( *i == 1 )
-    {
-      int line = i - visited.begin();
-      if ( not IsFree( used, free, line ) )
-      {
-        split_trace.push_back( line );
-      }
-    }
-  }
-  if ( split_trace.size()==0 )
-  {
-    throw std::runtime_error( "no split trace" );
-  }
   for ( std::vector<int>::iterator i=visited.begin();
         i!=visited.begin() + graph.Split();
         ++i )
@@ -455,13 +494,26 @@ void GEO::CUT::COLOREDGRAPH::Graph::Split( Graph & connection, const std::vector
 {
   // find lhs and rhs starting from split trace
 
-  int p = split_trace.front();
-  plain_int_set & row = at( p );
+  plain_int_set * row = NULL;
+  for ( std::vector<int>::const_iterator i=split_trace.begin();
+        i!=split_trace.end();
+        ++i )
+  {
+    int p = *i;
+    row = &at( p );
+    if ( row->size()==2 )
+    {
+      break;
+    }
+  }
 
-  if ( row.size()!=2 )
+  if ( row->size()!=2 )
+  {
+    // This might happen and it might be a valid split. How to deal with it?
     throw std::runtime_error( "expect two facets at line" );
+  }
 
-  plain_int_set::iterator i = row.begin();
+  plain_int_set::iterator i = row->begin();
   Fill( split_trace, connection, *i, c1 );
   ++i;
   Fill( split_trace, connection, *i, c2 );
@@ -569,36 +621,79 @@ void GEO::CUT::COLOREDGRAPH::CycleList::AddPoints( Graph & graph, Graph & used, 
   while ( free.size() > 0 )
   {
     Graph connection( graph.Split() );
+
+    // find connection graph and trace lines
     std::vector<int> split_trace;
     connection.FindFreeFacets( graph, used, free, split_trace );
 
-#if 0
-#ifdef DEBUGCUTLIBRARY
-    std::cout << "connection:\n";
-    connection.Print();
-#endif
-#endif
-
-    //connection.FindSplitTrace( split_trace );
-
-    bool found = false;
+    // There might be multiple matches. Only one of those is the one we are
+    // looking for.
+    std::vector<std::list<Cycle>::iterator> matching;
     for ( std::list<Cycle>::iterator i=cycles_.begin(); i!=cycles_.end(); ++i )
     {
       Cycle & c = *i;
-
-      // There can be just one graph that contains the trace. This prohibits self-cuts.
       if ( c.ContainsTrace( split_trace ) )
       {
-        Graph c1( graph.Split() );
-        Graph c2( graph.Split() );
+        matching.push_back( i );
+      }
+    }
 
-        c.Split( connection, split_trace, c1, c2 );
+    bool found = false;
 
-        cycles_.erase( i );
+    for ( std::vector<std::list<Cycle>::iterator>::iterator ilist=matching.begin();
+          ilist!=matching.end();
+          ++ilist )
+    {
+      Cycle & c = **ilist;
+
+      Graph c1( graph.Split() );
+      Graph c2( graph.Split() );
+
+#ifdef DEBUGCUTLIBRARY
+      DumpGraphPython( "cycle.py", c() );
+      DumpGraphPython( "connection.py", connection );
+#endif
+
+      c.Split( connection, split_trace, c1, c2 );
+
+#ifdef DEBUGCUTLIBRARY
+      DumpGraphPython( "cycle1.py", c1 );
+      DumpGraphPython( "cycle2.py", c2 );
+#endif
+
+      if ( c1 == c2 )
+      {
+        if ( matching.size()==1 )
+        {
+          PushBack( c1 );
+
+          throw std::runtime_error( "bad luck" );
+
+          cycles_.erase( *ilist );
+          found = true;
+          break;
+        }
+      }
+      else
+      {
+        // sanity test
+        for ( Graph::const_iterator i=c().begin(); i!=c().end(); ++i )
+        {
+          int f = i->first;
+          if ( f >= c().Split() )
+            break;
+          if ( connection.count( f )==0 and
+               c1.count( f ) > 0 and
+               c2.count( f ) > 0 )
+          {
+            throw std::runtime_error( "not a valid split" );
+          }
+        }
 
         PushBack( c1 );
         PushBack( c2 );
 
+        cycles_.erase( *ilist );
         found = true;
         break;
       }
@@ -623,5 +718,24 @@ void GEO::CUT::COLOREDGRAPH::CycleList::Print()
   {
     Cycle & c = *i;
     c.Print();
+  }
+}
+
+void GEO::CUT::COLOREDGRAPH::Graph::TestSplit()
+{
+  for ( std::map<int, plain_int_set >::iterator i=graph_.begin(); i!=graph_.end(); ++i )
+  {
+    int p = i->first;
+    if ( p >= color_split_ )
+    {
+      plain_int_set & row = i->second;
+      if ( row.size() > 2 )
+      {
+#ifdef DEBUGCUTLIBRARY
+        DumpGraphPython( "failedgraph.py", *this );
+#endif
+        throw std::runtime_error( "colored graph not properly split" );
+      }
+    }
   }
 }
