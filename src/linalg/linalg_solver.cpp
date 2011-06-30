@@ -413,7 +413,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     case INPAR::SOLVER::azsolv_BiCGSTAB: azlist.set("AZ_solver",AZ_bicgstab); break;
     case INPAR::SOLVER::azsolv_LU:       azlist.set("AZ_solver",AZ_lu);       break;
     case INPAR::SOLVER::azsolv_TFQMR:    azlist.set("AZ_solver",AZ_tfqmr);    break;
-    default: 
+    default:
     {
       cout << "flag " << DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE") << endl;
       dserror("Unknown solver for AztecOO");            break;
@@ -1665,7 +1665,7 @@ void LINALG::Solver::KrylovSolver::Solve()
     }
     else dserror("Aztec returned unknown nonzero status %d",(int)stat);
   }
-#else  
+#else
   if (status[AZ_why] != AZ_normal)
   {
     if (status[AZ_why] == AZ_breakdown)
@@ -1744,7 +1744,7 @@ void LINALG::Solver::KrylovSolver::CreatePreconditioner( ParameterList & azlist,
     }
     else
     {
-      dserror( "unknown preconditioner" );
+      preconditioner_ = Teuchos::rcp( new NonePreconditioner( outfile_, Params() ) );
     }
 
     // decide whether we do what kind of scaling
@@ -1818,6 +1818,28 @@ void LINALG::Solver::PreconditionerType::SetupLinearProblem( Epetra_Operator * m
   lp_.SetOperator(matrix);
   lp_.SetLHS(x);
   lp_.SetRHS(b);
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+LINALG::Solver::NonePreconditioner::NonePreconditioner( FILE * outfile, ParameterList & list )
+  : PreconditionerType( outfile )
+{
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::Solver::NonePreconditioner::Setup( bool create,
+                                                Epetra_Operator * matrix,
+                                                Epetra_MultiVector * x,
+                                                Epetra_MultiVector * b )
+{
+  SetupLinearProblem( matrix, x, b );
+
+  if ( create )
+  {
+    prec_ = Teuchos::rcp( new NoneOperator( matrix ) );
+  }
 }
 
 //----------------------------------------------------------------------------------

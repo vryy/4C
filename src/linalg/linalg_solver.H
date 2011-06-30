@@ -93,6 +93,7 @@ Maintainer: Michael Gee
 
 #include "linalg_projected_precond.H"
 #include "linalg_projected_operator.H"
+#include "linalg_none_operator.H"
 #include "bgs2x2_operator.H"
 
 
@@ -193,6 +194,26 @@ class Solver
 
     //! file to write output to (proc 0 only, can be NULL on input)
     FILE * outfile_;
+  };
+
+  class NonePreconditioner : public PreconditionerType
+  {
+  public:
+
+    NonePreconditioner( FILE * outfile, ParameterList & list );
+
+    virtual void Setup( bool create,
+                        Epetra_Operator * matrix,
+                        Epetra_MultiVector * x,
+                        Epetra_MultiVector * b );
+
+    virtual Epetra_Operator * PrecOperator() const { return &*prec_; }
+
+    virtual void Print( std::ostream & stream ) { stream << "None"; }
+
+  private:
+
+    RCP<NoneOperator> prec_;
   };
 
   /// ifpack preconditioners
