@@ -335,7 +335,7 @@ namespace GEO
           facet = facet_stack.back();
           facet_stack.pop_back();
 
-          if ( facet_color[facet] == 0 )
+          if ( facet_color[facet] == 0 ) // white
           {
             plain_int_set & row = graph[facet];
 
@@ -369,7 +369,7 @@ namespace GEO
               }
             }
           }
-          else if ( facet_color[facet] == 1 )
+          else if ( facet_color[facet] == 1 ) // gray
           {
             // search for any facet within the stack that can be added
             int pos = facet_stack.size()-1;
@@ -390,7 +390,19 @@ namespace GEO
               plain_int_set & row = graph[facet];
               UnMarkFacet( used, free, facet, row, visited, num_split_lines );
 
-              facet_color[facet] = 0; // ???
+              if ( std::find( facet_stack.begin(), facet_stack.end(), facet )==facet_stack.end() )
+                facet_color[facet] = 0;
+              else
+                facet_color[facet] = 2;
+            }
+          }
+          else if ( facet_color[facet] == 2 ) // black
+          {
+            // if a black facet is poped for the last time (it is not any more
+            // on the stack), we make it available again.
+            if ( std::find( facet_stack.begin(), facet_stack.end(), facet )==facet_stack.end() )
+            {
+              facet_color[facet] = 0;
             }
           }
         }
