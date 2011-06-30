@@ -65,7 +65,7 @@ void THR::TimIntImpl::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tan
   smdofs = LINALG::MergeMap(sdofs,mdofs,false);
 
   // row map of thermal problem
-  RCP<Epetra_Map> problemrowmap = rcp(new Epetra_Map(*(discret_->DofRowMap())));
+  RCP<Epetra_Map> problemrowmap = rcp(new Epetra_Map(*dofrowmap_));
 
   // split problemrowmap in n+am
   ndofs = LINALG::SplitMap(*problemrowmap,*smdofs);
@@ -1047,7 +1047,6 @@ void THR::TimIntImpl::AssembleMechDissMaster(Epetra_Vector& mechdissrate)
     {
       int gid = masternodes->GID(i);
       DRT::Node* node    = (interface[m]->Discret()).gNode(gid);
-      DRT::Node* nodeges = discretstruct_->gNode(gid);
 
       if (!node) dserror("ERROR: Cannot find node with gid %",gid);
       CONTACT::FriNode* cnode = static_cast<CONTACT::FriNode*>(node);
@@ -1072,6 +1071,7 @@ void THR::TimIntImpl::AssembleMechDissMaster(Epetra_Vector& mechdissrate)
       if(Comm().MyPID()==cnode->Owner())
       {
         // row dof of temperature
+        DRT::Node* nodeges = discretstruct_->gNode(gid);
         int rowtemp = discretstruct_->Dof(1,nodeges)[0];
 
         Epetra_SerialDenseVector mechdissiprate(1);
@@ -1199,7 +1199,7 @@ void THR::TimIntImpl::AssembleThermContCondition(LINALG::SparseMatrix& thermcont
   RCP<Epetra_Vector> fa, fm, rest1, rest2;
 
   // row map of thermal problem
-  RCP<Epetra_Map> problemrowmap = rcp(new Epetra_Map(*(discret_->DofRowMap())));
+  RCP<Epetra_Map> problemrowmap = rcp(new Epetra_Map(*dofrowmap_));
 
   LINALG::SplitVector(*problemrowmap,*tempn_,activedofs,fa,masterdofs,fm);
 
@@ -1299,7 +1299,7 @@ void THR::TimIntImpl::Recover(RCP<Epetra_Vector> tempi)
   smdofs = LINALG::MergeMap(sdofs,mdofs,false);
  
   // row map of thermal problem
-  RCP<Epetra_Map> problemrowmap = rcp(new Epetra_Map(*(discret_->DofRowMap())));
+  RCP<Epetra_Map> problemrowmap = rcp(new Epetra_Map(*dofrowmap_));
 
   // split problemrowmap in n+am
   ndofs = LINALG::SplitMap(*problemrowmap,*smdofs);
