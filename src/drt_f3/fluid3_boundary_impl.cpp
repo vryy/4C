@@ -1838,7 +1838,40 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ComputeFlowRate(
     // use negative value so that inflow is positiv
     for (int inode=0;inode<bdrynen_;++inode)
     {
-      elevec1[inode*numdofpernode_] += funct_(inode)* fac_ * flowrate; //
+      // see "A better consistency for low order stabilized finite element methods"
+      // Jansen, Collis, Whiting, Shakib
+      //
+      // Here the principle is used to bring the flow rate to the outside world!!
+      //
+      // funct_ *  velint * n * fac
+      //   |      |________________|
+      //   |              |
+      //   |         flow rate * fac  -> integral over Gamma
+      //   |
+      // flow rate is distributed to the single nodes of the element
+      // = flow rate per node
+      //
+      // adding up all nodes (ghost elements are handled by the assembling strategy)
+      // -> total flow rate at the desired boundary
+      //
+      // it can be interpreted as a rhs term
+      //
+      //  ( v , u o n)
+      //               Gamma
+      //
+      elevec1[inode*numdofpernode_] += funct_(inode)* fac_ * flowrate;
+
+      // alternative way:
+      //
+      //  velint * n * fac
+      // |________________|
+      //         |
+      //    flow rate * fac  -> integral over Gamma
+      //     = flow rate per element
+      //
+      //  adding up all elements (be aware of ghost elements!!)
+      //  -> total flow rate at the desired boundary
+      //     (is identical to the total flow rate computed above)
     }
   }
 }//DRT::ELEMENTS::Fluid3Surface::ComputeFlowRate
