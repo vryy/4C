@@ -508,7 +508,11 @@ void STR::MLMC::ProlongateResults()
 
    Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
    Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
+   // plastic strains need to be init as well
+   Teuchos::RCP<std::vector<char> > plstrain = Teuchos::rcp(new std::vector<char>());
    p.set("stress", stress);
+   p.set("plstrain",plstrain);
+   //
 
    p.set<int>("iostress", iostress);
    p.set("strain", strain);
@@ -882,7 +886,9 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
       // beta = beta_mean = beta_mean * random field value
       //beta = beta_mean+beta_mean*field.EvalRandomField(ele_center[0],ele_center[1],ele_center[2]);
       // HACK instead of circular field use pseudo 3D Field
-      beta = beta_mean+field.EvalRandomFieldCylinder(ele_center[0],ele_center[1],ele_center[2]);
+      cout << RED_LIGHT << "HACK IN USE: BETA = BETA MEAN " END_COLOR << endl;
+     // beta = beta_mean+field.EvalRandomFieldCylinder(ele_center[0],ele_center[1],ele_center[2]);
+      beta = beta_mean;
       //cout << "value filed " << field.EvalRandomFieldCylinder(ele_center[0],ele_center[1],ele_center[2]) << endl;
       //vector<double> location = dis->gElement(i)->soh8_ElementCenterRefeCoords();
       // for now we need a quick check wether beta> 0.22 because thats the cutoff value right now
