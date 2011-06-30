@@ -70,7 +70,7 @@ namespace GEO
       {
       public:
 
-        typedef std::map<int, plain_int_set >::const_iterator const_iterator;
+        typedef std::map<int, plain_int_set>::const_iterator const_iterator;
 
         explicit Graph( int color_split )
           : color_split_( color_split )
@@ -82,7 +82,7 @@ namespace GEO
 
         int FindNext( Graph & used, int p, Graph & cycle, const plain_int_set & free );
 
-        void FindFreeFacets( Graph & graph, Graph & used, plain_int_set & free );
+        void FindFreeFacets( Graph & graph, Graph & used, plain_int_set & free, std::vector<int> & split_trace );
 
         void FindSplitTrace( std::vector<int> & split_trace );
 
@@ -104,9 +104,11 @@ namespace GEO
 
         unsigned count( int p ) { return graph_.count( p ); }
 
-        std::map<int, plain_int_set >::const_iterator begin() const { return graph_.begin(); }
+        unsigned size() const { return graph_.size(); }
 
-        std::map<int, plain_int_set >::const_iterator end()   const { return graph_.end(); }
+        const_iterator begin() const { return graph_.begin(); }
+
+        const_iterator end()   const { return graph_.end(); }
 
         void Swap( Graph & other )
         {

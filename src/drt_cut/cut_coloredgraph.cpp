@@ -2,6 +2,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <stack>
+#include <queue>
 
 #include "cut_coloredgraph.H"
 
@@ -160,61 +161,381 @@ void GEO::CUT::COLOREDGRAPH::Graph::Print()
   std::cout << "\n";
 }
 
-void GEO::CUT::COLOREDGRAPH::Graph::FindFreeFacets( Graph & graph, Graph & used, plain_int_set & free )
+namespace GEO
 {
-  int free_facet = *free.begin();
-  if ( free_facet >= Split() )
+  namespace CUT
   {
-    throw std::runtime_error( "no free facet but free lines" );
-  }
-
-  std::stack<int> stack;
-  stack.push( free_facet );
-
-  while ( not stack.empty() )
-  {
-    int facet = stack.top();
-    stack.pop();
-
-    plain_int_set & row = graph[facet];
-    for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
+    namespace COLOREDGRAPH
     {
-      int line = *i;
 
-      if ( used.count( line ) == 0 and free.count( line ) > 0 )
+      bool IsFree( Graph & used, plain_int_set & free, int i )
       {
-        plain_int_set & row = graph[line];
+        return used.count( i ) == 0 and free.count( i ) > 0;
+      }
+
+      int FindFirstFreeFacet( Graph & graph, Graph & used, plain_int_set & free )
+      {
+        for ( plain_int_set::iterator i=free.begin(); i!=free.end(); ++i )
+        {
+          int facet = *i;
+          if ( facet >= graph.Split() )
+          {
+            throw std::runtime_error( "no free facet but free lines" );
+          }
+          plain_int_set & row = graph[facet];
+          for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
+          {
+            int line = *i;
+            if ( not IsFree( used, free, line ) )
+            {
+              return facet;
+            }
+          }
+        }
+        throw std::runtime_error( "empty free set" );
+      }
+
+      bool VisitFacetBFS( Graph & graph,
+                          Graph & used,
+                          plain_int_set & free,
+                          int facet,
+                          std::vector<int> & visited,
+                          int & num_split_lines )
+      {
+        std::queue<int> facets;
+        facets.push( facet );
+
+        while ( not facets.empty() )
+        {
+          facet = facets.front();
+          facets.pop();
+
+          plain_int_set & row = graph[facet];
+
+          // mark facet and lines
+          visited[facet] += 1;
+          for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
+          {
+            int line = *i;
+            if ( not IsFree( used, free, line ) )
+              num_split_lines += 1;
+            visited[line] += 1;
+          }
+
+          // test for success: only non-free lines are open
+          if ( num_split_lines==0 )
+            return true;
+
+          // try neighbouring facets
+          for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
+          {
+            int line = *i;
+            if ( visited[line] < 2 and IsFree( used, free, line ) )
+            {
+              plain_int_set & row = graph[line];
+              for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
+              {
+                int f = *i;
+                if ( visited[f] == 0 )
+                {
+                  facets.push( f );
+                }
+              }
+            }
+          }
+
+          // unmark facet and lines
+          for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
+          {
+            int line = *i;
+            if ( not IsFree( used, free, line ) )
+              num_split_lines -= 1;
+            visited[line] -= 1;
+          }
+          visited[facet] -= 1;
+        }
+
+        return false;
+      }
+
+      bool IsValidFacet( plain_int_set & row, std::vector<int> & visited )
+      {
         for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
         {
-          int f = *i;
-          if ( f != facet and used.count( f ) == 0 and free.count( f ) > 0 )
+          int line = *i;
+          if ( visited[line] >= 2 )
           {
-            stack.push( f );
-
-            // We can never have more than one new facet per line. This will
-            // not work in very extreme cases, when many internal lines have
-            // multiple choices.
-            break;
+            return false;
           }
+        }
+        return true;
+      }
+
+      void MarkFacet( Graph & used,
+                      plain_int_set & free,
+                      int facet,
+                      plain_int_set & row,
+                      std::vector<int> & visited,
+                      int & num_split_lines )
+      {
+        // mark facet and lines
+        visited[facet] += 1;
+        for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
+        {
+          int line = *i;
+          if ( IsFree( used, free, line ) )
+          {
+            if ( visited[line]==0 )
+              num_split_lines += 1;
+            else if ( visited[line]==1 )
+              num_split_lines -= 1;
+          }
+          visited[line] += 1;
         }
       }
 
-      used.Add( line, facet );
-      Add( line, facet );
+      void UnMarkFacet( Graph & used,
+                        plain_int_set & free,
+                        int facet,
+                        plain_int_set & row,
+                        std::vector<int> & visited,
+                        int & num_split_lines )
+      {
+        // unmark facet and lines
+        for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
+        {
+          int line = *i;
+          if ( IsFree( used, free, line ) )
+          {
+            if ( visited[line]==1 )
+              num_split_lines -= 1;
+            else if ( visited[line]==2 )
+              num_split_lines += 1;
+          }
+          visited[line] -= 1;
+        }
+        visited[facet] -= 1;
+      }
+
+#if 1
+      bool VisitFacetDFS( Graph & graph,
+                          Graph & used,
+                          plain_int_set & free,
+                          int facet,
+                          std::vector<int> & visited,
+                          int & num_split_lines )
+      {
+        std::vector<int> facet_stack;
+        facet_stack.push_back( facet );
+
+        std::vector<int> facet_color( graph.size(), 0 );
+
+        while ( not facet_stack.empty() )
+        {
+          facet = facet_stack.back();
+          facet_stack.pop_back();
+
+          if ( facet_color[facet] == 0 )
+          {
+            plain_int_set & row = graph[facet];
+
+            if ( IsValidFacet( row, visited ) )
+            {
+              MarkFacet( used, free, facet, row, visited, num_split_lines );
+
+              // test for success: only non-free lines are open
+              if ( num_split_lines==0 )
+                return true;
+
+              facet_color[facet] = 1;
+              facet_stack.push_back( facet );
+
+              // try neighbouring facets
+              for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
+              {
+                int line = *i;
+                if ( visited[line] < 2 and IsFree( used, free, line ) )
+                {
+                  plain_int_set & row = graph[line];
+                  for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
+                  {
+                    int f = *i;
+                    if ( facet_color[f] == 0 )
+                    {
+                      facet_stack.push_back( f );
+                    }
+                  }
+                }
+              }
+            }
+          }
+          else if ( facet_color[facet] == 1 )
+          {
+            // search for any facet within the stack that can be added
+            int pos = facet_stack.size()-1;
+            for ( ; pos >=0; --pos )
+            {
+              int f = facet_stack[pos];
+              if ( facet_color[f] == 0 and IsValidFacet( graph[f], visited ) )
+              {
+                facet_stack.push_back( facet );
+                facet_stack.push_back( f );
+                break;
+              }
+            }
+
+            // clear current facet if there is nothing more to add
+            if ( pos < 0 )
+            {
+              plain_int_set & row = graph[facet];
+              UnMarkFacet( used, free, facet, row, visited, num_split_lines );
+
+              facet_color[facet] = 0; // ???
+            }
+          }
+        }
+        return false;
+      }
+#else
+      bool VisitFacetDFS( Graph & graph,
+                          Graph & used,
+                          plain_int_set & free,
+                          int facet,
+                          std::vector<int> & visited,
+                          int & num_split_lines )
+      {
+        plain_int_set & row = graph[facet];
+
+        // mark facet and lines
+        visited[facet] += 1;
+        for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
+        {
+          int line = *i;
+          if ( not IsFree( used, free, line ) )
+            num_split_lines += 1;
+          visited[line] += 1;
+        }
+
+        // test for success: only non-free lines are open
+#if 1
+        if ( num_split_lines==0 )
+          return true;
+#else
+        bool success = true;
+        for ( std::vector<int>::iterator i=visited.begin() + graph.Split();
+              i!=visited.end();
+              ++i )
+        {
+          if ( *i == 1 )
+          {
+            int line = i - visited.begin();
+            if ( IsFree( used, free, line ) )
+            {
+              success = false;
+              break;
+            }
+          }
+          else if ( *i > 2 )
+          {
+            throw std::runtime_error( "illegal facet combination" );
+          }
+        }
+        if ( success )
+        {
+          return true;
+        }
+#endif
+
+        // try neighbouring facets
+        for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
+        {
+          int line = *i;
+          if ( visited[line] < 2 and IsFree( used, free, line ) )
+          {
+            plain_int_set & row = graph[line];
+            for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
+            {
+              int f = *i;
+              if ( visited[f] == 0 )
+              {
+                if ( VisitFacetDFS( graph, used, free, f, visited ) )
+                  return true;
+              }
+            }
+          }
+        }
+
+        // unmark facet and lines
+        for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
+        {
+          int line = *i;
+          if ( not IsFree( used, free, line ) )
+            num_split_lines -= 1;
+          visited[line] -= 1;
+        }
+        visited[facet] -= 1;
+
+        return false;
+      }
+#endif
+
     }
   }
+}
 
-  for ( Graph::const_iterator i=begin(); i!=end(); ++i )
+void GEO::CUT::COLOREDGRAPH::Graph::FindFreeFacets( Graph & graph,
+                                                    Graph & used,
+                                                    plain_int_set & free,
+                                                    std::vector<int> & split_trace )
+{
+  int free_facet = FindFirstFreeFacet( graph, used, free );
+
+  std::vector<int> visited( graph.size(), 0 );
+
+  int num_split_lines = 0;
+  if ( not VisitFacetDFS( graph, used, free, free_facet, visited, num_split_lines ) )
   {
-    int p = i->first;
+    throw std::runtime_error( "failed to find volume split" );
+  }
 
-    const plain_int_set & row = i->second;
-    for ( plain_int_set::const_iterator i=row.begin(); i!=row.end(); ++i )
+  for ( std::vector<int>::iterator i=visited.begin() + graph.Split();
+        i!=visited.end();
+        ++i )
+  {
+    if ( *i == 1 )
     {
-      int p = *i;
-      free.erase( p );
+      int line = i - visited.begin();
+      if ( not IsFree( used, free, line ) )
+      {
+        split_trace.push_back( line );
+      }
     }
-    free.erase( p );
+  }
+  if ( split_trace.size()==0 )
+  {
+    throw std::runtime_error( "no split trace" );
+  }
+  for ( std::vector<int>::iterator i=visited.begin();
+        i!=visited.begin() + graph.Split();
+        ++i )
+  {
+    if ( *i == 1 )
+    {
+      int facet = i - visited.begin();
+      plain_int_set & row = graph[facet];
+      for ( plain_int_set::iterator i=row.begin(); i!=row.end(); ++i )
+      {
+        int line = *i;
+        used.Add( line, facet );
+        Add( line, facet );
+        free.erase( line );
+      }
+      free.erase( facet );
+    }
+    else if ( *i > 1 )
+    {
+      throw std::runtime_error( "same facet twice" );
+    }
   }
 }
 
@@ -370,10 +691,17 @@ void GEO::CUT::COLOREDGRAPH::CycleList::AddPoints( Graph & graph, Graph & used, 
   while ( free.size() > 0 )
   {
     Graph connection( graph.Split() );
-    connection.FindFreeFacets( graph, used, free );
-
     std::vector<int> split_trace;
-    connection.FindSplitTrace( split_trace );
+    connection.FindFreeFacets( graph, used, free, split_trace );
+
+#if 0
+#ifdef DEBUGCUTLIBRARY
+    std::cout << "connection:\n";
+    connection.Print();
+#endif
+#endif
+
+    //connection.FindSplitTrace( split_trace );
 
     bool found = false;
     for ( std::list<Cycle>::iterator i=cycles_.begin(); i!=cycles_.end(); ++i )

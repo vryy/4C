@@ -96,6 +96,38 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const plain_
   }
 
 #if 0
+#ifdef DEBUGCUTLIBRARY
+  {
+    std::ofstream file( "lines.py" );
+    file << "lines = [\n";
+
+    for ( std::vector<std::pair<Point*, Point*> >::iterator i=all_lines_.begin();
+          i!=all_lines_.end();
+          ++i )
+    {
+      Point * p1 = i->first;
+      Point * p2 = i->second;
+      file << "  (("
+           << p1->X()[0] << ","
+           << p1->X()[1] << ","
+           << p1->X()[2] << ","
+           << "),("
+           << p2->X()[0] << ","
+           << p2->X()[1] << ","
+           << p2->X()[2] << ","
+           << ")),   # "
+           << p1->Id()
+           << ","
+           << p2->Id()
+           << "\n";
+    }
+    file << "]\n";
+  }
+#endif
+#endif
+
+
+#if 0
   graph_.FixSingleLines();
 #else
   graph_.TestClosed();
@@ -171,6 +203,7 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const plain_
   std::copy( free.begin(), free.end(), std::ostream_iterator<int>( std::cout, " " ) );
   std::cout << "\n";
 
+#if 0
   for ( std::vector<Facet*>::iterator i=all_facets_.begin(); i!=all_facets_.end(); ++i )
   {
     Facet * f = *i;
@@ -180,6 +213,7 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const plain_
     std::ofstream file( str.str().c_str() );
     f->Print( file );
   }
+#endif
 #endif
 #endif
 
