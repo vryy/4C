@@ -151,15 +151,15 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(
     const DRT::Element* ele = discret->lRowElement(iele);
     const DRT::Element::DiscretizationType distype = ele->Shape();
     const int numnode = distypeToGmshNumNode(distype);
+    const int nsd = DRT::UTILS::getDimension(distype);
 
-    LINALG::SerialDenseMatrix xyze(3,numnode);
+    LINALG::SerialDenseMatrix xyze(nsd,numnode);
 
     const DRT::Node*const* nodes = ele->Nodes();
     for(int inode = 0; inode < numnode; ++inode)
     {
-      xyze(0,inode) = nodes[inode]->X()[0];
-      xyze(1,inode) = nodes[inode]->X()[1];
-      xyze(2,inode) = nodes[inode]->X()[2];
+      for(int idim = 0; idim < nsd; ++idim)
+      xyze(idim,inode) = nodes[inode]->X()[idim];
     }
 
     s << "V"; // vector field indicator
@@ -174,13 +174,88 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(
     ele->LocationVector(*discret, lm, lmowner, lmstride);
 
     // extract local values from the global vector
-    Epetra_SerialDenseVector myvectorfield(lm.size());
-    DRT::UTILS::ExtractMyValues(*vectorfield, myvectorfield, lm);
+    Epetra_SerialDenseVector extractmyvectorfield(lm.size());
+    DRT::UTILS::ExtractMyValues(*vectorfield, extractmyvectorfield, lm);
+
+    // Extract velocity from local velnp_
+    LINALG::SerialDenseMatrix myvectorfield(nsd,numnode);
+    for (int inode = 0; inode < numnode; ++inode)
+      for (int idim = 0; idim < nsd; ++idim)
+        myvectorfield(idim,inode)= extractmyvectorfield(idim + inode*(nsd+1));
 
     // write vector field to Gmsh stream
     // remark: only the first 3 components are written to the Gmsh postprocessing file
     //         -> e.g. pressure in velnp_ fluid state vector is not written ('myvectorfield': velx,vely,velz,pressure)
     VectorFieldToStream(myvectorfield, distype, s);
+
+    s << "\n";
+  }
+}
+
+/*------------------------------------------------------------------------------------------------*
+ | write scalar / vector from a dof-based vector field (e.g. velocity)                            |
+ | to Gmsh postprocessing file                                                         ehrl 05/11 |
+ *------------------------------------------------------------------------------------------------*/
+void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(
+    const Teuchos::RCP<DRT::Discretization> discret,
+    const Teuchos::RCP<Epetra_Vector>       vectorfield_row,
+    const string                            field,
+    std::ostream&                           s
+)
+{
+#ifdef PARALLEL
+  // tranform solution vector from DofRowMap to DofColMap
+  const Teuchos::RCP<const Epetra_Vector> vectorfield = DRT::UTILS::GetColVersionOfRowVector(discret,vectorfield_row);
+#else
+  const Teuchos::RCP<const Epetra_Vector> vectorfield = vectorfield_row;
+#endif
+
+  // loop all row elements on this processor
+  for (int iele=0; iele<discret->NumMyRowElements(); ++iele)
+  {
+    const DRT::Element* ele = discret->lRowElement(iele);
+    const DRT::Element::DiscretizationType distype = ele->Shape();
+    const int numnode = distypeToGmshNumNode(distype);
+    const int nsd = DRT::UTILS::getDimension(distype);
+
+    LINALG::SerialDenseMatrix xyze(nsd,numnode);
+
+    const DRT::Node*const* nodes = ele->Nodes();
+    for(int inode = 0; inode < numnode; ++inode)
+    {
+      for(int idim = 0; idim < nsd; ++idim)
+      xyze(idim,inode) = nodes[inode]->X()[idim];
+    }
+
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
+    ele->LocationVector(*discret, lm, lmowner, lmstride);
+
+    // extract local element values from the global vector
+    Epetra_SerialDenseVector extractelementvalues(lm.size());
+    DRT::UTILS::ExtractMyValues(*vectorfield, extractelementvalues, lm);
+
+    if (field == "pressure")
+    {
+      // Extract scalar from local velnp_
+      LINALG::SerialDenseVector myscalarfield(numnode);
+      for (int inode = 0; inode < numnode; ++inode)
+        myscalarfield(inode)= extractelementvalues(nsd+inode*(nsd+1));
+
+      cellWithScalarFieldToStream(distype, myscalarfield, xyze, s);
+    }
+    else if(field == "velocity")
+    {
+      // Extract velocity from local velnp_
+      LINALG::SerialDenseMatrix myvectorfield(nsd,numnode);
+      for (int inode = 0; inode < numnode; ++inode)
+        for (int idim = 0; idim < nsd; ++idim)
+          myvectorfield(idim,inode)= extractelementvalues(idim + inode*(nsd+1));
+
+      cellWithVectorFieldToStream(distype, myvectorfield, xyze, s);
+    }
+    else dserror("The choosen field does not exist (wrong writting, ...)");
 
     s << "\n";
   }

@@ -23,6 +23,7 @@
 #ifdef CCADISCRET
 
 #include "../drt_lib/drt_discret.H"
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 namespace IO
 {
@@ -53,6 +54,15 @@ namespace IO
         std::ostream&                           s
         );
 
+    //! write dof-based velocity / pressure field to Gmsh postprocessing file
+    //!
+    void VelocityPressureFieldDofBasedToGmsh(
+        const Teuchos::RCP<DRT::Discretization> discret,
+        const Teuchos::RCP<Epetra_Vector>       vectorfield,
+        const string                            field,  //< "velocity" or "pressure"
+        std::ostream&                           s
+        );
+
     //! write node-based vector field to Gmsh postprocessing file
     void VectorFieldNodeBasedToGmsh(
         const Teuchos::RCP<DRT::Discretization> discret,
@@ -71,15 +81,22 @@ namespace IO
       s.precision(12);
 
       const int numnode = distypeToGmshNumNode(distype);
+      const int nsd = DRT::UTILS::getDimension(distype);
 
       // coordinates
       s << "(";
       for (int inen = 0; inen < numnode; ++inen)
       {
-        // print position
-        s << coord(0, inen) << ",";
-        s << coord(1, inen) << ",";
-        s << coord(2, inen);
+        for (int idim = 0; idim < nsd; ++idim)
+        {
+          // print position
+          s << coord(idim, inen);
+          if (idim < nsd -1)
+            s << ",";
+          if (nsd == 2 and idim == nsd -1)
+            s << ",0.000000000000e+00";
+        }
+
         if (inen < numnode-1)
         {
           s << ",";
@@ -147,7 +164,7 @@ namespace IO
       s.precision(12);
 
       const int numnode = distypeToGmshNumNode(distype);
-      const int nsd = 3;
+      const int nsd = DRT::UTILS::getDimension(distype);
 
       // values
       s << "{";
@@ -158,6 +175,8 @@ namespace IO
           s << scientific << vectorfield(isd, inode);
           if (isd < nsd-1)
             s << ",";
+          if (nsd == 2 and isd == nsd -1)
+            s << ",0.000000000000e+00";
         }
         if (inode < numnode-1)
         {
