@@ -379,7 +379,21 @@ void UTILS::ConstrManager::ComputeMonitorValues(RCP<const Epetra_Vector> disp)
   vector<DRT::Condition*> monitcond(0);
   monitorvalues_->PutScalar(0.0);
   ParameterList p;
-  actdisc_->SetState("displacement",disp);
+  if (not actdisc_->DofRowMap()->SameAs(disp->Map()))
+  {
+    // build merged dof row map
+    RCP<Epetra_Map> largemap = LINALG::MergeMap(*actdisc_->DofRowMap(),
+                                  *constrmap_,
+                                  false);
+
+    LINALG::MapExtractor conmerger;
+    conmerger.Setup(*largemap,
+        rcp(actdisc_->DofRowMap(),false),
+        constrmap_);
+    actdisc_->SetState("displacement",conmerger.ExtractCondVector(disp));
+  }
+  else
+    actdisc_->SetState("displacement",disp);
 
   RCP<Epetra_Vector> actmonredundant = rcp(new Epetra_Vector(*redmonmap_));
   p.set("OffsetID",minMonitorID_);
