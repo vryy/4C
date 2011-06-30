@@ -54,6 +54,10 @@ Maintainer: Peter Gamnitzer
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
+#include "../drt_io/io_gmsh.H"
+
+// include Gmesh output
+//#define GMSHOUTPUT
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -2927,6 +2931,10 @@ void FLD::FluidImplicitTimeInt::Output()
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(velnp_);
     output_.WriteVector("pressure", pressure);
 
+#ifdef GMSHOUTPUT
+    OutputToGmsh(step_, time_);
+#endif
+
     //output_.WriteVector("residual", trueresidual_);
     if (alefluid_) output_.WriteVector("dispnp", dispnp_);
 
@@ -3142,6 +3150,35 @@ void FLD::FluidImplicitTimeInt::Output()
   return;
 } // FluidImplicitTimeInt::Output
 
+void FLD::FluidImplicitTimeInt::OutputToGmsh(
+    const int step,
+    const double time
+    ) const
+{
+  // turn on/off screen output for writing process of Gmsh postprocessing file
+  const bool screen_out = true;
+
+  // create Gmsh postprocessing file
+  // 20 steps are kept
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_velpres", step, 20, screen_out, discret_->Comm().MyPID());
+  std::ofstream gmshfilecontent(filename.c_str());
+
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "velocity solution \" {" << endl;
+    IO::GMSH::VelocityPressureFieldDofBasedToGmsh(discret_, velnp_ , "velocity", gmshfilecontent);
+    gmshfilecontent << "};" << endl;
+  }
+  {
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "pressure solution\" {" << endl;
+    IO::GMSH::VelocityPressureFieldDofBasedToGmsh(discret_, velnp_, "pressure",gmshfilecontent);
+    gmshfilecontent << "};" << endl;
+  }
+
+  gmshfilecontent.close();
+  if (screen_out) std::cout << " done" << endl;
+}
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

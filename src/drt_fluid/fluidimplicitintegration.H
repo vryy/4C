@@ -210,6 +210,11 @@ public:
   */
   void Output();
 
+  void OutputToGmsh(
+      const int step,
+      const double time
+      ) const;
+
   /*!
   \brief Access output object
 
