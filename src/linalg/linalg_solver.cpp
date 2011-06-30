@@ -1742,9 +1742,13 @@ void LINALG::Solver::KrylovSolver::CreatePreconditioner( ParameterList & azlist,
     {
       preconditioner_ = Teuchos::rcp( new AMGBSPreconditioner( outfile_, Params() ) );
     }
-    else
+    else if (azlist.get<int>("AZ_precond") == AZ_none)
     {
       preconditioner_ = Teuchos::rcp( new NonePreconditioner( outfile_, Params() ) );
+    }
+    else
+    {
+      dserror( "unknown preconditioner" );
     }
 
     // decide whether we do what kind of scaling
