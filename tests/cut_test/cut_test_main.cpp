@@ -190,7 +190,7 @@ void test_graph2();
 void test_geometry();
 
 void test_cut_volumes();
-
+void test_cut_volumes2();
 
 typedef void ( *testfunct )();
 
@@ -440,6 +440,7 @@ int main( int argc, char ** argv )
   functable["geometry"] = test_geometry;
 
   functable["cut_volumes"] = test_cut_volumes;
+  functable["cut_volumes2"] = test_cut_volumes2;
 
   Teuchos::CommandLineProcessor clp( false );
 
