@@ -1091,8 +1091,8 @@ void FSI::MortarMonolithicFluidSplit::PrepareTimeStep()
 
   PrintHeader();
 
-  if (aleproj_!= INPAR::FSI::ALEprojection_none)
-    StructureField().SystemMatrix()->Reset();
+  if (StructureField().GetSTCAlgo() != INPAR::STR::stc_none)
+      StructureField().SystemMatrix()->Reset();
   StructureField().PrepareTimeStep();
   FluidField().    PrepareTimeStep();
   AleField().      PrepareTimeStep();

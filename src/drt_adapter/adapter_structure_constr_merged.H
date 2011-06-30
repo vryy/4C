@@ -126,6 +126,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetSTCMat()
     {
       dserror("FSI with merged structural constraints does not work in combination with STC!");
+      return structure_->GetSTCMat();
     }
 
     //! Update iteration
