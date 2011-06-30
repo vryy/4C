@@ -95,7 +95,7 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const plain_
     }
   }
 
-#if 0
+#if 1
 #ifdef DEBUGCUTLIBRARY
   {
     std::ofstream file( "lines.py" );
@@ -261,13 +261,6 @@ void GEO::CUT::FacetGraph::CreateVolumeCells( Mesh & mesh, Element * element, pl
     }
   }
 
-//   std::cout << "generated volumes " << volumes.size() << " vs " << cycle_list_.size() << "\n";
-
-//   if ( cycle_list_.size()==1 )
-//   {
-//     graph_.Print();
-//   }
-
   for ( std::vector<plain_facet_set>::iterator i=volumes.begin(); i!=volumes.end(); ++i )
   {
     plain_facet_set & collected_facets = *i;
@@ -286,20 +279,6 @@ void GEO::CUT::FacetGraph::CreateVolumeCells( Mesh & mesh, Element * element, pl
     all_collected_facets_.push_back( collected_facets );
 #endif
   }
-
-#if 0
-  for ( std::vector<int>::iterator i=debug_counter.begin(); i!=debug_counter.end(); ++i )
-  {
-    int p = *i;
-    if ( p > 2 )
-    {
-#ifdef DEBUGCUTLIBRARY
-      PrintAllCollected();
-#endif
-      throw std::runtime_error( "failed to split graph properly" );
-    }
-  }
-#endif
 }
 
 #ifdef DEBUGCUTLIBRARY
