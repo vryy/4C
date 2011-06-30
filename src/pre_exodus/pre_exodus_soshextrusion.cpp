@@ -73,16 +73,6 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
   // store average node normals for base node of new extrusion
   map<int,vector<double> > ext_node_normals;
 
-  // loop through all EBlocks to check for extrusion blocks
-  for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
-    bool toextrude = CheckExtrusion(*i_ebs->second);
-    if (toextrude){
-      extrusion_conns.insert(pair<int,map<int,vector<int> > >(extrusioncounter,*(i_ebs->second->GetEleConn())));
-      extrusion_types.insert(pair<int,ExtrusionType>(extrusioncounter,eblock));
-      extrusioncounter ++;
-    }
-  }
-
   set<int> nodes_from_sideset;
   int extrusion_sideset_id=-1;
   // loop through all SideSets to check for extrusion
@@ -105,7 +95,19 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
       //highestblock ++;
     }
   }
-
+  
+  if(extrusioncounter==0)
+  {
+    // loop through all EBlocks to check for extrusion blocks
+    for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
+      bool toextrude = CheckExtrusion(*i_ebs->second);
+      if (toextrude){
+        extrusion_conns.insert(pair<int,map<int,vector<int> > >(extrusioncounter,*(i_ebs->second->GetEleConn())));
+        extrusion_types.insert(pair<int,ExtrusionType>(extrusioncounter,eblock));
+        extrusioncounter ++;
+      }
+    }
+  }
   // obtain variable extrusion thicknesses (at nodes) from centerline
   map<int,double> nd_ts;
   if (cline != ""){
@@ -553,16 +555,16 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     //string blockname = "extr";
     switch(extrusion_types.find(i_extr->first)->second){
     case eblock:{ // Eblocks have only one type of eles
-      const int numnodes = newconn->find(0)->second.size();
-      ElementBlock::Shape newshape = ElementBlock::dis_none;
-      if (numnodes == 6) newshape = ElementBlock::wedge6;
-      else if (numnodes == 8) newshape = ElementBlock::hex8;
-      else dserror("Number of basenodes for extrusion not supported");
-      blockname << highestblock;
-      RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(newshape,newconn,blockname.str()));
-      neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
-      highestblock ++;
-      break;
+//      const int numnodes = newconn->find(0)->second.size();
+//      ElementBlock::Shape newshape = ElementBlock::dis_none;
+//      if (numnodes == 6) newshape = ElementBlock::wedge6;
+//      else if (numnodes == 8) newshape = ElementBlock::hex8;
+//      else dserror("Number of basenodes for extrusion not supported");
+//      blockname << highestblock;
+//      RCP<EXODUS::ElementBlock> neweblock = rcp(new ElementBlock(newshape,newconn,blockname.str()));
+//      neweblocks.insert(pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
+//      highestblock ++;
+//      break;
     }
     case sideset:{ // SideSets can have different types of eles and have to be checked individually
       map<int,vector<int> >::const_iterator i_ele;
