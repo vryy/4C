@@ -142,7 +142,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
           elevec3[0] = ComputeWeightedDistance(mydisp,*direct);
         else if (*value == "x")
         {
-          LINALG::Matrix<2,3> xscurr;  // material coord. of element
+          LINALG::Matrix<2,3> xscurr;  // spatial coord. of element
           SpatialConfiguration(xscurr,mydisp);
           elevec3[0] = ComputeWeightedDistance(xscurr,*direct);
         }
