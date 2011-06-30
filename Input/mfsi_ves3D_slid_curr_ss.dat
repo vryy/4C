@@ -139,7 +139,7 @@ ENERGYCHECK                     no
 TOLENCHECK                      1.0E-6
 RELAX                           1.0
 ITEMAX                          10
-CONVTOL                         1.0E-9
+CONVTOL                         1.0E-11
 BASETOL                         1.0E-12
 SHAPEDERIVATIVES                Yes
 SECONDORDER                     Yes
