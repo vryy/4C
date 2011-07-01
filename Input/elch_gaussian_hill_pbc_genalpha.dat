@@ -76,8 +76,9 @@ BLOCKPRECOND     No // Krylov space projection works only with one CrsMatrix
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 //DEFINITION_TAU          Zero
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
-CONVTOL          1.0e-6
+CONVTOL          1.0e-7
 ITEMAX           7
+ABSTOLRES        5.0e-13
 ------------------------------------------------------ELCH CONTROL
 UPRES            1
 RESTARTEVRY      2
@@ -98,10 +99,10 @@ AZREUSE        20                  // how often to recompute some preconditioner
 AZDROP         0.0                // drop tolerance for ILUT
 IFPACKFILL     1.0                // fill-in for ILUT
 IFPACKGFILL    0                  // graph fill for ILU
-AZTOL          1.0E-7             // tolerance in (un)scaled residual
+AZTOL          1.0E-9             // tolerance in (un)scaled residual
 AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER         500               // max iterations
-AZSUB          200                 // size of krylov space for gmres
+AZSUB          200   //!!!!!!!    // size of krylov space for gmres
 AZOMEGA        1.0                // damping factor for Jacobi/GaussSeidel type preconditioners
 AZGRAPH        1                  // unused
 AZPOLY         1                  // polynomial order for Neumann
@@ -163,8 +164,8 @@ FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.5 // potential field -> integral of p
 --------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS 1 NODE 420 POSITION phi1     NAME phi1     VALUE 1.632407508e+00 TOLERANCE 1e-8
-SCATRA DIS 1 NODE 430 POSITION phi1     NAME phi1     VALUE 1.630152897e+00 TOLERANCE 1e-8
-SCATRA DIS 1 NODE 446 POSITION phi1     NAME phi1     VALUE 1.521473669e+00 TOLERANCE 1e-8
+SCATRA DIS 1 NODE 430 POSITION phi1     NAME phi1     VALUE 1.630152908e+00 TOLERANCE 1e-8
+SCATRA DIS 1 NODE 446 POSITION phi1     NAME phi1     VALUE 1.521473669e+00 TOLERANCE 1e-7
 SCATRA DIS 1 NODE 461 POSITION phi1     NAME phi1     VALUE 1.436100999e+00 TOLERANCE 1e-8
 SCATRA DIS 1 NODE 420 POSITION phi2     NAME phi2     VALUE 1.632407478e+00 TOLERANCE 1e-7
 SCATRA DIS 1 NODE 430 POSITION phi2     NAME phi2     VALUE 1.630152884e+00 TOLERANCE 1e-7
@@ -174,10 +175,10 @@ SCATRA DIS 1 NODE 420 POSITION phi3     NAME phi3     VALUE 1.632407515e+00 TOLE
 SCATRA DIS 1 NODE 430 POSITION phi3     NAME phi3     VALUE 1.630152897e+00 TOLERANCE 1e-7
 SCATRA DIS 1 NODE 446 POSITION phi3     NAME phi3     VALUE 1.521473701e+00 TOLERANCE 1e-7
 SCATRA DIS 1 NODE 461 POSITION phi3     NAME phi3     VALUE 1.436101017e+00 TOLERANCE 1e-7
-SCATRA DIS 1 NODE 420 POSITION phi4     NAME phi4     VALUE 5.039080523e-01 TOLERANCE 1e-6
-SCATRA DIS 1 NODE 430 POSITION phi4     NAME phi4     VALUE 5.038955120e-01 TOLERANCE 1e-6
-SCATRA DIS 1 NODE 446 POSITION phi4     NAME phi4     VALUE 5.033154559e-01 TOLERANCE 1e-6
-SCATRA DIS 1 NODE 461 POSITION phi4     NAME phi4     VALUE 5.028316147e-01 TOLERANCE 1e-6
+SCATRA DIS 1 NODE 420 POSITION phi4     NAME phi4     VALUE 5.039183196e-01 TOLERANCE 1e-5
+SCATRA DIS 1 NODE 430 POSITION phi4     NAME phi4     VALUE 5.039060909e-01 TOLERANCE 1e-5
+SCATRA DIS 1 NODE 446 POSITION phi4     NAME phi4     VALUE 5.033266143e-01 TOLERANCE 1e-5
+SCATRA DIS 1 NODE 461 POSITION phi4     NAME phi4     VALUE 5.028430597e-01 TOLERANCE 1e-5
 // result test for doing 100steps (one cycle): 
 // values below are identical to scatra version of this test case and must be fulfilled!!!
 // there is absolutely no space allowing for small differences!!
