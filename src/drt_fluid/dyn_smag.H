@@ -137,6 +137,31 @@ public:
     }
 
 
+  void OutputofFineScaleVel(
+    Teuchos::RCP<Epetra_Vector> outvec
+    )
+    {
+      // loop all elements on this proc (including ghosted ones)
+      for (int n=0;n<discret_->NumMyRowNodes();++n)
+      {
+        // get the node
+        DRT::Node* node = discret_->lRowNode(n);
+
+        vector<int> dofs= discret_->Dof(node);
+
+        for(int d=0;d<discret_->NumDof(node)-1;++d)
+        {
+          double val=(*((*fs_vel_)(d)))[n];
+
+          int    id =dofs[d];
+
+          (outvec)->ReplaceGlobalValues(1,&val,&id);
+        }
+      }
+      return;
+    }
+
+
   void FilteredVelComp(
     Teuchos::RCP<Epetra_Vector> outvec,
     const int                   i,
@@ -228,6 +253,24 @@ public:
       return;
     }
 
+
+  void GetFineScaleVelocity(
+    Teuchos::RCP<Epetra_MultiVector> velocity
+    )
+    {
+      // loop all elements on this proc (including ghosted ones)
+      for (int nid=0;nid<discret_->NumMyColNodes();++nid)
+      {
+        for (int i =0;i<3;++i)
+        {
+          double val = (*((*col_fs_vel_)(i)))[nid];
+          ((*velocity)(i))->ReplaceMyValues(1,&val,&nid);
+        }
+      }
+      return;
+    }
+
+
 private:
   /*!
   \brief perform box filtering in five steps
@@ -249,13 +292,13 @@ private:
                              set to zero
 
   */
-  void DynSmagBoxFilter(
-    Teuchos::RCP<Epetra_Vector>             velocity    ,
-    const Teuchos::RCP<const Epetra_Vector> dirichtoggle
-    );
+//  void DynSmagBoxFilter(
+//    Teuchos::RCP<Epetra_Vector>             velocity    ,
+//    const Teuchos::RCP<const Epetra_Vector> dirichtoggle
+//    );
 
   void ApplyBoxFilter(
-    Teuchos::RCP<Epetra_Vector>             velocity    ,
+    const Teuchos::RCP<const Epetra_Vector> velocity,
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle
     );
 
@@ -281,7 +324,7 @@ private:
   //! @name control parameters
   bool                         channel_flow_;
   bool                         apply_dynamic_smagorinsky_;
-  bool                         apply_scale_similarity_;
+  bool                         apply_box_filter_;
   //@}
 
 
@@ -294,12 +337,16 @@ private:
   RCP<Epetra_MultiVector>      filtered_reynoldsstress_;
   //! the modeled subgrid stress in nodes (9 vectors)
   RCP<Epetra_MultiVector>      filtered_modeled_subgrid_stress_;
+  //! the modeled fine scale velocities in nodes (3 vectors)
+  RCP<Epetra_MultiVector>      fs_vel_;
   //! the filtered vel exported to column map
   RCP<Epetra_MultiVector>      col_filtered_vel_;
   //! the filtered reystress exported to column map
   RCP<Epetra_MultiVector>      col_filtered_reynoldsstress_;
   //! the modeled subgrid stresses exported to column map
   RCP<Epetra_MultiVector>      col_filtered_modeled_subgrid_stress_;
+  //! the modeled fine scale velocities exported to column map
+  RCP<Epetra_MultiVector>      col_fs_vel_;
   //@}
 
   //! @name turbulent channel flow specials

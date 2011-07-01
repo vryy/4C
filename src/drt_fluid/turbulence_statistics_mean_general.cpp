@@ -312,6 +312,12 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
     avgcomm.SumAll(&lnumlines,&numlines,1);
   }
 
+  // Remark:
+  // Problems occur, if the ids of slave nodes are smaller than the ids of master nodes. In this case the correct nodes
+  // aren't found. Especially for only one proc, none of the nodes are found. If more than one proc is used, it
+  // is also possible that nodes are missing in the sampling. So be careful when using this function!
+  if (numlines == 0)
+    dserror("No node with the smallest coordinate in direction %d found. Changing master and slave of the pbc might help. Read remark.");
 
   // get an empty vector for the averages
   vector<double> avg_u(x.size(),0.0);

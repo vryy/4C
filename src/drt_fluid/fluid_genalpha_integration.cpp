@@ -805,7 +805,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
   discret_->ClearState();
 
   // Transfer of boundary data if necessary
-  turbulent_inflow_condition_->Transfer(veln_,velnp_);
+  turbulent_inflow_condition_->Transfer(veln_,velnp_,time_);
 
   // in the case of local systems we have to rotate back into global
   // Cartesian frame

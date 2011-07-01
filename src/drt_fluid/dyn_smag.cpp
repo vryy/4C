@@ -39,7 +39,7 @@ FLD::DynSmagFilter::DynSmagFilter(
 {
   // the default is do nothing
   apply_dynamic_smagorinsky_ = false;
-  apply_scale_similarity_ = false;
+  apply_box_filter_ = false;
   channel_flow_              = false;
 
   // -------------------------------------------------------------------
@@ -79,10 +79,13 @@ FLD::DynSmagFilter::DynSmagFilter(
 
     if(modelparams->get<string>("PHYSICAL_MODEL","no_model")
        ==
-       "Scale_Similarity"
+       "Scale_Similarity" or
+       modelparams->get<string>("PHYSICAL_MODEL","no_model")
+       ==
+       "Multifractal_Subgrid_Scales"
       )
     {
-      apply_scale_similarity_ = true;
+      apply_box_filter_ = true;
 
       // ---------------------------------------------------------------
       // get a vector layout from the discretization to construct
@@ -92,6 +95,7 @@ FLD::DynSmagFilter::DynSmagFilter(
       // vectors for the filtered quantities
       filtered_vel_                     = rcp(new Epetra_MultiVector(*noderowmap,3,true));
       filtered_reynoldsstress_          = rcp(new Epetra_MultiVector(*noderowmap,9,true));
+      fs_vel_                           = rcp(new Epetra_MultiVector(*noderowmap,3,true));
     }
   }
 
@@ -134,9 +138,7 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfCs(
 {
 
   // perform filtering
-  DynSmagBoxFilter(velocity,dirichtoggle);
-  //TODO Replace by
-  //ApplyBoxFilter(velocity,dirichtoggle);
+  ApplyBoxFilter(velocity,dirichtoggle);
 
   // compute Cs, use averaging or clipping
   DynSmagComputeCs();
@@ -159,326 +161,337 @@ void FLD::DynSmagFilter::ApplyFilter(
   return;
 }
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | perform box filtering                                      (private) |
- |                                                           gammi 09/08|
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::DynSmagFilter::DynSmagBoxFilter(
-  Teuchos::RCP<Epetra_Vector>             velocity           ,
-  const Teuchos::RCP<const Epetra_Vector> dirichtoggle
-  )
-{
-  TEUCHOS_FUNC_TIME_MONITOR("FLD::FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs");
 
-  // LES turbulence modeling is only valid for 3 dimensions
-  const int numdim =3;
+/* Achtung:
+ * Original Version von Gammi
+ * eigentlich nur umbenannt und scale similarity model
+ * hinzugefügt
+ * lasse das trotzdem mal stehen, da irgendwo im dynamic
+ * smagorinsky model (nicht im Filtern) noch ein paralleler
+ * Bug zu stecken scheint
+ */
 
-  // generate a parameterlist for communication and control
-  ParameterList filterparams;
-  // action for elements
-  filterparams.set("action","calc_fluid_box_filter");
-  filterparams.set("LESmodel",apply_dynamic_smagorinsky_);
 
-  // set state vector to pass distributed vector to the element
-  discret_->ClearState();
-  discret_->SetState("u and p (trial)",velocity);
-
-  // define element matrices and vectors --- they are used to
-  // transfer information into the element routine and back
-  Epetra_SerialDenseMatrix ep_reystress_hat(numdim,numdim);
-  Epetra_SerialDenseMatrix ep_modeled_stress_grid_scale_hat(numdim,numdim);
-  Epetra_SerialDenseVector ep_vel_hat (numdim);
-  Epetra_SerialDenseVector dummy1;
-  Epetra_SerialDenseVector dummy2;
-
-  // ---------------------------------------------------------------
-  // get a vector layout from the discretization to construct
-  const Epetra_Map* noderowmap = discret_->NodeRowMap();
-
-  // alloc an additional vector to store/add up the patch volume
-  RCP<Epetra_Vector> patchvol     = rcp(new Epetra_Vector(*noderowmap,true));
-
-  // free mem and reallocate to zero out vecs
-  filtered_vel_                   = Teuchos::null;
-  filtered_reynoldsstress_        = Teuchos::null;
-  filtered_modeled_subgrid_stress_= Teuchos::null;
-
-  filtered_vel_                   = rcp(new Epetra_MultiVector(*noderowmap,numdim       ,true));
-  filtered_reynoldsstress_        = rcp(new Epetra_MultiVector(*noderowmap,numdim*numdim,true));
-  filtered_modeled_subgrid_stress_= rcp(new Epetra_MultiVector(*noderowmap,numdim*numdim,true));
-
-  // ---------------------------------------------------------------
-  // do the integration of the (not normalized) box filter function
-  // on the element
-
-  // loop all elements on this proc (including ghosted ones)
-  for (int nele=0;nele<discret_->NumMyColElements();++nele)
-  {
-    // get the element
-    DRT::Element* ele = discret_->lColElement(nele);
-
-    // reset element matrices and vectors --- they are used to
-    // transfer information into the element routine and back
-    memset(ep_reystress_hat.A()                ,0,numdim*numdim*sizeof(double));
-    memset(ep_modeled_stress_grid_scale_hat.A(),0,numdim*numdim*sizeof(double));
-    memset(ep_vel_hat.Values()                 ,0,       numdim*sizeof(double));
-
-    // get element location vector, dirichlet flags and ownerships
-    vector<int> lm;
-    vector<int> lmowner;
-    vector<int> lmstride;
-    ele->LocationVector(*discret_,lm,lmowner,lmstride);
-
-    // call the element evaluate method to integrate functions
-    // against heaviside function element
-    int err = ele->Evaluate(filterparams,
-                            *discret_,
-                            lm,
-                            ep_reystress_hat,
-                            ep_modeled_stress_grid_scale_hat,
-                            ep_vel_hat,dummy1,dummy2);
-    if (err) dserror("Proc %d: Element %d returned err=%d",
-                     discret_->Comm().MyPID(),ele->Id(),err);
-
-    // get contribution to patch volume of this element. Add it up.
-    double volume_contribution =filterparams.get<double>("volume_contribution");
-
-    // loop all nodes of this element, add values to the global vectors
-    DRT::Node** elenodes=ele->Nodes();
-    for(int nn=0;nn<ele->NumNode();++nn)
-    {
-      DRT::Node* node = (elenodes[nn]);
-
-      // we are interested only in  row nodes
-      if(node->Owner() == discret_->Comm().MyPID())
-      {
-
-        // now assemble the computed values into the global vector
-        int    id = (node->Id());
-
-        double val = volume_contribution;
-        patchvol->SumIntoGlobalValues(1,&val,&id);
-
-        for (int idim =0;idim<numdim;++idim)
-        {
-          val = ep_vel_hat(idim);
-          ((*filtered_vel_)(idim))->SumIntoGlobalValues(1,&val,&id);
-
-          for (int jdim =0;jdim<numdim;++jdim)
-          {
-            const int ij = numdim*idim+jdim;
-
-            val = ep_reystress_hat (idim,jdim);
-            ((*filtered_reynoldsstress_ )       (ij))->SumIntoGlobalValues(1,&val,&id);
-
-            val = ep_modeled_stress_grid_scale_hat(idim,jdim);
-            ((*filtered_modeled_subgrid_stress_)(ij))->SumIntoGlobalValues(1,&val,&id);
-          }
-        }
-      }
-    }
-  } // end elementloop
-
-  // ---------------------------------------------------------------
-  // send add values from masters and slaves
-  {
-    map<int, vector<int> >::iterator masternode;
-
-    double val;
-    double vel_val[3];
-    double reystress_val[3][3];
-    double modeled_subgrid_stress_val[3][3];
-
-    // loop all masternodes on this proc
-    for(masternode =pbcmapmastertoslave_->begin();
-        masternode!=pbcmapmastertoslave_->end();
-        ++masternode)
-    {
-      // add all slave values to mastervalue
-      vector<int>::iterator slavenode;
-
-      int lid = noderowmap->LID(masternode->first);
-
-      val = (*patchvol)[lid];
-
-      for (int idim =0;idim<numdim;++idim)
-      {
-        vel_val[idim]=((*((*filtered_vel_)(idim)))[lid]);
-
-        for (int jdim =0;jdim<numdim;++jdim)
-        {
-          const int ij = numdim*idim+jdim;
-
-          reystress_val             [idim][jdim]=(*((*filtered_reynoldsstress_         ) (ij)))[lid];
-          modeled_subgrid_stress_val[idim][jdim]=(*((*filtered_modeled_subgrid_stress_ ) (ij)))[lid];
-        }
-      }
-
-      // loop all this masters slaves
-      for(slavenode=(masternode->second).begin();slavenode!=(masternode->second).end();++slavenode)
-      {
-        lid = noderowmap->LID(*slavenode);
-        val += (*patchvol)[lid];
-        for (int idim =0;idim<numdim;++idim)
-        {
-          vel_val[idim]+=((*((*filtered_vel_)(idim)))[lid]);
-
-          for (int jdim =0;jdim<numdim;++jdim)
-          {
-            const int ij = numdim*idim+jdim;
-
-            reystress_val             [idim][jdim]+=(*((*filtered_reynoldsstress_         ) (ij)))[lid];
-            modeled_subgrid_stress_val[idim][jdim]+=(*((*filtered_modeled_subgrid_stress_ ) (ij)))[lid];
-          } // end loop jdim
-        } // end loop idim
-      }  // end loop slaves
-
-      // replace value by sum
-      lid = noderowmap->LID(masternode->first);
-      patchvol->ReplaceMyValues(1,&val,&lid);
-
-      for (int idim =0;idim<numdim;++idim)
-      {
-        ((*filtered_vel_)(idim))->ReplaceMyValues(1,&(vel_val[idim]),&lid);
-
-        for (int jdim =0;jdim<numdim;++jdim)
-        {
-          const int ij = numdim*idim+jdim;
-
-          ((*filtered_reynoldsstress_        )(ij))->ReplaceMyValues(1,&(reystress_val             [idim][jdim]),&lid);
-          ((*filtered_modeled_subgrid_stress_)(ij))->ReplaceMyValues(1,&(modeled_subgrid_stress_val[idim][jdim]),&lid);
-        } // end loop jdim
-      } // end loop idim
-
-      // loop all this masters slaves
-      for(slavenode=(masternode->second).begin();slavenode!=(masternode->second).end();++slavenode)
-      {
-        lid = noderowmap->LID(*slavenode);
-        patchvol->ReplaceMyValues(1,&val,&lid);
-
-        for (int idim =0;idim<numdim;++idim)
-        {
-          ((*filtered_vel_)(idim))->ReplaceMyValues(1,&(vel_val[idim]),&lid);
-
-          for (int jdim =0;jdim<numdim;++jdim)
-          {
-            const int ij = numdim*idim+jdim;
-
-            ((*filtered_reynoldsstress_        )(ij))->ReplaceMyValues(1,&(reystress_val             [idim][jdim]),&lid);
-            ((*filtered_modeled_subgrid_stress_)(ij))->ReplaceMyValues(1,&(modeled_subgrid_stress_val[idim][jdim]),&lid);
-          } // end loop jdim
-        } // end loop idim
-      } // end loop slaves
-    } // end loop masters
-  }
-
-  // ---------------------------------------------------------------
-  // zero out dirichlet nodes
-  {
-    // get a rowmap for the dofs
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-    // loop all nodes on the processor
-    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
-    {
-      // get the processor local node
-      DRT::Node*  lnode       = discret_->lRowNode(lnodeid);
-
-      // the set of degrees of freedom associated with the node
-      vector<int> nodedofset = discret_->Dof(lnode);
-
-      // check whether the node is on a wall, i.e. all velocity dofs
-      // are Dirichlet constrained
-      int is_no_slip_node =0;
-      for(int index=0;index<numdim;++index)
-      {
-        int gid = nodedofset[index];
-        int lid = dofrowmap->LID(gid);
-
-        if ((*dirichtoggle)[lid]==1)
-        {
-          is_no_slip_node++;
-        }
-      }
-
-      // this node is on a wall
-      if (is_no_slip_node == numdim)
-      {
-        for (int idim =0;idim<numdim;++idim)
-        {
-          double val = 0.0;
-          ((*filtered_vel_)(idim))->ReplaceMyValues(1,&val,&lnodeid);
-
-          for (int jdim =0;jdim<numdim;++jdim)
-          {
-            const int ij = numdim*idim+jdim;
-
-            val = 0.0;
-            ((*filtered_reynoldsstress_         ) (ij))->ReplaceMyValues(1,&val,&lnodeid);
-
-            val = 0.0;
-            ((*filtered_modeled_subgrid_stress_ ) (ij))->ReplaceMyValues(1,&val,&lnodeid);
-          } // end loop jdim
-        } // end loop idim
-      }
-    } // end loop all nodes
-  }
-
-  // ---------------------------------------------------------------
-  // scale vectors by element patch sizes --- this corresponds to
-  // the normalization of the box filter function
-
-  // loop all nodes on the processor
-  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
-  {
-    double thisvol = (*patchvol)[lnodeid];
-
-    for (int idim =0;idim<3;++idim)
-    {
-      double val = ((*((*filtered_vel_)(idim)))[lnodeid])/thisvol;
-      ((*filtered_vel_)(idim))->ReplaceMyValues(1,&val,&lnodeid);
-
-      for (int jdim =0;jdim<3;++jdim)
-      {
-        const int ij = numdim*idim+jdim;
-
-        val = ((*((*filtered_reynoldsstress_ ) (ij)))[lnodeid])/thisvol;
-        ((*filtered_reynoldsstress_ ) (ij))->ReplaceMyValues(1,&val,&lnodeid);
-
-        val = ((*((*filtered_modeled_subgrid_stress_ ) (ij)))[lnodeid])/thisvol;
-        ((*filtered_modeled_subgrid_stress_ ) (ij))->ReplaceMyValues(1,&val,&lnodeid);
-      } // end loop jdim
-    } // end loop idim
-  } // end loop nodes
-
-  // clean up
-  discret_->ClearState();
-
-  // ----------------------------------------------------------
-  // the communication part: Export from row to column map
-
-  // get the column map in order to communicate the result to all ghosted nodes
-  const Epetra_Map* nodecolmap = discret_->NodeColMap();
-
-  // allocate distributed vectors in col map format to have the filtered
-  // quantities available on ghosted nodes
-  col_filtered_vel_                    = rcp(new Epetra_MultiVector(*nodecolmap,3,true));
-  col_filtered_reynoldsstress_         = rcp(new Epetra_MultiVector(*nodecolmap,9,true));
-  col_filtered_modeled_subgrid_stress_ = rcp(new Epetra_MultiVector(*nodecolmap,9,true));
-
-  // export filtered vectors in rowmap to columnmap format
-  LINALG::Export(*filtered_vel_                   ,*col_filtered_vel_                   );
-  LINALG::Export(*filtered_reynoldsstress_        ,*col_filtered_reynoldsstress_        );
-  LINALG::Export(*filtered_modeled_subgrid_stress_,*col_filtered_modeled_subgrid_stress_);
-
-  return;
-} //end FLD::DynSmagFilter::DynSmagBoxFilter
+////<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+////<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+////<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+///*----------------------------------------------------------------------*
+// | perform box filtering                                      (private) |
+// |                                                           gammi 09/08|
+// *----------------------------------------------------------------------*/
+////<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+////<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+////<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//void FLD::DynSmagFilter::DynSmagBoxFilter(
+//  Teuchos::RCP<Epetra_Vector>             velocity           ,
+//  const Teuchos::RCP<const Epetra_Vector> dirichtoggle
+//  )
+//{
+//  TEUCHOS_FUNC_TIME_MONITOR("FLD::FluidGenAlphaIntegration::ApplyFilterForDynamicComputationOfCs");
+//
+//  // LES turbulence modeling is only valid for 3 dimensions
+//  const int numdim =3;
+//
+//  // generate a parameterlist for communication and control
+//  ParameterList filterparams;
+//  // action for elements
+//  filterparams.set("action","calc_fluid_box_filter");
+//  filterparams.set("LESmodel",apply_dynamic_smagorinsky_);
+//
+//  // set state vector to pass distributed vector to the element
+//  discret_->ClearState();
+//  discret_->SetState("u and p (trial)",velocity);
+//
+//  // define element matrices and vectors --- they are used to
+//  // transfer information into the element routine and back
+//  Epetra_SerialDenseMatrix ep_reystress_hat(numdim,numdim);
+//  Epetra_SerialDenseMatrix ep_modeled_stress_grid_scale_hat(numdim,numdim);
+//  Epetra_SerialDenseVector ep_vel_hat (numdim);
+//  Epetra_SerialDenseVector dummy1;
+//  Epetra_SerialDenseVector dummy2;
+//
+//  // ---------------------------------------------------------------
+//  // get a vector layout from the discretization to construct
+//  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+//
+//  // alloc an additional vector to store/add up the patch volume
+//  RCP<Epetra_Vector> patchvol     = rcp(new Epetra_Vector(*noderowmap,true));
+//
+//  // free mem and reallocate to zero out vecs
+//  filtered_vel_                   = Teuchos::null;
+//  filtered_reynoldsstress_        = Teuchos::null;
+//  filtered_modeled_subgrid_stress_= Teuchos::null;
+//
+//  filtered_vel_                   = rcp(new Epetra_MultiVector(*noderowmap,numdim       ,true));
+//  filtered_reynoldsstress_        = rcp(new Epetra_MultiVector(*noderowmap,numdim*numdim,true));
+//  filtered_modeled_subgrid_stress_= rcp(new Epetra_MultiVector(*noderowmap,numdim*numdim,true));
+//
+//  // ---------------------------------------------------------------
+//  // do the integration of the (not normalized) box filter function
+//  // on the element
+//
+//  // loop all elements on this proc (including ghosted ones)
+//  for (int nele=0;nele<discret_->NumMyColElements();++nele)
+//  {
+//    // get the element
+//    DRT::Element* ele = discret_->lColElement(nele);
+//
+//    // reset element matrices and vectors --- they are used to
+//    // transfer information into the element routine and back
+//    memset(ep_reystress_hat.A()                ,0,numdim*numdim*sizeof(double));
+//    memset(ep_modeled_stress_grid_scale_hat.A(),0,numdim*numdim*sizeof(double));
+//    memset(ep_vel_hat.Values()                 ,0,       numdim*sizeof(double));
+//
+//    // get element location vector, dirichlet flags and ownerships
+//    vector<int> lm;
+//    vector<int> lmowner;
+//    vector<int> lmstride;
+//    ele->LocationVector(*discret_,lm,lmowner,lmstride);
+//
+//    // call the element evaluate method to integrate functions
+//    // against heaviside function element
+//    int err = ele->Evaluate(filterparams,
+//                            *discret_,
+//                            lm,
+//                            ep_reystress_hat,
+//                            ep_modeled_stress_grid_scale_hat,
+//                            ep_vel_hat,dummy1,dummy2);
+//    if (err) dserror("Proc %d: Element %d returned err=%d",
+//                     discret_->Comm().MyPID(),ele->Id(),err);
+//
+//    // get contribution to patch volume of this element. Add it up.
+//    double volume_contribution =filterparams.get<double>("volume_contribution");
+//
+//    // loop all nodes of this element, add values to the global vectors
+//    DRT::Node** elenodes=ele->Nodes();
+//    for(int nn=0;nn<ele->NumNode();++nn)
+//    {
+//      DRT::Node* node = (elenodes[nn]);
+//
+//      // we are interested only in  row nodes
+//      if(node->Owner() == discret_->Comm().MyPID())
+//      {
+//
+//        // now assemble the computed values into the global vector
+//        int    id = (node->Id());
+//
+//        double val = volume_contribution;
+//        patchvol->SumIntoGlobalValues(1,&val,&id);
+//
+//        for (int idim =0;idim<numdim;++idim)
+//        {
+//          val = ep_vel_hat(idim);
+//          ((*filtered_vel_)(idim))->SumIntoGlobalValues(1,&val,&id);
+//
+//          for (int jdim =0;jdim<numdim;++jdim)
+//          {
+//            const int ij = numdim*idim+jdim;
+//
+//            val = ep_reystress_hat (idim,jdim);
+//            ((*filtered_reynoldsstress_ )       (ij))->SumIntoGlobalValues(1,&val,&id);
+//
+//            val = ep_modeled_stress_grid_scale_hat(idim,jdim);
+//            ((*filtered_modeled_subgrid_stress_)(ij))->SumIntoGlobalValues(1,&val,&id);
+//          }
+//        }
+//      }
+//    }
+//  } // end elementloop
+//
+//  // ---------------------------------------------------------------
+//  // send add values from masters and slaves
+//  {
+//    map<int, vector<int> >::iterator masternode;
+//
+//    double val;
+//    double vel_val[3];
+//    double reystress_val[3][3];
+//    double modeled_subgrid_stress_val[3][3];
+//
+//    // loop all masternodes on this proc
+//    for(masternode =pbcmapmastertoslave_->begin();
+//        masternode!=pbcmapmastertoslave_->end();
+//        ++masternode)
+//    {
+//      // add all slave values to mastervalue
+//      vector<int>::iterator slavenode;
+//
+//      int lid = noderowmap->LID(masternode->first);
+//
+//      val = (*patchvol)[lid];
+//
+//      for (int idim =0;idim<numdim;++idim)
+//      {
+//        vel_val[idim]=((*((*filtered_vel_)(idim)))[lid]);
+//
+//        for (int jdim =0;jdim<numdim;++jdim)
+//        {
+//          const int ij = numdim*idim+jdim;
+//
+//          reystress_val             [idim][jdim]=(*((*filtered_reynoldsstress_         ) (ij)))[lid];
+//          modeled_subgrid_stress_val[idim][jdim]=(*((*filtered_modeled_subgrid_stress_ ) (ij)))[lid];
+//        }
+//      }
+//
+//      // loop all this masters slaves
+//      for(slavenode=(masternode->second).begin();slavenode!=(masternode->second).end();++slavenode)
+//      {
+//        lid = noderowmap->LID(*slavenode);
+//        val += (*patchvol)[lid];
+//        for (int idim =0;idim<numdim;++idim)
+//        {
+//          vel_val[idim]+=((*((*filtered_vel_)(idim)))[lid]);
+//
+//          for (int jdim =0;jdim<numdim;++jdim)
+//          {
+//            const int ij = numdim*idim+jdim;
+//
+//            reystress_val             [idim][jdim]+=(*((*filtered_reynoldsstress_         ) (ij)))[lid];
+//            modeled_subgrid_stress_val[idim][jdim]+=(*((*filtered_modeled_subgrid_stress_ ) (ij)))[lid];
+//          } // end loop jdim
+//        } // end loop idim
+//      }  // end loop slaves
+//
+//      // replace value by sum
+//      lid = noderowmap->LID(masternode->first);
+//      patchvol->ReplaceMyValues(1,&val,&lid);
+//
+//      for (int idim =0;idim<numdim;++idim)
+//      {
+//        ((*filtered_vel_)(idim))->ReplaceMyValues(1,&(vel_val[idim]),&lid);
+//
+//        for (int jdim =0;jdim<numdim;++jdim)
+//        {
+//          const int ij = numdim*idim+jdim;
+//
+//          ((*filtered_reynoldsstress_        )(ij))->ReplaceMyValues(1,&(reystress_val             [idim][jdim]),&lid);
+//          ((*filtered_modeled_subgrid_stress_)(ij))->ReplaceMyValues(1,&(modeled_subgrid_stress_val[idim][jdim]),&lid);
+//        } // end loop jdim
+//      } // end loop idim
+//
+//      // loop all this masters slaves
+//      for(slavenode=(masternode->second).begin();slavenode!=(masternode->second).end();++slavenode)
+//      {
+//        lid = noderowmap->LID(*slavenode);
+//        patchvol->ReplaceMyValues(1,&val,&lid);
+//
+//        for (int idim =0;idim<numdim;++idim)
+//        {
+//          ((*filtered_vel_)(idim))->ReplaceMyValues(1,&(vel_val[idim]),&lid);
+//
+//          for (int jdim =0;jdim<numdim;++jdim)
+//          {
+//            const int ij = numdim*idim+jdim;
+//
+//            ((*filtered_reynoldsstress_        )(ij))->ReplaceMyValues(1,&(reystress_val             [idim][jdim]),&lid);
+//            ((*filtered_modeled_subgrid_stress_)(ij))->ReplaceMyValues(1,&(modeled_subgrid_stress_val[idim][jdim]),&lid);
+//          } // end loop jdim
+//        } // end loop idim
+//      } // end loop slaves
+//    } // end loop masters
+//  }
+//
+//  // ---------------------------------------------------------------
+//  // zero out dirichlet nodes
+//  {
+//    // get a rowmap for the dofs
+//    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+//
+//    // loop all nodes on the processor
+//    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
+//    {
+//      // get the processor local node
+//      DRT::Node*  lnode       = discret_->lRowNode(lnodeid);
+//
+//      // the set of degrees of freedom associated with the node
+//      vector<int> nodedofset = discret_->Dof(lnode);
+//
+//      // check whether the node is on a wall, i.e. all velocity dofs
+//      // are Dirichlet constrained
+//      int is_no_slip_node =0;
+//      for(int index=0;index<numdim;++index)
+//      {
+//        int gid = nodedofset[index];
+//        int lid = dofrowmap->LID(gid);
+//
+//        if ((*dirichtoggle)[lid]==1)
+//        {
+//          is_no_slip_node++;
+//        }
+//      }
+//
+//      // this node is on a wall
+//      if (is_no_slip_node == numdim)
+//      {
+//        for (int idim =0;idim<numdim;++idim)
+//        {
+//          double val = 0.0;
+//          ((*filtered_vel_)(idim))->ReplaceMyValues(1,&val,&lnodeid);
+//
+//          for (int jdim =0;jdim<numdim;++jdim)
+//          {
+//            const int ij = numdim*idim+jdim;
+//
+//            val = 0.0;
+//            ((*filtered_reynoldsstress_         ) (ij))->ReplaceMyValues(1,&val,&lnodeid);
+//
+//            val = 0.0;
+//            ((*filtered_modeled_subgrid_stress_ ) (ij))->ReplaceMyValues(1,&val,&lnodeid);
+//          } // end loop jdim
+//        } // end loop idim
+//      }
+//    } // end loop all nodes
+//  }
+//
+//  // ---------------------------------------------------------------
+//  // scale vectors by element patch sizes --- this corresponds to
+//  // the normalization of the box filter function
+//
+//  // loop all nodes on the processor
+//  for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
+//  {
+//    double thisvol = (*patchvol)[lnodeid];
+//
+//    for (int idim =0;idim<3;++idim)
+//    {
+//      double val = ((*((*filtered_vel_)(idim)))[lnodeid])/thisvol;
+//      ((*filtered_vel_)(idim))->ReplaceMyValues(1,&val,&lnodeid);
+//
+//      for (int jdim =0;jdim<3;++jdim)
+//      {
+//        const int ij = numdim*idim+jdim;
+//
+//        val = ((*((*filtered_reynoldsstress_ ) (ij)))[lnodeid])/thisvol;
+//        ((*filtered_reynoldsstress_ ) (ij))->ReplaceMyValues(1,&val,&lnodeid);
+//
+//        val = ((*((*filtered_modeled_subgrid_stress_ ) (ij)))[lnodeid])/thisvol;
+//        ((*filtered_modeled_subgrid_stress_ ) (ij))->ReplaceMyValues(1,&val,&lnodeid);
+//      } // end loop jdim
+//    } // end loop idim
+//  } // end loop nodes
+//
+//  // clean up
+//  discret_->ClearState();
+//
+//  // ----------------------------------------------------------
+//  // the communication part: Export from row to column map
+//
+//  // get the column map in order to communicate the result to all ghosted nodes
+//  const Epetra_Map* nodecolmap = discret_->NodeColMap();
+//
+//  // allocate distributed vectors in col map format to have the filtered
+//  // quantities available on ghosted nodes
+//  col_filtered_vel_                    = rcp(new Epetra_MultiVector(*nodecolmap,3,true));
+//  col_filtered_reynoldsstress_         = rcp(new Epetra_MultiVector(*nodecolmap,9,true));
+//  col_filtered_modeled_subgrid_stress_ = rcp(new Epetra_MultiVector(*nodecolmap,9,true));
+//
+//  // export filtered vectors in rowmap to columnmap format
+//  LINALG::Export(*filtered_vel_                   ,*col_filtered_vel_                   );
+//  LINALG::Export(*filtered_reynoldsstress_        ,*col_filtered_reynoldsstress_        );
+//  LINALG::Export(*filtered_modeled_subgrid_stress_,*col_filtered_modeled_subgrid_stress_);
+//
+//  return;
+//} //end FLD::DynSmagFilter::DynSmagBoxFilter
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -658,7 +671,7 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
 } // end FLD::DynSmagFilter::DynSmagComputeCs
 
 void FLD::DynSmagFilter::ApplyBoxFilter(
-  Teuchos::RCP<Epetra_Vector>             velocity           ,
+  const Teuchos::RCP<const Epetra_Vector> velocity,
   const Teuchos::RCP<const Epetra_Vector> dirichtoggle
   )
 {
@@ -696,12 +709,16 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
   filtered_vel_                   = Teuchos::null;
   filtered_reynoldsstress_        = Teuchos::null;
   if (apply_dynamic_smagorinsky_)
-    filtered_modeled_subgrid_stress_= Teuchos::null;
+    filtered_modeled_subgrid_stress_ = Teuchos::null;
+  if (apply_box_filter_)
+    fs_vel_ = Teuchos::null;
 
   filtered_vel_                   = rcp(new Epetra_MultiVector(*noderowmap,numdim       ,true));
   filtered_reynoldsstress_        = rcp(new Epetra_MultiVector(*noderowmap,numdim*numdim,true));
   if (apply_dynamic_smagorinsky_)
     filtered_modeled_subgrid_stress_= rcp(new Epetra_MultiVector(*noderowmap,numdim*numdim,true));
+  if (apply_box_filter_)
+    fs_vel_ = rcp(new Epetra_MultiVector(*noderowmap,numdim       ,true));
 
   // ---------------------------------------------------------------
   // do the integration of the (not normalized) box filter function
@@ -904,7 +921,6 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
         if ((*dirichtoggle)[lid]==1) //this is a dirichlet node
         {
           is_dirichlet_node++;
-////          std::cout << lid << std::endl;
           double vel_i = (*velocity)[lid];
           if (vel_i < 10e-14) //==0.0?
           {
@@ -912,16 +928,6 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
           }
         }
       }
-      // jetzt wird das Volumen nur für den Fall, dass v in alle Raumrichtungen
-      // vorgegeben wird ersetzt
-      // sonst wird der alte Wert verwendet
-      // das heißt es ergeben sich Problem, wenn nur ein v in eine Richtung ungleich 0
-      // vorgegeben wird
-//      if (is_dirichlet_node == numdim)
-//      {
-//        double volval = 1.0;
-//        patchvol->ReplaceMyValues(1,&volval,&lnodeid);
-//      }
 
       // this node is on a wall
       if (is_dirichlet_node == numdim)
@@ -944,9 +950,7 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
             double valvel_j = (*velocity)[lid_j];
             double valvel_ij= valvel_i * valvel_j;
             ((*filtered_reynoldsstress_         ) (ij))->ReplaceMyValues(1,&valvel_ij,&lnodeid);
-//            std::cout << valvel_ij << std::endl;
 
-            //was wird daraus?
             if (apply_dynamic_smagorinsky_)
             {
               if (is_no_slip_node == numdim)
@@ -957,9 +961,6 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
               else
               {
                 double thisvol = (*patchvol)[lnodeid];
-//                std::cout << "stress" << std::endl;
-//                std::cout << thisvol << std::endl;
-//                std::cout << ((*((*filtered_modeled_subgrid_stress_ ) (ij)))[lnodeid]) << std::endl;
                 double val = ((*((*filtered_modeled_subgrid_stress_ ) (ij)))[lnodeid])/thisvol;
                 ((*filtered_modeled_subgrid_stress_ ) (ij))->ReplaceMyValues(1,&val,&lnodeid);
               }
@@ -972,7 +973,6 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
       }
     } // end loop all nodes
   }
-//  std::cout << *filtered_vel_ << std::endl;
 
   // ---------------------------------------------------------------
   // scale vectors by element patch sizes --- this corresponds to
@@ -982,7 +982,6 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
   for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();++lnodeid)
   {
     double thisvol = (*patchvol)[lnodeid];
-//    std::cout << thisvol << std::endl;
 
     for (int idim =0;idim<3;++idim)
     {
@@ -1008,6 +1007,34 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
   // clean up
   discret_->ClearState();
 
+  //calculate fine scale velocities
+  if (apply_box_filter_)
+  {
+    // loop all elements on this proc
+    for (int nid=0;nid<discret_->NumMyRowNodes();++nid)
+    {
+      // get the node
+      DRT::Node* node = discret_->lRowNode(nid);
+      // get global ids of all dofs of the node
+      vector<int> dofs= discret_->Dof(node);
+      //we only loop over all velocity dofs
+      for(int d=0;d<discret_->NumDof(node)-1;++d)
+      {
+        // get global id of the dof
+        int gid = dofs[d];
+        // get local dof id corresponding to the global id
+        int lid = discret_->DofRowMap()->LID(gid);
+        // filtered velocity and all scale velocity
+        double filteredvel = (*((*filtered_vel_)(d)))[nid];
+        double vel = (*velocity)[lid];
+        // calculate fine scale velocity
+        double val = vel - filteredvel;
+        // calculate fine scale velocity
+        ((*fs_vel_)(d))->ReplaceMyValues(1,&val,&nid);
+      }
+    }
+  }
+
   // ----------------------------------------------------------
   // the communication part: Export from row to column map
 
@@ -1020,14 +1047,16 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
   col_filtered_reynoldsstress_         = rcp(new Epetra_MultiVector(*nodecolmap,9,true));
   if (apply_dynamic_smagorinsky_)
     col_filtered_modeled_subgrid_stress_ = rcp(new Epetra_MultiVector(*nodecolmap,9,true));
+  if (apply_box_filter_)
+    col_fs_vel_ = rcp(new Epetra_MultiVector(*nodecolmap,3,true));
 
   // export filtered vectors in rowmap to columnmap format
   LINALG::Export(*filtered_vel_                   ,*col_filtered_vel_                   );
   LINALG::Export(*filtered_reynoldsstress_        ,*col_filtered_reynoldsstress_        );
   if (apply_dynamic_smagorinsky_)
     LINALG::Export(*filtered_modeled_subgrid_stress_,*col_filtered_modeled_subgrid_stress_);
-//  std::cout << *filtered_vel_ << std::endl;
-//  std::cout << *filtered_reynoldsstress_ << std::endl;
+  if (apply_box_filter_)
+    LINALG::Export(*fs_vel_                   ,*col_fs_vel_                   );
 
   return;
 }

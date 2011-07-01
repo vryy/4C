@@ -90,11 +90,8 @@ DRT::ELEMENTS::Fluid3ImplParameter::Fluid3ImplParameter()
 //---------------------------------------------------------------------*/
 void DRT::ELEMENTS::Fluid3ImplParameter::SetElementGeneralFluidParameter( Teuchos::ParameterList& params )
 {
-  // routine SetGeneralFluidParameter was called once
   if(set_general_fluid_parameter_ == false)
     set_general_fluid_parameter_ = true;
-  else
-    dserror("SetGeneralFluidParameter() is supposed to be called only once during runtime");
 
 //----------------------------------------------------------------------
 // get flags to switch on/off different fluid formulations
@@ -331,15 +328,13 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementGeneralFluidParameter( Teucho
       turb_mod_action_ = INPAR::FLUID::scale_similarity;
       Cl_ = turbmodelparams.get<double>("C_SCALE_SIMILARITY");
     }
-    else if (physical_turbulence_model == "Mixed_Scale_Similarity_Eddy_Viscosity_Model")
+    else if (physical_turbulence_model == "Multifractal_Subgrid_Scales")
     {
-      turb_mod_action_ = INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model;
-      Cl_ = turbmodelparams.get<double>("C_SCALE_SIMILARITY");
-      Cs_ = turbmodelparams.get<double>("C_SMAGORINSKY");
+      turb_mod_action_ = INPAR::FLUID::multifractal_subgrid_scales;
     }
     else
     {
-      dserror("Up to now, only Smagorinsky (constant coefficient with and without wall function as well as dynamic) and Scale Similarity (also combined with Smagorinsky) are available");
+      dserror("Up to now, only Smagorinsky, Scale Similarity and Multifractal Subgrid Scales are available");
     }
   } // end if(Classical LES)
 }

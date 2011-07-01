@@ -16,6 +16,8 @@ Maintainer: Peter Gamnitzer
 #ifdef CCADISCRET
 #include "drt_transfer_turb_inflow.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
+#include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 
@@ -33,11 +35,12 @@ TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
   RefCountPtr<LINALG::MapExtractor> dbcmaps
     )
   : dis_(dis),
-    dbcmaps_(dbcmaps)
+    dbcmaps_(dbcmaps),
+    curve_(-1)
 {
   active_=false;
 
-  // vector of pointers to all node clouds ie. conditions to couple
+  // vector of pointers to all node clouds i.e. conditions to couple
   std::vector<DRT::Condition*>     nodecloudstocouple;
 
   // get surfaces to couple
@@ -65,7 +68,7 @@ TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
         cond!=nodecloudstocouple.end();
         ++cond)
     {
-      // get id, directiuon info and toggle
+      // get id, direction info and toggle
       int        id       =-1;
       int        direction=-1;
       ToggleType toggle   =none;
@@ -190,9 +193,9 @@ TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
     {
       if(pair->second.size()!=1)
       {
-	dserror("expected one node to match, got %d out of %d",
-		pair->second.size(),
-		slavenodeids.size());
+        dserror("expected one node to match, got %d out of %d",
+        pair->second.size(),
+        slavenodeids.size());
       }
     }
   }
@@ -210,7 +213,8 @@ TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void TransferTurbulentInflowCondition::Transfer(
   const Teuchos::RCP<Epetra_Vector> veln ,
-  Teuchos::RCP<Epetra_Vector>       velnp)
+  Teuchos::RCP<Epetra_Vector>       velnp,
+  const double                      time)
 {
   const Epetra_Map* dofrowmap = dis_->DofRowMap();
 
@@ -219,6 +223,28 @@ void TransferTurbulentInflowCondition::Transfer(
 
   if(active_)
   {
+
+      // initialization of time curve factor
+      double curvefac    = 1.0;
+      if (curve_ >= 0) // yes, we have a time curve
+      {
+        // time factor for the intermediate step
+        if(time >= 0.0)
+        {
+          curvefac = DRT::Problem::Instance()->Curve(curve_).f(time);
+        }
+        else
+        {
+          // do not compute an "alternative" curvefac here since a negative time value
+          // indicates an error.
+          dserror("Negative time value: time = %f",time);
+        }
+      }
+      else // we do not have a time curve --- time curve factor is constant equal 1
+      {
+        // nothing to do
+      }
+
     // collect masters on this proc and associated velocities
     for (std::map<int,vector<int> >::iterator pair=midtosid_.begin();
          pair!=midtosid_.end();
@@ -238,7 +264,7 @@ void TransferTurbulentInflowCondition::Transfer(
         {
           int lid = dofrowmap->LID(masterdofs[rr]);
 
-          (mymasters_vel[rr]).push_back((*veln)[lid]);
+          (mymasters_vel[rr]).push_back(((*veln)[lid])*curvefac);
         }
       }
       else
@@ -283,9 +309,9 @@ void TransferTurbulentInflowCondition::Transfer(
       // in the last step, we keep everything on this proc
       if(np < numproc)
       {
-	// -----------------------
-	// do what we wanted to do
-	SetValuesAvailableOnThisProc(mymasters,mymasters_vel,velnp);
+        // -----------------------
+        // do what we wanted to do
+        SetValuesAvailableOnThisProc(mymasters,mymasters_vel,velnp);
 
         // Pack info into block to send
         DRT::PackBuffer data;
@@ -366,6 +392,15 @@ void TransferTurbulentInflowCondition::GetData(
   else
   {
     dserror("expecting either master or slave");
+  }
+
+  // find out whether we will use a time curve
+  if (curve_ == -1)
+  {
+    const vector<int>* curve = cond->Get<vector<int> >("curve");
+
+    // set curve number
+    if (curve) curve_ = (*curve)[0];
   }
 
   return;

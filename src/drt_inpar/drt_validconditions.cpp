@@ -602,13 +602,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
         "transfer direction","x",
         Teuchos::tuple<std::string>("x","y","z"),
         Teuchos::tuple<std::string>("x","y","z"))));
+  tbc_turb_inflow_components.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
 
   Teuchos::RCP<ConditionDefinition> tbc_turb_inflow =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURF TURBULENT INFLOW TRANSFER",
                                          "TransferTurbulentInflow",
                                          "TransferTurbulentInflow",
                                          DRT::Condition::TransferTurbulentInflow,
-                                         false,
+                                         true,
                                          DRT::Condition::Surface));
 
   // we attach all the components of this condition to this weak line DBC
@@ -619,6 +620,19 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   // and append it to the list of all conditions
   condlist.push_back(tbc_turb_inflow);
+
+  /*--------------------------------------------------------------------*/
+  // separate domain for turbulent inflow generation
+
+  Teuchos::RCP<ConditionDefinition> turbulentinflowgeneration =
+    Teuchos::rcp(new ConditionDefinition("FLUID TURBULENT INFLOW VOLUME",
+                                         "TurbulentInflowSection",
+                                         "TurbulentInflowSection",
+                                         DRT::Condition::TurbulentInflowSection,
+                                         true,
+                                         DRT::Condition::Volume));
+
+   condlist.push_back(turbulentinflowgeneration);
 
   /*--------------------------------------------------------------------*/
   // weak Dirichlet

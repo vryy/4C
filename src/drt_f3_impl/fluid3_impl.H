@@ -412,6 +412,13 @@ namespace ELEMENTS
                            const double                            thermpressdtam ///< time derivative of thermodynamic pressure at time n+alpha_m / n
                            );
 
+    //! get parameters for multifractal subgrid scales
+    void PrepareMultifractalSubgrScales(LINALG::Matrix<nsd_,1>&           B,         ///< coefficient multifractal subgrid scales
+                                        const LINALG::Matrix<nsd_,nen_>&  evelaf,    ///< velocity at time n+alpha_f / n+1
+                                        const LINALG::Matrix<nsd_,nen_>&  fsevelaf,  ///< fine scale velocity at time n+alpha_f / n+1
+                                        const double                      vol        ///< volume
+                                        );
+
     //! get turbulence parameter
     void GetTurbulenceParams(ParameterList&             turbmodelparams,    ///< pointer turbulence parameter list
                              double&                    Cs_delta_sq,        ///< parameter CS in dynamic Smagorinsky
@@ -433,6 +440,21 @@ namespace ELEMENTS
                                 const double                        vol,        ///< volume
                                 double&                             Cs          ///< parameter CS in fixed Smagorinsky
                                 );
+
+    void CalcScaleSimilarityFineScaleSubgrVisc(
+      const LINALG::Matrix<nsd_,nen_>&        evel_hat,
+      const LINALG::Matrix<nsd_,nen_>&        fsevelaf,
+      const double                            vol,
+      double&                                 Cs,
+      const LINALG::Matrix<nsd_,1>&           B
+      );
+
+    void CalcMultiFracSubgridVelCoef(
+      const double            CI,
+      const double            alpha,
+      const vector<double>    N,
+      LINALG::Matrix<nsd_,1>& B
+      );
 
     //! calculate stabilization parameter
     void CalcStabParameter(const double  vol);  ///< volume
@@ -644,11 +666,51 @@ namespace ELEMENTS
         const double &                            fssgviscfac     ///< = (fine scale subgrid viscousity) x timefacfac
         );
 
+    void SubGridStressTermPrefiltering(
+        //const int &                               eid,
+        LINALG::Matrix<nsd_,nen_> &               velforce,
+        const double &                            rhsfac,
+        const double &                            Cl);
+
     void SubGridStressTerm(
         //const int &                               eid,
         LINALG::Matrix<nsd_,nen_> &               velforce,
         const double &                            rhsfac,
         const double &                            Cl);
+
+    void SubGridStressTermCross(
+        //const int &                               eid,
+        LINALG::Matrix<nsd_,nen_> &               velforce,
+        const double &                            rhsfac,
+        const double &                            Cl);
+
+    void SubGridStressTermReynolds(
+        //const int &                               eid,
+        LINALG::Matrix<nsd_,nen_> &               velforce,
+        const double &                            rhsfac,
+        const double &                            Cl);
+
+    void MultfracSubGridScalesCross(
+        //const int &                               eid,
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
+        LINALG::Matrix<nsd_,nen_> &               velforce,
+        const double &                            timefacfac,
+        const double &                            rhsfac,
+        //const double &                            B
+        LINALG::Matrix<nsd_,1>&                   B);
+
+    void MultfracSubGridScalesReynolds(
+        //const int &                               eid,
+        LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
+        LINALG::Matrix<nsd_,nen_> &               velforce,
+        const double &                            timefacfac,
+        const double &                            rhsfac,
+        //const double &                            B
+        LINALG::Matrix<nsd_,1>&                   B);
+
+    void FineScaleSimilaritySubGridViscosityTerm(
+        LINALG::Matrix<nsd_,nen_> &             velforce,
+        const double &                          fssgviscfac);
 
     //! linearisation in the case of mesh motion 2-D
     void LinMeshMotion_2D(
@@ -681,7 +743,7 @@ namespace ELEMENTS
                          const LINALG::Matrix<nsd_,nen_>& derxy,
                          LINALG::Matrix<nsd_,nsd_>        & velderxy)
     {
-      double rateofstrain=0;
+      double rateofstrain=0.0;
 
       // velderxy is computed here since the evaluation of the strain rate can be performed
       // at the element center before the gauss loop
@@ -727,6 +789,65 @@ namespace ELEMENTS
       // sqrt(two_epsilon(rr,mm)*two_epsilon(mm,rr)/4.0*2.0)
 
       return(sqrt(rateofstrain/2.0));
+    }
+
+    /*!
+      \brief calculate norm of strain of (fine-scale) velocity
+
+      \param evel       (i) nodal velocity values
+      \param derxy      (i) shape function derivatives
+      \param velderxy   (o) velocity derivatives
+
+      \return computed norm of strain
+     */
+    double GetNormStrain(const LINALG::Matrix<nsd_,nen_>& evel,
+                         const LINALG::Matrix<nsd_,nen_>& derxy,
+                         LINALG::Matrix<nsd_,nsd_>      & velderxy)
+    {
+      double normofstrain=0.0;
+
+      // velderxy is computed here since the evaluation of the strain rate can be performed
+      // at the element center before the gauss loop
+
+      // get velocity derivatives at integration point
+      //
+      //              +-----  dN (x)
+      //   dvel (x)    \        k
+      //   -------- =   +     ------ * vel
+      //      dx       /        dx        k
+      //        j     +-----      j
+      //              node k
+      //
+      // j : direction of derivative x/y/z
+      //
+      velderxy.MultiplyNT(evel,derxy);
+
+      // compute (resolved) norm of strain
+      //
+      //          +-                                 -+ 1
+      //          |          /   \           /   \    | -
+      //          |     eps | vel |   * eps | vel |   | 2
+      //          |          \   / ij        \   / ij |
+      //          +-                                 -+
+      //
+      LINALG::Matrix<nsd_,nsd_> two_epsilon;
+      for(int rr=0;rr<nsd_;++rr)
+      {
+        for(int mm=0;mm<nsd_;++mm)
+        {
+          two_epsilon(rr,mm) = velderxy(rr,mm) + velderxy(mm,rr);
+        }
+      }
+
+      for(int rr=0;rr<nsd_;++rr)
+      {
+        for(int mm=0;mm<nsd_;++mm)
+        {
+          normofstrain += two_epsilon(rr,mm)*two_epsilon(rr,mm);
+        }
+      }
+
+      return(sqrt(normofstrain/4.0));
     }
 
     /*!
@@ -786,6 +907,8 @@ namespace ELEMENTS
     LINALG::Matrix<nsd_,nsd_> vderxy_;
     //! fine-scale global velocity derivatives in gausspoint w.r.t x,y,z
     LINALG::Matrix<nsd_,nsd_> fsvderxy_;
+    //! fine-scale global velocity derivatives in gausspoint w.r.t x,y,z for multifractal subgrid-scale modeling
+    LINALG::Matrix<nsd_,nsd_> mffsvderxy_;
     //! global derivatives of shape functions w.r.t x,y,z
     LINALG::Matrix<nsd_,nen_> derxy_;
     //! global second derivatives of shape functions w.r.t x,y,z
@@ -802,6 +925,8 @@ namespace ELEMENTS
     LINALG::Matrix<nsd_,1> fsvelint_;
     //! subgrid-scale velocity vector in gausspoint
     LINALG::Matrix<nsd_,1> sgvelint_;
+    //! fine-scale velocity vector in gausspoint for multifractal subgrid-scale modeling
+    LINALG::Matrix<nsd_,1> mffsvelint_;
     //! filtered velocity in gausspoint
     LINALG::Matrix<nsd_,1> velinthat_;
     //! global filtered velocity derivatives in gausspoint w.r.t x,y,z
@@ -831,6 +956,8 @@ namespace ELEMENTS
     LINALG::Matrix<nen_,1> sgconv_c_;
     //! velocity divergence
     double vdiv_;
+    //! fine scale velocity divergence for multifractal subgrid-scale modeling
+    double mffsvdiv_;
     //! total right hand side terms at int.-point for momentum equation
     LINALG::Matrix<nsd_,1> rhsmom_;
     //! (u_old*nabla)u_old

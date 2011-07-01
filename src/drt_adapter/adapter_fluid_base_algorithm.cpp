@@ -52,6 +52,17 @@ ADAPTER::FluidBaseAlgorithm::FluidBaseAlgorithm(const Teuchos::ParameterList& pr
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+ADAPTER::FluidBaseAlgorithm::FluidBaseAlgorithm(
+  const Teuchos::ParameterList& prbdyn,
+  const Teuchos::RCP<DRT::Discretization> discret,
+  const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave)
+{
+  SetupInflowFluid(prbdyn, discret,pbcmapmastertoslave);
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 ADAPTER::FluidBaseAlgorithm::~FluidBaseAlgorithm()
 {
 }
@@ -552,6 +563,292 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     }
     fluid_->SetInitialFlowField(initfield,startfuncno);
   }
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
+  const Teuchos::ParameterList& prbdyn,
+  const Teuchos::RCP<DRT::Discretization> discret,
+  const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave)
+{
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("ADAPTER::FluidBaseAlgorithm::SetupFluid");
+  Teuchos::TimeMonitor monitor(*t);
+
+  // the inflow computation can only deal with standard fluid problems so far
+  // extensions for xfluid, fsi or combust problems have to be added if necessary
+  // they should not pose any additional problem
+  // meshtying or xfem related parameters are not supported, yet
+  if (genprob.probtyp != prb_fluid)
+     dserror("Only fluid problems supported! Read comment and add your problem type!");
+
+  // -------------------------------------------------------------------
+  // set degrees of freedom in the discretization
+  // -------------------------------------------------------------------
+  if (!discret->HaveDofs())
+  {
+    dserror("FillComplete shouldn't be necessary!");
+    //discret->FillComplete();
+  }
+
+  // -------------------------------------------------------------------
+  // context for output and restart
+  // -------------------------------------------------------------------
+  RCP<IO::DiscretizationWriter> output = rcp(new IO::DiscretizationWriter(discret));
+
+  // -------------------------------------------------------------------
+  // set some pointers and variables
+  // -------------------------------------------------------------------
+  //const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
+  const Teuchos::ParameterList& probsize = DRT::Problem::Instance()->ProblemSizeParams();
+  const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance()->IOParams();
+  const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
+
+  if (discret->Comm().MyPID()==0)
+    DRT::INPUT::PrintDefaultParameters(std::cout, fdyn);
+
+  // -------------------------------------------------------------------
+  // create a solver
+  // -------------------------------------------------------------------
+  RCP<LINALG::Solver> solver =
+    rcp(new LINALG::Solver(DRT::Problem::Instance()->FluidSolverParams(),
+                           discret->Comm(),
+                           DRT::Problem::Instance()->ErrorFile()->Handle()));
+
+  discret->ComputeNullSpaceIfNecessary(solver->Params(),true);
+
+
+  // -------------------------------------------------------------------
+  // create a second solver for SIMPLER preconditioner if chosen from input
+  // -------------------------------------------------------------------
+  if (DRT::INPUT::IntegralValue<int>(fdyn,"SIMPLER"))
+  {
+    solver->PutSolverParamsToSubParams("SIMPLER",
+                                       DRT::Problem::Instance()->FluidPressureSolverParams());
+  }
+
+  // -------------------------------------------------------------------
+  // set parameters in list required for all schemes
+  // -------------------------------------------------------------------
+  RCP<ParameterList> fluidtimeparams = rcp(new ParameterList());
+
+  // --------------------provide info about periodic boundary conditions
+  fluidtimeparams->set<RCP<map<int,vector<int> > > >("periodic bc",pbcmapmastertoslave);
+
+  fluidtimeparams->set<int>("Simple Preconditioner",DRT::INPUT::IntegralValue<int>(fdyn,"SIMPLER"));
+  fluidtimeparams->set<int>("AMG(BS) Preconditioner",DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->FluidSolverParams(),"AZPREC"));
+
+  // -------------------------------------- number of degrees of freedom
+  // number of space dimensions
+  fluidtimeparams->set<int>("number of velocity degrees of freedom" ,probsize.get<int>("DIM"));
+
+  // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma)
+  fluidtimeparams->set<int>("Physical Type",
+      DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(fdyn,"PHYSICAL_TYPE"));
+
+
+  // -------------------------------------------------- time integration
+  // note: here, the values are taken out of the problem-dependent ParameterList prbdyn
+  // (which also can be fluiddyn itself!)
+
+  // the default time step size
+  fluidtimeparams->set<double> ("time step size"      ,prbdyn.get<double>("TIMESTEP"));
+  // maximum simulation time
+  fluidtimeparams->set<double> ("total time"          ,prbdyn.get<double>("MAXTIME"));
+  // maximum number of timesteps
+  fluidtimeparams->set<int>    ("max number timesteps",prbdyn.get<int>("NUMSTEP"));
+
+  // -------- additional parameters in list for generalized-alpha scheme
+  // parameter alpha_M
+  fluidtimeparams->set<double> ("alpha_M", fdyn.get<double>("ALPHA_M"));
+  // parameter alpha_F
+  fluidtimeparams->set<double> ("alpha_F", fdyn.get<double>("ALPHA_F"));
+  // parameter gamma
+  fluidtimeparams->set<double> ("gamma",   fdyn.get<double>("GAMMA"));
+
+  // ---------------------------------------------- nonlinear iteration
+  // type of predictor
+  fluidtimeparams->set<string>          ("predictor"                 ,fdyn.get<string>("PREDICTOR"));
+  // set linearisation scheme
+  fluidtimeparams->set<int>("Linearisation", DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER"));
+  // set bool flag "Newton true or false" for combustion formulation and XFEM
+  //fluidtimeparams->set<bool>("Use reaction terms for linearisation",
+  //                           DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER")== INPAR::FLUID::Newton);
+  // maximum number of nonlinear iteration steps
+  fluidtimeparams->set<int>             ("max nonlin iter steps"     ,fdyn.get<int>("ITEMAX"));
+  // maximum number of nonlinear iteration steps for initial stationary solution
+  fluidtimeparams->set<int>             ("max nonlin iter steps init stat sol",fdyn.get<int>("INITSTATITEMAX"));
+  // stop nonlinear iteration when both incr-norms are below this bound
+  fluidtimeparams->set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
+  // set convergence check
+  fluidtimeparams->set<string>          ("CONVCHECK"  ,fdyn.get<string>("CONVCHECK"));
+  // set adaptoive linear solver tolerance
+  fluidtimeparams->set<bool>            ("ADAPTCONV",DRT::INPUT::IntegralValue<int>(fdyn,"ADAPTCONV")==1);
+  fluidtimeparams->set<double>          ("ADAPTCONV_BETTER",fdyn.get<double>("ADAPTCONV_BETTER"));
+
+
+  // ----------------------------------------------- restart and output
+  // restart
+  fluidtimeparams->set ("write restart every", prbdyn.get<int>("RESTARTEVRY"));
+  // solution output
+  fluidtimeparams->set ("write solution every", prbdyn.get<int>("UPRES"));
+  // flag for writing stresses
+  fluidtimeparams->set ("write stresses"  ,DRT::INPUT::IntegralValue<int>(ioflags,"FLUID_STRESS"));
+  // flag for writing wall shear stress
+  fluidtimeparams->set ("write wall shear stresses"  ,DRT::INPUT::IntegralValue<int>(ioflags,"FLUID_WALL_SHEAR_STRESS"));
+
+  // ---------------------------------------------------- lift and drag
+  fluidtimeparams->set<int>("liftdrag",DRT::INPUT::IntegralValue<int>(fdyn,"LIFTDRAG"));
+
+  // -----------evaluate error for test flows with analytical solutions
+  INPAR::FLUID::InitialField initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn,"INITIALFIELD");
+  fluidtimeparams->set<int>("eval err for analyt sol", initfield);
+
+  // ------------------------------------------ form of convective term
+  fluidtimeparams->set<string> ("form of convective term", fdyn.get<string>("CONVFORM"));
+
+  // ------------------------------------ potential Neumann inflow terms
+  fluidtimeparams->set<string> ("Neumann inflow",fdyn.get<string>("NEUMANNINFLOW"));
+
+  //--------------------------------------mesh tying for fluid
+  fluidtimeparams->set<int>("MESHTYING",
+      DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"));
+
+  //--------------------------------------analytical error evaluation
+  fluidtimeparams->set<int>("calculate error",
+      Teuchos::getIntegralValue<int>(fdyn,"CALCERROR"));
+
+  // ---------------------------- fine-scale subgrid viscosity approach
+  fluidtimeparams->set<string> ("fs subgrid viscosity"   ,fdyn.get<string>("FSSUGRVISC"));
+
+  // -----------------------sublist containing stabilization parameters
+  fluidtimeparams->sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");
+
+  // -----------------------------get also scatra stabilization sublist
+  const Teuchos::ParameterList& scatradyn =
+    DRT::Problem::Instance()->ScalarTransportDynamicParams();
+  fluidtimeparams->sublist("SCATRA STABILIZATION")=scatradyn.sublist("STABILIZATION");
+
+  // --------------------------sublist containing turbulence parameters
+  {
+    fluidtimeparams->sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
+
+    fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("statistics outfile",DRT::Problem::Instance()->OutputControlFile()->FileName());
+
+    // overwrite canonical flow parameters by inflow type
+    fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("CANONICAL_FLOW",fdyn.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW"));
+    fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("HOMDIR",fdyn.sublist("TURBULENT INFLOW").get<string>("INFLOW_HOMDIR"));
+    fluidtimeparams->sublist("TURBULENCE MODEL").set<int>("DUMPING_PERIOD",fdyn.sublist("TURBULENT INFLOW").get<int>("INFLOW_DUMPING_PERIOD"));
+    fluidtimeparams->sublist("TURBULENCE MODEL").set<int>("SAMPLING_START",fdyn.sublist("TURBULENT INFLOW").get<int>("INFLOW_SAMPLING_START"));
+    fluidtimeparams->sublist("TURBULENCE MODEL").set<int>("SAMPLING_STOP",fdyn.sublist("TURBULENT INFLOW").get<int>("INFLOW_SAMPLING_STOP"));
+  }
+
+  // -------------------------------------------------------------------
+  // additional parameters and algorithm call depending on respective
+  // time-integration (or stationary) scheme
+  // -------------------------------------------------------------------
+  INPAR::FLUID::TimeIntegrationScheme timeint = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,"TIMEINTEGR");
+
+  // -------------------------------------------------------------------
+  // additional parameters and algorithm call depending on respective
+  // time-integration (or stationary) scheme
+  // -------------------------------------------------------------------
+  if(timeint == INPAR::FLUID::timeint_stationary or
+     timeint == INPAR::FLUID::timeint_one_step_theta or
+     timeint == INPAR::FLUID::timeint_bdf2 or
+     timeint == INPAR::FLUID::timeint_afgenalpha
+    )
+  {
+    // -----------------------------------------------------------------
+    // set additional parameters in list for
+    // one-step-theta/BDF2/af-generalized-alpha/stationary scheme
+    // -----------------------------------------------------------------
+    // type of time-integration (or stationary) scheme
+    fluidtimeparams->set<int>("time int algo",timeint);
+    // parameter theta for time-integration schemes
+    fluidtimeparams->set<double>           ("theta"                    ,fdyn.get<double>("THETA"));
+    // number of steps for potential start algorithm
+    fluidtimeparams->set<int>              ("number of start steps"    ,fdyn.get<int>("NUMSTASTEPS"));
+    // parameter theta for potential start algorithm
+    fluidtimeparams->set<double>           ("start theta"              ,fdyn.get<double>("START_THETA"));
+    // parameter for grid velocity interpolation
+    fluidtimeparams->set<int>              ("order gridvel"            ,fdyn.get<int>("GRIDVEL"));
+
+    fluidtimeparams->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
+
+    bool dirichletcond = true;
+    //------------------------------------------------------------------
+    // create all vectors and variables associated with the time
+    // integration (call the constructor);
+    // the only parameter from the list required here is the number of
+    // velocity degrees of freedom
+
+    {
+      RCP<Fluid> tmpfluid;
+      int fluidsolver = DRT::INPUT::IntegralValue<int>(fdyn,"FLUID_SOLVER");
+      switch(fluidsolver)
+      {
+      case fluid_solver_implicit:
+        tmpfluid = rcp(new ADAPTER::FluidImpl(discret, solver, fluidtimeparams, output, false, dirichletcond));
+        break;
+      case fluid_solver_pressurecorrection:
+      case fluid_solver_pressurecorrection_semiimplicit:
+      {
+        // check if implicit or semi-implicit projection solver
+        fluidtimeparams->set<bool>("PROJ_IMPLICIT",fluidsolver==fluid_solver_pressurecorrection);
+
+        // -------------------------------------------------------------------
+        // create a second solver for Projection Methods if chosen from input
+        // -------------------------------------------------------------------
+        RCP<LINALG::Solver> psolver = rcp(new LINALG::Solver(DRT::Problem::Instance()->FluidSolverParams(),discret->Comm(),DRT::Problem::Instance()->ErrorFile()->Handle()));
+        psolver->PutSolverParamsToSubParams("FLUID PRESSURE SOLVER",
+                                            DRT::Problem::Instance()->FluidPressureSolverParams());
+
+        tmpfluid = rcp(new ADAPTER::FluidProjection(discret, solver, psolver, fluidtimeparams, output, false, dirichletcond));
+      }
+      break;
+      default:
+        dserror("fluid solving strategy unknown.");
+      }
+        fluid_ = tmpfluid;
+    }
+  }
+  else if (timeint == INPAR::FLUID::timeint_gen_alpha)
+  {
+    fluidtimeparams->set<int>("time int algo",timeint);
+
+    // -------------------------------------------------------------------
+    // no additional parameters in list for generalized-alpha scheme
+    // -------------------------------------------------------------------
+    // create all vectors and variables associated with the time
+    // integration (call the constructor);
+    // the only parameter from the list required here is the number of
+    // velocity degrees of freedom
+    //------------------------------------------------------------------
+    RCP<Fluid> tmpfluid;
+    tmpfluid = rcp(new ADAPTER::FluidGenAlpha(discret, solver, fluidtimeparams, output, false , pbcmapmastertoslave));
+    fluid_ = tmpfluid;
+  }
+  else
+  {
+    dserror("Unknown time integration for fluid\n");
+  }
+
+  // set initial field for inflow section by given function
+  // we do this here, since we have direct access to all necessary parameters
+  initfield = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(fdyn.sublist("TURBULENT INFLOW"),"INITIALINFLOWFIELD");
+  if(initfield != INPAR::FLUID::initfield_zero_field)
+  {
+    int startfuncno = fdyn.sublist("TURBULENT INFLOW").get<int>("INFLOWFUNC");
+    if (initfield != INPAR::FLUID::initfield_field_by_function and
+        initfield != INPAR::FLUID::initfield_disturbed_field_from_function)
+    {
+      startfuncno=-1;
+    }
+    fluid_->SetInitialFlowField(initfield,startfuncno);
+  }
+
   return;
 }
 

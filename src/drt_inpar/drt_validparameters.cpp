@@ -2430,7 +2430,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "Smagorinsky_with_van_Driest_damping",
       "Dynamic_Smagorinsky",
       "Scale_Similarity",
-      "Mixed_Scale_Similarity_Eddy_Viscosity_Model"),
+      "Multifractal_Subgrid_Scales"),
     tuple<std::string>(
       "If classical LES is our turbulence approach, this is a contradiction and should cause a dserror.",
       "Classical constant coefficient Smagorinsky model. Be careful if you \nhave a wall bounded flow domain!",
@@ -2446,6 +2446,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("C_TURBPRANDTL",1.0,"(Constant) turbulent Prandtl number for the Smagorinsky model in scalar transport.",&fdyn_turbu);
 
   DoubleParameter("C_SCALE_SIMILARITY",1.0,"Constant for the scale similarity model. Something between 0.45 +- 0.15 or 1.0.", &fdyn_turbu);
+
+  setStringToIntegralParameter<int>(
+    "FILTERTYPE",
+    "box_filter",
+    "Specify the filter type for scale separation in LES",
+    tuple<std::string>(
+      "box_filter",
+      "algebraic_multigrid_operator"),
+    tuple<std::string>(
+      "classical box filter",
+      "scale separation by algebraic multigrid operator"),
+    tuple<int>(0,1),
+    &fdyn_turbu);
 
   {
     // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.
@@ -2527,6 +2540,85 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("SAMPLING_START",10000000,"Time step after when sampling shall be started",&fdyn_turbu);
   IntParameter("SAMPLING_STOP",1,"Time step when sampling shall be stopped",&fdyn_turbu);
   IntParameter("DUMPING_PERIOD",1,"Period of time steps after which statistical data shall be dumped",&fdyn_turbu);
+
+  /*----------------------------------------------------------------------*/
+   Teuchos::ParameterList& fdyn_turbinf = fdyn.sublist("TURBULENT INFLOW",false,"");
+
+   setStringToIntegralParameter<int>("TURBULENTINFLOW",
+                                "no",
+                                "Flag to (de)activate potential separate turbulent inflow section",
+                                tuple<std::string>(
+                                  "no",
+                                  "yes"),
+                                tuple<std::string>(
+                                  "no turbulent inflow section",
+                                  "turbulent inflow section"),
+                                tuple<int>(0,1),
+                                &fdyn_turbinf);
+
+   setStringToIntegralParameter<int>("INITIALINFLOWFIELD","zero_field",
+                                "Initial field for inflow section",
+                                tuple<std::string>(
+                                  "zero_field",
+                                  "field_by_function",
+                                  "disturbed_field_from_function"),
+                                tuple<int>(
+                                      INPAR::FLUID::initfield_zero_field,
+                                      INPAR::FLUID::initfield_field_by_function,
+                                      INPAR::FLUID::initfield_disturbed_field_from_function),
+                                &fdyn_turbinf);
+
+   IntParameter("INFLOWFUNC",-1,"Function number for initial flow field in inflow section",&fdyn_turbinf);
+
+   DoubleParameter(
+     "INFLOW_INIT_DIST",
+     0.1,
+     "Max. amplitude of the random disturbance in percent of the initial value in mean flow direction.",
+     &fdyn_turbinf);
+
+   IntParameter("NUMINFLOWSTEP",1,"Total number of time steps for development of turbulent flow",&fdyn_turbinf);
+
+   setStringToIntegralParameter<int>(
+       "CANONICAL_INFLOW",
+       "no",
+       "Sampling is different for different canonical flows \n--- so specify what kind of flow you've got",
+       tuple<std::string>(
+       "no",
+       "time_averaging",
+       "channel_flow_of_height_2"),
+       tuple<std::string>(
+       "The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible",
+       "The flow is not further specified, but time averaging of velocity and pressure field is performed",
+       "For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow."),
+       tuple<int>(0,1,2),
+       &fdyn_turbinf);
+
+   setStringToIntegralParameter<int>(
+     "INFLOW_HOMDIR",
+     "not_specified",
+     "Specify the homogenous direction(s) of a flow",
+     tuple<std::string>(
+       "not_specified",
+       "x"            ,
+       "y"            ,
+       "z"            ,
+       "xy"           ,
+       "xz"           ,
+       "yz"           ),
+     tuple<std::string>(
+       "no homogeneous directions available, averaging is restricted to time averaging",
+       "average along x-direction"                                                     ,
+       "average along y-direction"                                                     ,
+       "average along z-direction"                                                     ,
+       "Wall normal direction is z, average in x and y direction"                      ,
+       "Wall normal direction is y, average in x and z direction (standard case)"      ,
+       "Wall normal direction is x, average in y and z direction"                      ),
+     tuple<int>(0,1,2,3,4,5,6),
+     &fdyn_turbinf);
+
+   IntParameter("INFLOW_SAMPLING_START",10000000,"Time step after when sampling shall be started",&fdyn_turbinf);
+   IntParameter("INFLOW_SAMPLING_STOP",1,"Time step when sampling shall be stopped",&fdyn_turbinf);
+   IntParameter("INFLOW_DUMPING_PERIOD",1,"Period of time steps after which statistical data shall be dumped",&fdyn_turbinf);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& adyn = list->sublist("ALE DYNAMIC",false,"");

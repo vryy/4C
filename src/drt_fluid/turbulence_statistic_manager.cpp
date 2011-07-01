@@ -282,7 +282,9 @@ namespace FLD
     myfsvelaf_       (fluid.fsvelaf_       )
   {
 
-    subgrid_dissipation_=true;
+    //subgrid_dissipation_=true;
+    //why: read comment in CalcDissipation() (fluid3_impl.cpp)
+    subgrid_dissipation_=false;
 
     // the flow parameter will control for which geometry the
     // sampling is done
@@ -641,8 +643,7 @@ namespace FLD
       case channel_flow_of_height_2:
       case loma_channel_flow_of_height_2:
       {
-        // add computed dynamic Smagorinsky quantities
-        // (effective viscosity etc. used during the computation)
+        // add computed subfilter stress
         if(scalesimilarity_) statistics_channel_->AddSubfilterStresses(stress12);
         break;
       }
@@ -893,7 +894,8 @@ namespace FLD
   ----------------------------------------------------------------------*/
   void TurbulenceStatisticManager::DoOutput(IO::DiscretizationWriter& output,
                                             int                       step,
-                                            const double              eosfac)
+                                            const double              eosfac,
+                                            const double              inflow)
   {
     // sampling takes place only in the sampling period
     if(step>=samstart_ && step<=samstop_ && flow_ != no_special_flow)
@@ -1046,6 +1048,8 @@ namespace FLD
         std::cout << "done" << std::endl;
 
       // dump general mean value output in combination with a restart/output
+      // don't write output if turbulent inflow is computed
+      if (!inflow)
       {
         int upres    =params_.get("write solution every", -1);
         int uprestart=params_.get("write restart every" , -1);

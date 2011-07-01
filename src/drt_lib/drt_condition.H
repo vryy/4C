@@ -133,6 +133,7 @@ public:
     LinePeriodic,
     SurfacePeriodic,
     TransferTurbulentInflow,
+    TurbulentInflowSection,
     LineWeakDirichlet,
     SurfaceWeakDirichlet,
     LineMixHybDirichlet,

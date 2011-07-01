@@ -125,6 +125,15 @@ namespace ADAPTER {
     /// velocities (and pressures) at t(n)
     virtual Teuchos::RCP<const Epetra_Vector> Veln() = 0;
 
+    /// velocities (and pressures) at t(n-1)
+    virtual Teuchos::RCP<const Epetra_Vector> Velnm() = 0;
+
+    /// accelerations at t(n+1)
+    virtual Teuchos::RCP<const Epetra_Vector> Accnp() = 0;
+
+    /// accelerations at t(n)
+    virtual Teuchos::RCP<const Epetra_Vector> Accn() = 0;
+
     /// accelerations at t(n+alpaM)
     virtual Teuchos::RCP<const Epetra_Vector> Accam() = 0;
 
@@ -183,6 +192,9 @@ namespace ADAPTER {
                                    Teuchos::RCP<DRT::Discretization> scatradis,
                                    const int                whichscalar = -1) = 0;
 
+    /// set velocity field (separate computation)
+    virtual void SetVelocityField(Teuchos::RCP<const Epetra_Vector> velnp) = 0;
+
     /// provide access to the turbulence statistic manager
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager() = 0;
 
@@ -195,6 +207,7 @@ namespace ADAPTER {
 
     /// start new time step
     virtual void PrepareTimeStep() = 0;
+    virtual void PrepareTimeandStep() = 0;
 
     /// update fluid unknowns and evaluate elements
     ///
@@ -218,11 +231,22 @@ namespace ADAPTER {
     /// output results
     virtual void Output() = 0;
 
+    /// output statistics
+    virtual void StatisticsOutput() = 0;
+
     /// access to output
     virtual IO::DiscretizationWriter& DiscWriter() = 0;
 
     /// read restart information for given time step
     virtual void ReadRestart(int step) = 0;
+    /// set restart
+    virtual void SetRestart(const int step,
+                    const double time,
+                    Teuchos::RCP<const Epetra_Vector> readvelnp,
+                    Teuchos::RCP<const Epetra_Vector> readveln,
+                    Teuchos::RCP<const Epetra_Vector> readvelnm,
+                    Teuchos::RCP<const Epetra_Vector> readaccnp,
+                    Teuchos::RCP<const Epetra_Vector> readaccn) = 0;
 
     /// current time value
     virtual double Time() const = 0;

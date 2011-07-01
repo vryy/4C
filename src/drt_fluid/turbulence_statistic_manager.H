@@ -97,7 +97,11 @@ public:
   \brief Write (dump) the statistics to a file
 
   */
-  void DoOutput(IO::DiscretizationWriter& output, int step, const double eosfac);
+  void DoOutput(
+       IO::DiscretizationWriter& output,
+       int step,
+       const double eosfac,
+       const double inflow = false);
 
   /*!
   \brief Clear all statistics collected up to now

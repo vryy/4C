@@ -38,6 +38,7 @@ Maintainer: Peter Gamnitzer
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_fluid/drt_transfer_turb_inflow.H"
 #include "fluid_utils_mapextractor.H" // should go away
 
 using namespace std;
@@ -205,6 +206,13 @@ public:
   void StatisticsAndOutput();
 
   /*!
+  \brief statistics time sample and
+         output of statistics
+
+  */
+  void StatisticsOutput();
+
+  /*!
   \brief update configuration and output to file/screen
 
   */
@@ -212,7 +220,8 @@ public:
 
   void OutputToGmsh(
       const int step,
-      const double time
+      const double time,
+      const bool inflow
       ) const;
 
   /*!
@@ -270,6 +279,17 @@ public:
 
   */
   void ReadRestart(int step);
+  /*!
+  \brief get restart data in case of turbulent inflow computation
+
+  */
+  void SetRestart(const int step,
+                  const double time,
+                  Teuchos::RCP<const Epetra_Vector> readvelnp,
+                  Teuchos::RCP<const Epetra_Vector> readveln,
+                  Teuchos::RCP<const Epetra_Vector> readvelnm,
+                  Teuchos::RCP<const Epetra_Vector> readaccnp,
+                  Teuchos::RCP<const Epetra_Vector> readaccn);
 
   //! @name access methods for composite algorithms
   /// monolithic FSI needs to access the linear fluid problem
@@ -280,6 +300,9 @@ public:
   Teuchos::RCP<Epetra_Vector> Velnp() { return velnp_; }
   Teuchos::RCP<Epetra_Vector> Velaf() { return velaf_; }
   Teuchos::RCP<Epetra_Vector> Veln() { return veln_; }
+  Teuchos::RCP<Epetra_Vector> Velnm() { return velnm_; }
+  Teuchos::RCP<Epetra_Vector> Accnp() { return accnp_; }
+  Teuchos::RCP<Epetra_Vector> Accn() { return accn_; }
   Teuchos::RCP<Epetra_Vector> Accam() { return accam_; }
   Teuchos::RCP<Epetra_Vector> Hist() { return hist_; }
   Teuchos::RCP<Epetra_Vector> GridVel() { return gridv_; }
@@ -335,6 +358,10 @@ public:
   int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
   void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
 
+  void UpdateStepandTime(){ step_ += 1;
+  time_ += dta_;}
+
+
   /*!
   \brief return type of time integration scheme
 
@@ -362,6 +389,12 @@ public:
                          RCP<const Epetra_Vector> scatraresidual,
                          Teuchos::RCP<DRT::Discretization> scatradis,
                          const int                whichscalar = -1);
+
+  /*!
+  \brief set velocity field obtained by separate computation
+
+  */
+  void SetVelocityField(Teuchos::RCP<const Epetra_Vector> setvelnp) { velnp_->Update(1.0,*setvelnp,0.0); return;}
 
   /// provide access to turbulence statistics manager
   Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager();
@@ -408,16 +441,14 @@ public:
 
   //@}
 
-  //! @name methods for turbulence models (dynamic Smagorinsky)
-  /*!
+  //! @name methods for turbulence models
 
-  \brief filter quantities for dynamic Smagorinsky model.
-         Compute averaged values for LijMij and MijMij.
+  void ApplyFilterForLES();
 
-  */
-  void ApplyFilterForDynamicComputationOfCs();
+  void OutputofFilteredVel(Teuchos::RCP<Epetra_Vector> outvec,
+                           Teuchos::RCP<Epetra_Vector> fsoutvec);
 
-  void ApplyFilterForClassicalLES();
+  void PrintTurbulenceModel();
 
 
 protected:
@@ -461,8 +492,9 @@ protected:
   int                           myrank_;
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?
   bool                          alefluid_;
-  bool                          dynamic_smagorinsky_;
-  bool                          scale_similarity_;
+  //! do we have a turblence model?
+  enum INPAR::FLUID::TurbModelAction turbmodel_;
+
   //@}
 
   /// number of spatial dimensions
@@ -618,6 +650,12 @@ protected:
   /// only necessary for Scale Similarity Model: filtered reynolds stress
   RCP<Epetra_MultiVector>    filteredreystr_;
 
+  /// only necessary for Scale Similarity Model: fine scale velocity
+  RCP<Epetra_MultiVector>    finescalevel_;
+
+  /// only necessary for LES models including filtered quantities: filter type
+  enum INPAR::FLUID::FilterType filtertype_;
+
   /// grid velocity (set from the adapter!)
   RCP<Epetra_Vector>    gridv_;
 
@@ -647,7 +685,11 @@ protected:
   FLD::UTILS::KSPMapExtractor kspsplitter_;
 
   /// connection between master and slave nodes on this proc
-  RCP<map<int,vector<int> > >     pbcmapmastertoslave_;
+  RCP<map<int,vector<int> > > pbcmapmastertoslave_;
+
+  /// a manager doing the transfer of boundary data for
+  /// turbulent inflow profiles from a separate (periodic) domain
+  Teuchos::RCP<TransferTurbulentInflowCondition> turbulent_inflow_condition_;
 
   /// bio related special (outflow) boudaries
   RCP<UTILS::FluidImpedanceWrapper> impedancebc_;

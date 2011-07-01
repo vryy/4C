@@ -53,7 +53,8 @@ public:
          of the last time step on the master boundary
   */
   void Transfer(const Teuchos::RCP<Epetra_Vector> veln ,
-                Teuchos::RCP<Epetra_Vector>       velnp);
+                Teuchos::RCP<Epetra_Vector>       velnp,
+                const double                      time);
 
 private:
 
@@ -115,6 +116,8 @@ private:
   //! the connectivity of the boundary condition
   std::map<int,vector<int> >       midtosid_;
 
+  //! time curve number
+  int curve_;
 
 };
 

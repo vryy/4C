@@ -83,6 +83,9 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Vector> Velnp();
     virtual Teuchos::RCP<const Epetra_Vector> Velaf();
     virtual Teuchos::RCP<const Epetra_Vector> Veln();
+    virtual Teuchos::RCP<const Epetra_Vector> Velnm(){ dserror("not implemented"); return null; };
+    virtual Teuchos::RCP<const Epetra_Vector> Accnp(){ dserror("not implemented"); return null; };
+    virtual Teuchos::RCP<const Epetra_Vector> Accn(){ dserror("not implemented"); return null; };
     virtual Teuchos::RCP<const Epetra_Vector> Accam();
     virtual Teuchos::RCP<const Epetra_Vector> Hist(){ dserror("not implemented"); return null; };
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp();
@@ -99,10 +102,12 @@ namespace ADAPTER {
 
     virtual void TimeLoop();
     virtual void PrepareTimeStep();
+    virtual void PrepareTimeandStep() { dserror("not implemented!"); return; }
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> accstepinc);
     virtual void Update();
     virtual void StatisticsAndOutput();
     virtual void Output();
+    virtual void StatisticsOutput() { dserror("not implemented!"); return; }
     virtual IO::DiscretizationWriter& DiscWriter() { return fluid_.DiscWriter();}
 
     virtual void NonlinearSolve();
@@ -127,6 +132,13 @@ namespace ADAPTER {
     virtual const FLD::UTILS::MapExtractor&  Interface() const { return interface_; }
 
     virtual void ReadRestart(int step);
+    virtual void SetRestart(const int step,
+                    const double time,
+                    Teuchos::RCP<const Epetra_Vector> readvelnp,
+                    Teuchos::RCP<const Epetra_Vector> readveln,
+                    Teuchos::RCP<const Epetra_Vector> readvelnm,
+                    Teuchos::RCP<const Epetra_Vector> readaccnp,
+                    Teuchos::RCP<const Epetra_Vector> readaccn) { dserror("not implemented!"); return; }
     virtual double Time() const;
     virtual int Step() const;
     virtual double Dt() const;
@@ -201,6 +213,10 @@ namespace ADAPTER {
                                    RCP<const Epetra_Vector> scatraresidual,
                                    Teuchos::RCP<DRT::Discretization> scatradis,
                                    const int                whichscalar = -1);
+
+    /// set velocity field (separate computation)
+    virtual void SetVelocityField(Teuchos::RCP<const Epetra_Vector> velnp)
+    { dserror("not implemented!");return; };
 
     /// provide access to the turbulence statistic manager
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()

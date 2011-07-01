@@ -103,6 +103,30 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Veln()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Velnm()
+{
+  return fluid_.Velnm();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Accnp()
+{
+  return fluid_.Accnp();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Accn()
+{
+  return fluid_.Accn();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Accam()
 {
   return fluid_.Accam();
@@ -221,6 +245,14 @@ void ADAPTER::FluidImpl::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::FluidImpl::PrepareTimeandStep()
+{
+  fluid_.UpdateStepandTime();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::FluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
   if (stepinc!=Teuchos::null)
@@ -255,6 +287,14 @@ void ADAPTER::FluidImpl::StatisticsAndOutput()
 void ADAPTER::FluidImpl::Output()
 {
   fluid_.Output();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidImpl::StatisticsOutput()
+{
+  fluid_.StatisticsOutput();
 }
 
 
@@ -340,6 +380,20 @@ double ADAPTER::FluidImpl::TimeScaling() const
 void ADAPTER::FluidImpl::ReadRestart(int step)
 {
   fluid_.ReadRestart(step);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidImpl::SetRestart(const int step,
+                const double time,
+                Teuchos::RCP<const Epetra_Vector> readvelnp,
+                Teuchos::RCP<const Epetra_Vector> readveln,
+                Teuchos::RCP<const Epetra_Vector> readvelnm,
+                Teuchos::RCP<const Epetra_Vector> readaccnp,
+                Teuchos::RCP<const Epetra_Vector> readaccn)
+{
+  fluid_.SetRestart(step,time,readvelnp,readveln,readvelnm,readaccnp,readaccn);
 }
 
 
@@ -648,6 +702,15 @@ void ADAPTER::FluidImpl::SetTimeLomaFields(
 {
    fluid_.SetTimeLomaFields(scalarnp,thermpressnp,scatraresidual,scatradis, whichscalar);
    return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidImpl::SetVelocityField(
+    Teuchos::RCP<const Epetra_Vector> velnp)
+{
+  fluid_.SetVelocityField(velnp);
+  return;
 }
 
 #endif  // #ifdef CCADISCRET

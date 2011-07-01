@@ -886,6 +886,7 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/fluid_genalpha_integration.cpp
   src/drt_fluid/fluid_projectionmethod.cpp
   src/drt_fluid/fluid_meshtying.cpp
+  src/drt_fluid/fluid_discret_extractor.cpp
   src/drt_fluid/fluid_utils.cpp
   src/drt_fluid/fluid_utils_mapextractor.cpp
   src/drt_fluid/fluid_MHD_evaluate.cpp
@@ -898,6 +899,7 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/xfluidfluidresulttest.cpp
   src/drt_fluid/fluidresulttest.cpp
   src/drt_fluid/time_integration_scheme.cpp
+  src/drt_fluid/turbulent_flow_algorithm.cpp
   src/drt_fluid/turbulence_statistic_manager.cpp
   src/drt_fluid/turbulence_statistics_bfs.cpp
   src/drt_fluid/turbulence_statistics_oracles.cpp
@@ -2348,3 +2350,4 @@ baci_test(xfsi_shooter_thin 1 "")
 
 # remove any output files from our tests
 add_test(NAME test_cleanup COMMAND sh -c "rm -v xxx* core.*")
+

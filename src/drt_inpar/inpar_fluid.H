@@ -177,7 +177,14 @@ namespace INPAR
       smagorinsky_with_van_Driest_damping,
       dynamic_smagorinsky,
       scale_similarity,
-      mixed_scale_similarity_eddy_viscosity_model
+      multifractal_subgrid_scales
+    };
+
+    //! filter type for LES (if necessary)
+    enum FilterType
+    {
+      box_filter,
+      algebraic_multigrid_operator
     };
 
     //! options for fine-scale subgrid viscosity

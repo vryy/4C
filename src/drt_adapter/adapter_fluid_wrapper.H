@@ -25,6 +25,12 @@ namespace ADAPTER
     { return fluid_->Velaf(); }
     virtual Teuchos::RCP<const Epetra_Vector> Veln()
     { return fluid_->Veln(); }
+    virtual Teuchos::RCP<const Epetra_Vector> Velnm()
+    { dserror("not implemented"); return Teuchos::null; };
+    virtual Teuchos::RCP<const Epetra_Vector> Accnp()
+    { dserror("not implemented"); return Teuchos::null; };
+    virtual Teuchos::RCP<const Epetra_Vector> Accn()
+    { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Vector> Accam()
     { return fluid_->Accam(); }
     virtual Teuchos::RCP<const Epetra_Vector> Hist()
@@ -66,10 +72,14 @@ namespace ADAPTER
     { return fluid_->SetTimeLomaFields(scalarnp, thermpressnp, scatraresidual, scatradis, whichscalar); }
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
     { return fluid_->TurbulenceStatisticManager();}
+    virtual void SetVelocityField(Teuchos::RCP<const Epetra_Vector> velnp)
+    { dserror("not implemented!");return; };
     virtual void TimeLoop()
     { return fluid_->TimeLoop(); }
     virtual void PrepareTimeStep()
     { return fluid_->PrepareTimeStep(); }
+    virtual void PrepareTimeandStep()
+    { dserror("not implemented!"); return; }
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
     { return fluid_->Evaluate(stepinc); }
     virtual void Update()
@@ -78,10 +88,18 @@ namespace ADAPTER
     { return fluid_->StatisticsAndOutput(); }
     virtual void Output()
     { return fluid_->Output(); }
+    virtual void StatisticsOutput() { dserror("not implemented!"); return; }
     virtual IO::DiscretizationWriter& DiscWriter()
     { return fluid_->DiscWriter();}
     virtual void ReadRestart(int step)
     { return fluid_->ReadRestart(step); }
+    virtual void SetRestart(const int step,
+                    const double time,
+                    Teuchos::RCP<const Epetra_Vector> readvelnp,
+                    Teuchos::RCP<const Epetra_Vector> readveln,
+                    Teuchos::RCP<const Epetra_Vector> readvelnm,
+                    Teuchos::RCP<const Epetra_Vector> readaccnp,
+                    Teuchos::RCP<const Epetra_Vector> readaccn) { dserror("not implemented!"); return; }
     virtual double Time() const
     { return fluid_->Time(); }
     virtual int Step() const

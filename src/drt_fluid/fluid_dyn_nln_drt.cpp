@@ -35,6 +35,7 @@ Maintainer: Peter Gamnitzer
 #include "fluid_dyn_nln_drt.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
+#include "turbulent_flow_algorithm.H"
 #include "../drt_lib/drt_utils_createdis.H"
 
 /*----------------------------------------------------------------------*
@@ -59,18 +60,47 @@ void dyn_fluid_drt(const int restart)
   //const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
 
-  // create instance of fluid basis algorithm
-  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,false));
+  // prepares a turbulent flow simulation with generation of turbulent inflow during the
+  // actual simulation
+  if ((fdyn.sublist("TURBULENT INFLOW").get<string>("TURBULENTINFLOW")=="yes") and
+     (restart<fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
+  {
+    if (comm.MyPID()==0)
+    {
+      std::cout << "#-----------------------------------------------#" << std::endl;
+      std::cout << "#      ENTER TURBULENT INFLOW COMPUTATION       #" << std::endl;
+      std::cout << "#-----------------------------------------------#" << std::endl;
+    }
 
-  // read the restart information, set vectors and variables
-  if (restart) fluidalgo->FluidField().ReadRestart(restart);
+    // create instance of fluid turbulent flow algorithm
+    Teuchos::RCP<FLD::TurbulentFlowAlgorithm> turbfluidalgo = rcp(new FLD::TurbulentFlowAlgorithm(comm,fdyn));
 
-  // run the simulation
-  fluidalgo->FluidField().TimeLoop();
+    // read the restart information, set vectors and variables
+    if (restart) turbfluidalgo->ReadRestart(restart);
 
-  // perform result tests if required
-  DRT::Problem::Instance()->AddFieldTest(fluidalgo->FluidField().CreateFieldTest());
-  DRT::Problem::Instance()->TestAll(comm);
+    // run simulation for a separate part of the complete domain to get turbulent flow in it
+    // after restart a turbulent inflow profile is computed in the separate inflow section and
+    // transferred as dirichlet boundary condition to the problem domain of interest
+    // this finally allows to get high quality turbulent inflow conditions during simulation of the
+    // actual flow
+    turbfluidalgo->TimeLoop();
+  }
+  // solve a simple fluid problem
+  else
+  {
+    // create instance of fluid basis algorithm
+    Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,false));
+
+    // read the restart information, set vectors and variables
+    if (restart) fluidalgo->FluidField().ReadRestart(restart);
+
+    // run the simulation
+    fluidalgo->FluidField().TimeLoop();
+
+    // perform result tests if required
+    DRT::Problem::Instance()->AddFieldTest(fluidalgo->FluidField().CreateFieldTest());
+    DRT::Problem::Instance()->TestAll(comm);
+  }
 
   // have fun with your results!
   return;

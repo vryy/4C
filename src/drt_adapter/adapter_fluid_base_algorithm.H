@@ -39,6 +39,12 @@ namespace ADAPTER {
     /// constructor
     explicit FluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn, bool isale);
 
+    /// second constructor (special version for turbulent flows with separate inflow
+    /// section for generation of turbulent inflow profiles)
+    explicit FluidBaseAlgorithm(const Teuchos::ParameterList& prbdyn,
+                                const Teuchos::RCP<DRT::Discretization> discret,
+                                const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave);
+
     /// virtual destructor to support polymorph destruction
     virtual ~FluidBaseAlgorithm();
 
@@ -52,6 +58,13 @@ namespace ADAPTER {
     /// setup fluid algorithm (overriding some fluid parameters with
     /// values specified in given problem-dependent ParameterList)
     void SetupFluid(const Teuchos::ParameterList& prbdyn, bool& isale);
+
+    /// setup second fluid algorithm (overriding some fluid parameters with
+    /// values specified in given problem-dependent Turbulent Inflow ParameterList)
+    /// separate discretization for inflow generation
+    void SetupInflowFluid(const Teuchos::ParameterList& prbdyn,
+                          const Teuchos::RCP<DRT::Discretization> discret,
+                          const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave);
 
     /// fluid field solver
     Teuchos::RCP<Fluid> fluid_;
