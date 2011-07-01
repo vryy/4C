@@ -261,6 +261,19 @@ void THR::TimInt::ApplyDirichletBC(
 }
 
 /*----------------------------------------------------------------------*
+ |  Prepare thermal contact                                   mgit 06/11 |
+ *----------------------------------------------------------------------*/
+void THR::TimInt:: PrepareThermoContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
+                                        Teuchos::RCP<DRT::Discretization> discretstruct)
+{
+
+  // thermo contact manager
+  thermcontman_ = rcp(new THR::ThermoContactMan(cmtman,discretstruct,discret_));
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
  |  Set structural contact                                    mgit 09/10 |
  *----------------------------------------------------------------------*/
 void THR::TimInt:: SetStructContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,

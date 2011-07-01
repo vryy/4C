@@ -143,6 +143,10 @@ namespace ADAPTER
       Teuchos::RCP<MORTAR::ManagerBase> cmtman,
       Teuchos::RCP<DRT::Discretization> discretstruct
       );
+    
+    /// prepare thermal contact
+    void PrepareThermoContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
+                              Teuchos::RCP<DRT::Discretization> discretstruct);
 
     /// Initialize thermal LM
     void InitializeThermLM(Teuchos::RCP<Epetra_Map> sthermdofs);

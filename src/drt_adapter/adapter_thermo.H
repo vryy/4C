@@ -190,6 +190,10 @@ namespace ADAPTER
     /// Recover thermal LM
     virtual void RecoverThermLM(Teuchos::RCP<Epetra_Vector> titerinc) = 0;
 
+    /// prepare thermal contact
+    virtual void PrepareThermoContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
+                                      Teuchos::RCP<DRT::Discretization> discretstruct) = 0;
+
     //@}
 
     //! @name Solver calls

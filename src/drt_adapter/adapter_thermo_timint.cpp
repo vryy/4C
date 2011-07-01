@@ -389,6 +389,15 @@ void ADAPTER::ThermoTimInt::ReadRestart(const int step)
 }
 
 /*----------------------------------------------------------------------*
+ | prepare thermal contact                                    mgit 06/11 |
+ *----------------------------------------------------------------------*/
+void ADAPTER::ThermoTimInt:: PrepareThermoContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
+                                                  Teuchos::RCP<DRT::Discretization> discretstruct)
+{
+  thermo_->PrepareThermoContact(cmtman,discretstruct);
+}
+
+/*----------------------------------------------------------------------*
  | set structural contact                                    mgit 09/10 |
  *----------------------------------------------------------------------*/
 void ADAPTER::ThermoTimInt:: SetStructContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,

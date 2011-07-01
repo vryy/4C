@@ -874,6 +874,7 @@ set(OBJS_DRT_THERMO
   src/drt_thermo/thrtimint_impl_contact.cpp
   src/drt_thermo/thrtimint_ost.cpp
   src/drt_thermo/thrtimint_statics.cpp
+  src/drt_thermo/thr_contact.cpp
 )
 set(OBJS_POST_GID_TXT
   src/post_gid/gid_out_txt.c

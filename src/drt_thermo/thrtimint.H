@@ -25,6 +25,7 @@ Maintainer: Burkhard Bornemann
 #include "Epetra_Operator.h"
 #include "Epetra_RowMatrix.h"
 
+#include "thr_contact.H"
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -132,7 +133,11 @@ namespace THR
     //! Set contact manager
     void SetStructContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
                           Teuchos::RCP<DRT::Discretization> discretstruct);
-
+        
+    //! prepare thermal contact
+    void PrepareThermoContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
+                              Teuchos::RCP<DRT::Discretization> discretstruct);
+    
     //! Do time integration of multiple steps
     void Integrate();
 
@@ -512,6 +517,9 @@ namespace THR
 
     //! contact / meshtying manager
     Teuchos::RCP<MORTAR::ManagerBase> cmtman_;
+    
+    // thermo contact manager
+    Teuchos::RCP<THR::ThermoContactMan> thermcontman_;
 
     //@}
 

@@ -34,6 +34,7 @@ Maintainer: Caroline Danowski
 #include "../drt_contact/contact_abstract_strategy.H"
 #include "../drt_contact/contact_node.H"
 #include "../drt_contact/friction_node.H"
+#include "../drt_thermo/thr_contact.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -126,6 +127,10 @@ TSI::Algorithm::Algorithm(Epetra_Comm& comm)
     cout << *ThermoField().DofRowMap(1) << endl;
 //    exit(0);
 #endif // TSIASOUTPUT
+
+    // contact
+    if(StructureField().ContactManager() != null)
+      ThermoField().PrepareThermoContact(StructureField().ContactManager(),StructureField().Discretization());      
 
 }
 
