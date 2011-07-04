@@ -1373,6 +1373,7 @@ int DRT::UTILS::getDimension(const DRT::Element::DiscretizationType distype)
         case DRT::Element::wedge6  : dim = DisTypeToDim<DRT::Element::wedge6>::dim; break;
         case DRT::Element::wedge15 : dim = DisTypeToDim<DRT::Element::wedge15>::dim; break;
         case DRT::Element::pyramid5: dim = DisTypeToDim<DRT::Element::pyramid5>::dim; break;
+        case DRT::Element::point1  : dim = DisTypeToDim<DRT::Element::point1>::dim; break;
         default:
             dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
     }
