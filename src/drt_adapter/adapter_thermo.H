@@ -181,6 +181,13 @@ namespace ADAPTER
     /// read restart information for given time step
     virtual void ReadRestart(const int step) = 0;
 
+    /// prepare thermal contact
+    virtual void PrepareThermoContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
+                                      Teuchos::RCP<DRT::Discretization> discretstruct) = 0;
+    
+    /// return thermal contact manager
+    virtual Teuchos::RCP<THR::ThermoContactMan> ThermoContactManager() = 0;
+
     /// set structural contact
     virtual void SetStructContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
                                   Teuchos::RCP<DRT::Discretization> discretstruct) = 0;
@@ -189,10 +196,6 @@ namespace ADAPTER
     
     /// Recover thermal LM
     virtual void RecoverThermLM(Teuchos::RCP<Epetra_Vector> titerinc) = 0;
-
-    /// prepare thermal contact
-    virtual void PrepareThermoContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
-                                      Teuchos::RCP<DRT::Discretization> discretstruct) = 0;
 
     //@}
 

@@ -99,6 +99,9 @@ namespace ADAPTER
       return thermo_->GetDBCMapExtractor();
     }
     
+    // access to thermal contact manager
+    Teuchos::RCP<THR::ThermoContactMan> ThermoContactManager();
+    
     /// thermal Lagrange multiplier (tsi with contact)
     Teuchos::RCP<Epetra_Vector> ThermLM();
   

@@ -1250,5 +1250,98 @@ void THR::ThermoContactMan::AssembleThermContCondition(LINALG::SparseMatrix& the
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | Initialize thermal LM                                       mgit 05/11|
+ *----------------------------------------------------------------------*/
+void THR::ThermoContactMan::InitializeThermLM(RCP<Epetra_Map> sthermdofs)
+{
+ 
+  // initialize thermal LM
+  z_ = rcp(new Epetra_Vector(*sthermdofs));
+  
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Recovery method                                            mgit 05/11|
+ *----------------------------------------------------------------------*/
+void THR::ThermoContactMan::RecoverThermLM(RCP<Epetra_Vector> tempi)
+{
+ 
+  // check if contact contributions are present,
+  // if not we can skip this routine to speed things up
+  // static cast of mortar strategy to contact strategy
+  MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
+  CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
+ 
+  if (!cstrategy.IsInContact() && !cstrategy.WasInContact() && !cstrategy.WasInContactLastTimeStep())
+    return;
+
+  // necessary maps 
+  // convert maps (from structure discretization to thermo discretization)
+  // slave-, active-, inactive-, master-, activemaster-, n- smdofs
+  RCP<Epetra_Map> sdofs,adofs,idofs,mdofs,amdofs,ndofs,smdofs;
+  ConvertMaps (sdofs,adofs,mdofs);
+ 
+  // check if contact contributions are present,
+  // speed up in the case of no contact
+  if(!(adofs->NumGlobalElements()))
+    return;
+
+  smdofs = LINALG::MergeMap(sdofs,mdofs,false);
+ 
+  // row map of thermal problem
+  RCP<Epetra_Map> problemrowmap = rcp(new Epetra_Map(*(discretthermo_->DofRowMap(0))));
+  
+  // split problemrowmap in n+am
+  ndofs = LINALG::SplitMap(*problemrowmap,*smdofs);
+
+    // double-check if this is a dual LM system
+    //if (shapefcn!=INPAR::MORTAR::shape_dual) dserror("Condensation only for dual LM");
+        
+    // extract slave temperatures from tempi
+    RCP<Epetra_Vector> tempis = rcp(new Epetra_Vector(*sdofs));
+    if (sdofs->NumGlobalElements()) LINALG::Export(*tempi, *tempis);
+
+   // extract master displacements from disi
+    RCP<Epetra_Vector> tempim = rcp(new Epetra_Vector(*mdofs));
+    if (mdofs->NumGlobalElements()) LINALG::Export(*tempi, *tempim);
+
+    // extract other displacements from disi
+    RCP<Epetra_Vector> tempin = rcp(new Epetra_Vector(*ndofs));
+    if (ndofs->NumGlobalElements()) LINALG::Export(*tempi,*tempin);
+
+    // condensation has been performed for active LM only,
+    // thus we construct a modified invd matrix here which
+    // only contains the active diagonal block
+    // (this automatically renders the incative LM to be zero)
+    RCP<LINALG::SparseMatrix> invda;
+    RCP<Epetra_Map> tempmap;
+    RCP<LINALG::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;
+    LINALG::SplitMatrix2x2(invd_,adofs,tempmap,adofs,tempmap,invda,tempmtx1,tempmtx2,tempmtx3);
+    RCP<LINALG::SparseMatrix> invdmod = rcp(new LINALG::SparseMatrix(*sdofs,10));
+    invdmod->Add(*invda,false,1.0,1.0);
+    invdmod->Complete();
+
+    /**********************************************************************/
+    /* Update Lagrange multipliers z_n+1                                  */
+    /**********************************************************************/
+
+    // full update
+    z_->Update(1.0,*fs_,0.0);
+    RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*sdofs));
+    kss_->Multiply(false,*tempis,*mod);
+    z_->Update(-1.0,*mod,1.0);
+    ksm_->Multiply(false,*tempim,*mod);
+    z_->Update(-1.0,*mod,1.0);
+    ksn_->Multiply(false,*tempin,*mod);
+    z_->Update(-1.0,*mod,1.0);
+    RCP<Epetra_Vector> zcopy = rcp(new Epetra_Vector(*z_));
+    invdmod->Multiply(true,*zcopy,*z_);
+    
+  return;
+}
+
+
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef CCADISCRET

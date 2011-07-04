@@ -429,6 +429,9 @@ namespace THR
     {
       return dbcmaps_;
     }
+    
+    //! Return thermal contact manager
+    Teuchos::RCP<THR::ThermoContactMan> ThermoContactManager() {return thermcontman_;}
 
     //@}
 

@@ -59,6 +59,12 @@ namespace THR
     //! Destructor
     virtual ~ThermoContactMan() { ; }
     
+    //! Return thermcondLM matrix
+    Teuchos::RCP<LINALG::SparseMatrix> ThermCondLMMatrix() { return thermcondLM_; }
+    
+    //! Return thermal Lagrange multiplier
+    Teuchos::RCP<Epetra_Vector> ThermLM() { return z_; }
+    
     //! Apply thermal contact
     void ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tang,
                             Teuchos::RCP<Epetra_Vector>& feff,
@@ -103,6 +109,12 @@ namespace THR
                                     RCP<Epetra_Map> masterdofs,
                                     Teuchos::RCP<Epetra_Vector>& temp,
                                     double dt);
+    
+    //! initialize thermal lagrange multipliers
+    void InitializeThermLM(RCP<Epetra_Map> sthermdofs);
+    
+    //! recover thermal lagrange multipliers from temperature
+    void RecoverThermLM(RCP<Epetra_Vector> tempi);
   
     protected:
   

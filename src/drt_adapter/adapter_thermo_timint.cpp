@@ -236,6 +236,13 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::ThermoTimInt::FExtnp()
   return thermo_->FextNew();
 }
 
+/*----------------------------------------------------------------------*
+ | Thermal contact manager                                   mgit 07/11 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<THR::ThermoContactMan> ADAPTER::ThermoTimInt::ThermoContactManager()
+{
+  return thermo_->ThermoContactManager();
+}
 
 /*----------------------------------------------------------------------*
  | prepare time step                                        bborn 08/09 |

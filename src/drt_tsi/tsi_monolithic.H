@@ -382,6 +382,9 @@ namespace TSI
     // contact manager
     RCP<MORTAR::ManagerBase> cmtman_;
     
+    // thermo contact manager
+    Teuchos::RCP<THR::ThermoContactMan> thermcontman_;
+    
     RCP<Epetra_Vector> zstruct_ ;
     RCP<Epetra_Vector> ztherm_;
     RCP<LINALG::SparseMatrix> kst_;  // stiffness block K_ss (needed for LM)
