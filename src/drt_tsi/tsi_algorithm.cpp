@@ -283,9 +283,6 @@ void TSI::Algorithm::TimeLoop()
         StructureField().PrepareTimeStep();
         StructureField().Solve();
 
-        // initialize contact manager of thermo field
-        ThermoField().SetStructContact(cmtman,StructureField().Discretization());
-
         ThermoField().PrepareTimeStep();
         ThermoField().Solve();
       }
@@ -317,9 +314,6 @@ void TSI::Algorithm::TimeLoop()
           // elch_algorithm: use current values)
           tempincnp_->Update(1.0,*ThermoField().Tempnp(),0.0);
           dispincnp_->Update(1.0,*StructureField().Dispnp(),0.0);
-
-          // initialize contact manager of thermo field
-          ThermoField().SetStructContact(cmtman,StructureField().Discretization());
 
           ThermoField().PrepareTimeStep();
           ThermoField().Solve();

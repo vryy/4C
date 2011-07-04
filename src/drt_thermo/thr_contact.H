@@ -23,6 +23,9 @@ Maintainer: Markus Gitterle
 #include "thrtimint.H"
 #include "thr_aux.H"
 
+#include "thrtimint_mstep.H"
+#include "../linalg/linalg_sparsematrix.H"
+
 #include "../drt_mortar/mortar_manager_base.H"
 #include "../drt_contact/meshtying_manager.H"
 #include "../drt_contact/contact_manager.H"
@@ -55,6 +58,51 @@ namespace THR
   
     //! Destructor
     virtual ~ThermoContactMan() { ; }
+    
+    //! Apply thermal contact
+    void ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tang,
+                            Teuchos::RCP<Epetra_Vector>& feff,
+                            Teuchos::RCP<Epetra_Vector>& temp,
+                            double dt);
+    
+    // convert maps form structure discretization to thermo discretization
+    void ConvertMaps(RCP<Epetra_Map>& slavedofs,
+                     RCP<Epetra_Map>& activedofs,
+                     RCP<Epetra_Map>& masterdofs);
+    
+    //! transform mortar matrices from structure dofs in thermo dofs
+    // This needs
+    // 1. Reduction of mortar matrices
+    // 2. Transformation into thermo dofs
+    void TransformDM(LINALG::SparseMatrix& dmatrix,
+                     LINALG::SparseMatrix& mmatrix,
+                     RCP<Epetra_Map>& slavedofs,
+                     RCP<Epetra_Map>& masterdofs);
+    
+    //! transform matrix A
+    void TransformA(LINALG::SparseMatrix& amatrix,
+                    RCP<Epetra_Map>& slavedofs);
+
+    //! apply B matrix for nodes in contact
+    void AssembleB(LINALG::SparseMatrix& bmatrix);
+
+    //! assemble mechanical dissipation for master nodes
+    void AssembleMechDissMaster(Epetra_Vector& mechdissrate,double dt);
+
+    //! assemble mechanical dissipation for slave nodes
+    void AssembleMechDissSlave(Epetra_Vector& mechdissrate,double dt);
+
+    //! assemble thermal contact condition
+    void AssembleThermContCondition(LINALG::SparseMatrix& thermcontLM,
+                                    LINALG::SparseMatrix& thermcontTEMP,
+                                    Epetra_Vector& thermcontRHS,
+                                    LINALG::SparseMatrix& dmatrix,
+                                    LINALG::SparseMatrix& mmatrix,
+                                    LINALG::SparseMatrix& amatrix,
+                                    RCP<Epetra_Map> activedofs,
+                                    RCP<Epetra_Map> masterdofs,
+                                    Teuchos::RCP<Epetra_Vector>& temp,
+                                    double dt);
   
     protected:
   
@@ -64,6 +112,20 @@ namespace THR
     Teuchos::RCP<MORTAR::ManagerBase> cmtman_;         // structural contact manager     
     Teuchos::RCP<DRT::Discretization> discretstruct_;  // structural discretisation
     Teuchos::RCP<DRT::Discretization> discretthermo_;  // thermal discretisation
+    
+    RCP<Epetra_Comm>                      comm_;       // an Epetra_comm
+    
+    // some RCP's needed for contact,
+    // will be moved to seperate class soon!
+    RCP<LINALG::SparseMatrix> thermcondLM_; // stiffness of thermal condition
+                                            // with respect to Lagrange multipliers
+    RCP<Epetra_Vector> z_;                  // thermal Lagrange multipliers
+    RCP<Epetra_Vector> fs_;                 // slave side effective heat fluxes (needed for LM)
+    RCP<LINALG::SparseMatrix> invd_;        // inverse of Mortar matrix D (needed for LM)
+    RCP<LINALG::SparseMatrix> ksn_;         // stiffness block K_sn (needed for LM)
+    RCP<LINALG::SparseMatrix> ksm_;         // stiffness block K_sm (needed for LM)
+    RCP<LINALG::SparseMatrix> kss_;         // stiffness block K_ss (needed for LM)
+
     
   };  // class ThermoContactMan
 

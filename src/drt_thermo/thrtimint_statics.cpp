@@ -127,7 +127,8 @@ void THR::TimIntStatics::EvaluateRhsTangResidual()
   //! i.e. do nothing here
 
   // apply modifications due to thermal contact
-  ApplyThermoContact(tang_,fres_,tempn_);
+  if (thermcontman_!= null)
+    thermcontman_->ApplyThermoContact(tang_,fres_,tempn_,(*dt_)[0]);
 
   tang_->Complete();  // close tangent matrix
 
