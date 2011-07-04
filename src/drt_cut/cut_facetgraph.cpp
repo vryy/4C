@@ -11,7 +11,7 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const plain_
   : graph_( facets.size() )
 {
 
-  std::map<std::pair<Point*, Point*>, plain_facet_set > lines;
+  std::map<std::pair<Point*, Point*>, plain_facet_set> lines;
   for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
   {
     Facet * f = *i;
@@ -23,7 +23,7 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const plain_
     {
       const plain_facet_set & holes = f->Holes();
 
-      std::map<std::pair<Point*, Point*>, plain_facet_set > hole_lines;
+      std::map<std::pair<Point*, Point*>, plain_facet_set> hole_lines;
       for ( plain_facet_set::const_iterator i=holes.begin(); i!=holes.end(); ++i )
       {
         Facet * h = *i;
@@ -52,7 +52,7 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const plain_
 
   // fix for very rare case
 
-  for ( std::map<std::pair<Point*, Point*>, plain_facet_set >::iterator li=lines.begin(); li!=lines.end(); )
+  for ( std::map<std::pair<Point*, Point*>, plain_facet_set>::iterator li=lines.begin(); li!=lines.end(); )
   {
     plain_facet_set & fs = li->second;
     if ( fs.size() < 2 )
@@ -123,18 +123,14 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const plain_
     }
     file << "]\n";
   }
+
+  graph_.DumpGraph( "facetgraph.py" );
 #endif
 #endif
 
-
-#if 0
-  graph_.FixSingleLines();
-#else
   graph_.TestClosed();
-#endif
 
   COLOREDGRAPH::Graph cycle( all_facets_.size() );
-  //COLOREDGRAPH::Graph holes( all_facets_.size() );
 
   for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
   {
@@ -188,6 +184,10 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const plain_
 #endif
 #endif
 
+#ifdef DEBUGCUTLIBRARY
+  cycle.DumpGraph( "facetcycle.py" );
+#endif
+
   plain_int_set free;
   graph_.GetAll( free );
 
@@ -218,7 +218,7 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const plain_
 #endif
 
   COLOREDGRAPH::Graph used( cycle );
-  cycle_list_.AddPoints( graph_, used, cycle, free );
+  cycle_list_.AddPoints( graph_, used, cycle, free, all_lines_ );
 }
 
 void GEO::CUT::FacetGraph::CreateVolumeCells( Mesh & mesh, Element * element, plain_volumecell_set & cells )

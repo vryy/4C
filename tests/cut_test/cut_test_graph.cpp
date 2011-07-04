@@ -17,6 +17,7 @@ void test_graph2()
 
 void test_colored_graph()
 {
+#if 0
   GEO::CUT::COLOREDGRAPH::Graph g( 7 );
 
   g.Add( 0, 7 );
@@ -104,11 +105,13 @@ void test_colored_graph()
     g.TestClosed();
     g.TestSplit();
   }
+#endif
 }
 
 
 void test_colored_graph2()
 {
+#if 0
   GEO::CUT::COLOREDGRAPH::Graph g( 10 );
 
   g.Add( 0, 17 );
@@ -207,4 +210,5 @@ void test_colored_graph2()
     g.TestClosed();
     g.TestSplit();
   }
+#endif
 }

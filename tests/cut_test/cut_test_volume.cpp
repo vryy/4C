@@ -78,3 +78,94 @@ void test_cut_volumes2()
     }
   }
 }
+
+void test_cut_volumes3()
+{
+  SimpleWrapper w;
+
+  Epetra_SerialDenseMatrix xyze( 3, 8 );
+
+  xyze( 0, 0 ) = -1;
+  xyze( 1, 0 ) = -1;
+  xyze( 2, 0 ) = -1;
+
+  xyze( 0, 1 ) = 1;
+  xyze( 1, 1 ) = -1;
+  xyze( 2, 1 ) = -1;
+
+  xyze( 0, 2 ) = 1;
+  xyze( 1, 2 ) = 1;
+  xyze( 2, 2 ) = -1;
+
+  xyze( 0, 3 ) = -1;
+  xyze( 1, 3 ) = 1;
+  xyze( 2, 3 ) = -1;
+
+  xyze( 0, 4 ) = -1;
+  xyze( 1, 4 ) = -1;
+  xyze( 2, 4 ) = 1;
+
+  xyze( 0, 5 ) = 1;
+  xyze( 1, 5 ) = -1;
+  xyze( 2, 5 ) = 1;
+
+  xyze( 0, 6 ) = 1;
+  xyze( 1, 6 ) = 1;
+  xyze( 2, 6 ) = 1;
+
+  xyze( 0, 7 ) = -1;
+  xyze( 1, 7 ) = 1;
+  xyze( 2, 7 ) = 1;
+
+  w.CreateHex8( xyze );
+
+  xyze( 0, 0 ) =  0;
+  xyze( 1, 0 ) = -1;
+  xyze( 2, 0 ) = -1;
+
+  xyze( 0, 1 ) =  0;
+  xyze( 1, 1 ) = -1;
+  xyze( 2, 1 ) =  1;
+
+  xyze( 0, 2 ) =  0;
+  xyze( 1, 2 ) =  1;
+  xyze( 2, 2 ) =  1;
+
+  xyze( 0, 3 ) =  0;
+  xyze( 1, 3 ) =  1;
+  xyze( 2, 3 ) = -1;
+
+  xyze( 0, 4 ) = -0.5;
+  xyze( 1, 4 ) = 0;
+  xyze( 2, 4 ) = 0;
+
+  w.CreatePyramid5Sides( xyze );
+
+#if 0
+  xyze( 0, 0 ) =  0;
+  xyze( 1, 0 ) = -1;
+  xyze( 2, 0 ) = -1;
+
+  xyze( 0, 1 ) =  0;
+  xyze( 1, 1 ) =  1;
+  xyze( 2, 1 ) = -1;
+
+  xyze( 0, 2 ) =  0;
+  xyze( 1, 2 ) =  1;
+  xyze( 2, 2 ) =  1;
+
+  xyze( 0, 3 ) =  0;
+  xyze( 1, 3 ) = -1;
+  xyze( 2, 3 ) =  1;
+
+  xyze( 0, 4 ) = 0.5;
+  xyze( 1, 4 ) = 0;
+  xyze( 2, 4 ) = 0;
+
+  w.CreatePyramid5Sides( xyze );
+#endif
+
+  w.Status();
+  w.Cut();
+}
+

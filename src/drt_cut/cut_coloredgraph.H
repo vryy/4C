@@ -83,7 +83,7 @@ namespace GEO
 
         int FindNext( Graph & used, int p, Graph & cycle, const plain_int_set & free );
 
-        void FindFreeFacets( Graph & graph, Graph & used, plain_int_set & free, std::vector<int> & split_trace );
+        void FindFreeFacets( Graph & graph, Graph & used, plain_int_set & free, const std::vector<std::pair<Point*, Point*> > & all_lines, std::vector<int> & split_trace );
 
         void FindSplitTrace( std::vector<int> & split_trace );
 
@@ -121,7 +121,7 @@ namespace GEO
 
         void SetSplit( int color_split ) { color_split_ = color_split; }
 
-        void Split( Graph & connection, const std::vector<int> & split_trace, Graph & c1, Graph & c2 );
+        void Split( Graph & used, plain_int_set & free, Graph & connection, const std::vector<int> & split_trace, Graph & c1, Graph & c2 );
 
         bool ContainsTrace( const std::vector<int> & split_trace );
 
@@ -135,9 +135,11 @@ namespace GEO
           return not ( *this == other );
         }
 
+        void DumpGraph( const std::string & name );
+
       private:
 
-        void Fill( const std::vector<int> & split_trace, Graph & connection, int seed, Graph & c );
+        void Fill( const std::vector<int> & split_trace, Graph & used, plain_int_set & free, Graph & connection, int seed, Graph & c );
 
         std::map<int, plain_int_set> graph_;
 
@@ -163,8 +165,8 @@ namespace GEO
 
         void Print();
 
-        void Split( Graph & connection, const std::vector<int> & split_trace, Graph & c1, Graph & c2 )
-        { cycle_.Split( connection, split_trace, c1, c2 ); }
+        void Split( Graph & used, plain_int_set & free, Graph & connection, const std::vector<int> & split_trace, Graph & c1, Graph & c2 )
+        { cycle_.Split( used, free, connection, split_trace, c1, c2 ); }
 
         bool ContainsTrace( const std::vector<int> & split_trace )
         { return cycle_.ContainsTrace( split_trace ); }
@@ -219,7 +221,11 @@ namespace GEO
       public:
         typedef CycleListIterator iterator;
 
-        void AddPoints( Graph & graph, Graph & used, Graph & cycle, plain_int_set & free );
+        void AddPoints( Graph & graph,
+                        Graph & used,
+                        Graph & cycle,
+                        plain_int_set & free,
+                        const std::vector<std::pair<Point*, Point*> > & all_lines );
 
         void Print();
 

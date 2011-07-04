@@ -35,15 +35,9 @@ public:
   bool InCollectedFacets( const plain_facet_set & collected_facets );
 
   void PrintAllCollected();
-
 #endif
 
 private:
-
-//   void Add( GRAPH::Graph & graph,
-//             std::map<std::pair<Point*, Point*>, int> & all_facets,
-//             std::map<std::pair<Point*, Point*>, plain_facet_set> & facets
-//             );
 
   int FacetId( Facet * f )
   {
