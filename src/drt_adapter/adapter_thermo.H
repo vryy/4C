@@ -127,13 +127,6 @@ namespace ADAPTER
     /// Return MapExtractor for Dirichlet boundary conditions
     virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
     
-    /// thermal Lagrange multiplier (tsi with contact)
-    virtual Teuchos::RCP<Epetra_Vector> ThermLM() = 0;
-
-    /// matrix from thermal contact condition,
-    /// linearization with respect to LM (tsi with contact)
-    virtual Teuchos::RCP<LINALG::SparseMatrix> ThermCondLMMatrix() = 0;
-    
     //@}
 
     //! @name Time step helpers
@@ -187,15 +180,6 @@ namespace ADAPTER
     
     /// return thermal contact manager
     virtual Teuchos::RCP<THR::ThermoContactMan> ThermoContactManager() = 0;
-
-    /// set structural contact
-    virtual void SetStructContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
-                                  Teuchos::RCP<DRT::Discretization> discretstruct) = 0;
-    /// Initialize thermal LM
-    virtual void InitializeThermLM(Teuchos::RCP<Epetra_Map> sthermdofs) = 0;
-    
-    /// Recover thermal LM
-    virtual void RecoverThermLM(Teuchos::RCP<Epetra_Vector> titerinc) = 0;
 
     //@}
 

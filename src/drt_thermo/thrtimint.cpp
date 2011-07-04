@@ -272,18 +272,6 @@ void THR::TimInt:: PrepareThermoContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  Set structural contact                                    mgit 09/10 |
- *----------------------------------------------------------------------*/
-void THR::TimInt:: SetStructContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
-                                    Teuchos::RCP<DRT::Discretization> discretstruct)
-{
-  cmtman_=cmtman;
-  discretstruct_=discretstruct;
-  return;
-}
-
 /*----------------------------------------------------------------------*
  |  Update time and step counter                            bborn 06/08 |
  *----------------------------------------------------------------------*/

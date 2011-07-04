@@ -871,7 +871,6 @@ set(OBJS_DRT_THERMO
   src/drt_thermo/thrtimint.cpp
   src/drt_thermo/thrtimint_genalpha.cpp
   src/drt_thermo/thrtimint_impl.cpp
-  src/drt_thermo/thrtimint_impl_contact.cpp
   src/drt_thermo/thrtimint_ost.cpp
   src/drt_thermo/thrtimint_statics.cpp
   src/drt_thermo/thr_contact.cpp

@@ -278,54 +278,6 @@ namespace THR
     //! recalculate the thermal matrices for tsi simulations
     void TSIMatrix();
 
-    //! Apply thermal contact
-    void ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tang,
-                            Teuchos::RCP<Epetra_Vector>& feff,
-                            Teuchos::RCP<Epetra_Vector>& temp);
-
-    // convert maps form structure discretization to thermo discretization
-    void ConvertMaps(RCP<Epetra_Map>& slavedofs,
-                     RCP<Epetra_Map>& activedofs,
-                     RCP<Epetra_Map>& masterdofs);
-
-    //! transform mortar matrices from structure dofs in thermo dofs
-    // This needs
-    // 1. Reduction of mortar matrices
-    // 2. Transformation into thermo dofs
-    void TransformDM(LINALG::SparseMatrix& dmatrix,
-                     LINALG::SparseMatrix& mmatrix,
-                     RCP<Epetra_Map>& slavedofs,
-                     RCP<Epetra_Map>& masterdofs);
-
-    //! transform matrix A
-    void TransformA(LINALG::SparseMatrix& amatrix,
-                    RCP<Epetra_Map>& slavedofs);
-
-    //! apply B matrix for nodes in contact
-    void AssembleB(LINALG::SparseMatrix& bmatrix);
-
-    //! assemble mechanical dissipation for master nodes
-    void AssembleMechDissMaster(Epetra_Vector& mechdissrate);
-
-    //! assemble mechanical dissipation for slave nodes
-    void AssembleMechDissSlave(Epetra_Vector& mechdissrate);
-
-    //! assemble thermal contact condition
-    void AssembleThermContCondition(LINALG::SparseMatrix& thermcontLM,
-                                    LINALG::SparseMatrix& thermcontTEMP,
-                                    Epetra_Vector& thermcontRHS,
-                                    LINALG::SparseMatrix& dmatrix,
-                                    LINALG::SparseMatrix& mmatrix,
-                                    LINALG::SparseMatrix& amatrix,
-                                    RCP<Epetra_Map> activedofs,
-                                    RCP<Epetra_Map> masterdofs);
-    
-    //! recover thermal lagrange multipliers from temperature
-    void InitializeThermLM(RCP<Epetra_Map> sthermdofs);
-    
-    //! recover thermal lagrange multipliers from temperature
-    void Recover(RCP<Epetra_Vector> tempi);
-    
     //@}
 
     //! @name Access methods

@@ -99,18 +99,11 @@ namespace ADAPTER
       return thermo_->GetDBCMapExtractor();
     }
     
-    // access to thermal contact manager
-    Teuchos::RCP<THR::ThermoContactMan> ThermoContactManager();
-    
-    /// thermal Lagrange multiplier (tsi with contact)
-    Teuchos::RCP<Epetra_Vector> ThermLM();
-  
-    /// matrix from thermal contact condition,
-    /// linearization with respect to LM (tsi with contact)
-    Teuchos::RCP<LINALG::SparseMatrix> ThermCondLMMatrix();
-
     /// External force at t_{n+1} (corresponds in structure to FExtn())
     Teuchos::RCP<const Epetra_Vector> FExtnp();
+    
+    // access to thermal contact manager
+    Teuchos::RCP<THR::ThermoContactMan> ThermoContactManager();
 
     /// @name Time step helpers
     //@{
@@ -140,22 +133,6 @@ namespace ADAPTER
 
     /// evaluate element with given temperature increment
     void Evaluate();
-
-    /// Set contact manager
-    void SetStructContact(
-      Teuchos::RCP<MORTAR::ManagerBase> cmtman,
-      Teuchos::RCP<DRT::Discretization> discretstruct
-      );
-    
-    /// prepare thermal contact
-    void PrepareThermoContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
-                              Teuchos::RCP<DRT::Discretization> discretstruct);
-
-    /// Initialize thermal LM
-    void InitializeThermLM(Teuchos::RCP<Epetra_Map> sthermdofs);
-    
-    /// Recover thermal LM
-    void RecoverThermLM(Teuchos::RCP<Epetra_Vector> titerinc);
 
     /// update temperature increment after Newton step
     void UpdateNewton(
@@ -199,6 +176,10 @@ namespace ADAPTER
 
     /// extract current temperatures for inserting in structure field
     virtual Teuchos::RCP<Epetra_Vector> ExtractTempnp();
+    
+    /// prepare thermal contact
+    void PrepareThermoContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
+                              Teuchos::RCP<DRT::Discretization> discretstruct);
 
     //@}
 
