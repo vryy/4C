@@ -15,6 +15,10 @@ Maintainer: Lena Wiechert
 #ifdef CCADISCRET
 
 #include <Epetra_LinearProblem.h>
+
+#ifndef HAVENOT_UMFPACK
+#include <Amesos_Umfpack.h>
+#endif
 #include <Amesos_Klu.h>
 
 #include "microstatic.H"

@@ -7,6 +7,8 @@
 
 #ifdef CCADISCRET
 
+#include <Ifpack.h>
+
 #include "smoother.H"
 
 LINALG::Smoother::Smoother(string type, const RCP<Epetra_CrsMatrix>& A, ParameterList& params, FILE* outfile)

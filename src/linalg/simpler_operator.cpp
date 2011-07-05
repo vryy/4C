@@ -1,4 +1,4 @@
-/*!----------------------------------------------------------------------
+ /*!----------------------------------------------------------------------
 \file simpler_operator.cpp
 
 <pre>
@@ -10,6 +10,9 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
+
+#include <Ifpack.h>
+
 #include "linalg_downwindmatrix.H"
 #include "simpler_operator.H"
 

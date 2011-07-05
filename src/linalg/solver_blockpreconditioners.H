@@ -1,0 +1,102 @@
+/*
+ * solver_blockpreconditioners.H
+ *
+ *  Created on: Jul 4, 2011
+ *      Author: wiesner
+ */
+
+#ifndef SOLVER_BLOCKPRECONDITIONERS_H_
+#define SOLVER_BLOCKPRECONDITIONERS_H_
+
+#include "bgs2x2_operator.H"             // Lena's BGS implementation
+#include "simpler_operator.H"            // Michael's SIMPLE(R) for fluid
+#include "simpler_operator_ex.H"         // Tobias' SIMPLE
+#include "saddlepointpreconditioner.H"   // Tobias' saddle point preconditioner
+
+#include "solver_preconditionertype.H"
+
+namespace LINALG
+{
+  namespace SOLVER
+  {
+    /// SIMPLE(R) block preconditioner
+    /*!
+      Block preconditioners assume the Epetra_Operator to be a
+      LINALG::BlockSparseMatrix.
+     */
+    class SimplePreconditioner : public PreconditionerType
+    {
+    public:
+
+      SimplePreconditioner( FILE * outfile,
+          Teuchos::ParameterList & params, Teuchos::ParameterList & simpleparams );
+
+      virtual void Setup( bool create,
+                          Epetra_Operator * matrix,
+                          Epetra_MultiVector * x,
+                          Epetra_MultiVector * b );
+
+      virtual Epetra_Operator * PrecOperator() const { return &*P_; }
+
+      virtual void Print( std::ostream & stream ) { stream << "Simple"; }
+
+    private:
+      Teuchos::ParameterList & params_;
+      Teuchos::ParameterList & simpleparams_;
+
+      Teuchos::RCP<Epetra_Operator>    P_;
+    };
+
+    /// AMG BS
+    class AMGBSPreconditioner : public PreconditionerType
+    {
+    public:
+
+      AMGBSPreconditioner( FILE * outfile,
+          Teuchos::ParameterList & params );
+
+      virtual void Setup( bool create,
+                          Epetra_Operator * matrix,
+                          Epetra_MultiVector * x,
+                          Epetra_MultiVector * b );
+
+      virtual Epetra_Operator * PrecOperator() const { return &*P_; }
+
+      virtual void Print( std::ostream & stream ) { stream << "AMG BS"; }
+
+    private:
+      Teuchos::ParameterList & params_;
+      Teuchos::RCP<Epetra_Operator>    P_;
+    };
+
+    /// General purpose block gauss-seidel preconditioner
+    /*!
+      2x2 block preconditioner
+     */
+    class BGSPreconditioner : public PreconditionerType
+    {
+    public:
+
+      BGSPreconditioner( FILE * outfile,
+          Teuchos::ParameterList & params, Teuchos::ParameterList & bgslist );
+
+      virtual void Setup( bool create,
+                          Epetra_Operator * matrix,
+                          Epetra_MultiVector * x,
+                          Epetra_MultiVector * b );
+
+      virtual Epetra_Operator * PrecOperator() const { return &*P_; }
+
+      virtual void Print( std::ostream & stream ) { stream << "BGS"; }
+
+    private:
+
+      Teuchos::ParameterList & params_;
+      Teuchos::ParameterList & bgslist_;
+      Teuchos::RCP<LINALG::BGS2x2_Operator> P_;
+    };
+  }
+}
+
+
+#endif /* SOLVER_BLOCKPRECONDITIONERS_H_ */

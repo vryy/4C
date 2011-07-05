@@ -1,0 +1,47 @@
+/*
+ * solver_solvertype.H
+ *
+ *  Created on: Jul 4, 2011
+ *      Author: wiesner
+ */
+
+#ifndef SOLVER_SOLVERTYPE_H_
+#define SOLVER_SOLVERTYPE_H_
+
+#include "../drt_lib/drt_dserror.H"
+
+namespace LINALG
+{
+  namespace SOLVER
+  {
+    class PreconditionerType;
+
+    /// linear solver type base class
+    class SolverType
+    {
+    public:
+
+      virtual ~SolverType() {}
+
+      /// solve the linear system
+      virtual void Setup( Teuchos::RCP<Epetra_Operator>     matrix             ,
+                          Teuchos::RCP<Epetra_Vector>       x                  ,
+                          Teuchos::RCP<Epetra_Vector>       b                  ,
+                          bool                             refactor           ,
+                          bool                             reset              ,
+                          Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean,
+                          Teuchos::RCP<Epetra_MultiVector>  kernel_c           ,
+                          bool                             project) = 0;
+
+      virtual void Solve() = 0;
+
+      virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) = 0;
+
+      /// preconditioner used within this solver
+      virtual PreconditionerType * Preconditioner() = 0;
+    };
+  }
+}
+
+
+#endif /* SOLVER_SOLVERTYPE_H_ */

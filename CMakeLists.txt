@@ -1074,6 +1074,14 @@ set(OBJS_LINALG
   src/linalg/transfer_operator_pgamg2.cpp
   src/linalg/transfer_operator_saamg.cpp
   src/linalg/transfer_operator_tentative.cpp
+  src/linalg/solver_preconditionertype.cpp
+  src/linalg/solver_directsolver.cpp
+  src/linalg/solver_krylovsolver.cpp  
+  src/linalg/solver_pointpreconditioner.cpp
+  src/linalg/solver_blockpreconditioners.cpp
+  src/linalg/solver_krylovprojectionpreconditioner.cpp
+  src/linalg/solver_ifpackpreconditioner.cpp
+  src/linalg/solver_mlpreconditioner.cpp
 )
 set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/constraint.cpp

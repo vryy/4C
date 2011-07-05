@@ -11,6 +11,8 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include <Ifpack.h>
+
 #include "linalg_precond.H"
 #include "linalg_solver.H"
 

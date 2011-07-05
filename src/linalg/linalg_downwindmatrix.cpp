@@ -17,6 +17,7 @@ Maintainer: Michael Gee
 #include "linalg_utils.H"
 #include "Epetra_Time.h"
 
+#include "ml_utils.h"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 03/08|

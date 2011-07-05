@@ -10,8 +10,13 @@ Maintainer: Michael Gee
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
+
+#include <Ifpack.h>
+
 #include "linalg_downwindmatrix.H"
 #include "simpler_operator_ex.H"
+
+#include "EpetraExt_OperatorOut.h"
 
 #define SIMPLEC_DIAGONAL      1    // 1: row sums     0: just diagonal
 #define CHEAPSIMPLE_ALGORITHM 1    // 1: AMG          0: true solve
@@ -84,6 +89,11 @@ void LINALG::SIMPLER_BlockPreconditioner::Setup(RCP<Epetra_Operator> A,
     mmex_ = A_->RangeExtractor();
   }
 
+  /* temporary test */
+//  RCP<BlockSparseMatrixBase> A2 = A_->Clone(Copy);
+//
+//  RCP<BlockSparseMatrixBase > result = LINALG::Multiply(*A_,false,*A2,false,true,false,true);
+
   //-------------------------------------------------------------------------
   // split nullspace into velocity and pressure subproblem
   //  commented out -> only needed for fluid problems!
@@ -124,12 +134,21 @@ void LINALG::SIMPLER_BlockPreconditioner::Setup(RCP<Epetra_Operator> A,
   bool cstr = schurSolver_list_.get<bool>("CONSTRAINT",false);
   if(mt || co || cstr) // provide nullspaces for meshtying problems
   {
+
     if(visml)
     {
       // structure problem (without lagrange multipliers) -> do nothing!
+#if 0
+      Teuchos::RCP<vector<double> > ns = predictSolver_list_.sublist("ML Parameters").get<Teuchos::RCP<vector<double> > >("nullspace",Teuchos::null);
+
+      for(int i=0; i<ns->size(); i++)
+        cout << i << ": " << (*ns)[i] << endl;
+      dserror("ENDE");
+#endif
     }
     if(pisml)
     {
+#if 1
       // Schur complement system (1 degree per "node") -> standard nullspace
       schurSolver_list_.sublist("ML Parameters").set("PDE equations",1);
       schurSolver_list_.sublist("ML Parameters").set("null space: dimension",1);
@@ -138,6 +157,23 @@ void LINALG::SIMPLER_BlockPreconditioner::Setup(RCP<Epetra_Operator> A,
       schurSolver_list_.sublist("ML Parameters").set("null space: vectors",&((*pnewns)[0]));
       schurSolver_list_.sublist("ML Parameters").remove("nullspace",false);
       schurSolver_list_.sublist("Michael's secret vault").set<RCP<vector<double> > >("pressure nullspace",pnewns);
+#else
+      // Schur complement system (3 degrees per freedom) only TEST!!!
+      int nv = 3;
+      schurSolver_list_.sublist("ML Parameters").set("PDE equations",nv);
+      schurSolver_list_.sublist("ML Parameters").set("null space: dimension",nv);
+      const int vlength = (*A_)(1,1).RowMap().NumMyElements();
+      RCP<vector<double> > vnewns = rcp(new vector<double>(nv*vlength,0.0));
+      for (int i=0; i<vlength/nv; ++i)
+      {
+         (*vnewns)[i*nv] = 1.0;
+         (*vnewns)[vlength+i*nv+1] = 1.0;
+         if (nv>2) (*vnewns)[2*vlength+i*nv+2] = 1.0;
+      }
+      schurSolver_list_.sublist("ML Parameters").set("null space: vectors",&((*vnewns)[0]));
+      schurSolver_list_.sublist("ML Parameters").remove("nullspace",false);
+      schurSolver_list_.sublist("Michael's secret vault").set<RCP<vector<double> > >("pressure nullspace",vnewns);
+#endif
     }
   }
 
@@ -146,7 +182,6 @@ void LINALG::SIMPLER_BlockPreconditioner::Setup(RCP<Epetra_Operator> A,
   //-------------------------------------------------------------------------
   {
     int maxiter = predictSolver_list_.sublist("Aztec Parameters").get("AZ_max_iter",1);
-    predictSolver_list_.sublist("Aztec Parameters").set("reuse",maxiter+1);
     predictSolver_list_.sublist("Aztec Parameters").set("reuse",maxiter+1);
   }
 
@@ -196,6 +231,18 @@ void LINALG::SIMPLER_BlockPreconditioner::Setup(RCP<Epetra_Operator> A,
     S_->Complete((*A_)(1,1).DomainMap(),(*A_)(1,1).RangeMap());
     if (!myrank && SIMPLER_TIMING) printf("*** S complete            %10.3E\n",ltime.ElapsedTime());
     ltime.ResetStartTime();
+
+    //TODO
+    //LINALG::PrintBlockMatrixInMatlabFormat("A.mat",*A_);
+    //dserror("ENDE");
+    /*EpetraExt::OperatorToMatlabFile("diagAinv.mat",*diagAinv_);
+    EpetraExt::OperatorToMatlabFile("A00.mat",(*A_)(0,0));
+    EpetraExt::OperatorToMatlabFile("A10.mat",(*A_)(1,0));
+    EpetraExt::OperatorToMatlabFile("A01.mat",(*A_)(0,1));
+    EpetraExt::OperatorToMatlabFile("A11.mat",(*A_)(1,1));
+    EpetraExt::OperatorToMatlabFile("S.mat",*S_);
+    dserror("ENDE");*/
+
   }
   if (!myrank && SIMPLER_TIMING) printf("--- Time to do S            %10.3E\n",time.ElapsedTime());
   time.ResetStartTime();

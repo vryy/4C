@@ -417,6 +417,108 @@ const Epetra_Map& LINALG::BlockSparseMatrixBase::OperatorRangeMap() const
   return FullRangeMap();
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::Multiply(
+    const BlockSparseMatrixBase& A, bool transA,
+    const BlockSparseMatrixBase& B, bool transB,
+    bool explicitdirichlet,
+    bool savegraph,
+    bool completeoutput)
+{
+    if (!A.Filled() || !B.Filled())
+      dserror("LINALG::BlockSparseMatrixBase::MatrixMultiyply: we expect A and B to be filled");
+
+    if(A.Cols() != B.Rows() /*|| !A.FullDomainMap().SameAs(B.FullRowMap())*/)
+    {
+      dserror("LINALG::BlockSparseMatrixBase::MatrixMultiply: A and B not compatible");
+    }
+
+    if(A.Cols() != 2 || A.Rows() !=2) dserror("only 2x2 block matrices supported up to now");
+
+    int npr = 81; // estimated number of entries per row in each block
+
+    // generate result matrix
+    Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > C = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(B.DomainExtractor(),A.RangeExtractor(),npr,explicitdirichlet,savegraph));
+
+    // nested loop over all blocks
+    for (int i = 0; i<C->Rows(); i++)
+    {
+      for (int j=0; j<C->Cols(); j++)
+      {
+        // build block C(i,j)
+        RCP<SparseMatrix> Cij = rcp(new LINALG::SparseMatrix(C->RangeMap(i),npr,explicitdirichlet,savegraph));
+
+          for (int l=0; l<C->Cols(); l++)
+          {
+            // build submatrices for row i and j
+            RCP<SparseMatrix> tmpij = LINALG::Multiply(A.Matrix(i,l),false,B.Matrix(l,j),false,true);
+            Cij->Add(*tmpij,false,1.0,1.0);
+          }
+
+        // complete Cij with correct range and domain map
+        Cij->Complete(C->DomainMap(j),C->RangeMap(i));
+
+        // assign Cij block
+        C->Assign(i,j,View,*Cij);
+      }
+
+    }
+
+    if(completeoutput)
+      C->Complete();
+
+    return rcp_dynamic_cast<BlockSparseMatrixBase>(C);
+
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > LINALG::BlockMatrix2x2(
+                                                 LINALG::SparseMatrix& A00,
+                                                 LINALG::SparseMatrix& A01,
+                                                 LINALG::SparseMatrix& A10,
+                                                 LINALG::SparseMatrix& A11)
+{
+  if(!A00.RangeMap().SameAs(A01.RangeMap()) ||
+     !A00.DomainMap().SameAs(A10.DomainMap()) ||
+     !A01.DomainMap().SameAs(A11.DomainMap()) ||
+     !A10.RangeMap().SameAs(A11.RangeMap()))
+    dserror("LINALG::BlockMatrix2x2: block maps are not compatible.");
+
+
+  // generate range map
+  std::vector<RCP<const Epetra_Map> > range_maps;
+  range_maps.reserve(2);
+
+  range_maps.push_back(rcp(new Epetra_Map(A00.RangeMap())));
+  range_maps.push_back(rcp(new Epetra_Map(A10.RangeMap())));
+  RCP<const Epetra_Map> range_map = MultiMapExtractor::MergeMaps(range_maps);
+  RCP<MultiMapExtractor> rangeMMex = rcp(new MultiMapExtractor(*range_map,range_maps));
+
+  // generate domain map
+  std::vector<RCP<const Epetra_Map> > domain_maps;
+  domain_maps.reserve(2);
+
+  domain_maps.push_back(rcp(new Epetra_Map(A00.DomainMap())));
+  domain_maps.push_back(rcp(new Epetra_Map(A01.DomainMap())));
+  RCP<const Epetra_Map> domain_map = MultiMapExtractor::MergeMaps(domain_maps);
+  RCP<MultiMapExtractor> domainMMex = rcp(new MultiMapExtractor(*domain_map,domain_maps));
+
+  // generate result matrix
+  Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > C = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(*domainMMex,*rangeMMex));
+  //Teuchos::RCP<LINALG::BlockSparseMatrixBase> Cb = rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(C);
+  // assign matrices
+  C->Assign(0,0,View,A00);
+  C->Assign(0,1,View,A01);
+  C->Assign(1,0,View,A10);
+  C->Assign(1,1,View,A11);
+
+  C->Complete();
+
+  return C;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

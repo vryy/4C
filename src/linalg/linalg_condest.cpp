@@ -15,9 +15,15 @@ Maintainer: Michael Gee
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
+#include "AztecOO.h"
+#include "AztecOO_StatusTestResNorm.h"
+#include "AztecOO_StatusTestCombo.h"
+#include "AztecOO_StatusTestMaxIters.h"
+
 #include "linalg_solver.H"
 #include "linalg_sparsematrix.H"
 #include <Teuchos_TimeMonitor.hpp>
+
 
 
 double LINALG::Condest(

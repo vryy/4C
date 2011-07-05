@@ -55,51 +55,18 @@ Maintainer: Michael Gee
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
 
-#include <EpetraExt_Reindex_LinearProblem.h>
-
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
-
-#include "ml_common.h"
-#include "ml_include.h"
-#include "ml_epetra_utils.h"
-#include "ml_epetra.h"
-#include "ml_epetra_operator.h"
-#include "ml_MultiLevelPreconditioner.h"
-
-#include "AztecOO.h"
-#include "AztecOO_StatusTestResNorm.h"
-#include "AztecOO_StatusTestCombo.h"
-#include "AztecOO_StatusTestMaxIters.h"
-
-#include "Ifpack.h"
-#include "Ifpack_AdditiveSchwarz.h"
-
-#include "Amesos_Klu.h"
-#ifndef HAVENOT_UMFPACK
-#include "Amesos_Umfpack.h"
-#endif
-#include "Amesos_Lapack.h"
-
-// Trilinos is configured with SuperLUDIST only in the parallel version (not on altix)
-#ifdef PARALLEL
-#ifndef HAVENOT_SUPERLU
-#include "Amesos_Superludist.h"
-#endif
-#endif
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_solver.H"
 
-#include "linalg_projected_precond.H"
-#include "linalg_projected_operator.H"
-#include "linalg_none_operator.H"
-#include "bgs2x2_operator.H"
+#include <Ifpack.h> // for condest
 
+#include "solver_solvertype.H"
+#include "solver_preconditionertype.H"
 
 using namespace std;
-using namespace Teuchos;
-
 
 namespace LINALG
 {
@@ -121,573 +88,6 @@ class DownwindMatrix;
 */
 class Solver
 {
-
-  /// preconditioner base class
-  /*!
-
-    A KrylovSolver object needs one (or more) preconditioner objects. There
-    are many possible preconditioners. A unified framework simplifies the
-    solution process.
-
-    \author u.kue
-    \date 04/11
-   */
-  class PreconditionerType
-  {
-  public:
-
-    /// construction with output on proc 0 (might be NULL)
-    /*!
-      No setup is done upon construction, only the preconditioner object is
-      created.
-     */
-    explicit PreconditionerType( FILE * outfile );
-
-    /// virtual destruction
-    virtual ~PreconditionerType() {}
-
-    /// linear problem created (managed) by this preconditioner
-    /*!
-      This is how aztec sees the linear problem that needs to be solved.
-     */
-    virtual Epetra_LinearProblem & LinearProblem() { return lp_; }
-
-    /// support routine for setup
-    void SetupLinearProblem( Epetra_Operator * matrix,
-                             Epetra_MultiVector * x,
-                             Epetra_MultiVector * b );
-
-    /// Setup preconditioner with a given linear system.
-    virtual void Setup( bool create,
-                        Epetra_Operator * matrix,
-                        Epetra_MultiVector * x,
-                        Epetra_MultiVector * b ) = 0;
-
-    /// Finish calculation after linear solve.
-    /*!
-      This is empty in most cases, however some preconditioners might want to
-      scale the solution.
-     */
-    virtual void Finish( Epetra_Operator * matrix,
-                         Epetra_MultiVector * x,
-                         Epetra_MultiVector * b ) {}
-
-    /// linear operator used for preconditioning
-    /*!
-      This is how aztec sees the linear operator to be used for preconditioning.
-     */
-    virtual Epetra_Operator * PrecOperator() const = 0;
-
-    /// Apply inverse of the preconditioner
-    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
-    {
-      return PrecOperator()->ApplyInverse( X, Y );
-    }
-
-    /// debug output
-    virtual void Print( std::ostream & stream ) = 0;
-
-  protected:
-
-    //! a linear problem wrapper class used by Trilinos and for scaling of the system
-    Epetra_LinearProblem lp_;
-
-    //! file to write output to (proc 0 only, can be NULL on input)
-    FILE * outfile_;
-  };
-
-  class NonePreconditioner : public PreconditionerType
-  {
-  public:
-
-    NonePreconditioner( FILE * outfile, ParameterList & list );
-
-    virtual void Setup( bool create,
-                        Epetra_Operator * matrix,
-                        Epetra_MultiVector * x,
-                        Epetra_MultiVector * b );
-
-    virtual Epetra_Operator * PrecOperator() const { return &*prec_; }
-
-    virtual void Print( std::ostream & stream ) { stream << "None"; }
-
-  private:
-
-    RCP<NoneOperator> prec_;
-  };
-
-  /// ifpack preconditioners
-  /*!
-    Set of standard single-matrix preconditioners.
-   */
-  class IFPACKPreconditioner : public PreconditionerType
-  {
-  public:
-
-    IFPACKPreconditioner( FILE * outfile, ParameterList & ifpacklist, ParameterList & azlist );
-
-    virtual void Setup( bool create,
-                        Epetra_Operator * matrix,
-                        Epetra_MultiVector * x,
-                        Epetra_MultiVector * b );
-
-    virtual Epetra_Operator * PrecOperator() const { return &*prec_; }
-
-    virtual void Print( std::ostream & stream ) { stream << "IFPACK"; }
-
-  private:
-
-    ParameterList & ifpacklist_;
-    ParameterList & azlist_;
-
-    //! system of equations used for preconditioning used by P_ only
-    RCP<Epetra_RowMatrix>                 Pmatrix_;
-
-    /// preconditioner
-    RCP<Ifpack_Preconditioner> prec_;
-  };
-
-  /// ml preconditioners
-  /*!
-    Set of single-matrix algebraic multi-grid preconditioners.
-   */
-  class MLPreconditioner : public PreconditionerType
-  {
-  public:
-
-    MLPreconditioner( FILE * outfile, ParameterList & mllist );
-
-    virtual void Setup( bool create,
-                        Epetra_Operator * matrix,
-                        Epetra_MultiVector * x,
-                        Epetra_MultiVector * b );
-
-    virtual Epetra_Operator * PrecOperator() const { return &*P_; }
-
-    virtual void Print( std::ostream & stream ) { stream << "ML"; }
-
-  private:
-
-    ParameterList & mllist_;
-
-    //! system of equations used for preconditioning used by P_ only
-    RCP<Epetra_RowMatrix>                 Pmatrix_;
-
-    /// preconditioner
-    RCP<Epetra_Operator>                  P_;
-
-  };
-
-  /// downwinding, a preconditioner-wrapper
-  /*!
-    Downwinding does a matrix-reordering that is supposed to speed-up the
-    solution process. The actual solution is performed using another
-    preconditioner. DWindPreconditioner is just a wrapper that presents a
-    permuted matrix to the actual preconditioner (and solver).
-
-    \note DWindPreconditioner is a preconditioner in the solver framework, not
-    in a mathematical sense.
-   */
-  class DWindPreconditioner : public PreconditionerType
-  {
-  public:
-
-    DWindPreconditioner( FILE * outfile,
-                         Teuchos::RCP<PreconditionerType> preconditioner,
-                         ParameterList & azlist );
-
-    virtual void Setup( bool create,
-                        Epetra_Operator * matrix,
-                        Epetra_MultiVector * x,
-                        Epetra_MultiVector * b );
-
-    /// undo reordering of lhs, don't care for rhs or matrix
-    virtual void Finish( Epetra_Operator * matrix,
-                         Epetra_MultiVector * x,
-                         Epetra_MultiVector * b );
-
-    /// return the wrapped preconditioner, no work needs to be done after the
-    /// permutation is performed
-    virtual Epetra_Operator * PrecOperator() const { return preconditioner_->PrecOperator(); }
-
-    virtual void Print( std::ostream & stream )
-    {
-      stream << "DWind(";
-      preconditioner_->Print( stream );
-      stream << ")";
-    }
-
-  private:
-
-    Teuchos::RCP<PreconditionerType> preconditioner_;
-
-    ParameterList & azlist_;
-
-    //! downwinding reindexer for downwind smoothers
-    RCP<LINALG::DownwindMatrix>            dwind_;
-
-    RCP<Epetra_CrsMatrix>     dwA_;
-    RCP<Epetra_MultiVector>   dwx_;
-    RCP<Epetra_MultiVector>   dwb_;
-  };
-
-  /// SIMPLE(R) block preconditioner
-  /*!
-    Block preconditioners assume the Epetra_Operator to be a
-    LINALG::BlockSparseMatrix.
-   */
-  class SimplePreconditioner : public PreconditionerType
-  {
-  public:
-
-    SimplePreconditioner( FILE * outfile,
-                          ParameterList & params, ParameterList & simpleparams );
-
-    virtual void Setup( bool create,
-                        Epetra_Operator * matrix,
-                        Epetra_MultiVector * x,
-                        Epetra_MultiVector * b );
-
-    virtual Epetra_Operator * PrecOperator() const { return &*P_; }
-
-    virtual void Print( std::ostream & stream ) { stream << "Simple"; }
-
-  private:
-    ParameterList & params_;
-    ParameterList & simpleparams_;
-
-    RCP<Epetra_Operator>    P_;
-  };
-
-  /// AMG BS
-  class AMGBSPreconditioner : public PreconditionerType
-  {
-  public:
-
-    AMGBSPreconditioner( FILE * outfile,
-                         ParameterList & params );
-
-    virtual void Setup( bool create,
-                        Epetra_Operator * matrix,
-                        Epetra_MultiVector * x,
-                        Epetra_MultiVector * b );
-
-    virtual Epetra_Operator * PrecOperator() const { return &*P_; }
-
-    virtual void Print( std::ostream & stream ) { stream << "AMG BS"; }
-
-  private:
-    ParameterList & params_;
-    RCP<Epetra_Operator>    P_;
-  };
-
-  /// General purpose block gauss-seidel preconditioner
-  /*!
-    2x2 block preconditioner
-   */
-  class BGSPreconditioner : public PreconditionerType
-  {
-  public:
-
-    BGSPreconditioner( FILE * outfile,
-                       ParameterList & params, ParameterList & bgslist );
-
-    virtual void Setup( bool create,
-                        Epetra_Operator * matrix,
-                        Epetra_MultiVector * x,
-                        Epetra_MultiVector * b );
-
-    virtual Epetra_Operator * PrecOperator() const { return &*P_; }
-
-    virtual void Print( std::ostream & stream ) { stream << "BGS"; }
-
-  private:
-
-    ParameterList & params_;
-    ParameterList & bgslist_;
-    RCP<LINALG::BGS2x2_Operator> P_;
-  };
-
-  /// krylov projection for undefined pressure value in incompressible fluids
-  /*!
-    This is not a preconditioner in a mathematical sense, but it fits the
-    software framework nicely.
-
-    A "real" preconditioner is wrapped.
-   */
-  class KrylovProjectionPreconditioner : public PreconditionerType
-  {
-  public:
-
-    KrylovProjectionPreconditioner( FILE * outfile,
-                                    Teuchos::RCP<PreconditionerType> preconditioner,
-                                    RCP<Epetra_MultiVector>  weighted_basis_mean,
-                                    RCP<Epetra_MultiVector>  kernel_c );
-
-    //virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }
-
-    virtual void Setup( bool create,
-                        Epetra_Operator * matrix,
-                        Epetra_MultiVector * x,
-                        Epetra_MultiVector * b );
-
-    virtual void Finish( Epetra_Operator * matrix,
-                         Epetra_MultiVector * x,
-                         Epetra_MultiVector * b );
-
-    /// return the projecting operator
-    virtual Epetra_Operator * PrecOperator() const { return &*P_; }
-
-    virtual void Print( std::ostream & stream )
-    {
-      stream << "krylov projection(";
-      preconditioner_->Print( stream );
-      stream << ")";
-    }
-
-  private:
-    Teuchos::RCP<PreconditionerType> preconditioner_;
-
-    /// Peter's projector object that does the actual work
-    Teuchos::RCP<LINALG::KrylovProjector> projector_;
-    Teuchos::RCP<Epetra_MultiVector> weighted_basis_mean_;
-    Teuchos::RCP<Epetra_MultiVector> kernel_c_;
-
-    /// linear operator that calls a "real" preconditioning operator and does
-    /// a projection afterwards.
-    Teuchos::RCP<LINALG::LinalgProjectedOperator> A_;
-
-    Teuchos::RCP<Epetra_Operator> P_;
-  };
-
-  /// inf-norm scaling fits the preconditioner framework perfecty
-  /*!
-    Modifies the underlying matrix and needs to unscale the result
-    afterwards. Can be combined with any single-matrix preconditioner.
-   */
-  class InfNormPreconditioner : public PreconditionerType
-  {
-  public:
-
-    InfNormPreconditioner( Teuchos::RCP<PreconditionerType> preconditioner );
-
-    virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }
-
-    virtual void Setup( bool create,
-                        Epetra_Operator * matrix,
-                        Epetra_MultiVector * x,
-                        Epetra_MultiVector * b );
-
-    virtual void Finish( Epetra_Operator * matrix,
-                         Epetra_MultiVector * x,
-                         Epetra_MultiVector * b );
-
-    virtual Epetra_Operator * PrecOperator() const { return preconditioner_->PrecOperator(); }
-
-    virtual void Print( std::ostream & stream )
-    {
-      stream << "InfNorm(";
-      preconditioner_->Print( stream );
-      stream << ")";
-    }
-
-  private:
-    Teuchos::RCP<PreconditionerType> preconditioner_;
-    RCP<Epetra_Vector> rowsum_;
-    RCP<Epetra_Vector> colsum_;
-  };
-
-  /// diagonal scaling fits the preconditioner framework perfecty
-  /*!
-    Modifies the underlying matrix and needs to unscale the result
-    afterwards. Can be combined with any single-matrix preconditioner.
-   */
-  class SymDiagPreconditioner : public PreconditionerType
-  {
-  public:
-
-    SymDiagPreconditioner( Teuchos::RCP<PreconditionerType> preconditioner );
-
-    virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }
-
-    virtual void Setup( bool create,
-                        Epetra_Operator * matrix,
-                        Epetra_MultiVector * x,
-                        Epetra_MultiVector * b );
-
-    virtual void Finish( Epetra_Operator * matrix,
-                         Epetra_MultiVector * x,
-                         Epetra_MultiVector * b );
-
-    virtual Epetra_Operator * PrecOperator() const { return preconditioner_->PrecOperator(); }
-
-    virtual void Print( std::ostream & stream )
-    {
-      stream << "SymDiag(";
-      preconditioner_->Print( stream );
-      stream << ")";
-    }
-
-  private:
-
-    /// embedded preconditioner
-    Teuchos::RCP<PreconditionerType> preconditioner_;
-
-    /// matrix diagonal
-    RCP<Epetra_Vector> diag_;
-  };
-
-  /// linear solver type base class
-  class SolverType
-  {
-  public:
-
-    virtual ~SolverType() {}
-
-    /// solve the linear system
-    virtual void Setup( RCP<Epetra_Operator>     matrix             ,
-                        RCP<Epetra_Vector>       x                  ,
-                        RCP<Epetra_Vector>       b                  ,
-                        bool                             refactor           ,
-                        bool                             reset              ,
-                        RCP<Epetra_MultiVector>  weighted_basis_mean,
-                        RCP<Epetra_MultiVector>  kernel_c           ,
-                        bool                             project) = 0;
-
-    virtual void Solve() = 0;
-
-    virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) = 0;
-
-    /// preconditioner used within this solver
-    virtual PreconditionerType * Preconditioner() = 0;
-  };
-
-  /// direct linear solver (using amesos)
-  class DirectSolver : public SolverType
-  {
-  public:
-
-    explicit DirectSolver( std::string solvertype );
-
-    ~DirectSolver();
-
-    virtual void Setup( RCP<Epetra_Operator>     matrix             ,
-                        RCP<Epetra_Vector>       x                  ,
-                        RCP<Epetra_Vector>       b                  ,
-                        bool                             refactor           ,
-                        bool                             reset              ,
-                        RCP<Epetra_MultiVector>  weighted_basis_mean,
-                        RCP<Epetra_MultiVector>  kernel_c           ,
-                        bool                             project);
-
-    virtual void Solve();
-
-    virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y);
-
-    virtual PreconditionerType * Preconditioner() { return NULL; }
-
-    bool IsFactored() { return factored_; }
-
-  private:
-
-    std::string solvertype_;
-
-    //! flag indicating whether matrix was factored before
-    bool                                  factored_;
-
-    //! a linear problem wrapper class used by Trilinos and for scaling of the system
-    RCP<Epetra_LinearProblem>             lp_;
-
-    //! initial guess and solution
-    RCP<Epetra_Vector>                    x_;
-
-    //! right hand side vector
-    RCP<Epetra_Vector>                    b_;
-
-    //! system of equations
-    RCP<Epetra_Operator>  A_;
-
-    //! an abstract amesos solver that can be any of the amesos concrete implementations
-    RCP<Amesos_BaseSolver>                amesos_;
-
-    //! reindex linear problem for amesos
-    RCP<EpetraExt::LinearProblem_Reindex> reindexer_;
-  };
-
-  /// kryolv subspace linear solvers (aztec) with right-side preconditioning
-  class KrylovSolver : public SolverType
-  {
-  public:
-
-    KrylovSolver( const Epetra_Comm & comm, Teuchos::ParameterList & params, FILE * outfile );
-
-    ~KrylovSolver();
-
-    virtual void Setup( RCP<Epetra_Operator>     matrix             ,
-                        RCP<Epetra_Vector>       x                  ,
-                        RCP<Epetra_Vector>       b                  ,
-                        bool                             refactor           ,
-                        bool                             reset              ,
-                        RCP<Epetra_MultiVector>  weighted_basis_mean,
-                        RCP<Epetra_MultiVector>  kernel_c           ,
-                        bool                             project);
-
-    virtual void Solve();
-
-    virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y);
-
-    virtual PreconditionerType * Preconditioner() { return &*preconditioner_; }
-
-    int Ncall() { return ncall_; }
-
-    ParameterList & Params() const { return params_; }
-
-  private:
-
-    void CreatePreconditioner( ParameterList & azlist,
-                               bool isCrsMatrix,
-                               RCP<Epetra_MultiVector> weighted_basis_mean,
-                               RCP<Epetra_MultiVector> kernel_c,
-                               bool project );
-
-    //! a communicator
-    const Epetra_Comm&                    comm_;
-
-    //! (internal) parameter list
-    ParameterList&                  params_;
-
-    //! file to write output to (proc 0 only, can be NULL on input)
-    FILE*                                 outfile_;
-
-    //! initial guess and solution
-    RCP<Epetra_Vector>                    x_;
-
-    //! right hand side vector
-    RCP<Epetra_Vector>                    b_;
-
-    //! system of equations
-    RCP<Epetra_Operator>  A_;
-
-    //! counting how many times matrix was solved between resets
-    int                                   ncall_;
-
-    Teuchos::RCP<PreconditionerType> preconditioner_;
-
-    //! an aztex maxiter status test
-    RCP<AztecOO_StatusTestMaxIters>       aztest_maxiter_;
-    //! an aztec 2-norm convergence test
-    RCP<AztecOO_StatusTestResNorm>        aztest_norm2_;
-    //! an aztec inf-norm convergence test
-    RCP<AztecOO_StatusTestResNorm>        aztest_norminf_;
-    // ! combination of the above tests
-    RCP<AztecOO_StatusTestCombo>          aztest_combo1_;
-    RCP<AztecOO_StatusTestCombo>          aztest_combo2_;
-
-#ifdef WRITEOUTSTATISTICS
-    double dtimeprecondsetup_;
-#endif
-  };
-
 public:
 
   /*!
@@ -698,7 +98,7 @@ public:
   \param outfile (in): ptr to an error file on proc 0 only. If NULL on input,
                        no output will be generated.
   */
-  Solver(RCP<ParameterList> params, const Epetra_Comm& comm, FILE* outfile);
+  Solver(Teuchos::RCP<Teuchos::ParameterList> params, const Epetra_Comm& comm, FILE* outfile);
 
 
   /*!
@@ -769,13 +169,13 @@ public:
                                          out of the Krylov space (Aztec only option)
   */
   void Setup(
-    RCP<Epetra_Operator>     matrix                              ,
-    RCP<Epetra_Vector>       x                                   ,
-    RCP<Epetra_Vector>       b                                   ,
+    Teuchos::RCP<Epetra_Operator>     matrix                              ,
+    Teuchos::RCP<Epetra_Vector>       x                                   ,
+    Teuchos::RCP<Epetra_Vector>       b                                   ,
     bool                     refactor                            ,
     bool                     reset   = false                     ,
-    RCP<Epetra_MultiVector>  weighted_basis_mean_w= Teuchos::null,
-    RCP<Epetra_MultiVector>  kernel_c= Teuchos::null             ,
+    Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean_w= Teuchos::null,
+    Teuchos::RCP<Epetra_MultiVector>  kernel_c= Teuchos::null             ,
     bool                     project = false                     );
 
   /// solve linear system after setup has been done
@@ -813,14 +213,14 @@ public:
                                          out of the Krylov space (Aztec only option)
   */
   void Solve(
-    RCP<Epetra_Operator>     matrix                              ,
-    RCP<Epetra_Vector>       x                                   ,
-    RCP<Epetra_Vector>       b                                   ,
-    bool                     refactor                            ,
-    bool                     reset   = false                     ,
-    RCP<Epetra_MultiVector>  weighted_basis_mean_w= Teuchos::null,
-    RCP<Epetra_MultiVector>  kernel_c= Teuchos::null             ,
-    bool                     project = false                     );
+      Teuchos::RCP<Epetra_Operator>     matrix                              ,
+      Teuchos::RCP<Epetra_Vector>       x                                   ,
+      Teuchos::RCP<Epetra_Vector>       b                                   ,
+      bool                     refactor                            ,
+      bool                     reset   = false                     ,
+      Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean_w= Teuchos::null,
+      Teuchos::RCP<Epetra_MultiVector>  kernel_c= Teuchos::null             ,
+      bool                     project = false                     );
 
   /*!
   \brief Reset the solver and clear data
@@ -944,7 +344,7 @@ public:
   \brief Get solver parameters
 
   */
-  inline ParameterList& Params() const { return *params_; }
+  inline Teuchos::ParameterList& Params() const { return *params_; }
 
   /*!
   \brief Get number of solver calls done on this solver
@@ -971,12 +371,12 @@ private:
   //! a communicator
   const Epetra_Comm&                    comm_;
   //! (internal) parameter list
-  RCP<ParameterList>                    params_;
+  Teuchos::RCP<Teuchos::ParameterList>                    params_;
   //! file to write output to (proc 0 only, can be NULL on input)
   FILE*                                 outfile_;
 
   /// internal solver strategy
-  RCP<SolverType> solver_;
+  Teuchos::RCP<SOLVER::SolverType> solver_;
 
 private:
 
@@ -1034,7 +434,7 @@ It uses ML instead of EpetraExt for the multiplication kernel.
 \param complete (in): flag indicating whether C shall be called FillComplete.
                       There intentionally is NO default value for this here.
 */
-RCP<SparseMatrix> MLMultiply(const Epetra_CrsMatrix& Aorig,
+Teuchos::RCP<SparseMatrix> MLMultiply(const Epetra_CrsMatrix& Aorig,
                              const Epetra_CrsMatrix& Borig,
                              bool explicitdirichlet,
                              bool savegraph,
@@ -1046,7 +446,7 @@ RCP<SparseMatrix> MLMultiply(const Epetra_CrsMatrix& Aorig,
 \sa MLMultiply(const Epetra_CrsMatrix& A,const Epetra_CrsMatrix& B,bool complete);
 
 */
-RCP<SparseMatrix> MLMultiply(const SparseMatrix& A,
+Teuchos::RCP<SparseMatrix> MLMultiply(const SparseMatrix& A,
                              const SparseMatrix& B,
                              bool explicitdirichlet,
                              bool savegraph,
@@ -1058,7 +458,7 @@ RCP<SparseMatrix> MLMultiply(const SparseMatrix& A,
 \sa MLMultiply(const Epetra_CrsMatrix& A,const Epetra_CrsMatrix& B,bool complete);
 
 */
-RCP<SparseMatrix> MLMultiply(const SparseMatrix& A,
+Teuchos::RCP<SparseMatrix> MLMultiply(const SparseMatrix& A,
                              const SparseMatrix& B,
                              bool complete);
 
@@ -1087,7 +487,7 @@ RCP<SparseMatrix> MLMultiply(const SparseMatrix& A,
   \param completeoutput (in)     : flag indicating whether Complete(...) shall be called on C upon output
   \return Matrix product A(^T)*B(^T)
 */
-RCP<SparseMatrix> MLMultiply(const SparseMatrix& A, bool transA,
+Teuchos::RCP<SparseMatrix> MLMultiply(const SparseMatrix& A, bool transA,
                              const SparseMatrix& B, bool transB,
                              bool explicitdirichlet,
                              bool savegraph,
