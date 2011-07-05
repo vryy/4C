@@ -58,6 +58,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   // dofrowmap for output
   const Epetra_Map* noderowmapoutput = xfluid.bgdis_->NodeRowMap();
   vector<int> dofmapoutput;
+  vector<int> dofmappressureoutput;
   int count = 0;
   for (int lid=0; lid<xfluid.bgdis_->NumMyRowNodes(); lid++)
   {
@@ -69,6 +70,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
     if (  gdofs.size() != 0 )
     {
       copy(&gdofs[0], &gdofs[0]+(gdofs.size()), back_inserter(dofmapoutput));
+      dofmappressureoutput.push_back(gdofs[3]);
       count = 1;
     }
     else
@@ -79,16 +81,22 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
         dofmapoutput.push_back(count+1);
         dofmapoutput.push_back(count+2);
         dofmapoutput.push_back(count+3);
+        dofmappressureoutput.push_back(count);
         count = 1;
       }
       int& last = dofmapoutput.back();
+      int& lastpres = dofmappressureoutput.back();
       dofmapoutput.push_back(last+count);
       dofmapoutput.push_back(last+count+1);
       dofmapoutput.push_back(last+count+2);
       dofmapoutput.push_back(last+count+3);
+      dofmappressureoutput.push_back(lastpres+count+3);
     }
   }
+
   outputfluiddofrowmap_ = rcp(new Epetra_Map(-1, dofmapoutput.size(), &dofmapoutput[0], 0, xfluid.bgdis_->Comm()));
+  outputpressuredofrowmap_ = rcp(new Epetra_Map(-1, dofmappressureoutput.size(), &dofmappressureoutput[0], 0, xfluid.bgdis_->Comm()));
+
 
   sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,108,false,true));
 
@@ -195,60 +203,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
   sysmat_->Zero();
   xfluid_.alesysmat_->Zero();
 
-  //Gmsh
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("element_node_id", 0, 5, 0, discret.Comm().MyPID());
-   std::ofstream gmshfilecontent(filename.c_str());
-   {
-     // draw bg elements with associated gid
-     gmshfilecontent << "View \" " << "bg Element->Id() \" {\n";
-     for (int i=0; i<discret.NumMyColElements(); ++i)
-     {
-       const DRT::Element* actele = discret.lColElement(i);
-       IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
-     };
-     gmshfilecontent << "};\n";
-   }
-   {
-     // draw cut elements with associated gid
-     gmshfilecontent << "View \" " << "cut Element->Id() \" {\n";
-     for (int i=0; i<cutdiscret.NumMyColElements(); ++i)
-     {
-       const DRT::Element* actele = cutdiscret.lColElement(i);
-       IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
-     };
-     gmshfilecontent << "};\n";
-     // draw embedded elements with associated gid
-     gmshfilecontent << "View \" " << "embedded Element->Id() \" {\n";
-     for (int i=0; i<alediscret.NumMyColElements(); ++i)
-     {
-       const DRT::Element* actele = alediscret.lColElement(i);
-       IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
-     };
-     gmshfilecontent << "};\n";
-     {
-      gmshfilecontent << "View \" " << "bg Node->Id() \" {\n";
-      for (int i=0; i<discret.NumMyColNodes(); ++i)
-      {
-        const DRT::Node* actnode = discret.lColNode(i);
-        const LINALG::Matrix<3,1> pos(actnode->X());
-        IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, gmshfilecontent);
-      }
-      gmshfilecontent << "};\n";
-     }
-     {
-      gmshfilecontent << "View \" " << "embedded Node->Id() \" {\n";
-      for (int i=0; i<alediscret.NumMyColNodes(); ++i)
-      {
-        const DRT::Node* actnode = alediscret.lColNode(i);
-        const LINALG::Matrix<3,1> pos(actnode->X());
-        IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, gmshfilecontent);
-      }
-      gmshfilecontent << "};\n";
-    }
-   }
-   gmshfilecontent.close();
-
-  // add Neumann loads
+   // add Neumann loads
   residual_->Update(1.0,*neumann_loads_,0.0);
   xfluid_.aleresidual_->PutScalar(0.0);
 
@@ -1104,10 +1059,11 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
     aledispnp_ = LINALG::CreateVector(*aledofrowmap_,true);
     aledispn_  = LINALG::CreateVector(*aledofrowmap_,true);
     aledispnm_ = LINALG::CreateVector(*aledofrowmap_,true);
-    aletotaldispnp_ = LINALG::CreateVector(*aledofrowmap_,true);
-    aletotaldispn_ = LINALG::CreateVector(*aledofrowmap_,true);
     gridv_  = LINALG::CreateVector(*aledofrowmap_,true);
   }
+
+  aletotaldispnp_ = LINALG::CreateVector(*aledofrowmap_,true);
+  aletotaldispn_ = LINALG::CreateVector(*aledofrowmap_,true);
 
   // acceleration/(scalar time derivative) at time n+1 and n
   aleaccnp_ = LINALG::CreateVector(*aledofrowmap_,true);
@@ -1464,6 +1420,9 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
   dtele_    = 0.0;
   dtfilter_ = 0.0;
 
+  if (step_>1 and alefluid_)
+    CutAndSetStateVectors();
+
   if (myrank_ == 0)
   {
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
@@ -1741,7 +1700,9 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
   }
   // debug output
 
-  aletotaldispn_->Update(1.0,*aledispn_,1.0);
+  if (alefluid_)
+    aletotaldispn_->Update(1.0,*aledispn_,1.0);
+
   state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "result", step_, state_->velnp_ , alevelnp_, aletotaldispn_);
 
 }
@@ -1935,63 +1896,6 @@ void FLD::XFluidFluid::TimeUpdate()
     aledispn_->Update(1.0,*aledispnp_,0.0);
   }
 
-
-  // map of standard node ids and their dof-gids in time step n
-  std::map<int, vector<int> > stdnoden;
-  const Epetra_Map* noderowmap = bgdis_->NodeRowMap();
-  // map of standard nodes and their dof-ids
-  for (int lid=0; lid<noderowmap->NumGlobalPoints(); lid++)
-  {
-    int gid;
-    // get global id of a node
-    gid = noderowmap->GID(lid);
-    // get the node
-    DRT::Node * node = bgdis_->gNode(gid);
-    if( bgdis_->NumDof(node) != 0)
-    {
-      vector<int> gdofs = bgdis_->Dof(node);
-      stdnoden[gid] = gdofs;
-    }
-  }
-
-  // create patch boxes of embedded elements
-  std::map<int,GEO::CUT::BoundingBox> patchboxes;
-  if (alefluid_)
-    CreatePatchBoxes(patchboxes);
-
-  // save the old state vector
-  staten_ = state_;
-
-  // if (step_ < stepmax_)
-  {
-    // new cut for the next time step
-    Epetra_Vector idispcol( *boundarydis_->DofColMap() );
-    idispcol.PutScalar( 0. );
-    aletotaldispnp_->Update(1.0,*aledispnp_,1.0);
-    LINALG::Export(*aletotaldispnp_,idispcol);
-    state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
-
-    // set and/or project state vectors
-    SetNewStatevector(stdnoden,staten_->velnp_,state_->velnp_);
-    SetNewStatevector(stdnoden,staten_->accnp_,state_->accnp_);
-
-    if (alefluid_)
-    {
-      SetNewStatevectorAndProjectEmbToBg(stdnoden,patchboxes,staten_->veln_,state_->veln_,aleveln_);
-      SetNewStatevectorAndProjectEmbToBg(stdnoden,patchboxes,staten_->velnm_,state_->velnm_,alevelnm_);
-      SetNewStatevectorAndProjectEmbToBg(stdnoden,patchboxes,staten_->accn_,state_->accn_,aleaccn_);
-    }
-    else
-    {
-      SetNewStatevector(stdnoden,staten_->veln_,state_->veln_);
-      SetNewStatevector(stdnoden,staten_->velnm_,state_->velnm_);
-      SetNewStatevector(stdnoden,staten_->accn_,state_->accn_);
-    }
-
-    // debug output
-    state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "after_intr", step_, state_->veln_ , aleveln_, aletotaldispnp_);
-  }
-
   // -------------------------------------------------------------------
   // treat impedance BC
   // note: these methods return without action, if the problem does not
@@ -2039,6 +1943,75 @@ void FLD::XFluidFluid::SetNewStatevector(map<int, vector<int> > stdnoden,
         (*statevn)[statevn->Map().LID(gdofsn[3])];
     }
   }
+}
+// -------------------------------------------------------------------
+//
+// -------------------------------------------------------------------
+void FLD::XFluidFluid::CutAndSetStateVectors()
+{
+  // map of standard node ids and their dof-gids in time step n
+  std::map<int, vector<int> > stdnoden;
+  const Epetra_Map* noderowmap = bgdis_->NodeRowMap();
+  // map of standard nodes and their dof-ids
+  for (int lid=0; lid<noderowmap->NumGlobalPoints(); lid++)
+  {
+    int gid;
+    // get global id of a node
+    gid = noderowmap->GID(lid);
+    // get the node
+    DRT::Node * node = bgdis_->gNode(gid);
+    if( bgdis_->NumDof(node) != 0)
+    {
+      vector<int> gdofs = bgdis_->Dof(node);
+      stdnoden[gid] = gdofs;
+    }
+  }
+
+  // create patch boxes of embedded elements
+  std::map<int,GEO::CUT::BoundingBox> patchboxes;
+  if (alefluid_)
+    CreatePatchBoxes(patchboxes);
+
+  // save the old state vector
+  staten_ = state_;
+
+  // new cut for the next time step
+  Epetra_Vector idispcol( *boundarydis_->DofColMap() );
+  idispcol.PutScalar( 0. );
+  aletotaldispnp_->Update(1.0,*aledispnp_,1.0);
+  LINALG::Export(*aletotaldispnp_,idispcol);
+  state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
+
+  // set and/or project state vectors
+  SetNewStatevector(stdnoden,staten_->velnp_,state_->velnp_);
+  SetNewStatevector(stdnoden,staten_->accnp_,state_->accnp_);
+
+  if (alefluid_)
+  {
+    SetNewStatevectorAndProjectEmbToBg(stdnoden,patchboxes,staten_->veln_,state_->veln_,aleveln_);
+    SetNewStatevectorAndProjectEmbToBg(stdnoden,patchboxes,staten_->velnm_,state_->velnm_,alevelnm_);
+    SetNewStatevectorAndProjectEmbToBg(stdnoden,patchboxes,staten_->accn_,state_->accn_,aleaccn_);
+  }
+  else
+  {
+    SetNewStatevector(stdnoden,staten_->veln_,state_->veln_);
+    SetNewStatevector(stdnoden,staten_->velnm_,state_->velnm_);
+    SetNewStatevector(stdnoden,staten_->accn_,state_->accn_);
+  }
+
+  // debug output
+  state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "after_intr", step_, state_->veln_, aleveln_, aletotaldispnp_);
+
+  bgdis_->ClearState();
+  bgdis_->SetState("velnp",state_->velnp_);
+  bgdis_->SetState("hist",state_->hist_);
+
+  embdis_->ClearState();
+  embdis_->SetState("velnp",alevelnp_);
+  embdis_->SetState("hist",alehist_);
+
+  bgdis_->ClearState();
+  embdis_->ClearState();
 }
 // -------------------------------------------------------------------
 //
@@ -2270,6 +2243,60 @@ void FLD::XFluidFluid::Output()
 {
   //  ART_exp_timeInt_->Output();
   // output of solution
+
+  //Gmsh
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("element_node_id", step_, 5, 0, bgdis_->Comm().MyPID());
+   std::ofstream gmshfilecontent(filename.c_str());
+   {
+     // draw bg elements with associated gid
+     gmshfilecontent << "View \" " << "bg Element->Id() \" {\n";
+     for (int i=0; i<bgdis_->NumMyColElements(); ++i)
+     {
+       const DRT::Element* actele = bgdis_->lColElement(i);
+       IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
+     };
+     gmshfilecontent << "};\n";
+   }
+   {
+     // draw cut elements with associated gid
+     gmshfilecontent << "View \" " << "cut Element->Id() \" {\n";
+     for (int i=0; i<boundarydis_->NumMyColElements(); ++i)
+     {
+       const DRT::Element* actele = boundarydis_->lColElement(i);
+       IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
+     };
+     gmshfilecontent << "};\n";
+     // draw embedded elements with associated gid
+     gmshfilecontent << "View \" " << "embedded Element->Id() \" {\n";
+     for (int i=0; i<embdis_->NumMyColElements(); ++i)
+     {
+       const DRT::Element* actele = embdis_->lColElement(i);
+       IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
+     };
+     gmshfilecontent << "};\n";
+     {
+      gmshfilecontent << "View \" " << "bg Node->Id() \" {\n";
+      for (int i=0; i<bgdis_->NumMyColNodes(); ++i)
+      {
+        const DRT::Node* actnode = bgdis_->lColNode(i);
+        const LINALG::Matrix<3,1> pos(actnode->X());
+        IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, gmshfilecontent);
+      }
+      gmshfilecontent << "};\n";
+     }
+     {
+      gmshfilecontent << "View \" " << "embedded Node->Id() \" {\n";
+      for (int i=0; i<embdis_->NumMyColNodes(); ++i)
+      {
+        const DRT::Node* actnode = embdis_->lColNode(i);
+        const LINALG::Matrix<3,1> pos(actnode->X());
+        IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, gmshfilecontent);
+      }
+      gmshfilecontent << "};\n";
+    }
+   }
+   gmshfilecontent.close();
+
   if (step_%upres_ == 0)
   {
     // step number and time
@@ -2280,15 +2307,26 @@ void FLD::XFluidFluid::Output()
       int gid = state_->velnp_->Map().GID(iter);
       if (state_->velnpoutput_->Map().MyGID(gid))
         (*state_->velnpoutput_)[state_->velnpoutput_->Map().LID(gid)]=(*state_->velnpoutput_)[state_->velnpoutput_->Map().LID(gid)] +                                                                (*state_->velnp_)[state_->velnp_->Map().LID(gid)];
-
     }
+
     // velocity/pressure vector
     output_->WriteVector("velnp",state_->velnpoutput_);
 
     // (hydrodynamic) pressure
-//     Teuchos::RCP<Epetra_Vector> pressure = state_->velpressplitter_.ExtractCondVector(state_->velnpoutput_);
-//     pressure->Scale(density_);
-//     output_->WriteVector("pressure", pressure);
+    Teuchos::RCP<Epetra_Vector> pressureoutput = LINALG::CreateVector(*state_->outputpressuredofrowmap_,true);
+
+    for (int iter=0; iter<pressureoutput->MyLength(); iter++)
+    {
+      int gid = pressureoutput->Map().GID(iter);
+      if (pressureoutput->Map().MyGID(gid))
+        (*pressureoutput)[pressureoutput->Map().LID(gid)]=(*state_->velnpoutput_)[state_->velnpoutput_->Map().LID(gid)];
+    }
+
+//  Teuchos::RCP<Epetra_Vector> pressure =  state_->velpressplitter_.ExtractCondVector(state_->velnpoutput_);
+
+    pressureoutput->Scale(density_);
+    output_->WriteVector("pressure", pressureoutput);
+
 
     //output_.WriteVector("residual", trueresidual_);
 
@@ -2351,7 +2389,8 @@ void FLD::XFluidFluid::Output()
     emboutput_->WriteVector("pressure", pressure);
 
     //output_.WriteVector("residual", trueresidual_);
-    if (alefluid_) emboutput_->WriteVector("dispnp", aledispnp_);
+
+    if (alefluid_) emboutput_->WriteVector("dispnp", aletotaldispn_);
 
     if (step_==upres_) emboutput_->WriteElementData();
   }

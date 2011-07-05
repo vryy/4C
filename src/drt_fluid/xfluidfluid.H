@@ -149,6 +149,7 @@ namespace FLD
       // dof-row maps
       const Epetra_Map* fluiddofrowmap_;
       Teuchos::RCP<const Epetra_Map> outputfluiddofrowmap_;
+      Teuchos::RCP<const Epetra_Map> outputpressuredofrowmap_;
 //      const Epetra_Map* aledofrowmap_;
 //      const Epetra_Map* boundarydofrowmap_;
 
@@ -269,6 +270,8 @@ namespace FLD
                                             Teuchos::RCP<Epetra_Vector> statevn,
                                             Teuchos::RCP<Epetra_Vector> statevnp,
                                             Teuchos::RCP<Epetra_Vector> fluidstate_vector_n);
+
+    void CutAndSetStateVectors();
 
     void CreatePatchBoxes(std::map<int, GEO::CUT::BoundingBox> & patchboxes);
 
