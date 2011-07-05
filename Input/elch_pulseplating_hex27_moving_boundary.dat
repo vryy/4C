@@ -250,7 +250,9 @@ CURVE5 on PhysiologicalWaveform InterpolType Fourier       Period 0.004 Flowrate
 // for use of Fourier representation of pulse curve computed from set of total current values
 // only activated for testing input reading of CURVE5
 ------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0.0 0 FUNCTION 0.0*(-161.84337)*y*y
+FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0*(-161.84337)*y*y
+FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 // RDE velocity field was deactivated for this example!!!
 ------------------------------------------------------------FUNCT2
 FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0
