@@ -9,7 +9,7 @@
 #include "cut_element.H"
 #include "cut_options.H"
 #include "cut_integrationcellcreator.H"
-//#include "cut_linegraph.H"
+#include "cut_volumecellgenerator.H"
 #include "cut_facetgraph.H"
 
 #include <string>
@@ -377,10 +377,13 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
 #endif
 #endif
 
+#if 1
+  VolumeCellGenerator vcg( sides_, facets_ );
+  vcg.CreateVolumeCells( mesh, this, cells_ );
+#else
   FacetGraph fg( sides_, facets_ );
-  //fg.Print();
-
   fg.CreateVolumeCells( mesh, this, cells_ );
+#endif
 }
 
 bool GEO::CUT::ConcreteElement<DRT::Element::tet4>::PointInside( Point* p )

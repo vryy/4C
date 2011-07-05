@@ -29,7 +29,7 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const plain_
         Facet * h = *i;
         h->GetLines( hole_lines );
       }
-      for ( std::map<std::pair<Point*, Point*>, plain_facet_set >::iterator i=hole_lines.begin();
+      for ( std::map<std::pair<Point*, Point*>, plain_facet_set>::iterator i=hole_lines.begin();
             i!=hole_lines.end();
             ++i )
       {
@@ -123,8 +123,6 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const plain_
     }
     file << "]\n";
   }
-
-  graph_.DumpGraph( "facetgraph.py" );
 #endif
 #endif
 
@@ -185,6 +183,7 @@ GEO::CUT::FacetGraph::FacetGraph( const std::vector<Side*> & sides, const plain_
 #endif
 
 #ifdef DEBUGCUTLIBRARY
+  graph_.DumpGraph( "facetgraph.py" );
   cycle.DumpGraph( "facetcycle.py" );
 #endif
 
