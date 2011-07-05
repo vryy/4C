@@ -377,7 +377,7 @@ void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
 #endif
 #endif
 
-#if 1
+#if 0
   VolumeCellGenerator vcg( sides_, facets_ );
   vcg.CreateVolumeCells( mesh, this, cells_ );
 #else
