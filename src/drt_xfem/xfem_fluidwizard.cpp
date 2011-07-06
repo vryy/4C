@@ -82,6 +82,7 @@ void XFEM::FluidWizard::Cut(  bool include_inner, const Epetra_Vector & idispcol
   }
 
   cw.PrintCellStats();
+  cw.DumpGmshIntegrationCells();
 
 #else
   dserror( "QHULL needs to be defined to cut elements" );
