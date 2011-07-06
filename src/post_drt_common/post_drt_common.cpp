@@ -354,7 +354,8 @@ void PostProblem::setup_filter(string control_file_name, string output_name)
 
     /* read the previous control file */
     parse_control_file(table, control_file_name.c_str());
-    printf("read restarted control file: %s\n", control_file_name.c_str());
+    if(comm_->MyPID() == 0)
+      printf("read restarted control file: %s\n", control_file_name.c_str());
 
     /* find the previous results */
 
@@ -593,7 +594,8 @@ void PostProblem::read_meshes()
         }
         else
         {
-          printf("condition name '%s' not supported, continue anyway", condname);
+          if(comm_->MyPID() == 0)
+            printf("condition name '%s' not supported, continue anyway", condname);
 //          dserror("condition name '%s' not supported", condname);
         }
       }
