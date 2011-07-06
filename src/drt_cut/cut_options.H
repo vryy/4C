@@ -12,11 +12,13 @@ public:
 
   Options( bool positions=true,
            bool simpleshapes=true,
+           bool genquad4=false,
            bool genhex8=true,
            bool genwedge6=false,
            bool genpyramid5=false )
     : positions_(positions),
       simpleshapes_(simpleshapes),
+      genquad4_(genquad4),
       genhex8_(genhex8),
       genwedge6_(genwedge6),
       genpyramid5_(genpyramid5)
@@ -29,6 +31,7 @@ public:
 
   bool SimpleShapes() const { return simpleshapes_; }
 
+  bool GenQuad4() const { return genquad4_; }
   bool GenHex8() const { return genhex8_; }
   bool GenWedge6() const { return genwedge6_; }
   bool GenPyramid5() const { return genpyramid5_; }
@@ -37,6 +40,7 @@ private:
 
   bool positions_;
   bool simpleshapes_;
+  bool genquad4_;
   bool genhex8_;
   bool genwedge6_;
   bool genpyramid5_;

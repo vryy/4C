@@ -4,6 +4,11 @@
 
 GEO::CUT::SideHandle * GEO::CUT::MeshHandle::CreateSide( int sid, const std::vector<int> & nids, DRT::Element::DiscretizationType distype )
 {
+#ifdef DRT_CUT_DUMPCREATION
+  std::cout << "CreateSide( " << sid << ", ";
+  std::copy( nids.begin(), nids.end(), std::ostream_iterator<int>( std::cout, ", " ) );
+  std::cout << distype << " );\n";
+#endif
   switch ( distype )
   {
 //  case DRT::Element::quad4:
@@ -67,6 +72,11 @@ GEO::CUT::SideHandle * GEO::CUT::MeshHandle::CreateSide( int sid, const std::vec
 
 GEO::CUT::ElementHandle * GEO::CUT::MeshHandle::CreateElement( int eid, const std::vector<int> & nids, DRT::Element::DiscretizationType distype )
 {
+#ifdef DRT_CUT_DUMPCREATION
+  std::cout << "CreateElement( " << eid << ", ";
+  std::copy( nids.begin(), nids.end(), std::ostream_iterator<int>( std::cout, ", " ) );
+  std::cout << distype << " );\n";
+#endif
   switch ( distype )
   {
   case DRT::Element::hex8:

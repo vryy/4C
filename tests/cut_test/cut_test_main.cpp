@@ -194,6 +194,8 @@ void test_cut_volumes();
 void test_cut_volumes2();
 void test_cut_volumes3();
 
+void test_fluidfluid();
+
 typedef void ( *testfunct )();
 
 
@@ -445,6 +447,8 @@ int main( int argc, char ** argv )
   functable["cut_volumes"] = test_cut_volumes;
   functable["cut_volumes2"] = test_cut_volumes2;
   functable["cut_volumes3"] = test_cut_volumes3;
+
+  functable["fluidfluid"] = test_fluidfluid;
 
   Teuchos::CommandLineProcessor clp( false );
 

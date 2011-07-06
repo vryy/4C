@@ -58,6 +58,9 @@ public:
 
 private:
 
+  void DumpGmshIntegrationCells( std::map< int, GEO::DomainIntCells > & domainintcells,
+                                 std::map< int, GEO::BoundaryIntCells > & boundaryintcells );
+
   Teuchos::RCP<GEO::CutWizard> cut_;
 
   /// background discretization

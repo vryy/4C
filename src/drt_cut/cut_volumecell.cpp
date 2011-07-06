@@ -356,7 +356,6 @@ void GEO::CUT::VolumeCell::SimplifyIntegrationCells( Mesh & mesh )
 {
   // do whatever can be done to get simpler cells
   //
-  // right now this code has no effect
 
   std::map<int, std::vector<Facet*> > side_facets;
 
@@ -407,7 +406,19 @@ void GEO::CUT::VolumeCell::SimplifyIntegrationCells( Mesh & mesh )
           {
           case DRT::Element::quad4:
             // the facet is too small, but it knows the right side
-            mesh.NewQuad4Cell( this, facets[0], corner_points );
+            if ( mesh.CreateOptions().GenQuad4() )
+            {
+              mesh.NewQuad4Cell( this, facets[0], corner_points );
+            }
+            else
+            {
+              std::vector<Point*> tri3_points = corner_points;
+              tri3_points.pop_back();
+              mesh.NewTri3Cell( this, facets[0], tri3_points );
+              tri3_points.erase( tri3_points.begin()+1 );
+              tri3_points.push_back( corner_points.back() );
+              mesh.NewTri3Cell( this, facets[0], tri3_points );
+            }
             break;
           case DRT::Element::tri3:
             // the facet is too small, but it knows the right side

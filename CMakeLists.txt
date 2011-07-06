@@ -1293,10 +1293,12 @@ set(OBJS_CUT_TEST
   tests/cut_test/cut_test_geometry.cpp
   tests/cut_test/cut_test_intersection.cpp
   tests/cut_test/cut_test_levelset.cpp
+  tests/cut_test/cut_test_loader.cpp
   tests/cut_test/cut_test_main.cpp
   tests/cut_test/cut_test_simple.cpp
   tests/cut_test/cut_test_units.cpp
   tests/cut_test/cut_test_utils.cpp
+  tests/cut_test/cut_test_fluidfluid.cpp
   tests/cut_test/cut_test_alex_39.cpp
   tests/cut_test/cut_test_alex_40.cpp
   tests/cut_test/cut_test_alex_41.cpp

@@ -86,6 +86,8 @@ namespace GEO
 
     void PrintCellStats();
 
+    void DumpGmshIntegrationCells();
+
   private:
 
     DRT::Discretization & dis_;

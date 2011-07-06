@@ -62,6 +62,8 @@ public:
 
   Mesh & CutMesh( int i=0 ) { return cut_mesh_[i]->LinearMesh(); }
 
+  void DumpGmshIntegrationCells( std::string name );
+
 private:
 
   Teuchos::RCP<PointPool> pp_;

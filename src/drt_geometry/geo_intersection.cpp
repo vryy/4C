@@ -6,6 +6,9 @@
 
 #include "geo_intersection.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_globalproblem.H"
+
+#include "../drt_io/io_control.H"
 
 // #include "searchtree.H"
 // #include "searchtree_geometry_service.H"
@@ -248,6 +251,17 @@ void GEO::CutWizard::PrintCellStats()
   mesh_->PrintCellStats();
 }
 
+void GEO::CutWizard::DumpGmshIntegrationCells()
+{
+  std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  std::stringstream str;
+  str << name
+      << ".integrationcells."
+      << dis_.Comm().MyPID()
+      << ".pos";
+  mesh_->DumpGmshIntegrationCells( str.str() );
+}
+
 #if 0
 Teuchos::RCP<Epetra_CrsGraph> GEO::CutWizard::MatrixGraph( const CutDofSet & dofset, const Epetra_Map & dbcmap )
 {
@@ -465,11 +479,12 @@ void GEO::computeIntersection( const Teuchos::RCP<DRT::Discretization> xfemdis,
   const double t_end = Teuchos::Time::wallTime()-t_start;
   if ( xfemdis->Comm().MyPID() == 0 )
   {
-    std::cout << " Success (" << t_end  <<  " secs), intersected elements: " << globalcells;
-    std::cout << endl;
+    std::cout << " Success (" << t_end  <<  " secs), intersected elements: " << globalcells
+              << "\n";
   }
 
   wizard.PrintCellStats();
+  wizard.DumpGmshIntegrationCells();
 }
 
 #endif

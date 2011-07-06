@@ -9,6 +9,7 @@
 #include "cut_boundarycell.H"
 #include "cut_volumecell.H"
 #include "cut_kernel.H"
+#include "cut_options.H"
 
 GEO::CUT::Facet::Facet( Mesh & mesh, const std::vector<Point*> & points, Side * side, bool cutsurface )
   : points_( points ),
@@ -760,8 +761,22 @@ void GEO::CUT::Facet::NewTri3Cell( Mesh & mesh, VolumeCell * volume, const std::
 
 void GEO::CUT::Facet::NewQuad4Cell( Mesh & mesh, VolumeCell * volume, const std::vector<Point*> & points, plain_boundarycell_set & bcells )
 {
-  BoundaryCell * bc = mesh.NewQuad4Cell( volume, this, points );
-  bcells.insert( bc );
+  if ( mesh.CreateOptions().GenQuad4() )
+  {
+    BoundaryCell * bc = mesh.NewQuad4Cell( volume, this, points );
+    bcells.insert( bc );
+  }
+  else
+  {
+    std::vector<Point*> tri3_points = points;
+    tri3_points.pop_back();
+    BoundaryCell * bc = mesh.NewTri3Cell( volume, this, tri3_points );
+    bcells.insert( bc );
+    tri3_points.erase( tri3_points.begin()+1 );
+    tri3_points.push_back( tri3_points.back() );
+    bc = mesh.NewTri3Cell( volume, this, tri3_points );
+    bcells.insert( bc );
+  }
 }
 
 void GEO::CUT::Facet::GetBoundaryCells( plain_boundarycell_set & bcells )

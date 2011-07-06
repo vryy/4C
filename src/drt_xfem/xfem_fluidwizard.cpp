@@ -12,6 +12,8 @@
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_node.H"
 
+#include "../drt_io/io_control.H"
+
 void XFEM::FluidWizard::Cut(  bool include_inner, const Epetra_Vector & idispcol, bool positions )
 {
 #ifdef QHULL
@@ -182,18 +184,41 @@ void XFEM::FluidWizard::Cut( const Epetra_Vector & idispcol,
 
   // cleanup
 
-  int localcells = domainintcells.size();
-  int globalcells;
-  backdis_.Comm().SumAll( &localcells, &globalcells, 1 );
+  int localsizes[3];
+  localsizes[0] = domainintcells.size();
+
+  localsizes[1] = 0;
+  for ( std::map< int, GEO::DomainIntCells >::iterator i=domainintcells.begin();
+        i!=domainintcells.end();
+        ++i )
+  {
+    localsizes[1] += i->second.size();
+  }
+
+  localsizes[2] = 0;
+  for ( std::map< int, GEO::BoundaryIntCells >::iterator i=boundaryintcells.begin();
+        i!=boundaryintcells.end();
+        ++i )
+  {
+    localsizes[2] += i->second.size();
+  }
+
+  int globalsizes[3];
+  backdis_.Comm().SumAll( localsizes, globalsizes, 3 );
 
   const double t_end = Teuchos::Time::wallTime()-t_start;
   if ( backdis_.Comm().MyPID() == 0 )
   {
-    std::cout << " Success (" << t_end  <<  " secs), intersected elements: " << globalcells;
-    std::cout << endl;
+    std::cout << " Success (" << t_end  <<  " secs), intersected elements: " << globalsizes[0]
+              << "   domain cells: " << globalsizes[1]
+              << "   boundary cells: " << globalsizes[2]
+              << "\n";
   }
 
   cw.PrintCellStats();
+  cw.DumpGmshIntegrationCells();
+
+  DumpGmshIntegrationCells( domainintcells, boundaryintcells );
 
 #else
   dserror( "QHULL needs to be defined to cut elements" );
@@ -254,4 +279,101 @@ void XFEM::FluidWizard::CreateDofMap( std::map<int, const std::set<XFEM::FieldEn
 Teuchos::RCP<XFEM::FluidDofSet> XFEM::FluidWizard::DofSet()
 {
   return Teuchos::rcp( new FluidDofSet( this ) );
+}
+
+void XFEM::FluidWizard::DumpGmshIntegrationCells( std::map< int, GEO::DomainIntCells > & domainintcells,
+                                                  std::map< int, GEO::BoundaryIntCells > & boundaryintcells )
+{
+  std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  std::stringstream str;
+  str << name
+      << ".cells."
+      << backdis_.Comm().MyPID()
+      << ".pos";
+
+  std::ofstream file( str.str().c_str() );
+
+  file << "View \"IntegrationCells\" {\n";
+  for ( std::map< int, GEO::DomainIntCells >::iterator i=domainintcells.begin();
+        i!=domainintcells.end();
+        ++i )
+  {
+    GEO::DomainIntCells & cells = i->second;
+    for ( GEO::DomainIntCells::iterator i=cells.begin(); i!=cells.end(); ++i )
+    {
+      GEO::DomainIntCell & cell = *i;
+      const LINALG::SerialDenseMatrix & xyz = cell.CellNodalPosXYZ();
+      switch ( cell.Shape() )
+      {
+      case DRT::Element::hex8:
+        file << "SH(";
+        break;
+      case DRT::Element::tet4:
+        file << "SS(";
+        break;
+      case DRT::Element::wedge6:
+        file << "SI(";
+        break;
+      case DRT::Element::pyramid5:
+        file << "SP(";
+        break;
+      default:
+        dserror( "distype unsupported" );
+      }
+      for ( int i=0; i<xyz.N(); ++i )
+      {
+        if ( i > 0 )
+          file << ",";
+        file << xyz( 0, i ) << "," << xyz( 1, i ) << "," << xyz( 2, i );
+      }
+      file << "){";
+      for ( int i=0; i<xyz.N(); ++i )
+      {
+        if ( i > 0 )
+          file << ",";
+        file << 0;
+      }
+      file << "};\n";
+    }
+  }
+  file << "};\n";
+
+  file << "View \"BoundaryCells\" {\n";
+  for ( std::map< int, GEO::BoundaryIntCells >::iterator i=boundaryintcells.begin();
+        i!=boundaryintcells.end();
+        ++i )
+  {
+    GEO::BoundaryIntCells & cells = i->second;
+    for ( GEO::BoundaryIntCells::iterator i=cells.begin(); i!=cells.end(); ++i )
+    {
+      GEO::BoundaryIntCell & cell = *i;
+      const LINALG::SerialDenseMatrix & xyz = cell.CellNodalPosXYZ();
+      switch ( cell.Shape() )
+      {
+      case DRT::Element::tri3:
+        file << "ST(";
+        break;
+      case DRT::Element::quad4:
+        file << "SQ(";
+        break;
+      default:
+        dserror( "distype unsupported" );
+      }
+      for ( int i=0; i<xyz.N(); ++i )
+      {
+        if ( i > 0 )
+          file << ",";
+        file << xyz( 0, i ) << "," << xyz( 1, i ) << "," << xyz( 2, i );
+      }
+      file << "){";
+      for ( int i=0; i<xyz.N(); ++i )
+      {
+        if ( i > 0 )
+          file << ",";
+        file << 0;
+      }
+      file << "};\n";
+    }
+  }
+  file << "};\n";
 }

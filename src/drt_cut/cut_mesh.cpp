@@ -171,6 +171,14 @@ GEO::CUT::Node* GEO::CUT::Mesh::GetNode( int nid, const double * xyz, double lsv
   Point * p = NewPoint( xyz, NULL, NULL );
   Node * n = new Node( nid, p, lsv );
   nodes_[nid] = Teuchos::rcp( n );
+#ifdef DRT_CUT_DUMPCREATION
+  if ( cutmesh_ )
+    std::cout << "GetCutNode( " << nid << ", ";
+  else
+    std::cout << "GetNode( " << nid << ", ";
+  std::copy( xyz, xyz+3, std::ostream_iterator<double>( std::cout, ", " ) );
+  std::cout << lsv << " );\n";
+#endif
   return n;
 }
 
@@ -1453,6 +1461,8 @@ void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool levelset )
 
 void GEO::CUT::Mesh::SimplifyIntegrationCells()
 {
+  // There are obscure bugs. Do not try to be clever.
+#if 0
   for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin();
         i!=cells_.end();
         ++i )
@@ -1460,6 +1470,7 @@ void GEO::CUT::Mesh::SimplifyIntegrationCells()
     VolumeCell * vc = &**i;
     vc->SimplifyIntegrationCells( *this );
   }
+#endif
 }
 
 void GEO::CUT::Mesh::TestElementVolume( bool fatal )
