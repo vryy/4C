@@ -144,13 +144,19 @@ void GEO::CUT::VolumeCellGenerator::CreateVolumeCells( Mesh & mesh,
 {
   while ( not Done() )
   {
+    bool found = false;
     for ( std::map<Point*, GenPoint>::iterator i=points_.begin(); i!=points_.end(); ++i )
     {
       GenPoint & gp = i->second;
       if ( gp.TestCorner( volumes_ ) )
       {
+        found = true;
         break;
       }
+    }
+    if ( not found )
+    {
+      throw std::runtime_error( "no new corner found" );
     }
   }
 
