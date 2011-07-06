@@ -276,10 +276,9 @@ void SCATRA::TimIntGenAlpha::ComputeThermPressure()
   // provide velocity field (export to column map necessary for parallel evaluation)
   AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
 
-  //provide displacement field in case of ALE
+  // provide displacement field in case of ALE
   eleparams.set("isale",isale_);
-  if (isale_)
-    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
   // set action for elements
   eleparams.set("action","calc_domain_and_bodyforce");
@@ -290,13 +289,13 @@ void SCATRA::TimIntGenAlpha::ComputeThermPressure()
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
     = Teuchos::rcp(new Epetra_SerialDenseVector(2));
 
+  // evaluate domain and bodyforce integral
   discret_->EvaluateScalars(eleparams, scalars);
 
   // get global integral values
   double pardomint  = (*scalars)[0];
   double parbofint  = (*scalars)[1];
 
-  // evaluate domain integral
   // set action for elements
   eleparams.set("action","calc_therm_press");
 
@@ -306,7 +305,7 @@ void SCATRA::TimIntGenAlpha::ComputeThermPressure()
   eleparams.set("velocity-divergence integral",divuint);
   eleparams.set("diffusive-flux integral",     diffint);
 
-  // evaluate velocity-divergence and rhs on boundaries
+  // evaluate velocity-divergence and diffusive (minus sign!) flux on boundaries
   // We may use the flux-calculation condition for calculation of fluxes for
   // thermodynamic pressure, since it is usually at the same boundary.
   vector<std::string> condnames;
@@ -333,7 +332,7 @@ void SCATRA::TimIntGenAlpha::ComputeThermPressure()
   const double shr  = 1.4;
   const double divt = shr*pardivuint/pardomint;
   const double lhs  = alphaF_*genalphafac_*dta_*divt;
-  const double rhs  = genalphafac_*dta_*(shr-1.0)*(pardiffint+parbofint)/pardomint;
+  const double rhs  = genalphafac_*dta_*(shr-1.0)*(-pardiffint+parbofint)/pardomint;
   const double hist = thermpressn_
                      - (1.0 - alphaF_)*genalphafac_*dta_*divt*thermpressn_
                      + (1.0 - genalphafac_)*dta_*thermpressdtn_;

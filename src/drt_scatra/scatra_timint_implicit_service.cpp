@@ -577,10 +577,9 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
   AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
   AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
 
-  //provide displacement field in case of ALE
+  // provide displacement field in case of ALE
   eleparams.set("isale",isale_);
-  if (isale_)
-    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
   // set parameters for element evaluation
   eleparams.set("action","calc_domain_and_bodyforce");
@@ -591,13 +590,13 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
     = Teuchos::rcp(new Epetra_SerialDenseVector(2));
 
+  // evaluate domain and bodyforce integral
   discret_->EvaluateScalars(eleparams, scalars);
 
   // get global integral values
   double pardomint  = (*scalars)[0];
   double parbofint  = (*scalars)[1];
 
-  // evaluate domain integral
   // set action for elements
   eleparams.set("action","calc_therm_press");
 
@@ -607,7 +606,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
   eleparams.set("velocity-divergence integral",divuint);
   eleparams.set("diffusive-flux integral",     diffint);
 
-  // evaluate velocity-divergence and rhs on boundaries
+  // evaluate velocity-divergence and diffusive (minus sign!) flux on boundaries
   // We may use the flux-calculation condition for calculation of fluxes for
   // thermodynamic pressure, since it is usually at the same boundary.
   vector<std::string> condnames;
@@ -634,7 +633,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
   // (with specific heat ratio fixed to be 1.4)
   const double shr = 1.4;
   thermpressdtn_ = (-shr*thermpressn_*pardivuint
-                    + (shr-1.0)*(pardiffint+parbofint))/pardomint;
+                    + (shr-1.0)*(-pardiffint+parbofint))/pardomint;
 
   // set time derivative of thermodynamic pressure at n+1 equal to the one at n
   // for following evaluation of intermediate values
@@ -707,8 +706,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons()
 
   //provide displacement field in case of ALE
   eleparams.set("isale",isale_);
-  if (isale_)
-    AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+  if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
 
   // evaluate integral of inverse temperature
   Teuchos::RCP<Epetra_SerialDenseVector> scalars
