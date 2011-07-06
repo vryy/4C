@@ -313,11 +313,17 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
   }
 
   // Remark:
-  // Problems occur, if the ids of slave nodes are smaller than the ids of master nodes. In this case the correct nodes
+  // Problems occur, if the coordinates in homogeneous direction the of slave nodes are smaller
+  // than the coordinates in homogeneous direction of the master nodes. In this case the correct nodes
   // aren't found. Especially for only one proc, none of the nodes are found. If more than one proc is used, it
   // is also possible that nodes are missing in the sampling. So be careful when using this function!
+  // To avoid problems check that the master side contains lower x/y/z-values than the slave side.
   if (numlines == 0)
-    dserror("No node with the smallest coordinate in direction %d found. Changing master and slave of the pbc might help. Read remark.");
+  {
+    //dserror("No node with the smallest coordinate in direction %d found. Changing master and slave of the pbc might help. Read remark.");
+    if (discret_->Comm().MyPID()==0)
+     std::cout << "Warning: Sampling for paraview output (averaged velocity/pressure) is incomplete! \nChanging master and slave of the pbc might help! \nRead remark!" << std::endl;
+  }
 
   // get an empty vector for the averages
   vector<double> avg_u(x.size(),0.0);
@@ -1079,6 +1085,14 @@ void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(
   }
 
   AddToTotalTimeAverage();
+
+  if(discret_->Comm().MyPID()==0)
+  {
+    cout << "XXXXXXXXXXXXXXXXXXXXX              ";
+    cout << " Wrote averaged vector             ";
+    cout << "XXXXXXXXXXXXXXXXXXXXX";
+    cout << "\n\n";
+  }
 
   output.WriteInt   ("num_steps_in_sample", prev_n_       );
   output.WriteDouble("sampling_time"      , prev_avg_time_);
