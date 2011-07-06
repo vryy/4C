@@ -81,19 +81,46 @@ namespace IO
       s.precision(12);
 
       const int numnode = distypeToGmshNumNode(distype);
-      const int nsd = DRT::UTILS::getDimension(distype);
 
       // coordinates
       s << "(";
       for (int inen = 0; inen < numnode; ++inen)
       {
-        for (int idim = 0; idim < nsd; ++idim)
+        // print position
+        s << coord(0, inen) << ",";
+        s << coord(1, inen) << ",";
+        s << coord(2, inen);
+        if (inen < numnode-1)
+        {
+          s << ",";
+        }
+      };
+      s << ")";
+      return;
+    }
+
+    //! take an array (3,numnode) and translate it to the coordinate section of a Gmsh element entry
+    template<class M> void CoordinatesToStream2D(
+        const M&                               coord,     ///< position array (3, numnode)
+        const DRT::Element::DiscretizationType distype,   ///< element shape
+        std::ostream&                          s
+    )
+    {
+      s.setf(ios::scientific,ios::floatfield);
+      s.precision(12);
+      const int nsd = 2;
+
+      const int numnode = distypeToGmshNumNode(distype);
+
+      // coordinates
+      s << "(";
+      for (int inen = 0; inen < numnode; ++inen)
+      {
+        for (int idim = 0; idim < 3; ++idim)
         {
           // print position
           s << coord(idim, inen);
           if (idim < nsd -1)
-            s << ",";
-          if (nsd == 2 and idim == nsd -1)
             s << ",0.000000000000e+00";
         }
 
@@ -164,7 +191,7 @@ namespace IO
       s.precision(12);
 
       const int numnode = distypeToGmshNumNode(distype);
-      const int nsd = DRT::UTILS::getDimension(distype);
+      const int nsd = 3;
 
       // values
       s << "{";
@@ -175,7 +202,37 @@ namespace IO
           s << scientific << vectorfield(isd, inode);
           if (isd < nsd-1)
             s << ",";
-          if (nsd == 2 and isd == nsd -1)
+        }
+        if (inode < numnode-1)
+        {
+          s << ",";
+        }
+      };
+      s << "};";
+    }
+
+
+    //! take an array (3,numnode) and translate it to the vector value section of an Gmsh element entry
+    template<class M> void VectorFieldToStream2D(
+        const M&                               vectorfield,  ///< vector value array (3, numnode)
+        const DRT::Element::DiscretizationType distype,      ///< element shape
+        std::ostream&                          s
+    )
+    {
+      s.setf(ios::scientific,ios::floatfield);
+      s.precision(12);
+
+      const int numnode = distypeToGmshNumNode(distype);
+      const int nsd = 2;
+
+      // values
+      s << "{";
+      for (int inode = 0; inode<numnode; ++inode)
+      {
+        for (int isd = 0; isd < nsd; ++isd)
+        {
+          s << scientific << vectorfield(isd, inode);
+          if (isd < nsd-1)
             s << ",0.000000000000e+00";
         }
         if (inode < numnode-1)

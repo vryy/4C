@@ -194,6 +194,7 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(
 
 /*------------------------------------------------------------------------------------------------*
  | write scalar / vector from a dof-based vector field (e.g. velocity)                            |
+ | (only supported by fluid implicit integration)                                                 |
  | to Gmsh postprocessing file                                                         ehrl 05/11 |
  *------------------------------------------------------------------------------------------------*/
 void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(
@@ -243,7 +244,21 @@ void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(
       for (int inode = 0; inode < numnode; ++inode)
         myscalarfield(inode)= extractelementvalues(nsd+inode*(nsd+1));
 
-      cellWithScalarFieldToStream(distype, myscalarfield, xyze, s);
+      //replace function: cellWithScalarFieldToStream(distype, myscalarfield, xyze, s);
+      {
+        s << "S"; // scalar field indicator
+        s << distypeToGmshElementHeader(distype);
+        if (nsd==3)
+          CoordinatesToStream(xyze, distype, s);
+        else if(nsd==2)
+          CoordinatesToStream2D(xyze, distype, s);
+        else
+          dserror("only two- and three-dimensional domains are supported");
+
+        ScalarFieldToStream(myscalarfield, distype, s);
+        s << "\n";
+      }
+
     }
     else if(field == "velocity")
     {
@@ -253,7 +268,24 @@ void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(
         for (int idim = 0; idim < nsd; ++idim)
           myvectorfield(idim,inode)= extractelementvalues(idim + inode*(nsd+1));
 
-      cellWithVectorFieldToStream(distype, myvectorfield, xyze, s);
+      // replace function : cellWithVectorFieldToStream(distype, myvectorfield, xyze, s);
+      {
+        s << "S"; // scalar field indicator
+        s << distypeToGmshElementHeader(distype);
+        if (nsd==3)
+        {
+          CoordinatesToStream(xyze, distype, s);
+          VectorFieldToStream(myvectorfield, distype, s);
+        }
+        else if(nsd==2)
+        {
+          CoordinatesToStream2D(xyze, distype, s);
+          VectorFieldToStream2D(myvectorfield, distype, s);
+        }
+        else
+          dserror("");
+        s << "\n";
+      }
     }
     else dserror("The choosen field does not exist (wrong writting, ...)");
 
