@@ -89,9 +89,36 @@ void test_geometry_distance()
   }
 }
 
+void test_geometry_distance2()
+{
+  double xyze_row_data[] = {0, 0, 0, 0,
+                            0.737999, -0.737999, -0.737999, 0.737999,
+                            -0.207634, -0.207634, -0.207472, 0.62274};
+  double xyz_data[] = {-1.476, -0.737999, -0.207634};
+
+  LINALG::Matrix<3,4> xyze;
+  LINALG::Matrix<3,1> xyz( xyz_data );
+
+  for ( int i=0; i<3; ++i )
+  {
+    for ( int j=0; j<4; ++j )
+    {
+      xyze( i, j ) = xyze_row_data[i*4+j];
+    }
+  }
+
+  //Matrix<3,1>[1 -1 1.476]
+
+  GEO::CUT::Position2d<DRT::Element::quad4> pos( xyze, xyz );
+  if ( pos.Compute() )
+  {
+  }
+}
+
 void test_geometry()
 {
   test_geometry_schleifend1();
   test_geometry_parallel1();
   test_geometry_distance();
+  test_geometry_distance2();
 }

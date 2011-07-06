@@ -165,6 +165,7 @@ void test_ls_hex8_ursula1();
 void test_ls_hex8_ursula2();
 void test_ls_hex8_ursula3();
 void test_ls_hex8_ursula4();
+void test_ls_hex8_ursula5();
 void test_ls_hex8_simple();
 void test_ls_hex8_simple2();
 void test_ls_hex8_simple3();
@@ -416,6 +417,7 @@ int main( int argc, char ** argv )
   functable["ls_hex8_ursula2"] = test_ls_hex8_ursula2;
   functable["ls_hex8_ursula3"] = test_ls_hex8_ursula3;
   functable["ls_hex8_ursula4"] = test_ls_hex8_ursula4;
+  functable["ls_hex8_ursula5"] = test_ls_hex8_ursula5;
   functable["ls_hex8_simple"] = test_ls_hex8_simple;
   functable["ls_hex8_simple2"] = test_ls_hex8_simple2;
   functable["ls_hex8_simple3"] = test_ls_hex8_simple3;

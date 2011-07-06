@@ -520,6 +520,7 @@ namespace GEO
         {
           std::stringstream str;
           str << "ComputeDistance: Newton scheme did not converge:\n"
+              << std::setprecision( 16 )
               << ( *xyze_surface_ )
               << ( *px_ )
               << xsi_

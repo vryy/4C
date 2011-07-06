@@ -2689,7 +2689,8 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
         std::cerr << "failed to cut element\n"
             << "coordinates:\n";
         cellcoord.Print( std::cerr );
-        std::cerr << "g-function values:\n";
+        std::cerr << "g-function values:\n"
+                  << std::setprecision( 16 );
         std::copy( gfuncvalues.begin(), gfuncvalues.end(), std::ostream_iterator<double>( std::cerr, ", " ) );
         std::cerr << "\n";
         throw;
@@ -4883,7 +4884,8 @@ void COMBUST::FlameFront::buildPLC(
                 << "coordinates:\n"
         ;
       globalcellcoord.Print( std::cerr );
-      std::cerr << "g-function values:\n";
+      std::cerr << "g-function values:\n"
+                << std::setprecision( 16 );
       std::copy( gfuncvalues.begin(), gfuncvalues.end(), std::ostream_iterator<double>( std::cerr, ", " ) );
       std::cerr << "\n";
       throw;
