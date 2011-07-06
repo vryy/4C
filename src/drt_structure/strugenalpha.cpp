@@ -3245,6 +3245,46 @@ void StruGenAlpha::Output()
     output_.WriteVector("acceleration",acc_);
     output_.WriteVector("fexternal",fext_);
     output_.WriteElementData();
+    
+    // do the output for the patient specific conditions (if they exist)
+    vector<DRT::Condition*> mypatspeccond;
+    discret_.GetCondition("PatientSpecificData", mypatspeccond);
+    IO::DiscretizationWriter::VectorType vt= IO::DiscretizationWriter::elementvector;
+    if (mypatspeccond.size())
+    {
+      RCP<Epetra_Vector> patspecstuff = LINALG::CreateVector(*(discret_.ElementRowMap()),true);
+      for(unsigned int i=0; i<mypatspeccond.size(); ++i)
+      {
+	const Epetra_Vector* actcond = mypatspeccond[i]->Get<Epetra_Vector>("normalized ilt thickness");
+	if (actcond)
+	{
+	  for (int j=0; j<patspecstuff->MyLength(); ++j)
+	    (*patspecstuff)[j] = (*actcond)[actcond->Map().LID(discret_.ElementRowMap()->GID(j))];
+	  output_.WriteVector("thrombus_thickness", patspecstuff, vt);
+	}
+
+	actcond = mypatspeccond[i]->Get<Epetra_Vector>("local radius");
+	if (actcond)
+	{
+	  for (int j=0; j<patspecstuff->MyLength(); ++j)
+	    (*patspecstuff)[j] = (*actcond)[actcond->Map().LID(discret_.ElementRowMap()->GID(j))];
+	  output_.WriteVector("local_radius", patspecstuff, vt);
+	}
+
+	 actcond = mypatspeccond[i]->Get<Epetra_Vector>("elestrength");
+	if (actcond)
+	{
+	  for (int j=0; j<patspecstuff->MyLength(); ++j)
+	    (*patspecstuff)[j] = (*actcond)[actcond->Map().LID(discret_.ElementRowMap()->GID(j))];
+	  output_.WriteVector("strength", patspecstuff, vt);
+	}
+      }
+      RCP<Epetra_Vector> eleID = LINALG::CreateVector(*(discret_.ElementRowMap()),true);
+      for (int i=0; i<eleID->MyLength(); ++i)
+        (*eleID)[i] = (discret_.ElementRowMap()->GID(i))+1;
+      output_.WriteVector("eleID", eleID, vt);
+    }
+
 
     if (control) // disp or arclength control together with dynkindstat
     {

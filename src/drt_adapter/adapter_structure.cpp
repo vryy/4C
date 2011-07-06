@@ -295,7 +295,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   // test for patient specific needs
   if (DRT::INPUT::IntegralValue<int>(patspec,"PATSPEC"))
   {
-    PATSPEC::PatientSpecificGeometry(*actdis, output);
+    PATSPEC::PatientSpecificGeometry(*actdis);
   }
 
   // sanity checks and default flags

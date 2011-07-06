@@ -43,19 +43,15 @@ namespace IO
 namespace PATSPEC
 {
 
-  void PatientSpecificGeometry(DRT::Discretization& dis,
-			       Teuchos::RCP<IO::DiscretizationWriter> output);
+  void PatientSpecificGeometry(DRT::Discretization& dis);
 
-  void ComputeEleNormalizedLumenDistance(DRT::Discretization& dis,
-					 Teuchos::RCP<IO::DiscretizationWriter> output);
+  void ComputeEleNormalizedLumenDistance(DRT::Discretization& dis);
 
-  void ComputeEleLocalRadius(DRT::Discretization& dis,
-			     Teuchos::RCP<IO::DiscretizationWriter> output);
+  void ComputeEleLocalRadius(DRT::Discretization& dis);
 
   std::vector<double> GetCenterline(std::string filename);
 
-  void ComputeEleStrength(DRT::Discretization& dis, 
-			  Teuchos::RCP<IO::DiscretizationWriter> output);
+  void ComputeEleStrength(DRT::Discretization& dis);
 
   void GetILTDistance(const int eleid, 
                       Teuchos::ParameterList& params, 
