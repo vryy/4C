@@ -788,7 +788,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     const INPAR::SCATRA::EvalMat matloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
     mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
 
-    // initialize frt for ELCH
+    // initialize parameter F/RT for ELCH
     double frt(0.0);
 
     // set values for ELCH
@@ -5336,7 +5336,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
 
 
   /*----------------------------------------------------------------------*
-   |  calculate mass flux (no reactive flux so far)    (private) gjb 06/08|
+   |  calculate weighted mass flux (no reactive flux so far)     gjb 06/08|
    *----------------------------------------------------------------------*/
   template <DRT::Element::DiscretizationType distype>
   void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateFlux(
@@ -5347,6 +5347,18 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
       const int                       dofindex
   )
   {
+/*
+ * Actually, we compute here a weighted (and integrated) form of the fluxes!
+ * On time integration level, these contributions are then used to calculate
+ * an L2-projected representation of fluxes.
+ * Thus, this method here DOES NOT YET provide flux values that are ready to use!!
+    /                                                         \
+   |                /   \                               /   \  |
+   | w, -D * nabla | phi | + u*phi - frt*z_k*c_k*nabla | pot | |
+   |                \   /                               \   /  |
+    \                      [optional]      [optional]         /
+*/
+
     // get material parameters (evaluation at element center)
     if (not mat_gp_) GetMaterialParams(ele);
 
@@ -5378,21 +5390,20 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
       LINALG::Matrix<nsd_,1> q(true);
 
       // add different flux contributions as specified by user input
-      // BE CAREFUL. WE COMPUTE HERE THE NEGATIVE OF THE MASS FLUX!
       switch (fluxtype)
       {
       case INPAR::SCATRA::flux_total_domain:
 
-        // convective flux terms
-        q.Update(-densnp_[dofindex]*phi,velint_);
+        // convective flux contribution
+        q.Update(densnp_[dofindex]*phi,velint_);
 
         // no break statement here!
       case INPAR::SCATRA::flux_diffusive_domain:
-        //diffusive flux terms
-        q.Update(diffus_[dofindex],gradphi_,1.0);
+        // diffusive flux contribution
+        q.Update(-diffus_[dofindex],gradphi_,1.0);
 
-        // ELCH
-        if (frt > 0.0) q.Update(diffusvalence_[dofindex]*frt*phi,gradpot_,1.0);
+        // ELCH (migration flux contribution)
+        if (frt > 0.0) q.Update(-diffusvalence_[dofindex]*frt*phi,gradpot_,1.0);
 
         break;
       default:
@@ -5400,7 +5411,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
       };
       // q at integration point
 
-      // integrate and assemble
+      // integrate and assemble everything into the "flux" vector
       for (int vi=0; vi < nen_; vi++)
       {
         for (int idim=0; idim<nsd_ ;idim++)
