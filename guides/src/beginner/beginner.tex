@@ -1494,31 +1494,37 @@ Refer to the experienced and friendly Eclipse community at LNM or the help in Ec
 \newpage
 
 \subsection{Checkout student version of BACI (version controlled: git)}
-
-\subsubsection{git}
+Incorporating the work of students into the current version of BACI or updating the students version of the code can be painfull. Using git version controll alleviates the pain
+to some extend and offers a more convenient way to provide students with BACI updates or to merge their work with the current revision.
+However, because svn and git do not really go great together it takes some effort to set it up. First you will have to create two additional instances of BACI on your Machine. The first instance is as usual
+checked out using svn into e.g /Baci. The second one is created by cloning the first with git and is in the following referred to as /Baci\_stud. From this git instance
+of BACI you can now push a version into the student's home directory which is from now on referred to as /Baci\_bare. The students can now pull a version of Baci\_bare onto their local 
+drive i.e /scratch to work with/compile BACI. Also they can commit changes to their /Baci\_bare instance, from which you can pull it back up onto your machine.
+Allright, here's what you need to do:
+%\subsubsection{git}
 
 \paragraph{In your home directory}
 
 \begin{enumerate}
   \item check out a svn version with git (in a new folder): \\
-  git svn clone -r (Revision number) svn://gauss/trunk/ccarat Baci \\
-  Revision number: actual Baci reversion number ($\rightarrow $ entire Baci starting from revision 0 is checked out without this number)
+  \texttt{git svn clone -r (Revision number) svn://gauss/trunk/ccarat Baci} \\
+  Revision number:  Baci reversion number (default is 0, thus entire Baci starting from revision 0 is checked out without this number)
   \item clone the git version which you have just checked out into a new folder e.g. Baci\_stud/ (execute the command in the new folder): \\
-  git clone Baci Baci\_stud
+  \texttt{git clone Baci Baci\_stud}
   \item generate a new branch (you can have as many branches as students): \\
-  git branch student\_name
+  \texttt{git branch student\_name}
   \item change to new branch: \\
-  git checkout student\_name
+ \texttt{git checkout student\_name}
 \end{enumerate}
 
 \paragraph{Important}
 
 \begin{itemize}
   \item show connections: \\
-  git config -$\,$-list
+ \texttt{git config -$\,$-list }
   \item git pull cannot be executed in branch student\_name: \\
-  git config branch.student\_name.merge refs/heads/master \\
-  git config  branch.student\_name.remote origin 
+  \texttt{git config branch.student\_name.merge refs/heads/master} \\
+  \texttt{git config  branch.student\_name.remote origin} 
 \end{itemize}
 
 
@@ -1527,66 +1533,73 @@ Refer to the experienced and friendly Eclipse community at LNM or the help in Ec
 \begin{enumerate}
   \item open $\sim$/.bashrc: \\
   add \texttt{module load openmpi-i386} to the end of the file \\
-  add \texttt{alias eclipse="/lnm/programs/eclipse\_cdt6/eclipse"} $ \rightarrow $ eclipse can be executed by \texttt{eclipse} in the shell
-  \item close actual shell and open a new shell
+  add \texttt{alias eclipse="/lnm/programs/eclipse\_cdt6/eclipse"} so that  eclipse can be executed by using the shortcut \texttt{eclipse} in the shell
+  \item \texttt{source ~/.bashrc} restart shellwith new .bashrc file
   \item clone the repository Baci\_stud: \\
-  git clone $ ~$ -$\,$-bare -b student\_name myname@mycomputer.lnm.mw.tum.de:/myDirectory/Baci\_stud Baci\_bare
+  \texttt{git clone $ ~$ -$\,$-bare -b student\_name myname@mycomputer.lnm.mw.tum.de:/myDirectory/Baci\_stud Baci\_bare}
   \item delete master branch (if there is one): \\
-  git branch $\rightarrow $ list all branches in the actual clone \\
-  git branch -d master \\
+  \texttt{git branch $\rightarrow $ } list all branches in the current clone \\
+  \texttt{git branch -d master} \\
 \end{enumerate}
 
-\paragraph{On the local hard drive /scratch}
+\paragraph{In the student's scratch}
 
 \begin{enumerate}
-  \item generate your own folder structure:
+  \item generate some folder structure:
 \begin{itemize}
-  \item mkdir student\_name
-  \item cd student\_name
-  \item mkdir workspace
-  \item cd workspace
+  \item \texttt{mkdir student\_name}
+  \item \texttt{cd student\_name}
+  \item \texttt{mkdir workspace}
+  \item \texttt{cd workspace}
 \end{itemize}
   \item clone baci\_bare to this folder (it will be your future workspace): \\
-  git clone -b student\_name $\sim$/Baci\_bare baci
+  \texttt{git clone -b student\_name $\sim$/Baci\_bare baci}
+  \item {After the student made some changes to the code he can commit their work to the \/Baci\_bare in their
+home directory. This way they can acces their code from another machine next time and the code is backed up by the lrz }	
 \end{enumerate}
 
+
+
+\paragraph{Update baci version of the student}
+In order to update the student's code you first have to update the svn and the git instances of BACI  on your machine by:
+  \begin{enumerate}
+    \item \texttt{git svn rebase} (in folder Baci)\\
+    get latest version from the svn repository
+    \item \texttt{git pull $\sim$/Baci} (in folder Baci\_stud) \\
+    pull the updated version to Baci\_stud (git instance, only the active branch is updated)
+    \item \texttt{git pull student@red??.stud:$\sim$/Baci\_bare} (in folder Baci\_stud)\\
+    this command is necessary to get the latest version of the student's Baci\_bare, which is merged before with the working copy from the student's scratch) \\
+    possible conflicts need to be resolved
+    \item \texttt{git push student@red??.stud:$\sim$/Baci\_bare } (in folder Baci\_stud)
+    push down the latest revision of Baci (now merged with the students changes) down into his home directory.	
+  \end{enumerate}
 
 \paragraph{Usefull commands}
 
 \begin{itemize}
-  \item git branch \\ 
-  list all branches in the actual clone
-  \item git diff \$*$\mid$ kompare - \\
+  \item \texttt{git branch} \\ 
+  list all branches in the current clone
+  \item  \texttt{git diff \$*$\mid$ kompare -} \\
   compare the files in kompare
-  \item git diff branch\_name \$*$\mid$ kompare - \\
-  compare actual branch to branch\_name in kompare
+  \item \texttt{git diff branch\_name \$*$\mid$ kompare -} \\
+  compare current branch to branch\_name in kompare
   \item Before you can update your version in your home directory, you need to commit your modifications on the branch student\_name (scratch). Commands are executed in /scratch/student\_name/workspace/Baci:
   \begin{itemize}
-    \item git commit -a \\
+    \item \texttt{git commit -a }\\
     After commiting the modifications the command 'git diff' does not show anymore any differences in the files. Now, the git version in the branch student\_name on scratch matches the version on your computer 
-    \item git add 'file' \\
-    git commit -a \\
+    \item \texttt{git add 'file' }\\
+   \texttt{ git commit -a }\\
     a new file is added to the version control
   \end{itemize}
-  \item At different computers the student has allways access to the actual baci version stored in his home directory (Baci\_bare). Therefore, Baci\_bare need to be updated regularly.
+  \item At different computers the student has allways access to the latest baci version stored in his home directory (Baci\_bare). Therefore, Baci\_bare need to be updated regularly.
   \begin{itemize}
     \item git pull cannot be executed from baci\_bare $\rightarrow$ update Baci\_bare: \\
-    git push $\sim$ /student/Baci\_bare $\rightarrow$ update Baci\_bare
-    \item getting actual version from Baci\_bare: \\
-    git pull $\sim$/bBaci\_bare $\rightarrow$ update Baci\_bare
+  \texttt{ git push $\sim$ /student/Baci\_bare $\rightarrow$ update Baci\_bare}
+    \item getting latest version from Baci\_bare: \\
+   \texttt{ git pull $\sim$/Baci\_bare $\rightarrow$ update Baci\_bare}
   \end{itemize}
-  \item update baci version of the student
-  \begin{enumerate}
-    \item git svn rebase \\
-    get actual version from the svn repository
-    \item git pull $\sim$/Baci (in folder Baci\_stud) \\
-    pull the actual version to Baci\_stud (only the active branch is updated)
-    \item pull student@red??.stud:$\sim$/Baci\_bare\\
-    this command is necessary to get the actual version of the student (merge student version with version Baci\_stud) \\
-    possible conflicts need to be resolved
-    \item push ehrl@red??.stud:$\sim$/Baci\_bare
-  \end{enumerate}
-  \item gitk \\
+  
+  \item \texttt{gitk} \\
   graphical representation of the history
 \end{itemize}
 
