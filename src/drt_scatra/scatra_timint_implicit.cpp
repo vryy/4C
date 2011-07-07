@@ -1780,7 +1780,8 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
               errfile_));
       discret_->ComputeNullSpaceIfNecessary(lssolver->Params());
 
-      cout<<"\nSolver tolerance for least squares problem set to "<<newtol<<" (orig: "<<origtol<<")"<<endl;
+      if(myrank_ ==0)
+        cout<<"\nSolver tolerance for least squares problem set to "<<newtol<<" (orig: "<<origtol<<")"<<endl;
 
       DRT::NURBS::apply_nurbs_initial_condition(
           *discret_  ,
