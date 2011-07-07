@@ -1577,8 +1577,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NUM_EVAL_ELEMENTS",-1,"number of elements that are taken into account when applying Dirichlet Conditions",&statmech);
   // number of partitions along the edge length of the volume determining the resolution of the search grid
   IntParameter("SEARCHRES",1,"leads to the indexing of SEARCHRES^3 cubic volume partitions",&statmech);
-  //search interval
-  IntParameter("SEARCHINTERVAL",1,"search for neighbours every SEARCHINTERVAL steps",&statmech);
   //Reading direction of oscillatory motion that DBC nodes are subjected to (we need this when using periodic BCs)
   IntParameter("INITIALSEED",0,"Integer value which guarantuees reproducable random number, default 0",&statmech);
   // number of histogram bins for post-analysis
