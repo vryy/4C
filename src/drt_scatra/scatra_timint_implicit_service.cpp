@@ -2172,6 +2172,14 @@ void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues(RCP<Epetra_Vector> vec)
   // action only for ELCH applications
   if (IsElch(scatratype_))
   {
+    // for NURBS discretizations we skip the following check.
+    // Control points (i.e., the "nodes" and its associated dofs can be located
+    // outside the domain of interest. Thus, they can have negative
+    // concentration values although the concentration solution is positive
+    // in the whole computational domain!
+    if(dynamic_cast<DRT::NURBS::NurbsDiscretization*>(discret_.get())!=NULL)
+      return;
+  
     // this option can be helpful in some rare situations
     bool makepositive(false);
 
