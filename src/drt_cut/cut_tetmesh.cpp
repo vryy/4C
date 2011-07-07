@@ -214,7 +214,7 @@ void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
   }
   else
   {
-    if ( count <= 3 )
+    //if ( count <= 3 )
     {
       TetMeshIntersection intersection( mesh.CreateOptions(), element, tets_, accept_tets_, points_, cut_sides, levelset );
       intersection.Cut( mesh, element, cells, count, levelset );
@@ -477,7 +477,7 @@ void GEO::CUT::TetMesh::CallQHull( const std::vector<Point*> & points,
   fflush( errfile );
 #endif
 
-  throw std::runtime_error( "qhull failed" );
+  throw std::runtime_error( "qhull failed: Maybe the wrong version is used. Check your installation." );
 
 #else
   throw std::runtime_error( "qhull not available" );

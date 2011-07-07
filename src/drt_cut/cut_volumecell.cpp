@@ -216,6 +216,10 @@ void GEO::CUT::VolumeCell::Print( std::ostream & stream )
 
 void GEO::CUT::VolumeCell::NewBoundaryCell( Mesh & mesh, DRT::Element::DiscretizationType shape, Facet * f, const std::vector<Point*> & x )
 {
+  if ( facets_.count( f )==0 )
+  {
+    throw std::runtime_error( "facet does not belong to volume cell" );
+  }
   switch ( shape )
   {
   case DRT::Element::tri3:
@@ -438,5 +442,49 @@ void GEO::CUT::VolumeCell::SimplifyIntegrationCells( Mesh & mesh )
 #endif
       }
     }
+  }
+}
+
+void GEO::CUT::VolumeCell::TestSurface()
+{
+  // see if all lines are closed
+
+  point_line_set lines;
+
+  for ( plain_boundarycell_set::iterator i=bcells_.begin(); i!=bcells_.end(); ++i )
+  {
+    BoundaryCell * bc = *i;
+    if ( bc->GetFacet()->OnCutSide() )
+    {
+      const std::vector<Point*> & points = bc->Points();
+      Cycle cycle( points );
+      cycle.Add( lines );
+    }
+  }
+
+  for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  {
+    Facet * f = *i;
+
+    if ( f->OnCutSide() )
+    {
+      if ( f->IsTriangulated() )
+      {
+        //
+      }
+      if ( f->HasHoles() )
+      {
+        //
+      }
+
+      const std::vector<Point*> & points = f->Points();
+      Cycle cycle( points );
+      cycle.Add( lines );
+    }
+  }
+
+  if ( lines.size()!=0 )
+  {
+    throw std::runtime_error( "volume cut facets not closed" );
   }
 }

@@ -48,6 +48,7 @@ namespace GEO
         return points_;
       }
 
+      /// add all lines from this cycle to the set of lines
       void Add( point_line_set & lines ) const;
 
       void CommonEdges( plain_edge_set & edges ) const;

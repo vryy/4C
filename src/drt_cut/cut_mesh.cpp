@@ -2048,6 +2048,15 @@ void GEO::CUT::Mesh::AssignOtherVolumeCells( const Mesh & other )
   }
 }
 
+void GEO::CUT::Mesh::TestVolumeSurface()
+{
+  for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+  {
+    VolumeCell * vc = &**i;
+    vc->TestSurface();
+  }
+}
+
 void GEO::CUT::Mesh::TestFacetArea()
 {
   for ( std::list<Teuchos::RCP<Facet> >::iterator i=facets_.begin(); i!=facets_.end(); ++i )

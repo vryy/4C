@@ -210,6 +210,8 @@ public:
 
   void AssignOtherVolumeCells( const Mesh & other );
 
+  void TestVolumeSurface();
+
   void TestFacetArea();
 
 private:

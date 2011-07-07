@@ -119,7 +119,10 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner )
   //Status();
 
   m.CreateIntegrationCells( 0, false );
+#ifdef DEBUGCUTLIBRARY
+  m.TestVolumeSurface();
   m.TestFacetArea();
+#endif
   m.SimplifyIntegrationCells();
 
   Status();

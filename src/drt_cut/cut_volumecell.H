@@ -97,6 +97,8 @@ public:
   /// calculate cell volume from integration cells
   double Volume();
 
+  void TestSurface();
+
   int NumGaussPoints( DRT::Element::DiscretizationType shape );
 
 private:
