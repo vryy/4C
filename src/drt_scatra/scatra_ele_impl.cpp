@@ -2121,21 +2121,21 @@ else if (material->MaterialType() == INPAR::MAT::m_biofilm)
 {
   dsassert(numdofpernode_==1,"more than 1 dof per node for BIOFILM material");
 
-         const MAT::Biofilm* actsinglemat = static_cast<const MAT::Biofilm*>(singlemat.get());
-         diffus_[0] = actsinglemat->Diffusivity();
-         // double rearate_k = actsinglemat->ReaRate();
-         // double satcoeff_k = actsinglemat->SatCoeff();
+  const MAT::Biofilm* actmat = static_cast<const MAT::Biofilm*>(material.get());
+  diffus_[0] = actmat->Diffusivity();
+  // double rearate_k = actmat->ReaRate();
+  // double satcoeff_k = actmat->SatCoeff();
 
-         // set reaction flag to true
-         reaction_ = true;
+  // set reaction flag to true
+  reaction_ = true;
 
-         // get substrate concentration at n+1 or n+alpha_F at integration point
-         const double csnp = funct_.Dot(ephinp_[0]);
-         //const double conp = funct_.Dot(ephinp_[1]);
+  // get substrate concentration at n+1 or n+alpha_F at integration point
+  const double csnp = funct_.Dot(ephinp_[0]);
+  //const double conp = funct_.Dot(ephinp_[1]);
 
-         // compute reaction coefficient for species equation
-         reacoeff_[0] = actsinglemat->ComputeReactionCoeff(csnp);
-         reacoeffderiv_[0] = actsinglemat->ComputeReactionCoeffDeriv(csnp);
+  // compute reaction coefficient for species equation
+  reacoeff_[0] = actmat->ComputeReactionCoeff(csnp);
+  reacoeffderiv_[0] = actmat->ComputeReactionCoeffDeriv(csnp);
 
   // set specific heat capacity at constant pressure to 1.0
   shcacp_ = 1.0;
