@@ -2122,6 +2122,8 @@ void GEO::CUT::Mesh::TestFacetArea()
   for ( std::list<Teuchos::RCP<Facet> >::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
     Facet * f = &**i;
-    f->TestFacetArea();
+
+    // This is a crude test. We do not demand so much here...
+    f->TestFacetArea( 1e-7 );
   }
 }

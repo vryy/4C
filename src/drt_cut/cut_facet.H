@@ -145,7 +145,7 @@ public:
 
   void GetBoundaryCells( plain_boundarycell_set & bcells );
 
-  void TestFacetArea();
+  void TestFacetArea( double tolerance );
 
   bool IsTriangle( const std::vector<Point*> & tri ) const;
 

@@ -804,7 +804,7 @@ void GEO::CUT::Facet::GetBoundaryCells( plain_boundarycell_set & bcells )
   }
 }
 
-void GEO::CUT::Facet::TestFacetArea()
+void GEO::CUT::Facet::TestFacetArea( double tolerance )
 {
   if ( OnCutSide() and cells_.size() > 1 )
   {
@@ -834,7 +834,7 @@ void GEO::CUT::Facet::TestFacetArea()
       throw std::runtime_error( "expect two volume cells at facet" );
     }
     double diff = area[0] - area[1];
-    if ( diff >= TOLERANCE )
+    if ( fabs( diff ) >= tolerance )
     {
       std::stringstream str;
       str << "area mismatch: a1=" << area[0]

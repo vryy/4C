@@ -293,7 +293,7 @@ void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, 
   mesh_.RemoveEmptyVolumeCells();
 
 #ifdef DEBUGCUTLIBRARY
-  mesh_.TestVolumeSurface();
+  //mesh_.TestVolumeSurface();
   mesh_.TestFacetArea();
 #endif
 

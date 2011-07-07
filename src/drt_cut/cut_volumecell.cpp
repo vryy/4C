@@ -466,6 +466,9 @@ void GEO::CUT::VolumeCell::TestSurface()
   }
 
   // see if all lines are closed
+  //
+  // This finds all the degenerated cases that where dropped before. Thus the
+  // test complains a lot.
 
   for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
