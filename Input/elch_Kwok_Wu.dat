@@ -50,8 +50,6 @@ THERM_TEMPERATURE      No
 THERM_HEATFLUX         No
 FILESTEPS              1000
 ------------------------------------------------------------STATIC
-//LINEAR
-//
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------MESHTYING AND CONTACT
@@ -261,9 +259,9 @@ FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION (-0.1666666666666)*log((2.0+(cos(1*pi*x
 -----------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS 1 NODE 131 POSITION fluxx   NAME fluxx    VALUE  4.219160790e-03 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 131 POSITION fluxy   NAME fluxy    VALUE  8.525128716e-03 TOLERANCE 1e-9
-SCATRA DIS 1 NODE 131 POSITION fluxz   NAME fluxz    VALUE  7.264267984e-10 TOLERANCE 1e-11
+SCATRA DIS 1 NODE 131 POSITION fluxx   NAME fluxx    VALUE -4.219160790e-03 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 131 POSITION fluxy   NAME fluxy    VALUE -8.525128716e-03 TOLERANCE 1e-9
+SCATRA DIS 1 NODE 131 POSITION fluxz   NAME fluxz    VALUE -7.264267984e-10 TOLERANCE 1e-11
 SCATRA DIS 1 NODE 131 POSITION phi1    NAME phi1     VALUE  1.775488037e+00 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 307 POSITION phi1    NAME phi1     VALUE  2.898048097e+00 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 131 POSITION phi2    NAME phi2     VALUE  8.877440186e-01 TOLERANCE 1e-9
