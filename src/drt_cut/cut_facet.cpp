@@ -773,7 +773,7 @@ void GEO::CUT::Facet::NewQuad4Cell( Mesh & mesh, VolumeCell * volume, const std:
     BoundaryCell * bc = mesh.NewTri3Cell( volume, this, tri3_points );
     bcells.insert( bc );
     tri3_points.erase( tri3_points.begin()+1 );
-    tri3_points.push_back( tri3_points.back() );
+    tri3_points.push_back( points.back() );
     bc = mesh.NewTri3Cell( volume, this, tri3_points );
     bcells.insert( bc );
   }

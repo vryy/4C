@@ -700,6 +700,14 @@ GEO::CUT::Tri3BoundaryCell* GEO::CUT::Mesh::NewTri3Cell( VolumeCell * volume, Fa
 {
   if ( points.size()!=3 )
     throw std::runtime_error( "expect 3 points" );
+#ifdef DEBUGCUTLIBRARY
+  plain_point_set pointtest;
+  pointtest.insert( points.begin(), points.end() );
+  if ( points.size()!=pointtest.size() )
+  {
+    throw std::runtime_error( "point used more than once in boundary cell" );
+  }
+#endif
   Epetra_SerialDenseMatrix xyz( 3, 3 );
   for ( int i=0; i<3; ++i )
     points[i]->Coordinates( &xyz( 0, i ) );
@@ -712,6 +720,14 @@ GEO::CUT::Quad4BoundaryCell* GEO::CUT::Mesh::NewQuad4Cell( VolumeCell * volume, 
 {
   if ( points.size()!=4 )
     throw std::runtime_error( "expect 4 points" );
+#ifdef DEBUGCUTLIBRARY
+  plain_point_set pointtest;
+  pointtest.insert( points.begin(), points.end() );
+  if ( points.size()!=pointtest.size() )
+  {
+    throw std::runtime_error( "point used more than once in boundary cell" );
+  }
+#endif
   Epetra_SerialDenseMatrix xyz( 3, 4 );
   for ( int i=0; i<4; ++i )
     points[i]->Coordinates( &xyz( 0, i ) );
