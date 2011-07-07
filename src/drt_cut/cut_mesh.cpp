@@ -2047,3 +2047,12 @@ void GEO::CUT::Mesh::AssignOtherVolumeCells( const Mesh & other )
     throw std::runtime_error( str.str() );
   }
 }
+
+void GEO::CUT::Mesh::TestFacetArea()
+{
+  for ( std::list<Teuchos::RCP<Facet> >::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  {
+    Facet * f = &**i;
+    f->TestFacetArea();
+  }
+}

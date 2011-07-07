@@ -143,6 +143,8 @@ public:
 
   void GetBoundaryCells( plain_boundarycell_set & bcells );
 
+  void TestFacetArea();
+
   bool IsTriangle( const std::vector<Point*> & tri ) const;
 
   bool IsTriangulated() const { return triangulation_.size() > 0; }

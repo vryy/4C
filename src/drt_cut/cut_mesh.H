@@ -210,6 +210,8 @@ public:
 
   void AssignOtherVolumeCells( const Mesh & other );
 
+  void TestFacetArea();
+
 private:
 
   void DumpGmsh( std::ofstream & file, const std::vector<Node*> & nodes, char elementtype );

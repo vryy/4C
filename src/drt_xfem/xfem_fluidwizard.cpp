@@ -332,7 +332,7 @@ void XFEM::FluidWizard::DumpGmshIntegrationCells( std::map< int, GEO::DomainIntC
       {
         if ( i > 0 )
           file << ",";
-        file << 0;
+        file << cell.VolumeInPhysicalDomain();
       }
       file << "};\n";
     }
@@ -371,7 +371,7 @@ void XFEM::FluidWizard::DumpGmshIntegrationCells( std::map< int, GEO::DomainIntC
       {
         if ( i > 0 )
           file << ",";
-        file << 0;
+        file << cell.GetSurfaceEleGid();
       }
       file << "};\n";
     }

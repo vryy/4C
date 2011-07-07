@@ -799,6 +799,47 @@ void GEO::CUT::Facet::GetBoundaryCells( plain_boundarycell_set & bcells )
   }
 }
 
+void GEO::CUT::Facet::TestFacetArea()
+{
+  if ( OnCutSide() and cells_.size() > 1 )
+  {
+    std::vector<double> area;
+    area.reserve( 2 );
+    for ( plain_volumecell_set::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+    {
+      VolumeCell * vc = *i;
+
+      area.push_back( 0. );
+      double & a = area.back();
+
+      const plain_boundarycell_set & vbcells = vc->BoundaryCells();
+      for ( plain_boundarycell_set::const_iterator i=vbcells.begin();
+            i!=vbcells.end();
+            ++i )
+      {
+        BoundaryCell * bc = *i;
+        if ( bc->GetFacet()==this )
+        {
+          a += bc->Area();
+        }
+      }
+    }
+    if ( area.size() != 2 )
+    {
+      throw std::runtime_error( "expect two volume cells at facet" );
+    }
+    double diff = area[0] - area[1];
+    if ( diff >= TOLERANCE )
+    {
+      std::stringstream str;
+      str << "area mismatch: a1=" << area[0]
+          << " a2=" << area[1]
+          << " diff=" << diff;
+      throw std::runtime_error( str.str() );
+    }
+  }
+}
+
 void GEO::CUT::Facet::FindCornerPoints()
 {
   if ( corner_points_.size()==0 )
