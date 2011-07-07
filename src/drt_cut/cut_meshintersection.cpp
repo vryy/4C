@@ -107,6 +107,17 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner )
   m.MakeFacets();
   m.MakeVolumeCells();
 
+  //Status();
+
+  m.CreateIntegrationCells( 0, false );
+  m.RemoveEmptyVolumeCells();
+
+#ifdef DEBUGCUTLIBRARY
+  m.TestVolumeSurface();
+  m.TestFacetArea();
+#endif
+  m.SimplifyIntegrationCells();
+
   if ( options_.FindPositions() )
   {
     // find inside and outside positions of nodes
@@ -115,15 +126,6 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner )
     // find number and connection of dofsets at nodes from cut volumes
     m.FindNodalDOFSets( include_inner );
   }
-
-  //Status();
-
-  m.CreateIntegrationCells( 0, false );
-#ifdef DEBUGCUTLIBRARY
-  m.TestVolumeSurface();
-  m.TestFacetArea();
-#endif
-  m.SimplifyIntegrationCells();
 
   Status();
 

@@ -39,6 +39,8 @@ public:
 
   void Register( VolumeCell * cell );
 
+  void DisconnectVolume( VolumeCell * cell );
+
   void Print()
   {
     for ( std::vector<Point*>::iterator i=points_.begin();

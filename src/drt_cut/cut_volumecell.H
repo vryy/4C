@@ -72,6 +72,10 @@ public:
 
   const plain_boundarycell_set & BoundaryCells() const { return bcells_; }
 
+  bool Empty() const { return integrationcells_.size()==0 and bcells_.size()==0; }
+
+  void Disconnect();
+
   const std::vector<int> & NodalDofSet() const { return nodaldofset_; }
 
   /// create integration cell of specified shape

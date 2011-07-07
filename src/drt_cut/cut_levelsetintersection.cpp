@@ -49,13 +49,14 @@ void GEO::CUT::LevelSetIntersection::Cut( bool include_inner )
   m.MakeFacets();
   m.MakeVolumeCells();
 
+  m.CreateIntegrationCells( 0, true );
+  m.RemoveEmptyVolumeCells();
+
   if ( options_.FindPositions() )
   {
     m.FindLSNodePositions();
     m.FindNodalDOFSets( include_inner );
   }
-
-  m.CreateIntegrationCells( 0, true );
 
 #ifdef DEBUGCUTLIBRARY
   m.DumpGmsh( "mesh.pos" );

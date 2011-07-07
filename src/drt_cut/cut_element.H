@@ -68,6 +68,12 @@ public:
 
   void CreateIntegrationCells( Mesh & mesh, int count, bool levelset );
 
+  /// After the integration and boundary cells have been created, there might
+  /// still be some empty volume cells. Those are artificial cells with zero
+  /// volume and need to be removed from their elements, before we count nodal
+  /// dof sets.
+  void RemoveEmptyVolumeCells();
+
   void FindNodePositions();
 
   bool IsCut();

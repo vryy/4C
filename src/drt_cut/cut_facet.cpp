@@ -84,6 +84,11 @@ void GEO::CUT::Facet::Register( VolumeCell * cell )
   }
 }
 
+void GEO::CUT::Facet::DisconnectVolume( VolumeCell * cell )
+{
+  cells_.erase( cell );
+}
+
 int GEO::CUT::Facet::SideId()
 {
   return parentside_->Id();

@@ -126,6 +126,8 @@ public:
 
   void CreateIntegrationCells( int count, bool levelset );
 
+  void RemoveEmptyVolumeCells();
+
   void SimplifyIntegrationCells();
 
   void TestElementVolume( bool fatal );

@@ -1237,6 +1237,8 @@ void GEO::CUT::Mesh::FindFacetPositions()
   for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin(); i!=cells_.end(); ++i )
   {
     VolumeCell * c = &**i;
+    if ( c->Empty() )
+      continue;
     if ( c->Position()==Point::undecided )
     {
       const plain_facet_set & facets = c->Facets();
@@ -1464,6 +1466,48 @@ void GEO::CUT::Mesh::CreateIntegrationCells( int count, bool levelset )
     {
 #endif
       e.CreateIntegrationCells( *this, count+1, levelset );
+#ifndef DEBUGCUTLIBRARY
+    }
+    catch ( std::runtime_error & err )
+    {
+      e.DebugDump();
+      throw;
+    }
+#endif
+  }
+}
+
+void GEO::CUT::Mesh::RemoveEmptyVolumeCells()
+{
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();
+        ++i )
+  {
+    Element & e = *i->second;
+#ifndef DEBUGCUTLIBRARY
+    try
+    {
+#endif
+      e.RemoveEmptyVolumeCells();
+#ifndef DEBUGCUTLIBRARY
+    }
+    catch ( std::runtime_error & err )
+    {
+      e.DebugDump();
+      throw;
+    }
+#endif
+  }
+  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+        i!=shadow_elements_.end();
+        ++i )
+  {
+    Element & e = **i;
+#ifndef DEBUGCUTLIBRARY
+    try
+    {
+#endif
+      e.RemoveEmptyVolumeCells();
 #ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )

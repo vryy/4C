@@ -369,6 +369,23 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count, bool lev
   tetmesh.CreateElementTets( mesh, this, cells_, cut_faces_, count, levelset );
 }
 
+void GEO::CUT::Element::RemoveEmptyVolumeCells()
+{
+  for ( plain_volumecell_set::iterator i=cells_.begin(); i!=cells_.end(); )
+  {
+    VolumeCell * vc = *i;
+    if ( vc->Empty() )
+    {
+      vc->Disconnect();
+      set_erase( cells_, i );
+    }
+    else
+    {
+      ++i;
+    }
+  }
+}
+
 void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
 {
 #if 0

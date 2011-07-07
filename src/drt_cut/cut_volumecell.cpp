@@ -166,6 +166,8 @@ void GEO::CUT::VolumeCell::GetBoundaryCells( std::map<int, std::vector<GEO::CUT:
 
 void GEO::CUT::VolumeCell::ConnectNodalDOFSets( bool include_inner )
 {
+  if ( Empty() )
+    return;
   if ( not include_inner and Position()!=Point::outside )
     return;
 
@@ -271,6 +273,15 @@ int GEO::CUT::VolumeCell::NumGaussPoints( DRT::Element::DiscretizationType shape
   }
 
   return numgp;
+}
+
+void GEO::CUT::VolumeCell::Disconnect()
+{
+  for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
+  {
+    Facet * f = *i;
+    f->DisconnectVolume( this );
+  }
 }
 
 void GEO::CUT::VolumeCell::NewIntegrationCell( Mesh & mesh, DRT::Element::DiscretizationType shape, const std::vector<Point*> & x )
@@ -447,20 +458,14 @@ void GEO::CUT::VolumeCell::SimplifyIntegrationCells( Mesh & mesh )
 
 void GEO::CUT::VolumeCell::TestSurface()
 {
-  // see if all lines are closed
-
-  point_line_set lines;
-
-  for ( plain_boundarycell_set::iterator i=bcells_.begin(); i!=bcells_.end(); ++i )
+  if ( Empty() )
   {
-    BoundaryCell * bc = *i;
-    if ( bc->GetFacet()->OnCutSide() )
-    {
-      const std::vector<Point*> & points = bc->Points();
-      Cycle cycle( points );
-      cycle.Add( lines );
-    }
+    // This is an artificial cell with zero volume. It should not exist in the
+    // first place.
+    return;
   }
+
+  // see if all lines are closed
 
   for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )
   {
@@ -477,14 +482,27 @@ void GEO::CUT::VolumeCell::TestSurface()
         //
       }
 
+      point_line_set lines;
+
       const std::vector<Point*> & points = f->Points();
       Cycle cycle( points );
       cycle.Add( lines );
-    }
-  }
 
-  if ( lines.size()!=0 )
-  {
-    throw std::runtime_error( "volume cut facets not closed" );
+      for ( plain_boundarycell_set::iterator i=bcells_.begin(); i!=bcells_.end(); ++i )
+      {
+        BoundaryCell * bc = *i;
+        if ( bc->GetFacet() == f )
+        {
+          const std::vector<Point*> & points = bc->Points();
+          Cycle cycle( points );
+          cycle.Add( lines );
+        }
+      }
+
+      if ( lines.size()!=0 )
+      {
+        throw std::runtime_error( "volume cut facets not closed" );
+      }
+    }
   }
 }
