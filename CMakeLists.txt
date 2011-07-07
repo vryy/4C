@@ -410,6 +410,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/arrhenius_temp.cpp
   src/drt_mat/artwallremod.cpp
   src/drt_mat/biocell.cpp
+  src/drt_mat/biofilm.cpp
   src/drt_mat/carreauyasuda.cpp
   src/drt_mat/charmm.cpp
   src/drt_mat/cnst_1d_art.cpp

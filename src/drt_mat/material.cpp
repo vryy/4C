@@ -64,6 +64,7 @@ Maintainer: Lena Wiechert
 #include "humphreycardiovascular.H"
 #include "growth_ip.H"
 #include "constraintmixture.H"
+#include "biofilm.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -431,6 +432,13 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::ConstraintMixture(curmat));
     MAT::PAR::ConstraintMixture* params = static_cast<MAT::PAR::ConstraintMixture*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_biofilm:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::Biofilm(curmat));
+    MAT::PAR::Biofilm* params = static_cast<MAT::PAR::Biofilm*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_pl_mises_3D:

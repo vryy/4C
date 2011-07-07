@@ -653,6 +653,9 @@ public:
     bool migrationstab_;
     //! use migration velocity in residual of strong form (ELCH)
     bool migrationinresidual_;
+    //! reaction coefficent derivative (needed for matrix contribution)
+    vector<double> reacoeffderiv_;
+
 
   };
 

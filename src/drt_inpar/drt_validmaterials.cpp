@@ -1508,6 +1508,24 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // biofilm modeling (convection-diffusion-reaction equation)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_biofilm",
+                                            "biofilm material",
+                                            INPAR::MAT::m_biofilm));
+
+    AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
+    //AddNamedReal(m,"REACOEFF","reaction coefficient",true);
+
+    AddNamedString(m,"KINETICS","Substrate consumption kinetics (SimpleMonod)","SimpleMonod");
+    AddNamedReal(m,"REARATE","substrate uptake rate coefficient");
+    AddNamedReal(m,"SATCOEFF","substrate saturation coefficient");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // deliver
   return vm;
 }

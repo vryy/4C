@@ -25,6 +25,7 @@ Maintainer: Georg Bauer
 #include "../drt_mat/arrhenius_pv.H"
 #include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/ion.H"
+#include "../drt_mat/biofilm.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -236,7 +237,8 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     tauderpot_(numscal_),
     migrationintau_(true),
     migrationstab_(true),
-    migrationinresidual_(true)
+    migrationinresidual_(true),
+    reacoeffderiv_(numscal_)
 {
   return;
 }
@@ -1787,7 +1789,7 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
 
       // compute reaction coefficient for species equation
       reacoeff_[k] = actsinglemat->ComputeReactionCoeff(tempnp);
-
+      reacoeffderiv_[k] = reacoeff_[k];
       // set reaction flag to true
       reaction_ = true;
     }
@@ -1844,8 +1846,27 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
       // in case of reaction with constant coefficient, read coefficient and
       // set reaction flag to true
       reacoeff_[k] = actsinglemat->ReaCoeff();
-      if (reacoeff_[k] > EPS15) reaction_ = true;
+      if (abs(reacoeff_[k]) > EPS14) reaction_ = true;
+      reacoeffderiv_[k] = reacoeff_[k];
     }
+    else if (singlemat->MaterialType() == INPAR::MAT::m_biofilm)
+       {
+         const MAT::Biofilm* actsinglemat = static_cast<const MAT::Biofilm*>(singlemat.get());
+         diffus_[k] = actsinglemat->Diffusivity();
+         // double rearate_k = actsinglemat->ReaRate();
+         // double satcoeff_k = actsinglemat->SatCoeff();
+
+         // set reaction flag to true
+         reaction_ = true;
+
+         // get substrate concentration at n+1 or n+alpha_F at integration point
+         const double csnp = funct_.Dot(ephinp_[k]);
+         //const double conp = funct_.Dot(ephinp_[1]);
+
+         // compute reaction coefficient for species equation
+         reacoeff_[k] = actsinglemat->ComputeReactionCoeff(csnp);
+         reacoeffderiv_[k] = actsinglemat->ComputeReactionCoeffDeriv(csnp);
+       }
     else dserror("material type not allowed");
 
     // check whether there is negative (physical) diffusivity
@@ -1864,7 +1885,8 @@ else if (material->MaterialType() == INPAR::MAT::m_scatra)
   // in case of reaction with (non-zero) constant coefficient:
   // read coefficient and set reaction flag to true
   reacoeff_[0] = actmat->ReaCoeff();
-  if (reacoeff_[0] > EPS15) reaction_ = true;
+  if (abs(reacoeff_[0]) > EPS14) reaction_ = true;
+  reacoeffderiv_[0] = reacoeff_[0];
 
   // set specific heat capacity at constant pressure to 1.0
   shcacp_ = 1.0;
@@ -1939,6 +1961,7 @@ else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
 
   // set reaction coeff. and temperature rhs for reactive equation system to zero
   reacoeff_[0] = 0.0;
+  reacoeffderiv_[0] = 0.0;
   reatemprhs_[0] = 0.0;
 
   // get also fluid viscosity if subgrid-scale velocity is to be included
@@ -1984,6 +2007,7 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
 
   // set reaction coeff. and temperature rhs for reactive equation system to zero
   reacoeff_[0] = 0.0;
+  reacoeffderiv_[0] = 0.0;
   reatemprhs_[0] = 0.0;
 
   // get also fluid viscosity if subgrid-scale velocity is to be included
@@ -2030,7 +2054,7 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
 
   // compute reaction coefficient for progress variable
   reacoeff_[0] = actmat->ComputeReactionCoeff(tempnp);
-
+  reacoeffderiv_[0] = reacoeff_[0];
   // compute right-hand side contribution for progress variable
   // -> equal to reaction coefficient
   reatemprhs_[0] = reacoeff_[0];
@@ -2082,7 +2106,7 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
 
   // compute reaction coefficient for progress variable
   reacoeff_[0] = actmat->ComputeReactionCoeff(provarnp);
-
+  reacoeffderiv_[0] = reacoeff_[0];
   // compute right-hand side contribution for progress variable
   // -> equal to reaction coefficient
   reatemprhs_[0] = reacoeff_[0];
@@ -2092,6 +2116,38 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
 
   // get also fluid viscosity if subgrid-scale velocity is to be included
   if (sgvel_) visc_ = actmat->ComputeViscosity(tempnp);
+}
+else if (material->MaterialType() == INPAR::MAT::m_biofilm)
+{
+  dsassert(numdofpernode_==1,"more than 1 dof per node for BIOFILM material");
+
+         const MAT::Biofilm* actsinglemat = static_cast<const MAT::Biofilm*>(singlemat.get());
+         diffus_[0] = actsinglemat->Diffusivity();
+         // double rearate_k = actsinglemat->ReaRate();
+         // double satcoeff_k = actsinglemat->SatCoeff();
+
+         // set reaction flag to true
+         reaction_ = true;
+
+         // get substrate concentration at n+1 or n+alpha_F at integration point
+         const double csnp = funct_.Dot(ephinp_[0]);
+         //const double conp = funct_.Dot(ephinp_[1]);
+
+         // compute reaction coefficient for species equation
+         reacoeff_[0] = actsinglemat->ComputeReactionCoeff(csnp);
+         reacoeffderiv_[0] = actsinglemat->ComputeReactionCoeffDeriv(csnp);
+
+  // set specific heat capacity at constant pressure to 1.0
+  shcacp_ = 1.0;
+
+  // set temperature rhs for reactive equation system to zero
+  reatemprhs_[0] = 0.0;
+
+  // set density at various time steps and density gradient factor to 1.0/0.0
+  densn_[0]       = 1.0;
+  densnp_[0]      = 1.0;
+  densam_[0]      = 1.0;
+  densgradfac_[0] = 0.0;
 }
 else dserror("Material type is not supported");
 
@@ -3759,7 +3815,7 @@ if (not is_stationary_)
 //----------------------------------------------------------------
 if (reaction_)
 {
-  const double fac_reac        = timefacfac*densnp_[dofindex]*reacoeff_[dofindex];
+  const double fac_reac        = timefacfac*densnp_[dofindex]*reacoeffderiv_[dofindex];
   const double timetaufac_reac = timetaufac*densnp_[dofindex]*reacoeff_[dofindex];
   //----------------------------------------------------------------
   // standard Galerkin reactive term

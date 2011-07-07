@@ -122,6 +122,7 @@ namespace INPAR
       m_humphreycardiovascular,   ///< anisotropic material for arteries cf Humphrey
       m_growth,   ///< integration point based growth
       m_constraintmixture,  ///< growth and remodeling of arteries
+      m_biofilm,   ///< biofilm modeling (convection-diffusion-reaction)
       m_none          ///< undefined
     };
 

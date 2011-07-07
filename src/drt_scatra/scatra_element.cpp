@@ -252,7 +252,9 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
      mat->MaterialType() == INPAR::MAT::m_sutherland or
      mat->MaterialType() == INPAR::MAT::m_arrhenius_pv or
      mat->MaterialType() == INPAR::MAT::m_ferech_pv or
-     mat->MaterialType() == INPAR::MAT::m_ion)
+     mat->MaterialType() == INPAR::MAT::m_ion or
+     mat->MaterialType() == INPAR::MAT::m_biofilm
+     )
   {
     numdofpernode_=1; // we only have a single scalar
   }
