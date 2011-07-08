@@ -1672,7 +1672,7 @@ void TSI::Monolithic::RecoverStructThermLM()
 
   // multiplication
   RCP<Epetra_Vector> modtherm = rcp(new Epetra_Vector(*sdofs));
-  kts_->Multiply(false,*sx,*mod);
+  kts_->Multiply(false,*sx,*modtherm);
 
   // active part of invdtherm
   LINALG::SplitMatrix2x2(invdtherm_,adofstherm,tempmaptherm,adofstherm,tempmaptherm,invdatherm,tempmtx4,tempmtx5,tempmtx6);
