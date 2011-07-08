@@ -786,12 +786,12 @@ namespace FLD
       }
       }
 
-//      if(discret_->Comm().MyPID()==0)
-//      {
-//        cout << "Computed statistics: mean values, fluctuations, boundary forces etc.             (";
-//        printf("%10.4E",Teuchos::Time::wallTime()-tcpu);
-//        cout << ")";
-//      }
+      if(discret_->Comm().MyPID()==0)
+      {
+        cout << "Computed statistics: mean values, fluctuations, boundary forces etc.             (";
+        printf("%10.4E",Teuchos::Time::wallTime()-tcpu);
+        cout << ")";
+      }
 
       //--------------------------------------------------
       // do averaging of residuals, dissipation rates etc
@@ -991,11 +991,8 @@ namespace FLD
 
         if(outputformat == write_multiple_records)
         {
-//cout << "ORACLES TimeAverageStatistics" << endl;
           statistics_oracles_->TimeAverageStatistics();
-//cout << "ORACLES OutputStatistics" << endl;
           statistics_oracles_->OutputStatistics(step);
-//cout << "ORACLES ClearStatistics" << endl;
           statistics_oracles_->ClearStatistics();
         }
 
