@@ -49,7 +49,8 @@ Maintainer: Michael Gee
 #include "Epetra_SerialDenseMatrix.h"
 
 using namespace std;
-using namespace Teuchos;
+using Teuchos::RCP;
+using Teuchos::ParameterList;
 
 #include "drt_parobject.H"
 #include "drt_dserror.H"

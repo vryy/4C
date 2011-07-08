@@ -1,10 +1,14 @@
-/*
- * solver_pointpreconditioner.H
- *
- *  Created on: Jul 4, 2011
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file solver_pointpreconditioner.H
 
+<pre>
+Maintainer: Tobias Wiesner
+            wiesner@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15240
+Created on: Jul 4, 2011
+</pre>
+*----------------------------------------------------------------------*/
 #ifndef SOLVER_POINTPRECONDITIONER_H_
 #define SOLVER_POINTPRECONDITIONER_H_
 

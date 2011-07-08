@@ -16,7 +16,7 @@ Maintainer: Michael Gee
 #include "linalg_downwindmatrix.H"
 #include "simpler_operator_ex.H"
 
-#include "EpetraExt_OperatorOut.h"
+#include <EpetraExt_OperatorOut.h>
 
 #define SIMPLEC_DIAGONAL      1    // 1: row sums     0: just diagonal
 #define CHEAPSIMPLE_ALGORITHM 1    // 1: AMG          0: true solve

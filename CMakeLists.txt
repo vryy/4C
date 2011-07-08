@@ -1083,6 +1083,8 @@ set(OBJS_LINALG
   src/linalg/solver_krylovprojectionpreconditioner.cpp
   src/linalg/solver_ifpackpreconditioner.cpp
   src/linalg/solver_mlpreconditioner.cpp
+  src/linalg/solver_belossolver.cpp
+  src/linalg/solver_aztecsolver.cpp
 )
 set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/constraint.cpp

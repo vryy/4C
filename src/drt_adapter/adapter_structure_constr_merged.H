@@ -37,7 +37,7 @@ Maintainer: Thomas Kloeppel
 
 #include "adapter_structure_wrapper.H"
 
-using namespace Teuchos;
+//using namespace Teuchos;
 /*----------------------------------------------------------------------*/
 /* adapting adapter */
 namespace ADAPTER {

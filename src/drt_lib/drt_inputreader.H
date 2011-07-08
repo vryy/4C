@@ -35,7 +35,8 @@ Maintainer: Ulrich Kuettler
 // #include "../drt_nurbs_discret/drt_control_point.H"
 
 using namespace std;
-using namespace Teuchos;
+using Teuchos::RCP;
+using Teuchos::ParameterList;
 
 namespace DRT
 {

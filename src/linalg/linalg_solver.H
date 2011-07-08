@@ -70,7 +70,6 @@ using namespace std;
 
 namespace LINALG
 {
-
 // forward declarations
 class SparseMatrix;
 class SparseOperator;
@@ -367,6 +366,16 @@ public:
   //@}
 
 private:
+   //! @name BuildSolver methods
+
+    /*!
+    \brief helper function for generating BELOS solver
+
+    creates an internal BelosSolver object and stores it in solver_
+    */
+    void BuildBelosSolver(const Epetra_Comm & comm, Teuchos::ParameterList & params, FILE * outfile);
+
+  //@}
 
   //! a communicator
   const Epetra_Comm&                    comm_;

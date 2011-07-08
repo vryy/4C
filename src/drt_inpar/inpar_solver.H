@@ -52,7 +52,8 @@ namespace INPAR
       amesos_klu_sym,   ///< Trilinos' solver interface Amesos using KLU
       amesos_klu_nonsym,///< Trilinos' solver interface Amesos using KLU
       superlu,          ///< Trilinos' solver interface Amesos using SuperLU_Dist
-      vm3               ///< VM3 solver
+      vm3,              ///< VM3 solver
+      belos             ///< Belos solver
     };
 
     /// Different solvers within the Aztec2.1 library

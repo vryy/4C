@@ -31,13 +31,11 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
                                               bool recompute)
 {
   // see whether we have an aztec list
-  if (!solveparams.isSublist("Aztec Parameters")) return;
+  if (!solveparams.isSublist("Aztec Parameters") && !solveparams.isSublist("Belos Parameters")) return;
 
   int numdf = 1; // default value for no. of degrees of freedom
   int dimns = 1; // default value for size of nullspace
 
-  // get the aztec list and see whether we use downwinding
-  ParameterList& azlist = solveparams.sublist("Aztec Parameters");
   // downwinding needs nodal block information, compute it
   if (!NumMyRowElements()) dserror("Proc does not have any elements");
   DRT::Element* dwele = lRowElement(0);
@@ -133,8 +131,28 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   }
 #endif
   if (!(nv+np)) dserror("Cannot determine nodal block size");
-  azlist.set<int>("downwinding nv",nv);
-  azlist.set<int>("downwinding np",np);
+
+  if(solveparams.isSublist("Aztec Parameters"))
+  {
+
+    // get the aztec list and see whether we use downwinding
+    ParameterList& azlist = solveparams.sublist("Aztec Parameters");
+
+    azlist.set<int>("downwinding nv",nv);
+    azlist.set<int>("downwinding np",np);
+  }
+  else if(solveparams.isSublist("Belos Parameters"))
+  {
+    // get the belos list and see whether we use downwinding
+    ParameterList& beloslist = solveparams.sublist("Belos Parameters");
+
+    beloslist.set<int>("downwinding nv",nv);
+    beloslist.set<int>("downwinding np",np);
+  }
+  else
+  {
+    dserror("no Aztec and no Belos list");
+  }
 
   // see whether we have a sublist indicating usage of Trilinos::ML
   if (!solveparams.isSublist("ML Parameters")) return;

@@ -41,8 +41,9 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_dserror.H"
 
 using namespace std;
-using namespace Teuchos;
 using namespace MLAPI;
+using Teuchos::RCP;
+using Teuchos::ParameterList;
 
 namespace LINALG
 {

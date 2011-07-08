@@ -29,7 +29,8 @@ Maintainer: Michael Gee
 #include "linalg_ana.H"
 
 using namespace std;
-using namespace Teuchos;
+using Teuchos::RCP;
+using Teuchos::ParameterList;
 
 namespace LINALG
 {

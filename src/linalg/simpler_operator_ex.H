@@ -28,22 +28,10 @@ Maintainer: Michael Gee
 #include "linalg_utils.H"
 #include "linalg_ana.H"
 
-#include "MLAPI_Error.h"
-#include "MLAPI_CompObject.h"
-#include "MLAPI_TimeObject.h"
-#include "MLAPI_Operator.h"
-#include "MLAPI_Operator_Utils.h"
-#include "MLAPI_MultiVector.h"
-#include "MLAPI_InverseOperator.h"
-#include "MLAPI_Expressions.h"
-#include "MLAPI_BaseOperator.h"
-#include "MLAPI_Workspace.h"
-#include "MLAPI_Aggregation.h"
-#include "MLAPI_Eig.h"
-
-
 using namespace std;
-using namespace Teuchos;
+using Teuchos::RCP;
+using Teuchos::ParameterList;
+
 
 namespace LINALG
 {

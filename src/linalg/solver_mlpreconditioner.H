@@ -1,9 +1,14 @@
-/*
- * solver_mlpreconditioner.H
- *
- *  Created on: Jul 4, 2011
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file solver_mlpreconditioner.H
+
+<pre>
+Maintainer: Tobias Wiesner
+            wiesner@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15240
+Created on: Jul 4, 2011
+</pre>
+*----------------------------------------------------------------------*/
 
 #ifndef SOLVER_MLPRECONDITIONER_H_
 #define SOLVER_MLPRECONDITIONER_H_

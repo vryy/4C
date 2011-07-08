@@ -50,7 +50,7 @@ Maintainer: Michael Gee
 #include "Epetra_Vector.h"
 #include "Epetra_CrsGraph.h"
 using namespace std;
-using namespace Teuchos;
+using Teuchos::RCP;
 
 #include "drt_element.H"
 #include "drt_node.H"

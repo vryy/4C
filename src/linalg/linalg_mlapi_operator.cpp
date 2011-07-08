@@ -26,7 +26,7 @@ nlevel_(0)
 {
   Epetra_CrsMatrix* tmp = dynamic_cast<Epetra_CrsMatrix*>(A.get());
   if (!tmp) dserror("Expected Epetra_CrsMatrix");
-  Ainput_ = rcp(tmp,false);
+  Ainput_ = Teuchos::rcp(tmp,false);
   SetupNonSymStab();
   return;
 }

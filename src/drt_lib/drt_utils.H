@@ -49,9 +49,8 @@ Maintainer: Michael Gee
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 using namespace std;
-using namespace Teuchos;
-
-
+using Teuchos::RCP;
+using Teuchos::ParameterList;
 
 
 namespace DRT

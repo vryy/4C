@@ -47,7 +47,7 @@ Maintainer: Michael Gee
 #include "Teuchos_RefCountPtr.hpp"
 
 using namespace std;
-using namespace Teuchos;
+using Teuchos::RCP;
 
 #include "drt_container.H"
 #include "drt_parobjectfactory.H"

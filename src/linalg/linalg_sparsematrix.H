@@ -626,7 +626,7 @@ LINALG::SparseMatrix::Split(
   {
     const int npr = EpetraMatrix()->MaxNumEntries();
     Teuchos::RCP<BlockSparseMatrix<Strategy> > blockA =
-      rcp(new LINALG::BlockSparseMatrix<Strategy>(domainmaps,rangemaps,npr,
+      Teuchos::rcp(new LINALG::BlockSparseMatrix<Strategy>(domainmaps,rangemaps,npr,
           explicitdirichlet_,savegraph_));
     this->Split2x2(*blockA);
     return blockA;

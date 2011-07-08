@@ -28,7 +28,8 @@ Maintainer: Ulrich Kuettler
 #include "drt_resulttest.H"
 
 using namespace std;
-using namespace Teuchos;
+using Teuchos::RCP;
+using Teuchos::ParameterList;
 
 namespace IO
 {

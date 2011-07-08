@@ -2067,6 +2067,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Switch on SIMPLE family of solvers, needs additional FLUID PRESSURE SOLVER block!",
                                yesnotuple,yesnovalue,&fdyn);
 
+/*  setStringToIntegralParameter<int>("SPLITFLUID","no",
+                               "If yes, the fluid matrix is splitted into a block sparse matrix for velocity and pressure degrees of freedom (similar to SIMPLER flag)",
+                               yesnotuple,yesnovalue,&fdyn);*/
+
   setStringToIntegralParameter<int>("ADAPTCONV","yes",
                                "Switch on adaptive control of linear solver tolerance for nonlinear solution",
                                yesnotuple,yesnovalue,&fdyn);
@@ -3666,7 +3670,8 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
                        "Aztec_MSR",
                        "LAPACK_sym",
                        "LAPACK_nonsym",
-                       "UMFPACK"),
+                       "UMFPACK",
+                       "Belos"),
     tuple<int>(INPAR::SOLVER::amesos_klu_sym,
                                      INPAR::SOLVER::amesos_klu_nonsym,
                                      INPAR::SOLVER::superlu,
@@ -3674,7 +3679,8 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
                                      INPAR::SOLVER::aztec_msr,
                                      INPAR::SOLVER::lapack_sym,
                                      INPAR::SOLVER::lapack_nonsym,
-                                     INPAR::SOLVER::umfpack),
+                                     INPAR::SOLVER::umfpack,
+                                     INPAR::SOLVER::belos),
     &list
     );
 

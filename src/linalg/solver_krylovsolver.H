@@ -1,20 +1,20 @@
-/*
- * solver_krylovsolver.H
- *
- *  Created on: Jul 4, 2011
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file solver_krylovsolver.H
+
+<pre>
+Maintainer: Tobias Wiesner
+            wiesner@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15240
+Created on: Jul 4, 2011
+</pre>
+*----------------------------------------------------------------------*/
 
 #ifndef SOLVER_KRYLOVSOLVER_H_
 #define SOLVER_KRYLOVSOLVER_H_
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
-
-#include "AztecOO.h"
-#include "AztecOO_StatusTestResNorm.h"
-#include "AztecOO_StatusTestCombo.h"
-#include "AztecOO_StatusTestMaxIters.h"
 
 #include "solver_solvertype.H"
 #include "solver_preconditionertype.H"
@@ -40,11 +40,11 @@ namespace LINALG
           bool                             reset              ,
           Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean,
           Teuchos::RCP<Epetra_MultiVector>  kernel_c           ,
-          bool                             project);
+          bool                             project) = 0;
 
-      virtual void Solve();
+      virtual void Solve() = 0;
 
-      virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y);
+      int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y);
 
       virtual PreconditionerType * Preconditioner() { return &*preconditioner_; }
 
@@ -52,19 +52,20 @@ namespace LINALG
 
       Teuchos::ParameterList & Params() const { return params_; }
 
-      private:
+      protected:
 
+      //! function for creating preconditioner object
       void CreatePreconditioner( Teuchos::ParameterList & azlist,
           bool isCrsMatrix,
           Teuchos::RCP<Epetra_MultiVector> weighted_basis_mean,
           Teuchos::RCP<Epetra_MultiVector> kernel_c,
           bool project );
 
-      //! a communicator
-      const Epetra_Comm&                    comm_;
+          //! a communicator
+          const Epetra_Comm&                    comm_;
 
-      //! (internal) parameter list
-      Teuchos::ParameterList&                  params_;
+          //! (internal) parameter list
+          Teuchos::ParameterList&                  params_;
 
           //! file to write output to (proc 0 only, can be NULL on input)
           FILE*                                 outfile_;
@@ -81,17 +82,8 @@ namespace LINALG
           //! counting how many times matrix was solved between resets
           int                                   ncall_;
 
+          //! preconditioner object
           Teuchos::RCP<PreconditionerType> preconditioner_;
-
-          //! an aztex maxiter status test
-          Teuchos::RCP<AztecOO_StatusTestMaxIters>       aztest_maxiter_;
-          //! an aztec 2-norm convergence test
-          Teuchos::RCP<AztecOO_StatusTestResNorm>        aztest_norm2_;
-          //! an aztec inf-norm convergence test
-          Teuchos::RCP<AztecOO_StatusTestResNorm>        aztest_norminf_;
-          // ! combination of the above tests
-          Teuchos::RCP<AztecOO_StatusTestCombo>          aztest_combo1_;
-          Teuchos::RCP<AztecOO_StatusTestCombo>          aztest_combo2_;
 
 #ifdef WRITEOUTSTATISTICS
           double dtimeprecondsetup_;

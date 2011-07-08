@@ -23,7 +23,9 @@ Maintainer: Michael Gee
 #define DEBUGGING_ANA 0 // turn on to get debugging printouts
 
 using namespace std;
-using namespace Teuchos;
+using Teuchos::RCP;
+using Teuchos::rcp;
+using Teuchos::ParameterList;
 
 namespace LINALG
 {

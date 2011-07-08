@@ -77,15 +77,15 @@ stringdata_(old.stringdata_)
   // we want a true deep copy of the data, not a reference
   map<string,RCP<vector<int> > >::const_iterator ifool;
   for (ifool=old.intdata_.begin(); ifool!=old.intdata_.end(); ++ifool)
-    intdata_[ifool->first] = rcp(new vector<int>(*(ifool->second)));
+    intdata_[ifool->first] = Teuchos::rcp(new vector<int>(*(ifool->second)));
 
   map<string,RCP<vector<double> > >::const_iterator dfool;
   for (dfool=old.doubledata_.begin(); dfool!=old.doubledata_.end(); ++dfool)
-    doubledata_[dfool->first] = rcp(new vector<double>(*(dfool->second)));
+    doubledata_[dfool->first] = Teuchos::rcp(new vector<double>(*(dfool->second)));
 
   map<string,RCP<Epetra_SerialDenseMatrix> >::const_iterator curr;
   for (curr=old.matdata_.begin();curr!=old.matdata_.end(); ++curr)
-    matdata_[curr->first] = rcp(new Epetra_SerialDenseMatrix(*(curr->second)));
+    matdata_[curr->first] = Teuchos::rcp(new Epetra_SerialDenseMatrix(*(curr->second)));
 
   map<string,RCP<Epetra_MultiVector> >::const_iterator eveccurr;
   for (eveccurr=old.evecdata_.begin();eveccurr!=old.evecdata_.end(); ++eveccurr)
@@ -94,9 +94,9 @@ stringdata_(old.stringdata_)
     // native Epetra_Vector and native Epetra_MultiVector in this map
     Epetra_Vector* tmp = dynamic_cast<Epetra_Vector*>(eveccurr->second.get());
     if (tmp)
-      evecdata_[eveccurr->first] = rcp(new Epetra_Vector(*tmp));
+      evecdata_[eveccurr->first] = Teuchos::rcp(new Epetra_Vector(*tmp));
     else
-      evecdata_[eveccurr->first] = rcp(new Epetra_MultiVector(*(eveccurr->second)));
+      evecdata_[eveccurr->first] = Teuchos::rcp(new Epetra_MultiVector(*(eveccurr->second)));
   }
 
   return;
@@ -300,7 +300,7 @@ void DRT::Container::Print(ostream& os) const
 void DRT::Container::Add(const string& name, const int* data, const int num)
 {
   // get data in a vector
-  RefCountPtr<vector<int> > storage = rcp(new vector<int>(num));
+  RefCountPtr<vector<int> > storage = Teuchos::rcp(new vector<int>(num));
   vector<int>& access = *storage;
   for (int i=0; i<num; ++i) access[i] = data[i];
 
@@ -326,7 +326,7 @@ void DRT::Container::Add(const string& name, RefCountPtr<vector<int> > data)
 void DRT::Container::Add(const string& name, const double* data, const int num)
 {
   // get data in a vector
-  RefCountPtr<vector<double> > storage = rcp(new vector<double>(num));
+  RefCountPtr<vector<double> > storage = Teuchos::rcp(new vector<double>(num));
   vector<double>& access = *storage;
   for (int i=0; i<num; ++i) access[i] = data[i];
 
@@ -362,7 +362,7 @@ void DRT::Container::Add(const string& name, const string& data)
  *----------------------------------------------------------------------*/
 void DRT::Container::Add(const string& name, const Epetra_SerialDenseMatrix& matrix)
 {
-  matdata_[name] = rcp(new Epetra_SerialDenseMatrix(matrix));
+  matdata_[name] = Teuchos::rcp(new Epetra_SerialDenseMatrix(matrix));
   return;
 }
 
@@ -382,7 +382,7 @@ void DRT::Container::Add(const string& name, RCP<Epetra_SerialDenseMatrix> matri
  *----------------------------------------------------------------------*/
 void DRT::Container::Add(const string& name, Epetra_MultiVector& data)
 {
-  evecdata_[name] = rcp(new Epetra_MultiVector(data));
+  evecdata_[name] = Teuchos::rcp(new Epetra_MultiVector(data));
   return;
 }
 
@@ -392,7 +392,7 @@ void DRT::Container::Add(const string& name, Epetra_MultiVector& data)
  *----------------------------------------------------------------------*/
 void DRT::Container::Add(const string& name, Epetra_Vector& data)
 {
-  evecdata_[name] = rcp(new Epetra_Vector(data));
+  evecdata_[name] = Teuchos::rcp(new Epetra_Vector(data));
   return;
 }
 

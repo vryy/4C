@@ -24,9 +24,9 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 02/08|
  *----------------------------------------------------------------------*/
-LINALG::SIMPLER_Operator::SIMPLER_Operator(RCP<Epetra_Operator> A,
-                                           const ParameterList& velocitylist,
-                                           const ParameterList& pressurelist,
+LINALG::SIMPLER_Operator::SIMPLER_Operator(Teuchos::RCP<Epetra_Operator> A,
+                                           const Teuchos::ParameterList& velocitylist,
+                                           const Teuchos::ParameterList& pressurelist,
                                            FILE* outfile)
   : outfile_(outfile),
     vlist_(velocitylist),
@@ -49,9 +49,9 @@ LINALG::SIMPLER_Operator::SIMPLER_Operator(RCP<Epetra_Operator> A,
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 02/08|
  *----------------------------------------------------------------------*/
-void LINALG::SIMPLER_Operator::Setup(RCP<Epetra_Operator> A,
-                                     const ParameterList& origvlist,
-                                     const ParameterList& origplist)
+void LINALG::SIMPLER_Operator::Setup(Teuchos::RCP<Epetra_Operator> A,
+                                     const Teuchos::ParameterList& origvlist,
+                                     const Teuchos::ParameterList& origplist)
 {
   const int myrank = A->Comm().MyPID();
   Epetra_Time time(A->Comm());

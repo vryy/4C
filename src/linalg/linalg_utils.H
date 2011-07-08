@@ -59,7 +59,8 @@ Maintainer: Michael Gee
 #include "linalg_blocksparsematrix.H"
 
 using namespace std;
-using namespace Teuchos;
+using Teuchos::RCP;
+using Teuchos::ParameterList;
 
 namespace IO
 {

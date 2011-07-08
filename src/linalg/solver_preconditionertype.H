@@ -1,10 +1,14 @@
-/*
- * solver_preconditionertype.H
- *
- *  Created on: Jul 4, 2011
- *      Author: wiesner
- */
+/*!----------------------------------------------------------------------
+\file solver_preconditionertype.H
 
+<pre>
+Maintainer: Tobias Wiesner
+            wiesner@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15240
+Created on: Jul 4, 2011
+</pre>
+*----------------------------------------------------------------------*/
 #ifndef SOLVER_PRECONDITIONERTYPE_H_
 #define SOLVER_PRECONDITIONERTYPE_H_
 
@@ -15,10 +19,6 @@
 #include "Epetra_CrsGraph.h"
 #include "Epetra_CrsMatrix.h"
 #include "Epetra_Vector.h"
-#include "Epetra_Export.h"
-#include "Epetra_Import.h"
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
