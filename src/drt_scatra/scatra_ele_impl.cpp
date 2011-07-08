@@ -1846,7 +1846,9 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
       // in case of reaction with constant coefficient, read coefficient and
       // set reaction flag to true
       reacoeff_[k] = actsinglemat->ReaCoeff();
-      if (abs(reacoeff_[k]) > EPS14) reaction_ = true;
+      if (reacoeff_[k] > EPS14) reaction_ = true;
+      if (reacoeff_[k] < -EPS14)
+        dserror("Reaction coefficient for species %d is not positive: %f",k, reacoeff_[k]);
       reacoeffderiv_[k] = reacoeff_[k];
     }
     else if (singlemat->MaterialType() == INPAR::MAT::m_biofilm)
@@ -1885,7 +1887,10 @@ else if (material->MaterialType() == INPAR::MAT::m_scatra)
   // in case of reaction with (non-zero) constant coefficient:
   // read coefficient and set reaction flag to true
   reacoeff_[0] = actmat->ReaCoeff();
-  if (abs(reacoeff_[0]) > EPS14) reaction_ = true;
+  if (reacoeff_[0] > EPS14) reaction_ = true;
+  if (reacoeff_[0] < -EPS14)
+    dserror("Reaction coefficient for species %d is not positive: %f",0, reacoeff_[0]);
+
   reacoeffderiv_[0] = reacoeff_[0];
 
   // set specific heat capacity at constant pressure to 1.0
