@@ -2184,7 +2184,9 @@ void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues(RCP<Epetra_Vector> vec)
     bool makepositive(false);
 
     vector<int> numfound(numscal_,0);
-
+#if 0
+    stringstream myerrormessage;
+#endif
     for (int i = 0; i < discret_->NumMyRowNodes(); i++)
     {
       DRT::Node* lnode = discret_->lRowNode(i);
@@ -2194,11 +2196,16 @@ void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues(RCP<Epetra_Vector> vec)
       for (int k = 0; k < numscal_; k++)
       {
         const int lid = discret_->DofRowMap()->LID(dofs[k]);
-        if (((*vec)[lid]) < EPS15 )
+        if (((*vec)[lid]) < EPS13 )
         {
           numfound[k]++;
           if (makepositive)
-            ((*vec)[lid]) = EPS15;
+            ((*vec)[lid]) = EPS13;
+#if 0
+          myerrormessage<<"PROC "<<myrank_<<" dof index: "<<k<<setprecision(7)<<scientific<<
+              " val: "<<((*vec)[lid])<<" node gid: "<<lnode->Id()<<
+              " coord: [x] "<< lnode->X()[0]<<" [y] "<< lnode->X()[1]<<" [z] "<< lnode->X()[2]<<endl;
+#endif
         }
       }
     }
@@ -2211,12 +2218,35 @@ void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues(RCP<Epetra_Vector> vec)
         cout<<"WARNING: PROC "<<myrank_<<" has "<<numfound[k]<<
         " nodes with zero/neg. concentration values for species "<<k;
         if (makepositive)
-          cout<<"-> were made positive (set to 1.0e-15)"<<endl;
+          cout<<"-> were made positive (set to 1.0e-13)"<<endl;
         else
           cout<<endl;
       }
     }
+
+#if 0
+    // print detailed info to error file
+    for(int p=0; p < discret_->Comm().NumProc(); p++)
+    {
+      if (p==myrank_) // is it my turn?
+      {
+        // finish error message
+        myerrormessage.flush();
+
+        // write info to error file
+        if ((errfile_!=NULL) and (myerrormessage.str()!=""))
+        {
+          fprintf(errfile_,myerrormessage.str().c_str());
+          // cout<<myerrormessage.str()<<endl;
+        }
+      }
+      // give time to finish writing to file before going to next proc ?
+      discret_->Comm().Barrier();
+    }
+#endif
+
   }
+  // so much code for a simple check!
   return;
 }
 
