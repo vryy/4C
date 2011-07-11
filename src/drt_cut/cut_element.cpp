@@ -92,7 +92,7 @@ void GEO::CUT::Element::MakeCutLines( Mesh & mesh, Creator & creator )
     if ( cut )
     {
       // create any remaining cut lines
-      side.CreateMissingLines( creator, this );
+      //side.CreateMissingLines( creator, this );
     }
   }
 }
