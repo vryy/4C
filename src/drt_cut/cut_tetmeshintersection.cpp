@@ -258,7 +258,7 @@ void GEO::CUT::TetMeshIntersection::Cut( Mesh & parent_mesh, Element * element, 
   FindEdgeCuts();
 
   plain_element_set elements_done;
-  cut_mesh_.Cut( mesh_, elements_done );
+  cut_mesh_.Cut( mesh_, elements_done, count+1 );
 
   cut_mesh_.RectifyCutNumerics();
   mesh_.RectifyCutNumerics();

@@ -102,9 +102,9 @@ public:
 
   bool DetectSelfCut();
 
-  void Cut( Mesh & mesh, plain_element_set & elements_done );
+  void Cut( Mesh & mesh, plain_element_set & elements_done, int recursion );
 
-  void Cut( Side & side, const plain_element_set & done, plain_element_set & elements_done );
+  void Cut( Side & side, const plain_element_set & done, plain_element_set & elements_done, int recursion );
 
   void Cut( LevelSetSide & side );
 

@@ -58,7 +58,7 @@ public:
 
   virtual double Scalar( const std::vector<double> & ns, const LINALG::Matrix<3,1> & rst ) = 0;
 
-  bool Cut( Mesh & mesh, Side & side );
+  bool Cut( Mesh & mesh, Side & side, int recursion );
 
   void MakeCutLines( Mesh & mesh, Creator & creator );
 
@@ -130,7 +130,7 @@ protected:
 
 private:
 
-  bool FindCutPoints( Mesh & mesh, Side & side, Side & other );
+  bool FindCutPoints( Mesh & mesh, Side & side, Side & other, int recursion );
 
   bool FindCutLines( Mesh & mesh, Side & side, Side & other );
 

@@ -123,7 +123,7 @@ public:
 
   const std::vector<Node*> & Nodes() const { return nodes_; }
 
-  bool FindCutPoints( Mesh & mesh, Element * element, Side & other );
+  bool FindCutPoints( Mesh & mesh, Element * element, Side & other, int recursion );
 
   bool FindCutLines( Mesh & mesh, Element * element, Side & other );
 

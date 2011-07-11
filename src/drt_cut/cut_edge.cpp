@@ -16,7 +16,7 @@
 bool GEO::CUT::Edge::FindCutPoints( Mesh & mesh,
                                     Element * element,
                                     Side & side,
-                                    Side & other )
+                                    Side & other, int recursion )
 {
   bool cut = false;
   for ( PointPositionSet::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
@@ -29,7 +29,7 @@ bool GEO::CUT::Edge::FindCutPoints( Mesh & mesh,
     }
   }
 #if 1
-  if ( cut )
+  if ( cut and recursion > 0 )
   {
     return true;
   }

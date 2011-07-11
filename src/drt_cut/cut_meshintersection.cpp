@@ -100,7 +100,7 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner )
   {
     MeshHandle & cut_mesh_handle = **i;
     Mesh & cut_mesh = cut_mesh_handle.LinearMesh();
-    cut_mesh.Cut( m, elements_done );
+    cut_mesh.Cut( m, elements_done, 0 );
   }
 
   m.MakeCutLines();

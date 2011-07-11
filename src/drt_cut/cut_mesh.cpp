@@ -850,8 +850,8 @@ bool GEO::CUT::Mesh::DetectSelfCut()
       {
         Side * s = *i;
         {
-          bool normal_cut  = side.FindCutPoints( *this, NULL, *s );
-          bool reverse_cut = s->FindCutPoints( *this, NULL, side );
+          bool normal_cut  = side.FindCutPoints( *this, NULL, *s, 0 );
+          bool reverse_cut = s->FindCutPoints( *this, NULL, side, 0 );
           if ( normal_cut or reverse_cut )
           {
             //std::cout << side << "\n" << ( *s ) << "\n";
@@ -931,7 +931,7 @@ void GEO::CUT::Mesh::SelfCut()
 }
 #endif
 
-void GEO::CUT::Mesh::Cut( Mesh & mesh, plain_element_set & elements_done )
+void GEO::CUT::Mesh::Cut( Mesh & mesh, plain_element_set & elements_done, int recursion )
 {
   if ( DetectSelfCut() )
     throw std::runtime_error( "cut surface with self cut not supported" );
@@ -943,7 +943,7 @@ void GEO::CUT::Mesh::Cut( Mesh & mesh, plain_element_set & elements_done )
         ++i )
   {
     Side & side = *i->second;
-    mesh.Cut( side, elements_done, my_elements_done );
+    mesh.Cut( side, elements_done, my_elements_done, recursion );
   }
 
   std::copy( my_elements_done.begin(),
@@ -951,7 +951,7 @@ void GEO::CUT::Mesh::Cut( Mesh & mesh, plain_element_set & elements_done )
              std::inserter( elements_done, elements_done.begin() ) );
 }
 
-void GEO::CUT::Mesh::Cut( Side & side, const plain_element_set & done, plain_element_set & elements_done )
+void GEO::CUT::Mesh::Cut( Side & side, const plain_element_set & done, plain_element_set & elements_done, int recursion )
 {
   BoundingBox sidebox( side );
   plain_element_set elements;
@@ -962,7 +962,7 @@ void GEO::CUT::Mesh::Cut( Side & side, const plain_element_set & done, plain_ele
     Element * e = *i;
     if ( done.count( e )==0 )
     {
-      if ( e->Cut( *this, side ) )
+      if ( e->Cut( *this, side, recursion ) )
       {
         elements_done.insert( e );
       }
@@ -981,7 +981,7 @@ void GEO::CUT::Mesh::Cut( LevelSetSide & side )
     try
     {
 #endif
-      e.Cut( *this, side );
+      e.Cut( *this, side, 0 );
 #ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
@@ -1000,7 +1000,7 @@ void GEO::CUT::Mesh::Cut( LevelSetSide & side )
     try
     {
 #endif
-      e.Cut( *this, side );
+      e.Cut( *this, side, 0 );
 #ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )

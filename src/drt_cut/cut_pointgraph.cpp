@@ -375,6 +375,7 @@ void GEO::CUT::IMPL::PointGraph::Graph::FindCycles( Element * element, Side * si
   // All vertices are connected. If there is no cycle, done.
   if ( boost::num_vertices( g ) > boost::num_edges( g ) )
   {
+#if 0
 #ifdef DEBUGCUTLIBRARY
     if ( boost::num_vertices( g ) > 2 )
     {
@@ -384,6 +385,7 @@ void GEO::CUT::IMPL::PointGraph::Graph::FindCycles( Element * element, Side * si
                 << cycle << "\n";
       boost::print_graph( g, boost::get( boost::vertex_name, g ) );
     }
+#endif
 #endif
     return;
   }

@@ -67,7 +67,7 @@ void test_hex8_simple()
 
   mesh.Status();
 
-  e->Cut( mesh, *( s ) );
+  e->Cut( mesh, *( s ), 0 );
 
   cutmesh( mesh );
 }
@@ -100,7 +100,7 @@ void test_tet4_simple()
 
   mesh.Status();
 
-  e->Cut( mesh, *( s ) );
+  e->Cut( mesh, *( s ), 0 );
 
   cutmesh( mesh );
 }
@@ -137,7 +137,7 @@ void test_pyramid5_simple()
 
   mesh.Status();
 
-  e->Cut( mesh, *( s ) );
+  e->Cut( mesh, *( s ), 0 );
 
   cutmesh( mesh );
 }
@@ -178,7 +178,7 @@ void test_wedge6_simple()
 
   mesh.Status();
 
-  e->Cut( mesh, *( s ) );
+  e->Cut( mesh, *( s ), 0 );
 
   cutmesh( mesh );
 }
@@ -193,7 +193,7 @@ void test_hex8_fullside()
 
   mesh.Status();
 
-  e->Cut( mesh, *( s ) );
+  e->Cut( mesh, *( s ), 0 );
 
   cutmesh( mesh );
 }
@@ -207,7 +207,7 @@ void test_hex8_diagonal()
 
   mesh.Status();
 
-  e->Cut( mesh, *( s ) );
+  e->Cut( mesh, *( s ), 0 );
 
   cutmesh( mesh );
 }
@@ -452,7 +452,7 @@ void test_hex8_mesh()
 
   GEO::CUT::plain_element_set done;
   GEO::CUT::plain_element_set elements_done;
-  mesh.Cut( *( s ), done, elements_done );
+  mesh.Cut( *( s ), done, elements_done, 0 );
 
   cutmesh( mesh );
 }
@@ -467,8 +467,8 @@ void test_hex8_double()
 
   mesh.Status();
 
-  e->Cut( mesh, *( s1 ) );
-  e->Cut( mesh, *( s2 ) );
+  e->Cut( mesh, *( s1 ), 0 );
+  e->Cut( mesh, *( s2 ), 0 );
 
   cutmesh( mesh );
 }
@@ -488,7 +488,7 @@ void test_hex8_multiple()
 
       //mesh.Status();
 
-      e->Cut( mesh, *( s ) );
+      e->Cut( mesh, *( s ), 0 );
 
       //mesh.Status();
     }
@@ -559,7 +559,7 @@ void test_hex8_bad1()
 
   mesh.Status();
 
-  e->Cut( mesh, *( quad4 ) );
+  e->Cut( mesh, *( quad4 ), 0 );
 
   cutmesh( mesh );
 }
@@ -625,7 +625,7 @@ void test_hex8_bad2()
 
   mesh.Status();
 
-  e->Cut( mesh, *( quad4 ) );
+  e->Cut( mesh, *( quad4 ), 0 );
 
   cutmesh( mesh );
 }
@@ -691,7 +691,7 @@ void test_hex8_bad3()
 
   mesh.Status();
 
-  e->Cut( mesh, *( quad4 ) );
+  e->Cut( mesh, *( quad4 ), 0 );
 
   cutmesh( mesh );
 }
@@ -739,7 +739,7 @@ void test_hex8_bad4()
 
   mesh.Status();
 
-  e->Cut( mesh, *( quad4 ) );
+  e->Cut( mesh, *( quad4 ), 0 );
 
   cutmesh( mesh );
 }
@@ -1562,7 +1562,7 @@ void test_hex8_quad4_mesh()
     GEO::CUT::Side* quad4 = *i;
     GEO::CUT::plain_element_set done;
     GEO::CUT::plain_element_set elements_done;
-    mesh.Cut( *( quad4 ), done, elements_done );
+    mesh.Cut( *( quad4 ), done, elements_done, 0 );
   }
 
   cutmesh( mesh );

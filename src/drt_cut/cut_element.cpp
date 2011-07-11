@@ -15,7 +15,7 @@
 #include <string>
 #include <stack>
 
-bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side )
+bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side, int recursion )
 {
   bool cut = false;
 
@@ -44,7 +44,7 @@ bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side )
   for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
   {
     Side * s = *i;
-    if ( FindCutPoints( mesh, *s, side ) )
+    if ( FindCutPoints( mesh, *s, side, recursion ) )
     {
       cut = true;
     }
@@ -97,10 +97,10 @@ void GEO::CUT::Element::MakeCutLines( Mesh & mesh, Creator & creator )
   }
 }
 
-bool GEO::CUT::Element::FindCutPoints( Mesh & mesh, Side & side, Side & other )
+bool GEO::CUT::Element::FindCutPoints( Mesh & mesh, Side & side, Side & other, int recursion )
 {
-  bool cut = side.FindCutPoints( mesh, this, other );
-  bool reverse_cut = other.FindCutPoints( mesh, this, side );
+  bool cut = side.FindCutPoints( mesh, this, other, recursion );
+  bool reverse_cut = other.FindCutPoints( mesh, this, side, recursion );
   return cut or reverse_cut;
 }
 

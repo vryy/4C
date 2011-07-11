@@ -30,7 +30,7 @@ void test_cut_volumes()
 
   GEO::CUT::plain_element_set elements_done;
 
-  mesh2.Cut( mesh1, elements_done );
+  mesh2.Cut( mesh1, elements_done, 0 );
 
   cutmesh( mesh1 );
 
@@ -69,7 +69,7 @@ void test_cut_volumes2()
 
         GEO::CUT::plain_element_set elements_done;
 
-        mesh2.Cut( mesh1, elements_done );
+        mesh2.Cut( mesh1, elements_done, 0 );
 
         cutmesh( mesh1 );
 

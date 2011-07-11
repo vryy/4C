@@ -28,14 +28,14 @@ GEO::CUT::Edge * GEO::CUT::Side::FindEdge( Point * begin, Point * end )
   return NULL;
 }
 
-bool GEO::CUT::Side::FindCutPoints( Mesh & mesh, Element * element, Side & other )
+bool GEO::CUT::Side::FindCutPoints( Mesh & mesh, Element * element, Side & other, int recursion )
 {
   bool cut = false;
   const std::vector<Edge*> & edges = Edges();
   for ( std::vector<Edge*>::const_iterator i=edges.begin(); i!=edges.end(); ++i )
   {
     Edge * e = *i;
-    if ( e->FindCutPoints( mesh, element, *this, other ) )
+    if ( e->FindCutPoints( mesh, element, *this, other, recursion ) )
     {
       cut = true;
     }
@@ -87,7 +87,54 @@ bool GEO::CUT::Side::FindCutLines( Mesh & mesh, Element * element, Side & other 
     }
     else
     {
-      throw std::runtime_error( "most peculiar cut" );
+      //throw std::runtime_error( "most peculiar cut" );
+
+      // Assume there is one point too much between the two that
+      // matter. Assume all three points are on one line. This is a numerical
+      // artefact. But who am I to complain?
+      //
+      // Try to recover. All points need to be used.
+
+      LINALG::Matrix<3,1> p1( ( *cuts.begin() )->X() );
+
+      std::vector<Point*> rp;
+      rp.reserve( 2 );
+      rp.assign( reverse_cuts.begin(), reverse_cuts.end() );
+
+      LINALG::Matrix<3,1> p2( rp[0]->X() );
+      LINALG::Matrix<3,1> p3( rp[1]->X() );
+
+      LINALG::Matrix<3,1> d;
+
+      d.Update( 1., p2, -1., p1, 0. );
+      double dist1 = d.Norm2();
+
+      d.Update( 1., p3, -1., p1, 0. );
+      double dist2 = d.Norm2();
+
+      d.Update( 1., p3, -1., p2, 0. );
+      double dist3 = d.Norm2();
+
+      if ( dist3 > dist1 and dist3 > dist2 )
+      {
+        // first point in the middle
+        // now this is unexpected
+        mesh.NewLine( *cuts.begin(), rp[0], this, &other, element );
+        mesh.NewLine( *cuts.begin(), rp[1], this, &other, element );
+      }
+      else
+      {
+        if ( dist2 > dist1 )
+        {
+          mesh.NewLine( *cuts.begin(), rp[1], this, &other, element );
+        }
+        else
+        {
+          mesh.NewLine( *cuts.begin(), rp[0], this, &other, element );
+        }
+        mesh.NewLine( rp[0], rp[1], this, &other, element );
+      }
+      return true;
     }
   }
   case 2:

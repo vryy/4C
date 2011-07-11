@@ -180,7 +180,7 @@ public:
   void Coordinates( LINALG::Matrix<3, 2> & xyze_lineElement )
   { Edge::Coordinates( xyze_lineElement.A() ); }
 
-  bool FindCutPoints( Mesh & mesh, Element * element, Side & side, Side & other );
+  bool FindCutPoints( Mesh & mesh, Element * element, Side & side, Side & other, int recursion );
 
   void GetCutPoints( Element * element, Side & side, Side & other, PointSet & cuts );
 
