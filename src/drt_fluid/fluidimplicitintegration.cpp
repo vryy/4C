@@ -828,9 +828,12 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
       // use backward-Euler-type parameter combination
       if (step_<=numstasteps_)
       {
-        cout<<"Starting algorithm for Af_GenAlpha active."
-            <<"Performing step "<<step_ <<" of "<<numstasteps_<<
-            " Backward Euler starting steps"<<endl;
+        if (myrank_==0)
+        {
+          cout<<"Starting algorithm for Af_GenAlpha active."
+              <<"Performing step "<<step_ <<" of "<<numstasteps_
+              <<" Backward Euler starting steps"<<endl;
+        }
         alphaM_ = 1.0;
         alphaF_ = 1.0;
         gamma_  = 1.0;
