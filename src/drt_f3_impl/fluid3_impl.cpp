@@ -6750,52 +6750,53 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::MultfracSubGridScalesCross(
       }
     }
   }
-//  // additional terms conservative part
-//  //if (f3Parameter_->is_conservative_)
-//  {
-//    for (int idim = 0; idim <nsd_; ++idim)
-//    {
-//      for (int ui=0; ui<nen_; ++ui)
-//      {
-//        const int fui   = nsd_*ui + idim;
-//
-//        for (int vi=0; vi<nen_; ++vi)
-//        {
-//          const int fvi   = nsd_*vi + idim;
-//            /                                     \
-//            |      /               \       \      |
-//            |  Du | rho*nabla o du  | , v   |     |
-//            |      \               /       /      |
-//            \                                     /
-//          /
-//          estif_u(fvi  , fui  ) += timefacfac * densaf_
-//                                 * funct_(vi) * funct_(ui) * mffsvdiv_;
-//        }
-//      }
-//    }
-//
-//    for (int idim = 0; idim <nsd_; ++idim)
-//    {
-//      for (int vi=0; vi<nen_; ++vi)
-//      {
-//        const int fvi   = nsd_*vi + idim;
-//
-//        for (int ui=0; ui<nen_; ++ui)
-//        {
-//          const int fui   = nsd_*ui;
-//            /                                     \
-//            |      /               \       \      |
-//            |  du | rho*nabla o Du  | , v   |     |
-//            |      \               /       /      |
-//            \                                     /
-//          /
-//          for(int jdim=0; jdim<nsd_;++jdim)
-//            estif_u(fvi,  fui+jdim  ) += timefacfac * densaf_ * funct_(vi)
-//                                       * mffsvelint_(idim) * derxy_(jdim, ui) ;
-//        }
-//      }
-//    }
-//  }
+/*
+  // additional terms conservative part
+  //if (f3Parameter_->is_conservative_)
+  {
+    for (int idim = 0; idim <nsd_; ++idim)
+    {
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const int fui   = nsd_*ui + idim;
+
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const int fvi   = nsd_*vi + idim;
+            /                                     \
+            |      /               \       \      |
+            |  Du | rho*nabla o du  | , v   |     |
+            |      \               /       /      |
+            \                                     /
+          /
+          estif_u(fvi  , fui  ) += timefacfac * densaf_
+                                 * funct_(vi) * funct_(ui) * mffsvdiv_;
+        }
+      }
+    }
+
+    for (int idim = 0; idim <nsd_; ++idim)
+    {
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi   = nsd_*vi + idim;
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int fui   = nsd_*ui;
+            /                                     \
+            |      /               \       \      |
+            |  du | rho*nabla o Du  | , v   |     |
+            |      \               /       /      |
+            \                                     /
+          /
+          for(int jdim=0; jdim<nsd_;++jdim)
+            estif_u(fvi,  fui+jdim  ) += timefacfac * densaf_ * funct_(vi)
+                                       * mffsvelint_(idim) * derxy_(jdim, ui) ;
+        }
+      }
+    }
+  }*/
 #endif
 #endif
 
