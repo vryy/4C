@@ -653,9 +653,9 @@ namespace GEO
         return true;
       }
 
-      void SeedDomain( Domain<4> & cell_domain, Facet * f )
+      void SeedDomain( Domain<4> & cell_domain, Facet * f, bool force=false )
       {
-        if ( not f->OnCutSide() )
+        if ( force or not f->OnCutSide() )
         {
           FacetMesh & fm = facet_mesh_[f];
           const PlainEntitySet<3> & tris = fm.SurfaceTris();
@@ -665,39 +665,11 @@ namespace GEO
           {
             Entity<3> * t = *i;
             const std::vector<Entity<4>*> & tets = t->Parents();
-#if 1
             if ( tets.size()==1 )
             {
               if ( not cell_domain.Contains( tets[0] ) )
                 cell_domain.Add( tets[0] );
             }
-#else
-            std::vector<Entity<4>*> valid_tets;
-            valid_tets.reserve( 1 );
-            for ( std::vector<Entity<4>*>::const_iterator i=tets.begin(); i!=tets.end(); ++i )
-            {
-              Entity<4> * t = *i;
-              if ( accept_tets_[t->Id()] )
-              {
-                valid_tets.push_back( t );
-              }
-            }
-            if ( valid_tets.size()==1 )
-            {
-              if ( not cell_domain.Contains( valid_tets[0] ) )
-                cell_domain.Add( valid_tets[0] );
-            }
-            else if ( valid_tets.size()==0 )
-            {
-              // Ignore. No valid tet at an element side is fine. Happens.
-            }
-            else
-            {
-              // This is odd. No fatal mistake, maybe. But unexpected. Lets be
-              // careful.
-              throw std::runtime_error( "one parent tet at outside tri expected" );
-            }
-#endif
           }
         }
       }

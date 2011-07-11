@@ -7,6 +7,7 @@
 #include <set>
 #include <cstring>
 
+//#define DRT_CUT_DUMPCREATION    // dump object creation to generate test case
 #define CUT_USE_SORTED_VECTOR
 
 #ifdef CUT_USE_SORTED_VECTOR

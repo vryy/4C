@@ -18,7 +18,6 @@ bool GEO::CUT::Edge::FindCutPoints( Mesh & mesh,
                                     Side & side,
                                     Side & other )
 {
-#if 1
   bool cut = false;
   for ( PointPositionSet::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
@@ -29,6 +28,7 @@ bool GEO::CUT::Edge::FindCutPoints( Mesh & mesh,
       p->AddElement( element );
     }
   }
+#if 1
   if ( cut )
   {
     return true;

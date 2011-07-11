@@ -356,3 +356,79 @@ void test_fluidfluid()
 
   loader.Cut( true );
 }
+
+
+void test_fluidfluid2()
+{
+  MeshLoader loader;
+
+  loader.GetCutNode( 32, -0.25, -0.25, 0.025, 0 );
+  loader.GetCutNode( 35, -0.25, 0.25, 0.025, 0 );
+  loader.GetCutNode( 34, -0.25, 0.25, -0.025, 0 );
+  loader.GetCutNode( 33, -0.25, -0.25, -0.025, 0 );
+  loader.CreateSide( 0, 32, 35, 34, 33, 1 );
+  loader.GetCutNode( -1, -0.25, 0, 0, 0 );
+  loader.GetCutNode( 37, 0.25, -0.25, -0.025, 0 );
+  loader.GetCutNode( 36, 0.25, -0.25, 0.025, 0 );
+  loader.CreateSide( 1, 32, 33, 37, 36, 1 );
+  loader.GetCutNode( -2, 0, -0.25, 0, 0 );
+  loader.GetCutNode( 39, 0.25, 0.25, 0.025, 0 );
+  loader.CreateSide( 2, 32, 36, 39, 35, 1 );
+  loader.GetCutNode( -3, 0, 0, 0.025, 0 );
+  loader.GetCutNode( 38, 0.25, 0.25, -0.025, 0 );
+  loader.CreateSide( 3, 33, 34, 38, 37, 1 );
+  loader.GetCutNode( -4, 0, 0, -0.025, 0 );
+  loader.CreateSide( 4, 34, 35, 39, 38, 1 );
+  loader.GetCutNode( -5, 0, 0.25, 0, 0 );
+  loader.CreateSide( 5, 36, 37, 38, 39, 1 );
+  loader.GetCutNode( -6, 0.25, 0, 0, 0 );
+  loader.CreateSide( 6, 32, 35, 34, 33, 1 );
+  loader.CreateSide( 7, 32, 33, 37, 36, 1 );
+  loader.CreateSide( 8, 32, 36, 39, 35, 1 );
+  loader.CreateSide( 9, 33, 34, 38, 37, 1 );
+  loader.CreateSide( 10, 34, 35, 39, 38, 1 );
+  loader.CreateSide( 11, 36, 37, 38, 39, 1 );
+  loader.GetNode( 0, -0.75, -0.75, 0.025, 0 );
+  loader.GetNode( 1, -0.75, -0.75, -0.025, 0 );
+  loader.GetNode( 2, -0.75, -0.25, -0.025, 0 );
+  loader.GetNode( 3, -0.75, -0.25, 0.025, 0 );
+  loader.GetNode( 4, -0.25, -0.75, 0.025, 0 );
+  loader.GetNode( 5, -0.25, -0.75, -0.025, 0 );
+  loader.GetNode( 6, -0.25, -0.25, -0.025, 0 );
+  loader.GetNode( 7, -0.25, -0.25, 0.025, 0 );
+  loader.CreateElement( 0, 0, 1, 2, 3, 4, 5, 6, 7, 6 );
+  loader.GetNode( 8, -0.75, 0.25, -0.025, 0 );
+  loader.GetNode( 9, -0.75, 0.25, 0.025, 0 );
+  loader.GetNode( 10, -0.25, 0.25, -0.025, 0 );
+  loader.GetNode( 11, -0.25, 0.25, 0.025, 0 );
+  loader.CreateElement( 1, 3, 2, 8, 9, 7, 6, 10, 11, 6 );
+  loader.GetNode( 12, -0.75, 0.75, -0.025, 0 );
+  loader.GetNode( 13, -0.75, 0.75, 0.025, 0 );
+  loader.GetNode( 14, -0.25, 0.75, -0.025, 0 );
+  loader.GetNode( 15, -0.25, 0.75, 0.025, 0 );
+  loader.CreateElement( 2, 9, 8, 12, 13, 11, 10, 14, 15, 6 );
+  loader.GetNode( 16, 0.25, -0.75, 0.025, 0 );
+  loader.GetNode( 17, 0.25, -0.75, -0.025, 0 );
+  loader.GetNode( 18, 0.25, -0.25, -0.025, 0 );
+  loader.GetNode( 19, 0.25, -0.25, 0.025, 0 );
+  loader.CreateElement( 3, 4, 5, 6, 7, 16, 17, 18, 19, 6 );
+  loader.GetNode( 20, 0.25, 0.25, -0.025, 0 );
+  loader.GetNode( 21, 0.25, 0.25, 0.025, 0 );
+  loader.CreateElement( 4, 7, 6, 10, 11, 19, 18, 20, 21, 6 );
+  loader.GetNode( 22, 0.25, 0.75, -0.025, 0 );
+  loader.GetNode( 23, 0.25, 0.75, 0.025, 0 );
+  loader.CreateElement( 5, 11, 10, 14, 15, 21, 20, 22, 23, 6 );
+  loader.GetNode( 24, 0.75, -0.75, 0.025, 0 );
+  loader.GetNode( 25, 0.75, -0.75, -0.025, 0 );
+  loader.GetNode( 26, 0.75, -0.25, -0.025, 0 );
+  loader.GetNode( 27, 0.75, -0.25, 0.025, 0 );
+  loader.CreateElement( 6, 16, 17, 18, 19, 24, 25, 26, 27, 6 );
+  loader.GetNode( 28, 0.75, 0.25, -0.025, 0 );
+  loader.GetNode( 29, 0.75, 0.25, 0.025, 0 );
+  loader.CreateElement( 7, 19, 18, 20, 21, 27, 26, 28, 29, 6 );
+  loader.GetNode( 30, 0.75, 0.75, -0.025, 0 );
+  loader.GetNode( 31, 0.75, 0.75, 0.025, 0 );
+  loader.CreateElement( 8, 21, 20, 22, 23, 29, 28, 30, 31, 6 );
+
+  loader.Cut( true );
+}

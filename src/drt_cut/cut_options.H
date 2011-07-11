@@ -12,7 +12,7 @@ public:
 
   Options( bool positions=true,
            bool simpleshapes=true,
-           bool genquad4=false,
+           bool genquad4=true,
            bool genhex8=true,
            bool genwedge6=false,
            bool genpyramid5=false )

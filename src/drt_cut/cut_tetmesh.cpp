@@ -159,9 +159,28 @@ void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
 
       if ( cell_domain.Empty() )
       {
-        // Assume the volume cell in question is degenerated and does not
-        // contain any tets.
-        continue;
+        // Emergency. If this is the only volume cell within the element (an
+        // element is surrounded by cut surfaces), try and force any available
+        // tet into the volume cell. (This is a special case that turns up in
+        // debug situations only.)
+
+        if ( cells.size()==1 )
+        {
+          for ( plain_facet_set::const_iterator i=facets.begin();
+                i!=facets.end();
+                ++i )
+          {
+            Facet * f = *i;
+            SeedDomain( cell_domain, f, true );
+          }
+        }
+
+        if ( cell_domain.Empty() )
+        {
+          // Assume the volume cell in question is degenerated and does not
+          // contain any tets.
+          continue;
+        }
       }
 
       cell_domain.Fill();
@@ -210,6 +229,11 @@ void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
       }
 
       vc->CreateTet4IntegrationCells( mesh, tets, sides_xyz );
+
+      if ( vc->Empty() )
+      {
+        throw std::runtime_error( "empty volume cell detected" );
+      }
     }
   }
   else
