@@ -166,8 +166,8 @@ void GEO::CUT::VolumeCell::GetBoundaryCells( std::map<int, std::vector<GEO::CUT:
 
 void GEO::CUT::VolumeCell::ConnectNodalDOFSets( bool include_inner )
 {
-  if ( Empty() )
-    return;
+//   if ( Empty() )
+//     return;
   if ( not include_inner and Position()!=Point::outside )
     return;
 

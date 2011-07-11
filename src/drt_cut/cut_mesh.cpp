@@ -1237,8 +1237,8 @@ void GEO::CUT::Mesh::FindFacetPositions()
   for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin(); i!=cells_.end(); ++i )
   {
     VolumeCell * c = &**i;
-    if ( c->Empty() )
-      continue;
+//     if ( c->Empty() )
+//       continue;
     if ( c->Position()==Point::undecided )
     {
       const plain_facet_set & facets = c->Facets();

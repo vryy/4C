@@ -110,7 +110,7 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner )
   //Status();
 
   m.CreateIntegrationCells( 0, false );
-  m.RemoveEmptyVolumeCells();
+  //m.RemoveEmptyVolumeCells();
 
 #ifdef DEBUGCUTLIBRARY
   //m.TestVolumeSurface();
