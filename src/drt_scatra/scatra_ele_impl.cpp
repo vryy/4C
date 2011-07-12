@@ -2702,6 +2702,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
       // various parameter computations for case without dt:
       // relating convective to viscous part
+      if (diffus < EPS14) dserror("Invalid diffusion coefficent");
       const double epe = mk * densnp_[k] * vel_norm * h / diffus;
       // relating viscous to reactive part
       const double epe1 = 2.0*diffus/(mk*densnp_[k]*sigma_tot*DSQR(h));
@@ -2768,6 +2769,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
       // various parameter computations for case without dt:
       // relating convective to viscous part
+      if (diffus < EPS14) dserror("Invalid diffusion coefficent");
       const double epe = mk * densnp_[k] * vel_norm * h / diffus;
       // relating viscous to reactive part
       double epe1 = 0.0;
@@ -2906,6 +2908,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       else
         vel_norm = velint_.Norm2();
 
+      if (diffus < EPS14) dserror("Invalid diffusion coefficent");
       double epe = 0.5 * densnp_[k] * vel_norm * h / diffus;
 
       const double pp = exp(epe);
