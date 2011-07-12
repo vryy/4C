@@ -65,8 +65,8 @@ ALPHA_F          0.666666666666667
 GAMMA            0.666666666666667
 VELOCITYFIELD    function
 VELFUNCNO        1
-INITIALFIELD     field_by_function
-INITFUNCNO       2
+INITIALFIELD     field_by_condition // test this option! //field_by_function
+//INITFUNCNO       2
 FSSUGRDIFF       No
 WRITEFLUX        No
 MATID            4
@@ -74,7 +74,7 @@ INITPOTCALC      no
 SKIPINITDER      No
 BLOCKPRECOND     No // Krylov space projection works only with one CrsMatrix
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
-//DEFINITION_TAU          Zero
+DEFINITION_TAU          Franca_Valentin //(for binary electrolyte solution!)
 --------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 CONVTOL          1.0e-7
 ITEMAX           7
@@ -295,6 +295,10 @@ DLINE  0
 DVOL 1
 // ensure that integral of electric potential in domain is equal the initial integral value of 0.5
 E 1 - scatra 0.0 0.0 0.0 1.0 0.0 0.0 integration
+-------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
+DVOL 1
+E 1 - ScaTra 2  // set initial fields as defined by FUNCT 2
+// surface 1 equals the whole computational domain!
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
