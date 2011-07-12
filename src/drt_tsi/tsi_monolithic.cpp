@@ -1413,7 +1413,7 @@ void TSI::Monolithic::ApplyThermContact(Teuchos::RCP<LINALG::SparseMatrix>& k_ts
   // convert maps (from structure discretization to thermo discretization)
   RCP<Epetra_Map> sdofs,adofs,idofs,mdofs,amdofs,ndofs,smdofs;
   RCP<Epetra_Map> thermoprobrowmap = rcp(new Epetra_Map(*(ThermoField().Discretization()->DofRowMap(0))));
-  ConvertMaps(sdofs,adofs,mdofs);
+  thermcontman_->ConvertMaps(sdofs,adofs,mdofs);
   smdofs = LINALG::MergeMap(sdofs,mdofs,false);
   ndofs = LINALG::SplitMap(*(ThermoField().Discretization()->DofRowMap(0)),*smdofs);
 
@@ -1421,7 +1421,7 @@ void TSI::Monolithic::ApplyThermContact(Teuchos::RCP<LINALG::SparseMatrix>& k_ts
   // structural mortar matrices, converted to thermal dofs
   RCP<LINALG::SparseMatrix> dmatrix = rcp(new LINALG::SparseMatrix(*sdofs,10));
   RCP<LINALG::SparseMatrix> mmatrix = rcp(new LINALG::SparseMatrix(*sdofs,100));
-  TransformDM(*dmatrix,*mmatrix,sdofs,mdofs);
+  thermcontman_->TransformDM(*dmatrix,*mmatrix,sdofs,mdofs);
   
   // FillComplete() global Mortar matrices
   dmatrix->Complete();
@@ -1575,7 +1575,7 @@ void TSI::Monolithic::RecoverStructThermLM()
   // FIXGIT: this should be done before
   // for structural LM, this is done in within the structural field
   RCP<Epetra_Map> sthermdofs,athermdofs,mthermdofs;
-  ConvertMaps (sthermdofs,athermdofs,mthermdofs);
+  thermcontman_->ConvertMaps (sthermdofs,athermdofs,mthermdofs);
   
   thermcontman_->InitializeThermLM(sthermdofs);
  
@@ -1667,7 +1667,7 @@ void TSI::Monolithic::RecoverStructThermLM()
   
   // necessary maps
   RCP<Epetra_Map> sdofstherm,adofstherm,idofstherm,mdofstherm;
-  ConvertMaps(sdofstherm,adofstherm,mdofstherm);
+  thermcontman_->ConvertMaps(sdofstherm,adofstherm,mdofstherm);
   idofstherm = LINALG::SplitMap(*sdofstherm,*adofstherm);
 
   // multiplication
@@ -1763,7 +1763,7 @@ void TSI::Monolithic::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
         double val = lm*(scolcurr->second); 
         ++scolcurr;
 
-        if (abs(val)>1.0e-12) lindglobal.FEAssemble(val,row,col);
+        if (abs(val)>1.0e-12) lindglobal.FEAssemble(-val,row,col);
       }
 
         // check for completeness of DerivD-Derivatives-iteration
@@ -1806,7 +1806,7 @@ void TSI::Monolithic::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
         // might not own the corresponding rows in lindglobal (DISP slave node)
         // (FE_MATRIX automatically takes care of non-local assembly inside!!!)
         //cout << "Assemble LinM: " << row << " " << col << " " << val << endl;
-        if (abs(val)>1.0e-12) linmglobal.FEAssemble(-val,row,col);
+        if (abs(val)>1.0e-12) linmglobal.FEAssemble(val,row,col);
       }
 
       // check for completeness of DerivM-Derivatives-iteration
@@ -1963,264 +1963,6 @@ void TSI::Monolithic::AssembleThermContCondition(LINALG::SparseMatrix& lindisglo
       dserror("ERROR: AssembleThermContCondition: Not all master entries of DerivM considered!");
     /******************************** Finished with LinMMatrix **********/
   }
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | convert maps form structure dofs to thermo dofs            mgit 04/10 |
- *----------------------------------------------------------------------*/
-void TSI::Monolithic::ConvertMaps(RCP<Epetra_Map>& slavedofs,
-                                  RCP<Epetra_Map>& activedofs,
-                                  RCP<Epetra_Map>& masterdofs)
-{
-
-  // stactic cast of mortar strategy to contact strategy
-  MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
-
-  // get vector of contact interfaces
-  vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
-
-  // this currently works only for one interface yet
-  if (interface.size()>1)
-    dserror("Error in TSI::Algorithm::ConvertMaps: Only for one interface yet.");
-
-  // loop over all interfaces
-  for (int m=0; m<(int)interface.size(); ++m)
-  {
-    // slave nodes/dofs
-    const RCP<Epetra_Map> slavenodes = interface[m]->SlaveRowNodes();
-
-    // define local variables
-    int slavecountnodes = 0;
-    vector<int> myslavegids(slavenodes->NumMyElements());
-
-    // loop over all slave nodes of the interface
-    for (int i=0;i<slavenodes->NumMyElements();++i)
-    {
-      int gid = slavenodes->GID(i);
-      DRT::Node* node = StructureField().Discretization()->gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(node);
-
-      if (cnode->Owner() != Comm().MyPID())
-        dserror("ERROR: ConvertMaps: Node ownership inconsistency!");
-
-      myslavegids[slavecountnodes] = (StructureField().Discretization()->Dof(1,node))[0];
-      ++slavecountnodes;
-    }
-
-    // resize the temporary vectors
-    myslavegids.resize(slavecountnodes);
-
-    // communicate countnodes, countdofs, countslipnodes and countslipdofs among procs
-    int gslavecountnodes;
-    Comm().SumAll(&slavecountnodes,&gslavecountnodes,1);
-
-    // create active node map and active dof map
-    slavedofs = rcp(new Epetra_Map(gslavecountnodes,slavecountnodes,&myslavegids[0],0,Comm()));
-
-    // active nodes/dofs
-    const RCP<Epetra_Map> activenodes = interface[m]->ActiveNodes();
-
-    // define local variables
-    int countnodes = 0;
-    vector<int> mynodegids(activenodes->NumMyElements());
-
-    // loop over all active nodes of the interface
-    for (int i=0;i<activenodes->NumMyElements();++i)
-    {
-      int gid = activenodes->GID(i);
-      DRT::Node* node = StructureField().Discretization()->gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(node);
-
-      if (cnode->Owner() != Comm().MyPID())
-        dserror("ERROR: ConvertMaps: Node ownership inconsistency!");
-
-      mynodegids[countnodes] = (StructureField().Discretization()->Dof(1,node))[0];
-      ++countnodes;
-    }
-
-    // resize the temporary vectors
-    mynodegids.resize(countnodes);
-
-    // communicate countnodes, countdofs, countslipnodes and countslipdofs among procs
-    int gcountnodes;
-    Comm().SumAll(&countnodes,&gcountnodes,1);
-
-    // create active node map and active dof map
-    activedofs = rcp(new Epetra_Map(gcountnodes,countnodes,&mynodegids[0],0,Comm()));
-
-    // master nodes/dofs
-    const RCP<Epetra_Map> masternodes = interface[m]->MasterRowNodes();
-
-    // define local variables
-    int mastercountnodes = 0;
-    vector<int> mymastergids(masternodes->NumMyElements());
-
-    // loop over all active nodes of the interface
-    for (int i=0;i<masternodes->NumMyElements();++i)
-    {
-      int gid = masternodes->GID(i);
-      DRT::Node* node = StructureField().Discretization()->gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-      CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(node);
-
-      if (cnode->Owner() != Comm().MyPID())
-        dserror("ERROR: ConvertMaps: Node ownership inconsistency!");
-
-      mymastergids[mastercountnodes] = (StructureField().Discretization()->Dof(1,node))[0];
-      ++mastercountnodes;
-    }
-
-    // resize the temporary vectors
-    mymastergids.resize(mastercountnodes);
-
-    // communicate countnodes, countdofs, countslipnodes and countslipdofs among procs
-    int gmastercountnodes;
-    Comm().SumAll(&mastercountnodes,&gmastercountnodes,1);
-
-    // create active node map and active dof map
-    masterdofs = rcp(new Epetra_Map(gmastercountnodes,mastercountnodes,&mymastergids[0],0,Comm()));
-  }
-  
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | transform mortar matrices in thermo dofs                   mgit 04/10 |
- *----------------------------------------------------------------------*/
-void TSI::Monolithic::TransformDM(LINALG::SparseMatrix& dmatrix,
-                      LINALG::SparseMatrix& mmatrix,
-                      RCP<Epetra_Map>& slavedofs,
-                      RCP<Epetra_Map>& masterdofs)
-{
-  // static cast of mortar strategy to contact strategy
-  MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
-  CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
-
-  // dimension of the problem
-  int dim = cstrategy.Dim();
-  if (dim==2)
-    dserror("In THR::TimIntImpl::TransformDM: Thermal problems only in 3D so far");
-  
-  int myrow;
-  int numentries;
-  
-  /****************************************************** D-matrix ******/
-  
-  // mortar matrix D in structural dofs 
-  RCP<Epetra_CrsMatrix> dstruct = (cstrategy.DMatrix())->EpetraMatrix();
-  
-  // row and column map of mortar matrices
-  const Epetra_Map& rowmap = dstruct->RowMap();
-  const Epetra_Map& colmap = dstruct->ColMap();
-  
-  // set of every dim-th dof (row map)
-  std::set<int> rowsetred;
-  for (myrow=0; myrow<dstruct->NumMyRows(); myrow=myrow+dim)
-    rowsetred.insert(rowmap.GID(myrow));
-  
-  // map of every dim-th dof (row map)
-  RCP<Epetra_Map> rowmapred = LINALG::CreateMap(rowsetred,Comm());
-  
-  // mortar matrices in reduced structural dofs
-  // this means no loss of information
-  RCP<LINALG::SparseMatrix> dstructred = rcp(new LINALG::SparseMatrix(*rowmapred,10)) ;
-
-  // loop over all rows of mortar matrix D 
-  for (myrow=0; myrow<dstruct->NumMyRows(); myrow=myrow+dim)
-  {
-    double *Values;
-    int *Indices;
-
-    int err = dstruct->ExtractMyRowView(myrow, numentries, Values, Indices);
-    if (err)
-      dserror("ExtractMyRowView failed: err=%d", err);
-
-     // row
-     int row = rowmap.GID(myrow);
-    
-    // loop over entries of the row 
-    for (int i=0;i<numentries; ++i)
-    {
-      // col and val
-      int col  = colmap.GID(Indices[i]);
-      double  val = Values[i];
-      
-      // assembly
-      dstructred->Assemble(val,row,col); 
-    }
-  }
-  
-  // complete the matrix
-  dstructred->Complete();
-  
-  // transform reduced structural D matrix in thermo dofs
-  dmatrix=*(MORTAR::MatrixRowColTransformGIDs(dstructred,slavedofs,slavedofs));
-
-  /****************************************************** M-matrix ******/
-  
-  // mortar matrix M in structural dofs 
-  RCP<Epetra_CrsMatrix> mstruct = (cstrategy.MMatrix())->EpetraMatrix();
-  
-  // row and column map of mortar matrix M
-  const Epetra_Map& rowmapm = mstruct->RowMap();
-  const Epetra_Map& colmapm = mstruct->ColMap();
-  const Epetra_Map& domainmapm = mstruct->DomainMap();
-  
-  // set of every dim-th dof (row map)
-  rowsetred.clear();
-  for (myrow=0; myrow<mstruct->NumMyRows(); myrow=myrow+dim)
-    rowsetred.insert(rowmapm.GID(myrow));
-
-  // set of every dim-th dof (domain map)
-  std::set<int> domainsetred;
-    for (int mycol=0; mycol<domainmapm.NumMyElements(); mycol=mycol+dim)
-      domainsetred.insert(domainmapm.GID(mycol));
-    
-  // map of every dim-th dof (row map)
-  rowmapred = LINALG::CreateMap(rowsetred,Comm());
-  
-  // map of every dim-th dof (domain map)
-  RCP<Epetra_Map> domainmapred = LINALG::CreateMap(domainsetred,Comm());
-  
-  // mortar matrix M in reduced structural dofs
-  // this means no loss of information
-  RCP<LINALG::SparseMatrix> mstructred = rcp(new LINALG::SparseMatrix(*rowmapred,100)) ;
-
-  // loop over all rows of mortar matrix M 
-  for (myrow=0; myrow<mstruct->NumMyRows(); myrow=myrow+dim)
-  {
-    double *Values;
-    int *Indices;
-
-    int err = mstruct->ExtractMyRowView(myrow, numentries, Values, Indices);
-    if (err)
-      dserror("ExtractMyRowView failed: err=%d", err);
-
-     // row
-     int row = rowmapm.GID(myrow);
-     
-    // loop over entries of the row 
-    for (int i=0;i<numentries; ++i)
-    {
-      // col and val
-      int col  = colmapm.GID(Indices[i]);
-      double  val = Values[i];
-      
-      // assembly
-      mstructred->Assemble(val,row,col); 
-    }
-  }
-  
-  // complete the matrix
-  mstructred->Complete(*domainmapred,*rowmapred);
-  
-  // transform reduced structural M matrix in thermo dofs
-  mmatrix=*(MORTAR::MatrixRowColTransformGIDs(mstructred,slavedofs,masterdofs));
-
   return;
 }
 

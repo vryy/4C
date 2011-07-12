@@ -294,21 +294,6 @@ namespace TSI
     // plus takes into account the dependence on off diagonal blocks
     void RecoverStructThermLM();
 
-    // convert maps form structure discretization to thermo discretization
-    // FIXGIT (this is twice)
-    void ConvertMaps(RCP<Epetra_Map>& slavedofs,
-                     RCP<Epetra_Map>& activedofs,
-                     RCP<Epetra_Map>& masterdofs);
-    
-    //! transform mortar matrices from structure dofs in thermo dofs
-    // This needs
-    // 1. Reduction of mortar matrices
-    // 2. Transformation into thermo dofs
-    // FIXGIT (this is twice)
-    void TransformDM(LINALG::SparseMatrix& dmatrix,
-                     LINALG::SparseMatrix& mmatrix,
-                     RCP<Epetra_Map>& slavedofs,
-                     RCP<Epetra_Map>& masterdofs);
     //@}
 
     //! @name General purpose algorithm members

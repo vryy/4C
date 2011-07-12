@@ -768,6 +768,11 @@ void THR::ThermoContactMan::TransformDM(LINALG::SparseMatrix& dmatrix,
   
   // transform reduced structural D matrix in thermo dofs
   dmatrix=*(MORTAR::MatrixRowColTransformGIDs(dstructred,slavedofs,slavedofs));
+  
+//  dmatrix.Assemble(2.866034e-02,792,792); 
+//  dmatrix.Assemble(2.866034e-02,810,810); 
+//  dmatrix.Assemble(2.866034e-02,834,834); 
+//  dmatrix.Assemble(2.866034e-02,843,843); 
 
   /****************************************************** M-matrix ******/
   
@@ -829,6 +834,43 @@ void THR::ThermoContactMan::TransformDM(LINALG::SparseMatrix& dmatrix,
   
   // transform reduced structural M matrix in thermo dofs
   mmatrix=*(MORTAR::MatrixRowColTransformGIDs(mstructred,slavedofs,masterdofs));
+  
+//  mmatrix.Assemble(4.597135e-03,792,           851);            
+//  mmatrix.Assemble(8.293508e-03,792,           863);            
+//  mmatrix.Assemble(-1.410774e-03,792,           871);          
+//  mmatrix.Assemble(8.293508e-03, 792,           903);           
+//  mmatrix.Assemble( 1.495921e-02,792,           909 );           
+//  mmatrix.Assemble(-2.547689e-03,792,           913  );        
+//  mmatrix.Assemble(-1.410774e-03,792,           931   );        
+//  mmatrix.Assemble(-2.547689e-03,792,           937    );       
+//  mmatrix.Assemble(4.339013e-04, 792,           941     );       
+//  mmatrix.Assemble(-1.410774e-03,810,           871    );       
+//  mmatrix.Assemble(8.293508e-03, 810,           879   );        
+//  mmatrix.Assemble(4.597135e-03,  810,           887   );         
+//  mmatrix.Assemble(-2.547689e-03, 810,           913   );        
+//  mmatrix.Assemble( 1.495921e-02, 810,           917   );        
+//  mmatrix.Assemble( 8.293508e-03, 810,           921   );         
+//  mmatrix.Assemble(4.339013e-04,  810,           941   );         
+//  mmatrix.Assemble(-2.547689e-03, 810,           945   );        
+//  mmatrix.Assemble(-1.410774e-03, 810,           949   );        
+//  mmatrix.Assemble(-1.410774e-03, 834,           931   );        
+//  mmatrix.Assemble(-2.547689e-03, 834,           937   );        
+//  mmatrix.Assemble( 4.339013e-04, 834,           941   );        
+//  mmatrix.Assemble( 8.293508e-03, 834,           959   );        
+//  mmatrix.Assemble( 1.495921e-02, 834,           965   );         
+//  mmatrix.Assemble(-2.547689e-03, 834,           969   );        
+//  mmatrix.Assemble( 4.597135e-03, 834,           987   );         
+//  mmatrix.Assemble( 8.293508e-03, 834,           993   );         
+//  mmatrix.Assemble(-1.410774e-03,  834,           997   );        
+//  mmatrix.Assemble( 4.339013e-04, 843,           941   );        
+//  mmatrix.Assemble( -2.547689e-03, 843,           945   );        
+//  mmatrix.Assemble( -1.410774e-03, 843,           949  );         
+//  mmatrix.Assemble( -2.547689e-03, 843,           969  );         
+//  mmatrix.Assemble( 1.495921e-02,  843,           973  );          
+//  mmatrix.Assemble( 8.293508e-03,  843,           977  );         
+//  mmatrix.Assemble( -1.410774e-03, 843,           997  );         
+//  mmatrix.Assemble( 8.293508e-03, 843,          1001  );         
+//  mmatrix.Assemble( 4.597135e-03,  843,          1005  );          
 
   return;
 }
@@ -1208,6 +1250,24 @@ void THR::ThermoContactMan::AssembleThermContCondition(LINALG::SparseMatrix& the
   RCP <Epetra_Vector> MdotTemp = rcp(new Epetra_Vector(*activedofs));
   mmatrix.Multiply(false,*fm,*MdotTemp);
   thermcontRHS.Update(+beta,*MdotTemp,1.0);
+  
+//  // loop over active dofs
+//  for (int i=0; i<cstrategy.ActiveRowNodes()->NumMyElements(); ++i)
+//  {
+//    int gid = cstrategy.ActiveRowNodes()->GID(i);
+//    //cout << "GID " << gid << endl;
+//    
+//     DRT::Node* node = discretstruct_->gNode(gid);
+//     
+//     int row = (discretstruct_->Dof(1,node))[0];
+//     
+//     //cout << "ROW " << row << endl;
+//     
+//     int locid = (fa->Map()).LID(row);
+//   
+//     thermcontRHS[locid] = (-1)*(*fa)[locid]+5;
+//     thermcontTEMP.Assemble(-1,row,row);
+//  }
 
   // add mechanical dissipation only in the frictional case
   if (cmtman_->GetStrategy().Friction())
@@ -1328,7 +1388,7 @@ void THR::ThermoContactMan::RecoverThermLM(RCP<Epetra_Vector> tempi)
     /**********************************************************************/
 
     // full update
-    z_->Update(1.0,*fs_,0.0);
+    z_->Update(-1.0,*fs_,0.0);
     RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*sdofs));
     kss_->Multiply(false,*tempis,*mod);
     z_->Update(-1.0,*mod,1.0);
