@@ -2589,7 +2589,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PrepareMultifractalSubgrScales(
         velino(0,0) = 1.0;
       }
       LINALG::Matrix<nen_,1> tmp;
-      tmp.MultiplyTN(derxy,velino);
+      tmp.MultiplyTN(derxy_,velino);
       const double val = tmp.Norm1();
       hk = 2.0/val;
 #endif
@@ -2615,7 +2615,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PrepareMultifractalSubgrScales(
     double strainnorm = GetNormStrain(evelaf,derxy_,vderxy_);
     Re_ele = strainnorm * hk * hk * densaf_ / visc_;
 #endif
-    if (Re_ele == -1.0)
+    if (Re_ele < 0.0)
       dserror("Set velocity for Re-dependent N!");
 
     if (Re_ele < 1.0)

@@ -126,22 +126,22 @@ Maintainer: Ursula Rasthofer
 #define RE_ELE
 //> set reference length for Reynolds-number
 //> stream length
-//#define STREAM_LENGTH
+#define STREAM_LENGTH
 //> volume equivalent diameter
 //#define VOLUME_EQ_DIA
 //> length of cube with same volume
-#define CUBIC_LENGTH
+//#define CUBIC_LENGTH
 //> set reference velocity
 //> use resolved velocity at element center
 //#define RESOLVED_VEL
 //> use fine-scale velocity at element center
-//#define FINESCALE_VEL
+#define FINESCALE_VEL
 //> scale element Reynolds-number
 //#define FINESCALE_VEL_SCALED
 //> factor for scaling
 //#define FAC 0.75
 //> use strain rate
-#define STRAINRATE
+//#define STRAINRATE
 //> set N equal to zero if N < Tol
 //#define CLIPPING
 //#define TOL 1.0

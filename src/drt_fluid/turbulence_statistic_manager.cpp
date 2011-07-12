@@ -928,7 +928,7 @@ namespace FLD
       }
 
       if (discret_->Comm().MyPID()==0 && outputformat != do_not_write )
-        std::cout << "---  writing statistics record ... " << std::flush;
+        std::cout << "---  statistics record: \n" << std::flush;
 
       // do actual output (time averaging)
       switch(flow_)
@@ -1041,8 +1041,17 @@ namespace FLD
       }
       }
 
-      if (discret_->Comm().MyPID()==0 && outputformat != do_not_write )
-        std::cout << "done" << std::endl;
+//      if (discret_->Comm().MyPID()==0 && outputformat != do_not_write )
+//        std::cout << "done" << std::endl;
+
+      if(discret_->Comm().MyPID()==0 && outputformat != do_not_write)
+      {
+        cout << "XXXXXXXXXXXXXXXXXXXXX              ";
+        cout << "wrote statistics record            ";
+        cout << "XXXXXXXXXXXXXXXXXXXXX";
+        cout << "\n\n";
+      }
+
 
       // dump general mean value output in combination with a restart/output
       // don't write output if turbulent inflow is computed
@@ -1054,12 +1063,12 @@ namespace FLD
         if(step%upres == 0 || (uprestart > 0 && step%uprestart == 0) )
         {
           if (discret_->Comm().MyPID()==0)
-            std::cout << "---  writing averaged vector ... " << std::flush;
+            std::cout << "---  averaged vector: \n" << std::flush;
 
           statistics_general_mean_->WriteOldAverageVec(output);
 
-          if (discret_->Comm().MyPID()==0)
-            std::cout << "done" << std::endl;
+//          if (discret_->Comm().MyPID()==0)
+//            std::cout << "done" << std::endl;
         }
       }
     } // end step is in sampling period
