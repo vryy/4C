@@ -1832,46 +1832,21 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
   }
   case INPAR::SCATRA::initfield_field_by_condition:
   {
-    // access the initial field condition
-    vector<DRT::Condition*> cond;
-    discret_->GetCondition("InitialField", cond);
+    // set initial field for ALL existing scatra fields
+    const string field = "ScaTra";
+    const int numdofpernode = discret_->NumDof(discret_->lRowNode(0));
+    vector<int> localdofs(numdofpernode);
 
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-    for (unsigned i=0; i<cond.size(); ++i)
+    for (int i = 0; i < numdofpernode; i++)
     {
-      cout<<"Applied InitialField Condition "<<i<<endl;
-
-      // loop all nodes on the processor
-      for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
-      {
-        // get the processor local node
-        DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
-
-        vector<DRT::Condition*> mycond;
-        lnode->GetCondition("InitialField",mycond);
-
-        if (mycond.size()>0)
-        {
-          // the set of degrees of freedom associated with the node
-          vector<int> nodedofset = discret_->Dof(lnode);
-
-          int numdofs = nodedofset.size();
-          for (int k=0;k< numdofs;++k)
-          {
-            // set 1.0 as initial value if node belongs to condition
-            double phi0 = 1.0;
-            // set initial value
-            const int dofgid = nodedofset[k];
-            int doflid = dofrowmap->LID(dofgid);
-            phin_->ReplaceMyValues(1,&phi0,&doflid);
-            // initialize also the solution vector. These values are a pretty good guess for the
-            // solution after the first time step (much better than starting with a zero vector)
-            phinp_->ReplaceMyValues(1,&phi0,&doflid);
-          }
-        }
-      }
+      localdofs[i] = i;
     }
+    discret_->EvaluateInitialField(field,phin_,localdofs);
+
+    // initialize also the solution vector. These values are a pretty good guess for the
+    // solution after the first time step (much better than starting with a zero vector)
+    phinp_->Update(1.0,*phin_ ,0.0);
+
     break;
   }
   // discontinuous 0-1 field for progress variable in 1-D

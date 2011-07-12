@@ -52,6 +52,7 @@ std::map<string,string> SCATRA::ScatraFluidCloneStrategy::ConditionsToCopy()
   conditions_to_copy.insert(pair<string,string>("KrylovSpaceProjection","KrylovSpaceProjection"));
   conditions_to_copy.insert(pair<string,string>("ElectrodeKinetics","ElectrodeKinetics"));
   conditions_to_copy.insert(pair<string,string>("ScaTraFluxCalc","ScaTraFluxCalc"));
+  conditions_to_copy.insert(pair<string,string>("Initfield","Initfield"));
 
   // for moving boundary problems
   conditions_to_copy.insert(pair<string,string>("FSICoupling","FSICoupling"));

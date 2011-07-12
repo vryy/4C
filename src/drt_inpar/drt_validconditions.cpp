@@ -374,8 +374,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     Teuchos::rcp(
       new StringConditionComponent(
         "Field","Undefined",
-        Teuchos::tuple<std::string>("Undefined","Velocity","Pressure","Temperature"),
-        Teuchos::tuple<std::string>("Undefined","Velocity","Pressure","Temperature"))));
+        Teuchos::tuple<std::string>("Undefined","Velocity","Pressure","Temperature","ScaTra"),
+        Teuchos::tuple<std::string>("Undefined","Velocity","Pressure","Temperature","ScaTra"))));
 
   // give function id - always one single integer
   // (for initial vector fields, use the COMPONENT option of our functions)

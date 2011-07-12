@@ -1650,6 +1650,7 @@ void DRT::Discretization::EvaluateInitialField(
   if (fieldstring=="Velocity" && (int)locids.size()!=3) invalid = true;
   if (fieldstring=="Pressure" && (int)locids.size()!=1) invalid = true;
   if (fieldstring=="Temperature" && (int)locids.size()!=1) invalid = true;
+  if (fieldstring=="ScaTra" && ((int)locids.size()!=NumDof(lRowNode(0)))) invalid = true;
   if (invalid) dserror("ERROR: Invalid input to EvaluateInitialField().");
 
   // get initial field conditions
