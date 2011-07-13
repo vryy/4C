@@ -5,14 +5,6 @@
  *      Author: wiesner
  */
 
-
-/*
- * solver_krylovsolver.cpp
- *
- *  Created on: Jul 4, 2011
- *      Author: wiesner
- */
-
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_CrsMatrix.h>
@@ -27,6 +19,7 @@ LINALG::SOLVER::AztecSolver::AztecSolver( const Epetra_Comm & comm,
                                             FILE * outfile )
   : KrylovSolver(comm,params,outfile)
 {
+  ncall_ = 0;
 }
 
 //----------------------------------------------------------------------------------
@@ -141,23 +134,23 @@ void LINALG::SOLVER::AztecSolver::Solve()
     Epetra_Vector*   rhs = static_cast<Epetra_Vector*>(aztec.GetProblem()->GetRHS());
     Epetra_Vector*   lhs = static_cast<Epetra_Vector*>(aztec.GetProblem()->GetLHS());
     // max iterations
-    aztest_maxiter_ = rcp(new AztecOO_StatusTestMaxIters(iter));
+    aztest_maxiter_ = Teuchos::rcp(new AztecOO_StatusTestMaxIters(iter));
     // L2 norm
-    aztest_norm2_ = rcp(new AztecOO_StatusTestResNorm(*op,*lhs,*rhs,tol));
+    aztest_norm2_ = Teuchos::rcp(new AztecOO_StatusTestResNorm(*op,*lhs,*rhs,tol));
     aztest_norm2_->DefineResForm(AztecOO_StatusTestResNorm::Implicit,
                                  AztecOO_StatusTestResNorm::TwoNorm);
     aztest_norm2_->DefineScaleForm(AztecOO_StatusTestResNorm::NormOfInitRes,
                                    AztecOO_StatusTestResNorm::TwoNorm);
     // Linf norm (demanded to be 1.0 times L2-norm now, to become an input parameter?)
-    aztest_norminf_ = rcp(new AztecOO_StatusTestResNorm(*op,*lhs,*rhs,1.0*tol));
+    aztest_norminf_ = Teuchos::rcp(new AztecOO_StatusTestResNorm(*op,*lhs,*rhs,1.0*tol));
     aztest_norminf_->DefineResForm(AztecOO_StatusTestResNorm::Implicit,
                                    AztecOO_StatusTestResNorm::InfNorm);
     aztest_norminf_->DefineScaleForm(AztecOO_StatusTestResNorm::NormOfInitRes,
                                      AztecOO_StatusTestResNorm::InfNorm);
     // L2 AND Linf
-    aztest_combo1_ = rcp(new AztecOO_StatusTestCombo(AztecOO_StatusTestCombo::SEQ));
+    aztest_combo1_ = Teuchos::rcp(new AztecOO_StatusTestCombo(AztecOO_StatusTestCombo::SEQ));
     // maxiters OR (L2 AND Linf)
-    aztest_combo2_ = rcp(new AztecOO_StatusTestCombo(AztecOO_StatusTestCombo::OR));
+    aztest_combo2_ = Teuchos::rcp(new AztecOO_StatusTestCombo(AztecOO_StatusTestCombo::OR));
     aztest_combo1_->AddStatusTest(*aztest_norm2_);
     aztest_combo1_->AddStatusTest(*aztest_norminf_);
     aztest_combo2_->AddStatusTest(*aztest_maxiter_);
