@@ -1011,15 +1011,108 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   conditions_to_copy.push_back("XFEMCoupling");
   boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(embdis, "XFEMCoupling", "boundary", "BELE3", conditions_to_copy);
 
-  if (boundarydis_->NumGlobalNodes() == 0)
+  // delete the elements with the same coordinates if they are any
+  map<int, std::vector<double> > eleIdToNodeCoord;
+  for (int iele=0; iele< boundarydis_->NumMyColElements(); ++iele)
   {
-    std::cout << "Empty XFEM-boundary discretization detected!\n";
+    DRT::Element* ele = boundarydis_->lColElement(iele);
+    const DRT::Node*const* elenodes = ele->Nodes();
+    std::vector<double> nodeCoords;
+    for (int inode=0; inode<ele->NumNode(); ++inode)
+    {
+      nodeCoords.push_back(elenodes[inode]->X()[0]);
+      nodeCoords.push_back(elenodes[inode]->X()[1]);
+      nodeCoords.push_back(elenodes[inode]->X()[2]);
+    }
+    eleIdToNodeCoord[ele->Id()]=nodeCoords;
   }
 
-  RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentDofSet(embdis));
-  boundarydis_->ReplaceDofSet(newdofset);
-  boundarydis_->FillComplete();
+  cout << "Number of boundarydis elements: " << boundarydis_->NumMyRowElements()  << ", Number of nodes: "<< boundarydis_->NumMyRowNodes()<< endl;
 
+  for ( std::map<int, std::vector<double> >::const_iterator iter=eleIdToNodeCoord.begin();
+            iter!=eleIdToNodeCoord.end(); ++iter)
+  {
+    int id1 = iter->first;
+    std::vector<double> corditer1 = iter->second;
+    for ( std::map<int, std::vector<double> >::const_iterator iter2=eleIdToNodeCoord.begin();
+          iter2!=eleIdToNodeCoord.end(); ++iter2)
+    {
+      int id2 = iter2->first;
+      std::vector<double> corditer2 = iter2->second;
+      double sub = 0.0;
+      int count = 0;
+      for (int c=0; c<corditer1.size(); ++c)
+      {
+        sub = (corditer1.at(c)-corditer2.at(c));
+        if (sub != 0.0)
+          continue;
+        else if (sub == 0.0)
+          count++;
+      }
+      if ((id1 < id2) and (count ==corditer1.size()))
+      {
+        // duplicates!!!
+        boundarydis_->DeleteElement(id2);
+        eleIdToNodeCoord.erase(id2);
+      }
+    }
+  }
+
+  // do we have a 2D-problem?
+  set<double> zCoords;
+  for (int iele=0; iele< bgdis_->NumMyColElements(); ++iele)
+  {
+    DRT::Element* ele = bgdis_->lColElement(iele);
+    const DRT::Node*const* elenodes = ele->Nodes();
+    for (int inode=0; inode<ele->NumNode(); ++inode)
+      zCoords.insert(elenodes[inode]->X()[2]);
+  }
+
+  boundarydis_->FillComplete();
+  bool twoD = false;
+  if (zCoords.size() == 2) twoD = true;
+
+  cout << "Number of boundarydis elements after deleting the duplicates: " << boundarydis_->NumMyRowElements()  << ", Number of nodes: "<< boundarydis_->NumMyRowNodes()<< endl;
+
+  // if we have 2D problem delete the two side elements from the boundarydis
+  if (twoD)
+  {
+    cout << "2D problem! -> Delete the side boundary elements..." << endl;
+    std::set<int> elementstodelete;
+    for (int iele=0; iele< boundarydis_->NumMyColElements(); ++iele)
+    {
+      DRT::Element* ele = boundarydis_->lColElement(iele);
+      std::vector<double> zCoordNodes;
+      const DRT::Node*const* elenodes = ele->Nodes();
+      for (int inode=0; inode<ele->NumNode(); ++inode)
+        zCoordNodes.push_back(elenodes[inode]->X()[2]);
+
+      int count = 0;
+      for (int i=1;i< zCoordNodes.size();++i)
+      {
+        if (zCoordNodes.at(i-1) != zCoordNodes.at(i))
+          continue;
+        else
+          count++;
+      }
+      if ((count+1) == zCoordNodes.size())
+      {
+        // elements with same z-coordinate detected
+        elementstodelete.insert(ele->Id());
+        eleIdToNodeCoord.erase(ele->Id());
+      }
+    }
+
+    // delete elements with same z-coordiante
+    for (std::set<int>::const_iterator iter=elementstodelete.begin();
+         iter!=elementstodelete.end(); ++iter)
+      boundarydis_->DeleteElement(*iter);
+
+    boundarydis_->FillComplete();
+    cout << "Number of boundarydis elements after deleting the sides: " << boundarydis_->NumMyRowElements()  << ", Number of nodes: "<< boundarydis_->NumMyRowNodes()<< endl;
+  }
+
+  //gmsh
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("Fluid_Fluid_Coupling", 1, 0, 0,actdis->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
@@ -1028,6 +1121,15 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
     IO::GMSH::disToStream("embeddedFluid", 0.0, embdis_,gmshfilecontent);
     gmshfilecontent.close();
   }
+
+  if (boundarydis_->NumGlobalNodes() == 0)
+  {
+    std::cout << "Empty XFEM-boundary discretization detected!\n";
+  }
+
+  RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentDofSet(embdis));
+  boundarydis_->ReplaceDofSet(newdofset);
+  boundarydis_->FillComplete();
 
   Epetra_Vector idispcol( *boundarydis_->DofColMap() );
   idispcol.PutScalar( 0. );
@@ -1582,12 +1684,12 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
                  itnum,itemax,ittol,vresnorm,presnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
           printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-          cout << endl;
           if (dynamic_smagorinsky_ or scale_similarity_)
           {
             printf(",tf=%10.3E",dtfilter_);
           }
-          printf(")\n");
+          printf(")");
+          cout << endl;
         }
     }
 
