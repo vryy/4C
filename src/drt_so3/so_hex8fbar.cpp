@@ -72,6 +72,9 @@ void DRT::ELEMENTS::So_hex8fbarType::SetupElementDefinition( std::map<std::strin
     .AddIntVector("HEX8",8)
     .AddNamedInt("MAT")
     .AddNamedString("KINTYP")
+    .AddOptionalNamedDoubleVector("RAD",3)
+    .AddOptionalNamedDoubleVector("AXI",3)
+    .AddOptionalNamedDoubleVector("CIR",3)
     ;
 }
 

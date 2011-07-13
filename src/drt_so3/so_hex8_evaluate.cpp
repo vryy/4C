@@ -578,6 +578,20 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
         comix->SetupHistory(NUMGPT_SOH8);
       }
+      // Reset prestress
+      if (pstype_==INPAR::STR::prestress_mulf)
+      {
+        time_ = 0.0;
+        LINALG::Matrix<3,3> Id(true);
+        Id(0,0) = Id(1,1) = Id(2,2) = 1.0;
+        for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+        {
+          prestress_->MatrixtoStorage(gp,Id,prestress_->FHistory());
+          prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
+        }
+      }
+      if (pstype_==INPAR::STR::prestress_id)
+        dserror("Reset of Inverse Design not yet implemented");
     }
     break;
 

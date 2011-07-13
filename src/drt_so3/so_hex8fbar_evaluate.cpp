@@ -23,6 +23,7 @@ Maintainer: Alexander Popp
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/plasticneohooke.H"
 #include "../drt_mat/growth_ip.H"
+#include "../drt_mat/constraintmixture.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -66,6 +67,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_istep")                    act = So_hex8fbar::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike")                  act = So_hex8fbar::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")                     act = So_hex8fbar::calc_struct_reset_istep;
+  else if (action=="calc_struct_reset_discretization")            act = So_hex8fbar::calc_struct_reset_discretization;
   else if (action=="calc_homog_dens")                             act = So_hex8fbar::calc_homog_dens;
   else if (action=="postprocess_stress")                          act = So_hex8fbar::postprocess_stress;
   else if (action=="multi_readrestart")                           act = So_hex8fbar::multi_readrestart;
@@ -262,6 +264,11 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
         MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
         grow->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
+      {
+        MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
+        comix->Update();
+      }
     }
     break;
 
@@ -279,6 +286,11 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
         MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
         grow->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
+      {
+        MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
+        comix->Update();
+      }
     }
     break;
 
@@ -291,6 +303,47 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
 	MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
 	plastic->Update();
       }
+    }
+    break;
+
+    //==================================================================================
+    case calc_struct_reset_discretization:
+    {
+      // Reset of history for materials
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
+      {
+        MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
+        comix->SetupHistory(NUMGPT_SOH8);
+      }
+      // Reset prestress
+      if (pstype_==INPAR::STR::prestress_mulf)
+      {
+        time_ = 0.0;
+        LINALG::Matrix<3,3> Id(true);
+        Id(0,0) = Id(1,1) = Id(2,2) = 1.0;
+        for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+        {
+          prestress_->MatrixtoStorage(gp,Id,prestress_->FHistory());
+          prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
+        }
+        prestress_->MatrixtoStorage(NUMGPT_SOH8,Id,prestress_->FHistory());
+        LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;
+        for (int i=0; i<NUMNOD_SOH8; ++i)
+        {
+          xrefe(i,0) = Nodes()[i]->X()[0];
+          xrefe(i,1) = Nodes()[i]->X()[1];
+          xrefe(i,2) = Nodes()[i]->X()[2];
+        }
+        LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
+        DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0, 0, 0, hex8);
+        LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
+        invJ_0.Multiply(N_rst_0,xrefe);
+        invJ_0.Invert();
+        prestress_->MatrixtoStorage(NUMGPT_SOH8,invJ_0,prestress_->JHistory());
+      }
+      if (pstype_==INPAR::STR::prestress_id)
+        dserror("Reset of Inverse Design not yet implemented");
     }
     break;
 
@@ -345,9 +398,9 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
         soh8_read_restart_multi(params);
     }
     break;
-    
-    
-    
+
+
+
 
     default:
       dserror("Unknown type of action for So_hex8fbar");
@@ -382,7 +435,7 @@ void DRT::ELEMENTS::So_hex8fbar::InitJacobianMapping()
         prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
 
   }
-  
+
   // init the centroid invJ
   if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
     if (!(prestress_->IsInit()))
@@ -541,7 +594,7 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
     //material derivatives at centroid
     N_XYZ_0.Multiply(invJ_0,N_rst_0);
   }
-  
+
   if (pstype_==INPAR::STR::prestress_mulf)
   {
     // get Jacobian mapping wrt to the stored configuration
@@ -551,14 +604,14 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
     // get derivatives wrt to last spatial configuration
     LINALG::Matrix<3,8> N_xyz_0;
     N_xyz_0.Multiply(invJdef_0,N_rst_0); //if (!Id()) cout << invJdef_0;
-    
+
     // build multiplicative incremental defgrd
     LINALG::Matrix<3,3> defgrd_0(false);
     defgrd_0.MultiplyTT(xdisp,N_xyz_0);
     defgrd_0(0,0) += 1.0;
     defgrd_0(1,1) += 1.0;
     defgrd_0(2,2) += 1.0;
-    
+
     // get stored old incremental F
     LINALG::Matrix<3,3> Fhist;
     prestress_->StoragetoMatrix(NUMGPT_SOH8,Fhist,prestress_->FHistory());
@@ -567,7 +620,7 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
     LINALG::Matrix<3,3> tmp;
     tmp.Multiply(defgrd_0,Fhist);
     defgrd_0 = tmp;
-    
+
     // build inverse and detF
     invdefgrd_0.Invert(defgrd_0);
     detF_0=defgrd_0.Determinant();
@@ -607,7 +660,7 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
       // get derivatives wrt to last spatial configuration
       LINALG::Matrix<3,8> N_xyz;
       N_xyz.Multiply(invJdef,derivs[gp]);
-      
+
       // build multiplicative incremental defgrd
       defgrd.MultiplyTT(xdisp,N_xyz);
       defgrd(0,0) += 1.0;
