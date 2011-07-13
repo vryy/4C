@@ -122,4 +122,5 @@ void LINALG::SOLVER::BelosSolver::Solve()
     std::cout << std::endl << "WARNING: Belos did not converge!" << std::endl;
   }
 
+  ncall_ += 1; // increment counter of solver calls
 }
