@@ -609,6 +609,8 @@ protected:
 
   bool                        selfcontact_;    // flag indicating if this is a self contact interface
   bool                        friction_;       // flag for frictional contact
+  bool                        wear_;           // flag for wear  
+  bool                        tsi_;            // flag for thermo structure interaction
   
   RCP<Epetra_Map>             activenodes_;    // row map of all active slave nodes
   RCP<Epetra_Map>             activedofs_;     // row map of all active slave dofs

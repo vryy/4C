@@ -41,6 +41,7 @@ Maintainer: Markus Gitterle
 
 #include "contact_node.H"
 #include "../drt_lib/drt_parobjectfactory.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 using namespace std;
 using namespace Teuchos;
@@ -135,16 +136,6 @@ public:
   virtual inline bool& Slip() { return slip_; }
   
   /*!
-  \brief Return the old 'A' map (vector) of this node (last converged state)
-  */
-  virtual inline vector<map<int,double> >& GetA() { return arows_; }
-  
-  /*!
-  \brief Return the map with according slave nodes
-  */
-  virtual inline set<int>& GetANodes() { return anodes_; }
-
-  /*!
   \brief Return the old 'D' map (vector) of this node (last converged state)
   */
   virtual inline vector<map<int,double> >& GetDOld() { return drowsold_; }
@@ -188,17 +179,7 @@ public:
   \brief Return old penalty traction (length 3)
   */
   virtual inline double* tractionold() { return tractionold_; }
-  
-  /*!
-  \brief Return the weighted wear per node (length 1)
-   */
-  virtual double& Wear() { return wear_; }
-  
-  /*!
-  \brief Return the delta of the weighted wear per node without wear coefficient (length 1)
-   */
-   virtual double& DeltaWear() { return deltawear_; }
-  
+
   //@}
 
 protected:
@@ -217,22 +198,82 @@ protected:
   set<int>                      mnodes_;       // nodal set of according master nodes
   set<int>                      mnodesold_;    // nodal set of old according masternodes
 
-  vector<map<int,double> >      arows_;        // nodal rows of matrix A
-  set<int>                      anodes_;       // nodal set of according slave nodes
-  
   vector<map<int,double> >      derivjump_;  // directional derivative of nodal weighted jump vector
 
   // penalty related quantities
   double                        traction_[3];     // traction vector of current time step
   double                        tractionold_[3];  // traction vector of previous time step
 
+}; // class FriNodeDataContainer
+
+/*!
+\brief An additional container for wear and tsi with contact specific data
+
+This class contains additional information to the data container of the 
+frictional node. These additional data are needed only for contact 
+problems with wear and thermo-structure-interaction problems with contact.
+
+\author gitterle (gitterle@lnm.mw.tum.de)
+*/
+class FriNodeDataContainerPlus
+{
+public:
+
+  //! @name Constructors and destructors and related methods
+
+  /*!
+  \brief Standard Constructor
+
+  */
+  FriNodeDataContainerPlus();
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~FriNodeDataContainerPlus() { return; }
+
+  //@}
+
+  //! @name Access methods
+
+  /*!
+  \brief Return the old 'A' map (vector) of this node (last converged state)
+  */
+  virtual inline vector<map<int,double> >& GetA() { return arows_; }
+  
+  /*!
+  \brief Return the map with according slave nodes
+  */
+  virtual inline set<int>& GetANodes() { return anodes_; }
+
+  /*!
+  \brief Return the weighted wear per node (length 1)
+   */
+  virtual double& Wear() { return wear_; }
+  
+  /*!
+  \brief Return the delta of the weighted wear per node without wear coefficient (length 1)
+   */
+   virtual double& DeltaWear() { return deltawear_; }
+  
+  //@}
+
+protected:
+
+  // don't want = operator and cctor
+  FriNodeDataContainerPlus operator = (const FriNodeDataContainerPlus& old);
+  FriNodeDataContainerPlus(const FriNodeDataContainerPlus& old);
+
+  // tsi with contact related quantities
+  vector<map<int,double> >      arows_;        // nodal rows of matrix A
+  set<int>                      anodes_;       // nodal set of according slave nodes
+  
   // wear related quantities
   double                        wear_;            // weighted wear
   double                        deltawear_;       // deltawear 
   
-  
-}; // class FriNodeDataContainer
-
+}; // class FriNodeDataContainerPlus
 
 /*!
 \brief A class for a frictional contact node derived from CONTACT::CoNode
@@ -350,6 +391,15 @@ public:
   */
   inline CONTACT::FriNodeDataContainer& FriData() { return *fridata_; }
 
+  /*!
+  \brief Return of additional data container of this node
+
+  This method returns the additional data container of this node where additional
+  tsi and wear specific quantities/information are stored.
+
+  */
+  inline CONTACT::FriNodeDataContainerPlus& FriDataPlus() { return *fridataplus_; }
+  
   //@}
 
   //! @name Evaluation methods
@@ -467,7 +517,8 @@ protected:
   vector<map<int,double> >      brows_;        // nodal rows of matrix A
   set<int>                      bnodes_;       // nodal set of according slave nodes
 
-  RCP<CONTACT::FriNodeDataContainer> fridata_;       // additional information of proc's contact nodes
+  RCP<CONTACT::FriNodeDataContainer>     fridata_;       // additional information of proc's friction nodes
+  RCP<CONTACT::FriNodeDataContainerPlus> fridataplus_;   // additional information to proc's data container
 
 }; // class FriNode
 

@@ -1121,9 +1121,9 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
               double wearcoeff = Params().get<double>("WEARCOEFF", 0.0);
               
               if(DRT::Problem::Instance()->ProblemType()!="structure_ale")
-                frinode->FriData().Wear() += wearcoeff*frinode->FriData().DeltaWear();
+                frinode->FriDataPlus().Wear() += wearcoeff*frinode->FriDataPlus().DeltaWear();
               else
-                frinode->FriData().Wear() = wearcoeff*frinode->FriData().DeltaWear();
+                frinode->FriDataPlus().Wear() = wearcoeff*frinode->FriDataPlus().DeltaWear();
             }
           break;
         }
@@ -1246,7 +1246,7 @@ void CONTACT::CoAbstractStrategy::OutputWear()
 
       for (int j=0;j<3;++j)
         nn[j]=frinode->MoData().n()[j];
-      wear = frinode->FriData().Wear();
+      wear = frinode->FriDataPlus().Wear();
 
       // find indices for DOFs of current node in Epetra_Vector
       // and put node values (normal and tangential stress components) at these DOFs
@@ -1491,7 +1491,7 @@ void CONTACT::CoAbstractStrategy::DoWriteRestart(RCP<Epetra_Vector>& activetoggl
       {
         CONTACT::FriNode* frinode = static_cast<CONTACT::FriNode*>(cnode);
         if (frinode->FriData().Slip()) (*sliptoggle)[dof]=1;
-        if (wear_)  (*weightedwear)[dof] = frinode->FriData().Wear();
+        if (wear_)  (*weightedwear)[dof] = frinode->FriDataPlus().Wear();
       }
     }
   }
@@ -1579,7 +1579,7 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
           // set value stick / slip in cnode
           // set wear value
           if ((*sliptoggle)[dof]==1) static_cast<CONTACT::FriNode*>(cnode)->FriData().Slip()=true;
-          if (wear_) static_cast<CONTACT::FriNode*>(cnode)->FriData().Wear() = (*weightedwear)[dof];
+          if (wear_) static_cast<CONTACT::FriNode*>(cnode)->FriDataPlus().Wear() = (*weightedwear)[dof];
         }
       }
     }
@@ -2122,7 +2122,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
           dserror("Error: Jumpteta should be zero for 2D");
         
         // compute weighted wear
-        if (wear_) wear = frinode->FriData().Wear();
+        if (wear_) wear = frinode->FriDataPlus().Wear();
 
         // store node id
         lnid.push_back(gid);

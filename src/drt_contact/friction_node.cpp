@@ -62,9 +62,7 @@ DRT::ParObject* CONTACT::FriNodeType::Create( const std::vector<char> & data )
  *----------------------------------------------------------------------*/
 CONTACT::FriNodeDataContainer::FriNodeDataContainer():
 activeold_(false),
-slip_(false),
-wear_(0.0),
-deltawear_(0.0)
+slip_(false)
 {
   for (int i=0;i<3;++i)
   {
@@ -173,6 +171,15 @@ void CONTACT::FriNodeDataContainer::Unpack(vector<char>::size_type& position, co
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  ctor (public)                                             mgit 07/11|
+ *----------------------------------------------------------------------*/
+CONTACT::FriNodeDataContainerPlus::FriNodeDataContainerPlus():
+wear_(0.0),
+deltawear_(0.0)
+{
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             mgit 02/10|
@@ -285,6 +292,7 @@ void CONTACT::FriNode::Unpack(const vector<char>& data)
   else
   {
     fridata_ = Teuchos::null;
+    fridataplus_ = Teuchos::null;
   }
 
   if (position != data.size())
@@ -335,7 +343,7 @@ void CONTACT::FriNode::AddANode(int node)
   if (IsOnBound()==true)
     dserror("ERROR: AddANode: function called for boundary node %i", Id());
 
-  FriData().GetANodes().insert(node);
+  FriDataPlus().GetANodes().insert(node);
 
   return;
 }
@@ -392,15 +400,15 @@ void CONTACT::FriNode::AddAValue(int& row, int& col, double& val)
     dserror("ERROR: AddAValue: function called for boundary node %i", Id());
 
   // check if this has been called before
-  if ((int)FriData().GetA().size()==0)
-    FriData().GetA().resize(NumDof());
+  if ((int)FriDataPlus().GetA().size()==0)
+    FriDataPlus().GetA().resize(NumDof());
 
   // check row index input
-  if ((int)FriData().GetA().size()<=row)
+  if ((int)FriDataPlus().GetA().size()<=row)
     dserror("ERROR: AddAValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
-  map<int,double>& amap = FriData().GetA()[row];
+  map<int,double>& amap = FriDataPlus().GetA()[row];
   amap[col] += val;
 
   return;
@@ -486,7 +494,7 @@ void CONTACT::FriNode::StoreTracOld()
 void CONTACT::FriNode::AddDeltaWearValue(double& val)
 {
   // add given value to deltawear_
-  FriData().DeltaWear()+=val;
+  FriDataPlus().DeltaWear()+=val;
 }
 
 /*----------------------------------------------------------------------*
@@ -501,6 +509,14 @@ void CONTACT::FriNode::InitializeDataContainer()
     codata_ =rcp(new CONTACT::CoNodeDataContainer());
     fridata_=rcp(new CONTACT::FriNodeDataContainer());
   }
+  
+  // initialize data container for wear and tsi problems 
+  if (DRT::Problem::Instance()->ProblemType()=="tsi" or 
+     (DRT::Problem::Instance()->MeshtyingAndContactParams()).get<double>("WEARCOEFF")>0.0)
+  {
+     if (fridataplus_==Teuchos::null)
+      fridataplus_=rcp(new CONTACT::FriNodeDataContainerPlus());
+  }
 
   return;
 }
@@ -511,9 +527,10 @@ void CONTACT::FriNode::InitializeDataContainer()
 void CONTACT::FriNode::ResetDataContainer()
 {
   // reset to null
-  fridata_ = Teuchos::null;
-  codata_  = Teuchos::null;
-  modata_  = Teuchos::null;
+  fridata_     = Teuchos::null;
+  fridataplus_ = Teuchos::null; 
+  codata_      = Teuchos::null;
+  modata_      = Teuchos::null;
 
   return;
 }

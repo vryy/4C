@@ -68,13 +68,24 @@ CONTACT::CoInterface::CoInterface(const int id, const Epetra_Comm& comm,
                                   bool redundant) :
 MORTAR::MortarInterface(id,comm,dim,icontact,redundant),
 selfcontact_(selfcontact),
-friction_(false)
+friction_(false),
+wear_(false),
+tsi_(false)
 {
   // set frictional contact status
   INPAR::CONTACT::FrictionType ftype = DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(icontact,"FRICTION");
   if (ftype != INPAR::CONTACT::friction_none)
     friction_ = true;
+  
+  // set wear contact status
+  INPAR::CONTACT::WearType wtype = DRT::INPUT::IntegralValue<INPAR::CONTACT::WearType>(icontact,"WEAR");
+  if (wtype != INPAR::CONTACT::wear_none)
+    wear_ = true;
 
+  // set thermo-structure-interaction with contact  
+  if (DRT::Problem::Instance()->ProblemType()=="tsi")
+    tsi_ = true;
+  
   // check for redundant slave storage
   // (needed for self contact but not wanted for general contact)
   if (selfcontact_ && !redundant)
@@ -675,18 +686,23 @@ void CONTACT::CoInterface::Initialize()
       frinode->FriData().GetSNodes().clear();
       frinode->FriData().GetMNodes().clear();
 
-      // reset matrix A quantities
-      frinode->FriData().GetANodes().clear();
+      if (tsi_)
+      {  
+        // reset matrix A quantities
+        frinode->FriDataPlus().GetANodes().clear();
       
-      // reset nodal A maps
-      for (int j=0;j<(int)((frinode->FriData().GetA()).size());++j)
-        (frinode->FriData().GetA())[j].clear();
+        // reset nodal A maps
+        for (int j=0;j<(int)((frinode->FriDataPlus().GetA()).size());++j)
+          (frinode->FriDataPlus().GetA())[j].clear();
       
-      (frinode->FriData().GetA()).resize(0);
+        (frinode->FriDataPlus().GetA()).resize(0);
+      }  
       
-      // reset wear increment
-      frinode->FriData().DeltaWear() = 0.0;
-      
+      if (wear_)
+      {  
+        // reset wear increment
+        frinode->FriDataPlus().DeltaWear() = 0.0;
+      }
     }
   }
 
@@ -3284,7 +3300,7 @@ void CONTACT::CoInterface::AssembleWear(Epetra_Vector& gglobal)
       dserror("ERROR: AssembleWear: Node ownership inconsistency!");
 
     /**************************************************** w-vector ******/
-    double wear = frinode->FriData().Wear();
+    double wear = frinode->FriDataPlus().Wear();
       
     Epetra_SerialDenseVector wnode(1);
     vector<int> lm(1);
@@ -5544,9 +5560,9 @@ void CONTACT::CoInterface::AssembleA(LINALG::SparseMatrix& aglobal)
       dserror("ERROR: AssembleA: Node ownership inconsistency!");
 
     /**************************************************** A-matrix ******/
-    if ((frinode->FriData().GetA()).size()>0)
+    if ((frinode->FriDataPlus().GetA()).size()>0)
     {
-      vector<map<int,double> > amap = frinode->FriData().GetA();
+      vector<map<int,double> > amap = frinode->FriDataPlus().GetA();
       int rowsize = frinode->NumDof();
       int colsize = (int)amap[0].size();
 
