@@ -466,6 +466,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
     discret.ClearState();
 
+
     // scaling to get true residual vector
     trueresidual_->Update(xfluid_.ResidualScaling(),*residual_,0.0);
 
@@ -967,7 +968,6 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
                      Teuchos::RCP<DRT::Discretization> embdis,
                      LINALG::Solver & solver,
                      const Teuchos::ParameterList & params,
-                               //IO::DiscretizationWriter& output,
                      bool alefluid )
   : bgdis_(actdis),
     embdis_(embdis),
@@ -976,7 +976,6 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
     alefluid_(alefluid),
     time_(0.0),
     step_(0)
-    //output_(output)
 {
   // -------------------------------------------------------------------
   // get the processor ID from the communicator
@@ -1000,12 +999,13 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   emboutput_ = rcp(new IO::DiscretizationWriter(embdis_));
   emboutput_->WriteMesh(0,0.0);
 
+
+  bool twoDFlow = false;
+  if (params_.get<string>("2DFLOW","no") == "yes") twoDFlow = true;
+
   // ensure that degrees of freedom in the discretization have been set
   if ( not bgdis_->Filled() or not actdis->HaveDofs() )
     bgdis_->FillComplete();
-
-  //output_ = rcp(new IO::DiscretizationWriter(bgdis_));
-  //output_->WriteMesh(0,0.0);
 
   std::vector<std::string> conditions_to_copy;
   conditions_to_copy.push_back("XFEMCoupling");
@@ -1027,7 +1027,8 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
     eleIdToNodeCoord[ele->Id()]=nodeCoords;
   }
 
-  cout << "Number of boundarydis elements: " << boundarydis_->NumMyRowElements()  << ", Number of nodes: "<< boundarydis_->NumMyRowNodes()<< endl;
+  cout << "Number of boundarydis elements: " << boundarydis_->NumMyRowElements()  << ", Number of nodes: "
+       << boundarydis_->NumMyRowNodes()<< endl;
 
   for ( std::map<int, std::vector<double> >::const_iterator iter=eleIdToNodeCoord.begin();
             iter!=eleIdToNodeCoord.end(); ++iter)
@@ -1040,8 +1041,8 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
       int id2 = iter2->first;
       std::vector<double> corditer2 = iter2->second;
       double sub = 0.0;
-      int count = 0;
-      for (int c=0; c<corditer1.size(); ++c)
+      unsigned int count = 0;
+      for (size_t c=0; c<corditer1.size(); ++c)
       {
         sub = (corditer1.at(c)-corditer2.at(c));
         if (sub != 0.0)
@@ -1049,7 +1050,7 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
         else if (sub == 0.0)
           count++;
       }
-      if ((id1 < id2) and (count ==corditer1.size()))
+      if ((id1 < id2) and (count == corditer1.size()))
       {
         // duplicates!!!
         boundarydis_->DeleteElement(id2);
@@ -1058,26 +1059,15 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
     }
   }
 
-  // do we have a 2D-problem?
-  set<double> zCoords;
-  for (int iele=0; iele< bgdis_->NumMyColElements(); ++iele)
-  {
-    DRT::Element* ele = bgdis_->lColElement(iele);
-    const DRT::Node*const* elenodes = ele->Nodes();
-    for (int inode=0; inode<ele->NumNode(); ++inode)
-      zCoords.insert(elenodes[inode]->X()[2]);
-  }
+   boundarydis_->FillComplete();
 
-  boundarydis_->FillComplete();
-  bool twoD = false;
-  if (zCoords.size() == 2) twoD = true;
-
-  cout << "Number of boundarydis elements after deleting the duplicates: " << boundarydis_->NumMyRowElements()  << ", Number of nodes: "<< boundarydis_->NumMyRowNodes()<< endl;
+  cout << "Number of boundarydis elements after deleting the duplicates: " << boundarydis_->NumMyRowElements()  <<
+    ", Number of nodes: "<< boundarydis_->NumMyRowNodes()<< endl;
 
   // if we have 2D problem delete the two side elements from the boundarydis
-  if (twoD)
+  if (twoDFlow)
   {
-    cout << "2D problem! -> Delete the side boundary elements..." << endl;
+    cout << "2D problem! -> Delete the side boundary elements if needed..." << endl;
     std::set<int> elementstodelete;
     for (int iele=0; iele< boundarydis_->NumMyColElements(); ++iele)
     {
@@ -1087,8 +1077,8 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
       for (int inode=0; inode<ele->NumNode(); ++inode)
         zCoordNodes.push_back(elenodes[inode]->X()[2]);
 
-      int count = 0;
-      for (int i=1;i< zCoordNodes.size();++i)
+      unsigned int count = 0;
+      for (size_t i=1;i<zCoordNodes.size();++i)
       {
         if (zCoordNodes.at(i-1) != zCoordNodes.at(i))
           continue;
@@ -1109,7 +1099,8 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
       boundarydis_->DeleteElement(*iter);
 
     boundarydis_->FillComplete();
-    cout << "Number of boundarydis elements after deleting the sides: " << boundarydis_->NumMyRowElements()  << ", Number of nodes: "<< boundarydis_->NumMyRowNodes()<< endl;
+    cout << "Number of boundarydis elements after deleting the sides: " << boundarydis_->NumMyRowElements()  <<
+      ", Number of nodes: "<< boundarydis_->NumMyRowNodes()<< endl;
   }
 
   //gmsh
@@ -2244,12 +2235,12 @@ bool FLD::XFluidFluid::ComputeSpacialToElementCoordAndProject(DRT::Element*     
   switch ( pele->Shape() )
   {
     case DRT::Element::hex8:
-
+    {
       const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
       LINALG::Matrix<4,numnodes> veln(true);
       LINALG::Matrix<4,numnodes> dispnm;
 
-      for (std::size_t inode = 0; inode < numnodes; ++inode)
+      for (int inode = 0; inode < numnodes; ++inode)
       {
         embdis_->Dof(pelenodes[inode],0,pgdofs);
         DRT::UTILS::ExtractMyValues(*fluidstate_vector_n,myval,pgdofs);
@@ -2282,7 +2273,7 @@ bool FLD::XFluidFluid::ComputeSpacialToElementCoordAndProject(DRT::Element*     
         DRT::UTILS::shape_function_3D( shp, xsi(0,0), xsi(1,0), xsi(2,0), DRT::Element::hex8 );
 
         // Interpolate
-        for (std::size_t inode = 0; inode < numnodes; ++inode)
+        for (int inode = 0; inode < numnodes; ++inode)
           for (std::size_t isd = 0; isd < 4; ++isd)
           {
             interpolatedvec(isd) += veln(isd,inode)*shp(inode);
@@ -2292,6 +2283,15 @@ bool FLD::XFluidFluid::ComputeSpacialToElementCoordAndProject(DRT::Element*     
       else
         return false;
       break;
+    }
+    case DRT::Element::hex20:
+    case DRT::Element::hex27:
+    {
+      dserror("No support for hex20 and hex27!");
+      break;
+    }
+    default:
+      dserror("Element-type not supported here!");
   }
 }
 // -------------------------------------------------------------------
