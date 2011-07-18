@@ -144,9 +144,7 @@ void ADAPTER::FluidCombust::NonlinearSolve()
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidCombust::Predictor()
 {
-  dserror("not implemented");
-  return;
-  //fluid_.Predictor();
+  fluid_.Predictor();
 }
 
 
@@ -155,9 +153,7 @@ void ADAPTER::FluidCombust::Predictor()
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidCombust::MultiCorrector()
 {
-  dserror("not implemented");
-  return;
-  //fluid_.MultiCorrector();
+  fluid_.MultiCorrector();
 }
 
 

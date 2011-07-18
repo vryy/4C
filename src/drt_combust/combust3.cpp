@@ -314,22 +314,30 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Volumes()
  | constructor                                              henke 04/10 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Combust3::MyState::MyState(
-    const DRT::Discretization&                                 discretization,
-    const std::vector<int>&                                    lm,
-    const bool                                                 instationary,
-    const bool                                                 gradphi,
-    const DRT::ELEMENTS::Combust3*                             ele,
-    const COMBUST::InterfaceHandleCombust*                     ih
+    const DRT::Discretization&             discretization,
+    const std::vector<int>&                lm,
+    const bool                             instationary,
+    const bool                             genalpha,
+    const bool                             gradphi,
+    const DRT::ELEMENTS::Combust3*         ele,
+    const COMBUST::InterfaceHandleCombust* ih
     ) :
       instationary_(instationary),
+      genalpha_(genalpha),
       gradphi_(gradphi)
 {
-  DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),velnp_,lm);
+  if (!genalpha_)
+    DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),velnp_,lm);
   if (instationary_)
   {
     DRT::UTILS::ExtractMyValues(*discretization.GetState("veln") ,veln_ ,lm);
     DRT::UTILS::ExtractMyValues(*discretization.GetState("velnm"),velnm_,lm);
     DRT::UTILS::ExtractMyValues(*discretization.GetState("accn") ,accn_ ,lm);
+    if(genalpha_)
+    {
+      DRT::UTILS::ExtractMyValues(*discretization.GetState("velaf") ,velaf_ ,lm);
+      DRT::UTILS::ExtractMyValues(*discretization.GetState("accam") ,accam_ ,lm);
+    }
   }
 
   // get pointer to vector holding G-function values at the fluid nodes
@@ -357,6 +365,8 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
   {
     // get pointer to vector holding SMOOTHED G-function values at the fluid nodes
     const Teuchos::RCP<Epetra_MultiVector> gradphinp = ih->FlameFront()->GradPhi();
+    // get pointer to vector holding curvature values at the fluid nodes
+    const Teuchos::RCP<Epetra_Vector> curv = ih->FlameFront()->Curvature();
 
     // extract local (element level) G-function values from global vector
     // only if element is intersected; only adjacent nodal values are calculated
@@ -370,6 +380,8 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
       //         - for simplicity the phi gradient is fetched for every element
       if (gradphinp == Teuchos::null) dserror("no gradient of phi has been computed!");
       DRT::UTILS::ExtractMyNodeBasedValues(ele, gradphinp_,*gradphinp);
+      if (curv == Teuchos::null) dserror("no curvature has been computed!");
+      DRT::UTILS::ExtractMyNodeBasedValues(ele, curv_,*curv);
 #ifndef COMBUST_NORMAL_ENRICHMENT
     }
 #endif

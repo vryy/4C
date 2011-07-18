@@ -61,18 +61,23 @@ void SysmatDomainNitsche(
     const M1&                      eveln,        ///< nodal velocity n   values for this element
     const M1&                      evelnm,       ///< nodal velocity n-1 values for this element
     const M1&                      eaccn,        ///< nodal acceleration n values for this element
+    const M1&                      eaccam,       ///< nodal acceleration n values for this element
     const V1&                      eprenp,       ///< nodal pressure n+1 values for this element
     const V2&                      ephi,         ///< nodal G-function values for this element
     Teuchos::RCP<const MAT::Material> material,  ///< fluid material
     const INPAR::FLUID::TimeIntegrationScheme timealgo,     ///< time discretization scheme
     const double                   dt,           ///< delta t (time step size)
     const double                   theta,        ///< parameter for one step theta scheme
+    const double                   ga_alphaF,
+    const double                   ga_alphaM,
+    const double                   ga_gamma,
     const bool                     newton,       ///< full Newton or fixed-point-like
     const bool                     pstab,        ///< turn on/off PSPG stabilization
     const bool                     supg,         ///< turn on/off SUPG stabilization
     const bool                     cstab,        ///< turn on/off BV   stabilization
     const INPAR::FLUID::TauType    tautype,      //< stabilization parameter definition
     const bool                     instationary, ///< switch between stationary and instationary formulation
+    const bool                     genalpha,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
     double&                        ele_meas_plus,      // set measure of element in plus domain
     double&                        ele_meas_minus      // set measure of element in minus domain
@@ -87,7 +92,7 @@ void SysmatDomainNitsche(
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // time integration factor
-  const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
+  const double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
 
   // get node coordinates of this element
   static LINALG::Matrix<nsd,numnode> xyze;
@@ -289,6 +294,10 @@ void SysmatDomainNitsche(
       const LINALG::Matrix<nsd,1> gpveln  = XFEM::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
       const LINALG::Matrix<nsd,1> gpvelnm = XFEM::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
       const LINALG::Matrix<nsd,1> gpaccn  = XFEM::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
+      // get acceleration at n+alpha_m for generalized alpha time integration scheme
+      LINALG::Matrix<3,1> gpaccam(true);
+      if (genalpha)
+        gpaccam  = XFEM::interpolateVectorFieldToIntPoint(eaccam , shp.d0, numparamvelx);
 
       //----------------------------------------------
       // get velocity derivatives at integration point
@@ -370,7 +379,7 @@ void SysmatDomainNitsche(
 
       // time RHS vector from previous time step
       // remark: histvec = \rho^{n}*(u^n + delta t (1-theta) a^n)
-      LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
+      LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT::GetOldPartOfRighthandside(
           gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
       histvec.Scale(densn);
 
@@ -463,15 +472,23 @@ void SysmatDomainNitsche(
 
       // evaluate residual once for all stabilisation right hand sides
       LINALG::Matrix<nsd,1> res_old(true);
-      for (size_t isd = 0; isd < nsd; ++isd)
-        res_old(isd) = -rhsint(isd)+timefac*(densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd));
-
-      if (instationary)
+      if (genalpha)
       {
-        for(size_t isd=0; isd < nsd; ++isd)
-          res_old(isd) += densaf * gpvelnp(isd);
+        for (size_t isd = 0; isd < nsd; ++isd)
+          res_old(isd) = dt*(densn*gpaccam(isd)+densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd)-densaf*bodyforce(isd));
+        //TODO dt*(densam*gpaccam(isd)+densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd)-densaf*bodyforce(isd));
       }
+      else
+      {
+        for (size_t isd = 0; isd < nsd; ++isd)
+          res_old(isd) = -rhsint(isd)+timefac*(densaf*conv_old(isd)+gradp(isd)-2.0*dynvisc*visc_old(isd));
 
+        if (instationary)
+        {
+          for(size_t isd=0; isd < nsd; ++isd)
+            res_old(isd) += densaf * gpvelnp(isd);
+        }
+      }
       // integration factors and coefficients of single terms
       const double timefacfac = timefac * fac;
 
@@ -571,13 +588,13 @@ void SysmatDomainNitsche(
 //          } cout << endl;
         }
       }
-//----------------------------------------
+      //----------------------------------------
       // build stiffness matrix standard entries
       //----------------------------------------
       COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
-          assembler, shp, shp, fac, timefac, timefacfac, densaf, dynvisc,
-          gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_conv_c, enr_viscs2,
-          instationary, newton, pstab, supg, cstab,
+          assembler, shp, shp, fac, timefac, timefacfac, ga_alphaM, densaf, dynvisc,
+          gpvelnp, pres, gpaccam, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_conv_c, enr_viscs2,
+          instationary, genalpha, newton, pstab, supg, cstab,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
     } // end loop over gauss points
   } // end loop over integration cells
@@ -604,8 +621,10 @@ void Nitsche_SysmatBoundaryCell(
     const V1&                         eprenp,
     const V2&                         ephi,
     const M3&                         grad_ephi_smoothed, ///<smoothed nodal G-function gradient values for this element
-    const double&                     ju_n,
-    const double&                     jflux_n,
+    const V2&                         ecurv,
+    const double&                     flamespeed,
+    const double&                     dens_minus,
+    const double                      dens_plus,
     const double&                       timefac,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
     const XFEM::ElementEnrichmentValues&       enrvals_plus,
@@ -752,6 +771,8 @@ void Nitsche_SysmatBoundaryCell(
     //--------------------------------------------------------------------------------------------
     static LINALG::Matrix<nsd,1> normal(true);
     normal.Clear();
+    static double curv;
+    curv = 0.0;
 
     // call smoothed normals for an accurate evaluation of boundary integration terms
     if(smoothed_boundary_integration == false)
@@ -776,8 +797,11 @@ void Nitsche_SysmatBoundaryCell(
         normal(0)+=grad_ephi_smoothed(0,i)*funct_gp(i);
         normal(1)+=grad_ephi_smoothed(1,i)*funct_gp(i);
         normal(2)+=grad_ephi_smoothed(2,i)*funct_gp(i);
-      }
 
+        // interpolate curvature to Gaussian point
+        curv += ecurv(i)*funct_gp(i);
+      }
+      curv = 0.0;//curv*-1.0;
       // 4. normalize final gradient
       // remark: n = -grad(\phi)
 #ifdef COMBUST_2D
@@ -803,8 +827,48 @@ void Nitsche_SysmatBoundaryCell(
       normal.Scale(-1.0/norm);
 #endif
 
-    // jump in velocity
-    LINALG::Matrix<nsd,1> ju(true);
+      //-----------------------------
+      // prepare interface conditions
+      //-----------------------------
+      // mass flux through flame front
+      const double D = 0.0;//1.161/(1.161*1.0);
+      const double flamespeed_mod = flamespeed -D*curv;
+      const double mflux = flamespeed_mod*dens_minus;
+
+      // velocity jump in normal direction
+#if 0
+      // jump velocity vector ju_{n,t1,t2}
+      LINALG::Matrix<nsd,1> ju_nt(true);
+      ju_nt(0,0) = -flamespeed_mod*dens_minus*(1.0/dens_minus - 1.0/dens_plus);
+      ju_nt(1,0) = 0.0;
+      ju_nt(2,0) = 0.0;
+#else
+      double ju_n = 0.0;
+      if (veljumptype == INPAR::COMBUST::vel_jump_premixed_combustion){
+        ju_n = -mflux*(1.0/dens_minus - 1.0/dens_plus);
+      }
+      else if(veljumptype == INPAR::COMBUST::vel_jump_const){
+        ju_n = 5.0;
+      }
+      else{
+        // velocity jump is zero
+      }
+#endif
+
+      // jump in flux (normal stress)
+      double jflux_n = 0.0;//mflux*mflux*(1.0/dens_minus - 1.0/dens_plus);
+      if(fluxjumptype == INPAR::COMBUST::flux_jump_premixed_combustion){
+        jflux_n = mflux*mflux*(1.0/dens_minus - 1.0/dens_plus);
+      }
+      else if(fluxjumptype == INPAR::COMBUST::flux_jump_const){
+        jflux_n = 3.0;
+      }
+      else{
+        // flux jump is zero
+      }
+
+      // jump in velocity
+      LINALG::Matrix<nsd,1> ju(true);
 #if 0
     //----------------------------------------------------------------------------------------
     // remark: does not make much sense; multiplication of 'ju' by 'normal' yields same result
@@ -1476,10 +1540,14 @@ void SysmatBoundaryNitsche(
     const V1&                                  eprenp,         ///<
     const V2&                                  ephi,           ///<
     const M2&                                  egradphi,
+    const V2&                                  ecurv,
     Teuchos::RCP<const MAT::Material>          material,       ///< fluid material
     const INPAR::FLUID::TimeIntegrationScheme  timealgo,       ///< time discretization type
     const double&                              dt,             ///< delta t (time step size)
     const double&                              theta,          ///< factor for one step theta scheme
+    const double                               ga_alphaF,
+    const double                               ga_alphaM,
+    const double                               ga_gamma,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&  assembler,      ///<
     const double                               flamespeed,     ///<
     const double                               nitschevel,     ///<
@@ -1507,7 +1575,7 @@ void SysmatBoundaryNitsche(
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // time integration constant
-  const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
+  const double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
 
   // get node coordinates of the current element
   static LINALG::Matrix<nsd,numnode> xyze;
@@ -1543,44 +1611,6 @@ void SysmatBoundaryNitsche(
   double surftenscoeff = 0.0;
   // set surface tension
   COMBUST::GetMaterialParams(material, surftenscoeff);
-
-  //-----------------------------
-  // prepare interface conditions
-  //-----------------------------
-  // mass flux through flame front
-  const double mflux = flamespeed*dens_minus;
-
-  // velocity jump in normal direction
-#if 0
-  // jump velocity vector ju_{n,t1,t2}
-  LINALG::Matrix<nsd,1> ju_nt(true);
-  ju_nt(0,0) = -flamespeed*dens_minus*(1.0/dens_minus - 1.0/dens_plus);
-  ju_nt(1,0) = 0.0;
-  ju_nt(2,0) = 0.0;
-#else
-  double ju_n = 0.0;
-  if (veljumptype == INPAR::COMBUST::vel_jump_premixed_combustion){
-    ju_n = -mflux*(1.0/dens_minus - 1.0/dens_plus);
-  }
-  else if(veljumptype == INPAR::COMBUST::vel_jump_const){
-    ju_n = 5.0;
-  }
-  else{
-    // velocity jump is zero
-  }
-#endif
-
-  // jump in flux (normal stress)
-  double jflux_n = -mflux*mflux*(1.0/dens_minus - 1.0/dens_plus);
-  if(fluxjumptype == INPAR::COMBUST::flux_jump_premixed_combustion){
-    jflux_n = -mflux*mflux*(1.0/dens_minus - 1.0/dens_plus);
-  }
-  else if(fluxjumptype == INPAR::COMBUST::flux_jump_const){
-    jflux_n = 3.0;
-  }
-  else{
-    // flux jump is zero
-  }
 
   //----------------------------------------
   // compute Nitsche stabilization patameter
@@ -1638,8 +1668,8 @@ void SysmatBoundaryNitsche(
     case DRT::Element::tri3:
       COMBUST::Nitsche_SysmatBoundaryCell<DISTYPE,DRT::Element::tri3,ASSTYPE,NUMDOF>(
           *cell, DRT::UTILS::intrule_tri_37point, xyze, ele, higher_order_ele,
-          evelnp, eprenp, ephi, egradphi,
-          ju_n, jflux_n,
+          evelnp, eprenp, ephi, egradphi, ecurv,
+          flamespeed, dens_minus, dens_plus,
           timefac, assembler,
           enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
           alphau, alpha_conv,
@@ -1650,8 +1680,8 @@ void SysmatBoundaryNitsche(
     case DRT::Element::quad4:
       COMBUST::Nitsche_SysmatBoundaryCell<DISTYPE,DRT::Element::quad4,ASSTYPE,NUMDOF>(
           *cell, DRT::UTILS::intrule_quad_25point , xyze, ele, higher_order_ele,
-          evelnp, eprenp, ephi, egradphi,
-          ju_n, jflux_n,
+          evelnp, eprenp, ephi, egradphi, ecurv,
+          flamespeed, dens_minus, dens_plus,
           timefac, assembler,
           enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
           alphau, alpha_conv,

@@ -76,15 +76,19 @@ namespace COMBUST
       Epetra_SerialDenseMatrix&               estif,
       Epetra_SerialDenseVector&               eforce,
       Teuchos::RCP<const MAT::Material>       material,
-      const INPAR::FLUID::TimeIntegrationScheme timealgo,     ///< time discretization type
+      const INPAR::FLUID::TimeIntegrationScheme timealgo,   ///< time discretization type
       const double                            dt,           ///< delta t (time step size)
       const double                            theta,        ///< factor for one step theta scheme
+      const double                            ga_alphaF,
+      const double                            ga_alphaM,
+      const double                            ga_gamma,
       const bool                              newton,
       const bool                              pstab,
       const bool                              supg,
       const bool                              cstab,
       const INPAR::FLUID::TauType             tautype,      ///< stabilization parameter definition
       const bool                              instationary,
+      const bool                              genalpha,
       const INPAR::COMBUST::CombustionType    combusttype,
       const double                            flamespeed,
       const double                            nitschevel,
@@ -213,7 +217,7 @@ namespace COMBUST
       densaf = mat->ComputeDensity(scaafgp);
       // factor for convective scalar term at n+alpha_F or n+1
       scaconvfacaf = mat->EosFacA()*densaf;
-      if (timealgo == INPAR::FLUID::timeint_gen_alpha)
+      if (timealgo == INPAR::FLUID::timeint_afgenalpha)
       {
         // compute density at n+alpha_M based on mixture fraction
         densam = mat->ComputeDensity(scaamgp);
@@ -247,7 +251,7 @@ namespace COMBUST
       densaf = mat->ComputeDensity(scaafgp,thermpressaf);
       // factor for convective scalar term at n+alpha_F or n+1
       scaconvfacaf = 1.0/scaafgp;
-      if (timealgo == INPAR::FLUID::timeint_gen_alpha)
+      if (timealgo == INPAR::FLUID::timeint_afgenalpha)
       {
         // factor for scalar time derivative at n+alpha_M
         scadtfac = 1.0/scaamgp;
@@ -284,7 +288,7 @@ namespace COMBUST
       densaf = mat->ComputeDensity(scaafgp);
       // factor for convective scalar term at n+alpha_F or n+1
       scaconvfacaf = mat->ComputeFactor(scaafgp);
-      if (timealgo == INPAR::FLUID::timeint_gen_alpha)
+      if (timealgo == INPAR::FLUID::timeint_afgenalpha)
       {
         // compute density at n+alpha_M based on progress variable
         densam = mat->ComputeDensity(scaamgp);
@@ -320,7 +324,7 @@ namespace COMBUST
       densaf = mat->ComputeDensity(scaafgp);
       // factor for convective scalar term at n+alpha_F or n+1
       scaconvfacaf = mat->ComputeFactor(scaafgp);
-      if (timealgo == INPAR::FLUID::timeint_gen_alpha)
+      if (timealgo == INPAR::FLUID::timeint_afgenalpha)
       {
         // compute density at n+alpha_M based on progress variable
         densam = mat->ComputeDensity(scaamgp);

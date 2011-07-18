@@ -117,7 +117,7 @@ void combust_dyn()
   INPAR::FLUID::TimeIntegrationScheme timeintscheme = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn,"TIMEINT");
 
   if (timeintscheme == INPAR::FLUID::timeint_one_step_theta or
-      timeintscheme == INPAR::FLUID::timeint_gen_alpha)
+      timeintscheme == INPAR::FLUID::timeint_afgenalpha)
   {
     // solve a dynamic combustion problem
     combust_->TimeLoop();

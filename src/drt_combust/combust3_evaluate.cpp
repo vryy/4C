@@ -152,7 +152,6 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       this->trisected_     = false;
       this->touched_  = false;
 
-#ifdef COMBUST_CUT
       if (ih_->FlameFront() != Teuchos::null) // not the initial call
       {
         const COMBUST::FlameFront::CutStatus cutstat = ih_->ElementCutStatus(this->Id());
@@ -173,34 +172,6 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         else
           dserror("cut status not available for element % ",this->Id());
       }
-#else
-      if (ih_->FlameFront() != Teuchos::null) // not the initial call
-      {
-        // more than one domain integration cell -> element bisected
-        if(ih_->ElementBisected(this))
-          this->bisected_ = true;
-        // one domain and one plus boundary integration cell -> element touched plus
-        else if(ih_->ElementTouchedPlus(this))
-          this->touched_ = true;
-        // one domain and one minus boundary integration cell -> element touched minus
-        else if(ih_->ElementTouchedMinus(this))
-          this->touched_ = true;
-        else // regular element (numdomaincells==1 and numboundarycells==0)
-        {
-// TODO @Florian uncomment DEBUG flag
-//#if DEBUG
-          std::size_t numDomainCells = ih_->GetNumDomainIntCells(this);
-          if (numDomainCells<1) // 'numcells' is zero or negative number
-            // impossible, something went wrong!
-            dserror ("unknown number of DomainIntCells for element %d ", this->Id());
-          std::size_t numBoundaryCells = ih_->GetNumBoundaryIntCells(this);
-          if(numBoundaryCells!=0)
-            // impossible, something went wrong!
-            dserror ("unknown number of BoundaryIntCells for element %d ", this->Id());
-        }
-//#endif
-      }
-#endif
 
       //----------------------------------
       // hand over global dofs to elements
@@ -281,48 +252,42 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
     }
     break;
     case calc_fluid_systemmat_and_residual:
+    case calc_fluid_stationary_systemmat_and_residual:
     {
       TEUCHOS_FUNC_TIME_MONITOR("COMBUST3 - evaluate - calc_fluid_systemmat_and_residual");
 
       // do no calculation, if not needed
-      if (lm.empty())
-        break;
+      if (lm.empty()) break;
 
-      const INPAR::COMBUST::CombustionType combusttype = DRT::INPUT::get<INPAR::COMBUST::CombustionType>(params, "combusttype");
-      const INPAR::COMBUST::VelocityJumpType veljumptype = DRT::INPUT::get<INPAR::COMBUST::VelocityJumpType>(params, "veljumptype");
-      const INPAR::COMBUST::FluxJumpType fluxjumptype = DRT::INPUT::get<INPAR::COMBUST::FluxJumpType>(params, "fluxjumptype");
-      const INPAR::COMBUST::SmoothGradPhi smoothgradphi = DRT::INPUT::get<INPAR::COMBUST::SmoothGradPhi>(params, "smoothgradphi");
-
-      // instationary formulation
-      const bool instationary = true;
-      // smoothed gradient of phi required (surface tension application)
-      double gradphi = true;
-      if (combusttype == INPAR::COMBUST::combusttype_twophaseflow or
-          smoothgradphi == INPAR::COMBUST::smooth_grad_phi_none)
-      {
-        gradphi = false;
-      }
-
-      // extract local (element level) vectors from global state vectors
-      DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, instationary, gradphi, this, ih_);
-
+      // parameter for type of linearization
       const bool newton = params.get<bool>("include reactive terms for linearisation",false);
 
-      const double flamespeed = params.get<double>("flamespeed");
+      // general parameters for two-phase flow and premixed combustion problems
+      const INPAR::COMBUST::CombustionType combusttype   = DRT::INPUT::get<INPAR::COMBUST::CombustionType>(params, "combusttype");
+      const INPAR::COMBUST::VelocityJumpType veljumptype = DRT::INPUT::get<INPAR::COMBUST::VelocityJumpType>(params, "veljumptype");
+      const INPAR::COMBUST::FluxJumpType fluxjumptype    = DRT::INPUT::get<INPAR::COMBUST::FluxJumpType>(params, "fluxjumptype");
+      const INPAR::COMBUST::SmoothGradPhi smoothgradphi  = DRT::INPUT::get<INPAR::COMBUST::SmoothGradPhi>(params, "smoothgradphi");
       const double nitschevel = params.get<double>("nitschevel");
       const double nitschepres = params.get<double>("nitschepres");
+
+      // parameters for premixed combustion problems
+      const double flamespeed = params.get<double>("flamespeed");
+
+      // parameters for two-phase flow problems with surface tension
+      // type of surface tension approximation
+      const INPAR::COMBUST::SurfaceTensionApprox surftensapprox = DRT::INPUT::get<INPAR::COMBUST::SurfaceTensionApprox>(params, "surftensapprox");
+      const bool connected_interface = params.get<bool>("connected_interface");
+      const bool smoothed_boundary_integration = params.get<bool>("smoothed_bound_integration");
 
       // stabilization terms
       bool pstab = true;
       bool supg  = true;
       bool cstab = true;
-      if (DRT::INPUT::IntegralValue<INPAR::FLUID::SUPG>(params.sublist("STABILIZATION"),"SUPG") == INPAR::FLUID::convective_stab_none)
-         supg = false;
-      if (DRT::INPUT::IntegralValue<INPAR::FLUID::PSPG>(params.sublist("STABILIZATION"),"PSPG") == INPAR::FLUID::pstab_assume_inf_sup_stable)
-         pstab = false;
-      if (DRT::INPUT::IntegralValue<INPAR::FLUID::CStab>(params.sublist("STABILIZATION"),"CSTAB") == INPAR::FLUID::continuity_stab_none)
-         cstab = false;
-      // stabilization parameters
+      if (DRT::INPUT::IntegralValue<INPAR::FLUID::SUPG>(params.sublist("STABILIZATION"),"SUPG")   == INPAR::FLUID::convective_stab_none) supg = false;
+      if (DRT::INPUT::IntegralValue<INPAR::FLUID::PSPG>(params.sublist("STABILIZATION"),"PSPG")   == INPAR::FLUID::pstab_assume_inf_sup_stable) pstab = false;
+      if (DRT::INPUT::IntegralValue<INPAR::FLUID::CStab>(params.sublist("STABILIZATION"),"CSTAB") == INPAR::FLUID::continuity_stab_none) cstab = false;
+
+      // stabilization parameter
       const INPAR::FLUID::TauType tautype = DRT::INPUT::IntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"DEFINITION_TAU");
       // check if stabilization parameter definition can be handled by combust3 element
       if (!(tautype == INPAR::FLUID::tau_taylor_hughes_zarins or
@@ -339,93 +304,20 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
       // time integration parameters
       const INPAR::FLUID::TimeIntegrationScheme timealgo = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "timealgo");
-      const double            dt       = params.get<double>("dt");
-      const double            theta    = params.get<double>("theta");
-#ifdef SUGRVEL_OUTPUT
-      //const int               step     = params.get<int>("step");
-#endif
 
-      // parameters for two-phase flow problems with surface tension
-      // type of surface tension approximation
-      const INPAR::COMBUST::SurfaceTensionApprox surftensapprox = DRT::INPUT::get<INPAR::COMBUST::SurfaceTensionApprox>(params, "surftensapprox");
-      const bool connected_interface = params.get<bool>("connected_interface");
-      const bool smoothed_boundary_integration = params.get<bool>("smoothed_bound_integration");
+      const double dt     = params.get<double>("dt");
+      const double theta  = params.get<double>("theta");
+      const double ga_gamma  = params.get<double>("gamma");
+      const double ga_alphaF = params.get<double>("alphaF");
+      const double ga_alphaM = params.get<double>("alphaM");
 
-#ifdef COMBUST_STRESS_BASED
-      // integrate and assemble all unknowns
-      if ((not this->bisected_ and not this->trisected_) or
-          not params.get<bool>("DLM_condensation"))
-      {
-        const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
-            *eleDofManager_, NumNode(), NodeIds());
+      // instationary formulation
+      bool instationary = true;
+      if (timealgo == INPAR::FLUID::timeint_stationary) instationary = false;
+      // generalized alpha time integration scheme
+      bool genalpha = false;
+      if (timealgo == INPAR::FLUID::timeint_afgenalpha) genalpha = true;
 
-        if (ih_->GetNumBoundaryIntCells(this) > 0)
-          cout << "/!\\ warning === element " << this->Id() << " is not intersected, but has boundary integration cells!" << endl;
-
-        // calculate element coefficient matrix and rhs
-        COMBUST::callSysmat(assembly_type,
-          this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
-          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
-          connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration);
-      }
-      // create bigger element matrix and vector, assemble, condense and copy to small matrix provided by discretization
-      else
-      {
-        if (eleDofManager_uncondensed_ == Teuchos::null)
-          dserror("Intersected element %d has no element dofs", this->Id());
-
-        UpdateOldDLMAndDLMRHS(discretization, lm, mystate);
-
-        // create uncondensed element matrix and vector
-        const int numdof_uncond = eleDofManager_uncondensed_->NumDofElemAndNode();
-        Epetra_SerialDenseMatrix elemat1_uncond(numdof_uncond,numdof_uncond);
-        Epetra_SerialDenseVector elevec1_uncond(numdof_uncond);
-
-        const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
-            *eleDofManager_uncondensed_, NumNode(), NodeIds());
-
-        // calculate element coefficient matrix and rhs
-        COMBUST::callSysmat(assembly_type,
-          this, ih_, *eleDofManager_uncondensed_, mystate, elemat1_uncond, elevec1_uncond,
-          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
-          connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration);
-
-        // condensation
-        CondenseElementStressAndStoreOldIterationStep(
-            elemat1_uncond, elevec1_uncond,
-            elemat1, elevec1
-        );
-      }
-#else
-      const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
-          *eleDofManager_, NumNode(), NodeIds());
-
-      // schott Jun 16, 2010
-      // calculate element coefficient matrix and rhs
-      COMBUST::callSysmat(assembly_type,
-          this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
-          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
-          combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
-          connected_interface,veljumptype,fluxjumptype,smoothed_boundary_integration);
-#endif
-    }
-    break;
-    case calc_fluid_stationary_systemmat_and_residual:
-    {
-      TEUCHOS_FUNC_TIME_MONITOR("COMBUST3 - evaluate - calc_fluid_stationary_systemmat_and_residual");
-      // do no calculation, if not needed
-      if (lm.empty())
-        break;
-
-      const INPAR::COMBUST::CombustionType combusttype = DRT::INPUT::get<INPAR::COMBUST::CombustionType>(params, "combusttype");
-      const INPAR::COMBUST::VelocityJumpType veljumptype = DRT::INPUT::get<INPAR::COMBUST::VelocityJumpType>(params, "veljumptype");
-      const INPAR::COMBUST::FluxJumpType fluxjumptype = DRT::INPUT::get<INPAR::COMBUST::FluxJumpType>(params, "fluxjumptype");
-      const INPAR::COMBUST::SmoothGradPhi smoothgradphi = DRT::INPUT::get<INPAR::COMBUST::SmoothGradPhi>(params, "smoothgradphi");
-
-      // stationary formulation
-      const bool instationary = false;
       // smoothed gradient of phi required (surface tension application)
       double gradphi = true;
       if (combusttype == INPAR::COMBUST::combusttype_twophaseflow or
@@ -435,53 +327,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       }
 
       // extract local (element level) vectors from global state vectors
-      DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, instationary, gradphi, this, ih_);
-
-      const bool newton = params.get<bool>("include reactive terms for linearisation",false);
-
-      const double flamespeed = params.get<double>("flamespeed");
-      const double nitschevel = params.get<double>("nitschevel");
-      const double nitschepres = params.get<double>("nitschepres");
-
-      // parameters for two-phase flow problems with surface tension
-      // type of surface tension approximation
-      const INPAR::COMBUST::SurfaceTensionApprox surftensapprox = DRT::INPUT::get<INPAR::COMBUST::SurfaceTensionApprox>(params, "surftensapprox");
-      const bool connected_interface = params.get<bool>("connected_interface");
-      const bool smoothed_boundary_integration = params.get<bool>("smoothed_bound_integration");
-
-      // stabilization terms
-      bool pstab = true;
-      bool supg  = true;
-      bool cstab = true;
-      if (DRT::INPUT::IntegralValue<INPAR::FLUID::SUPG>(params.sublist("STABILIZATION"),"SUPG") == INPAR::FLUID::convective_stab_none)
-         supg = false;
-      if (DRT::INPUT::IntegralValue<INPAR::FLUID::PSPG>(params.sublist("STABILIZATION"),"PSPG") == INPAR::FLUID::pstab_assume_inf_sup_stable)
-         pstab = false;
-      if (DRT::INPUT::IntegralValue<INPAR::FLUID::CStab>(params.sublist("STABILIZATION"),"CSTAB") == INPAR::FLUID::continuity_stab_none)
-         cstab = false;
-      // stabilization parameters
-      const INPAR::FLUID::TauType tautype = DRT::INPUT::IntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"DEFINITION_TAU");
-      // check if stabilization parameter definition can be handled by combust3 element
-      if (!(tautype == INPAR::FLUID::tau_taylor_hughes_zarins or
-            tautype == INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
-            tautype == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
-            tautype == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
-            tautype == INPAR::FLUID::tau_taylor_hughes_zarins_scaled or
-            tautype == INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt or
-            tautype == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall or
-            tautype == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
-            tautype == INPAR::FLUID::tau_shakib_hughes_codina or
-            tautype == INPAR::FLUID::tau_shakib_hughes_codina_wo_dt))
-        dserror("unknown type of stabilization parameter definition");
-
-      // time integration factors
-      const INPAR::FLUID::TimeIntegrationScheme timealgo = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "timealgo");
-      dsassert(timealgo == INPAR::FLUID::timeint_stationary, "must be stationary!");
-      const double            dt       = 1.0;
-      const double            theta    = 1.0;
-#ifdef SUGRVEL_OUTPUT
-      const int               step     = 0;
-#endif
+      DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, instationary, genalpha, gradphi, this, ih_);
 
 #ifdef COMBUST_STRESS_BASED
       // integrate and assemble all unknowns
@@ -497,7 +343,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
-          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration);
       }
@@ -539,7 +385,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_uncondensed_, mystate, elemat1_uncond, elevec1_uncond,
-          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration);
 
@@ -556,73 +402,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // calculate element coefficient matrix and rhs
       COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
-          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface,veljumptype,fluxjumptype,smoothed_boundary_integration);
-#endif
-
-#if 0
-          const XFEM::BoundaryIntCells&  boundaryIntCells(ih_->GetBoundaryIntCells(this->Id()));
-          if ((assembly_type == XFEM::xfem_assembly) and (not boundaryIntCells.empty()))
-          {
-              const int entry = 4; // line in stiffness matrix to compare
-              const double disturbance = 1.0e-4;
-
-              // initialize locval
-              for (std::size_t i = 0;i < locval.size(); ++i)
-              {
-                  locval[i] = 0.0;
-                  locval_hist[i] = 0.0;
-              }
-              // R_0
-              // calculate element coefficient matrix and rhs
-              XFLUID::callSysmat4(assembly_type,
-                      this, ih_, eleDofManager_, locval, locval_hist, ivelcol, iforcecol, estif, eforce,
-                      mat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
-
-              LINALG::SerialDensevector eforce_0(locval.size());
-              for (std::size_t i = 0;i < locval.size(); ++i)
-              {
-                  eforce_0(i) = eforce(i);
-              }
-
-              // create disturbed vector
-              vector<double> locval_disturbed(locval.size());
-              for (std::size_t i = 0;i < locval.size(); ++i)
-              {
-                  if (i == entry)
-                  {
-                      locval_disturbed[i] = locval[i] + disturbance;
-                  }
-                  else
-                  {
-                      locval_disturbed[i] = locval[i];
-                  }
-                  std::cout << locval[i] <<  " " << locval_disturbed[i] << endl;
-              }
-
-
-              // R_0+dx
-              // calculate element coefficient matrix and rhs
-              XFLUID::callSysmat4(assembly_type,
-                      this, ih_, eleDofManager_, locval_disturbed, locval_hist, ivelcol, iforcecol, estif, eforce,
-                      mat, pseudotime, 1.0, newton, pstab, supg, cstab, false);
-
-
-
-              // compare
-              std::cout << "sekante" << endl;
-              for (std::size_t i = 0;i < locval.size(); ++i)
-              {
-                  //cout << i << endl;
-                  const double matrixentry = (eforce_0(i) - eforce(i))/disturbance;
-                  printf("should be %+12.8E, is %+12.8E, factor = %5.2f, is %+12.8E, factor = %5.2f\n", matrixentry, estif(i, entry), estif(i, entry)/matrixentry, estif(entry,i), estif(entry,i)/matrixentry);
-                  //cout << "should be: " << std::scientific << matrixentry << ", is: " << estif(entry, i) << " " << estif(i, entry) << endl;
-              }
-
-              exit(0);
-          }
-          else
 #endif
     }
     break;
@@ -668,13 +450,16 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       {
         // stationary formulation
         const bool instationary = false;
+        const INPAR::FLUID::TimeIntegrationScheme timealgo = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "timealgo");
+        bool genalpha = false;
+        if (timealgo == INPAR::FLUID::timeint_afgenalpha) genalpha = true;
         // smoothed gradient of phi required (surface tension application)
         const bool gradphi = true;
         const bool smoothed_boundary_integration = params.get<bool>("smoothed_bound_integration");
         const INPAR::COMBUST::NitscheError NitscheErrorType = DRT::INPUT::get<INPAR::COMBUST::NitscheError>(params, "Nitsche_Compare_Analyt");
 
         // extract local (element level) vectors from global state vectors
-        DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, instationary, gradphi, this, ih_);
+        DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, instationary, genalpha, gradphi, this, ih_);
 
         // get assembly type
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(

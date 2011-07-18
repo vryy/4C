@@ -2115,6 +2115,9 @@ void SysmatBoundarySurfaceTension(
     const INPAR::FLUID::TimeIntegrationScheme timealgo,      ///< time discretization type
     const double&                     dt,            ///< delta t (time step size)
     const double&                     theta,         ///< factor for one step theta scheme
+    const double                      ga_alphaF,
+    const double                      ga_alphaM,
+    const double                      ga_gamma,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
     const double                      flamespeed,
     const double                      nitschevel,
@@ -2142,7 +2145,7 @@ void SysmatBoundarySurfaceTension(
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // time integration constant
-  const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
+  const double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
 
   // get node coordinates of the current element
   static LINALG::Matrix<nsd,numnode> xyze;

@@ -74,7 +74,7 @@ public:
   void UpdateDensityElch(){dserror("not implemented"); return;};
 
   /// update solution after reinitialization for OST scheme
-  void UpdateReinit() { dserror("only implemented for OST"); return; };
+  void UpdateReinit();
 
   /// read restart data
   void ReadRestart(int step);
@@ -144,7 +144,7 @@ protected:
                                                          return; };
 
   /// calcuate phidt after reinitialization for OST scheme
-  void CalcPhidtReinit() { dserror("only implemented for OST"); return; };
+  void CalcPhidtReinit();
 
 private:
 

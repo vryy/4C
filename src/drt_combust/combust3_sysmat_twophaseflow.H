@@ -60,6 +60,7 @@ void SysmatTwoPhaseFlow(
     const M1&                           eveln,
     const M1&                           evelnm,
     const M1&                           eaccn,
+    const M1&                           eaccam,       ///< nodal acceleration n values for this element
     const V1&                           eprenp,
     const V2&                           ephi,
     const M2&                           etensor,
@@ -67,6 +68,9 @@ void SysmatTwoPhaseFlow(
     const INPAR::FLUID::TimeIntegrationScheme timealgo,      ///< time discretization type
     const double                        dt,            ///< delta t (time step size)
     const double                        theta,         ///< factor for one step theta scheme
+    const double                        ga_alphaF,
+    const double                        ga_alphaM,
+    const double                        ga_gamma,
     //const int                           step,        ///< for gmsh output of subgrid velocity
     const bool                          newton,        ///< full Newton or fixed-point-like
     const bool                          pstab,         ///< flag for stabilization
@@ -74,6 +78,7 @@ void SysmatTwoPhaseFlow(
     const bool                          cstab,         ///< flag for stabilization
     const INPAR::FLUID::TauType         tautype,       ///< stabilization parameter definition
     const bool                          instationary,  ///< switch between stationary and instationary formulation
+    const bool                          genalpha,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler,
     double&                        ele_meas_plus,      ///< set measure of element in plus domain
     double&                        ele_meas_minus      ///< set measure of element in minus domain
@@ -88,7 +93,7 @@ void SysmatTwoPhaseFlow(
   const size_t nsd = 3;
 
   // time integration constant
-  const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
+  const double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
 
   // get node coordinates of the current element
   static LINALG::Matrix<nsd,numnode> xyze;
@@ -417,6 +422,10 @@ void SysmatTwoPhaseFlow(
       LINALG::Matrix<nsd,1> gpveln  = XFEM::interpolateVectorFieldToIntPoint(eveln , shpvel.d0, numparamvelx);
       LINALG::Matrix<nsd,1> gpvelnm = XFEM::interpolateVectorFieldToIntPoint(evelnm, shpvel.d0, numparamvelx);
       LINALG::Matrix<nsd,1> gpaccn  = XFEM::interpolateVectorFieldToIntPoint(eaccn , shpvel.d0, numparamvelx);
+      // get acceleration at n+alpha_m for generalized alpha time integration scheme
+      LINALG::Matrix<3,1> gpaccam(true);
+      if (genalpha)
+        gpaccam  = XFEM::interpolateVectorFieldToIntPoint(eaccam , shpvel.d0, numparamvelx);
 
       // commenting this section out leads to problems with instationary calculations   henke 01/09
       //            if (ASSTYPE == XFEM::xfem_assembly and timealgo != timeint_stationary)
@@ -438,7 +447,7 @@ void SysmatTwoPhaseFlow(
       //                for (int iparam = 0; iparam < numparamvelx; ++iparam)
       //                    histvec(isd) += evelnp_hist(isd,iparam)*shp.d0(iparam);
       //            }
-      const LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
+      const LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT::GetOldPartOfRighthandside(
           gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
 
       // get velocity (np,i) derivatives at integration point
@@ -737,9 +746,9 @@ void SysmatTwoPhaseFlow(
       // build stiffness matrix standard entries
       //----------------------------------------
       COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
-         assembler, shpvel, shppres, fac, timefac, timefacfac, densaf, dynvisc,
-         gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c_, enr_conv_c_sg, enr_viscs2,
-         instationary, newton, pstab, supg, cstab,
+         assembler, shpvel, shppres, fac, timefac, timefacfac, ga_alphaM, densaf, dynvisc,
+         gpvelnp, pres, gpaccam, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c_, enr_conv_c_sg, enr_viscs2,
+         instationary, genalpha, newton, pstab, supg, cstab,
          tau_stab_M, tau_stab_Mp, tau_stab_C);
 #else
 

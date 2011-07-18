@@ -352,6 +352,7 @@ void SysmatDomainStress(
     const M1&                           eveln,        ///< nodal velocity n   values for this element
     const M1&                           evelnm,       ///< nodal velocity n-1 values for this element
     const M1&                           eaccn,        ///< nodal acceleration n values for this element
+    const M1&                           eaccam,       ///< nodal acceleration n values for this element
     const V1&                           eprenp,       ///< nodal pressure n+1 values for this element
     const V2&                           ephi,         ///< nodal G-function values for this element
     const M2&                           eepsilon,     ///< element stresses
@@ -360,12 +361,16 @@ void SysmatDomainStress(
     const INPAR::FLUID::TimeIntegrationScheme timealgo,     ///< time discretization scheme
     const double                        dt,           ///< delta t (time step size)
     const double                        theta,        ///< parameter for one step theta scheme
+    const double                        ga_alphaF,
+    const double                        ga_alphaM,
+    const double                        ga_gamma,
     const bool                          newton,       ///< full Newton or fixed-point-like
     const bool                          pstab,        ///< flag for stabilization
     const bool                          supg,         ///< flag for stabilization
     const bool                          cstab,        ///< flag for stabilization
     const INPAR::FLUID::TauType         tautype,      ///< stabilization parameter definition
     const bool                          instationary, ///< switch between stationary and instationary formulation
+    const bool                          genalpha,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler
 )
 {
@@ -378,7 +383,7 @@ void SysmatDomainStress(
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // time integration factor
-  const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
+  const double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
 
   // get node coordinates of this element
   static LINALG::Matrix<nsd,numnode> xyze;
@@ -703,6 +708,10 @@ void SysmatDomainStress(
       const LINALG::Matrix<nsd,1> gpveln  = XFEM::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
       const LINALG::Matrix<nsd,1> gpvelnm = XFEM::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
       const LINALG::Matrix<nsd,1> gpaccn  = XFEM::interpolateVectorFieldToIntPoint(eaccn , shp.d0, numparamvelx);
+      // get acceleration at n+alpha_m for generalized alpha time integration scheme
+      LINALG::Matrix<3,1> gpaccam(true);
+      if (genalpha)
+        gpaccam  = XFEM::interpolateVectorFieldToIntPoint(eaccam , shp.d0, numparamvelx);
 
       //----------------------------------------------
       // get velocity derivatives at integration point
@@ -817,7 +826,7 @@ void SysmatDomainStress(
 
       // time RHS vector from previous time step
       // remark: histvec = \rho^{n}*(u^n + delta t (1-theta) a^n)
-      LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
+      LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT::GetOldPartOfRighthandside(
           gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
       histvec.Scale(densn);
 
@@ -925,8 +934,8 @@ void SysmatDomainStress(
       //----------------------------------------
       COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
           assembler, shp, shp, fac, timefac, timefacfac, densaf, dynvisc,
-          gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_conv_c, enr_viscs2,
-          instationary, newton, pstab, supg, cstab,
+          gpvelnp, pres, gpaccam, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_conv_c, enr_viscs2,
+          instationary, genalpha, newton, pstab, supg, cstab,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
 
       if (epsilonele_unknowns_present)
@@ -971,6 +980,9 @@ void SysmatBoundaryStress(
     const INPAR::FLUID::TimeIntegrationScheme timealgo,       ///< time discretization type
     const double&                     dt,                     ///< delta t (time step size)
     const double&                     theta,                  ///< factor for one step theta scheme
+    const double                      ga_alphaF,
+    const double                      ga_alphaM,
+    const double                      ga_gamma,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,      ///< local assembler
     const double                      flamespeed              ///< flame speed
 )
@@ -989,7 +1001,7 @@ void SysmatBoundaryStress(
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // time integration constant
-  const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
+  const double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
 
   // get node coordinates of the current element
   static LINALG::Matrix<nsd,numnode> xyze;
@@ -1065,25 +1077,30 @@ void SysmatBoundaryStress(
     // get Gaussian points for this integration cell
     //----------------------------------------------
     // TODO: finish -> template? Only tri3 boundary integration cells allowed?
+    // choose an (arbitrary) number of Gaussian points for the output
+    DRT::UTILS::GaussRule2D intrule2D = DRT::UTILS::intrule2D_undefined;
     if (cell->Shape() == DRT::Element::tri3)
     {
       // there should only be triangular boundary cells
+      // TODO: are 6 Gaussian points enough?
+      //const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_6point);
+      intrule2D = DRT::UTILS::intrule_tri_37point;
     }
     else if (cell->Shape() == DRT::Element::quad4)
     {
-      dserror("triangular boundary integration cell expected");
+      //dserror("triangular boundary integration cell expected");
+      intrule2D = DRT::UTILS::intrule_quad_25point;
     }
     else
     {
       dserror("invalid type of boundary integration cell");
     }
 
+    dserror("triangular boundary integration cell expected");
     // here, a triangular boundary integration cell is assumed (numvertices = 3)
     const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
 
-    // TODO: are 6 Gaussian points enough?
-    //const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_6point);
-    const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_37point);
+    const DRT::UTILS::IntegrationPoints2D intpoints(intrule2D);
 
     // get coordinates of vertices of boundary integration cell in element coordinates \xi^domain
     LINALG::SerialDenseMatrix cellXiDomaintmp = cell->CellNodalPosXiDomain();
@@ -1890,6 +1907,9 @@ void SysmatBoundarySigma(
     const INPAR::FLUID::TimeIntegrationScheme timealgo,       ///< time discretization type
     const double&                     dt,                     ///< delta t (time step size)
     const double&                     theta,                  ///< factor for one step theta scheme
+    const double                      ga_alphaF,
+    const double                      ga_alphaM,
+    const double                      ga_gamma,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,      ///< local assembler
     const double                      flamespeed              ///< flame speed
 )
@@ -1908,7 +1928,7 @@ void SysmatBoundarySigma(
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // time integration constant
-  const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
+  const double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
 
   // get node coordinates of the current element
   static LINALG::Matrix<nsd,numnode> xyze;
@@ -2631,6 +2651,9 @@ void SysmatBoundaryStressDoubleOneSided(
     const INPAR::FLUID::TimeIntegrationScheme timealgo,      ///< time discretization type
     const double&                     dt,            ///< delta t (time step size)
     const double&                     theta,         ///< factor for one step theta scheme
+    const double                      ga_alphaF,
+    const double                      ga_alphaM,
+    const double                      ga_gamma,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
     const double                      flamespeed
 )
@@ -2649,7 +2672,7 @@ void SysmatBoundaryStressDoubleOneSided(
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // time integration constant
-  const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
+  const double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
 
   // get node coordinates of the current element
   static LINALG::Matrix<nsd,numnode> xyze;

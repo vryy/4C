@@ -268,6 +268,7 @@ void SysmatDomainStressNormal(
     const M1&                           eveln,        ///< nodal velocity n   values for this element
     const M1&                           evelnm,       ///< nodal velocity n-1 values for this element
     const M1&                           eaccn,        ///< nodal acceleration n values for this element
+    const M1&                           eaccam,       ///< nodal acceleration n values for this element
     const V1&                           eprenp,       ///< nodal pressure n+1 values for this element
     const V2&                           ephi,         ///< nodal G-function values for this element
     const M2&                           egradphi,     ///<
@@ -295,7 +296,7 @@ void SysmatDomainStressNormal(
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // time integration factor
-  const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
+  const double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
 
   // get node coordinates of this element
   static LINALG::Matrix<nsd,numnode> xyze;
@@ -986,7 +987,7 @@ void SysmatDomainStressNormal(
 
       // time RHS vector from previous time step
       // remark: histvec = \rho^{n}*(u^n + delta t (1-theta) a^n)
-      LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
+      LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT::GetOldPartOfRighthandside(
           gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
       histvec.Scale(densn);
 
@@ -1123,8 +1124,8 @@ void SysmatDomainStressNormal(
       //----------------------------------------
       COMBUST::BuildStandardDomainIntegralsNormal<DISTYPE,ASSTYPE,NUMDOF,shpVecSizeVel,shpVecSizePres>(
           assembler, shp, shp_pres, fac, timefac, timefacfac, densaf, dynvisc,
-          gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_viscs2,
-          instationary, newton, pstab, supg, cstab,
+          gpvelnp, pres, accam, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_viscs2,
+          instationary, genalpha, newton, pstab, supg, cstab,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
 #ifndef COMBUST_DECOUPLEDXFEM
       if (epsilonele_unknowns_present)
@@ -1188,7 +1189,7 @@ void SysmatBoundaryStressNormal(
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // time integration constant
-  const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
+  const double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
 
   // get node coordinates of the current element
   static LINALG::Matrix<nsd,numnode> xyze;

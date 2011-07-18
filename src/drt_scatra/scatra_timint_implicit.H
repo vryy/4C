@@ -285,6 +285,9 @@ public:
   /// routine to return information on periodic bondary conditions (row map)
   Teuchos::RCP<map<int,vector<int> > > PBCmap() { return pbcmapmastertoslave_; };
 
+  /// routine to return the periodic boundary condition member
+  Teuchos::RCP<PeriodicBoundaryConditions> PBC() { return pbc_; }
+
   /// routine to return thermo. press. at time step n+1 for low-Mach-number flow
   double ThermPressNp() const { return thermpressnp_; }
 

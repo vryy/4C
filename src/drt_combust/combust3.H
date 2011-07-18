@@ -80,22 +80,27 @@ private:
         {
         public:
           MyState(
-              const DRT::Discretization&                                 discretization,
-              const std::vector<int>&                                    lm,
-              const bool                                                 instationary,
-              const bool                                                 gradphi,
-              const DRT::ELEMENTS::Combust3*                             ele,
-              const COMBUST::InterfaceHandleCombust*                     ih
+              const DRT::Discretization&             discretization,
+              const std::vector<int>&                lm,
+              const bool                             instationary,
+              const bool                             genalpha,
+              const bool                             gradphi,
+              const DRT::ELEMENTS::Combust3*         ele,
+              const COMBUST::InterfaceHandleCombust* ih
               );
 
           const bool instationary_;
+          const bool genalpha_;
           const bool gradphi_;
-          std::vector<double> velnp_; ///< velocity/pressure unknowns at n+1
-          std::vector<double> veln_;  ///< velocity/pressure unknowns at n
-          std::vector<double> velnm_; ///< velocity/pressure unknowns at n-1
-          std::vector<double> accn_;  ///< time derivative of unknowns at n
-          std::vector<double> phinp_; ///< G-function unknowns at n+1
+          std::vector<double> velnp_;     ///< velocity/pressure unknowns at n+1
+          std::vector<double> veln_;      ///< velocity/pressure unknowns at n
+          std::vector<double> velnm_;     ///< velocity/pressure unknowns at n-1
+          std::vector<double> velaf_;     ///< velocity/pressure unknowns at alpha+f for generalized alpha scheme
+          std::vector<double> accn_;      ///< time derivative of unknowns at n
+          std::vector<double> accam_;     ///< time derivative of unknowns at alpha+m for generalized alpha scheme
+          std::vector<double> phinp_;     ///< G-function unknowns at n+1
           std::vector<double> gradphinp_; ///< smoothed G-function gradient at n+1
+          std::vector<double> curv_;      ///< curvature based on G-function gradient at n+1
         };
 
         //! @name Constructors and destructors and related methods

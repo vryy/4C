@@ -25,6 +25,7 @@ Maintainer: Florian Henke
 #include "../drt_inpar/inpar_combust.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_fluid/drt_pbcdofset.H"
+#include "../drt_fluid/turbulence_statistic_manager.H"
 #include "combust_flamefront.H"
 #include "combust_interface.H"
 
@@ -113,6 +114,18 @@ public:
   void NonlinearSolve();
 
   /*!
+  \brief predictor
+
+  */
+  void Predictor();
+
+  /*!
+  \brief (multiple) corrector
+
+  */
+  void MultiCorrector();
+
+  /*!
   \brief Update the solution after convergence of the nonlinear
          iteration. Current solution becomes old solution of next
          timestep.
@@ -163,6 +176,10 @@ public:
   */
   void StatisticsAndOutput();
 
+  /*
+  \brief provide access to turbulence statistics manager
+  */
+  Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager() const { return turbstatisticsmanager_; }
 
   /*!
   \brief update configuration and output to file/screen
@@ -270,7 +287,9 @@ public:
   Teuchos::RCP<Epetra_Vector>& Residual()      { return residual_; }
   Teuchos::RCP<Epetra_Vector>& TrueResidual()  { return trueresidual_; }
   Teuchos::RCP<Epetra_Vector>& Velnp()         { return state_.velnp_; }
+  Teuchos::RCP<Epetra_Vector>& Velaf()         { return state_.velaf_; }
   Teuchos::RCP<Epetra_Vector>& Veln()          { return state_.veln_; }
+  Teuchos::RCP<Epetra_Vector>& Accam()         { return state_.accam_; }
 
   /// provide access to the Dirichlet map
   const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
@@ -284,6 +303,13 @@ public:
   LINALG::MapExtractor& VelPresSplitter()         { return velpressplitter_; }
   Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.OtherMap(); }
   Teuchos::RCP<const Epetra_Map> PressureRowMap() { return velpressplitter_.CondMap(); }
+
+  /*double ResidualScaling() const
+  { if (TimIntScheme()==INPAR::FLUID::timeint_stationary)
+         return density_;
+    else if (TimIntScheme()==INPAR::FLUID::timeint_afgenalpha)
+         return density_*alphaM_/(gamma_*dta_);
+    else return density_/(theta_*dta_);}*/
 
   double Dt()   const { return dta_; }
   double Time() const { return time_; }
@@ -360,6 +386,24 @@ protected:
       const Teuchos::RCP<XFEM::DofManager> dofmanager
       );
 
+  /*!
+  \brief call elements to calculate system matrix/rhs and assemble
+
+  */
+  void AssembleMatAndRHS();
+
+  /*!
+  \brief compute values at intermediate time steps for gen.-alpha
+
+  */
+  void GenAlphaIntermediateValues();
+
+  /*!
+  \brief update acceleration for generalized-alpha time integration
+
+  */
+  void GenAlphaUpdateAcceleration();
+
   //! @name general algorithm parameters
   //! fluid discretization
   Teuchos::RCP<DRT::Discretization>      discret_;
@@ -370,6 +414,9 @@ protected:
 
   //! the processor ID from the communicator
   const int                     myrank_;
+
+  /// number of spatial dimensions
+  int numdim_;
 
   //! connection between master and slave row nodes
   RCP<map<int,vector<int> > > pbcmapmastertoslave_;
@@ -405,10 +452,12 @@ protected:
   INPAR::COMBUST::SmoothGradPhi smoothgradphi_;
 
   //! @name time stepping variables
-  int     step_;    ///< timestep
-  double  time_;    ///< physical time
-  const int     stepmax_; ///< maximal number of timesteps
-  const double  maxtime_; ///< maximal physical computation time
+  int           step_;        ///< timestep
+  double        time_;        ///< physical time
+  const int     stepmax_;     ///< maximal number of timesteps
+  const double  maxtime_;     ///< maximal physical computation time
+
+  int           startsteps_; ///< maximal number of starting time steps for generalized alpha scheme
   //@}
 
   //! @name time step sizes
@@ -419,14 +468,11 @@ protected:
   /// time algorithm flag
   INPAR::FLUID::TimeIntegrationScheme timealgo_;
 
-  /// time algorithm flag for first time step
-  //INPAR::FLUID::TimeIntegrationScheme startalgo_;
-
   //! @name time-integration-scheme factors
   double theta_;
-//  double alphaM_;
-//  double alphaF_;
-//  double gamma_;
+  double alphaM_;
+  double alphaF_;
+  double gamma_;
   //@}
 
   /// boolean indicating if stationary solution is computed as initial solution
@@ -434,6 +480,9 @@ protected:
 
   /// maximum number of nonlinear iterations
   int itemax_;
+
+  /// flag for potential Neumann inflow
+  bool neumanninflow_;
 
   /// whether we do some extrapolation at the beginning of each time step
   bool extrapolationpredictor_;
@@ -443,6 +492,13 @@ protected:
   const int upres_;
   const int writestresses_;
   //@}
+
+  /// cpu-time measures
+  double  dtele_;
+  double  dtsolve_;
+
+  /// pointer to turbulence statistics manager
+  Teuchos::RCP<FLD::TurbulenceStatisticManager> turbstatisticsmanager_;
 
   /// density extracted from element material
 //  double density_;
@@ -502,12 +558,14 @@ protected:
     //! @name accelerations
     Teuchos::RCP<Epetra_Vector>    accnp_;  ///< accelerations at time n+1
     Teuchos::RCP<Epetra_Vector>    accn_;   ///< accelerations at time n
+    Teuchos::RCP<Epetra_Vector>    accam_;  ///< accelerations at time n+alpha_M
     //@}
 
     //! @name velocities and pressures
-    Teuchos::RCP<Epetra_Vector>    velnp_;  ///< velocities and pressures at time n+1
-    Teuchos::RCP<Epetra_Vector>    veln_;   ///< velocities and pressures at time n
-    Teuchos::RCP<Epetra_Vector>    velnm_;  ///< velocities and pressures at time n-1
+    Teuchos::RCP<Epetra_Vector>    velnp_; ///< velocities and pressures at time n+1
+    Teuchos::RCP<Epetra_Vector>    veln_;  ///< velocities and pressures at time n
+    Teuchos::RCP<Epetra_Vector>    velnm_; ///< velocities and pressures at time n-1
+    Teuchos::RCP<Epetra_Vector>    velaf_; ///< velocities and pressures at time n+alpha_F
     //@}
   } state_;
 

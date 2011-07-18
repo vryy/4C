@@ -47,24 +47,27 @@ template <DRT::Element::DiscretizationType DISTYPE,
           size_t shpVecSize>
 void BuildStandardDomainIntegrals(
     COMBUST::LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>& assembler,
-    const XFEM::ApproxFunc<2,shpVecSize>& shpvel,          // shape functions and their derivatives (velocity)
-    const XFEM::ApproxFunc<2,shpVecSize>& shppres,         // shape functions and their derivatives (pressure)
+    const XFEM::ApproxFunc<2,shpVecSize>& shpvel,      // shape functions and their derivatives (velocity)
+    const XFEM::ApproxFunc<2,shpVecSize>& shppres,     // shape functions and their derivatives (pressure)
     const double& fac,                                 // factor for integration in space
     const double& timefac,                             // factor for integration in time
     const double& timefacfac,                          // overall integration factor
+    const double& alphaM,
     const double& densaf,                              // density at n+1 (OST), alpha_f (GenAlpha)
     const double& dynvisc,                             // dynamic viscosity at n+1
     const LINALG::Matrix<3,1>& velnp,                  // velocity at Gaussian point (GP) at n+1
     const double&              pres,                   // pressure at GP at n+1
+    const LINALG::Matrix<3,1>& accam,                  // acceleration at n+alphaM
     const LINALG::Matrix<3,1>& gradp,                  // pressure gradient at GP at n+1
     const LINALG::Matrix<3,3>& vderxy,                 // velocity derivative at GP at n+1
     const LINALG::Matrix<3,1>& rhsint,                 // time RHS (at n) and body force (at n+1) at GP
     const LINALG::Matrix<3,1>& res_old,                // residual at GP at n
     const LINALG::Matrix<3,1>& visc_old,               // viscous term at GP at n
     const LINALG::Matrix<shpVecSize,1>& enr_conv_c,    // convective term at GP at n
-    const LINALG::Matrix<shpVecSize,1>& enr_conv_c_sg,    // convective term at GP at n
+    const LINALG::Matrix<shpVecSize,1>& enr_conv_c_sg, // convective subgrid term at GP at n
     const COMBUST::EnrViscs2<shpVecSize>& enr_viscs2,  // viscous term (second derivatves) at GP at n
     const bool instationary,                           // turn on/off instationary problem
+    const bool genalpha,                               // switch to generalized alpha terms
     const bool newton,                                 // turn on/off linearization of convective term
     const bool pstab,                                  // turn on/off PSPG stabilization
     const bool supg,                                   // turn on/off SUPG stabilization
@@ -74,6 +77,7 @@ void BuildStandardDomainIntegrals(
     const double& tau_stab_C                           // BV   stabilization parameter
 )
 {
+  const double rhstimefacfac = timefacfac/alphaM;
   const double densfac = densaf * fac;
   //----------------------------------------------------------------------
   //                            GALERKIN PART
@@ -93,9 +97,21 @@ void BuildStandardDomainIntegrals(
     assembler.template Matrix<Vely,Vely>(shpvel.d0, densfac, shpvel.d0);
     assembler.template Matrix<Velz,Velz>(shpvel.d0, densfac, shpvel.d0);
 
-    assembler.template Vector<Velx>(shpvel.d0, -densfac*velnp(0));
-    assembler.template Vector<Vely>(shpvel.d0, -densfac*velnp(1));
-    assembler.template Vector<Velz>(shpvel.d0, -densfac*velnp(2));
+    if (genalpha)
+    {
+      const bool densrhstimefacfac = densaf * rhstimefacfac;
+      // TODO const bool densrhstimefacfac = densam * rhstimefacfac;
+
+      assembler.template Vector<Velx>(shpvel.d0, -densrhstimefacfac*accam(0));
+      assembler.template Vector<Vely>(shpvel.d0, -densrhstimefacfac*accam(1));
+      assembler.template Vector<Velz>(shpvel.d0, -densrhstimefacfac*accam(2));
+    }
+    else
+    {
+      assembler.template Vector<Velx>(shpvel.d0, -densfac*velnp(0));
+      assembler.template Vector<Vely>(shpvel.d0, -densfac*velnp(1));
+      assembler.template Vector<Velz>(shpvel.d0, -densfac*velnp(2));
+    }
   }
 #endif
 
@@ -110,17 +126,18 @@ void BuildStandardDomainIntegrals(
                      \                            cross-stress              /
    */
   const double denstimefacfac = densaf * timefacfac;
+  const double rhsdenstimefacfac = densaf * rhstimefacfac;
   assembler.template Matrix<Velx,Velx>(shpvel.d0, denstimefacfac, enr_conv_c_sg);
   assembler.template Matrix<Vely,Vely>(shpvel.d0, denstimefacfac, enr_conv_c_sg);
   assembler.template Matrix<Velz,Velz>(shpvel.d0, denstimefacfac, enr_conv_c_sg);
 
-  assembler.template Vector<Velx>(shpvel.d0, -denstimefacfac*(velnp(0)*vderxy(0,0)
+  assembler.template Vector<Velx>(shpvel.d0, -rhsdenstimefacfac*(velnp(0)*vderxy(0,0)
                                                           +velnp(1)*vderxy(0,1)
                                                           +velnp(2)*vderxy(0,2)));
-  assembler.template Vector<Vely>(shpvel.d0, -denstimefacfac*(velnp(0)*vderxy(1,0)
+  assembler.template Vector<Vely>(shpvel.d0, -rhsdenstimefacfac*(velnp(0)*vderxy(1,0)
                                                           +velnp(1)*vderxy(1,1)
                                                           +velnp(2)*vderxy(1,2)));
-  assembler.template Vector<Velz>(shpvel.d0, -denstimefacfac*(velnp(0)*vderxy(2,0)
+  assembler.template Vector<Velz>(shpvel.d0, -rhsdenstimefacfac*(velnp(0)*vderxy(2,0)
                                                           +velnp(1)*vderxy(2,1)
                                                           +velnp(2)*vderxy(2,2)));
 
@@ -173,17 +190,17 @@ void BuildStandardDomainIntegrals(
   assembler.template Matrix<Velz,Vely>(shpvel.dy,     dynvisc*timefacfac, shpvel.dz);
   assembler.template Matrix<Velz,Velz>(shpvel.dz, 2.0*dynvisc*timefacfac, shpvel.dz);
 
-  assembler.template Vector<Velx>(shpvel.dx,     -dynvisc*timefacfac*(vderxy(0, 0) + vderxy(0, 0)));
-  assembler.template Vector<Velx>(shpvel.dy,     -dynvisc*timefacfac*(vderxy(0, 1) + vderxy(1, 0)));
-  assembler.template Vector<Velx>(shpvel.dz,     -dynvisc*timefacfac*(vderxy(0, 2) + vderxy(2, 0)));
+  assembler.template Vector<Velx>(shpvel.dx,     -dynvisc*rhstimefacfac*(vderxy(0, 0) + vderxy(0, 0)));
+  assembler.template Vector<Velx>(shpvel.dy,     -dynvisc*rhstimefacfac*(vderxy(0, 1) + vderxy(1, 0)));
+  assembler.template Vector<Velx>(shpvel.dz,     -dynvisc*rhstimefacfac*(vderxy(0, 2) + vderxy(2, 0)));
 
-  assembler.template Vector<Vely>(shpvel.dx,     -dynvisc*timefacfac*(vderxy(1, 0) + vderxy(0, 1)));
-  assembler.template Vector<Vely>(shpvel.dy,     -dynvisc*timefacfac*(vderxy(1, 1) + vderxy(1, 1)));
-  assembler.template Vector<Vely>(shpvel.dz,     -dynvisc*timefacfac*(vderxy(1, 2) + vderxy(2, 1)));
+  assembler.template Vector<Vely>(shpvel.dx,     -dynvisc*rhstimefacfac*(vderxy(1, 0) + vderxy(0, 1)));
+  assembler.template Vector<Vely>(shpvel.dy,     -dynvisc*rhstimefacfac*(vderxy(1, 1) + vderxy(1, 1)));
+  assembler.template Vector<Vely>(shpvel.dz,     -dynvisc*rhstimefacfac*(vderxy(1, 2) + vderxy(2, 1)));
 
-  assembler.template Vector<Velz>(shpvel.dx,     -dynvisc*timefacfac*(vderxy(2, 0) + vderxy(0, 2)));
-  assembler.template Vector<Velz>(shpvel.dy,     -dynvisc*timefacfac*(vderxy(2, 1) + vderxy(1, 2)));
-  assembler.template Vector<Velz>(shpvel.dz,     -dynvisc*timefacfac*(vderxy(2, 2) + vderxy(2, 2)));
+  assembler.template Vector<Velz>(shpvel.dx,     -dynvisc*rhstimefacfac*(vderxy(2, 0) + vderxy(0, 2)));
+  assembler.template Vector<Velz>(shpvel.dy,     -dynvisc*rhstimefacfac*(vderxy(2, 1) + vderxy(1, 2)));
+  assembler.template Vector<Velz>(shpvel.dz,     -dynvisc*rhstimefacfac*(vderxy(2, 2) + vderxy(2, 2)));
 #endif
 
 #ifdef COMBUST_DOM_PRESSURE
@@ -199,9 +216,9 @@ void BuildStandardDomainIntegrals(
   assembler.template Matrix<Vely,Pres>(shpvel.dy, -timefacfac, shppres.d0);
   assembler.template Matrix<Velz,Pres>(shpvel.dz, -timefacfac, shppres.d0);
 
-  assembler.template Vector<Velx>(shpvel.dx, timefacfac*pres);
-  assembler.template Vector<Vely>(shpvel.dy, timefacfac*pres);
-  assembler.template Vector<Velz>(shpvel.dz, timefacfac*pres);
+  assembler.template Vector<Velx>(shpvel.dx, rhstimefacfac*pres);
+  assembler.template Vector<Vely>(shpvel.dy, rhstimefacfac*pres);
+  assembler.template Vector<Velz>(shpvel.dz, rhstimefacfac*pres);
 #endif
 
 #ifdef COMBUST_DOM_CONTINUITY
@@ -219,7 +236,7 @@ void BuildStandardDomainIntegrals(
   assembler.template Matrix<Pres,Velz>(shppres.d0, timefacfac, shpvel.dz);
 
   const double trace_gamma = (vderxy(0,0) + vderxy(1,1) + vderxy(2,2));
-  assembler.template Vector<Pres>(shppres.d0, -timefacfac*trace_gamma);
+  assembler.template Vector<Pres>(shppres.d0, -rhstimefacfac*trace_gamma);
 #endif
 
 #ifdef COMBUST_DOM_RHS
@@ -231,9 +248,19 @@ void BuildStandardDomainIntegrals(
                  |      |
                   \    /
    */
-  assembler.template Vector<Velx>(shpvel.d0, fac*rhsint(0));
-  assembler.template Vector<Vely>(shpvel.d0, fac*rhsint(1));
-  assembler.template Vector<Velz>(shpvel.d0, fac*rhsint(2));
+  if (genalpha)
+  {
+    const double rhsfac = fac/alphaM;
+    assembler.template Vector<Velx>(shpvel.d0, rhsfac*rhsint(0));
+    assembler.template Vector<Vely>(shpvel.d0, rhsfac*rhsint(1));
+    assembler.template Vector<Velz>(shpvel.d0, rhsfac*rhsint(2));
+  }
+  else
+  {
+    assembler.template Vector<Velx>(shpvel.d0, fac*rhsint(0));
+    assembler.template Vector<Vely>(shpvel.d0, fac*rhsint(1));
+    assembler.template Vector<Velz>(shpvel.d0, fac*rhsint(2));
+  }
 #endif
 
   //----------------------------------------------------------------------
@@ -604,7 +631,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           size_t shpVecSizePres>
 void BuildStandardDomainIntegralsNormal(
     COMBUST::LocalAssembler<DISTYPE,ASSTYPE,NUMDOF>& assembler,
-    const XFEM::ApproxFuncNormalVector<2,shpVecSizeVel>& shp,     // shape functions and derivatives
+    const XFEM::ApproxFuncNormalVector<2,shpVecSizeVel>& shp, // shape functions and derivatives
     const XFEM::ApproxFunc<1,shpVecSizePres>& shp_pres,    // shape functions and derivatives
     const double& fac,                                     // factor for integration in space
     const double& timefac,                                 // factor for integration in time
@@ -613,13 +640,14 @@ void BuildStandardDomainIntegralsNormal(
     const double& dynvisc,                                 // dynamic viscosity at n+1
     const LINALG::Matrix<3,1>& velnp,                      // velocity at Gaussian point (GP) at n+1
     const double&              pres,                       // pressure at GP at n+1
+    const LINALG::Matrix<3,1>& accam,                      // acceleration at n+alphaM
     const LINALG::Matrix<3,1>& gradp,                      // pressure gradient at GP at n+1
     const LINALG::Matrix<3,3>& vderxy,                     // velocity derivative at GP at n+1
     const LINALG::Matrix<3,1>& rhsint,                     // time RHS (at n) and body force (at n+1) at GP
     const LINALG::Matrix<3,1>& res_old,                    // residual at GP at n
     const LINALG::Matrix<3,1>& visc_old,                   // viscous term at GP at n
-    const XFEM::ApproxFuncNormalVector<0,shpVecSizeVel>& enr_conv_c,     // convective term at GP at n
-    const XFEM::EnrViscs2N<shpVecSizeVel>& enr_viscs2,   // viscous term (second derivatves) at GP at n
+    const XFEM::ApproxFuncNormalVector<0,shpVecSizeVel>& enr_conv_c, // convective term at GP at n
+    const XFEM::EnrViscs2N<shpVecSizeVel>& enr_viscs2,     // viscous term (second derivatves) at GP at n
     const bool instationary,                               // turn on/off instationary problem
     const bool newton,                                     // turn on/off linearization of convective term
     const bool pstab,                                      // turn on/off PSPG stabilization

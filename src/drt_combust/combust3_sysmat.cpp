@@ -56,11 +56,12 @@ template <DRT::Element::DiscretizationType DISTYPE,
 void fillElementUnknownsArrays(
     const XFEM::ElementDofManager& dofman,
     const DRT::ELEMENTS::Combust3::MyState& mystate,
-    M1& evelnp,
+    M1& evelaf,
     M1& eveln,
     M1& evelnm,
     M1& eaccn,
-    V1& eprenp,
+    M1& eaccam,
+    V1& epreaf,
     V2& ephi,
     M2& etensor,
     V3& ediscpres
@@ -118,40 +119,66 @@ void fillElementUnknownsArrays(
   const std::vector<int>& presdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Pres>());
 #endif
 
-  for (size_t iparam=0; iparam<numparamvelx; ++iparam)
+  if (mystate.instationary_)
   {
-    evelnp(0,iparam) = mystate.velnp_[velxdof[iparam]];
-    if (mystate.instationary_)
+    for (size_t iparam=0; iparam<numparamvelx; ++iparam)
     {
       eveln( 0,iparam) = mystate.veln_[ velxdof[iparam]];
       evelnm(0,iparam) = mystate.velnm_[velxdof[iparam]];
       eaccn( 0,iparam) = mystate.accn_[ velxdof[iparam]];
     }
-  }
-  for (size_t iparam=0; iparam<numparamvely; ++iparam)
-  {
-    evelnp(1,iparam) = mystate.velnp_[velydof[iparam]];
-    if (mystate.instationary_)
+    for (size_t iparam=0; iparam<numparamvely; ++iparam)
     {
       eveln( 1,iparam) = mystate.veln_[ velydof[iparam]];
       evelnm(1,iparam) = mystate.velnm_[velydof[iparam]];
       eaccn( 1,iparam) = mystate.accn_[ velydof[iparam]];
     }
-  }
-  for (size_t iparam=0; iparam<numparamvelz; ++iparam)
-  {
-    evelnp(2,iparam) = mystate.velnp_[velzdof[iparam]];
-    if (mystate.instationary_)
+    for (size_t iparam=0; iparam<numparamvelz; ++iparam)
     {
       eveln( 2,iparam) = mystate.veln_[ velzdof[iparam]];
       evelnm(2,iparam) = mystate.velnm_[velzdof[iparam]];
       eaccn( 2,iparam) = mystate.accn_[ velzdof[iparam]];
     }
+    if(mystate.genalpha_)
+    {
+      for (size_t iparam=0; iparam<numparamvelx; ++iparam)
+        evelaf(0,iparam) = mystate.velaf_[velxdof[iparam]];
+      for (size_t iparam=0; iparam<numparamvely; ++iparam)
+        evelaf(1,iparam) = mystate.velaf_[velydof[iparam]];
+      for (size_t iparam=0; iparam<numparamvelz; ++iparam)
+        evelaf(2,iparam) = mystate.velaf_[velzdof[iparam]];
+
+      for (size_t iparam=0; iparam<numparamvelx; ++iparam)
+        eaccam(0,iparam) = mystate.accam_[velxdof[iparam]];
+      for (size_t iparam=0; iparam<numparamvely; ++iparam)
+        eaccam(1,iparam) = mystate.accam_[velydof[iparam]];
+      for (size_t iparam=0; iparam<numparamvelz; ++iparam)
+        eaccam(2,iparam) = mystate.accam_[velzdof[iparam]];
+    }
+    else
+    {
+      for (size_t iparam=0; iparam<numparamvelx; ++iparam)
+        evelaf(0,iparam) = mystate.velnp_[velxdof[iparam]];
+      for (size_t iparam=0; iparam<numparamvely; ++iparam)
+        evelaf(1,iparam) = mystate.velnp_[velydof[iparam]];
+      for (size_t iparam=0; iparam<numparamvelz; ++iparam)
+        evelaf(2,iparam) = mystate.velnp_[velzdof[iparam]];
+    }
   }
+  else
+  {
+    for (size_t iparam=0; iparam<numparamvelx; ++iparam)
+      evelaf(0,iparam) = mystate.velnp_[velxdof[iparam]];
+    for (size_t iparam=0; iparam<numparamvely; ++iparam)
+      evelaf(1,iparam) = mystate.velnp_[velydof[iparam]];
+    for (size_t iparam=0; iparam<numparamvelz; ++iparam)
+      evelaf(2,iparam) = mystate.velnp_[velzdof[iparam]];
+  }
+
 #ifdef COMBUST_NORMAL_ENRICHMENT
   for (size_t iparam=0; iparam<numparamveln; ++iparam)
   {
-    evelnp(3,iparam) = mystate.velnp_[velndof[iparam]];
+    evelaf(3,iparam) = mystate.velnp_[velndof[iparam]];
     if (mystate.instationary_)
     {
       eveln( 3,iparam) = mystate.veln_[ velndof[iparam]];
@@ -161,8 +188,16 @@ void fillElementUnknownsArrays(
     }
   }
 #endif
-  for (size_t iparam=0; iparam<numparampres; ++iparam)
-    eprenp(iparam) = mystate.velnp_[presdof[iparam]];
+  if (mystate.genalpha_)
+  {
+    for (size_t iparam=0; iparam<numparampres; ++iparam)
+      epreaf(iparam) = mystate.velaf_[presdof[iparam]];
+  }
+  else
+  {
+    for (size_t iparam=0; iparam<numparampres; ++iparam)
+      epreaf(iparam) = mystate.velnp_[presdof[iparam]];
+  }
 
   const bool epsilonele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Epsilonxx, 0) > 0);
   if (epsilonele_unknowns_present)
@@ -187,12 +222,24 @@ void fillElementUnknownsArrays(
     const std::vector<int>& epsilonxydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Epsilonxy>());
     const std::vector<int>& epsilonxzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Epsilonxz>());
     const std::vector<int>& epsilonyzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Epsilonyz>());
-    for (size_t iparam=0; iparam<numparamepsilonxx; ++iparam)   etensor(0,iparam) = mystate.velnp_[epsilonxxdof[iparam]];
-    for (size_t iparam=0; iparam<numparamepsilonyy; ++iparam)   etensor(1,iparam) = mystate.velnp_[epsilonyydof[iparam]];
-    for (size_t iparam=0; iparam<numparamepsilonzz; ++iparam)   etensor(2,iparam) = mystate.velnp_[epsilonzzdof[iparam]];
-    for (size_t iparam=0; iparam<numparamepsilonxy; ++iparam)   etensor(3,iparam) = mystate.velnp_[epsilonxydof[iparam]];
-    for (size_t iparam=0; iparam<numparamepsilonxz; ++iparam)   etensor(4,iparam) = mystate.velnp_[epsilonxzdof[iparam]];
-    for (size_t iparam=0; iparam<numparamepsilonyz; ++iparam)   etensor(5,iparam) = mystate.velnp_[epsilonyzdof[iparam]];
+    if (mystate.genalpha_)
+    {
+      for (size_t iparam=0; iparam<numparamepsilonxx; ++iparam)   etensor(0,iparam) = mystate.velaf_[epsilonxxdof[iparam]];
+      for (size_t iparam=0; iparam<numparamepsilonyy; ++iparam)   etensor(1,iparam) = mystate.velaf_[epsilonyydof[iparam]];
+      for (size_t iparam=0; iparam<numparamepsilonzz; ++iparam)   etensor(2,iparam) = mystate.velaf_[epsilonzzdof[iparam]];
+      for (size_t iparam=0; iparam<numparamepsilonxy; ++iparam)   etensor(3,iparam) = mystate.velaf_[epsilonxydof[iparam]];
+      for (size_t iparam=0; iparam<numparamepsilonxz; ++iparam)   etensor(4,iparam) = mystate.velaf_[epsilonxzdof[iparam]];
+      for (size_t iparam=0; iparam<numparamepsilonyz; ++iparam)   etensor(5,iparam) = mystate.velaf_[epsilonyzdof[iparam]];
+    }
+    else
+    {
+      for (size_t iparam=0; iparam<numparamepsilonxx; ++iparam)   etensor(0,iparam) = mystate.velnp_[epsilonxxdof[iparam]];
+      for (size_t iparam=0; iparam<numparamepsilonyy; ++iparam)   etensor(1,iparam) = mystate.velnp_[epsilonyydof[iparam]];
+      for (size_t iparam=0; iparam<numparamepsilonzz; ++iparam)   etensor(2,iparam) = mystate.velnp_[epsilonzzdof[iparam]];
+      for (size_t iparam=0; iparam<numparamepsilonxy; ++iparam)   etensor(3,iparam) = mystate.velnp_[epsilonxydof[iparam]];
+      for (size_t iparam=0; iparam<numparamepsilonxz; ++iparam)   etensor(4,iparam) = mystate.velnp_[epsilonxzdof[iparam]];
+      for (size_t iparam=0; iparam<numparamepsilonyz; ++iparam)   etensor(5,iparam) = mystate.velnp_[epsilonyzdof[iparam]];
+    }
   }
   const bool sigmaele_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Sigmaxx, 0) > 0);
   if (sigmaele_unknowns_present)
@@ -217,12 +264,24 @@ void fillElementUnknownsArrays(
     const std::vector<int>& sigmaxydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxy>());
     const std::vector<int>& sigmaxzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmaxz>());
     const std::vector<int>& sigmayzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Sigmayz>());
-    for (size_t iparam=0; iparam<numparamsigmaxx; ++iparam)   etensor(0,iparam) = mystate.velnp_[sigmaxxdof[iparam]];
-    for (size_t iparam=0; iparam<numparamsigmayy; ++iparam)   etensor(1,iparam) = mystate.velnp_[sigmayydof[iparam]];
-    for (size_t iparam=0; iparam<numparamsigmazz; ++iparam)   etensor(2,iparam) = mystate.velnp_[sigmazzdof[iparam]];
-    for (size_t iparam=0; iparam<numparamsigmaxy; ++iparam)   etensor(3,iparam) = mystate.velnp_[sigmaxydof[iparam]];
-    for (size_t iparam=0; iparam<numparamsigmaxz; ++iparam)   etensor(4,iparam) = mystate.velnp_[sigmaxzdof[iparam]];
-    for (size_t iparam=0; iparam<numparamsigmayz; ++iparam)   etensor(5,iparam) = mystate.velnp_[sigmayzdof[iparam]];
+    if (mystate.genalpha_)
+    {
+      for (size_t iparam=0; iparam<numparamsigmaxx; ++iparam)   etensor(0,iparam) = mystate.velaf_[sigmaxxdof[iparam]];
+      for (size_t iparam=0; iparam<numparamsigmayy; ++iparam)   etensor(1,iparam) = mystate.velaf_[sigmayydof[iparam]];
+      for (size_t iparam=0; iparam<numparamsigmazz; ++iparam)   etensor(2,iparam) = mystate.velaf_[sigmazzdof[iparam]];
+      for (size_t iparam=0; iparam<numparamsigmaxy; ++iparam)   etensor(3,iparam) = mystate.velaf_[sigmaxydof[iparam]];
+      for (size_t iparam=0; iparam<numparamsigmaxz; ++iparam)   etensor(4,iparam) = mystate.velaf_[sigmaxzdof[iparam]];
+      for (size_t iparam=0; iparam<numparamsigmayz; ++iparam)   etensor(5,iparam) = mystate.velaf_[sigmayzdof[iparam]];
+    }
+    else
+    {
+      for (size_t iparam=0; iparam<numparamsigmaxx; ++iparam)   etensor(0,iparam) = mystate.velnp_[sigmaxxdof[iparam]];
+      for (size_t iparam=0; iparam<numparamsigmayy; ++iparam)   etensor(1,iparam) = mystate.velnp_[sigmayydof[iparam]];
+      for (size_t iparam=0; iparam<numparamsigmazz; ++iparam)   etensor(2,iparam) = mystate.velnp_[sigmazzdof[iparam]];
+      for (size_t iparam=0; iparam<numparamsigmaxy; ++iparam)   etensor(3,iparam) = mystate.velnp_[sigmaxydof[iparam]];
+      for (size_t iparam=0; iparam<numparamsigmaxz; ++iparam)   etensor(4,iparam) = mystate.velnp_[sigmaxzdof[iparam]];
+      for (size_t iparam=0; iparam<numparamsigmayz; ++iparam)   etensor(5,iparam) = mystate.velnp_[sigmayzdof[iparam]];
+    }
   }
   const bool discpres_unknowns_present = (XFEM::getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::DiscPres, 0) > 0);
   if (discpres_unknowns_present)
@@ -249,10 +308,11 @@ namespace COMBUST
 {
 //! fill a number of (local) element arrays
 template <DRT::Element::DiscretizationType DISTYPE,
-          class M>
+          class M, class V>
 void fillElementGradPhi(
     const DRT::ELEMENTS::Combust3::MyState& mystate,
-    M& egradphi)
+    M& egradphi,
+    V& ecurv)
 {
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
@@ -263,6 +323,10 @@ void fillElementGradPhi(
     egradphi(0, iparam) = mystate.gradphinp_[ipos  ];
     egradphi(1, iparam) = mystate.gradphinp_[ipos+1];
     egradphi(2, iparam) = mystate.gradphinp_[ipos+2];
+  }
+  for (size_t iparam=0; iparam<numnode; ++iparam)
+  {
+    ecurv(iparam) = mystate.curv_[iparam];
   }
 }
 }
@@ -493,12 +557,16 @@ void Sysmat(
     const INPAR::FLUID::TimeIntegrationScheme timealgo,      ///< time discretization type
     const double                            dt,              ///< delta t (time step size)
     const double                            theta,           ///< factor for one step theta scheme
+    const double                            ga_alphaF,
+    const double                            ga_alphaM,
+    const double                            ga_gamma,
     const bool                              newton,          ///< full Newton or fixed-point-like
     const bool                              pstab,           ///< flag for stabilisation
     const bool                              supg,            ///< flag for stabilisation
     const bool                              cstab,           ///< flag for stabilisation
     const INPAR::FLUID::TauType             tautype,         ///< stabilization parameter definition
     const bool                              instationary,    ///< switch between stationary and instationary formulation
+    const bool                              genalpha,
     const INPAR::COMBUST::CombustionType    combusttype,     ///< switch for type of combusiton problem
     const double                            flamespeed,      ///<
     const double                            nitschevel,      ///<
@@ -528,25 +596,27 @@ void Sysmat(
 #ifdef COMBUST_NORMAL_ENRICHMENT
   const size_t shpVecSizeVel = COMBUST::SizeFacVel<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
   const size_t shpVecSizePres = COMBUST::SizeFacPres<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-  LINALG::Matrix<4,shpVecSizeVel> evelnp(true);
+  LINALG::Matrix<4,shpVecSizeVel> evelaf(true);
   LINALG::Matrix<4,shpVecSizeVel> eveln(true);
   LINALG::Matrix<4,shpVecSizeVel> evelnm(true);
   LINALG::Matrix<4,shpVecSizeVel> eaccn(true);
-  LINALG::Matrix<shpVecSizePres,1> eprenp(true);
+  LINALG::Matrix<4,shpVecSizeVel> eaccam(true);
+  LINALG::Matrix<shpVecSizePres,1> epreaf(true);
 #else
   const int shpVecSize = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-  LINALG::Matrix<3,shpVecSize> evelnp(true);
+  LINALG::Matrix<3,shpVecSize> evelaf(true);
   LINALG::Matrix<3,shpVecSize> eveln(true);
   LINALG::Matrix<3,shpVecSize> evelnm(true);
   LINALG::Matrix<3,shpVecSize> eaccn(true);
-  LINALG::Matrix<shpVecSize,1> eprenp(true);
+  LINALG::Matrix<3,shpVecSize> eaccam(true);
+  LINALG::Matrix<shpVecSize,1> epreaf(true);
 #endif
   LINALG::Matrix<numnode,1> ephi(true);
   LINALG::Matrix<6,shpVecSizeStress> etensor(true);
   LINALG::Matrix<shpVecSizeDiscPres,1> ediscpres(true);
 
   COMBUST::fillElementUnknownsArrays<DISTYPE,ASSTYPE>(
-      dofman, mystate, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etensor, ediscpres);
+      dofman, mystate, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor, ediscpres);
 
   switch(combusttype)
   {
@@ -558,19 +628,21 @@ void Sysmat(
     double ele_meas_minus = 0.0; // for different averages <> and {}
 #ifndef COMBUST_NORMAL_ENRICHMENT
     COMBUST::SysmatDomainNitsche<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler,
+        ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi,
+        material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
         ele_meas_plus, ele_meas_minus);
 #else
         LINALG::Matrix<3,numnode> egradphi(true);
+        LINALG::Matrix<numnode,1> ecurv(true);
      // boundary integrals are only added for intersected elements (fully enriched elements)
 //    if (ele->Bisected() == true)
 //    {
-      COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi);
+      if (smoothed_boundary_integration)
+        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
 //    }
     COMBUST::SysmatDomainNitscheNormal<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, egradphi,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler,
+        ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, egradphi,
+        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
         ele_meas_plus, ele_meas_minus);
 #endif
 #endif
@@ -578,27 +650,29 @@ void Sysmat(
 #ifdef COMBUST_NORMAL_ENRICHMENT
     // get smoothed gradient of phi for surface tension applications
     LINALG::Matrix<3,numnode> egradphi(true);
+    LINALG::Matrix<numnode,1> ecurv(true);
      // boundary integrals are only added for intersected elements (fully enriched elements)
 //    if (ele->Bisected() == true)
 //    {
-      COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi);
+      if (smoothed_boundary_integration)
+        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
 //    }
 
 //cout << "phi gradient danach" << ele->Id() << " " << egradphi << endl;
 
     COMBUST::SysmatDomainStressNormal<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, egradphi, etensor, ediscpres,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
+        ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, egradphi, etensor, ediscpres,
+        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler);
 
 #else
     COMBUST::SysmatDomainStress<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etensor, ediscpres,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
+        ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor, ediscpres,
+        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler);
 #ifdef COMBUST_SIGMA_BASED
     // TODO: der aufruf ist doch der gleiche wie der darueber? -> COMBUST_SIGMA_BASED raus?
     COMBUST::SysmatDomainStress<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etensor, ediscpres,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler);
+        ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor, ediscpres,
+        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler);
 #endif
 #endif
 #endif
@@ -611,16 +685,19 @@ void Sysmat(
       // get smoothed gradient of phi for surface tension applications
       LINALG::Matrix<3,numnode> egradphi;
       egradphi.Clear();
-      fillElementGradPhi<DISTYPE>(mystate, egradphi);
+      LINALG::Matrix<numnode,1> ecurv;
+      ecurv.Clear();
+      if (smoothed_boundary_integration)
+        fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
 #ifndef COMBUST_NORMAL_ENRICHMENT
       COMBUST::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, timealgo, dt, theta, assembler,
+          ele, ih, dofman, evelaf, epreaf, ephi, egradphi, ecurv, material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
           flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
           surftensapprox, connected_interface, veljumptype,
           fluxjumptype, smoothed_boundary_integration);
 #else
       COMBUST::SysmatBoundaryNitscheNormal<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, timealgo, dt, theta, assembler,
+          ele, ih, dofman, evelaf, epreaf, ephi, egradphi, material, timealgo, dt, theta, assembler,
           flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
           surftensapprox, connected_interface, veljumptype,
           fluxjumptype, smoothed_boundary_integration);
@@ -633,21 +710,25 @@ void Sysmat(
 #ifdef COMBUST_STRESS_BASED
       // get smoothed gradient of phi for surface tension applications
       LINALG::Matrix<3,numnode> egradphi;
-      COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi);
+      egradphi.Clear();
+      LINALG::Matrix<numnode,1> ecurv;
+      ecurv.Clear();
+      if (smoothed_boundary_integration)
+        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
 
 #ifdef COMBUST_EPSPRES_BASED
 #ifdef COMBUST_NORMAL_ENRICHMENT
       COMBUST::SysmatBoundaryStressNormal<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, eprenp, ephi, egradphi, etensor, ediscpres, material, timealgo, dt,
+          ele, ih, dofman, evelaf, epreaf, ephi, egradphi, etensor, ediscpres, material, timealgo, dt,
           theta, assembler, flamespeed);
 #else
       COMBUST::SysmatBoundaryStress<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, eprenp, ephi, egradphi, etensor, ediscpres, material, timealgo, dt,
+          ele, ih, dofman, evelaf, epreaf, ephi, egradphi, etensor, ediscpres, material, timealgo, dt,
           theta, assembler, flamespeed);
 #endif
 #ifdef COMBUST_SIGMA_BASED
       COMBUST::SysmatBoundarySigma<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, eprenp, ephi, egradphi, etensor, ediscpres, material, timealgo, dt,
+          ele, ih, dofman, evelaf, epreaf, ephi, egradphi, etensor, ediscpres, material, timealgo, dt,
           theta, assembler, flamespeed);
 #endif
 #endif
@@ -662,8 +743,8 @@ void Sysmat(
     double ele_meas_minus = 0.0; // for different averages <> and {}
 
     COMBUST::SysmatTwoPhaseFlow<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etensor,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler,
+        ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor,
+        material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
         ele_meas_plus, ele_meas_minus);
   }
   break;
@@ -673,8 +754,8 @@ void Sysmat(
     double ele_meas_minus = 0.0; // for different averages <> and {}
 
     COMBUST::SysmatTwoPhaseFlow<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi, etensor,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler,
+        ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor,
+        material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
         ele_meas_plus, ele_meas_minus);
 
     // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
@@ -683,11 +764,14 @@ void Sysmat(
       // get smoothed gradient of phi for surface tension applications
       LINALG::Matrix<3,numnode> egradphi;
       egradphi.Clear();
-      COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi);
+      LINALG::Matrix<numnode,1> ecurv;
+      ecurv.Clear();
+      if (smoothed_boundary_integration)
+        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
 
       COMBUST::SysmatBoundarySurfaceTension<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, eprenp, ephi, egradphi, etensor,
-          material, timealgo, dt, theta, assembler,
+          ele, ih, dofman, evelaf, epreaf, ephi, egradphi, etensor,
+          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
           flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
           surftensapprox, connected_interface, veljumptype,
           fluxjumptype, smoothed_boundary_integration);
@@ -700,8 +784,8 @@ void Sysmat(
     double ele_meas_minus = 0.0; // for different averages <> and {}
 
     COMBUST::SysmatDomainNitsche<DISTYPE,ASSTYPE,NUMDOF>(
-        ele, ih, dofman, evelnp, eveln, evelnm, eaccn, eprenp, ephi,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, assembler,
+        ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi,
+        material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
         ele_meas_plus, ele_meas_minus);
 
     // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
@@ -710,11 +794,14 @@ void Sysmat(
       // get smoothed gradient of phi for surface tension applications
       LINALG::Matrix<3,numnode> egradphi;
       egradphi.Clear();
-      COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi);
+      LINALG::Matrix<numnode,1> ecurv;
+      ecurv.Clear();
+      if (smoothed_boundary_integration)
+        COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
 
       COMBUST::SysmatBoundaryNitsche<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelnp, eprenp, ephi, egradphi,
-          material, timealgo, dt, theta, assembler,
+          ele, ih, dofman, evelaf, epreaf, ephi, egradphi, ecurv,
+          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
           flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
           surftensapprox, connected_interface, veljumptype,
           fluxjumptype, smoothed_boundary_integration);
@@ -786,12 +873,16 @@ void COMBUST::callSysmat(
     const INPAR::FLUID::TimeIntegrationScheme timealgo, ///< time discretization type
     const double                         dt,            ///< delta t (time step size)
     const double                         theta,         ///< factor for one step theta scheme
+    const double                         ga_alphaF,
+    const double                         ga_alphaM,
+    const double                         ga_gamma,
     const bool                           newton,
     const bool                           pstab,
     const bool                           supg,
     const bool                           cstab,
     const INPAR::FLUID::TauType          tautype,       ///< stabilization parameter definition
     const bool                           instationary,
+    const bool                           genalpha,
     const INPAR::COMBUST::CombustionType combusttype,
     const double                         flamespeed,
     const double                         nitschevel,
@@ -809,33 +900,33 @@ void COMBUST::callSysmat(
     case DRT::Element::hex8:
       COMBUST::Sysmat<DRT::Element::hex8,XFEM::standard_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
-          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
     break;
     case DRT::Element::hex20:
       COMBUST::Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
-          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
           combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
     break;
 //    case DRT::Element::hex27:
 //      COMBUST::Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet4:
 //      COMBUST::Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet10:
 //      COMBUST::Sysmat<DRT::Element::tet10,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
     default:
@@ -849,33 +940,33 @@ void COMBUST::callSysmat(
     case DRT::Element::hex8:
       COMBUST::Sysmat<DRT::Element::hex8,XFEM::xfem_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
-          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
     break;
     case DRT::Element::hex20:
       COMBUST::Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
-          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
           combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,
             connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
     break;
 //    case DRT::Element::hex27:
 //      COMBUST::Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet4:
 //      COMBUST::Sysmat<DRT::Element::tet4,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet10:
 //      COMBUST::Sysmat<DRT::Element::tet10,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
     default:
@@ -910,8 +1001,8 @@ void NitscheErrors(
   const int shpVecSize       = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
-  LINALG::Matrix<shpVecSize,1> eprenp;
-  LINALG::Matrix<3,shpVecSize> evelnp;
+  LINALG::Matrix<shpVecSize,1> epreaf;
+  LINALG::Matrix<3,shpVecSize> evelaf;
   LINALG::Matrix<numnode,1> ephi;
 
 
@@ -936,21 +1027,28 @@ void NitscheErrors(
   const std::vector<int>& velzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velz>());
   const std::vector<int>& presdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Pres>());
 
-  for (size_t iparam=0; iparam<numparamvelx; ++iparam)
+  if (mystate.genalpha_)
   {
-    evelnp(0,iparam) = mystate.velnp_[velxdof[iparam]];
+    for (size_t iparam=0; iparam<numparamvelx; ++iparam)
+      evelaf(0,iparam) = mystate.velaf_[velxdof[iparam]];
+    for (size_t iparam=0; iparam<numparamvely; ++iparam)
+      evelaf(1,iparam) = mystate.velaf_[velydof[iparam]];
+    for (size_t iparam=0; iparam<numparamvelz; ++iparam)
+      evelaf(2,iparam) = mystate.velaf_[velzdof[iparam]];
+    for (size_t iparam=0; iparam<numparampres; ++iparam)
+      epreaf(iparam) = mystate.velaf_[presdof[iparam]];
   }
-  for (size_t iparam=0; iparam<numparamvely; ++iparam)
+  else
   {
-    evelnp(1,iparam) = mystate.velnp_[velydof[iparam]];
+    for (size_t iparam=0; iparam<numparamvelx; ++iparam)
+      evelaf(0,iparam) = mystate.velnp_[velxdof[iparam]];
+    for (size_t iparam=0; iparam<numparamvely; ++iparam)
+      evelaf(1,iparam) = mystate.velnp_[velydof[iparam]];
+    for (size_t iparam=0; iparam<numparamvelz; ++iparam)
+      evelaf(2,iparam) = mystate.velnp_[velzdof[iparam]];
+    for (size_t iparam=0; iparam<numparampres; ++iparam)
+      epreaf(iparam) = mystate.velnp_[presdof[iparam]];
   }
-  for (size_t iparam=0; iparam<numparamvelz; ++iparam)
-  {
-    evelnp(2,iparam) = mystate.velnp_[velzdof[iparam]];
-  }
-  for (size_t iparam=0; iparam<numparampres; ++iparam)
-    eprenp(iparam) = mystate.velnp_[presdof[iparam]];
-
   // copy element phi vector from std::vector (mystate) to LINALG::Matrix (ephi)
   // TODO: this is inefficient, but it is nice to have only fixed size matrices afterwards!
   for (size_t iparam=0; iparam<numnode; ++iparam)
@@ -961,16 +1059,19 @@ void NitscheErrors(
   double ele_meas_minus = 0.0;	// for different averages <> and {}
 
   COMBUST::Nitsche_BuildDomainIntegratedErrors<DISTYPE,ASSTYPE,NUMDOF>(
-      eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, material, ele_meas_plus, ele_meas_minus);
+      eleparams, NitscheErrorType, ele, ih, dofman, evelaf, epreaf, ephi, material, ele_meas_plus, ele_meas_minus);
 
   if (ele->Bisected() or ele->Touched() )
   {
     LINALG::Matrix<3,numnode> egradphi;
     egradphi.Clear();
-    COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi);
+    LINALG::Matrix<numnode,1> ecurv;
+      ecurv.Clear();
+    if (smoothed_boundary_integration)
+      COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
 
     COMBUST::Nitsche_BuildBoundaryIntegratedErrors<DISTYPE,ASSTYPE,NUMDOF>(
-        eleparams, NitscheErrorType, ele, ih, dofman, evelnp, eprenp, ephi, egradphi, material, ele_meas_plus, ele_meas_minus, smoothed_boundary_integration);
+        eleparams, NitscheErrorType, ele, ih, dofman, evelaf, epreaf, ephi, egradphi, material, ele_meas_plus, ele_meas_minus, smoothed_boundary_integration);
   }
 
   return;

@@ -86,13 +86,16 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   smoothgradphi_(DRT::INPUT::IntegralValue<INPAR::COMBUST::SmoothGradPhi>(params_.sublist("COMBUSTION FLUID"),"SMOOTHGRADPHI")),
   step_(0),
   time_(0.0),
-  stepmax_ (params_.get<int>   ("max number timesteps")),
+  stepmax_ (params_.get<int>("max number timesteps")),
   maxtime_ (params_.get<double>("total time")),
+  startsteps_(params_.get<int> ("number of start steps")),
   dta_     (params_.get<double> ("time step size")),
   dtp_     (params_.get<double> ("time step size")),
   timealgo_(DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo")),
-  //startalgo_(params_.get<INPAR::FLUID::TimeIntegrationScheme>("start time int algo")),
   theta_   (params_.get<double>("theta")),
+  alphaM_(params_.get<double>("alpha_M")),
+  alphaF_(params_.get<double>("alpha_F")),
+  gamma_(params_.get<double>("gamma")),
   initstatsol_(DRT::INPUT::IntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"INITSTATSOL")),
   itemax_(params_.get<int>("max nonlin iter steps")),
   extrapolationpredictor_(params.get("do explicit predictor",false)),
@@ -126,7 +129,6 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // connect degrees of freedom for periodic boundary conditions
   //------------------------------------------------------------------------------------------------
   {
-    cout << "apply periodic boundary conditions for the fluid" << endl;
     // set elements to 'standard mode' so the parallel redistribution (includes call of FillComplete)
     // hidden in the construction of periodic boundary condition runs correctly
     // remark: the 'elementdofmanager' would get lost packing and unpacking the elements
@@ -136,8 +138,16 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
 
     PeriodicBoundaryConditions pbc(discret_);
     pbc.UpdateDofsForPeriodicBoundaryConditions();
-    pbcmapmastertoslave_ = pbc.ReturnAllCoupledRowNodes();
+    pbcmapmastertoslave_ = pbc.ReturnAllCoupledColNodes();
   }
+
+  //------------------------------------------------------------------------------------------------
+  // consistency checks
+  //------------------------------------------------------------------------------------------------
+  if (combusttype_ != INPAR::COMBUST::combusttype_twophaseflow and smoothgradphi_ == INPAR::COMBUST::smooth_grad_phi_none)
+    dserror("Every COMBUSTTYPE except Two_Phase_Flow need smoothgradphi_ set to anything but smooth_grad_phi_none.");
+  if (!smoothed_boundary_integration_ and smoothgradphi_ != INPAR::COMBUST::smooth_grad_phi_none)
+    dserror("If SMOOTHGRADPHI is not smooth_grad_phi_none, then the SMOOTHED_BOUNDARY_INTEGRATION has to be set to Yes.");
 
   //------------------------------------------------------------------------------------------------
   // prepare XFEM (initial degree of freedom management)
@@ -186,6 +196,8 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // split based on complete fluid field
   FLD::UTILS::SetupFluidSplit(*discret_,*standarddofset_,3,velpressplitterForOutput_);
 
+  turbstatisticsmanager_ = Teuchos::null;
+
   //------------------------------------------------------------------------------------------------
   // get dof layout from the discretization to construct vectors and matrices
   //------------------------------------------------------------------------------------------------
@@ -217,8 +229,19 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   state_.velnm_ = LINALG::CreateVector(*dofrowmap,true);
 
   // acceleration at time n+1 and n
-  state_.accnp_ = LINALG::CreateVector(*dofrowmap,true);
-  state_.accn_  = LINALG::CreateVector(*dofrowmap,true);
+  state_.accnp_  = LINALG::CreateVector(*dofrowmap,true);
+  state_.accn_   = LINALG::CreateVector(*dofrowmap,true);
+
+  if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
+  {
+    state_.velaf_ = LINALG::CreateVector(*dofrowmap,true);
+    state_.accam_  = LINALG::CreateVector(*dofrowmap,true);
+  }
+  else
+  {
+    state_.velaf_ = Teuchos::null;
+    state_.accam_  = Teuchos::null;
+  }
 
   state_.nodalDofDistributionMap_.clear();
   state_.elementalDofDistributionMap_.clear();
@@ -226,9 +249,6 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   dofmanagerForOutput_->fillDofRowDistributionMaps(
       state_.nodalDofDistributionMap_,
       state_.elementalDofDistributionMap_);
-
-  // history vector: scheint in state-Konstrukt nicht nötig zu sein!
-//  hist_ = LINALG::CreateVector(*dofrowmap,true);
 
   //---------------------------------------------
   // vectors associated with boundary conditions
@@ -360,6 +380,35 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
       dserror("number of time step is wrong");
     break;
   }
+  case INPAR::FLUID::timeint_afgenalpha:
+  {
+    // use start parameters for generalized alpha scheme
+    if (startsteps_>0)
+    {
+      if (step_<=startsteps_)
+      {
+        if (startsteps_ > stepmax_)
+          dserror("more starting steps than total time steps");
+
+        cout0_ << "/!\\ first " << startsteps_ << " steps are computed with Backward-Euler scheme" << endl;
+        // use backward-Euler-type parameter combination
+        alphaM_ = 1.0;
+        alphaF_ = 1.0;
+        gamma_  = 1.0;
+      }
+      else
+      {
+        // recall original parameters from input file
+        alphaM_ = params_.get<double>("alpha_M");
+        alphaF_ = params_.get<double>("alpha_F");
+        gamma_  = params_.get<double>("gamma");
+      }
+    }
+    // compute "pseudo-theta" for af-generalized-alpha scheme
+    theta_ = alphaF_*gamma_/alphaM_;
+
+    break;
+  }
   case INPAR::FLUID::timeint_bdf2:
   {
     // do a backward Euler step for the first time step
@@ -402,27 +451,27 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
   //
   // We cannot have a predictor in case of monolithic FSI here. There needs to
   // be a way to turn this off.
-  if (extrapolationpredictor_)
-  {
-    // TODO Was davon brauchen wir?
-    if (step_>1)
-    {
-      double timealgo_constant=theta_;
-
-      TIMEINT_THETA_BDF2::ExplicitPredictor(
-        "default",
-        state_.veln_,
-        state_.velnm_,
-        state_.accn_,
-        velpressplitter_,
-        timealgo_,
-        timealgo_constant,
-        dta_,
-        dtp_,
-        state_.velnp_,
-        discret_->Comm());
-    }
-  }
+//  if (extrapolationpredictor_)
+//  {
+//    // TODO Was davon brauchen wir?
+//    if (step_>1)
+//    {
+//      double timealgo_constant=theta_;
+//
+//      TIMEINT_THETA_BDF2::ExplicitPredictor(
+//        "default",
+//        state_.veln_,
+//        state_.velnm_,
+//        state_.accn_,
+//        velpressplitter_,
+//        timealgo_,
+//        timealgo_constant,
+//        dta_,
+//        dtp_,
+//        state_.velnp_,
+//        discret_->Comm());
+//    }
+//  }
 
   // -------------------------------------------------------------------
   //         evaluate dirichlet and neumann boundary conditions
@@ -484,6 +533,25 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
     neumann_loads_->PutScalar(0.0);
     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
     discret_->ClearState();
+  }
+
+  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+  {
+    // --------------------------------------------------
+    // adjust accnp according to Dirichlet values of velnp
+    //
+    //                                  n+1     n
+    //                               vel   - vel
+    //       n+1      n  gamma-1.0      (0)
+    //    acc    = acc * --------- + ------------
+    //       (0)           gamma      gamma * dt
+    //
+    GenAlphaUpdateAcceleration();
+
+    // ----------------------------------------------------------------
+    // compute values at intermediate time steps
+    // ----------------------------------------------------------------
+    GenAlphaIntermediateValues();
   }
 
 }
@@ -657,6 +725,8 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
             oldNodalDofColDistrib,
             newdofrowmap,
             state_.nodalDofDistributionMap_));
+          //,
+            //pbcmapmastertoslave_));
         }
 
         if(start_val_semilagrange_)
@@ -758,9 +828,19 @@ const Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::ConVelnp()
   //       (here in every nonlinear iteration, and in the Output() function after every time step)
 
   // convection velocity vector
-  Teuchos::RCP<Epetra_Vector> convel = dofmanagerForOutput_->transformXFEMtoStandardVector(
-                                         *state_.velnp_, *standarddofset_,
-                                         state_.nodalDofDistributionMap_, outputfields);
+  Teuchos::RCP<Epetra_Vector> convel = Teuchos::null;
+  if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
+  {
+    convel = dofmanagerForOutput_->transformXFEMtoStandardVector(
+        *state_.velaf_, *standarddofset_,
+        state_.nodalDofDistributionMap_, outputfields);
+  }
+  else
+  {
+    convel = dofmanagerForOutput_->transformXFEMtoStandardVector(
+        *state_.velnp_, *standarddofset_,
+        state_.nodalDofDistributionMap_, outputfields);
+  }
   return convel;
 }
 
@@ -803,7 +883,8 @@ const Teuchos::RCP<Epetra_Vector> FLD::CombustFluidImplicitTimeInt::Hist()
 
   //TODO es ist sowas auch noch in PrepareNonlinearSolve(). Was brauchen wir?
   //stationary case (timealgo_== INPAR::FLUID::timeint_stationary))
-  if (timealgo_==INPAR::FLUID::timeint_one_step_theta)
+  if ( (timealgo_==INPAR::FLUID::timeint_one_step_theta) or
+       (timealgo_==INPAR::FLUID::timeint_afgenalpha) )
     FLD::TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(veln,Teuchos::null, accn,timealgo_, dta_, theta_, hist);
   else
     dserror("time integration scheme not supported");
@@ -933,10 +1014,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       ParameterList eleparams;
 
       // action for elements
-      if (timealgo_==INPAR::FLUID::timeint_stationary)
-        eleparams.set("action","calc_fluid_stationary_systemmat_and_residual");
-      else
-        eleparams.set("action","calc_fluid_systemmat_and_residual");
+      eleparams.set("action","calc_fluid_systemmat_and_residual");
 
       // flag for type of combustion problem
       eleparams.set<int>("combusttype",combusttype_);
@@ -961,6 +1039,9 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       eleparams.set<int>("timealgo",timealgo_);
       eleparams.set("dt",dta_);
       eleparams.set("theta",theta_);
+      eleparams.set("gamma",gamma_);
+      eleparams.set("alphaF",alphaF_);
+      eleparams.set("alphaM",alphaM_);
 
 #ifdef SUGRVEL_OUTPUT
       //eleparams.set("step",step_);
@@ -983,10 +1064,18 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
       // set vector values needed by elements
       discret_->ClearState();
+
+      // set scheme-specific element parameters and vector values
+      //if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+      //  discret_->SetState("velaf",state_.velaf_);
+      //else
       discret_->SetState("velnp",state_.velnp_);
+
       discret_->SetState("veln" ,state_.veln_);
       discret_->SetState("velnm",state_.velnm_);
       discret_->SetState("accn" ,state_.accn_);
+
+      //discret_->SetState("accam",state_.accam_);
 
       discret_->SetState("velpres nodal iterinc",oldinc_);
 
@@ -1378,6 +1467,23 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
     //------------------------------------------------ update (u,p) trial
     state_.velnp_->Update(1.0,*incvel_,1.0);
+
+    // -------------------------------------------------------------------
+    // For af-generalized-alpha: update accelerations
+    // Furthermore, calculate velocities, pressures, scalars and
+    // accelerations at intermediate time steps n+alpha_F and n+alpha_M,
+    // respectively, for next iteration.
+    // This has to be done at the end of the iteration, since we might
+    // need the velocities at n+alpha_F in a potential coupling
+    // algorithm, for instance.
+    // -------------------------------------------------------------------
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+    {
+      GenAlphaUpdateAcceleration();
+
+      GenAlphaIntermediateValues();
+    }
+
     //------------------- store nodal increment for element stress update
     oldinc_->Update(1.0,*incvel_,0.0);
   }
@@ -1461,7 +1567,518 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
   dataout << endl;
   dataout.close();
 #endif
-} // CombustImplicitTimeInt::NonlinearSolve
+}
+
+
+/*----------------------------------------------------------------------*
+ | predictor                                                   vg 02/09 |
+ *----------------------------------------------------------------------*/
+void FLD::CombustFluidImplicitTimeInt::Predictor()
+{
+  // -------------------------------------------------------------------
+  // time measurement: nonlinear iteration
+  // -------------------------------------------------------------------
+  TEUCHOS_FUNC_TIME_MONITOR("   + predictor");
+
+  // -------------------------------------------------------------------
+  // call elements to calculate system matrix and rhs and assemble
+  // -------------------------------------------------------------------
+  AssembleMatAndRHS();
+
+  // -------------------------------------------------------------------
+  // calculate and print out residual norms
+  // (blank residual DOFs which are on Dirichlet BC
+  // We can do this because the values at the dirichlet positions
+  // are not used anyway.
+  // We could avoid this though, if velrowmap_ and prerowmap_ would
+  // not include the dirichlet values as well. But it is expensive
+  // to avoid that.)
+  // -------------------------------------------------------------------
+  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),residual_);
+
+  double vresnorm;
+  double presnorm;
+
+  Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
+  onlyvel->Norm2(&vresnorm);
+
+  Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(residual_);
+  onlypre->Norm2(&presnorm);
+
+  if (myrank_ == 0)
+  {
+    printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+    printf("| predictor  |  vel. | pre. res. | %10.3E   | %10.3E   |      --      |      --      |",vresnorm,presnorm);
+    printf(" (      --     ,te=%10.3E",dtele_);
+    printf(")\n");
+    printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+  }
+
+}
+
+
+/*----------------------------------------------------------------------*
+ | (multiple) corrector                                        vg 02/09 |
+ *----------------------------------------------------------------------*/
+void FLD::CombustFluidImplicitTimeInt::MultiCorrector()
+{
+  PrepareNonlinearSolve();
+
+  // -------------------------------------------------------------------
+  // time measurement: nonlinear iteration
+  // -------------------------------------------------------------------
+  TEUCHOS_FUNC_TIME_MONITOR("   + corrector");
+
+  dtsolve_  = 0.0;
+
+  // -------------------------------------------------------------------
+  // parameters and variables for nonlinear iteration
+  // -------------------------------------------------------------------
+  const double ittol = params_.get<double>("tolerance for nonlin iter");
+  int          itnum = 0;
+  //int          itemax = 0;
+  bool         stopnonliniter = false;
+  double       incvelnorm_L2;
+  double       incprenorm_L2;
+  double       velnorm_L2;
+  double       prenorm_L2;
+  double       vresnorm;
+  double       presnorm;
+
+  // -------------------------------------------------------------------
+  // currently default for turbulent channel flow:
+  // only one iteration before sampling
+  // -------------------------------------------------------------------
+  //if (special_flow_ == "channel_flow_of_height_2" && step_<samstart_ )
+  //     itemax = 1;
+  //else itemax = params_.get<int>("max nonlin iter steps");
+
+  // -------------------------------------------------------------------
+  // turn adaptive solver tolerance on/off
+  // -------------------------------------------------------------------
+  const bool   isadapttol    = params_.get<bool>("ADAPTCONV");
+  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER");
+
+  // -------------------------------------------------------------------
+  // prepare print out for (multiple) corrector
+  // -------------------------------------------------------------------
+  if (myrank_ == 0)
+  {
+    printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+    printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc ---|\n");
+  }
+
+    // increment of the old iteration step - used for update of condensed element stresses
+  oldinc_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+
+  // -------------------------------------------------------------------
+  // nonlinear iteration loop
+  // -------------------------------------------------------------------
+  while (stopnonliniter==false)
+  {
+    itnum++;
+
+    // -------------------------------------------------------------------
+    // call elements to calculate system matrix and rhs and assemble
+    // -------------------------------------------------------------------
+    AssembleMatAndRHS();
+
+    // -------------------------------------------------------------------
+    // apply Dirichlet boundary conditions to system of equations:
+    // - Residual displacements are supposed to be zero for resp. dofs.
+    // - Time for applying Dirichlet boundary conditions is measured.
+    // -------------------------------------------------------------------
+    incvel_->PutScalar(0.0);
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
+      LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
+    }
+
+    // -------------------------------------------------------------------
+    // solve for velocity and pressure increments
+    // - Adaptive linear solver tolerance is used from second
+    //   corrector step on.
+    // - Time for solver is measured.
+    // -------------------------------------------------------------------
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
+
+      const double tcpusolve=Teuchos::Time::wallTime();
+
+      // do adaptive linear solver tolerance (not in first solve)
+      if (isadapttol and itnum>1)
+      {
+        double currresidual = max(vresnorm,presnorm);
+        currresidual = max(currresidual,incvelnorm_L2/velnorm_L2);
+        currresidual = max(currresidual,incprenorm_L2/prenorm_L2);
+        solver_.AdaptTolerance(ittol,currresidual,adaptolbetter);
+      }
+
+#if 0
+      if (project_)
+      {
+        DRT::Condition* KSPcond=discret_->GetCondition("KrylovSpaceProjection");
+
+        // in this case, we want to project out some zero pressure modes
+        const string* definition = KSPcond->Get<string>("weight vector definition");
+
+        if(*definition == "pointvalues")
+        {
+          // zero w and c
+          w_->PutScalar(0.0);
+          c_->PutScalar(0.0);
+
+          // get pressure
+          const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
+
+          for(int rr=0;rr<numdim_;++rr)
+          {
+            if(abs((*mode)[rr]>1e-14))
+            {
+              dserror("expecting only an undetermined pressure");
+            }
+          }
+
+          int predof = numdim_;
+
+          Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
+
+          presmode->PutScalar((*mode)[predof]);
+
+          /* export to vector to normalize against
+          //
+          // Note that in the case of definition pointvalue based,
+          // the average pressure will vanish in a pointwise sense
+          //
+          //    +---+
+          //     \
+          //      +   p_i  = 0
+          //     /
+          //    +---+
+          */
+          Teuchos::RCP<Epetra_Vector> tmpw = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+          LINALG::Export(*presmode,*tmpw);
+          Teuchos::RCP<Epetra_Vector> tmpkspw = kspsplitter_.ExtractKSPCondVector(*tmpw);
+          LINALG::Export(*tmpkspw,*w_);
+
+          // export to vector of ones
+          presmode->PutScalar(1.0);
+          Teuchos::RCP<Epetra_Vector> tmpc = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+          LINALG::Export(*presmode,*tmpc);
+          Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*tmpc);
+          LINALG::Export(*tmpkspc,*c_);
+        }
+        else if(*definition == "integration")
+        {
+          // zero w and c
+          w_->PutScalar(0.0);
+          c_->PutScalar(0.0);
+
+          ParameterList mode_params;
+
+          // set action for elements
+          mode_params.set("action","integrate_shape");
+
+          if (alefluid_)
+          {
+            discret_->SetState("dispnp",dispnp_);
+          }
+
+          /* evaluate KrylovSpaceProjection condition in order to get
+          // integrated nodal basis functions w_
+          // Note that in the case of definition integration based,
+          // the average pressure will vanish in an integral sense
+          //
+          //                    /              /                      /
+          //   /    \          |              |  /          \        |  /    \
+          //  | w_*p | = p_i * | N_i(x) dx =  | | N_i(x)*p_i | dx =  | | p(x) | dx = 0
+          //   \    /          |              |  \          /        |  \    /
+          //                   /              /                      /
+          */
+
+
+          discret_->EvaluateCondition
+          (mode_params        ,
+           Teuchos::null      ,
+           Teuchos::null      ,
+           w_               ,
+           Teuchos::null      ,
+           Teuchos::null      ,
+           "KrylovSpaceProjection");
+
+          // get pressure
+          const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
+
+          for(int rr=0;rr<numdim_;++rr)
+          {
+            if(abs((*mode)[rr]>1e-14))
+            {
+              dserror("expecting only an undetermined pressure");
+            }
+          }
+
+          Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
+
+          // export to vector of ones
+          presmode->PutScalar(1.0);
+          Teuchos::RCP<Epetra_Vector> tmpc = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+          LINALG::Export(*presmode,*tmpc);
+          Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*tmpc);
+          LINALG::Export(*tmpkspc,*c_);
+        }
+        else
+        {
+          dserror("unknown definition of weight vector w for restriction of Krylov space");
+        }
+      }
+      solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
+      solver_.ResetTolerance();
+#endif
+
+      solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1);
+      solver_.ResetTolerance();
+
+      dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
+    }
+
+    // -------------------------------------------------------------------
+    // update velocity and pressure values by increments
+    // -------------------------------------------------------------------
+    state_.velnp_->Update(1.0,*incvel_,1.0);
+
+    // -------------------------------------------------------------------
+    // For af-generalized-alpha: update accelerations
+    // Furthermore, calculate velocities, pressures, scalars and
+    // accelerations at intermediate time steps n+alpha_F and n+alpha_M,
+    // respectively, for next iteration.
+    // This has to be done at the end of the iteration, since we might
+    // need the velocities at n+alpha_F in a potential coupling
+    // algorithm, for instance.
+    // -------------------------------------------------------------------
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+    {
+      GenAlphaUpdateAcceleration();
+
+      GenAlphaIntermediateValues();
+    }
+
+    // -------------------------------------------------------------------
+    // calculate and print out norms for convergence check
+    // (blank residual DOFs which are on Dirichlet BC
+    // We can do this because the values at the dirichlet positions
+    // are not used anyway.
+    // We could avoid this though, if velrowmap_ and prerowmap_ would
+    // not include the dirichlet values as well. But it is expensive
+    // to avoid that.)
+    // -------------------------------------------------------------------
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),residual_);
+
+    Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
+    onlyvel->Norm2(&vresnorm);
+
+    velpressplitter_.ExtractOtherVector(incvel_,onlyvel);
+    onlyvel->Norm2(&incvelnorm_L2);
+
+    velpressplitter_.ExtractOtherVector(state_.velnp_,onlyvel);
+    onlyvel->Norm2(&velnorm_L2);
+
+    Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(residual_);
+    onlypre->Norm2(&presnorm);
+
+    velpressplitter_.ExtractCondVector(incvel_,onlypre);
+    onlypre->Norm2(&incprenorm_L2);
+
+    velpressplitter_.ExtractCondVector(state_.velnp_,onlypre);
+    onlypre->Norm2(&prenorm_L2);
+
+    // care for the case that nothing really happens in velocity
+    // or pressure field
+    if (velnorm_L2 < 1e-5) velnorm_L2 = 1.0;
+    if (prenorm_L2 < 1e-5) prenorm_L2 = 1.0;
+
+    if (myrank_ == 0)
+    {
+      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",itnum,itemax_,ittol,vresnorm,presnorm,
+                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+      printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
+      printf(")\n");
+    }
+
+    // -------------------------------------------------------------------
+    // check convergence and print out respective information:
+    // - stop if convergence is achieved
+    // - warn if itemax is reached without convergence, but proceed to
+    //   next timestep
+    // -------------------------------------------------------------------
+    if (vresnorm <= ittol and
+        presnorm <= ittol and
+        incvelnorm_L2/velnorm_L2 <= ittol and
+        incprenorm_L2/prenorm_L2 <= ittol)
+    {
+      stopnonliniter=true;
+      if (myrank_ == 0)
+      {
+        printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+        FILE* errfile = params_.get<FILE*>("err file");
+        if (errfile!=NULL)
+        {
+          fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
+          itnum,itemax_,ittol,vresnorm,presnorm,
+          incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+        }
+      }
+      break;
+    }
+
+    if ((itnum == itemax_) and (vresnorm > ittol or
+                               presnorm > ittol or
+                               incvelnorm_L2/velnorm_L2 > ittol or
+                               incprenorm_L2/prenorm_L2 > ittol))
+    {
+      stopnonliniter=true;
+      if (myrank_ == 0)
+      {
+        printf("+---------------------------------------------------------------+\n");
+        printf("|            >>>>>> not converged in itemax steps!              |\n");
+        printf("+---------------------------------------------------------------+\n");
+
+        FILE* errfile = params_.get<FILE*>("err file");
+        if (errfile!=NULL)
+        {
+          fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
+                  itnum,itemax_,ittol,vresnorm,presnorm,
+                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+        }
+      }
+      break;
+    }
+  }
+
+}
+
+
+/*----------------------------------------------------------------------*
+ | call elements to calculate system matrix/rhs and assemble   vg 02/09 |
+ *----------------------------------------------------------------------*/
+void FLD::CombustFluidImplicitTimeInt::AssembleMatAndRHS()
+{
+  dtele_    = 0.0;
+
+  // time measurement: element
+  TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
+
+  // get cpu time
+  const double tcpu=Teuchos::Time::wallTime();
+
+  sysmat_->Zero();
+
+  // add Neumann loads
+  residual_->Update(1.0,*neumann_loads_,0.0);
+
+  // create the parameters for the discretization
+  ParameterList eleparams;
+
+  // action for elements
+  eleparams.set("action","calc_fluid_systemmat_and_residual");
+
+  // flag for type of combustion problem
+  eleparams.set<int>("combusttype",combusttype_);
+  eleparams.set<int>("veljumptype",veljumptype_);
+  eleparams.set<int>("fluxjumptype",fluxjumptype_);
+  eleparams.set("flamespeed",flamespeed_);
+  eleparams.set("nitschevel",nitschevel_);
+  eleparams.set("nitschepres",nitschepres_);
+  eleparams.set("DLM_condensation",condensation_);
+
+  // parameters for two-phase flow problems with surface tension
+  eleparams.set<int>("surftensapprox",surftensapprox_);
+  eleparams.set("connected_interface",connected_interface_);
+
+  // smoothed normal vectors for boundary integration
+  eleparams.set("smoothed_bound_integration",smoothed_boundary_integration_);
+  eleparams.set<int>("smoothgradphi",smoothgradphi_);
+
+  // set scheme-specific element parameters and vector values
+  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+  {
+    eleparams.set("total time",time_-(1-alphaF_)*dta_);
+    eleparams.set("alphaF",alphaF_);
+    eleparams.set("alphaM",alphaM_);
+    eleparams.set("gamma",gamma_);
+  }
+  else
+  {
+    eleparams.set("total time",time_);
+  }
+
+  eleparams.set<int>("timealgo",timealgo_);
+  eleparams.set("dt",dta_);
+  eleparams.set("theta",theta_);
+
+  //eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation"));
+  //type of linearisation: include reactive terms for linearisation
+  if(DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation") == INPAR::FLUID::Newton)
+    eleparams.set("include reactive terms for linearisation",true);
+  else if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation") == INPAR::FLUID::minimal)
+    dserror("LinearisationAction minimal is not defined in the combustion formulation");
+  else
+    eleparams.set("include reactive terms for linearisation",false);
+
+  // parameters for stabilization
+  eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
+
+  // parameters for stabilization
+  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+
+  // set general vector values needed by elements
+  discret_->ClearState();
+
+  // set scheme-specific element parameters and vector values
+  if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+    discret_->SetState("velaf",state_.velaf_);
+  else discret_->SetState("velaf",state_.velnp_);
+
+  discret_->SetState("veln" ,state_.veln_);
+  discret_->SetState("velnm",state_.velnm_);
+  discret_->SetState("accn" ,state_.accn_);
+  discret_->SetState("accam",state_.accam_);
+  discret_->SetState("velpres nodal iterinc",oldinc_);
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,sysmat_,residual_);
+  discret_->ClearState();
+
+  // account for potential Neumann inflow terms
+  if (neumanninflow_)
+  {
+    // create parameter list
+    ParameterList condparams;
+
+    // action for elements
+    condparams.set("action","calc_Neumann_inflow");
+
+    // set vector values needed by elements
+    discret_->ClearState();
+
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+         discret_->SetState("velaf",state_.velaf_);
+    else discret_->SetState("velaf",state_.velnp_);
+
+    std::string condstring("FluidNeumannInflow");
+    discret_->EvaluateCondition(condparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condstring);
+    discret_->ClearState();
+  }
+
+  // scaling to get true residual vector
+  //trueresidual_->Update(ResidualScaling(),*residual_,0.0);
+
+  // finalize the complete matrix
+  sysmat_->Complete();
+
+  // end time measurement for element
+  dtele_=Teuchos::Time::wallTime()-tcpu;
+
+}
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -1491,6 +2108,91 @@ void FLD::CombustFluidImplicitTimeInt::TimeUpdate()
 
   return;
 }// FluidImplicitTimeInt::TimeUpdate
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | update acceleration for generalized-alpha time integration  vg 02/09 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::CombustFluidImplicitTimeInt::GenAlphaUpdateAcceleration()
+{
+
+  //                                  n+1     n
+  //                               vel   - vel
+  //       n+1      n  gamma-1.0      (i)
+  //    acc    = acc * --------- + ------------
+  //       (i)           gamma      gamma * dt
+  //
+
+  // extract the degrees of freedom associated with velocities
+  // only these are allowed to be updated, otherwise you will
+  // run into trouble in loma, where the 'pressure' component
+  // is used to store the acceleration of the temperature
+  Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_.ExtractOtherVector(state_.accn_ );
+  Teuchos::RCP<Epetra_Vector> onlyveln  = velpressplitter_.ExtractOtherVector(state_.veln_ );
+  Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_.ExtractOtherVector(state_.velnp_);
+
+  Teuchos::RCP<Epetra_Vector> onlyaccnp = rcp(new Epetra_Vector(onlyaccn->Map()));
+
+  const double fact1 = 1.0/(gamma_*dta_);
+  const double fact2 = 1.0 - (1.0/gamma_);
+  onlyaccnp->Update(fact2,*onlyaccn,0.0);
+  onlyaccnp->Update(fact1,*onlyvelnp,-fact1,*onlyveln,1.0);
+
+  // copy back into global vector
+  LINALG::Export(*onlyaccnp,*state_.accnp_);
+
+} // FluidImplicitTimeInt::GenAlphaUpdateAcceleration
+
+
+/*----------------------------------------------------------------------*
+ | compute values at intermediate time steps for gen.-alpha    vg 02/09 |
+ *----------------------------------------------------------------------*/
+void FLD::CombustFluidImplicitTimeInt::GenAlphaIntermediateValues()
+{
+  //       n+alphaM                n+1                      n
+  //    acc         = alpha_M * acc     + (1-alpha_M) *  acc
+  //       (i)                     (i)
+  {
+    // extract the degrees of freedom associated with velocities
+    // only these are allowed to be updated, otherwise you will
+    // run into trouble in loma, where the 'pressure' component
+    // is used to store the acceleration of the temperature
+    Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_.ExtractOtherVector(state_.accn_ );
+    Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_.ExtractOtherVector(state_.accnp_);
+
+    Teuchos::RCP<Epetra_Vector> onlyaccam = rcp(new Epetra_Vector(onlyaccnp->Map()));
+
+    onlyaccam->Update((alphaM_),*onlyaccnp,(1.0-alphaM_),*onlyaccn,0.0);
+
+    // copy back into global vector
+    LINALG::Export(*onlyaccam,*state_.accam_);
+  }
+
+  // set intermediate values for velocity
+  //
+  //       n+alphaF              n+1                   n
+  //      u         = alpha_F * u     + (1-alpha_F) * u
+  //       (i)                   (i)
+  //
+  // and pressure
+  //
+  //       n+alphaF              n+1                   n
+  //      p         = alpha_F * p     + (1-alpha_F) * p
+  //       (i)                   (i)
+  //
+  // note that its af-genalpha with mid-point treatment of the pressure,
+  // not implicit treatment as for the genalpha according to Whiting
+  state_.velaf_->Update((alphaF_),*state_.velnp_,(1.0-alphaF_),*state_.veln_,0.0);
+
+} // FluidImplicitTimeInt::GenAlphaIntermediateValues
+
+
 
 /*------------------------------------------------------------------------------------------------*
  | lift'n'drag forces, statistics time sample and output of solution and statistics   gammi 11/08 |
@@ -2765,10 +3467,17 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             vector<double> myphinp(numnode);
             // extract G-function values to element level
             DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp);
+
 #ifdef DEBUG
+#ifndef COMBUST_HEX20
             if (numnode != 8) dserror("velocity jump output only available for hex8 elements!");
 #endif
+#endif
+#ifndef COMBUST_HEX20
             LINALG::Matrix<8,1> ephi;
+#else
+            LINALG::Matrix<20,1> ephi;
+#endif
             for (size_t iparam=0; iparam<numnode; ++iparam)
               ephi(iparam) = myphinp[iparam];
 
@@ -3276,10 +3985,10 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
     LINALG::Matrix<nsd,1> xyz0_right(true);
 
     // set initial locations of vortices
-    xyz0_left(0)  = 37.5; // x-coordinate left vortex
+    xyz0_left(0)  = 37.5;//87.5+0.78125; //37.5; // x-coordinate left vortex
     xyz0_left(1)  = 75.0; // y-coordinate left vortex
     xyz0_left(2)  = 0.0;  // z-coordinate is 0 (2D problem)
-    xyz0_right(0) = 62.5; // x-coordinate right vortex
+    xyz0_right(0) = 62.5;//12.5+0.78125; //62.5; // x-coordinate right vortex
     xyz0_right(1) = 75.0; // y-coordinate right vortex
     xyz0_right(2) = 0.0;  // z-coordinate is 0 (2D problem)
 
@@ -3371,7 +4080,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
       else // minus/unburnt domain -> unburnt material
       {
         dens = dens_u;
-        pres = -flamespeed_*flamespeed_*dens_u*dens_u*(1.0/dens_b - 1.0/dens_u)
+        pres = -flamespeed_*flamespeed_*dens_u*dens_u*(1.0/dens_u - 1.0/dens_b)
         -0.5*(C*C/R_squared)*(exp(-r_squared_left) + exp(-r_squared_right));
       }
       //----------------------------------------------
@@ -4532,7 +5241,7 @@ std::string FLD::CombustFluidImplicitTimeInt::MapTimIntEnumToString(const enum I
   case INPAR::FLUID::timeint_stationary :
     return "  Stationary  ";
     break;
-  case INPAR::FLUID::timeint_gen_alpha :
+  case INPAR::FLUID::timeint_afgenalpha :
     return "  Gen. Alpha  ";
     break;
   default :

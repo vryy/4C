@@ -60,6 +60,7 @@ void SysmatDomainNitscheNormal(
     const M1&                      eveln,        ///< nodal velocity n   values for this element
     const M1&                      evelnm,       ///< nodal velocity n-1 values for this element
     const M1&                      eaccn,        ///< nodal acceleration n values for this element
+    const M1&                      eaccam,       ///< nodal acceleration n values for this element
     const V1&                      eprenp,       ///< nodal pressure n+1 values for this element
     const V2&                      ephi,         ///< nodal G-function values for this element
     const M2&                      egradphi,     ///<
@@ -67,12 +68,16 @@ void SysmatDomainNitscheNormal(
     const INPAR::FLUID::TimeIntegrationScheme timealgo,     ///< time discretization scheme
     const double                   dt,           ///< delta t (time step size)
     const double                   theta,        ///< parameter for one step theta scheme
+    const double                   ga_alphaF,
+    const double                   ga_alphaM,
+    const double                   ga_gamma,
     const bool                     newton,       ///< full Newton or fixed-point-like
     const bool                     pstab,        ///< turn on/off PSPG stabilization
     const bool                     supg,         ///< turn on/off SUPG stabilization
     const bool                     cstab,        ///< turn on/off BV   stabilization
     const INPAR::FLUID::TauType    tautype,      //< stabilization parameter definition
     const bool                     instationary, ///< switch between stationary and instationary formulation
+    const bool                     genalpha,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
     double&                        ele_meas_plus,      // set measure of element in plus domain
     double&                        ele_meas_minus      // set measure of element in minus domain
@@ -87,7 +92,7 @@ void SysmatDomainNitscheNormal(
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // time integration factor
-  const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
+  const double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
 
   // get node coordinates of this element
   static LINALG::Matrix<nsd,numnode> xyze;
@@ -427,6 +432,10 @@ void SysmatDomainNitscheNormal(
       const LINALG::Matrix<nsd,1> gpveln  = XFEM::interpolateVectorFieldToIntPointNormal(eveln , shp, numparamvelx, ele, dofman);
       const LINALG::Matrix<nsd,1> gpvelnm = XFEM::interpolateVectorFieldToIntPointNormal(evelnm, shp, numparamvelx, ele, dofman);
       const LINALG::Matrix<nsd,1> gpaccn  = XFEM::interpolateVectorFieldToIntPointNormal(eaccn , shp, numparamvelx, ele, dofman);
+      // get acceleration at n+alpha_m for generalized alpha time integration scheme
+      LINALG::Matrix<3,1> gpaccam(true);
+      if (genalpha)
+        gpaccam  = XFEM::interpolateVectorFieldToIntPoint(eaccam , shp, numparamvelx);
 
       //----------------------------------------------
       // get velocity derivatives at integration point
@@ -597,7 +606,7 @@ void SysmatDomainNitscheNormal(
 
       // time RHS vector from previous time step
       // remark: histvec = \rho^{n}*(u^n + delta t (1-theta) a^n)
-      LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
+      LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT::GetOldPartOfRighthandside(
           gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
       histvec.Scale(densn);
 
@@ -850,8 +859,8 @@ void SysmatDomainNitscheNormal(
       //----------------------------------------
       COMBUST::BuildStandardDomainIntegralsNormal<DISTYPE,ASSTYPE,NUMDOF,shpVecSizeVel,shpVecSizePres>(
           assembler, shp, shp_pres, fac, timefac, timefacfac, densaf, dynvisc,
-          gpvelnp, pres, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_viscs2,
-          instationary, newton, pstab, supg, cstab,
+          gpvelnp, pres, gpaccam, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_viscs2,
+          instationary, genalpha, newton, pstab, supg, cstab,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
     } // end loop over gauss points
   ++icell;
@@ -2236,6 +2245,9 @@ void SysmatBoundaryNitscheNormal(
     const INPAR::FLUID::TimeIntegrationScheme  timealgo,       ///< time discretization type
     const double&                              dt,             ///< delta t (time step size)
     const double&                              theta,          ///< factor for one step theta scheme
+    const double                               ga_alphaF,
+    const double                               ga_alphaM,
+    const double                               ga_gamma,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&  assembler,      ///<
     const double                               flamespeed,     ///<
     const double                               nitschevel,     ///<
@@ -2263,7 +2275,7 @@ void SysmatBoundaryNitscheNormal(
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // time integration constant
-  const double timefac = FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(timealgo, dt, theta);
+  const double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
 
   // get node coordinates of the current element
   static LINALG::Matrix<nsd,numnode> xyze;
