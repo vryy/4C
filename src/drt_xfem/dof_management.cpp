@@ -92,7 +92,7 @@ XFEM::DofManager::DofManager(
   //         - for the initialization call of DofManager in CombustFluidImplicitTimeInt constructor the
   //           pbc map does not make sence yet, since no XFEM dofs have been assigned
   {
-    // for periodic boundary conditions and more than one processor this will not work reliably
+    // we think that this works reliably for periodic boundary conditions in all cases (henke 18.7.2011)
     // remark: - enrichments are distributed in a loop over all column elements
     //         - periodic boundary conditions live on row (or colunm) nodes
     //         -> for a general parallel distribution 'pbcmap' and 'nodeDofMap' do not contain the same information
@@ -104,36 +104,50 @@ XFEM::DofManager::DofManager(
     for (std::map<int, vector<int>  >::const_iterator pbciter= (*pbcmap_).begin(); pbciter != (*pbcmap_).end(); ++pbciter)
     {
       const int mastergid = pbciter->first;
-      const int slavegid  = pbciter->second[0];
-      if (pbciter->second.size()!=1) dserror("this might need to be modified for more than 1 slave per master");
-      //cout << "proc " << ih_->xfemdis()->Comm().MyPID() << " mastergid " << mastergid << " slavegid " << slavegid << endl;
 
+      for (size_t islave = 0; islave < pbciter->second.size(); islave++)
+      {
+        const int slavegid  = pbciter->second[islave];
+        //cout << "proc " << ih_->xfemdis()->Comm().MyPID() << " mastergid " << mastergid << " slavegid " << slavegid << endl;
+
+        std::set<FieldEnr> masterfieldenr = emptyset_;
+        std::set<FieldEnr> slavefieldenr = emptyset_;
+
+        std::map<int, std::set<XFEM::FieldEnr> >::iterator masterentry = nodeDofMap.find(mastergid);
+        if (masterentry != nodeDofMap.end())
+          masterfieldenr = masterentry->second;
+        else dserror("pbc master node not found in node dof map");
+
+        std::map<int, std::set<XFEM::FieldEnr> >::iterator slaveentry = nodeDofMap.find(slavegid);
+        if (slaveentry != nodeDofMap.end())
+          slavefieldenr = slaveentry->second;
+        else
+          dserror("pbc slave node not found in node dof map");
+
+        //if (slaveentry->second != masterentry->second)
+        //{
+        //  cout << mastergid << " das passt nicht zusammen" << endl;
+        //  cout << "proc " << ih_->xfemdis()->Comm().MyPID() << " master dofs " << masterfieldenr.size() << endl;
+        //  cout << "proc " << ih_->xfemdis()->Comm().MyPID() << " slave dofs " << slavefieldenr.size() << endl;
+        //}
+
+        // if slave is enriched, but master is not (slave has more dofs)
+        if (slavefieldenr.size()>masterfieldenr.size())
+          masterentry->second = slaveentry->second;
+      }
+
+      //by now the master has the most dofs and must be copied to all slaves
       std::set<FieldEnr> masterfieldenr = emptyset_;
-      std::set<FieldEnr> slavefieldenr = emptyset_;
-
       std::map<int, std::set<XFEM::FieldEnr> >::iterator masterentry = nodeDofMap.find(mastergid);
-      if (masterentry != nodeDofMap.end())
-        masterfieldenr = masterentry->second;
-      else dserror("pbc master node not found in node dof map");
 
-      std::map<int, std::set<XFEM::FieldEnr> >::iterator slaveentry = nodeDofMap.find(slavegid);
-      if (slaveentry != nodeDofMap.end())
-        slavefieldenr = slaveentry->second;
-      else
-        dserror("pbc slave node not found in node dof map");
+      for (size_t islave = 0; islave < pbciter->second.size(); islave++)
+      {
+        const int slavegid = pbciter->second[islave];
+        std::set<FieldEnr> slavefieldenr = emptyset_;
+        std::map<int, std::set<XFEM::FieldEnr> >::iterator slaveentry = nodeDofMap.find(slavegid);
 
-      //if (slaveentry->second != masterentry->second)
-      //{
-      //  cout << mastergid << " das passt nicht zusammen" << endl;
-      //  cout << "proc " << ih_->xfemdis()->Comm().MyPID() << " master dofs " << masterfieldenr.size() << endl;
-      //  cout << "proc " << ih_->xfemdis()->Comm().MyPID() << " slave dofs " << slavefieldenr.size() << endl;
-      //}
-
-      // if slave is enriched, but master is not (slave has more dofs)
-      if (slavefieldenr.size()>masterfieldenr.size())
-        masterentry->second = slaveentry->second;
-      else // slave is overwritten by master
         slaveentry->second = masterentry->second;
+      }
     }
   }
 
