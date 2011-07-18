@@ -3226,13 +3226,13 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
 
   statisticsmanager_->Restart(reader,step);
 
-  if (fssgv_ != "No") AVM3Preparation();
-  if (turbmodel_==INPAR::FLUID::scale_similarity and
-      filtertype_ == INPAR::FLUID::algebraic_multigrid_operator)
-      AVM3Preparation();
-  if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales and
-      filtertype_ == INPAR::FLUID::algebraic_multigrid_operator)
-      AVM3Preparation();
+  if ((fssgv_ != "No") or
+      (filtertype_ == INPAR::FLUID::algebraic_multigrid_operator and turbmodel_==INPAR::FLUID::scale_similarity) or
+      (filtertype_ == INPAR::FLUID::algebraic_multigrid_operator and turbmodel_==INPAR::FLUID::multifractal_subgrid_scales))
+  {
+    SetElementTimeParameter();
+    AVM3Preparation();
+  }
 
   if (alefluid_)
   {
@@ -3294,13 +3294,14 @@ void FLD::FluidImplicitTimeInt::SetRestart(
   accnp_->Update(1.0,*readaccnp,0.0);
   accn_->Update(1.0,*readaccn,0.0);
 
-  if (fssgv_ != "No") AVM3Preparation();
-  if (turbmodel_==INPAR::FLUID::scale_similarity and
-      filtertype_ == INPAR::FLUID::algebraic_multigrid_operator)
-      AVM3Preparation();
-  if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales and
-      filtertype_ == INPAR::FLUID::algebraic_multigrid_operator)
-      AVM3Preparation();
+  if ((fssgv_ != "No") or
+      (filtertype_ == INPAR::FLUID::algebraic_multigrid_operator and turbmodel_==INPAR::FLUID::scale_similarity) or
+      (filtertype_ == INPAR::FLUID::algebraic_multigrid_operator and turbmodel_==INPAR::FLUID::multifractal_subgrid_scales))
+  {
+    SetElementTimeParameter();
+    AVM3Preparation();
+  }
+
 }
 
 
