@@ -133,6 +133,15 @@ public:
       }
     }
 
+
+  //! @name method that returns a pointer to the vector of the conditions
+  vector<DRT::Condition*>* ReturnSurfacePBCs()
+  {
+    return &mysurfpbcs_;
+  }
+  //@}
+
+
 protected:
   //! @name handling of all pbc pairs
 

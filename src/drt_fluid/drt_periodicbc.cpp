@@ -1268,10 +1268,61 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
         }
       }
 
+      // We need to do this again in order to get the new master-slave pairs
+      // that might have been added in the previous loop over the inversenodecoupling
+#ifdef PARALLEL
+      {
+        // now reconstruct the extended colmap
+        newcolnodemap = rcp(new Epetra_Map(-1,
+            mycolnodes.size(),
+            &mycolnodes[0],
+            0,
+            discret_->Comm()));
+
+        *allcoupledcolnodes_=(*allcoupledrownodes_);
+
+        // create an exporter
+        DRT::Exporter exportconnectivity(*newrownodemap,
+            *newcolnodemap,
+            discret_->Comm());
+
+        // export information on all master->slave couplings (with multiple
+        // couplings)
+        exportconnectivity.Export(*allcoupledcolnodes_);
+      }
+#endif
+
+      // determine all ghosted master nodes in this vector which do not have
+      // all their slaves ghosted on this proc --- we have to fetch them to be able
+      // to assign the dofs
+      for (map<int,vector<int> >::iterator curr=allcoupledcolnodes_->begin();
+          curr!=allcoupledcolnodes_->end();
+          ++curr)
+      {
+        if(curr->second.empty())
+        {
+          dserror("master-slave matching incomplete");
+        }
+        for (size_t i = 0; i < curr->second.size(); ++i)
+        {
+          if(newcolnodemap->LID(curr->second[i])<0)
+          {
+            // was slave already added to the list of (ghosted) nodes?
+            vector<int>::iterator found;
+            found=find(mycolnodes.begin(),mycolnodes.end(),curr->second[i]);
+            // no, it's not inside
+            if(found==mycolnodes.end())
+            {
+              mycolnodes.push_back(curr->second[i]);
+            }
+          }
+        }
+      }
+
       // now reconstruct the extended colmap
       newcolnodemap = rcp(new Epetra_Map(-1,
-                                         mycolnodes.size(),
-                                         &mycolnodes[0],
+          mycolnodes.size(),
+          &mycolnodes[0],
                                          0,
                                          discret_->Comm()));
 

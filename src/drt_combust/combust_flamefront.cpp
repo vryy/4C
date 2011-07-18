@@ -137,7 +137,7 @@ void COMBUST::FlameFront::ProcessFlameFront(const Teuchos::RCP<const Epetra_Vect
    */
 
   if (fluiddis_->Comm().MyPID()==0)
-    std::cout << "\n---  processing flame front... " << std::flush;
+    std::cout << "\n---  capturing flame front... " << std::flush;
 
   const Teuchos::RCP<Epetra_Vector> phicol = rcp(new Epetra_Vector(*fluiddis_->NodeColMap()));
   if (phicol->MyLength() != phi->MyLength())
@@ -960,16 +960,16 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
     //--------------------------------------
     // boolean indicating whether this node is a pbc node
     bool pbcnode = false;
-    int coupnodegid = -1;
+    vector<int> coupnodegid;
     // loop all nodes with periodic boundary conditions (master nodes)
     for (std::map<int, vector<int>  >::const_iterator pbciter= (*pbcmap_).begin(); pbciter != (*pbcmap_).end(); ++pbciter)
     {
       if (pbciter->first == nodegid) // node is a pbc master node
       {
         pbcnode = true;
-        // coupled node is the (first) slave node
-        coupnodegid = pbciter->second[0];
-        if (pbciter->second.size()!=1) dserror("this might need to be modified for more than 1 slave per master");
+        // coupled node is the slave node; there can be more than one per master node
+        for (unsigned int i = 0; i < pbciter->second.size(); i++)
+          coupnodegid.push_back(pbciter->second[i]);
       }
       else
       {
@@ -980,7 +980,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
           {
             pbcnode = true;
             // coupled node is the master node
-            coupnodegid = pbciter->first;
+            coupnodegid.push_back(pbciter->first);
           }
         }
       }
@@ -989,14 +989,17 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
     // add elements located around the coupled pbc node
     if (pbcnode)
     {
-      // get coupled pbc node (master or slave)
-      const DRT::Node* ptToCoupNode = gfuncdis_->gNode(coupnodegid);
-      // get adjacent elements of this node
-      const DRT::Element*const* pbcelements = ptToCoupNode->Elements();
-      // add elements to list
-      for (int iele=0;iele<ptToCoupNode->NumElement();iele++)// = ptToNode->Elements();
+      for (unsigned int i = 0; i < coupnodegid.size(); i++)
       {
-        elements.push_back(pbcelements[iele]);
+        // get coupled pbc node (master or slave)
+        const DRT::Node* ptToCoupNode = gfuncdis_->gNode(coupnodegid[i]);
+        // get adjacent elements of this node
+        const DRT::Element*const* pbcelements = ptToCoupNode->Elements();
+        // add elements to list
+        for (int iele=0;iele<ptToCoupNode->NumElement();iele++)// = ptToNode->Elements();
+        {
+          elements.push_back(pbcelements[iele]);
+        }
       }
     }
 
@@ -1073,7 +1076,8 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
           {
             nodeID_adj[inode] = ptToNodeIds_adj[inode];
             // get local number of node actnode in ele_adj
-            if(coupnodegid == ptToNodeIds_adj[inode]) ID_param_space = inode;
+            for (size_t icng = 0; icng < coupnodegid.size(); ++icng)
+              if(coupnodegid[icng] == ptToNodeIds_adj[inode]) ID_param_space = inode;
           }
         }
         if (ID_param_space < 0) dserror("node not found in element");
@@ -1227,7 +1231,8 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
           {
             nodeID_adj[inode] = ptToNodeIds_adj[inode];
             // get local number of node actnode in ele_adj
-            if(coupnodegid == ptToNodeIds_adj[inode]) ID_param_space = inode;
+            for (size_t icng = 0; icng < coupnodegid.size(); ++icng)
+              if(coupnodegid[icng] == ptToNodeIds_adj[inode]) ID_param_space = inode;
           }
         }
         if (ID_param_space < 0) dserror ("node in current adjacent not found!!!");

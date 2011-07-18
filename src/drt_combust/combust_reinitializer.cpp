@@ -18,6 +18,7 @@ Maintainer: Florian Henke
 #include "combust_defines.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
+#include "../drt_fluid/drt_periodicbc.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -93,10 +94,84 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
   // get map holding pairs of nodes (master-slave) on periodic boundaries (pbc nodes)
   Teuchos::RCP<map<int,vector<int> > > pbcmap = scatra_.PBCmap();
 
+  // get the pbc itself
+  Teuchos::RCP<PeriodicBoundaryConditions> pbc = scatra_.PBC();
+
   // map holding pbc nodes (masters or slaves) <pbc node id, distance to flame front>
   std::map<int, double> pbcnodes;
 
   const Epetra_Map* dofrowmap = gfuncdis->DofRowMap();
+
+  // get the following information about the pbc
+  // - planenormaldirection e.g. (1,0,0)
+  // - minimum in planenormaldirection
+  // - maximum in planenormaldirection
+  vector<DRT::Condition*>* surfacepbcs = pbc->ReturnSurfacePBCs();
+  vector<int>    planenormal(0);
+  vector<double> globalmins (0);
+  vector<double> globalmaxs (0);
+  for (size_t i = 0; i < surfacepbcs->size(); ++i)
+  {
+    const string* ismaster = (*surfacepbcs)[i]->Get<string>("Is slave periodic boundary condition");
+    if (*ismaster == "Master")
+    {
+      const int masterid = (*surfacepbcs)[i]->GetInt("Id of periodic boundary condition");
+      vector<int> nodeids(*((*surfacepbcs)[i]->Nodes()));
+      for (size_t j = 0; j < surfacepbcs->size(); ++j)
+      {
+        const int slaveid = (*surfacepbcs)[j]->GetInt("Id of periodic boundary condition");
+        if (masterid == slaveid)
+        {
+          const string* isslave = (*surfacepbcs)[j]->Get<string>("Is slave periodic boundary condition");
+          if (*isslave == "Slave")
+          {
+            const vector<int>* slavenodeids = (*surfacepbcs)[j]->Nodes();
+            // append slave node Ids to node Ids for the complete condition
+            for (size_t k = 0; k < slavenodeids->size(); ++k)
+              nodeids.push_back(slavenodeids->at(k));
+          }
+        }
+      }
+
+      // Get normal direction of pbc plane
+      const string* pbcplane = (*surfacepbcs)[i]->Get<string>("degrees of freedom for the pbc plane");
+      if (*pbcplane == "yz")
+        planenormal.push_back(0);
+      else if (*pbcplane == "xz")
+        planenormal.push_back(1);
+      else if (*pbcplane == "xy")
+        planenormal.push_back(2);
+      else
+        dserror("A PBC condition could not provide a plane normal.");
+
+      double min = +10e19;
+      double max = -10e19;
+      for (size_t j = 0; j < nodeids.size(); ++j)
+      {
+
+        const int gid = nodeids[j];
+        const int lid = gfuncdis->NodeRowMap()->LID(gid);
+        if (lid < 0)
+          continue;
+        const DRT::Node* lnode = gfuncdis->lRowNode(lid);
+        const double* coord = lnode->X();
+        if (coord[planenormal.back()] < min)
+          min = coord[planenormal.back()];
+        if (coord[planenormal.back()] > max)
+          max = coord[planenormal.back()];
+      }
+      globalmins.resize(planenormal.size());
+      globalmaxs.resize(planenormal.size());
+      gfuncdis->Comm().MinAll(&min, &(globalmins.back()), 1);
+      gfuncdis->Comm().MaxAll(&max, &(globalmaxs.back()), 1);
+    }
+  }//end loop over all surfacepbcs
+
+  //  for (size_t i = 0; i < planenormal.size(); ++i)
+  //  {
+  //    cout << "Normal: " << planenormal[i] << " Min: " << globalmins[i] << " Max: " << globalmaxs[i] << endl;
+  //  }
+
 
   // vector of coordinates of node, the G-function value of which is to be reinitialized
   static LINALG::Matrix<3,1> nodecoord(true);
@@ -134,7 +209,6 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
         pbcnode = true;
       else
       {
-        if (iter->second.size()!=1) dserror("this might need to be modified for more than 1 slave per master");
         for (size_t islave=0;islave<iter->second.size();islave++)
         {
           if (iter->second[islave] == nodeid) // node is a pbc slave node
@@ -154,19 +228,82 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
     if (!reinitband_ or // reinitialize entire level set field
         (reinitband_ and fabs((*phivector)[doflid]) <= reinitbandwidth_)); // reinitialize only within a band around the zero level set
     {
-
-      //-----------------------------------------------------------
-      // compute smallest distance to the flame front for this node
-      //-----------------------------------------------------------
       // smallest distance to the vertex of a flame front patch
       double vertexdist = 7777.7; // default value
       // smallest distance to flame front
       double mindist = 5555.5; // default value
 
-      if (flamefront_.empty())
-         dserror("no flamefront patches available");
-      // loop groups (vectors) of flamefront patches of all elements
-      for(std::map<int,GEO::BoundaryIntCells>::const_iterator elepatches = flamefront_.begin(); elepatches != flamefront_.end(); ++elepatches)
+      //--------------------------------
+      // due to the PBCs the node might actually be closer to the
+      // interface then would be calculated if one only considered
+      // the actual position of the node. In order to find the
+      // smallest distance the node is copied along all PBC directions
+      //
+      //   +------------------+ - - - - - - - - - -+
+      //   +             II   +
+      //   +   x        I  I  +    y               +
+      //   +             II   +
+      //   +------------------+ - - - - - - - - - -+
+      //         original           copy
+      //
+      //   x: current node
+      //   y: copy of current node
+      //   I: interface
+      //   +: pbc
+
+      if (planenormal.size() > 3)
+        dserror("Sorry, but currently a maximum of three periodic boundary conditions are supported by the combustion reinitializer.");
+
+      // since there is stl pow(INT, INT) function, we calculate it manually
+      size_t looplimit = 1;
+      for (size_t i = 0; i < planenormal.size(); ++i)
+        looplimit *= 2;
+
+      for (size_t ipbc = 0; ipbc < looplimit; ++ipbc)
+      {
+        LINALG::Matrix<3,1> tmpcoord(nodecoord);
+
+        // determine which pbcs have to be applied
+        //
+        // loopcounter | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+        // ------------+---+---+---+---+---+---+---+---+
+        //  first PBC  |     x       x       x       x
+        // second PBC  |         x   x           x   x
+        //  third PBC  |                 x   x   x   x
+        //
+        // this is equivalent to the binary representation
+        // of the size_t
+        if (ipbc & 0x01)
+        {
+          const double pbclength = globalmaxs[0] - globalmins[0];
+          if (nodecoord(planenormal[0]) > globalmins[0] + pbclength/2.0)
+            tmpcoord(planenormal[0]) = nodecoord(planenormal[0]) - pbclength;
+          else
+            tmpcoord(planenormal[0]) = nodecoord(planenormal[0]) + pbclength;
+        }
+        if (ipbc & 0x02)
+        {
+          const double pbclength = globalmaxs[1] - globalmins[1];
+          if (nodecoord(planenormal[1]) > globalmins[1] + pbclength/2.0)
+            tmpcoord(planenormal[1]) = nodecoord(planenormal[1]) - pbclength;
+          else
+            tmpcoord(planenormal[1]) = nodecoord(planenormal[1]) + pbclength;
+        }
+        if (ipbc & 0x04)
+        {
+          const double pbclength = globalmaxs[2] - globalmins[2];
+          if (nodecoord(planenormal[2]) > globalmins[2] + pbclength/2.0)
+            tmpcoord(planenormal[2]) = nodecoord(planenormal[2]) - pbclength;
+          else
+            tmpcoord(planenormal[2]) = nodecoord(planenormal[2]) + pbclength;
+        }
+        //-----------------------------------------------------------
+        // compute smallest distance to the flame front for this node
+        //-----------------------------------------------------------
+        if (flamefront_.empty())
+          dserror("no flamefront patches available");
+        // loop groups (vectors) of flamefront patches of all elements
+        for(std::map<int,GEO::BoundaryIntCells>::const_iterator elepatches = flamefront_.begin(); elepatches != flamefront_.end(); ++elepatches)
       {
         // number of flamefront patches for this element
         const std::vector<GEO::BoundaryIntCell> patches = elepatches->second;
@@ -201,7 +338,7 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
           // distance to the facing patch
           double patchdist = 7777.7; // default value
           // check if this patch faces the node
-          FindFacingPatchProjCellSpace(nodecoord,patch,patchcoord,normal,facenode,patchdist);
+          FindFacingPatchProjCellSpace(tmpcoord,patch,patchcoord,normal,facenode,patchdist);
 
           // a facing patch was found
           if (facenode == true)
@@ -226,16 +363,18 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
           //----------------------------------------------------------------
           // compute smallest distance to vertices of this flame front patch
           //----------------------------------------------------------------
-          ComputeDistanceToPatch(nodecoord,patch,patchcoord,normal,vertexdist);
+          ComputeDistanceToPatch(tmpcoord,patch,patchcoord,normal,vertexdist);
         }
       }
+      }// end loop over all pbc copied nodes
+
 
       //-------------------------------------------
       // determine smallest distance to flame front
       //-------------------------------------------
       // remark: variables have the following meaning here:
       //         - "mindist" is either "patchdist" or still the default value (5555.5)
-      //         - "vertexdist" is the distance to the clostest vertex of any flame front patch
+      //         - "vertexdist" is the distance to the closest vertex of any flame front patch
       //
       // case 1: a local flame front patch was found for this node -> mindist = patchdist
       // case 2: a flame front patch was found for this node, but it is not local (curved interface);
@@ -290,9 +429,10 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
   {
     // get master node gid
     const int mastergid = pbciter->first;
-    // get (first) slave node gid
-    if (pbciter->second.size()!=1) dserror("this might need to be modified for more than 1 slave per master");
-    const int slavegid = pbciter->second[0];
+    // get slave node gids
+    vector<int> slavegid;
+    for (size_t islave = 0; islave < pbciter->second.size(); islave++)
+      slavegid.push_back(pbciter->second[islave]);
 
     // get the dof associated with these nodes (master and slave share this dof)
     DRT::Node* masternode = gfuncdis->gNode(mastergid);
@@ -307,12 +447,17 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
 
     // look for this pbc master node in map of pbc patch nodes
     std::map<int, double>::const_iterator pbcmasteriter = pbcnodes.find(mastergid);
-    // look for this pbc slave node in map of pbc patch nodes
-    std::map<int, double>::const_iterator pbcslaveiter = pbcnodes.find(slavegid);
 
-    double mastermindist = pbcmasteriter->second;
-    double slavemindist = pbcslaveiter->second;
-    double mindist = std::min(mastermindist,slavemindist);
+    double mindist = pbcmasteriter->second;
+
+    for (size_t islave = 0; islave < slavegid.size(); islave++)
+    {
+      // look for this pbc slave node in map of pbc patch nodes
+      std::map<int, double>::const_iterator pbcslaveiter = pbcnodes.find(slavegid[islave]);
+
+      double slavemindist = pbcslaveiter->second;
+      mindist = std::min(mindist,slavemindist);
+    }
 
     int err = phivector->ReplaceMyValues(1,&mindist,&doflid);
     if (err) dserror("this did not work");
@@ -526,11 +671,13 @@ void COMBUST::Reinitializer::ComputeNormalVectorToFlameFront(
   normal.Scale(1.0/norm);
 
 #ifdef DEBUG
+#ifdef COMBUST_2D
   if (!((normal(2) > 0.0-1.0E-8) and (normal(2) < 0.0+1.0E-8)))
   {
     cout << "z-component of normal: " << normal(2) << endl;
     dserror ("pseudo-3D problem not symmetric anymore!");
   }
+#endif
 #endif
 
   return;

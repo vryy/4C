@@ -127,7 +127,8 @@ bool XFEM::ApplyJumpEnrichmentToTouched(
       }
     }
     if (nodecount < 4)
-      dserror("number of enriched nodes of touched element less than four %d ", nodecount);
+      //dserror("number of enriched nodes of touched element less than four %d ", nodecount);
+      cout << "/!\\ touched element " << xfemele->Id() << " has less than four enriched nodes: " << nodecount << endl;
     if (nodecount != 4)
       cout << "/!\\ touched element " << xfemele->Id() << " has " << nodecount << " enriched nodes" << endl;
 
