@@ -160,10 +160,9 @@ namespace ADAPTER
 
     /// provide access to the turbulence statistic manager
     virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
-      {
-        return Teuchos::null;
-        //return fluid_.TurbulenceStatisticManager();
-      }
+    {
+      return fluid_.TurbulenceStatisticManager();
+    }
 
     /*--------------------------------------------------------------------------------------------*
      * group member functions which are implemented and used
