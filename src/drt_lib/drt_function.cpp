@@ -374,6 +374,26 @@ namespace UTILS {
   };
 
 
+  /// special implementation for (randomly) disturbed 3d turbulent boundary-layer profile
+  /// (incompressible flow in the ORACLES test rig)
+  class TurbBouLayerFunctionORACLES : public Function
+  {
+  public:
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+  };
+
+
   /// special implementation for Womersley blood flow
   class WomersleyFunction : public Function
   {
@@ -607,6 +627,12 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddTag("TURBBOULAYER-BFS")
     ;
 
+  DRT::INPUT::LineDefinition turbboulayeroracles;
+  turbboulayeroracles
+    .AddNamedInt("FUNCT")
+    .AddTag("TURBBOULAYERORACLES")
+    ;
+
   DRT::INPUT::LineDefinition jefferyhamel;
   jefferyhamel
     .AddNamedInt("FUNCT")
@@ -677,6 +703,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(bochevrhs);
   lines->Add(turbboulayer);
   lines->Add(turbboulayerbfs);
+  lines->Add(turbboulayeroracles);
   lines->Add(jefferyhamel);
   lines->Add(womersley);
   lines->Add(localwomersley);
@@ -842,6 +869,10 @@ void DRT::UTILS::FunctionManager::ReadInput(const DRT::INPUT::DatFileReader& rea
       else if (function->HaveNamed("TURBBOULAYER-BFS"))
       {
         functions_.push_back(rcp(new TurbBouLayerFunctionBFS()));
+      }
+      else if (function->HaveNamed("TURBBOULAYERORACLES"))
+      {
+        functions_.push_back(rcp(new TurbBouLayerFunctionORACLES()));
       }
       else if (function->HaveNamed("JEFFERY-HAMEL"))
       {
@@ -1250,6 +1281,84 @@ double DRT::UTILS::TurbBouLayerFunctionBFS::Evaluate(int index, const double* xp
       noise = fluc * randomnumber;
 
       // return velocity value in z-direction
+      return noise;
+    }
+    // nothing to be done for hydrodynamic pressure values
+    case 3:
+  default:
+    return 0.0;
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::UTILS::TurbBouLayerFunctionORACLES::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  double randomnumber;
+  double noise;
+
+  // fluctuation 10% of bulk mean velocity
+  double fluc= 1.1;
+
+  switch (index)
+  {
+    case 0:
+    {
+      // set u_tau und nu and compute l_tau
+      const double utau = 0.7;
+      const double nu   = 1.375E-5;
+      double ltau = nu/utau;
+
+      // transform global y-coordinate to local (upper and lower) channel y-coordinates
+      double y=0.0;
+      // remark: no tolerances needed, since there will always be no-slip boundary conditions
+      // upper half upper inlet channel
+      if (xp[1]>0.0202 and xp[1]<0.0354+1.0E-9)
+        y = -(xp[1]-0.0354);
+      // lower half upper inlet channel
+      else if (xp[1]>0.005-1.0E-9 and xp[1]<=0.0202)
+        y = xp[1]-0.005;
+      // upper half lower inlet channel
+      else if (xp[1]>=-0.0202 and xp[1]<-0.005+1.0E-9)
+        y = -(xp[1]+0.005);
+      // lower half lower inlet channel
+      else if (xp[1]>-0.0354-1.0E-9 and xp[1]<-0.0202)
+        y = xp[1]+0.0354;
+      else
+      {
+        dserror("coordinates do not match to ORACLES problem");
+      }
+      // compute y+
+      double yplus = y/ltau;
+
+      // maximal velocity
+      double umax = 15.62;
+
+      // generate noise via random number
+      randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+      noise = fluc * randomnumber;
+
+      // return velocity value in x-direction
+      if (yplus <= 5.0)
+        return utau * yplus + noise;
+      else if ((yplus > 5.0) and (yplus <= 30.0))
+        return utau * ( 5.0 * log(yplus) - 3.05 ) + noise;
+      else if (yplus > 30.0)
+      {
+        double upre = utau * ( 2.5 * log(yplus) + 5.5 );
+        if (upre > umax) return umax + noise;
+        else            return upre + noise;
+      }
+    }
+    // return velocity value in z or y-direction
+    case 1:
+    case 2:
+    {
+      // generate noise via random number
+      randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+      noise = fluc * randomnumber;
+
       return noise;
     }
     // nothing to be done for hydrodynamic pressure values

@@ -32,10 +32,10 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
   discret_    (discret),
   params_     (params),
   h_          (0.0299),
-  x1min_      (-9.0*h_),//(-5.0*h_),
-  x1max_      (-6.0*h_),//(16.0*h_),
-  x2min_      (0.010/2.),//(-0.0653),
-  x2max_      (0.0708/2.),//(+0.0653),
+  x1min_      (-9.0*h_), // (-5.0*h_),
+  x1max_      (16.0*h_), //(-6.0*h_),
+  x2min_      (-0.0653),//(0.010/2.),//
+  x2max_      (+0.0653),//(0.0708/2.),//
   x2inflowmin_(-0.0708/2.),
   x2inflowmax_(+0.0708/2.),
   x2inflowchannelmin_(0.010/2.),
@@ -45,7 +45,7 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
   midupchan_  (0.0855),
   midlowchan_ (0.0451),
   midchamber_ (0.0653),
-  x2first_    (0.00005),
+  x2first_    (0.00004),
   x2max_first_(x2max_-x2first_),
   x2min_first_(x2min_+x2first_),
   x2inflowchannelmax_first_(x2inflowchannelmax_-x2first_),
@@ -149,8 +149,6 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
       // we need the kinematic viscosity here
       dens_ = actmat->density_;
       visc_ = actmat->viscosity_/actmat->density_;
-      if (dens_ != 1.0)
-        dserror("density 1.0 expected");
     }
   }
 
@@ -1130,6 +1128,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
     // reference ltau (at x=10h)
     double ltau_ref = 1.0;
 
+    //TODO clean
     for(size_t iplane=0; iplane<2; ++iplane)
     {
       for (size_t ix1pos=0; ix1pos<numx1_wallchamber_; ++ix1pos)
