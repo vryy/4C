@@ -42,6 +42,7 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
   x2inflowchannelmax_(0.0708/2.),
   x3min_      (-0.1505/2.),//(-0.07525/2.),
   x3max_      (+0.1505/2.),//(+0.07525/2.),
+  utau_       (0.48),
   midupchan_  (0.0855),
   midlowchan_ (0.0451),
   midchamber_ (0.0653),
@@ -152,6 +153,13 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
     }
   }
 
+  if (discret_->Comm().MyPID()==0)
+  {
+    cout << "\n" << "parameters used for ORACLES output: "       << endl;
+    cout         << "  utau: "               << utau_            << endl;
+    cout         << "  first y-coordinate: " << x2first_ << "\n" << endl;
+  }
+
   // initialize counters
   numsamp_ = 0;
   countrecord_ = 0;
@@ -167,7 +175,7 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
     x1positions_(1)  = -(0.0704+0.0397); // begin ramp
     // -3.*h_ located on splitter ramp -> not interesting
     // get x2-coordinates from x2_0h_
-    x1positions_(2)  = -2.*h_;
+    x1positions_(2)  = -0.0352;
     x1positions_(3)  = -1.*h_;
     x1positions_(4)  = 0.*h_;
     // get x2-coordinates from x2_1h_
@@ -1125,10 +1133,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
 
     // compute ltau (used to compute y+)
     LINALG::SerialDenseMatrix ltau(2,numx1_wallchamber_,true);
-    // reference ltau (at x=10h)
-    double ltau_ref = 1.0;
 
-    //TODO clean
     for(size_t iplane=0; iplane<2; ++iplane)
     {
       for (size_t ix1pos=0; ix1pos<numx1_wallchamber_; ++ix1pos)
@@ -1137,26 +1142,8 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
         //cout << abs((*wallforcev_)(iplane,ix1pos)) << endl;
         //cout << abs((*wallforcew_)(iplane,ix1pos)) << endl;
 
-        //if ( (abs((*wallforceu_)(iplane,ix1pos)) > abs((*wallforcev_)(iplane,ix1pos))) and
-        //     (abs((*wallforceu_)(iplane,ix1pos)) > abs((*wallforcew_)(iplane,ix1pos))) )
-        //{
-//          if( abs((*wallforceu_)(iplane,ix1pos)) < 1.0E-12 )
-//            dserror("zero force during computation of wall shear stress\n");
-
-          //ltau(iplane,ix1pos) = visc_ / (sqrt( (*wallforceu_)(iplane,ix1pos) / (area(0,ix1pos)*dens_) ));
-          ltau(iplane,ix1pos) = visc_ / (sqrt( abs((*wallforceu_)(iplane,ix1pos)) / (area*dens_) ));
-//cout << "wallforce " << (*wallforceu_)(iplane,ix1pos) << endl;
-//cout << "ltau " << ltau(iplane,ix1pos) << endl;
-
-          if ( (x1positions_(ix1pos) > 10*h_-NODETOL) and (x1positions_(ix1pos) < 10*h_+NODETOL) )
-          {
-            ltau_ref = ltau(iplane,ix1pos);
-          }
-        //}
-        //else
-        //{
-        //  dserror("Cannot determine flow direction by traction (seems to be not unique)");
-        //}
+        //ltau(iplane,ix1pos) = visc_ / (sqrt( abs((*wallforceu_)(iplane,ix1pos)) / (area(0,ix1pos)*dens_) ));
+        ltau(iplane,ix1pos) = visc_ / (sqrt( abs((*wallforceu_)(iplane,ix1pos)) / (area*dens_) ));
       }
     }
 
@@ -1315,7 +1302,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
         {
           // y and y+
           (*log) <<  " "  << setw(11) << setprecision(4) << (*x2_inflow_)[ix2pos];
-          (*log) << "   " << setw(11) << setprecision(4) << (*x2_inflow_)[ix2pos]/ltau_ref;
+          (*log) << "   " << setw(11) << setprecision(4) << (*x2_inflow_)[ix2pos]*utau_/visc_;
 
           // time mean values
           (*log) << "   " << setw(11) << setprecision(4) << (*vertinflowu_)(ix1pos,ix2pos);
@@ -1367,7 +1354,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
         {
           // y and y+
           (*log) <<  " "  << setw(11) << setprecision(4) << (*x2_0h_)[ix2pos];
-          (*log) << "   " << setw(11) << setprecision(4) << (*x2_0h_)[ix2pos]/ltau_ref;
+          (*log) << "   " << setw(11) << setprecision(4) << (*x2_0h_)[ix2pos]*utau_/visc_;
 
           // time mean values
           (*log) << "   " << setw(11) << setprecision(4) << (*vertmixingu_)(ix1pos,ix2pos);
@@ -1419,7 +1406,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
         {
           // y and y+
           (*log) <<  " "  << setw(11) << setprecision(4) << (*x2_1h_)[ix2pos];
-          (*log) << "   " << setw(11) << setprecision(4) << (*x2_1h_)[ix2pos]/ltau_ref;
+          (*log) << "   " << setw(11) << setprecision(4) << (*x2_1h_)[ix2pos]*utau_/visc_;
 
           // time mean values
           (*log) << "   " << setw(11) << setprecision(4) << (*vert1hu_ )(ix1pos,ix2pos);
@@ -1471,7 +1458,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
         {
           // y and y+
           (*log) <<  " "  << setw(11) << setprecision(4) << (*x2_2h_)[ix2pos];
-          (*log) << "   " << setw(11) << setprecision(4) << (*x2_2h_)[ix2pos]/ltau_ref;
+          (*log) << "   " << setw(11) << setprecision(4) << (*x2_2h_)[ix2pos]*utau_/visc_;
 
           // time mean values
           (*log) << "   " << setw(11) << setprecision(4) << (*vert2hu_ )(ix1pos,ix2pos);
@@ -1523,7 +1510,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
         {
           // y and y+
           (*log) <<  " "  << setw(11) << setprecision(4) << (*x2_3h_)[ix2pos];
-          (*log) << "   " << setw(11) << setprecision(4) << (*x2_3h_)[ix2pos]/ltau_ref;
+          (*log) << "   " << setw(11) << setprecision(4) << (*x2_3h_)[ix2pos]*utau_/visc_;
 
           // time mean values
           (*log) << "   " << setw(11) << setprecision(4) << (*vertchamberu_ )(ix1pos,ix2pos);

@@ -62,7 +62,7 @@ void dyn_fluid_drt(const int restart)
 
   // prepares a turbulent flow simulation with generation of turbulent inflow during the
   // actual simulation
-  if ((fdyn.sublist("TURBULENT INFLOW").get<string>("TURBULENTINFLOW")=="yes") and
+  if ((DRT::INPUT::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true) and
      (restart<fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
   {
     if (comm.MyPID()==0)

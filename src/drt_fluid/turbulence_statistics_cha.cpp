@@ -12,6 +12,8 @@ flows.
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_globalproblem.H"
 
+#define NODETOL 1e-9
+
 /*----------------------------------------------------------------------
 
                   Standard Constructor (public)
@@ -33,7 +35,11 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   params_             (params             ),
   smagorinsky_        (smagorinsky        ),
   scalesimilarity_    (scalesimilarity    ),
-  subgrid_dissipation_(subgrid_dissipation)
+  subgrid_dissipation_(subgrid_dissipation),
+  inflowchannel_      (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
+  inflowmax_(-0.1794),
+  dens_     (1.0),
+  visc_     (1.0)
 {
   //----------------------------------------------------------------------
   // plausibility check
@@ -49,7 +55,11 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
   // get the plane normal direction from the parameterlist
   {
-    string planestring = params_.sublist("TURBULENCE MODEL").get<string>("HOMDIR","not_specified");
+    string planestring;
+    if (inflowchannel_)
+      planestring = params_.sublist("TURBULENT INFLOW").get<string>("INFLOW_HOMDIR","not_specified");
+    else
+      planestring = params_.sublist("TURBULENCE MODEL").get<string>("HOMDIR","not_specified");
 
     if(planestring == "xz")
     {
@@ -81,9 +91,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
       const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
       // we need the kinematic viscosity here
-      visc_ = actmat->viscosity_/actmat->density_;
-      if (actmat->density_ != 1.0)
-        dserror("density 1.0 expected");
+      dens_ = actmat->density_;
+      visc_ = actmat->viscosity_/dens_;
     }
   }
 
@@ -152,23 +161,30 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     // the criterion allows differences in coordinates by 1e-9
     set<double,PlaneSortCriterion> availablecoords;
 
+    if (inflowchannel_)
+      if (discret_->Comm().MyPID()==0)
+        cout << "  coordinate of outflow for inflow channel: " << inflowmax_ << "\n" << endl;
+
     // loop nodes, build set of planes accessible on this proc and
     // calculate bounding box
     for (int i=0; i<discret_->NumMyRowNodes(); ++i)
     {
       DRT::Node* node = discret_->lRowNode(i);
+      if (inflowchannel_ and node->X()[0]> inflowmax_+NODETOL)
+        continue;
+
       availablecoords.insert(node->X()[dim_]);
 
       for (int row = 0;row<3;++row)
       {
-	if ((*boundingbox_)(0,row)>node->X()[row])
-	{
-	  (*boundingbox_)(0,row)=node->X()[row];
-	}
-	if ((*boundingbox_)(1,row)<node->X()[row])
-	{
-	  (*boundingbox_)(1,row)=node->X()[row];
-	}
+        if ((*boundingbox_)(0,row)>node->X()[row])
+        {
+          (*boundingbox_)(0,row)=node->X()[row];
+        }
+        if ((*boundingbox_)(1,row)<node->X()[row])
+        {
+          (*boundingbox_)(1,row)=node->X()[row];
+        }
       }
     }
 
@@ -212,71 +228,71 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       {
         DRT::PackBuffer data;
 
-	for (set<double,PlaneSortCriterion>::iterator plane=availablecoords.begin();
-	     plane!=availablecoords.end();
-	     ++plane)
-	{
-	  DRT::ParObject::AddtoPack(data,*plane);
-	}
+        for (set<double,PlaneSortCriterion>::iterator plane=availablecoords.begin();
+            plane!=availablecoords.end();
+            ++plane)
+        {
+          DRT::ParObject::AddtoPack(data,*plane);
+        }
         data.StartPacking();
-	for (set<double,PlaneSortCriterion>::iterator plane=availablecoords.begin();
-	     plane!=availablecoords.end();
-	     ++plane)
-	{
-	  DRT::ParObject::AddtoPack(data,*plane);
-	}
+        for (set<double,PlaneSortCriterion>::iterator plane=availablecoords.begin();
+            plane!=availablecoords.end();
+            ++plane)
+        {
+          DRT::ParObject::AddtoPack(data,*plane);
+        }
         swap( sblock, data() );
 
 #ifdef PARALLEL
-	MPI_Request request;
-	int         tag    =myrank;
+        MPI_Request request;
+        int         tag    =myrank;
 
-	int         frompid=myrank;
-	int         topid  =(myrank+1)%numprocs;
+        int         frompid=myrank;
+        int         topid  =(myrank+1)%numprocs;
 
-	int         length=sblock.size();
+        int         length=sblock.size();
 
-	exporter.ISend(frompid,topid,
-		       &(sblock[0]),sblock.size(),
-		       tag,request);
+        exporter.ISend(frompid,topid,
+            &(sblock[0]),sblock.size(),
+            tag,request);
 
-	rblock.clear();
+        rblock.clear();
 
-	// receive from predecessor
-	frompid=(myrank+numprocs-1)%numprocs;
-	exporter.ReceiveAny(frompid,tag,rblock,length);
+        // receive from predecessor
+        frompid=(myrank+numprocs-1)%numprocs;
+        exporter.ReceiveAny(frompid,tag,rblock,length);
 
-	if(tag!=(myrank+numprocs-1)%numprocs)
-	{
-	  dserror("received wrong message (ReceiveAny)");
-	}
+        if(tag!=(myrank+numprocs-1)%numprocs)
+        {
+          dserror("received wrong message (ReceiveAny)");
+        }
 
-	exporter.Wait(request);
+        exporter.Wait(request);
 
-	{
-	  // for safety
-	  exporter.Comm().Barrier();
-	}
+        {
+          // for safety
+          exporter.Comm().Barrier();
+        }
 #else
-	// dummy communication
-	rblock.clear();
-	rblock=sblock;
+        // dummy communication
+        rblock.clear();
+        rblock=sblock;
 #endif
 
-	// Unpack received block into set of all planes.
-	{
-	  vector<double> coordsvec;
+        // Unpack received block into set of all planes.
+        {
+          vector<double> coordsvec;
 
-	  coordsvec.clear();
+          coordsvec.clear();
 
-	  vector<char>::size_type index = 0;
-	  while (index < rblock.size())
-	  {
-	    double onecoord;
-	    DRT::ParObject::ExtractfromPack(index,rblock,onecoord);
-	    availablecoords.insert(onecoord);
-	  }
-	}
+          vector<char>::size_type index = 0;
+          while (index < rblock.size())
+          {
+            double onecoord;
+            DRT::ParObject::ExtractfromPack(index,rblock,onecoord);
+            availablecoords.insert(onecoord);
+          }
+        }
       }
     }
 
@@ -288,10 +304,10 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
 
       for(set<double,PlaneSortCriterion>::iterator coord=availablecoords.begin();
-	  coord!=availablecoords.end();
-	  ++coord)
+          coord!=availablecoords.end();
+          ++coord)
       {
-	nodeplanes_->push_back(*coord);
+        nodeplanes_->push_back(*coord);
       }
 
       // insert additional sampling planes (to show influence of quadratic
@@ -299,12 +315,12 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
       for(unsigned rr =0; rr < nodeplanes_->size()-1; ++rr)
       {
-	double delta = ((*nodeplanes_)[rr+1]-(*nodeplanes_)[rr])/((double) numsubdivisions);
+        double delta = ((*nodeplanes_)[rr+1]-(*nodeplanes_)[rr])/((double) numsubdivisions);
 
-	for (int mm =0; mm < numsubdivisions; ++mm)
-	{
-	  planecoordinates_->push_back((*nodeplanes_)[rr]+delta*mm);
-	}
+        for (int mm =0; mm < numsubdivisions; ++mm)
+        {
+          planecoordinates_->push_back((*nodeplanes_)[rr]+delta*mm);
+        }
       }
       planecoordinates_->push_back((*nodeplanes_)[(*nodeplanes_).size()-1]);
     }
@@ -965,7 +981,10 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     }
     else
     {
-      s.append(".flow_statistics");
+      if (inflowchannel_)
+        s.append(".flow_statistics_inflow");
+      else
+        s.append(".flow_statistics");
 
       log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
       (*log) << "# Statistics for turbulent incompressible channel flow (first- and second-order moments)\n\n";
@@ -1040,7 +1059,7 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
   //----------------------------------------------------------------------
   // loop planes and calculate integral means in each plane
 
-  this->EvaluateIntegralMeanValuesInPlanes();
+  //this->EvaluateIntegralMeanValuesInPlanes();
 
   //----------------------------------------------------------------------
   // loop planes and calculate pointwise means in each plane
@@ -2831,17 +2850,17 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
       dserror("zero force during computation of wall shear stress\n");
     }
 
-    ltau = visc_/sqrt(sumforceu_/area);
+    ltau = visc_/sqrt(sumforceu_/dens_/area);
   }
   else if (sumforcev_>sumforceu_ && sumforcev_>sumforcew_)
   {
     flowdirection=1;
-    ltau = visc_/sqrt(sumforcev_/area);
+    ltau = visc_/sqrt(sumforcev_/dens_/area);
   }
   else if (sumforcew_>sumforceu_ && sumforcew_>sumforcev_)
   {
     flowdirection=2;
-    ltau = visc_/sqrt(sumforcew_/area);
+    ltau = visc_/sqrt(sumforcew_/dens_/area);
   }
   else
   {
@@ -2854,7 +2873,10 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-    s.append(".flow_statistics");
+    if (inflowchannel_)
+      s.append(".flow_statistics_inflow");
+    else
+      s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
     (*log) << "\n\n\n";
@@ -2862,9 +2884,9 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
     (*log) << "# (u_tau)^2 = tau_W/rho : ";
-    (*log) << "   " << setw(11) << setprecision(4) << sumforceu_/area;
-    (*log) << "   " << setw(11) << setprecision(4) << sumforcev_/area;
-    (*log) << "   " << setw(11) << setprecision(4) << sumforcew_/area;
+    (*log) << "   " << setw(11) << setprecision(4) << sumforceu_/dens_/area;
+    (*log) << "   " << setw(11) << setprecision(4) << sumforcev_/dens_/area;
+    (*log) << "   " << setw(11) << setprecision(4) << sumforcew_/dens_/area;
     (*log) << &endl;
 
 
@@ -3234,17 +3256,17 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(int step)
   if      (sumforceu_>sumforcev_ && sumforceu_>sumforcew_)
   {
     flowdirection=0;
-    ltau = visc_/sqrt(sumforceu_/(area*numsamp_));
+    ltau = visc_/sqrt(sumforceu_/dens_/(area*numsamp_));
   }
   else if (sumforcev_>sumforceu_ && sumforcev_>sumforcew_)
   {
     flowdirection=1;
-    ltau = visc_/sqrt(sumforcev_/(area*numsamp_));
+    ltau = visc_/sqrt(sumforcev_/dens_/(area*numsamp_));
   }
   else if (sumforcew_>sumforceu_ && sumforcew_>sumforcev_)
   {
     flowdirection=2;
-    ltau = visc_/sqrt(sumforcew_/(area*numsamp_));
+    ltau = visc_/sqrt(sumforcew_/dens_/(area*numsamp_));
   }
   else
   {
@@ -3257,7 +3279,10 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(int step)
   if (discret_->Comm().MyPID()==0)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-    s.append(".flow_statistics");
+    if (inflowchannel_)
+      s.append(".flow_statistics_inflow");
+    else
+      s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
     (*log) << "# Statistics for turbulent incompressible channel flow (first- and second-order moments)";

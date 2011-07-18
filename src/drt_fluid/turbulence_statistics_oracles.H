@@ -148,6 +148,8 @@ private:
   const double x3min_; // -75.25mm
   const double x3max_; //  75.25mm
 
+  const double utau_;
+
   const double midupchan_;   // x2-coordinate mid line upper channel
   const double midlowchan_;  // x2-coordinate mid line lower channel
   const double midchamber_;  // x2-coordinate mid line chamber

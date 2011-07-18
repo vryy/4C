@@ -2477,8 +2477,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   {
     // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.
     // Otherwise BACI DEBUG version will crash during runtime!
-    Teuchos::Tuple<std::string,12> name;
-    Teuchos::Tuple<int,12> label;
+    Teuchos::Tuple<std::string,13> name;
+    Teuchos::Tuple<int,13> label;
     name[ 0] = "no";                                      label[ 0] = 0;
     name[ 1] = "time_averaging";                          label[ 1] = 1;
     name[ 2] = "channel_flow_of_height_2";                label[ 2] = 2;
@@ -2491,8 +2491,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     name[ 9] = "loma_channel_flow_of_height_2";           label[ 9] = 9;
     name[10] = "loma_lid_driven_cavity";                  label[10] = 10;
     name[11] = "loma_backward_facing_step";               label[11] = 11;
+    name[12] = "combust_oracles";                         label[12] = 12;
 
-    Teuchos::Tuple<std::string,12> description;
+    Teuchos::Tuple<std::string,13> description;
     description[0]="The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible";
     description[1]="The flow is not further specified, but time averaging of velocity and pressure field is performed";
     description[2]="For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.";
@@ -2505,6 +2506,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     description[9]="For this low-Mach-number flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.";
     description[10]="For this low-Mach-number flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time.";
     description[11]="For this low-Mach-number flow, statistical data are evaluated on various lines, averaged over time and z.";
+    description[12]="ORACLES test rig for turbulent premixed combustion.";
 
     setStringToIntegralParameter<int>(
         "CANONICAL_FLOW",
@@ -2558,17 +2560,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
    Teuchos::ParameterList& fdyn_turbinf = fdyn.sublist("TURBULENT INFLOW",false,"");
 
-   setStringToIntegralParameter<int>("TURBULENTINFLOW",
-                                "no",
-                                "Flag to (de)activate potential separate turbulent inflow section",
-                                tuple<std::string>(
-                                  "no",
-                                  "yes"),
-                                tuple<std::string>(
-                                  "no turbulent inflow section",
-                                  "turbulent inflow section"),
-                                tuple<int>(0,1),
-                                &fdyn_turbinf);
+//   setStringToIntegralParameter<int>("TURBULENTINFLOW",
+//                                "no",
+//                                "Flag to (de)activate potential separate turbulent inflow section",
+//                                tuple<std::string>(
+//                                  "no",
+//                                  "yes"),
+//                                tuple<std::string>(
+//                                  "no turbulent inflow section",
+//                                  "turbulent inflow section"),
+//                                tuple<int>(0,1),
+//                                &fdyn_turbinf);
+
+   BoolParameter("TURBULENTINFLOW","No","Flag to (de)activate potential separate turbulent inflow section",&fdyn_turbinf);
 
    setStringToIntegralParameter<int>("INITIALINFLOWFIELD","zero_field",
                                 "Initial field for inflow section",
@@ -3114,17 +3118,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&combustcontrol);
   IntParameter("ITEMAX",1,"Total number of FG iterations",&combustcontrol);
   DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields",&combustcontrol);
-  IntParameter("RESTARTEVRY",20,"Increment for writing restart",&combustcontrol);
+  IntParameter("RESTARTEVRY",1,"Increment for writing restart",&combustcontrol);
   IntParameter("UPRES",1,"Increment for writing solution",&combustcontrol);
   setStringToIntegralParameter<int>("TIMEINT","One_Step_Theta","Time Integration Scheme",
       tuple<std::string>(
           "Stationary",
           "One_Step_Theta",
-          "Generalized_Alpha"),
+          "Gen_Alpha"),
           tuple<int>(
               INPAR::FLUID::timeint_stationary,
               INPAR::FLUID::timeint_one_step_theta,
-              INPAR::FLUID::timeint_gen_alpha),
+              INPAR::FLUID::timeint_afgenalpha),
               &combustcontrol);
 
   /*----------------------------------------------------------------------*/
@@ -3204,7 +3208,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
               INPAR::COMBUST::surface_tension_approx_laplacebeltrami,
               INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed),
               &combustcontrolfluid);
-  setStringToIntegralParameter<int>("SMOOTHGRADPHI","smooth_grad_phi_meanvalue","Type of smoothing for grad(phi)",
+  setStringToIntegralParameter<int>("SMOOTHGRADPHI","smooth_grad_phi_none","Type of smoothing for grad(phi)",
       tuple<std::string>(
           "smooth_grad_phi_none",
           "smooth_grad_phi_meanvalue",

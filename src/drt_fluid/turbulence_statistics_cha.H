@@ -330,6 +330,11 @@ private:
   //! toggle whether to evaluate residuals, taus, dissipation rates etc
   bool                             subgrid_dissipation_;
 
+  //! boolean indicating turbulent inflow channel discretization
+  const bool inflowchannel_;
+  //! x-coordinate of outflow of inflow channel
+  const double inflowmax_;
+
   //! parameterlist for the element call when averages of residuals
   //! are calculated --- used for communication between element
   //! and averaging methods
@@ -360,7 +365,8 @@ private:
   RefCountPtr<Epetra_SerialDenseMatrix> boundingbox_;
 
   //! viscosity to calculate l_tau, y+ etc.
-  double                           visc_;
+  double dens_;
+  double visc_;
 
   //!--------------------------------------------------
   //!         integration based averaging

@@ -146,7 +146,7 @@ void FLD::TurbulentFlowAlgorithm::TimeLoop()
 void FLD::TurbulentFlowAlgorithm::TransferInflowVelocity()
 {
   if (fluiddis_->Comm().MyPID()==0)
-    std::cout << "#   transfer solution of inflow section ..." << std::endl;
+    std::cout << "#   transfer solution of inflow section ..." << std::flush;
 
   // velocity/pressure at time n+1 of inflow section
   Teuchos::RCP<const Epetra_Vector> inflowvelnp = inflowfluidalgo_->FluidField().Velnp();
@@ -163,7 +163,7 @@ void FLD::TurbulentFlowAlgorithm::TransferInflowVelocity()
     dserror("Export using exporter returned err=%d",err);
 
   if (fluiddis_->Comm().MyPID()==0)
-    std::cout << "#   ... done \n" << std::endl;
+    std::cout << "done\n" << std::endl;
 
   return;
 }
