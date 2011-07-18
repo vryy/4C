@@ -724,9 +724,8 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
             olddofcolmap,
             oldNodalDofColDistrib,
             newdofrowmap,
-            state_.nodalDofDistributionMap_));
-          //,
-            //pbcmapmastertoslave_));
+            state_.nodalDofDistributionMap_,
+            pbcmapmastertoslave_));
         }
 
         if(start_val_semilagrange_)

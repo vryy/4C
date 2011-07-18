@@ -45,7 +45,8 @@ namespace XFEM
         const Epetra_Map& olddofcolmap,
         const map<DofKey<onNode>, DofGID>& oldNodalDofColDistrib,
         const Epetra_Map& newdofrowmap,
-        const map<DofKey<onNode>, DofGID>& nodalDofRowDistrib
+        const map<DofKey<onNode>, DofGID>& nodalDofRowDistrib,
+        const RCP<map<int,vector<int> > > pbcmapmastertoslave
     );
     
     //! destructor
@@ -72,6 +73,12 @@ namespace XFEM
     
     //! disabled default constructor
     explicit Enrichmentvalues();
+
+    //! add adjacebt elements for a periodic boundary node
+    void addPBCelements(
+        const DRT::Node* node,
+        vector<const DRT::Element*>&  eles
+        );
     
     //! computation of different values for old interface position
     void oldValues(
@@ -291,6 +298,9 @@ namespace XFEM
     Epetra_Map newdofrowmap_;
     map<DofKey<onNode>, DofGID> newNodalDofRowDistrib_;
     
+
+    //! connection between master and slave row nodes
+    RCP<map<int,vector<int> > > pbcmap_;
 
     // stuff for parallel communication
     DRT::Exporter exporter_; // exporter for parallel communication
