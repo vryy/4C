@@ -2022,6 +2022,16 @@ void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name, bool include_inner )
     }
   }
   file << "};\n";
+
+  file << "View \"Nodes\" {\n";
+  for ( std::map<int, Teuchos::RCP<Node> >::iterator i=nodes_.begin(); i!=nodes_.end(); ++i )
+  {
+    Node * n = &*i->second;
+    Point * p = n->point();
+    const double * x = p->X();
+    file << "SP(" << x[0] << "," << x[1] << "," << x[2] << "){" << n->NumDofSets() << "};\n";
+  }
+  file << "};\n";
 }
 
 void GEO::CUT::Mesh::DumpGmshIntegrationCells( std::string name )
