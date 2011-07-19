@@ -142,7 +142,7 @@ public:
 
   void DumpGmsh( std::string name );
 
-  void DumpGmshVolumeCells( std::string name );
+  void DumpGmshVolumeCells( std::string name, bool include_inner );
 
   void DumpGmshIntegrationCells( std::string name );
 

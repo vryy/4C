@@ -251,6 +251,17 @@ void GEO::CutWizard::PrintCellStats()
   mesh_->PrintCellStats();
 }
 
+void GEO::CutWizard::DumpGmshVolumeCells( bool include_inner )
+{
+  std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  std::stringstream str;
+  str << name
+      << ".volumecells."
+      << dis_.Comm().MyPID()
+      << ".pos";
+  mesh_->DumpGmshVolumeCells( str.str(), include_inner );
+}
+
 void GEO::CutWizard::DumpGmshIntegrationCells()
 {
   std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();

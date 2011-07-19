@@ -1946,43 +1946,82 @@ void GEO::CUT::Mesh::DumpGmsh( std::ofstream & file, const std::vector<Node*> & 
   file << "};\n";
 }
 
-void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name )
+void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name, bool include_inner )
 {
+  std::ofstream file( name.c_str() );
   int count = 0;
+
+  file << "View \"VolumeCells\" {\n";
   for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin();
         i!=cells_.end();
         ++i )
   {
     VolumeCell * vc = &**i;
-    std::stringstream filename;
-    filename << name << count << ".pos";
-    std::ofstream file( filename.str().c_str() );
 
-    file << "View \"IntegrationCells\" {\n";
-    const plain_integrationcell_set & integrationcells = vc->IntegrationCells();
-    for ( plain_integrationcell_set::const_iterator i=integrationcells.begin();
-          i!=integrationcells.end();
-          ++i )
+    if ( include_inner or vc->Position()!=Point::inside )
     {
-      IntegrationCell * ic = *i;
-      ic->DumpGmsh( file );
+      const plain_integrationcell_set & integrationcells = vc->IntegrationCells();
+      for ( plain_integrationcell_set::const_iterator i=integrationcells.begin();
+            i!=integrationcells.end();
+            ++i )
+      {
+        IntegrationCell * ic = *i;
+        ic->DumpGmsh( file, &count );
+      }
     }
-    file << "};\n";
-
-    file << "View \"BoundaryCells\" {\n";
-    const plain_boundarycell_set & boundarycells = vc->BoundaryCells();
-    for ( plain_boundarycell_set::const_iterator i=boundarycells.begin();
-          i!=boundarycells.end();
-          ++i )
-    {
-      BoundaryCell * bc = *i;
-      if ( bc->IsValid() )
-        bc->DumpGmsh( file );
-    }
-    file << "};\n";
 
     count += 1;
   }
+  file << "};\n";
+
+  file << "View \"Elements\" {\n";
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();
+        ++i )
+  {
+    Element * e = &*i->second;
+    const plain_volumecell_set & volumes = e->VolumeCells();
+    count = volumes.size();
+    for ( plain_volumecell_set::const_iterator i=volumes.begin(); i!=volumes.end(); ++i )
+    {
+      VolumeCell * vc = *i;
+      if ( include_inner or vc->Position()!=Point::inside )
+      {
+        const plain_integrationcell_set & integrationcells = vc->IntegrationCells();
+        for ( plain_integrationcell_set::const_iterator i=integrationcells.begin();
+              i!=integrationcells.end();
+              ++i )
+        {
+          IntegrationCell * ic = *i;
+          ic->DumpGmsh( file, &count );
+        }
+      }
+    }
+  }
+  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+        i!=shadow_elements_.end();
+        ++i )
+  {
+    Element * e = &**i;
+    const plain_volumecell_set & volumes = e->VolumeCells();
+    count = volumes.size();
+    for ( plain_volumecell_set::const_iterator i=volumes.begin(); i!=volumes.end(); ++i )
+    {
+      VolumeCell * vc = *i;
+      if ( include_inner or vc->Position()!=Point::inside )
+      {
+        const plain_integrationcell_set & integrationcells = vc->IntegrationCells();
+        for ( plain_integrationcell_set::const_iterator i=integrationcells.begin();
+              i!=integrationcells.end();
+              ++i )
+        {
+          IntegrationCell * ic = *i;
+          ic->DumpGmsh( file, &count );
+        }
+      }
+    }
+  }
+  file << "};\n";
 }
 
 void GEO::CUT::Mesh::DumpGmshIntegrationCells( std::string name )

@@ -100,7 +100,7 @@ void GEO::CUT::Quad4BoundaryCell::CollectCoordinates( const std::vector<Point*> 
 }
 #endif
 
-void GEO::CUT::Tri3BoundaryCell::DumpGmsh( std::ofstream & file )
+void GEO::CUT::Tri3BoundaryCell::DumpGmsh( std::ofstream & file, int * value )
 {
   file << "ST(";
   for ( int i=0; i<3; ++i )
@@ -116,12 +116,15 @@ void GEO::CUT::Tri3BoundaryCell::DumpGmsh( std::ofstream & file )
   {
     if ( i > 0 )
       file << ",";
-    file << facet_->SideId();
+    if ( value!=NULL )
+      file << ( *value );
+    else
+      file << facet_->SideId();
   }
   file << "};\n";
 }
 
-void GEO::CUT::Quad4BoundaryCell::DumpGmsh( std::ofstream & file )
+void GEO::CUT::Quad4BoundaryCell::DumpGmsh( std::ofstream & file, int * value )
 {
   file << "SQ(";
   for ( int i=0; i<4; ++i )
@@ -137,7 +140,10 @@ void GEO::CUT::Quad4BoundaryCell::DumpGmsh( std::ofstream & file )
   {
     if ( i > 0 )
       file << ",";
-    file << facet_->SideId();
+    if ( value!=NULL )
+      file << ( *value );
+    else
+      file << facet_->SideId();
   }
   file << "};\n";
 }

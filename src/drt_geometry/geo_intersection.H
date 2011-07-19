@@ -86,6 +86,8 @@ namespace GEO
 
     void PrintCellStats();
 
+    void DumpGmshVolumeCells( bool include_inner );
+
     void DumpGmshIntegrationCells();
 
   private:

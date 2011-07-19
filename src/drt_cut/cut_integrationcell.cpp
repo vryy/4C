@@ -362,7 +362,7 @@ bool GEO::CUT::IntegrationCell::CreateCells( Mesh & mesh,
 }
 #endif
 
-void GEO::CUT::Hex8IntegrationCell::DumpGmsh( std::ofstream & file )
+void GEO::CUT::Hex8IntegrationCell::DumpGmsh( std::ofstream & file, int * value )
 {
   file << "SH(";
   for ( int i=0; i<8; ++i )
@@ -378,12 +378,15 @@ void GEO::CUT::Hex8IntegrationCell::DumpGmsh( std::ofstream & file )
   {
     if ( i > 0 )
       file << ",";
-    file << position_;
+    if ( value!=NULL )
+      file << ( *value );
+    else
+      file << position_;
   }
   file << "};\n";
 }
 
-void GEO::CUT::Tet4IntegrationCell::DumpGmsh( std::ofstream & file )
+void GEO::CUT::Tet4IntegrationCell::DumpGmsh( std::ofstream & file, int * value )
 {
   file << "SS(";
   for ( int i=0; i<4; ++i )
@@ -399,12 +402,15 @@ void GEO::CUT::Tet4IntegrationCell::DumpGmsh( std::ofstream & file )
   {
     if ( i > 0 )
       file << ",";
-    file << position_;
+    if ( value!=NULL )
+      file << ( *value );
+    else
+      file << position_;
   }
   file << "};\n";
 }
 
-void GEO::CUT::Wedge6IntegrationCell::DumpGmsh( std::ofstream & file )
+void GEO::CUT::Wedge6IntegrationCell::DumpGmsh( std::ofstream & file, int * value )
 {
   file << "SI(";
   for ( int i=0; i<6; ++i )
@@ -420,12 +426,15 @@ void GEO::CUT::Wedge6IntegrationCell::DumpGmsh( std::ofstream & file )
   {
     if ( i > 0 )
       file << ",";
-    file << position_;
+    if ( value!=NULL )
+      file << ( *value );
+    else
+      file << position_;
   }
   file << "};\n";
 }
 
-void GEO::CUT::Pyramid5IntegrationCell::DumpGmsh( std::ofstream & file )
+void GEO::CUT::Pyramid5IntegrationCell::DumpGmsh( std::ofstream & file, int * value )
 {
   file << "SP(";
   for ( int i=0; i<5; ++i )
@@ -441,7 +450,10 @@ void GEO::CUT::Pyramid5IntegrationCell::DumpGmsh( std::ofstream & file )
   {
     if ( i > 0 )
       file << ",";
-    file << position_;
+    if ( value!=NULL )
+      file << ( *value );
+    else
+      file << position_;
   }
   file << "};\n";
 }

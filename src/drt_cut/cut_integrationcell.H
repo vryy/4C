@@ -39,7 +39,7 @@ public:
 
   virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const = 0;
 
-  virtual void DumpGmsh( std::ofstream & file ) = 0;
+  virtual void DumpGmsh( std::ofstream & file, int * value=NULL ) = 0;
 
   double Volume() const;
 
@@ -71,7 +71,7 @@ public:
 
   virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const;
 
-  virtual void DumpGmsh( std::ofstream & file );
+  virtual void DumpGmsh( std::ofstream & file, int * value=NULL );
 
   //virtual double Volume() const;
 
@@ -92,7 +92,7 @@ public:
 
   virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const;
 
-  virtual void DumpGmsh( std::ofstream & file );
+  virtual void DumpGmsh( std::ofstream & file, int * value=NULL );
 
   //virtual double Volume() const;
 
@@ -111,7 +111,7 @@ public:
 
   virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const;
 
-  virtual void DumpGmsh( std::ofstream & file );
+  virtual void DumpGmsh( std::ofstream & file, int * value=NULL );
 
   //virtual double Volume() const;
 private:
@@ -131,7 +131,7 @@ public:
 
   virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const;
 
-  virtual void DumpGmsh( std::ofstream & file );
+  virtual void DumpGmsh( std::ofstream & file, int * value=NULL );
 
   //virtual double Volume() const;
 private:

@@ -186,6 +186,11 @@ void GEO::CUT::MeshIntersection::Status()
 #endif
 }
 
+void GEO::CUT::MeshIntersection::DumpGmshVolumeCells( std::string name, bool include_inner )
+{
+  NormalMesh().DumpGmshVolumeCells( name, include_inner );
+}
+
 void GEO::CUT::MeshIntersection::DumpGmshIntegrationCells( std::string name )
 {
   NormalMesh().DumpGmshIntegrationCells( name );

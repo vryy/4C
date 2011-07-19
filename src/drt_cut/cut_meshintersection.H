@@ -62,6 +62,8 @@ public:
 
   Mesh & CutMesh( int i=0 ) { return cut_mesh_[i]->LinearMesh(); }
 
+  void DumpGmshVolumeCells( std::string name, bool include_inner );
+
   void DumpGmshIntegrationCells( std::string name );
 
 private:

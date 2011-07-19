@@ -43,7 +43,7 @@ public:
 
   virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const = 0;
 
-  virtual void DumpGmsh( std::ofstream & file ) = 0;
+  virtual void DumpGmsh( std::ofstream & file, int * value=NULL ) = 0;
 
   virtual double Area() = 0;
 
@@ -114,7 +114,7 @@ public:
 
   virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const { return 20; }
 
-  virtual void DumpGmsh( std::ofstream & file );
+  virtual void DumpGmsh( std::ofstream & file, int * value=NULL );
 
   virtual double Area() { return MyArea<DRT::Element::tri3>(); }
 
@@ -143,7 +143,7 @@ public:
 
   virtual int CubatureDegree( DRT::Element::DiscretizationType elementshape ) const { return 20; }
 
-  virtual void DumpGmsh( std::ofstream & file );
+  virtual void DumpGmsh( std::ofstream & file, int * value=NULL );
 
   virtual double Area() { return MyArea<DRT::Element::quad4>(); }
 
