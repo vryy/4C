@@ -513,10 +513,10 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     if (iset) tangnew->Add(*kia,false,1.0,1.0);
   
     // add a submatrices to tangnew
-    if (aset) tangnew->Add(*kanmod,false,1.0,1.0);
-    if (aset) tangnew->Add(*kammod,false,1.0,1.0);
-    if (aset && iset) tangnew->Add(*kaimod,false,1.0,1.0);
-    if (aset) tangnew->Add(*kaamod,false,1.0,1.0);
+    if (aset) tangnew->Add(*kanmod,false,-1.0,1.0);
+    if (aset) tangnew->Add(*kammod,false,-1.0,1.0);
+    if (aset && iset) tangnew->Add(*kaimod,false,-1.0,1.0);
+    if (aset) tangnew->Add(*kaamod,false,-1.0,1.0);
   
     // add n subvector to feffnew
     RCP<Epetra_Vector> fnexp = rcp(new Epetra_Vector(*problemrowmap));
@@ -533,7 +533,7 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     {  
       RCP<Epetra_Vector> mechdissrateexp = rcp(new Epetra_Vector(*problemrowmap));
       LINALG::Export(*mechdissrate,*mechdissrateexp);
-      feffnew->Update(-1.0,*mechdissrateexp,1.0);
+      feffnew->Update(+1.0,*mechdissrateexp,1.0);
     }
       
     // add i subvector to feffnew
@@ -551,16 +551,16 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     {
       famodexp = rcp(new Epetra_Vector(*problemrowmap));
       LINALG::Export(*famod,*famodexp);
-      feffnew->Update(1.0,*famodexp,+1.0);
+      feffnew->Update(-1.0,*famodexp,+1.0);
     }
   
     // add linearized thermo contact condition
-    tangnew->Add(*thermcontTEMP,false,-1.0,+1.0);
+    tangnew->Add(*thermcontTEMP,false,+1.0,+1.0);
   
     // add rhs of thermal contact condition to feffnew
     RCP<Epetra_Vector> thermcontRHSexp = rcp(new Epetra_Vector(*problemrowmap));
     LINALG::Export(*thermcontRHS,*thermcontRHSexp);
-    feffnew->Update(-1.0,*thermcontRHSexp,1.0);
+    feffnew->Update(+1.0,*thermcontRHSexp,1.0);
   
     // FillComplete tangnew (square)
     tangnew->Complete();
@@ -1245,11 +1245,11 @@ void THR::ThermoContactMan::AssembleThermContCondition(LINALG::SparseMatrix& the
 
   RCP <Epetra_Vector> DdotTemp = rcp(new Epetra_Vector(*activedofs));
   dmatrix.Multiply(false,*fa,*DdotTemp);
-  thermcontRHS.Update(-beta,*DdotTemp,1.0);
+  thermcontRHS.Update(+beta,*DdotTemp,1.0);
 
   RCP <Epetra_Vector> MdotTemp = rcp(new Epetra_Vector(*activedofs));
   mmatrix.Multiply(false,*fm,*MdotTemp);
-  thermcontRHS.Update(+beta,*MdotTemp,1.0);
+  thermcontRHS.Update(-beta,*MdotTemp,1.0);
   
 //  // loop over active dofs
 //  for (int i=0; i<cstrategy.ActiveRowNodes()->NumMyElements(); ++i)
@@ -1297,12 +1297,12 @@ void THR::ThermoContactMan::AssembleThermContCondition(LINALG::SparseMatrix& the
         vector<int> dof(1);
         vector<int> owner(1);
   
-        mechdissiprate(0) = delta/dt*cnode->MechDiss();
+        mechdissiprate(0) = (-1)*delta/dt*cnode->MechDiss();
         dof[0] = rowtemp;
         owner[0] = cnode->Owner();
   
         // do assembly
-        if(abs(mechdissiprate(0)>1e-12 and cnode->Active()))
+        if(abs(mechdissiprate(0))>1e-12 and cnode->Active())
           LINALG::Assemble(thermcontRHS, mechdissiprate, dof, owner);
       }
     }
@@ -1388,7 +1388,7 @@ void THR::ThermoContactMan::RecoverThermLM(RCP<Epetra_Vector> tempi)
     /**********************************************************************/
 
     // full update
-    z_->Update(-1.0,*fs_,0.0);
+    z_->Update(1.0,*fs_,0.0);
     RCP<Epetra_Vector> mod = rcp(new Epetra_Vector(*sdofs));
     kss_->Multiply(false,*tempis,*mod);
     z_->Update(-1.0,*mod,1.0);
