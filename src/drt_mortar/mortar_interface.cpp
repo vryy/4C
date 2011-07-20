@@ -66,8 +66,7 @@ comm_(comm),
 dim_(dim),
 icontact_(icontact),
 shapefcn_(INPAR::MORTAR::shape_undefined),
-quadslave2d_(false),
-quadslave3d_(false),
+quadslave_(false),
 redundant_(redundant),
 maxdofglobal_(-1)
 {
@@ -223,11 +222,11 @@ void MORTAR::MortarInterface::AddMortarElement(RCP<MORTAR::MortarElement> mrtrel
 {
   // check for quadratic 2d slave elements to be modified
   if (mrtrele->IsSlave() && (mrtrele->Shape()==DRT::Element::line3))
-    quadslave2d_=true;
+    quadslave_=true;
 
   // check for quadratic 3d slave elements to be modified
   if (mrtrele->IsSlave() && (mrtrele->Shape()==DRT::Element::quad8 || mrtrele->Shape()==DRT::Element::tri6))
-    quadslave3d_=true;
+    quadslave_=true;
 
   idiscret_->AddElement(mrtrele);
   return;
@@ -315,21 +314,13 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
   //**********************************************************************
 
   //**********************************************************************
-  // check for linear interpolation of 3D quadratic Lagrange multipliers
-  bool lagmultlin = (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D")
+  // check for linear interpolation of 2D/3D quadratic Lagrange multipliers
+  bool lagmultlin = (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(IParams(),"LAGMULT_QUAD")
                      == INPAR::MORTAR::lagmult_lin_lin);
 
   // modify crosspoints / edge nodes
   if (lagmultlin)
   {
-    // if dimension is not 3 dont change anything
-    if (Dim()!=3) dserror("ERROR: Lin/Lin interpolation of LM only for 3D quadratic mortar");
-
-    // modification for different DiscretizationTypes on slave side: search all node->Elements()[k]
-    // if there is one element of type tri6 or quad8 then prove for one of these elements
-    // ------> not implemented jet!!!
-    // TODO: mixed (hex27,hex20,tet10) discretizations !!!
-
     // modified treatment of vertex nodes and edge nodes
     // detect middle nodes (quadratic nodes) on slave side
     // set status of middle nodes -> MASTER
@@ -341,7 +332,7 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
       // get node and cast to cnode
       MORTAR::MortarNode* node = static_cast<MORTAR::MortarNode*>(idiscret_->lRowNode(i));
 
-      // candiates are slave nodes with shape tri6 and quad8
+      // candidates are slave nodes with shape line3 (2D), tri6 and quad8/9 (3D)
       if (node->IsSlave())
       {
         //search the first adjacent element
@@ -350,6 +341,26 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
         // which discretization type
         switch(shape)
         {
+          // line3 contact elements (= quad8/9 or tri6 discretizations)
+          case MORTAR::MortarElement::line3:
+          {
+            // case1: vertex nodes remain SLAVE
+            if (node->Id() == (node->Elements()[0])->NodeIds()[0]
+             || node->Id() == (node->Elements()[0])->NodeIds()[1])
+            {
+              // do nothing
+            }
+
+            // case2: middle nodes must be set to MASTER
+            else
+            {
+              node->SetBound() = true;
+              node->SetSlave() = false;
+            }
+
+            break;
+          }
+
           // tri6 contact elements (= tet10 discretizations)
           case MORTAR::MortarElement::tri6:
           {
@@ -418,7 +429,7 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
           // other cases
           default:
           {
-            dserror("ERROR: Lin/Lin interpolation of LM only for tri6/quad8/quad9 contact elements");
+            dserror("ERROR: Lin/Lin interpolation of LM only for line3/tri6/quad8/quad9 mortar elements");
             break;
           }
         } // switch(Shape)
@@ -557,18 +568,12 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
     mele->InitializeDataContainer();
   }
 
-  // communicate quadslave2d/3d status among ALL processors
+  // communicate quadslave status among ALL processors
   // (not only those participating in interface)
-  int localstatus2d = (int)(quadslave2d_);
-  int globalstatus2d = 0;
-  Comm().SumAll(&localstatus2d,&globalstatus2d,1);
-  quadslave2d_ = (bool)(globalstatus2d);
-  int localstatus3d = (int)(quadslave3d_);
-  int globalstatus3d = 0;
-  Comm().SumAll(&localstatus3d,&globalstatus3d,1);
-  quadslave3d_ = (bool)(globalstatus3d);
-
-
+  int localstatus = (int)(quadslave_);
+  int globalstatus = 0;
+  Comm().SumAll(&localstatus,&globalstatus,1);
+  quadslave_ = (bool)(globalstatus);
 
   return;
 }
@@ -1191,8 +1196,9 @@ void MORTAR::MortarInterface::Initialize()
   {
     MORTAR::MortarNode* node = static_cast<MORTAR::MortarNode*>(idiscret_->lColNode(i));
 
-    // reset feasible projection status
+    // reset feasible projection and segmentation status
     node->HasProj() = false;
+    node->HasSegment() = false;
   }
 
   // loop over all slave nodes to reset stuff (standard column map)
@@ -1824,6 +1830,18 @@ bool MORTAR::MortarInterface::IntegrateSlave(MORTAR::MortarElement& sele)
 bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
                                                 vector<MORTAR::MortarElement*> mele)
 {
+  // check if quadratic interpolation is involved
+  bool quadratic = false;
+  if (sele->IsQuad())
+    quadratic = true;
+  for (int m=0;m<(int)mele.size();++m)
+    if (mele[m]->IsQuad())
+      quadratic = true;
+
+  // get LM interpolation and testing type for quadratic FE
+  INPAR::MORTAR::LagMultQuad lmtype =
+    DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(IParams(),"LAGMULT_QUAD");
+
   // *********************************************************************
   // do interface coupling within a new class
   // (projection slave and master, overlap detection, integration and
@@ -1837,21 +1855,13 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
     // interpolation need any special treatment in the 2d case
 
     // create Coupling2dManager
-    MORTAR::Coupling2dManager coup(shapefcn_,Discret(),Dim(),sele,mele);
+    MORTAR::Coupling2dManager coup(shapefcn_,Discret(),Dim(),quadratic,lmtype,sele,mele);
   }
   // ************************************************************** 3D ***
   else if (Dim()==3)
   {
     // check for auxiliary plane coupling
     bool auxplane = DRT::INPUT::IntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
-
-    // check if quadratic interpolation is involved
-    bool quadratic = false;
-    if (sele->IsQuad3d())
-      quadratic = true;
-    for (int m=0;m<(int)mele.size();++m)
-      if (mele[m]->IsQuad3d())
-        quadratic = true;
 
     // *************************************************** linear 3D ***
     if (!quadratic)
@@ -1871,10 +1881,6 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
         vector<RCP<MORTAR::IntElement> > mauxelements(0);
         SplitIntElements(*sele,sauxelements);
         SplitIntElements(*mele[m],mauxelements);
-
-        // get LM interpolation and testing type
-        INPAR::MORTAR::LagMultQuad3D lmtype =
-          DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D");
 
         // loop over all IntElement pairs for coupling
         for (int i=0;i<(int)sauxelements.size();++i)
@@ -2363,8 +2369,8 @@ void MORTAR::MortarInterface::AssembleTrafo(LINALG::SparseMatrix& trafo,
   if (!lComm())
     return;
 
-  // check for dual shape functions and quadratic 3d slave elements
-  if (shapefcn_ != INPAR::MORTAR::shape_dual || quadslave3d_ == false)
+  // check for dual shape functions and quadratic slave elements
+  if (shapefcn_ != INPAR::MORTAR::shape_dual || quadslave_ == false)
     dserror("ERROR: AssembleTrafo -> you should not be here...");
 
   // loop over proc's slave nodes of the interface for assembly

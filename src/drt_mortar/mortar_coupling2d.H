@@ -88,7 +88,8 @@ public:
   To be able to evaluate them, the Coupling2d have to be created with the alternative constructor (see below).
 
   */
-  Coupling2d(DRT::Discretization& idiscret, int dim,
+  Coupling2d(DRT::Discretization& idiscret,
+             int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
              MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
   
   /*!
@@ -99,7 +100,8 @@ public:
   performed in parallel by individual processes.
   
   */  
-  Coupling2d(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret, int dim,
+  Coupling2d(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret,
+             int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
              MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
 
   /*!
@@ -139,6 +141,18 @@ public:
 
   */
   virtual const int& Dim() {return dim_;};
+
+  /*!
+  \brief Get coupling / FE ansatz type (true = quadratic)
+
+  */
+  virtual const bool& Quad() {return quad_;};
+
+  /*!
+  \brief Return the LM interpolation / testing type for quadratic FE
+
+  */
+  INPAR::MORTAR::LagMultQuad LagMultQuad() { return lmtype_; }
 
   /*!
   \brief Get projection status of the four end nodes
@@ -209,6 +223,8 @@ protected:
     const INPAR::MORTAR::ShapeFcn shapefcn_;  // employed type of shape function set
     DRT::Discretization&          idiscret_;  // discretization of the contact interface
     int                           dim_;       // problem dimension (here: 2D)
+    bool                          quad_;      // flag indicating coupling type (true = quadratic)
+    INPAR::MORTAR::LagMultQuad    lmtype_;    // type of quadratic LM interpolation and testing
     MORTAR::MortarElement&        sele_;      // slave element to perform coupling for
     MORTAR::MortarElement&        mele_;      // master element to perform coupling for
 
@@ -244,7 +260,8 @@ public:
   constructor (see below).
 
   */
-  Coupling2dManager(DRT::Discretization& idiscret, int dim,
+  Coupling2dManager(DRT::Discretization& idiscret,
+                    int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
                     MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
 
   /*!
@@ -255,7 +272,8 @@ public:
   performed in parallel by individual processes.
 
   */
-  Coupling2dManager(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret, int dim,
+  Coupling2dManager(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret,
+                    int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
                     MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
 
   /*!
@@ -306,6 +324,8 @@ protected:
     const INPAR::MORTAR::ShapeFcn   shapefcn_;  // employed type of shape function set
     DRT::Discretization&            idiscret_;  // discretization of the contact interface
     int                             dim_;       // problem dimension (here: 2D)
+    bool                            quad_;      // flag indicating coupling type (true = quadratic)
+    INPAR::MORTAR::LagMultQuad      lmtype_;    // type of quadratic LM interpolation and testing
     MORTAR::MortarElement*          sele_;      // slave element
     vector<MORTAR::MortarElement*>  mele_;      // master elements
     vector<RCP<Coupling2d> >        coup_;      // coupling pairs

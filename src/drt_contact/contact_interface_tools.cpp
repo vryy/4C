@@ -2229,8 +2229,9 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       node->CoData().Getg() = 1.0e12;
       (node->CoData().GetDerivG()).clear();
 
-      // reset feasible projection status
+      // reset feasible projection and segmentation status
       node->HasProj() = false;
+      node->HasSegment() = false;
     }
 
     // loop over all elements to reset candidates / search lists
@@ -2435,8 +2436,9 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
       node->CoData().Getg() = 1.0e12;
       (node->CoData().GetDerivG()).clear();
 
-      // reset feasible projection status
+      // reset feasible projection and segmentation status
       node->HasProj() = false;
+      node->HasSegment() = false;
     }
 
     // loop over all elements to reset candidates / search lists
@@ -2640,8 +2642,9 @@ void CONTACT::CoInterface::FDCheckTangLMDeriv()
     node->CoData().Getg() = 1.0e12;
     (node->CoData().GetDerivG()).clear();
 
-    // reset feasible projection status
+    // reset feasible projection and segmentation status
     node->HasProj() = false;
+    node->HasSegment() = false;
   }
 
   // loop over all elements to reset candidates / search lists

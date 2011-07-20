@@ -75,7 +75,8 @@ public:
   To be able to evaluate them, the CoCoupling2d have to be created with the alternative constructor (see below).
 
   */
-  CoCoupling2d(DRT::Discretization& idiscret, int dim,
+  CoCoupling2d(DRT::Discretization& idiscret,
+               int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
                MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
   
   /*!
@@ -86,7 +87,8 @@ public:
   performed in parallel by individual processes.
   
   */  
-  CoCoupling2d(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret, int dim,
+  CoCoupling2d(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret,
+               int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
                MORTAR::MortarElement& sele, MORTAR::MortarElement& mele);
   
   /*!
@@ -149,7 +151,8 @@ public:
   constructor (see below).
 
   */
-  CoCoupling2dManager(DRT::Discretization& idiscret, int dim,
+  CoCoupling2dManager(DRT::Discretization& idiscret,
+                      int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
                       MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
 
   /*!
@@ -160,7 +163,8 @@ public:
   performed in parallel by individual processes.
 
   */
-  CoCoupling2dManager(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret, int dim,
+  CoCoupling2dManager(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret,
+                      int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
                       MORTAR::MortarElement* sele, vector<MORTAR::MortarElement*> mele);
 
   /*!
@@ -211,6 +215,8 @@ protected:
     const INPAR::MORTAR::ShapeFcn   shapefcn_;  // employed type of shape function set
     DRT::Discretization&            idiscret_;  // discretization of the contact interface
     int                             dim_;       // problem dimension (here: 2D)
+    bool                            quad_;      // flag indicating coupling type (true = quadratic)
+    INPAR::MORTAR::LagMultQuad      lmtype_;    // type of quadratic LM interpolation and testing
     MORTAR::MortarElement*          sele_;      // slave element
     vector<MORTAR::MortarElement*>  mele_;      // master elements
     vector<RCP<CoCoupling2d> >      coup_;      // coupling pairs

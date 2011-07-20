@@ -164,6 +164,20 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     break;
   }
   // *********************************************************************
+  // 1D linear part of standard quadratic shape functions (line3)
+  // (used for linear interpolation of std LM field in 2D quadratic mortar)
+  // *********************************************************************
+  case MortarElement::quad1D_only_lin:
+  {
+    val[0] = 0.5*(1-xi[0]);
+    val[1] = 0.5*(1+xi[0]);
+    val[2] = 0.0;
+    deriv(0,0) = -0.5;
+    deriv(1,0) =  0.5;
+    deriv(2,0) =  0.0;
+    break;
+  }
+  // *********************************************************************
   // 2D standard quadratic shape functions (tri6)
   // (used for interpolation of displacement field)
   // *********************************************************************
@@ -515,6 +529,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     val[5] = 0.0;
     val[6] = 0.0;
     val[7] = 0.0;
+    val[8] = 0.0;
     
     deriv(0,0) = -0.25*(1-xi[1]); deriv(0,1) = -0.25*(1-xi[0]);
     deriv(1,0) =  0.25*(1-xi[1]); deriv(1,1) = -0.25*(1+xi[0]);
@@ -524,6 +539,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     deriv(5,0) =  0.0;            deriv(5,1) =  0.0;
     deriv(6,0) =  0.0;            deriv(6,1) =  0.0;
     deriv(7,0) =  0.0;            deriv(7,1) =  0.0;
+    deriv(8,0) =  0.0;            deriv(8,1) =  0.0;
     
     break;
   }
@@ -1113,9 +1129,12 @@ bool MORTAR::MortarElement::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFc
   if (!IsSlave())
     dserror("ERROR: EvaluateShapeLagMultLin called for master element");
 
-  // check for feasible element types (tri6, quad8 or quad9)
-  if (Shape()!=DRT::Element::tri6 && Shape()!=DRT::Element::quad8 && Shape()!=DRT::Element::quad9)
-    dserror("ERROR: Linear LM interpolation only for tri6/quad8/quad9 elements");
+  // check for feasible element types (line3,tri6, quad8 or quad9)
+  if (Shape()!=DRT::Element::line3 &&
+      Shape()!=DRT::Element::tri6 &&
+      Shape()!=DRT::Element::quad8 &&
+      Shape()!=DRT::Element::quad9)
+    dserror("ERROR: Linear LM interpolation only for quadratic finite elements");
   
   // dual shape functions or not
   bool dual = false;
@@ -1125,47 +1144,64 @@ bool MORTAR::MortarElement::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFc
   DRT::Node** mynodes = Nodes();
   if (!mynodes) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
 
+  // check for boundary nodes
+  bool bound = false;
+  for (int i=0;i<NumNode();++i)
+  {
+    MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
+    if (!mymrtrnode) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
+    bound += mymrtrnode->IsOnBound();
+  }
+
+  // all nodes are interior: use unmodified shape functions
+  if (!bound)
+  {
+    dserror("ERROR: You should not be here...");
+  }
+
   switch(Shape())
   {
+    // 2D quadratic case (quadratic line)
+    case DRT::Element::line3:
+    {
+      // the middle node is defined as slave boundary (=master)
+      // dual Lagrange multipliers
+      if (dual)
+      {
+        dserror("ERROR: Quad->Lin modification of dual LM shape functions not yet implemented");
+        ShapeFunctions(MortarElement::quaddual1D_only_lin,xi,val,deriv);
+      }
+
+      // standard Lagrange multipliers
+      else
+      {
+        ShapeFunctions(MortarElement::quad1D_only_lin,xi,val,deriv);
+      }
+
+      break;
+    }
+
     // 3D quadratic cases (quadratic triangle, biquadratic and serendipity quad)
     case DRT::Element::tri6:
     case DRT::Element::quad8:
     case DRT::Element::quad9:
     {
-      // check for boundary nodes
-      bool bound = false;
-      for (int i=0;i<NumNode();++i)
+      // the edge nodes are defined as slave boundary (=master)
+      // dual Lagrange multipliers
+      if (dual)
       {
-        MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
-        if (!mymrtrnode) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
-        bound += mymrtrnode->IsOnBound();
+        //dserror("ERROR: Quad->Lin modification of dual LM shape functions not yet implemented");
+        if (Shape()==tri6)       ShapeFunctions(MortarElement::quaddual2D_only_lin,xi,val,deriv);
+        else if (Shape()==quad8) ShapeFunctions(MortarElement::serendipitydual2D_only_lin,xi,val,deriv);
+        else /*Shape()==quad9*/  ShapeFunctions(MortarElement::biquaddual2D_only_lin,xi,val,deriv);
       }
-  
-      // all nodes are interior: use unmodified shape functions
-      if (!bound)
-      {
-        dserror("ERROR: You should not be here...");
-      }
-  
-      // the quadratic nodes are defined as slave boundary
+
+      // standard Lagrange multipliers
       else
-      { 
-        // dual Lagrange multipliers
-        if (dual)
-        {
-          dserror("ERROR: Quad->Lin modification of dual LM shape functions not yet implemented");
-          if (Shape()==tri6)       ShapeFunctions(MortarElement::quaddual2D_only_lin,xi,val,deriv);
-          else if (Shape()==quad8) ShapeFunctions(MortarElement::serendipitydual2D_only_lin,xi,val,deriv);
-          else /*Shape()==quad9*/  ShapeFunctions(MortarElement::biquaddual2D_only_lin,xi,val,deriv);
-        }
-        
-        // standard Lagrange multipliers
-        else
-        {
-          if (Shape()==tri6)       ShapeFunctions(MortarElement::quad2D_only_lin,xi,val,deriv);
-          else if (Shape()==quad8) ShapeFunctions(MortarElement::serendipity2D_only_lin,xi,val,deriv);
-          else /*Shape()==quad9*/  ShapeFunctions(MortarElement::biquad2D_only_lin,xi,val,deriv);
-        }
+      {
+        if (Shape()==tri6)       ShapeFunctions(MortarElement::quad2D_only_lin,xi,val,deriv);
+        else if (Shape()==quad8) ShapeFunctions(MortarElement::serendipity2D_only_lin,xi,val,deriv);
+        else /*Shape()==quad9*/  ShapeFunctions(MortarElement::biquad2D_only_lin,xi,val,deriv);
       }
   
       break;

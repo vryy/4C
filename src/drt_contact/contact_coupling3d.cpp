@@ -155,6 +155,19 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     // integrate cell only if not neglectable
     if (intcellarea < MORTARINTLIM*selearea) continue;
 
+    // set segmentation status of all slave nodes
+    // (hassegment_ of a slave node is true if ANY segment/cell
+    // is integrated that contributes to this slave node)
+    int nnodes = SlaveIntElement().NumNode();
+    DRT::Node** mynodes = SlaveIntElement().Nodes();
+    if (!mynodes) dserror("ERROR: Null pointer!");
+    for (int k=0;k<nnodes;++k)
+    {
+      MORTAR::MortarNode* mycnode = static_cast<MORTAR::MortarNode*> (mynodes[k]);
+      if (!mycnode) dserror("ERROR: Null pointer!");
+      mycnode->HasSegment()=true;
+    }
+
     // *******************************************************************
     // different options for mortar integration
     // *******************************************************************
@@ -163,7 +176,7 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     // (3) quadratic element(s) involved -> linear LM interpolation
     // (4) quadratic element(s) involved -> piecew. linear LM interpolation
     // *******************************************************************
-    INPAR::MORTAR::LagMultQuad3D lmtype = LagMultQuad3D();
+    INPAR::MORTAR::LagMultQuad lmtype = LagMultQuad();
     
     // *******************************************************************
     // case (1)
@@ -1323,7 +1336,7 @@ CONTACT::CoCoupling3dQuad::CoCoupling3dQuad(DRT::Discretization& idiscret,
                                 MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
                                 MORTAR::IntElement& sintele,
                                 MORTAR::IntElement& mintele,
-                                INPAR::MORTAR::LagMultQuad3D& lmtype) :
+                                INPAR::MORTAR::LagMultQuad& lmtype) :
 CONTACT::CoCoupling3d(INPAR::MORTAR::shape_undefined,idiscret,dim,quad,auxplane,sele,mele),
 sintele_(sintele),
 mintele_(mintele),
@@ -1349,7 +1362,7 @@ CONTACT::CoCoupling3dQuad::CoCoupling3dQuad(const INPAR::MORTAR::ShapeFcn shapef
                                 MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
                                 MORTAR::IntElement& sintele,
                                 MORTAR::IntElement& mintele,
-                                INPAR::MORTAR::LagMultQuad3D& lmtype) :
+                                INPAR::MORTAR::LagMultQuad& lmtype) :
 CONTACT::CoCoupling3d(shapefcn,idiscret,dim,quad,auxplane,sele,mele),
 sintele_(sintele),
 mintele_(mintele),

@@ -1661,7 +1661,9 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
       // but instead check if the two elements to be clipped are
       // close to each other at all. If so, then really throw the
       // dserror, if not, simply continue with the next pair!
-      cout << "***WARNING*** Input polygon 2 not convex!" << endl;
+      int sid = SlaveElement().Id();
+      int mid = MasterElement().Id();
+      cout << "***WARNING*** Input polygon 2 not convex! (S/M-pair: " << sid << "/" << mid << ")" << endl;
       bool nearcheck = RoughCheckNodes();
       if (nearcheck && out)
       {
@@ -1679,14 +1681,14 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
           filename << 0;
         else
           dserror("Gmsh output implemented for a maximum of 9.999 problem polygons");
-        filename << problemcount << ".pos";
+        filename << problemcount << "_" << sid << "_" << mid << ".pos";
         problemcount++;
       
         // do output to file in c-style
         FILE* fp = NULL;
         fp = fopen(filename.str().c_str(), "w");
         std::stringstream gmshfilecontent;
-        gmshfilecontent << "View \" ProblemClipping \" {" << endl;
+        gmshfilecontent << "View \" ProblemClipping S" <<  sid << "/M" << mid << " \" {" << endl;
       
         // get slave and master nodes
         int nsnodes = SlaveIntElement().NumNode();
@@ -2884,6 +2886,19 @@ bool MORTAR::Coupling3d::IntegrateCells()
     // integrate cell only if not neglectable
     if (intcellarea < MORTARINTLIM*selearea) continue;
 
+    // set segmentation status of all slave nodes
+    // (hassegment_ of a slave node is true if ANY segment/cell
+    // is integrated that contributes to this slave node)
+    int nnodes = SlaveIntElement().NumNode();
+    DRT::Node** mynodes = SlaveIntElement().Nodes();
+    if (!mynodes) dserror("ERROR: Null pointer!");
+    for (int k=0;k<nnodes;++k)
+    {
+      MORTAR::MortarNode* mycnode = static_cast<MORTAR::MortarNode*> (mynodes[k]);
+      if (!mycnode) dserror("ERROR: Null pointer!");
+      mycnode->HasSegment()=true;
+    }
+
     // *******************************************************************
     // different options for mortar integration
     // *******************************************************************
@@ -2892,7 +2907,7 @@ bool MORTAR::Coupling3d::IntegrateCells()
     // (3) quadratic element(s) involved -> linear LM interpolation
     // (4) quadratic element(s) involved -> piecew. linear LM interpolation
     // *******************************************************************
-    INPAR::MORTAR::LagMultQuad3D lmtype = LagMultQuad3D();
+    INPAR::MORTAR::LagMultQuad lmtype = LagMultQuad();
     
     // *******************************************************************
     // case (1)
@@ -3018,7 +3033,7 @@ MORTAR::Coupling3dQuad::Coupling3dQuad(DRT::Discretization& idiscret,
                                 MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
                                 MORTAR::IntElement& sintele,
                                 MORTAR::IntElement& mintele,
-                                INPAR::MORTAR::LagMultQuad3D& lmtype) :
+                                INPAR::MORTAR::LagMultQuad& lmtype) :
 MORTAR::Coupling3d(INPAR::MORTAR::shape_undefined,idiscret,dim,quad,auxplane,sele,mele),
 sintele_(sintele),
 mintele_(mintele),
@@ -3040,7 +3055,7 @@ MORTAR::Coupling3dQuad::Coupling3dQuad(const INPAR::MORTAR::ShapeFcn shapefcn,
                                 MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
                                 MORTAR::IntElement& sintele,
                                 MORTAR::IntElement& mintele,
-                                INPAR::MORTAR::LagMultQuad3D& lmtype) :
+                                INPAR::MORTAR::LagMultQuad& lmtype) :
 MORTAR::Coupling3d(shapefcn,idiscret,dim,quad,auxplane,sele,mele),
 sintele_(sintele),
 mintele_(mintele),

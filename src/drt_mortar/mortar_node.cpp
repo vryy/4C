@@ -126,7 +126,8 @@ isonbound_(false),
 isdbc_(false),
 numdof_(numdof),
 dofs_(dofs),
-hasproj_(false)
+hasproj_(false),
+hassegment_(false)
 {
   for (int i=0;i<3;++i)
   {
@@ -148,7 +149,8 @@ isonbound_(old.isonbound_),
 isdbc_(old.isdbc_),
 numdof_(old.numdof_),
 dofs_(old.dofs_),
-hasproj_(old.hasproj_)
+hasproj_(old.hasproj_),
+hassegment_(old.hassegment_)
 {
   for (int i=0;i<3;++i)
   {
@@ -231,6 +233,8 @@ void MORTAR::MortarNode::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,uold_,3*sizeof(double));
   // add hasproj_
   AddtoPack(data,hasproj_);
+  // add hassegment_
+  AddtoPack(data,hassegment_);
 
   // add data_
   bool hasdata = (modata_!=Teuchos::null);
@@ -274,6 +278,8 @@ void MORTAR::MortarNode::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,uold_,3*sizeof(double));
   // hasproj_
   hasproj_ = ExtractInt(position,data);
+  // hassegment_
+  hassegment_ = ExtractInt(position,data);
 
   // data_
   bool hasdata = ExtractInt(position,data);

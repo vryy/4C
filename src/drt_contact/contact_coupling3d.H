@@ -269,7 +269,7 @@ public:
                    int dim, bool quad, bool auxplane,
                    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
                    MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
-                   INPAR::MORTAR::LagMultQuad3D& lmtype);
+                   INPAR::MORTAR::LagMultQuad& lmtype);
 
   /*!
   \brief Constructor with shape function specification
@@ -284,7 +284,7 @@ public:
                    int dim, bool quad, bool auxplane,
                    MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
                    MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
-                   INPAR::MORTAR::LagMultQuad3D& lmtype);
+                   INPAR::MORTAR::LagMultQuad& lmtype);
   
   /*!
   \brief Destructor
@@ -310,7 +310,7 @@ public:
   \brief Return the Lagrange multiplier interpolation and testing type
 
   */
-  INPAR::MORTAR::LagMultQuad3D LagMultQuad3D() { return lmtype_; }
+  INPAR::MORTAR::LagMultQuad LagMultQuad() { return lmtype_; }
     
   //@}
   
@@ -322,7 +322,7 @@ protected:
 
     MORTAR::IntElement&            sintele_;     // slave sub-integration element
     MORTAR::IntElement&            mintele_;     // slave sub-integration element
-    INPAR::MORTAR::LagMultQuad3D&  lmtype_;      // type of LM interpolation and testing
+    INPAR::MORTAR::LagMultQuad&  lmtype_;      // type of LM interpolation and testing
 
 }; // class CoCoupling3dQuad
 

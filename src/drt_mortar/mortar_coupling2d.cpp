@@ -49,12 +49,15 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
-MORTAR::Coupling2d::Coupling2d(DRT::Discretization& idiscret, int dim,
+MORTAR::Coupling2d::Coupling2d(DRT::Discretization& idiscret,
+                               int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
                                MORTAR::MortarElement& sele,
                                MORTAR::MortarElement& mele) :
 shapefcn_(INPAR::MORTAR::shape_undefined),
 idiscret_(idiscret),
 dim_(dim),
+quad_(quad),
+lmtype_(lmtype),
 sele_(sele),
 mele_(mele),
 overlap_(false)
@@ -70,12 +73,15 @@ overlap_(false)
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
 MORTAR::Coupling2d::Coupling2d(const INPAR::MORTAR::ShapeFcn shapefcn,
-                               DRT::Discretization& idiscret, int dim,
+                               DRT::Discretization& idiscret,
+                               int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
                                MORTAR::MortarElement& sele,
                                MORTAR::MortarElement& mele) :
 shapefcn_(shapefcn),
 idiscret_(idiscret),
 dim_(dim),
+quad_(quad),
+lmtype_(lmtype),
 sele_(sele),
 mele_(mele),
 overlap_(false)
@@ -542,25 +548,59 @@ bool MORTAR::Coupling2d::IntegrateOverlap()
   // create an integrator instance with correct NumGP and Dim
   MORTAR::MortarIntegrator integrator(shapefcn_,SlaveElement().Shape());
 
-  // do the overlap integration (integrate and linearize both M and gap)
-  int nrow = SlaveElement().NumNode();
-  int ncol = MasterElement().NumNode();
-  int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
-  
-  // mortar matrix dimensions depend on the actual number of slave / master DOFs
-  // per node, which is NOT always identical to the problem dimension
-  // (e.g. fluid meshtying -> 4 DOFs per node in a 3D problem)
-  // -> thus the following check has been commented out (popp 04/2011)
-  // if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
-  
-  RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
-  RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
-  RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
-  integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,dseg,mseg,gseg);
+  // *******************************************************************
+  // different options for mortar integration
+  // *******************************************************************
+  // (1) no quadratic element(s) involved -> linear LM interpolation
+  // (2) quadratic element(s) involved -> quadratic LM interpolation
+  // (3) quadratic element(s) involved -> linear LM interpolation
+  // (4) quadratic element(s) involved -> piecew. linear LM interpolation
+  // *******************************************************************
+  INPAR::MORTAR::LagMultQuad lmtype = LagMultQuad();
 
-  // do the two assemblies into the slave nodes
-  integrator.AssembleD(Comm(),SlaveElement(),*dseg);
-  integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
+  // *******************************************************************
+  // cases (1), (2) and (3)
+  // *******************************************************************
+  if (!Quad() ||
+      (Quad() && lmtype==INPAR::MORTAR::lagmult_quad_quad) ||
+      (Quad() && lmtype==INPAR::MORTAR::lagmult_lin_lin))
+  {
+    // do the overlap integration (integrate and linearize both M and gap)
+    int nrow = SlaveElement().NumNode();
+    int ncol = MasterElement().NumNode();
+    int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
+
+    // mortar matrix dimensions depend on the actual number of slave / master DOFs
+    // per node, which is NOT always identical to the problem dimension
+    // (e.g. fluid meshtying -> 4 DOFs per node in a 3D problem)
+    // -> thus the following check has been commented out (popp 04/2011)
+    // if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
+
+    RCP<Epetra_SerialDenseMatrix> dseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
+    RCP<Epetra_SerialDenseMatrix> mseg = rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
+    RCP<Epetra_SerialDenseVector> gseg = rcp(new Epetra_SerialDenseVector(nrow));
+    integrator.IntegrateDerivSegment2D(SlaveElement(),sxia,sxib,MasterElement(),mxia,mxib,lmtype,dseg,mseg,gseg);
+
+    // do the two assemblies into the slave nodes
+    integrator.AssembleD(Comm(),SlaveElement(),*dseg);
+    integrator.AssembleM(Comm(),SlaveElement(),MasterElement(),*mseg);
+  }
+
+  // *******************************************************************
+  // case (4)
+  // *******************************************************************
+  else if (Quad() && lmtype==INPAR::MORTAR::lagmult_pwlin_pwlin)
+  {
+     dserror("ERROR: Piecewise linear LM interpolation not (yet?) implemented in 2D");
+  }
+
+  // *******************************************************************
+  // other cases
+  // *******************************************************************
+  else
+  {
+    dserror("ERROR: IntegrateOverlap: Invalid case for 2D mortar coupling LM interpolation");
+  }
 
   /*----------------------------------------------------------------------
   // check for the modification of the M matrix for curved interfaces
@@ -606,12 +646,16 @@ bool MORTAR::Coupling2d::IntegrateOverlap()
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
-MORTAR::Coupling2dManager::Coupling2dManager(DRT::Discretization& idiscret, int dim,
+MORTAR::Coupling2dManager::Coupling2dManager(DRT::Discretization& idiscret,
+                                             int dim, bool quad,
+                                             INPAR::MORTAR::LagMultQuad lmtype,
                                              MORTAR::MortarElement* sele,
                                              vector<MORTAR::MortarElement*> mele) :
 shapefcn_(INPAR::MORTAR::shape_undefined),
 idiscret_(idiscret),
 dim_(dim),
+quad_(quad),
+lmtype_(lmtype),
 sele_(sele),
 mele_(mele)
 {
@@ -625,12 +669,16 @@ mele_(mele)
  |  ctor (public)                                             popp 06/09|
  *----------------------------------------------------------------------*/
 MORTAR::Coupling2dManager::Coupling2dManager(const INPAR::MORTAR::ShapeFcn shapefcn,
-                                             DRT::Discretization& idiscret, int dim,
+                                             DRT::Discretization& idiscret,
+                                             int dim, bool quad,
+                                             INPAR::MORTAR::LagMultQuad lmtype,
                                              MORTAR::MortarElement* sele,
                                              vector<MORTAR::MortarElement*> mele) :
 shapefcn_(shapefcn),
 idiscret_(idiscret),
 dim_(dim),
+quad_(quad),
+lmtype_(lmtype),
 sele_(sele),
 mele_(mele)
 {
@@ -649,7 +697,7 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling()
   for (int m=0;m<(int)MasterElements().size();++m)
   {
     // create Coupling2d object and push back
-    Coupling().push_back(rcp(new Coupling2d(shapefcn_,idiscret_,dim_,SlaveElement(),MasterElement(m))));
+    Coupling().push_back(rcp(new Coupling2d(shapefcn_,idiscret_,dim_,quad_,lmtype_,SlaveElement(),MasterElement(m))));
 
     // project the element pair
     Coupling()[m]->Project();

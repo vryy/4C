@@ -389,23 +389,27 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
     dserror("ERROR: Crosspoints / edge node modification not yet implemented for 3D");
 
   if (DRT::INPUT::IntegralValue<int>(input,"CROSSPOINTS") == true &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_lin_lin)
+    dserror("ERROR: Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
+
+  if (DRT::INPUT::IntegralValue<int>(input,"CROSSPOINTS") == true &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Crosspoints and parallel redistribution not yet compatible");
 
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
   // *********************************************************************
-  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_quad_pwlin ||
-       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_quad_lin) &&
+  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_pwlin ||
+       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_lin) &&
        DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard)
-    dserror("No Petrov-Galerkin approach (for LM) implemented for 3D quadratic meshtying with STANDARD shape fct.");
+    dserror("No Petrov-Galerkin approach (for LM) implemented for quadratic meshtying with STANDARD shape fct.");
 
-  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_pwlin_pwlin ||
-       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_lin_lin ||
-       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_quad_pwlin ||
-       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(input,"LAGMULT_QUAD3D") == INPAR::MORTAR::lagmult_quad_lin) &&
+  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_pwlin_pwlin ||
+       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_lin_lin ||
+       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_pwlin ||
+       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_lin) &&
        DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_dual)
-    dserror("Only quadratic/quadratic approach (for LM) implemented for 3D quadratic meshtying with DUAL shape fct.");
+    dserror("Only quadratic/quadratic approach (for LM) implemented for quadratic meshtying with DUAL shape fct.");
 
   // *********************************************************************
   // warnings

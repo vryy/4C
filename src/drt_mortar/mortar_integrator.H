@@ -167,6 +167,7 @@ public:
   virtual void IntegrateDerivSegment2D(
       MORTAR::MortarElement& sele, double& sxia, double& sxib,
       MORTAR::MortarElement& mele, double& mxia, double& mxib,
+      INPAR::MORTAR::LagMultQuad& lmtype,
       RCP<Epetra_SerialDenseMatrix> dseg,
       RCP<Epetra_SerialDenseMatrix> mseg,
       RCP<Epetra_SerialDenseVector> gseg);
@@ -221,7 +222,7 @@ public:
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
      RCP<MORTAR::IntCell> cell,
-     INPAR::MORTAR::LagMultQuad3D& lmtype,
+     INPAR::MORTAR::LagMultQuad& lmtype,
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg);
@@ -236,7 +237,7 @@ public:
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
      RCP<MORTAR::IntCell> cell, double* auxn,
-     INPAR::MORTAR::LagMultQuad3D& lmtype,
+     INPAR::MORTAR::LagMultQuad& lmtype,
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg);

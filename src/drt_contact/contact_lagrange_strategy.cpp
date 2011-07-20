@@ -3260,8 +3260,35 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
   // FIXME: Here we do not consider zig-zagging yet!
 
   // get out gof here if not in the semi-smooth Newton case
+  // (but before doing this, check if there are invalid active nodes)
   bool semismooth = DRT::INPUT::IntegralValue<int>(Params(),"SEMI_SMOOTH_NEWTON");
-  if (!semismooth) return;
+  if (!semismooth)
+  {
+    // loop over all interfaces
+    for (int i=0; i<(int)interface_.size(); ++i)
+    {
+      // loop over all slave nodes on the current interface
+      for (int j=0;j<interface_[i]->SlaveRowNodes()->NumMyElements();++j)
+      {
+        int gid = interface_[i]->SlaveRowNodes()->GID(j);
+        DRT::Node* node = interface_[i]->Discret().gNode(gid);
+        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+        CoNode* cnode = static_cast<CoNode*>(node);
+
+        // The nested active set strategy cannot deal with the case of
+        // active nodes that have no integration segments/cells attached,
+        // as this leads to zero rows in D and M and thus to singukar systems.
+        // However, this case might possibly happen when slave nodes slide
+        // over the edge of a master body within one fixed active set step.
+        // (Remark: Semi-smooth Newton has no problems in this case, as it
+        // updates the active set after EACH Newton step, see below, and thus
+        // would always set the corresponding nodes to INACTIVE.)
+        if (cnode->Active() && !cnode->HasSegment())
+          dserror("ERROR: Active node %i without any segment/cell attached",cnode->Id());
+      }
+    }
+    return;
+  }
   
   // get input parameter ftype
   INPAR::CONTACT::FrictionType ftype =

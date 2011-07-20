@@ -356,6 +356,11 @@ public:
   virtual bool& HasProj() { return hasproj_; }
 
   /*!
+  \brief Return segmentation / cell status of this node (only for slave side!)
+  */
+  virtual bool& HasSegment() { return hassegment_; }
+
+  /*!
   \brief Return of data container of this node
 
   This method returns the data container of this mortar node where additional
@@ -475,6 +480,7 @@ protected:
   double          xspatial_[3];    // current configuration
   double          uold_[3];        // old displacement (last converged state)
   bool            hasproj_;        // true if feasible projection within search set (slave nodes only)
+  bool            hassegment_;     // true if some integration segment / cell attached (slave nodes only)
 
   RCP<MORTAR::MortarNodeDataContainer> modata_;   // additional information of proc's mortar nodes
 

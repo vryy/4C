@@ -210,6 +210,7 @@ public:
     quaddual1D_edge0,           // crosspoint LM modification 1D
     quaddual1D_edge1,           // crosspoint LM modification 1D
 
+    quad1D_only_lin,            // quad->lin standard LM modification 1D
     quad2D_only_lin,            // quad->lin standard LM modification 2D
     serendipity2D_only_lin,     // quad->lin standard LM modification 2D
     biquad2D_only_lin,          // quad->lin standard LM modification 2D
@@ -218,6 +219,7 @@ public:
     serendipity2D_modified,     // displacement modification for dual LM serendipity 2D
     biquad2D_modified,          // displacement modification for dual LM biquadratic 2D
 
+    quaddual1D_only_lin,        // quad->lin dual LM modification 1D (not yet impl.)
     quaddual2D_only_lin,        // quad->lin dual LM modification 2D (not yet impl.)
     serendipitydual2D_only_lin, // quad->lin dual LM modification 2D (not yet impl.)
     biquaddual2D_only_lin       // quad->lin dual LM modification 2D (not yet impl.)
@@ -374,13 +376,33 @@ public:
   virtual bool& SetSlave() { return isslave_; }
 
   /*!
-  \brief Return ansatz type (true = quad3d) of element
+  \brief Return ansatz type (true = quadratic) of element
 
   */
-  virtual bool IsQuad3d()
+  virtual bool IsQuad()
   {
-    if (Shape()==quad8 || Shape()==quad9 || Shape()==tri6) return true;
-    else return false;
+    bool isquad = false;
+    switch(Shape())
+    {
+    case DRT::Element::line2:
+    case DRT::Element::tri3:
+    case DRT::Element::quad4:
+    {
+      // do nothing
+      break;
+    }
+    case DRT::Element::line3:
+    case DRT::Element::quad8:
+    case DRT::Element::quad9:
+    case DRT::Element::tri6:
+    {
+      isquad = true;
+      break;
+    }
+    default:
+      dserror("ERROR: Unknown mortar element type identifier");
+    }
+    return isquad;
   }
 
   /*!
@@ -652,7 +674,7 @@ public:
 
   //@}
 
-private:
+protected:
 
   DRT::Element::DiscretizationType    shape_;          // shape of this element
   bool                                isslave_;        // indicating slave or master side

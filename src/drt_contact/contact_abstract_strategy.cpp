@@ -459,9 +459,9 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   // with the transformation matrix T^(-1).
   //----------------------------------------------------------------------
   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
-  if (shapefcn == INPAR::MORTAR::shape_dual)
+  if (shapefcn == INPAR::MORTAR::shape_dual && Dim()==3)
     for (int i=0; i<(int)interface_.size(); ++i)
-      dualquadslave3d_ += interface_[i]->Quadslave3d();
+      dualquadslave3d_ += interface_[i]->Quadslave();
 
   //----------------------------------------------------------------------
   // IF SO, COMPUTE TRAFO MATRIX AND ITS INVERSE

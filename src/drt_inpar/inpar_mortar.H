@@ -59,11 +59,11 @@ namespace INPAR
       shape_dual       ///< dual shape functions
     };
     
-    /// Type of Lagrange multiplier interpolation for 3D quadratic case
-    /// (this enum represents the input file parameter LAGMULT_QUAD3D)
-    enum LagMultQuad3D
+    /// Type of Lagrange multiplier interpolation for quadratic FE case
+    /// (this enum represents the input file parameter LAGMULT_QUAD)
+    enum LagMultQuad
     {
-      lagmult_undefined,   ///< undefined (default for cases other than 3D quadratic)
+      lagmult_undefined,   ///< undefined (default)
       lagmult_quad_quad,   ///< quadratic interpolation, quadratic testing
       lagmult_quad_pwlin,  ///< quadratic interpolation, piecewise linear testing
       lagmult_quad_lin,    ///< quadratic interpolation, linear testing

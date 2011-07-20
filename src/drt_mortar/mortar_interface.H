@@ -164,8 +164,7 @@ public:
   Returns TRUE if at least one higher-order 2d/3d slave element in interface.
 
   */
-  virtual const bool& Quadslave2d() { return quadslave2d_; };
-  virtual const bool& Quadslave3d() { return quadslave3d_; };
+  virtual const bool& Quadslave() { return quadslave_; };
 
   /*!
   \brief Get redundant storage flag
@@ -676,8 +675,7 @@ protected:
   int                         dim_;           // dimension of problem (2D or 3D)
   Teuchos::ParameterList      icontact_;      // containing contact input parameters of interface
   INPAR::MORTAR::ShapeFcn     shapefcn_;      // employed type of shape function set
-  bool                        quadslave2d_;   // flag indicating quadratic 2d slave elements
-  bool                        quadslave3d_;   // flag indicating quadratic 3d slave elements
+  bool                        quadslave_;     // flag indicating quadratic 2d/3d slave elements
   bool                        redundant_;     // flag indicating fully redundant storage of interface
   
   RCP<Epetra_Map>             oldnodecolmap_; // column map of all interface nodes (overlap=1)

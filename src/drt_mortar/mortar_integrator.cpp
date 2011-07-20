@@ -234,6 +234,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivSlave2D3D(
 void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
      MORTAR::MortarElement& sele, double& sxia, double& sxib,
      MORTAR::MortarElement& mele, double& mxia, double& mxib,
+     INPAR::MORTAR::LagMultQuad& lmtype,
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg)
@@ -280,6 +281,14 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
     bound += mymrtrnode->IsOnBound();
   }
   
+  // decide whether linear LM are used for quadratic FE here
+  bool linlm = false;
+  if (lmtype == INPAR::MORTAR::lagmult_lin_lin && sele.Shape() == DRT::Element::line3)
+  {
+    bound = false; // crosspoints and linear LM NOT at the same time!!!!
+    linlm = true;
+  }
+
   //**********************************************************************
   // loop over all Gauss points for integration
   //**********************************************************************
@@ -313,7 +322,10 @@ void MORTAR::MortarIntegrator::IntegrateDerivSegment2D(
     }
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    sele.EvaluateShapeLagMult(shapefcn_,sxi,lmval,lmderiv,nrow);
+    if (linlm)
+      sele.EvaluateShapeLagMultLin(shapefcn_,sxi,lmval,lmderiv,nrow);
+    else
+      sele.EvaluateShapeLagMult(shapefcn_,sxi,lmval,lmderiv,nrow);
 
     // evaluate trace space shape functions (on both elements)
     sele.EvaluateShape(sxi,sval,sderiv,nrow);
@@ -990,7 +1002,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DQuad(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
      RCP<MORTAR::IntCell> cell,
-     INPAR::MORTAR::LagMultQuad3D& lmtype,
+     INPAR::MORTAR::LagMultQuad& lmtype,
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg)
@@ -1279,7 +1291,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
      MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
      MORTAR::IntElement& sintele, MORTAR::IntElement& mintele,
      RCP<MORTAR::IntCell> cell, double* auxn,
-     INPAR::MORTAR::LagMultQuad3D& lmtype,
+     INPAR::MORTAR::LagMultQuad& lmtype,
      RCP<Epetra_SerialDenseMatrix> dseg,
      RCP<Epetra_SerialDenseMatrix> mseg,
      RCP<Epetra_SerialDenseVector> gseg)

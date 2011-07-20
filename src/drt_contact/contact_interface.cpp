@@ -131,9 +131,13 @@ void CONTACT::CoInterface::AddCoNode(RCP<CONTACT::CoNode> cnode)
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::AddCoElement(RCP<CONTACT::CoElement> cele)
 {
+  // check for quadratic 2d slave elements to be modified
+  if (cele->IsSlave() && (cele->Shape()==DRT::Element::line3))
+    quadslave_=true;
+
   // check for quadratic 3d slave elements to be modified
   if (cele->IsSlave() && (cele->Shape()==DRT::Element::quad8 || cele->Shape()==DRT::Element::tri6))
-    quadslave3d_=true;
+    quadslave_=true;
 
   idiscret_->AddElement(cele);
   return;
@@ -601,8 +605,9 @@ void CONTACT::CoInterface::Initialize()
   {
     CONTACT::CoNode* node = static_cast<CONTACT::CoNode*>(idiscret_->lColNode(i));
 
-    // reset feasible projection status
+    // reset feasible projection and segmentation status
     node->HasProj() = false;
+    node->HasSegment() = false;
     
     if (friction_)
     {  
@@ -1196,6 +1201,18 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
   // increase counter of slave/master pairs
   smpairs_ += (int)mele.size();
 
+  // check if quadratic interpolation is involved
+  bool quadratic = false;
+  if (sele->IsQuad())
+    quadratic = true;
+  for (int m=0;m<(int)mele.size();++m)
+    if (mele[m]->IsQuad())
+      quadratic = true;
+
+  // get LM interpolation and testing type for quadratic FE
+  INPAR::MORTAR::LagMultQuad lmtype =
+    DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(IParams(),"LAGMULT_QUAD");
+
   // *********************************************************************
   // do interface coupling within a new class
   // (projection slave and master, overlap detection, integration and
@@ -1209,7 +1226,7 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
     // interpolation need any special treatment in the 2d case
     
     // create CoCoupling2dManager
-    CONTACT::CoCoupling2dManager coup(shapefcn_,Discret(),Dim(),sele,mele);
+    CONTACT::CoCoupling2dManager coup(shapefcn_,Discret(),Dim(),quadratic,lmtype,sele,mele);
 
     // increase counter of slave/master integration pairs and intcells
     smintpairs_ += (int)mele.size();
@@ -1220,14 +1237,6 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
   {
     // check for auxiliary plane coupling
     bool auxplane = DRT::INPUT::IntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
-
-    // check if quadratic interpolation is involved
-    bool quadratic = false;
-    if (sele->IsQuad3d())
-      quadratic = true;
-    for (int m=0;m<(int)mele.size();++m)
-      if (mele[m]->IsQuad3d())
-        quadratic = true;
 
     // *************************************************** linear 3D ***
     if (!quadratic)
@@ -1251,10 +1260,6 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
         vector<RCP<MORTAR::IntElement> > mauxelements(0);
         SplitIntElements(*sele,sauxelements);
         SplitIntElements(*mele[m],mauxelements);
-
-        // get LM interpolation and testing type
-        INPAR::MORTAR::LagMultQuad3D lmtype =
-          DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D");
 
         // loop over all IntElement pairs for coupling
         for (int i=0;i<(int)sauxelements.size();++i)
@@ -1306,14 +1311,14 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
   bool auxplane = DRT::INPUT::IntegralValue<int>(IParams(),"COUPLING_AUXPLANE");
 
   // ************************************************** quadratic 3D ***
-  if (Dim()==3 && sele.IsQuad3d())
+  if (Dim()==3 && sele.IsQuad())
   {
     // only for auxiliary plane 3D version
     if (!auxplane) dserror("ERROR: Quadratic 3D contact only for AuxPlane case!");
 
     // get LM interpolation and testing type
-    INPAR::MORTAR::LagMultQuad3D lmtype =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad3D>(IParams(),"LAGMULT_QUAD3D");
+    INPAR::MORTAR::LagMultQuad lmtype =
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(IParams(),"LAGMULT_QUAD");
           
     // build linear integration elements from quadratic CElements
     vector<RCP<MORTAR::IntElement> > sauxelements(0);
