@@ -630,6 +630,18 @@ void STR::GenInvAnalysis::ReadInParameters()
               // p_(j+1) = params->beta_; // need also change resize above to invoke beta_
             }
             break;
+            case INPAR::MAT::mes_coupanisoexpotwo:
+            {
+              MAT::ELASTIC::PAR::CoupAnisoExpoTwo* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoExpoTwo*>(actelastmat->Parameter());
+              if (!params) dserror("Cannot cast material parameters");
+              const int j = p_.Length();
+              p_.Resize(j+4);
+              p_(j)    = params->k1_;
+              p_(j+1)  = params->k2_;
+              p_(j+2)  = params->k3_;
+              p_(j+3)  = params->k4_;
+            }
+            break;
             default:
               dserror("Unknown type of elasthyper material");
             break;
@@ -639,6 +651,8 @@ void STR::GenInvAnalysis::ReadInParameters()
       case INPAR::MAT::mes_isoyeoh: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
       break;
       case INPAR::MAT::mes_vologden: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
+      break;
+      case INPAR::MAT::mes_coupanisoexpotwo: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
       break;
       case INPAR::MAT::m_constraintmixture:
       {
@@ -733,6 +747,18 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
               count += 1;
             }
             break;
+            case INPAR::MAT::mes_coupanisoexpotwo:
+            {
+              MAT::ELASTIC::PAR::CoupAnisoExpoTwo* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoExpoTwo*>(actelastmat->Parameter());
+              if (!params) dserror("Cannot cast material parameters");
+              const_cast<double&>(params->k1_) = p_cur[count];
+              const_cast<double&>(params->k2_) = p_cur[count+1];
+              const_cast<double&>(params->k3_) = p_cur[count+2];
+              const_cast<double&>(params->k4_) = p_cur[count+3];
+              if (myrank == 0) printf("MAT::ELASTIC::PAR::CoupAnisoExpoTwo %20.15e %20.15e %20.15e %20.15e\n",params->k1_,params->k2_,params->k3_,params->k4_);
+              count += 4;
+            }
+            break;
             default:
               dserror("Unknown type of elasthyper material");
             break;
@@ -743,6 +769,8 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
       case INPAR::MAT::mes_isoyeoh: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
       break;
       case INPAR::MAT::mes_vologden: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
+      break;
+      case INPAR::MAT::mes_coupanisoexpotwo: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
       break;
       case INPAR::MAT::m_constraintmixture:
       {
