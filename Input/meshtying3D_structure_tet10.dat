@@ -71,7 +71,7 @@ APPLICATION          MortarMeshtying
 STRATEGY             Lagrange
 SHAPEFCN             Dual
 PENALTYPARAM         1.0e6
-LAGMULT_QUAD3D       quad_quad
+LAGMULT_QUAD         quad_quad
 -----------------------------------------------------FLUID DYNAMIC
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC

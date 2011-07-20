@@ -73,7 +73,7 @@ FRICTION             coulomb
 STRATEGY             lagrange
 SHAPEFCN             dual
 COUPLING_AUXPLANE    Yes
-LAGMULT_QUAD3D       quad_quad
+LAGMULT_QUAD         quad_quad
 FRCOEFF              0.1
 FULL_LINEARIZATION   Yes
 SEMI_SMOOTH_NEWTON   Yes

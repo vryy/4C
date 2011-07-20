@@ -78,7 +78,7 @@ STRATEGY             Penalty
 SHAPEFCN             Standard
 PENALTYPARAM         20000
 COUPLING_AUXPLANE    Yes
-LAGMULT_QUAD3D       pwlin_pwlin
+LAGMULT_QUAD         pwlin_pwlin
 -----------------------------------------------------FLUID DYNAMIC
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC

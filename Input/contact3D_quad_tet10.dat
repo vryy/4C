@@ -76,7 +76,7 @@ APPLICATION          MortarContact
 STRATEGY             Lagrange
 SHAPEFCN             Dual
 COUPLING_AUXPLANE    Yes
-LAGMULT_QUAD3D       quad_quad
+LAGMULT_QUAD         quad_quad
 //SYSTEM               spcoupled
 -----------------------------------------------------FLUID DYNAMIC
 -------------------------------------------------------FSI DYNAMIC

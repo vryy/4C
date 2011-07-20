@@ -93,7 +93,7 @@ VSTAB                           no_vstab
 ----------------------------------------------MESHTYING AND CONTACT
 APPLICATION                     None
 CROSSPOINTS                     Yes  //Remove multipliers from crosspoints
-LAGMULT_QUAD3D                  undefined //lin_lin, quad_quad
+LAGMULT_QUAD                    undefined //lin_lin, quad_quad
 SEARCH_ALGORITHM                Binarytree  //...
 SEARCH_PARAM                    0.3
 SHAPEFCN                        Dual  //Standard, Dual
