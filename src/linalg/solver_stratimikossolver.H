@@ -1,0 +1,77 @@
+/*
+ * solver_stratimikossolver.H
+ *
+ *  Created on: Jul 13, 2011
+ *      Author: wiesner
+ */
+
+#ifndef SOLVER_STRATIMIKOSSOLVER_H_
+#define SOLVER_STRATIMIKOSSOLVER_H_
+
+#ifdef TRILINOS_DEV
+
+#include "Teuchos_RefCountPtr.hpp"
+#include "Teuchos_ParameterList.hpp"
+
+#include "solver_solvertype.H"
+
+namespace LINALG
+{
+  namespace SOLVER
+  {
+    /// linear solvers (using the Trilinos STRATIMIKOS framework)
+    class StratimikosSolver : public SolverType
+    {
+      public:
+
+      StratimikosSolver( const Epetra_Comm & comm, Teuchos::ParameterList & params, FILE * outfile );
+
+      virtual ~StratimikosSolver();
+
+      virtual void Setup( Teuchos::RCP<Epetra_Operator>     matrix             ,
+          Teuchos::RCP<Epetra_Vector>       x                  ,
+          Teuchos::RCP<Epetra_Vector>       b                  ,
+          bool                             refactor           ,
+          bool                             reset              ,
+          Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean,
+          Teuchos::RCP<Epetra_MultiVector>  kernel_c           ,
+          bool                             project);
+
+      virtual void Solve();
+
+      int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y);
+
+      virtual PreconditionerType * Preconditioner() { return NULL; }
+
+      Teuchos::ParameterList& Params() const { return params_; }
+
+      protected:
+
+          //! a communicator
+          const Epetra_Comm&                    comm_;
+
+          //! (internal) parameter list
+          Teuchos::ParameterList&      params_;
+
+          //! file to write output to (proc 0 only, can be NULL on input)
+          FILE*                                 outfile_;
+
+          //! initial guess and solution
+          Teuchos::RCP<Epetra_Vector>                    x_;
+
+          //! right hand side vector
+          Teuchos::RCP<Epetra_Vector>                    b_;
+
+          //! system of equations
+          Teuchos::RCP<Epetra_Operator>  A_;
+
+          //! counting how many times matrix was solved between resets
+          int                                   ncall_;
+
+    };
+  }
+}
+
+#endif /* TRILINOS_DEV */
+
+#endif /* SOLVER_STRATIMIKOSSOLVER_H_ */

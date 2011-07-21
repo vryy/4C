@@ -44,13 +44,16 @@ void LINALG::SOLVER::IFPACKPreconditioner::Setup( bool create,
     Pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
 
     // get the type of ifpack preconditioner from aztec
-    string prectype = azlist_.get("preconditioner","ILU");
+    string prectype = azlist_.get("Preconditioner Type","ILU");
     int    overlap  = azlist_.get("AZ_overlap",0);
     Ifpack Factory;
     prec_ = Teuchos::rcp( Factory.Create(prectype,Pmatrix_.get(),overlap) );
     prec_->SetParameters(ifpacklist_);
     prec_->Initialize();
     prec_->Compute();
+
+    //cout << ifpacklist_ << endl;
+    //prec_->Print(std::cout);
   }
 }
 
