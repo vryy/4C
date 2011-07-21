@@ -3676,27 +3676,27 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   using Teuchos::tuple;
   using Teuchos::setStringToIntegralParameter;
 
+  Teuchos::Tuple<std::string,12> solver_name;
+  Teuchos::Tuple<int,12>  solver_number;
+
+  solver_name[0] = "Amesos_KLU_sym";               solver_number[0] = INPAR::SOLVER::amesos_klu_sym;
+  solver_name[1] = "Amesos_KLU_nonsym";            solver_number[1] = INPAR::SOLVER::amesos_klu_nonsym;
+  solver_name[2] = "Superlu";                      solver_number[2] = INPAR::SOLVER::superlu;
+  solver_name[3] = "vm3";                          solver_number[3] = INPAR::SOLVER::vm3;
+  solver_name[4] = "Aztec_MSR";                    solver_number[4] = INPAR::SOLVER::aztec_msr;
+  solver_name[5] = "LAPACK_sym";                   solver_number[5] = INPAR::SOLVER::lapack_sym;
+  solver_name[6] = "LAPACK_nonsym";                solver_number[6] = INPAR::SOLVER::lapack_nonsym;
+  solver_name[7] = "UMFPACK";                      solver_number[7] = INPAR::SOLVER::umfpack;
+  solver_name[8] = "Belos";                        solver_number[8] = INPAR::SOLVER::belos;
+  solver_name[9] = "Stratimikos_Amesos";           solver_number[9] = INPAR::SOLVER::stratimikos_amesos;
+  solver_name[10]= "Stratimikos_Aztec";            solver_number[10]= INPAR::SOLVER::stratimikos_aztec;
+  solver_name[11]= "Stratimikos_Belos";            solver_number[11]= INPAR::SOLVER::stratimikos_belos;
+
   setStringToIntegralParameter<int>(
     "SOLVER", "UMFPACK",
     "The solver to attack the system of linear equations arising of FE approach with.",
-    tuple<std::string>("Amesos_KLU_sym",
-                       "Amesos_KLU_nonsym",
-                       "Superlu",
-                       "vm3",
-                       "Aztec_MSR",
-                       "LAPACK_sym",
-                       "LAPACK_nonsym",
-                       "UMFPACK",
-                       "Belos"),
-    tuple<int>(INPAR::SOLVER::amesos_klu_sym,
-                                     INPAR::SOLVER::amesos_klu_nonsym,
-                                     INPAR::SOLVER::superlu,
-                                     INPAR::SOLVER::vm3,
-                                     INPAR::SOLVER::aztec_msr,
-                                     INPAR::SOLVER::lapack_sym,
-                                     INPAR::SOLVER::lapack_nonsym,
-                                     INPAR::SOLVER::umfpack,
-                                     INPAR::SOLVER::belos),
+    solver_name,
+    solver_number,
     &list
     );
 
@@ -3960,6 +3960,11 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     tuple<std::string>("Umfpack","KLU","ILU","Jacobi","Gauss-Seidel","symmetric Gauss-Seidel","Jacobi stand-alone","Gauss-Seidel stand-alone","symmetric Gauss-Seidel stand-alone"),
     tuple<int>(0,1,2,3,4,5,6,7,8),
     &list);
+
+  // the only one stratimikos specific parameter
+  setNumericStringParameter("STRATIMIKOS_XMLFILE","",
+                              "xml file for stratimikos parameters",
+                              &list);
 
   // unused
   setStringToIntegralParameter<int>("PARTITION","Cut_Elements","unused",

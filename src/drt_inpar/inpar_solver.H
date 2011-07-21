@@ -33,27 +33,30 @@ namespace INPAR
     /// \date 7/01,11/08
     enum SolverType
     {
-      mlib_d_sp,        ///< solver package, hp's mlib, ect-sparse-symmetric-unsymmetric
-      aztec_msr,        ///< solver package aztec 2.1, matrix in dmsr format
-      hypre_amg,        ///< solver package hypre, amg-solver, matrix in parcsr format
-      hypre_pcg,        ///< solver package hypre, cg, matrix in parcsr format
-      hypre_gmres,      ///< solver package hypre, gmres, matrix in parcsr format
-      hypre_bicgstab,   ///< solver package hypre, bicgstab, matrix in parcsr format
-      parsuperlu,       ///< solver package superlu, direkt parallel LU, matrix in redundant harwell-boeing
-      lapack_sym,       ///< symmetric lapack LU decomposition, matrix is dense
-      lapack_nonsym,    ///< unsymmetric lapack LU decomposition, matrix is dense
-      mumps_sym,        ///< solver package mumps, multifrontal parallel LU, matrixin row/column pointer format
-      mumps_nonsym,     ///< same but unsymmetric
-      colsol_solver,    ///< colsol
-      SPOOLES_sym,      ///< spooles parallel direct solver
-      SPOOLES_nonsym,   ///< spooles parallel direct solver
-      umfpack,          ///< solver package umfpack, matrix in compressed column format
-      mlpcg,            ///< internal solver package mlpcg
-      amesos_klu_sym,   ///< Trilinos' solver interface Amesos using KLU
-      amesos_klu_nonsym,///< Trilinos' solver interface Amesos using KLU
-      superlu,          ///< Trilinos' solver interface Amesos using SuperLU_Dist
-      vm3,              ///< VM3 solver
-      belos             ///< Belos solver
+      mlib_d_sp,         ///< solver package, hp's mlib, ect-sparse-symmetric-unsymmetric
+      aztec_msr,         ///< solver package aztec 2.1, matrix in dmsr format
+      hypre_amg,         ///< solver package hypre, amg-solver, matrix in parcsr format
+      hypre_pcg,         ///< solver package hypre, cg, matrix in parcsr format
+      hypre_gmres,       ///< solver package hypre, gmres, matrix in parcsr format
+      hypre_bicgstab,    ///< solver package hypre, bicgstab, matrix in parcsr format
+      parsuperlu,        ///< solver package superlu, direkt parallel LU, matrix in redundant harwell-boeing
+      lapack_sym,        ///< symmetric lapack LU decomposition, matrix is dense
+      lapack_nonsym,     ///< unsymmetric lapack LU decomposition, matrix is dense
+      mumps_sym,         ///< solver package mumps, multifrontal parallel LU, matrixin row/column pointer format
+      mumps_nonsym,      ///< same but unsymmetric
+      colsol_solver,     ///< colsol
+      SPOOLES_sym,       ///< spooles parallel direct solver
+      SPOOLES_nonsym,    ///< spooles parallel direct solver
+      umfpack,           ///< solver package umfpack, matrix in compressed column format
+      mlpcg,             ///< internal solver package mlpcg
+      amesos_klu_sym,    ///< Trilinos' solver interface Amesos using KLU
+      amesos_klu_nonsym, ///< Trilinos' solver interface Amesos using KLU
+      superlu,           ///< Trilinos' solver interface Amesos using SuperLU_Dist
+      vm3,               ///< VM3 solver
+      belos,             ///< Belos solver
+      stratimikos_amesos,///< Stratimikos solver framework (Amesos KLU)
+      stratimikos_aztec, ///< Stratimikos solver framework (Aztec)
+      stratimikos_belos  ///< Stratimikos solver framework (Belos)
     };
 
     /// Different solvers within the Aztec2.1 library
