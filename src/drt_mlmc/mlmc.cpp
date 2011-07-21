@@ -52,12 +52,6 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
 {
 
   // get coarse and fine discretizations
-    // Get finest Grid problem instance
-
-    actdis_fine_ = DRT::Problem::Instance(1)->Dis(genprob.numsf, 0);
-    // set degrees of freedom in the discretization
-    if (not actdis_fine_->Filled()) actdis_fine_->FillComplete();
-    // Get coarse Grid problem instance
 
     actdis_coarse_ = DRT::Problem::Instance(0)->Dis(genprob.numsf, 0);
     // set degrees of freedom in the discretization
@@ -67,10 +61,7 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
   reset_out_count_=0;
 
     filename_ = DRT::Problem::Instance()->OutputControlFile()->FileName();
-  // seee if we can chagen output for coarse dis here
-  //output_control_coarse_ = rcp(new IO::OutputControl(actdis_coarse_->Comm(), "structure", "Polynomial", filename_, filename_, 3, 0, 20));
-  //output_ = Teuchos::rcp(new IO::DiscretizationWriter(actdis_coarse_,output_control_coarse_));
-  //output_
+
   // input parameters structural dynamics
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   // get number of timesteps
@@ -121,56 +112,72 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
        else
               meshfilename_ = meshfilename_helper2.substr(pos+1);
 
-  // context for output and restart
-  // make ew output control
+  //init stuff that is only needed when we want to prolongate the results to a finer mesh,
+  // and hence have a fine discretization
+  if(prolongate_res_ )
+  {
+    // Get finest Grid problem instance
+        cout << "before def actidis fine " << endl;
+        actdis_fine_ = DRT::Problem::Instance(1)->Dis(genprob.numsf, 0);
+        // set degrees of freedom in the discretization
+        if (not actdis_fine_->Filled()) actdis_fine_->FillComplete();
+        // Get coarse Grid problem instance
+        cout << "before def actidis fine " << endl;
+    output_control_fine_ = rcp(new IO::OutputControl(actdis_fine_->Comm(), "structure", "Polynomial", filename_, filename_, 3, 0, 20));
+     output_fine_ = Teuchos::rcp(new IO::DiscretizationWriter(actdis_fine_,output_control_fine_));
 
-  output_control_fine_ = rcp(new IO::OutputControl(actdis_fine_->Comm(), "structure", "Polynomial", filename_, filename_, 3, 0, 20));
-  output_fine_ = Teuchos::rcp(new IO::DiscretizationWriter(actdis_fine_,output_control_fine_));
-
-  // init vectors to store mean stresses and displacements
-  mean_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
-  mean_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
-  mean_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
-  // init vectors to store standard dev of  stresses and displacements
-  var_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
-  var_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
-  var_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
-  // init vectors to calc standard dev of  stresses and displacements
-  delta_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
-  delta_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
-  delta_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
-  m2_var_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
-  m2_var_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
-  m2_var_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
-  m2_helper_var_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
-  m2_helper_var_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
-  m2_helper_var_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
-
-
-  // same vectors for difference between two levels
-  // init vectors to store mean stresses and displacements
-  diff_mean_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
-  diff_mean_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
-  diff_mean_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
-  // init vectors to store standard dev of  stresses and displacements
-  diff_var_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
-  diff_var_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
-  diff_var_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
-  // init vectors to calc standard dev of  stresses and displacements
-  diff_delta_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
-  diff_delta_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
-  diff_delta_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
-  diff_m2_var_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
-  diff_m2_var_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
-  diff_m2_var_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
-  diff_m2_helper_var_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
-  diff_m2_helper_var_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
-  diff_m2_helper_var_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     // init vectors to store mean stresses and displacements
+     mean_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
+     mean_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     mean_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     // init vectors to store standard dev of  stresses and displacements
+     var_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
+     var_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     var_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     // init vectors to calc standard dev of  stresses and displacements
+     delta_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
+     delta_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     delta_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     m2_var_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
+     m2_var_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     m2_var_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     m2_helper_var_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
+     m2_helper_var_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     m2_helper_var_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
 
 
-  disp_lower_level_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
-  stress_lower_level_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
-  strain_lower_level_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     // same vectors for difference between two levels
+     // init vectors to store mean stresses and displacements
+     diff_mean_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
+     diff_mean_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     diff_mean_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     // init vectors to store standard dev of  stresses and displacements
+     diff_var_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
+     diff_var_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     diff_var_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     // init vectors to calc standard dev of  stresses and displacements
+     diff_delta_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
+     diff_delta_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     diff_delta_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     diff_m2_var_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
+     diff_m2_var_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     diff_m2_var_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     diff_m2_helper_var_disp_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
+     diff_m2_helper_var_stress_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     diff_m2_helper_var_strain_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+
+
+     disp_lower_level_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->DofRowMap()),1,true));
+     stress_lower_level_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+     strain_lower_level_ = Teuchos::rcp(new Epetra_MultiVector(*(actdis_fine_->NodeRowMap()),6,true));
+
+
+
+
+
+  }
+
+
 }
 
 
@@ -178,7 +185,9 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
 /* analyse */
 void STR::MLMC::Integrate()
 {
-
+  //measure time
+  Epetra_Time timer(discret_->Comm());
+  double t1 = timer.ElapsedTime();
   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
   int numruns = mlmcp.get<int>("NUMRUNS")+start_run_;
   // get initial random seed from inputfile
@@ -187,9 +196,12 @@ void STR::MLMC::Integrate()
   {
     cout << "################################################### " << endl;
     cout << "   MULTILEVEL MONTE CARLO " << endl;
-    cout <<  "RUN: " << numb_run_ << "of " << numruns  << endl;
+    cout << "   RUN: " << numb_run_ << "of " << numruns  << endl;
      cout << "################################################### " << endl;
+    double t1 = timer.ElapsedTime();
     SetupStochMat((random_seed+(unsigned int)numb_run_));
+    double t2 = timer.ElapsedTime();
+    cout << "elapsed time " << t2 << endl;
     output_->NewResultFile(filename_,(numb_run_));
 
 
@@ -822,7 +834,8 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
 {
   // Variables for Random field
   double sigma =0.0 , corrlength = 0.0, beta = 0.0 ,beta_mean = 0.0;
-
+  // flag have init stochmat??
+  int stochmat_flag=0;
   // Get parameters from stochastic matlaw
   const int myrank = discret_->Comm().MyPID();
   // loop all materials in problem
@@ -836,6 +849,7 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
     {
        case INPAR::MAT::m_aaaneohooke_stopro:
        {
+         stochmat_flag=1;
          MAT::PAR::AAAneohooke_stopro* params = dynamic_cast<MAT::PAR::AAAneohooke_stopro*>(actmat->Parameter());
          if (!params) dserror("Cannot cast material parameters");
          sigma = params->sigma_0_;
@@ -845,9 +859,13 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
        break;
       default:
       {
-        // ignore unknown materials ?
-        cout << "Mat Type   " << actmat->Type() << endl;
-        dserror("Unknown type of material");
+
+        if (!stochmat_flag)// ignore unknown materials ?
+        {
+          cout << "Mat Type   " << actmat->Type() << endl;
+          dserror("Unknown type of material");
+        }
+
 
       }
 
@@ -886,9 +904,9 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
       // beta = beta_mean = beta_mean * random field value
       //beta = beta_mean+beta_mean*field.EvalRandomField(ele_center[0],ele_center[1],ele_center[2]);
       // HACK instead of circular field use pseudo 3D Field
-      cout << RED_LIGHT << "HACK IN USE: BETA = BETA MEAN " END_COLOR << endl;
-     // beta = beta_mean+field.EvalRandomFieldCylinder(ele_center[0],ele_center[1],ele_center[2]);
-      beta = beta_mean;
+     // cout << RED_LIGHT << "HACK IN USE: BETA = BETA MEAN " END_COLOR << endl;
+      beta = beta_mean+field.EvalRandomFieldCylinder(ele_center[0],ele_center[1],ele_center[2]);
+      //beta = beta_mean;
       //cout << "value filed " << field.EvalRandomFieldCylinder(ele_center[0],ele_center[1],ele_center[2]) << endl;
       //vector<double> location = dis->gElement(i)->soh8_ElementCenterRefeCoords();
       // for now we need a quick check wether beta> 0.22 because thats the cutoff value right now

@@ -468,7 +468,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   nox = *snox;
   // Parameter to determinen wether MLMC is on/off
   // Needed to for reduced restart output
-  xparams->set<int>("MLMC",Teuchos::getIntegralValue<int>((*mlmcp),"MLMC"));
+  xparams->set<int>("REDUCED_OUTPUT",Teuchos::getIntegralValue<int>((*mlmcp),"REDUCED_OUTPUT"));
 
   // overrule certain parameters
   sdyn->set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));

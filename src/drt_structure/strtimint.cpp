@@ -83,7 +83,7 @@ STR::TimInt::TimInt
   printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
   printiter_(true),  // ADD INPUT PARAMETER
   writerestartevery_(sdynparams.get<int>("RESTARTEVRY")),
-  writereducedrestart_(xparams.get<int>("MLMC")),
+  writereducedrestart_(xparams.get<int>("REDUCED_OUTPUT")),
   writestate_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_DISP")),
   writeresultsevery_(sdynparams.get<int>("RESULTSEVRY")),
   writestress_(DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams,"STRUCT_STRESS")),
