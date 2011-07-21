@@ -292,6 +292,28 @@ public:
   const Teuchos::ParameterList TranslateSolverParameters(const Teuchos::ParameterList& inparams);
 
   /*!
+   \brief Translate BACI dat file parameters to Stratimikos
+   */
+  const Teuchos::ParameterList TranslateToStratimikos(const Teuchos::ParameterList& inparams);
+
+  /*!
+   \brief Translate BACI dat file parameters to Stratimikos (Amesos)
+   */
+  const Teuchos::ParameterList TranslateAmesosToStratimikos(const Teuchos::ParameterList& inparams);
+
+  const Teuchos::ParameterList TranslateAztecToStratimikos(const Teuchos::ParameterList& inparams);
+
+  const Teuchos::ParameterList TranslateBelosToStratimikos(const Teuchos::ParameterList& inparams);
+
+  const Teuchos::ParameterList TranslateIfpackToStratimikos(const Teuchos::ParameterList& inparams);
+
+  const Teuchos::ParameterList TranslateMLToStratimikos(const Teuchos::ParameterList& inparams);
+
+  const Teuchos::ParameterList TranslateBACIToML(const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist = NULL);
+
+  const Teuchos::ParameterList TranslateBACIToIfpack(const Teuchos::ParameterList& inparams);
+
+  /*!
   \brief Add a validated input parameter list as sublist to internal
          parameters
 
