@@ -95,6 +95,11 @@ if (STKADAPTIVE)
   add_definitions("-DSTKADAPTIVE")
 endif (STKADAPTIVE)
 
+option (TRILINOS_DEV "Turn on advanced functionality from most recent Trilinos packages" OFF)
+if (TRILINOS_DEV)
+  add_definitions("-DTRILINOS_DEV")
+endif (TRILINOS_DEV)
+
 #   additional features
 
 option (BINIO "binary io" ON)
@@ -1083,8 +1088,10 @@ set(OBJS_LINALG
   src/linalg/solver_krylovprojectionpreconditioner.cpp
   src/linalg/solver_ifpackpreconditioner.cpp
   src/linalg/solver_mlpreconditioner.cpp
+  src/linalg/solver_tekopreconditioner.cpp
   src/linalg/solver_belossolver.cpp
   src/linalg/solver_aztecsolver.cpp
+  src/linalg/solver_stratimikossolver.cpp
 )
 set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/constraint.cpp
@@ -1442,6 +1449,14 @@ option (D_RED_AIRWAYS "reduced dimensional airways for calculating flow in lungs
 if (D_RED_AIRWAYS)
   add_definitions("-DD_RED_AIRWAYS")
 endif(D_RED_AIRWAYS)
+
+###------------------------------------------------------------------ Element flags
+
+#   other flags
+option (HAVENOT_SUPERLU "if no super lu is available, turn it on" OFF)
+if (HAVENOT_SUPERLU)
+  add_definitions("-DHAVENOT_SUPERLU")
+endif(HAVENOT_SUPERLU)
 
 ###------------------------------------------------------------------ Binaries
 
@@ -2313,8 +2328,6 @@ baci_test(fxf_shearflow_stat 1 "")
 baci_test(fxf_shearflow_stat_cond 1 "")
 baci_test(xff_channel_simple_stat 1 "")
 baci_test(xff_shear_flow_stat 1 "")
-baci_test(xff_shear_flow_2D_stat_neumann 1 "")
-baci_test(xff_shear_flow_2D_instat_neumann 1 "")
 baci_test(two_phase_couette_flow 1 "")
 baci_test(two_phase_rayleigh_taylor_instability_32x128 1 4)
 baci_test(two_phase_stat_bubble_surftens_20x20x20 2 "")
