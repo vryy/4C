@@ -51,9 +51,13 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator>      matrix,
                                    bool                               structuresplit)
 {
   std::string solvertype = solver_->Params().get("solver","none");
-  if (solvertype=="aztec")
+  if (solvertype=="aztec" || solvertype=="belos")
   {
-    Teuchos::ParameterList& azlist = solver_->Params().sublist("Aztec Parameters");
+    Teuchos::ParameterList* azlist_ptr = NULL;
+    if (solvertype == "aztec") azlist_ptr = &(solver_->Params().sublist("Aztec Parameters"));
+    else azlist_ptr = &(solver_->Params().sublist("Belos Parameters"));
+    Teuchos::ParameterList& azlist = *azlist_ptr;
+    //Teuchos::ParameterList& azlist = solver_->Params().sublist("Aztec Parameters");
     // see whether Operator is a Epetra_CrsMatrix
     Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(&*matrix);
 
