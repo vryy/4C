@@ -31,7 +31,9 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
                                               bool recompute)
 {
   // see whether we have an aztec list
-  if (!solveparams.isSublist("Aztec Parameters") && !solveparams.isSublist("Belos Parameters")) return;
+  if (!solveparams.isSublist("Aztec Parameters") &&
+      !solveparams.isSublist("Belos Parameters") &&
+      !solveparams.isSublist("Stratimikos Parameters")) return;
 
   int numdf = 1; // default value for no. of degrees of freedom
   int dimns = 1; // default value for size of nullspace
@@ -149,17 +151,33 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     beloslist.set<int>("downwinding nv",nv);
     beloslist.set<int>("downwinding np",np);
   }
+  else if(solveparams.isSublist("Stratimikos Parameters"))
+  {
+    // no up and downwinding supported within Stratimikos...
+  }
   else
   {
     dserror("no Aztec and no Belos list");
   }
 
+  // adapt ML settings (if ML preconditioner is used)
   // see whether we have a sublist indicating usage of Trilinos::ML
-  if (!solveparams.isSublist("ML Parameters")) return;
+  if (!solveparams.isSublist("ML Parameters") && !solveparams.isSublist("Stratimikos Parameters")) return;
+  ParameterList* mllist_ptr = NULL;
+  if (solveparams.isSublist("Stratimikos Parameters"))
+  {
+    if (solveparams.sublist("Stratimikos Parameters").get<string>("Preconditioner Type") != "ML")
+        return;
+    else
+      mllist_ptr = &(solveparams.sublist("Stratimikos Parameters").sublist("Preconditioner Types").sublist("ML").sublist("ML Settings"));
+  }
+  else if (solveparams.isSublist("ML Parameters"))
+    mllist_ptr = &(solveparams.sublist("ML Parameters"));
+  else return;
 
   // see whether we have previously computed the nullspace
   // and recomputation is enforced
-  ParameterList& mllist = solveparams.sublist("ML Parameters");
+  ParameterList& mllist = *mllist_ptr; //solveparams.sublist("ML Parameters");
   RCP<vector<double> > ns = mllist.get<RCP<vector<double> > >("nullspace",null);
   if (ns != null && !recompute) return;
 
