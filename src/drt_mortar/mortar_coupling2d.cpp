@@ -539,6 +539,19 @@ bool MORTAR::Coupling2d::IntegrateOverlap()
   // no integration if no overlap
   if (!overlap_) return false;
 
+  // set segmentation status of all slave nodes
+  // (hassegment_ of a slave node is true if ANY segment/cell
+  // is integrated that contributes to this slave node)
+  int nnodes = SlaveElement().NumNode();
+  DRT::Node** mynodes = SlaveElement().Nodes();
+  if (!mynodes) dserror("ERROR: Null pointer!");
+  for (int k=0;k<nnodes;++k)
+  {
+    MORTAR::MortarNode* mycnode = static_cast<MORTAR::MortarNode*> (mynodes[k]);
+    if (!mycnode) dserror("ERROR: Null pointer!");
+    mycnode->HasSegment()=true;
+  }
+  
   //local working copies of input variables
   double sxia = xiproj_[0];
   double sxib = xiproj_[1];
