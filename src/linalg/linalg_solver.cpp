@@ -461,6 +461,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateAmesosToStratimikos(const 
     outparams.set("Solver Type","Klu");
     outparams.set("Refactorization Policy","RepivotOnRefactorization");
     break;
+  default:
+    break;
   }
 
   // common Amesos parameters
