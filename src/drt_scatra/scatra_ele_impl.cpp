@@ -53,6 +53,7 @@ Maintainer: Georg Bauer
 //#define PRINT_ELCH_DEBUG
 // use effective diffusion coefficient for stabilization
 #define ACTIVATEBINARYELECTROLYTE
+#define ELCHOTHERMODELS
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -728,7 +729,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         elemat1_epetra,
         elevec1_epetra,
         reinitswitch,
-        frt);
+        frt,
+        scatratype);
   }
   else if (action =="calc_subgrid_diffusivity_matrix")
   // calculate normalized subgrid-diffusivity matrix
@@ -822,7 +824,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     {
       // calculate flux vectors for actual scalar
       eflux.Clear();
-      CalculateFlux(eflux,ele,frt,fluxtype,idof);
+      CalculateFlux(eflux,ele,frt,fluxtype,idof,scatratype);
       // assembly
       for (int inode=0;inode<nen_;inode++)
       {
@@ -895,6 +897,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
     CalErrorComparedToAnalytSolution(
         ele,
+        scatratype,
         params,
         elevec1_epetra);
   }
@@ -925,11 +928,11 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         }
       } // for i
 
-      CalculateConductivity(ele,frt,elevec1_epetra);
+      CalculateConductivity(ele,frt,scatratype,elevec1_epetra);
     }
     else // conductivity = diffusivity for a electric potential field
     {
-      GetMaterialParams(ele);
+      GetMaterialParams(ele,scatratype);
       elevec1_epetra(0)=diffus_[0];
       elevec1_epetra(1)=diffus_[0];
     }
@@ -1017,7 +1020,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         elevec1_epetra,
         whichtau,
         dt,
-        timefac
+        timefac,
+        scatratype
         );
   }
   // calculate initial electric potential field caused by initial ion concentrations
@@ -1040,7 +1044,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     } // for i
     const double frt = params.get<double>("frt");
 
-    CalculateElectricPotentialField(ele,frt,elemat1_epetra,elevec1_epetra);
+    CalculateElectricPotentialField(ele,frt,scatratype,elemat1_epetra,elevec1_epetra);
 
   }
   else
@@ -1100,7 +1104,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   //----------------------------------------------------------------------
   // get material parameters (evaluation at element center)
   //----------------------------------------------------------------------
-  if (not mat_gp_ or not tau_gp_) GetMaterialParams(ele);
+  if (not mat_gp_ or not tau_gp_) GetMaterialParams(ele,scatratype);
 
   //----------------------------------------------------------------------
   // calculation of subgrid diffusivity and stabilization parameter(s)
@@ -1134,6 +1138,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
        migrationstab_=false;
        migrationintau_=false;
 #endif
+       if (ele->Id()==0)
+         cout<<"twoion system -> resdiffus ="<<resdiffus<<endl;
       }
     }
 
@@ -1173,7 +1179,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       //----------------------------------------------------------------------
       // get material parameters (evaluation at integration point)
       //----------------------------------------------------------------------
-      if (mat_gp_) GetMaterialParams(ele);
+      if (mat_gp_) GetMaterialParams(ele, scatratype);
 
       // get velocity at integration point
       velint_.Multiply(evelnp_,funct_);
@@ -1530,7 +1536,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       //----------------------------------------------------------------------
       // get material parameters (evaluation at integration point)
       //----------------------------------------------------------------------
-      if (mat_gp_) GetMaterialParams(ele);
+      if (mat_gp_) GetMaterialParams(ele,scatratype);
 
       for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
       {
@@ -1605,6 +1611,49 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       } // loop over each scalar
     }
   } // integration loop
+
+#if 0
+  // usually, we are done here, but
+  // for ELCH problems with eliminated ion species concentration we have to provide
+  // additional flux terms across (Dirichlet) boundaries
+  if(scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+  {
+    double val(0.0);
+    const DRT::Node* const* nodes = ele->Nodes();
+    string condname = "Dirichlet";
+
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      std::vector<DRT::Condition*> dirichcond0;
+      nodes[vi]->GetCondition(condname,dirichcond0);
+
+      // there is a Dirichlet condition (for which scalar we do not care!)
+      if (dirichcond0.size() > 0)
+      {
+        cout<<"Ele Id = "<<ele->Id()<<"  Found one Dirichlet node for vi="<<vi<<endl;
+
+        const vector<int>*    onoff = dirichcond0[0]->Get<vector<int> >   ("onoff");
+
+        for (int k=0; k<numscal_; ++k)
+        {
+          if ((*onoff)[k])
+          {
+            const int fvi = vi*numdofpernode_+k;
+            val = residual[fvi];
+            cout<<"Dirichlet is on for k="<<k<<endl;
+            cout<<"k="<<k<<"  val="<<val<<" valence_k="<<valence_[k]<<endl;
+            residual[vi*numdofpernode_+numscal_] += valence_[k]*val;
+          }
+        } // for k
+        if (vi==0 and ele->Id()==0)
+        {
+            residual[vi*numdofpernode_+numscal_] += valence_[numscal_]*(1.0-(1.0-time))*0.02*(-1.0);
+            cout<<"Added flux value ="<<(1.0-(1.0-time))*0.02<<endl;
+        }
+      } // if dirch
+    } // for vi
+  }  // elim
+#endif
 
   return;
 }
@@ -1740,7 +1789,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::BodyForceReinit(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
-    const DRT::Element*  ele
+    const DRT::Element*  ele,
+    const enum INPAR::SCATRA::ScaTraType  scatratype
 )
 {
 // get the material
@@ -1776,6 +1826,32 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
       valence_[k] = actsinglemat->Valence();
       diffus_[k] = actsinglemat->Diffusivity();
       diffusvalence_[k] = valence_[k]*diffus_[k];
+
+      // Material data of eliminated ion species is read from the LAST ion material
+      // in the matlist!
+      if ((scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim) and (k==(numscal_-1)))
+      {
+        if (diffus_.size() == (unsigned) numscal_)
+        {
+          // For storing additional data, we increase the vector for
+          // diffusivity and valences by one!
+          cout<<"k = "<<k<<"   Did push back for diffus_ and valence_!"<<endl;
+          diffus_.push_back(actsinglemat->ElimDiffusivity());
+          valence_.push_back(actsinglemat->ElimValence());
+        }
+        else if (diffus_.size() == (unsigned) (numscal_+1))
+        {
+          diffus_[numscal_]  = actsinglemat->ElimDiffusivity();
+          valence_[numscal_] = actsinglemat->ElimValence();
+        }
+        else
+          dserror("Something is wrong with eliminated ion species data");
+        //if (ele->Id()==0)
+        //  cout<<"data: "<<diffus_[numscal_]<<"   "<<valence_[numscal_]<<endl;
+        // data check:
+        if (abs(diffus_[numscal_])< EPS13) dserror("No diffusivity for eliminated species read!");
+        if (abs(valence_[numscal_])< EPS13) dserror("No valence for eliminated species read!");
+      }
     }
     else if (singlemat->MaterialType() == INPAR::MAT::m_arrhenius_spec)
     {
@@ -4215,7 +4291,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
     Epetra_SerialDenseMatrix&             emat,
     Epetra_SerialDenseVector&             erhs,
     const bool                            reinitswitch,
-    const double                          frt
+    const double                          frt,
+    const enum INPAR::SCATRA::ScaTraType  scatratype
 )
 {
   // dead load in element nodes at initial point in time
@@ -4239,7 +4316,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
     // evaluate shape functions and derivatives at element center
     EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id()); //fac unused
 
-    GetMaterialParams(ele);
+    GetMaterialParams(ele,scatratype);
   }
 
   // integrations points and weights
@@ -4255,7 +4332,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
-    if (mat_gp_) GetMaterialParams(ele);
+    if (mat_gp_) GetMaterialParams(ele,scatratype);
 
     //------------ get values of variables at integration point
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
@@ -4412,7 +4489,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
     Epetra_SerialDenseVector&             erhs,
     const enum INPAR::SCATRA::TauType     whichtau,
     const double                          dt,
-    const double                          timefac
+    const double                          timefac,
+    const enum INPAR::SCATRA::ScaTraType  scatratype
 )
 {
   //----------------------------------------------------------------------
@@ -4431,7 +4509,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
   if (not mat_gp_ or not tau_gp_)
   {
 
-    GetMaterialParams(ele);
+    GetMaterialParams(ele,scatratype);
 
     if (not tau_gp_)
       {
@@ -4459,7 +4537,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
-    if (mat_gp_) GetMaterialParams(ele);
+    if (mat_gp_) GetMaterialParams(ele,scatratype);
 
     //------------ get values of variables at integration point
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
@@ -4920,7 +4998,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
         // diffusive term
         double laplawf(0.0);
-        GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
+        GetLaplacianWeakForm(laplawf, derxy_,ui,vi); // compute once, reuse below!
         emat(fvi, fui) += timefacfac*diffus_[k]*laplawf;
 
         // migration term
@@ -4929,39 +5007,56 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
         // b) derivative w.r.t. electric potential
         emat(fvi,ui*numdofpernode_+numscal_) += frt*timefacfac*diffus_valence_k*conint_[k]*laplawf;
 
+#ifndef ELCHOTHERMODELS
         // electroneutrality condition
         emat(vi*numdofpernode_+numscal_, fui) += alphaF*valence_k_fac_funct_vi*funct_(ui);
-/*
 
-        // what's the governing equation for the electric potential field ?
+#else
+        // what's the governing equation for the electric potential field?
+        // we provide a lot of different options here:
         if (scatratype==INPAR::SCATRA::scatratype_elch_enc)
         {
           // electroneutrality condition (only derivative w.r.t. concentration c_k)
           emat(vi*numdofpernode_+numscal_, fui) += alphaF*valence_k_fac_funct_vi*funct_(ui);
         }
         else if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde)
-        { // use 2nd order pde derived from electroneutrality condition
+        { // use 2nd order pde derived from electroneutrality condition (k=1,...,m)
           // a) derivative w.r.t. concentration c_k
           emat(vi*numdofpernode_+numscal_, fui) -= valence_[k]*(timefacfac_diffus_valence_k_mig_vi*funct_(ui));
           emat(vi*numdofpernode_+numscal_, fui) += valence_[k]*(timefacfac*diffus_[k]*laplawf);
-
           // b) derivative w.r.t. electric potential
-          emat(vi*numdofpernode_+numscal_, ui*numdofpernode_+numscal_) -= valence_[k]*(frt*timefacfac*diffus_valence_k*conint_[k]*laplawf);
+          emat(vi*numdofpernode_+numscal_, ui*numdofpernode_+numscal_) += valence_[k]*(frt*timefacfac*diffus_valence_k*conint_[k]*laplawf);
 
-
-          // ENC
-          const double beta=1.0;
-          emat(vi*numdofpernode_+numscal_, fui) += beta*alphaF*valence_k_fac_funct_vi*funct_(ui);
-
+          // combine with ENC for reducing "drift-off"???
+          //const double beta=0.0;
+          //emat(vi*numdofpernode_+numscal_, fui) += beta*alphaF*valence_k_fac_funct_vi*funct_(ui);
         }
-      //    else if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
-      //    const double diffus_m = 1.0;
-      //    const double valence_m = 1.0;
+        else if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+        {
+          // use 2nd order pde derived from electroneutrality condition (k=1,...,m-1)
+          // a) derivative w.r.t. concentration c_k
+          emat(vi*numdofpernode_+numscal_, fui) -= valence_[k]*(timefacfac_diffus_valence_k_mig_vi*funct_(ui));
+          emat(vi*numdofpernode_+numscal_, fui) += valence_[k]*(timefacfac*diffus_[k]*laplawf);
+          // b) derivative w.r.t. electric potential
+          emat(vi*numdofpernode_+numscal_, ui*numdofpernode_+numscal_) += valence_[k]*(frt*timefacfac*diffus_valence_k*conint_[k]*laplawf);
+
+          // care for eliminated species with index m
+          //(diffus_ and valence_ vector were extended in GetMaterialParams()!)
+          // a) derivative w.r.t. concentration c_k
+          const double timefacfac_diffus_valence_m_mig_vi = timefacfac*diffus_[numscal_]*valence_[numscal_]*migconv_(vi);
+          emat(vi*numdofpernode_+numscal_, fui) += valence_[k]*(timefacfac_diffus_valence_m_mig_vi*funct_(ui));
+          emat(vi*numdofpernode_+numscal_, fui) -= valence_[k]*(timefacfac*diffus_[numscal_]*laplawf);
+          // b) derivative w.r.t. electric potential
+          emat(vi*numdofpernode_+numscal_, ui*numdofpernode_+numscal_) -= valence_[k]*(frt*timefacfac*diffus_[numscal_]*valence_[numscal_]*conint_[k]*laplawf);
+        }
           else if (scatratype==INPAR::SCATRA::scatratype_elch_poisson)
-            ;
+          {
+            const double epsilon = 1.0;
+            emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+numscal_) += alphaF*fac*epsilon*laplawf;
+          }
           else
             dserror ("How did you reach this point?");
-            */
+#endif
 
         //----------------------------------------------------------------
         // Stabilization terms
@@ -5127,14 +5222,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
       // diffusive term
       double laplawf(0.0);
-      GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
+      GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);  // compute once, reuse below!
       erhs[fvi] -= rhsfac*diffus_[k]*laplawf;
 
+#ifndef ELCHOTHERMODELS
       // electroneutrality condition
       // for incremental formulation, there is the residuum on the rhs! : 0-sum(z_k c_k)
       erhs[vi*numdofpernode_+numscal_] -= valence_[k]*fac*funct_(vi)*conint_[k];
 
-      /*
+#else
       // what's the governing equation for the electric potential field ?
       if (scatratype==INPAR::SCATRA::scatratype_elch_enc)
       {
@@ -5144,19 +5240,28 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       }
       else if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde)
       {
-        // use 2nd order pde derived from electroneutrality condition
-        erhs[vi*numdofpernode_+numscal_] -= rhsfac*valence_[k]*((diffus_valence_k*conint_[k]*migconv_(vi))+(diffus_[k]*laplawf));
-        const double beta=1.0;
-        erhs[vi*numdofpernode_+numscal_] -= beta*valence_[k]*fac*funct_(vi)*conint_[k];
+        // use 2nd order pde derived from electroneutrality condition (k=1,...,m)
+        erhs[vi*numdofpernode_+numscal_] += rhsfac*valence_[k]*((diffus_valence_k*conint_[k]*migconv_(vi))-(diffus_[k]*laplawf));
+        //const double beta=0.0;
+        //erhs[vi*numdofpernode_+numscal_] -= beta*valence_[k]*fac*funct_(vi)*conint_[k];
       }
-  //    else if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
-  //    const double diffus_m = 1.0;
-  //    const double valence_m = 1.0;
+      else if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+      {
+        // use 2nd order pde derived from electroneutrality condition (k=0,...,m-1)
+        erhs[vi*numdofpernode_+numscal_] += rhsfac*valence_[k]*((diffus_valence_k*conint_[k]*migconv_(vi))-(diffus_[k]*laplawf));
+        // care for eliminated species with index m
+        //(diffus_ and valence_ vector were extended in GetMaterialParams()!)
+        erhs[vi*numdofpernode_+numscal_] -= rhsfac*valence_[k]*((diffus_[numscal_]*valence_[numscal_]*conint_[k]*migconv_(vi))-(diffus_[numscal_]*laplawf));
+      }
       else if (scatratype==INPAR::SCATRA::scatratype_elch_poisson)
-        ;
+      {
+        const double epsilon = 1.0;
+        erhs[vi*numdofpernode_+numscal_] -= fac*epsilon*laplawf;
+      }
       else
         dserror ("How did you reach this point?");
-      */
+
+#endif
 
       //----------------------------------------------------------------
       // Stabilization terms
@@ -5210,6 +5315,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
     const DRT::Element*                   ele,
+    const enum INPAR::SCATRA::ScaTraType  scatratype,
     ParameterList&                        params,
     Epetra_SerialDenseVector&             errors
 )
@@ -5227,7 +5333,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   const double frt = params.get<double>("frt");
 
   // get material constants
-  GetMaterialParams(ele);
+  GetMaterialParams(ele,scatratype);
 
   // integrations points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
@@ -5408,7 +5514,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
       const DRT::Element*             ele,
       const double                    frt,
       const INPAR::SCATRA::FluxType   fluxtype,
-      const int                       dofindex
+      const int                       dofindex,
+      const enum INPAR::SCATRA::ScaTraType  scatratype
   )
   {
 /*
@@ -5424,7 +5531,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
 */
 
     // get material parameters (evaluation at element center)
-    if (not mat_gp_) GetMaterialParams(ele);
+    if (not mat_gp_) GetMaterialParams(ele,scatratype);
 
     // integration rule
     DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -5436,7 +5543,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
       const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
       // get material parameters (evaluation at integration point)
-      if (mat_gp_) GetMaterialParams(ele);
+      if (mat_gp_) GetMaterialParams(ele,scatratype);
 
       // get velocity at integration point
       velint_.Multiply(evelnp_,funct_);
@@ -5643,10 +5750,11 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateConductivity(
     const DRT::Element*  ele,
     const double         frt,
+    const enum INPAR::SCATRA::ScaTraType  scatratype,
     Epetra_SerialDenseVector& sigma
 )
 {
-  GetMaterialParams(ele);
+  GetMaterialParams(ele,scatratype);
 
   // use one-point Gauss rule to do calculations at the element center
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
@@ -5679,12 +5787,13 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
     const DRT::Element*         ele,
     const double                frt,
+    const enum INPAR::SCATRA::ScaTraType  scatratype,
     Epetra_SerialDenseMatrix&   emat,
     Epetra_SerialDenseVector&   erhs
 )
 {
   // access material parameters
-  GetMaterialParams(ele);
+  GetMaterialParams(ele,scatratype);
 
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);

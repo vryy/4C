@@ -170,7 +170,8 @@ public:
         Epetra_SerialDenseMatrix&             emat, ///< element matrix to calculate
         Epetra_SerialDenseVector&             erhs, ///< element rhs to calculate
         const bool                            reinitswitch,
-        const double                          frt ///< factor F/RT needed for ELCH calculations
+        const double                          frt, ///< factor F/RT needed for ELCH calculations
+        const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
     );
 
     //! calculate mass matrix and rhs for determining initial time derivative
@@ -180,7 +181,8 @@ public:
         Epetra_SerialDenseVector&             erhs, ///< element rhs to calculate
         const enum INPAR::SCATRA::TauType     whichtau, ///< stabilization parameter definition
         const double                          dt, ///< current time-step length
-        const double                          timefac ///< time discretization factor
+        const double                          timefac, ///< time discretization factor
+        const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
 //        const bool                            reinitswitch,
 //        const double                          frt ///< factor F/RT needed for ELCH calculations
     );
@@ -207,7 +209,10 @@ public:
 //end REINHARD
 
     //! get the material parameters
-    virtual void GetMaterialParams(const DRT::Element* ele);
+    virtual void GetMaterialParams(
+        const DRT::Element* ele, ///< the element we are dealing with
+        const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
+        );
 
     //! calculate all-scale subgrid diffusivity
     virtual void CalcSubgrDiff(
@@ -306,8 +311,9 @@ public:
     //! calculate error compared to analytical solutions
     virtual void CalErrorComparedToAnalytSolution(
         const DRT::Element*          ele, ///< the element
+        const enum INPAR::SCATRA::ScaTraType  scatratype, ///< type of scalar transport problem
         ParameterList&               params, ///< parameter list
-        Epetra_SerialDenseVector&    errors
+        Epetra_SerialDenseVector&    errors ///< computed error contributions
     );
 
     //! calculate flux vector for actual solution
@@ -316,7 +322,8 @@ public:
         const DRT::Element*             ele,
         const double                    frt,
         const INPAR::SCATRA::FluxType   fluxtype,
-        const int                       dofindex
+        const int                       dofindex,
+        const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
     );
 
     //! calculate scalars and domain integral
@@ -346,6 +353,7 @@ public:
    void CalculateConductivity(
        const DRT::Element*       ele,  ///< the current element
        const double              frt,  ///< factor F/RT needed for ELCH calculations
+       const enum INPAR::SCATRA::ScaTraType  scatratype, ///< type of scalar transport problem
        Epetra_SerialDenseVector& sigma ///< values for different conductivity expressions
        );
 
@@ -353,6 +361,7 @@ public:
    void CalculateElectricPotentialField(
        const DRT::Element*         ele,  ///<the current element
        const double                frt,  ///< factor F/RT needed for ELCH calculations
+       const enum INPAR::SCATRA::ScaTraType  scatratype, ///< type of scalar transport problem
        Epetra_SerialDenseMatrix&   emat, ///< matrix (to be assembled)
        Epetra_SerialDenseVector&   erhs  ///< rhs-vector (to be assembled)
    );
