@@ -181,12 +181,10 @@ void MonWriter::WriteMonStressFile(
   {
     // file name
     const std::string filename = problem.outname() + ".stress.mon";
-
     // define kind of stresses
     std::vector<std::string> groupnames;
     groupnames.push_back("gauss_cauchy_stresses_xyz");
     groupnames.push_back("gauss_2PK_stresses_xyz");
-
     // write it, now
     WriteMonStrFile(filename, problem, infieldtype, "stress", stresstype, groupnames, node);
   }
@@ -282,7 +280,6 @@ void MonWriter::WriteMonStrFile(
     {
       gdof[i] += offset1;
     }
-
     // write header
     WriteHeader(outfile);
     outfile << node << "\n";
@@ -839,54 +836,27 @@ void StructMonWriter::WriteStrResult(
   // discretisation (once more)
   const Teuchos::RCP<DRT::Discretization> dis = field->discretization();
 
-  // extrapolate stresses/strains to nodes
-  // and assemble them in two global vectors
   Teuchos::ParameterList p;
   p.set("action", "postprocess_stress");
   p.set("stresstype", "ndxyz");
   p.set("gpstressmap", data);
-  Teuchos::RCP<Epetra_Vector> normal_stresses = Teuchos::rcp(new Epetra_Vector(*(dis->DofRowMap())));
-  Teuchos::RCP<Epetra_Vector> shear_stresses = Teuchos::rcp(new Epetra_Vector(*(dis->DofRowMap())));
-  dis->Evaluate(p,Teuchos::null,Teuchos::null,normal_stresses,shear_stresses,Teuchos::null);
 
-  // average stresses/strains and print to file
+  const Epetra_Map* nodemap = dis->NodeRowMap();
+  RCP<Epetra_MultiVector> nodal_stress = rcp(new Epetra_MultiVector(*nodemap,6));
+  p.set("poststress",nodal_stress);
+  dis->Evaluate(p,null,null,null,null,null);
+    if (nodal_stress==null)
+    {
+      dserror("vector containing nodal stresses/strains not available");
+    }
   if (nodeowner_)
   {
-    const DRT::Node* lnode = dis->gNode(node);
-    const std::vector<int> lnodedofs = dis->Dof(lnode);
-    const int adjele = lnode->NumElement();
-
-    std::vector<double> nodal_stresses;
-    if (numdf == 6)
-    {
-      if (lnodedofs.size() < 3)
-        dserror("Too few DOFs at node of interest");
-      nodal_stresses.push_back((*normal_stresses)[lnodedofs[0]]/adjele);
-      nodal_stresses.push_back((*normal_stresses)[lnodedofs[1]]/adjele);
-      nodal_stresses.push_back((*normal_stresses)[lnodedofs[2]]/adjele);
-      nodal_stresses.push_back((*shear_stresses)[lnodedofs[0]]/adjele);
-      nodal_stresses.push_back((*shear_stresses)[lnodedofs[1]]/adjele);
-      nodal_stresses.push_back((*shear_stresses)[lnodedofs[2]]/adjele);
-    }
-    else if (numdf == 3)
-    {
-      if (lnodedofs.size() < 2)
-        dserror("Too few DOFs at node of interest");
-      nodal_stresses.push_back((*normal_stresses)[lnodedofs[0]]/adjele);
-      nodal_stresses.push_back((*normal_stresses)[lnodedofs[1]]/adjele);
-      nodal_stresses.push_back((*shear_stresses)[lnodedofs[0]]/adjele);
-    }
-    else
-    {
-      dserror("Don't know what to do with %d DOFs per node", numdf);
-    }
-
-    // print to file
     outfile << std::right << std::setw(10) << result.step();
     outfile << std::right << std::setw(16) << std::scientific << result.time();
-    for (std::vector<double>::iterator ns=nodal_stresses.begin(); ns!=nodal_stresses.end(); ++ns)
-      outfile << std::right << std::setw(16) << std::scientific << *ns;
+    for (int i=0;i<6;i++)
+    outfile << std::right << std::setw(16) << std::scientific << (*nodal_stress)[i][node];
     outfile << std::endl;
+
   }
 
   return;
