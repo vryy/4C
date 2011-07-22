@@ -295,7 +295,14 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   // test for patient specific needs
   if (DRT::INPUT::IntegralValue<int>(patspec,"PATSPEC"))
   {
-    PATSPEC::PatientSpecificGeometry(*actdis);
+    // check if patspeccond are already initialized
+    // This is only important for Montecarlo Simulation!
+    vector<DRT::Condition*> mypatspeccond;
+    actdis->GetCondition("PatientSpecificData", mypatspeccond);
+     if (!mypatspeccond.size())
+     {
+       PATSPEC::PatientSpecificGeometry(*actdis);
+     }
   }
 
   // sanity checks and default flags
