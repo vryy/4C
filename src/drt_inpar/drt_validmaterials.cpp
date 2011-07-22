@@ -303,6 +303,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
     AddNamedReal(m,"VALENCE","valence (= charge number)");
     AddNamedReal(m,"DENSIFICATION","densification coefficient",true);
+    // via these two optional parameters we can bring the material parameters
+    // of one eliminated ionic species into BACI if needed
+    AddNamedReal(m,"ELIM_DIFFUSIVITY","kinematic diffusivity of elim. species",true);
+    AddNamedReal(m,"ELIM_VALENCE","valence of elim. species",true);
 
     AppendMaterialDefinition(matlist,m);
   }

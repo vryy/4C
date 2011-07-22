@@ -154,6 +154,7 @@ namespace INPAR
       scatratype_loma,
       scatratype_elch_enc,
       scatratype_elch_enc_pde,
+      scatratype_elch_enc_pde_elim,
       scatratype_elch_poisson,
       scatratype_levelset
     };

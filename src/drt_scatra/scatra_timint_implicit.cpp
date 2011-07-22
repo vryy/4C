@@ -214,10 +214,16 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     // we need a block sparse matrix here
     if (not IsElch(scatratype_))
       dserror("Block-Preconditioning is only for ELCH problems");
+
+    if ((scatratype_==INPAR::SCATRA::scatratype_elch_enc_pde) or
+        (scatratype_==INPAR::SCATRA::scatratype_elch_enc_pde_elim) or
+        (scatratype_==INPAR::SCATRA::scatratype_elch_poisson))
+      dserror("Special ELCH assemble strategy for block-matrix will not assemble A_11 block!");
+
     // initial guess for non-zeros per row: 27 neighboring nodes for hex8
     // this is enough! A higher guess would require too much memory!
     // A more precise guess for every submatrix would read:
-    // A_00: 27*1,  A_01: 27*1,  A_10: 27*numscal_ due to electroneutrality, A_11: empty matrix
+    // A_00: 27*1,  A_01: 27*1,  A_10: 27*numscal_ due to electroneutrality, A_11: EMPTY matrix !!!!!
     // usage of a split strategy that makes use of the ELCH-specific sparsity pattern
     Teuchos::RCP<LINALG::BlockSparseMatrix<SCATRA::SplitStrategy> > blocksysmat =
       Teuchos::rcp(new LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>(*splitter_,*splitter_,27,false,true));
@@ -1772,7 +1778,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       ParameterList p(DRT::Problem::Instance()->ScalarTransportSolverParams());
       const double origtol = p.get<double>("AZTOL");
       const double newtol  = 1.0e-11;
-      p.sublist("Aztec Parameters").set("AZTOL",newtol);
+      p.set("AZTOL",newtol);
 
       RCP<LINALG::Solver> lssolver =
           rcp(new LINALG::Solver(p,
@@ -1781,7 +1787,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       discret_->ComputeNullSpaceIfNecessary(lssolver->Params());
 
       if(myrank_ ==0)
-        cout<<"\nSolver tolerance for least squares problem set to "<<newtol<<" (orig: "<<origtol<<")"<<endl;
+        cout<<"\nSolver tolerance for least squares problem set to "<<newtol<<" (orig: "<<origtol<<")";
 
       DRT::NURBS::apply_nurbs_initial_condition(
           *discret_  ,

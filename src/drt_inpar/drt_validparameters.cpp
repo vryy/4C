@@ -2841,6 +2841,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "LowMachNumberFlow",
                                  "Elch_ENC",
                                  "Elch_ENC_PDE",
+                                 "Elch_ENC_PDE_ELIM",
                                  "Elch_Possion",
                                  "LevelSet"),
                                tuple<int>(
@@ -2849,6 +2850,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::SCATRA::scatratype_loma,
                                  INPAR::SCATRA::scatratype_elch_enc,
                                  INPAR::SCATRA::scatratype_elch_enc_pde,
+                                 INPAR::SCATRA::scatratype_elch_enc_pde_elim,
                                  INPAR::SCATRA::scatratype_elch_poisson,
                                  INPAR::SCATRA::scatratype_levelset),
                                  &scatradyn);

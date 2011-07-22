@@ -24,7 +24,9 @@ MAT::PAR::Ion::Ion(
 : Parameter(matdata),
   valence_(matdata->GetDouble("VALENCE")),
   diffusivity_(matdata->GetDouble("DIFFUSIVITY")),
-  densification_(matdata->GetDouble("DENSIFICATION"))
+  densification_(matdata->GetDouble("DENSIFICATION")),
+  elimvalence_(matdata->GetDouble("ELIM_VALENCE")),
+  elimdiffusivity_(matdata->GetDouble("ELIM_DIFFUSIVITY"))
 {
 }
 

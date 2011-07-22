@@ -182,7 +182,8 @@ public:
        const double               frt,  ///< factor F/RT
        const double             gamma,  ///< exponent for concentration dependency
        const double            refcon,  ///< reference concentration of reactive ion species
-       const bool              iselch   ///< problemtype elch or scatra
+       const bool              iselch,  ///< problemtype elch or scatra
+       const INPAR::SCATRA::ScaTraType scatratype   ///< scatra problem type
        );
 
     //! provide electrode kinetics status information
@@ -285,7 +286,7 @@ public:
     //! diffusivity / diffusivities (in case of systems) / thermal conductivity
     vector<double> diffus_;
     //! charge numbers of all ion species (ELCH specific)
-    vector<double> valence_;
+    // vector<double> valence_;
     //! specific heat capacity at constant pressure (in case of temperature eq.)
     double shcacp_;
     //! coordinates of current integration point in reference coordinates

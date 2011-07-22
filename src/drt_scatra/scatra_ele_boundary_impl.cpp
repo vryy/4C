@@ -48,6 +48,7 @@ Maintainer: Georg Bauer
 #include "../drt_mat/ion.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_inpar/inpar_scatra.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -149,7 +150,7 @@ DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl
     normalfac_(1.0),
     edispnp_(true),
     diffus_(numscal_,0),
-    valence_(numscal_,0),
+    //valence_(numscal_,0),
     shcacp_(0.0),
     xsi_(true),
     funct_(true),
@@ -346,7 +347,8 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
           frt,
           gamma,
           refcon,
-          iselch
+          iselch,
+          scatratype
       );
 
       // realize correct scaling of rhs contribution for gen.alpha case
@@ -954,7 +956,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
     const double               frt,
     const double             gamma,
     const double            refcon,
-    const bool              iselch
+    const bool              iselch,
+    const INPAR::SCATRA::ScaTraType scatratype
 )
 {
   //for pre-multiplication of i0 with 1/(F z_k)
@@ -962,6 +965,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 
   // index of reactive species (starting from zero)
   const int k = speciesid-1;
+
+  double valence_k(0.0);
 
   if (iselch) // this is not necessary for secondary current distributions
   {
@@ -975,7 +980,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
       if (singlemat->MaterialType() == INPAR::MAT::m_ion)
       {
         const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(singlemat.get());
-        fz = fz/actsinglemat->Valence();
+        valence_k = actsinglemat->Valence();
+        if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
+        fz = fz/valence_k;
       }
       else
         dserror("single material type is not 'ion'");
@@ -1284,6 +1291,32 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
     } // if iselch
 
   } // end of loop over integration points gpid
+
+  if (iselch)
+  {
+    if ((scatratype==INPAR::SCATRA::scatratype_elch_enc_pde) or
+        (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+        )
+    {
+      // we have to add boundary contributions to the potential equation as well!
+      // and do not forget the corresponding matrix contributions ;-)
+      double val(0.0);
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        // ---------------------matrix
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          val = emat(vi*numdofpernode_+k,ui*numdofpernode_+k);
+          emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+k) += valence_k*val;
+          val = emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_);
+          emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+numscal_) += valence_k*val;
+        }
+        // ------------right-hand-side
+        val = erhs[vi*numdofpernode_+k];
+        erhs[vi*numdofpernode_+numscal_] += valence_k*val;
+      }
+    }
+  }
 
   return;
 

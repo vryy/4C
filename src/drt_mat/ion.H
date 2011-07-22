@@ -46,6 +46,10 @@ namespace MAT
       const double diffusivity_;
       /// densification coefficient
       const double densification_;
+      /// valence (= charge number) of eliminated ion species
+      const double elimvalence_;
+      /// diffusivity coefficient of eliminated ion species
+      const double elimdiffusivity_;
 
       //@}
 
@@ -133,6 +137,10 @@ private:
     double Diffusivity() const { return params_->diffusivity_; }
     /// densification coefficient
     double Densification() const { return params_->densification_; }
+    /// valence (= charge number) of eliminated ion species
+    double ElimValence() const { return params_->elimvalence_; }
+    /// diffusivity coefficient of eliminated ion species
+    double ElimDiffusivity() const { return params_->elimdiffusivity_; }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
