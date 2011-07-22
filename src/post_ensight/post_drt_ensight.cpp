@@ -150,6 +150,33 @@ int main(
         }
         break;
     }
+    case prb_fluid_fluid:
+    {
+      string basename = problem.outname();
+
+      PostField* fluidfield = problem.get_discretization(0);
+      FluidEnsightWriter fluidwriter(fluidfield, basename);
+      fluidwriter.WriteFiles();
+
+      PostField* embfluidfield = problem.get_discretization(1);
+      FluidEnsightWriter embfluidwriter(embfluidfield, basename);
+      embfluidwriter.WriteFiles();
+      break;
+    }
+    case prb_fluid_fluid_ale:
+    {
+      string basename = problem.outname();
+
+      PostField* fluidfield = problem.get_discretization(0);
+      FluidEnsightWriter fluidwriter(fluidfield, basename);
+      fluidwriter.WriteFiles();
+
+      PostField* embfluidfield = problem.get_discretization(1);
+      FluidEnsightWriter embfluidwriter(embfluidfield, basename);
+      embfluidwriter.WriteFiles();
+
+      break;
+    }
     case prb_fluid_dgfem:
     {
         PostField* field = problem.get_discretization(0);
