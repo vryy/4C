@@ -26,7 +26,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 02/08|
  *----------------------------------------------------------------------*/
-LINALG::SIMPLER_BlockPreconditioner::SIMPLER_BlockPreconditioner(RCP<Epetra_Operator> A,
+LINALG::SOLVER::SIMPLER_BlockPreconditioner::SIMPLER_BlockPreconditioner(RCP<Epetra_Operator> A,
                                            const ParameterList& velocitylist,
                                            const ParameterList& pressurelist,
                                            FILE* outfile)
@@ -61,7 +61,7 @@ LINALG::SIMPLER_BlockPreconditioner::SIMPLER_BlockPreconditioner(RCP<Epetra_Oper
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 02/08|
  *----------------------------------------------------------------------*/
-void LINALG::SIMPLER_BlockPreconditioner::Setup(RCP<Epetra_Operator> A,
+void LINALG::SOLVER::SIMPLER_BlockPreconditioner::Setup(RCP<Epetra_Operator> A,
                                      const ParameterList& origvlist,
                                      const ParameterList& origplist)
 {
@@ -327,7 +327,7 @@ void LINALG::SIMPLER_BlockPreconditioner::Setup(RCP<Epetra_Operator> A,
 /*----------------------------------------------------------------------*
  |  apply const operator (public)                            mwgee 02/08|
  *----------------------------------------------------------------------*/
-int LINALG::SIMPLER_BlockPreconditioner::ApplyInverse(const Epetra_MultiVector& X,
+int LINALG::SOLVER::SIMPLER_BlockPreconditioner::ApplyInverse(const Epetra_MultiVector& X,
                                            Epetra_MultiVector& Y) const
 {
   // note: Aztec might pass X and Y as physically identical objects,
@@ -367,7 +367,7 @@ int LINALG::SIMPLER_BlockPreconditioner::ApplyInverse(const Epetra_MultiVector& 
  | Sandia technical report SAND2007-2761, 2007                          |
  | Also appeared in JCP                                                 |
  *----------------------------------------------------------------------*/
-void LINALG::SIMPLER_BlockPreconditioner::Simple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
+void LINALG::SOLVER::SIMPLER_BlockPreconditioner::Simple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
                                       LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const
 {
   using namespace LINALG::ANA;
@@ -402,7 +402,7 @@ void LINALG::SIMPLER_BlockPreconditioner::Simple(LINALG::ANA::Vector& vx, LINALG
  | A Multigrid Preconditioned Newton-Krylov method for the incomp.      |
  | Navier-Stokes equations, Siam, J. Sci. Comp. 23, pp. 398-418 (2001)  |
  *----------------------------------------------------------------------*/
-void LINALG::SIMPLER_BlockPreconditioner::Simpler(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
+void LINALG::SOLVER::SIMPLER_BlockPreconditioner::Simpler(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
                                        LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const
 {
   using namespace LINALG::ANA;
@@ -441,7 +441,7 @@ void LINALG::SIMPLER_BlockPreconditioner::Simpler(LINALG::ANA::Vector& vx, LINAL
  |                                                                      |
  | all solves replaced by single AMG sweeps                             |
  *----------------------------------------------------------------------*/
-void LINALG::SIMPLER_BlockPreconditioner::CheapSimple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
+void LINALG::SOLVER::SIMPLER_BlockPreconditioner::CheapSimple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
                                            LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const
 {
   SparseMatrix& A10      = (*A_)(1,0);

@@ -24,7 +24,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 02/08|
  *----------------------------------------------------------------------*/
-LINALG::SIMPLER_Operator::SIMPLER_Operator(Teuchos::RCP<Epetra_Operator> A,
+LINALG::SOLVER::SIMPLER_Operator::SIMPLER_Operator(Teuchos::RCP<Epetra_Operator> A,
                                            const Teuchos::ParameterList& velocitylist,
                                            const Teuchos::ParameterList& pressurelist,
                                            FILE* outfile)
@@ -49,7 +49,7 @@ LINALG::SIMPLER_Operator::SIMPLER_Operator(Teuchos::RCP<Epetra_Operator> A,
 /*----------------------------------------------------------------------*
  |  (private)                                                mwgee 02/08|
  *----------------------------------------------------------------------*/
-void LINALG::SIMPLER_Operator::Setup(Teuchos::RCP<Epetra_Operator> A,
+void LINALG::SOLVER::SIMPLER_Operator::Setup(Teuchos::RCP<Epetra_Operator> A,
                                      const Teuchos::ParameterList& origvlist,
                                      const Teuchos::ParameterList& origplist)
 {
@@ -368,7 +368,7 @@ void LINALG::SIMPLER_Operator::Setup(Teuchos::RCP<Epetra_Operator> A,
 /*----------------------------------------------------------------------*
  |  apply const operator (public)                            mwgee 02/08|
  *----------------------------------------------------------------------*/
-int LINALG::SIMPLER_Operator::ApplyInverse(const Epetra_MultiVector& X,
+int LINALG::SOLVER::SIMPLER_Operator::ApplyInverse(const Epetra_MultiVector& X,
                                            Epetra_MultiVector& Y) const
 {
   // note: Aztec might pass X and Y as physically identical objects,
@@ -408,7 +408,7 @@ int LINALG::SIMPLER_Operator::ApplyInverse(const Epetra_MultiVector& X,
  | Sandia technical report SAND2007-2761, 2007                          |
  | Also appeared in JCP                                                 |
  *----------------------------------------------------------------------*/
-void LINALG::SIMPLER_Operator::Simple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
+void LINALG::SOLVER::SIMPLER_Operator::Simple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
                                       LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const
 {
   using namespace LINALG::ANA;
@@ -443,7 +443,7 @@ void LINALG::SIMPLER_Operator::Simple(LINALG::ANA::Vector& vx, LINALG::ANA::Vect
  | A Multigrid Preconditioned Newton-Krylov method for the incomp.      |
  | Navier-Stokes equations, Siam, J. Sci. Comp. 23, pp. 398-418 (2001)  |
  *----------------------------------------------------------------------*/
-void LINALG::SIMPLER_Operator::Simpler(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
+void LINALG::SOLVER::SIMPLER_Operator::Simpler(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
                                        LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const
 {
   using namespace LINALG::ANA;
@@ -482,7 +482,7 @@ void LINALG::SIMPLER_Operator::Simpler(LINALG::ANA::Vector& vx, LINALG::ANA::Vec
  |                                                                      |
  | all solves replaced by single AMG sweeps                             |
  *----------------------------------------------------------------------*/
-void LINALG::SIMPLER_Operator::CheapSimple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
+void LINALG::SOLVER::SIMPLER_Operator::CheapSimple(LINALG::ANA::Vector& vx, LINALG::ANA::Vector& px,
                                            LINALG::ANA::Vector& vb, LINALG::ANA::Vector& pb) const
 {
   SparseMatrix& A10      = (*A_)(1,0);

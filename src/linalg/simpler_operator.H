@@ -33,6 +33,8 @@ using namespace std;
 
 namespace LINALG
 {
+  namespace SOLVER
+  {
 // forward declarations
 class DownwindMatrix;
 
@@ -239,6 +241,7 @@ private:
   Teuchos::RCP<LINALG::ANA::Vector>                   pdwout_;  // working vector
 
 }; // class  SIMPLER_Operator : public virtual Epetra_Operator
+}  // namespace SOLVER
 }  // namespace LINALG
 
 

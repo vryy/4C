@@ -46,11 +46,11 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
     bool cstr = simpleparams_.get<bool>("CONSTRAINT",false);
     if (mt || co || cstr)
     {
-      P_ = Teuchos::rcp(new LINALG::SIMPLER_BlockPreconditioner(Teuchos::rcp( matrix, false ),params_,simpleparams_,outfile_));
+      P_ = Teuchos::rcp(new LINALG::SOLVER::SIMPLER_BlockPreconditioner(Teuchos::rcp( matrix, false ),params_,simpleparams_,outfile_));
     }
     else
     {
-      P_ = Teuchos::rcp(new LINALG::SIMPLER_Operator(Teuchos::rcp( matrix, false ),params_,simpleparams_,outfile_));
+      P_ = Teuchos::rcp(new LINALG::SOLVER::SIMPLER_Operator(Teuchos::rcp( matrix, false ),params_,simpleparams_,outfile_));
     }
   }
 }
