@@ -20,7 +20,8 @@ Maintainer: Peter Gamnitzer
 #include "../drt_fluid/fluid_genalpha_integration.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "fluid_utils.H"
-
+#include "../drt_io/io_control.H"
+#include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -2261,13 +2262,32 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
       }
     }
 
-    DRT::NURBS::apply_nurbs_initial_condition(
-      *discret_  ,
-      solver_    ,
-      startfuncno,
-      velnp_     );
-    veln_->Update(1.0,*velnp_ ,0.0);
+    // for NURBS discretizations we have to solve a least squares problem!
+    if(dynamic_cast<DRT::NURBS::NurbsDiscretization*>(discret_.get())!=NULL)
+    {
+      // Owing to experience a very accurate solution has to be enforced here!
+      // Thus, we allocate an own solver with VERY strict tolerance!
+      ParameterList p(DRT::Problem::Instance()->FluidSolverParams());
+      const double origtol = p.get<double>("AZTOL");
+      const double newtol  = 1.0e-11;
+      p.set("AZTOL",newtol);
 
+      RCP<LINALG::Solver> lssolver =
+          rcp(new LINALG::Solver(p,
+              discret_->Comm(),
+              DRT::Problem::Instance()->ErrorFile()->Handle()));
+      discret_->ComputeNullSpaceIfNecessary(lssolver->Params());
+
+      if(myrank_ ==0)
+        cout<<"\nSolver tolerance for least squares problem set to "<<newtol<<" (orig: "<<origtol<<")";
+
+      DRT::NURBS::apply_nurbs_initial_condition(
+        *discret_  ,
+        *lssolver  ,
+        startfuncno,
+        velnp_     );
+      veln_->Update(1.0,*velnp_ ,0.0);
+    }
 
     //----------------------------------------------------------------------
     // random perturbations for field

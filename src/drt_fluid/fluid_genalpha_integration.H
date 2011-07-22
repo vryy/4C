@@ -67,9 +67,6 @@ Maintainer: Peter Gamnitzer
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_sparsematrix.H"
-
-#include "../drt_nurbs_discret/drt_apply_nurbs_initial_condition.H"
-
 #include "../drt_inpar/inpar_fluid.H"
 
 #ifdef PARALLEL
