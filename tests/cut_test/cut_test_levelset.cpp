@@ -1,4 +1,5 @@
 
+#include "../../src/drt_cut/cut_options.H"
 #include "../../src/drt_cut/cut_mesh.H"
 #include "../../src/drt_cut/cut_element.H"
 #include "../../src/drt_cut/cut_levelsetintersection.H"
@@ -1607,4 +1608,65 @@ void test_ls_hex8_between()
     lsi.AddElement( e, nids, xyze, &lsvs[0], DRT::Element::hex8 );
     lsi.Cut();
   }
+}
+
+void test_ls_hex8_experiment()
+{
+  GEO::CUT::LevelSetIntersection lsi;
+
+  lsi.CreateOptions().SetSimpleShapes( false );
+
+  // simple hex8 element
+  std::vector<int> nids( 8 );
+  std::vector<double> lsvs( 8 );
+  Epetra_SerialDenseMatrix xyze( 3, 8 );
+
+  for ( int i=0; i<8; ++i )
+  {
+    nids[i] = i;
+  }
+
+  lsvs[0] =  1;
+  lsvs[1] =  1;
+  lsvs[2] =  -1;
+  lsvs[3] =  -1;
+  lsvs[4] =  1;
+  lsvs[5] =  -1;
+  lsvs[6] =  1;
+  lsvs[7] =  -1;
+
+  xyze( 0, 0 ) = -1;
+  xyze( 1, 0 ) = -1;
+  xyze( 2, 0 ) = -1;
+
+  xyze( 0, 1 ) =  1;
+  xyze( 1, 1 ) = -1;
+  xyze( 2, 1 ) = -1;
+
+  xyze( 0, 2 ) =  1;
+  xyze( 1, 2 ) =  1;
+  xyze( 2, 2 ) = -1;
+
+  xyze( 0, 3 ) = -1;
+  xyze( 1, 3 ) =  1;
+  xyze( 2, 3 ) = -1;
+
+  xyze( 0, 4 ) = -1;
+  xyze( 1, 4 ) = -1;
+  xyze( 2, 4 ) =  1;
+
+  xyze( 0, 5 ) =  1;
+  xyze( 1, 5 ) = -1;
+  xyze( 2, 5 ) =  1;
+
+  xyze( 0, 6 ) =  1;
+  xyze( 1, 6 ) =  1;
+  xyze( 2, 6 ) =  1;
+
+  xyze( 0, 7 ) = -1;
+  xyze( 1, 7 ) =  1;
+  xyze( 2, 7 ) =  1;
+
+  lsi.AddElement( 1, nids, xyze, &lsvs[0], DRT::Element::hex8 );
+  lsi.Cut();
 }

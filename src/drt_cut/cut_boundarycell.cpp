@@ -106,7 +106,7 @@ void GEO::CUT::Tri3BoundaryCell::DumpGmsh( std::ofstream & file, int * value )
   for ( int i=0; i<3; ++i )
   {
     if ( i > 0 )
-      file << ",";
+      file << ", ";
     file << xyz_( 0, i ) << ","
          << xyz_( 1, i ) << ","
          << xyz_( 2, i );
@@ -130,7 +130,7 @@ void GEO::CUT::Quad4BoundaryCell::DumpGmsh( std::ofstream & file, int * value )
   for ( int i=0; i<4; ++i )
   {
     if ( i > 0 )
-      file << ",";
+      file << ", ";
     file << xyz_( 0, i ) << ","
          << xyz_( 1, i ) << ","
          << xyz_( 2, i );

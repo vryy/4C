@@ -368,7 +368,7 @@ void GEO::CUT::Hex8IntegrationCell::DumpGmsh( std::ofstream & file, int * value 
   for ( int i=0; i<8; ++i )
   {
     if ( i > 0 )
-      file << ",";
+      file << ", ";
     file << xyz_( 0, i ) << ","
          << xyz_( 1, i ) << ","
          << xyz_( 2, i );
@@ -392,7 +392,7 @@ void GEO::CUT::Tet4IntegrationCell::DumpGmsh( std::ofstream & file, int * value 
   for ( int i=0; i<4; ++i )
   {
     if ( i > 0 )
-      file << ",";
+      file << ", ";
     file << xyz_( 0, i ) << ","
          << xyz_( 1, i ) << ","
          << xyz_( 2, i );
@@ -416,7 +416,7 @@ void GEO::CUT::Wedge6IntegrationCell::DumpGmsh( std::ofstream & file, int * valu
   for ( int i=0; i<6; ++i )
   {
     if ( i > 0 )
-      file << ",";
+      file << ", ";
     file << xyz_( 0, i ) << ","
          << xyz_( 1, i ) << ","
          << xyz_( 2, i );
@@ -440,7 +440,7 @@ void GEO::CUT::Pyramid5IntegrationCell::DumpGmsh( std::ofstream & file, int * va
   for ( int i=0; i<5; ++i )
   {
     if ( i > 0 )
-      file << ",";
+      file << ", ";
     file << xyz_( 0, i ) << ","
          << xyz_( 1, i ) << ","
          << xyz_( 2, i );

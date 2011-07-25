@@ -24,7 +24,7 @@
 
 #include "../drt_geometry/element_volume.H"
 
-GEO::CUT::Mesh::Mesh( const Options & options, double norm, Teuchos::RCP<PointPool> pp, bool cutmesh )
+GEO::CUT::Mesh::Mesh( Options & options, double norm, Teuchos::RCP<PointPool> pp, bool cutmesh )
   : setup_( true ),
     options_( options ),
     norm_( norm ),

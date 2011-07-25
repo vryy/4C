@@ -42,6 +42,8 @@ public:
 
   Mesh & NormalMesh() { return mesh_.LinearMesh(); }
 
+  Options & CreateOptions() { return options_; }
+
 private:
 
   Teuchos::RCP<PointPool> pp_;

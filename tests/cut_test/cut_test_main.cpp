@@ -175,6 +175,7 @@ void test_ls_hex8_simple6();
 void test_ls_hex8_simple7();
 void test_ls_hex8_touch();
 void test_ls_hex8_between();
+void test_ls_hex8_experiment();
 
 void test_quad4_surface_mesh_cut();
 void test_hex8_quad4_double_cut();
@@ -430,6 +431,7 @@ int main( int argc, char ** argv )
   functable["ls_hex8_simple7"] = test_ls_hex8_simple7;
   functable["ls_hex8_touch"] = test_ls_hex8_touch;
   functable["ls_hex8_between"] = test_ls_hex8_between;
+  functable["ls_hex8_experiment"] = test_ls_hex8_experiment;
 
   functable["quad4_surface_mesh_cut"] = test_quad4_surface_mesh_cut;
   functable["hex8_quad4_double_cut"] = test_hex8_quad4_double_cut;

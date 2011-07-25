@@ -177,10 +177,6 @@ void GEO::CUT::Facet::AddHole( Facet * hole )
 
 bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, bool dotriangulate )
 {
-
-//   if ( not parentside_->DoTriangulation() )
-//     return true;
-
   if ( dotriangulate )
   {
     //if ( not IsTriangulated() and points_.size() > 3 )

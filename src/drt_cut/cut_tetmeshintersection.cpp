@@ -13,7 +13,7 @@
 #include "cut_tetmeshintersection.H"
 #include "cut_volumecell.H"
 
-GEO::CUT::TetMeshIntersection::TetMeshIntersection( const Options & options,
+GEO::CUT::TetMeshIntersection::TetMeshIntersection( Options & options,
                                                     Element * element,
                                                     const std::vector<std::vector<int> > & tets,
                                                     const std::vector<int> & accept_tets,

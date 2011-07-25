@@ -34,7 +34,7 @@ class MeshHandle
 {
 public:
 
-  MeshHandle( const Options & options, double norm=1, Teuchos::RCP<PointPool> pp=Teuchos::null, bool cutmesh=false )
+  MeshHandle( Options & options, double norm=1, Teuchos::RCP<PointPool> pp=Teuchos::null, bool cutmesh=false )
     : mesh_( options, norm, pp, cutmesh )
   {
   }

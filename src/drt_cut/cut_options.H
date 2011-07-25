@@ -31,6 +31,8 @@ public:
 
   bool SimpleShapes() const { return simpleshapes_; }
 
+  void SetSimpleShapes( bool simpleshapes ) { simpleshapes_ = simpleshapes; }
+
   bool GenQuad4() const { return genquad4_; }
   bool GenHex8() const { return genhex8_; }
   bool GenWedge6() const { return genwedge6_; }

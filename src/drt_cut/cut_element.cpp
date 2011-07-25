@@ -354,7 +354,11 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count, bool lev
     if ( f->OnCutSide() and f->HasHoles() )
       throw std::runtime_error( "no holes in cut facet possible" );
     //f->GetAllPoints( mesh, cut_points, f->OnCutSide() );
+#if 1
     f->GetAllPoints( mesh, cut_points, levelset and f->OnCutSide() );
+#else
+    f->GetAllPoints( mesh, cut_points, false );
+#endif
   }
 
   std::vector<Point*> points;
@@ -364,6 +368,25 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count, bool lev
   // sort points that go into qhull to obtain the same result independent of
   // pointer values (compiler flags, code structure, memory usage, ...)
   std::sort( points.begin(), points.end(), PointPidLess() );
+
+#if 0
+  {
+    LINALG::Matrix<3,1> xyz;
+    LINALG::Matrix<3,1> rst;
+    for ( std::vector<Point*>::iterator i=points.begin(); i!=points.end(); ++i )
+    {
+      Point * p = *i;
+      std::copy( p->X(), p->X()+3, &xyz( 0, 0 ) );
+      LocalCoordinates( xyz, rst );
+      std::cout << "rst[" << p->Id() << "] = ("
+                << std::setprecision( 10 )
+                << rst( 0, 0 ) << ","
+                << rst( 1, 0 ) << ","
+                << rst( 2, 0 ) << ")\n";
+    }
+    throw std::runtime_error( "debug output done" );
+  }
+#endif
 
   TetMesh tetmesh( points, facets_, false );
   tetmesh.CreateElementTets( mesh, this, cells_, cut_faces_, count, levelset );

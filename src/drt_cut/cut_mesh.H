@@ -54,7 +54,7 @@ class Mesh
 {
 public:
 
-  Mesh( const Options & options, double norm=1, Teuchos::RCP<PointPool> pp=Teuchos::null, bool cutmesh=false );
+  Mesh( Options & options, double norm=1, Teuchos::RCP<PointPool> pp=Teuchos::null, bool cutmesh=false );
 
   Element * CreateElement( int eid, const std::vector<int> & nids, DRT::Element::DiscretizationType distype );
 
@@ -202,7 +202,7 @@ public:
 
   Teuchos::RCP<PointPool> Points() { return pp_; }
 
-  const Options & CreateOptions() const { return options_; }
+  Options & CreateOptions() { return options_; }
 
   const std::list<Teuchos::RCP<VolumeCell> > & VolumeCells() const { return cells_; }
 
@@ -235,7 +235,7 @@ private:
   bool setup_;
 
   /// options container
-  const Options & options_;
+  Options & options_;
 
   /// mesh dependent point lookup norm
   double norm_;

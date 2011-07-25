@@ -20,7 +20,7 @@ namespace GEO
     {
     public:
 
-      TetMeshIntersection( const Options & options,
+      TetMeshIntersection( Options & options,
                            Element * element,
                            const std::vector<std::vector<int> > & tets,
                            const std::vector<int> & accept_tets,
