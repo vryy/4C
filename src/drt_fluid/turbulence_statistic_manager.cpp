@@ -449,6 +449,38 @@ namespace FLD
       // do the time integration independent setup
       Setup();
     }
+    else if(fluid.special_flow_=="rotating_circular_cylinder_nurbs")
+    {
+      flow_=rotating_circular_cylinder_nurbs;
+      const bool withscatra = false;
+
+      // do the time integration independent setup
+      Setup();
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_ccy_=rcp(new TurbulenceStatisticsCcy(discret_            ,
+                                                      alefluid_           ,
+                                                      mydispnp_           ,
+                                                      params_             ,
+                                                      withscatra));
+    }
+    else if(fluid.special_flow_=="rotating_circular_cylinder_nurbs_scatra")
+    {
+      flow_=rotating_circular_cylinder_nurbs_scatra;
+      const bool withscatra = true;
+
+      // do the time integration independent setup
+      Setup();
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_ccy_=rcp(new TurbulenceStatisticsCcy(discret_            ,
+                                                      alefluid_           ,
+                                                      mydispnp_           ,
+                                                      params_             ,
+                                                      withscatra));
+    }
     else if(fluid.special_flow_=="time_averaging")
     {
       flow_=time_averaging;
@@ -999,8 +1031,8 @@ namespace FLD
       // (allows restarts during sampling)
       if(dumperiod_==0)
       {
-        int upres    =params_.get("write solution every", -1);
-        int uprestart=params_.get("write restart every" , -1);
+        int upres    =params_.get<int>("write solution every");
+        int uprestart=params_.get<int>("write restart every" );
 
         // dump in combination with a restart/output
         if((step%upres == 0 || ( uprestart > 0 && step%uprestart == 0) ) && step>=samstart_)
@@ -1144,7 +1176,6 @@ namespace FLD
       case rotating_circular_cylinder_nurbs:
       case rotating_circular_cylinder_nurbs_scatra:
       {
-
         if(statistics_ccy_==null)
           dserror("need statistics_ccy_ to do a time sample for a flow in a rotating circular cylinder");
 
@@ -1174,8 +1205,8 @@ namespace FLD
       // don't write output if turbulent inflow is computed
       if (!inflow)
       {
-        int upres    =params_.get("write solution every", -1);
-        int uprestart=params_.get("write restart every" , -1);
+        int upres    =params_.get<int>("write solution every");
+        int uprestart=params_.get<int>("write restart every" );
 
         if(step%upres == 0 || (uprestart > 0 && step%uprestart == 0) )
         {

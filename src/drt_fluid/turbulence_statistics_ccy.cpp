@@ -1406,27 +1406,27 @@ void FLD::TurbulenceStatisticsCcy::TimeAverageMeansAndOutputOfStatistics(int ste
     (*log) << "----------------------------------------------------------|";
     (*log) << "\n";
 
-    (*log) << "#      y         ";
-    (*log) << "    u_theta    ";
-    (*log) << "      u_r      ";
-    (*log) << "      u_z      ";
-    (*log) << "       p       ";
-    (*log) << "u_theta*u_theta";
-    (*log) << "    u_r*u_r    ";
-    (*log) << "    u_z*u_z    ";
-    (*log) << "      p*p      ";
-    (*log) << "  u_theta*u_r  ";
-    (*log) << "  u_theta*u_z  ";
-    (*log) << "    u_r*u_z    ";
+    (*log) << "#       y        ";
+    (*log) << "      u_theta     ";
+    (*log) << "       u_r       ";
+    (*log) << "       u_z       ";
+    (*log) << "        p        ";
+    (*log) << " u_theta*u_theta ";
+    (*log) << "     u_r*u_r     ";
+    (*log) << "     u_z*u_z     ";
+    (*log) << "       p*p       ";
+    (*log) << "   u_theta*u_r   ";
+    (*log) << "   u_theta*u_z   ";
+    (*log) << "     u_r*u_z     ";
     if (withscatra_)
     {
-      (*log) << "       c       ";
-      (*log) << "      c*c      ";
+      (*log) << "         c         ";
+      (*log) << "        c*c        ";
 
       for(int k=0; k< numscatradofpernode_; k++)
       {
-        (*log) << "       c"<<k+1<<"       ";
-        (*log) << "    c"<<k+1<<"*c"<<k+1<<"     ";
+        (*log) << "         c"<<k+1<<"         ";
+        (*log) << "      c"<<k+1<<"*c"<<k+1<<"       ";
       }
     }
     (*log) << "\n";
@@ -1437,26 +1437,26 @@ void FLD::TurbulenceStatisticsCcy::TimeAverageMeansAndOutputOfStatistics(int ste
       (*log) <<  " "  << setw(14) << setprecision(7) << (*shellcoordinates_)[i];
 
       // pointwise means
-      (*log) << "    " << setw(14) << setprecision(7) << (*pointsumu_ )[i]/numsamp_;
-      (*log) << "    " << setw(14) << setprecision(7) << (*pointsumv_ )[i]/numsamp_;
-      (*log) << "    " << setw(14) << setprecision(7) << (*pointsumw_ )[i]/numsamp_;
-      (*log) << "    " << setw(14) << setprecision(7) << (*pointsump_ )[i]/numsamp_;
-      (*log) << "    " << setw(14) << setprecision(7) << (*pointsumuu_)[i]/numsamp_;
-      (*log) << "    " << setw(14) << setprecision(7) << (*pointsumvv_)[i]/numsamp_;
-      (*log) << "    " << setw(14) << setprecision(7) << (*pointsumww_)[i]/numsamp_;
-      (*log) << "    " << setw(14) << setprecision(7) << (*pointsumpp_)[i]/numsamp_;
-      (*log) << "    " << setw(14) << setprecision(7) << (*pointsumuv_)[i]/numsamp_;
-      (*log) << "    " << setw(14) << setprecision(7) << (*pointsumuw_)[i]/numsamp_;
-      (*log) << "    " << setw(14) << setprecision(7) << (*pointsumvw_)[i]/numsamp_;
+      (*log) << "    " << setw(13) << setprecision(6) << (*pointsumu_ )[i]/numsamp_;
+      (*log) << "    " << setw(13) << setprecision(6) << (*pointsumv_ )[i]/numsamp_;
+      (*log) << "    " << setw(13) << setprecision(6) << (*pointsumw_ )[i]/numsamp_;
+      (*log) << "    " << setw(13) << setprecision(6) << (*pointsump_ )[i]/numsamp_;
+      (*log) << "    " << setw(13) << setprecision(6) << (*pointsumuu_)[i]/numsamp_;
+      (*log) << "    " << setw(13) << setprecision(6) << (*pointsumvv_)[i]/numsamp_;
+      (*log) << "    " << setw(13) << setprecision(6) << (*pointsumww_)[i]/numsamp_;
+      (*log) << "    " << setw(13) << setprecision(6) << (*pointsumpp_)[i]/numsamp_;
+      (*log) << "    " << setw(13) << setprecision(6) << (*pointsumuv_)[i]/numsamp_;
+      (*log) << "    " << setw(13) << setprecision(6) << (*pointsumuw_)[i]/numsamp_;
+      (*log) << "    " << setw(13) << setprecision(6) << (*pointsumvw_)[i]/numsamp_;
       if (withscatra_)
       {
-        (*log) << "    " << setw(14) << setprecision(7) << (*pointsumc_ )[i]/numsamp_;
-        (*log) << "    " << setw(14) << setprecision(7) << (*pointsumcc_)[i]/numsamp_;
+        (*log) << "    " << setw(15) << setprecision(8) << (*pointsumc_ )[i]/numsamp_;
+        (*log) << "    " << setw(15) << setprecision(8) << (*pointsumcc_)[i]/numsamp_;
 
         for(int k=0; k< numscatradofpernode_; k++)
         {
-          (*log) << "    " << setw(14) << setprecision(7) << ((*pointsumphi_ )(i,k))/numsamp_;
-          (*log) << "    " << setw(14) << setprecision(7) << ((*pointsumphiphi_)(i,k))/numsamp_;
+          (*log) << "    " << setw(15) << setprecision(8) << ((*pointsumphi_ )(i,k))/numsamp_;
+          (*log) << "    " << setw(15) << setprecision(8) << ((*pointsumphiphi_)(i,k))/numsamp_;
         }
       }
       (*log) << "\n";
