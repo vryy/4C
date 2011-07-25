@@ -4,7 +4,6 @@
 \brief calculate mean values and fluctuations for turbulent channel
 flows.
 
-
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
@@ -170,6 +169,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     for (int i=0; i<discret_->NumMyRowNodes(); ++i)
     {
       DRT::Node* node = discret_->lRowNode(i);
+
       if (inflowchannel_ and node->X()[0]> inflowmax_+NODETOL)
         continue;
 
@@ -982,7 +982,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     else
     {
       if (inflowchannel_)
-        s.append(".flow_statistics_inflow");
+        s.append(".inflow.flow_statistics");
       else
         s.append(".flow_statistics");
 
@@ -1104,15 +1104,25 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
       {
         DRT::Node* node = discret_->lRowNode(nn);
 
-        // this node belongs to the plane under consideration
-        if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
+        // if we have an inflow channel problem, the nodes outside the inflow discretization are
+        // not in the bounding box -> we don't consider them for averaging
+        if (node->X()[0] < (*boundingbox_)(1,0)+NODETOL and
+            node->X()[1] < (*boundingbox_)(1,1)+NODETOL and
+            node->X()[2] < (*boundingbox_)(1,2)+NODETOL and
+            node->X()[0] > (*boundingbox_)(0,0)-NODETOL and
+            node->X()[1] > (*boundingbox_)(0,1)-NODETOL and
+            node->X()[2] > (*boundingbox_)(0,2)-NODETOL )
         {
-          vector<int> dof = discret_->Dof(node);
-          double      one = 1.0;
+          // this node belongs to the plane under consideration
+          if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
+          {
+            vector<int> dof = discret_->Dof(node);
+            double      one = 1.0;
 
-          toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
-          togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
-          togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
+            toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
+            togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
+            togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
+          }
         }
       }
 
@@ -1238,16 +1248,26 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
       {
         DRT::Node* node = discret_->lRowNode(nn);
 
-        // this node belongs to the plane under consideration
-        if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
+        // if we have an inflow channel problem, the nodes outside the inflow discretization are
+        // not in the bounding box -> we don't consider them for averaging
+        if (node->X()[0] < (*boundingbox_)(1,0)+NODETOL and
+            node->X()[1] < (*boundingbox_)(1,1)+NODETOL and
+            node->X()[2] < (*boundingbox_)(1,2)+NODETOL and
+            node->X()[0] > (*boundingbox_)(0,0)-NODETOL and
+            node->X()[1] > (*boundingbox_)(0,1)-NODETOL and
+            node->X()[2] > (*boundingbox_)(0,2)-NODETOL )
         {
-          vector<int> dof = discret_->Dof(node);
-          double      one = 1.0;
+          // this node belongs to the plane under consideration
+          if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
+          {
+            vector<int> dof = discret_->Dof(node);
+            double      one = 1.0;
 
-          toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
-          togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
-          togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
-          togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
+            toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
+            togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
+            togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
+            togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
+          }
         }
       }
 
@@ -1282,16 +1302,26 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
       {
         DRT::Node* node = discret_->lRowNode(nn);
 
-        // this node belongs to the plane under consideration
-        if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
+        // if we have an inflow channel problem, the nodes outside the inflow discretization are
+        // not in the bounding box -> we don't consider them for averaging
+        if (node->X()[0] < (*boundingbox_)(1,0)+NODETOL and
+            node->X()[1] < (*boundingbox_)(1,1)+NODETOL and
+            node->X()[2] < (*boundingbox_)(1,2)+NODETOL and
+            node->X()[0] > (*boundingbox_)(0,0)-NODETOL and
+            node->X()[1] > (*boundingbox_)(0,1)-NODETOL and
+            node->X()[2] > (*boundingbox_)(0,2)-NODETOL )
         {
-          vector<int> dof = discret_->Dof(node);
-          double      one = 1.0;
+          // this node belongs to the plane under consideration
+          if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
+          {
+            vector<int> dof = discret_->Dof(node);
+            double      one = 1.0;
 
-          toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
-          togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
-          togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
-          togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
+            toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
+            togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
+            togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
+            togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
+          }
         }
       }
 
@@ -1791,47 +1821,57 @@ void FLD::TurbulenceStatisticsCha::EvaluatePointwiseMeanValuesInPlanes()
     {
       DRT::Node* node = discret_->lRowNode(nn);
 
-      // this node belongs to the plane under consideration
-      if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
+      // if we have an inflow channel problem, the nodes outside the inflow discretization are
+      // not in the bounding box -> we don't consider them for averaging
+      if (node->X()[0] < (*boundingbox_)(1,0)+NODETOL and
+          node->X()[1] < (*boundingbox_)(1,1)+NODETOL and
+          node->X()[2] < (*boundingbox_)(1,2)+NODETOL and
+          node->X()[0] > (*boundingbox_)(0,0)-NODETOL and
+          node->X()[1] > (*boundingbox_)(0,1)-NODETOL and
+          node->X()[2] > (*boundingbox_)(0,2)-NODETOL )
       {
-        vector<int> dof = discret_->Dof(node);
-        double      one = 1.0;
-
-        toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
-        togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
-        togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
-        togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
-
-        // now check whether we have a pbc condition on this node
-        vector<DRT::Condition*> mypbc;
-
-        node->GetCondition("SurfacePeriodic",mypbc);
-
-        // yes, we have a pbc
-        if (mypbc.size()>0)
+        // this node belongs to the plane under consideration
+        if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
         {
-          // loop them and check, whether this is a pbc pure master node
-          // for all previous conditions
-          unsigned ntimesmaster = 0;
-          for (unsigned numcond=0;numcond<mypbc.size();++numcond)
+          vector<int> dof = discret_->Dof(node);
+          double      one = 1.0;
+
+          toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
+          togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
+          togglew_->ReplaceGlobalValues(1,&one,&(dof[2]));
+          togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
+
+          // now check whether we have a pbc condition on this node
+          vector<DRT::Condition*> mypbc;
+
+          node->GetCondition("SurfacePeriodic",mypbc);
+
+          // yes, we have a pbc
+          if (mypbc.size()>0)
           {
-            const string* mymasterslavetoggle
+            // loop them and check, whether this is a pbc pure master node
+            // for all previous conditions
+            unsigned ntimesmaster = 0;
+            for (unsigned numcond=0;numcond<mypbc.size();++numcond)
+            {
+              const string* mymasterslavetoggle
               = mypbc[numcond]->Get<string>("Is slave periodic boundary condition");
 
-            if(*mymasterslavetoggle=="Master")
-            {
-              ++ntimesmaster;
-            } // end is slave?
-          } // end loop this conditions
+              if(*mymasterslavetoggle=="Master")
+              {
+                ++ntimesmaster;
+              } // end is slave?
+            } // end loop this conditions
 
-          if(ntimesmaster!=mypbc.size())
-          {
-            continue;
+            if(ntimesmaster!=mypbc.size())
+            {
+              continue;
+            }
+            // we have a master. Remember this cause we have to extend the patch
+            // to the other side...
           }
-          // we have a master. Remember this cause we have to extend the patch
-          // to the other side...
+          countnodesinplane++;
         }
-        countnodesinplane++;
       }
     }
 
@@ -2010,34 +2050,46 @@ void FLD::TurbulenceStatisticsCha::AddSubfilterStresses(const RCP<Epetra_Vector>
   {
     // get the node
     DRT::Node* node = discret_->lRowNode(nid);
-    // get coordinate in node plane direction
-    double nodecoord = node->X()[dim_];
 
-    // get tau12 of this node
-    double tau12 = (*stress12)[nid];
-
-    //determine the node layer
-    int  nlayer;
-    bool found = false;
-    for (nlayer=0;nlayer<(int)(*nodeplanes_).size();)
+    // if we have an inflow channel problem, the nodes outside the inflow discretization are
+    // not in the bounding box -> we don't consider them for averaging
+    if (node->X()[0] < (*boundingbox_)(1,0)+NODETOL and
+        node->X()[1] < (*boundingbox_)(1,1)+NODETOL and
+        node->X()[2] < (*boundingbox_)(1,2)+NODETOL and
+        node->X()[0] > (*boundingbox_)(0,0)-NODETOL and
+        node->X()[1] > (*boundingbox_)(0,1)-NODETOL and
+        node->X()[2] > (*boundingbox_)(0,2)-NODETOL )
     {
-      if(nodecoord<((*nodeplanes_)[nlayer]+2e-9) && nodecoord >((*nodeplanes_)[nlayer]-2e-9))
-        //(nodecoord == (*nodeplanes_)[nlayer])
-        //(nodecoord<(*nodeplanes_)[nlayer+1])
+
+      // get coordinate in node plane direction
+      double nodecoord = node->X()[dim_];
+
+      // get tau12 of this node
+      double tau12 = (*stress12)[nid];
+
+      //determine the node layer
+      int  nlayer;
+      bool found = false;
+      for (nlayer=0;nlayer<(int)(*nodeplanes_).size();)
       {
-        found = true;
-        break;
+        if(nodecoord<((*nodeplanes_)[nlayer]+2e-9) && nodecoord >((*nodeplanes_)[nlayer]-2e-9))
+          //(nodecoord == (*nodeplanes_)[nlayer])
+          //(nodecoord<(*nodeplanes_)[nlayer+1])
+        {
+          found = true;
+          break;
+        }
+        nlayer++;
       }
-      nlayer++;
-    }
-    if (found ==false)
-    {
-      dserror("could not determine element layer");
-    }
+      if (found ==false)
+      {
+        dserror("could not determine element layer");
+      }
 
-    // add tau12 up
-    (*local_stress12_sum)[nlayer] += tau12;
+      // add tau12 up
+      (*local_stress12_sum)[nlayer] += tau12;
 
+    }
   }
 
   // now add all the stuff from the different processors
@@ -2874,7 +2926,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
     if (inflowchannel_)
-      s.append(".flow_statistics_inflow");
+      s.append(".inflow.flow_statistics");
     else
       s.append(".flow_statistics");
 
@@ -3280,7 +3332,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(int step)
   {
     std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
     if (inflowchannel_)
-      s.append(".flow_statistics_inflow");
+      s.append(".inflow.flow_statistics");
     else
       s.append(".flow_statistics");
 

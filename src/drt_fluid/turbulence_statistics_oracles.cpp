@@ -175,8 +175,8 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
     x1positions_(1)  = -(0.0704+0.0397); // begin ramp
     // -3.*h_ located on splitter ramp -> not interesting
     // get x2-coordinates from x2_0h_
-    x1positions_(2)  = -0.0352;
-    x1positions_(3)  = -1.*h_;
+    x1positions_(2)  = 0.0; // not used, since the mesh changesin y-direction here
+    x1positions_(3)  = 0.0; // not used, since the mesh changesin y-direction here
     x1positions_(4)  = 0.*h_;
     // get x2-coordinates from x2_1h_
     x1positions_(5)  = 1.*h_;
@@ -348,8 +348,6 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
     numx1_wallchamber_ = x1_wallchamber_->size();
     numx1_wallinflowchannel_ = x1_wallinflowchannel_->size();
 
-    numx2_inflow_ = x2_inflow_->size();
-    numx2_0h_ = x2_0h_->size();
     // number of nodes at inflows -1 = number of nodes at expansion, since two nodes coincide at edge of splitter plate
 //TODO put check back in
     //    if (numx2_inflow_-1 != numx2_0h_) dserror("structured grid expected between inflow and expansion");
@@ -358,7 +356,6 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
     const size_t numx2_2h = x2_2h_->size();
     const size_t numx2_3h = x2_3h_->size();
     if ( !( numx2_1h == numx2_2h and numx2_1h == numx2_3h) ) dserror("structured grid expected in chamber");
-    numx2_chamber_ = numx2_3h;
   }
 
   //----------------------------------------------
@@ -384,81 +381,232 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
   // allocate arrays holding time mean profiles of first order moments
   //------------------------------------------------------------------
   // time average of vertical profiles in inflow zone (-5h, -4h)
-  vertinflowu_ = rcp(new LINALG::SerialDenseMatrix(2,x2_inflow_->size(),true));
-  vertinflowv_ = rcp(new LINALG::SerialDenseMatrix(2,x2_inflow_->size(),true));
-  vertinfloww_ = rcp(new LINALG::SerialDenseMatrix(2,x2_inflow_->size(),true));
-  vertinflowp_ = rcp(new LINALG::SerialDenseMatrix(2,x2_inflow_->size(),true));
+  vertinflowu_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+  vertinflowv_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+  vertinfloww_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+  vertinflowp_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
 
-  vertmixingu_ = rcp(new LINALG::SerialDenseMatrix(3,x2_0h_->size(),true));
-  vertmixingv_ = rcp(new LINALG::SerialDenseMatrix(3,x2_0h_->size(),true));
-  vertmixingw_ = rcp(new LINALG::SerialDenseMatrix(3,x2_0h_->size(),true));
-  vertmixingp_ = rcp(new LINALG::SerialDenseMatrix(3,x2_0h_->size(),true));
+  vertmixingu_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+  vertmixingv_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+  vertmixingw_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+  vertmixingp_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
 
-  vert1hu_ = rcp(new LINALG::SerialDenseMatrix(1,x2_1h_->size(),true));
-  vert1hv_ = rcp(new LINALG::SerialDenseMatrix(1,x2_1h_->size(),true));
-  vert1hw_ = rcp(new LINALG::SerialDenseMatrix(1,x2_1h_->size(),true));
-  vert1hp_ = rcp(new LINALG::SerialDenseMatrix(1,x2_1h_->size(),true));
+  vert1hu_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+  vert1hv_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+  vert1hw_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+  vert1hp_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
 
-  vert2hu_ = rcp(new LINALG::SerialDenseMatrix(1,x2_2h_->size(),true));
-  vert2hv_ = rcp(new LINALG::SerialDenseMatrix(1,x2_2h_->size(),true));
-  vert2hw_ = rcp(new LINALG::SerialDenseMatrix(1,x2_2h_->size(),true));
-  vert2hp_ = rcp(new LINALG::SerialDenseMatrix(1,x2_2h_->size(),true));
+  vert2hu_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+  vert2hv_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+  vert2hw_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+  vert2hp_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
 
-  vertchamberu_ = rcp(new LINALG::SerialDenseMatrix(14,x2_3h_->size(),true));
-  vertchamberv_ = rcp(new LINALG::SerialDenseMatrix(14,x2_3h_->size(),true));
-  vertchamberw_ = rcp(new LINALG::SerialDenseMatrix(14,x2_3h_->size(),true));
-  vertchamberp_ = rcp(new LINALG::SerialDenseMatrix(14,x2_3h_->size(),true));
-
-  //-------------------------------------------------------------------
-  // allocate arrays holding time mean profiles of second order moments
-  //-------------------------------------------------------------------
-  vertinflowuu_ = rcp(new LINALG::SerialDenseMatrix(2,x2_inflow_->size(),true));
-  vertinflowvv_ = rcp(new LINALG::SerialDenseMatrix(2,x2_inflow_->size(),true));
-  vertinflowww_ = rcp(new LINALG::SerialDenseMatrix(2,x2_inflow_->size(),true));
-  vertinflowpp_ = rcp(new LINALG::SerialDenseMatrix(2,x2_inflow_->size(),true));
-
-  vertmixinguu_ = rcp(new LINALG::SerialDenseMatrix(3,x2_0h_->size(),true));
-  vertmixingvv_ = rcp(new LINALG::SerialDenseMatrix(3,x2_0h_->size(),true));
-  vertmixingww_ = rcp(new LINALG::SerialDenseMatrix(3,x2_0h_->size(),true));
-  vertmixingpp_ = rcp(new LINALG::SerialDenseMatrix(3,x2_0h_->size(),true));
-
-  vert1huu_ = rcp(new LINALG::SerialDenseMatrix(1,x2_1h_->size(),true));
-  vert1hvv_ = rcp(new LINALG::SerialDenseMatrix(1,x2_1h_->size(),true));
-  vert1hww_ = rcp(new LINALG::SerialDenseMatrix(1,x2_1h_->size(),true));
-  vert1hpp_ = rcp(new LINALG::SerialDenseMatrix(1,x2_1h_->size(),true));
-
-  vert2huu_ = rcp(new LINALG::SerialDenseMatrix(1,x2_2h_->size(),true));
-  vert2hvv_ = rcp(new LINALG::SerialDenseMatrix(1,x2_2h_->size(),true));
-  vert2hww_ = rcp(new LINALG::SerialDenseMatrix(1,x2_2h_->size(),true));
-  vert2hpp_ = rcp(new LINALG::SerialDenseMatrix(1,x2_2h_->size(),true));
-
-  vertchamberuu_ = rcp(new LINALG::SerialDenseMatrix(14,x2_3h_->size(),true));
-  vertchambervv_ = rcp(new LINALG::SerialDenseMatrix(14,x2_3h_->size(),true));
-  vertchamberww_ = rcp(new LINALG::SerialDenseMatrix(14,x2_3h_->size(),true));
-  vertchamberpp_ = rcp(new LINALG::SerialDenseMatrix(14,x2_3h_->size(),true));
+  vertchamberu_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+  vertchamberv_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+  vertchamberw_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+  vertchamberp_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
 
   //-------------------------------------------------------------------
   // allocate arrays holding time mean profiles of second order moments
   //-------------------------------------------------------------------
-  vertinflowuv_ = rcp(new LINALG::SerialDenseMatrix(2,x2_inflow_->size(),true));
-  vertinflowuw_ = rcp(new LINALG::SerialDenseMatrix(2,x2_inflow_->size(),true));
-  vertinflowvw_ = rcp(new LINALG::SerialDenseMatrix(2,x2_inflow_->size(),true));
+  vertinflowuu_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+  vertinflowvv_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+  vertinflowww_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+  vertinflowpp_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
 
-  vertmixinguv_ = rcp(new LINALG::SerialDenseMatrix(3,x2_0h_->size(),true));
-  vertmixinguw_ = rcp(new LINALG::SerialDenseMatrix(3,x2_0h_->size(),true));
-  vertmixingvw_ = rcp(new LINALG::SerialDenseMatrix(3,x2_0h_->size(),true));
+  vertmixinguu_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+  vertmixingvv_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+  vertmixingww_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+  vertmixingpp_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
 
-  vert1huv_ = rcp(new LINALG::SerialDenseMatrix(1,x2_1h_->size(),true));
-  vert1huw_ = rcp(new LINALG::SerialDenseMatrix(1,x2_1h_->size(),true));
-  vert1hvw_ = rcp(new LINALG::SerialDenseMatrix(1,x2_1h_->size(),true));
+  vert1huu_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+  vert1hvv_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+  vert1hww_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+  vert1hpp_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
 
-  vert2huv_ = rcp(new LINALG::SerialDenseMatrix(1,x2_2h_->size(),true));
-  vert2huw_ = rcp(new LINALG::SerialDenseMatrix(1,x2_2h_->size(),true));
-  vert2hvw_ = rcp(new LINALG::SerialDenseMatrix(1,x2_2h_->size(),true));
+  vert2huu_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+  vert2hvv_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+  vert2hww_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+  vert2hpp_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
 
-  vertchamberuv_ = rcp(new LINALG::SerialDenseMatrix(14,x2_3h_->size(),true));
-  vertchamberuw_ = rcp(new LINALG::SerialDenseMatrix(14,x2_3h_->size(),true));
-  vertchambervw_ = rcp(new LINALG::SerialDenseMatrix(14,x2_3h_->size(),true));
+  vertchamberuu_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+  vertchambervv_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+  vertchamberww_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+  vertchamberpp_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+
+  //-------------------------------------------------------------------
+  // allocate arrays holding time mean profiles of second order moments
+  //-------------------------------------------------------------------
+  vertinflowuv_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+  vertinflowuw_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+  vertinflowvw_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+
+  vertmixinguv_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+  vertmixinguw_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+  vertmixingvw_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+
+  vert1huv_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+  vert1huw_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+  vert1hvw_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+
+  vert2huv_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+  vert2huw_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+  vert2hvw_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+
+  vertchamberuv_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+  vertchamberuw_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+  vertchambervw_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+
+  if (discret_->Comm().MyPID()==0)
+  {
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.-5h.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES vertical flow statistics file\n";
+      title.flush();
+    }
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.ramp.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES vertical flow statistics file\n";
+      title.flush();
+    }
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.00h.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES vertical flow statistics file\n";
+      title.flush();
+    }
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.01h.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES vertical flow statistics file\n";
+      title.flush();
+    }
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.02h.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES vertical flow statistics file\n";
+      title.flush();
+    }
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.03h.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES vertical flow statistics file\n";
+      title.flush();
+    }
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.04h.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES vertical flow statistics file\n";
+      title.flush();
+    }
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.05h.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES vertical flow statistics file\n";
+      title.flush();
+    }
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.06h.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES vertical flow statistics file\n";
+      title.flush();
+    }
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.07h.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES vertical flow statistics file\n";
+      title.flush();
+    }
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.08h.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES vertical flow statistics file\n";
+      title.flush();
+    }
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.09h.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES vertical flow statistics file\n";
+      title.flush();
+    }
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.10h.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES vertical flow statistics file\n";
+      title.flush();
+    }
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.11h.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES vertical flow statistics file\n";
+      title.flush();
+    }
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.12h.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES vertical flow statistics file\n";
+      title.flush();
+    }
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.13h.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES vertical flow statistics file\n";
+      title.flush();
+    }
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.14h.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES vertical flow statistics file\n";
+      title.flush();
+    }
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.15h.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES vertical flow statistics file\n";
+      title.flush();
+    }
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.16h.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES vertical flow statistics file\n";
+      title.flush();
+    }
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.horiz.chamber.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES horizontal chamber flow statistics file\n";
+      title.flush();
+    }
+    {
+      std::string outfile = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      outfile.append(".oracles.horiz.chamber.flow_statistics");
+      std::ofstream title(outfile.c_str(),ios::out);
+      title << "# ORACLES horizontal inflow flow statistics file\n";
+      title.flush();
+    }
+  }
 
   return;
 }
@@ -971,24 +1119,24 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractSetOfProfiles(
 
     for(size_t ix2pos=0; ix2pos<x2locations.size(); ++ix2pos)
     {
-      profilesu(ix1pos,ix2pos) += globu[ix1pos][ix2pos];
-      profilesv(ix1pos,ix2pos) += globv[ix1pos][ix2pos];
-      profilesw(ix1pos,ix2pos) += globw[ix1pos][ix2pos];
-      profilesp(ix1pos,ix2pos) += globp[ix1pos][ix2pos];
+      profilesu(ix2pos,ix1pos) += globu[ix1pos][ix2pos];
+      profilesv(ix2pos,ix1pos) += globv[ix1pos][ix2pos];
+      profilesw(ix2pos,ix1pos) += globw[ix1pos][ix2pos];
+      profilesp(ix2pos,ix1pos) += globp[ix1pos][ix2pos];
 
-      profilesuu(ix1pos,ix2pos) += globu[ix1pos][ix2pos]*globu[ix1pos][ix2pos];
-      profilesvv(ix1pos,ix2pos) += globv[ix1pos][ix2pos]*globv[ix1pos][ix2pos];
-      profilesww(ix1pos,ix2pos) += globw[ix1pos][ix2pos]*globw[ix1pos][ix2pos];
-      profilespp(ix1pos,ix2pos) += globp[ix1pos][ix2pos]*globp[ix1pos][ix2pos];
+      profilesuu(ix2pos,ix1pos) += globu[ix1pos][ix2pos]*globu[ix1pos][ix2pos];
+      profilesvv(ix2pos,ix1pos) += globv[ix1pos][ix2pos]*globv[ix1pos][ix2pos];
+      profilesww(ix2pos,ix1pos) += globw[ix1pos][ix2pos]*globw[ix1pos][ix2pos];
+      profilespp(ix2pos,ix1pos) += globp[ix1pos][ix2pos]*globp[ix1pos][ix2pos];
 
-      profilesuv(ix1pos,ix2pos) += globu[ix1pos][ix2pos]*globv[ix1pos][ix2pos];
-      profilesuw(ix1pos,ix2pos) += globu[ix1pos][ix2pos]*globw[ix1pos][ix2pos];
-      profilesvw(ix1pos,ix2pos) += globv[ix1pos][ix2pos]*globw[ix1pos][ix2pos];
+      profilesuv(ix2pos,ix1pos) += globu[ix1pos][ix2pos]*globv[ix1pos][ix2pos];
+      profilesuw(ix2pos,ix1pos) += globu[ix1pos][ix2pos]*globw[ix1pos][ix2pos];
+      profilesvw(ix2pos,ix1pos) += globv[ix1pos][ix2pos]*globw[ix1pos][ix2pos];
     }
 
-    //std::copy(globu[ix1pos].begin(), globu[ix1pos].end(), profilesu(ix1pos,0));
-    //std::copy(globv[ix1pos].begin(), globv[ix1pos].end(), profilesv(ix1pos,0));
-    //std::copy(globw[ix1pos].begin(), globw[ix1pos].end(), profilesw(ix1pos,0));
+    //std::copy(globu[ix1pos].begin(), globu[ix1pos].end(), profilesu(0,ix1pos));
+    //std::copy(globv[ix1pos].begin(), globv[ix1pos].end(), profilesv(0,ix1pos));
+    //std::copy(globw[ix1pos].begin(), globw[ix1pos].end(), profilesw(0,ix1pos));
   }
 
 }
@@ -1106,27 +1254,6 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
     //------------------------------------
     // compute u_tau and l_tau (and tau_W)
     //------------------------------------
-    // evaluate area
-//    LINALG::SerialDenseMatrix area(1,numx1_wallchamber_,true);
-//
-//    for(size_t ix1pos=0; ix1pos<numx1_wallchamber_; ++ix1pos)
-//    {
-//      size_t leftpos = ix1pos-1;
-//      size_t rightpos = ix1pos+1;
-//      double meanfac = 0.5;
-//      if (ix1pos==0) // farther left node
-//      {
-//        leftpos = 0;
-//        meanfac = 1.;
-//      }
-//      if (ix1pos==numx1_wallchamber_) // farther right node
-//      {
-//        rightpos = numx1_wallchamber_;
-//        meanfac = 1.;
-//      }
-//      // use average length in x1-direction (mean of left and right position)
-//      area(0,ix1pos) = (x3max_-x3min_) * meanfac*((*x1_wallchamber_)[rightpos]-(*x1_wallchamber_)[leftpos]);
-//    }
     const double area = 1.0;//(x3max_-x3min_) * (x1max_-0.0);
 
     // nonzero forces (tractions) only expected in the streamwise (x1) direction
@@ -1153,12 +1280,12 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
     {
       std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       // define file name suffix
-      s.append(".flow_statistics_horiz");
+      s.append(".oracles.horiz.chamber.flow_statistics");
 
       // output to log-file
       Teuchos::RCP<std::ofstream> log;
       log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
-      (*log) << "\n\n\n";
+      (*log) << "\n";
       (*log) << "# Statistics record " << countrecord_;
       (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
@@ -1216,12 +1343,12 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
     {
       std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
       // define file name suffix
-      s.append(".flow_statistics_inflowchannel_horiz");
+      s.append(".oracles.horiz.inflow.flow_statistics");
 
       // output to log-file
       Teuchos::RCP<std::ofstream> log;
       log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
-      (*log) << "\n\n\n";
+      (*log) << "\n";
       (*log) << "# Statistics record " << countrecord_;
       (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
 
@@ -1277,263 +1404,117 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
     // write vertical inflow profiles
     //-------------------------------
     {
-      std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-      s.append(".flow_statistics_vert_inflow");
+      WriteStatisticsFile(step, "oracles.-5h", 0, *x2_inflow_,
+          (*vertinflowu_) [0], (*vertinflowv_) [0], (*vertinfloww_) [0], (*vertinflowp_) [0],
+          (*vertinflowuu_)[0], (*vertinflowvv_)[0], (*vertinflowww_)[0], (*vertinflowpp_)[0],
+          (*vertinflowuv_)[0], (*vertinflowuw_)[0], (*vertinflowvw_)[0]);
 
-      // output to log-file
-      Teuchos::RCP<std::ofstream> log;
-      log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
-      (*log) << "\n\n\n";
-      (*log) << "# Statistics record " << countrecord_;
-      (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
-
-      (*log) << "#     y            y+";
-      (*log) << "           umean         vmean         wmean         pmean";
-      (*log) << "        mean u^2      mean v^2      mean w^2";
-      (*log) << "      mean u*v      mean u*w      mean v*w      mean p^2 \n";
-      (*log) << scientific;
-
-      for(int ix1pos=0; ix1pos<(*vertinflowu_).M(); ++ix1pos)
-      {
-        (*log) << "\n";
-        (*log) << "# profile at x-position " << setprecision(2) << x1positions_(0+ix1pos)/h_ << " h \n";
-
-        for(int ix2pos=(*vertinflowu_).N()-1; ix2pos>=0; --ix2pos)
-        {
-          // y and y+
-          (*log) <<  " "  << setw(11) << setprecision(4) << (*x2_inflow_)[ix2pos];
-          (*log) << "   " << setw(11) << setprecision(4) << (*x2_inflow_)[ix2pos]*utau_/visc_;
-
-          // time mean values
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertinflowu_)(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertinflowv_)(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertinfloww_)(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertinflowp_)(ix1pos,ix2pos);
-
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertinflowuu_)(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertinflowvv_)(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertinflowww_)(ix1pos,ix2pos);
-
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertinflowuv_)(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertinflowuw_)(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertinflowvw_)(ix1pos,ix2pos);
-
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertinflowpp_)(ix1pos,ix2pos);
-
-          (*log) << "\n";
-        }
-        log->flush();
-      }
+      WriteStatisticsFile(step, "oracles.ramp", 1, *x2_inflow_,
+          (*vertinflowu_) [1], (*vertinflowv_) [1], (*vertinfloww_) [1], (*vertinflowp_) [1],
+          (*vertinflowuu_)[1], (*vertinflowvv_)[1], (*vertinflowww_)[1], (*vertinflowpp_)[1],
+          (*vertinflowuv_)[1], (*vertinflowuw_)[1], (*vertinflowvw_)[1]);
     }
     //-------------------------------
     // write vertical mixing profiles
     //-------------------------------
     {
-      std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-      s.append(".flow_statistics_vert_mixing");
-
-      // output to log-file
-      Teuchos::RCP<std::ofstream> log;
-      log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
-      (*log) << "\n\n\n";
-      (*log) << "# Statistics record " << countrecord_;
-      (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
-
-      (*log) << "#     y            y+";
-      (*log) << "           umean         vmean         wmean         pmean";
-      (*log) << "        mean u^2      mean v^2      mean w^2";
-      (*log) << "      mean u*v      mean u*w      mean v*w      mean p^2 \n";
-      (*log) << scientific;
-
-      for(int ix1pos=0; ix1pos<(*vertmixingu_).M(); ++ix1pos)
-      {
-        (*log) << "\n";
-        (*log) << "# profile at x-position " << setprecision(2) << x1positions_(2+ix1pos)/h_ << " h \n";
-
-        for(int ix2pos=(*vertmixingu_).N()-1; ix2pos>=0; --ix2pos)
-        {
-          // y and y+
-          (*log) <<  " "  << setw(11) << setprecision(4) << (*x2_0h_)[ix2pos];
-          (*log) << "   " << setw(11) << setprecision(4) << (*x2_0h_)[ix2pos]*utau_/visc_;
-
-          // time mean values
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertmixingu_)(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertmixingv_)(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertmixingw_)(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertmixingp_)(ix1pos,ix2pos);
-
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertmixinguu_)(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertmixingvv_)(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertmixingww_)(ix1pos,ix2pos);
-
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertmixinguv_)(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertmixinguw_)(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertmixingvw_)(ix1pos,ix2pos);
-
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertmixingpp_)(ix1pos,ix2pos);
-
-          (*log) << "\n";
-        }
-        log->flush();
-      }
+      WriteStatisticsFile(step, "oracles.00h", 4, *x2_0h_,
+          (*vertmixingu_) [2], (*vertmixingv_) [2], (*vertmixingw_) [2], (*vertmixingp_) [2],
+          (*vertmixinguu_)[2], (*vertmixingvv_)[2], (*vertmixingww_)[2], (*vertmixingpp_)[2],
+          (*vertmixinguv_)[2], (*vertmixinguw_)[2], (*vertmixingvw_)[2]);
     }
     //-----------------------------
     // write vertical profile at 1h
     //-----------------------------
     {
-      std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-      s.append(".flow_statistics_vert_1h");
-
-      // output to log-file
-      Teuchos::RCP<std::ofstream> log;
-      log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
-      (*log) << "\n\n\n";
-      (*log) << "# Statistics record " << countrecord_;
-      (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
-
-      (*log) << "#     y            y+";
-      (*log) << "           umean         vmean         wmean         pmean";
-      (*log) << "        mean u^2      mean v^2      mean w^2";
-      (*log) << "      mean u*v      mean u*w      mean v*w      mean p^2 \n";
-      (*log) << scientific;
-
-      for(int ix1pos=0; ix1pos<(*vert1hu_).M(); ++ix1pos)
-      {
-        (*log) << "\n";
-        (*log) << "# profile at x-position " << setprecision(2) << x1positions_(5+ix1pos)/h_ << " h \n";
-
-        for(int ix2pos=(*vert1hu_).N()-1; ix2pos>=0; --ix2pos)
-        {
-          // y and y+
-          (*log) <<  " "  << setw(11) << setprecision(4) << (*x2_1h_)[ix2pos];
-          (*log) << "   " << setw(11) << setprecision(4) << (*x2_1h_)[ix2pos]*utau_/visc_;
-
-          // time mean values
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert1hu_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert1hv_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert1hw_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert1hp_ )(ix1pos,ix2pos);
-
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert1huu_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert1hvv_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert1hww_ )(ix1pos,ix2pos);
-
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert1huv_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert1huw_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert1hvw_ )(ix1pos,ix2pos);
-
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert1hpp_ )(ix1pos,ix2pos);
-
-          (*log) << "\n";
-        }
-        log->flush();
-      }
+      WriteStatisticsFile(step, "oracles.01h", 5, *x2_1h_,
+          (*vert1hu_) [0], (*vert1hv_) [0], (*vert1hw_) [0], (*vert1hp_) [0],
+          (*vert1huu_)[0], (*vert1hvv_)[0], (*vert1hww_)[0], (*vert1hpp_)[0],
+          (*vert1huv_)[0], (*vert1huw_)[0], (*vert1hvw_)[0]);
     }
     //-----------------------------
     // write vertical profile at 2h
     //-----------------------------
     {
-      std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-      s.append(".flow_statistics_vert_2h");
-
-      // output to log-file
-      Teuchos::RCP<std::ofstream> log;
-      log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
-      (*log) << "\n\n\n";
-      (*log) << "# Statistics record " << countrecord_;
-      (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
-
-      (*log) << "#     y            y+";
-      (*log) << "           umean         vmean         wmean         pmean";
-      (*log) << "        mean u^2      mean v^2      mean w^2";
-      (*log) << "      mean u*v      mean u*w      mean v*w      mean p^2 \n";
-      (*log) << scientific;
-
-      for(int ix1pos=0; ix1pos<(*vert2hu_).M(); ++ix1pos)
-      {
-        (*log) << "\n";
-        (*log) << "# profile at x-position " << setprecision(2) << x1positions_(6+ix1pos)/h_ << " h \n";
-
-        for(int ix2pos=(*vert2hu_).N()-1; ix2pos>=0; --ix2pos)
-        {
-          // y and y+
-          (*log) <<  " "  << setw(11) << setprecision(4) << (*x2_2h_)[ix2pos];
-          (*log) << "   " << setw(11) << setprecision(4) << (*x2_2h_)[ix2pos]*utau_/visc_;
-
-          // time mean values
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert2hu_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert2hv_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert2hw_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert2hp_ )(ix1pos,ix2pos);
-
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert2huu_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert2hvv_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert2hww_ )(ix1pos,ix2pos);
-
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert2huv_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert2huw_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert2hvw_ )(ix1pos,ix2pos);
-
-          (*log) << "   " << setw(11) << setprecision(4) << (*vert2hpp_ )(ix1pos,ix2pos);
-
-          (*log) << "\n";
-        }
-        log->flush();
-      }
+      WriteStatisticsFile(step, "oracles.02h", 6, *x2_2h_,
+          (*vert2hu_) [0], (*vert2hv_) [0], (*vert2hw_) [0], (*vert2hp_) [0],
+          (*vert2huu_)[0], (*vert2hvv_)[0], (*vert2hww_)[0], (*vert2hpp_)[0],
+          (*vert2huv_)[0], (*vert2huw_)[0], (*vert2hvw_)[0]);
     }
     //---------------------------------
     // write vertical chamber profiles
     //---------------------------------
     {
-      std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-      s.append(".flow_statistics_vert_chamber");
+      WriteStatisticsFile(step, "oracles.03h", 7, *x2_3h_,
+          (*vertchamberu_) [0], (*vertchamberv_) [0], (*vertchamberw_) [0], (*vertchamberp_) [0],
+          (*vertchamberuu_)[0], (*vertchambervv_)[0], (*vertchamberww_)[0], (*vertchamberpp_)[0],
+          (*vertchamberuv_)[0], (*vertchamberuw_)[0], (*vertchambervw_)[0]);
 
-      // output to log-file
-      Teuchos::RCP<std::ofstream> log;
-      log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
-      (*log) << "\n\n\n";
-      (*log) << "# Statistics record " << countrecord_;
-      (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+      WriteStatisticsFile(step, "oracles.04h", 8, *x2_3h_,
+          (*vertchamberu_) [1], (*vertchamberv_) [1], (*vertchamberw_) [1], (*vertchamberp_) [1],
+          (*vertchamberuu_)[1], (*vertchambervv_)[1], (*vertchamberww_)[1], (*vertchamberpp_)[1],
+          (*vertchamberuv_)[1], (*vertchamberuw_)[1], (*vertchambervw_)[1]);
 
-      (*log) << "#     y            y+";
-      (*log) << "           umean         vmean         wmean         pmean";
-      (*log) << "        mean u^2      mean v^2      mean w^2";
-      (*log) << "      mean u*v      mean u*w      mean v*w      mean p^2 \n";
-      (*log) << scientific;
+      WriteStatisticsFile(step, "oracles.05h", 9, *x2_3h_,
+          (*vertchamberu_) [2], (*vertchamberv_) [2], (*vertchamberw_) [2], (*vertchamberp_) [2],
+          (*vertchamberuu_)[2], (*vertchambervv_)[2], (*vertchamberww_)[2], (*vertchamberpp_)[2],
+          (*vertchamberuv_)[2], (*vertchamberuw_)[2], (*vertchambervw_)[2]);
 
-      for(int ix1pos=0; ix1pos<(*vertchamberu_).M(); ++ix1pos)
-      {
-        (*log) << "\n";
-        (*log) << "# profile at x-position " << setprecision(2) << x1positions_(7+ix1pos)/h_ << " h \n";
+      WriteStatisticsFile(step, "oracles.06h", 10, *x2_3h_,
+          (*vertchamberu_) [3], (*vertchamberv_) [3], (*vertchamberw_) [3], (*vertchamberp_) [3],
+          (*vertchamberuu_)[3], (*vertchambervv_)[3], (*vertchamberww_)[3], (*vertchamberpp_)[3],
+          (*vertchamberuv_)[3], (*vertchamberuw_)[3], (*vertchambervw_)[3]);
 
-        for(int ix2pos=(*vertchamberu_).N()-1; ix2pos>=0; --ix2pos)
-        {
-          // y and y+
-          (*log) <<  " "  << setw(11) << setprecision(4) << (*x2_3h_)[ix2pos];
-          (*log) << "   " << setw(11) << setprecision(4) << (*x2_3h_)[ix2pos]*utau_/visc_;
+      WriteStatisticsFile(step, "oracles.07h", 11, *x2_3h_,
+          (*vertchamberu_) [4], (*vertchamberv_) [4], (*vertchamberw_) [4], (*vertchamberp_) [4],
+          (*vertchamberuu_)[4], (*vertchambervv_)[4], (*vertchamberww_)[4], (*vertchamberpp_)[4],
+          (*vertchamberuv_)[4], (*vertchamberuw_)[4], (*vertchambervw_)[4]);
 
-          // time mean values
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertchamberu_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertchamberv_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertchamberw_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertchamberp_ )(ix1pos,ix2pos);
+      WriteStatisticsFile(step, "oracles.08h", 12, *x2_3h_,
+          (*vertchamberu_) [5], (*vertchamberv_) [5], (*vertchamberw_) [5], (*vertchamberp_) [5],
+          (*vertchamberuu_)[5], (*vertchambervv_)[5], (*vertchamberww_)[5], (*vertchamberpp_)[5],
+          (*vertchamberuv_)[5], (*vertchamberuw_)[5], (*vertchambervw_)[5]);
 
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertchamberuu_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertchambervv_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertchamberww_ )(ix1pos,ix2pos);
+      WriteStatisticsFile(step, "oracles.09h", 13, *x2_3h_,
+          (*vertchamberu_) [6], (*vertchamberv_) [6], (*vertchamberw_) [6], (*vertchamberp_) [6],
+          (*vertchamberuu_)[6], (*vertchambervv_)[6], (*vertchamberww_)[6], (*vertchamberpp_)[6],
+          (*vertchamberuv_)[6], (*vertchamberuw_)[6], (*vertchambervw_)[6]);
 
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertchamberuv_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertchamberuw_ )(ix1pos,ix2pos);
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertchambervw_ )(ix1pos,ix2pos);
+      WriteStatisticsFile(step, "oracles.10h", 14, *x2_3h_,
+          (*vertchamberu_) [7], (*vertchamberv_) [7], (*vertchamberw_) [7], (*vertchamberp_) [7],
+          (*vertchamberuu_)[7], (*vertchambervv_)[7], (*vertchamberww_)[7], (*vertchamberpp_)[7],
+          (*vertchamberuv_)[7], (*vertchamberuw_)[7], (*vertchambervw_)[7]);
 
-          (*log) << "   " << setw(11) << setprecision(4) << (*vertchamberpp_ )(ix1pos,ix2pos);
+      WriteStatisticsFile(step, "oracles.11h", 15, *x2_3h_,
+          (*vertchamberu_) [8], (*vertchamberv_) [8], (*vertchamberw_) [8], (*vertchamberp_) [8],
+          (*vertchamberuu_)[8], (*vertchambervv_)[8], (*vertchamberww_)[8], (*vertchamberpp_)[8],
+          (*vertchamberuv_)[8], (*vertchamberuw_)[8], (*vertchambervw_)[8]);
 
-          (*log) << "\n";
-        }
-        log->flush();
-      }
+      WriteStatisticsFile(step, "oracles.12h", 16, *x2_3h_,
+          (*vertchamberu_) [9], (*vertchamberv_) [9], (*vertchamberw_) [9], (*vertchamberp_) [9],
+          (*vertchamberuu_)[9], (*vertchambervv_)[9], (*vertchamberww_)[9], (*vertchamberpp_)[9],
+          (*vertchamberuv_)[9], (*vertchamberuw_)[9], (*vertchambervw_)[9]);
+
+      WriteStatisticsFile(step, "oracles.13h", 17, *x2_3h_,
+          (*vertchamberu_) [10], (*vertchamberv_) [10], (*vertchamberw_) [10], (*vertchamberp_) [10],
+          (*vertchamberuu_)[10], (*vertchambervv_)[10], (*vertchamberww_)[10], (*vertchamberpp_)[10],
+          (*vertchamberuv_)[10], (*vertchamberuw_)[10], (*vertchambervw_)[10]);
+
+      WriteStatisticsFile(step, "oracles.14h", 18, *x2_3h_,
+          (*vertchamberu_) [11], (*vertchamberv_) [11], (*vertchamberw_) [11], (*vertchamberp_) [11],
+          (*vertchamberuu_)[11], (*vertchambervv_)[11], (*vertchamberww_)[11], (*vertchamberpp_)[11],
+          (*vertchamberuv_)[11], (*vertchamberuw_)[11], (*vertchambervw_)[11]);
+
+      WriteStatisticsFile(step, "oracles.15h", 19, *x2_3h_,
+          (*vertchamberu_) [12], (*vertchamberv_) [12], (*vertchamberw_) [12], (*vertchamberp_) [12],
+          (*vertchamberuu_)[12], (*vertchambervv_)[12], (*vertchamberww_)[12], (*vertchamberpp_)[12],
+          (*vertchamberuv_)[12], (*vertchamberuw_)[12], (*vertchambervw_)[12]);
+
+      WriteStatisticsFile(step, "oracles.16h", 20, *x2_3h_,
+          (*vertchamberu_) [13], (*vertchamberv_) [13], (*vertchamberw_) [13], (*vertchamberp_) [13],
+          (*vertchamberuu_)[13], (*vertchambervv_)[13], (*vertchamberww_)[13], (*vertchamberpp_)[13],
+          (*vertchamberuv_)[13], (*vertchamberuw_)[13], (*vertchambervw_)[13]);
     }
-
   }
 
   // increase counter of written records
@@ -1542,6 +1523,77 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
   return;
 }
 
+/*------------------------------------------------------------------------------------------------*
+ | reset data structures for a new record                                             henke 06/11 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::TurbulenceStatisticsORACLES::WriteStatisticsFile(
+      const int                  step,
+      const string&              suffix,
+      const int                  x1pos,
+      const vector<double>&      x2locations,
+      double* profileu,
+      double* profilev,
+      double* profilew,
+      double* profilep,
+      double* profileuu,
+      double* profilevv,
+      double* profileww,
+      double* profilepp,
+      double* profileuv,
+      double* profileuw,
+      double* profilevw
+)
+{
+  std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+
+  std::ostringstream filename;
+  filename << "." << suffix << ".flow_statistics";
+  s.append(filename.str());
+
+  // output to log-file
+  Teuchos::RCP<std::ofstream> log;
+  log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::app));
+
+  (*log) << "\n";
+  (*log) << "# Statistics record " << countrecord_;
+  (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+
+  (*log) << "# profile at x-position " << setw(5) << setprecision(2) << x1positions_(x1pos)/h_ << " h \n";
+  (*log) << "\n";
+
+  (*log) << "#     y             y+";
+  (*log) << "          umean         vmean         wmean         pmean";
+  (*log) << "        mean u^2      mean v^2      mean w^2";
+  (*log) << "      mean u*v      mean u*w      mean v*w      mean p^2 \n";
+  (*log) << scientific;
+
+  for(int ix2pos=x2locations.size()-1; ix2pos>=0; --ix2pos)
+  {
+    // y and y+
+    (*log) <<  " "  << setw(11) << setprecision(4) << x2locations[ix2pos];
+    (*log) << "   " << setw(11) << setprecision(4) << x2locations[ix2pos]*utau_/visc_;
+
+    // time mean values
+    (*log) << "   " << setw(11) << setprecision(4) << profileu[ix2pos];
+    (*log) << "   " << setw(11) << setprecision(4) << profilev[ix2pos];
+    (*log) << "   " << setw(11) << setprecision(4) << profilew[ix2pos];
+    (*log) << "   " << setw(11) << setprecision(4) << profilep[ix2pos];
+
+    (*log) << "   " << setw(11) << setprecision(4) << profileuu[ix2pos];
+    (*log) << "   " << setw(11) << setprecision(4) << profilevv[ix2pos];
+    (*log) << "   " << setw(11) << setprecision(4) << profileww[ix2pos];
+
+    (*log) << "   " << setw(11) << setprecision(4) << profileuv[ix2pos];
+    (*log) << "   " << setw(11) << setprecision(4) << profileuw[ix2pos];
+    (*log) << "   " << setw(11) << setprecision(4) << profilevw[ix2pos];
+
+    (*log) << "   " << setw(11) << setprecision(4) << profilepp[ix2pos];
+
+    (*log) << "\n";
+  }
+  log->flush();
+
+}
 
 /*------------------------------------------------------------------------------------------------*
  | reset data structures for a new record                                             henke 06/11 |

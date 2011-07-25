@@ -89,6 +89,24 @@ public:
 
   void OutputStatistics(int step);
 
+  void WriteStatisticsFile(
+      const int               step,
+      const string&           suffix,
+      const int               x1pos,
+      const vector<double>&   x2locations,
+      double* profileu,
+      double* profilev,
+      double* profilew,
+      double* profilep,
+      double* profileuu,
+      double* profilevv,
+      double* profileww,
+      double* profilepp,
+      double* profileuv,
+      double* profileuw,
+      double* profilevw
+  );
+
   void ClearStatistics();
 
   /// dump results to a file
@@ -165,10 +183,6 @@ private:
   Teuchos::RCP<vector<double> > x2_1h_;     // x2-coordinates of nodes at x = 1h
   Teuchos::RCP<vector<double> > x2_2h_;     // x2-coordinates of nodes at x = 2h
   Teuchos::RCP<vector<double> > x2_3h_;     // x2-coordinates of nodes at x > 3h
-  // number of nodes in x2-direction
-  size_t numx2_inflow_;
-  size_t numx2_0h_;
-  size_t numx2_chamber_;
 
   // coordinates of nodes in x1-direction
   Teuchos::RCP<vector<double> > x1_midupperchannel_;   // x1-coordinates of nodes at y = 85.5mm = 2.86h (mid line upper channel)
