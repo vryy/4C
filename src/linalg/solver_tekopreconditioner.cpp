@@ -6,7 +6,6 @@
  */
 
 #ifdef TRILINOS_DEV
-#ifdef D_TEKO
 
 #include "../drt_lib/drt_dserror.H"
 #include "solver_tekopreconditioner.H"
@@ -14,11 +13,9 @@
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 LINALG::SOLVER::TekoPreconditioner::TekoPreconditioner( FILE * outfile,
-                                                        Teuchos::ParameterList & tekolist,
-                                                        Teuchos::ParameterList & azlist )
+                                                        Teuchos::ParameterList & tekolist)
   : PreconditionerType( outfile ),
-    tekolist_( tekolist ),
-    azlist_( azlist )
+    tekolist_( tekolist )
 {
 }
 
@@ -49,5 +46,5 @@ void LINALG::SOLVER::TekoPreconditioner::Setup( bool create,
   }
 }
 
-#endif /* D_TEKO */
+
 #endif /* TRILINOS_DEV */

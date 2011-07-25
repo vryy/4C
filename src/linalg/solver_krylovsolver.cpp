@@ -17,6 +17,9 @@
 #include "solver_krylovprojectionpreconditioner.H"
 #include "solver_ifpackpreconditioner.H"
 #include "solver_mlpreconditioner.H"
+#ifdef TRILINOS_DEV
+#include "solver_tekopreconditioner.H"
+#endif
 
 
 //----------------------------------------------------------------------------------
@@ -126,6 +129,14 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
     else if ( Params().isSublist("AMGBS Parameters") )
     {
       preconditioner_ = Teuchos::rcp( new AMGBSPreconditioner( outfile_, Params() ) );
+    }
+    else if ( Params().isSublist("Teko Parameters") )
+    {
+#ifdef TRILINOS_DEV
+      preconditioner_ = Teuchos::rcp( new TekoPreconditioner( outfile_, Params() ));
+#else
+      dserror("Teko only supported in DEV version of BACI");
+#endif
     }
     else
     {

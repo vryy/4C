@@ -9,7 +9,6 @@
 #define SOLVER_TEKOPRECONDITIONER_H_
 
 #ifdef TRILINOS_DEV
-#ifdef D_TEKO
 
 #include "solver_preconditionertype.H"
 
@@ -25,7 +24,7 @@ namespace LINALG
     {
     public:
 
-      TekoPreconditioner( FILE * outfile, Teuchos::ParameterList & tekolist, Teuchos::ParameterList & azlist );
+      TekoPreconditioner( FILE * outfile, Teuchos::ParameterList & tekolist);
 
       virtual void Setup( bool create,
                           Epetra_Operator * matrix,
@@ -34,12 +33,11 @@ namespace LINALG
 
       virtual Epetra_Operator * PrecOperator() const { return &*prec_; }
 
-      virtual void Print( std::ostream & stream ) { stream << "IFPACK"; }
+      virtual void Print( std::ostream & stream ) { stream << "TEKO"; }
 
     private:
 
       Teuchos::ParameterList & tekolist_;
-      Teuchos::ParameterList & azlist_;
 
       //! system of equations used for preconditioning used by P_ only
       Teuchos::RCP<Epetra_RowMatrix>                 Pmatrix_;
@@ -51,7 +49,6 @@ namespace LINALG
   }
 }
 
-#endif /* TEKO */
 #endif /* TRILINOS_DEV */
 #endif /* SOLVER_TEKOPRECONDITIONER_H_ */
 

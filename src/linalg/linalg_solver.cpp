@@ -1143,7 +1143,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
      if (azprectyp == INPAR::SOLVER::azprec_Teko)
      {
        ParameterList& tekolist = outparams.sublist("Teko Parameters");
-       tekolist.set("HAllo Welt","Test");
+       tekolist.set("Prec Type","SIMPLE"); // this is not Stratimikos
+
      }
      //------------------------------------- set parameters for ML if used
      if (azprectyp == INPAR::SOLVER::azprec_ML       ||

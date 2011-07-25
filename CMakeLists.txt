@@ -1092,6 +1092,7 @@ set(OBJS_LINALG
   src/linalg/solver_belossolver.cpp
   src/linalg/solver_aztecsolver.cpp
   src/linalg/solver_stratimikossolver.cpp
+  src/linalg/teko_baciepetraoperatorwrapper.cpp
 )
 set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/constraint.cpp
