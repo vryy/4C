@@ -206,6 +206,11 @@ private:
       LINALG::Matrix<6,1>& stress  ///< 2nd Piola--Kirchhoff stress
       );
 
+    /// hyperelastic stress response plus elasticity tensor (Epetra-type interface)
+    void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
+                  Epetra_SerialDenseMatrix* cmat_e,
+                  Epetra_SerialDenseVector* stress_e);
+
     void Setup(DRT::INPUT::LineDefinition* linedef);
     void SetupILTthickness(Teuchos::ParameterList& params);
 

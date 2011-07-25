@@ -31,6 +31,7 @@ Maintainer: Michael Gee
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/aaaneohooke.H"
 #include "../drt_mat/mooneyrivlin.H"
+#include "../drt_mat/elasthyper.H"
 
 using namespace std;
 
@@ -708,6 +709,14 @@ void DRT::ELEMENTS::PtetType::SelectMaterial(
       lungpen->Evaluate(&glstrain,&cmat,&stress);
 
       density = lungpen->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
+    {
+      MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
+      hyper->Evaluate(glstrain,cmat,stress);
+      density = hyper->Density();
       return;
       break;
     }

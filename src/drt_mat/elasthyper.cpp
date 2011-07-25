@@ -278,10 +278,10 @@ void MAT::ElastHyper::Setup(DRT::INPUT::LineDefinition* linedef)
       locsys(i,1) = axi[i]/axinorm;
       locsys(i,2) = cir[i]/cirnorm;
     }
-    
+
     // alignment angles gamma_i are read from first entry of then unnecessary vectors a1 and a2
     const double gamma = (params_->gamma_*PI)/180.; //convert
-    
+
     for (int i = 0; i < 3; ++i) {
       // a1 = cos gamma e3 + sin gamma e2
       a1_(i) = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
@@ -760,6 +760,23 @@ void MAT::ElastHyper::Evaluate(
   }
 
 }
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ElastHyper::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
+                               Epetra_SerialDenseMatrix* cmat_e,
+                               Epetra_SerialDenseVector* stress_e)
+{
+  // this is temporary as long as the material does not have a
+  // Matrix-type interface
+  const LINALG::Matrix<6,1> glstrain(glstrain_e->A(),true);
+  LINALG::Matrix<6,6> cmat(cmat_e->A(),true);
+  LINALG::Matrix<6,1> stress(stress_e->A(),true);
+
+  Evaluate(glstrain,cmat,stress);
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
