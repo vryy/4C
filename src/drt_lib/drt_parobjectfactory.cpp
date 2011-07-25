@@ -93,7 +93,7 @@ namespace DRT
     private:
 
       static ParObjectPreRegister * instance_;
-      
+
       /// preregistered types
       std::vector<ParObjectType*> types_;
     };
@@ -265,6 +265,8 @@ void DRT::ParObjectFactory::InitializeElements( DRT::Discretization & dis )
 
   LINALG::AllreduceVector( localtypeids, globaltypeids, dis.Comm() );
 
+  std::set<ElementType*> & ae = active_elements_[&dis];
+
   // This is element specific code. Thus we need a down cast.
 
   for ( std::vector<int>::iterator i=globaltypeids.begin(); i!=globaltypeids.end(); ++i )
@@ -273,7 +275,7 @@ void DRT::ParObjectFactory::InitializeElements( DRT::Discretization & dis )
     ElementType * eot = dynamic_cast<ElementType*>( pot );
     if ( eot!=NULL )
     {
-      active_elements_.insert( eot );
+      ae.insert( eot );
       int err = eot->Initialize( dis );
       if (err) dserror("Element Initialize returned err=%d",err);
     }
@@ -295,9 +297,9 @@ void DRT::ParObjectFactory::PreEvaluate(DRT::Discretization& dis,
 {
   FinalizeRegistration();
 
-  for ( std::set<ElementType*>::iterator i=active_elements_.begin();
-        i!=active_elements_.end();
-        ++i )
+  std::set<ElementType*> & ae = active_elements_[&dis];
+
+  for ( std::set<ElementType*>::iterator i=ae.begin(); i!=ae.end(); ++i )
   {
     ( *i )->PreEvaluate( dis, p, systemmatrix1, systemmatrix2,
                          systemvector1, systemvector2, systemvector3 );

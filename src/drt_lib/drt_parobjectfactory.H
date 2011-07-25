@@ -182,7 +182,7 @@ private:
   std::vector<ParObjectType*> types_;
 
   /// element types that are actually used
-  std::set<ElementType*> active_elements_;
+  std::map<DRT::Discretization*, std::set<ElementType*> > active_elements_;
 
   // no copying
 
