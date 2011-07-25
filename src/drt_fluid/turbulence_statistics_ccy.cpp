@@ -1437,26 +1437,26 @@ void FLD::TurbulenceStatisticsCcy::TimeAverageMeansAndOutputOfStatistics(int ste
       (*log) <<  " "  << setw(14) << setprecision(7) << (*shellcoordinates_)[i];
 
       // pointwise means
-      (*log) << "    " << setw(11) << setprecision(4) << (*pointsumu_ )[i]/numsamp_;
-      (*log) << "    " << setw(11) << setprecision(4) << (*pointsumv_ )[i]/numsamp_;
-      (*log) << "    " << setw(11) << setprecision(4) << (*pointsumw_ )[i]/numsamp_;
-      (*log) << "    " << setw(11) << setprecision(4) << (*pointsump_ )[i]/numsamp_;
-      (*log) << "    " << setw(11) << setprecision(4) << (*pointsumuu_)[i]/numsamp_;
-      (*log) << "    " << setw(11) << setprecision(4) << (*pointsumvv_)[i]/numsamp_;
-      (*log) << "    " << setw(11) << setprecision(4) << (*pointsumww_)[i]/numsamp_;
-      (*log) << "    " << setw(11) << setprecision(4) << (*pointsumpp_)[i]/numsamp_;
-      (*log) << "    " << setw(11) << setprecision(4) << (*pointsumuv_)[i]/numsamp_;
-      (*log) << "    " << setw(11) << setprecision(4) << (*pointsumuw_)[i]/numsamp_;
-      (*log) << "    " << setw(11) << setprecision(4) << (*pointsumvw_)[i]/numsamp_;
+      (*log) << "    " << setw(14) << setprecision(7) << (*pointsumu_ )[i]/numsamp_;
+      (*log) << "    " << setw(14) << setprecision(7) << (*pointsumv_ )[i]/numsamp_;
+      (*log) << "    " << setw(14) << setprecision(7) << (*pointsumw_ )[i]/numsamp_;
+      (*log) << "    " << setw(14) << setprecision(7) << (*pointsump_ )[i]/numsamp_;
+      (*log) << "    " << setw(14) << setprecision(7) << (*pointsumuu_)[i]/numsamp_;
+      (*log) << "    " << setw(14) << setprecision(7) << (*pointsumvv_)[i]/numsamp_;
+      (*log) << "    " << setw(14) << setprecision(7) << (*pointsumww_)[i]/numsamp_;
+      (*log) << "    " << setw(14) << setprecision(7) << (*pointsumpp_)[i]/numsamp_;
+      (*log) << "    " << setw(14) << setprecision(7) << (*pointsumuv_)[i]/numsamp_;
+      (*log) << "    " << setw(14) << setprecision(7) << (*pointsumuw_)[i]/numsamp_;
+      (*log) << "    " << setw(14) << setprecision(7) << (*pointsumvw_)[i]/numsamp_;
       if (withscatra_)
       {
-        (*log) << "    " << setw(11) << setprecision(4) << (*pointsumc_ )[i]/numsamp_;
-        (*log) << "    " << setw(11) << setprecision(4) << (*pointsumcc_)[i]/numsamp_;
+        (*log) << "    " << setw(14) << setprecision(7) << (*pointsumc_ )[i]/numsamp_;
+        (*log) << "    " << setw(14) << setprecision(7) << (*pointsumcc_)[i]/numsamp_;
 
         for(int k=0; k< numscatradofpernode_; k++)
         {
-          (*log) << "    " << setw(11) << setprecision(4) << ((*pointsumphi_ )(i,k))/numsamp_;
-          (*log) << "    " << setw(11) << setprecision(4) << ((*pointsumphiphi_)(i,k))/numsamp_;
+          (*log) << "    " << setw(14) << setprecision(7) << ((*pointsumphi_ )(i,k))/numsamp_;
+          (*log) << "    " << setw(14) << setprecision(7) << ((*pointsumphiphi_)(i,k))/numsamp_;
         }
       }
       (*log) << "\n";
