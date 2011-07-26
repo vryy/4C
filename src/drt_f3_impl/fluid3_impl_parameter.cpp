@@ -155,6 +155,12 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementGeneralFluidParameter( Teucho
   if (is_genalpha_np_ and is_conservative_)
     dserror("the combination Np_Gen_Alpha and conservative flow is not supported");
 
+  if (not is_stationary_ and is_conservative_)
+  {
+    cout << endl << "Warning: missing time derivative terms in conservative formulation!!" << endl;
+  }
+
+
 // ---------------------------------------------------------------------
 // get control parameters for stabilization and higher-order elements
 //----------------------------------------------------------------------

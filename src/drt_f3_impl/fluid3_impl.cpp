@@ -4876,199 +4876,120 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ConservativeFormulation(
   // right-hand-side contribution
   //----------------------------------------------------------------------
 
-  // TODO: cleaning
+  /* convection, convective part (conservative addition) */
+    /*
+      /                                                \
+      |      /              n+1    n+1           \      |
+      |  Du | rho*nabla o u    +  u   *nabla rho | , v  |
+      |      \             (i)     (i)          /       |
+      \                                                 /
+    */
 
-  for (int idim = 0; idim <nsd_; ++idim)
-   {
-     for (int ui=0; ui<nen_; ++ui)
-     {
-       const int fui   = nsd_*ui + idim;
-       //const int fui   = 4*ui;
-       //const int fuip  = fui+1;
-       //const int fuipp = fui+2;
-       double v = timefacfac*densaf_*funct_(ui)*vdiv_;
-       if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma) v -= timefacfac*densaf_*scaconvfacaf_*conv_scaaf_;
-       //if (loma_) v -= timefacfac*densaf_*scaconvfacaf_*conv_scaaf_;
-       // only with linear density-concentration correlation
-       else if(f3Parameter_->physicaltype_ == INPAR::FLUID::varying_density) v += timefacfac*conv_scaaf_;
-       //else if(varyingdensity_) v += timefacfac*conv_scaaf_;
-       for (int vi=0; vi<nen_; ++vi)
-       {
-         const int fvi   = nsd_*vi + idim;
-         //const int fvi   = 4*vi;
-         //const int fvip  = fvi+1;
-         //const int fvipp = fvi+2;
-         /* convection, convective part (conservative addition) */
+    for (int idim = 0; idim <nsd_; ++idim)
+    {
+      // left hand side
+      {
+      // compute prefactor
+      double v = timefacfac*densaf_*vdiv_;
+      if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma) v -= timefacfac*densaf_*scaconvfacaf_*conv_scaaf_;
+      else if(f3Parameter_->physicaltype_ == INPAR::FLUID::varying_density)
+      {
+        v += timefacfac*conv_scaaf_;
+        //         o
+        // (v, Du rho)
+        /*{
+          // interpolation to GP
+          double densdtngp = densdtn.Dot(funct_);
+          v += timefacfac*densdtngp;
+        }*/
+      }
+
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        const int    fui   = nsd_*ui + idim;
+        const double v1 = v*funct_(ui);
+
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const int fvi   = nsd_*vi + idim;
+          estif_u(fvi  , fui  ) += funct_(vi)*v1;
+        }
+      }
+
+      /*  convection, reactive part (conservative addition) */
+      /*
+        /                              \
+        |  n+1  /               \      |
+        | u    | rho*nabla o Du | , v  |
+        |  (i)  \              /       |
+        \                             /
+      */
+
+      if (f3Parameter_->is_newton_)
+      {
+        const double v_idim = timefacfac*densaf_*velint_(idim);
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const int fvi   = nsd_*vi + idim;
+          const double v1_idim = v_idim*funct_(vi);
+
+          for (int ui=0; ui<nen_; ++ui)
+          {
+            const int fui   = nsd_*ui;
+
+            for(int jdim=0; jdim<nsd_;++jdim)
+              estif_u(fvi,  fui+jdim  ) += v1_idim*derxy_(jdim, ui);
+           }
+         }
+
+         /*  convection, reactive part (conservative addition) */
          /*
-           /                                                \
-           |      /              n+1    n+1           \      |
-           |  Du | rho*nabla o u    +  u   *nabla rho | , v  |
-           |      \             (i)     (i)          /       |
-           \                                                 /
+          /                           \
+          |  n+1  /             \      |
+          | u    | Du*nabla rho | , v  |
+          |  (i)  \            /       |
+          \                           /
          */
-         double v2 = v*funct_(vi) ;
-         estif_u(fvi  , fui  ) += v2;
-         //estif(fvi  , fui  ) += v2;
-         //estif(fvip , fuip ) += v2;
-         //estif(fvipp, fuipp) += v2;
-       }
-     }
-
-     if (f3Parameter_->is_newton_)
-     {
-       for (int vi=0; vi<nen_; ++vi)
-       {
-         const int fvi   = nsd_*vi + idim;
-         //const int fvi   = 4*vi;
-         //const int fvip  = fvi+1;
-         //const int fvipp = fvi+2;
-         const double v_idim = timefacfac*densaf_*velint_(idim)*funct_(vi);
-         //const double v0 = timefacfac*densaf_*velint_(0)*funct_(vi);
-         //const double v1 = timefacfac*densaf_*velint_(1)*funct_(vi);
-         //const double v2 = timefacfac*densaf_*velint_(2)*funct_(vi);
-         for (int ui=0; ui<nen_; ++ui)
+         if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma
+             or f3Parameter_->physicaltype_ == INPAR::FLUID::varying_density)
          {
-           const int fui   = nsd_*ui;
-           //const int fui   = 4*ui;
-           //const int fuip  = fui+1;
-           //const int fuipp = fui+2;
-           /*  convection, reactive part (conservative addition) */
-           /*
-             /                              \
-             |  n+1  /               \      |
-             | u    | rho*nabla o Du | , v  |
-             |  (i)  \              /       |
-             \                             /
-           */
-           for(int jdim=0; jdim<nsd_;++jdim)
-           estif_u(fvi,  fui+jdim  ) += v_idim*derxy_(jdim, ui) ;
+           double v_idim = 0.0;
+           if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
+             v_idim = -timefacfac*densaf_*scaconvfacaf_*grad_scaaf_(idim)*velint_(idim);
+           else if (f3Parameter_->physicaltype_ == INPAR::FLUID::varying_density)
+             v_idim = +timefacfac*grad_scaaf_(idim)*velint_(idim);
 
-           //estif(fvi,  fui  ) += v0*derxy_(0, ui) ;
-           //estif(fvi,  fuip ) += v0*derxy_(1, ui) ;
-           //estif(fvi,  fuipp) += v0*derxy_(2, ui) ;
-           //estif(fvip, fui  ) += v1*derxy_(0, ui) ;
-           //estif(fvip, fuip ) += v1*derxy_(1, ui) ;
-           //estif(fvip, fuipp) += v1*derxy_(2, ui) ;
-           //estif(fvipp,fui  ) += v2*derxy_(0, ui) ;
-           //estif(fvipp,fuip ) += v2*derxy_(1, ui) ;
-           //estif(fvipp,fuipp) += v2*derxy_(2, ui) ;
-         }
-       }
-
-       if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
-       //if(loma_)
-       {
-         for (int vi=0; vi<nen_; ++vi)
-         {
-           const int fvi   = nsd_*vi + idim;
-           //const int fvi   = 4*vi;
-           //const int fvip  = fvi+1;
-           //const int fvipp = fvi+2;
-           const double v_idim = -timefacfac*densaf_*scaconvfacaf_*grad_scaaf_(idim)*velint_(idim)*funct_(vi);
-           //const double v0 = -timefacfac*densaf_*scaconvfacaf_*grad_scaaf_(0)*velint_(0)*funct_(vi);
-           //const double v1 = -timefacfac*densaf_*scaconvfacaf_*grad_scaaf_(1)*velint_(1)*funct_(vi);
-           //const double v2 = -timefacfac*densaf_*scaconvfacaf_*grad_scaaf_(2)*velint_(2)*funct_(vi);
-           for (int ui=0; ui<nen_; ++ui)
+           for (int vi=0; vi<nen_; ++vi)
            {
-             const int fui   = nsd_*ui;
-             //const int fui   = 4*ui;
-             //const int fuip  = fui+1;
-             //const int fuipp = fui+2;
-             /*  convection, reactive part (conservative addition) */
-             /*
-               /                           \
-               |  n+1  /             \      |
-               | u    | Du*nabla rho | , v  |
-               |  (i)  \            /       |
-               \                           /
-             */
-             for(int jdim=0;jdim<nsd_;++jdim)
-               estif_u(fvi,  fui +jdim  ) += v_idim*funct_(ui) ;
+             const int    fvi   = nsd_*vi + idim;
+             const double v1_idim = v_idim*funct_(vi);
 
-             //estif(fvi,  fui  ) += v0*funct_(ui) ;
-             //estif(fvi,  fuip ) += v0*funct_(ui) ;
-             //estif(fvi,  fuipp) += v0*funct_(ui) ;
-             //estif(fvip, fui  ) += v1*funct_(ui) ;
-             //estif(fvip, fuip ) += v1*funct_(ui) ;
-             //estif(fvip, fuipp) += v1*funct_(ui) ;
-             //estif(fvipp,fui  ) += v2*funct_(ui) ;
-             //estif(fvipp,fuip ) += v2*funct_(ui) ;
-             //estif(fvipp,fuipp) += v2*funct_(ui) ;
-           }
-         }
-       }
-       if (f3Parameter_->physicaltype_ == INPAR::FLUID::varying_density)
-       //if(varyingdensity_)
-       {
+             for (int ui=0; ui<nen_; ++ui)
+             {
+               const int fui   = nsd_*ui;
+
+               for(int jdim=0;jdim<nsd_;++jdim)
+                 estif_u(fvi,  fui +jdim  ) += v1_idim*funct_(ui) ;
+              }
+            }
+          }
+        }
+      }
+
+      //right hand side
+      {
+        /* convection (conservative addition) on right-hand side */
+        double v = -rhsfac*densaf_*velint_(idim)*vdiv_;
+
+        if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
+          v += rhsfac*velint_(idim)*densaf_*scaconvfacaf_*conv_scaaf_;
+        else if (f3Parameter_->physicaltype_ == INPAR::FLUID::varying_density)
+          v -= rhsfac*velint_(idim)*conv_scaaf_;
+
          for (int vi=0; vi<nen_; ++vi)
-         {
-           const int fvi   = nsd_*vi + idim;
-           //const int fvi   = 4*vi;
-           //const int fvip  = fvi+1;
-           //const int fvipp = fvi+2;
-           const double v_idim = +timefacfac*grad_scaaf_(idim)*velint_(idim)*funct_(vi);
-           //const double v0 = +timefacfac*grad_scaaf_(0)*velint_(0)*funct_(vi);
-           //const double v1 = +timefacfac*grad_scaaf_(1)*velint_(1)*funct_(vi);
-           //const double v2 = +timefacfac*grad_scaaf_(2)*velint_(2)*funct_(vi);
-           for (int ui=0; ui<nen_; ++ui)
-           {
-             const int fui   = nsd_*ui;
-             //const int fui   = 4*ui;
-             //const int fuip  = fui+1;
-             //const int fuipp = fui+2;
-             /*  convection, reactive part (conservative addition) */
-             /*
-               /                           \
-               |  n+1  /             \      |
-               | u    | Du*nabla rho | , v  |
-               |  (i)  \            /       |
-               \                           /
-             */
-             for(int jdim=0;jdim<nsd_;++jdim)
-               estif_u(fvi,  fui+jdim  ) += v_idim*funct_(ui) ;
-
-           }
-         }
-       }
-     }
-
-     for (int vi=0; vi<nen_; ++vi)
-     {
-       //const int fvi   = 4*vi;
-       /* convection (conservative addition) on right-hand side */
-       double v = -rhsfac*densaf_*funct_(vi)*vdiv_;
-       velforce(idim, vi    ) += v*velint_(idim) ;
-       //eforce(fvi    ) += v*velint_(0) ;
-       //eforce(fvi + 1) += v*velint_(1) ;
-       //eforce(fvi + 2) += v*velint_(2) ;
-     }
-
-     if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
-     //if(loma_)
-     {
-       for (int vi=0; vi<nen_; ++vi)
-       {
-         //const int fvi   = 4*vi;
-         /* convection (conservative addition) on rhs for low-Mach-number flow */
-         double v = rhsfac*densaf_*scaconvfacaf_*conv_scaaf_*funct_(vi);
-         velforce(idim, vi    ) += v*velint_(idim) ;
-         //eforce(fvi    ) += v*velint_(0) ;
-         //eforce(fvi + 1) += v*velint_(1) ;
-         //eforce(fvi + 2) += v*velint_(2) ;
-       }
-     }
-     if (f3Parameter_->physicaltype_ == INPAR::FLUID::varying_density)
-     //if(varyingdensity_)
-     {
-       for (int vi=0; vi<nen_; ++vi)
-       {
-         //const int fvi   = 4*vi;
-         /* convection (conservative addition) on rhs for low-Mach-number flow */
-         double v = -rhsfac*conv_scaaf_*funct_(vi);
-         velforce(idim, vi    ) += v*velint_(idim) ;
-       }
-     }
-   }  // end for(idim)
+           velforce(idim, vi    ) += v*funct_(vi);
+      }
+    }  // end for(idim)
 
   return;
 }
