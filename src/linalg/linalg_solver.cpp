@@ -460,6 +460,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateAmesosToStratimikos(const 
   case INPAR::SOLVER::stratimikos_amesos://====================================== Tim Davis' KLU
     outparams.set("Solver Type","Klu");
     outparams.set("Refactorization Policy","RepivotOnRefactorization");
+    outparams.sublist("Amesos Settings").set("Reindex",true);// in parallel Amesos KLU needs standard maps (ReIndexing necessary)
     break;
   default:
     break;
@@ -1103,48 +1104,13 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
      {
        ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
        ifpacklist = TranslateBACIToIfpack(inparams);
-
-       /*ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
-       ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-       ifpacklist.set("fact: level-of-fill",inparams.get<int>("IFPACKGFILL"));
-       ifpacklist.set("fact: ilut level-of-fill",inparams.get<double>("IFPACKFILL"));
-       ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-       ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Zero", "Add", "Insert"
-       ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis" or "amd"
-       ifpacklist.set("amesos: solver type", "Amesos_Klu"); // can be "Amesos_Klu", "Amesos_Umfpack", "Amesos_Superlu"
-       if (azprectyp == INPAR::SOLVER::azprec_SymmGaussSeidel)
-       {
-         ifpacklist.set("relaxation: type","symmetric Gauss-Seidel");
-         ifpacklist.set("relaxation: sweeps",inparams.get<int>("IFPACKGFILL"));
-         ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
-       }
-       if (azprectyp == INPAR::SOLVER::azprec_GaussSeidel)
-       {
-         ifpacklist.set("relaxation: type","Gauss-Seidel");
-         ifpacklist.set("relaxation: sweeps",inparams.get<int>("IFPACKGFILL"));
-         ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
-       }
-       if (azprectyp == INPAR::SOLVER::azprec_DownwindGaussSeidel)
-       {
-         // in case of downwinding prevent ifpack from again reordering
-         ifpacklist.set("schwarz: reordering type","none");
-         ifpacklist.set("relaxation: type","Gauss-Seidel");
-         ifpacklist.set("relaxation: sweeps",inparams.get<int>("IFPACKGFILL"));
-         ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
-       }
-       if (azprectyp == INPAR::SOLVER::azprec_Jacobi)
-       {
-         ifpacklist.set("relaxation: type","Jacobi");
-         ifpacklist.set("relaxation: sweeps",inparams.get<int>("IFPACKGFILL"));
-         ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
-       }*/
      }
      //------------------------------------- set parameters for Teko if used
      if (azprectyp == INPAR::SOLVER::azprec_Teko)
      {
        ParameterList& tekolist = outparams.sublist("Teko Parameters");
        tekolist.set("Prec Type","SIMPLE"); // this is not Stratimikos
-
+       // TODO: Teko preconditioners -> Stratimikos interface? -> ask Eric about his plans
      }
      //------------------------------------- set parameters for ML if used
      if (azprectyp == INPAR::SOLVER::azprec_ML       ||
@@ -1259,6 +1225,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     case INPAR::SOLVER::azprec_AMGBS:
     case INPAR::SOLVER::azprec_AMG:
     case INPAR::SOLVER::azprec_BGS2x2:
+    case INPAR::SOLVER::azprec_Teko:
       azlist.set("AZ_precond",AZ_user_precond);
     break;
     default:
@@ -1332,6 +1299,13 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
         ifpacklist.set("relaxation: sweeps",inparams.get<int>("IFPACKGFILL"));
         ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
       }*/
+    }
+    //------------------------------------- set parameters for Teko if used
+    if (azprectyp == INPAR::SOLVER::azprec_Teko)
+    {
+      ParameterList& tekolist = outparams.sublist("Teko Parameters");
+      tekolist.set("Prec Type","SIMPLE"); // this is not Stratimikos
+      // TODO: Teko preconditioners -> Stratimikos interface? -> ask Eric about his plans
     }
     //------------------------------------- set parameters for ML if used
     if (azprectyp == INPAR::SOLVER::azprec_ML       ||
