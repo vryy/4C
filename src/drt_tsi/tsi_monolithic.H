@@ -158,6 +158,9 @@ namespace TSI
     /// solve linear TSI system
     void LinearSolve();
 
+    /// create linear solver (setup of parameter lists, etc...)
+    void CreateLinearSolver();
+
     //! Evaluate mechanical-thermal system matrix
     void ApplyStrCouplMatrix(
       Teuchos::RCP<LINALG::SparseMatrix> k_st,  //!< mechanical-thermal stiffness matrix
