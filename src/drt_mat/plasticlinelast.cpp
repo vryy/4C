@@ -95,7 +95,8 @@ MAT::PlasticLinElast::PlasticLinElast()
  | copy-constructor (public)                                      04/11 |
  *----------------------------------------------------------------------*/
 MAT::PlasticLinElast::PlasticLinElast(MAT::PAR::PlasticLinElast* params)
-  : params_(params)
+: plastic_step(false),
+  params_(params)
 {
 }
 
@@ -419,8 +420,15 @@ void MAT::PlasticLinElast::Evaluate(
   //-------------------------------------------------------------------
   else //if (Phi_trial > 0.0)
   {
-    if(gp==0)
-      cout << "plastic step\n" << endl;
+    // only first plastic call is output at screen for every processor
+    // visualisation of whole plastic behaviour via PLASTIC_STRAIN in postprocessing
+    if(plastic_step == false)
+    {
+      if(gp==0)
+        cout << "first plastic step: plastic strains unequal zero!" << endl;
+      plastic_step = true;
+    }
+
     // -------------------------------------------------- return-mapping
 
     // local Newton-Raphson
