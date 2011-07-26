@@ -19,12 +19,21 @@ Maintainer: Peter Gamnitzer
 #ifndef TRANSFERTURBINF_H
 #define TRANSFERTURBINF_H
 #include "Teuchos_RefCountPtr.hpp"
-#include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 
 /*
 
 */
+
+//forward declarations
+namespace DRT
+{
+  class Discretization;
+}
+
+namespace FLD
+{
+
 class TransferTurbulentInflowCondition
 {
 public:
@@ -122,7 +131,7 @@ private:
 };
 
 
-
+} // end namespace FLD
 
 #endif  // #ifndef TRANSFERTURBINF_H
 #endif  // #ifdef CCADISCRET

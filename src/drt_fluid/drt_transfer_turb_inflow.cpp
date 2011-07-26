@@ -18,6 +18,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
 
 
 
@@ -30,7 +31,7 @@ Maintainer: Peter Gamnitzer
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
+FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
   RefCountPtr<DRT::Discretization>  dis    ,
   RefCountPtr<LINALG::MapExtractor> dbcmaps
     )
@@ -211,7 +212,7 @@ TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void TransferTurbulentInflowCondition::Transfer(
+void FLD::TransferTurbulentInflowCondition::Transfer(
   const Teuchos::RCP<Epetra_Vector> veln ,
   Teuchos::RCP<Epetra_Vector>       velnp,
   const double                      time)
@@ -338,7 +339,7 @@ void TransferTurbulentInflowCondition::Transfer(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-TransferTurbulentInflowCondition::~TransferTurbulentInflowCondition()
+FLD::TransferTurbulentInflowCondition::~TransferTurbulentInflowCondition()
 {
   return;
 }// ~TransferTurbulentInflowCondition
@@ -352,7 +353,7 @@ TransferTurbulentInflowCondition::~TransferTurbulentInflowCondition()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void TransferTurbulentInflowCondition::GetData(
+void FLD::TransferTurbulentInflowCondition::GetData(
   int                 & id       ,
   int                 & direction,
   ToggleType          & type     ,
@@ -418,7 +419,7 @@ void TransferTurbulentInflowCondition::GetData(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void TransferTurbulentInflowCondition::ReceiveBlock(
+void FLD::TransferTurbulentInflowCondition::ReceiveBlock(
     vector<char>   & rblock,
     DRT::Exporter  & exporter,
     MPI_Request    & request)
@@ -470,7 +471,7 @@ void TransferTurbulentInflowCondition::ReceiveBlock(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void TransferTurbulentInflowCondition::SendBlock(
+void FLD::TransferTurbulentInflowCondition::SendBlock(
     vector<char>  & sblock  ,
     DRT::Exporter & exporter,
     MPI_Request   & request )
@@ -508,7 +509,7 @@ void TransferTurbulentInflowCondition::SendBlock(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void TransferTurbulentInflowCondition::UnpackLocalMasterValues(
+void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(
   vector<int>             & mymasters    ,
   vector<vector<double> > & mymasters_vel,
   vector<char>            & rblock
@@ -614,7 +615,7 @@ void TransferTurbulentInflowCondition::UnpackLocalMasterValues(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void TransferTurbulentInflowCondition::PackLocalMasterValues(
+void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(
     vector<int>             & mymasters    ,
     vector<vector<double> > & mymasters_vel,
     DRT::PackBuffer         & sblock
@@ -691,7 +692,7 @@ void TransferTurbulentInflowCondition::PackLocalMasterValues(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void TransferTurbulentInflowCondition::SetValuesAvailableOnThisProc(
+void FLD::TransferTurbulentInflowCondition::SetValuesAvailableOnThisProc(
     vector<int>                 & mymasters,
     vector<vector<double> >     & mymasters_vel,
     Teuchos::RCP<Epetra_Vector>   velnp)

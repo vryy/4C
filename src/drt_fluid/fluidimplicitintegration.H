@@ -38,7 +38,6 @@ Maintainer: Peter Gamnitzer
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
 #include "../drt_inpar/inpar_fluid.H"
-#include "../drt_fluid/drt_transfer_turb_inflow.H"
 #include "fluid_utils_mapextractor.H" // should go away
 
 using namespace std;
@@ -92,6 +91,7 @@ namespace FLD
 class TurbulenceStatisticManager;
 class DynSmagFilter;
 class Meshtying;
+class TransferTurbulentInflowCondition;
 namespace UTILS
 {
   class MapExtractor;
