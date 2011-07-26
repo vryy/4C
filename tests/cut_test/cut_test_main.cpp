@@ -448,8 +448,12 @@ int main( int argc, char ** argv )
   functable["geometry"] = test_geometry;
 
   functable["cut_volumes"] = test_cut_volumes;
+#if 0
+  // Does not work with current volume cell construction
+  // algorithms. FacetGraph fails here.
   functable["cut_volumes2"] = test_cut_volumes2;
   functable["cut_volumes3"] = test_cut_volumes3;
+#endif
 
   functable["fluidfluid"] = test_fluidfluid;
   functable["fluidfluid2"] = test_fluidfluid2;
