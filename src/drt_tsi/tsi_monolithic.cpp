@@ -308,22 +308,17 @@ void TSI::Monolithic::CreateLinearSolver()
           solvertype != INPAR::SOLVER::stratimikos_belos)
         dserror("Teko expects a STRATIMIKOS solver object in THERMAL SOLVER");
 
-      solver_->PutSolverParamsToSubParams("Primary Inverse", ssolverparams);
-      solver_->PutSolverParamsToSubParams("Secondary Inverse", tsolverparams);
-
-      cout << "Primary inverse " << endl << solver_->Params().sublist("Primary Inverse") << endl;
+      solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
+      solver_->PutSolverParamsToSubParams("Inverse2", tsolverparams);
 
       // describe rigid body mode
       StructureField().Discretization()->ComputeNullSpaceIfNecessary(
-                                           solver_->Params().sublist("Primary Inverse")
+                                           solver_->Params().sublist("Inverse1")
                                            );
       // TODO (TW) maybe using ML 2nd discretisation is necessary, too
       ThermoField().Discretization()->ComputeNullSpaceIfNecessary(
-                                        solver_->Params().sublist("Secondary Inverse")
+                                        solver_->Params().sublist("Inverse2")
                                         );
-
-
-      cout << "solver_->Params()\n" << solver_->Params() << endl;
 
 #else
       dserror("Teko preconditioners only in TRILINOS_DEV BACI version available. Ask Tobias for more info.");

@@ -14,6 +14,7 @@
 // Teko specific includes
 #include <Teko_Utilities.hpp>
 #include <Teko_InverseFactory.hpp>
+#include <Teko_BlockInvDiagonalStrategy.hpp>
 #include <Teko_GaussSeidelPreconditionerFactory.hpp>
 
 #include "teko_baciepetraoperatorwrapper.H"
@@ -54,37 +55,37 @@ void LINALG::SOLVER::TekoPreconditioner::Setup( bool create,
     Teuchos::RCP<LINALG::SOLVER::TEKO::Teko_BACIEpetraOperatorWrapper> blockA =
         Teuchos::rcp(new LINALG::SOLVER::TEKO::Teko_BACIEpetraOperatorWrapper(Pmatrix_));
 
-    cout << blockA->GetBlockRowCount() << " x " << blockA->GetBlockColCount() << " BlockMatrix" << endl;
-
     // Handles some I/O to the output screen
     Teuchos::RCP<Teuchos::FancyOStream> out = Teuchos::VerboseObjectBase::getDefaultOStream();
 
-    Teuchos::ParameterList invParams1 = Params().sublist("Primary Inverse").sublist("Stratimikos Parameters");
-    std::string invType1 = invParams1.get<std::string>("Linear Solver Type");
-    Teuchos::RCP<Teko::InverseFactory> inverseFact1 = Teko::invFactoryFromParamList(invParams1,invType1);
-    Teko::InverseLinearOp invOp1 = Teko::buildInverse(*inverseFact1,blockA->GetThyraBlock(0,0));
-    invOp1->describe(*out,Teuchos::VERB_DEFAULT);
+    int numBlocks = blockA->GetBlockRowCount();
 
-    Teuchos::ParameterList invParams2 = Params().sublist("Secondary Inverse").sublist("Stratimikos Parameters");
-    std::string invType2 = invParams2.get<std::string>("Linear Solver Type");
-    Teuchos::RCP<Teko::InverseFactory> inverseFact2 = Teko::invFactoryFromParamList(invParams2,invType2);
-    Teko::InverseLinearOp invOp2 = Teko::buildInverse(*inverseFact2,blockA->GetThyraBlock(1,1));
-    invOp2->describe(*out,Teuchos::VERB_DEFAULT);
+    std::vector<Teko::LinearOp > inverseLinearOps;
+    inverseLinearOps.reserve(numBlocks);
+    for(int i=0; i<numBlocks; i++)
+    {
+      std::stringstream ssinverse;
+      ssinverse << "Inverse" << i+1;
+      if(!Params().isSublist(ssinverse.str())) dserror("missing parameter sublists for inverses.");
+      Teuchos::ParameterList invParams = Params().sublist(ssinverse.str()).sublist("Stratimikos Parameters");
+      std::string invType = invParams.get<std::string>("Linear Solver Type");
+      Teuchos::RCP<Teko::InverseFactory> inverseFact = Teko::invFactoryFromParamList(invParams,invType);
+      Teko::InverseLinearOp invOp = Teko::buildInverse(*inverseFact,blockA->GetThyraBlock(i,i));
+      inverseLinearOps.push_back(invOp);
+    }
+
+    const std::vector<Teko::LinearOp > constInverseLinearOps = inverseLinearOps;
+
+    // build Teko::BlockInvDiagStrategy
+    Teuchos::RCP<const Teko::StaticInvDiagStrategy> diagInvStrat = Teuchos::rcp(new Teko::StaticInvDiagStrategy(constInverseLinearOps));
 
     // build 2x2 block Gauss Seidel preconditioner factory
     Teuchos::RCP<Teko::GaussSeidelPreconditionerFactory> precFact =
-        Teuchos::rcp(new Teko::GaussSeidelPreconditionerFactory(Teko::GS_UseLowerTriangle,invOp1,invOp2));
-    precFact->describe(*out,Teuchos::VERB_HIGH);
-    cout << "Preconditioner factory initialized" << endl;
+        Teuchos::rcp(new Teko::GaussSeidelPreconditionerFactory(Teko::GS_UseLowerTriangle,diagInvStrat));
+    //precFact->describe(*out,Teuchos::VERB_HIGH);
 
     prec_ = Teuchos::rcp(new Teko::Epetra::EpetraBlockPreconditioner(precFact));
-    cout << "created EpetraBlockPreconditioner" << endl;
     prec_->buildPreconditioner(blockA); // use our Teko_2x2EpetraOperatorWrapper as input
-    cout << "Preconditioner built" << endl;
-
-
-//
-//    dserror("check me");
   }
 }
 
