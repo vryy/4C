@@ -119,7 +119,12 @@ void LINALG::SOLVER::TEKO::Teko_BACIEpetraOperatorWrapper::BuildBlockedOperator(
   thyraOp_ = A;
 }
 
-
+Teuchos::RCP<const Thyra::EpetraLinearOp > LINALG::SOLVER::TEKO::Teko_BACIEpetraOperatorWrapper::GetThyraBlock(int r, int c)
+{
+  const Teuchos::RCP<const Thyra::BlockedLinearOpBase<double> > blkOp
+         = Teuchos::rcp_dynamic_cast<const Thyra::BlockedLinearOpBase<double> >(getThyraOp());
+  return Teuchos::rcp_dynamic_cast<const Thyra::EpetraLinearOp>(blkOp->getBlock(r,c));
+}
 #endif
 
 

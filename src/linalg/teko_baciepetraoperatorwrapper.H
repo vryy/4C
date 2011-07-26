@@ -10,7 +10,10 @@
 
 #ifdef TRILINOS_DEV
 
+#include <Thyra_EpetraLinearOp.hpp>
+
 #include <Teko_EpetraOperatorWrapper.hpp>
+
 
 #include "linalg_mapextractor.H"
 #include "linalg_blocksparsematrix.H"
@@ -72,6 +75,9 @@ namespace LINALG
         virtual ~Teko_BACIEpetraOperatorWrapper() {;};
 
         void BuildBlockedOperator();
+
+        Teuchos::RCP<const Thyra::EpetraLinearOp> GetThyraBlock(int r, int c);
+
         private:
         Teuchos::RCP<Teko_BACIMappingStrategy> mappingStrategy_;
         Teuchos::RCP<LINALG::BlockSparseMatrixBase> mat_;
