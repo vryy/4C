@@ -739,6 +739,54 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
     }
   } //end of loop over integration points
 
+
+  // **********************************************************************
+  // add boundary flux contributions to the potential equation as well!
+  // **********************************************************************
+  const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
+  if (scatratype == INPAR::SCATRA::scatratype_undefined)
+    dserror("Element parameter SCATRATYPE has not been set!");
+
+  // this has to be done only for the following problem formulations:
+  if ((scatratype==INPAR::SCATRA::scatratype_elch_enc_pde) or
+      (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim))
+  {
+    // access the parent element's material
+    DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
+    RCP<MAT::Material> material = parentele->Material();
+
+    for (int k = 0; k < numscal_; k++)
+    {
+      // get valence
+      double valence_k(0.0);
+      if (material->MaterialType() == INPAR::MAT::m_matlist)
+      {
+        const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
+
+        const int matid = actmat->MatID(k);
+        Teuchos::RCP<const MAT::Material> singlemat = actmat->MaterialById(matid);
+        if (singlemat->MaterialType() == INPAR::MAT::m_ion)
+        {
+          const MAT::Ion* actsinglemat = static_cast<const MAT::Ion*>(singlemat.get());
+          valence_k = actsinglemat->Valence();
+        }
+        else
+          dserror("single material type is not 'ion'");
+      }
+      else
+        dserror("material type is not a 'matlist' material");
+
+      // get corresponding Neumann values, multiply with z_k and add to
+      // the row of the electric potential equation
+      double val(0.0);
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        val = elevec1[vi*numdofpernode_+k];
+        elevec1[vi*numdofpernode_+numscal_] += valence_k*val;
+      }
+    } // loop over scalars
+  }
+
   return 0;
 }
 
