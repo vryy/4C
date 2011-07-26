@@ -10,6 +10,13 @@
 
 #ifdef TRILINOS_DEV
 
+#include "linalg_blocksparsematrix.H"
+
+// Teko specific includes
+#include <Teko_EpetraBlockPreconditioner.hpp>
+
+#include "teko_baciepetraoperatorwrapper.H"
+
 #include "solver_preconditionertype.H"
 
 namespace LINALG
@@ -35,16 +42,17 @@ namespace LINALG
 
       virtual void Print( std::ostream & stream ) { stream << "TEKO"; }
 
+      Teuchos::ParameterList& Params() {return tekolist_; };
+
     private:
 
       Teuchos::ParameterList & tekolist_;
 
       //! system of equations used for preconditioning used by P_ only
-      Teuchos::RCP<Epetra_RowMatrix>                 Pmatrix_;
+      Teuchos::RCP<LINALG::BlockSparseMatrixBase>       Pmatrix_;
 
       /// preconditioner
-      //Teuchos::RCP<Ifpack_Preconditioner> prec_;
-      Teuchos::RCP<Epetra_Operator> prec_;
+      Teuchos::RCP<Teko::Epetra::EpetraBlockPreconditioner> prec_;
     };
   }
 }
