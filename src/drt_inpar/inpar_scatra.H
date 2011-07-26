@@ -185,16 +185,6 @@ namespace INPAR
       consistency_l2_projection_lumped
     };
 
-
-    enum MeshTying
-    {
-      no_meshtying,
-      condensed_smat,
-      condensed_bmat,
-      sps_coupled,
-      sps_pc
-    };
-
   }  // namespace SCATRA
 
 }  // namespace INPAR

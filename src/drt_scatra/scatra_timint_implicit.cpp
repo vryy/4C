@@ -209,7 +209,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 //  }
 
   if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND")
-      and msht_ == INPAR::SCATRA::no_meshtying)
+      and msht_ == INPAR::FLUID::no_meshtying)
   {
     // we need a block sparse matrix here
     if (not IsElch(scatratype_))
@@ -231,10 +231,19 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
 
     sysmat_ = blocksysmat;
   }
-  else if(msht_!= INPAR::SCATRA::no_meshtying)
+  else if(msht_!= INPAR::FLUID::no_meshtying)
   {
-    if (msht_!= INPAR::SCATRA::condensed_smat)
-      dserror("In the moment the only option is condensation in a sparse matrix");
+    if (((msht_== INPAR::FLUID::condensed_bmat) or
+        (msht_== INPAR::FLUID::condensed_bmat_merged) or
+         msht_== INPAR::FLUID::coupling_iontransport_laplace) and
+        (scatratype_ == INPAR::SCATRA::scatratype_elch_enc))
+      dserror("In the context of mesh-tying, the ion-transport system inluding the electroneutrality condition \n"
+          "cannot be solved by a block matrix");
+
+    if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND") and
+        (msht_== INPAR::FLUID::condensed_bmat or
+                msht_== INPAR::FLUID::condensed_bmat_merged))
+      dserror("Switch of the block matrix!!");
 
     // define parameter list for meshtying
     ParameterList mshtparams;
@@ -901,7 +910,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
       PrepareKrylovSpaceProjection();
 
-      if (msht_!=INPAR::SCATRA::no_meshtying)
+      if (msht_!=INPAR::FLUID::no_meshtying)
         meshtying_->SolveMeshtying(*solver_, sysmat_, increment_, residual_, itnum, w_, c_, project_);
       else
         solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,itnum==1,w_,c_,project_);
@@ -1398,7 +1407,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // end time measurement for element
   dtele_=Teuchos::Time::wallTime()-tcpuele;
 
-  if (msht_!=INPAR::SCATRA::no_meshtying)
+  if (msht_!=INPAR::FLUID::no_meshtying)
   {
     meshtying_->PrepareMeshtyingSystem(sysmat_, residual_);
   }

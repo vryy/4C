@@ -88,11 +88,11 @@ DRT::ELEMENTS::ScaTraBoundaryImplInterface* DRT::ELEMENTS::ScaTraBoundaryImplInt
   case DRT::Element::line2:
   {
     return ScaTraBoundaryImpl<DRT::Element::line2>::Instance(numdofpernode,numscal);
-  }/*
+  }
   case DRT::Element::line3:
   {
     return ScaTraBoundaryImpl<DRT::Element::line3>::Instance(numdofpernode,numscal);
-  }*/
+  }
   case DRT::Element::nurbs2:    // 1D nurbs boundary element
   {
     return ScaTraBoundaryImpl<DRT::Element::nurbs2>::Instance(numdofpernode,numscal);

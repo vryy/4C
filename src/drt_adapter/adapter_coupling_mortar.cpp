@@ -32,7 +32,7 @@
 using namespace std;
 extern struct _GENPROB genprob;
 
-//#define SADDLEPOINTSYSTEM
+#define ALLDOF
 
 ADAPTER::CouplingMortar::CouplingMortar()
 {
@@ -584,46 +584,73 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   RCP<MORTAR::MortarInterface> interface = rcp(new MORTAR::MortarInterface(0, comm, dim, input, redundant));
 
   //  Pressure DoF are also transferred to MortarInterface
+#ifdef ALLDOF
   int dof = dis.NumDof(dis.lRowNode(0));
+  cout << "All dof's are coupled!! " << endl << endl;
+#else
   //  Pressure DoF are not transferred to MortarInterface
-  //dim = dis.NumDof(dis.lRowNode(0))-1;
+  int dof = dis.NumDof(dis.lRowNode(0))-1;
+  cout << "Warning: NOT all dof's are coupled!! " << endl << endl;
+#endif
 
-  if (dof == dim)
+  if(meshtyingoption != INPAR::FLUID::coupling_iontransport_laplace)
   {
-    if(comm.MyPID()==0)
-      cout << "Warning: pressure dof's are NOT coupled!! " << endl << endl;
+    // feeding master nodes to the interface including ghosted nodes
+    map<int, DRT::Node*>::const_iterator nodeiter;
+    for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
+    {
+      DRT::Node* node = nodeiter->second;
+      vector<int> dofids(dof);
+      for (int k=0;k<dof;++k) dofids[k] = dis.Dof(node)[k];
+      RCP<MORTAR::MortarNode> mrtrnode = rcp(
+                  new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
+                      dof, dofids, false));
+
+      interface->AddMortarNode(mrtrnode);
+    }
+
+    // feeding slave nodes to the interface including ghosted nodes
+    for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
+    {
+      DRT::Node* node = nodeiter->second;
+      vector<int> dofids(dof);
+      for (int k=0;k<dof;++k) dofids[k] = dis.Dof(node)[k];
+      RCP<MORTAR::MortarNode> mrtrnode = rcp(
+                  new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
+                      dof, dofids, true));
+
+      interface->AddMortarNode(mrtrnode);
+    }
   }
-  else if (dof == dim+1)
+  else
   {
-    if(comm.MyPID()==0)
-      cout << "Pressure dof's are coupled!! " << endl << endl;
-  }
+    // only the potential is coupled (at position dof-1)
+    // feeding master nodes to the interface including ghosted nodes
+    map<int, DRT::Node*>::const_iterator nodeiter;
+    for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
+    {
+      DRT::Node* node = nodeiter->second;
+      vector<int> dofids(1);
+      for (int k=0;k<1;++k) dofids[k] = dis.Dof(node)[dis.NumDof(dis.lRowNode(0))-1];
+      RCP<MORTAR::MortarNode> mrtrnode = rcp(
+                  new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
+                      1, dofids, false));
 
-  // feeding master nodes to the interface including ghosted nodes
-  map<int, DRT::Node*>::const_iterator nodeiter;
-  for (nodeiter = mastergnodes.begin(); nodeiter != mastergnodes.end(); ++nodeiter)
-  {
-    DRT::Node* node = nodeiter->second;
-    vector<int> dofids(dof);
-    for (int k=0;k<dof;++k) dofids[k] = dis.Dof(node)[k];
-    RCP<MORTAR::MortarNode> mrtrnode = rcp(
-                new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
-                    dof, dofids, false));
+      interface->AddMortarNode(mrtrnode);
+    }
 
-    interface->AddMortarNode(mrtrnode);
-  }
+    // feeding slave nodes to the interface including ghosted nodes
+    for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
+    {
+      DRT::Node* node = nodeiter->second;
+      vector<int> dofids(1);
+      for (int k=0;k<1;++k) dofids[k] = dis.Dof(node)[dis.NumDof(dis.lRowNode(0))-1];
+      RCP<MORTAR::MortarNode> mrtrnode = rcp(
+                  new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
+                      1, dofids, true));
 
-  // feeding slave nodes to the interface including ghosted nodes
-  for (nodeiter = slavegnodes.begin(); nodeiter != slavegnodes.end(); ++nodeiter)
-  {
-    DRT::Node* node = nodeiter->second;
-    vector<int> dofids(dof);
-    for (int k=0;k<dof;++k) dofids[k] = dis.Dof(node)[k];
-    RCP<MORTAR::MortarNode> mrtrnode = rcp(
-                new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
-                    dof, dofids, true));
-
-    interface->AddMortarNode(mrtrnode);
+      interface->AddMortarNode(mrtrnode);
+    }
   }
 
   // max master element ID needed for unique eleIDs in interface discretization

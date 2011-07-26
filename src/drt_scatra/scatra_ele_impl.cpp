@@ -1138,8 +1138,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
        migrationstab_=false;
        migrationintau_=false;
 #endif
-       if (ele->Id()==0)
-         cout<<"twoion system -> resdiffus ="<<resdiffus<<endl;
       }
     }
 
@@ -1169,6 +1167,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
+
+  //TODO
   // integration loop
   if (iselch_) // electrochemistry problem
   {
