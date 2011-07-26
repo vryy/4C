@@ -76,6 +76,8 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
   switch (msht_)
   {
   case INPAR::FLUID::condensed_bmat:
+  case INPAR::FLUID::condensed_bmat_merged:
+  case INPAR::FLUID::coupling_iontransport_laplace:
   {
     // slave dof rowmap
     gsdofrowmap_ = adaptermeshtying_.SlaveDofRowMap();
@@ -145,17 +147,20 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
     //cout << "address  " << test2 << endl;
 
     // fixing length of PREC1 nullspace
+    if (msht_ ==INPAR::FLUID::condensed_bmat)
     {
-      const Epetra_Map& oldmap = *(dofrowmap_);
-      const Epetra_Map& newmap = matsolve->Matrix(0,0).EpetraMatrix()->RowMap();
-      solver_.FixMLNullspace("PREC1",oldmap, newmap, solver_.Params().sublist("PREC1"));
-    }
-    // fixing length of PREC2 nullspace
-    {
-      const Epetra_Map& oldmap = *(dofrowmap_);
-      const Epetra_Map& newmap = matsolve->Matrix(1,1).EpetraMatrix()->RowMap();
-      solver_.FixMLNullspace("PREC2",oldmap, newmap, solver_.Params().sublist("PREC2"));
-    }
+      {
+        const Epetra_Map& oldmap = *(dofrowmap_);
+        const Epetra_Map& newmap = matsolve->Matrix(0,0).EpetraMatrix()->RowMap();
+        solver_.FixMLNullspace("PREC1",oldmap, newmap, solver_.Params().sublist("PREC1"));
+      }
+      // fixing length of PREC2 nullspace
+      {
+        const Epetra_Map& oldmap = *(dofrowmap_);
+        const Epetra_Map& newmap = matsolve->Matrix(1,1).EpetraMatrix()->RowMap();
+        solver_.FixMLNullspace("PREC2",oldmap, newmap, solver_.Params().sublist("PREC2"));
+     }
+   }
 
     return mat;
   }
@@ -222,6 +227,8 @@ void FLD::Meshtying::PrepareMeshtyingSystem(
   switch (msht_)
   {
   case INPAR::FLUID::condensed_bmat:
+  case INPAR::FLUID::condensed_bmat_merged:
+  case INPAR::FLUID::coupling_iontransport_laplace:
     CondensationBlockMatrix(sysmat, residual);
     break;
   case INPAR::FLUID::condensed_smat:
@@ -312,14 +319,20 @@ void FLD::Meshtying::SolveMeshtying(
     RCP<Epetra_Vector>          mergedresidual  = LINALG::CreateVector(*mergedmap_,true);
     RCP<Epetra_Vector>          mergedincvel    = LINALG::CreateVector(*mergedmap_,true);
 
-    PrepareSaddlePointSystem(sysmat, mergedsysmat, residual, mergedresidual);
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.1)   - Preparation");
+      PrepareSaddlePointSystem(sysmat, mergedsysmat, residual, mergedresidual);
+    }
 
     {
       TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.2)   - Solve");
       solver_.Solve(mergedsysmat->EpetraOperator(),mergedincvel,mergedresidual,true,itnum==1, w, c, project);
     }
 
-    UpdateSaddlePointSystem(incvel,mergedincvel);
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.3)   - Update");
+      UpdateSaddlePointSystem(incvel,mergedincvel);
+    }
   }
   break;
   case INPAR::FLUID::sps_pc:
@@ -335,7 +348,10 @@ void FLD::Meshtying::SolveMeshtying(
     RCP<Epetra_Vector>          mergedresidual  = LINALG::CreateVector(*mergedmap_,true);
     RCP<Epetra_Vector>          mergedincvel    = LINALG::CreateVector(*mergedmap_,true);
 
-    PrepareSaddlePointSystemPC(sysmat, blocksysmat, residual, mergedresidual);
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.1)   - Preparation");
+      PrepareSaddlePointSystemPC(sysmat, blocksysmat, residual, mergedresidual);
+    }
 
     //OutputBlockMatrix(blocksysmat, mergedresidual);
 
@@ -347,16 +363,22 @@ void FLD::Meshtying::SolveMeshtying(
       solver_.Solve(blocksysmat->EpetraOperator(),mergedincvel,mergedresidual,true,itnum==1);
     }
 
-    UpdateSaddlePointSystem(incvel,mergedincvel);
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.3)   - Update");
+      UpdateSaddlePointSystem(incvel,mergedincvel);
+    }
   }
   break;
   case INPAR::FLUID::condensed_bmat:
   {
-    {
-      TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.2)   - Solve");
+    RCP<Epetra_Vector> res  = LINALG::CreateVector(*mergedmap_,true);
+    RCP<Epetra_Vector> inc  = LINALG::CreateVector(*mergedmap_,true);
 
-      RCP<Epetra_Vector> res  = LINALG::CreateVector(*mergedmap_,true);
-      RCP<Epetra_Vector> inc  = LINALG::CreateVector(*mergedmap_,true);
+    RCP<LINALG::BlockSparseMatrixBase> sysmatnew = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat);
+    RCP<LINALG::BlockSparseMatrixBase> sysmatsolve = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmatsolve_);
+
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.1)   - Preparation");
 
       // container for split residual vector
       std::vector<RCP<Epetra_Vector> > splitvector(3);
@@ -366,33 +388,88 @@ void FLD::Meshtying::SolveMeshtying(
       LINALG::Export(*(splitvector[0]),*res);
       LINALG::Export(*(splitvector[1]),*res);
 
-      RCP<LINALG::BlockSparseMatrixBase> sysmatnew = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat);
-      RCP<LINALG::BlockSparseMatrixBase> sysmatsolve = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmatsolve_);
-
       // assign blocks to the solution matrix
       sysmatsolve->Assign(0,0, View, sysmatnew->Matrix(0,0));
       sysmatsolve->Assign(0,1, View, sysmatnew->Matrix(0,1));
       sysmatsolve->Assign(1,0, View, sysmatnew->Matrix(1,0));
       sysmatsolve->Assign(1,1, View, sysmatnew->Matrix(1,1));
       sysmatsolve->Complete();
+    }
 
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.2)   - Solve");
       solver_.Solve(sysmatsolve->EpetraOperator(),inc,res,true,itnum==1, w, c, project);
+    }
+
+    {
+      TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.3)   - Update");
 
       // Export the computed increment to the global increment
       LINALG::Export(*inc,*incvel);
+
+      // compute and update slave dof's
+      UpdateSlaveDOF(incvel);
     }
-    // compute and update slave dof's
-    UpdateSlaveDOF(incvel);
   }
   break;
+  case INPAR::FLUID::condensed_bmat_merged:
+  case INPAR::FLUID::coupling_iontransport_laplace:
+    {
+      RCP<Epetra_Vector> res  = LINALG::CreateVector(*mergedmap_,true);
+      RCP<Epetra_Vector> inc  = LINALG::CreateVector(*mergedmap_,true);
+
+      RCP<LINALG::BlockSparseMatrixBase> sysmatnew = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat);
+      RCP<LINALG::BlockSparseMatrixBase> sysmatsolve = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmatsolve_);
+      RCP<LINALG::SparseMatrix> test = Teuchos::rcp(new LINALG::SparseMatrix(*mergedmap_,108,false,true));
+
+      {
+        TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.1)   - Preparation");
+
+        // container for split residual vector
+        std::vector<RCP<Epetra_Vector> > splitvector(3);
+        SplitVector(residual, splitvector);
+
+        // build up the reduced residual
+        LINALG::Export(*(splitvector[0]),*res);
+        LINALG::Export(*(splitvector[1]),*res);
+
+        // assign blocks to the solution matrix
+        sysmatsolve->Assign(0,0, View, sysmatnew->Matrix(0,0));
+        sysmatsolve->Assign(0,1, View, sysmatnew->Matrix(0,1));
+        sysmatsolve->Assign(1,0, View, sysmatnew->Matrix(1,0));
+        sysmatsolve->Assign(1,1, View, sysmatnew->Matrix(1,1));
+        sysmatsolve->Complete();
+
+        test = sysmatsolve->Merge();
+      }
+
+      {
+        TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.2)   - Solve");
+        solver_.Solve(test->EpetraOperator(),inc,res,true,itnum==1, w, c, project);
+      }
+
+      {
+        TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.3)   - Update");
+        // Export the computed increment to the global increment
+        LINALG::Export(*inc,*incvel);
+
+        // compute and update slave dof's
+        UpdateSlaveDOF(incvel);
+      }
+    }
+    break;
   case INPAR::FLUID::condensed_smat:
     {
       {
-        TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.2)   - Solve");
+        TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.3)   - Solve");
         solver_.Solve(sysmat->EpetraOperator(),incvel,residual,true,itnum==1, w, c, project);
       }
-      // compute and update slave dof's
-      UpdateSlaveDOF(incvel);
+
+      {
+        TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.3)   - Update");
+        // compute and update slave dof's
+        UpdateSlaveDOF(incvel);
+      }
     }
     break;
   default:

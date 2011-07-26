@@ -227,6 +227,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   {
     msht_ = params_.get<int>("MESHTYING");
 
+    if (msht_ == INPAR::FLUID::coupling_iontransport_laplace)
+      dserror("the option 'coupling_iontransport_laplace' is only available in Elch!!");
+
     // define parameter list for meshtying
     ParameterList mshtparams;
     mshtparams.set("theta",theta_);
