@@ -485,9 +485,18 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     {
       for (int k=0;k < numscal_;k++)
       {
-        cout<<"Electrolyte conductivity (species "<<k+1<<")   = "<<sigma_[k]<<endl;
+        cout<<"Electrolyte conductivity (species "<<k+1<<")    = "<<sigma_[k]<<endl;
       }
-      cout<<"Electrolyte conductivity (all species) = "<<sigma_[numscal_]<<endl<<endl;
+      if (scatratype_==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+      {
+        double diff = sigma_[0];
+        for (int k=1;k < numscal_;k++)
+        {
+          diff += sigma_[k];
+        }
+        cout<<"Electrolyte conductivity (species elim) = "<<sigma_[numscal_]-diff<<endl;
+      }
+      cout<<"Electrolyte conductivity (all species)  = "<<sigma_[numscal_]<<endl<<endl;
     }
   }
 

@@ -1612,11 +1612,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     }
   } // integration loop
 
-#if 0
   // usually, we are done here, but
-  // for ELCH problems with eliminated ion species concentration we have to provide
-  // additional flux terms across (Dirichlet) boundaries
-  if(scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+  // for two certain ELCH problem formulations we have to provide
+  // additional flux terms / currents across Dirichlet boundaries
+  if((scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim) or
+      (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde))
   {
     double val(0.0);
     const DRT::Node* const* nodes = ele->Nodes();
@@ -1627,33 +1627,36 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       std::vector<DRT::Condition*> dirichcond0;
       nodes[vi]->GetCondition(condname,dirichcond0);
 
-      // there is a Dirichlet condition (for which scalar we do not care!)
+      // there is at least one Dirichlet condition on this node
       if (dirichcond0.size() > 0)
       {
-        cout<<"Ele Id = "<<ele->Id()<<"  Found one Dirichlet node for vi="<<vi<<endl;
-
+        //cout<<"Ele Id = "<<ele->Id()<<"  Found one Dirichlet node for vi="<<vi<<endl;
         const vector<int>*    onoff = dirichcond0[0]->Get<vector<int> >   ("onoff");
-
         for (int k=0; k<numscal_; ++k)
         {
           if ((*onoff)[k])
           {
+            //cout<<"Dirichlet is on for k="<<k<<endl;
+            //cout<<"k="<<k<<"  val="<<val<<" valence_k="<<valence_[k]<<endl;
             const int fvi = vi*numdofpernode_+k;
+            // We use the fact, that the rhs vector value for boundary nodes
+            // is equivalent to the integrated negative normal flux
+            // due to diffusion and migration
             val = residual[fvi];
-            cout<<"Dirichlet is on for k="<<k<<endl;
-            cout<<"k="<<k<<"  val="<<val<<" valence_k="<<valence_[k]<<endl;
-            residual[vi*numdofpernode_+numscal_] += valence_[k]*val;
+            residual[vi*numdofpernode_+numscal_] += valence_[k]*(-val);
+            // corresponding linearization
+            for (int ui=0; ui<nen_; ++ui)
+            {
+              val = sys_mat(vi*numdofpernode_+k,ui*numdofpernode_+k);
+              sys_mat(vi*numdofpernode_+numscal_,ui*numdofpernode_+k)+=valence_[k]*(-val);
+              val = sys_mat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_);
+              sys_mat(vi*numdofpernode_+numscal_,ui*numdofpernode_+numscal_)+=valence_[k]*(-val);
+            }
           }
         } // for k
-        if (vi==0 and ele->Id()==0)
-        {
-            residual[vi*numdofpernode_+numscal_] += valence_[numscal_]*(1.0-(1.0-time))*0.02*(-1.0);
-            cout<<"Added flux value ="<<(1.0-(1.0-time))*0.02<<endl;
-        }
-      } // if dirch
+      } // if Dirichlet at node vi
     } // for vi
   }  // elim
-#endif
 
   return;
 }
@@ -1838,11 +1841,13 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
           cout<<"k = "<<k<<"   Did push back for diffus_ and valence_!"<<endl;
           diffus_.push_back(actsinglemat->ElimDiffusivity());
           valence_.push_back(actsinglemat->ElimValence());
+          diffusvalence_.push_back(valence_[numscal_]*diffus_[numscal_]);
         }
         else if (diffus_.size() == (unsigned) (numscal_+1))
         {
           diffus_[numscal_]  = actsinglemat->ElimDiffusivity();
           valence_[numscal_] = actsinglemat->ElimValence();
+          diffusvalence_[numscal_] = valence_[numscal_]*diffus_[numscal_];
         }
         else
           dserror("Something is wrong with eliminated ion species data");
@@ -5772,8 +5777,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateConductivity(
     double sigma_k = factor*valence_[k]*diffusvalence_[k]*conint;
     sigma[k] += sigma_k; // insert value for this ionic species
     sigma_all += sigma_k;
+
+    // effect of eliminated species c_m has to be added (c_m = - 1/z_m \sum_{k=1}^{m-1} z_k c_k)
+    if(scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+    {
+      sigma_all += factor*diffusvalence_[numscal_]*valence_[k]*(-conint);
+    }
   }
-  sigma[numscal_] += sigma_all; // conductivity based on ALL ionic species
+  // conductivity based on ALL ionic species (even eliminated ones!)
+  sigma[numscal_] += sigma_all;
 
   return;
 
