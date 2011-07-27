@@ -12,6 +12,8 @@ flows.
 #include "../drt_lib/drt_globalproblem.H"
 
 #define NODETOL 1e-9
+// turn on if problems with mean values in planes occur
+//#define NO_VALUES_IN_PLANES
 
 /*----------------------------------------------------------------------
 
@@ -1059,7 +1061,9 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
   //----------------------------------------------------------------------
   // loop planes and calculate integral means in each plane
 
-  //this->EvaluateIntegralMeanValuesInPlanes();
+#ifndef NO_VALUES_IN_PLANES
+  this->EvaluateIntegralMeanValuesInPlanes();
+#endif
 
   //----------------------------------------------------------------------
   // loop planes and calculate pointwise means in each plane
