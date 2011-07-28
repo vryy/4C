@@ -76,7 +76,7 @@ Maintainer: Michael Gee
 #include "solver_stratimikossolver.H"
 #endif
 
-
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 02/07|
@@ -239,6 +239,8 @@ void LINALG::Solver::Setup(
   RefCountPtr<Epetra_MultiVector>  kernel_c           ,
   bool                             project            )
 {
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::Solver:  1)   Setup");
+
   // reset data flags on demand
    if (reset)
   {
@@ -286,6 +288,7 @@ void LINALG::Solver::Setup(
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Solve()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::Solver:  2)   Solve");
   solver_->Solve();
 }
 
@@ -424,7 +427,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateToStratimikos(const Teucho
     alist = TranslateIfpackToStratimikos(inparams);
   }
   break;
-  case INPAR::SOLVER::azprec_Teko:
+  case INPAR::SOLVER::azprec_TekoSIMPLE:
+  case INPAR::SOLVER::azprec_BGSnxn:
     // using Teko
     dserror("Teko not supported by Stratimikos by default");
     break;
@@ -627,18 +631,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateIfpackToStratimikos(const 
   ParameterList& settings = outparams.sublist("Ifpack Settings");
   settings = TranslateBACIToIfpack(inparams);
 
-  cout << outparams << endl;
-
-  /*
-  settings.set("amesos: solver type", "Amesos_Klu");
-  settings.set("fact: absolute threshold", 0.0);  // no threshold
-  settings.set("fact: drop tolerance", inparams.get<double>("AZDROP"));
-  settings.set("fact: ilut level-of-fill", inparams.get<double>("IFPACKFILL"));
-  settings.set("fact: level-of-fill", inparams.get<int>("IFPACKGFILL"));
-  settings.set("partitioner: overlap", inparams.get<int>("IFPACKOVERLAP"));
-  settings.set("relaxation: damping factor", inparams.get<double>("AZOMEGA"));
-  settings.set("relaxation: sweeps", inparams.get<int>("AZGRAPH")); // TODO fix me! introduce IFPACKSWEEPS or something like that!*/
-
   return outparams;
 }
 
@@ -653,8 +645,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateMLToStratimikos(const Teuc
 
   ParameterList& settings = outparams.sublist("ML Settings");
   settings = TranslateBACIToML(inparams,NULL); // no downwinding Gauss Seidel within ML
-
-  cout << outparams << endl;
 
   return outparams;
 }
@@ -958,13 +948,38 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
   return mllist;
 }
 
+const Teuchos::ParameterList LINALG::Solver::TranslateBACIToTeko(const Teuchos::ParameterList& inparams)
+{
+  Teuchos::ParameterList tekolist;
 
+  const int prectyp = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(inparams,"AZPREC");
+  switch (prectyp)
+  {
+  case INPAR::SOLVER::azprec_TekoSIMPLE:
+  {
+    tekolist.set("Prec Type","SIMPLE");
+    tekolist.set("alpha",inparams.get<double>("SIMPLE_DAMPING"));
+  }
+  break;
+  case INPAR::SOLVER::azprec_BGSnxn:
+  {
+    tekolist.set("Prec Type","BGS");
+  }
+  break;
+  default:
+    dserror("LINALG::Solver::TranslateBACIToTeko: wrong type of preconditioner");
+    break;
+  }
+
+  return tekolist;
+}
 
 /*----------------------------------------------------------------------*
  |  translate solver parameters (public)               mwgee 02/07,11/08|
  *----------------------------------------------------------------------*/
 const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const ParameterList& inparams)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::Solver:  0)   TranslateSolverParameters");
   // HINT:
   // input parameter inparams.get<int>("AZGRAPH") is not retrieved
 
@@ -1041,7 +1056,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
       // using ifpack
       beloslist.set("Preconditioner Type","ILU");
     break;
-    case INPAR::SOLVER::azprec_Teko:
+    case INPAR::SOLVER::azprec_TekoSIMPLE:
+    case INPAR::SOLVER::azprec_BGSnxn:
       // using Teko
       beloslist.set("Preconditioner Type","Teko");
       break;
@@ -1106,11 +1122,11 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
        ifpacklist = TranslateBACIToIfpack(inparams);
      }
      //------------------------------------- set parameters for Teko if used
-     if (azprectyp == INPAR::SOLVER::azprec_Teko)
+     if (azprectyp == INPAR::SOLVER::azprec_TekoSIMPLE ||
+         azprectyp == INPAR::SOLVER::azprec_BGSnxn)
      {
        ParameterList& tekolist = outparams.sublist("Teko Parameters");
-       tekolist.set("Prec Type","SIMPLE"); // this is not Stratimikos
-       // TODO: Teko preconditioners -> Stratimikos interface? -> ask Eric about his plans
+       tekolist = TranslateBACIToTeko(inparams);
      }
      //------------------------------------- set parameters for ML if used
      if (azprectyp == INPAR::SOLVER::azprec_ML       ||
@@ -1121,7 +1137,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
      {
        ParameterList& mllist = outparams.sublist("ML Parameters");
        mllist = TranslateBACIToML(inparams,&beloslist);
-       cout << beloslist << endl;
      } // if ml preconditioner
 
     break;
@@ -1225,7 +1240,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     case INPAR::SOLVER::azprec_AMGBS:
     case INPAR::SOLVER::azprec_AMG:
     case INPAR::SOLVER::azprec_BGS2x2:
-    case INPAR::SOLVER::azprec_Teko:
+    case INPAR::SOLVER::azprec_BGSnxn:
+    case INPAR::SOLVER::azprec_TekoSIMPLE:
       azlist.set("AZ_precond",AZ_user_precond);
     break;
     default:
@@ -1301,10 +1317,11 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
       }*/
     }
     //------------------------------------- set parameters for Teko if used
-    if (azprectyp == INPAR::SOLVER::azprec_Teko)
+    if (azprectyp == INPAR::SOLVER::azprec_TekoSIMPLE ||
+        azprectyp == INPAR::SOLVER::azprec_BGSnxn)
     {
       ParameterList& tekolist = outparams.sublist("Teko Parameters");
-      tekolist.set("Prec Type","SIMPLE"); // this is not Stratimikos
+      tekolist = TranslateBACIToTeko(inparams);
       // TODO: Teko preconditioners -> Stratimikos interface? -> ask Eric about his plans
     }
     //------------------------------------- set parameters for ML if used

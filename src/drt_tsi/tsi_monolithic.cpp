@@ -278,7 +278,8 @@ void TSI::Monolithic::CreateLinearSolver()
       cout << "solver_->Params()\n" << solver_->Params() << endl;
     }
     break;
-    case INPAR::SOLVER::azprec_Teko:
+    case INPAR::SOLVER::azprec_BGSnxn:
+    case INPAR::SOLVER::azprec_TekoSIMPLE:
     {
 #ifdef TRILINOS_DEV
       // read in Aztec parameters for monolithic "master" solver

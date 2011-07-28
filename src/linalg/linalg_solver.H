@@ -313,6 +313,8 @@ public:
 
   const Teuchos::ParameterList TranslateBACIToIfpack(const Teuchos::ParameterList& inparams);
 
+  const Teuchos::ParameterList TranslateBACIToTeko(const Teuchos::ParameterList& inparams);
+
   /*!
   \brief Add a validated input parameter list as sublist to internal
          parameters

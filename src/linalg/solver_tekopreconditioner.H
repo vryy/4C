@@ -40,13 +40,18 @@ namespace LINALG
 
       virtual Epetra_Operator * PrecOperator() const { return &*prec_; }
 
-      virtual void Print( std::ostream & stream ) { stream << "TEKO"; }
+      virtual void Print( std::ostream & stream )
+      {
+        stream << "TEKO " << type_ << " preconditioner";
+      }
 
       Teuchos::ParameterList& Params() {return tekolist_; };
 
     private:
 
       Teuchos::ParameterList & tekolist_;
+
+      std::string type_;
 
       //! system of equations used for preconditioning used by P_ only
       Teuchos::RCP<LINALG::BlockSparseMatrixBase>       Pmatrix_;
