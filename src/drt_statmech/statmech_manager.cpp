@@ -381,7 +381,6 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
 			SearchAndDeleteCrosslinkers(dt, noderowmap, nodecolmap, currentpositions);
 		}
 
-
 		// reset thermal energy to new value (simple value change for now, maybe Load Curve later on)
 		if(fabs(time_-statmechparams_.get<double>("KTSWITCHTIME",0.0))<(dt/1e3))
 			statmechparams_.set("KT",statmechparams_.get<double>("KTACT",statmechparams_.get<double>("KT",0.0)));
@@ -415,7 +414,6 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
 #ifdef MEASURETIME
 		cout << "\n***\nadministration time: " << Teuchos::Time::wallTime() - t_admin<< " seconds\n***\n";
 #endif // #ifdef MEASURETIME
-
 	}//if(DRT::INPUT::IntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
 
 #ifdef MEASURETIME
@@ -1379,11 +1377,13 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 			{
 				crosslinkergidsrow[gidposition][i] = node->Elements()[j]->Id();
 				for(int k=0; k<element->NumNode(); k++)
+				{
 					for(int l=0; l<crosslinkernodeidsrow.NumVectors(); l++)
-						if(element->NodeIds()[k]!=crosslinkernodeidsrow[l][i]) // no identical entry yet
-							crosslinkernodeidsrow[gidposition*element->NumNode()+k][i] = element->NodeIds()[k];
-						else
+						if(element->NodeIds()[k]!=(int)(crosslinkernodeidsrow[l][i]) && crosslinkernodeidsrow[l][i]<-0.9) // no identical entry yet
+								crosslinkernodeidsrow[l][i] = element->NodeIds()[k];
+						else if(element->NodeIds()[k]==(int)(crosslinkernodeidsrow[l][i])) // if entry already exists, exit l-loop and proceed with next k
 							break;
+				}
 				gidposition++;
 			}
 		}
@@ -1523,8 +1523,8 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 	delcrosslinkerstrans.Export(delcrosslinkers, crosslinkexporter, Add);
 	delcrosslinkers.Import(delcrosslinkerstrans, crosslinkimporter, Insert);
 
-        unsigned startsize = deletedelements_.size();
-        std::vector<DRT::PackBuffer> vdata( startsize );
+	unsigned startsize = deletedelements_.size();
+	std::vector<DRT::PackBuffer> vdata( startsize );
 
 	// DELETION OF ELEMENTS
 	for (int i=0; i<delcrosslinkers.MyLength(); i++)
@@ -1551,8 +1551,11 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 	 *new element maps and call FillComplete();*/
 	discret_.CheckFilledGlobally();
 	discret_.FillComplete(true, false, false);
+
 	if(!discret_.Comm().MyPID())
 		cout<<numdelelements<<" crosslinker element(s) deleted!"<<endl;
+
+	return;
 } //StatMechManager::SearchAndDeleteCrosslinkers()
 
 /*----------------------------------------------------------------------*
