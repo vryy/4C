@@ -1376,18 +1376,36 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 			if(element->Id() > basisnodes_)
 			{
 				crosslinkergidsrow[gidposition][i] = node->Elements()[j]->Id();
+
 				for(int k=0; k<element->NumNode(); k++)
 				{
+					// check if node id has already been added
+					bool redundantid = false;
+					int newidpos = -1;
 					for(int l=0; l<crosslinkernodeidsrow.NumVectors(); l++)
-						if(element->NodeIds()[k]!=(int)(crosslinkernodeidsrow[l][i]) && crosslinkernodeidsrow[l][i]<-0.9) // no identical entry yet
-								crosslinkernodeidsrow[l][i] = element->NodeIds()[k];
-						else if(element->NodeIds()[k]==(int)(crosslinkernodeidsrow[l][i])) // if entry already exists, exit l-loop and proceed with next k
+					{
+						// exit loop if node id is already there
+						if(element->NodeIds()[k]==(int)(crosslinkernodeidsrow[l][i]))
+						{
+							redundantid = true;
 							break;
+						}
+						// exit as soon as spotting the first "-1" entry
+						if(crosslinkernodeidsrow[l][i]<-0.9)
+						{
+							newidpos = l;
+							break;
+						}
+					}
+					// if node id is not yet present in the vector
+					if(!redundantid)
+						crosslinkernodeidsrow[newidpos][i] = element->NodeIds()[k];
 				}
 				gidposition++;
 			}
 		}
 	}
+
 	// Import from row map to column map
 	crosslinkergids.Import(crosslinkergidsrow, importer, Insert);
 	crosslinkernodeids.Import(crosslinkernodeidsrow, importer, Insert);
