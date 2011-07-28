@@ -21,6 +21,7 @@
 #include "solver_tekopreconditioner.H"
 #endif
 
+#include <Teuchos_TimeMonitor.hpp>
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
@@ -59,6 +60,8 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
                                                          Teuchos::RCP<Epetra_MultiVector> kernel_c,
                                                          bool project )
 {
+  TEUCHOS_FUNC_TIME_MONITOR("LINALG::Solver:  1.1)   CreatePreconditioner");
+
   preconditioner_ = Teuchos::null;
 
   if ( isCrsMatrix )
