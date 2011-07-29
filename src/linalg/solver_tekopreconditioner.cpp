@@ -79,6 +79,7 @@ void LINALG::SOLVER::TekoPreconditioner::Setup( bool create,
         std::stringstream ssinverse;
         ssinverse << "Inverse" << i+1;
         if(!Params().isSublist(ssinverse.str())) dserror("missing parameter sublists for inverses.");
+        if(!Params().sublist(ssinverse.str()).isSublist("Stratimikos Parameters")) dserror("Teko block preconditioners need STRATIMIKOS solver objects for the block inverses.");
         Teuchos::ParameterList invParams = Params().sublist(ssinverse.str()).sublist("Stratimikos Parameters");
         std::string invType = invParams.get<std::string>("Linear Solver Type");
         Teuchos::RCP<Teko::InverseFactory> inverseFact = Teko::invFactoryFromParamList(invParams,invType);
@@ -98,6 +99,7 @@ void LINALG::SOLVER::TekoPreconditioner::Setup( bool create,
     else if(type_=="SIMPLE")
     {
       if(!Params().isSublist("Inverse1")) dserror("missing parameter sublists for inverse.");
+      if(!Params().sublist("Inverse1").isSublist("Stratimikos Parameters")) dserror("Teko block preconditioners need STRATIMIKOS solver objects for the block inverses.");
       Teuchos::ParameterList invParams = Params().sublist("Inverse1").sublist("Stratimikos Parameters");
       std::string invType = invParams.get<std::string>("Linear Solver Type");
       double alpha = Params().sublist("Teko Parameters").get<double>("alpha",0.9);
@@ -106,6 +108,7 @@ void LINALG::SOLVER::TekoPreconditioner::Setup( bool create,
       // check for second inverse (if available)
       if(Params().isSublist("Inverse2"))
       {
+        if(!Params().sublist("Inverse2").isSublist("Stratimikos Parameters")) dserror("Teko block preconditioners need STRATIMIKOS solver objects for the block inverses.");
         Teuchos::ParameterList invParams2 = Params().sublist("Inverse2").sublist("Stratimikos Parameters");
         std::string invType2 = invParams2.get<std::string>("Linear Solver Type");
         Teuchos::RCP<Teko::InverseFactory> inverseFact2 = Teko::invFactoryFromParamList(invParams2,invType2);

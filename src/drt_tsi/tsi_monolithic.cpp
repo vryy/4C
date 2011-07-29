@@ -235,7 +235,8 @@ void TSI::Monolithic::CreateLinearSolver()
         tsisolveparams,
         "SOLVER"
         );
-  if (solvertype != INPAR::SOLVER::aztec_msr)
+  if (solvertype != INPAR::SOLVER::aztec_msr &&
+      solvertype != INPAR::SOLVER::belos)
   {
     cout << "!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!" << endl;
     cout << " Note: the BGS2x2 preconditioner now "              << endl;
@@ -251,99 +252,62 @@ void TSI::Monolithic::CreateLinearSolver()
         tsisolveparams,
         "AZPREC"
         );
-//  if (azprectype != INPAR::SOLVER::azprec_BGS2x2)
-//    dserror("Block Gauss-Seidel preconditioner expected");
 
+  // plausibility check
   switch (azprectype)
   {
     case INPAR::SOLVER::azprec_BGS2x2:
-    {
-      solver_ = rcp(new LINALG::Solver(
-                             tsisolveparams,
-                             // ggfs. explizit Comm von STR wie lungscatra
-                             Comm(),
-                             DRT::Problem::Instance()->ErrorFile()->Handle()
-                             )
-                         );
-      solver_->PutSolverParamsToSubParams(
-                    "Inverse1",
-                    DRT::Problem::Instance()->StructSolverParams()
-                    //DRT::Problem::Instance()->BGSPrecBlock1Params()
-                    );
-      solver_->PutSolverParamsToSubParams(
-                    "Inverse2",
-                    DRT::Problem::Instance()->ThermalSolverParams()
-                    //DRT::Problem::Instance()->BGSPrecBlock2Params()
-                    );
-
-      // TODO (TW) handling of flip flag???
-      // describe rigid body mode
-      StructureField().Discretization()->ComputeNullSpaceIfNecessary(
-                                           solver_->Params().sublist("Inverse1")
-                                           );
-      // TODO (TW) maybe using ML 2nd discretisation is necessary, too
-      ThermoField().Discretization()->ComputeNullSpaceIfNecessary(
-                                        solver_->Params().sublist("Inverse2")
-                                        );
-
-      cout << "solver_->Params()\n" << solver_->Params() << endl;
-    }
-    break;
+      break;
     case INPAR::SOLVER::azprec_BGSnxn:
     case INPAR::SOLVER::azprec_TekoSIMPLE:
     {
 #ifdef TRILINOS_DEV
-      // read in Aztec parameters for monolithic "master" solver
-      solver_ = rcp(new LINALG::Solver(
-                             tsisolveparams,
-                             // ggfs. explizit Comm von STR wie lungscatra
-                             Comm(),
-                             DRT::Problem::Instance()->ErrorFile()->Handle()
-                             )
-                         );
-
-      // fill in parameters for inverse factories for TEKO::SIMPLER
-
-      // use solver blocks for structure and temperature (thermal field)
-      const Teuchos::ParameterList& ssolverparams = DRT::Problem::Instance()->StructSolverParams();
-      const Teuchos::ParameterList& tsolverparams = DRT::Problem::Instance()->ThermalSolverParams();
-
       // check if structural solver and thermal solver are Stratimikos based (Teko expects stratimikos)
-      int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(ssolverparams, "SOLVER");
+      int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->StructSolverParams(), "SOLVER");
       if (solvertype != INPAR::SOLVER::stratimikos_amesos &&
           solvertype != INPAR::SOLVER::stratimikos_aztec  &&
           solvertype != INPAR::SOLVER::stratimikos_belos)
-        dserror("Teko expects a STRATIMIKOS solver object in STRUCTURE SOLVER");
-      solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(tsolverparams, "SOLVER");
+      dserror("Teko expects a STRATIMIKOS solver object in STRUCTURE SOLVER");
+
+      solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(DRT::Problem::Instance()->ThermalSolverParams(), "SOLVER");
       if (solvertype != INPAR::SOLVER::stratimikos_amesos &&
           solvertype != INPAR::SOLVER::stratimikos_aztec  &&
           solvertype != INPAR::SOLVER::stratimikos_belos)
         dserror("Teko expects a STRATIMIKOS solver object in THERMAL SOLVER");
-
-      solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
-      solver_->PutSolverParamsToSubParams("Inverse2", tsolverparams);
-
-      // describe rigid body mode
-      StructureField().Discretization()->ComputeNullSpaceIfNecessary(
-                                           solver_->Params().sublist("Inverse1")
-                                           );
-      // TODO (TW) maybe using ML 2nd discretisation is necessary, too
-      ThermoField().Discretization()->ComputeNullSpaceIfNecessary(
-                                        solver_->Params().sublist("Inverse2")
-                                        );
-
 #else
-      dserror("Teko preconditioners only in TRILINOS_DEV BACI version available. Ask Tobias for more info.");
+      dserror("Teko preconditioners only available with TRILINOS_DEV BACI (>Q1/2011)");
 #endif
     }
     break;
     default:
-    {
-      dserror("Block Gauss-Seidel BGS preconditioner expected.");
-    }
+          dserror("Block Gauss-Seidel BGS2x2 preconditioner expected");
+          break;
   }
 
+  solver_ = rcp(new LINALG::Solver(
+                         tsisolveparams,
+                         // ggfs. explizit Comm von STR wie lungscatra
+                         Comm(),
+                         DRT::Problem::Instance()->ErrorFile()->Handle()
+                         )
+                     );
 
+  // use solver blocks for structure and temperature (thermal field)
+  const Teuchos::ParameterList& ssolverparams = DRT::Problem::Instance()->StructSolverParams();
+  const Teuchos::ParameterList& tsolverparams = DRT::Problem::Instance()->ThermalSolverParams();
+
+  solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
+  solver_->PutSolverParamsToSubParams("Inverse2", tsolverparams);
+
+  // TODO (TW) handling of flip flag in Lena's BGS2x2???
+
+  // prescribe rigid body modes
+  StructureField().Discretization()->ComputeNullSpaceIfNecessary(
+                                       solver_->Params().sublist("Inverse1")
+                                       );
+  ThermoField().Discretization()->ComputeNullSpaceIfNecessary(
+                                    solver_->Params().sublist("Inverse2")
+                                    );
 }
 
 /*----------------------------------------------------------------------*
