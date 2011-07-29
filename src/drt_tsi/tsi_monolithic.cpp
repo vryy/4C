@@ -229,7 +229,7 @@ TSI::Monolithic::Monolithic(
 void TSI::Monolithic::CreateLinearSolver()
 {
   const Teuchos::ParameterList& tsisolveparams
-    = DRT::Problem::Instance()->MonolithicSolverParams();
+    = DRT::Problem::Instance()->TSIMonolithicSolverParams();
   const int solvertype
     = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
         tsisolveparams,
