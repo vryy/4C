@@ -78,7 +78,7 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
     {
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MLPreconditioner( outfile_, Params().sublist("ML Parameters") ) );
     }
-    else if ( Params().isSublist("AMGBS Parameters") )
+    else if ( Params().isSublist("AMGBS Parameters") ) // TODO remove me.
     {
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::AMGBSPreconditioner( outfile_, Params() ) );
     }

@@ -112,8 +112,8 @@ void LINALG::SOLVER::BGSPreconditioner::Setup( bool create,
     if (numblocks == 2) // BGS2x2
     {
       // check whether sublists for individual block solvers are present
-      bool haveprec1 = params_.isSublist("PREC1");
-      bool haveprec2 = params_.isSublist("PREC2");
+      bool haveprec1 = params_.isSublist("Inverse1");
+      bool haveprec2 = params_.isSublist("Inverse2");
       if (!haveprec1 or !haveprec2)
         dserror("individual block solvers for BGS2x2 need to be specified");
 
@@ -126,8 +126,8 @@ void LINALG::SOLVER::BGSPreconditioner::Setup( bool create,
       bool fliporder = bgslist_.get<bool>("fliporder");
 
       P_ = Teuchos::rcp(new LINALG::BGS2x2_Operator(Teuchos::rcp( matrix, false ),
-                                           params_.sublist("PREC1"),
-                                           params_.sublist("PREC2"),
+                                           params_.sublist("Inverse1"),
+                                           params_.sublist("Inverse2"),
                                            global_iter,
                                            global_omega,
                                            block1_iter,
@@ -138,6 +138,6 @@ void LINALG::SOLVER::BGSPreconditioner::Setup( bool create,
                                            outfile_));
     }
     else
-      dserror("Block Gauss-Seidel is currently only implemented for a 2x2 system");
+      dserror("Block Gauss-Seidel BGS2x2 is currently only implemented for a 2x2 system. Use BGSnxn for a common block Gauss-Seidel implementation (based on Teko package in Trilinos).");
   }
 }

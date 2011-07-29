@@ -138,27 +138,27 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
       = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> (dommapext,rowmapext,1,false,true));
     sysmatsolve_ = matsolve;
 
-    //RCP<vector<double> > test1 = solver.Params().sublist("PREC1").sublist("ML Parameters").get<RCP<vector<double> > >("nullspace");
+    //RCP<vector<double> > test1 = solver.Params().sublist("Inverse1").sublist("ML Parameters").get<RCP<vector<double> > >("nullspace");
     //cout << "Length of null space before  " << test1->size() << endl;
     //cout << "address  " << test1 << endl;
 
-    //RCP<vector<double> > test2 = solver.Params().sublist("PREC2").sublist("ML Parameters").get<RCP<vector<double> > >("nullspace");
+    //RCP<vector<double> > test2 = solver.Params().sublist("Inverse2").sublist("ML Parameters").get<RCP<vector<double> > >("nullspace");
     //cout << "Length of null space before  " << test2->size() << endl;
     //cout << "address  " << test2 << endl;
 
-    // fixing length of PREC1 nullspace
+    // fixing length of Inverse1 nullspace
     if (msht_ ==INPAR::FLUID::condensed_bmat)
     {
       {
         const Epetra_Map& oldmap = *(dofrowmap_);
         const Epetra_Map& newmap = matsolve->Matrix(0,0).EpetraMatrix()->RowMap();
-        solver_.FixMLNullspace("PREC1",oldmap, newmap, solver_.Params().sublist("PREC1"));
+        solver_.FixMLNullspace("Inverse1",oldmap, newmap, solver_.Params().sublist("Inverse1"));
       }
-      // fixing length of PREC2 nullspace
+      // fixing length of Inverse2 nullspace
       {
         const Epetra_Map& oldmap = *(dofrowmap_);
         const Epetra_Map& newmap = matsolve->Matrix(1,1).EpetraMatrix()->RowMap();
-        solver_.FixMLNullspace("PREC2",oldmap, newmap, solver_.Params().sublist("PREC2"));
+        solver_.FixMLNullspace("Inverse2",oldmap, newmap, solver_.Params().sublist("Inverse2"));
      }
    }
 

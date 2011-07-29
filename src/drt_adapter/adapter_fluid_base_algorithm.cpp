@@ -149,10 +149,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
   if(DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING")==INPAR::FLUID::condensed_bmat)
   {
-    solver->PutSolverParamsToSubParams("PREC1",
+    solver->PutSolverParamsToSubParams("Inverse1",
         DRT::Problem::Instance()->BGSPrecBlock1Params());
 
-    solver->PutSolverParamsToSubParams("PREC2",
+    solver->PutSolverParamsToSubParams("Inverse2",
             DRT::Problem::Instance()->BGSPrecBlock2Params());
   }
 
@@ -164,8 +164,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
     if (DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING")==INPAR::FLUID::condensed_bmat)
     {
-      actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("PREC1"),true);
-      actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("PREC2"),true);
+      actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse1"),true);
+      actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse2"),true);
     }
   }
 

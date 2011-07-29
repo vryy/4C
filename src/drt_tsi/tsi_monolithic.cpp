@@ -238,10 +238,7 @@ void TSI::Monolithic::CreateLinearSolver()
   if (solvertype != INPAR::SOLVER::aztec_msr)
   {
     cout << "!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!" << endl;
-    cout << " We changed the dat file format: The solver block " << endl;
-    cout << " TSI MONOLITHIC SOLVER has been renamed to "        << endl;
-    cout << " MONOLITHIC SOLVER in the dat file!"                << endl;
-    cout << " Furthermore the BGS2x2 preconditioner now "        << endl;
+    cout << " Note: the BGS2x2 preconditioner now "              << endl;
     cout << " uses the STRUCT SOLVER and THERMAL SOLVER blocks"  << endl;
     cout << " for building the internal inverses"                << endl;
     cout << " Remove the old BGS PRECONDITIONER BLOCK entries "  << endl;
@@ -269,12 +266,12 @@ void TSI::Monolithic::CreateLinearSolver()
                              )
                          );
       solver_->PutSolverParamsToSubParams(
-                    "PREC1",
+                    "Inverse1",
                     DRT::Problem::Instance()->StructSolverParams()
                     //DRT::Problem::Instance()->BGSPrecBlock1Params()
                     );
       solver_->PutSolverParamsToSubParams(
-                    "PREC2",
+                    "Inverse2",
                     DRT::Problem::Instance()->ThermalSolverParams()
                     //DRT::Problem::Instance()->BGSPrecBlock2Params()
                     );
@@ -282,11 +279,11 @@ void TSI::Monolithic::CreateLinearSolver()
       // TODO (TW) handling of flip flag???
       // describe rigid body mode
       StructureField().Discretization()->ComputeNullSpaceIfNecessary(
-                                           solver_->Params().sublist("PREC1")
+                                           solver_->Params().sublist("Inverse1")
                                            );
       // TODO (TW) maybe using ML 2nd discretisation is necessary, too
       ThermoField().Discretization()->ComputeNullSpaceIfNecessary(
-                                        solver_->Params().sublist("PREC2")
+                                        solver_->Params().sublist("Inverse2")
                                         );
 
       cout << "solver_->Params()\n" << solver_->Params() << endl;

@@ -136,22 +136,25 @@ FSI::LungScatra::LungScatra(Teuchos::RCP<FSI::Monolithic> fsi):
                                          firstscatradis->Comm(),
                                          DRT::Problem::Instance()->ErrorFile()->Handle()));
 #else
-  const Teuchos::ParameterList& scatrasolvparams =  DRT::Problem::Instance()->CoupledScalarTransportSolverParams();
-  const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(scatrasolvparams,"SOLVER");
+  const Teuchos::ParameterList& coupledscatrasolvparams =  DRT::Problem::Instance()->CoupledScalarTransportSolverParams();
+  const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(coupledscatrasolvparams,"SOLVER");
   if (solvertype != INPAR::SOLVER::aztec_msr)
     dserror("aztec solver expected");
-  const int azprectype = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(scatrasolvparams,"AZPREC");
+  const int azprectype = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(coupledscatrasolvparams,"AZPREC");
   if (azprectype != INPAR::SOLVER::azprec_BGS2x2)
     dserror("Block Gauss-Seidel preconditioner expected");
 
-  scatrasolver_ = rcp(new LINALG::Solver(scatrasolvparams,
+  // use coupled SCATRA solver object
+  scatrasolver_ = rcp(new LINALG::Solver(coupledscatrasolvparams,
                                          firstscatradis->Comm(),
                                          DRT::Problem::Instance()->ErrorFile()->Handle()));
 
-  scatrasolver_->PutSolverParamsToSubParams("PREC1",DRT::Problem::Instance()->ScalarTransportFluidSolverParams());
-  scatrasolver_->PutSolverParamsToSubParams("PREC2",DRT::Problem::Instance()->ScalarTransportStructureSolverParams());
+  scatrasolver_->PutSolverParamsToSubParams("Inverse1",DRT::Problem::Instance()->ScalarTransportFluidSolverParams());
+  scatrasolver_->PutSolverParamsToSubParams("Inverse2",DRT::Problem::Instance()->ScalarTransportStructureSolverParams());
 
-  firstscatradis->ComputeNullSpaceIfNecessary(scatrasolver_->Params());
+  firstscatradis->ComputeNullSpaceIfNecessary(scatrasolver_->Params()); //TODO is this sufficient/necessary?
+  //(scatravec_[0])->ScaTraField().Discretization()->ComputeNullSpaceIfNecessary(scatrasolver_->Params().sublist("Inverse1")); // in my opinion we need these two rows!
+  //(scatravec_[1])->ScaTraField().Discretization()->ComputeNullSpaceIfNecessary(scatrasolver_->Params().sublist("Inverse2"));
 #endif
 
   // make sure that initial time derivative of concentration is not calculated
