@@ -1793,7 +1793,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
     {
       // Owing to experience a very accurate solution has to be enforced here!
       // Thus, we allocate an own solver with VERY strict tolerance!
-      ParameterList p(DRT::Problem::Instance()->ScalarTransportSolverParams());
+      ParameterList p(DRT::Problem::Instance()->ScalarTransportFluidSolverParams());
       const double origtol = p.get<double>("AZTOL");
       const double newtol  = 1.0e-11;
       p.set("AZTOL",newtol);

@@ -19,7 +19,7 @@ Maintainer: Georg Bauer
 #define ADAPTER_SCATRA_BASE_ALGORITHM_H
 
 #include "../drt_scatra/scatra_timint_implicit.H"
-
+#include "../drt_lib/drt_globalproblem.H"
 
 // forward declarations
 namespace DRT
@@ -47,7 +47,8 @@ namespace ADAPTER {
     explicit ScaTraBaseAlgorithm(
         const Teuchos::ParameterList& prbdyn, ///< problem-dependent parameters
         const bool isale,                     ///< do we need the ALE formulation?
-        const int disnum=0                    ///< scatra discretization number (default: 0)
+        const int disnum=0,                   ///< scatra discretization number (default: 0)
+        const Teuchos::ParameterList& solverparams=DRT::Problem::Instance()->ScalarTransportFluidSolverParams() ///< BACI solver block parameter list from dat file (default: FLUID SCALAR TRANSPORT SOLVER)
       );
 
     /// virtual destructor to support polymorph destruction

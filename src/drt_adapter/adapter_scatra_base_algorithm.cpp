@@ -17,7 +17,6 @@ Maintainer: Georg Bauer
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"
 #include "adapter_scatra_base_algorithm.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_scatra.H"
@@ -42,7 +41,8 @@ extern struct _GENPROB     genprob;
 ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
     const Teuchos::ParameterList& prbdyn,
     bool isale,
-    const int disnum
+    const int disnum,
+    const Teuchos::ParameterList& solverparams
 )
 {
   // setup scalar transport algorithm (overriding some dynamic parameters
@@ -81,7 +81,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
     DRT::INPUT::PrintDefaultParameters(std::cout, scatradyn.sublist("NONLINEAR"));
     /*
     const Teuchos::ParameterList& solverparams =
-        DRT::Problem::Instance()->ScalarTransportSolverParams();
+        DRT::Problem::Instance()->ScalarTransportFluidSolverParams();
     DRT::INPUT::PrintDefaultParameters(std::cout, solverparams);
     */
   }
@@ -90,7 +90,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // create a solver
   // -------------------------------------------------------------------
   RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(DRT::Problem::Instance()->ScalarTransportSolverParams(),
+    rcp(new LINALG::Solver(solverparams,   //DRT::Problem::Instance()->ScalarTransportFluidSolverParams(),
                            actdis->Comm(),
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());

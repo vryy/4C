@@ -217,7 +217,9 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--STRUCT SOLVER", *list);
   reader.ReadGidSection("--ALE SOLVER", *list);
   reader.ReadGidSection("--THERMAL SOLVER", *list);
-  reader.ReadGidSection("--SCALAR TRANSPORT SOLVER", *list);
+  //reader.ReadGidSection("--SCALAR TRANSPORT SOLVER", *list);
+  reader.ReadGidSection("--FLUID SCALAR TRANSPORT SOLVER", *list);
+  reader.ReadGidSection("--STRUCTURE SCALAR TRANSPORT SOLVER", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER", *list);
   reader.ReadGidSection("--COUPLED SCALAR TRANSPORT SOLVER", *list);
   reader.ReadGidSection("--ARTERY NETWORK SOLVER", *list);

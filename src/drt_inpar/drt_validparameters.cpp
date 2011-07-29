@@ -3645,8 +3645,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   SetValidSolverParameters(thermalsolver);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& scatrasolver = list->sublist("SCALAR TRANSPORT SOLVER",false,"solver parameters for scalar transport problems");
-  SetValidSolverParameters(scatrasolver);
+  Teuchos::ParameterList& fluidscatrasolver = list->sublist("FLUID SCALAR TRANSPORT SOLVER",false,"solver parameters for scalar transport problems");
+  SetValidSolverParameters(fluidscatrasolver);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& structurescatrasolver = list->sublist("STRUCTURE SCALAR TRANSPORT SOLVER",false,"solver parameters for scalar transport problems");
+  SetValidSolverParameters(structurescatrasolver);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatrapotsolver = list->sublist("SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER",false,"solver parameters for block-preconditioning");

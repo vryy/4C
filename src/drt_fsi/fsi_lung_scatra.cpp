@@ -73,8 +73,8 @@ FSI::LungScatra::LungScatra(Teuchos::RCP<FSI::Monolithic> fsi):
     dserror("lung gas exchange is limited in functionality (only one-step-theta scheme possible)");
 
   // create one-way coupling algorithm instances
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,true,0));
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,true,1));
+  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,true,0,DRT::Problem::Instance()->ScalarTransportFluidSolverParams()));
+  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,true,1,DRT::Problem::Instance()->ScalarTransportStructureSolverParams()));
 
   scatravec_.push_back(fluidscatra);
   scatravec_.push_back(structscatra);
@@ -147,10 +147,9 @@ FSI::LungScatra::LungScatra(Teuchos::RCP<FSI::Monolithic> fsi):
   scatrasolver_ = rcp(new LINALG::Solver(scatrasolvparams,
                                          firstscatradis->Comm(),
                                          DRT::Problem::Instance()->ErrorFile()->Handle()));
-  scatrasolver_->PutSolverParamsToSubParams("PREC1",
-                                           DRT::Problem::Instance()->BGSPrecBlock1Params());
-  scatrasolver_->PutSolverParamsToSubParams("PREC2",
-                                           DRT::Problem::Instance()->BGSPrecBlock2Params());
+
+  scatrasolver_->PutSolverParamsToSubParams("PREC1",DRT::Problem::Instance()->ScalarTransportFluidSolverParams());
+  scatrasolver_->PutSolverParamsToSubParams("PREC2",DRT::Problem::Instance()->ScalarTransportStructureSolverParams());
 
   firstscatradis->ComputeNullSpaceIfNecessary(scatrasolver_->Params());
 #endif
