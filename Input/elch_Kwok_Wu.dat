@@ -154,7 +154,7 @@ ML_DAMPFINE       0.67            // damping fine grid
 ML_DAMPMED        1.0             // damping med grids
 ML_DAMPCOARSE     1.0             // damping coarse grid
 PARTITION         Cut_Elements
--------------------------------------------SCALAR TRANSPORT SOLVER
+-------------------------------------FLUID SCALAR TRANSPORT SOLVER
 SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                  // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR

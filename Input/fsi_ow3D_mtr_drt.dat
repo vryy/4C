@@ -329,7 +329,7 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1 1
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
---------------------------------------------SCALAR TRANSPORT SOLVER
+--------------------------------------FLUID SCALAR TRANSPORT SOLVER
 AZBDIAG                         0
 AZCONV                          AZ_r0
 AZDROP                          0

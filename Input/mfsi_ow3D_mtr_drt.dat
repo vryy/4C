@@ -203,7 +203,7 @@ ITEMAX                          10
 -------------------------SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
---------------------------------------------SCALAR TRANSPORT SOLVER
+--------------------------------------FLUID SCALAR TRANSPORT SOLVER
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 ------------------------------------------------------STRUCT SOLVER

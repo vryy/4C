@@ -53,7 +53,7 @@ WRITEFLUX    No
 -------------------------------------------------------ALE DYNAMIC
 ------------------------------------------------------OPTIMIZATION
 ------------------------------------------------------FLUID SOLVER
--------------------------------------------SCALAR TRANSPORT SOLVER
+-------------------------------------FLUID SCALAR TRANSPORT SOLVER
 SOLVER         LAPACK_nonsym
 PARTITION      Cut_Elements
 -----------------------------------------------------STRUCT SOLVER

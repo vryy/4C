@@ -88,7 +88,7 @@ TEMPERATURE      11.604506 // abused as a scaling factor in order to have: F/RT 
 -------------------------------------------------------ALE DYNAMIC
 -------------------------------------------------------TSI DYNAMIC
 ------------------------------------------------------FLUID SOLVER
--------------------------------------------SCALAR TRANSPORT SOLVER
+-------------------------------------FLUID SCALAR TRANSPORT SOLVER
 SOLVER         UMFPACK            // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 ---------------------------------------------FLUID PRESSURE SOLVER
 -----------------------------------------------------STRUCT SOLVER

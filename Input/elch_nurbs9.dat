@@ -99,7 +99,7 @@ NATURAL_CONVECTION              No
 TEMPERATURE                     293
 ------------------------------------------------------FLUID SOLVER
 SOLVER         UMFPACK
--------------------------------------------SCALAR TRANSPORT SOLVER
+-------------------------------------FLUID SCALAR TRANSPORT SOLVER
 SOLVER         UMFPACK
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4

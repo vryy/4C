@@ -94,7 +94,7 @@ DUMPING_PERIOD        0
 -------------------------------------------------------ALE DYNAMIC
 -------------------------------------------------------TSI DYNAMIC
 ------------------------------------------------------FLUID SOLVER
--------------------------------------------SCALAR TRANSPORT SOLVER
+-------------------------------------FLUID SCALAR TRANSPORT SOLVER
 SOLVER         UMFPACK            // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                  // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR

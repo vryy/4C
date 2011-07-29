@@ -133,7 +133,7 @@ REINITINTERVAL                  15
 SOLVER         UMFPACK 
 -------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  yes
--------------------------------------------SCALAR TRANSPORT SOLVER
+-------------------------------------FLUID SCALAR TRANSPORT SOLVER
 SOLVER         UMFPACK 
 ----------------------------------------------------------MATERIALS
 MAT       1 MAT_matlist  NUMMAT 2 MATIDS 3 4

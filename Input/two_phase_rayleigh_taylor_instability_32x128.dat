@@ -146,7 +146,7 @@ SUGRVEL                         no
 GMSH_DEBUG_OUT                  Yes
 -------------------------------------------------------FLUID SOLVER
 SOLVER         UMFPACK
--------------------------------------------SCALAR TRANSPORT SOLVER
+-------------------------------------FLUID SCALAR TRANSPORT SOLVER
 SOLVER         UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT       1 MAT_matlist  NUMMAT 2 MATIDS 3 4

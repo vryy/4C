@@ -274,7 +274,7 @@ UPRES                           1
 VELFUNCNO                       -1
 VELOCITYFIELD                   zero
 WRITEFLUX                       No
---------------------------------------------SCALAR TRANSPORT SOLVER
+--------------------------------------FLUID SCALAR TRANSPORT SOLVER
 AZBDIAG                         0
 AZCONV                          AZ_r0
 AZDROP                          0

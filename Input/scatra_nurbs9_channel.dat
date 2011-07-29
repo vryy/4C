@@ -79,7 +79,7 @@ OUTPUT_GMSH      No
 OUTMEAN          Yes
 ------------------------------------------------------FLUID SOLVER
 SOLVER         UMFPACK
--------------------------------------------SCALAR TRANSPORT SOLVER
+-------------------------------------FLUID SCALAR TRANSPORT SOLVER
 SOLVER         UMFPACK
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4
