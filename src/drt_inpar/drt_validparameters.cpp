@@ -3674,8 +3674,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // TSI monolithic solver section
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& tsimonsolver = list->sublist("TSI MONOLITHIC SOLVER",false,"solver parameters for monoltihic tsi");
-  SetValidSolverParameters(tsimonsolver);
+  Teuchos::ParameterList& monsolver = list->sublist("MONOLITHIC SOLVER",false,"solver parameters for monoltihic tsi");
+  SetValidSolverParameters(monsolver);
 
   // CONTACT solver section
   /*----------------------------------------------------------------------*/

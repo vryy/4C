@@ -229,14 +229,26 @@ TSI::Monolithic::Monolithic(
 void TSI::Monolithic::CreateLinearSolver()
 {
   const Teuchos::ParameterList& tsisolveparams
-    = DRT::Problem::Instance()->TSIMonolithicSolverParams();
+    = DRT::Problem::Instance()->MonolithicSolverParams();
   const int solvertype
     = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
         tsisolveparams,
         "SOLVER"
         );
   if (solvertype != INPAR::SOLVER::aztec_msr)
+  {
+    cout << "!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!" << endl;
+    cout << " We changed the dat file format: The solver block " << endl;
+    cout << " TSI MONOLITHIC SOLVER has been renamed to "        << endl;
+    cout << " MONOLITHIC SOLVER in the dat file!"                << endl;
+    cout << " Furthermore the BGS2x2 preconditioner now "        << endl;
+    cout << " uses the STRUCT SOLVER and THERMAL SOLVER blocks"  << endl;
+    cout << " for building the internal inverses"                << endl;
+    cout << " Remove the old BGS PRECONDITIONER BLOCK entries "  << endl;
+    cout << " in the dat files!"                                 << endl;
+    cout << "!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!" << endl;
     dserror("aztec solver expected");
+  }
   const int azprectype
     = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
         tsisolveparams,
@@ -258,11 +270,13 @@ void TSI::Monolithic::CreateLinearSolver()
                          );
       solver_->PutSolverParamsToSubParams(
                     "PREC1",
-                    DRT::Problem::Instance()->BGSPrecBlock1Params()
+                    DRT::Problem::Instance()->StructSolverParams()
+                    //DRT::Problem::Instance()->BGSPrecBlock1Params()
                     );
       solver_->PutSolverParamsToSubParams(
                     "PREC2",
-                    DRT::Problem::Instance()->BGSPrecBlock2Params()
+                    DRT::Problem::Instance()->ThermalSolverParams()
+                    //DRT::Problem::Instance()->BGSPrecBlock2Params()
                     );
 
       // TODO (TW) handling of flip flag???
