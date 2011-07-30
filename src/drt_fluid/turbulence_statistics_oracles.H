@@ -201,12 +201,6 @@ private:
   LINALG::Matrix<21,1> x1positions_;
   const double x3position_;
 
-  //! toogle vectors: sums are computed by scalarproducts
-  Teuchos::RCP<Epetra_Vector> toggleu_;
-  Teuchos::RCP<Epetra_Vector> togglev_;
-  Teuchos::RCP<Epetra_Vector> togglew_;
-  Teuchos::RCP<Epetra_Vector> togglep_;
-
   //! sum over nodal forces at wall
   Teuchos::RCP<LINALG::SerialDenseMatrix> wallforceu_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> wallforcev_;
@@ -215,6 +209,7 @@ private:
   Teuchos::RCP<LINALG::SerialDenseMatrix> wallvelu_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> wallvelv_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> wallvelw_;
+  Teuchos::RCP<LINALG::SerialDenseMatrix> wallp_;
 
   Teuchos::RCP<LINALG::SerialDenseMatrix> wallinflowchannelforceu_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> wallinflowchannelforcev_;
@@ -223,6 +218,7 @@ private:
   Teuchos::RCP<LINALG::SerialDenseMatrix> wallinflowchannelvelu_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> wallinflowchannelvelv_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> wallinflowchannelvelw_;
+  Teuchos::RCP<LINALG::SerialDenseMatrix> wallinflowchannelp_;
 
   //! first order momentum
   Teuchos::RCP<LINALG::SerialDenseMatrix> vertinflowu_;
