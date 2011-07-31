@@ -1695,9 +1695,11 @@ include(CTest)
 
 ###------------------------------------------------------------------ Unit Tests
 
-add_executable(cut_test ${OBJS_CUT_TEST})
-target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuchos ${LAPACK_LIBRARIES})
-add_test(NAME run_cut_test COMMAND $<TARGET_FILE:cut_test>)
+if(NOT TRILINOS_DEV)
+  add_executable(cut_test ${OBJS_CUT_TEST})
+  target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuchos ${LAPACK_LIBRARIES})
+  add_test(NAME run_cut_test COMMAND $<TARGET_FILE:cut_test>)
+endif(NOT TRILINOS_DEV)
 
 #add_executable(graph_test ${OBJS_GRAPH_TEST})
 #target_link_libraries(graph_test ${Boost_LIBRARIES})
@@ -1759,6 +1761,7 @@ macro (passive_baci_test arg nproc restart)
 endmacro (passive_baci_test)
 
 ###------------------------------------------------------------------ List of tests
+if(NOT TRILINOS_DEV)
 baci_test(artaneurysm_hex 1 "")
 baci_test(artaneurysm_hex 2 "")
 baci_test(artaneurysm_tet 1 "")
@@ -2399,4 +2402,12 @@ passive_baci_test(xfsi_shooter_thin 1 "")
 
 # remove any output files from our tests
 add_test(NAME test_cleanup COMMAND sh -c "rm -v xxx* core.*")
+
+else()
+# Tests for TRILINOS_DEV version
+baci_test(tsi_heatconvection_amg 1 "")
+baci_test(tsi_heatconvection_amg 2 "")
+endif(NOT TRILINOS_DEV)
+
+
 
