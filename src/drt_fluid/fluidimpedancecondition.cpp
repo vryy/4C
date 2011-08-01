@@ -879,7 +879,7 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
   double flowrate = 0.0;
   dofrowmap->Comm().SumAll(&local_flowrate,&flowrate,1);
 
-  if(treetype_ == "windkessel_freq_indp")
+  if(treetype_ == "windkessel_freq_indp" || treetype_ == "resistive")
   {
     Qin_np_ = flowrate;
   }
@@ -976,6 +976,11 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
     Pin_np_ = Pc_n_ + Qin_np_*R1;
 
     pressure = Pin_np_;
+  }
+  else if(treetype_ == "resistive")
+  {
+    double R = k1_;
+    pressure = R*Qin_np_;
   }
   else
   {
