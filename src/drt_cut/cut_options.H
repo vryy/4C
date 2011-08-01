@@ -6,6 +6,7 @@ namespace GEO
 namespace CUT
 {
 
+/// Some options to configure the cutting behavior.
 class Options
 {
 public:

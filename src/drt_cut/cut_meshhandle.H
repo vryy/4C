@@ -30,6 +30,7 @@ namespace CUT
   class LinearElementHandle;
   class QuadraticElementHandle;
 
+/// mesh interface to the outside-world
 class MeshHandle
 {
 public:

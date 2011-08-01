@@ -19,6 +19,7 @@ namespace CUT
   class Side;
   class Element;
 
+/// interface class for levelset cuts
 class LevelSetIntersection
 {
 public:

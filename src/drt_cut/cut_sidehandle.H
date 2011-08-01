@@ -18,6 +18,10 @@ namespace CUT
   class Side;
   class Mesh;
 
+/// Outside-world interface to side.
+/*!
+ * Converts quadratic to linear sides.
+ */
 class SideHandle
 {
 public:
@@ -76,6 +80,7 @@ private:
   std::map<Point*, LINALG::Matrix<2,1> > local_coordinates_;
 };
 
+/// linear side handle
 class LinearSideHandle : public SideHandle
 {
 public:
@@ -118,6 +123,7 @@ private:
   Side * side_;
 };
 
+/// quadratic side handle
 class QuadraticSideHandle : public SideHandle
 {
 public:
@@ -144,6 +150,7 @@ protected:
   std::vector<Node*> nodes_;
 };
 
+/// tri6 side handle
 class Tri6SideHandle : public QuadraticSideHandle
 {
 public:
@@ -158,6 +165,10 @@ public:
   virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rst );
 };
 
+/// quad4 side handle
+/*!
+ * quad4 need to be split in 3 tri3 in order to avoid subtle ambiguities.
+ */
 class Quad4SideHandle : public QuadraticSideHandle
 {
 public:
@@ -172,6 +183,7 @@ public:
   virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rst );
 };
 
+/// quad8 side handle
 class Quad8SideHandle : public QuadraticSideHandle
 {
 public:
@@ -186,6 +198,7 @@ public:
   virtual void LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rst );
 };
 
+/// quad9 side handle
 class Quad9SideHandle : public QuadraticSideHandle
 {
 public:

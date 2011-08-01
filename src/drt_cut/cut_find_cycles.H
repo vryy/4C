@@ -48,6 +48,7 @@ namespace GEO
 
     typedef boost::color_traits<boost::property_traits<color_map_t>::value_type> color_t;
 
+    /// boost::graph visitor that is used to create a spanning tree from a graph
     class SpanningTreeCreator : public boost::default_bfs_visitor
     {
     public:
@@ -75,6 +76,7 @@ namespace GEO
       graph_t & st_;
     };
 
+    /// boost::graph visitor
     class SpanningTreePathFinder : public boost::default_dfs_visitor
     {
     public:
@@ -116,6 +118,7 @@ namespace GEO
       std::vector<vertex_t> & path_;
     };
 
+    /// visitor that collects cycles in a planar graph
     struct face_visitor : public boost::planar_face_traversal_visitor
     {
       face_visitor( name_map_t name_map, std::vector<Cycle> & cycles )
@@ -151,6 +154,7 @@ namespace GEO
       std::vector<Cycle> & cycles_;
     };
 
+    /// filter that selects all edges to a given marker
     struct edge_filter
     {
       edge_filter()

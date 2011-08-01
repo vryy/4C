@@ -19,6 +19,7 @@ namespace CUT
   class Creator;
   class Cycle;
 
+/// base of all sides
 class Side
 {
 public:
@@ -172,6 +173,7 @@ private:
     return stream;
   }
 
+/// tri3 side
 template <>
 class ConcreteSide<DRT::Element::tri3> : public Side
 {
@@ -214,6 +216,7 @@ public:
 };
 
 
+/// quad4 side
 template <>
 class ConcreteSide<DRT::Element::quad4> : public Side
 {

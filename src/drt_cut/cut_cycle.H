@@ -24,6 +24,10 @@ namespace GEO
     typedef std::set<std::pair<Point*, Point*> > point_line_set;
 #endif
 
+    /// closed cycle of points
+    /*!
+     * Utility class for facet creation.
+     */
     class Cycle
     {
     public:

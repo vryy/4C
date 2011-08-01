@@ -13,6 +13,14 @@ namespace CUT
 {
   class VolumeCell;
 
+/// One node in a cut mesh
+/*!
+ * Nodes have a mesh-unique id, a levelset-value and a point. The point
+ * contains the major part of the information.
+ *
+ * Furthermore, nodes have some idea how many dofsets are required. This is
+ * optional information than can be used by the xfem code.
+ */
 class Node
 {
 public:
@@ -52,6 +60,7 @@ public:
 
   const plain_element_set & Elements() const { return point_->Elements(); }
 
+  /// Find the number of dofsets required at this node.
   void FindDOFSets( bool include_inner );
 
   int DofSetNumber( VolumeCell * cell );

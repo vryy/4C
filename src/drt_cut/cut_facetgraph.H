@@ -17,6 +17,16 @@ namespace CUT
   class Element;
   class VolumeCell;
 
+/// Interface to the algorithm that creates volume cells.
+/*!
+ * The connection between lines and facets forms a (particular) graph. Volume
+ * cells are minimal but complete loops in this graph.
+ *
+ * The current algorithm is purely topological and does not consider
+ * geometrical information. Therefore, cuts that cannot be decided on pure
+ * topological ground will not work properly. This is one of the many
+ * shortcomings of this library.
+ */
 class FacetGraph
 {
 public:

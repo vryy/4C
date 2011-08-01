@@ -16,6 +16,7 @@ namespace GEO
     class TetMesh;
     class VolumeCell;
 
+    /// interface class for scary recursive cuts.
     class TetMeshIntersection
     {
     public:

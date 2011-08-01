@@ -21,6 +21,10 @@ namespace CUT
   class MeshIntersection;
   class LevelSetIntersection;
 
+/// Outside-world interface to element.
+/*!
+ * Converts quadratic to linear elements. Provides Gauss-point sets.
+ */
 class ElementHandle
 {
 public:
@@ -84,6 +88,7 @@ private:
   std::map<Point*, LINALG::Matrix<3,1> > local_coordinates_;
 };
 
+/// linear element handle
 class LinearElementHandle : public ElementHandle
 {
 public:
@@ -143,6 +148,7 @@ private:
   Element * element_;
 };
 
+/// quadratic element handle
 class QuadraticElementHandle : public ElementHandle
 {
 public:
@@ -183,6 +189,7 @@ protected:
   std::vector<Node*> nodes_;
 };
 
+/// hex20 element handle
 class Hex20ElementHandle : public QuadraticElementHandle
 {
 public:
@@ -195,6 +202,7 @@ public:
 
 };
 
+/// hex27 element handle
 class Hex27ElementHandle : public QuadraticElementHandle
 {
 public:
@@ -207,6 +215,7 @@ public:
 
 };
 
+/// tet10 element handle
 class Tet10ElementHandle : public QuadraticElementHandle
 {
 public:

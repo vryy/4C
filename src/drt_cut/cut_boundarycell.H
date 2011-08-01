@@ -26,6 +26,11 @@ namespace CUT
   class Mesh;
   class Point;
 
+/// Base of boundary cells.
+/*!
+ * Boundary cells are used to represent the cut surface. Each volume cell has
+ * its own boundary cells at any cut surface with outward normals.
+ */
 class BoundaryCell
 {
 public:
@@ -96,6 +101,7 @@ protected:
   Cycle points_;
 };
 
+/// tri3 boundary cell
 class Tri3BoundaryCell : public BoundaryCell
 {
 public:
@@ -104,11 +110,6 @@ public:
     : BoundaryCell( xyz, facet, points )
   {
   }
-
-//   static void CreateCell( Mesh & mesh, VolumeCell * cell, Facet * facet, const std::vector<Point*> & side );
-
-//   static void CollectCoordinates( const std::vector<Point*> & side,
-//                                   std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz );
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::tri3; }
 
@@ -125,6 +126,7 @@ protected:
   virtual DRT::UTILS::GaussRule2D MySimpleGaussRule() { return DRT::UTILS::intrule_tri_3point; }
 };
 
+/// quad4 boundary cell
 class Quad4BoundaryCell : public BoundaryCell
 {
 public:
@@ -133,11 +135,6 @@ public:
     : BoundaryCell( xyz, facet, points )
   {
   }
-
-//   static void CreateCell( Mesh & mesh, VolumeCell * cell, Facet * facet, const std::vector<Point*> & side );
-
-//   static void CollectCoordinates( const std::vector<Point*> & side,
-//                                   std::map<Facet*, std::vector<Epetra_SerialDenseMatrix> > & sides_xyz );
 
   virtual DRT::Element::DiscretizationType Shape() const { return DRT::Element::quad4; }
 

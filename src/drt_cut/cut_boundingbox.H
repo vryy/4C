@@ -17,6 +17,7 @@ namespace GEO
     class Side;
     class Element;
 
+/// simple bounding box for fast overlap detection
 class BoundingBox
 {
 public:

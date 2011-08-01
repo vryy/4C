@@ -8,6 +8,7 @@ namespace GEO
   namespace CUT
   {
 
+/// special geometry-free levelset cut "side"
 class LevelSetSide : public Side
 {
 public:

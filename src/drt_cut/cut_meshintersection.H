@@ -23,6 +23,7 @@ namespace CUT
   class Element;
   class ElementHandle;
 
+/// interface class for a surface mesh cut
 class MeshIntersection
 {
 public:

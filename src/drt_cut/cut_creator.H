@@ -12,6 +12,10 @@ namespace GEO
     class Element;
     class Mesh;
 
+    /// delayed line object creation
+    /*!
+     * Unused.
+     */
     class Creator
     {
     public:

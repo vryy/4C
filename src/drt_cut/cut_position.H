@@ -13,6 +13,7 @@ namespace GEO
 namespace CUT
 {
 
+/// element local coordinates of a point
 template <DRT::Element::DiscretizationType elementtype,
           int numNodesElement = DRT::UTILS::DisTypeToNumNodePerEle<elementtype>::numNodePerElement
 >

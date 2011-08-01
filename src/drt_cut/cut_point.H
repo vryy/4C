@@ -34,6 +34,10 @@ public:
 
 }
 
+/// Points in a mesh. Both nodal points and cut points.
+/*!
+ * A point knows its position with respect to the cut interface.
+ */
 class Point
 {
 public:
@@ -207,6 +211,7 @@ inline std::ostream & operator<<( std::ostream & stream, Point * point )
 
 inline int EntityId( const Point & p ) { return p.Pid(); }
 
+/// id based comparison for sorting and searching
 template <class T>
 class EntityIdLess
 {
@@ -231,6 +236,7 @@ public:
 
 typedef EntityIdLess<Point> PointPidLess;
 
+/// position on edge based comparison for sorting and searching
 class PointPositionLess
 {
 public:

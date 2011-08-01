@@ -50,6 +50,13 @@ class Pyramid5IntegrationCell;
 
 
 /// Keeps the whole thing. Volume mesh, cut surface, cuts
+/*!
+ * There is one background mesh and one mesh for the cut surface. These meshes
+ * have different objects but share the same points via the point pool.
+ *
+ * Mesh does the memory management for the whole thing. Therefore, all
+ * creation of cut library objects is done via the mesh.
+ */
 class Mesh
 {
 public:

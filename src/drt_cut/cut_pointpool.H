@@ -16,9 +16,10 @@ namespace CUT
   class Edge;
   class Side;
 
-// octtree to store points
-//
-
+/// internal point pool class
+/*!
+ * Might need some speedup.
+ */
 class OctTreeNode
 {
 public:
@@ -64,6 +65,7 @@ private:
   double norm_;
 };
 
+/// oct tree based point storage container
 class PointPool
 {
 public:

@@ -31,6 +31,7 @@ class Facet;
 
 //typedef EntityIdLess<Facet> FacetPidLess;
 
+/// Surface of arbitrary shape, defined by its points.
 class Facet
 {
 public:

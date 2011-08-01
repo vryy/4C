@@ -18,6 +18,7 @@ namespace CUT
 namespace IMPL
 {
 
+/// a planar graph that is used to create facets out of lines and points
 class PointGraph
 {
 public:

@@ -14,34 +14,14 @@ namespace CUT
   class Element;
   class LevelSetSide;
 
-// template <DRT::Element::DiscretizationType edgetype>
-// class ConcreteEdge;
-
-// template <>
-// class ConcreteEdge<DRT::Element::line2>;
-
-// template <>
-// class ConcreteEdge<DRT::Element::line3>;
-
-
 template <DRT::Element::DiscretizationType sidetype>
 class ConcreteSide;
 
 template <>
 class ConcreteSide<DRT::Element::tri3>;
 
-// template <>
-// class ConcreteSide<DRT::Element::tri6>;
-
 template <>
 class ConcreteSide<DRT::Element::quad4>;
-
-// template <>
-// class ConcreteSide<DRT::Element::quad8>;
-
-// template <>
-// class ConcreteSide<DRT::Element::quad9>;
-
 
 template <DRT::Element::DiscretizationType elementtype>
 class ConcreteElement;
@@ -49,28 +29,20 @@ class ConcreteElement;
 template <>
 class ConcreteElement<DRT::Element::hex8>;
 
-// template <>
-// class ConcreteElement<DRT::Element::hex20>;
-
-// template <>
-// class ConcreteElement<DRT::Element::hex27>;
-
 template <>
 class ConcreteElement<DRT::Element::tet4>;
-
-// template <>
-// class ConcreteElement<DRT::Element::tet10>;
 
 template <>
 class ConcreteElement<DRT::Element::wedge6>;
 
-// template <>
-// class ConcreteElement<DRT::Element::wedge15>;
-
 template <>
 class ConcreteElement<DRT::Element::pyramid5>;
 
-
+/// Linear edge between two nodes.
+/*!
+ * The edge nodes are always cut points. There can be further cut points on
+ * the edge.
+ */
 class Edge
 {
 public:

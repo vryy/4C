@@ -36,6 +36,7 @@ namespace GEO
 namespace CUT
 {
 
+  /// sorted vector that emulates a set (and is supposed to be much more efficient)
   template <class K, bool bNoDuplicates = true, class Pr = std::less<K>, class A = std::allocator<K> >
   class sorted_vector : public boost::less_than_comparable<sorted_vector<K, bNoDuplicates, Pr, A> >,
                                boost::equality_comparable<sorted_vector<K, bNoDuplicates, Pr, A> >

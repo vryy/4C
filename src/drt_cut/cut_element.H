@@ -15,6 +15,7 @@ namespace CUT
   class BoundaryCell;
   class Creator;
 
+/// Base of all elements.
 class Element
 {
 public:
@@ -150,7 +151,7 @@ private:
   plain_volumecell_set cells_;
 };
 
-
+/// tet4 element
 template <>
 class ConcreteElement<DRT::Element::tet4> : public Element
 {
@@ -202,7 +203,7 @@ public:
 
 };
 
-
+/// wedge6 element
 template <>
 class ConcreteElement<DRT::Element::wedge6> : public Element
 {
@@ -254,7 +255,7 @@ public:
 
 };
 
-
+/// pyramid5 element
 template <>
 class ConcreteElement<DRT::Element::pyramid5> : public Element
 {
@@ -305,7 +306,7 @@ public:
 
 };
 
-
+/// hex8 element
 template <>
 class ConcreteElement<DRT::Element::hex8> : public Element
 {
