@@ -1813,16 +1813,22 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   setStringToIntegralParameter<int>("NORM_RESF","Abs","type of norm for residual convergence check",
                                  tuple<std::string>(
-                                   "Abs"
+                                   "Abs",
+                                   "Rel",
+                                   "Mix"
                                    ),
                                  tuple<int>(
-                                   INPAR::TSI::convnorm_abs
+                                   INPAR::TSI::convnorm_abs,
+                                   INPAR::TSI::convnorm_rel,
+                                   INPAR::TSI::convnorm_mix
                                    ),
                                  &tsidyn);
 
   setStringToIntegralParameter<int>("NORMCOMBI_RESFINC","And","binary operator to combine primary variables and residual force values",
                                tuple<std::string>("And"),
-                               tuple<int>(INPAR::TSI::bop_and),
+                               tuple<int>(
+                                 INPAR::TSI::bop_and
+                                 ),
                                &tsidyn);
 
   /*----------------------------------------------------------------------*/

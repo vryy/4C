@@ -264,10 +264,10 @@ namespace TSI
 
     //! extractor to communicate between full monolithic map and block maps
     const LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
-    
+
     //! apply contact to off diagonal block k_st
     /*!
-    Within the condensation process of Lagrange multipliers, the structural 
+    Within the condensation process of Lagrange multipliers, the structural
     LM are expressed in terms of the displacements, and, in the TSI case,
     also in terms of the temperatures. This results in modification in the
     off diagonal block k_st
@@ -276,18 +276,18 @@ namespace TSI
 
     //! apply contact to off diagonal block k_ts
     /*!
-    The contribution to the energy equation form thermal contact and the 
-    thermal contact condition both depend on displacement dofs (deformed 
+    The contribution to the energy equation form thermal contact and the
+    thermal contact condition both depend on displacement dofs (deformed
     configuration). This leads to additional entries in k_ts. Additionally,
     the condensation process of thermal LM leads to contributions to k_ts.
     */
     void ApplyThermContact(Teuchos::RCP<LINALG::SparseMatrix>& k_ts );
-    
+
     //! entries from linearized mortar matrices D and M in energy
     //! equation (with respect to displacements)
     void AssembleLinDM(LINALG::SparseMatrix& lindglobal,
                        LINALG::SparseMatrix& linmglobal);
-    
+
     //! entries from linearized thermal contact condition
     //! (with respect to displacements)
     void AssembleThermContCondition(LINALG::SparseMatrix& lindisglobal);
@@ -353,7 +353,11 @@ namespace TSI
     int itermax_;  //!< maximally permitted iterations
     int itermin_;  //!< minimally requested iteration
     double normrhs_;  //!< norm of residual forces
+    double normstrrhs_;  //!< norm of structural residual forces
+    double normthrrhs_;  //!< norm of thermal residual forces
     double norminc_;  //!< norm of residual unknowns
+    int ns_;  //!< length of structural residual forces
+    int nt_;  //!< length of thermal residual forces
 
     //@}
 
@@ -366,21 +370,21 @@ namespace TSI
     Teuchos::RCP<Epetra_Vector> veln_;  //!< global velocities
                                         //!< \f${V}_{n+1}\f$
                                         //!< at \f$t_{n+1}\f$
-    
+
     // contact manager
     RCP<MORTAR::ManagerBase> cmtman_;
-    
+
     // thermo contact manager
     Teuchos::RCP<THR::ThermoContactMan> thermcontman_;
-    
+
     RCP<Epetra_Vector> zstruct_ ;
     RCP<Epetra_Vector> ztherm_;
     RCP<LINALG::SparseMatrix> kst_;  // stiffness block K_ss (needed for LM)
     RCP<LINALG::SparseMatrix> invd_;  // stiffness block K_ss (needed for LM)
     RCP<LINALG::SparseMatrix> kts_;  // stiffness block K_ss (needed for LM)
     RCP<LINALG::SparseMatrix> invdtherm_;  // stiffness block K_ss (needed for LM)
-    
-    
+
+
     //@}
 
   }; // Monolithic

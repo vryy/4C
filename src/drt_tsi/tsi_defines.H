@@ -32,7 +32,8 @@ Maintainer: Caroline Danowski
 //#define TSIPARALLEL          /* flag for parallel TSI */
 //#define THRASOUTPUT          /* flag for output in the thermal field */
 //#define DEBUGMATERIAL        /* flag for material debug output */
-
+//#define MonTSIwithoutTHR     /* flag to comment out all coupling terms in STR field */
+//#define MonTSIwithoutSTR     /* flag to comment out all coupling terms in THR field */
 
 #endif  // #ifndef TSI_DEFINES_H
 #endif  // #ifdef CCADISCRET

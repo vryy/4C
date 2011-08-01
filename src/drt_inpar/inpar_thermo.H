@@ -179,7 +179,7 @@ namespace THR
   {
     convnorm_abs,         ///< absolute norm
     convnorm_rel,         ///< relative norm
-    convnorm_mix         ///< mixed absolute-relative norm
+    convnorm_mix          ///< mixed absolute-relative norm
   };
 
   /// type of norm to check for convergence

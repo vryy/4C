@@ -45,7 +45,9 @@ namespace TSI
   /// type of norm to check for convergence
   enum ConvNorm
   {
-    convnorm_abs  ///< absolute norm
+    convnorm_abs,  ///< absolute norm
+    convnorm_rel,  ///< relative norm
+    convnorm_mix   ///< mixed absolute-relative norm
   };
 
   /// type of norm to check for convergence
