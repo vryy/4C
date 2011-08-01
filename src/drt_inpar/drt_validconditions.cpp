@@ -1668,8 +1668,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   impedancebc->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   AddNamedReal(impedancebc,"timeperiod");
   impedancebc->AddComponent(Teuchos::rcp(new StringConditionComponent("tree", "lung",
-                                                                      Teuchos::tuple<std::string>("lung","artery","windkessel","windkessel_freq_indp"),
-                                                                      Teuchos::tuple<std::string>("lung","artery","windkessel","windkessel_freq_indp"),
+                                                                      Teuchos::tuple<std::string>("lung","artery","windkessel","windkessel_freq_indp","resistive"),
+                                                                      Teuchos::tuple<std::string>("lung","artery","windkessel","windkessel_freq_indp","resistive"),
                                                                       true)));
   AddNamedReal(impedancebc,"termradius");
   impedancebc->AddComponent(Teuchos::rcp(new RealConditionComponent("k1")));
