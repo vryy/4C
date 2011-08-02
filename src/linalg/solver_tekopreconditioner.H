@@ -23,9 +23,14 @@ namespace LINALG
 {
   namespace SOLVER
   {
-    /// ifpack preconditioners
+    /// Teko preconditioners
     /*!
-      Set of standard single-matrix preconditioners.
+      Set of standard block-matrix preconditioners
+
+      Teko only needs the parameters for the block inverses in the parameter list
+      as sublists "Inverse1", "Inverse2",...
+      From the parameter list the Teko lists are automatically constructed, no BACI
+      SOLVER objects needed!
      */
     class TekoPreconditioner : public SOLVER::PreconditionerType
     {
