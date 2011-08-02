@@ -487,7 +487,8 @@ void BoundaryGPToParentGP(
     // resize output array
     pqxg.Shape(intpoints.M(),3);
 
-    if(distype==DRT::Element::quad4 && pdistype==DRT::Element::hex8)
+    if(   (distype==DRT::Element::quad4 && pdistype==DRT::Element::hex8)
+       or (distype==DRT::Element::quad8 && pdistype==DRT::Element::hex20)) //schott 05/11
     {
       switch(beleid)
       {

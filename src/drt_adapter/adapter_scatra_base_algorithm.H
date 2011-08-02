@@ -57,6 +57,9 @@ namespace ADAPTER {
     /// access to the scalar transport field solver
     SCATRA::ScaTraTimIntImpl& ScaTraField();
 
+    /// access to the reinitialization field solver
+    SCATRA::ScaTraTimIntImpl& ScaTraReinitField();
+
     /// create result test for scalar transport field
     Teuchos::RCP<DRT::ResultTest> CreateScaTraFieldTest();
 
@@ -64,6 +67,10 @@ namespace ADAPTER {
 
     /// scalar transport field solver
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_;
+
+    /// scalar reinitialization solver for level set methods
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> reinit_;
+
 
   }; // class ScaTraBaseAlgorithm
 

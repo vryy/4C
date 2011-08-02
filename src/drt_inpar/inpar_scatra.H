@@ -30,7 +30,12 @@ namespace INPAR
       timeint_stationary,
       timeint_one_step_theta,
       timeint_bdf2,
-      timeint_gen_alpha
+      timeint_gen_alpha,
+      timeint_tg2,                    //schott 05/11
+      timeint_tg2_LW,                 //schott 05/11
+      timeint_tg3,                    //schott 05/11
+      timeint_tg4_leapfrog,           //schott 05/11
+      timeint_tg4_onestep             //schott 05/11
     };
 
     /// type of solution procedures for scalar transport problems
@@ -169,6 +174,39 @@ namespace INPAR
       reinitaction_function,
       reinitaction_signeddistancefunction
     };
+
+    /// type of reinitialization strategy for level set function
+    enum ReinitializationStrategy
+    {
+      reinitstrategy_pdebased_characteristic_galerkin,
+      reinitstrategy_pdebased_stabilized_convection,
+      reinitstrategy_pdebased_linear_convection,
+      reinitstrategy_none,
+    };
+
+    /// type of signum function for reinitialization based on solving Sussman's equation
+    enum SmoothedSignType
+    {
+    	signtype_nonsmoothed,
+    	signtype_Nagrath2005,
+    	signtype_LinEtAl2005,
+    	signtype_LinEtAl_normalized
+    };
+
+    /// type of signum function for reinitialization based on solving Sussman's equation
+    enum PenaltyMethod
+    {
+    	penalty_method_none,
+    	penalty_method_intersection_points,
+    	penalty_method_akkerman
+    };
+
+    /// type of reinitialization convergence check
+    enum ReInitialStationaryCheck
+    {
+    	reinit_stationarycheck_L1normintegrated,
+    	reinit_stationarycheck_numsteps
+    };                                                 // schott
 
     /// type of mass calculation strategy for level set function
     enum MassCalculation

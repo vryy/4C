@@ -185,6 +185,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--COMBUSTION CONTROL", *list);
   reader.ReadGidSection("--COMBUSTION CONTROL/COMBUSTION FLUID", *list);
   reader.ReadGidSection("--COMBUSTION CONTROL/COMBUSTION GFUNCTION", *list);
+  reader.ReadGidSection("--COMBUSTION CONTROL/COMBUSTION PDE REINITIALIZATION", *list); //schott
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/NONLINEAR", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT DYNAMIC/STABILIZATION", *list);

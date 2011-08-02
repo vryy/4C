@@ -38,7 +38,8 @@ namespace INPAR
     {
       reinitaction_none,
       reinitaction_byfunction,
-      reinitaction_signeddistancefunction
+      reinitaction_signeddistancefunction,
+      reinitaction_sussman
     };
 
     /// type of reinitialization for level set function (G-function)

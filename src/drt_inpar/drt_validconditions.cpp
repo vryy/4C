@@ -845,7 +845,46 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
    condlist.push_back(linetransportneumanninflow);
    condlist.push_back(surftransportneumanninflow);
 
+   /*--------------------------------------------------------------------*/ // schott
+   // Taylor Galerkin outflow Boundaries for level set transport equation
+
+   Teuchos::RCP<ConditionDefinition> surfOutflowTaylorGalerkin =
+     Teuchos::rcp(new ConditionDefinition("TAYLOR GALERKIN OUTFLOW SURF CONDITIONS",
+                                          "TaylorGalerkinOutflow",
+                                          "Surface Taylor Galerkin Outflow",
+                                          DRT::Condition::TaylorGalerkinOutflow,
+                                          true,
+                                          DRT::Condition::Surface));
+
+    condlist.push_back(surfOutflowTaylorGalerkin);
+
+  /*--------------------------------------------------------------------*/ //schott
+
+    Teuchos::RCP<ConditionDefinition> surfneumanninflowTaylorGalerkin =
+      Teuchos::rcp(new ConditionDefinition("TAYLOR GALERKIN NEUMANN INFLOW SURF CONDITIONS",
+                                           "TaylorGalerkinNeumannInflow",
+                                           "Surface Taylor Galerkin Neumann Inflow",
+                                           DRT::Condition::TaylorGalerkinNeumannInflow,
+                                           true,
+                                           DRT::Condition::Surface));
+
+     condlist.push_back(surfneumanninflowTaylorGalerkin);
+
+
   /*--------------------------------------------------------------------*/
+  // schott
+  // Characteristic Galerkin Boundaries for LevelSet-Reinitialization
+
+  Teuchos::RCP<ConditionDefinition> surfreinitializationtaylorgalerkin =
+    Teuchos::rcp(new ConditionDefinition("REINITIALIZATION TAYLOR GALERKIN SURF CONDITIONS",
+                                         "ReinitializationTaylorGalerkin",
+                                         "Surface Reinitialization Taylor Galerkin",
+                                         DRT::Condition::ReinitializationTaylorGalerkin,
+                                         true,
+                                         DRT::Condition::Surface));
+
+   condlist.push_back(surfreinitializationtaylorgalerkin);
+
   // FSI
 
   std::vector<Teuchos::RCP<ConditionComponent> > fsicomponents;

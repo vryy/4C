@@ -2694,21 +2694,32 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::SCATRA::solvertype_nonlinear),
                                &scatradyn);
 
-  setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
+setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                "Time Integration Scheme",
                                tuple<std::string>(
                                  "Stationary",
                                  "One_Step_Theta",
                                  "BDF2",
-                                 "Gen_Alpha"
+                                 "Gen_Alpha",
+                                 "Taylor_Galerkin_2",
+                                 "Taylor_Galerkin_2_LW",
+                                 "Taylor_Galerkin_3",
+                                 "Taylor_Galerkin_4_Leapfrog",
+                                 "Taylor_Galerkin_4_onestep"
                                  ),
                                tuple<int>(
                                    INPAR::SCATRA::timeint_stationary,
                                    INPAR::SCATRA::timeint_one_step_theta,
                                    INPAR::SCATRA::timeint_bdf2,
-                                   INPAR::SCATRA::timeint_gen_alpha
+                                   INPAR::SCATRA::timeint_gen_alpha,
+                                   INPAR::SCATRA::timeint_tg2,
+                                   INPAR::SCATRA::timeint_tg2_LW,
+                                   INPAR::SCATRA::timeint_tg3,                     //schott 05/11
+                                   INPAR::SCATRA::timeint_tg4_leapfrog,
+                                   INPAR::SCATRA::timeint_tg4_onestep
                                  ),
                                &scatradyn);
+
 
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&scatradyn);
   IntParameter("NUMSTEP",20,"Total number of time steps",&scatradyn);
@@ -3282,7 +3293,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("START_VAL_ENRICHMENT","No","Turn XFEM-time-integration strategy for enrichment values on/off",
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
 
-
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrolgfunc = combustcontrol.sublist("COMBUSTION GFUNCTION",false,
       "control parameters for the G-function (level set) field of a combustion problem");
@@ -3292,12 +3302,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<std::string>(
                                  "None",
                                  "Function",
-                                 "Signed_Distance_Function"),
+                                 "Signed_Distance_Function",
+                                 "Sussman"),
                                tuple<int>(
                                  INPAR::COMBUST::reinitaction_none,
                                  INPAR::COMBUST::reinitaction_byfunction,
-                                 INPAR::COMBUST::reinitaction_signeddistancefunction),
+                                 INPAR::COMBUST::reinitaction_signeddistancefunction,
+                                 INPAR::COMBUST::reinitaction_sussman),
                                &combustcontrolgfunc);
+
+
+  BoolParameter("REINIT_OUTPUT","No","gmsh output for reinitialized pseudo timesteps?",&combustcontrolgfunc);
   IntParameter("REINITFUNCNO",-1,"function number for reinitialization of level set (G-function) field",&combustcontrolgfunc);
   IntParameter("REINITINTERVAL",1,"reinitialization interval",&combustcontrolgfunc);
   BoolParameter("REINITBAND","No","reinitialization only within a band around the interface, or entire domain?",&combustcontrolgfunc);
@@ -3305,6 +3320,81 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("REFINEMENT","No","Turn refinement strategy for level set function on/off",
                                      yesnotuple,yesnovalue,&combustcontrolgfunc);
   IntParameter("REFINEMENTLEVEL",-1,"number of refinement level for refinement strategy",&combustcontrolgfunc);
+
+  /*----------------------------------------------------------------------*/
+  // schott 04/11
+  Teuchos::ParameterList& combustcontrolpdereinit = combustcontrol.sublist("COMBUSTION PDE REINITIALIZATION",false,"");
+
+  setStringToIntegralParameter<int>("REINIT_METHOD", "PDE_Based_Characteristic_Galerkin",
+                                 "Type of reinitialization method",
+                                 tuple<std::string>(
+                                  "PDE_Based_Characteristic_Galerkin",
+                                  "PDE_Based_Stabilized_Convection",
+                                  "PDE_Based_Linear_Convection",
+                                  "None"),
+                                tuple<int>(
+                                  INPAR::SCATRA::reinitstrategy_pdebased_characteristic_galerkin,
+                                  INPAR::SCATRA::reinitstrategy_pdebased_stabilized_convection,
+                                  INPAR::SCATRA::reinitstrategy_pdebased_linear_convection,
+                                  INPAR::SCATRA::reinitstrategy_none),
+                                  &combustcontrolpdereinit); // schott
+
+  setStringToIntegralParameter<int>("REINIT_TIMEINTEGR","Taylor_Galerkin_2",
+                               "Time Integration Scheme for PDE-based reinitialization",
+                               tuple<std::string>(
+                                 "Taylor_Galerkin_2",
+                                 "One_Step_Theta"
+                                 ),
+                               tuple<int>(
+                                   INPAR::SCATRA::timeint_tg2,
+                                   INPAR::SCATRA::timeint_one_step_theta
+                                 ),
+                               &combustcontrolpdereinit);
+
+  setStringToIntegralParameter<int>("STATIONARY_CHECK", "Integrated_L1_Norm",
+                                 "Type of check for stationary solution",
+                                 tuple<std::string>(
+                                  "Integrated_L1_Norm",
+                                  "Num_Steps"),
+                                tuple<int>(
+                                  INPAR::SCATRA::reinit_stationarycheck_L1normintegrated,
+                                  INPAR::SCATRA::reinit_stationarycheck_numsteps),
+                                  &combustcontrolpdereinit); // schott
+
+  setStringToIntegralParameter<int>("SMOOTHED_SIGN_TYPE", "LinEtAl2005",
+                                 "Type of check for stationary solution",
+                                 tuple<std::string>(
+                                  "NonSmoothed",
+                                  "Nagrath2005",
+                                  "LinEtAl2005",
+                                  "LinEtAl_Normalized"),
+                                tuple<int>(
+                                  INPAR::SCATRA::signtype_nonsmoothed,
+                                  INPAR::SCATRA::signtype_Nagrath2005,
+                                  INPAR::SCATRA::signtype_LinEtAl2005,
+                                  INPAR::SCATRA::signtype_LinEtAl_normalized),
+                                  &combustcontrolpdereinit); // schott
+
+  setStringToIntegralParameter<int>("PENALTY_METHOD", "None",
+                                 "Type of interface penalizing",
+                                 tuple<std::string>(
+                                  "None",
+                                  "Intersection_Points",
+                                  "Akkerman"),
+                                tuple<int>(
+                                  INPAR::SCATRA::penalty_method_none,
+                                  INPAR::SCATRA::penalty_method_intersection_points,
+                                  INPAR::SCATRA::penalty_method_akkerman),
+                                  &combustcontrolpdereinit); // schott
+
+  IntParameter("NUMPSEUDOSTEPS", 5, "number of pseudo time steps for pde based reinitialization", &combustcontrolpdereinit);
+  DoubleParameter("PSEUDOTIMESTEP_FACTOR", 0.1, "factor for pseudo time step size for pde based reinitialization (factor*meshsize)", &combustcontrolpdereinit);
+  DoubleParameter("PENALTY_INTERFACE", 100.0, "factor for penalizing interface moving during ", &combustcontrolpdereinit);
+  DoubleParameter("EPSILON_BANDWIDTH", 2.0, "factor for interface thickness (multiplied by meshsize)", &combustcontrolpdereinit);
+  DoubleParameter("SHOCK_CAPTURING_DIFFUSIVITY", 1e-003, "diffusivity used for shock capturing operator", &combustcontrolpdereinit);
+  BoolParameter("SHOCK_CAPTURING","no","Switch on shock capturing",&combustcontrolpdereinit);
+  /*----------------------------------------------------------------------*/
+
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fsidyn = list->sublist(

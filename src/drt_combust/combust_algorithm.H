@@ -73,6 +73,15 @@ namespace COMBUST
     /// reinitialize G-function
     void ReinitializeGfunc();
 
+    /// call reinitialization
+    void PrepareReinitialization(); // schott
+
+    /// call reinitialization
+    void DoReinitialization(); // schott
+
+    /// call reinitialization (old signed distance method)
+    void ReinitializeGfuncSignedDistance(); // schott
+
     /// overwrite Navier-Stokes velocity field (used for test cases)
     const Teuchos::RCP<Epetra_Vector> OverwriteFluidVel();
 
@@ -80,6 +89,12 @@ namespace COMBUST
     const Teuchos::RCP<Epetra_Vector> ComputeFlameVel(const Teuchos::RCP<Epetra_Vector>& velnp,
                                                       const Teuchos::RCP<const DRT::DofSet>& dofset
     );
+
+    /// compute reinit velocity for advective scheme
+    const Teuchos::RCP<Epetra_Vector> ComputeReinitVel(/*const Teuchos::RCP<Epetra_Vector>& velnp,*/
+                                                      const Teuchos::RCP<const DRT::DofSet>& dofset
+    );
+
 
     /// tests if the FGI iteration has converged
     bool NotConvergedFGI();
@@ -130,6 +145,8 @@ namespace COMBUST
     // boolean indicating time step of reinitialization
     bool stepreinit_;
 
+    double volume_start_;
+
 
     // phi vector reinitialized after time step n
     Teuchos::RCP<Epetra_Vector>  phireinitn_;
@@ -153,6 +170,13 @@ namespace COMBUST
     const bool reinitband_;
     /// band width for reinitialization (maximum G-function value)
     const double reinitbandwidth_;
+
+    // boolian for reinitialization output
+    const bool reinit_output_; // schott
+
+    /// reinitialization acception status
+    bool reinitialization_accepted_; // schott
+
 
     /// combustion input parameter list
     const Teuchos::ParameterList& combustdyn_;

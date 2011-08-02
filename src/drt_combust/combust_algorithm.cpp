@@ -63,6 +63,7 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   reinitinterval_(combustdyn.sublist("COMBUSTION GFUNCTION").get<int>("REINITINTERVAL")),
   reinitband_(DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINITBAND")),
   reinitbandwidth_(combustdyn.sublist("COMBUSTION GFUNCTION").get<double>("REINITBANDWIDTH")),
+  reinit_output_(DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINIT_OUTPUT")),
   combustdyn_(combustdyn),
   interfacehandle_(Teuchos::null),
   interfacehandle_old_(Teuchos::null),
@@ -161,10 +162,15 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   interfacehandle_->UpdateInterfaceHandle();
   interfacehandle_old_->UpdateInterfaceHandle();
 
+  volume_start_ = ComputeVolume(); // schott
+
   if (reinitaction_ != INPAR::COMBUST::reinitaction_none)
   {
-    stepreinit_ = true;
-    ReinitializeGfunc();
+//    stepreinit_ = true;
+//    DoReinitialization(); // schott 04/11
+
+	  cout<< "reinitialization at timestep 0 switched off!" << endl;
+
     if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary)
     {
       // reset phin vector in ScaTra time integration scheme to phinp vector
@@ -203,7 +209,7 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
     // extract convection velocity from fluid solution
     const Teuchos::RCP<Epetra_Vector> convel = FluidField().ExtractInterfaceVeln();
     ScaTraField().SetVelocityField(
-        //OverwriteFluidVel(),
+//        OverwriteFluidVel(),
         //FluidField().ExtractInterfaceVeln(),
         ComputeFlameVel(convel,FluidField().DofSet()),
         Teuchos::null,
@@ -231,7 +237,7 @@ COMBUST::Algorithm::~Algorithm()
 void COMBUST::Algorithm::TimeLoop()
 {
   // compute initial volume of minus domain
-  const double volume_start = ComputeVolume();
+  volume_start_ = ComputeVolume();
 
   // get initial field by solving stationary problem first
   if(DRT::INPUT::IntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == true)
@@ -255,24 +261,14 @@ void COMBUST::Algorithm::TimeLoop()
       // solve linear G-function equation
       DoGfuncField();
 
-      // reinitialize G-function
-      if (stepreinit_)
-      {
-        // compute current volume of minus domain
-        const double volume_current_before = ComputeVolume();
-        // print mass conservation check on screen
-        printMassConservationCheck(volume_start, volume_current_before);
-
-        ReinitializeGfunc();
-
-        // compute current volume of minus domain
-        const double volume_current_after = ComputeVolume();
-        // print mass conservation check on screen
-        printMassConservationCheck(volume_start, volume_current_after);
-      }
-
+      //(after Scatra transport but before reinitialization)
       // update interface geometry
       UpdateInterface();
+
+      // TODO: stepreinit and fg-iteration (Benedikt)
+      // if reinitialization is accepted the interface and interfacehandle was updated
+      if(stepreinit_) DoReinitialization();
+
 
       // solve nonlinear Navier-Stokes system
       DoFluidField();
@@ -293,7 +289,7 @@ void COMBUST::Algorithm::TimeLoop()
       // compute current volume of minus domain
       const double volume_current = ComputeVolume();
       // print mass conservation check on screen
-      printMassConservationCheck(volume_start, volume_current);
+      printMassConservationCheck(volume_start_, volume_current);
     }
 
   } // time loop
@@ -301,7 +297,7 @@ void COMBUST::Algorithm::TimeLoop()
   // compute final volume of minus domain
   const double volume_end = ComputeVolume();
   // print mass conservation check on screen
-  printMassConservationCheck(volume_start, volume_end);
+  printMassConservationCheck(volume_start_, volume_end);
 
   return;
 }
@@ -387,6 +383,124 @@ void COMBUST::Algorithm::SolveStationaryProblem()
   printMassConservationCheck(volume_start, volume_end);
 
   return;
+}
+
+/*------------------------------------------------------------------------------------------------*
+ | protected: reinitialize G-function                                                schott 04/11 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::Algorithm::PrepareReinitialization()
+{
+
+	// reset the ScatraFieldReinit
+	ScaTraReinitField().ResetTimeAndStep();
+
+	// set the start phinp and phin field and phistart field
+	ScaTraReinitField().SetPhiReinit(ScaTraField().Phinp());
+
+	// set params
+	// set velocity field for reinitialization -> implement this in Scatra-part
+
+
+
+	return;
+}
+
+/*------------------------------------------------------------------------------------------------*
+ | protected: reinitialize G-function                                                schott 05/11 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::Algorithm::DoReinitialization()
+{
+//  if(reinitaction_ == INPAR::COMBUST::reinitaction_pdebased_characteristic_galerkin)
+//	  {cout << "Reinitialization Characteristic "
+//	 reinitaction_ == INPAR::COMBUST::reinitaction_pdebased_stabilized_convection)
+
+
+  // compute current volume of minus domain
+  const double volume_current_before = ComputeVolume();
+  // print mass conservation check on screen
+  printMassConservationCheck(volume_start_, volume_current_before);
+
+
+  // reinitialize Gfunc
+  switch(reinitaction_)
+  {
+    case INPAR::COMBUST::reinitaction_sussman:
+      if(Comm().MyPID()==0) std::cout << "COMBUST::Algorithm: reinitialization via PDE-based method" << std::endl;
+      PrepareReinitialization();
+      reinitialization_accepted_ = ScaTraReinitField().CallReinitialization();
+      if(reinitialization_accepted_ == true) ScaTraField().SetPhinp(ScaTraReinitField().Phinp());
+      break;
+    case INPAR::COMBUST::reinitaction_signeddistancefunction:
+      if(Comm().MyPID()==0) std::cout << "COMBUST::Algorithm: reinitialization via calculating signed distance functions" << std::endl;
+      ReinitializeGfuncSignedDistance();
+      reinitialization_accepted_ = true;
+      break;
+    case INPAR::COMBUST::reinitaction_none:
+      if(Comm().MyPID()==0) std::cout << "No reinitialization chosen" << std::endl;
+      reinitialization_accepted_=false;
+      break;
+    default: dserror("unknown type of reinitialization technique");
+  }
+
+  // now ScatraField().Phinp() is updated
+
+  if(Comm().MyPID()==0)
+  {
+    if(reinitialization_accepted_) cout << "...reinitialization was accepted." << std::endl;
+    else                           cout << "...reinitialization was not accepted." << std::endl;
+  }
+
+
+
+  // update flamefront and interfacehandle according to reinitialized G-function field
+  if(reinitialization_accepted_)
+  {
+    // update flame front according to reinitialized G-function field
+    flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
+
+    // update interfacehandle (get integration cells) according to updated flame front
+    interfacehandle_->UpdateInterfaceHandle();
+  }
+
+  // TODO: the step used for output is switched for one
+  if(reinit_output_ and reinitialization_accepted_ and reinitaction_ != INPAR::COMBUST::reinitaction_signeddistancefunction)
+  {
+	  ScaTraReinitField().OutputReinit(ScaTraField().Step(), ScaTraField().Time());
+  }
+
+  // compute current volume of minus domain
+  const double volume_current_after = ComputeVolume();
+  // print mass conservation check on screen
+  printMassConservationCheck(volume_start_, volume_current_after);
+
+  return;
+}
+
+/*------------------------------------------------------------------------------------------------*
+ | protected: reinitialize G-function                                                schott 04/11 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::Algorithm::ReinitializeGfuncSignedDistance()
+{
+	// REMARK:
+	// all interface updates and updates of interfacehandles are done in DoReinitialization() (schott)
+
+    // get my flame front (boundary integration cells)
+    // TODO we generate a copy of the flame front here, which is not neccessary in the serial case
+    std::map<int, GEO::BoundaryIntCells> myflamefront = interfacehandle_->GetElementalBoundaryIntCells();
+
+#ifdef PARALLEL
+    // export flame front (boundary integration cells) to all processors
+    flamefront_->ExportFlameFront(myflamefront);
+#endif
+
+    // reinitialize G-function (level set) field
+    COMBUST::Reinitializer reinitializer(
+        combustdyn_,
+        ScaTraField(),
+        myflamefront,
+        ScaTraField().Phinp());
+
+    return;
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -540,6 +654,10 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::OverwriteFluidVel()
 
       // get value of corresponding velocity component
       double value = DRT::Problem::Instance()->Funct(velfuncno-1).Evaluate(icomp,lnode->X(),0.0,NULL);
+
+//      // scaling for stretching fluid example // schott
+//      cout <<"Scaling with time-curve!!!!" << endl;
+//      value *= cos(PI*FluidField().Time()/500.0);
       //value = 0.0;
 
       // insert velocity value into node-based vector
@@ -552,6 +670,191 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::OverwriteFluidVel()
     std::cout << "done" << std::endl;
 
   return convel;
+}
+
+/*------------------------------------------------------------------------------------------------*
+ | protected: compute reinit velocity                                                schott 04/11 |
+ *------------------------------------------------------------------------------------------------*/
+const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeReinitVel(
+    /*const Teuchos::RCP<Epetra_Vector>& convel,*/
+    const Teuchos::RCP<const DRT::DofSet>& dofset
+    )
+{
+	// needed for lids
+	const Teuchos::RCP<Epetra_Vector> & convel = FluidField().ExtractInterfaceVeln();
+
+	  // temporary vector for convective velocity (based on dofrowmap of standard (non-XFEM) dofset)
+	  // remark: operations must not be performed on 'convel', because the vector is accessed by both
+	  //         master and slave nodes, if periodic bounday conditions are present
+	  Teuchos::RCP<Epetra_Vector> reinitvel_tmp = LINALG::CreateVector(*(dofset->DofRowMap()),true);
+
+	  // get a pointer to the fluid discretization
+	  const Teuchos::RCP<const DRT::Discretization> fluiddis = FluidField().Discretization();
+
+	  // get G-function value vector on fluid NodeColMap
+	  const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
+	  const Teuchos::RCP<Epetra_MultiVector> gradphinp = flamefront_->GradPhi();
+
+	#ifdef DEBUG
+	  // get map of this vector
+	  const Epetra_BlockMap& phimap = phinp->Map();
+	  // check, whether this map is still identical with the current node map in the discretization
+	  if (not phimap.SameAs(*fluiddis->NodeColMap())) dserror("node column map has changed!");
+	  // get map of this vector
+	  const Epetra_BlockMap& gradphimap = gradphinp->Map();
+	  // check, whether this map is still identical with the current node map in the discretization
+	  if (not gradphimap.SameAs(*fluiddis->NodeColMap())) dserror("node column map has changed!");
+	#endif
+
+	#ifdef COMBUST_GMSH_NORMALFIELD
+	  const std::string filestr = "normal_field";
+	  const std::string name_in_gmsh = "Normal field";
+
+	  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, Step(), 500, true, fluiddis->Comm().MyPID());
+	  std::ofstream gmshfilecontent(filename.c_str());
+	  {
+	    gmshfilecontent << "View \" " << name_in_gmsh << "\" {\n";
+	#endif
+
+	#if 1
+	    // loop over nodes on this processor
+	    for(int lnodeid=0; lnodeid < fluiddis->NumMyRowNodes(); ++lnodeid)
+	    {
+	      //-------------------------------------------------------------
+	      // get (smoothed) gradient of the G-function field at this node
+	      //-------------------------------------------------------------
+	      LINALG::Matrix<3,1> mygradphi(true);
+
+	      // get the processor local node
+	      DRT::Node*  lnode = fluiddis->lRowNode(lnodeid);
+	      // get the global id for current node
+	      const int gid = lnode->Id();
+	      // get local processor id according to global node id
+	      const int nodelid = (*gradphinp).Map().LID(gid);
+	      if (nodelid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*gradphinp).Comm().MyPID(),gid);
+
+	      const int numcol = (*gradphinp).NumVectors();
+	      if( numcol != 3) dserror("number of columns in Epetra_MultiVector is not 3");
+
+	      // loop over dimensions (= number of columns in multivector)
+	      for(int col=0; col< numcol; col++)
+	      {
+	        // get columns vector of multivector
+	        double* globalcolumn = (*gradphinp)[col];
+	        // set smoothed gradient entry of phi into column of global multivector
+	        mygradphi(col) = globalcolumn[nodelid];
+	      }
+
+	      //------------------------------------
+	      // compute smoothed unit normal vector
+	      // n = - grad phi / |grad phi|
+	      //------------------------------------
+	      // smoothed normal vector at this node
+	      LINALG::Matrix<3,1> nvec = mygradphi;
+	      // compute norm of smoothed normal vector
+	      const double ngradphi = mygradphi.Norm2();
+
+	      // divide vector by its norm to get unit normal vector
+	      if (abs(ngradphi < 1.0E-12))// 'ngradnorm' == 0.0
+	      {
+	        // length of smoothed normal is zero at this node -> node must be on a singularity of the
+	        // level set function (e.g. "regular level set cone"); all normals add up to zero normal vector
+	        // -> The fluid convective velocity 'fluidvel' alone constitutes the flame velocity, since the
+	        //    relative flame velocity 'flvelrel' turns out to be zero due to the zero average normal vector.
+	        std::cout << "/!\\ reinit velocity at node " << gid << " is set to zero" << std::endl;
+	        nvec.Clear();
+	      }
+	      else
+	      {
+	    	  nvec.Scale(1.0/ngradphi);
+	      }
+
+	#ifdef COMBUST_GMSH_NORMALFIELD
+	      LINALG::SerialDenseMatrix xyz(3,1);
+	      xyz(0,0) = lnode->X()[0];
+	      xyz(1,0) = lnode->X()[1];
+	      xyz(2,0) = lnode->X()[2];
+
+	      IO::GMSH::cellWithVectorFieldToStream(DRT::Element::point1, nvec, xyz, gmshfilecontent);
+	#endif
+
+	      //------------------------
+//	      // get material parameters
+//	      //------------------------
+//	      // get list of adjacent elements of this node
+//	      DRT::Element** elelist = lnode->Elements();
+//
+//	      // get material from first (arbitrary!) element adjacent to this node
+//	      const Teuchos::RCP<MAT::Material> matlistptr = elelist[0]->Material();
+//	      dsassert(matlistptr->MaterialType() == INPAR::MAT::m_matlist, "material is not of type m_matlist");
+//	      const MAT::MatList* matlist = static_cast<const MAT::MatList*>(matlistptr.get());
+//
+//	      // density burnt domain
+//	      Teuchos::RCP<const MAT::Material> matptrplus = matlist->MaterialById(3);
+//	      dsassert(matptrplus->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
+//	      const MAT::NewtonianFluid* matplus = static_cast<const MAT::NewtonianFluid*>(matptrplus.get());
+//	      const double rhoplus = matplus->Density();
+//
+//	      // density unburnt domain
+//	      Teuchos::RCP<const MAT::Material> matptrminus = matlist->MaterialById(4);
+//	      dsassert(matptrminus->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
+//	      const MAT::NewtonianFluid* matminus = static_cast<const MAT::NewtonianFluid*>(matptrminus.get());
+//	      const double rhominus = matminus->Density();
+//
+//	      // laminar flame speed
+//	      const double sl = combustdyn_.sublist("COMBUSTION FLUID").get<double>("LAMINAR_FLAMESPEED");
+//	      //---------------------------------------------
+//	      // compute relative flame velocity at this node
+//	      //---------------------------------------------
+//	      // get phi value for this node
+//	      const double gfuncval = (*phinp)[nodelid];
+//
+//	      double speedfac = 0.0;
+//	      if (gfuncval >= 0.0){ // interface or burnt domain -> burnt material
+//	        // flame speed factor = laminar flame speed * rho_unburnt / rho_burnt
+//	        speedfac = sl * rhominus/rhoplus;
+//	      }
+//	      else{ // unburnt domain -> unburnt material
+//	        // flame speed factor = laminar flame speed
+//	        speedfac = sl;
+//	      }
+
+
+//	      cout << "WARNING: the velocity vector is set to zero at the moment" << endl;
+//	      nvec.Clear();
+
+	      //-----------------------------------------------
+	      // compute (absolute) flame velocity at this node
+	      //-----------------------------------------------
+	      LINALG::Matrix<3,1> fluidvel(true);
+	      // get the set of dof IDs for this node (3 x vel + 1 x pressure) from standard FEM dofset
+	      const std::vector<int> dofids = (*dofset).Dof(lnode);
+	      std::vector<int> lids(3);
+
+	      // extract velocity values (no pressure!) from global velocity vector
+	      for (int icomp=0; icomp<3; ++icomp)
+	      {
+	        lids[icomp] = convel->Map().LID(dofids[icomp]);
+	      }
+
+	      LINALG::Matrix<3,1> flvelabs(true);
+	      // add fluid velocity (Navier Stokes solution) and relative flame velocity
+	      for (int icomp=0; icomp<3; ++icomp)
+	      {
+	        const int err = reinitvel_tmp->ReplaceMyValues(1,&nvec(icomp),&lids[icomp]);
+	        if (err) dserror("could not replace values for convective reinit velocity");
+	      }
+	    }
+	#endif
+
+	#ifdef COMBUST_GMSH_NORMALFIELD
+	    gmshfilecontent << "};\n";
+	  }
+	  gmshfilecontent.close();
+	  if (true) std::cout << " done" << endl;
+	#endif
+
+  return reinitvel_tmp;
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -1084,9 +1387,9 @@ void COMBUST::Algorithm::DoGfuncField()
 #endif
 
     ScaTraField().SetVelocityField(
-        //OverwriteFluidVel(),
+        OverwriteFluidVel(),
         //FluidField().ExtractInterfaceVeln(),
-        ComputeFlameVel(convel,FluidField().DofSet()),
+//        ComputeFlameVel(convel,FluidField().DofSet()),
         Teuchos::null,
         FluidField().DofSet(),
         FluidField().Discretization()
@@ -1118,7 +1421,7 @@ void COMBUST::Algorithm::UpdateInterface()
     flamefront_->UpdateFlameFront(combustdyn_, ScaTraField().Phin(), ScaTraField().Phiaf());
   else
     flamefront_->UpdateFlameFront(combustdyn_, ScaTraField().Phin(), ScaTraField().Phinp());
-  //flamefront_->UpdateFlameFront(combustdyn_,phinpip_, ScaTraField().Phinp()); // phinpip_ now is the secondary newest phi-vector
+//  flamefront_->UpdateFlameFront(combustdyn_,phinpip_, ScaTraField().Phinp()); // phinpip_ now is the secondary newest phi-vector
 
   // update interfacehandle (get integration cells) according to updated flame front
   interfacehandle_->UpdateInterfaceHandle();
@@ -1134,12 +1437,14 @@ void COMBUST::Algorithm::UpdateTimeStep()
 {
   FluidField().Update();
 
-  if (stepreinit_)
+  if (stepreinit_ and reinitialization_accepted_)
   {
+	cout << "UpdateReinit" << endl;
     ScaTraField().UpdateReinit();
   }
   else
   {
+     cout << "Update" << endl;
      ScaTraField().Update();
   }
 

@@ -976,6 +976,13 @@ void SCATRA::ScaTraTimIntImpl::OutputToGmsh(
   // create Gmsh postprocessing file
   const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_scalar", step, 5, screen_out, discret_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
+//  {
+//    // add 'View' to Gmsh postprocessing file
+//    gmshfilecontent << "View \" " << "Phin \" {" << endl;
+//    // draw scalar field 'Phindtp' for every element
+//    IO::GMSH::ScalarFieldToGmsh(discret_,phin_,gmshfilecontent);
+//    gmshfilecontent << "};" << endl;
+//  }
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" " << "Phinp \" {" << endl;
@@ -983,13 +990,20 @@ void SCATRA::ScaTraTimIntImpl::OutputToGmsh(
     IO::GMSH::ScalarFieldToGmsh(discret_,phinp_,gmshfilecontent);
     gmshfilecontent << "};" << endl;
   }
-  //{
-  //  // add 'View' to Gmsh postprocessing file
-  //  gmshfilecontent << "View \" " << "Phidtnp \" {" << endl;
-  //  // draw scalar field 'Phindtp' for every element
-  //  IO::GMSH::ScalarFieldToGmsh(discret_,phidtnp_,gmshfilecontent);
-  //  gmshfilecontent << "};" << endl;
-  //}
+//  {
+//    // add 'View' to Gmsh postprocessing file
+//    gmshfilecontent << "View \" " << "Phidtn \" {" << endl;
+//    // draw scalar field 'Phindtn' for every element
+//    IO::GMSH::ScalarFieldToGmsh(discret_,phidtn_,gmshfilecontent);
+//    gmshfilecontent << "};" << endl;
+//  }
+//  {
+//    // add 'View' to Gmsh postprocessing file
+//    gmshfilecontent << "View \" " << "Phidtnp \" {" << endl;
+//    // draw scalar field 'Phindtp' for every element
+//    IO::GMSH::ScalarFieldToGmsh(discret_,phidtnp_,gmshfilecontent);
+//    gmshfilecontent << "};" << endl;
+//  }
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" " << "Convective Velocity \" {" << endl;

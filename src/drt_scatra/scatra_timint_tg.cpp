@@ -1,0 +1,389 @@
+/*!-----------------------------------------------------------------------------------------------*
+\file scatra_timint_tg.cpp
+
+\brief explicit Taylor Galerkin time integration scheme (TG) and implicit Characteristic Galerkin scheme (ICG)
+
+<pre>
+Maintainer: Benedikt Schott
+			schott@lnm.mw.tum.de
+			http://www.lnm.mw.tum.de
+			089 - 289-15241
+</pre>
+ *------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+
+#ifdef CCADISCRET
+
+#include "scatra_timint_tg.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Teuchos_TimeMonitor.hpp>
+#include "../drt_inpar/inpar_elch.H"
+#include "../drt_io/io.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
+
+
+
+/*----------------------------------------------------------------------*
+ |  Constructor (public)                                   schott 05/11 |
+ *----------------------------------------------------------------------*/
+SCATRA::TimIntTaylorGalerkin::TimIntTaylorGalerkin(
+  RCP<DRT::Discretization>      actdis,
+  RCP<LINALG::Solver>           solver,
+  RCP<ParameterList>            params,
+  RCP<ParameterList>            extraparams,
+  RCP<IO::DiscretizationWriter> output)
+: ScaTraTimIntImpl(actdis,solver,params,extraparams,output)
+{
+  if(scatratype_ != INPAR::SCATRA::scatratype_levelset)
+	 dserror("Third order Taylor Galerkin timeintegration scheme should be used only for the 1D transport equation");
+
+
+  // -------------------------------------------------------------------
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices
+  //                 local <-> global dof numbering
+  // -------------------------------------------------------------------
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  //solution at time n-1, for level set problems
+  //TODO: only used for 2-step 3rd order taylor galerkin method
+  phinm_  = LINALG::CreateVector(*dofrowmap,true);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+| Destructor dtor (public)                                 schott 05/11 |
+*-----------------------------------------------------------------------*/
+SCATRA::TimIntTaylorGalerkin::~TimIntTaylorGalerkin()
+{
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | set part of the residual vector belonging to the old timestep        |
+ |                                                         schott 05/11 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::SetOldPartOfRighthandside()
+{
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | perform an explicit predictor step                      schott 05/11 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::ExplicitPredictor()
+{
+  dserror("do we need an explicit predictor");
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | predict thermodynamic pressure and time derivative          vg 12/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::PredictThermPressure()
+{
+  // same-thermodynamic-pressure predictor (not required to be performed,
+  // since we just updated the thermodynamic pressure, and thus,
+  // thermpressnp_ = thermpressn_)
+
+  // same-thermodynamic-pressure-derivative predictor (currently not used)
+  //thermpressnp_ += dta_*thermpressdtn_;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | set time for evaluation of Neumann boundary conditions      vg 12/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::SetTimeForNeumannEvaluation(
+  ParameterList& params)
+{
+  params.set("total time",time_);
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | add actual Neumann loads                                             |
+ | scaled with a factor resulting from time discretization schott 05/11 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::AddNeumannToResidual()
+{
+  if (neumanninflow_) ComputeNeumannInflowTG(sysmat_,residual_);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute potential Neumann inflow                        schott 05/11 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::ComputeNeumannInflowTG(
+    RCP<LINALG::SparseOperator> matrix,
+    RCP<Epetra_Vector>          rhs)
+{
+  // time measurement: evaluate condition 'Neumann inflow'
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'TaylorGalerkinNeumannInflow'");
+
+  // create parameter list
+  ParameterList condparams;
+
+  // action for elements
+  condparams.set("action","calc_Neumann_inflow_TaylorGalerkin");
+  condparams.set<int>("scatratype",scatratype_);
+  condparams.set<int>("timealgo",timealgo_);
+  condparams.set("incremental solver",incremental_);
+
+  condparams.set("time-step length", dta_);
+
+  // provide velocity field and potentially acceleration/pressure field
+  // (export to column map necessary for parallel evaluation)
+  AddMultiVectorToParameterList(condparams,"velocity field",convel_);
+
+  //provide displacement field in case of ALE
+  condparams.set("isale",isale_);
+  if (isale_) AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+
+  // add element parameters according to time-integration scheme
+  AddSpecificTimeIntegrationParameters(condparams);
+
+  std::string condstring("TaylorGalerkinNeumannInflow");
+  discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
+  discret_->ClearState();
+
+  return;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | AVM3-based scale separation                                 vg 03/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::AVM3Separation()
+{
+  dserror("adapt this function");
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | add parameters specific for time-integration scheme     schott 05/11 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::AddSpecificTimeIntegrationParameters(
+  ParameterList& params)
+{
+  params.set("using stationary formulation",false);
+  params.set("using generalized-alpha time integration",false);
+  params.set("total time",time_);
+//  params.set("time factor",theta_*dta_);
+  params.set("alpha_F",1.0);
+
+
+  discret_->SetState("phinp",phinp_);
+  discret_->SetState("phin",phin_);
+  discret_->SetState("phinm",phinm_);
+
+  if(reinitswitch_) discret_->SetState("phistart", phistart_);
+
+  if(timealgo_ == INPAR::SCATRA::timeint_tg4_leapfrog)
+  {
+    //=======================================================================
+    // do the first time step with Taylor Galerkin 3rd order
+    //=======================================================================
+    if(step_==1) params.set<int>("timealgo",INPAR::SCATRA::timeint_tg3);
+    else params.set<int>("timealgo",timealgo_);
+  }
+  else params.set<int>("timealgo",timealgo_);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute thermodynamic pressure for low-Mach-number flow     vg 12/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::ComputeThermPressure()
+{
+	dserror("do not call this function");
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute time derivative                                     vg 09/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::ComputeTimeDerivative()
+{
+  dserror("do not call this function");
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | compute time derivative of thermodynamic pressure           vg 09/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::ComputeThermPressureTimeDerivative()
+{
+	  dserror("do not call this function");
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | current solution becomes most recent solution of next timestep       |
+ |                                                         schott 05/11 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::Update()
+{
+  // phinm is needed for 2-step Taylor Galerkin methods as well as for restart of level set problems
+  phinm_ ->Update(1.0,*phin_,0.0);
+
+  // solution of this step becomes most recent solution of the last step
+  phin_ ->Update(1.0,*phinp_,0.0);
+
+  cout << "Update done" << endl;
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | update level set after reinitialization                  schott 05/11 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::UpdateReinit()
+{
+  // at the moment the same function as Update()
+  // for Taylor Galerkin methods we do not have to compute new time derivatives
+
+  //phinm is needed for restart of level set problems
+  phinm_ ->Update(1.0,*phin_,0.0);
+
+  // solution of this step becomes most recent solution of the last step
+  phin_ ->Update(1.0,*phinp_,0.0);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | update thermodynamic pressure at n for low-Mach-number flow vg 12/08 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::UpdateThermPressure()
+{
+	dserror("do not call this function");
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update density at n for ELCH natural convection         schott 05/11 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::UpdateDensityElch()
+{
+	dserror("do not call this function");
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | write additional data required for restart               schott 05/11 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::OutputRestart()
+{
+  // additional state vectors that are needed for One-Step-Theta restart
+//  output_->WriteVector("phidtn", phidtn_);
+  output_->WriteVector("phin", phin_);
+
+  // phinm is needed for 2-step Taylor Galerkin methods and to reconstruct the interface
+  output_->WriteVector("phinm", phinm_);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |                                                         schott 05/11 |
+ -----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::ReadRestart(int step)
+{
+  IO::DiscretizationReader reader(discret_,step);
+  time_ = reader.ReadDouble("time");
+  step_ = reader.ReadInt("step");
+
+  // read state vectors that are needed for One-Step-Theta restart
+  reader.ReadVector(phinp_, "phinp");
+  reader.ReadVector(phin_,  "phin");
+  reader.ReadVector(phidtn_,"phidtn");
+
+  // phinm is needed for restart of level set problems
+  reader.ReadVector(phinm_,  "phinm");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | Initialization procedure before the first time step     schott 05/11 |
+ -----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::PrepareFirstTimeStep()
+{
+  // evaluate Dirichlet boundary conditions at time t=0
+  // the values should match your initial field at the boundary!
+  //ApplyDirichletBC(time_,phin_,phidtn_);
+  ApplyDirichletBC(time_,phin_,Teuchos::null);
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | update of time-dependent variables for electrode kinetics  gjb 11/09 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::ElectrodeKineticsTimeUpdate(const bool init)
+{
+	dserror("do not call this function");
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | set old part of RHS for galvanostatic equation             gjb 04/10 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::ElectrodeKineticsSetOldPartOfRHS()
+{
+	dserror("do not call this function");
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | reset phi vector due to reinitialization                 henke 01/10 |
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::SetPhin(Teuchos::RCP<Epetra_Vector> phireinitn)
+{
+	dserror("do not call this function");
+  return;
+}
+
+/*--------------------------------------------------------------------------*
+ | calculate time derivative of phi after reinitialization   rasthofer 02/10|
+ *--------------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::CalcPhidtReinit()
+{
+	dserror("do not call this function");
+
+  return;
+}
+
+
+#endif /* CCADISCRET */

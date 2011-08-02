@@ -1153,6 +1153,154 @@ LINALG::Matrix<3,1> DRT::UTILS::getNodeCoordinates(   const int                 
                 dserror("node number does not exist");
         }
     }
+    else if(distype == DRT::Element::hex20) //schott 05/11
+    {
+        switch(nodeId)
+        {
+            case 0:
+            {
+                coord(0) = -1.0;
+                coord(1) = -1.0;
+                coord(2) = -1.0;
+                break;
+            }
+            case 1:
+            {
+                coord(0) = +1.0;
+                coord(1) = -1.0;
+                coord(2) = -1.0;
+                break;
+            }
+            case 2:
+            {
+                coord(0) = +1.0;
+                coord(1) = +1.0;
+                coord(2) = -1.0;
+                break;
+            }
+            case 3:
+            {
+                coord(0) = -1.0;
+                coord(1) = +1.0;
+                coord(2) = -1.0;
+                break;
+            }
+            case 4:
+            {
+                coord(0) = -1.0;
+                coord(1) = -1.0;
+                coord(2) = +1.0;
+                break;
+            }
+            case 5:
+            {
+                coord(0) = +1.0;
+                coord(1) = -1.0;
+                coord(2) = +1.0;
+                break;
+            }
+            case 6:
+            {
+                coord(0) = +1.0;
+                coord(1) = +1.0;
+                coord(2) = +1.0;
+                break;
+            }
+            case 7:
+            {
+                coord(0) = -1.0;
+                coord(1) = +1.0;
+                coord(2) = +1.0;
+                break;
+            }
+            case 8:
+            {
+                coord(0) =  0.0;
+                coord(1) = -1.0;
+                coord(2) = -1.0;
+                break;
+            }
+            case 9:
+            {
+                coord(0) = +1.0;
+                coord(1) =  0.0;
+                coord(2) = -1.0;
+                break;
+            }
+            case 10:
+            {
+                coord(0) =  0.0;
+                coord(1) =  1.0;
+                coord(2) = -1.0;
+                break;
+            }
+            case 11:
+            {
+                coord(0) = -1.0;
+                coord(1) =  0.0;
+                coord(2) = -1.0;
+                break;
+            }
+            case 12:
+            {
+                coord(0) = -1.0;
+                coord(1) = -1.0;
+                coord(2) =  0.0;
+                break;
+            }
+            case 13:
+            {
+                coord(0) = +1.0;
+                coord(1) = -1.0;
+                coord(2) =  0.0;
+                break;
+            }
+            case 14:
+            {
+                coord(0) = +1.0;
+                coord(1) = +1.0;
+                coord(2) =  0.0;
+                break;
+            }
+            case 15:
+            {
+                coord(0) = -1.0;
+                coord(1) = +1.0;
+                coord(2) =  0.0;
+                break;
+            }
+            case 16:
+            {
+                coord(0) =  0.0;
+                coord(1) = -1.0;
+                coord(2) = +1.0;
+                break;
+            }
+            case 17:
+            {
+                coord(0) = +1.0;
+                coord(1) =  0.0;
+                coord(2) = +1.0;
+                break;
+            }
+            case 18:
+            {
+                coord(0) =  0.0;
+                coord(1) = +1.0;
+                coord(2) = +1.0;
+                break;
+            }
+            case 19:
+            {
+                coord(0) = -1.0;
+                coord(1) =  0.0;
+                coord(2) = +1.0;
+                break;
+            }
+            default:
+                dserror("node number does not exist");
+        }
+    }
     else
         dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype)).c_str());
 

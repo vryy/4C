@@ -534,6 +534,18 @@ namespace UTILS {
     double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
   };
 
+  /// special implementation for a level set test function
+  class RotatingConeFunction : public Function
+  {
+  public:
+
+    /// ctor
+    RotatingConeFunction();
+
+    /// evaluate function at given position in space
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+  };
+
   /// special implementation for a xfem test function
   class LevelSetCutTestFunction : public Function
   {
@@ -671,6 +683,12 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddTag("ZALESAKSDISK")
     ;
 
+  DRT::INPUT::LineDefinition rotatingcone;
+  rotatingcone
+    .AddNamedInt("FUNCT")
+    .AddTag("ROTATINGCONE")
+    ;
+
   DRT::INPUT::LineDefinition levelsetcuttest;
   levelsetcuttest
     .AddNamedInt("FUNCT")
@@ -709,6 +727,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(localwomersley);
   lines->Add(cylinder3d);
   lines->Add(zalesaksdisk);
+  lines->Add(rotatingcone);
   lines->Add(levelsetcuttest);
   lines->Add(componentexpr);
   lines->Add(expr);
@@ -926,6 +945,10 @@ void DRT::UTILS::FunctionManager::ReadInput(const DRT::INPUT::DatFileReader& rea
       else if (function->HaveNamed("ZALESAKSDISK"))
       {
         functions_.push_back(rcp(new ZalesaksDiskFunction()));
+      }
+      else if (function->HaveNamed("ROTATINGCONE"))
+      {
+        functions_.push_back(rcp(new RotatingConeFunction()));
       }
       else if (function->HaveNamed("LEVELSETCUTTEST"))
       {
@@ -2159,74 +2182,201 @@ Function()
  *----------------------------------------------------------------------*/
 double DRT::UTILS::ZalesaksDiskFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
 {
+	// REIMPLEMENTATION
+	// Benedikt Schott 06/11
+	// the disk consists of 3 lines and a part of a circle and four points
+	// decide if the orthogonal projection of the current point lies on the lines and the circle (four different distances possible)
+	// additionally the smallest distance can be between the current point and one of the four corners
+
+	double distance = 99999.0;
+
+	//=====================================
+	// distances to the four corners
+	//=====================================
+	// upper points
+	double y_upper = sqrt(DSQR(0.15)-DSQR(0.025)) + 0.25;
+	// warning: sign must be positive
+	double dist_lu = sqrt(DSQR(xp[0]+0.025)+DSQR(xp[1]-y_upper));
+	if(abs(dist_lu) < abs(distance)) distance = dist_lu;
+
+	// warning: sign must be positive
+	double dist_ru = sqrt(DSQR(xp[0]-0.025)+DSQR(xp[1]-y_upper));
+	if(abs(dist_ru) < abs(distance)) distance = dist_ru;
+
+	// under points
+	double y_down = 0.15;
+	// warning: sign must be negative
+	double dist_ld = sqrt(DSQR(xp[0]+0.025)+DSQR(xp[1]-y_down));
+	if(abs(dist_ld) < abs(distance)) distance = -dist_ld;
+
+	// warning: sign must be negative
+	double dist_rd = sqrt(DSQR(xp[0]-0.025)+DSQR(xp[1]-y_down));
+	if(abs(dist_rd) < abs(distance)) distance = -dist_rd;
+
+
+
+	//=====================================
+	// projection on the 3 lines
+	//=====================================
+	// decide for vertical lines
+	if(xp[1]>= 0.15 && xp[1]<= y_upper)
+	{
+		// leftVertLine
+		if(abs(xp[0]+0.025) < abs(distance)) distance = xp[0]+0.025;
+
+		// rightVertLine
+		if(abs(0.025-xp[0]) < abs(distance)) distance = 0.025-xp[0];
+	}
+	// decide for horizontal line
+	if(xp[0]>= -0.025 && xp[0]<=0.025)
+	{
+		// horizontalLine
+		if(abs(xp[1]-0.15) < abs(distance)) distance = xp[1]-0.15;
+	}
+
+
+	//======================================
+	// distance to the circle
+	//======================================
+	// decide for part of circle
+	// get radius of sphere for current point
+	double s = sqrt(DSQR(xp[0]-0.0)+DSQR(xp[1]-0.25));
+	// get angle between line form midpoint of circle to current point and vector (0,1,0)
+	double y_tmp= sqrt(DSQR(0.15)-DSQR(0.025))*s/0.15;
+	if((xp[1]-0.25) <= y_tmp)
+	{
+		if(abs(s-0.15) < abs(distance)) distance = s-0.15;
+	}
+
+
+  return distance;
+
+
+// old implementation (WRONG!!!)
+
+//  //here calculation of distance (sign is already taken in consideration)
+//  double distance = 0;
+//
+//  //inner part of slot
+//  if ((xp[0] <= 0.025) & (xp[0] >= -0.025) & (xp[1] >= 0.15) & (xp[1] <= 0.40))
+//  {
+//    distance = xp[1]-0.15;
+//    if ((xp[0]+0.025) < distance)
+//      distance = xp[0]+0.025;
+//    if ((0.025-xp[0]) < distance)
+//      distance = 0.025-xp[0];
+//  }
+//
+//  //part directly under slot
+//  else if ((xp[0] <= 0.025) & (xp[0] >= -0.025) & (xp[1] >= 0.10) & (xp[1] < 0.15))
+//  {
+//    distance = xp[1]-0.15;
+//    if ((sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15) > distance)
+//      distance = sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15;
+//  }
+//
+//  //part on the right hand side under the slot
+//  else if ((xp[0] > 0.025) & ((sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15)<0) & (xp[1] <= 0.15))
+//  {
+//    distance = sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15;
+//    if (-sqrt(DSQR(xp[0]-0.025)+DSQR(xp[1]-0.15)) > distance)
+//      distance = -sqrt(DSQR(xp[0]-0.025)+DSQR(xp[1]-0.15));
+//  }
+//
+//  //part on the left hand side under the slot
+//  else if ((xp[0] < -0.025) & ((sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15) < 0) & (xp[1] <= 0.15))
+//  {
+//    distance = sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15;
+//
+//    if (-sqrt(DSQR(xp[0]+0.025)+DSQR(xp[1]-0.15)) > distance)
+//      distance = -sqrt(DSQR(xp[0]+0.025)+DSQR(xp[1]-0.15));
+//  }
+//
+//  //part on the right side of the slot
+//  else if ((xp[0]>0.025) & ((sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15)<0))
+//  {
+//    distance = sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15;
+//    if ((0.025-xp[0]) > distance)
+//      distance = 0.025-xp[0];
+//  }
+//
+//  //part on the left side of the slot
+//  else if ((xp[0] < -0.025) & ((sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15)<0))
+//  {
+//    distance = sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15;
+//    if ((xp[0]+0.025) > distance)
+//      distance = xp[0]+0.025;
+//  }
+//
+//  //trapezoidal part over the slot
+//  else if ((xp[1] > 0.40) & ((xp[1]-0.25-6*xp[0]) >= 0) & ((xp[1]-0.25+6*xp[0]) >= 0))
+//  {
+//    distance = sqrt(DSQR(xp[0]+0.025)+DSQR(xp[1]-0.4));
+//    if (sqrt(DSQR(xp[0]-0.025)+DSQR(xp[1]-0.40)) < distance)
+//      distance = sqrt(DSQR(xp[0]-0.025)+DSQR(xp[1]-0.40));
+//  }
+//
+//  //rest of outer area
+//  else
+//  distance = sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15;
+
+//  cout << "at the moment we use the rotating cone example in ZALESAKSDISK Evaluate!!!" << endl;
+//
+//  double distance = 0.0;
+//
+//  double x0c = 1.0/6.0;
+//  double x1c = 1.0/6.0;
+//
+//  double sigma = 0.2;
+//
+//  double X0 = (xp[0]-x0c)/sigma;
+//  double X1 = (xp[1]-x1c)/sigma;
+//
+//  double radius = sqrt(DSQR(X0)+DSQR(X1));
+//
+//  if(radius <= 1.0) distance = 0.25*(1.0+cos(PI*X0))*(1.0+cos(PI*X1));
+//  else distance = 0.0;
+
+// return distance;
+
+}
+
+
+/*----------------------------------------------------------------------*
+ | constructor                                             schott 05/11 |
+ *----------------------------------------------------------------------*/
+DRT::UTILS::RotatingConeFunction::RotatingConeFunction() :
+Function()
+{
+}
+
+/*----------------------------------------------------------------------*
+ | evaluation of level set test function "Rotating Cone "  schott 05/11 |
+ *----------------------------------------------------------------------*/
+double DRT::UTILS::RotatingConeFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
   //here calculation of distance (sign is already taken in consideration)
   double distance = 0;
 
-  //inner part of slot
-  if ((xp[0] <= 0.025) & (xp[0] >= -0.025) & (xp[1] >= 0.15) & (xp[1] <= 0.40))
-  {
-    distance = xp[1]-0.15;
-    if ((xp[0]+0.025) < distance)
-      distance = xp[0]+0.025;
-    if ((0.025-xp[0]) < distance)
-      distance = 0.025-xp[0];
-  }
 
-  //part directly under slot
-  else if ((xp[0] <= 0.025) & (xp[0] >= -0.025) & (xp[1] >= 0.10) & (xp[1] < 0.15))
-  {
-    distance = xp[1]-0.15;
-    if ((sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15) > distance)
-      distance = sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15;
-  }
+  double x0c = 1.0/6.0;
+  double x1c = 1.0/6.0;
 
-  //part on the right hand side under the slot
-  else if ((xp[0] > 0.025) & ((sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15)<0) & (xp[1] <= 0.15))
-  {
-    distance = sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15;
-    if (-sqrt(DSQR(xp[0]-0.025)+DSQR(xp[1]-0.15)) > distance)
-      distance = -sqrt(DSQR(xp[0]-0.025)+DSQR(xp[1]-0.15));
-  }
+  double sigma = 0.2;
 
-  //part on the left hand side under the slot
-  else if ((xp[0] < -0.025) & ((sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15) < 0) & (xp[1] <= 0.15))
-  {
-    distance = sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15;
+  double X0 = (xp[0]-x0c)/sigma;
+  double X1 = (xp[1]-x1c)/sigma;
 
-    if (-sqrt(DSQR(xp[0]+0.025)+DSQR(xp[1]-0.15)) > distance)
-      distance = -sqrt(DSQR(xp[0]+0.025)+DSQR(xp[1]-0.15));
-  }
+  double radius = sqrt(DSQR(X0)+DSQR(X1));
 
-  //part on the right side of the slot
-  else if ((xp[0]>0.025) & ((sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15)<0))
-  {
-    distance = sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15;
-    if ((0.025-xp[0]) > distance)
-      distance = 0.025-xp[0];
-  }
+  if(radius <= 1.0) distance = 0.25*(1.0+cos(PI*X0))*(1.0+cos(PI*X1));
+  else distance = 0.0;
 
-  //part on the left side of the slot
-  else if ((xp[0] < -0.025) & ((sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15)<0))
-  {
-    distance = sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15;
-    if ((xp[0]+0.025) > distance)
-      distance = xp[0]+0.025;
-  }
 
-  //trapezoidal part over the slot
-  else if ((xp[1] > 0.40) & ((xp[1]-0.25-6*xp[0]) >= 0) & ((xp[1]-0.25+6*xp[0]) >= 0))
-  {
-    distance = sqrt(DSQR(xp[0]+0.025)+DSQR(xp[1]-0.4));
-    if (sqrt(DSQR(xp[0]-0.025)+DSQR(xp[1]-0.40)) < distance)
-      distance = sqrt(DSQR(xp[0]-0.025)+DSQR(xp[1]-0.40));
-  }
-
-  //rest of outer area
-  else
-  distance = sqrt(DSQR(xp[0])+DSQR(xp[1]-0.25))-0.15;
-
-  return distance;
+  return (distance-1.0);
 }
+
+
 /*----------------------------------------------------------------------*
  | constructor                                              henke 05/11 |
  *----------------------------------------------------------------------*/

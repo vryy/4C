@@ -27,6 +27,8 @@ Maintainer: Georg Bauer
 #include "../drt_scatra/scatra_timint_ost.H"
 #include "../drt_scatra/scatra_timint_bdf2.H"
 #include "../drt_scatra/scatra_timint_genalpha.H"
+#include "../drt_scatra/scatra_timint_tg.H"             //schott 05/11
+//#include "../drt_scatra/scatra_timint_reinitialization.H"       //schott 05/11
 #include "../drt_scatra/scatra_resulttest.H"
 
 /*----------------------------------------------------------------------*
@@ -204,9 +206,111 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
      scatra_ = rcp(new SCATRA::TimIntGenAlpha(actdis, solver, scatratimeparams,extraparams, output));
      break;
    }
+   case INPAR::SCATRA::timeint_tg2: //schott 05/11
+   {
+     // create instance of time integration class (call the constructor)
+	 scatra_ = rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
+     break;
+   }
+   case INPAR::SCATRA::timeint_tg2_LW: //schott 05/11
+   {
+     // create instance of time integration class (call the constructor)
+	 scatra_ = rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
+     break;
+   }
+   case INPAR::SCATRA::timeint_tg3: //schott 05/11
+   {
+     // create instance of time integration class (call the constructor)
+	 scatra_ = rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
+     break;
+   }
+   case INPAR::SCATRA::timeint_tg4_leapfrog: //schott 05/11
+   {
+     // create instance of time integration class (call the constructor)
+     scatra_ = rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
+     break;
+   }
+   case INPAR::SCATRA::timeint_tg4_onestep: //schott 05/11
+   {
+     // create instance of time integration class (call the constructor)
+     scatra_ = rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver, scatratimeparams,extraparams, output));
+     break;
+   }
    default:
-     dserror("Unknown time-integration scheme for scalar tranport problem");
+     dserror("Unknown time-integration scheme for scalar transport problem");
    }// switch(timintscheme)
+
+
+   if (genprob.probtyp == prb_combust)
+   {
+
+	   //TODO: Do this within the Combust Algorithm !!!
+
+	   // -------------------------------------------------------------------
+	   // create a solver
+	   // -------------------------------------------------------------------
+	   RCP<LINALG::Solver> solver_reinit =
+	     rcp(new LINALG::Solver(solverparams, //DRT::Problem::Instance()->ScalarTransportSolverParams(),
+	                            actdis->Comm(),
+	                            DRT::Problem::Instance()->ErrorFile()->Handle()));
+	   actdis->ComputeNullSpaceIfNecessary(solver_reinit->Params());
+
+
+     extraparams->sublist("COMBUSTION GFUNCTION")=prbdyn.sublist("COMBUSTION GFUNCTION");
+     extraparams->sublist("COMBUSTION PDE REINITIALIZATION")=prbdyn.sublist("COMBUSTION PDE REINITIALIZATION");
+     extraparams->set<bool>("REINITSWITCH", true);
+     // -------------------------------------------------------------------
+     // set parameters in list required for all schemes
+     // -------------------------------------------------------------------
+     // make a copy (inside an rcp) containing also all sublists
+     RCP<ParameterList> reinittimeparams= rcp(new ParameterList(scatradyn));
+
+
+//     DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params,"REINIT_TIMEINTEGR")
+     // -------------------------------------------------------------------
+     // overrule certain parameters for coupled problems
+     // -------------------------------------------------------------------
+//     DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>
+     // the default time step size
+//     reinittimeparams->set<int>      ("TIMEINTEGR"  ,DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(prbdyn.sublist("COMBUSTION PDE REINITIALIZATION"),"REINIT_TIMEINTEGR"));
+     // the default time step size
+     reinittimeparams->set<double>   ("TIMESTEP"    ,prbdyn.sublist("COMBUSTION PDE REINITIALIZATION").get<double>("PSEUDOTIMESTEP_FACTOR"));
+     // maximum simulation time
+     reinittimeparams->set<double>   ("MAXTIME"     ,prbdyn.get<double>("MAXTIME"));
+     // maximum number of timesteps
+     reinittimeparams->set<int>      ("NUMSTEP"     ,prbdyn.sublist("COMBUSTION PDE REINITIALIZATION").get<int>("NUMPSEUDOSTEPS"));
+     // restart
+     reinittimeparams->set           ("RESTARTEVRY" ,prbdyn.get<int>("RESTARTEVRY"));
+     // solution output
+     reinittimeparams->set           ("UPRES"       ,prbdyn.get<int>("UPRES"));
+
+
+
+     // -------------------------------------------------------------------
+     // algorithm construction depending on
+     // respective time-integration (or stationary) scheme
+     // -------------------------------------------------------------------
+     INPAR::SCATRA::TimeIntegrationScheme timintscheme_reinitialization = DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(prbdyn.sublist("COMBUSTION PDE REINITIALIZATION"),"REINIT_TIMEINTEGR");
+
+     switch(timintscheme_reinitialization)
+     {
+     case INPAR::SCATRA::timeint_one_step_theta:
+     {
+       // create instance of time integration class (call the constructor)
+       reinit_ = rcp(new SCATRA::TimIntOneStepTheta(actdis, solver_reinit, reinittimeparams, extraparams,output));
+       break;
+     }
+     case INPAR::SCATRA::timeint_tg2:
+     {
+       // create instance of time integration class (call the constructor)
+       reinit_ = rcp(new SCATRA::TimIntTaylorGalerkin(actdis, solver_reinit, reinittimeparams,extraparams, output));
+       break;
+     }
+     default:
+       dserror("Unknown time-integration scheme for reinitialization problem");
+     }// switch(timintscheme_reinitialization)
+
+   }
 
   return;
 
@@ -219,6 +323,12 @@ SCATRA::ScaTraTimIntImpl& ADAPTER::ScaTraBaseAlgorithm::ScaTraField()
   return *scatra_;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+SCATRA::ScaTraTimIntImpl& ADAPTER::ScaTraBaseAlgorithm::ScaTraReinitField()
+{
+  return *reinit_;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

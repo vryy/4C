@@ -42,6 +42,9 @@ std::map<string,string> SCATRA::ScatraFluidCloneStrategy::ConditionsToCopy()
   conditions_to_copy.insert(pair<string,string>("TransportSurfaceNeumann","SurfaceNeumann"));
   conditions_to_copy.insert(pair<string,string>("TransportVolumeNeumann","VolumeNeumann"));
   conditions_to_copy.insert(pair<string,string>("TransportNeumannInflow","TransportNeumannInflow"));
+  conditions_to_copy.insert(pair<string,string>("TaylorGalerkinOutflow","TaylorGalerkinOutflow")); // schott
+  conditions_to_copy.insert(pair<string,string>("TaylorGalerkinNeumannInflow","TaylorGalerkinNeumannInflow")); // schott
+  conditions_to_copy.insert(pair<string,string>("ReinitializationTaylorGalerkin","ReinitializationTaylorGalerkin")); // schott
   // when the fluid problem is periodic we also expect the mass transport to be so:
   conditions_to_copy.insert(pair<string,string>("LinePeriodic","LinePeriodic"));
   conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));

@@ -209,6 +209,8 @@ void SCATRA::TimIntOneStepTheta::AddSpecificTimeIntegrationParameters(
     discret_->SetState("phin",phin_);
   }
 
+  if(reinitswitch_) params.set("theta_reinit", theta_);
+
   return;
 }
 

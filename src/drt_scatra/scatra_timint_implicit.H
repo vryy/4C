@@ -9,6 +9,10 @@
      o two-step BDF2 time-integration scheme
        (with potential one-step-theta start algorithm)
 
+     o implicit characteristic Galerkin (ICG) time-integration scheme (level-set transport)
+
+     o explicit taylor galerkin (TG) time-integration schemes (level-set transport)
+
      and stationary solver.
 
 <pre>
@@ -108,8 +112,29 @@ public:
                time_,maxtime_,dta_,MethodTitle().c_str(),step_,stepmax_);
   }
 
+  /// print information about current pseudo time step to screen
+  virtual void PrintPseudoTimeStepInfoReinit()
+  {
+    if (myrank_==0)
+        printf("TIMESTEPFACTOR: %11.4E      %s          PSEUDOSTEP = %4d/%4d \n",
+        		dta_,MethodTitle().c_str(),step_,stepmax_);
+  }
+
+  /// increment time and step value
+  void ResetTimeAndStep()
+  {
+    step_ = 0;
+    time_ = 0.0;
+  }
+
+  /// evaluate integrated error norm for reinitialization stop criterion
+  double EvaluateGradientNormError();
+
   /// do time integration (time loop)
   void TimeLoop();
+
+  /// do time integration for reinitialization (time loop)
+  void TimeLoop_Reinit();
 
   /// setup the variables to do a new time step
   void PrepareTimeStep();
@@ -138,6 +163,26 @@ public:
   /// update configuration and output to file
   void Output();
 
+  /// output to file for reinitialized scatra field
+  void OutputReinit(const int globalstep, const double globaltime);
+
+  /// output reinitialization steps
+  void OutputReinitializationSteps();
+
+  /// write state vectors to Gmsh postprocessing files
+  void OutputToGmshReinitializationSteps(
+      const int reinit_step,
+      const double reinit_pseudo_time
+  ) const;
+
+  /// write state vectors (phinp) to Gmsh postprocessing files
+  void OutputToGmshReinit(
+      const int globalstep,
+      const double globaltime,
+      const int step,
+      const double time
+  ) const;
+
   /// Access output object
   IO::DiscretizationWriter& DiscWriter() { return *output_; }
 
@@ -153,6 +198,9 @@ public:
       Teuchos::RCP<const Epetra_Vector> fluidacc, ///< fluid acceleration vector
       Teuchos::RCP<const DRT::DofSet> dofset,
       Teuchos::RCP<DRT::Discretization> fluiddis);    ///< fluid discretization
+
+  /// call different reinitialization techniques based on solving the sussman equation
+  bool CallReinitialization();
 
  /// apply moving mesh data
  void ApplyMeshMovement(
@@ -233,6 +281,16 @@ public:
 
   /// routine to reset phi vector due to reinitialization for OST scheme
   virtual void SetPhin(Teuchos::RCP<Epetra_Vector> phireinitn) = 0;
+
+  /// routine to set phi vectors due to reinitialization
+  void SetPhinp(Teuchos::RCP<Epetra_Vector> phinp);
+
+  /// routine to set phi vectors due to reinitialization
+  void SetPhiReinit(Teuchos::RCP<Epetra_Vector> phi);
+
+  /// routine to check for steady state due to reinitialization
+  void CheckSteadyState(double&    Gradient_Error_old,
+  		                bool&      STOP);
 
   /// output of all electrode information to screen and/or file (default: 2x true)
   void OutputElectrodeInfo(bool printtoscreen = true, bool printtofile = true);
@@ -443,6 +501,15 @@ protected:
   /// call elements to calculate system matrix and rhs and assemble
   void AssembleMatAndRHS();
 
+  /// call elements to calculate system matrix and rhs at boundaries for Taylor-Galerkin methods
+  void AssembleMatAndRHS_Boundary();
+
+  /// output of all reinitialization information to screen and/or file
+  void ReinitializeInfo(bool printtoscreen = true, bool printtofile = true); //schott
+
+  /// add reinitialization specific parameters
+  void AddReinitializationParameters(ParameterList& params);
+
   /// solve linear system
   void LinearSolve();
 
@@ -581,7 +648,12 @@ protected:
   /// flag controlling level set mass calculation strategy
   INPAR::SCATRA::MassCalculation masscalc_;
 
+
+  /// boolian if scatra object is used for level set reinitialization
   bool reinitswitch_;
+
+  /// boolian if a reinitialization step is accepted or not
+  bool reinitialization_accepted_;
 
   /// maximum number of steps
   int stepmax_;
@@ -610,7 +682,7 @@ protected:
   /// boolean to write Gmsh postprocessing files (input parameter)
   const bool outputgmsh_;
 
-  /// time step size
+  /// time step size (for reinitialization methods this is a pseudo time step factor)
   double dta_;
 
   /// time step size
@@ -678,6 +750,9 @@ protected:
   /// phi at times n+1 and n
   RCP<Epetra_Vector>    phinp_;
   RCP<Epetra_Vector>    phin_;
+  
+  /// phi at time 0 as reference for reinitialization procedure
+  RCP<Epetra_Vector>    phistart_;
 
   /// time derivative of phi at times n+1 and n
   RCP<Epetra_Vector>  phidtnp_;

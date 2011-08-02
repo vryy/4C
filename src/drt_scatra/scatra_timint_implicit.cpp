@@ -10,6 +10,10 @@
      o two-step BDF2 time-integration scheme
 
      o generalized-alpha time-integration scheme
+     
+     o implicit characteristic Galerkin (ICG) time-integration scheme (level-set transport)
+
+     o explicit taylor galerkin (TG) time-integration schemes (level-set transport)
 
      and stationary solver.
 
@@ -94,7 +98,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   scatratype_  (DRT::INPUT::IntegralValue<INPAR::SCATRA::ScaTraType>(*params,"SCATRATYPE")),
   reinitaction_(INPAR::SCATRA::reinitaction_none),
   masscalc_    (INPAR::SCATRA::masscalc_none),
-  reinitswitch_(false),
+  reinitswitch_(extraparams_->get<bool>("REINITSWITCH",false)),
   stepmax_  (params_->get<int>("NUMSTEP")),
   maxtime_  (params_->get<double>("MAXTIME")),
   timealgo_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(*params,"TIMEINTEGR")),
@@ -163,10 +167,17 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
-  pbc_ = rcp(new PeriodicBoundaryConditions (discret_));
-  pbc_->UpdateDofsForPeriodicBoundaryConditions();
+  // schott:
+  // do not apply periodic boundary conditions for the second scatra reinit object
+  // then again a new redistribution of the redistributed scatra discretization would be performed
+  if(reinitswitch_ == false)
+  {
+	  cout << "apply periodic boundary conditions for scatra" << endl;
+	  pbc_ = rcp(new PeriodicBoundaryConditions (discret_));
+	  pbc_->UpdateDofsForPeriodicBoundaryConditions();
+	  pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
+  }
 
-  pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
 
   discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
 
@@ -269,6 +280,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // solutions at time n+1 and n
   phinp_ = LINALG::CreateVector(*dofrowmap,true);
   phin_  = LINALG::CreateVector(*dofrowmap,true);
+
+  if(reinitswitch_)
+  {
+	  phistart_  = LINALG::CreateVector(*dofrowmap,true);
+  }
 
   // temporal solution derivative at time n+1
   phidtnp_ = LINALG::CreateVector(*dofrowmap,true);
@@ -548,6 +564,21 @@ std::string SCATRA::ScaTraTimIntImpl::MapTimIntEnumToString
   case INPAR::SCATRA::timeint_gen_alpha :
     return "  Gen. Alpha  ";
     break;
+  case INPAR::SCATRA::timeint_tg2_LW :    //schott
+    return "  Taylor Galerkin Lax-Wendroff 2rd order  ";
+    break;
+  case INPAR::SCATRA::timeint_tg2 :    //schott
+    return "  Taylor Galerkin 2rd order  ";
+    break;
+  case INPAR::SCATRA::timeint_tg3 :    //schott
+    return "  Taylor Galerkin 3rd order  ";
+    break;
+  case INPAR::SCATRA::timeint_tg4_leapfrog :    //schott
+    return "  Taylor Galerkin Leapfrog 4rd order  ";
+    break;
+  case INPAR::SCATRA::timeint_tg4_onestep :    //schott
+    return "  Taylor Galerkin 4rd order one step ";
+    break;
   default :
     dserror("Cannot cope with name enum %d", term);
     return "";
@@ -651,6 +682,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
     // if initial velocity field has not been set here, the initial time derivative of phi will be
     // calculated wrongly for some time integration schemes
     if (initialvelset_) PrepareFirstTimeStep();
+    else if (reinitswitch_);
     else dserror("Initial velocity field has not been set");
   }
 
@@ -787,7 +819,9 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   while (!stopgalvanostat) // galvanostatic control (ELCH)
   {
   // out to screen
-  PrintTimeStepInfo();
+  if(reinitswitch_==false)      PrintTimeStepInfo();
+  else if (reinitswitch_==true) PrintPseudoTimeStepInfoReinit();
+
   if (myrank_ == 0)
   {
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
@@ -1312,7 +1346,21 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   ParameterList eleparams;
 
   // action for elements
-  eleparams.set("action","calc_condif_systemmat_and_residual");
+  if (reinitswitch_ == true) eleparams.set("action","reinitialize_levelset");
+  else if(timealgo_ == INPAR::SCATRA::timeint_tg2
+       or timealgo_ == INPAR::SCATRA::timeint_tg2_LW
+       or timealgo_ == INPAR::SCATRA::timeint_tg3
+       or timealgo_ == INPAR::SCATRA::timeint_tg4_leapfrog
+       or timealgo_ == INPAR::SCATRA::timeint_tg4_onestep)
+  {
+	  // taylor galerkin transport of levelset
+	  eleparams.set("action","levelset_TaylorGalerkin");
+  }
+  else
+  {
+	  // standard case
+	  eleparams.set("action","calc_condif_systemmat_and_residual");
+  }
 
   // DO THIS AT VERY FIRST!!!
   // compute reconstructed diffusive fluxes for better consistency
@@ -1362,6 +1410,9 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // add element parameters according to time-integration scheme
   AddSpecificTimeIntegrationParameters(eleparams);
 
+  // add reinitialization specific time-integration parameters
+  if (reinitswitch_) AddReinitializationParameters(eleparams);
+
   // call loop over elements with subgrid-diffusivity(-scaling) vector
   discret_->Evaluate(eleparams,sysmat_,null,residual_,subgrdiff_,null);
   discret_->ClearState();
@@ -1404,6 +1455,9 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
     // clear state
     discret_->ClearState();
   }
+
+  AssembleMatAndRHS_Boundary();
+
 
   // AVM3 scaling for non-incremental solver: scaling of normalized AVM3-based
   // fine-scale subgrid-diffusivity matrix by subgrid diffusivity

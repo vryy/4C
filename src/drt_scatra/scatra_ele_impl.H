@@ -121,6 +121,9 @@ public:
   //! element-type specific flag if second derivatives are needed
   static const bool use2ndderiv_ = SCATRA::Use2ndDerivs<distype>::use;
 
+  //! element-type specific flag if second derivatives are needed
+  static const bool use2ndderivReinitialization_ = SCATRA::Use2ndDerivsReinitialization<distype>::use;
+
   //! number of components necessary to store second derivatives
   // 1 component  for nsd=1:  (N,xx)
   // 3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
@@ -162,6 +165,16 @@ public:
         const double                          tpn, ///< turbulent Prandtl number
         const double                          frt, ///< factor F/RT needed for ELCH calculations
         const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
+    );
+
+    //! Calculate matrix and rhs. Here the whole thing is hidden.
+    virtual void Sysmat_TaylorGalerkin(
+        DRT::Element*                         ele, ///< the element those matrix is calculated
+        Epetra_SerialDenseMatrix&             sys_mat,///< element matrix to calculate
+        Epetra_SerialDenseVector&             residual, ///< element rhs to calculate
+        const double                          dt, ///< current time-step length
+        const enum INPAR::SCATRA::ScaTraType  scatratype, ///< type of scalar transport problem
+        const enum INPAR::SCATRA::TimeIntegrationScheme timealgo
     );
 
     //! calculate mass matrix and rhs for determining initial time derivative
@@ -295,6 +308,56 @@ public:
         const double                          timefac,
         const double                          alphaF,
         const int                             dofindex
+    );
+
+    //! calculate element matrix and rhs vector (TaylorGalerkin2)
+    virtual void CalMatAndRHS_TG2(
+        Epetra_SerialDenseMatrix&             emat,
+        Epetra_SerialDenseVector&             erhs,
+        const double                          fac,      ///< integration factor
+        const int                             dofindex,
+        DRT::Element*                         ele,
+        const double                          dt
+    );
+
+    //! calculate element matrix and rhs vector (TaylorGalerkin3
+    virtual void CalMatAndRHS_TG2_LW(
+        Epetra_SerialDenseMatrix&             emat,
+        Epetra_SerialDenseVector&             erhs,
+        const double                          fac,      ///< integration factor
+        const int                             dofindex,
+        DRT::Element*                         ele,
+        const double                          dt
+    );
+
+    //! calculate element matrix and rhs vector (TaylorGalerkin3
+    virtual void CalMatAndRHS_TG3(
+        Epetra_SerialDenseMatrix&             emat,
+        Epetra_SerialDenseVector&             erhs,
+        const double                          fac,      ///< integration factor
+        const int                             dofindex,
+        DRT::Element*                         ele,
+        const double                          dt
+    );
+
+    //! calculate element matrix and rhs vector (TaylorGalerkin4 one step
+    virtual void CalMatAndRHS_TG4_1S(
+        Epetra_SerialDenseMatrix&             emat,
+        Epetra_SerialDenseVector&             erhs,
+        const double                          fac,      ///< integration factor
+        const int                             dofindex,
+        DRT::Element*                         ele,
+        const double                          dt
+    );
+
+    //! calculate element matrix and rhs vector (TaylorGalerkin4 Leapfrog
+    virtual void CalMatAndRHS_TG4_Leapfrog(
+        Epetra_SerialDenseMatrix&             emat,
+        Epetra_SerialDenseVector&             erhs,
+        const double                          fac,      ///< integration factor
+        const int                             dofindex,
+        DRT::Element*                         ele,
+        const double                          dt
     );
 
     //! calculate element matrix and rhs vector (Electrochemistry problems)
@@ -507,6 +570,110 @@ public:
       );
 
 
+
+
+    //! calculate element matrix and rhs vector (One-Step-Theta)
+    virtual void CalMatAndRHS_Characteristic_Galerkin_REINITIALIZATION(
+        Epetra_SerialDenseMatrix&             emat,
+        Epetra_SerialDenseVector&             erhs,
+        const double                          fac,      ///< integration factor
+        const int                             dofindex,
+        DRT::Element*                         ele,
+        double                                pseudo_timestep_size,
+        double                                mesh_size,
+        const INPAR::SCATRA::PenaltyMethod    penalty_method,
+        const double                          penalty_interface_reinit,
+        const double                          epsilon_bandwidth,
+        const INPAR::SCATRA::SmoothedSignType smoothedSignType
+    );
+
+    //! calculate element matrix and rhs vector (One-Step-Theta)
+    virtual void CalMatAndRHS_LinearAdvection_REINITIALIZATION(
+        Epetra_SerialDenseMatrix&             emat,
+        Epetra_SerialDenseVector&             erhs,
+        const double                          fac,      ///< integration factor
+        const int                             dofindex,
+        DRT::Element*                         ele,
+        double                                pseudo_timestep_size_factor,
+        double                                meshsize,
+        const INPAR::SCATRA::PenaltyMethod    penalty_method,
+        const double                          penalty_interface_reinit,
+        const double                          epsilon_bandwidth,
+        const INPAR::SCATRA::SmoothedSignType smoothedSignType,
+        const bool                            shock_capturing,
+        const double                          shock_capturing_diffusivity,
+        double                                timefac
+    );
+
+    virtual void CalMatAndRHS_PENALTY_REINITIALIZATION_assemble(
+        Epetra_SerialDenseMatrix&             emat,
+        Epetra_SerialDenseVector&             erhs,
+        const int                             dofindex,
+        DRT::Element*                         ele,
+        const double                          penalty_interface_reinit,
+        LINALG::Matrix<3,1>&                  intersection_local
+        );
+
+    //! calculate element matrix and rhs vector (One-Step-Theta)
+    virtual void CalMatAndRHS_PENALTY_REINITIALIZATION(
+        Epetra_SerialDenseMatrix&             emat,
+        Epetra_SerialDenseVector&             erhs,
+        const int                             dofindex,
+        DRT::Element*                         ele,
+        const double                          penalty_interface_reinit
+    );
+
+    //! calculate error for steady state check
+    virtual void CalErrorsReinitialization(
+        const DRT::Element*          ele, ///< the element
+        ParameterList&               params ///< parameter list
+    );
+
+    //! evaluate shape functions and their derivatives at current integration point with second order derivatives //Schott 01/11
+    virtual double EvalShapeFuncAndDerivsAtIntPointReinitialization(
+        const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, ///< integration points
+        const int                                    iquad,     ///< id of current Gauss point
+        const int                                    eleid       ///< the element id
+    );
+
+    //! Calculate matrix and rhs. Here the whole thing is hidden.
+    virtual void SysmatReinitialize(
+        DRT::Element*                         ele, ///< the element those matrix is calculated
+        Epetra_SerialDenseMatrix&             sys_mat,///< element matrix to calculate
+        Epetra_SerialDenseVector&             residual, ///< element rhs to calculate
+        const bool                            reinitswitch,
+        const double                          reinit_pseudo_timestepsize_factor,
+        const INPAR::SCATRA::SmoothedSignType smoothedSignType,
+        const INPAR::SCATRA::ReinitializationStrategy reinitstrategy,
+        const INPAR::SCATRA::PenaltyMethod    penalty_method,
+        const double                          penalty_interface_reinit,
+        const double                          epsilon_bandwidth,
+        const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
+    );
+
+    //! Calculate matrix and rhs. Here the whole thing is hidden.
+    virtual void SysmatLinearAdvectionSysmat(
+        DRT::Element*                         ele, ///< the element those matrix is calculated
+        Epetra_SerialDenseMatrix&             sys_mat,///< element matrix to calculate
+        Epetra_SerialDenseVector&             residual, ///< element rhs to calculate
+        Epetra_SerialDenseVector&             subgrdiff, ///< subgrid-diff.-scaling vector
+        const double                          dt, ///< current time-step length
+        const double                          timefac,
+        const double                          meshsize,
+        const enum INPAR::SCATRA::TauType     whichtau, ///< stabilization parameter definition
+        const bool                            reinitswitch,
+        const double                          reinit_pseudo_timestepsize_factor,
+        const INPAR::SCATRA::SmoothedSignType smoothedSignType,
+        const INPAR::SCATRA::ReinitializationStrategy reinitstrategy,
+        const INPAR::SCATRA::PenaltyMethod    penalty_method,
+        const double                          penalty_interface_reinit,
+        const double                          epsilon_bandwidth,
+        const bool                            shock_capturing,
+        const double                          shock_capturing_diffusivity,
+        const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
+    );
+
+
     //! number of dof per node
     const int numdofpernode_;
     //! number of transported scalars (numscal_ <= numdofpernode_)
@@ -541,6 +708,12 @@ public:
     LINALG::Matrix<nsd_,nen_> eaccnp_;
     //! nodal pressure values at t_(n+1) or t_(n+alpha_F)
     LINALG::Matrix<nen_,1> eprenp_;
+    //! scalar at t_(0) used for reinitialization as reference
+    vector<LINALG::Matrix<nen_,1> > ephi0_Reinit_Reference_;
+    //! scalar at t_(0) used for reinitialization as reference
+    vector<LINALG::Matrix<nen_,1> > ephi0_penalty_;
+    //! scalar at t_(n-1)
+    vector<LINALG::Matrix<nen_,1> > ephinm_; //schott
     //! scalar at t_(n)
     vector<LINALG::Matrix<nen_,1> > ephin_;
     //! scalar at t_(n+1) or t_(n+alpha_F)
@@ -549,6 +722,10 @@ public:
     vector<LINALG::Matrix<nen_,1> > ephiam_;
     //! history vector of transported scalars
     vector<LINALG::Matrix<nen_,1> > ehist_;
+
+
+    LINALG::Matrix<nsd_,1> grad_phi_0;
+
     //! electric potential (ELCH)
     LINALG::Matrix<nen_,1> epotnp_;
     //! magnetic field at t_(n+1) (ELCH)
