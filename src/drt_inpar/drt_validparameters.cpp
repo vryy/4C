@@ -3190,6 +3190,29 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
               INPAR::COMBUST::xfemintegration_tetrahedra,
               INPAR::COMBUST::xfemintegration_hexahedra),
               &combustcontrolfluid);
+
+  setStringToIntegralParameter<int>("XFEMTIMEINT","DoNothing",
+      "Type of time integration strategy",
+      tuple<std::string>(
+          "DoNothing",
+          "SemiLagrange"),
+          tuple<int>(
+              INPAR::COMBUST::xfemtimeint_donothing,
+              INPAR::COMBUST::xfemtimeint_semilagrange),
+              &combustcontrolfluid);
+
+  setStringToIntegralParameter<int>("XFEMTIMEINT_ENR","DoNothing",
+      "Type of time integration strategy",
+      tuple<std::string>(
+          "DoNothing",
+          "QuasiStatic",
+          "SetEnrichment"),
+          tuple<int>(
+              INPAR::COMBUST::xfemtimeintenr_donothing,
+              INPAR::COMBUST::xfemtimeintenr_quasistatic,
+              INPAR::COMBUST::xfemtimeintenr_setenrichment),
+              &combustcontrolfluid);
+
   setStringToIntegralParameter<int>("INITIALFIELD","zero_field","Initial field for fluid problem",
       tuple<std::string>(
           "zero_field",
@@ -3229,12 +3252,14 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
           "surface_tension_approx_none",
           "surface_tension_approx_fixed_curvature",
           "surface_tension_approx_divgrad",
+          "surface_tension_approx_divgrad_normal",
           "surface_tension_approx_laplacebeltrami",
           "surface_tension_approx_laplacebeltrami_smoothed"),
           tuple<int>(
               INPAR::COMBUST::surface_tension_approx_none,
               INPAR::COMBUST::surface_tension_approx_fixed_curvature,
               INPAR::COMBUST::surface_tension_approx_divgrad,
+              INPAR::COMBUST::surface_tension_approx_divgrad_normal,
               INPAR::COMBUST::surface_tension_approx_laplacebeltrami,
               INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed),
               &combustcontrolfluid);
@@ -3254,6 +3279,8 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
               INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dy,
               INPAR::COMBUST::smooth_grad_phi_leastsquares_2Dz),
               &combustcontrolfluid);
+  // set parameters VELOCITY_JUMP_TYPE and FLUX_JUMP_TYPE in case of CombustType Premixed_Combustion
+  // Two_Phase_Flow_Jumps is equal to Premixed_Combustion & vel_jump_none & flux_jump_surface_tension
   setStringToIntegralParameter<int>("VELOCITY_JUMP_TYPE","vel_jump_none","Type of velocity jump",
       tuple<std::string>(
           "vel_jump_none",
@@ -3277,7 +3304,8 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
               INPAR::COMBUST::flux_jump_surface_tension),
               &combustcontrolfluid);
   IntParameter("INITFUNCNO",-1,"Function for initial field",&combustcontrolfluid);
-  DoubleParameter("PHI_MODIFY_TOL",1.0E-10,"We modify GfuncValues near zero",&combustcontrolfluid);
+  // unused
+  //DoubleParameter("PHI_MODIFY_TOL",1.0E-10,"We modify GfuncValues near zero",&combustcontrolfluid);
   DoubleParameter("LAMINAR_FLAMESPEED",1.0,"The laminar flamespeed incorporates all chemical kinetics into the problem for now",&combustcontrolfluid);
   DoubleParameter("MARKSTEIN_LENGTH",0.0,"The Markstein length takes flame curvature into account",&combustcontrolfluid);
   DoubleParameter("NITSCHE_VELOCITY",100.0,"Nitsche parameter to stabilize/penalize the velocity jump",&combustcontrolfluid);
@@ -3288,10 +3316,10 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
   setStringToIntegralParameter<int>("INITSTATSOL","No","Compute stationary solution as initial solution",
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
-  setStringToIntegralParameter<int>("START_VAL_SEMILAGRANGE","No","Turn XFEM-time-integration strategy for nodal start values on/off",
-                                     yesnotuple,yesnovalue,&combustcontrolfluid);
-  setStringToIntegralParameter<int>("START_VAL_ENRICHMENT","No","Turn XFEM-time-integration strategy for enrichment values on/off",
-                                     yesnotuple,yesnovalue,&combustcontrolfluid);
+//  setStringToIntegralParameter<int>("START_VAL_SEMILAGRANGE","No","Turn XFEM-time-integration strategy for nodal start values on/off",
+//                                     yesnotuple,yesnovalue,&combustcontrolfluid);
+//  setStringToIntegralParameter<int>("START_VAL_ENRICHMENT","No","Turn XFEM-time-integration strategy for enrichment values on/off",
+//                                     yesnotuple,yesnovalue,&combustcontrolfluid);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrolgfunc = combustcontrol.sublist("COMBUSTION GFUNCTION",false,

@@ -723,7 +723,7 @@ void SCATRA::TimIntOneStepTheta::CalcPhidtReinit()
   }
 
   // apply Dirichlet boundary conditions to system matrix
-  LINALG::ApplyDirichlettoSystem(sysmat_,phidtn_,residual_,phidtn_,*(dbcmaps_->CondMap()));
+  //LINALG::ApplyDirichlettoSystem(sysmat_,phidtn_,residual_,phidtn_,*(dbcmaps_->CondMap()));
 
   // solve for phidtn
   solver_->Solve(sysmat_->EpetraOperator(),phidtn_,residual_,true,true);

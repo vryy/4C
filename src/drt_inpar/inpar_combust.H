@@ -42,12 +42,27 @@ namespace INPAR
       reinitaction_sussman
     };
 
-    /// type of reinitialization for level set function (G-function)
+    /// type of domain and boundary integration cell construction
     enum XFEMIntegration
     {
       xfemintegration_cut,
       xfemintegration_tetrahedra,
       xfemintegration_hexahedra
+    };
+
+    /// type of xfem time integration
+    enum XFEMTimeIntegration
+    {
+      xfemtimeint_donothing,
+      xfemtimeint_semilagrange
+    };
+
+    /// type of xfem time integration of enrichment values
+    enum XFEMTimeIntegrationEnr
+    {
+      xfemtimeintenr_donothing,
+      xfemtimeintenr_quasistatic,
+      xfemtimeintenr_setenrichment
     };
 
     /// type of initial fluid field
@@ -66,6 +81,7 @@ namespace INPAR
       surface_tension_approx_none,
       surface_tension_approx_fixed_curvature,
       surface_tension_approx_divgrad,
+      surface_tension_approx_divgrad_normal,
       surface_tension_approx_laplacebeltrami,
       surface_tension_approx_laplacebeltrami_smoothed
     };

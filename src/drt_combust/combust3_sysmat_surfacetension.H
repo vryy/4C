@@ -56,8 +56,6 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_TPF(
     M1&                                        cellXiDomain,
     M2&                                        xyze,          ///< xyz coordinates of element ele
     const M3&                                  grad_ephi_smoothed, ///<smoothed nodal G-function gradient values for this element
-    const double&                              kappa_plus,
-    const double&                              kappa_minus,
     const size_t&                              numparamvelx,
     const double&                              timefac,
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
@@ -263,20 +261,17 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_TPF(
         //--------------------------------------------------------------------------------------------
         const std::size_t shpVecSize = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
-        const XFEM::ElementEnrichmentValues enrvals_plus(*ele,dofman,XFEM::Enrichment::approachFromPlus,ephi,funct_gp,derxy_gp,derxy2_gp);
-        const XFEM::ElementEnrichmentValues enrvals_minus(*ele,dofman,XFEM::Enrichment::approachFromMinus,ephi,funct_gp,derxy_gp,derxy2_gp);
+        // see remark: SysmatBoundarySurfaceTensionIntCell
+        const XFEM::ElementEnrichmentValues enrvals(*ele,dofman,XFEM::Enrichment::approachFromPlus,ephi,funct_gp,derxy_gp,derxy2_gp);
 
 
         // temporary arrays holding enriched shape functions (N * \Psi) on either side of the interface
-        static LINALG::Matrix<shpVecSize,1>       enrfunct_plus;
-        enrfunct_plus.Clear();
-        static LINALG::Matrix<shpVecSize,1>       enrfunct_minus;
-        enrfunct_minus.Clear();
+        static LINALG::Matrix<shpVecSize,1>       enrfunct;
+        enrfunct.Clear();
 
 
         // shape functions for nodal parameters (dofs) on plus and minus side
-        enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct_gp, enrfunct_plus);
-        enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct_gp, enrfunct_minus);
+        enrvals.ComputeModifiedEnrichedNodalShapefunction(Velx, funct_gp, enrfunct);
 
         // (enriched) shape functions = approximation functions (P = N * \Psi)
         static XFEM::ApproxFunc<0,shpVecSize> shp_mean_inv;
@@ -285,8 +280,7 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_TPF(
         // fill approximation functions
         for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
         {
-          // <>-average
-          shp_mean_inv.d0(iparam) = kappa_minus * enrfunct_plus(iparam) + kappa_plus * enrfunct_minus(iparam);
+          shp_mean_inv.d0(iparam) = enrfunct(iparam);
         }
 
 
@@ -391,36 +385,6 @@ void RHS_LaplaceBeltrami_1DLineIntegrals_TPF(
   } //=========================== end loop over lines==================================
   return;
 }
-
-
-
-//
-////--------------------------------------------------------------------------------------------
-//// rearrange (enriched) shape functions as approximation functions
-////--------------------------------------------------------------------------------------------
-//const std::size_t shpVecSize = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-//
-//// temporary arrays holding enriched shape functions (N * \Psi) on either side of the interface
-//static LINALG::Matrix<shpVecSize,1>       enrfunct_plus;
-//enrfunct_plus.Clear();
-//static LINALG::Matrix<shpVecSize,1>       enrfunct_minus;
-//enrfunct_minus.Clear();
-//
-//
-//// shape functions for nodal parameters (dofs) on plus and minus side
-//enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct_gp, enrfunct_plus);
-//enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct_gp, enrfunct_minus);
-//
-//// (enriched) shape functions = approximation functions (P = N * \Psi)
-//static XFEM::ApproxFunc<0,shpVecSize> shp_mean_inv;
-//
-//
-//// fill approximation functions
-//for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
-//{
-//  // <>-average
-//  shp_mean_inv.d0(iparam) = kappa_minus * enrfunct_plus(iparam) + kappa_plus * enrfunct_minus(iparam);
-//}
 
 
 /*!
@@ -780,10 +744,8 @@ template <DRT::Element::DiscretizationType DISTYPE,
 class M1, class M2, class M3>
 void CalcCurvature(
     M1&                                        posXiDomain, // position of gaussian point for evaluating of surface tension terms
-//    const DRT::ELEMENTS::Combust3*             ele,           ///< the element those matrix is calculated
     M2&                                        xyze,          ///< xyz coordinates of element ele
     const M3&                                  grad_ephi_smoothed, ///<smoothed nodal G-function gradient values for this element
-//    M4&                                        normal,
     double&                                    curvature   ///<
 )
 {
@@ -803,7 +765,6 @@ void CalcCurvature(
     funct_gp.Clear();
     DRT::UTILS::shape_function_3D(funct_gp,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
 
-    // TODO: already defined above
     static LINALG::Matrix<nsd,numnode> deriv_gp;
     deriv_gp.Clear();
     DRT::UTILS::shape_function_3D_deriv1(deriv_gp,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
@@ -885,688 +846,6 @@ void CalcCurvature(
   return;
 
 }
-
-
-///*!
-// Calculate surface tension 1D-boundary integrals for a line segment of a 2D-boundary integration cell
-// for jump enrichments in velocity!!!
-// */
-//template <DRT::Element::DiscretizationType DISTYPE,
-//DRT::Element::DiscretizationType CELLDISTYPE,
-//XFEM::AssemblyType ASSTYPE,
-//int NUMDOF,
-//class M1, class M2, class M3>
-//void RHS_LaplaceBeltrami_1DLineIntegrals_Nitsche(
-//    M1&                                        cellXiDomain,
-//    M2&                                        xyze,          ///< xyz coordinates of element ele
-//    const M3&                                  grad_ephi_smoothed, ///<smoothed nodal G-function gradient values for this element
-//    const XFEM::ElementEnrichmentValues&       enrvals_plus,
-//    const XFEM::ElementEnrichmentValues&       enrvals_minus,
-//    const double&                              kappa_plus,
-//    const double&                              kappa_minus,
-//    const size_t&                              numparamvelx,
-//    const double&                              timefac,
-//    const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
-//    const double                               surftenscoeff,   ///<
-//    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&  assembler
-//)
-//{
-//	  // additional 1D surface tension integrals get assembled
-//
-//	  // number space dimensions for 3d combustion element
-//	  const size_t nsd = 3;
-//
-//	  // number of nodes of this element
-//	  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-//
-//	  // here, a triangular boundary integration cell is assumed (numvertices = 3)
-//	  const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<CELLDISTYPE>::numNodePerElement;
-//
-//	  //--------------------------------------------------------------------------------------------
-//	  // get all line segments of current 2D boundary integration cell
-//	  //--------------------------------------------------------------------------------------------
-//
-//	  // shape functions in 1D => only lines are assumed
-//	  const size_t numvertices_line = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement;
-//
-//	  // define vector of line segments
-//	  // each line is represented by a (nsd x 2)-matrix
-//	  std::vector< LINALG::Matrix<nsd,numvertices_line> > lineVec;
-//
-//	  //--------------------------------------------------------------------------------------------
-//	  // set elements of lineVec
-//	  //--------------------------------------------------------------------------------------------
-//	  // loop over nodes of boundary cell
-//	  for (size_t inode=0; inode<numvertices; inode++)
-//	  {
-//	    LINALG::Matrix<nsd,numvertices_line> linetmp;
-//	    linetmp.Clear();
-//
-//	    for (size_t isd = 0; isd<nsd; isd++){
-//	      // second point
-//	      linetmp(isd,1) = cellXiDomain(isd,(inode+1)%numvertices);
-//	      // first point
-//	      linetmp(isd,0) = cellXiDomain(isd,(inode)%numvertices);
-//	    }
-//	    lineVec.push_back(linetmp);
-//	  }
-//
-//
-//
-//	  //============================   loop over boundary lines ==================================
-//
-//	  // define vector iterator
-//	  typedef std::vector<LINALG::Matrix<nsd,numvertices_line> > LinesVec;
-//	  typedef LinesVec::iterator LinesVec_Iterator;
-//
-//	  for (LinesVec_Iterator line_it = lineVec.begin(); line_it != lineVec.end(); line_it++ )
-//	  {
-//	    // check if line lies in boundary of the domain (bound(Omega))
-//	    // REMARK:
-//	    // we integrate all boundary lines because isbound-check is not so easy
-//	    // interior lines are integrated twice but with contrarious directions -> cancel each other out
-//
-//	    bool isbound =true;
-//
-//	    if(isbound==false);
-//	    else // line is a boundary line => integrate boundary integral for surface tension at Interface-boundaries
-//	    {
-//	      //============================ INTEGRATE BOUNDARY TERM ==============================
-//	      //    		cout << "boundary line is found:\n" << *line_it;
-//
-//	      // get integration points
-//	      // TODO get the right intrule
-//	      const DRT::UTILS::IntegrationPoints1D intpoint_line(DRT::UTILS::intrule_line_2point);
-//
-//
-//	      LINALG::Matrix<nsd,numvertices_line> currLine(*line_it);
-//	      //----------------------------------------------------------------------------------------------
-//	      // integration loop over Gaussian points
-//	      //----------------------------------------------------------------------------------------------
-//	      for (int iquad=0; iquad<intpoint_line.nquad; ++iquad)
-//	      {
-//
-//	    	// 1D-integration points
-//	    	const LINALG::Matrix<1,1> posGammaBound(intpoint_line.qxg[iquad]);
-//	        const DRT::UTILS::IntegrationPoints1D intpoint_line(DRT::UTILS::intrule_line_2point);
-//
-//	    	  // jacobian for coupled transformation
-//	    	  // get derivatives dxi_3D/dline_1D
-//	        static LINALG::Matrix<1,numvertices_line> deriv_gamma;
-//	        DRT::UTILS::shape_function_1D_deriv1(deriv_gamma,posGammaBound(0,0),DRT::Element::line2);
-//
-//	    	    // calculate dxi3Ddline_1D
-//	    	    static LINALG::Matrix<3,1> dXi3Ddline1D;
-//	    	    dXi3Ddline1D.Clear();
-//	    	    for (int i = 0; i < 3; i++)   // dimensions
-//	    	      for (int j = 0; j < 1; j++) // derivatives
-//	    	        for (int k = 0; k < (int)numvertices; k++)
-//	    	        	dXi3Ddline1D(i,j) += cellXiDomain(i,k)*deriv_gamma(j,k);
-//
-//	    	    // transform Gauss point to xi3D space (element parameter space)
-//	    	    static LINALG::Matrix<nsd,1> gpinXi3D;
-//	    	    gpinXi3D.Clear();
-//
-//	            static LINALG::Matrix<numvertices_line,1> shape_gamma;
-//	            DRT::UTILS::shape_function_1D(shape_gamma,posGammaBound(0,0),DRT::Element::line2);
-//
-//	            gpinXi3D.Multiply(currLine,shape_gamma);
-//
-//
-//	    	    static LINALG::Matrix<3,numnode> deriv_xi3D;
-//	    	    DRT::UTILS::shape_function_3D_deriv1(deriv_xi3D,gpinXi3D(0,0), gpinXi3D(1,0), gpinXi3D(2,0), DISTYPE);
-//
-//
-//	    	    // calculate dx3Ddxi3D
-//	    	    static LINALG::Matrix<3,3> dX3DdXi3D;
-//	    	    dX3DdXi3D.Clear();
-//	    	    for (int i = 0; i < 3; i++)   // dimensions
-//	    	      for (int j = 0; j < 3; j++) // derivatives
-//	    	        for (int k = 0; k < (int)numnode; k++)
-//	    	        	dX3DdXi3D(i,j) += xyze(i,k)*deriv_xi3D(j,k);
-//
-//	    	    // get the coupled Jacobian dx3Ddeta2D
-//	    	    static LINALG::Matrix<3,1> dx3Ddline1D;
-//	    	    dx3Ddline1D.Clear();
-//	    	    for (int i = 0; i < 3; i++)   // dimensions
-//	    	      for (int j = 0; j < 1; j++) // derivatives
-//	    	        for (int k = 0; k < 3; k++)
-//	    	        	dx3Ddline1D(i,j) += dX3DdXi3D(i,k) * dXi3Ddline1D(k,j);
-//
-//	    	    // get deformation factor
-//	    	    static LINALG::Matrix<1,1> Jac_tmp; // J^T*J
-//	    	    Jac_tmp.Clear();
-//	    	    Jac_tmp.MultiplyTN(dx3Ddline1D,dx3Ddline1D);
-//
-//	    	    if(Jac_tmp.Determinant() == 0.0) dserror("deformation factor for boundary integration is zero");
-//
-//	    	    const double deform_factor = sqrt(Jac_tmp.Determinant()); // sqrt(det(J^T*J))
-//
-//	    	    const double fac = intpoint_line.qwgt[iquad]*deform_factor;
-//
-//
-//	            // compute total (time and spatial) integration factor (and coefficients of single terms)?
-//	            const double timefacfac_gamma = timefac * fac;
-//
-//
-//
-//
-//        //--------------------------------------------------------------------------------------------
-//        // evaluate element shape functions at this Gaussian point
-//        //--------------------------------------------------------------------------------------------
-//        static LINALG::Matrix<numnode,1> funct_gp;
-//        funct_gp.Clear();
-//        DRT::UTILS::shape_function_3D(funct_gp,gpinXi3D(0),gpinXi3D(1),gpinXi3D(2),DISTYPE);
-//
-//
-//        //--------------------------------------------------------------------------------------------
-//        // rearrange (enriched) shape functions as approximation functions
-//        //--------------------------------------------------------------------------------------------
-//        const std::size_t shpVecSize = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-//
-//        // temporary arrays holding enriched shape functions (N * \Psi) on either side of the interface
-//        static LINALG::Matrix<shpVecSize,1>       enrfunct_plus;
-//        enrfunct_plus.Clear();
-//        static LINALG::Matrix<shpVecSize,1>       enrfunct_minus;
-//        enrfunct_minus.Clear();
-//
-//
-//        // shape functions for nodal parameters (dofs) on plus and minus side
-//        enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct_gp, enrfunct_plus);
-//        enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct_gp, enrfunct_minus);
-//
-//        // (enriched) shape functions = approximation functions (P = N * \Psi)
-//        static XFEM::ApproxFunc<0,shpVecSize> shp_mean_inv;
-//
-//
-//        // fill approximation functions
-//        for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
-//        {
-//          // <>-average
-//          shp_mean_inv.d0(iparam) = kappa_minus * enrfunct_plus(iparam) + kappa_plus * enrfunct_minus(iparam);
-//        }
-//
-//
-//        //================= get normal to gamma-line  =======================================
-//        // normal vector has to lie in the tangential space to the interface
-//        // normal has to lie orthogonal to gamma-line
-//        // normal has to be normalized
-//        // normal must have the right orientation
-//
-//        // get tangential space to the interface at current gaussian point
-//
-//        //--------------------------------------------------------------------------------------------
-//        // 1. define vector for line-direction line
-//        //--------------------------------------------------------------------------------------------
-//        static LINALG::Matrix<nsd,1> line;
-//        line.Clear();
-//        line(0) = currLine(0,1) - currLine(0,0);
-//        line(1) = currLine(1,1) - currLine(1,0);
-//        line(2) = currLine(2,1) - currLine(2,0);
-//
-//        //--------------------------------------------------------------------------------------------
-//        // 2. get normal_Phi = grad(phi)/| grad_phi | at gp
-//        //--------------------------------------------------------------------------------------------
-//        LINALG::Matrix<nsd,1> normal_Phi;
-//        normal_Phi.Clear();
-//
-//
-//        for(size_t i=0; i<numnode; i++)
-//        {
-//          // get smoothed xyz-gradient at node i
-//          // funct = shape functions at Gaussian point
-//
-//          // interpolate nodal phi gradients
-//          normal_Phi(0)+=grad_ephi_smoothed(0,i)*funct_gp(i);
-//          normal_Phi(1)+=grad_ephi_smoothed(1,i)*funct_gp(i);
-//          normal_Phi(2)+=grad_ephi_smoothed(2,i)*funct_gp(i);
-//
-//        }
-//
-//        // normalize final gradient
-//        normal_Phi.Scale(1.0/normal_Phi.Norm2());
-//
-//        //--------------------------------------------------------------------------------------------
-//        // 3. get normal_gamma: <n_gamma,line > = 0, <n_gamma,normal_Phi> = 0, orientation!!!
-//        // set n_gamma pointing outward from domain n_gamma = normal_Phi x line
-//        //--------------------------------------------------------------------------------------------
-//        static LINALG::Matrix<nsd,1> normal_gamma;
-//        normal_gamma.Clear();
-//        normal_gamma(0) = normal_Phi(1)*line(2) - normal_Phi(2)*line(1);
-//        normal_gamma(1) = normal_Phi(2)*line(0) - normal_Phi(0)*line(2);
-//        normal_gamma(2) = normal_Phi(0)*line(1) - normal_Phi(1)*line(0);
-//
-//        normal_gamma.Scale(1.0/normal_gamma.Norm2());
-//
-//
-//
-//        // =============================  assemble vectors ==================
-//        //----------------------------------------     |                                 |
-//        // surface tension term boundary of interface  |  < v > , surftens*n_gamma >      |
-//        //----------------------------------------     |                                 |
-//
-//        assembler.template Vector<Velx>(shp_mean_inv.d0, + timefacfac_gamma*surftenscoeff*normal_gamma(0));
-//        assembler.template Vector<Vely>(shp_mean_inv.d0, + timefacfac_gamma*surftenscoeff*normal_gamma(1));
-//        assembler.template Vector<Velz>(shp_mean_inv.d0, + timefacfac_gamma*surftenscoeff*normal_gamma(2));
-//
-//
-//      } // ==================================== end loop gaussian points ==========================
-//
-//
-//    } // ================================= end line is boundary / end of assembly ============
-//
-//
-//  } //=========================== end loop over lines==================================
-//  return;
-//}
-
-
-//
-///*!
-// Calculate surface tension 1D-boundary integrals for a line segment of a 2D-boundary integration cell
-// for jump enrichments in velocity!!!
-// */
-//template <DRT::Element::DiscretizationType DISTYPE,
-//DRT::Element::DiscretizationType CELLDISTYPE,
-//XFEM::AssemblyType ASSTYPE,
-//int NUMDOF,
-//class M1, class M2, class M3>
-//void RHS_LaplaceBeltrami_1DLineIntegrals_Nitsche(
-//    M1&                                        cellXiDomain,
-//    M2&                                        xyze,          ///< xyz coordinates of element ele
-//    const M3&                                  grad_ephi_smoothed, ///<smoothed nodal G-function gradient values for this element
-//    const XFEM::ElementEnrichmentValues&       enrvals_plus,
-//    const XFEM::ElementEnrichmentValues&       enrvals_minus,
-//    const double&                              kappa_plus,
-//    const double&                              kappa_minus,
-//    const size_t&                              numparamvelx,
-//    const double&                              timefac,
-//    const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
-//    const double                               surftenscoeff,   ///<
-//    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&  assembler
-//)
-//{
-//  // additional 1D surface tension integrals get assembled
-//
-//  // number space dimensions for 3d combustion element
-//  const size_t nsd = 3;
-//
-//  // number of nodes of this element
-//  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-//
-//  // here, a triangular boundary integration cell is assumed (numvertices = 3)
-//  const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<CELLDISTYPE>::numNodePerElement;
-//
-//
-//  //--------------------------------------------------------------------------------------------
-//  // get all line segments of current 2D boundary integration cell
-//  //--------------------------------------------------------------------------------------------
-//
-//  // assume tri3 boundary integration cells
-//  //if (cellShape != DRT::Element::tri3) dserror("invalid type of boundary integration cell");
-//  //const size_t numlines = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
-//
-//  // shape functions in 1D => only lines are assumed
-//  const size_t numvertices_line = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::line2>::numNodePerElement;
-//
-//  // define vector of line segments
-//  // each line is represented by a (nsd x 2)-matrix
-//  std::vector< LINALG::Matrix<nsd,numvertices_line> > lineVec;
-//
-//  //--------------------------------------------------------------------------------------------
-//  // set elements of lineVec
-//  //--------------------------------------------------------------------------------------------
-//  // loop over nodes of boundary cell
-//  for (size_t inode=0; inode<numvertices; inode++)
-//  {
-//    LINALG::Matrix<nsd,numvertices_line> linetmp;
-//    linetmp.Clear();
-//
-//    for (size_t isd = 0; isd<nsd; isd++){
-//      // second point
-//      linetmp(isd,1) = cellXiDomain(isd,(inode+1)%numvertices);
-//      // first point
-//      linetmp(isd,0) = cellXiDomain(isd,(inode)%numvertices);
-//    }
-//    lineVec.push_back(linetmp);
-//  }
-//
-//
-//
-//  //============================   loop over boundary lines ==================================
-//
-//  // define vector iterator
-//  typedef std::vector<LINALG::Matrix<nsd,numvertices_line> > LinesVec;
-//  typedef LinesVec::iterator LinesVec_Iterator;
-//
-//  for (LinesVec_Iterator line_it = lineVec.begin(); line_it != lineVec.end(); line_it++ )
-//  {
-//    // check if line lies in boundary of the domain (bound(Omega))
-//    // REMARK:
-//    // we integrate all boundary lines because isbound-check is not so easy
-//    // interior lines are integrated twice but with contrarious directions -> cancel each other out
-//
-//    bool isbound =true;
-//
-//    if(isbound==false);
-//    else // line is a boundary line => integrate boundary integral for surface tension at Interface-boundaries
-//    {
-//      //============================ INTEGRATE BOUNDARY TERM ==============================
-//      //    		cout << "boundary line is found:\n" << *line_it;
-//
-//      // get integration points
-//      // TODO get the right intrule
-//      const DRT::UTILS::IntegrationPoints1D intpoint_line(DRT::UTILS::intrule_line_2point);
-//
-//
-//      LINALG::Matrix<nsd,numvertices_line> currLine(*line_it);
-//      //----------------------------------------------------------------------------------------------
-//      // integration loop over Gaussian points
-//      //----------------------------------------------------------------------------------------------
-//      for (int iquad=0; iquad<intpoint_line.nquad; ++iquad)
-//      {
-//
-//      	// 1D-integration points
-//      	const LINALG::Matrix<1,1> posGammaBound(intpoint_line.qxg[iquad]);
-//          const DRT::UTILS::IntegrationPoints1D intpoint_line(DRT::UTILS::intrule_line_2point);
-//
-//      	  // jacobian for coupled transformation
-//      	  // get derivatives dxi_3D/dline_1D
-//          static LINALG::Matrix<1,numvertices_line> deriv_gamma;
-//          DRT::UTILS::shape_function_1D_deriv1(deriv_gamma,posGammaBound(0,0),DRT::Element::line2);
-//
-//      	    // calculate dxi3Ddeta2D
-//      	    static LINALG::Matrix<3,1> dXi3Ddline1D;
-//      	    dXi3Ddline1D.Clear();
-//      	    for (int i = 0; i < 3; i++)   // dimensions
-//      	      for (int j = 0; j < 1; j++) // derivatives
-//      	        for (int k = 0; k < (int)numvertices; k++)
-//      	        	dXi3Ddline1D(i,j) += cellXiDomain(i,k)*deriv_gamma(j,k);
-//
-//      	    // transform Gauss point to xi3D space (element parameter space)
-//      	    static LINALG::Matrix<nsd,1> gpinXi3D;
-//      	    gpinXi3D.Clear();
-//
-//              static LINALG::Matrix<numvertices_line,1> shape_gamma;
-//              DRT::UTILS::shape_function_1D(shape_gamma,posGammaBound(0,0),DRT::Element::line2);
-//
-//              gpinXi3D.Multiply(currLine,shape_gamma);
-//
-//
-//      	    static LINALG::Matrix<3,numnode> deriv_xi3D;
-//      	    DRT::UTILS::shape_function_3D_deriv1(deriv_xi3D,gpinXi3D(0,0), gpinXi3D(1,0), gpinXi3D(2,0), DISTYPE);
-//
-//
-//      	    // calculate dx3Ddxi3D
-//      	    static LINALG::Matrix<3,3> dX3DdXi3D;
-//      	    dX3DdXi3D.Clear();
-//      	    for (int i = 0; i < 3; i++)   // dimensions
-//      	      for (int j = 0; j < 3; j++) // derivatives
-//      	        for (int k = 0; k < (int)numnode; k++)
-//      	        	dX3DdXi3D(i,j) += xyze(i,k)*deriv_xi3D(j,k);
-//
-//      	    // get the coupled Jacobian dx3Ddeta2D
-//      	    static LINALG::Matrix<3,1> dx3Ddline1D;
-//      	    dx3Ddline1D.Clear();
-//      	    for (int i = 0; i < 3; i++)   // dimensions
-//      	      for (int j = 0; j < 1; j++) // derivatives
-//      	        for (int k = 0; k < 3; k++)
-//      	        	dx3Ddline1D(i,j) += dX3DdXi3D(i,k) * dXi3Ddline1D(k,j);
-//
-//      	    // get deformation factor
-//      	    static LINALG::Matrix<1,1> Jac_tmp; // J^T*J
-//      	    Jac_tmp.Clear();
-//      	    Jac_tmp.MultiplyTN(dx3Ddline1D,dx3Ddline1D);
-//
-//      	    if(Jac_tmp.Determinant() == 0.0) dserror("deformation factor for boundary integration is zero");
-//
-//      	    const double deform_factor = sqrt(Jac_tmp.Determinant()); // sqrt(det(J^T*J))
-//
-//      	    const double fac = intpoint_line.qwgt[iquad]*deform_factor;
-//
-//
-//              // compute total (time and spatial) integration factor (and coefficients of single terms)?
-//              const double timefacfac_gamma = timefac * fac;
-//
-//
-//              //--------------------------------------------------------------------------------------------
-//              // evaluate element shape functions at this Gaussian point
-//              //--------------------------------------------------------------------------------------------
-//              static LINALG::Matrix<numnode,1> funct_gp;
-//              funct_gp.Clear();
-//              DRT::UTILS::shape_function_3D(funct_gp,gpinXi3D(0),gpinXi3D(1),gpinXi3D(2),DISTYPE);
-//
-//              static LINALG::Matrix<nsd,numnode> deriv_gp;
-//              deriv_gp.Clear();
-//              DRT::UTILS::shape_function_3D_deriv1(deriv_gp,gpinXi3D(0),gpinXi3D(1),gpinXi3D(2),DISTYPE);
-//
-//              //--------------------------------------------------------------------------------------------
-//              // procedures involving Jacobian matrix for domain mapping
-//              //--------------------------------------------------------------------------------------------
-//              // get transposed of the jacobian matrix d x / d \xi
-//              // xjm(i,j) = deriv(i,k)*xyze(j,k)
-//              static LINALG::Matrix<nsd,nsd> xjm_gp;
-//              xjm_gp.Clear();
-//              xjm_gp.MultiplyNT(deriv_gp,xyze);
-//              // determinant for mapping from physical space (X^3D/domain) to element (Xi^3D/domain)
-////              const double detXtoXi = xjm_gp.Determinant();
-//              //#ifdef DEBUG
-////              if (detXtoXi < 0.0)
-////              {
-////                dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), detXtoXi);
-////              }
-//              //#endif
-//              // inverse of jacobian
-//              static LINALG::Matrix<nsd,nsd> xji_gp;
-//              xji_gp.Clear();
-//              xji_gp.Invert(xjm_gp);
-//
-//              //--------------------------------------------------------------------------------------------
-//              // compute global derivates of shape functions at this Gaussian point
-//              //--------------------------------------------------------------------------------------------
-//              // compute first global derivative
-//              static LINALG::Matrix<3,numnode> derxy_gp;
-//              derxy_gp.Clear();
-//              // derxy(i,j) = xji(i,k) * deriv(k,j)
-//              derxy_gp.Multiply(xji_gp,deriv_gp);
-//
-//              // compute second global derivative
-//              static LINALG::Matrix<6,numnode> derxy2_gp;
-//              if (false) // if (higher_order_ele)
-//              {
-//                static LINALG::Matrix<6,numnode> deriv2_gp;
-//                DRT::UTILS::shape_function_3D_deriv2(deriv2_gp,gpinXi3D(0),gpinXi3D(1),gpinXi3D(2),DISTYPE);
-//                DRT::UTILS::gder2<DISTYPE>(xjm_gp, derxy_gp, deriv2_gp, xyze, derxy2_gp);
-//              }
-//              else
-//              {
-//                derxy2_gp.Clear();
-//              }
-//
-//
-//        //--------------------------------------------------------------------------------------------
-//        // rearrange (enriched) shape functions as approximation functions
-//        //--------------------------------------------------------------------------------------------
-//        const std::size_t shpVecSize = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-//
-//        // temporary arrays holding enriched shape functions (N * \Psi) on either side of the interface
-//        static LINALG::Matrix<shpVecSize,1>       enrfunct_plus;
-//        enrfunct_plus.Clear();
-//        static LINALG::Matrix<shpVecSize,1>       enrfunct_minus;
-//        enrfunct_minus.Clear();
-//
-//
-//        // shape functions for nodal parameters (dofs) on plus and minus side
-//        enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct_gp, enrfunct_plus);
-//        enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct_gp, enrfunct_minus);
-//
-//        // (enriched) shape functions = approximation functions (P = N * \Psi)
-//        static XFEM::ApproxFunc<0,shpVecSize> shp_mean_inv;
-//
-//
-//        // fill approximation functions
-//        for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
-//        {
-//          // <>-average
-//          shp_mean_inv.d0(iparam) = kappa_minus * enrfunct_plus(iparam) + kappa_plus * enrfunct_minus(iparam);
-//        }
-//
-//
-//        //================= get normal to gamma-line  =======================================
-//        // normal vector has to lie in the tangential space to the interface
-//        // normal has to lie orthogonal to gamma-line
-//        // normal has to be normalized
-//        // normal must have the right orientation
-//
-//        // get tangential space to the interface at current gaussian point
-//
-//        //--------------------------------------------------------------------------------------------
-//        // 1. define vector for line-direction line
-//        //--------------------------------------------------------------------------------------------
-//        static LINALG::Matrix<nsd,1> line;
-//        line.Clear();
-//        line(0) = currLine(0,1) - currLine(0,0);
-//        line(1) = currLine(1,1) - currLine(1,0);
-//        line(2) = currLine(2,1) - currLine(2,0);
-//
-//        //--------------------------------------------------------------------------------------------
-//        // 2. get normal_Phi = grad(phi)/| grad_phi | at gp
-//        //--------------------------------------------------------------------------------------------
-//        LINALG::Matrix<nsd,1> normal_Phi;
-//        normal_Phi.Clear();
-//
-//
-//        for(size_t i=0; i<numnode; i++)
-//        {
-//#if(1)
-//          LINALG::Matrix<nsd,1> nodal_grad_xyz_tmp;
-//          nodal_grad_xyz_tmp.Clear();
-//
-//
-//          // get smoothed xyz-gradient at node i
-//          // funct = shape functions at Gaussian point
-//          //nodal_grad_xyz_tmp.Multiply(grad_ephi_smoothed,funct);
-//
-//          // transform xyz-gradient
-//          // 1. transformt nodal xyz-gradient (nodal_grad_xyz_tmp) to nodal xi-gradient => nodal_grad_xi_tmp
-//          // 2. interpolate xi-gradient at Gaussian point          => nodal_grad_xi
-//          // 3. transform xi-gradient at Gaussian point to xyz-gradient
-//          // 4. normalize final gradient
-//
-//          // 1. transform nodal xyz-gradient to nodal xi-gradient
-//          // get smoothed xyz-gradient at node i
-////          nodal_grad_xyz_tmp(0) =  grad_ephi_smoothed(0,i);
-////          nodal_grad_xyz_tmp(1) =  grad_ephi_smoothed(1,i);
-////          nodal_grad_xyz_tmp(2) =  grad_ephi_smoothed(2,i);
-//
-////          // transform to xi-coordinates
-////          // jacobi at node
-////
-////          // get Xi-coordinates of current node in current element
-////          static LINALG::Matrix<nsd,1> node_Xicoordinates;
-////          node_Xicoordinates.Clear();
-////          node_Xicoordinates = DRT::UTILS::getNodeCoordinates(i, DISTYPE);
-////
-////          //cout << node_Xicoordinates << endl;
-////
-////          // get derivatives of shapefunctions at node
-////          static LINALG::Matrix<nsd,numnode> deriv_node;
-////          deriv_node.Clear();
-////          DRT::UTILS::shape_function_3D_deriv1(deriv_node,node_Xicoordinates(0),node_Xicoordinates(1),node_Xicoordinates(2),DISTYPE);
-////
-////          // get jacobian at node
-////
-////          // get transposed of the jacobian matrix d x / d \xi
-////          // xjm(i,j) = deriv(i,k)*xyze(j,k)
-////          static LINALG::Matrix<nsd,nsd> xjm_node;
-////          xjm_node.Clear();
-////          xjm_node.MultiplyNT(deriv_node,xyze);
-////
-////          //            static LINALG::Matrix<nsd,nsd> xji_node;
-////          //            xji_node.Clear();
-////          //            xji_node.Invert(xjm_node);
-////
-////
-////          //            nodal_grad_xi_tmp.Multiply(xjm_node,nodal_grad_xyz_tmp);
-////          nodal_grad_xi_tmp.Multiply(xjm_node,nodal_grad_xyz_tmp);
-////
-////          // funct = shape functions at Gaussian point
-//
-//          normal_Phi(0) += grad_ephi_smoothed(0)*funct_gp(i);
-//          normal_Phi(1) += grad_ephi_smoothed(1)*funct_gp(i);
-//          normal_Phi(2) += grad_ephi_smoothed(2)*funct_gp(i);
-//
-//
-//
-//#else
-//          LINALG::Matrix<nsd,1> nodal_grad_xi_tmp;
-//          nodal_grad_xi_tmp.Clear();
-//
-//          // get smoothed xi-gradient at node i
-//          nodal_grad_xi_tmp(0) =  grad_ephi_smoothed(0,i);
-//          nodal_grad_xi_tmp(1) =  grad_ephi_smoothed(1,i);
-//          nodal_grad_xi_tmp(2) =  grad_ephi_smoothed(2,i);
-//
-//
-//          grad_xi(0) += nodal_grad_xi_tmp(0)*funct_gp(i);
-//          grad_xi(1) += nodal_grad_xi_tmp(1)*funct_gp(i);
-//          grad_xi(2) += nodal_grad_xi_tmp(2)*funct_gp(i);
-//#endif
-//        }
-////
-////        // transform xi-gradient at Gaussian point to xyz-gradient
-////        static LINALG::Matrix<nsd,numnode> deriv_gp;
-////        deriv_gp.Clear();
-////        DRT::UTILS::shape_function_3D_deriv1(deriv_gp,posGammainXi(0),posGammainXi(1),posGammainXi(2),DISTYPE);
-////
-////
-////        static LINALG::Matrix<nsd,nsd> xjm_gp;
-////        xjm_gp.Clear();
-////        xjm_gp.MultiplyNT(deriv_gp,xyze);
-////
-////        static LINALG::Matrix<nsd,nsd> xji_gp;
-////        xji_gp.Clear();
-////        xji_gp.Invert(xjm_gp);
-//
-////        normal_Phi.Multiply(xji_gp,grad_xi);
-//
-//        // normalize final gradient
-//        normal_Phi.Scale(1.0/normal_Phi.Norm2());
-//
-//        //--------------------------------------------------------------------------------------------
-//        // 3. get normal_gamma: <n_gamma,line > = 0, <n_gamma,normal_Phi> = 0, orientation!!!
-//        // set n_gamma pointing outward from domain n_gamma = normal_Phi x line
-//        //--------------------------------------------------------------------------------------------
-//        static LINALG::Matrix<nsd,1> normal_gamma;
-//        normal_gamma.Clear();
-//        normal_gamma(0) = normal_Phi(1)*line(2) - normal_Phi(2)*line(1);
-//        normal_gamma(1) = normal_Phi(2)*line(0) - normal_Phi(0)*line(2);
-//        normal_gamma(2) = normal_Phi(0)*line(1) - normal_Phi(1)*line(0);
-//
-//        normal_gamma.Scale(1.0/normal_gamma.Norm2());
-//
-//
-//        // =============================  assemble vectors ==================
-//        //----------------------------------------     |                                 |
-//        // surface tension term boundary of interface  |  < v > , surftens*n_gamma >      |
-//        //----------------------------------------     |                                 |
-//
-//        assembler.template Vector<Velx>(shp_mean_inv.d0, + timefacfac_gamma*surftenscoeff*normal_gamma(0));
-//        assembler.template Vector<Vely>(shp_mean_inv.d0, + timefacfac_gamma*surftenscoeff*normal_gamma(1));
-//        assembler.template Vector<Velz>(shp_mean_inv.d0, + timefacfac_gamma*surftenscoeff*normal_gamma(2));
-//
-//
-//      } // ==================================== end loop gaussian points ==========================
-//
-//
-//    } // ================================= end line is boundary / end of assembly ============
-//
-//
-//  } //=========================== end loop over lines==================================
-//  return;
-//}
-
-
 
 
 /*!
@@ -1716,7 +995,8 @@ void RHS_SurfaceTension2DIntegrals(
     assembler.template Vector<Velz>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(2) );
 
   }
-  else if(surftensapprox == INPAR::COMBUST::surface_tension_approx_divgrad)
+  else if(surftensapprox == INPAR::COMBUST::surface_tension_approx_divgrad
+          or surftensapprox == INPAR::COMBUST::surface_tension_approx_divgrad_normal)
   {
 
     //----------------------------------------     |                                 |
@@ -1757,17 +1037,12 @@ void SysmatBoundarySurfaceTensionIntCell(
     const V1&                         eprenp,
     const V2&                         ephi,
     const M3&                         grad_ephi_smoothed, ///<smoothed nodal G-function gradient values for this element
-    const double&                     jt,
     const double&                       timefac,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
-    const double&                        kappa_plus,    /// weights of average in plus domain
-    const double&                        kappa_minus,    /// weights of average in minus domain
     const size_t&                              numparamvelx,
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
     const double                               surftenscoeff,   ///<
     const bool                                 connected_interface,
-    const INPAR::COMBUST::VelocityJumpType      veljumptype,
-    const INPAR::COMBUST::FluxJumpType fluxjumptype,
     const bool                                  smoothed_boundary_integration
 )
 {
@@ -1793,14 +1068,13 @@ void SysmatBoundarySurfaceTensionIntCell(
   // and has intersection with domain boundary
   // no line integrals for not laplace-beltrami surface tension approximation types
   if(!connected_interface
-      && (   fluxjumptype == INPAR::COMBUST::flux_jump_surface_tension)
       && ( surftensapprox == INPAR::COMBUST::surface_tension_approx_laplacebeltrami ||
            surftensapprox == INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed )
   ) // only for laplace_beltrami approximation
   {
     COMBUST::RHS_LaplaceBeltrami_1DLineIntegrals_TPF<DISTYPE,CELLDISTYPE,ASSTYPE,NUMDOF>(
         ele, dofman, ephi, cellXiDomain, xyze, grad_ephi_smoothed,
-        kappa_plus,kappa_minus,numparamvelx,timefac,surftensapprox,surftenscoeff,assembler
+        numparamvelx,timefac,surftensapprox,surftenscoeff,assembler
     );
   }
 
@@ -1894,23 +1168,19 @@ void SysmatBoundarySurfaceTensionIntCell(
 
     //--------------------------------------------------------------------------------------------
     // compute normal vector (in physical coordinates)
-    // remark: for linear boundary integrastion cells this could be done before the loop over all
+    // remark: for linear boundary integration cells this could be done before the loop over all
     //         Gaussian points
-    // TODO: is this normal normed?
     //--------------------------------------------------------------------------------------------
     static LINALG::Matrix<nsd,1> normal(true);
     normal.Clear();
 
     // schott Sep 2, 2010
     // call smoothed normals for an accurate evaluation of boundary integration terms
-    if (smoothed_boundary_integration == false)
-    {
-      // TODO: implement also normals based on nabla(phi)/|nabla(phi)| (interpolated), necessary for surface tension //Benedikt 04/26/2010
-      // here normal points from Omega^+ to Omega^-
-      GEO::computeNormalToSurfaceElement(CELLDISTYPE, cellXYZDomain, posEtaBoundary, normal);
-
-    }
-    else // smoothed_boundary_integration == true
+    //TODO Ursula
+    // normal points from Omega^+ to Omega^-
+    if ((smoothed_boundary_integration == true)
+        and (surftensapprox != INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed
+        or surftensapprox != INPAR::COMBUST::surface_tension_approx_divgrad_normal))
     {
       // get shape functions at gaussian point
       static LINALG::Matrix<numnode,1> funct_gp;
@@ -1933,20 +1203,11 @@ void SysmatBoundarySurfaceTensionIntCell(
       if (normal.Norm2() == 0.0 ) dserror("normal norm is zero !!! ");
 //      normal.Scale(1.0/normal.Norm2());
       normal.Scale(-1.0/normal.Norm2());
-
     }
-
-    static LINALG::Matrix<nsd,1> jump_tension;
-    jump_tension.Clear();
-
-    if(fluxjumptype == INPAR::COMBUST::flux_jump_const)
+    else //(smoothed_boundary_integration == false)
     {
-      // normal tension jump is set to jt
-      jump_tension(0,0) = jt * normal(0);
-      jump_tension(1,0) = jt * normal(1);
-      jump_tension(2,0) = jt * normal(2);
+      GEO::computeNormalToSurfaceElement(CELLDISTYPE, cellXYZDomain, posEtaBoundary, normal);
     }
-    // no jump value necessary for surface tension  => another implementation (jump value implicit given)
 
     //--------------------------------------------------------------------------------------------
     // evaluate shape functions and their first derivatives at this Gaussian point
@@ -2007,8 +1268,12 @@ void SysmatBoundarySurfaceTensionIntCell(
 
     const std::size_t shpVecSize = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
-    const XFEM::ElementEnrichmentValues enrvals_plus(*ele,dofman,XFEM::Enrichment::approachFromPlus,ephi,funct,derxy,derxy2);
-    const XFEM::ElementEnrichmentValues enrvals_minus(*ele,dofman,XFEM::Enrichment::approachFromMinus,ephi,funct,derxy,derxy2);
+    // remark: we need the velocity shape function here
+    //         and we have kink enrichments for velocity
+    //         hence, XFEM::Enrichment::approachFromPlus is not used
+    //         we transfer this parameter because this class also computes pressure shape functions and otherwise
+    //         we get a dserror
+    const XFEM::ElementEnrichmentValues enrvals(*ele,dofman,XFEM::Enrichment::approachFromPlus,ephi,funct,derxy,derxy2);
 
     //--------------------------------------------------------------------------------------------
     // rearrange (enriched) shape functions and derivatives as approximation functions
@@ -2016,32 +1281,26 @@ void SysmatBoundarySurfaceTensionIntCell(
 
     // temporary variables holding enriched shape functions (N * \Psi) on either side of the interface
     // for velocity (kink enriched)
-    static LINALG::Matrix<shpVecSize,1>       enrfunct_plus_vel;
-    enrfunct_plus_vel.Clear();
-    static LINALG::Matrix<shpVecSize,1>       enrfunct_minus_vel;
-    enrfunct_minus_vel.Clear();
+    static LINALG::Matrix<shpVecSize,1>       enrfunct_vel;
+    enrfunct_vel.Clear();
 
-    static LINALG::Matrix<3,shpVecSize> enrderxy_plus_vel;
-    enrderxy_plus_vel.Clear();
-    static LINALG::Matrix<3,shpVecSize> enrderxy_minus_vel;
-    enrderxy_minus_vel.Clear();
-    static LINALG::Matrix<6,shpVecSize> enrderxy2_plus_vel;
-    enrderxy2_plus_vel.Clear();
-    static LINALG::Matrix<6,shpVecSize> enrderxy2_minus_vel;
-    enrderxy2_minus_vel.Clear();
+    static LINALG::Matrix<3,shpVecSize> enrderxy_vel;
+    enrderxy_vel.Clear();
+
+    static LINALG::Matrix<6,shpVecSize> enrderxy2_vel;
+    enrderxy2_vel.Clear();
 
     // shape functions for nodal parameters (dofs) on plus and minus side
     // Velx okay, all shapefunctions for Velx, Vely, Velz are the same (kink enriched)
-    enrvals_plus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct, derxy, derxy2,
-        enrfunct_plus_vel, enrderxy_plus_vel, enrderxy2_plus_vel);
-    enrvals_minus.ComputeModifiedEnrichedNodalShapefunction(Velx, funct, derxy, derxy2,
-        enrfunct_minus_vel, enrderxy_minus_vel, enrderxy2_minus_vel);
+    enrvals.ComputeModifiedEnrichedNodalShapefunction(Velx, funct, derxy, derxy2,
+        enrfunct_vel, enrderxy_vel, enrderxy2_vel);
 
     // (enriched) shape functions = approximation functions (P = N * \Psi)
 
     static XFEM::ApproxFunc<2,shpVecSize> shp_mean_inv;
 
-#if 1
+#if 0
+    // version for jumps, unused
     // fill approximation functions
     for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
     {
@@ -2053,42 +1312,23 @@ void SysmatBoundarySurfaceTensionIntCell(
       shp_mean_inv.dz(iparam) = kappa_minus * enrderxy_plus_vel(2,iparam) + kappa_plus * enrderxy_minus_vel(2,iparam);
       //std::cout << "jump   " << shp_mean_inv.dx(iparam) << std::endl;
     }
-#else // new reduced version for kink enrichments
+#endif
+    // new reduced version for kink enrichments
     // fill approximation functions
     for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
     {
-      shp_mean_inv.d0(iparam) = enrfunct_plus_vel(iparam);
-      //std::cout << "kink   " << shp_mean_inv.d0(iparam) << std::endl;
+      shp_mean_inv.d0(iparam) = enrfunct_vel(iparam);
 
-      shp_mean_inv.dx(iparam) = enrderxy_plus_vel(0,iparam);
-      shp_mean_inv.dy(iparam) = enrderxy_plus_vel(1,iparam);
-      shp_mean_inv.dz(iparam) = enrderxy_plus_vel(2,iparam);
-      //std::cout << "kink   " << shp_mean_inv.dx(iparam) << std::endl;
+      shp_mean_inv.dx(iparam) = enrderxy_vel(0,iparam);
+      shp_mean_inv.dy(iparam) = enrderxy_vel(1,iparam);
+      shp_mean_inv.dz(iparam) = enrderxy_vel(2,iparam);
     }
 
-#endif
+    //================================ SURFACE TENSION ASSEMBLY =================================
+    //---------------------assemble 2D surface integrals -------------------------
+    COMBUST::RHS_SurfaceTension2DIntegrals<DISTYPE,ASSTYPE,NUMDOF>(posXiDomain,shp_mean_inv,ele,xyze,grad_ephi_smoothed,normal,timefacfac,surftensapprox,surftenscoeff,assembler);
 
-    if(fluxjumptype == INPAR::COMBUST::flux_jump_surface_tension)
-    {
-      //================================ SURFACE TENSION ASSEMBLY =================================
-      //---------------------assemble 2D surface integrals -------------------------
-      COMBUST::RHS_SurfaceTension2DIntegrals<DISTYPE,ASSTYPE,NUMDOF>(posXiDomain,shp_mean_inv,ele,xyze,grad_ephi_smoothed,normal,timefacfac,surftensapprox,surftenscoeff,assembler);
-
-      //===========================================================================================
-    }
-    else
-    { // all other normal tension jumps
-
-      //----------------------------------------     |                     |
-      // surface tension (constant jump) term      - |  < v > , J_t >      |
-      //----------------------------------------     |                     |
-
-      assembler.template Vector<Velx>(shp_mean_inv.d0, timefacfac*jump_tension(0,0) );
-      assembler.template Vector<Vely>(shp_mean_inv.d0, timefacfac*jump_tension(1,0) );
-      assembler.template Vector<Velz>(shp_mean_inv.d0, timefacfac*jump_tension(2,0) );
-
-    }
-
+    //===========================================================================================
   }// loop Gaussian points
 
   return;
@@ -2122,12 +1362,8 @@ void SysmatBoundarySurfaceTension(
     const double                      flamespeed,
     const double                      nitschevel,
     const double                      nitschepres,
-    const double                      ele_meas_plus,    /// measure of element in plus domain
-    const double                      ele_meas_minus,    /// measure of element in minus domain
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
     const bool                                 connected_interface,
-    const INPAR::COMBUST::VelocityJumpType     veljumptype,
-    const INPAR::COMBUST::FluxJumpType         fluxjumptype,
     const bool                                 smoothed_boundary_integration
 )
 {
@@ -2162,17 +1398,6 @@ void SysmatBoundarySurfaceTension(
   // set surface tension
   COMBUST::GetMaterialParams(material, surftenscoeff);
 
-  //=====================================================================================================
-  // get weights for average operators { () } = kappa_plus * ()_plus + kappa_minus * ()_minus
-  //                               and < () > = kappa_minus* ()_plus + kappa_plus  * ()_minus
-  // this is only necessary for discontinuous velocity enrichement functions
-  double ele_meas = ele_meas_plus + ele_meas_minus;
-  if(ele_meas == 0.0) dserror("element measure is zero!!! Weighted average operators can not get defined!");
-  double kappa_plus  = ele_meas_plus/ele_meas;
-  double kappa_minus = ele_meas_minus/ele_meas;
-
-  //=====================================================================================================
-
   // flag for higher order elements
   const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
 
@@ -2183,14 +1408,6 @@ void SysmatBoundarySurfaceTension(
 
   // get domain integration cells for this element
   const GEO::BoundaryIntCells& boundaryIntCells = ih->GetBoundaryIntCells(ele->Id());
-
-  //------------------------------------------------------------------------------------------------
-  // compute jump values
-  //------------------------------------------------------------------------------------------------
-  double jt = 0.0;
-
-  // jump in normal tension with value jt
-  if(fluxjumptype == INPAR::COMBUST::flux_jump_const) jt = 3.0; // (flamespeed*flamespeed*dens_minus*dens_minus)*(1/dens_plus - 1/dens_minus);
 
   //------------------------------------------------------------------------------------------------
   // loop over boundary integration cells
@@ -2205,10 +1422,9 @@ void SysmatBoundarySurfaceTension(
           dofman,
           *cell, DRT::UTILS::intrule_tri_37point, xyze, ele, higher_order_ele,
           evelnp, eprenp, ephi, grad_ephi_smoothed,
-          jt,
           timefac, assembler,
-          kappa_plus, kappa_minus,
-          numparamvelx, surftensapprox, surftenscoeff, connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration
+//          kappa_plus, kappa_minus,
+          numparamvelx, surftensapprox, surftenscoeff, connected_interface, smoothed_boundary_integration
       );
       break;
     case DRT::Element::quad4:
@@ -2217,10 +1433,9 @@ void SysmatBoundarySurfaceTension(
           dofman,
           *cell, DRT::UTILS::intrule_quad_9point, xyze, ele, higher_order_ele,
           evelnp, eprenp, ephi, grad_ephi_smoothed,
-          jt,
           timefac, assembler,
-          kappa_plus, kappa_minus,
-          numparamvelx, surftensapprox, surftenscoeff, connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration
+//          kappa_plus, kappa_minus,
+          numparamvelx, surftensapprox, surftenscoeff, connected_interface, smoothed_boundary_integration
       );
       break;
     default:

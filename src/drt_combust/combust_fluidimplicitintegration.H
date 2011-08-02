@@ -430,8 +430,9 @@ protected:
   INPAR::COMBUST::VelocityJumpType veljumptype_;
   INPAR::COMBUST::FluxJumpType fluxjumptype_;
 
-  const bool start_val_semilagrange_;
-  const bool start_val_enrichment_;
+  /// xfem time integration
+  INPAR::COMBUST::XFEMTimeIntegration xfemtimeint_;
+  INPAR::COMBUST::XFEMTimeIntegrationEnr xfemtimeint_enr_;
 
   // laminar flame speed
   const double flamespeed_;

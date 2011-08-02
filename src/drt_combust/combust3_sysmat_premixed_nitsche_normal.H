@@ -1043,12 +1043,9 @@ void Nitsche_SysmatBoundaryCellNormal(
     normal.Clear();
 
     // call smoothed normals for an accurate evaluation of boundary integration terms
-    if(smoothed_boundary_integration == false)
-    {
-      // normal vector points from Omega^+ to Omega^- (n = n^+ = -n^-)
-      GEO::computeNormalToSurfaceElement(CELLDISTYPE, cellXYZDomain, posEtaBoundary, normal);
-    }
-    else // smoothed_boundary_integration == true
+    if ((smoothed_boundary_integration == true)
+        and (surftensapprox != INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed
+        or surftensapprox != INPAR::COMBUST::surface_tension_approx_divgrad_normal))
     {
       // get shape functions at gaussian point
       static LINALG::Matrix<numnode,1> funct_gp;
@@ -1077,6 +1074,12 @@ void Nitsche_SysmatBoundaryCellNormal(
       if (norm == 0.0) dserror("norm of normal vector is zero!");
       normal.Scale(-1.0/norm);
     }
+    else
+    {
+      // normal vector points from Omega^+ to Omega^- (n = n^+ = -n^-)
+      GEO::computeNormalToSurfaceElement(CELLDISTYPE, cellXYZDomain, posEtaBoundary, normal);
+    }
+
 #ifdef COLLAPSE_FLAME
       normal.Clear();
       // get shape functions at gaussian point

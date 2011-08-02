@@ -54,8 +54,8 @@ NITSCHE_PRESSURE                0
 CONNECTED_INTERFACE             No
 SMOOTHGRADPHI                   smooth_grad_phi_meanvalue
 SMOOTHED_BOUNDARY_INTEGRATION   Yes
-START_VAL_SEMILAGRANGE          Yes // No
-START_VAL_ENRICHMENT            Yes // No
+XFEMTIMEINT                     SemiLagrange
+XFEMTIMEINT_ENR                 SetEnrichment
 INITSTATSOL                     No
 -----------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 REFINEMENT                      No

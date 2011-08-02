@@ -47,8 +47,9 @@ TIMESTEP                        50.0
 UPRES                           1
 -----------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Two_Phase_Flow_Surf
-                                 //Premixed_Combustion 
 XFEMINTEGRATION                 Cut
+XFEMTIMEINT                     DoNothing
+XFEMTIMEINT_ENR                 QuasiStatic
 VELOCITY_JUMP_TYPE              vel_jump_none 
                                 //vel_jump_const 
                                 //vel_jump_premixed_combustion

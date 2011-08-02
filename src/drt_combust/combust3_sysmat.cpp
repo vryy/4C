@@ -739,27 +739,21 @@ void Sysmat(
   break;
   case INPAR::COMBUST::combusttype_twophaseflow:
   {
-    double ele_meas_plus = 0.0;  // we need measure of element in plus domain and minus domain
-    double ele_meas_minus = 0.0; // for different averages <> and {}
-
     COMBUST::SysmatTwoPhaseFlow<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor,
-        material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
-        ele_meas_plus, ele_meas_minus);
+        material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary,
+        genalpha, assembler);
   }
   break;
   case INPAR::COMBUST::combusttype_twophaseflow_surf:
   {
-    double ele_meas_plus = 0.0;  // we need measure of element in plus domain and minus domain
-    double ele_meas_minus = 0.0; // for different averages <> and {}
-
     COMBUST::SysmatTwoPhaseFlow<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor,
-        material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
-        ele_meas_plus, ele_meas_minus);
+        material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary,
+        genalpha, assembler);
 
     // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
-    if (ele->Bisected() or ele->Touched() )
+    if (ele->Bisected() or ele->Touched())
     {
       // get smoothed gradient of phi for surface tension applications
       LINALG::Matrix<3,numnode> egradphi;
@@ -772,9 +766,8 @@ void Sysmat(
       COMBUST::SysmatBoundarySurfaceTension<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelaf, epreaf, ephi, egradphi, etensor,
           material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
-          flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
-          surftensapprox, connected_interface, veljumptype,
-          fluxjumptype, smoothed_boundary_integration);
+          flamespeed, nitschevel, nitschepres,
+          surftensapprox, connected_interface, smoothed_boundary_integration);
     }
   }
   break;
@@ -789,7 +782,7 @@ void Sysmat(
         ele_meas_plus, ele_meas_minus);
 
     // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
-    if (ele->Bisected() or ele->Touched() )
+    if (ele->Bisected() or ele->Touched())
     {
       // get smoothed gradient of phi for surface tension applications
       LINALG::Matrix<3,numnode> egradphi;
@@ -803,8 +796,8 @@ void Sysmat(
           ele, ih, dofman, evelaf, epreaf, ephi, egradphi, ecurv,
           material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
           flamespeed, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
-          surftensapprox, connected_interface, veljumptype,
-          fluxjumptype, smoothed_boundary_integration);
+          surftensapprox, connected_interface, INPAR::COMBUST::vel_jump_none,
+          INPAR::COMBUST::flux_jump_surface_tension, smoothed_boundary_integration);
     }
   }
   break;

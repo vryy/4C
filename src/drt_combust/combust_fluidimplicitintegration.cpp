@@ -74,8 +74,8 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   combusttype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::CombustionType>(params_.sublist("COMBUSTION FLUID"),"COMBUSTTYPE")),
   veljumptype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::VelocityJumpType>(params_.sublist("COMBUSTION FLUID"),"VELOCITY_JUMP_TYPE")),
   fluxjumptype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::FluxJumpType>(params_.sublist("COMBUSTION FLUID"),"FLUX_JUMP_TYPE")),
-  start_val_semilagrange_(DRT::INPUT::IntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"START_VAL_SEMILAGRANGE")),
-  start_val_enrichment_(DRT::INPUT::IntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"START_VAL_ENRICHMENT")),
+  xfemtimeint_(DRT::INPUT::IntegralValue<INPAR::COMBUST::XFEMTimeIntegration>(params_.sublist("COMBUSTION FLUID"),"XFEMTIMEINT")),
+  xfemtimeint_enr_(DRT::INPUT::IntegralValue<INPAR::COMBUST::XFEMTimeIntegrationEnr>(params_.sublist("COMBUSTION FLUID"),"XFEMTIMEINT_ENR")),
   flamespeed_(params_.sublist("COMBUSTION FLUID").get<double>("LAMINAR_FLAMESPEED")),
   nitschevel_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_VELOCITY")),
   nitschepres_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_PRESSURE")),
@@ -144,10 +144,40 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   //------------------------------------------------------------------------------------------------
   // consistency checks
   //------------------------------------------------------------------------------------------------
-  if (combusttype_ != INPAR::COMBUST::combusttype_twophaseflow and smoothgradphi_ == INPAR::COMBUST::smooth_grad_phi_none)
-    dserror("Every COMBUSTTYPE except Two_Phase_Flow need smoothgradphi_ set to anything but smooth_grad_phi_none.");
+  if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion and smoothgradphi_ == INPAR::COMBUST::smooth_grad_phi_none)
+    dserror("Every COMBUSTTYPE except Two_Phase_Flow_... need smoothgradphi_ set to anything but smooth_grad_phi_none.");
   if (!smoothed_boundary_integration_ and smoothgradphi_ != INPAR::COMBUST::smooth_grad_phi_none)
     dserror("If SMOOTHGRADPHI is not smooth_grad_phi_none, then the SMOOTHED_BOUNDARY_INTEGRATION has to be set to Yes.");
+  if (combusttype_ == INPAR::COMBUST::combusttype_twophaseflow_surf or combusttype_ == INPAR::COMBUST::combusttype_twophaseflowjump)
+  {
+    if ((surftensapprox_ != INPAR::COMBUST::surface_tension_approx_laplacebeltrami
+        and surftensapprox_ != INPAR::COMBUST::surface_tension_approx_fixed_curvature)
+        and smoothed_boundary_integration_!=true)
+      dserror("All surface tension approximations need a smooth gradient field of phi expect laplace-beltrami and fixed-curvature! Read remark!");
+    // surface_tension_approx_laplacebeltrami
+    // surface_tension_approx_fixed_curvature: we can use a smoothed normal vector based on the smoothed gradient of phi (SMOOTHGRADPHI = Yes)
+    //                                         or we simply use the normal vector of the boundary integration cell (SMOOTHGRADPHI = No)
+    // surface_tension_approx_divgrad
+    // surface_tension_approx_divgrad_normal: we use the smoothed gradient of phi to compute the curvature of the interface, hence we
+    //                                        always have to set SMOOTHGRADPHI = Yes, in addition, we need the normal to the interface,
+    //                                        version surface_tension_approx_divgrad_normal simply uses the normal vector of the boundary
+    //                                        integration cell, while surface_tension_approx_divgrad uses a smoothed one based on phi
+    // surface_tension_approx_laplacebeltrami_smoothed: here, we need a smoothed and a non-smoothed normal, hence, SMOOTHGRADPHI = Yes
+  }
+  if (combusttype_ == INPAR::COMBUST::combusttype_twophaseflowjump
+      and (veljumptype_ != INPAR::COMBUST::vel_jump_none or fluxjumptype_ != INPAR::COMBUST::flux_jump_surface_tension))
+  {
+    if (veljumptype_ != INPAR::COMBUST::vel_jump_none)
+    {
+      veljumptype_ = INPAR::COMBUST::vel_jump_none;
+      std::cout << "Velocity jump is set to NONE for two-phase flow with jumps!" << std::endl;
+    }
+    if (fluxjumptype_ != INPAR::COMBUST::flux_jump_surface_tension)
+    {
+      fluxjumptype_ = INPAR::COMBUST::flux_jump_surface_tension;
+      std::cout << "Flux jump is set to SURFACE TENSION for two-phase flow with jumps!" << std::endl;
+    }
+  }
 
   //------------------------------------------------------------------------------------------------
   // prepare XFEM (initial degree of freedom management)
@@ -487,23 +517,24 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
 
     if (step_ > 0) //(itnum == 1)
     {
-      if (start_val_semilagrange_ or start_val_enrichment_)
+
+      if(xfemtimeint_ == INPAR::COMBUST::xfemtimeint_semilagrange)
       {
         cout0_ << "---  XFEM time integration based on semi-Lagrangian back tracking scheme... " << std::flush;
+
         vector<RCP<Epetra_Vector> > newRowVectors;
         newRowVectors.push_back(state_.velnp_);
         newRowVectors.push_back(state_.accnp_);
 
-        if(start_val_semilagrange_)
-        {
-          cout0_ << "apply semi-Lagrangian back tracking scheme... " << std::flush;
-          startval_->semiLagrangeBackTracking(newRowVectors,true);
-        }
-        if(start_val_enrichment_)
-        {
-          cout0_ << "compute enrichment values... " << std::flush;
-          enrichmentval_->setEnrichmentValues();
-        }
+        cout0_ << "apply semi-Lagrangian back tracking scheme... " << std::flush;
+        startval_->semiLagrangeBackTracking(newRowVectors,true);
+        cout0_ << "done" << std::endl;
+      }
+
+      if(xfemtimeint_enr_ == INPAR::COMBUST::xfemtimeintenr_setenrichment)
+      {
+        cout0_ << "compute enrichment values... " << std::flush;
+        enrichmentval_->setEnrichmentValues();
         cout0_ << "done" << std::endl;
       }
 
@@ -665,19 +696,17 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
     cout0_ << "---  transform state vectors... " << std::flush;
     // quasi-static enrichment strategy for kink enrichments
     // remark: as soon as the XFEM-time-integration works for kinks, this should be removed
-    if (combusttype_==INPAR::COMBUST::combusttype_twophaseflow or
-        combusttype_==INPAR::COMBUST::combusttype_twophaseflow_surf)
+    if (xfemtimeint_enr_==INPAR::COMBUST::xfemtimeintenr_quasistatic)
     {
-      const bool quasi_static_enr = true;
       cout0_ << "\n... quasi-static enrichment for two-phase flow problems ..." << std::endl;
 
       // accelerations at time n+1 and n
-      dofswitch.mapVectorToNewDofDistributionCombust(state_.accnp_,quasi_static_enr);
-      dofswitch.mapVectorToNewDofDistributionCombust(state_.accn_, quasi_static_enr);
+      dofswitch.mapVectorToNewDofDistributionCombust(state_.accnp_,true);
+      dofswitch.mapVectorToNewDofDistributionCombust(state_.accn_, true);
       // velocities and pressures at time n+1, n and n-1
-      dofswitch.mapVectorToNewDofDistributionCombust(state_.velnp_,quasi_static_enr); // use old velocity as start value
-      dofswitch.mapVectorToNewDofDistributionCombust(state_.veln_ ,quasi_static_enr);
-      dofswitch.mapVectorToNewDofDistributionCombust(state_.velnm_,quasi_static_enr);
+      dofswitch.mapVectorToNewDofDistributionCombust(state_.velnp_,true); // use old velocity as start value
+      dofswitch.mapVectorToNewDofDistributionCombust(state_.veln_ ,true);
+      dofswitch.mapVectorToNewDofDistributionCombust(state_.velnm_,true);
     }
     else
     {
@@ -699,7 +728,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
 
     if (step_ > 0)
     {
-      if (start_val_enrichment_ or start_val_enrichment_)
+      if ((xfemtimeint_==INPAR::COMBUST::xfemtimeint_semilagrange) or (xfemtimeint_enr_ ==INPAR::COMBUST::xfemtimeintenr_setenrichment))
       {
         // vectors to be written by time integration algorithm
         vector<RCP<Epetra_Vector> > newRowStateVectors;
@@ -710,7 +739,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
           dserror("stateVector sizes are different! Fix this!");
 #endif
 
-        if(start_val_enrichment_)
+        if(xfemtimeint_enr_ ==INPAR::COMBUST::xfemtimeintenr_setenrichment)
         {
           enrichmentval_ = rcp(new XFEM::Enrichmentvalues(
             discret_,
@@ -728,7 +757,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
             pbcmapmastertoslave_));
         }
 
-        if(start_val_semilagrange_)
+        if(xfemtimeint_==INPAR::COMBUST::xfemtimeint_semilagrange)
         {
           startval_ = rcp(new XFEM::Startvalues(
             discret_,

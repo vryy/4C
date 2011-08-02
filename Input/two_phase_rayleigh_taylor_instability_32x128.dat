@@ -52,6 +52,8 @@ MARKSTEIN_LENGTH                1
 XFEMINTEGRATION                 Cut
 SMOOTHED_BOUNDARY_INTEGRATION   No
 SMOOTHGRADPHI                   smooth_grad_phi_none
+XFEMTIMEINT                     DoNothing
+XFEMTIMEINT_ENR                 QuasiStatic
 ----------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 REFINEMENT                      no
 REFINEMENTLEVEL                 -1

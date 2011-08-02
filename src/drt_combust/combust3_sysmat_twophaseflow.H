@@ -79,9 +79,9 @@ void SysmatTwoPhaseFlow(
     const INPAR::FLUID::TauType         tautype,       ///< stabilization parameter definition
     const bool                          instationary,  ///< switch between stationary and instationary formulation
     const bool                          genalpha,
-    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler,
-    double&                        ele_meas_plus,      ///< set measure of element in plus domain
-    double&                        ele_meas_minus      ///< set measure of element in minus domain
+    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler
+//    double&                        ele_meas_plus,      ///< set measure of element in plus domain
+//    double&                        ele_meas_minus      ///< set measure of element in minus domain
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR(" - evaluate - Sysmat - domain");
@@ -187,10 +187,11 @@ void SysmatTwoPhaseFlow(
         dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
       }
 
-      // schott
-      // set measure of element in plus and minus domain
-      if(cell->getDomainPlus() == true)        {ele_meas_plus  += fac;}
-      else  {ele_meas_minus += fac;}
+      //TODO remove
+//      // schott
+//      // set measure of element in plus and minus domain
+//      if(cell->getDomainPlus() == true)        {ele_meas_plus  += fac;}
+//      else  {ele_meas_minus += fac;}
 
       // inverse of jacobian
       static LINALG::Matrix<nsd,nsd> xji;
