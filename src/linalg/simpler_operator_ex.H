@@ -80,7 +80,7 @@ public:
   */
   virtual ~SIMPLER_BlockPreconditioner()
   {
-    vsolver_ = Teuchos::null;
+    vsolver_ = Teuchos::null; // solver objects only generated for SIMPLE and SIMPLER (not for CheapSIMPLE)
     psolver_ = Teuchos::null;
     Ppredict_ = Teuchos::null;
     Pschur_ = Teuchos::null;
@@ -228,8 +228,8 @@ private:
   RCP<LINALG::ANA::Vector>                            pwork1_;  // working vector pressure dimension
   RCP<LINALG::ANA::Vector>                            pwork2_;  // working vector pressure dimension
 
-  RCP<LINALG::Solver>                                 vsolver_; // velocity solver
-  RCP<LINALG::Solver>                                 psolver_; // pressure solver
+  RCP<LINALG::Solver>                                 vsolver_; // velocity solver // not used for CheapSIMPLE
+  RCP<LINALG::Solver>                                 psolver_; // pressure solver // not used for CheapSIMPLE
 
   bool                                                vdw_;     // indicate downwinding for velocity subproblem
   RCP<LINALG::DownwindMatrix>                         vdwind_;  // downwinding reindexer for velocity subproblem
