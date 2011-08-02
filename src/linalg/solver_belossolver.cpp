@@ -106,6 +106,7 @@ void LINALG::SOLVER::BelosSolver::Solve()
   }
 
   // create iterative solver manager
+  // TODO: support for CG!!!
   Teuchos::RCP<Belos::SolverManager<double,MV,OP> > newSolver = Teuchos::rcp(new Belos::BlockGmresSolMgr<double,MV,OP>(problem,Teuchos::rcp(&belist,false)));
 
   //
@@ -120,6 +121,10 @@ void LINALG::SOLVER::BelosSolver::Solve()
   if (ret!=Belos::Converged)
   {
     std::cout << std::endl << "WARNING: Belos did not converge!" << std::endl;
+  }
+  else
+  {
+    std::cout << std::endl << "SUCCESS: Belos converged after " << newSolver->getNumIters() << " iterations" << endl;
   }
 
   ncall_ += 1; // increment counter of solver calls
