@@ -121,7 +121,7 @@ XFEM::Startvalues::Startvalues(
     }
   } // end loop over processor nodes
 
-  if (myrank_==0)
+//  if (myrank_==0)
     cout << "---  computing new reference solution(s) for " << basic_->size() << " nodes" << endl;
 
   return;
