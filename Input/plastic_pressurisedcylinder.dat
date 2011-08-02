@@ -411,7 +411,7 @@ ML_SMOTIMES                     1 1 1 1 1
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
-MAT 1   MAT_Struct_PlasticLinElast   YOUNG 2.1e8 NUE 0.3 DENS 0.0 YIELD 2.4e5 TOL 1.0e-06
+MAT 1   MAT_Struct_PlasticLinElast   YOUNG 2.1e8 NUE 0.3 DENS 0.0 YIELD 2.4e5 KINHARD 0.0 TOL 1.0e-06
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0.5*(sin((t*pi/5)-(pi/2)))+0.5  t1 0.0 t2 5.0 // Tmax=5

@@ -6,8 +6,7 @@
        following ideal von Mises plasticity and a linear elastic material law
        (St.Venant Kirchhoff).
 
-       perfect plasticity:
-        - no hardening allowed
+       plastic materail with kinematic hardening
         - independent yield stress level of degree of plastification
         - constant uniaxial yield stress \sigma_y = const.
 
@@ -66,6 +65,8 @@ namespace MAT
       const double density_;
       /// yield stress (constant for perfect plasticity)
       const double yield_;
+      /// kinematic hardening
+      const double kinhard_;
       // tolerance for local Newton iteration
       const double abstol_;
 
@@ -173,6 +174,12 @@ private:
       LINALG::Matrix<NUM_STRESS_3D,1>& stress //!< 2nd PK-stress
       );
 
+    void RelStress(
+      const LINALG::Matrix<6,1>& devstrain,  //!< deviatoric stress tensor
+      const LINALG::Matrix<6,1>& beta,  //!< back stress tensor
+      LINALG::Matrix<NUM_STRESS_3D,1>& eta //!< relative stress
+      );
+
     /// computes isotropic elasticity tensor in matrix notion for 3d
     void SetupCmat(LINALG::Matrix<6,6>& cmat);
 
@@ -184,7 +191,8 @@ private:
       double q,
       const LINALG::Matrix<6,1> flowvector,
       const LINALG::Matrix<6,1> devstress,
-      double heaviside
+      double heaviside,
+      double Hkin
       );
 
     /// computes isotropic elastoplastic tensor in matrix notion for 3d
@@ -239,11 +247,20 @@ private:
     /// my material parameters
     MAT::PAR::PlasticLinElast* params_;
 
-    /// plastic history deformation
+    /// plastic history vector
     // old plastic strain at t_n
     Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainpllast_;  //!< \f${\varepsilon}^p_{n}\f$
     // current plastic strain at t_n+1
     Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
+    // old accumulated plastic strain at t_n
+    Teuchos::RCP< vector< LINALG::Matrix<1,1> > > strainbarpllast_;  //!< \f${\varepsilon}^p_{n}\f$
+    // current accumulated plastic strain at t_n+1
+    Teuchos::RCP< vector< LINALG::Matrix<1,1> > > strainbarplcurr_;  //!< \f${\varepsilon}^p_{n+1}\f$
+    // old back stress at t_n
+    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > backstresslast_;  //!< \f${\beta}_{n}\f$
+    // current back stress at t_n+1
+    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > backstresscurr_;  //!< \f${\beta}_{n+1}\f$
+
 
     /// indicator if #Initialize routine has been called
     bool isinit_;

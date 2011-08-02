@@ -443,6 +443,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"DENS","mass density");
     AddNamedReal(m,"YIELD","yield stress");
+    AddNamedReal(m,"KINHARD","kinematic hardening modulus");
     AddNamedReal(m,"TOL","tolerance for local Newton iteration");
 
     AppendMaterialDefinition(matlist,m);
