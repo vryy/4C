@@ -166,9 +166,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS_Boundary()
   // get cpu time
   const double tcpuele = Teuchos::Time::wallTime();
 
-  INPAR::SCATRA::TimeIntegrationScheme timealgo_reinit = DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(extraparams_->sublist("COMBUSTION PDE REINITIALIZATION"),"REINIT_TIMEINTEGR");
-
-
   //----------------------------------------------------------------------
   // apply Taylor Galerkin Outflow boundary conditions
   //----------------------------------------------------------------------
@@ -213,13 +210,16 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS_Boundary()
 		discret_->ClearState();
   }
 
-  if(reinitswitch_ == true
-		  and (  timealgo_reinit == INPAR::SCATRA::timeint_tg2
+  if(reinitswitch_ == true)
+  {
+	    INPAR::SCATRA::TimeIntegrationScheme timealgo_reinit = DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(extraparams_->sublist("COMBUSTION PDE REINITIALIZATION"),"REINIT_TIMEINTEGR");
+
+		if (  timealgo_reinit == INPAR::SCATRA::timeint_tg2
 			       or timealgo_reinit == INPAR::SCATRA::timeint_tg2_LW
 			       or timealgo_reinit == INPAR::SCATRA::timeint_tg3
 			       or timealgo_reinit == INPAR::SCATRA::timeint_tg4_leapfrog
-			       or timealgo_reinit == INPAR::SCATRA::timeint_tg4_onestep))
-  {
+			       or timealgo_reinit == INPAR::SCATRA::timeint_tg4_onestep)
+		{
 	    // evaluate boundary conditions for characteristic galerkin reinitialization method
 	    // new parameter list
 	    ParameterList reinitCharacteristicParams;
@@ -249,6 +249,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS_Boundary()
 	       "ReinitializationTaylorGalerkin");
 
 	    discret_->ClearState();
+		}
   }
 
 

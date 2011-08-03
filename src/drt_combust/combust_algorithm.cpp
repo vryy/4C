@@ -167,9 +167,9 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   if (reinitaction_ != INPAR::COMBUST::reinitaction_none)
   {
 //    stepreinit_ = true;
-//    DoReinitialization(); // schott 04/11
+    DoReinitialization(); // schott 04/11
 
-	  cout<< "reinitialization at timestep 0 switched off!" << endl;
+//	  cout<< "reinitialization at timestep 0 switched off!" << endl;
 
     if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary)
     {
