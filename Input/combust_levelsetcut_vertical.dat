@@ -81,8 +81,8 @@ TIMESTEP                        1.0
 UPRES                           1
 -----------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Premixed_Combustion
-START_VAL_SEMILAGRANGE          Yes
-START_VAL_ENRICHMENT            Yes
+XFEMTIMEINT                     SemiLagrange
+XFEMTIMEINT_ENR                 SetEnrichment
 INITSTATSOL                     No
 NITSCHE_VELOCITY                10
 NITSCHE_PRESSURE                0
