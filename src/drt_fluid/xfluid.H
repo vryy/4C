@@ -14,6 +14,10 @@
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_xfem/xfem_fluidwizard.H"
 
+#include "../drt_io/io.H"
+#include "../drt_io/io_ostream0.H"
+#include "../drt_io/io_control.H"
+
 #include "../drt_lib/drt_resulttest.H"
 
 namespace DRT
@@ -142,6 +146,10 @@ namespace FLD
       //! Extractor used for convergence check
       LINALG::MapExtractor      velpressplitter_;
 
+      //! dof-row maps
+      Teuchos::RCP<const Epetra_Map> outputfluiddofrowmap_;
+      Teuchos::RCP<const Epetra_Map> outputpressuredofrowmap_;
+
       void GenAlphaIntermediateValues();
       void GenAlphaUpdateAcceleration();
 
@@ -239,6 +247,28 @@ namespace FLD
         return density_/(theta_*dta_);
     }
 
+    // dof-row maps
+    const Epetra_Map* soliddofrowmap_;
+    const Epetra_Map* boundarydofrowmap_;
+
+
+    // dofset for fluid output
+    DRT::DofSet                dofset_out_;
+
+    // velocity pressure splitter for fluid output
+    LINALG::MapExtractor      velpressplitterForOutput_;
+
+    // output vector for fluid field (velocity and pressure)
+    Teuchos::RCP<Epetra_Vector> outvec_fluid_;
+
+
+    //! @name boundary-dis state vectors
+    Teuchos::RCP<Epetra_Vector>    ivelnp_;
+    Teuchos::RCP<Epetra_Vector>    iveln_;
+    Teuchos::RCP<Epetra_Vector>    ivelnm_;
+
+    Teuchos::RCP<Epetra_Vector>    outvec_solid_disp_;
+
   private:
 
     //! @name Set general parameter in class f3Parameter
@@ -292,7 +322,11 @@ namespace FLD
 //     //! basis vector for nullspace (vector of ones in the pressure component)
 //     Teuchos::RCP<Epetra_Vector>   c_;
     Teuchos::ParameterList params_;
-//     IO::DiscretizationWriter&     output_;
+    Teuchos::RCP<IO::DiscretizationWriter> fluid_output_;
+    Teuchos::RCP<IO::DiscretizationWriter> solid_output_;
+    Teuchos::RCP<IO::DiscretizationWriter> boundary_output_;
+
+
     //! the processor ID from the communicator
     int                           myrank_;
     //! do we move the fluid mesh and calculate the fluid on this moving mesh?
@@ -328,6 +362,10 @@ namespace FLD
 
     /// flag for physical type of fluid flow (standard: incompressible)
     enum INPAR::FLUID::PhysicalType physicaltype_;
+
+    //! @name restart variables
+    int upres_;
+    //@}
 
     //! @name time step sizes
     double dta_;

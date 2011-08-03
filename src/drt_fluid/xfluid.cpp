@@ -26,9 +26,14 @@
 #include "../drt_cut/cut_point.H"
 #include "../drt_cut/cut_meshintersection.H"
 
+#include "../drt_io/io_gmsh.H"
+#include "../drt_io/io_control.H"
+
 #include "../drt_f3/fluid3.H"
 
 #include "../drt_f3_impl/fluid3_interface.H"
+
+#include "time_integration_scheme.H"
 
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
@@ -47,9 +52,67 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid )
   xfluid.discret_->ReplaceDofSet( dofset_ );
   xfluid.discret_->FillComplete();
 
+//	// how many dofs are stored for the row nodes
+//	// dofrowmap for output
+//	const Epetra_Map* noderowmapoutput_new_after = xfluid.discret_->NodeRowMap();
+//	for(int lid=0; lid < xfluid.discret_->NumMyRowNodes(); lid++)
+//	{
+//	    // global id
+//	    int gid = noderowmapoutput_new_after->GID(lid);
+//	    // get the node
+//	    DRT::Node * node = xfluid.discret_->gNode(gid);
+//	    vector<int> gdofs = xfluid.discret_->Dof(node);
+//
+//	    cout << "Gid: " << gid << "   gdofs  " << gdofs.size() << endl;
+//	}
+
   FLD::UTILS::SetupFluidSplit(*xfluid.discret_,xfluid.numdim_,velpressplitter_);
 
   const Epetra_Map* dofrowmap = xfluid.discret_->DofRowMap();
+
+
+//  // dofrowmap for output
+//   const Epetra_Map* noderowmapoutput = xfluid.discret_->NodeRowMap();
+//   vector<int> dofmapoutput;
+//   vector<int> dofmappressureoutput;
+//   int count = 0;
+//   for (int lid=0; lid<xfluid.discret_->NumMyRowNodes(); lid++)
+//   {
+//     // global id
+//     int gid = noderowmapoutput->GID(lid);
+//     // get the node
+//     DRT::Node * node = xfluid.discret_->gNode(gid);
+//     vector<int> gdofs = xfluid.discret_->Dof(node);
+//     if (  gdofs.size() != 0 )
+//     {
+//       copy(&gdofs[0], &gdofs[0]+(gdofs.size()), back_inserter(dofmapoutput));
+//       dofmappressureoutput.push_back(gdofs[3]);
+//       count = 1;
+//     }
+//     else
+//     {
+//       if (count==0)
+//       {
+//         dofmapoutput.push_back(count);
+//         dofmapoutput.push_back(count+1);
+//         dofmapoutput.push_back(count+2);
+//         dofmapoutput.push_back(count+3);
+//         dofmappressureoutput.push_back(count);
+//         count = 1;
+//       }
+//       int& last = dofmapoutput.back();
+//       int& lastpres = dofmappressureoutput.back();
+//       dofmapoutput.push_back(last+count);
+//       dofmapoutput.push_back(last+count+1);
+//       dofmapoutput.push_back(last+count+2);
+//       dofmapoutput.push_back(last+count+3);
+//       dofmappressureoutput.push_back(lastpres+count+3);
+//     }
+//   }
+//
+//   outputfluiddofrowmap_ = rcp(new Epetra_Map(-1, dofmapoutput.size(), &dofmapoutput[0], 0, xfluid.discret_->Comm()));
+//   outputpressuredofrowmap_ = rcp(new Epetra_Map(-1, dofmappressureoutput.size(), &dofmappressureoutput[0], 0, xfluid.discret_->Comm()));
+
 
   sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
 
@@ -101,6 +164,11 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid )
 
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   zeros_   = LINALG::CreateVector(*dofrowmap,true);
+
+  // Vectors passed to the element
+  // -----------------------------
+  // velocity/pressure at time n+1, n and n-1
+  velnp_ = LINALG::CreateVector(*dofrowmap,true);
 
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
   dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
@@ -673,6 +741,8 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   convform_     = params_.get<string>("CONVFORM");
   fssgv_        = params_.get<string>("FSSUGRVISC","No");
 
+  upres_        = params_.get<int>("write solution every", -1);
+
   numdim_       = genprob.ndim; //params_.get<int>("DIM");
 
   // ensure that degrees of freedom in the discretization have been set
@@ -688,7 +758,70 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
     std::cout << "Empty boundary discretization detected. No FSI coupling will be performed...\n";
   }
 
+
+  // get constant density variable for incompressible flow
+  {
+    ParameterList eleparams;
+    eleparams.set("action","get_density");
+    discret_->Evaluate(eleparams);
+    density_ = eleparams.get<double>("density");
+    if (density_ <= 0.0) dserror("received negative or zero density value from elements");
+  }
+
+//========================================================================================================
+////  cout << "boundarydis_" << *boundarydis_ << endl;
+//    fluid_output_ = (rcp(new IO::DiscretizationWriter(discret_)));
+//    fluid_output_->WriteMesh(0,0.0);
+//  const Teuchos::RCP<Epetra_Vector> velnp = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+//
+//  // set values
+//cout << *velnp << endl;
+////
+////    // step number and time
+//    fluid_output_->NewStep(100,100.0);
+//    fluid_output_->WriteVector("velnp",velnp);
+//    fluid_output_->WriteElementData();
+//===========================================================================================================
+
+
+  // store a dofset with the complete fluid unknowns
+  dofset_out_.Reset();
+  dofset_out_.AssignDegreesOfFreedom(*discret_,0,0);
+  // split based on complete fluid field
+  FLD::UTILS::SetupFluidSplit(*discret_,dofset_out_,3,velpressplitterForOutput_);
+
+  // create vector according to the dofset_out row map holding all standard fluid unknowns
+  outvec_fluid_ = LINALG::CreateVector(*dofset_out_.DofRowMap(),true);
+
+  // create fluid output object
+  fluid_output_ = (rcp(new IO::DiscretizationWriter(discret_)));
+  fluid_output_->WriteMesh(0,0.0);
+
+  // create new XFluidState object
   state_ = Teuchos::rcp( new XFluidState( *this ) );
+
+  // create solid output object
+  solid_output_ = rcp(new IO::DiscretizationWriter(soliddis_));
+  solid_output_->WriteMesh(0,0.0);
+
+  // create interface/boundary output object
+  boundary_output_ = rcp(new IO::DiscretizationWriter(boundarydis_));
+  boundary_output_->WriteMesh(0,0.0);
+
+
+  // get dofrowmap for solid discretization
+  soliddofrowmap_ = soliddis_->DofRowMap();
+//  cout << *soliddofrowmap_ << endl;
+
+  outvec_solid_disp_ = LINALG::CreateVector(*soliddofrowmap_,true);
+
+  //--------------------------------------------------------
+  // FluidFluid-Boundary Vectors passes to element
+  // -------------------------------------------------------
+  boundarydofrowmap_ = boundarydis_->DofRowMap();
+  ivelnp_ = LINALG::CreateVector(*boundarydofrowmap_,true);
+  iveln_  = LINALG::CreateVector(*boundarydofrowmap_,true);
+  ivelnm_ = LINALG::CreateVector(*boundarydofrowmap_,true);
 
   // ---------------------------------------------------------------------
   // set general fluid parameter defined before
@@ -703,20 +836,45 @@ void FLD::XFluid::Integrate()
   {
     ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
 
-    cout << "Stabilization type         : " << stabparams->get<string>("STABTYPE") << "\n";
-    cout << "                             " << stabparams->get<string>("TDS")<< "\n";
+    cout << "+------------------------------------------------------------------------------------+" << endl;
+    cout << "                              FLUID-STABILIZATION                       " << endl;
+
+    cout << "Stabilization type: " << stabparams->get<string>("STABTYPE") << "\n";
+    cout << "                    " << stabparams->get<string>("TDS")<< "\n";
     cout << "\n";
 
+    string def_tau = stabparams->get<string>("DEFINITION_TAU");
+
+    // instationary case
     if (timealgo_!=INPAR::FLUID::timeint_stationary)
-      cout <<  "                             " << "Tau Type        = " << stabparams->get<string>("DEFINITION_TAU") <<"\n";
-    else
     {
-      if(stabparams->get<string>("DEFINITION_TAU") == "Barrenechea_Franca_Valentin_Wall" or
-          stabparams->get<string>("DEFINITION_TAU") == "Barrenechea_Franca_Valentin_Wall_wo_dt")
-        cout <<  "                             " << "Tau             = " << "Barrenechea_Franca_Valentin_Wall_wo_dt" << "\n";
-      else if (stabparams->get<string>("DEFINITION_TAU") == "Bazilevs_wo_dt" or
-          stabparams->get<string>("DEFINITION_TAU") == "Bazilevs")
-        cout <<  "                             " << "Tau             = " << "Bazilevs_wo_dt" << "\n";
+      cout <<  "                    " << "Tau Type        = " << def_tau <<"\n";
+
+      // check for instationary version of tau definitions
+      if(def_tau != "Taylor_Hughes_Zarins" and
+         def_tau != "Taylor_Hughes_Zarins_Whiting_Jansen" and
+         def_tau != "Taylor_Hughes_Zarins_scaled" and
+         def_tau != "Franca_Barrenechea_Valentin_Frey_Wall" and
+         def_tau != "Shakib_Hughes_Codina" and
+         def_tau != "Codina" and
+         def_tau != "Franca_Madureira_Valentin_Badia_Codina" and
+         def_tau != "Smoothed_FBVW")
+      {
+    	  dserror("not a valid tau definition (DEFINITION_TAU) without \"dt\" for instationary problems");
+      }
+    }
+    else // stationary case
+    {
+        if(def_tau != "Taylor_Hughes_Zarins_wo_dt" and
+           def_tau != "Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt" and
+           def_tau != "Taylor_Hughes_Zarins_scaled_wo_dt" and
+           def_tau != "Franca_Barrenechea_Valentin_Frey_Wall_wo_dt" and
+           def_tau != "Shakib_Hughes_Codina_wo_dt" and
+           def_tau != "Codina_wo_dt" and
+           def_tau != "Franca_Madureira_Valentin_Badia_Codina_wo_dt")
+        {
+      	  dserror("not a valid tau definition (DEFINITION_TAU) for stationary problems");
+        }
     }
     cout << "\n";
 
@@ -727,13 +885,14 @@ void FLD::XFluid::Integrate()
         dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
       }
     }
-    cout <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
-    cout <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
-    cout <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
-    cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
-    cout <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
-    cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
-    cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
+    cout <<  "                    " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
+    cout <<  "                    " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
+    cout <<  "                    " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
+    cout <<  "                    " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
+    cout <<  "                    " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
+    cout <<  "                    " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
+    cout <<  "                    " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
+    cout << "+------------------------------------------------------------------------------------+" << endl;
     cout << "\n";
   }
 
@@ -749,6 +908,8 @@ void FLD::XFluid::Integrate()
 
 void FLD::XFluid::TimeLoop()
 {
+  printf("start TIMELOOP (FLD::XFluid::TimeLoop) -- MAXTIME = %11.4E -- STEPMAX %4d\n\n",maxtime_,stepmax_);
+
   while (step_<stepmax_ and time_<maxtime_)
   {
     PrepareTimeStep();
@@ -855,7 +1016,7 @@ void FLD::XFluid::SolveStationaryProblem()
 
       state_->neumann_loads_->PutScalar(0.0);
       discret_->SetState("scaaf",state_->scaaf_);
-      discret_->EvaluateNeumann(eleparams,*state_->neumann_loads_);
+//      discret_->EvaluateNeumann(eleparams,*state_->neumann_loads_);
       discret_->ClearState();
     }
 
@@ -881,9 +1042,98 @@ void FLD::XFluid::SolveStationaryProblem()
   }
 }
 
+
+/*------------------------------------------------------------------------------------------------*
+ | prepare a fluid time step                                                         schott 07/11 |
+ *------------------------------------------------------------------------------------------------*/
 void FLD::XFluid::PrepareTimeStep()
 {
+	  cout << "PrepareTimeStep (FLD::XFluid::PrepareTimeStep) " << endl;
 
+	  //TODO: check if we have to use a stationary initial solution => SolveStationaryProblem()
+
+	  // -------------------------------------------------------------------
+	  //              set time dependent parameters
+	  // -------------------------------------------------------------------
+	  step_ += 1;
+	  time_ += dta_;
+
+
+	  printf("----------------------XFLUID-------  time step %2d ----------------------------------------\n", step_);
+
+	  // -------------------------------------------------------------------
+	  // set time parameters dependent on time integration scheme and step
+	  // -------------------------------------------------------------------
+	  if (timealgo_ == INPAR::FLUID::timeint_stationary)
+	  {
+	    theta_ = 1.0;
+	  }
+	  else
+	  {
+	    // do a backward Euler step for the first timestep
+	    if (step_==1)
+	    {
+	      theta_ = params_.get<double>("START_THETA");
+	    }
+	    else if (step_ > 1)
+	    {
+	      // for OST
+	      if(timealgo_ == INPAR::FLUID::timeint_one_step_theta) theta_ = params_.get<double>("THETA");
+
+	      // for BDF2, theta is set by the time-step sizes, 2/3 for const. dt
+	      if (timealgo_==INPAR::FLUID::timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
+	    }
+	    else dserror("number of time step is wrong");
+	  }
+
+	  // -------------------------------------------------------------------
+	  //  set time parameter for element call
+	  // -------------------------------------------------------------------
+	  SetElementTimeParameter();
+
+	  // -------------------------------------------------------------------
+	  // set part(s) of the rhs vector(s) belonging to the old timestep
+	  // (only meaningful for momentum part)
+	  //
+	  // stationary/af-generalized-alpha: hist_ = 0.0
+	  //
+	  // one-step-Theta:                  hist_ = veln_  + dt*(1-Theta)*accn_
+	  //
+	  // BDF2: for constant time step:    hist_ = 4/3 veln_  - 1/3 velnm_
+	  //
+	  // -------------------------------------------------------------------
+
+	  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(state_->veln_,state_->velnm_, state_->accn_,
+	                                                timealgo_, dta_, theta_, state_->hist_);
+
+
+	    // -------------------------------------------------------------------
+	    //         evaluate Dirichlet and Neumann boundary conditions
+	    // -------------------------------------------------------------------
+	    {
+	      ParameterList eleparams;
+
+	      // other parameters needed by the elements
+	      eleparams.set("total time",time_);
+
+	      // set vector values needed by elements
+	      discret_->ClearState();
+	      discret_->SetState("velaf",state_->velnp_);
+	      // predicted dirichlet values
+	      // velnp then also holds prescribed new dirichlet values
+	      discret_->EvaluateDirichlet(eleparams,state_->velnp_,null,null,null);
+
+	      discret_->ClearState();
+
+	      // set thermodynamic pressure
+	      eleparams.set("thermodynamic pressure",thermpressaf_);
+
+	      state_->neumann_loads_->PutScalar(0.0);
+	      discret_->SetState("scaaf",state_->scaaf_);
+	      discret_->EvaluateNeumann(eleparams,*state_->neumann_loads_);
+	      discret_->ClearState();
+	    }
+	    cout << "Neumann_loads " << *state_->neumann_loads_ << endl;
 }
 
 void FLD::XFluid::NonlinearSolve()
@@ -1138,7 +1388,7 @@ void FLD::XFluid::LinearSolve()
 
 void FLD::XFluid::Predictor()
 {
-
+ cout << "IMPLEMENT explicit predictor!!!" << endl;
 }
 
 void FLD::XFluid::MultiCorrector()
@@ -1160,12 +1410,297 @@ void FLD::XFluid::TimeUpdate()
 
 void FLD::XFluid::StatisticsAndOutput()
 {
+	  // time measurement: output and statistics
+	  TEUCHOS_FUNC_TIME_MONITOR("      + output and statistics");
 
+	  // -------------------------------------------------------------------
+	  //          calculate lift'n'drag forces from the residual
+	  // -------------------------------------------------------------------
+//	  LiftDrag();
+
+	  // -------------------------------------------------------------------
+	  //          calculate flow through surfaces
+	  // -------------------------------------------------------------------
+//	  ComputeSurfaceFlowRates();
+
+	  // -------------------------------------------------------------------
+	  //          calculate impuls rate through surfaces
+	  // -------------------------------------------------------------------
+//	  ComputeSurfaceImpulsRates();
+
+	  // -------------------------------------------------------------------
+	  //   add calculated velocity to mean value calculation (statistics)
+	  // -------------------------------------------------------------------
+	//  statisticsmanager_->DoTimeSample(step_,time_);
+
+	  // -------------------------------------------------------------------
+	  //                         output of solution
+	  // -------------------------------------------------------------------
+	  Output();
+
+	  // -------------------------------------------------------------------
+	  //          dumping of turbulence statistics if required
+	  // -------------------------------------------------------------------
+	//  statisticsmanager_->DoOutput(output_,step_);
+
+	  return;
 }
 
 void FLD::XFluid::Output()
 {
+	  //Gmsh
+	  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("element_node_id", step_, 5, 0, discret_->Comm().MyPID());
+	   std::ofstream gmshfilecontent(filename.c_str());
+	   {
+	     // draw bg elements with associated gid
+	     gmshfilecontent << "View \" " << "fluid Element->Id() \" {\n";
+	     for (int i=0; i<discret_->NumMyColElements(); ++i)
+	     {
+	       const DRT::Element* actele = discret_->lColElement(i);
+	       IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
+	     };
+	     gmshfilecontent << "};\n";
+	   }
+	   {
+	     // draw cut elements with associated gid
+	     gmshfilecontent << "View \" " << "cut Element->Id() \" {\n";
+	     for (int i=0; i<boundarydis_->NumMyColElements(); ++i)
+	     {
+	       const DRT::Element* actele = boundarydis_->lColElement(i);
+	       IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
+	     };
+	     gmshfilecontent << "};\n";
+	     // draw structure elements with associated gid
+	     gmshfilecontent << "View \" " << "structure Element->Id() \" {\n";
+	     for (int i=0; i<soliddis_->NumMyColElements(); ++i)
+	     {
+	       const DRT::Element* actele = soliddis_->lColElement(i);
+	       IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
+	     };
+	     gmshfilecontent << "};\n";
+	     {
+	      gmshfilecontent << "View \" " << "fluid Node->Id() \" {\n";
+	      for (int i=0; i<discret_->NumMyColNodes(); ++i)
+	      {
+	        const DRT::Node* actnode = discret_->lColNode(i);
+	        const LINALG::Matrix<3,1> pos(actnode->X());
+	        IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, gmshfilecontent);
+	      }
+	      gmshfilecontent << "};\n";
+	     }
+	     {
+	      gmshfilecontent << "View \" " << "structure Node->Id() \" {\n";
+	      for (int i=0; i<soliddis_->NumMyColNodes(); ++i)
+	      {
+	        const DRT::Node* actnode = soliddis_->lColNode(i);
+	        const LINALG::Matrix<3,1> pos(actnode->X());
+	        IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, gmshfilecontent);
+	      }
+	      gmshfilecontent << "};\n";
+	    }
+	   }
+	   gmshfilecontent.close();
 
+
+
+	   if (step_%upres_ == 0)
+	   {
+	   	   fluid_output_->NewStep(step_,time_);
+
+	   	   const Epetra_Map* dofrowmap = dofset_out_.DofRowMap(); // original fluid unknowns
+	   	   const Epetra_Map* xdofrowmap = discret_->DofRowMap();  // fluid unknown for current cut
+
+
+	   	   for (int i=0; i<discret_->NumMyRowNodes(); ++i)
+	   	   {
+	   		 // get row node via local id
+	   	     const DRT::Node* xfemnode = discret_->lRowNode(i);
+
+//	   	     // get global id of this node
+//	   	     const int gid = xfemnode->Id();
+
+	   	     // the dofset_out_ contains the original dofs for each row node
+	   	     const std::vector<int> gdofs_original(dofset_out_.Dof(xfemnode));
+
+//	   	     cout << "node->Id() " << gid << "gdofs " << gdofs_original[0] << " " << gdofs_original[1] << "etc" << endl;
+
+	   	     // if the dofs for this node do not exist in the xdofrowmap, then a hole is given
+	   	     // else copy the right nodes
+	   	     const std::vector<int> gdofs_current(discret_->Dof(xfemnode));
+
+	   	     if(gdofs_current.size() == 0); // cout << "no dofs available->hole" << endl;
+	   	     else if(gdofs_current.size() == gdofs_original.size()); //cout << "same number of dofs available" << endl;
+	   	     else if(gdofs_current.size() > gdofs_original.size());  //cout << "more dofs available->decide" << endl;
+	   	     else cout << "decide which dofs can be copied and which have to be set to zero" << endl;
+
+	   	     if(gdofs_current.size() == 0)
+	   	     {
+	   	       size_t numdof = gdofs_original.size();
+	   	       // no dofs for this node... must be a hole or somethin'
+	   	       for (std::size_t idof = 0; idof < numdof; ++idof)
+	   	       {
+	   	         //cout << dofrowmap->LID(gdofs[idof]) << endl;
+	   	         (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] = 0.0;
+	   	       }
+	   	     }
+	   	     else if(gdofs_current.size() == gdofs_original.size())
+	   	     {
+	   	    	 size_t numdof = gdofs_original.size();
+	   	    	 // copy all values
+	   	         for (std::size_t idof = 0; idof < numdof; ++idof)
+	   	         {
+	   	           //cout << dofrowmap->LID(gdofs[idof]) << endl;
+	   	        	 (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] = (*state_->velnp_)[xdofrowmap->LID(gdofs_current[idof])];
+	   	         }
+	   	     }
+	   	     else dserror("decide which dofs are used for output");
+	   //	     else
+	   //	     {
+	   //	       //cout << "some values available" << endl;
+	   //
+	   //	       //const std::vector<int> gdofs(ih_->xfemdis()->Dof(actnode));
+	   //	       const std::set<FieldEnr> dofset = entry->second;
+	   //
+	   //	       const LINALG::Matrix<3,1> actpos(xfemnode->X());
+	   //	       int idof = 0;
+	   //	       for(std::set<XFEM::PHYSICS::Field>::const_iterator field_out = fields_out.begin(); field_out != fields_out.end(); ++field_out)
+	   //	       {
+	   //	         for(std::set<FieldEnr>::const_iterator fieldenr = dofset.begin(); fieldenr != dofset.end(); ++fieldenr )
+	   //	         {
+	   //	           const XFEM::PHYSICS::Field fielditer = fieldenr->getField();
+	   //	           if (fielditer == *field_out)
+	   //	           {
+	   //	             const double enrval = fieldenr->getEnrichment().EnrValue(actpos, *ih_, XFEM::Enrichment::approachUnknown);
+	   //	             const XFEM::DofKey<XFEM::onNode> dofkey(gid,*fieldenr);
+	   //	             const int origpos = nodalDofDistributionMap.find(dofkey)->second;
+	   //	             //cout << origpos << endl;
+	   //	             if (origpos < 0)
+	   //	               dserror("bug!");
+	   //	             if (gdofs[idof] < 0)
+	   //	               dserror("bug!");
+	   //	             (*outvec)[dofrowmap->LID(gdofs[idof])] += enrval * original_vector[xdofrowmap->LID(origpos)];
+	   //	           }
+	   //	         }
+	   //	         //cout << "LID " << dofrowmap->LID(gdofs[idof]) << " -> GID " << gdofs[idof] << endl;
+	   //	         idof++;
+	   //	       }
+	   //	     }
+	   	   };
+
+	       // output (hydrodynamic) pressure for visualization
+	       Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(outvec_fluid_);
+
+	       pressure->Scale(density_);
+
+	   	   fluid_output_->WriteVector("velnp", outvec_fluid_);
+	   	   fluid_output_->WriteVector("pressure", pressure);
+
+	   	   fluid_output_->WriteElementData();
+
+
+	   	   // output for solid
+	   	   solid_output_->NewStep(step_,time_);
+
+	   	   solid_output_->WriteVector("displacement", outvec_solid_disp_);
+
+	   	   solid_output_->WriteElementData();
+
+
+	   	   // output for interface
+	   	   boundary_output_->NewStep(step_,time_);
+
+	   	   boundary_output_->WriteVector("ivelnp", ivelnp_);
+
+	   	   boundary_output_->WriteElementData();
+	   }
+
+	//    if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
+	//     {
+	//       // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
+	//       output_.WriteVector("accnp",accnp_);
+	//       output_.WriteVector("accn", accn_);
+	//       output_.WriteVector("veln", veln_);
+	//       output_.WriteVector("velnm",velnm_);
+
+	//       if (alefluid_)
+	//       {
+	//         output_.WriteVector("dispn", dispn_);
+	//         output_.WriteVector("dispnm",dispnm_);
+	//       }
+
+	//       // also write impedance bc information if required
+	//       // Note: this method acts only if there is an impedance BC
+	//       impedancebc_->WriteRestart(output_);
+
+	//       Wk_optimization_->WriteRestart(output_);
+	//     }
+
+	//    vol_surf_flow_bc_->Output(output_);
+
+
+
+
+
+
+
+//
+//
+//	  if (write_visualization_data or write_restart_data)
+//	  {
+//	    output_->NewStep(step_,time_);
+//	  }
+//
+//	  if (write_visualization_data)  //write solution for visualization
+//	  {
+//	    Teuchos::RCP<Epetra_Vector> velnp_out = dofmanager_np_->fillPhysicalOutputVector(
+//	        *state_.velnp_, dofset_out_, state_.nodalDofDistributionMap_, physprob_.fieldset_);
+//
+//	    // write physical fields on full domain including voids etc.
+//	    if (physprob_.fieldset_.find(XFEM::PHYSICS::Velx) != physprob_.fieldset_.end())
+//	    {
+//	      // output velocity field for visualization
+//	      output_->WriteVector("velocity_smoothed", velnp_out);
+//
+//	      // output (hydrodynamic) pressure for visualization
+//	      Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(velnp_out);
+//	      pressure->Scale(density_);
+//	      output_->WriteVector("pressure_smoothed", pressure);
+//
+//	      //output_->WriteVector("residual", trueresidual_);
+//
+//	      //only perform stress calculation when output is needed
+////	      if (writestresses_)
+////	      {
+////	        Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
+////	        output_->WriteVector("traction",traction);
+////	      }    // debug output
+//	      state_->GmshOutput( *discret_, *boundarydis_, "result", step_, state_->velnp_ );
+//	    }
+//	    else if (physprob_.fieldset_.find(XFEM::PHYSICS::Temp) != physprob_.fieldset_.end())
+//	    {
+//	      output_->WriteVector("temperature_smoothed", velnp_out);
+//	    }
+//
+//	    // write domain decomposition for visualization
+//	    output_->WriteElementData();
+//	  }
+//
+//	  // write restart
+//	  if (write_restart_data)
+//	  {
+//	    output_->WriteVector("velnp", state_.velnp_);
+//	    output_->WriteVector("veln" , state_.veln_);
+//	    output_->WriteVector("velnm", state_.velnm_);
+//	    output_->WriteVector("accnp", state_.accnp_);
+//	    output_->WriteVector("accn" , state_.accn_);
+//	  }
+//
+//	  OutputToGmsh(step_, time_);
+//
+//	  if (fluidfluidCoupling_)
+//	    FluidFluidboundaryOutput();
+
+	  return;
 }
 
 // -------------------------------------------------------------------

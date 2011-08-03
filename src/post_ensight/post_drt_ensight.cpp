@@ -265,6 +265,29 @@ int main(
 //        ifacewriter.WriteFiles();
         break;
     }
+    case prb_fluid_xfem2:
+    {
+        string basename = problem.outname();
+
+        cout << "  Fluid Field" << endl;
+        PostField* fluidfield = problem.get_discretization(0);
+        FluidEnsightWriter fluidwriter(fluidfield, basename);
+        fluidwriter.WriteFiles();
+
+
+        cout << "  Structural Field" << endl;
+        PostField* structfield = problem.get_discretization(1);
+        StructureEnsightWriter structwriter(structfield, problem.outname(), problem.stresstype(), problem.straintype());
+        structwriter.WriteFiles();
+
+
+        cout << "  Interface Field" << endl;
+        PostField* ifacefield = problem.get_discretization(2);
+        InterfaceEnsightWriter ifacewriter(ifacefield, basename);
+        ifacewriter.WriteFiles();
+
+        break;
+    }
     case prb_loma:
     {
         string basename = problem.outname();
