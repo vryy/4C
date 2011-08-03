@@ -232,7 +232,6 @@ void StatMechTime::Integrate()
         std::cout<<"\nTotal number of elements after crosslinker update: "<<discret_.NumGlobalElements();
         std::cout<<"\nNumber of unconverged steps since simulation start: "<<statmechmanager_->unconvergedsteps_<<"\n";
       }
-
       //assuming that iterations will converge
       isconverged_ = 1;
 
@@ -240,14 +239,11 @@ void StatMechTime::Integrate()
        *number of random numbers required by any element in the discretization per time step; therefore this multivector is suitable
        *for synchrinisation of these random numbers in parallel computing*/
       RCP<Epetra_MultiVector> randomnumbers = rcp( new Epetra_MultiVector(*(discret_.ElementColMap()),maxrandomnumbersperglobalelement_) );
-
       //pay attention: for a constant predictor an incremental velocity update is necessary, which has
       //been deleted out of the code in oder to simplify it
 
       //generate gaussian random numbers for parallel use with mean value 0 and standard deviation (2KT / dt)^0.5
       statmechmanager_->GenerateGaussianRandomNumbers(randomnumbers,0,pow(2.0 * (statmechmanager_->statmechparams_).get<double>("KT",0.0) / dt,0.5));
-
-
 
       //in case that beam contact is activated special solution strategies are required
       if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
@@ -318,7 +314,6 @@ void StatMechTime::Integrate()
       }
       else
       {
-
         ConsistentPredictor(randomnumbers);
 
         if(ndim ==3)

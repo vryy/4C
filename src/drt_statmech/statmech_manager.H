@@ -394,9 +394,11 @@ protected:
 	RCP<Epetra_Vector>	numbond_;
 	// \brief a vector indicating crosslinker elements that cover two binding spots on the same filament
 	RCP<Epetra_Vector>	crosslinkonsamefilament_;
+	// \brief a vector mapping crosslink molecule IDs to crosslinker element IDs
+	RCP<Epetra_Vector> crosslink2element_;
 	// \brief a vector just for the sake of visual quality
 	RCP<Epetra_MultiVector> visualizepositions_;
-	// \brief a vector holding information on whether or not a crosslink molecule searches for neighbours
+	// \brief a vector holding information on whether or not a crosslink molecule searches for neighbours (switch for active/passive crosslinker)
 	RCP<Epetra_Vector> searchforneighbours_;
 	// \brief a vector holding indices used in DensityDensityCorrOutput()
 	RCP<std::vector<double> > startindex_;
