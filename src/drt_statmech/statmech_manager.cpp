@@ -1241,12 +1241,10 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 				if(discret_.HaveGlobalElement(newcrosslinkerGID))
 					gidstatus=1;
 				// sum over all processors
-				discret_.Comm().SumAll(&gidstatus, &summed, 1);
+				discret_.Comm().MaxAll(&gidstatus, &summed, 1);
 				// calculate new GID if necessary
-				if(summed>0 &&discret_.Comm().MyPID()==0)
+				if(summed>0)
 					newcrosslinkerGID++;
-				// Broadcast the new GID to all Procs for the nex run
-				discret_.Comm().Broadcast(&newcrosslinkerGID,1,0);
 			}
 			while(summed!=0);
 
