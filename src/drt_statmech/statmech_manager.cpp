@@ -1051,7 +1051,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 					int index = neighbourorder[j];
 
 					// skip this, if neighbourslid entry is '-2', meaning empty
-					if((*neighbourslid)[index][irandom] < -1.9)
+					if((*neighbourslid)[index][irandom] > -1.9)
 					{
 						// current neighbour LID
 						int nodeLID = (int)(*neighbourslid)[index][irandom];
