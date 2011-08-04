@@ -107,10 +107,35 @@ void test_geometry_distance2()
     }
   }
 
-  //Matrix<3,1>[1 -1 1.476]
+  GEO::CUT::Position2d<DRT::Element::quad4> pos( xyze, xyz );
+  if ( pos.Compute() )
+  {
+  }
+}
+
+void test_geometry_distance3()
+{
+  double xyze_row_data[] = {0, 0, 0, 0,
+                            -0.1327641128640012, -0.1327641128640012, 0.3981781258443317, -0.132649900116329,
+                            0.8469286675746165, -0.8469286675746165, -0.8469286675746165, 0.8469286675746165};
+  double xyz_data[] = {1.693857335149233, -0.1327438687864578, 0.8469286675746165};
+
+  LINALG::Matrix<3,4> xyze;
+  LINALG::Matrix<3,1> xyz( xyz_data );
+
+  for ( int i=0; i<3; ++i )
+  {
+    for ( int j=0; j<4; ++j )
+    {
+      xyze( i, j ) = xyze_row_data[i*4+j];
+    }
+  }
 
   GEO::CUT::Position2d<DRT::Element::quad4> pos( xyze, xyz );
   if ( pos.Compute() )
+  {
+  }
+  else
   {
   }
 }
@@ -121,4 +146,5 @@ void test_geometry()
   test_geometry_parallel1();
   test_geometry_distance();
   test_geometry_distance2();
+  test_geometry_distance3();
 }

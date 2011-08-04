@@ -518,6 +518,9 @@ namespace GEO
 
         bool NewtonFailed()
         {
+#if 1
+          return true;
+#else
           std::stringstream str;
           str << "ComputeDistance: Newton scheme did not converge:\n"
               << std::setprecision( 16 )
@@ -526,6 +529,7 @@ namespace GEO
               << xsi_
             ;
           throw std::runtime_error( str.str() );
+#endif
         }
 
       private:
