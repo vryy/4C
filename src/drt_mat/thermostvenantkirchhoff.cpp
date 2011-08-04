@@ -1,6 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file thermostvenantkirchhoff.cpp
+\brief St.Venant Kirchhoff with an additional temperature dependent term
+       describing heat expansion
+
+       example input line:
+       MAT 1   MAT_Struct_ThrStVenantK   YOUNG 1.48e8 NUE 0.3 DENS 9.130e-6
+       THEXPANS 1.72e-5 INITTEMP 293.15
 
 <pre>
 Maintainer: Caroline Danowski
