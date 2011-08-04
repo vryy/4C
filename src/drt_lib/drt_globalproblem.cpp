@@ -465,6 +465,69 @@ void DRT::Problem::ReadMaterials(const DRT::INPUT::DatFileReader& reader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void DRT::Problem::ReadClonedMaterials(const DRT::INPUT::DatFileReader& reader)
+{
+  const std::string name = "--CLONING MATERIAL MAP";
+  std::vector<const char*> section = reader.Section(name);
+  if (section.size() > 0)
+  {
+    for (std::vector<const char*>::iterator i=section.begin();
+         i!=section.end();
+         ++i)
+    {
+      Teuchos::RCP<std::stringstream> condline = Teuchos::rcp(new std::stringstream(*i));
+
+      std::string field_sep1;
+      std::string src_field;
+      std::string num_sep1;
+      std::string src_num;
+      std::string field_sep2;
+      std::string tar_field;
+      std::string num_sep2;
+      std::string tar_num;
+
+      (*condline) >> field_sep1 >> src_field >> num_sep1 >> src_num >>
+        field_sep2 >> tar_field >> num_sep2 >> tar_num;
+      if ( (not (*condline)) or (field_sep1 != "SRC_FIELD" and
+                                 field_sep2 != "TAR_FIELD" and
+                                 num_sep1 != "SRC_MAT" and
+                                 num_sep2 != "TAR_MAT") )
+        dserror("invalid material line in '%s'",name.c_str());
+
+      std::pair<string,string> fields(src_field,tar_field);
+
+      // extract material IDs
+      int src_matid = -1;
+      int tar_matid = -1;
+      {
+        char* src_ptr;
+        src_matid = strtol(src_num.c_str(),&src_ptr,10);
+        if (src_ptr == src_num.c_str())
+          dserror("failed to read material object number '%s'",
+                  src_num.c_str());
+
+        char* tar_ptr;
+        tar_matid = strtol(tar_num.c_str(),&tar_ptr,10);
+        if (tar_ptr == tar_num.c_str())
+          dserror("failed to read material object number '%s'",
+                  tar_num.c_str());
+      }
+
+      // processed?
+      if (materials_->Find(src_matid) == -1)
+        dserror("Source material 'MAT %d' could not be identified", src_matid);
+      if (materials_->Find(tar_matid) == -1)
+        dserror("Target material 'MAT %d' could not be identified", src_matid);
+
+      pair<int,int> matmap(src_matid,tar_matid);
+      clonefieldmatmap_[fields].insert(matmap);
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::Problem::ReadConditions(const DRT::INPUT::DatFileReader& reader)
 {
   Epetra_Time time(*reader.Comm());
@@ -870,15 +933,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     {
       structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
       fluiddis  = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
-      xfluiddis = rcp(new DRT::Discretization("xfluid"   ,reader.Comm()));
       aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
     }
 
 
     AddDis(genprob.numsf, structdis);
     AddDis(genprob.numff, fluiddis);
-    if (xfluiddis!=Teuchos::null)
-      AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
     AddDis(genprob.numaf, aledis);
 
     DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
@@ -890,17 +950,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
-    if (xfluiddis!=Teuchos::null)
-      nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "XFLUID3")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     nodereader.Read();
 #ifdef EXTENDEDPARALLELOVERLAP
     structdis->CreateExtendedOverlap(false,false,false);
 #endif
-    // read microscale fields from second, third, ... inputfile if necessary
-    // (in case of multi-scale material models in structure field)
-    ReadMicroFields(reader);
 
     // fluid scatra field
     fluidscatradis = rcp(new DRT::Discretization("scatra1",reader.Comm()));

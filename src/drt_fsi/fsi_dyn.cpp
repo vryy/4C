@@ -756,13 +756,10 @@ void fsi_lung_gas()
   // access the fluid structure discretization
   RefCountPtr<DRT::Discretization> structscatradis = DRT::Problem::Instance()->Dis(3,1);
 
-  // access the problem-specific parameter list
-  const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
-
-  // fetch the desired material id for the transport elements
-  std::vector<int> matlist = SCATRA::GetScaTraMatList(scatradyn);
-  if (matlist.size() != 2)
-    dserror("2 matlists needed for lung gas exchange");
+  // get material map for the transport elements
+  std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap = DRT::Problem::Instance()->ClonedMaterialMap();
+  if (clonefieldmatmap.size() < 2)
+    dserror("at least 2 matlists needed for lung gas exchange");
 
   // FLUID SCATRA
   // we use the fluid discretization as layout for the scalar transport discretization
@@ -778,7 +775,10 @@ void fsi_lung_gas()
       Teuchos::RCP<DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy> > clonewizard =
         Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy>() );
 
-      clonewizard->CreateMatchingDiscretization(fluiddis,fluidscatradis,matlist[0]);
+      std::pair<string,string> key("fluid","scatra1");
+      std::map<int,int> fluidmatmap = clonefieldmatmap[key];
+
+      clonewizard->CreateMatchingDiscretization(fluiddis,fluidscatradis,fluidmatmap);
     }
     if (comm.MyPID()==0)
       cout<<"Created scalar transport discretization from fluid field in...."
@@ -801,7 +801,10 @@ void fsi_lung_gas()
       Teuchos::RCP<DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy> > clonewizard =
         Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy>() );
 
-      clonewizard->CreateMatchingDiscretization(structdis,structscatradis,matlist[1]);
+      std::pair<string,string> key("structure","scatra2");
+      std::map<int,int> structmatmap = clonefieldmatmap[key];
+
+      clonewizard->CreateMatchingDiscretization(structdis,structscatradis,structmatmap);
     }
     if (comm.MyPID()==0)
       cout<<"Created scalar transport discretization from structure field in...."

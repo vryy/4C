@@ -185,6 +185,9 @@ public:
   /// input of materials
   void ReadMaterials(const DRT::INPUT::DatFileReader& reader);
 
+  /// setup map between materials of original and cloned elements
+  void ReadClonedMaterials(const DRT::INPUT::DatFileReader& reader);
+
   /// input of conditions
   void ReadConditions(const DRT::INPUT::DatFileReader& reader);
 
@@ -317,6 +320,8 @@ public:
 
   //@}
 
+  std::map<std::pair<string,string>,std::map<int,int> > ClonedMaterialMap() { return clonefieldmatmap_; }
+
   /// @name Spatial Functions
 
   /// return a specified function
@@ -372,6 +377,11 @@ private:
 
   /// all test values we might have
   DRT::ResultTestManager resulttest_;
+
+  /// map of coupled fields and corresponding material IDs (needed for cloning
+  /// of discretizations)
+  std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap_;
+
 
   /// @name File IO
 

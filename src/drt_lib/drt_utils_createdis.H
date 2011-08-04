@@ -22,6 +22,8 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "../drt_mat/material.H"
+#include "../drt_mat/matpar_parameter.H"
 
 namespace DRT
 {
@@ -113,6 +115,38 @@ public:
 
     // create elements
     CreateElements(sourcedis,targetdis,matid,isnurbsdis);
+
+    // copy desired conditions from source to target discretization
+    map<string,string> conditions_to_copy = CloneStrategy::ConditionsToCopy();
+    CopyConditions(sourcedis,targetdis,conditions_to_copy);
+
+    // call Redistribute, FillComplete etc.
+    Finalize(sourcedis,targetdis);
+  };
+
+  /// method for cloning a new discretization from an existing one
+  void CreateMatchingDiscretization(
+      Teuchos::RCP<DRT::Discretization> sourcedis,  ///< RCP to source discretization
+      Teuchos::RCP<DRT::Discretization> targetdis, ///< RCP to empty target discretization
+      const std::map<int,int> matmap ///< map of material IDs (source element -> target element)
+      )
+  {
+    // try to cast sourcedis to NurbsDiscretisation
+    DRT::NURBS::NurbsDiscretization* nurbsdis =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*(sourcedis)));
+    bool isnurbsdis(nurbsdis!=NULL);
+
+    // check and analyze source discretization
+    InitialChecks(sourcedis,targetdis);
+    AnalyzeSourceDis(sourcedis,eletype_,egid_,rownodeset_,colnodeset_);
+
+    // do the node business
+    CreateNodes(sourcedis,targetdis,rownodeset_,colnodeset_,isnurbsdis);
+    targetnoderowmap_ = CreateNodeRowMap(rownodeset_,targetdis);
+    targetnodecolmap_ = CreateNodeColMap(colnodeset_,targetdis);
+
+    // create elements
+    CreateElements(sourcedis,targetdis,matmap,isnurbsdis);
 
     // copy desired conditions from source to target discretization
     map<string,string> conditions_to_copy = CloneStrategy::ConditionsToCopy();
@@ -240,6 +274,95 @@ private:
 
       // add new element to discretization
       targetdis->AddElement(newele);
+    }
+  }
+
+  /// create new elements and add them to the target discretization
+  void CreateElements(
+      Teuchos::RCP<DRT::Discretization> sourcedis,
+      Teuchos::RCP<DRT::Discretization> targetdis,
+      std::map<int,int> matmap,
+      const bool isnurbsdis)
+  {
+    // now do the elements
+    for (std::map<int,int>::iterator mapit=matmap.begin(); mapit!=matmap.end(); ++mapit)
+    {
+      int target_id = mapit->second;
+      CloneStrategy::CheckMaterialType(target_id);
+    }
+
+    // prepare some variables we need
+    int myrank = targetdis->Comm().MyPID();
+
+    // construct new elements
+    // The order of the elements might be different from that of the
+    // source elements. We don't care. There are no dofs to these elements.
+    for (std::size_t i=0; i<egid_.size(); ++i)
+    {
+      DRT::Element* sourceele = sourcedis->gElement(egid_[i]);
+
+      string approxtype = "Polynomial";
+      if(isnurbsdis)
+      {
+        if(sourceele->NumNode()==8)
+        {
+          approxtype="NURBS8";
+        }
+        else if(sourceele->NumNode()==9)
+        {
+          approxtype="NURBS9";
+        }
+        else if(sourceele->NumNode()==4)
+        {
+          approxtype="NURBS4";
+        }
+        else if(sourceele->NumNode()==27)
+        {
+          approxtype="NURBS27";
+        }
+        else if(sourceele->NumNode()==2)
+        {
+          approxtype="NURBS2";
+        }
+        else if(sourceele->NumNode()==3)
+        {
+          approxtype="NURBS3";
+        }
+        else
+        {
+          dserror("unknown type of nurbs element\n");
+        }
+      }
+
+      // create a new element of desired type with the same global element id
+      RCP<DRT::Element> newele = DRT::UTILS::Factory(eletype_[i],approxtype,egid_[i],myrank);
+
+      // get global node ids of fluid element
+      vector<int> nids;
+      nids.reserve(sourceele->NumNode());
+      transform(sourceele->Nodes(), sourceele->Nodes()+sourceele->NumNode(),
+                back_inserter(nids), mem_fun(&DRT::Node::Id));
+
+      // set the same global node ids to the new element
+      newele->SetNodeIds(nids.size(), &nids[0]);
+
+      // We need to set material and gauss points to complete element setup.
+      // This is again really ugly as we have to extract the actual
+      // element type in order to access the material property
+      // note: SetMaterial() was reimplemented by the transport element!
+
+      int src_matid = sourceele->Material()->Parameter()->Id();
+      std::map<int,int>::iterator mat_iter = matmap.find(src_matid);
+      if (mat_iter!=matmap.end())
+      {
+        int tar_matid = mat_iter->second;
+        CloneStrategy::SetElementData(newele,sourceele,tar_matid,isnurbsdis);
+
+        // add new element to discretization
+        targetdis->AddElement(newele);
+      }
+      else
+        dserror("no matching material ID in map");
     }
   }
 

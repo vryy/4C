@@ -87,6 +87,9 @@ void ntainp_ccadiscret()
   /* input of fields */
   problem->ReadFields(reader);
 
+  /* input of materials of cloned fields (if needed) */
+  problem->ReadClonedMaterials(reader);
+
   // read all types of geometry related conditions (e.g. boundary conditions)
   // Also read time and space functions and local coord systems
   problem->ReadConditions(reader);
