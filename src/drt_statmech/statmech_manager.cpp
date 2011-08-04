@@ -998,10 +998,9 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 
 	//get current on-rate for crosslinkers
 	double kon = 0;
-	double starttime = statmechparams_.get<double>("STARTTIMEACT", 0.0);
-	double ktswitchtime = statmechparams_.get<double>("KTSWITCHTIME", starttime);
+	double starttime = statmechparams_.get<double>("KTSWITCHTIME", 0.0);
 
-	if(time_ <= ktswitchtime || (time_>ktswitchtime && fabs(time_-ktswitchtime) < dt/1e4))
+	if(time_ <= starttime || (time_>starttime && fabs(time_-starttime) < dt/1e4))
 		kon = statmechparams_.get<double>("K_ON_start",0.0);
 	else
 		kon = statmechparams_.get<double>("K_ON_end",0.0);
@@ -1038,145 +1037,146 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 		{
 			int irandom = order[i];
 
-
-			// skip this crosslink molecule if it already bonded with two nodes or if it is passive
-			if((*numbond_)[irandom]>1.9)
-				continue;
-
-			// PROBABILITY CHECK & PREPARATION OF VECTORS
-			// obtain a random order of neighboursLID indices
-			std::vector<int> neighbourorder = Permutation(neighbourslid->NumVectors());
-
-			// loop over neighbour nodes
-			for(int j=0; j<neighbourslid->NumVectors(); j++)
+			// only consider crosslink molecule with less than two nodes or if it is actively searching for bonding partners
+			if((*numbond_)[irandom]<1.9)
 			{
-				// random index
-				int index = neighbourorder[j];
+				// PROBABILITY CHECK & PREPARATION OF VECTORS
+				// obtain a random order of neighboursLID indices
+				std::vector<int> neighbourorder = Permutation(neighbourslid->NumVectors());
 
-				// continue, if neighbourslid entry is '-2', meaning empty
-				if((*neighbourslid)[index][irandom] < -1.9)
-					continue;
-
-				// current neighbour LID
-				int nodeLID = (int)(*neighbourslid)[index][irandom];
-				//continue in case of N_CROSSMAX crosslinkers at the current node (only if nodeLID>-1, i.e. no passive crosslinker)
-				if(nodeLID>-1)
-					if((*numcrossnodes_)[nodeLID]>=statmechparams_.get<int>("N_CROSSMAX",0))
-						continue;
-				// flag indicating loop break after first new bond has been established between i-th crosslink molecule and j-th neighbour node
-				bool bondestablished = false;
-				// necessary condition to be fulfilled in order to set a crosslinker
-				double probability = 0.0;
-				// switch between probability for regular inter-filament binding and self-binding crosslinker
-				if(nodeLID>=0)
-					probability = plink;
-				else
-					probability = pself;
-
-				if( uniformclosedgen_.random() < probability )
+				// loop over neighbour nodes
+				for(int j=0; j<neighbourslid->NumVectors(); j++)
 				{
-					int free = 0;
-					int occupied = 0;
-					bool set = false;
+					// random index
+					int index = neighbourorder[j];
 
-					// check both entries of crosslinkerbond_
-					for(int k=0; k<crosslinkerbond_->NumVectors(); k++)
-						if((*crosslinkerbond_)[k][irandom]<-0.9 && !set)
-						{
-							// store free bond position
-							free = k;
-							set = true;
-						}
-						else
-							occupied = k;
-
-					switch((int)(*numbond_)[irandom])
+					// skip this, if neighbourslid entry is '-2', meaning empty
+					if((*neighbourslid)[index][irandom] < -1.9)
 					{
-						// free crosslink molecule creating a bond
-						case 0:
+						// current neighbour LID
+						int nodeLID = (int)(*neighbourslid)[index][irandom];
+
+						//continue in case of N_CROSSMAX crosslinkers at the current node (only if nodeLID>-1, i.e. no passive crosslinker)
+						if(nodeLID>-1)
+							if((*numcrossnodes_)[nodeLID]>=statmechparams_.get<int>("N_CROSSMAX",0))
+								continue;
+
+						// flag indicating loop break after first new bond has been established between i-th crosslink molecule and j-th neighbour node
+						bool bondestablished = false;
+						// necessary condition to be fulfilled in order to set a crosslinker
+						double probability = 0.0;
+						// switch between probability for regular inter-filament binding and self-binding crosslinker
+						if(nodeLID>=0)
+							probability = plink;
+						else
+							probability = pself;
+
+						if( uniformclosedgen_.random() < probability )
 						{
-							// update of crosslink molecule positions
-							LINALG::SerialDenseMatrix LID(1,1,true);
-							LID(0,0) = nodeLID;
-							(*crosslinkerbond_)[free][irandom] = nodecolmap.GID(nodeLID);
-							// increment the number of crosslinkers at this node
-							((*numcrossnodes_)[nodeLID]) += 1.0;
-							// increment the number of bonds of this crosslinker
-							((*numbond_)[irandom]) = 1.0;
-							CrosslinkerIntermediateUpdate(currentpositions, LID, irandom);
-							bondestablished = true;
-						}
-						break;
-						// one bond already exists -> establish a second bond/passive crosslink molecule
-						// Potentially, add an element (later)
-						case 1:
-						{
-							//Col map LIDs of nodes to be crosslinked
-							LINALG::Matrix<2,1> LID;
-							LID(0) = nodecolmap.LID((int)(*crosslinkerbond_)[occupied][irandom]);
-							// distinguish between a real nodeLID and the entry '-1', which indicates a passive crosslink molecule
-							if(nodeLID>=0)
-								LID(1) = nodeLID;
-							else // choose the neighbours node on the same filament as nodeLID as second entry and take basisnodes_ into account
-							{
-								int currfilament = (int)(*filamentnumber_)[(int)LID(0)];
-								if((int)LID(0)<basisnodes_-1)
-									if((int)(*filamentnumber_)[(int)LID(0)+1]==currfilament)
-										LID(1) = LID(0) + 1.0;
-									else
-										LID(1) = LID(0) - 1.0;
-								if((int)LID(0)==basisnodes_-1)
-									if((int)(*filamentnumber_)[(int)LID(0)-1]==currfilament)
-										LID(1) = LID(0) - 1.0;
-							}
+							int free = 0;
+							int occupied = 0;
+							bool set = false;
 
-							//unit direction vector between currently considered two nodes
-							LINALG::Matrix<3,1> direction((currentpositions.find((int)LID(0)))->second);
-							direction -= (currentpositions.find((int)LID(1)))->second;
-							direction.Scale(1.0/direction.Norm2());
-
-							/*Orientation Check: only if the two nodes in question pass a check for their
-							 * orientation, a marker, indicating an element to be added, will be set*/
-							if(CheckOrientation(direction,nodaltriadscol,LID))
-							{
-								numsetelements++;
-								LINALG::SerialDenseMatrix lid(2,1,true);
-								lid(0,0) = LID(0);
-								lid(1,0) = LID(1);
-
-								((*numbond_)[irandom]) = 2.0;
-								// actually existing two bonds
-								if(nodeLID>=0)
+							// check both entries of crosslinkerbond_
+							for(int k=0; k<crosslinkerbond_->NumVectors(); k++)
+								if((*crosslinkerbond_)[k][irandom]<-0.9 && !set)
 								{
+									// store free bond position
+									free = k;
+									set = true;
+								}
+								else
+									occupied = k;
+
+							switch((int)(*numbond_)[irandom])
+							{
+								// free crosslink molecule creating a bond
+								case 0:
+								{
+									// update of crosslink molecule positions
+									LINALG::SerialDenseMatrix LID(1,1,true);
+									LID(0,0) = nodeLID;
 									(*crosslinkerbond_)[free][irandom] = nodecolmap.GID(nodeLID);
+									// increment the number of crosslinkers at this node
 									((*numcrossnodes_)[nodeLID]) += 1.0;
-									// insert node GID in order to check the correct setup
-									doublebond[irandom] = 1.0;
-									// update molecule positions
-									CrosslinkerIntermediateUpdate(currentpositions, lid, irandom);
-
-									// consider crosslinkers covering two binding spots of one filament
-									if((*filamentnumber_)[(int)LID(0)]==(*filamentnumber_)[nodeLID])
-										(*crosslinkonsamefilament_)[irandom] = 1.0;
+									// increment the number of bonds of this crosslinker
+									((*numbond_)[irandom]) = 1.0;
+									CrosslinkerIntermediateUpdate(currentpositions, LID, irandom);
+									bondestablished = true;
 								}
-								else // passive crosslink molecule
+								break;
+								// one bond already exists -> establish a second bond/passive crosslink molecule
+								// Potentially, add an element (later)
+								case 1:
 								{
-									(*searchforneighbours_)[irandom] = 0.0;
-									LINALG::SerialDenseMatrix oneLID(1,1,true);
-									oneLID(0,0) = LID(0);
-									CrosslinkerIntermediateUpdate(currentpositions, oneLID, irandom);
-								}
-								bondestablished = true;
-							}
-						}
-						break;
-					}// switch((int)(*numbond_)[irandom])
+									//Col map LIDs of nodes to be crosslinked
+									LINALG::Matrix<2,1> LID;
+									LID(0) = nodecolmap.LID((int)(*crosslinkerbond_)[occupied][irandom]);
+									// distinguish between a real nodeLID and the entry '-1', which indicates a passive crosslink molecule
+									if(nodeLID>=0)
+										LID(1) = nodeLID;
+									else // choose the neighbours node on the same filament as nodeLID as second entry and take basisnodes_ into account
+									{
+										int currfilament = (int)(*filamentnumber_)[(int)LID(0)];
+										if((int)LID(0)<basisnodes_-1)
+											if((int)(*filamentnumber_)[(int)LID(0)+1]==currfilament)
+												LID(1) = LID(0) + 1.0;
+											else
+												LID(1) = LID(0) - 1.0;
+										if((int)LID(0)==basisnodes_-1)
+											if((int)(*filamentnumber_)[(int)LID(0)-1]==currfilament)
+												LID(1) = LID(0) - 1.0;
+									}
 
-					// for now, break after a new bond was established, i.e crosslinker elements cannot be established starting from zero bonds
-					if(bondestablished)
-						break;
-				}// if(uniformclosedgen_.random() < plink)
-			}// for(int j=0; j<(int)neighboursLID.size(); j++)
+									//unit direction vector between currently considered two nodes
+									LINALG::Matrix<3,1> direction((currentpositions.find((int)LID(0)))->second);
+									direction -= (currentpositions.find((int)LID(1)))->second;
+									direction.Scale(1.0/direction.Norm2());
+
+									/*Orientation Check: only if the two nodes in question pass a check for their
+									 * orientation, a marker, indicating an element to be added, will be set*/
+									if(CheckOrientation(direction,nodaltriadscol,LID))
+									{
+										numsetelements++;
+										LINALG::SerialDenseMatrix lid(2,1,true);
+										lid(0,0) = LID(0);
+										lid(1,0) = LID(1);
+
+										((*numbond_)[irandom]) = 2.0;
+										// actually existing two bonds
+										if(nodeLID>=0)
+										{
+											(*crosslinkerbond_)[free][irandom] = nodecolmap.GID(nodeLID);
+											((*numcrossnodes_)[nodeLID]) += 1.0;
+											// set flag at irandom-th crosslink molecule that an element is to be added
+											doublebond[irandom] = 1.0;
+											// update molecule positions
+											CrosslinkerIntermediateUpdate(currentpositions, lid, irandom);
+
+											// consider crosslinkers covering two binding spots of one filament
+											if((*filamentnumber_)[(int)LID(0)]==(*filamentnumber_)[nodeLID])
+												(*crosslinkonsamefilament_)[irandom] = 1.0;
+										}
+										else // passive crosslink molecule
+										{
+											(*searchforneighbours_)[irandom] = 0.0;
+											LINALG::SerialDenseMatrix oneLID(1,1,true);
+											oneLID(0,0) = LID(0);
+											CrosslinkerIntermediateUpdate(currentpositions, oneLID, irandom);
+										}
+										bondestablished = true;
+									}
+								}
+								break;
+							}// switch((int)(*numbond_)[irandom])
+
+							// for now, break after a new bond was established, i.e crosslinker elements cannot be established starting from zero bonds
+							if(bondestablished)
+								break;
+						}// if(uniformclosedgen_.random() < plink)
+					}
+				}// for(int j=0; j<(int)neighboursLID.size(); j++)
+			}//if((*numbond_)[irandom]<1.9)
 		}// for(int i=0; i<numbond_->MyLength(); i++)
 		cout << "\nsearch time: " << Teuchos::Time::wallTime() - t_search<< " seconds";
 	}// if(discret_.Comm().MypPID==0)
@@ -1253,6 +1253,8 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 			/* Create mapping from crosslink molecule to crosslinker element GID*/
 			if(discret_.Comm().MyPID()==0)
 				(*crosslink2element_)[i] = newcrosslinkerGID;
+			else // set to zero on all other Procs (information will be made redundant on all Procs later on)
+				(*crosslink2element_)[i] = 0.0;
 
 			/*a crosslinker is added on each processor which is row node owner of at least one of its nodes;
 			 *the processor which is row map owner of the node with the larger GID will be the owner of the new crosslinker element; on the other processors the new
@@ -1360,10 +1362,6 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
   discret_.CheckFilledGlobally();
   discret_.FillComplete(true, false, false);
 
-  // make mapping crosslink mol -> crosslinker element GID redundant on all processors
-	if(discret_.Comm().MyPID()!=0)
-		crosslink2element_->PutScalar(0.0);
-
 	Epetra_Vector crosslink2elementrow(*transfermap_,true);
 
 	crosslink2elementrow.Export(*crosslink2element_,exporter,Add);
@@ -1391,10 +1389,9 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 
 	//get current off-rate for crosslinkers
 	double koff = 0;
-	double starttime = statmechparams_.get<double>("STARTTIMEACT", 0.0);
-	double ktswitchtime = statmechparams_.get<double>("KTSWITCHTIME", starttime);
+	double starttime = statmechparams_.get<double>("KTSWITCHTIME", 0.0);
 
-	if (time_ <= ktswitchtime || (time_>ktswitchtime && fabs(time_-ktswitchtime)<dt/1e4))
+	if (time_ <= starttime || (time_>starttime && fabs(starttime)<dt/1e4))
 		koff = statmechparams_.get<double> ("K_OFF_start", 0.0);
 	else
 		koff = statmechparams_.get<double> ("K_OFF_end", 0.0);
