@@ -128,7 +128,7 @@ namespace LINALG
     int PutScalar(double ScalarConstant);
 
     /// Multiply all values in the matrix by a constant value (in place: A <- ScalarConstant * A).
-    int Scale(double ScalarConstant);
+    virtual int Scale(double ScalarConstant);
 
     /// Replaces diagonal values of the matrix with those in the user-provided vector.
     int ReplaceDiagonalValues(const Epetra_Vector &Diagonal);

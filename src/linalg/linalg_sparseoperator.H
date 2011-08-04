@@ -294,6 +294,9 @@ class SparseOperator : public Epetra_Operator
     /// Add one BlockSparseMatrix to another
     virtual const void AddOther(LINALG::BlockSparseMatrixBase& A, const bool transposeA, const double scalarA,  const double scalarB) const = 0;
 
+    /// Multiply all values by a constant value (in place: A <- ScalarConstant * A).
+    virtual int Scale(double ScalarConstant) = 0;
+
     /// Matrix-vector product
     virtual int Multiply(bool TransA, const Epetra_MultiVector &X, Epetra_MultiVector &Y) const = 0;
 

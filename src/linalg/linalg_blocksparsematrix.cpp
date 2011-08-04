@@ -352,6 +352,23 @@ void LINALG::BlockSparseMatrixBase::Add(const LINALG::BlockSparseMatrixBase& A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+int LINALG::BlockSparseMatrixBase::Scale(double ScalarConstant)
+{
+  for (int i=0; i<Rows(); i++)
+  {
+    for (int j=0; j<Cols(); j++)
+    {
+      int err = Matrix(i,j).Scale(ScalarConstant);
+      if (err != 0)
+        dserror("Scaling of matrix block (%d,%d) failed", i, j);
+    }
+  }
+  return 0;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 int LINALG::BlockSparseMatrixBase::Multiply(bool TransA,
                                             const Epetra_MultiVector &X,
                                             Epetra_MultiVector &Y) const

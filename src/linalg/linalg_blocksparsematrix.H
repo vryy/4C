@@ -224,6 +224,9 @@ class BlockSparseMatrixBase : public SparseOperator
                               const double scalarA,
                               const double scalarB) const;
 
+  /// Multiply all values in the matrix by a constant value (in place: A <- ScalarConstant * A).
+  virtual int Scale(double ScalarConstant);
+
   /// Returns the infinity norm of the global matrix.
   virtual double NormInf() const;
 
