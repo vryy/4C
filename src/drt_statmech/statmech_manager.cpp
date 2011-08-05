@@ -1025,7 +1025,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 	 *note: a fully overlapping node map on processor 0 is imperative for the following part of the code to work correctly!*/
 
 	// a vector indicating the crosslink molecule which is going to constitute a crosslinker element
-	Epetra_Vector doublebond(*crosslinkermap_, true);
+	Epetra_Vector addcrosselement(*crosslinkermap_, true);
 
 	int numsetelements = 0;
 	if(discret_.Comm().MyPID()==0)
@@ -1056,7 +1056,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 						// current neighbour LID
 						int nodeLID = (int)(*neighbourslid)[index][irandom];
 
-						//continue in case of N_CROSSMAX crosslinkers at the current node (only if nodeLID>-1, i.e. no passive crosslinker)
+						//skip the rest of this iteration of the i-loop in case of N_CROSSMAX crosslinkers at the current node (only if nodeLID>-1, i.e. no passive crosslinker)
 						if(nodeLID>-1)
 							if((*numcrossnodes_)[nodeLID]>=statmechparams_.get<int>("N_CROSSMAX",0))
 								continue;
@@ -1149,7 +1149,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 											(*crosslinkerbond_)[free][irandom] = nodecolmap.GID(nodeLID);
 											((*numcrossnodes_)[nodeLID]) += 1.0;
 											// set flag at irandom-th crosslink molecule that an element is to be added
-											doublebond[irandom] = 1.0;
+											addcrosselement[irandom] = 1.0;
 											// update molecule positions
 											CrosslinkerIntermediateUpdate(currentpositions, lid, irandom);
 
@@ -1170,11 +1170,11 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 								break;
 							}// switch((int)(*numbond_)[irandom])
 
-							// for now, break after a new bond was established, i.e crosslinker elements cannot be established starting from zero bonds
+							// for now, break j-loop after a new bond was established, i.e crosslinker elements cannot be established starting from zero bonds
 							if(bondestablished)
 								break;
 						}// if(uniformclosedgen_.random() < plink)
-					}
+					}// if(neighbourslid...)
 				}// for(int j=0; j<(int)neighboursLID.size(); j++)
 			}//if((*numbond_)[irandom]<1.9)
 		}// for(int i=0; i<numbond_->MyLength(); i++)
@@ -1191,8 +1191,9 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 		crosslinkerpositions_->PutScalar(0.0);
 		crosslinkerbond_->PutScalar(0.0);
 		numbond_->PutScalar(0.0);
-		doublebond.PutScalar(0.0);
+		addcrosselement.PutScalar(0.0);
 	}
+
 	//synchronize information about number of bonded filament nodes by exporting it to row map format and then reimporting it to column map format
 	Epetra_Export exporter(nodecolmap,noderowmap);
 	Epetra_Vector numcrossnodesrow(noderowmap,true);
@@ -1207,7 +1208,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 	Epetra_MultiVector crosslinkerpositionstrans(*transfermap_,3,true);
 	Epetra_MultiVector crosslinkerbondtrans(*transfermap_,2,true);
 	Epetra_Vector numbondtrans(*transfermap_, true);
-	Epetra_Vector doublebondtrans(*transfermap_, true);
+	Epetra_Vector addcrosselementtrans(*transfermap_, true);
 
 	// exports and reimports
 	crosslinkerpositionstrans.Export(*crosslinkerpositions_, crosslinkexporter, Add);
@@ -1216,43 +1217,41 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 	crosslinkerbond_->Import(crosslinkerbondtrans, crosslinkimporter, Insert);
 	numbondtrans.Export(*numbond_, crosslinkexporter, Add);
 	numbond_->Import(numbondtrans, crosslinkimporter, Insert);
-	doublebondtrans.Export(doublebond, crosslinkexporter, Add);
-	doublebond.Import(doublebondtrans, crosslinkimporter, Insert);
+	addcrosselementtrans.Export(addcrosselement, crosslinkexporter, Add);
+	addcrosselement.Import(addcrosselementtrans, crosslinkimporter, Insert);
 
-	std::vector<int> crosslinkerids;
 	// ADDING ELEMENTS
-	for(int i=0; i<doublebond.MyLength(); i++)
+	for(int i=0; i<addcrosselement.MyLength(); i++)
 	{
-		if(doublebond[i]>0.9)
+		if(addcrosselement[i]>0.9)
 		{
 			// obtain node GID
 			int nodeGID[2] = {	(int)(*crosslinkerbond_)[0][i],(int)(*crosslinkerbond_)[1][i]};
-			int newcrosslinkerGID = (max(nodeGID[0],nodeGID[1]) + 1)*basisnodes_ + min(nodeGID[0],nodeGID[1]);
+			int GID2 = min(nodeGID[0],nodeGID[1]);
+			int GID1 = max(nodeGID[0],nodeGID[1]);
+			int newcrosslinkerGID = (GID1 + 1)*basisnodes_ + GID2;
 
 			/* Correction of the crosslinker GID if there happens to be another crosslinker with the same ID. This might occur
 			 * if two different crosslink molecules bind to the same two nodes. Then, the calculated crosslinker GID will be the
 			 * same in both cases, leading to problems within the discretization.
 			 * As long as an unused GID cannot be found, the crosslinker GID keeps getting incremented by 1.*/
-			int summed=basisnodes_;
-			do
+			while(1)
 			{
-				int gidstatus = 0;
-				// query existance of GID on the processor
-				if(discret_.HaveGlobalElement(newcrosslinkerGID))
-					gidstatus=1;
+				int gidexists = 1;
+				// query existance of node on this Proc
+				int gidonproc = (int)(discret_.HaveGlobalElement(newcrosslinkerGID));
 				// sum over all processors
-				discret_.Comm().MaxAll(&gidstatus, &summed, 1);
-				// calculate new GID if necessary
-				if(summed>0)
+				discret_.Comm().MaxAll(&gidonproc, &gidexists, 1);
+				// calculate new GID if necessary by shifting the initial GID
+				if(gidexists)
 					newcrosslinkerGID++;
+				else
+					break;
 			}
-			while(summed!=0);
 
 			/* Create mapping from crosslink molecule to crosslinker element GID*/
 			if(discret_.Comm().MyPID()==0)
 				(*crosslink2element_)[i] = newcrosslinkerGID;
-			else // set to zero on all other Procs (information will be made redundant on all Procs later on)
-				(*crosslink2element_)[i] = 0.0;
 
 			/*a crosslinker is added on each processor which is row node owner of at least one of its nodes;
 			 *the processor which is row map owner of the node with the larger GID will be the owner of the new crosslinker element; on the other processors the new
@@ -1277,8 +1276,6 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 				 * Hence basisnodes_ + GID1*basisnodes_ + GID2 always gives a GID which cannot be used by any other element;
 				 * the first node of the crosslinker element is always assumed to be the one with the greater GID; the owner
 				 * of the first node is assumed to be the owner of the crosslinker element*/
-				int GID2 = min(nodeGID[0],nodeGID[1]);
-				int GID1 = max(nodeGID[0],nodeGID[1]);
 				int globalnodeids[2] = {GID1, GID2};
 				DRT::Node* nodes[2] = {	discret_.gNode( GID1 ) , discret_.gNode( GID2 )};
 
@@ -1313,7 +1310,6 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 
 				if(statmechparams_.get<double>("ILINK",0.0) > 0.0)
 				{
-					crosslinkerids.push_back(newcrosslinkerGID);
 					RCP<DRT::ELEMENTS::Beam3> newcrosslinker = rcp(new DRT::ELEMENTS::Beam3(newcrosslinkerGID,(discret_.gNode(GID1))->Owner() ) );
 
 					newcrosslinker->SetNodeIds(2,globalnodeids);
@@ -1356,14 +1352,19 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 			}
 		}
 	} // ADDING ELEMENTS
+
+	// communicate crosslink2element to all Procs
+	if(discret_.Comm().MyPID()!=0)
+		crosslink2element_->PutScalar(0.0);
+
+	Epetra_Vector crosslink2elementtrans(*transfermap_,true);
+
+	crosslink2elementtrans.Export(*crosslink2element_,crosslinkexporter,Add);
+	crosslink2element_->Import(crosslink2elementtrans,crosslinkimporter,Insert);
+
   // synchronization
   discret_.CheckFilledGlobally();
   discret_.FillComplete(true, false, false);
-
-	Epetra_Vector crosslink2elementrow(*transfermap_,true);
-
-	crosslink2elementrow.Export(*crosslink2element_,exporter,Add);
-	crosslink2element_->Import(crosslink2elementrow,importer,Insert);
 
   //couts
   if(!discret_.Comm().MyPID())
@@ -1381,10 +1382,6 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
 																									const std::map<int, LINALG::Matrix<3, 1> >& currentpositions)
 {
-	// a vector indicating the upcoming deletion of crosslinker elements
-	Epetra_Vector delcrosslinkers(*crosslinkermap_, true);
-	delcrosslinkers.PutScalar(-1.0);
-
 	//get current off-rate for crosslinkers
 	double koff = 0;
 	double starttime = statmechparams_.get<double>("KTSWITCHTIME", 0.0);
@@ -1396,6 +1393,10 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 
 	//probability with which a crosslink breaks up in the current time step
 	double punlink = 1.0 - exp(-dt * koff);
+
+	// a vector indicating the upcoming deletion of crosslinker elements
+	Epetra_Vector delcrosselement(*crosslinkermap_, true);
+	delcrosselement.PutScalar(-1.0);
 
 	// SEARCH
 	// search and setup for the deletion of elements is done by Proc 0
@@ -1453,7 +1454,7 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 								// get the nodal LIDs
 								int nodeLID = nodecolmap.LID((int)(*crosslinkerbond_)[jrandom][irandom]);
 								// enter the crosslinker element ID into the deletion list
-								delcrosslinkers[irandom] = (*crosslink2element_)[irandom];
+								delcrosselement[irandom] = (*crosslink2element_)[irandom];
 
 								// vector updates
 								(*crosslink2element_)[irandom] = -1.0;
@@ -1490,7 +1491,7 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 		crosslinkerbond_->PutScalar(0.0);
 		numbond_->PutScalar(0.0);
 		crosslink2element_->PutScalar(0.0);
-		delcrosslinkers.PutScalar(0.0);
+		delcrosselement.PutScalar(0.0);
 		// searchforneighbours_ and crosslinkonsamefilament_ are not communicated, hence, no resetting to zero here
 	}
 
@@ -1509,7 +1510,7 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 	Epetra_MultiVector crosslinkerbondtrans(*transfermap_, 2, true);
 	Epetra_Vector numbondtrans(*transfermap_, true);
 	Epetra_Vector crosslink2elementtrans(*transfermap_, true);
-	Epetra_Vector delcrosslinkerstrans(*transfermap_, true);
+	Epetra_Vector delcrosselementtrans(*transfermap_, true);
 
 	//exports and reimports
 	crosslinkerpositionstrans.Export(*crosslinkerpositions_, crosslinkexporter, Add);
@@ -1520,29 +1521,29 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 	numbond_->Import(numbondtrans, crosslinkimporter, Insert);
 	crosslink2elementtrans.Export(*crosslink2element_, crosslinkexporter, Add);
 	crosslink2element_->Import(crosslink2elementtrans, crosslinkimporter, Insert);
-	delcrosslinkerstrans.Export(delcrosslinkers, crosslinkexporter, Add);
-	delcrosslinkers.Import(delcrosslinkerstrans, crosslinkimporter, Insert);
+	delcrosselementtrans.Export(delcrosselement, crosslinkexporter, Add);
+	delcrosselement.Import(delcrosselementtrans, crosslinkimporter, Insert);
 
 	unsigned startsize = deletedelements_.size();
 	std::vector<DRT::PackBuffer> vdata( startsize );
 
 	// DELETION OF ELEMENTS
-	for (int i=0; i<delcrosslinkers.MyLength(); i++)
-		if (discret_.HaveGlobalElement((int)delcrosslinkers[i]))
+	for (int i=0; i<delcrosselement.MyLength(); i++)
+		if (discret_.HaveGlobalElement((int)delcrosselement[i]))
 		{
 			//save the element by packing before elimination to make it restorable in case that needed
 			vdata.push_back( DRT::PackBuffer() );
-			discret_.gElement((int)delcrosslinkers[i])->Pack( vdata.back() );
+			discret_.gElement((int)delcrosselement[i])->Pack( vdata.back() );
 		}
 	for ( unsigned i=startsize; i<vdata.size(); ++i )
 		vdata[i].StartPacking();
-	for (int i=0; i<delcrosslinkers.MyLength(); i++)
-		if (discret_.HaveGlobalElement((int)delcrosslinkers[i]))
+	for (int i=0; i<delcrosselement.MyLength(); i++)
+		if (discret_.HaveGlobalElement((int)delcrosselement[i]))
 		{
 			//save the element by packing before elimination to make it restorable in case that needed
 			deletedelements_.push_back( std::vector<char>() );
-			discret_.gElement((int)delcrosslinkers[i])->Pack( vdata[deletedelements_.size()-1] );
-			discret_.DeleteElement( (int)delcrosslinkers[i] );
+			discret_.gElement((int)delcrosselement[i])->Pack( vdata[deletedelements_.size()-1] );
+			discret_.DeleteElement( (int)delcrosselement[i] );
 		}
 	for ( unsigned i=startsize; i<vdata.size(); ++i )
 		swap( deletedelements_[i], vdata[i]() );
