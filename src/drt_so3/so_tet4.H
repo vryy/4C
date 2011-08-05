@@ -382,6 +382,7 @@ protected:
                                        //!< to state in the beginning of the computation
     calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
     prestress_update,
+    prestress_reset,
     inversedesign_update,
     inversedesign_switch
   };

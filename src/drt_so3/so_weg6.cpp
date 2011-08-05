@@ -21,10 +21,12 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/artwallremod.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
+#include "../drt_mat/aaaneohooke_stopro.H"
 #include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -365,7 +367,31 @@ void DRT::ELEMENTS::So_weg6::soweg6_expol
       (*(expolstresses(j)))[lnid] += nodalstresses(i,j)/adjele;
   }
 }
+vector<double> DRT::ELEMENTS::So_weg6::ElementCenterRefeCoords()
+{
 
+  // update element geometry
+  DRT::Node** nodes = Nodes();
+  LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xrefe;  // material coord. of element
+  for (int i=0; i<NUMNOD_WEG6; ++i){
+    const double* x = nodes[i]->X();
+    xrefe(i,0) = x[0];
+    xrefe(i,1) = x[1];
+    xrefe(i,2) = x[2];
+  }
+  const DRT::Element::DiscretizationType distype = Shape();
+  LINALG::Matrix<NUMNOD_WEG6,1> funct;
+  // Element midpoint at r=s=t=0.0
+  DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
+  LINALG::Matrix<1,NUMDIM_WEG6> midpoint;
+  //midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
+  midpoint.MultiplyTN(funct, xrefe);
+  vector<double> centercoords(3);
+  centercoords[0] = midpoint(0,0);
+  centercoords[1] = midpoint(0,1);
+  centercoords[2] = midpoint(0,2);
+  return centercoords;
+}
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                maf 07/08|
  *----------------------------------------------------------------------*/
@@ -425,6 +451,13 @@ void DRT::ELEMENTS::So_weg6::VisNames(map<string,int>& names)
     fiber = "Fiber2";
     names[fiber] = 3; // 3-dim vector
   }
+  if (Material()->MaterialType() == INPAR::MAT::m_aaaneohooke_stopro)
+      {
+          string fiber = "beta";
+          names[fiber] = 1; // scalar
+          fiber = "youngs";
+          names[fiber] = 1; // scalar
+      }
 
   return;
 }
@@ -561,6 +594,18 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
       return false;
     }
   }
+  if (Material()->MaterialType() == INPAR::MAT::m_aaaneohooke_stopro){
+      MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(Material().get());
+        if (name=="beta"){
+          if ((int)data.size()!=1) dserror("size mismatch");
+          data[0] = aaa_stopro->Beta();
+        }else if (name=="youngs"){
+          if ((int)data.size()!=1) dserror("size mismatch");
+          data[0] = aaa_stopro->Youngs();
+        } else {
+          return false;
+        }
+    }
 
   return true;
 }

@@ -43,7 +43,7 @@ MAT::PAR::AAAneohooke_stopro::AAAneohooke_stopro(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
-  youngs_(matdata->GetDouble("YOUNG")),
+  youngs_mean_(matdata->GetDouble("YOUNG")),
   nue_(matdata->GetDouble("NUE")),
   beta_mean_(matdata->GetDouble("BETA")),
   density_(matdata->GetDouble("DENS")),
@@ -51,6 +51,8 @@ MAT::PAR::AAAneohooke_stopro::AAAneohooke_stopro(
   corrlength_(matdata->GetDouble("CORRLENGTH"))
 {
   init_ = 0;
+  //isinit_youngs_ = false;
+  //isinit_beta_ = false;
 }
 
 
@@ -138,17 +140,32 @@ void MAT::AAAneohooke_stopro::Unpack(const vector<char>& data)
 
 
 // initialize function to be called from MLMC to get beta from a random field
-void MAT::AAAneohooke_stopro::Init(double value_stopro)
+void MAT::AAAneohooke_stopro::Init(double value_stopro, string stochpar)
 {
   int initflag = params_->init_;
   // stochastic beta beta_mean+ beta_mean*value_stopro
   if(initflag==0)
   {
-   // beta_ = params_->beta_mean_+params_->beta_mean_*value_stopro;
-   // calculation done in MLMC
-  beta_ = value_stopro;
+   if(!stochpar.compare("beta"))
+   {
+     // calculation done in MLMC
+     beta_ = value_stopro;
+     youngs_ = params_->youngs_mean_;
+   }
+   else if(!stochpar.compare("youngs"))
+   {
+     youngs_ = value_stopro;
+     beta_ = params_->beta_mean_;
+   }
+   else
+   {
+     isinit_youngs_ = false;
+     isinit_beta_ = false;
+     dserror("Unknown parameter in AAAnohooke_stopro::Init()");
+   }
   }
-  isinit_ = true;
+  isinit_beta_ = true;
+  isinit_youngs_ = true;
   return;
 }
 
@@ -159,13 +176,20 @@ void MAT::AAAneohooke_stopro::Evaluate(
       LINALG::Matrix<6,1>& stress)
 {
     // init check here
-    if (!isinit_)
-    dserror("Stochastic Parameters of AAAneohooke_stopro have not been initialized! \n AAAneohooke_stopro for use with MLMC ONLY!!!");
+    if (!isinit_beta_&&!isinit_youngs_)
+   dserror("Stochastic Parameters of AAAneohooke_stopro have not been initialized! \n AAAneohooke_stopro for use with MLMC ONLY!!!");
 
   // material parameters for isochoric part
-  const double youngs   = params_->youngs_;    // Young's modulus
+    double youngs;
+    youngs = youngs_;
+
+  //else
+    //youngs   = params_->youngs_mean_;    // Young's modulus
   // add stochastic part to beta
-  const double beta     = beta_;
+    double beta;
+    beta     = beta_;
+  //else
+    //beta     = params_->beta_mean_;
   const double nue      = params_->nue_;       // Poisson's ratio
   const double alpha    = youngs*0.1666666666666666667;       // E = alpha * 6..
 

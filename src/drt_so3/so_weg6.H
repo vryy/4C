@@ -163,6 +163,12 @@ public:
   virtual vector<RCP<DRT::Element> > Volumes();
 
   /*!
+    \brief Get coordinates of element center
+
+    */
+  virtual vector<double> ElementCenterRefeCoords();
+
+  /*!
   \brief Return unique ParObject id
 
   every class implementing ParObject needs a unique id defined at the
@@ -352,7 +358,6 @@ public:
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
-
   //@}
 
 protected:
@@ -378,6 +383,7 @@ protected:
                                        //!< to state in the beginning of the computation
     postprocess_stress,
     prestress_update,
+    prestress_reset,
     inversedesign_update,
     inversedesign_switch
   };

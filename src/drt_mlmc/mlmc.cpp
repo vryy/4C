@@ -185,23 +185,35 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
 /* analyse */
 void STR::MLMC::Integrate()
 {
+  const int myrank = discret_->Comm().MyPID();
+
   //measure time
   Epetra_Time timer(discret_->Comm());
-  double t1 = timer.ElapsedTime();
+  //double t1 = timer.ElapsedTime();
   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
+
+
   int numruns = mlmcp.get<int>("NUMRUNS")+start_run_;
   // get initial random seed from inputfile
   unsigned int random_seed= mlmcp.get<int>("INITRANDOMSEED");
   do
   {
-    cout << "################################################### " << endl;
-    cout << "   MULTILEVEL MONTE CARLO " << endl;
-    cout << "   RUN: " << numb_run_ << "of " << numruns  << endl;
-     cout << "################################################### " << endl;
-    double t1 = timer.ElapsedTime();
+   if (myrank == 0)
+   {
+      cout << GREEN_LIGHT "================================================================================" << endl;
+      cout << "                            MULTILEVEL MONTE CARLO                              " << endl;
+      cout << "                              RUN: " << numb_run_ << "  of  " << numruns  << endl;
+      cout << "================================================================================" END_COLOR << endl;
+   }
+    //double t1 = timer.ElapsedTime();
+    ResetPrestress();
     SetupStochMat((random_seed+(unsigned int)numb_run_));
-    double t2 = timer.ElapsedTime();
-    cout << "elapsed time " << t2 << endl;
+    discret_->Comm().Barrier();
+
+
+
+    //double t2 = timer.ElapsedTime();
+
     output_->NewResultFile(filename_,(numb_run_));
 
 
@@ -833,7 +845,10 @@ void STR::MLMC::CalcDifferenceToLowerLevel(RCP< Epetra_MultiVector> stress, RCP<
 void STR::MLMC::SetupStochMat(unsigned int random_seed)
 {
   // Variables for Random field
-  double sigma =0.0 , corrlength = 0.0, beta = 0.0 ,beta_mean = 0.0;
+  double sigma =0.0 , corrlength = 0.0,beta_mean = 0.0;
+  double youngs = 0.0, youngs_mean = 0.0;
+  // element center
+  vector<double> ele_c_location;
   // flag have init stochmat??
   int stochmat_flag=0;
   // Get parameters from stochastic matlaw
@@ -842,7 +857,7 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
   const map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
   if (myrank == 0) printf("No. material laws considered : %d\n",(int) mats.size());
   map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
-  for (curr=mats.begin(); curr != mats.end(); ++curr)
+  for (curr=mats.begin(); curr != mats.end(); curr++)
   {
     const RCP<MAT::PAR::Material> actmat = curr->second;
     switch(actmat->Type())
@@ -850,77 +865,55 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
        case INPAR::MAT::m_aaaneohooke_stopro:
        {
          stochmat_flag=1;
+         cout << "in setupStochamt LINE " << __LINE__ << endl;
          MAT::PAR::AAAneohooke_stopro* params = dynamic_cast<MAT::PAR::AAAneohooke_stopro*>(actmat->Parameter());
          if (!params) dserror("Cannot cast material parameters");
          sigma = params->sigma_0_;
          corrlength = params->corrlength_;
          beta_mean =params->beta_mean_;
+         youngs_mean =params->youngs_mean_;
        }
        break;
       default:
       {
-
-        if (!stochmat_flag)// ignore unknown materials ?
-        {
-          cout << "Mat Type   " << actmat->Type() << endl;
-          dserror("Unknown type of material");
-        }
-
-
+       cout << "MAT CURR " << actmat->Type() << "not stochastic" << endl;
       }
 
     }
   } // EOF loop over mats
-
-  // get elements on proc
-  Teuchos::RCP<Epetra_Vector> my_ele = rcp(new Epetra_Vector(*discret_->ElementRowMap(),true));
-
+  if (!stochmat_flag)// ignore unknown materials ?
+          {
+            //cout << "Mat Type   " << actmat->Type() << endl;
+            dserror("No stochastic material supplied");
+          }
+  // get elements on proc use col map to init ghost elements as well
+  Teuchos::RCP<Epetra_Vector> my_ele = rcp(new Epetra_Vector(*discret_->ElementColMap(),true));
   RandomField field(random_seed,sigma,corrlength);
   // loop over all elements
-  for (int i=0; i< my_ele->MyLength(); i++)
+  for (int i=0; i< (discret_->NumMyColElements()); i++)
+  {
+
+    if(discret_->lColElement(i)->Material()->MaterialType()==INPAR::MAT::m_aaaneohooke_stopro)
     {
-    if(discret_->gElement(i)->Material()->MaterialType()==INPAR::MAT::m_aaaneohooke_stopro)
-      {
-      MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(discret_->gElement(i)->Material().get());
-
-      //double sigma = aaa_stopro->Sigma();
-      //double corrlength = aaa_stopro->Corrlength();
-
-      //beta = field.EvalRandomField(0.2,0.2,0.2);
-      // get element centercoords
-      DRT::Node** nodes = discret_->gElement(i)->Nodes();
+      MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(discret_->lColElement(i)->Material().get());
       vector<double> ele_center;
-      // init to zero
-      ele_center.push_back(0.0);
-      ele_center.push_back(0.0);
-      ele_center.push_back(0.0);
+      ele_center = discret_->lColElement(i)->ElementCenterRefeCoords();
 
-      for (int i = 0; i < 8; i++ )
-      {
-        ele_center[0] += nodes[i]->X()[0]/8.;
-        ele_center[1] += nodes[i]->X()[1]/8.;
-        ele_center[2] += nodes[i]->X()[2]/8.;
-      }
-      // beta = beta_mean = beta_mean * random field value
-      //beta = beta_mean+beta_mean*field.EvalRandomField(ele_center[0],ele_center[1],ele_center[2]);
+      //beta = beta_mean+field.EvalRandomField(ele_center[0],ele_center[1],ele_center[2]);
+      youngs = youngs_mean+field.EvalRandomField(ele_center[0],ele_center[1],ele_center[2]);
       // HACK instead of circular field use pseudo 3D Field
-     // cout << RED_LIGHT << "HACK IN USE: BETA = BETA MEAN " END_COLOR << endl;
-      beta = beta_mean+field.EvalRandomFieldCylinder(ele_center[0],ele_center[1],ele_center[2]);
-      //beta = beta_mean;
-      //cout << "value filed " << field.EvalRandomFieldCylinder(ele_center[0],ele_center[1],ele_center[2]) << endl;
-      //vector<double> location = dis->gElement(i)->soh8_ElementCenterRefeCoords();
-      // for now we need a quick check wether beta> 0.22 because thats the cutoff value right now
-      if(beta<0.22)
-        beta = 0.22;
+      // cout << RED_LIGHT << "HACK IN USE: BETA = BETA MEAN " END_COLOR << endl;
+      //beta = beta_mean+field.EvalRandomFieldCylinder(ele_center[0],ele_center[1],ele_center[2]);
+      // there is a lower threshold
+      if(youngs<500000)
+        youngs= 500000;
 
-      aaa_stopro->Init(beta);
-      //aaa_stopro->Init(2.1);
-      //cout << RED_LIGHT << "HACK IN USE:SET BETA TO 2.1" END_COLOR << endl;
+      aaa_stopro->Init(youngs,"youngs");
+
+
       }
-      //cout << "beta  " << beta << endl;
     } // EOF loop elements
-  cout << RED_LIGHT << "HACK IN USE: PROBLEM SPECIFIC INPUT NEEDED FOR EVALUATION OF RANDOM FIELD" END_COLOR << endl;
-  //cout << "\n" GREEN_LIGHT "OK (" << count << ")" END_COLOR "\n";
+  //cout << RED_LIGHT << "HACK IN USE: PROBLEM SPECIFIC INPUT NEEDED FOR EVALUATION OF RANDOM FIELD" END_COLOR << endl;
 }
 
 // calculate some statistics
@@ -1018,6 +1011,37 @@ void STR::MLMC::WriteStatOutput()
     output_fine_->WriteVector("diff_mean_gauss_GL_strain_xyz", diff_mean_strain_, output_fine_->nodevector);
     output_fine_->WriteVector("diff_variance_gauss_GL_strain_xyz", diff_var_strain_, output_fine_->nodevector);
    }
+}
+void STR::MLMC::ResetPrestress()
+{
+  // Reset Presstress possibly still present in Discretization
+  // Get prestress parameter
+    const Teuchos::ParameterList& patspecp = DRT::Problem::Instance()->PatSpecParams();
+    // get prestress type
+    INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(patspecp,"PRESTRESS");
+    switch(pstype)
+    {
+    case INPAR::STR::prestress_none:
+    {
+      cout << "nothing to do";
+    }
+    break;
+    case INPAR::STR::prestress_mulf:
+    {
+      ParameterList p;
+      // action for elements
+      p.set("action","reset_struct_prestress");
+      discret_->Evaluate(p,null,null,null,null,null);
+     }
+    break;
+    case INPAR::STR::prestress_id:
+    {
+      dserror("MLMC and pressstressing with ID do not go great together");
+    }
+    break;
+    default:
+      dserror("Unknown type of prestressing");
+    }
 }
 
 void STR::MLMC::HelperForDebuggin()

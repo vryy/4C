@@ -184,6 +184,9 @@ public:
 
   void WriteStatOutput();
 
+  // Reset prestress F f present in discret
+  void ResetPrestress();
+
   void HelperForDebuggin();
 
   // Funtion that writes the disp and sigma values of specific DOF to a seperate outputfile

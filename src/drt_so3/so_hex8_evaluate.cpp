@@ -93,6 +93,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
   else if (action=="multi_newresultfile")                         act = So_hex8::multi_newresultfile;
   else if (action=="calc_potential_stiff")                        act = So_hex8::calc_potential_stiff;
   else if (action=="calc_struct_prestress_update")                act = So_hex8::prestress_update;
+  else if (action=="reset_struct_prestress")                      act = So_hex8::prestress_reset;
   else if (action=="calc_struct_inversedesign_update")            act = So_hex8::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch")            act = So_hex8::inversedesign_switch;
   else if (action=="calc_global_gpstresses_map")                   act = So_hex8::calc_global_gpstresses_map;
@@ -998,12 +999,31 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
         Fnew.Multiply(deltaF,Fhist);
         prestress_->MatrixtoStorage(gp,Fnew,prestress_->FHistory());
+       // if(gp ==1)
+       // {
+          //cout << "Fhist  " << Fhist << endl;
+          //cout << "Fhnew  " << new << endl;
+       // }
       }
 
       // push-forward invJ for every gaussian point
       UpdateJacobianMapping(mydisp,*prestress_);
     }
     break;
+
+    //==================================================================================
+    case prestress_reset:
+    {
+      // Reset the deformation gradient to unity f
+       LINALG::Matrix<3,3> F(true);
+       F(0,0) = F(1,1) = F(2,2) = 1.0;
+      for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+      {
+        prestress_->MatrixtoStorage(gp,F,prestress_->FHistory());
+      }
+    }
+    break;
+
 
     //==================================================================================
     case inversedesign_update:
@@ -1693,16 +1713,6 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass(
       if (elestress == NULL) dserror("stress data not available");
       for (int i = 0; i < NUMSTR_SOH8; ++i)
         (*elestress)(gp,i) = stress(i);
-        /*RCP<MAT::Material> mat = Material();
-        if (mat->MaterialType()==INPAR::MAT::m_aaaneohooke_stopro)
-        {
-          MAT::AAAneohooke_stopro* aaa_stopro= static_cast <MAT::AAAneohooke_stopro*>(Material().get());
-          // Get stochastic mat parameter beta
-          double beta = aaa_stopro->Beta();
-          // and write it into stress tensor FOR TESTING ONLY !!!!
-          (*elestress)(gp,0)=beta;
-        }*/
-
     }
     break;
     case INPAR::STR::stress_cauchy:

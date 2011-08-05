@@ -305,6 +305,10 @@ public:
   */
   inline const int* NodeIds() const { if (nodeid_.size()) return &nodeid_[0];
                                       else                return NULL;     }
+  /*!
+    \brief Return Element center coordinates
+    */
+  virtual vector<double> ElementCenterRefeCoords();
 
   /*!
   \brief Get vector of ptrs to nodes

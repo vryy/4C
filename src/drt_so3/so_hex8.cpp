@@ -30,6 +30,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/constraintmixture.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -481,6 +482,33 @@ vector<RCP<DRT::Element> > DRT::ELEMENTS::So_hex8::Lines()
 }
 
 /*----------------------------------------------------------------------*
+ |  get location of element center                              jb 08/11|
+ *----------------------------------------------------------------------*/
+vector<double> DRT::ELEMENTS::So_hex8::ElementCenterRefeCoords()
+{
+  // update element geometry
+  DRT::Node** nodes = Nodes();
+  LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;  // material coord. of element
+  for (int i=0; i<NUMNOD_SOH8; ++i){
+    const double* x = nodes[i]->X();
+    xrefe(i,0) = x[0];
+    xrefe(i,1) = x[1];
+    xrefe(i,2) = x[2];
+  }
+  const DRT::Element::DiscretizationType distype = Shape();
+  LINALG::Matrix<NUMNOD_SOH8,1> funct;
+  // Element midpoint at r=s=t=0.0
+  DRT::UTILS::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
+  LINALG::Matrix<1,NUMDIM_SOH8> midpoint;
+  //midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
+  midpoint.MultiplyTN(funct, xrefe);
+  vector<double> centercoords(3);
+  centercoords[0] = midpoint(0,0);
+  centercoords[1] = midpoint(0,1);
+  centercoords[2] = midpoint(0,2);
+  return centercoords;
+}
+/*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                maf 01/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
@@ -584,6 +612,8 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
   if (Material()->MaterialType() == INPAR::MAT::m_aaaneohooke_stopro)
     {
         string fiber = "beta";
+        names[fiber] = 1; // scalar
+        fiber = "youngs";
         names[fiber] = 1; // scalar
     }
 
@@ -863,6 +893,11 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
       if (name=="beta"){
         if ((int)data.size()!=1) dserror("size mismatch");
         data[0] = aaa_stopro->Beta();
+      }else if (name=="youngs"){
+        if ((int)data.size()!=1) dserror("size mismatch");
+        data[0] = aaa_stopro->Youngs();
+      } else {
+        return false;
       }
   }
 

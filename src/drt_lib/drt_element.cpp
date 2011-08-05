@@ -748,7 +748,13 @@ int DRT::Element::EvaluateNeumann(ParameterList& params,
 }
 #endif
 
-
+vector<double> DRT::Element::ElementCenterRefeCoords()
+{
+  dserror("subclass implementations missing");
+  vector <double> return_stuff(0);
+  return_stuff[0]=1;
+  return return_stuff;
+}
 
 
 #endif  // #ifdef CCADISCRET

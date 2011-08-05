@@ -533,6 +533,14 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_aaaneohooke_stopro: /*-- special case of generalised NeoHookean material see Raghavan, Vorp with stochastic mat parameters*/
+        {
+          MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(mat.get());
+          aaa_stopro->Evaluate(*glstrain,*cmat,*stress);
+          *density = aaa_stopro->Density();
+          return;
+          break;
+    }
     case INPAR::MAT::m_aaagasser: /*-- AAA thrombus material acc. to GASSER [2008] */
     {
       MAT::AAAgasser* gasser = static_cast<MAT::AAAgasser*>(mat.get());
@@ -1344,6 +1352,14 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       return;
       break;
     }
+    case INPAR::MAT::m_aaaneohooke_stopro: /*-- special case of generalised NeoHookean material see Raghavan, Vorp with stochastic mat parameters*/
+        {
+          MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(mat.get());
+          aaa_stopro->Evaluate(*glstrain,*cmat,*stress);
+          *density = aaa_stopro->Density();
+          return;
+          break;
+     }
     case INPAR::MAT::m_aaaraghavanvorp_damage: //-- special case of generalised NeoHookean material see Raghavan, Vorp, with damage
     {
       MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());

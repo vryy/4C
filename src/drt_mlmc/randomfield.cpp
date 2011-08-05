@@ -34,7 +34,6 @@ using namespace DRT;
 RandomField::RandomField(unsigned int  seed,double sigma, double corr_length)
 {
   // Init the necessesary stuff
-
   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
   // Dimension
   dim_ = mlmcp.get<int>("RANDOM_FIELD_DIMENSION");
@@ -45,7 +44,6 @@ RandomField::RandomField(unsigned int  seed,double sigma, double corr_length)
   d_ = corr_length;
   sigma_0_ = sigma;
   pi_=M_PI;
-
   // The StoPro will have a period of 2*pi / Deltakappa == 2*pi*N*d / 6.
   // We want this to be >= 200.
   // ceil:= return next largest integer
@@ -103,8 +101,6 @@ RandomField::RandomField(unsigned int  seed,double sigma, double corr_length)
      dserror("Dimension of random field must be 2 or 3, fix your input file");
      break;
    }
-
-
 }
 void RandomField::CreateNewSample(unsigned int seed)
 {

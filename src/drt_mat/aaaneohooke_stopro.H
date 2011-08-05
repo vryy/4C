@@ -58,7 +58,7 @@ namespace MAT
       //@{
 
       /// Young's modulus
-      const double youngs_;
+      const double youngs_mean_;
       /// Possion's ratio
       const double nue_;
       /// 2nd parameter
@@ -71,6 +71,9 @@ namespace MAT
       const double corrlength_;
       //
       int init_;
+      //bool isinit_beta_;
+
+      //bool isinit_youngs_;
 
 
 
@@ -154,6 +157,9 @@ private:
     // stochastic beta
     double Beta() const {return beta_;}
 
+    // stochastic youngs
+    double Youngs() const {return youngs_;}
+
     // variance of random field
     double Sigma() const {return params_->sigma_0_;}
 
@@ -163,7 +169,7 @@ private:
     double Density() const { return params_->density_; }
 
     /// shear modulus
-    double ShearMod() const { return 0.5*params_->youngs_/(1.0+params_->nue_); }
+    double ShearMod() const { return 0.5*params_->youngs_mean_/(1.0+params_->nue_); }
 
     // material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_aaaneohooke_stopro; }
@@ -172,7 +178,7 @@ private:
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new AAAneohooke_stopro( *this ) ); }
 
     // Init stochastic beta
-    void Init(double value_stopro);
+    void Init(double value_stopro, string stochpar);
 
     // THE material routine
     //void Evaluate(const Epetra_SerialDenseVector* glstrain_e,
@@ -197,7 +203,10 @@ private:
     // put beta not in params because it will not be initialized with constructor
     double beta_;
     /// init flag for stochastic beta
-    bool isinit_;
+    bool isinit_beta_;
+
+    double youngs_;
+   bool isinit_youngs_;
   };
 }
 
