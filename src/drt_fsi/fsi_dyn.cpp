@@ -247,7 +247,6 @@ void fluid_fluid_ale_drt()
     {
       NonMovingFluideleGIDs.push_back(bgele->Id());
       int numnode = bgele->NumNode();
-      const DRT::Node*const* bgelenodes = bgele->Nodes();
       for (int inode=0; inode <numnode; ++inode)
         NonMovingFluidNodeGIDs.push_back(bgele->Nodes()[inode]->Id());
     }
@@ -272,18 +271,18 @@ void fluid_fluid_ale_drt()
    }
 
   // delete elements and nodes
-  for(int mv=0; mv<MovingFluideleGIDs.size(); ++mv)
+  for(size_t mv=0; mv<MovingFluideleGIDs.size(); ++mv)
     bgfluiddis->DeleteElement(MovingFluideleGIDs.at(mv));
 
-  for(int mv=0; mv<MovingFluidNodeGIDs.size(); ++mv)
+  for(size_t mv=0; mv<MovingFluidNodeGIDs.size(); ++mv)
     bgfluiddis->DeleteNode(MovingFluidNodeGIDs.at(mv));
 
   bgfluiddis->FillComplete();
 
-  for(int nmv=0; nmv<NonMovingFluideleGIDs.size(); ++nmv)
+  for(size_t nmv=0; nmv<NonMovingFluideleGIDs.size(); ++nmv)
     embfluiddis->DeleteElement(NonMovingFluideleGIDs.at(nmv));
 
-  for(int nmv=0; nmv<NonMovingFluidNodeGIDs.size(); ++nmv)
+  for(size_t nmv=0; nmv<NonMovingFluidNodeGIDs.size(); ++nmv)
     embfluiddis->DeleteNode(NonMovingFluidNodeGIDs.at(nmv));
 
   embfluiddis->FillComplete();
