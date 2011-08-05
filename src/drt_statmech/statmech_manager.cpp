@@ -1243,7 +1243,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 				// sum over all processors
 				discret_.Comm().MaxAll(&gidonproc, &gidexists, 1);
 				// calculate new GID if necessary by shifting the initial GID
-				if(gidexists)
+				if(gidexists>0)
 					newcrosslinkerGID++;
 				else
 					break;
@@ -1885,6 +1885,7 @@ void StatMechManager::WriteRestart(IO::DiscretizationWriter& output)
   WriteRestartRedundantMultivector(output,"crosslinkerbond",crosslinkerbond_);
   WriteRestartRedundantMultivector(output,"crosslinkerpositions",crosslinkerpositions_);
   WriteRestartRedundantMultivector(output,"numbond",numbond_);
+  WriteRestartRedundantMultivector(output,"crosslink2element",crosslink2element_);
   WriteRestartRedundantMultivector(output,"crosslinkonsamefilament",crosslinkonsamefilament_);
   WriteRestartRedundantMultivector(output,"visualizepositions",visualizepositions_);
   WriteRestartRedundantMultivector(output,"searchforneighbours",searchforneighbours_);
@@ -1952,6 +1953,7 @@ void StatMechManager::ReadRestart(IO::DiscretizationReader& reader)
 	ReadRestartRedundantMultivector(reader,"crosslinkerbond",crosslinkerbond_);
 	ReadRestartRedundantMultivector(reader,"crosslinkerpositions",crosslinkerpositions_);
 	ReadRestartRedundantMultivector(reader,"numbond",numbond_);
+	ReadRestartRedundantMultivector(reader,"crosslink2element",crosslink2element_);
 	ReadRestartRedundantMultivector(reader,"crosslinkonsamefilament",crosslinkonsamefilament_);
 	ReadRestartRedundantMultivector(reader,"visualizepositions",visualizepositions_);
 	ReadRestartRedundantMultivector(reader,"searchforneighbours",searchforneighbours_);
