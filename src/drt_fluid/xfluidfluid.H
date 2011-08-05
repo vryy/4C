@@ -411,6 +411,15 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector>    iveln_;
     Teuchos::RCP<Epetra_Vector>    ivelnm_;
 
+    // dofset for bg-fluid output
+    DRT::DofSet                dofset_out_;
+
+    // velocity pressure splitter for fluid output
+    LINALG::MapExtractor      velpressplitterForOutput_;
+
+    // output vector for bg-fluid field (velocity and pressure)
+    Teuchos::RCP<Epetra_Vector> outvec_fluid_;
+
   private:
 
     //! @name Set general parameter in class f3Parameter

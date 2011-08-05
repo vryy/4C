@@ -12,7 +12,7 @@
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_dofset_transparent.H"
-
+#include "../drt_lib/drt_dofset.H"
 
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_mapextractor.H"
@@ -54,48 +54,47 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
 
   fluiddofrowmap_ = xfluid.bgdis_->DofRowMap();
 
+//   // dofrowmap for output
+//   const Epetra_Map* noderowmapoutput = xfluid.bgdis_->NodeRowMap();
+//   vector<int> dofmapoutput;
+//   vector<int> dofmappressureoutput;
+//   int count = 0;
+//   for (int lid=0; lid<xfluid.bgdis_->NumMyRowNodes(); lid++)
+//   {
+//     // global id
+//     int gid = noderowmapoutput->GID(lid);
+//     // get the node
+//     DRT::Node * node = xfluid.bgdis_->gNode(gid);
+//     vector<int> gdofs = xfluid.bgdis_->Dof(node);
+//     if (  gdofs.size() != 0 )
+//     {
+//       copy(&gdofs[0], &gdofs[0]+(gdofs.size()), back_inserter(dofmapoutput));
+//       dofmappressureoutput.push_back(gdofs[3]);
+//       count = 1;
+//     }
+//     else
+//     {
+//       if (count==0)
+//       {
+//         dofmapoutput.push_back(count);
+//         dofmapoutput.push_back(count+1);
+//         dofmapoutput.push_back(count+2);
+//         dofmapoutput.push_back(count+3);
+//         dofmappressureoutput.push_back(count);
+//         count = 1;
+//       }
+//       int& last = dofmapoutput.back();
+//       int& lastpres = dofmappressureoutput.back();
+//       dofmapoutput.push_back(last+count);
+//       dofmapoutput.push_back(last+count+1);
+//       dofmapoutput.push_back(last+count+2);
+//       dofmapoutput.push_back(last+count+3);
+//       dofmappressureoutput.push_back(lastpres+count+3);
+//     }
+//   }
 
-  // dofrowmap for output
-  const Epetra_Map* noderowmapoutput = xfluid.bgdis_->NodeRowMap();
-  vector<int> dofmapoutput;
-  vector<int> dofmappressureoutput;
-  int count = 0;
-  for (int lid=0; lid<xfluid.bgdis_->NumMyRowNodes(); lid++)
-  {
-    // global id
-    int gid = noderowmapoutput->GID(lid);
-    // get the node
-    DRT::Node * node = xfluid.bgdis_->gNode(gid);
-    vector<int> gdofs = xfluid.bgdis_->Dof(node);
-    if (  gdofs.size() != 0 )
-    {
-      copy(&gdofs[0], &gdofs[0]+(gdofs.size()), back_inserter(dofmapoutput));
-      dofmappressureoutput.push_back(gdofs[3]);
-      count = 1;
-    }
-    else
-    {
-      if (count==0)
-      {
-        dofmapoutput.push_back(count);
-        dofmapoutput.push_back(count+1);
-        dofmapoutput.push_back(count+2);
-        dofmapoutput.push_back(count+3);
-        dofmappressureoutput.push_back(count);
-        count = 1;
-      }
-      int& last = dofmapoutput.back();
-      int& lastpres = dofmappressureoutput.back();
-      dofmapoutput.push_back(last+count);
-      dofmapoutput.push_back(last+count+1);
-      dofmapoutput.push_back(last+count+2);
-      dofmapoutput.push_back(last+count+3);
-      dofmappressureoutput.push_back(lastpres+count+3);
-    }
-  }
-
-  outputfluiddofrowmap_ = rcp(new Epetra_Map(-1, dofmapoutput.size(), &dofmapoutput[0], 0, xfluid.bgdis_->Comm()));
-  outputpressuredofrowmap_ = rcp(new Epetra_Map(-1, dofmappressureoutput.size(), &dofmappressureoutput[0], 0, xfluid.bgdis_->Comm()));
+//   outputfluiddofrowmap_ = rcp(new Epetra_Map(-1, dofmapoutput.size(), &dofmapoutput[0], 0, xfluid.bgdis_->Comm()));
+//   outputpressuredofrowmap_ = rcp(new Epetra_Map(-1, dofmappressureoutput.size(), &dofmappressureoutput[0], 0, xfluid.bgdis_->Comm()));
 
 
   sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*fluiddofrowmap_,108,false,true));
@@ -107,7 +106,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   veln_  = LINALG::CreateVector(*fluiddofrowmap_,true);
   velnm_ = LINALG::CreateVector(*fluiddofrowmap_,true);
 
-  velnpoutput_ = LINALG::CreateVector(*outputfluiddofrowmap_,true);
+//  velnpoutput_ = LINALG::CreateVector(*outputfluiddofrowmap_,true);
 
   // acceleration/(scalar time derivative) at time n+1 and n
   accnp_ = LINALG::CreateVector(*fluiddofrowmap_,true);
@@ -288,6 +287,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
       DRT::ELEMENTS::Fluid3ImplInterface * impl = DRT::ELEMENTS::Fluid3ImplInterface::Impl( actele->Shape() );
 
       GEO::CUT::ElementHandle * e = wizard_.GetElement( actele );
+      // Evaluate xfem
       if ( e!=NULL )
       {
         GEO::CUT::plain_volumecell_set cells;
@@ -303,9 +303,13 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
           {
             const std::vector<int> & nds = vc->NodalDofSet();
 
-            // get element location vector, dirichlet flags and ownerships
-            actele->LocationVector(discret,nds,la,false);
+            // one set of dofs
+            std::vector<int>  ndstest;
+            for (int t=0;t<8; ++t)
+              ndstest.push_back(0);
 
+            actele->LocationVector(discret,nds,la,false);
+            //actele->LocationVector(discret,ndstest,la,false);
 
             // get dimension of element matrices and vectors
             // Reshape element matrices and vectors and init to zero
@@ -567,6 +571,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
                                                      Teuchos::RCP<Epetra_Vector> alevel,
                                                      Teuchos::RCP<Epetra_Vector> dispntotal)
 {
+
   std::stringstream vel_str;
   vel_str << name << "_vel_" << count << ".pos";
   std::ofstream vel_f( vel_str.str().c_str() );
@@ -631,7 +636,6 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
   press_f << "};\n";
   bound_f << "};\n";
 }
-
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::XFluidFluidState::GmshOutputElement( DRT::Discretization & discret,
@@ -687,6 +691,9 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputElement( DRT::Discretization 
   vel_f << "};\n";
   press_f << "};\n";
 }
+
+
+
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::XFluidFluidState::GmshOutputElementEmb( DRT::Discretization & discret,
@@ -759,17 +766,24 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputVolumeCell( DRT::Discretizati
 {
   const std::vector<int> & nds = vc->NodalDofSet();
 
+  std::vector<int>  ndstest;
+  for (int t=0;t<8; ++t)
+    ndstest.push_back(0);
+
   DRT::Element::LocationArray la( 1 );
 
   // get element location vector, dirichlet flags and ownerships
+  //actele->LocationVector(discret,ndstest,la,false);
   actele->LocationVector(discret,nds,la,false);
 
   std::vector<double> m(la[0].lm_.size());
+
   DRT::UTILS::ExtractMyValues(*velvec,m,la[0].lm_);
 
   Epetra_SerialDenseMatrix vel( 3, actele->NumNode() );
   Epetra_SerialDenseMatrix press( 1, actele->NumNode() );
 
+  //schauen wenn mein Dof ein primäre ist, setzen!!!!
   for ( int i=0; i<actele->NumNode(); ++i )
   {
     vel( 0, i ) = m[4*i+0];
@@ -777,6 +791,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputVolumeCell( DRT::Discretizati
     vel( 2, i ) = m[4*i+2];
     press( 0, i ) = m[4*i+3];
   }
+
 
   const GEO::CUT::plain_integrationcell_set & intcells = vc->IntegrationCells();
   for ( GEO::CUT::plain_integrationcell_set::const_iterator i=intcells.begin();
@@ -859,11 +874,11 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputVolumeCell( DRT::Discretizati
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::XFluidFluidState::GmshOutputBoundaryCell( DRT::Discretization & discret,
-                                                       DRT::Discretization & cutdiscret,
-                                                       std::ofstream & bound_f,
-                                                       DRT::Element * actele,
-                                                       GEO::CUT::ElementHandle * e,
-                                                       GEO::CUT::VolumeCell * vc )
+                                                                 DRT::Discretization & cutdiscret,
+                                                                 std::ofstream & bound_f,
+                                                                 DRT::Element * actele,
+                                                                 GEO::CUT::ElementHandle * e,
+                                                                 GEO::CUT::VolumeCell * vc )
 {
   LINALG::Matrix<3,1> normal;
   LINALG::Matrix<2,2> metrictensor;
@@ -1122,6 +1137,19 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   boundarydis_->ReplaceDofSet(newdofset);
   boundarydis_->FillComplete();
 
+  // store a dofset with the complete fluid unknowns
+  dofset_out_.Reset();
+  dofset_out_.AssignDegreesOfFreedom(*bgdis_,0,0);
+  // split based on complete fluid field
+  FLD::UTILS::SetupFluidSplit(*bgdis_,dofset_out_,3,velpressplitterForOutput_);
+
+  // create vector according to the dofset_out row map holding all standard fluid unknowns
+  outvec_fluid_ = LINALG::CreateVector(*dofset_out_.DofRowMap(),true);
+
+  // create fluid output object
+  output_ = (rcp(new IO::DiscretizationWriter(bgdis_)));
+  output_->WriteMesh(0,0.0);
+
   Epetra_Vector idispcol( *boundarydis_->DofColMap() );
   idispcol.PutScalar( 0. );
   state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
@@ -1129,8 +1157,8 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   if ( not bgdis_->Filled() or not actdis->HaveDofs() )
     bgdis_->FillComplete();
 
-  output_ = rcp(new IO::DiscretizationWriter(bgdis_));
-  output_->WriteMesh(0,0.0);
+//   output_ = rcp(new IO::DiscretizationWriter(bgdis_));
+//   output_->WriteMesh(0,0.0);
 
 
   // embedded fluid state vectors
@@ -1522,6 +1550,24 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
     printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc ---|\n");
   }
 
+//  cout << *bgdis_ << endl;
+//    const int numcolele = bgdis_->NumMyColElements();
+//    for (int j=0; j<numcolele; ++j)
+//    {
+//      DRT::Element* actele = bgdis_->lColElement(j);
+//      cout << "actele " << actele->Id() << endl;
+//      const DRT::Node*const* elenodes = actele->Nodes();
+//      for (int inode=0; inode<actele->NumNode(); ++inode)
+//      {
+//        cout << " node ids: " << elenodes[inode]->Id()  ;
+//        vector<int> gdofs = bgdis_->Dof(elenodes[inode]);
+//        cout << " dofs: " ;
+//        for (int d=0; d<gdofs.size();++d)
+//          cout << " " << gdofs.at(d) << " ";
+//        cout << endl;
+//      }
+//    }
+
   while (stopnonliniter==false)
   {
     // Insert fluid and xfluid vectors to fluidxfluid
@@ -1797,9 +1843,10 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
     aletotaldispn_->Update(1.0,*aledispn_,1.0);
 
   state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "result", step_, state_->velnp_ , alevelnp_, aletotaldispn_);
-
 }
-
+// -------------------------------------------------------------------
+//
+// -------------------------------------------------------------------
 void FLD::XFluidFluid::LinearSolve()
 {
 
@@ -2288,10 +2335,12 @@ bool FLD::XFluidFluid::ComputeSpacialToElementCoordAndProject(DRT::Element*     
     case DRT::Element::hex27:
     {
       dserror("No support for hex20 and hex27!");
+      return false;
       break;
     }
     default:
       dserror("Element-type not supported here!");
+      return false;
   }
 }
 // -------------------------------------------------------------------
@@ -2346,7 +2395,6 @@ void FLD::XFluidFluid::Output()
   //  ART_exp_timeInt_->Output();
   // output of solution
 
-  //Gmsh
   const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("element_node_id", step_, 5, 0, bgdis_->Comm().MyPID());
    std::ofstream gmshfilecontent(filename.c_str());
    {
@@ -2404,30 +2452,85 @@ void FLD::XFluidFluid::Output()
     // step number and time
     output_->NewStep(step_,time_);
 
-    for (int iter=0; iter<state_->velnp_->MyLength();++iter)
+//     for (int iter=0; iter<state_->velnp_->MyLength();++iter)
+//     {
+//       int gid = state_->velnp_->Map().GID(iter);
+//       if (state_->velnpoutput_->Map().MyGID(gid))
+//         (*state_->velnpoutput_)[state_->velnpoutput_->Map().LID(gid)]=(*state_->velnpoutput_)[state_->velnpoutput_->Map().LID(gid)] +                                                                (*state_->velnp_)[state_->velnp_->Map().LID(gid)];
+//     }
+
+    const Epetra_Map* dofrowmap = dofset_out_.DofRowMap(); // original fluid unknowns
+    const Epetra_Map* xdofrowmap = bgdis_->DofRowMap();  // fluid unknown for current cut
+
+
+    #ifdef output
+    cout << "out put " << endl;
+    for (int i=0; i<bgdis_->NumMyRowNodes(); ++i)
     {
-      int gid = state_->velnp_->Map().GID(iter);
-      if (state_->velnpoutput_->Map().MyGID(gid))
-        (*state_->velnpoutput_)[state_->velnpoutput_->Map().LID(gid)]=(*state_->velnpoutput_)[state_->velnpoutput_->Map().LID(gid)] +                                                                (*state_->velnp_)[state_->velnp_->Map().LID(gid)];
+      // get row node via local id
+      const DRT::Node* xfemnode = bgdis_->lRowNode(i);
+
+      // get global id of this node
+      const int gid = xfemnode->Id();
+
+      // the dofset_out_ contains the original dofs for each row node
+      const std::vector<int> gdofs_original(dofset_out_.Dof(xfemnode));
+
+//    cout << "node->Id() " << gid << "gdofs " << gdofs_original[0] << " " << gdofs_original[1] << "etc" << endl;
+
+      // if the dofs for this node do not exist in the xdofrowmap, then a hole is given
+      // else copy the right nodes
+      const std::vector<int> gdofs_current(bgdis_->Dof(xfemnode));
+
+      if(gdofs_current.size() == 0); // cout << "no dofs available->hole" << endl;
+      else if(gdofs_current.size() == gdofs_original.size()); //cout << "same number of dofs available" << endl;
+      else if(gdofs_current.size() > gdofs_original.size());  //cout << "more dofs available->decide" << endl;
+      else cout << "decide which dofs can be copied and which have to be set to zero" << endl;
+
+      if(gdofs_current.size() == 0)
+      {
+        size_t numdof = gdofs_original.size();
+        // no dofs for this node... must be a hole or somethin'
+        for (std::size_t idof = 0; idof < numdof; ++idof)
+        {
+          //cout << dofrowmap->LID(gdofs[idof]) << endl;
+          (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] = 0.0;
+        }
+      }
+      else if(gdofs_current.size() == gdofs_original.size())
+      {
+        size_t numdof = gdofs_original.size();
+        // copy all values
+        for (std::size_t idof = 0; idof < numdof; ++idof)
+        {
+          //cout << dofrowmap->LID(gdofs[idof]) << endl;
+          (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] = (*state_->velnp_)[xdofrowmap->LID(gdofs_current[idof])];
+        }
+      }
+      else dserror("decide which dofs are used for output");
     }
+    #endif
 
     // velocity/pressure vector
-    output_->WriteVector("velnp",state_->velnpoutput_);
+    //output_->WriteVector("velnp",state_->velnpoutput_);
+    output_->WriteVector("velnp", outvec_fluid_);
 
     // (hydrodynamic) pressure
-    Teuchos::RCP<Epetra_Vector> pressureoutput = LINALG::CreateVector(*state_->outputpressuredofrowmap_,true);
-
-    for (int iter=0; iter<pressureoutput->MyLength(); iter++)
-    {
-      int gid = pressureoutput->Map().GID(iter);
-      if (pressureoutput->Map().MyGID(gid))
-        (*pressureoutput)[pressureoutput->Map().LID(gid)]=(*state_->velnpoutput_)[state_->velnpoutput_->Map().LID(gid)];
-    }
-
+//    Teuchos::RCP<Epetra_Vector> pressureoutput = LINALG::CreateVector(*state_->outputpressuredofrowmap_,true);
+//     for (int iter=0; iter<pressureoutput->MyLength(); iter++)
+//     {
+//       int gid = pressureoutput->Map().GID(iter);
+//       if (pressureoutput->Map().MyGID(gid))
+//         (*pressureoutput)[pressureoutput->Map().LID(gid)]=(*state_->velnpoutput_)[state_->velnpoutput_->Map().LID(gid)];
+//     }
+//    pressureoutput->Scale(density_);
+//     output_->WriteVector("pressure", pressureoutput);
 //  Teuchos::RCP<Epetra_Vector> pressure =  state_->velpressplitter_.ExtractCondVector(state_->velnpoutput_);
 
-    pressureoutput->Scale(density_);
-    output_->WriteVector("pressure", pressureoutput);
+    // output (hydrodynamic) pressure for visualization
+    Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(outvec_fluid_);
+    pressure->Scale(density_);
+    output_->WriteVector("pressure", pressure);
 
 
     //output_.WriteVector("residual", trueresidual_);
