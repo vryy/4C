@@ -142,30 +142,69 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(DRT::Problem::Instance()->FluidSolverParams(),
-                           actdis->Comm(),
-                           DRT::Problem::Instance()->ErrorFile()->Handle()));
+  Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
 
-  if(DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING")==INPAR::FLUID::condensed_bmat)
+  switch(DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"))
   {
-    solver->PutSolverParamsToSubParams("Inverse1",
-        DRT::Problem::Instance()->BGSPrecBlock1Params());
+    case INPAR::FLUID::condensed_bmat:
+    case INPAR::FLUID::sps_pc:
+    {
+      // meshtying fluid
+      solver =
+        rcp(new LINALG::Solver(DRT::Problem::Instance()->ContactSolverParams(),
+                               actdis->Comm(),
+                               DRT::Problem::Instance()->ErrorFile()->Handle()));
 
-    solver->PutSolverParamsToSubParams("Inverse2",
-            DRT::Problem::Instance()->BGSPrecBlock2Params());
+      solver->Params().set<bool>("MESHTYING",true);
+
+      // TODO: check for block preconditioners
+
+      solver->PutSolverParamsToSubParams("Inverse1",
+          DRT::Problem::Instance()->FluidSolverParams());
+
+      solver->PutSolverParamsToSubParams("Inverse2",
+              DRT::Problem::Instance()->FluidPressureSolverParams());
+
+
+    }
+    break;
+    default:
+    {
+      // default: create solver using the FluidSolverParams from FLUID SOLVER block
+      solver =
+        rcp(new LINALG::Solver(DRT::Problem::Instance()->FluidSolverParams(),
+                               actdis->Comm(),
+                               DRT::Problem::Instance()->ErrorFile()->Handle()));
+      break;
+    }
   }
 
+  // compute null space information
   if (genprob.probtyp != prb_fsi_xfem and
       genprob.probtyp != prb_fluid_xfem and
       genprob.probtyp != prb_combust)
   {
-    actdis->ComputeNullSpaceIfNecessary(solver->Params(),true);
-
-    if (DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING")==INPAR::FLUID::condensed_bmat)
+    switch(DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"))
     {
-      actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse1"),true);
-      actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse2"),true);
+      case INPAR::FLUID::condensed_bmat:
+      {
+        // meshtying fluid
+        // block Gauss Seidel or SIMPLE preconditioners
+        actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse1"),true);
+        actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse2"),true);
+      }
+      break;
+      case INPAR::FLUID::sps_pc:
+      {
+        // meshtying fluid
+        // pure saddle point problem. only SIMPLE type preconditioners available
+        // the standard nullspace is computed for the constraint block within the SIMPLE block preconditioner class
+        actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse1"),true);
+      }
+      break;
+      default:
+        // no block matrix
+        actdis->ComputeNullSpaceIfNecessary(solver->Params(),true);
     }
   }
 
@@ -174,6 +213,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   if (DRT::INPUT::IntegralValue<int>(fdyn,"SIMPLER"))
   {
+    // TODO: remove me
     solver->PutSolverParamsToSubParams("SIMPLER",
                                        DRT::Problem::Instance()->FluidPressureSolverParams());
   }

@@ -1075,6 +1075,7 @@ set(OBJS_LINALG
   src/linalg/saddlepointpreconditioner.cpp
   src/linalg/simpler_operator.cpp
   src/linalg/simpler_operator_ex.cpp
+  src/linalg/solver_cheapsimplepreconditioner.cpp
   src/linalg/bgs2x2_operator.cpp
   src/linalg/smoother.cpp
   src/linalg/transfer_operator.cpp
@@ -1763,7 +1764,7 @@ macro (passive_baci_test arg nproc restart)
 endmacro (passive_baci_test)
 
 ###------------------------------------------------------------------ List of tests
-if(NOT TRILINOS_DEV)
+##if(NOT TRILINOS_DEV)
 baci_test(artaneurysm_hex 1 "")
 baci_test(artaneurysm_hex 2 "")
 baci_test(artaneurysm_tet 1 "")
@@ -2405,11 +2406,11 @@ passive_baci_test(xfsi_shooter_thin 1 "")
 # remove any output files from our tests
 add_test(NAME test_cleanup COMMAND sh -c "rm -v xxx* core.*")
 
-else()
+##else()
 # Tests for TRILINOS_DEV version
-baci_test(tsi_heatconvection_amg 1 "")
-baci_test(tsi_heatconvection_amg 2 "")
-endif(NOT TRILINOS_DEV)
+#baci_test(tsi_heatconvection_amg 1 "")
+#baci_test(tsi_heatconvection_amg 2 "")
+##endif(NOT TRILINOS_DEV)
 
 
 

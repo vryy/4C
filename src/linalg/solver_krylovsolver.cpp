@@ -121,9 +121,13 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
   {
     // assume block matrix
 
-    if ( Params().isSublist("SIMPLER") )
+    if ( Params().isSublist("SIMPLER") ) // old BACI::(Cheap)SIMPLER preconditioner TODO: remove/replace me
     {
-      preconditioner_ = Teuchos::rcp( new SimplePreconditioner( outfile_, Params(), Params().sublist("SIMPLER") ) );
+      preconditioner_ = Teuchos::rcp( new SimplePreconditioner( outfile_, Params() ) ); // Michael's SIMPLE for Fluid
+    }
+    else if( Params().isSublist("CheapSIMPLE Parameters") )
+    {
+      preconditioner_ = Teuchos::rcp( new SimplePreconditioner( outfile_, Params() ) );
     }
     else if ( Params().isSublist("BGS Parameters") )
     {

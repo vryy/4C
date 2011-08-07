@@ -67,12 +67,14 @@ STR::TimInt::TimInt
   const Teuchos::ParameterList& xparams,
   Teuchos::RCP<DRT::Discretization> actdis,
   Teuchos::RCP<LINALG::Solver> solver,
+  Teuchos::RCP<LINALG::Solver> contactsolver,
   Teuchos::RCP<IO::DiscretizationWriter> output
 )
 : discret_(actdis),
   myrank_(actdis->Comm().MyPID()),
   dofrowmap_(actdis->Filled() ? actdis->DofRowMap() : NULL),
   solver_(solver),
+  contactsolver_(contactsolver),
   solveradapttol_(DRT::INPUT::IntegralValue<int>(sdynparams,"ADAPTCONV")==1),
   solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
   dbcmaps_(Teuchos::rcp(new LINALG::MapExtractor())),
@@ -397,6 +399,15 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       // FOR PENALTY CONTACT (ONLY ONCE), NO FUNCTIONALITY FOR OTHER CASES
       // (1) Explicitly store gap-scaling factor kappa
       cmtman_->GetStrategy().SaveReferenceState(zeros_);
+    }
+
+    //**********************************************************************
+    // prepare solvers for contact/meshtying problem
+    //**********************************************************************
+    {
+      // only plausability check, that a contact solver is available
+      if (contactsolver_ == Teuchos::null)
+        dserror("no contact solver in STR::TimInt::PrepareContactMeshtying? cannot be");
     }
 
     // output of strategy type to screen

@@ -44,6 +44,7 @@ STR::TimIntImpl::TimIntImpl
   const Teuchos::ParameterList& xparams,
   Teuchos::RCP<DRT::Discretization> actdis,
   Teuchos::RCP<LINALG::Solver> solver,
+  Teuchos::RCP<LINALG::Solver> contactsolver,
   Teuchos::RCP<IO::DiscretizationWriter> output
 )
 : TimInt
@@ -53,6 +54,7 @@ STR::TimIntImpl::TimIntImpl
     xparams,
     actdis,
     solver,
+    contactsolver,
     output
   ),
   fsisurface_(NULL),
@@ -1350,6 +1352,15 @@ void STR::TimIntImpl::CmtNonlinearSolve()
 /* linear solver call for contact / meshtying */
 void STR::TimIntImpl::CmtLinearSolve()
 {
+  // adapt tolerance for contact solver
+  // note: tolerance for fallback solver already adapted in NewtonFull
+  if (solveradapttol_ and (iter_ > 1))
+  {
+    double worst = normfres_;
+    double wanted = tolfres_;
+    contactsolver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
+  }
+
   // strategy and system setup types
   INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
   INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtman_->GetStrategy().Params(),"SYSTEM");
@@ -1378,7 +1389,8 @@ void STR::TimIntImpl::CmtLinearSolve()
   if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
   {
     // (iter_-1 to be consistent with old time integration)
-    cmtman_->GetStrategy().SaddlePointSolve(*solver_,stiff_,fres_,disi_,dirichtoggle_,iter_-1);
+    //cmtman_->GetStrategy().SaddlePointSolve(*solver_,stiff_,fres_,disi_,dirichtoggle_,iter_-1);
+    cmtman_->GetStrategy().SaddlePointSolve(*contactsolver_,*solver_,stiff_,fres_,disi_,dirichtoggle_,iter_-1);
   }
 
   //**********************************************************************
@@ -1388,9 +1400,13 @@ void STR::TimIntImpl::CmtLinearSolve()
   //**********************************************************************
   else
   {
-    // standard solver call
-    solver_->Solve(stiff_->EpetraOperator(),disi_,fres_,true,iter_==1);
+    // standard solver call with contact/meshtying solver
+    //contactsolver_->Solve(stiff_->EpetraOperator(),disi_,fres_,true,iter_==1);
+    cmtman_->GetStrategy().Solve(*contactsolver_,*solver_,stiff_,fres_,disi_,dirichtoggle_,iter_-1);
   }
+
+  // reset tolerance for contact solver
+  contactsolver_->ResetTolerance();
 
   return;
 }

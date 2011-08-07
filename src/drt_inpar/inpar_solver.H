@@ -101,7 +101,8 @@ namespace INPAR
       azprec_AMG,                ///< AMG preconditioner for Fluids (without ML)
       azprec_BGS2x2,             ///< Block Gauss-Seidel for 2x2 system
       azprec_TekoSIMPLE,         ///< SIMPLE preconditioner for 2x2 block system (Teko)
-      azprec_BGSnxn              ///< Block Gauss-Seidel for nxn system (Teko)
+      azprec_BGSnxn,             ///< Block Gauss-Seidel for nxn system (Teko)
+      azprec_CheapSIMPLE         ///< CheapSIMPLE (BACI implementation for contact/meshtying/constraints)
     };
 
     /// Different prolongation smoothing strategies for AMGBS preconditioner

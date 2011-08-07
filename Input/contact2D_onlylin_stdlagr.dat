@@ -83,6 +83,8 @@ SEMI_SMOOTH_CT       1.0
 -------------------------------------------------------TSI DYNAMIC
 -----------------------------------------------------STRUCT SOLVER
 SOLVER         UMFPACK
+----------------------------------------------------CONTACT SOLVER
+SOLVER         UMFPACK
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 12
 NDLINE  8

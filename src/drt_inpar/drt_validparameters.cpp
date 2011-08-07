@@ -3812,8 +3812,8 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
 
   // CONSTRAINT solver section
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& constraintsolver = list->sublist("CONSTRAINT SOLVER",false,"solver parameters for constraint block (Lagrange multipliers) within saddle point problem");
-  SetValidSolverParameters(constraintsolver);
+  Teuchos::ParameterList& cconstraintsolver = list->sublist("CONTACT CONSTRAINT SOLVER",false,"solver parameters for constraint block (Lagrange multipliers) within saddle point problem");
+  SetValidSolverParameters(cconstraintsolver);
 
 
   return list;
@@ -3874,8 +3874,8 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   {
     // this one is longer than 15 and the tuple<> function does not support this,
     // so build the Tuple class directly (which can be any size)
-    Teuchos::Tuple<std::string,22> name;
-    Teuchos::Tuple<int,22>  number;
+    Teuchos::Tuple<std::string,23> name;
+    Teuchos::Tuple<int,23>  number;
 
     name[0] = "none";                         number[0] = INPAR::SOLVER::azprec_none;
     name[1] = "ILU";                          number[1] = INPAR::SOLVER::azprec_ILU;
@@ -3899,6 +3899,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     name[19] = "BGS2x2";                      number[19] = INPAR::SOLVER::azprec_BGS2x2;
     name[20] = "BGSnxn";                      number[20] = INPAR::SOLVER::azprec_BGSnxn;
     name[21] = "TekoSIMPLE";                  number[21] = INPAR::SOLVER::azprec_TekoSIMPLE;
+    name[22] = "CheapSIMPLE";                 number[22] = INPAR::SOLVER::azprec_CheapSIMPLE;
 
     setStringToIntegralParameter<int>(
       "AZPREC", "ILU",

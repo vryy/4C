@@ -147,11 +147,11 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  RCP<LINALG::Solver> solver =
-    rcp(new LINALG::Solver(DRT::Problem::Instance()->StructSolverParams(),
-                           actdis->Comm(),
-                           DRT::Problem::Instance()->ErrorFile()->Handle()));
-  actdis->ComputeNullSpaceIfNecessary(solver->Params());
+  Teuchos::RCP<LINALG::Solver> solver = CreateLinearSolver(actdis);
+//TODO
+  // create contact/meshtying solver only if contact/meshtying problem.
+  Teuchos::RCP<LINALG::Solver> contactsolver = CreateContactMeshtyingSolver(actdis);
+
 
   // -------------------------------------------------------------------
   // create a generalized alpha time integrator
@@ -388,27 +388,27 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
 
   Teuchos::RCP<StruGenAlpha> tintegrator = null;
   if (!mortarcontact && !mortarmeshtying && !beamcontact && !thermalbath)
-    tintegrator = rcp(new StruGenAlpha(*genalphaparams,*actdis,*solver,*output));
+    tintegrator = Teuchos::rcp(new StruGenAlpha(*genalphaparams,*actdis,*solver,*output));
   else
   {
-    if (mortarcontact)
-      tintegrator = rcp(new CONTACT::CmtStruGenAlpha(*genalphaparams,*actdis,*solver,*output));
-    if (mortarmeshtying)
-      tintegrator = rcp (new CONTACT::CmtStruGenAlpha(*genalphaparams,*actdis,*solver,*output));
+    if(mortarcontact || mortarmeshtying)
+      tintegrator = Teuchos::rcp(new CONTACT::CmtStruGenAlpha(*genalphaparams,*actdis,*solver,contactsolver,*output));
+ 
     if (beamcontact)
-      tintegrator = rcp(new CONTACT::Beam3ContactStruGenAlpha(*genalphaparams,*actdis,*solver,*output));
-    if (thermalbath)
-      tintegrator = rcp(new StatMechTime(*genalphaparams,*actdis,*solver,*output));
+      tintegrator = Teuchos::rcp(new CONTACT::Beam3ContactStruGenAlpha(*genalphaparams,*actdis,*solver,*output));
+ 
+    if(thermalbath)
+      tintegrator = Teuchos::rcp(new StatMechTime(*genalphaparams,*actdis,*solver,*output));
   }
   if (tintegrator == null) dserror("Failed to allocate strugenalpha derived time integrator");
 
-  RCP<Structure> tmpstr;
+  Teuchos::RCP<Structure> tmpstr;
   tmpstr = rcp(new StructureGenAlpha(genalphaparams,tintegrator,actdis,solver,output));
 
   if (tmpstr->HaveConstraint())
   {
-    structure_ = rcp(new StructureNOXCorrectionWrapper(
-                   rcp(new StructureConstrMerged(tmpstr))));
+    structure_ = Teuchos::rcp(new StructureNOXCorrectionWrapper(
+                   Teuchos::rcp(new StructureConstrMerged(tmpstr))));
   }
   else
   {
@@ -529,13 +529,12 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   }
 
   // create a solver
-  Teuchos::RCP<LINALG::Solver> solver
-    = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->StructSolverParams(),
-                                      actdis->Comm(),
-                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
-  actdis->ComputeNullSpaceIfNecessary(solver->Params());
+  Teuchos::RCP<LINALG::Solver> solver = CreateLinearSolver(actdis);
 
-  if (solver->Params().isSublist("Aztec Parameters")
+  // create contact/meshtying solver only if contact/meshtying problem.
+  Teuchos::RCP<LINALG::Solver> contactsolver = CreateContactMeshtyingSolver(actdis);
+
+  if ((solver->Params().isSublist("Aztec Parameters") || solver->Params().isSublist("Belos Parameters"))
       &&
       solver->Params().isSublist("ML Parameters")
       &&
@@ -646,12 +645,12 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   Teuchos::RCP<STR::TimInt> sti;
   Teuchos::RCP<STR::TimIntImpl> stii;
 
-  sti = stii = STR::TimIntImplCreate(*ioflags, *sdyn, *xparams, actdis, solver, output);
+  sti = stii = STR::TimIntImplCreate(*ioflags, *sdyn, *xparams, actdis, solver, contactsolver, output);
 
   Teuchos::RCP<STR::TimIntExpl> stie;
   if (stii==Teuchos::null)
   {
-    sti = stie = STR::TimIntExplCreate(*ioflags, *sdyn, *xparams, actdis, solver, output);
+    sti = stie = STR::TimIntExplCreate(*ioflags, *sdyn, *xparams, actdis, solver, contactsolver, output);
   }
 
   // create auxiliar time integrator
@@ -673,7 +672,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
       dserror("no explicit time integration with fsi");
     }
     structure_ = Teuchos::rcp(new StructureTimIntExpl(stie, ioflags, sdyn, xparams,
-                                                      actdis, solver, output));
+                                                      actdis, solver, contactsolver, output));
   }
   else if (stii!=Teuchos::null)
   {
@@ -721,6 +720,75 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
 
   // see you
   return;
+}
+
+Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateLinearSolver(Teuchos::RCP<DRT::Discretization>& actdis)
+{
+  Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
+
+  solver = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->StructSolverParams(),
+                                    actdis->Comm(),
+                                    DRT::Problem::Instance()->ErrorFile()->Handle()));
+  actdis->ComputeNullSpaceIfNecessary(solver->Params());
+
+  return solver;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMeshtyingSolver(Teuchos::RCP<DRT::Discretization>& actdis)
+{
+  Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
+
+  const Teuchos::ParameterList& mcparams     = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  switch(DRT::INPUT::IntegralValue<int>(mcparams,"SYSTEM"))
+  {
+    case INPAR::CONTACT::system_spsimpler:
+    {
+      // meshtying/contact for structure
+
+      // plausibility check
+      INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->ContactSolverParams(),"AZPREC");
+      if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
+          prec != INPAR::SOLVER::azprec_TekoSIMPLE)
+        dserror("Mortar/Contact with saddlepoint system only possible with SIMPLE preconditioner. Choose CheapSIMPLE or TekoSIMPLE in the CONTACT SOLVER block in your dat file.");
+
+      // build saddlepoint solver
+      solver =
+        rcp(new LINALG::Solver(DRT::Problem::Instance()->ContactSolverParams(),
+                               actdis->Comm(),
+                               DRT::Problem::Instance()->ErrorFile()->Handle()));
+
+      actdis->ComputeNullSpaceIfNecessary(solver->Params());
+
+      INPAR::CONTACT::ApplicationType apptype = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(mcparams,"APPLICATION");
+      if     (apptype == INPAR::CONTACT::app_mortarcontact) solver->Params().set<bool>("CONTACT",true);
+      else if(apptype==INPAR::CONTACT::app_mortarmeshtying) solver->Params().set<bool>("MESHTYING",true);
+      else dserror("this cannot be: no saddlepoint problem for beamcontact or pure structure problem.");
+
+      INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mcparams,"STRATEGY");
+      INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(mcparams,"SYSTEM");
+      if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
+      {
+        solver->PutSolverParamsToSubParams("Inverse1", DRT::Problem::Instance()->StructSolverParams());
+        solver->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->ContactConstraintSolverParams());
+
+        // note: the null space is definitely too long and wrong for the Lagrange multipliers
+        // don't forget to call FixMLNullspace for "Inverse1"!
+        actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse1"));
+      }
+    }
+    break;
+    default:
+    {
+      solver = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->ContactSolverParams(),
+                                        actdis->Comm(),
+                                        DRT::Problem::Instance()->ErrorFile()->Handle()));
+      actdis->ComputeNullSpaceIfNecessary(solver->Params());
+    }
+  }
+
+  return solver;
 }
 
 /*----------------------------------------------------------------------*/

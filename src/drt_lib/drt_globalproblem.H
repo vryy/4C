@@ -289,8 +289,8 @@ public:
   const Teuchos::ParameterList& BGSPrecBlock1Params() const { return getParameterList()->sublist("BGS PRECONDITIONER BLOCK 1"); }
   const Teuchos::ParameterList& BGSPrecBlock2Params() const { return getParameterList()->sublist("BGS PRECONDITIONER BLOCK 2"); }
   const Teuchos::ParameterList& TSIMonolithicSolverParams() const { return getParameterList()->sublist("TSI MONOLITHIC SOLVER"); }
-  const Teuchos::ParameterList& ContactSolverParams() const { cout << "WARNING: we return the content of STRUCT SOLVER for CONTACT solver. This will change in future" << endl; return getParameterList()->sublist("STRUCT SOLVER"); }
-  const Teuchos::ParameterList& ConstraintSolverParams() const { return getParameterList()->sublist("CONSTRAINT SOLVER"); }
+  const Teuchos::ParameterList& ContactSolverParams() const { /*cout << "WARNING: we return the content of STRUCT SOLVER for CONTACT solver. This will change in future" << endl;*/ return getParameterList()->sublist("CONTACT SOLVER"); }
+  const Teuchos::ParameterList& ContactConstraintSolverParams() const { return getParameterList()->sublist("CONTACT CONSTRAINT SOLVER"); }
 
   //@}
 

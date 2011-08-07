@@ -102,6 +102,7 @@ namespace STR
       sta_ = Teuchos::rcp(new T(ioparams, sdynparams, xparams,
                                 sti->Discretization(),
                                 sti->Solver(),
+                                Teuchos::null, // no contact solver
                                 sti->DiscWriter()));
       // check explicitness
       if (sta_->MethodImplicit())

@@ -315,6 +315,41 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1 1
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
+-----------------------------------------------------CONTACT SOLVER
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+IFPACKFILL                          1
+IFPACKGFILL                         0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+IFPACKOVERLAP                       0
+AZPOLY                          3
+AZPREC                          ILU
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               KLU
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES                     1 1 1 1 1 1
+PARTITION                       Cut_Elements
+SOLVER                          UMFPACK
 ----------------------------------------------MESHTYING AND CONTACT
 -------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
@@ -7482,7 +7517,7 @@ NODE 2482  	COORD	-8.43445003e-01	8.05823207e-01	-2.62499988e-01
 FLUID DIS 1 NODE 824 POSITION velx NAME velx VALUE 8.007725038e-01 TOLERANCE 1e-8
 FLUID DIS 1 NODE 824 POSITION vely NAME vely VALUE -1.866831914e-02 TOLERANCE 1e-8
 FLUID DIS 1 NODE 824 POSITION pressure NAME pressure VALUE 8.088278382e-07 TOLERANCE 1e-10
-STRUCTURE DIS 1 NODE 1963 POSITION dispx NAME dispx VALUE 5.735161739e-02 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 1963 POSITION dispx NAME dispx VALUE 5.735161781e-02 TOLERANCE 1e-8
 STRUCTURE DIS 1 NODE 1963 POSITION dispy NAME dispy VALUE -4.902373685e-02 TOLERANCE 1e-8
 STRUCTURE DIS 1 NODE 1963 POSITION dispz NAME dispz VALUE 0.000000000e00 TOLERANCE 1e-8
 ---------------------------------------------------------------END

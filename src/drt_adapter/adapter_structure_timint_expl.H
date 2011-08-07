@@ -58,6 +58,7 @@ namespace ADAPTER {
       Teuchos::RCP<Teuchos::ParameterList> xparams,  ///< extra flags
       Teuchos::RCP<DRT::Discretization> discret,  ///< current discretisation
       Teuchos::RCP<LINALG::Solver> solver,  ///< the solver
+      Teuchos::RCP<LINALG::Solver> contactsolver,  ///< the solver
       Teuchos::RCP<IO::DiscretizationWriter> output  ///< the output
     );
 

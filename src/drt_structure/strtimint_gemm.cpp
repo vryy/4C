@@ -29,6 +29,7 @@ STR::TimIntGEMM::TimIntGEMM
   const Teuchos::ParameterList& xparams,
   Teuchos::RCP<DRT::Discretization> actdis,
   Teuchos::RCP<LINALG::Solver> solver,
+  Teuchos::RCP<LINALG::Solver> contactsolver,
   Teuchos::RCP<IO::DiscretizationWriter> output
 )
 : TimIntImpl
@@ -38,6 +39,7 @@ STR::TimIntGEMM::TimIntGEMM
     xparams,
     actdis,
     solver,
+    contactsolver,
     output
   ),
   beta_(sdynparams.sublist("GEMM").get<double>("BETA")),

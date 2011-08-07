@@ -176,13 +176,31 @@ class MtPenaltyStrategy : public MtAbstractStrategy
   
   //@}
   
+  /*!
+  \brief Solve linear system
+
+  \param solver (in): LINALG::Solver object
+  \param solver (in): LINALG::Solver object (second solver for fallback)
+  \param kdd (in): the displacement dof stiffness (upper left block)
+  \param fd (in): the displacement dof r.h.s. (upper block)
+  \param sold (in/out): the displacement dof solution increment
+  \param dirichtoggle (in): toggle vector for dirichlet conditions
+  \param numiter (in): current nonlinear iteration step
+
+  This routine is called by the <tt>LinearSolve</tt> function in the (contact) structure time integration algorithm.
+  The <tt>Solve</tt> method is only used for condensed systems (no saddle point structure). Per default, the solver
+  parameter is a <tt>LINALG::SOLVER</tt> object from the CONTACT SOLVER block in the BACI dat file, that is used for 
+  contact problems. If there is no contact, the fallback solver is applied (per default: STRUCT SOLVER from BACI dat file).
+  */
+  void Solve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, RCP<LINALG::SparseOperator> kdd, RCP<Epetra_Vector> fd, RCP<Epetra_Vector> sold, RCP<Epetra_Vector> dirichtoggle, int numiter);
+  
   //! @name Empty functions (Lagrange meshtying)
           
   // All these functions only have functionality in Lagrange meshtying simulations,
   // thus they are defined empty here in the case of Penalty meshtying.
   
   void Recover(RCP<Epetra_Vector> disi) {}
-  void SaddlePointSolve(LINALG::Solver& solver, RCP<LINALG::SparseOperator> kdd, RCP<Epetra_Vector> fd, RCP<Epetra_Vector> sold, RCP<Epetra_Vector> dirichtoggle, int numiter) {}
+  void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, RCP<LINALG::SparseOperator> kdd, RCP<Epetra_Vector> fd, RCP<Epetra_Vector> sold, RCP<Epetra_Vector> dirichtoggle, int numiter) { cout << "WARNING: no saddlepoint solver in penalty meshtying strategy" << endl;};
   
   //@}
   

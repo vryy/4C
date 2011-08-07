@@ -807,9 +807,26 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
 }
 
 /*----------------------------------------------------------------------*
+ | Solve linear system                                     wiesner 08/11|
+ *----------------------------------------------------------------------*/
+/// default behaviour: use STRUCT SOLVER from dat file for condensed meshtying
+void CONTACT::MtLagrangeStrategy::Solve(LINALG::Solver& solver,
+                  LINALG::Solver& fallbacksolver,
+                  RCP<LINALG::SparseOperator> kdd,  RCP<Epetra_Vector> fd,
+                  RCP<Epetra_Vector>  sold, RCP<Epetra_Vector> dirichtoggle,
+                  int numiter)
+{
+  // solver for a condensed meshtying problem
+  // use fallbacksolver (=struct solver in meshtying/contact context)
+  fallbacksolver.Solve(kdd->EpetraOperator(),sold,fd,true,numiter==0);
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | Solve linear system of saddle point type                   popp 03/10|
  *----------------------------------------------------------------------*/
 void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
+                  LINALG::Solver& fallbacksolver,
                   RCP<LINALG::SparseOperator> kdd,  RCP<Epetra_Vector> fd,
                   RCP<Epetra_Vector>  sold, RCP<Epetra_Vector> dirichtoggle,
                   int numiter)
@@ -892,7 +909,7 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     //LINALG::PrintMapInMatlabFormat("xxx.contact.lmmap",*glmdofrowmap_,true);
     //LINALG::PrintSparsityToPostscript(*(mergedmt->EpetraMatrix()));
     
-    // standard solver call
+    // standard solver call (note: single SparseMatrix, you can only use UMFPACK direct solver or maybe use Teko and split the matrix again)
     solver.Solve(mergedmt->EpetraMatrix(),mergedsol,mergedrhs,true,numiter==0);
   }
   
@@ -920,10 +937,6 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     LINALG::MapExtractor rowmapext(*mergedmap,glmdofrowmap_,problemrowmap_);
     LINALG::MapExtractor dommapext(*mergedmap,glmdofrowmap_,problemrowmap_);
 
-    // make solver SIMPLER-ready
-    solver.PutSolverParamsToSubParams("SIMPLER", DRT::Problem::Instance()->FluidPressureSolverParams());
-    solver.Params().sublist("SIMPLER").set<bool>("MESHTYING",true);
-    
     // build block matrix for SIMPLER
     Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat =
       rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
@@ -944,7 +957,10 @@ void CONTACT::MtLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     RCP<Epetra_Vector> dirichtoggleexp = rcp(new Epetra_Vector(*mergedmap));
     LINALG::Export(*dirichtoggle,*dirichtoggleexp);
     LINALG::ApplyDirichlettoSystem(mergedsol,mergedrhs,mergedzeros,dirichtoggleexp);
-       
+
+    // make solver SIMPLER-ready
+    solver.Params().set<bool>("MESHTYING",true); // flag makes sure that SIMPLER sets correct null space for constraint equations
+
     // SIMPLER preconditioning solver call
     solver.Solve(mat->EpetraOperator(),mergedsol,mergedrhs,true,numiter==0);   
   }

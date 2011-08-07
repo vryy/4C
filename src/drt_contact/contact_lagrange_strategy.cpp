@@ -2454,9 +2454,43 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& k
 }
 
 /*----------------------------------------------------------------------*
+ | Solve linear system                                     wiesner 08/11|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoLagrangeStrategy::Solve(LINALG::Solver& solver,
+                  LINALG::Solver& fallbacksolver,
+                  RCP<LINALG::SparseOperator> kdd,  RCP<Epetra_Vector> fd,
+                  RCP<Epetra_Vector>  sold, RCP<Epetra_Vector> dirichtoggle,
+                  int numiter)
+{
+  // check if contact contributions are present,
+  // if not we make a standard solver call to speed things up
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
+  {
+    // remove SIMPLER sublist if still around
+    // (this is important in the case where contact is released again)
+    //if (systype==INPAR::CONTACT::system_spsimpler && solver.Params().isSublist("SIMPLER"))
+    //  solver.Params().remove("SIMPLER");
+
+    cout << "##################################################" << endl;
+    cout << " USE FALLBACK SOLVER (pure structure problem)" << endl;
+    cout << fallbacksolver.Params() << endl;
+    cout << "##################################################" << endl;
+
+    // standard solver call
+    fallbacksolver.Solve(kdd->EpetraOperator(),sold,fd,true,numiter==0);
+    return;
+  }
+
+  // solve with contact solver
+  solver.Solve(kdd->EpetraOperator(),sold,fd,true,numiter==0);
+  return;
+}
+
+/*----------------------------------------------------------------------*
  | Solve linear system of saddle point type                   popp 03/10|
  *----------------------------------------------------------------------*/
 void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
+                  LINALG::Solver& fallbacksolver,
                   RCP<LINALG::SparseOperator> kdd,  RCP<Epetra_Vector> fd,
                   RCP<Epetra_Vector>  sold, RCP<Epetra_Vector> dirichtoggle,
                   int numiter)
@@ -2470,11 +2504,16 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   {
     // remove SIMPLER sublist if still around
     // (this is important in the case where contact is released again)
-    if (systype==INPAR::CONTACT::system_spsimpler && solver.Params().isSublist("SIMPLER"))
-      solver.Params().remove("SIMPLER");
+    //if (systype==INPAR::CONTACT::system_spsimpler && solver.Params().isSublist("SIMPLER"))
+    //  solver.Params().remove("SIMPLER");
+
+    cout << "##################################################" << endl;
+    cout << " USE FALLBACK SOLVER (pure structure problem)" << endl;
+    cout << fallbacksolver.Params() << endl;
+    cout << "##################################################" << endl;
 
     // standard solver call
-    solver.Solve(kdd->EpetraOperator(),sold,fd,true,numiter==0);
+    fallbacksolver.Solve(kdd->EpetraOperator(),sold,fd,true,numiter==0);
     return;
   }
 
@@ -2757,10 +2796,10 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     LINALG::MapExtractor rowmapext(*mergedmap,glmdofrowmap_,problemrowmap_);
     LINALG::MapExtractor dommapext(*mergedmap,glmdofrowmap_,problemrowmap_);
 
-    // make solver SIMPLER-ready
-    solver.PutSolverParamsToSubParams("SIMPLER", DRT::Problem::Instance()->FluidPressureSolverParams());
-    solver.Params().sublist("SIMPLER").set<bool>("CONTACT",true);
-    
+    // set a helper flag for the CheapSIMPLE preconditioner (used to detect, if nullspace has to be set explicitely)
+    // do we need this? if we set the nullspace when the solver is constructed?
+    solver.Params().set<bool>("CONTACT",true); // for simpler precond
+
     // build block matrix for SIMPLER
     Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat =
       rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
@@ -2783,6 +2822,8 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     LINALG::Export(*dirichtoggle,*dirichtoggleexp);
     LINALG::ApplyDirichlettoSystem(mergedsol,mergedrhs,mergedzeros,dirichtoggleexp);
     
+    cout << solver.Params() << endl;
+
     // SIMPLER preconditioning solver call
     solver.Solve(mat->EpetraOperator(),mergedsol,mergedrhs,true,numiter==0);
   }

@@ -55,8 +55,15 @@ namespace ADAPTER {
 
   private:
 
-    /// setup fluid algorithm (overriding some fluid parameters with
-    /// values specified in given problem-dependent ParameterList)
+    //! setup fluid algorithm (overriding some fluid parameters with
+    //! values specified in given problem-dependent ParameterList)
+    /**
+     * \note In this function the linear solver object is generated. For pure fluid problems or
+     * fluid meshtying (no block matrix) the FLUID SOLVER block from the BACI dat file is used.
+     * For fluid meshtying (block matrix) the CONTACT SOLVER block is used as main solver object with a
+     * block preconditioner (BGS or SIMPLE type). The block preconditioners use the information form the
+     * FLUID SOLVER and the FLUID PRESSURE SOLVER block for the velocity and pressure dofs.
+     */
     void SetupFluid(const Teuchos::ParameterList& prbdyn, bool& isale);
 
     /// setup second fluid algorithm (overriding some fluid parameters with

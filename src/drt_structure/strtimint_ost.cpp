@@ -40,6 +40,7 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
   const Teuchos::ParameterList& xparams,
   Teuchos::RCP<DRT::Discretization> actdis,
   Teuchos::RCP<LINALG::Solver> solver,
+  Teuchos::RCP<LINALG::Solver> contactsolver,
   Teuchos::RCP<IO::DiscretizationWriter> output
 )
 : TimIntImpl
@@ -49,6 +50,7 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
     xparams,
     actdis,
     solver,
+    contactsolver,
     output
   ),
   theta_(sdynparams.sublist("ONESTEPTHETA").get<double>("THETA")),

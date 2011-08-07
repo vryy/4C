@@ -229,7 +229,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--BGS PRECONDITIONER BLOCK 2", *list);   // TODO: remove me. use field solvers and monolithic solver instead
   reader.ReadGidSection("--TSI MONOLITHIC SOLVER", *list);        // TODO: change me to MONOLITHIC SOLVER, that is used for all monolithic multi physics problem as "master" solver
   reader.ReadGidSection("--CONTACT SOLVER", *list);               // CONTACT SOLVER for contact problems (stores all special parameters for contact preconditioner)
-  reader.ReadGidSection("--CONSTRAINT SOLVER", *list);            // only used for constraint block in a saddle point problem (will replace FLUID PRESSURE SOLVER)
+  reader.ReadGidSection("--CONTACT CONSTRAINT SOLVER", *list);    // only used for constraint block in a saddle point problem (will replace FLUID PRESSURE SOLVER)
 
   // a special section for condition names that contains a list of key-integer
   // pairs but is not validated since the keys are arbitrary.

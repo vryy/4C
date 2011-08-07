@@ -13,11 +13,9 @@
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 LINALG::SOLVER::SimplePreconditioner::SimplePreconditioner( FILE * outfile,
-                                                            Teuchos::ParameterList & params,
-                                                            Teuchos::ParameterList & simpleparams )
+                                                            Teuchos::ParameterList & params)
   : LINALG::SOLVER::PreconditionerType( outfile ),
-    params_( params ),
-    simpleparams_( simpleparams )
+    params_( params )
 {
 }
 
@@ -41,16 +39,45 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
 
     // temporary hack: distinguish between "old" SIMPLER_Operator (for fluid
     // only) and "new" more general test implementation
-    bool mt = simpleparams_.get<bool>("MESHTYING",false);
-    bool co = simpleparams_.get<bool>("CONTACT",false);
-    bool cstr = simpleparams_.get<bool>("CONSTRAINT",false);
+    bool mt = params_.get<bool>("MESHTYING",false);
+    bool co = params_.get<bool>("CONTACT",false);
+    bool cstr = params_.get<bool>("CONSTRAINT",false); // TODO what about CONSTRAINT?
     if (mt || co || cstr)
     {
-      P_ = Teuchos::rcp(new LINALG::SOLVER::SIMPLER_BlockPreconditioner(Teuchos::rcp( matrix, false ),params_,simpleparams_,outfile_));
+      RCP<BlockSparseMatrixBase> A = rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
+      if (A==null) dserror("matrix is not a BlockSparseMatrix");
+
+      // fix null space for "Inverse1"
+      //      {
+      //        const Epetra_Map& oldmap = A->FullRowMap();
+      //        const Epetra_Map& newmap = A->Matrix(0,0).EpetraMatrix()->RowMap();
+      //        LINALG::Solver::FixMLNullspace("Inverse1",oldmap, newmap, params_.sublist("Inverse1"));
+      //      }
+
+      // adapt null space for constraint equations
+      Teuchos::ParameterList& inv2 = params_.sublist("Inverse2");
+      if(inv2.isSublist("ML Parameters"))
+      {
+        // Schur complement system (1 degree per "node") -> standard nullspace
+        inv2.sublist("ML Parameters").set("PDE equations",1);
+        inv2.sublist("ML Parameters").set("null space: dimension",1);
+        const int plength = (*A)(1,1).RowMap().NumMyElements();
+        RCP<vector<double> > pnewns = rcp(new vector<double>(plength,1.0));
+        inv2.sublist("ML Parameters").set("null space: vectors",&((*pnewns)[0]));
+        inv2.sublist("ML Parameters").remove("nullspace",false);
+      }
+
+      //P_ = Teuchos::rcp(new LINALG::SOLVER::SIMPLER_BlockPreconditioner(A,params_.sublist("Inverse1"),params_.sublist("Inverse2"),outfile_));
+      P_ = Teuchos::rcp(new LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner(A,params_.sublist("Inverse1"),params_.sublist("Inverse2"),outfile_));
     }
     else
     {
-      P_ = Teuchos::rcp(new LINALG::SOLVER::SIMPLER_Operator(Teuchos::rcp( matrix, false ),params_,simpleparams_,outfile_));
+      //cout << "************************************************" << endl;
+      //cout << "WARNING: SIMPLE for Fluid? expect bugs..." << endl;
+      //cout << "************************************************" << endl;
+      // Michaels old CheapSIMPLE for Fluid
+      // TODO replace me by CheapSIMPLE_BlockPreconditioner
+      P_ = Teuchos::rcp(new LINALG::SOLVER::SIMPLER_Operator(Teuchos::rcp( matrix, false ),params_,params_.sublist("SIMPLER"),outfile_));
     }
   }
 }

@@ -23,7 +23,7 @@ QUALITY none
 RESULTSEVRY 1
 TIMESTEP 0.1
 ------------------------------------------------------------------ALE SOLVER
-SOLVER UMFPACK
+SOLVER Aztec_MSR
 PARTITION Cut_Elements
 -------------------------------------------------------------CONDITION NAMES
 --------------------------------------------------------------DISCRETISATION
@@ -74,10 +74,10 @@ TDS quasistatic
 TRANSIENT no_transient
 VSTAB no_vstab
 -------------------------------------------------------FLUID PRESSURE SOLVER
-SOLVER UMFPACK
+SOLVER Aztec_MSR
 PARTITION Cut_Elements
 ----------------------------------------------------------------FLUID SOLVER
-SOLVER UMFPACK
+SOLVER Aztec_MSR
 PARTITION Cut_Elements
 -----------------------------------------------------------------FSI DYNAMIC
 BASETOL 1e-8
@@ -118,7 +118,7 @@ NUMFIELD 3
 SHAPEFCT Polynomial
 TIMETYP Dynamic
 ---------------------------------------------------------------STRUCT SOLVER
-SOLVER UMFPACK
+SOLVER Aztec_MSR
 PARTITION Cut_Elements
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV yes

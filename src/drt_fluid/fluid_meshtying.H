@@ -186,7 +186,7 @@ class Meshtying
     //! discretisation
     RCP<DRT::Discretization> discret_;
 
-    LINALG::Solver& solver_;
+    LINALG::Solver& solver_;                        // standard solver object
 
     //! meshting options
     /// 0: no_meshtying     -> no mesh-tying

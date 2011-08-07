@@ -102,6 +102,26 @@ SYSTEM                          SaddlePointCoupled  //SaddlePointCoupled, Saddle
 // Uzawa -> solution process
 UZAWACONSTRTOL                  1e-08
 UZAWAMAXSTEPS                   10
+-------------------------------------------------------CONTACT SOLVER
+SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT       0                 // output every so often, 0 no output
+AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC         CheapSIMPLE
+AZREUSE        0                  // how often to recompute some preconditioners
+AZDROP         0.0                // drop tolerance for ILUT
+IFPACKFILL     1.0
+IFPACKGFILL    0
+IFPACKOVERLAP  0
+AZTOL          1.0E-14             // tolerance in (un)scaled residual
+AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+AZITER         1000               // max iterations
+AZSUB          125                 // size of krylov space for gmres
+AZOMEGA        1.0                // damping factor for Jacobi/GaussSeidel type preconditioners
+AZGRAPH        1                  // unused
+AZPOLY         1                  // polynomial order for Neumann
+AZSCAL         none               // none sym infnorm scaling of the system
+DWINDTAU       2.5                // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
+PARTITION         Cut_Elements
 -------------------------------------------------------FLUID SOLVER
 SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                 // output every so often, 0 no output

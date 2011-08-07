@@ -54,6 +54,7 @@ Teuchos::RCP<STR::TimInt> STR::TimIntCreate
   const Teuchos::ParameterList& xparams,
   Teuchos::RCP<DRT::Discretization>& actdis,
   Teuchos::RCP<LINALG::Solver>& solver,
+  Teuchos::RCP<LINALG::Solver>& contactsolver,
   Teuchos::RCP<IO::DiscretizationWriter>& output
 )
 {
@@ -77,11 +78,11 @@ Teuchos::RCP<STR::TimInt> STR::TimIntCreate
     default :
     {
       // try implicit integrators
-      sti = TimIntImplCreate(ioflags, sdyn, xparams, actdis, solver, output);
+      sti = TimIntImplCreate(ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
       // if nothing found try explicit integrators
       if (sti == Teuchos::null)
       {
-        sti = TimIntExplCreate(ioflags, sdyn, xparams, actdis, solver, output);
+        sti = TimIntExplCreate(ioflags, sdyn, xparams, actdis, solver, contactsolver, output);
       }
     }
   }
@@ -99,10 +100,13 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
   const Teuchos::ParameterList& xparams,
   Teuchos::RCP<DRT::Discretization>& actdis,
   Teuchos::RCP<LINALG::Solver>& solver,
+  Teuchos::RCP<LINALG::Solver>& contactsolver,
   Teuchos::RCP<IO::DiscretizationWriter>& output
 )
 {
   Teuchos::RCP<STR::TimIntImpl> sti = Teuchos::null;
+
+  // TODO: add contact solver...
 
   // create specific time integrator
   switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP"))
@@ -111,7 +115,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
     case INPAR::STR::dyna_statics :
     {
       sti = Teuchos::rcp(new STR::TimIntStatics(ioflags, sdyn, xparams,
-                                                actdis, solver, output));
+                                                actdis, solver, contactsolver, output));
       break;
     }
 
@@ -119,7 +123,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
     case INPAR::STR::dyna_genalpha :
     {
       sti = Teuchos::rcp(new STR::TimIntGenAlpha(ioflags, sdyn, xparams,
-                                                 actdis, solver, output));
+                                                 actdis, solver, contactsolver, output));
       break;
     }
 
@@ -127,7 +131,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
     case INPAR::STR::dyna_onesteptheta :
     {
       sti = Teuchos::rcp(new STR::TimIntOneStepTheta(ioflags, sdyn, xparams,
-                                                     actdis, solver, output));
+                                                     actdis, solver, contactsolver, output));
       break;
     }
 
@@ -135,7 +139,7 @@ Teuchos::RCP<STR::TimIntImpl> STR::TimIntImplCreate
     case INPAR::STR::dyna_gemm :
     {
       sti = Teuchos::rcp(new STR::TimIntGEMM(ioflags, sdyn, xparams,
-                                             actdis, solver, output));
+                                             actdis, solver, contactsolver, output));
       break;
     }
 
@@ -160,6 +164,7 @@ Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate
   const Teuchos::ParameterList& xparams,
   Teuchos::RCP<DRT::Discretization>& actdis,
   Teuchos::RCP<LINALG::Solver>& solver,
+  Teuchos::RCP<LINALG::Solver>& contactsolver,
   Teuchos::RCP<IO::DiscretizationWriter>& output
 )
 {
@@ -172,7 +177,7 @@ Teuchos::RCP<STR::TimIntExpl> STR::TimIntExplCreate
     case INPAR::STR::dyna_ab2 :
     {
       sti = Teuchos::rcp(new STR::TimIntAB2(ioflags, sdyn, xparams,
-                                            actdis, solver, output));
+                                            actdis, solver, contactsolver, output));
       break;
     }
 

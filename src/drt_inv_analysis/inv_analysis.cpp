@@ -289,7 +289,7 @@ Epetra_SerialDenseVector STR::InvAnalysis::CalcCvector()
   xparams.set<int>("REDUCED_OUTPUT",0);
 
   // create time integrator
-  sti_ = TimIntCreate(ioflags, sdyn, xparams, discret_, solver_, output_);
+  sti_ = TimIntCreate(ioflags, sdyn, xparams, discret_, solver_, solver_, output_);
   if (sti_ == Teuchos::null) dserror("Failed in creating integrator.");
 
   // initialize time loop / Attention the Functions give back the

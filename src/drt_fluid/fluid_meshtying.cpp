@@ -24,6 +24,9 @@ Maintainer: Andreas Ehrl
 #include "../drt_f3_impl/fluid3_impl_parameter.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io.H"
+#include "../drt_io/io_control.H"
 #include <Teuchos_TimeMonitor.hpp>
 
 
@@ -358,8 +361,7 @@ void FLD::Meshtying::SolveMeshtying(
     // make solver SIMPLER-ready
     {
       TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.2)   - Solve");
-      solver_.PutSolverParamsToSubParams("SIMPLER", DRT::Problem::Instance()->FluidPressureSolverParams());
-      solver_.Params().sublist("SIMPLER").set<bool>("MESHTYING",true);
+
       solver_.Solve(blocksysmat->EpetraOperator(),mergedincvel,mergedresidual,true,itnum==1);
     }
 

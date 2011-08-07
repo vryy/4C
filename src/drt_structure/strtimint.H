@@ -121,6 +121,7 @@ namespace STR
       const Teuchos::ParameterList& xparams,  //!< extra flags
       Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
       Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
+      Teuchos::RCP<LINALG::Solver> contactsolver,  //!< the solver for contact/meshtying
       Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
     );
 
@@ -584,7 +585,8 @@ namespace STR
     const Epetra_Map* dofrowmap_;  //!< vector layout from the discretization
                                    //!< to construct matching
                                    //!< vectors and matrices
-    Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver
+    Teuchos::RCP<LINALG::Solver> solver_;  //!< linear algebraic solver (no contact/meshtying)
+    Teuchos::RCP<LINALG::Solver> contactsolver_;  //!< linear algebraic solver (for contact/meshtying)
     bool solveradapttol_;  //!< adapt solver tolerance
     double solveradaptolbetter_;  //!< tolerance to which is adpated ????
     Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;  //!< map extractor object

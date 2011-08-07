@@ -102,7 +102,7 @@ SYSTEM                          SaddlePointCoupled  //SaddlePointCoupled, Saddle
 // Uzawa -> solution process
 UZAWACONSTRTOL                  1e-08
 UZAWAMAXSTEPS                   10
--------------------------------------------------------FLUID SOLVER
+-------------------------------------------------------CONTACT SOLVER
 SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                  // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
@@ -136,10 +136,10 @@ ML_DAMPFINE       0.45            // damping fine grid
 ML_DAMPMED        1.0             // damping med grids
 ML_DAMPCOARSE     1.0             // damping coarse grid
 PARTITION         Cut_Elements
---------------------------------------------BGS PRECONDITIONER BLOCK 1
+--------------------------------------------FLUID SOLVER
 SOLVER         UMFPACK
 PARTITION      Cut_Elements
---------------------------------------------BGS PRECONDITIONER BLOCK 2
+--------------------------------------------FLUID PRESSURE SOLVER
 SOLVER         UMFPACK
 PARTITION      Cut_Elements
 ---------------------------------------------------------MATERIALS

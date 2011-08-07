@@ -53,6 +53,7 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_constraint/constraint_manager.H"
+#include "../drt_io/io_control.H"
 
 #include <Teuchos_Time.hpp>
 #include <iostream>
@@ -63,8 +64,10 @@ Maintainer: Alexander Popp
 CONTACT::CmtStruGenAlpha::CmtStruGenAlpha(ParameterList& params,
                                           DRT::Discretization& dis,
                                           LINALG::Solver& solver,
+                                          Teuchos::RCP<LINALG::Solver>& contactsolver,
                                           IO::DiscretizationWriter& output) :
-StruGenAlpha(params,dis,solver,output)
+StruGenAlpha(params,dis,solver,output),
+contactsolver_(contactsolver)
 {
   //**********************************************************************
   // see whether we have contact boundary conditions
@@ -147,6 +150,44 @@ StruGenAlpha(params,dis,solver,output)
     // FOR PENALTY CONTACT (ONLY ONCE), NO FUNCTIONALITY FOR OTHER CASES
     // (1) Explicitly store gap-scaling factor kappa
     cmtmanager_->GetStrategy().SaveReferenceState(zeros_);
+  }
+
+  //**********************************************************************
+  // prepare solvers for contact/meshtying problem
+  //**********************************************************************
+  {
+    if(contactsolver_ == Teuchos::null) dserror("no contact/meshtying solver? cannot be.");
+
+    // TODO: remove me. all done in adapter_structure...
+/*
+    // use ContactSolverParameters (instead of StructSolverParameters)
+    contactsolver_ =
+      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->ContactSolverParams(),
+                                      dis.Comm(),
+                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
+    dis.ComputeNullSpaceIfNecessary(contactsolver_->Params());
+
+    // get system type
+    INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
+    INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtmanager_->GetStrategy().Params(),"SYSTEM");
+
+    //**********************************************************************
+    // Solving a saddle point system
+    // (1) Standard / Dual Lagrange multipliers -> SaddlePointCoupled
+    // (2) Standard / Dual Lagrange multipliers -> SaddlePointSimpler
+    //**********************************************************************
+    if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
+    {
+      //contactsolver_->PutSolverParamsToSubParams("SIMPLER", DRT::Problem::Instance()->FluidPressureSolverParams());
+      contactsolver_->PutSolverParamsToSubParams("Inverse1", DRT::Problem::Instance()->StructSolverParams());  // in SIMPLER we have to approximate a struct problem with constraints
+      contactsolver_->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->ContactConstraintSolverParams());
+
+      // note: the null space is definitely too long and wrong for the Lagrange multipliers
+      // don't forget to call FixMLNullspace for "Inverse1"!
+      dis.ComputeNullSpaceIfNecessary(contactsolver_->Params().sublist("Inverse1"));
+
+    }*/
+
   }
 
   //**********************************************************************
@@ -3487,6 +3528,11 @@ void CONTACT::CmtStruGenAlpha::LinearSolve(int numiter, double wanted, double wo
   // adapt solver tolerance
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
+
+  // adapt tolerance for constraint solver
+  if (isadapttol && numiter) contactsolver_->AdaptTolerance(wanted,worst,adaptolbetter);
+
+  // adapt tolerance for fallback solver (only used, if no contact)
   if (isadapttol && numiter) solver_.AdaptTolerance(wanted,worst,adaptolbetter);
 
   // strategy and system setup types
@@ -3501,9 +3547,9 @@ void CONTACT::CmtStruGenAlpha::LinearSolve(int numiter, double wanted, double wo
   if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
   {
     // saddle point solver call
-    cmtmanager_->GetStrategy().SaddlePointSolve(solver_,stiff_,fresm_,disi_,dirichtoggle_,numiter);
-  }
+    cmtmanager_->GetStrategy().SaddlePointSolve(*contactsolver_,solver_,stiff_,fresm_,disi_,dirichtoggle_,numiter);
 
+  }
   //**********************************************************************
   // Solving a purely displacement based system
   // (1) Dual (not Standard) Lagrange multipliers -> Condensed
@@ -3511,12 +3557,14 @@ void CONTACT::CmtStruGenAlpha::LinearSolve(int numiter, double wanted, double wo
   //**********************************************************************
   else
   {
-    // standard solver call
-    solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
+    // standard solver call (with contact/meshtying solver)
+    //contactsolver_->Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
+    cmtmanager_->GetStrategy().Solve(*contactsolver_,solver_,stiff_,fresm_,disi_,dirichtoggle_,numiter);
   }
 
   // reset solver tolerance
   solver_.ResetTolerance();
+  contactsolver_->ResetTolerance();
 
   return;
 } // void CmtStruGeanAlpha::LinearSolve()

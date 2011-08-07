@@ -58,6 +58,7 @@ namespace STR
     const Teuchos::ParameterList& xparams,  //!< extra flags
     Teuchos::RCP<DRT::Discretization>& actdis,  //!< discretisation
     Teuchos::RCP<LINALG::Solver>& solver,  //!< the solver
+    Teuchos::RCP<LINALG::Solver>& contactsolver,  //!< the solver for contact/meshtying
     Teuchos::RCP<IO::DiscretizationWriter>& output  //!< output writer
   );
 
@@ -72,6 +73,7 @@ namespace STR
     const Teuchos::ParameterList& xparams,  //!< extra flags
     Teuchos::RCP<DRT::Discretization>& actdis,  //!< discretisation
     Teuchos::RCP<LINALG::Solver>& solver,  //!< the solver
+    Teuchos::RCP<LINALG::Solver>& contactsolver,  //!< the contact solver
     Teuchos::RCP<IO::DiscretizationWriter>& output  //!< output writer
   );
 
@@ -86,6 +88,7 @@ namespace STR
     const Teuchos::ParameterList& xparams,  //!< extra flags
     Teuchos::RCP<DRT::Discretization>& actdis,  //!< discretisation
     Teuchos::RCP<LINALG::Solver>& solver,  //!< the solver
+    Teuchos::RCP<LINALG::Solver>& contactsolver,  //!< the solver for contact/meshtying
     Teuchos::RCP<IO::DiscretizationWriter>& output  //!< output writer
   );
 

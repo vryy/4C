@@ -68,6 +68,7 @@ public:
   CmtStruGenAlpha(ParameterList& params,
                   DRT::Discretization& dis,
                   LINALG::Solver& solver,
+                  Teuchos::RCP<LINALG::Solver>& contactsolver,
                   IO::DiscretizationWriter& output);
 
   /*!
@@ -251,7 +252,7 @@ public:
   \brief get manager
 
   */
-  RCP<MORTAR::ManagerBase> GetManager() {return cmtmanager_; }
+  Teuchos::RCP<MORTAR::ManagerBase> GetManager() {return cmtmanager_; }
   
   /*!
   \brief return bool indicating if contact or meshtying are defined
@@ -265,7 +266,10 @@ protected:
   CmtStruGenAlpha operator = (const CmtStruGenAlpha& old);
   CmtStruGenAlpha(const CmtStruGenAlpha& old);
 
-  RCP<MORTAR::ManagerBase>    cmtmanager_;
+  Teuchos::RCP<MORTAR::ManagerBase>    cmtmanager_;
+
+  // contact/meshtying solvers
+  Teuchos::RCP<LINALG::Solver>         contactsolver_;
 
 }; // class CmtStruGenAlpha
 } // namespace CONTACT

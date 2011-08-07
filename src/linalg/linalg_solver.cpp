@@ -912,9 +912,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
     {
       mllist.set("coarse: type"          ,"IFPACK");
       mllist.set("coarse: ifpack type"   ,"ILU");
-      mllist.set("coarse: ifpack overlap",0);
+      mllist.set("coarse: ifpack overlap",inparams.get<int>("IFPACKOVERLAP"));
       mllist.set<double>("coarse: ifpack level-of-fill",(double)mlsmotimessteps[coarse]);
-      ParameterList& ifpacklist = mllist.sublist("coarse: ifpack list");
+      ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
       ifpacklist.set<int>("fact: level-of-fill",mlsmotimessteps[coarse]);
       ifpacklist.set("schwarz: reordering type","rcm");
       ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Zero", "Insert", "Add"
@@ -1022,7 +1022,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     outparams.set("solver","stratimikos");
     outparams.set("xml file",inparams.get<string>("STRATIMIKOS_XMLFILE"));
     ParameterList& stratimikoslist = outparams.sublist("Stratimikos Parameters");
-    stratimikoslist = TranslateToStratimikos(inparams);
+    stratimikoslist = LINALG::Solver::TranslateToStratimikos(inparams);
   }
   break;
   case INPAR::SOLVER::belos:     //=================================================== Belos
@@ -1090,6 +1090,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
       beloslist.set("Preconditioner Type","ML");
       break;
     break;
+    case INPAR::SOLVER::azprec_CheapSIMPLE:
+      beloslist.set("Preconditioner Type","CheapSIMPLE");
+      break;
     default:
       dserror("Unknown preconditioner for Belos");
     break;
@@ -1098,15 +1101,15 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
      beloslist.set("Num Blocks",inparams.get<int>("AZSUB"));
      beloslist.set("Maximum Iterations",inparams.get<int>("AZITER"));
      beloslist.set("Adaptive Block Size",true);
-     const int verbosity= inparams.get<int>("AZOUTPUT");
-     if (verbosity > 0)
-       beloslist.set("Verbosity", Belos::Errors);
-     else if (verbosity > 1)
-       beloslist.set("Verbosity", Belos::Errors + Belos::Warnings);
-     else if (verbosity > 3)
-       beloslist.set("Verbosity", Belos::Errors + Belos::Warnings + Belos::StatusTestDetails);
-     else if (verbosity > 6)
-       beloslist.set("Verbosity", Belos::Errors + Belos::Warnings + Belos::StatusTestDetails + Belos::TimingDetails);
+     beloslist.set("Output Frequency", inparams.get<int>("AZOUTPUT"));
+      //     if (verbosity > 0)
+      //       beloslist.set("Verbosity", Belos::Errors);
+      //     else if (verbosity > 1)
+      //       beloslist.set("Verbosity", Belos::Errors + Belos::Warnings);
+      //     else if (verbosity > 3)
+      //       beloslist.set("Verbosity", Belos::Errors + Belos::Warnings + Belos::StatusTestDetails);
+      //     else if (verbosity > 6)
+     beloslist.set("Verbosity", Belos::Errors + Belos::Warnings + Belos::StatusTestDetails + Belos::TimingDetails);
      beloslist.set("Convergence Tolerance",inparams.get<double>("AZTOL"));
      //-------------------------------- set parameters for Ifpack if used
      if (azprectyp == INPAR::SOLVER::azprec_ILU  ||
@@ -1119,14 +1122,20 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
          azprectyp == INPAR::SOLVER::azprec_Jacobi)
      {
        ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
-       ifpacklist = TranslateBACIToIfpack(inparams);
+       ifpacklist = LINALG::Solver::TranslateBACIToIfpack(inparams);
      }
      //------------------------------------- set parameters for Teko if used
      if (azprectyp == INPAR::SOLVER::azprec_TekoSIMPLE ||
          azprectyp == INPAR::SOLVER::azprec_BGSnxn)
      {
        ParameterList& tekolist = outparams.sublist("Teko Parameters");
-       tekolist = TranslateBACIToTeko(inparams);
+       tekolist = LINALG::Solver::TranslateBACIToTeko(inparams);
+     }
+     //------------------------------------- set parameters for CheapSIMPLE if used
+     if (azprectyp == INPAR::SOLVER::azprec_CheapSIMPLE)
+     {
+       ParameterList& simplelist = outparams.sublist("CheapSIMPLE Parameters");
+       simplelist.set("Prec Type","CheapSIMPLE"); // not used
      }
      //------------------------------------- set parameters for ML if used
      if (azprectyp == INPAR::SOLVER::azprec_ML       ||
@@ -1136,7 +1145,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
          azprectyp == INPAR::SOLVER::azprec_AMG)          // new AMG preconditioner
      {
        ParameterList& mllist = outparams.sublist("ML Parameters");
-       mllist = TranslateBACIToML(inparams,&beloslist);
+       mllist = LINALG::Solver::TranslateBACIToML(inparams,&beloslist);
      } // if ml preconditioner
 
     break;
@@ -1244,6 +1253,10 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     case INPAR::SOLVER::azprec_TekoSIMPLE:
       azlist.set("AZ_precond",AZ_user_precond);
     break;
+    case INPAR::SOLVER::azprec_CheapSIMPLE:
+      azlist.set("AZ_precond",AZ_user_precond);
+      azlist.set("Preconditioner Type","CheapSIMPLE");
+      break;
     default:
       dserror("Unknown preconditioner for AztecOO");
     break;
@@ -1279,50 +1292,21 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
         azprectyp == INPAR::SOLVER::azprec_Jacobi)
     {
       ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
-      ifpacklist = TranslateBACIToIfpack(inparams);
-
-      /*ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
-      ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
-      ifpacklist.set("fact: level-of-fill",inparams.get<int>("IFPACKGFILL"));
-      ifpacklist.set("fact: ilut level-of-fill",inparams.get<double>("IFPACKFILL"));
-      ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-      ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Zero", "Add", "Insert"
-      ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis" or "amd"
-      ifpacklist.set("amesos: solver type", "Amesos_Klu"); // can be "Amesos_Klu", "Amesos_Umfpack", "Amesos_Superlu"
-      if (azprectyp == INPAR::SOLVER::azprec_SymmGaussSeidel)
-      {
-        ifpacklist.set("relaxation: type","symmetric Gauss-Seidel");
-        ifpacklist.set("relaxation: sweeps",inparams.get<int>("IFPACKGFILL"));
-        ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
-      }
-      if (azprectyp == INPAR::SOLVER::azprec_GaussSeidel)
-      {
-        ifpacklist.set("relaxation: type","Gauss-Seidel");
-        ifpacklist.set("relaxation: sweeps",inparams.get<int>("IFPACKGFILL"));
-        ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
-      }
-      if (azprectyp == INPAR::SOLVER::azprec_DownwindGaussSeidel)
-      {
-        // in case of downwinding prevent ifpack from again reordering
-        ifpacklist.set("schwarz: reordering type","none");
-        ifpacklist.set("relaxation: type","Gauss-Seidel");
-        ifpacklist.set("relaxation: sweeps",inparams.get<int>("IFPACKGFILL"));
-        ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
-      }
-      if (azprectyp == INPAR::SOLVER::azprec_Jacobi)
-      {
-        ifpacklist.set("relaxation: type","Jacobi");
-        ifpacklist.set("relaxation: sweeps",inparams.get<int>("IFPACKGFILL"));
-        ifpacklist.set("relaxation: damping factor",inparams.get<double>("AZOMEGA"));
-      }*/
+      ifpacklist = LINALG::Solver::TranslateBACIToIfpack(inparams);
     }
     //------------------------------------- set parameters for Teko if used
     if (azprectyp == INPAR::SOLVER::azprec_TekoSIMPLE ||
         azprectyp == INPAR::SOLVER::azprec_BGSnxn)
     {
       ParameterList& tekolist = outparams.sublist("Teko Parameters");
-      tekolist = TranslateBACIToTeko(inparams);
+      tekolist = LINALG::Solver::TranslateBACIToTeko(inparams);
       // TODO: Teko preconditioners -> Stratimikos interface? -> ask Eric about his plans
+    }
+    //------------------------------------- set parameters for CheapSIMPLE if used
+    if (azprectyp == INPAR::SOLVER::azprec_CheapSIMPLE)
+    {
+      ParameterList& simplelist = outparams.sublist("CheapSIMPLE Parameters");
+      simplelist.set("Prec Type","CheapSIMPLE"); // not used
     }
     //------------------------------------- set parameters for ML if used
     if (azprectyp == INPAR::SOLVER::azprec_ML       ||
@@ -1332,7 +1316,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
         azprectyp == INPAR::SOLVER::azprec_AMG)          // new AMG preconditioner
     {
       ParameterList& mllist = outparams.sublist("ML Parameters");
-      mllist = TranslateBACIToML(inparams,&azlist);
+      mllist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);
 
       /*ML_Epetra::SetDefaults("SA",mllist);
       switch (azprectyp)
@@ -1868,9 +1852,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
       amglist.set("null space: add default vectors",false);
       amglist.set<double*>("null space: vectors",NULL);
 
-
-
-      cout << amglist << endl; // TODO delete me
     } // if AMGBS preconditioner
     if (azprectyp == INPAR::SOLVER::azprec_BGS2x2)
     {

@@ -416,11 +416,25 @@ void UTILS::ConstraintSolver::SolveSimple
   RCP<Epetra_Vector> dirichzeros = dbcmaps_->ExtractCondVector(zeros);
   RCP<Epetra_Vector> rhscopy=rcp(new Epetra_Vector(*rhsstand));
   
-  //make solver SIMPLE-ready
-  solver_->PutSolverParamsToSubParams("SIMPLER",
+  //make solver CheapSIMPLE-ready
+  Teuchos::ParameterList sfparams = solver_->Params();  // save copy of original solver parameter list
+  solver_->Params() = LINALG::Solver::TranslateSolverParameters(DRT::Problem::Instance()->ContactSolverParams());
+  if(!solver_->Params().isSublist("Aztec Parameters") &&
+     !solver_->Params().isSublist("Belos Parameters"))
+  {
+    cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+    cout << "You need a \'CONTACT SOLVER\' block within your dat file with either \'Aztec_MSR\' or \'Belos\' as SOLVER." << endl;
+    cout << "The \'STRUCT SOLVER\' block is then used for the primary inverse within CheapSIMPLE and the \'FLUID PRESSURE SOLVER\' " << endl;
+    cout << "block for the constraint block" << endl;
+    cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << endl;
+    dserror("Please edit your dat file");
+  }
+  solver_->Params().set<bool>("CONSTRAINT",true);      // handling of constraint null space within Simple type preconditioners
+  solver_->Params().sublist("CheapSIMPLE Parameters"); // this automatically sets preconditioner to CheapSIMPLE!
+  solver_->Params().sublist("Inverse1") = sfparams;
+  solver_->PutSolverParamsToSubParams("Inverse2",
       DRT::Problem::Instance()->FluidPressureSolverParams());
-  solver_->Params().sublist("SIMPLER").set<bool>("CONSTRAINT",true);
-  
+
   //build block matrix for SIMPLE
   Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy> > mat=
       rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(dommapext,rowmapext,81,false,false));
@@ -441,7 +455,8 @@ void UTILS::ConstraintSolver::SolveSimple
   // solve
   solver_->Solve(mat->EpetraOperator(),mergedsol,mergedrhs,true,counter_==0);
   solver_->ResetTolerance();
-  
+  solver_->Params() = sfparams; // store back original parameter list
+
   // store results in smaller vectors
   rowmapext.ExtractCondVector(mergedsol,lagrinc);
   rowmapext.ExtractOtherVector(mergedsol,dispinc);

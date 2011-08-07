@@ -32,6 +32,7 @@ STR::TimIntAB2::TimIntAB2
   //const Teuchos::ParameterList& ab2params,
   Teuchos::RCP<DRT::Discretization> actdis,
   Teuchos::RCP<LINALG::Solver> solver,
+  Teuchos::RCP<LINALG::Solver> contactsolver,
   Teuchos::RCP<IO::DiscretizationWriter> output
 )
 : TimIntExpl
@@ -41,6 +42,7 @@ STR::TimIntAB2::TimIntAB2
     xparams,
     actdis,
     solver,
+    contactsolver,
     output
   ),
   fextn_(Teuchos::null),

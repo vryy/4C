@@ -654,4 +654,37 @@ void CONTACT::CoPenaltyStrategy::UpdateAugmentedLagrange()
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | Solve linear system                                     wiesner 08/11|
+ *----------------------------------------------------------------------*/
+void CONTACT::CoPenaltyStrategy::Solve(LINALG::Solver& solver,
+                  LINALG::Solver& fallbacksolver,
+                  RCP<LINALG::SparseOperator> kdd,  RCP<Epetra_Vector> fd,
+                  RCP<Epetra_Vector>  sold, RCP<Epetra_Vector> dirichtoggle,
+                  int numiter)
+{
+  // check if contact contributions are present,
+  // if not we make a standard solver call to speed things up
+  if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
+  {
+    // remove SIMPLER sublist if still around
+    // (this is important in the case where contact is released again)
+    //if (systype==INPAR::CONTACT::system_spsimpler && solver.Params().isSublist("SIMPLER"))
+    //  solver.Params().remove("SIMPLER");
+
+    cout << "##################################################" << endl;
+    cout << " USE FALLBACK SOLVER (pure structure problem)" << endl;
+    cout << fallbacksolver.Params() << endl;
+    cout << "##################################################" << endl;
+
+    // standard solver call
+    fallbacksolver.Solve(kdd->EpetraOperator(),sold,fd,true,numiter==0);
+    return;
+  }
+
+  // solve with contact solver
+  solver.Solve(kdd->EpetraOperator(),sold,fd,true,numiter==0);
+  return;
+}
+
 #endif // CCADISCRET

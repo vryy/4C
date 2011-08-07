@@ -12,10 +12,11 @@ Created on: Jul 4, 2011
 #ifndef SOLVER_BLOCKPRECONDITIONERS_H_
 #define SOLVER_BLOCKPRECONDITIONERS_H_
 
-#include "bgs2x2_operator.H"             // Lena's BGS implementation
-#include "simpler_operator.H"            // Michael's SIMPLE(R) for fluid
-#include "simpler_operator_ex.H"         // Tobias' SIMPLE
-#include "saddlepointpreconditioner.H"   // Tobias' saddle point preconditioner
+#include "bgs2x2_operator.H"                   // Lena's BGS implementation
+#include "simpler_operator.H"                  // Michael's SIMPLE(R) for fluid
+#include "simpler_operator_ex.H"               // Tobias' SIMPLE
+#include "solver_cheapsimplepreconditioner.H"  // Tobias' CheapSIMPLE
+#include "saddlepointpreconditioner.H"         // Tobias' saddle point preconditioner
 
 #include "solver_preconditionertype.H"
 
@@ -33,7 +34,7 @@ namespace LINALG
     public:
 
       SimplePreconditioner( FILE * outfile,
-          Teuchos::ParameterList & params, Teuchos::ParameterList & simpleparams );
+          Teuchos::ParameterList & params );
 
       virtual void Setup( bool create,
                           Epetra_Operator * matrix,
@@ -42,11 +43,10 @@ namespace LINALG
 
       virtual Epetra_Operator * PrecOperator() const { return &*P_; }
 
-      virtual void Print( std::ostream & stream ) { stream << "Simple"; }
+      virtual void Print( std::ostream & stream ) { stream << "CheapSimple"; }
 
     private:
       Teuchos::ParameterList & params_;
-      Teuchos::ParameterList & simpleparams_;
 
       Teuchos::RCP<Epetra_Operator>    P_;
     };

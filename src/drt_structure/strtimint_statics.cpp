@@ -29,6 +29,7 @@ STR::TimIntStatics::TimIntStatics
   const Teuchos::ParameterList& xparams,
   Teuchos::RCP<DRT::Discretization> actdis,
   Teuchos::RCP<LINALG::Solver> solver,
+  Teuchos::RCP<LINALG::Solver> contactsolver,
   Teuchos::RCP<IO::DiscretizationWriter> output
 )
 : TimIntImpl
@@ -38,6 +39,7 @@ STR::TimIntStatics::TimIntStatics
     xparams,
     actdis,
     solver,
+    contactsolver,
     output
   ),
   fint_(Teuchos::null),

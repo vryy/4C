@@ -52,6 +52,7 @@ namespace STR
       //const Teuchos::ParameterList& ab2params,  //!< AB2 flags
       Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
       Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
+      Teuchos::RCP<LINALG::Solver> contactsolver,  //!< the solver for contact meshtying
       Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
     );
 
