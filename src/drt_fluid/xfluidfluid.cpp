@@ -308,8 +308,8 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
             for (int t=0;t<8; ++t)
               ndstest.push_back(0);
 
-            actele->LocationVector(discret,nds,la,false);
-            //actele->LocationVector(discret,ndstest,la,false);
+            //actele->LocationVector(discret,nds,la,false);
+            actele->LocationVector(discret,ndstest,la,false);
 
             // get dimension of element matrices and vectors
             // Reshape element matrices and vectors and init to zero
@@ -773,8 +773,8 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputVolumeCell( DRT::Discretizati
   DRT::Element::LocationArray la( 1 );
 
   // get element location vector, dirichlet flags and ownerships
-  //actele->LocationVector(discret,ndstest,la,false);
-  actele->LocationVector(discret,nds,la,false);
+  actele->LocationVector(discret,ndstest,la,false);
+  //actele->LocationVector(discret,nds,la,false);
 
   std::vector<double> m(la[0].lm_.size());
 
@@ -1837,7 +1837,6 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
       GenAlphaIntermediateValues();
     }
   }
-  // debug output
 
   if (alefluid_)
     aletotaldispn_->Update(1.0,*aledispn_,1.0);
@@ -2202,6 +2201,7 @@ void FLD::XFluidFluid::SetNewStatevectorAndProjectEmbToBg(map<int, vector<int> >
       // compute the element coordinates of backgroundflnode due to the patch discretization
       // loop over all relevant patch boxes
       bool insideelement;
+      int count = 0;
       for (size_t box=0; box<elementsIdsofRelevantBoxes.size(); ++box)
       {
         // get the patch-element for the box
@@ -2218,7 +2218,10 @@ void FLD::XFluidFluid::SetNewStatevectorAndProjectEmbToBg(map<int, vector<int> >
           (*statevnp)[statevnp->Map().LID(bgdis_->Dof(bgnode)[3])] = interpolatedvec(3);
           break;
         }
+        count ++;
       }
+      if (count == elementsIdsofRelevantBoxes.size())
+        cout << "Warning: No box found for node " << bgnode->Id() << endl;
     }
   }
 }
@@ -2229,7 +2232,8 @@ void FLD::XFluidFluid::SetNewStatevectorAndProjectEmbToBg(map<int, vector<int> >
 void FLD::XFluidFluid::CreatePatchBoxes(std::map<int, GEO::CUT::BoundingBox> & patchboxes)
 {
   // get column version of the displacement vector
-  Teuchos::RCP<const Epetra_Vector> col_embfluiddispnm = DRT::UTILS::GetColVersionOfRowVector(embdis_, aledispnm_);
+  Teuchos::RCP<const Epetra_Vector> col_embfluiddisp =
+      DRT::UTILS::GetColVersionOfRowVector(embdis_, aletotaldispn_);
 
   // Map of all boxes of embedded fluid discretization
   for (int pele=0; pele<embdis_->NumMyColElements(); ++pele)
@@ -2242,8 +2246,8 @@ void FLD::XFluidFluid::CreatePatchBoxes(std::map<int, GEO::CUT::BoundingBox> & p
     vector<int> lmstride;
     actpele->LocationVector(*embdis_, lm, lmowner, lmstride);
 
-    vector<double> mydispnm(lm.size());
-    DRT::UTILS::ExtractMyValues(*col_embfluiddispnm, mydispnm, lm);
+    vector<double> mydisp(lm.size());
+    DRT::UTILS::ExtractMyValues(*col_embfluiddisp, mydisp, lm);
 
     GEO::CUT::BoundingBox patchbox;
     //patchboxes
@@ -2251,9 +2255,9 @@ void FLD::XFluidFluid::CreatePatchBoxes(std::map<int, GEO::CUT::BoundingBox> & p
     {
       // the coordinates of the actuall node
       LINALG::Matrix<3,1> pnodepos(true);
-      pnodepos(0,0) = pelenodes[pnode]->X()[0] + mydispnm[0+(pnode*4)];
-      pnodepos(1,0) = pelenodes[pnode]->X()[1] + mydispnm[1+(pnode*4)];
-      pnodepos(2,0) = pelenodes[pnode]->X()[2] + mydispnm[2+(pnode*4)];;
+      pnodepos(0,0) = pelenodes[pnode]->X()[0] + mydisp[0+(pnode*4)];
+      pnodepos(1,0) = pelenodes[pnode]->X()[1] + mydisp[1+(pnode*4)];
+      pnodepos(2,0) = pelenodes[pnode]->X()[2] + mydisp[2+(pnode*4)];;
 
       // fill the patchbox
       patchbox.AddPoint(pnodepos);
@@ -2275,7 +2279,7 @@ bool FLD::XFluidFluid::ComputeSpacialToElementCoordAndProject(DRT::Element*     
   DRT::Node** pelenodes = pele->Nodes();
 
   std::vector<double> myval(4);
-  std::vector<double> mydispnm(4);
+  std::vector<double> mydisp(4);
   std::vector<int> pgdofs(4);
   LINALG::Matrix<3,1> xsi(true);
 
@@ -2285,7 +2289,7 @@ bool FLD::XFluidFluid::ComputeSpacialToElementCoordAndProject(DRT::Element*     
     {
       const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
       LINALG::Matrix<4,numnodes> veln(true);
-      LINALG::Matrix<4,numnodes> dispnm;
+      LINALG::Matrix<4,numnodes> disp;
 
       for (int inode = 0; inode < numnodes; ++inode)
       {
@@ -2296,16 +2300,17 @@ bool FLD::XFluidFluid::ComputeSpacialToElementCoordAndProject(DRT::Element*     
         veln(2,inode) = myval[2];
         veln(3,inode) = myval[3];
 
-        DRT::UTILS::ExtractMyValues(*aledispnm_,mydispnm,pgdofs);
-        dispnm(0,inode) = mydispnm[0];
-        dispnm(1,inode) = mydispnm[1];
-        dispnm(2,inode) = mydispnm[2];
+        DRT::UTILS::ExtractMyValues(*aletotaldispn_,mydisp,pgdofs);
+        disp(0,inode) = mydisp[0];
+        disp(1,inode) = mydisp[1];
+        disp(2,inode) = mydisp[2];
 
         // get the coordinates of patch element and add the current displacement to it
-        pxyze(0,inode) = pelenodes[inode]->X()[0] + dispnm(0,inode);
-        pxyze(1,inode) = pelenodes[inode]->X()[1] + dispnm(1,inode);
-        pxyze(2,inode) = pelenodes[inode]->X()[2] + dispnm(2,inode);
+        pxyze(0,inode) = pelenodes[inode]->X()[0] + disp(0,inode);
+        pxyze(1,inode) = pelenodes[inode]->X()[1] + disp(1,inode);
+        pxyze(2,inode) = pelenodes[inode]->X()[2] + disp(2,inode);
       }
+
       // check whether the xfemnode is in the element
       LINALG::Matrix< 3,numnodes > xyzem(pxyze,true);
       GEO::CUT::Position <DRT::Element::hex8> pos(xyzem,x);
@@ -2339,8 +2344,10 @@ bool FLD::XFluidFluid::ComputeSpacialToElementCoordAndProject(DRT::Element*     
       break;
     }
     default:
+    {
       dserror("Element-type not supported here!");
       return false;
+    }
   }
 }
 // -------------------------------------------------------------------
@@ -2459,12 +2466,10 @@ void FLD::XFluidFluid::Output()
 //         (*state_->velnpoutput_)[state_->velnpoutput_->Map().LID(gid)]=(*state_->velnpoutput_)[state_->velnpoutput_->Map().LID(gid)] +                                                                (*state_->velnp_)[state_->velnp_->Map().LID(gid)];
 //     }
 
-    const Epetra_Map* dofrowmap = dofset_out_.DofRowMap(); // original fluid unknowns
-    const Epetra_Map* xdofrowmap = bgdis_->DofRowMap();  // fluid unknown for current cut
-
-
     #ifdef output
-    cout << "out put " << endl;
+    const Epetra_Map* dofrowmap = dofset_out_.DofRowMap(); // original fluid unknowns
+    const Epetra_Map* xdofrowmap = bgdis_->DofRowMap();    // fluid unknown for current cut
+
     for (int i=0; i<bgdis_->NumMyRowNodes(); ++i)
     {
       // get row node via local id
