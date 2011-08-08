@@ -137,6 +137,28 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
 }
 
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
+                                      const std::vector<DRT::Condition*>& conds,
+                                      map<int,map<int, DRT::Node*> >& nodes)
+{
+  const int myrank = dis.Comm().MyPID();
+  for (unsigned i=0; i<conds.size(); ++i)
+  {
+    int id = conds[i]->GetInt("coupling id");
+    const std::vector<int>* n = conds[i]->Nodes();
+    for (unsigned j=0; j<n->size(); ++j)
+    {
+      const int gid = (*n)[j];
+      if (dis.HaveGlobalNode(gid) and dis.gNode(gid)->Owner()==myrank)
+      {
+        (nodes[id])[gid] = dis.gNode(gid);
+      }
+    }
+  }
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
@@ -240,6 +262,44 @@ void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::UTILS::FindConditionObjects(const DRT::Discretization& dis,
+                                      map<int, map<int, DRT::Node*> >& nodes,
+                                      map<int, map<int, DRT::Node*> >& gnodes,
+                                      map<int, map<int, RCP<DRT::Element> > >& elements,
+                                      const string& condname)
+{
+  vector<DRT::Condition*> conds;
+  dis.GetCondition(condname, conds);
+
+  FindConditionedNodes(dis, conds, nodes);
+
+  for (unsigned i = 0; i < conds.size(); ++i)
+  {
+    int id = conds[i]->GetInt("coupling id");
+    // get this condition's elements
+    map< int, RCP< DRT::Element > >& geo = conds[i]->Geometry();
+    map< int, RCP< DRT::Element > >::iterator iter, pos;
+    pos = elements[id].begin();
+    for (iter = geo.begin(); iter != geo.end(); ++iter)
+    {
+      // get all elements locally known, including ghost elements
+      pos = elements[id].insert(pos, *iter);
+      const int* n = iter->second->NodeIds();
+      for (int j=0; j < iter->second->NumNode(); ++j)
+      {
+        const int gid = n[j];
+        if (dis.HaveGlobalNode(gid))
+        {
+          gnodes[id][gid] = dis.gNode(gid);
+        }
+        else
+          dserror("All nodes of known elements must be known. Panic.");
+      }
+    }
+  }
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
