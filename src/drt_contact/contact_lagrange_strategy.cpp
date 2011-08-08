@@ -2471,10 +2471,10 @@ void CONTACT::CoLagrangeStrategy::Solve(LINALG::Solver& solver,
     //if (systype==INPAR::CONTACT::system_spsimpler && solver.Params().isSublist("SIMPLER"))
     //  solver.Params().remove("SIMPLER");
 
-    cout << "##################################################" << endl;
-    cout << " USE FALLBACK SOLVER (pure structure problem)" << endl;
-    cout << fallbacksolver.Params() << endl;
-    cout << "##################################################" << endl;
+    //cout << "##################################################" << endl;
+    //cout << " USE FALLBACK SOLVER (pure structure problem)" << endl;
+    //cout << fallbacksolver.Params() << endl;
+    //cout << "##################################################" << endl;
 
     // standard solver call
     fallbacksolver.Solve(kdd->EpetraOperator(),sold,fd,true,numiter==0);
@@ -2507,10 +2507,10 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
     //if (systype==INPAR::CONTACT::system_spsimpler && solver.Params().isSublist("SIMPLER"))
     //  solver.Params().remove("SIMPLER");
 
-    cout << "##################################################" << endl;
-    cout << " USE FALLBACK SOLVER (pure structure problem)" << endl;
-    cout << fallbacksolver.Params() << endl;
-    cout << "##################################################" << endl;
+    //cout << "##################################################" << endl;
+    //cout << " USE FALLBACK SOLVER (pure structure problem)" << endl;
+    //cout << fallbacksolver.Params() << endl;
+    //cout << "##################################################" << endl;
 
     // standard solver call
     fallbacksolver.Solve(kdd->EpetraOperator(),sold,fd,true,numiter==0);
