@@ -3805,6 +3805,11 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   Teuchos::ParameterList& tsimonsolver = list->sublist("TSI MONOLITHIC SOLVER",false,"solver parameters for monoltihic tsi");
   SetValidSolverParameters(tsimonsolver);
 
+  // MESHTYING solver section
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& meshtyingsolver = list->sublist("MESHTYING SOLVER",false,"solver parameters for fluid or structure meshtying problem");
+  SetValidSolverParameters(meshtyingsolver);
+
   // CONTACT solver section
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& contactsolver = list->sublist("CONTACT SOLVER",false,"solver parameters for contact problem");

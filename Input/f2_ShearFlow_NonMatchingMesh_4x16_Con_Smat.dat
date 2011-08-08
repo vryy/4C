@@ -99,7 +99,7 @@ SEARCH_PARAM                    0.3
 SHAPEFCN                        Dual  //Standard, Dual
 STRATEGY                        LagrangianMultipliers  //Penalty,..
 SYSTEM                          SaddlePointCoupled  //SaddlePointCoupled, SaddlePointSimpler 
--------------------------------------------------------FLUID SOLVER
+-----------------------------------------------------MESHTYING SOLVER
 SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                  // output every so often, 0 no output
 AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR

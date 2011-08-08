@@ -171,11 +171,11 @@ contactsolver_(contactsolver)
     INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
     INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtmanager_->GetStrategy().Params(),"SYSTEM");
 
-    //**********************************************************************
+    // **********************************************************************
     // Solving a saddle point system
     // (1) Standard / Dual Lagrange multipliers -> SaddlePointCoupled
     // (2) Standard / Dual Lagrange multipliers -> SaddlePointSimpler
-    //**********************************************************************
+    // **********************************************************************
     if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
     {
       //contactsolver_->PutSolverParamsToSubParams("SIMPLER", DRT::Problem::Instance()->FluidPressureSolverParams());
@@ -3559,11 +3559,25 @@ void CONTACT::CmtStruGenAlpha::LinearSolve(int numiter, double wanted, double wo
   {
     // standard solver call (with contact/meshtying solver)
     //contactsolver_->Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
-    cmtmanager_->GetStrategy().Solve(*contactsolver_,solver_,stiff_,fresm_,disi_,dirichtoggle_,numiter);
+    //cmtmanager_->GetStrategy().Solve(*contactsolver_,solver_,stiff_,fresm_,disi_,dirichtoggle_,numiter);
+
+    // check if contact contributions are present,
+    // if not we make a standard solver call to speed things up
+    if (!cmtmanager_->GetStrategy().IsInContact() &&
+        !cmtmanager_->GetStrategy().WasInContact() &&
+        !cmtmanager_->GetStrategy().WasInContactLastTimeStep())
+    {
+      // standard solver call (fallback solver for pure structure problem)
+      solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
+      solver_.ResetTolerance();
+      return;
+    }
+
+    // solve with contact solver
+    contactsolver_->Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
   }
 
   // reset solver tolerance
-  solver_.ResetTolerance();
   contactsolver_->ResetTolerance();
 
   return;

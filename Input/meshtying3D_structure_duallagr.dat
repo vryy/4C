@@ -79,7 +79,7 @@ MIN_ELEPROC          0
 ------------------------------------------------------FLUID SOLVER
 -----------------------------------------------------STRUCT SOLVER
 SOLVER               UMFPACK
-----------------------------------------------------CONTACT SOLVER
+--------------------------------------------------MESHTYING SOLVER
 SOLVER         UMFPACK
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_NeoHooke  YOUNG 10 NUE 0.3 DENS 7.8e-6

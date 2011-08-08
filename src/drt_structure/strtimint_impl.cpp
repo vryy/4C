@@ -1389,7 +1389,6 @@ void STR::TimIntImpl::CmtLinearSolve()
   if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
   {
     // (iter_-1 to be consistent with old time integration)
-    //cmtman_->GetStrategy().SaddlePointSolve(*solver_,stiff_,fres_,disi_,dirichtoggle_,iter_-1);
     cmtman_->GetStrategy().SaddlePointSolve(*contactsolver_,*solver_,stiff_,fres_,disi_,dirichtoggle_,iter_-1);
   }
 
@@ -1400,9 +1399,20 @@ void STR::TimIntImpl::CmtLinearSolve()
   //**********************************************************************
   else
   {
-    // standard solver call with contact/meshtying solver
-    //contactsolver_->Solve(stiff_->EpetraOperator(),disi_,fres_,true,iter_==1);
-    cmtman_->GetStrategy().Solve(*contactsolver_,*solver_,stiff_,fres_,disi_,dirichtoggle_,iter_-1);
+    // check if contact contributions are present,
+    // if not we make a standard solver call to speed things up
+    if (!cmtman_->GetStrategy().IsInContact() &&
+        !cmtman_->GetStrategy().WasInContact() &&
+        !cmtman_->GetStrategy().WasInContactLastTimeStep())
+    {
+      // standard solver call (fallback solver for pure structure problem)
+      solver_->Solve(stiff_->EpetraOperator(),disi_,fres_,true,iter_==1);
+      return;
+    }
+
+    // solve with contact solver
+    contactsolver_->Solve(stiff_->EpetraOperator(),disi_,fres_,true,iter_==1);
+    //cmtman_->GetStrategy().Solve(*contactsolver_,*solver_,stiff_,fres_,disi_,dirichtoggle_,iter_-1);
   }
 
   // reset tolerance for contact solver

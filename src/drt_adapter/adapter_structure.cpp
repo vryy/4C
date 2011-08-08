@@ -741,24 +741,40 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
   Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
 
   const Teuchos::ParameterList& mcparams     = DRT::Problem::Instance()->MeshtyingAndContactParams();
+  INPAR::CONTACT::ApplicationType apptype    = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(mcparams,"APPLICATION");
   switch(DRT::INPUT::IntegralValue<int>(mcparams,"SYSTEM"))
   {
     case INPAR::CONTACT::system_spsimpler:
     {
       // meshtying/contact for structure
+      if(apptype == INPAR::CONTACT::app_mortarmeshtying)
+      {
+        // plausibility check
+        INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->MeshtyingSolverParams(),"AZPREC");
+        if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
+            prec != INPAR::SOLVER::azprec_TekoSIMPLE)
+          dserror("Mortar/Contact with saddlepoint system only possible with SIMPLE preconditioner. Choose CheapSIMPLE or TekoSIMPLE in the MESHTYING SOLVER block in your dat file.");
 
-      // plausibility check
-      INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->ContactSolverParams(),"AZPREC");
-      if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
-          prec != INPAR::SOLVER::azprec_TekoSIMPLE)
-        dserror("Mortar/Contact with saddlepoint system only possible with SIMPLE preconditioner. Choose CheapSIMPLE or TekoSIMPLE in the CONTACT SOLVER block in your dat file.");
+        // build meshtying solver
+        solver =
+        rcp(new LINALG::Solver(DRT::Problem::Instance()->MeshtyingSolverParams(),
+                               actdis->Comm(),
+                               DRT::Problem::Instance()->ErrorFile()->Handle()));
+      }
+      else if(apptype == INPAR::CONTACT::app_mortarcontact)
+      {
+        // plausibility check
+        INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->ContactSolverParams(),"AZPREC");
+        if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
+            prec != INPAR::SOLVER::azprec_TekoSIMPLE)
+          dserror("Mortar/Contact with saddlepoint system only possible with SIMPLE preconditioner. Choose CheapSIMPLE or TekoSIMPLE in the CONTACT SOLVER block in your dat file.");
 
-      // build saddlepoint solver
-      solver =
+        // build contact solver
+        solver =
         rcp(new LINALG::Solver(DRT::Problem::Instance()->ContactSolverParams(),
                                actdis->Comm(),
                                DRT::Problem::Instance()->ErrorFile()->Handle()));
-
+      }
       actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
       INPAR::CONTACT::ApplicationType apptype = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(mcparams,"APPLICATION");
@@ -781,9 +797,22 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
     break;
     default:
     {
-      solver = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->ContactSolverParams(),
-                                        actdis->Comm(),
-                                        DRT::Problem::Instance()->ErrorFile()->Handle()));
+      if(apptype == INPAR::CONTACT::app_mortarmeshtying)
+      {
+        // build meshtying solver
+        solver =
+        rcp(new LINALG::Solver(DRT::Problem::Instance()->MeshtyingSolverParams(),
+                               actdis->Comm(),
+                               DRT::Problem::Instance()->ErrorFile()->Handle()));
+      }
+      else if(apptype == INPAR::CONTACT::app_mortarcontact)
+      {
+        // build contact solver
+        solver =
+        rcp(new LINALG::Solver(DRT::Problem::Instance()->ContactSolverParams(),
+                               actdis->Comm(),
+                               DRT::Problem::Instance()->ErrorFile()->Handle()));
+      }
       actdis->ComputeNullSpaceIfNecessary(solver->Params());
     }
   }

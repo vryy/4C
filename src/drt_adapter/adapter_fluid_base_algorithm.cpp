@@ -151,7 +151,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     {
       // meshtying fluid
       solver =
-        rcp(new LINALG::Solver(DRT::Problem::Instance()->ContactSolverParams(),
+        rcp(new LINALG::Solver(DRT::Problem::Instance()->MeshtyingSolverParams(),
                                actdis->Comm(),
                                DRT::Problem::Instance()->ErrorFile()->Handle()));
 
@@ -168,6 +168,18 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
     }
     break;
+    case INPAR::FLUID::condensed_smat:
+    case INPAR::FLUID::condensed_bmat_merged:
+    case INPAR::FLUID::sps_coupled:
+    case INPAR::FLUID::coupling_iontransport_laplace:
+    { // meshtying (no saddle point problem)
+      solver =
+        rcp(new LINALG::Solver(DRT::Problem::Instance()->MeshtyingSolverParams(),
+                               actdis->Comm(),
+                               DRT::Problem::Instance()->ErrorFile()->Handle()));
+    }
+    break;
+    case INPAR::FLUID::no_meshtying: // no meshtying -> use FLUID SOLVER
     default:
     {
       // default: create solver using the FluidSolverParams from FLUID SOLVER block

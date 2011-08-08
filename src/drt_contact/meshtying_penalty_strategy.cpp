@@ -408,20 +408,4 @@ void CONTACT::MtPenaltyStrategy::UpdateAugmentedLagrange()
   return;
 }
 
-/*----------------------------------------------------------------------*
- | Solve linear system                                     wiesner 08/11|
- *----------------------------------------------------------------------*/
-/// default behaviour: use STRUCT SOLVER from dat file for condensed meshtying
-void CONTACT::MtPenaltyStrategy::Solve(LINALG::Solver& solver,
-                  LINALG::Solver& fallbacksolver,
-                  RCP<LINALG::SparseOperator> kdd,  RCP<Epetra_Vector> fd,
-                  RCP<Epetra_Vector>  sold, RCP<Epetra_Vector> dirichtoggle,
-                  int numiter)
-{
-  // solver for a condensed meshtying problem
-  // use fallbacksolver (=struct solver in meshtying/contact context)
-  fallbacksolver.Solve(kdd->EpetraOperator(),sold,fd,true,numiter==0);
-  return;
-}
-
 #endif // CCADISCRET

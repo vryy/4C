@@ -197,7 +197,6 @@ class StrategyBase
     virtual void ResetPenalty() = 0;
     virtual void RestrictMeshtyingZone() = 0;
     virtual void SaddlePointSolve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, RCP<LINALG::SparseOperator> kdd, RCP<Epetra_Vector> fd, RCP<Epetra_Vector> sold, RCP<Epetra_Vector> dirichtoggle, int numiter) = 0;
-    virtual void Solve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, RCP<LINALG::SparseOperator> kdd, RCP<Epetra_Vector> fd, RCP<Epetra_Vector> sold, RCP<Epetra_Vector> dirichtoggle, int numiter) = 0;
     virtual void SaveReferenceState(RCP<Epetra_Vector> dis) = 0;
     virtual void SetState(const string& statename, const RCP<Epetra_Vector> vec) = 0;
     virtual const RCP<Epetra_Map> SlipRowNodes() = 0;
