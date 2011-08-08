@@ -148,10 +148,23 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   // create a solver
   // -------------------------------------------------------------------
   Teuchos::RCP<LINALG::Solver> solver = CreateLinearSolver(actdis);
-//TODO
-  // create contact/meshtying solver only if contact/meshtying problem.
-  Teuchos::RCP<LINALG::Solver> contactsolver = CreateContactMeshtyingSolver(actdis);
 
+  // create contact/meshtying solver only if contact/meshtying problem.
+  Teuchos::RCP<LINALG::Solver> contactsolver = Teuchos::null;
+  INPAR::CONTACT::ApplicationType bContact = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
+  switch (bContact)
+  {
+    case INPAR::CONTACT::app_none:
+      break;
+    case INPAR::CONTACT::app_mortarcontact:
+    case INPAR::CONTACT::app_mortarmeshtying:
+    case INPAR::CONTACT::app_beamcontact:
+      contactsolver = CreateContactMeshtyingSolver(actdis);
+      break;
+    default:
+      dserror("Cannot cope with choice of contact or meshtying type");
+      break;
+  }
 
   // -------------------------------------------------------------------
   // create a generalized alpha time integrator
