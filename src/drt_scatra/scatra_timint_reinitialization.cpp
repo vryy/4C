@@ -252,11 +252,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS_Boundary()
 		}
   }
 
-
-
-  // finalize the complete matrix
-  sysmat_->Complete();
-
   // end time measurement for element
   dtele_=Teuchos::Time::wallTime()-tcpuele;
 
