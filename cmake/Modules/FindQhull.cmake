@@ -12,12 +12,14 @@ ENDIF (QHULL_INCLUDE_DIR)
 
 FIND_PATH(QHULL_INCLUDE_DIR qhull/qhull.h
   ${INCLUDE_INSTALL_DIR}
+  ${QHULL_INCLUDE_DIR}
   /usr/local/include
   /usr/include
 )
 
 FIND_LIBRARY(QHULL_LIBRARY libqhull.so
   ${LIB_INSTALL_DIR}
+  ${QHULL_LIBRARY_DIR}
   /usr/local/lib
   /usr/lib
 )
