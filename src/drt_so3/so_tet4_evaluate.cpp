@@ -105,7 +105,6 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
   else if (action=="calc_struct_reset_discretization") act = So_tet4::calc_struct_reset_discretization;
   else if (action=="calc_struct_errornorms")           act = So_tet4::calc_struct_errornorms;
   else if (action=="calc_struct_prestress_update")     act = So_tet4::prestress_update;
-  else if (action=="reset_struct_prestress")           act = So_tet4::prestress_reset;
   else if (action=="calc_struct_inversedesign_update") act = So_tet4::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch") act = So_tet4::inversedesign_switch;
   else dserror("Unknown type of action for So_tet4");
@@ -325,18 +324,6 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
 
       // push-forward invJ for every gaussian point
       UpdateJacobianMapping(mydisp,*prestress_);
-    }
-    break;
-    //==================================================================================
-    case prestress_reset:
-    {
-      // Reset the deformation gradient to unity f
-       LINALG::Matrix<3,3> F(true);
-       F(0,0) = F(1,1) = F(2,2) = 1.0;
-      for (int gp=0; gp<NUMGPT_SOTET4; ++gp)
-      {
-        prestress_->MatrixtoStorage(gp,F,prestress_->FHistory());
-      }
     }
     break;
 

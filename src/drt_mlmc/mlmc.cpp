@@ -1030,7 +1030,7 @@ void STR::MLMC::ResetPrestress()
     {
       ParameterList p;
       // action for elements
-      p.set("action","reset_struct_prestress");
+      p.set("action","calc_struct_reset_discretization");
       discret_->Evaluate(p,null,null,null,null,null);
      }
     break;

@@ -93,7 +93,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
   else if (action=="multi_newresultfile")                         act = So_hex8::multi_newresultfile;
   else if (action=="calc_potential_stiff")                        act = So_hex8::calc_potential_stiff;
   else if (action=="calc_struct_prestress_update")                act = So_hex8::prestress_update;
-  else if (action=="reset_struct_prestress")                      act = So_hex8::prestress_reset;
   else if (action=="calc_struct_inversedesign_update")            act = So_hex8::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch")            act = So_hex8::inversedesign_switch;
   else if (action=="calc_global_gpstresses_map")                   act = So_hex8::calc_global_gpstresses_map;
@@ -1010,21 +1009,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       UpdateJacobianMapping(mydisp,*prestress_);
     }
     break;
-
-    //==================================================================================
-    case prestress_reset:
-    {
-      // Reset the deformation gradient to unity f
-       LINALG::Matrix<3,3> F(true);
-       F(0,0) = F(1,1) = F(2,2) = 1.0;
-      for (int gp=0; gp<NUMGPT_SOH8; ++gp)
-      {
-        prestress_->MatrixtoStorage(gp,F,prestress_->FHistory());
-      }
-    }
-    break;
-
-
     //==================================================================================
     case inversedesign_update:
     {

@@ -383,7 +383,6 @@ protected:
                                        //!< to state in the beginning of the computation
     postprocess_stress,
     prestress_update,
-    prestress_reset,
     inversedesign_update,
     inversedesign_switch
   };

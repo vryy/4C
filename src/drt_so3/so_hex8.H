@@ -491,7 +491,6 @@ protected:
     eas_set_multi,            //!< multi-scale: set EAS parameters on microscale
     postprocess_stress,       //!< postprocess stresses
     prestress_update,
-    prestress_reset,
     inversedesign_update,
     inversedesign_switch,
     multi_readrestart,        //!< multi-scale: read restart on microscale

@@ -75,7 +75,6 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
   else if (action=="calc_struct_reset_discretization") act = So_weg6::calc_struct_reset_discretization;
   else if (action=="postprocess_stress")               act = So_weg6::postprocess_stress;
   else if (action=="calc_struct_prestress_update")     act = So_weg6::prestress_update;
-  else if (action=="reset_struct_prestress")           act = So_weg6::prestress_reset;
   else if (action=="calc_struct_inversedesign_update") act = So_weg6::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch") act = So_weg6::inversedesign_switch;
   else dserror("Unknown type of action for So_weg6");
@@ -411,19 +410,6 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       UpdateJacobianMapping(mydisp,*prestress_);
     }
     break;
-    //==================================================================================
-    case prestress_reset:
-    {
-      // Reset the deformation gradient to unity f
-       LINALG::Matrix<3,3> F(true);
-       F(0,0) = F(1,1) = F(2,2) = 1.0;
-      for (int gp=0; gp<NUMGPT_WEG6; ++gp)
-      {
-        prestress_->MatrixtoStorage(gp,F,prestress_->FHistory());
-      }
-    }
-    break;
-
     //==================================================================================
     case inversedesign_update:
     {
