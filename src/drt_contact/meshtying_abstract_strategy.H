@@ -435,6 +435,9 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     bool ActiveSetConverged() {return true;}
     bool ActiveSetSemiSmoothConverged() {return true;}
     bool Friction() {return false;}
+    bool IsInContact() { return true; }
+    bool WasInContact() { return true; }
+    bool WasInContactLastTimeStep() { return true; }
     bool Wear() {return false;}
     RCP<Epetra_Vector> ContactNorStress() {return Teuchos::null;}
     RCP<Epetra_Vector> ContactTanStress() {return Teuchos::null;}

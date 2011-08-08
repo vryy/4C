@@ -156,6 +156,7 @@ class StrategyBase
     // As the base class MORTAR::StrategyBase is always called from the control routine
     // (time integrator), these functions need to be defined purely virtual here.
 
+    virtual const RCP<Epetra_Map> ActiveRowNodes() = 0;
     virtual bool ActiveSetConverged() = 0;
     virtual bool ActiveSetSemiSmoothConverged() = 0;
     virtual void ApplyForceStiffCmt(RCP<Epetra_Vector> dis, RCP<LINALG::SparseOperator>& kt, RCP<Epetra_Vector>& f, bool predictor = false) = 0;
@@ -168,13 +169,18 @@ class StrategyBase
     virtual void DoWriteRestart(RCP<Epetra_Vector>& activetoggle,RCP<Epetra_Vector>& sliptoggle,RCP<Epetra_Vector>& weightedwear) = 0;
     virtual void Evaluate(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis) = 0;
     virtual void EvaluateMeshtying(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis) = 0;
+    virtual void EvaluateReferenceState(int step,const RCP<Epetra_Vector> vec) = 0;
+    virtual void EvaluateRelMov() = 0;
+    virtual void EvaluateRelMovPredict() = 0;
     virtual void ForceRefConfig() = 0;
+    virtual bool Friction() = 0;
     virtual void InitEvalInterface() = 0;
     virtual void InitEvalMortar() = 0;
     virtual void Initialize() = 0;
     virtual void InitializeUzawa(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff) = 0;
     virtual double InitialPenalty() = 0;
     virtual void InterfaceForces(bool output = false) = 0;
+    virtual bool IsInContact() = 0;
     virtual RCP<Epetra_Vector> LagrMult() = 0; 
     virtual RCP<Epetra_Vector> LagrMultOld() = 0;  
     virtual void MeshInitialization() = 0;
@@ -194,6 +200,7 @@ class StrategyBase
     virtual void Solve(LINALG::Solver& solver, LINALG::Solver& fallbacksolver, RCP<LINALG::SparseOperator> kdd, RCP<Epetra_Vector> fd, RCP<Epetra_Vector> sold, RCP<Epetra_Vector> dirichtoggle, int numiter) = 0;
     virtual void SaveReferenceState(RCP<Epetra_Vector> dis) = 0;
     virtual void SetState(const string& statename, const RCP<Epetra_Vector> vec) = 0;
+    virtual const RCP<Epetra_Map> SlipRowNodes() = 0;
     virtual void StoreDirichletStatus(RCP<LINALG::MapExtractor> dbcmaps) = 0;
     virtual void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) = 0;
     virtual void Update(int istep, RCP<Epetra_Vector> dis) = 0;
@@ -201,14 +208,10 @@ class StrategyBase
     virtual void UpdateActiveSetSemiSmooth() = 0;
     virtual void UpdateAugmentedLagrange() = 0;
     virtual void UpdateConstraintNorm(int uzawaiter = 0) = 0;
-    virtual void EvaluateReferenceState(int step,const RCP<Epetra_Vector> vec) = 0;
-    virtual void EvaluateRelMov() = 0;
-    virtual void EvaluateRelMovPredict() = 0;
-    virtual bool Friction() = 0;
-    virtual bool Wear() = 0;
     virtual void VisualizeGmsh(const int step, const int iter = 0) = 0;
-    virtual const RCP<Epetra_Map> ActiveRowNodes() = 0;
-    virtual const RCP<Epetra_Map> SlipRowNodes() = 0;
+    virtual bool WasInContact() = 0;
+    virtual bool WasInContactLastTimeStep() = 0;
+    virtual bool Wear() = 0;
  
     //@}
 

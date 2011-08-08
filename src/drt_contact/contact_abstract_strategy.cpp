@@ -359,9 +359,9 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   // initialize flags for global contact status
   if (gactivenodes_->NumGlobalElements())
   {
-    IsInContact()=true;
-    WasInContact()=true;
-    WasInContactLastTimeStep()=true;
+    isincontact_=true;
+    wasincontact_=true;
+    wasincontactlts_=true;
   }
   
   // ------------------------------------------------------------------------
@@ -1421,13 +1421,13 @@ void CONTACT::CoAbstractStrategy::Update(int istep, RCP<Epetra_Vector> dis)
   // update flag for global contact status of last time step
   if (gactivenodes_->NumGlobalElements())
   {
-    WasInContact()=true;
-    WasInContactLastTimeStep()=true;
+    wasincontact_=true;
+    wasincontactlts_=true;
   }
   else
   {
-    WasInContact()=false;
-    WasInContactLastTimeStep()=false;
+    wasincontact_=false;
+    wasincontactlts_=false;
   }
 
   //----------------------------------------friction: store history values
@@ -1647,9 +1647,9 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
   // update flags for global contact status
   if (gactivenodes_->NumGlobalElements())
   {
-    IsInContact()=true;
-    WasInContact()=true;
-    WasInContactLastTimeStep()=true;
+    isincontact_=true;
+    wasincontact_=true;
+    wasincontactlts_=true;
   }
   
   // evaluate relative movement (jump)

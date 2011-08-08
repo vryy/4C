@@ -3284,11 +3284,11 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
   // update flag for global contact status
   if (gactivenodes_->NumGlobalElements())
   {
-    IsInContact()=true;
-    WasInContact()=true;
+    isincontact_=true;
+    wasincontact_=true;
   }
   else
-    IsInContact()=false;
+    isincontact_=false;
 
   return;
 }
@@ -3590,11 +3590,11 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
   // update flag for global contact status
   if (gactivenodes_->NumGlobalElements())
   {
-      IsInContact()=true;
-      WasInContact()=true;
+    isincontact_=true;
+    wasincontact_=true;
   }
   else
-    IsInContact()=false;
+    isincontact_=false;
 
   return;
 }

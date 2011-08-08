@@ -205,7 +205,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     \brief Return current global contact status
 
     */
-    bool& IsInContact() { return isincontact_; }
+    bool IsInContact() { return isincontact_; }
 
     /*!
     \brief Return old global contact status (this time step)
@@ -213,7 +213,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     True if there has been contact in any nonlinear iteration
     step of the current time step.
     */
-    bool& WasInContact() { return wasincontact_; }
+    bool WasInContact() { return wasincontact_; }
 
     /*!
     \brief Return old global contact status (last time step)
@@ -221,7 +221,7 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     True if there has been contact at the end of the last
     time step (last converged state)
     */
-    bool& WasInContactLastTimeStep() { return wasincontactlts_; }
+    bool WasInContactLastTimeStep() { return wasincontactlts_; }
 
     /*!
     \brief Return global self contact status

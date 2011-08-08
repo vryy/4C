@@ -197,11 +197,11 @@ void CONTACT::CoPenaltyStrategy::EvaluateContact(RCP<LINALG::SparseOperator>& kt
 
   if (globalcontact>=1)
   {
-    IsInContact() = true;
-    WasInContact() = true;
+    isincontact_=true;
+    wasincontact_=true;
   }
   else
-    IsInContact() = false;
+    isincontact_=false;
 
   if( (Comm().MyPID()==0) && (globalchange>=1) )
     cout << "ACTIVE SET HAS CHANGED..." << endl;
