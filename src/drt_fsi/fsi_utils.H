@@ -180,7 +180,7 @@ namespace FSI
           DRT::Discretization& mtrdis,              ///< mtr interface  discretization
           Teuchos::RCP<Epetra_Vector> idispale,     ///< vector of ALE displacements
           const Epetra_Comm& comm,                  ///< communicator
-          double& rotrat,                           ///< rotation ratio of tangential displacements
+          map<int, double> rotrat,                           ///< rotation ratio of tangential displacements
           Teuchos::RCP<Epetra_Vector> rotfull       ///< vector of full displacements in tangential directions
       );
 
@@ -190,7 +190,7 @@ namespace FSI
       (
           Teuchos::RCP<Epetra_Vector> reddisp,     ///< redundant version of structure displacements
           DRT::Discretization& interfacedis,       ///< interface discretization
-          double& maxz
+          map<int, double> maxcoord
       );
       
 
@@ -221,18 +221,18 @@ namespace FSI
       vector<double> centerdisptotal_;            ///< sum over all center displacement increments
       double maxmindist_;                         ///<maximal distance between fluidpairs
       
-      map<int, DRT::Node*> istructslidnodes_;        ///< sliding struct nodes in the interface
-      map<int, Teuchos::RCP<DRT::Element> > istructslideles_;  ///< sliding struct elements in the interface
+//      map<int, Teuchos::RCP<DRT::Element> > istructslideles_;  ///< sliding struct elements in the interface
+      map<int, map<int, Teuchos::RCP<DRT::Element> > > istructslideles_;  ///< sliding struct elements in the interface
       map<int, DRT::Node*> istructdispnodes_;        ///< struct nodes in the interface used for centerdisp calculation
       map<int, Teuchos::RCP<DRT::Element> > istructdispeles_;  ///< struct elements in the interface used for centerdisp calc
-      Teuchos::RCP<Epetra_Map>  slideeleredmap_;      ///< redundant version of sliding struct elements
-      map<int, DRT::Node*> ifluidslidnodes_;          ///< sliding fluid nodes in the interface
+      map<int, Teuchos::RCP<Epetra_Map> >  slideeleredmap_;      ///< redundant version of sliding struct elements
+      map<int, map<int, DRT::Node*> > ifluidslidnodes_;          ///< sliding fluid nodes in the interface
       map<int, DRT::Node*> ifluidconfnodes_;          ///< sticking fluid nodes in the interface
       
-      map<int, Teuchos::RCP<DRT::Element> > ifluidslideles_;
-      map<int, Teuchos::RCP<DRT::Element> > ifluidslidstructeles_;
+      map<int, map<int, Teuchos::RCP<DRT::Element> > > ifluidslideles_;
+      map<int, map<int, Teuchos::RCP<DRT::Element> > > ifluidslidstructeles_;
 
-      map<int, Teuchos::RCP<DRT::Element> > structreduelements_;
+      map<int, map<int, Teuchos::RCP<DRT::Element> > > structreduelements_;
 
       Teuchos::RCP<Epetra_Map> structdofrowmap_;
       Teuchos::RCP<Epetra_Map> fluiddofrowmap_;
@@ -241,6 +241,7 @@ namespace FSI
       Teuchos::RCP<Epetra_Map> fluidfullnodemap_;
       Teuchos::RCP<Epetra_Map> fluidfullelemap_;
 
+      int maxid_;
 
       Teuchos::RCP<Epetra_Vector> iprojhist_;         ///< history of final displacements
       
