@@ -172,10 +172,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // then again a new redistribution of the redistributed scatra discretization would be performed
   if(reinitswitch_ == false)
   {
-	  cout << "apply periodic boundary conditions for scatra" << endl;
-	  pbc_ = rcp(new PeriodicBoundaryConditions (discret_));
-	  pbc_->UpdateDofsForPeriodicBoundaryConditions();
-	  pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
+    pbc_ = rcp(new PeriodicBoundaryConditions (discret_));
+    pbc_->UpdateDofsForPeriodicBoundaryConditions();
+    pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
   }
 
 
