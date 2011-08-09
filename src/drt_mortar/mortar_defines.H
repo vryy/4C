@@ -47,6 +47,7 @@ using namespace std;
 /* Mortar algorithm options                                             */
 /************************************************************************/
 
+//#define MORTARTRAFO           /* flag for basis trafo for quadratic FE */
 //#define MORTARNEWCOUPLING     /* flag for new coupling with consistent LM */
 
 /************************************************************************/
@@ -62,7 +63,7 @@ using namespace std;
 #define MORTARPROJLIM 1.0e-8   /* exact projection limit (no tolerance!) */
 
 // MORTAR PROJECTION AND INTEGRATION (3D)
-#define MORTARCLIPTOL 1.0e-12  /* tolerance for polygon clipping */
+#define MORTARCLIPTOL 1.0e-8   /* tolerance for polygon clipping */
 #define MORTARINTLIM 1.0e-12   /* min(area-%) cell/slave for integration */
 
 /************************************************************************/
@@ -73,6 +74,7 @@ using namespace std;
 //#define MORTARGMSH1          /* flag for gmsh output in each time step */
 //#define MORTARGMSH2          /* flag for gmsh output in each iteration */
 //#define MORTARGMSH3          /* flag for gmsh output at t = 0.0 */
+//#define MORTARGMSHCELLS      /* flag for gmsh output of intcells (3D) */
 //#define MORTARGMSHTN         /* gmsh output of all treenodes */
 //#define MORTARGMSHCTN        /* gmsh output of coupling treenodes */
 

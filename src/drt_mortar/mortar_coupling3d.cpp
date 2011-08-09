@@ -46,6 +46,10 @@ Maintainer: Alexander Popp
 #include "mortar_utils.H"
 #include "../drt_lib/drt_discret.H"
 
+#include "../drt_io/io_gmsh.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_control.H"
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
  *----------------------------------------------------------------------*/
@@ -2886,6 +2890,11 @@ bool MORTAR::Coupling3d::IntegrateCells()
     // integrate cell only if not neglectable
     if (intcellarea < MORTARINTLIM*selearea) continue;
 
+    // debug output of integration cells in GMSH
+#ifdef MORTARGMSHCELLS
+    GmshOutputCells(i);
+#endif // #ifdef MORTARGMSHCELLS
+    
     // set segmentation status of all slave nodes
     // (hassegment_ of a slave node is true if ANY segment/cell
     // is integrated that contributes to this slave node)
@@ -2945,10 +2954,6 @@ bool MORTAR::Coupling3d::IntegrateCells()
     // *******************************************************************
     else if (Quad() && (lmtype==INPAR::MORTAR::lagmult_quad_quad || lmtype==INPAR::MORTAR::lagmult_lin_lin))
     {
-      // check for dual shape functions and linear LM interpolation
-      if (shapefcn_ == INPAR::MORTAR::shape_dual && lmtype==INPAR::MORTAR::lagmult_lin_lin)
-        dserror("ERROR: Linear LM interpolation not yet implemented for DUAL 3D quadratic mortar");
-
       // prepare integration of M (and possibly D) on intcells
       int nrow = SlaveElement().NumNode();
       int ncol = MasterElement().NumNode();
@@ -3023,6 +3028,79 @@ bool MORTAR::Coupling3d::IntegrateCells()
   }
   
   return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Integration of cells (3D)                                 popp 07/11|
+ *----------------------------------------------------------------------*/
+void MORTAR::Coupling3d::GmshOutputCells(int lid)
+{
+  // every processor writes its own cell file
+  int proc = idiscret_.Comm().MyPID();
+  int nproc = idiscret_.Comm().NumProc();
+  
+  // write each integration cell only once
+  // (no overlap, only owner of slave element writes output)
+  if (proc != SlaveElement().Owner()) return;
+    
+  // construct unique filename for gmsh output
+  // first index = time step index
+  std::ostringstream filename;
+  const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  filename << "o/gmsh_output/" << filebase << "_cells_" << proc << ".pos";
+  
+  // do output to file in c-style
+  FILE* fp = NULL;
+  
+  // static variable
+  static int count = 0;
+  
+  // open file
+  if (count==0) fp = fopen(filename.str().c_str(), "w");
+  else          fp = fopen(filename.str().c_str(), "a");
+  
+  // plot current integration cell
+  const Epetra_SerialDenseMatrix& coord = Cells()[lid]->Coords();
+  
+  // write output to temporary stringstream
+  std::stringstream gmshfilecontent;
+  
+  // header and dummy elements
+  if (count==0)
+  {
+    // header
+    gmshfilecontent << "View \"Integration Cells Proc " << proc << "\" {" << endl;
+    
+    // dummy element 1
+    gmshfilecontent << "ST(" << scientific << 0.0 << "," << 0.0 << ","
+                    << 0.0 << "," << 0.0 << "," << 0.0 << ","
+                    << 0.0 << "," << 0.0 << "," << 0.0 << ","
+                    << 0.0 << ")";
+    gmshfilecontent << "{" << scientific << 0 << "," << 0 << "," << 0 << "};" << endl;
+    
+    // dummy element 1
+    gmshfilecontent << "ST(" << scientific << 0.0 << "," << 0.0 << ","
+                    << 0.0 << "," << 0.0 << "," << 0.0 << ","
+                    << 0.0 << "," << 0.0 << "," << 0.0 << ","
+                    << 0.0 << ")";
+    gmshfilecontent << "{" << scientific << nproc << "," << nproc << "," << nproc << "};" << endl;
+  }
+  
+  // plot cell itself
+  gmshfilecontent << "ST(" << scientific << coord(0,0) << "," << coord(1,0) << ","
+                  << coord(2,0) << "," << coord(0,1) << "," << coord(1,1) << ","
+                  << coord(2,1) << "," << coord(0,2) << "," << coord(1,2) << ","
+                  << coord(2,2) << ")";
+  gmshfilecontent << "{" << scientific << proc << "," << proc << "," << proc << "};" << endl;
+  
+  // move everything to gmsh post-processing files and close them
+  fprintf(fp,gmshfilecontent.str().c_str());
+  fclose(fp);
+  
+  // increase static variable
+  count += 1;
+  
+  return;
 }
 
 /*----------------------------------------------------------------------*

@@ -276,6 +276,40 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     break;
   }
   // *********************************************************************
+  // 2D modified (hierarchical) quadratic shape functions (tri6)
+  // (used in combination with linear dual LM field in 3D quadratic mortar)
+  // *********************************************************************
+  case MortarElement::quad2D_hierarchical:
+  {
+    const double r=xi[0];
+    const double s=xi[1];
+    const double t1 = 1.0-r-s;
+    const double t2 = r;
+    const double t3 = s;
+
+    val[0] = t1;
+    val[1] = t2;
+    val[2] = t3;
+    val[3] = 4.0*t2*t1;
+    val[4] = 4.0*t2*t3;
+    val[5] = 4.0*t3*t1;
+
+    deriv(0,0)= -1.0;
+    deriv(0,1)= -1.0;
+    deriv(1,0)=  1.0;
+    deriv(1,1)=  0.0;
+    deriv(2,0)=  0.0;
+    deriv(2,1)=  1.0;
+    deriv(3,0)= 4.0*(1.0-2.0*r-s);
+    deriv(3,1)=-4.0*r;
+    deriv(4,0)= 4.0*s;
+    deriv(4,1)= 4.0*r;
+    deriv(5,0)=-4.0*s;
+    deriv(5,1)= 4.0*(1.0-r-2.0*s);
+
+    break;
+  }
+  // *********************************************************************
   // 2D linear part of standard quadratic shape functions (tri6)
   // (used for linear interpolation of std LM field in 3D quadratic mortar)
   // *********************************************************************
@@ -437,6 +471,49 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     break;
   }
   // *********************************************************************
+  // 2D modified (hierarchical) serendipity shape functions (quad8)
+  // (used in combination with linear dual LM field in 3D quadratic mortar)
+  // *********************************************************************
+  case MortarElement::serendipity2D_hierarchical:
+  {
+    const double r=xi[0];
+    const double s=xi[1];
+    const double rp=1.0+r;
+    const double rm=1.0-r;
+    const double sp=1.0+s;
+    const double sm=1.0-s;
+    const double r2=1.0-r*r;
+    const double s2=1.0-s*s;
+
+    val[0]=0.25*rm*sm;
+    val[1]=0.25*rp*sm;
+    val[2]=0.25*rp*sp;
+    val[3]=0.25*rm*sp;
+    val[4]=0.5*r2*sm;
+    val[5]=0.5*s2*rp;
+    val[6]=0.5*r2*sp;
+    val[7]=0.5*s2*rm;
+
+    deriv(0,0)=-0.25*sm;
+    deriv(0,1)=-0.25*rm;
+    deriv(1,0)= 0.25*sm;
+    deriv(1,1)=-0.25*rp;
+    deriv(2,0)= 0.25*sp;
+    deriv(2,1)= 0.25*rp;
+    deriv(3,0)=-0.25*sp;
+    deriv(3,1)= 0.25*rm;
+    deriv(4,0)=-sm*r;
+    deriv(4,1)=-0.5*rm*rp;
+    deriv(5,0)= 0.5*sm*sp;
+    deriv(5,1)=-rp*s;
+    deriv(6,0)=-sp*r;
+    deriv(6,1)= 0.5*rm*rp;
+    deriv(7,0)=-0.5*sm*sp;
+    deriv(7,1)=-rm*s;
+
+    break;
+  }
+  // *********************************************************************
   // 2D bilinear part of serendipity quadratic shape functions (quad8)
   // (used for linear interpolation of std LM field in 3D quadratic mortar)
   // *********************************************************************
@@ -502,6 +579,149 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
     deriv(2,1)= shp*rh*rp;
     deriv(3,0)= rhm*sh*sp;
     deriv(3,1)=-shp*rh*rm;
+    deriv(4,0)= 2.0*r*sh*sm;
+    deriv(4,1)= shm*r2;
+    deriv(5,0)= rhp*s2;
+    deriv(5,1)=-2.0*s*rh*rp;
+    deriv(6,0)=-2.0*r*sh*sp;
+    deriv(6,1)= shp*r2;
+    deriv(7,0)= rhm*s2;
+    deriv(7,1)= 2.0*s*rh*rm;
+    deriv(8,0)=-2.0*r*s2;
+    deriv(8,1)=-2.0*s*r2;
+
+    break;
+  }
+  // *********************************************************************
+  // 2D standard biquadratic shape functions (quad9)
+  // (used in combination with quadr dual LM field in 3D quadratic mortar)
+  // *********************************************************************
+  case MortarElement::biquad2D_modified:
+  {
+    const double r=xi[0];
+    const double s=xi[1];
+    const double rp=1.0+r;
+    const double rm=1.0-r;
+    const double sp=1.0+s;
+    const double sm=1.0-s;
+    const double r2=1.0-r*r;
+    const double s2=1.0-s*s;
+    const double rh=0.5*r;
+    const double sh=0.5*s;
+    const double rs=rh*sh;
+    const double rhp=r+0.5;
+    const double rhm=r-0.5;
+    const double shp=s+0.5;
+    const double shm=s-0.5;
+
+    LINALG::SerialDenseVector valtmp(NumNode(),1);
+    LINALG::SerialDenseMatrix derivtmp(NumNode(),2);
+    
+    valtmp[0]= rs*rm*sm;
+    valtmp[1]=-rs*rp*sm;
+    valtmp[2]= rs*rp*sp;
+    valtmp[3]=-rs*rm*sp;
+    valtmp[4]=-sh*sm*r2;
+    valtmp[5]= rh*rp*s2;
+    valtmp[6]= sh*sp*r2;
+    valtmp[7]=-rh*rm*s2;
+    valtmp[8]= r2*s2;
+
+    derivtmp(0,0)=-rhm*sh*sm;
+    derivtmp(0,1)=-shm*rh*rm;
+    derivtmp(1,0)=-rhp*sh*sm;
+    derivtmp(1,1)= shm*rh*rp;
+    derivtmp(2,0)= rhp*sh*sp;
+    derivtmp(2,1)= shp*rh*rp;
+    derivtmp(3,0)= rhm*sh*sp;
+    derivtmp(3,1)=-shp*rh*rm;
+    derivtmp(4,0)= 2.0*r*sh*sm;
+    derivtmp(4,1)= shm*r2;
+    derivtmp(5,0)= rhp*s2;
+    derivtmp(5,1)=-2.0*s*rh*rp;
+    derivtmp(6,0)=-2.0*r*sh*sp;
+    derivtmp(6,1)= shp*r2;
+    derivtmp(7,0)= rhm*s2;
+    derivtmp(7,1)= 2.0*s*rh*rm;
+    derivtmp(8,0)=-2.0*r*s2;
+    derivtmp(8,1)=-2.0*s*r2;
+    
+    // define constant modification factor
+    // (CURRENTLY NOT USED -> ZERO)
+    double fac = 0.0;
+
+    // apply constant modification at vertex nodes and PoU
+    val[0]=valtmp[0]+(valtmp[4]+valtmp[7])*fac+0.5*valtmp[8]*fac;
+    val[1]=valtmp[1]+(valtmp[4]+valtmp[5])*fac+0.5*valtmp[8]*fac;
+    val[2]=valtmp[2]+(valtmp[5]+valtmp[6])*fac+0.5*valtmp[8]*fac;
+    val[3]=valtmp[3]+(valtmp[6]+valtmp[7])*fac+0.5*valtmp[8]*fac;
+    val[4]=valtmp[4]*(1.0-2.0*fac);
+    val[5]=valtmp[5]*(1.0-2.0*fac);
+    val[6]=valtmp[6]*(1.0-2.0*fac);
+    val[7]=valtmp[7]*(1.0-2.0*fac);
+    val[8]=valtmp[8]*(1.0-4.0*0.5*fac);
+
+    deriv(0,0)=derivtmp(0,0)+(derivtmp(4,0)+derivtmp(7,0))*fac+0.5*derivtmp(8,0)*fac;
+    deriv(0,1)=derivtmp(0,1)+(derivtmp(4,1)+derivtmp(7,1))*fac+0.5*derivtmp(8,1)*fac;
+    deriv(1,0)=derivtmp(1,0)+(derivtmp(4,0)+derivtmp(5,0))*fac+0.5*derivtmp(8,0)*fac;
+    deriv(1,1)=derivtmp(1,1)+(derivtmp(4,1)+derivtmp(5,1))*fac+0.5*derivtmp(8,1)*fac;
+    deriv(2,0)=derivtmp(2,0)+(derivtmp(5,0)+derivtmp(6,0))*fac+0.5*derivtmp(8,0)*fac;
+    deriv(2,1)=derivtmp(2,1)+(derivtmp(5,1)+derivtmp(6,1))*fac+0.5*derivtmp(8,1)*fac;
+    deriv(3,0)=derivtmp(3,0)+(derivtmp(6,0)+derivtmp(7,0))*fac+0.5*derivtmp(8,0)*fac;
+    deriv(3,1)=derivtmp(3,1)+(derivtmp(6,1)+derivtmp(7,1))*fac+0.5*derivtmp(8,1)*fac;
+    deriv(4,0)=derivtmp(4,0)*(1.0-2.0*fac);
+    deriv(4,1)=derivtmp(4,1)*(1.0-2.0*fac);
+    deriv(5,0)=derivtmp(5,0)*(1.0-2.0*fac);
+    deriv(5,1)=derivtmp(5,1)*(1.0-2.0*fac);
+    deriv(6,0)=derivtmp(6,0)*(1.0-2.0*fac);
+    deriv(6,1)=derivtmp(6,1)*(1.0-2.0*fac);
+    deriv(7,0)=derivtmp(7,0)*(1.0-2.0*fac);
+    deriv(7,1)=derivtmp(7,1)*(1.0-2.0*fac);
+    deriv(8,0)=derivtmp(8,0)*(1.0-4.0*0.5*fac);
+    deriv(8,1)=derivtmp(8,1)*(1.0-4.0*0.5*fac);
+
+    break;
+  }
+  // *********************************************************************
+  // 2D standard biquadratic shape functions (quad9)
+  // (used in combination with linear dual LM field in 3D quadratic mortar)
+  // *********************************************************************
+  case MortarElement::biquad2D_hierarchical:
+  {
+    const double r=xi[0];
+    const double s=xi[1];
+    const double rp=1.0+r;
+    const double rm=1.0-r;
+    const double sp=1.0+s;
+    const double sm=1.0-s;
+    const double r2=1.0-r*r;
+    const double s2=1.0-s*s;
+    const double rh=0.5*r;
+    const double sh=0.5*s;
+    //const double rs=rh*sh;
+    const double rhp=r+0.5;
+    const double rhm=r-0.5;
+    const double shp=s+0.5;
+    const double shm=s-0.5;
+
+    val[0]=0.25*rm*sm;
+    val[1]=0.25*rp*sm;
+    val[2]=0.25*rp*sp;
+    val[3]=0.25*rm*sp;
+    val[4]=-sh*sm*r2;
+    val[5]= rh*rp*s2;
+    val[6]= sh*sp*r2;
+    val[7]=-rh*rm*s2;
+    val[8]= r2*s2;
+
+    deriv(0,0)=-0.25*sm;
+    deriv(0,1)=-0.25*rm;
+    deriv(1,0)= 0.25*sm;
+    deriv(1,1)=-0.25*rp;
+    deriv(2,0)= 0.25*sp;
+    deriv(2,1)= 0.25*rp;
+    deriv(3,0)=-0.25*sp;
+    deriv(3,1)= 0.25*rm;
     deriv(4,0)= 2.0*r*sh*sm;
     deriv(4,1)= shm*r2;
     deriv(5,0)= rhp*s2;
@@ -596,13 +816,11 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
   // *********************************************************************
   // 1D dual quadratic shape functions (line3)
   // 2D dual bilinear shape functions (quad4)
-  // 2D dual biquadratic shape functions (quad9)
   // (used for interpolation of Lagrange mutliplier field)
   // (including adaption process for distorted elements)
   // *********************************************************************
   case MortarElement::quaddual1D:
   case MortarElement::bilindual2D:
-  case MortarElement::biquaddual2D:
   {
     // establish fundamental data
     double detg = 0.0;
@@ -662,12 +880,14 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
   // *********************************************************************
   // 2D dual quadratic shape functions (tri6)
   // 2D dual serendipity shape functions (quad8)
+  // 2D dual biquadratic shape functions (quad9)
   // (used for interpolation of Lagrange mutliplier field)
   // (including adaption process for distorted elements)
   // (including modification of displacement shape functions)
   // *********************************************************************
   case MortarElement::quaddual2D:
   case MortarElement::serendipitydual2D:
+  case MortarElement::biquaddual2D:
   {
     // establish fundamental data
     double detg = 0.0;
@@ -705,6 +925,94 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape,
 
     // evaluate dual shape functions at loc. coord. xi
     EvaluateShape(xi, valquad, derivquad, nnodes, true);
+    val.Zero(); deriv.Zero();
+
+    for (int i=0;i<nnodes;++i)
+      for (int j=0;j<nnodes;++j)
+      {
+        val[i]+=ae(i,j)*valquad[j];
+        deriv(i,0)+=ae(i,j)*derivquad(j,0);
+        deriv(i,1)+=ae(i,j)*derivquad(j,1);
+      }
+
+    break;
+  }
+  // *********************************************************************
+  // 2D dual quadratic shape functions (tri6)
+  // 2D dual serendipity shape functions (quad8)
+  // 2D dual biquadratic shape functions (quad9)
+  // (used for LINEAR interpolation of Lagrange mutliplier field)
+  // (including adaption process for distorted elements)
+  // (including modification of displacement shape functions)
+  // *********************************************************************
+  case MortarElement::quaddual2D_only_lin:
+  case MortarElement::serendipitydual2D_only_lin:
+  case MortarElement::biquaddual2D_only_lin:
+  {
+    // establish fundamental data
+    double detg = 0.0;
+    int nnodes = NumNode();
+
+    // empty shape function vals + derivs
+    LINALG::SerialDenseVector valquad(nnodes);
+    LINALG::SerialDenseMatrix derivquad(nnodes,2);
+
+    // compute entries to bi-ortho matrices me/de with Gauss quadrature
+    MORTAR::ElementIntegrator integrator(Shape());
+    LINALG::SerialDenseMatrix me(nnodes,nnodes,true);
+    LINALG::SerialDenseMatrix de(nnodes,nnodes,true);
+
+    for (int i=0;i<integrator.nGP();++i)
+    {
+      double gpc[2] = {integrator.Coordinate(i,0), integrator.Coordinate(i,1)};
+      if (shape==quaddual2D_only_lin)
+        ShapeFunctions(MortarElement::quad2D_only_lin,gpc,valquad,derivquad);
+      else if (shape==serendipitydual2D_only_lin)
+        ShapeFunctions(MortarElement::serendipity2D_only_lin,gpc,valquad,derivquad);
+      else if (shape==biquaddual2D_only_lin)
+        ShapeFunctions(MortarElement::biquad2D_only_lin,gpc,valquad,derivquad);
+      detg = Jacobian(gpc);
+
+      for (int j=0;j<nnodes;++j)
+        for (int k=0;k<nnodes;++k)
+        {
+          me(j,k)+=integrator.Weight(i)*valquad[j]*valquad[k]*detg;
+          de(j,k)+=(j==k)*integrator.Weight(i)*valquad[j]*detg;
+        }
+    }
+
+    // how many non-zero nodes
+    int nnodeslin = 0;
+    if (shape==quaddual2D_only_lin)             nnodeslin = 3;
+    else if (shape==serendipitydual2D_only_lin) nnodeslin = 4;
+    else if (shape==biquaddual2D_only_lin)      nnodeslin = 4;
+    
+    // reduce me to non-zero nodes before inverting
+    LINALG::SerialDenseMatrix melin(nnodeslin,nnodeslin,true);
+    for (int j=0;j<nnodeslin;++j)
+      for (int k=0;k<nnodeslin;++k)
+        melin(j,k) = me(j,k);
+    
+    // invert bi-ortho matrix melin
+    LINALG::SymmetricInverse(melin,nnodeslin);
+
+    // re-inflate inverse of melin to full size
+    LINALG::SerialDenseMatrix invme(nnodes,nnodes,true);
+    for (int j=0;j<nnodeslin;++j)
+      for (int k=0;k<nnodeslin;++k)
+        invme(j,k) = melin(j,k);
+    
+    // get solution matrix with dual parameters
+    LINALG::SerialDenseMatrix ae(nnodes,nnodes);
+    ae.Multiply('N','N',1.0,de,invme,0.0);
+
+    // evaluate dual shape functions at loc. coord. xi
+    if (shape==quaddual2D_only_lin)
+      ShapeFunctions(MortarElement::quad2D_only_lin,xi,valquad,derivquad);
+    else if (shape==serendipitydual2D_only_lin)
+      ShapeFunctions(MortarElement::serendipity2D_only_lin,xi,valquad,derivquad);
+    else if (shape==biquaddual2D_only_lin)
+      ShapeFunctions(MortarElement::biquad2D_only_lin,xi,valquad,derivquad);
     val.Zero(); deriv.Zero();
 
     for (int i=0;i<nnodes;++i)
@@ -907,6 +1215,19 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, LINALG::SerialDenseV
   if (!xi)
     dserror("ERROR: EvaluateShape called with xi=NULL");
 
+  // get node number and node pointers
+  DRT::Node** mynodes = Nodes();
+  if (!mynodes) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
+  
+  // check for boundary nodes
+  bool bound = false;
+  for (int i=0;i<NumNode();++i)
+  {
+    MortarNode* mymrtrnode = static_cast<MortarNode*> (mynodes[i]);
+    if (!mymrtrnode) dserror("ERROR: EvaluateShapeLagMult: Null pointer!");
+    bound += mymrtrnode->IsOnBound();
+  }
+  
   switch(Shape())
   {
   // 2D linear case (2noded line element)
@@ -941,23 +1262,27 @@ bool MORTAR::MortarElement::EvaluateShape(const double* xi, LINALG::SerialDenseV
   case DRT::Element::tri6:
   {
     if (valdim!=6) dserror("ERROR: Inconsistency in EvluateShape");
-    if (dualquad3d) ShapeFunctions(MortarElement::quad2D_modified,xi,val,deriv);
-    else            ShapeFunctions(MortarElement::quad2D,xi,val,deriv);
+    if (dualquad3d && !bound)     ShapeFunctions(MortarElement::quad2D_modified,xi,val,deriv);
+    else if (dualquad3d && bound) ShapeFunctions(MortarElement::quad2D_hierarchical,xi,val,deriv);
+    else                          ShapeFunctions(MortarElement::quad2D,xi,val,deriv);
     break;
   }
   // 3D serendipity case (8noded quadrilateral element)
   case DRT::Element::quad8:
   {
     if (valdim!=8) dserror("ERROR: Inconsistency in EvluateShape");
-    if (dualquad3d) ShapeFunctions(MortarElement::serendipity2D_modified,xi,val,deriv);
-    else            ShapeFunctions(MortarElement::serendipity2D,xi,val,deriv);
+    if (dualquad3d && !bound)     ShapeFunctions(MortarElement::serendipity2D_modified,xi,val,deriv);
+    else if (dualquad3d && bound) ShapeFunctions(MortarElement::serendipity2D_hierarchical,xi,val,deriv);
+    else                          ShapeFunctions(MortarElement::serendipity2D,xi,val,deriv);
     break;
   }
   // 3D biquadratic case (9noded quadrilateral element)
   case DRT::Element::quad9:
   {
     if (valdim!=9) dserror("ERROR: Inconsistency in EvluateShape");
-    ShapeFunctions(MortarElement::biquad2D,xi,val,deriv);
+    if (dualquad3d && !bound)     ShapeFunctions(MortarElement::biquad2D_modified,xi,val,deriv);
+    else if (dualquad3d && bound) ShapeFunctions(MortarElement::biquad2D_hierarchical,xi,val,deriv);
+    else                          ShapeFunctions(MortarElement::biquad2D,xi,val,deriv);
     break;
   }
   // unknown case

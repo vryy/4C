@@ -41,6 +41,7 @@ Maintainer: Alexander Popp
 #include "Epetra_SerialComm.h"
 #include "meshtying_lagrange_strategy.H"
 #include "meshtying_defines.H"
+#include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_mortar/mortar_node.H"
 #include "../drt_mortar/mortar_utils.H"
@@ -119,6 +120,35 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   //----------------------------------------------------------------------
   if (Dualquadslave3d())
   {
+#ifdef MORTARTRAFO
+    // do nothing
+    
+    /*
+    // FOR DEBUGGING ONLY
+    RCP<LINALG::SparseMatrix> it_ss,it_sm,it_ms,it_mm;
+    LINALG::SplitMatrix2x2(invtrafo_,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,it_ss,it_sm,it_ms,it_mm);
+    RCP<Epetra_Vector> checkg = LINALG::CreateVector(*gsdofrowmap_, true);
+    RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_,true);
+    RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
+    AssembleCoords("slave",true,xs);
+    AssembleCoords("master",true,xm);
+    RCP<LINALG::SparseMatrix> lhs = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,false,true));
+    RCP<LINALG::SparseMatrix> direct = LINALG::MLMultiply(*dmatrix_,false,*it_ss,false,false,false,true);
+    RCP<LINALG::SparseMatrix> mixed = LINALG::MLMultiply(*mmatrix_,false,*it_ms,false,false,false,true);
+    lhs->Add(*direct,false,1.0,1.0);
+    lhs->Add(*mixed,false,-1.0,1.0);
+    lhs->Complete(); 
+    RCP<Epetra_Vector> slave = rcp(new Epetra_Vector(*gsdofrowmap_));
+    lhs->Multiply(false,*xs,*slave);
+    RCP<Epetra_Vector> master = rcp(new Epetra_Vector(*gsdofrowmap_));
+    mmatrix_->Multiply(false,*xm,*master);
+    checkg->Update(1.0,*slave,1.0);
+    checkg->Update(-1.0,*master,1.0);
+    double infnorm = 0.0;
+    checkg->NormInf(&infnorm);
+    if (Comm().MyPID()==0) cout << "\nINFNORM OF G: " << infnorm << endl;
+    */
+#else
     // modify dmatrix_, invd_ and mhatmatrix_
     RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
     RCP<LINALG::SparseMatrix> temp2 = LINALG::MLMultiply(*trafo_,false,*invd_,false,false,false,true);
@@ -126,6 +156,29 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
     dmatrix_    = temp1;
     invd_       = temp2;
     mhatmatrix_ = temp3;
+#endif // #ifdef MORTARTRAFO
+  }
+  else
+  {
+    // do nothing
+
+    /*
+    //FOR DEBUGGING ONLY
+    RCP<Epetra_Vector> checkg = LINALG::CreateVector(*gsdofrowmap_, true);
+    RCP<Epetra_Vector> xs = LINALG::CreateVector(*gsdofrowmap_,true);
+    RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
+    AssembleCoords("slave",true,xs);
+    AssembleCoords("master",true,xm);
+    RCP<Epetra_Vector> slave = rcp(new Epetra_Vector(*gsdofrowmap_));
+    dmatrix_->Multiply(false,*xs,*slave);
+    RCP<Epetra_Vector> master = rcp(new Epetra_Vector(*gsdofrowmap_));
+    mmatrix_->Multiply(false,*xm,*master);
+    checkg->Update(1.0,*slave,1.0);
+    checkg->Update(-1.0,*master,1.0);
+    double infnorm = 0.0;
+    checkg->NormInf(&infnorm);
+    if (Comm().MyPID()==0) cout << "\nINFNORM OF G: " << infnorm << endl;
+    */
   }
 
   /**********************************************************************/
@@ -204,6 +257,14 @@ void CONTACT::MtLagrangeStrategy::MeshInitialization()
   Comm().Barrier();
   const double t_start = Teuchos::Time::wallTime();
 
+  // not yet working for quadratic FE with linear dual LM
+  if (Dualquadslave3d())
+  {
+#ifdef MORTARTRAFO
+    dserror("ERROR: MeshInitialization not yet implemented for this case");
+#endif // #ifdef MORTARTRAFO
+  }
+  
   //**********************************************************************
   // (1) get master positions on global level
   //**********************************************************************
@@ -219,24 +280,59 @@ void CONTACT::MtLagrangeStrategy::MeshInitialization()
     
   // shape function type
   INPAR::MORTAR::ShapeFcn shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(),"SHAPEFCN");
+
+  // quadratic FE with dual LM
+  if (Dualquadslave3d())
+  {
+#ifdef MORTARTRAFO
+    // split T^-1
+    RCP<LINALG::SparseMatrix> it_ss,it_sm,it_ms,it_mm;
+    LINALG::SplitMatrix2x2(invtrafo_,gsdofrowmap_,gmdofrowmap_,gsdofrowmap_,gmdofrowmap_,it_ss,it_sm,it_ms,it_mm);
+
+    // build lhs
+    RCP<LINALG::SparseMatrix> lhs = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,100,false,true));
+    RCP<LINALG::SparseMatrix> direct = LINALG::MLMultiply(*dmatrix_,false,*it_ss,false,false,false,true);
+    RCP<LINALG::SparseMatrix> mixed = LINALG::MLMultiply(*mmatrix_,false,*it_ms,false,false,false,true);
+    lhs->Add(*direct,false,1.0,1.0);
+    lhs->Add(*mixed,false,-1.0,1.0);
+    lhs->Complete(); 
     
-  // CASE A: DUAL LM SHAPE FUNCTIONS
-  if (shapefcn == INPAR::MORTAR::shape_dual)
-  {
-    // this is trivial for dual Lagrange multipliers
-    mhatmatrix_->Multiply(false,*Xmaster,*Xslavemod);
-  }
-  
-  // CASE B: STANDARD LM SHAPE FUNCTIONS
-  else if (shapefcn == INPAR::MORTAR::shape_standard)
-  {
-    // create linear problem
-    RCP<Epetra_Vector> rhs = LINALG::CreateVector(*gsdofrowmap_,true);
-    mmatrix_->Multiply(false,*Xmaster,*rhs);
+    // build rhs
+    RCP<Epetra_Vector> xm = LINALG::CreateVector(*gmdofrowmap_,true);
+    AssembleCoords("master",true,xm);
+    RCP<Epetra_Vector> rhs = rcp(new Epetra_Vector(*gsdofrowmap_));
+    mmatrix_->Multiply(false,*xm,*rhs);
     
     // solve with default solver
     LINALG::Solver solver(Comm());
-    solver.Solve(dmatrix_->EpetraOperator(),Xslavemod,rhs,true);
+    solver.Solve(lhs->EpetraOperator(),Xslavemod,rhs,true);
+#else
+    // this is trivial for dual Lagrange multipliers
+    mhatmatrix_->Multiply(false,*Xmaster,*Xslavemod);
+#endif // #ifdef MORTARTRAFO
+  }
+
+  // other cases (quadratic FE with std LM, linear FE)
+  else
+  {
+    // CASE A: DUAL LM SHAPE FUNCTIONS
+    if (shapefcn == INPAR::MORTAR::shape_dual)
+    {
+      // this is trivial for dual Lagrange multipliers
+      mhatmatrix_->Multiply(false,*Xmaster,*Xslavemod);
+    }
+    
+    // CASE B: STANDARD LM SHAPE FUNCTIONS
+    else if (shapefcn == INPAR::MORTAR::shape_standard)
+    {
+      // create linear problem
+      RCP<Epetra_Vector> rhs = LINALG::CreateVector(*gsdofrowmap_,true);
+      mmatrix_->Multiply(false,*Xmaster,*rhs);
+      
+      // solve with default solver
+      LINALG::Solver solver(Comm());
+      solver.Solve(dmatrix_->EpetraOperator(),Xslavemod,rhs,true);
+    }
   }
   
   //**********************************************************************
@@ -303,6 +399,29 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
 
     // split into slave/master part + structure part
     RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
+    
+    /**********************************************************************/
+    /* Apply basis transformation to K and f                              */
+    /* (currently only needed for quadratic FE with linear dual LM)       */
+    /**********************************************************************/
+    if (Dualquadslave3d())
+    {
+#ifdef MORTARTRAFO
+      // basis transformation
+      RCP<LINALG::SparseMatrix> systrafo = rcp(new LINALG::SparseMatrix(*problemrowmap_,100,false,true));
+      RCP<LINALG::SparseMatrix> eye = LINALG::Eye(*gndofrowmap_);
+      systrafo->Add(*eye,false,1.0,1.0);
+      if (ParRedist()) trafo_ = MORTAR::MatrixRowColTransform(trafo_,pgsmdofrowmap_,pgsmdofrowmap_);
+      systrafo->Add(*trafo_,false,1.0,1.0);
+      systrafo->Complete();
+      
+      // apply basis transformation to K and f
+      kteffmatrix = LINALG::MLMultiply(*kteffmatrix,false,*systrafo,false,false,false,true);
+      kteffmatrix = LINALG::MLMultiply(*systrafo,true,*kteffmatrix,false,false,false,true);
+      systrafo->Multiply(true,*feff,*feff);
+#endif // #ifdef MORTARTRAFO
+    }
+  
     if (ParRedist())
     {
       // split and transform to redistributed maps
@@ -558,6 +677,19 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
 
     // split into slave/master part + structure part
     RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
+
+    /**********************************************************************/
+    /* Apply basis transformation to K and f                              */
+    /* (currently only needed for quadratic FE with linear dual LM)       */
+    /**********************************************************************/
+    if (Dualquadslave3d())
+    {
+#ifdef MORTARTRAFO
+      // basis transformation
+      dserror("ERROR: MORTARTRAFO not yet implemented for this case.");
+#endif // #ifdef MORTARTRAFO
+    }
+
     if (ParRedist())
     {
       // split and transform to redistributed maps
@@ -776,6 +908,32 @@ void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(RCP<LINALG::SparseOperator>&
   //**********************************************************************
   else
   {
+    /**********************************************************************/
+    /* Apply basis transformation to K and f                              */
+    /* (currently only needed for quadratic FE with linear dual LM)       */
+    /**********************************************************************/
+    if (Dualquadslave3d())
+    {
+#ifdef MORTARTRAFO
+      // basis transformation
+      RCP<LINALG::SparseMatrix> systrafo = rcp(new LINALG::SparseMatrix(*problemrowmap_,100,false,true));
+      RCP<LINALG::SparseMatrix> eye = LINALG::Eye(*gndofrowmap_);
+      systrafo->Add(*eye,false,1.0,1.0);
+      if (ParRedist()) trafo_ = MORTAR::MatrixRowColTransform(trafo_,pgsmdofrowmap_,pgsmdofrowmap_);
+      systrafo->Add(*trafo_,false,1.0,1.0);
+      systrafo->Complete();
+
+      // apply basis transformation to K and f
+      kteff->Complete();
+      RCP<LINALG::SparseMatrix> kteffmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(kteff);
+      RCP<LINALG::SparseMatrix> kteffnew = rcp(new LINALG::SparseMatrix(*problemrowmap_,81,true,false,kteffmatrix->GetMatrixtype()));
+      kteffnew = LINALG::MLMultiply(*kteffmatrix,false,*systrafo,false,false,false,true);
+      kteffnew = LINALG::MLMultiply(*systrafo,true,*kteffnew,false,false,false,true);
+      kteff = kteffnew;
+      systrafo->Multiply(true,*feff,*feff);
+#endif // #ifdef MORTARTRAFO
+    }
+    
     // add meshtying force terms
     RCP<Epetra_Vector> fs = rcp(new Epetra_Vector(*gsdofrowmap_));
     dmatrix_->Multiply(true,*z_,*fs);
@@ -1015,7 +1173,25 @@ void CONTACT::MtLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
     LINALG::Export(*disis,*disisexp);
     disi->Update(1.0,*disisexp,1.0);
 #endif // #ifdef MESHTYINGTWOCON
-          
+
+    /**********************************************************************/
+    /* Undo basis transformation to solution                              */
+    /* (currently only needed for quadratic FE with linear dual LM)       */
+    /**********************************************************************/
+    if (Dualquadslave3d())
+    {
+#ifdef MORTARTRAFO
+      // undo basis transformation to solution
+      RCP<LINALG::SparseMatrix> systrafo = rcp(new LINALG::SparseMatrix(*problemrowmap_,100,false,true));
+      RCP<LINALG::SparseMatrix> eye = LINALG::Eye(*gndofrowmap_);
+      systrafo->Add(*eye,false,1.0,1.0);
+      if (ParRedist()) trafo_ = MORTAR::MatrixRowColTransform(trafo_,pgsmdofrowmap_,pgsmdofrowmap_);
+      systrafo->Add(*trafo_,false,1.0,1.0);
+      systrafo->Complete();
+      systrafo->Multiply(false,*disi,*disi);
+#endif // #ifdef MORTARTRAFO
+    }
+    
     /**********************************************************************/
     /* Update Lagrange multipliers z_n+1                                  */
     /**********************************************************************/
@@ -1047,6 +1223,24 @@ void CONTACT::MtLagrangeStrategy::Recover(RCP<Epetra_Vector> disi)
   else
   {
     // do nothing (z_ was part of solution already)
+    
+    /**********************************************************************/
+    /* Undo basis transformation to solution                              */
+    /* (currently only needed for quadratic FE with linear dual LM)       */
+    /**********************************************************************/
+    if (Dualquadslave3d())
+    {
+#ifdef MORTARTRAFO
+      // undo basis transformation to solution
+      RCP<LINALG::SparseMatrix> systrafo = rcp(new LINALG::SparseMatrix(*problemrowmap_,100,false,true));
+      RCP<LINALG::SparseMatrix> eye = LINALG::Eye(*gndofrowmap_);
+      systrafo->Add(*eye,false,1.0,1.0);
+      if (ParRedist()) trafo_ = MORTAR::MatrixRowColTransform(trafo_,pgsmdofrowmap_,pgsmdofrowmap_);
+      systrafo->Add(*trafo_,false,1.0,1.0);
+      systrafo->Complete();
+      systrafo->Multiply(false,*disi,*disi);
+#endif // #ifdef MORTARTRAFO
+    }
   }
   
 

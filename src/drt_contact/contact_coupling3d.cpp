@@ -155,6 +155,11 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
     // integrate cell only if not neglectable
     if (intcellarea < MORTARINTLIM*selearea) continue;
 
+    // debug output of integration cells in GMSH
+#ifdef MORTARGMSHCELLS
+    GmshOutputCells(i);
+#endif // #ifdef MORTARGMSHCELLS
+    
     // set segmentation status of all slave nodes
     // (hassegment_ of a slave node is true if ANY segment/cell
     // is integrated that contributes to this slave node)

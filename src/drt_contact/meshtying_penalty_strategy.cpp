@@ -93,9 +93,13 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const RCP<Epetra_Vector> dis)
   //----------------------------------------------------------------------
   if (Dualquadslave3d())
   {
+#ifdef MORTARTRAFO
+    dserror("MORTARTRAFO not yet implemented for meshtying with penalty strategy");
+#else
     // modify dmatrix_
     RCP<LINALG::SparseMatrix> temp1 = LINALG::MLMultiply(*dmatrix_,false,*invtrafo_,false,false,false,true);
     dmatrix_    = temp1;
+#endif // #ifdef MORTARTRAFO
   }
 
   // build mortar matrix products

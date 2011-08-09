@@ -47,6 +47,7 @@ Maintainer: Alexander Popp
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_mortar/mortar_node.H"
 #include "../drt_mortar/mortar_element.H"
+#include "../drt_mortar/mortar_defines.H"
 #include "../drt_io/io.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -399,18 +400,20 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
   // *********************************************************************
-  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_pwlin ||
-       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_lin) &&
-       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_standard)
-    dserror("No Petrov-Galerkin approach (for LM) implemented for quadratic meshtying with STANDARD shape fct.");
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_pwlin ||
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_lin)
+    dserror("No Petrov-Galerkin approach (for LM) implemented for quadratic meshtying");
 
-  if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_pwlin_pwlin ||
-       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_lin_lin ||
-       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_pwlin ||
-       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_lin) &&
-       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_dual)
-    dserror("Only quadratic/quadratic approach (for LM) implemented for quadratic meshtying with DUAL shape fct.");
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_pwlin_pwlin &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_dual)
+    dserror("No pwlin/pwlin approach (for LM) implemented for quadratic meshtying with DUAL shape fct.");
 
+#ifndef MORTARTRAFO
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_lin_lin &&
+      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_dual)
+    dserror("Lin/lin approach (for LM) for quadratic meshtying with DUAL shape fct. requires MORTARTRAFO");
+#endif // #ifndef MORTARTRAFO
+    
   // *********************************************************************
   // warnings
   // *********************************************************************

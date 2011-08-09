@@ -242,8 +242,16 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
   //----------------------------------------------------------------------
   if (Dualquadslave3d())
   {
+    // for the MORTARTRAFO case consider both slave and master DOFs
+    // else, only consider slave DOFs
+#ifdef MORTARTRAFO
+    trafo_    = rcp(new LINALG::SparseMatrix(*gsmdofrowmap_,10));
+    invtrafo_ = rcp(new LINALG::SparseMatrix(*gsmdofrowmap_,10));
+
+#else
     trafo_    = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
     invtrafo_ = rcp(new LINALG::SparseMatrix(*gsdofrowmap_,10));
+#endif // #ifdef MORTARTRAFO
 
     // set of already processed nodes
     // (in order to avoid double-assembly for N interfaces)

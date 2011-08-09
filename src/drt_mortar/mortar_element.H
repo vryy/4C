@@ -215,14 +215,20 @@ public:
     serendipity2D_only_lin,     // quad->lin standard LM modification 2D
     biquad2D_only_lin,          // quad->lin standard LM modification 2D
 
+    quaddual1D_only_lin,        // quad->lin dual LM modification 1D (not yet impl.)
+    quaddual2D_only_lin,        // quad->lin dual LM modification 2D
+    serendipitydual2D_only_lin, // quad->lin dual LM modification 2D
+    biquaddual2D_only_lin,      // quad->lin dual LM modification 2D
+
+    quad1D_modified,            // displacement modification for dual LM quadratic 1D (not yet impl.)
     quad2D_modified,            // displacement modification for dual LM quadratic 2D
     serendipity2D_modified,     // displacement modification for dual LM serendipity 2D
     biquad2D_modified,          // displacement modification for dual LM biquadratic 2D
 
-    quaddual1D_only_lin,        // quad->lin dual LM modification 1D (not yet impl.)
-    quaddual2D_only_lin,        // quad->lin dual LM modification 2D (not yet impl.)
-    serendipitydual2D_only_lin, // quad->lin dual LM modification 2D (not yet impl.)
-    biquaddual2D_only_lin       // quad->lin dual LM modification 2D (not yet impl.)
+    quad1D_hierarchical,        // displacement modification for quad->lin dual LM quadratic 1D (not yet impl.)
+    quad2D_hierarchical,        // displacement modification for quad->lin dual LM quadratic 2D
+    serendipity2D_hierarchical, // displacement modification for quad->lin dual LM serendipity 2D
+    biquad2D_hierarchical       // displacement modification for quad->lin dual LM biquadratic 2D
   };
 
   //@}

@@ -47,6 +47,7 @@ Maintainer: Alexander Popp
 #include "contact_penalty_strategy.H"
 #include "contact_defines.H"
 #include "friction_node.H"
+#include "../drt_mortar/mortar_defines.H"
 #include "../drt_io/io.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -572,6 +573,10 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(input,"LAGMULT_QUAD") == INPAR::MORTAR::lagmult_quad_lin) &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") == INPAR::MORTAR::shape_dual)
     dserror("Only quadratic/quadratic approach (for LM) implemented for quadratic contact with DUAL shape fct.");
+
+#ifdef MORTARTRAFO
+    dserror("MORTARTRAFO not yet implemented for contact, only for meshtying");
+#endif // #ifndef MORTARTRAFO
 
   // *********************************************************************
   // warnings

@@ -418,6 +418,16 @@ public:
   
   //@}
 
+  //! @name Visualization and Debugging methods
+  
+  /*!
+  \brief Visualize integration cells with gmsh
+
+  */
+  virtual void GmshOutputCells(int lid);
+  
+  //@}
+
   //! @name Linearization methods (for mortar contact only!)
   
   /*!

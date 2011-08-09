@@ -1070,10 +1070,11 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DQuad(
   }
 
   // decide whether displacement shape fct. modification has to be considered or not
-  // this is the case for dual quadratic Lagrange multipliers on quad8 and tri6 elements
+  // this is the case for dual quadratic and linear Lagrange multipliers on quad9/quad8/tri6 elements
   bool dualquad3d = false;
-  if ( (shapefcn_ == INPAR::MORTAR::shape_dual) && (lmtype == INPAR::MORTAR::lagmult_quad_quad)
-    && (sele.Shape() == DRT::Element::quad8 || sele.Shape() == DRT::Element::tri6) )
+  if ( (shapefcn_ == INPAR::MORTAR::shape_dual) &&
+       (lmtype == INPAR::MORTAR::lagmult_quad_quad || lmtype == INPAR::MORTAR::lagmult_lin_lin) &&
+       (sele.Shape() == DRT::Element::quad9 || sele.Shape() == DRT::Element::quad8 || sele.Shape() == DRT::Element::tri6) )
   {
     dualquad3d = true;
   }
@@ -1239,7 +1240,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DQuad(
 
     // CASE 4: Dual LM shape functions and quadratic interpolation
     else if (shapefcn_ == INPAR::MORTAR::shape_dual &&
-             (lmtype == INPAR::MORTAR::lagmult_quad_quad || lmtype == INPAR::MORTAR::lagmult_lin_lin))
+             lmtype == INPAR::MORTAR::lagmult_quad_quad)
     {
       // compute all mseg (and dseg) matrix entries
       // loop over Lagrange multiplier dofs j
@@ -1265,6 +1266,47 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DQuad(
             (*mseg)(j,l) += prod*jac*wgt;
             (*dseg)(j,j) += prod*jac*wgt;
           }
+        }
+      }
+    }
+
+    // CASE 5: Dual LM shape functions and linear interpolation
+    // (here, we must NOT ignore the small off-diagonal terms for accurate convergence)
+    else if (shapefcn_ == INPAR::MORTAR::shape_dual &&
+             lmtype == INPAR::MORTAR::lagmult_lin_lin)
+    {
+      // compute all mseg and dseg matrix entries
+      // loop over Lagrange multiplier dofs j
+      for (int j=0; j<nrow*ndof; ++j)
+      {
+        // integrate mseg
+        for (int l=0; l<ncol*ndof; ++l)
+        {
+          int jindex = (int)(j/ndof);
+          int lindex = (int)(l/ndof);
+
+          // multiply the two shape functions
+          double prod = lmval[jindex]*mval[lindex];
+
+          // isolate the mseg entries to be filled and
+          // add current Gauss point's contribution to mseg
+          if ((j==l) || ((j-jindex*ndof)==(l-lindex*ndof)))
+            (*mseg)(j,l) += prod*jac*wgt;
+        }
+
+        // integrate dseg
+        for (int k=0; k<nrow*ndof; ++k)
+        {
+          int jindex = (int)(j/ndof);
+          int kindex = (int)(k/ndof);
+
+          // multiply the two shape functions
+          double prod = lmval[jindex]*sval[kindex];
+
+          // isolate the dseg entries to be filled and
+          // add current Gauss point's contribution to dseg
+          if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+            (*dseg)(j,k) += prod*jac*wgt;
         }
       }
     }
@@ -1360,10 +1402,11 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
   }
 
   // decide whether displacement shape fct. modification has to be considered or not
-  // this is the case for dual quadratic Lagrange multipliers on quad8 and tri6 elements
+  // this is the case for dual quadratic and linear Lagrange multipliers on quad9/quad8/tri6 elements
   bool dualquad3d = false;
-  if ( (shapefcn_ == INPAR::MORTAR::shape_dual) && (lmtype == INPAR::MORTAR::lagmult_quad_quad)
-    && (sele.Shape() == DRT::Element::quad8 || sele.Shape() == DRT::Element::tri6) )
+  if ( (shapefcn_ == INPAR::MORTAR::shape_dual) &&
+       (lmtype == INPAR::MORTAR::lagmult_quad_quad || lmtype == INPAR::MORTAR::lagmult_lin_lin) &&
+       (sele.Shape() == DRT::Element::quad9 || sele.Shape() == DRT::Element::quad8 || sele.Shape() == DRT::Element::tri6) )
   {
     dualquad3d = true;
   }
@@ -1548,7 +1591,7 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
     
     // CASE 4: Dual LM shape functions and quadratic interpolation
     else if (shapefcn_ == INPAR::MORTAR::shape_dual &&
-             (lmtype == INPAR::MORTAR::lagmult_quad_quad || lmtype == INPAR::MORTAR::lagmult_lin_lin))
+             lmtype == INPAR::MORTAR::lagmult_quad_quad)
     {
       // compute all mseg (and dseg) matrix entries
       // loop over Lagrange multiplier dofs j
@@ -1574,6 +1617,47 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
             (*mseg)(j,l) += prod*jac*wgt;
             (*dseg)(j,j) += prod*jac*wgt;
           }
+        }
+      }
+    }
+
+    // CASE 5: Dual LM shape functions and linear interpolation
+    // (here, we must NOT ignore the small off-diagonal terms for accurate convergence)
+    else if (shapefcn_ == INPAR::MORTAR::shape_dual &&
+             lmtype == INPAR::MORTAR::lagmult_lin_lin)
+    {
+      // compute all mseg and dseg matrix entries
+      // loop over Lagrange multiplier dofs j
+      for (int j=0; j<nrow*ndof; ++j)
+      {
+        // integrate mseg
+        for (int l=0; l<ncol*ndof; ++l)
+        {
+          int jindex = (int)(j/ndof);
+          int lindex = (int)(l/ndof);
+
+          // multiply the two shape functions
+          double prod = lmval[jindex]*mval[lindex];
+
+          // isolate the mseg entries to be filled and
+          // add current Gauss point's contribution to mseg
+          if ((j==l) || ((j-jindex*ndof)==(l-lindex*ndof)))
+            (*mseg)(j,l) += prod*jac*wgt;
+        }
+
+        // integrate dseg
+        for (int k=0; k<nrow*ndof; ++k)
+        {
+          int jindex = (int)(j/ndof);
+          int kindex = (int)(k/ndof);
+
+          // multiply the two shape functions
+          double prod = lmval[jindex]*sval[kindex];
+
+          // isolate the dseg entries to be filled and
+          // add current Gauss point's contribution to dseg
+          if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+            (*dseg)(j,k) += prod*jac*wgt;
         }
       }
     }
