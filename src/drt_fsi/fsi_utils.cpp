@@ -1281,7 +1281,7 @@ void FSI::UTILS::SlideAleUtils::Rotation
     DRT::Discretization& mtrdis,      ///< fluid discretization
     Teuchos::RCP<Epetra_Vector> idispale,            ///< vector of ALE displacements
     const Epetra_Comm& comm,                         ///< communicator
-    map<int, double> rotrat,                                  ///< rotation ratio of tangential displacements
+    map<int, double>& rotrat,                                  ///< rotation ratio of tangential displacements
     Teuchos::RCP<Epetra_Vector> rotfull              ///< vector of full displacements in tangential directions
 )
 {
