@@ -417,6 +417,7 @@ protected:
   RCP<Epetra_Vector> numcrossnodesconv_;
   RCP<Epetra_Vector> numbondconv_;
   RCP<Epetra_Vector> crosslinkonsamefilamentconv_;
+	RCP<Epetra_Vector> crosslink2elementconv_;
   RCP<Epetra_Vector> searchforneighboursconv_;
 
   // \brief structure type

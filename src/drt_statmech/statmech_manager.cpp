@@ -1235,6 +1235,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 			 * if two different crosslink molecules bind to the same two nodes. Then, the calculated crosslinker GID will be the
 			 * same in both cases, leading to problems within the discretization.
 			 * As long as an unused GID cannot be found, the crosslinker GID keeps getting incremented by 1.*/
+			discret_.Comm().Barrier();
 			while(1)
 			{
 				int gidexists = 1;
@@ -1249,9 +1250,10 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 					break;
 			}
 
-			/* Create mapping from crosslink molecule to crosslinker element GID*/
-			if(discret_.Comm().MyPID()==0)
-				(*crosslink2element_)[i] = newcrosslinkerGID;
+			/* Create mapping from crosslink molecule to crosslinker element GID
+			 * Note: No need for the usual procedure of exporting and reimporting to make things redundant
+			 * because info IS already redundant by design here.*/
+			(*crosslink2element_)[i] = newcrosslinkerGID;
 
 			/*a crosslinker is added on each processor which is row node owner of at least one of its nodes;
 			 *the processor which is row map owner of the node with the larger GID will be the owner of the new crosslinker element; on the other processors the new
@@ -1352,15 +1354,6 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 			}
 		}
 	} // ADDING ELEMENTS
-
-	// communicate crosslink2element to all Procs
-	if(discret_.Comm().MyPID()!=0)
-		crosslink2element_->PutScalar(0.0);
-
-	Epetra_Vector crosslink2elementtrans(*transfermap_,true);
-
-	crosslink2elementtrans.Export(*crosslink2element_,crosslinkexporter,Add);
-	crosslink2element_->Import(crosslink2elementtrans,crosslinkimporter,Insert);
 
   // synchronization
   discret_.CheckFilledGlobally();
@@ -1997,6 +1990,7 @@ void StatMechManager::WriteConv()
   numcrossnodesconv_ = rcp(new Epetra_Vector(*numcrossnodes_));
   numbondconv_ = rcp(new Epetra_Vector(*numbond_));
   crosslinkonsamefilamentconv_ = rcp(new Epetra_Vector(*crosslinkonsamefilament_));
+	crosslink2elementconv_ = rcp(new Epetra_Vector(*crosslink2element_));
   searchforneighboursconv_ = rcp(new Epetra_Vector(*searchforneighbours_));
 
   //set addedelements_, deletedelements_ empty vectors
@@ -2017,6 +2011,7 @@ void StatMechManager::RestoreConv(RCP<LINALG::SparseOperator>& stiff)
   numcrossnodes_ = rcp(new Epetra_Vector(*numcrossnodesconv_));
   numbond_ = rcp(new Epetra_Vector(*numbondconv_));
   crosslinkonsamefilament_ = rcp(new Epetra_Vector(*crosslinkonsamefilamentconv_));
+  crosslink2element_ = rcp(new Epetra_Vector(*crosslink2elementconv_));
   searchforneighbours_ = rcp(new Epetra_Vector(*searchforneighboursconv_));
 
   /*restore state of the discretization at the beginning of this time step; note that to this and
