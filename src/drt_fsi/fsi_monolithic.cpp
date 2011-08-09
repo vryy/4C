@@ -17,6 +17,8 @@
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_lib/drt_colors.H"
 
+#include "../drt_constraint/constraint_manager.H"
+
 #include "../drt_io/io_control.H"
 
 #ifdef PARALLEL
@@ -97,6 +99,13 @@ void FSI::MonolithicBase::Output()
   AleField().      Output();
 
   FluidField().LiftDrag();
+
+  if (StructureField().GetConstraintManager()->HaveMonitor())
+  {
+    StructureField().GetConstraintManager()->ComputeMonitorValues(StructureField().Dispnp());
+    if(Comm().MyPID() == 0)
+      StructureField().GetConstraintManager()->PrintMonitorValues();
+  }
 }
 
 

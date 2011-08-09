@@ -13,6 +13,7 @@
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../linalg/linalg_solver.H"
+
 #include "../drt_constraint/constraint_manager.H"
 
 #include "../drt_io/io_control.H"
@@ -995,13 +996,6 @@ void FSI::MortarMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
 void FSI::MortarMonolithicFluidSplit::Update()
 {
 
-  if (StructureField().GetConstraintManager()->HaveMonitor())
-  {
-    StructureField().GetConstraintManager()->ComputeMonitorValues(StructureField().Dispnp());
-    if(comm_.MyPID() == 0)
-      StructureField().GetConstraintManager()->PrintMonitorValues();
-  }
-
   // update history variabels for sliding ale
   if (aleproj_!= INPAR::FSI::ALEprojection_none)
   {
@@ -1057,6 +1051,13 @@ void FSI::MortarMonolithicFluidSplit::Output()
   AleField().      Output();
   FluidField().LiftDrag();
   
+  if (StructureField().GetConstraintManager()->HaveMonitor())
+  {
+    StructureField().GetConstraintManager()->ComputeMonitorValues(StructureField().Dispnp());
+    if(comm_.MyPID() == 0)
+      StructureField().GetConstraintManager()->PrintMonitorValues();
+  }
+
 }
 
 void FSI::MortarMonolithicFluidSplit::ReadRestart(int step)
