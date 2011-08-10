@@ -53,12 +53,22 @@ void EXODUS::ValidateInputFile(const RCP<Epetra_Comm> comm, const string datfile
   cout<<"...Read materials"<<endl;
   problem->ReadMaterials(reader);
 
+  // do not read the different fields (discretizations) here,
+  // since RAM might be a problem for huge problems!
+  // But, we have to insert empty dummy discretizations instead since
+  // some reading procedures depend on the number of fields (e.g., ReadKnots())
+  // std::string distype = (DRT::Problem::Instance())->ProblemTypeParams().get<std::string>("SHAPEFCT");
+
   // read and validate all condition definitions
   cout<<"...";
   problem->ReadConditions(reader);
 
-  // do not read the different fields (discretizations) here,
-  // since RAM might be a problem for huge problems!
+  /* input of materials of cloned fields (if needed) */
+  problem->ReadClonedMaterials(reader);
+
+  // read all knot information for isogeometric analysis
+  // and add it to the (derived) nurbs discretization
+  problem->ReadKnots(reader);
 
   // inform user about unused/obsolete section names being found
   // and force him/her to correct the input file accordingly

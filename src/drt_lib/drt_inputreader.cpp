@@ -314,13 +314,41 @@ void DatFileReader::ReadKnots(
   const int                              dim     ,
   const string                           name    ,
   Teuchos::RCP<DRT::NURBS::Knotvector> & disknots
-  ) const
+  )
 {
 
   // io to shell
   const int myrank  = comm_->MyPID();
 
   Epetra_Time time(*comm_);
+
+  // only the knotvector section of this discretisation
+  // type is of interest
+  string field;
+  if(name=="fluid" or name=="xfluid")
+  {
+    field = "FLUID";
+  }
+  else if(name=="structure")
+  {
+    field="STRUCTURE";
+  }
+  else if(name=="ale")
+  {
+    field="ALE";
+  }
+  else if(name=="scatra")
+  {
+    field="TRANSPORT";
+  }
+  else
+  {
+    dserror("Unknown discretization name for knotvector input\n");
+  }
+
+  // another valid section name was found
+  const string sectionname = "--"+field+" KNOTVECTORS";
+  knownsections_[sectionname] = true;
 
   if (myrank==0)
   {
@@ -364,26 +392,8 @@ void DatFileReader::ReadKnots(
 
         // only the knotvector section of this discretisation
         // type is of interest
-        if(name=="fluid" or name=="xfluid")
-        {
-          loc= tmp.rfind("FLUID");
-        }
-        else if(name=="structure")
-        {
-          loc= tmp.rfind("STRUCTURE");
-        }
-        else if(name=="ale")
-        {
-          loc= tmp.rfind("ALE");
-        }
-        else if(name=="scatra")
-        {
-          loc= tmp.rfind("TRANSPORT");
-        }
-        else
-        {
-          dserror("Unknown discretization name for knotvector input\n");
-        }
+        loc= tmp.rfind(field);
+
         if (loc == string::npos)
         {
           knotvectorsection=false;
@@ -513,26 +523,8 @@ void DatFileReader::ReadKnots(
 
         // only the knotvector section of this discretisation
         // type is of interest
-        if(name=="fluid" or name=="xfluid")
-        {
-          loc= tmp.rfind("FLUID");
-        }
-        else if(name=="structure")
-        {
-          loc= tmp.rfind("STRUCTURE");
-        }
-        else if(name=="ale")
-        {
-          loc= tmp.rfind("ALE");
-        }
-        else if(name=="scatra")
-        {
-          loc= tmp.rfind("TRANSPORT");
-        }
-        else
-        {
-          dserror("Unknown discretization name for knotvector input\n");
-        }
+        loc= tmp.rfind(field);
+
         if (loc == string::npos)
         {
           knotvectorsection=false;

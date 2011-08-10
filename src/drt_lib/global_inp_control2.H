@@ -38,7 +38,7 @@ Maintainer: Michael Gee
 using namespace std;
 using namespace Teuchos;
 
-// headers and prototypes of functions acessible from c++
+// headers and prototypes of functions accessible from c++
 
 string inp_micro_filename(int mypid);
 
@@ -46,7 +46,7 @@ string inp_micro_filename(int mypid);
 
 
 
-/* headers and prototypes of functions also acessible from c */
+/* headers and prototypes of functions also accessible from c */
 #ifdef __cplusplus
 extern "C"
 {

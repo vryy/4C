@@ -192,7 +192,7 @@ public:
   void ReadConditions(DRT::INPUT::DatFileReader& reader);
 
   /// input of knots for isogeometric analysis
-  void ReadKnots(const DRT::INPUT::DatFileReader& reader);
+  void ReadKnots(DRT::INPUT::DatFileReader& reader);
 
   //@}
 

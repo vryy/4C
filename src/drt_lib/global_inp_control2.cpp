@@ -108,7 +108,7 @@ void ntainp_ccadiscret()
   if (comm->MyPID()==0)
     problem->WriteInputParameters();
 
-  // before we destroy the reader we want to know about unused sectios
+  // before we destroy the reader we want to know about unused sections
   reader.PrintUnknownSections();
 
   return;

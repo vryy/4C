@@ -681,7 +681,7 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::ReadKnots(const DRT::INPUT::DatFileReader& reader)
+void DRT::Problem::ReadKnots(DRT::INPUT::DatFileReader& reader)
 {
   // decide which kind of spatial representation is required
   const Teuchos::ParameterList& ptype = ProblemTypeParams();
@@ -694,7 +694,7 @@ void DRT::Problem::ReadKnots(const DRT::INPUT::DatFileReader& reader)
 
   int dim = psize.get<int>("DIM");
 
-  // Iterate through all discretizations and sort the appropiate condition
+  // Iterate through all discretizations and sort the appropriate condition
   // into the correct discretization it applies to
 
   for (unsigned i=0; i<NumFields(); ++i)

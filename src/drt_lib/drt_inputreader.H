@@ -131,7 +131,7 @@ public:
     const int                              dim     ,
     const string                           name    ,
     Teuchos::RCP<DRT::NURBS::Knotvector> & disknots
-    ) const;
+    );
 
   /// print unknown section names found in the input file
   bool PrintUnknownSections();
