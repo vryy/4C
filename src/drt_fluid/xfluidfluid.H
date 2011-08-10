@@ -170,8 +170,12 @@ namespace FLD
 
       LINALG::MapExtractor      fluidfluidvelpressplitter_;
 
+      XFEM::FluidWizard wizard_;
+
+
       void GenAlphaIntermediateValues();
       void GenAlphaUpdateAcceleration();
+
 
     private:
 
@@ -205,7 +209,6 @@ namespace FLD
                                  Teuchos::RCP<Epetra_Vector> disp);
 
       XFluidFluid & xfluid_;
-      XFEM::FluidWizard wizard_;
       Teuchos::RCP<XFEM::FluidDofSet> dofset_;
     };
 
@@ -229,7 +232,8 @@ namespace FLD
     /// Solve stationary problem
     void SolveStationaryProblemFluidFluid();
 
-    /// setup the variables to do a new time step
+    /// setup the variables to do a new time step, new cut and
+    /// xfem-Timeintegration happens here
     void PrepareTimeStep();
 
     /// do nonlinear iteration, e.g. full Newton, Newton like or Fixpoint iteration
@@ -279,6 +283,11 @@ namespace FLD
                                                 LINALG::Matrix<3,1>&    x,  // background node's coordinates (x,y,z)
                                                 LINALG::Matrix<4,1>&    interpolatedvec,
                                                 RCP<Epetra_Vector>       fluidstate_vector_n);
+
+    void SetInitialFlowField(
+      const INPAR::FLUID::InitialField initfield,
+      const int startfuncno
+      );
 
      /*!
        \brief Access output object

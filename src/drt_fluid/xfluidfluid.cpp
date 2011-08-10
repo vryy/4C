@@ -176,14 +176,6 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   fluidfluidincvel_   = LINALG::CreateVector(*fluidfluiddofrowmap,true);
   fluidfluidvelnp_ = LINALG::CreateVector(*fluidfluiddofrowmap,true);
   fluidfluidzeros_ = LINALG::CreateVector(*fluidfluiddofrowmap,true);
-
-//   //--------------------------------------------------------
-//   // FluidFluid-Boundary Vectros passes to element
-//   // -------------------------------------------------------
-//   boundarydofrowmap_ = xfluid.boundarydis_->DofRowMap();
-//   ivelnp_ = LINALG::CreateVector(*boundarydofrowmap_,true);
-//   iveln_  = LINALG::CreateVector(*boundarydofrowmap_,true);
-//   ivelnm_ = LINALG::CreateVector(*boundarydofrowmap_,true);
 }
 
 // -------------------------------------------------------------------
@@ -582,10 +574,10 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
   std::ofstream press_f( press_str.str().c_str() );
   press_f << "View \"" << name << " pressure " << count << "\" {\n";
 
-  std::stringstream bound_str;
-  bound_str << name << "_bound_" << count << ".pos";
-  std::ofstream bound_f( bound_str.str().c_str() );
-  bound_f << "View \"" << name << " boundary " << count << "\" {\n";
+//   std::stringstream bound_str;
+//   bound_str << name << "_bound_" << count << ".pos";
+//   std::ofstream bound_f( bound_str.str().c_str() );
+//   bound_f << "View \"" << name << " boundary " << count << "\" {\n";
 
   const int numcolele = discret.NumMyColElements();
   for (int i=0; i<numcolele; ++i)
@@ -608,7 +600,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
           if ( e->IsCut() )
           {
             GmshOutputVolumeCell( discret, vel_f, press_f, actele, e, vc, vel );
-            GmshOutputBoundaryCell( discret, cutdiscret, bound_f, actele, e, vc );
+            //GmshOutputBoundaryCell( discret, cutdiscret, bound_f, actele, e, vc );
           }
           else
           {
@@ -624,17 +616,52 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
     }
   }
 
+  vel_f << "};\n";
+  press_f << "};\n";
+
+  vel_f << "View \"" << name << " embedded " << count << "\" {\n";
+  press_f << "View \"" << name << " embedded " << count << "\" {\n";
   const int numalecolele = alefluiddis.NumMyColElements();
   for (int i=0; i<numalecolele; ++i)
   {
     DRT::Element* actele = alefluiddis.lColElement(i);
     GmshOutputElementEmb( alefluiddis, vel_f, press_f, actele,alevel,dispntotal );
-//     GmshOutputElement( alefluiddis, vel_f, press_f, actele, alevel);
+  }
+  vel_f << "};\n";
+  press_f << "};\n";
+
+  vel_f << "View \"" << name << " void " << count << "\" {\n";
+  press_f << "View \"" << name << " void " << count << "\" {\n";
+  for (int i=0; i<numcolele; ++i)
+  {
+    DRT::Element* actele = discret.lColElement(i);
+
+    GEO::CUT::ElementHandle * e = wizard_.GetElement( actele );
+    if ( e!=NULL )
+    {
+      GEO::CUT::plain_volumecell_set cells;
+      std::vector<DRT::UTILS::GaussIntegration> intpoints;
+      e->VolumeCellGaussPoints( cells, intpoints );
+
+      int count = 0;
+      for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
+      {
+        GEO::CUT::VolumeCell * vc = *i;
+        if ( vc->Position()==GEO::CUT::Point::outside )
+        {
+          if ( e->IsCut() )
+          {
+            GmshOutputElement( discret, vel_f,  press_f, actele, vel);
+          }
+        }
+      }
+      count += 1;
+    }
   }
 
   vel_f << "};\n";
   press_f << "};\n";
-  bound_f << "};\n";
+//  bound_f << "};\n";
 }
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
@@ -1415,7 +1442,7 @@ void FLD::XFluidFluid::SolveStationaryProblemFluidFluid()
       // Neumann
       state_->neumann_loads_->PutScalar(0.0);
       bgdis_->SetState("scaaf",state_->scaaf_);
-      bgdis_->EvaluateNeumann(eleparams,*state_->neumann_loads_);
+      //bgdis_->EvaluateNeumann(eleparams,*state_->neumann_loads_);
       bgdis_->ClearState();
     }
 
@@ -1474,10 +1501,14 @@ void FLD::XFluidFluid::PrepareTimeStep()
   TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(aleveln_,alevelnm_, aleaccn_,
                                                 timealgo_, dta_, theta_, alehist_);
 
+
   // -------------------------------------------------------------------
   //  Set time parameter for element call
   // -------------------------------------------------------------------
   SetElementTimeParameter();
+
+  if (step_>1 and alefluid_)
+    CutAndSetStateVectors();
 
   // -------------------------------------------------------------------
   //  evaluate Dirichlet and Neumann boundary conditions
@@ -1518,6 +1549,7 @@ void FLD::XFluidFluid::PrepareTimeStep()
     bgdis_->ClearState();
   }
 }
+
 ///////////////////////////////////////////////////////////////
 //
 //////////////////////////////////////////////////////////////
@@ -1541,8 +1573,6 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
   dtele_    = 0.0;
   dtfilter_ = 0.0;
 
-  if (step_>1 and alefluid_)
-    CutAndSetStateVectors();
 
   if (myrank_ == 0)
   {
@@ -1568,6 +1598,7 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
 //      }
 //    }
 
+
   while (stopnonliniter==false)
   {
     // Insert fluid and xfluid vectors to fluidxfluid
@@ -1577,7 +1608,7 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
     itnum++;
 
     // -------------------------------------------------------------------
-    // call elements to calculate system matrix and RHS
+    // Call elements to calculate system matrix and RHS
     // -------------------------------------------------------------------
     {
       // get cpu time
@@ -1774,9 +1805,8 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
     maps.push_back(aledbcmaps_->CondMap());
     Teuchos::RCP<Epetra_Map> fluidfluiddbcmaps = LINALG::MultiMapExtractor::MergeMaps(maps);
 
-    //LINALG::ApplyDirichlettoSystem(state_->sysmat_,state_->incvel_,state_->residual_,state_->zeros_,*(state_->dbcmaps_->CondMap()));
+    //Linalg::ApplyDirichlettoSystem(state_->sysmat_,state_->incvel_,state_->residual_,state_->zeros_,*(state_->dbcmaps_->CondMap()));
     LINALG::ApplyDirichlettoSystem(state_->fluidfluidsysmat_,state_->fluidfluidincvel_,state_->fluidfluidresidual_,state_->fluidfluidzeros_                                   ,*fluidfluiddbcmaps);
-
 
     //-------solve for residual displacements to correct incremental displacements
     {
@@ -1805,7 +1835,6 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
     // update velocity and pressure values by increments
     //
     // -------------------------------------------------------------------
-
     state_->fluidfluidvelnp_->Update(1.0,*state_->fluidfluidincvel_,1.0);
 
     // extract velnp_
@@ -1842,6 +1871,7 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
     aletotaldispn_->Update(1.0,*aledispn_,1.0);
 
   state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "result", step_, state_->velnp_ , alevelnp_, aletotaldispn_);
+  state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "resultn", step_, state_->veln_ , aleveln_, aletotaldispn_);
 }
 // -------------------------------------------------------------------
 //
@@ -1921,6 +1951,7 @@ void FLD::XFluidFluid::AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoa
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::TimeUpdate()
 {
+  cout << " TimeUpdate " << endl;
   ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
 
   if(stabparams->get<string>("TDS") == "time_dependent")
@@ -2017,6 +2048,8 @@ void FLD::XFluidFluid::TimeUpdate()
     LINALG::Export(*aleonlyaccnp,*aleaccnp_);
   }
 
+  state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "result_accnp", step_, state_->accnp_, aleaccnp_, aletotaldispnp_);
+
   // update old acceleration
   state_->accn_->Update(1.0,*state_->accnp_,0.0);
   aleaccn_->Update(1.0,*aleaccnp_,0.0);
@@ -2040,16 +2073,16 @@ void FLD::XFluidFluid::TimeUpdate()
   // note: these methods return without action, if the problem does not
   //       have impedance boundary conditions
   // -------------------------------------------------------------------
-  bgdis_->ClearState();
-  bgdis_->SetState("velnp",state_->velnp_);
-  bgdis_->SetState("hist",state_->hist_);
+//   bgdis_->ClearState();
+//   bgdis_->SetState("velnp",state_->velnp_);
+//   bgdis_->SetState("hist",state_->hist_);
 
-  embdis_->ClearState();
-  embdis_->SetState("velnp",alevelnp_);
-  embdis_->SetState("hist",alehist_);
+//    embdis_->ClearState();
+//    embdis_->SetState("velnp",alevelnp_);
+//    embdis_->SetState("hist",alehist_);
 
-  bgdis_->ClearState();
-  embdis_->ClearState();
+//   bgdis_->ClearState();
+//   embdis_->ClearState();
 
 
 } //XFluidFluid::TimeUpdate()
@@ -2088,6 +2121,7 @@ void FLD::XFluidFluid::SetNewStatevector(map<int, vector<int> > stdnoden,
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::CutAndSetStateVectors()
 {
+  cout << " CutAndSetStateVectors " << endl;
   // map of standard node ids and their dof-gids in time step n
   std::map<int, vector<int> > stdnoden;
   const Epetra_Map* noderowmap = bgdis_->NodeRowMap();
@@ -2099,11 +2133,46 @@ void FLD::XFluidFluid::CutAndSetStateVectors()
     gid = noderowmap->GID(lid);
     // get the node
     DRT::Node * node = bgdis_->gNode(gid);
-    if( bgdis_->NumDof(node) != 0)
+    GEO::CUT::Node * n = state_->wizard_.GetNode(node->Id());
+    if (n!=NULL) // xfem nodes
+    {
+      GEO::CUT::Point * p = n->point();
+      GEO::CUT::Point::PointPosition pos = p->Position();
+      if (pos==GEO::CUT::Point::outside and bgdis_->NumDof(node) != 0) //std
+      {
+        //cout << " outside " << pos <<  " "<< node->Id() << endl;
+        vector<int> gdofs = bgdis_->Dof(node);
+        stdnoden[gid] = gdofs;
+      }
+      else if (pos==GEO::CUT::Point::inside) //void
+      {
+        //cout << " inside " <<  pos << node->Id() << endl;
+      }
+    }
+    else if( bgdis_->NumDof(node) != 0)
     {
       vector<int> gdofs = bgdis_->Dof(node);
       stdnoden[gid] = gdofs;
     }
+    else
+      cout << " why here? " << endl;
+  }
+
+  // Gmsh
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("std_node_id", step_, 5, 0, bgdis_->Comm().MyPID());
+  std::ofstream gmshfilecontent(filename.c_str());
+  {
+    gmshfilecontent << "View \" " << "std/void Node \" {\n";
+    for (int i=0; i<bgdis_->NumMyColNodes(); ++i)
+    {
+      int kind = 0;
+      const DRT::Node* actnode = bgdis_->lColNode(i);
+      const LINALG::Matrix<3,1> pos(actnode->X());
+      map<int, vector<int> >::const_iterator iter = stdnoden.find(actnode->Id());
+      if (iter != stdnoden.end()) kind = 1;
+      IO::GMSH::cellWithScalarToStream(DRT::Element::point1, kind, pos, gmshfilecontent);
+    }
+    gmshfilecontent << "};\n";
   }
 
   // create patch boxes of embedded elements
@@ -2114,16 +2183,14 @@ void FLD::XFluidFluid::CutAndSetStateVectors()
   // save the old state vector
   staten_ = state_;
 
+  state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "before_intr_vn", step_, state_->veln_, aleveln_, aletotaldispnp_);
+
   // new cut for the next time step
   Epetra_Vector idispcol( *boundarydis_->DofColMap() );
   idispcol.PutScalar( 0. );
   aletotaldispnp_->Update(1.0,*aledispnp_,1.0);
   LINALG::Export(*aletotaldispnp_,idispcol);
   state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
-
-  // set and/or project state vectors
-  SetNewStatevector(stdnoden,staten_->velnp_,state_->velnp_);
-  SetNewStatevector(stdnoden,staten_->accnp_,state_->accnp_);
 
   if (alefluid_)
   {
@@ -2138,19 +2205,30 @@ void FLD::XFluidFluid::CutAndSetStateVectors()
     SetNewStatevector(stdnoden,staten_->accn_,state_->accn_);
   }
 
+
+  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(state_->veln_,state_->velnm_, state_->accn_,
+                                                timealgo_, dta_, theta_, state_->hist_);
+  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(aleveln_,alevelnm_, aleaccn_,
+                                                timealgo_, dta_, theta_, alehist_);
+
+
+  //velocity as start velue
+  state_->velnp_->Update(1.0,*state_->veln_,0.0);  // use old velocity as start velue
+  alevelnp_->Update(1.0,*aleveln_,0.0); // use old velocity as start velue
+
   // debug output
-  state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "after_intr", step_, state_->veln_, aleveln_, aletotaldispnp_);
+  state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "after_intr_vp", step_, state_->velnp_, alevelnp_, aletotaldispnp_);
+  state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "after_intr_vn", step_, state_->veln_, aleveln_, aletotaldispnp_);
+  state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "after_intr_vnm", step_, state_->velnm_, alevelnm_, aletotaldispnp_);
+  state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "after_intr_accn", step_, state_->accn_, aleaccn_, aletotaldispnp_);
 
   bgdis_->ClearState();
-  bgdis_->SetState("velnp",state_->velnp_);
+  bgdis_->SetState("velaf",state_->velnp_);
   bgdis_->SetState("hist",state_->hist_);
 
   embdis_->ClearState();
-  embdis_->SetState("velnp",alevelnp_);
+  embdis_->SetState("velaf",alevelnp_);
   embdis_->SetState("hist",alehist_);
-
-  bgdis_->ClearState();
-  embdis_->ClearState();
 }
 // -------------------------------------------------------------------
 //
@@ -2201,7 +2279,7 @@ void FLD::XFluidFluid::SetNewStatevectorAndProjectEmbToBg(map<int, vector<int> >
       // compute the element coordinates of backgroundflnode due to the patch discretization
       // loop over all relevant patch boxes
       bool insideelement;
-      int count = 0;
+      size_t count = 0;
       for (size_t box=0; box<elementsIdsofRelevantBoxes.size(); ++box)
       {
         // get the patch-element for the box
@@ -2223,6 +2301,18 @@ void FLD::XFluidFluid::SetNewStatevectorAndProjectEmbToBg(map<int, vector<int> >
       if (count == elementsIdsofRelevantBoxes.size())
         cout << "Warning: No box found for node " << bgnode->Id() << endl;
     }
+    //n+1: void, n: void -> do nothing
+    else if ( bgdis_->NumDof(bgnode) == 0 and iter == stdnoden.end())
+    {
+
+    }
+    //n+1: void, n: std -> do nothing
+    else if ( bgdis_->NumDof(bgnode) == 0 and iter != stdnoden.end())
+    {
+
+    }
+    else
+      cout << "warum bin ich da?! " <<  bgdis_->NumDof(bgnode)   << " " <<    bgnode->Id() <<  endl;
   }
 }
 
@@ -2340,15 +2430,14 @@ bool FLD::XFluidFluid::ComputeSpacialToElementCoordAndProject(DRT::Element*     
     case DRT::Element::hex27:
     {
       dserror("No support for hex20 and hex27!");
-      return false;
       break;
     }
     default:
     {
       dserror("Element-type not supported here!");
-      return false;
     }
   }
+  return false;
 }
 // -------------------------------------------------------------------
 //
@@ -2403,35 +2492,35 @@ void FLD::XFluidFluid::Output()
   // output of solution
 
   const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("element_node_id", step_, 5, 0, bgdis_->Comm().MyPID());
-   std::ofstream gmshfilecontent(filename.c_str());
-   {
-     // draw bg elements with associated gid
-     gmshfilecontent << "View \" " << "bg Element->Id() \" {\n";
-     for (int i=0; i<bgdis_->NumMyColElements(); ++i)
-     {
-       const DRT::Element* actele = bgdis_->lColElement(i);
-       IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
-     };
-     gmshfilecontent << "};\n";
-   }
-   {
-     // draw cut elements with associated gid
-     gmshfilecontent << "View \" " << "cut Element->Id() \" {\n";
-     for (int i=0; i<boundarydis_->NumMyColElements(); ++i)
-     {
-       const DRT::Element* actele = boundarydis_->lColElement(i);
-       IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
-     };
-     gmshfilecontent << "};\n";
-     // draw embedded elements with associated gid
-     gmshfilecontent << "View \" " << "embedded Element->Id() \" {\n";
-     for (int i=0; i<embdis_->NumMyColElements(); ++i)
-     {
+  std::ofstream gmshfilecontent(filename.c_str());
+  {
+    // draw bg elements with associated gid
+    gmshfilecontent << "View \" " << "bg Element->Id() \" {\n";
+    for (int i=0; i<bgdis_->NumMyColElements(); ++i)
+    {
+      const DRT::Element* actele = bgdis_->lColElement(i);
+      IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
+    };
+    gmshfilecontent << "};\n";
+  }
+  {
+    // draw cut elements with associated gid
+    gmshfilecontent << "View \" " << "cut Element->Id() \" {\n";
+    for (int i=0; i<boundarydis_->NumMyColElements(); ++i)
+    {
+      const DRT::Element* actele = boundarydis_->lColElement(i);
+      IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
+    };
+    gmshfilecontent << "};\n";
+    // draw embedded elements with associated gid
+    gmshfilecontent << "View \" " << "embedded Element->Id() \" {\n";
+    for (int i=0; i<embdis_->NumMyColElements(); ++i)
+    {
        const DRT::Element* actele = embdis_->lColElement(i);
        IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
-     };
-     gmshfilecontent << "};\n";
-     {
+    };
+    gmshfilecontent << "};\n";
+    {
       gmshfilecontent << "View \" " << "bg Node->Id() \" {\n";
       for (int i=0; i<bgdis_->NumMyColNodes(); ++i)
       {
@@ -2440,8 +2529,8 @@ void FLD::XFluidFluid::Output()
         IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, gmshfilecontent);
       }
       gmshfilecontent << "};\n";
-     }
-     {
+    }
+    {
       gmshfilecontent << "View \" " << "embedded Node->Id() \" {\n";
       for (int i=0; i<embdis_->NumMyColNodes(); ++i)
       {
@@ -2451,8 +2540,8 @@ void FLD::XFluidFluid::Output()
       }
       gmshfilecontent << "};\n";
     }
-   }
-   gmshfilecontent.close();
+  }
+  gmshfilecontent.close();
 
   if (step_%upres_ == 0)
   {
@@ -2890,4 +2979,146 @@ void FLD::XFluidFluid::XFluidFluidState::GenAlphaUpdateAcceleration()
 
 //   return integratedshapefunc;
 //}
+///////////////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////////////
+void FLD::XFluidFluid::SetInitialFlowField(
+  const INPAR::FLUID::InitialField initfield,
+  const int startfuncno
+  )
+{
+  cout << "SetInitialFlowField " << endl;
+  // initial field by (undisturbed) function (init==2)
+  // or disturbed function (init==3)
+  if (initfield == INPAR::FLUID::initfield_field_by_function or
+      initfield == INPAR::FLUID::initfield_disturbed_field_from_function)
+  {
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<bgdis_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = bgdis_->lRowNode(lnodeid);
+      // the set of degrees of freedom associated with the node
+      const vector<int> nodedofset = bgdis_->Dof(lnode);
+
+      if (nodedofset.size()!=0)
+      {
+        for(int index=0;index<numdim_+1;++index)
+        {
+          int gid = nodedofset[index];
+
+          double initialval=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(index,lnode->X(),0.0,NULL);
+          state_->velnp_->ReplaceGlobalValues(1,&initialval,&gid);
+        }
+      }
+    }
+
+    // initialize veln_ as well.
+    state_->veln_->Update(1.0,*state_->velnp_ ,0.0);
+
+    // loop all nodes of embedded fluid on the processor
+    for(int lnodeid=0;lnodeid<embdis_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = embdis_->lRowNode(lnodeid);
+      // the set of degrees of freedom associated with the node
+      const vector<int> nodedofset = embdis_->Dof(lnode);
+
+      for(int index=0;index<numdim_+1;++index)
+      {
+        int gid = nodedofset[index];
+
+        double initialval=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(index,lnode->X(),0.0,NULL);
+
+        alevelnp_->ReplaceGlobalValues(1,&initialval,&gid);
+      }
+    }
+
+    // initialize veln_ as well.
+    aleveln_->Update(1.0,*alevelnp_ ,0.0);
+    LINALG::Export(*(alevelnp_),*(ivelnp_));
+  }
+
+
+  // special initial function: Beltrami flow (3-D)
+  else if (initfield == INPAR::FLUID::initfield_beltrami_flow)
+  {
+    const Epetra_Map* dofrowmap = bgdis_->DofRowMap();
+
+    int err = 0;
+
+    const int npredof = numdim_;
+
+    double         p;
+    vector<double> u  (numdim_);
+    vector<double> xyz(numdim_);
+
+    // check whether present flow is indeed three-dimensional
+    if (numdim_!=3) dserror("Beltrami flow is a three-dimensional flow!");
+
+    // set constants for analytical solution
+    const double a = M_PI/4.0;
+    const double d = M_PI/2.0;
+
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<bgdis_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = bgdis_->lRowNode(lnodeid);
+
+      // the set of degrees of freedom associated with the node
+      vector<int> nodedofset = bgdis_->Dof(lnode);
+
+      // set node coordinates
+      for(int dim=0;dim<numdim_;dim++)
+      {
+        xyz[dim]=lnode->X()[dim];
+      }
+
+      // compute initial velocity components
+      u[0] = -a * ( exp(a*xyz[0]) * sin(a*xyz[1] + d*xyz[2]) +
+                    exp(a*xyz[2]) * cos(a*xyz[0] + d*xyz[1]) );
+      u[1] = -a * ( exp(a*xyz[1]) * sin(a*xyz[2] + d*xyz[0]) +
+                    exp(a*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) );
+      u[2] = -a * ( exp(a*xyz[2]) * sin(a*xyz[0] + d*xyz[1]) +
+                    exp(a*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) );
+
+      // compute initial pressure
+      p = -a*a/2.0 *
+        ( exp(2.0*a*xyz[0])
+          + exp(2.0*a*xyz[1])
+          + exp(2.0*a*xyz[2])
+          + 2.0 * sin(a*xyz[0] + d*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) * exp(a*(xyz[1]+xyz[2]))
+          + 2.0 * sin(a*xyz[1] + d*xyz[2]) * cos(a*xyz[0] + d*xyz[1]) * exp(a*(xyz[2]+xyz[0]))
+          + 2.0 * sin(a*xyz[2] + d*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) * exp(a*(xyz[0]+xyz[1]))
+          );
+
+      // set initial velocity components
+      for(int nveldof=0;nveldof<numdim_;nveldof++)
+      {
+        const int gid = nodedofset[nveldof];
+        int lid = dofrowmap->LID(gid);
+        err += state_->velnp_->ReplaceMyValues(1,&(u[nveldof]),&lid);
+        err += state_->veln_ ->ReplaceMyValues(1,&(u[nveldof]),&lid);
+        err += state_->velnm_->ReplaceMyValues(1,&(u[nveldof]),&lid);
+      }
+
+      // set initial pressure
+      const int gid = nodedofset[npredof];
+      int lid = dofrowmap->LID(gid);
+      err += state_->velnp_->ReplaceMyValues(1,&p,&lid);
+      err += state_->veln_ ->ReplaceMyValues(1,&p,&lid);
+      err += state_->velnm_->ReplaceMyValues(1,&p,&lid);
+    } // end loop nodes lnodeid
+
+    if (err!=0) dserror("dof not on proc");
+  }
+
+  else
+  {
+    dserror("Only initial fields auch as a zero field, initial fields by (un-)disturbed functions and  Beltrami flow!");
+  }
+
+  return;
+} // end SetInitialFlowField
 
