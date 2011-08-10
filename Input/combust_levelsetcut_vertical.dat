@@ -33,7 +33,7 @@ x=-1                                    x=0                                     
                *        *        *       *       *        *      *       *
                1        2        3       4       5        6      7       8
 cut number (1-8) / interface position (*) / left element / right element / explanation
-1 / x = -0.6+1.0E-4   / uncut (u)         /  bisected (b)     / regular cut right element 
+1 / x = -0.6+1.0E-4   / uncut (u)         / bisected (b)      / regular cut right element 
 2 / x = -0.4-1.0E-5   / bisected->touched / uncut             / small plus volume in left element -> throw away volume + keep boundary cell
 3 / x = -0.2-1.0E-12  / touched (t)       / touched           / interface almost (left) on element boundary (within point tolerance)
 4 / x = 0.0           / touched           / touched           / interface exactly on element boundary
@@ -1243,20 +1243,20 @@ FLUID DIS 1 NODE 218 POSITION velx NAME velx VALUE  8.0e+00  TOLERANCE 1e-3
 FLUID DIS 1 NODE 231 POSITION velx NAME velx VALUE  9.0e+00  TOLERANCE 1e-3
 FLUID DIS 1 NODE 255 POSITION velx NAME velx VALUE  9.0e+00  TOLERANCE 1e-3
 FLUID DIS 1 NODE 7   POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 69  POSITION pressure NAME pressure VALUE  6.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 63  POSITION pressure NAME pressure VALUE  6.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 77  POSITION pressure NAME pressure VALUE  6.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 91  POSITION pressure NAME pressure VALUE  6.0e+00  TOLERANCE 1e-2
+FLUID DIS 1 NODE 69  POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-2
+FLUID DIS 1 NODE 63  POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-2
+FLUID DIS 1 NODE 77  POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-2
+FLUID DIS 1 NODE 91  POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-2
 FLUID DIS 1 NODE 105 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 118 POSITION pressure NAME pressure VALUE  6.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 133 POSITION pressure NAME pressure VALUE  6.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 147 POSITION pressure NAME pressure VALUE  6.0e+00  TOLERANCE 1e-2
+FLUID DIS 1 NODE 118 POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-2
+FLUID DIS 1 NODE 133 POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-2
+FLUID DIS 1 NODE 147 POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-2
 FLUID DIS 1 NODE 161 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-2
 FLUID DIS 1 NODE 175 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 189 POSITION pressure NAME pressure VALUE  6.0e+00  TOLERANCE 1e-2
+FLUID DIS 1 NODE 189 POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-2
 FLUID DIS 1 NODE 203 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-2
 FLUID DIS 1 NODE 218 POSITION pressure NAME pressure VALUE  4.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 231 POSITION pressure NAME pressure VALUE  6.0e+00  TOLERANCE 1e-2
-FLUID DIS 1 NODE 255 POSITION pressure NAME pressure VALUE  6.0e+00  TOLERANCE 1e-3
+FLUID DIS 1 NODE 231 POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-2
+FLUID DIS 1 NODE 255 POSITION pressure NAME pressure VALUE  2.0e+00  TOLERANCE 1e-2
 ---------------------------------------------------------------END
 // END

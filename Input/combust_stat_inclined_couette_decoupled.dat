@@ -58,6 +58,7 @@ COMBUSTTYPE                     Premixed_Combustion
 LAMINAR_FLAMESPEED              1.0
 MARKSTEIN_LENGTH                0.0
 NITSCHE_VELOCITY                10
+SMOOTHED_BOUNDARY_INTEGRATION   Yes
 SMOOTHGRADPHI                   smooth_grad_phi_meanvalue
 VELOCITY_JUMP_TYPE              vel_jump_premixed_combustion
 FLUX_JUMP_TYPE                  flux_jump_premixed_combustion
