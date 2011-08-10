@@ -1174,15 +1174,11 @@ void SysmatBoundarySurfaceTensionIntCell(
     static LINALG::Matrix<nsd,1> normal(true);
     normal.Clear();
 
-    // schott Sep 2, 2010
-    // call smoothed normals for an accurate evaluation of boundary integration terms
-    //TODO Ursula
     // normal points from Omega^+ to Omega^-
     if ((smoothed_boundary_integration == true)
         and (surftensapprox != INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed
-        or surftensapprox != INPAR::COMBUST::surface_tension_approx_divgrad_normal))
+        and surftensapprox != INPAR::COMBUST::surface_tension_approx_divgrad_normal))
     {
-      // get shape functions at gaussian point
       static LINALG::Matrix<numnode,1> funct_gp;
       funct_gp.Clear();
       DRT::UTILS::shape_function_3D(funct_gp,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
