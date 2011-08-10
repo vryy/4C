@@ -431,8 +431,8 @@ void DRT::INPUT::ConditionDefinition::AddComponent(Teuchos::RCP<ConditionCompone
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::INPUT::ConditionDefinition::Read(const Problem& problem,
-                                           const DatFileReader& reader,
-                                           std::multimap<int,Teuchos::RCP<DRT::Condition> >& cmap)
+    DatFileReader& reader,
+    std::multimap<int,Teuchos::RCP<DRT::Condition> >& cmap)
 {
   std::string name = "--";
   name += sectionname_;

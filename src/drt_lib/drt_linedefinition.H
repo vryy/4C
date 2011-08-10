@@ -226,7 +226,7 @@ namespace INPUT
 
     /// read section and return one LineDefinition per line read
     std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition> >
-    Read(const DatFileReader& reader, int suffix=-1);
+    Read(DatFileReader& reader, int suffix=-1);
 
   private:
 

@@ -256,7 +256,7 @@ Teuchos::RCP<DRT::INPUT::Lines> ResultTestManager::ValidResultLines()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ResultTestManager::ReadInput(const DRT::INPUT::DatFileReader& reader)
+void ResultTestManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 {
   Teuchos::RCP<DRT::INPUT::Lines> lines = ValidResultLines();
   results_ = lines->Read(reader);

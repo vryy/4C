@@ -368,7 +368,7 @@ namespace INPUT
       \param cmap (o) the conditions we read here
      */
     void Read(const Problem& problem,
-              const DatFileReader& reader,
+              DatFileReader& reader,
               std::multimap<int,Teuchos::RCP<DRT::Condition> >& cmap);
 
     /// print my dat file section and possible conditions from the Discretization

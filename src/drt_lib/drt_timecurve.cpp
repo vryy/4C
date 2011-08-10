@@ -468,7 +468,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::TimeCurveManager::ValidTimeCurveLine
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::TimeCurveManager::ReadInput(const DRT::INPUT::DatFileReader& reader)
+void DRT::UTILS::TimeCurveManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 {
   curves_.clear();
 

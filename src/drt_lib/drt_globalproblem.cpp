@@ -403,7 +403,7 @@ void DRT::Problem::InputControl()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::ReadMaterials(const DRT::INPUT::DatFileReader& reader)
+void DRT::Problem::ReadMaterials(DRT::INPUT::DatFileReader& reader)
 {
   // create list of known materials
   Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > vm = DRT::INPUT::ValidMaterials();
@@ -466,7 +466,7 @@ void DRT::Problem::ReadMaterials(const DRT::INPUT::DatFileReader& reader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::ReadClonedMaterials(const DRT::INPUT::DatFileReader& reader)
+void DRT::Problem::ReadClonedMaterials(DRT::INPUT::DatFileReader& reader)
 {
   const std::string name = "--CLONING MATERIAL MAP";
   std::vector<const char*> section = reader.Section(name);
@@ -529,7 +529,7 @@ void DRT::Problem::ReadClonedMaterials(const DRT::INPUT::DatFileReader& reader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::ReadConditions(const DRT::INPUT::DatFileReader& reader)
+void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
 {
   Epetra_Time time(*reader.Comm());
   if (reader.Comm()->MyPID()==0)

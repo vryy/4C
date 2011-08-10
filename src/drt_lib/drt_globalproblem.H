@@ -183,13 +183,13 @@ public:
   void ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reader);
 
   /// input of materials
-  void ReadMaterials(const DRT::INPUT::DatFileReader& reader);
+  void ReadMaterials(DRT::INPUT::DatFileReader& reader);
 
   /// setup map between materials of original and cloned elements
-  void ReadClonedMaterials(const DRT::INPUT::DatFileReader& reader);
+  void ReadClonedMaterials(DRT::INPUT::DatFileReader& reader);
 
   /// input of conditions
-  void ReadConditions(const DRT::INPUT::DatFileReader& reader);
+  void ReadConditions(DRT::INPUT::DatFileReader& reader);
 
   /// input of knots for isogeometric analysis
   void ReadKnots(const DRT::INPUT::DatFileReader& reader);

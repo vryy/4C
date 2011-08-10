@@ -178,11 +178,6 @@ void EXODUS::WriteDatDesign(const vector<EXODUS::cond_def>& condefs, ostream& da
   dat << "NDSURF  " << nds << endl;
   dat << "NDVOL   " << ndv << endl;
 
-  dat << "-----------------------------------------------------DESIGN POINTS" << endl;
-  dat << "------------------------------------------------------DESIGN LINES" << endl;
-  dat << "---------------------------------------------------DESIGN SURFACES" << endl;
-  dat << "----------------------------------------------------DESIGN VOLUMES" << endl;
-
   return;
 }
 
@@ -445,8 +440,6 @@ void EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh, ostream& dat)
 void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& mymesh, ostream& dat,
      const map<int,map<int,vector<vector<double> > > >& elecenterlineinfo)
 {
-  dat << "----------------------------------------------------------ELEMENTS" << endl;
-
   // sort elements w.r.t. structure, fluid, ale, scalar transport, thermo, etc.
   vector<EXODUS::elem_def> strus;
   vector<EXODUS::elem_def> fluids;

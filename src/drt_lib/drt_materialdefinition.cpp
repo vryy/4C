@@ -645,7 +645,7 @@ void DRT::INPUT::MaterialDefinition::AddComponent(
  *----------------------------------------------------------------------*/
 void DRT::INPUT::MaterialDefinition::Read(
   const Problem& problem,
-  const DatFileReader& reader,
+  DatFileReader& reader,
   Teuchos::RCP<MAT::PAR::Bundle> mmap
   )
 {

@@ -135,7 +135,7 @@ namespace UTILS {
     Teuchos::RCP<DRT::INPUT::Lines> ValidFunctionLines();
 
     /// read the baci input file and set up all functions
-    void ReadInput(const DRT::INPUT::DatFileReader& reader);
+    void ReadInput(DRT::INPUT::DatFileReader& reader);
 
     /// return a specified function
     Function& Funct(int num);

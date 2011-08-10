@@ -737,7 +737,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::FunctionManager::ReadInput(const DRT::INPUT::DatFileReader& reader)
+void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 {
   functions_.clear();
 

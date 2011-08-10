@@ -717,7 +717,7 @@ void DRT::INPUT::Lines::Print(std::ostream& stream)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition> >
-DRT::INPUT::Lines::Read(const DatFileReader& reader, int suffix)
+DRT::INPUT::Lines::Read(DatFileReader& reader, int suffix)
 {
   std::ostringstream name;
   name << "--" << sectionname_;

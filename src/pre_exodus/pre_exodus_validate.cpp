@@ -60,6 +60,11 @@ void EXODUS::ValidateInputFile(const RCP<Epetra_Comm> comm, const string datfile
   // do not read the different fields (discretizations) here,
   // since RAM might be a problem for huge problems!
 
+  // inform user about unused/obsolete section names being found
+  // and force him/her to correct the input file accordingly
+  if(reader.PrintUnknownSections())
+    dserror("Unknown sections detected. Correct this!");
+
   // the input file seems to be valid
   cout<<"...OK"<<endl<<endl;
 

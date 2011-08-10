@@ -30,10 +30,6 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-// #include "drt_discret.H"
-// #include "../drt_nurbs_discret/drt_knotvector.H"
-// #include "../drt_nurbs_discret/drt_control_point.H"
-
 using namespace std;
 using Teuchos::RCP;
 using Teuchos::ParameterList;
@@ -118,10 +114,10 @@ public:
   bool ReadGidSection(string name, Teuchos::ParameterList& list);
 
   /// return the content of a section
-  vector<const char*> Section(string name) const;
+  vector<const char*> Section(string name);
 
   /// read a node-design topology section
-  void ReadDesign(const std::string& name, std::vector<std::vector<int> >& dobj_fenode) const;
+  void ReadDesign(const std::string& name, std::vector<std::vector<int> >& dobj_fenode);
 
   /*!
     \brief read the knotvector section (for isogeometric analysis)
@@ -136,6 +132,9 @@ public:
     const string                           name    ,
     Teuchos::RCP<DRT::NURBS::Knotvector> & disknots
     ) const;
+
+  /// print unknown section names found in the input file
+  bool PrintUnknownSections();
 
 private:
 
@@ -174,6 +173,9 @@ private:
 
   /// section positions of all sections
   map<string,unsigned> positions_;
+
+  /// protocol of known and unknown section names
+  map<string,bool> knownsections_;
 };
 
 

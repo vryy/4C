@@ -133,6 +133,9 @@ bool DatFileReader::ReadSection(string name, Teuchos::ParameterList& list)
   if (name.length() < 3 or name[0]!='-' or name[1]!='-')
     dserror("illegal section name '%s'", name.c_str());
 
+  // The section name is desired from outside. Thus, we consider it as valid
+  knownsections_[name] = true;
+
   Teuchos::ParameterList& sublist = FindSublist(name.substr(2), list);
 
   if (positions_.find(name)==positions_.end())
@@ -172,6 +175,9 @@ bool DatFileReader::ReadGidSection(string name, Teuchos::ParameterList& list)
 {
   if (name.length() < 3 or name[0]!='-' or name[1]!='-')
     dserror("illegal section name '%s'", name.c_str());
+
+  // The section name is desired from outside. Thus, we consider it as valid
+  knownsections_[name] = true;
 
   Teuchos::ParameterList& sublist = FindSublist(name.substr(2), list);
 
@@ -216,8 +222,11 @@ bool DatFileReader::ReadGidSection(string name, Teuchos::ParameterList& list)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-vector<const char*> DatFileReader::Section(string name) const
+vector<const char*> DatFileReader::Section(string name)
 {
+  // The section name is desired from outside. Thus, we consider it as valid
+  knownsections_[name] = true;
+
   vector<const char*> sec;
 
   map<string,unsigned>::const_iterator i = positions_.find(name);
@@ -243,7 +252,10 @@ vector<const char*> DatFileReader::Section(string name) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DatFileReader::ReadDesign(const std::string& name, std::vector<std::vector<int> >& dobj_fenode) const
+void DatFileReader::ReadDesign(
+    const std::string& name,
+    std::vector<std::vector<int> >& dobj_fenode
+ )
 {
   std::map<int,std::set<int> > topology;
 
@@ -289,6 +301,9 @@ void DatFileReader::ReadDesign(const std::string& name, std::vector<std::vector<
       dobj_fenode[i->first].assign(i->second.begin(),i->second.end());
     }
   }
+
+  // The section name is desired from outside. Thus, we consider it as valid
+  knownsections_[marker] = true;
 }
 
 
@@ -962,11 +977,36 @@ void DatFileReader::ReadDat()
       if (positions_.find(sectionname)!=positions_.end())
         dserror("section '%s' defined more than once", sectionname.c_str());
       positions_[sectionname] = i;
+      knownsections_[sectionname] = false; //initialize as unknown
     }
   }
 
   if (positions_.find("--END")==positions_.end())
     dserror("end section missing. incomplete dat file?");
+
+  // the following section names are always regarded as valid
+  knownsections_["--END"] = true;
+  knownsections_["--TITLE"] = true;
+  //knownsections_["--ELEMENTS"] = true;
+  //knownsections_["--LOAD CURVES"] = true;
+  knownsections_["--CURVE1"] = true;
+  knownsections_["--CURVE2"] = true;
+  knownsections_["--CURVE3"] = true;
+  knownsections_["--CURVE4"] = true;
+  knownsections_["--CURVE5"] = true;
+  knownsections_["--CURVE6"] = true;
+  knownsections_["--FUNCT1"] = true;
+  knownsections_["--FUNCT2"] = true;
+  knownsections_["--FUNCT3"] = true;
+  knownsections_["--FUNCT4"] = true;
+  knownsections_["--FUNCT5"] = true;
+  knownsections_["--FUNCT6"] = true;
+  knownsections_["--LOCSYS1"] = true;
+  knownsections_["--LOCSYS2"] = true;
+  knownsections_["--LOCSYS3"] = true;
+  knownsections_["--LOCSYS4"] = true;
+  knownsections_["--LOCSYS5"] = true;
+  knownsections_["--LOCSYS6"] = true;
 }
 
 
@@ -996,6 +1036,41 @@ void DatFileReader::DumpInput()
 #endif
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DatFileReader::PrintUnknownSections()
+{
+  // This function shell be called only after all reading with DatFileReader
+  // is finished. Only then we have a proper protocol of (in-)valid section names
+
+  bool printout(false);
+  map<string,bool>::iterator iter;
+  // is there at least one unknown section?
+  for (iter = knownsections_.begin(); iter != knownsections_.end(); iter++)
+  {
+    if (iter->second == false)
+    {
+      printout = true;
+      break;
+    }
+  }
+  // now it's time to create noise on the screen
+  if ((printout == true) and (Comm()->MyPID()==0))
+  {
+    if (Comm()->MyPID()==0)
+    cout<<"\nWARNING!"<<"\n--------"<<
+        "\nThe following input file sections remained unused (obsolete or typo?):"
+        <<endl;
+    for (iter = knownsections_.begin(); iter != knownsections_.end(); iter++)
+    {
+      if (iter->second == false)
+        cout<<iter->first<<endl;
+    }
+    cout<<endl;
+  }
+
+  return printout;
+}
 
 }
 }

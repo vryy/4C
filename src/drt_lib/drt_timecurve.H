@@ -123,7 +123,7 @@ namespace UTILS {
     Teuchos::RCP<DRT::INPUT::Lines> ValidTimeCurveLines();
 
     /// read the baci input file and set up all curves
-    void ReadInput(const DRT::INPUT::DatFileReader& reader);
+    void ReadInput(DRT::INPUT::DatFileReader& reader);
 
     /// return a specified time curve
     TimeCurve& Curve(int num);

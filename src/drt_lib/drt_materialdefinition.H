@@ -538,7 +538,7 @@ namespace DRT
       /// read all materials from my input file section
       void Read(
         const Problem& problem,  ///< global problem instance that manages the input
-        const DatFileReader& reader,  ///< the actual dat file reader that has access to the dat file
+        DatFileReader& reader,  ///< the actual dat file reader that has access to the dat file
         Teuchos::RCP<MAT::PAR::Bundle> mmap  ///< the materials we read here
         );
 
