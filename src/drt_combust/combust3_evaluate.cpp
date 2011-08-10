@@ -319,7 +319,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       if (timealgo == INPAR::FLUID::timeint_afgenalpha) genalpha = true;
 
       // smoothed gradient of phi required (surface tension application)
-      double gradphi = true;
+      bool gradphi = true;
       if (combusttype == INPAR::COMBUST::combusttype_twophaseflow or
           smoothgradphi == INPAR::COMBUST::smooth_grad_phi_none)
       {
