@@ -1,3 +1,18 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fluid_MHD_evaluate.cpp
+
+\brief Class FLD::FluidMHDEvaluate
+
+<pre>
+Maintainer: Peter Gamnitzer
+            gamnitzer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15235
+</pre>
+
+*/
+
 #include "../drt_fluid/fluid_MHD_evaluate.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_lib/drt_dofset_transparent.H"

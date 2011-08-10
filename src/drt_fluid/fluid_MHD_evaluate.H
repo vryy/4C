@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fluid_genalpha_integration.H
+\file fluid_MHD_evaluate.H
 
-\brief
+\brief Class FLD::FluidMHDEvaluate
 
 <pre>
 Maintainer: Peter Gamnitzer
