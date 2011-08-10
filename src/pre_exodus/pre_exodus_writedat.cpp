@@ -137,7 +137,7 @@ void EXODUS::WriteDatHead(const string& headfile, ostream& dat)
   if(size_sectiondes!=string::npos)
   {
     const size_t size_section2 =headstring.find("DESIGN DESCRIPTION", size_section);
-    const size_t typ_sectiondes = headstring.find("---");
+    const size_t typ_sectiondes = headstring.find("---", size_section2);
     headstring.erase(size_sectiondes,typ_sectiondes-size_sectiondes);
   }
 
