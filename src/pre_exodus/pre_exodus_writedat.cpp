@@ -127,19 +127,19 @@ void EXODUS::WriteDatHead(const string& headfile, ostream& dat)
   string headstring = head.str();
   const size_t size_section = headstring.find("-------------------------------------------------------PROBLEM SIZE");
   if (size_section!=string::npos){
-    const size_t typ_section = headstring.find("--------------------------------------------------------PROBLEM TYP");
+    const size_t size_section2 =headstring.find("PROBLEM", size_section);
+    const size_t typ_section = headstring.find("---", size_section2);
     headstring.erase(size_section,typ_section-size_section);
   }
-  headstring.erase(headstring.end()-1);
 
   // delete section "DESIGN DESCRIPTION" as it is written in WriteDatDesign
   const size_t size_sectiondes = headstring.find("-------------------------------------------------DESIGN DESCRIPTION");
   if(size_sectiondes!=string::npos)
   {
-      const size_t typ_sectiondes = headstring.find("-----------------------------------------------------DISCRETISATION");
-      headstring.erase(size_sectiondes,typ_sectiondes-size_sectiondes);
+    const size_t size_section2 =headstring.find("DESIGN DESCRIPTION", size_section);
+    const size_t typ_sectiondes = headstring.find("---");
+    headstring.erase(size_sectiondes,typ_sectiondes-size_sectiondes);
   }
-  headstring.erase(headstring.end()-1);
 
   // delete very first line with comment "//"
   if (headstring.find("//")== 0)
@@ -150,6 +150,9 @@ void EXODUS::WriteDatHead(const string& headfile, ostream& dat)
     headstring.erase(comment+1,headstring.find("\n",comment+1)-comment);
     comment = headstring.find("\n//",comment);
   }
+
+  // remove eof character
+  headstring.erase(headstring.end()-1);
 
   dat<<headstring<<endl;
   return;
