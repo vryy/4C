@@ -4426,14 +4426,14 @@ bool DRT::INPUT::NeedToPrintEqualSign(const Teuchos::ParameterList& list)
 {
   const std::string printequalsign = PrintEqualSign();
   bool pes = false;
-//  try
-//  {
-//    pes = list.get<bool>(printequalsign);
-//  }
-//  catch (Teuchos::Exceptions::InvalidParameter)
-//  {
-//    pes = false;
-//  }
+  try
+  {
+    pes = list.get<bool>(printequalsign);
+  }
+  catch (Teuchos::Exceptions::InvalidParameter)
+  {
+    pes = false;
+  }
   return pes;
 }
 
