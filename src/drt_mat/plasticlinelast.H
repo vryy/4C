@@ -93,11 +93,12 @@ public:
 private:
 
   static PlasticLinElastType instance_;
+
 };  // PlasticLinElastType
 
 
   /*----------------------------------------------------------------------*/
-  /// Wrapper for Plastic linear elastic (St.Venant Kirchhoff) Material
+  /// wrapper for linear elasto-plastic material
   class PlasticLinElast : public Material
   {
   public:
@@ -190,7 +191,7 @@ private:
       double G,
       double q,
       const LINALG::Matrix<6,1> flowvector,
-      const LINALG::Matrix<6,1> devstress,
+      const LINALG::Matrix<6,1> eta,
       double heaviside,
       double Hkin
       );
@@ -224,16 +225,17 @@ private:
 
     /// Finite difference check for debugging purposes
     void FDCheck(
+      LINALG::Matrix<6,1>& stress,  //!< updated stress sigma_n+1
+      LINALG::Matrix<6,6>& cmatFD, //!< material tangent calculated with FD of stresses
+      LINALG::Matrix<6,1>& beta,  //!< updated back stresses
+      double p,  //!< volumetric stress
       const LINALG::Matrix<6,1>& strain,  //!< elastic strain vector
       double Dgamma,  //!< plastic multiplier
       double G,  //!< shear modulus
-      double q,  //!< elastic trial von Mises effective stress
+      double qbar,  //!< elastic trial von Mises effective stress
       double kappa, //!< bulk modulus
       LINALG::Matrix<6,1>& N, // flow vector
-      double heaviside,  //!< Heaviside function
-      double p,  //!< volumetric stress
-      LINALG::Matrix<6,1>& stress,  //!< updated stress sigma_n+1
-      LINALG::Matrix<6,6>& cmatFD //!< material tangent calculated with FD of stresses
+      double heaviside  //!< Heaviside function
       );
 
     /// Check implementation of material tangent for debugging purposes
