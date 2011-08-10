@@ -77,7 +77,9 @@ void BuildStandardDomainIntegrals(
     const double& tau_stab_C                           // BV   stabilization parameter
 )
 {
-  const double rhstimefacfac = timefacfac/alphaM;
+  double rhstimefacfac = timefacfac;
+  if (genalpha)
+    rhstimefacfac /= alphaM;
   const double densfac = densaf * fac;
   //----------------------------------------------------------------------
   //                            GALERKIN PART
