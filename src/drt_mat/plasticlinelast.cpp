@@ -29,12 +29,12 @@ Maintainer: Caroline Danowski
 </pre>
 */
 /*----------------------------------------------------------------------*
- | Definitions                                                    04/11 |
+ | Definitions                                               dano 04/11 |
  *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
 
 /*----------------------------------------------------------------------*
- | Headers                                                        04/11 |
+ | Headers                                                   dano 04/11 |
  *----------------------------------------------------------------------*/
 #include <vector>
 #include <Epetra_SerialDenseMatrix.h>
@@ -48,7 +48,7 @@ Maintainer: Caroline Danowski
 
 
 /*----------------------------------------------------------------------*
- | constructor (public)                                           04/11 |
+ | constructor (public)                                      dano 04/11 |
  *----------------------------------------------------------------------*/
 MAT::PAR::PlasticLinElast::PlasticLinElast(
   Teuchos::RCP<MAT::PAR::Material> matdata
@@ -82,7 +82,7 @@ DRT::ParObject* MAT::PlasticLinElastType::Create( const std::vector<char> & data
 
 
 /*----------------------------------------------------------------------*
- | constructor (public)                                          04/11  |
+ | constructor (public)                                      dano 04/11 |
  *----------------------------------------------------------------------*/
 MAT::PlasticLinElast::PlasticLinElast()
   : params_(NULL)
@@ -90,7 +90,7 @@ MAT::PlasticLinElast::PlasticLinElast()
   // material is not initialized, yet
   isinit_ = false;
 
-  // TODO 01.08.11 Susanna hat hier keine history informationen gespeichert!!!
+  // TODO 01.08.11 check if history information is needed here!!!
   /// plastic history deformation
   strainpllast_ = Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   strainplcurr_ = Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
@@ -106,7 +106,7 @@ MAT::PlasticLinElast::PlasticLinElast()
 
 
 /*----------------------------------------------------------------------*
- | copy-constructor (public)                                      04/11 |
+ | copy-constructor (public)                                 dano 04/11 |
  *----------------------------------------------------------------------*/
 MAT::PlasticLinElast::PlasticLinElast(MAT::PAR::PlasticLinElast* params)
 : plastic_step(false),
@@ -116,7 +116,7 @@ MAT::PlasticLinElast::PlasticLinElast(MAT::PAR::PlasticLinElast* params)
 
 
 /*----------------------------------------------------------------------*
- | pack (public)                                                 04/11 |
+ | pack (public)                                             dano 04/11 |
  *----------------------------------------------------------------------*/
 void MAT::PlasticLinElast::Pack(DRT::PackBuffer& data) const
 {
@@ -160,7 +160,7 @@ void MAT::PlasticLinElast::Pack(DRT::PackBuffer& data) const
 
 
 /*----------------------------------------------------------------------*
- | unpack (public)                                                04/11 |
+ | unpack (public)                                           dano 04/11 |
  *----------------------------------------------------------------------*/
 void MAT::PlasticLinElast::Unpack(const vector<char>& data)
 {
@@ -279,7 +279,7 @@ void MAT::PlasticLinElast::Setup(const int numgp)
 
 
 /*---------------------------------------------------------------------*
- | update internal stress variables (public)                     04/11 |
+ | update internal stress variables (public)                dano 04/11 |
  *---------------------------------------------------------------------*/
 void MAT::PlasticLinElast::Update()
 {
@@ -318,7 +318,7 @@ void MAT::PlasticLinElast::Update()
 
 
 /*---------------------------------------------------------------------*
- | reset internal stress variables (public)                      04/11 |
+ | reset internal stress variables (public)                 dano 04/11 |
  *---------------------------------------------------------------------*/
 void MAT::PlasticLinElast::Reset()
 {
@@ -332,7 +332,7 @@ void MAT::PlasticLinElast::Reset()
 
 
 /*----------------------------------------------------------------------*
- | evaluate material (public)                                     08/11 |
+ | evaluate material (public)                                dano 08/11 |
  *----------------------------------------------------------------------*/
 void MAT::PlasticLinElast::Evaluate(
   const LINALG::Matrix<6,1>& linstrain,  //!< linear strain vector
