@@ -49,15 +49,19 @@ void EXODUS::ValidateInputFile(const RCP<Epetra_Comm> comm, const string datfile
   cout<<"...Read parameters"<<endl;
   problem->ReadParameter(reader);
 
+  // input of not mesh or time based problem data (setup of genprob!)
+  problem->InputControl();
+
   // read and validate all material definitions
   cout<<"...Read materials"<<endl;
   problem->ReadMaterials(reader);
 
-  // do not read the different fields (discretizations) here,
+  // do not allocate the different fields (discretizations) here,
   // since RAM might be a problem for huge problems!
-  // But, we have to insert empty dummy discretizations instead since
+  // But, we have to perform at least the problem-specific setup since
   // some reading procedures depend on the number of fields (e.g., ReadKnots())
-  // std::string distype = (DRT::Problem::Instance())->ProblemTypeParams().get<std::string>("SHAPEFCT");
+  cout<<"...Read field setup"<<endl;
+  problem->ReadFields(reader,false);
 
   // read and validate all condition definitions
   cout<<"...";
@@ -73,7 +77,9 @@ void EXODUS::ValidateInputFile(const RCP<Epetra_Comm> comm, const string datfile
   // inform user about unused/obsolete section names being found
   // and force him/her to correct the input file accordingly
   if(reader.PrintUnknownSections())
+  {
     dserror("Unknown sections detected. Correct this!");
+  }
 
   // the input file seems to be valid
   cout<<"...OK"<<endl<<endl;

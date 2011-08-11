@@ -218,7 +218,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--STRUCT SOLVER", *list);
   reader.ReadGidSection("--ALE SOLVER", *list);
   reader.ReadGidSection("--THERMAL SOLVER", *list);
-  //reader.ReadGidSection("--SCALAR TRANSPORT SOLVER", *list);
   reader.ReadGidSection("--FLUID SCALAR TRANSPORT SOLVER", *list);
   reader.ReadGidSection("--STRUCTURE SCALAR TRANSPORT SOLVER", *list);
   reader.ReadGidSection("--SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER", *list);
@@ -683,15 +682,12 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
 /*----------------------------------------------------------------------*/
 void DRT::Problem::ReadKnots(DRT::INPUT::DatFileReader& reader)
 {
-  // decide which kind of spatial representation is required
-  const Teuchos::ParameterList& ptype = ProblemTypeParams();
   // get information on the spatial approximation --- we only read knots
   // in the nurbs case
-  std::string distype = ptype.get<std::string>("SHAPEFCT");
+  std::string distype = SpatialApproximation();
 
   // get problem dimension
   const Teuchos::ParameterList& psize= ProblemSizeParams();
-
   int dim = psize.get<int>("DIM");
 
   // Iterate through all discretizations and sort the appropriate condition
@@ -791,7 +787,7 @@ void DRT::Problem::WriteInputParameters()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
+void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool readmesh)
 {
   // read elements the first time to create graph object
   // row distribution of nodes
@@ -818,16 +814,16 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
   RCP<DRT::Discretization> airwaydis       = null; //
 
   // decide which kind of spatial representation is required
-  const Teuchos::ParameterList& ptype = ProblemTypeParams();
+  std::string distype = SpatialApproximation();
+
+  // the basic node reader. now add desired element readers to it!
+  DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
 
   switch (genprob.probtyp)
   {
   case prb_fsi:
   case prb_fsi_lung:
   {
-    // allocate and input general old stuff....
-    std::string distype = ptype.get<std::string>("SHAPEFCT");
-
     if(distype == "Nurbs")
     {
       structdis = rcp(new DRT::NURBS::NurbsDiscretization("structure",reader.Comm()));
@@ -841,7 +837,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
       xfluiddis = rcp(new DRT::Discretization("xfluid"   ,reader.Comm()));
       aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
     }
-
 
     AddDis(genprob.numsf, structdis);
     AddDis(genprob.numff, fluiddis);
@@ -857,8 +852,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
     AddDis(genprob.numawf, airwaydis);
 #endif
-
-    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
 
     std::set<std::string> fluidelementtypes;
     fluidelementtypes.insert("FLUID");
@@ -877,11 +870,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
 #endif
 
-    nodereader.Read();
-    // read microscale fields from second, third, ... inputfile if necessary
-    // (in case of multi-scale material models in structure field)
-    ReadMicroFields(reader);
-
     break;
   }
   case prb_fluid_fluid_ale:
@@ -895,13 +883,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
       AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
     AddDis(genprob.numaf, aledis);
 
-    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
-
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
-    nodereader.Read();
     break;
   }
   case prb_fluid_fluid:
@@ -913,19 +898,13 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     if (xfluiddis!=Teuchos::null)
       AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
 
-    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
-
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
 
-    nodereader.Read();
     break;
   }
   case prb_fsi_lung_gas:
   {
-    // allocate and input general old stuff....
-    std::string distype = ptype.get<std::string>("SHAPEFCT");
-
     if(distype == "Nurbs")
     {
       dserror("Nurbs discretization not possible for lung gas exchange!");
@@ -937,12 +916,9 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
       aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
     }
 
-
     AddDis(genprob.numsf, structdis);
     AddDis(genprob.numff, fluiddis);
     AddDis(genprob.numaf, aledis);
-
-    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
 
     std::set<std::string> fluidelementtypes;
     fluidelementtypes.insert("FLUID");
@@ -953,7 +929,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
-    nodereader.Read();
 #ifdef EXTENDEDPARALLELOVERLAP
     structdis->CreateExtendedOverlap(false,false,false);
 #endif
@@ -980,20 +955,14 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     AddDis(genprob.numff, fluiddis);
     AddDis(genprob.numaf, aledis);
 
-    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
-
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
-    nodereader.Read();
     break;
   }
   case prb_ale:
   {
-    // allocate and input general old stuff....
-    std::string distype = ptype.get<std::string>("SHAPEFCT");
-
     if(distype == "Nurbs")
     {
       aledis = rcp(new DRT::NURBS::NurbsDiscretization("ale",reader.Comm()));
@@ -1005,17 +974,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
     AddDis(genprob.numaf, aledis);
 
-    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
-    nodereader.Read();
+
     break;
   }
   case prb_fluid:
   {
-
-    // allocate and input general old stuff....
-    std::string distype = ptype.get<std::string>("SHAPEFCT");
-
     if(distype == "Nurbs")
     {
       fluiddis = rcp(new DRT::NURBS::NurbsDiscretization("fluid",reader.Comm()));
@@ -1046,7 +1010,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     fluidelementtypes.insert("FLUID2");
     fluidelementtypes.insert("FLUID3");
 
-    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", fluidelementtypes)));
 
     if (xfluiddis!=Teuchos::null)
@@ -1059,17 +1022,13 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
 #endif
 
-    nodereader.Read();
     break;
   }
   case prb_scatra:
   {
-    // allocate and input general old stuff....
     //if (genprob.numfld!=2) dserror("numfld != 2 for scalar transport problem");
 
     // create empty discretizations
-    std::string distype = ptype.get<std::string>("SHAPEFCT");
-
     if(distype == "Nurbs")
     {
       fluiddis = rcp(new DRT::NURBS::NurbsDiscretization("fluid",reader.Comm()));
@@ -1084,19 +1043,14 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     AddDis(genprob.numff, fluiddis);
     AddDis(genprob.numscatra, scatradis);
 
-
-    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
-    nodereader.Read();
+
     break;
   }
   case prb_fluid_ale:
   case prb_freesurf:
   {
-    // allocate and input general old stuff....
-    std::string distype = ptype.get<std::string>("SHAPEFCT");
-
     if(distype == "Nurbs")
     {
       fluiddis  = rcp(new DRT::NURBS::NurbsDiscretization("fluid"    ,reader.Comm()));
@@ -1119,60 +1073,45 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     fluidelementtypes.insert("FLUID2");
     fluidelementtypes.insert("FLUID3");
 
-    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
-
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS",fluidelementtypes)));
     if (xfluiddis!=Teuchos::null)
       nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "XFLUID3")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
-    nodereader.Read();
     break;
   }
   case prb_fluid_pm:
   {
-	dserror("prb_fluid_pm not supported by BACI. just use projection method as fluid-solver for fluid problems!");
-	break;
+    dserror("prb_fluid_pm not supported by BACI. just use projection method as fluid-solver for fluid problems!");
+    break;
   }
   case prb_tsi:
   {
-    // allocate and input general old stuff....
-  //std::string distype = ptype.get<std::string>("SHAPEFCT");
-
     structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
     thermdis  = Teuchos::rcp(new DRT::Discretization("thermo"   ,reader.Comm()));
 
     AddDis(genprob.numsf, structdis);
     AddDis(genprob.numtf, thermdis);
 
-    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
-
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 //    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(thermdis, reader, "--THERMO ELEMENTS")));
-    nodereader.Read();
+
     break;
   }
   case prb_thermo:
   {
     {
-      // allocate and input general old stuff....
-      //std::string distype = ptype.get<std::string>("SHAPEFCT");
-
       thermdis = Teuchos::rcp(new DRT::Discretization("thermo",reader.Comm()));
       AddDis(genprob.numtf, thermdis);
 
-      DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
       nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(thermdis, reader, "--THERMO ELEMENTS")));
-      nodereader.Read();
+
       break;
     } // end of else if (genprob.probtyp==prb_thermo)
   }
 
   case prb_structure:
   {
-    // allocate and input general old stuff....
-    std::string distype = ptype.get<std::string>("SHAPEFCT");
-
     if(distype == "Nurbs")
     {
       structdis = rcp(new DRT::NURBS::NurbsDiscretization("structure",reader.Comm()));
@@ -1184,23 +1123,13 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
 
     AddDis(genprob.numsf, structdis);
 
-    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-    nodereader.Read();
-
-    // read microscale fields from second, third, ... inputfile if necessary
-    // (in case of multi-scale material models)
-    ReadMicroFields(reader);
-
-    // Read in another discretization for MultiLevel Monte Carlo use
-    ReadMultiLevelDiscretization(reader);
 
     break;
   } // end of else if (genprob.probtyp==prb_structure)
 
   case prb_loma:
   {
-    // allocate and input general old stuff....
     // create empty discretizations
     fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
     AddDis(genprob.numff, fluiddis);
@@ -1208,20 +1137,15 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
     AddDis(genprob.numscatra, scatradis);
 
-    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(scatradis, reader, "--TRANSPORT ELEMENTS")));
-    nodereader.Read();
 
     break;
   } // end of else if (genprob.probtyp==prb_loma)
 
   case prb_elch:
   {
-    // allocate and input general old stuff....
     // create empty discretizations
-    std::string distype = ptype.get<std::string>("SHAPEFCT");
-
     if(distype == "Nurbs")
     {
       fluiddis  = rcp(new DRT::NURBS::NurbsDiscretization("fluid",reader.Comm()));
@@ -1239,18 +1163,15 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     AddDis(genprob.numscatra, scatradis);
     AddDis(genprob.numaf, aledis);
 
-    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(scatradis,reader, "--TRANSPORT ELEMENTS")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis,   reader, "--ALE ELEMENTS")));
-    nodereader.Read();
 
     break;
   } // end of else if (genprob.probtyp==prb_elch)
 
   case prb_combust:
   {
-    // allocate and input general old stuff....
     // create empty discretizations
     fluiddis = rcp(new DRT::Discretization("fluid",reader.Comm()));
     AddDis(genprob.numff, fluiddis);
@@ -1258,38 +1179,28 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     scatradis = rcp(new DRT::Discretization("scatra",reader.Comm()));
     AddDis(genprob.numscatra, scatradis);
 
-    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
-    nodereader.Read();
 
     break;
   } // end of else if (genprob.probtyp==prb_combust)
 
   case prb_art_net: // _1D_ARTERY_
   {
-    // allocate and input general old stuff....
     // create empty discretizations
     arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
     AddDis(genprob.numartf, arterydis);
 
-
-    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
-    nodereader.Read();
 
     break;
   } // end of else if (genprob.probtyp==prb_art_net)
   case prb_red_airways: // _reduced D airways
   {
-    // allocate and input general old stuff....
     // create empty discretizations
     airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
     AddDis(genprob.numawf, airwaydis);
 
-
-    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
-    nodereader.Read();
 
     break;
   } // end of else if (genprob.probtyp==prb_red_airways)
@@ -1301,15 +1212,45 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader)
     AddDis(genprob.numsf, structdis);
     AddDis(genprob.numaf, aledis);
 
-    DRT::INPUT::NodeReader nodereader(reader, "--NODE COORDS");
-
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
-    nodereader.Read();
+
     break;
   } // end of else if (genprob.probtyp==prb_struct_ale)
   default:
-    dserror("Type of problem unknown");
+    dserror("Unknown problem type: %d",genprob.probtyp);
   }
+
+  if (readmesh) // now read and allocate!
+  {
+    // we read nodes and elements for the desired fields as specified above
+    nodereader.Read();
+
+    // care for special applications
+    switch (genprob.probtyp)
+    {
+    case prb_fsi:
+    case prb_fsi_lung:
+    {
+      // read microscale fields from second, third, ... inputfile if necessary
+      // (in case of multi-scale material models in structure field)
+      ReadMicroFields(reader);
+      break;
+    }
+    case prb_structure:
+    {
+      // read microscale fields from second, third, ... inputfile if necessary
+      // (in case of multi-scale material models)
+      ReadMicroFields(reader);
+
+      // Read in another discretization for MultiLevel Monte Carlo use
+      ReadMultiLevelDiscretization(reader);
+      break;
+    }
+    default:
+      break;
+    }
+  } // if(readmesh)
+
 }
 
 

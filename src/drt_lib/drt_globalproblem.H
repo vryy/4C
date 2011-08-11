@@ -174,7 +174,7 @@ public:
   void InputControl();
 
   /// setup the discretizations
-  void ReadFields(DRT::INPUT::DatFileReader& reader);
+  void ReadFields(DRT::INPUT::DatFileReader& reader, const bool readmesh = true);
 
   /// set up micro-scale discretizations in case of structure multi-scale simulations
   void ReadMicroFields(DRT::INPUT::DatFileReader& reader);
