@@ -61,12 +61,12 @@ dofoffset_(dofoffset)
   DRT::Element* beamelement = searchdis_.gElement(0);
   const DRT::ElementType & eot = beamelement->ElementType();
   
-#ifdef D_BEAM3II
+#ifdef D_BEAM3
   if (eot == DRT::ELEMENTS::Beam3Type::Instance())
     diameter_ = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(beamelement))->Izz()) / M_PI));
 #endif // #ifdef BEAM3II
   
-#ifdef D_BEAM3
+#ifdef D_BEAM3II
   if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
     diameter_ = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(beamelement))->Izz()) / M_PI));
 #endif
