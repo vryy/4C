@@ -16,6 +16,7 @@ Maintainer: Ulrich Kuettler
 
 #include "adapter_fluid_impl.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../linalg/linalg_utils.H"
 
 
 /*----------------------------------------------------------------------*/

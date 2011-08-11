@@ -16,6 +16,7 @@ Maintainer: Ulrich Kuettler
 
 #include "adapter_fluid_genalpha.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_fluid/fluidresulttest.H"
 
 ADAPTER::FluidGenAlpha::FluidGenAlpha(
   Teuchos::RCP<DRT::Discretization>      dis,

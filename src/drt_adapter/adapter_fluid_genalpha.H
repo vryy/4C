@@ -25,12 +25,11 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
 
-#include "../drt_fluid/fluidimplicitintegration.H"
-#include "../drt_fluid/fluidresulttest.H"
-#include "../drt_lib/drt_utils.H"
-
 #include "adapter_fluid.H"
 
+#include "../drt_fluid/fluid_genalpha_integration.H"
+#include "../drt_lib/drt_utils.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 // Algorithm adapter classes for use in multi-field problems
 namespace ADAPTER {
