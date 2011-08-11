@@ -66,8 +66,12 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator>      matrix,
     // if we have an ml parameter list we do ml
     bool   doifpack  = solver_->Params().isSublist("IFPACK Parameters");
     bool   doml      = solver_->Params().isSublist("ML Parameters");
+#if 0
     bool   dosimpler = solver_->Params().isSublist("SIMPLER");
     if (!A || dosimpler)
+#else
+    if (!A)
+#endif
     {
       doifpack = false;
       doml     = false;
