@@ -21,27 +21,42 @@ Maintainer: Peter Gamnitzer
 #ifndef TURBULENCE_STATISTIC_MANAGER_H
 #define TURBULENCE_STATISTIC_MANAGER_H
 
-#include "../drt_fluid/fluid_genalpha_integration.H"
-#include "../drt_fluid/fluidimplicitintegration.H"
-#include "../drt_fluid/fluid_utils.H"
-
-#include "../drt_fluid/turbulence_statistics_mean_general.H"
-#include "../drt_fluid/turbulence_statistics_ccy.H"
-#include "../drt_fluid/turbulence_statistics_cha.H"
-#include "../drt_fluid/turbulence_statistics_ldc.H"
-#include "../drt_fluid/turbulence_statistics_bfs.H"
-#include "../drt_fluid/turbulence_statistics_oracles.H"
-#include "../drt_fluid/turbulence_statistics_sqc.H"
-
+#include "Epetra_Vector.h"
+#include "Teuchos_RCP.hpp"
+#include "Teuchos_ParameterList.hpp"
 
 using namespace std;
 using namespace Teuchos;
 
+namespace DRT
+{
+  class Discretization;
+}
+
+namespace IO
+{
+  class DiscretizationReader;
+  class DiscretizationWriter;
+}
+
+namespace COMBUST
+{
+  class TurbulenceStatisticsORACLES;
+}
+
 namespace FLD
 {
-
+// forward declarations
 class FluidGenAlphaIntegration;
 class FluidImplicitTimeInt;
+class TurbulenceStatisticsGeneralMean;
+
+class TurbulenceStatisticsCha;
+class TurbulenceStatisticsCcy;
+class TurbulenceStatisticsLdc;
+class TurbulenceStatisticsBfs;
+class TurbulenceStatisticsSqc;
+
 
 class TurbulenceStatisticManager
 {

@@ -15,6 +15,9 @@ Maintainer: Peter Gamnitzer
 #ifdef CCADISCRET
 
 #include "turbulence_statistics_mean_general.H"
+#include "../drt_lib/drt_discret.H"
+#include "../linalg/linalg_utils.H"
+#include "../drt_io/io.H"
 
 //----------------------------------------------------------------------
 //

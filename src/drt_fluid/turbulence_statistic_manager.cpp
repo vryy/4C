@@ -16,6 +16,17 @@ Maintainer: Peter Gamnitzer
 #ifdef CCADISCRET
 
 #include "turbulence_statistic_manager.H"
+#include "../drt_fluid/fluid_genalpha_integration.H"
+#include "../drt_fluid/fluidimplicitintegration.H"
+#include "../drt_fluid/fluid_utils.H" // for LiftDrag
+#include "../drt_fluid/turbulence_statistics_mean_general.H"
+
+#include "../drt_fluid/turbulence_statistics_ccy.H"
+#include "../drt_fluid/turbulence_statistics_cha.H"
+#include "../drt_fluid/turbulence_statistics_ldc.H"
+#include "../drt_fluid/turbulence_statistics_bfs.H"
+#include "../drt_fluid/turbulence_statistics_oracles.H"
+#include "../drt_fluid/turbulence_statistics_sqc.H"
 
 namespace FLD
 {

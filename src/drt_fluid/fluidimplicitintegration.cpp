@@ -54,6 +54,10 @@ Maintainer: Peter Gamnitzer
 #include "../drt_io/io_control.H"
 #endif
 
+// for AVM3 solver:
+#include <MLAPI_Workspace.h>
+#include <MLAPI_Aggregation.h>
+
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
@@ -3469,7 +3473,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
 
     // get plain aggregation Ptent
     RCP<Epetra_CrsMatrix> crsPtent;
-    GetPtent(*SystemMatrix()->EpetraMatrix(),mlparams,nullspace,crsPtent);
+    MLAPI::GetPtent(*SystemMatrix()->EpetraMatrix(),mlparams,nullspace,crsPtent);
     LINALG::SparseMatrix Ptent(crsPtent);
 
     // compute scale-separation matrix: S = I - Ptent*Ptent^T

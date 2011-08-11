@@ -29,12 +29,26 @@ Maintainer: Peter Gamnitzer
 #define TURBULENCE_STATISTICS_MEAN_GENERAL_H
 
 #include "Epetra_Vector.h"
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_utils.H"
-#include "../drt_io/io.H"
+#include "Teuchos_RefCountPtr.hpp"
+
+namespace LINALG
+{
+  class MapExtractor;
+}
 
 using namespace std;
 using namespace Teuchos;
+
+// forward declarations
+namespace DRT
+{
+  class Discretization;
+}
+namespace IO
+{
+  class DiscretizationReader;
+  class DiscretizationWriter;
+}
 
 
 namespace FLD

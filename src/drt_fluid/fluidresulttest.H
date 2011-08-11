@@ -19,12 +19,20 @@ http://www.lnm.mw.tum.de/Members/kuettler
 #ifdef CCADISCRET
 
 #include "../drt_lib/drt_resulttest.H"
-#include "fluidimplicitintegration.H"
-#include "fluid_projectionmethod.H"
-#include "fluid_genalpha_integration.H"
+#include <Epetra_Vector.h>
+
+namespace DRT
+{
+class Discretization;
+}
 
 namespace FLD
 {
+// forward declarations
+class FluidImplicitTimeInt;
+class FluidProjectionMethod;
+class FluidGenAlphaIntegration;
+
 
 /*!
 \brief Fluid specific result test class
@@ -63,11 +71,11 @@ public:
 private:
 
     /// pointer to fluid discretization
-    RefCountPtr<DRT::Discretization> fluiddis_;
+    Teuchos::RCP<DRT::Discretization> fluiddis_;
     /// pointer to unknown vector with values
-    RefCountPtr<Epetra_Vector>       mysol_;
+    Teuchos::RCP<Epetra_Vector>       mysol_;
     /// pointer to traction vector with values
-    RefCountPtr<Epetra_Vector>       mytraction_;
+    Teuchos::RCP<Epetra_Vector>       mytraction_;
 };
 
 }
