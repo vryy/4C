@@ -27,6 +27,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_mat/plasticneohooke.H"
 #include "../drt_mat/plasticlinelast.H"
+#include "../drt_mat/thermoplasticlinelast.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/growth_ip.H"
@@ -420,8 +421,13 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       }
       else if (mat->MaterialType() == INPAR::MAT::m_pllinelast)
       {
-        MAT::PlasticLinElast* plastic = static_cast <MAT::PlasticLinElast*>(mat.get());
-        plastic->Update();
+        MAT::PlasticLinElast* pllinelast = static_cast <MAT::PlasticLinElast*>(mat.get());
+        pllinelast->Update();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_thermopllinelast)
+      {
+        MAT::ThermoPlasticLinElast* thrpllinelast = static_cast <MAT::ThermoPlasticLinElast*>(mat.get());
+        thrpllinelast->Update();
       }
       else if (mat->MaterialType() == INPAR::MAT::m_growth)
       {
@@ -506,8 +512,13 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       }
       else if (mat->MaterialType() == INPAR::MAT::m_pllinelast)
       {
-        MAT::PlasticLinElast* plastic = static_cast <MAT::PlasticLinElast*>(mat.get());
-        plastic->Update();
+        MAT::PlasticLinElast* pllinelast = static_cast <MAT::PlasticLinElast*>(mat.get());
+        pllinelast->Update();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_thermopllinelast)
+      {
+        MAT::ThermoPlasticLinElast* thrpllinelast = static_cast <MAT::ThermoPlasticLinElast*>(mat.get());
+        thrpllinelast->Update();
       }
       else if (mat->MaterialType() == INPAR::MAT::m_growth)
       {
@@ -560,11 +571,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
         plastic->Update();
       }
-      else if (mat->MaterialType() == INPAR::MAT::m_pllinelast)
-      {
-        MAT::PlasticLinElast* plastic = static_cast <MAT::PlasticLinElast*>(mat.get());
-        plastic->Update();
-      }
+//      else if (mat->MaterialType() == INPAR::MAT::m_pllinelast)
+//      {
+//        MAT::PlasticLinElast* pllinelast = static_cast <MAT::PlasticLinElast*>(mat.get());
+//        pllinelast->Update();
+//      }
     }
     break;
 

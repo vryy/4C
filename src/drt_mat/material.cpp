@@ -21,10 +21,11 @@ Maintainer: Lena Wiechert
 #include "newtonianfluid.H"
 #include "stvenantkirchhoff.H"
 #include "thermostvenantkirchhoff.H"
-#include "micromaterial.H"
-#include "neohooke.H"
+#include "thermoplasticlinelast.H"
 #include "plasticneohooke.H"
 #include "plasticlinelast.H"
+#include "micromaterial.H"
+#include "neohooke.H"
 #include "aaaneohooke.H"
 #include "aaaneohooke_stopro.H"
 #include "aaagasser.H"
@@ -109,6 +110,27 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::ThermoStVenantKirchhoff* params = static_cast<MAT::PAR::ThermoStVenantKirchhoff*>(curmat->Parameter());
     return params->CreateMaterial();
   }
+  case INPAR::MAT::m_thermopllinelast:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ThermoPlasticLinElast(curmat));
+    MAT::PAR::ThermoPlasticLinElast* params = static_cast<MAT::PAR::ThermoPlasticLinElast*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_plneohooke:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::PlasticNeoHooke(curmat));
+    MAT::PAR::PlasticNeoHooke* params = static_cast<MAT::PAR::PlasticNeoHooke*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_pllinelast:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::PlasticLinElast(curmat));
+    MAT::PAR::PlasticLinElast* params = static_cast<MAT::PAR::PlasticLinElast*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
   case INPAR::MAT::m_struct_multiscale:
   {
     if (curmat->Parameter() == NULL)
@@ -177,20 +199,6 @@ Teuchos::RefCountPtr<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::NeoHooke(curmat));
     MAT::PAR::NeoHooke* params = static_cast<MAT::PAR::NeoHooke*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
-  case INPAR::MAT::m_plneohooke:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::PlasticNeoHooke(curmat));
-    MAT::PAR::PlasticNeoHooke* params = static_cast<MAT::PAR::PlasticNeoHooke*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
-  case INPAR::MAT::m_pllinelast:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::PlasticLinElast(curmat));
-    MAT::PAR::PlasticLinElast* params = static_cast<MAT::PAR::PlasticLinElast*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_aaaneohooke:

@@ -22,6 +22,7 @@ Maintainer: Caroline Danowski
 #include "../linalg/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/thermostvenantkirchhoff.H"
+#include "../drt_mat/thermoplasticlinelast.H"
 #include <iterator>
 
 #include "../drt_inpar/inpar_structure.H"

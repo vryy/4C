@@ -36,6 +36,7 @@ Maintainer: Caroline Danowski
 // material headers
 #include "../drt_mat/fourieriso.H"
 #include "../drt_mat/thermostvenantkirchhoff.H"
+#include "../drt_mat/thermoplasticlinelast.H"
 
 //#define VISUALIZE_ELEMENT_DATA
 #include "thermo_element.H" // only for visualization of element data
@@ -292,6 +293,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 
         // if there is a displacement/velocity vector
         // --> calculate coupling term
+
+#ifndef MonTSIwithoutSTR
         CalculateCouplFintCondCapa(
           ele,
           time,
@@ -304,6 +307,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           NULL,
           NULL
           );
+#endif // MonTSIwithoutSTR
+
       } // coupling term
     } // la.Size>1
   }  // action == "calc_thermo_fintcond"
@@ -358,6 +363,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 
         // if there is a displacement/velocity vector available go on here
         // --> calculate coupling
+
+#ifndef MonTSIwithoutSTR
         CalculateCouplFintCondCapa(
           ele,
           time,
@@ -370,6 +377,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           NULL,
           NULL
           );
+#endif // MonTSIwithoutSTR
+
       } // end coupling
     } // end la.Size>1
   }  // action == "calc_thermo_fint"
@@ -425,6 +434,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 
         // if there is a strucutural vector available go on here
         // --> calculate coupling
+
+#ifndef MonTSIwithoutSTR
         CalculateCouplFintCondCapa(
           ele,
           time,
@@ -437,6 +448,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           NULL,
           NULL
           );
+#endif // MonTSIwithoutSTR
+
       } // end coupling
     } // end la.Size()>1
 
@@ -498,6 +511,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 
         // if there is a strucutural vector available go on here
         // --> calculate coupling
+
+#ifndef MonTSIwithoutSTR
         CalculateCouplFintCondCapa(
           ele,
           time,
@@ -510,6 +525,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           NULL,
           NULL
           );
+#endif // MonTSIwithoutSTR
+
       } // end coupling
     } // end la.Size()>1
 
@@ -602,6 +619,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     tgdata.StartPacking();
     ParObject::AddtoPack(tgdata, etempgrad);
     std::copy(tgdata().begin(),tgdata().end(),std::back_inserter(*tempgraddata));
+
   }  // action == "proc_thermo_heatflux"
 
   //============================================================================
@@ -898,7 +916,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::EvaluateNeumann(
 }
 
 /*----------------------------------------------------------------------*
- |  calculate system matrix and rhs (public)                 g.bau 08/08|
+ |  calculate system matrix and rhs (public)                g.bau 08/08 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
@@ -1046,12 +1064,22 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
     {
       MAT::ThermoStVenantKirchhoff* thrstvk
         = static_cast <MAT::ThermoStVenantKirchhoff*>(structmat.get());
-
       thrstvk->SetupCthermo(ctemp);
 
       //  for TSI validation/verification (2nd Danilovskaya problem): use COUPLEINITTEMPERATURE
 #ifdef COUPLEINITTEMPERATURE
       thetainit = thrstvk->InitTemp();
+#endif // COUPLEINITTEMPERATURE
+    }
+    else if (structmat->MaterialType() == INPAR::MAT::m_thermopllinelast)
+    {
+      MAT::ThermoPlasticLinElast* thrpllinelast
+        = static_cast <MAT::ThermoPlasticLinElast*>(structmat.get());
+      thrpllinelast->SetupCthermo(ctemp);
+
+      //  for TSI validation/verification (2nd Danilovskaya problem): use COUPLEINITTEMPERATURE
+#ifdef COUPLEINITTEMPERATURE
+      thetainit = thrpllinelast->InitTemp();
 #endif // COUPLEINITTEMPERATURE
     }
   }
@@ -1248,8 +1276,13 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
     {
       MAT::ThermoStVenantKirchhoff* thrstvk
         = static_cast <MAT::ThermoStVenantKirchhoff*>(structmat.get());
-
       thrstvk->SetupCthermo(ctemp);
+    }
+    else if (structmat->MaterialType() == INPAR::MAT::m_thermopllinelast)
+    {
+      MAT::ThermoPlasticLinElast* thrpllinelast
+        = static_cast <MAT::ThermoPlasticLinElast*>(structmat.get());
+      thrpllinelast->SetupCthermo(ctemp);
     }
   }
   // END OF COUPLING

@@ -22,6 +22,7 @@ Maintainer: Caroline Danowski
 #include "../linalg/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/thermostvenantkirchhoff.H"
+#include "../drt_mat/thermoplasticlinelast.H"
 #include <iterator>
 
 using namespace std; // cout etc.
@@ -743,6 +744,16 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_temp(
       return;
       break;
     }
+    // small strain von Mises thermoelastoplastic material
+    case INPAR::MAT::m_thermopllinelast:
+    {
+      MAT::ThermoPlasticLinElast* thrpllinelast
+        = static_cast <MAT::ThermoPlasticLinElast*>(mat.get());
+      thrpllinelast->Evaluate(*Ntemp,*ctemp,*stresstemp);
+      *density = thrpllinelast->Density();
+      return;
+      break;
+    }
     default:
       dserror("Unknown type of temperature dependent material");
     break;
@@ -772,12 +783,21 @@ void DRT::ELEMENTS::So_hex8::Stempconst(
        return thrstvk->Stempconst(*ctemp,*stempconst);
        break;
     }
+    // small strain von Mises thermoelastoplastic material
+    case INPAR::MAT::m_thermopllinelast:
+    {
+      MAT::ThermoPlasticLinElast* thrpllinelast
+        = static_cast <MAT::ThermoPlasticLinElast*>(mat.get());
+      return thrpllinelast->Stempconst(*ctemp,*stempconst);
+      break;
+    }
     default:
       dserror("Cannot ask material for the temperature rhs");
       break;
   } // switch (mat->MaterialType())
 
   return;
+
 } // So_hex8::Stempconst
 
 
@@ -795,12 +815,20 @@ void DRT::ELEMENTS::So_hex8::Ctemp(LINALG::Matrix<6,1>* ctemp)
       MAT::ThermoStVenantKirchhoff* thrstvk
         = static_cast<MAT::ThermoStVenantKirchhoff*>(mat.get());
        return thrstvk->SetupCthermo(*ctemp);
-
        break;
+    }
+    // small strain von Mises thermoelastoplastic material
+    case INPAR::MAT::m_thermopllinelast:
+    {
+      MAT::ThermoPlasticLinElast* thrpllinelast
+        = static_cast <MAT::ThermoPlasticLinElast*>(mat.get());
+      return thrpllinelast->SetupCthermo(*ctemp);
+      break;
     }
     default:
       dserror("Cannot ask material for the temperature rhs");
       break;
+
   } // switch (mat->MaterialType())
 
 }

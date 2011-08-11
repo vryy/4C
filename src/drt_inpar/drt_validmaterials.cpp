@@ -352,8 +352,66 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"YOUNG","Young's modulus");
     AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"DENS","mass density");
-    AddNamedReal(m,"THEXPANS","coefficient of linear thermal expansion",true);
-    AddNamedReal(m,"INITTEMP","initial temperature",true);
+    AddNamedReal(m,"THEXPANS","coefficient of linear thermal expansion");
+    AddNamedReal(m,"INITTEMP","initial temperature");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Linear thermo-elastic St.Venant Kirchhoff / plastic von Mises
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_Struct_ThrPlasticLinElast",
+                                            "Thermo-elastic St.Venant Kirchhoff / plastic von Mises material",
+                                            INPAR::MAT::m_thermopllinelast));
+
+    AddNamedReal(m,"YOUNG","Young's modulus");
+    AddNamedReal(m,"NUE","Poisson's ratio");
+    AddNamedReal(m,"DENS","mass density");
+    AddNamedReal(m,"THEXPANS","coefficient of linear thermal expansion");
+    AddNamedReal(m,"INITTEMP","initial temperature");
+    AddNamedReal(m,"YIELD","yield stress");
+    AddNamedReal(m,"KINHARD","kinematic hardening modulus");
+    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Plastic Neo-Hooke / von Mises
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_Struct_PlasticNeoHooke",
+                                            "elastic neo-Hooke / plastic von Mises material",
+                                            INPAR::MAT::m_plneohooke));
+
+    AddNamedReal(m,"YOUNG","Young's modulus");
+    AddNamedReal(m,"NUE","Poisson's ratio");
+    AddNamedReal(m,"DENS","mass density");
+    AddNamedReal(m,"ISOHARD","isotropic hardening");
+    AddNamedReal(m,"YIELD","yield stress");
+    AddNamedReal(m,"INFYIELD","inf yield stress for nonlinear isotropic hardening");
+    AddNamedReal(m,"EXP","exponent for nonlinear isotropic hardening");
+    AddNamedReal(m,"KINHARD","kinematic hardening");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // Plastic linear elastic St.Venant Kirchhoff / von Mises
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_Struct_PlasticLinElast",
+                                            "elastic St.Venant Kirchhoff / plastic von Mises material",
+                                            INPAR::MAT::m_pllinelast));
+
+    AddNamedReal(m,"YOUNG","Young's modulus");
+    AddNamedReal(m,"NUE","Poisson's ratio");
+    AddNamedReal(m,"DENS","mass density");
+    AddNamedReal(m,"YIELD","yield stress");
+    AddNamedReal(m,"KINHARD","kinematic hardening modulus");
+    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
 
     AppendMaterialDefinition(matlist,m);
   }
@@ -410,45 +468,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
-
-  /*----------------------------------------------------------------------*/
-  // Plastic Neo-Hooke / von Mises
-  {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_Struct_PlasticNeoHooke",
-                                            "elastic neo-Hooke / plastic von Mises material",
-                                            INPAR::MAT::m_plneohooke));
-
-    AddNamedReal(m,"YOUNG","Young's modulus");
-    AddNamedReal(m,"NUE","Poisson's ratio");
-    AddNamedReal(m,"DENS","mass density");
-    AddNamedReal(m,"ISOHARD","isotropic hardening");
-    AddNamedReal(m,"YIELD","yield stress");
-    AddNamedReal(m,"INFYIELD","inf yield stress for nonlinear isotropic hardening");
-    AddNamedReal(m,"EXP","exponent for nonlinear isotropic hardening");
-    AddNamedReal(m,"KINHARD","kinematic hardening");
-
-    AppendMaterialDefinition(matlist,m);
-  }
-
-  /*----------------------------------------------------------------------*/
-  // Plastic linear elastic St.Venant Kirchhoff / von Mises
-  {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_Struct_PlasticLinElast",
-                                            "elastic St.Venant Kirchhoff / plastic von Mises material",
-                                            INPAR::MAT::m_pllinelast));
-
-    AddNamedReal(m,"YOUNG","Young's modulus");
-    AddNamedReal(m,"NUE","Poisson's ratio");
-    AddNamedReal(m,"DENS","mass density");
-    AddNamedReal(m,"YIELD","yield stress");
-    AddNamedReal(m,"KINHARD","kinematic hardening modulus");
-    AddNamedReal(m,"TOL","tolerance for local Newton iteration");
-
-    AppendMaterialDefinition(matlist,m);
-  }
-
 
   /*--------------------------------------------------------------------*/
   // aneurysm wall material according to Raghavan and Vorp [2000]

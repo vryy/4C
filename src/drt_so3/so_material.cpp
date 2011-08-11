@@ -33,6 +33,9 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/thermostvenantkirchhoff.H"
+#include "../drt_mat/thermoplasticlinelast.H"
+#include "../drt_mat/plasticneohooke.H"
+#include "../drt_mat/plasticlinelast.H"
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/aaaneohooke.H"
@@ -56,8 +59,6 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/protein.H"
 #include "../drt_mat/elasthyper.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
-#include "../drt_mat/plasticneohooke.H"
-#include "../drt_mat/plasticlinelast.H"
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
@@ -106,6 +107,40 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       MAT::ThermoStVenantKirchhoff* thrstvk = static_cast <MAT::ThermoStVenantKirchhoff*>(mat.get());
       thrstvk->Evaluate(*glstrain,*cmat,*stress);
       *density = thrstvk->Density();
+      return;
+      break;
+    }
+    // added this material only for hex8
+    case INPAR::MAT::m_thermopllinelast: /*------------- Linear thermo-elastio-plastic Material */
+    {
+      MAT::ThermoPlasticLinElast* thrpllinelast = static_cast <MAT::ThermoPlasticLinElast*>(mat.get());
+      /* Initialization moved to element input. So we can be sure, that material is initialized. */
+      // if (!pllinelast->Initialized())
+      //   thrpllinelast->Setup(NUMGPT_SOH8);
+      thrpllinelast->Evaluate(*glstrain,*plglstrain,gp,params,*cmat,*stress);
+      *density = thrpllinelast->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_plneohooke: /*----------------- Plastic NeoHookean Material */
+    {
+      MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
+      /* Initialization moved to element input. So we can be sure, that material is initialized. */
+      //if (!plastic->Initialized())
+      //  plastic->Setup(NUMGPT_SOH8);
+      plastic->Evaluate(defgrd,gp,params,cmat,stress);
+      *density = plastic->Density();
+      return;
+      break;
+    }
+    case INPAR::MAT::m_pllinelast: /*------------- Plastic linear elastic Material */
+    {
+      MAT::PlasticLinElast* pllinelast = static_cast <MAT::PlasticLinElast*>(mat.get());
+      /* Initialization moved to element input. So we can be sure, that material is initialized. */
+      // if (!pllinelast->Initialized())
+      //  pllinelast->Setup(NUMGPT_SOH8);
+      pllinelast->Evaluate(*glstrain,*plglstrain,gp,params,*cmat,*stress);
+      *density = pllinelast->Density();
       return;
       break;
     }
@@ -449,28 +484,6 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
       if (action == "calc_struct_stress") output = true;
       comix->Evaluate(glstrain,gp,cmat,stress,dt,t,output);
       *density = comix->Density();
-      return;
-      break;
-    }
-    case INPAR::MAT::m_plneohooke: /*----------------- Plastic NeoHookean Material */
-    {
-      MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
-      /* Initialization moved to element input. So we can be sure, that material is initialized. */
-      //if (!plastic->Initialized())
-      //  plastic->Setup(NUMGPT_SOH8);
-      plastic->Evaluate(defgrd,gp,params,cmat,stress);
-      *density = plastic->Density();
-      return;
-      break;
-    }
-    case INPAR::MAT::m_pllinelast: /*------------- Plastic linear elastic Material */
-    {
-      MAT::PlasticLinElast* plastic = static_cast <MAT::PlasticLinElast*>(mat.get());
-      /* Initialization moved to element input. So we can be sure, that material is initialized. */
-      // if (!plastic->Initialized())
-      //  plastic->Setup(NUMGPT_SOH8);
-      plastic->Evaluate(*glstrain,*plglstrain,gp,params,*cmat,*stress);
-      *density = plastic->Density();
       return;
       break;
     }

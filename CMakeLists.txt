@@ -452,6 +452,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/stvenantkirchhoff.cpp
   src/drt_mat/sutherland.cpp
   src/drt_mat/thermostvenantkirchhoff.cpp
+  src/drt_mat/thermoplasticlinelast.cpp
   src/drt_mat/viscoanisotropic.cpp
   src/drt_mat/visconeohooke.cpp
   src/drt_mat/yeoh.cpp

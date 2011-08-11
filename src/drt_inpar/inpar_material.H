@@ -31,7 +31,8 @@ namespace INPAR
     enum MaterialType
     {
       m_stvenant,    ///< St.Venant Kirchhoff material
-      m_thermostvenant,  ///< St.Venant Kirchhoff material with temperature
+      m_thermostvenant, ///< St.Venant Kirchhoff material with temperature
+      m_thermopllinelast, ///< Hooke elasticity with temperature and von Mises plasticity
       m_pl_mises_3D, ///< Stefans Mises
       m_pl_mises,    ///< von Mises material
       m_pl_hoff,     ///< anisotropic plastic material based on hoffman criterion
