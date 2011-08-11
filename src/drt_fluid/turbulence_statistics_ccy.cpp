@@ -1420,13 +1420,13 @@ void FLD::TurbulenceStatisticsCcy::TimeAverageMeansAndOutputOfStatistics(int ste
     (*log) << "     u_r*u_z     ";
     if (withscatra_)
     {
-      (*log) << "         c         ";
-      (*log) << "        c*c        ";
+      (*log) << "          c          ";
+      (*log) << "         c*c         ";
 
       for(int k=0; k< numscatradofpernode_; k++)
       {
-        (*log) << "         c"<<k+1<<"         ";
-        (*log) << "      c"<<k+1<<"*c"<<k+1<<"       ";
+        (*log) << "          c"<<k+1<<"          ";
+        (*log) << "       c"<<k+1<<"*c"<<k+1<<"        ";
       }
     }
     (*log) << "\n";
@@ -1450,13 +1450,13 @@ void FLD::TurbulenceStatisticsCcy::TimeAverageMeansAndOutputOfStatistics(int ste
       (*log) << "    " << setw(13) << setprecision(6) << (*pointsumvw_)[i]/numsamp_;
       if (withscatra_)
       {
-        (*log) << "    " << setw(15) << setprecision(8) << (*pointsumc_ )[i]/numsamp_;
-        (*log) << "    " << setw(15) << setprecision(8) << (*pointsumcc_)[i]/numsamp_;
+        (*log) << "    " << setw(17) << setprecision(10) << (*pointsumc_ )[i]/numsamp_;
+        (*log) << "    " << setw(17) << setprecision(10) << (*pointsumcc_)[i]/numsamp_;
 
         for(int k=0; k< numscatradofpernode_; k++)
         {
-          (*log) << "    " << setw(15) << setprecision(8) << ((*pointsumphi_ )(i,k))/numsamp_;
-          (*log) << "    " << setw(15) << setprecision(8) << ((*pointsumphiphi_)(i,k))/numsamp_;
+          (*log) << "    " << setw(17) << setprecision(10) << ((*pointsumphi_ )(i,k))/numsamp_;
+          (*log) << "    " << setw(17) << setprecision(10) << ((*pointsumphiphi_)(i,k))/numsamp_;
         }
       }
       (*log) << "\n";
