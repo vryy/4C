@@ -157,37 +157,6 @@ contactsolver_(contactsolver)
   //**********************************************************************
   {
     if(contactsolver_ == Teuchos::null) dserror("no contact/meshtying solver? cannot be.");
-
-    // TODO: remove me. all done in adapter_structure...
-/*
-    // use ContactSolverParameters (instead of StructSolverParameters)
-    contactsolver_ =
-      Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->ContactSolverParams(),
-                                      dis.Comm(),
-                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
-    dis.ComputeNullSpaceIfNecessary(contactsolver_->Params());
-
-    // get system type
-    INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtmanager_->GetStrategy().Params(),"STRATEGY");
-    INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(cmtmanager_->GetStrategy().Params(),"SYSTEM");
-
-    // **********************************************************************
-    // Solving a saddle point system
-    // (1) Standard / Dual Lagrange multipliers -> SaddlePointCoupled
-    // (2) Standard / Dual Lagrange multipliers -> SaddlePointSimpler
-    // **********************************************************************
-    if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
-    {
-      //contactsolver_->PutSolverParamsToSubParams("SIMPLER", DRT::Problem::Instance()->FluidPressureSolverParams());
-      contactsolver_->PutSolverParamsToSubParams("Inverse1", DRT::Problem::Instance()->StructSolverParams());  // in SIMPLER we have to approximate a struct problem with constraints
-      contactsolver_->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->ContactConstraintSolverParams());
-
-      // note: the null space is definitely too long and wrong for the Lagrange multipliers
-      // don't forget to call FixMLNullspace for "Inverse1"!
-      dis.ComputeNullSpaceIfNecessary(contactsolver_->Params().sublist("Inverse1"));
-
-    }*/
-
   }
 
   //**********************************************************************

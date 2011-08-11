@@ -2469,11 +2469,6 @@ void CONTACT::CoLagrangeStrategy::SaddlePointSolve(LINALG::Solver& solver,
   // if not we make a standard solver call to speed things up
   if (!IsInContact() && !WasInContact() && !WasInContactLastTimeStep())
   {
-    // remove SIMPLER sublist if still around
-    // (this is important in the case where contact is released again)
-    //if (systype==INPAR::CONTACT::system_spsimpler && solver.Params().isSublist("SIMPLER"))
-    //  solver.Params().remove("SIMPLER");
-
     //cout << "##################################################" << endl;
     //cout << " USE FALLBACK SOLVER (pure structure problem)" << endl;
     //cout << fallbacksolver.Params() << endl;
