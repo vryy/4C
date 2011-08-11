@@ -190,7 +190,7 @@ namespace FSI
       (
           Teuchos::RCP<Epetra_Vector> reddisp,     ///< redundant version of structure displacements
           DRT::Discretization& interfacedis,       ///< interface discretization
-          map<int, double> maxcoord
+          map<int, double>& maxcoord
       );
       
 

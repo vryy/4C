@@ -999,7 +999,7 @@ std::map<int,LINALG::Matrix<3,1> > FSI::UTILS::SlideAleUtils::CurrentStructPos
 (
     Teuchos::RCP<Epetra_Vector> reddisp,
     DRT::Discretization& interfacedis,
-    map<int, double> maxcoord
+    map<int, double>& maxcoord
 )
 {
   std::map<int,LINALG::Matrix<3,1> > currentpositions;
@@ -1040,6 +1040,7 @@ std::map<int,LINALG::Matrix<3,1> > FSI::UTILS::SlideAleUtils::CurrentStructPos
       }
     }
   }
+  
   return currentpositions;
 }
 
@@ -1309,6 +1310,7 @@ void FSI::UTILS::SlideAleUtils::Rotation
     double maxcoord = 0.0;
     if (ifluidslidstructeles_.find(i) != ifluidslidstructeles_.end())
       maxcoord=rotrat[i];
+    
     map<int, RCP<DRT::Element> >::const_iterator elemiter;
     for (elemiter = ifluidslidstructeles_[i].begin(); elemiter != ifluidslidstructeles_[i].end(); elemiter++)
     {
