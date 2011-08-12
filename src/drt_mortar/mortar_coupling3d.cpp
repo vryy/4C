@@ -2742,7 +2742,61 @@ bool MORTAR::Coupling3d::Triangulation(map<int,double>& projpar)
   VertexLinearization(linvertex,projpar);
 
   //**********************************************************************
-  // (2) Find center of clipping polygon (centroid formula)
+  // (2) Simple cliiping polygon (triangle, quadrilateral) -> IntCells
+  //**********************************************************************
+  // clip polygon = triangle
+  // no triangulation necessary -> 1 IntCell
+  if (clipsize==3)
+  {
+    // IntCell vertices = clip polygon vertices
+    Epetra_SerialDenseMatrix coords(3,clipsize);
+    for (int i=0;i<clipsize;++i)
+      for (int k=0;k<3;++k)
+        coords(k,i) = Clip()[i].Coord()[k];
+
+    // create IntCell object and push back
+    Cells().push_back(rcp(new IntCell(0,3,coords,Auxn(),DRT::Element::tri3,
+      CouplingInAuxPlane(),linvertex[0],linvertex[1],linvertex[2],GetDerivAuxn())));
+
+    // get out of here
+    return true;
+  }
+
+  // clip polygon = quadrilateral
+  // no triangulation necessary -> 2 IntCells
+  else if (clipsize==4)
+  {
+    // IntCell 1 vertices = clip polygon vertices 0,1,2
+    Epetra_SerialDenseMatrix coords(3,3);
+    for (int k=0;k<3;++k)
+    {
+      coords(k,0) = Clip()[0].Coord()[k];
+      coords(k,1) = Clip()[1].Coord()[k];
+      coords(k,2) = Clip()[2].Coord()[k];
+    }
+
+    // create 1st IntCell object and push back
+    Cells().push_back(rcp(new IntCell(0,3,coords,Auxn(),DRT::Element::tri3,
+      CouplingInAuxPlane(),linvertex[0],linvertex[1],linvertex[2],GetDerivAuxn())));
+
+    // IntCell vertices = clip polygon vertices 2,3,0
+    for (int k=0;k<3;++k)
+    {
+      coords(k,0) = Clip()[2].Coord()[k];
+      coords(k,1) = Clip()[3].Coord()[k];
+      coords(k,2) = Clip()[0].Coord()[k];
+    }
+
+    // create 2nd IntCell object and push back
+    Cells().push_back(rcp(new IntCell(1,3,coords,Auxn(),DRT::Element::tri3,
+      CouplingInAuxPlane(),linvertex[2],linvertex[3],linvertex[0],GetDerivAuxn())));
+
+    // get out of here
+    return true;
+  }
+
+  //**********************************************************************
+  // (3) Find center of clipping polygon (centroid formula)
   //**********************************************************************
   vector<double> clipcenter(3);
   for (int k=0;k<3;++k) clipcenter[k] = 0.0;
@@ -2796,89 +2850,39 @@ bool MORTAR::Coupling3d::Triangulation(map<int,double>& projpar)
   //cout << "Clipcenter: " << clipcenter[0] << " " << clipcenter[1] << " " << clipcenter[2] << endl;
 
   //**********************************************************************
-  // (3) Linearization of clip center coordinates (only non-empty for contact)
+  // (4) Linearization of clip center coordinates (only non-empty for contact)
   //**********************************************************************
   CenterLinearization(linvertex,lincenter);
 
   //**********************************************************************
-  // (4)Triangulation -> IntCells
+  // (5) General clipping polygon: Triangulation -> IntCells
   //**********************************************************************
-  vector<IntCell> cells;
-
-  // easy if clip polygon = triangle: 1 IntCell
-  if (clipsize==3)
+  // center-based triangulation if clip polygon > quadrilateral
+  // No. of IntCells is equal to no. of clip polygon vertices
+  for (int num=0;num<clipsize;++num)
   {
-    // IntCell vertices = clip polygon vertices
-    Epetra_SerialDenseMatrix coords(3,clipsize);
-    for (int i=0;i<clipsize;++i)
-      for (int k=0;k<3;++k)
-        coords(k,i) = Clip()[i].Coord()[k];
-
-    // create IntCell object and push back
-    Cells().push_back(rcp(new IntCell(0,3,coords,Auxn(),DRT::Element::tri3,
-      CouplingInAuxPlane(),linvertex[0],linvertex[1],linvertex[2],GetDerivAuxn())));
-
-  }
-
-  // easy if clip polygon = quadrilateral: 2 IntCells
-  else if (clipsize==4)
-  {
-    // IntCell 1 vertices = clip polygon vertices 0,1,2
+    // the first vertex is always the clip center
+    // the second vertex is always the current clip vertex
     Epetra_SerialDenseMatrix coords(3,3);
     for (int k=0;k<3;++k)
     {
-      coords(k,0) = Clip()[0].Coord()[k];
-      coords(k,1) = Clip()[1].Coord()[k];
-      coords(k,2) = Clip()[2].Coord()[k];
+      coords(k,0) = clipcenter[k];
+      coords(k,1) = Clip()[num].Coord()[k];
     }
 
-    // create 1st IntCell object and push back
-    Cells().push_back(rcp(new IntCell(0,3,coords,Auxn(),DRT::Element::tri3,
-      CouplingInAuxPlane(),linvertex[0],linvertex[1],linvertex[2],GetDerivAuxn())));
-
-    // IntCell vertices = clip polygon vertices 2,3,0
-    for (int k=0;k<3;++k)
+    // the third vertex is the next vertex on clip polygon
+    int numplus1 = num+1;
+    if (num==clipsize-1)
     {
-      coords(k,0) = Clip()[2].Coord()[k];
-      coords(k,1) = Clip()[3].Coord()[k];
-      coords(k,2) = Clip()[0].Coord()[k];
+      for (int k=0;k<3;++k) coords(k,2) = Clip()[0].Coord()[k];
+      numplus1 = 0;
     }
+    else
+      for (int k=0;k<3;++k) coords(k,2) = Clip()[num+1].Coord()[k];
 
-    // create 2nd IntCell object and push back
-    Cells().push_back(rcp(new IntCell(1,3,coords,Auxn(),DRT::Element::tri3,
-      CouplingInAuxPlane(),linvertex[2],linvertex[3],linvertex[0],GetDerivAuxn())));
-
-  }
-
-  // center-based triangulation if clip polygon > quadrilateral
-  else
-  {
-    // No. of IntCells is equal to no. of clip polygon vertices
-    for (int num=0;num<clipsize;++num)
-    {
-      // the first vertex is always the clip center
-      // the second vertex is always the current clip vertex
-      Epetra_SerialDenseMatrix coords(3,3);
-      for (int k=0;k<3;++k)
-      {
-        coords(k,0) = clipcenter[k];
-        coords(k,1) = Clip()[num].Coord()[k];
-      }
-
-      // the third vertex is the next vertex on clip polygon
-      int numplus1 = num+1;
-      if (num==clipsize-1)
-      {
-        for (int k=0;k<3;++k) coords(k,2) = Clip()[0].Coord()[k];
-        numplus1 = 0;
-      }
-      else
-        for (int k=0;k<3;++k) coords(k,2) = Clip()[num+1].Coord()[k];
-
-      // create IntCell object and push back
-      Cells().push_back(rcp(new IntCell(num,3,coords,Auxn(),DRT::Element::tri3,
-        CouplingInAuxPlane(),lincenter,linvertex[num],linvertex[numplus1],GetDerivAuxn())));
-    }
+    // create IntCell object and push back
+    Cells().push_back(rcp(new IntCell(num,3,coords,Auxn(),DRT::Element::tri3,
+      CouplingInAuxPlane(),lincenter,linvertex[num],linvertex[numplus1],GetDerivAuxn())));
   }
 
   return true;
