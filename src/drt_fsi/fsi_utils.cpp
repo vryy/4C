@@ -711,7 +711,7 @@ aletype_(aleproj)
   for ( eit=structmelements.begin() ; eit != structmelements.end(); eit++ )
   {
     int err = 0;
-    for ( meit=istructslideles_.begin(); meit != istructslideles_.end(); eit++ )
+    for ( meit=istructslideles_.begin(); meit != istructslideles_.end(); meit++ )
       err += meit->second.erase((*eit).first);
     if (!err)
       dserror("Non sliding interface has to be a subset of FSI-interface or empty");
@@ -763,7 +763,7 @@ aletype_(aleproj)
   {
     int err = 0;
     for ( mnit=ifluidslidnodes_.begin(); mnit != ifluidslidnodes_.end(); mnit++ )
-      int err = mnit->second.erase((*nit).first);
+      err += mnit->second.erase((*nit).first);
     if (!err)
       dserror("Non sliding interface has to be a subset of FSI-interface or empty");
   }
