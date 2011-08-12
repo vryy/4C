@@ -2405,7 +2405,7 @@ passive_baci_test(xfsi_multibody_hex8_monolithic 1 "")
 passive_baci_test(xfsi_shooter_thin 1 "")
 
 # remove any output files from our tests
-add_test(NAME test_cleanup COMMAND sh -c "rm -v xxx* core.*")
+add_test(NAME test_cleanup COMMAND sh -c "rm -vf xxx* core.*")
 
 ##else()
 # Tests for TRILINOS_DEV version
