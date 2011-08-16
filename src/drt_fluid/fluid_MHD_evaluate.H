@@ -18,8 +18,22 @@ Maintainer: Peter Gamnitzer
 #ifndef FLUID_MHD_EVALUATE_H
 #define FLUID_MHD_EVALUATE_H
 
-#include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_sparsematrix.H"
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
+
+using namespace Teuchos;
+
+// forward declarations
+namespace DRT
+{
+class Discretization;
+}
+
+namespace LINALG
+{
+  class SparseMatrix;
+}
 
 namespace FLD {
 

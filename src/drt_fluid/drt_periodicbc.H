@@ -16,12 +16,12 @@ Maintainer: Peter Gamnitzer
 #ifndef PERIODICBC_H
 #define PERIODICBC_H
 
-#include "Teuchos_RefCountPtr.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dofset.H"
-#include "drt_pbcdofset.H"
-#include "../drt_lib/drt_nodematchingoctree.H"
+#include <Epetra_IntVector.h>
+#include <Teuchos_RefCountPtr.hpp>
+#include <Epetra_Map.h>
+
 #include <Teuchos_TimeMonitor.hpp>
+#include <Epetra_Time.h>
 
 typedef int idxtype;
 extern "C"
@@ -34,8 +34,19 @@ extern "C"
 			   idxtype *);
 }
 
-
+using namespace std;
 using namespace Teuchos;
+
+// forward declarations
+namespace DRT
+{
+class Discretization;
+class DofSet;
+class Condition;
+}
+
+class PBCDofSet;
+
 
 /*!
 \brief  update dofrowmap and dofsets for periodic boundary conditions

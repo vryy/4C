@@ -17,6 +17,12 @@ Maintainer: Peter Gamnitzer
 #include "drt_pbcdofset.H"
 
 
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_node.H"
+#include "../drt_lib/drt_discret.H"
+#include "../linalg/linalg_utils.H"
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 05/07|

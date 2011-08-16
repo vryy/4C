@@ -37,6 +37,7 @@ Maintainer: Peter Gamnitzer
 #ifndef TURBULENCE_STATISTICS_CCY_H
 #define TURBULENCE_STATISTICS_CCY_H
 
+
 #ifdef PARALLEL
 #include "Epetra_MpiComm.h"
 #else
@@ -45,16 +46,17 @@ Maintainer: Peter Gamnitzer
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-#include "../drt_nurbs_discret/drt_control_point.H"
-#include "../linalg/linalg_utils.H"
+#include "Epetra_Vector.h"
+#include "Epetra_SerialDenseMatrix.h"
 
-#include "../drt_mat/newtonianfluid.H"
 
 using namespace std;
 using namespace Teuchos;
+
+namespace DRT
+{
+  class Discretization;
+}
 
 namespace FLD
 {

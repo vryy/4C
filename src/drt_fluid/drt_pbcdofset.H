@@ -22,24 +22,23 @@ Maintainer: Peter Gamnitzer
 #define PBCDOFSET_H
 
 #include <vector>
+#include <map>
 
 #include <Epetra_IntVector.h>
 #include <Teuchos_RefCountPtr.hpp>
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 
+#include "../drt_lib/drt_dofset.H"
+
 using namespace std;
 
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_dofset.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_element.H"
-#include "../drt_lib/drt_node.H"
-#include "../drt_lib/drt_discret.H"
 
-#include "../linalg/linalg_utils.H"
-
-#include "../headers/define_sizes.h"
+// forward declarations
+namespace DRT
+{
+class Discretization;
+}
 
 /*!
 \brief A set of degrees of freedom

@@ -22,6 +22,10 @@ Maintainer: Peter Gamnitzer
 
 
 #include "drt_periodicbc.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_nodematchingoctree.H"
+#include "drt_pbcdofset.H"
+#include "../linalg/linalg_utils.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
