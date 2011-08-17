@@ -1017,7 +1017,6 @@ namespace FLD
   ----------------------------------------------------------------------*/
   void TurbulenceStatisticManager::DoOutput(IO::DiscretizationWriter& output,
                                             int                       step,
-                                            const double              eosfac,
                                             const double              inflow)
   {
     // sampling takes place only in the sampling period
@@ -1046,7 +1045,7 @@ namespace FLD
         int uprestart=params_.get<int>("write restart every" );
 
         // dump in combination with a restart/output
-        if((step%upres == 0 || ( uprestart > 0 && step%uprestart == 0) ) && step>=samstart_)
+        if((step%upres == 0 || ( uprestart > 0 && step%uprestart == 0) ) && step>samstart_)
           outputformat=write_multiple_records;
       }
 
@@ -1171,7 +1170,7 @@ namespace FLD
         else
         {
           if(outputformat == write_single_record)
-            statistics_bfs_->DumpLomaStatistics(step,eosfac);
+            statistics_bfs_->DumpLomaStatistics(step);
         }
         break;
       }

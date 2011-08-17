@@ -62,6 +62,10 @@ void dyn_fluid_drt(const int restart)
 
   // prepares a turbulent flow simulation with generation of turbulent inflow during the
   // actual simulation
+  // this is done in two steps
+  // 1. computation of inflow until it reaches a fully turbulent state
+  // 2. computation of the main problem after restart
+  // Remark: we restart the simulation to save procs!
   if ((DRT::INPUT::IntegralValue<int>(fdyn.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true) and
      (restart<fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
   {
@@ -84,6 +88,10 @@ void dyn_fluid_drt(const int restart)
     // this finally allows to get high quality turbulent inflow conditions during simulation of the
     // actual flow
     turbfluidalgo->TimeLoop();
+
+    // perform result tests if required
+    DRT::Problem::Instance()->AddFieldTest(turbfluidalgo->DoResultCheck());
+    DRT::Problem::Instance()->TestAll(comm);
   }
   // solve a simple fluid problem
   else

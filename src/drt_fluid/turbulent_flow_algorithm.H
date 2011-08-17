@@ -19,6 +19,8 @@ Maintainer: Ursula Rasthofer
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
 #include "../drt_fluid/fluid_discret_extractor.H"
 
+#include "../drt_fluid/fluidresulttest.H"
+
 
 namespace FLD
 {
@@ -40,6 +42,9 @@ public:
   /// read restart
   /// only during inflow generation
   void ReadRestart(const int restart);
+
+  /// do result check
+  Teuchos::RCP<DRT::ResultTest> DoResultCheck(){return fluidalgo_->FluidField().CreateFieldTest();};
 
 private:
 

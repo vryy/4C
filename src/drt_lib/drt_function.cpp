@@ -534,6 +534,18 @@ namespace UTILS {
     double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
   };
 
+  /// special implementation two-phase flow test case
+  class CollapsingWaterColumnFunction : public Function
+  {
+  public:
+
+    /// ctor
+    CollapsingWaterColumnFunction();
+
+    /// evaluate function at given position in space
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+  };
+
   /// special implementation for a level set test function
   class RotatingConeFunction : public Function
   {
@@ -683,6 +695,12 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddTag("ZALESAKSDISK")
     ;
 
+  DRT::INPUT::LineDefinition collapsingwatercolumn;
+  collapsingwatercolumn
+    .AddNamedInt("FUNCT")
+    .AddTag("COLLAPSINGWATERCOLUMN")
+    ;
+
   DRT::INPUT::LineDefinition rotatingcone;
   rotatingcone
     .AddNamedInt("FUNCT")
@@ -727,6 +745,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(localwomersley);
   lines->Add(cylinder3d);
   lines->Add(zalesaksdisk);
+  lines->Add(collapsingwatercolumn);
   lines->Add(rotatingcone);
   lines->Add(levelsetcuttest);
   lines->Add(componentexpr);
@@ -945,6 +964,10 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       else if (function->HaveNamed("ZALESAKSDISK"))
       {
         functions_.push_back(rcp(new ZalesaksDiskFunction()));
+      }
+      else if (function->HaveNamed("COLLAPSINGWATERCOLUMN"))
+      {
+        functions_.push_back(rcp(new CollapsingWaterColumnFunction()));
       }
       else if (function->HaveNamed("ROTATINGCONE"))
       {
@@ -1251,57 +1274,121 @@ double DRT::UTILS::TurbBouLayerFunction::Evaluate(int index, const double* xp, d
 /*----------------------------------------------------------------------*/
 double DRT::UTILS::TurbBouLayerFunctionBFS::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
 {
-  double randomnumber;
-  double noise;
-
-  // fluctuation 10% of bulk mean velocity
-  double fluc= 0.1675;
+  double randomnumber = 0.0;
+  double noise = 0.0;
+  // maximal velocity
+  const double max = 1.899;
+  // fluctuation 10% of maximal velocity
+  const double fluc = 0.1 * max;
+  // generate noise in turbulent boundary layer only
+  const bool boulayer = true;
+  // step height
+  double h = 0.041;
+  // boundary layer thickness
+  double delta = 1.2 * h;
 
   switch (index)
   {
     case 0:
     {
       // set u_tau und nu and compute l_tau
-      double utau = 0.084;
+      double utau = 0.093;
       double nu   = 0.000015268;
       double ltau = nu/utau;
 
       // compute y+
       double yplus = xp[1]/ltau;
 
-      // maximal velocity
-      double max = 1.880;
-
-      // generate noise via random number
-      randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
-      noise = fluc * randomnumber;
+      if (!boulayer)
+      {
+        // noise over complete inlet
+        // generate noise via random number between -1 and 1
+        randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+        noise = fluc * randomnumber;
+      }
+      else
+      {
+        // noise only in boundary layer
+        if (xp[1]<=delta)
+        {
+          // generate noise via random number between -1 and 1
+          randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+          noise = fluc * randomnumber;
+        }
+        else
+        {
+          noise = 0.0;
+        }
+      }
 
       // return velocity value in x-direction
+      // viscous sublayer
       if (yplus <= 5.0)
         return utau * yplus + noise;
-      else if ((yplus > 5.0)   and (yplus <= 30.0))
-        return utau * ( 5.0 * log(yplus) - 3.05 ) + noise;
-      else if (yplus > 30.0)
+      // buffer layer
+      else if ((yplus > 5.0) and (yplus <= 30.0))
+        return utau * ( 4.5 * log(yplus) - 2.2 ) + noise;
+      // log-layer
+      else if (yplus > 30.0 and (yplus <= 150.0))
+        return utau * ( 2.6 * log(yplus) + 4.3 ) + noise;
+      // defect law
+      else if (yplus > 150.0)
       {
-        double upre = utau * ( 2.5 * log(yplus) + 5.5 );
+        double upre = utau * ( 3.6 * log(xp[1]/delta) - 0.35 ) + max;
         if (upre > max) return max + noise;
-        else             return upre + noise;
+        else            return upre + noise;
       }
     }
     case 1:
     {
-      // generate noise via random number
-      randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
-      noise = fluc * randomnumber;
+      if (!boulayer)
+      {
+        // noise over complete inlet
+        // generate noise via random number between -1 and 1
+        randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+        noise = fluc * randomnumber;
+      }
+      else
+      {
+        // noise only in boundary layer
+        if (xp[1]<=delta)
+        {
+          // generate noise via random number between -1 and 1
+          randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+          noise = fluc * randomnumber;
+        }
+        else
+        {
+          noise = 0.0;
+        }
+      }
 
       // return velocity value in y-direction
       return noise;
     }
     case 2:
     {
-      // generate noise via random number
-      randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
-      noise = fluc * randomnumber;
+      if (!boulayer)
+      {
+        // noise over complete inlet
+        // generate noise via random number between -1 and 1
+        randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+        noise = fluc * randomnumber;
+      }
+      else
+      {
+        // noise only in boundary layer
+        if (xp[1]<=delta)
+        {
+          // generate noise via random number between -1 and 1
+         randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
+          noise = fluc * randomnumber;
+        }
+        else
+        {
+          noise = 0.0;
+        }
+      }
 
       // return velocity value in z-direction
       return noise;
@@ -2339,6 +2426,51 @@ double DRT::UTILS::ZalesaksDiskFunction::Evaluate(int index, const double* xp, d
 
 // return distance;
 
+}
+
+
+/*----------------------------------------------------------------------*
+ | constructor                                          rasthofer 04/10 |
+ *----------------------------------------------------------------------*/
+DRT::UTILS::CollapsingWaterColumnFunction::CollapsingWaterColumnFunction() :
+Function()
+{
+}
+
+/*----------------------------------------------------------------------*
+ | evaluation of two-phase flow test case               rasthofer 04/10 |
+ *----------------------------------------------------------------------*/
+double DRT::UTILS::CollapsingWaterColumnFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  //here calculation of distance (sign is already taken in consideration)
+  double distance = 0.0;
+  
+  if (xp[0] > -0.146 and xp[1] > 0.067)
+  {
+     distance = + sqrt(DSQR(-0.146 - xp[0])+DSQR(0.067 - xp[1]));
+  }
+  else if (xp[0] >= -0.146 and xp[1] <= 0.067)
+  {
+     distance = + fabs(-0.146 - xp[0]);
+     //std::cout << distance << std::endl;
+  }
+  else if (xp[0] <= -0.146 and xp[1] >= 0.067)
+  {
+     distance = + fabs(0.067 - xp[1]);
+  }
+  else if (xp[0] < -0.146 and xp[1] < 0.067 and xp[1] <= (xp[0] + 0.213))
+  {
+     //distance = - fabs(0.067 - xp[1]);
+     distance = - fabs(-0.146 - xp[0]);
+  }
+  else
+  {
+     //distance = - fabs(-0.146 - xp[0]);
+     distance = - fabs(0.067 - xp[1]);
+     //std::cout << distance << std::endl;
+  }
+
+  return distance;
 }
 
 

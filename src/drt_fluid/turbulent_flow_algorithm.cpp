@@ -16,6 +16,7 @@ Maintainer: Ursula Rasthofer
 
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_dserror.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 
 /*----------------------------------------------------------------------*
@@ -111,7 +112,7 @@ void FLD::TurbulentFlowAlgorithm::TimeLoop()
     // update time integration
     inflowfluidalgo_->FluidField().Update();
     // write output of statistics only
-    // TODO: macht im Moment auch Gmsch-Output
+    // remark: does also gmsh-output if required
     inflowfluidalgo_->FluidField().StatisticsOutput();
 
     // transfer solution of inflow section to fluid discretization
@@ -135,6 +136,9 @@ void FLD::TurbulentFlowAlgorithm::TimeLoop()
     std::cout << "#     -> problem ready for restart              #" << std::endl;
     std::cout << "#-----------------------------------------------#\n" << std::endl;
   }
+
+  // summarize the performance measurements
+  Teuchos::TimeMonitor::summarize();
 
   return;
 }

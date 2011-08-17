@@ -62,7 +62,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
 
-// include Gmesh output
+// include Gmsh output
 //#define GMSHOUTPUT
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -2867,7 +2867,7 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   // -------------------------------------------------------------------
   //          dumping of turbulence statistics if required
   // -------------------------------------------------------------------
-  statisticsmanager_->DoOutput(output_,step_,eosfac);
+  statisticsmanager_->DoOutput(output_,step_);
 
   return;
 } // FluidImplicitTimeInt::StatisticsAndOutput
@@ -2900,7 +2900,7 @@ void FLD::FluidImplicitTimeInt::StatisticsOutput()
   // -------------------------------------------------------------------
   //          dumping of turbulence statistics if required
   // -------------------------------------------------------------------
-  statisticsmanager_->DoOutput(output_,step_,eosfac,true);
+  statisticsmanager_->DoOutput(output_,step_,true);
 
 #ifdef GMSHOUTPUT
     OutputToGmsh(step_, time_,true);
@@ -2962,6 +2962,9 @@ void FLD::FluidImplicitTimeInt::Output()
       }
     }
 
+    // don't write output in case of separate inflow computation
+    // Sep_-Matrix needed for algebraic-multigrid filter has never been build
+#if 0
     // output of coarse and fine scale velocities
     // at time n+1 or n+af depending on the time
     // integration scheme
@@ -3004,6 +3007,7 @@ void FLD::FluidImplicitTimeInt::Output()
     {
       output_.WriteVector("fsvelaf",fsvelaf_);
     }
+#endif
 
     // write domain decomposition for visualization (only once!)
     if (step_==upres_) output_.WriteElementData();

@@ -123,7 +123,7 @@ public:
   statistic to the file
   */
 
-  void DumpLomaStatistics(int step, const double eosfac);
+  void DumpLomaStatistics(int step);
 
 
 protected:
@@ -188,6 +188,12 @@ private:
 
    //! pointer to vel/pres^2 field (space allocated in constructor)
   RCP<Epetra_Vector>       squaredvelnp_;
+  //! pointer to T^2 field (space allocated in constructor)
+  RCP<Epetra_Vector>       squaredscanp_;
+  //! pointer to 1/T field (space allocated in constructor)
+  RCP<Epetra_Vector>       invscanp_;
+  //! pointer to (1/T)^2 field (space allocated in constructor)
+  RCP<Epetra_Vector>       squaredinvscanp_;
 
   //! toogle vectors: sums are computed by scalarproducts
   RCP<Epetra_Vector>       toggleu_;

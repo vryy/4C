@@ -153,7 +153,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       }
     }
 
-    // all row nodes next to a separation node are now contained in the child discetization
+    // all separation row nodes are now contained in the child discetization
     for(set<int>::iterator id = sepcondelenodes_row.begin();
         id!=sepcondelenodes_row.end();
         ++id)
@@ -334,8 +334,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     {
       cout << "| Replace dofset by a transparent dofset that copies ";
       cout << "the dofs of the original";
-      cout << " (parent) discretisation"; // At this place";
-//      cout << " a sub-dofrowmap (identical layout) of\n";
+      cout << " (parent) discretisation";
     }
 
     // idea: use a transparent dofset and hand through the dof numbering
@@ -533,5 +532,9 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       }
     }
 
+  }
+  else
+  {
+    dserror("Nodes with separation condition expected!");
   }
 }

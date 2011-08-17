@@ -115,7 +115,6 @@ public:
   void DoOutput(
        IO::DiscretizationWriter& output,
        int step,
-       const double eosfac,
        const double inflow = false);
 
   /*!

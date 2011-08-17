@@ -47,6 +47,14 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   params_ (params),
   geotype_(TurbulenceStatisticsBfs::none)
 {
+  if (discret_->Comm().MyPID()==0)
+  {
+    std::cout << "This is the turbulence statistics manager of backward-facing step problems:" << std::endl;
+    std::cout << "It can deal with the following two geometries:" << std::endl;
+    std::cout << "- geometry of DNS by Le,Moin,Kim (expansion ratio 1.2) and" << std::endl;
+    std::cout << "- geometry of experiment by Kasagi,Matsunaga (expansion ratio 1.5)." << std::endl;
+    std::cout << "If additional output in front of the step is required, it has to be set manually (look for numx1supplocations_)." << std::endl;
+  }
   //----------------------------------------------------------------------
   // plausibility check
   int numdim = params_.get<int>("number of velocity degrees of freedom");
@@ -64,6 +72,9 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
   squaredvelnp_ = LINALG::CreateVector(*dofrowmap,true);
+  squaredscanp_ = LINALG::CreateVector(*dofrowmap,true);
+  invscanp_ = LINALG::CreateVector(*dofrowmap,true);
+  squaredinvscanp_ = LINALG::CreateVector(*dofrowmap,true);
 
   toggleu_      = LINALG::CreateVector(*dofrowmap,true);
   togglev_      = LINALG::CreateVector(*dofrowmap,true);
@@ -89,7 +100,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
 
   // loop nodes and build sets of lines in x1- and x2-direction
   // accessible on this proc
-  // For x1-direction: consider upper wall
+  // For x1-direction: consider horizontal line at x2=0
   // and assume no change in discretization behind the step
   // For x2-direction: consider vertical line at x1=0
   // and assume no change in discretization behind the step
@@ -97,24 +108,14 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   {
     DRT::Node* node = discret_->lRowNode(i);
 
-    if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating)
-    {
-      if (node->X()[1]<0.0820002 && node->X()[1]>0.0819998)
-        x1avcoords.insert(node->X()[0]);
-      if (node->X()[0]<2e-9 && node->X()[0]>-2e-9)
-        x2avcoords.insert(node->X()[1]);
-    }
-    else if (geotype_ == TurbulenceStatisticsBfs::geometry_DNS_incomp_flow)
-    {
-      //if (node->X()[1]<0.2050002 && node->X()[1]>0.2049998)
-      if (node->X()[1]<2e-9 && node->X()[1]>-2e-9)
-        x1avcoords.insert(node->X()[0]);
-      if (node->X()[0]<2e-9 && node->X()[0]>-2e-9)
-        x2avcoords.insert(node->X()[1]);
-    }
-    else
-      dserror("Unknown geometry of backward facing step!");
+    if (node->X()[1]<2e-9 && node->X()[1]>-2e-9)
+      x1avcoords.insert(node->X()[0]);
+    if (node->X()[0]<2e-9 && node->X()[0]>-2e-9)
+      x2avcoords.insert(node->X()[1]);
 
+    // find mins and maxs
+    // we do not look for x1min and x1max as they depend
+    // on inflow generation technique
     if (x2min_>node->X()[1]) x2min_=node->X()[1];
     if (x2max_<node->X()[1]) x2max_=node->X()[1];
 
@@ -316,6 +317,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
         ++coord1)
     {
       x1coordinates_->push_back(*coord1);
+      //std::cout << *coord1 << std::endl;
     }
 
     for(set<double,LineSortCriterion>::iterator coord2=x2avcoords.begin();
@@ -323,11 +325,12 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
         ++coord2)
     {
       x2coordinates_->push_back(*coord2);
+      //std::cout << *coord2 << std::endl;
     }
   }
 
   //----------------------------------------------------------------------
-  // number of ccordinates in x1- and x2-direction
+  // number of coordinates in x1- and x2-direction
   //----------------------------------------------------------------------
   numx1coor_ = x1coordinates_->size();
   numx2coor_ = x2coordinates_->size();
@@ -340,149 +343,101 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
 
   //----------------------------------------------------------------------
   // define locations in x1-direction for statistical evaluation
-  // (coarse discretization)
   //----------------------------------------------------------------------
+
   // compute step height
-  double h = (x2max_ - x2min_)/6;
-
-  if (geotype_ == TurbulenceStatisticsBfs::geometry_DNS_incomp_flow)
-  {
-    x1statlocations_(0)  = 0.0;
-//    x1statlocations_(1)  = 1.0 * h;
-//    x1statlocations_(2)  = 2.0 * h;
-//    x1statlocations_(3)  = 3.0 * h;
-//    x1statlocations_(4)  = 4.0 * h;
-//    x1statlocations_(5)  = 5.0 * h;
-//    x1statlocations_(6)  = 6.0 * h;
-//    x1statlocations_(7)  = 7.0 * h;
-//    x1statlocations_(8)  = 8.0 * h;
-//    x1statlocations_(9)  = 9.0 * h;
-    x1statlocations_(1)  = 0.039237;
-    x1statlocations_(2)  = 0.079599;
-    x1statlocations_(3)  = 0.1207;
-    x1statlocations_(4)  = 0.1643;
-    x1statlocations_(5)  = 0.20678;
-    x1statlocations_(6)  = 0.24393;
-    x1statlocations_(7)  = 0.28633;
-    x1statlocations_(8)  = 0.33471;
-    x1statlocations_(9)  = 0.3707;
-    x1statlocations_(10) = 10.0 * h;
-    x1statlocations_(11) = 11.0 * h;
-    x1statlocations_(12) = 12.0 * h;
-    x1statlocations_(13) = 13.0 * h;
-    x1statlocations_(14) = 14.0 * h;
-    x1statlocations_(15) = 15.0 * h;
-    x1statlocations_(16) = 16.0 * h;
-    x1statlocations_(17) = 17.0 * h;
-    x1statlocations_(18) = 18.0 * h;
-    x1statlocations_(19) = 19.0 * h;
-    x1statlocations_(20) = 20.0 * h;
-
-    numx1supplocations_ = 10;
-    numx1statlocations_ += numx1supplocations_;
-    x1supplocations_(0) = -10.0 * h;
-    x1supplocations_(1) = -9.0 * h;
-    x1supplocations_(2) = -8.0 * h;
-    x1supplocations_(3) = -7.0 * h;
-    x1supplocations_(4) = -6.0 * h;
-    x1supplocations_(5) = -5.0 * h;
-    x1supplocations_(6) = -4.0 * h;
-    x1supplocations_(7) = -3.0 * h;
-    x1supplocations_(8) = -2.0 * h;
-    x1supplocations_(9) = -0.043144;
-
-    x2supplocations_(0) = x2coordinates_->at(1);
-    x2supplocations_(1) = 1.0e+9; //not needed here, upper wall is slip wall
-  }
-
+  double h = 0.0;
   if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating)
   {
-    if (numx1coor_ < 80)
-    {
-      x1statlocations_(0)  = 0.0;
-      x1statlocations_(1)  = 0.040169;
-      x1statlocations_(2)  = 0.081119;
-      x1statlocations_(3)  = 0.12255;
-      x1statlocations_(4)  = 0.15677;
-      x1statlocations_(5)  = 0.19741;
-      x1statlocations_(6)  = 0.2457;
-      x1statlocations_(7)  = 0.27316;
-      x1statlocations_(8)  = 0.3357;
-      x1statlocations_(9)  = 0.37125;
-      x1statlocations_(10) = 0.41;
-      x1statlocations_(11) = 0.451;
-      x1statlocations_(12) = 0.492;
-      x1statlocations_(13) = 0.533;
-      x1statlocations_(14) = 0.574;
-      x1statlocations_(15) = 0.615;
-      x1statlocations_(16) = 0.656;
-      x1statlocations_(17) = 0.697;
-      x1statlocations_(18) = 0.738;
-      x1statlocations_(19) = 0.779;
-      x1statlocations_(20) = 0.82;
+    h = (x2max_ - x2min_)/3;
+  }
+  else if (geotype_ == TurbulenceStatisticsBfs::geometry_DNS_incomp_flow)
+  {
+    h = (x2max_ - x2min_)/6;
+  }
 
-      //----------------------------------------------------------------------
-      // define supplementary locations in x2-direction for statistical
-      // evaluation of velocity derivative at wall
-      // (first nodes off lower and upper wall, respectively, coarse discret.)
-      //----------------------------------------------------------------------
-      x2supplocations_(0) = -0.0389218666;
-      x2supplocations_(1) = 0.080080628;
-    }
-    else
-    {
-      //----------------------------------------------------------------------
-      // define locations in x1-direction for statistical evaluation
-      // (fine discretization)
-      //----------------------------------------------------------------------
-      x1statlocations_(0)  = 0.0;
-      x1statlocations_(1)  = 0.039237;
-      x1statlocations_(2)  = 0.079599;
-      x1statlocations_(3)  = 0.1207;
-      x1statlocations_(4)  = 0.1643;
-      x1statlocations_(5)  = 0.20678;
-      x1statlocations_(6)  = 0.24393;
-      x1statlocations_(7)  = 0.28633;
-      x1statlocations_(8)  = 0.33471;
-      x1statlocations_(9)  = 0.3707;
-      x1statlocations_(10) = 0.41;
-      x1statlocations_(11) = 0.451;
-      x1statlocations_(12) = 0.492;
-      x1statlocations_(13) = 0.533;
-      x1statlocations_(14) = 0.574;
-      x1statlocations_(15) = 0.615;
-      x1statlocations_(16) = 0.656;
-      x1statlocations_(17) = 0.697;
-      x1statlocations_(18) = 0.738;
-      x1statlocations_(19) = 0.779;
-      x1statlocations_(20) = 0.82;
+  //find locations x/h=0 ... x/h=20
+  for (int rr = 0; rr < numx1statlocations_; rr++)
+  {
+    int actpos = rr;
+    double dist = 30 * h;
+    double mindist = 30.0 * h;
+    int pos = 0;
 
-      //----------------------------------------------------------------------
-      // define supplementary locations in x2-direction for statistical
-      // evaluation of velocity derivative at wall
-      // (first nodes off lower and upper wall, respectively, fine discret.)
-      //----------------------------------------------------------------------
-      x2supplocations_(0) = -0.040752954;
-      x2supplocations_(1) = 0.081752896;
+    for (int ll = 0; ll < numx1coor_; ll++)
+    {
+      dist = abs(actpos*h - x1coordinates_->at(ll));
+      if (dist < mindist)
+      {
+        mindist = dist;
+        pos = ll;
+      }
     }
+
+    x1statlocations_(rr) = x1coordinates_->at(pos);
+    // std::cout << x1statlocations_(rr) << std::endl;
+  }
+
+  //find supplementary locations x/h=-2 and -1
+  //remark1: number of supplementary location depends on length of inlet section
+  //remark2: as separate channel may be located in front of the step, we have to
+  //         use this rather complicated way
+  numx1supplocations_ = 2;
+  numx1statlocations_ += numx1supplocations_;
+  for (int rr = 0; rr < numx1supplocations_; rr++)
+  {
+    int actpos = rr - numx1supplocations_;
+    double dist = 30 * h;
+    double mindist = 30.0 * h;
+    int pos = 0;
+
+    for (int ll = 0; ll < numx1coor_; ll++)
+    {
+      dist = abs(actpos*h - x1coordinates_->at(ll));
+      if (dist < mindist)
+      {
+        mindist = dist;
+        pos = ll;
+      }
+    }
+
+    x1supplocations_(rr) = x1coordinates_->at(pos);
+    // std::cout << x1supplocations_(rr) << std::endl;
   }
 
   //----------------------------------------------------------------------
   // define locations in x2-direction for statistical evaluation
   // (lower and upper wall)
   //----------------------------------------------------------------------
-  //TODO: replace by x2min_ and x2max_
   if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating)
   {
+    // num2statlocations_ also defines number of supplocations
     numx2statlocations_ = 2;
-    x2statlocations_(0) = -0.041;
-    x2statlocations_(1) = 0.082;
+
+    x2statlocations_(0) = x2min_;
+    x2statlocations_(1) = x2max_;
+    //----------------------------------------------------------------------
+    // define supplementary locations in x2-direction for statistical
+    // evaluation of velocity derivative at wall
+    // (first nodes off lower and upper wall, respectively)
+    //----------------------------------------------------------------------
+    x2supplocations_(0) = x2coordinates_->at(1);
+    x2supplocations_(1) = x2coordinates_->at(x2coordinates_->size()-2);
   }
   else if (geotype_ == TurbulenceStatisticsBfs::geometry_DNS_incomp_flow)
   {
+    // num2statlocations_ also defines number of supplocations
     numx2statlocations_ = 1;
-    x2statlocations_(0) = x2min_; //-0.041;
-    x2statlocations_(1) = x2max_; //1.0e+9; //not needed here
+
+    x2statlocations_(0) = x2min_;
+    x2statlocations_(1) = x2max_; //not needed here, upper wall is slip wall
+    //----------------------------------------------------------------------
+    // define supplementary locations in x2-direction for statistical
+    // evaluation of velocity derivative at wall
+    // (first nodes off lower and upper wall, respectively)
+    //----------------------------------------------------------------------
+    x2supplocations_(0) = x2coordinates_->at(1);
+    x2supplocations_(1) = x2coordinates_->at(x2coordinates_->size()-2); //not needed here, upper wall is slip wall
   }
   else
     dserror("Unknown geometry of backward facing step!");
@@ -616,6 +571,9 @@ void FLD::TurbulenceStatisticsBfs::DoTimeSample(
 Teuchos::RefCountPtr<Epetra_Vector> velnp
 )
 {
+  // compute squared values of velocity
+  squaredvelnp_->Multiply(1.0,*velnp,*velnp,0.0);
+
   //----------------------------------------------------------------------
   // increase sample counter
   //----------------------------------------------------------------------
@@ -784,30 +742,54 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
         velnp->Dot(*togglew_,&w);
         velnp->Dot(*togglep_,&p);
 
+        double uu;
+        double vv;
+        double ww;
+        double pp;
+        squaredvelnp_->Dot(*toggleu_,&uu);
+        squaredvelnp_->Dot(*togglev_,&vv);
+        squaredvelnp_->Dot(*togglew_,&ww);
+        squaredvelnp_->Dot(*togglep_,&pp);
+
+        double uv;
+        double uw;
+        double vw;
+        double locuv = 0.0;
+        double locuw = 0.0;
+        double locvw = 0.0;
+        for (int rr=1;rr<velnp->MyLength();++rr)
+        {
+          locuv += ((*velnp)[rr-1]*(*toggleu_)[rr-1]) * ((*velnp)[rr]*(*togglev_)[rr]);
+        }
+        discret_->Comm().SumAll(&locuv,&uv,1);
+        for (int rr=2;rr<velnp->MyLength();++rr)
+        {
+          locuw += ((*velnp)[rr-2]*(*toggleu_)[rr-2]) * ((*velnp)[rr]*(*togglew_)[rr]);
+        }
+        discret_->Comm().SumAll(&locuw,&uw,1);
+        for (int rr=2;rr<velnp->MyLength();++rr)
+        {
+          locvw += ((*velnp)[rr-1]*(*togglev_)[rr-1]) * ((*velnp)[rr]*(*togglew_)[rr]);
+        }
+        discret_->Comm().SumAll(&locvw,&vw,1);
+
         //----------------------------------------------------------------------
         // calculate spatial means on this line
-        //----------------------------------------------------------------------
-        double usm=u/countnodesonallprocs;
-        double vsm=v/countnodesonallprocs;
-        double wsm=w/countnodesonallprocs;
-        double psm=p/countnodesonallprocs;
-
-        //----------------------------------------------------------------------
         // add spatial mean values to statistical sample
         //----------------------------------------------------------------------
-        (*x2sumu_)(x1nodnum,x2nodnum)+=usm;
-        (*x2sumv_)(x1nodnum,x2nodnum)+=vsm;
-        (*x2sumw_)(x1nodnum,x2nodnum)+=wsm;
-        (*x2sump_)(x1nodnum,x2nodnum)+=psm;
+        (*x2sumu_)(x1nodnum,x2nodnum)+=u/countnodesonallprocs;
+        (*x2sumv_)(x1nodnum,x2nodnum)+=v/countnodesonallprocs;
+        (*x2sumw_)(x1nodnum,x2nodnum)+=w/countnodesonallprocs;
+        (*x2sump_)(x1nodnum,x2nodnum)+=p/countnodesonallprocs;
 
-        (*x2sumsqu_)(x1nodnum,x2nodnum)+=usm*usm;
-        (*x2sumsqv_)(x1nodnum,x2nodnum)+=vsm*vsm;
-        (*x2sumsqw_)(x1nodnum,x2nodnum)+=wsm*wsm;
-        (*x2sumsqp_)(x1nodnum,x2nodnum)+=psm*psm;
+        (*x2sumsqu_)(x1nodnum,x2nodnum)+=uu/countnodesonallprocs;
+        (*x2sumsqv_)(x1nodnum,x2nodnum)+=vv/countnodesonallprocs;
+        (*x2sumsqw_)(x1nodnum,x2nodnum)+=ww/countnodesonallprocs;
+        (*x2sumsqp_)(x1nodnum,x2nodnum)+=pp/countnodesonallprocs;
 
-        (*x2sumuv_)(x1nodnum,x2nodnum)+=usm*vsm;
-        (*x2sumuw_)(x1nodnum,x2nodnum)+=usm*wsm;
-        (*x2sumvw_)(x1nodnum,x2nodnum)+=vsm*wsm;
+        (*x2sumuv_)(x1nodnum,x2nodnum)+=uv/countnodesonallprocs;
+        (*x2sumuw_)(x1nodnum,x2nodnum)+=uw/countnodesonallprocs;
+        (*x2sumvw_)(x1nodnum,x2nodnum)+=vw/countnodesonallprocs;
       }
     }
   }
@@ -824,6 +806,17 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp,
 Teuchos::RefCountPtr<Epetra_Vector> scanp,
 const double                        eosfac)
 {
+  // compute squared values of velocity
+  squaredvelnp_->Multiply(1.0,*velnp,*velnp,0.0);
+  squaredscanp_->Multiply(1.0,*scanp,*scanp,0.0);
+  // compute 1/T and (1/T)^2
+  for (int rr=0;rr<squaredscanp_->MyLength();++rr)
+  {
+    if ((*scanp)[rr]>0) //temperature in kelvin is always > 0
+    (*invscanp_)[rr] = 1 / ((*scanp)[rr]);
+  }
+  squaredinvscanp_->Multiply(1.0,*invscanp_,*invscanp_,0.0);
+
   //----------------------------------------------------------------------
   // increase sample counter
   //----------------------------------------------------------------------
@@ -900,14 +893,18 @@ const double                        eosfac)
         double T;
         scanp->Dot(*togglep_,&T);
 
+        double rho;
+        invscanp_->Dot(*togglep_,&rho);
+        // compute density: rho = eosfac/T
+        rho *= eosfac;
+
         //----------------------------------------------------------------------
         // calculate spatial means
         //----------------------------------------------------------------------
         double usm=u/countnodesonallprocs;
         double psm=p/countnodesonallprocs;
         double Tsm=T/countnodesonallprocs;
-        // compute density: rho = eosfac/T
-        double rhosm=eosfac/Tsm;
+        double rhosm=rho/countnodesonallprocs;
 
         //----------------------------------------------------------------------
         // add spatial mean values to statistical sample
@@ -926,7 +923,17 @@ const double                        eosfac)
   for (int x1nodnum=0;x1nodnum<numx1statlocations_;++x1nodnum)
   {
     // current x1-coordinate
-    double x1c = x1statlocations_(x1nodnum);
+    // caution: if there are supplementary locations in x1-direction, we loop
+    //          them first (only DNS geometry)
+    double x1c = 1.0e20;
+    if (x1nodnum < numx1supplocations_)
+    {
+      x1c = x1supplocations_(x1nodnum);
+    }
+    else
+    {
+      x1c = x1statlocations_(x1nodnum - numx1supplocations_);
+    }
 
     int x2nodnum = -1;
     //----------------------------------------------------------------------
@@ -993,44 +1000,107 @@ const double                        eosfac)
         double T;
         scanp->Dot(*togglep_,&T);
 
+        double uu;
+        double vv;
+        double ww;
+        double pp;
+        squaredvelnp_->Dot(*toggleu_,&uu);
+        squaredvelnp_->Dot(*togglev_,&vv);
+        squaredvelnp_->Dot(*togglew_,&ww);
+        squaredvelnp_->Dot(*togglep_,&pp);
+
+        double uv;
+        double uw;
+        double vw;
+        double locuv = 0.0;
+        double locuw = 0.0;
+        double locvw = 0.0;
+        for (int rr=1;rr<velnp->MyLength();++rr)
+        {
+          locuv += ((*velnp)[rr-1]*(*toggleu_)[rr-1]) * ((*velnp)[rr]*(*togglev_)[rr]);
+        }
+        discret_->Comm().SumAll(&locuv,&uv,1);
+        for (int rr=2;rr<velnp->MyLength();++rr)
+        {
+          locuw += ((*velnp)[rr-2]*(*toggleu_)[rr-2]) * ((*velnp)[rr]*(*togglew_)[rr]);
+        }
+        discret_->Comm().SumAll(&locuw,&uw,1);
+        for (int rr=2;rr<velnp->MyLength();++rr)
+        {
+          locvw += ((*velnp)[rr-1]*(*togglev_)[rr-1]) * ((*velnp)[rr]*(*togglew_)[rr]);
+        }
+        discret_->Comm().SumAll(&locvw,&vw,1);
+
+        double TT;
+        squaredscanp_->Dot(*togglep_,&TT);
+
+        double uT;
+        double vT;
+        double locuT = 0.0;
+        double locvT = 0.0;
+        for (int rr=3;rr<velnp->MyLength();++rr)
+        {
+          locuT += ((*velnp)[rr-3]*(*toggleu_)[rr-3]) * ((*scanp)[rr]*(*togglep_)[rr]);
+        }
+        discret_->Comm().SumAll(&locuT,&uT,1);
+        for (int rr=3;rr<velnp->MyLength();++rr)
+        {
+          locvT += ((*velnp)[rr-2]*(*togglev_)[rr-2]) * ((*scanp)[rr]*(*togglep_)[rr]);
+        }
+        discret_->Comm().SumAll(&locvT,&vT,1);
+
+        double rho;
+        invscanp_->Dot(*togglep_,&rho);
+        // compute density: rho = eosfac/T
+        rho *= eosfac;
+        double rhorho;
+        squaredinvscanp_->Dot(*togglep_,&rhorho);
+        rhorho *= eosfac*eosfac;
+
+        double rhou;
+        double rhov;
+        double locrhou = 0.0;
+        double locrhov = 0.0;
+        for (int rr=3;rr<velnp->MyLength();++rr)
+        {
+          locrhou += (eosfac * ((*invscanp_)[rr]*(*togglep_)[rr])) * ((*velnp)[rr-3]*(*toggleu_)[rr-3]);
+        }
+        discret_->Comm().SumAll(&locrhou,&rhou,1);
+        for (int rr=3;rr<velnp->MyLength();++rr)
+        {
+          locrhov += (eosfac * ((*invscanp_)[rr]*(*togglep_)[rr])) * ((*velnp)[rr-2]*(*togglev_)[rr-2]);
+        }
+        discret_->Comm().SumAll(&locrhov,&rhov,1);
+
+
         //----------------------------------------------------------------------
         // calculate spatial means on this line
-        //----------------------------------------------------------------------
-        double usm=u/countnodesonallprocs;
-        double vsm=v/countnodesonallprocs;
-        double wsm=w/countnodesonallprocs;
-        double psm=p/countnodesonallprocs;
-        double Tsm=T/countnodesonallprocs;
-        // compute density: rho = eosfac/T
-        double rhosm=eosfac/Tsm;
-
-        //----------------------------------------------------------------------
         // add spatial mean values to statistical sample
         //----------------------------------------------------------------------
-        (*x2sumu_)(x1nodnum,x2nodnum)+=usm;
-        (*x2sumv_)(x1nodnum,x2nodnum)+=vsm;
-        (*x2sumw_)(x1nodnum,x2nodnum)+=wsm;
-        (*x2sump_)(x1nodnum,x2nodnum)+=psm;
+        (*x2sumu_)(x1nodnum,x2nodnum)+=u/countnodesonallprocs;
+        (*x2sumv_)(x1nodnum,x2nodnum)+=v/countnodesonallprocs;
+        (*x2sumw_)(x1nodnum,x2nodnum)+=w/countnodesonallprocs;
+        (*x2sump_)(x1nodnum,x2nodnum)+=p/countnodesonallprocs;
 
-        (*x2sumT_)(x1nodnum,x2nodnum)+=Tsm;
-        (*x2sumrho_)(x1nodnum,x2nodnum)+=rhosm;
+        (*x2sumT_)(x1nodnum,x2nodnum)+=T/countnodesonallprocs;
+        (*x2sumrho_)(x1nodnum,x2nodnum)+=rho/countnodesonallprocs;
 
-        (*x2sumsqu_)(x1nodnum,x2nodnum)+=usm*usm;
-        (*x2sumsqv_)(x1nodnum,x2nodnum)+=vsm*vsm;
-        (*x2sumsqw_)(x1nodnum,x2nodnum)+=wsm*wsm;
-        (*x2sumsqp_)(x1nodnum,x2nodnum)+=psm*psm;
+        (*x2sumsqu_)(x1nodnum,x2nodnum)+=uu/countnodesonallprocs;
+        (*x2sumsqv_)(x1nodnum,x2nodnum)+=vv/countnodesonallprocs;
+        (*x2sumsqw_)(x1nodnum,x2nodnum)+=ww/countnodesonallprocs;
+        (*x2sumsqp_)(x1nodnum,x2nodnum)+=pp/countnodesonallprocs;
 
-        (*x2sumsqT_)(x1nodnum,x2nodnum)+=Tsm*Tsm;
-        (*x2sumsqrho_)(x1nodnum,x2nodnum)+=rhosm*rhosm;
+        (*x2sumsqT_)(x1nodnum,x2nodnum)+=TT/countnodesonallprocs;
+        (*x2sumsqrho_)(x1nodnum,x2nodnum)+=rhorho/countnodesonallprocs;
 
-        (*x2sumuv_)(x1nodnum,x2nodnum)+=usm*vsm;
-        (*x2sumuw_)(x1nodnum,x2nodnum)+=usm*wsm;
-        (*x2sumvw_)(x1nodnum,x2nodnum)+=vsm*wsm;
+        (*x2sumuv_)(x1nodnum,x2nodnum)+=uv/countnodesonallprocs;
+        (*x2sumuw_)(x1nodnum,x2nodnum)+=uw/countnodesonallprocs;
+        (*x2sumvw_)(x1nodnum,x2nodnum)+=vw/countnodesonallprocs;
 
-        (*x2sumrhou_)(x1nodnum,x2nodnum)+=rhosm*usm;
-        (*x2sumrhouT_)(x1nodnum,x2nodnum)+=rhosm*usm*Tsm;
-        (*x2sumrhov_)(x1nodnum,x2nodnum)+=rhosm*vsm;
-        (*x2sumrhovT_)(x1nodnum,x2nodnum)+=rhosm*vsm*Tsm;
+        (*x2sumrhou_)(x1nodnum,x2nodnum)+=rhou/countnodesonallprocs;
+        (*x2sumrhouT_)(x1nodnum,x2nodnum)+=uT/countnodesonallprocs;
+        (*x2sumrhov_)(x1nodnum,x2nodnum)+=rhov/countnodesonallprocs;
+        (*x2sumrhovT_)(x1nodnum,x2nodnum)+=vT/countnodesonallprocs;
       }
     }
   }
@@ -1108,7 +1178,7 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
     {
       // current x1-coordinate
       // caution: if there are supplementary locations in x1-direction, we loop
-      //          them first (only DNS geometry)
+      //          them first
       double x1 = 1.0e20;
       if (i < numx1supplocations_)
       {
@@ -1118,6 +1188,7 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
       {
         x1 = x1statlocations_(i - numx1supplocations_);
       }
+
 
       (*log) << "\n\n\n";
       (*log) << "# line in x2-direction at x1 = " << setw(11) << setprecision(4) << x1 << "\n";
@@ -1167,8 +1238,7 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
-                                                      const double eosfac)
+void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
 {
   //----------------------------------------------------------------------
   // output to log-file
@@ -1181,11 +1251,15 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
     log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
     (*log) << "# Statistics for turbulent variable-density flow over a backward-facing step at low Mach number (first- and second-order moments)";
     (*log) << "\n\n";
+    (*log) << "# Caution: The following statistics have to be used carefully:\n";
+    (*log) << "#          rhoumean, uTmean, rhovmean, vTmean, rhou'T', rhov'T'\n";
+    (*log) << "#          there are not any reference values for rhoumean, uTmean, rhovmean, vTmean and rhou'T'\n";
+    (*log) << "#          it is not clear what is denoted by rhou'T' and rhov'T' in the paper of Avnacha and Pletcher(2002)\n\n";
     (*log) << "# Statistics record ";
     (*log) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n\n\n";
     (*log) << scientific;
 
-    (*log) << "\n";
+    (*log) << "\n\n\n";
     (*log) << "# lower wall behind step\n";
     (*log) << "#        x1";
     (*log) << "                 duxdy               pmean             rhomean              Tmean\n";
@@ -1215,7 +1289,7 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
 
     if (geotype_ == TurbulenceStatisticsBfs::geometry_LES_flow_with_heating)
     {
-      (*log) << "\n";
+      (*log) << "\n\n\n";
       (*log) << "# upper wall\n";
       (*log) << "#        x1";
       (*log) << "                 duxdy               pmean             rhomean              Tmean\n";
@@ -1243,10 +1317,23 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
 
     for (int i=0; i<numx1statlocations_; ++i)
     {
-      (*log) << "\n";
+      // current x1-coordinate
+      // caution: if there are supplementary locations in x1-direction, we loop
+      //          them first
+      double x1 = 1.0e20;
+      if (i < numx1supplocations_)
+      {
+        x1 = x1supplocations_(i);
+      }
+      else
+      {
+        x1 = x1statlocations_(i - numx1supplocations_);
+      }
+
+      (*log) << "\n\n\n";
       (*log) << "# line in x2-direction at x1 = " << setw(11) << setprecision(10) << x1statlocations_(i) << "\n";
       (*log) << "#        x2";
-      (*log) << "                 umean               vmean               wmean               pmean             rhomean               Tmean            rhoumean           rhouTmean            rhovmean           rhovTmean";
+      (*log) << "                 umean               vmean               wmean               pmean             rhomean               Tmean            rhoumean           uTmean            rhovmean           vTmean";
       (*log) << "               urms                vrms                wrms                prms               rhorms                Trms";
       (*log) << "                u'v'                u'w'                v'w'             rhou'T'             rhov'T'\n";
 
@@ -1260,24 +1347,34 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
         double x2rho   = (*x2sumrho_)(i,j)/numsamp_;
         double x2T     = (*x2sumT_)(i,j)/numsamp_;
         double x2rhou  = (*x2sumrhou_)(i,j)/numsamp_;
-        double x2rhouT = (*x2sumrhouT_)(i,j)/numsamp_;
+        double x2uT = (*x2sumrhouT_)(i,j)/numsamp_;
         double x2rhov  = (*x2sumrhov_)(i,j)/numsamp_;
-        double x2rhovT = (*x2sumrhovT_)(i,j)/numsamp_;
+        double x2vT = (*x2sumrhovT_)(i,j)/numsamp_;
 
         double x2urms  = sqrt((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u);
         double x2vrms  = sqrt((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v);
         double x2wrms  = sqrt((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w);
         double x2prms  = sqrt((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p);
 
-        double x2rhorms = sqrt((*x2sumsqrho_)(i,j)/numsamp_-x2rho*x2rho);
-        double x2Trms   = sqrt((*x2sumsqT_)(i,j)/numsamp_-x2T*x2T);
+        // as T and rho are constant in the inflow section
+        // <T(rho)^2>-<T(rho)>*<T(rho)> should be zero
+        // however, due to small errors, <T(rho)^2>-<T(rho)>*<T(rho)>
+        // is only approximately equal zero
+        // hence, zero negative values should be excluded
+        // as they produce nans
+        double x2rhorms = 0.0;
+        double x2Trms   = 0.0;
+        if (abs((*x2sumsqrho_)(i,j)/numsamp_-x2rho*x2rho)>1e-12)
+            x2rhorms = sqrt((*x2sumsqrho_)(i,j)/numsamp_-x2rho*x2rho);
+        if (abs((*x2sumsqrho_)(i,j)/numsamp_-x2rho*x2rho)>1e-12)
+            x2Trms   = sqrt((*x2sumsqT_)(i,j)/numsamp_-x2T*x2T);
 
         double x2uv   = (*x2sumuv_)(i,j)/numsamp_-x2u*x2v;
         double x2uw   = (*x2sumuw_)(i,j)/numsamp_-x2u*x2w;
         double x2vw   = (*x2sumvw_)(i,j)/numsamp_-x2v*x2w;
 
-        double x2rhouppTpp = x2rhouT-eosfac*x2rhou/x2rho;
-        double x2rhovppTpp = x2rhovT-eosfac*x2rhov/x2rho;
+        double x2rhouppTpp = x2rho*(x2uT-x2u*x2T);
+        double x2rhovppTpp = x2rho*(x2vT-x2v*x2T);
 
         (*log) <<  " "  << setw(17) << setprecision(10) << (*x2coordinates_)[j];
         (*log) << "   " << setw(17) << setprecision(10) << x2u;
@@ -1287,9 +1384,9 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step,
         (*log) << "   " << setw(17) << setprecision(10) << x2rho;
         (*log) << "   " << setw(17) << setprecision(10) << x2T;
         (*log) << "   " << setw(17) << setprecision(10) << x2rhou;
-        (*log) << "   " << setw(17) << setprecision(10) << x2rhouT;
+        (*log) << "   " << setw(17) << setprecision(10) << x2uT;
         (*log) << "   " << setw(17) << setprecision(10) << x2rhov;
-        (*log) << "   " << setw(17) << setprecision(10) << x2rhovT;
+        (*log) << "   " << setw(17) << setprecision(10) << x2vT;
         (*log) << "   " << setw(17) << setprecision(10) << x2urms;
         (*log) << "   " << setw(17) << setprecision(10) << x2vrms;
         (*log) << "   " << setw(17) << setprecision(10) << x2wrms;
