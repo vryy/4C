@@ -2900,8 +2900,15 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(vector<vector<map<int,double> > >
       double radius3 = sqrt((xcenter-x3)*(xcenter-x3)+(ycenter-y3)*(ycenter-y3)+(zcenter-z3)*(zcenter-z3));
 
       // check radius computation
-      if (abs(radius2-radius1) > tol) dserror("ERROR: Circumcircle radius is wrong: %e",abs(radius2-radius1));
-      if (abs(radius3-radius1) > tol) dserror("ERROR: Circumcircle radius is wrong: %e",abs(radius3-radius1));
+      if (abs(radius2-radius1) > tol || abs(radius3-radius1) > tol)
+      {
+        cout << "***WARNING*** Delaunay triangulation failed (no well-defined circumcircles)"
+             << " -> using backup" << endl;
+
+        // if Delaunay triangulation failed, use old center-based
+        // triangulation as backup (therefore return false)
+        return false;
+      }
 
       // check Delaunay criterion for all other vertices
       // (of current polygon, NOT the full clipping polygon)
