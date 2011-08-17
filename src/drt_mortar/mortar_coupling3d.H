@@ -392,16 +392,28 @@ public:
   /*!
   \brief Triangulation of clip polygon (3D)
 
-  This method first finds the center of the clip polygon by computing
-  the centroid / geometric center (2nd case) or by simple averaging of
-  vertex coordinates (arithmetic center, 1st case, aux. plane!). In a
-  second step, linearizations of all clip polygon vertices and of the
-  clip center are computed and stored into local maps. Then the clip
-  polygon is triangulated into as many integration cells (tri3) as
-  necessary. The method stores these cells in the variable cells_.
+  In a first step, this method computes linearizations of all clip
+  polygon vertices and stores them into local maps. Then, one of the
+  two available triangulation algorithms (Delaunay, Center) is called
+  to do the actual triangulation of the convex clip polygon.
+
+  DelaunayTriangulation() is more efficient, as it always generates N-2 triangles
+  for a clip polygon with N vertices. Moreover, the triangle shape is optimized
+  according to the Delaunay criterion, which maximizes the smallest internal
+  angle. Thus, DelaunayTriangulation() is used BY DEFAULT here.
+
+  CenterTriangulation() is an old version that was based on first finding the
+  center of the clip polygon by computing the centroid / geometric center
+  (see M. Puso, A 3D mortar method for solid mechanics, IJNME, 2004).
+  The clip polygon is triangulated into integration cells all containing two
+  vertices and the center point. Thus, we always generate N triangles here
+  for a clip polygon with N vertices (except for the special case N=3).
+  Thus, CenterTriangulation() is NOT used anymore.
 
   */
-  virtual bool Triangulation(map<int,double>& projpar);
+  virtual bool Triangulation(map<int,double>& projpar, double tol);
+  virtual bool DelaunayTriangulation(vector<vector<map<int,double> > >& linvertex, double tol);
+  virtual bool CenterTriangulation(vector<vector<map<int,double> > >& linvertex, double tol);
 
   /*!
   \brief Integrate the integration cells (3D)

@@ -226,8 +226,8 @@ bool MORTAR::Coupling3d::EvaluateCoupling()
     // check / set  projection status of slave nodes
     HasProjStatus();
 
-    // do linearization + triangulation of clip polygon
-    Triangulation(projpar);
+    // do triangulation (+linearization) of clip polygon
+    Triangulation(projpar,tol);
 
     // do integration of integration cells
     IntegrateCells();
@@ -2729,20 +2729,44 @@ bool MORTAR::Coupling3d::HasProjStatus()
 /*----------------------------------------------------------------------*
  |  Triangulation of clip polygon (3D)                        popp 11/08|
  *----------------------------------------------------------------------*/
-bool MORTAR::Coupling3d::Triangulation(map<int,double>& projpar)
+bool MORTAR::Coupling3d::Triangulation(map<int,double>& projpar, double tol)
 {
   // preparations
   int clipsize = (int)(Clip().size());
   vector<vector<map<int,double> > > linvertex(clipsize,vector<map<int,double> >(3));
-  vector<map<int,double> > lincenter(3);
 
   //**********************************************************************
-  // (1) Linearization of clip vertex coordinates (only non-empty for contact)
+  // (1) Linearization of clip vertex coordinates (only for contact)
   //**********************************************************************
   VertexLinearization(linvertex,projpar);
 
   //**********************************************************************
-  // (2) Simple cliiping polygon (triangle, quadrilateral) -> IntCells
+  // (2) Triangulation of clip polygon (DELAUNAY-based (new))
+  //**********************************************************************
+  bool success = DelaunayTriangulation(linvertex,tol);
+
+  //**********************************************************************
+  // (3) Backup triangulation of clip polygon (CENTER-based (old))
+  //**********************************************************************
+  if (!success) CenterTriangulation(linvertex,tol);
+
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Triangulation of clip polygon (3D) - DELAUNAY             popp 08/11|
+ *----------------------------------------------------------------------*/
+bool MORTAR::Coupling3d::DelaunayTriangulation(vector<vector<map<int,double> > >& linvertex,
+                                               double tol)
+{
+  // preparations
+  Cells().resize(0);
+  int clipsize = (int)(Clip().size());
+  bool out = false;
+  if (out) cout << "***\nPolygon with " << clipsize << " vertices\n***" << endl;
+
+  //**********************************************************************
+  // (1) Trivial clipping polygon -> IntCells
   //**********************************************************************
   // clip polygon = triangle
   // no triangulation necessary -> 1 IntCell
@@ -2762,6 +2786,446 @@ bool MORTAR::Coupling3d::Triangulation(map<int,double>& projpar)
     return true;
   }
 
+  //**********************************************************************
+  // (2) General clipping polygon: Triangulation -> IntCells
+  //**********************************************************************
+  // store Delaunay triangles here
+  vector<vector<int> > triangles(0,vector<int>(3));
+
+  // start with first triangle v0,v1,v2
+  vector<int> currtriangle(3);
+  currtriangle[0] = 0;
+  currtriangle[1] = 1;
+  currtriangle[2] = 2;
+  triangles.push_back(currtriangle);
+
+  // build Delaunay triangulation recursively (starting from a triangle
+  // and then adding all remaining nodes of the clipping polygon 1-by-1)
+  // loop over clip vertices v3,..,vN
+  for (int c=3;c<clipsize;++c)
+  {
+    // current size of triangulated polygon
+    int currsize = c+1;
+
+    // add next triangle v(c-1),vc,v0
+    vector<int> nexttriangle(3);
+    nexttriangle[0] = c-1;
+    nexttriangle[1] = c;
+    nexttriangle[2] = 0;
+    triangles.push_back(nexttriangle);
+
+    if (out)
+    {
+      cout << "-> checking " << currsize << "th node of polygon" << endl;
+      cout << "-> found " << (int)triangles.size() << " triangles" << endl;
+      for (int k=0;k<(int)triangles.size();++k)
+        cout << "      Triangle: " << triangles[k][0] << " " << triangles[k][1] << " " << triangles[k][2] << " " << endl;
+    }
+
+    // check Delaunay criterion for all triangles and sort
+    // triangles accordingly (good / bad)
+    int numt = (int)triangles.size();
+    vector<bool> bad(numt);
+    vector<double> close(numt);
+    for (int t=0;t<numt;++t)
+    {
+      // initialize values indicating a close decision
+      // these are needed to later introduce some tolerance into
+      // the Delaunay criterion decision (which is needed in the
+      // cases where this decision becomes non-unique / arbitrary).
+      close[t]= 1.0e12;
+
+      // indices of current triangle
+      int idx0 = triangles[t][0];
+      int idx1 = triangles[t][1];
+      int idx2 = triangles[t][2];
+
+      // coordinates of current triangle
+      Epetra_SerialDenseMatrix coords(3,3);
+      for (int k=0;k<3;++k)
+      {
+        coords(k,0) = Clip()[idx0].Coord()[k];
+        coords(k,1) = Clip()[idx1].Coord()[k];
+        coords(k,2) = Clip()[idx2].Coord()[k];
+      }
+
+      // define center of circumcircle of current triangle
+      double x1 = coords(0,0); double y1 = coords(1,0); double z1 = coords(2,0);
+      double x2 = coords(0,1); double y2 = coords(1,1); double z2 = coords(2,1);
+      double x3 = coords(0,2); double y3 = coords(1,2); double z3 = coords(2,2);
+
+      // a=vector P1P2, b=vector P2P3
+      double a1 = x2-x1;
+      double a2 = y2-y1;
+      double a3 = z2-z1;
+      double b1 = x3-x2;
+      double b2 = y3-y2;
+      double b3 = z3-z2;
+
+      // normal vector of plane P1P2P3 via cross product
+      double no1=a2*b3-b2*a3;
+      double no2=a3*b1-b3*a1;
+      double no3=a1*b2-b1*a2;
+
+      // perpendicular bisector of P1P2 via cross product
+      double c1=a2*no3-no2*a3;
+      double c2=a3*no1-no3*a1;
+      double c3=a1*no2-no1*a2;
+
+      // perpendicular bisector of P2P3 via cross product
+      double d1=b2*no3-no2*b3;
+      double d2=b3*no1-no3*b1;
+      //double d3=b1*no2-no1*b2;
+
+      // mid-points of P1P2 and P2P3
+      double m1=(x1+x2)/2.0;
+      double m2=(y1+y2)/2.0;
+      double m3=(z1+z2)/2.0;
+      double n1=(x2+x3)/2.0;
+      double n2=(y2+y3)/2.0;
+      //double n3=(z2+z3)/2.0;
+
+      // intersection of the two perpendicular bisections
+      // (solution of m1+s*c1 = n1+t*d1 and m2+s*c2 = n2+t*d2)
+      double s=(m2*d1-n2*d1-d2*m1+d2*n1)/(c1*d2-c2*d1);
+
+      // center of the circumcircle
+      double xcenter = m1+s*c1;
+      double ycenter = m2+s*c2;
+      double zcenter = m3+s*c3;
+
+      // radius of the circumcircle
+      double radius1 = sqrt((xcenter-x1)*(xcenter-x1)+(ycenter-y1)*(ycenter-y1)+(zcenter-z1)*(zcenter-z1));
+      double radius2 = sqrt((xcenter-x2)*(xcenter-x2)+(ycenter-y2)*(ycenter-y2)+(zcenter-z2)*(zcenter-z2));
+      double radius3 = sqrt((xcenter-x3)*(xcenter-x3)+(ycenter-y3)*(ycenter-y3)+(zcenter-z3)*(zcenter-z3));
+
+      // check radius computation
+      if (abs(radius2-radius1) > tol) dserror("ERROR: Circumcircle radius is wrong: %e",abs(radius2-radius1));
+      if (abs(radius3-radius1) > tol) dserror("ERROR: Circumcircle radius is wrong: %e",abs(radius3-radius1));
+
+      // check Delaunay criterion for all other vertices
+      // (of current polygon, NOT the full clipping polygon)
+      for (int k=0;k<currsize;++k)
+      {
+        // no check needed for triangle vertices
+        if (k==idx0 || k==idx1 || k==idx2) continue;
+
+        // compute distance
+        double dist = sqrt((xcenter-Clip()[k].Coord()[0])*(xcenter-Clip()[k].Coord()[0])
+                          +(ycenter-Clip()[k].Coord()[1])*(ycenter-Clip()[k].Coord()[1])
+                          +(zcenter-Clip()[k].Coord()[2])*(zcenter-Clip()[k].Coord()[2]));
+
+        // monitor critical Delaunay criterion decision
+        // (necessary to avoid inconsistent good/bad grouping later)
+        double diff = abs(dist-radius1);
+        if (diff < close[t]) close[t] = diff;
+
+        // check for bad triangle (without tolerance)
+        if (dist < radius1) bad[t]=true;
+      }
+    }
+
+    // make good/bad decision consistent (with tolerance)
+    // (problems might occur if more than 3 vertices on circumcircle)
+    for (int t=0;t<numt;++t)
+    {
+      // check if this good decision was really close
+      if (!bad[t] && close[t]<tol)
+      {
+        // check if any bad decision was really close, too
+        bool foundpartner = false;
+        for (int u=0;u<numt;++u)
+        {
+          if (bad[u] && close[u]<tol)
+            foundpartner = true;
+        }
+
+        // set good->bad if partner found
+        if (foundpartner) bad[t] = true;
+      }
+    }
+
+    // now we build vector of all good / bad triangles
+    vector<vector<int> > goodtriangles(0,vector<int>(3));
+    vector<vector<int> > badtriangles(0,vector<int>(3));
+    for (int t=0;t<numt;++t)
+    {
+      if (bad[t]) badtriangles.push_back(triangles[t]);
+      else        goodtriangles.push_back(triangles[t]);
+    }
+
+    if (out)
+    {
+      cout << "   -> found " << (int)goodtriangles.size() << " GOOD triangles" << endl;
+      for (int k=0;k<(int)goodtriangles.size();++k)
+        cout << "      Triangle: " << goodtriangles[k][0] << " " << goodtriangles[k][1] << " " << goodtriangles[k][2] << " " << endl;
+      cout << "   -> found " << (int)badtriangles.size() << " BAD triangles" << endl;
+      for (int k=0;k<(int)badtriangles.size();++k)
+        cout << "      Triangle: " << badtriangles[k][0] << " " << badtriangles[k][1] << " " << badtriangles[k][2] << " " << endl;
+    }
+
+    // find vertices in bad triangles: ALL vertices
+    // find vertices in bad triangles: NOT connected with current vertex
+    vector<int> badv(0);
+    vector<int> ncv(0);
+    for (int t=0;t<numt;++t)
+    {
+      if (bad[t])
+      {
+        // indices of current bad triangle
+        int idx0 = triangles[t][0];
+        int idx1 = triangles[t][1];
+        int idx2 = triangles[t][2];
+
+        // collect ALL vertices
+        bool foundbefore0 = false;
+        for(int k=0;k<(int)badv.size();++k)
+        {
+          if (badv[k]==idx0)
+            foundbefore0 = true;
+        }
+        if (!foundbefore0) badv.push_back(idx0);
+
+        bool foundbefore1 = false;
+        for(int k=0;k<(int)badv.size();++k)
+        {
+          if (badv[k]==idx1)
+            foundbefore1 = true;
+        }
+        if (!foundbefore1) badv.push_back(idx1);
+
+        bool foundbefore2 = false;
+        for(int k=0;k<(int)badv.size();++k)
+        {
+          if (badv[k]==idx2)
+            foundbefore2 = true;
+        }
+        if (!foundbefore2) badv.push_back(idx2);
+
+        // indices of current vertex neighbors
+        int neighbor0 = c-1;
+        int neighbor1 = 0;
+
+        // collect NOT connected vertices
+        if (idx0 != c && idx0 != neighbor0 && idx0 != neighbor1)
+        {
+          bool foundbefore = false;
+          for(int k=0;k<(int)ncv.size();++k)
+          {
+            if (ncv[k]==idx0)
+              foundbefore = true;
+          }
+          if (!foundbefore) ncv.push_back(idx0);
+        }
+        if (idx1 != c && idx1 != neighbor0 && idx1 != neighbor1)
+        {
+          bool foundbefore = false;
+          for(int k=0;k<(int)ncv.size();++k)
+          {
+            if (ncv[k]==idx1)
+              foundbefore = true;
+          }
+          if (!foundbefore) ncv.push_back(idx1);
+        }
+        if (idx2 != c && idx2 != neighbor0 && idx2 != neighbor1)
+        {
+          bool foundbefore = false;
+          for(int k=0;k<(int)ncv.size();++k)
+          {
+            if (ncv[k]==idx2)
+              foundbefore = true;
+          }
+          if (!foundbefore) ncv.push_back(idx2);
+        }
+      }
+    }
+
+    // build triangles formed by current vertex and ncv vertices
+    vector<vector<int> > addtriangles(0,vector<int>(3));
+    for (int k=0;k<(int)ncv.size();++k)
+    {
+      // find ncv vertex neighbor0
+      bool validneighbor0 = false;
+      int off0 = 0;
+      int neighbor0 = 0;
+      do
+      {
+        // set neighbor
+        neighbor0 = ncv[k]-1-off0;
+        if ((ncv[k]-off0)==0) neighbor0 = currsize-1-off0;
+
+        // check if neighbor is in bad vertices
+        for(int k=0;k<(int)badv.size();++k)
+        {
+          if (badv[k]==neighbor0)
+            validneighbor0 = true;
+        }
+
+        // increase counter
+        ++off0;
+
+      } while (!validneighbor0);
+
+      // find ncv vertex neighbor1
+      bool validneighbor1 = false;
+      int off1=0;
+      int neighbor1=0;
+      do
+      {
+        // set neighbor
+        neighbor1 = ncv[k]+1+off1;
+        if ((ncv[k]+off1)==currsize-1) neighbor1 = 0+off1;
+
+        // check if neighbor is in bad vertices
+        for(int k=0;k<(int)badv.size();++k)
+        {
+          if (badv[k]==neighbor1)
+            validneighbor1 = true;
+        }
+
+        // increase counter
+        ++off1;
+
+      } while (!validneighbor1);
+
+      // plausibility check
+      if (neighbor0 == c || neighbor1 == c)
+        dserror("ERROR: Connected nodes not possible here");
+
+      // add triangles
+      vector<int> add1(3);
+      add1[0] = c; add1[1]=ncv[k]; add1[2]=neighbor0;
+      addtriangles.push_back(add1);
+      vector<int> add2(3);
+      add2[0] = c; add2[1]=ncv[k]; add2[2]=neighbor1;
+      addtriangles.push_back(add2);
+    }
+
+    if (out)
+    {
+      cout << "   -> we have " << (int)addtriangles.size() << " potential NEW triangles" << endl;
+      for (int k=0;k<(int)addtriangles.size();++k)
+        cout << "      Triangle: " << addtriangles[k][0] << " " << addtriangles[k][1] << " " << addtriangles[k][2] << " " << endl;
+    }
+
+    // collapse addtriangles (remove double entries)
+    int nadd = 0;
+    for (int k=0;k<(int)addtriangles.size();++k)
+    {
+      bool addbefore = false;
+      int idx0 = addtriangles[k][0];
+      int idx1 = addtriangles[k][1];
+      int idx2 = addtriangles[k][2];
+
+      // check against all other goodtriangles
+      for (int l=0;l<(int)goodtriangles.size();++l)
+      {
+        // do not check against itself
+        int lidx0 = goodtriangles[l][0];
+        int lidx1 = goodtriangles[l][1];
+        int lidx2 = goodtriangles[l][2];
+
+        if (idx0==lidx0 && idx1==lidx1 && idx2==lidx2) addbefore=true;
+        if (idx0==lidx0 && idx1==lidx2 && idx2==lidx1) addbefore=true;
+        if (idx0==lidx1 && idx1==lidx0 && idx2==lidx2) addbefore=true;
+        if (idx0==lidx1 && idx1==lidx2 && idx2==lidx0) addbefore=true;
+        if (idx0==lidx2 && idx1==lidx0 && idx2==lidx1) addbefore=true;
+        if (idx0==lidx2 && idx1==lidx1 && idx2==lidx0) addbefore=true;
+      }
+
+      // add to good triangles
+      if (!addbefore)
+      {
+        nadd++;
+        goodtriangles.push_back(addtriangles[k]);
+      }
+    }
+
+    // store final triangulation
+    triangles.resize(0);
+    for (int k=0;k<(int)goodtriangles.size();++k)
+      triangles.push_back(goodtriangles[k]);
+
+    if (out)
+    {
+      cout << "   -> added " << nadd << " NEW triangles" << endl;
+      cout << "   -> overall " << (int)triangles.size() << " triangles" << endl;
+      for (int k=0;k<(int)triangles.size();++k)
+        cout << "      Triangle: " << triangles[k][0] << " " << triangles[k][1] << " " << triangles[k][2] << " " << endl;
+    }
+  }
+
+  // create intcells for all triangle
+  int numt = (int)triangles.size();
+  for (int t=0;t<numt;++t)
+  {
+    // indices of current triangle
+    int idx0 = triangles[t][0];
+    int idx1 = triangles[t][1];
+    int idx2 = triangles[t][2];
+
+    // coordinates of current triangle
+    Epetra_SerialDenseMatrix coords(3,3);
+    for (int k=0;k<3;++k)
+    {
+      coords(k,0) = Clip()[idx0].Coord()[k];
+      coords(k,1) = Clip()[idx1].Coord()[k];
+      coords(k,2) = Clip()[idx2].Coord()[k];
+    }
+
+    // create IntCell object and push back
+    Cells().push_back(rcp(new IntCell(t,3,coords,Auxn(),DRT::Element::tri3,
+      CouplingInAuxPlane(),linvertex[idx0],linvertex[idx1],linvertex[idx2],GetDerivAuxn())));
+  }
+
+  // double check number of triangles
+  if (numt != clipsize-2)
+  {
+    cout << "***WARNING*** Delaunay triangulation failed (" << clipsize << " vertices, "
+         << numt << " triangles)" << " -> using backup" << endl;
+
+    // if Delaunay triangulation failed, use old center-based
+    // triangulation as backup (therefore return false)
+    return false;
+  }
+
+  // triangulation successful
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Triangulation of clip polygon (3D) - CENTER               popp 08/11|
+ *----------------------------------------------------------------------*/
+bool MORTAR::Coupling3d::CenterTriangulation(vector<vector<map<int,double> > >& linvertex,
+                                             double tol)
+{
+  // preparations
+  Cells().resize(0);
+  int clipsize = (int)(Clip().size());
+  vector<map<int,double> > lincenter(3);
+
+  //**********************************************************************
+  // (1) Trivial clipping polygon -> IntCells
+  //**********************************************************************
+  // clip polygon = triangle
+  // no triangulation necessary -> 1 IntCell
+  if (clipsize==3)
+  {
+    // IntCell vertices = clip polygon vertices
+    Epetra_SerialDenseMatrix coords(3,clipsize);
+    for (int i=0;i<clipsize;++i)
+      for (int k=0;k<3;++k)
+        coords(k,i) = Clip()[i].Coord()[k];
+
+    // create IntCell object and push back
+    Cells().push_back(rcp(new IntCell(0,3,coords,Auxn(),DRT::Element::tri3,
+      CouplingInAuxPlane(),linvertex[0],linvertex[1],linvertex[2],GetDerivAuxn())));
+
+    // get out of here
+    return true;
+  }
+
+  /*
   // clip polygon = quadrilateral
   // no triangulation necessary -> 2 IntCells
   else if (clipsize==4)
@@ -2794,9 +3258,10 @@ bool MORTAR::Coupling3d::Triangulation(map<int,double>& projpar)
     // get out of here
     return true;
   }
+  */
 
   //**********************************************************************
-  // (3) Find center of clipping polygon (centroid formula)
+  // (2) Find center of clipping polygon (centroid formula)
   //**********************************************************************
   vector<double> clipcenter(3);
   for (int k=0;k<3;++k) clipcenter[k] = 0.0;
@@ -2845,17 +3310,16 @@ bool MORTAR::Coupling3d::Triangulation(map<int,double>& projpar)
     for (int k=0;k<3;++k) clipcenter[k] += 1.0/3.0 * (xi_i[k] + xi_ip1[k] + nac[k]) * Atri;
   }
 
-  //final clipcenter
+  // final clipcenter
   for (int k=0;k<3;++k) clipcenter[k] /= fac;
-  //cout << "Clipcenter: " << clipcenter[0] << " " << clipcenter[1] << " " << clipcenter[2] << endl;
 
   //**********************************************************************
-  // (4) Linearization of clip center coordinates (only non-empty for contact)
+  // (3) Linearization of clip center coordinates (only for contact)
   //**********************************************************************
   CenterLinearization(linvertex,lincenter);
 
   //**********************************************************************
-  // (5) General clipping polygon: Triangulation -> IntCells
+  // (4) General clipping polygon: Triangulation -> IntCells
   //**********************************************************************
   // center-based triangulation if clip polygon > quadrilateral
   // No. of IntCells is equal to no. of clip polygon vertices
@@ -2885,6 +3349,7 @@ bool MORTAR::Coupling3d::Triangulation(map<int,double>& projpar)
       CouplingInAuxPlane(),lincenter,linvertex[num],linvertex[numplus1],GetDerivAuxn())));
   }
 
+  // triangulation successful
   return true;
 }
 
