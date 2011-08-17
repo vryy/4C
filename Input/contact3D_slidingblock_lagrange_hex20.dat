@@ -176,7 +176,7 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 2.0 4.0 FACTOR 0.0 1.0
 -----------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 2 POSITION dispx NAME dispx VALUE 9.3736229657695264e-02 TOLERANCE 1e-7
+STRUCTURE DIS 1 NODE 2 POSITION dispx NAME dispx VALUE  9.3736108397383694e-02 TOLERANCE 1e-7
 STRUCTURE DIS 1 NODE 2 POSITION dispy NAME dispy VALUE -4.9734987185849086e-05 TOLERANCE 1e-7
 STRUCTURE DIS 1 NODE 2 POSITION dispz NAME dispz VALUE -1.9351831150777096e-01 TOLERANCE 1e-7
 ------------------------------------------------DESIGN DESCRIPTION
