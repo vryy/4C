@@ -8078,14 +8078,14 @@ namespace DRT
                                                           Epetra_SerialDenseMatrix & C_uui,
                                                           Epetra_SerialDenseMatrix & rhC_ui,
                                                           Epetra_SerialDenseMatrix & Gsui,
-                                                          Epetra_SerialDenseMatrix & Guis
+                                                          Epetra_SerialDenseMatrix & Guis,
+                                                          Epetra_SerialDenseMatrix & side_xyze
                                                           );
 
 
         virtual ~SideInterface() {}
 
-        virtual void Evaluate(Epetra_SerialDenseMatrix & side_xyze,
-                              const LINALG::Matrix<2,1> & eta,
+        virtual void Evaluate(const LINALG::Matrix<2,1> & eta,
                               LINALG::Matrix<3,1> & x,
                               LINALG::Matrix<3,1> & normal,
                               double & drs) = 0;
@@ -8093,6 +8093,12 @@ namespace DRT
         virtual void eivel(const DRT::Discretization &  cutdis,
                            const std::string            state,
                            const vector<int>&           lm) = 0;
+
+
+        virtual void addeidisp(const DRT::Discretization &  cutdis,
+                               const std::string            state,
+                               const vector<int>&           lm,
+                               Epetra_SerialDenseMatrix  &  side_xyze) = 0;
 
         virtual void buildCouplingMatrices(LINALG::Matrix<3,1> & normal,
                                            const double          fac,
@@ -8123,30 +8129,31 @@ namespace DRT
                  Epetra_SerialDenseMatrix & C_uui,
                  Epetra_SerialDenseMatrix & rhC_ui,
                  Epetra_SerialDenseMatrix & Gsui,
-                 Epetra_SerialDenseMatrix & Guis
+                 Epetra_SerialDenseMatrix & Guis,
+                 Epetra_SerialDenseMatrix & side_xyze
                  )
           : C_uiu_(C_uiu.A(),true),
             C_uui_(C_uui.A(),true),
             rhC_ui_(rhC_ui.A(),true),
             K_sui_(Gsui.A(),true),
-            K_uis_(Guis.A(),true)
+            K_uis_(Guis.A(),true),
+            xyze_(side_xyze.A(),true)
         {
         }
 
-        virtual void Evaluate(Epetra_SerialDenseMatrix  & side_xyze,
-                              const LINALG::Matrix<2,1> & eta,
+        virtual void Evaluate(const LINALG::Matrix<2,1> & eta,
                               LINALG::Matrix<3,1>       & x,
                               LINALG::Matrix<3,1>       & normal,
                               double                    & drs
                               )
         {
-          LINALG::Matrix<3,side_nen> xyze( side_xyze, true );
           LINALG::Matrix<2,side_nen> deriv;
           LINALG::Matrix<2,2> metrictensor;
           DRT::UTILS::shape_function_2D( side_funct_, eta( 0 ), eta( 1 ), side_distype );
           DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), side_distype );
-          DRT::UTILS::ComputeMetricTensorForBoundaryEle<side_distype>( xyze, deriv, metrictensor, drs, &normal );
-          x.Multiply( xyze, side_funct_ );
+          DRT::UTILS::ComputeMetricTensorForBoundaryEle<side_distype>( xyze_,deriv, metrictensor, drs, &normal );
+          x.Multiply( xyze_,side_funct_ );
+
         }
 
         virtual void eivel(const DRT::Discretization &  cutdis,
@@ -8170,6 +8177,39 @@ namespace DRT
             }
           }
         }
+
+        virtual void addeidisp(const DRT::Discretization &  cutdis,
+                               const std::string            state,
+                               const vector<int>&           lm,
+                               Epetra_SerialDenseMatrix  &  side_xyze)
+        {
+          // get state of the global vector
+          Teuchos::RCP<const Epetra_Vector> matrix_state = cutdis.GetState(state);
+          if(matrix_state == null)
+            dserror("Cannot get state vector %s", state.c_str());
+
+          // extract local values of the global vectors
+          std::vector<double> mymatrix(lm.size());
+          DRT::UTILS::ExtractMyValues(*matrix_state,mymatrix,lm);
+
+          for (int inode=0; inode<side_nen; ++inode)  // number of nodes
+          {
+            for(int idim=0; idim<3; ++idim) // number of dimensions
+            {
+              (eidisp_)(idim,inode) = mymatrix[idim+(inode*3)];
+            }
+          }
+
+          // add the displacement of the interface
+          for (std::size_t inode = 0; inode < side_nen; ++inode)
+          {
+            xyze_(0,inode) += eidisp_(0, inode);
+            xyze_(1,inode) += eidisp_(1, inode);
+            xyze_(2,inode) += eidisp_(2, inode);
+          }
+
+        }
+
 
         virtual void buildCouplingMatrices(LINALG::Matrix<3,1>       & normal,
                                             const double                fac,
@@ -8380,6 +8420,8 @@ namespace DRT
         LINALG::Matrix<6*nen,3*side_nen>       K_sui_;
         LINALG::Matrix<3*side_nen,6*nen>       K_uis_;
         LINALG::Matrix<3,side_nen>             eivel_;
+        LINALG::Matrix<3,side_nen>             eidisp_;
+        LINALG::Matrix<3,side_nen>             xyze_;
       };
 
       template<DRT::Element::DiscretizationType distype>
@@ -8388,7 +8430,8 @@ namespace DRT
                                                                          Epetra_SerialDenseMatrix &  C_uui,
                                                                          Epetra_SerialDenseMatrix &  rhC_ui,
                                                                          Epetra_SerialDenseMatrix &  Gsui,
-                                                                         Epetra_SerialDenseMatrix &  Guis
+                                                                         Epetra_SerialDenseMatrix &  Guis,
+                                                                         Epetra_SerialDenseMatrix &  side_xyze
                                                                          )
       {
         SideInterface * si = NULL;
@@ -8397,13 +8440,13 @@ namespace DRT
          case DRT::Element::tri3:
          {
            typedef SideImpl<distype,DRT::Element::tri3> SideImplType;
-           si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis);
+           si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
            break;
          }
          case DRT::Element::tri6:
          {
            typedef SideImpl<distype,DRT::Element::tri6> SideImplType;
-           si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis);
+           si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
            break;
          }
          case DRT::Element::quad4:
@@ -8412,19 +8455,19 @@ namespace DRT
 //            C_uiu->Reshape(SideImplType::side_nen*3,SideImplType::nen*4);
 //            C_uui->Reshape(SideImplType::nen*4,SideImplType::side_nen*3);
 //            C_uiui->Reshape(SideImplType::side_nen*3,SideImplType::side_nen*3);
-           si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis);
+           si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
            break;
          }
          case DRT::Element::quad8:
          {
            typedef SideImpl<distype,DRT::Element::quad8> SideImplType;
-           si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis);
+           si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
            break;
          }
          case DRT::Element::quad9:
          {
            typedef SideImpl<distype,DRT::Element::quad9> SideImplType;
-           si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis);
+           si = new SideImplType(side,C_uiu,C_uui,rhC_ui,Gsui,Guis,side_xyze);
            break;
          }
         default:
@@ -8455,7 +8498,6 @@ void Fluid3Impl<distype>::ElementXfemInterface(
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
   //----------------------------------------------------------------------------
-
 
   // get node coordinates
   GEO::fillInitialPositionArray< distype, nsd_, LINALG::Matrix<nsd_,nen_> >( ele, xyze_ );
@@ -8723,13 +8765,17 @@ void Fluid3Impl<distype>::ElementXfemInterface(
     Epetra_SerialDenseMatrix & eleGuis = Cuiui_matrices[1];
     Epetra_SerialDenseMatrix  eleGuisKssInv;
 
-    si = XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleGsui,eleGuis);
+    si = XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleGsui,eleGuis,side_xyze);
     side_impl[sid] = si;
 
     // get velocity at integration point of boundary dis
     if ( fluidfluidcoupling )
+    {
       si->eivel(cutdis,"ivelnp",cutla[0].lm_);
+      si->addeidisp(cutdis,"idispnp",cutla[0].lm_,side_xyze);
+    }
 
+    // loop gausspoints
     for ( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=cutintpoints.begin();
           i!=cutintpoints.end();
           ++i )
@@ -8745,7 +8791,7 @@ void Fluid3Impl<distype>::ElementXfemInterface(
 
         double drs = 0;
 
-        si->Evaluate(side_xyze,eta,x_side,normal,drs);
+        si->Evaluate(eta,x_side,normal,drs);
 
         const double fac = drs*iquad.Weight();
 
@@ -9830,6 +9876,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PoroSysmat(
     // 5) standard Galerkin bodyforce term on right-hand side
     BodyForceRhsTerm(velforce,
                      rhsfac);
+
 
     // 6) PSPG term
     if (f3Parameter_->pspg_ == INPAR::FLUID::pstab_use_pspg)

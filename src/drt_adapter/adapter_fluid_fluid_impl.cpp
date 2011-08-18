@@ -35,7 +35,6 @@ ADAPTER::FluidFluidImpl::FluidFluidImpl(
     params_(params)
     //output_(output)
 {
-
   interface_.Setup(*embfluiddis);
   fluid_.SetSurfaceSplitter(&interface_);
 
@@ -191,7 +190,7 @@ void ADAPTER::FluidFluidImpl::Output()
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidImpl::NonlinearSolve()
 {
-  fluid_.NonlinearSolveFluidFluid();
+  fluid_.NonlinearSolve();
 }
 
 
@@ -323,6 +322,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFluidImpl::ExtractInterfaceVeln()
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
+  cout << "ApplyInterfaceVelocities " << endl;
   interface_.InsertFSICondVector(ivel,fluid_.Velnp());
 }
 
@@ -331,8 +331,8 @@ void ADAPTER::FluidFluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vecto
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
 {
-
-    meshmap_.InsertCondVector(fluiddisp,fluid_.Dispnp());
+  cout << "ApplyMeshDisplacement " << endl;
+  meshmap_.InsertCondVector(fluiddisp,fluid_.Dispnp());
 
   // new grid velocity
   fluid_.UpdateGridv();
@@ -353,6 +353,7 @@ void ADAPTER::FluidFluidImpl::ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidImpl::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
 {
+  cout << " DisplacementToVelocity " << endl;
   // get interface velocity at t(n)
   const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSICondVector(Veln());
 
@@ -369,6 +370,7 @@ void ADAPTER::FluidFluidImpl::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector>
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidImpl::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
 {
+  cout << "VelocityToDisplacement " << endl;
   // get interface velocity at t(n)
   const Teuchos::RCP<Epetra_Vector> veln = Interface().ExtractFSICondVector(Veln());
 

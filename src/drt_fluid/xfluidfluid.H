@@ -150,8 +150,6 @@ namespace FLD
       const Epetra_Map* fluiddofrowmap_;
       Teuchos::RCP<const Epetra_Map> outputfluiddofrowmap_;
       Teuchos::RCP<const Epetra_Map> outputpressuredofrowmap_;
-//      const Epetra_Map* aledofrowmap_;
-//      const Epetra_Map* boundarydofrowmap_;
 
       // fluid-fluid
       Teuchos::RCP<LINALG::SparseOperator> fluidfluidsysmat_;
@@ -237,7 +235,7 @@ namespace FLD
     void PrepareTimeStep();
 
     /// do nonlinear iteration, e.g. full Newton, Newton like or Fixpoint iteration
-    void NonlinearSolveFluidFluid();
+    void NonlinearSolve();
 
     /// solve linearised fluid
     void LinearSolve();
@@ -419,6 +417,8 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector>    ivelnp_;
     Teuchos::RCP<Epetra_Vector>    iveln_;
     Teuchos::RCP<Epetra_Vector>    ivelnm_;
+
+    Teuchos::RCP<Epetra_Vector>    idispnp_;
 
     // dofset for bg-fluid output
     DRT::DofSet                dofset_out_;

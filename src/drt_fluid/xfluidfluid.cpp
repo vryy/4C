@@ -205,6 +205,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
   discret.SetState("scaaf",scaaf_);
   discret.SetState("scaam",scaam_);
 
+
   // set general vector values needed by elements
   alediscret.ClearState();
   alediscret.SetState("hist" ,xfluid_.alehist_ );
@@ -221,9 +222,16 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
   // set general vector values of boundarydis needed by elements
   cutdiscret.SetState("ivelnp",xfluid_.ivelnp_);
 
+  // set interface dispnp needed for the elements
+  if (xfluid_.alefluid_)
+    LINALG::Export(*(xfluid_.aledispnp_),*(xfluid_.idispnp_));
+
+  cutdiscret.SetState("idispnp",xfluid_.idispnp_);
+
   // set scheme-specific element parameters and vector values
   if (xfluid_.timealgo_==INPAR::FLUID::timeint_afgenalpha)
   {
+    dserror("no genalpha for fluid-fluid!!");
     discret.SetState("velaf",velaf_);
     alediscret.SetState("velaf",xfluid_.alevelaf_);
   }
@@ -462,10 +470,8 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
     discret.ClearState();
 
-
     // scaling to get true residual vector
     trueresidual_->Update(xfluid_.ResidualScaling(),*residual_,0.0);
-
 
     // finalize the complete matrices
     Cuui_->Complete(*xfluid_.boundarydofrowmap_,*fluiddofrowmap_);
@@ -532,7 +538,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
   // scaling to get true residual vector
   xfluid_.aletrueresidual_->Update(xfluid_.ResidualScaling(),*xfluid_.aleresidual_,0.0);
-
 
   // finalize the complete matrices
   xfluid_.alesysmat_->Complete();
@@ -1178,7 +1183,7 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   output_->WriteMesh(0,0.0);
 
   Epetra_Vector idispcol( *boundarydis_->DofColMap() );
-  idispcol.PutScalar( 0. );
+  idispcol.PutScalar( 0.0 );
   state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
 
   if ( not bgdis_->Filled() or not actdis->HaveDofs() )
@@ -1261,8 +1266,7 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   // -------------------------------------------------------
   boundarydofrowmap_ = boundarydis_->DofRowMap();
   ivelnp_ = LINALG::CreateVector(*boundarydofrowmap_,true);
-  iveln_  = LINALG::CreateVector(*boundarydofrowmap_,true);
-  ivelnm_ = LINALG::CreateVector(*boundarydofrowmap_,true);
+  idispnp_ = LINALG::CreateVector(*boundarydofrowmap_,true);
 
   // ---------------------------------------------------------------------
   // set general fluid parameter defined before
@@ -1326,6 +1330,7 @@ void FLD::XFluidFluid::IntegrateFluidFluid()
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::TimeLoop()
 {
+  cout << "TimeLoop() " << endl;
   while (step_<stepmax_ and time_<maxtime_)
   {
     PrepareTimeStep();
@@ -1356,7 +1361,7 @@ void FLD::XFluidFluid::TimeLoop()
     // -----------------------------------------------------------------
     //                     solve nonlinear equation
     // -----------------------------------------------------------------
-    NonlinearSolveFluidFluid();
+    NonlinearSolve();
 
 
     // -------------------------------------------------------------------
@@ -1442,14 +1447,14 @@ void FLD::XFluidFluid::SolveStationaryProblemFluidFluid()
       // Neumann
       state_->neumann_loads_->PutScalar(0.0);
       bgdis_->SetState("scaaf",state_->scaaf_);
-      //bgdis_->EvaluateNeumann(eleparams,*state_->neumann_loads_);
+      bgdis_->EvaluateNeumann(eleparams,*state_->neumann_loads_);
       bgdis_->ClearState();
     }
 
     // -------------------------------------------------------------------
     //                     solve nonlinear equation system
     // -------------------------------------------------------------------
-    NonlinearSolveFluidFluid();
+    NonlinearSolve();
 
     // -------------------------------------------------------------------
     //         calculate lift'n'drag forces from the residual
@@ -1507,8 +1512,23 @@ void FLD::XFluidFluid::PrepareTimeStep()
   // -------------------------------------------------------------------
   SetElementTimeParameter();
 
-  if (step_>1 and alefluid_)
-    CutAndSetStateVectors();
+  bgdis_->ClearState();
+  bgdis_->SetState("velaf",state_->velnp_);
+  bgdis_->SetState("hist",state_->hist_);
+
+  embdis_->ClearState();
+  embdis_->SetState("velaf",alevelnp_);
+  embdis_->SetState("hist",alehist_);
+
+  if (alefluid_)
+  {
+    aledispnm_->Update(1.0,*aledispn_,0.0);
+    aledispn_ ->Update(1.0,*aledispnp_,0.0);
+  }
+
+  // Update the fluid material velocity along the interface (ivelnp_), source (in): state_.alevelnp_
+  LINALG::Export(*(alevelnp_),*(ivelnp_));
+  boundarydis_->SetState("ivelnp",ivelnp_);
 
   // -------------------------------------------------------------------
   //  evaluate Dirichlet and Neumann boundary conditions
@@ -1553,7 +1573,7 @@ void FLD::XFluidFluid::PrepareTimeStep()
 ///////////////////////////////////////////////////////////////
 //
 //////////////////////////////////////////////////////////////
-void FLD::XFluidFluid::NonlinearSolveFluidFluid()
+void FLD::XFluidFluid::NonlinearSolve()
 {
   // ---------------------------------------------- nonlinear iteration
   // ------------------------------- stop nonlinear iteration when both
@@ -1573,6 +1593,9 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
   dtele_    = 0.0;
   dtfilter_ = 0.0;
 
+
+  if (step_>1 and alefluid_)
+    CutAndSetStateVectors();
 
   if (myrank_ == 0)
   {
@@ -1630,16 +1653,12 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
 
       // set vector values needed by elements
       bgdis_->ClearState();
-      bgdis_->ClearState();
       bgdis_->SetState("velaf",state_->velnp_);
 
       embdis_->ClearState();
       embdis_->SetState("velaf",alevelnp_);
 
       state_->EvaluateFluidFluid( eleparams, *bgdis_, *boundarydis_, *embdis_,  itnum );
-
-      // debug output
-      //state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "residual", itnum, state_->residual_ ,state_->aleresidual_);
 
       // end time measurement for element
       dtele_=Teuchos::Time::wallTime()-tcpu;
@@ -1651,6 +1670,7 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
     // We could avoid this though, if velrowmap_ and prerowmap_ would
     // not include the dirichlet values as well. But it is expensive
     // to avoid that.
+
     state_->dbcmaps_->InsertCondVector(state_->dbcmaps_->ExtractCondVector(state_->zeros_), state_->residual_);
     aledbcmaps_->InsertCondVector(aledbcmaps_->ExtractCondVector(alezeros_), aleresidual_);
 
@@ -1822,7 +1842,6 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
         solver_.AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
 
-
       Teuchos::RCP<LINALG::SparseMatrix> sysmatmatrixmatlab = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->fluidfluidsysmat_);
       solver_.Solve(state_->fluidfluidsysmat_->EpetraOperator(),state_->fluidfluidincvel_,state_->fluidfluidresidual_,true,itnum==1);
       solver_.ResetTolerance();
@@ -1849,7 +1868,6 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
     LINALG::Export(*(alevelnp_),*(ivelnp_));
     boundarydis_->SetState("ivelnp",ivelnp_);
 
-
     // -------------------------------------------------------------------
     // For af-generalized-alpha: update accelerations
     // Furthermore, calculate velocities, pressures, scalars and
@@ -1870,8 +1888,8 @@ void FLD::XFluidFluid::NonlinearSolveFluidFluid()
   if (alefluid_)
     aletotaldispn_->Update(1.0,*aledispn_,1.0);
 
-  state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "result", step_, state_->velnp_ , alevelnp_, aletotaldispn_);
-  state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "resultn", step_, state_->veln_ , aleveln_, aletotaldispn_);
+  state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "result", step_, state_->velnp_ , alevelnp_, aletotaldispnp_);
+  //state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "grid_v", step_, state_->velnp_ ,gridv_ , aletotaldispnp_);
 }
 // -------------------------------------------------------------------
 //
@@ -1898,6 +1916,7 @@ void FLD::XFluidFluid::Evaluate(
   Teuchos::RCP<const Epetra_Vector> stepinc ///< solution increment between time step n and n+1
   )
 {
+  cout << " Evaluate() " << endl;
 
 }
 // -------------------------------------------------------------------
@@ -1909,7 +1928,6 @@ void FLD::XFluidFluid::UpdateGridv()
   // from input file data
   //const int order  = params_.get<int>("order gridvel");
   const int order  = params_.get<int>("GRIDVEL");
-
   switch (order)
   {
     case 1:
@@ -1951,7 +1969,7 @@ void FLD::XFluidFluid::AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoa
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::TimeUpdate()
 {
-  cout << " TimeUpdate " << endl;
+  cout << "FLD::XFluidFluid::TimeUpdate " << endl;
   ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
 
   if(stabparams->get<string>("TDS") == "time_dependent")
@@ -2067,7 +2085,6 @@ void FLD::XFluidFluid::TimeUpdate()
     aledispnm_->Update(1.0,*aledispn_,0.0);
     aledispn_->Update(1.0,*aledispnp_,0.0);
   }
-
   // -------------------------------------------------------------------
   // treat impedance BC
   // note: these methods return without action, if the problem does not
@@ -2183,13 +2200,12 @@ void FLD::XFluidFluid::CutAndSetStateVectors()
   // save the old state vector
   staten_ = state_;
 
-  state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "before_intr_vn", step_, state_->veln_, aleveln_, aletotaldispnp_);
-
   // new cut for the next time step
   Epetra_Vector idispcol( *boundarydis_->DofColMap() );
   idispcol.PutScalar( 0. );
-  aletotaldispnp_->Update(1.0,*aledispnp_,1.0);
-  LINALG::Export(*aletotaldispnp_,idispcol);
+  aletotaldispnp_->Update(1.0,*aledispnp_,0.0);
+  //LINALG::Export(*aletotaldispnp_,idispcol);
+  LINALG::Export(*aledispnp_,idispcol);
   state_ = Teuchos::rcp( new XFluidFluidState( *this, idispcol ) );
 
   if (alefluid_)
@@ -2216,11 +2232,46 @@ void FLD::XFluidFluid::CutAndSetStateVectors()
   state_->velnp_->Update(1.0,*state_->veln_,0.0);  // use old velocity as start velue
   alevelnp_->Update(1.0,*aleveln_,0.0); // use old velocity as start velue
 
+  LINALG::Export(*(alevelnp_),*(ivelnp_));
+  boundarydis_->SetState("ivelnp",ivelnp_);
+
   // debug output
-  state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "after_intr_vp", step_, state_->velnp_, alevelnp_, aletotaldispnp_);
-  state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "after_intr_vn", step_, state_->veln_, aleveln_, aletotaldispnp_);
-  state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "after_intr_vnm", step_, state_->velnm_, alevelnm_, aletotaldispnp_);
-  state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "after_intr_accn", step_, state_->accn_, aleaccn_, aletotaldispnp_);
+  state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "after_intr_vn", step_, state_->veln_, aleveln_, aledispnp_);
+  state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "after_intr_vnm", step_, state_->velnm_, alevelnm_, aledispnp_);
+  state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "after_intr_accn", step_, state_->accn_, aleaccn_, aledispnp_);
+
+  // -------------------------------------------------------------------
+  //         evaluate Dirichlet and Neumann boundary conditions
+  // -------------------------------------------------------------------
+  {
+    ParameterList eleparams;
+
+    // other parameters needed by the elements
+    eleparams.set("total time",time_);
+
+    // set vector values needed by elements
+    bgdis_->ClearState();
+    bgdis_->SetState("velaf",state_->velnp_);
+    // predicted dirichlet values
+    // velnp then also holds prescribed new dirichlet values
+    bgdis_->EvaluateDirichlet(eleparams,state_->velnp_,null,null,null);
+
+    bgdis_->ClearState();
+
+    embdis_->ClearState();
+    embdis_->SetState("velaf",alevelnp_);
+    embdis_->EvaluateDirichlet(eleparams,alevelnp_,null,null,null);
+    embdis_->ClearState();
+
+    // set thermodynamic pressure
+    eleparams.set("thermodynamic pressure",thermpressaf_);
+
+    // Neumann
+    state_->neumann_loads_->PutScalar(0.0);
+    bgdis_->SetState("scaaf",state_->scaaf_);
+    bgdis_->EvaluateNeumann(eleparams,*state_->neumann_loads_);
+    bgdis_->ClearState();
+  }
 
   bgdis_->ClearState();
   bgdis_->SetState("velaf",state_->velnp_);
@@ -2323,7 +2374,7 @@ void FLD::XFluidFluid::CreatePatchBoxes(std::map<int, GEO::CUT::BoundingBox> & p
 {
   // get column version of the displacement vector
   Teuchos::RCP<const Epetra_Vector> col_embfluiddisp =
-      DRT::UTILS::GetColVersionOfRowVector(embdis_, aletotaldispn_);
+    DRT::UTILS::GetColVersionOfRowVector(embdis_, aledispn_);
 
   // Map of all boxes of embedded fluid discretization
   for (int pele=0; pele<embdis_->NumMyColElements(); ++pele)
@@ -2390,7 +2441,7 @@ bool FLD::XFluidFluid::ComputeSpacialToElementCoordAndProject(DRT::Element*     
         veln(2,inode) = myval[2];
         veln(3,inode) = myval[3];
 
-        DRT::UTILS::ExtractMyValues(*aletotaldispn_,mydisp,pgdofs);
+        DRT::UTILS::ExtractMyValues(*aledispn_,mydisp,pgdofs);
         disp(0,inode) = mydisp[0];
         disp(1,inode) = mydisp[1];
         disp(2,inode) = mydisp[2];
