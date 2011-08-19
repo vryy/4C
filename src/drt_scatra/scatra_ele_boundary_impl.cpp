@@ -425,10 +425,11 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     vector<int> lmparent(nenparent);
     vector<int> lmparentowner;
     vector<int> lmparentstride;
-    parentele->LocationVector(discretization, lmparent, lmparentowner,lmparentstride);
+    parentele->LocationVector(discretization,lmparent,lmparentowner,lmparentstride);
 
     // get velocity values at nodes
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+
     // we deal with a (nsd_+1)-dimensional flow field
     Epetra_SerialDenseVector evel((nsd_+1)*nenparent);
     DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,nsd_+1);
@@ -441,9 +442,9 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     vector<double> myphinp(lmparent.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
 
-    // define vector for normal fluxes
-    vector<double> mydiffflux(lm.size());
-    vector<double> mydivu(lm.size());
+    // define vector for normal diffusive and velocity fluxes
+    vector<double> mynormdiffflux(lm.size());
+    vector<double> mynormvel(lm.size());
 
     // determine constant outer normal to this element
     GetConstNormal(normal_,xyze_);
@@ -457,33 +458,31 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     string name = "flux_phi_"+temp.str();
     // try to get the pointer to the entry (and check if type is RCP<Epetra_MultiVector>)
     RCP<Epetra_MultiVector>* f = params.getPtr< RCP<Epetra_MultiVector> >(name);
-    if (f!= NULL) // field has been set and is not of type Teuchos::null
-    {
-      DRT::UTILS::ExtractMyNodeBasedValues(peleptr,eflux,*f,3);
-    }
-    else
-      dserror("MultiVector %s has not been found!",name.c_str());
+    // check: field has been set and is not of type Teuchos::null
+    if (f!= NULL) DRT::UTILS::ExtractMyNodeBasedValues(peleptr,eflux,*f,3);
+    else          dserror("MultiVector %s has not been found!",name.c_str());
 
+    // calculate normal diffusive and velocity flux at each node of the
+    // present boundary element 
     for (int i=0; i<nen_; ++i)
     {
       for(int j = 0; j<nenparent;++j)
       {
-        // calculate normal diffusive flux and velocity div. at present node
-        mydiffflux[i] = 0.0;
-        mydivu[i]     = 0.0;
+        mynormdiffflux[i] = 0.0;
+        mynormvel[i]      = 0.0;
         for (int l=0; l<nsd_+1; l++)
         {
-          mydiffflux[i] += eflux(l,j)*normal_(l);
-          mydivu[i]     += evel[i*(nsd_+1)+l]*normal_(l);
+          mynormdiffflux[i] += eflux(l,j)*normal_(l);
+          mynormvel[i]      += evel[i*(nsd_+1)+l]*normal_(l);
         }
       }
     }
 
-    // calculate integral of normal diffusive flux and velocity divergence
+    // calculate integral of normal diffusive and velocity flux
     // NOTE: add integral value only for elements which are NOT ghosted!
     if(ele->Owner() == discretization.Comm().MyPID())
     {
-      DifffluxAndDivuIntegral(ele,params,mydiffflux,mydivu);
+      NormDiffFluxAndVelIntegral(ele,params,mynormdiffflux,mynormvel);
     }
   }
   else if (action =="integrate_shape_functions")
@@ -522,12 +521,20 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     if (scatratype==INPAR::SCATRA::scatratype_loma)
       thermpress_ = params.get<double>("thermodynamic pressure");
 
+    // get values of scalar
+    RefCountPtr<const Epetra_Vector> phinp  = discretization.GetState("phinp");
+    if (phinp==null) dserror("Cannot get state vector 'phinp'");
+
+    // extract local values from global vector
+    vector<double> ephinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
+
     // we dont know the parent element's lm vector; so we have to build it here
     const int nenparent = parentele->NumNode();
     vector<int> lmparent(nenparent);
     vector<int> lmparentowner;
     vector<int> lmparentstride;
-    parentele->LocationVector(discretization, lmparent, lmparentowner,lmparentstride);
+    parentele->LocationVector(discretization,lmparent,lmparentowner,lmparentstride);
 
     // get velocity values at nodes
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
@@ -536,28 +543,10 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     Epetra_SerialDenseVector evel((nsd_+1)*nenparent);
     DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,nsd_+1);
 
-    // get values of scalar
-    RefCountPtr<const Epetra_Vector> phinp  = discretization.GetState("phinp");
-    if (phinp==null) dserror("Cannot get state vector 'phinp'");
-
-    // extract local values from the global vectors for the parent(!) element
-    vector<double> myphinp(lmparent.size());
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
-
-    // create object for density and solution array
-    vector<LINALG::Matrix<nen_,1> > ephinp(numscal_);
-    LINALG::Matrix<nsd_+1,nen_>     evelnp;
-
-    // insert into element arrays
+    // insert velocity field into element array
+    LINALG::Matrix<nsd_+1,nen_> evelnp;
     for (int i=0;i<nen_;++i)
     {
-      for (int k = 0; k< numscal_; ++k)
-      {
-        // split for each tranported scalar, insert into element arrays
-        ephinp[k](i,0) = myphinp[k+(i*numdofpernode_)];
-      }
-
-      // insert velocity field into element array
       for (int idim=0 ; idim < nsd_+1 ; idim++)
       {
         evelnp(idim,i) = evel[idim + i*(nsd_+1)];
@@ -642,20 +631,9 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     RefCountPtr<const Epetra_Vector> phinp  = discretization.GetState("phinp");
     if (phinp==null) dserror("Cannot get state vector 'phinp'");
 
-    // extract local values from the global vector
-    vector<double> myphinp(lm.size());
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-
-    // insert into element arrays
-    vector<LINALG::Matrix<nen_,1> > ephinp(numscal_);
-    for (int i=0; i<nen_; ++i)
-    {
-      for (int k=0; k<numscal_; ++k)
-      {
-        // split for each tranported scalar, insert into element arrays
-        ephinp[k](i,0) = myphinp[k+(i*numdofpernode_)];
-      }
-    }
+    // extract local values from global vector
+    vector<double> ephinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
 
     // get current condition
     Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
@@ -835,6 +813,14 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     if (scatratype==INPAR::SCATRA::scatratype_loma)
       thermpress_ = params.get<double>("thermodynamic pressure");
 
+    // get values of scalar
+    RefCountPtr<const Epetra_Vector> phinp  = discretization.GetState("phinp");
+    if (phinp==null) dserror("Cannot get state vector 'phinp'");
+
+    // extract local values from global vector
+    vector<double> ephinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
+
     // we dont know the parent element's lm vector; so we have to build it here
     const int nenparent = parentele->NumNode();
     vector<int> lmparent(nenparent);
@@ -844,32 +830,15 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
     // get velocity values at nodes
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+
     // we deal with a (nsd_+1)-dimensional flow field
     Epetra_SerialDenseVector evel((nsd_+1)*nenparent);
     DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,nsd_+1);
 
-    // get values of scalar
-    RefCountPtr<const Epetra_Vector> phinp  = discretization.GetState("phinp");
-    if (phinp==null) dserror("Cannot get state vector 'phinp'");
-
-    // extract local values from the global vectors for the parent(!) element
-    vector<double> myphinp(lmparent.size());
-    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
-
-    // create object for density and solution array
-    vector<LINALG::Matrix<nen_,1> > ephinp(numscal_);
-    LINALG::Matrix<nsd_+1,nen_>     evelnp;
-
-    // insert into element arrays
+    // insert velocity field into element array
+    LINALG::Matrix<nsd_+1,nen_> evelnp;
     for (int i=0;i<nen_;++i)
     {
-      for (int k = 0; k< numscal_; ++k)
-      {
-        // split for each tranported scalar, insert into element arrays
-        ephinp[k](i,0) = myphinp[k+(i*numdofpernode_)];
-      }
-
-      // insert velocity field into element array
       for (int idim=0 ; idim < nsd_+1 ; idim++)
       {
         evelnp(idim,i) = evel[idim + i*(nsd_+1)];
@@ -1062,25 +1031,35 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
-    const DRT::Element*                     ele,
-    Teuchos::RCP<const MAT::Material>       material,
-    const vector<LINALG::Matrix<nen_,1> >&  ephinp,
-    const LINALG::Matrix<nsd_+1,nen_>&      evelnp,
-    Epetra_SerialDenseMatrix&               emat,
-    Epetra_SerialDenseVector&               erhs,
-    const double                            timefac,
-    const double                            alphaF)
+    const DRT::Element*                 ele,
+    Teuchos::RCP<const MAT::Material>   material,
+    const vector<double>&               ephinp,
+    const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
+    Epetra_SerialDenseMatrix&           emat,
+    Epetra_SerialDenseVector&           erhs,
+    const double                        timefac,
+    const double                        alphaF)
 {
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
-  // integration loop
-  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-  {
-    const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id(),&normal_);
+  // define vector for scalar values at nodes
+  LINALG::Matrix<nen_,1> phinod(true);
 
-    for(int k=0;k<numdofpernode_;++k)
+  // loop over all scalars
+  for(int k=0;k<numdofpernode_;++k)
+  {
+    // compute scalar values at nodes
+    for (int inode=0; inode< nen_;++inode)
     {
+      phinod(inode) = ephinp[inode*numdofpernode_+k];
+    }
+
+    // loop over all integration points
+    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    {
+      const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id(),&normal_);
+
       // get velocity at integration point
       velint_.Multiply(evelnp,funct_);
 
@@ -1104,8 +1083,15 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
           {
             const MAT::ArrheniusTemp* actsinglemat = static_cast<const MAT::ArrheniusTemp*>(singlemat.get());
 
+            // compute temperature values at nodes (always last scalar)
+            LINALG::Matrix<nen_,1> tempnod(true);
+            for (int inode=0; inode< nen_;++inode)
+            {
+              tempnod(inode) = ephinp[(inode+1)*numdofpernode_-1];
+            }
+
             // compute temperature
-            const double temp = funct_.Dot(ephinp[k]);
+            const double temp = funct_.Dot(tempnod);
 
             // compute density based on temperature and thermodynamic pressure
             dens = actsinglemat->ComputeDensity(temp,thermpress_);
@@ -1117,7 +1103,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
           const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
 
           // compute mixture fraction
-          const double mixfrac = funct_.Dot(ephinp[k]);
+          const double mixfrac = funct_.Dot(phinod);
 
           // compute density based on mixture fraction
           dens = actmat->ComputeDensity(mixfrac);
@@ -1127,7 +1113,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
           const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
 
           // compute temperature
-          const double temp = funct_.Dot(ephinp[k]);
+          const double temp = funct_.Dot(phinod);
 
           // compute density based on temperature and thermodynamic pressure
           dens = actmat->ComputeDensity(temp,thermpress_);
@@ -1137,7 +1123,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
           const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
 
           // compute progress variable
-          const double provar = funct_.Dot(ephinp[k]);
+          const double provar = funct_.Dot(phinod);
 
           // compute density
           dens = actmat->ComputeDensity(provar);
@@ -1147,7 +1133,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
           const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
 
           // compute progress variable
-          const double provar = funct_.Dot(ephinp[k]);
+          const double provar = funct_.Dot(phinod);
 
           // compute density
           dens = actmat->ComputeDensity(provar);
@@ -1182,7 +1168,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
         }
 
         // scalar at integration point
-        const double phi = funct_.Dot(ephinp[k]);
+        const double phi = funct_.Dot(phinod);
 
         // rhs
         const double vrhs = rhsfac*phi;
@@ -1922,29 +1908,40 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::GetConstNormal(
   return;
 } // ScaTraBoundaryImpl<distype>::
 
+
 /*----------------------------------------------------------------------*
  |  Evaluate surface/interface permeability   		                |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateSurfacePermeability(
     const DRT::Element*        ele,
-    const vector<LINALG::Matrix<nen_,1> >&  ephinp,
-    Epetra_SerialDenseMatrix& emat,
-    Epetra_SerialDenseVector& erhs,
-    const double timefac,
-    const double  perm
+    const vector<double>&      ephinp,
+    Epetra_SerialDenseMatrix&  emat,
+    Epetra_SerialDenseVector&  erhs,
+    const double               timefac,
+    const double               perm
     )
 {
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
-  // integration loop
-  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-  {
-    const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id(),&normal_);
+  // define vector for scalar values at nodes
+  LINALG::Matrix<nen_,1> phinod(true);
 
-    for(int k=0;k<numdofpernode_;++k)
+  // loop over all scalars
+  for(int k=0;k<numdofpernode_;++k)
+  {
+    // compute scalar values at nodes
+    for (int inode=0; inode< nen_;++inode)
     {
+      phinod(inode) = ephinp[inode*numdofpernode_+k];
+    }
+
+    // loop over all integration points
+    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    {
+      const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id(),&normal_);
+
       // integration factor for left-hand side
       const double lhsfac = timefac*fac*perm;
 
@@ -1971,7 +1968,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateSurfacePermeability(
       }
 
       // scalar at integration point
-      const double phi = funct_.Dot(ephinp[k]);
+      const double phi = funct_.Dot(phinod);
 
       // rhs
       const double vrhs = rhsfac*phi;
@@ -2035,19 +2032,19 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::IntegrateShapeFunctions(
 
 
 /*----------------------------------------------------------------------*
- | calculate integral of normal diffusive flux + velocity div.  vg 09/08|
+ | calculate integral of normal diffusive flux and velocity     vg 09/08|
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::DifffluxAndDivuIntegral(
+void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NormDiffFluxAndVelIntegral(
     const DRT::Element*             ele,
     ParameterList&                  params,
-    const vector<double>&           ediffflux,
-    const vector<double>&           edivu
+    const vector<double>&           enormdiffflux,
+    const vector<double>&           enormvel
 )
 {
-  // get variables for integrals of normal diffusive flux and velocity div.
-  double difffluxintegral = params.get<double>("diffusive-flux integral");
-  double divuintegral     = params.get<double>("velocity-divergence integral");
+  // get variables for integrals of normal diffusive flux and velocity
+  double normdifffluxint = params.get<double>("normal diffusive flux integral");
+  double normvelint      = params.get<double>("normal velocity integral");
 
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -2060,18 +2057,18 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::DifffluxAndDivuIntegral(
     // compute integral of normal flux
     for (int node=0;node<nen_;++node)
     {
-      difffluxintegral += funct_(node) * ediffflux[node] * fac;
-      divuintegral     += funct_(node) * edivu[node] * fac;
+      normdifffluxint += funct_(node) * enormdiffflux[node] * fac;
+      normvelint      += funct_(node) * enormvel[node] * fac;
     }
   } // loop over integration points
 
   // add contributions to the global values
-  params.set<double>("diffusive-flux integral",difffluxintegral);
-  params.set<double>("velocity-divergence integral",divuintegral);
+  params.set<double>("normal diffusive flux integral",normdifffluxint);
+  params.set<double>("normal velocity integral",normvelint);
 
   return;
 
-} //ScaTraBoundaryImpl<distype>::DifffluxAndDivuIntegral
+} //ScaTraBoundaryImpl<distype>::NormDiffFluxAndVelIntegral
 
 
 /*----------------------------------------------------------------------*

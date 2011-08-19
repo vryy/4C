@@ -275,11 +275,11 @@ void SCATRA::TimIntBDF2::ComputeThermPressure()
   // set action for elements
   eleparams.set("action","calc_therm_press");
 
-  // variables for integrals of velocity-divergence and diffusive flux
-  double divuint = 0.0;
-  double diffint = 0.0;
-  eleparams.set("velocity-divergence integral",divuint);
-  eleparams.set("diffusive-flux integral",     diffint);
+  // variables for integrals of normal velocity and diffusive flux
+  double normvelint      = 0.0;
+  double normdifffluxint = 0.0;
+  eleparams.set("normal velocity integral",normvelint);
+  eleparams.set("normal diffusive flux integral",normdifffluxint);
 
   // evaluate velocity-divergence and diffusive (minus sign!) flux on boundaries
   // We may use the flux-calculation condition for calculation of fluxes for
@@ -292,22 +292,22 @@ void SCATRA::TimIntBDF2::ComputeThermPressure()
   }
 
   // get integral values on this proc
-  divuint = eleparams.get<double>("velocity-divergence integral");
-  diffint = eleparams.get<double>("diffusive-flux integral");
+  normvelint      = eleparams.get<double>("normal velocity integral");
+  normdifffluxint = eleparams.get<double>("normal diffusive flux integral");
 
   // get integral values in parallel case
-  double pardivuint = 0.0;
-  double pardiffint = 0.0;
-  discret_->Comm().SumAll(&divuint,&pardivuint,1);
-  discret_->Comm().SumAll(&diffint,&pardiffint,1);
+  double parnormvelint      = 0.0;
+  double parnormdifffluxint = 0.0;
+  discret_->Comm().SumAll(&normvelint,&parnormvelint,1);
+  discret_->Comm().SumAll(&normdifffluxint,&parnormdifffluxint,1);
 
   // clean up
   discret_->ClearState();
 
   // compute thermodynamic pressure (with specific heat ratio fixed to be 1.4)
   const double shr = 1.4;
-  const double lhs = theta_*dta_*shr*pardivuint/pardomint;
-  const double rhs = theta_*dta_*(shr-1.0)*(-pardiffint+parbofint)/pardomint;
+  const double lhs = theta_*dta_*shr*parnormvelint/pardomint;
+  const double rhs = theta_*dta_*(shr-1.0)*(-parnormdifffluxint+parbofint)/pardomint;
   thermpressnp_ = (rhs + hist)/(1.0 + lhs);
 
   // print out thermodynamic pressure
@@ -316,8 +316,8 @@ void SCATRA::TimIntBDF2::ComputeThermPressure()
     cout << endl;
     cout << "+--------------------------------------------------------------------------------------------+" << endl;
     cout << "Data output for instationary thermodynamic pressure:" << endl;
-    cout << "Velocity in-/outflow at indicated boundary: " << pardivuint << endl;
-    cout << "Diffusive flux at indicated boundary: "       << pardiffint << endl;
+    cout << "Velocity in-/outflow at indicated boundary: " << parnormvelint << endl;
+    cout << "Diffusive flux at indicated boundary: "       << parnormdifffluxint << endl;
     cout << "Thermodynamic pressure: "                     << thermpressnp_ << endl;
     cout << "+--------------------------------------------------------------------------------------------+" << endl;
   }

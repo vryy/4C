@@ -641,11 +641,11 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
   // set action for elements
   eleparams.set("action","calc_therm_press");
 
-  // variables for integrals of velocity-divergence and diffusive flux
-  double divuint = 0.0;
-  double diffint = 0.0;
-  eleparams.set("velocity-divergence integral",divuint);
-  eleparams.set("diffusive-flux integral",     diffint);
+  // variables for integrals of normal velocity and diffusive flux
+  double normvelint      = 0.0;
+  double normdifffluxint = 0.0;
+  eleparams.set("normal velocity integral",normvelint);
+  eleparams.set("normal diffusive flux integral",normdifffluxint);
 
   // evaluate velocity-divergence and diffusive (minus sign!) flux on boundaries
   // We may use the flux-calculation condition for calculation of fluxes for
@@ -658,14 +658,14 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
   }
 
   // get integral values on this proc
-  divuint = eleparams.get<double>("velocity-divergence integral");
-  diffint = eleparams.get<double>("diffusive-flux integral");
+  normvelint      = eleparams.get<double>("normal velocity integral");
+  normdifffluxint = eleparams.get<double>("normal diffusive flux integral");
 
   // get integral values in parallel case
-  double pardivuint = 0.0;
-  double pardiffint = 0.0;
-  discret_->Comm().SumAll(&divuint,&pardivuint,1);
-  discret_->Comm().SumAll(&diffint,&pardiffint,1);
+  double parnormvelint      = 0.0;
+  double parnormdifffluxint = 0.0;
+  discret_->Comm().SumAll(&normvelint,&parnormvelint,1);
+  discret_->Comm().SumAll(&normdifffluxint,&parnormdifffluxint,1);
 
   // clean up
   discret_->ClearState();
@@ -673,8 +673,8 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
   // compute initial time derivative of thermodynamic pressure
   // (with specific heat ratio fixed to be 1.4)
   const double shr = 1.4;
-  thermpressdtn_ = (-shr*thermpressn_*pardivuint
-                    + (shr-1.0)*(-pardiffint+parbofint))/pardomint;
+  thermpressdtn_ = (-shr*thermpressn_*parnormvelint
+                    + (shr-1.0)*(-parnormdifffluxint+parbofint))/pardomint;
 
   // set time derivative of thermodynamic pressure at n+1 equal to the one at n
   // for following evaluation of intermediate values
@@ -2234,7 +2234,7 @@ void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues(RCP<Epetra_Vector> vec)
     // in the whole computational domain!
     if(dynamic_cast<DRT::NURBS::NurbsDiscretization*>(discret_.get())!=NULL)
       return;
-
+  
     // this option can be helpful in some rare situations
     bool makepositive(false);
 

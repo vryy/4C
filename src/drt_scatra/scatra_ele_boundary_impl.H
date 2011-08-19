@@ -252,12 +252,12 @@ public:
 
     //! evaluate surface/interface permeability
     void EvaluateSurfacePermeability(
-        const DRT::Element*                       ele,  ///< the actual boundary element
-        const vector<LINALG::Matrix<nen_,1> >& ephinp,  ///< actual conc. and pot. values
-        Epetra_SerialDenseMatrix&                emat,  ///< element-matrix
-        Epetra_SerialDenseVector&                erhs,  ///< element-rhs
-        const double                          timefac,  ///< time factor
-        const double                             perm   ///< surface/interface permeability coefficient
+        const DRT::Element*        ele,  ///< the actual boundary element
+        const vector<double>&      ephinp, ///< scalar values at element nodes
+        Epetra_SerialDenseMatrix&  emat,  ///< element-matrix
+        Epetra_SerialDenseVector&  erhs,  ///< element-rhs
+        const double               timefac,  ///< time factor
+        const double               perm   ///< surface/interface permeability coefficient
     );
 
      //! integral of shape functions over boundary surface
@@ -268,12 +268,12 @@ public:
          const bool                addarea ///< flag for area calculation
      );
 
-    //! integral of normal diffusive flux and velocity div. over boundary surface
-    void DifffluxAndDivuIntegral(
+    //! integral of normal diffusive flux and velocity over boundary surface
+    void NormDiffFluxAndVelIntegral(
         const DRT::Element*             ele,
         ParameterList&                  params,
-        const vector<double>&           ediffflux,
-        const vector<double>&           edivu);
+        const vector<double>&           enormdiffflux,
+        const vector<double>&           enormvel);
 
     //! Compute a constant normal vector for a boundary element
     void GetConstNormal(
@@ -283,14 +283,14 @@ public:
 
     //! calculate potential Neumann inflow terms
     void NeumannInflow(
-        const DRT::Element*                   ele,
-        Teuchos::RCP<const MAT::Material>     material,
-        const vector<LINALG::Matrix<nen_,1> >& ephinp,
-        const LINALG::Matrix<nsd_+1,nen_>&     evelnp,
-        Epetra_SerialDenseMatrix&             emat,
-        Epetra_SerialDenseVector&             erhs,
-        const double                          timefac,
-        const double                          alphaF);
+        const DRT::Element*                 ele,
+        Teuchos::RCP<const MAT::Material>   material,
+        const vector<double>&               ephinp,
+        const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
+        Epetra_SerialDenseMatrix&           emat,
+        Epetra_SerialDenseVector&           erhs,
+        const double                        timefac,
+        const double                        alphaF);
 
     /*!
     \brief Evaluate weak Dirichlet boundary conditions
