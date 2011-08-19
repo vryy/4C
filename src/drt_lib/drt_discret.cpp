@@ -561,31 +561,6 @@ Teuchos::RCP<DRT::DofSet> DRT::Discretization::GetDofSetProxy()
 
 
 /*----------------------------------------------------------------------*
- |  get dof row map (public)                                 mwgee 12/06|
- *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::Discretization::DofRowMap() const
-{
-  dsassert(dofsets_.size()==1,"expect just one dof set");
-  if (!Filled()) dserror("FillComplete was not called on this discretization");
-  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() not called on this discretization");
-
-  return dofsets_[0]->DofRowMap();
-}
-
-
-/*----------------------------------------------------------------------*
- |  get dof column map (public)                              mwgee 12/06|
- *----------------------------------------------------------------------*/
-const Epetra_Map* DRT::Discretization::DofColMap() const
-{
-  dsassert(dofsets_.size()==1,"expect just one dof set");
-  if (!Filled()) dserror("FillComplete was not called on this discretization");
-  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() not called on this discretization");
-
-  return dofsets_[0]->DofColMap();
-}
-
-/*----------------------------------------------------------------------*
  |  replace the dofset of the discretisation (public)        gammi 05/07|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::ReplaceDofSet(RCP<DofSet> newdofset)

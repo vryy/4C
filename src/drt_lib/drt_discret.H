@@ -319,30 +319,6 @@ public:
   */
   virtual void ReplaceDofSet(RCP<DofSet> newdofset);
 
-  /*!
-  \brief Get degree of freedom row map (Filled()==true prerequisite)
-
-  Return ptr to degree of freedom row distribution map of this discretization.
-  If it does not exist yet, build it.
-
-  - Filled()==true prerequisite
-  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
-
-  */
-  virtual const Epetra_Map* DofRowMap() const;
-
-  /*!
-  \brief Get degree of freedom column map (Filled()==true prerequisite)
-
-  Return ptr to degree of freedom column distribution map of this discretization.
-  If it does not exist yet, build it.
-
-  - Filled()==true prerequisite
-  - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
-
-  */
-  virtual const Epetra_Map* DofColMap() const;
-
   //@}
 
   /// @name Dof query methods for multi dof set discretizations
@@ -517,7 +493,7 @@ public:
   - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
 
   */
-  virtual const Epetra_Map* DofRowMap(unsigned nds) const;
+  virtual const Epetra_Map* DofRowMap(unsigned nds=0) const;
 
   /*!
   \brief Get degree of freedom column map (Filled()==true prerequisite)
@@ -529,7 +505,7 @@ public:
   - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
 
   */
-  virtual const Epetra_Map* DofColMap(unsigned nds) const;
+  virtual const Epetra_Map* DofColMap(unsigned nds=0) const;
 
   //@}
 
@@ -1113,7 +1089,7 @@ public:
         (Filled()==true NOT prerequisite)
 
   This routine is mainly useful for input read on proc 0
-  
+
   \param target (in): desired distirbution of elements
   \param gidlist (in): list of element gids to be distributed
 
@@ -1125,7 +1101,7 @@ public:
         (Filled()==true NOT prerequisite)
 
   This routine is mainly useful for input read on proc 0
-  
+
   \param target (in): desired distirbution of elements
 
   */
@@ -1659,7 +1635,7 @@ public:
    *
    * Every element is only called \b once by its owning processor. (We are
    * parsing the element row map.) At this call the element return its value,
-   * i.e. its scalar. The scalar is put in a Epetra_Vector called "element scalar" 
+   * i.e. its scalar. The scalar is put in a Epetra_Vector called "element scalar"
    * iun the parameter list
    *
    * Example: strain energy in structures
