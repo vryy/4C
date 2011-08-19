@@ -3589,7 +3589,7 @@ void MORTAR::Coupling3d::GmshOutputCells(int lid)
                     << 0.0 << "," << 0.0 << "," << 0.0 << ","
                     << 0.0 << "," << 0.0 << "," << 0.0 << ","
                     << 0.0 << ")";
-    gmshfilecontent << "{" << scientific << nproc << "," << nproc << "," << nproc << "};" << endl;
+    gmshfilecontent << "{" << scientific << nproc-1 << "," << nproc-1 << "," << nproc-1 << "};" << endl;
   }
   
   // plot cell itself
