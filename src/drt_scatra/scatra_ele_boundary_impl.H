@@ -250,6 +250,16 @@ public:
         const double     dlcapacitance   ///< capacitance of electric double-layer
     );
 
+    //! evaluate surface/interface permeability
+    void EvaluateSurfacePermeability(
+        const DRT::Element*                       ele,  ///< the actual boundary element
+        const vector<LINALG::Matrix<nen_,1> >& ephinp,  ///< actual conc. and pot. values
+        Epetra_SerialDenseMatrix&                emat,  ///< element-matrix
+        Epetra_SerialDenseVector&                erhs,  ///< element-rhs
+        const double                          timefac,  ///< time factor
+        const double                             perm   ///< surface/interface permeability coefficient
+    );
+
      //! integral of shape functions over boundary surface
      void IntegrateShapeFunctions(
          const DRT::Element*       ele,    ///< the actual boundary element

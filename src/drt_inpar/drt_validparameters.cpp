@@ -2829,6 +2829,9 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   BoolParameter("NEUMANNINFLOW",
       "no","Flag to (de)activate potential Neumann inflow term(s)",&scatradyn);
 
+  BoolParameter("PERMEABLESURF",
+      "no","Consideration of surface/interface permeability",&scatradyn);
+
   BoolParameter("SKIPINITDER",
       "no","Flag to skip computation of initial time derivative",&scatradyn);
 

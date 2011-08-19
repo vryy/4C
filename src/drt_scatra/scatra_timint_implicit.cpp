@@ -10,7 +10,7 @@
      o two-step BDF2 time-integration scheme
 
      o generalized-alpha time-integration scheme
-     
+
      o implicit characteristic Galerkin (ICG) time-integration scheme (level-set transport)
 
      o explicit taylor galerkin (TG) time-integration schemes (level-set transport)
@@ -1270,16 +1270,22 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::PrepareLinearSolve()
 {
-  // -------------------------------------------------------------------
   // call elements to calculate system matrix and rhs and assemble
-  // -------------------------------------------------------------------
   AssembleMatAndRHS();
 
-  // -------------------------------------------------------------------
   // potential residual scaling and potential addition of Neumann terms
-  // -------------------------------------------------------------------
   ScalingAndNeumann();
 
+  // apply Dirichlet boundary conditions
+  ApplyDirichletToSystem();
+}
+
+
+/*----------------------------------------------------------------------*
+ | application of Dirichlet boundary conditions                         |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ApplyDirichletToSystem()
+{
   // -------------------------------------------------------------------
   // Apply Dirichlet boundary conditions to system matrix
   // -------------------------------------------------------------------
@@ -1310,9 +1316,8 @@ void SCATRA::ScaTraTimIntImpl::PrepareLinearSolve()
 
     LINALG::ApplyDirichlettoSystem(sysmat_,phinp_,residual_,phinp_,*(dbcmaps_->CondMap()));
   }
-
   return;
-} // ScaTraTimIntImpl::PrepareSolve
+}
 
 
 /*----------------------------------------------------------------------*

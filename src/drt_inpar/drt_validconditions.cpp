@@ -1934,8 +1934,12 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   std::vector<Teuchos::RCP<ConditionComponent> > scatracoupcomponents;
 
+  scatracoupcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPID")));
   scatracoupcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+  scatracoupcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FIELDNUM")));
   scatracoupcomponents.push_back(Teuchos::rcp(new IntConditionComponent("field number")));
+  scatracoupcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("PERMCOEF")));
+  scatracoupcomponents.push_back(Teuchos::rcp(new RealConditionComponent("permeability coefficient")));
 
   Teuchos::RCP<ConditionDefinition> surfscatracoup =
     Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA COUPLING SURF CONDITIONS",
@@ -2469,7 +2473,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(surfthermoconvect);
 
   /*--------------------------------------------------------------------*/
- 
+
   // Embedding Tissue
 
   Teuchos::RCP<ConditionDefinition> embeddingtissuecond =
@@ -2479,19 +2483,19 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::EmbeddingTissue,
                                          true,
                                          DRT::Condition::Surface));
-  
-  
+
+
   AddNamedReal(embeddingtissuecond,"stiff");
   AddNamedReal(embeddingtissuecond,"offset");
   embeddingtissuecond->AddComponent(Teuchos::rcp(new StringConditionComponent("model", "lin",
                                                                                        Teuchos::tuple<std::string>("lin","nonlin"),
                                                                                        Teuchos::tuple<std::string>("lin","nonlin"),
                                                                                        true)));
-  
+
   condlist.push_back(embeddingtissuecond);
   //embeddingtissuecond->Print(cout, NULL, "");
- 
- 
+
+
 
   return vc;
 

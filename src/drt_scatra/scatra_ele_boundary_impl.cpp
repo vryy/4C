@@ -531,6 +531,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
     // get velocity values at nodes
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+
     // we deal with a (nsd_+1)-dimensional flow field
     Epetra_SerialDenseVector evel((nsd_+1)*nenparent);
     DRT::UTILS::ExtractMyNodeBasedValues(parentele,evel,velocity,nsd_+1);
@@ -620,6 +621,56 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
         dserror("not implemented yet\n");
       }
       }
+  }
+  else if (action =="calc_surface_permeability")
+  {
+    // get control parameters
+    is_stationary_  = params.get<bool>("using stationary formulation");
+    is_genalpha_    = params.get<bool>("using generalized-alpha time integration");
+    is_incremental_ = params.get<bool>("incremental solver");
+
+    double timefac = 1.0;
+    if (is_genalpha_ or not is_incremental_)
+      dserror("calc_surface_permeability: chosen option not available");
+    if (not is_stationary_)
+    {
+      timefac = params.get<double>("time factor");
+      if (timefac < 0.0) dserror("time factor is negative.");
+    }
+
+    // get values of scalar
+    RefCountPtr<const Epetra_Vector> phinp  = discretization.GetState("phinp");
+    if (phinp==null) dserror("Cannot get state vector 'phinp'");
+
+    // extract local values from the global vector
+    vector<double> myphinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+
+    // insert into element arrays
+    vector<LINALG::Matrix<nen_,1> > ephinp(numscal_);
+    for (int i=0; i<nen_; ++i)
+    {
+      for (int k=0; k<numscal_; ++k)
+      {
+        // split for each tranported scalar, insert into element arrays
+        ephinp[k](i,0) = myphinp[k+(i*numdofpernode_)];
+      }
+    }
+
+    // get current condition
+    Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
+    if (cond == Teuchos::null) dserror("Cannot access condition 'SurfacePermeability'");
+
+    const double perm = cond->GetDouble("permeability coefficient");
+
+    EvaluateSurfacePermeability(
+      ele,
+      ephinp,
+      elemat1_epetra,
+      elevec1_epetra,
+      timefac,
+      perm
+      );
   }
   else if( action == "levelset_TaylorGalerkin_boundary")
   {
@@ -1870,6 +1921,70 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::GetConstNormal(
 
   return;
 } // ScaTraBoundaryImpl<distype>::
+
+/*----------------------------------------------------------------------*
+ |  Evaluate surface/interface permeability   		                |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateSurfacePermeability(
+    const DRT::Element*        ele,
+    const vector<LINALG::Matrix<nen_,1> >&  ephinp,
+    Epetra_SerialDenseMatrix& emat,
+    Epetra_SerialDenseVector& erhs,
+    const double timefac,
+    const double  perm
+    )
+{
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // integration loop
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id(),&normal_);
+
+    for(int k=0;k<numdofpernode_;++k)
+    {
+      // integration factor for left-hand side
+      const double lhsfac = timefac*fac*perm;
+
+      // integration factor for right-hand side
+      double rhsfac = 0.0;
+      if (is_incremental_ and not is_genalpha_)
+        rhsfac = lhsfac;
+      else
+        dserror("EvaluateSurfacePermeability: Requested scheme not yet implemented");
+
+      // matrix
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const double vlhs = lhsfac*funct_(vi);
+
+        const int fvi = vi*numdofpernode_+k;
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int fui = ui*numdofpernode_+k;
+
+          emat(fvi,fui) += vlhs*funct_(ui);
+        }
+      }
+
+      // scalar at integration point
+      const double phi = funct_.Dot(ephinp[k]);
+
+      // rhs
+      const double vrhs = rhsfac*phi;
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+k;
+
+        erhs[fvi] -= vrhs*funct_(vi);
+      }
+    }
+  }
+  return;
+}
 
 
 /*----------------------------------------------------------------------*

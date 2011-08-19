@@ -47,6 +47,8 @@ namespace FSI
                                    Teuchos::RCP<const Epetra_Vector>& vec1,
                                    Teuchos::RCP<const Epetra_Vector>& vec2);
 
+    void SetupCoupledScatraRHS();
+
     void SetupCoupledScatraMatrix();
 
     void LinearSolveScatra();
@@ -68,6 +70,7 @@ namespace FSI
     /// make sure potential Dirichlet conditions at the scatra coupling
     /// interface are defined on both discretizations
     void CheckInterfaceDirichletBC();
+
 
   private:
 
@@ -95,14 +98,29 @@ namespace FSI
     /// scatra block matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> scatrasystemmatrix_;
 
+    /// coupling forces (in case of surface permeability)
+    std::vector<Teuchos::RCP<Epetra_Vector> > scatracoupforce_;
+
+    /// coupling matrices (in case of surface permeability)
+    std::vector<Teuchos::RCP<LINALG::SparseMatrix> > scatracoupmat_;
+
+    /// zero vector (needed for application of Dirichlet BC on
+    /// coupling vector)
+    std::vector<Teuchos::RCP<Epetra_Vector> > scatrazeros_;
+
     /// scatra solver
     Teuchos::RCP<LINALG::Solver> scatrasolver_;
+
+    /// consideration of surface permeability
+    bool permeablesurf_;
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
     UTILS::MatrixRowColTransform sbbtransform_;
     UTILS::MatrixRowTransform sbitransform_;
     UTILS::MatrixColTransform sibtransform_;
+
+    UTILS::MatrixRowTransform fbitransform_;
     ///@}
   };
 

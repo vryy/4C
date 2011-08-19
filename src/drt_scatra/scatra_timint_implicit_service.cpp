@@ -367,6 +367,47 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | Evaluate surface/interface permeability                              |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
+    RCP<LINALG::SparseOperator> matrix,
+    RCP<Epetra_Vector>          rhs)
+{
+  // time measurement: evaluate condition 'SurfacePermeability'
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ScaTraCoupling'");
+
+  // create parameter list
+  ParameterList condparams;
+
+  // action for elements
+  condparams.set("action","calc_surface_permeability");
+  condparams.set<int>("scatratype",scatratype_);
+  condparams.set("incremental solver",incremental_);
+
+  // provide displacement field in case of ALE
+  condparams.set("isale",isale_);
+  if (isale_) AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
+
+  // set vector values needed by elements
+  discret_->ClearState();
+
+  // add element parameters according to time-integration scheme
+  AddSpecificTimeIntegrationParameters(condparams);
+
+  std::string condstring("ScaTraCoupling");
+  discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
+  discret_->ClearState();
+
+  matrix->Complete();
+
+  double scaling = 1.0/ResidualScaling();
+
+  rhs->Scale(scaling);
+  matrix->Scale(scaling);
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | construct toggle vector for Dirichlet dofs                  gjb 11/08|
@@ -2193,7 +2234,7 @@ void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues(RCP<Epetra_Vector> vec)
     // in the whole computational domain!
     if(dynamic_cast<DRT::NURBS::NurbsDiscretization*>(discret_.get())!=NULL)
       return;
-  
+
     // this option can be helpful in some rare situations
     bool makepositive(false);
 

@@ -398,6 +398,11 @@ public:
       std::vector<string>& condnames,
       const bool writetofile);
 
+  /// compute contribution of permeable surface/interface
+  void SurfacePermeability(
+      RCP<LINALG::SparseOperator> matrix,
+      RCP<Epetra_Vector>          rhs);
+
   /// returns map extractor used for convergence check either in ELCH or LOMA case
   Teuchos::RCP<LINALG::MapExtractor> Splitter() { return splitter_; }
 
@@ -503,6 +508,9 @@ protected:
 
   /// call elements to calculate system matrix and rhs at boundaries for Taylor-Galerkin methods
   void AssembleMatAndRHS_Boundary();
+
+  /// apply Dirichlet boundary conditions
+  void ApplyDirichletToSystem();
 
   /// output of all reinitialization information to screen and/or file
   void ReinitializeInfo(bool printtoscreen = true, bool printtofile = true); //schott
@@ -750,7 +758,7 @@ protected:
   /// phi at times n+1 and n
   RCP<Epetra_Vector>    phinp_;
   RCP<Epetra_Vector>    phin_;
-  
+
   /// phi at time 0 as reference for reinitialization procedure
   RCP<Epetra_Vector>    phistart_;
 

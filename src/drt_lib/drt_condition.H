@@ -178,6 +178,7 @@ public:
     ElectroRepulsion_Potential_Surface,
     ElectroRepulsion_Potential_Line,
     ElectrodeKinetics,
+    SurfacePermeability,
     TransportNeumannInflow,
     FluidNeumannInflow,
     TaylorGalerkinOutflow,
