@@ -92,6 +92,57 @@ FSI::LungScatra::LungScatra(Teuchos::RCP<FSI::Monolithic> fsi):
   if (scatravec_[0]->ScaTraField().Incremental() == false)
     dserror("Incremental formulation needed for coupled lung scatra simulations");
 
+  // check if scatra coupling conditions are defined on both discretizations
+  // and have the same permeability coefficient
+  std::vector<std::set<int> > condIDs;
+  std::set<int> fluidIDs;
+  std::set<int> structIDs;
+  condIDs.push_back(fluidIDs);
+  condIDs.push_back(structIDs);
+  std::vector<std::map<int,double> > PermCoeffs;
+  std::map<int,double> fluidcoeff;
+  std::map<int,double> structcoeff;
+  PermCoeffs.push_back(fluidcoeff);
+  PermCoeffs.push_back(structcoeff);
+
+  for (unsigned i=0; i<scatravec_.size(); ++i)
+  {
+    Teuchos::RCP<DRT::Discretization> dis = (scatravec_[i])->ScaTraField().Discretization();
+    std::vector<DRT::Condition*> coupcond;
+    dis->GetCondition("ScaTraCoupling",coupcond);
+
+    for (unsigned iter=0; iter<coupcond.size(); ++iter)
+    {
+      int myID = (coupcond[iter])->GetInt("coupling id");
+      condIDs[i].insert(myID);
+
+      if (permeablesurf_)
+      {
+        double myperm = (coupcond[iter])->GetDouble("permeability coefficient");
+        PermCoeffs[i].insert(pair<int,double>(myID,myperm));
+      }
+    }
+  }
+  if (condIDs[0].size() != condIDs[1].size())
+    dserror("ScaTra coupling conditions need to be defined on both discretizations");
+
+  if (permeablesurf_)
+  {
+    std::map<int,double> fluid_PermCoeffs = PermCoeffs[0];
+    std::map<int,double> struct_PermCoeffs = PermCoeffs[1];
+
+    for (std::map<int,double>::iterator fit=fluid_PermCoeffs.begin(); fit!=fluid_PermCoeffs.end(); ++fit)
+    {
+      int ID = (*fit).first;
+      double fluid_permcoef = (*fit).second;
+
+      std::map<int,double>::iterator sit = struct_PermCoeffs.find(ID);
+      if ((*sit).second != fluid_permcoef)
+        dserror("Permeability coefficient of ScaTra interface needs to be the same in both conditions");
+    }
+  }
+
+
   // create map extractors needed for scatra condition coupling
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
