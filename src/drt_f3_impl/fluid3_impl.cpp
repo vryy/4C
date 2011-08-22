@@ -6971,11 +6971,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LinMeshMotion_2D(
       const int tui   = 3*ui;
       const int tuip  = tui + 1;
 
-      emesh(tvi,   tui ) += v*(velint_(0)-rhsmom_(0)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(0, ui);
-      emesh(tvi,   tuip) += v*(velint_(0)-rhsmom_(0)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(1, ui);
+      emesh(tvi,   tui ) += v*(densam_*velint_(0)-rhsmom_(0)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(0, ui);
+      emesh(tvi,   tuip) += v*(densam_*velint_(0)-rhsmom_(0)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(1, ui);
 
-      emesh(tvip,  tui ) += v*(velint_(1)-rhsmom_(1)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(0, ui);
-      emesh(tvip,  tuip) += v*(velint_(1)-rhsmom_(1)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(1, ui);
+      emesh(tvip,  tui ) += v*(densam_*velint_(1)-rhsmom_(1)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(0, ui);
+      emesh(tvip,  tuip) += v*(densam_*velint_(1)-rhsmom_(1)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(1, ui);
     }
   }
 
@@ -6992,7 +6992,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LinMeshMotion_2D(
   {
     const int tvi  = 3*vi;
     const int tvip = tvi+1;
-    const double v = timefacfac/det_*funct_(vi);
+    const double v = densaf_*timefacfac/det_*funct_(vi);
     for (int ui=0; ui<nen_; ++ui)
     {
       const int tui  = 3*ui;
@@ -7070,17 +7070,17 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LinMeshMotion_3D(
     double v = fac_*funct_(vi,0);
     for (int ui=0; ui<nen_; ++ui)
     {
-      emesh(vi*4    , ui*4    ) += v*(velint_(0)-rhsmom_(0)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(0, ui);
-      emesh(vi*4    , ui*4 + 1) += v*(velint_(0)-rhsmom_(0)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(1, ui);
-      emesh(vi*4    , ui*4 + 2) += v*(velint_(0)-rhsmom_(0)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(2, ui);
+      emesh(vi*4    , ui*4    ) += v*(densam_*velint_(0)-rhsmom_(0)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(0, ui);
+      emesh(vi*4    , ui*4 + 1) += v*(densam_*velint_(0)-rhsmom_(0)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(1, ui);
+      emesh(vi*4    , ui*4 + 2) += v*(densam_*velint_(0)-rhsmom_(0)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(2, ui);
 
-      emesh(vi*4 + 1, ui*4    ) += v*(velint_(1)-rhsmom_(1)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(0, ui);
-      emesh(vi*4 + 1, ui*4 + 1) += v*(velint_(1)-rhsmom_(1)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(1, ui);
-      emesh(vi*4 + 1, ui*4 + 2) += v*(velint_(1)-rhsmom_(1)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(2, ui);
+      emesh(vi*4 + 1, ui*4    ) += v*(densam_*velint_(1)-rhsmom_(1)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(0, ui);
+      emesh(vi*4 + 1, ui*4 + 1) += v*(densam_*velint_(1)-rhsmom_(1)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(1, ui);
+      emesh(vi*4 + 1, ui*4 + 2) += v*(densam_*velint_(1)-rhsmom_(1)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(2, ui);
 
-      emesh(vi*4 + 2, ui*4    ) += v*(velint_(2)-rhsmom_(2)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(0, ui);
-      emesh(vi*4 + 2, ui*4 + 1) += v*(velint_(2)-rhsmom_(2)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(1, ui);
-      emesh(vi*4 + 2, ui*4 + 2) += v*(velint_(2)-rhsmom_(2)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(2, ui);
+      emesh(vi*4 + 2, ui*4    ) += v*(densam_*velint_(2)-rhsmom_(2)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(0, ui);
+      emesh(vi*4 + 2, ui*4 + 1) += v*(densam_*velint_(2)-rhsmom_(2)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(1, ui);
+      emesh(vi*4 + 2, ui*4 + 2) += v*(densam_*velint_(2)-rhsmom_(2)*f3Parameter_->dt_*f3Parameter_->theta_)*derxy_(2, ui);
     }
   }
 
@@ -7139,7 +7139,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::LinMeshMotion_3D(
 
     for (int vi=0; vi<nen_; ++vi)
     {
-      double v = timefacfac/det_*funct_(vi);
+      double v = densaf_*timefacfac/det_*funct_(vi);
 
       emesh(vi*4 + 0, ui*4 + 0) += v*v00;
       emesh(vi*4 + 0, ui*4 + 1) += v*v01;
