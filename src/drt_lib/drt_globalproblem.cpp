@@ -224,9 +224,9 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--COUPLED SCALAR TRANSPORT SOLVER", *list);
   reader.ReadGidSection("--ARTERY NETWORK SOLVER", *list);
   reader.ReadGidSection("--REDUCED DIMENSIONAL AIRWAYS SOLVER", *list);
-  reader.ReadGidSection("--BGS PRECONDITIONER BLOCK 1", *list);   // TODO: remove me. use field solvers and monolithic solver instead
-  reader.ReadGidSection("--BGS PRECONDITIONER BLOCK 2", *list);   // TODO: remove me. use field solvers and monolithic solver instead
-  reader.ReadGidSection("--TSI MONOLITHIC SOLVER", *list);        // TODO: change me to MONOLITHIC SOLVER, that is used for all monolithic multi physics problem as "master" solver
+  //reader.ReadGidSection("--BGS PRECONDITIONER BLOCK 1", *list);   // TODO: remove me. use field solvers and monolithic solver instead
+  //reader.ReadGidSection("--BGS PRECONDITIONER BLOCK 2", *list);   // TODO: remove me. use field solvers and monolithic solver instead
+  reader.ReadGidSection("--TSI MONOLITHIC SOLVER", *list);
   reader.ReadGidSection("--MESHTYING SOLVER", *list);             // MESHTYING SOLVER for structure/fluid meshtying
   reader.ReadGidSection("--CONTACT SOLVER", *list);               // CONTACT SOLVER for contact problems (stores all special parameters for contact preconditioner)
   reader.ReadGidSection("--CONTACT CONSTRAINT SOLVER", *list);    // only used for constraint block in a saddle point problem (will replace FLUID PRESSURE SOLVER)

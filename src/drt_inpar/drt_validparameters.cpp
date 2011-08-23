@@ -3796,12 +3796,12 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   SetValidSolverParameters(redairwaysolver);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& precond1 = list->sublist("BGS PRECONDITIONER BLOCK 1",false,"");
-  SetValidSolverParameters(precond1);
+  //Teuchos::ParameterList& precond1 = list->sublist("BGS PRECONDITIONER BLOCK 1",false,"");
+  //SetValidSolverParameters(precond1);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& precond2 = list->sublist("BGS PRECONDITIONER BLOCK 2",false,"");
-  SetValidSolverParameters(precond2);
+  //Teuchos::ParameterList& precond2 = list->sublist("BGS PRECONDITIONER BLOCK 2",false,"");
+  //SetValidSolverParameters(precond2);
 
   // TSI monolithic solver section
   /*----------------------------------------------------------------------*/
