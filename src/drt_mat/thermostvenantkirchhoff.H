@@ -208,7 +208,7 @@ private:
     double PoissonRatio() const { return params_->poissonratio_; }
 
     /// density
-    double Density() const { return params_->density_; }
+    virtual double Density() const { return params_->density_; }
 
     /// Initial temperature
     double InitTemp() const { return params_->thetainit_; }

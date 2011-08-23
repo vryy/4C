@@ -166,7 +166,7 @@ private:
     // coreelation length of random field
     double Corrlength() const {return params_->corrlength_ ;}
     /// material mass density
-    double Density() const { return params_->density_; }
+    virtual double Density() const { return params_->density_; }
 
     /// shear modulus
     double ShearMod() const { return 0.5*params_->youngs_mean_/(1.0+params_->nue_); }

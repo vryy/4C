@@ -139,7 +139,7 @@ private:
     double Beta() const { return params_->beta_; }
     double AlfaP(const unsigned i) const { return params_->alfap_[i]; }
     double MuP(const unsigned i) const { return params_->mup_[i]; }
-    double Density() const { return params_->density_; }
+    virtual double Density() const { return params_->density_; }
     double Lambda() const { return params_->lambda_; }
     double Kappa() const { return params_->kappa_; }
     double L(const unsigned i) const { return params_->l_[i]; }

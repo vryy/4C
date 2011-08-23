@@ -56,7 +56,7 @@ namespace MAT
       /// patient's age for calculating alpha and beta
       const double age_;
       ///reference diameter for normalizing (=to calculate NORD)
-      const double refdia_; 
+      const double refdia_;
       /// mass density
       const double density_;
 
@@ -138,13 +138,13 @@ private:
     //@}
 
     /// material mass density
-    double Density() const { return params_->density_; }
+    virtual double Density() const { return params_->density_; }
 
     /// shear modulus
     double ShearMod(double elelocalrad) const
     { return // => 0.5*6*alpha/(1.0+nue)
       3E6*(0.09631+0.03329*(elelocalrad*2/params_->refdia_ - 2.55))/(1.0+params_->nue_); }
-	
+
 
     // material type
     virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_aaa_mixedeffects; }

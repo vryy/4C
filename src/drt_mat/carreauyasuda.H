@@ -143,7 +143,7 @@ private:
     /// constant parameter
     double BParam() const { return params_->b_param_; }
     /// density
-    double Density() const { return params_->density_; }
+    virtual double Density() const { return params_->density_; }
 
     //@}
 

@@ -145,7 +145,7 @@ private:
     string Type() const { return *params_->type_; }
 
     /// return density
-    double Density() const { return params_->density_; }
+    virtual double Density() const { return params_->density_; }
 
     /// return viscosity
     double Viscosity() const { return params_->viscosity_; }

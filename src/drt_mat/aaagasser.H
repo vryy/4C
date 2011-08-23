@@ -210,7 +210,7 @@ private:
 
 
     /// material mass density
-    double Density() const { return params_->density_; }
+    virtual double Density() const { return params_->density_; }
 
     /// shear modulus
     double ShearMod() const { dserror("Cannot provide shear modulus equivalent"); return 0.0; }

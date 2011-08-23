@@ -170,7 +170,7 @@ private:
 	);
 
 	/// density
-	inline double Density() const {
+	virtual double Density() const {
 	    return params_->density_;
 	}
 

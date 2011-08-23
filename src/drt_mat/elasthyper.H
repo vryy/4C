@@ -194,7 +194,7 @@ private:
     Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(const int id) const { return params_->MaterialById(id); }
 
     /// material mass density
-    double Density() const { return params_->density_; }
+    virtual double Density() const { return params_->density_; }
 
     /// a shear modulus equivalent
     double ShearMod() const;

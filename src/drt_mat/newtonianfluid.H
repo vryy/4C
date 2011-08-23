@@ -134,7 +134,7 @@ private:
     double Viscosity() const { return params_->viscosity_; } //matdata_->m.fluid->viscosity; }
 
     /// return density
-    double Density() const { return params_->density_; } //matdata_->m.fluid->density; }
+    virtual double Density() const { return params_->density_; } //matdata_->m.fluid->density; }
 
     /// return surface tension coefficient
     double Gamma() const { return params_->gamma_; } //matdata_->m.fluid->gamma; }

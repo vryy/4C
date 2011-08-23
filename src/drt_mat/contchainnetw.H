@@ -155,7 +155,7 @@ private:
                                       int eleId);
 
     /// return density
-    double Density() const {return params_->density_;}
+    virtual double Density() const {return params_->density_;}
 
     /// check whether material history is initialized
     bool Initialized() const

@@ -409,7 +409,7 @@ private:
 	/// \b NUE: Poisson ratio
 	inline double NUE() const { return params_->nue_; }
 	/// \b DENS: density
-	inline double Density() const {
+	virtual double Density() const {
 	    return params_->density_;
 	}
 

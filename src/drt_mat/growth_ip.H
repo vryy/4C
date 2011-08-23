@@ -176,7 +176,7 @@ namespace MAT
     );
 
     /// Return density
-    double Density() const {return params_->density_;}
+    virtual double Density() const {return params_->density_;}
 
     /// Return theta
     RCP<vector<double> > Gettheta() const {return theta_;}

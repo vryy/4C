@@ -168,7 +168,7 @@ private:
     );
 
     /// Return density
-    double Density() const { return params_->density_; }
+    virtual double Density() const { return params_->density_; }
 
     /// Check if history variables are already initialized
     bool Initialized() const { return (isinit_ && (histplasticrcgcurr_!=Teuchos::null)); }

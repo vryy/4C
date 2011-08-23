@@ -132,7 +132,7 @@ private:
             LINALG::Matrix<6,1>* stress);
 
 
-    inline double Density() const { return params_->density_; }
+    virtual double Density() const { return params_->density_; }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

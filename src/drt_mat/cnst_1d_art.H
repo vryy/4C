@@ -145,7 +145,7 @@ private:
     double Viscosity() const { return params_->viscosity_; }
 
     /// return density
-    double Density() const { return params_->density_; }
+    virtual double Density() const { return params_->density_; }
 
     /// return Youngs modulus
     double Young() const { return params_->young_; }

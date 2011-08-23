@@ -144,7 +144,7 @@ private:
             LINALG::Matrix<NUM_STRESS_3D,1> * stress);
 
     /// return density
-    double Density() const { return params_->dens_; }
+    virtual double Density() const { return params_->dens_; }
 
     /*!
       \brief setup material at element input with potentially local fiber cosy

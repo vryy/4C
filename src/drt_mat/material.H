@@ -78,6 +78,13 @@ namespace MAT
     static Teuchos::RefCountPtr<Material> Factory(
       int matnum  ///< material ID
       );
+
+    /// Return material density (if provided by the specific material)
+    virtual double Density() const
+    {
+      dserror("The material you are using does not provide a density");
+      return 0.;
+    }
   };
 
   /*! \brief Multiply two 2nd order tensors A x B and add the result to a

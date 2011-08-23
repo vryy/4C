@@ -167,7 +167,7 @@ private:
     );
 
     /// Return density
-    double Density() const {return params_->density_;};
+    virtual double Density() const {return params_->density_;};
 
     /// Return shear modulus
     double ShearMod() const {return params_->mue_;};

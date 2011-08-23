@@ -269,7 +269,7 @@ namespace MAT
     );
 
     /// Return density
-    double Density() const {return params_->density_;}
+    virtual double Density() const {return params_->density_;}
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

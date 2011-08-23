@@ -149,7 +149,7 @@ private:
 
 
     /// return density
-    double Density() const {return params_->density_;}
+    virtual double Density() const {return params_->density_;}
 
     /// check whether internal variables are initialized
     bool Initialized() const

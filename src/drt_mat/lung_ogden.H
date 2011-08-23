@@ -138,7 +138,7 @@ private:
 
     /// @name Access methods
     //@{
-    double Density() const { return params_->dens_; }
+    virtual double Density() const { return params_->dens_; }
     double C() const { return params_->c_; }
     double K1() const { return params_->k1_; }
     double K2() const { return params_->k2_; }
