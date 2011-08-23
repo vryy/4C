@@ -476,11 +476,6 @@ protected:
   //! @name Multi-scale related stuff
 
   /*!
-   * \brief Calculate initial volume of microscale RVE
-   * */
-  void soh20_initvol(ParameterList& params);
-
-  /*!
    * \brief Determine a homogenized material density for multi-scale
    * analyses by averaging over the initial volume
    * */

@@ -391,7 +391,7 @@ public:
                           to fill this vector
   \return 0 if successful, negative otherwise
   */
-  
+
   virtual int Evaluate(Teuchos::ParameterList& params,
                        DRT::Discretization& discretization,
                        DRT::Element::LocationArray& la,
@@ -778,11 +778,6 @@ protected:
 
 
   //! @name Multi-scale related stuff
-
-  /*!
-   * \brief Calculate initial volume of microscale RVE
-   * */
-  void soh8_initvol(ParameterList& params);
 
   /*!
    * \brief Determine a homogenized material density for multi-scale
