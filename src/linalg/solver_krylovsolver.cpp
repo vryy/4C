@@ -123,6 +123,7 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
 
     if ( Params().isSublist("SIMPLER") ) // old BACI::(Cheap)SIMPLER preconditioner TODO: remove/replace me
     {
+      dserror("SIMPLER sublist not supported any more.");
       preconditioner_ = Teuchos::rcp( new SimplePreconditioner( outfile_, Params() ) ); // Michael's SIMPLE for Fluid
     }
     else if( Params().isSublist("CheapSIMPLE Parameters") )

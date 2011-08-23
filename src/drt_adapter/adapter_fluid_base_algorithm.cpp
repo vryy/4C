@@ -226,8 +226,16 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   if (DRT::INPUT::IntegralValue<int>(fdyn,"SIMPLER"))
   {
     // TODO: remove me
-    solver->PutSolverParamsToSubParams("SIMPLER",
-                                       DRT::Problem::Instance()->FluidPressureSolverParams());
+    //solver->PutSolverParamsToSubParams("SIMPLER",
+    //                                   DRT::Problem::Instance()->FluidPressureSolverParams());
+
+    Teuchos::ParameterList& inv1 = solver->Params().sublist("Inverse1");
+    inv1 = solver->Params();
+    inv1.remove("SIMPLER",false); // not necessary
+    inv1.remove("Inverse1",false);
+    solver->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->FluidPressureSolverParams());
+    solver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type","CheapSIMPLE");
+    solver->Params().set("FLUID",true);
   }
 
   // -------------------------------------------------------------------

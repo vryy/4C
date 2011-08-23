@@ -154,8 +154,16 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
     if (DRT::INPUT::IntegralValue<int>(scatradyn,"BLOCKPRECOND"))
     {
       // switch to the SIMPLE(R) algorithms
-      solver->PutSolverParamsToSubParams("SIMPLER",
-         DRT::Problem::Instance()->ScalarTransportElectricPotentialSolverParams());
+      //solver->PutSolverParamsToSubParams("SIMPLER",
+      //   DRT::Problem::Instance()->ScalarTransportElectricPotentialSolverParams());
+
+      Teuchos::ParameterList& inv1 = solver->Params().sublist("Inverse1");
+      inv1 = solver->Params();
+      inv1.remove("SIMPLER",false);
+      inv1.remove("Inverse1",false);
+      solver->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->ScalarTransportElectricPotentialSolverParams());
+      solver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type","CheapSIMPLE");
+      solver->Params().set("ELCH",true);
 
       // print unused solver parameters to screen
       /*
