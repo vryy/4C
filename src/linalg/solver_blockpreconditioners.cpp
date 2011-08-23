@@ -41,9 +41,12 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
     // only) and "new" more general test implementation
     bool mt = params_.get<bool>("MESHTYING",false);
     bool co = params_.get<bool>("CONTACT",false);
-    bool cstr = params_.get<bool>("CONSTRAINT",false); // TODO what about CONSTRAINT?
+    bool cstr = params_.get<bool>("CONSTRAINT",false);
+    bool fl = params_.isSublist("SIMPLER") || params_.get<bool>("FLUID",false); //params_.get<bool>("FLUIDSIMPLE",false); // SIMPLE for fluids
+    bool elch = params_.get<bool>("ELCH",false);
     if (mt || co || cstr)
     {
+      // adapt ML null space for contact/meshtying/constraint problems
       RCP<BlockSparseMatrixBase> A = rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
       if (A==null) dserror("matrix is not a BlockSparseMatrix");
 
@@ -70,6 +73,79 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
       //P_ = Teuchos::rcp(new LINALG::SOLVER::SIMPLER_BlockPreconditioner(A,params_.sublist("Inverse1"),params_.sublist("Inverse2"),outfile_));
       P_ = Teuchos::rcp(new LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner(A,params_.sublist("Inverse1"),params_.sublist("Inverse2"),outfile_));
     }
+#if 1
+    else if(fl || elch) // CheapSIMPLE for pure fluid problems
+    {
+      // adapt nullspace for splitted pure fluid problem
+      int nv = 0; // number of velocity dofs
+      int np = 0; // number of pressure dofs
+      int ndofpernode = 0; // dofs per node
+      int nlnode;
+
+      const Epetra_Map& fullmap = matrix->OperatorRangeMap();
+      const int length = fullmap.NumMyElements();
+
+      RCP<BlockSparseMatrixBase> A = rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp( matrix, false ));
+      if (A==null) dserror("matrix is not a BlockSparseMatrix");
+
+      // this is a fix for the old SIMPLER sublist
+      if(!params_.isSublist("Inverse1") && params_.isSublist("SIMPLER"))
+      {
+        Teuchos::ParameterList& inv1 = params_.sublist("Inverse1");
+        inv1 = params_;
+        inv1.remove("SIMPLER");
+        inv1.remove("Inverse1",false);
+        Teuchos::ParameterList& inv2 = params_.sublist("Inverse2");
+        inv2 = params_.sublist("SIMPLER");
+        params_.remove("SIMPLER");
+        params_.sublist("CheapSIMPLE Parameters").set("Prec Type","CheapSIMPLE");
+        params_.set("FLUID",true);
+      }
+
+      // fix null spae for ML inverses
+      Teuchos::ParameterList& inv1 = params_.sublist("Inverse1");
+      if(inv1.isSublist("ML Parameters"))
+      {
+        ndofpernode = inv1.sublist("NodalBlockInformation").get<int>("numdf",0);
+        nv = inv1.sublist("NodalBlockInformation").get<int>("nv",0);
+        np = inv1.sublist("NodalBlockInformation").get<int>("np",0);
+        if(ndofpernode==0) dserror("cannot read numdf from NodalBlockInformation");
+        if (nv==0 || np==0) dserror("nv or np == 0?");
+        nlnode = length/ndofpernode;
+
+        inv1.sublist("ML Parameters").set("PDE equations",nv);
+        inv1.sublist("ML Parameters").set("null space: dimension",nv);
+
+        const int vlength = A->Matrix(0,0).RowMap().NumMyElements();
+        Teuchos::RCP<std::vector<double> > vnewns = Teuchos::rcp(new std::vector<double>(nv*vlength,0.0));
+
+        for (int i=0;i<nlnode; ++i)
+        {
+          (*vnewns)[i*nv] = 1.0;
+          (*vnewns)[vlength+i*nv+1] = 1.0;
+          if(nv > 2) (*vnewns)[2*vlength+i*nv+2] = 1.0;
+        }
+        inv1.sublist("ML Parameters").set("null space: vectors",&((*vnewns)[0]));
+        inv1.sublist("ML Parameters").remove("nullspace",false); // necessary??
+        inv1.sublist("Michael's secret vault").set<RCP<vector<double> > >("velocity nullspace",vnewns);
+      }
+
+      Teuchos::ParameterList& inv2 = params_.sublist("Inverse2");
+      if(inv2.isSublist("ML Parameters"))
+      {
+        inv2.sublist("ML Parameters").set("PDE equations",1);
+        inv2.sublist("ML Parameters").set("null space: dimension",1);
+        const int plength = A->Matrix(1,1).RowMap().NumMyElements();
+        Teuchos::RCP<std::vector<double> > pnewns = Teuchos::rcp(new std::vector<double>(plength,1.0));
+        inv2.sublist("ML Parameters").set("null space: vectors",&((*pnewns)[0]));
+        inv2.sublist("ML Parameters").remove("nullspace",false); // necessary?
+        inv2.sublist("Michael's secret vault").set<RCP<vector<double> > >("pressure nullspace",pnewns);
+      }
+
+      P_ = Teuchos::rcp(new LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner(A,params_.sublist("Inverse1"),params_.sublist("Inverse2"),outfile_));
+    }
+#endif
+    //else if(!params_.isSublist("Inverse1") || !params_.isSublist("Inverse2"))
     else
     {
       //cout << "************************************************" << endl;
@@ -77,7 +153,9 @@ void LINALG::SOLVER::SimplePreconditioner::Setup( bool create,
       //cout << "************************************************" << endl;
       // Michaels old CheapSIMPLE for Fluid
       // TODO replace me by CheapSIMPLE_BlockPreconditioner
-      P_ = Teuchos::rcp(new LINALG::SOLVER::SIMPLER_Operator(Teuchos::rcp( matrix, false ),params_,params_.sublist("SIMPLER"),outfile_));
+
+      //P_ = Teuchos::rcp(new LINALG::SOLVER::SIMPLER_Operator(Teuchos::rcp( matrix, false ),params_,params_.sublist("SIMPLER"),outfile_));
+      dserror("old SIMPLE not supported any more");
     }
   }
 }
