@@ -1033,8 +1033,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
     //--------------------------------------------- set type of solver
     switch (DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE"))
     {
-    case INPAR::SOLVER::azsolv_CG:       beloslist.set("belos_solver",AZ_cg);       break;
-    case INPAR::SOLVER::azsolv_GMRES:    beloslist.set("belos_solver",AZ_gmres);    break;
+    case INPAR::SOLVER::azsolv_CG:       beloslist.set("Solver Type","CG");       break;
+    case INPAR::SOLVER::azsolv_GMRES:    beloslist.set("Solver Type","GMRES");    break;
     default:
     {
       cout << "flag " << DRT::INPUT::IntegralValue<INPAR::SOLVER::AzSolverType>(inparams,"AZSOLVE") << endl;

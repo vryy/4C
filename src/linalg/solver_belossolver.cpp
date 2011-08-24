@@ -106,8 +106,14 @@ void LINALG::SOLVER::BelosSolver::Solve()
   }
 
   // create iterative solver manager
-  // TODO: support for CG!!!
-  Teuchos::RCP<Belos::SolverManager<double,MV,OP> > newSolver = Teuchos::rcp(new Belos::BlockGmresSolMgr<double,MV,OP>(problem,Teuchos::rcp(&belist,false)));
+  Teuchos::RCP<Belos::SolverManager<double,MV,OP> > newSolver;
+  std::string solverType = belist.get<std::string>("Solver Type");
+  if(solverType=="GMRES")
+     newSolver = Teuchos::rcp(new Belos::BlockGmresSolMgr<double,MV,OP>(problem,Teuchos::rcp(&belist,false)));
+  else if (solverType=="CG")
+     newSolver = Teuchos::rcp(new Belos::BlockCGSolMgr<double,MV,OP>(problem,Teuchos::rcp(&belist,false)));
+  else
+    dserror("unknown solver type for Belos");
 
   //
   // Perform solve
