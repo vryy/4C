@@ -3597,5 +3597,26 @@ void CONTACT::CmtStruGenAlpha::ReadRestart(int step)
   return;
 } // void CmtStruGenAlpha::ReadRestart()
 
+/*----------------------------------------------------------------------*
+ |  use contact solver or not (public)                        popp 08/11|
+ *----------------------------------------------------------------------*/
+bool CONTACT::CmtStruGenAlpha::UseContactSolver()
+{
+  // no contact possible -> return false
+  if (!HaveContactMeshtying())
+    return false;
+  // contact possible -> check current status
+  else
+  {
+    // currently not in contact -> return false
+    if (!cmtmanager_->GetStrategy().IsInContact() &&
+        !cmtmanager_->GetStrategy().WasInContact() &&
+        !cmtmanager_->GetStrategy().WasInContactLastTimeStep())
+      return false;
+    // currently in contact -> return true
+    else
+      return true;
+  }
+}
 
 #endif  // #ifdef CCADISCRET

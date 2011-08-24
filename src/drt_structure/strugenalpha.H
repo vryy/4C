@@ -456,6 +456,9 @@ public:
   //! Return bool indicating if contact or meshtying are defined
   virtual bool HaveContactMeshtying() { return false; }
 
+  //! Use contact solver?
+  virtual bool UseContactSolver() { return false; }
+
   //! Return bool indicating if constraints are defined
   bool HaveConstraint();
 

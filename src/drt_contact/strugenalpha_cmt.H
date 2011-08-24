@@ -249,10 +249,10 @@ public:
   void ReadRestart(int step);
 
   /*!
-  \brief get manager
+  \brief use contact solver or not
 
   */
-  Teuchos::RCP<MORTAR::ManagerBase> ContactManager() {return cmtmanager_; }
+  bool UseContactSolver();
   
   /*!
   \brief return bool indicating if contact or meshtying are defined

@@ -156,7 +156,14 @@ namespace ADAPTER {
     };
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
+    virtual Teuchos::RCP<LINALG::Solver> LinearSolver()
+    {
+      if (!structure_->UseContactSolver())
+        return solver_;
+      // THIS SHOULD BE THE CONTACTSOLVER_
+      else
+        return solver_;
+    }
 
     /// linear structure solve with just a interface load
     /*!

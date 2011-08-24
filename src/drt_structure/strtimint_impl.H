@@ -549,6 +549,11 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> lagrincr ///< Lagrange multiplier increment
     );
 
+    //! use contact solver or not
+    bool UseContactSolver();
+
+    //! return bool indicating if contact or meshtying are defined
+    bool HaveContactMeshtying() { return (cmtman_ != Teuchos::null); }
 
     //@}
 
