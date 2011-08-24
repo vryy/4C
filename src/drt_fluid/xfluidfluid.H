@@ -263,11 +263,11 @@ namespace FLD
     /// determine grid velocity
     void UpdateGridv();
 
-    void SetNewStatevector(map<int, vector<int> > stdnoden,
-                           Teuchos::RCP<Epetra_Vector> statevn,
-                           Teuchos::RCP<Epetra_Vector> statevnp);
 
     void SetNewStatevectorAndProjectEmbToBg(map<int, vector<int> > stdnoden,
+                                            map<int, vector<int> > stdnodenp,
+                                            map<int, vector<int> > enrichednoden,
+                                            map<int, vector<int> > enrichednodenp,
                                             std::map<int,GEO::CUT::BoundingBox> & patchboxes,
                                             Teuchos::RCP<Epetra_Vector> statevn,
                                             Teuchos::RCP<Epetra_Vector> statevnp,
@@ -428,6 +428,13 @@ namespace FLD
 
     // output vector for bg-fluid field (velocity and pressure)
     Teuchos::RCP<Epetra_Vector> outvec_fluid_;
+
+    // maps needed for xfem time integration
+    std::map<int, vector<int> > stdnoden_;
+    std::map<int, vector<int> > stdnodenp_;
+
+    std::map<int, vector<int> > enrichednoden_;
+    std::map<int, vector<int> > enrichednodenp_;
 
   private:
 
