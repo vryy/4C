@@ -160,8 +160,6 @@ bool FSI::LungScatra::AbortScatraNonlinIter(const int itnum)
   const double abstolres = scatradyn.sublist("NONLINEAR").get<double>("ABSTOLRES");
 
   //----------------------------------------------------- compute norms
-  double incconnorm_L2(0.0);
-  scatraincrement_->Norm2(&incconnorm_L2);
   double conresnorm(0.0);
   scatrarhs_->Norm2(&conresnorm);
   // set up vector of absolute concentrations
@@ -189,7 +187,7 @@ bool FSI::LungScatra::AbortScatraNonlinIter(const int itnum)
   {
     if (myrank == 0)
     {
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   |      --      |\n",itnum,itemax,ittol,conresnorm);
+      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   |\n",itnum,itemax,ittol,conresnorm);
     }
     // abort iteration, when there's nothing more to do
     if (conresnorm < abstolres)
@@ -197,7 +195,7 @@ bool FSI::LungScatra::AbortScatraNonlinIter(const int itnum)
       // print 'finish line'
       if (myrank == 0)
       {
-        printf("+------------+-------------------+--------------+--------------+\n");
+        printf("+------------+-------------------+--------------+\n");
       }
       return true;
     }
@@ -212,13 +210,13 @@ bool FSI::LungScatra::AbortScatraNonlinIter(const int itnum)
     // print the screen info
     if (myrank == 0)
     {
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |\n",itnum,itemax,ittol,conresnorm,incconnorm_L2/connorm_L2);
+      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   |\n",itnum,itemax,ittol,conresnorm);
     }
 
     // this is the convergence check
     // We always require at least one solve. We test the L_2-norm of the
     // current residual. Norm of residual is just printed for information
-    if (conresnorm <= ittol and incconnorm_L2/connorm_L2 <= ittol)
+    if (conresnorm <= ittol)
     {
       if (myrank == 0)
       {
@@ -234,7 +232,7 @@ bool FSI::LungScatra::AbortScatraNonlinIter(const int itnum)
       // print 'finish line'
       if (myrank == 0)
       {
-        printf("+------------+-------------------+--------------+--------------+\n");
+        printf("+------------+-------------------+--------------+\n");
       }
       return true;
     }
@@ -245,9 +243,9 @@ bool FSI::LungScatra::AbortScatraNonlinIter(const int itnum)
     {
       if (myrank == 0)
       {
-        printf("+--------------------------------------------------------------+\n");
-        printf("|        >>>>>> scatra not converged in itemax steps!          |\n");
-        printf("+--------------------------------------------------------------+\n");
+        printf("+-----------------------------------------------+\n");
+        printf("| >>>>>>> scatra not converged in itemax steps! |\n");
+        printf("+-----------------------------------------------+\n");
       }
       // yes, we stop the iteration
       return true;
