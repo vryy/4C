@@ -153,17 +153,16 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
     // create a 2nd solver for block-preconditioning if chosen from input
     if (DRT::INPUT::IntegralValue<int>(scatradyn,"BLOCKPRECOND"))
     {
-      // switch to the SIMPLE(R) algorithms
-      //solver->PutSolverParamsToSubParams("SIMPLER",
-      //   DRT::Problem::Instance()->ScalarTransportElectricPotentialSolverParams());
-
+      // set Inverse1 block (for primary variable), use Fluid Scatra Solver
       Teuchos::ParameterList& inv1 = solver->Params().sublist("Inverse1");
       inv1 = solver->Params();
       inv1.remove("SIMPLER",false);
       inv1.remove("Inverse1",false);
+      // set Inverse2 block (for secondary variable), use ScalarTransportElectricPotential Solver
       solver->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->ScalarTransportElectricPotentialSolverParams());
+      // use CheapSIMPLE preconditioner (hardwired; change me for others)
       solver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type","CheapSIMPLE");
-      solver->Params().set("ELCH",true);
+      solver->Params().set("ELCH",true); // internal CheapSIMPLE modus for ML null space computation
 
       // print unused solver parameters to screen
       /*

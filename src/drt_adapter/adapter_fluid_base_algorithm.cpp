@@ -225,15 +225,14 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   if (DRT::INPUT::IntegralValue<int>(fdyn,"SIMPLER"))
   {
-    // TODO: remove me
-    //solver->PutSolverParamsToSubParams("SIMPLER",
-    //                                   DRT::Problem::Instance()->FluidPressureSolverParams());
-
+    // add Inverse1 block for velocity dofs
     Teuchos::ParameterList& inv1 = solver->Params().sublist("Inverse1");
     inv1 = solver->Params();
     inv1.remove("SIMPLER",false); // not necessary
     inv1.remove("Inverse1",false);
+    // add Inverse2 block for pressure dofs
     solver->PutSolverParamsToSubParams("Inverse2", DRT::Problem::Instance()->FluidPressureSolverParams());
+    // use CheapSIMPLE preconditioner (hardwired, change me for others)
     solver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type","CheapSIMPLE");
     solver->Params().set("FLUID",true);
   }
