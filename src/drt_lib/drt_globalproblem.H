@@ -286,8 +286,6 @@ public:
   const Teuchos::ParameterList& ConditionNamesParams() const { return getParameterList()->sublist("CONDITION NAMES"); }
   const Teuchos::ParameterList& SearchtreeParams() const { return getParameterList()->sublist("SEARCH TREE"); }
   const Teuchos::ParameterList& ReducedDAirwaySolverParams() const { return getParameterList()->sublist("REDUCED DIMENSIONAL AIRWAYS SOLVER"); }
-  //const Teuchos::ParameterList& BGSPrecBlock1Params() const { return getParameterList()->sublist("BGS PRECONDITIONER BLOCK 1"); }
-  //const Teuchos::ParameterList& BGSPrecBlock2Params() const { return getParameterList()->sublist("BGS PRECONDITIONER BLOCK 2"); }
   const Teuchos::ParameterList& TSIMonolithicSolverParams() const { return getParameterList()->sublist("TSI MONOLITHIC SOLVER"); }
   const Teuchos::ParameterList& MeshtyingSolverParams() const { return getParameterList()->sublist("MESHTYING SOLVER"); }
   const Teuchos::ParameterList& ContactSolverParams() const { return getParameterList()->sublist("CONTACT SOLVER"); }
