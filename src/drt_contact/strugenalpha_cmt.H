@@ -252,7 +252,7 @@ public:
   \brief get manager
 
   */
-  Teuchos::RCP<MORTAR::ManagerBase> GetManager() {return cmtmanager_; }
+  Teuchos::RCP<MORTAR::ManagerBase> ContactManager() {return cmtmanager_; }
   
   /*!
   \brief return bool indicating if contact or meshtying are defined
