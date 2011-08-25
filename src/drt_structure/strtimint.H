@@ -569,7 +569,7 @@ namespace STR
     bool UseContactSolver();
 
     //! return bool indicating if contact or meshtying are defined
-    bool HaveContactMeshtying() { return (HaveContactMeshtying()); }
+    bool HaveContactMeshtying() { return (cmtman_ != Teuchos::null); }
 
     //! return contact/meshtying manager
     Teuchos::RCP<MORTAR::ManagerBase> ContactManager() {return cmtman_;}
