@@ -438,14 +438,18 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 /* Prepare contact for new time step */
 void STR::TimInt::PrepareStepContact()
 {
-	// get out of here if no contact is present
-	if (cmtman_ == Teuchos::null) return;
+	// just do something here if contact is present
+	if (HaveContactMeshtying())
+	{
+    // dynamic parallel redistribution of interfaces
+    cmtman_->GetStrategy().RedistributeContact((*dis_)(0));
 
-	// dynamic parallel redistribution of interfaces
-	cmtman_->GetStrategy().RedistributeContact((*dis_)(0));
+    // evaluation of reference state for friction (only at t=0)
+    cmtman_->GetStrategy().EvaluateReferenceState(step_,disn_);
+	}
 
-	// evaluation of reference state for friction (only at t=0)
-	cmtman_->GetStrategy().EvaluateReferenceState(step_,disn_);
+	// bye bye
+	return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -453,7 +457,7 @@ void STR::TimInt::PrepareStepContact()
 void STR::TimInt::EvaluateReferenceState()
 {
   // only do something if contact is present
-  if (cmtman_ != Teuchos::null)
+  if (HaveContactMeshtying())
     cmtman_->GetStrategy().EvaluateReferenceState(step_,disn_);
 }
 
@@ -628,7 +632,7 @@ void STR::TimInt::UpdateStepTime()
 /* Update contact and meshtying */
 void STR::TimInt::UpdateStepContactMeshtying()
 {
-   if (cmtman_ != Teuchos::null)
+   if (HaveContactMeshtying())
      cmtman_->GetStrategy().Update(stepn_,disn_);
 
    // ciao
@@ -724,7 +728,7 @@ void STR::TimInt::ReadRestartConstraint()
 /* Read and set restart values for contact / meshtying */
 void STR::TimInt::ReadRestartContactMeshtying()
 {
-  if (cmtman_ != Teuchos::null)
+  if (HaveContactMeshtying())
   {
     //**********************************************************************
     // NOTE: There is an important difference here between contact and
@@ -876,7 +880,7 @@ void STR::TimInt::OutputRestart
   }
 
   // contact / meshtying
-  if (cmtman_ != Teuchos::null)
+  if (HaveContactMeshtying())
   {
       cmtman_->WriteRestart(*output_);
       cmtman_->PostprocessTractions(*output_);
@@ -923,7 +927,7 @@ void STR::TimInt::OutputState
     surfstressman_->WriteResults(step_, (*time_)[0]);
 
   // contact / meshtying
-  if (cmtman_ != Teuchos::null)
+  if (HaveContactMeshtying())
     cmtman_->PostprocessTractions(*output_);
 
   // leave for good
@@ -1112,168 +1116,169 @@ void STR::TimInt::OutputEnergy()
 /* output active set, energies and momentum for contact */
 void STR::TimInt::OutputContact()
 {
-  // get out of here if no contact / meshtying simulation
-  if (cmtman_ == Teuchos::null) return;
-
-  // THIS IS FOR DEBUGGING ONLY!!!
-  // print contact forces with respect to reference configuration
-#ifdef CONTACTFORCEREFCONFIG
-  cmtman_->GetStrategy().ForceRefConfig();
-#endif
-
-  // print active set
-  cmtman_->GetStrategy().PrintActiveSet();
-
-  // check chosen output option
-  INPAR::CONTACT::EmOutputType emtype =
-    DRT::INPUT::IntegralValue<INPAR::CONTACT::EmOutputType>(cmtman_->GetStrategy().Params(),"EMOUTPUT");
-
-  // get out of here if no enrgy momentum output wanted
-  if (emtype==INPAR::CONTACT::output_none) return;
-
-  // get some parameters from parameter list
-  double timen = (*time_)[0];
-  double dt    = (*dt_)[0];
-  int dim      = cmtman_->GetStrategy().Dim();
-
-  // global linear momentum (M*v)
-  RCP<Epetra_Vector> mv = LINALG::CreateVector(*(discret_->DofRowMap()), true);
-  mass_->Multiply(false, (*vel_)[0], *mv);
-
-  // linear / angular momentum
-  vector<double> sumlinmom(3);
-  vector<double> sumangmom(3);
-  vector<double> angmom(3);
-  vector<double> linmom(3);
-
-  // vectors of nodal properties
-  vector<double> nodelinmom(3);
-  vector<double> nodeangmom(3);
-  vector<double> position(3);
-
-  // loop over all nodes belonging to the respective processor
-  for (int k=0; k<(discret_->NodeRowMap())->NumMyElements();++k)
+  // only for contact / meshtying simulations
+  if (HaveContactMeshtying())
   {
-    // get current node
-    int gid = (discret_->NodeRowMap())->GID(k);
-    DRT::Node* mynode = discret_->gNode(gid);
-    vector<int> globaldofs = discret_->Dof(mynode);
+    // THIS IS FOR DEBUGGING ONLY!!!
+    // print contact forces with respect to reference configuration
+  #ifdef CONTACTFORCEREFCONFIG
+    cmtman_->GetStrategy().ForceRefConfig();
+  #endif
 
-    // loop over all DOFs comprised by this node
-    for (int i=0;i<dim;i++)
+    // print active set
+    cmtman_->GetStrategy().PrintActiveSet();
+
+    // check chosen output option
+    INPAR::CONTACT::EmOutputType emtype =
+      DRT::INPUT::IntegralValue<INPAR::CONTACT::EmOutputType>(cmtman_->GetStrategy().Params(),"EMOUTPUT");
+
+    // get out of here if no enrgy momentum output wanted
+    if (emtype==INPAR::CONTACT::output_none) return;
+
+    // get some parameters from parameter list
+    double timen = (*time_)[0];
+    double dt    = (*dt_)[0];
+    int dim      = cmtman_->GetStrategy().Dim();
+
+    // global linear momentum (M*v)
+    RCP<Epetra_Vector> mv = LINALG::CreateVector(*(discret_->DofRowMap()), true);
+    mass_->Multiply(false, (*vel_)[0], *mv);
+
+    // linear / angular momentum
+    vector<double> sumlinmom(3);
+    vector<double> sumangmom(3);
+    vector<double> angmom(3);
+    vector<double> linmom(3);
+
+    // vectors of nodal properties
+    vector<double> nodelinmom(3);
+    vector<double> nodeangmom(3);
+    vector<double> position(3);
+
+    // loop over all nodes belonging to the respective processor
+    for (int k=0; k<(discret_->NodeRowMap())->NumMyElements();++k)
     {
-      nodelinmom[i] = (*mv)[mv->Map().LID(globaldofs[i])];
-      sumlinmom[i] += nodelinmom[i];
-      position[i]   = (mynode->X())[i] + ((*dis_)[0])[mv->Map().LID(globaldofs[i])];
-    }
+      // get current node
+      int gid = (discret_->NodeRowMap())->GID(k);
+      DRT::Node* mynode = discret_->gNode(gid);
+      vector<int> globaldofs = discret_->Dof(mynode);
 
-    // calculate vector product position x linmom
-    nodeangmom[0] = position[1]*nodelinmom[2] - position[2]*nodelinmom[1];
-    nodeangmom[1] = position[2]*nodelinmom[0] - position[0]*nodelinmom[2];
-    nodeangmom[2] = position[0]*nodelinmom[1] - position[1]*nodelinmom[0];
-
-    // loop over all DOFs comprised by this node
-    for (int i=0; i<3; ++i) sumangmom[i] += nodeangmom[i];
-  }
-
-  // global quantities (sum over all processors)
-  for (int i=0;i<3;++i)
-  {
-    cmtman_->Comm().SumAll(&sumangmom[i],&angmom[i],1);
-    cmtman_->Comm().SumAll(&sumlinmom[i],&linmom[i],1);
-  }
-
-  //--------------------------Calculation of total kinetic energy
-  double kinen = 0.0;
-  mv->Dot((*vel_)[0],&kinen);
-  kinen *= 0.5;
-
-  //-------------------------Calculation of total internal energy
-  double inten = 0.0;
-  ParameterList p;
-  p.set("action", "calc_struct_energy");
-  discret_->ClearState();
-  discret_->SetState("displacement", (*dis_)(0));
-  RCP<Epetra_SerialDenseVector> energies = Teuchos::rcp(new Epetra_SerialDenseVector(1));
-  energies->Scale(0.0);
-  discret_->EvaluateScalars(p, energies);
-  discret_->ClearState();
-  inten = (*energies)(0);
-
-  //-------------------------Calculation of total external energy
-  double exten = 0.0;
-  // WARNING: This will only work with dead loads!!!
-  //fext_->Dot(*dis_, &exten);
-
-  //----------------------------------------Print results to file
-  if (emtype == INPAR::CONTACT::output_file ||
-      emtype == INPAR::CONTACT::output_both)
-  {
-    // processor 0 does all the work
-    if (!myrank_)
-    {
-      // path and filename
-      std::ostringstream filename;
-      filename << "o/scilab_output/OutputEnergyMomentum.txt";
-
-      // open file
-      FILE* MyFile = NULL;
-      if (timen < 2*dt)
+      // loop over all DOFs comprised by this node
+      for (int i=0;i<dim;i++)
       {
-        MyFile = fopen(filename.str().c_str(),"wt");
-
-        // initialize file pointer for writing contact interface forces/moments
-        FILE* MyConForce = NULL;
-        MyConForce = fopen("o/scilab_output/OutputInterface.txt", "wt");
-        if (MyConForce!=NULL) fclose(MyConForce);
-        else dserror("ERROR: File for writing contact interface forces/moments could not be generated.");
+        nodelinmom[i] = (*mv)[mv->Map().LID(globaldofs[i])];
+        sumlinmom[i] += nodelinmom[i];
+        position[i]   = (mynode->X())[i] + ((*dis_)[0])[mv->Map().LID(globaldofs[i])];
       }
-      else
-        MyFile = fopen(filename.str().c_str(),"at+");
 
-      // add current values to file
-      if (MyFile!=NULL)
-      {
-       std::stringstream filec;
-       fprintf(MyFile, "%g\t", timen);
-       for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", linmom[i]);
-       for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", angmom[i]);
-       fprintf(MyFile, "%g\t%g\t%g\n",kinen,inten,exten);
-       fclose(MyFile);
-      }
-      else
-        dserror("ERROR: File for writing momentum and energy data could not be opened.");
+      // calculate vector product position x linmom
+      nodeangmom[0] = position[1]*nodelinmom[2] - position[2]*nodelinmom[1];
+      nodeangmom[1] = position[2]*nodelinmom[0] - position[0]*nodelinmom[2];
+      nodeangmom[2] = position[0]*nodelinmom[1] - position[1]*nodelinmom[0];
+
+      // loop over all DOFs comprised by this node
+      for (int i=0; i<3; ++i) sumangmom[i] += nodeangmom[i];
     }
-  }
 
-  //-------------------------------Print energy results to screen
-  if (emtype == INPAR::CONTACT::output_screen ||
-      emtype == INPAR::CONTACT::output_both)
-  {
-    // processor 0 does all the work
-    if (!myrank_)
+    // global quantities (sum over all processors)
+    for (int i=0;i<3;++i)
     {
-      printf("******************************");
-      printf("\nMECHANICAL ENERGIES:");
-      printf("\nE_kinetic \t %e",kinen);
-      printf("\nE_internal \t %e",inten);
-      printf("\nE_external \t %e",exten);
-      printf("\n------------------------------");
-      printf("\nE_total \t %e",kinen+inten-exten);
-      printf("\n******************************");
-
-      printf("\n\n********************************************");
-      printf("\nLINEAR / ANGULAR MOMENTUM:");
-      printf("\nL_x  % e \t H_x  % e",linmom[0],angmom[0]);
-      printf("\nL_y  % e \t H_y  % e",linmom[1],angmom[1]);
-      printf("\nL_z  % e \t H_z  % e",linmom[2],angmom[2]);
-      printf("\n********************************************\n\n");
-      fflush(stdout);
+      cmtman_->Comm().SumAll(&sumangmom[i],&angmom[i],1);
+      cmtman_->Comm().SumAll(&sumlinmom[i],&linmom[i],1);
     }
-  }
 
-  //-------------------------- Compute and output interface forces
-  cmtman_->GetStrategy().InterfaceForces(true);
+    //--------------------------Calculation of total kinetic energy
+    double kinen = 0.0;
+    mv->Dot((*vel_)[0],&kinen);
+    kinen *= 0.5;
+
+    //-------------------------Calculation of total internal energy
+    double inten = 0.0;
+    ParameterList p;
+    p.set("action", "calc_struct_energy");
+    discret_->ClearState();
+    discret_->SetState("displacement", (*dis_)(0));
+    RCP<Epetra_SerialDenseVector> energies = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+    energies->Scale(0.0);
+    discret_->EvaluateScalars(p, energies);
+    discret_->ClearState();
+    inten = (*energies)(0);
+
+    //-------------------------Calculation of total external energy
+    double exten = 0.0;
+    // WARNING: This will only work with dead loads!!!
+    //fext_->Dot(*dis_, &exten);
+
+    //----------------------------------------Print results to file
+    if (emtype == INPAR::CONTACT::output_file ||
+        emtype == INPAR::CONTACT::output_both)
+    {
+      // processor 0 does all the work
+      if (!myrank_)
+      {
+        // path and filename
+        std::ostringstream filename;
+        filename << "o/scilab_output/OutputEnergyMomentum.txt";
+
+        // open file
+        FILE* MyFile = NULL;
+        if (timen < 2*dt)
+        {
+          MyFile = fopen(filename.str().c_str(),"wt");
+
+          // initialize file pointer for writing contact interface forces/moments
+          FILE* MyConForce = NULL;
+          MyConForce = fopen("o/scilab_output/OutputInterface.txt", "wt");
+          if (MyConForce!=NULL) fclose(MyConForce);
+          else dserror("ERROR: File for writing contact interface forces/moments could not be generated.");
+        }
+        else
+          MyFile = fopen(filename.str().c_str(),"at+");
+
+        // add current values to file
+        if (MyFile!=NULL)
+        {
+         std::stringstream filec;
+         fprintf(MyFile, "%g\t", timen);
+         for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", linmom[i]);
+         for (int i=0; i<3; i++) fprintf(MyFile, "%g\t", angmom[i]);
+         fprintf(MyFile, "%g\t%g\t%g\n",kinen,inten,exten);
+         fclose(MyFile);
+        }
+        else
+          dserror("ERROR: File for writing momentum and energy data could not be opened.");
+      }
+    }
+
+    //-------------------------------Print energy results to screen
+    if (emtype == INPAR::CONTACT::output_screen ||
+        emtype == INPAR::CONTACT::output_both)
+    {
+      // processor 0 does all the work
+      if (!myrank_)
+      {
+        printf("******************************");
+        printf("\nMECHANICAL ENERGIES:");
+        printf("\nE_kinetic \t %e",kinen);
+        printf("\nE_internal \t %e",inten);
+        printf("\nE_external \t %e",exten);
+        printf("\n------------------------------");
+        printf("\nE_total \t %e",kinen+inten-exten);
+        printf("\n******************************");
+
+        printf("\n\n********************************************");
+        printf("\nLINEAR / ANGULAR MOMENTUM:");
+        printf("\nL_x  % e \t H_x  % e",linmom[0],angmom[0]);
+        printf("\nL_y  % e \t H_y  % e",linmom[1],angmom[1]);
+        printf("\nL_z  % e \t H_z  % e",linmom[2],angmom[2]);
+        printf("\n********************************************\n\n");
+        fflush(stdout);
+      }
+    }
+
+    //-------------------------- Compute and output interface forces
+    cmtman_->GetStrategy().InterfaceForces(true);
+  }
 
   return;
 }
@@ -1534,6 +1539,27 @@ void STR::TimInt::Integrate()
 
   // that's it
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/* check whether contact solver should be used */
+bool STR::TimInt::UseContactSolver()
+{
+  // no contact possible -> return false
+  if (!HaveContactMeshtying())
+    return false;
+  // contact possible -> check current status
+  else
+  {
+    // currently not in contact -> return false
+    if (!cmtman_->GetStrategy().IsInContact() &&
+        !cmtman_->GetStrategy().WasInContact() &&
+        !cmtman_->GetStrategy().WasInContactLastTimeStep())
+      return false;
+    // currently in contact -> return true
+    else
+      return true;
+  }
 }
 
 /*----------------------------------------------------------------------*/

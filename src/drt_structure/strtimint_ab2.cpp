@@ -152,7 +152,7 @@ void STR::TimIntAB2::IntegrateStep()
   //dtcpu = timer_->WallTime();
 
   // contact or meshtying forces
-  if (cmtman_ != Teuchos::null)
+  if (HaveContactMeshtying())
   {
     fcmtn_->PutScalar(0.0);
     cmtman_->GetStrategy().ApplyForceStiffCmt(disn_,stiff_,fcmtn_,false);
@@ -170,7 +170,7 @@ void STR::TimIntAB2::IntegrateStep()
     frimpn_->Update(-1.0, *fviscn_, 1.0);
   }
   
-  if (cmtman_ != Teuchos::null)
+  if (HaveContactMeshtying())
   {
     frimpn_->Update(1.0, *fcmtn_, 1.0);
   }

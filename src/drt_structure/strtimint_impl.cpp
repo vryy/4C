@@ -578,7 +578,7 @@ void STR::TimIntImpl::ApplyForceStiffContactMeshtying
   bool predict
 )
 {
-  if (cmtman_ != Teuchos::null)
+  if (HaveContactMeshtying())
   {
     // *********** time measurement ***********
     double dtcpu = timer_->WallTime();
@@ -670,7 +670,7 @@ bool STR::TimIntImpl::Converged()
 
   // check contact (active set)
   bool ccontact = true;
-  if (cmtman_!=Teuchos::null)
+  if (HaveContactMeshtying())
   {
     // check which case (application, strategy) we are in
     INPAR::CONTACT::ApplicationType apptype =
@@ -747,7 +747,7 @@ bool STR::TimIntImpl::Converged()
 void STR::TimIntImpl::Solve()
 {
   // special nonlinear iterations for contact / meshtying
-  if (cmtman_ != Teuchos::null)
+  if (HaveContactMeshtying())
   {
     // choose solution technique in accordance with user's will
     CmtNonlinearSolve();
@@ -837,7 +837,7 @@ void STR::TimIntImpl::NewtonFull()
       solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
     }
     // linear solver call (contact / meshtying case or default)
-    if (cmtman_ != Teuchos::null)
+    if (HaveContactMeshtying())
       CmtLinearSolve();
     else
       solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_==1);
@@ -847,7 +847,7 @@ void STR::TimIntImpl::NewtonFull()
     RecoverSTCSolution();
 
     // recover contact / meshtying Lagrange multipliers
-    if (cmtman_ != Teuchos::null)
+    if (HaveContactMeshtying())
       cmtman_->GetStrategy().Recover(disi_);
 
     // *********** time measurement ***********
@@ -1022,27 +1022,6 @@ void STR::TimIntImpl::UpdateIterIncrConstr
 )
 {
   conman_->UpdateLagrMult(lagrincr);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-bool STR::TimIntImpl::UseContactSolver()
-{
-  // no contact possible -> return false
-  if (!HaveContactMeshtying())
-    return false;
-  // contact possible -> check current status
-  else
-  {
-    // currently not in contact -> return false
-    if (!cmtman_->GetStrategy().IsInContact() &&
-        !cmtman_->GetStrategy().WasInContact() &&
-        !cmtman_->GetStrategy().WasInContactLastTimeStep())
-      return false;
-    // currently in contact -> return true
-    else
-      return true;
-  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -1483,7 +1462,7 @@ void STR::TimIntImpl::UpdateIterIncrementally
   // recover contact / meshtying Lagrange multipliers (monolithic FSI)
   // not in the case of TSI with contact
   if (DRT::Problem::Instance()->ProblemType()!="tsi")
-    if (cmtman_ != Teuchos::null && disi != Teuchos::null)
+    if (HaveContactMeshtying() && disi != Teuchos::null)
       cmtman_->GetStrategy().Recover(disi_);
 
   // Update using #disi_
@@ -1637,7 +1616,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader
   //oss << std::setw(14)<< "wct";
   oss << std::setw(13)<< "ts";
   oss << std::setw(10)<< "te";
-  if (cmtman_ != Teuchos::null)
+  if (HaveContactMeshtying())
     oss << std::setw(10)<< "tc";
 
   // finish oss
@@ -1733,7 +1712,7 @@ void STR::TimIntImpl::PrintNewtonIterText
   //oss << std::setw(14) << std::setprecision(2) << std::scientific << timer_->ElapsedTime();
   oss << std::setw(13) << std::setprecision(2) << std::scientific << dtsolve_;
   oss << std::setw(10) << std::setprecision(2) << std::scientific << dtele_;
-  if (cmtman_ != Teuchos::null)
+  if (HaveContactMeshtying())
     oss << std::setw(10) << std::setprecision(2) << std::scientific << dtcmt_;
 
   // finish oss

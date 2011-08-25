@@ -560,7 +560,18 @@ namespace STR
     //! Sets the time for the next time step needed for the inverse analysis
     void SetTimen(double time){timen_ = time;};  //!< target time \f$t_{n+1}\f$
 
-    //! Return contact/meshtying manager
+    //@}
+
+    //! @name Contact and meshtying specific methods
+    //@{
+
+    //! use contact solver or not
+    bool UseContactSolver();
+
+    //! return bool indicating if contact or meshtying are defined
+    bool HaveContactMeshtying() { return (HaveContactMeshtying()); }
+
+    //! return contact/meshtying manager
     Teuchos::RCP<MORTAR::ManagerBase> ContactManager() {return cmtman_;}
 
     //@}

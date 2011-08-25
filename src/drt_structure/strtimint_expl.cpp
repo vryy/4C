@@ -54,7 +54,7 @@ STR::TimIntExpl:: TimIntExpl
     dserror("Explicit TIS cannot handle constraints");
 
   // explicit time integrators can only handle penalty contact / meshtying
-  if (cmtman_ != Teuchos::null)
+  if (HaveContactMeshtying())
   {
     INPAR::CONTACT::SolvingStrategy soltype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cmtman_->GetStrategy().Params(),"STRATEGY");
@@ -87,27 +87,6 @@ void STR::TimIntExpl::PrintStep()
 
   // fall asleep
   return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-bool STR::TimIntExpl::UseContactSolver()
-{
-  // no contact possible -> return false
-  if (!HaveContactMeshtying())
-    return false;
-  // contact possible -> check current status
-  else
-  {
-    // currently not in contact -> return false
-    if (!cmtman_->GetStrategy().IsInContact() &&
-        !cmtman_->GetStrategy().WasInContact() &&
-        !cmtman_->GetStrategy().WasInContactLastTimeStep())
-      return false;
-    // currently in contact -> return true
-    else
-      return true;
-  }
 }
 
 /*----------------------------------------------------------------------*/

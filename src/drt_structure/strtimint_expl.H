@@ -138,12 +138,6 @@ namespace STR
     //! Return linear error coefficient of velocities
     virtual double MethodLinErrCoeffVel() = 0;
 
-    //! use contact solver or not
-    bool UseContactSolver();
-
-    //! return bool indicating if contact or meshtying are defined
-    bool HaveContactMeshtying() { return (cmtman_ != Teuchos::null); }
-
     //@}
 
     //! @name System vectors
