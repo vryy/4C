@@ -26,8 +26,9 @@ typedef enum _PROBLEM_TYP
                        prb_fluid,        /*  fluid problem */
                        prb_fluid_xfem,   /*  fluid problem including XFEM interfaces */
                        prb_fluid_xfem2,  /*  fluid problem including XFEM interfaces */
-                       prb_fluid_fluid_ale, /*  fluid_fluid_ale problem */
-		               prb_fluid_fluid,  /*  fluid_fluid problem */
+                       prb_fluid_fluid_ale,/*fluid_fluid_ale problem */
+		       prb_fluid_fluid,  /*  fluid_fluid problem */
+		       prb_fluid_fluid_fsi,/*fluid_fluid fsi problem */
                        prb_fluid_dgfem,  /*  fluid problem including XFEM interfaces */
                        prb_fluid_ale,    /*  fluid on an ale mesh (no structure) */
                        prb_freesurf,     /*  free surface fluid */
@@ -48,7 +49,7 @@ typedef enum _PROBLEM_TYP
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential for the filters to read the problem
  * type! */
-#define PROBLEMNAMES {"none","fsi","fsi_xfem","fsi_lung","fsi_lung_gas","ssi","structure","structure_ale","fluid","fluid_xfem","fluid_xfem2","fluid_fluid_ale","fluid_fluid","fluid_dgfem","fluid_ale","freesurf","opt","ale","tsi","thermo","fluid_pm","scatra","pfsi","loma","elch","combustion","art_net","red_airways",NULL }
+#define PROBLEMNAMES {"none","fsi","fsi_xfem","fsi_lung","fsi_lung_gas","ssi","structure","structure_ale","fluid","fluid_xfem","fluid_xfem2","fluid_fluid_ale","fluid_fluid","fluid_fluid_fsi","fluid_dgfem","fluid_ale","freesurf","opt","ale","tsi","thermo","fluid_pm","scatra","pfsi","loma","elch","combustion","art_net","red_airways",NULL }
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
  *----------------------------------------------------------------------*/

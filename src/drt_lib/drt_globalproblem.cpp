@@ -306,6 +306,13 @@ void DRT::Problem::InputControl()
     genprob.numaf=1;
     break;
   }
+  case prb_fluid_fluid_fsi:
+  {
+    genprob.numff=0;
+    genprob.numaf=1;
+    genprob.numsf=2;
+    break;
+  }
   case prb_fluid_fluid:
   {
     genprob.numff=0;
@@ -883,6 +890,26 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
+
+    break;
+  }
+  case prb_fluid_fluid_fsi:
+  {
+    fluiddis  = rcp(new DRT::Discretization("fluid"    ,reader.Comm()));
+    xfluiddis = rcp(new DRT::Discretization("xfluid"   ,reader.Comm()));
+    aledis    = rcp(new DRT::Discretization("ale"      ,reader.Comm()));
+    structdis = rcp(new DRT::Discretization("structure",reader.Comm()));
+
+    AddDis(genprob.numff, fluiddis);
+    if (xfluiddis!=Teuchos::null)
+      AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
+    AddDis(genprob.numaf, aledis);
+    AddDis(genprob.numsf, structdis);
+
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "FLUID3")));
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
 
     break;
