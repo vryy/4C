@@ -137,23 +137,8 @@ bool CONTACT::CoCoupling3d::IntegrateCells()
   // loop over all integration cells
   for (int i=0;i<(int)(Cells().size());++i)
   {
-    // compare intcell area with slave integration element area
-    double intcellarea = Cells()[i]->Area();
-    double selearea = 0.0;
-    if (!CouplingInAuxPlane())
-      selearea = SlaveIntElement().MoData().Area();
-    else
-    {
-      DRT::Element::DiscretizationType dt = SlaveIntElement().Shape();
-      if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
-        selearea = 4.0;
-      else if (dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
-        selearea = 0.5;
-      else dserror("ERROR: IntegrateCells: Invalid 3D slave element type");
-    }
-
-    // integrate cell only if not neglectable
-    if (intcellarea < MORTARINTLIM*selearea) continue;
+    // integrate cell only if it has a non-zero area
+    if (Cells()[i]->Area() < MORTARINTLIM*SlaveElementArea()) continue;
 
     // debug output of integration cells in GMSH
 #ifdef MORTARGMSHCELLS

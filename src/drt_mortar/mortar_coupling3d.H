@@ -381,6 +381,26 @@ public:
                                          double& tol);
 
   /*!
+  \brief Compute and return area of clipping polygon (3D)
+
+  This method automatically returns the relevant(!) area of the
+  current clip polygon, depending on whether coupling is performed
+  in the auxiliary plane or in the slave parameter space.
+  
+  */
+  virtual double PolygonArea();
+
+  /*!
+  \brief Compute and return area of slave element (3D)
+
+  This method automatically returns the relevant(!) area of the
+  current slave element, depending on whether coupling is performed
+  in the auxiliary plane or in the slave parameter space.
+
+  */
+  virtual double SlaveElementArea();
+
+  /*!
   \brief Check / set projection status of slave nodes (3D)
 
   This method checks for all slave nodes if they are part of the clip

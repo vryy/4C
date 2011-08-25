@@ -219,19 +219,19 @@ bool MORTAR::Coupling3d::EvaluateCoupling()
   if (!clip) return false;
 
   // proceed only if clipping polygon is at least a triangle
-  bool overlap = false;
-  if (clipsize>=3) overlap = true;
-  if (overlap)
-  {
-    // check / set  projection status of slave nodes
-    HasProjStatus();
+  if (clipsize<3) return false;
 
-    // do triangulation (+linearization) of clip polygon
-    Triangulation(projpar,tol);
+  // proceed only if clipping polygon has non-zero area
+  if (PolygonArea() < MORTARINTLIM*SlaveElementArea()) return false;
 
-    // do integration of integration cells
-    IntegrateCells();
-  }
+  // check / set  projection status of slave nodes
+  HasProjStatus();
+
+  // do triangulation (+linearization) of clip polygon
+  Triangulation(projpar,tol);
+
+  // do integration of integration cells
+  IntegrateCells();
 
   return true;
 }
@@ -2350,7 +2350,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
   // - x* = A * (x - p1) where p1 = translation, A = rotation
   // - this yields transformed points with coords (x_bar,y_bar,0)
   //**********************************************************************
-  // number of points removed from convex hull (neede later)
+  // number of points removed from convex hull (needed later)
   int removed = 0;
   
   // only continue if more than two points remaining
@@ -2490,31 +2490,17 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
     for (int i=0;i<np-1;++i)
       yvalues.push_back(transformed(1,sorted[i]));
     
-    // sort list again where two angles are identical
-    for (int i=0;i<np-2;++i)
-      if (cotangle[i]==cotangle[i+1])
-        if (yvalues[i]>yvalues[i+1])
-        {
-          MORTAR::Swap(cotangle[i],cotangle[i+1]);
-          MORTAR::Swap(yvalues[i],yvalues[i+1]);
-          MORTAR::Swap(sorted[i],sorted[i+1]);
-        }
-    
-    // check whether 3 points with identical angle exist (without starting point)
-    int count = 0;
-    
-    for (int i=0;i<np-1;++i)
-    {
-      for (int j=0;j<np-1;++j)
-      {
-        // check if cotangle is identical
-        if (cotangle[j]==cotangle[i]) count += 1;
-      }
-      
-      // stop if 3 identical values found
-      if (count >= 3) dserror("ERROR: 3 points on one line in convex hull!");
-      else            count = 0;
-    }
+    // now sort ascending w.r.t value wherever angles are identical
+    // (bubblesort: we might need np-2 rounds if all np-1 angles identical)
+    for (int round=0;round<np-2;++round)
+      for (int i=0;i<np-2;++i)
+        if (cotangle[i]==cotangle[i+1])
+          if (yvalues[i]>yvalues[i+1])
+          {
+            MORTAR::Swap(cotangle[i],cotangle[i+1]);
+            MORTAR::Swap(yvalues[i],yvalues[i+1]);
+            MORTAR::Swap(sorted[i],sorted[i+1]);
+          }
     
     if (out)
     {
@@ -2536,6 +2522,9 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
     removed = 0;
     
     // go through sorted list and check for clockwise rotation
+    vector<bool> haveremovedthis(np-1);
+    for (int i=0;i<np-1;++i) haveremovedthis[i] = false;
+
     for (int i=0;i<np-1;++i)
     {
       double edge1[2] = {0.0, 0.0};
@@ -2553,42 +2542,92 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
       // standard case
       else if (i<np-2)
       {
-        edge1[0] = transformed(0,sorted[i]) - transformed(0,sorted[i-1]);
-        edge1[1] = transformed(1,sorted[i]) - transformed(1,sorted[i-1]);
-        edge2[0] = transformed(0,sorted[i+1]) - transformed(0,sorted[i]);
-        edge2[1] = transformed(1,sorted[i+1]) - transformed(1,sorted[i]);
+        // go back and find first non-removed partner
+        bool foundpartner = false;
+        int k=i-1;
+
+        while (foundpartner==false)
+        {
+          // found non-removed partner
+          if (haveremovedthis[k]==false)
+          {
+            edge1[0] = transformed(0,sorted[i]) - transformed(0,sorted[k]);
+            edge1[1] = transformed(1,sorted[i]) - transformed(1,sorted[k]);
+            edge2[0] = transformed(0,sorted[i+1]) - transformed(0,sorted[i]);
+            edge2[1] = transformed(1,sorted[i+1]) - transformed(1,sorted[i]);
+            foundpartner=true;
+          }
+          else
+          {
+            // decrease counter
+            k-=1;
+
+            // use starting point if all in between removed
+            if (k<0)
+            {
+              edge1[0] = transformed(0,sorted[i]) - startpoint[0];
+              edge1[1] = transformed(1,sorted[i]) - startpoint[1];
+              edge2[0] = transformed(0,sorted[i+1]) - transformed(0,sorted[i]);
+              edge2[1] = transformed(1,sorted[i+1]) - transformed(1,sorted[i]);
+              foundpartner=true;
+            }
+          }
+        }
       }
       
       // last triple
       else /* if i = np-1 */
       {
-        edge1[0] = transformed(0,sorted[i]) - transformed(0,sorted[i-1]);
-        edge1[1] = transformed(1,sorted[i]) - transformed(1,sorted[i-1]);
-        edge2[0] = startpoint[0] - transformed(0,sorted[i]);
-        edge2[1] = startpoint[1] - transformed(1,sorted[i]);
+        // go back and find first non-removed partner
+        bool foundpartner = false;
+        int k=i-1;
+
+        while (foundpartner==false)
+        {
+          // found non-removed partner
+          if (haveremovedthis[k]==false)
+          {
+            edge1[0] = transformed(0,sorted[i]) - transformed(0,sorted[k]);
+            edge1[1] = transformed(1,sorted[i]) - transformed(1,sorted[k]);
+            edge2[0] = startpoint[0] - transformed(0,sorted[i]);
+            edge2[1] = startpoint[1] - transformed(1,sorted[i]);
+            foundpartner=true;
+          }
+          else
+          {
+            // decrease counter
+            k-=1;
+
+            // use starting point if all in between removed
+            if (k<0)
+            {
+              edge1[0] = transformed(0,sorted[i]) - startpoint[0];
+              edge1[1] = transformed(1,sorted[i]) - startpoint[1];
+              edge2[0] = startpoint[0] - transformed(0,sorted[i]);
+              edge2[1] = startpoint[1] - transformed(1,sorted[i]);
+              foundpartner=true;
+            }
+          }
+        }
       }
       
       // check for clockwise rotation
       double cw = edge1[0]*edge2[1]-edge1[1]*edge2[0];
       
-      if (out) cout << "Check triple around point " << sorted[i] << endl;
-      if (out) cout << "cw: " << cw << endl;
-      
       // add point to convex hull if clockwise triple
-      // increas counter "removed" if counter-clockwise triple
-      if (cw <= 0)
+      // (use tolerance to remove almost straight lines of 3 points)
+      if (cw <= -tol)
       {
         Vertex* current = &collconvexhull[sorted[i]];
         respoly.push_back(Vertex(current->Coord(),current->VType(),current->Nodeids(),NULL,NULL,false,false,NULL,-1.0));
       }
+      // mark vertex as "removed" if counter-clockwise triple
       else
+      {
         removed++;
+        haveremovedthis[i]=true;
+      }
     }
-    
-    // (4) Keep in mind that our collconvexhull should already BE the convex hull
-    // (thus only sorting should be necessary, but no point should have to be removed in (3))
-    if (removed>0)
-      cout << "***WARNING*** In total, " << removed << " points removed from convex hull!" << endl;
   }
   
   // **********************************************************************
@@ -2689,6 +2728,74 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(vector<Vertex>& poly1,
   }
 
   return true;  
+}
+
+/*----------------------------------------------------------------------*
+ |  Compute and return area of clipping polygon (3D)          popp 11/08|
+ *----------------------------------------------------------------------*/
+double MORTAR::Coupling3d::PolygonArea()
+{
+  // initialize and check for trivial case
+  double area = 0.0;
+  int clipsize = (int)(Clip().size());
+  if (clipsize<3) return area;
+
+  // loop over all vertices to compute area
+  for (int k=0;k<clipsize;++k)
+  {
+    // current and next vertex vector
+    vector<double> vk = Clip()[k].Coord();
+    vector<double> vkp1;
+    if (k==clipsize-1) vkp1 = Clip()[0].Coord();
+    else               vkp1 = Clip()[k+1].Coord();
+
+    // cross product
+    double cross[3] = {0.0, 0.0, 0.0};
+    cross[0] = vk[1]*vkp1[2]-vk[2]*vkp1[1];
+    cross[1] = vk[2]*vkp1[0]-vk[0]*vkp1[2];
+    cross[2] = vk[0]*vkp1[1]-vk[1]*vkp1[0];
+
+    // add scalar product with negative(!) normal to area
+    // (because the clip polygon is oriented clockwise w.r.t. normal)
+    area -= 0.5*(cross[0]*Auxn()[0]+cross[1]*Auxn()[1]+cross[2]*Auxn()[2]);
+  }
+
+  // when areas are close to zero, we might get sign problems
+  // (as we do not want to check negative / positive orientation
+  // here anyway, but only close to zero areas, we simply return
+  // the absolute value!)
+  return abs(area);
+}
+
+/*----------------------------------------------------------------------*
+ |  Compute and return area of slave element (3D)             popp 11/08|
+ *----------------------------------------------------------------------*/
+double MORTAR::Coupling3d::SlaveElementArea()
+{
+  // initialize
+  double selearea = 0.0;
+
+  // (1) coupling in parameter space
+  // -> thus, give area w.r.t to local basis
+  if (!CouplingInAuxPlane())
+  {
+    selearea = SlaveIntElement().MoData().Area();
+  }
+
+  // (2) coupling in auxiliary plane
+  // -> thus, give area w.r.t to global basis
+  else
+  {
+    DRT::Element::DiscretizationType dt = SlaveIntElement().Shape();
+    if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
+      selearea = 4.0;
+    else if (dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
+      selearea = 0.5;
+    else
+      dserror("ERROR: IntegrateCells: Invalid 3D slave element type");
+  }
+
+  return selearea;
 }
 
 /*----------------------------------------------------------------------*
@@ -2875,7 +2982,7 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(vector<vector<map<int,double> > >
       // perpendicular bisector of P2P3 via cross product
       double d1=b2*no3-no2*b3;
       double d2=b3*no1-no3*b1;
-      //double d3=b1*no2-no1*b2;
+      double d3=b1*no2-no1*b2;
 
       // mid-points of P1P2 and P2P3
       double m1=(x1+x2)/2.0;
@@ -2883,11 +2990,36 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(vector<vector<map<int,double> > >
       double m3=(z1+z2)/2.0;
       double n1=(x2+x3)/2.0;
       double n2=(y2+y3)/2.0;
-      //double n3=(z2+z3)/2.0;
+      double n3=(z2+z3)/2.0;
+
+      // try to minimize error
+      int direction = 0;
+      if (abs(Auxn()[0])>=abs(Auxn()[1]) && abs(Auxn()[0])>=abs(Auxn()[2])) direction=1;
+      if (abs(Auxn()[1])>=abs(Auxn()[0]) && abs(Auxn()[1])>=abs(Auxn()[2])) direction=2;
+      if (abs(Auxn()[2])>=abs(Auxn()[0]) && abs(Auxn()[2])>=abs(Auxn()[1])) direction=3;
+      if (direction==0) dserror("ERROR: Did not find best direction");
 
       // intersection of the two perpendicular bisections
       // (solution of m1+s*c1 = n1+t*d1 and m2+s*c2 = n2+t*d2)
-      double s=(m2*d1-n2*d1-d2*m1+d2*n1)/(c1*d2-c2*d1);
+      double s=0.0;
+      if (direction==1)
+      {
+        // minimize error in yz-plane by solving
+        // m2+s*c2 = n2+t*d2 and m3+s*c3 = n3+t*d3
+        s=(m3*d2-n3*d2-d3*m2+d3*n2)/(c2*d3-c3*d2);
+      }
+      else if (direction==2)
+      {
+        // minimize error in xz-plane by solving
+        // m1+s*c1 = n1+t*d1 and m3+s*c3 = n3+t*d3
+        s=(m3*d1-n3*d1-d3*m1+d3*n1)/(c1*d3-c3*d1);
+      }
+      else /* (direction==3)*/
+      {
+        // minimize error in xy-plane by solving
+        // m1+s*c1 = n1+t*d1 and m2+s*c2 = n2+t*d2
+        s=(m2*d1-n2*d1-d2*m1+d2*n1)/(c1*d2-c2*d1);
+      }
 
       // center of the circumcircle
       double xcenter = m1+s*c1;
@@ -3378,23 +3510,8 @@ bool MORTAR::Coupling3d::IntegrateCells()
   // loop over all integration cells
   for (int i=0;i<(int)(Cells().size());++i)
   {
-    // compare intcell area with slave integration element area
-    double intcellarea = Cells()[i]->Area();
-    double selearea = 0.0;
-    if (!CouplingInAuxPlane())
-      selearea = SlaveIntElement().MoData().Area();
-    else
-    {
-      DRT::Element::DiscretizationType dt = SlaveIntElement().Shape();
-      if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
-        selearea = 4.0;
-      else if (dt==DRT::Element::tri3 || dt==DRT::Element::tri6)
-        selearea = 0.5;
-      else dserror("ERROR: IntegrateCells: Invalid 3D slave element type");
-    }
-
-    // integrate cell only if not neglectable
-    if (intcellarea < MORTARINTLIM*selearea) continue;
+    // integrate cell only if it has a non-zero area
+    if (Cells()[i]->Area() < MORTARINTLIM*SlaveElementArea()) continue;
 
     // debug output of integration cells in GMSH
 #ifdef MORTARGMSHCELLS
