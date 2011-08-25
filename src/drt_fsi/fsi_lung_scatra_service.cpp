@@ -221,7 +221,7 @@ bool FSI::LungScatra::AbortScatraNonlinIter(const int itnum)
       if (myrank == 0)
       {
         // print 'finish line'
-        printf("+------------+-------------------+--------------+--------------+\n");
+        printf("+------------+-------------------+--------------+\n");
       }
       return true;
     }

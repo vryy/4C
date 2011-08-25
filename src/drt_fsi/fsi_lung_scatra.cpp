@@ -62,8 +62,23 @@ FSI::LungScatra::LungScatra(Teuchos::RCP<FSI::Monolithic> fsi):
   // access the problem-specific parameter lists
   const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
   const Teuchos::ParameterList& structdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& fluiddyn = DRT::Problem::Instance()->FluidDynamicParams();
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
   permeablesurf_ = DRT::INPUT::IntegralValue<int>(scatradyn,"PERMEABLESURF");
+
+  // create one-way coupling algorithm instances
+  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra =
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,true,0,DRT::Problem::Instance()->ScalarTransportFluidSolverParams()));
+  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra =
+    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,true,1,DRT::Problem::Instance()->ScalarTransportStructureSolverParams()));
+
+  scatravec_.push_back(fluidscatra);
+  scatravec_.push_back(structscatra);
+
+  /*----------------------------------------------------------------------*/
+  /*                      Check of input parameters                       */
+  /*----------------------------------------------------------------------*/
 
   // check time integration algo -> currently only one-step-theta scheme supported
   INPAR::SCATRA::TimeIntegrationScheme scatratimealgo =
@@ -77,20 +92,24 @@ FSI::LungScatra::LungScatra(Teuchos::RCP<FSI::Monolithic> fsi):
       structtimealgo != INPAR::STR::dyna_onesteptheta)
     dserror("lung gas exchange is limited in functionality (only one-step-theta scheme possible)");
 
-  // create one-way coupling algorithm instances
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,true,0,DRT::Problem::Instance()->ScalarTransportFluidSolverParams()));
-  Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> structscatra =
-    Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(scatradyn,true,1,DRT::Problem::Instance()->ScalarTransportStructureSolverParams()));
-
-  scatravec_.push_back(fluidscatra);
-  scatravec_.push_back(structscatra);
-
   // check solver type -> it must be incremental, otherwise residual and
   // stiffness matrix determined by the scatra fields do not match the
   // formulation implemented below
   if (scatravec_[0]->ScaTraField().Incremental() == false)
     dserror("Incremental formulation needed for coupled lung scatra simulations");
+
+  // make sure that initial time derivative of concentration is not calculated
+  // automatically (i.e. field-wise)
+  if (DRT::INPUT::IntegralValue<int>(scatradyn,"SKIPINITDER")==false)
+    dserror("Initial time derivative of phi must not be calculated automatically -> set SKIPINITDER to false");
+
+  // check if relevant parameters are chosen the same for FSI and ScaTra
+  // dynamics
+  if (scatradyn.get<double>("TIMESTEP") != fsidyn.get<double>("TIMESTEP") or
+      scatradyn.get<int>("NUMSTEP") != fsidyn.get<int>("NUMSTEP") or
+      scatradyn.get<double>("THETA") != fluiddyn.get<double>("THETA") or
+      scatradyn.get<double>("THETA") != structdyn.sublist("ONESTEPTHETA").get<double>("THETA"))
+    dserror("Fix your input file! Time integration parameters for FSI and ScaTra fields not matching!");
 
   // check if scatra coupling conditions are defined on both discretizations
   // and have the same permeability coefficient
@@ -142,6 +161,9 @@ FSI::LungScatra::LungScatra(Teuchos::RCP<FSI::Monolithic> fsi):
     }
   }
 
+  /*----------------------------------------------------------------------*/
+  /*                            General set up                            */
+  /*----------------------------------------------------------------------*/
 
   // create map extractors needed for scatra condition coupling
   for (unsigned i=0; i<scatravec_.size(); ++i)
@@ -256,11 +278,6 @@ FSI::LungScatra::LungScatra(Teuchos::RCP<FSI::Monolithic> fsi):
   (scatravec_[0])->ScaTraField().Discretization()->ComputeNullSpaceIfNecessary(scatrasolver_->Params().sublist("Inverse1"));
   (scatravec_[1])->ScaTraField().Discretization()->ComputeNullSpaceIfNecessary(scatrasolver_->Params().sublist("Inverse2"));
 #endif
-
-  // make sure that initial time derivative of concentration is not calculated
-  // automatically (i.e. field-wise)
-  if (DRT::INPUT::IntegralValue<int>(scatradyn,"SKIPINITDER")==false)
-    dserror("Initial time derivative of phi must not be calculated automatically -> set SKIPINITDER to false");
 }
 
 
