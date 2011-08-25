@@ -90,6 +90,27 @@ void STR::TimIntExpl::PrintStep()
 }
 
 /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool STR::TimIntExpl::UseContactSolver()
+{
+  // no contact possible -> return false
+  if (!HaveContactMeshtying())
+    return false;
+  // contact possible -> check current status
+  else
+  {
+    // currently not in contact -> return false
+    if (!cmtman_->GetStrategy().IsInContact() &&
+        !cmtman_->GetStrategy().WasInContact() &&
+        !cmtman_->GetStrategy().WasInContactLastTimeStep())
+      return false;
+    // currently in contact -> return true
+    else
+      return true;
+  }
+}
+
+/*----------------------------------------------------------------------*/
 /* print step summary */
 void STR::TimIntExpl::PrintStepText
 (

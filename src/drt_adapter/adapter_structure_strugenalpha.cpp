@@ -34,11 +34,13 @@ ADAPTER::StructureGenAlpha::StructureGenAlpha(Teuchos::RCP<Teuchos::ParameterLis
                                               Teuchos::RCP<StruGenAlpha> tintegrator,
                                               Teuchos::RCP<DRT::Discretization> dis,
                                               Teuchos::RCP<LINALG::Solver> solver,
+                                              Teuchos::RCP<LINALG::Solver> contactsolver,  ///< the solver
                                               Teuchos::RCP<IO::DiscretizationWriter> output)
   : structure_(tintegrator),
     dis_(dis),
     params_(params),
     solver_(solver),
+    contactsolver_(contactsolver),
     output_(output)
 {
   //setup fsi-Interface

@@ -39,6 +39,7 @@ ADAPTER::StructureTimIntImpl::StructureTimIntImpl(
   Teuchos::RCP<Teuchos::ParameterList> xparams,
   Teuchos::RCP<DRT::Discretization> discret,
   Teuchos::RCP<LINALG::Solver> solver,
+  Teuchos::RCP<LINALG::Solver> contactsolver,
   Teuchos::RCP<IO::DiscretizationWriter> output
 )
 : structure_(stii),
@@ -47,6 +48,7 @@ ADAPTER::StructureTimIntImpl::StructureTimIntImpl(
   sdynparams_(sdynparams),
   xparams_(xparams),
   solver_(solver),
+  contactsolver_(solver),
   output_(output)
 {
   // make sure

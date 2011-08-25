@@ -216,7 +216,13 @@ namespace ADAPTER {
     virtual void Solve();
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
+    virtual Teuchos::RCP<LINALG::Solver> LinearSolver()
+    {
+      if (!structure_->UseContactSolver())
+        return solver_;
+      else
+        return contactsolver_;
+    }
 
     /// linear structure solve with just a interface load
     ///
@@ -342,6 +348,7 @@ namespace ADAPTER {
                                                        ///< but could/should be circumvented
     Teuchos::RCP<Teuchos::ParameterList> xparams_;  ///< eXtra input parameters
     Teuchos::RCP<LINALG::Solver> solver_;  ///< the solver
+    Teuchos::RCP<LINALG::Solver> contactsolver_; ///< the contact solver
     Teuchos::RCP<IO::DiscretizationWriter> output_;  ///< the output writer
     //@}
 

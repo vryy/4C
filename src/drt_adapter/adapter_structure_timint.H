@@ -58,6 +58,7 @@ namespace ADAPTER {
       Teuchos::RCP<Teuchos::ParameterList> xparams,  ///< extra flags
       Teuchos::RCP<DRT::Discretization> discret,  ///< current discretisation
       Teuchos::RCP<LINALG::Solver> solver,  ///< the solver
+      Teuchos::RCP<LINALG::Solver> contactsolver,  ///< the contact solver
       Teuchos::RCP<IO::DiscretizationWriter> output  ///< the output
     );
 
@@ -214,9 +215,8 @@ namespace ADAPTER {
     {
       if (!structure_->UseContactSolver())
         return solver_;
-      // THIS SHOULD BE THE CONTACTSOLVER_
       else
-        return solver_;
+        return contactsolver_;
     }
 
     /// linear structure solve with just a interface load
@@ -346,6 +346,7 @@ namespace ADAPTER {
                                                        ///< but could/should be circumvented
     Teuchos::RCP<Teuchos::ParameterList> xparams_;  ///< eXtra input parameters
     Teuchos::RCP<LINALG::Solver> solver_;  ///< the solver
+    Teuchos::RCP<LINALG::Solver> contactsolver_;  ///< the contact solver
     Teuchos::RCP<IO::DiscretizationWriter> output_;  ///< the output writer
     //@}
 

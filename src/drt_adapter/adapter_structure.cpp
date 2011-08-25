@@ -416,7 +416,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   if (tintegrator == null) dserror("Failed to allocate strugenalpha derived time integrator");
 
   Teuchos::RCP<Structure> tmpstr;
-  tmpstr = rcp(new StructureGenAlpha(genalphaparams,tintegrator,actdis,solver,output));
+  tmpstr = rcp(new StructureGenAlpha(genalphaparams,tintegrator,actdis,solver,contactsolver,output));
 
   if (tmpstr->HaveConstraint())
   {
@@ -676,7 +676,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
       dserror("no adaptive time integration with fsi");
     }
     structure_ = Teuchos::rcp(new StructureTimIntAda(sta, sti, ioflags, sdyn, xparams,
-                                                     actdis, solver, output));
+                                                     actdis, solver, contactsolver, output));
   }
   else if (stie!=Teuchos::null)
   {
@@ -691,7 +691,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   {
     Teuchos::RCP<Structure> tmpstr
       = Teuchos::rcp(new StructureTimIntImpl(stii, ioflags, sdyn, xparams,
-                                             actdis, solver, output));
+                                             actdis, solver, contactsolver, output));
 
     if (genprob.probtyp == prb_fsi or
         genprob.probtyp == prb_fsi_lung or

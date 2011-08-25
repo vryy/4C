@@ -48,6 +48,7 @@ ADAPTER::StructureTimIntExpl::StructureTimIntExpl(
   sdynparams_(sdynparams),
   xparams_(xparams),
   solver_(solver),
+  contactsolver_(contactsolver),
   output_(output)
 {
   // make sure

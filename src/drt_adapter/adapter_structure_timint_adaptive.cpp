@@ -40,6 +40,7 @@ ADAPTER::StructureTimIntAda::StructureTimIntAda(
   Teuchos::RCP<Teuchos::ParameterList> xparams,
   Teuchos::RCP<DRT::Discretization> discret,
   Teuchos::RCP<LINALG::Solver> solver,
+  Teuchos::RCP<LINALG::Solver> contactsolver,  ///< the solver
   Teuchos::RCP<IO::DiscretizationWriter> output
 )
 : structure_(sta),
@@ -49,6 +50,7 @@ ADAPTER::StructureTimIntAda::StructureTimIntAda(
   sdynparams_(sdynparams),
   xparams_(xparams),
   solver_(solver),
+  contactsolver_(contactsolver),
   output_(output)
 {
   // make sure

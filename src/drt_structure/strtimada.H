@@ -243,6 +243,9 @@ namespace STR
 
     //@}
 
+    //! use contact solver or not
+    bool UseContactSolver() { return false; };
+
   protected:
 
     //! not wanted: copy constructor

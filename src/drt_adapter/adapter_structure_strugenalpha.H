@@ -42,6 +42,7 @@ namespace ADAPTER {
                      Teuchos::RCP<StruGenAlpha> tintegrator,
                      Teuchos::RCP<DRT::Discretization> dis,
                      Teuchos::RCP<LINALG::Solver> solver,
+                     Teuchos::RCP<LINALG::Solver> contactsolver,
                      Teuchos::RCP<IO::DiscretizationWriter> output);
 
     Teuchos::RCP<const Epetra_Vector> InitialGuess();
@@ -160,9 +161,8 @@ namespace ADAPTER {
     {
       if (!structure_->UseContactSolver())
         return solver_;
-      // THIS SHOULD BE THE CONTACTSOLVER_
       else
-        return solver_;
+        return contactsolver_;
     }
 
     /// linear structure solve with just a interface load
@@ -279,6 +279,7 @@ namespace ADAPTER {
     Teuchos::RCP<DRT::Discretization> dis_;
     Teuchos::RCP<Teuchos::ParameterList> params_;
     Teuchos::RCP<LINALG::Solver> solver_;
+    Teuchos::RCP<LINALG::Solver> contactsolver_;
     Teuchos::RCP<IO::DiscretizationWriter> output_;
 
     //@}
