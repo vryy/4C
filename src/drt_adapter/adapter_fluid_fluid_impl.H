@@ -36,8 +36,7 @@ namespace ADAPTER {
    FluidFluidImpl(Teuchos::RCP<DRT::Discretization> embfluiddis,
              Teuchos::RCP<DRT::Discretization> bgfluiddis,
              Teuchos::RCP<LINALG::Solver> solver,
-             const Teuchos::ParameterList &     params,
-                  //Teuchos::RCP<IO::DiscretizationWriter> output,
+             Teuchos::RCP<ParameterList> params,
              bool isale,
              bool dirichletcond);
 
@@ -204,7 +203,7 @@ namespace ADAPTER {
 
 //     Teuchos::RCP<IO::DiscretizationWriter> fluidxfluidboundaryoutput_;
     Teuchos::RCP<LINALG::Solver>           solver_;
-    const Teuchos::ParameterList &         params_;
+    Teuchos::RCP<Teuchos::ParameterList>   params_;
     Teuchos::RCP<IO::DiscretizationWriter> output_;
     //@}
 

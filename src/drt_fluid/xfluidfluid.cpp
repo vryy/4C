@@ -241,7 +241,8 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
     alediscret.SetState("velaf",xfluid_.alevelnp_);
   }
 
-  int itemax = xfluid_.params_.get<int>("ITEMAX");
+  //int itemax = xfluid_.params_.get<int>("ITEMAX");
+  int itemax  = xfluid_.params_.get<int>("max nonlin iter steps");
 
   // convergence check at itemax is skipped for speedup if
   // CONVCHECK is set to L_2_norm_without_residual_at_itemax
@@ -1012,7 +1013,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputBoundaryCell( DRT::Discretiza
 FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
                      Teuchos::RCP<DRT::Discretization> embdis,
                      LINALG::Solver & solver,
-                     const Teuchos::ParameterList & params,
+                     ParameterList&                   params,
                      bool alefluid )
   : bgdis_(actdis),
     embdis_(embdis),
@@ -1027,23 +1028,21 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   // -------------------------------------------------------------------
   myrank_  = bgdis_->Comm().MyPID();
 
-  physicaltype_ = DRT::INPUT::IntegralValue<INPAR::FLUID::PhysicalType>(params_,"PHYSICAL_TYPE");
-  timealgo_     = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(params_,"TIMEINTEGR");
-  stepmax_      = params_.get<int>("NUMSTEP");
-  maxtime_      = params_.get<double>("MAXTIME");
-  dta_          = params_.get<double>("TIMESTEP");
-  dtp_          = dta_;
-  theta_        = params_.get<double>("THETA");
-  newton_       = DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(params_,"NONLINITER");
-  convform_     = params_.get<string>("CONVFORM");
-  fssgv_        = params_.get<string>("FSSUGRVISC","No");
+  physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type");
+  timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params_, "time int algo");
+  stepmax_  = params_.get<int>   ("max number timesteps");
+  maxtime_  = params_.get<double>("total time");
+  dtp_ = dta_ = params_.get<double>("time step size");
+  theta_    = params_.get<double>("theta");;
+  newton_ = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation");
+  convform_ = params_.get<string>("form of convective term","convective");
+  fssgv_ = params_.get<string>("fs subgrid viscosity","No");
   upres_        = params_.get<int>("write solution every", -1);
 
   numdim_       = genprob.ndim; //params_.get<int>("DIM");
 
   emboutput_ = rcp(new IO::DiscretizationWriter(embdis_));
   emboutput_->WriteMesh(0,0.0);
-
 
   bool twoDFlow = false;
   if (params_.get<string>("2DFLOW","no") == "yes") twoDFlow = true;
@@ -1511,7 +1510,7 @@ void FLD::XFluidFluid::SolveStationaryProblemFluidFluid()
     // -------------------------------------------------------------------
     //         calculate lift'n'drag forces from the residual
     // -------------------------------------------------------------------
-    //LiftDrag();
+    LiftDrag();
 
     // -------------------------------------------------------------------
     //                        compute flow rates
@@ -1624,16 +1623,16 @@ void FLD::XFluidFluid::NonlinearSolve()
   // ---------------------------------------------- nonlinear iteration
   // ------------------------------- stop nonlinear iteration when both
   //                                 increment-norms are below this bound
-  const double  ittol        = params_.get<double>("CONVTOL");
+  const double  ittol     =params_.get<double>("tolerance for nonlin iter");
 
   //------------------------------ turn adaptive solver tolerance on/off
-  const bool   isadapttol    = DRT::INPUT::IntegralValue<bool>(params_,"ADAPTCONV");
+  const bool   isadapttol    = params_.get<bool>("ADAPTCONV",true);
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER",0.01);
 
   int  itnum = 0;
   bool stopnonliniter = false;
 
-  int itemax = params_.get<int>("ITEMAX");
+  int itemax  = params_.get<int>   ("max nonlin iter steps");
 
   dtsolve_  = 0.0;
   dtele_    = 0.0;
@@ -1865,6 +1864,10 @@ void FLD::XFluidFluid::NonlinearSolve()
     state_->fluidfluidsysmat_->Add(*state_->Cuiui_,false,1.0,1.0);
     state_->fluidfluidsysmat_->Complete();
 
+    // scaling to get true residual vector
+    state_->trueresidual_->Update(ResidualScaling(),*state_->residual_,0.0);
+    aletrueresidual_->Update(ResidualScaling(),*aleresidual_,0.0);
+
     //build a merged map from fluid-fluid dbc-maps
     std::vector<Teuchos::RCP<const Epetra_Map> > maps;
     maps.push_back(state_->dbcmaps_->CondMap());
@@ -1972,8 +1975,7 @@ void FLD::XFluidFluid::UpdateGridv()
 {
   // get order of accuracy of grid velocity determination
   // from input file data
-  //const int order  = params_.get<int>("order gridvel");
-  const int order  = params_.get<int>("GRIDVEL");
+  const int order  = params_.get<int>("order gridvel");
   switch (order)
   {
     case 1:
@@ -1996,6 +1998,10 @@ void FLD::XFluidFluid::UpdateGridv()
       gridv_->Update(0.5/dta_, *aledispnm_, 1.0);
     break;
   }
+
+  // if the mesh velocity should have the same velocity like the embedded mesh
+  //gridv_->Update(1.0,*alevelnp_,0.0);
+  //aledispnp_->Update(1.0,*aledispn_,dta_,*alevelnp_,0.0);
 }
 
 // -------------------------------------------------------------------
@@ -2571,7 +2577,7 @@ void FLD::XFluidFluid::StatisticsAndOutput()
   // -------------------------------------------------------------------
   //          calculate lift'n'drag forces from the residual
   // -------------------------------------------------------------------
-  //LiftDrag();
+  LiftDrag();
 
   // compute equation-of-state factor
   //const double eosfac = thermpressaf_/gasconstant_;
@@ -2714,7 +2720,7 @@ void FLD::XFluidFluid::Output()
 //         (*state_->velnpoutput_)[state_->velnpoutput_->Map().LID(gid)]=(*state_->velnpoutput_)[state_->velnpoutput_->Map().LID(gid)] +                                                                (*state_->velnp_)[state_->velnp_->Map().LID(gid)];
 //     }
 
-    #ifdef output
+    #ifndef output
     const Epetra_Map* dofrowmap = dofset_out_.DofRowMap(); // original fluid unknowns
     const Epetra_Map* xdofrowmap = bgdis_->DofRowMap();    // fluid unknown for current cut
 
@@ -3027,6 +3033,32 @@ void FLD::XFluidFluid::SetElementTimeParameter()
 #else
   dserror("D_FLUID3 required");
 #endif
+}
+
+//----------------------------------------------------------------------
+// LiftDrag                                                  chfoe 11/07
+//----------------------------------------------------------------------
+//calculate lift&drag forces and angular moments
+//
+//Lift and drag forces are based upon the right hand side true-residual entities
+//of the corresponding nodes. The contribution of the end node of a line is entirely
+//added to a present L&D force.
+//
+//Notice: Angular moments obtained from lift&drag forces currently refer to the
+//        initial configuration, i.e. are built with the coordinates X of a particular
+//        node irrespective of its current position.
+//--------------------------------------------------------------------
+void FLD::XFluidFluid::LiftDrag() const
+{
+  // in this map, the results of the lift drag calculation are stored
+  RCP<map<int,vector<double> > > liftdragvals;
+
+  FLD::UTILS::LiftDrag(*embdis_,*aletrueresidual_,params_,liftdragvals);
+
+  if (liftdragvals!=Teuchos::null and embdis_->Comm().MyPID() == 0)
+    FLD::UTILS::WriteLiftDragToFile(time_, step_, *liftdragvals);
+
+  return;
 }
 //----------------------------------------------------------------------------
 //

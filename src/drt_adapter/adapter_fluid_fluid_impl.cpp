@@ -23,12 +23,10 @@ ADAPTER::FluidFluidImpl::FluidFluidImpl(
         Teuchos::RCP<DRT::Discretization> embfluiddis,
         Teuchos::RCP<DRT::Discretization> bgfluiddis,
         Teuchos::RCP<LINALG::Solver> solver,
-        const Teuchos::ParameterList &     params,
-        //Teuchos::RCP<IO::DiscretizationWriter> output,
+        Teuchos::RCP<ParameterList> params,
         bool isale,
         bool dirichletcond)
-//: fluid_( bgfluiddis,embfluiddis, *solver, params, *output, isale),
-  : fluid_( bgfluiddis,embfluiddis, *solver, params,  isale),
+  : fluid_( bgfluiddis,embfluiddis, *solver, *params,  isale),
     embfluiddis_(embfluiddis),
     bgfluiddis_(bgfluiddis),
     solver_(solver),
@@ -243,7 +241,7 @@ double ADAPTER::FluidFluidImpl::ResidualScaling() const
 /*----------------------------------------------------------------------*/
 double ADAPTER::FluidFluidImpl::TimeScaling() const
 {
-   if (params_.get<bool>("interface second order"))
+   if (params_->get<bool>("interface second order"))
    {
      return 2./fluid_.Dt();
    }
@@ -289,8 +287,7 @@ double ADAPTER::FluidFluidImpl::Dt() const
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidImpl::LiftDrag()
 {
-//  fluid_.LiftDrag();
-  return;
+  fluid_.LiftDrag();
 }
 
 
@@ -387,6 +384,7 @@ void ADAPTER::FluidFluidImpl::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector>
 /*----------------------------------------------------------------------*/
 int ADAPTER::FluidFluidImpl::Itemax() const
 {
+  dserror("itermax nicht implementet!");
 //  return fluid_.Itemax();
   return null;
 }
@@ -396,6 +394,7 @@ int ADAPTER::FluidFluidImpl::Itemax() const
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidImpl::SetItemax(int itemax)
 {
+  dserror("setitermax nicht implementet!");
 //  fluid_.SetItemax(itemax);
   return;
 }
@@ -423,6 +422,7 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::FluidFluidImpl::CreateFieldTest()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidFluidImpl::ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres)
 {
+  cout << "ExtractVelocityPart nicht implemented" << endl;
 //  return (fluid_.VelPresSplitter()).ExtractOtherVector(velpres);
   return null;
 }

@@ -314,7 +314,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // flag for writing wall shear stress
   fluidtimeparams->set ("write wall shear stresses"  ,DRT::INPUT::IntegralValue<int>(ioflags,"FLUID_WALL_SHEAR_STRESS"));
 
-  // ---------------------------------------------------- lift and drag
+  // ---------------------------------------------------- lift and
+  // drag
   fluidtimeparams->set<int>("liftdrag",DRT::INPUT::IntegralValue<int>(fdyn,"LIFTDRAG"));
 
   // -----------evaluate error for test flows with analytical solutions
@@ -544,7 +545,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
              or genprob.probtyp == prb_fluid_fluid)
     {
       RCP<DRT::Discretization> embfluiddis  =  DRT::Problem::Instance()->Dis(genprob.numff,1);
-      fluid_ = rcp(new ADAPTER::FluidFluidImpl(embfluiddis,actdis,solver,fdyn,isale,dirichletcond));
+      fluid_ = rcp(new ADAPTER::FluidFluidImpl(embfluiddis,actdis,solver,fluidtimeparams,isale,dirichletcond));
     }
     else
     {

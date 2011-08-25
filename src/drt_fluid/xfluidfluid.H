@@ -212,11 +212,11 @@ namespace FLD
 
   public:
 
+
     XFluidFluid( Teuchos::RCP<DRT::Discretization>  actdis,
                  Teuchos::RCP<DRT::Discretization>  embdis,
                  LINALG::Solver &                   solver,
-                 const Teuchos::ParameterList &     params,
-                 //IO::DiscretizationWriter&          output,
+                 ParameterList &                    params,
                  bool                               alefluid=false
       );
 
@@ -350,6 +350,8 @@ namespace FLD
         return density_/(theta_*dta_);
     }
     //Teuchos::RCP<Epetra_Vector> calcStresses();
+
+    void LiftDrag() const;
 
     // embedded fluid state vectors
     Teuchos::RCP<LINALG::SparseOperator> alesysmat_;
