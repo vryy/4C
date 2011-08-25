@@ -641,6 +641,7 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so_nstet_evaluate.cpp
   src/drt_so3/so_nstet_input.cpp
   src/drt_so3/so_nstet_nodalstrain.cpp
+  src/drt_so3/so_nstet_multiscale.cpp
   src/drt_so3/so_nurbs27.cpp
   src/drt_so3/so_nurbs27_evaluate.cpp
   src/drt_so3/so_nurbs27_input.cpp
@@ -648,6 +649,7 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so_ptet_evaluate.cpp
   src/drt_so3/so_ptet_input.cpp
   src/drt_so3/so_ptet_nodalstrain.cpp
+  src/drt_so3/so_ptet_multiscale.cpp
   src/drt_so3/so_sh8.cpp
   src/drt_so3/so_sh8_evaluate.cpp
   src/drt_so3/so_sh8_input.cpp
@@ -667,6 +669,7 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so_tet10_input.cpp
   src/drt_so3/so_tet4.cpp
   src/drt_so3/so_tet4_evaluate.cpp
+  src/drt_so3/so_tet4_multiscale.cpp
   src/drt_so3/so_tet4_input.cpp
   src/drt_so3/so_weg6.cpp
   src/drt_so3/so_weg6_evaluate.cpp

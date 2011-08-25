@@ -136,6 +136,9 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_istep")            act = Ptet::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike")          act = Ptet::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")             act = Ptet::calc_struct_reset_istep;
+  else if (action=="calc_homog_dens")                     act = Ptet::calc_homog_dens;
+  else if (action=="multi_readrestart")                   act = Ptet::multi_readrestart;
+  else if (action=="multi_newresultfile")                 act = Ptet::multi_newresultfile;
   else dserror("Unknown type of action for Ptet");
 
   // what should the element do
@@ -314,6 +317,28 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
     // linear stiffness
     case calc_struct_linstiff:
       dserror("action calc_struct_linstiff currently not supported");
+    break;
+
+    case calc_homog_dens:
+    {
+      ptet_homog(params);
+    }
+    break;
+
+    case multi_readrestart:
+    {
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+        ptet_read_restart_multi(params);
+    }
+    break;
+
+    case multi_newresultfile:
+    {
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+        ptet_multi_newresultfile(params);
+    }
     break;
 
     default:

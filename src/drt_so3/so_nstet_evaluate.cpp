@@ -137,6 +137,9 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_istep")            act = NStet::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike")          act = NStet::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")             act = NStet::calc_struct_reset_istep;
+  else if (action=="calc_homog_dens")                     act = NStet::calc_homog_dens;
+  else if (action=="multi_readrestart")                   act = NStet::multi_readrestart;
+  else if (action=="multi_newresultfile")                 act = NStet::multi_newresultfile;
   else dserror("Unknown type of action for NStet");
 
   // what should the element do
@@ -382,6 +385,28 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
     // linear stiffness
     case calc_struct_linstiff:
       dserror("action calc_struct_linstiff currently not supported");
+    break;
+
+    case calc_homog_dens:
+    {
+      nstet_homog(params);
+    }
+    break;
+
+    case multi_readrestart:
+    {
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+        nstet_read_restart_multi(params);
+    }
+    break;
+
+    case multi_newresultfile:
+    {
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+        nstet_multi_newresultfile(params);
+    }
     break;
 
     default:

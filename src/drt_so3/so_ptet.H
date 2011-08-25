@@ -371,7 +371,10 @@ protected:
     calc_struct_update_imrlike,
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                               //!< during iteration to last converged state
-    calc_struct_B_and_F
+    calc_struct_B_and_F,
+    calc_homog_dens,
+    multi_readrestart,
+    multi_newresultfile
   };
 
   enum StressType
@@ -470,6 +473,19 @@ protected:
                       LINALG::Matrix<6,1>& glstrain,
                       LINALG::Matrix<3,3>& defgrd,
                       int gp);
+
+  //! @name Multi-scale related stuff
+
+  /// Determine a homogenized material density for multi-scale analyses by averaging over the initial volume
+  void ptet_homog(ParameterList& params);
+
+  /// Read restart on the microscale
+  void ptet_read_restart_multi(ParameterList& params);
+
+  /// New result files on the microscale
+  void ptet_multi_newresultfile(ParameterList& params);
+
+  //@}
 
 }; // class Ptet
 

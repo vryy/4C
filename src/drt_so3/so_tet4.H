@@ -383,7 +383,10 @@ protected:
     calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
     prestress_update,
     inversedesign_update,
-    inversedesign_switch
+    inversedesign_switch,
+    calc_homog_dens,
+    multi_readrestart,
+    multi_newresultfile
   };
 
   //! kinematic types of so_tet10
@@ -498,6 +501,19 @@ protected:
                     LINALG::Matrix<3,3>* defgrd,
                     const int gp,
                     ParameterList& params);
+
+  //! @name Multi-scale related stuff
+
+  /// Determine a homogenized material density for multi-scale analyses by averaging over the initial volume
+  void sotet4_homog(ParameterList& params);
+
+  /// Read restart on the microscale
+  void sotet4_read_restart_multi(ParameterList& params);
+
+  /// New result files on the microscale
+  void sotet4_multi_newresultfile(ParameterList& params);
+
+  //@}
 
 }; // class So_tet4
 

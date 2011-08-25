@@ -145,13 +145,13 @@ private:
   // adjnode and adjlm for mis patches
   map<int,map<int,DRT::Node*> >           pstab_adjnode_;
   map<int,vector<int> >                   pstab_adjlm_;
-  
+
   // map indicating which element is associated with which MIS noderids
   // key is column element gid
   // value is MIS nodes this element is associated with
   map<int,vector<int> >                   pstab_cid_mis_;
   map<int,vector<double> >                pstab_cid_mis_weight_;
-  
+
   RCP<Epetra_Map>                         pstab_misstressout_;
 
   // nodal MIS stresses and strains for output
@@ -163,7 +163,7 @@ private:
                            const int                       myrank,
                            const int                       numproc,
                            DRT::Discretization&            dis);
-  
+
   void InitAdjacency(map<int,DRT::ELEMENTS::NStet*>&          elecids,
                      map<int,DRT::Node*>&                     noderids,
                      map<int,vector<DRT::ELEMENTS::NStet*> >& adjele,
@@ -520,7 +520,10 @@ protected:
     calc_struct_update_imrlike,
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                               //!< during iteration to last converged state
-    calc_struct_B_and_F
+    calc_struct_B_and_F,
+    calc_homog_dens,
+    multi_readrestart,
+    multi_newresultfile
   };
 
   enum StressType
@@ -536,22 +539,22 @@ protected:
 
   //! type of stress evaluation
   StressType                                               stresstype_;
-  
+
   //! number of the material law
   int                                                      material_;
-  
+
   //! vector of history variables for each Gauss point
   vector<RCP<MAT::Material> >                              mat_;
-  
+
   //! volume of element
   double                                                   V_;
-  
+
   //! derivs of shape functions wrt to material coords
   LINALG::Matrix<4,3>                                      nxyz_;
 
   //! element's def-gradient
   LINALG::Matrix<3,3>                                      F_;
-  
+
   // internal calculation methods
 
   // return volume of element
@@ -560,7 +563,7 @@ protected:
   public:
   inline LINALG::Matrix<4,3>& Nxyz() { return nxyz_; }
   protected:
-  
+
   inline LINALG::Matrix<3,3>& F() { return F_; }
 
   static LINALG::Matrix<3,3> BuildF(LINALG::Matrix<4,3>& xdisp,
@@ -574,7 +577,7 @@ protected:
     return F;
   }
 
-  template<typename T> 
+  template<typename T>
   static LINALG::TMatrix<T,3,3> BuildF(
                                        LINALG::TMatrix<T,4,3>& xdisp,
                                        LINALG::Matrix<4,3>& nxyz)
@@ -583,13 +586,13 @@ protected:
     for (int i=0; i<3; ++i)
     {
       for (int j=0; j<3; ++j)
-        for (int k=0; k<4; ++k) 
+        for (int k=0; k<4; ++k)
           F(i,j) += xdisp(k,i) * nxyz(k,j);
       F(i,i) += 1.0;
     }
     return F;
   }
-  
+
   // don't want = operator
   NStet& operator = (const NStet& old);
 
@@ -652,6 +655,20 @@ protected:
                       LINALG::Matrix<6,1>& glstrain,
                       LINALG::Matrix<3,3>& defgrd,
                       int gp);
+
+
+  //! @name Multi-scale related stuff
+
+  /// Determine a homogenized material density for multi-scale analyses by averaging over the initial volume
+  void nstet_homog(ParameterList& params);
+
+  /// Read restart on the microscale
+  void nstet_read_restart_multi(ParameterList& params);
+
+  /// New result files on the microscale
+  void nstet_multi_newresultfile(ParameterList& params);
+
+  //@}
 
 }; // class NStet
 

@@ -30,7 +30,9 @@ Maintainer: Lena Wiechert
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"
 #include "../drt_inpar/inpar_structure.H"
-
+#include "../drt_lib/drt_elementtype.H"
+#include "../drt_so3/so_hex8.H"
+#include "../drt_so3/so_shw6.H"
 
 using namespace IO;
 
@@ -214,12 +216,6 @@ V0_(V0)
     discret_->SetState("residual displacement",zeros_);
     discret_->SetState("displacement",dis_);
 
-    // provide EAS history of the last step
-    p.set("oldalpha", oldalpha_);
-    p.set("oldfeas", oldfeas_);
-    p.set("oldKaainv", oldKaainv_);
-    p.set("oldKda", oldKda_);
-
     discret_->Evaluate(p,stiff_,null,fintm_,null,null);
     discret_->ClearState();
   }
@@ -316,19 +312,7 @@ void STRUMULTI::MicroStatic::PredictConstDis(LINALG::Matrix<3,3>* defgrd)
   // this has to be done only once since the elements will remember
   // their EAS data until the end of the microscale simulation
   // (end of macroscopic iteration step)
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","eas_set_multi");
-
-    p.set("oldalpha", oldalpha_);
-    p.set("oldfeas", oldfeas_);
-    p.set("oldKaainv", oldKaainv_);
-    p.set("oldKda", oldKda_);
-
-    discret_->Evaluate(p,null,null,null,null,null);
-  }
+  SetEASData();
 
   //------------- eval fint at interpolated state, eval stiffness matrix
   {
@@ -416,19 +400,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
   // this has to be done only once since the elements will remember
   // their EAS data until the end of the microscale simulation
   // (end of macroscopic iteration step)
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","eas_set_multi");
-
-    p.set("oldalpha", oldalpha_);
-    p.set("oldfeas", oldfeas_);
-    p.set("oldKaainv", oldKaainv_);
-    p.set("oldKda", oldKda_);
-
-    discret_->Evaluate(p,null,null,null,null,null);
-  }
+  SetEASData();
 
   //------------- eval fint at interpolated state, eval stiffness matrix
   {
@@ -643,13 +615,6 @@ void STRUMULTI::MicroStatic::FullNewton()
       discret_->SetState("residual displacement",disi_);
       discret_->SetState("displacement",dism_);
       fintm_->PutScalar(0.0);  // initialise internal force vector
-
-      // provide EAS history of the last step (and a place to store
-      // new EAS related stuff)
-      p.set("oldalpha", oldalpha_);
-      p.set("oldfeas", oldfeas_);
-      p.set("oldKaainv", oldKaainv_);
-      p.set("oldKda", oldKda_);
 
       discret_->Evaluate(p,stiff_,null,fintm_,null,null);
       discret_->ClearState();
@@ -1321,6 +1286,38 @@ void STRUMULTI::MicroStatic::PrintPredictor()
     cout << "      MICROSCALE Predictor absolute res-norm " << resnorm_ << endl;
   }
   fflush(stdout);
+}
+
+
+void STRUMULTI::MicroStatic::SetEASData()
+{
+  for (int lid=0; lid<discret_->ElementRowMap()->NumMyElements(); ++lid)
+  {
+    DRT::Element* actele = discret_->lRowElement(lid);
+
+    if (actele->ElementType()==DRT::ELEMENTS::So_hex8Type::Instance() or
+        actele->ElementType()==DRT::ELEMENTS::So_shw6Type::Instance())
+    {
+      // create the parameters for the discretization
+      ParameterList p;
+      // action for elements
+      p.set("action","eas_set_multi");
+
+      p.set("oldalpha", oldalpha_);
+      p.set("oldfeas", oldfeas_);
+      p.set("oldKaainv", oldKaainv_);
+      p.set("oldKda", oldKda_);
+
+      Epetra_SerialDenseMatrix elematrix1;
+      Epetra_SerialDenseMatrix elematrix2;
+      Epetra_SerialDenseVector elevector1;
+      Epetra_SerialDenseVector elevector2;
+      Epetra_SerialDenseVector elevector3;
+      vector<int> lm;
+
+      actele->Evaluate(p,*discret_,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+    }
+  }
 }
 
 

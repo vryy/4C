@@ -21,6 +21,10 @@ Maintainer: Lena Wiechert
 #include "../linalg/linalg_utils.H"
 #include "../drt_inpar/inpar_structure.H"
 
+#include "../drt_lib/drt_elementtype.H"
+#include "../drt_so3/so_hex8.H"
+#include "../drt_so3/so_shw6.H"
+
 #include "../drt_stru_multi/microstatic.H"
 
 #include "../drt_io/io_control.H"
@@ -76,7 +80,7 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
 
   microstaticcounter_[microdisnum] += 1;
 
-  // create and initialize "empty" EAS history map
+  // create and initialize "empty" EAS history map (if necessary)
   EasInit();
 
   std::string newfilename;
@@ -216,18 +220,35 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
 
 void MAT::MicroMaterialGP::EasInit()
 {
-  // create the parameters for the discretization
-  ParameterList p;
-  // action for elements
-  p.set("action","eas_init_multi");
-  p.set("lastalpha", lastalpha_);
-  p.set("oldalpha", oldalpha_);
-  p.set("oldfeas", oldfeas_);
-  p.set("oldKaainv", oldKaainv_);
-  p.set("oldKda", oldKda_);
+  RCP<DRT::Discretization> discret = (DRT::Problem::Instance(microdisnum_))->Dis(0, 0);
 
-  RefCountPtr<DRT::Discretization> actdis = DRT::Problem::Instance(microdisnum_)->Dis(genprob.numsf,0);
-  actdis->Evaluate(p,null,null,null,null,null);
+  for (int lid=0; lid<discret->ElementRowMap()->NumMyElements(); ++lid)
+  {
+    DRT::Element* actele = discret->lRowElement(lid);
+
+    if (actele->ElementType()==DRT::ELEMENTS::So_hex8Type::Instance() or
+        actele->ElementType()==DRT::ELEMENTS::So_shw6Type::Instance())
+    {
+      // create the parameters for the discretization
+      ParameterList p;
+      // action for elements
+      p.set("action","eas_init_multi");
+      p.set("lastalpha", lastalpha_);
+      p.set("oldalpha", oldalpha_);
+      p.set("oldfeas", oldfeas_);
+      p.set("oldKaainv", oldKaainv_);
+      p.set("oldKda", oldKda_);
+
+      Epetra_SerialDenseMatrix elematrix1;
+      Epetra_SerialDenseMatrix elematrix2;
+      Epetra_SerialDenseVector elevector1;
+      Epetra_SerialDenseVector elevector2;
+      Epetra_SerialDenseVector elevector3;
+      vector<int> lm;
+
+      actele->Evaluate(p,*discret,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+    }
+  }
 
   return;
 }

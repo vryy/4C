@@ -244,6 +244,11 @@ public:
   */
   void PrintPredictor();
 
+  /*!
+  \brief Set EAS internal data if necessary
+
+  */
+  void SetEASData();
 
 
 protected:
