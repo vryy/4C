@@ -2412,7 +2412,7 @@ void FLD::XFluidFluid::SetNewStatevectorAndProjectEmbToBg(map<int, vector<int> >
        }
       if (count == embdis_->NumMyColElements())     // if (count == elementsIdsofRelevantBoxes.size())
       {
-        cout << " Warning: No patch element found for the node " << bgnode->Id() << endl;
+        cout << YELLOW_LIGHT << " Warning: No patch element found for the node " << bgnode->Id() << END_COLOR<< endl;
       }
     }
     //do nothing:

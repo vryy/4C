@@ -37,6 +37,7 @@ ADAPTER::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
     {
     case prb_fsi:
     case prb_fluid_fluid_ale:
+    case prb_fluid_fluid_fsi:
     case prb_fluid_ale:
     case prb_freesurf:
     {

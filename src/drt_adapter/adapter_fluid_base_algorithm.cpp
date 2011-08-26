@@ -78,7 +78,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // access the discretization
   // -------------------------------------------------------------------
   RCP<DRT::Discretization> actdis = null;
-  actdis = DRT::Problem::Instance()->Dis(genprob.numff,0);
+  if (genprob.probtyp == prb_fluid_fluid_fsi)
+    actdis = DRT::Problem::Instance()->Dis(genprob.numff,1);
+  else
+    actdis = DRT::Problem::Instance()->Dis(genprob.numff,0);
 
 
   // -------------------------------------------------------------------
@@ -123,7 +126,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       genprob.probtyp != prb_fluid_xfem and
       genprob.probtyp != prb_combust and
       genprob.probtyp != prb_fluid_fluid and
-      genprob.probtyp != prb_fluid_fluid_ale)
+      genprob.probtyp != prb_fluid_fluid_ale and
+      genprob.probtyp != prb_fluid_fluid_fsi)
   {
     output->WriteMesh(0,0.0);
   }
@@ -546,6 +550,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     {
       RCP<DRT::Discretization> embfluiddis  =  DRT::Problem::Instance()->Dis(genprob.numff,1);
       fluid_ = rcp(new ADAPTER::FluidFluidImpl(embfluiddis,actdis,solver,fluidtimeparams,isale,dirichletcond));
+    }
+    else if (genprob.probtyp == prb_fluid_fluid_fsi)
+    {
+      RCP<DRT::Discretization> bgfluiddis  =  DRT::Problem::Instance()->Dis(genprob.numff,0);
+      fluid_ = rcp(new ADAPTER::FluidFluidImpl(actdis,bgfluiddis,solver,fluidtimeparams,isale,dirichletcond));
     }
     else
     {

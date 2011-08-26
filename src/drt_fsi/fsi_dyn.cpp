@@ -342,7 +342,7 @@ void fluid_fluid_fsi_drt()
   RCP<DRT::Discretization> embfluiddis = problem->Dis(genprob.numff,1);
   embfluiddis->FillComplete();
 
-  RCP<DRT::Discretization> structdis = problem->Dis(genprob.numsf,2);
+  RCP<DRT::Discretization> structdis = problem->Dis(genprob.numsf,0);
   structdis->FillComplete();
 
   // copy  bgfluid to embfluid
@@ -401,11 +401,12 @@ void fluid_fluid_fsi_drt()
   vector<string>          conditions_to_copy;
   conditions_to_copy.push_back("Dirichlet");
   conditions_to_copy.push_back("XFEMCoupling");
+  conditions_to_copy.push_back("FSICoupling");
 
   // copy selected conditions to the new discretization
   for (vector<string>::const_iterator conditername = conditions_to_copy.begin();
        conditername != conditions_to_copy.end(); ++conditername)
- {
+  {
      vector<DRT::Condition*> conds;
      bgfluiddis->GetCondition(*conditername, conds);
      for (unsigned i=0; i<conds.size(); ++i)
@@ -450,6 +451,7 @@ void fluid_fluid_fsi_drt()
   }
 
   aledis->FillComplete();
+
   const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
   int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
   switch (coupling)

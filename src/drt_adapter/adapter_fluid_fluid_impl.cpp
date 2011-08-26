@@ -384,9 +384,7 @@ void ADAPTER::FluidFluidImpl::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector>
 /*----------------------------------------------------------------------*/
 int ADAPTER::FluidFluidImpl::Itemax() const
 {
-  dserror("itermax nicht implementet!");
-//  return fluid_.Itemax();
-  return null;
+  return fluid_.Itemax();
 }
 
 
@@ -394,9 +392,7 @@ int ADAPTER::FluidFluidImpl::Itemax() const
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidImpl::SetItemax(int itemax)
 {
-  dserror("setitermax nicht implementet!");
-//  fluid_.SetItemax(itemax);
-  return;
+  fluid_.SetItemax(itemax);
 }
 
 

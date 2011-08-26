@@ -340,6 +340,9 @@ namespace FLD
     double Time() const { return time_; }
     int Step() const { return step_; }
 
+    int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
+    void SetItemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
+
     double ResidualScaling() const
     {
       if (TimIntScheme()==INPAR::FLUID::timeint_stationary)
