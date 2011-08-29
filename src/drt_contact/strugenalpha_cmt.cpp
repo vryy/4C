@@ -3259,9 +3259,9 @@ void CONTACT::CmtStruGenAlpha::OutputErrorNorms()
   {
     printf("**********************************");
     printf("\nSOLUTION ERROR NORMS:");
-    printf("\nL_2 norm:     %e",sqrt((*norms)(0)));
-    printf("\nH_1 norm:     %e",sqrt((*norms)(1)));
-    printf("\nEnergy norm:  %e",sqrt((*norms)(2)));
+    printf("\nL_2 norm:     %.10e",sqrt((*norms)(0)));
+    printf("\nH_1 norm:     %.10e",sqrt((*norms)(1)));
+    printf("\nEnergy norm:  %.10e",sqrt((*norms)(2)));
     printf("\n**********************************\n\n");
     fflush(stdout);
   }

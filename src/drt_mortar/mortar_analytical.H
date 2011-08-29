@@ -48,9 +48,10 @@ Maintainer: Alexander Popp
 // available analytical solutions
 //------------------------------------------------------------------------
 // 0 = no output of error norms
-// 1 = 3D beam bending example
-// 2 = 3D pressurized hollow sphere example
-// 3 = 3D pressurized hollow sphere example (thick version)
+// 1 = 3D zero analytical solution
+// 2 = 3D beam bending example
+// 3 = 3D pressurized hollow sphere example
+// 4 = 3D pressurized hollow sphere example (thick version)
 //------------------------------------------------------------------------
 #define MORTARANALYTICALSOL 0
 
@@ -72,10 +73,40 @@ namespace MORTAR
                              LINALG::Matrix<3,3>& derivanalyt)
   {
     //----------------------------------------------------------------------
+    // 3D default (=zero) solution
+    //----------------------------------------------------------------------
+    if (MORTARANALYTICALSOL==1)
+    {
+      // displacements
+      uanalyt(0,0) = 0.0;
+      uanalyt(1,0) = 0.0;
+      uanalyt(2,0) = 0.0;
+
+      // strains
+      epsanalyt(0,0) = 0.0;
+      epsanalyt(1,0) = 0.0;
+      epsanalyt(2,0) = 0.0;
+      epsanalyt(3,0) = 0.0;
+      epsanalyt(4,0) = 0.0;
+      epsanalyt(5,0) = 0.0;
+
+      // displacement derivatives
+      derivanalyt(0,0) = 0.0;
+      derivanalyt(0,1) = 0.0;
+      derivanalyt(0,2) = 0.0;
+      derivanalyt(1,0) = 0.0;
+      derivanalyt(1,1) = 0.0;
+      derivanalyt(1,2) = 0.0;
+      derivanalyt(2,0) = 0.0;
+      derivanalyt(2,1) = 0.0;
+      derivanalyt(2,2) = 0.0;
+    }
+
+    //----------------------------------------------------------------------
     // 3D beam bending solution
     // (see Timoshenko and Goodier, Theory of Elasticity, 1970, p. 284)
     //----------------------------------------------------------------------
-    if (MORTARANALYTICALSOL==1)
+    else if (MORTARANALYTICALSOL==2)
     {
       // model parameters
       double h= 2.0;
@@ -112,7 +143,7 @@ namespace MORTAR
     // 3D pressurized sphere solution
     // (see Bower, Applied Mechanics of Solids, 2009, p. 197)
     //----------------------------------------------------------------------
-    else if (MORTARANALYTICALSOL==2 || MORTARANALYTICALSOL==3)
+    else if (MORTARANALYTICALSOL==3 || MORTARANALYTICALSOL==4)
     {
       // model parameters
       double a = 0.9;
@@ -122,7 +153,7 @@ namespace MORTAR
       double E = 1.0;
 
       // change geometry for thick version
-      if (MORTARANALYTICALSOL==3) { a = 0.5; b = 2.0; }
+      if (MORTARANALYTICALSOL==4) { a = 0.5; b = 2.0; }
 
       // radial coordinate r = sqrt(x^2+y^2+z^2)
       double r = sqrt(pos(0,0)*pos(0,0)+pos(1,0)*pos(1,0)+pos(2,0)*pos(2,0));
