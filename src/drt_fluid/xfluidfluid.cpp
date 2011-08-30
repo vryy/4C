@@ -2398,7 +2398,7 @@ void FLD::XFluidFluid::SetNewStatevectorAndProjectEmbToBg(map<int, vector<int> >
       {
         DRT::Element* pele = embdis_->lColElement(e);
         LINALG::Matrix<4,1> interpolatedvec(true);
-        insideelement = ComputeSpacialToElementCoordAndProject(pele,bgnodecords,interpolatedvec,fluidstate_vector_n);
+        insideelement = ComputeSpacialToElementCoordAndProject(pele,bgnodecords,interpolatedvec,fluidstate_vector_n,aledispn_);
         if (insideelement)
         {
           // hier set state
@@ -2409,10 +2409,20 @@ void FLD::XFluidFluid::SetNewStatevectorAndProjectEmbToBg(map<int, vector<int> >
           break;
         }
         count ++;
-       }
+      }
       if (count == embdis_->NumMyColElements())     // if (count == elementsIdsofRelevantBoxes.size())
       {
-        cout << YELLOW_LIGHT << " Warning: No patch element found for the node " << bgnode->Id() << END_COLOR<< endl;
+        cout << YELLOW_LIGHT << " Warning: No patch element found for the node " << bgnode->Id() ;
+        if ((iterstn == stdnoden.end() and iteren == enrichednoden.end()) and iterstnp != stdnodenp.end())
+          cout << YELLOW_LIGHT << " n:void -> n+1:std  " << END_COLOR<< endl;
+        else if (iteren != enrichednoden.end() and iterenp != enrichednodenp.end())
+          cout << YELLOW_LIGHT << " n:enriched -> n+1:enriched " << END_COLOR<< endl;
+        else if (iteren != enrichednoden.end() and iterstnp != stdnodenp.end())
+          cout << YELLOW_LIGHT << " n:enriched -> n+1: std " << END_COLOR<< endl;
+        else if ((iterstn == stdnoden.end() and iteren == enrichednoden.end()) and iterenp != enrichednodenp.end())
+          cout << YELLOW_LIGHT << " n:void ->  n+1:enriched " << END_COLOR<< endl;
+
+        dserror("STOP");
       }
     }
     //do nothing:
@@ -2477,7 +2487,8 @@ void FLD::XFluidFluid::CreatePatchBoxes(std::map<int, GEO::CUT::BoundingBox> & p
 bool FLD::XFluidFluid::ComputeSpacialToElementCoordAndProject(DRT::Element*                 pele,
                                                               LINALG::Matrix<3,1>&          x, // background node's coordinates (x,y,z)
                                                               LINALG::Matrix<4,1>&          interpolatedvec,
-                                                              Teuchos::RCP<Epetra_Vector>   fluidstate_vector_n)
+                                                              Teuchos::RCP<Epetra_Vector>   fluidstate_vector_n,
+                                                              Teuchos::RCP<Epetra_Vector>   embededddisp)
 {
   const std::size_t numnode = pele->NumNode();
   LINALG::SerialDenseMatrix pxyze(3,numnode);
@@ -2508,7 +2519,7 @@ bool FLD::XFluidFluid::ComputeSpacialToElementCoordAndProject(DRT::Element*     
         veln(3,inode) = myval[3];
 
         // we have to take aledispnm_ because the aledispn_ is already updated
-        DRT::UTILS::ExtractMyValues(*aledispn_,mydisp,pgdofs);
+        DRT::UTILS::ExtractMyValues(*embededddisp,mydisp,pgdofs);
         disp(0,inode) = mydisp[0];
         disp(1,inode) = mydisp[1];
         disp(2,inode) = mydisp[2];
@@ -2522,7 +2533,9 @@ bool FLD::XFluidFluid::ComputeSpacialToElementCoordAndProject(DRT::Element*     
       // check whether the xfemnode is in the element
       LINALG::Matrix< 3,numnodes > xyzem(pxyze,true);
       GEO::CUT::Position <DRT::Element::hex8> pos(xyzem,x);
-      bool insideelement = pos.Compute();
+      double tol = 1e-10;
+      bool insideelement = pos.ComputeTol(tol);
+      //bool insideelement = pos.Compute();
 
       // von ursula
       // bool in  = GEO::currentToVolumeElementCoordinates(DRT::Element::hex8, pxyze, x, xsi);
@@ -2547,7 +2560,6 @@ bool FLD::XFluidFluid::ComputeSpacialToElementCoordAndProject(DRT::Element*     
       }
       else
       {
-        //return false;
         inside = false;
         break;
       }
@@ -2616,7 +2628,6 @@ void FLD::XFluidFluid::Output()
 {
   //  ART_exp_timeInt_->Output();
   // output of solution
-
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("element_node_id", 0, 0, 0, bgdis_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
@@ -2750,10 +2761,44 @@ void FLD::XFluidFluid::Output()
       {
         size_t numdof = gdofs_original.size();
         // no dofs for this node... must be a hole or somethin'
-        for (std::size_t idof = 0; idof < numdof; ++idof)
+//         for (std::size_t idof = 0; idof < numdof; ++idof)
+//         {
+//           //cout << dofrowmap->LID(gdofs[idof]) << endl;
+//           (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] = 0.0;
+//         }
+
+        LINALG::Matrix<3,1> bgnodecords(true);
+        bgnodecords(0,0) = xfemnode->X()[0];
+        bgnodecords(1,0) = xfemnode->X()[1];
+        bgnodecords(2,0) = xfemnode->X()[2];
+
+        // take the values of embedded fluid is available
+        bool insideelement = false;
+        int count = 0;
+        // check all embedded elements to find the right one
+        for (int e=0; e<embdis_->NumMyColElements(); e++)
         {
-          //cout << dofrowmap->LID(gdofs[idof]) << endl;
-          (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] = 0.0;
+          DRT::Element* pele = embdis_->lColElement(e);
+          LINALG::Matrix<4,1> interpolatedvec(true);
+          insideelement = ComputeSpacialToElementCoordAndProject(pele,bgnodecords,interpolatedvec,alevelnp_,aledispnp_);
+          if (insideelement)
+          {
+            // hier set state
+            (*outvec_fluid_)[dofrowmap->LID(gdofs_original[0])] = interpolatedvec(0);
+            (*outvec_fluid_)[dofrowmap->LID(gdofs_original[1])] = interpolatedvec(1);
+            (*outvec_fluid_)[dofrowmap->LID(gdofs_original[2])] = interpolatedvec(2);
+            (*outvec_fluid_)[dofrowmap->LID(gdofs_original[3])] = interpolatedvec(3);
+            break;
+          }
+          count ++;
+          if (count == embdis_->NumMyColElements())
+          {
+            for (std::size_t idof = 0; idof < numdof; ++idof)
+            {
+              //cout << dofrowmap->LID(gdofs[idof]) << endl;
+              (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] = 0.0;
+            }
+          }
         }
       }
       else if(gdofs_current.size() == gdofs_original.size())

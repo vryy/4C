@@ -177,6 +177,22 @@ int main(
 
       break;
     }
+    case prb_fluid_fluid_fsi:
+    {
+      string basename = problem.outname();
+      PostField* fluidfield = problem.get_discretization(2);
+      FluidEnsightWriter fluidwriter(fluidfield, basename);
+      fluidwriter.WriteFiles();
+
+      PostField* embfluidfield = problem.get_discretization(1);
+      FluidEnsightWriter embfluidwriter(embfluidfield, basename);
+      embfluidwriter.WriteFiles();
+
+      PostField* structfield = problem.get_discretization(0);
+      StructureEnsightWriter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
+      structwriter.WriteFiles();
+      break;
+    }
     case prb_fluid_dgfem:
     {
         PostField* field = problem.get_discretization(0);

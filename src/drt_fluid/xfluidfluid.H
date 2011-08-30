@@ -280,7 +280,8 @@ namespace FLD
     bool ComputeSpacialToElementCoordAndProject(DRT::Element*           pele,
                                                 LINALG::Matrix<3,1>&    x,  // background node's coordinates (x,y,z)
                                                 LINALG::Matrix<4,1>&    interpolatedvec,
-                                                RCP<Epetra_Vector>       fluidstate_vector_n);
+                                                RCP<Epetra_Vector>       fluidstate_vector_n,
+                                                Teuchos::RCP<Epetra_Vector>   embededddisp);
 
     void SetInitialFlowField(
       const INPAR::FLUID::InitialField initfield,

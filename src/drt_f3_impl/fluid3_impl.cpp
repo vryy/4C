@@ -8201,7 +8201,7 @@ namespace DRT
           }
 
           // add the displacement of the interface
-          for (std::size_t inode = 0; inode < side_nen; ++inode)
+          for (int inode = 0; inode < side_nen; ++inode)
           {
             xyze_(0,inode) += eidisp_(0, inode);
             xyze_(1,inode) += eidisp_(1, inode);
@@ -8690,6 +8690,7 @@ void Fluid3Impl<distype>::ElementXfemInterface(
     begids.insert(sid);
   }
 
+  // map of background element gids, to coupling matrices Gsui and Guis
   std::map<int, std::vector<Epetra_SerialDenseMatrix> > Cuiui_coupling;
 
   // lm vector of all intersecting elements
