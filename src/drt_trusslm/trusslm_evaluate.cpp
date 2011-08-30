@@ -1,7 +1,7 @@
 /*!-----------------------------------------------------------------------------------------------------------
  \file trusslm_evaluate.cpp
  \brief three dimensional total Lagrange truss element (can be connected to beam3 elements and adapts assembly automatically according to the thereby changed number of nodal degrees of freedom)
- Lagrange Multipliers allow for placing truss elements inbetween two nodes.
+ By creating transformation matrices, we allow for placing truss elements inbetween two nodes.
 
 <pre>
 Maintainer: Kei Mueller
@@ -305,7 +305,7 @@ int DRT::ELEMENTS::TrussLm::EvaluateNeumann(ParameterList& params,
     const double xi = intpoints.qxg[ip][0];
     const double wgt = intpoints.qwgt[ip];
 
-    //evaluation of shape funcitons at Gauss points
+    //evaluation of shape functions at Gauss points
     DRT::UTILS::shape_function_1D(funct,xi,distype);
 
     double fac=0;
@@ -350,7 +350,7 @@ int DRT::ELEMENTS::TrussLm::EvaluatePTC(ParameterList& params,
   //get friction model according to which forces and damping are applied
   INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
 
-  //damping coefficients for translational and rotatinal degrees of freedom
+  //damping coefficients for translational and rotational degrees of freedom
   LINALG::Matrix<3,1> gamma(true);
   MyDampingConstants(params,gamma,frictionmodel);
 
@@ -412,32 +412,44 @@ void DRT::ELEMENTS::TrussLm::tlm_energy(ParameterList& params,
     dserror("unknown or improper type of material law");
   }
 
-  //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
-  LINALG::Matrix<6,1> xcurr;
+  const DiscretizationType distype = this->Shape();
+  //values for shape functions trusses A and B
+  Epetra_SerialDenseVector N_A(2);
+  Epetra_SerialDenseVector N_B(2);
 
-  //auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
-  LINALG::Matrix<6,1> aux;
+  //evaluation of shape functions at interpolated positions
+  DRT::UTILS::shape_function_1D(N_A,xiA_,distype);
+  DRT::UTILS::shape_function_1D(N_B,xiB_,distype);
+
+
+  //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
+  LINALG::Matrix<12,1> xcurr;
+  //current nodal position
+  for (int j=0; j<3; ++j)
+  {
+    xcurr(j  )   = Nodes()[0]->X()[j] + disp[  j]; //first node, truss A
+    xcurr(j+3)   = Nodes()[1]->X()[j] + disp[3+j]; //second node, truss A
+    xcurr(j+6)   = Nodes()[2]->X()[j] + disp[6+j]; //first node, truss B
+    xcurr(j+9)   = Nodes()[3]->X()[j] + disp[9+j]; //second node, truss B
+  }
+
+  // computing positions of interpolated nodes
+  LINALG::Matrix<6,1> xint;
+  // length of the interpolated truss C
+  double lcurr = 0.0;
+  for (int j=0; j<3; ++j)
+  {
+  	// interpolated node 0 calculated via shape function values of trusses A and B with their respective parameter xiA/xiB
+  	xint(j) = N_A(0)*xcurr(j) + N_A(1)*xcurr(j+3);
+  	// interpolated node 1
+  	xint(j+3) = N_B(0)*xcurr(j+6) + N_B(1)*xcurr(j+9);
+
+  	lcurr += (xint(j+3)-xint(j))*(xint(j+3)-xint(j));
+  }
+  lcurr = sqrt(lcurr);
 
   //strain
   double epsilon;
-
-  //current nodal position (first
-  for (int j=0; j<3; ++j)
-  {
-    xcurr(j  )   = Nodes()[0]->X()[j] + disp[  j]; //first node
-    xcurr(j+3)   = Nodes()[1]->X()[j] + disp[3+j]; //second node
-  }
-
-  //computing auxiliary vector aux = 4.0*N^T_{,xi} * N_{,xi} * xcurr
-  aux(0) = (xcurr(0) - xcurr(3));
-  aux(1) = (xcurr(1) - xcurr(4));
-  aux(2) = (xcurr(2) - xcurr(5));
-  aux(3) = (xcurr(3) - xcurr(0));
-  aux(4) = (xcurr(4) - xcurr(1));
-  aux(5) = (xcurr(5) - xcurr(2));
-
-  double lcurr = sqrt(pow(aux(0),2)+pow(aux(1),2)+pow(aux(2),2));
-
 
   switch(kintype_)
   {
@@ -450,7 +462,7 @@ void DRT::ELEMENTS::TrussLm::tlm_energy(ParameterList& params,
       (*intenergy)(0) = 0.5*(ym*crosssec_*lrefe_*pow(epsilon,2));
     }
     break;
-    case trlm_engstrain:
+    /*case trlm_engstrain:
     {
       //calculating strain epsilon from node position by scalar product:
       epsilon = (lcurr-lrefe_)/lrefe_;
@@ -458,7 +470,7 @@ void DRT::ELEMENTS::TrussLm::tlm_energy(ParameterList& params,
       //W_int = 1/2*E*A*lrefe*\epsilon^2
       (*intenergy)(0) = 0.5*(ym*crosssec_*lrefe_*pow(epsilon,2));
     }
-    break;
+    break;*/
     default:
       dserror("Unknown type kintype_ for TrussLm");
   }
@@ -474,84 +486,154 @@ void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass(ParameterList& params,
     vector<double>&           disp,
     Epetra_SerialDenseMatrix* stiffmatrix,
     Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseVector* force)
+    Epetra_SerialDenseMatrix* force)
 {
-  switch(kintype_)
+	//----------------------- Preliminary setup------------------------
+	/* here, we set up the matrices and vectors for the interpolated truss.
+	 * This means that dimension are reduced from a system based on four nodes
+	 * to a system based on two nodes.*/
+  const DiscretizationType distype = this->Shape();
+  //values for shape functions trusses A and B
+  Epetra_SerialDenseVector N_A(2);
+  Epetra_SerialDenseVector N_B(2);
+
+  //evaluation of shape functions at interpolated positions
+  DRT::UTILS::shape_function_1D(N_A,xiA_,distype);
+  DRT::UTILS::shape_function_1D(N_B,xiB_,distype);
+
+  // block matrix holding shape function values for specific xiA, xiB of trusses A and B
+  Epetra_SerialDenseMatrix trafomatrix(6,12,true);
+  for(int i=0; i<3; i++)
   {
-    case trlm_totlag:
-      tlm_nlnstiffmass_totlag(disp,stiffmatrix,massmatrix,force);
-    break;
-    case trlm_engstrain:
-      tlm_nlnstiffmass_engstr(disp,stiffmatrix,massmatrix,force);
-    break;
-    default:
-      dserror("Unknown type kintype_ for TrussLm");
+  	trafomatrix(i,i) = N_A(0);
+  	trafomatrix(i,i+3) = N_A(1);
+  	trafomatrix(i+3,i+6) = N_B(0);
+  	trafomatrix(i+3,i+9) = N_B(1);
   }
+
+  //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node, ...)
+  Epetra_SerialDenseMatrix xcurr(12,1);
+  /*current nodal displacement (first entries 0 .. 2 for first node, 3 ..5 for second node, ...) compared
+   * to reference configuration; note: in general this is not equal to the values in disp since the
+   * latter one referes to a nodal displacement compared to a reference configuration before the first
+   * time step whereas the following variable referes to the displacement with respect to a reference
+   * configuration which may have been set up at any point of time during the simulation (usually this
+   * is only important if an element has been added to the discretization after the start of the simulation)*/
+  Epetra_SerialDenseMatrix ucurr(12,1);
+  for (int j=0; j<3; ++j)
+  {
+    xcurr(j,0)   = Nodes()[0]->X()[j] + disp[  j]; //first node, truss A
+    xcurr(j+3,0)   = Nodes()[1]->X()[j] + disp[3+j]; //second node, truss A
+    xcurr(j+6,0)   = Nodes()[2]->X()[j] + disp[6+j]; //first node, truss B
+    xcurr(j+9,0)   = Nodes()[3]->X()[j] + disp[9+j]; //second node, truss B
+  }
+  //current displacement = current position - reference position
+  ucurr  = xcurr;
+  for(int j=0; j<ucurr.M(); j++)
+  	ucurr(j,0) -= X_(j);
+
+  // interpolated stiffness and mass matrix
+  Epetra_SerialDenseMatrix* stiffmatint;
+  Epetra_SerialDenseMatrix* massmatint;
+  // internal force vector
+  Epetra_SerialDenseMatrix* forceint;
+
+  if(stiffmatrix != NULL)
+  	stiffmatint = new Epetra_SerialDenseMatrix(6,6);
+  else
+  	stiffmatint = NULL;
+  if(massmatrix != NULL)
+  	massmatint = new Epetra_SerialDenseMatrix(6,6);
+  else
+  	massmatint = NULL;
+  if(force != NULL)
+  	forceint = new Epetra_SerialDenseMatrix(6,1);
+  else
+  	forceint = NULL;
+
+  // interpolated nodal reference positions, current positions, displacements, velocities
+  Epetra_SerialDenseVector Xint(6); // values are by default initialized to 0
+  Epetra_SerialDenseVector xint(6);
+  Epetra_SerialDenseVector uint(6);
+  Epetra_SerialDenseVector velint(6);
+
+  for(int i=0; i<trafomatrix.M()/2;i++)
+  	for(int j=0;j<trafomatrix.N()/2;j++)
+  	{
+  		Xint(i) += trafomatrix(i,j)*X_(j);
+  		Xint(i+3) += trafomatrix(i+3,j+6)*X_(j+6);
+  		velint(i) += trafomatrix(i,j)*vel[j];
+  		velint(i+3) +=  trafomatrix(i+3,j+6)*vel[j+6];
+  	}
+
+  xint.Multiply('N','N',1.0,trafomatrix,xcurr,0.0);
+  uint.Multiply('N','N',1.0,trafomatrix,ucurr,0.0);
+  //---------------------------------------------------------------
+
+  // calculate interpolated stiffness and mass matrix
+  if(kintype_==trlm_totlag)
+		tlm_nlnstiffmass_totlag(Xint,xint,uint,stiffmatint,massmatint,forceint);
+  else
+		dserror("Unknown type kintype_ for TrussLm");
 
   /*the following function call applies statistical forces and damping matrix according to the fluctuation dissipation theorem;
    * it is dedicated to the application of truss3 elements in the frame of statistical mechanics problems; for these problems a
    * special vector has to be passed to the element packed in the params parameter list; in case that the control routine calling
    * the element does not attach this special vector to params the following method is just doing nothing, which means that for
    * any ordinary problem of structural mechanics it may be ignored*/
-   CalcBrownian<2,3,3,3>(params,vel,disp,stiffmatrix,force);
+  // still, even if we have four real nodes, we give "2" as nnode since we think of two interpolated nodes
+  CalcBrownian<2,3,3,3>(params,velint,xint,stiffmatint,forceint);
 
-   return;
+  // ------------project interpolated system-------------------------
+  // stiffness matrix
+  Epetra_SerialDenseMatrix temp(6,12);
+  temp.Multiply('N','N',1.0,*stiffmatint,trafomatrix,0.0);
+  stiffmatrix->Multiply('T','N',1.0,trafomatrix,temp,0.0);
+  temp.Multiply('N','N',1.0,*massmatint,trafomatrix,0.0);
+  massmatrix->Multiply('T','N',1.0,trafomatrix,temp,0.0);
+  force->Multiply('T','N',1.0,trafomatrix,*forceint,0.0);
+
+  return;
 }
 
 
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private)                                                   cyron 08/08|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass_totlag( vector<double>& disp,
+void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass_totlag( const Epetra_SerialDenseVector& X,
+		const Epetra_SerialDenseVector& x,
+		const Epetra_SerialDenseVector& u,
     Epetra_SerialDenseMatrix* stiffmatrix,
     Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseVector* force)
+    Epetra_SerialDenseMatrix* force)
 {
-  //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
-  LINALG::Matrix<6,1> xcurr;
-
-  /*current nodal displacement (first entries 0 .. 2 for first node, 3 ..5 for second node) compared
-   * to reference configuration; note: in general this is not equal to the values in disp since the
-   * latter one referes to a nodal displacement compared to a reference configuration before the first
-   * time step whereas the following variable referes to the displacement with respect to a reference
-   * configuration which may have been set up at any point of time during the simulation (usually this
-   * is only important if an element has been added to the discretization after the start of the simulation)*/
-  LINALG::Matrix<6,1> ucurr;
-
   //Green-Lagrange strain
-  double epsilon;
+  double epsilon = 0.0;
+
+  // length of the interpolated truss C
+  double lint = 0.0;
+  for (int j=0; j<3; ++j)
+  	lint += (x(j+3)-x(j))*(x(j+3)-x(j));
+  lint = sqrt(lint);
 
   //auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
   LINALG::Matrix<6,1> aux;
-
-  //current nodal position
-  for (int j=0; j<3; ++j)
-  {
-    xcurr(j  )   = Nodes()[0]->X()[j] + disp[  j]; //first node
-    xcurr(j+3)   = Nodes()[1]->X()[j] + disp[3+j]; //second node
-  }
-
-  //current displacement = current position - reference position
-  ucurr  = xcurr;
-  ucurr -= X_;
-
   //computing auxiliary vector aux = N^T_{,xi} * N_{,xi} * xcurr
-  aux(0) = 0.25 * (xcurr(0) - xcurr(3));
-  aux(1) = 0.25 * (xcurr(1) - xcurr(4));
-  aux(2) = 0.25 * (xcurr(2) - xcurr(5));
-  aux(3) = 0.25 * (xcurr(3) - xcurr(0));
-  aux(4) = 0.25 * (xcurr(4) - xcurr(1));
-  aux(5) = 0.25 * (xcurr(5) - xcurr(2));
+  aux(0) = 0.25 * (x(0) - x(3));
+  aux(1) = 0.25 * (x(1) - x(4));
+  aux(2) = 0.25 * (x(2) - x(5));
+  aux(3) = 0.25 * (x(3) - x(0));
+  aux(4) = 0.25 * (x(4) - x(1));
+  aux(5) = 0.25 * (x(5) - x(2));
 
   //calculating strain epsilon from node position by scalar product:
   //epsilon = (xrefe + 0.5*ucurr)^T * N_{,s}^T * N_{,s} * d
-  epsilon = 0;
-  epsilon += (X_(0) + 0.5*ucurr(0)) * (ucurr(0) - ucurr(3));
-  epsilon += (X_(1) + 0.5*ucurr(1)) * (ucurr(1) - ucurr(4));
-  epsilon += (X_(2) + 0.5*ucurr(2)) * (ucurr(2) - ucurr(5));
-  epsilon += (X_(3) + 0.5*ucurr(3)) * (ucurr(3) - ucurr(0));
-  epsilon += (X_(4) + 0.5*ucurr(4)) * (ucurr(4) - ucurr(1));
-  epsilon += (X_(5) + 0.5*ucurr(5)) * (ucurr(5) - ucurr(2));
+  epsilon += (X(0) + 0.5*u(0)) * (u(0) - u(3));
+  epsilon += (X(1) + 0.5*u(1)) * (u(1) - u(4));
+  epsilon += (X(2) + 0.5*u(2)) * (u(2) - u(5));
+  epsilon += (X(3) + 0.5*u(3)) * (u(3) - u(0));
+  epsilon += (X(4) + 0.5*u(4)) * (u(4) - u(1));
+  epsilon += (X(5) + 0.5*u(5)) * (u(5) - u(2));
   epsilon /= lrefe_*lrefe_;
 
 
@@ -580,175 +662,44 @@ void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass_totlag( vector<double>& disp,
     dserror("unknown or improper type of material law");
   }
 
-
   //computing global internal forces
   if (force != NULL)
   {
-    for (int i=0; i<6; ++i)
-     (*force)(i) = (4*ym*crosssec_*epsilon/lrefe_) * aux(i);
+    for (int i=0; i<force->M(); ++i)
+    	(*force)(i,0) = (4*ym*crosssec_*epsilon/lrefe_) * aux(i);
   }
-
 
   //computing linear stiffness matrix
   if (stiffmatrix != NULL)
   {
     for (int i=0; i<3; ++i)
     {
-        //stiffness entries for first node
-        (*stiffmatrix)(i,i)     =  (ym*crosssec_*epsilon/lrefe_);
-        (*stiffmatrix)(i,3+i)   = -(ym*crosssec_*epsilon/lrefe_);
-        //stiffness entries for second node
-        (*stiffmatrix)(i+3,i+3) =  (ym*crosssec_*epsilon/lrefe_);
-        (*stiffmatrix)(i+3,i )  = -(ym*crosssec_*epsilon/lrefe_);
+			//stiffness entries for first node
+    	(*stiffmatrix)(i,i)     =  (ym*crosssec_*epsilon/lrefe_);
+    	(*stiffmatrix)(i,3+i)   = -(ym*crosssec_*epsilon/lrefe_);
+			//stiffness entries for second node
+    	(*stiffmatrix)(i+3,i+3) =  (ym*crosssec_*epsilon/lrefe_);
+    	(*stiffmatrix)(i+3,i )  = -(ym*crosssec_*epsilon/lrefe_);
     }
 
     for (int i=0; i<6; ++i)
       for (int j=0; j<6; ++j)
-        (*stiffmatrix)(i,j) += (16*ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
-   }
+      	(*stiffmatrix)(i,j) += (16*ym*crosssec_/pow(lrefe_,3))*aux(i)*aux(j);
+  }
 
   //calculating consistent mass matrix
   if (massmatrix != NULL)
   {
     for (int i=0; i<3; ++i)
     {
-      (*massmatrix)(i,i) = density*lrefe_*crosssec_ / 3;
-      (*massmatrix)(i+3,i+3) = density*lrefe_*crosssec_ / 3;
-      (*massmatrix)(i,i+3) = density*lrefe_*crosssec_ / 6;
-      (*massmatrix)(i+3,i) = density*lrefe_*crosssec_ / 6;
+    	(*massmatrix)(i,i) = density*lrefe_*crosssec_ / 3;
+    	(*massmatrix)(i+3,i+3) = density*lrefe_*crosssec_ / 3;
+    	(*massmatrix)(i,i+3) = density*lrefe_*crosssec_ / 6;
+    	(*massmatrix)(i+3,i) = density*lrefe_*crosssec_ / 6;
     }
   }
-
-
   return;
 } // DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass
-
-
-/*------------------------------------------------------------------------------------------------------------*
- | nonlinear stiffness and mass matrix (private)                                                      tk 10/08|
- | engineering strain measure, large displacements and rotations                                                |
-  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass_engstr( vector<double>& disp,
-    Epetra_SerialDenseMatrix* stiffmatrix,
-    Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseVector* force)
-{
-  //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
-  LINALG::Matrix<6,1> xcurr;
-
-  //Green-Lagrange strain
-  double epsilon;
-
-  //auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
-  LINALG::Matrix<6,1> aux;
-
-  //current nodal position (first
-  for (int j=0; j<3; ++j)
-  {
-    xcurr(j  )   = Nodes()[0]->X()[j] + disp[  j]; //first node
-    xcurr(j+3)   = Nodes()[1]->X()[j] + disp[3+j]; //second node
-  }
-
-  //computing auxiliary vector aux = 4.0*N^T_{,xi} * N_{,xi} * xcurr
-  aux(0) = (xcurr(0) - xcurr(3));
-  aux(1) = (xcurr(1) - xcurr(4));
-  aux(2) = (xcurr(2) - xcurr(5));
-  aux(3) = (xcurr(3) - xcurr(0));
-  aux(4) = (xcurr(4) - xcurr(1));
-  aux(5) = (xcurr(5) - xcurr(2));
-
-  double lcurr = sqrt(pow(aux(0),2)+pow(aux(1),2)+pow(aux(2),2));
-
-  //calculating strain epsilon from node position by scalar product:
-  epsilon = (lcurr-lrefe_)/lrefe_;
-
-  /* read material parameters using structure _MATERIAL which is defined by inclusion of      /
-   / "../drt_lib/drt_timecurve.H"; note: material parameters have to be read in the evaluation /
-   / function instead of e.g. TrussLm_input.cpp or within the TrussLmRegister class since it is not/
-   / sure that structure _MATERIAL is declared within those scopes properly whereas it is within/
-   / the evaluation functions */
-
-  // get the material law
-  Teuchos::RCP<const MAT::Material> currmat = Material();
-  double ym = 0;
-  double density = 0;
-
-  //assignment of material parameters; only St.Venant material is accepted for this truss
-  switch(currmat->MaterialType())
-  {
-  case INPAR::MAT::m_stvenant:// only linear elastic material supported
-    {
-      const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-      ym = actmat->Youngs();
-      density = actmat->Density();
-    }
-    break;
-    default:
-    dserror("unknown or improper type of material law");
-  }
-
-  // resulting force scaled by current length
-  double forcescalar=(ym*crosssec_*epsilon)/lcurr;
-
-  //computing global internal forces
-  if (force != NULL)
-    for (int i=0; i<6; ++i)
-     (*force)(i) = forcescalar * aux(i);
-
-
-  //computing linear stiffness matrix
-  if (stiffmatrix != NULL)
-  {
-    for (int i=0; i<3; ++i)
-    {
-        //stiffness entries for first node
-        (*stiffmatrix)(i,i)    =  forcescalar;
-        (*stiffmatrix)(i,3+i)  = -forcescalar;
-        //stiffness entries for second node
-        (*stiffmatrix)(i+3,i+3)=  forcescalar;
-        (*stiffmatrix)(i+3,i)  = -forcescalar;
-    }
-
-    for (int i=0; i<6; ++i)
-      for (int j=0; j<6; ++j)
-        (*stiffmatrix)(i,j) += (ym*crosssec_/pow(lcurr,3))*aux(i)*aux(j);
-  }
-
-  //calculating consistent mass matrix
-  if (massmatrix != NULL)
-  {
-    for (int i=0; i<3; ++i)
-    {
-      (*massmatrix)(i,i)     = density*lrefe_*crosssec_ / 3;
-      (*massmatrix)(i+3,i+3) = density*lrefe_*crosssec_ / 3;
-      (*massmatrix)(i,i+3)   = density*lrefe_*crosssec_ / 6;
-      (*massmatrix)(i+3,i)   = density*lrefe_*crosssec_ / 6;
-    }
-  }
-
-  return;
-} // DRT::ELEMENTS::TrussLm::bt_nlnstiffmass3
-
-
-// lump mass matrix
-void DRT::ELEMENTS::TrussLm::tlm_lumpmass(Epetra_SerialDenseMatrix* emass)
-{
-  // lump mass matrix
-  if (emass != NULL)
-  {
-    // we assume #elemat2 is a square matrix
-    for (int c=0; c<(*emass).N(); ++c) // parse columns
-    {
-      double d = 0.0;
-      for (int r=0; r<(*emass).M(); ++r) // parse rows
-      {
-        d += (*emass)(r,c); // accumulate row entries
-        (*emass)(r,c) = 0.0;
-      }
-      (*emass)(c,c) = d; // apply sum of row entries on diagonal
-    }
-  }
-}
 
 /*-----------------------------------------------------------------------------------------------------------*
  | computes damping coefficients per lengthand stores them in a matrix in the following order: damping of    |
@@ -810,10 +761,10 @@ void DRT::ELEMENTS::TrussLm::MyBackgroundVelocity(ParameterList& params,  //!<pa
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
 inline void DRT::ELEMENTS::TrussLm::MyTranslationalDamping(ParameterList& params,  //!<parameter list
-                                                  const vector<double>&     vel,  //!< element velocity vector
-                                                  const vector<double>&     disp, //!<element disp vector
+                                                  const Epetra_SerialDenseVector& vel,  //!< element velocity vector
+                                                  const Epetra_SerialDenseVector& x, //!< interpolated positions vector
                                                   Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                                                  Epetra_SerialDenseVector* force)//!< element internal force vector
+                                                  Epetra_SerialDenseMatrix* force)//!< element internal force vector
 {
   //get time step size
   double dt = params.get<double>("delta time",0.0);
@@ -856,13 +807,13 @@ inline void DRT::ELEMENTS::TrussLm::MyTranslationalDamping(ParameterList& params
     DRT::UTILS::shape_function_1D(funct,gausspoints.qxg[gp][0],Shape());
     DRT::UTILS::shape_function_1D_deriv1(deriv,gausspoints.qxg[gp][0],Shape());
 
-    //compute point in phyiscal space corresponding to Gauss point
-    evaluationpoint.PutScalar(0);
+    //compute point in physical space corresponding to Gauss point
+    evaluationpoint.PutScalar(0.0);
     //loop over all line nodes
     for(int i=0; i<nnode; i++)
       //loop over all dimensions
       for(int j=0; j<ndim; j++)
-        evaluationpoint(j) += funct(i)*(Nodes()[i]->X()[j]+disp[dof*i+j]);
+        evaluationpoint(j) += funct(i)*x(dof*i+j);
 
     //compute velocity and gradient of background flow field at evaluationpoint
     MyBackgroundVelocity<ndim>(params,evaluationpoint,velbackground,velbackgroundgrad);
@@ -872,13 +823,13 @@ inline void DRT::ELEMENTS::TrussLm::MyTranslationalDamping(ParameterList& params
     LINALG::Matrix<ndim,1> tpar(true);
     for(int i=0; i<nnode; i++)
       for(int k=0; k<ndim; k++)
-        tpar(k) += deriv(i)*(Nodes()[i]->X()[k]+disp[dof*i+k]) / jacobi[gp];
+        tpar(k) += deriv(i)*x(dof*i+k) / jacobi[gp];
 
     //compute velocity vector at this Gauss point
     LINALG::Matrix<ndim,1> velgp(true);
     for(int i=0; i<nnode; i++)
       for(int l=0; l<ndim; l++)
-        velgp(l) += funct(i)*vel[dof*i+l];
+        velgp(l) += funct(i)*vel(dof*i+l);
 
     //compute matrix product (t_{\par} \otimes t_{\par}) \cdot velbackgroundgrad
     LINALG::Matrix<ndim,ndim> tpartparvelbackgroundgrad(true);
@@ -895,9 +846,10 @@ inline void DRT::ELEMENTS::TrussLm::MyTranslationalDamping(ParameterList& params
         for(int l=0; l<ndim; l++)
         {
           if(force != NULL)
-            (*force)(i*dof+k)+= funct(i)*jacobi[gp]*gausspoints.qwgt[gp]*( (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) *(velgp(l)- velbackground(l));
+            (*force)(i*dof+k,0)+= funct(i)*jacobi[gp]*gausspoints.qwgt[gp]*( (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) *(velgp(l)- velbackground(l));
 
           if(stiffmatrix != NULL)
+          {
             //loop over all column nodes
             for (int j=0; j<nnode; j++)
             {
@@ -906,6 +858,7 @@ inline void DRT::ELEMENTS::TrussLm::MyTranslationalDamping(ParameterList& params
               (*stiffmatrix)(i*dof+k,j*dof+k) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*                                                   (gamma(0) - gamma(1))*tpar(l)*(velgp(l) - velbackground(l));
               (*stiffmatrix)(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*                                                   (gamma(0) - gamma(1))*tpar(k)*(velgp(l) - velbackground(l));
             }
+          }
         }
   }
 
@@ -917,10 +870,9 @@ inline void DRT::ELEMENTS::TrussLm::MyTranslationalDamping(ParameterList& params
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
 inline void DRT::ELEMENTS::TrussLm::MyStochasticForces(ParameterList& params,  //!<parameter list
-                                              const vector<double>&     vel,  //!< element velocity vector
-                                              const vector<double>&     disp, //!<element disp vector
+                                              const Epetra_SerialDenseVector& x, //!<interpolated element positions vector
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                                              Epetra_SerialDenseVector* force)//!< element internal force vector
+                                              Epetra_SerialDenseMatrix* force)//!< element internal force vector
 {
   //get friction model according to which forces and damping are applied
   INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
@@ -966,7 +918,7 @@ inline void DRT::ELEMENTS::TrussLm::MyStochasticForces(ParameterList& params,  /
     LINALG::Matrix<ndim,1> tpar(true);
     for(int i=0; i<nnode; i++)
       for(int k=0; k<ndim; k++)
-        tpar(k) += deriv(i)*(Nodes()[i]->X()[k]+disp[dof*i+k]) / jacobi[gp];
+        tpar(k) += deriv(i)*x(dof*i+k) / jacobi[gp];
 
 
     //loop over all line nodes
@@ -977,7 +929,7 @@ inline void DRT::ELEMENTS::TrussLm::MyStochasticForces(ParameterList& params,  /
         for(int l=0; l<ndim; l++)
         {
           if(force != NULL)
-            (*force)(i*dof+k) -= funct(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*tpar(k)*tpar(l))*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(jacobi[gp]*gausspoints.qwgt[gp]);
+            (*force)(i*dof+k,0) -= funct(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*tpar(k)*tpar(l))*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(jacobi[gp]*gausspoints.qwgt[gp]);
 
           if(stiffmatrix != NULL)
             //loop over all column nodes
@@ -999,20 +951,20 @@ inline void DRT::ELEMENTS::TrussLm::MyStochasticForces(ParameterList& params,  /
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
 inline void DRT::ELEMENTS::TrussLm::CalcBrownian(ParameterList& params,
-                                              const vector<double>&           vel,  //!< element velocity vector
-                                              const vector<double>&           disp, //!< element displacement vector
+																							const Epetra_SerialDenseVector& vel,  //!< element velocity vector
+                                              const Epetra_SerialDenseVector& x, //!< interpolated node positions vector
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                                              Epetra_SerialDenseVector* force) //!< element internal force vector
+                                              Epetra_SerialDenseMatrix* force) //!< element internal force vector
 {
   //if no random numbers for generation of stochastic forces are passed to the element no Brownian dynamics calculations are conducted
   if( params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) == Teuchos::null)
     return;
 
   //add stiffness and forces due to translational damping effects
-  MyTranslationalDamping<nnode,ndim,dof>(params,vel,disp,stiffmatrix,force);
+  MyTranslationalDamping<nnode,ndim,dof>(params,vel,x,stiffmatrix,force);
 
   //add stochastic forces and (if required) resulting stiffness
-  MyStochasticForces<nnode,ndim,dof,randompergauss>(params,vel,disp,stiffmatrix,force);
+  MyStochasticForces<nnode,ndim,dof,randompergauss>(params,x,stiffmatrix,force);
 
 return;
 

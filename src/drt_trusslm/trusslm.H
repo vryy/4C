@@ -346,7 +346,7 @@ private:
   enum KinematicType
   {
     trlm_totlag,
-    trlm_engstrain
+    //trlm_engstrain
   };
 
   //! container containing all kind of TrussLm thisandthat
@@ -355,8 +355,10 @@ private:
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
 
-  //!reference node position
-  LINALG::Matrix<6,1> X_;
+  //!reference node position (four nodes)
+  LINALG::Matrix<12,1> X_;
+  //!reference interpolated node positions (two nodes)
+  LINALG::Matrix<6,1> Xint_;
 
   //! material type
   int material_;
@@ -379,6 +381,10 @@ private:
   //! gaussrule_ will be initialized automatically to a 2 point integration rule
   DRT::UTILS::GaussRule1D gaussrule_;
 
+  //! curve parameters of the two trusses constituting the intermediate node positions
+  double xiA_;
+  double xiB_;
+
   //! @name methods for initilization of the element
 
   //!sets reference coordinates X_ and refenrence length lrefe_ for elements added to the discretization after simulation start
@@ -392,12 +398,12 @@ private:
   DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
 
   //!calculation of nonlinear stiffness and mass matrix switching between total lagrange and enginerring strains
-  void tlm_nlnstiffmass(ParameterList&            params,
+  void tlm_nlnstiffmass(ParameterList&           params,
                        vector<double>&           vel,
                        vector<double>&           disp,
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
-                       Epetra_SerialDenseVector* force);
+                       Epetra_SerialDenseMatrix* force);
 
   //!calculation of elastic energy
   void tlm_energy( ParameterList& params,
@@ -406,22 +412,12 @@ private:
 
 
   //!calculation of nonlinear stiffness and mass matrix
-  void tlm_nlnstiffmass_totlag( vector<double>& disp,
+  void tlm_nlnstiffmass_totlag( const Epetra_SerialDenseVector& X,
+  		const Epetra_SerialDenseVector& x,
+  		const Epetra_SerialDenseVector& u,
       Epetra_SerialDenseMatrix* stiffmatrix,
       Epetra_SerialDenseMatrix* massmatrix,
-      Epetra_SerialDenseVector* force);
-
-  /*!
-   * \brief calculate force, nonlinear stiffness and mass matrix using a engineering strain measure.
-   *
-   * Unlike the fully nonlinear implementation of #tlm_nlnstiffmass_totlag, this function uses \f$\varepsilon=\Delta d / d\f$
-   * as strain measure.
-   *
-  */
-  void tlm_nlnstiffmass_engstr( vector<double>& disp,
-      Epetra_SerialDenseMatrix* stiffmatrix,
-      Epetra_SerialDenseMatrix* massmatrix,
-      Epetra_SerialDenseVector* force);
+      Epetra_SerialDenseMatrix* force);
 
   //! lump mass matrix
   void tlm_lumpmass(Epetra_SerialDenseMatrix* emass);
@@ -433,10 +429,10 @@ private:
    //!compute damping matrix and statistical forces according to fluctuation dissipation theorem
    template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
    void CalcBrownian(ParameterList& params,  //!<parameter list
-                     const vector<double>&           vel,  //!< element velocity vector
-                     const vector<double>&           disp, //!<element disp vector
+                     const Epetra_SerialDenseVector& vel,  //!< interpolated element velocity vector
+                     const Epetra_SerialDenseVector& x, //!< interpolated element positions vector
                      Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                     Epetra_SerialDenseVector* force);//!< element internal force vector
+                     Epetra_SerialDenseMatrix* force);//!< element internal force vector
 
    //!computes damping coefficients for employed friction model
    void MyDampingConstants(ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel);
@@ -447,18 +443,17 @@ private:
    //!computes translational damping forces and stiffness
    template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
    void MyTranslationalDamping(ParameterList& params,  //!<parameter list
-                             const vector<double>&           vel,  //!< element velocity vector
-                             const vector<double>&           disp, //!<element disp vector
+                             const Epetra_SerialDenseVector& vel,  //!< interpolated element velocity vector
+                             const Epetra_SerialDenseVector& x, //!< interpolated element positions vector
                              Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                             Epetra_SerialDenseVector* force);//!< element internal force vector
+                             Epetra_SerialDenseMatrix* force);//!< element internal force vector
 
    //!computes stochastic translational forces and resulting stiffness
    template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
    void MyStochasticForces(ParameterList& params,  //!<parameter list
-                         const vector<double>&           vel,  //!< element velocity vector
-                         const vector<double>&           disp, //!<element disp vector
+												 const Epetra_SerialDenseVector& x, //!<interpolated element positions vector
                          Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-                         Epetra_SerialDenseVector* force);//!< element internal force vector
+                         Epetra_SerialDenseMatrix* force);//!< element internal force vector
 
    //!computes velocity of background fluid and gradient of that velocity at a certain evaluation point in the physical space and adds respective terms to internal forces and damping matrix
    template<int ndim> //number of dimensions of embedding space

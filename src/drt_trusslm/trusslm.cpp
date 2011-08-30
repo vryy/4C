@@ -68,15 +68,15 @@ void DRT::ELEMENTS::TrussLmType::SetupElementDefinition( std::map<std::string,st
 {
   std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["TRUSSLM"];
 
-  defs["LINE2"]
-    .AddIntVector("LINE2",2)
+  defs["LINE4"]
+    .AddIntVector("LINE4",4) // originally .AddIntVector("LINE2",2)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedString("KINEM")
     ;
 
-  defs["LIN2"]
-    .AddIntVector("LIN2",2)
+  defs["LIN4"]
+    .AddIntVector("LIN4",2)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedString("KINEM")
@@ -95,9 +95,11 @@ material_(0),
 lrefe_(0),
 crosssec_(0),
 kintype_(trlm_totlag),
+gaussrule_(DRT::UTILS::intrule_line_2point), // intrule_line_2point or intrule_line_4point, prob. 2point?
+xiA_(0.0), // currently, set it to the middle of the filament truss
+xiB_(0.0)
 //note: for corotational approach integration for Neumann conditions only
 //hence enough to integrate 3rd order polynomials exactly
-gaussrule_(DRT::UTILS::intrule_line_2point)
 {
   return;
 }
@@ -115,7 +117,9 @@ DRT::ELEMENTS::TrussLm::TrussLm(const DRT::ELEMENTS::TrussLm& old) :
  jacobinode_(old.jacobinode_),
  crosssec_(old.crosssec_),
  kintype_(old. kintype_),
- gaussrule_(old.gaussrule_)
+ gaussrule_(old.gaussrule_),
+ xiA_(old.xiA_),
+ xiB_(old.xiB_)
 {
   return;
 }
@@ -183,6 +187,8 @@ void DRT::ELEMENTS::TrussLm::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,gaussrule_); //implicit conversion from enum to integer
   AddtoPack(data,kintype_);
   AddtoPack(data,data_);
+  AddtoPack(data, xiA_); // not sure whether this is needed
+  AddtoPack(data, xiB_);
 
   return;
 }
@@ -210,6 +216,9 @@ void DRT::ELEMENTS::TrussLm::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,jacobimass_);
   ExtractfromPack(position,data,jacobinode_);
   ExtractfromPack(position,data,crosssec_);
+  ExtractfromPack(position,data,xiA_); // not sure whether this is needed
+  ExtractfromPack(position,data,xiB_);
+
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position,data,gausrule_integer);
@@ -372,6 +381,13 @@ void DRT::ELEMENTS::TrussLm::SetUpReferenceGeometry(const vector<double>& xrefe,
 
 int DRT::ELEMENTS::TrussLmType::Initialize(DRT::Discretization& dis)
 {
+	// In contrast to the conventional truss3 element, we have four nodes that constitute the element
+	// o--------x---------o
+	//          |
+	//          |
+	// o--------x---------o
+	// Thus, the intermediate positions - marked as x in the picture - are interpolated using the two nodes of on either side
+
   //reference node positions
   vector<double> xrefe;
 
@@ -396,7 +412,11 @@ int DRT::ELEMENTS::TrussLmType::Initialize(DRT::Discretization& dis)
     {
       for (int k=0; k<2; k++) //element has two nodes
         for(int l= 0; l < 3; l++)
-          xrefe[k*3 + l] = currele->Nodes()[k]->X()[l];
+        {
+        	// linearly interpolated node positions
+          xrefe[k*3 + l] = (currele->Nodes()[k+1]->X()[l]);
+          xrefe[k*3 + l] = (currele->Nodes()[k+3]->X()[l]);
+        }
     }
 
     currele->SetUpReferenceGeometry(xrefe);

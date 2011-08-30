@@ -37,12 +37,12 @@ bool DRT::ELEMENTS::TrussLm::ReadElement(const std::string& eletype,
   if (buffer=="totlag")
     kintype_ = trlm_totlag;
 
-  // geometrically non-linear approach with engineering strains
+  /*/ geometrically non-linear approach with engineering strains
   else if (buffer=="engstr")
-    kintype_ = trlm_engstrain;
+    kintype_ = trlm_engstrain;*/
 
   else
-    dserror("Reading of Torsion2 element failed because of unknown kinematic type!");
+    dserror("Reading of Torsion3 element failed because of unknown kinematic type!");
 
   return true;
 }
@@ -58,19 +58,19 @@ bool DRT::ELEMENTS::TrussLm::ReadElement()
   int ierr=0;
 
   //note: BACI intern type is LINE2, but gid input files work with LIN2
-  frchk("LIN2",&ierr);
+  frchk("LIN4",&ierr); //originally LIN2
   // two figures have to be read by frint
-  const int nnode=2;
+  const int nnode=4; //originally (truss3): const int nnode=2;
   // provide an array of length two in order to store the two node IDs read by frint_n
   int nodes[nnode];
-  frint_n("LIN2",nodes,nnode,&ierr);
+  frint_n("LIN4",nodes,nnode,&ierr);//originally LIN2
 
   // if that does not work try LINE2, in case .dat file was created with pre_exodus
   if (ierr != 1)
   {
     ierr=0;
-    frchk("LINE2",&ierr);
-    frint_n("LINE2",nodes,nnode,&ierr);
+    frchk("LINE4",&ierr);
+    frint_n("LINE4",nodes,nnode,&ierr);
   }
 
   if (ierr != 1) dserror("Reading of ELEMENT Topology failed");
