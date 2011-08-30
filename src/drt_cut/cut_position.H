@@ -47,7 +47,11 @@ public:
 
   bool Compute();
 
+  bool ComputeTol(double Tol);
+
   bool WithinLimits();
+
+  bool WithinLimitsTol(double Tol);
 
   const LINALG::Matrix<3,1> & LocalCoordinates() { return xsi_; }
 
@@ -94,6 +98,20 @@ bool Position<elementtype,numNodesElement>::Compute()
   return false;
 }
 
+template <DRT::Element::DiscretizationType elementtype,
+          int numNodesElement
+>
+bool Position<elementtype,numNodesElement>::ComputeTol(double Tol)
+{
+  KERNEL::ComputePosition<elementtype> cp( xsi_ );
+  if ( cp( xyze_, px_ ) )
+  {
+    return WithinLimitsTol(Tol);
+  }
+
+  return false;
+}
+
 
 template <DRT::Element::DiscretizationType elementtype,
           int numNodesElement
@@ -123,6 +141,40 @@ bool Position<elementtype,numNodesElement>::WithinLimits()
     return ( xsi_( 0 ) >=   -TOLERANCE and xsi_( 1 ) >=   -TOLERANCE and xsi_( 2 ) >= -1-TOLERANCE and
              xsi_( 2 ) <=  1+TOLERANCE and
              xsi_( 0 )+xsi_( 1 ) <= 1+TOLERANCE );
+  default:
+    throw std::runtime_error( "unsupported element type" );
+  }
+  return false;
+}
+
+template <DRT::Element::DiscretizationType elementtype,
+          int numNodesElement
+>
+bool Position<elementtype,numNodesElement>::WithinLimitsTol(double Tol)
+{
+  switch ( elementtype )
+  {
+  case DRT::Element::hex8:
+  case DRT::Element::hex20:
+  case DRT::Element::hex27:
+    return ( xsi_( 0 ) >= -1-Tol and xsi_( 1 ) >= -1-Tol and xsi_( 2 ) >= -1-Tol and
+             xsi_( 0 ) <=  1+Tol and xsi_( 1 ) <=  1+Tol and xsi_( 2 ) <=  1+Tol );
+  case DRT::Element::tet4:
+  case DRT::Element::tet10:
+    return ( xsi_( 0 ) >=   -Tol and xsi_( 1 ) >=   -Tol and xsi_( 2 ) >=   -Tol and
+             xsi_( 0 )+xsi_( 1 )+xsi_( 2 ) <= 1+Tol );
+  case DRT::Element::pyramid5:
+    return ( xsi_( 0 ) >= -1-Tol and xsi_( 1 ) >= -1-Tol and xsi_( 2 ) >=   -Tol and
+             xsi_( 0 ) <=  1+Tol and xsi_( 1 ) <=  1+Tol and
+             ( fabs( xsi_( 0 ) ) > fabs( xsi_( 1 ) ) ?
+               ( xsi_( 2 )+fabs( xsi_( 0 ) ) <= 1+Tol ) :
+               ( xsi_( 2 )+fabs( xsi_( 1 ) ) <= 1+Tol ) )
+      );
+  case DRT::Element::wedge6:
+  case DRT::Element::wedge15:
+    return ( xsi_( 0 ) >=   -Tol and xsi_( 1 ) >=   -Tol and xsi_( 2 ) >= -1-Tol and
+             xsi_( 2 ) <=  1+Tol and
+             xsi_( 0 )+xsi_( 1 ) <= 1+Tol );
   default:
     throw std::runtime_error( "unsupported element type" );
   }
