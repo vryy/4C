@@ -91,7 +91,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
   else if (action=="calc_homog_dens")                             act = So_hex8::calc_homog_dens;
   else if (action=="postprocess_stress")                          act = So_hex8::postprocess_stress;
   else if (action=="multi_readrestart")                           act = So_hex8::multi_readrestart;
-  else if (action=="multi_newresultfile")                         act = So_hex8::multi_newresultfile;
+  else if (action=="multi_invana_init")                           act = So_hex8::multi_invana_init;
   else if (action=="calc_potential_stiff")                        act = So_hex8::calc_potential_stiff;
   else if (action=="calc_struct_prestress_update")                act = So_hex8::prestress_update;
   else if (action=="calc_struct_inversedesign_update")            act = So_hex8::inversedesign_update;
@@ -945,17 +945,17 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     {
       RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-        soh8_read_restart_multi(params);
+        soh8_read_restart_multi();
     }
     break;
 
     //==================================================================================
-    // new result files on microscale
-    case multi_newresultfile:
+    // reset of micro-scale
+    case multi_invana_init:
     {
       RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-        soh8_multi_newresultfile(params);
+        soh8_multi_invana_init();
     }
     break;
 

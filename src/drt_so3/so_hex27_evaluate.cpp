@@ -72,6 +72,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(ParameterList& params,
   else if (action=="calc_homog_dens")                             act = So_hex27::calc_homog_dens;
   else if (action=="postprocess_stress")                          act = So_hex27::postprocess_stress;
   else if (action=="multi_readrestart")                           act = So_hex27::multi_readrestart;
+  else if (action=="multi_invana_init")                           act = So_hex27::multi_invana_init;
   else dserror("Unknown type of action for So_hex27");
   // what should the element do
   switch(act)
@@ -507,7 +508,18 @@ int DRT::ELEMENTS::So_hex27::Evaluate(ParameterList& params,
       RefCountPtr<MAT::Material> mat = Material();
 
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-        soh27_read_restart_multi(params);
+        soh27_read_restart_multi();
+    }
+    break;
+
+
+    // reset micro-scale for new run of inverse analysis
+    case multi_invana_init:
+    {
+      RefCountPtr<MAT::Material> mat = Material();
+
+      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+        soh27_multi_invana_init();
     }
     break;
 

@@ -115,7 +115,6 @@ private:
   std::vector<std::set<int> > matset_;
   std::vector<std::set<int> > eh_matset_;
 
-  bool multi_;
 
 public:
 

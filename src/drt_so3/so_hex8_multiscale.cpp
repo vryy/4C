@@ -103,7 +103,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eas_init_multi(ParameterList&  params)
 /*----------------------------------------------------------------------*
  |  Read restart on the microscale                              lw 05/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::soh8_read_restart_multi(ParameterList& params)
+void DRT::ELEMENTS::So_hex8::soh8_read_restart_multi()
 {
   const int ele_ID = Id();
   RefCountPtr<MAT::Material> mat = Material();
@@ -119,9 +119,9 @@ void DRT::ELEMENTS::So_hex8::soh8_read_restart_multi(ParameterList& params)
 
 
 /*----------------------------------------------------------------------*
- |  New result files on the microscale                          lw 01/11|
+ |  Initialization in case of inverse analyses                  lw 08/11|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::soh8_multi_newresultfile(ParameterList& params)
+void DRT::ELEMENTS::So_hex8::soh8_multi_invana_init()
 {
   const int ele_ID = Id();
   RefCountPtr<MAT::Material> mat = Material();
@@ -130,7 +130,7 @@ void DRT::ELEMENTS::So_hex8::soh8_multi_newresultfile(ParameterList& params)
   {
     MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
 
-    micro->Evaluate(NULL, NULL, NULL, NULL, gp, ele_ID, 0., 0., "multi_newresultfile");
+    micro->Evaluate(NULL, NULL, NULL, NULL, gp, ele_ID, 0., 0., "multi_invana_init");
   }
   return;
 }

@@ -111,8 +111,6 @@ STR::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
   mu_  = 1.;
   tol_mu_ = tol_;
 
-  multi_ = DRT::INPUT::IntegralValue<int>(iap,"INV_MULTI_OUT");
-
   // list of materials for each problem instance that should be fitted
   for (unsigned prob=0; prob<DRT::Problem::NumInstances(); ++prob)
   {
@@ -164,8 +162,8 @@ void STR::InvAnalysis::Integrate()
   double alpha  = iap.get<double>("INV_ALPHA");
   double beta   = iap.get<double>("INV_BETA");
   int max_itter = iap.get<int>("INV_ANA_MAX_RUN");
-  output_->NewResultFile((numb_run_));
-  output_->WriteMesh(0,0.0);
+  int newfiles = DRT::INPUT::IntegralValue<int>(iap,"NEW_FILES");
+
   // fitting loop
   do
   {
@@ -179,21 +177,22 @@ void STR::InvAnalysis::Integrate()
       cout << "-----------------------------making Jacobian matrix-------------------------" <<endl;
     for (int i=0; i<np_+1;i++)
     {
-      output_->NewResultFile((numb_run_));
+      if (newfiles)
+        output_->NewResultFile((numb_run_));
+      else
+        output_->OverwriteResultFile();
+
       output_->WriteMesh(0,0.0);
 
-      // check whether there are micro discretizations for which we have to
-      // define new result files, too
-      if (multi_)
-      {
-        // create the parameters for the discretization
-        ParameterList p;
-        // action for elements
-        p.set("action", "multi_newresultfile");
-        discret_->Evaluate(p, Teuchos::null, Teuchos::null,
-                           Teuchos::null, Teuchos::null, Teuchos::null);
-        discret_->ClearState();
-      }
+      // Multi-scale: if an inverse analysis is performed on the micro-level,
+      // the time and step need to be reset now. Furthermore, the result file
+      // needs to be opened. The results of the np_ evaluations of the
+      // disturbed equilibrium are always overwritten by the evaluation of the
+      // undisturbed equilibrium (i=np_).
+      ParameterList p;
+      p.set("action", "multi_invana_init");
+      discret_->Evaluate(p, Teuchos::null, Teuchos::null,
+                         Teuchos::null, Teuchos::null, Teuchos::null);
 
       if (discret_->Comm().MyPID()==0)
         cout << "------------------------------- run "<< i+1 << " of: " << np_+1 <<" ---------------------------------" <<endl;

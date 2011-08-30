@@ -68,6 +68,7 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
   else if (action=="postprocess_stress")          act = So_hex8::postprocess_stress;
   else if (action=="eas_init_multi")              act = So_hex8::eas_init_multi;
   else if (action=="eas_set_multi")               act = So_hex8::eas_set_multi;
+  else if (action=="multi_invana_init")           act = So_hex8::multi_invana_init;
   else if (action=="calc_homog_dens")             act = So_hex8::calc_homog_dens;
   else if (action=="multi_readrestart")           act = So_hex8::multi_readrestart;
   else dserror("Unknown type of action for So_hex8");
@@ -289,6 +290,7 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
     case eas_init_multi:
     case eas_set_multi:
     case calc_homog_dens:
+    case multi_invana_init:
     case multi_readrestart:
       dserror("multi-scale stuff not implemented for solid Q1P0 hex8 element");
       break;

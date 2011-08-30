@@ -109,7 +109,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
   else if (action=="calc_struct_inversedesign_switch") act = So_tet4::inversedesign_switch;
   else if (action=="calc_homog_dens")                  act = So_tet4::calc_homog_dens;
   else if (action=="multi_readrestart")                act = So_tet4::multi_readrestart;
-  else if (action=="multi_newresultfile")              act = So_tet4::multi_newresultfile;
+  else if (action=="multi_invana_init")                act = So_tet4::multi_invana_init;
   else dserror("Unknown type of action for So_tet4");
 
   // check for patient specific data
@@ -664,17 +664,17 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
     {
       RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-        sotet4_read_restart_multi(params);
+        sotet4_read_restart_multi();
     }
     break;
 
     //==================================================================================
     // new result files on microscale
-    case multi_newresultfile:
+    case multi_invana_init:
     {
       RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-        sotet4_multi_newresultfile(params);
+        sotet4_multi_invana_init();
     }
     break;
 

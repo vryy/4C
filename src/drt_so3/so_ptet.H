@@ -374,7 +374,7 @@ protected:
     calc_struct_B_and_F,
     calc_homog_dens,
     multi_readrestart,
-    multi_newresultfile
+    multi_invana_init
   };
 
   enum StressType
@@ -480,10 +480,10 @@ protected:
   void ptet_homog(ParameterList& params);
 
   /// Read restart on the microscale
-  void ptet_read_restart_multi(ParameterList& params);
+  void ptet_read_restart_multi();
 
   /// New result files on the microscale
-  void ptet_multi_newresultfile(ParameterList& params);
+  void ptet_multi_invana_init();
 
   //@}
 

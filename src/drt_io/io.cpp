@@ -565,10 +565,12 @@ void IO::DiscretizationWriter::CreateResultFile(const int step)
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::NewResultFile(int numb_run)
 {
-	resultfile_changed_ = -1;
-	meshfile_changed_ = -1;
-	output_->NewResultFile(numb_run);
+  resultfile_changed_ = -1;
+  meshfile_changed_ = -1;
+  output_->NewResultFile(numb_run);
 }
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::NewResultFile(string name_appendix, int numb_run)
@@ -576,9 +578,16 @@ void IO::DiscretizationWriter::NewResultFile(string name_appendix, int numb_run)
   resultfile_changed_ = -1;
   meshfile_changed_ = -1;
   output_->NewResultFile(name_appendix, numb_run);
-  }
+}
 
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationWriter::OverwriteResultFile()
+{
+  resultfile_changed_ = -1;
+  meshfile_changed_ = -1;
+  output_->OverwriteResultFile();
+}
 
 
 /*----------------------------------------------------------------------*/

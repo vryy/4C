@@ -138,7 +138,7 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
   else if (action=="calc_struct_reset_istep")             act = Ptet::calc_struct_reset_istep;
   else if (action=="calc_homog_dens")                     act = Ptet::calc_homog_dens;
   else if (action=="multi_readrestart")                   act = Ptet::multi_readrestart;
-  else if (action=="multi_newresultfile")                 act = Ptet::multi_newresultfile;
+  else if (action=="multi_invana_init")                   act = Ptet::multi_invana_init;
   else dserror("Unknown type of action for Ptet");
 
   // what should the element do
@@ -329,15 +329,15 @@ int DRT::ELEMENTS::Ptet::Evaluate(ParameterList& params,
     {
       RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-        ptet_read_restart_multi(params);
+        ptet_read_restart_multi();
     }
     break;
 
-    case multi_newresultfile:
+    case multi_invana_init:
     {
       RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-        ptet_multi_newresultfile(params);
+        ptet_multi_invana_init();
     }
     break;
 

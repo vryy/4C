@@ -40,7 +40,7 @@ void DRT::ELEMENTS::Ptet::ptet_homog(ParameterList&  params)
 /*----------------------------------------------------------------------*
  |  Read restart on the microscale                              lw 05/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ptet::ptet_read_restart_multi(ParameterList& params)
+void DRT::ELEMENTS::Ptet::ptet_read_restart_multi()
 {
   const int ele_ID = Id();
   const int gp = 0; // there is only one Gauss point
@@ -54,16 +54,16 @@ void DRT::ELEMENTS::Ptet::ptet_read_restart_multi(ParameterList& params)
 
 
 /*----------------------------------------------------------------------*
- |  New result files on the microscale                          lw 01/11|
+ |  New result files on the microscale                          lw 08/11|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Ptet::ptet_multi_newresultfile(ParameterList& params)
+void DRT::ELEMENTS::Ptet::ptet_multi_invana_init()
 {
   const int ele_ID = Id();
   const int gp = 0; // there is only one Gauss point
 
   RefCountPtr<MAT::Material> mat = Material();
   MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
-  micro->Evaluate(NULL, NULL, NULL, NULL, gp, ele_ID, 0., 0., "multi_newresultfile");
+  micro->Evaluate(NULL, NULL, NULL, NULL, gp, ele_ID, 0., 0., "multi_invana_init");
 
   return;
 }

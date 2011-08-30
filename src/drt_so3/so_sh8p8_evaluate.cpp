@@ -87,6 +87,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
   else if (action=="eas_set_multi")               act = So_hex8::eas_set_multi;
   else if (action=="calc_homog_dens")             act = So_hex8::calc_homog_dens;
   else if (action=="multi_readrestart")           act = So_hex8::multi_readrestart;
+  else if (action=="multi_invana_init")           act = So_hex8::multi_invana_init;
   else if (action=="calc_stc_matrix")             act = So_hex8::calc_stc_matrix;
   else if (action=="calc_stc_matrix_inverse")     act = So_hex8::calc_stc_matrix_inverse;
   else if (action=="calc_potential_stiff")        act = So_hex8::calc_potential_stiff;
@@ -534,9 +535,19 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       RefCountPtr<MAT::Material> mat = Material();
 
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-        soh8_read_restart_multi(params);
+        soh8_read_restart_multi();
     }
     break;
+
+    // reset of micro-scale
+    case multi_invana_init:
+    {
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+        soh8_multi_invana_init();
+    }
+    break;
+
     case calc_stc_matrix:
     {
       const INPAR::STR::STC_Scale stc_scaling = DRT::INPUT::get<INPAR::STR::STC_Scale>(params,"stc_scaling");

@@ -139,7 +139,7 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
   else if (action=="calc_struct_reset_istep")             act = NStet::calc_struct_reset_istep;
   else if (action=="calc_homog_dens")                     act = NStet::calc_homog_dens;
   else if (action=="multi_readrestart")                   act = NStet::multi_readrestart;
-  else if (action=="multi_newresultfile")                 act = NStet::multi_newresultfile;
+  else if (action=="multi_invana_init")                   act = NStet::multi_invana_init;
   else dserror("Unknown type of action for NStet");
 
   // what should the element do
@@ -397,15 +397,15 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
     {
       RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-        nstet_read_restart_multi(params);
+        nstet_read_restart_multi();
     }
     break;
 
-    case multi_newresultfile:
+    case multi_invana_init:
     {
       RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-        nstet_multi_newresultfile(params);
+        nstet_multi_invana_init();
     }
     break;
 

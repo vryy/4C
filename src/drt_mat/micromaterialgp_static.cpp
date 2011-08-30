@@ -66,6 +66,19 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
   oldKaainv_ = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
   oldKda_ = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
 
+  // we are using some parameters from the macroscale input file
+  // (e.g. time step size, alphaf etc. which need to be consistent in
+  // both micro- and macroscale input file) whereas individual
+  // parameters for the microscale can be used e.g. wrt output
+  // options, kind of predictor etc.
+  const Teuchos::ParameterList& sdyn_macro = DRT::Problem::Instance()->StructuralDynamicParams();
+
+  istep_ = 0;
+  // we set the microscale time _ALWAYS_ to 0 (also in restart case)
+  // in order to handle the implicit update query!!!
+  timen_ = 0.;
+  dt_    = sdyn_macro.get<double>("TIMESTEP");
+
   // if class handling microscale simulations is not yet initialized
   // -> set up
 
@@ -86,28 +99,11 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
   std::string newfilename;
   NewResultFile(eleowner, newfilename);
 
-  // we are using some parameters from the macroscale input file
-  // (e.g. time step size, alphaf etc. which need to be consistent in
-  // both micro- and macroscale input file) whereas individual
-  // parameters for the microscale can be used e.g. wrt output
-  // options, kind of predictor etc.
-  const Teuchos::ParameterList& sdyn_macro = DRT::Problem::Instance()->StructuralDynamicParams();
-
   // Initialize SurfStressManager for handling surface stress conditions due to interfacial phenomena
   // Note that this has to be done _after_ finding the output file name!
   // Note also that we are using the macroscale parameterlist here
   // because the SurfStressManager needs to know alphaf here
   surf_stress_man_=rcp(new UTILS::SurfStressManager(microdis, sdyn_macro, newfilename));
-
-  istep_ = 0;
-
-  if (eleowner) micro_output_->WriteMesh(istep_, microstaticmap_[microdisnum_]->GetTime());
-
-
-  // we set the microscale time _ALWAYS_ to 0 (also in restart case)
-  // in order to handle the implicit update query!!!
-  timen_ = 0.;
-  dt_    = sdyn_macro.get<double>("TIMESTEP");
 
   // check whether we are using modified Newton as a nonlinear solver
   // on the macroscale or not
@@ -212,6 +208,8 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
                             macrocontrol->FileSteps()));
 
     micro_output_ = rcp(new DiscretizationWriter(microdis,microcontrol));
+
+    micro_output_->WriteMesh(istep_, timen_);
   }
 
   return;
@@ -251,6 +249,14 @@ void MAT::MicroMaterialGP::EasInit()
   }
 
   return;
+}
+
+
+
+void MAT::MicroMaterialGP::ResetTimeAndStep()
+{
+  timen_ = 0.0;
+  istep_ = 0;
 }
 
 

@@ -44,7 +44,7 @@ public:
   /// Read restart
   void ReadRestart();
 
-  /// New result file (for inverse analysis)
+  /// New result file
   void NewResultFile(bool eleowner, std::string& newfilename);
 
   /// Perform microscale simulation
@@ -58,6 +58,10 @@ public:
 
   /// Create and initialize "empty" EAS history map
   void EasInit();
+
+  /// Reset global time and step number (needed for multi-scale inverse
+  /// analyses with multiple runs)
+  void ResetTimeAndStep();
 
 
 private:

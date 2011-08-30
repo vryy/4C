@@ -494,7 +494,7 @@ protected:
     inversedesign_update,
     inversedesign_switch,
     multi_readrestart,        //!< multi-scale: read restart on microscale
-    multi_newresultfile,      //!< multi-scale: define new result file (for inverse analysis)
+    multi_invana_init,        //!< multi-scale: reset time, step and output in case of inverse analyses
     calc_potential_stiff,     //!< volume interaction potential
     calc_stc_matrix,          //! calculate scaled director matrix for thin shell structures
     calc_stc_matrix_inverse,  //! calculate inverse of scaled director matrix for thin shell structures
@@ -802,12 +802,13 @@ protected:
   /*!
    * \brief Read restart on the microscale
    * */
-  void soh8_read_restart_multi(ParameterList& params);
+  void soh8_read_restart_multi();
 
   /*!
-   * \brief New result files on the microscale
+   * \brief Initialize time, step and output on the microscale in case of
+   * multi-scale inverse analyses
    * */
-  void soh8_multi_newresultfile(ParameterList& params);
+  void soh8_multi_invana_init();
 
   //@}
 

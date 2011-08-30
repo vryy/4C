@@ -386,7 +386,7 @@ protected:
     inversedesign_switch,
     calc_homog_dens,
     multi_readrestart,
-    multi_newresultfile
+    multi_invana_init
   };
 
   //! kinematic types of so_tet10
@@ -508,10 +508,10 @@ protected:
   void sotet4_homog(ParameterList& params);
 
   /// Read restart on the microscale
-  void sotet4_read_restart_multi(ParameterList& params);
+  void sotet4_read_restart_multi();
 
   /// New result files on the microscale
-  void sotet4_multi_newresultfile(ParameterList& params);
+  void sotet4_multi_invana_init();
 
   //@}
 

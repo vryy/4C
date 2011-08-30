@@ -1182,8 +1182,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                             "IDs of materials that have to be fitted",
                             &iap);
 
-  setStringToIntegralParameter<int>("INV_MULTI_OUT","no",
-                                    "output for optimization on micro-scale",
+  setStringToIntegralParameter<int>("NEW_FILES","yes",
+                                    "new result files for each run",
                                     yesnotuple,yesnovalue,&iap);
 
   /*----------------------------------------------------------------------*/

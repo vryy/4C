@@ -379,7 +379,8 @@ protected:
     postprocess_stress,       //!< postprocess stresses
     prestress_update,
     inversedesign_update,
-    multi_readrestart         //!< multi-scale: read restart on microscale
+    multi_readrestart,        //!< multi-scale: read restart on microscale
+    multi_invana_init         //!< reset micro-scale for new run of inverse analysis
   };
 
   //! kinematic types of So_hex20, but yet only total-lagrangian is implemented
@@ -484,7 +485,12 @@ protected:
   /*!
    * \brief Read restart on the microscale
    * */
-  void soh20_read_restart_multi(ParameterList& params);
+  void soh20_read_restart_multi();
+
+  /*!
+   * \brief Reset micro-scale for new run of inverse analysis
+   * */
+  void soh20_multi_invana_init();
 
   //@}
 

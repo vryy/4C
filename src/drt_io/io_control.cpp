@@ -244,6 +244,48 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void IO::OutputControl::OverwriteResultFile()
+{
+  controlfile_.close();
+  std::stringstream name;
+  name << filename_ << ".control";
+  controlfile_.open(name.str().c_str(),std::ios_base::out);
+  if (not controlfile_)
+    dserror("could not open control file '%s' for writing", name.str().c_str());
+
+  time_t time_value;
+  time_value = time(NULL);
+
+  char hostname[31];
+  struct passwd *user_entry;
+#ifndef WIN_MUENCH
+  user_entry = getpwuid(getuid());
+  gethostname(hostname, 30);
+#else
+  strcpy(hostname, "unknown host");
+#endif
+
+  controlfile_ << "# baci output control file\n"
+               << "# created by "
+#if !defined(WIN_MUENCH) && !defined(HPUX_GNU)
+               << user_entry->pw_name
+#else
+               << "unknown"
+#endif
+               << " on " << hostname << " at " << ctime(&time_value)
+               << "# using code revision " << (CHANGEDREVISION+0) << " \n\n"
+               << "input_file = \"" << inputfile_ << "\"\n"
+               << "problem_type = \"" << problemtype_ << "\"\n"
+               << "spatial_approximation = \"" << "Polynomial" << "\"\n"
+               << "ndim = " << ndim_ << "\n"
+               << "\n";
+
+  controlfile_ << std::flush;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void IO::OutputControl::NewResultFile(int numb_run)
 {
   if (filename_.rfind("_run_")!=string::npos)

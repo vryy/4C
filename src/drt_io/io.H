@@ -257,12 +257,14 @@ public:
   virtual void WriteRedundantDoubleVector(const string name,
 					  Teuchos::RCP<vector<double> > doublevec);
 
-    // creating new result files for the inverse analysis
+  /// overwrite result files for the inverse analysis
+  void OverwriteResultFile();
+
+  /// creating new result files for the inverse analysis
   void NewResultFile(int numb_run);
-  // creating new result files for the mlmc
+
+  /// creating new result files for the mlmc
   void NewResultFile(string name_appendix, int numb_run);
-
-
 
   //@}
 
