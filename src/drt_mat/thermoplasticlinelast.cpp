@@ -687,6 +687,9 @@ void MAT::ThermoPlasticLinElast::Evaluate(
 
   }  // plastic corrector
 
+  // --------------------------- consistent elastoplastic tangent modulus
+  // using an associative flow rule: C_ep is symmetric
+  // ( generally C_ep is nonsymmetric )
   // if Phi^trial=0: two tangent stress-strain relations exist
   // plastic loading --> C == C_ep
   if (Dgamma > 0.0)
@@ -694,9 +697,6 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   // elastic unloading --> C == C_e
   else heaviside = 0.0;
 
-  // --------------------------- consistent elastoplastic tangent modulus
-  // using an associative flow rule: C_ep is symmetric
-  // ( generally C_ep is nonsymmetric )
   SetupCmatElastoPlastic(
     cmat,
     Dgamma,
@@ -707,6 +707,33 @@ void MAT::ThermoPlasticLinElast::Evaluate(
     heaviside,
     Hkin
     );
+
+  // ----------------------------------------------- internal dissipation
+  // D_int = sigma : dot{epsilon}^p + beta : d(Phi)/d(beta) Dgamma
+  //       = (sigma - beta) : dot{epsilon}^p = (sigma - beta) : Dgamma . N
+  //       = eta : Dgamma . N
+
+  // ---------------------------------------- compute plastic strain increment
+  // strain^p_{n+1}' = Dgamma . flovec
+  strainplrate_.Update(Dgamma, flovec, 0.0);
+  // --> strain rate: strain^p_{n+1}' = (Dgamma . N_n+1) / Delta t
+
+  // dissipated mechanical power
+  // (sigma - beta) : strain^p_{n+1}'
+  // with total stress: sigma = sigma^{mech}+sigma^{theta}
+  // plasticpower_ = (sigma^{mech}+sigma^{theta} - beta) : strain^p_{n+1}'
+  plasticpower_ = 0.0;
+  for (int i=0; i<6; i++)
+    plasticpower_ = strainplrate_(i)*eta(i);
+  // time step not yet considered, i.e., plasticpower_ is an energy, not a power
+
+  // dissipated mechanical temperature dependent power
+  LINALG::Matrix<NUM_STRESS_3D,1> ctemp(true);
+  SetupCthermo(ctemp);
+  plastictemppower_ = 0.0;
+  for (int i=0; i<6; i++)
+    plastictemppower_ = strainplrate_(i)*ctemp(i);
+  // time step not yet considered, i.e., plastictemppower_ is an energy, not a power
 
 #ifdef DEBUGMATERIAL
   cout << "Nach Setup Cep\n" << endl;
@@ -947,6 +974,55 @@ void MAT::ThermoPlasticLinElast::SetupCmatElastoPlastic(
 
 
 /*----------------------------------------------------------------------*
+ | split given strain rate into elastic and plastic term     dano 08/11 |
+ *----------------------------------------------------------------------*/
+void MAT::ThermoPlasticLinElast::StrainRateSplit(
+  const double stepsize,
+  LINALG::Matrix<6,1>& strainlinrate
+  )
+{
+  // build the temporal rate of the plastic strains
+  // strain_n+1^p = Dgamma . N --> rate: (strain_n+1^p)' = Dgamma/dt . N
+  strainplrate_.Scale(1.0/stepsize);
+
+  // insert total strain rate epsilon'
+  // epsilon' = (epsilon^e)' + (epsilon^p)'
+  for (int i=0; i<6; i++)
+  {
+    strainelrate_(i,0) = strainlinrate(i,0) - strainplrate_(i,0);
+  }
+
+  return;
+
+}  // StrainRateSplit
+
+
+/*----------------------------------------------------------------------*
+ | computes internal dissipation term                        dano 08/11 |
+ *----------------------------------------------------------------------*/
+LINALG::Matrix<6,1> MAT::ThermoPlasticLinElast::PlasticStrainDiff(int gp)
+{
+  // strain^{p,trial}_{n+1} = strain^p_n
+  // equivalent plastic strain
+  LINALG::Matrix<NUM_STRESS_3D,1> strainp_n(true);
+  LINALG::Matrix<NUM_STRESS_3D,1> strainp_np(true);
+  for (int i=0; i<6; i++)
+  {
+    strainp_n(i,0) = strainpllast_->at(gp)(i,0);
+    strainp_np(i,0) = strainplcurr_->at(gp)(i,0);
+  }
+
+  //  V_n+1^k = (D_n+1^k - D_n) / Dt
+  LINALG::Matrix<NUM_STRESS_3D,1> strainp_vel(true);
+  strainp_vel.Update(1.0, strainp_np, 0.0);
+  strainp_vel.Update( (-1.0), strainp_n, 1.0);
+
+  return strainp_vel;
+
+}  // PlasticStrainRate
+
+
+/*----------------------------------------------------------------------*
  | computes temperature dependent isotropic                  dano 05/10 |
  | elasticity tensor in matrix notion for 3d, second(!) order tensor    |
  *----------------------------------------------------------------------*/
@@ -1042,6 +1118,8 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   // temperature dependent stress
   // sigma = C_theta * Delta T = (m*I) * Delta T
   stresstemp.MultiplyNN(ctemp,deltaT);
+
+  stresstemp_.Update(1.0, stresstemp, 0.0);
 
 } // Evaluate
 
