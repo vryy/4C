@@ -51,22 +51,6 @@ namespace ELEMENTS
     /// Empty destructor
     virtual ~TemperImplInterface() {}
 
-//    // 02.02.10 not used since Evaluate(la) is included
-//    /// Evaluate the element
-//    //!  This class does not provide a definition for this function, it
-//    //!  must be defined in TemperImpl.
-//    virtual int Evaluate(
-//      DRT::Element* ele,
-//      Teuchos::ParameterList& params,
-//      DRT::Discretization& discretization,
-//      std::vector<int>& lm,
-//      Epetra_SerialDenseMatrix& elemat1_epetra,
-//      Epetra_SerialDenseMatrix& elemat2_epetra,
-//      Epetra_SerialDenseVector& elevec1_epetra,
-//      Epetra_SerialDenseVector& elevec2_epetra,
-//      Epetra_SerialDenseVector& elevec3_epetra
-//      ) = 0;
-
     /// Evaluate the element
     //!  This class does not provide a definition for this function, it
     //!  must be defined in TemperImpl.
@@ -146,20 +130,6 @@ namespace ELEMENTS
 
     //! number of Gauss points
     static const int nquad_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
-
-//    // 02.02.10 not used since Evaluate(la) is included
-//    //! Evaluate
-//    virtual int Evaluate(
-//      DRT::Element* ele,
-//      Teuchos::ParameterList& params,
-//      DRT::Discretization& discretization,
-//      std::vector<int>& lm,
-//      Epetra_SerialDenseMatrix& elemat1_epetra,
-//      Epetra_SerialDenseMatrix& elemat2_epetra,
-//      Epetra_SerialDenseVector& elevec1_epetra,
-//      Epetra_SerialDenseVector& elevec2_epetra,
-//      Epetra_SerialDenseVector& elevec3_epetra
-//      );
 
     // new method for volume coupling
     //! Evaluate for multiple dofsets
@@ -242,12 +212,25 @@ namespace ELEMENTS
       const double& time,  ///< current time
       vector<double>& disp,  // current displacements
       vector<double>& vel,  // current velocities
+      const double& stepsize,
       LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  ///< conductivity matrix
       LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa,  ///< capacity matrix
       LINALG::Matrix<nen_*numdofpernode_,1>* efint,  ///< internal force
       LINALG::Matrix<nen_*numdofpernode_,1>* efext,  ///< external force
       LINALG::Matrix<nquad_,nsd_>* eheatflux,  ///< heat fluxes at Gauss points
       LINALG::Matrix<nquad_,nsd_>* etempgrad  ///< temperature gradients at Gauss points
+      );
+
+    //! calculate internal dissipation arising when a thermo-elasto-plastic
+    //! material is used
+    //! Clausius-Duhem inequality is no longer = 0, but > 0:
+    //! mechanical energy dissipates as heat
+    void CalculateInternalDissipation(
+      DRT::Element* ele,  ///< the element whose matrix is calculated
+      vector<double>& vel,  // current velocities
+      const double& stepsize,
+      LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* etang,  ///< conductivity matrix
+      LINALG::Matrix<nen_*numdofpernode_,1>* efint  ///< internal force
       );
 
     //! calculate thermal-mechanical system matrix term needed in monolithic TSI
@@ -298,6 +281,9 @@ namespace ELEMENTS
 
     //! material tangent of the structure
     LINALG::Matrix<6,1> ctemp_;
+    
+    //! flag plastic material is used
+    bool plasticmat_;
 
     //@}
 
