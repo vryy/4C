@@ -564,11 +564,7 @@ void MAT::PlasticLinElast::Evaluate(
       // if not converged
       if ( itnum>itermax )
       {
-        dserror(
-          "local Newton iteration did not converge after iteration %3d/%3d",
-          itnum,
-          itermax
-          );
+        dserror("local Newton iteration did not converge after iteration %3d/%3d",itnum,itermax);
       }
       // continue loop
 
@@ -955,7 +951,7 @@ void MAT::PlasticLinElast::FDCheck(
   double G,  //!< shear modulus
   double qbar,  //!< elastic trial von Mises effective stress
   double kappa,  //!< bulk modulus
-  LINALG::Matrix<6,1>& N, // flow vector
+  LINALG::Matrix<6,1>& N, //!< flow vector
   double heaviside  //!< Heaviside function
   )
 {

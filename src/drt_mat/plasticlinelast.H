@@ -238,9 +238,6 @@ private:
       double heaviside  //!< Heaviside function
       );
 
-    /// Check implementation of material tangent for debugging purposes
-    void CheckImpl();
-
     //! Flag plastic step was called
     bool plastic_step;
 
