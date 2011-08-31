@@ -599,9 +599,15 @@ void PATSPEC::CheckEmbeddingTissue(DRT::Discretization& discret,
   {
     const vector<int>* nodes = embedcond[i]->Nodes();
     double springstiff = embedcond[i]->GetDouble("stiff");
-    //const string* model = embedcond[i]->Get<string>("model");
-    //double offset = embedcond[i]->GetDouble("offset");
-   
+    const string* model = embedcond[i]->Get<string>("model");
+    double offset = embedcond[i]->GetDouble("offset");
+    const vector<double>* areapernode = embedcond[i]->Get< vector<double> >("areapernode");
+    
+    //for (int i=0; i<areapernode->size(); i++)
+    //{
+    //  cout << (*areapernode)[i] << endl;
+    //}
+    //exit(0);
     
     const vector<int>& nds = *nodes;
     for (int j=0; j<(int)nds.size(); ++j)
@@ -610,6 +616,8 @@ void PATSPEC::CheckEmbeddingTissue(DRT::Discretization& discret,
       if (nodemap->MyGID(nds[j]))
       {
 	int gid = nds[j];
+	double nodalarea = (*areapernode)[j];
+	//cout << nodalarea << endl;
         DRT::Node* node = discret.gNode(gid);
 	
 
@@ -638,14 +646,10 @@ void PATSPEC::CheckEmbeddingTissue(DRT::Discretization& discret,
       
         for (int k=0; k<numdof; ++k)
         {
-	   if (gid==4834 && k==0)
-	   {
-	     //cout << "found" << endl;
-	     double val = springstiff*u[k];
-	     //double dval = springstiff;
+	     double val = nodalarea*springstiff*u[k];
+	     double dval = nodalarea*springstiff;
 	     fint->SumIntoGlobalValues(1,&val,&dofs[k]);
-	     stiff->Assemble(springstiff,dofs[k],dofs[k]); 
-           }
+	     stiff->Assemble(nodalarea*springstiff,dofs[k],dofs[k]); 
 	} //loop of dofs
       
       } //node owned by processor?
