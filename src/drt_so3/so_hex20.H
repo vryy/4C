@@ -413,6 +413,20 @@ protected:
   //! init the inverse of the jacobian and its determinant in the material configuration
   virtual void InitJacobianMapping();
 
+  //! Calculate linear stiffness and mass matrix
+  virtual void soh20_linstiffmass(
+      vector<int>&              lm,             ///< location matrix
+      vector<double>&           disp,           ///< current displacements
+      vector<double>&           residual,       ///< current residual displ
+      LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20>* stiffmatrix,    ///< element stiffness matrix
+      LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20>* massmatrix,     ///< element mass matrix
+      LINALG::Matrix<NUMDOF_SOH20,1>* force,          ///< element internal force vector
+      LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20>* elestress,      ///< stresses at GP
+      LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20>* elestrain,      ///< strains at GP
+      ParameterList&            params,         ///< algorithmic parameters e.g. time
+      const INPAR::STR::StressType   iostress,  ///< stress output option
+      const INPAR::STR::StrainType   iostrain); ///< strain output option
+
   //! Calculate nonlinear stiffness and mass matrix
   virtual void soh20_nlnstiffmass(
       vector<int>&              lm,             ///< location matrix

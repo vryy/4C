@@ -99,11 +99,7 @@ bool DRT::ELEMENTS::So_hex20::ReadElement(const std::string& eletype,
   linedef->ExtractString("KINEM",buffer);
 
   // geometrically linear
-  if      (buffer=="Geolin")
-  {
-    kintype_ = soh20_geolin;
-    dserror("Only Total Lagrange for SO_HEX20 implemented!");
-  }
+  if      (buffer=="Geolin")    kintype_ = soh20_geolin;
   // geometrically non-linear with Total Lagrangean approach
   else if (buffer=="Totlag")    kintype_ = soh20_totlag;
   // geometrically non-linear with Updated Lagrangean approach
@@ -113,6 +109,10 @@ bool DRT::ELEMENTS::So_hex20::ReadElement(const std::string& eletype,
     dserror("Only Total Lagrange for SO_HEX20 implemented!");
   }
   else dserror("Reading of SO_HEX20 element failed");
+
+  // check for SVK material if geometrically linear
+  if (kintype_==soh20_geolin && Material()->MaterialType()!=INPAR::MAT::m_stvenant)
+    dserror("ERROR: Only linear elasticity (SVK) for geometrically linear hex20 element");
 
   return true;
 }

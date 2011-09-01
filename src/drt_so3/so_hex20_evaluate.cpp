@@ -104,8 +104,18 @@ int DRT::ELEMENTS::So_hex20::Evaluate(ParameterList& params,
       LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20>* matptr = NULL;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
-      soh20_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
-                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+      // special case: geometrically linear
+      if (kintype_ == DRT::ELEMENTS::So_hex20::soh20_geolin)
+      {
+        soh20_linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
+      // standard is: geometrically non-linear with Total Lagrangean approach
+      else
+      {
+        soh20_nlnstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
     }
     break;
 
@@ -122,8 +132,19 @@ int DRT::ELEMENTS::So_hex20::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20> myemat(true);
-      soh20_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
-                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+
+      // special case: geometrically linear
+      if (kintype_ == DRT::ELEMENTS::So_hex20::soh20_geolin)
+      {
+        soh20_linstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
+                           INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
+      // standard is: geometrically non-linear with Total Lagrangean approach
+      else
+      {
+        soh20_nlnstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,params,
+                          INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
     }
     break;
 
@@ -144,8 +165,20 @@ int DRT::ELEMENTS::So_hex20::Evaluate(ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      soh20_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
-                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+
+      // special case: geometrically linear
+      if (kintype_ == DRT::ELEMENTS::So_hex20::soh20_geolin)
+      {
+        soh20_linstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+                           INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
+      // standard is: geometrically non-linear with Total Lagrangean approach
+      else
+      {
+        soh20_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
+                           INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
+
       if (act==calc_struct_nlnstifflmass) soh20_lumpmass(&elemat2);
     }
     break;
@@ -171,7 +204,17 @@ int DRT::ELEMENTS::So_hex20::Evaluate(ParameterList& params,
         LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20> strain;
         INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
-        soh20_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+
+        // special case: geometrically linear
+        if (kintype_ == DRT::ELEMENTS::So_hex20::soh20_geolin)
+        {
+          soh20_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+        }
+        // standard is: geometrically non-linear with Total Lagrangean approach
+        else
+        {
+          soh20_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+        }
 
         {
           DRT::PackBuffer data;
@@ -635,6 +678,279 @@ void DRT::ELEMENTS::So_hex20::InitJacobianMapping()
 }
 
 /*----------------------------------------------------------------------*
+ |  evaluate the element (private)                           popp 09/11 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex20::soh20_linstiffmass(
+    vector<int>&              lm,             // location matrix
+    vector<double>&           disp,           // current displacements
+    vector<double>&           residual,       // current residual displ
+    LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20>* stiffmatrix, // element stiffness matrix
+    LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20>* massmatrix,  // element mass matrix
+    LINALG::Matrix<NUMDOF_SOH20,1>* force,                 // element internal force vector
+    LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20>* elestress,   // stresses at GP
+    LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20>* elestrain,   // strains at GP
+    ParameterList&            params,         // algorithmic parameters e.g. time
+    const INPAR::STR::StressType   iostress,  // stress output option
+    const INPAR::STR::StrainType   iostrain)  // strain output option
+{
+/* ============================================================================*
+** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_20 with 27 GAUSS POINTS*
+** ============================================================================*/
+  const static vector<LINALG::Matrix<NUMNOD_SOH20,1> > shapefcts = soh20_shapefcts();
+  const static vector<LINALG::Matrix<NUMDIM_SOH20,NUMNOD_SOH20> > derivs = soh20_derivs();
+  const static vector<double> gpweights = soh20_weights();
+/* ============================================================================*/
+
+  // update element geometry
+  LINALG::Matrix<NUMNOD_SOH20,NUMDIM_SOH20> xrefe;  // material coord. of element
+  LINALG::Matrix<NUMNOD_SOH20,NUMDIM_SOH20> xcurr;  // current  coord. of element
+  LINALG::Matrix<NUMNOD_SOH20,NUMDIM_SOH20> xdisp;
+
+  DRT::Node** nodes = Nodes();
+  for (int i=0; i<NUMNOD_SOH20; ++i)
+  {
+    const double* x = nodes[i]->X();
+    xrefe(i,0) = x[0];
+    xrefe(i,1) = x[1];
+    xrefe(i,2) = x[2];
+
+    xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOH20+0];
+    xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOH20+1];
+    xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOH20+2];
+  }
+
+  LINALG::Matrix<NUMDOF_SOH20,1> nodaldisp;
+  for (int i=0; i<NUMDOF_SOH20; ++i)
+  {
+    nodaldisp(i,0) = disp[i];
+  }
+
+  /* =========================================================================*/
+  /* ================================================= Loop over Gauss Points */
+  /* =========================================================================*/
+  LINALG::Matrix<NUMDIM_SOH20,NUMNOD_SOH20> N_XYZ;
+  // build deformation gradient wrt to material configuration
+  // in case of prestressing, build defgrd wrt to last stored configuration
+  // CAUTION: defgrd(true): filled with zeros!
+  LINALG::Matrix<NUMDIM_SOH20,NUMDIM_SOH20> defgrd(true);
+  for (int gp=0; gp<NUMGPT_SOH20; ++gp)
+  {
+
+    /* get the inverse of the Jacobian matrix which looks like:
+    **            [ x_,r  y_,r  z_,r ]^-1
+    **     J^-1 = [ x_,s  y_,s  z_,s ]
+    **            [ x_,t  y_,t  z_,t ]
+    */
+    // compute derivatives N_XYZ at gp w.r.t. material coordinates
+    // by N_XYZ = J^-1 * N_rst
+    N_XYZ.Multiply(invJ_[gp],derivs[gp]);
+    double detJ = detJ_[gp];
+
+    // set to initial state as test to receive a linear solution
+    for (int i=0; i<3; ++i) defgrd(i,i) = 1.0;
+
+    /* non-linear B-operator (may so be called, meaning
+    ** of B-operator is not so sharp in the non-linear realm) *
+    ** B = F . Bl *
+    **
+    **      [ ... | F_11*N_{,1}^k  F_21*N_{,1}^k  F_31*N_{,1}^k | ... ]
+    **      [ ... | F_12*N_{,2}^k  F_22*N_{,2}^k  F_32*N_{,2}^k | ... ]
+    **      [ ... | F_13*N_{,3}^k  F_23*N_{,3}^k  F_33*N_{,3}^k | ... ]
+    ** B =  [ ~~~   ~~~~~~~~~~~~~  ~~~~~~~~~~~~~  ~~~~~~~~~~~~~   ~~~ ]
+    **      [       F_11*N_{,2}^k+F_12*N_{,1}^k                       ]
+    **      [ ... |          F_21*N_{,2}^k+F_22*N_{,1}^k        | ... ]
+    **      [                       F_31*N_{,2}^k+F_32*N_{,1}^k       ]
+    **      [                                                         ]
+    **      [       F_12*N_{,3}^k+F_13*N_{,2}^k                       ]
+    **      [ ... |          F_22*N_{,3}^k+F_23*N_{,2}^k        | ... ]
+    **      [                       F_32*N_{,3}^k+F_33*N_{,2}^k       ]
+    **      [                                                         ]
+    **      [       F_13*N_{,1}^k+F_11*N_{,3}^k                       ]
+    **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
+    **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
+    */
+    LINALG::Matrix<NUMSTR_SOH20,NUMDOF_SOH20> bop;
+    for (int i=0; i<NUMNOD_SOH20; ++i)
+    {
+      bop(0,NODDOF_SOH20*i+0) = defgrd(0,0)*N_XYZ(0,i);
+      bop(0,NODDOF_SOH20*i+1) = defgrd(1,0)*N_XYZ(0,i);
+      bop(0,NODDOF_SOH20*i+2) = defgrd(2,0)*N_XYZ(0,i);
+      bop(1,NODDOF_SOH20*i+0) = defgrd(0,1)*N_XYZ(1,i);
+      bop(1,NODDOF_SOH20*i+1) = defgrd(1,1)*N_XYZ(1,i);
+      bop(1,NODDOF_SOH20*i+2) = defgrd(2,1)*N_XYZ(1,i);
+      bop(2,NODDOF_SOH20*i+0) = defgrd(0,2)*N_XYZ(2,i);
+      bop(2,NODDOF_SOH20*i+1) = defgrd(1,2)*N_XYZ(2,i);
+      bop(2,NODDOF_SOH20*i+2) = defgrd(2,2)*N_XYZ(2,i);
+      /* ~~~ */
+      bop(3,NODDOF_SOH20*i+0) = defgrd(0,0)*N_XYZ(1,i) + defgrd(0,1)*N_XYZ(0,i);
+      bop(3,NODDOF_SOH20*i+1) = defgrd(1,0)*N_XYZ(1,i) + defgrd(1,1)*N_XYZ(0,i);
+      bop(3,NODDOF_SOH20*i+2) = defgrd(2,0)*N_XYZ(1,i) + defgrd(2,1)*N_XYZ(0,i);
+      bop(4,NODDOF_SOH20*i+0) = defgrd(0,1)*N_XYZ(2,i) + defgrd(0,2)*N_XYZ(1,i);
+      bop(4,NODDOF_SOH20*i+1) = defgrd(1,1)*N_XYZ(2,i) + defgrd(1,2)*N_XYZ(1,i);
+      bop(4,NODDOF_SOH20*i+2) = defgrd(2,1)*N_XYZ(2,i) + defgrd(2,2)*N_XYZ(1,i);
+      bop(5,NODDOF_SOH20*i+0) = defgrd(0,2)*N_XYZ(0,i) + defgrd(0,0)*N_XYZ(2,i);
+      bop(5,NODDOF_SOH20*i+1) = defgrd(1,2)*N_XYZ(0,i) + defgrd(1,0)*N_XYZ(2,i);
+      bop(5,NODDOF_SOH20*i+2) = defgrd(2,2)*N_XYZ(0,i) + defgrd(2,0)*N_XYZ(2,i);
+    }
+
+    // now build the linear strain
+    LINALG::Matrix<NUMSTR_SOH20,1> strainlin(true);
+    strainlin.Multiply(bop,nodaldisp);
+
+    // and rename it as glstrain to use the common methods further on
+
+    // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+    // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+    Epetra_SerialDenseVector glstrain_epetra(NUMSTR_SOH20);
+    LINALG::Matrix<NUMSTR_SOH20,1> glstrain(glstrain_epetra.A(),true);
+    glstrain.Update(1.0,strainlin);
+
+    // return gp strains (only in case of stress/strain output)
+    switch (iostrain)
+    {
+    case INPAR::STR::strain_gl:
+    {
+      if (elestrain == NULL) dserror("strain data not available");
+      for (int i = 0; i < 3; ++i)
+        (*elestrain)(gp,i) = glstrain(i);
+      for (int i = 3; i < 6; ++i)
+        (*elestrain)(gp,i) = 0.5 * glstrain(i);
+    }
+    break;
+    case INPAR::STR::strain_ea:
+    {
+      if (elestrain == NULL) dserror("strain data not available");
+      // rewriting Green-Lagrange strains in matrix format
+      LINALG::Matrix<NUMDIM_SOH20,NUMDIM_SOH20> gl;
+      gl(0,0) = glstrain(0);
+      gl(0,1) = 0.5*glstrain(3);
+      gl(0,2) = 0.5*glstrain(5);
+      gl(1,0) = gl(0,1);
+      gl(1,1) = glstrain(1);
+      gl(1,2) = 0.5*glstrain(4);
+      gl(2,0) = gl(0,2);
+      gl(2,1) = gl(1,2);
+      gl(2,2) = glstrain(2);
+
+      // inverse of deformation gradient
+      LINALG::Matrix<NUMDIM_SOH20,NUMDIM_SOH20> invdefgrd;
+      invdefgrd.Invert(defgrd);
+
+      LINALG::Matrix<NUMDIM_SOH20,NUMDIM_SOH20> temp;
+      LINALG::Matrix<NUMDIM_SOH20,NUMDIM_SOH20> euler_almansi;
+      temp.Multiply(gl,invdefgrd);
+      euler_almansi.MultiplyTN(invdefgrd,temp);
+
+      (*elestrain)(gp,0) = euler_almansi(0,0);
+      (*elestrain)(gp,1) = euler_almansi(1,1);
+      (*elestrain)(gp,2) = euler_almansi(2,2);
+      (*elestrain)(gp,3) = euler_almansi(0,1);
+      (*elestrain)(gp,4) = euler_almansi(1,2);
+      (*elestrain)(gp,5) = euler_almansi(0,2);
+    }
+    break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror("requested strain type not available");
+    }
+
+    /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+    ** Here all possible material laws need to be incorporated,
+    ** the stress vector, a C-matrix, and a density must be retrieved,
+    ** every necessary data must be passed.
+    */
+    double density = 0.0;
+    LINALG::Matrix<NUMSTR_SOH20,NUMSTR_SOH20> cmat(true);
+    LINALG::Matrix<NUMSTR_SOH20,1> stress(true);
+    LINALG::Matrix<NUMSTR_SOH20,1> plglstrain(true);
+    soh20_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
+    // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+
+    // return gp stresses
+    switch (iostress)
+    {
+    case INPAR::STR::stress_2pk:
+    {
+      if (elestress == NULL) dserror("stress data not available");
+      for (int i = 0; i < NUMSTR_SOH20; ++i)
+        (*elestress)(gp,i) = stress(i);
+    }
+    break;
+    case INPAR::STR::stress_cauchy:
+    {
+      if (elestress == NULL) dserror("stress data not available");
+      const double detF = defgrd.Determinant();
+
+      LINALG::Matrix<3,3> pkstress;
+      pkstress(0,0) = stress(0);
+      pkstress(0,1) = stress(3);
+      pkstress(0,2) = stress(5);
+      pkstress(1,0) = pkstress(0,1);
+      pkstress(1,1) = stress(1);
+      pkstress(1,2) = stress(4);
+      pkstress(2,0) = pkstress(0,2);
+      pkstress(2,1) = pkstress(1,2);
+      pkstress(2,2) = stress(2);
+
+      LINALG::Matrix<3,3> temp;
+      LINALG::Matrix<3,3> cauchystress;
+      temp.Multiply(1.0/detF,defgrd,pkstress,0.0);
+      cauchystress.MultiplyNT(temp,defgrd);
+
+      (*elestress)(gp,0) = cauchystress(0,0);
+      (*elestress)(gp,1) = cauchystress(1,1);
+      (*elestress)(gp,2) = cauchystress(2,2);
+      (*elestress)(gp,3) = cauchystress(0,1);
+      (*elestress)(gp,4) = cauchystress(1,2);
+      (*elestress)(gp,5) = cauchystress(0,2);
+    }
+    break;
+    case INPAR::STR::stress_none:
+      break;
+    default:
+      dserror("requested stress type not available");
+    }
+
+    double detJ_w = detJ*gpweights[gp];
+    if (force != NULL && stiffmatrix != NULL)
+    {
+      // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
+      force->MultiplyTN(detJ_w, bop, stress, 1.0);
+      // integrate `elastic' and `initial-displacement' stiffness matrix
+      // keu = keu + (B^T . C . B) * detJ * w(gp)
+      LINALG::Matrix<6,NUMDOF_SOH20> cb;
+      cb.Multiply(cmat,bop);
+      stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
+    }
+
+    if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
+    {
+      // integrate consistent mass matrix
+      const double factor = detJ_w * density;
+      double ifactor, massfactor;
+      for (int inod=0; inod<NUMNOD_SOH20; ++inod)
+      {
+        ifactor = shapefcts[gp](inod) * factor;
+        for (int jnod=0; jnod<NUMNOD_SOH20; ++jnod)
+        {
+          massfactor = shapefcts[gp](jnod) * ifactor;     // intermediate factor
+          (*massmatrix)(NUMDIM_SOH20*inod+0,NUMDIM_SOH20*jnod+0) += massfactor;
+          (*massmatrix)(NUMDIM_SOH20*inod+1,NUMDIM_SOH20*jnod+1) += massfactor;
+          (*massmatrix)(NUMDIM_SOH20*inod+2,NUMDIM_SOH20*jnod+2) += massfactor;
+        }
+      }
+
+    } // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
+   /* =========================================================================*/
+  }/* ==================================================== end of Loop over GP */
+   /* =========================================================================*/
+
+  return;
+} // DRT::ELEMENTS::So_hex20::soh20_linstiffmass
+
+
+/*----------------------------------------------------------------------*
  |  evaluate the element (private)                                      |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass(
@@ -651,7 +967,7 @@ void DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass(
       const INPAR::STR::StrainType   iostrain)  // strain output option
 {
 /* ============================================================================*
-** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_20 with 20 GAUSS POINTS*
+** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_20 with 27 GAUSS POINTS*
 ** ============================================================================*/
   const static vector<LINALG::Matrix<NUMNOD_SOH20,1> > shapefcts = soh20_shapefcts();
   const static vector<LINALG::Matrix<NUMDIM_SOH20,NUMNOD_SOH20> > derivs = soh20_derivs();
