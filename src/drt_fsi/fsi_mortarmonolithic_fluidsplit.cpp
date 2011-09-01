@@ -275,6 +275,49 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
       a->Matrix(0,1).Apply(*icoupfa_.MasterToSlave(iprojdispinc_),*rhs);
 
       Extractor().AddVector(*rhs,2,f);
+      
+      Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
+      if (mmm!=Teuchos::null)
+      {
+        LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
+        LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
+        
+        rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
+
+        fmgg.Apply(*iprojdispinc_,*rhs);
+
+        Teuchos::RCP<LINALG::SparseMatrix> mortar = coupsfm_.GetMortarTrafo();
+
+        Teuchos::RCP<Epetra_Vector> tmprhs = Teuchos::rcp(new Epetra_Vector(mortar->DomainMap()));
+        mortar->Multiply(true,*rhs,*tmprhs);
+        
+        rhs = StructureField().Interface().InsertFSICondVector(tmprhs);
+
+        Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
+        LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
+
+        if (StructureField().GetSTCAlgo() == INPAR::STR::stc_currsym)
+        {
+          Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField().GetSTCMat();
+          stcmat->Multiply(true,*rhs,*rhs);
+        }
+
+        Extractor().AddVector(*rhs,0,f);
+        
+        rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
+
+        fmig.Apply(*iprojdispinc_,*rhs);
+
+        #ifdef FLUIDSPLITAMG
+          rhs = FluidField().Interface().InsertOtherVector(rhs);
+        #endif
+
+        zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
+        LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField().GetDBCMapExtractor()->CondMap()));
+
+        Extractor().AddVector(*rhs,1,f);
+
+      }
     }
 
     LINALG::SparseMatrix& fig = blockf->Matrix(0,1);
