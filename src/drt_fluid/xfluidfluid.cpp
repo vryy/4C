@@ -2228,20 +2228,20 @@ void FLD::XFluidFluid::CutAndSetStateVectors()
       cout << " why here? " << endl;
   }
 
-//   //debug output
-//   for (int i=0; i<bgdis_->NumMyColNodes(); ++i)
-//   {
-//     int kind = 0;
-//     const DRT::Node* actnode = bgdis_->lColNode(i);
-//     map<int, vector<int> >::const_iterator iter = stdnoden_.find(actnode->Id());
-//     map<int, vector<int> >::const_iterator iter2 = enrichednoden_.find(actnode->Id());
-//     map<int, vector<int> >::const_iterator iter3 = stdnodenp_.find(actnode->Id());
-//     map<int, vector<int> >::const_iterator iter4 = enrichednodenp_.find(actnode->Id());
-//     if (iter2 != enrichednoden_.end()) cout  << " enrichned n : " << actnode->Id() << " "  ;
-//     if (iter2 == enrichednoden_.end() and iter == stdnoden_.end()) cout  << " void n :" <<  actnode->Id() << " "  ;
-//     if (iter4 != enrichednodenp_.end()) cout  << " enrichned np : " << actnode->Id() << " "  ;
-//     if (iter4 == enrichednodenp_.end() and iter3 == stdnodenp_.end()) cout  << " void np :" <<  actnode->Id() << " "  ;
-//   }
+//    //debug output
+//    for (int i=0; i<bgdis_->NumMyColNodes(); ++i)
+//    {
+//      int kind = 0;
+//      const DRT::Node* actnode = bgdis_->lColNode(i);
+//      map<int, vector<int> >::const_iterator iter = stdnoden_.find(actnode->Id());
+//      map<int, vector<int> >::const_iterator iter2 = enrichednoden_.find(actnode->Id());
+//      map<int, vector<int> >::const_iterator iter3 = stdnodenp_.find(actnode->Id());
+//      map<int, vector<int> >::const_iterator iter4 = enrichednodenp_.find(actnode->Id());
+//      if (iter2 != enrichednoden_.end()) cout  << " enrichned n : " << actnode->Id() << " "  ;
+//      if (iter2 == enrichednoden_.end() and iter == stdnoden_.end()) cout  << " void n :" <<  actnode->Id() << " "  ;
+//      if (iter4 != enrichednodenp_.end()) cout  << " enrichned np : " << actnode->Id() << " "  ;
+//      if (iter4 == enrichednodenp_.end() and iter3 == stdnodenp_.end()) cout  << " void np :" <<  actnode->Id() << " "  ;
+//    }
 
   SetNewStatevectorAndProjectEmbToBg(stdnoden_,stdnodenp_,enrichednoden_,enrichednodenp_,patchboxes,staten_->veln_,state_->veln_,aleveln_);
   SetNewStatevectorAndProjectEmbToBg(stdnoden_,stdnodenp_,enrichednoden_,enrichednodenp_,patchboxes,staten_->velnm_,state_->velnm_,alevelnm_);
@@ -2409,15 +2409,32 @@ void FLD::XFluidFluid::SetNewStatevectorAndProjectEmbToBg(map<int, vector<int> >
       }
       if (count == embdis_->NumMyColElements())     // if (count == elementsIdsofRelevantBoxes.size())
       {
-        cout << YELLOW_LIGHT << " Warning: No patch element found for the node " << bgnode->Id() ;
-        if ((iterstn == stdnoden.end() and iteren == enrichednoden.end()) and iterstnp != stdnodenp.end())
-          cout << YELLOW_LIGHT << " n:void -> n+1:std  " << END_COLOR<< endl;
-        else if (iteren != enrichednoden.end() and iterenp != enrichednodenp.end())
-          cout << YELLOW_LIGHT << " n:enriched -> n+1:enriched " << END_COLOR<< endl;
-        else if (iteren != enrichednoden.end() and iterstnp != stdnodenp.end())
-          cout << YELLOW_LIGHT << " n:enriched -> n+1: std " << END_COLOR<< endl;
-        else if ((iterstn == stdnoden.end() and iteren == enrichednoden.end()) and iterenp != enrichednodenp.end())
-          cout << YELLOW_LIGHT << " n:void ->  n+1:enriched " << END_COLOR<< endl;
+        // if there are any enriched values..
+        if ((iteren != enrichednoden.end() and iterenp != enrichednodenp.end())
+            or ((iteren != enrichednoden.end() and iterstnp != stdnodenp.end())))
+        {
+          vector<int> gdofsn = iteren->second;
+          (*statevnp)[statevnp->Map().LID(bgdis_->Dof(bgnode)[0])] =
+            (*statevn)[statevn->Map().LID(gdofsn[0])];
+          (*statevnp)[statevnp->Map().LID(bgdis_->Dof(bgnode)[1])] =
+            (*statevn)[statevn->Map().LID(gdofsn[1])];
+          (*statevnp)[statevnp->Map().LID(bgdis_->Dof(bgnode)[2])] =
+            (*statevn)[statevn->Map().LID(gdofsn[2])];
+          (*statevnp)[statevnp->Map().LID(bgdis_->Dof(bgnode)[3])] =
+            (*statevn)[statevn->Map().LID(gdofsn[3])];
+        }
+        else
+        {
+          cout << YELLOW_LIGHT << " Warning: No patch element found for the node " << bgnode->Id() ;
+          if ((iterstn == stdnoden.end() and iteren == enrichednoden.end()) and iterstnp != stdnodenp.end())
+            cout << YELLOW_LIGHT << " n:void -> n+1:std  " << END_COLOR<< endl;
+          else if (iteren != enrichednoden.end() and iterenp != enrichednodenp.end())
+            cout << YELLOW_LIGHT << " n:enriched -> n+1:enriched " << END_COLOR<< endl;
+          else if (iteren != enrichednoden.end() and iterstnp != stdnodenp.end())
+            cout << YELLOW_LIGHT << " n:enriched -> n+1: std " << END_COLOR<< endl;
+          else if ((iterstn == stdnoden.end() and iteren == enrichednoden.end()) and iterenp != enrichednodenp.end())
+            cout << YELLOW_LIGHT << " n:void ->  n+1:enriched " << END_COLOR<< endl;
+        }
 
         //dserror("STOP");
       }
