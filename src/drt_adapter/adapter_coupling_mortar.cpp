@@ -234,7 +234,8 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   interface_ = interface;
 
   // mesh initialization (for rotational invariance)
-  MeshInit(masterdis,slavedis,aledis,redistmaster,redistslave,comm,structslave);
+  if (!structslave)
+    MeshInit(masterdis,slavedis,aledis,redistmaster,redistslave,comm,structslave);
 
   // only for parallel redistribution case
   if (parredist)

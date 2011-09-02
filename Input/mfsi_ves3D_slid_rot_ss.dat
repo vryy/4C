@@ -139,7 +139,7 @@ ENERGYCHECK                     no
 TOLENCHECK                      1.0E-6
 RELAX                           1.0
 ITEMAX                          10
-CONVTOL                         1.0E-9
+CONVTOL                         1.0E-10
 BASETOL                         1.0E-12
 SHAPEDERIVATIVES                Yes
 SECONDORDER                     Yes
@@ -207,7 +207,7 @@ IFPACKCOMBINE                   Zero
 AZSCAL                          none                            // none sym infnorm scaling of the system
 ML_PRINT                        0                               // ML print-out level (0-10)
 ML_MAXCOARSESIZE                1000                            // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     2                               // ML max number of levels
+ML_MAXLEVEL                     1                               // ML max number of levels
 ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
 ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
 ML_PROLONG_SMO                  1.33                            // damping factor for prolongator smoother (usually 1.33 or 0.0)
@@ -241,7 +241,7 @@ IFPACKCOMBINE                   Zero
 AZSCAL                          infnorm                         // none sym infnorm scaling of the system
 ML_PRINT                        0                               // ML print-out level (0-10)
 ML_MAXCOARSESIZE                1                               // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     2                               // ML max number of levels
+ML_MAXLEVEL                     1                               // ML max number of levels
 ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
 ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
 ML_PROLONG_SMO                  1.33                            // damping factor for prolongator smoother (usually 0.0 or 1.33)
@@ -323,7 +323,7 @@ E  3  -  0  1  1  0  0  0  0.0  0.0  0.0  0.0  0.0  0.0  none  none  none  none 
 //                              r_r_extrude_aux_flat
 E  4  -  0  0  1  0  0  0  0.0  0.0  0.0  0.0  0.0  0.0  none  none  none  none  none  none  0  0  0  0  0  0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           5
+DSURF                           4
 //                              fluidxsurfs
 E  2  -  0  1  0  0  0  0  0.0  0.0  0.0  0.0  0.0  0.0  none  none  none  none  none  none  0  0  0  0  0  0
 //                              fluidysurfs
@@ -332,8 +332,6 @@ E  3  -  1  1  1  0  0  0  1.0  0.0  0.0  0.0  0.0  0.0  1  none  none  none  no
 E  4  -  1  1  1  0  0  0  1.0  0.0  0.0  0.0  0.0  0.0  1  none  none  none  none  none  1  0  0  0  0  0
 //                              fluidsym
 E  5  -  0  0  1  0  0  0  0.0  0.0  0.0  0.0  0.0  0.0  none  none  none  none  none  none  0  0  0  0  0  0
-//                              extextrude_aux_flat
-E  6  -  0  0  1  0  0  0  0.0  0.0  0.0  0.0  0.0  0.0  none  none  none  none  none  none  0  0  0  0  0  0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
@@ -6114,10 +6112,10 @@ NODE  2393  COORD  1.2437880660728e-07  2.9000000000000e+00  0.0000000000000e+00
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 1521 POSITION velx NAME velx VALUE 3.361265000e-05 TOLERANCE 1e-10
-FLUID DIS 1 NODE 960  POSITION velx NAME velx VALUE -3.361265053e-05 TOLERANCE 1e-10
-STRUCTURE DIS 1 NODE 2271 POSITION dispx NAME dispx VALUE 1.271284048e-05 TOLERANCE 1e-10
-STRUCTURE DIS 1 NODE 2031 POSITION dispx NAME dispx VALUE -1.271284218e-05 TOLERANCE 1e-10
+FLUID DIS 1 NODE 1521 POSITION velx NAME velx VALUE 3.32406e-05 TOLERANCE 1e-9
+FLUID DIS 1 NODE 960  POSITION velx NAME velx VALUE -3.32406e-05 TOLERANCE 1e-9
+STRUCTURE DIS 1 NODE 2271 POSITION dispx NAME dispx VALUE 1.25844e-05 TOLERANCE 1e-9
+STRUCTURE DIS 1 NODE 2031 POSITION dispx NAME dispx VALUE -1.25844e-05 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END
 // END

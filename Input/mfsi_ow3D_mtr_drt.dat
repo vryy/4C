@@ -110,9 +110,9 @@ SOLVER                          UMFPACK
 ADAPTIVEDIST                    0
 ALPHA_F                         -1
 ALPHA_S                         -1
-BASETOL                         1.0E-5
+BASETOL                         1.0e-8
 CONVCRIT                        ||g(i)||:sqrt(neq)
-CONVTOL                         1e-08
+CONVTOL                         1e-09
 COUPALGO                        iter_mortar_monolithicstructuresplit
 COUPFORCE                       nodeforce
 COUPMETHOD                      mtr
@@ -3805,10 +3805,10 @@ NODE 1132  	COORD	1.00000000e+00	1.10000002e+00	-5.00000007e-02
 ------------------------------------------------------ALE ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 60 POSITION dispy NAME dispy VALUE -3.519071460e-05 TOLERANCE 1e-9
-FLUID DIS 1 NODE 589 POSITION velx NAME velx VALUE 2.971681946e-05 TOLERANCE 1e-9
-FLUID DIS 1 NODE 589 POSITION vely NAME vely VALUE -7.069640837e-04 TOLERANCE 1e-9
+STRUCTURE DIS 1 NODE 60 POSITION dispy NAME dispy VALUE -3.5193282e-05 TOLERANCE 1e-9
+FLUID DIS 1 NODE 589 POSITION velx NAME velx VALUE 2.97073606e-05 TOLERANCE 1e-9
+FLUID DIS 1 NODE 589 POSITION vely NAME vely VALUE -7.06842091e-04 TOLERANCE 1e-9
 FLUID DIS 1 NODE 589 POSITION velz NAME velz VALUE 0.0 TOLERANCE 1e-9
-FLUID DIS 1 NODE 589 POSITION pressure NAME pressure VALUE 6.140356123e-03 TOLERANCE 1e-7
+FLUID DIS 1 NODE 589 POSITION pressure NAME pressure VALUE 6.142444512e-03 TOLERANCE 1e-9
 --------------------------------------------------------------END
 // END
