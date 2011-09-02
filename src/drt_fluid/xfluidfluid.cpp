@@ -471,9 +471,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
     discret.ClearState();
 
-    // scaling to get true residual vector
-    trueresidual_->Update(xfluid_.ResidualScaling(),*residual_,0.0);
-
     // finalize the complete matrices
     Cuui_->Complete(*xfluid_.boundarydofrowmap_,*fluiddofrowmap_);
     Cuiu_->Complete(*fluiddofrowmap_,*xfluid_.boundarydofrowmap_);
@@ -536,9 +533,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
     }
   }
   cutdiscret.ClearState();
-
-  // scaling to get true residual vector
-  xfluid_.aletrueresidual_->Update(xfluid_.ResidualScaling(),*xfluid_.aleresidual_,0.0);
 
   // finalize the complete matrices
   xfluid_.alesysmat_->Complete();
@@ -1709,6 +1703,10 @@ void FLD::XFluidFluid::NonlinearSolve()
       dtele_=Teuchos::Time::wallTime()-tcpu;
     }
 
+    // scaling to get true residual vector
+    state_->trueresidual_->Update(ResidualScaling(),*state_->residual_,0.0);
+    aletrueresidual_->Update(ResidualScaling(),*aleresidual_,0.0);
+
     // blank residual DOFs which are on Dirichlet BC
     // We can do this because the values at the dirichlet positions
     // are not used anyway.
@@ -1864,10 +1862,6 @@ void FLD::XFluidFluid::NonlinearSolve()
     state_->fluidfluidsysmat_->Add(*state_->Cuiui_,false,1.0,1.0);
     state_->fluidfluidsysmat_->Complete();
 
-    // scaling to get true residual vector
-    state_->trueresidual_->Update(ResidualScaling(),*state_->residual_,0.0);
-    aletrueresidual_->Update(ResidualScaling(),*aleresidual_,0.0);
-
     //build a merged map from fluid-fluid dbc-maps
     std::vector<Teuchos::RCP<const Epetra_Map> > maps;
     maps.push_back(state_->dbcmaps_->CondMap());
@@ -1998,6 +1992,9 @@ void FLD::XFluidFluid::UpdateGridv()
       gridv_->Update(0.5/dta_, *aledispnm_, 1.0);
     break;
   }
+
+
+  state_->GmshOutput(*bgdis_, *embdis_, *boundarydis_, "result_dispnp", step_, state_->accnp_, aledispnp_, aletotaldispnp_);
 
   // if the mesh velocity should have the same velocity like the embedded mesh
   //gridv_->Update(1.0,*alevelnp_,0.0);
@@ -2422,7 +2419,7 @@ void FLD::XFluidFluid::SetNewStatevectorAndProjectEmbToBg(map<int, vector<int> >
         else if ((iterstn == stdnoden.end() and iteren == enrichednoden.end()) and iterenp != enrichednodenp.end())
           cout << YELLOW_LIGHT << " n:void ->  n+1:enriched " << END_COLOR<< endl;
 
-        dserror("STOP");
+        //dserror("STOP");
       }
     }
     //do nothing:

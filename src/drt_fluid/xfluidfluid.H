@@ -347,11 +347,12 @@ namespace FLD
     double ResidualScaling() const
     {
       if (TimIntScheme()==INPAR::FLUID::timeint_stationary)
-        return density_;
+        return 1.0; //density_;
       else if (TimIntScheme()==INPAR::FLUID::timeint_afgenalpha)
-        return density_*alphaM_/(gamma_*dta_);
-      else
-        return density_/(theta_*dta_);
+        return alphaM_/(gamma_*dta_);
+      else{
+        return 1.0/(theta_*dta_);
+      }
     }
     //Teuchos::RCP<Epetra_Vector> calcStresses();
 
