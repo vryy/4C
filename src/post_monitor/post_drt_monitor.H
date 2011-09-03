@@ -73,6 +73,14 @@ public:
     int node
     );
 
+  //! write something : strain a point
+  void WriteMonPlStrainFile(
+    PostProblem& problem,
+    string& infieldtype,
+    string straintype,
+    int node
+    );
+
   //! write something : heatflux a point
   void WriteMonHeatfluxFile(
     PostProblem& problem,

@@ -222,6 +222,36 @@ void MonWriter::WriteMonStrainFile(
 }
 
 /*----------------------------------------------------------------------*/
+void MonWriter::WriteMonPlStrainFile(
+  PostProblem& problem,
+  string& infieldtype,
+  string straintype,
+  int node
+  )
+{
+  // stop it now
+  if ( (straintype != "none") and (straintype != "ndxyz") )
+    dserror("Cannot deal with requested plastic strain output type: %s", straintype.c_str());
+
+  if (straintype != "none")
+  {
+    // output file name
+    const std::string filename = problem.outname() + ".plasticstrain.mon";
+
+    // define kind of strains
+    std::vector<std::string> groupnames;
+    groupnames.push_back("gauss_pl_GL_strains_xyz");
+    groupnames.push_back("gauss_pl_EA_strains_xyz");
+
+    // write, now
+    WriteMonStrFile(filename, problem, infieldtype, "strain", straintype, groupnames, node);
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*/
 void MonWriter::WriteMonStrFile(
   const string& filename,
   PostProblem& problem,
@@ -785,6 +815,17 @@ void StructMonWriter::WriteStrResults(
     {
       name = "nodal_EA_strains_xyz";
       out = "Euler-Almansi strains";
+    }
+    // the same for plastic strains
+    else if (groupname == "gauss_pl_GL_strains_xyz")
+    {
+      name = "nodal_pl_GL_strains_xyz";
+      out = "Plastic Green-Lagrange strains";
+    }
+    else if (groupname == "gauss_pl_EA_strains_xyz")
+    {
+      name = "nodal_pl_EA_strains_xyz";
+      out = "Plastic Euler-Almansi strains";
     }
     else
     {
@@ -1531,6 +1572,7 @@ int main(int argc, char** argv)
         mymonwriter.WriteMonFile(problem,infieldtype,node);
         mymonwriter.WriteMonStressFile(problem,infieldtype,problem.stresstype(),node);
         mymonwriter.WriteMonStrainFile(problem,infieldtype,problem.straintype(),node);
+        mymonwriter.WriteMonPlStrainFile(problem,infieldtype,problem.straintype(),node);
       }
       else if(infieldtype == "thermo")
       {
