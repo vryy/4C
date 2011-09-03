@@ -108,6 +108,14 @@ MAT::ThermoPlasticLinElast::ThermoPlasticLinElast()
   /// accumulated plastic strains
   strainbarpllast_ = Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
   strainbarplcurr_ = Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
+
+  plasticpower2_ = Teuchos::rcp(new vector< LINALG::Matrix<1,1>  >);
+  plastictemppower2_ = Teuchos::rcp(new vector< LINALG::Matrix<1,1>  >);
+
+  strainplincr_ = Teuchos::rcp(new vector< LINALG::Matrix<6,1>  >);
+  strainplrate_ = Teuchos::rcp(new vector< LINALG::Matrix<6,1>  >);
+  strainelrate_ = Teuchos::rcp(new vector< LINALG::Matrix<6,1>  >);
+
 }
 
 
@@ -159,6 +167,13 @@ void MAT::ThermoPlasticLinElast::Pack(DRT::PackBuffer& data) const
     AddtoPack(data,backstresslast_->at(var));
 
     AddtoPack(data,strainbarpllast_->at(var));
+
+    AddtoPack(data,plasticpower2_->at(var));
+    AddtoPack(data,plastictemppower2_->at(var));
+
+    AddtoPack(data,strainplincr_->at(var));
+    AddtoPack(data,strainplrate_->at(var));
+    AddtoPack(data,strainelrate_->at(var));
   }
 
   return;
@@ -212,6 +227,13 @@ void MAT::ThermoPlasticLinElast::Unpack(const vector<char>& data)
   strainbarpllast_ = Teuchos::rcp( new vector<LINALG::Matrix<1,1> > );
   strainbarplcurr_ = Teuchos::rcp( new vector<LINALG::Matrix<1,1> > );
 
+  plasticpower2_ = Teuchos::rcp( new vector< LINALG::Matrix<1,1>  > );
+  plastictemppower2_ = Teuchos::rcp( new vector< LINALG::Matrix<1,1>  > );
+
+  strainplincr_ = Teuchos::rcp( new vector<LINALG::Matrix<NUM_STRESS_3D,1> > );
+  strainplrate_ = Teuchos::rcp( new vector<LINALG::Matrix<NUM_STRESS_3D,1> > );
+  strainelrate_ = Teuchos::rcp( new vector<LINALG::Matrix<NUM_STRESS_3D,1> > );
+
   for (int var=0; var<histsize; ++var)
   {
     LINALG::Matrix<NUM_STRESS_3D,1> tmp(true);
@@ -231,6 +253,22 @@ void MAT::ThermoPlasticLinElast::Unpack(const vector<char>& data)
     backstresscurr_->push_back(tmp);
 
     strainbarplcurr_->push_back(tmp1);
+
+    ExtractfromPack(position,data,tmp1);
+    plasticpower2_->push_back(tmp1);
+
+    ExtractfromPack(position,data,tmp1);
+    plastictemppower2_->push_back(tmp1);
+
+    ExtractfromPack(position,data,tmp);
+    strainplincr_->push_back(tmp);
+
+    ExtractfromPack(position,data,tmp);
+    strainplrate_->push_back(tmp);
+
+    ExtractfromPack(position,data,tmp);
+    strainelrate_->push_back(tmp);
+
   }
 
   if (position != data.size())
@@ -256,6 +294,16 @@ void MAT::ThermoPlasticLinElast::Setup(const int numgp)
   strainbarpllast_ = Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
   strainbarplcurr_ = Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
 
+  plasticpower2_ = Teuchos::rcp(new vector< LINALG::Matrix<1,1>  >);
+  plasticpower2_->resize(numgp);
+
+  plastictemppower2_ = Teuchos::rcp(new vector< LINALG::Matrix<1,1>  >);
+  plastictemppower2_->resize(numgp);
+
+  strainplincr_ = Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  strainplrate_ = Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  strainelrate_ = Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+
   LINALG::Matrix<NUM_STRESS_3D,1> emptymat(true);
   strainpllast_->resize(numgp);
   strainplcurr_->resize(numgp);
@@ -267,6 +315,10 @@ void MAT::ThermoPlasticLinElast::Setup(const int numgp)
   strainbarpllast_->resize(numgp);
   strainbarplcurr_->resize(numgp);
 
+  strainplincr_->resize(numgp);
+  strainplrate_->resize(numgp);
+  strainelrate_->resize(numgp);
+
   for (int i=0; i<numgp; i++)
   {
     strainpllast_->at(i) = emptymat;
@@ -277,6 +329,14 @@ void MAT::ThermoPlasticLinElast::Setup(const int numgp)
 
     strainbarpllast_->at(i) = emptymat1;
     strainbarplcurr_->at(i) = emptymat1;
+
+    plasticpower2_->at(i) = emptymat1;
+    plastictemppower2_->at(i) = emptymat1;
+
+    strainplincr_->at(i) = emptymat;
+    strainplrate_->at(i) = emptymat;
+    strainelrate_->at(i) = emptymat;
+
   }
 
   isinit_=true;
@@ -450,7 +510,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   // --------------------------------------  relativ effective stress
   // eta^(trial)_{n+1} = s^(trial)_{n+1} - beta^(trial)_{n+1}
   LINALG::Matrix<NUM_STRESS_3D,1> eta(true);
-  RelStress( devstress, beta, eta);
+  RelDevStress( devstress, beta, eta);
 
   // J2 = 1/2 (eta11^2 + eta22^2 + eta33^2 + 2 . eta12^2 + 2 . eta23^2 + 2 . eta13^2)
   double J2 = 0.0;
@@ -573,7 +633,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(
       // if not converged
       if ( itnum>itermax )
       {
-        dserror("local Newton iteration did not converge after iteration %3d/%3d",itnum,itermax);
+        dserror("local Newton iteration did not converge after iteration %3d/%3d with Res=%3d",itnum,itermax,Res);
       }
       // continue loop
 
@@ -708,32 +768,52 @@ void MAT::ThermoPlasticLinElast::Evaluate(
     Hkin
     );
 
+
   // ----------------------------------------------- internal dissipation
   // D_int = sigma : dot{epsilon}^p + beta : d(Phi)/d(beta) Dgamma
   //       = (sigma - beta) : dot{epsilon}^p = (sigma - beta) : Dgamma . N
   //       = eta : Dgamma . N
 
   // ---------------------------------------- compute plastic strain increment
-  // strain^p_{n+1}' = Dgamma . flovec
-  strainplrate_.Update(Dgamma, flovec, 0.0);
+  // strain^p_{n+1} = Dgamma . flovec
+  for (int i=0; i<6; i++)
+    strainplincr_->at(gp)(i,0) = Dgamma * flovec(i,0);
   // --> strain rate: strain^p_{n+1}' = (Dgamma . N_n+1) / Delta t
 
   // dissipated mechanical power
   // (sigma - beta) : strain^p_{n+1}'
   // with total stress: sigma = sigma^{mech}+sigma^{theta}
+
+  // stressdiff = (sigma^{mech} - beta)
+  LINALG::Matrix<NUM_STRESS_3D,1> stressdiff(true);
+  stressdiff.Update(1.0, stress, 0.0);
+  stressdiff.Update((-1.0), (backstresscurr_->at(gp)), 1.0);
+
   // plasticpower_ = (sigma^{mech}+sigma^{theta} - beta) : strain^p_{n+1}'
-  plasticpower_ = 0.0;
-  for (int i=0; i<6; i++)
-    plasticpower_ = strainplrate_(i)*eta(i);
+  double plasticpower = 0.0;
+  plasticpower = (strainplincr_->at(gp))(0)*stressdiff(0) + (strainplincr_->at(gp))(1)*stressdiff(1) +
+                 (strainplincr_->at(gp))(2)*stressdiff(2) + (strainplincr_->at(gp))(3)*stressdiff(3) +
+                 (strainplincr_->at(gp))(4)*stressdiff(4) + (strainplincr_->at(gp))(5)*stressdiff(5);
   // time step not yet considered, i.e., plasticpower_ is an energy, not a power
+  // accumulated plastic strain
+  plasticpower2_->at(gp) = plasticpower;
 
   // dissipated mechanical temperature dependent power
   LINALG::Matrix<NUM_STRESS_3D,1> ctemp(true);
   SetupCthermo(ctemp);
-  plastictemppower_ = 0.0;
-  for (int i=0; i<6; i++)
-    plastictemppower_ = strainplrate_(i)*ctemp(i);
+  double plastictemppower = 0.0;
+  plasticpower = (strainplincr_->at(gp))(0)*ctemp(0) +
+                 (strainplincr_->at(gp))(1)*ctemp(1) +
+                 (strainplincr_->at(gp))(2)*ctemp(2) +
+                 (strainplincr_->at(gp))(3)*ctemp(3) +
+                 (strainplincr_->at(gp))(4)*ctemp(4) +
+                 (strainplincr_->at(gp))(5)*ctemp(5);
   // time step not yet considered, i.e., plastictemppower_ is an energy, not a power
+  plastictemppower2_->at(gp) = plastictemppower;
+
+  // TODO calculate the stiffness term of K_Td due to linearisation of (sigma -beta)
+  // with respect to the displacments
+  // Lin[ (sigma - beta) ] : (Delta u) . strain_p^{n+1}' = C_ep . strain_p^{n+1}'
 
 #ifdef DEBUGMATERIAL
   cout << "Nach Setup Cep\n" << endl;
@@ -802,7 +882,7 @@ void MAT::ThermoPlasticLinElast::Stress(
 /*----------------------------------------------------------------------*
  | compute relative deviatoric stress tensor                 dano 08/11 |
  *----------------------------------------------------------------------*/
-void MAT::ThermoPlasticLinElast::RelStress(
+void MAT::ThermoPlasticLinElast::RelDevStress(
   const LINALG::Matrix<6,1>& devstress,  //!< deviatoric stress tensor
   const LINALG::Matrix<6,1>& beta,  //!< back stress tensor
   LINALG::Matrix<NUM_STRESS_3D,1>& eta //!< relative stress
@@ -813,7 +893,7 @@ void MAT::ThermoPlasticLinElast::RelStress(
   eta.Update( 1.0, devstress, 0.0 );
   eta.Update( (-1.0), beta, 1.0);
 
-}  // RelStress()
+}  // RelDevStress()
 
 
 /*----------------------------------------------------------------------*
@@ -977,19 +1057,20 @@ void MAT::ThermoPlasticLinElast::SetupCmatElastoPlastic(
  | split given strain rate into elastic and plastic term     dano 08/11 |
  *----------------------------------------------------------------------*/
 void MAT::ThermoPlasticLinElast::StrainRateSplit(
+  int gp,
   const double stepsize,
   LINALG::Matrix<6,1>& strainlinrate
   )
 {
   // build the temporal rate of the plastic strains
   // strain_n+1^p = Dgamma . N --> rate: (strain_n+1^p)' = Dgamma/dt . N
-  strainplrate_.Scale(1.0/stepsize);
+  strainplrate_->at(gp).Update((1.0/stepsize), (strainplincr_->at(gp)), 0.0);
 
   // insert total strain rate epsilon'
   // epsilon' = (epsilon^e)' + (epsilon^p)'
   for (int i=0; i<6; i++)
   {
-    strainelrate_(i,0) = strainlinrate(i,0) - strainplrate_(i,0);
+    strainelrate_->at(gp)(i,0) = strainlinrate(i,0) - strainplrate_->at(gp)(i,0);
   }
 
   return;

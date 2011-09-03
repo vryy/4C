@@ -188,7 +188,7 @@ private:
       );
 
     // computes relative stress eta = stress - back stress
-    void RelStress(
+    void RelDevStress(
       const LINALG::Matrix<6,1>& devstrain,  //!< deviatoric stress tensor
       const LINALG::Matrix<6,1>& beta,  //!< back stress tensor
       LINALG::Matrix<NUM_STRESS_3D,1>& eta //!< relative stress
@@ -280,7 +280,10 @@ private:
     double STModulus();
 
     /// initial temperature
-    double InitTemp() const { return params_->thetainit_; }
+    double InitTemp() const
+    {
+      return params_->thetainit_;
+    }
 
     //@}
 
@@ -292,6 +295,7 @@ private:
     //   \param strainlinrate (in): total strain rate ( B d')
     //   \param strainelrate_ (out): elastic strain rate ( B d^e' = B d - Dgama N)
     void StrainRateSplit(
+      int gp,
       const double stepsize,
       LINALG::Matrix<6,1>& strainlinrate
       );
@@ -303,12 +307,15 @@ private:
     }
 
     /// return current plastic strain vector \f$\dot{\varepsilon}^p_{n+1}\f$
-    LINALG::Matrix<6,1> PlasticStrainRate() const { return strainplrate_; }
+    LINALG::Matrix<6,1> PlasticStrainRate(int gp) const
+    {
+      return strainplrate_->at(gp);
+    }
 
     /// return current elastic strain rate vector \f$\dot{\varepsilon}^e_{n+1}\f$
-    LINALG::Matrix<6,1> ElasticStrainRate() const
+    LINALG::Matrix<6,1> ElasticStrainRate(int gp) const
     {
-      return strainelrate_;
+      return strainelrate_->at(gp);
     }
 
     /// return relative stress vector \f${\eta}_{n+1}={\sigma}_{n+1}-{\beta}_{n+1}\f$
@@ -318,10 +325,28 @@ private:
     LINALG::Matrix<6,1> ThermalStress() const { return stresstemp_; }
 
     /// return mechanical work
-    double PlasticPower() const { return plasticpower_;  }
+    double PlasticPower() const
+    {
+      return plasticpower_;
+    }
 
     /// return mechanical work
-    double PlasticTempPower() const { return plastictemppower_;  }
+    double PlasticTempPower() const
+    {
+      return plastictemppower_;
+    }
+
+    /// return plastic power
+    double PlasticPower2(int gp) const
+    {
+      return plasticpower2_->at(gp)(0,0);
+    }
+
+    /// return thermal stress dependent plastic power
+    double PlasticTempPower2(int gp) const
+    {
+      return plastictemppower2_->at(gp)(0,0);
+    }
 
     /// return current plastic strain vector \f${\varepsilon}^p_{n+1}\f$
     LINALG::Matrix<6,1> PlasticStrainDiff(int gp);
@@ -351,14 +376,20 @@ private:
     // current back stress at t_n+1
     Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > backstresscurr_;  //!< \f${\beta}_{n+1}\f$
 
-    /// @name specific methods for TSI and plastic material
+    /// @name specific methods for the combination TSI and plastic material
     //@{
 
     //! save stresstemp sigma^{theta} = m . Delta T . I
     LINALG::Matrix<NUM_STRESS_3D,1> stresstemp_;
+
+    //! mechanical plastic power at t_n+1
+    Teuchos::RCP< vector< LINALG::Matrix<1,1> > > plasticpower2_;
+    //! temperature dependent plastic power at t_n+1
+    Teuchos::RCP< vector< LINALG::Matrix<1,1> > > plastictemppower2_;
     //! save current strain rates
-    LINALG::Matrix<NUM_STRESS_3D,1> strainplrate_;
-    LINALG::Matrix<NUM_STRESS_3D,1> strainelrate_;
+    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainplincr_;
+    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainplrate_;
+    Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainelrate_;
     //! save current relative stress eta
     LINALG::Matrix<NUM_STRESS_3D,1> eta_;
 
