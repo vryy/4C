@@ -109,8 +109,8 @@ MAT::ThermoPlasticLinElast::ThermoPlasticLinElast()
   strainbarpllast_ = Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
   strainbarplcurr_ = Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
 
-  plasticpower2_ = Teuchos::rcp(new vector< LINALG::Matrix<1,1>  >);
-  plastictemppower2_ = Teuchos::rcp(new vector< LINALG::Matrix<1,1>  >);
+  plasticpower_ = Teuchos::rcp(new vector< LINALG::Matrix<1,1>  >);
+  plastictemppower_ = Teuchos::rcp(new vector< LINALG::Matrix<1,1>  >);
 
   strainplincr_ = Teuchos::rcp(new vector< LINALG::Matrix<6,1>  >);
   strainplrate_ = Teuchos::rcp(new vector< LINALG::Matrix<6,1>  >);
@@ -168,8 +168,8 @@ void MAT::ThermoPlasticLinElast::Pack(DRT::PackBuffer& data) const
 
     AddtoPack(data,strainbarpllast_->at(var));
 
-    AddtoPack(data,plasticpower2_->at(var));
-    AddtoPack(data,plastictemppower2_->at(var));
+    AddtoPack(data,plasticpower_->at(var));
+    AddtoPack(data,plastictemppower_->at(var));
 
     AddtoPack(data,strainplincr_->at(var));
     AddtoPack(data,strainplrate_->at(var));
@@ -227,8 +227,8 @@ void MAT::ThermoPlasticLinElast::Unpack(const vector<char>& data)
   strainbarpllast_ = Teuchos::rcp( new vector<LINALG::Matrix<1,1> > );
   strainbarplcurr_ = Teuchos::rcp( new vector<LINALG::Matrix<1,1> > );
 
-  plasticpower2_ = Teuchos::rcp( new vector< LINALG::Matrix<1,1>  > );
-  plastictemppower2_ = Teuchos::rcp( new vector< LINALG::Matrix<1,1>  > );
+  plasticpower_ = Teuchos::rcp( new vector< LINALG::Matrix<1,1>  > );
+  plastictemppower_ = Teuchos::rcp( new vector< LINALG::Matrix<1,1>  > );
 
   strainplincr_ = Teuchos::rcp( new vector<LINALG::Matrix<NUM_STRESS_3D,1> > );
   strainplrate_ = Teuchos::rcp( new vector<LINALG::Matrix<NUM_STRESS_3D,1> > );
@@ -255,10 +255,10 @@ void MAT::ThermoPlasticLinElast::Unpack(const vector<char>& data)
     strainbarplcurr_->push_back(tmp1);
 
     ExtractfromPack(position,data,tmp1);
-    plasticpower2_->push_back(tmp1);
+    plasticpower_->push_back(tmp1);
 
     ExtractfromPack(position,data,tmp1);
-    plastictemppower2_->push_back(tmp1);
+    plastictemppower_->push_back(tmp1);
 
     ExtractfromPack(position,data,tmp);
     strainplincr_->push_back(tmp);
@@ -294,11 +294,11 @@ void MAT::ThermoPlasticLinElast::Setup(const int numgp)
   strainbarpllast_ = Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
   strainbarplcurr_ = Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
 
-  plasticpower2_ = Teuchos::rcp(new vector< LINALG::Matrix<1,1>  >);
-  plasticpower2_->resize(numgp);
+  plasticpower_ = Teuchos::rcp(new vector< LINALG::Matrix<1,1>  >);
+  plasticpower_->resize(numgp);
 
-  plastictemppower2_ = Teuchos::rcp(new vector< LINALG::Matrix<1,1>  >);
-  plastictemppower2_->resize(numgp);
+  plastictemppower_ = Teuchos::rcp(new vector< LINALG::Matrix<1,1>  >);
+  plastictemppower_->resize(numgp);
 
   strainplincr_ = Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   strainplrate_ = Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
@@ -330,8 +330,8 @@ void MAT::ThermoPlasticLinElast::Setup(const int numgp)
     strainbarpllast_->at(i) = emptymat1;
     strainbarplcurr_->at(i) = emptymat1;
 
-    plasticpower2_->at(i) = emptymat1;
-    plastictemppower2_->at(i) = emptymat1;
+    plasticpower_->at(i) = emptymat1;
+    plastictemppower_->at(i) = emptymat1;
 
     strainplincr_->at(i) = emptymat;
     strainplrate_->at(i) = emptymat;
@@ -796,7 +796,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(
                  (strainplincr_->at(gp))(4)*stressdiff(4) + (strainplincr_->at(gp))(5)*stressdiff(5);
   // time step not yet considered, i.e., plasticpower_ is an energy, not a power
   // accumulated plastic strain
-  plasticpower2_->at(gp) = plasticpower;
+  plasticpower_->at(gp) = plasticpower;
 
   // dissipated mechanical temperature dependent power
   LINALG::Matrix<NUM_STRESS_3D,1> ctemp(true);
@@ -809,7 +809,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(
                  (strainplincr_->at(gp))(4)*ctemp(4) +
                  (strainplincr_->at(gp))(5)*ctemp(5);
   // time step not yet considered, i.e., plastictemppower_ is an energy, not a power
-  plastictemppower2_->at(gp) = plastictemppower;
+  plastictemppower_->at(gp) = plastictemppower;
 
   // TODO calculate the stiffness term of K_Td due to linearisation of (sigma -beta)
   // with respect to the displacments

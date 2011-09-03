@@ -1219,7 +1219,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
     edisp(i,0) = disp[i+0];
     evel(i,0) = vel[i+0];
   }
-  
+
 #ifdef THRASOUTPUT
   cout << "CalculateCoupl evel\n" << evel << endl;
   cout << "edisp\n" << edisp << endl;
@@ -1318,10 +1318,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
       // strainvel includes the elastic strain rates of the structural velocity vel
       // --> if CalcVelocity() is used in tsi
       //     --> calculate the elastic velocity with the given veln_ again
-      thrpllinelast->StrainRateSplit(stepsize,strainvel);
+      thrpllinelast->StrainRateSplit(iquad,stepsize,strainvel);
       // overwrite the total strain rate by the elastic strain rate
-      strainvel.Update(1.0, (thrpllinelast->ElasticStrainRate()), 0.0);
-      plasticstrainlinrate.Update(1.0, (thrpllinelast->PlasticStrainRate()), 0.0);
+      strainvel.Update(1.0, (thrpllinelast->ElasticStrainRate(iquad)), 0.0);
+      plasticstrainlinrate.Update(1.0, (thrpllinelast->PlasticStrainRate(iquad)), 0.0);
     }
 
     // scalar product Ctemp : (B . (d^e)') == (B . d') in case of elastic step
@@ -1367,6 +1367,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
 #ifdef TSIMONOLITHASOUTPUT
       if (ele->Id()==0)
       {
+        cout << "efint nach CalculateCoupl"<< *efint << endl;
+        cout << "etang nach CalculateCoupl"<< *etang << endl;
         cout << "CouplFint\n" << endl;
         cout << "ele Id= " << ele->Id() << endl;
         cout << "bop\n" << bop << endl;
@@ -1399,7 +1401,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
   // START OF COUPLING
+  // temperature dependent material tangent
   LINALG::Matrix<6,1> ctemp(true);
+  // in case of thermo-elasto-plastic material: elasto-plastic tangent modulus
+  LINALG::Matrix<6,6> cmat(true);
   {
     // access the structure discretization, needed later for calling the solid
     // material and getting its tangent
@@ -1539,14 +1544,20 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
       }
 #endif  // TSIMONOLITHASOUTPUT
 
+    // 03.09.11 TODO in case of thermo-elasto-plastic material:
+    // get elasto-plastic tangent modulus out of material C_ep
+    // K_Td = K_Td - C_ep . strain_p'
+
+    // END OF COUPLING
+
+
     // coupling stiffness matrix
     if (etangcoupl != NULL)
     {
       // k_Td^e = k_Td^e + ( N^T . N . T . C_temp . B ) * detJ * w(gp)
       // with C_temp = m * I
       etangcoupl->MultiplyNN(fac_,nntc,bop,1.0); //(8x24)=(8x6)(6x24)
-      // TODO: 19.08.11. term for K_st of Internal Dissipation has to be added here as well!!!
-
+      // TODO: 19.08.11. term for K_Td of Internal Dissipation has to be added here as well!!!
     }
     /* =======================================================================*/
    }/* ================================================== end of Loop over GP */
@@ -1673,8 +1684,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateInternalDissipation(
 
     // call material ThermoPlasticLinElast and get the plastic strain rates
     LINALG::Matrix<6,1> plasticstrainlinrate(true);
-    // get the temperature dependent stress
+    // calculate the stress part dependent on the temperature in the material
+    LINALG::Matrix<6,1> ctemp(true);
     LINALG::Matrix<6,1> stresstemp(true);
+
     // plastic power
     double plasticpower = 0.0;
     // plastic temperature dependent stress power --> for K_tt
@@ -1689,23 +1702,36 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateInternalDissipation(
       // --> if CalcVelocity() is used in tsi
       //     --> calculate the elastic velocity with the given veln_ again
       //     --> build the plastic strain rate by dividing by stepsize
-      thrpllinelast->StrainRateSplit(stepsize,strainvel);
-      plasticstrainlinrate.Update(1.0, (thrpllinelast->PlasticStrainRate()), 0.0);
+      thrpllinelast->StrainRateSplit(iquad,stepsize,strainvel);
+      plasticstrainlinrate.Update(1.0, (thrpllinelast->PlasticStrainRate(iquad)), 0.0);
       // in the material the increment is calculated, NOT the temporal rate
       // --> divide by dt
       // plasticpower_ = (sigma^{mech}+sigma^{theta} - beta) : strain^p_{n+1}'
-      plasticpower = thrpllinelast->PlasticPower();
+
+      // compute element temperature N_T . T
+      LINALG::Matrix<1,1> Ntemp(true);
+      Ntemp.MultiplyTN(funct_,etemp_);
+      // in the material: 1.) Delta T = subtract ( N . T - T_0 )
+      //                  2.) stresstemp = C . Delta T
+      thrpllinelast->Evaluate(*(&Ntemp),*(&ctemp),*(&stresstemp));
+
+      // plasticpower_ = (sigma^{mech} - beta) : strain^p_{n+1}'
+      plasticpower = thrpllinelast->PlasticPower(iquad);
       plasticpower *= (1.0/stepsize);
       // plasticpower_ += sigma^{theta}_n+1 : strain^p_{n+1}'
-      for (int i=0; i<6; i++)
-        plasticpower += stresstemp(i)*plasticstrainlinrate(i);
+      double tempstressplstrain = stresstemp(0)*plasticstrainlinrate(0) +
+                                  stresstemp(1)*plasticstrainlinrate(1) +
+                                  stresstemp(2)*plasticstrainlinrate(2) +
+                                  stresstemp(3)*plasticstrainlinrate(3) +
+                                  stresstemp(4)*plasticstrainlinrate(4) +
+                                  stresstemp(5)*plasticstrainlinrate(5);
+      plasticpower += tempstressplstrain;
 
       // C_mat^theta : epsilon_p'
       // in the material the increment is calculated, NOT the temporal rate
       // --> divide by dt
-      plastictemppower = thrpllinelast->PlasticTempPower();
+      plastictemppower = thrpllinelast->PlasticTempPower(iquad);
       // to be a power the term has to be multiplied by 1/dt
-      // 30.08.11 TODO check if stepsize is already considered in StrainRateSplit
       plastictemppower *= 1.0/stepsize;
     }
     // ---------------------------------------------------- END OF COUPLING
@@ -1714,20 +1740,23 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateInternalDissipation(
     // and coupling conductivity matrix (displacement dependent)
     if (efint != NULL && etang != NULL)
     {
-      // fint_diss = fint_diss - N^T . D_mech
-      LINALG::Matrix<nen_,1> fdiss(true); // (8x1) . scalar
-      fdiss.Update((-plasticpower), funct_, 0.0);
       // update of the internal "force" vector
-      efint->Update(fac_,fdiss,1.0);
+      efint->Update((fac_*(-plasticpower)),funct_,1.0);
 
       // update conductivity matrix (with displacement dependent term)
-      // k = k - ( N^T . (-m * I) . epsilon_p' ) * detJ * w(gp)
-      // with C_mat^theta = (-k)*I
-      // --> negative term enters the tangent (cf. L923) ctemp.Scale(-1.0);
-      LINALG::Matrix<nen_,1> ftempdiss(true); // (8x1) . scalar
-      ftempdiss.Update((-plastictemppower), funct_, 0.0);
-      etang->MultiplyNT(fac_,ftempdiss,funct_,1.0); // (8x8) = (8x1)(8x1)^T
+      // k = k - ( N^T . C_mat^theta . epsilon_p' ) * detJ * w(gp)
+      // with C_mat^theta = m * I
+      etang->MultiplyNT((fac_*(-plastictemppower)),funct_,funct_,1.0); // (8x8) = (8x1)(8x1)^T
     }
+
+#ifdef TSIMONOLITHASOUTPUT
+      if (ele->Id()==0)
+      {
+        cout << "CouplFint\n" << endl;
+        cout << "bop\n" << bop << endl;
+        cout << "etemp_ Ende InternalDiss\n" << etemp_  << endl;
+      }
+#endif  // TSIMONOLITHASOUTPUT
 
   /* =======================================================================*/
   }/* ================================================== end of Loop over GP */

@@ -324,28 +324,16 @@ private:
     /// return relative stress vector \f${\eta}_{n+1}={\sigma}_{n+1}-{\beta}_{n+1}\f$
     LINALG::Matrix<6,1> ThermalStress() const { return stresstemp_; }
 
-    /// return mechanical work
-    double PlasticPower() const
-    {
-      return plasticpower_;
-    }
-
-    /// return mechanical work
-    double PlasticTempPower() const
-    {
-      return plastictemppower_;
-    }
-
     /// return plastic power
-    double PlasticPower2(int gp) const
+    double PlasticPower(int gp) const
     {
-      return plasticpower2_->at(gp)(0,0);
+      return plasticpower_->at(gp)(0,0);
     }
 
     /// return thermal stress dependent plastic power
-    double PlasticTempPower2(int gp) const
+    double PlasticTempPower(int gp) const
     {
-      return plastictemppower2_->at(gp)(0,0);
+      return plastictemppower_->at(gp)(0,0);
     }
 
     /// return current plastic strain vector \f${\varepsilon}^p_{n+1}\f$
@@ -383,19 +371,15 @@ private:
     LINALG::Matrix<NUM_STRESS_3D,1> stresstemp_;
 
     //! mechanical plastic power at t_n+1
-    Teuchos::RCP< vector< LINALG::Matrix<1,1> > > plasticpower2_;
+    Teuchos::RCP< vector< LINALG::Matrix<1,1> > > plasticpower_;
     //! temperature dependent plastic power at t_n+1
-    Teuchos::RCP< vector< LINALG::Matrix<1,1> > > plastictemppower2_;
+    Teuchos::RCP< vector< LINALG::Matrix<1,1> > > plastictemppower_;
     //! save current strain rates
     Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainplincr_;
     Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainplrate_;
     Teuchos::RCP< vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainelrate_;
     //! save current relative stress eta
     LINALG::Matrix<NUM_STRESS_3D,1> eta_;
-
-    // calculate power values needed for the heat equation
-    double plasticpower_;
-    double plastictemppower_;
 
     //@}
 
