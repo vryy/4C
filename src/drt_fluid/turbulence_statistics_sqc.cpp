@@ -55,6 +55,26 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
     dserror("Evaluation of turbulence statistics only for 3d flow problems!");
   }
 
+  if (discret_->Comm().MyPID()==0)
+  {
+    std::cout << "This is the turbulence statistics manager for the square cylinder:" << std::endl;
+  }
+
+  // use input parameter HOMDIR to specify sampling
+  string phomdir_ = params_.sublist("TURBULENCE MODEL").get<string>("HOMDIR","not_specified");
+  if (homdir_=="not_specified")
+  {
+    std::cout << "Slip-boundary conditions are assumed and" << std::endl;
+    std::cout << "sampling is done in time only." << std::endl;
+  }
+  else if (homdir_=="z")
+  {
+    std::cout << "Periodic-boundary conditions are assumed and" << std::endl;
+    std::cout << "sampling is done in homogeneous(z-) direction and in time." << std::endl;
+  }
+  else
+    dserror("");
+
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
@@ -790,7 +810,7 @@ FLD::TurbulenceStatisticsSqc::~TurbulenceStatisticsSqc()
 // sampling of lift/drag values
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsSqc::DoLiftDragTimeSample(double dragforce,
-                                                   double liftforce)
+                                                        double liftforce)
 {
 
   double cdrag =2.0*dragforce/(x3max_-x3min_);
@@ -798,6 +818,7 @@ void FLD::TurbulenceStatisticsSqc::DoLiftDragTimeSample(double dragforce,
 
   drag_   +=cdrag;
   lift_   +=clift;
+  //TODO: passen rms-Werte?
   dragsq_ +=cdrag*cdrag;
   liftsq_ +=clift*clift;
 
@@ -812,6 +833,8 @@ void FLD::TurbulenceStatisticsSqc::DoTimeSample(
 Teuchos::RefCountPtr<Epetra_Vector> velnp
   )
 {
+  // compute squared values of velocity
+  squaredvelnp_->Multiply(1.0,*velnp,*velnp,0.0);
 
   //----------------------------------------------------------------------
   // increase sample counter
@@ -842,11 +865,12 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
       DRT::Node* node = discret_->lRowNode(nn);
 
       // this node belongs to the centerline in x1-direction
-      if ((node->X()[0]<(*x1cline+2e-9) && node->X()[0]>(*x1cline-2e-9)) &&
-          (node->X()[1]<(7.0+2e-9) && node->X()[1]>(7.0-2e-9)) &&
-          (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
-           node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))
+      if (((node->X()[0]<(*x1cline+2e-9) && node->X()[0]>(*x1cline-2e-9)) and
+          (node->X()[1]<(7.0+2e-9) && node->X()[1]>(7.0-2e-9))) and
+          ((homdir_=="z") or (homdir_=="not_specified" and (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
+          node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))))
       {
+
         vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
 
@@ -863,6 +887,12 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
 
     discret_->Comm().SumAll(&countnodes,&countnodesonallprocs,1);
 
+    if (homdir_=="z")
+    {
+      // reduce by 1 due to periodic boundary condition
+      countnodesonallprocs-=1;
+    }
+
     if (countnodesonallprocs)
     {
       //----------------------------------------------------------------------
@@ -877,31 +907,54 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
       velnp->Dot(*togglew_,&w);
       velnp->Dot(*togglep_,&p);
 
-      //----------------------------------------------------------------------
-      // calculate spatial means for velocity and pressure on this line
-      // (if more than one node contributing to this line node)
-      //----------------------------------------------------------------------
-      double usm=u/countnodesonallprocs;
-      double vsm=v/countnodesonallprocs;
-      double wsm=w/countnodesonallprocs;
-      double psm=p/countnodesonallprocs;
+      double uu;
+      double vv;
+      double ww;
+      double pp;
+      squaredvelnp_->Dot(*toggleu_,&uu);
+      squaredvelnp_->Dot(*togglev_,&vv);
+      squaredvelnp_->Dot(*togglew_,&ww);
+      squaredvelnp_->Dot(*togglep_,&pp);
+
+      double uv;
+      double uw;
+      double vw;
+      double locuv = 0.0;
+      double locuw = 0.0;
+      double locvw = 0.0;
+      for (int rr=1;rr<velnp->MyLength();++rr)
+      {
+        locuv += ((*velnp)[rr-1]*(*toggleu_)[rr-1]) * ((*velnp)[rr]*(*togglev_)[rr]);
+      }
+      discret_->Comm().SumAll(&locuv,&uv,1);
+      for (int rr=2;rr<velnp->MyLength();++rr)
+      {
+        locuw += ((*velnp)[rr-2]*(*toggleu_)[rr-2]) * ((*velnp)[rr]*(*togglew_)[rr]);
+      }
+      discret_->Comm().SumAll(&locuw,&uw,1);
+      for (int rr=2;rr<velnp->MyLength();++rr)
+      {
+        locvw += ((*velnp)[rr-1]*(*togglev_)[rr-1]) * ((*velnp)[rr]*(*togglew_)[rr]);
+      }
+      discret_->Comm().SumAll(&locvw,&vw,1);
 
       //----------------------------------------------------------------------
+      // calculate spatial means on this line
       // add spatial mean values to statistical sample
       //----------------------------------------------------------------------
-      (*x1csumu_)[x1cnodnum]+=usm;
-      (*x1csumv_)[x1cnodnum]+=vsm;
-      (*x1csumw_)[x1cnodnum]+=wsm;
-      (*x1csump_)[x1cnodnum]+=psm;
+      (*x1csumu_)[x1cnodnum]+=u/countnodesonallprocs;
+      (*x1csumv_)[x1cnodnum]+=v/countnodesonallprocs;
+      (*x1csumw_)[x1cnodnum]+=w/countnodesonallprocs;
+      (*x1csump_)[x1cnodnum]+=p/countnodesonallprocs;
 
-      (*x1csumsqu_)[x1cnodnum]+=usm*usm;
-      (*x1csumsqv_)[x1cnodnum]+=vsm*vsm;
-      (*x1csumsqw_)[x1cnodnum]+=wsm*wsm;
-      (*x1csumsqp_)[x1cnodnum]+=psm*psm;
+      (*x1csumsqu_)[x1cnodnum]+=uu/countnodesonallprocs;
+      (*x1csumsqv_)[x1cnodnum]+=vv/countnodesonallprocs;
+      (*x1csumsqw_)[x1cnodnum]+=ww/countnodesonallprocs;
+      (*x1csumsqp_)[x1cnodnum]+=pp/countnodesonallprocs;
 
-      (*x1csumuv_)[x1cnodnum]+=usm*vsm;
-      (*x1csumuw_)[x1cnodnum]+=usm*wsm;
-      (*x1csumvw_)[x1cnodnum]+=vsm*wsm;
+      (*x1csumuv_)[x1cnodnum]+=uv/countnodesonallprocs;
+      (*x1csumuw_)[x1cnodnum]+=uw/countnodesonallprocs;
+      (*x1csumvw_)[x1cnodnum]+=vw/countnodesonallprocs;
     }
     x1cnodnum++;
 
@@ -931,11 +984,10 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
     {
       DRT::Node* node = discret_->lRowNode(nn);
 
-      // this node belongs to the centerline in x2-direction
-      if ((node->X()[1]<(*x2cline+2e-9) && node->X()[1]>(*x2cline-2e-9)) &&
-          (node->X()[0]<(5.0+2e-9) && node->X()[0]>(5.0-2e-9)) &&
-          (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
-           node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))
+      if (((node->X()[1]<(*x2cline+2e-9) && node->X()[1]>(*x2cline-2e-9)) and
+          (node->X()[0]<(5.0+2e-9) && node->X()[0]>(5.0-2e-9))) and
+          ((homdir_=="z") or (homdir_=="not_specified" and (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
+          node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))))
       {
         vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
@@ -953,6 +1005,12 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
 
     discret_->Comm().SumAll(&countnodes,&countnodesonallprocs,1);
 
+    if (homdir_=="z")
+    {
+      // reduce by 1 due to periodic boundary condition
+      countnodesonallprocs-=1;
+    }
+
     if (countnodesonallprocs)
     {
       //----------------------------------------------------------------------
@@ -967,31 +1025,54 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
       velnp->Dot(*togglew_,&w);
       velnp->Dot(*togglep_,&p);
 
-      //----------------------------------------------------------------------
-      // calculate spatial means for velocity and pressure on this line
-      // (if more than one node contributing to this line node)
-      //----------------------------------------------------------------------
-      double usm=u/countnodesonallprocs;
-      double vsm=v/countnodesonallprocs;
-      double wsm=w/countnodesonallprocs;
-      double psm=p/countnodesonallprocs;
+      double uu;
+      double vv;
+      double ww;
+      double pp;
+      squaredvelnp_->Dot(*toggleu_,&uu);
+      squaredvelnp_->Dot(*togglev_,&vv);
+      squaredvelnp_->Dot(*togglew_,&ww);
+      squaredvelnp_->Dot(*togglep_,&pp);
+
+      double uv;
+      double uw;
+      double vw;
+      double locuv = 0.0;
+      double locuw = 0.0;
+      double locvw = 0.0;
+      for (int rr=1;rr<velnp->MyLength();++rr)
+      {
+        locuv += ((*velnp)[rr-1]*(*toggleu_)[rr-1]) * ((*velnp)[rr]*(*togglev_)[rr]);
+      }
+      discret_->Comm().SumAll(&locuv,&uv,1);
+      for (int rr=2;rr<velnp->MyLength();++rr)
+      {
+        locuw += ((*velnp)[rr-2]*(*toggleu_)[rr-2]) * ((*velnp)[rr]*(*togglew_)[rr]);
+      }
+      discret_->Comm().SumAll(&locuw,&uw,1);
+      for (int rr=2;rr<velnp->MyLength();++rr)
+      {
+        locvw += ((*velnp)[rr-1]*(*togglev_)[rr-1]) * ((*velnp)[rr]*(*togglew_)[rr]);
+      }
+      discret_->Comm().SumAll(&locvw,&vw,1);
 
       //----------------------------------------------------------------------
+      // calculate spatial means on this line
       // add spatial mean values to statistical sample
       //----------------------------------------------------------------------
-      (*x2csumu_)[x2cnodnum]+=usm;
-      (*x2csumv_)[x2cnodnum]+=vsm;
-      (*x2csumw_)[x2cnodnum]+=wsm;
-      (*x2csump_)[x2cnodnum]+=psm;
+      (*x2csumu_)[x2cnodnum]+=u/countnodesonallprocs;
+      (*x2csumv_)[x2cnodnum]+=v/countnodesonallprocs;
+      (*x2csumw_)[x2cnodnum]+=w/countnodesonallprocs;
+      (*x2csump_)[x2cnodnum]+=p/countnodesonallprocs;
 
-      (*x2csumsqu_)[x2cnodnum]+=usm*usm;
-      (*x2csumsqv_)[x2cnodnum]+=vsm*vsm;
-      (*x2csumsqw_)[x2cnodnum]+=wsm*wsm;
-      (*x2csumsqp_)[x2cnodnum]+=psm*psm;
+      (*x2csumsqu_)[x2cnodnum]+=uu/countnodesonallprocs;
+      (*x2csumsqv_)[x2cnodnum]+=vv/countnodesonallprocs;
+      (*x2csumsqw_)[x2cnodnum]+=ww/countnodesonallprocs;
+      (*x2csumsqp_)[x2cnodnum]+=pp/countnodesonallprocs;
 
-      (*x2csumuv_)[x2cnodnum]+=usm*vsm;
-      (*x2csumuw_)[x2cnodnum]+=usm*wsm;
-      (*x2csumvw_)[x2cnodnum]+=vsm*wsm;
+      (*x2csumuv_)[x2cnodnum]+=uv/countnodesonallprocs;
+      (*x2csumuw_)[x2cnodnum]+=uw/countnodesonallprocs;
+      (*x2csumvw_)[x2cnodnum]+=vw/countnodesonallprocs;
     }
     x2cnodnum++;
 
@@ -1022,10 +1103,10 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
       DRT::Node* node = discret_->lRowNode(nn);
 
       // this node belongs to the centerline in x2-direction
-      if ((node->X()[1]<(*x2wline+2e-9) && node->X()[1]>(*x2wline-2e-9)) &&
-          (node->X()[0]<(7.5+2e-9) && node->X()[0]>(7.5-2e-9)) &&
-          (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
-           node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))
+      if (((node->X()[1]<(*x2wline+2e-9) && node->X()[1]>(*x2wline-2e-9)) and
+          (node->X()[0]<(7.5+2e-9) && node->X()[0]>(7.5-2e-9))) and
+          ((homdir_=="z") or (homdir_=="not_specified" and (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
+          node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))))
       {
         vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
@@ -1043,6 +1124,12 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
 
     discret_->Comm().SumAll(&countnodes,&countnodesonallprocs,1);
 
+    if (homdir_=="z")
+    {
+      // reduce by 1 due to periodic boundary condition
+      countnodesonallprocs-=1;
+    }
+
     if (countnodesonallprocs)
     {
       //----------------------------------------------------------------------
@@ -1057,31 +1144,54 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
       velnp->Dot(*togglew_,&w);
       velnp->Dot(*togglep_,&p);
 
-      //----------------------------------------------------------------------
-      // calculate spatial means for velocity and pressure on this line
-      // (if more than one node contributing to this line node)
-      //----------------------------------------------------------------------
-      double usm=u/countnodesonallprocs;
-      double vsm=v/countnodesonallprocs;
-      double wsm=w/countnodesonallprocs;
-      double psm=p/countnodesonallprocs;
+      double uu;
+      double vv;
+      double ww;
+      double pp;
+      squaredvelnp_->Dot(*toggleu_,&uu);
+      squaredvelnp_->Dot(*togglev_,&vv);
+      squaredvelnp_->Dot(*togglew_,&ww);
+      squaredvelnp_->Dot(*togglep_,&pp);
+
+      double uv;
+      double uw;
+      double vw;
+      double locuv = 0.0;
+      double locuw = 0.0;
+      double locvw = 0.0;
+      for (int rr=1;rr<velnp->MyLength();++rr)
+      {
+        locuv += ((*velnp)[rr-1]*(*toggleu_)[rr-1]) * ((*velnp)[rr]*(*togglev_)[rr]);
+      }
+      discret_->Comm().SumAll(&locuv,&uv,1);
+      for (int rr=2;rr<velnp->MyLength();++rr)
+      {
+        locuw += ((*velnp)[rr-2]*(*toggleu_)[rr-2]) * ((*velnp)[rr]*(*togglew_)[rr]);
+      }
+      discret_->Comm().SumAll(&locuw,&uw,1);
+      for (int rr=2;rr<velnp->MyLength();++rr)
+      {
+        locvw += ((*velnp)[rr-1]*(*togglev_)[rr-1]) * ((*velnp)[rr]*(*togglew_)[rr]);
+      }
+      discret_->Comm().SumAll(&locvw,&vw,1);
 
       //----------------------------------------------------------------------
+      // calculate spatial means on this line
       // add spatial mean values to statistical sample
       //----------------------------------------------------------------------
-      (*x2w1sumu_)[x2wnodnum]+=usm;
-      (*x2w1sumv_)[x2wnodnum]+=vsm;
-      (*x2w1sumw_)[x2wnodnum]+=wsm;
-      (*x2w1sump_)[x2wnodnum]+=psm;
+      (*x2w1sumu_)[x2wnodnum]+=u/countnodesonallprocs;
+      (*x2w1sumv_)[x2wnodnum]+=v/countnodesonallprocs;
+      (*x2w1sumw_)[x2wnodnum]+=w/countnodesonallprocs;
+      (*x2w1sump_)[x2wnodnum]+=p/countnodesonallprocs;
 
-      (*x2w1sumsqu_)[x2wnodnum]+=usm*usm;
-      (*x2w1sumsqv_)[x2wnodnum]+=vsm*vsm;
-      (*x2w1sumsqw_)[x2wnodnum]+=wsm*wsm;
-      (*x2w1sumsqp_)[x2wnodnum]+=psm*psm;
+      (*x2w1sumsqu_)[x2wnodnum]+=uu/countnodesonallprocs;
+      (*x2w1sumsqv_)[x2wnodnum]+=vv/countnodesonallprocs;
+      (*x2w1sumsqw_)[x2wnodnum]+=ww/countnodesonallprocs;
+      (*x2w1sumsqp_)[x2wnodnum]+=pp/countnodesonallprocs;
 
-      (*x2w1sumuv_)[x2wnodnum]+=usm*vsm;
-      (*x2w1sumuw_)[x2wnodnum]+=usm*wsm;
-      (*x2w1sumvw_)[x2wnodnum]+=vsm*wsm;
+      (*x2w1sumuv_)[x2wnodnum]+=uv/countnodesonallprocs;
+      (*x2w1sumuw_)[x2wnodnum]+=uw/countnodesonallprocs;
+      (*x2w1sumvw_)[x2wnodnum]+=vw/countnodesonallprocs;
     }
     x2wnodnum++;
 
@@ -1112,10 +1222,10 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
       DRT::Node* node = discret_->lRowNode(nn);
 
       // this node belongs to the centerline in x2-direction
-      if ((node->X()[1]<(*x2wline+2e-9) && node->X()[1]>(*x2wline-2e-9)) &&
-          (node->X()[0]<(11.5+2e-9) && node->X()[0]>(11.5-2e-9)) &&
-          (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
-           node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))
+      if (((node->X()[1]<(*x2wline+2e-9) && node->X()[1]>(*x2wline-2e-9)) &&
+          (node->X()[0]<(11.5+2e-9) && node->X()[0]>(11.5-2e-9))) and
+          ((homdir_=="z") or (homdir_=="not_specified" and (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
+          node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))))
       {
         vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
@@ -1133,6 +1243,12 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
 
     discret_->Comm().SumAll(&countnodes,&countnodesonallprocs,1);
 
+    if (homdir_=="z")
+    {
+      // reduce by 1 due to periodic boundary condition
+      countnodesonallprocs-=1;
+    }
+
     if (countnodesonallprocs)
     {
       //----------------------------------------------------------------------
@@ -1147,31 +1263,54 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
       velnp->Dot(*togglew_,&w);
       velnp->Dot(*togglep_,&p);
 
-      //----------------------------------------------------------------------
-      // calculate spatial means for velocity and pressure on this line
-      // (if more than one node contributing to this line node)
-      //----------------------------------------------------------------------
-      double usm=u/countnodesonallprocs;
-      double vsm=v/countnodesonallprocs;
-      double wsm=w/countnodesonallprocs;
-      double psm=p/countnodesonallprocs;
+      double uu;
+      double vv;
+      double ww;
+      double pp;
+      squaredvelnp_->Dot(*toggleu_,&uu);
+      squaredvelnp_->Dot(*togglev_,&vv);
+      squaredvelnp_->Dot(*togglew_,&ww);
+      squaredvelnp_->Dot(*togglep_,&pp);
+
+      double uv;
+      double uw;
+      double vw;
+      double locuv = 0.0;
+      double locuw = 0.0;
+      double locvw = 0.0;
+      for (int rr=1;rr<velnp->MyLength();++rr)
+      {
+        locuv += ((*velnp)[rr-1]*(*toggleu_)[rr-1]) * ((*velnp)[rr]*(*togglev_)[rr]);
+      }
+      discret_->Comm().SumAll(&locuv,&uv,1);
+      for (int rr=2;rr<velnp->MyLength();++rr)
+      {
+        locuw += ((*velnp)[rr-2]*(*toggleu_)[rr-2]) * ((*velnp)[rr]*(*togglew_)[rr]);
+      }
+      discret_->Comm().SumAll(&locuw,&uw,1);
+      for (int rr=2;rr<velnp->MyLength();++rr)
+      {
+        locvw += ((*velnp)[rr-1]*(*togglev_)[rr-1]) * ((*velnp)[rr]*(*togglew_)[rr]);
+      }
+      discret_->Comm().SumAll(&locvw,&vw,1);
 
       //----------------------------------------------------------------------
+      // calculate spatial means on this line
       // add spatial mean values to statistical sample
       //----------------------------------------------------------------------
-      (*x2w2sumu_)[x2wnodnum]+=usm;
-      (*x2w2sumv_)[x2wnodnum]+=vsm;
-      (*x2w2sumw_)[x2wnodnum]+=wsm;
-      (*x2w2sump_)[x2wnodnum]+=psm;
+      (*x2w2sumu_)[x2wnodnum]+=u/countnodesonallprocs;
+      (*x2w2sumv_)[x2wnodnum]+=v/countnodesonallprocs;
+      (*x2w2sumw_)[x2wnodnum]+=w/countnodesonallprocs;
+      (*x2w2sump_)[x2wnodnum]+=p/countnodesonallprocs;
 
-      (*x2w2sumsqu_)[x2wnodnum]+=usm*usm;
-      (*x2w2sumsqv_)[x2wnodnum]+=vsm*vsm;
-      (*x2w2sumsqw_)[x2wnodnum]+=wsm*wsm;
-      (*x2w2sumsqp_)[x2wnodnum]+=psm*psm;
+      (*x2w2sumsqu_)[x2wnodnum]+=uu/countnodesonallprocs;
+      (*x2w2sumsqv_)[x2wnodnum]+=vv/countnodesonallprocs;
+      (*x2w2sumsqw_)[x2wnodnum]+=ww/countnodesonallprocs;
+      (*x2w2sumsqp_)[x2wnodnum]+=pp/countnodesonallprocs;
 
-      (*x2w2sumuv_)[x2wnodnum]+=usm*vsm;
-      (*x2w2sumuw_)[x2wnodnum]+=usm*wsm;
-      (*x2w2sumvw_)[x2wnodnum]+=vsm*wsm;
+      (*x2w2sumuv_)[x2wnodnum]+=uv/countnodesonallprocs;
+      (*x2w2sumuw_)[x2wnodnum]+=uw/countnodesonallprocs;
+      (*x2w2sumvw_)[x2wnodnum]+=vw/countnodesonallprocs;
     }
     x2wnodnum++;
 
@@ -1201,10 +1340,10 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
       DRT::Node* node = discret_->lRowNode(nn);
 
       // this node belongs to the centerline in x1-direction
-      if ((node->X()[1]<(*clrline+2e-9) && node->X()[1]>(*clrline-2e-9)) &&
-          (node->X()[0]<(4.5+2e-9) && node->X()[0]>(4.5-2e-9)) &&
-          (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
-           node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))
+      if (((node->X()[1]<(*clrline+2e-9) && node->X()[1]>(*clrline-2e-9)) &&
+          (node->X()[0]<(4.5+2e-9) && node->X()[0]>(4.5-2e-9))) and
+          ((homdir_=="z") or (homdir_=="not_specified" and (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
+          node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))))
       {
         vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
@@ -1222,6 +1361,12 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
 
     discret_->Comm().SumAll(&countnodes,&countnodesonallprocs,1);
 
+    if (homdir_=="z")
+    {
+      // reduce by 1 due to periodic boundary condition
+      countnodesonallprocs-=1;
+    }
+
     if (countnodesonallprocs)
     {
       //----------------------------------------------------------------------
@@ -1236,31 +1381,54 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
       velnp->Dot(*togglew_,&w);
       velnp->Dot(*togglep_,&p);
 
-      //----------------------------------------------------------------------
-      // calculate spatial means for velocity and pressure on this line
-      // (if more than one node contributing to this line node)
-      //----------------------------------------------------------------------
-      double usm=u/countnodesonallprocs;
-      double vsm=v/countnodesonallprocs;
-      double wsm=w/countnodesonallprocs;
-      double psm=p/countnodesonallprocs;
+      double uu;
+      double vv;
+      double ww;
+      double pp;
+      squaredvelnp_->Dot(*toggleu_,&uu);
+      squaredvelnp_->Dot(*togglev_,&vv);
+      squaredvelnp_->Dot(*togglew_,&ww);
+      squaredvelnp_->Dot(*togglep_,&pp);
+
+      double uv;
+      double uw;
+      double vw;
+      double locuv = 0.0;
+      double locuw = 0.0;
+      double locvw = 0.0;
+      for (int rr=1;rr<velnp->MyLength();++rr)
+      {
+        locuv += ((*velnp)[rr-1]*(*toggleu_)[rr-1]) * ((*velnp)[rr]*(*togglev_)[rr]);
+      }
+      discret_->Comm().SumAll(&locuv,&uv,1);
+      for (int rr=2;rr<velnp->MyLength();++rr)
+      {
+        locuw += ((*velnp)[rr-2]*(*toggleu_)[rr-2]) * ((*velnp)[rr]*(*togglew_)[rr]);
+      }
+      discret_->Comm().SumAll(&locuw,&uw,1);
+      for (int rr=2;rr<velnp->MyLength();++rr)
+      {
+        locvw += ((*velnp)[rr-1]*(*togglev_)[rr-1]) * ((*velnp)[rr]*(*togglew_)[rr]);
+      }
+      discret_->Comm().SumAll(&locvw,&vw,1);
 
       //----------------------------------------------------------------------
+      // calculate spatial means on this line
       // add spatial mean values to statistical sample
       //----------------------------------------------------------------------
-      (*cyllsumu_)[clrnodnum]+=usm;
-      (*cyllsumv_)[clrnodnum]+=vsm;
-      (*cyllsumw_)[clrnodnum]+=wsm;
-      (*cyllsump_)[clrnodnum]+=psm;
+      (*cyllsumu_)[clrnodnum]+=u/countnodesonallprocs;
+      (*cyllsumv_)[clrnodnum]+=v/countnodesonallprocs;
+      (*cyllsumw_)[clrnodnum]+=w/countnodesonallprocs;
+      (*cyllsump_)[clrnodnum]+=p/countnodesonallprocs;
 
-      (*cyllsumsqu_)[clrnodnum]+=usm*usm;
-      (*cyllsumsqv_)[clrnodnum]+=vsm*vsm;
-      (*cyllsumsqw_)[clrnodnum]+=wsm*wsm;
-      (*cyllsumsqp_)[clrnodnum]+=psm*psm;
+      (*cyllsumsqu_)[clrnodnum]+=uu/countnodesonallprocs;
+      (*cyllsumsqv_)[clrnodnum]+=vv/countnodesonallprocs;
+      (*cyllsumsqw_)[clrnodnum]+=ww/countnodesonallprocs;
+      (*cyllsumsqp_)[clrnodnum]+=pp/countnodesonallprocs;
 
-      (*cyllsumuv_)[clrnodnum]+=usm*vsm;
-      (*cyllsumuw_)[clrnodnum]+=usm*wsm;
-      (*cyllsumvw_)[clrnodnum]+=vsm*wsm;
+      (*cyllsumuv_)[clrnodnum]+=uv/countnodesonallprocs;
+      (*cyllsumuw_)[clrnodnum]+=uw/countnodesonallprocs;
+      (*cyllsumvw_)[clrnodnum]+=vw/countnodesonallprocs;
     }
     clrnodnum++;
 
@@ -1290,10 +1458,10 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
       DRT::Node* node = discret_->lRowNode(nn);
 
       // this node belongs to the centerline in x1-direction
-      if ((node->X()[0]<(*ctbline+2e-9) && node->X()[0]>(*ctbline-2e-9)) &&
-          (node->X()[1]<(7.5+2e-9) && node->X()[1]>(7.5-2e-9)) &&
-          (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
-           node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))
+      if (((node->X()[0]<(*ctbline+2e-9) && node->X()[0]>(*ctbline-2e-9)) &&
+          (node->X()[1]<(7.5+2e-9) && node->X()[1]>(7.5-2e-9))) and
+          ((homdir_=="z") or (homdir_=="not_specified" and (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
+          node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))))
       {
         vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
@@ -1311,6 +1479,12 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
 
     discret_->Comm().SumAll(&countnodes,&countnodesonallprocs,1);
 
+    if (homdir_=="z")
+    {
+      // reduce by 1 due to periodic boundary condition
+      countnodesonallprocs-=1;
+    }
+
     if (countnodesonallprocs)
     {
       //----------------------------------------------------------------------
@@ -1325,31 +1499,54 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
       velnp->Dot(*togglew_,&w);
       velnp->Dot(*togglep_,&p);
 
-      //----------------------------------------------------------------------
-      // calculate spatial means for velocity and pressure on this line
-      // (if more than one node contributing to this line node)
-      //----------------------------------------------------------------------
-      double usm=u/countnodesonallprocs;
-      double vsm=v/countnodesonallprocs;
-      double wsm=w/countnodesonallprocs;
-      double psm=p/countnodesonallprocs;
+      double uu;
+      double vv;
+      double ww;
+      double pp;
+      squaredvelnp_->Dot(*toggleu_,&uu);
+      squaredvelnp_->Dot(*togglev_,&vv);
+      squaredvelnp_->Dot(*togglew_,&ww);
+      squaredvelnp_->Dot(*togglep_,&pp);
+
+      double uv;
+      double uw;
+      double vw;
+      double locuv = 0.0;
+      double locuw = 0.0;
+      double locvw = 0.0;
+      for (int rr=1;rr<velnp->MyLength();++rr)
+      {
+        locuv += ((*velnp)[rr-1]*(*toggleu_)[rr-1]) * ((*velnp)[rr]*(*togglev_)[rr]);
+      }
+      discret_->Comm().SumAll(&locuv,&uv,1);
+      for (int rr=2;rr<velnp->MyLength();++rr)
+      {
+        locuw += ((*velnp)[rr-2]*(*toggleu_)[rr-2]) * ((*velnp)[rr]*(*togglew_)[rr]);
+      }
+      discret_->Comm().SumAll(&locuw,&uw,1);
+      for (int rr=2;rr<velnp->MyLength();++rr)
+      {
+        locvw += ((*velnp)[rr-1]*(*togglev_)[rr-1]) * ((*velnp)[rr]*(*togglew_)[rr]);
+      }
+      discret_->Comm().SumAll(&locvw,&vw,1);
 
       //----------------------------------------------------------------------
+      // calculate spatial means on this line
       // add spatial mean values to statistical sample
       //----------------------------------------------------------------------
-      (*cyltsumu_)[ctbnodnum]+=usm;
-      (*cyltsumv_)[ctbnodnum]+=vsm;
-      (*cyltsumw_)[ctbnodnum]+=wsm;
-      (*cyltsump_)[ctbnodnum]+=psm;
+      (*cyltsumu_)[ctbnodnum]+=u/countnodesonallprocs;
+      (*cyltsumv_)[ctbnodnum]+=v/countnodesonallprocs;
+      (*cyltsumw_)[ctbnodnum]+=w/countnodesonallprocs;
+      (*cyltsump_)[ctbnodnum]+=p/countnodesonallprocs;
 
-      (*cyltsumsqu_)[ctbnodnum]+=usm*usm;
-      (*cyltsumsqv_)[ctbnodnum]+=vsm*vsm;
-      (*cyltsumsqw_)[ctbnodnum]+=wsm*wsm;
-      (*cyltsumsqp_)[ctbnodnum]+=psm*psm;
+      (*cyltsumsqu_)[ctbnodnum]+=uu/countnodesonallprocs;
+      (*cyltsumsqv_)[ctbnodnum]+=vv/countnodesonallprocs;
+      (*cyltsumsqw_)[ctbnodnum]+=ww/countnodesonallprocs;
+      (*cyltsumsqp_)[ctbnodnum]+=pp/countnodesonallprocs;
 
-      (*cyltsumuv_)[ctbnodnum]+=usm*vsm;
-      (*cyltsumuw_)[ctbnodnum]+=usm*wsm;
-      (*cyltsumvw_)[ctbnodnum]+=vsm*wsm;
+      (*cyltsumuv_)[ctbnodnum]+=uv/countnodesonallprocs;
+      (*cyltsumuw_)[ctbnodnum]+=uw/countnodesonallprocs;
+      (*cyltsumvw_)[ctbnodnum]+=vw/countnodesonallprocs;
     }
     ctbnodnum++;
 
@@ -1379,10 +1576,10 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
       DRT::Node* node = discret_->lRowNode(nn);
 
       // this node belongs to the centerline in x1-direction
-      if ((node->X()[1]<(*clrline+2e-9) && node->X()[1]>(*clrline-2e-9)) &&
-          (node->X()[0]<(5.5+2e-9) && node->X()[0]>(5.5-2e-9)) &&
-          (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
-           node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))
+      if (((node->X()[1]<(*clrline+2e-9) && node->X()[1]>(*clrline-2e-9)) &&
+          (node->X()[0]<(5.5+2e-9) && node->X()[0]>(5.5-2e-9))) and
+          ((homdir_=="z") or (homdir_=="not_specified" and (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
+          node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))))
       {
         vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
@@ -1400,6 +1597,12 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
 
     discret_->Comm().SumAll(&countnodes,&countnodesonallprocs,1);
 
+    if (homdir_=="z")
+    {
+      // reduce by 1 due to periodic boundary condition
+      countnodesonallprocs-=1;
+    }
+
     if (countnodesonallprocs)
     {
       //----------------------------------------------------------------------
@@ -1414,31 +1617,54 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
       velnp->Dot(*togglew_,&w);
       velnp->Dot(*togglep_,&p);
 
-      //----------------------------------------------------------------------
-      // calculate spatial means for velocity and pressure on this line
-      // (if more than one node contributing to this centerline node)
-      //----------------------------------------------------------------------
-      double usm=u/countnodesonallprocs;
-      double vsm=v/countnodesonallprocs;
-      double wsm=w/countnodesonallprocs;
-      double psm=p/countnodesonallprocs;
+      double uu;
+      double vv;
+      double ww;
+      double pp;
+      squaredvelnp_->Dot(*toggleu_,&uu);
+      squaredvelnp_->Dot(*togglev_,&vv);
+      squaredvelnp_->Dot(*togglew_,&ww);
+      squaredvelnp_->Dot(*togglep_,&pp);
+
+      double uv;
+      double uw;
+      double vw;
+      double locuv = 0.0;
+      double locuw = 0.0;
+      double locvw = 0.0;
+      for (int rr=1;rr<velnp->MyLength();++rr)
+      {
+        locuv += ((*velnp)[rr-1]*(*toggleu_)[rr-1]) * ((*velnp)[rr]*(*togglev_)[rr]);
+      }
+      discret_->Comm().SumAll(&locuv,&uv,1);
+      for (int rr=2;rr<velnp->MyLength();++rr)
+      {
+        locuw += ((*velnp)[rr-2]*(*toggleu_)[rr-2]) * ((*velnp)[rr]*(*togglew_)[rr]);
+      }
+      discret_->Comm().SumAll(&locuw,&uw,1);
+      for (int rr=2;rr<velnp->MyLength();++rr)
+      {
+        locvw += ((*velnp)[rr-1]*(*togglev_)[rr-1]) * ((*velnp)[rr]*(*togglew_)[rr]);
+      }
+      discret_->Comm().SumAll(&locvw,&vw,1);
 
       //----------------------------------------------------------------------
+      // calculate spatial means on this line
       // add spatial mean values to statistical sample
       //----------------------------------------------------------------------
-      (*cylrsumu_)[clrnodnum]+=usm;
-      (*cylrsumv_)[clrnodnum]+=vsm;
-      (*cylrsumw_)[clrnodnum]+=wsm;
-      (*cylrsump_)[clrnodnum]+=psm;
+      (*cylrsumu_)[clrnodnum]+=u/countnodesonallprocs;
+      (*cylrsumv_)[clrnodnum]+=v/countnodesonallprocs;
+      (*cylrsumw_)[clrnodnum]+=w/countnodesonallprocs;
+      (*cylrsump_)[clrnodnum]+=p/countnodesonallprocs;
 
-      (*cylrsumsqu_)[clrnodnum]+=usm*usm;
-      (*cylrsumsqv_)[clrnodnum]+=vsm*vsm;
-      (*cylrsumsqw_)[clrnodnum]+=wsm*wsm;
-      (*cylrsumsqp_)[clrnodnum]+=psm*psm;
+      (*cylrsumsqu_)[clrnodnum]+=uu/countnodesonallprocs;
+      (*cylrsumsqv_)[clrnodnum]+=vv/countnodesonallprocs;
+      (*cylrsumsqw_)[clrnodnum]+=ww/countnodesonallprocs;
+      (*cylrsumsqp_)[clrnodnum]+=pp/countnodesonallprocs;
 
-      (*cylrsumuv_)[clrnodnum]+=usm*vsm;
-      (*cylrsumuw_)[clrnodnum]+=usm*wsm;
-      (*cylrsumvw_)[clrnodnum]+=vsm*wsm;
+      (*cylrsumuv_)[clrnodnum]+=uv/countnodesonallprocs;
+      (*cylrsumuw_)[clrnodnum]+=uw/countnodesonallprocs;
+      (*cylrsumvw_)[clrnodnum]+=vw/countnodesonallprocs;
     }
     clrnodnum++;
 
@@ -1468,10 +1694,10 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
       DRT::Node* node = discret_->lRowNode(nn);
 
       // this node belongs to the centerline in x1-direction
-      if ((node->X()[0]<(*ctbline+2e-9) && node->X()[0]>(*ctbline-2e-9)) &&
-          (node->X()[1]<(6.5+2e-9) && node->X()[1]>(6.5-2e-9)) &&
-          (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
-           node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))
+      if (((node->X()[0]<(*ctbline+2e-9) && node->X()[0]>(*ctbline-2e-9)) &&
+          (node->X()[1]<(6.5+2e-9) && node->X()[1]>(6.5-2e-9))) and
+          ((homdir_=="z") or (homdir_=="not_specified" and (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
+          node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))))
       {
         vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
@@ -1489,6 +1715,12 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
 
     discret_->Comm().SumAll(&countnodes,&countnodesonallprocs,1);
 
+    if (homdir_=="z")
+    {
+      // reduce by 1 due to periodic boundary condition
+      countnodesonallprocs-=1;
+    }
+
     if (countnodesonallprocs)
     {
       //----------------------------------------------------------------------
@@ -1503,31 +1735,54 @@ Teuchos::RefCountPtr<Epetra_Vector> velnp
       velnp->Dot(*togglew_,&w);
       velnp->Dot(*togglep_,&p);
 
-      //----------------------------------------------------------------------
-      // calculate spatial means for velocity and pressure on this line
-      // (if more than one node contributing to this line node)
-      //----------------------------------------------------------------------
-      double usm=u/countnodesonallprocs;
-      double vsm=v/countnodesonallprocs;
-      double wsm=w/countnodesonallprocs;
-      double psm=p/countnodesonallprocs;
+      double uu;
+      double vv;
+      double ww;
+      double pp;
+      squaredvelnp_->Dot(*toggleu_,&uu);
+      squaredvelnp_->Dot(*togglev_,&vv);
+      squaredvelnp_->Dot(*togglew_,&ww);
+      squaredvelnp_->Dot(*togglep_,&pp);
+
+      double uv;
+      double uw;
+      double vw;
+      double locuv = 0.0;
+      double locuw = 0.0;
+      double locvw = 0.0;
+      for (int rr=1;rr<velnp->MyLength();++rr)
+      {
+        locuv += ((*velnp)[rr-1]*(*toggleu_)[rr-1]) * ((*velnp)[rr]*(*togglev_)[rr]);
+      }
+      discret_->Comm().SumAll(&locuv,&uv,1);
+      for (int rr=2;rr<velnp->MyLength();++rr)
+      {
+        locuw += ((*velnp)[rr-2]*(*toggleu_)[rr-2]) * ((*velnp)[rr]*(*togglew_)[rr]);
+      }
+      discret_->Comm().SumAll(&locuw,&uw,1);
+      for (int rr=2;rr<velnp->MyLength();++rr)
+      {
+        locvw += ((*velnp)[rr-1]*(*togglev_)[rr-1]) * ((*velnp)[rr]*(*togglew_)[rr]);
+      }
+      discret_->Comm().SumAll(&locvw,&vw,1);
 
       //----------------------------------------------------------------------
+      // calculate spatial means on this line
       // add spatial mean values to statistical sample
       //----------------------------------------------------------------------
-      (*cylbsumu_)[ctbnodnum]+=usm;
-      (*cylbsumv_)[ctbnodnum]+=vsm;
-      (*cylbsumw_)[ctbnodnum]+=wsm;
-      (*cylbsump_)[ctbnodnum]+=psm;
+      (*cylbsumu_)[ctbnodnum]+=u/countnodesonallprocs;
+      (*cylbsumv_)[ctbnodnum]+=v/countnodesonallprocs;
+      (*cylbsumw_)[ctbnodnum]+=w/countnodesonallprocs;
+      (*cylbsump_)[ctbnodnum]+=p/countnodesonallprocs;
 
-      (*cylbsumsqu_)[ctbnodnum]+=usm*usm;
-      (*cylbsumsqv_)[ctbnodnum]+=vsm*vsm;
-      (*cylbsumsqw_)[ctbnodnum]+=wsm*wsm;
-      (*cylbsumsqp_)[ctbnodnum]+=psm*psm;
+      (*cylbsumsqu_)[ctbnodnum]+=uu/countnodesonallprocs;
+      (*cylbsumsqv_)[ctbnodnum]+=vv/countnodesonallprocs;
+      (*cylbsumsqw_)[ctbnodnum]+=ww/countnodesonallprocs;
+      (*cylbsumsqp_)[ctbnodnum]+=pp/countnodesonallprocs;
 
-      (*cylbsumuv_)[ctbnodnum]+=usm*vsm;
-      (*cylbsumuw_)[ctbnodnum]+=usm*wsm;
-      (*cylbsumvw_)[ctbnodnum]+=vsm*wsm;
+      (*cylbsumuv_)[ctbnodnum]+=uv/countnodesonallprocs;
+      (*cylbsumuw_)[ctbnodnum]+=uw/countnodesonallprocs;
+      (*cylbsumvw_)[ctbnodnum]+=vw/countnodesonallprocs;
     }
     ctbnodnum++;
 
@@ -1571,6 +1826,7 @@ void FLD::TurbulenceStatisticsSqc::DumpStatistics(int step)
     (*log) << "# rms drag " << setw(11) << setprecision(4) << dragrms;
     (*log) << "\n";
     (*log) << "\n";
+    (*log) << "\n";
 
     (*log) << "# centerline in x1-direction\n";
     (*log) << "#     x1";
@@ -1610,7 +1866,7 @@ void FLD::TurbulenceStatisticsSqc::DumpStatistics(int step)
       (*log) << "   \n";
     }
 
-    (*log) << "\n";
+    (*log) << "\n\n\n";
     (*log) << "# centerline in x2-direction (with respect to cylinder center)\n";
     (*log) << "#     x2";
     (*log) << "           umean         vmean         wmean         pmean";
@@ -1649,7 +1905,7 @@ void FLD::TurbulenceStatisticsSqc::DumpStatistics(int step)
       (*log) << "   \n";
     }
 
-    (*log) << "\n";
+    (*log) << "\n\n\n";
     (*log) << "# first wakeline in x2-direction (at x1=7.5)\n";
     (*log) << "#     x2";
     (*log) << "           umean         vmean         wmean         pmean";
@@ -1688,7 +1944,7 @@ void FLD::TurbulenceStatisticsSqc::DumpStatistics(int step)
       (*log) << "   \n";
     }
 
-    (*log) << "\n";
+    (*log) << "\n\n\n";
     (*log) << "# second wakeline in x2-direction (at x1=11.5)\n";
     (*log) << "#     x2";
     (*log) << "           umean         vmean         wmean         pmean";
@@ -1727,7 +1983,7 @@ void FLD::TurbulenceStatisticsSqc::DumpStatistics(int step)
       (*log) << "   \n";
     }
 
-    (*log) << "\n";
+    (*log) << "\n\n\n";
     (*log) << "# left cylinder boundary\n";
     (*log) << "#     x2";
     (*log) << "           umean         vmean         wmean         pmean";
@@ -1766,7 +2022,7 @@ void FLD::TurbulenceStatisticsSqc::DumpStatistics(int step)
       (*log) << "   \n";
     }
 
-    (*log) << "\n";
+    (*log) << "\n\n\n";
     (*log) << "# top cylinder boundary\n";
     (*log) << "#     x1";
     (*log) << "           umean         vmean         wmean         pmean";
@@ -1805,7 +2061,7 @@ void FLD::TurbulenceStatisticsSqc::DumpStatistics(int step)
       (*log) << "   \n";
     }
 
-    (*log) << "\n";
+    (*log) << "\n\n\n";
     (*log) << "# right cylinder boundary\n";
     (*log) << "#     x2";
     (*log) << "           umean         vmean         wmean         pmean";
@@ -1844,7 +2100,7 @@ void FLD::TurbulenceStatisticsSqc::DumpStatistics(int step)
       (*log) << "   \n";
     }
 
-    (*log) << "\n";
+    (*log) << "\n\n\n";
     (*log) << "# bottom cylinder boundary\n";
     (*log) << "#     x1";
     (*log) << "           umean         vmean         wmean         pmean";

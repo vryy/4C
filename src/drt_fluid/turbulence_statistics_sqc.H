@@ -147,6 +147,8 @@ private:
 
   //! number of samples taken
   int                              numsamp_;
+  //! homogeneous direction for sampling
+  string                           homdir_;
 
   //! bounds for extension of cavity in x3-direction
   double                           x3min_;
