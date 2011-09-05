@@ -55,25 +55,26 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
     dserror("Evaluation of turbulence statistics only for 3d flow problems!");
   }
 
+  // use input parameter HOMDIR to specify sampling
+  homdir_ = params_.sublist("TURBULENCE MODEL").get<string>("HOMDIR","not_specified");
+
+  // output to screen
   if (discret_->Comm().MyPID()==0)
   {
-    std::cout << "This is the turbulence statistics manager for the square cylinder:" << std::endl;
-  }
+    std::cout << "This is the turbulence statistics manager for the flow past a square-section cylinder:" << std::endl;
 
-  // use input parameter HOMDIR to specify sampling
-  string phomdir_ = params_.sublist("TURBULENCE MODEL").get<string>("HOMDIR","not_specified");
-  if (homdir_=="not_specified")
-  {
-    std::cout << "Slip-boundary conditions are assumed and" << std::endl;
-    std::cout << "sampling is done in time only." << std::endl;
+    if (homdir_=="not_specified")
+    {
+      std::cout << "Slip-boundary conditions are assumed and" << std::endl;
+      std::cout << "sampling is done in time only." << std::endl;
+    }
+    else if (homdir_=="z")
+    {
+      std::cout << "Periodic-boundary conditions are assumed and" << std::endl;
+      std::cout << "sampling is done in homogeneous (z-)direction and in time." << std::endl;
+    }
+    else dserror("unknown sampling procedure for square-section cylinder!");
   }
-  else if (homdir_=="z")
-  {
-    std::cout << "Periodic-boundary conditions are assumed and" << std::endl;
-    std::cout << "sampling is done in homogeneous(z-) direction and in time." << std::endl;
-  }
-  else
-    dserror("");
 
   //----------------------------------------------------------------------
   // allocate some (toggle) vectors
