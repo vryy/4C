@@ -493,9 +493,6 @@ void FLD::UTILS::LiftDrag(
           ldaxismap[label] = ldconds[i]->Get<vector<double> >("axis");
         }
 
-        // centre coordinates to present label
-        ldcoordmap[label] = ldconds[i]->Get<vector<double> >("centerCoord");
-
         /* get pointer to its nodal Ids*/
         const vector<int>* ids = ldconds[i]->Get<vector<int> >("Node Ids");
 
@@ -540,30 +537,52 @@ void FLD::UTILS::LiftDrag(
           values[1] += fy;
           values[2] += fz;
 
-          // get distance of point to center point
+          // get moment
+          double mx = 0.0;
+          double my = 0.0;
+          double mz = 0.0;
+
+          // get vector of point to center point
           LINALG::Matrix<3,1> distances;
           distances.Update(1.0, x, -1.0, centerCoord);
 
+          // calculate nodal angular moment with respect to global coordinate system
+          const double mx_gc = distances(1)*fz-distances(2)*fy;
+          const double my_gc = distances(2)*fx-distances(0)*fz;
+          const double mz_gc = distances(0)*fy-distances(1)*fx;
+
           // get pointer to axis vector (if available)
           const std::vector<double>* axisvecptr = ldaxismap[label];
-          // we have to compute the distance of the actual node to the
-          // axis of rotation:
           if (axisvecptr)
           {
             if (axisvecptr->size() != 3) dserror("axis vector has not length 3");
-            const LINALG::Matrix<3,1> axisvec(&((*axisvecptr)[0]),false);
-            double lambda = distances.Dot(axisvec);
+            LINALG::Matrix<3,1> axisvec(&((*axisvecptr)[0]),false);
+            double norm = 0.0;
             if (axisvec.Norm2() != 0.0)
-              lambda = lambda / axisvec.Norm2();
+            {
+              norm = axisvec.Norm2();
+              // normed axis vector
+              axisvec.Scale(1.0/norm);
+            }
             else
-              dserror("zero vector is not a valid direction vector for axis of rotation.");
-            distances.Update(lambda,axisvec,1.0);
+              dserror("norm==0.0!");
+            // projection of moment on given axis
+            double mdir = mx_gc*axisvec(0,0) + my_gc*axisvec(1,0)+ mz_gc*axisvec(2,0);
+
+            mx = mdir*axisvec(0,0);
+            my = mdir*axisvec(1,0);
+            mz = mdir*axisvec(2,0);
+          }
+          else
+          {
+            mx = mx_gc;
+            my = my_gc;
+            mz = mz_gc;
           }
 
-          // calculate nodal angular momenta
-          values[3] += distances(1)*fz-distances(2)*fy;
-          values[4] += distances(2)*fx-distances(0)*fz;
-          values[5] += distances(0)*fy-distances(1)*fx;
+          values[3] += mx;
+          values[4] += my;
+          values[5] += mz;
 
         } // end: loop over nodes
 
