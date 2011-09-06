@@ -412,17 +412,47 @@ private:
 
 
   //!calculation of nonlinear stiffness and mass matrix
-  void tlm_nlnstiffmass_totlag( const Epetra_SerialDenseVector& X,
+  void StiffAndMassTotLag( const Epetra_SerialDenseVector& X,
   		const Epetra_SerialDenseVector& x,
   		const Epetra_SerialDenseVector& u,
       Epetra_SerialDenseMatrix* stiffmatrix,
       Epetra_SerialDenseMatrix* massmatrix,
       Epetra_SerialDenseMatrix* force);
 
-  //! lump mass matrix
-  void tlm_lumpmass(Epetra_SerialDenseMatrix* emass);
+  //! assembly of transformation matrix 4-noded -> 2-noded
+  Epetra_SerialDenseMatrix* AssembleTrafoMatrix();
 
-  //@}
+  //! get current nodal positions and displacements
+  void CurrentNodePosAndDisp(std::vector<double>& disp,
+  		                       Epetra_SerialDenseMatrix* xcurr,
+  		                       Epetra_SerialDenseMatrix* ucurr);
+
+  /* !brief interpolate positions, displacements and velocities
+   * \param trafomatrix (in)	transformation matrix 4-noded -> 2-noded
+   * \param xcurr       (in)	12x1 current position
+   * \param ucurr       (in)  12x1 current displacement
+   * \param vel         (in)  12x1 velocity vector
+   * \param Xint        (in)	6x1 reference position
+   * \param xint        (in)  6x1 current position
+   * \param uint        (in)  6x1 current displacement
+   * \param velint      (in)  6x1 current velocity
+   */
+  void ReduceSystemSize(Epetra_SerialDenseMatrix& trafomatrix,
+												Epetra_SerialDenseMatrix& xcurr,
+												Epetra_SerialDenseMatrix& ucurr,
+												std::vector<double>& vel,
+												Epetra_SerialDenseVector* Xint,
+												Epetra_SerialDenseVector* xint,
+												Epetra_SerialDenseVector* uint,
+												Epetra_SerialDenseVector* velint);
+
+  void RestoreSystemSize(Epetra_SerialDenseMatrix& trafomatrix,
+												 Epetra_SerialDenseMatrix* stiffmatint,
+												 Epetra_SerialDenseMatrix* massmatint,
+												 Epetra_SerialDenseMatrix* forceint,
+												 Epetra_SerialDenseMatrix* stiffmatrix,
+												 Epetra_SerialDenseMatrix* maxmatrix,
+												 Epetra_SerialDenseMatrix* force);
 
   //! @name Methods for Brownian dynamics simulations
 

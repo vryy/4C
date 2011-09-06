@@ -479,7 +479,7 @@ void DRT::ELEMENTS::TrussLm::tlm_energy(ParameterList& params,
 }
 
 /*--------------------------------------------------------------------------------------*
- | switch between kintypes                                                      tk 11/08|
+ | nonlinear stiffness and mass matrix, forward and backward projection mueller    09/11|
  *--------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass(ParameterList& params,
     vector<double>&           vel,
@@ -489,30 +489,11 @@ void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass(ParameterList& params,
     Epetra_SerialDenseMatrix* force)
 {
 	//----------------------- Preliminary setup------------------------
-	/* here, we set up the matrices and vectors for the interpolated truss.
-	 * This means that dimension are reduced from a system based on four nodes
-	 * to a system based on two nodes.*/
-  const DiscretizationType distype = this->Shape();
-  //values for shape functions trusses A and B
-  Epetra_SerialDenseVector N_A(2);
-  Epetra_SerialDenseVector N_B(2);
-
-  //evaluation of shape functions at interpolated positions
-  DRT::UTILS::shape_function_1D(N_A,xiA_,distype);
-  DRT::UTILS::shape_function_1D(N_B,xiB_,distype);
-
-  // block matrix holding shape function values for specific xiA, xiB of trusses A and B
-  Epetra_SerialDenseMatrix trafomatrix(6,12,true);
-  for(int i=0; i<3; i++)
-  {
-  	trafomatrix(i,i) = N_A(0);
-  	trafomatrix(i,i+3) = N_A(1);
-  	trafomatrix(i+3,i+6) = N_B(0);
-  	trafomatrix(i+3,i+9) = N_B(1);
-  }
+	//first, get the transformation matrix from 4-noded to 2-noded
+	Epetra_SerialDenseMatrix trafomatrix = AssembleTrafoMatrix();
 
   //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node, ...)
-  Epetra_SerialDenseMatrix xcurr(12,1);
+	Epetra_SerialDenseMatrix xcurr(12,1);
   /*current nodal displacement (first entries 0 .. 2 for first node, 3 ..5 for second node, ...) compared
    * to reference configuration; note: in general this is not equal to the values in disp since the
    * latter one referes to a nodal displacement compared to a reference configuration before the first
@@ -520,17 +501,7 @@ void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass(ParameterList& params,
    * configuration which may have been set up at any point of time during the simulation (usually this
    * is only important if an element has been added to the discretization after the start of the simulation)*/
   Epetra_SerialDenseMatrix ucurr(12,1);
-  for (int j=0; j<3; ++j)
-  {
-    xcurr(j,0)   = Nodes()[0]->X()[j] + disp[  j]; //first node, truss A
-    xcurr(j+3,0)   = Nodes()[1]->X()[j] + disp[3+j]; //second node, truss A
-    xcurr(j+6,0)   = Nodes()[2]->X()[j] + disp[6+j]; //first node, truss B
-    xcurr(j+9,0)   = Nodes()[3]->X()[j] + disp[9+j]; //second node, truss B
-  }
-  //current displacement = current position - reference position
-  ucurr  = xcurr;
-  for(int j=0; j<ucurr.M(); j++)
-  	ucurr(j,0) -= X_(j);
+  CurrentNodePosAndDisp(disp, &xcurr, &ucurr);
 
   // interpolated stiffness and mass matrix
   Epetra_SerialDenseMatrix* stiffmatint;
@@ -551,28 +522,19 @@ void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass(ParameterList& params,
   else
   	forceint = NULL;
 
-  // interpolated nodal reference positions, current positions, displacements, velocities
+  //-------------forward projection of real (4-node) system onto interpolated system-------------------------
+
+  // interpolated reference and current positions, displacements and velocities
   Epetra_SerialDenseVector Xint(6); // values are by default initialized to 0
   Epetra_SerialDenseVector xint(6);
   Epetra_SerialDenseVector uint(6);
   Epetra_SerialDenseVector velint(6);
 
-  for(int i=0; i<trafomatrix.M()/2;i++)
-  	for(int j=0;j<trafomatrix.N()/2;j++)
-  	{
-  		Xint(i) += trafomatrix(i,j)*X_(j);
-  		Xint(i+3) += trafomatrix(i+3,j+6)*X_(j+6);
-  		velint(i) += trafomatrix(i,j)*vel[j];
-  		velint(i+3) +=  trafomatrix(i+3,j+6)*vel[j+6];
-  	}
+  ReduceSystemSize(trafomatrix, xcurr, ucurr, vel, &Xint, &xint,&uint, &velint);
 
-  xint.Multiply('N','N',1.0,trafomatrix,xcurr,0.0);
-  uint.Multiply('N','N',1.0,trafomatrix,ucurr,0.0);
-  //---------------------------------------------------------------
-
-  // calculate interpolated stiffness and mass matrix
+  //--------------calculate interpolated stiffness and mass matrix--------------------------------------------
   if(kintype_==trlm_totlag)
-		tlm_nlnstiffmass_totlag(Xint,xint,uint,stiffmatint,massmatint,forceint);
+  	StiffAndMassTotLag(Xint,xint,uint,stiffmatint,massmatint,forceint);
   else
 		dserror("Unknown type kintype_ for TrussLm");
 
@@ -584,14 +546,8 @@ void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass(ParameterList& params,
   // still, even if we have four real nodes, we give "2" as nnode since we think of two interpolated nodes
   CalcBrownian<2,3,3,3>(params,velint,xint,stiffmatint,forceint);
 
-  // ------------project interpolated system-------------------------
-  // stiffness matrix
-  Epetra_SerialDenseMatrix temp(6,12);
-  temp.Multiply('N','N',1.0,*stiffmatint,trafomatrix,0.0);
-  stiffmatrix->Multiply('T','N',1.0,trafomatrix,temp,0.0);
-  temp.Multiply('N','N',1.0,*massmatint,trafomatrix,0.0);
-  massmatrix->Multiply('T','N',1.0,trafomatrix,temp,0.0);
-  force->Multiply('T','N',1.0,trafomatrix,*forceint,0.0);
+  //-------------backwards projection of interpolated system onto real (4-node) system-------------------------
+  RestoreSystemSize(trafomatrix, stiffmatint, massmatint, forceint, stiffmatrix, massmatrix, force);
 
   return;
 }
@@ -600,12 +556,12 @@ void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass(ParameterList& params,
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private)                                                   cyron 08/08|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass_totlag( const Epetra_SerialDenseVector& X,
-		const Epetra_SerialDenseVector& x,
-		const Epetra_SerialDenseVector& u,
-    Epetra_SerialDenseMatrix* stiffmatrix,
-    Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseMatrix* force)
+void DRT::ELEMENTS::TrussLm::StiffAndMassTotLag(const Epetra_SerialDenseVector& X,
+																								const Epetra_SerialDenseVector& x,
+																								const Epetra_SerialDenseVector& u,
+																								Epetra_SerialDenseMatrix* stiffmatrix,
+																								Epetra_SerialDenseMatrix* massmatrix,
+																								Epetra_SerialDenseMatrix* force)
 {
   //Green-Lagrange strain
   double epsilon = 0.0;
@@ -700,6 +656,99 @@ void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass_totlag( const Epetra_SerialDenseVe
   }
   return;
 } // DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass
+
+/*--------------------------------------------------------------------------------------*
+ | assembly of transformation matrix                                       mueller 09/11|
+ *--------------------------------------------------------------------------------------*/
+Epetra_SerialDenseMatrix* DRT::ELEMENTS::TrussLm::AssembleTrafoMatrix()
+{
+	/* here, we set up the matrix projecting the 4-node system onto a 2-node system*/
+  const DiscretizationType distype = this->Shape();
+  //values for shape functions trusses A and B
+  Epetra_SerialDenseVector N_A(2);
+  Epetra_SerialDenseVector N_B(2);
+
+  //evaluation of shape functions at interpolated positions
+  DRT::UTILS::shape_function_1D(N_A,xiA_,distype);
+  DRT::UTILS::shape_function_1D(N_B,xiB_,distype);
+
+  // block matrix holding shape function values for specific xiA, xiB of trusses A and B
+  Epetra_SerialDenseMatrix trafomatrix(6,12,true);
+  for(int i=0; i<3; i++)
+  {
+  	trafomatrix(i,i) = N_A(0);
+  	trafomatrix(i,i+3) = N_A(1);
+  	trafomatrix(i+3,i+6) = N_B(0);
+  	trafomatrix(i+3,i+9) = N_B(1);
+  }
+  Epetra_SerialDenseMatrix* result = &trafomatrix;
+  return result;
+}
+
+/*--------------------------------------------------------------------------------------*
+ | Get current nodal position and velocities                               mueller 09/11|
+ *--------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::TrussLm::CurrentNodePosAndDisp(std::vector<double>& disp,
+																									 Epetra_SerialDenseMatrix* xcurr,
+																									 Epetra_SerialDenseMatrix* ucurr)
+{
+  for (int j=0; j<3; ++j)
+  {
+    (*xcurr)(j,0)   = Nodes()[0]->X()[j] + disp[  j]; //first node, truss A
+    (*xcurr)(j+3,0)   = Nodes()[1]->X()[j] + disp[3+j]; //second node, truss A
+    (*xcurr)(j+6,0)   = Nodes()[2]->X()[j] + disp[6+j]; //first node, truss B
+    (*xcurr)(j+9,0)   = Nodes()[3]->X()[j] + disp[9+j]; //second node, truss B
+  }
+  //current displacement = current position - reference position
+  *ucurr  = *xcurr;
+  for(int j=0; j<ucurr->M(); j++)
+  	(*ucurr)(j,0) -= X_(j);
+}
+
+/*--------------------------------------------------------------------------------------*
+ | Reduce system size from 4-noded to fictitious 2-noded element           mueller 09/11|
+ *--------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::TrussLm::ReduceSystemSize(Epetra_SerialDenseMatrix& trafomatrix,
+																							Epetra_SerialDenseMatrix& xcurr,
+																							Epetra_SerialDenseMatrix& ucurr,
+																							std::vector<double>& vel,
+																							Epetra_SerialDenseVector* Xint,
+																							Epetra_SerialDenseVector* xint,
+																							Epetra_SerialDenseVector* uint,
+																							Epetra_SerialDenseVector* velint)
+{
+  for(int i=0; i<trafomatrix.M()/2;i++)
+  	for(int j=0;j<trafomatrix.N()/2;j++)
+  	{
+  		(*Xint)(i) += trafomatrix(i,j)*X_(j);
+  		(*Xint)(i+3) += trafomatrix(i+3,j+6)*X_(j+6);
+  		(*velint)(i) += trafomatrix(i,j)*vel[j];
+  		(*velint)(i+3) +=  trafomatrix(i+3,j+6)*vel[j+6];
+  	}
+
+  xint->Multiply('N','N',1.0,trafomatrix,xcurr,0.0);
+  uint->Multiply('N','N',1.0,trafomatrix,ucurr,0.0);
+}
+
+/*--------------------------------------------------------------------------------------*
+ | Restore system size from fictitious 2-noded to 4-noded element          mueller 09/11|
+ *--------------------------------------------------------------------------------------*/
+void DRT::ELEMENTS::TrussLm::RestoreSystemSize(Epetra_SerialDenseMatrix& trafomatrix,
+																							 Epetra_SerialDenseMatrix* stiffmatint,
+																							 Epetra_SerialDenseMatrix* massmatint,
+																							 Epetra_SerialDenseMatrix* forceint,
+																							 Epetra_SerialDenseMatrix* stiffmatrix,
+																							 Epetra_SerialDenseMatrix* massmatrix,
+																							 Epetra_SerialDenseMatrix* force)
+{
+  // stiffness matrix
+  Epetra_SerialDenseMatrix temp(stiffmatint->M(),stiffmatrix->M());
+  temp.Multiply('N','N',1.0,*stiffmatint,trafomatrix,0.0);
+  stiffmatrix->Multiply('T','N',1.0,trafomatrix,temp,0.0);
+  temp.Multiply('N','N',1.0,*massmatint,trafomatrix,0.0);
+  massmatrix->Multiply('T','N',1.0,trafomatrix,temp,0.0);
+  force->Multiply('T','N',1.0,trafomatrix,*forceint,0.0);
+}
 
 /*-----------------------------------------------------------------------------------------------------------*
  | computes damping coefficients per lengthand stores them in a matrix in the following order: damping of    |
