@@ -392,10 +392,10 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
         double f = 0;//mean value of force
         double d = 0;//Displacement
 
-        for(int i=0; i<forcesensor_->MyLength(); i++)//changed
+        for(int i=0; i<forcesensor_->MyLength(); i++)// forcesensor_ is unique on each Proc (see UpdateForceSensors() !)
           if((*forcesensor_)[i]>0.9)
           {
-          	// tranlate i to DofRowMap LID
+          	// translate i to DofRowMap LID
           	int dofgid = discret_.DofColMap()->GID(i);
           	int rowid = discret_.DofRowMap()->LID(dofgid);
             f += fint[rowid];
