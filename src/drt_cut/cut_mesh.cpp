@@ -938,6 +938,7 @@ void GEO::CUT::Mesh::Cut( Mesh & mesh, plain_element_set & elements_done, int re
 
   plain_element_set my_elements_done;
 
+  // perform the cut for each side of the cut_mesh_
   for ( std::map<plain_int_set, Teuchos::RCP<Side> >::iterator i=sides_.begin();
         i!=sides_.end();
         ++i )
@@ -953,10 +954,11 @@ void GEO::CUT::Mesh::Cut( Mesh & mesh, plain_element_set & elements_done, int re
 
 void GEO::CUT::Mesh::Cut( Side & side, const plain_element_set & done, plain_element_set & elements_done, int recursion )
 {
-  BoundingBox sidebox( side );
+  BoundingBox sidebox( side ); // define a bounding box around the maybe twisted side to find involved elements
   plain_element_set elements;
-  pp_->CollectElements( sidebox, elements );
+  pp_->CollectElements( sidebox, elements ); // find involved elements (octree-based)
 
+  // perform the cut of this side for each involved element
   for ( plain_element_set::iterator i=elements.begin(); i!=elements.end(); ++i )
   {
     Element * e = *i;

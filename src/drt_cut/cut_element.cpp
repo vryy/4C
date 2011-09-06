@@ -26,20 +26,21 @@ bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side, int recursion )
     Node * n = *i;
     Point * p = n->point();
 
-    if ( not p->IsCut( this ) )
+    if ( not p->IsCut( this ) ) // point does not no if this element is a cut_element_
     {
-      if ( PointInside( p ) )
+      if ( PointInside( p ) ) // if point is inside the element
       {
-        p->AddElement( this );
+        p->AddElement( this ); // add element to cut_element_-list of this point
         cut = true;
       }
     }
-    else
+    else // point inside this element, already determined by another side
     {
       cut = true;
     }
   }
 
+  // all the other cut points lie on sides of the element (s is an element side, side is the cutter side)
   const std::vector<Side*> & sides = Sides();
   for ( std::vector<Side*>::const_iterator i=sides.begin(); i!=sides.end(); ++i )
   {
@@ -50,6 +51,7 @@ bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side, int recursion )
     }
   }
 
+  // insert this side into cut_faces_
   if ( cut )
   {
     cut_faces_.insert( &side );

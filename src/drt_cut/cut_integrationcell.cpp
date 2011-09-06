@@ -468,7 +468,7 @@ int GEO::CUT::Hex8IntegrationCell::CubatureDegree( DRT::Element::DiscretizationT
   switch ( elementshape )
   {
   case DRT::Element::hex8:
-    return 3;
+    return 5;
   case DRT::Element::hex20:
     return 4;
   case DRT::Element::hex27:
