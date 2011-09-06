@@ -108,7 +108,6 @@ namespace IO
     {
       s.setf(ios::scientific,ios::floatfield);
       s.precision(12);
-      const int nsd = 2;
 
       const int numnode = distypeToGmshNumNode(distype);
 
@@ -116,14 +115,10 @@ namespace IO
       s << "(";
       for (int inen = 0; inen < numnode; ++inen)
       {
-        for (int idim = 0; idim < 3; ++idim)
-        {
-          // print position
-          s << coord(idim, inen);
-          if (idim < nsd -1)
-            s << ",0.000000000000e+00";
-        }
-
+        // print position 2D
+        s << coord(0, inen) << ",";
+        s << coord(1, inen) << ",";
+        s << "0.000000000000e+00";
         if (inen < numnode-1)
         {
           s << ",";
@@ -223,18 +218,15 @@ namespace IO
       s.precision(12);
 
       const int numnode = distypeToGmshNumNode(distype);
-      const int nsd = 2;
 
       // values
       s << "{";
       for (int inode = 0; inode<numnode; ++inode)
       {
-        for (int isd = 0; isd < nsd; ++isd)
-        {
-          s << scientific << vectorfield(isd, inode);
-          if (isd < nsd-1)
-            s << ",0.000000000000e+00";
-        }
+        // 2D
+        s << scientific << vectorfield(0, inode) << ",";
+        s << scientific << vectorfield(1, inode) << ",";
+        s << "0.000000000000e+00";
         if (inode < numnode-1)
         {
           s << ",";

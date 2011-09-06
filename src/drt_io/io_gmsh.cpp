@@ -270,7 +270,7 @@ void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(
 
       // replace function : cellWithVectorFieldToStream(distype, myvectorfield, xyze, s);
       {
-        s << "S"; // scalar field indicator
+        s << "V"; // scalar field indicator
         s << distypeToGmshElementHeader(distype);
         if (nsd==3)
         {
