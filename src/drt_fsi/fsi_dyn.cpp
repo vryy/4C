@@ -165,8 +165,9 @@ void fluid_xfem2_drt()
                                     actdis->Comm(),
                                     problem->ErrorFile()->Handle()));
   //actdis->ComputeNullSpaceIfNecessary(solver->Params());
+  const Teuchos::ParameterList xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
 
-  FLD::XFluid fluid( actdis,soliddis,*solver,problem->FluidDynamicParams() );
+  FLD::XFluid fluid( actdis,soliddis,*solver,problem->FluidDynamicParams(), xdyn);
   fluid.Integrate();
 
 //   Teuchos::RCP<FSI::FluidXFEMAlgorithm> xfluid = Teuchos::rcp(new FSI::FluidXFEMAlgorithm(comm));

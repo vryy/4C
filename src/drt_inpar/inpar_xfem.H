@@ -28,7 +28,9 @@ namespace INPAR
     enum BoundaryIntegralType
     {
       BoundaryTypeSigma,
-      BoundaryTypeTauPressure
+      BoundaryTypeTauPressure,
+      BoundaryTypeNitsche,
+      BoundaryTypeNeumann
     };
 
   }  // namespace FSI

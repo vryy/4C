@@ -11,6 +11,7 @@
 #include <Epetra_Map.h>
 
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_xfem.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_xfem/xfem_fluidwizard.H"
 
@@ -153,6 +154,15 @@ namespace FLD
       void GenAlphaIntermediateValues();
       void GenAlphaUpdateAcceleration();
 
+      /// return system matrix down-casted as sparse matrix
+      Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix();
+
+      /// return system matrix downcasted as block sparse matrix
+      Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+
+      /// return the wizard
+      Teuchos::RCP<XFEM::FluidWizard> Wizard() { return wizard_; }
+
     private:
 
       void GmshOutputElement( DRT::Discretization & discret,
@@ -177,7 +187,7 @@ namespace FLD
                                    GEO::CUT::VolumeCell * vc );
 
       XFluid & xfluid_;
-      XFEM::FluidWizard wizard_;
+      Teuchos::RCP<XFEM::FluidWizard> wizard_;
       Teuchos::RCP<XFEM::FluidDofSet> dofset_;
     };
 
@@ -187,6 +197,7 @@ namespace FLD
             Teuchos::RCP<DRT::Discretization>  soliddis,
             LINALG::Solver &                   solver,
             const Teuchos::ParameterList &     params,
+            const Teuchos::ParameterList &     xdyn,
             bool                               alefluid=false
       );
 
@@ -231,11 +242,22 @@ namespace FLD
     /// update configuration and output to file/screen
     void Output();
 
+    /// set an initial flow field
+    void SetInitialFlowField(
+      const INPAR::FLUID::InitialField initfield,
+      const int startfuncno
+      );
+
+    /// set an initial solid field
+    void SetInitialSolidField();
+
     /*!
       \brief return type of time integration scheme
 
     */
     const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
+
+    const INPAR::XFEM::BoundaryIntegralType BoundIntType() const {return boundIntType_;}
 
     double ResidualScaling() const
     {
@@ -266,6 +288,16 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector>    ivelnp_;
     Teuchos::RCP<Epetra_Vector>    iveln_;
     Teuchos::RCP<Epetra_Vector>    ivelnm_;
+
+    Teuchos::RCP<Epetra_Vector>    idispnp_;
+
+    Teuchos::RCP<Epetra_Vector>    solidvelnp_;
+    Teuchos::RCP<Epetra_Vector>    solidveln_;
+    Teuchos::RCP<Epetra_Vector>    solidvelnm_;
+
+    Teuchos::RCP<Epetra_Vector>    soliddispnp_;
+    Teuchos::RCP<Epetra_Vector>    soliddispn_;
+    Teuchos::RCP<Epetra_Vector>    soliddispnm_;
 
     Teuchos::RCP<Epetra_Vector>    outvec_solid_disp_;
 
@@ -322,6 +354,10 @@ namespace FLD
 //     //! basis vector for nullspace (vector of ones in the pressure component)
 //     Teuchos::RCP<Epetra_Vector>   c_;
     Teuchos::ParameterList params_;
+
+    enum INPAR::XFEM::BoundaryIntegralType boundIntType_;
+    int boundIntFunct_;
+
     Teuchos::RCP<IO::DiscretizationWriter> fluid_output_;
     Teuchos::RCP<IO::DiscretizationWriter> solid_output_;
     Teuchos::RCP<IO::DiscretizationWriter> boundary_output_;

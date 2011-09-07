@@ -149,6 +149,38 @@ namespace ELEMENTS
                                        Epetra_SerialDenseMatrix&  Cuiui
       ) = 0;
 
+    /// add interface condition at cut to element matrix and rhs (Nitsche coupling)
+    virtual void ElementXfemInterfaceNitsche( DRT::ELEMENTS::Fluid3 * ele,
+                                       DRT::Discretization & dis,
+                                       const std::vector<int> & lm,
+                                       const DRT::UTILS::GaussIntegration & intpoints,
+                                       DRT::Discretization & cutdis,
+                                       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+                                       const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
+                                       std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+                                       //std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
+                                       Teuchos::ParameterList&    params,
+                                       Epetra_SerialDenseMatrix&  elemat1_epetra,
+                                       Epetra_SerialDenseVector&  elevec1_epetra,
+                                       Epetra_SerialDenseMatrix&  Cuiui
+      ) = 0;
+
+    /// add interface condition at cut to element matrix and rhs (Nitsche coupling)
+    virtual void ElementXfemInterfaceNeumann( DRT::ELEMENTS::Fluid3 * ele,
+                                       DRT::Discretization & dis,
+                                       const std::vector<int> & lm,
+                                       const DRT::UTILS::GaussIntegration & intpoints,
+                                       DRT::Discretization & cutdis,
+                                       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+                                       const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
+                                       std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+                                       //std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
+                                       Teuchos::ParameterList&    params,
+                                       Epetra_SerialDenseMatrix&  elemat1_epetra,
+                                       Epetra_SerialDenseVector&  elevec1_epetra,
+                                       Epetra_SerialDenseMatrix&  Cuiui
+      ) = 0;
+
     /// Internal implementation class for fluid element
     static Fluid3ImplInterface* Impl(DRT::Element::DiscretizationType distype);
 

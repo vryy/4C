@@ -8082,6 +8082,9 @@ namespace DRT
                                                           Epetra_SerialDenseMatrix & side_xyze
                                                           );
 
+        static Teuchos::RCP<SideInterface<distype> > Impl(DRT::Element * side,
+                                                          Epetra_SerialDenseMatrix & side_xyze
+                                                          );
 
         virtual ~SideInterface() {}
 
@@ -8112,6 +8115,8 @@ namespace DRT
                                                 LINALG::BlockMatrix<LINALG::Matrix<nen,  1>,6,1> &  rhs
                                                 ) = 0;
 
+        virtual void get_vel_WeakDBC (LINALG::Matrix<3,1> & ivelint) = 0;
+
       };
 
       template<DRT::Element::DiscretizationType distype,
@@ -8138,6 +8143,14 @@ namespace DRT
             K_sui_(Gsui.A(),true),
             K_uis_(Guis.A(),true),
             xyze_(side_xyze.A(),true)
+        {
+        }
+
+
+        SideImpl(DRT::Element * side,
+                 Epetra_SerialDenseMatrix & side_xyze
+                 )
+          : xyze_(side_xyze.A(),true)
         {
         }
 
@@ -8409,6 +8422,14 @@ namespace DRT
 
         }
 
+        // set prescribed WDBC at Gaussian point
+        virtual void get_vel_WeakDBC( LINALG::Matrix<3,1> & ivelint )
+        {
+            ivelint.Clear();
+            ivelint.Multiply(eivel_,side_funct_);
+        }
+
+
         LINALG::BlockMatrix<LINALG::Matrix<nen,side_nen>,6,3> BK_sui_;
         LINALG::BlockMatrix<LINALG::Matrix<nen,   1>,6,1>     rhsi_;
         LINALG::BlockMatrix<LINALG::Matrix<side_nen,nen>,3,6> BK_uis_;
@@ -8475,7 +8496,53 @@ namespace DRT
         }
         return Teuchos::rcp(si);
       }
+//    }
+
+
+    template<DRT::Element::DiscretizationType distype>
+    Teuchos::RCP<SideInterface<distype> > SideInterface<distype>::Impl(DRT::Element * side,
+                                                                       Epetra_SerialDenseMatrix &  side_xyze
+                                                                       )
+    {
+      SideInterface * si = NULL;
+      switch ( side->Shape() )
+      {
+       case DRT::Element::tri3:
+       {
+         typedef SideImpl<distype,DRT::Element::tri3> SideImplType;
+         si = new SideImplType(side,side_xyze);
+         break;
+       }
+       case DRT::Element::tri6:
+       {
+         typedef SideImpl<distype,DRT::Element::tri6> SideImplType;
+         si = new SideImplType(side,side_xyze);
+         break;
+       }
+       case DRT::Element::quad4:
+       {
+         typedef SideImpl<distype,DRT::Element::quad4> SideImplType;
+         si = new SideImplType(side,side_xyze);
+         break;
+       }
+       case DRT::Element::quad8:
+       {
+         typedef SideImpl<distype,DRT::Element::quad8> SideImplType;
+         si = new SideImplType(side,side_xyze);
+         break;
+       }
+       case DRT::Element::quad9:
+       {
+         typedef SideImpl<distype,DRT::Element::quad9> SideImplType;
+         si = new SideImplType(side,side_xyze);
+         break;
+       }
+      default:
+        dserror( "unsupported side shape %d", side->Shape() );
+      }
+      return Teuchos::rcp(si);
     }
+  }
 
 /*--------------------------------------------------------------------------------
  *--------------------------------------------------------------------------------*/
@@ -8609,6 +8676,7 @@ void Fluid3Impl<distype>::ElementXfemInterface(
       dz( i ) = derxy_( 2, i );
     }
 
+    // block - K_ss
     bK_ss.MultiplyNT( funct_, funct_ );
 
 
@@ -8753,28 +8821,37 @@ void Fluid3Impl<distype>::ElementXfemInterface(
     std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c = side_coupling.find( sid );
 
     std::vector<Epetra_SerialDenseMatrix> & side_matrices = c->second;
-    Epetra_SerialDenseMatrix & C_uiu  = side_matrices[0];
-    Epetra_SerialDenseMatrix & C_uui  = side_matrices[1];
-    Epetra_SerialDenseMatrix & rhC_ui = side_matrices[2];
 
     if ( side_matrices.size()==3 )
       fluidfluidcoupling = true;
 
-    std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c2 = Cuiui_coupling.find( sid );
-    std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = c2->second;
-    Epetra_SerialDenseMatrix & eleGsui = Cuiui_matrices[0];
-    Epetra_SerialDenseMatrix & eleGuis = Cuiui_matrices[1];
-    Epetra_SerialDenseMatrix  eleGuisKssInv;
 
-    si = XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleGsui,eleGuis,side_xyze);
+    if(fluidfluidcoupling)
+    {
+        Epetra_SerialDenseMatrix & C_uiu  = side_matrices[0];
+        Epetra_SerialDenseMatrix & C_uui  = side_matrices[1];
+        Epetra_SerialDenseMatrix & rhC_ui = side_matrices[2];
+
+        std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c2 = Cuiui_coupling.find( sid );
+        std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = c2->second;
+        Epetra_SerialDenseMatrix & eleGsui = Cuiui_matrices[0];
+        Epetra_SerialDenseMatrix & eleGuis = Cuiui_matrices[1];
+        Epetra_SerialDenseMatrix  eleGuisKssInv;
+
+        si = XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleGsui,eleGuis,side_xyze);
+    }
+    else
+    {
+        si = XFLUID::SideInterface<distype>::Impl(side,side_xyze);
+    }
+
     side_impl[sid] = si;
 
     // get velocity at integration point of boundary dis
-    if ( fluidfluidcoupling )
-    {
-      si->eivel(cutdis,"ivelnp",cutla[0].lm_);
-      si->addeidisp(cutdis,"idispnp",cutla[0].lm_,side_xyze);
-    }
+
+    si->eivel(cutdis,"ivelnp",cutla[0].lm_);
+    si->addeidisp(cutdis,"idispnp",cutla[0].lm_,side_xyze);
+
 
     // loop gausspoints
     for ( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=cutintpoints.begin();
@@ -8847,6 +8924,26 @@ void Fluid3Impl<distype>::ElementXfemInterface(
         rhs( Sigmazy, 0 )->Update( fac*normal(1)*velint_(2), funct_, 1.0 );
         rhs( Sigmazz, 0 )->Update( fac*normal(2)*velint_(2), funct_, 1.0 );
 
+if(!fluidfluidcoupling)
+{
+        /*                   _  \
+       |  (virt tau) * n^f , u   |
+        \                      */
+
+
+        LINALG::Matrix<nsd_,1> velint_WDBC(true);
+        si->get_vel_WeakDBC(velint_WDBC);
+
+        rhs( Sigmaxx, 0 )->Update( -fac*normal(0)*velint_WDBC(0), funct_, 1.0 );
+        rhs( Sigmaxy, 0 )->Update( -fac*normal(1)*velint_WDBC(0), funct_, 1.0 );
+        rhs( Sigmaxz, 0 )->Update( -fac*normal(2)*velint_WDBC(0), funct_, 1.0 );
+        rhs( Sigmayx, 0 )->Update( -fac*normal(0)*velint_WDBC(1), funct_, 1.0 );
+        rhs( Sigmayy, 0 )->Update( -fac*normal(1)*velint_WDBC(1), funct_, 1.0 );
+        rhs( Sigmayz, 0 )->Update( -fac*normal(2)*velint_WDBC(1), funct_, 1.0 );
+        rhs( Sigmazx, 0 )->Update( -fac*normal(0)*velint_WDBC(2), funct_, 1.0 );
+        rhs( Sigmazy, 0 )->Update( -fac*normal(1)*velint_WDBC(2), funct_, 1.0 );
+        rhs( Sigmazz, 0 )->Update( -fac*normal(2)*velint_WDBC(2), funct_, 1.0 );
+}
 
                /*               \
             - |  v , Dtau * n^f  |
@@ -8977,6 +9074,71 @@ void Fluid3Impl<distype>::ElementXfemInterface(
           force_boundary(2,inode) += funct_boundary(inode) * -(disctau_times_nf(2) * fac);
         }
 #endif
+
+#if 0
+        // TODO: timefac not used here?!?!?
+  double timefacfac = fac;
+
+  // funct_ * timefac * fac
+  LINALG::Matrix<nen_,1> funct_timefacfac(true);
+  funct_timefacfac.Update(timefacfac,funct_,0.0);
+
+  // funct_ * timefac * fac * funct_ (dyadic product)
+  LINALG::Matrix<nen_,nen_> funct_dyad_timefacfac(true);
+  funct_dyad_timefacfac.MultiplyNT(funct_timefacfac,funct_);
+
+			  // convective stabilization
+				 /*                           \        /                       i   _     \
+			    |  gamma/h_K *  v*n , Du*n     | =  - |   gamma/h_K *  v*n , (u  - u)*n   |
+				 \                            /        \                                */
+
+			  const double gamma_conv = 100.0;
+			  const double h_K = 1.0/20.0;
+
+			  const double stab_fac_conv = gamma_conv/h_K;
+
+			  for(int ir=0; ir<nen_; ir++)
+			  {
+					int idVelx = ir*(nsd_+1) + 0;
+					int idVely = ir*(nsd_+1) + 1;
+					int idVelz = ir*(nsd_+1) + 2;
+
+					// (stab * v, Du)
+					for(int ic=0; ic<nen_; ic++)
+					{
+						int iVelx = ic*(nsd_+1)+0;
+						int iVely = ic*(nsd_+1)+1;
+						int iVelz = ic*(nsd_+1)+2;
+
+						elemat1_epetra(idVelx, iVelx) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Velx)*normal(Velx);
+						elemat1_epetra(idVelx, iVely) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Velx)*normal(Vely);
+						elemat1_epetra(idVelx, iVelz) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Velx)*normal(Velz);
+
+						elemat1_epetra(idVely, iVelx) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Vely)*normal(Velx);
+						elemat1_epetra(idVely, iVely) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Vely)*normal(Vely);
+						elemat1_epetra(idVely, iVelz) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Vely)*normal(Velz);
+
+						elemat1_epetra(idVelz, iVelx) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Velz)*normal(Velx);
+						elemat1_epetra(idVelz, iVely) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Velz)*normal(Vely);
+						elemat1_epetra(idVelz, iVelz) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Velz)*normal(Velz);
+					}
+
+					double velint_normal = velint_.Dot(normal);
+
+					// -(stab * v*n, u*n)
+					elevec1_epetra(idVelx) -= funct_timefacfac(ir)*normal(Velx)*stab_fac_conv*velint_normal;
+					elevec1_epetra(idVely) -= funct_timefacfac(ir)*normal(Vely)*stab_fac_conv*velint_normal;
+					elevec1_epetra(idVelz) -= funct_timefacfac(ir)*normal(Velz)*stab_fac_conv*velint_normal;
+
+
+//					double velint_WDBC_normal = velint_WDBC.Dot(normal);
+//					// +(stab * v*n, u_DBC*n)
+//					elevec1_epetra(idVelx) += funct_timefacfac(ir)*normal(Velx)*stab_fac_conv*velint_WDBC_normal;
+//					elevec1_epetra(idVely) += funct_timefacfac(ir)*normal(Vely)*stab_fac_conv*velint_WDBC_normal;
+//					elevec1_epetra(idVelz) += funct_timefacfac(ir)*normal(Velz)*stab_fac_conv*velint_WDBC_normal;
+			  }
+#endif
+
       }
     }
   }
@@ -9282,8 +9444,1118 @@ void Fluid3Impl<DRT::Element::nurbs9>::ElementXfemInterface(
   dserror( "distype not supported" );
 }
 
+
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
+  )
+{
+	  //----------------------------------------------------------------------------
+	  //                         ELEMENT GEOMETRY
+	  //----------------------------------------------------------------------------
+
+	  // get node coordinates
+	  GEO::fillInitialPositionArray< distype, nsd_, LINALG::Matrix<nsd_,nen_> >( ele, xyze_ );
+
+	  LINALG::Matrix<nsd_,nen_> evelaf(true);
+	  LINALG::Matrix<nen_,1> epreaf(true);
+	  ExtractValuesFromGlobalVector(dis, lm, *rotsymmpbc_, &evelaf, &epreaf, "velaf");
+
+	  // define WDBC velocity vector
+//	  LINALG::Matrix<nsd_,nen_> evel_WDBC(true);
+//	  LINALG::Matrix<nsd_,1> direction(true);
+//	  direction(0) = 1.0; // x-direction
+//	  direction(1) = 0.0; // y-direction
+//	  direction(2) = 0.0; // z-direction
+
+//	  double scalefac = 3.0;
+//
+//	  for(int col=0; col<nen_; col++)
+//	  {
+//	  evel_WDBC(0,0) = direction(0)*7.0;
+//	  evel_WDBC(0,1) = direction(0)*7.0;
+//	  evel_WDBC(0,2) = direction(0)*3.0;
+//	  evel_WDBC(0,3) = direction(0)*3.0;
+//
+//	  evel_WDBC(0,4) = direction(0)*7.0;
+//	  evel_WDBC(0,5) = direction(0)*7.0;
+//	  evel_WDBC(0,6) = direction(0)*3.0;
+//	  evel_WDBC(0,7) = direction(0)*3.0;
+
+//
+//		  evel_WDBC(1,col) = direction(1)*scalefac;
+//		  evel_WDBC(2,col) = direction(2)*scalefac;
+//	  }
+
+//
+//	    evel_WDBC(0,0) = direction(0)*(5.0+30.0*xyze_(1,0) + 60.0*xyze_(2,0));
+//	    evel_WDBC(0,1) = direction(0)*(5.0+30.0*xyze_(1,1) + 60.0*xyze_(2,1));
+//	    evel_WDBC(0,2) = direction(0)*(5.0+30.0*xyze_(1,2) + 60.0*xyze_(2,2));
+//	    evel_WDBC(0,3) = direction(0)*(5.0+30.0*xyze_(1,3) + 60.0*xyze_(2,3));
+//
+//	    evel_WDBC(0,4) = direction(0)*(5.0+30.0*xyze_(1,4) + 60.0*xyze_(2,4));
+//	    evel_WDBC(0,5) = direction(0)*(5.0+30.0*xyze_(1,5) + 60.0*xyze_(2,5));
+//	    evel_WDBC(0,6) = direction(0)*(5.0+30.0*xyze_(1,6) + 60.0*xyze_(2,6));
+//	    evel_WDBC(0,7) = direction(0)*(5.0+30.0*xyze_(1,7) + 60.0*xyze_(2,7));
+
+
+	  // numbering for velocity components and pressure
+	  const unsigned Velx = 0;
+	  const unsigned Vely = 1;
+	  const unsigned Velz = 2;
+
+
+	  // integrate surface
+
+	  DRT::Element::LocationArray cutla( 1 );
+
+	  LINALG::Matrix<3,1> normal;
+	  LINALG::Matrix<3,1> x_side;
+
+	  bool fluidfluidcoupling = false;
+
+	  std::map<int, Teuchos::RCP<XFLUID::SideInterface<distype> > > side_impl;
+	  Teuchos::RCP<XFLUID::SideInterface<distype> > si;
+
+	  // find all the intersecting elements of actele
+	  std::set<int> begids;
+	  for (std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
+	       bc!=bcells.end(); ++bc )
+	  {
+	    int sid = bc->first;
+	    begids.insert(sid);
+	  }
+
+	  std::map<int, std::vector<Epetra_SerialDenseMatrix> > Cuiui_coupling;
+
+	  // lm vector of all intersecting elements
+	  std::vector<int> patchelementslmv;
+	  std::vector<int> patchelementslmowner;
+	  for (std::set<int>::const_iterator bgid=begids.begin(); bgid!=begids.end(); ++bgid)
+	  {
+	    DRT::Element * side = cutdis.gElement(*bgid);
+	    vector<int> patchlm;
+	    vector<int> patchlmowner;
+	    vector<int> patchlmstride;
+	    side->LocationVector(cutdis, patchlm, patchlmowner, patchlmstride);
+
+	    patchelementslmv.reserve( patchelementslmv.size() + patchlm.size());
+	    patchelementslmv.insert(patchelementslmv.end(), patchlm.begin(), patchlm.end());
+
+	    patchelementslmowner.reserve( patchelementslmowner.size() + patchlmowner.size());
+	    patchelementslmowner.insert( patchelementslmowner.end(), patchlmowner.begin(), patchlmowner.end());
+
+	    std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = Cuiui_coupling[*bgid];
+
+	    Cuiui_matrices.resize(2);
+	    Cuiui_matrices[0].Reshape(nen_*6,patchlm.size()); //Gsui
+	    Cuiui_matrices[1].Reshape(patchlm.size(),nen_*6); //Guis
+	  }
+
+	  Epetra_SerialDenseMatrix Gsui(nen_*6,patchelementslmv.size());
+	  Epetra_SerialDenseMatrix Guis(patchelementslmv.size(),nen_*6);
+	  Epetra_SerialDenseMatrix InvKss(nen_*6,nen_*6);
+	  Epetra_SerialDenseMatrix GuisInvKss(patchelementslmv.size(),nen_*6);
+
+	  // map of side-element id and Guass points
+	  for ( std::map<int, std::vector<DRT::UTILS::GaussIntegration> >::const_iterator i=bintpoints.begin();
+	        i!=bintpoints.end();
+	        ++i )
+	  {
+	    int sid = i->first;
+	    const std::vector<DRT::UTILS::GaussIntegration> & cutintpoints = i->second;
+
+	    std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator j = bcells.find( sid );
+	    if ( j==bcells.end() )
+	      dserror( "missing boundary cell" );
+
+	    const std::vector<GEO::CUT::BoundaryCell*> & bcs = j->second;
+	    if ( bcs.size()!=cutintpoints.size() )
+	      dserror( "boundary cell integration rules mismatch" );
+
+	    DRT::Element * side = cutdis.gElement( sid );
+	    side->LocationVector(cutdis,cutla,false);
+
+	    const int numnodes = side->NumNode();
+	    DRT::Node ** nodes = side->Nodes();
+	    Epetra_SerialDenseMatrix side_xyze( 3, numnodes );
+	    for ( int i=0; i<numnodes; ++i )
+	    {
+	      const double * x = nodes[i]->X();
+	      std::copy( x, x+3, &side_xyze( 0, i ) );
+	    }
+
+	    std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c = side_coupling.find( sid );
+
+	    std::vector<Epetra_SerialDenseMatrix> & side_matrices = c->second;
+
+	    if ( side_matrices.size()==3 )
+	      fluidfluidcoupling = true;
+
+
+	    if(fluidfluidcoupling)
+	    {
+	        Epetra_SerialDenseMatrix & C_uiu  = side_matrices[0];
+	        Epetra_SerialDenseMatrix & C_uui  = side_matrices[1];
+	        Epetra_SerialDenseMatrix & rhC_ui = side_matrices[2];
+
+	        std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c2 = Cuiui_coupling.find( sid );
+	        std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = c2->second;
+	        Epetra_SerialDenseMatrix & eleGsui = Cuiui_matrices[0];
+	        Epetra_SerialDenseMatrix & eleGuis = Cuiui_matrices[1];
+	        Epetra_SerialDenseMatrix  eleGuisKssInv;
+
+	        si = XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleGsui,eleGuis,side_xyze);
+	    }
+	    else
+	    {
+	        si = XFLUID::SideInterface<distype>::Impl(side,side_xyze);
+	    }
+
+	    side_impl[sid] = si;
+
+	    // get velocity at integration point of boundary dis
+	    si->eivel(cutdis,"ivelnp",cutla[0].lm_);
+	    si->addeidisp(cutdis,"idispnp",cutla[0].lm_,side_xyze);
+
+	    // loop gausspoints
+	    for ( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=cutintpoints.begin();
+	          i!=cutintpoints.end();
+	          ++i )
+	    {
+	      const DRT::UTILS::GaussIntegration & gi = *i;
+	      //const GEO::CUT::BoundaryCell & bc = *bcs[i - cutintpoints.begin()];
+
+	      //gi.Print();
+
+	      for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
+	      {
+	        const LINALG::Matrix<2,1> eta( iquad.Point() );
+
+	        double drs = 0;
+
+	        si->Evaluate(eta,x_side,normal,drs);
+
+
+
+	        const double fac = drs*iquad.Weight();
+
+	        // find element local position of gauss point at interface
+	        GEO::CUT::Position<distype> pos( xyze_, x_side );
+	        pos.Compute();
+	        const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+
+	        // evaluate shape functions
+	        DRT::UTILS::shape_function<distype>( rst, funct_ );
+
+	        // evaluate shape functions and derivatives at integration point
+//	        EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+
+	        DRT::UTILS::shape_function_deriv1<distype>(rst,deriv_);
+	        xjm_.MultiplyNT(deriv_,xyze_);
+	        det_ = xji_.Invert(xjm_);
+
+//	        if (det_ < 1E-16)
+//	          dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det_);
+
+	        // compute global first derivates
+	        derxy_.Multiply(xji_,deriv_);
+
+
+	        // get velocity at integration point
+	        // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+	        velint_.Multiply(evelaf,funct_);
+
+	        LINALG::Matrix<nsd_,1> velint_WDBC(true);
+	        si->get_vel_WeakDBC(velint_WDBC);
+
+//	        get velocity derivatives at integration point
+//	        (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+	        vderxy_.MultiplyNT(evelaf,derxy_);
+
+//	        get pressure at integration point
+//	        (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+	        double press = funct_.Dot(epreaf);
+
+	        const double timefacfac = f3Parameter_->timefac_ * fac;
+
+
+#if 0 // pure Neumann boundary condition
+        // evaluate  Neumann boundary condition
+        LINALG::Matrix<nsd_,1> h_N(true);
+
+        double shear_xx =   0.0;
+        double shear_xy =  30.0;
+        double shear_xz =  60.0;
+
+        double shear_yx =   0.0;
+        double shear_yy =   0.0;
+        double shear_yz =   0.0;
+
+        double shear_zx =   0.0;
+        double shear_zy =   0.0;
+        double shear_zz =   0.0;
+
+        double pres_N= 5.0;
+
+        // attention normal has the wrong sign!!! (is the normal vector normal to the "side")
+        h_N(0) = -pres_N*normal(0) + 2.0*visceff_*(      shear_xx          *normal(0)
+                                                   +0.5*(shear_xy+shear_yx)*normal(1)
+                                                   +0.5*(shear_xz+shear_zx)*normal(2)  );
+        h_N(1) = -pres_N*normal(1) + 2.0*visceff_*( 0.5*(shear_yx+shear_xy)*normal(0)
+                                                   +     shear_yy          *normal(1)
+                                                   +0.5*(shear_yz+shear_zy)*normal(2)  );
+        h_N(2) = -pres_N*normal(2) + 2.0*visceff_*( 0.5*(shear_zx+shear_xz)*normal(0)
+                                                   +0.5*(shear_zy+shear_yz)*normal(1)
+                                                   +     shear_zz          *normal(2)  );
+
+
+        for(int r=0; r<nen_; r++)
+        {
+        	int rind = r*(nsd_+1);
+        	int dVelx=rind+0;
+        	int dVely=rind+1;
+        	int dVelz=rind+2;
+
+        	elevec1_epetra(dVelx,0) += funct_(r)*fac*h_N(0);
+        	elevec1_epetra(dVely,0) += funct_(r)*fac*h_N(1);
+        	elevec1_epetra(dVelz,0) += funct_(r)*fac*h_N(2);
+
+        }
+#endif
+
+	        // funct_ * timefac * fac
+	        LINALG::Matrix<nen_,1> funct_timefacfac(true);
+	        funct_timefacfac.Update(timefacfac,funct_,0.0);
+
+	        // funct_ * timefac * fac * funct_ (dyadic product)
+	        LINALG::Matrix<nen_,nen_> funct_dyad_timefacfac(true);
+	        funct_dyad_timefacfac.MultiplyNT(funct_timefacfac,funct_);
+
+
+
+	               /*              \       /       i     \
+	            - |   v , - Dp*n    | = - |  v ,  p * n   |
+	               \               /       \            */
+
+	        for(int ir = 0; ir<nen_; ir++)
+	        {
+        		int idVelx = ir*(nsd_+1) + 0;
+        		int idVely = ir*(nsd_+1) + 1;
+        		int idVelz = ir*(nsd_+1) + 2;
+
+        		// (v,Dp*n)
+	        	for(int ic =0; ic<nen_; ic++)
+	        	{
+	        		int iPres = ic*(nsd_+1)+3;
+
+	        		elemat1_epetra(idVelx, iPres) += funct_dyad_timefacfac(ir,ic)*normal(Velx);
+	        		elemat1_epetra(idVely, iPres) += funct_dyad_timefacfac(ir,ic)*normal(Vely);
+	        		elemat1_epetra(idVelz, iPres) += funct_dyad_timefacfac(ir,ic)*normal(Velz);
+	        	}
+
+	        	// -(v,p*n)
+	        	double funct_timefacfac_press = funct_timefacfac(ir)*press;
+        		elevec1_epetra(idVelx,0) -= funct_timefacfac_press*normal(Velx);
+        		elevec1_epetra(idVely,0) -= funct_timefacfac_press*normal(Vely);
+        		elevec1_epetra(idVelz,0) -= funct_timefacfac_press*normal(Velz);
+	        }
+
+
+
+					/*              \     /          i  \       /         _   \
+				 - |   q*n , Du      | = |   q*n  , u    |  -  |   q*n  , u    |
+					\               /     \             /       \            */
+
+			 for(int ir = 0; ir<nen_; ir++)
+			 {
+				int idPres = ir*(nsd_+1) + 3;
+
+				// -(q*n,Du)
+				for(int ic =0; ic<nen_; ic++)
+				{
+					int iVelx = ic*(nsd_+1)+0;
+					int iVely = ic*(nsd_+1)+1;
+					int iVelz = ic*(nsd_+1)+2;
+
+					elemat1_epetra(idPres, iVelx) -= funct_dyad_timefacfac(ir,ic)*normal(Velx);
+					elemat1_epetra(idPres, iVely) -= funct_dyad_timefacfac(ir,ic)*normal(Vely);
+					elemat1_epetra(idPres, iVelz) -= funct_dyad_timefacfac(ir,ic)*normal(Velz);
+				}
+
+				// (q*n,u)
+				double velint_normal = velint_.Dot(normal);
+				elevec1_epetra(idPres,0) += funct_timefacfac(ir)*velint_normal;
+
+				// -(q*n,u_DBC)
+				double velint_WDBC_normal = velint_WDBC.Dot(normal);
+				elevec1_epetra(idPres,0) -= funct_timefacfac(ir)*velint_WDBC_normal;
+			 }
+
+
+
+					 /*                      \       /               i     \
+				  - |   v ,  2mu eps(Du)*n    | =   |  v ,  2mu eps(u ) * n |
+					 \                       /       \                    */
+
+			  const double doubled_visceff = 2.0*visceff_;
+
+			  LINALG::Matrix<nen_,1> funct_visc_timefacfac(true);
+			  funct_visc_timefacfac.Update(doubled_visceff, funct_timefacfac, 0.0);
+
+			  for(int ir = 0; ir<nen_; ir++)
+			  {
+				int idVelx = ir*(nsd_+1) + 0;
+				int idVely = ir*(nsd_+1) + 1;
+				int idVelz = ir*(nsd_+1) + 2;
+
+				// -(v, 2mu*eps(Du)*n)
+				for(int ic =0; ic<nen_; ic++)
+				{
+					int iVelx = ic*(nsd_+1)+0;
+					int iVely = ic*(nsd_+1)+1;
+					int iVelz = ic*(nsd_+1)+2;
+
+					//(x,x)
+					elemat1_epetra(idVelx, iVelx) -= funct_visc_timefacfac(ir)*(         normal(Velx)*derxy_(Velx,ic)
+					                                                             + 0.5 * normal(Vely)*derxy_(Vely,ic)
+					                                                             + 0.5 * normal(Velz)*derxy_(Velz,ic)  );
+					//(x,y)
+					elemat1_epetra(idVelx, iVely) -= funct_visc_timefacfac(ir)*    0.5 * normal(Vely)*derxy_(Velx,ic);
+					//(x,z)
+					elemat1_epetra(idVelx, iVelz) -= funct_visc_timefacfac(ir)*    0.5 * normal(Velz)*derxy_(Velx,ic);
+
+					//(y,x)
+					elemat1_epetra(idVely, iVelx) -= funct_visc_timefacfac(ir)*    0.5 * normal(Velx)*derxy_(Vely,ic);
+					//(y,y)
+					elemat1_epetra(idVely, iVely) -= funct_visc_timefacfac(ir)*(   0.5 * normal(Velx)*derxy_(Velx,ic)
+					                                                             +       normal(Vely)*derxy_(Vely,ic)
+					                                                             + 0.5 * normal(Velz)*derxy_(Velz,ic)  );
+					//(y,z)
+					elemat1_epetra(idVely, iVelz) -= funct_visc_timefacfac(ir)*    0.5 * normal(Velz)*derxy_(Vely,ic);
+
+					//(z,x)
+					elemat1_epetra(idVelz, iVelx) -= funct_visc_timefacfac(ir)*    0.5 * normal(Velx)*derxy_(Velz,ic);
+					//(z,y)
+					elemat1_epetra(idVelz, iVely) -= funct_visc_timefacfac(ir)*    0.5 * normal(Vely)*derxy_(Velz,ic);
+					//(z,z)
+					elemat1_epetra(idVelz, iVelz) -= funct_visc_timefacfac(ir)*(   0.5 * normal(Velx)*derxy_(Velx,ic)
+					                                                             + 0.5 * normal(Vely)*derxy_(Vely,ic)
+					                                                             +       normal(Velz)*derxy_(Velz,ic)  );
+				}
+
+				//  (v, 2mu*eps(u)*n)
+				elevec1_epetra(idVelx,0) += funct_visc_timefacfac(ir)*(            vderxy_(Velx,Velx)                      *normal(Velx)
+						                                                 + 0.5 * ( vderxy_(Velx,Vely) + vderxy_(Vely,Velx))*normal(Vely)
+						                                                 + 0.5 * ( vderxy_(Velx,Velz) + vderxy_(Velz,Velx))*normal(Velz)  );
+				elevec1_epetra(idVely,0) += funct_visc_timefacfac(ir)*(    0.5 * ( vderxy_(Vely,Velx) + vderxy_(Velx,Vely))*normal(Velx)
+                                                                         +         vderxy_(Vely,Vely)                      *normal(Vely)
+                                                                         + 0.5 * ( vderxy_(Vely,Velz) + vderxy_(Velz,Vely))*normal(Velz)  );
+				elevec1_epetra(idVelz,0) += funct_visc_timefacfac(ir)*(    0.5 * ( vderxy_(Velz,Velx) + vderxy_(Velx,Velz))*normal(Velx)
+                                                                         + 0.5 * ( vderxy_(Velz,Vely) + vderxy_(Vely,Velz))*normal(Vely)
+                                                                         +         vderxy_(Velz,Velz)                      *normal(Velz)  );
+
+			  }
+
+
+
+				 /*                            \       /                        i   _  \
+			  - |  alpha* 2mu*eps(v)*n , Du     | =   |  alpha* 2mu eps(v)*n , u  - u   |
+				 \                             /       \                              */
+			  // antisymmetric formulation (see Burman, Fernandez 2009)
+			  double alpha = 1.0;
+
+			  for(int ir = 0; ir<nen_; ir++)
+			  {
+				int idVelx = ir*(nsd_+1) + 0;
+				int idVely = ir*(nsd_+1) + 1;
+				int idVelz = ir*(nsd_+1) + 2;
+
+				// -(2mu*eps(v)*n, Du)
+				for(int ic =0; ic<nen_; ic++)
+				{
+					int iVelx = ic*(nsd_+1)+0;
+					int iVely = ic*(nsd_+1)+1;
+					int iVelz = ic*(nsd_+1)+2;
+
+					//(x,x)
+					elemat1_epetra(idVelx, iVelx) -= alpha*funct_visc_timefacfac(ic)*(         normal(Velx)*derxy_(Velx,ir)
+					                                                             + 0.5 * normal(Vely)*derxy_(Vely,ir)
+					                                                             + 0.5 * normal(Velz)*derxy_(Velz,ir)  );
+					//(y,x)
+					elemat1_epetra(idVely, iVelx) -= alpha*funct_visc_timefacfac(ic)*    0.5 * normal(Vely)*derxy_(Velx,ir);
+					//(z,x)
+					elemat1_epetra(idVelz, iVelx) -= alpha*funct_visc_timefacfac(ic)*    0.5 * normal(Velz)*derxy_(Velx,ir);
+
+					//(x,y)
+					elemat1_epetra(idVelx, iVely) -= alpha*funct_visc_timefacfac(ic)*    0.5 * normal(Velx)*derxy_(Vely,ir);
+					//(y,y)
+					elemat1_epetra(idVely, iVely) -= alpha*funct_visc_timefacfac(ic)*(   0.5 * normal(Velx)*derxy_(Velx,ir)
+					                                                             +       normal(Vely)*derxy_(Vely,ir)
+					                                                             + 0.5 * normal(Velz)*derxy_(Velz,ir)  );
+					//(z,y)
+					elemat1_epetra(idVelz, iVely) -= alpha*funct_visc_timefacfac(ic)*    0.5 * normal(Velz)*derxy_(Vely,ir);
+
+					//(x,z)
+					elemat1_epetra(idVelx, iVelz) -= alpha*funct_visc_timefacfac(ic)*    0.5 * normal(Velx)*derxy_(Velz,ir);
+					//(y,z)
+					elemat1_epetra(idVely, iVelz) -= alpha*funct_visc_timefacfac(ic)*    0.5 * normal(Vely)*derxy_(Velz,ir);
+					//(z,z)
+					elemat1_epetra(idVelz, iVelz) -= alpha*funct_visc_timefacfac(ic)*(   0.5 * normal(Velx)*derxy_(Velx,ir)
+					                                                             + 0.5 * normal(Vely)*derxy_(Vely,ir)
+					                                                             +       normal(Velz)*derxy_(Velz,ir)  );
+				}
+				//  (2mu*eps(v)*n, u)
+				double timefacfac_visc = alpha*timefacfac*doubled_visceff;
+				elevec1_epetra(idVelx,0) += timefacfac_visc* (  derxy_(Velx,ir) *       normal(Velx) * velint_(Velx)
+						                                      + derxy_(Vely,ir) * 0.5* (normal(Vely) * velint_(Velx) + normal(Velx)*velint_(Vely))
+						                                      + derxy_(Velz,ir) * 0.5* (normal(Velz) * velint_(Velx) + normal(Velx)*velint_(Velz)));
+
+				elevec1_epetra(idVely,0) += timefacfac_visc* (  derxy_(Velx,ir) * 0.5* (normal(Vely) * velint_(Velx) + normal(Velx)*velint_(Vely))
+						                                      + derxy_(Vely,ir) *       normal(Vely) * velint_(Vely)
+						                                      + derxy_(Velz,ir) * 0.5* (normal(Velz) * velint_(Vely) + normal(Vely)*velint_(Velz)));
+
+				elevec1_epetra(idVelz,0) += timefacfac_visc* (  derxy_(Velx,ir) * 0.5* (normal(Velx) * velint_(Velz) + normal(Velz)*velint_(Velx))
+						                                      + derxy_(Vely,ir) * 0.5* (normal(Vely) * velint_(Velz) + normal(Velz)*velint_(Vely))
+						                                      + derxy_(Velz,ir) *       normal(Velz) * velint_(Velz));
+
+				// -(2mu*eps(v)*n, u_DBC)
+				elevec1_epetra(idVelx,0) -= timefacfac_visc* (  derxy_(Velx,ir) *       normal(Velx) * velint_WDBC(Velx)
+						                                      + derxy_(Vely,ir) * 0.5* (normal(Vely) * velint_WDBC(Velx) + normal(Velx)*velint_WDBC(Vely))
+						                                      + derxy_(Velz,ir) * 0.5* (normal(Velz) * velint_WDBC(Velx) + normal(Velx)*velint_WDBC(Velz)));
+
+				elevec1_epetra(idVely,0) -= timefacfac_visc* (  derxy_(Velx,ir) * 0.5* (normal(Vely) * velint_WDBC(Velx) + normal(Velx)*velint_WDBC(Vely))
+						                                      + derxy_(Vely,ir) *       normal(Vely) * velint_WDBC(Vely)
+						                                      + derxy_(Velz,ir) * 0.5* (normal(Velz) * velint_WDBC(Vely) + normal(Vely)*velint_WDBC(Velz)));
+
+				elevec1_epetra(idVelz,0) -= timefacfac_visc* (  derxy_(Velx,ir) * 0.5* (normal(Velx) * velint_WDBC(Velz) + normal(Velz)*velint_WDBC(Velx))
+						                                      + derxy_(Vely,ir) * 0.5* (normal(Vely) * velint_WDBC(Velz) + normal(Velz)*velint_WDBC(Vely))
+						                                      + derxy_(Velz,ir) *       normal(Velz) * velint_WDBC(Velz));
+			  }
+
+
+
+				 /*                          \        /                       i   _  \
+			    |  gamma*mu/h_K *  v , Du     | =  - |   gamma*mu/h_K *  v , u  - u   |
+				 \                           /        \                             */
+
+			  const double gamma = 100.0;
+			  const double h_K   = 1.0/10.0;
+
+			  const double stab_fac = gamma*visceff_/h_K;
+
+			  for(int ir=0; ir<nen_; ir++)
+			  {
+					int idVelx = ir*(nsd_+1) + 0;
+					int idVely = ir*(nsd_+1) + 1;
+					int idVelz = ir*(nsd_+1) + 2;
+
+					// (stab * v, Du)
+					for(int ic=0; ic<nen_; ic++)
+					{
+						int iVelx = ic*(nsd_+1)+0;
+						int iVely = ic*(nsd_+1)+1;
+						int iVelz = ic*(nsd_+1)+2;
+
+						elemat1_epetra(idVelx, iVelx) += funct_dyad_timefacfac(ir,ic)*stab_fac;
+						elemat1_epetra(idVely, iVely) += funct_dyad_timefacfac(ir,ic)*stab_fac;
+						elemat1_epetra(idVelz, iVelz) += funct_dyad_timefacfac(ir,ic)*stab_fac;
+					}
+
+					// -(stab * v, u)
+					elevec1_epetra(idVelx,0) -= funct_timefacfac(ir)*stab_fac*velint_(Velx);
+					elevec1_epetra(idVely,0) -= funct_timefacfac(ir)*stab_fac*velint_(Vely);
+					elevec1_epetra(idVelz,0) -= funct_timefacfac(ir)*stab_fac*velint_(Velz);
+
+					// +(stab * v, u_DBC)
+					elevec1_epetra(idVelx,0) += funct_timefacfac(ir)*stab_fac*velint_WDBC(Velx);
+					elevec1_epetra(idVely,0) += funct_timefacfac(ir)*stab_fac*velint_WDBC(Vely);
+					elevec1_epetra(idVelz,0) += funct_timefacfac(ir)*stab_fac*velint_WDBC(Velz);
+			  }
+
+
+
+#if 1
+			  // convective stabilization
+				 /*                           \        /                       i   _     \
+			    |  gamma/h_K *  v*n , Du*n     | =  - |   gamma/h_K *  v*n , (u  - u)*n   |
+				 \                            /        \                                */
+
+			  const double gamma_conv = 10.0;
+
+			  const double stab_fac_conv = gamma_conv/h_K;
+
+			  for(int ir=0; ir<nen_; ir++)
+			  {
+					int idVelx = ir*(nsd_+1) + 0;
+					int idVely = ir*(nsd_+1) + 1;
+					int idVelz = ir*(nsd_+1) + 2;
+
+					// (stab * v, Du)
+					for(int ic=0; ic<nen_; ic++)
+					{
+						int iVelx = ic*(nsd_+1)+0;
+						int iVely = ic*(nsd_+1)+1;
+						int iVelz = ic*(nsd_+1)+2;
+
+						elemat1_epetra(idVelx, iVelx) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Velx)*normal(Velx);
+						elemat1_epetra(idVelx, iVely) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Velx)*normal(Vely);
+						elemat1_epetra(idVelx, iVelz) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Velx)*normal(Velz);
+
+						elemat1_epetra(idVely, iVelx) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Vely)*normal(Velx);
+						elemat1_epetra(idVely, iVely) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Vely)*normal(Vely);
+						elemat1_epetra(idVely, iVelz) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Vely)*normal(Velz);
+
+						elemat1_epetra(idVelz, iVelx) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Velz)*normal(Velx);
+						elemat1_epetra(idVelz, iVely) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Velz)*normal(Vely);
+						elemat1_epetra(idVelz, iVelz) += funct_dyad_timefacfac(ir,ic)*stab_fac_conv*normal(Velz)*normal(Velz);
+					}
+
+					double velint_normal = velint_.Dot(normal);
+
+					// -(stab * v*n, u*n)
+					elevec1_epetra(idVelx) -= funct_timefacfac(ir)*normal(Velx)*stab_fac_conv*velint_normal;
+					elevec1_epetra(idVely) -= funct_timefacfac(ir)*normal(Vely)*stab_fac_conv*velint_normal;
+					elevec1_epetra(idVelz) -= funct_timefacfac(ir)*normal(Velz)*stab_fac_conv*velint_normal;
+
+
+					double velint_WDBC_normal = velint_WDBC.Dot(normal);
+					// +(stab * v*n, u_DBC*n)
+					elevec1_epetra(idVelx) += funct_timefacfac(ir)*normal(Velx)*stab_fac_conv*velint_WDBC_normal;
+					elevec1_epetra(idVely) += funct_timefacfac(ir)*normal(Vely)*stab_fac_conv*velint_WDBC_normal;
+					elevec1_epetra(idVelz) += funct_timefacfac(ir)*normal(Velz)*stab_fac_conv*velint_WDBC_normal;
+			  }
+#endif
+
+	      }
+	    }
+	  }
+
+
+}
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <>
+void Fluid3Impl<DRT::Element::tri3>::ElementXfemInterfaceNitsche(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+  //std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
+  )
+{
+  dserror( "distype not supported" );
+}
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <>
+void Fluid3Impl<DRT::Element::tri6>::ElementXfemInterfaceNitsche(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+//  std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
+  )
+{
+  dserror( "distype not supported" );
+}
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <>
+void Fluid3Impl<DRT::Element::quad4>::ElementXfemInterfaceNitsche(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+//  std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
+  )
+{
+  dserror( "distype not supported" );
+}
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <>
+void Fluid3Impl<DRT::Element::quad8>::ElementXfemInterfaceNitsche(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+  //std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
+  )
+{
+  dserror( "distype not supported" );
+}
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <>
+void Fluid3Impl<DRT::Element::quad9>::ElementXfemInterfaceNitsche(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+  //std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
+  )
+{
+  dserror( "distype not supported" );
+}
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <>
+void Fluid3Impl<DRT::Element::nurbs9>::ElementXfemInterfaceNitsche(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+//  std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
+  )
+{
+  dserror( "distype not supported" );
+}
+
+
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void Fluid3Impl<distype>::ElementXfemInterfaceNeumann(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
+  )
+{
+	  //----------------------------------------------------------------------------
+	  //                         ELEMENT GEOMETRY
+	  //----------------------------------------------------------------------------
+
+	  // get node coordinates
+	  GEO::fillInitialPositionArray< distype, nsd_, LINALG::Matrix<nsd_,nen_> >( ele, xyze_ );
+
+	  LINALG::Matrix<nsd_,nen_> evelaf(true);
+	  LINALG::Matrix<nen_,1> epreaf(true);
+	  ExtractValuesFromGlobalVector(dis, lm, *rotsymmpbc_, &evelaf, &epreaf, "velaf");
+
+
+	  // integrate surface
+
+	  DRT::Element::LocationArray cutla( 1 );
+
+	  LINALG::Matrix<3,1> normal;
+	  LINALG::Matrix<3,1> x_side;
+
+	  bool fluidfluidcoupling = false;
+
+	  std::map<int, Teuchos::RCP<XFLUID::SideInterface<distype> > > side_impl;
+	  Teuchos::RCP<XFLUID::SideInterface<distype> > si;
+
+	  // find all the intersecting elements of actele
+	  std::set<int> begids;
+	  for (std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
+	       bc!=bcells.end(); ++bc )
+	  {
+	    int sid = bc->first;
+	    begids.insert(sid);
+	  }
+
+	  std::map<int, std::vector<Epetra_SerialDenseMatrix> > Cuiui_coupling;
+
+	  // lm vector of all intersecting elements
+	  std::vector<int> patchelementslmv;
+	  std::vector<int> patchelementslmowner;
+	  for (std::set<int>::const_iterator bgid=begids.begin(); bgid!=begids.end(); ++bgid)
+	  {
+	    DRT::Element * side = cutdis.gElement(*bgid);
+	    vector<int> patchlm;
+	    vector<int> patchlmowner;
+	    vector<int> patchlmstride;
+	    side->LocationVector(cutdis, patchlm, patchlmowner, patchlmstride);
+
+	    patchelementslmv.reserve( patchelementslmv.size() + patchlm.size());
+	    patchelementslmv.insert(patchelementslmv.end(), patchlm.begin(), patchlm.end());
+
+	    patchelementslmowner.reserve( patchelementslmowner.size() + patchlmowner.size());
+	    patchelementslmowner.insert( patchelementslmowner.end(), patchlmowner.begin(), patchlmowner.end());
+
+	    std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = Cuiui_coupling[*bgid];
+
+	    Cuiui_matrices.resize(2);
+	    Cuiui_matrices[0].Reshape(nen_*6,patchlm.size()); //Gsui
+	    Cuiui_matrices[1].Reshape(patchlm.size(),nen_*6); //Guis
+	  }
+
+	  Epetra_SerialDenseMatrix Gsui(nen_*6,patchelementslmv.size());
+	  Epetra_SerialDenseMatrix Guis(patchelementslmv.size(),nen_*6);
+	  Epetra_SerialDenseMatrix InvKss(nen_*6,nen_*6);
+	  Epetra_SerialDenseMatrix GuisInvKss(patchelementslmv.size(),nen_*6);
+
+	  // map of side-element id and Guass points
+	  for ( std::map<int, std::vector<DRT::UTILS::GaussIntegration> >::const_iterator i=bintpoints.begin();
+	        i!=bintpoints.end();
+	        ++i )
+	  {
+	    int sid = i->first;
+	    const std::vector<DRT::UTILS::GaussIntegration> & cutintpoints = i->second;
+
+	    std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator j = bcells.find( sid );
+	    if ( j==bcells.end() )
+	      dserror( "missing boundary cell" );
+
+	    const std::vector<GEO::CUT::BoundaryCell*> & bcs = j->second;
+	    if ( bcs.size()!=cutintpoints.size() )
+	      dserror( "boundary cell integration rules mismatch" );
+
+	    DRT::Element * side = cutdis.gElement( sid );
+	    side->LocationVector(cutdis,cutla,false);
+
+	    const int numnodes = side->NumNode();
+	    DRT::Node ** nodes = side->Nodes();
+	    Epetra_SerialDenseMatrix side_xyze( 3, numnodes );
+	    for ( int i=0; i<numnodes; ++i )
+	    {
+	      const double * x = nodes[i]->X();
+	      std::copy( x, x+3, &side_xyze( 0, i ) );
+	    }
+
+	    std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c = side_coupling.find( sid );
+
+	    std::vector<Epetra_SerialDenseMatrix> & side_matrices = c->second;
+
+	    if ( side_matrices.size()==3 )
+	      fluidfluidcoupling = true;
+
+
+	    if(fluidfluidcoupling)
+	    {
+	        Epetra_SerialDenseMatrix & C_uiu  = side_matrices[0];
+	        Epetra_SerialDenseMatrix & C_uui  = side_matrices[1];
+	        Epetra_SerialDenseMatrix & rhC_ui = side_matrices[2];
+
+	        std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c2 = Cuiui_coupling.find( sid );
+	        std::vector<Epetra_SerialDenseMatrix> & Cuiui_matrices = c2->second;
+	        Epetra_SerialDenseMatrix & eleGsui = Cuiui_matrices[0];
+	        Epetra_SerialDenseMatrix & eleGuis = Cuiui_matrices[1];
+	        Epetra_SerialDenseMatrix  eleGuisKssInv;
+
+	        si = XFLUID::SideInterface<distype>::Impl(side,C_uiu,C_uui,rhC_ui,eleGsui,eleGuis,side_xyze);
+	    }
+	    else
+	    {
+	        si = XFLUID::SideInterface<distype>::Impl(side,side_xyze);
+	    }
+
+	    side_impl[sid] = si;
+
+	    // get velocity at integration point of boundary dis
+	    si->eivel(cutdis,"ivelnp",cutla[0].lm_);
+	    si->addeidisp(cutdis,"idispnp",cutla[0].lm_,side_xyze);
+
+	    // loop gausspoints
+	    for ( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=cutintpoints.begin();
+	          i!=cutintpoints.end();
+	          ++i )
+	    {
+	      const DRT::UTILS::GaussIntegration & gi = *i;
+	      //const GEO::CUT::BoundaryCell & bc = *bcs[i - cutintpoints.begin()];
+
+	      //gi.Print();
+
+	      for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
+	      {
+	        const LINALG::Matrix<2,1> eta( iquad.Point() );
+
+	        double drs = 0;
+
+	        si->Evaluate(eta,x_side,normal,drs);
+
+
+
+	        const double fac = drs*iquad.Weight();
+
+	        // find element local position of gauss point at interface
+	        GEO::CUT::Position<distype> pos( xyze_, x_side );
+	        pos.Compute();
+	        const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+
+	        // evaluate shape functions
+	        DRT::UTILS::shape_function<distype>( rst, funct_ );
+
+
+//	        // get velocity at integration point
+//	        // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+//	        velint_.Multiply(evelaf,funct_);
+//
+//
+////	        get pressure at integration point
+////	        (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+//	        double press = funct_.Dot(epreaf);
+
+//	        const double timefacfac = f3Parameter_->timefac_ * fac;
+
+
+	        // pure Neumann boundary condition
+	        // evaluate  Neumann boundary condition
+        LINALG::Matrix<nsd_,1> h_N(true);
+
+        double shear_xx =   0.0;
+        double shear_xy =  30.0;
+        double shear_xz =  60.0;
+
+        double shear_yx =   0.0;
+        double shear_yy =   0.0;
+        double shear_yz =   0.0;
+
+        double shear_zx =   0.0;
+        double shear_zy =   0.0;
+        double shear_zz =   0.0;
+
+        double pres_N= 5.0;
+
+        // attention normal has the wrong sign!!! (is the normal vector normal to the "side")
+        h_N(0) = -pres_N*normal(0) + 2.0*visceff_*(      shear_xx          *normal(0)
+                                                   +0.5*(shear_xy+shear_yx)*normal(1)
+                                                   +0.5*(shear_xz+shear_zx)*normal(2)  );
+        h_N(1) = -pres_N*normal(1) + 2.0*visceff_*( 0.5*(shear_yx+shear_xy)*normal(0)
+                                                   +     shear_yy          *normal(1)
+                                                   +0.5*(shear_yz+shear_zy)*normal(2)  );
+        h_N(2) = -pres_N*normal(2) + 2.0*visceff_*( 0.5*(shear_zx+shear_xz)*normal(0)
+                                                   +0.5*(shear_zy+shear_yz)*normal(1)
+                                                   +     shear_zz          *normal(2)  );
+
+
+        for(int r=0; r<nen_; r++)
+        {
+        	int rind = r*(nsd_+1);
+        	int dVelx=rind+0;
+        	int dVely=rind+1;
+        	int dVelz=rind+2;
+
+        	elevec1_epetra(dVelx,0) += funct_(r)*fac*h_N(0);
+        	elevec1_epetra(dVely,0) += funct_(r)*fac*h_N(1);
+        	elevec1_epetra(dVelz,0) += funct_(r)*fac*h_N(2);
+
+        }
+
+
+
+	      }
+	    }
+	  }
+
+
+}
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <>
+void Fluid3Impl<DRT::Element::tri3>::ElementXfemInterfaceNeumann(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+  //std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
+  )
+{
+  dserror( "distype not supported" );
+}
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <>
+void Fluid3Impl<DRT::Element::tri6>::ElementXfemInterfaceNeumann(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+//  std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
+  )
+{
+  dserror( "distype not supported" );
+}
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <>
+void Fluid3Impl<DRT::Element::quad4>::ElementXfemInterfaceNeumann(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+//  std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
+  )
+{
+  dserror( "distype not supported" );
+}
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <>
+void Fluid3Impl<DRT::Element::quad8>::ElementXfemInterfaceNeumann(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+  //std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
+  )
+{
+  dserror( "distype not supported" );
+}
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <>
+void Fluid3Impl<DRT::Element::quad9>::ElementXfemInterfaceNeumann(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+  //std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
+  )
+{
+  dserror( "distype not supported" );
+}
+
+/*--------------------------------------------------------------------------------
+ *--------------------------------------------------------------------------------*/
+template <>
+void Fluid3Impl<DRT::Element::nurbs9>::ElementXfemInterfaceNeumann(
+  DRT::ELEMENTS::Fluid3 * ele,
+  DRT::Discretization & dis,
+  const std::vector<int> & lm,
+  const DRT::UTILS::GaussIntegration & intpoints,
+  DRT::Discretization & cutdis,
+  const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+  const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & bintpoints,
+  std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+//  std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
+  Teuchos::ParameterList&    params,
+  Epetra_SerialDenseMatrix&  elemat1_epetra,
+  Epetra_SerialDenseVector&  elevec1_epetra,
+  Epetra_SerialDenseMatrix&  Cuiui
+  )
+{
+  dserror( "distype not supported" );
+}
+
   }
 }
+
+
 
 
 /*----------------------------------------------------------------------*

@@ -3743,11 +3743,16 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   DoubleParameter("boundaryRatioLimit",1.0e-4,"don't enrich element, when less than this area fraction is within this element",&xfem_general);
 
   setStringToIntegralParameter<int>("EMBEDDED_BOUNDARY","BoundaryTypeSigma","how to treat the interface",
-                               tuple<std::string>("BoundaryTypeSigma","BoundaryTypeTauPressure"),
+                               tuple<std::string>("BoundaryTypeSigma","BoundaryTypeTauPressure", "BoundaryTypeNitsche", "BoundaryTypeNeumann"),
                                tuple<int>(
                                    INPAR::XFEM::BoundaryTypeSigma,
-                                   INPAR::XFEM::BoundaryTypeTauPressure),
+                                   INPAR::XFEM::BoundaryTypeTauPressure,
+                                   INPAR::XFEM::BoundaryTypeNitsche,
+                                   INPAR::XFEM::BoundaryTypeNeumann
+                                   ),
                                &xfem_general);
+
+  IntParameter("BOUNDARY_FUNCT_NO",-1,"funct no for WDBC or Neumann Condition at embedded boundary/interface",&xfem_general);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fluidsolver = list->sublist("FLUID SOLVER",false,"");
