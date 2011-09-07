@@ -27,20 +27,46 @@ Maintainer: Peter Gamnitzer
 #define DRT_APPLY_NURBS_INITIAL_CONDITION_H
 
 #include "Epetra_Vector.h"
-#include "Teuchos_RefCountPtr.hpp"
-#include "../drt_lib/drt_function.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
-#include "../linalg/linalg_solver.H"
-#include "../linalg/linalg_utils.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "Teuchos_RCP.hpp"
+#include "Teuchos_ParameterList.hpp"
+
+//forward declarations
+namespace DRT
+{
+class Discretization;
+}
+namespace LINALG
+{
+class Solver;
+}
 
 namespace DRT
 {
 
 namespace NURBS
 {
+
+/*----------------------------------------------------------------------*/
+/*!
+\brief A service method allowing the application of initial conditions
+       for nurbs discretisations. Recommended version with separate
+       solver allocation
+
+\param dis          (i) the discretisation
+\param solverparams (i) a list with solver parameters
+\param startfuncno  (i) the number of the startfunction defining
+                       the initial field (i.e. u_0(x))
+\param initialvals  (o) the initial field on output (i.e. u_cp)
+
+\date 08/11
+*/
+void apply_nurbs_initial_condition(
+  DRT::Discretization&        dis         ,
+  FILE*                       outfile,
+  const Teuchos::ParameterList&     solverparams,
+  const int                   startfuncno ,
+  Teuchos::RCP<Epetra_Vector> initialvals );
+
 /*----------------------------------------------------------------------*/
 /*!
 \brief A service method allowing the application of initial conditions
@@ -93,7 +119,7 @@ This is equivalent to the solution of the following linear system:
 
 \date 04/09
 */
-  void apply_nurbs_initial_condition(
+  void apply_nurbs_initial_condition_solve(
     DRT::Discretization&        dis         ,
     LINALG::Solver&             solver      ,
     const int                   startfuncno ,

@@ -25,8 +25,6 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Operator.h>
 
 #include "../drt_fluid/fluidimplicitintegration.H"
-#include "../drt_fluid/fluidresulttest.H"
-#include "../drt_lib/drt_utils.H"
 
 #include "adapter_fluid.H"
 

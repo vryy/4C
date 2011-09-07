@@ -15,6 +15,67 @@ Maintainer: Peter Gamnitzer
 #ifdef CCADISCRET
 #include "drt_apply_nurbs_initial_condition.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_function.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_nurbs_discret/drt_nurbs_discret.H"
+#include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
+#include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+
+
+
+/*----------------------------------------------------------------------*/
+/*!
+   A service method allowing the application of initial conditions
+   for nurbs discretisations. recommended version with allocation
+   of a separate solver!
+*/
+/*----------------------------------------------------------------------*/
+void DRT::NURBS::apply_nurbs_initial_condition(
+  DRT::Discretization&        dis         ,
+  FILE*                       outfile,
+  const Teuchos::ParameterList&     solverparams,
+  const int                   startfuncno ,
+  Teuchos::RCP<Epetra_Vector> initialvals )
+{
+  // try to cast dis to a nurbs discretisation --- if possible, proceed
+  // with setting initial conditions. Otherwise return.
+  DRT::NURBS::NurbsDiscretization* nurbsdis
+  = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&dis);
+
+  if(nurbsdis==NULL)
+  {
+    return;
+  }
+
+  // Owing to experience a very accurate solution has to be enforced here!
+  // Thus, we allocate an own solver with VERY strict tolerance!
+  ParameterList p(solverparams);
+  const double origtol = p.get<double>("AZTOL");
+  const double newtol  = 1.0e-11;
+  p.set("AZTOL",newtol);
+
+  RCP<LINALG::Solver> lssolver =
+      rcp(new LINALG::Solver(p,
+          dis.Comm(),
+          outfile));
+  dis.ComputeNullSpaceIfNecessary(lssolver->Params());
+
+  // get the processor ID from the communicator
+  const int myrank  = dis.Comm().MyPID();
+
+  if(myrank==0)
+    cout<<"\nSolver tolerance for least squares problem set to "<<newtol<<" (orig: "<<origtol<<")";
+
+  apply_nurbs_initial_condition_solve(
+      dis  ,
+      *lssolver  ,
+      startfuncno,
+      initialvals);
+  return;
+}
+
 
 /*----------------------------------------------------------------------*/
 /*!
@@ -22,7 +83,7 @@ Maintainer: Peter Gamnitzer
                     for nurbs discretisations.
 */
 /*----------------------------------------------------------------------*/
-void DRT::NURBS::apply_nurbs_initial_condition(
+void DRT::NURBS::apply_nurbs_initial_condition_solve(
   DRT::Discretization&        dis         ,
   LINALG::Solver&             solver      ,
   const int                   startfuncno ,
