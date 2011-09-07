@@ -3565,33 +3565,16 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       }
     }
 
-    // for NURBS discretizations we have to solve a least squares problem!
-    if(dynamic_cast<DRT::NURBS::NurbsDiscretization*>(discret_.get())!=NULL)
-    {
-      // Owing to experience a very accurate solution has to be enforced here!
-      // Thus, we allocate an own solver with VERY strict tolerance!
-      ParameterList p(DRT::Problem::Instance()->FluidSolverParams());
-      const double origtol = p.get<double>("AZTOL");
-      const double newtol  = 1.0e-11;
-      p.set("AZTOL",newtol);
-
-      RCP<LINALG::Solver> lssolver =
-          rcp(new LINALG::Solver(p,
-              discret_->Comm(),
-              DRT::Problem::Instance()->ErrorFile()->Handle()));
-      discret_->ComputeNullSpaceIfNecessary(lssolver->Params());
-
-      if(myrank_ ==0)
-        cout<<"\nSolver tolerance for least squares problem set to "<<newtol<<" (orig: "<<origtol<<")";
-
+    // for NURBS discretizations we have to solve a least squares problem,
+    // with high accuracy! (do nothing for Lagrangian polynomials)
       DRT::NURBS::apply_nurbs_initial_condition(
         *discret_  ,
-        *lssolver  ,
+        DRT::Problem::Instance()->ErrorFile()->Handle(),
+        DRT::Problem::Instance()->FluidSolverParams(),
         startfuncno,
         velnp_     );
-    }
 
-    // initialize veln_ as well.
+    // initialize veln_ as well. That's what we actually want to do here!
     veln_->Update(1.0,*velnp_ ,0.0);
 
     // add random perturbation of certain percentage to function

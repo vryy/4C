@@ -41,10 +41,6 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_scatra.H"
 
-//TODO: move to cpp??
-#include "../drt_adapter/adapter_coupling_mortar.H"
-#include "../linalg/linalg_mapextractor.H"
-
 
 //forward declarations
 class PeriodicBoundaryConditions;

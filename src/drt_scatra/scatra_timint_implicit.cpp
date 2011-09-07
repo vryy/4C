@@ -1846,31 +1846,14 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       }
     }
 
-    // for NURBS discretizations we have to solve a least squares problem!
-    if(dynamic_cast<DRT::NURBS::NurbsDiscretization*>(discret_.get())!=NULL)
-    {
-      // Owing to experience a very accurate solution has to be enforced here!
-      // Thus, we allocate an own solver with VERY strict tolerance!
-      ParameterList p(DRT::Problem::Instance()->ScalarTransportFluidSolverParams());
-      const double origtol = p.get<double>("AZTOL");
-      const double newtol  = 1.0e-11;
-      p.set("AZTOL",newtol);
-
-      RCP<LINALG::Solver> lssolver =
-          rcp(new LINALG::Solver(p,
-              discret_->Comm(),
-              errfile_));
-      discret_->ComputeNullSpaceIfNecessary(lssolver->Params());
-
-      if(myrank_ ==0)
-        cout<<"\nSolver tolerance for least squares problem set to "<<newtol<<" (orig: "<<origtol<<")";
-
-      DRT::NURBS::apply_nurbs_initial_condition(
-          *discret_  ,
-          *lssolver  ,
-          startfuncno,
-          phin_     );
-    }
+    // for NURBS discretizations we have to solve a least squares problem,
+    // with high accuracy! (do nothing for Lagrangian polynomials)
+    DRT::NURBS::apply_nurbs_initial_condition(
+        *discret_  ,
+        errfile_,
+        DRT::Problem::Instance()->ScalarTransportFluidSolverParams(),
+        startfuncno,
+        phin_     );
 
     // initialize also the solution vector. These values are a pretty good guess for the
     // solution after the first time step (much better than starting with a zero vector)
