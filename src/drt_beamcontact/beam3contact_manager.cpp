@@ -878,16 +878,10 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
   // STEP 1: OUTPUT OF TIME STEP INDEX
   std::ostringstream filename;
   filename << "o/gmsh_output/";
-  if (timestep<10)
-    filename << "beams_t0000" << timestep;
-  else if (timestep<100) 
-    filename << "beams_t000" << timestep;
-  else if (timestep<1000)
-    filename << "beams_t00" << timestep;
-  else if (timestep<10000)
-    filename << "beams_t0" << timestep;
-  else /*(timestep>=10000)*/
-    dserror("ERROR: Gmsh output implemented for max 9.999 time steps");
+  if (timestep<1000000)
+    filename << "beams_t" << std::setw(6) << setfill('0') << timestep;
+  else /*(timestep>=1000000)*/
+    dserror("ERROR: Gmsh output implemented for max 999.999 time steps");
   
   // STEPS 2/3: OUTPUT OF UZAWA AND NEWTON STEP INDEX
   // (for the end of time step output, indicated by 99, omit this)
