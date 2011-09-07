@@ -356,7 +356,7 @@ void Beam3ContactOctTree::extendedAABB(std::map<int, LINALG::Matrix<3,1> >&  cur
   //Test: print allAABB->...................
   //cout << "\n\tTest extendedAABB" << endl;
 
-  //Visualization print allAABB to .dat-file and plot with Matlab....................
+  /*/Visualization print allAABB to .dat-file and plot with Matlab....................
   std::ostringstream filename;
   filename << "extendedAABB.dat";
   FILE* fp = NULL;
@@ -374,7 +374,7 @@ void Beam3ContactOctTree::extendedAABB(std::map<int, LINALG::Matrix<3,1> >&  cur
   }
   //write content into file and close it
   fprintf(fp, myfile.str().c_str());
-  fclose(fp);
+  fclose(fp);*/
 
   double bbgentimelocal = Teuchos::Time::wallTime() - t_AABB;
   double bbgentimeglobal = 0.0;
@@ -471,7 +471,7 @@ void Beam3ContactOctTree::locateAll(RCP<Epetra_MultiVector> allAABB,
   fclose(fp);*/
 
 
-  // For Octree Visualization: Write OctreeLimits to.dat-file OctreeLimits...................
+  /*/ For Octree Visualization: Write OctreeLimits to.dat-file OctreeLimits...................
   std::ostringstream filename3;
   filename3 << "OctreeLimits.dat";
   FILE* fp3 = NULL;
@@ -489,7 +489,7 @@ void Beam3ContactOctTree::locateAll(RCP<Epetra_MultiVector> allAABB,
       }
    //write content into file and close it
    fprintf(fp3, myfile3.str().c_str());
-   fclose(fp3);
+   fclose(fp3);*/
 
    if(!searchdis_.Comm().MyPID())
      cout << "\nOctree building time:\t\t" << Teuchos::Time::wallTime() - t_octree<< " seconds" << endl;

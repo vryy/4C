@@ -249,7 +249,7 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
 
 
   if (abs(XiContact[0])< (1.0 + XIETATOL) && abs(XiContact[1]) < (1.0 + XIETATOL) && elementscolinear == false)
-    { cout << "Auswertung von Paar:" << element1_->Id() << "/" << element2_->Id() << endl;
+    { //cout << "Auswertung von Paar:" << element1_->Id() << "/" << element2_->Id() << endl;
 
     }
   else
@@ -548,7 +548,7 @@ void CONTACT::Beam3contact::EvaluateNewtonF(vector<double>& f, const vector<doub
         f[0] += (x1[i]-x2[i])*t1[i] / norm;
         f[1] += (x2[i]-x1[i])*t2[i] / norm;
       }
-      cout << "smoothed tangent field" << endl;
+      //cout << "smoothed tangent field" << endl;
   }
 
 
@@ -1123,7 +1123,7 @@ void CONTACT::Beam3contact::ComputeNormal(vector<double>& normal, double& gap,
     double& norm, const vector<double>& x1, const vector<double>& x2)
 {
 
-    cout << "Compute Normal" << endl;
+    //cout << "Compute Normal" << endl;
 
   // compute non-unit normal
   for (int i=0;i<NDIM;i++) normal[i] = x1[i]-x2[i];    
@@ -1202,27 +1202,31 @@ void CONTACT::Beam3contact::ComputeGap(double& gap, const double& norm)
 
   // comute gap to be returned
   gap = norm - radius_ele1 - radius_ele2;
-  cout << "\n***\nPaar: " << element1_->Id() << "/" << element2_->Id() << "\n***" << endl;
+  //cout << "\n***\nPaar: " << element1_->Id() << "/" << element2_->Id() << "\n***" << endl;
   //cout << "effektiver Radius: " << radius_ele1 + radius_ele2 << "\n";
 
-  cout << "old gap:" << gap << "\n";
+  //cout << "old gap:" << gap << "\n";
 
-  cout << "normalvector_old:" << normal_old_[0] << ", " << normal_old_[1] << ", " << normal_old_[2] << "\n";
-  cout << "normalvector_new:" << normal_[0] << ", " << normal_[1] << ", " << normal_[2] << "\n";
-  cout << "Xi/Eta:" << xicontact_[0] << " / " << xicontact_[1] << "\n";
+  //cout << "normalvector_old:" << normal_old_[0] << ", " << normal_old_[1] << ", " << normal_old_[2] << "\n";
+  //cout << "normalvector_new:" << normal_[0] << ", " << normal_[1] << ", " << normal_[2] << "\n";
+  //cout << "Xi/Eta:" << xicontact_[0] << " / " << xicontact_[1] << "\n";
 
   double gapnew = 0;
 
+
+
+  if (ngf_)
+  {
   double normalold_normal=0;
   normalold_normal = Computeskalar();
-  if ((normalold_normal*normalold_normal) < NORMALTOL) dserror("ERROR: Rotation to large! --> Choose smaller Time step!");
+  if ((normalold_normal*normalold_normal) < NORMALTOL) dserror("ERROR: Rotation too large! --> Choose smaller Time step!");
   gapnew = sgn(normalold_normal)*norm - radius_ele1 - radius_ele2;
-
+  }
 
   oldgap_ = gap;
 
   if (ngf_) gap = gapnew;
-  cout << "new gap:" << gap << "\n";
+  //cout << "new gap:" << gap << "\n";
 
 
 
@@ -2412,11 +2416,11 @@ void CONTACT::Beam3contact::FDCheckNewtonCPP(const int& numnode1, const int& num
 
 
 
-                    cout << "f: " << f[0] << "," << f[1] << endl;
+                    //cout << "f: " << f[0] << "," << f[1] << endl;
 
-                    cout << "f1: " << f1[0] << "," << f1[1] << endl;
+                    //cout << "f1: " << f1[0] << "," << f1[1] << endl;
 
-                    cout << "f2: " << f2[0] << "," << f2[1] << endl;
+                    //cout << "f2: " << f2[0] << "," << f2[1] << endl;
 
                     dfFD(0,0) = (f1[0]-f[0])/delta;
                     dfFD(1,0) = (f1[1]-f[1])/delta;
@@ -2424,7 +2428,7 @@ void CONTACT::Beam3contact::FDCheckNewtonCPP(const int& numnode1, const int& num
                     dfFD(1,1) = (f2[1]-f[1])/delta;
 
 
-    cout << "FD-Check der lokalen Jakobimatrix für CCP: " << dfFD << endl;
+   // cout << "FD-Check der lokalen Jakobimatrix für CCP: " << dfFD << endl;
 
   return;
 }

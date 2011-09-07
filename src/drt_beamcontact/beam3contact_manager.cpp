@@ -203,7 +203,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
 
   // flag for octree search
   // (switch ON / OFF here)
-//#define OCTTREESEARCH
+#define OCTTREESEARCH
   
 #ifdef OCTTREESEARCH
   //**********************************************************************
@@ -236,7 +236,8 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   }
   
   double t_end = Teuchos::Time::wallTime() - t_start;
-  cout << "\nOcttree Search: " << t_end << " seconds\n";
+  if(!pdiscret_.Comm().MyPID())
+  	cout << "\nOcttree Search: " << t_end << " seconds\n";
   
   /*//Print ContactPairs to .dat-file and plot with Matlab....................
   std::ostringstream filename2;
@@ -267,7 +268,8 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   double t_start = Teuchos::Time::wallTime();
   SearchPossibleContactPairs(currentpositions);
   double t_end = Teuchos::Time::wallTime() - t_start;
-  cout << "\nBrute Force Search: " << t_end << " seconds\n";
+  if(!pdiscret_.Comm().MyPID())
+  	cout << "\nBrute Force Search: " << t_end << " seconds\n";
 #endif // #ifdef OCTTREESEARCH
   
   //**********************************************************************
@@ -291,8 +293,8 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   
   // uncomplete stiffness matrix
   stiffmatrix.UnComplete();
-  
-  cout << "We have " << (int)(pairs_.size()) << " pairs at the moment" << endl;
+  if(!pdiscret_.Comm().MyPID())
+  	cout << "We have " << (int)(pairs_.size()) << " pairs at the moment" << endl;
 
   // print current pair vector on the screen
   for (int i=0;i<(int)pairs_.size();++i)
@@ -1102,8 +1104,9 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(const int uzawaiter)
     {
 
       if (pairs_[i]->GetNewGapStatus() == true)
-      { pairs_[i]->InvertNormal();
-        cout << "Penetration to large, choose higher penalty parameter!" << endl;
+      {
+      	pairs_[i]->InvertNormal();
+				cout << "Penetration to large, choose higher penalty parameter!" << endl;
       }
 
       gapvector[j] = pairs_[i]->GetGap();
