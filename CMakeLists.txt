@@ -558,6 +558,7 @@ set(OBJS_INTERSECTION
   src/drt_xfem/xdofmapcreation_parallel_utils.cpp
   src/drt_xfem/xfem_fluiddofset.cpp
   src/drt_xfem/xfem_fluidwizard.cpp
+  src/drt_xfem/xfem_neumann.cpp
   src/drt_geometry/geo_intersection.cpp
   src/drt_combust/combust_interface.cpp
 )

@@ -24,6 +24,7 @@ void XFEM::FluidWizard::Cut(  bool include_inner, const Epetra_Vector & idispcol
 
   const double t_start = Teuchos::Time::wallTime();
 
+  // set a new CutWizard based on the background discretization
   cut_ = Teuchos::rcp( new GEO::CutWizard( backdis_, false, 1 ) );
   cut_->SetFindPositions( positions );
   GEO::CutWizard & cw = *cut_;
@@ -31,6 +32,15 @@ void XFEM::FluidWizard::Cut(  bool include_inner, const Epetra_Vector & idispcol
   std::vector<int> lm;
   std::vector<double> mydisp;
 
+
+  // fill the cutwizard cw with information:
+  // build up the mesh_ (normal background mesh) and the cut_mesh_ (cutter mesh) created by the meshhandle:
+  // DO NOT CHANGE THE ORDER of 1. and 2.
+  // 1. Add CutSides (sides of the cutterdiscretization)
+  //      -> Update the current position of all cutter-nodes dependent on displacement idispcol
+  // 2. Add Elements (elements of the background discretization)
+
+  // 1.
   int numcutelements = cutterdis_.NumMyColElements();
   for ( int lid = 0; lid < numcutelements; ++lid )
   {
@@ -56,14 +66,17 @@ void XFEM::FluidWizard::Cut(  bool include_inner, const Epetra_Vector & idispcol
       LINALG::Matrix<3, 1> disp( &mydisp[0], true );
       LINALG::Matrix<3, 1> x( node.X() );
 
+      // update x-position of cutter node for current time step (update with displacement)
       x.Update( 1, disp, 1 );
 
       std::copy( x.A(), x.A()+3, &xyze( 0, i ) );
     }
 
+    // add the side of the cutter-discretization to the FluidWizard
     cw.AddCutSide( 0, element, xyze );
   }
 
+  // 2. add background elements dependent on bounding box created by the CutSides in 1.
   int numbackelements = backdis_.NumMyColElements();
   for ( int k = 0; k < numbackelements; ++k )
   {
@@ -71,6 +84,7 @@ void XFEM::FluidWizard::Cut(  bool include_inner, const Epetra_Vector & idispcol
     cw.AddElement( element );
   }
 
+  // run the Cut
   cw.Cut( include_inner );
 
   // cleanup
@@ -240,7 +254,7 @@ void XFEM::FluidWizard::CreateDofMap( std::map<int, const std::set<XFEM::FieldEn
   //XFEM::Enrichment::typeVoidFSI;
   //XFEM::Enrichment::typeVoid;
 
-  // XFEM::ElementEnrichmentValues neu machen, weil dort die Entscheidung über
+  // XFEM::ElementEnrichmentValues neu machen, weil dort die Entscheidung ï¿½ber
   // die Position der Anreicherung implizit eingeht.
 
   position_ = Teuchos::rcp( new Epetra_IntVector( *backdis_.NodeColMap() ) );
