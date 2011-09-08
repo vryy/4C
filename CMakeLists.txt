@@ -2333,6 +2333,11 @@ baci_test(w1q4_patch_eas 2 "")
 baci_test(w1q9_dyn_rot_drt_gemm 1 "")
 baci_test(w1q9_dyn_rot_drt_gena 1 "")
 baci_test(womersley_f3 2 "")
+baci_test(xfluid_channel_constWDBC_inclinedCut 1 "")
+baci_test(xfluid_channel_constWDBC_straightCut 1 "")
+baci_test(xfluid_channel_shearWDBC_inclinedCut 1 "")
+baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf 1 "")
+baci_test(xfluid_channel_shearWDBC_inclineddoubleCut_bodyf 1 "")
 
 
 if (D_BEAM3II)

@@ -86,6 +86,7 @@ namespace FLD
       void GmshOutput( DRT::Discretization & discret,
                        DRT::Discretization & cutdiscret,
                        const std::string & name,
+                       int step,
                        int count,
                        Teuchos::RCP<Epetra_Vector> vel );
 
@@ -357,6 +358,11 @@ namespace FLD
 
     enum INPAR::XFEM::BoundaryIntegralType boundIntType_;
     int boundIntFunct_;
+
+    bool gmsh_debug_out_;
+    bool gmsh_sol_out_;
+    bool gmsh_discret_out_;
+    bool gmsh_cut_out_;
 
     Teuchos::RCP<IO::DiscretizationWriter> fluid_output_;
     Teuchos::RCP<IO::DiscretizationWriter> solid_output_;
