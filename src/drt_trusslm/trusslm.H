@@ -307,6 +307,9 @@ public:
   template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
   int EvaluatePTC(ParameterList&            params,
                   Epetra_SerialDenseMatrix& elemat1);
+
+  //!\brief return cross section of the truss
+  const double& CSec() const { return crosssec_;}
   //@}
 
 private:
