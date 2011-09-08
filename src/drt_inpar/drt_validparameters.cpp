@@ -1565,8 +1565,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //Reading whether fixed seed for random numbers should be applied
   setStringToIntegralParameter<int>("CHECKORIENT","No","If chosen crosslinkers are set only after check of orientation of linked filaments",
                                yesnotuple,yesnovalue,&statmech);
-  //Reading whether fixed seed for random numbers should be applied
+  //Gmsh Output switch
   setStringToIntegralParameter<int>("GMSHOUTPUT","No","If chosen gmsh output is generated.",
+                               yesnotuple,yesnovalue,&statmech);
+  setStringToIntegralParameter<int>("GMSHNETSTRUCT","No","If chosen special gmsh visualization for network structure types is generated.",
                                yesnotuple,yesnovalue,&statmech);
   //Number of time steps between two special outputs written
   IntParameter("OUTPUTINTERVALS",1,"Number of time steps between two special outputs written",&statmech);

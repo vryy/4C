@@ -666,8 +666,6 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
   LINALG::Matrix<3,1> center;
   center.PutScalar(periodlength/2);
   GmshOutputBox(0.0, &center, periodlength, &filename);
-  // plot the cog
-  GmshOutputBox(0.75, &cog_, 0.05, &filename);
   // plot crosslink molecule diffusion and (partial) bonding
   GmshOutputCrosslinkDiffusion(0.125, &filename, disrow);
   // finish data section of this view by closing curly brackets
@@ -676,7 +674,8 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
     fp = fopen(filename.str().c_str(), "a");
     std::stringstream gmshfileend;
 
-    if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
+    if(DRT::INPUT::IntegralValue<int>(statmechparams_,"GMSHNETSTRUCT") &&
+    	 DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
     {
 			// plot the rotated material triad (with axis length 0.5)
 			for(int i=0; i<trafo_->M(); i++)
@@ -689,13 +688,16 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
 				}
 				GMSH_2_noded(1,coord,discret_.lRowElement(0),gmshfileend,0.0,true,true);
 			}
-    }
-		gmshfileend << "SP(" << scientific;
-		gmshfileend << cog_(0)<<","<<cog_(1)<<","<<cog_(2)<<"){" << scientific << 0.75 << ","<< 0.75 <<"};"<<endl;
-    // gmsh output of detected network structure volume
-    int nline = 16;
-    if(step>0)
-    	GmshNetworkStructVolume(nline, gmshfileend, 0.875);
+		  // plot the cog
+			GmshOutputBox(0.75, &cog_, 0.05, &filename);
+			gmshfileend << "SP(" << scientific;
+			gmshfileend << cog_(0)<<","<<cog_(1)<<","<<cog_(2)<<"){" << scientific << 0.75 << ","<< 0.75 <<"};"<<endl;
+
+			// gmsh output of detected network structure volume
+			int nline = 16;
+			if(step>0)
+				GmshNetworkStructVolume(nline, gmshfileend, 0.875);
+		}
     gmshfileend << "};" << endl;
     fprintf(fp, gmshfileend.str().c_str());
     fclose(fp);
@@ -1452,6 +1454,8 @@ void StatMechManager::GMSH_2_noded(const int& n,
 #ifdef D_BEAM3
 		if(eot == DRT::ELEMENTS::Beam3Type::Instance())
 			radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(thisele))->Izz()) / M_PI));
+		else if(thisele->Id()>basisnodes_)
+			radius = sqrt(statmechparams_.get<double>("ALINK",4.75166e-06) / M_PI); //defaul value according to diss. Tharmann
 		else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
 			radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(thisele))->Izz()) / M_PI));
 		else
