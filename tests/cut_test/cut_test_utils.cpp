@@ -258,12 +258,14 @@ void cutmesh( GEO::CUT::Mesh & mesh )
   mesh.MakeCutLines();
   mesh.MakeFacets();
   mesh.MakeVolumeCells();
+
   if ( mesh.CreateOptions().FindPositions() )
   {
     mesh.FindNodePositions();
     mesh.FindNodalDOFSets( true );
   }
   mesh.CreateIntegrationCells( 0, false );
+  mesh.MomentFitGaussWeights();
   //mesh.RemoveEmptyVolumeCells();
 
   //mesh.DumpGmshVolumeCells( "volumecells" );
