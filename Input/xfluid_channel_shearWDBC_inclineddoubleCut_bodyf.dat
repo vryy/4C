@@ -122,13 +122,6 @@ NDPOINT 4
 NDLINE  10
 NDSURF  12
 NDVOL  2
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
------------------------------------DESIGN POINT NEUMANN CONDITIONS
-DPOINT 0
-------------------------------------DESIGN LINE NEUMANN CONDITIONS
-DLINE  0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 2
 // surface outflow
@@ -137,7 +130,6 @@ E 4 - none 1 1 1 0 0 0  -4.0 3.0 6.0 0.0 0.0 0.0  Mid  0 0 0 0 0 0
 E 3 - none 1 1 1 0 0 0  -10.0 -3.0 -6.0 0.0 0.0 0.0  Mid  0 0 0 0 0 0
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL  1
-// fluid volume
 E 1 - none 1 1 1 0 0 0  10.0 0.0 0.0 0.0 0.0 0.0  Mid  0 0 0 0 0 0
 -------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
 DPOINT 0
