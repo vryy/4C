@@ -1454,10 +1454,12 @@ void StatMechManager::GMSH_2_noded(const int& n,
 #ifdef D_BEAM3
 		if(eot == DRT::ELEMENTS::Beam3Type::Instance())
 			radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(thisele))->Izz()) / M_PI));
-		else if(thisele->Id()>basisnodes_)
-			radius = sqrt(statmechparams_.get<double>("ALINK",4.75166e-06) / M_PI); //defaul value according to diss. Tharmann
 		else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
 			radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(thisele))->Izz()) / M_PI));
+		else if(eot == DRT::ELEMENTS::Truss3Type::Instance())
+			radius = sqrt((dynamic_cast<DRT::ELEMENTS::Truss3*>(thisele))->CSec() / M_PI);
+		else if(thisele->Id()>basisnodes_)
+			radius = sqrt(statmechparams_.get<double>("ALINK",4.75166e-06) / M_PI); //defaul value according to diss. Tharmann
 		else
 			//radius = 0.003;
 			dserror("thisele is not a line element providing its radius.");
