@@ -14,6 +14,7 @@
 
 #include <string>
 #include <stack>
+#include <iostream>
 
 bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side, int recursion )
 {
@@ -21,6 +22,7 @@ bool GEO::CUT::Element::Cut( Mesh & mesh, Side & side, int recursion )
 
   // find nodal points inside the element
   const std::vector<Node*> side_nodes = side.Nodes();
+
   for ( std::vector<Node*>::const_iterator i=side_nodes.begin(); i!=side_nodes.end(); ++i )
   {
     Node * n = *i;
@@ -576,3 +578,15 @@ void GEO::CUT::Element::DumpFacets()
   }
 }
 
+void GEO::CUT::Element::MomentFitGaussWeights( Mesh & mesh )
+{
+  if ( not active_ )
+    return;
+
+  for(plain_volumecell_set::iterator i=cells_.begin();
+                           i!=cells_.end();i++)
+  {
+          VolumeCell *cell1 = *i;
+          cell1->MomentFitGaussWeights(this);
+  }
+}

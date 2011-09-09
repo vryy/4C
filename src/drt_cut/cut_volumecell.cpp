@@ -7,6 +7,7 @@
 #include "cut_mesh.H"
 #include "cut_options.H"
 #include "cut_kernel.H"
+#include "volume_integration.H"
 
 #include "../../src/drt_fem_general/drt_utils_gausspoints.H"
 
@@ -508,4 +509,24 @@ void GEO::CUT::VolumeCell::TestSurface()
       }
     }
   }
+}
+
+//Find Gaussian points and weights by moment fitting equations
+void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem)
+{
+    //position is used to decide whether the ordering of points are in clockwise or not
+    const GEO::CUT::Point::PointPosition posi = Position();
+    VolumeIntegration vc_inte(this,elem,posi,20);
+
+    std::vector<double> weights = vc_inte.compute_weights();
+
+/*  const plain_facet_set & facete = Facets();
+    for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
+    {
+        Facet *fe = *i;
+        FacetIntegration faee1(fe,elem,posi);
+        double dee = faee1.integrate_facet();
+        std::cout<<dee<<std::endl;
+    //  break;
+    }*/
 }

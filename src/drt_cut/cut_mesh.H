@@ -133,6 +133,8 @@ public:
 
   void CreateIntegrationCells( int count, bool levelset );
 
+  void MomentFitGaussWeights();
+
   void RemoveEmptyVolumeCells();
 
   void SimplifyIntegrationCells();

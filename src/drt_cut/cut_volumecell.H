@@ -56,6 +56,8 @@ public:
 
   void GetIntegrationCells( plain_integrationcell_set & cells );
 
+  void MomentFitGaussWeights(Element *elem);
+
   void GetBoundaryCells( std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells );
 
   void ConnectNodalDOFSets( bool include_inner );

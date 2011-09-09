@@ -217,6 +217,9 @@ namespace FLD
     /// do nonlinear iteration, e.g. full Newton, Newton like or Fixpoint iteration
     void NonlinearSolve();
 
+    /// compute lift and drag values by integrating the true residuals
+    void LiftDrag() const;
+
     /// solve linearised fluid
     void LinearSolve();
 

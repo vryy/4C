@@ -2178,3 +2178,45 @@ void GEO::CUT::Mesh::TestFacetArea()
     f->TestFacetArea( 1e-7 );
   }
 }
+
+void GEO::CUT::Mesh::MomentFitGaussWeights()
+{
+  for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+        i!=elements_.end();
+        ++i )
+  {
+    Element & e = *i->second;
+#ifndef DEBUGCUTLIBRARY
+    try
+    {
+#endif
+      e.MomentFitGaussWeights( *this );
+#ifndef DEBUGCUTLIBRARY
+    }
+    catch ( std::runtime_error & err )
+    {
+      e.DebugDump();
+      throw;
+    }
+#endif
+  }
+  for ( std::list<Teuchos::RCP<Element> >::iterator i=shadow_elements_.begin();
+        i!=shadow_elements_.end();
+        ++i )
+  {
+    Element & e = **i;
+#ifndef DEBUGCUTLIBRARY
+    try
+    {
+#endif
+      e.MomentFitGaussWeights( *this );
+#ifndef DEBUGCUTLIBRARY
+    }
+    catch ( std::runtime_error & err )
+    {
+      e.DebugDump();
+      throw;
+    }
+#endif
+  }
+}
