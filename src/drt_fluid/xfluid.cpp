@@ -385,6 +385,8 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    const std::string filename_vel = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_vel.str(), step, step_diff, screen_out, discret.Comm().MyPID());
    cout << endl;
    std::ofstream gmshfilecontent_vel(filename_vel.c_str());
+   gmshfilecontent_vel.setf(ios::scientific,ios::floatfield);
+   gmshfilecontent_vel.precision(16);
 
    std::ostringstream filename_base_press;
    if(count > -1) filename_base_press << filename_base << "_" << count << "_press";
@@ -392,6 +394,8 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    const std::string filename_press = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_press.str(), step, step_diff, screen_out, discret.Comm().MyPID());
    cout << endl;
    std::ofstream gmshfilecontent_press(filename_press.c_str());
+   gmshfilecontent_press.setf(ios::scientific,ios::floatfield);
+   gmshfilecontent_press.precision(16);
 
    std::ostringstream filename_base_bound;
    if(count > -1) filename_base_bound << filename_base << "_" << count << "_bound";
@@ -399,6 +403,8 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    const std::string filename_bound = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_bound.str(), step, step_diff, screen_out, discret.Comm().MyPID());
    cout << endl;
    std::ofstream gmshfilecontent_bound(filename_bound.c_str());
+   gmshfilecontent_bound.setf(ios::scientific,ios::floatfield);
+   gmshfilecontent_bound.precision(16);
 
    if(count > -1) // for residual output
    {
@@ -423,7 +429,7 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
     {
       GEO::CUT::plain_volumecell_set cells;
       std::vector<DRT::UTILS::GaussIntegration> intpoints;
-      e->VolumeCellGaussPoints( cells, intpoints );
+      e->VolumeCells( cells );
 
       int count = 0;
       for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
@@ -713,6 +719,18 @@ void FLD::XFluid::XFluidState::GmshOutputBoundaryCell( DRT::Discretization & dis
           //DRT::UTILS::shape_function_2D( funct, eta( 0 ), eta( 1 ), DRT::Element::quad4 );
           DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::quad4 );
           DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad4>( xyze, deriv, metrictensor, drs, &normal );
+          //x.Multiply( xyze, funct );
+          break;
+        }
+        case DRT::Element::tri3:
+        {
+          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
+          LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
+          //LINALG::Matrix<numnodes,1> funct;
+          LINALG::Matrix<2,numnodes> deriv;
+          //DRT::UTILS::shape_function_2D( funct, eta( 0 ), eta( 1 ), DRT::Element::quad4 );
+          DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::tri3 );
+          DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::tri3>( xyze, deriv, metrictensor, drs, &normal );
           //x.Multiply( xyze, funct );
           break;
         }
@@ -1579,6 +1597,8 @@ void FLD::XFluid::Output()
         // output for Element and Node IDs
         const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("DISCRET", step_, step_diff, screen_out, discret_->Comm().MyPID());
         std::ofstream gmshfilecontent(filename.c_str());
+        gmshfilecontent.setf(ios::scientific,ios::floatfield);
+        gmshfilecontent.precision(16);
         {
             // draw bg elements with associated gid
             gmshfilecontent << "View \" " << "fluid Element->Id() \" {\n";
