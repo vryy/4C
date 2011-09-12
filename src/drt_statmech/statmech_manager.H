@@ -428,6 +428,13 @@ protected:
   double characlength_;
   // \brief center of gravity of the detected structure
   LINALG::Matrix<3,1> cog_;
+
+  // glue initial set of broken elements at the beginning of oscillation to the upper and lower plate
+  std::vector<int> oscillnodes_;
+  std::vector<int> fixednodes_;
+  std::vector<int> freenodes_;
+  bool initialset_;
+
 }; // class StatMechManager
 
 #endif /*STATMECH_MANAGER_H*/

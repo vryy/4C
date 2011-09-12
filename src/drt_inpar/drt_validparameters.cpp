@@ -1568,7 +1568,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //Gmsh Output switch
   setStringToIntegralParameter<int>("GMSHOUTPUT","No","If chosen gmsh output is generated.",
                                yesnotuple,yesnovalue,&statmech);
+  // toggling Gmsh Output for structure detection
   setStringToIntegralParameter<int>("GMSHNETSTRUCT","No","If chosen special gmsh visualization for network structure types is generated.",
+                               yesnotuple,yesnovalue,&statmech);
+  setStringToIntegralParameter<int>("FIXEDDIRICHNODES","No","If chosen, the set of Dirichlet Nodes is fixed and is not updated/changed anymore.",
                                yesnotuple,yesnovalue,&statmech);
   //Number of time steps between two special outputs written
   IntParameter("OUTPUTINTERVALS",1,"Number of time steps between two special outputs written",&statmech);

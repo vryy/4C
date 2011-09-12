@@ -62,7 +62,8 @@ basisnodes_(discret.NumGlobalNodes()),
 basiselements_(discret.NumGlobalElements()),
 outputfilenumber_(-1),
 normalgen_(0,1),
-discret_(discret)
+discret_(discret),
+initialset_(false)
 {
   //initialize random generators
   SeedRandomGenerators(0);
@@ -2570,12 +2571,8 @@ void StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
 	bool alreadydone = false;
 	// store node Id of previously handled node
   int tmpid = -1;
-  // store LIDs of element nodes
-  vector<int>	lids;
-  // vectors to manipulate DBC properties
-  vector<int> oscillnodes;
-  vector<int> fixednodes;
-  vector<int> freenodes;
+  // store LIDs of element node dofs
+  vector<int>	doflids;
 
 	// get the apmlitude of the oscillation
 	double amp = statmechparams_.get<double>("SHEARAMPLITUDE",0.0);
@@ -2602,129 +2599,155 @@ void StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
 	Epetra_Vector deltadbc(*(discret_.DofRowMap()), true);
 
   // loop over row elements
-	for(int lid=0; lid<discret_.NumMyRowElements(); lid++)
+	// enter here only ONCE if the initial set of Dirichlet Nodes shall not be changed anymore OR ALWAYS in the case of an updated Dirichlet Node Set
+	if(!initialset_ || !(DRT::INPUT::IntegralValue<int>(statmechparams_, "FIXEDDIRICHNODES")))
 	{
-		// An element used to browse through local Row Elements
-	  DRT::Element* element = discret_.lRowElement(lid);
+	  // vectors to manipulate DBC; reset the vectors as they will be filled for the first time OR anew
+	  oscillnodes_.clear();
+	  fixednodes_.clear();
+	  freenodes_.clear();
 
-	  // skip element if it is a crosslinker element or in addition, in case of the Bead Spring model, Torsion3 elements
-	  if(element->Id() > basisnodes_ || element->Id() >= statmechparams_.get<int>("NUM_EVAL_ELEMENTS", basiselements_))
-	  	continue;
+		for(int lid=0; lid<discret_.NumMyRowElements(); lid++)
+		{
+			// An element used to browse through local Row Elements
+			DRT::Element* element = discret_.lRowElement(lid);
 
-	  // number of translational DOFs (not elegant but...ah well...!)
-	  int numdof = 3;
-	  // positions of nodes of an element with n nodes
-	  LINALG::SerialDenseMatrix coord(3,(int)discret_.lRowElement(lid)->NumNode(), true);
-	  // indicates location, direction and component of a broken element with n nodes->n-1 possible cuts
-	  LINALG::SerialDenseMatrix cut(3,(int)discret_.lRowElement(lid)->NumNode()-1,true);
-//-------------------------------- obtain nodal coordinates of the current element
-	  // get nodal coordinates and LIDs of the nodal DOFs
-	  GetElementNodeCoords(element, disn, coord, &lids);
-//-----------------------detect broken/fixed/free elements and fill position vector
-	  // determine existence and location of broken element
-	  CheckForBrokenElement(coord, cut, &broken);
+			// skip element if it is a crosslinker element or in addition, in case of the Bead Spring model, Torsion3 elements
+			if(element->Id() > basisnodes_ || element->Id() >= statmechparams_.get<int>("NUM_EVAL_ELEMENTS", basiselements_))
+				continue;
 
-	  // loop over number of cuts (columns)
-	  for(int n=0; n<cut.N(); n++)
-	  {
-	  	// case 1: broken element (in z-dir); node_n+1 oscillates, node_n is fixed in dir. of oscillation
-			if(broken && cut(2,n)==1.0)
+			// number of translational DOFs (not elegant but...ah well...!)
+			int numdof = 3;
+			// positions of nodes of an element with n nodes
+			LINALG::SerialDenseMatrix coord(3,(int)discret_.lRowElement(lid)->NumNode(), true);
+			// indicates location, direction and component of a broken element with n nodes->n-1 possible cuts
+			LINALG::SerialDenseMatrix cut(3,(int)discret_.lRowElement(lid)->NumNode()-1,true);
+	//-------------------------------- obtain nodal coordinates of the current element
+			// get nodal coordinates and LIDs of the nodal DOFs
+			GetElementNodeCoords(element, disn, coord, &doflids);
+	//-----------------------detect broken/fixed/free elements and fill position vector
+			// determine existence and location of broken element
+			CheckForBrokenElement(coord, cut, &broken);
+
+			// loop over number of cuts (columns)
+			for(int n=0; n<cut.N(); n++)
 			{
-				// indicates beginning of a new filament (in the very special case that this is needed)
-				bool newfilament = false;
-				// check for case: last element of filament I as well as first element of filament I+1 broken
-				if(tmpid!=element->Nodes()[n]->Id() && alreadydone)
+				// case 1: broken element (in z-dir); node_n+1 oscillates, node_n is fixed in dir. of oscillation
+				if(broken && cut(2,n)==1.0)
 				{
-					// in this case, reset alreadydone...
+					// indicates beginning of a new filament (in the very special case that this is needed)
+					bool newfilament = false;
+					// check for case: last element of filament I as well as first element of filament I+1 broken
+					if(tmpid!=element->Nodes()[n]->Id() && alreadydone)
+					{
+						// in this case, reset alreadydone...
+						alreadydone = false;
+						// ...and set newfilament to true. Otherwise the last free nodes vector element will be deleted
+						newfilament = true;
+					}
+					// add GID of fixed node to fixed-nodes-vector (to be added to condition later)
+					if(!alreadydone)
+						fixednodes_.push_back(element->Nodes()[n]->Id());
+					// add GID of oscillating node to osc.-nodes-vector
+					oscillnodes_.push_back(element->Nodes()[n+1]->Id());
+					/* When an element is cut, there are always two nodes involved: one that is subjected to a fixed
+					 * displacement in one particular direction (oscdir), another which oscillates in the same direction.
+					 * The following code section calculates increments for both node types and stores this increment in
+					 * a vector deltadbc. This increment is later added to the nodes' displacement of the preceding time step.
+					 */
+					// the new displacement increments
+					// incremental displacement for a fixed node...(all DOFs = 0.0)
+					for(int i=0; i<numdof; i++)
+						if(i==oscdir)
+							deltadbc[doflids.at(numdof*n+i)] = 0.0;
+					// incremental Dirichlet displacement for an oscillating node (all DOFs except oscdir = 0.0)
+					// time step size
+					double dt = params.get<double>("delta time" ,-1.0);
+					// time curve increment
+					double tcincrement = 0.0;
+					if(curvenumber>-1)
+						tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
+													DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
+					deltadbc[doflids.at(numdof*(n+1)+oscdir)] = amp*tcincrement;
+					// delete last Id of freenodes if it was previously and falsely added
+					if(element->Nodes()[n]->Id()==tmpid && !alreadydone && !newfilament)
+						freenodes_.pop_back();
+					// store gid of the "n+1"-node to avoid overwriting during the following iteration,
+					// e.g. oscillating node becomes free if the following CheckForBrokenElement() call yields "!broken".
+					tmpid = element->Nodes()[n+1]->Id();
+					// Set to true to initiate certain actions if the following element is also broken.
+					// If the following element isn't broken, alreadydone will be reset to false (see case: !broken)
+					alreadydone=true;
+				}// end of case 1
+
+				// case 2: broken element (in z-dir); node_n oscillates, node_n+1 is fixed in dir. of oscillation
+				if(broken && cut(2,n)==2.0)
+				{
+					bool newfilament = false;
+					if(tmpid!=element->Nodes()[n]->Id() && alreadydone)
+					{
+						alreadydone = false;
+						newfilament = true;
+					}
+					if(!alreadydone)
+						oscillnodes_.push_back(element->Nodes()[n]->Id());
+					fixednodes_.push_back(element->Nodes()[n+1]->Id());
+					// oscillating node
+					double dt = params.get<double>("delta time" ,-1.0);
+					double tcincrement = 0.0;
+					if(curvenumber>-1)
+						tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
+													DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
+					deltadbc[doflids.at(numdof*n+oscdir)] = amp*tcincrement;
+					// fixed node
+					for(int i=0; i<numdof; i++)
+						if(i==oscdir)
+							deltadbc[doflids.at(numdof*(n+1)+i)] = 0.0;
+					if(element->Nodes()[n]->Id()==tmpid && !alreadydone && !newfilament)
+						freenodes_.pop_back();
+					tmpid = element->Nodes()[n+1]->Id();
+					alreadydone = true;
+				} // end of case 2
+
+				// case 3: unbroken element or broken in another than z-direction
+				if(cut(2,n)==0.0)
+				{
+					if(element->Nodes()[n]->Id()!=tmpid)
+					{
+						freenodes_.push_back(element->Nodes()[n]->Id());
+						freenodes_.push_back(element->Nodes()[n+1]->Id());
+					}
+					else
+						freenodes_.push_back(element->Nodes()[n+1]->Id());
+					tmpid=element->Nodes()[n+1]->Id();
+					// set to false to handle annoying special cases
 					alreadydone = false;
-					// ...and set newfilament to true. Otherwise the last free nodes vector element will be deleted
-					newfilament = true;
 				}
-				// add GID of fixed node to fixed-nodes-vector (to be added to condition later)
-				if(!alreadydone)
-					fixednodes.push_back(element->Nodes()[n]->Id());
-				// add GID of oscillating node to osc.-nodes-vector
-				oscillnodes.push_back(element->Nodes()[n+1]->Id());
-				/* When an element is cut, there are always two nodes involved: one that is subjected to a fixed
-				 * displacement in one particular direction (oscdir), another which oscillates in the same direction.
-				 * The following code section calculates increments for both node types and stores this increment in
-				 * a vector deltadbc. This increment is later added to the nodes' displacement of the preceding time step.
-				 */
-				// the new displacement increments
-				// incremental displacement for a fixed node...(all DOFs = 0.0)
-				for(int i=0; i<numdof; i++)
-					if(i==oscdir)
-						deltadbc[lids.at(numdof*n+i)] = 0.0;
-				// incremental Dirichlet displacement for an oscillating node (all DOFs except oscdir = 0.0)
-				// time step size
-				double dt = params.get<double>("delta time" ,-1.0);
-				// time curve increment
-				double tcincrement = 0.0;
-				if(curvenumber>-1)
-					tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
-												DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
-				deltadbc[lids.at(numdof*(n+1)+oscdir)] = amp*tcincrement;
-				// delete last Id of freenodes if it was previously and falsely added
-				if(element->Nodes()[n]->Id()==tmpid && !alreadydone && !newfilament)
-					freenodes.pop_back();
-				// store gid of the "n+1"-node to avoid overwriting during the following iteration,
-				// e.g. oscillating node becomes free if the following CheckForBrokenElement() call yields "!broken".
-				tmpid = element->Nodes()[n+1]->Id();
-				// Set to true to initiate certain actions if the following element is also broken.
-				// If the following element isn't broken, alreadydone will be reset to false (see case: !broken)
-				alreadydone=true;
-			}// end of case 1
-
-			// case 2: broken element (in z-dir); node_n oscillates, node_n+1 is fixed in dir. of oscillation
-			if(broken && cut(2,n)==2.0)
-			{
-				bool newfilament = false;
-				if(tmpid!=element->Nodes()[n]->Id() && alreadydone)
-				{
-					alreadydone = false;
-					newfilament = true;
-				}
-				if(!alreadydone)
-					oscillnodes.push_back(element->Nodes()[n]->Id());
-				fixednodes.push_back(element->Nodes()[n+1]->Id());
-				// oscillating node
-				double dt = params.get<double>("delta time" ,-1.0);
-				double tcincrement = 0.0;
-				if(curvenumber>-1)
-					tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
-												DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
-				deltadbc[lids.at(numdof*n+oscdir)] = amp*tcincrement;
-				// fixed node
-				for(int i=0; i<numdof; i++)
-					if(i==oscdir)
-						deltadbc[lids.at(numdof*(n+1)+i)] = 0.0;
-				if(element->Nodes()[n]->Id()==tmpid && !alreadydone && !newfilament)
-					freenodes.pop_back();
-				tmpid = element->Nodes()[n+1]->Id();
-				alreadydone = true;
-			} // end of case 2
-
-			// case 3: unbroken element or broken in another than z-direction
-			if(cut(2,n)==0.0)
-			{
-				if(element->Nodes()[n]->Id()!=tmpid)
-				{
-					freenodes.push_back(element->Nodes()[n]->Id());
-					freenodes.push_back(element->Nodes()[n+1]->Id());
-				}
-				else
-					freenodes.push_back(element->Nodes()[n+1]->Id());
-				tmpid=element->Nodes()[n+1]->Id();
-				// set to false to handle annoying special cases
-				alreadydone = false;
 			}
-	  }
+		}
+	}
+	else // only ever use the fixed set of nodes after the first time dirichlet values were imposed
+	{
+		for(int i=0; i<(int)oscillnodes_.size(); i++)
+		{
+			int nodelid = discret_.NodeRowMap()->LID(oscillnodes_[i]);
+			DRT::Node* oscnode = discret_.lRowNode(nodelid);
+			std::vector<int> dofnode = discret_.Dof(oscnode);
+			// oscillating node
+			double dt = params.get<double>("delta time" ,-1.0);
+			double tcincrement = 0.0;
+			if(curvenumber>-1)
+				tcincrement = DRT::Problem::Instance()->Curve(curvenumber).f(time) -
+											DRT::Problem::Instance()->Curve(curvenumber).f(time-dt);
+			deltadbc[discret_.DofRowMap()->LID(dofnode[oscdir])] = amp*tcincrement;
+		}
+		// dofs of fixednodes_ and freenodes remain untouched since fixednodes_ dofs are 0.0 and freenodes_ do not matter
 	}
 
 //---------check/set force sensors anew for each time step
 	// add DOF LID where a force sensor is to be set
-  if(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"DYN_CROSSLINKERS"))
-  	UpdateForceSensors(oscillnodes, oscdir);
+  if( DRT::INPUT::IntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS") && !initialset_)
+  	UpdateForceSensors(oscillnodes_, oscdir);
   //if(!discret_.Comm().MyPID())
   //	cout<<"\n=========================================="<<endl;
   //for(int pid=0; pid<discret_.Comm().NumProc();pid++)
@@ -2742,26 +2765,33 @@ void StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
 	vector<int>  	 addonoff(numdof, 0);
 
   // set condition for oscillating nodes
-	// inhibit all DOFs (for now, testing)
-	for(int i=0; i<numdof; i++)
-		if(i==oscdir)
+	if(DRT::INPUT::IntegralValue<int>(statmechparams_, "FIXEDDIRICHNODES"))
+	{
+		for(int i=0; i<3; i++)
 			addonoff.at(i) = 1;
+	}
+	else
+		addonoff.at(oscdir) = 1;
 
   // do not do anything if vector is empty
-  if(!oscillnodes.empty())
-  	DoDirichletConditionPeriodic(&oscillnodes, &addonoff, disn, dirichtoggle, invtoggle, deltadbc);
+  if(!oscillnodes_.empty())
+  	DoDirichletConditionPeriodic(&oscillnodes_, &addonoff, disn, dirichtoggle, invtoggle, deltadbc);
 
   // set condition for fixed nodes
-	if(!fixednodes.empty())
-  	DoDirichletConditionPeriodic(&fixednodes, &addonoff, disn, dirichtoggle, invtoggle, deltadbc);
+	if(!fixednodes_.empty())
+  	DoDirichletConditionPeriodic(&fixednodes_, &addonoff, disn, dirichtoggle, invtoggle, deltadbc);
 
   // set condition for free or recently set free nodes
-  for(int i=0; i<numdof; i++)
-  	if(i==oscdir)
-  		addonoff.at(i) = 0;
+	if(DRT::INPUT::IntegralValue<int>(statmechparams_, "FIXEDDIRICHNODES"))
+	{
+		for(int i=0; i<3; i++)
+			addonoff.at(i) = 0;
+	}
+	else
+		addonoff.at(oscdir) = 0;
 
-	if(!freenodes.empty())
-  	DoDirichletConditionPeriodic(&freenodes, &addonoff, disn, dirichtoggle, invtoggle, deltadbc);
+	if(!freenodes_.empty())
+  	DoDirichletConditionPeriodic(&freenodes_, &addonoff, disn, dirichtoggle, invtoggle, deltadbc);
 
 #ifdef MEASURETIME
   const double t_end = Teuchos::Time::wallTime();

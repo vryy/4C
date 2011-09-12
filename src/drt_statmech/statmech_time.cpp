@@ -877,11 +877,14 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
   timer.ResetStartTime();
   bool print_unconv = true;
 
+  // flag indicating whether or not the iterative loop was left because the residual norm was going to diverge anyway
+  bool fresmnormdivergent = false;
+
   //parameters to make sure that in last iteration step botch PTC parameters have reached zero
   double ctransptcold = ctransptc;
   double crotptcold   = crotptc;
 
-  while ( (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) || ctransptcold > 0.0 || crotptcold > 0.0) and numiter<=maxiter  )
+  while ((!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) || ctransptcold > 0.0 || crotptcold > 0.0) and numiter<=maxiter )
   {
 
     //save PTC parameters of the so far last iteration step
@@ -1079,13 +1082,20 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
     //--------------------------------- increment equilibrium loop index
     ++numiter;
+
+    // leave the loop without going to maxiter iteration because most probably, the process will not converge anyway from here on
+    if(fresmnorm>1.0e4)
+    {
+    	fresmnormdivergent = true;
+    	break;
+    }
   }
   //============================================= end equilibrium loop
   print_unconv = false;
 
   //-------------------------------- test whether max iterations was hit
   //if on convergence arises within maxiter iterations the time step is restarted with new random numbers
-  if (numiter>=maxiter)
+  if (numiter>=maxiter || fresmnormdivergent)
   {
     isconverged_ = 0;
     statmechmanager_->unconvergedsteps_++;
