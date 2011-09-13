@@ -516,7 +516,7 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem)
 {
     //position is used to decide whether the ordering of points are in clockwise or not
     const GEO::CUT::Point::PointPosition posi = Position();
-    VolumeIntegration vc_inte(this,elem,posi,20);
+    VolumeIntegration vc_inte(this,elem,posi,35);
 
     std::vector<double> weights = vc_inte.compute_weights();
 

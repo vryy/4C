@@ -58,8 +58,8 @@ double base_function(std::vector<double> coordi,int base_num)
                 return coordi[0]*coordi[0]*coordi[1]*coordi[1];
         if(base_num==25) //f(x,y,z) = x^2*yz
                 return coordi[0]*coordi[0]*coordi[1]*coordi[2];
-        if(base_num==26) //f(x,y,z) = x^2*y^2
-                return coordi[0]*coordi[0]*coordi[1]*coordi[1];
+        if(base_num==26) //f(x,y,z) = x^2*z^2
+                return coordi[0]*coordi[0]*coordi[2]*coordi[2];
         if(base_num==27) //f(x,y,z) = xy^3
                 return coordi[0]*coordi[1]*coordi[1]*coordi[1];
         if(base_num==28) //f(x,y,z) = xy^2*z

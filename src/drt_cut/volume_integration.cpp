@@ -65,29 +65,29 @@ void GEO::CUT::VolumeIntegration::compute_Gaussian_points()
 
     unsigned numb = x1.size();
     double minnx=x1[0],maxxx=x1[numb-1],minny=y1[0],maxxy=y1[numb-1],minnz=z1[0],maxxz=z1[numb-1];  
-    double tauu[] = {0.1,0.2,0.5,0.6};
-    double tauuz[] = {0.1,0.2,0.5,0.6};
-//  double tauux[] = {0.25, 0.75};
-//  double tauuy[] = {0.2,0.6,0.8};
-//  double tauuz[] = {0.1,0.3,0.5,0.7};
-    for(int i=0;i<4;i++)
+//    double tauu[] = {0.1,0.2,0.5,0.6};
+//    double tauuz[] = {0.1,0.2,0.5,0.6};
+    double tauux[] = {0.2,0.4, 0.55,0.7,0.9};
+    double tauuy[] = {0.2,0.4, 0.55,0.7,0.9};
+    double tauuz[] = {0.2,0.4, 0.55,0.7,0.9};
+    for(int i=0;i<5;i++)
     {
         
         std::vector<double> ptt;
         ptt.resize(3);
         ptt[2] = minnz+(maxxz-minnz)*tauuz[i];
-        for(int j=0;j<4;j++)
+        for(int j=0;j<5;j++)
         {
 
-            ptt[1] = minny+(maxxy-minny)*tauuz[j];
-            for(int k=0;k<4;k++)
+            ptt[1] = minny+(maxxy-minny)*tauuy[j];
+            for(int k=0;k<5;k++)
             {
-                ptt[0] = minnx+(maxxx-minnx)*tauuz[k];
+                ptt[0] = minnx+(maxxx-minnx)*tauux[k];
                 gaus_pts_.push_back(ptt);
             }
         }
     }
-    std::cout<<"size"<<gaus_pts_.size()<<std::endl;
+//    std::cout<<"size"<<gaus_pts_.size()<<std::endl;
 /*  for(int i=0;i<27;i++)
     {
         std::cout<<gau_pts[i][0]<<"\t"<<gau_pts[i][1]<<"\t"<<gau_pts[i][2]<<std::endl;
@@ -145,7 +145,7 @@ std::vector<double> GEO::CUT::VolumeIntegration::compute_weights()
     LeastSquares least(moment_matrix,rhs_moment);
     weights = least.linear_least_square();
 
-/*  for(int j=0;j<num_func_;j++)
+/*   for(int j=0;j<num_func_;j++)
     {
     double chek = 0.0;
     for(int i=0;i<weights.size();i++)

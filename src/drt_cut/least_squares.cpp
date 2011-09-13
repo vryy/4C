@@ -68,7 +68,7 @@ std::vector<double> GEO::CUT::LeastSquares::ConjugateGradient(std::vector<std::v
                 }
                 double conv_check = multi_vec(resi_new,resi_new);
         //      std::cout<<sqrt(conv_check)<<std::endl;
-                if(sqrt(conv_check)<1e-11/*0.00000000001*/)
+                if(sqrt(conv_check)<1e-12/*0.00000000001*/)
                         break;
                 double beta = multi_vec(resi_new,resi_new)/multi_vec(resi,resi);
                 for(int i=0;i<rhs.size();i++)
