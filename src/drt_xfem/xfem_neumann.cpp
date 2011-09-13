@@ -350,9 +350,10 @@ void XFEM::EvaluateNeumannXFEM(                      Teuchos::RCP<XFEM::FluidWiz
           // get the element
           DRT::Element* parent_ele = discret.gElement(ele_id);
 
+#ifdef D_FLUID3
           DRT::ELEMENTS::Fluid3 * ele = dynamic_cast<DRT::ELEMENTS::Fluid3 *>( parent_ele );
           if ( ele==NULL ) dserror( "expect fluid element" );
-
+#endif
 
           // ask wizard for this parent element
           GEO::CUT::ElementHandle * e = wizard->GetElement( parent_ele );
