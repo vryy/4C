@@ -276,8 +276,11 @@ namespace MAT
 
     /// Return variables for visualization
     LINALG::Matrix<3,1> GetVis(int gp) const {return vismassstress_->at(gp);}
-
+    /// Return actual mass density in reference configuration
+    double GetMassDensity(int gp) const {return refmassdens_->at(gp);}
+    /// Return circumferential fiber direction
     Teuchos::RCP<vector<LINALG::Matrix<3,1> > > Geta1() const {return a1_;}
+    /// Return axial fiber direction
     Teuchos::RCP<vector<LINALG::Matrix<3,1> > > Geta2() const {return a2_;}
 
     /// evaluate fiber directions from locsys, pull back
@@ -291,6 +294,8 @@ namespace MAT
 
     /// temporary for visualization
     Teuchos::RCP<vector<LINALG::Matrix<3,1> > > vismassstress_;
+    /// actual mass density in reference configuration
+    Teuchos::RCP<vector<double> > refmassdens_;
     /// basal rate of mass production
     double massprodbasal_;
 

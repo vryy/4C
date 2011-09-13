@@ -124,6 +124,7 @@ void MAT::ConstraintMixture::Pack(DRT::PackBuffer& data) const
     AddtoPack(data,a3_->at(gp));
     AddtoPack(data,a4_->at(gp));
     AddtoPack(data,vismassstress_->at(gp));
+    AddtoPack(data,refmassdens_->at(gp));
   }
   if (numgp > 0)
   {
@@ -182,6 +183,7 @@ void MAT::ConstraintMixture::Unpack(const vector<char>& data)
   a3_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> >(numgp));
   a4_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> >(numgp));
   vismassstress_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> > (numgp));
+  refmassdens_ = Teuchos::rcp(new vector<double> (numgp));
 
   for (int gp = 0; gp < numgp; ++gp) {
     LINALG::Matrix<3,1> alin;
@@ -195,6 +197,9 @@ void MAT::ConstraintMixture::Unpack(const vector<char>& data)
     a4_->at(gp) = alin;
     ExtractfromPack(position,data,alin);
     vismassstress_->at(gp) = alin;
+    double a;
+    ExtractfromPack(position,data,a);
+    refmassdens_->at(gp) = a;
   }
   double basal;
   ExtractfromPack(position,data,basal);
@@ -229,11 +234,13 @@ void MAT::ConstraintMixture::Setup (const int numgp, DRT::INPUT::LineDefinition*
 
   // visualization
   vismassstress_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> > (numgp));
+  refmassdens_ = Teuchos::rcp(new vector<double> (numgp));
   for (int gp = 0; gp < numgp; gp++)
   {
     vismassstress_->at(gp)(0) = 0.0;
     vismassstress_->at(gp)(1) = 0.0;
     vismassstress_->at(gp)(2) = 0.0;
+    refmassdens_->at(gp) = params_->density_;
   }
 
   // basal mass production rate determined by DENS, PHIE and LIFETIME
@@ -298,7 +305,12 @@ void MAT::ConstraintMixture::SetupHistory (const int numgp)
   int numint = 0;
   if (*params_->integration_ == "Explicit")
     numint = 1;
-  int numpast = static_cast<int>(round(params_->lifetime_ / dt)) + numint;
+  int numpast = 0;
+  if (abs(round(params_->lifetime_ / dt) - params_->lifetime_ / dt) < 1.0e-8){
+    numpast = static_cast<int>(round(params_->lifetime_ / dt)) + numint;
+  } else {
+    numpast = static_cast<int>(ceil(params_->lifetime_ / dt)) + numint;
+  }
   // history
   history_ = Teuchos::rcp(new vector<ConstraintMixtureHistory> (numpast));
   for (int idpast = 0; idpast < numpast; idpast++)
@@ -416,7 +428,8 @@ void MAT::ConstraintMixture::Evaluate
     double eps = 1.0e-12;
     if (time > params_->starttime_ + eps)
     {
-      history_->back().SetStretches(gp,actstretch);}
+      history_->back().SetStretches(gp,actstretch);
+    }
 //    } else {  // this is not working for all material parameters
 //      int numsteps = history_->size();
 //      for (int i = 0; i < numsteps; i++)
@@ -555,6 +568,9 @@ void MAT::ConstraintMixture::EvaluateStress
   EvaluateVolumetric(glstrain, & cmatvol, & Svol, currmassdens, density);
   (*stress) += Svol;
   (*cmat) += cmatvol;
+
+  // set actual mass density
+  refmassdens_->at(gp) = currmassdens;
 }
 
 /*----------------------------------------------------------------------*
@@ -882,7 +898,6 @@ void MAT::ConstraintMixture::MassProduction
     (*massprodcomp)(0) = massprodbasal_ * (1.0 + params_->growthfactor_ * (massstress1 / params_->homstress_ - 1.0));
   else
     (*massprodcomp)(0) = massprodbasal_ * (1.0 + params_->growthfactor_ * massstress1);
-  //cout << "1: " << massstress1 << endl;
 
   double massstress2 = 0.0;
   for (int i=0; i < 3; i++){
@@ -895,7 +910,6 @@ void MAT::ConstraintMixture::MassProduction
     (*massprodcomp)(1) = massprodbasal_ * (1.0 + params_->growthfactor_ * (massstress2 / params_->homstress_ - 1.0));
   else
     (*massprodcomp)(1) = massprodbasal_ * (1.0 + params_->growthfactor_ * massstress2);
-  //cout << "2: " << massstress2 << endl;
 
   double massstress3 = 0.0;
   for (int i=0; i < 3; i++){
@@ -908,7 +922,6 @@ void MAT::ConstraintMixture::MassProduction
     (*massprodcomp)(2) = massprodbasal_ * (1.0 + params_->growthfactor_ * (massstress3 / params_->homstress_ - 1.0));
   else
     (*massprodcomp)(2) = massprodbasal_ * (1.0 + params_->growthfactor_ * massstress3);
-  //cout << "3: " << massstress3 << endl;
 
   double massstress4 = 0.0;
   for (int i=0; i < 3; i++){
@@ -921,7 +934,6 @@ void MAT::ConstraintMixture::MassProduction
     (*massprodcomp)(3) = massprodbasal_ * (1.0 + params_->growthfactor_ * (massstress4 / params_->homstress_ - 1.0));
   else
     (*massprodcomp)(3) = massprodbasal_ * (1.0 + params_->growthfactor_ * massstress4);
-  //cout << "4: " << massstress4 << endl;
 
   (*massstress)(0) = massstress1;
   (*massstress)(1) = massstress2;
