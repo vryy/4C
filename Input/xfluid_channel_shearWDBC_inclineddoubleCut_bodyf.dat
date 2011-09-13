@@ -122,6 +122,10 @@ NDPOINT 4
 NDLINE  10
 NDSURF  12
 NDVOL  2
+-----------------------------------DESIGN POINT NEUMANN CONDITIONS
+DPOINT 0
+----------------------------------- DESIGN LINE NEUMANN CONDITIONS
+DLINE 0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 2
 // surface outflow
