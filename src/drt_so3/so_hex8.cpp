@@ -608,6 +608,8 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
     names[fiber] = 3; // 3-dim vector
     fiber = "Fiber2";
     names[fiber] = 3; // 3-dim vector
+    fiber = "referentialMassDensity";
+    names[fiber] = 1;
   }
   if (Material()->MaterialType() == INPAR::MAT::m_aaaneohooke_stopro)
     {
@@ -884,6 +886,11 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
       if ((int)data.size()!=3) dserror("size mismatch");
       LINALG::Matrix<3,1> a2 = cons->Geta2()->at(0);  // get a2 of first gp
       data[0] = a2(0); data[1] = a2(1); data[2] = a2(2);
+    } else if (name == "referentialMassDensity"){
+      if ((int)data.size()!=1) dserror("size mismatch");
+      double temp = 0.0;
+      for (int iter=0; iter<NUMGPT_SOH8; iter++) temp += cons->GetMassDensity(iter);
+      data[0] = temp/NUMGPT_SOH8;
     } else {
       return false;
     }
