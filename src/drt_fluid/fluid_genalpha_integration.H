@@ -457,6 +457,7 @@ public:
   */
   Teuchos::RCP<Epetra_Vector> Velaf()
     {
+      // to be sure: (re-)compute current value of velaf_
       GenAlphaComputeIntermediateSol();
       return velaf_;
     }
@@ -467,10 +468,8 @@ public:
   */
   Teuchos::RCP<Epetra_Vector> Accam()
     {
-      // just to be sure we get the current values:
-      // compute current value of accnp_
-      GenAlphaCalcInitialAccelerations();
-      // compute current value of accam_
+      // to be sure: (re-)compute current value of accam_
+      // assuming that accnp_ is already up to date!
       GenAlphaComputeIntermediateSol();
       return accam_;
     }
