@@ -37,6 +37,7 @@ Maintainer: Peter Gamnitzer
 #include "../drt_adapter/adapter_fluid_base_algorithm.H"
 #include "turbulent_flow_algorithm.H"
 #include "../drt_lib/drt_utils_createdis.H"
+#include "../linalg/linalg_utils.H"
 
 /*----------------------------------------------------------------------*
  * Main control routine for fluid including various solvers:
@@ -120,11 +121,12 @@ void dyn_fluid_drt(const int restart)
 void fluid_fluid_drt()
 {
   // create a communicator
-#ifdef PARALLEL
-  Epetra_MpiComm comm(MPI_COMM_WORLD);
-#else
-  Epetra_SerialComm comm;
-#endif
+  #ifdef PARALLEL
+   RCP<Epetra_Comm> comm = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
+  #else
+    Epetra_SerialComm comm;
+  #endif
+
   RCP<DRT::Problem> problem = DRT::Problem::Instance();
 
   RCP<DRT::Discretization> bgfluiddis = problem->Dis(genprob.numff,0);
@@ -180,7 +182,6 @@ void fluid_fluid_drt()
     {
       NonMovingFluideleGIDs.push_back(bgele->Id());
       int numnode = bgele->NumNode();
-      const DRT::Node*const* bgelenodes = bgele->Nodes();
       for (int inode=0; inode <numnode; ++inode)
         NonMovingFluidNodeGIDs.push_back(bgele->Nodes()[inode]->Id());
     }
@@ -204,24 +205,126 @@ void fluid_fluid_drt()
      }
    }
 
-  // delete elements and nodes
-  for(int mv=0; mv<MovingFluideleGIDs.size(); ++mv)
-    bgfluiddis->DeleteElement(MovingFluideleGIDs.at(mv));
+  //information how many processors work at all
+  vector<int> allproc(embfluiddis->Comm().NumProc());
 
-  for(int mv=0; mv<MovingFluidNodeGIDs.size(); ++mv)
-    bgfluiddis->DeleteNode(MovingFluidNodeGIDs.at(mv));
+  // Gather all informations from all processors
+  vector<int> MovingFluideleGIDsall;
+  vector<int> MovingFluidNodeGIDsall;
+
+  //in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
+  for (int i=0; i<embfluiddis->Comm().NumProc(); ++i) allproc[i] = i;
+
+  //gathers information of MovingFluideleGIDs of all processors
+  LINALG::Gather<int>(MovingFluideleGIDs,MovingFluideleGIDsall,(int)embfluiddis->Comm().NumProc(),&allproc[0],embfluiddis->Comm());
+
+  //gathers information of MovingFluidNodeGIDs of all processors
+  LINALG::Gather<int>(MovingFluidNodeGIDs,MovingFluidNodeGIDsall,(int)embfluiddis->Comm().NumProc(),&allproc[0],embfluiddis->Comm());
+
+  //information how many processors work at all
+  vector<int> allprocbg(bgfluiddis->Comm().NumProc());
+
+  vector<int> NonMovingFluideleGIDsall;
+  vector<int> NonMovingFluidNodeGIDsall;
+
+  //in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
+  for (int i=0; i<bgfluiddis->Comm().NumProc(); ++i) allprocbg[i] = i;
+
+  //gathers information of NonMovingFluideleGIDs of all processors
+  LINALG::Gather<int>(NonMovingFluideleGIDs,NonMovingFluideleGIDsall,(int)bgfluiddis->Comm().NumProc(),&allprocbg[0],bgfluiddis->Comm());
+
+  //gathers information of NonMovingFluidNodeGIDs of all processors
+  LINALG::Gather<int>(NonMovingFluidNodeGIDs,NonMovingFluidNodeGIDsall,(int)bgfluiddis->Comm().NumProc(),&allprocbg[0],bgfluiddis->Comm());
+
+  // ----------------------------------------------------------------------------
+  // preparing the background fluid discretization...
+
+  // delete elements and nodes
+  for(size_t mv=0; mv<MovingFluideleGIDsall.size(); ++mv)
+    bgfluiddis->DeleteElement(MovingFluideleGIDsall.at(mv));
+
+  for(size_t mv=0; mv<MovingFluidNodeGIDsall.size(); ++mv)
+    bgfluiddis->DeleteNode(MovingFluidNodeGIDsall.at(mv));
 
   bgfluiddis->FillComplete();
 
-  for(int nmv=0; nmv<NonMovingFluideleGIDs.size(); ++nmv)
-    embfluiddis->DeleteElement(NonMovingFluideleGIDs.at(nmv));
+#if defined(PARALLEL)
+  vector<int> bgeleids;          // ele ids
+  for (int i=0; i<bgfluiddis->NumMyRowElements(); ++i)
+  {
+    DRT::Element* bgele = bgfluiddis->lRowElement(i);
+    int gid = bgele->Id();
+    bgeleids.push_back(gid);
+  }
 
-  for(int nmv=0; nmv<NonMovingFluidNodeGIDs.size(); ++nmv)
-    embfluiddis->DeleteNode(NonMovingFluidNodeGIDs.at(nmv));
+  // Background discretization redistribution..
+  RCP<Epetra_Map> bgroweles =  rcp(new Epetra_Map(-1,(int)bgeleids.size(),&bgeleids[0],0,bgfluiddis->Comm()));
+  RCP<Epetra_Map> bgrownodes = Teuchos::null;
+  RCP<Epetra_Map> bgcolnodes = Teuchos::null;
+
+  DRT::UTILS::PartUsingParMetis(bgfluiddis,bgroweles,bgrownodes,bgcolnodes,comm,false);
+
+  RCP<Epetra_Map> bgnewroweles  = Teuchos::null;
+  RCP<Epetra_Map> bgnewcoleles  = Teuchos::null;
+  bgfluiddis->BuildElementRowColumn(*bgrownodes,*bgcolnodes,bgnewroweles,bgnewcoleles);
+
+  // export nodes and elements to the row map
+  bgfluiddis->ExportRowNodes(*bgrownodes);
+  bgfluiddis->ExportRowElements(*bgnewroweles);
+
+  // export nodes and elements to the column map (create ghosting)
+  bgfluiddis->ExportColumnNodes(*bgcolnodes);
+  bgfluiddis->ExportColumnElements(*bgnewcoleles);
+
+  bgfluiddis->FillComplete();
+#endif
+  //-------------------------------------------------------------------------
+
+  // ----------------------------------------------------------------------------
+  // preparing the embedded fluid discretization...
+
+  // delete elements and nodes
+  for(size_t nmv=0; nmv<NonMovingFluideleGIDsall.size(); ++nmv)
+    embfluiddis->DeleteElement(NonMovingFluideleGIDsall.at(nmv));
+
+  for(size_t nmv=0; nmv<NonMovingFluidNodeGIDsall.size(); ++nmv)
+    embfluiddis->DeleteNode(NonMovingFluidNodeGIDsall.at(nmv));
 
   embfluiddis->FillComplete();
 
-    // access to some parameter lists
+#if defined(PARALLEL)
+  vector<int> eleids;          // ele ids
+  for (int i=0; i<embfluiddis->NumMyRowElements(); ++i)
+  {
+    DRT::Element* ele = embfluiddis->lRowElement(i);
+    int gid = ele->Id();
+    eleids.push_back(gid);
+  }
+
+  // Embedded discretization redistribution..
+  RCP<Epetra_Map> embroweles =  rcp(new Epetra_Map(-1,(int)eleids.size(),&eleids[0],0,embfluiddis->Comm()));
+  RCP<Epetra_Map> embrownodes = Teuchos::null;
+  RCP<Epetra_Map> embcolnodes = Teuchos::null;
+
+  DRT::UTILS::PartUsingParMetis(embfluiddis,embroweles,embrownodes,embcolnodes,comm,false);
+
+  RCP<Epetra_Map> embnewroweles  = Teuchos::null;
+  RCP<Epetra_Map> embnewcoleles  = Teuchos::null;
+  embfluiddis->BuildElementRowColumn(*embrownodes,*embcolnodes,embnewroweles,embnewcoleles);
+
+  // export nodes and elements to the row map
+  embfluiddis->ExportRowNodes(*embrownodes);
+  embfluiddis->ExportRowElements(*embnewroweles);
+
+  // export nodes and elements to the column map (create ghosting)
+  embfluiddis->ExportColumnNodes(*embcolnodes);
+  embfluiddis->ExportColumnElements(*embnewcoleles);
+
+  embfluiddis->FillComplete();
+#endif
+  //------------------------------------------------------------------------------
+
+  // access to some parameter lists
   //const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
 
@@ -236,8 +339,7 @@ void fluid_fluid_drt()
 
   // perform result tests if required
   DRT::Problem::Instance()->AddFieldTest(fluidalgo->FluidField().CreateFieldTest());
-  DRT::Problem::Instance()->TestAll(comm);
-
+  DRT::Problem::Instance()->TestAll(*comm);
   return;
 
 } // end of fluid_fluid_drt()

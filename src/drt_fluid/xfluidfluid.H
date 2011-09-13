@@ -71,8 +71,9 @@ namespace FLD
       void GmshOutput( DRT::Discretization & bgdis,
                        DRT::Discretization & embdis,
                        DRT::Discretization & cutdiscret,
-                       const std::string & name,
-                       int count,
+                       const std::string & filename_base,
+                       int countiter,
+                       int step,
                        Teuchos::RCP<Epetra_Vector> vel,
                        Teuchos::RCP<Epetra_Vector> alevel,
                        Teuchos::RCP<Epetra_Vector> disptotal );
@@ -181,7 +182,7 @@ namespace FLD
                               std::ofstream & vel_f,
                               std::ofstream & press_f,
                               DRT::Element * actele,
-                              Teuchos::RCP<Epetra_Vector> vel );
+                              Teuchos::RCP<const Epetra_Vector> vel );
 
       void GmshOutputVolumeCell( DRT::Discretization & discret,
                                  std::ofstream & vel_f,
@@ -189,7 +190,7 @@ namespace FLD
                                  DRT::Element * actele,
                                  GEO::CUT::ElementHandle * e,
                                  GEO::CUT::VolumeCell * vc,
-                                 Teuchos::RCP<Epetra_Vector> vel );
+                                 Teuchos::RCP<const Epetra_Vector> vel );
 
       void GmshOutputBoundaryCell( DRT::Discretization & discret,
                                    DRT::Discretization & cutdiscret,
@@ -203,8 +204,8 @@ namespace FLD
                                  std::ofstream & vel_f,
                                  std::ofstream & press_f,
                                  DRT::Element * actele,
-                                 Teuchos::RCP<Epetra_Vector> vel,
-                                 Teuchos::RCP<Epetra_Vector> disp);
+                                 Teuchos::RCP<const Epetra_Vector> vel,
+                                 Teuchos::RCP<const Epetra_Vector> disp);
 
       XFluidFluid & xfluid_;
       Teuchos::RCP<XFEM::FluidDofSet> dofset_;
