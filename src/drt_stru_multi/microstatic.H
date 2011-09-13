@@ -287,6 +287,7 @@ protected:
   INPAR::STR::StressType        iostress_;
   int                           resevrystrs_;
   INPAR::STR::StrainType        iostrain_;
+  INPAR::STR::StrainType        ioplstrain_;
   bool                          iosurfactant_;
   int                           restart_;
   int                           restartevry_;

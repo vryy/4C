@@ -134,6 +134,8 @@ V0_(V0)
   resevrystrs_ = sdyn_micro.get<int>("RESULTSEVRY");
   INPAR::STR::StrainType iostrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_STRAIN");
   iostrain_ = iostrain;
+  INPAR::STR::StrainType ioplstrain = DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioflags,"STRUCT_PLASTIC_STRAIN");
+  ioplstrain_ = ioplstrain;
   iosurfactant_ = DRT::INPUT::IntegralValue<int>(ioflags,"STRUCT_SURFACTANT");
 
   isadapttol_ = (DRT::INPUT::IntegralValue<int>(sdyn_micro,"ADAPTCONV")==1);
@@ -741,10 +743,13 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
     p.set("delta time",dt);
     Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
     Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
+    Teuchos::RCP<std::vector<char> > plstrain  = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stress);
     p.set("strain", strain);
+    p.set("plstrain", plstrain);
     p.set<int>("iostress", iostress_);
     p.set<int>("iostrain", iostrain_);
+    p.set<int>("ioplstrain", ioplstrain_);
     // set vector values needed by elements
     discret_->ClearState();
     discret_->SetState("residual displacement",zeros_);
@@ -780,6 +785,20 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
       break;
     default:
       dserror("requested strain type not supported");;
+    }
+
+    switch (ioplstrain_)
+    {
+    case INPAR::STR::strain_ea:
+      output->WriteVector("gauss_pl_EA_strains_xyz",*plstrain,*discret_->ElementRowMap());
+      break;
+    case INPAR::STR::strain_gl:
+      output->WriteVector("gauss_pl_GL_strains_xyz",*plstrain,*discret_->ElementRowMap());
+      break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror("requested plastic strain type not supported");;
     }
   }
 
