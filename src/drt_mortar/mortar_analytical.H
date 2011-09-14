@@ -48,8 +48,8 @@ Maintainer: Alexander Popp
 // available analytical solutions
 //------------------------------------------------------------------------
 // 0 = no output of error norms
-// 1 = 3D zero analytical solution
-// 2 = 3D beam bending example
+// 1 = 2D/3D zero analytical solution
+// 2 = 2D/3D beam bending example
 // 3 = 3D pressurized hollow sphere example
 // 4 = 3D pressurized hollow sphere example (thick version)
 //------------------------------------------------------------------------
@@ -60,6 +60,80 @@ Maintainer: Alexander Popp
 */
 namespace MORTAR
 {
+  /*!
+  \brief Analytical solutions for 2D elasticity problems
+
+  \param pos (in)       : position where analytical solution is evaluated
+  \param uanalyt (out)  : analytical displacement solution
+  \param epsanalyt (out): analytical strain solution
+  */
+  inline void AnalyticalSolutions2D(const LINALG::Matrix<2,1>& pos,
+                             LINALG::Matrix<2,1>& uanalyt,
+                             LINALG::Matrix<4,1>& epsanalyt,
+                             LINALG::Matrix<2,2>& derivanalyt)
+  {
+    //----------------------------------------------------------------------
+    // 2D default (=zero) solution
+    //----------------------------------------------------------------------
+    if (MORTARANALYTICALSOL==1)
+    {
+      // displacements
+      uanalyt(0,0) = 0.0;
+      uanalyt(1,0) = 0.0;
+
+      // strains
+      epsanalyt(0,0) = 0.0;
+      epsanalyt(1,0) = 0.0;
+      epsanalyt(2,0) = 0.0;
+      epsanalyt(3,0) = 0.0;
+
+      // displacement derivatives
+      derivanalyt(0,0) = 0.0;
+      derivanalyt(0,1) = 0.0;
+      derivanalyt(1,0) = 0.0;
+      derivanalyt(1,1) = 0.0;
+    }
+
+    //----------------------------------------------------------------------
+    // 2D beam bending solution (plane stress)
+    // (see Timoshenko and Goodier, Theory of Elasticity, 1970, p. 284)
+    //----------------------------------------------------------------------
+    else if (MORTARANALYTICALSOL==2)
+    {
+      // model parameters
+      double h= 2.0;
+      double p = 100.0;
+      double nu = 0.3;
+      double E = 1000.0;
+
+      // displacements
+      uanalyt(0,0) =  ((2*p)/(E*h)) * (pos(0,0)*pos(1,0));
+      uanalyt(1,0) =  (p/(E*h)) * (-pos(0,0)*pos(0,0) - nu*pos(1,0)*pos(1,0));
+
+      // strains
+      epsanalyt(0,0) =  ((2*p)/(E*h)) * pos(1,0);
+      epsanalyt(1,0) = -((2*p*nu)/(E*h)) * pos(1,0);
+      epsanalyt(2,0) =  0.0;
+      epsanalyt(3,0) =  0.0;
+
+      // displacement derivatives
+      derivanalyt(0,0) =  ((2*p)/(E*h)) * pos(1,0);
+      derivanalyt(0,1) =  ((2*p)/(E*h)) * pos(0,0);
+      derivanalyt(1,0) = -((2*p)/(E*h)) * pos(0,0);
+      derivanalyt(1,1) = -((2*p*nu)/(E*h)) * pos(1,0);
+    }
+
+    //----------------------------------------------------------------------
+    // Other cases
+    //----------------------------------------------------------------------
+    else
+    {
+      dserror("ERROR: Other 2D analytical solutions not yet implemented");
+    }
+
+    return;
+  }
+
   /*!
   \brief Analytical solutions for 3D elasticity problems
 

@@ -32,7 +32,7 @@ Maintainer: Markus Gitterle
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_lib/drt_globalproblem.H"
-
+#include "../drt_mortar/mortar_analytical.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_potential/drt_potential_manager.H"
 
@@ -81,6 +81,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
   else if (action=="calc_struct_update_imrlike") act = Wall1::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")   act = Wall1::calc_struct_reset_istep;
   else if (action=="calc_struct_energy")        act = Wall1::calc_struct_energy;
+  else if (action=="calc_struct_errornorms")    act = Wall1::calc_struct_errornorms;
   else if (action=="calc_potential_stiff")      act = Wall1::calc_potential_stiff;
   else dserror("Unknown type of action %s for Wall1", action.c_str());
 
@@ -136,8 +137,19 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
       vector<double> mydispmat(lm.size());
       for (int i=0; i<(int)mydispmat.size(); ++i) mydispmat[i] = 0.0;
-      w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
-                      INPAR::STR::stress_none,INPAR::STR::strain_none);
+
+      // special case: geometrically linear
+      if (kintype_ == DRT::ELEMENTS::Wall1::w1_geolin)
+      {
+        w1_linstiffmass(lm,mydisp,myres,mydispmat,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
+                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
+      // standard is: geometrically non-linear with Total Lagrangean approach
+      else
+      {
+        w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
+                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
     }
     break;
     case Wall1::calc_struct_nlnstiffmass:
@@ -157,8 +169,20 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
         RefCountPtr<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
         DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
       }  
-      w1_nlnstiffmass(lm,mydisp,mydispmat,myres,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
-                      INPAR::STR::stress_none,INPAR::STR::strain_none);
+
+      // special case: geometrically linear
+      if (kintype_ == DRT::ELEMENTS::Wall1::w1_geolin)
+      {
+        w1_linstiffmass(lm,mydisp,mydispmat,myres,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
+                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
+      // standard is: geometrically non-linear with Total Lagrangean approach
+      else
+      {
+        w1_nlnstiffmass(lm,mydisp,mydispmat,myres,myknots,&elemat1,&elemat2,&elevec1,NULL,NULL,actmat,
+                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
+
       if (act==calc_struct_nlnstifflmass) w1_lumpmass(&elemat2);
     }
     break;
@@ -179,8 +203,19 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
         RefCountPtr<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
         DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
       }  
-      w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
-                      INPAR::STR::stress_none,INPAR::STR::strain_none);
+
+      // special case: geometrically linear
+      if (kintype_ == DRT::ELEMENTS::Wall1::w1_geolin)
+      {
+        w1_linstiffmass(lm,mydisp,myres,mydispmat,myknots,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
+                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
+      // standard is: geometrically non-linear with Total Lagrangean approach
+      else
+      {
+        w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,&elemat1,NULL,&elevec1,NULL,NULL,actmat,
+                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
     }
     break;
     case Wall1::calc_struct_internalforce:
@@ -203,8 +238,19 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
         RefCountPtr<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
         DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
       }  
-      w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,&myemat,NULL,&elevec1,NULL,NULL,actmat,
-                      INPAR::STR::stress_none,INPAR::STR::strain_none);
+
+      // special case: geometrically linear
+      if (kintype_ == DRT::ELEMENTS::Wall1::w1_geolin)
+      {
+        w1_linstiffmass(lm,mydisp,myres,mydispmat,myknots,&myemat,NULL,&elevec1,NULL,NULL,actmat,
+                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
+      // standard is: geometrically non-linear with Total Lagrangean approach
+      else
+      {
+        w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,&myemat,NULL,&elevec1,NULL,NULL,actmat,
+                        INPAR::STR::stress_none,INPAR::STR::strain_none);
+      }
     }
     break;
     case Wall1::calc_struct_nlnstiff_gemm:
@@ -293,7 +339,17 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
         Epetra_SerialDenseMatrix strain(intpoints.nquad,Wall1::numstr_);
         INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
-        w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
+
+        // special case: geometrically linear
+        if (kintype_ == DRT::ELEMENTS::Wall1::w1_geolin)
+        {
+          w1_linstiffmass(lm,mydisp,myres,mydispmat,myknots,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
+        }
+        // standard is: geometrically non-linear with Total Lagrangean approach
+        else
+        {
+          w1_nlnstiffmass(lm,mydisp,myres,mydispmat,myknots,NULL,NULL,NULL,&stress,&strain,actmat,iostress,iostrain);
+        }
 
         {
           DRT::PackBuffer data;
@@ -375,6 +431,240 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       if (elevec1.Length() < 1) dserror("Result vector too short");
       // determine energies
       Energy(params,lm,mydisp,&elevec1,actmat);
+    }
+    break;
+    //==================================================================================
+    case calc_struct_errornorms:
+    {
+      // IMPORTANT NOTES (popp 10/2010):
+      // - error norms are based on a small deformation assumption (linear elasticity)
+      // - extension to finite deformations would be possible without difficulties,
+      //   however analytical solutions are extremely rare in the nonlinear realm
+      // - only implemented for SVK material (relevant for energy norm only, L2 and
+      //   H1 norms are of course valid for arbitrary materials)
+      // - analytical solutions are currently stored in a repository in the MORTAR
+      //   namespace, however they could (should?) be moved to a more general location
+
+      // check length of elevec1
+      if (elevec1.Length() < 3) dserror("The given result vector is too short.");
+
+      // check material law
+      RCP<MAT::Material> mat = Material();
+
+      //******************************************************************
+      // only for St.Venant Kirchhoff material
+      //******************************************************************
+      if (mat->MaterialType() == INPAR::MAT::m_stvenant)
+      {
+        // declaration of variables
+        double l2norm = 0.0;
+        double h1norm = 0.0;
+        double energynorm = 0.0;
+
+        // some definitions
+        const int numnode = NumNode();
+        const int numdf   = 2;
+        const int nd      = numnode*numdf;
+        const int numeps  = 4;
+        Epetra_SerialDenseMatrix xjm;
+        xjm.Shape(2,2);
+        double det = 0.0;
+        Epetra_SerialDenseMatrix boplin;
+        boplin.Shape(numeps,nd);
+        Epetra_SerialDenseVector F;
+        F.Size(numeps);
+        Epetra_SerialDenseVector strain;
+        strain.Size(numeps);
+
+        // shape functions, derivatives and integration rule
+        Epetra_SerialDenseVector funct(numnode);
+        Epetra_SerialDenseMatrix deriv;
+        deriv.Shape(2,numnode);
+        const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+
+        // get displacements and extract values of this element
+        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+        if (disp==null) dserror("Cannot get state displacement vector");
+        vector<double> mydisp(lm.size());
+        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+        // reference and current geometry (nodal positions)
+        Epetra_SerialDenseMatrix xrefe(2,numnode);
+        Epetra_SerialDenseMatrix xcure(2,numnode);
+        for (int k=0; k<numnode; ++k)
+        {
+          xrefe(0,k) = Nodes()[k]->X()[0];
+          xrefe(1,k) = Nodes()[k]->X()[1];
+          xcure(0,k) = xrefe(0,k) + mydisp[k*numdf+0];
+          xcure(1,k) = xrefe(1,k) + mydisp[k*numdf+1];
+        }
+
+        /*------------------------- get node weights for nurbs elements */
+        const DiscretizationType distype = Shape();
+        Epetra_SerialDenseVector weights(numnode);
+        if (distype==DRT::Element::nurbs4 || distype==DRT::Element::nurbs9)
+        {
+          for (int inode=0; inode<numnode; ++inode)
+          {
+            DRT::NURBS::ControlPoint* cp =
+              dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
+            weights(inode) = cp->W();
+          }
+        }
+
+        //----------------------------------------------------------------
+        // loop over all Gauss points
+        //----------------------------------------------------------------
+        for (int ip=0; ip<intpoints.nquad; ++ip)
+        {
+          const double e1 = intpoints.qxg[ip][0];
+          const double e2 = intpoints.qxg[ip][1];
+          const double wgt = intpoints.qwgt[ip];
+
+          // get values of shape functions and derivatives in the gausspoint
+          if (distype != DRT::Element::nurbs4 &&
+              distype != DRT::Element::nurbs9)
+          {
+            // shape functions and their derivatives for polynomials
+            DRT::UTILS::shape_function_2D       (funct,e1,e2,distype);
+            DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
+          }
+          else
+          {
+            // nurbs version
+            Epetra_SerialDenseVector gp(2);
+            gp(0)=e1;
+            gp(1)=e2;
+
+            DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+            (funct  ,
+             deriv  ,
+             gp     ,
+             myknots,
+             weights,
+             distype);
+          }
+
+          /*--------------------------------------- compute jacobian Matrix */
+          w1_jacobianmatrix(xrefe,deriv,xjm,&det,numnode);
+
+          /*------------------------------------ integration factor  -------*/
+          double fac = wgt * det * thickness_;
+
+          /*----------------------------------- calculate operator Blin  ---*/
+          w1_boplin(boplin,deriv,xjm,det,numnode);
+
+          /*-------------------------deformation gradient and GL strains ---*/
+          w1_defgrad(F,strain,xrefe,xcure,boplin,numnode);
+
+          // Gauss point in reference configuration
+          LINALG::Matrix<2,1> xgp(true);
+          for (int k=0;k<numdf;++k)
+            for (int n=0;n<numnode;++n)
+              xgp(k,0) += funct[n] * xrefe(k,n);
+
+          //**************************************************************
+          // get analytical solution
+          LINALG::Matrix<2,1> uanalyt(true);
+          LINALG::Matrix<4,1> strainanalyt(true);
+          LINALG::Matrix<2,2> derivanalyt(true);
+
+          MORTAR::AnalyticalSolutions2D(xgp,uanalyt,strainanalyt,derivanalyt);
+          //**************************************************************
+
+          //--------------------------------------------------------------
+          // (1) L2 norm
+          //--------------------------------------------------------------
+
+          // compute displacements at GP
+          LINALG::Matrix<2,1> ugp(true);
+          for (int k=0;k<numdf;++k)
+            for (int n=0;n<numnode;++n)
+              ugp(k,0) += funct[n] * (xcure(k,n) - xrefe(k,n));
+
+          // displacement error
+          LINALG::Matrix<2,1> uerror(true);
+          for (int k=0;k<numdf;++k)
+            uerror(k,0) = uanalyt(k,0) - ugp(k,0);
+
+          // compute GP contribution to L2 error norm
+          l2norm += fac * uerror.Dot(uerror);
+
+          //--------------------------------------------------------------
+          // (2) H1 norm
+          //--------------------------------------------------------------
+
+          // compute partial derivatives at GP
+          LINALG::Matrix<2,2> derivgp(true);
+          derivgp(0,0) = F[0] - 1.0;
+          derivgp(0,1) = F[2];
+          derivgp(1,0) = F[3];
+          derivgp(1,1) = F[1] - 1.0;
+
+          // derivative error
+          LINALG::Matrix<2,2> deriverror(true);
+          for (int k=0;k<numdf;++k)
+            for (int m=0;m<numdf;++m)
+              deriverror(k,m) = derivanalyt(k,m) - derivgp(k,m);
+
+          // compute GP contribution to H1 error norm
+          h1norm += fac * deriverror.Dot(deriverror);
+          h1norm += fac * uerror.Dot(uerror);
+
+          //--------------------------------------------------------------
+          // (3) Energy norm
+          //--------------------------------------------------------------
+
+          // compute linear strain at GP
+          LINALG::Matrix<4,1> straingp(true);
+          straingp(0,0) = 0.5 * (F[0] + F[0]) - 1.0;
+          straingp(1,0) = 0.5 * (F[1] + F[1]) - 1.0;
+          straingp(2,0) = 0.5 * (F[2] + F[3]);
+          straingp(3,0) = straingp(2,0);
+
+          // strain error
+          LINALG::Matrix<4,1> strainerror(true);
+          for (int k=0;k<numeps;++k)
+            strainerror(k,0) = strainanalyt(k,0) - straingp(k,0);
+
+          // compute stress vector and constitutive matrix
+          Epetra_SerialDenseMatrix C;
+          C.Shape(4,4);
+          Epetra_SerialDenseMatrix tempstress;
+          tempstress.Shape(4,4);
+          Epetra_SerialDenseVector tempstrainerror(4);
+          tempstrainerror[0] = strainerror(0,0);
+          tempstrainerror[1] = strainerror(1,0);
+          tempstrainerror[2] = strainerror(2,0);
+          tempstrainerror[3] = strainerror(3,0);
+          Teuchos::RCP<const MAT::Material> material = Material();
+          w1_call_matgeononl(tempstrainerror,tempstress,C,numeps,material);
+          LINALG::Matrix<4,1> stress(true);
+          stress(0,0) = tempstress(0,0);
+          stress(1,0) = tempstress(1,1);
+          stress(2,0) = tempstress(0,2);
+          stress(3,0) = tempstress(0,2);
+
+
+          // compute GP contribution to energy error norm
+          energynorm += fac * stress.Dot(strainerror);
+
+          //cout << "UAnalytical:      " << ugp << endl;
+          //cout << "UDiscrete:        " << uanalyt << endl;
+          //cout << "StrainAnalytical: " << strainanalyt << endl;
+          //cout << "StrainDiscrete:   " << straingp << endl;
+          //cout << "DerivAnalytical:  " << derivanalyt << endl;
+          //cout << "DerivDiscrete:    " << derivgp << endl;
+        }
+        //----------------------------------------------------------------
+
+        // return results
+        elevec1[0] = l2norm;
+        elevec1[1] = h1norm;
+        elevec1[2] = energynorm;
+      }
+      else
+        dserror("ERROR: Error norms only implemented for SVK material");
     }
     break;
     case Wall1::calc_potential_stiff:
@@ -996,6 +1286,206 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
     }
   }
   // -------------------------------------------------------------------- EAS
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate the element (private)                            popp 09/11|
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Wall1::w1_linstiffmass(
+  const vector<int>                    & lm         ,
+  const vector<double>                 & disp       ,
+  const vector<double>                 & residual   ,
+  const vector<double>                 & dispmat   ,
+  std::vector<Epetra_SerialDenseVector>& myknots    ,
+  Epetra_SerialDenseMatrix             * stiffmatrix,
+  Epetra_SerialDenseMatrix             * massmatrix ,
+  Epetra_SerialDenseVector             * force      ,
+  Epetra_SerialDenseMatrix             * elestress  ,
+  Epetra_SerialDenseMatrix             * elestrain  ,
+  Teuchos::RCP<const MAT::Material>      material   ,
+  const INPAR::STR::StressType           iostress   ,
+  const INPAR::STR::StrainType           iostrain   )
+{
+  const int numnode = NumNode();
+  const int numdf   = 2;
+  const int nd      = numnode*numdf;
+
+   // general arrays
+  Epetra_SerialDenseVector funct(numnode);
+  Epetra_SerialDenseMatrix deriv;
+  deriv.Shape(2,numnode);
+  Epetra_SerialDenseMatrix xjm;
+  xjm.Shape(2,2);
+  Epetra_SerialDenseMatrix boplin;
+  boplin.Shape(4,2*numnode);
+  Epetra_SerialDenseVector F;
+  F.Size(4);
+  Epetra_SerialDenseVector strain;
+  strain.Size(4);
+  double det;
+  Epetra_SerialDenseMatrix xrefe(2,numnode);
+  Epetra_SerialDenseMatrix xcure(2,numnode);
+  const int numeps = 4;
+  Epetra_SerialDenseMatrix b_cure;
+  b_cure.Shape(numeps,nd);
+  Epetra_SerialDenseMatrix stress;
+  stress.Shape(4,4);
+  Epetra_SerialDenseMatrix C;
+  C.Shape(4,4);
+
+  // ------------------------------------ check calculation of mass matrix
+  double density = 0.0;
+  if (massmatrix) density = Density(material);
+
+  /*------- get integraton data ---------------------------------------- */
+  const DiscretizationType distype = Shape();
+
+  // gaussian points
+  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+
+  /*----------------------------------------------------- geometry update */
+  for (int k=0; k<numnode; ++k)
+  {
+    xrefe(0,k) = Nodes()[k]->X()[0];
+    xrefe(1,k) = Nodes()[k]->X()[1];
+    xcure(0,k) = xrefe(0,k) + disp[k*numdf+0];
+    xcure(1,k) = xrefe(1,k) + disp[k*numdf+1];
+  }
+
+  /*--------------------------------- get node weights for nurbs elements */
+  Epetra_SerialDenseVector weights(numnode);
+  if(distype==DRT::Element::nurbs4 || distype==DRT::Element::nurbs9)
+  {
+    for (int inode=0; inode<numnode; ++inode)
+    {
+      DRT::NURBS::ControlPoint* cp
+        =
+        dynamic_cast<DRT::NURBS::ControlPoint* > (Nodes()[inode]);
+
+      weights(inode) = cp->W();
+    }
+  }
+
+  /*=================================================== integration loops */
+  for (int ip=0; ip<intpoints.nquad; ++ip)
+  {
+    /*================================== gaussian point and weight at it */
+    const double e1 = intpoints.qxg[ip][0];
+    const double e2 = intpoints.qxg[ip][1];
+    const double wgt = intpoints.qwgt[ip];
+
+    // get values of shape functions and derivatives in the gausspoint
+    if(distype != DRT::Element::nurbs4
+       &&
+       distype != DRT::Element::nurbs9)
+    {
+    // shape functions and their derivatives for polynomials
+      DRT::UTILS::shape_function_2D       (funct,e1,e2,distype);
+      DRT::UTILS::shape_function_2D_deriv1(deriv,e1,e2,distype);
+    }
+    else
+    {
+      // nurbs version
+      Epetra_SerialDenseVector gp(2);
+      gp(0)=e1;
+      gp(1)=e2;
+
+      DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv
+  (funct  ,
+   deriv  ,
+   gp     ,
+   myknots,
+   weights,
+   distype);
+    }
+
+    /*--------------------------------------- compute jacobian Matrix */
+    w1_jacobianmatrix(xrefe,deriv,xjm,&det,numnode);
+
+    /*------------------------------------ integration factor  -------*/
+    double fac = wgt * det * thickness_;
+
+    /*------------------------------compute mass matrix if imass-----*/
+    if (massmatrix)
+    {
+      double facm = fac * density;
+      for (int a=0; a<numnode; a++)
+      {
+        for (int b=0; b<numnode; b++)
+        {
+          (*massmatrix)(2*a,2*b)     += facm * funct(a) * funct(b); /* a,b even */
+          (*massmatrix)(2*a+1,2*b+1) += facm * funct(a) * funct(b); /* a,b odd  */
+        }
+      }
+    }
+
+    /*----------------------------------- calculate operator Blin  ---*/
+    w1_boplin(boplin,deriv,xjm,det,numnode);
+
+    /*-------------------------deformation gradient and GL strains ---*/
+    w1_defgrad(F,strain,xrefe,xcure,boplin,numnode);
+
+    /*--------------redefine strains -> linear engineering strains ---*/
+    strain[0] = 0.5 * (F[0] + F[0]) - 1.0;
+    strain[1] = 0.5 * (F[1] + F[1]) - 1.0;
+    strain[2] = 0.5 * (F[2] + F[3]);
+    strain[3] = strain[2];
+
+    // material call
+    w1_call_matgeononl(strain,stress,C,numeps,material);
+
+    // return gp strains (only in case of strain output)
+    switch (iostrain)
+    {
+    case INPAR::STR::strain_gl:
+    {
+     if (elestrain == NULL) dserror("no strain data available");
+     (*elestrain)(ip,0) = strain(0);
+     (*elestrain)(ip,1) = strain(1);
+     (*elestrain)(ip,2) = 0.0;
+     (*elestrain)(ip,3) = strain(3);;
+    }
+    break;
+    case INPAR::STR::strain_none:
+      break;
+    case INPAR::STR::strain_ea:
+    default:
+      dserror("requested strain type not supported");
+   }
+
+   // return gp stresses (only in case of stress output)
+   switch (iostress)
+   {
+   case INPAR::STR::stress_2pk:
+   {
+     if (elestress == NULL) dserror("no stress data available");
+     (*elestress)(ip,0) = stress(0,0);
+     (*elestress)(ip,1) = stress(1,1);
+     (*elestress)(ip,2) = 0.0;
+     (*elestress)(ip,3) = stress(0,2);
+   }
+   break;
+   case INPAR::STR::stress_cauchy:
+   {
+     if (elestress == NULL) dserror("no stress data available");
+     StressCauchy(ip, F[0], F[1], F[2], F[3], stress, elestress);
+   }
+   break;
+   case INPAR::STR::stress_none:
+     break;
+   default:
+     dserror("requested stress type not supported");
+   }
+
+   /*-------------------------------- linear stiffness matrix keu ---*/
+   if (stiffmatrix) w1_keu(*stiffmatrix,boplin,C,fac,nd,numeps);
+
+   /*--------------- nodal forces fi from integration of stresses ---*/
+   if (force) w1_fint(stress,boplin,*force,fac,nd);
+
+  } // for (int ip=0; ip<totngp; ++ip)
 
   return;
 }

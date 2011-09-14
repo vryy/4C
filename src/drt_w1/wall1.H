@@ -318,6 +318,7 @@ private:
     calc_struct_reset_istep,  ///< reset elementwise internal variables
                               ///< during iteration to last converged state
     calc_struct_energy,       ///< calculate internal energy of element
+    calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
     calc_potential_stiff      ///< calculate volume potential
   };
 
@@ -347,6 +348,14 @@ private:
     eas_q1et4  ///< Q1ET4 formulation due to Glaser and Armero [2]
   };
 
+  /// kinematics type
+  enum KinematicType
+  {
+    w1_geolin,
+    w1_totlag,
+    w1_updlag
+  };
+
   /// container containing all kind of wall1 thisandthat
   DRT::Container data_;
 
@@ -364,6 +373,8 @@ private:
   bool iseas_;
   /// EAS type
   enum EasType eastype_;
+  //! kinematics type
+  enum KinematicType kintype_;
   /// struct_ale
   bool structale_;
 
@@ -373,6 +384,23 @@ private:
   /// evaluate the element forces and stiffness and mass
   /// \author mgit \date 03/07
   void w1_nlnstiffmass(
+    const std::vector<int>               & lm         , ///< location vector
+    const std::vector<double>            & disp       , ///< element displacements
+    const std::vector<double>            & residual   , ///< residual displacements
+    const std::vector<double>            & dispmat    , ///< residual displacements
+    std::vector<Epetra_SerialDenseVector>& myknots    , ///< knot vector for nurbs elements
+    Epetra_SerialDenseMatrix             * stiffmatrix, ///< element stiffness matrix
+    Epetra_SerialDenseMatrix             * massmatrix , ///< element mass matrix
+    Epetra_SerialDenseVector             * force      , ///< element internal force vector
+    Epetra_SerialDenseMatrix             * elestress  , ///< element stresses
+    Epetra_SerialDenseMatrix             * elestrain  , ///< element strains
+    Teuchos::RCP<const MAT::Material>      material   , ///< element material
+    const INPAR::STR::StressType           iostress   , ///< stress output option
+    const INPAR::STR::StrainType           iostrain     ///< strain output option
+  );
+
+  /// evaluate the geometrically linear element forces and stiffness and mass
+  void w1_linstiffmass(
     const std::vector<int>               & lm         , ///< location vector
     const std::vector<double>            & disp       , ///< element displacements
     const std::vector<double>            & residual   , ///< residual displacements

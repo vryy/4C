@@ -51,8 +51,9 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
   else dserror("Unknown type of SurfaceNeumann condition");
 
   // get values and switches from the condition
-  const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
-  const vector<double>* val   = condition.Get<vector<double> >("val"  );
+  const vector<int>*    onoff    = condition.Get<vector<int> >("onoff");
+  const vector<double>* val      = condition.Get<vector<double> >("val");
+  const vector<int>*    spa_func = condition.Get<vector<int> >("funct");
 
   // find out whether we will use a time curve
   bool usetime = true;
@@ -101,13 +102,16 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
   {
      const double e1 = intpoints.qxg[gpid][0];
 
-  // get shape functions and derivatives in the line
+     // get shape functions and derivatives in the line
      DRT::UTILS::shape_function_1D(funct,e1,distype);
      DRT::UTILS::shape_function_1D_deriv1(deriv,e1,distype);
 
      switch(ltype)
      {
        case neum_live:{ // uniform load on reference configuration
+
+         double functfac = 1.0;
+         int functnum = -1;
 
          // compute infinitesimal line element dr for integration along the line
          const double dr = w1_substitution(xye,deriv,NULL,numnod);
@@ -116,9 +120,36 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
          vector<double> ar(Wall1::noddof_);
 
          // loop the dofs of a node
-         // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]*curvefac
+         // ar[i] = ar[i] * facr * ds * onoff[i] * val[i] * curvefac * functfac
          for (int i=0; i<Wall1::noddof_; ++i)
-           ar[i] = intpoints.qwgt[gpid] * dr * (*onoff)[i]*(*val)[i] * curvefac;
+         {
+           if ((*onoff)[i]) // is this dof activated?
+           {
+             // factor given by spatial function
+             if (spa_func)
+               functnum = (*spa_func)[i];
+
+             if (functnum>0)
+             {
+               // calculate reference position of GP
+               LINALG::SerialDenseMatrix gp_coord(1,Wall1::numdim_);
+               gp_coord.Multiply('T','T',1.0,funct,xye,0.0);
+
+               // write coordinates in another datatype
+               const int numdim = 2;
+               double gp_coord2[numdim];
+               for(int k=0;k<numdim;k++)
+                 gp_coord2[k]=gp_coord(0,k);
+               const double* coordgpref = &gp_coord2[0]; // needed for function evaluation
+
+               //evaluate function at current gauss point
+               functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(i,coordgpref,0.0,NULL);
+             }
+             else
+               functfac = 1.0;
+           }
+           ar[i] = intpoints.qwgt[gpid] * dr * (*onoff)[i]*(*val)[i] * curvefac * functfac;
+         }
 
          // add load components
          for (int node=0; node<numnod; ++node)

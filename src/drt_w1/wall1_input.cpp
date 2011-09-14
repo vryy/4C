@@ -58,6 +58,22 @@ bool DRT::ELEMENTS::Wall1::ReadElement(const std::string& eletype,
   else if (buffer=="PLANE_STRAIN") wtype_ = plane_strain;
   else dserror("Illegal strain/stress type '%s'",buffer.c_str());
 
+  // kinematics type
+  linedef->ExtractString("KINEM",buffer);
+
+  // geometrically linear
+  if      (buffer=="W_GeoLin")    kintype_ = w1_geolin;
+  // geometrically non-linear with Total Lagrangean approach
+  else if (buffer=="W_TotalLagr")    kintype_ = w1_totlag;
+  // geometrically non-linear with Updated Lagrangean approach
+  else if (buffer=="W_UpdLagr")
+  {
+    kintype_ = w1_updlag;
+    dserror("Updated Lagrange for wall element NOT implemented!");
+  }
+  else dserror("Reading of WALL element failed");
+
+  // EAS type
   linedef->ExtractString("EAS",buffer);
   if (buffer=="Displ_Model")
   {
@@ -127,6 +143,10 @@ bool DRT::ELEMENTS::Wall1::ReadElement(const std::string& eletype,
 //   if      (buffer=="XY")       stresstype_ = w1_xy;
 //   else if (buffer=="RS")       stresstype_ = w1_rs;
 //   else dserror("Reading of WALL1 element failed");
+
+  // check for invalid combinations
+  if (kintype_==w1_geolin && iseas_==true)
+    dserror("ERROR: No EAS for geometrically linear WALL element");
 
   return true;
 }

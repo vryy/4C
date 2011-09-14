@@ -75,7 +75,7 @@ void DRT::ELEMENTS::Wall1Type::SetupElementDefinition( std::map<std::string,std:
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
     .AddString("STRESS_STRAIN")
-    .AddString("LAGRANGE")
+    .AddString("KINEM")
     .AddString("EAS")
     //.AddNamedString("STRESSES")
     ;
@@ -86,7 +86,7 @@ void DRT::ELEMENTS::Wall1Type::SetupElementDefinition( std::map<std::string,std:
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
     .AddString("STRESS_STRAIN")
-    .AddString("LAGRANGE")
+    .AddString("KINEM")
     .AddString("EAS")
     //.AddNamedString("STRESSES")
     ;
@@ -97,7 +97,7 @@ void DRT::ELEMENTS::Wall1Type::SetupElementDefinition( std::map<std::string,std:
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
     .AddString("STRESS_STRAIN")
-    .AddString("LAGRANGE")
+    .AddString("KINEM")
     .AddString("EAS")
     //.AddNamedString("STRESSES")
     ;
@@ -108,7 +108,7 @@ void DRT::ELEMENTS::Wall1Type::SetupElementDefinition( std::map<std::string,std:
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
     .AddString("STRESS_STRAIN")
-    .AddString("LAGRANGE")
+    .AddString("KINEM")
     .AddString("EAS")
     //.AddNamedString("STRESSES")
     ;
@@ -119,7 +119,7 @@ void DRT::ELEMENTS::Wall1Type::SetupElementDefinition( std::map<std::string,std:
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
     .AddString("STRESS_STRAIN")
-    .AddString("LAGRANGE")
+    .AddString("KINEM")
     .AddString("EAS")
     //.AddNamedString("STRESSES")
     ;
@@ -130,7 +130,7 @@ void DRT::ELEMENTS::Wall1Type::SetupElementDefinition( std::map<std::string,std:
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
     .AddString("STRESS_STRAIN")
-    .AddString("LAGRANGE")
+    .AddString("KINEM")
     .AddString("EAS")
     //.AddNamedString("STRESSES")
     ;
@@ -141,7 +141,7 @@ void DRT::ELEMENTS::Wall1Type::SetupElementDefinition( std::map<std::string,std:
     .AddNamedDouble("THICK")
     .AddNamedIntVector("GP",2)
     .AddString("STRESS_STRAIN")
-    .AddString("LAGRANGE")
+    .AddString("KINEM")
     .AddString("EAS")
     //.AddNamedString("STRESSES")
     ;
