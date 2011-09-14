@@ -138,7 +138,7 @@ bool DRT::DofSetBase::Initialized() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::DofSetBase::MaxGIDinList() const
+int DRT::DofSetBase::MaxGIDinList(const Epetra_Comm& comm) const
 {
   int count = -1;
   for (std::list<DofSetBase*>::const_iterator i=static_dofsets_.begin();
@@ -154,7 +154,9 @@ int DRT::DofSetBase::MaxGIDinList() const
       count = max((*i)->MaxAllGID(),count);
     }
   }
-  return count;
+  int max;
+  comm.MaxAll(&count,&max,1);
+  return max;
 }
 
 #endif  // #ifdef CCADISCRET

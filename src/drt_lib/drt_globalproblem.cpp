@@ -813,8 +813,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   RCP<DRT::Discretization> scatradis       = null;
   RCP<DRT::Discretization> fluidscatradis  = null;
   RCP<DRT::Discretization> structscatradis = null;
-  RCP<DRT::Discretization> structdis_macro = null;
-  RCP<DRT::Discretization> structdis_micro = null;
   RCP<DRT::Discretization> arterydis       = null; //_1D_ARTERY_
   RCP<DRT::Discretization> airwaydis       = null; //
 
@@ -1283,13 +1281,35 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 /*----------------------------------------------------------------------*/
 void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 {
+  // make sure that we read the micro discretizations only on the processors on
+  // which elements with the corresponding micro material are evaluated
+
+  RCP<DRT::Problem> macro_problem = DRT::Problem::Instance();
+  RCP<DRT::Discretization> macro_dis = macro_problem->Dis(genprob.numsf,0);
+  macro_dis->FillComplete();
+
+  std::set<int> my_multimat_IDs;
+
+  // take care also of ghosted elements! -> ElementColMap!
+  for (int i=0; i<macro_dis->ElementColMap()->NumMyElements(); ++i)
+  {
+    DRT::Element* actele = macro_dis->lColElement(i);
+    RCP<MAT::Material> actmat = actele->Material();
+    if (actmat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+    {
+      MAT::PAR::Parameter* actparams = actmat->Parameter();
+      my_multimat_IDs.insert(actparams->Id());
+    }
+  }
+
   for (std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator i=materials_->Map()->begin();
        i!=materials_->Map()->end();
        ++i)
   {
     int matid = i->first;
     Teuchos::RCP<MAT::PAR::Material> material = i->second;
-    if (material->Type() == INPAR::MAT::m_struct_multiscale)
+
+    if (my_multimat_IDs.find(matid)!=my_multimat_IDs.end())
     {
       Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matid);
       MAT::MicroMaterial* micromat = static_cast<MAT::MicroMaterial*>(mat.get());
@@ -1326,7 +1346,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
       micro_problem->InputControl();
 
       // read materials of microscale
-      // CAUTION: materials for microscale can not be read until
+      // CAUTION: materials for microscale cannot be read until
       // micro_reader is activated, since else materials will again be
       // read from macroscale inputfile. Besides, materials MUST be read
       // before elements are read since elements establish a connection
@@ -1351,12 +1371,13 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 
       // set the problem number from which to call materials again to zero
       // (i.e. macro problem), cf. MAT::Material::Factory!
-      materials_->SetReadFromProblem(0);
+      materials_->ResetReadFromProblem();
     }
   }
-
   materials_->ResetReadFromProblem();
 }
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::Problem::ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reader)

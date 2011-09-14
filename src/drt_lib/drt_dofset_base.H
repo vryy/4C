@@ -99,7 +99,7 @@ public:
   virtual bool Initialized() const;
 
   /// Get Max of all GID assigned in the DofSets in front of current one in the list #static_dofsets_
-  virtual int MaxGIDinList() const;
+  virtual int MaxGIDinList(const Epetra_Comm& comm) const;
 
   //@}
 

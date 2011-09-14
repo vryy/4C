@@ -80,8 +80,8 @@ void UTILS::ConstraintDofSet::Reset()
  *----------------------------------------------------------------------*/
 int UTILS::ConstraintDofSet::AssignDegreesOfFreedom
 (
-    const RCP<DRT::Discretization> dis, 
-    const int ndofs, 
+    const RCP<DRT::Discretization> dis,
+    const int ndofs,
     const int start
 )
 {
@@ -109,7 +109,7 @@ int UTILS::ConstraintDofSet::AssignDegreesOfFreedom
   // try to understand what you do.
 
   // Get highest GID used so far and add one
-  const int count = MaxGIDinList() + 1;
+  const int count = MaxGIDinList(dis->Comm()) + 1;
 
   dofrowmap_=rcp(new Epetra_Map(ndofs,count,dis->Comm()));
 
