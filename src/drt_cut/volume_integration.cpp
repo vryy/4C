@@ -5,6 +5,8 @@
 #include "volume_integration.H"
 #include "base_vol.H"
 #include "least_squares.H"
+#include "cut_boundingbox.H"
+#include "cut_options.H"
 
 //compute the rhs of the moment fitting equations
 //Integration of base functions take place inside this
@@ -41,9 +43,23 @@ void GEO::CUT::VolumeIntegration::compute_Gaussian_points()
     }*/
 
 
+    /*********geneate Gaussian points by checking the intersection of an arbitrary line
+     ********* with the sides of the volumecell**************************************/
+    BoundingBox box1(*volcell_);
+    const double xmin = box1.minx();
+    const double xmax = box1.maxx();
+    const double ymin = box1.miny();
+    const double ymax = box1.maxy();
+    const double zmin = box1.minz();
+    const double zmax = box1.maxz();
+    /*std::cout<<xmin<<"\t"<<xmax<<std::endl;
+    std::cout<<ymin<<"\t"<<ymax<<std::endl;
+    std::cout<<zmin<<"\t"<<zmax<<std::endl;*/
+      
+     
 /*************** probably need to remove this*****************************************/
 //create a bounding box over the volume and generate gaussian points over that volume   
-    const plain_facet_set & facete = volcell_->Facets();
+ /*   const plain_facet_set & facete = volcell_->Facets();
     std::vector<double> x1,y1,z1;
     for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
     {
@@ -86,7 +102,7 @@ void GEO::CUT::VolumeIntegration::compute_Gaussian_points()
                 gaus_pts_.push_back(ptt);
             }
         }
-    }
+    }*/
 //    std::cout<<"size"<<gaus_pts_.size()<<std::endl;
 /*  for(int i=0;i<27;i++)
     {

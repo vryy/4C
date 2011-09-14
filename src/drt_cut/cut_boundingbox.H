@@ -15,6 +15,7 @@ namespace GEO
     class Node;
     class Edge;
     class Side;
+    class VolumeCell;
     class Element;
 
 /// simple bounding box for fast overlap detection
@@ -27,6 +28,8 @@ public:
   explicit BoundingBox( Edge & edge );
 
   explicit BoundingBox( Side & side );
+  
+  explicit BoundingBox( VolumeCell & volcell );
 
   explicit BoundingBox( Element & element );
 

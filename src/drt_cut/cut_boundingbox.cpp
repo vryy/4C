@@ -5,6 +5,7 @@
 #include "cut_edge.H"
 #include "cut_side.H"
 #include "cut_element.H"
+#include "cut_volumecell.H"
 
 GEO::CUT::BoundingBox::BoundingBox( Edge & edge )
   : empty_( true )
@@ -18,6 +19,23 @@ GEO::CUT::BoundingBox::BoundingBox( Side & side )
 {
   const std::vector<Node*> & nodes = side.Nodes();
   AddPoints( nodes );
+}
+
+GEO::CUT::BoundingBox::BoundingBox( VolumeCell & volcell )
+  : empty_( true )
+{
+  const plain_facet_set & facete = volcell.Facets();
+  for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
+  {
+      Facet *fac = *i;
+      const std::vector<Point*> & corners = fac->CornerPoints();
+      for(std::vector<Point*>::const_iterator k=corners.begin();k!=corners.end();k++)
+      {
+          const Point* po = *k;
+          const double * coords = po->X();
+	  AddPoint(coords);
+      }
+  }
 }
 
 GEO::CUT::BoundingBox::BoundingBox( Element & element )
