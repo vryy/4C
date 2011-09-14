@@ -36,6 +36,9 @@ Maintainer: Christoph Meier
 #include "../drt_beam3ii/beam3ii.H"
 #endif
 
+// measure time for octree build and intermediate steps
+//#define MEASURETIME
+
 using namespace std;
 
 /*----------------------------------------------------------------------*
@@ -109,8 +112,9 @@ vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(
  *----------------------------------------------------------------------*/
 void Beam3ContactOctTree::extendedAABB(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, RCP<Epetra_MultiVector> allAABB)
 {
+#ifdef MEASURETIME
   double t_AABB = Teuchos::Time::wallTime();
-
+#endif
   // Initialize Variables....................
   // statistical mechanics parameter list from input file
   Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
@@ -376,6 +380,7 @@ void Beam3ContactOctTree::extendedAABB(std::map<int, LINALG::Matrix<3,1> >&  cur
   fprintf(fp, myfile.str().c_str());
   fclose(fp);*/
 
+#ifdef MEASURETIME
   double bbgentimelocal = Teuchos::Time::wallTime() - t_AABB;
   double bbgentimeglobal = 0.0;
 
@@ -383,6 +388,7 @@ void Beam3ContactOctTree::extendedAABB(std::map<int, LINALG::Matrix<3,1> >&  cur
 
   if(!searchdis_.Comm().MyPID())
     cout << "\n\nBounding Box generation time:\t" << bbgentimeglobal<< " seconds";
+#endif
 
   return;
 }
@@ -400,8 +406,9 @@ void Beam3ContactOctTree::extendedAABB(std::map<int, LINALG::Matrix<3,1> >&  cur
 void Beam3ContactOctTree::locateAll(RCP<Epetra_MultiVector> allAABB,
                                     std::vector<std::vector<int> >& aabbinoctants)
 {
+#ifdef MEASURETIME
   double t_octree = Teuchos::Time::wallTime();
-  
+#endif
   //cout << "\n\tTest locateAll" << endl;
   
   // Parameters and Initialization....................
@@ -490,10 +497,10 @@ void Beam3ContactOctTree::locateAll(RCP<Epetra_MultiVector> allAABB,
    //write content into file and close it
    fprintf(fp3, myfile3.str().c_str());
    fclose(fp3);*/
-
+#ifdef MEASURETIME
    if(!searchdis_.Comm().MyPID())
      cout << "\nOctree building time:\t\t" << Teuchos::Time::wallTime() - t_octree<< " seconds" << endl;
-
+#endif
   return;
 }// end of method locateAll
 
@@ -655,7 +662,9 @@ void Beam3ContactOctTree::IntersectionAABB(std::map<int, LINALG::Matrix<3,1> >& 
                                            std::vector<std::vector<int> >* aabbinoctants,
                                            RCP<Epetra_MultiVector> allAABB)
 {
+#ifdef MEASURETIME
   double t_search = Teuchos::Time::wallTime();
+#endif
   //cout << "\n\nIntersectionAABB Test..................." << endl;
 
   //Initialization....................
@@ -800,9 +809,10 @@ void Beam3ContactOctTree::IntersectionAABB(std::map<int, LINALG::Matrix<3,1> >& 
     // add to pair vector
     contactpairs->push_back(rcp (new Beam3contact(discret_,searchdis_,dofoffset_,tempele1,tempele2,ele1pos,ele2pos)));
   }
-  if(!discret_.Comm().MyPID())
-    cout<<"number of boxes: "<<counter<<endl;
+  //if(!discret_.Comm().MyPID())
+    //cout<<"number of boxes: "<<counter<<endl;
 
+#ifdef MEASURETIME
   double isectimelocal = Teuchos::Time::wallTime() - t_search;
   double isectimeglobal = 0.0;
 
@@ -810,7 +820,7 @@ void Beam3ContactOctTree::IntersectionAABB(std::map<int, LINALG::Matrix<3,1> >& 
   discret_.Comm().Barrier();
   if(!searchdis_.Comm().MyPID())
     cout << "Intersection time:\t\t" << isectimeglobal << " seconds\n\n";
-
+#endif
   /*/Print ContactPairs to .dat-file and plot with Matlab....................
   std::ostringstream filename2;
   filename2 << "ContactPairs.dat";

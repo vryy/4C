@@ -856,9 +856,15 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
   ConsoleOutput();
     
   // clear potential contact pairs
-  //pairs_.clear();
-  //pairs_.resize(0);
   
+
+  bool newgapfunction = DRT::INPUT::IntegralValue<int>(InputParameters(),"BEAMS_NEWGAP");
+  if (!newgapfunction)
+  {
+		pairs_.clear();
+		pairs_.resize(0);
+  }
+
   return;
 }
 
@@ -932,7 +938,41 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
     // open file to write output data into
     fp = fopen(filename.str().c_str(), "w");
   
+    std::stringstream gmshfileheader;
     // write output to temporary stringstream; 
+    gmshfileheader <<"General.BackgroundGradient = 0;\n";
+		gmshfileheader <<"View.LineType = 1;\n";
+		gmshfileheader <<"View.LineWidth = 1.4;\n";
+		gmshfileheader <<"View.PointType = 1;\n";
+		gmshfileheader <<"View.PointSize = 3;\n";
+		gmshfileheader <<"General.ColorScheme = 1;\n";
+		gmshfileheader <<"General.Color.Background = {255,255,255};\n";
+		gmshfileheader <<"General.Color.Foreground = {255,255,255};\n";
+		//gmshfileheader <<"General.Color.BackgroundGradient = {128,147,255};\n";
+		gmshfileheader <<"General.Color.Foreground = {85,85,85};\n";
+		gmshfileheader <<"General.Color.Text = {0,0,0};\n";
+		gmshfileheader <<"General.Color.Axes = {0,0,0};\n";
+		gmshfileheader <<"General.Color.SmallAxes = {0,0,0};\n";
+		gmshfileheader <<"General.Color.AmbientLight = {25,25,25};\n";
+		gmshfileheader <<"General.Color.DiffuseLight = {255,255,255};\n";
+		gmshfileheader <<"General.Color.SpecularLight = {255,255,255};\n";
+		gmshfileheader <<"View.ColormapAlpha = 1;\n";
+		gmshfileheader <<"View.ColormapAlphaPower = 0;\n";
+		gmshfileheader <<"View.ColormapBeta = 0;\n";
+		gmshfileheader <<"View.ColormapBias = 0;\n";
+		gmshfileheader <<"View.ColormapCurvature = 0;\n";
+		gmshfileheader <<"View.ColormapInvert = 0;\n";
+		gmshfileheader <<"View.ColormapNumber = 2;\n";
+		gmshfileheader <<"View.ColormapRotation = 0;\n";
+		gmshfileheader <<"View.ColormapSwap = 0;\n";
+		gmshfileheader <<"View.ColorTable = {Black,Yellow,Blue,Orange,Red,Cyan,Purple,Brown,Green};\n";
+
+    //write content into file and close it
+    fprintf(fp, gmshfileheader.str().c_str());
+    fclose(fp);
+
+    fp = fopen(filename.str().c_str(), "w");
+
     std::stringstream gmshfilecontent;
     gmshfilecontent << "View \" Step T" << timestep;
             
@@ -989,7 +1029,8 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
       }
     }
     
-    // finish data section of this view by closing curley brackets
+    // finish data section of this view by closing curley brackets (somehow needed to get color)
+    gmshfilecontent <<"SP(0.0,0.0,0.0){0.0,0.0};"<<endl;
     gmshfilecontent << "};" << endl;
     
     // write content into file and close
@@ -1341,7 +1382,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
     bool active = pairs_[i]->GetContactFlag();
     
     // if element is memeber of an active contact pair, choose different color
-    if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.0; 
+    if ( (thisele->Id()==id1 || thisele->Id()==id2) && active) color = 0.875;
   }
     
   // compute three dimensional angle theta

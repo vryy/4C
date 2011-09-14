@@ -1217,10 +1217,10 @@ void CONTACT::Beam3contact::ComputeGap(double& gap, const double& norm)
 
   if (ngf_)
   {
-  double normalold_normal=0;
-  normalold_normal = Computeskalar();
-  if ((normalold_normal*normalold_normal) < NORMALTOL) dserror("ERROR: Rotation too large! --> Choose smaller Time step!");
-  gapnew = sgn(normalold_normal)*norm - radius_ele1 - radius_ele2;
+		double normalold_normal=0;
+		normalold_normal = Computeskalar();
+		if ((normalold_normal*normalold_normal) < NORMALTOL) dserror("ERROR: Rotation too large! --> Choose smaller Time step!");
+		gapnew = sgn(normalold_normal)*norm - radius_ele1 - radius_ele2;
   }
 
   oldgap_ = gap;

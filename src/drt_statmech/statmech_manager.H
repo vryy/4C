@@ -17,6 +17,7 @@ Maintainer: Christian Cyron
 #include "../drt_geometry/searchtree.H"
 #include "../drt_geometry/intersection_service.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_beamcontact/beam3contact_manager.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 
@@ -38,6 +39,7 @@ namespace DRT
 \brief management and auxiliary functions for statistical mechanics
 \author cyron (cyron@lnm.mw.tum.de)
 */
+using namespace CONTACT;
 
 class StatMechManager
 {
@@ -50,7 +52,7 @@ public:
   virtual ~StatMechManager() {};
 
   //! \brief write special output for statistical mechanics into files
-  void Output(ParameterList& params, const int ndim, const double& time,const int& istep, const double& dt, const Epetra_Vector& dis, const Epetra_Vector& fint);
+  void Output(ParameterList& params, const int ndim, const double& time,const int& istep, const double& dt, const Epetra_Vector& dis, const Epetra_Vector& fint, RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null);
 
   //! \brief saving all necessary class variables for restart
   void WriteRestart(IO::DiscretizationWriter& output);
@@ -85,7 +87,7 @@ public:
   void SeedRandomGenerators(const int seedparameter);
 
 	//! \brief write output for Gmsh postprocessing
-	void GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step);
+	void GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step, RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null);
 
 	/*! \brief gmsh output in case of periodic boundary conditions
 		 *  \param coord 						(in)

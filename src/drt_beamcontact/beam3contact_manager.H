@@ -116,6 +116,7 @@ public:
   inline const RCP<Epetra_Map> RowElements() const { return elerowmap_; }
   inline const RCP<Epetra_Map> ColElements() const { return elecolmap_; }
   inline const RCP<Epetra_Map> FullElements() const { return elefullmap_; }
+  inline const vector<RCP<Beam3contact> >* Pairs() const { return &pairs_; }
 
   /*!
   \brief Get list of contact input parameters

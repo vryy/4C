@@ -53,8 +53,9 @@ using namespace LARGEROTATIONS;
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
 void StatMechManager::Output(ParameterList& params, const int ndim,
-                                     const double& time, const int& istep, const double& dt,
-                                     const Epetra_Vector& dis, const Epetra_Vector& fint)
+														 const double& time, const int& istep, const double& dt,
+														 const Epetra_Vector& dis, const Epetra_Vector& fint,
+														 RCP<CONTACT::Beam3cmanager> beamcmanager)
 {
   /*in general simulations in statistical mechanics run over so many time steps that the amount of data stored in the error file
    * may exceed the capacity even of a server hard disk; thus, we rewind the error file in each time step so that the amount of data
@@ -468,7 +469,10 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
 			dserror("Gmsh output implemented for a maximum of 999999 steps");
 
 		//calling method for writing Gmsh output
-		GmshOutput(dis,filename,istep);
+		if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
+			GmshOutput(dis,filename,istep,beamcmanager);
+		else
+			GmshOutput(dis,filename,istep);
 	}
 
   return;
@@ -478,7 +482,7 @@ void StatMechManager::Output(ParameterList& params, const int ndim,
 /*----------------------------------------------------------------------*
  | writing Gmsh data for current step                 public)cyron 01/09|
  *----------------------------------------------------------------------*/
-void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step)
+void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostringstream& filename, const int& step, RCP<CONTACT::Beam3cmanager> beamcmanager)
 {
   /*the following method writes output data for Gmsh into file with name "filename"; all line elements are written;
    * the nodal displacements are handed over in the variable "dis"; note: in case of parallel computing only
@@ -585,6 +589,18 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow, const std::ostring
           color = 1.0;
         else
           color = 0.5;
+
+        if(DRT::INPUT::IntegralValue<int>(statmechparams_, "BEAMCONTACT"))
+        {
+        	for(int j=0; j<(int)(*(beamcmanager->Pairs())).size(); j++)
+        	{
+						int celeid1 = (*(beamcmanager->Pairs()))[j]->Element1()->Id();
+						int celeid2 = (*(beamcmanager->Pairs()))[j]->Element2()->Id();
+
+						if(element->Id()==celeid1 || element->Id()==celeid2)
+							color = 0.875;
+        	}
+        }
 
         //if no periodic boundary conditions are to be applied, we just plot the current element
         if (periodlength == 0.0)
@@ -1458,11 +1474,14 @@ void StatMechManager::GMSH_2_noded(const int& n,
 			radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(thisele))->Izz()) / M_PI));
 		else if(eot == DRT::ELEMENTS::Truss3Type::Instance())
 			radius = sqrt((dynamic_cast<DRT::ELEMENTS::Truss3*>(thisele))->CSec() / M_PI);
-		else if(thisele->Id()>basisnodes_)
-			radius = sqrt(statmechparams_.get<double>("ALINK",4.75166e-06) / M_PI); //defaul value according to diss. Tharmann
 		else
 			//radius = 0.003;
 			dserror("thisele is not a line element providing its radius.");
+
+		// case: crosslinker
+		if(thisele->Id()>basisnodes_)
+			radius = sqrt(statmechparams_.get<double>("ALINK",4.75166e-06) / M_PI); //defaul value according to diss. Tharmann
+
 #endif
 #endif
   }

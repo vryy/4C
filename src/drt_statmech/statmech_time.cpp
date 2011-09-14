@@ -191,7 +191,10 @@ void StatMechTime::Integrate()
     		std::ostringstream filename;
     			filename << "./GmshOutput/networkInit.pos";
     		//calling method for writing Gmsh output
-    		statmechmanager_->GmshOutput(*dis_,filename,step);
+				if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+					statmechmanager_->GmshOutput(*dis_,filename,step, beamcmanager_);
+				else
+					statmechmanager_->GmshOutput(*dis_,filename,step);
     	}
     }
 
@@ -341,6 +344,12 @@ void StatMechTime::Integrate()
 
     UpdateandOutput();
 
+		//special output for statistical mechanics
+    if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+			statmechmanager_->Output(params_,ndim,time,i,dt,*dis_,*fint_,beamcmanager_);
+    else
+    	statmechmanager_->Output(params_,ndim,time,i,dt,*dis_,*fint_);
+
     //**********************************************************************
     //**********************************************************************
     // update beam contact-specific quantities
@@ -354,9 +363,6 @@ void StatMechTime::Integrate()
     }
     //**********************************************************************
      //**********************************************************************
-
-    //special output for statistical mechanics
-    statmechmanager_->Output(params_,ndim,time,i,dt,*dis_,*fint_);
 
     if (time>=maxtime) break;
   }
@@ -1073,7 +1079,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
 
 
     //Modifikation: sobald Residuum klein, PTC ausgeschaltet
-    if(np < 0.001*resinit || numiter > 5) //
+    if(np < 0.001*resinit || numiter > 5)
     {
       ctransptc = 0.0;
       crotptc = 0.0;
