@@ -19,11 +19,11 @@ Maintainer: Georg Bauer
 #ifndef SCATRA_ELE_IMPL_H
 #define SCATRA_ELE_IMPL_H
 
-
 #include "scatra_ele_impl_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include <Epetra_IntSerialDenseVector.h>
+#include "../drt_lib/drt_singletondestruction.H"
 
 namespace DRT
 {
@@ -36,8 +36,12 @@ namespace ELEMENTS
   versions of ScaTraImpl. The only function
   this class actually defines is Impl, which returns a pointer to
   the appropriate version of ScaTraImpl.
+  Deriving from DRT::SingletonDestruction provides proper registration
+  of singleton at DRT::Problem instance and - as a result -
+  correct memory handling at the end of a BACI run.
+  (correctly delete allocated ScaTraImplInterface instances)
  */
-class ScaTraImplInterface
+class ScaTraImplInterface : public DRT::SingletonDestruction
 {
 
 public:
@@ -110,7 +114,10 @@ public:
   ScaTraImpl(const int numdofpernode, const int numscal);
 
   /// Singleton access method
-  static ScaTraImpl<distype> * Instance(const int numdofpernode, const int numscal);
+  static ScaTraImpl<distype> * Instance(const int numdofpernode, const int numscal, bool create=true );
+
+  /// called upon destruction
+  virtual void Done();
 
   //! number of element nodes (nomenclature: T. Hughes, The finite element method)
   static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;

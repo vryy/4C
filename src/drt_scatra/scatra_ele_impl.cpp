@@ -159,13 +159,36 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraImpl<distype> * DRT::ELEMENTS::ScaTraImpl<distype>::Instance(
     const int numdofpernode,
-    const int numscal
+    const int numscal,
+    bool create
     )
 {
   static ScaTraImpl<distype> * instance;
-  if ( instance==NULL )
-    instance = new ScaTraImpl<distype>(numdofpernode,numscal);
+  if ( create )
+  {
+    if ( instance==NULL )
+    {
+      instance = new ScaTraImpl<distype>(numdofpernode,numscal);
+    }
+  }
+  else
+  {
+    if ( instance!=NULL )
+      delete instance;
+    instance = NULL;
+  }
   return instance;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::Done()
+{
+  // delete this pointer! Afterwards we have to go! But since this is a
+  // cleanup call, we can do it this way.
+  Instance(0,0,false );
 }
 
 

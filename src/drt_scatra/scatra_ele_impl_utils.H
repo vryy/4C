@@ -205,7 +205,7 @@ namespace SCATRA
   //! determine whether there are only two charged species present or not
   bool IsBinaryElectrolyte(const std::vector<double>& valence);
 
-  //! determine indices of the two charged species in case of an binry electrolyte
+  //! determine indices of the two charged species in case of an binary electrolyte
   std::vector<int> GetIndicesBinaryElectrolyte(const std::vector<double>& valence);
 
   //! calculate resultant diffusion coefficient for stabilization of binary electrolyte systems
