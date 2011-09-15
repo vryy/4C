@@ -792,8 +792,6 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_dirichletneumann.cpp
   src/drt_fsi/fsi_dirichletneumannslideale.cpp
   src/drt_fsi/fsi_dyn.cpp
-  src/drt_fsi/fsi_lung_scatra.cpp
-  src/drt_fsi/fsi_lung_scatra_service.cpp
   src/drt_fsi/fsi_fluid_ale.cpp
   src/drt_fsi/fsi_fluid_xfem.cpp
   src/drt_fsi/fsi_lagrangeprec.cpp
@@ -834,6 +832,10 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_statustest.cpp
   src/drt_fsi/fsi_structureale.cpp
   src/drt_fsi/fsi_utils.cpp
+)
+set(OBJS_DRT_FS3I
+  src/drt_fs3i/fs3i_1wc.cpp
+  src/drt_fs3i/fs3i_service.cpp
 )
 set(OBJS_DRT_RED_AIRWAYS
   src/drt_red_airways/airwayimplicitintegration.cpp
@@ -1534,6 +1536,7 @@ add_library(alg_fsi ${OBJS_DRT_FSI})
 add_library(alg_loma ${OBJS_DRT_LOMA})
 add_library(alg_tsi ${OBJS_DRT_TSI})
 add_library(alg_stru_ale ${OBJS_DRT_STRU_ALE})
+add_library(alg_fs3i ${OBJS_DRT_FS3I})
 
 add_library(alg_stk_fsi ${OBJS_STK_FSI})
 
@@ -1544,6 +1547,7 @@ set(MULTIFIELD_LIBRARIES
   alg_tsi
   alg_stk_fsi
   alg_stru_ale
+  alg_fs3i
   )
 
 # the adapter layer
