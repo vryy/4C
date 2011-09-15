@@ -2,12 +2,12 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "fsi_dyn.H"
-#include "fs_monolithic.H"
-#include "fsi_monolithicfluidsplit.H"
-#include "fsi_monolithiclagrange.H"
-#include "fsi_monolithicstructuresplit.H"
-#include "fsi_utils.H"
+#include "../drt_fsi/fsi_dyn.H"
+#include "../drt_fsi/fs_monolithic.H"
+#include "../drt_fsi/fsi_monolithicfluidsplit.H"
+#include "../drt_fsi/fsi_monolithiclagrange.H"
+#include "../drt_fsi/fsi_monolithicstructuresplit.H"
+#include "../drt_fsi/fsi_utils.H"
 
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_condition_utils.H"
@@ -29,12 +29,13 @@
 #include <Epetra_SerialComm.h>
 #endif
 
-#include "fsi_lung_scatra.H"
+#include "fs3i.H"
+#include "fs3i_1wc.H"
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::LungScatra::Scatra2ToScatra1(Teuchos::RCP<Epetra_Vector> iv)
+Teuchos::RCP<Epetra_Vector> FS3I::FS3I_1WC::Scatra2ToScatra1(Teuchos::RCP<Epetra_Vector> iv)
 {
   return scatracoup_.SlaveToMaster(iv);
 }
@@ -42,14 +43,90 @@ Teuchos::RCP<Epetra_Vector> FSI::LungScatra::Scatra2ToScatra1(Teuchos::RCP<Epetr
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::LungScatra::Scatra1ToScatra2(Teuchos::RCP<Epetra_Vector> iv)
+Teuchos::RCP<Epetra_Vector> FS3I::FS3I_1WC::Scatra1ToScatra2(Teuchos::RCP<Epetra_Vector> iv)
 {
   return scatracoup_.MasterToSlave(iv);
 }
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungScatra::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >& vel)
+void FS3I::FS3I_1WC::CheckInterfaceDirichletBC()
+{
+#ifdef PARALLEL
+  Epetra_MpiComm comm(MPI_COMM_WORLD);
+#else
+  Epetra_SerialComm comm;
+#endif
+
+  Teuchos::RCP<DRT::Discretization> masterdis = scatravec_[0]->ScaTraField().Discretization();
+  Teuchos::RCP<DRT::Discretization> slavedis = scatravec_[1]->ScaTraField().Discretization();
+
+  Teuchos::RCP<const Epetra_Map> mastermap = scatracoup_.MasterDofMap();
+  Teuchos::RCP<const Epetra_Map> permmastermap = scatracoup_.PermMasterDofMap();
+  Teuchos::RCP<const Epetra_Map> slavemap = scatracoup_.SlaveDofMap();
+  Teuchos::RCP<const Epetra_Map> permslavemap = scatracoup_.PermSlaveDofMap();
+
+  const Teuchos::RCP<const LINALG::MapExtractor> masterdirichmapex = scatravec_[0]->ScaTraField().DirichMaps();
+  const Teuchos::RCP<const Epetra_Map> masterdirichmap = masterdirichmapex->CondMap();
+
+  // filter out master dirichlet dofs associated with the interface
+  Teuchos::RCP<Epetra_Vector> masterifdirich = rcp(new Epetra_Vector(*mastermap,true));
+  for (int i=0; i<mastermap->NumMyElements(); ++i)
+  {
+    int gid = mastermap->GID(i);
+    if (masterdirichmap->MyGID(gid))
+    {
+      (*masterifdirich)[i] = 1.0;
+    }
+  }
+  Teuchos::RCP<Epetra_Vector> test_slaveifdirich = scatracoup_.MasterToSlave(masterifdirich);
+
+  const Teuchos::RCP<const LINALG::MapExtractor> slavedirichmapex = scatravec_[1]->ScaTraField().DirichMaps();
+  const Teuchos::RCP<const Epetra_Map> slavedirichmap = slavedirichmapex->CondMap();
+
+  // filter out slave dirichlet dofs associated with the interface
+  Teuchos::RCP<Epetra_Vector> slaveifdirich = rcp(new Epetra_Vector(*slavemap,true));
+  for (int i=0; i<slavemap->NumMyElements(); ++i)
+  {
+    int gid = slavemap->GID(i);
+    if (slavedirichmap->MyGID(gid))
+    {
+      (*slaveifdirich)[i] = 1.0;
+    }
+  }
+  Teuchos::RCP<Epetra_Vector> test_masterifdirich = scatracoup_.SlaveToMaster(slaveifdirich);
+
+  // check if the locations of non-zero entries do not match
+  for (int i=0; i<slavedis->DofRowMap()->NumMyElements(); ++i)
+  {
+    int gid = slavedis->DofRowMap()->GID(i);
+    if (slavemap->MyGID(gid)) // in this case, the current dof is part of the interface
+    {
+      if ((*test_slaveifdirich)[slavemap->LID(gid)] == 1.0 and (*slaveifdirich)[slavemap->LID(gid)] != 1.0)
+      {
+        dserror("Dirichlet boundary conditions not matching at the interface");
+      }
+    }
+  }
+
+  for (int i=0; i<masterdis->DofRowMap()->NumMyElements(); ++i)
+  {
+    int gid = masterdis->DofRowMap()->GID(i);
+    if (mastermap->MyGID(gid)) // in this case, the current dof is part of the interface
+    {
+      if ((*test_masterifdirich)[mastermap->LID(gid)] == 1.0 and (*masterifdirich)[mastermap->LID(gid)] != 1.0)
+      {
+        dserror("Dirichlet boundary conditions not matching at the interface");
+      }
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::FS3I_1WC::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >& vel)
 {
   // extract fluid velocities and accelerations
 
@@ -102,7 +179,7 @@ void FSI::LungScatra::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungScatra::SetVelocityFields()
+void FS3I::FS3I_1WC::SetVelocityFields()
 {
   std::vector<Teuchos::RCP<const Epetra_Vector> > vel;
   ExtractVel(vel);
@@ -125,7 +202,7 @@ void FSI::LungScatra::SetVelocityFields()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungScatra::SetMeshDisp()
+void FS3I::FS3I_1WC::SetMeshDisp()
 {
   // fluid field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra = scatravec_[0];
@@ -143,7 +220,7 @@ void FSI::LungScatra::SetMeshDisp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FSI::LungScatra::AbortScatraNonlinIter(const int itnum)
+bool FS3I::FS3I_1WC::AbortScatraNonlinIter(const int itnum)
 {
 #ifdef PARALLEL
   Epetra_MpiComm comm(MPI_COMM_WORLD);
@@ -255,79 +332,5 @@ bool FSI::LungScatra::AbortScatraNonlinIter(const int itnum)
   }
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FSI::LungScatra::CheckInterfaceDirichletBC()
-{
-#ifdef PARALLEL
-  Epetra_MpiComm comm(MPI_COMM_WORLD);
-#else
-  Epetra_SerialComm comm;
-#endif
-
-  Teuchos::RCP<DRT::Discretization> masterdis = scatravec_[0]->ScaTraField().Discretization();
-  Teuchos::RCP<DRT::Discretization> slavedis = scatravec_[1]->ScaTraField().Discretization();
-
-  Teuchos::RCP<const Epetra_Map> mastermap = scatracoup_.MasterDofMap();
-  Teuchos::RCP<const Epetra_Map> permmastermap = scatracoup_.PermMasterDofMap();
-  Teuchos::RCP<const Epetra_Map> slavemap = scatracoup_.SlaveDofMap();
-  Teuchos::RCP<const Epetra_Map> permslavemap = scatracoup_.PermSlaveDofMap();
-
-  const Teuchos::RCP<const LINALG::MapExtractor> masterdirichmapex = scatravec_[0]->ScaTraField().DirichMaps();
-  const Teuchos::RCP<const Epetra_Map> masterdirichmap = masterdirichmapex->CondMap();
-
-  // filter out master dirichlet dofs associated with the interface
-  Teuchos::RCP<Epetra_Vector> masterifdirich = rcp(new Epetra_Vector(*mastermap,true));
-  for (int i=0; i<mastermap->NumMyElements(); ++i)
-  {
-    int gid = mastermap->GID(i);
-    if (masterdirichmap->MyGID(gid))
-    {
-      (*masterifdirich)[i] = 1.0;
-    }
-  }
-  Teuchos::RCP<Epetra_Vector> test_slaveifdirich = scatracoup_.MasterToSlave(masterifdirich);
-
-  const Teuchos::RCP<const LINALG::MapExtractor> slavedirichmapex = scatravec_[1]->ScaTraField().DirichMaps();
-  const Teuchos::RCP<const Epetra_Map> slavedirichmap = slavedirichmapex->CondMap();
-
-  // filter out slave dirichlet dofs associated with the interface
-  Teuchos::RCP<Epetra_Vector> slaveifdirich = rcp(new Epetra_Vector(*slavemap,true));
-  for (int i=0; i<slavemap->NumMyElements(); ++i)
-  {
-    int gid = slavemap->GID(i);
-    if (slavedirichmap->MyGID(gid))
-    {
-      (*slaveifdirich)[i] = 1.0;
-    }
-  }
-  Teuchos::RCP<Epetra_Vector> test_masterifdirich = scatracoup_.SlaveToMaster(slaveifdirich);
-
-  // check if the locations of non-zero entries do not match
-  for (int i=0; i<slavedis->DofRowMap()->NumMyElements(); ++i)
-  {
-    int gid = slavedis->DofRowMap()->GID(i);
-    if (slavemap->MyGID(gid)) // in this case, the current dof is part of the interface
-    {
-      if ((*test_slaveifdirich)[slavemap->LID(gid)] == 1.0 and (*slaveifdirich)[slavemap->LID(gid)] != 1.0)
-      {
-        dserror("Dirichlet boundary conditions not matching at the interface");
-      }
-    }
-  }
-
-  for (int i=0; i<masterdis->DofRowMap()->NumMyElements(); ++i)
-  {
-    int gid = masterdis->DofRowMap()->GID(i);
-    if (mastermap->MyGID(gid)) // in this case, the current dof is part of the interface
-    {
-      if ((*test_masterifdirich)[mastermap->LID(gid)] == 1.0 and (*masterifdirich)[mastermap->LID(gid)] != 1.0)
-      {
-        dserror("Dirichlet boundary conditions not matching at the interface");
-      }
-    }
-  }
-}
 
 #endif

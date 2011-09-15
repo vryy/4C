@@ -37,7 +37,8 @@
 
 #include "../drt_scatra/scatra_utils.H"
 
-#include "fsi_lung_scatra.H"
+#include "../drt_fs3i/fs3i.H"
+#include "../drt_fs3i/fs3i_1wc.H"
 
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_lib/drt_resulttest.H"
@@ -1233,7 +1234,7 @@ void fsi_lung_gas()
       dserror("Cannot find appropriate monolithic solver for coupling %d and linear strategy %d",coupling,linearsolverstrategy);
     }
 
-    Teuchos::RCP<FSI::LungScatra> lungscatra = Teuchos::rcp(new FSI::LungScatra(fsi));
+    Teuchos::RCP<FS3I::FS3I_1WC> lungscatra = Teuchos::rcp(new FS3I::FS3I_1WC(fsi));
 
     lungscatra->ReadRestart();
     lungscatra->SetupFSISystem();

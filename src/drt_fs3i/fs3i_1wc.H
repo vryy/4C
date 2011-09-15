@@ -1,31 +1,30 @@
 #ifdef CCADISCRET
 
-#ifndef FSI_LUNG_SCATRA_H
-#define FSI_LUNG_SCATRA_H
+#ifndef FS3I_1WC_H
+#define FS3I_1WC_H
 
 #include "../drt_scatra/passive_scatra_algorithm.H"
+#include "fs3i.H"
 
-namespace FSI
+namespace FS3I
 {
-  class LungScatra
+  class FS3I_1WC : public FS3I_Base
   {
-
   public:
 
-    LungScatra(Teuchos::RCP<FSI::Monolithic> fsi);
+    FS3I_1WC(Teuchos::RCP< ::FSI::Monolithic> fsi);
 
-    ~LungScatra(){};
+    virtual ~FS3I_1WC(){};
 
     Teuchos::RCP<Epetra_Vector> Scatra2ToScatra1(Teuchos::RCP<Epetra_Vector> iv);
 
     Teuchos::RCP<Epetra_Vector> Scatra1ToScatra2(Teuchos::RCP<Epetra_Vector> iv);
 
-    /// read restart
-    void ReadRestart();
+    virtual void ReadRestart();
 
     void SetupFSISystem();
 
-    void Timeloop();
+    virtual void Timeloop();
 
     void DoFsiStep();
 
@@ -65,7 +64,9 @@ namespace FSI
     /// update concentrations in each iteration
     void FieldUpdateIter();
 
-    void UpdateAndOutput();
+    virtual void Output();
+
+    void UpdateScatraFields();
 
     /// make sure potential Dirichlet conditions at the scatra coupling
     /// interface are defined on both discretizations
@@ -75,7 +76,7 @@ namespace FSI
   private:
 
     /// fsi algorithm
-    Teuchos::RCP<FSI::Monolithic> fsi_;
+    Teuchos::RCP< ::FSI::Monolithic> fsi_;
 
     /// vector of scatra algorithms
     std::vector<Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> > scatravec_;
@@ -116,11 +117,11 @@ namespace FSI
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
-    UTILS::MatrixRowColTransform sbbtransform_;
-    UTILS::MatrixRowTransform sbitransform_;
-    UTILS::MatrixColTransform sibtransform_;
+    FSI::UTILS::MatrixRowColTransform sbbtransform_;
+    FSI::UTILS::MatrixRowTransform sbitransform_;
+    FSI::UTILS::MatrixColTransform sibtransform_;
 
-    UTILS::MatrixRowTransform fbitransform_;
+    FSI::UTILS::MatrixRowTransform fbitransform_;
     ///@}
   };
 

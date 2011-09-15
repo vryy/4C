@@ -2,26 +2,17 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "fsi_dyn.H"
+#include "../drt_fsi/fsi_dyn.H"
 
-#include "fsi_monolithicfluidsplit.H"
-#include "fsi_monolithiclagrange.H"
-#include "fsi_monolithicstructuresplit.H"
-#include "fsi_utils.H"
+#include "../drt_fsi/fsi_monolithicfluidsplit.H"
+#include "../drt_fsi/fsi_monolithiclagrange.H"
+#include "../drt_fsi/fsi_monolithicstructuresplit.H"
+#include "../drt_fsi/fsi_utils.H"
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
 
-#include "fs_monolithic.H"
-
-#include "fsi_nox_aitken.H"
-#include "fsi_nox_group.H"
-#include "fsi_nox_newton.H"
-#include "fsi_statustest.H"
-
-#include <NOX_Epetra_Interface_Jacobian.H>
-#include <NOX_Epetra_Interface_Preconditioner.H>
-#include <NOX_Direction_UserDefinedFactory.H>
+#include "../drt_fsi/fs_monolithic.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
@@ -41,7 +32,7 @@
 #include <Epetra_SerialComm.h>
 #endif
 
-#include "fsi_lung_scatra.H"
+#include "fs3i_1wc.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -51,12 +42,13 @@
 extern struct _GENPROB     genprob;
 
 
-//#define SCATRABLOCKMATRIXMERGE
+#define SCATRABLOCKMATRIXMERGE
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::LungScatra::LungScatra(Teuchos::RCP<FSI::Monolithic> fsi):
+FS3I::FS3I_1WC::FS3I_1WC(Teuchos::RCP<FSI::Monolithic> fsi):
+  FS3I_Base(),
   fsi_(fsi)
 {
   // access the problem-specific parameter lists
@@ -283,7 +275,7 @@ FSI::LungScatra::LungScatra(Teuchos::RCP<FSI::Monolithic> fsi):
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungScatra::ReadRestart()
+void FS3I::FS3I_1WC::ReadRestart()
 {
   // read the restart information, set vectors and variables ---
   // be careful, dofmaps might be changed here in a Redistribute call
@@ -302,7 +294,7 @@ void FSI::LungScatra::ReadRestart()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungScatra::SetupFSISystem()
+void FS3I::FS3I_1WC::SetupFSISystem()
 {
   // now do the coupling setup and create the combined dofmap
   fsi_->SetupSystem();
@@ -311,7 +303,7 @@ void FSI::LungScatra::SetupFSISystem()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungScatra::Timeloop()
+void FS3I::FS3I_1WC::Timeloop()
 {
   fsi_->PrepareTimeloop();
 
@@ -319,24 +311,24 @@ void FSI::LungScatra::Timeloop()
   {
     DoFsiStep();
     DoScatraStep();
+    Output();
   }
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungScatra::DoFsiStep()
+void FS3I::FS3I_1WC::DoFsiStep()
 {
   fsi_->PrepareTimeStep();
   fsi_->TimeStep(fsi_);
   fsi_->Update();
-  fsi_->Output();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungScatra::DoScatraStep()
+void FS3I::FS3I_1WC::DoScatraStep()
 {
 #ifdef PARALLEL
   Epetra_MpiComm comm(MPI_COMM_WORLD);
@@ -376,13 +368,13 @@ void FSI::LungScatra::DoScatraStep()
     itnum++;
   }
 
-  UpdateAndOutput();
+  UpdateScatraFields();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungScatra::PrepareTimeStep()
+void FS3I::FS3I_1WC::PrepareTimeStep()
 {
   SetMeshDisp();
   SetVelocityFields();
@@ -397,7 +389,7 @@ void FSI::LungScatra::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungScatra::EvaluateScatraFields()
+void FS3I::FS3I_1WC::EvaluateScatraFields()
 {
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
@@ -431,7 +423,7 @@ void FSI::LungScatra::EvaluateScatraFields()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungScatra::SetupCoupledScatraSystem()
+void FS3I::FS3I_1WC::SetupCoupledScatraSystem()
 {
   // set up scatra rhs
   SetupCoupledScatraRHS();
@@ -443,7 +435,7 @@ void FSI::LungScatra::SetupCoupledScatraSystem()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungScatra::SetupCoupledScatraRHS()
+void FS3I::FS3I_1WC::SetupCoupledScatraRHS()
 {
   Teuchos::RCP<const Epetra_Vector> scatra1 = scatravec_[0]->ScaTraField().Residual();
   Teuchos::RCP<const Epetra_Vector> scatra2 = scatravec_[1]->ScaTraField().Residual();
@@ -475,7 +467,7 @@ void FSI::LungScatra::SetupCoupledScatraRHS()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungScatra::SetupCoupledScatraVector(Teuchos::RCP<Epetra_Vector> globalvec,
+void FS3I::FS3I_1WC::SetupCoupledScatraVector(Teuchos::RCP<Epetra_Vector> globalvec,
                                                const Teuchos::RCP<const Epetra_Vector> vec1,
                                                const Teuchos::RCP<const Epetra_Vector> vec2)
 {
@@ -503,7 +495,7 @@ void FSI::LungScatra::SetupCoupledScatraVector(Teuchos::RCP<Epetra_Vector> globa
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungScatra::ExtractScatraFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,
+void FS3I::FS3I_1WC::ExtractScatraFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,
                                                 Teuchos::RCP<const Epetra_Vector>& vec1,
                                                 Teuchos::RCP<const Epetra_Vector>& vec2)
 {
@@ -531,7 +523,7 @@ void FSI::LungScatra::ExtractScatraFieldVectors(Teuchos::RCP<const Epetra_Vector
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungScatra::SetupCoupledScatraMatrix()
+void FS3I::FS3I_1WC::SetupCoupledScatraMatrix()
 {
   Teuchos::RCP<LINALG::SparseMatrix> scatra1 = scatravec_[0]->ScaTraField().SystemMatrix();
   Teuchos::RCP<LINALG::SparseMatrix> scatra2 = scatravec_[1]->ScaTraField().SystemMatrix();
@@ -615,7 +607,7 @@ void FSI::LungScatra::SetupCoupledScatraMatrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungScatra::LinearSolveScatra()
+void FS3I::FS3I_1WC::LinearSolveScatra()
 {
   scatraincrement_->PutScalar(0.0);
   CoupledScatraSolve();
@@ -624,7 +616,7 @@ void FSI::LungScatra::LinearSolveScatra()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungScatra::FieldUpdateIter()
+void FS3I::FS3I_1WC::FieldUpdateIter()
 {
   Teuchos::RCP<const Epetra_Vector> inc1;
   Teuchos::RCP<const Epetra_Vector> inc2;
@@ -638,19 +630,33 @@ void FSI::LungScatra::FieldUpdateIter()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungScatra::UpdateAndOutput()
+void FS3I::FS3I_1WC::UpdateScatraFields()
 {
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
     scatra->ScaTraField().Update();
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::FS3I_1WC::Output()
+{
+  fsi_->Output();
+
+  for (unsigned i=0; i<scatravec_.size(); ++i)
+  {
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
     scatra->ScaTraField().Output();
   }
 }
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungScatra::CoupledScatraSolve()
+void FS3I::FS3I_1WC::CoupledScatraSolve()
 {
 #ifdef SCATRABLOCKMATRIXMERGE
   Teuchos::RCP<LINALG::SparseMatrix> sparse = scatrasystemmatrix_->Merge();
