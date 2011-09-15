@@ -254,6 +254,8 @@ void DRT::ELEMENTS::Wall1::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,iseas_);
   // eas type
   AddtoPack(data,eastype_);
+  // kinemtics type
+  AddtoPack(data,kintype_);
   // structale
   AddtoPack(data,structale_);
   //data
@@ -294,6 +296,8 @@ void DRT::ELEMENTS::Wall1::Unpack(const vector<char>& data)
   iseas_ = ExtractInt(position,data);
   // eastype_
   eastype_ = static_cast<EasType>( ExtractInt(position,data) );
+  // kintype_
+  kintype_ = static_cast<KinematicType>( ExtractInt(position,data) );
   // structale_
   structale_ = ExtractInt(position,data);
   //data
