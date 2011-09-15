@@ -386,7 +386,7 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
 			statmechparams_.set("KT",statmechparams_.get<double>("KTACT",statmechparams_.get<double>("KT",0.0)));
 
 		// actions taken when reaching STARTTIMEACT
-		if(fabs(time_-statmechparams_.get<double>("STARTTIMEACT",0.0))<(dt/1e3))
+		if(fabs(time_-statmechparams_.get<double>("STARTTIMEACT",0.0))<(dt/1e3) && statmechparams_.get<int>("REDUCECROSSLINKSBY",0)>0)
 		{
 			if(!discret_.Comm().MyPID())
 			{
