@@ -54,10 +54,10 @@ bool DRT::ELEMENTS::TrussLm::ReadElement(const std::string& eletype,
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::TrussLm::ReadElement()
 {
-  // read element's nodes; in case of a truss element always line2 shape
+  // read element's nodes; in case of a trusslm element line4 shape
   int ierr=0;
 
-  //note: BACI intern type is LINE2, but gid input files work with LIN2
+  //note: BACI intern type is LINE4, but gid input files work with LIN4
   frchk("LIN4",&ierr); //originally LIN2
   // two figures have to be read by frint
   const int nnode=4; //originally (truss3): const int nnode=2;

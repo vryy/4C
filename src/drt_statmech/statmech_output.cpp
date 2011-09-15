@@ -598,7 +598,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
 						int celeid2 = (*(beamcmanager->Pairs()))[j]->Element2()->Id();
 
 						if(element->Id()==celeid1 || element->Id()==celeid2)
-							color = 0.875;
+							color = 0.75;
         	}
         }
 

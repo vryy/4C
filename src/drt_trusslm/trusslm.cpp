@@ -76,7 +76,7 @@ void DRT::ELEMENTS::TrussLmType::SetupElementDefinition( std::map<std::string,st
     ;
 
   defs["LIN4"]
-    .AddIntVector("LIN4",2)
+    .AddIntVector("LIN4",4)
     .AddNamedInt("MAT")
     .AddNamedDouble("CROSS")
     .AddNamedString("KINEM")
@@ -95,7 +95,7 @@ material_(0),
 lrefe_(0),
 crosssec_(0),
 kintype_(trlm_totlag),
-gaussrule_(DRT::UTILS::intrule_line_2point), // intrule_line_2point or intrule_line_4point, prob. 2point?
+gaussrule_(DRT::UTILS::intrule_line_2point),
 xiA_(0.0), // currently, set it to the middle of the filament truss
 xiB_(0.0)
 //note: for corotational approach integration for Neumann conditions only
@@ -397,11 +397,11 @@ int DRT::ELEMENTS::TrussLmType::Initialize(DRT::Discretization& dis)
   //setting beam reference director correctly
   for (int i=0; i<  dis.NumMyColElements(); ++i)
   {
-    //in case that current element is not a beam3 element there is nothing to do and we go back
+    //in case that current element is not a truss3 element there is nothing to do and we go back
     //to the head of the loop
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    //if we get so far current element is a beam3 element and  we get a pointer at it
+    //if we get so far current element is a truss3 element and  we get a pointer at it
     DRT::ELEMENTS::TrussLm* currele = dynamic_cast<DRT::ELEMENTS::TrussLm*>(dis.lColElement(i));
     if (!currele) dserror("cast to TrussLm* failed");
 

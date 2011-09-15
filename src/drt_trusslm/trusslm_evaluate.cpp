@@ -492,6 +492,15 @@ void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass(ParameterList& params,
 	//first, get the transformation matrix from 4-noded to 2-noded
 	Epetra_SerialDenseMatrix trafomatrix = AssembleTrafoMatrix();
 
+	// cout of Trafo matrix
+	cout<<"transformation matrix:"<<endl;
+	for(int i=0; i<trafomatrix.M(); i++)
+	{
+		for(int j=0; j<trafomatrix.N(); j++)
+			cout<<trafomatrix(i,j)<<" ";
+		cout<<endl;
+	}
+
   //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node, ...)
 	Epetra_SerialDenseMatrix xcurr(12,1);
   /*current nodal displacement (first entries 0 .. 2 for first node, 3 ..5 for second node, ...) compared
@@ -538,6 +547,22 @@ void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass(ParameterList& params,
   else
 		dserror("Unknown type kintype_ for TrussLm");
 
+  // cout of stiffness matrix and mass matrix
+  cout<<"interpolated stiffness matrix:"<<endl;
+  for(int i=0; i<stiffmatint->M(); i++)
+  {
+  	for(int j=0; j<stiffmatint->N(); j++)
+  		cout<<(*stiffmatint)(i,j)<<" ";
+  	cout<<endl;
+  }
+  cout<<"interpolated mass matrix:"<<endl;
+  for(int i=0; i<massmatint->M(); i++)
+  {
+  	for(int j=0; j<massmatint->N(); j++)
+  		cout<<(*massmatint)(i,j)<<" ";
+  	cout<<endl;
+  }
+
   /*the following function call applies statistical forces and damping matrix according to the fluctuation dissipation theorem;
    * it is dedicated to the application of truss3 elements in the frame of statistical mechanics problems; for these problems a
    * special vector has to be passed to the element packed in the params parameter list; in case that the control routine calling
@@ -548,6 +573,21 @@ void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass(ParameterList& params,
 
   //-------------backwards projection of interpolated system onto real (4-node) system-------------------------
   RestoreSystemSize(trafomatrix, stiffmatint, massmatint, forceint, stiffmatrix, massmatrix, force);
+  // cout of stiffness matrix and mass matrix
+  cout<<"resulting stiffness matrix:"<<endl;
+  for(int i=0; i<stiffmatrix->M(); i++)
+  {
+  	for(int j=0; j<stiffmatrix->N(); j++)
+  		cout<<(*stiffmatrix)(i,j)<<" ";
+  	cout<<endl;
+  }
+  cout<<"resulting mass matrix:"<<endl;
+  for(int i=0; i<massmatrix->M(); i++)
+  {
+  	for(int j=0; j<massmatrix->N(); j++)
+  		cout<<(*massmatrix)(i,j)<<" ";
+  	cout<<endl;
+  }
 
   return;
 }

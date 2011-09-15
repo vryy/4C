@@ -349,7 +349,7 @@ private:
   enum KinematicType
   {
     trlm_totlag,
-    //trlm_engstrain
+    trlm_engstrain
   };
 
   //! container containing all kind of TrussLm thisandthat
