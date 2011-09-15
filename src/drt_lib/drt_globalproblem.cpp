@@ -38,6 +38,9 @@ Maintainer: Ulrich Kuettler
 #include "../drt_mat/micromaterial.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
+#include "../drt_torsion2/torsion2.H"
+#include "../drt_torsion3/torsion3.H"
+
 #include "../drt_io/io_control.H"
 
 
@@ -1294,11 +1297,18 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
   for (int i=0; i<macro_dis->ElementColMap()->NumMyElements(); ++i)
   {
     DRT::Element* actele = macro_dis->lColElement(i);
-    RCP<MAT::Material> actmat = actele->Material();
-    if (actmat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+    DRT::ElementType& acteletype = actele->ElementType();
+
+    // workaround: torsion elements do not define a material!
+    if (acteletype != DRT::ELEMENTS::Torsion2Type::Instance() and
+        acteletype != DRT::ELEMENTS::Torsion3Type::Instance())
     {
-      MAT::PAR::Parameter* actparams = actmat->Parameter();
-      my_multimat_IDs.insert(actparams->Id());
+      RCP<MAT::Material> actmat = actele->Material();
+      if (actmat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::PAR::Parameter* actparams = actmat->Parameter();
+        my_multimat_IDs.insert(actparams->Id());
+      }
     }
   }
 
