@@ -73,13 +73,16 @@ namespace FS3I
     void CheckInterfaceDirichletBC();
 
 
-  private:
+  protected:
 
     /// fsi algorithm
-    Teuchos::RCP< ::FSI::Monolithic> fsi_;
+     Teuchos::RCP< ::FSI::Monolithic> fsi_;
 
-    /// vector of scatra algorithms
-    std::vector<Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> > scatravec_;
+     /// vector of scatra algorithms
+     std::vector<Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> > scatravec_;
+
+
+  private:
 
     /// vector of scatra field map extractors (coupled vs. uncoupled dofs)
     std::vector<LINALG::MultiMapExtractor> scatrafieldexvec_;

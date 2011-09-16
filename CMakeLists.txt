@@ -504,6 +504,7 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_scatra_fluid_ale_coupling_algo.cpp
   src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.cpp
   src/drt_adapter/adapter_structure.cpp
+  src/drt_adapter/adapter_structure_bio.cpp
   src/drt_adapter/adapter_structure_constr_merged.cpp
   src/drt_adapter/adapter_structure_lung.cpp
   src/drt_adapter/adapter_structure_strugenalpha.cpp
@@ -836,6 +837,7 @@ set(OBJS_DRT_FSI
 set(OBJS_DRT_FS3I
   src/drt_fs3i/fs3i_1wc.cpp
   src/drt_fs3i/fs3i_service.cpp
+  src/drt_fs3i/fs3i_biofilm_growth.cpp
 )
 set(OBJS_DRT_RED_AIRWAYS
   src/drt_red_airways/airwayimplicitintegration.cpp

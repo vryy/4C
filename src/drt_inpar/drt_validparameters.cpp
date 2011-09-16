@@ -3149,6 +3149,17 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   IntParameter("MAGNETICFIELD_FUNCNO",-1,"function number defining an externally imposed magnetic field",&elchcontrol);
 
   /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& biofilmcontrol = list->sublist(
+      "BIOFILM CONTROL",
+      false,
+      "control parameters for biofilm problems\n");
+
+  BoolParameter("SURFACEGROWTH","No","Scatra algorithm for surface growth",&biofilmcontrol);
+  DoubleParameter("GROWNVOLUME",0.0,"Volume for surface growth",&biofilmcontrol);
+  DoubleParameter("BIOTIMESTEP",0.05,"Time step size for surface grown",&biofilmcontrol);
+  IntParameter("BIONUMSTEP",0,"Maximum number of steps for surface grown",&biofilmcontrol);
+
+  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrol = list->sublist("COMBUSTION CONTROL",false,
       "control parameters for a combustion problem");
 

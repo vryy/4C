@@ -268,6 +268,11 @@ public:
   */
   virtual void ClearConditions() { condition_.clear(); return; }
 
+  /*!
+  \brief Change position reference
+  */
+  virtual void ChangePos(int k);
+
   //@}
 
 protected:

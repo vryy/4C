@@ -39,6 +39,7 @@
 
 #include "../drt_fs3i/fs3i.H"
 #include "../drt_fs3i/fs3i_1wc.H"
+#include "../drt_fs3i/fs3i_biofilm_growth.H"
 
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_lib/drt_resulttest.H"
@@ -1234,16 +1235,35 @@ void fsi_lung_gas()
       dserror("Cannot find appropriate monolithic solver for coupling %d and linear strategy %d",coupling,linearsolverstrategy);
     }
 
-    Teuchos::RCP<FS3I::FS3I_1WC> lungscatra = Teuchos::rcp(new FS3I::FS3I_1WC(fsi));
+    // access the biofilm-specific parameter list
+        const Teuchos::ParameterList& biofilmcontrol = DRT::Problem::Instance()->BIOFILMControlParams();
+    	const int surfgrowth = DRT::INPUT::IntegralValue<int>(biofilmcontrol,"SURFACEGROWTH");
 
-    lungscatra->ReadRestart();
-    lungscatra->SetupFSISystem();
-    lungscatra->Timeloop();
+    	if (surfgrowth==1)
+    		{
+    		cout << "\n\nSurface growth algorithm"<< endl;
 
-    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
-    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
-    DRT::Problem::Instance()->TestAll(comm);
-    break;
+    		// create an FSI::BiofilmGrowth instance
+    		Teuchos::RCP<FS3I::BiofilmGrowth> biofilmgrowth = Teuchos::rcp(new FS3I::BiofilmGrowth(fsi, comm, fsidyn));
+    		biofilmgrowth->ReadRestart(0);
+    		//biofilmgrowth->SetupFSISystem();
+    		biofilmgrowth->OutTimeloop();
+    		}
+    		else
+    		{
+
+			Teuchos::RCP<FS3I::FS3I_1WC> lungscatra = Teuchos::rcp(new FS3I::FS3I_1WC(fsi));
+
+			lungscatra->ReadRestart();
+			lungscatra->SetupFSISystem();
+			lungscatra->Timeloop();
+    		}
+
+
+		DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
+		DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
+		DRT::Problem::Instance()->TestAll(comm);
+		break;
   }
   default:
   {

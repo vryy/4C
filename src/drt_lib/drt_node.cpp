@@ -232,12 +232,14 @@ DRT::Condition* DRT::Node::GetCondition(const string& name) const
 }
 
 
-
-
-
-
-
-
+/*----------------------------------------------------------------------*
+ |  Change position reference                                  (public) |
+ |                                                            mc 	    |
+ *----------------------------------------------------------------------*/
+void DRT::Node::ChangePos(int k)
+{
+	return;
+}
 
 
 #endif  // #ifdef CCADISCRET
