@@ -191,9 +191,6 @@ void LOMA::Algorithm::GenAlphaOuterLoop()
   {
     itnum++;
 
-    // store scalar from first solution for convergence check
-    ScaTraField().ScalIncNp()->Update(1.0,*ScaTraField().Phinp(),0.0);
-
     // in case of non-constant thermodynamic pressure: compute
     // (either based on energy conservation or based on mass conservation)
     if (consthermpress_=="No_energy")
@@ -266,9 +263,6 @@ void LOMA::Algorithm::OSTBDF2OuterLoop()
   while (stopnonliniter==false)
   {
     itnum++;
-
-    // store scalar from first solution for convergence check
-    ScaTraField().ScalIncNp()->Update(1.0,*ScaTraField().Phinp(),0.0);
 
     // in case of non-constant thermodynamic pressure: compute
     // (either based on energy conservation or based on mass conservation)

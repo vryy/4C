@@ -330,9 +330,6 @@ public:
   /// routine to return trueresidual at time step n+1 for low-Mach-number flow
   Teuchos::RCP<Epetra_Vector> TrueResidual() { return trueresidual_; }
 
-  /// routine to return scalar increment at time step n+1 for low-Mach-number flow
-  Teuchos::RCP<Epetra_Vector> ScalIncNp() { return phiincnp_; }
-
   /// routine to return discretization
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
 
@@ -769,10 +766,6 @@ protected:
   RCP<Epetra_Vector>    elchdensnp_;
   RCP<Epetra_Vector>    elchdensn_;
   RCP<Epetra_Vector>    elchdensnm_;
-
-  /// scalar and velocity increment at time n+1
-  RCP<Epetra_Vector>       phiincnp_;
-  //RCP<Epetra_MultiVector>  velincnp_;
 
   /// histvector --- a linear combination of phinm, phin (BDF)
   ///                or phin, phidtn (One-Step-Theta)

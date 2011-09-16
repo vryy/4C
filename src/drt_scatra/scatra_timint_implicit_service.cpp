@@ -931,71 +931,62 @@ bool SCATRA::ScaTraTimIntImpl::LomaConvergenceCheck(int          itnum,
 {
   bool stopnonliniter = false;
 
-  // define L2-norm of incremental scalar and scalar
-  double phiincnorm_L2;
-  double phinorm_L2;
+  // define L2-norm of residual, incremental scalar and scalar
+  double resnorm_L2(0.0);
+  double phiincnorm_L2(0.0);
+  double phinorm_L2(0.0);
 
-  // get increment of (species and) temperature
-  phiincnp_->Update(1.0,*phinp_,-1.0);
-
-  // for reactive systems, extract temperature and use as convergence criterion
-  if (numscal_>1)
+  // for the time being, only one scalar considered for low-Mach-number flow
+  /*if (numscal_>1)
   {
-    Teuchos::RCP<Epetra_Vector> onlyphi = splitter_->ExtractCondVector(phiincnp_);
+    Teuchos::RCP<Epetra_Vector> onlyphi = splitter_->ExtractCondVector(increment_);
     onlyphi->Norm2(&phiincnorm_L2);
 
     splitter_->ExtractCondVector(phinp_,onlyphi);
     onlyphi->Norm2(&phinorm_L2);
   }
-  else
-  {
-    phiincnp_->Norm2(&phiincnorm_L2);
-    phinp_->Norm2(&phinorm_L2);
-  }
+  else*/
+  residual_ ->Norm2(&resnorm_L2);
+  increment_->Norm2(&phiincnorm_L2);
+  phinp_    ->Norm2(&phinorm_L2);
 
-  /*double velincnorm_L2;
-  double velnorm_L2;
-  velincnp_->Update(1.0,*convel_,-1.0);
-  velincnp_->Norm2(&velincnorm_L2);
-  convel_->Norm2(&velnorm_L2);*/
+  // check for any INF's and NaN's
+  if (std::isnan(resnorm_L2) or
+      std::isnan(phiincnorm_L2) or
+      std::isnan(phinorm_L2))
+    dserror("At least one of the calculated vector norms is NaN.");
 
-  // care for the case that there is (almost) zero scalar or velocity
-  // (usually not required for temperature)
-  //if (velnorm_L2 < 1e-6) velnorm_L2 = 1.0;
-  //if (phinorm_L2 < 1e-6) phinorm_L2 = 1.0;
+  if (abs(std::isinf(resnorm_L2)) or
+      abs(std::isinf(phiincnorm_L2)) or
+      abs(std::isinf(phinorm_L2)))
+    dserror("At least one of the calculated vector norms is INF.");
+
+  // for scalar norm being (close to) zero, set to one
+  if (phinorm_L2 < 1e-5) phinorm_L2 = 1.0;
 
   if (myrank_==0)
   {
     cout<<"\n************************\n  OUTER ITERATION STEP\n************************\n";
-    printf("+------------+-------------------+--------------+\n");
-    printf("|- step/max -|- tol      [norm] -|- scalar-inc -|\n");
-    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   |",
-         itnum,itmax,ittol,phiincnorm_L2/phinorm_L2);
-    printf("\n");
-    printf("+------------+-------------------+--------------+\n");
-
-    /*printf("+------------+-------------------+--------------+--------------+\n");
-    printf("|- step/max -|- tol      [norm] -|- scalar-inc -|-- vel-inc --|\n");
+    printf("+------------+-------------------+--------------+--------------+\n");
+    printf("|- step/max -|- tol      [norm] -|- residual   -|- scalar-inc -|\n");
     printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",
-         itnum,itmax,ittol,phiincnorm_L2/phinorm_L2,velincnorm_L2/velnorm_L2);
+         itnum,itmax,ittol,resnorm_L2,phiincnorm_L2/phinorm_L2);
     printf("\n");
-    printf("+------------+-------------------+--------------+--------------+\n");*/
+    printf("+------------+-------------------+--------------+--------------+\n");
   }
 
-  /*if ((phiincnorm_L2/phinorm_L2 <= ittol) and (velincnorm_L2/velnorm_L2 <= ittol))
-    stopnonliniter=true;*/
-  if ((phiincnorm_L2/phinorm_L2 <= ittol)) stopnonliniter=true;
+  if ((resnorm_L2 <= ittol) and
+      (phiincnorm_L2/phinorm_L2 <= ittol)) stopnonliniter=true;
 
   // warn if itemax is reached without convergence, but proceed to next timestep
-  /*if ((itnum == itmax) and
-      ((phiincnorm_L2/phinorm_L2 > ittol) or (velincnorm_L2/velnorm_L2 > ittol)))*/
-  if ((itnum == itmax) and (phiincnorm_L2/phinorm_L2 > ittol))
+  if ((itnum == itmax) and
+      ((resnorm_L2 > ittol) or (phiincnorm_L2/phinorm_L2 > ittol)))
   {
     stopnonliniter=true;
     if (myrank_==0)
     {
-      printf("|     >>>>>> not converged in itemax steps!     |\n");
-      printf("+-----------------------------------------------+\n");
+      printf("|            >>>>>> not converged in itemax steps!             |\n");
+      printf("+--------------------------------------------------------------+\n");
     }
   }
 

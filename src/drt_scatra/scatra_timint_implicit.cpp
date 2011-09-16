@@ -416,17 +416,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   }
 
   // -------------------------------------------------------------------
-  // create specific vectors for low-Mach-number case
-  // (i.e., scalar variable is temperature)
-  // get also turbulence model and parameters
+  // get turbulence model and parameters for low-Mach-number case
   // -------------------------------------------------------------------
   turbmodel_ = false;
   if (scatratype_==INPAR::SCATRA::scatratype_loma)
   {
-    // scalar and velocity increment at time n+1
-    phiincnp_ = LINALG::CreateVector(*dofrowmap,true);
-    //velincnp_  = rcp(new Epetra_MultiVector(*noderowmap,3,true));
-
     // potential turbulence model
     if (turbparams->get<string>("PHYSICAL_MODEL") != "no_model")
       turbmodel_ = true;
