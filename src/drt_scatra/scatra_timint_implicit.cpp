@@ -1319,6 +1319,11 @@ void SCATRA::ScaTraTimIntImpl::ApplyDirichletToSystem()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc)
 {
+  // store incremental vector to be available for convergence check
+  // if incremental vector is received from outside for coupled problem
+  increment_->Update(1.0,*inc,0.0);
+
+  // update scalar values by adding increments
   phinp_->Update(1.0,*inc,1.0);
 }
 
