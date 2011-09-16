@@ -516,7 +516,8 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);
 
-  if (Material()->MaterialType() == INPAR::MAT::m_contchainnetw){
+  if (Material()->MaterialType() == INPAR::MAT::m_contchainnetw)
+  {
     string fiber = "Fiber1";
     names[fiber] = 3; // 3-dim vector
     fiber = "Fiber2";
@@ -589,7 +590,9 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
       names[fiber] = 3; // 3-dim vector
       fiber = "Fiber2";
       names[fiber] = 3; // 3-dim vector
-    } else if (grow->Matelastic()->MaterialType() == INPAR::MAT::m_humphreycardiovascular){
+    } 
+    else if (grow->Matelastic()->MaterialType() == INPAR::MAT::m_humphreycardiovascular)
+    {
       fiber = "Fiber1";
       names[fiber] = 3; // 3-dim vector
       fiber = "Fiber2";
@@ -612,12 +615,12 @@ void DRT::ELEMENTS::So_hex8::VisNames(map<string,int>& names)
     names[fiber] = 1;
   }
   if (Material()->MaterialType() == INPAR::MAT::m_aaaneohooke_stopro)
-    {
-        string fiber = "beta";
-        names[fiber] = 1; // scalar
-        fiber = "youngs";
-        names[fiber] = 1; // scalar
-    }
+  {
+    string fiber = "beta";
+    names[fiber] = 1; // scalar
+    fiber = "youngs";
+    names[fiber] = 1; // scalar
+  }
 
   return;
 }
@@ -631,19 +634,24 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
   if (DRT::Element::VisData(name,data))
     return true;
 
-  if (Material()->MaterialType() == INPAR::MAT::m_contchainnetw){
+  if (Material()->MaterialType() == INPAR::MAT::m_contchainnetw)
+  {
     RefCountPtr<MAT::Material> mat = Material();
     MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
-    if (!chain->Initialized()){
+    if (!chain->Initialized())
+    {
       data[0] = 0.0; data[1] = 0.0; data[2] = 0.0;
-    } else {
+    } 
+    else 
+    {
       RCP<vector<vector<double> > > gplis = chain->Getli();
       RCP<vector<vector<double> > > gpli0s = chain->Getli0();
       RCP<vector<LINALG::Matrix<3,3> > > gpnis = chain->Getni();
 
       vector<double> centerli (3,0.0);
       vector<double> centerli_0 (3,0.0);
-      for (int i = 0; i < (int)gplis->size(); ++i) {
+      for (int i = 0; i < (int)gplis->size(); ++i) 
+      {
         LINALG::Matrix<3,1> loc(&(gplis->at(i)[0]));
         //Epetra_SerialDenseVector loc(CV,&(gplis->at(i)[0]),3);
         LINALG::Matrix<3,1> glo;
@@ -679,41 +687,74 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
       LINALG::Matrix<3,3> T(gpnis->at(gp).A(),true);
       vector<double> gpli =  chain->Getli()->at(gp);
 
-      if (name == "Fiber1"){
+      if (name == "Fiber1")
+      {
         if ((int)data.size()!=3) dserror("size mismatch");
-        data[0] = centerli[0]; data[1] = -centerli[1]; data[2] = -centerli[2];
-      } else if (name == "Fiber2"){
-        data[0] = centerli[0]; data[1] = centerli[1]; data[2] = -centerli[2];
-      } else if (name == "Fiber3"){
-        data[0] = centerli[0]; data[1] = centerli[1]; data[2] = centerli[2];
-      } else if (name == "Fiber4"){
-        data[0] = -centerli[0]; data[1] = -centerli[1]; data[2] = centerli[2];
-      } else if (name == "FiberCell1"){
+        data[0] = centerli[0]; 
+        data[1] = -centerli[1]; 
+        data[2] = -centerli[2];
+      } 
+      else if (name == "Fiber2")
+      {
+        data[0] = centerli[0]; 
+        data[1] = centerli[1]; 
+        data[2] = -centerli[2];
+      }
+      else if (name == "Fiber3")
+      {
+        data[0] = centerli[0]; 
+        data[1] = centerli[1]; 
+        data[2] = centerli[2];
+      }
+      else if (name == "Fiber4")
+      {
+        data[0] = -centerli[0]; 
+        data[1] = -centerli[1]; 
+        data[2] = centerli[2];
+      } 
+      else if (name == "FiberCell1")
+      {
         LINALG::Matrix<3,1> e(true);
         e(0) = gpli[0];
         LINALG::Matrix<3,1> glo;
         //glo.Multiply('N','N',1.0,T,e,0.0);
         glo.Multiply(T, e);
-        data[0] = glo(0); data[1] = glo(1); data[2] = glo(2);
-      } else if (name == "FiberCell2"){
+        data[0] = glo(0); 
+        data[1] = glo(1); 
+        data[2] = glo(2);
+      }
+      else if (name == "FiberCell2")
+      {
         LINALG::Matrix<3,1> e(true);
         e(1) = gpli[1];
         LINALG::Matrix<3,1> glo;
         //glo.Multiply('N','N',1.0,T,e,0.0);
         glo.Multiply(T, e);
-        data[0] = glo(0); data[1] = glo(1); data[2] = glo(2);
-      } else if (name == "FiberCell3"){
+        data[0] = glo(0); 
+        data[1] = glo(1); 
+        data[2] = glo(2);
+      } 
+      else if (name == "FiberCell3")
+      {
         LINALG::Matrix<3,1> e(true);
         e(2) = gpli[2];
         LINALG::Matrix<3,1> glo;
         //glo.Multiply('N','N',1.0,T,e,0.0);
         glo.Multiply(T, e);
-        data[0] = glo(0); data[1] = glo(1); data[2] = glo(2);
-      } else if (name == "l1"){
+        data[0] = glo(0); 
+        data[1] = glo(1); 
+        data[2] = glo(2);
+      } 
+      else if (name == "l1")
+      {
         data[0] = centerli_0[0];
-      } else if (name == "l2"){
+      }
+      else if (name == "l2")
+      {
         data[0] = centerli_0[1];
-      } else if (name == "l3"){
+      }
+      else if (name == "l3")
+      {
         data[0] = centerli_0[2];
 //      } else if (name == "l1_0"){
 //        data[0] = centerli_0[0];
@@ -721,48 +762,86 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
 //        data[0] = centerli_0[1];
 //      } else if (name == "l3_0"){
 //        data[0] = centerli_0[2];
-      } else {
+      }
+      else
+      {
         return false;
       }
     }
   }
-  if (Material()->MaterialType() == INPAR::MAT::m_artwallremod){
+  if (Material()->MaterialType() == INPAR::MAT::m_artwallremod)
+  {
     MAT::ArtWallRemod* art = static_cast <MAT::ArtWallRemod*>(Material().get());
     vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
     vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
-    if (name == "Fiber1"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
-    } else if (name == "Fiber2"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
-    } else {
+    if (name == "Fiber1")
+    {
+      if ((int)data.size()!=3) 
+        dserror("size mismatch");
+      data[0] = a1[0];
+      data[1] = a1[1];
+      data[2] = a1[2];
+    }
+    else if (name == "Fiber2")
+    {
+      if ((int)data.size()!=3) 
+        dserror("size mismatch");
+      data[0] = a2[0];
+      data[1] = a2[1];
+      data[2] = a2[2];
+    }
+    else
+    {
      return false;
     }
   }
-  if (Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic){
+  if (Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic)
+  {
     MAT::ViscoAnisotropic* art = static_cast <MAT::ViscoAnisotropic*>(Material().get());
     vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
     vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
-    if (name == "Fiber1"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
-    } else if (name == "Fiber2"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
-    } else {
+    if (name == "Fiber1")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
+      data[0] = a1[0];
+      data[1] = a1[1];
+      data[2] = a1[2];
+    }
+    else if (name == "Fiber2")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
+      data[0] = a2[0];
+      data[1] = a2[1];
+      data[2] = a2[2];
+    }
+    else
+    {
       return false;
     }
   }
-  if (Material()->MaterialType() == INPAR::MAT::m_anisotropic_balzani){
+  if (Material()->MaterialType() == INPAR::MAT::m_anisotropic_balzani)
+  {
     MAT::AnisotropicBalzani* balz = static_cast <MAT::AnisotropicBalzani*>(Material().get());
-    if (name == "Fiber1"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = balz->Geta1().at(0); data[1] = balz->Geta1().at(1); data[2] = balz->Geta1().at(2);
-    } else if (name == "Fiber2"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = balz->Geta2().at(0); data[1] = balz->Geta2().at(1); data[2] = balz->Geta2().at(2);
-    } else {
+    if (name == "Fiber1")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
+      data[0] = balz->Geta1().at(0);
+      data[1] = balz->Geta1().at(1);
+      data[2] = balz->Geta1().at(2);
+    }
+    else if (name == "Fiber2")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
+      data[0] = balz->Geta2().at(0);
+      data[1] = balz->Geta2().at(1);
+      data[2] = balz->Geta2().at(2);
+    }
+    else
+    {
       return false;
     }
   }
@@ -771,142 +850,252 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, vector<double>& data)
     MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
     if (elahy->Anisotropic())
     {
-      if (name == "Fiber1"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = (elahy->Geta1())(0);
-      data[1] = (elahy->Geta1())(1);
-      data[2] = (elahy->Geta1())(2);
-    } else if (name == "Fiber2"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = (elahy->Geta2())(0);
-      data[1] = (elahy->Geta2())(1);
-      data[2] = (elahy->Geta2())(2);
-    } else {
-      return false;
-    }
+      if (name == "Fiber1")
+      {
+        if ((int)data.size()!=3)
+          dserror("size mismatch");
+        data[0] = (elahy->Geta1())(0);
+        data[1] = (elahy->Geta1())(1);
+        data[2] = (elahy->Geta1())(2);
+      }
+      else if (name == "Fiber2")
+      {
+        if ((int)data.size()!=3)
+          dserror("size mismatch");
+        data[0] = (elahy->Geta2())(0);
+        data[1] = (elahy->Geta2())(1);
+        data[2] = (elahy->Geta2())(2);
+      }
+      else
+      {
+        return false;
+      }
     }
   }
-  if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
+  if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular)
+  {
     MAT::HolzapfelCardio* art = static_cast <MAT::HolzapfelCardio*>(Material().get());
-    if (name == "Fiber1"){
-      if ((int)data.size()!=3) dserror("size mismatch");
+    if (name == "Fiber1")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
       vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
-      data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
-    } else if (name == "Fiber2"){
-      if ((int)data.size()!=3) dserror("size mismatch");
+      data[0] = a1[0];
+      data[1] = a1[1];
+      data[2] = a1[2];
+    }
+    else if (name == "Fiber2")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
       vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
-      data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
-    } else {
+      data[0] = a2[0];
+      data[1] = a2[1];
+      data[2] = a2[2];
+    } 
+    else 
+    {
       return false;
     }
   }
-  if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular){
+  if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular)
+  {
     MAT::HumphreyCardio* art = static_cast <MAT::HumphreyCardio*>(Material().get());
-    if (name == "Fiber1"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
+    if (name == "Fiber1")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
+      vector<double> a1 = art->Geta1()->at(0); // get a1 of first gp
       data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
-    } else if (name == "Fiber2"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
-      data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
-    } else if (name == "Fiber3"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      vector<double> a3 = art->Geta3()->at(0);  // get a3 of first gp
-      data[0] = a3[0]; data[1] = a3[1]; data[2] = a3[2];
-    } else if (name == "Fiber4"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      vector<double> a4 = art->Geta4()->at(0);  // get a4 of first gp
-      data[0] = a4[0]; data[1] = a4[1]; data[2] = a4[2];
-    } else {
-      return false;
-    }
-  }
-  if (Material()->MaterialType() == INPAR::MAT::m_growth){
-    MAT::Growth* grow = static_cast <MAT::Growth*>(Material().get());
-    if (name == "Theta"){
-      if ((int)data.size()!=1) dserror("size mismatch");
-      double temp = 0.0;
-      for (int iter=0; iter<NUMGPT_SOH8; iter++) temp += grow->Gettheta()->at(iter);
-      data[0] = temp/NUMGPT_SOH8;
-    } else if (name == "Mandel"){
-      if ((int)data.size()!=1) dserror("size mismatch");
-      double temp = 0.0;
-      for (int iter=0; iter<NUMGPT_SOH8; iter++) temp += grow->Getmandel()->at(iter);
-      data[0] = temp/NUMGPT_SOH8;
-    } else if (grow->Matelastic()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
-      MAT::HolzapfelCardio* art = static_cast <MAT::HolzapfelCardio*>(grow->Matelastic().get());
-      if (name == "Fiber1") {
-        if ((int)data.size()!=3) dserror("size mismatch");
-        vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
-        data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
-      } else if (name == "Fiber2") {
-        if ((int)data.size()!=3) dserror("size mismatch");
-        vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
-        data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
-      } else {
+    } 
+    else if (name == "Fiber2")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
+      vector<double> a2 = art->Geta2()->at(0); // get a2 of first gp
+      data[0] = a2[0];
+      data[1] = a2[1];
+      data[2] = a2[2];
+      }
+      else if (name == "Fiber3")
+      {
+        if ((int)data.size()!=3)
+          dserror("size mismatch");
+        vector<double> a3 = art->Geta3()->at(0); // get a3 of first gp
+        data[0] = a3[0];
+        data[1] = a3[1];
+        data[2] = a3[2];
+      }
+      else if (name == "Fiber4")
+      {
+        if ((int)data.size()!=3)
+          dserror("size mismatch");
+        vector<double> a4 = art->Geta4()->at(0); // get a4 of first gp
+        data[0] = a4[0];
+        data[1] = a4[1];
+        data[2] = a4[2];
+      } else
+      {
         return false;
       }
-    } else if (grow->Matelastic()->MaterialType() == INPAR::MAT::m_humphreycardiovascular){
-      MAT::HumphreyCardio* art = static_cast <MAT::HumphreyCardio*>(grow->Matelastic().get());
-      if (name == "Fiber1"){
-        if ((int)data.size()!=3) dserror("size mismatch");
-        vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
-        data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
-      } else if (name == "Fiber2"){
-        if ((int)data.size()!=3) dserror("size mismatch");
-        vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
-        data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
-      } else if (name == "Fiber3"){
-        if ((int)data.size()!=3) dserror("size mismatch");
-        vector<double> a3 = art->Geta3()->at(0);  // get a3 of first gp
-        data[0] = a3[0]; data[1] = a3[1]; data[2] = a3[2];
-      } else if (name == "Fiber4"){
-        if ((int)data.size()!=3) dserror("size mismatch");
-        vector<double> a4 = art->Geta4()->at(0);  // get a4 of first gp
-        data[0] = a4[0]; data[1] = a4[1]; data[2] = a4[2];
-      } else {
+    }
+  if (Material()->MaterialType() == INPAR::MAT::m_growth)
+    {
+      MAT::Growth* grow = static_cast <MAT::Growth*>(Material().get());
+      if (name == "Theta")
+      {
+        if ((int)data.size()!=1)
+          dserror("size mismatch");
+        double temp = 0.0;
+        for (int iter=0; iter<NUMGPT_SOH8; iter++)
+          temp += grow->Gettheta()->at(iter);
+        data[0] = temp/NUMGPT_SOH8;
+      }
+      else if (name == "Mandel")
+      {
+        if ((int)data.size()!=1)
+          dserror("size mismatch");
+        double temp = 0.0;
+        for (int iter=0; iter<NUMGPT_SOH8; iter++)
+          temp += grow->Getmandel()->at(iter);
+        data[0] = temp/NUMGPT_SOH8;
+      }
+      else if (grow->Matelastic()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular)
+      {
+        MAT::HolzapfelCardio* art = static_cast <MAT::HolzapfelCardio*>(grow->Matelastic().get());
+        if (name == "Fiber1")
+        {
+          if ((int)data.size()!=3)
+            dserror("size mismatch");
+          vector<double> a1 = art->Geta1()->at(0); // get a1 of first gp
+          data[0] = a1[0];
+          data[1] = a1[1];
+          data[2] = a1[2];
+        }
+        else if (name == "Fiber2")
+        {
+          if ((int)data.size()!=3)
+            dserror("size mismatch");
+          vector<double> a2 = art->Geta2()->at(0); // get a2 of first gp
+          data[0] = a2[0];
+          data[1] = a2[1];
+          data[2] = a2[2];
+        }
+        else
+        {
+          return false;
+        }
+      }
+      else if (grow->Matelastic()->MaterialType() == INPAR::MAT::m_humphreycardiovascular)
+      {
+        MAT::HumphreyCardio* art = static_cast <MAT::HumphreyCardio*>(grow->Matelastic().get());
+        if (name == "Fiber1")
+        {
+          if ((int)data.size()!=3)
+            dserror("size mismatch");
+          vector<double> a1 = art->Geta1()->at(0); // get a1 of first gp
+          data[0] = a1[0];
+          data[1] = a1[1];
+          data[2] = a1[2];
+        }
+        else if (name == "Fiber2")
+        {
+          if ((int)data.size()!=3) dserror("size mismatch");
+          vector<double> a2 = art->Geta2()->at(0); // get a2 of first gp
+          data[0] = a2[0];
+          data[1] = a2[1];
+          data[2] = a2[2];
+        }
+        else if (name == "Fiber3")
+        {
+          if ((int)data.size()!=3)
+            dserror("size mismatch");
+          vector<double> a3 = art->Geta3()->at(0); // get a3 of first gp
+          data[0] = a3[0];
+          data[1] = a3[1];
+          data[2] = a3[2];
+        }
+        else if (name == "Fiber4")
+        {
+          if ((int)data.size()!=3)
+            dserror("size mismatch");
+          vector<double> a4 = art->Geta4()->at(0); // get a4 of first gp
+          data[0] = a4[0];
+          data[1] = a4[1];
+          data[2] = a4[2];
+        }
+        else
+        {
+          return false;
+        }
+      }
+      else
+      {
         return false;
       }
-    } else {
-      return false;
     }
-  }
-  if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture){
-    MAT::ConstraintMixture* cons = static_cast <MAT::ConstraintMixture*>(Material().get());
-    if (name == "MassStress"){
-      LINALG::Matrix<3,1> temp(true);
-      for (int iter=0; iter<NUMGPT_SOH8; iter++) temp.Update(1.0,cons->GetVis(iter),1.0);
-      data[0] = temp(0)/NUMGPT_SOH8; data[1] = temp(1)/NUMGPT_SOH8; data[2] = temp(2)/NUMGPT_SOH8;
-    } else if (name == "Fiber1"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      LINALG::Matrix<3,1> a1 = cons->Geta1()->at(0);  // get a1 of first gp
-      data[0] = a1(0); data[1] = a1(1); data[2] = a1(2);
-    } else if (name == "Fiber2"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      LINALG::Matrix<3,1> a2 = cons->Geta2()->at(0);  // get a2 of first gp
-      data[0] = a2(0); data[1] = a2(1); data[2] = a2(2);
-    } else if (name == "referentialMassDensity"){
-      if ((int)data.size()!=1) dserror("size mismatch");
-      double temp = 0.0;
-      for (int iter=0; iter<NUMGPT_SOH8; iter++) temp += cons->GetMassDensity(iter);
-      data[0] = temp/NUMGPT_SOH8;
-    } else {
-      return false;
+    if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
+    {
+      MAT::ConstraintMixture* cons = static_cast <MAT::ConstraintMixture*>(Material().get());
+      if (name == "MassStress")
+      {
+        LINALG::Matrix<3,1> temp(true);
+        for (int iter=0; iter<NUMGPT_SOH8; iter++) 
+          temp.Update(1.0,cons->GetVis(iter),1.0);
+        data[0] = temp(0)/NUMGPT_SOH8;
+        data[1] = temp(1)/NUMGPT_SOH8;
+        data[2] = temp(2)/NUMGPT_SOH8;
+      }
+      else if (name == "Fiber1")
+      {
+        if ((int)data.size()!=3)
+          dserror("size mismatch");
+        LINALG::Matrix<3,1> a1 = cons->Geta1()->at(0); // get a1 of first gp
+        data[0] = a1(0);
+        data[1] = a1(1);
+        data[2] = a1(2);
+      }
+      else if (name == "Fiber2")
+      {
+        if ((int)data.size()!=3)
+          dserror("size mismatch");
+        LINALG::Matrix<3,1> a2 = cons->Geta2()->at(0); // get a2 of first gp
+        data[0] = a2(0);
+        data[1] = a2(1);
+        data[2] = a2(2);
+      }
+      else if (name == "referentialMassDensity")
+      {
+        if ((int)data.size()!=1)
+          dserror("size mismatch");
+        double temp = 0.0;
+        for (int iter=0; iter<NUMGPT_SOH8; iter++)
+          temp += cons->GetMassDensity(iter);
+        data[0] = temp/NUMGPT_SOH8;
+      }
+      else
+      {
+        return false;
+      }
     }
-  }
-  if (Material()->MaterialType() == INPAR::MAT::m_aaaneohooke_stopro){
-    MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(Material().get());
-      if (name=="beta"){
+    if (Material()->MaterialType() == INPAR::MAT::m_aaaneohooke_stopro)
+    {
+      MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(Material().get());
+      if (name=="beta")
+      {
         if ((int)data.size()!=1) dserror("size mismatch");
         data[0] = aaa_stopro->Beta();
-      }else if (name=="youngs"){
+      }
+      else if (name=="youngs")
+      {
         if ((int)data.size()!=1) dserror("size mismatch");
         data[0] = aaa_stopro->Youngs();
-      } else {
+      }
+      else
+      {
         return false;
       }
-  }
+    }
 
 
   return true;
