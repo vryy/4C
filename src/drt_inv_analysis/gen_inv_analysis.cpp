@@ -113,7 +113,6 @@ steps 25 nnodes 5
   */
 
   // open monitor file and read it
-  vector<double> timesteps;
   ndofs_ = 0;
   {
     char* foundit = NULL;
@@ -125,7 +124,7 @@ steps 25 nnodes 5
     // read steps
     foundit = strstr(buffer,"steps"); foundit += strlen("steps");
     nsteps_ = strtol(foundit,&foundit,10);
-    timesteps.resize(nsteps_);
+    timesteps_.resize(nsteps_);
     // read nnodes
     foundit = strstr(buffer,"nnodes"); foundit += strlen("nnodes");
     nnodes_ = strtol(foundit,&foundit,10);
@@ -169,7 +168,7 @@ steps 25 nnodes 5
     for (int i=0; i<nsteps_; ++i)
     {
       // read the time step
-      timesteps[i] = strtod(foundit,&foundit);
+      timesteps_[i] = strtod(foundit,&foundit);
       for (int j=0; j<ndofs_; ++j)
         mcurve_[count++] = strtod(foundit,&foundit);
       fgets(buffer,150000,file);
@@ -187,10 +186,18 @@ steps 25 nnodes 5
 
   kappa_multi_=1.0;
 
+  int word1;
+  std::istringstream matliststream(Teuchos::getNumericStringParameter(iap,"INV_LIST"));
+  while (matliststream >> word1)
+  {
+    if (word1!=-1) // this means there was no matlist specified in the input file
+      matset_.insert(word1);
+  }
+
   // read material parameters from input file
   ReadInParameters();
 
-  // Number of moterial parameters
+  // Number of material parameters
   np_ = p_.Length();
 
   // controlling parameter
@@ -205,7 +212,7 @@ void STR::GenInvAnalysis::Integrate()
   int myrank = discret_->Comm().MyPID();
   const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
   int max_itter = iap.get<int>("INV_ANA_MAX_RUN");
-  output_->NewResultFile((numb_run_));
+//  output_->NewResultFile((numb_run_));
   // fitting loop
   do
   {
@@ -271,8 +278,8 @@ void STR::GenInvAnalysis::Integrate()
     discret_->Comm().Broadcast(&error_o_,1,0);
     discret_->Comm().Broadcast(&error_,1,0);
     discret_->Comm().Broadcast(&numb_run_,1,0);
-    if (error_>tol_ && numb_run_<max_itter)
-      output_->NewResultFile(numb_run_);
+//    if (error_>tol_ && numb_run_<max_itter)
+//      output_->NewResultFile(numb_run_);
   } while (error_>tol_ && numb_run_<max_itter);
 
   return;
@@ -432,6 +439,18 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
       break;
   }
 
+  if (outputtofile)
+  {
+    const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
+    int newfiles = DRT::INPUT::IntegralValue<int>(iap,"NEW_FILES");
+    if (newfiles)
+      output_->NewResultFile((numb_run_));
+    else
+      output_->OverwriteResultFile();
+
+    output_->WriteMesh(0,0.0);
+  }
+
   RCP<StruGenAlpha> tintegrator = rcp(new StruGenAlpha(genalphaparams,*discret_,*solver_,*output_));
   int    step    = genalphaparams.get<int>("step",0);
   int    nstep   = genalphaparams.get<int>("nstep",-1);
@@ -447,7 +466,10 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
   Epetra_SerialDenseVector cvector;
   if (!myrank) cvector.Size(nmp_);
 
-  if (outputtofile) output_->WriteMesh(0,0.0);
+//  if (outputtofile) output_->WriteMesh(0,0.0);
+
+  int writestep = 0;
+  double endtime = 0.0;
 
   // load controled Newton only
   for (int i=step; i<nstep; ++i)
@@ -458,15 +480,24 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
     tintegrator->Update();
     if (outputtofile) tintegrator->Output();
     tintegrator->UpdateElement();
-    if (!myrank) printf("Step %d\n",i);
-    Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(tintegrator->Disp()));
-    if (!myrank)
-      for (int j=0; j<ndofs_; ++j)
-        cvector[i*ndofs_+j] = cvector_arg[j];
-
+    if (!myrank) printf("Step %d",i);
     double time = genalphaparams.get<double>("total time",0.0);
+    if (abs(time - timesteps_[writestep]) < 1.0e-12)
+    {
+      if (!myrank) printf(" monitored %f", time);
+      Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(tintegrator->Disp()));
+      if (!myrank)
+        for (int j=0; j<ndofs_; ++j)
+          cvector[writestep*ndofs_+j] = cvector_arg[j];
+      writestep += 1;
+    }
+    if (!myrank) printf("\n");
+    endtime = time;
     if (time>=maxtime) break;
   }
+  if (!myrank && (abs(timesteps_.back() - endtime) > 1.0e-12 || nsteps_ != writestep))
+    printf("Warning: there is something unclean!\nLook at your monitor file and/or your STRUCTURAL DYNAMIC parameters.\n");
+
   return cvector;
 }
 
@@ -569,107 +600,114 @@ void STR::GenInvAnalysis::ReadInParameters()
   // loop all materials in problem
   const map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
 
-  if (myrank == 0) printf("No. material laws considered : %d\n",(int) mats.size());
+  unsigned int nummat = mats.size();
+  if (matset_.size() > 0 && nummat > matset_.size()) nummat = matset_.size();
+  if (myrank == 0) printf("No. material laws considered : %d\n", nummat);
   map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
   for (curr=mats.begin(); curr != mats.end(); ++curr)
   {
     const RCP<MAT::PAR::Material> actmat = curr->second;
-    switch(actmat->Type())
+
+    if (matset_.size()==0 or matset_.find(actmat->Id())!=matset_.end())
     {
-      case INPAR::MAT::m_aaaneohooke:
+      switch(actmat->Type())
       {
-        MAT::PAR::AAAneohooke* params = dynamic_cast<MAT::PAR::AAAneohooke*>(actmat->Parameter());
-        if (!params) dserror("Cannot cast material parameters");
-        const int j = p_.Length();
-        p_.Resize(j+2);
-        p_(j)   = params->youngs_;
-        p_(j+1) = params->beta_;
-        //p_(j+2) = params->nue_; // need also change resize above to invoke nue
-      }
-      break;
-      case INPAR::MAT::m_neohooke:
-      {
-        MAT::PAR::NeoHooke* params = dynamic_cast<MAT::PAR::NeoHooke*>(actmat->Parameter());
-        if (!params) dserror("Cannot cast material parameters");
-        const int j = p_.Length();
-        p_.Resize(j+2);
-        p_(j)   = params->youngs_;
-        p_(j+1) = params->poissonratio_;
-      }
-      break;
-      case INPAR::MAT::m_elasthyper:
-      {
-        MAT::PAR::ElastHyper* params = dynamic_cast<MAT::PAR::ElastHyper*>(actmat->Parameter());
-        if (!params) dserror("Cannot cast material parameters");
-        const int nummat               = params->nummat_;
-        const std::vector<int>* matids = params->matids_;
-        for (int i=0; i<nummat; ++i)
+        case INPAR::MAT::m_aaaneohooke:
         {
-          const int id = (*matids)[i];
-          const RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
-          switch (actelastmat->Type())
+          MAT::PAR::AAAneohooke* params = dynamic_cast<MAT::PAR::AAAneohooke*>(actmat->Parameter());
+          if (!params) dserror("Cannot cast material parameters");
+          const int j = p_.Length();
+          p_.Resize(j+2);
+          p_(j)   = params->youngs_;
+          p_(j+1) = params->beta_;
+          //p_(j+2) = params->nue_; // need also change resize above to invoke nue
+        }
+        break;
+        case INPAR::MAT::m_neohooke:
+        {
+          MAT::PAR::NeoHooke* params = dynamic_cast<MAT::PAR::NeoHooke*>(actmat->Parameter());
+          if (!params) dserror("Cannot cast material parameters");
+          const int j = p_.Length();
+          p_.Resize(j+2);
+          p_(j)   = params->youngs_;
+          p_(j+1) = params->poissonratio_;
+        }
+        break;
+        case INPAR::MAT::m_elasthyper:
+        {
+          MAT::PAR::ElastHyper* params = dynamic_cast<MAT::PAR::ElastHyper*>(actmat->Parameter());
+          if (!params) dserror("Cannot cast material parameters");
+          const int nummat               = params->nummat_;
+          const std::vector<int>* matids = params->matids_;
+          for (int i=0; i<nummat; ++i)
           {
-            case INPAR::MAT::mes_isoyeoh:
+            const int id = (*matids)[i];
+            const RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
+            switch (actelastmat->Type())
             {
-              MAT::ELASTIC::PAR::IsoYeoh* params = dynamic_cast<MAT::ELASTIC::PAR::IsoYeoh*>(actelastmat->Parameter());
-              if (!params) dserror("Cannot cast material parameters");
-              const int j = p_.Length();
-              p_.Resize(j+3);
-              p_(j)   = params->c1_;
-              p_(j+1) = params->c2_;
-              p_(j+2) = params->c3_;
+              case INPAR::MAT::mes_isoyeoh:
+              {
+                MAT::ELASTIC::PAR::IsoYeoh* params = dynamic_cast<MAT::ELASTIC::PAR::IsoYeoh*>(actelastmat->Parameter());
+                if (!params) dserror("Cannot cast material parameters");
+                const int j = p_.Length();
+                p_.Resize(j+3);
+                p_(j)   = params->c1_;
+                p_(j+1) = params->c2_;
+                p_(j+2) = params->c3_;
+              }
+              break;
+              case INPAR::MAT::mes_vologden:
+              {
+                MAT::ELASTIC::PAR::VolOgden* params = dynamic_cast<MAT::ELASTIC::PAR::VolOgden*>(actelastmat->Parameter());
+                if (!params) dserror("Cannot cast material parameters");
+                const int j = p_.Length();
+                p_.Resize(j+1);
+                p_(j)   = params->kappa_;
+                // p_(j+1) = params->beta_; // need also change resize above to invoke beta_
+              }
+              break;
+              case INPAR::MAT::mes_coupanisoexpotwo:
+              {
+                MAT::ELASTIC::PAR::CoupAnisoExpoTwo* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoExpoTwo*>(actelastmat->Parameter());
+                if (!params) dserror("Cannot cast material parameters");
+                const int j = p_.Length();
+                p_.Resize(j+4);
+                p_(j)    = params->k1_;
+                p_(j+1)  = params->k2_;
+                p_(j+2)  = params->k3_;
+                p_(j+3)  = params->k4_;
+              }
+              break;
+              default:
+                dserror("Unknown type of elasthyper material");
+              break;
             }
-            break;
-            case INPAR::MAT::mes_vologden:
-            {
-              MAT::ELASTIC::PAR::VolOgden* params = dynamic_cast<MAT::ELASTIC::PAR::VolOgden*>(actelastmat->Parameter());
-              if (!params) dserror("Cannot cast material parameters");
-              const int j = p_.Length();
-              p_.Resize(j+1);
-              p_(j)   = params->kappa_;
-              // p_(j+1) = params->beta_; // need also change resize above to invoke beta_
-            }
-            break;
-            case INPAR::MAT::mes_coupanisoexpotwo:
-            {
-              MAT::ELASTIC::PAR::CoupAnisoExpoTwo* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoExpoTwo*>(actelastmat->Parameter());
-              if (!params) dserror("Cannot cast material parameters");
-              const int j = p_.Length();
-              p_.Resize(j+4);
-              p_(j)    = params->k1_;
-              p_(j+1)  = params->k2_;
-              p_(j+2)  = params->k3_;
-              p_(j+3)  = params->k4_;
-            }
-            break;
-            default:
-              dserror("Unknown type of elasthyper material");
-            break;
           }
         }
+        case INPAR::MAT::mes_isoyeoh: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
+        break;
+        case INPAR::MAT::mes_vologden: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
+        break;
+        case INPAR::MAT::mes_coupanisoexpotwo: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
+        break;
+        case INPAR::MAT::m_constraintmixture:
+        {
+          MAT::PAR::ConstraintMixture* params = dynamic_cast<MAT::PAR::ConstraintMixture*>(actmat->Parameter());
+          if (!params) dserror("Cannot cast material parameters");
+          const int j = p_.Length();
+          p_.Resize(j+1);
+          //p_(j)   = params->mue_;
+          //p_(j+1) = params->k1_;
+          //p_(j+2) = params->k2_;
+          //p_(j) = params->prestretchcollagen_;
+          p_(j) = params->growthfactor_;
+        }
+        break;
+        default:
+          // ignore unknown materials ?
+          dserror("Unknown type of material");
+        break;
       }
-      case INPAR::MAT::mes_isoyeoh: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
-      break;
-      case INPAR::MAT::mes_vologden: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
-      break;
-      case INPAR::MAT::mes_coupanisoexpotwo: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
-      break;
-      case INPAR::MAT::m_constraintmixture:
-      {
-        MAT::PAR::ConstraintMixture* params = dynamic_cast<MAT::PAR::ConstraintMixture*>(actmat->Parameter());
-        if (!params) dserror("Cannot cast material parameters");
-        const int j = p_.Length();
-        p_.Resize(j+1);
-        //p_(j)   = params->mue_;
-        //p_(j+1) = params->k1_;
-        //p_(j+2) = params->k2_;
-        p_(j) = params->prestretchcollagen_;
-      }
-      break;
-      default:
-        // ignore unknown materials ?
-        dserror("Unknown type of material");
-      break;
     }
   }
   return;
@@ -689,106 +727,111 @@ void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
   for (curr=mats.begin(); curr != mats.end(); ++curr)
   {
     const RCP<MAT::PAR::Material> actmat = curr->second;
-    switch(actmat->Type())
+
+    if (matset_.size()==0 or matset_.find(actmat->Id())!=matset_.end())
     {
-      case INPAR::MAT::m_aaaneohooke:
+      switch(actmat->Type())
       {
-        MAT::PAR::AAAneohooke* params = dynamic_cast<MAT::PAR::AAAneohooke*>(actmat->Parameter());
-        if (!params) dserror("Cannot cast material parameters");
-        // This is a tiny little bit brutal!!!
-        const_cast<double&>(params->youngs_) = p_cur[count];
-        const_cast<double&>(params->beta_)   = p_cur[count+1];
-        //const_cast<double&>(params->nue_)    = p_cur[count+2];
-        if (myrank == 0) printf("MAT::PAR::AAAneohooke %20.15e %20.15e\n",p_cur[count],p_cur[count+1]);
-        count += 2;
-      }
-      break;
-      case INPAR::MAT::m_neohooke:
-      {
-        MAT::PAR::NeoHooke* params = dynamic_cast<MAT::PAR::NeoHooke*>(actmat->Parameter());
-        if (!params) dserror("Cannot cast material parameters");
-        // This is a tiny little bit brutal!!!
-        const_cast<double&>(params->youngs_)       = p_cur[count];
-        const_cast<double&>(params->poissonratio_) = p_cur[count+1];
-        if (myrank == 0) printf("MAT::PAR::NeoHooke %20.15e %20.15e\n",params->youngs_,params->poissonratio_);
-        count += 2;
-      }
-      break;
-      case INPAR::MAT::m_elasthyper:
-      {
-        MAT::PAR::ElastHyper* params = dynamic_cast<MAT::PAR::ElastHyper*>(actmat->Parameter());
-        if (!params) dserror("Cannot cast material parameters");
-        const int nummat               = params->nummat_;
-        const std::vector<int>* matids = params->matids_;
-        for (int i=0; i<nummat; ++i)
+        case INPAR::MAT::m_aaaneohooke:
         {
-          const int id = (*matids)[i];
-          const RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
-          switch (actelastmat->Type())
+          MAT::PAR::AAAneohooke* params = dynamic_cast<MAT::PAR::AAAneohooke*>(actmat->Parameter());
+          if (!params) dserror("Cannot cast material parameters");
+          // This is a tiny little bit brutal!!!
+          const_cast<double&>(params->youngs_) = p_cur[count];
+          const_cast<double&>(params->beta_)   = p_cur[count+1];
+          //const_cast<double&>(params->nue_)    = p_cur[count+2];
+          if (myrank == 0) printf("MAT::PAR::AAAneohooke %20.15e %20.15e\n",p_cur[count],p_cur[count+1]);
+          count += 2;
+        }
+        break;
+        case INPAR::MAT::m_neohooke:
+        {
+          MAT::PAR::NeoHooke* params = dynamic_cast<MAT::PAR::NeoHooke*>(actmat->Parameter());
+          if (!params) dserror("Cannot cast material parameters");
+          // This is a tiny little bit brutal!!!
+          const_cast<double&>(params->youngs_)       = p_cur[count];
+          const_cast<double&>(params->poissonratio_) = p_cur[count+1];
+          if (myrank == 0) printf("MAT::PAR::NeoHooke %20.15e %20.15e\n",params->youngs_,params->poissonratio_);
+          count += 2;
+        }
+        break;
+        case INPAR::MAT::m_elasthyper:
+        {
+          MAT::PAR::ElastHyper* params = dynamic_cast<MAT::PAR::ElastHyper*>(actmat->Parameter());
+          if (!params) dserror("Cannot cast material parameters");
+          const int nummat               = params->nummat_;
+          const std::vector<int>* matids = params->matids_;
+          for (int i=0; i<nummat; ++i)
           {
-            case INPAR::MAT::mes_isoyeoh:
+            const int id = (*matids)[i];
+            const RCP<MAT::PAR::Material> actelastmat = mats.find(id)->second;
+            switch (actelastmat->Type())
             {
-              MAT::ELASTIC::PAR::IsoYeoh* params = dynamic_cast<MAT::ELASTIC::PAR::IsoYeoh*>(actelastmat->Parameter());
-              if (!params) dserror("Cannot cast material parameters");
-              const_cast<double&>(params->c1_) = p_cur[count];
-              const_cast<double&>(params->c2_) = p_cur[count+1];
-              const_cast<double&>(params->c3_) = p_cur[count+2];
-              if (myrank == 0) printf("MAT::ELASTIC::PAR::IsoYeoh %20.15e %20.15e %20.15e\n",params->c1_,params->c2_,params->c3_);
-              count += 3;
+              case INPAR::MAT::mes_isoyeoh:
+              {
+                MAT::ELASTIC::PAR::IsoYeoh* params = dynamic_cast<MAT::ELASTIC::PAR::IsoYeoh*>(actelastmat->Parameter());
+                if (!params) dserror("Cannot cast material parameters");
+                const_cast<double&>(params->c1_) = p_cur[count];
+                const_cast<double&>(params->c2_) = p_cur[count+1];
+                const_cast<double&>(params->c3_) = p_cur[count+2];
+                if (myrank == 0) printf("MAT::ELASTIC::PAR::IsoYeoh %20.15e %20.15e %20.15e\n",params->c1_,params->c2_,params->c3_);
+                count += 3;
+              }
+              break;
+              case INPAR::MAT::mes_vologden:
+              {
+                MAT::ELASTIC::PAR::VolOgden* params = dynamic_cast<MAT::ELASTIC::PAR::VolOgden*>(actelastmat->Parameter());
+                if (!params) dserror("Cannot cast material parameters");
+                const_cast<double&>(params->kappa_) = p_cur[count];
+                //const_cast<double&>(params->beta_) = p_cur[count+1];
+                if (myrank == 0) printf("MAT::ELASTIC::PAR::VolOgden %20.15e %20.15e\n",params->kappa_,params->beta_);
+                count += 1;
+              }
+              break;
+              case INPAR::MAT::mes_coupanisoexpotwo:
+              {
+                MAT::ELASTIC::PAR::CoupAnisoExpoTwo* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoExpoTwo*>(actelastmat->Parameter());
+                if (!params) dserror("Cannot cast material parameters");
+                const_cast<double&>(params->k1_) = p_cur[count];
+                const_cast<double&>(params->k2_) = p_cur[count+1];
+                const_cast<double&>(params->k3_) = p_cur[count+2];
+                const_cast<double&>(params->k4_) = p_cur[count+3];
+                if (myrank == 0) printf("MAT::ELASTIC::PAR::CoupAnisoExpoTwo %20.15e %20.15e %20.15e %20.15e\n",params->k1_,params->k2_,params->k3_,params->k4_);
+                count += 4;
+              }
+              break;
+              default:
+                dserror("Unknown type of elasthyper material");
+              break;
             }
-            break;
-            case INPAR::MAT::mes_vologden:
-            {
-              MAT::ELASTIC::PAR::VolOgden* params = dynamic_cast<MAT::ELASTIC::PAR::VolOgden*>(actelastmat->Parameter());
-              if (!params) dserror("Cannot cast material parameters");
-              const_cast<double&>(params->kappa_) = p_cur[count];
-              //const_cast<double&>(params->beta_) = p_cur[count+1];
-              if (myrank == 0) printf("MAT::ELASTIC::PAR::VolOgden %20.15e %20.15e\n",params->kappa_,params->beta_);
-              count += 1;
-            }
-            break;
-            case INPAR::MAT::mes_coupanisoexpotwo:
-            {
-              MAT::ELASTIC::PAR::CoupAnisoExpoTwo* params = dynamic_cast<MAT::ELASTIC::PAR::CoupAnisoExpoTwo*>(actelastmat->Parameter());
-              if (!params) dserror("Cannot cast material parameters");
-              const_cast<double&>(params->k1_) = p_cur[count];
-              const_cast<double&>(params->k2_) = p_cur[count+1];
-              const_cast<double&>(params->k3_) = p_cur[count+2];
-              const_cast<double&>(params->k4_) = p_cur[count+3];
-              if (myrank == 0) printf("MAT::ELASTIC::PAR::CoupAnisoExpoTwo %20.15e %20.15e %20.15e %20.15e\n",params->k1_,params->k2_,params->k3_,params->k4_);
-              count += 4;
-            }
-            break;
-            default:
-              dserror("Unknown type of elasthyper material");
-            break;
           }
         }
+        break;
+        case INPAR::MAT::mes_isoyeoh: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
+        break;
+        case INPAR::MAT::mes_vologden: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
+        break;
+        case INPAR::MAT::mes_coupanisoexpotwo: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
+        break;
+        case INPAR::MAT::m_constraintmixture:
+        {
+          MAT::PAR::ConstraintMixture* params = dynamic_cast<MAT::PAR::ConstraintMixture*>(actmat->Parameter());
+          if (!params) dserror("Cannot cast material parameters");
+          // This is a tiny little bit brutal!!!
+          //const_cast<double&>(params->mue_)  = p_cur[count];
+          //const_cast<double&>(params->k1_)  = p_cur[count+1];
+          //const_cast<double&>(params->k2_)  = p_cur[count+2];
+          //const_cast<double&>(params->prestretchcollagen_) = p_cur[count];
+          const_cast<double&>(params->growthfactor_) = abs(p_cur[count]);
+          if (myrank == 0) printf("MAT::PAR::ConstraintMixture %20.15e %20.15e %20.15e\n",params->growthfactor_,params->k1_,params->k2_);
+          count += 1;
+        }
+        break;
+        default:
+          // ignore unknown materials ?
+          dserror("Unknown type of material");
+        break;
       }
-      break;
-      case INPAR::MAT::mes_isoyeoh: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
-      break;
-      case INPAR::MAT::mes_vologden: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
-      break;
-      case INPAR::MAT::mes_coupanisoexpotwo: // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block
-      break;
-      case INPAR::MAT::m_constraintmixture:
-      {
-        MAT::PAR::ConstraintMixture* params = dynamic_cast<MAT::PAR::ConstraintMixture*>(actmat->Parameter());
-        if (!params) dserror("Cannot cast material parameters");
-        // This is a tiny little bit brutal!!!
-        //const_cast<double&>(params->mue_)  = p_cur[count];
-        //const_cast<double&>(params->k1_)  = p_cur[count+1];
-        //const_cast<double&>(params->k2_)  = p_cur[count+2];
-        const_cast<double&>(params->prestretchcollagen_) = p_cur[count];
-        if (myrank == 0) printf("MAT::PAR::ConstraintMixture %20.15e %20.15e %20.15e\n",params->prestretchcollagen_,params->k1_,params->k2_);
-        count += 1;
-      }
-      break;
-      default:
-        // ignore unknown materials ?
-        dserror("Unknown type of material");
-      break;
     }
   }
 

@@ -75,9 +75,10 @@ private:
 
   int problem_type_;		    // Neumann or Dirichlet Problem
   int np_;                          // number of fitted parameters (default 3, 4 with kappa)
-  int nmp_;                         // number of fitted parameters (default 3, 4 with kappa)
+  int nmp_;                         // total number of measured dofs
 
   Epetra_SerialDenseVector mcurve_; // measured displacment of the experiments (target value)
+  vector<double> timesteps_;  // time values where displacements are measured
 
   double mu_;
 
@@ -103,6 +104,8 @@ private:
   //@}
 
   int reset_out_count_;
+
+  std::set<int> matset_;
 
   // Michael's inv_analysis stuff
   int                  nnodes_;        // number of nodes observed
