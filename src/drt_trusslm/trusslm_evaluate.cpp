@@ -125,7 +125,6 @@ int DRT::ELEMENTS::TrussLm::Evaluate(ParameterList& params,
         DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
       }
 
-      // for engineering strains instead of total lagrange use tlm_nlnstiffmass2
       if (act == TrussLm::calc_struct_nlnstiffmass)
         tlm_nlnstiffmass(params,myvel,mydisp,&elemat1,&elemat2,&elevec1);
       else if (act == TrussLm::calc_struct_nlnstifflmass)

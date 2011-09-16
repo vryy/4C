@@ -359,14 +359,29 @@ void DRT::ELEMENTS::TrussLm::SetUpReferenceGeometry(const vector<double>& xrefe,
   {
     isinit_ = true;
 
-    //setting reference coordinates
-    for(int i=0;i<6;i++)
+    //setting reference coordinates (size of X_ is 12)
+    for(int i=0;i<(int)xrefe.size();i++)
       X_(i) = xrefe[i];
 
     //length in reference configuration
-    lrefe_ = pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5);
+    const DiscretizationType distype = this->Shape();
+    //1)values for shape functions trusses A and B
+    Epetra_SerialDenseVector N_A(2);
+    Epetra_SerialDenseVector N_B(2);
+
+    //2)evaluation of shape functions at interpolated positions
+    DRT::UTILS::shape_function_1D(N_A,xiA_,distype);
+    DRT::UTILS::shape_function_1D(N_B,xiB_,distype);
+
+    //lrefe_ = pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5);
+    //reference length of interpolated truss (2-noded)
+		for(int j=0; j<3; j++)
+			lrefe_ += (((X_(6+j)*N_B(0) + X_(9+j)*N_B(1))-(X_(j)*N_A(0) + X_(3+j)*N_A(1))) - ((X_(6+j)*N_B(0) + X_(9+j)*N_B(1))-(X_(j)*N_A(0) + X_(3+j)*N_A(1)))) *
+								(((X_(6+j)*N_B(0) + X_(9+j)*N_B(1))-(X_(j)*N_A(0) + X_(3+j)*N_A(1))) - ((X_(6+j)*N_B(0) + X_(9+j)*N_B(1))-(X_(j)*N_A(0) + X_(3+j)*N_A(1))));
+		lrefe_ = sqrt(lrefe_);
 
     //set jacobi determinants for integration of mass matrix and at nodes
+    // note: jacobie matrices for interpolated 2-node system
     jacobimass_.resize(2);
     jacobimass_[0] = lrefe_ / 2.0;
     jacobimass_[1] = lrefe_ / 2.0;
@@ -409,15 +424,9 @@ int DRT::ELEMENTS::TrussLmType::Initialize(DRT::Discretization& dis)
     if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
       dserror("Cannot get nodes in order to compute reference configuration'");
     else
-    {
-      for (int k=0; k<2; k++) //element has two nodes
+      for (int k=0; k<currele->NumNode(); k++) // element has four nodes
         for(int l= 0; l < 3; l++)
-        {
-        	// linearly interpolated node positions
-          xrefe[k*3 + l] = (currele->Nodes()[k+1]->X()[l]);
-          xrefe[k*3 + l] = (currele->Nodes()[k+3]->X()[l]);
-        }
-    }
+          xrefe[k*3 + l] = currele->Nodes()[k]->X()[l];
 
     currele->SetUpReferenceGeometry(xrefe);
 
