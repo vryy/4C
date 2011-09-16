@@ -177,12 +177,19 @@ void STR::InvAnalysis::Integrate()
       cout << "-----------------------------making Jacobian matrix-------------------------" <<endl;
     for (int i=0; i<np_+1;i++)
     {
-      if (newfiles)
-        output_->NewResultFile((numb_run_));
-      else
-        output_->OverwriteResultFile();
+      bool outputtofile = false;
+      // output only for last run
+      if (i==np_) outputtofile = true;
 
-      output_->WriteMesh(0,0.0);
+      if (outputtofile)
+      {
+        if (newfiles)
+          output_->NewResultFile((numb_run_));
+        else
+          output_->OverwriteResultFile();
+
+        output_->WriteMesh(0,0.0);
+      }
 
       // Multi-scale: if an inverse analysis is performed on the micro-level,
       // the time and step need to be reset now. Furthermore, the result file
@@ -200,7 +207,11 @@ void STR::InvAnalysis::Integrate()
       if (i!= np_)
         p_cur[i]=p_[i] + inc[i];
       SetParameters(p_cur);
-      Epetra_SerialDenseVector cvector = CalcCvector();
+
+      // compute nonlinear problem and obtain computed displacements
+      Epetra_SerialDenseVector cvector;
+      cvector = CalcCvector(outputtofile);
+
       for (int j=0; j<nmp_;j++)
         cmatrix(j, i)=cvector[j];
     }
@@ -276,7 +287,7 @@ void STR::InvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix cmatrix,  vect
   return;
 }
 
-Epetra_SerialDenseVector STR::InvAnalysis::CalcCvector()
+Epetra_SerialDenseVector STR::InvAnalysis::CalcCvector(bool outputtofile)
 {
   // get input parameter lists
   const Teuchos::ParameterList& ioflags
@@ -300,6 +311,7 @@ Epetra_SerialDenseVector STR::InvAnalysis::CalcCvector()
   const int stepmax = sti_->GetTimeNumStep();
 
   Epetra_SerialDenseVector cvector(2*stepmax);
+
   // time loop
   while ( (time < timemax) && (step < stepmax) )
   {
@@ -326,7 +338,7 @@ Epetra_SerialDenseVector STR::InvAnalysis::CalcCvector()
     sti_->PrintStep();
 
     // write output
-    sti_->OutputStep();
+    if (outputtofile) sti_->OutputStep();
 
     // Update Element
     sti_->UpdateStepElement();

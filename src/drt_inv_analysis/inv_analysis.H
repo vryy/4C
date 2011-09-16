@@ -140,9 +140,7 @@ public:
   /// fitting the material parameters using the Levenberg-Marquart algorithm
   void CalcNewParameters(Epetra_SerialDenseMatrix cmatrix,  vector<double> inc);
 
-
-  ///
-  Epetra_SerialDenseVector CalcCvector();
+  Epetra_SerialDenseVector CalcCvector(bool outputtofile);
 
   ///
   void Integrate();
