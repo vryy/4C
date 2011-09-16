@@ -39,10 +39,14 @@ ADAPTER::FluidFluidImpl::FluidFluidImpl(
   // build inner velocity map
   // dofs at the interface are excluded
   // we use only velocity dofs and only those without Dirichlet constraint
-  const Teuchos::RCP<const LINALG::MapExtractor> dbcmaps = fluid_.DirichMaps();
+
+  // here we get the dirichletmaps for the both discretizations
+  const Teuchos::RCP<const LINALG::MapExtractor> embdbcmaps = fluid_.EmbeddedDirichMaps();
+  const Teuchos::RCP<const LINALG::MapExtractor> bgdbcmaps = fluid_.BackgroundDirichMaps();
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;
   maps.push_back(interface_.OtherMap());
-  maps.push_back(dbcmaps->OtherMap());
+  maps.push_back(embdbcmaps->OtherMap());
+  maps.push_back(bgdbcmaps->OtherMap());
   innervelmap_ = LINALG::MultiMapExtractor::IntersectMaps(maps);
 
   if (dirichletcond)
@@ -130,17 +134,28 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidFluidImpl::ConvectiveVel()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> ADAPTER::FluidFluidImpl::Discretization()
+Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFluidImpl::DofRowMap()
 {
-  return fluid_.Discretization();
+//   const Epetra_Map* dofrowmap = embfluiddis_->DofRowMap();
+//   return Teuchos::rcp(dofrowmap, false);
+  // whole fluidfluid map
+  return fluid_.DofRowMap();
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Discretization> ADAPTER::FluidFluidImpl::Discretization()
+{
+  // embedded fluid discretization
+  return fluid_.Discretization();
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const LINALG::MapExtractor> ADAPTER::FluidFluidImpl::GetDBCMapExtractor()
 {
-  return fluid_.DirichMaps();
+  dserror("ADAPTER::FluidFluidImpl::GetDBCMapExtractor() not implemented");
+  //return fluid_.DirichMaps();
 }
 
 /*----------------------------------------------------------------------*/
@@ -158,6 +173,19 @@ void ADAPTER::FluidFluidImpl::PrepareTimeStep()
   fluid_.PrepareTimeStep();
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidFluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
+{
+  if (stepinc!=Teuchos::null)
+  {
+    fluid_.Evaluate(stepinc);
+  }
+  else
+  {
+    fluid_.Evaluate(Teuchos::null);
+  }
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -214,10 +242,9 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFluidImpl::VelocityRowMap()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFluidImpl::PressureRowMap()
 {
-  //return fluid_.PressureRowMap();
-  dserror(" pressurerowmap not implemented! ");
-  return null;
+  return fluid_.PressureRowMap();
 }
+
 
 
 /*----------------------------------------------------------------------*
@@ -405,6 +432,13 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidFluidImpl::IntegrateInterfaceShape()
   return null;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidFluidImpl::UseBlockMatrix(bool splitmatrix)
+{
+  Teuchos::RCP<std::set<int> > condelements = Interface().ConditionedElementMap(*Discretization());
+  fluid_.UseBlockMatrix(condelements,Interface(),Interface(),splitmatrix);
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

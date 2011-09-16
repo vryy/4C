@@ -54,7 +54,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Vector> Hist(){dserror("not implemented"); return null;}
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp();
     virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel();
-    virtual Teuchos::RCP<const Epetra_Map>    DofRowMap() {dserror("not implemented"); return null;}
+    virtual Teuchos::RCP<const Epetra_Map>    DofRowMap();
     virtual Teuchos::RCP<LINALG::SparseMatrix>SystemMatrix() {dserror("not implemented"); return null;}
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() {dserror("not implemented"); return null;}
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives() {dserror("not implemented!"); return null;}
@@ -65,7 +65,7 @@ namespace ADAPTER {
     virtual void TimeLoop();
     virtual void PrepareTimeStep();
     virtual void PrepareTimeandStep() { dserror("not implemented!"); return; }
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel) {dserror("not implemented");}
+    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
     virtual void Update();
     virtual void StatisticsAndOutput();
     virtual void Output();
@@ -78,7 +78,7 @@ namespace ADAPTER {
 
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() {return null;}// return solver_; }
+    virtual Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 
     virtual Teuchos::RCP<const Epetra_Map>    InnerVelocityRowMap();
     virtual Teuchos::RCP<const Epetra_Map>    VelocityRowMap();
@@ -136,7 +136,7 @@ namespace ADAPTER {
 
     virtual Teuchos::RCP<Epetra_Vector>   IntegrateInterfaceShape();
 
-    virtual void UseBlockMatrix(bool splitmatrix) {dserror("not implemented");}
+    virtual void UseBlockMatrix(bool splitmatrix);
 
     /// linear fluid solve with just a interface load
     /*!

@@ -24,6 +24,7 @@
 #include "fsi_constrmonolithic_fluidsplit.H"
 #include "fsi_constrmonolithic_structuresplit.H"
 #include "fsi_mortarmonolithic_structuresplit.H"
+#include "fsi_fluidfluidmonolithic_structuresplit.H"
 #include "fsi_mortarmonolithic_fluidsplit.H"
 #include "fsi_structureale.H"
 #include "fsi_fluid_ale.H"
@@ -664,14 +665,13 @@ void fluid_fluid_fsi_drt()
   {
   case fsi_iter_fluidfluid_monolithicstructuresplit:
   {
-//     Teuchos::RCP<FSI::Monolithic> fsi;
-//     fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplit(comm));
+    Teuchos::RCP<FSI::Monolithic> fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplit(*comm));
 
-//     // now do the coupling setup an create the combined dofmap
-//     fsi->SetupSystem();
+    // now do the coupling setup an create the combined dofmap
+    fsi->SetupSystem();
 
-//     // here we go...
-//     fsi->Timeloop(fsi);
+    // here we go...
+    fsi->Timeloop(fsi);
 
 //     DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
 //     DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());

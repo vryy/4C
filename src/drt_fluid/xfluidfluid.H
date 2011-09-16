@@ -65,8 +65,7 @@ namespace FLD
       void EvaluateFluidFluid( Teuchos::ParameterList & eleparams,
                                DRT::Discretization    & bgdis,
                                DRT::Discretization    & cutdiscret,
-                               DRT::Discretization    & embdis,
-                               int itnum );
+                               DRT::Discretization    & embdis);
 
       void GmshOutput( DRT::Discretization & bgdis,
                        DRT::Discretization & embdis,
@@ -149,6 +148,7 @@ namespace FLD
 
       // dof-row maps
       const Epetra_Map* fluiddofrowmap_;
+      Teuchos::RCP<Epetra_Map> fluidfluiddofrowmap_;
       Teuchos::RCP<const Epetra_Map> outputfluiddofrowmap_;
       Teuchos::RCP<const Epetra_Map> outputpressuredofrowmap_;
 
@@ -162,12 +162,15 @@ namespace FLD
       Teuchos::RCP<Epetra_Vector>    fluidfluidresidual_;
 
       Teuchos::RCP<Epetra_Vector>    fluidfluidvelnp_;
+      Teuchos::RCP<Epetra_Vector>    fluidfluidveln_;
       Teuchos::RCP<Epetra_Vector>    fluidfluidincvel_;
 
       // Extractor used for splitting fluid and ale_fluid
       FLD::UTILS::FluidXFluidMapExtractor fluidfluidsplitter_;
 
       LINALG::MapExtractor      fluidfluidvelpressplitter_;
+
+      Teuchos::RCP<LINALG::MapExtractor> fluidfluiddbcmaps_;
 
       XFEM::FluidWizard wizard_;
 
@@ -289,6 +292,11 @@ namespace FLD
       const int startfuncno
       );
 
+    void UseBlockMatrix(Teuchos::RCP<std::set<int> >     condelements,
+                        const LINALG::MultiMapExtractor& domainmaps,
+                        const LINALG::MultiMapExtractor& rangemaps,
+                        bool splitmatrix);
+
      /*!
        \brief Access output object
      */
@@ -300,19 +308,24 @@ namespace FLD
     /// update configuration and output to file/screen
     void Output();
 
-    Teuchos::RCP<Epetra_Vector> InitialGuess() { return aleincvel_; }
-    Teuchos::RCP<Epetra_Vector> Residual() { return aleresidual_; }
-    Teuchos::RCP<Epetra_Vector> TrueResidual() { return aletrueresidual_; }
-    Teuchos::RCP<Epetra_Vector> Velnp() { return alevelnp_; }
-    Teuchos::RCP<Epetra_Vector> Velaf() { return alevelaf_; }
-    Teuchos::RCP<Epetra_Vector> Veln() { return aleveln_; }
-    Teuchos::RCP<Epetra_Vector> GridVel() { return gridv_; }
+    Teuchos::RCP<Epetra_Vector> InitialGuess() {cout<< "InitialGuess" << endl; return state_->fluidfluidincvel_; }
+    Teuchos::RCP<Epetra_Vector> Residual() { cout << "Residual" << endl;return state_->fluidfluidresidual_; }
+    Teuchos::RCP<Epetra_Vector> TrueResidual() { cout << "TrueResidual" << endl;return aletrueresidual_; }
+    Teuchos::RCP<Epetra_Vector> Velnp() { cout << "Velnp" << endl;return alevelnp_; }
+    Teuchos::RCP<Epetra_Vector> Velaf() { cout << "Velaf" << endl;return alevelaf_; }
+    Teuchos::RCP<Epetra_Vector> Veln() { cout << "Veln" << endl;return aleveln_; }
+    Teuchos::RCP<Epetra_Vector> GridVel() {cout << "GridVel" << endl; return gridv_; }
 
-    Teuchos::RCP<Epetra_Vector> Dispnp() { return aledispnp_; }
-    Teuchos::RCP<Epetra_Vector> Dispn() { return aledispn_; }
+    Teuchos::RCP<Epetra_Vector> Dispnp() { cout << "Dispnp " << endl;return aledispnp_; }
+    Teuchos::RCP<Epetra_Vector> Dispn() { cout << "Dispn" << endl;return aledispn_; }
+
+    Teuchos::RCP<const Epetra_Map> DofRowMap() { return state_->fluidfluiddofrowmap_; }
+
+    Teuchos::RCP<const Epetra_Map>PressureRowMap() { return state_->fluidfluidvelpressplitter_.CondMap(); }
 
     /// provide access to the Dirichlet map
-    const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return aledbcmaps_; }
+    const Teuchos::RCP<const LINALG::MapExtractor> EmbeddedDirichMaps() { return aledbcmaps_;}
+    const Teuchos::RCP<const LINALG::MapExtractor> BackgroundDirichMaps() { return state_->dbcmaps_;}
 
     /// Expand the Dirichlet DOF set
     ///
@@ -361,6 +374,9 @@ namespace FLD
 
     // embedded fluid state vectors
     Teuchos::RCP<LINALG::SparseOperator> alesysmat_;
+
+     /// linearization with respect to mesh motion
+    RCP<LINALG::BlockSparseMatrixBase> shapederivatives_;
 
     /// maps for extracting Dirichlet and free DOF sets
     Teuchos::RCP<LINALG::MapExtractor> aledbcmaps_;
@@ -540,6 +556,11 @@ namespace FLD
     /// flag for physical type of fluid flow (standard: incompressible)
     enum INPAR::FLUID::PhysicalType physicaltype_;
 
+    /// whether we do some extrapolation at the begin of each time step (additional switch)
+    bool extrapolationpredictor_;
+
+    //! kind of predictor used in nonlinear iteration
+    string  predictor_;
 
     //! @name restart variables
     int upres_;
