@@ -38,9 +38,6 @@ Maintainer: Ulrich Kuettler
 #include "../drt_mat/micromaterial.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 
-#include "../drt_torsion2/torsion2.H"
-#include "../drt_torsion3/torsion3.H"
-
 #include "../drt_io/io_control.H"
 
 
@@ -1284,107 +1281,118 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 /*----------------------------------------------------------------------*/
 void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 {
-  // make sure that we read the micro discretizations only on the processors on
-  // which elements with the corresponding micro material are evaluated
+  // do we have micro materials at all?
 
-  RCP<DRT::Problem> macro_problem = DRT::Problem::Instance();
-  RCP<DRT::Discretization> macro_dis = macro_problem->Dis(genprob.numsf,0);
-  macro_dis->FillComplete();
+  bool foundmicromat = false;
 
-  std::set<int> my_multimat_IDs;
-
-  // take care also of ghosted elements! -> ElementColMap!
-  for (int i=0; i<macro_dis->ElementColMap()->NumMyElements(); ++i)
+  for (std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator i=materials_->Map()->begin();
+       i!=materials_->Map()->end();
+       ++i)
   {
-    DRT::Element* actele = macro_dis->lColElement(i);
-    DRT::ElementType& acteletype = actele->ElementType();
-
-    // workaround: torsion elements do not define a material!
-    if (acteletype != DRT::ELEMENTS::Torsion2Type::Instance() and
-        acteletype != DRT::ELEMENTS::Torsion3Type::Instance())
+    Teuchos::RCP<MAT::PAR::Material> material = i->second;
+    if (material->Type() == INPAR::MAT::m_struct_multiscale)
     {
+      foundmicromat = true;
+      break;
+    }
+  }
+
+  if (foundmicromat)
+  {
+    // make sure that we read the micro discretizations only on the processors on
+    // which elements with the corresponding micro material are evaluated
+
+    RCP<DRT::Problem> macro_problem = DRT::Problem::Instance();
+    RCP<DRT::Discretization> macro_dis = macro_problem->Dis(genprob.numsf,0);
+
+    std::set<int> my_multimat_IDs;
+
+    // take care also of ghosted elements! -> ElementColMap!
+    for (int i=0; i<macro_dis->ElementColMap()->NumMyElements(); ++i)
+    {
+      DRT::Element* actele = macro_dis->lColElement(i);
       RCP<MAT::Material> actmat = actele->Material();
+
       if (actmat->MaterialType() == INPAR::MAT::m_struct_multiscale)
       {
         MAT::PAR::Parameter* actparams = actmat->Parameter();
         my_multimat_IDs.insert(actparams->Id());
       }
     }
-  }
 
-  for (std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator i=materials_->Map()->begin();
-       i!=materials_->Map()->end();
-       ++i)
-  {
-    int matid = i->first;
-    Teuchos::RCP<MAT::PAR::Material> material = i->second;
-
-    if (my_multimat_IDs.find(matid)!=my_multimat_IDs.end())
+    for (std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator i=materials_->Map()->begin();
+         i!=materials_->Map()->end();
+         ++i)
     {
-      Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matid);
-      MAT::MicroMaterial* micromat = static_cast<MAT::MicroMaterial*>(mat.get());
-      int microdisnum = micromat->MicroDisNum();
+      int matid = i->first;
 
-      RCP<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
+      if (my_multimat_IDs.find(matid)!=my_multimat_IDs.end())
+      {
+        Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matid);
+        MAT::MicroMaterial* micromat = static_cast<MAT::MicroMaterial*>(mat.get());
+        int microdisnum = micromat->MicroDisNum();
+
+        RCP<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
 #ifdef PARALLEL
-      RCP<Epetra_MpiComm> serialcomm = rcp(new Epetra_MpiComm(MPI_COMM_SELF));
+        RCP<Epetra_MpiComm> serialcomm = rcp(new Epetra_MpiComm(MPI_COMM_SELF));
 #else
-      RCP<Epetra_SerialComm> serialcomm = rcp(new Epetra_SerialComm());
+        RCP<Epetra_SerialComm> serialcomm = rcp(new Epetra_SerialComm());
 #endif
 
-      string micro_inputfile_name = micromat->MicroInputFileName();
+        string micro_inputfile_name = micromat->MicroInputFileName();
 
-      if (micro_inputfile_name[0]!='/')
-      {
-        string filename = reader.MyInputfileName();
-        string::size_type pos = filename.rfind('/');
-        if (pos!=string::npos)
+        if (micro_inputfile_name[0]!='/')
         {
-          string path = filename.substr(0,pos+1);
-          micro_inputfile_name.insert(micro_inputfile_name.begin(), path.begin(), path.end());
+          string filename = reader.MyInputfileName();
+          string::size_type pos = filename.rfind('/');
+          if (pos!=string::npos)
+          {
+            string path = filename.substr(0,pos+1);
+            micro_inputfile_name.insert(micro_inputfile_name.begin(), path.begin(), path.end());
+          }
         }
+
+        DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, serialcomm, 1);
+
+        RCP<DRT::Discretization> structdis_micro = rcp(new DRT::Discretization("structure", micro_reader.Comm()));
+        micro_problem->AddDis(genprob.numsf, structdis_micro);
+
+        micro_problem->ReadParameter(micro_reader);
+
+        /* input of not mesh or time based problem data  */
+        micro_problem->InputControl();
+
+        // read materials of microscale
+        // CAUTION: materials for microscale cannot be read until
+        // micro_reader is activated, since else materials will again be
+        // read from macroscale inputfile. Besides, materials MUST be read
+        // before elements are read since elements establish a connection
+        // to the corresponding material! Thus do not change position of
+        // function calls!
+        materials_->SetReadFromProblem(microdisnum);
+
+        micro_problem->ReadMaterials(micro_reader);
+
+        DRT::INPUT::NodeReader micronodereader(micro_reader, "--NODE COORDS");
+        micronodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
+        micronodereader.Read();
+
+        // read conditions of microscale
+        // -> note that no time curves and spatial functions can be read!
+
+        micro_problem->ReadConditions(micro_reader);
+
+        // At this point, everything for the microscale is read,
+        // subsequent reading is only for macroscale
+        structdis_micro->FillComplete();
+
+        // set the problem number from which to call materials again to zero
+        // (i.e. macro problem), cf. MAT::Material::Factory!
+        materials_->ResetReadFromProblem();
       }
-
-      DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, serialcomm, 1);
-
-      RCP<DRT::Discretization> structdis_micro = rcp(new DRT::Discretization("structure", micro_reader.Comm()));
-      micro_problem->AddDis(genprob.numsf, structdis_micro);
-
-      micro_problem->ReadParameter(micro_reader);
-
-      /* input of not mesh or time based problem data  */
-      micro_problem->InputControl();
-
-      // read materials of microscale
-      // CAUTION: materials for microscale cannot be read until
-      // micro_reader is activated, since else materials will again be
-      // read from macroscale inputfile. Besides, materials MUST be read
-      // before elements are read since elements establish a connection
-      // to the corresponding material! Thus do not change position of
-      // function calls!
-      materials_->SetReadFromProblem(microdisnum);
-
-      micro_problem->ReadMaterials(micro_reader);
-
-      DRT::INPUT::NodeReader micronodereader(micro_reader, "--NODE COORDS");
-      micronodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(structdis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
-      micronodereader.Read();
-
-      // read conditions of microscale
-      // -> note that no time curves and spatial functions can be read!
-
-      micro_problem->ReadConditions(micro_reader);
-
-      // At this point, everything for the microscale is read,
-      // subsequent reading is only for macroscale
-      structdis_micro->FillComplete();
-
-      // set the problem number from which to call materials again to zero
-      // (i.e. macro problem), cf. MAT::Material::Factory!
-      materials_->ResetReadFromProblem();
     }
+    materials_->ResetReadFromProblem();
   }
-  materials_->ResetReadFromProblem();
 }
 
 
