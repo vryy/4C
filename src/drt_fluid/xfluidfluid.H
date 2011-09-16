@@ -322,6 +322,9 @@ namespace FLD
     Teuchos::RCP<const Epetra_Map> DofRowMap() { return state_->fluidfluiddofrowmap_; }
 
     Teuchos::RCP<const Epetra_Map>PressureRowMap() { return state_->fluidfluidvelpressplitter_.CondMap(); }
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives() { return shapederivatives_; }
+
+    Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->fluidfluidsysmat_); }
 
     /// provide access to the Dirichlet map
     const Teuchos::RCP<const LINALG::MapExtractor> EmbeddedDirichMaps() { return aledbcmaps_;}

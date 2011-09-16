@@ -55,9 +55,9 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp();
     virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel();
     virtual Teuchos::RCP<const Epetra_Map>    DofRowMap();
-    virtual Teuchos::RCP<LINALG::SparseMatrix>SystemMatrix() {dserror("not implemented"); return null;}
+    virtual Teuchos::RCP<LINALG::SparseMatrix>SystemMatrix() { return fluid_.SystemMatrix(); }
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() {dserror("not implemented"); return null;}
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives() {dserror("not implemented!"); return null;}
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives() { return fluid_.ShapeDerivatives(); }
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
     virtual Teuchos::RCP<const DRT::DofSet> DofSet() {dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
