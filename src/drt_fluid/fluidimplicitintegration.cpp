@@ -1499,37 +1499,28 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
     }
 
-    double incvelnorm_L2;
-    double incprenorm_L2;
-
-    double velnorm_L2;
-    double prenorm_L2;
-
-    double vresnorm;
-    double presnorm;
-
     Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
-    onlyvel->Norm2(&vresnorm);
+    onlyvel->Norm2(&vresnorm_);
 
     velpressplitter_.ExtractOtherVector(incvel_,onlyvel);
-    onlyvel->Norm2(&incvelnorm_L2);
+    onlyvel->Norm2(&incvelnorm_L2_);
 
     velpressplitter_.ExtractOtherVector(velnp_,onlyvel);
-    onlyvel->Norm2(&velnorm_L2);
+    onlyvel->Norm2(&velnorm_L2_);
 
     Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(residual_);
-    onlypre->Norm2(&presnorm);
+    onlypre->Norm2(&presnorm_);
 
     velpressplitter_.ExtractCondVector(incvel_,onlypre);
-    onlypre->Norm2(&incprenorm_L2);
+    onlypre->Norm2(&incprenorm_L2_);
 
     velpressplitter_.ExtractCondVector(velnp_,onlypre);
-    onlypre->Norm2(&prenorm_L2);
+    onlypre->Norm2(&prenorm_L2_);
 
     // care for the case that nothing really happens in the velocity
     // or pressure field
-    if (velnorm_L2 < 1e-5) velnorm_L2 = 1.0;
-    if (prenorm_L2 < 1e-5) prenorm_L2 = 1.0;
+    if (velnorm_L2_ < 1e-5) velnorm_L2_ = 1.0;
+    if (prenorm_L2_ < 1e-5) prenorm_L2_ = 1.0;
 
     //-------------------------------------------------- output to screen
     /* special case of very first iteration step:
@@ -1540,7 +1531,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       if (myrank_ == 0)
       {
         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
-               itnum,itemax,ittol,vresnorm,presnorm);
+               itnum,itemax,ittol,vresnorm_,presnorm_);
         printf(" (      --     ,te=%10.3E",dtele_);
         if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
         {
@@ -1557,15 +1548,15 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     // this is the convergence check
     // We always require at least one solve. Otherwise the
     // perturbation at the FSI interface might get by unnoticed.
-      if (vresnorm <= ittol and presnorm <= ittol and
-          incvelnorm_L2/velnorm_L2 <= ittol and incprenorm_L2/prenorm_L2 <= ittol)
+      if (vresnorm_ <= ittol and presnorm_ <= ittol and
+          incvelnorm_L2_/velnorm_L2_ <= ittol and incprenorm_L2_/prenorm_L2_ <= ittol)
       {
         stopnonliniter=true;
         if (myrank_ == 0)
         {
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-                 itnum,itemax,ittol,vresnorm,presnorm,
-                 incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+                 itnum,itemax,ittol,vresnorm_,presnorm_,
+                 incvelnorm_L2_/velnorm_L2_,incprenorm_L2_/prenorm_L2_);
           printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
           if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
           {
@@ -1578,8 +1569,8 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           if (errfile!=NULL)
           {
             fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
-                    itnum,itemax,ittol,vresnorm,presnorm,
-                    incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+                    itnum,itemax,ittol,vresnorm_,presnorm_,
+                    incvelnorm_L2_/velnorm_L2_,incprenorm_L2_/prenorm_L2_);
           }
         }
         break;
@@ -1588,8 +1579,8 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         if (myrank_ == 0)
         {
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-                 itnum,itemax,ittol,vresnorm,presnorm,
-                 incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+                 itnum,itemax,ittol,vresnorm_,presnorm_,
+                 incvelnorm_L2_/velnorm_L2_,incprenorm_L2_/prenorm_L2_);
           printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
           if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
           {
@@ -1601,9 +1592,9 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
     // warn if itemax is reached without convergence, but proceed to
     // next timestep...
-    if ((itnum == itemax) and (vresnorm > ittol or presnorm > ittol or
-                             incvelnorm_L2/velnorm_L2 > ittol or
-                             incprenorm_L2/prenorm_L2 > ittol))
+    if ((itnum == itemax) and (vresnorm_ > ittol or presnorm_ > ittol or
+                             incvelnorm_L2_/velnorm_L2_ > ittol or
+                             incprenorm_L2_/prenorm_L2_ > ittol))
     {
       stopnonliniter=true;
       if (myrank_ == 0)
@@ -1616,8 +1607,8 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         if (errfile!=NULL)
         {
           fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
-                  itnum,itemax,ittol,vresnorm,presnorm,
-                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+                  itnum,itemax,ittol,vresnorm_,presnorm_,
+                  incvelnorm_L2_/velnorm_L2_,incprenorm_L2_/prenorm_L2_);
         }
       }
       break;
@@ -1647,9 +1638,9 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       // do adaptive linear solver tolerance (not in first solve)
       if (isadapttol && itnum>1)
       {
-        double currresidual = max(vresnorm,presnorm);
-        currresidual = max(currresidual,incvelnorm_L2/velnorm_L2);
-        currresidual = max(currresidual,incprenorm_L2/prenorm_L2);
+        double currresidual = max(vresnorm_,presnorm_);
+        currresidual = max(currresidual,incvelnorm_L2_/velnorm_L2_);
+        currresidual = max(currresidual,incprenorm_L2_/prenorm_L2_);
         solver_.AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
 
@@ -1847,27 +1838,31 @@ void FLD::FluidImplicitTimeInt::Predictor()
   // -------------------------------------------------------------------
   dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),residual_);
 
-  // Treat the surface volumetric flow rate
+  // -------------------------------------------------------------------
+  // take surface volumetric flow rate into account
   //    RCP<Epetra_Vector> temp_vec = rcp(new Epetra_Vector(*vol_surf_flow_bcmaps_,true));
   //    vol_surf_flow_bc_->InsertCondVector( *temp_vec , *residual_);
+  // -------------------------------------------------------------------
   vol_flow_rates_bc_extractor_->InsertVolumetricSurfaceFlowCondVector(
     vol_flow_rates_bc_extractor_->ExtractVolumetricSurfaceFlowCondVector(zeros_),
     residual_);
 
-
-  double vresnorm;
-  double presnorm;
-
+  // -------------------------------------------------------------------
+  // extract velocity and pressure and compute respective norms
+  // -------------------------------------------------------------------
   Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
-  onlyvel->Norm2(&vresnorm);
-
   Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(residual_);
-  onlypre->Norm2(&presnorm);
 
+  onlyvel->Norm2(&vresnorm_);
+  onlypre->Norm2(&presnorm_);
+
+  // -------------------------------------------------------------------
+  // print out norms (only first processor)
+  // -------------------------------------------------------------------
   if (myrank_ == 0)
   {
     printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
-    printf("| predictor  |  vel. | pre. res. | %10.3E   | %10.3E   |      --      |      --      |",vresnorm,presnorm);
+    printf("| predictor  |  vel. | pre. res. | %10.3E   | %10.3E   |      --      |      --      |",vresnorm_,presnorm_);
     printf(" (      --     ,te=%10.3E",dtele_);
     if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity) printf(",tf=%10.3E",dtfilter_);
     printf(")\n");
@@ -1898,24 +1893,18 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
   // -------------------------------------------------------------------
   // parameters and variables for nonlinear iteration
   // -------------------------------------------------------------------
-  const double ittol = params_.get<double>("tolerance for nonlin iter");
   int          itnum = 0;
-  int          itemax = 0;
+  int          itmax = 0;
+  const double ittol = params_.get<double>("tolerance for nonlin iter");
   bool         stopnonliniter = false;
-  double       incvelnorm_L2;
-  double       incprenorm_L2;
-  double       velnorm_L2;
-  double       prenorm_L2;
-  double       vresnorm;
-  double       presnorm;
 
   // -------------------------------------------------------------------
   // currently default for turbulent channel flow:
   // only one iteration before sampling
   // -------------------------------------------------------------------
   if (special_flow_ == "channel_flow_of_height_2" && step_<samstart_ )
-       itemax = 1;
-  else itemax = params_.get<int>("max nonlin iter steps");
+       itmax = 1;
+  else itmax = params_.get<int>("max nonlin iter steps");
 
   // -------------------------------------------------------------------
   // turn adaptive solver tolerance on/off
@@ -1940,29 +1929,15 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
     itnum++;
 
     // -------------------------------------------------------------------
-    // call elements to calculate system matrix and rhs and assemble
+    // preparatives for solver
     // -------------------------------------------------------------------
-    AssembleMatAndRHS();
+    PrepareSolve();
 
     // -------------------------------------------------------------------
-    // apply Dirichlet boundary conditions to system of equations:
-    // - Residual displacements are supposed to be zero for resp. dofs.
-    // - Time for applying Dirichlet boundary conditions is measured.
-    // -------------------------------------------------------------------
-    incvel_->PutScalar(0.0);
-    {
-      TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
-      LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
-    }
-    {
-      // apply the womersley velocity profile as a dirichlet bc
-      LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(vol_surf_flow_bcmaps_));
-    }
-
-    // -------------------------------------------------------------------
-    // solve for velocity and pressure increments
-    // - Adaptive linear solver tolerance is used from second
-    //   corrector step on.
+    // solver:
+    // - It is solved for velocity and pressure increments.
+    // - Adaptive linear solver tolerance is used from second corrector
+    //   step on.
     // - Time for solver is measured.
     // -------------------------------------------------------------------
     {
@@ -1972,9 +1947,9 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
 
       if (isadapttol and itnum>1)
       {
-        double currresidual = max(vresnorm,presnorm);
-        currresidual = max(currresidual,incvelnorm_L2/velnorm_L2);
-        currresidual = max(currresidual,incprenorm_L2/prenorm_L2);
+        double currresidual = max(vresnorm_,presnorm_);
+        currresidual = max(currresidual,incvelnorm_L2_/velnorm_L2_);
+        currresidual = max(currresidual,incprenorm_L2_/prenorm_L2_);
         solver_.AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
 
@@ -2103,124 +2078,15 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
     }
 
     // -------------------------------------------------------------------
-    // update velocity and pressure values by increments
+    // update within iteration
     // -------------------------------------------------------------------
-    velnp_->Update(1.0,*incvel_,1.0);
-
-    // -------------------------------------------------------------------
-    // For af-generalized-alpha: update accelerations
-    // Furthermore, calculate velocities, pressures, scalars and
-    // accelerations at intermediate time steps n+alpha_F and n+alpha_M,
-    // respectively, for next iteration.
-    // This has to be done at the end of the iteration, since we might
-    // need the velocities at n+alpha_F in a potential coupling
-    // algorithm, for instance.
-    // -------------------------------------------------------------------
-    if (is_genalpha_)
-    {
-      GenAlphaUpdateAcceleration();
-
-      GenAlphaIntermediateValues();
-    }
+    IterUpdate(incvel_);
 
     // -------------------------------------------------------------------
-    // calculate and print out norms for convergence check
-    // (blank residual DOFs which are on Dirichlet BC
-    // We can do this because the values at the dirichlet positions
-    // are not used anyway.
-    // We could avoid this though, if velrowmap_ and prerowmap_ would
-    // not include the dirichlet values as well. But it is expensive
-    // to avoid that.)
+    // convergence check
     // -------------------------------------------------------------------
-    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),residual_);
+    stopnonliniter = ConvergenceCheck(itnum,itmax,ittol);
 
-    // Treat the surface volumetric flow rate
-    //    RCP<Epetra_Vector> temp_vec = rcp(new Epetra_Vector(*vol_surf_flow_bcmaps_,true));
-    //    vol_surf_flow_bc_->InsertCondVector( *temp_vec , *residual_);
-    vol_flow_rates_bc_extractor_->InsertVolumetricSurfaceFlowCondVector(
-      vol_flow_rates_bc_extractor_->ExtractVolumetricSurfaceFlowCondVector(zeros_),
-      residual_);
-
-    Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
-    onlyvel->Norm2(&vresnorm);
-
-    velpressplitter_.ExtractOtherVector(incvel_,onlyvel);
-    onlyvel->Norm2(&incvelnorm_L2);
-
-    velpressplitter_.ExtractOtherVector(velnp_,onlyvel);
-    onlyvel->Norm2(&velnorm_L2);
-
-    Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(residual_);
-    onlypre->Norm2(&presnorm);
-
-    velpressplitter_.ExtractCondVector(incvel_,onlypre);
-    onlypre->Norm2(&incprenorm_L2);
-
-    velpressplitter_.ExtractCondVector(velnp_,onlypre);
-    onlypre->Norm2(&prenorm_L2);
-
-    // care for the case that nothing really happens in velocity
-    // or pressure field
-    if (velnorm_L2 < 1e-5) velnorm_L2 = 1.0;
-    if (prenorm_L2 < 1e-5) prenorm_L2 = 1.0;
-
-    if (myrank_ == 0)
-    {
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",itnum,itemax,ittol,vresnorm,presnorm,
-                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-      printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-      if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity) printf(",tf=%10.3E",dtfilter_);
-      printf(")\n");
-    }
-
-    // -------------------------------------------------------------------
-    // check convergence and print out respective information:
-    // - stop if convergence is achieved
-    // - warn if itemax is reached without convergence, but proceed to
-    //   next timestep
-    // -------------------------------------------------------------------
-    if (vresnorm <= ittol and
-        presnorm <= ittol and
-        incvelnorm_L2/velnorm_L2 <= ittol and
-        incprenorm_L2/prenorm_L2 <= ittol)
-    {
-      stopnonliniter=true;
-      if (myrank_ == 0)
-      {
-        printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
-        FILE* errfile = params_.get<FILE*>("err file",NULL);
-        if (errfile!=NULL)
-        {
-          fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
-          itnum,itemax,ittol,vresnorm,presnorm,
-          incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-        }
-      }
-      break;
-    }
-
-    if ((itnum == itemax) and (vresnorm > ittol or
-                               presnorm > ittol or
-                               incvelnorm_L2/velnorm_L2 > ittol or
-                               incprenorm_L2/prenorm_L2 > ittol))
-    {
-      stopnonliniter=true;
-      if (myrank_ == 0)
-      {
-        printf("+---------------------------------------------------------------+\n");
-        printf("|            >>>>>> not converged in itemax steps!              |\n");
-        printf("+---------------------------------------------------------------+\n");
-
-        FILE* errfile = params_.get<FILE*>("err file",NULL);
-        if (errfile!=NULL)
-        {
-          fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
-                  itnum,itemax,ittol,vresnorm,presnorm,
-                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-        }
-      }
-      break;
-    }
   }
 
 } // FluidImplicitTimeInt::MultiCorrector
@@ -2230,68 +2096,20 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
- | compute values at intermediate time steps for gen.-alpha    vg 02/09 |
+ | preparatives for solver                                     vg 09/11 |
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::FluidImplicitTimeInt::GenAlphaIntermediateValues()
+void FLD::FluidImplicitTimeInt::PrepareSolve()
 {
-  //       n+alphaM                n+1                      n
-  //    acc         = alpha_M * acc     + (1-alpha_M) *  acc
-  //       (i)                     (i)
-  {
-    // extract the degrees of freedom associated with velocities
-    // only these are allowed to be updated, otherwise you will
-    // run into trouble in loma, where the 'pressure' component
-    // is used to store the acceleration of the temperature
-    Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_.ExtractOtherVector(accn_ );
-    Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_.ExtractOtherVector(accnp_);
+  // call elements to calculate system matrix and rhs and assemble
+  AssembleMatAndRHS();
 
-    Teuchos::RCP<Epetra_Vector> onlyaccam = rcp(new Epetra_Vector(onlyaccnp->Map()));
+  // apply Dirichlet boundary conditions to system of equations
+  ApplyDirichletToSystem();
 
-    onlyaccam->Update((alphaM_),*onlyaccnp,(1.0-alphaM_),*onlyaccn,0.0);
-
-    // copy back into global vector
-    LINALG::Export(*onlyaccam,*accam_);
-  }
-
-  // set intermediate values for velocity
-  //
-  //       n+alphaF              n+1                   n
-  //      u         = alpha_F * u     + (1-alpha_F) * u
-  //       (i)                   (i)
-  //
-  // and pressure
-  //
-  //       n+alphaF              n+1                   n
-  //      p         = alpha_F * p     + (1-alpha_F) * p
-  //       (i)                   (i)
-  //
-  // note that its af-genalpha with mid-point treatment of the pressure,
-  // not implicit treatment as for the genalpha according to Whiting
-  velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
-
-  if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
-  {
-	// set intermediate values for velocity
-	//
-	//       n+alphaF              n+1                   n
-	//      u         = alpha_F * u     + (1-alpha_F) * u
-	//       (i)                   (i)
-	//
-	// and pressure
-	//
-	//       n+1
-	//      p
-	//       (i)
-	//
-	// note that its af-genalpha with mid-point treatment of the pressure,
-	// not implicit treatment as for the genalpha according to Whiting
-    Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(velnp_);
-    LINALG::Export(*onlypre, *velaf_);
-  }
-} // FluidImplicitTimeInt::GenAlphaIntermediateValues
+} // FluidImplicitTimeInt::PrepareSolve
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -2444,6 +2262,73 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
+ | application of Dirichlet boundary conditions to system      vg 09/11 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidImplicitTimeInt::ApplyDirichletToSystem()
+{
+  // -------------------------------------------------------------------
+  // apply Dirichlet boundary conditions to system of equations:
+  // - Residual displacements are supposed to be zero for resp. dofs.
+  // - Time for applying Dirichlet boundary conditions is measured.
+  // -------------------------------------------------------------------
+  incvel_->PutScalar(0.0);
+  {
+    TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
+    LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
+  }
+  {
+    // apply the womersley velocity profile as a dirichlet bc
+    LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(vol_surf_flow_bcmaps_));
+  }
+
+} // FluidImplicitTimeInt::ApplyDirichletToSystem
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | update within iteration                                     vg 09/11 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidImplicitTimeInt::IterUpdate(
+  const Teuchos::RCP<const Epetra_Vector> increment)
+{
+  // store incremental vector to be available for convergence check
+  // if incremental vector is received from outside for coupled problems
+  incvel_->Update(1.0,*increment,0.0);
+
+  // update velocity and pressure values by adding increments
+  velnp_->Update(1.0,*increment,1.0);
+
+  // -------------------------------------------------------------------
+  // For af-generalized-alpha: update accelerations
+  // Furthermore, calculate velocities, pressures, scalars and
+  // accelerations at intermediate time steps n+alpha_F and n+alpha_M,
+  // respectively, for next iteration.
+  // This has to be done at the end of the iteration, since we might
+  // need the velocities at n+alpha_F in a potential coupling
+  // algorithm, for instance.
+  // -------------------------------------------------------------------
+  if (is_genalpha_)
+  {
+    GenAlphaUpdateAcceleration();
+
+    GenAlphaIntermediateValues();
+  }
+
+} // FluidImplicitTimeInt::IterUpdate
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
  | update acceleration for generalized-alpha time integration  vg 02/09 |
  *----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -2478,6 +2363,194 @@ void FLD::FluidImplicitTimeInt::GenAlphaUpdateAcceleration()
   LINALG::Export(*onlyaccnp,*accnp_);
 
 } // FluidImplicitTimeInt::GenAlphaUpdateAcceleration
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | compute values at intermediate time steps for gen.-alpha    vg 02/09 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidImplicitTimeInt::GenAlphaIntermediateValues()
+{
+  //       n+alphaM                n+1                      n
+  //    acc         = alpha_M * acc     + (1-alpha_M) *  acc
+  //       (i)                     (i)
+  {
+    // extract the degrees of freedom associated with velocities
+    // only these are allowed to be updated, otherwise you will
+    // run into trouble in loma, where the 'pressure' component
+    // is used to store the acceleration of the temperature
+    Teuchos::RCP<Epetra_Vector> onlyaccn  = velpressplitter_.ExtractOtherVector(accn_ );
+    Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_.ExtractOtherVector(accnp_);
+
+    Teuchos::RCP<Epetra_Vector> onlyaccam = rcp(new Epetra_Vector(onlyaccnp->Map()));
+
+    onlyaccam->Update((alphaM_),*onlyaccnp,(1.0-alphaM_),*onlyaccn,0.0);
+
+    // copy back into global vector
+    LINALG::Export(*onlyaccam,*accam_);
+  }
+
+  // set intermediate values for velocity
+  //
+  //       n+alphaF              n+1                   n
+  //      u         = alpha_F * u     + (1-alpha_F) * u
+  //       (i)                   (i)
+  //
+  // and pressure
+  //
+  //       n+alphaF              n+1                   n
+  //      p         = alpha_F * p     + (1-alpha_F) * p
+  //       (i)                   (i)
+  //
+  // note that its af-genalpha with mid-point treatment of the pressure,
+  // not implicit treatment as for the genalpha according to Whiting
+  velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
+
+  if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
+  {
+    // set intermediate values for velocity
+    //
+    //       n+alphaF              n+1                   n
+    //      u         = alpha_F * u     + (1-alpha_F) * u
+    //       (i)                   (i)
+    //
+    // and pressure
+    //
+    //       n+1
+    //      p
+    //       (i)
+    //
+    // note that its af-genalpha with mid-point treatment of the pressure,
+    // not implicit treatment as for the genalpha according to Whiting
+    Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(velnp_);
+
+    LINALG::Export(*onlypre, *velaf_);
+  }
+
+} // FluidImplicitTimeInt::GenAlphaIntermediateValues
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | convergence check                                           vg 09/11 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
+                                                 int          itmax,
+                                                 const double ittol)
+{
+  // -------------------------------------------------------------------
+  // calculate and print out norms for convergence check
+  // (blank residual DOFs which are on Dirichlet BC
+  // We can do this because the values at the dirichlet positions
+  // are not used anyway.
+  // We could avoid this though, if velrowmap_ and prerowmap_ would
+  // not include the dirichlet values as well. But it is expensive
+  // to avoid that.)
+  // -------------------------------------------------------------------
+  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),residual_);
+
+  // -------------------------------------------------------------------
+  // take surface volumetric flow rate into account
+  //    RCP<Epetra_Vector> temp_vec = rcp(new Epetra_Vector(*vol_surf_flow_bcmaps_,true));
+  //    vol_surf_flow_bc_->InsertCondVector( *temp_vec , *residual_);
+  // -------------------------------------------------------------------
+  vol_flow_rates_bc_extractor_->InsertVolumetricSurfaceFlowCondVector(
+    vol_flow_rates_bc_extractor_->ExtractVolumetricSurfaceFlowCondVector(zeros_),
+      residual_);
+
+  Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
+  onlyvel->Norm2(&vresnorm_);
+
+  velpressplitter_.ExtractOtherVector(incvel_,onlyvel);
+  onlyvel->Norm2(&incvelnorm_L2_);
+
+  velpressplitter_.ExtractOtherVector(velnp_,onlyvel);
+  onlyvel->Norm2(&velnorm_L2_);
+
+  Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(residual_);
+  onlypre->Norm2(&presnorm_);
+
+  velpressplitter_.ExtractCondVector(incvel_,onlypre);
+  onlypre->Norm2(&incprenorm_L2_);
+
+  velpressplitter_.ExtractCondVector(velnp_,onlypre);
+  onlypre->Norm2(&prenorm_L2_);
+
+  // care for the case that nothing really happens in velocity
+  // or pressure field
+  if (velnorm_L2_ < 1e-5) velnorm_L2_ = 1.0;
+  if (prenorm_L2_ < 1e-5) prenorm_L2_ = 1.0;
+
+  if (myrank_ == 0)
+  {
+    printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
+      itnum,itmax,ittol,vresnorm_,presnorm_,incvelnorm_L2_/velnorm_L2_,
+      incprenorm_L2_/prenorm_L2_);
+    printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
+    if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
+      printf(",tf=%10.3E",dtfilter_);
+    printf(")\n");
+  }
+
+  // -------------------------------------------------------------------
+  // check convergence and print out respective information:
+  // - stop if convergence is achieved
+  // - warn if itemax is reached without convergence, but proceed to
+  //   next timestep
+  // -------------------------------------------------------------------
+  if (vresnorm_ <= ittol and
+      presnorm_ <= ittol and
+      incvelnorm_L2_/velnorm_L2_ <= ittol and
+      incprenorm_L2_/prenorm_L2_ <= ittol)
+  {
+    if (myrank_ == 0)
+    {
+      printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+      FILE* errfile = params_.get<FILE*>("err file",NULL);
+      if (errfile!=NULL)
+      {
+        fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
+          itnum,itmax,ittol,vresnorm_,presnorm_,
+          incvelnorm_L2_/velnorm_L2_,incprenorm_L2_/prenorm_L2_);
+      }
+    }
+    return true;
+  }
+  else
+  {
+    if (itnum == itmax)
+    {
+      if (myrank_ == 0)
+      {
+        printf("+---------------------------------------------------------------+\n");
+        printf("|            >>>>>> not converged in itemax steps!              |\n");
+        printf("+---------------------------------------------------------------+\n");
+
+        FILE* errfile = params_.get<FILE*>("err file",NULL);
+        if (errfile!=NULL)
+        {
+          fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
+                  itnum,itmax,ittol,vresnorm_,presnorm_,
+                  incvelnorm_L2_/velnorm_L2_,incprenorm_L2_/prenorm_L2_);
+        }
+      }
+      return true;
+    }
+  }
+
+  return false;
+
+} // FluidImplicitTimeInt::ConvergenceCheck
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

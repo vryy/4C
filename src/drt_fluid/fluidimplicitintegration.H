@@ -183,6 +183,24 @@ public:
   void MultiCorrector();
 
   /*!
+  \brief preparatives for solver
+
+  */
+  void PrepareSolve();
+
+  /*!
+  \brief update within iteration
+
+  */
+  void IterUpdate(const Teuchos::RCP<const Epetra_Vector> increment);
+
+  /*!
+ \brief convergence check
+
+  */
+  bool ConvergenceCheck(int itnum, int itmax, const double ittol);
+
+  /*!
     \brief build linear system matrix and rhs
 
     Monolithic FSI needs to access the linear fluid problem.
@@ -458,22 +476,28 @@ protected:
   FluidImplicitTimeInt (const FluidImplicitTimeInt& old);
 
   /*!
-  \brief compute values at intermediate time steps for gen.-alpha
-
-  */
-  void GenAlphaIntermediateValues();
-
-  /*!
   \brief call elements to calculate system matrix/rhs and assemble
 
   */
   void AssembleMatAndRHS();
 
   /*!
+  \brief apply Dirichlet boundary conditions to system of equations
+
+  */
+  void ApplyDirichletToSystem();
+
+  /*!
   \brief update acceleration for generalized-alpha time integration
 
   */
   void GenAlphaUpdateAcceleration();
+
+  /*!
+  \brief compute values at intermediate time steps for gen.-alpha
+
+  */
+  void GenAlphaIntermediateValues();
 
 
   //! @name general algorithm parameters
@@ -556,6 +580,15 @@ protected:
   int samstart_;
   int samstop_;
   int dumperiod_;
+  //@}
+
+  //! @name norms for convergence check
+  double incvelnorm_L2_;
+  double incprenorm_L2_;
+  double velnorm_L2_;
+  double prenorm_L2_;
+  double vresnorm_;
+  double presnorm_;
   //@}
 
   /// flag for physical type of fluid flow (standard: incompressible)
