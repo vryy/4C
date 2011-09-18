@@ -2486,6 +2486,23 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
   velpressplitter_.ExtractCondVector(velnp_,onlypre);
   onlypre->Norm2(&prenorm_L2_);
 
+  // check for any INF's and NaN's
+  if (std::isnan(vresnorm_) or
+      std::isnan(incvelnorm_L2_) or
+      std::isnan(velnorm_L2_) or
+      std::isnan(presnorm_) or
+      std::isnan(incprenorm_L2_) or
+      std::isnan(prenorm_L2_))
+    dserror("At least one of the calculated vector norms is NaN.");
+
+  if (abs(std::isinf(vresnorm_)) or
+      abs(std::isinf(incvelnorm_L2_)) or
+      abs(std::isinf(velnorm_L2_)) or
+      abs(std::isinf(presnorm_)) or
+      abs(std::isinf(incprenorm_L2_)) or
+      abs(std::isinf(prenorm_L2_)))
+    dserror("At least one of the calculated vector norms is INF.");
+
   // care for the case that nothing really happens in velocity
   // or pressure field
   if (velnorm_L2_ < 1e-5) velnorm_L2_ = 1.0;
