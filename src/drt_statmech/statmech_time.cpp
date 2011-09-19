@@ -294,16 +294,15 @@ void StatMechTime::Integrate()
 
               // LOOP3: nonlinear iteration (Newton)
               if(ndim ==3)
-                PTC(randomnumbers);
+                PTC(randomnumbers,true);
               else
                 FullNewton(randomnumbers);
 
-              // update constraint norm and penalty parameter
-              beamcmanager_->UpdateConstrNorm(uzawaiter_);
+							// update constraint norm and penalty parameter
+							beamcmanager_->UpdateConstrNorm(uzawaiter_);
 
-              // update Uzawa Lagrange multipliers
-              beamcmanager_->UpdateAlllmuzawa(uzawaiter_);
-
+							// update Uzawa Lagrange multipliers
+							beamcmanager_->UpdateAlllmuzawa(uzawaiter_);
             } while (abs(beamcmanager_->GetConstrNorm()) >= eps);
 
             // reset penalty parameter
@@ -312,7 +311,7 @@ void StatMechTime::Integrate()
             break;
           }
           default:
-            dserror("Only penaltz and augmented Lagrange implemented in statmech_time.cpp for beam contact");
+            dserror("Only penalty and augmented Lagrange implemented in statmech_time.cpp for beam contact");
           }
       }
       else
@@ -823,7 +822,7 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
 /*----------------------------------------------------------------------*
  |  do Newton iteration (public)                             cyron 12/10|
  *----------------------------------------------------------------------*/
-void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
+void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, bool uzawa)
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -1086,11 +1085,40 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
     }
 
 
+    /*/ cout-Block for testing individual residual entries
+    for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
+    {
+    	if(pid==discret_.Comm().MyPID())
+				for(int i=0; i<fresm_->MyLength(); i++)
+				{
+					if((*fresm_)[i]>10)
+					{
+						cout<<"Proc "<<discret_.Comm().MyPID()<<": DOF "<<i<<": "<<(*fresm_)[i]<<" -> elements: ";
+						for(int j=0; j<discret_.lRowNode((int)(floor((double)i/6.0)))->NumElement(); j++)
+						{
+							int nodeid = discret_.lRowNode((int)(floor((double)i/6.0)))->Elements()[j]->Id();
+							cout<<nodeid<<" ";
+							for(int j=0; j<(int)beamcmanager_->Pairs()->size(); j++)
+							{
+								if((*(beamcmanager_->Pairs()))[j]->Element1()->Id()==nodeid ||
+									 (*(beamcmanager_->Pairs()))[j]->Element2()->Id()==nodeid)
+								{
+									cout<<"(contact) ";
+									break;
+								}
+							}
+						}
+						cout<<endl;
+					}
+				}
+    	discret_.Comm().Barrier();
+    }*/
+
     //--------------------------------- increment equilibrium loop index
     ++numiter;
 
     // leave the loop without going to maxiter iteration because most probably, the process will not converge anyway from here on
-    if(fresmnorm>1.0e4)
+    if(fresmnorm>1.0e4 && numiter>1)
     {
     	fresmnormdivergent = true;
     	break;
@@ -1106,7 +1134,13 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers)
     isconverged_ = 0;
     statmechmanager_->unconvergedsteps_++;
     if(discret_.Comm().MyPID()==0 and printscreen)
-      std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
+    {
+      std::cout<<"\n\n";
+      if(uzawa)
+      	std::cout<<"uzawa iteration unconverged!\n\n";
+      else
+      	std::cout<<"iteration unconverged - new trial with new random numbers!\n\n";
+    }
      //dserror("FullNewton unconverged in %d iterations",numiter);
   }
   else
