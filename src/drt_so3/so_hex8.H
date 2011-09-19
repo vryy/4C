@@ -475,6 +475,7 @@ protected:
     calc_struct_linstiffmass,
     calc_struct_nlnstiffmass,
     calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
+    calc_struct_nlnstiff_gemm,  //!< internal force, stiffness and mass for GEMM
     calc_struct_stress,
     calc_struct_eleload,
     calc_struct_fsiload,
@@ -575,6 +576,23 @@ protected:
   //! Calculate nonlinear stiffness and mass matrix
   virtual void soh8_nlnstiffmass(
       vector<int>&              lm,             ///< location matrix
+      vector<double>&           disp,           ///< current displacements
+      vector<double>&           residual,       ///< current residual displ
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
+      LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
+      LINALG::Matrix<NUMDOF_SOH8,1>* force,          ///< element internal force vector
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* eleplstrain,    ///< plastic strains at GP
+      ParameterList&            params,           ///< algorithmic parameters e.g. time
+      const INPAR::STR::StressType   iostress,    ///< stress output option
+      const INPAR::STR::StrainType   iostrain,    ///< strain output option
+      const INPAR::STR::StrainType   ioplstrain); ///< plastic strain output option
+
+  //! Calculate nonlinear stiffness and mass matrix (GEMM)
+  virtual void soh8_nlnstiffmass_gemm(
+      vector<int>&              lm,             ///< location matrix
+      vector<double>&           dispo,          ///< old displacements
       vector<double>&           disp,           ///< current displacements
       vector<double>&           residual,       ///< current residual displ
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
