@@ -160,12 +160,6 @@ void SCATRA::ScaTraTimIntImpl::AddReinitializationParameters(
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS_Boundary()
 {
-  // time measurement: element calls
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + element calls");
-
-  // get cpu time
-  const double tcpuele = Teuchos::Time::wallTime();
-
   //----------------------------------------------------------------------
   // apply Taylor Galerkin Outflow boundary conditions
   //----------------------------------------------------------------------
@@ -251,9 +245,6 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS_Boundary()
 	    discret_->ClearState();
 		}
   }
-
-  // end time measurement for element
-  dtele_=Teuchos::Time::wallTime()-tcpuele;
 
   return;
 } // ScaTraTimIntImpl::AssembleMatAndRHS_TaylorGalerkin
