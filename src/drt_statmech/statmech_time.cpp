@@ -443,7 +443,10 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     // determine evaluation mode
     if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) <= 0.0 && DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC"))
     	dserror("Set PeriodLength > 0.0 if periodic DBCs are to be applied");
-    if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0 && !(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC")))
+    if(!discret_.Comm().MyPID() &&
+    		firststep_ &&
+    		statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0 &&
+    		!(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC")))
     {
     	cout<<"========================STATMECH WARNING!=========================="<<endl;
     	cout<<"Be careful with DBCs when periodic boundary conditions are applied!"<<endl;
