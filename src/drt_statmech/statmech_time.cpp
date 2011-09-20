@@ -1127,7 +1127,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, bool uzawa)
     ++numiter;
 
     // leave the loop without going to maxiter iteration because most probably, the process will not converge anyway from here on
-    if(fresmnorm>1.0e4 && numiter>1 && !uzawa)
+    if(fresmnorm>1.0e4 && numiter>3)
     {
     	fresmnormdivergent = true;
     	break;
