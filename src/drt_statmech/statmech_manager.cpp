@@ -2589,7 +2589,7 @@ void StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
 	double dt = params.get<double>("delta time", 0.01);
 	double starttime = statmechparams_.get<double>("STARTTIMEACT",-1.0);
 	// check if time has superceeded start. If not, do nothing (i.e. no application of Dirichlet values) and just return!
-	if(time <= starttime || (time > starttime && fabs(time-starttime)<dt/1e4) || curvenumber == -1)
+	if(time <= starttime || (time > starttime && fabs(time-starttime)<dt/1e4) || curvenumber<0)
 		return;
 	if (time<0.0)
 		usetime = false;

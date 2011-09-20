@@ -173,10 +173,17 @@ void StatMechTime::Integrate()
   // debug cout
 	Epetra_Vector discol(*discret_.DofColMap(), true);
 
-  //defining solution strategz for beam contact
+  //defining solution strategy for beam contact
 	INPAR::CONTACT::SolvingStrategy soltype(INPAR::CONTACT::solution_penalty);
   if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+  {
     soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcmanager_->InputParameters(),"STRATEGY");
+    // decide wether the tangent field should be smoothed or not
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Smoothing>(DRT::Problem::Instance()->MeshtyingAndContactParams(),"BEAMS_SMOOTHING") == INPAR::CONTACT::bsm_none)
+		{
+			//cout << "Test BEAMS_SMOOTHING" << INPAR::CONTACT::bsm_none << endl;
+		}
+  }
 
   for (int i=step; i<nstep; ++i)
   {
@@ -215,6 +222,10 @@ void StatMechTime::Integrate()
 
     //seed random generators of statmechmanager_ to generate the same random numbers even if the simulation was interrupted by a restart
     statmechmanager_->SeedRandomGenerators(i);
+
+    // set normal vector of last time "normal_" to old normal vector "normal_old_"
+    if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT") && DRT::INPUT::IntegralValue<int>(beamcmanager_->InputParameters(),"BEAMS_NEWGAP"))
+    	beamcmanager_->ShiftAllNormal();
 
 
     //processor 0 indicates beginning of new time step on console
@@ -265,9 +276,8 @@ void StatMechTime::Integrate()
 
             // update constraint norm
             beamcmanager_->UpdateConstrNorm();
-
-            break;
           }
+          break;
           //solving strategy using regularization with augmented Lagrange method (nonlinear solution approach: nested UZAWA NEWTON)
           case INPAR::CONTACT::solution_auglag:
           {
@@ -307,9 +317,8 @@ void StatMechTime::Integrate()
 
             // reset penalty parameter
             beamcmanager_->ResetCurrentpp();
-
-            break;
           }
+          break;
           default:
             dserror("Only penalty and augmented Lagrange implemented in statmech_time.cpp for beam contact");
           }
@@ -1118,7 +1127,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, bool uzawa)
     ++numiter;
 
     // leave the loop without going to maxiter iteration because most probably, the process will not converge anyway from here on
-    if(fresmnorm>1.0e4 && numiter>1)
+    if(fresmnorm>1.0e4 && numiter>1 && !uzawa)
     {
     	fresmnormdivergent = true;
     	break;
