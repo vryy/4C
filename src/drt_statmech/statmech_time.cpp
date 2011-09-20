@@ -132,7 +132,7 @@ uzawaiter_(0)
       DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechmanager_->statmechparams_, "SPECIAL_OUTPUT") == INPAR::STATMECH::statout_anisotropic)
   {
     params_.set("print to screen",false);
-    std::cout<<"\n\nPay Attention: from no on regular output to screen suppressed !!!\n\n";
+    std::cout<<"\n\nPay Attention: from now on regular output to screen suppressed !!!\n\n";
   }
 
 
@@ -227,7 +227,6 @@ void StatMechTime::Integrate()
     if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT") && DRT::INPUT::IntegralValue<int>(beamcmanager_->InputParameters(),"BEAMS_NEWGAP"))
     	beamcmanager_->ShiftAllNormal();
 
-
     //processor 0 indicates beginning of new time step on console
     if(!discret_.Comm().MyPID() && params_.get<bool>  ("print to screen",true))
       std::cout<<"\nbegin time step "<<i+1<<":";
@@ -304,9 +303,13 @@ void StatMechTime::Integrate()
 
               // LOOP3: nonlinear iteration (Newton)
               if(ndim ==3)
-                PTC(randomnumbers,true);
+              	PTC(randomnumbers,true);
               else
                 FullNewton(randomnumbers);
+
+              // in case uzawa step did not converge, leave the inner loop and get a new set of random numbers
+              if(isconverged_==0)
+              	break;
 
 							// update constraint norm and penalty parameter
 							beamcmanager_->UpdateConstrNorm(uzawaiter_);
@@ -438,19 +441,19 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     // disn then also holds prescribed new dirichlet displacements
 
     // determine evaluation mode
-    if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) <= 0.0 &&
-    	 DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC"))
+    if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) <= 0.0 && DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC"))
     	dserror("Set PeriodLength > 0.0 if periodic DBCs are to be applied");
-    if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0 &&
-    	 DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"CONVENTIONALDBC"))
-    	dserror("Set PeriodLength to Zero if conventional DBCs are to be applied");
+    if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0 && !(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC")))
+    {
+    	cout<<"========================STATMECH WARNING!=========================="<<endl;
+    	cout<<"Be careful with DBCs when periodic boundary conditions are applied!"<<endl;
+    	cout<<"==================================================================="<<endl;
+    }
     // in case of activated periodic boundary conditions
     if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"PERIODICDBC"))
     	statmechmanager_->EvaluateDirichletPeriodic(p, disn_, dirichtoggle_, invtoggle_);
-		// "common" case without periodic boundary conditions
-    if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"CONVENTIONALDBC") )
+    else
     	discret_.EvaluateDirichlet(p,disn_,null,null,dirichtoggle_);
-
 
     discret_.ClearState();
     discret_.SetState("displacement",disn_);
@@ -1112,7 +1115,12 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, bool uzawa)
 								if((*(beamcmanager_->Pairs()))[j]->Element1()->Id()==nodeid ||
 									 (*(beamcmanager_->Pairs()))[j]->Element2()->Id()==nodeid)
 								{
-									cout<<"(contact) ";
+									cout<<"(contact: ";
+									if(i%6<3)
+										cout<<"trans DOF";
+									else
+										cout<<"rot DOF";
+									cout<<") ";
 									break;
 								}
 							}
@@ -1146,7 +1154,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, bool uzawa)
     {
       std::cout<<"\n\n";
       if(uzawa)
-      	std::cout<<"uzawa iteration unconverged!\n\n";
+      	std::cout<<"uzawa iteration unconverged-leaving loop!\n\n";
       else
       	std::cout<<"iteration unconverged - new trial with new random numbers!\n\n";
     }

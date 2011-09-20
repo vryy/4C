@@ -501,7 +501,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
   FILE* fp = NULL;
 
   //number of solid elements by which a round line is depicted
-  const int nline = 8;
+  const int nline = 16;
 
   // first processor starts by opening the file and writing the header, other processors have to wait
   if (discret_.Comm().MyPID() == 0)
@@ -590,7 +590,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
         else
           color = 0.5;
 
-        if(DRT::INPUT::IntegralValue<int>(statmechparams_, "BEAMCONTACT"))
+        /*if(DRT::INPUT::IntegralValue<int>(statmechparams_, "BEAMCONTACT"))
         {
         	for(int j=0; j<(int)(*(beamcmanager->Pairs())).size(); j++)
         	{
@@ -600,7 +600,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
 						if(element->Id()==celeid1 || element->Id()==celeid2)
 							color = 0.75;
         	}
-        }
+        }*/
 
         //if no periodic boundary conditions are to be applied, we just plot the current element
         if (periodlength == 0.0)
@@ -734,7 +734,7 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 {
 	double periodlength = statmechparams_.get<double>("PeriodLength",0.0);
   //number of solid elements by which a round line is depicted
-  const int nline = 8;
+  const int nline = 16;
 
   //number of spatial dimensions
   const int ndim = 3;
