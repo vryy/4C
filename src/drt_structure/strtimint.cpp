@@ -325,12 +325,17 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   if (contactconditions.size() && apptype != INPAR::CONTACT::app_none)
   {
     // store integration parameter alphaf into cmtman_ as well
-    // (for all cases except GenAlpha and GEMM this is zero)
+    // (for all cases except OST, GenAlpha and GEMM this is zero)
+    // (note that we want to hand in theta in the OST case, which
+    // is defined just the other way round as alphaf in GenAlpha schemes.
+    // Thus, we have to hand in 1-theta for OST!!!)
     double alphaf = 0.0;
     if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") == INPAR::STR::dyna_genalpha)
       alphaf = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
     if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") == INPAR::STR::dyna_gemm)
       alphaf = sdynparams.sublist("GEMM").get<double>("ALPHA_F");
+    if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP") == INPAR::STR::dyna_onesteptheta)
+      alphaf = 1.0 - sdynparams.sublist("ONESTEPTHETA").get<double>("THETA");
 
     // decide whether this is meshtying or contact and create manager
     if (apptype == INPAR::CONTACT::app_mortarmeshtying)
