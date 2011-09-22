@@ -511,10 +511,60 @@ void GEO::CUT::VolumeCell::TestSurface()
   }
 }
 
+void GEO::CUT::VolumeCell::DumpGmsh(const std::vector<std::vector<double> >&gauspts)
+{
+    const plain_facet_set & facete = Facets();
+    double mome = 0.0;
+    std::string filename="wrong";
+    std::ofstream file;
+
+    int pointno=1,point_begin,point_end,lineno=1;
+    for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
+    {
+         point_begin = pointno;
+         Facet *fe = *i;
+//the side id of the first facet is used as the file name for every volumecell
+         if(i==facete.begin())
+         {
+                 static int sideno = 0;
+		 sideno++;
+                 std::stringstream out;
+                 out <<"side"<<sideno<<".pos";
+                 filename = out.str();
+                 file.open(filename.c_str());
+         }
+         const std::vector<Point*> & corners = fe->CornerPoints();
+         for(std::vector<Point*>::const_iterator k=corners.begin();k!=corners.end();k++)
+         {
+             const Point* po = *k;
+             const double * coords = po->X();
+             file<<"Point("<<pointno<<")={"<<coords[0]<<","<<coords[1]<<","<<coords[2]<<","<<"1"<<"};"<<std::endl;
+             pointno++;
+         }
+         point_end = pointno;
+         for(int i=point_begin;i!=point_end;i++)
+         {
+                 if(i!=point_end-1)
+                         file<<"Line("<<lineno<<")={"<<i<<","<<i+1<<"};"<<std::endl;
+                 else 
+                         file<<"Line("<<lineno<<")={"<<i<<","<<point_begin<<"};"<<std::endl;
+                 lineno++;
+         }
+    }
+
+    for(unsigned i=0;i<gauspts.size();i++)
+    {
+             file<<"Point("<<pointno<<")={"<<gauspts[i][0]<<","<<gauspts[i][1]<<","<<gauspts[i][2]<<","<<"1"<<"};"<<std::endl;
+             pointno++;
+    }
+    file.close();
+}
+
 //Find Gaussian points and weights by moment fitting equations
 void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem)
 {
     //position is used to decide whether the ordering of points are in clockwise or not
+//        std::cout<<"volume"<<std::endl;
     const GEO::CUT::Point::PointPosition posi = Position();
     VolumeIntegration vc_inte(this,elem,posi,35);
 

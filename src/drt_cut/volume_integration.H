@@ -36,8 +36,17 @@ class VolumeIntegration
         int num_func_;
         std::vector<double> compute_rhs_moment();
         std::vector<std::vector<double> > gaus_pts_;
-        void compute_Gaussian_points();
+        std::vector<std::vector<double> > eqn_facets_;
+        bool compute_Gaussian_points();
         void moment_fitting_matrix(std::vector<std::vector<double> >&mom);
+        bool IsIntersect(double *pt, double *mini, double *maxi,vector<vector<double> >& linePts,
+                        vector<vector<double> >zcoord,vector<vector<double> >ycoord);
+        bool IsContainArea(double minn[3],double maxx[3], double&zmin,vector<vector<double> > &pts,
+                vector<vector<double> >zcoord,vector<vector<double> >ycoord);
+        void GaussPointGmsh();
+        void OnLine(vector<double>inter1,vector<double>inter2,vector<vector<double> >&linePts,int num);
+        void get_zcoordinates(vector<vector<double> >& zcoord,vector<vector<double> >& ycoord);
+        int pnpoly(int npol, vector<double>xp, vector<double>yp, double x, double y);
 };
 }
 }

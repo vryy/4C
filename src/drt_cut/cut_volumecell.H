@@ -107,6 +107,8 @@ public:
 
   int NumGaussPoints( DRT::Element::DiscretizationType shape );
 
+  void DumpGmsh(const std::vector<std::vector<double> >&gauspts);
+
 private:
 
   void SetTetPoints( const int * totet4,

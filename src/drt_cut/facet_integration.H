@@ -27,6 +27,7 @@ class FacetIntegration
         ~FacetIntegration(){};
         void set_integ_number(int inte_num){inte_num_ = inte_num;}
         double integrate_facet();
+        std::vector<double> get_equation() {return eqn_plane_;}
 //      std::vector<std::pair<int,int> > get_connectivity(){return connecti_;};
 
     private:
@@ -35,8 +36,9 @@ class FacetIntegration
         const GEO::CUT::Point::PointPosition position_;
         int inte_num_;
         bool clockwise_;
+        std::vector<double> eqn_plane_;
         std::vector<double> equation_plane(const std::vector<Point*>& corners);
-        double compute_normal(const std::vector<double> eqn_plane);
+        void IsClockwise(const std::vector<double> eqn_plane);
         std::vector<double> compute_alpha(std::vector<double> eqn_plane);
         
     };

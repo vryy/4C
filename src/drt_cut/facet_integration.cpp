@@ -41,16 +41,8 @@ std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector
 
 //compute only the x-component of unit-normal vector which is used in further computations
 //also determine whether the plane is numbered in clockwise or anticlockwise sense when seen away from the face
-double GEO::CUT::FacetIntegration::compute_normal(const std::vector<double> eqn_plane)
+void GEO::CUT::FacetIntegration::IsClockwise(const std::vector<double> eqn_plane)
 {
-        double normals;
-        double a = eqn_plane[0];
-        double b = eqn_plane[1];
-        double c = eqn_plane[2];
-        double fac = sqrt(a*a+b*b+c*c);
-        normals = a/fac;
-//      std::cout<<normals<<std::endl;
-
         clockwise_ = 0;
         Side* parent = face1_->ParentSide();
         std::vector<Point*>  par_pts;
@@ -79,7 +71,7 @@ double GEO::CUT::FacetIntegration::compute_normal(const std::vector<double> eqn_
         }       
         else
         {
-                const std::vector<Side*> &ele_sides = elem1_->Sides();
+        //        const std::vector<Side*> &ele_sides = elem1_->Sides();
         /*      for(std::vector<Side*>::const_iterator i=ele_sides.begin();i!=ele_sides.end();i++)              
                 {
                         Side*sss = *i;
@@ -99,7 +91,6 @@ double GEO::CUT::FacetIntegration::compute_normal(const std::vector<double> eqn_
                         clockwise_ = 1;
         }
 //      std::cout<<clockwise_<<std::endl;
-        return normals;
 }
 
 //computes x=a1+a2y+a3z from the plane equation
@@ -124,24 +115,22 @@ std::vector<double> GEO::CUT::FacetIntegration::compute_alpha(std::vector<double
 //perform integration over the facet
 double GEO::CUT::FacetIntegration::integrate_facet()
 {
-        std::vector<double> eqn_plane;
         const std::vector<Point*> & corners = face1_->CornerPoints();
-        eqn_plane = equation_plane(corners);
+        eqn_plane_ = equation_plane(corners);
 //      std::cout<<eqn_plane[0]<<"\t"<<eqn_plane[1]<<"\t"<<eqn_plane[2]<<"\t"<<eqn_plane[3]<<std::endl;
 
 // the face is in the x-y or in y-z plane which gives zero facet integral
-        if(fabs(eqn_plane[0])<0.0000001)
+        if(fabs(eqn_plane_[0])<0.0000001)
                 return 0.0;
 //x=0 plane which again do not contribute to facet integral
-        if(fabs(eqn_plane[1])<0.0000001 && fabs(eqn_plane[2])<0.0000001 && fabs(eqn_plane[3])<0.0000001)
+        if(fabs(eqn_plane_[1])<0.0000001 && fabs(eqn_plane_[2])<0.0000001 && fabs(eqn_plane_[3])<0.0000001)
                 return 0.0;
 
-        double normals;
-        normals = compute_normal(eqn_plane);
+        IsClockwise(eqn_plane_);
 //      std::cout<<normals<<std::endl;
 
         std::vector<double> alpha;
-        alpha = compute_alpha(eqn_plane);
+        alpha = compute_alpha(eqn_plane_);
 //      std::cout<<alpha[0]<<"\t"<<alpha[1]<<"\t"<<alpha[2]<<std::endl;
 
         //integrating over each line of the facet
@@ -177,6 +166,10 @@ double GEO::CUT::FacetIntegration::integrate_facet()
 
 //this condition results in negative normal for all the lines in the line integral
         if(clockwise_)
+        {
                 facet_integ = -1.0*facet_integ;
+                for(int i=0;i<4;i++)
+                       eqn_plane_[i] = -1.0*eqn_plane_[i];
+        }
         return facet_integ;
 }

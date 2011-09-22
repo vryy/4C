@@ -118,6 +118,7 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner )
 
   m.CreateIntegrationCells( 0, false );
   //m.RemoveEmptyVolumeCells();
+//  m.MomentFitGaussWeights();
 
 #ifdef DEBUGCUTLIBRARY
   //m.TestVolumeSurface();
