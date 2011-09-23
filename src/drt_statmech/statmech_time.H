@@ -53,7 +53,7 @@ public:
   virtual void PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep, bool uzawa = false);
 
   //!\brief initialize Newton for 2nd, 3rd, ... Uzawa iteration
-  void InitializeNewtonUzawa();
+  void InitializeNewtonUzawa(RCP<Epetra_MultiVector> randomnumbers);
 
   //!\brief writing output including restart information
   virtual void Output();

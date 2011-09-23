@@ -644,7 +644,7 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
   bool print_unconv = true;
 
   // create out-of-balance force for 2nd, 3rd, ... Uzawa iteration
-  InitializeNewtonUzawa();
+  InitializeNewtonUzawa(randomnumbers);
 
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) and numiter<=maxiter)
   {
@@ -839,10 +839,6 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
  *----------------------------------------------------------------------*/
 void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool uzawa)
 {
-	/*double norm = 0.0;
-	fresm_->Norm2(&norm);
-	cout<<"PTC Start FRESM norm = "<<norm<<endl;*/
-
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -877,7 +873,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
   if (dynkindstat) dserror("Static case not implemented");
 
   // create out-of-balance force for 2nd, 3rd, ... Uzawa iteration
-  InitializeNewtonUzawa();
+  InitializeNewtonUzawa(randomnumbers);
 
   // hard wired ptc parameters
   double ctransptc = (statmechmanager_->statmechparams_).get<double>("CTRANSPTC0",0.0);
@@ -961,15 +957,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
       double wanted = tolres;
       solver_.AdaptTolerance(wanted,worst,adaptolbetter);
     }
-		/*disi_->Norm2(&norm);
-		cout<<"PTC preSolve DISI norm = "<<norm<<endl;
-		fresm_->Norm2(&norm);
-		cout<<"PTC preSolve FRESM norm = "<<norm<<endl;*/
     solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
-		/*disi_->Norm2(&norm);
-		cout<<"PTC postSolve DISI norm = "<<norm<<endl;
-		fresm_->Norm2(&norm);
-		cout<<"PTC postSolve FRESM norm= "<<norm<<endl;*/
     solver_.ResetTolerance();
 
     //cout<<(*disi_)<<endl;
@@ -989,17 +977,6 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
     // incremental (required for constant predictor)
     velm_->Update(1.0/dt,*dism_,-1.0/dt,*dis_,0.0);
     //velm_->Update((delta-(1.0-alphaf)*gamma)/delta,*vel_,gamma/(delta*dt));
-    /*double norm = 0.0;
-    velm_->Norm2(&norm);
-    if(norm>10000)
-  	{
-  		cout<<"post velm: "<<endl;
-  		for(int i=0; i<velm_->MyLength(); i++)
-  			cout<<(*velm_)[i]<<", "<<(*dism_)[i]<<", "<<(*disi_)[i]<<endl;
-  		cout<<"\n\n"<<endl;
-  	}*/
-
-
     //---------------------------- compute internal forces and stiffness
     {
 
@@ -1102,44 +1079,6 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
       crotptc = 0.0;
     }
 
-
-    /*/ cout-Block for testing individual residual entries
-    if(uzawa)
-    {
-    	cout<<"->uzawa step "<<uzawaiter_<<endl;
-			for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
-			{
-				if(pid==discret_.Comm().MyPID())
-					for(int i=0; i<fresm_->MyLength(); i++)
-					{
-						if((*fresm_)[i]>100)
-						{
-							cout<<"Proc "<<discret_.Comm().MyPID()<<": DOF "<<i<<": "<<(*fresm_)[i]<<" -> elements: ";
-							for(int j=0; j<discret_.lRowNode((int)(floor((double)i/6.0)))->NumElement(); j++)
-							{
-								int nodeid = discret_.lRowNode((int)(floor((double)i/6.0)))->Elements()[j]->Id();
-								cout<<nodeid<<" ";
-								for(int j=0; j<(int)beamcmanager_->Pairs()->size(); j++)
-								{
-									if((*(beamcmanager_->Pairs()))[j]->Element1()->Id()==nodeid ||
-										 (*(beamcmanager_->Pairs()))[j]->Element2()->Id()==nodeid)
-									{
-										cout<<"(contact: ";
-										if(i%6<3)
-											cout<<"trans DOF";
-										else
-											cout<<"rot DOF";
-										cout<<") ";
-										break;
-									}
-								}
-							}
-							cout<<endl;
-						}
-					}
-				discret_.Comm().Barrier();
-			}
-		}*/
 #ifdef GMSHPTCSTEPS
     // GmshOutput
     if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"GMSHOUTPUT") && DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
@@ -1173,8 +1112,8 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
       std::cout<<"\n\n";
       if(uzawa)
       {
-      	std::cout<<"uzawa iteration unconverged-leaving loop!\n\n";
-      	dserror("interupt at uzawa iter %d", uzawaiter_);
+      	std::cout<<"Newton iteration in Uzawa Step "<<uzawaiter_<<" unconverged-leaving loop!\n\n";
+      	dserror("interrupt at Uzawa iter %d", uzawaiter_);
       }
       else
       	std::cout<<"iteration unconverged - new trial with new random numbers!\n\n";
@@ -1201,7 +1140,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
 /*----------------------------------------------------------------------*
  |  initialize Newton for 2nd, 3rd, ... Uzawa iteration      cyron 12/10|
  *----------------------------------------------------------------------*/
-void StatMechTime::InitializeNewtonUzawa()
+void StatMechTime::InitializeNewtonUzawa(RCP<Epetra_MultiVector> randomnumbers)
 {
   // -------------------------------------------------------------------
   // get some parameters from parameter list
@@ -1218,9 +1157,6 @@ void StatMechTime::InitializeNewtonUzawa()
   // create out-of-balance force for 2nd, 3rd, ... Uzawa iteration
   if (uzawaiter_>1)
   {
-    /*double norm = 0.0;
-		fresm_->Norm2(&norm);
-		cout<<"InitUzawa : iter"<<uzawaiter_<<"start FRESM norm = "<<norm<<endl;*/
     //--------------------------- recompute external forces if nonlinear
     // at state n, the external forces and linearization are interpolated at
     // time 1-alphaf in a TR fashion
@@ -1253,7 +1189,6 @@ void StatMechTime::InitializeNewtonUzawa()
     {
       // zero out stiffness
       stiff_->Zero();
-
       // create the parameters for the discretization
       ParameterList p;
       // action for elements
@@ -1262,6 +1197,20 @@ void StatMechTime::InitializeNewtonUzawa()
       p.set("total time",timen);
       p.set("delta time",dt);
       p.set("alpha f",alphaf);
+
+      //passing statistical mechanics parameters to elements
+      p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
+      p.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
+      p.set<int>("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
+      p.set("RandomNumbers",randomnumbers);
+      p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
+      p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
+      p.set("STARTTIMEACT",(statmechmanager_->statmechparams_).get<double>("STARTTIMEACT",0.0));
+      p.set("DELTA_T_NEW",(statmechmanager_->statmechparams_).get<double>("DELTA_T_NEW",0.0));
+      p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
+      p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
+
+
       // set vector values needed by elements
       discret_.ClearState();
 
@@ -1280,10 +1229,7 @@ void StatMechTime::InitializeNewtonUzawa()
     }
 
     //------------------------------------------ compute residual forces
-    fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
-
-		/*fresm_->Norm2(&norm);
-		cout<<"InitUzawa: pre-contact FRESM norm = "<<norm<<endl;*/
+    fresm_->Update(-1.0,*fint_,1.0,*fextm_,0.0);
     //**********************************************************************
     //**********************************************************************
     // evaluate beam contact
@@ -1291,8 +1237,6 @@ void StatMechTime::InitializeNewtonUzawa()
       beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
     //**********************************************************************
     //**********************************************************************
-		/*fresm_->Norm2(&norm);
-		cout<<"InitUzawa: post-contact FRESM norm = "<<norm<<endl;*/
 
     // blank residual DOFs that are on Dirichlet BC
     Epetra_Vector fresmcopy(*fresm_);
