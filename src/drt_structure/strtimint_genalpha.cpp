@@ -305,6 +305,11 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(bool predict)
   }
 
   // apply forces and stiffness due to contact / meshtying
+  // Note that we ALWAYS use a TR-like approach to compute the interface
+  // forces. This means we never explicitly compute fc at the generalized
+  // mid-point n+1-alphaf, but use a linear combination of the old end-
+  // point n and the new end-point n+1 instead:
+  // F_{c;n+1-alpha_f} := (1-alphaf) * F_{c;n+1} +  alpha_f * F_{c;n}
   ApplyForceStiffContactMeshtying(stiff_,fres_,disn_,predict);
 
   // close stiffness matrix

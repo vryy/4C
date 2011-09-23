@@ -421,9 +421,15 @@ void CONTACT::CmtStruGenAlpha::ConsistentPredictor()
   // Res = M . A_{n+1-alpha_m}
   //     + C . V_{n+1-alpha_f}
   //     + F_int(D_{n+1-alpha_f})
-  //     + F_c(D_{n+1-alpha_f})
+  //     + F_{c;n+1-alpha_f}
   //     - F_{ext;n+1-alpha_f}
 
+  // Note that we ALWAYS use a TR-like approach to compute the interface
+  // forces. This means we never explicitly compute fc at the generalized
+  // mid-point n+1-alphaf, but use a linear combination of the old end-
+  // point n and the new end-point n+1 instead:
+  // F_{c;n+1-alpha_f} := (1-alphaf) * F_{c;n+1} +  alpha_f * F_{c;n}
+  
   // Please note that due to the contact modifications to the l.h.s. and to
   // the r.h.s below, this dynamic equilibrium duoes NOT play the role of
   // the residual here, as it does in structural dynamics without contact.
@@ -666,9 +672,15 @@ void CONTACT::CmtStruGenAlpha::ConstantPredictor()
   // Res = M . A_{n+1-alpha_m}
   //     + C . V_{n+1-alpha_f}
   //     + F_int(D_{n+1-alpha_f})
-  //     + F_c(D_{n+1-alpha_f})
+  //     + F_{c;n+1-alpha_f}
   //     - F_{ext;n+1-alpha_f}
 
+  // Note that we ALWAYS use a TR-like approach to compute the interface
+  // forces. This means we never explicitly compute fc at the generalized
+  // mid-point n+1-alphaf, but use a linear combination of the old end-
+  // point n and the new end-point n+1 instead:
+  // F_{c;n+1-alpha_f} := (1-alphaf) * F_{c;n+1} +  alpha_f * F_{c;n}
+    
   // Please note that due to the contact modifications to the l.h.s. and to
   // the r.h.s below, this dynamic equilibrium duoes NOT play the role of
   // the residual here, as it does in structural dynamics without contact.
@@ -1547,8 +1559,14 @@ void CONTACT::CmtStruGenAlpha::FullNewton()
     // Res = M . A_{n+1-alpha_m}
     //     + C . V_{n+1-alpha_f}
     //     + F_int(D_{n+1-alpha_f})
-    //     + F_c(D_{n+1-alpha_f})
+    //     + F_{c;n+1-alpha_f}
     //     - F_{ext;n+1-alpha_f}
+
+    // Note that we ALWAYS use a TR-like approach to compute the interface
+    // forces. This means we never explicitly compute fc at the generalized
+    // mid-point n+1-alphaf, but use a linear combination of the old end-
+    // point n and the new end-point n+1 instead:
+    // F_{c;n+1-alpha_f} := (1-alphaf) * F_{c;n+1} +  alpha_f * F_{c;n}
 
     if (dynkindstat)
     {
@@ -1908,8 +1926,14 @@ void CONTACT::CmtStruGenAlpha::FullNewtonLineSearch()
     // Res = M . A_{n+1-alpha_m}
     //     + C . V_{n+1-alpha_f}
     //     + F_int(D_{n+1-alpha_f})
-    //     + F_c(D_{n+1-alpha_f})
+    //     + F_{c;n+1-alpha_f}
     //     - F_{ext;n+1-alpha_f}
+
+    // Note that we ALWAYS use a TR-like approach to compute the interface
+    // forces. This means we never explicitly compute fc at the generalized
+    // mid-point n+1-alphaf, but use a linear combination of the old end-
+    // point n and the new end-point n+1 instead:
+    // F_{c;n+1-alpha_f} := (1-alphaf) * F_{c;n+1} +  alpha_f * F_{c;n}
 
     if (dynkindstat)
     {
@@ -2500,8 +2524,14 @@ void CONTACT::CmtStruGenAlpha::PTC()
     // Res = M . A_{n+1-alpha_m}
     //     + C . V_{n+1-alpha_f}
     //     + F_int(D_{n+1-alpha_f})
-    //     + F_c(D_{n+1-alpha_f})
+    //     + F_{c;n+1-alpha_f}
     //     - F_{ext;n+1-alpha_f}
+
+    // Note that we ALWAYS use a TR-like approach to compute the interface
+    // forces. This means we never explicitly compute fc at the generalized
+    // mid-point n+1-alphaf, but use a linear combination of the old end-
+    // point n and the new end-point n+1 instead:
+    // F_{c;n+1-alpha_f} := (1-alphaf) * F_{c;n+1} +  alpha_f * F_{c;n}
 
     if (dynkindstat)
     {

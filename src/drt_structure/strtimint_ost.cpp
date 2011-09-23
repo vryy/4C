@@ -215,6 +215,11 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(bool predict)
   }
 
   // apply forces and stiffness due to contact / meshtying
+  // Note that we ALWAYS use a TR-like approach to compute the interface
+  // forces. This means we never explicitly compute fc at the generalized
+  // mid-point n+theta, but use a linear combination of the old end-
+  // point n and the new end-point n+1 instead:
+  // F_{c;n+theta} := theta * F_{c;n+1} +  (1-theta) * F_{c;n}
   ApplyForceStiffContactMeshtying(stiff_,fres_,disn_,predict);
 
   // close stiffness matrix

@@ -812,12 +812,6 @@ void CONTACT::MtAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
 {
-  // Note that we ALWAYS use a TR-like approach to compute the interface
-  // forces. This means we never explicitly compute fc at the generalized
-  // mid-point n+1-alphaf, but use a linear combination of the old end-
-  // point n and the new end-point n+1 instead:
-  // F_{c;n+1-alpha_f} := (1-alphaf) * F_{c;n+1} +  alpha_f * F_{c;n}
-
   // check chosen output option
   INPAR::CONTACT::EmOutputType emtype =
     DRT::INPUT::IntegralValue<INPAR::CONTACT::EmOutputType>(Params(),"EMOUTPUT");
@@ -825,25 +819,17 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
   // get out of here if no output wanted
   if (emtype==INPAR::CONTACT::output_none) return;
     
-  // compute two subvectors of fc each via Lagrange multipliers z_n+1, z_n
+  // compute discrete slave and master interface forces
   RCP<Epetra_Vector> fcslavetemp = rcp(new Epetra_Vector(dmatrix_->RowMap()));
   RCP<Epetra_Vector> fcmastertemp = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
-  RCP<Epetra_Vector> fcslavetempend = rcp(new Epetra_Vector(dmatrix_->RowMap()));
-  RCP<Epetra_Vector> fcmastertempend = rcp(new Epetra_Vector(mmatrix_->DomainMap()));
   dmatrix_->Multiply(true, *z_, *fcslavetemp);
   mmatrix_->Multiply(true, *z_, *fcmastertemp);
-  dmatrix_->Multiply(true, *zold_, *fcslavetempend);
-  mmatrix_->Multiply(true, *zold_, *fcmastertempend);
   
   // export the interface forces to full dof layout
   RCP<Epetra_Vector> fcslave = rcp(new Epetra_Vector(*problemrowmap_));
   RCP<Epetra_Vector> fcmaster = rcp(new Epetra_Vector(*problemrowmap_));
-  RCP<Epetra_Vector> fcslaveend = rcp(new Epetra_Vector(*problemrowmap_));
-  RCP<Epetra_Vector> fcmasterend = rcp(new Epetra_Vector(*problemrowmap_));
   LINALG::Export(*fcslavetemp, *fcslave);
   LINALG::Export(*fcmastertemp, *fcmaster);
-  LINALG::Export(*fcslavetempend, *fcslaveend);
-  LINALG::Export(*fcmastertempend, *fcmasterend);
 
   // interface forces and moments
   vector<double> gfcs(3);
