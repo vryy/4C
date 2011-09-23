@@ -49,12 +49,10 @@ Maintainer: Georg Bauer
 //#include "../drt_io/io_gmsh.H"
 //#include "../drt_geometry/integrationcell_coordtrafo.H"
 
-//#define SUBSCALE_ENC
 // activate debug screen output
 //#define PRINT_ELCH_DEBUG
 // use effective diffusion coefficient for stabilization
 #define ACTIVATEBINARYELECTROLYTE
-#define ELCHOTHERMODELS
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1649,6 +1647,21 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       // calculation of stabilization parameter at element center
       CalTau(ele,diffus_[k],dt,timefac,whichtau,vol,k,frt,migrationintau_);
     }
+
+    // compute stabilization parameter for eliminated ion species
+    if (iselch_)
+    {
+      if(scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+      {
+#ifdef ACTIVATEBINARYELECTROLYTE
+        if (twoionsystem && (abs(valence_[numscal_])>EPS10))
+          CalTau(ele,resdiffus,dt,timefac,whichtau,vol,numscal_,frt,false);
+        else
+#endif
+          // calculation of stabilization parameter at element center
+          CalTau(ele,diffus_[numscal_],dt,timefac,whichtau,vol,numscal_,frt,migrationintau_);
+      }
+    }
   }
 
   //----------------------------------------------------------------------
@@ -1725,6 +1738,18 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 #endif
           // calculation of stabilization parameter at integration point
           CalTau(ele,diffus_[k],dt,timefac,whichtau,vol,k,frt,migrationintau_);
+        }
+
+        // compute stabilization parameter for eliminated ion species
+        if(scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+        {
+#ifdef ACTIVATEBINARYELECTROLYTE
+          if (twoionsystem && (abs(valence_[numscal_])>EPS10))
+            CalTau(ele,resdiffus,dt,timefac,whichtau,vol,numscal_,frt,false);
+          else
+#endif
+            // calculation of stabilization parameter at element center
+            CalTau(ele,diffus_[numscal_],dt,timefac,whichtau,vol,numscal_,frt,migrationintau_);
         }
       }
 
@@ -2105,48 +2130,51 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   // usually, we are done here, but
   // for two certain ELCH problem formulations we have to provide
   // additional flux terms / currents across Dirichlet boundaries
-  if((scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim) or
-      (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde))
+  if (iselch_)
   {
-    double val(0.0);
-    const DRT::Node* const* nodes = ele->Nodes();
-    string condname = "Dirichlet";
-
-    for (int vi=0; vi<nen_; ++vi)
+    if((scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim) or
+        (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde))
     {
-      std::vector<DRT::Condition*> dirichcond0;
-      nodes[vi]->GetCondition(condname,dirichcond0);
+      double val(0.0);
+      const DRT::Node* const* nodes = ele->Nodes();
+      string condname = "Dirichlet";
 
-      // there is at least one Dirichlet condition on this node
-      if (dirichcond0.size() > 0)
+      for (int vi=0; vi<nen_; ++vi)
       {
-        //cout<<"Ele Id = "<<ele->Id()<<"  Found one Dirichlet node for vi="<<vi<<endl;
-        const vector<int>*    onoff = dirichcond0[0]->Get<vector<int> >   ("onoff");
-        for (int k=0; k<numscal_; ++k)
+        std::vector<DRT::Condition*> dirichcond0;
+        nodes[vi]->GetCondition(condname,dirichcond0);
+
+        // there is at least one Dirichlet condition on this node
+        if (dirichcond0.size() > 0)
         {
-          if ((*onoff)[k])
+          //cout<<"Ele Id = "<<ele->Id()<<"  Found one Dirichlet node for vi="<<vi<<endl;
+          const vector<int>*    onoff = dirichcond0[0]->Get<vector<int> >   ("onoff");
+          for (int k=0; k<numscal_; ++k)
           {
-            //cout<<"Dirichlet is on for k="<<k<<endl;
-            //cout<<"k="<<k<<"  val="<<val<<" valence_k="<<valence_[k]<<endl;
-            const int fvi = vi*numdofpernode_+k;
-            // We use the fact, that the rhs vector value for boundary nodes
-            // is equivalent to the integrated negative normal flux
-            // due to diffusion and migration
-            val = residual[fvi];
-            residual[vi*numdofpernode_+numscal_] += valence_[k]*(-val);
-            // corresponding linearization
-            for (int ui=0; ui<nen_; ++ui)
+            if ((*onoff)[k])
             {
-              val = sys_mat(vi*numdofpernode_+k,ui*numdofpernode_+k);
-              sys_mat(vi*numdofpernode_+numscal_,ui*numdofpernode_+k)+=valence_[k]*(-val);
-              val = sys_mat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_);
-              sys_mat(vi*numdofpernode_+numscal_,ui*numdofpernode_+numscal_)+=valence_[k]*(-val);
+              //cout<<"Dirichlet is on for k="<<k<<endl;
+              //cout<<"k="<<k<<"  val="<<val<<" valence_k="<<valence_[k]<<endl;
+              const int fvi = vi*numdofpernode_+k;
+              // We use the fact, that the rhs vector value for boundary nodes
+              // is equivalent to the integrated negative normal flux
+              // due to diffusion and migration
+              val = residual[fvi];
+              residual[vi*numdofpernode_+numscal_] += valence_[k]*(-val);
+              // corresponding linearization
+              for (int ui=0; ui<nen_; ++ui)
+              {
+                val = sys_mat(vi*numdofpernode_+k,ui*numdofpernode_+k);
+                sys_mat(vi*numdofpernode_+numscal_,ui*numdofpernode_+k)+=valence_[k]*(-val);
+                val = sys_mat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_);
+                sys_mat(vi*numdofpernode_+numscal_,ui*numdofpernode_+numscal_)+=valence_[k]*(-val);
+              }
             }
-          }
-        } // for k
-      } // if Dirichlet at node vi
-    } // for vi
-  }  // elim
+          } // for k
+        } // if Dirichlet at node vi
+      } // for vi
+    }  // elim
+  } // iselch_
 
   return;
 }
@@ -2332,6 +2360,10 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
           diffus_.push_back(actsinglemat->ElimDiffusivity());
           valence_.push_back(actsinglemat->ElimValence());
           diffusvalence_.push_back(valence_[numscal_]*diffus_[numscal_]);
+          // we also enlarge some other vectors by one
+          tau_.push_back(0.0);
+          LINALG::Matrix<nen_,1> mat(true);
+          tauderpot_.push_back(mat);
         }
         else if (diffus_.size() == (unsigned) (numscal_+1))
         {
@@ -4830,6 +4862,21 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
     //----------------------------------------------------------------------
     if (mat_gp_) GetMaterialParams(ele,scatratype);
 
+#if 0
+    int lastionidx(-1);
+    if (iselch_)
+    {  for (int k=numscal_-1;k>-1;--k)
+    {
+      if (abs(valence_[k]) > EPS14)
+        {
+           lastionidx=k;
+               break;
+        }
+    }
+    //cout<<"lastionidx="<<lastionidx<<endl;
+    }
+#endif
+
     //------------ get values of variables at integration point
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
     {
@@ -4887,7 +4934,38 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
           emat(fvi,fui) += v*funct_(ui);
         }
       }
+#if 0
+      // initial time derivative of last scalar
+      // is obtained from electroneutrality!
+      if (iselch_)
+      {
+        if (k==lastionidx)
+        {
+          for (int vi=0; vi<nen_; ++vi)
+          {
+            const double v = fac*funct_(vi)*densnp_[k];
+            const int fvi = vi*numdofpernode_+k;
 
+            for (int ui=0; ui<nen_; ++ui)
+            {
+              const int fui = ui*numdofpernode_+k;
+
+              emat(fvi,fui) += valence_[k]*v*funct_(ui);
+              for (int kk=0; kk<lastionidx ; kk++)
+              {
+                emat(fvi,ui*numdofpernode_+kk) -= valence_[kk]*fac*funct_(vi)*densnp_[kk]*funct_(ui);
+              }
+              for (int kk=lastionidx+1; kk<numscal_; kk++)
+              {
+                emat(fvi,ui*numdofpernode_+kk) -= valence_[kk]*fac*funct_(vi)*densnp_[kk]*funct_(ui);
+              }
+            }
+          }
+        }
+        // we do not have to add anything to the rhs! -> go on with next k!
+        continue;
+      }
+#endif
       //----------------------------------------------------------------
       // element right hand side: convective term in convective form
       //----------------------------------------------------------------
@@ -5268,14 +5346,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
   {cout<<"gradpot_["<<k<<"] = "<<gradpot_(k)<<endl;}
 #endif
 
-#ifdef SUBSCALE_ENC
-  int ilcs(0);
-  for (int l=0; l < numscal_; l++)
-  {
-    if (abs(valence_[l]) > EPS12)
-      ilcs = l;
-  }
-#endif
 
   for (int k = 0; k < numscal_;++k) // loop over all transported scalars
   {
@@ -5325,6 +5395,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
     double rhsfac       = 0.0;
     double rhstaufac    = 0.0;
 
+    double residual_elim = 0.0;
+
     // perform time-integration specific actions
     if (is_stationary_)
     {
@@ -5333,9 +5405,19 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       timetaufac  = taufac;
 
       if (migrationinresidual_)
+      {
         residual  = conv_eff_k - diff_ephinp_k + migrea_k - rhsint;
+        if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+          residual_elim = (-valence_[k]/valence_[numscal_])*(conv_ephinp_k+diffusvalence_[numscal_]*(migconv_.Dot(ephinp_[k])) -((diffus_[numscal_]/diffus_[k])*diff_ephinp_k));
+      }
       else
+      {
         residual  = conv_ephinp_k - diff_ephinp_k - rhsint;
+        if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+        {
+          residual_elim = (-valence_[k]/valence_[numscal_])*(conv_ephinp_k -((diffus_[numscal_]/diffus_[k])*diff_ephinp_k));
+        }
+      }
 
       rhsfac      = fac;
       rhstaufac   = taufac;
@@ -5472,7 +5554,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
       const double timefacfac_funct_vi = timefacfac*funct_(vi);
       const double timefacfac_diffus_valence_k_mig_vi = timefacfac*diffus_valence_k*migconv_(vi);
-      const double valence_k_fac_funct_vi = valence_[k]*fac*funct_(vi);
 
       for (int ui=0; ui<nen_; ++ui)
       {
@@ -5482,77 +5563,31 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
         // standard Galerkin terms
         //----------------------------------------------------------------
 
+        // matrix entries
+        double matvalconc = 0.0;
+        double matvalpot = 0.0;
+
         // convective term
-        emat(fvi, fui) += timefacfac_funct_vi*conv_(ui) ;
+        matvalconc += timefacfac_funct_vi*conv_(ui) ;
 
         // addition to convective term for conservative form
         if (conservative_)
         {
           // convective term using current scalar value
-          emat(fvi,fui) += timefacfac_funct_vi*vdiv_*funct_(ui);
+          matvalconc += timefacfac_funct_vi*vdiv_*funct_(ui);
         }
 
         // diffusive term
         double laplawf(0.0);
         GetLaplacianWeakForm(laplawf, derxy_,ui,vi); // compute once, reuse below!
-        emat(fvi, fui) += timefacfac*diffus_[k]*laplawf;
+        matvalconc += timefacfac*diffus_[k]*laplawf;
 
         // migration term
         // a) derivative w.r.t. concentration c_k
-        emat(fvi, fui) -= timefacfac_diffus_valence_k_mig_vi*funct_(ui);
+        matvalconc -= timefacfac_diffus_valence_k_mig_vi*funct_(ui);
         // b) derivative w.r.t. electric potential
-        emat(fvi,ui*numdofpernode_+numscal_) += frt*timefacfac*diffus_valence_k*conint_[k]*laplawf;
+        matvalpot += frt*timefacfac*diffus_valence_k*conint_[k]*laplawf;
 
-#ifndef ELCHOTHERMODELS
-        // electroneutrality condition
-        emat(vi*numdofpernode_+numscal_, fui) += alphaF*valence_k_fac_funct_vi*funct_(ui);
-
-#else
-        // what's the governing equation for the electric potential field?
-        // we provide a lot of different options here:
-        if (scatratype==INPAR::SCATRA::scatratype_elch_enc)
-        {
-          // electroneutrality condition (only derivative w.r.t. concentration c_k)
-          emat(vi*numdofpernode_+numscal_, fui) += alphaF*valence_k_fac_funct_vi*funct_(ui);
-        }
-        else if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde)
-        { // use 2nd order pde derived from electroneutrality condition (k=1,...,m)
-          // a) derivative w.r.t. concentration c_k
-          emat(vi*numdofpernode_+numscal_, fui) -= valence_[k]*(timefacfac_diffus_valence_k_mig_vi*funct_(ui));
-          emat(vi*numdofpernode_+numscal_, fui) += valence_[k]*(timefacfac*diffus_[k]*laplawf);
-          // b) derivative w.r.t. electric potential
-          emat(vi*numdofpernode_+numscal_, ui*numdofpernode_+numscal_) += valence_[k]*(frt*timefacfac*diffus_valence_k*conint_[k]*laplawf);
-
-          // combine with ENC for reducing "drift-off"???
-          //const double beta=0.0;
-          //emat(vi*numdofpernode_+numscal_, fui) += beta*alphaF*valence_k_fac_funct_vi*funct_(ui);
-        }
-        else if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
-        {
-          // use 2nd order pde derived from electroneutrality condition (k=1,...,m-1)
-          // a) derivative w.r.t. concentration c_k
-          emat(vi*numdofpernode_+numscal_, fui) -= valence_[k]*(timefacfac_diffus_valence_k_mig_vi*funct_(ui));
-          emat(vi*numdofpernode_+numscal_, fui) += valence_[k]*(timefacfac*diffus_[k]*laplawf);
-          // b) derivative w.r.t. electric potential
-          emat(vi*numdofpernode_+numscal_, ui*numdofpernode_+numscal_) += valence_[k]*(frt*timefacfac*diffus_valence_k*conint_[k]*laplawf);
-
-          // care for eliminated species with index m
-          //(diffus_ and valence_ vector were extended in GetMaterialParams()!)
-          // a) derivative w.r.t. concentration c_k
-          const double timefacfac_diffus_valence_m_mig_vi = timefacfac*diffus_[numscal_]*valence_[numscal_]*migconv_(vi);
-          emat(vi*numdofpernode_+numscal_, fui) += valence_[k]*(timefacfac_diffus_valence_m_mig_vi*funct_(ui));
-          emat(vi*numdofpernode_+numscal_, fui) -= valence_[k]*(timefacfac*diffus_[numscal_]*laplawf);
-          // b) derivative w.r.t. electric potential
-          emat(vi*numdofpernode_+numscal_, ui*numdofpernode_+numscal_) -= valence_[k]*(frt*timefacfac*diffus_[numscal_]*valence_[numscal_]*conint_[k]*laplawf);
-        }
-          else if (scatratype==INPAR::SCATRA::scatratype_elch_poisson)
-          {
-            const double epsilon = 1.0;
-            emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+numscal_) += alphaF*fac*epsilon*laplawf;
-          }
-          else
-            dserror ("How did you reach this point?");
-#endif
 
         //----------------------------------------------------------------
         // Stabilization terms
@@ -5562,84 +5597,163 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
         // not implemented. Only stabilization of SUPG type
 
         /* 1) convective stabilization */
-#ifdef SUBSCALE_ENC
-        if (k != ilcs)
+
+        /* convective term */
+
+        // I) linearization of residual part of stabilization term
+
+        // effective convective stabilization of convective term
+        // derivative of convective term in residual w.r.t. concentration c_k
+        matvalconc += timetaufac*conv_eff_vi*conv_(ui);
+
+        // migration convective stabilization of convective term
+        double val_ui; GetLaplacianWeakFormRHS(val_ui, derxy_,gradphi_,ui);
+        if (migrationinresidual_)
         {
-#endif
-          /* convective term */
+          // a) derivative w.r.t. concentration_k
+          matvalconc += timetaufac*conv_eff_vi*diffus_valence_k*migconv_(ui);
 
-          // I) linearization of residual part of stabilization term
+          // b) derivative w.r.t. electric potential
+          matvalpot -= timetaufac*conv_eff_vi*diffus_valence_k*frt*val_ui;
 
-          // effective convective stabilization of convective term
-          // derivative of convective term in residual w.r.t. concentration c_k
-          emat(fvi, fui) += timetaufac*conv_eff_vi*conv_(ui);
+          // note: higher-order and instationary parts of residuum part are linearized elsewhere!
+        }
+
+        // II) linearization of convective stabilization operator part of stabilization term
+        if (migrationstab_)
+        {
+          // a) derivative w.r.t. concentration_k
+          //    not necessary -> zero
+
+          // b) derivative w.r.t. electric potential
+          double laplacewf(0.0);
+          GetLaplacianWeakForm(laplacewf, derxy_,ui,vi);
+          matvalpot -= timetaufac*residual*diffus_valence_k*frt*laplacewf;
 
           // migration convective stabilization of convective term
-          double val_ui; GetLaplacianWeakFormRHS(val_ui, derxy_,gradphi_,ui);
-          if (migrationinresidual_)
-          {
-            // a) derivative w.r.t. concentration_k
-            emat(fvi, fui) += timetaufac*conv_eff_vi*diffus_valence_k*migconv_(ui);
+          //emat(fvi,ui*numdofpernode_+numscal_) -= timetaufac*conv_(vi)*diffus_valence_k*frt*val_ui;
+          // migration convective stabilization of migration term
+          //double myval = timetaufac*diffus_valence_k*migconv_(vi);
+          //emat(fvi,ui*numdofpernode_+numscal_) -= 2.0*frt*myval*diffus_valence_k*val_ui;
+        }
 
-            // b) derivative w.r.t. electric potential
-            emat(fvi,ui*numdofpernode_+numscal_) -= timetaufac*conv_eff_vi*diffus_valence_k*frt*val_ui;
+        // III) linearization of tau part of stabilization term
+        if (migrationintau_)
+        {
+          // derivative of tau (only effective for Taylor_Hughes_Zarins) w.r.t. electric potential
+          const double tauderiv_ui = ((tauderpot_[k])(ui,0));
+          matvalpot += timefacfac*tauderiv_ui*conv_eff_vi*residual;
+        }
 
-            // note: higher-order and instationary parts of residuum part are linearized elsewhere!
-          }
-
-          // II) linearization of convective stabilization operator part of stabilization term
-          if (migrationstab_)
-          {
-            // a) derivative w.r.t. concentration_k
-            //    not necessary -> zero
-
-            // b) derivative w.r.t. electric potential
-            double laplacewf(0.0);
-            GetLaplacianWeakForm(laplacewf, derxy_,ui,vi);
-            emat(fvi,ui*numdofpernode_+numscal_) -= timetaufac*residual*diffus_valence_k*frt*laplacewf;
-
-            // migration convective stabilization of convective term
-            //emat(fvi,ui*numdofpernode_+numscal_) -= timetaufac*conv_(vi)*diffus_valence_k*frt*val_ui;
-            // migration convective stabilization of migration term
-            //double myval = timetaufac*diffus_valence_k*migconv_(vi);
-            //emat(fvi,ui*numdofpernode_+numscal_) -= 2.0*frt*myval*diffus_valence_k*val_ui;
-          }
-
-          // III) linearization of tau part of stabilization term
-          if (migrationintau_)
-          {
-            // derivative of tau (only effective for Taylor_Hughes_Zarins) w.r.t. electric potential
-            const double tauderiv_ui = ((tauderpot_[k])(ui,0));
-            emat(fvi,ui*numdofpernode_+numscal_) += timefacfac*tauderiv_ui*conv_eff_vi*residual;
-          }
-
-#ifdef SUBSCALE_ENC
-          const int row = ui*numdofpernode_+ilcs;
-          const double myfactor = (-valence_[k]/valence_[ilcs]);
-          emat(row, ui*numdofpernode_+ilcs) += 0.0*myfactor*timetaufac*conv_eff_vi*conv_(ui);
-          emat(row, ui*numdofpernode_+ilcs) += 0.0*myfactor*timetaufac*conv_eff_vi*diffus_valence_k*migconv_(ui);
-          emat(row,ui*numdofpernode_+numscal_) -= 0.0*myfactor*timetaufac*conv_(vi)*diffus_valence_k*frt*val_ui;
-          if (migrationintau_)
-          {
-            // derivative of tau (Bazilevs) with respect to electric potential
-            const double conv_ephinp_k = conv_.Dot(ephinp_[k]);
-            const double Dkzk_mig_ephinp_k = diffus_valence_k*(migconv_.Dot(ephinp_[k]));
-            const double tauderiv_ui = ((tauderpot_[k])(ui,0));
-            emat(row,ui*numdofpernode_+numscal_) += 0.0*myfactor*timefacfac*conv_eff_vi*tauderiv_ui*(conv_ephinp_k + Dkzk_mig_ephinp_k);
-          }
-          if (migrationstab_)
-          {
-            // migration convective stabilization of convective term
-            emat(row,ui*numdofpernode_+numscal_) -= 0.0*myfactor*timetaufac*conv_(vi)*diffus_valence_k*frt*val_ui;
-            // migration convective stabilization of migration term
-            double myval = timetaufac*diffus_valence_k*migconv_(vi);
-            emat(row,ui*numdofpernode_+numscal_) -= 0.0*myfactor *2.0*frt*myval*diffus_valence_k*val_ui;
-          }
-        } // if (k != ilcs)
-#endif
+        // try to access the element matrix not too often. Can be costly
+        emat(fvi,fui)                        += matvalconc;
+        emat(fvi,ui*numdofpernode_+numscal_) += matvalpot;
 
       } // for ui
+
     } // for vi
+
+    //-------------------------------------------------------------------------
+    // 2b) element matrix: stationary terms (governing equation for potential)
+    //-------------------------------------------------------------------------
+    // what's the governing equation for the electric potential field?
+    // we provide a lot of different options here:
+    if (scatratype==INPAR::SCATRA::scatratype_elch_enc)
+    {
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int pvi = vi*numdofpernode_+numscal_;
+        const double alphaF_valence_k_fac_funct_vi = valence_[k]*fac*funct_(vi);
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int fui = ui*numdofpernode_+k;
+
+          // electroneutrality condition (only derivative w.r.t. concentration c_k)
+          emat(pvi, fui) += alphaF_valence_k_fac_funct_vi*funct_(ui);
+        } // for ui
+      } // for vi
+    }
+    else if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde)
+    {
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int pvi = vi*numdofpernode_+numscal_;
+        const double timefacfac_diffus_valence_k_mig_vi = timefacfac*diffus_valence_k*migconv_(vi);
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int fui = ui*numdofpernode_+k;
+
+          double laplawf(0.0);
+          GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
+
+          // use 2nd order pde derived from electroneutrality condition (k=1,...,m)
+          // a) derivative w.r.t. concentration c_k
+          emat(pvi, fui) -= valence_[k]*(timefacfac_diffus_valence_k_mig_vi*funct_(ui));
+          emat(pvi, fui) += valence_[k]*(timefacfac*diffus_[k]*laplawf);
+          // b) derivative w.r.t. electric potential
+          emat(pvi, ui*numdofpernode_+numscal_) += valence_[k]*(frt*timefacfac*diffus_valence_k*conint_[k]*laplawf);
+
+          // combine with ENC for reducing "drift-off"???
+          //const double beta=0.0;
+          //emat(vi*numdofpernode_+numscal_, fui) += beta*alphaF*valence_k_fac_funct_vi*funct_(ui);
+        } // for ui
+      } // for vi
+    }
+    else if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+    {
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int pvi = vi*numdofpernode_+numscal_;
+        const double timefacfac_diffus_valence_k_mig_vi = timefacfac*diffus_valence_k*migconv_(vi);
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int fui = ui*numdofpernode_+k;
+
+          double laplawf(0.0);
+          GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
+
+          // use 2nd order pde derived from electroneutrality condition (k=1,...,m-1)
+          // a) derivative w.r.t. concentration c_k
+          emat(pvi, fui) -= valence_[k]*(timefacfac_diffus_valence_k_mig_vi*funct_(ui));
+          emat(pvi, fui) += valence_[k]*(timefacfac*diffus_[k]*laplawf);
+          // b) derivative w.r.t. electric potential
+          emat(pvi, ui*numdofpernode_+numscal_) += valence_[k]*(frt*timefacfac*diffus_valence_k*conint_[k]*laplawf);
+
+          // care for eliminated species with index m
+          //(diffus_ and valence_ vector were extended in GetMaterialParams()!)
+          // a) derivative w.r.t. concentration c_k
+          const double timefacfac_diffus_valence_m_mig_vi = timefacfac*diffus_[numscal_]*valence_[numscal_]*migconv_(vi);
+          emat(pvi, fui) += valence_[k]*(timefacfac_diffus_valence_m_mig_vi*funct_(ui));
+          emat(pvi, fui) -= valence_[k]*(timefacfac*diffus_[numscal_]*laplawf);
+          // b) derivative w.r.t. electric potential
+          emat(pvi, ui*numdofpernode_+numscal_) -= valence_[k]*(frt*timefacfac*diffus_[numscal_]*valence_[numscal_]*conint_[k]*laplawf);
+
+        } // for ui
+      } // for vi
+    }
+    else if (scatratype==INPAR::SCATRA::scatratype_elch_poisson)
+    {
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int pvi = vi*numdofpernode_+numscal_;
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int pui = ui*numdofpernode_+numscal_;
+          double laplawf(0.0);
+          GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
+
+          const double epsilon = 1.0;
+          emat(pvi,pui) += alphaF*fac*epsilon*laplawf;
+        } // for ui
+      } // for vi
+    }
+    else
+      dserror ("How did you reach this point?");
+
 
     if (use2ndderiv_)
     {
@@ -5654,6 +5768,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
           conv_eff_vi += diffus_valence_k*migconv_(vi);
         }
 
+        const double timetaufac_conv_eff_vi = timetaufac*conv_eff_vi;
+
         for (int ui=0; ui<nen_; ++ui)
         {
           const int fui = ui*numdofpernode_+k;
@@ -5662,29 +5778,36 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
           // diffusive term
           // derivative w.r.t. concentration c_k
-          emat(fvi, fui) -= timetaufac*conv_eff_vi*diff_(ui) ;
+          emat(fvi,fui) -= timetaufac_conv_eff_vi*diff_(ui) ;
 
-          // reactive part of migration term
-          if (migrationinresidual_)
+        } // for ui
+
+        // reactive part of migration term
+        if (migrationinresidual_)
+        {
+          const double timetaufac_conv_eff_vi_conint_k_frt_valence_k =timetaufac_conv_eff_vi*conint_[k]*frt*valence_[k];
+          for (int ui=0; ui<nen_; ++ui)
           {
+            const int fui = ui*numdofpernode_+k;
+
             // a) derivative w.r.t. concentration_k
-            emat(fvi, fui) += timetaufac*conv_eff_vi*migrea_(ui) ;
+            emat(fvi,fui) += timetaufac_conv_eff_vi*migrea_(ui) ;
             // note: migrea_ already contains frt*diffus_valence!!!
 
             // b) derivative w.r.t. electric potential
-            emat(fvi, ui*numdofpernode_+numscal_) -= timetaufac*conv_eff_vi*conint_[k]*frt*valence_[k]*diff_(ui);
+            emat(fvi, ui*numdofpernode_+numscal_) -= timetaufac_conv_eff_vi_conint_k_frt_valence_k*diff_(ui);
             // note: diff_ already includes factor D_k
-          }
 
-          // 2) diffusive stabilization
-          // not implemented. Only stabilization of SUPG type
+          } // for ui
+        }
 
-          // 3) reactive stabilization (reactive part of migration term)
-          // not implemented. Only stabilization of SUPG type
+        // 2) diffusive stabilization
+        // not implemented. Only stabilization of SUPG type
 
-        } // for ui
+        // 3) reactive stabilization (reactive part of migration term)
+        // not implemented. Only stabilization of SUPG type
+
       } // for vi
-
     } // use2ndderiv
 
 
@@ -5696,7 +5819,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       const int fvi = vi*numdofpernode_+k;
 
       //----------------------------------------------------------------
-      // standard Galerkin terms
+      // standard Galerkin terms (ion transport equations)
       //----------------------------------------------------------------
 
       // RHS source term (contains old part of rhs for OST / BDF2)
@@ -5718,46 +5841,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
       // diffusive term
       double laplawf(0.0);
-      GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);  // compute once, reuse below!
+      GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
       erhs[fvi] -= rhsfac*diffus_[k]*laplawf;
 
-#ifndef ELCHOTHERMODELS
-      // electroneutrality condition
-      // for incremental formulation, there is the residuum on the rhs! : 0-sum(z_k c_k)
-      erhs[vi*numdofpernode_+numscal_] -= valence_[k]*fac*funct_(vi)*conint_[k];
-
-#else
-      // what's the governing equation for the electric potential field ?
-      if (scatratype==INPAR::SCATRA::scatratype_elch_enc)
-      {
-        // electroneutrality condition
-        // for incremental formulation, there is the residuum on the rhs! : 0-sum(z_k c_k)
-        erhs[vi*numdofpernode_+numscal_] -= valence_[k]*fac*funct_(vi)*conint_[k];
-      }
-      else if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde)
-      {
-        // use 2nd order pde derived from electroneutrality condition (k=1,...,m)
-        erhs[vi*numdofpernode_+numscal_] += rhsfac*valence_[k]*((diffus_valence_k*conint_[k]*migconv_(vi))-(diffus_[k]*laplawf));
-        //const double beta=0.0;
-        //erhs[vi*numdofpernode_+numscal_] -= beta*valence_[k]*fac*funct_(vi)*conint_[k];
-      }
-      else if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
-      {
-        // use 2nd order pde derived from electroneutrality condition (k=0,...,m-1)
-        erhs[vi*numdofpernode_+numscal_] += rhsfac*valence_[k]*((diffus_valence_k*conint_[k]*migconv_(vi))-(diffus_[k]*laplawf));
-        // care for eliminated species with index m
-        //(diffus_ and valence_ vector were extended in GetMaterialParams()!)
-        erhs[vi*numdofpernode_+numscal_] -= rhsfac*valence_[k]*((diffus_[numscal_]*valence_[numscal_]*conint_[k]*migconv_(vi))-(diffus_[numscal_]*laplawf));
-      }
-      else if (scatratype==INPAR::SCATRA::scatratype_elch_poisson)
-      {
-        const double epsilon = 1.0;
-        erhs[vi*numdofpernode_+numscal_] -= fac*epsilon*laplawf;
-      }
-      else
-        dserror ("How did you reach this point?");
-
-#endif
 
       //----------------------------------------------------------------
       // Stabilization terms
@@ -5767,10 +5853,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       //    not implemented. Only stabilization of SUPG type
 
       // 1) convective stabilization
-#ifdef SUBSCALE_ENC
-      if (k != ilcs)
-      {
-#endif
 
         erhs[fvi] -= rhstaufac*conv_(vi)*residual;
         if (migrationstab_)
@@ -5778,16 +5860,22 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
           erhs[fvi] -=  rhstaufac*diffus_valence_k*migconv_(vi)*residual;
         }
 
-#ifdef SUBSCALE_ENC
-        const double myfactor = (-valence_[k]/valence_[ilcs]);
-        // valence_[k] prevents undesired influence on neutral species automatically
-        erhs[vi*numdofpernode_+ilcs] += myfactor*conv_(vi)* taufacresidual *adjust; // last scalar
-        if (migrationstab_)
-        {
-          erhs[vi*numdofpernode_+ilcs] += myfactor*diffus_valence_k*migconv_(vi) * taufacresidual*adjust;
+        if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+        {/*
+          erhs[vi*numdofpernode_+numscal_] -= valence_[k]*rhstaufac*conv_(vi)*residual;
+          if (migrationstab_)
+          {
+            erhs[vi*numdofpernode_+numscal_] -=  valence_[k]*rhstaufac*diffus_valence_k*migconv_(vi)*residual;
+          }
+*/
+/*
+          double rhstaufac_m = tau_[numscal_]*fac; // not always right!!!
+          erhs[vi*numdofpernode_+numscal_] += valence_[numscal_]*rhstaufac_m*conv_(vi)*residual_elim;
+          if (migrationstab_)
+          {
+            erhs[vi*numdofpernode_+numscal_] += valence_[numscal_]*rhstaufac_m*diffusvalence_[numscal_]*migconv_(vi)*residual_elim;
+          }*/
         }
-      } // if       if (k != ilcs)
-#endif
 
       // 2) diffusive stabilization
       //    not implemented. Only stabilization of SUPG type
@@ -5796,6 +5884,72 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       //    not implemented. Only stabilization of SUPG type
 
     } // for vi
+
+      //----------------------------------------------------------------
+      // standard Galerkin terms (equation for electric potential)
+      //----------------------------------------------------------------
+      // what's the governing equation for the electric potential field ?
+      if (scatratype==INPAR::SCATRA::scatratype_elch_enc)
+      {
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const int pvi = vi*numdofpernode_+numscal_;
+
+          // electroneutrality condition
+          // for incremental formulation, there is the residuum on the rhs! : 0-sum(z_k c_k)
+          erhs[pvi] -= valence_[k]*fac*funct_(vi)*conint_[k];
+        } // for vi
+      }
+      else if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde)
+      {
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const int pvi = vi*numdofpernode_+numscal_;
+
+          double laplawf(0.0);
+          GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
+
+          // use 2nd order pde derived from electroneutrality condition (k=1,...,m)
+          erhs[pvi] += rhsfac*valence_[k]*((diffus_valence_k*conint_[k]*migconv_(vi))-(diffus_[k]*laplawf));
+          //const double beta=0.0;
+          //erhs[vi*numdofpernode_+numscal_] -= beta*valence_[k]*fac*funct_(vi)*conint_[k];
+
+        } // for vi
+      }
+      else if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+      {
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const int pvi = vi*numdofpernode_+numscal_;
+
+          double laplawf(0.0);
+          GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
+
+          // use 2nd order pde derived from electroneutrality condition (k=0,...,m-1)
+          erhs[pvi] += rhsfac*valence_[k]*((diffus_valence_k*conint_[k]*migconv_(vi))-(diffus_[k]*laplawf));
+          // care for eliminated species with index m
+          //(diffus_ and valence_ vector were extended in GetMaterialParams()!)
+          erhs[pvi] -= rhsfac*valence_[k]*((diffus_[numscal_]*valence_[numscal_]*conint_[k]*migconv_(vi))-(diffus_[numscal_]*laplawf));
+
+        } // for vi
+      }
+      else if (scatratype==INPAR::SCATRA::scatratype_elch_poisson)
+      {
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          const int pvi = vi*numdofpernode_+numscal_;
+
+          double laplawf(0.0);
+          GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
+
+          const double epsilon = 1.0;
+          erhs[pvi] -= fac*epsilon*laplawf;
+
+        } // for vi
+      }
+      else
+        dserror ("How did you reach this point?");
+
     // RHS vector finished
 
 
