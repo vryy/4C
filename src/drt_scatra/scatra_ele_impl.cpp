@@ -5663,7 +5663,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       for (int vi=0; vi<nen_; ++vi)
       {
         const int pvi = vi*numdofpernode_+numscal_;
-        const double alphaF_valence_k_fac_funct_vi = valence_[k]*fac*funct_(vi);
+        const double alphaF_valence_k_fac_funct_vi = alphaF*valence_[k]*fac*funct_(vi);
 
         for (int ui=0; ui<nen_; ++ui)
         {
