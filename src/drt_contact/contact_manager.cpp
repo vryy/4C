@@ -745,7 +745,7 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   //check interface size - just doing this now for a single interface
   
   if (myInterface.size() != 1)
-	  dserror("Interface size should be 1");
+    dserror("Interface size should be 1");
   
   cout << "OUTPUT OF MASTER NODE IN CONTACT" << endl;
   //cout << "Master_node_in_contact x_dis y_dis z_dis" << endl;
