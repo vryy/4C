@@ -43,7 +43,8 @@ Maintainer: Christian Cyron
 #endif  // #ifdef D_TRUSS2
 
 
-//#define MEASURETIME
+//#define GMSHPTCSTEPS
+
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             cyron 08/08|
  *----------------------------------------------------------------------*/
@@ -269,7 +270,7 @@ void StatMechTime::Integrate()
             ConsistentPredictor(randomnumbers);
 
             if(ndim ==3)
-              PTC(randomnumbers);
+              PTC(randomnumbers,i);
             else
               FullNewton(randomnumbers);
 
@@ -303,7 +304,7 @@ void StatMechTime::Integrate()
 
               // LOOP3: nonlinear iteration (Newton)
               if(ndim ==3)
-              	PTC(randomnumbers,true);
+              	PTC(randomnumbers,i,true);
               else
                 FullNewton(randomnumbers);
 
@@ -313,7 +314,6 @@ void StatMechTime::Integrate()
 
 							// update constraint norm and penalty parameter
 							beamcmanager_->UpdateConstrNorm(uzawaiter_);
-
 							// update Uzawa Lagrange multipliers
 							beamcmanager_->UpdateAlllmuzawa(uzawaiter_);
             } while (abs(beamcmanager_->GetConstrNorm()) >= eps);
@@ -331,7 +331,7 @@ void StatMechTime::Integrate()
         ConsistentPredictor(randomnumbers);
 
         if(ndim ==3)
-          PTC(randomnumbers);
+          PTC(randomnumbers,i);
         else
           FullNewton(randomnumbers);
       }
@@ -837,8 +837,12 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
 /*----------------------------------------------------------------------*
  |  do Newton iteration (public)                             cyron 12/10|
  *----------------------------------------------------------------------*/
-void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, bool uzawa)
+void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool uzawa)
 {
+	/*double norm = 0.0;
+	fresm_->Norm2(&norm);
+	cout<<"PTC Start FRESM norm = "<<norm<<endl;*/
+
   // -------------------------------------------------------------------
   // get some parameters from parameter list
   // -------------------------------------------------------------------
@@ -871,7 +875,6 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, bool uzawa)
 
   const bool   dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
   if (dynkindstat) dserror("Static case not implemented");
-
 
   // create out-of-balance force for 2nd, 3rd, ... Uzawa iteration
   InitializeNewtonUzawa();
@@ -906,7 +909,6 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, bool uzawa)
 
   while ((!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) || ctransptcold > 0.0 || crotptcold > 0.0) and numiter<=maxiter )
   {
-
     //save PTC parameters of the so far last iteration step
     ctransptcold = ctransptc;
     crotptcold   = crotptc;
@@ -950,7 +952,6 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, bool uzawa)
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
     LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
-
     //--------------------------------------------------- solve for disi
     const double t_solver = Teuchos::Time::wallTime();
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
@@ -960,12 +961,20 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, bool uzawa)
       double wanted = tolres;
       solver_.AdaptTolerance(wanted,worst,adaptolbetter);
     }
+		/*disi_->Norm2(&norm);
+		cout<<"PTC preSolve DISI norm = "<<norm<<endl;
+		fresm_->Norm2(&norm);
+		cout<<"PTC preSolve FRESM norm = "<<norm<<endl;*/
     solver_.Solve(stiff_->EpetraOperator(),disi_,fresm_,true,numiter==0);
+		/*disi_->Norm2(&norm);
+		cout<<"PTC postSolve DISI norm = "<<norm<<endl;
+		fresm_->Norm2(&norm);
+		cout<<"PTC postSolve FRESM norm= "<<norm<<endl;*/
     solver_.ResetTolerance();
 
+    //cout<<(*disi_)<<endl;
+
     sumsolver += Teuchos::Time::wallTime() - t_solver;
-
-
 
     //---------------------------------- update mid configuration values
     // displacements
@@ -980,7 +989,15 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, bool uzawa)
     // incremental (required for constant predictor)
     velm_->Update(1.0/dt,*dism_,-1.0/dt,*dis_,0.0);
     //velm_->Update((delta-(1.0-alphaf)*gamma)/delta,*vel_,gamma/(delta*dt));
-
+    /*double norm = 0.0;
+    velm_->Norm2(&norm);
+    if(norm>10000)
+  	{
+  		cout<<"post velm: "<<endl;
+  		for(int i=0; i<velm_->MyLength(); i++)
+  			cout<<(*velm_)[i]<<", "<<(*dism_)[i]<<", "<<(*disi_)[i]<<endl;
+  		cout<<"\n\n"<<endl;
+  	}*/
 
 
     //---------------------------- compute internal forces and stiffness
@@ -1040,26 +1057,13 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, bool uzawa)
     //        + F_int(D_{n+1-alpha_f})
     //        - F_{ext;n+1-alpha_f}
     // add mid-inertial force
-
-
     //RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,0.0);
-
     //**********************************************************************
     //**********************************************************************
     // evaluate beam contact
     if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
-    {
       beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
-
-#ifdef GMSHNEWTONSTEPS
-      // Create gmsh-output to visualize every step of newton iteration
-      int step  = params_.get<int>("step",0);
-      int istep = step + 1;
-      beamcmanager_->GmshOutput(*disn_,istep,uzawaiter_,numiter+1);
-      beamcmanager_->ConsoleOutput();
-#endif
-    }
     //**********************************************************************
     //**********************************************************************
 
@@ -1069,7 +1073,6 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, bool uzawa)
       Epetra_Vector fresmcopy(*fresm_);
       fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
     }
-
     // compute inf norm of residual
     double np;
     fresm_->NormInf(&np);
@@ -1101,40 +1104,52 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, bool uzawa)
 
 
     /*/ cout-Block for testing individual residual entries
-    for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
+    if(uzawa)
     {
-    	if(pid==discret_.Comm().MyPID())
-				for(int i=0; i<fresm_->MyLength(); i++)
-				{
-					if((*fresm_)[i]>10)
+    	cout<<"->uzawa step "<<uzawaiter_<<endl;
+			for(int pid=0; pid<discret_.Comm().NumProc(); pid++)
+			{
+				if(pid==discret_.Comm().MyPID())
+					for(int i=0; i<fresm_->MyLength(); i++)
 					{
-						cout<<"Proc "<<discret_.Comm().MyPID()<<": DOF "<<i<<": "<<(*fresm_)[i]<<" -> elements: ";
-						for(int j=0; j<discret_.lRowNode((int)(floor((double)i/6.0)))->NumElement(); j++)
+						if((*fresm_)[i]>100)
 						{
-							int nodeid = discret_.lRowNode((int)(floor((double)i/6.0)))->Elements()[j]->Id();
-							cout<<nodeid<<" ";
-							for(int j=0; j<(int)beamcmanager_->Pairs()->size(); j++)
+							cout<<"Proc "<<discret_.Comm().MyPID()<<": DOF "<<i<<": "<<(*fresm_)[i]<<" -> elements: ";
+							for(int j=0; j<discret_.lRowNode((int)(floor((double)i/6.0)))->NumElement(); j++)
 							{
-								if((*(beamcmanager_->Pairs()))[j]->Element1()->Id()==nodeid ||
-									 (*(beamcmanager_->Pairs()))[j]->Element2()->Id()==nodeid)
+								int nodeid = discret_.lRowNode((int)(floor((double)i/6.0)))->Elements()[j]->Id();
+								cout<<nodeid<<" ";
+								for(int j=0; j<(int)beamcmanager_->Pairs()->size(); j++)
 								{
-									cout<<"(contact: ";
-									if(i%6<3)
-										cout<<"trans DOF";
-									else
-										cout<<"rot DOF";
-									cout<<") ";
-									break;
+									if((*(beamcmanager_->Pairs()))[j]->Element1()->Id()==nodeid ||
+										 (*(beamcmanager_->Pairs()))[j]->Element2()->Id()==nodeid)
+									{
+										cout<<"(contact: ";
+										if(i%6<3)
+											cout<<"trans DOF";
+										else
+											cout<<"rot DOF";
+										cout<<") ";
+										break;
+									}
 								}
 							}
+							cout<<endl;
 						}
-						cout<<endl;
 					}
-				}
-    	discret_.Comm().Barrier();
-    }*/
-
-    //--------------------------------- increment equilibrium loop index
+				discret_.Comm().Barrier();
+			}
+		}*/
+#ifdef GMSHPTCSTEPS
+    // GmshOutput
+    if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"GMSHOUTPUT") && DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+    {
+			std::ostringstream filename;
+			filename << "./GmshOutput/network"<< std::setw(6) << setfill('0') << istep <<"_u"<<std::setw(2) << setfill('0')<<uzawaiter_<<"_n"<<std::setw(2) << setfill('0')<<numiter<<".pos";
+			statmechmanager_->GmshOutput(*disn_,filename,istep,beamcmanager_);
+    }
+#endif
+		//--------------------------------- increment equilibrium loop index
     ++numiter;
 
     // leave the loop without going to maxiter iteration because most probably, the process will not converge anyway from here on
@@ -1157,7 +1172,10 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, bool uzawa)
     {
       std::cout<<"\n\n";
       if(uzawa)
+      {
       	std::cout<<"uzawa iteration unconverged-leaving loop!\n\n";
+      	dserror("interupt at uzawa iter %d", uzawaiter_);
+      }
       else
       	std::cout<<"iteration unconverged - new trial with new random numbers!\n\n";
     }
@@ -1200,6 +1218,9 @@ void StatMechTime::InitializeNewtonUzawa()
   // create out-of-balance force for 2nd, 3rd, ... Uzawa iteration
   if (uzawaiter_>1)
   {
+    /*double norm = 0.0;
+		fresm_->Norm2(&norm);
+		cout<<"InitUzawa : iter"<<uzawaiter_<<"start FRESM norm = "<<norm<<endl;*/
     //--------------------------- recompute external forces if nonlinear
     // at state n, the external forces and linearization are interpolated at
     // time 1-alphaf in a TR fashion
@@ -1261,7 +1282,8 @@ void StatMechTime::InitializeNewtonUzawa()
     //------------------------------------------ compute residual forces
     fresm_->Update(-1.0,*fint_,1.0,*fextm_,-1.0);
 
-
+		/*fresm_->Norm2(&norm);
+		cout<<"InitUzawa: pre-contact FRESM norm = "<<norm<<endl;*/
     //**********************************************************************
     //**********************************************************************
     // evaluate beam contact
@@ -1269,15 +1291,16 @@ void StatMechTime::InitializeNewtonUzawa()
       beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
     //**********************************************************************
     //**********************************************************************
+		/*fresm_->Norm2(&norm);
+		cout<<"InitUzawa: post-contact FRESM norm = "<<norm<<endl;*/
 
     // blank residual DOFs that are on Dirichlet BC
     Epetra_Vector fresmcopy(*fresm_);
     fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
-
   }
 
   return;
-}
+}//StatMechTime::InitializeNewtonUzawa()
 
 
 /*----------------------------------------------------------------------*

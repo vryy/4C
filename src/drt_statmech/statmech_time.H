@@ -50,7 +50,7 @@ public:
   virtual void FullNewton(RCP<Epetra_MultiVector> randomnumbers);
 
   //!\brief solve non-linear problem by means of PTC method
-  virtual void PTC(RCP<Epetra_MultiVector> randomnumbers, bool uzawa = false);
+  virtual void PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep, bool uzawa = false);
 
   //!\brief initialize Newton for 2nd, 3rd, ... Uzawa iteration
   void InitializeNewtonUzawa();
