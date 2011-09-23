@@ -372,9 +372,9 @@ void stru_genalpha_drt()
     // add mid-viscous damping force
     if (damping)
     {
-    	RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
-    	damp_mat->Multiply(false,*velm,*fviscm);
-    	fresm->Update(1.0,*fviscm,1.0);
+      RefCountPtr<Epetra_Vector> fviscm = LINALG::CreateVector(*dofrowmap,true);
+      damp_mat->Multiply(false,*velm,*fviscm);
+      fresm->Update(1.0,*fviscm,1.0);
     }
 
     // add static mid-balance

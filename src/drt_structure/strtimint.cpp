@@ -443,18 +443,18 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 /* Prepare contact for new time step */
 void STR::TimInt::PrepareStepContact()
 {
-	// just do something here if contact is present
-	if (HaveContactMeshtying())
-	{
+  // just do something here if contact is present
+  if (HaveContactMeshtying())
+  {
     // dynamic parallel redistribution of interfaces
     cmtman_->GetStrategy().RedistributeContact((*dis_)(0));
 
     // evaluation of reference state for friction (only at t=0)
     cmtman_->GetStrategy().EvaluateReferenceState(step_,disn_);
-	}
+  }
 
-	// bye bye
-	return;
+  // bye bye
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1292,34 +1292,34 @@ void STR::TimInt::OutputContact()
 /* output solution error norms */
 void STR::TimInt::OutputErrorNorms()
 {
-	// get out of here if no output wanted
-	if (MORTARANALYTICALSOL==0) return;
+  // get out of here if no output wanted
+  if (MORTARANALYTICALSOL==0) return;
 
-	// initialize variables
-	RCP<Epetra_SerialDenseVector> norms = Teuchos::rcp(new Epetra_SerialDenseVector(3));
-	norms->Scale(0.0);
+  // initialize variables
+  RCP<Epetra_SerialDenseVector> norms = Teuchos::rcp(new Epetra_SerialDenseVector(3));
+  norms->Scale(0.0);
 
-	// call discretization to evaluate error norms
-	ParameterList p;
-	p.set("action", "calc_struct_errornorms");
-	discret_->ClearState();
-	discret_->SetState("displacement",(*dis_)(0));
-	discret_->EvaluateScalars(p, norms);
-	discret_->ClearState();
+  // call discretization to evaluate error norms
+  ParameterList p;
+  p.set("action", "calc_struct_errornorms");
+  discret_->ClearState();
+  discret_->SetState("displacement",(*dis_)(0));
+  discret_->EvaluateScalars(p, norms);
+  discret_->ClearState();
 
-	// proc 0 writes output to screen
-	if (!myrank_)
-	{
-		printf("**********************************");
-		printf("\nSOLUTION ERROR NORMS:");
-		printf("\nL_2 norm:     %.10e",sqrt((*norms)(0)));
-		printf("\nH_1 norm:     %.10e",sqrt((*norms)(1)));
-		printf("\nEnergy norm:  %.10e",sqrt((*norms)(2)));
-		printf("\n**********************************\n\n");
-		fflush(stdout);
-	}
+  // proc 0 writes output to screen
+  if (!myrank_)
+  {
+    printf("**********************************");
+    printf("\nSOLUTION ERROR NORMS:");
+    printf("\nL_2 norm:     %.10e",sqrt((*norms)(0)));
+    printf("\nH_1 norm:     %.10e",sqrt((*norms)(1)));
+    printf("\nEnergy norm:  %.10e",sqrt((*norms)(2)));
+    printf("\n**********************************\n\n");
+    fflush(stdout);
+  }
 
-	return;
+  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1518,8 +1518,8 @@ void STR::TimInt::Integrate()
   double eps = 1.0e-12;
   while ( (timen_ <= timemax_+eps) and (stepn_ <= stepmax_) )
   {
-  	// prepare contact for new time step
-  	PrepareStepContact();
+    // prepare contact for new time step
+    PrepareStepContact();
 
     // integrate time step
     // after this step we hold disn_, etc

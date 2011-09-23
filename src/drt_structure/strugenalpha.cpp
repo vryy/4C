@@ -1232,9 +1232,9 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
 #endif
     // blank residual DOFs that are on Dirichlet BC
     {
-    	// in case of existing local coordinate systems: forward rotation
+      // in case of existing local coordinate systems: forward rotation
       if(locsysmanager_ != null)
-      	locsysmanager_->RotateGlobalToLocal(fresm_);
+        locsysmanager_->RotateGlobalToLocal(fresm_);
 
       Epetra_Vector fresmcopy(*fresm_);
       fresm_->Multiply(1.0, *invtoggle_, fresmcopy,  0.0);
@@ -1269,15 +1269,15 @@ void StruGenAlpha::Evaluate(Teuchos::RCP<const Epetra_Vector> disp)
   //----------------------- apply dirichlet BCs to system of equations
   // in case of existing local coordinate systems: forward rotation
   if(locsysmanager_ != null)
-  	locsysmanager_->RotateGlobalToLocal(SystemMatrix());
+    locsysmanager_->RotateGlobalToLocal(SystemMatrix());
 
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
   LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
   // in case of existing local coordinate systems: backward rotation
   if(locsysmanager_ != null)
   {
-  	locsysmanager_->RotateLocalToGlobal(fresm_);
-  	locsysmanager_->RotateLocalToGlobal(SystemMatrix());
+    locsysmanager_->RotateLocalToGlobal(fresm_);
+    locsysmanager_->RotateLocalToGlobal(SystemMatrix());
   }
 
 
@@ -3255,36 +3255,35 @@ void StruGenAlpha::Output()
       RCP<Epetra_Vector> patspecstuff = LINALG::CreateVector(*(discret_.ElementRowMap()),true);
       for(unsigned int i=0; i<mypatspeccond.size(); ++i)
       {
-	const Epetra_Vector* actcond = mypatspeccond[i]->Get<Epetra_Vector>("normalized ilt thickness");
-	if (actcond)
-	{
-	  for (int j=0; j<patspecstuff->MyLength(); ++j)
-	    (*patspecstuff)[j] = (*actcond)[actcond->Map().LID(discret_.ElementRowMap()->GID(j))];
-	  output_.WriteVector("thrombus_thickness", patspecstuff, vt);
-	}
+        const Epetra_Vector* actcond = mypatspeccond[i]->Get<Epetra_Vector>("normalized ilt thickness");
+        if (actcond)
+        {
+          for (int j=0; j<patspecstuff->MyLength(); ++j)
+            (*patspecstuff)[j] = (*actcond)[actcond->Map().LID(discret_.ElementRowMap()->GID(j))];
+          output_.WriteVector("thrombus_thickness", patspecstuff, vt);
+        }
 
-	actcond = mypatspeccond[i]->Get<Epetra_Vector>("local radius");
-	if (actcond)
-	{
-	  for (int j=0; j<patspecstuff->MyLength(); ++j)
-	    (*patspecstuff)[j] = (*actcond)[actcond->Map().LID(discret_.ElementRowMap()->GID(j))];
-	  output_.WriteVector("local_radius", patspecstuff, vt);
-	}
+        actcond = mypatspeccond[i]->Get<Epetra_Vector>("local radius");
+        if (actcond)
+        {
+          for (int j=0; j<patspecstuff->MyLength(); ++j)
+            (*patspecstuff)[j] = (*actcond)[actcond->Map().LID(discret_.ElementRowMap()->GID(j))];
+          output_.WriteVector("local_radius", patspecstuff, vt);
+        }
 
-	 actcond = mypatspeccond[i]->Get<Epetra_Vector>("elestrength");
-	if (actcond)
-	{
-	  for (int j=0; j<patspecstuff->MyLength(); ++j)
-	    (*patspecstuff)[j] = (*actcond)[actcond->Map().LID(discret_.ElementRowMap()->GID(j))];
-	  output_.WriteVector("strength", patspecstuff, vt);
-	}
+         actcond = mypatspeccond[i]->Get<Epetra_Vector>("elestrength");
+        if (actcond)
+        {
+          for (int j=0; j<patspecstuff->MyLength(); ++j)
+            (*patspecstuff)[j] = (*actcond)[actcond->Map().LID(discret_.ElementRowMap()->GID(j))];
+          output_.WriteVector("strength", patspecstuff, vt);
+        }
       }
       RCP<Epetra_Vector> eleID = LINALG::CreateVector(*(discret_.ElementRowMap()),true);
       for (int i=0; i<eleID->MyLength(); ++i)
         (*eleID)[i] = (discret_.ElementRowMap()->GID(i))+1;
       output_.WriteVector("eleID", eleID, vt);
     }
-
 
     if (control) // disp or arclength control together with dynkindstat
     {
@@ -3943,7 +3942,7 @@ bool StruGenAlpha::Converged(const string type, const double disinorm,
         const double toldisp, const double tolres,
         const double tolconstr)
 {
-	return (Converged(type,disinorm, resnorm, toldisp,tolres) and (constrnorm<tolconstr));
+  return (Converged(type,disinorm, resnorm, toldisp,tolres) and (constrnorm<tolconstr));
 }
 
 /*----------------------------------------------------------------------*
@@ -4227,7 +4226,7 @@ void StruGenAlpha::PrintPTC(bool printscreen, bool printerr, bool print_unconv,
   else
   {
 
-	double timepernlnsolve = timer.ElapsedTime();
+  double timepernlnsolve = timer.ElapsedTime();
 
     if (relres)
     {
