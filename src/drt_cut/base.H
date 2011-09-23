@@ -214,7 +214,7 @@ double base_func_line_int(std::vector<double> pt, int inte_num,std::vector<doubl
                 basef_line = y2*(3*alfa[2]*pt[1]+3*alfa[0])+2*alfa[1]*y3;
                 return basef_line*z3/6.0;
         }
-        if(inte_num==35) //f(x,y,z) = y*z^3
+        if(inte_num==35) //f(x,y,z) = z^4
         {
                 basef_line = alfa[2]*pt[0]*pt[1]+0.5*alfa[1]*y2+alfa[0]*pt[0];
                 return basef_line*z4;
