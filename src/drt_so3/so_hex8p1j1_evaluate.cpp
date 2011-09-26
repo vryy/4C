@@ -23,6 +23,7 @@ Maintainer: Lena Wiechert
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_mat/plasticneohooke.H"
+#include "../drt_mat/micromaterial.H"
 
 #include <Epetra_SerialComm.h>
 
@@ -66,10 +67,9 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
   else if (action=="calc_struct_update_imrlike")  act = So_hex8::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")     act = So_hex8::calc_struct_reset_istep;
   else if (action=="postprocess_stress")          act = So_hex8::postprocess_stress;
-  else if (action=="eas_init_multi")              act = So_hex8::eas_init_multi;
-  else if (action=="eas_set_multi")               act = So_hex8::eas_set_multi;
-  else if (action=="multi_invana_init")           act = So_hex8::multi_invana_init;
-  else if (action=="calc_homog_dens")             act = So_hex8::calc_homog_dens;
+  else if (action=="multi_eas_init")              act = So_hex8::multi_eas_init;
+  else if (action=="multi_eas_set")               act = So_hex8::multi_eas_set;
+  else if (action=="multi_calc_dens")             act = So_hex8::multi_calc_dens;
   else if (action=="multi_readrestart")           act = So_hex8::multi_readrestart;
   else dserror("Unknown type of action for So_hex8");
 
@@ -254,6 +254,11 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
         MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
         plastic->Update();
       }
+      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+        micro->Update();
+      }
     }
     break;
 
@@ -269,6 +274,11 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
       {
         MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
         plastic->Update();
+      }
+      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+        micro->Update();
       }
     }
     break;
@@ -287,10 +297,9 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
     }
     break;
 
-    case eas_init_multi:
-    case eas_set_multi:
-    case calc_homog_dens:
-    case multi_invana_init:
+    case multi_eas_init:
+    case multi_eas_set:
+    case multi_calc_dens:
     case multi_readrestart:
       dserror("multi-scale stuff not implemented for solid Q1P0 hex8 element");
       break;

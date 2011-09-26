@@ -41,6 +41,7 @@ Maintainer: Sophie Rausch
 #include "../drt_matelast/elast_vologden.H"
 #include "../drt_matelast/elast_volsussmanbathe.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/micromaterial.H"
 
 //using namespace LINALG::ANA;
 using namespace std;
@@ -193,13 +194,8 @@ void STR::InvAnalysis::Integrate()
 
       // Multi-scale: if an inverse analysis is performed on the micro-level,
       // the time and step need to be reset now. Furthermore, the result file
-      // needs to be opened. The results of the np_ evaluations of the
-      // disturbed equilibrium are always overwritten by the evaluation of the
-      // undisturbed equilibrium (i=np_).
-      ParameterList p;
-      p.set("action", "multi_invana_init");
-      discret_->Evaluate(p, Teuchos::null, Teuchos::null,
-                         Teuchos::null, Teuchos::null, Teuchos::null);
+      // needs to be opened.
+      MultiInvAnaInit();
 
       if (discret_->Comm().MyPID()==0)
         cout << "------------------------------- run "<< i+1 << " of: " << np_+1 <<" ---------------------------------" <<endl;
@@ -1010,5 +1006,21 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
   }
 }
 
+
+void STR::InvAnalysis::MultiInvAnaInit()
+{
+  for (int i=0; i<discret_->NumMyColElements(); i++)
+  {
+    DRT::Element* actele = discret_->lColElement(i);
+    RefCountPtr<MAT::Material> mat = actele->Material();
+    if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+    {
+      MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+      bool eleowner = false;
+      if (discret_->Comm().MyPID()==actele->Owner()) eleowner = true;
+      micro->InvAnaInit(eleowner);
+    }
+  }
+}
 
 #endif

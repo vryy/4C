@@ -23,6 +23,7 @@ Maintainer: Jonas Biehler
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_mortar/mortar_analytical.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_mat/micromaterial.H"
 #include "Epetra_SerialDenseSolver.h"
 
 
@@ -251,13 +252,23 @@ int DRT::ELEMENTS::So_tet10::Evaluate(ParameterList& params,
 
     case calc_struct_update_istep:
     {
-      ;// there is nothing to do here at the moment
+      RefCountPtr<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+        micro->Update();
+      }
     }
     break;
 
     case calc_struct_update_imrlike:
-	{
-      ;// there is nothing to do here at the moment
+    {
+      RefCountPtr<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+        micro->Update();
+      }
     }
     break;
 

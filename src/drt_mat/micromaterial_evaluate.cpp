@@ -55,17 +55,13 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
                                   LINALG::Matrix<6,1>* stress,
                                   double* density,
                                   const int gp,
-                                  const int ele_ID,
-                                  const double time,
-                                  const double dt,
-                                  string action)
+                                  const int ele_ID)
 {
   // activate microscale material
 
   int microdisnum = MicroDisNum();
   double V0 = InitVol();
   RefCountPtr<DRT::Problem> micro_problem = DRT::Problem::Instance(microdisnum);
-//  micro_problem->ActivateMaterial();
   DRT::Problem::Instance()->Materials()->SetReadFromProblem(microdisnum);
 
   // avoid writing output also for ghosted elements
@@ -74,35 +70,65 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
   if (gp > static_cast<int>(matgp_.size())-1)
   {
     matgp_.resize(gp+1);
-    matgp_[gp] = rcp(new MicroMaterialGP(gp, ele_ID, eleowner, time, microdisnum, V0));
+    matgp_[gp] = rcp(new MicroMaterialGP(gp, ele_ID, eleowner, microdisnum, V0));
   }
 
   RefCountPtr<MicroMaterialGP> actmicromatgp = matgp_[gp];
 
-  // read restart if necessary
-  if (action == "multi_readrestart")
-  {
-    actmicromatgp->ReadRestart();
-  }
-  // open new result file if necessary
-  else if (action == "multi_invana_init")
-  {
-    actmicromatgp->ResetTimeAndStep();
-    std::string newfilename;
-    actmicromatgp->NewResultFile(eleowner, newfilename);
-  }
   // perform microscale simulation and homogenization (if fint and stiff/mass or stress calculation is required)
-  else
-  {
-    actmicromatgp->PerformMicroSimulation(defgrd, stress, cmat, density, time, dt, eleowner);
-  }
+  actmicromatgp->PerformMicroSimulation(defgrd, stress, cmat, density);
 
   // reactivate macroscale material
-//  RefCountPtr<DRT::Problem> macro_problem = DRT::Problem::Instance(0);
-//  macro_problem->ActivateMaterial();
   DRT::Problem::Instance()->Materials()->ResetReadFromProblem();
 
   return;
 }
 
+
+void MAT::MicroMaterial::Update()
+{
+  for (unsigned int gp=0; gp<matgp_.size(); ++gp)
+  {
+    RefCountPtr<MicroMaterialGP> actmicromatgp = matgp_[gp];
+    actmicromatgp->Update();
+  }
+}
+
+
+void MAT::MicroMaterial::Output()
+{
+  for (unsigned int gp=0; gp<matgp_.size(); ++gp)
+  {
+    RefCountPtr<MicroMaterialGP> actmicromatgp = matgp_[gp];
+    actmicromatgp->Output();
+  }
+}
+
+
+void MAT::MicroMaterial::ReadRestart(const int gp, const int eleID, const bool eleowner)
+{
+  if (gp > static_cast<int>(matgp_.size())-1)
+  {
+    int microdisnum = MicroDisNum();
+    double V0 = InitVol();
+
+    matgp_.resize(gp+1);
+    matgp_[gp] = rcp(new MicroMaterialGP(gp, eleID, eleowner, microdisnum, V0));
+  }
+
+  RefCountPtr<MicroMaterialGP> actmicromatgp = matgp_[gp];
+  actmicromatgp->ReadRestart();
+}
+
+
+void MAT::MicroMaterial::InvAnaInit(const bool eleowner)
+{
+  for (unsigned int gp=0; gp<matgp_.size(); ++gp)
+  {
+    RefCountPtr<MicroMaterialGP> actmicromatgp = matgp_[gp];
+    actmicromatgp->ResetTimeAndStep();
+    std::string newfilename;
+    actmicromatgp->NewResultFile(eleowner, newfilename);
+  }
+}
 #endif

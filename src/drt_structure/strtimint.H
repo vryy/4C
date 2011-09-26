@@ -278,6 +278,9 @@ namespace STR
     //! Nodal positions output
     void OutputNodalPositions();
 
+    //! Output on the micro-scale (multi-scale analysis)
+    void OutputMicro();
+
     //! Check wether energy output file is attached
     bool AttachedEnergyFile()
     {

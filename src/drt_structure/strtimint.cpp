@@ -27,6 +27,7 @@ Maintainer: Burkhard Bornemann
 #include "../drt_io/io_control.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/micromaterial.H"
 
 #include "../drt_mortar/mortar_defines.H"
 #include "../drt_mortar/mortar_analytical.H"
@@ -276,7 +277,7 @@ STR::TimInt::TimInt
       FLD::UTILS::SetupFluidSplit(*discret_, ndim, *pressure_);
     }
   }
-  
+
   // check for structural problem with ale
   if(DRT::Problem::Instance()->ProblemType() == "structure_ale")
     dismatn_ = LINALG::CreateVector(*(discret_->DofRowMap(0)),true);
@@ -830,6 +831,9 @@ void STR::TimInt::OutputStep()
   // output of nodal positions in current configuration
   OutputNodalPositions();
 
+  // write output on micro-scale (multi-scale analysis)
+  OutputMicro();
+
   // what's next?
   return;
 }
@@ -1320,6 +1324,22 @@ void STR::TimInt::OutputErrorNorms()
   }
 
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/* output on micro-scale */
+void STR::TimInt::OutputMicro()
+{
+  for (int i=0; i<discret_->NumMyRowElements(); i++)
+  {
+    DRT::Element* actele = discret_->lRowElement(i);
+    RefCountPtr<MAT::Material> mat = actele->Material();
+    if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+    {
+      MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+      micro->Output();
+    }
+  }
 }
 
 /*----------------------------------------------------------------------*/

@@ -50,7 +50,7 @@ std::map<int, int> MAT::MicroMaterialGP::microstaticcounter_;
 /// microscale discretization
 
 MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool eleowner,
-                                      const double time, const int microdisnum, const double V0)
+                                      const int microdisnum, const double V0)
   : gp_(gp),
     ele_ID_(ele_ID),
     microdisnum_(microdisnum)
@@ -73,11 +73,11 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
   // options, kind of predictor etc.
   const Teuchos::ParameterList& sdyn_macro = DRT::Problem::Instance()->StructuralDynamicParams();
 
-  istep_ = 0;
-  // we set the microscale time _ALWAYS_ to 0 (also in restart case)
-  // in order to handle the implicit update query!!!
-  timen_ = 0.;
   dt_    = sdyn_macro.get<double>("TIMESTEP");
+  step_  = 0;
+  stepn_ = step_ + 1;
+  time_  = 0.;
+  timen_ = time_ + dt_;
 
   // if class handling microscale simulations is not yet initialized
   // -> set up
@@ -129,8 +129,8 @@ MAT::MicroMaterialGP::~MicroMaterialGP()
 
 void MAT::MicroMaterialGP::ReadRestart()
 {
-  istep_ = genprob.restart;
-  microstaticmap_[microdisnum_]->ReadRestart(istep_, dis_, lastalpha_, surf_stress_man_, restartname_);
+  step_ = genprob.restart;
+  microstaticmap_[microdisnum_]->ReadRestart(step_, dis_, lastalpha_, surf_stress_man_, restartname_);
   // both dism_ and disn_ equal dis_
   dism_->Update(1.0, *dis_, 0.0);
   disn_->Update(1.0, *dis_, 0.0);
@@ -209,7 +209,7 @@ void MAT::MicroMaterialGP::NewResultFile(bool eleowner, std::string& newfilename
 
     micro_output_ = rcp(new DiscretizationWriter(microdis,microcontrol));
 
-    micro_output_->WriteMesh(istep_, timen_);
+    micro_output_->WriteMesh(step_, time_);
   }
 
   return;
@@ -230,7 +230,7 @@ void MAT::MicroMaterialGP::EasInit()
       // create the parameters for the discretization
       ParameterList p;
       // action for elements
-      p.set("action","eas_init_multi");
+      p.set("action","multi_eas_init");
       p.set("lastalpha", lastalpha_);
       p.set("oldalpha", oldalpha_);
       p.set("oldfeas", oldfeas_);
@@ -255,8 +255,10 @@ void MAT::MicroMaterialGP::EasInit()
 
 void MAT::MicroMaterialGP::ResetTimeAndStep()
 {
-  timen_ = 0.0;
-  istep_ = 0;
+  time_  = 0.0;
+  timen_ = time_ + dt_;
+  step_  = 0;
+  stepn_ = step_ + 1;
 }
 
 
@@ -265,72 +267,16 @@ void MAT::MicroMaterialGP::ResetTimeAndStep()
 void MAT::MicroMaterialGP::PerformMicroSimulation(LINALG::Matrix<3,3>* defgrd,
                                                   LINALG::Matrix<6,1>* stress,
                                                   LINALG::Matrix<6,6>* cmat,
-                                                  double* density,
-                                                  const double time,
-                                                  const double dt,
-                                                  const bool eleowner)
+                                                  double* density)
 {
   // select corresponding "time integration class" for this microstructure
   RefCountPtr<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];
 
-  // check if we have to update absolute time and step number
-  // in case of restart, timen_ is set to the current total time in
-  // the constructor, whereas "time" handed on to this function is
-  // still 0. since the macroscopic update of total time is done after
-  // the initializing phase in which this function is called the first
-  // time.
-  // note that actually time and timen_ need to be _exactly_ the same
-  // while we are in the same macro time step, since timen_ is always
-  // a copy of time.
-  if (fabs(time - timen_) > 0.5*dt)  // this is an arbitrarily chosen bound
-  {
-    build_stiff_ = true;
+  // set displacements and EAS data of last step
+  microstatic->SetOldState(dis_, dism_, disn_, surf_stress_man_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
 
-    if (timen_ > 0.5*dt)  // confer above comment (actually if (timen_!=0.))
-    {
-      microstatic->UpdateNewTimeStep(dis_, dism_, disn_, oldalpha_, lastalpha_, surf_stress_man_);
-
-      // set displacements and EAS data of last step
-      microstatic->SetOldState(dis_, dism_, disn_, surf_stress_man_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
-
-      // Microscale data should be output when macroscale is entering a
-      // new timestep, not in every macroscopic iteration! Therefore
-      // output is written in the beginning of a microscopic step if
-      // necessary at all. Problem: we don't get any output for the very
-      // last time step since the macro-program finishes and the
-      // micro-program is not called again to write output.
-      // Note: only the process owning the corresponding macro-element
-      // is writing output here!
-
-      // We don't want to write results after just having constructed
-      // the StruGenAlpha class which corresponds to a total time of 0.
-      // (in the calculation phase, total time is instantly set to the first
-      // time step)
-      if (eleowner)
-      {
-        microstatic->Output(micro_output_, timen_, istep_, dt_);
-      }
-      timen_ = time;
-      dt_ = dt;
-      istep_++;
-    }
-    else
-    {
-      // set displacements and EAS data of last step
-      microstatic->SetOldState(dis_, dism_, disn_, surf_stress_man_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
-      timen_ = time;
-      dt_ = dt;
-      istep_++;
-    }
-  }
-  else
-  {
-    // set displacements and EAS data of last step
-    microstatic->SetOldState(dis_, dism_, disn_, surf_stress_man_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
-  }
-
-  // set current absolute time, time step size and step number
-  microstatic->SetTime(timen_, dt_, istep_);
+  // set current time, time step size and step number
+  microstatic->SetTime(time_, timen_, dt_, step_, stepn_);
 
   microstatic->Predictor(defgrd);
   microstatic->FullNewton();
@@ -343,6 +289,35 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(LINALG::Matrix<3,3>* defgrd,
 
   // clear displacements in MicroStruGenAlpha for next usage
   microstatic->ClearState();
+}
+
+
+void MAT::MicroMaterialGP::Update()
+{
+  // select corresponding "time integration class" for this microstructure
+  RefCountPtr<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];
+
+  microstatic->UpdateNewTimeStep(dis_, dism_, disn_, oldalpha_, lastalpha_, surf_stress_man_);
+
+  time_  = timen_;
+  timen_ += dt_;
+  step_  = stepn_;
+  stepn_++;
+
+  // in case of modified Newton, the stiffness matrix needs to be rebuilt at
+  // the beginning of the new time step
+  build_stiff_ = true;
+}
+
+
+void MAT::MicroMaterialGP::Output()
+{
+  // select corresponding "time integration class" for this microstructure
+  RefCountPtr<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];
+
+  // set displacements and EAS data of last step
+  microstatic->SetOldState(dis_, dism_, disn_, surf_stress_man_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
+  microstatic->Output(micro_output_, time_, step_, dt_);
 }
 
 #endif

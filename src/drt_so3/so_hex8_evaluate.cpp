@@ -32,6 +32,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
+#include "../drt_mat/micromaterial.H"
 #include "../drt_mortar/mortar_analytical.H"
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_patspec/patspec.H"
@@ -87,17 +88,16 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
   else if (action=="calc_struct_reset_discretization")            act = So_hex8::calc_struct_reset_discretization;
   else if (action=="calc_struct_energy")                          act = So_hex8::calc_struct_energy;
   else if (action=="calc_struct_errornorms")                      act = So_hex8::calc_struct_errornorms;
-  else if (action=="eas_init_multi")                              act = So_hex8::eas_init_multi;
-  else if (action=="eas_set_multi")                               act = So_hex8::eas_set_multi;
-  else if (action=="calc_homog_dens")                             act = So_hex8::calc_homog_dens;
-  else if (action=="postprocess_stress")                          act = So_hex8::postprocess_stress;
+  else if (action=="multi_eas_init")                              act = So_hex8::multi_eas_init;
+  else if (action=="multi_eas_set")                               act = So_hex8::multi_eas_set;
   else if (action=="multi_readrestart")                           act = So_hex8::multi_readrestart;
-  else if (action=="multi_invana_init")                           act = So_hex8::multi_invana_init;
+  else if (action=="multi_calc_dens")                             act = So_hex8::multi_calc_dens;
+  else if (action=="postprocess_stress")                          act = So_hex8::postprocess_stress;
   else if (action=="calc_potential_stiff")                        act = So_hex8::calc_potential_stiff;
   else if (action=="calc_struct_prestress_update")                act = So_hex8::prestress_update;
   else if (action=="calc_struct_inversedesign_update")            act = So_hex8::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch")            act = So_hex8::inversedesign_switch;
-  else if (action=="calc_global_gpstresses_map")                   act = So_hex8::calc_global_gpstresses_map;
+  else if (action=="calc_global_gpstresses_map")                  act = So_hex8::calc_global_gpstresses_map;
   else dserror("Unknown type of action for So_hex8");
 
   // check for patient specific data
@@ -472,6 +472,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
         comix->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast<MAT::MicroMaterial*>(mat.get());
+        micro->Update();
+      }
     }
     break;
 
@@ -562,6 +567,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
       {
         MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
         comix->Update();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast<MAT::MicroMaterial*>(mat.get());
+        micro->Update();
       }
     }
     break;
@@ -745,15 +755,15 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     //==================================================================================
     case calc_struct_errornorms:
     {
-    	// IMPORTANT NOTES (popp 10/2010):
-    	// - error norms are based on a small deformation assumption (linear elasticity)
-    	// - extension to finite deformations would be possible without difficulties,
-    	//   however analytical solutions are extremely rare in the nonlinear realm
-    	// - only implemented for purely displacement-based version, not yet for EAS
-    	// - only implemented for SVK material (relevant for energy norm only, L2 and
-    	//   H1 norms are of course valid for arbitrary materials)
-    	// - analytical solutions are currently stored in a repository in the MORTAR
-    	//   namespace, however they could (should?) be moved to a more general location
+      // IMPORTANT NOTES (popp 10/2010):
+      // - error norms are based on a small deformation assumption (linear elasticity)
+      // - extension to finite deformations would be possible without difficulties,
+      //   however analytical solutions are extremely rare in the nonlinear realm
+      // - only implemented for purely displacement-based version, not yet for EAS
+      // - only implemented for SVK material (relevant for energy norm only, L2 and
+      //   H1 norms are of course valid for arbitrary materials)
+      // - analytical solutions are currently stored in a repository in the MORTAR
+      //   namespace, however they could (should?) be moved to a more general location
 
       // check length of elevec1
       if (elevec1_epetra.Length() < 3) dserror("The given result vector is too short.");
@@ -814,7 +824,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
           // Gauss point in reference configuration
           LINALG::Matrix<NUMDIM_SOH8,1> xgp(true);
           for (int k=0;k<NUMDIM_SOH8;++k)
-          	for (int n=0;n<NUMNOD_SOH8;++n)
+            for (int n=0;n<NUMNOD_SOH8;++n)
               xgp(k,0) += (vals[gp])(n) * xrefe(n,k);
 
           //**************************************************************
@@ -833,16 +843,16 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
           // compute displacements at GP
           LINALG::Matrix<NUMDIM_SOH8,1> ugp(true);
           for (int k=0;k<NUMDIM_SOH8;++k)
-          	for (int n=0;n<NUMNOD_SOH8;++n)
+            for (int n=0;n<NUMNOD_SOH8;++n)
               ugp(k,0) += (vals[gp])(n) * nodaldisp(NODDOF_SOH8*n+k,0);
 
           // displacement error
-					LINALG::Matrix<NUMDIM_SOH8,1> uerror(true);
-					for (int k=0;k<NUMDIM_SOH8;++k)
-						uerror(k,0) = uanalyt(k,0) - ugp(k,0);
+          LINALG::Matrix<NUMDIM_SOH8,1> uerror(true);
+          for (int k=0;k<NUMDIM_SOH8;++k)
+            uerror(k,0) = uanalyt(k,0) - ugp(k,0);
 
-					// compute GP contribution to L2 error norm
-					l2norm += fac * uerror.Dot(uerror);
+          // compute GP contribution to L2 error norm
+          l2norm += fac * uerror.Dot(uerror);
 
           //--------------------------------------------------------------
           // (2) H1 norm
@@ -856,15 +866,15 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
           // compute partial derivatives at GP
           LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> derivgp(true);
           for (int l=0;l<NUMDIM_SOH8;++l)
-          	for (int m=0;m<NUMDIM_SOH8;++m)
-          		for (int k=0;k<NUMNOD_SOH8;++k)
-          			derivgp(l,m) += N_XYZ(m,k) * nodaldisp(NODDOF_SOH8*k+l,0);
+            for (int m=0;m<NUMDIM_SOH8;++m)
+              for (int k=0;k<NUMNOD_SOH8;++k)
+                derivgp(l,m) += N_XYZ(m,k) * nodaldisp(NODDOF_SOH8*k+l,0);
 
           // derivative error
-					LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> deriverror(true);
-					for (int k=0;k<NUMDIM_SOH8;++k)
-						for (int m=0;m<NUMDIM_SOH8;++m)
-							deriverror(k,m) = derivanalyt(k,m) - derivgp(k,m);
+          LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> deriverror(true);
+          for (int k=0;k<NUMDIM_SOH8;++k)
+            for (int m=0;m<NUMDIM_SOH8;++m)
+              deriverror(k,m) = derivanalyt(k,m) - derivgp(k,m);
 
           // compute GP contribution to H1 error norm
           h1norm += fac * deriverror.Dot(deriverror);
@@ -906,7 +916,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
           // strain error
           LINALG::Matrix<NUMSTR_SOH8,1> strainerror(true);
           for (int k=0;k<NUMSTR_SOH8;++k)
-          	strainerror(k,0) = strainanalyt(k,0) - straingp(k,0);
+            strainerror(k,0) = strainanalyt(k,0) - straingp(k,0);
 
           // compute stress vector and constitutive matrix
           double density = 0.0;
@@ -939,249 +949,231 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
     break;
 
     //==================================================================================
-    case calc_homog_dens:
+  case multi_calc_dens:
+  {
+    soh8_homog(params);
+  }
+  break;
+
+  //==================================================================================
+  // in case of multi-scale problems, possible EAS internal data on microscale
+  // have to be stored in every macroscopic Gauss point
+  // allocation and initializiation of these data arrays can only be
+  // done in the elements that know the number of EAS parameters
+  case multi_eas_init:
+  {
+    soh8_eas_init_multi(params);
+  }
+  break;
+
+  //==================================================================================
+  // in case of multi-scale problems, possible EAS internal data on microscale
+  // have to be stored in every macroscopic Gauss point
+  // before any microscale simulation, EAS internal data has to be
+  // set accordingly
+  case multi_eas_set:
+  {
+    soh8_set_eas_multi(params);
+  }
+  break;
+
+  //==================================================================================
+  // read restart of microscale
+  case multi_readrestart:
+  {
+    soh8_read_restart_multi();
+  }
+  break;
+
+  //==================================================================================
+  // compute additional stresses due to intermolecular potential forces
+  case calc_potential_stiff:
+  {
+    RCP<PotentialManager> potentialmanager =
+      params.get<RCP<PotentialManager> >("pot_man", null);
+    if (potentialmanager==null)
+      dserror("No PotentialManager in Solid3 Surface available");
+
+    RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
+    if (cond==null)
+      dserror("Condition not available in Solid3 Surface");
+
+    if (cond->Type()==DRT::Condition::LJ_Potential_Volume) // Lennard-Jones potential
     {
-      soh8_homog(params);
+      potentialmanager->StiffnessAndInternalForcesPotential(this, DRT::UTILS::intrule_hex_8point, params, lm, elemat1_epetra, elevec1_epetra);
     }
-    break;
-
-    //==================================================================================
-    // in case of multi-scale problems, possible EAS internal data on microscale
-    // have to be stored in every macroscopic Gauss point
-    // allocation and initializiation of these data arrays can only be
-    // done in the elements that know the number of EAS parameters
-    case eas_init_multi:
+    if (cond->Type()==DRT::Condition::VanDerWaals_Potential_Volume) // Van der Walls forces
     {
-      if (eastype_ != soh8_easnone)
-      {
-        soh8_eas_init_multi(params);
-      }
+      potentialmanager->StiffnessAndInternalForcesPotential(this, DRT::UTILS::intrule_hex_8point, params, lm, elemat1_epetra, elevec1_epetra);
     }
-    break;
+    if( cond->Type()!=DRT::Condition::LJ_Potential_Volume &&
+        cond->Type()!=DRT::Condition::VanDerWaals_Potential_Volume)
+      dserror("Unknown condition type %d",cond->Type());
+  }
+  break;
 
-    //==================================================================================
-    // in case of multi-scale problems, possible EAS internal data on microscale
-    // have to be stored in every macroscopic Gauss point
-    // before any microscale simulation, EAS internal data has to be
-    // set accordingly
-    case eas_set_multi:
+  //==================================================================================
+  case prestress_update:
+  {
+    time_ = params.get<double>("total time");
+    RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+    if (disp==null) dserror("Cannot get displacement state");
+    vector<double> mydisp(lm.size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+    // build def gradient for every gauss point
+    LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_SOH8,9);
+    DefGradient(mydisp,gpdefgrd,*prestress_);
+
+    // update deformation gradient and put back to storage
+    LINALG::Matrix<3,3> deltaF;
+    LINALG::Matrix<3,3> Fhist;
+    LINALG::Matrix<3,3> Fnew;
+    for (int gp=0; gp<NUMGPT_SOH8; ++gp)
     {
-      if (eastype_ != soh8_easnone)
-      {
-        soh8_set_eas_multi(params);
-      }
+      prestress_->StoragetoMatrix(gp,deltaF,gpdefgrd);
+      prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
+      Fnew.Multiply(deltaF,Fhist);
+      prestress_->MatrixtoStorage(gp,Fnew,prestress_->FHistory());
+      // if(gp ==1)
+      // {
+      //cout << "Fhist  " << Fhist << endl;
+      //cout << "Fhnew  " << new << endl;
+      // }
     }
-    break;
 
-    //==================================================================================
-    // read restart of microscale
-    case multi_readrestart:
+    // push-forward invJ for every gaussian point
+    UpdateJacobianMapping(mydisp,*prestress_);
+  }
+  break;
+  //==================================================================================
+  case inversedesign_update:
+  {
+    time_ = params.get<double>("total time");
+    RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+    if (disp==null) dserror("Cannot get displacement state");
+    vector<double> mydisp(lm.size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+    invdesign_->soh8_StoreMaterialConfiguration(this,mydisp);
+    invdesign_->IsInit() = true; // this is to make the restart work
+  }
+  break;
+  //==================================================================================
+  case inversedesign_switch:
+  {
+    time_ = params.get<double>("total time");
+  }
+  break;
+  //==================================================================================
+  // evaluate stresses and strains at gauss points and store gpstresses in map <EleId, gpstresses >
+  case calc_global_gpstresses_map:
+  {
+    // nothing to do for ghost elements
+    if (discretization.Comm().MyPID()==Owner())
     {
-      RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-        soh8_read_restart_multi();
-    }
-    break;
-
-    //==================================================================================
-    // reset of micro-scale
-    case multi_invana_init:
-    {
-      RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-        soh8_multi_invana_init();
-    }
-    break;
-
-    //==================================================================================
-    // compute additional stresses due to intermolecular potential forces
-    case calc_potential_stiff:
-    {
-      RCP<PotentialManager> potentialmanager =
-        params.get<RCP<PotentialManager> >("pot_man", null);
-      if (potentialmanager==null)
-        dserror("No PotentialManager in Solid3 Surface available");
-
-      RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
-      if (cond==null)
-        dserror("Condition not available in Solid3 Surface");
-
-      if (cond->Type()==DRT::Condition::LJ_Potential_Volume) // Lennard-Jones potential
-      {
-        potentialmanager->StiffnessAndInternalForcesPotential(this, DRT::UTILS::intrule_hex_8point, params, lm, elemat1_epetra, elevec1_epetra);
-      }
-      if (cond->Type()==DRT::Condition::VanDerWaals_Potential_Volume) // Van der Walls forces
-      {
-        potentialmanager->StiffnessAndInternalForcesPotential(this, DRT::UTILS::intrule_hex_8point, params, lm, elemat1_epetra, elevec1_epetra);
-      }
-      if( cond->Type()!=DRT::Condition::LJ_Potential_Volume &&
-          cond->Type()!=DRT::Condition::VanDerWaals_Potential_Volume)
-            dserror("Unknown condition type %d",cond->Type());
-    }
-    break;
-
-    //==================================================================================
-    case prestress_update:
-    {
-      time_ = params.get<double>("total time");
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) dserror("Cannot get displacement state");
+      RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+      RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
+      RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
+      RCP<vector<char> > plstraindata = params.get<RCP<vector<char> > >("plstrain", null);
+      if (disp==null) dserror("Cannot get state vectors 'displacement'");
+      if (stressdata==null) dserror("Cannot get 'stress' data");
+      if (straindata==null) dserror("Cannot get 'strain' data");
+      if (plstraindata==null) dserror("Cannot get 'plastic strain' data");
+      const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
+      if (gpstressmap==null)
+        dserror("no gp stress map available for writing gpstresses");
+      const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap=
+        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstrainmap",null);
+      if (gpstrainmap==null)
+        dserror("no gp strain map available for writing gpstrains");
       vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+      vector<double> myres(lm.size());
+      DRT::UTILS::ExtractMyValues(*res,myres,lm);
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
+      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> plstrain;
+      INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+      INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
+      INPAR::STR::StrainType ioplstrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
+      //
 
-      // build def gradient for every gauss point
-      LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_SOH8,9);
-      DefGradient(mydisp,gpdefgrd,*prestress_);
-
-      // update deformation gradient and put back to storage
-      LINALG::Matrix<3,3> deltaF;
-      LINALG::Matrix<3,3> Fhist;
-      LINALG::Matrix<3,3> Fnew;
-      for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+      // if a linear analysis is desired
+      if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
+        soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
+      // standard is: geometrically non-linear with Total Lagrangean approach
+      else
       {
-        prestress_->StoragetoMatrix(gp,deltaF,gpdefgrd);
-        prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
-        Fnew.Multiply(deltaF,Fhist);
-        prestress_->MatrixtoStorage(gp,Fnew,prestress_->FHistory());
-       // if(gp ==1)
-       // {
-          //cout << "Fhist  " << Fhist << endl;
-          //cout << "Fhnew  " << new << endl;
-       // }
+        if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
+          invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
+
+        else // standard analysis
+          soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
+      }
+      // add stresses to global map
+      //get EleID Id()
+      int gid = Id();
+      RCP<Epetra_SerialDenseMatrix> gpstress = rcp(new Epetra_SerialDenseMatrix);
+      gpstress->Shape(NUMGPT_SOH8,NUMSTR_SOH8);
+
+      //move stresses to serial dense matrix
+      for(int i=0;i<NUMGPT_SOH8;i++)
+      {
+        for(int j=0;j<NUMSTR_SOH8;j++)
+        {
+          (*gpstress)(i,j)=stress(i,j);
+        }
       }
 
-      // push-forward invJ for every gaussian point
-      UpdateJacobianMapping(mydisp,*prestress_);
-    }
-    break;
-    //==================================================================================
-    case inversedesign_update:
-    {
-      time_ = params.get<double>("total time");
-      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) dserror("Cannot get displacement state");
-      vector<double> mydisp(lm.size());
-      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      invdesign_->soh8_StoreMaterialConfiguration(this,mydisp);
-      invdesign_->IsInit() = true; // this is to make the restart work
-    }
-    break;
-    //==================================================================================
-    case inversedesign_switch:
-    {
-      time_ = params.get<double>("total time");
-    }
-    break;
-    //==================================================================================
-    // evaluate stresses and strains at gauss points and store gpstresses in map <EleId, gpstresses >
-    case calc_global_gpstresses_map:
-    {
-      // nothing to do for ghost elements
-      if (discretization.Comm().MyPID()==Owner())
+      //strains
+      RCP<Epetra_SerialDenseMatrix> gpstrain = rcp(new Epetra_SerialDenseMatrix);
+      gpstrain->Shape(NUMGPT_SOH8,NUMSTR_SOH8);
+
+      //move stresses to serial dense matrix
+      for(int i=0;i<NUMGPT_SOH8;i++)
       {
-        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-        RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
-        RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
-        RCP<vector<char> > plstraindata = params.get<RCP<vector<char> > >("plstrain", null);
-        if (disp==null) dserror("Cannot get state vectors 'displacement'");
-        if (stressdata==null) dserror("Cannot get 'stress' data");
-        if (straindata==null) dserror("Cannot get 'strain' data");
-        if (plstraindata==null) dserror("Cannot get 'plastic strain' data");
-        const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-                params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
-        if (gpstressmap==null)
-          dserror("no gp stress map available for writing gpstresses");
-        const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap=
-                        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstrainmap",null);
-        if (gpstrainmap==null)
-                  dserror("no gp strain map available for writing gpstrains");
-        vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        vector<double> myres(lm.size());
-        DRT::UTILS::ExtractMyValues(*res,myres,lm);
-        LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
-        LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
-        LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> plstrain;
-        INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
-        INPAR::STR::StrainType ioplstrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
-        //
-
-        // if a linear analysis is desired
-        if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
-          soh8_linstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
-        // standard is: geometrically non-linear with Total Lagrangean approach
-        else
+        for(int j=0;j<NUMSTR_SOH8;j++)
         {
-          if (pstype_==INPAR::STR::prestress_id && time_ <= pstime_) // inverse design analysis
-            invdesign_->soh8_nlnstiffmass(this,lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,params,iostress,iostrain);
-
-          else // standard analysis
-            soh8_nlnstiffmass(lm,mydisp,myres,NULL,NULL,NULL,&stress,&strain,&plstrain,params,iostress,iostrain,ioplstrain);
-        }
-        // add stresses to global map
-        //get EleID Id()
-        int gid = Id();
-        RCP<Epetra_SerialDenseMatrix> gpstress = rcp(new Epetra_SerialDenseMatrix);
-        gpstress->Shape(NUMGPT_SOH8,NUMSTR_SOH8);
-
-        //move stresses to serial dense matrix
-        for(int i=0;i<NUMGPT_SOH8;i++)
-        {
-          for(int j=0;j<NUMSTR_SOH8;j++)
-          {
-            (*gpstress)(i,j)=stress(i,j);
-          }
-        }
-
-        //strains
-        RCP<Epetra_SerialDenseMatrix> gpstrain = rcp(new Epetra_SerialDenseMatrix);
-        gpstrain->Shape(NUMGPT_SOH8,NUMSTR_SOH8);
-
-        //move stresses to serial dense matrix
-        for(int i=0;i<NUMGPT_SOH8;i++)
-        {
-          for(int j=0;j<NUMSTR_SOH8;j++)
-          {
-            (*gpstrain)(i,j)=strain(i,j);
-          }
-        }
-
-        //add to map
-        (*gpstressmap)[gid]=gpstress;
-        (*gpstrainmap)[gid]=gpstrain;
-
-        {
-          DRT::PackBuffer data;
-          AddtoPack(data, stress);
-          data.StartPacking();
-          AddtoPack(data, stress);
-          std::copy(data().begin(),data().end(),std::back_inserter(*stressdata));
-        }
-
-        {
-          DRT::PackBuffer data;
-          AddtoPack(data, strain);
-          data.StartPacking();
-          AddtoPack(data, strain);
-          std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
-        }
-
-        {
-          DRT::PackBuffer data;
-          AddtoPack(data, plstrain);
-          data.StartPacking();
-          AddtoPack(data, plstrain);
-          std::copy(data().begin(),data().end(),std::back_inserter(*plstraindata));
+          (*gpstrain)(i,j)=strain(i,j);
         }
       }
-    }
-    break;
 
-    //==================================================================================
-    default:
-      dserror("Unknown type of action for So_hex8");
+      //add to map
+      (*gpstressmap)[gid]=gpstress;
+      (*gpstrainmap)[gid]=gpstrain;
+
+      {
+        DRT::PackBuffer data;
+        AddtoPack(data, stress);
+        data.StartPacking();
+        AddtoPack(data, stress);
+        std::copy(data().begin(),data().end(),std::back_inserter(*stressdata));
+      }
+
+      {
+        DRT::PackBuffer data;
+        AddtoPack(data, strain);
+        data.StartPacking();
+        AddtoPack(data, strain);
+        std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
+      }
+
+      {
+        DRT::PackBuffer data;
+        AddtoPack(data, plstrain);
+        data.StartPacking();
+        AddtoPack(data, plstrain);
+        std::copy(data().begin(),data().end(),std::back_inserter(*plstraindata));
+      }
+    }
+  }
+  break;
+
+  //==================================================================================
+  default:
+    dserror("Unknown type of action for So_hex8");
   }
   return 0;
 }

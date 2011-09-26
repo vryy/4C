@@ -16,8 +16,11 @@ Maintainer: Lena Wiechert
 #include "../drt_lib/drt_utils.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/micromaterial.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 using namespace std; // cout etc.
+
+extern struct _GENPROB     genprob;
 
 
 /*----------------------------------------------------------------------*
@@ -53,23 +56,25 @@ void DRT::ELEMENTS::So_hex8::soh8_homog(ParameterList&  params)
 
 void DRT::ELEMENTS::So_hex8::soh8_set_eas_multi(ParameterList&  params)
 {
-  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha =
-    params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldalpha", null);
-  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas =
-    params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldfeas", null);
-  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv =
-    params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldKaainv", null);
-  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda =
-    params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldKda", null);
+  if (eastype_ != soh8_easnone)
+  {
+    RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha =
+      params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldalpha", null);
+    RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas =
+      params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldfeas", null);
+    RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv =
+      params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldKaainv", null);
+    RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda =
+      params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldKda", null);
 
-  if (oldalpha==null || oldfeas==null || oldKaainv==null || oldKda==null)
-    dserror("Cannot get EAS internal data from parameter list for multi-scale problems");
+    if (oldalpha==null || oldfeas==null || oldKaainv==null || oldKda==null)
+      dserror("Cannot get EAS internal data from parameter list for multi-scale problems");
 
-  data_.Add("alpha", (*oldalpha)[Id()]);
-  data_.Add("feas", (*oldfeas)[Id()]);
-  data_.Add("invKaa", (*oldKaainv)[Id()]);
-  data_.Add("Kda", (*oldKda)[Id()]);
-
+    data_.Add("alpha", (*oldalpha)[Id()]);
+    data_.Add("feas", (*oldfeas)[Id()]);
+    data_.Add("invKaa", (*oldKaainv)[Id()]);
+    data_.Add("Kda", (*oldKda)[Id()]);
+  }
   return;
 }
 
@@ -79,23 +84,25 @@ void DRT::ELEMENTS::So_hex8::soh8_set_eas_multi(ParameterList&  params)
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_eas_init_multi(ParameterList&  params)
 {
-  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha =
-    params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("lastalpha", null);
-  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha =
-    params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldalpha", null);
-  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas =
-    params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldfeas", null);
-  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv =
-    params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldKaainv", null);
-  RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda =
-    params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldKda", null);
+  if (eastype_ != soh8_easnone)
+  {
+    RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha =
+      params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("lastalpha", null);
+    RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha =
+      params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldalpha", null);
+    RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas =
+      params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldfeas", null);
+    RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv =
+      params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldKaainv", null);
+    RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda =
+      params.get<RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > >("oldKda", null);
 
-  (*lastalpha)[Id()] = rcp(new Epetra_SerialDenseMatrix(neas_, 1));
-  (*oldalpha)[Id()]  = rcp(new Epetra_SerialDenseMatrix(neas_, 1));
-  (*oldfeas)[Id()]   = rcp(new Epetra_SerialDenseMatrix(neas_, 1));
-  (*oldKaainv)[Id()] = rcp(new Epetra_SerialDenseMatrix(neas_, neas_));
-  (*oldKda)[Id()]    = rcp(new Epetra_SerialDenseMatrix(neas_, NUMDOF_SOH8));
-
+    (*lastalpha)[Id()] = rcp(new Epetra_SerialDenseMatrix(neas_, 1));
+    (*oldalpha)[Id()]  = rcp(new Epetra_SerialDenseMatrix(neas_, 1));
+    (*oldfeas)[Id()]   = rcp(new Epetra_SerialDenseMatrix(neas_, 1));
+    (*oldKaainv)[Id()] = rcp(new Epetra_SerialDenseMatrix(neas_, neas_));
+    (*oldKda)[Id()]    = rcp(new Epetra_SerialDenseMatrix(neas_, NUMDOF_SOH8));
+  }
   return;
 }
 
@@ -105,33 +112,19 @@ void DRT::ELEMENTS::So_hex8::soh8_eas_init_multi(ParameterList&  params)
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_read_restart_multi()
 {
-  const int ele_ID = Id();
   RefCountPtr<MAT::Material> mat = Material();
 
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+  if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
   {
     MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+    int eleID = Id();
+    bool eleowner = false;
+    if (DRT::Problem::Instance()->Dis(genprob.numsf,0)->Comm().MyPID()==Owner()) eleowner = true;
 
-    micro->Evaluate(NULL, NULL, NULL, NULL, gp, ele_ID, 0., 0., "multi_readrestart");
+    for (int gp=0; gp<NUMGPT_SOH8; ++gp)
+      micro->ReadRestart(gp, eleID, eleowner);
   }
-  return;
-}
 
-
-/*----------------------------------------------------------------------*
- |  Initialization in case of inverse analyses                  lw 08/11|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::soh8_multi_invana_init()
-{
-  const int ele_ID = Id();
-  RefCountPtr<MAT::Material> mat = Material();
-
-  for (int gp=0; gp<NUMGPT_SOH8; ++gp)
-  {
-    MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
-
-    micro->Evaluate(NULL, NULL, NULL, NULL, gp, ele_ID, 0., 0., "multi_invana_init");
-  }
   return;
 }
 

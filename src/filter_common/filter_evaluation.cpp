@@ -164,12 +164,29 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
                                   LINALG::Matrix<6,1>* stress,
                                   double* density,
                                   const int gp,
-                                  const int ele_ID,
-                                  const double time,
-                                  const double dt,
-                                  const string action)
+                                  const int ele_ID)
 {
   dserror("MAT::MicroMaterial::Evaluate not available");
+}
+
+void MAT::MicroMaterial::Output()
+{
+  dserror("MAT::MicroMaterial::Output not available");
+}
+
+void MAT::MicroMaterial::Update()
+{
+  dserror("MAT::MicroMaterial::Update not available");
+}
+
+void MAT::MicroMaterial::ReadRestart(const int gp, const int eleID, const bool eleowner)
+{
+  dserror("MAT::MicroMaterial::ReadRestart not available");
+}
+
+void MAT::MicroMaterial::InvAnaInit(const bool eleowner)
+{
+  dserror("Mat::MicroMaterial::InvAna_Init not available");
 }
 
 #endif

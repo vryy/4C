@@ -487,15 +487,14 @@ protected:
                                        //!< to state in the beginning of the computation
     calc_struct_energy,       //!< compute internal energy
     calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
-    calc_homog_dens,          //!< multi-scale: calculate homogenized density
-    eas_init_multi,           //!< multi-scale: initialize EAS parameters on microscale
-    eas_set_multi,            //!< multi-scale: set EAS parameters on microscale
     postprocess_stress,       //!< postprocess stresses
     prestress_update,
     inversedesign_update,
     inversedesign_switch,
     multi_readrestart,        //!< multi-scale: read restart on microscale
-    multi_invana_init,        //!< multi-scale: reset time, step and output in case of inverse analyses
+    multi_eas_init,           //!< multi-scale: initialize EAS parameters on microscale
+    multi_eas_set,            //!< multi-scale: set EAS parameters on microscale
+    multi_calc_dens,          //!< multi-scale: calculate homogenized density
     calc_potential_stiff,     //!< volume interaction potential
     calc_stc_matrix,          //! calculate scaled director matrix for thin shell structures
     calc_stc_matrix_inverse,  //! calculate inverse of scaled director matrix for thin shell structures
@@ -821,12 +820,6 @@ protected:
    * \brief Read restart on the microscale
    * */
   void soh8_read_restart_multi();
-
-  /*!
-   * \brief Initialize time, step and output on the microscale in case of
-   * multi-scale inverse analyses
-   * */
-  void soh8_multi_invana_init();
 
   //@}
 

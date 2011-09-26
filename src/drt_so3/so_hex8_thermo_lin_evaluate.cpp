@@ -23,6 +23,7 @@ Maintainer: Caroline Danowski
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/thermostvenantkirchhoff.H"
 #include "../drt_mat/thermoplasticlinelast.H"
+#include "../drt_mat/micromaterial.H"
 #include <iterator>
 
 #include "../drt_inpar/inpar_structure.H"
@@ -299,6 +300,12 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
   case calc_struct_update_istep:
   {
     // Update of history for visco material if they exist
+    RefCountPtr<MAT::Material> mat = Material();
+    if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+    {
+      MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+      micro->Update();
+    }
   }
   break;
 

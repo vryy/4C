@@ -149,6 +149,9 @@ public:
   void PrintStorage(Epetra_SerialDenseMatrix cmatrix,  Epetra_SerialDenseVector delta_p);
   void PrintFile();
 
+  /// Re-initialized micro-scale
+  void MultiInvAnaInit();
+
 
 };  // class InvAnalysis
 

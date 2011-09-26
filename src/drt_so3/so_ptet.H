@@ -372,9 +372,8 @@ protected:
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                               //!< during iteration to last converged state
     calc_struct_B_and_F,
-    calc_homog_dens,
-    multi_readrestart,
-    multi_invana_init
+    multi_calc_dens,
+    multi_readrestart
   };
 
   enum StressType
@@ -481,9 +480,6 @@ protected:
 
   /// Read restart on the microscale
   void ptet_read_restart_multi();
-
-  /// New result files on the microscale
-  void ptet_multi_invana_init();
 
   //@}
 

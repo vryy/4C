@@ -78,7 +78,7 @@ public:
   \brief Destructor
 
   */
-  virtual ~MicroStatic();
+  virtual ~MicroStatic(){};
 
   /*!
   \brief Read restart
@@ -175,7 +175,7 @@ public:
   \brief Set time and step
 
   */
-  void SetTime(const double timen, const double dt, const int istep);
+  void SetTime(const double time, const double timen, const double dt, const int step, const int stepn);
 
   /*!
   \brief Clear all displacement states
@@ -271,6 +271,7 @@ protected:
 
   double                        dt_;
   double                        time_;
+  double                        timen_;
 
   INPAR::STR::PredEnum          pred_;  //!< predictor
 
@@ -281,6 +282,7 @@ protected:
   int                           numiter_;
   int                           numstep_;
   int                           step_;
+  int                           stepn_;
 
   bool                          iodisp_;
   int                           resevrydisp_;

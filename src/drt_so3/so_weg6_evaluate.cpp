@@ -28,6 +28,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
+#include "../drt_mat/micromaterial.H"
 #include "../drt_patspec/patspec.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -310,6 +311,11 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
         MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
         comix->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+        micro->Update();
+      }
     }
     break;
 
@@ -342,6 +348,11 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
       {
         MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
         comix->Update();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+        micro->Update();
       }
     }
     break;

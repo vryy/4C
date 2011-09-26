@@ -36,7 +36,7 @@ public:
   /// construct an instance of MicroMaterial for a given Gauss point
   /// and microscale discretization
   MicroMaterialGP(const int gp, const int ele_ID, const bool eleowner,
-                  const double time, const int microdisnum, const double V0);
+                  const int microdisnum, const double V0);
 
   /// destructor
   ~MicroMaterialGP();
@@ -51,10 +51,11 @@ public:
   void PerformMicroSimulation(LINALG::Matrix<3,3>* defgrd,
                               LINALG::Matrix<6,1>* stress,
                               LINALG::Matrix<6,6>* cmat,
-                              double* density,
-                              const double time,
-                              const double dt,
-                              const bool eleowner);
+                              double* density);
+
+  void Update();
+
+  void Output();
 
   /// Create and initialize "empty" EAS history map
   void EasInit();
@@ -102,11 +103,17 @@ private:
   RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv_;
   RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda_;
 
+  /// old absolute time
+  double time_;
+
   /// current absolute time
   double timen_;
 
+  /// old step
+  int step_;
+
   /// current step
-  int istep_;
+  int stepn_;
 
   /// timestep size
   double dt_;

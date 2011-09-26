@@ -26,6 +26,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/viscoanisotropic.H"
+#include "../drt_mat/micromaterial.H"
 
 
 using namespace std; // cout etc.
@@ -255,6 +256,11 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
       }
+      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+        micro->Update();
+      }
     }
     break;
 
@@ -269,6 +275,12 @@ int DRT::ELEMENTS::So_shw6::Evaluate(ParameterList& params,
         // alphao = (-alphaf/(1.0-alphaf))*alphao  + 1.0/(1.0-alphaf) * alpha
         LINALG::DENSEFUNCTIONS::update<double,soshw6_easpoisthick,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
         LINALG::DENSEFUNCTIONS::update<double,soshw6_easpoisthick,1>(*alpha,*alphao); // alpha := alphao
+      }
+      RefCountPtr<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+        micro->Update();
       }
     }
     break;

@@ -114,9 +114,11 @@ V0_(V0)
   INPAR::STR::VectorNorm iternorm = DRT::INPUT::IntegralValue<INPAR::STR::VectorNorm>(sdyn_micro,"ITERNORM");
   iternorm_ = iternorm;
 
-  time_ = 0.0;
-  dt_ = sdyn_macro.get<double>("TIMESTEP");
-  step_ = 0;
+  dt_    = sdyn_macro.get<double>("TIMESTEP");
+  time_  = 0.0;
+  timen_ = time_ + dt_;
+  step_  = 0;
+  stepn_ = step_ + 1;
   numstep_ = sdyn_macro.get<int>("NUMSTEP");
   maxiter_ = sdyn_micro.get<int>("MAXITER");
   numiter_ = -1;
@@ -211,7 +213,7 @@ V0_(V0)
     // action for elements
     p.set("action","calc_struct_nlnstiff");
     // other parameters that might be needed by the elements
-    p.set("total time",time_);
+    p.set("total time",timen_);
     p.set("delta time",dt_);
     // set vector values needed by elements
     discret_->ClearState();
@@ -264,7 +266,7 @@ V0_(V0)
   // create the parameters for the discretization
   ParameterList par;
   // action for elements
-  par.set("action","calc_homog_dens");
+  par.set("action","multi_calc_dens");
   // set density to zero
   par.set("homogdens", 0.0);
 
@@ -325,7 +327,7 @@ void STRUMULTI::MicroStatic::PredictConstDis(LINALG::Matrix<3,3>* defgrd)
     // action for elements
     p.set("action","calc_struct_nlnstiff");
     // other parameters that might be needed by the elements
-    p.set("total time",time_);
+    p.set("total time",timen_);
     p.set("delta time",dt_);
     p.set("alpha f",alphaf_);
     // set vector values needed by elements
@@ -413,7 +415,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
     // action for elements
     p.set("action","calc_struct_nlnstiff");
     // other parameters that might be needed by the elements
-    p.set("total time",time_);
+    p.set("total time",timen_);
     p.set("delta time",dt_);
     p.set("alpha f",alphaf_);
     // set vector values needed by elements
@@ -507,7 +509,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
     // action for elements
     p.set("action","calc_struct_nlnstiff");
     // other parameters that might be needed by the elements
-    p.set("total time",time_);
+    p.set("total time",timen_);
     p.set("delta time",dt_);
     p.set("alpha f",alphaf_);
     // set vector values needed by elements
@@ -605,7 +607,7 @@ void STRUMULTI::MicroStatic::FullNewton()
       // action for elements
       p.set("action","calc_struct_nlnstiff");
       // other parameters that might be needed by the elements
-      p.set("total time",time_);
+      p.set("total time",timen_);
       p.set("delta time",dt_);
       p.set("alpha f",alphaf_);
       // set vector values needed by elements
@@ -670,21 +672,21 @@ void STRUMULTI::MicroStatic::FullNewton()
  *----------------------------------------------------------------------*/
 void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
                                     const double time,
-                                    const int istep,
+                                    const int step,
                                     const double dt)
 {
   bool isdatawritten = false;
 
   //------------------------------------------------- write restart step
-  if (restartevry_ and step_%restartevry_==0)
+  if (restartevry_ and step%restartevry_==0)
   {
-    output->WriteMesh(istep,time);
-    output->NewStep(istep, time);
+    output->WriteMesh(step,time);
+    output->NewStep(step, time);
     output->WriteVector("displacement",dis_);
     isdatawritten = true;
 
     if (surf_stress_man_->HaveSurfStress())
-      surf_stress_man_->WriteRestart(istep, time);
+      surf_stress_man_->WriteRestart(step, time);
 
     //RCP<std::vector<char> > lastalphadata = rcp(new std::vector<char>());
 
@@ -721,18 +723,18 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
   }
 
   //----------------------------------------------------- output results
-  if (iodisp_ && resevrydisp_ && step_%resevrydisp_==0 && !isdatawritten)
+  if (iodisp_ && resevrydisp_ && step%resevrydisp_==0 && !isdatawritten)
   {
-    output->NewStep(istep, time);
+    output->NewStep(step, time);
     output->WriteVector("displacement",dis_);
     isdatawritten = true;
 
     if (surf_stress_man_->HaveSurfStress() && iosurfactant_)
-      surf_stress_man_->WriteResults(istep, time);
+      surf_stress_man_->WriteResults(step, time);
   }
 
   //------------------------------------- do stress calculation and output
-  if (resevrystrs_ and !(istep%resevrystrs_) and iostress_!=INPAR::STR::stress_none)
+  if (resevrystrs_ and !(step%resevrystrs_) and iostress_!=INPAR::STR::stress_none)
   {
     // create the parameters for the discretization
     ParameterList p;
@@ -756,7 +758,7 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
     discret_->SetState("displacement",dis_);
     discret_->Evaluate(p,null,null,null,null,null);
     discret_->ClearState();
-    if (!isdatawritten) output->NewStep(istep, time);
+    if (!isdatawritten) output->NewStep(step, time);
     isdatawritten = true;
 
     switch (iostress_)
@@ -828,8 +830,10 @@ void STRUMULTI::MicroStatic::ReadRestart(int step,
   // reader.ReadMesh(step);
 
   // Override current time and step with values from file
-  time_ = time;
-  step_ = rstep;
+  time_  = time;
+  timen_ = time_ + dt_;
+  step_  = rstep;
+  stepn_ = step_ + 1;
 
   if (surf_stress_man->HaveSurfStress())
   {
@@ -841,58 +845,6 @@ void STRUMULTI::MicroStatic::ReadRestart(int step,
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 03/07|
- *----------------------------------------------------------------------*/
-STRUMULTI::MicroStatic::~MicroStatic()
-{
-  return;
-}
-
-
-void STRUMULTI::MicroStatic::DetermineToggle()
-{
-  int np = 0;   // number of prescribed (=boundary) dofs needed for the
-                // creation of vectors and matrices for homogenization
-                // procedure
-
-  vector<DRT::Condition*> conds;
-  discret_->GetCondition("MicroBoundary", conds);
-  for (unsigned i=0; i<conds.size(); ++i)
-  {
-    const vector<int>* nodeids = conds[i]->Get<vector<int> >("Node Ids");
-    if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
-    const int nnode = (*nodeids).size();
-
-    for (int i=0; i<nnode; ++i)
-    {
-      // do only nodes in my row map
-      if (!discret_->NodeRowMap()->MyGID((*nodeids)[i])) continue;
-      DRT::Node* actnode = discret_->gNode((*nodeids)[i]);
-      if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
-      vector<int> dofs = discret_->Dof(actnode);
-      const unsigned numdf = dofs.size();
-
-      for (unsigned j=0; j<numdf; ++j)
-      {
-        const int gid = dofs[j];
-
-        const int lid = disn_->Map().LID(gid);
-        if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
-
-        if ((*dirichtoggle_)[lid] != 1.0)  // be careful not to count dofs more
-                                           // than once since nodes belong to
-                                           // several surfaces simultaneously
-          ++np;
-
-        (*dirichtoggle_)[lid] = 1.0;
-      }
-    }
-  }
-
-  np_ = np;
-}
 
 void STRUMULTI::MicroStatic::EvaluateMicroBC(LINALG::Matrix<3,3>* defgrd,
                                              RefCountPtr<Epetra_Vector> disp)
@@ -938,7 +890,6 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(LINALG::Matrix<3,3>* defgrd,
       }
 
       vector<int> dofs = discret_->Dof(actnode);
-      //cout << "dofs:\n" << dofs[0] << "\n" << dofs[1] << "\n" << dofs[2] << endl;
 
       for (int l=0; l<3; ++l)
       {
@@ -1011,11 +962,13 @@ void STRUMULTI::MicroStatic::UpdateNewTimeStep(RefCountPtr<Epetra_Vector> dis,
   }
 }
 
-void STRUMULTI::MicroStatic::SetTime(const double timen, const double dt, const int istep)
+void STRUMULTI::MicroStatic::SetTime(const double time, const double timen, const double dt, const int step, const int stepn)
 {
-  time_ = timen;
-  dt_ = dt;
-  step_ = istep;
+  time_  = time;
+  timen_ = timen;
+  dt_    = dt;
+  step_  = step;
+  stepn_ = stepn;
 }
 
 //RefCountPtr<Epetra_Vector> STRUMULTI::MicroStatic::ReturnNewDism() { return rcp(new Epetra_Vector(*dism_)); }
@@ -1026,287 +979,6 @@ void STRUMULTI::MicroStatic::ClearState()
   dism_ = null;
   disn_ = null;
 }
-
-void STRUMULTI::MicroStatic::SetUpHomogenization()
-{
-  int indp = 0;
-  int indf = 0;
-
-  ndof_ = discret_->DofRowMap()->NumMyElements();
-
-  std::vector <int>   pdof(np_);
-  std::vector <int>   fdof(ndof_-np_);        // changed this, previously this
-                                              // has been just fdof(np_),
-                                              // but how should that
-                                              // work for ndof_-np_>np_???
-
-  for (int it=0; it<ndof_; ++it)
-  {
-    if ((*dirichtoggle_)[it] == 1.0)
-    {
-      pdof[indp]=discret_->DofRowMap()->GID(it);
-      ++indp;
-    }
-    else
-    {
-      fdof[indf]=discret_->DofRowMap()->GID(it);
-      ++indf;
-    }
-  }
-
-  // create map based on the determined dofs of prescribed and free nodes
-  pdof_ = rcp(new Epetra_Map(-1, np_, &pdof[0], 0, discret_->Comm()));
-  fdof_ = rcp(new Epetra_Map(-1, ndof_-np_, &fdof[0], 0, discret_->Comm()));
-
-  // create importer
-  importp_ = rcp(new Epetra_Import(*pdof_, *(discret_->DofRowMap())));
-  importf_ = rcp(new Epetra_Import(*fdof_, *(discret_->DofRowMap())));
-
-  // create vector containing material coordinates of prescribed nodes
-  Epetra_Vector Xp_temp(*pdof_);
-
-  vector<DRT::Condition*> conds;
-  discret_->GetCondition("MicroBoundary", conds);
-  for (unsigned i=0; i<conds.size(); ++i)
-  {
-    const vector<int>* nodeids = conds[i]->Get<vector<int> >("Node Ids");
-    if (!nodeids) dserror("MicroBoundary condition does not have nodal cloud");
-    const int nnode = (*nodeids).size();
-
-    for (int i=0; i<nnode; ++i)
-    {
-      // do only nodes in my row map
-      if (!discret_->NodeRowMap()->MyGID((*nodeids)[i])) continue;
-      DRT::Node* actnode = discret_->gNode((*nodeids)[i]);
-      if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
-
-      // nodal coordinates
-      const double* x = actnode->X();
-
-      vector<int> dofs = discret_->Dof(actnode);
-
-      for (int k=0; k<3; ++k)
-      {
-        const int gid = dofs[k];
-
-        const int lid = disn_->Map().LID(gid);
-        if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
-
-        for (int l=0;l<np_;++l)
-        {
-          if (pdof[l]==gid)
-            Xp_temp[l]=x[k];
-        }
-      }
-    }
-  }
-
-  Xp_ = LINALG::CreateVector(*pdof_,true);
-  *Xp_ = Xp_temp;
-
-  // now create D and its transpose DT (following Miehe et al., 2002)
-
-  Epetra_Map Dmap(9, 0, Epetra_SerialComm());
-  D_ = rcp(new Epetra_MultiVector(Dmap, np_));
-
-  for (int n=0;n<np_/3;++n)
-  {
-    Epetra_Vector* temp1 = (*D_)(3*n);
-    (*temp1)[0] = (*Xp_)[3*n];
-    (*temp1)[3] = (*Xp_)[3*n+1];
-    (*temp1)[6] = (*Xp_)[3*n+2];
-    Epetra_Vector* temp2 = (*D_)(3*n+1);
-    (*temp2)[1] = (*Xp_)[3*n+1];
-    (*temp2)[4] = (*Xp_)[3*n+2];
-    (*temp2)[7] = (*Xp_)[3*n];
-    Epetra_Vector* temp3 = (*D_)(3*n+2);
-    (*temp3)[2] = (*Xp_)[3*n+2];
-    (*temp3)[5] = (*Xp_)[3*n];
-    (*temp3)[8] = (*Xp_)[3*n+1];
-  }
-
-  Epetra_MultiVector DT(*pdof_, 9);
-
-  for (int n=0;n<np_/3;++n)
-  {
-    (*(DT(0)))[3*n]   = (*Xp_)[3*n];
-    (*(DT(1)))[3*n+1] = (*Xp_)[3*n+1];
-    (*(DT(2)))[3*n+2] = (*Xp_)[3*n+2];
-    (*(DT(3)))[3*n]   = (*Xp_)[3*n+1];
-    (*(DT(4)))[3*n+1] = (*Xp_)[3*n+2];
-    (*(DT(5)))[3*n+2] = (*Xp_)[3*n];
-    (*(DT(6)))[3*n]   = (*Xp_)[3*n+2];
-    (*(DT(7)))[3*n+1] = (*Xp_)[3*n];
-    (*(DT(8)))[3*n+2] = (*Xp_)[3*n+1];
-  }
-
-  rhs_ = rcp(new Epetra_MultiVector(*(discret_->DofRowMap()), 9));
-
-  for (int i=0;i<9;++i)
-  {
-    ((*rhs_)(i))->Export(*(DT(i)), *importp_, Insert);
-  }
-}
-
-
-/*----------------------------------------------------------------------*
- |  check convergence of Newton iteration (public)              lw 12/07|
- *----------------------------------------------------------------------*/
-bool STRUMULTI::MicroStatic::Converged()
-{
-  if (convcheck_ == INPAR::STR::convcheck_absres_or_absdis)
-  {
-    return (disinorm_ < toldis_ or resnorm_ < tolres_);
-  }
-  else if (convcheck_ == INPAR::STR::convcheck_absres_and_absdis)
-  {
-    return (disinorm_ < toldis_ and resnorm_ < tolres_);
-  }
-  else if (convcheck_ == INPAR::STR::convcheck_relres_or_absdis)
-  {
-    return (disinorm_ < toldis_ or (resnorm_/ref_resnorm_) < tolres_);
-  }
-  else if (convcheck_ == INPAR::STR::convcheck_relres_and_absdis)
-  {
-    return (disinorm_ < toldis_ and (resnorm_/ref_resnorm_) < tolres_);
-  }
-  else if (convcheck_ == INPAR::STR::convcheck_relres_or_reldis)
-  {
-    return ((disinorm_/ref_disinorm_) < toldis_  or (resnorm_/ref_resnorm_) < tolres_);
-  }
-  else if (convcheck_ == INPAR::STR::convcheck_relres_and_reldis)
-  {
-    return ((disinorm_/ref_disinorm_) < toldis_ and (resnorm_/ref_resnorm_) < tolres_);
-  }
-  else if (convcheck_ == INPAR::STR::convcheck_mixres_or_mixdis)
-  {
-    return (((disinorm_/ref_disinorm_) < toldis_ or disinorm_ < toldis_) or
-            ((resnorm_/ref_resnorm_) < tolres_ or resnorm_ < tolres_));
-  }
-  else if (convcheck_ == INPAR::STR::convcheck_mixres_and_mixdis)
-  {
-    return (((disinorm_/ref_disinorm_) < toldis_ or disinorm_ < toldis_) and
-            ((resnorm_/ref_resnorm_) < tolres_ or resnorm_ < tolres_));
-  }
-  else
-  {
-    dserror("Requested convergence check not (yet) implemented");
-    return true;
-  }
-}
-
-/*----------------------------------------------------------------------*
- |  calculate reference norms for relative convergence checks   lw 12/07|
- *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::CalcRefNorms()
-{
-  // The reference norms are used to scale the calculated iterative
-  // displacement norm and/or the residual force norm. For this
-  // purpose we only need the right order of magnitude, so we don't
-  // mind evaluating the corresponding norms at possibly different
-  // points within the timestep (end point, generalized midpoint).
-  // In the beginning (construction of macroscale time integrator and
-  // first macroscale predictor), macro displacements are generally
-  // 0 leading to no load on the micro problem. Consequently, the
-  // microscale reference norms are 0 in case of displacements, and
-  // near 0 in case of the residual (sum of ndof numerical near zero
-  // values). To enable convergence in these cases, the reference norm
-  // is automatically set to 1 if the calculated values are below
-  // the chosen tolerances. Simply testing against 0 only works for
-  // the displacements, but not for the residual!
-
-  ref_disinorm_ = STR::AUX::CalculateVectorNorm(iternorm_, dis_);
-  if (ref_disinorm_ < toldis_) ref_disinorm_ = 1.0;
-
-  double fintnorm = STR::AUX::CalculateVectorNorm(iternorm_, fintm_);
-  double freactnorm = STR::AUX::CalculateVectorNorm(iternorm_, freactm_);
-  ref_resnorm_ = max(fintnorm, freactnorm);
-  if (ref_resnorm_ < tolres_) ref_resnorm_ = 1.0;
-}
-
-/*----------------------------------------------------------------------*
- |  print to screen and/or error file                           lw 12/07|
- *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::PrintNewton(bool print_unconv, Epetra_Time timer)
-{
-  bool relres        = (convcheck_ == INPAR::STR::convcheck_relres_and_absdis ||
-                        convcheck_ == INPAR::STR::convcheck_relres_or_absdis);
-  bool relres_reldis = (convcheck_ == INPAR::STR::convcheck_relres_and_reldis ||
-                        convcheck_ == INPAR::STR::convcheck_relres_or_reldis);
-
-  if (relres)
-  {
-    resnorm_ /= ref_resnorm_;
-  }
-  if (relres_reldis)
-  {
-    resnorm_ /= ref_resnorm_;
-    disinorm_  /= ref_disinorm_;
-  }
-
-  if (print_unconv)
-  {
-    if (printscreen_)
-    {
-      if (relres)
-      {
-        printf("      MICROSCALE numiter %2d scaled res-norm %10.5e absolute dis-norm %20.15E\n",numiter_+1, resnorm_, disinorm_);
-        fflush(stdout);
-      }
-      else if (relres_reldis)
-      {
-        printf("      MICROSCALE numiter %2d scaled res-norm %10.5e scaled dis-norm %20.15E\n",numiter_+1, resnorm_, disinorm_);
-        fflush(stdout);
-      }
-      else
-        {
-        printf("      MICROSCALE numiter %2d absolute res-norm %10.5e absolute dis-norm %20.15E\n",numiter_+1, resnorm_, disinorm_);
-        fflush(stdout);
-      }
-    }
-  }
-  else
-  {
-    double timepernlnsolve = timer.ElapsedTime();
-
-    if (relres)
-    {
-      printf("      MICROSCALE Newton iteration converged: numiter %d scaled res-norm %e absolute dis-norm %e time %10.5f\n\n",
-             numiter_,resnorm_,disinorm_,timepernlnsolve);
-      fflush(stdout);
-    }
-    else if (relres_reldis)
-    {
-      printf("      MICROSCALE Newton iteration converged: numiter %d scaled res-norm %e scaled dis-norm %e time %10.5f\n\n",
-             numiter_,resnorm_,disinorm_,timepernlnsolve);
-      fflush(stdout);
-    }
-    else
-    {
-      printf("      MICROSCALE Newton iteration converged: numiter %d absolute res-norm %e absolute dis-norm %e time %10.5f\n\n",
-             numiter_,resnorm_,disinorm_,timepernlnsolve);
-      fflush(stdout);
-    }
-  }
-}
-
-/*----------------------------------------------------------------------*
- |  print to screen                                             lw 12/07|
- *----------------------------------------------------------------------*/
-void STRUMULTI::MicroStatic::PrintPredictor()
-{
-  if (convcheck_ == INPAR::STR::convcheck_absres_or_absdis && convcheck_ != INPAR::STR::convcheck_absres_and_absdis)
-  {
-    resnorm_ /= ref_resnorm_;
-    cout << "      MICROSCALE Predictor scaled res-norm " << resnorm_ << endl;
-  }
-  else
-  {
-    cout << "      MICROSCALE Predictor absolute res-norm " << resnorm_ << endl;
-  }
-  fflush(stdout);
-}
-
 
 void STRUMULTI::MicroStatic::SetEASData()
 {
@@ -1320,7 +992,7 @@ void STRUMULTI::MicroStatic::SetEASData()
       // create the parameters for the discretization
       ParameterList p;
       // action for elements
-      p.set("action","eas_set_multi");
+      p.set("action","multi_eas_set");
 
       p.set("oldalpha", oldalpha_);
       p.set("oldfeas", oldfeas_);

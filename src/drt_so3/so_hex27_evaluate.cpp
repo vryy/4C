@@ -23,6 +23,7 @@ Maintainer: Thomas Kloeppel
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/viscoanisotropic.H"
+#include "../drt_mat/micromaterial.H"
 #include "../drt_mortar/mortar_analytical.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
@@ -69,10 +70,9 @@ int DRT::ELEMENTS::So_hex27::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_imrlike")                  act = So_hex27::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")                     act = So_hex27::calc_struct_reset_istep;
   else if (action=="calc_struct_errornorms")                      act = So_hex27::calc_struct_errornorms;
-  else if (action=="calc_homog_dens")                             act = So_hex27::calc_homog_dens;
   else if (action=="postprocess_stress")                          act = So_hex27::postprocess_stress;
   else if (action=="multi_readrestart")                           act = So_hex27::multi_readrestart;
-  else if (action=="multi_invana_init")                           act = So_hex27::multi_invana_init;
+  else if (action=="multi_calc_dens")                             act = So_hex27::multi_calc_dens;
   else dserror("Unknown type of action for So_hex27");
   // what should the element do
   switch(act)
@@ -310,6 +310,11 @@ int DRT::ELEMENTS::So_hex27::Evaluate(ParameterList& params,
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+        micro->Update();
+      }
     }
     break;
 
@@ -326,6 +331,11 @@ int DRT::ELEMENTS::So_hex27::Evaluate(ParameterList& params,
       {
         MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
         visco->Update();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+        micro->Update();
       }
     }
     break;
@@ -348,226 +358,212 @@ int DRT::ELEMENTS::So_hex27::Evaluate(ParameterList& params,
     break;
 
     //==================================================================================
-		case calc_struct_errornorms:
-		{
-			// IMPORTANT NOTES (popp 10/2010):
-			// - error norms are based on a small deformation assumption (linear elasticity)
-			// - extension to finite deformations would be possible without difficulties,
-			//   however analytical solutions are extremely rare in the nonlinear realm
-			// - only implemented for SVK material (relevant for energy norm only, L2 and
-			//   H1 norms are of course valid for arbitrary materials)
-			// - analytical solutions are currently stored in a repository in the MORTAR
-			//   namespace, however they could (should?) be moved to a more general location
+  case calc_struct_errornorms:
+  {
+    // IMPORTANT NOTES (popp 10/2010):
+    // - error norms are based on a small deformation assumption (linear elasticity)
+    // - extension to finite deformations would be possible without difficulties,
+    //   however analytical solutions are extremely rare in the nonlinear realm
+    // - only implemented for SVK material (relevant for energy norm only, L2 and
+    //   H1 norms are of course valid for arbitrary materials)
+    // - analytical solutions are currently stored in a repository in the MORTAR
+    //   namespace, however they could (should?) be moved to a more general location
 
-			// check length of elevec1
-			if (elevec1_epetra.Length() < 3) dserror("The given result vector is too short.");
+    // check length of elevec1
+    if (elevec1_epetra.Length() < 3) dserror("The given result vector is too short.");
 
-			// check material law
-			RCP<MAT::Material> mat = Material();
+    // check material law
+    RCP<MAT::Material> mat = Material();
 
-			//******************************************************************
-			// only for St.Venant Kirchhoff material
-			//******************************************************************
-			if (mat->MaterialType() == INPAR::MAT::m_stvenant)
-			{
-				// declaration of variables
-				double l2norm = 0.0;
-				double h1norm = 0.0;
-				double energynorm = 0.0;
+    //******************************************************************
+        // only for St.Venant Kirchhoff material
+        //******************************************************************
+            if (mat->MaterialType() == INPAR::MAT::m_stvenant)
+          {
+            // declaration of variables
+            double l2norm = 0.0;
+            double h1norm = 0.0;
+            double energynorm = 0.0;
 
-				// shape functions, derivatives and integration weights
-				const static vector<LINALG::Matrix<NUMNOD_SOH27,1> > vals = soh27_shapefcts();
-				const static vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > derivs = soh27_derivs();
-				const static std::vector<double> weights = soh27_weights();
+            // shape functions, derivatives and integration weights
+            const static vector<LINALG::Matrix<NUMNOD_SOH27,1> > vals = soh27_shapefcts();
+            const static vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > derivs = soh27_derivs();
+            const static std::vector<double> weights = soh27_weights();
 
-				// get displacements and extract values of this element
-				RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-				if (disp==null) dserror("Cannot get state displacement vector");
-				vector<double> mydisp(lm.size());
-				DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+            // get displacements and extract values of this element
+            RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+            if (disp==null) dserror("Cannot get state displacement vector");
+            vector<double> mydisp(lm.size());
+            DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
-				// nodal displacement vector
-				LINALG::Matrix<NUMDOF_SOH27,1> nodaldisp;
-				for (int i=0; i<NUMDOF_SOH27; ++i) nodaldisp(i,0) = mydisp[i];
+            // nodal displacement vector
+            LINALG::Matrix<NUMDOF_SOH27,1> nodaldisp;
+            for (int i=0; i<NUMDOF_SOH27; ++i) nodaldisp(i,0) = mydisp[i];
 
-				// reference geometry (nodal positions)
-				LINALG::Matrix<NUMNOD_SOH27,NUMDIM_SOH27> xrefe;
-				DRT::Node** nodes = Nodes();
-				for (int i=0; i<NUMNOD_SOH27; ++i)
-				{
-					xrefe(i,0) = nodes[i]->X()[0];
-					xrefe(i,1) = nodes[i]->X()[1];
-					xrefe(i,2) = nodes[i]->X()[2];
-				}
+            // reference geometry (nodal positions)
+            LINALG::Matrix<NUMNOD_SOH27,NUMDIM_SOH27> xrefe;
+            DRT::Node** nodes = Nodes();
+            for (int i=0; i<NUMNOD_SOH27; ++i)
+            {
+              xrefe(i,0) = nodes[i]->X()[0];
+              xrefe(i,1) = nodes[i]->X()[1];
+              xrefe(i,2) = nodes[i]->X()[2];
+            }
 
-				// deformation gradient = identity tensor (geometrically linear case!)
-				LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27> defgrd(true);
-				for (int i=0;i<NUMDIM_SOH27;++i) defgrd(i,i) = 1;
+            // deformation gradient = identity tensor (geometrically linear case!)
+            LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27> defgrd(true);
+            for (int i=0;i<NUMDIM_SOH27;++i) defgrd(i,i) = 1;
 
-				//----------------------------------------------------------------
-				// loop over all Gauss points
-				//----------------------------------------------------------------
-				for (int gp=0; gp<NUMGPT_SOH27; gp++)
-				{
-					// Gauss weights and Jacobian determinant
-					double fac = detJ_[gp] * weights[gp];
+            //----------------------------------------------------------------
+            // loop over all Gauss points
+            //----------------------------------------------------------------
+            for (int gp=0; gp<NUMGPT_SOH27; gp++)
+            {
+              // Gauss weights and Jacobian determinant
+              double fac = detJ_[gp] * weights[gp];
 
-					// Gauss point in reference configuration
-					LINALG::Matrix<NUMDIM_SOH27,1> xgp(true);
-					for (int k=0;k<NUMDIM_SOH27;++k)
-						for (int n=0;n<NUMNOD_SOH27;++n)
-							xgp(k,0) += (vals[gp])(n) * xrefe(n,k);
+              // Gauss point in reference configuration
+              LINALG::Matrix<NUMDIM_SOH27,1> xgp(true);
+              for (int k=0;k<NUMDIM_SOH27;++k)
+                for (int n=0;n<NUMNOD_SOH27;++n)
+                  xgp(k,0) += (vals[gp])(n) * xrefe(n,k);
 
-					//**************************************************************
-					// get analytical solution
-					LINALG::Matrix<NUMDIM_SOH27,1> uanalyt(true);
-					LINALG::Matrix<NUMSTR_SOH27,1> strainanalyt(true);
-					LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27> derivanalyt(true);
+              //**************************************************************
+                  // get analytical solution
+                  LINALG::Matrix<NUMDIM_SOH27,1> uanalyt(true);
+              LINALG::Matrix<NUMSTR_SOH27,1> strainanalyt(true);
+              LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27> derivanalyt(true);
 
-					MORTAR::AnalyticalSolutions3D(xgp,uanalyt,strainanalyt,derivanalyt);
-					//**************************************************************
+              MORTAR::AnalyticalSolutions3D(xgp,uanalyt,strainanalyt,derivanalyt);
+              //**************************************************************
 
-					//--------------------------------------------------------------
-					// (1) L2 norm
-					//--------------------------------------------------------------
+                  //--------------------------------------------------------------
+                  // (1) L2 norm
+                  //--------------------------------------------------------------
 
-					// compute displacements at GP
-					LINALG::Matrix<NUMDIM_SOH27,1> ugp(true);
-					for (int k=0;k<NUMDIM_SOH27;++k)
-						for (int n=0;n<NUMNOD_SOH27;++n)
-							ugp(k,0) += (vals[gp])(n) * nodaldisp(NODDOF_SOH27*n+k,0);
+                  // compute displacements at GP
+                  LINALG::Matrix<NUMDIM_SOH27,1> ugp(true);
+              for (int k=0;k<NUMDIM_SOH27;++k)
+                for (int n=0;n<NUMNOD_SOH27;++n)
+                  ugp(k,0) += (vals[gp])(n) * nodaldisp(NODDOF_SOH27*n+k,0);
 
-					// displacement error
-					LINALG::Matrix<NUMDIM_SOH27,1> uerror(true);
-					for (int k=0;k<NUMDIM_SOH27;++k)
-						uerror(k,0) = uanalyt(k,0) - ugp(k,0);
+              // displacement error
+              LINALG::Matrix<NUMDIM_SOH27,1> uerror(true);
+              for (int k=0;k<NUMDIM_SOH27;++k)
+                uerror(k,0) = uanalyt(k,0) - ugp(k,0);
 
-					// compute GP contribution to L2 error norm
-					l2norm += fac * uerror.Dot(uerror);
+              // compute GP contribution to L2 error norm
+              l2norm += fac * uerror.Dot(uerror);
 
-					//--------------------------------------------------------------
-					// (2) H1 norm
-					//--------------------------------------------------------------
+              //--------------------------------------------------------------
+              // (2) H1 norm
+              //--------------------------------------------------------------
 
-					// compute derivatives N_XYZ at GP w.r.t. material coordinates
-					// by N_XYZ = J^-1 * N_rst
-					LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> N_XYZ(true);
-					N_XYZ.Multiply(invJ_[gp],derivs[gp]);
+              // compute derivatives N_XYZ at GP w.r.t. material coordinates
+              // by N_XYZ = J^-1 * N_rst
+              LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> N_XYZ(true);
+              N_XYZ.Multiply(invJ_[gp],derivs[gp]);
 
-					// compute partial derivatives at GP
-					LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27> derivgp(true);
-					for (int l=0;l<NUMDIM_SOH27;++l)
-						for (int m=0;m<NUMDIM_SOH27;++m)
-							for (int k=0;k<NUMNOD_SOH27;++k)
-								derivgp(l,m) += N_XYZ(m,k) * nodaldisp(NODDOF_SOH27*k+l,0);
+              // compute partial derivatives at GP
+              LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27> derivgp(true);
+              for (int l=0;l<NUMDIM_SOH27;++l)
+                for (int m=0;m<NUMDIM_SOH27;++m)
+                  for (int k=0;k<NUMNOD_SOH27;++k)
+                    derivgp(l,m) += N_XYZ(m,k) * nodaldisp(NODDOF_SOH27*k+l,0);
 
-					// derivative error
-					LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27> deriverror(true);
-					for (int k=0;k<NUMDIM_SOH27;++k)
-						for (int m=0;m<NUMDIM_SOH27;++m)
-							deriverror(k,m) = derivanalyt(k,m) - derivgp(k,m);
+              // derivative error
+              LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27> deriverror(true);
+              for (int k=0;k<NUMDIM_SOH27;++k)
+                for (int m=0;m<NUMDIM_SOH27;++m)
+                  deriverror(k,m) = derivanalyt(k,m) - derivgp(k,m);
 
-					// compute GP contribution to H1 error norm
-					h1norm += fac * deriverror.Dot(deriverror);
-					h1norm += fac * uerror.Dot(uerror);
+              // compute GP contribution to H1 error norm
+              h1norm += fac * deriverror.Dot(deriverror);
+              h1norm += fac * uerror.Dot(uerror);
 
-					//--------------------------------------------------------------
-					// (3) Energy norm
-					//--------------------------------------------------------------
+              //--------------------------------------------------------------
+              // (3) Energy norm
+              //--------------------------------------------------------------
 
-					// compute linear B-operator
-					LINALG::Matrix<NUMSTR_SOH27,NUMDOF_SOH27> bop;
-					for (int i=0; i<NUMNOD_SOH27; ++i)
-					{
-						bop(0,NODDOF_SOH27*i+0) = N_XYZ(0,i);
-						bop(0,NODDOF_SOH27*i+1) = 0.0;
-						bop(0,NODDOF_SOH27*i+2) = 0.0;
-						bop(1,NODDOF_SOH27*i+0) = 0.0;
-						bop(1,NODDOF_SOH27*i+1) = N_XYZ(1,i);
-						bop(1,NODDOF_SOH27*i+2) = 0.0;
-						bop(2,NODDOF_SOH27*i+0) = 0.0;
-						bop(2,NODDOF_SOH27*i+1) = 0.0;
-						bop(2,NODDOF_SOH27*i+2) = N_XYZ(2,i);
+              // compute linear B-operator
+              LINALG::Matrix<NUMSTR_SOH27,NUMDOF_SOH27> bop;
+              for (int i=0; i<NUMNOD_SOH27; ++i)
+              {
+                bop(0,NODDOF_SOH27*i+0) = N_XYZ(0,i);
+                bop(0,NODDOF_SOH27*i+1) = 0.0;
+                bop(0,NODDOF_SOH27*i+2) = 0.0;
+                bop(1,NODDOF_SOH27*i+0) = 0.0;
+                bop(1,NODDOF_SOH27*i+1) = N_XYZ(1,i);
+                bop(1,NODDOF_SOH27*i+2) = 0.0;
+                bop(2,NODDOF_SOH27*i+0) = 0.0;
+                bop(2,NODDOF_SOH27*i+1) = 0.0;
+                bop(2,NODDOF_SOH27*i+2) = N_XYZ(2,i);
 
-						bop(3,NODDOF_SOH27*i+0) = N_XYZ(1,i);
-						bop(3,NODDOF_SOH27*i+1) = N_XYZ(0,i);
-						bop(3,NODDOF_SOH27*i+2) = 0.0;
-						bop(4,NODDOF_SOH27*i+0) = 0.0;
-						bop(4,NODDOF_SOH27*i+1) = N_XYZ(2,i);
-						bop(4,NODDOF_SOH27*i+2) = N_XYZ(1,i);
-						bop(5,NODDOF_SOH27*i+0) = N_XYZ(2,i);
-						bop(5,NODDOF_SOH27*i+1) = 0.0;
-						bop(5,NODDOF_SOH27*i+2) = N_XYZ(0,i);
-					}
+                bop(3,NODDOF_SOH27*i+0) = N_XYZ(1,i);
+                bop(3,NODDOF_SOH27*i+1) = N_XYZ(0,i);
+                bop(3,NODDOF_SOH27*i+2) = 0.0;
+                bop(4,NODDOF_SOH27*i+0) = 0.0;
+                bop(4,NODDOF_SOH27*i+1) = N_XYZ(2,i);
+                bop(4,NODDOF_SOH27*i+2) = N_XYZ(1,i);
+                bop(5,NODDOF_SOH27*i+0) = N_XYZ(2,i);
+                bop(5,NODDOF_SOH27*i+1) = 0.0;
+                bop(5,NODDOF_SOH27*i+2) = N_XYZ(0,i);
+              }
 
-					// compute linear strain at GP
-					LINALG::Matrix<NUMSTR_SOH27,1> straingp(true);
-					straingp.Multiply(bop,nodaldisp);
+              // compute linear strain at GP
+              LINALG::Matrix<NUMSTR_SOH27,1> straingp(true);
+              straingp.Multiply(bop,nodaldisp);
 
-					// strain error
-					LINALG::Matrix<NUMSTR_SOH27,1> strainerror(true);
-					for (int k=0;k<NUMSTR_SOH27;++k)
-						strainerror(k,0) = strainanalyt(k,0) - straingp(k,0);
+              // strain error
+              LINALG::Matrix<NUMSTR_SOH27,1> strainerror(true);
+              for (int k=0;k<NUMSTR_SOH27;++k)
+                strainerror(k,0) = strainanalyt(k,0) - straingp(k,0);
 
-					// compute stress vector and constitutive matrix
-					double density = 0.0;
-					LINALG::Matrix<NUMSTR_SOH27,NUMSTR_SOH27> cmat(true);
-					LINALG::Matrix<NUMSTR_SOH27,1> stress(true);
-					soh27_mat_sel(&stress,&cmat,&density,&strainerror,&defgrd,gp,params);
+              // compute stress vector and constitutive matrix
+              double density = 0.0;
+              LINALG::Matrix<NUMSTR_SOH27,NUMSTR_SOH27> cmat(true);
+              LINALG::Matrix<NUMSTR_SOH27,1> stress(true);
+              soh27_mat_sel(&stress,&cmat,&density,&strainerror,&defgrd,gp,params);
 
-					// compute GP contribution to energy error norm
-					energynorm += fac * stress.Dot(strainerror);
+              // compute GP contribution to energy error norm
+              energynorm += fac * stress.Dot(strainerror);
 
-					//cout << "UAnalytical:      " << ugp << endl;
-					//cout << "UDiscrete:        " << uanalyt << endl;
-					//cout << "StrainAnalytical: " << strainanalyt << endl;
-					//cout << "StrainDiscrete:   " << straingp << endl;
-					//cout << "DerivAnalytical:  " << derivanalyt << endl;
-					//cout << "DerivDiscrete:    " << derivgp << endl;
-				}
-				//----------------------------------------------------------------
+              //cout << "UAnalytical:      " << ugp << endl;
+              //cout << "UDiscrete:        " << uanalyt << endl;
+              //cout << "StrainAnalytical: " << strainanalyt << endl;
+              //cout << "StrainDiscrete:   " << straingp << endl;
+              //cout << "DerivAnalytical:  " << derivanalyt << endl;
+              //cout << "DerivDiscrete:    " << derivgp << endl;
+            }
+            //----------------------------------------------------------------
 
-				// return results
-				elevec1_epetra(0) = l2norm;
-				elevec1_epetra(1) = h1norm;
-				elevec1_epetra(2) = energynorm;
-			}
-			else
-				dserror("ERROR: Error norms only implemented for SVK material");
-		}
-		break;
-
-
-    case calc_homog_dens:
-    {
-      soh27_homog(params);
-    }
-    break;
+            // return results
+            elevec1_epetra(0) = l2norm;
+            elevec1_epetra(1) = h1norm;
+            elevec1_epetra(2) = energynorm;
+          }
+    else
+      dserror("ERROR: Error norms only implemented for SVK material");
+  }
+  break;
 
 
-    // read restart of microscale
-    case multi_readrestart:
-    {
-      RefCountPtr<MAT::Material> mat = Material();
-
-      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-        soh27_read_restart_multi();
-    }
-    break;
+  case multi_calc_dens:
+  {
+    soh27_homog(params);
+  }
+  break;
 
 
-    // reset micro-scale for new run of inverse analysis
-    case multi_invana_init:
-    {
-      RefCountPtr<MAT::Material> mat = Material();
+  // read restart of microscale
+  case multi_readrestart:
+  {
+    soh27_read_restart_multi();
+  }
+  break;
 
-      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-        soh27_multi_invana_init();
-    }
-    break;
-
-    default:
-      dserror("Unknown type of action for So_hex27");
+  default:
+    dserror("Unknown type of action for So_hex27");
   }
   return 0;
 }
@@ -575,14 +571,14 @@ int DRT::ELEMENTS::So_hex27::Evaluate(ParameterList& params,
 
 
 /*----------------------------------------------------------------------*
- |  Integrate a Volume Neumann boundary condition (public)               |
- *----------------------------------------------------------------------*/
+  |  Integrate a Volume Neumann boundary condition (public)               |
+  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_hex27::EvaluateNeumann(ParameterList& params,
-                                           DRT::Discretization&      discretization,
-                                           DRT::Condition&           condition,
-                                           vector<int>&              lm,
-                                           Epetra_SerialDenseVector& elevec1,
-                                           Epetra_SerialDenseMatrix* elemat1)
+                                             DRT::Discretization&      discretization,
+                                             DRT::Condition&           condition,
+                                             vector<int>&              lm,
+                                             Epetra_SerialDenseVector& elevec1,
+                                             Epetra_SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
   const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
@@ -636,7 +632,7 @@ int DRT::ELEMENTS::So_hex27::EvaluateNeumann(ParameterList& params,
 
     double fac = gpweights[gp] * curvefac * detJ;          // integration factor
     // distribute/add over element load vector
-      for(int dim=0; dim<NUMDIM_SOH27; dim++) {
+    for(int dim=0; dim<NUMDIM_SOH27; dim++) {
       double dim_fac = (*onoff)[dim] * (*val)[dim] * fac;
       for (int nodid=0; nodid<NUMNOD_SOH27; ++nodid) {
         elevec1[nodid*NUMDIM_SOH27+dim] += shapefcts[gp](nodid) * dim_fac;

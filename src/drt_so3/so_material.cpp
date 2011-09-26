@@ -375,10 +375,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
         defgrd->MultiplyNN(R,U_enh);
       }
 
-      const double time = params.get<double>("total time",-1.0);
-      const double dt = params.get<double>("delta time",-1.0);
-
-      micro->Evaluate(defgrd, cmat, stress, density, gp, Id(), time, dt);
+      micro->Evaluate(defgrd, cmat, stress, density, gp, Id());
       return;
       break;
     }
@@ -898,11 +895,7 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
     case INPAR::MAT::m_struct_multiscale: /*------------------- multiscale approach */
     {
       MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
-
-      const double time = params.get<double>("total time",-1.0);
-      const double dt = params.get<double>("delta time",-1.0);
-
-      micro->Evaluate(defgrd, cmat, stress, density, gp, Id(), time, dt);
+      micro->Evaluate(defgrd, cmat, stress, density, gp, Id());
       return;
       break;
     }
@@ -1127,11 +1120,7 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
     case INPAR::MAT::m_struct_multiscale: /*------------------- multiscale approach */
     {
       MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
-
-      const double time = params.get<double>("total time",-1.0);
-      const double dt = params.get<double>("delta time",-1.0);
-
-      micro->Evaluate(defgrd, cmat, stress, density, gp, Id(), time, dt);
+      micro->Evaluate(defgrd, cmat, stress, density, gp, Id());
       return;
       break;
     }

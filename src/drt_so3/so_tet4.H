@@ -384,9 +384,8 @@ protected:
     prestress_update,
     inversedesign_update,
     inversedesign_switch,
-    calc_homog_dens,
-    multi_readrestart,
-    multi_invana_init
+    multi_calc_dens,
+    multi_readrestart
   };
 
   //! kinematic types of so_tet10
@@ -509,9 +508,6 @@ protected:
 
   /// Read restart on the microscale
   void sotet4_read_restart_multi();
-
-  /// New result files on the microscale
-  void sotet4_multi_invana_init();
 
   //@}
 

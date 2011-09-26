@@ -29,6 +29,7 @@ Maintainer: Moritz Frenzel
 #include "../drt_mat/visconeohooke.H"
 #include "../drt_mat/viscoanisotropic.H"
 #include "../drt_mat/aaaraghavanvorp_damage.H"
+#include "../drt_mat/micromaterial.H"
 #include "../drt_potential/drt_potential_manager.H"
 #include "../drt_lib/drt_condition.H"
 
@@ -75,11 +76,10 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
   else if (action=="calc_struct_update_imrlike")  act = So_hex8::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")     act = So_hex8::calc_struct_reset_istep;
   else if (action=="postprocess_stress")          act = So_hex8::postprocess_stress;
-  else if (action=="eas_init_multi")              act = So_hex8::eas_init_multi;
-  else if (action=="eas_set_multi")               act = So_hex8::eas_set_multi;
-  else if (action=="calc_homog_dens")             act = So_hex8::calc_homog_dens;
+  else if (action=="multi_eas_init")              act = So_hex8::multi_eas_init;
+  else if (action=="multi_eas_set")               act = So_hex8::multi_eas_set;
+  else if (action=="multi_calc_dens")             act = So_hex8::multi_calc_dens;
   else if (action=="multi_readrestart")           act = So_hex8::multi_readrestart;
-  else if (action=="multi_invana_init")           act = So_hex8::multi_invana_init;
   else if (action=="calc_stc_matrix")             act = So_hex8::calc_stc_matrix;
   else if (action=="calc_stc_matrix_inverse")     act = So_hex8::calc_stc_matrix_inverse;
   else if (action=="calc_potential_stiff")        act = So_hex8::calc_potential_stiff;
@@ -320,6 +320,11 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
         aaadamage->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+        micro->Update();
+      }
     }
     break;
 
@@ -352,6 +357,11 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
         MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
         aaadamage->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+        micro->Update();
+      }
     }
     break;
 
@@ -383,7 +393,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
     }
     break;
 
-    case calc_homog_dens:
+    case multi_calc_dens:
     {
       soh8_homog(params);
     }
@@ -393,7 +403,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
     // have to be stored in every macroscopic Gauss point
     // allocation and initializiation of these data arrays can only be
     // done in the elements that know the number of EAS parameters
-    case eas_init_multi:
+    case multi_eas_init:
     {
       if (eastype_ != soh8_easnone)
       {
@@ -406,7 +416,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
     // have to be stored in every macroscopic Gauss point
     // before any microscale simulation, EAS internal data has to be
     // set accordingly
-    case eas_set_multi:
+    case multi_eas_set:
     {
       if (eastype_ != soh8_easnone)
       {
@@ -422,15 +432,6 @@ int DRT::ELEMENTS::So_sh8::Evaluate(ParameterList&            params,
 
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
         soh8_read_restart_multi();
-    }
-    break;
-
-    // reset of micro-scale
-    case multi_invana_init:
-    {
-      RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-        soh8_multi_invana_init();
     }
     break;
 

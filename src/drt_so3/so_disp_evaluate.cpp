@@ -26,6 +26,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "Epetra_SerialDenseSolver.h"
+#include "../drt_mat/micromaterial.H"
 
 using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
@@ -140,12 +141,22 @@ int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
     break;
 
     case calc_struct_update_istep: {
-      ;// there is nothing to do here at the moment
+      RefCountPtr<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+        micro->Update();
+      }
     }
     break;
 
     case calc_struct_update_imrlike: {
-      ;// there is nothing to do here at the moment
+      RefCountPtr<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+        micro->Update();
+      }
     }
     break;
 

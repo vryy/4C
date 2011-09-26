@@ -28,6 +28,7 @@ written by : Alexander Volf
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/constraintmixture.H"
+#include "../drt_mat/micromaterial.H"
 #include "../drt_mortar/mortar_analytical.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -107,9 +108,8 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
   else if (action=="calc_struct_prestress_update")     act = So_tet4::prestress_update;
   else if (action=="calc_struct_inversedesign_update") act = So_tet4::inversedesign_update;
   else if (action=="calc_struct_inversedesign_switch") act = So_tet4::inversedesign_switch;
-  else if (action=="calc_homog_dens")                  act = So_tet4::calc_homog_dens;
+  else if (action=="multi_calc_dens")                  act = So_tet4::multi_calc_dens;
   else if (action=="multi_readrestart")                act = So_tet4::multi_readrestart;
-  else if (action=="multi_invana_init")                act = So_tet4::multi_invana_init;
   else dserror("Unknown type of action for So_tet4");
 
   // check for patient specific data
@@ -384,6 +384,11 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
         MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
         comix->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+        micro->Update();
+      }
     }
     break;
 
@@ -411,6 +416,11 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
       {
         MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
         comix->Update();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+        micro->Update();
       }
     }
     break;
@@ -652,7 +662,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
     break;
 
     //==================================================================================
-    case calc_homog_dens:
+    case multi_calc_dens:
     {
       sotet4_homog(params);
     }
@@ -662,19 +672,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
     // read restart of microscale
     case multi_readrestart:
     {
-      RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-        sotet4_read_restart_multi();
-    }
-    break;
-
-    //==================================================================================
-    // new result files on microscale
-    case multi_invana_init:
-    {
-      RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-        sotet4_multi_invana_init();
+      sotet4_read_restart_multi();
     }
     break;
 

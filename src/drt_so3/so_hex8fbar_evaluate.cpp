@@ -24,6 +24,7 @@ Maintainer: Alexander Popp
 #include "../drt_mat/plasticneohooke.H"
 #include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
+#include "../drt_mat/micromaterial.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -68,10 +69,9 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_imrlike")                  act = So_hex8fbar::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")                     act = So_hex8fbar::calc_struct_reset_istep;
   else if (action=="calc_struct_reset_discretization")            act = So_hex8fbar::calc_struct_reset_discretization;
-  else if (action=="calc_homog_dens")                             act = So_hex8fbar::calc_homog_dens;
   else if (action=="postprocess_stress")                          act = So_hex8fbar::postprocess_stress;
   else if (action=="multi_readrestart")                           act = So_hex8fbar::multi_readrestart;
-  else if (action=="multi_invana_init")                           act = So_hex8fbar::multi_invana_init;
+  else if (action=="multi_calc_dens")                             act = So_hex8fbar::multi_calc_dens;
   else if (action=="calc_struct_prestress_update")                act = So_hex8fbar::prestress_update;
   else dserror("Unknown type of action for So_hex8fbar");
   // what should the element do
@@ -270,6 +270,11 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
         MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
         comix->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+        micro->Update();
+      }
     }
     break;
 
@@ -291,6 +296,11 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
       {
         MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
         comix->Update();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+        micro->Update();
       }
     }
     break;
@@ -348,7 +358,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
     }
     break;
 
-    case calc_homog_dens:
+    case multi_calc_dens:
     {
       soh8_homog(params);
     }
@@ -399,16 +409,6 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
         soh8_read_restart_multi();
     }
     break;
-
-    // reset of micro-scale
-    case multi_invana_init:
-    {
-      RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-        soh8_multi_invana_init();
-    }
-    break;
-
 
     default:
       dserror("Unknown type of action for So_hex8fbar");

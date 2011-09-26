@@ -375,12 +375,11 @@ protected:
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                               //!< during iteration to last converged state
     calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
-    calc_homog_dens,          //!< multi-scale: calculate homogenized density
     postprocess_stress,       //!< postprocess stresses
     prestress_update,
     inversedesign_update,
     multi_readrestart,        //!< multi-scale: read restart on microscale
-    multi_invana_init         //!< reset micro-scale for new inverse analysis run
+    multi_calc_dens           //!< multi-scale: calculate homogenized density
   };
 
   //! kinematic types of So_hex27, but yet only total-lagrangian is implemented
@@ -500,11 +499,6 @@ protected:
    * \brief Read restart on the microscale
    * */
   void soh27_read_restart_multi();
-
-  /*!
-   * \brief Initialize microscale for new run of inverse analysis
-   * */
-  void soh27_multi_invana_init();
 
   //@}
 

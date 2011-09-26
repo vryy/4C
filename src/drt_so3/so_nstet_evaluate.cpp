@@ -137,9 +137,8 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
   else if (action=="calc_struct_update_istep")            act = NStet::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike")          act = NStet::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")             act = NStet::calc_struct_reset_istep;
-  else if (action=="calc_homog_dens")                     act = NStet::calc_homog_dens;
+  else if (action=="multi_calc_dens")                     act = NStet::multi_calc_dens;
   else if (action=="multi_readrestart")                   act = NStet::multi_readrestart;
-  else if (action=="multi_invana_init")                   act = NStet::multi_invana_init;
   else dserror("Unknown type of action for NStet");
 
   // what should the element do
@@ -343,13 +342,23 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
 
     case calc_struct_update_istep:
     {
-      ;// there is nothing to do here at the moment
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+        micro->Update();
+      }
     }
     break;
 
     case calc_struct_update_imrlike:
     {
-      ;// there is nothing to do here at the moment
+      RCP<MAT::Material> mat = Material();
+      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+      {
+        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+        micro->Update();
+      }
     }
     break;
 
@@ -387,7 +396,7 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
       dserror("action calc_struct_linstiff currently not supported");
     break;
 
-    case calc_homog_dens:
+    case multi_calc_dens:
     {
       nstet_homog(params);
     }
@@ -395,17 +404,7 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
 
     case multi_readrestart:
     {
-      RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-        nstet_read_restart_multi();
-    }
-    break;
-
-    case multi_invana_init:
-    {
-      RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-        nstet_multi_invana_init();
+      nstet_read_restart_multi();
     }
     break;
 

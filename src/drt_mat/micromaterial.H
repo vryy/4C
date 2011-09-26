@@ -163,10 +163,19 @@ private:
                   LINALG::Matrix<6,1>* stress,
                   double* density,
                   const int gp,
-                  const int ele_ID,
-                  const double time,
-                  const double dt,
-                  string action = string());
+                  const int ele_ID);
+
+    /// Write output on micro-scale
+    void Output();
+
+    // Update state vectors
+    void Update();
+
+    /// Read restart on micro-scale
+    void ReadRestart(const int gp, const int eleID, const bool eleowner);
+
+    /// Prepare new run of inverse analysis
+    void InvAnaInit(const bool eleowner);
 
     /// @name Access parameters
     //@{
