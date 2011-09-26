@@ -136,8 +136,11 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
     S_ = LINALG::Multiply(*diagAinv_,false,(*A_)(0,1),false,true);
     if (!myrank && SIMPLER_TIMING) printf("*** S = diagAinv * A(0,1) %10.3E\n",ltime.ElapsedTime());
     ltime.ResetStartTime();
-    //S_ = LINALG::MLMultiply((*A_)(1,0),*S_,false);
-    S_ = LINALG::Multiply((*A_)(1,0),false,*S_,false,false);
+    S_ = LINALG::MLMultiply((*A_)(1,0),*S_,false);
+    // The LINALG::Multiply method would consume a HUGE amount of memory!!!
+    // So always use LINALG::MLMultiply in the line above! Otherwise you won't be able
+    // to solve any large linear problem since you'll definitely run out of memory.
+    //S_ = LINALG::Multiply((*A_)(1,0),false,*S_,false,false);
     if (!myrank && SIMPLER_TIMING) printf("*** S = A(1,0) * S (ML)   %10.3E\n",ltime.ElapsedTime());
     ltime.ResetStartTime();
     S_->Add((*A_)(1,1),false,1.0,-1.0);
