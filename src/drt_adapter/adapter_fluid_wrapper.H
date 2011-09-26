@@ -27,6 +27,8 @@ namespace ADAPTER
     { return fluid_->Veln(); }
     virtual Teuchos::RCP<const Epetra_Vector> Velnm()
     { dserror("not implemented"); return Teuchos::null; };
+    virtual Teuchos::RCP<Epetra_Vector> ExtractEmbVector(Teuchos::RCP<const Epetra_Vector> f)
+    {dserror("not implemented"); return Teuchos::null;};
     virtual Teuchos::RCP<const Epetra_Vector> Accnp()
     { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Vector> Accn()

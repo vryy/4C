@@ -95,6 +95,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives();
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
     virtual Teuchos::RCP<const DRT::DofSet> DofSet() { dserror("not implemented"); return Teuchos::null; };
+    virtual Teuchos::RCP<Epetra_Vector> ExtractEmbVector(Teuchos::RCP<const Epetra_Vector> f) {dserror("not implemented"); return Teuchos::null;};
     virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
 
     //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const;

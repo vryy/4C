@@ -38,7 +38,8 @@ namespace ADAPTER {
              Teuchos::RCP<LINALG::Solver> solver,
              Teuchos::RCP<ParameterList> params,
              bool isale,
-             bool dirichletcond);
+             bool dirichletcond,
+             bool monolithicfluidfluidfsi);
 
 
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess();
@@ -125,6 +126,8 @@ namespace ADAPTER {
     virtual void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx) {dserror("not implemented");}
     virtual void FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx) {dserror("not implemented");}
 
+    virtual Teuchos::RCP<Epetra_Vector> ExtractEmbVector(Teuchos::RCP<const Epetra_Vector> f) { return fluid_.ExtractEmbVector(f);};
+
     virtual int  Itemax() const;
     virtual void SetItemax(int itemax);
 
@@ -193,6 +196,9 @@ namespace ADAPTER {
     /// ALE dof map
     LINALG::MapExtractor                   meshmap_;
 
+    // FSI-Cond Map of ALE (used for monolithic-fluidfluid-fsi)
+    LINALG::MapExtractor                   fsiale_;
+
     //! @name local copies of input parameters
     // fluid discretization
     Teuchos::RCP<DRT::Discretization>      embfluiddis_;
@@ -209,6 +215,8 @@ namespace ADAPTER {
 
     /// all velocity dofs not at the interface
     Teuchos::RefCountPtr<Epetra_Map>       innervelmap_;
+
+    bool monolithicfluidfluidfsi_;
   };
 }
 

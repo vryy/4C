@@ -308,12 +308,12 @@ namespace FLD
     /// update configuration and output to file/screen
     void Output();
 
-    Teuchos::RCP<Epetra_Vector> InitialGuess() {cout<< "InitialGuess" << endl; return state_->fluidfluidincvel_; }
+    Teuchos::RCP<Epetra_Vector> InitialGuess() {cout<< "InitialGuess" <<endl; return state_->fluidfluidincvel_; }
     Teuchos::RCP<Epetra_Vector> Residual() { cout << "Residual" << endl;return state_->fluidfluidresidual_; }
     Teuchos::RCP<Epetra_Vector> TrueResidual() { cout << "TrueResidual" << endl;return aletrueresidual_; }
-    Teuchos::RCP<Epetra_Vector> Velnp() { cout << "Velnp" << endl;return alevelnp_; }
+    Teuchos::RCP<Epetra_Vector> Velnp() { cout << "Velnp" << endl; return alevelnp_; }
     Teuchos::RCP<Epetra_Vector> Velaf() { cout << "Velaf" << endl;return alevelaf_; }
-    Teuchos::RCP<Epetra_Vector> Veln() { cout << "Veln" << endl;return aleveln_; }
+    Teuchos::RCP<Epetra_Vector> Veln() { cout << "Veln() in!!! " <<  endl; return aleveln_; } //return state_->fluidfluidveln_ ;}//
     Teuchos::RCP<Epetra_Vector> GridVel() {cout << "GridVel" << endl; return gridv_; }
 
     Teuchos::RCP<Epetra_Vector> Dispnp() { cout << "Dispnp " << endl;return aledispnp_; }
@@ -326,7 +326,9 @@ namespace FLD
 
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->fluidfluidsysmat_); }
 
-    /// provide access to the Dirichlet map
+    Teuchos::RCP<Epetra_Vector> ExtractEmbVector(Teuchos::RCP<const Epetra_Vector> f){ return state_->fluidfluidsplitter_.ExtractFluidVector(f); }
+
+    /// provide access to the Dirichlet maps
     const Teuchos::RCP<const LINALG::MapExtractor> EmbeddedDirichMaps() { return aledbcmaps_;}
     const Teuchos::RCP<const LINALG::MapExtractor> BackgroundDirichMaps() { return state_->dbcmaps_;}
 
@@ -345,7 +347,7 @@ namespace FLD
       This method must (and will) be called during setup with a properly
       initialized extractor object iff we are on an ale mesh.
     */
-    void SetSurfaceSplitter(const UTILS::MapExtractor* surfacesplitter) { state_->surfacesplitter_ = surfacesplitter; }
+    void SetSurfaceSplitter(const UTILS::MapExtractor* surfacesplitter) {cout << "SetSurfaceSplitter" << endl; state_->surfacesplitter_ = surfacesplitter; }
 
     /*!
       \brief return type of time integration scheme

@@ -40,7 +40,7 @@ namespace ADAPTER {
              Teuchos::RCP<IO::DiscretizationWriter> output,
              bool isale,
              bool dirichletcond);
-    
+
 
     virtual Teuchos::RCP<const Epetra_Vector> InitialGuess();
     virtual Teuchos::RCP<const Epetra_Vector> RHS();
@@ -62,6 +62,8 @@ namespace ADAPTER {
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
     virtual Teuchos::RCP<const DRT::DofSet> DofSet() { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
+
+    virtual Teuchos::RCP<Epetra_Vector> ExtractEmbVector(Teuchos::RCP<const Epetra_Vector> f) {dserror("not implemented"); return Teuchos::null;};
 
     virtual void TimeLoop();
     virtual void PrepareTimeStep();
@@ -183,32 +185,32 @@ namespace ADAPTER {
 
 
   private:
-    
+
     void PrepareFluidXFluidBoundaryDis();
-    
+
     /// the actual fluid algorithm
     FLD::FluidXFluidImplicitTimeInt        fluid_;
-       
+
     /// the interface map setup for fsi interface, free surface, interior translation
     FLD::UTILS::MapExtractor               interface_;
-       
+
     /// ALE dof map
     LINALG::MapExtractor                   meshmap_;
-    
+
     //! @name local copies of input parameters
-    // fluid discretization 
+    // fluid discretization
     Teuchos::RCP<DRT::Discretization>      fluiddis_;
-    // xfluid discretization 
+    // xfluid discretization
     Teuchos::RCP<DRT::Discretization>      xfluiddis_;
     // fluid-xfluid-boundary discretization
     Teuchos::RCP<DRT::Discretization>      fluidxfluidboundarydis_;
-    
+
     Teuchos::RCP<IO::DiscretizationWriter> fluidxfluidboundaryoutput_;
     Teuchos::RCP<LINALG::Solver>           solver_;
     Teuchos::RCP<Teuchos::ParameterList>   params_;
     Teuchos::RCP<IO::DiscretizationWriter> output_;
     //@}
-    
+
     //! @name state vectors using the fluid-xfluid boundary parallel distribution (row vectors)
     Teuchos::RCP<Epetra_Vector>            fxfidispnp_;   ///< interface displacement  n+1
     Teuchos::RCP<Epetra_Vector>            fxfivelnp_;    ///< interface velocity      n+1
@@ -219,7 +221,7 @@ namespace ADAPTER {
     Teuchos::RCP<Epetra_Vector>            fxfiaccnp_;    ///< interface acceleration  n+1
     Teuchos::RCP<Epetra_Vector>            fxfiaccn_;     ///< interface acceleration  n
     //@}
-        
+
     /// all velocity dofs not at the interface
     Teuchos::RefCountPtr<Epetra_Map>       innervelmap_;
   };

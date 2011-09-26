@@ -193,6 +193,8 @@ namespace ADAPTER
     virtual void StatisticsOutput() { dserror("not implemented!"); return; }
     virtual IO::DiscretizationWriter& DiscWriter() { return fluid_.DiscWriter();}
 
+    virtual Teuchos::RCP<Epetra_Vector> ExtractEmbVector(Teuchos::RCP<const Epetra_Vector> f) {dserror("not implemented"); return Teuchos::null;};
+
     virtual void NonlinearSolve();
     /// predictor
     virtual void Predictor();

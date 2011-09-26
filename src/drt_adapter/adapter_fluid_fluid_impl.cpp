@@ -25,12 +25,14 @@ ADAPTER::FluidFluidImpl::FluidFluidImpl(
         Teuchos::RCP<LINALG::Solver> solver,
         Teuchos::RCP<ParameterList> params,
         bool isale,
-        bool dirichletcond)
+        bool dirichletcond,
+        bool monolithicfluidfluidfsi)
   : fluid_( bgfluiddis,embfluiddis, *solver, *params,  isale),
     embfluiddis_(embfluiddis),
     bgfluiddis_(bgfluiddis),
     solver_(solver),
-    params_(params)
+    params_(params),
+    monolithicfluidfluidfsi_(monolithicfluidfluidfsi)
     //output_(output)
 {
   interface_.Setup(*embfluiddis);
@@ -43,11 +45,19 @@ ADAPTER::FluidFluidImpl::FluidFluidImpl(
   // here we get the dirichletmaps for the both discretizations
   const Teuchos::RCP<const LINALG::MapExtractor> embdbcmaps = fluid_.EmbeddedDirichMaps();
   const Teuchos::RCP<const LINALG::MapExtractor> bgdbcmaps = fluid_.BackgroundDirichMaps();
+
+  // first build the inner map of embedded fluid
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;
   maps.push_back(interface_.OtherMap());
   maps.push_back(embdbcmaps->OtherMap());
-  maps.push_back(bgdbcmaps->OtherMap());
-  innervelmap_ = LINALG::MultiMapExtractor::IntersectMaps(maps);
+  Teuchos::RefCountPtr<Epetra_Map> innervelmap_emb = LINALG::MultiMapExtractor::IntersectMaps(maps);
+
+  // now the inner map of background fluid and merge it with the
+  // inner map of embedded fluid
+  std::vector<Teuchos::RCP<const Epetra_Map> > finalmaps;
+  finalmaps.push_back(bgdbcmaps->OtherMap());
+  finalmaps.push_back(innervelmap_emb);
+  innervelmap_ = LINALG::MultiMapExtractor::MergeMaps(finalmaps);
 
   if (dirichletcond)
   {
@@ -155,6 +165,7 @@ Teuchos::RCP<DRT::Discretization> ADAPTER::FluidFluidImpl::Discretization()
 Teuchos::RCP<const LINALG::MapExtractor> ADAPTER::FluidFluidImpl::GetDBCMapExtractor()
 {
   dserror("ADAPTER::FluidFluidImpl::GetDBCMapExtractor() not implemented");
+  return null;
   //return fluid_.DirichMaps();
 }
 
@@ -251,6 +262,7 @@ Teuchos::RCP<const Epetra_Map> ADAPTER::FluidFluidImpl::PressureRowMap()
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidImpl::SetMeshMap(Teuchos::RCP<const Epetra_Map> mm)
 {
+  cout << "SetMeshMap" << endl;
   meshmap_.Setup(*embfluiddis_->DofRowMap(),mm,LINALG::SplitMap(*embfluiddis_->DofRowMap(),*mm));
   return;
 }
@@ -356,11 +368,43 @@ void ADAPTER::FluidFluidImpl::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vecto
 void ADAPTER::FluidFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
 {
   cout << "ApplyMeshDisplacement " << endl;
-  meshmap_.InsertCondVector(fluiddisp,fluid_.Dispnp());
+  // insert fluiddisp to fluid_.Dispnp()
+  // if a node has the dofs: 25 26 27 28, the fluiddisp dofs are:
+  // 25 26 27 and fluid_.Dispnp() dofs: 25 26 27 28
 
-  // new grid velocity
-  fluid_.UpdateGridv();
+  // for monolithic fluid-fluid-fsi we want the ale mesh to move
+  // just on the fsi-surface and on the other nodes keep it's
+  // positions until the end of monolithic time-step. After that we'll
+  // let the ale mesh find it's real displacement.
 
+  if (monolithicfluidfluidfsi_ == false)
+  {
+    meshmap_.InsertCondVector(fluiddisp,fluid_.Dispnp());
+
+    // new grid velocity
+    fluid_.UpdateGridv();
+  }
+  else
+  {
+    Teuchos::RCP<const Epetra_Map>  nonfsimap = interface_.OtherMap();
+    //fsiale_.Setup(fluiddisp->Map(),fsimap,LINALG::SplitMap(fluiddisp->Map(),fsimap));
+
+    Teuchos::RCP<Epetra_Vector> fluiddispcp = Teuchos::rcp_const_cast< Epetra_Vector >(fluiddisp);
+    //   Teuchos::rcp(&vector)
+    for (int lid=0; lid<nonfsimap->NumGlobalPoints(); lid++)
+    {
+      // get global id of a node
+      int gid = nonfsimap->GID(lid);
+
+      // if it is not a fsi-dof set the value to zero
+      if (fluiddispcp->Map().MyGID(gid))
+        (*fluiddispcp)[fluiddispcp->Map().LID(gid)] = 0.0;
+    }
+    meshmap_.InsertCondVector(fluiddispcp,fluid_.Dispnp());
+
+    // new grid velocity
+    fluid_.UpdateGridv();
+  }
   return;
 }
 
@@ -369,6 +413,7 @@ void ADAPTER::FluidFluidImpl::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Ve
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFluidImpl::ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel)
 {
+  cout << "ApplyMeshVelocity " << endl;
   meshmap_.InsertCondVector(gridvel,fluid_.GridVel());
   return;
 }
@@ -403,7 +448,6 @@ void ADAPTER::FluidFluidImpl::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector>
 
   double timescale = 1./TimeScaling();
   fcx->Update(fluid_.Dt(),*veln,timescale);
-
   return;
 }
 

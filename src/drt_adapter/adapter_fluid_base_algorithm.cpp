@@ -411,6 +411,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
                                DRT::INPUT::IntegralValue<int>(fsidyn,"SHAPEDERIVATIVES"));
 
     const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
+
     if (coupling == fsi_iter_monolithicfluidsplit or
         coupling == fsi_iter_monolithiclagrange or
         coupling == fsi_iter_monolithicstructuresplit or
@@ -502,7 +503,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
     fluidtimeparams->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
     bool dirichletcond = true;
-    if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_fsi_lung_gas)
+    if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_fsi_lung_gas
+        or  genprob.probtyp == prb_fluid_fluid_fsi)
     {
       // FSI input parameters
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
@@ -515,7 +517,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           coupling == fsi_iter_constr_monolithicstructuresplit or
           coupling == fsi_iter_constr_monolithicfluidsplit or
           coupling == fsi_iter_mortar_monolithicstructuresplit or
-          coupling == fsi_iter_mortar_monolithicfluidsplit)
+          coupling == fsi_iter_mortar_monolithicfluidsplit or
+          coupling == fsi_iter_fluidfluid_monolithicstructuresplit)
       {
         dirichletcond = false;
       }
@@ -550,12 +553,14 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
              or genprob.probtyp == prb_fluid_fluid)
     {
       RCP<DRT::Discretization> embfluiddis  =  DRT::Problem::Instance()->Dis(genprob.numff,1);
-      fluid_ = rcp(new ADAPTER::FluidFluidImpl(embfluiddis,actdis,solver,fluidtimeparams,isale,dirichletcond));
+      bool monolithicfluidfluidfsi = false;
+      fluid_ = rcp(new ADAPTER::FluidFluidImpl(embfluiddis,actdis,solver,fluidtimeparams,isale,dirichletcond,monolithicfluidfluidfsi));
     }
     else if (genprob.probtyp == prb_fluid_fluid_fsi)
     {
       RCP<DRT::Discretization> bgfluiddis  =  DRT::Problem::Instance()->Dis(genprob.numff,0);
-      fluid_ = rcp(new ADAPTER::FluidFluidImpl(actdis,bgfluiddis,solver,fluidtimeparams,isale,dirichletcond));
+      bool monolithicfluidfluidfsi = true;
+      fluid_ = rcp(new ADAPTER::FluidFluidImpl(actdis,bgfluiddis,solver,fluidtimeparams,isale,dirichletcond,monolithicfluidfluidfsi));
     }
     else
     {
