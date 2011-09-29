@@ -327,6 +327,9 @@ void TSI::Monolithic::TimeLoop(
     // Newton-Raphson iteration
     NewtonFull(sdynparams);
 
+    // calculate stresses, strains, energies
+    PrepareOutput();
+
     // update all single field solvers
     Update();
 

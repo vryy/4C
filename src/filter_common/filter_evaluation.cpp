@@ -169,6 +169,11 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
   dserror("MAT::MicroMaterial::Evaluate not available");
 }
 
+void PrepareOutput()
+{
+  dserror("MAT::MicroMaterial::PrepareOutput not available");
+}
+
 void MAT::MicroMaterial::Output()
 {
   dserror("MAT::MicroMaterial::Output not available");

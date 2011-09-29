@@ -130,7 +130,7 @@ TSI::Algorithm::Algorithm(Epetra_Comm& comm)
 
     // contact
     if(StructureField().ContactManager() != null)
-      ThermoField().PrepareThermoContact(StructureField().ContactManager(),StructureField().Discretization());      
+      ThermoField().PrepareThermoContact(StructureField().ContactManager(),StructureField().Discretization());
 
 }
 
@@ -334,6 +334,9 @@ void TSI::Algorithm::TimeLoop()
       else
         dserror("No sequential staggered coupling algorithm with contact");
 
+      // calculate stresses, strains, energies
+      PrepareOutput();
+
       // update all single field solvers
       Update();
 
@@ -395,6 +398,9 @@ void TSI::Algorithm::TimeLoopOneWay()
     // do the solve for the time step. All boundary conditions have been set
     DoThermoStep();
 
+    // calculate stresses, strains, energies
+    PrepareOutput();
+
     // update all single field solvers
     Update();
 
@@ -434,6 +440,9 @@ void TSI::Algorithm::TimeLoopOneWay()
     // do the nonlinear solve for the time step. All boundary conditions have
     // been set.
     DoStructureStep();
+
+    // calculate stresses, strains, energies
+    PrepareOutput();
 
     // update all single field solvers
     Update();
@@ -502,6 +511,9 @@ void TSI::Algorithm::TimeLoopSequStagg()
     else
       veln_ = StructureField().ExtractVelnp();
 
+    // calculate stresses, strains, energies
+    PrepareOutput();
+
     // update all single field solvers
     Update();
 
@@ -560,6 +572,9 @@ void TSI::Algorithm::TimeLoopSequStagg()
 
     // end nonlinear solver **************************************************
 
+    // calculate stresses, strains, energies
+    PrepareOutput();
+
     // update all single field solvers
     Update();
 
@@ -579,6 +594,9 @@ void TSI::Algorithm::TimeLoopFull()
 {
   // outer iteration loop
   OuterIterationLoop();
+
+  // calculate stresses, strains, energies
+  PrepareOutput();
 
   // update all single field solvers
   Update();

@@ -90,6 +90,12 @@ namespace TSI
 
     //! @name Time loop building blocks
 
+    /// calculate stresses, strains, energies
+    void PrepareOutput()
+    {
+      StructureField().PrepareOutput();
+    }
+
     /// take current results for converged and save for next time step
     virtual void Update();
 

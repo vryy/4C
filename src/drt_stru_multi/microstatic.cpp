@@ -668,6 +668,36 @@ void STRUMULTI::MicroStatic::FullNewton()
 
 
 /*----------------------------------------------------------------------*
+ |  "prepare" output (public)                                   ly 09/11|
+ *----------------------------------------------------------------------*/
+void STRUMULTI::MicroStatic::PrepareOutput()
+{
+  if (resevrystrs_ and !(stepn_%resevrystrs_) and iostress_!=INPAR::STR::stress_none)
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_stress");
+    // other parameters that might be needed by the elements
+    p.set("total time",timen_);
+    p.set("delta time",dt_);
+    p.set("stress", stress_);
+    p.set("strain", strain_);
+    p.set("plstrain", plstrain_);
+    p.set<int>("iostress", iostress_);
+    p.set<int>("iostrain", iostrain_);
+    p.set<int>("ioplstrain", ioplstrain_);
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("residual displacement",zeros_);
+    discret_->SetState("displacement",disn_);
+    discret_->Evaluate(p,null,null,null,null,null);
+    discret_->ClearState();
+  }
+}
+
+
+/*----------------------------------------------------------------------*
  |  write output (public)                                       lw 02/08|
  *----------------------------------------------------------------------*/
 void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
@@ -733,41 +763,22 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
       surf_stress_man_->WriteResults(step, time);
   }
 
-  //------------------------------------- do stress calculation and output
+  //------------------------------------- stress/strain output
   if (resevrystrs_ and !(step%resevrystrs_) and iostress_!=INPAR::STR::stress_none)
   {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","calc_struct_stress");
-    // other parameters that might be needed by the elements
-    p.set("total time",time);
-    p.set("delta time",dt);
-    Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
-    Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
-    Teuchos::RCP<std::vector<char> > plstrain  = Teuchos::rcp(new std::vector<char>());
-    p.set("stress", stress);
-    p.set("strain", strain);
-    p.set("plstrain", plstrain);
-    p.set<int>("iostress", iostress_);
-    p.set<int>("iostrain", iostrain_);
-    p.set<int>("ioplstrain", ioplstrain_);
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("residual displacement",zeros_);
-    discret_->SetState("displacement",dis_);
-    discret_->Evaluate(p,null,null,null,null,null);
-    discret_->ClearState();
     if (!isdatawritten) output->NewStep(step, time);
     isdatawritten = true;
+
+    if (stress_ == Teuchos::null or strain_ == Teuchos::null or plstrain_ == Teuchos::null)
+      dserror("Missing stresses and strains in micro-structural time integrator");
 
     switch (iostress_)
     {
     case INPAR::STR::stress_cauchy:
-      output->WriteVector("gauss_cauchy_stresses_xyz",*stress,*discret_->ElementRowMap());
+      output->WriteVector("gauss_cauchy_stresses_xyz",*stress_,*discret_->ElementRowMap());
       break;
     case INPAR::STR::stress_2pk:
-      output->WriteVector("gauss_2PK_stresses_xyz",*stress,*discret_->ElementRowMap());
+      output->WriteVector("gauss_2PK_stresses_xyz",*stress_,*discret_->ElementRowMap());
       break;
     case INPAR::STR::stress_none:
       break;
@@ -778,10 +789,10 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
     switch (iostrain_)
     {
     case INPAR::STR::strain_ea:
-      output->WriteVector("gauss_EA_strains_xyz",*strain,*discret_->ElementRowMap());
+      output->WriteVector("gauss_EA_strains_xyz",*strain_,*discret_->ElementRowMap());
       break;
     case INPAR::STR::strain_gl:
-      output->WriteVector("gauss_GL_strains_xyz",*strain,*discret_->ElementRowMap());
+      output->WriteVector("gauss_GL_strains_xyz",*strain_,*discret_->ElementRowMap());
       break;
     case INPAR::STR::strain_none:
       break;
@@ -792,10 +803,10 @@ void STRUMULTI::MicroStatic::Output(RefCountPtr<DiscretizationWriter> output,
     switch (ioplstrain_)
     {
     case INPAR::STR::strain_ea:
-      output->WriteVector("gauss_pl_EA_strains_xyz",*plstrain,*discret_->ElementRowMap());
+      output->WriteVector("gauss_pl_EA_strains_xyz",*plstrain_,*discret_->ElementRowMap());
       break;
     case INPAR::STR::strain_gl:
-      output->WriteVector("gauss_pl_GL_strains_xyz",*plstrain,*discret_->ElementRowMap());
+      output->WriteVector("gauss_pl_GL_strains_xyz",*plstrain_,*discret_->ElementRowMap());
       break;
     case INPAR::STR::strain_none:
       break;
@@ -903,20 +914,27 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(LINALG::Matrix<3,3>* defgrd,
   }
 }
 
-void STRUMULTI::MicroStatic::SetOldState(RefCountPtr<Epetra_Vector> dis,
-                                         RefCountPtr<Epetra_Vector> dism,
-                                         RefCountPtr<Epetra_Vector> disn,
-                                         RefCountPtr<UTILS::SurfStressManager> surfman,
-                                         RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha,
-                                         RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
-                                         RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas,
-                                         RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv,
-                                         RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda)
+void STRUMULTI::MicroStatic::SetState(RefCountPtr<Epetra_Vector> dis,
+                                      RefCountPtr<Epetra_Vector> dism,
+                                      RefCountPtr<Epetra_Vector> disn,
+                                      RefCountPtr<UTILS::SurfStressManager> surfman,
+                                      RefCountPtr<std::vector<char> > stress,
+                                      RefCountPtr<std::vector<char> > strain,
+                                      RefCountPtr<std::vector<char> > plstrain,
+                                      RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha,
+                                      RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
+                                      RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas,
+                                      RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv,
+                                      RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda)
 {
   dis_ = dis;
   dism_ = dism;
   disn_ = disn;
   surf_stress_man_ = surfman;
+
+  stress_ = stress;
+  strain_ = strain;
+  plstrain_ = plstrain;
 
   // using RCP's here means we do not need to return EAS data explicitly
   lastalpha_ = lastalpha;

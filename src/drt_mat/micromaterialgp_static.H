@@ -55,6 +55,9 @@ public:
 
   void Update();
 
+  /// Calculate stresses and strains on the micro-scale
+  void PrepareOutput();
+
   void Output();
 
   /// Create and initialize "empty" EAS history map
@@ -102,6 +105,11 @@ private:
   RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas_;
   RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv_;
   RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda_;
+
+  /// my stresses and strains
+  Teuchos::RCP<std::vector<char> > stress_;
+  Teuchos::RCP<std::vector<char> > strain_;
+  Teuchos::RCP<std::vector<char> > plstrain_;
 
   /// old absolute time
   double time_;

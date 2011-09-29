@@ -228,6 +228,25 @@ namespace STR
 
     //@}
 
+    //! @name Determination of output quantities that depend on
+    // the constitutive model
+    //@{
+    //! Calculate all output quantities depending on the constitutive model
+    //  (and, hence, on a potential material history)
+    void PrepareOutput();
+
+    //! Calculate stresses, strains on micro-scale
+    void PrepareOutputMicro();
+
+    //! Calculate stresses and strains
+    void DetermineStressStrain();
+
+    //! Calculate kinetic, internal and external energy
+    void DetermineEnergy();
+
+    //@}
+
+
     //! @name Output
     //@{
 
@@ -509,6 +528,9 @@ namespace STR
     //! Return external force \f$F_{ext,n}\f$
     virtual Teuchos::RCP<Epetra_Vector> Fext() = 0;
 
+    //! Return external force \f$F_{ext,n+1}\f$
+    virtual Teuchos::RCP<Epetra_Vector> FextNew() = 0;
+
     //! Return reaction forces
     virtual Teuchos::RCP<Epetra_Vector> Freact() = 0;
 
@@ -631,6 +653,13 @@ namespace STR
     int writeenergyevery_;  //!< write system energy every given step
     bool writesurfactant_;  //!< write surfactant output
     std::ofstream* energyfile_;  //!< outputfile for energy
+
+    Teuchos::RCP<std::vector<char> > stressdata_; //!< container for element GP stresses
+    Teuchos::RCP<std::vector<char> > straindata_; //!< container for element GP strains
+    Teuchos::RCP<std::vector<char> > plstraindata_; //!< container for element GP plastic strains
+    double kinergy_; //!< kinetic energy
+    double intergy_; //!< internal energy
+    double extergy_; //!< external energy
     //@}
 
     //! @name Damping

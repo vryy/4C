@@ -256,6 +256,10 @@ public:
   /// update configuration
   virtual void Update();
 
+  /// Calculate all output quantities depending on the constitutive model
+  /// (and, hence, on a potential material history)
+  void PrepareOutput();
+
   /// output to file/screen
   virtual void Output();
 
@@ -568,6 +572,15 @@ protected:
   RCP<Epetra_Vector>    fextn_;
   RCP<Epetra_Vector>    fresm_;
   RCP<Epetra_Vector>    frobin_;
+
+  //@}
+
+  //! @name Containers for output
+
+  RCP<std::vector<char> > stress_;
+  RCP<std::vector<char> > strain_;
+  RCP<std::vector<char> > plstrain_;
+  RCP<Epetra_MultiVector> se_;
 
   //@}
 

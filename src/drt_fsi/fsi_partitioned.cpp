@@ -462,14 +462,17 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
 
     // ==================================================================
 
-  	//In case of sliding ALE interfaces, 'remesh' fluid field
-  	INPAR::FSI::PartitionedCouplingMethod usedmethod =
-       	DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
+    //In case of sliding ALE interfaces, 'remesh' fluid field
+    INPAR::FSI::PartitionedCouplingMethod usedmethod =
+      DRT::INPUT::IntegralValue<INPAR::FSI::PartitionedCouplingMethod>(fsidyn,"PARTITIONED");
 
-  	if (usedmethod == INPAR::FSI::DirichletNeumannSlideale)
+    if (usedmethod == INPAR::FSI::DirichletNeumannSlideale)
     {
-    	Remeshing();
+      Remeshing();
     }
+
+    // calculate stresses, strains, energies
+    PrepareOutput();
 
     // prepare field variables for new time step
     Update();

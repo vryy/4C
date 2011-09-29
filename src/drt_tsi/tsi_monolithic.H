@@ -92,6 +92,12 @@ namespace TSI
     /// take current results for converged and save for next time step
     virtual void Update();
 
+    /// calculate stresses, strains, energies
+    virtual void PrepareOutput()
+    {
+      StructureField().PrepareOutput();
+    }
+
     /// write output
     virtual void Output();
 

@@ -315,6 +315,9 @@ Epetra_SerialDenseVector STR::InvAnalysis::CalcCvector(bool outputtofile)
     // after this step we hold disn_, etc
     sti_->IntegrateStep();
 
+    // calculate stresses, strains, energies
+    sti_->PrepareOutput();
+
     // update displacements, velocities, accelerations
     // after this call we will have disn_==dis_, etc
     sti_->UpdateStepState();
@@ -330,14 +333,14 @@ Epetra_SerialDenseVector STR::InvAnalysis::CalcCvector(bool outputtofile)
     // update time and step
     sti_->UpdateStepTime();
 
+    // Update Element
+    sti_->UpdateStepElement();
+
     // print info about finished time step
     sti_->PrintStep();
 
     // write output
     if (outputtofile) sti_->OutputStep();
-
-    // Update Element
-    sti_->UpdateStepElement();
 
     // get current time ...
     time = sti_->GetTime();

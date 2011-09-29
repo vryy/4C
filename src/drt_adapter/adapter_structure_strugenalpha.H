@@ -102,6 +102,11 @@ namespace ADAPTER {
     }
     void Output();
 
+    void PrepareOutput()
+    {
+      structure_->PrepareOutput();
+    }
+
     /// Access to output object
     Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()
     {
@@ -254,15 +259,15 @@ namespace ADAPTER {
 
     //! @name Structure with ale specific methods
     //@{
-    
+
     /// material displacements (structure with ale)
     virtual Teuchos::RCP<Epetra_Vector> DispMat();
-    
+
     /// apply material displacements to structure field (structure with ale)
     virtual void ApplyDisMat(Teuchos::RCP< Epetra_Vector> dismat);
-    
+
     //@}
-    
+
     /// create result test for encapulated structure algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 

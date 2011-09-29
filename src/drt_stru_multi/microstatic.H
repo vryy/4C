@@ -136,6 +136,12 @@ public:
                          RefCountPtr<UTILS::SurfStressManager> surf_stress_man);
 
   /*!
+  \brief Calculate stresses and strains
+
+  */
+  void PrepareOutput();
+
+  /*!
   \brief Write output and (possibly) restart
 
   */
@@ -161,15 +167,18 @@ public:
   \brief Set old state given from micromaterialgp
 
   */
-  void SetOldState(RefCountPtr<Epetra_Vector> dis,
-                   RefCountPtr<Epetra_Vector> dism,
-                   RefCountPtr<Epetra_Vector> disn,
-                   RefCountPtr<UTILS::SurfStressManager> surfman,
-                   RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha,
-                   RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
-                   RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas,
-                   RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv,
-                   RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda);
+  void SetState(RefCountPtr<Epetra_Vector> dis,
+                RefCountPtr<Epetra_Vector> dism,
+                RefCountPtr<Epetra_Vector> disn,
+                RefCountPtr<UTILS::SurfStressManager> surfman,
+                RefCountPtr<std::vector<char> > stress,
+                RefCountPtr<std::vector<char> > strain,
+                RefCountPtr<std::vector<char> > plstrain,
+                RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha,
+                RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldalpha,
+                RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldfeas,
+                RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKaainv,
+                RefCountPtr<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > oldKda);
 
   /*!
   \brief Set time and step
@@ -318,6 +327,10 @@ protected:
   RefCountPtr<Epetra_Vector>    fintm_;
   RefCountPtr<Epetra_Vector>    fresm_;
   RefCountPtr<Epetra_Vector>    freactm_;
+
+  Teuchos::RCP<std::vector<char> > stress_;
+  Teuchos::RCP<std::vector<char> > strain_;
+  Teuchos::RCP<std::vector<char> > plstrain_;
 
   //EAS history data
   RCP<std::map<int, RefCountPtr<Epetra_SerialDenseMatrix> > > lastalpha_;

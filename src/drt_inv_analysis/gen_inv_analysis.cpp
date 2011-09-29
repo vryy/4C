@@ -477,9 +477,10 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
     if      (predictor==1) tintegrator->ConstantPredictor();
     else if (predictor==2) tintegrator->ConsistentPredictor();
     tintegrator->FullNewton();
+    tintegrator->PrepareOutput();
     tintegrator->Update();
-    if (outputtofile) tintegrator->Output();
     tintegrator->UpdateElement();
+    if (outputtofile) tintegrator->Output();
     if (!myrank) printf("Step %d",i);
     double time = genalphaparams.get<double>("total time",0.0);
     if (abs(time - timesteps_[writestep]) < 1.0e-12)

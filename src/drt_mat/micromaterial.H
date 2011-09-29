@@ -165,6 +165,9 @@ private:
                   const int gp,
                   const int ele_ID);
 
+    /// Calculate stresses and strains on the micro-scale
+    void PrepareOutput();
+
     /// Write output on micro-scale
     void Output();
 

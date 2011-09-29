@@ -95,6 +95,16 @@ void MAT::MicroMaterial::Update()
 }
 
 
+void MAT::MicroMaterial::PrepareOutput()
+{
+  for (unsigned int gp=0; gp<matgp_.size(); ++gp)
+  {
+    RefCountPtr<MicroMaterialGP> actmicromatgp = matgp_[gp];
+    actmicromatgp->PrepareOutput();
+  }
+}
+
+
 void MAT::MicroMaterial::Output()
 {
   for (unsigned int gp=0; gp<matgp_.size(); ++gp)

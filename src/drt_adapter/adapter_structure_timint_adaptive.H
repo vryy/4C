@@ -158,7 +158,13 @@ namespace ADAPTER {
       return output_;
     }
 
-    /// output results, update at element level
+    /// prepare output (i.e. calculate stresses, strains, energies)
+    void PrepareOutput()
+    {
+      structure_->PrepareOutputPeriod();
+    }
+
+    /// output results
     void Output();
 
     //@}
@@ -318,16 +324,16 @@ namespace ADAPTER {
     virtual void PreparePartitionStep();
 
     //@}
-    
+
     //! @name Structure with ale specific methods
     //@{
-    
+
     /// material displacements (structure with ale)
     virtual Teuchos::RCP<Epetra_Vector> DispMat();
-        
+
     /// apply material displacements to structure field (structure with ale)
     virtual void ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat);
-    
+
     //@}
 
 

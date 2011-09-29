@@ -273,7 +273,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(LINALG::Matrix<3,3>* defgrd,
   RefCountPtr<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];
 
   // set displacements and EAS data of last step
-  microstatic->SetOldState(dis_, dism_, disn_, surf_stress_man_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
+  microstatic->SetState(dis_, dism_, disn_, surf_stress_man_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
 
   // set current time, time step size and step number
   microstatic->SetTime(time_, timen_, dt_, step_, stepn_);
@@ -310,14 +310,34 @@ void MAT::MicroMaterialGP::Update()
 }
 
 
+void MAT::MicroMaterialGP::PrepareOutput()
+{
+  // select corresponding "time integration class" for this microstructure
+  RefCountPtr<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];
+
+  stress_ = rcp(new std::vector<char>());
+  strain_ = rcp(new std::vector<char>());
+  plstrain_ = rcp(new std::vector<char>());
+
+  microstatic->SetState(dis_, dism_, disn_, surf_stress_man_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
+  microstatic->SetTime(time_, timen_, dt_, step_, stepn_);
+  microstatic->PrepareOutput();
+}
+
+
 void MAT::MicroMaterialGP::Output()
 {
   // select corresponding "time integration class" for this microstructure
   RefCountPtr<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];
 
   // set displacements and EAS data of last step
-  microstatic->SetOldState(dis_, dism_, disn_, surf_stress_man_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
+  microstatic->SetState(dis_, dism_, disn_, surf_stress_man_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
   microstatic->Output(micro_output_, time_, step_, dt_);
+
+  // we don't need these containers anymore
+  stress_ = Teuchos::null;
+  strain_ = Teuchos::null;
+  plstrain_ = Teuchos::null;
 }
 
 #endif

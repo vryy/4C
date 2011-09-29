@@ -78,6 +78,8 @@ namespace ADAPTER
 
     virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()
     { return structure_->DiscWriter();}
+    virtual void PrepareOutput()
+    { return structure_->PrepareOutput(); }
     virtual void Output()
     { return structure_->Output(); }
     virtual void ReadRestart(int step)

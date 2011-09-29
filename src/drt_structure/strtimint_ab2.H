@@ -131,6 +131,13 @@ namespace STR
       return fextn_;
     }
 
+    //! Return external force \f$F_{ext,n+1}\f$
+    Teuchos::RCP<Epetra_Vector> FextNew()
+    {
+      dserror("FextNew() not available in AB2");
+      return Teuchos::null;
+    }
+
     //! Read and set restart for forces
     void ReadRestartForce();
 

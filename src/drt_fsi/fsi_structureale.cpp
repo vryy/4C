@@ -87,6 +87,7 @@ void FSI::StructureALE::Timeloop()
   {
     PrepareTimeStep();
     Solve();
+    PrepareOutput();
     Update();
     Output();
   }

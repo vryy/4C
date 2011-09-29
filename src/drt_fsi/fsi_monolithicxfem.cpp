@@ -231,6 +231,7 @@ void FSI::MonolithicXFEM::Timeloop()
 //      lsParams.sublist("Output").set("Total Number of Linear Iterations",0);
     }
 
+    PrepareOutput();
     Update();
     Output();
   }

@@ -2984,6 +2984,7 @@ void StruGenAlpha::computeJacobian(const Epetra_Vector& x)
  *----------------------------------------------------------------------*/
 void StruGenAlpha::UpdateandOutput()
 {
+  PrepareOutput();
   Update();
   UpdateElement();
   Output();
@@ -3191,6 +3192,73 @@ void StruGenAlpha::UpdateElement()
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ |  "prepare" output (public)                                   ly 09/11|
+ *----------------------------------------------------------------------*/
+void StruGenAlpha::PrepareOutput()
+{
+  double dt            = params_.get<double>("delta time"             ,0.01);
+  double time          = params_.get<double>("total time"             ,0.0);
+  double timen         = time + dt;  // t_{n+1}
+  double alphaf        = params_.get<double>("alpha f"                ,0.459);
+  int    step          = params_.get<int>   ("step"                   ,0);
+  int    istep         = step + 1;  // n+1
+
+  INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params_, "io structural stress",INPAR::STR::stress_none);
+  int    updevrystress = params_.get<int>   ("io stress every nstep"  ,10);
+  INPAR::STR::StrainType iostrain      = DRT::INPUT::get<INPAR::STR::StrainType>(params_, "io structural strain",INPAR::STR::strain_none);
+  INPAR::STR::StrainType ioplstrain    = DRT::INPUT::get<INPAR::STR::StrainType>(params_, "io structural plastic strain",INPAR::STR::strain_none);
+  bool   iose          = params_.get<bool>  ("io structural strain energy",false);
+
+  //------------------------------------- do stress calculation and output
+  if (updevrystress and !(istep%updevrystress) and iostress!=INPAR::STR::stress_none)
+  {
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action","calc_struct_stress");
+    // other parameters that might be needed by the elements
+    p.set("total time",timen);
+    p.set("delta time",dt);
+    p.set("alpha f",alphaf);
+    stress_ = Teuchos::rcp(new std::vector<char>());
+    strain_ = Teuchos::rcp(new std::vector<char>());
+    plstrain_ = Teuchos::rcp(new std::vector<char>());
+    p.set("stress", stress_);
+    p.set<int>("iostress", iostress);
+    p.set("strain", strain_);
+    p.set<int>("iostrain", iostrain);
+    p.set("plstrain", plstrain_);
+    p.set<int>("ioplstrain", ioplstrain);
+    // set vector values needed by elements
+    discret_.ClearState();
+    discret_.SetState("residual displacement",zeros_);
+    discret_.SetState("displacement",disn_);
+    discret_.SetState("velocity",veln_);
+    discret_.Evaluate(p,null,null,null,null,null);
+    discret_.ClearState();
+
+    if (iose) // output of strain energy
+    {
+      ParameterList pse;
+      pse.set("action","calc_struct_energy");
+      pse.set("total time",timen);
+      pse.set("delta time",dt);
+      pse.set("alpha f",alphaf);
+      se_ = rcp(new Epetra_MultiVector(*discret_.ElementRowMap(),1,true));
+      //pse.set<Teuchos::RCP<Epetra_MultiVector> >("strain energy",se);
+      discret_.ClearState();
+      discret_.SetState("residual displacement",zeros_);
+      discret_.SetState("displacement",disn_);
+      discret_.SetState("velocity",veln_);
+      discret_.EvaluateScalars(pse,se_);
+      //se_->Scale(-1.0); // strain energy returns all negative ??
+    }
+  }
+}
+
+
 /*----------------------------------------------------------------------*
  |  do output (public)                                       mwgee 03/07|
  *----------------------------------------------------------------------*/
@@ -3201,7 +3269,6 @@ void StruGenAlpha::Output()
   // -------------------------------------------------------------------
   double timen         = params_.get<double>("total time"             ,0.0);
   double dt            = params_.get<double>("delta time"             ,0.01);
-  double alphaf        = params_.get<double>("alpha f"                ,0.459);
   int    istep         = params_.get<int>   ("step"                   ,0);
   int    nstep         = params_.get<int>   ("nstep"                  ,5);
   int    numiter       = params_.get<int>   ("num iterations"         ,-1);
@@ -3245,7 +3312,7 @@ void StruGenAlpha::Output()
     output_.WriteVector("acceleration",acc_);
     output_.WriteVector("fexternal",fext_);
     output_.WriteElementData();
-    
+
     // do the output for the patient specific conditions (if they exist)
     vector<DRT::Condition*> mypatspeccond;
     discret_.GetCondition("PatientSpecificData", mypatspeccond);
@@ -3334,92 +3401,60 @@ void StruGenAlpha::Output()
   //------------------------------------- do stress calculation and output
   if (updevrystress and !(istep%updevrystress) and iostress!=INPAR::STR::stress_none)
   {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action","calc_struct_stress");
-    // other parameters that might be needed by the elements
-    p.set("total time",timen);
-    p.set("delta time",dt);
-    p.set("alpha f",alphaf);
-    Teuchos::RCP<std::vector<char> > stress = Teuchos::rcp(new std::vector<char>());
-    Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
-    Teuchos::RCP<std::vector<char> > plstrain = Teuchos::rcp(new std::vector<char>());
-    p.set("stress", stress);
-    p.set<int>("iostress", iostress);
-    p.set("strain", strain);
-    p.set<int>("iostrain", iostrain);
-    p.set("plstrain", plstrain);
-    p.set<int>("ioplstrain", ioplstrain);
-    // set vector values needed by elements
-    discret_.ClearState();
-    discret_.SetState("residual displacement",zeros_);
-    discret_.SetState("displacement",dis_);
-    discret_.SetState("velocity",vel_);
-    discret_.Evaluate(p,null,null,null,null,null);
-    discret_.ClearState();
     if (!isdatawritten) output_.NewStep(istep, timen);
     isdatawritten = true;
 
     switch (iostress)
     {
     case INPAR::STR::stress_cauchy:
-      output_.WriteVector("gauss_cauchy_stresses_xyz",*stress,*discret_.ElementRowMap());
+      output_.WriteVector("gauss_cauchy_stresses_xyz",*stress_,*discret_.ElementRowMap());
       break;
     case INPAR::STR::stress_2pk:
-      output_.WriteVector("gauss_2PK_stresses_xyz",*stress,*discret_.ElementRowMap());
+      output_.WriteVector("gauss_2PK_stresses_xyz",*stress_,*discret_.ElementRowMap());
       break;
     case INPAR::STR::stress_none:
       break;
     default:
       dserror ("requested stress type not supported");
     }
+    // this is not needed anymore!
+    stress_ = Teuchos::null;
 
     switch (iostrain)
     {
     case INPAR::STR::strain_ea:
-      output_.WriteVector("gauss_EA_strains_xyz",*strain,*discret_.ElementRowMap());
+      output_.WriteVector("gauss_EA_strains_xyz",*strain_,*discret_.ElementRowMap());
       break;
     case INPAR::STR::strain_gl:
-      output_.WriteVector("gauss_GL_strains_xyz",*strain,*discret_.ElementRowMap());
+      output_.WriteVector("gauss_GL_strains_xyz",*strain_,*discret_.ElementRowMap());
       break;
     case INPAR::STR::strain_none:
       break;
     default:
       dserror("requested strain type not supported");
     }
+    // this is not needed anymore!
+    strain_ = Teuchos::null;
 
     switch (ioplstrain)
     {
     case INPAR::STR::strain_ea:
-      output_.WriteVector("gauss_pl_EA_strains_xyz",*plstrain,*discret_.ElementRowMap());
+      output_.WriteVector("gauss_pl_EA_strains_xyz",*plstrain_,*discret_.ElementRowMap());
       break;
     case INPAR::STR::strain_gl:
-      output_.WriteVector("gauss_pl_GL_strains_xyz",*plstrain,*discret_.ElementRowMap());
+      output_.WriteVector("gauss_pl_GL_strains_xyz",*plstrain_,*discret_.ElementRowMap());
       break;
     case INPAR::STR::strain_none:
       break;
     default:
       dserror("requested plastic strain type not supported");
     }
+    // this is not needed anymore!
+    plstrain_ = Teuchos::null;
 
     if (iose) // output of strain energy
     {
-      ParameterList pse;
-      pse.set("action","calc_struct_energy");
-      pse.set("total time",timen);
-      pse.set("delta time",dt);
-      pse.set("alpha f",alphaf);
-      Teuchos::RCP<Epetra_MultiVector> se = rcp(new Epetra_MultiVector(*discret_.ElementRowMap(),1,true));
-      //pse.set<Teuchos::RCP<Epetra_MultiVector> >("strain energy",se);
-      discret_.ClearState();
-      discret_.SetState("residual displacement",zeros_);
-      discret_.SetState("displacement",dis_);
-      discret_.SetState("velocity",vel_);
-      discret_.EvaluateScalars(pse,se);
-      //se->Scale(-1.0); // strain energy returns all negative ??
-      discret_.ClearState();
-      output_.WriteVector("struct_strain_energy",se,IO::DiscretizationWriter::elementvector);
+      output_.WriteVector("struct_strain_energy",se_,IO::DiscretizationWriter::elementvector);
     }
   }
 

@@ -782,6 +782,15 @@ void STR::TimInt::ReadRestartMultiScale()
 }
 
 /*----------------------------------------------------------------------*/
+/* Calculate all output quantities that depend on a potential material history */
+void STR::TimInt::PrepareOutput()
+{
+  DetermineStressStrain();
+  DetermineEnergy();
+  PrepareOutputMicro();
+}
+
+/*----------------------------------------------------------------------*/
 /* output to file
  * originally by mwgee 03/07 */
 void STR::TimInt::OutputStep()
@@ -944,52 +953,106 @@ void STR::TimInt::OutputState
 }
 
 /*----------------------------------------------------------------------*/
-/* stress calculation and output
- * originally by lw */
+/* Calculation of stresses and strains */
+void STR::TimInt::DetermineStressStrain()
+{
+  if ( writeresultsevery_
+       and ( (writestress_ != INPAR::STR::stress_none)
+             or (writestrain_ != INPAR::STR::strain_none)
+             or (writeplstrain_ != INPAR::STR::strain_none) )
+       and (stepn_%writeresultsevery_ == 0) )
+  {
+    //-------------------------------
+    // create the parameters for the discretization
+    ParameterList p;
+    // action for elements
+    p.set("action", "calc_struct_stress");
+    // other parameters that might be needed by the elements
+    p.set("total time", timen_);
+    p.set("delta time", (*dt_)[0]);
+
+    stressdata_ = Teuchos::rcp(new std::vector<char>());
+    p.set("stress", stressdata_);
+    p.set<int>("iostress", writestress_);
+
+    straindata_ = Teuchos::rcp(new std::vector<char>());
+    p.set("strain", straindata_);
+    p.set<int>("iostrain", writestrain_);
+
+    // plastic strain
+    plstraindata_ = Teuchos::rcp(new std::vector<char>());
+    p.set("plstrain", plstraindata_);
+    p.set<int>("ioplstrain", writeplstrain_);
+
+    // set vector values needed by elements
+    discret_->ClearState();
+    // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
+    discret_->SetState(0,"residual displacement", zeros_);
+    discret_->SetState(0,"displacement", disn_);
+    // set the temperature for the coupled problem
+    if(tempn_!=Teuchos::null)
+      discret_->SetState(1,"temperature",tempn_);
+    if(dismatn_!= null)
+      discret_->SetState(0,"material displacement",dismatn_);
+
+    discret_->Evaluate(p, Teuchos::null, Teuchos::null,
+                       Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->ClearState();
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/* Calculation of internal, external and kinetic energy */
+void STR::TimInt::DetermineEnergy()
+{
+  if ( writeenergyevery_ and (stepn_%writeenergyevery_ == 0) )
+  {
+    // internal/strain energy
+    intergy_ = 0.0;  // total internal energy
+    {
+      ParameterList p;
+      // other parameters needed by the elements
+      p.set("action", "calc_struct_energy");
+
+      // set vector values needed by elements
+      discret_->ClearState();
+      discret_->SetState("displacement", disn_);
+      // get energies
+      Teuchos::RCP<Epetra_SerialDenseVector> energies
+        = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+      discret_->EvaluateScalars(p, energies);
+      discret_->ClearState();
+      intergy_ = (*energies)(0);
+    }
+
+    // global calculation of kinetic energy
+    kinergy_ = 0.0;  // total kinetic energy
+    {
+      Teuchos::RCP<Epetra_Vector> linmom
+        = LINALG::CreateVector(*dofrowmap_, true);
+      mass_->Multiply(false, *veln_, *linmom);
+      linmom->Dot(*veln_, &kinergy_);
+      kinergy_ *= 0.5;
+    }
+
+    // external energy
+    extergy_ = 0.0;  // total external energy
+    {
+      // WARNING: This will only work with dead loads and implicit time
+      // integration (otherwise there is no fextn_)!!!
+      Teuchos::RCP<Epetra_Vector> fext = FextNew();
+      fext->Dot(*disn_, &extergy_);
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/* stress calculation and output */
 void STR::TimInt::OutputStressStrain
 (
   bool& datawritten
 )
 {
-  // create the parameters for the discretization
-  ParameterList p;
-  // action for elements
-  p.set("action", "calc_struct_stress");
-  // other parameters that might be needed by the elements
-  p.set("total time", (*time_)[0]);
-  p.set("delta time", (*dt_)[0]);
-
-  Teuchos::RCP<std::vector<char> > stressdata
-    = Teuchos::rcp(new std::vector<char>());
-  p.set("stress", stressdata);
-  p.set<int>("iostress", writestress_);
-
-  Teuchos::RCP<std::vector<char> > straindata
-    = Teuchos::rcp(new std::vector<char>());
-  p.set("strain", straindata);
-  p.set<int>("iostrain", writestrain_);
-
-  // plastic strain
-  Teuchos::RCP<std::vector<char> > plstraindata
-    = Teuchos::rcp(new std::vector<char>());
-  p.set("plstrain", plstraindata);
-  p.set<int>("ioplstrain", writeplstrain_);
-
-  // set vector values needed by elements
-  discret_->ClearState();
-  // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
-  discret_->SetState(0,"residual displacement", zeros_);
-  discret_->SetState(0,"displacement", (*dis_)(0));
-  // set the temperature for the coupled problem
-  if(tempn_!=Teuchos::null)
-    discret_->SetState(1,"temperature",tempn_);
-  if(dismatn_!= null)
-    discret_->SetState(0,"material displacement",dismatn_);
-
-  discret_->Evaluate(p, Teuchos::null, Teuchos::null,
-                     Teuchos::null, Teuchos::null, Teuchos::null);
-  discret_->ClearState();
-
   // Make new step
   if (not datawritten)
   {
@@ -1013,8 +1076,10 @@ void STR::TimInt::OutputStressStrain
     {
       dserror("requested stress type not supported");
     }
-    output_->WriteVector(stresstext, *stressdata,
+    output_->WriteVector(stresstext, *stressdata_,
                          *(discret_->ElementRowMap()));
+    // we don't need this anymore
+    stressdata_ = Teuchos::null;
   }
 
   // write strain
@@ -1033,8 +1098,10 @@ void STR::TimInt::OutputStressStrain
     {
       dserror("requested strain type not supported");
     }
-    output_->WriteVector(straintext, *straindata,
+    output_->WriteVector(straintext, *straindata_,
                          *(discret_->ElementRowMap()));
+    // we don't need this anymore
+    straindata_ = Teuchos::null;
   }
 
   // write plastic strain
@@ -1053,8 +1120,10 @@ void STR::TimInt::OutputStressStrain
     {
       dserror("requested plastic strain type not supported");
     }
-    output_->WriteVector(plstraintext, *plstraindata,
+    output_->WriteVector(plstraintext, *plstraindata_,
                          *(discret_->ElementRowMap()));
+    // we don't need this anymore
+    plstraindata_ = Teuchos::null;
   }
 
   // leave me alone
@@ -1065,44 +1134,8 @@ void STR::TimInt::OutputStressStrain
 /* output system energies */
 void STR::TimInt::OutputEnergy()
 {
-  // internal/strain energy
-  double intergy = 0.0;  // total internal energy
-  {
-    ParameterList p;
-    // other parameters needed by the elements
-    p.set("action", "calc_struct_energy");
-
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("displacement", (*dis_)(0));
-    // get energies
-    Teuchos::RCP<Epetra_SerialDenseVector> energies
-      = Teuchos::rcp(new Epetra_SerialDenseVector(1));
-    discret_->EvaluateScalars(p, energies);
-    discret_->ClearState();
-    intergy = (*energies)(0);
-  }
-
-  // global calculation of kinetic energy
-  double kinergy = 0.0;  // total kinetic energy
-  {
-    Teuchos::RCP<Epetra_Vector> linmom
-      = LINALG::CreateVector(*dofrowmap_, true);
-    mass_->Multiply(false, (*vel_)[0], *linmom);
-    linmom->Dot((*vel_)[0], &kinergy);
-    kinergy *= 0.5;
-  }
-
-  // external energy
-  double extergy = 0.0;  // total external energy
-  {
-    // WARNING: This will only work with dead loads!!!
-    Teuchos::RCP<Epetra_Vector> fext = Fext();
-    fext->Dot((*dis_)[0], &extergy);
-  }
-
   // total energy
-  double totergy = kinergy + intergy - extergy;
+  double totergy = kinergy_ + intergy_ - extergy_;
 
   // the output
   if (myrank_ == 0)
@@ -1111,9 +1144,9 @@ void STR::TimInt::OutputEnergy()
                  << std::scientific  << std::setprecision(16)
                  << " " << (*time_)[0]
                  << " " << totergy
-                 << " " << kinergy
-                 << " " << intergy
-                 << " " << extergy
+                 << " " << kinergy_
+                 << " " << intergy_
+                 << " " << extergy_
                  << std::endl;
   }
 
@@ -1343,6 +1376,23 @@ void STR::TimInt::OutputMicro()
 }
 
 /*----------------------------------------------------------------------*/
+/* calculate stresses and strains on micro-scale */
+void STR::TimInt::PrepareOutputMicro()
+{
+  for (int i=0; i<discret_->NumMyRowElements(); i++)
+  {
+    DRT::Element* actele = discret_->lRowElement(i);
+
+    RefCountPtr<MAT::Material> mat = actele->Material();
+    if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
+    {
+      MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
+      micro->PrepareOutput();
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*/
 /* output nodal positions */
 void STR::TimInt::OutputNodalPositions()
 {
@@ -1544,6 +1594,11 @@ void STR::TimInt::Integrate()
     // integrate time step
     // after this step we hold disn_, etc
     IntegrateStep();
+
+    // calculate stresses, strains and energies
+    // note: this has to be done before the update since otherwise a potential
+    // material history is overwritten
+    PrepareOutput();
 
     // update displacements, velocities, accelerations
     // after this call we will have disn_==dis_, etc

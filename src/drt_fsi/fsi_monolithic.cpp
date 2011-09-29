@@ -220,6 +220,7 @@ void FSI::Monolithic::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   {
     PrepareTimeStep();
     TimeStep(interface);
+    PrepareOutput();
     Update();
     Output();
   }

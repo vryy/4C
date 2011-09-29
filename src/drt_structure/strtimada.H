@@ -174,6 +174,12 @@ namespace STR
     //! Modify step size to hit precisely output period
     void SizeForOutput();
 
+    //! Prepare output to file(s)
+    void PrepareOutputPeriod()
+    {
+      sti_->PrepareOutput();
+    }
+
     //! Output to file(s)
     void OutputPeriod();
 
