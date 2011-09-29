@@ -43,6 +43,9 @@ int CountMat(const string& headfile);
 //! headfile content into datfile
 void WriteDatHead(const string& headfile, ostream& dat);
 
+//! remove a specific input file section
+void RemoveDatSection(const string secname, string& headstring);
+
 //! design description
 void WriteDatDesign(const vector<EXODUS::cond_def>& condefs, ostream& dat);
 

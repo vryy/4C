@@ -125,21 +125,10 @@ void EXODUS::WriteDatHead(const string& headfile, ostream& dat)
   //while (!header.eof()) head << (char) header.get();
   header.close();
   string headstring = head.str();
-  const size_t size_section = headstring.find("-------------------------------------------------------PROBLEM SIZE");
-  if (size_section!=string::npos){
-    const size_t size_section2 =headstring.find("PROBLEM", size_section);
-    const size_t typ_section = headstring.find("---", size_section2);
-    headstring.erase(size_section,typ_section-size_section);
-  }
 
-  // delete section "DESIGN DESCRIPTION" as it is written in WriteDatDesign
-  const size_t size_sectiondes = headstring.find("-------------------------------------------------DESIGN DESCRIPTION");
-  if(size_sectiondes!=string::npos)
-  {
-    const size_t size_section2 =headstring.find("DESIGN DESCRIPTION", size_section);
-    const size_t typ_sectiondes = headstring.find("---", size_section2);
-    headstring.erase(size_sectiondes,typ_sectiondes-size_sectiondes);
-  }
+  // delete sections which will be written by WriteDatDesign()
+  RemoveDatSection("PROBLEM SIZE", headstring);
+  RemoveDatSection("DESIGN DESCRIPTION", headstring);
 
   // delete very first line with comment "//"
   if (headstring.find("//")== 0)
@@ -154,10 +143,29 @@ void EXODUS::WriteDatHead(const string& headfile, ostream& dat)
   // remove eof character
   headstring.erase(headstring.end()-1);
 
+  // now put everything to the input file
   dat<<headstring<<endl;
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void EXODUS::RemoveDatSection(const string secname, string& headstring)
+{
+  const size_t secpos = headstring.find(secname);
+  if(secpos!=string::npos)
+  {
+    // where does this section line actually start?
+    const size_t endoflastline = headstring.substr(0,secpos).rfind("\n");
+    // want to keep the newline character of line before
+    const size_t sectionbegin = endoflastline+1;
+    // now we remove the whole section
+    const size_t sectionend = headstring.find("---", secpos);
+    headstring.erase(sectionbegin,sectionend-sectionbegin);
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
