@@ -22,15 +22,15 @@ Maintainer: Florian Henke
 
 namespace XFEM
 {
-  
+
   /*!
   \brief this class is used to compute startvalues for critical interface-near nodes
-  
+
   */
   class Startvalues
   {
   public:
-    
+
     //! constructor
     explicit Startvalues(
         const RCP<DRT::Discretization> discret,
@@ -49,20 +49,20 @@ namespace XFEM
         const double& theta,
         const double& flamespeed
     );
-    
+
     //! destructor
     ~Startvalues()
     {
       return;
     }
-    
+
     //! get startvalues in time step for nodes which changed interface-side
     void semiLagrangeBackTracking(
         vector<RCP<Epetra_Vector> > newColVectors,
         bool predictor_step);
-    
+
   private:
-    
+
     //! disabled copy constructor
     explicit Startvalues(const XFEM::Startvalues& startvals);
 
@@ -71,12 +71,12 @@ namespace XFEM
 
     //! disabled default constructor
     explicit Startvalues();
-    
+
     // this class holds data for a node that will get a new startvalue
     class StartpointData
     {
     public:
-      
+
       // constructor for basic_ vector
       StartpointData(
           DRT::Node movNode,
@@ -118,7 +118,7 @@ namespace XFEM
         startOwner_(startOwner),
         dMin_(dMin)
       {return;}
-      
+
       // constructor for curr_ and next_ vector items
       StartpointData(
           DRT::Node movNode,
@@ -145,7 +145,7 @@ namespace XFEM
         startGid_(startGid),
         startOwner_(startOwner)
       {return;}
-      
+
       // constructor for done_ vector item
       StartpointData(
           DRT::Node movNode,
@@ -164,7 +164,7 @@ namespace XFEM
         velValues_(velValues),
         presValues_(presValues)
       {return;}
-      
+
       // constructor for failed_ vector item
       StartpointData(
           DRT::Node movNode,
@@ -185,12 +185,12 @@ namespace XFEM
         startGid_(startGid),
         startOwner_(startOwner)
       {return;}
-      
+
       // destructor
       ~StartpointData()
       {return;}
-      
-      
+
+
       /*----------------------------------------------*
        * data required by the StartpointData subclass *
        *----------------------------------------------*/
@@ -211,21 +211,21 @@ namespace XFEM
       vector<double> presValues_; // computed pressure for a node
 
     private:
-      
+
       explicit StartpointData(); // don't want default constructor
-      
+
     }; // end class StartpointData
-    
-    
-    
+
+
+
     //! determine a first starting point approximation
-    // for points "x" which changed interface side 
+    // for points "x" which changed interface side
     void startpoints();
-    
+
     //! run a Newton loop in order to compute the exact lagrangian
     // origin for a node which changed interface side
     void NewtonLoop(
-        DRT::Element*& fittingele,
+        DRT::Element*& ele,
         StartpointData& curr,
         LINALG::Matrix<3,1>& xi,
         LINALG::Matrix<3,1>& vel,
@@ -235,25 +235,34 @@ namespace XFEM
         bool& stdBackTracking,
         double& deltaT1
     );
-    
-    void alternativeNewtonLoop(
-        DRT::Element*& fittingele,
+
+    template<const int numnode, DRT::Element::DiscretizationType DISTYPE>
+    void NewtonIter(
+        DRT::Element*& ele,
         StartpointData& curr,
         LINALG::Matrix<3,1>& xi,
         LINALG::Matrix<3,1>& vel,
+        LINALG::Matrix<3,1>& residuum,
+        LINALG::Matrix<3,1>& incr,
         double& phi,
-        bool& elefound,
-        bool& ihSide,
-        bool& stdBackTracking,
-        double& deltaT1
+        bool& elefound
     );
-    
+
     //! determine velocity and pressure for nodes where the
     // "normal" semi-lagrange startfinder failed
     void getDataForNotConvergedNodes(
     );
 
+    void callBackTracking(
+        DRT::Element*& ele,
+        StartpointData& data,
+        LINALG::Matrix<3,1>& xi,
+        const char* backTrackingType,
+        double deltaT1
+    );
+
     //! track back the lagrangian origin to get final startvalues
+    template<const int numnode, DRT::Element::DiscretizationType DISTYPE>
     void backTracking(
         DRT::Element*& fittingele,
         StartpointData& curr,
@@ -261,12 +270,22 @@ namespace XFEM
         const char* backTrackingType,
         double deltaT1
     );
-    
+
     //! set the final startvalues for a node
     void setFinalData(
+    );
+
+    void callElementSearch(
+        DRT::Element*& ele,
+        LINALG::Matrix<3,1>& x,
+        LINALG::Matrix<3,1>& xi,
+        LINALG::Matrix<3,1>& vel,
+        double& phi,
+        bool& elefound
     ) const;
-    
+
     //! find Element, local coordinates and data for a given, arbitrary point
+    template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
     void elementAndLocalCoords(
         DRT::Element*& fittingele,
         LINALG::Matrix<3,1>& x,
@@ -275,51 +294,55 @@ namespace XFEM
         double& phi,
         bool& eleFound
     ) const;
-    
+
     //! data of the element nodes
-    template<size_t nsd, size_t numnode>
+    template<const int numnode>
     void elementsNodalData(
         DRT::Element*& element,
         const RCP<Epetra_Vector> field,
         const RCP<DofManager> dofman,
         const Epetra_Map& dofMap,
         const map<DofKey<onNode>, DofGID>& dofDistribution,
-        LINALG::Matrix<nsd,2*numnode>& nodevel,
+        LINALG::Matrix<3,2*numnode>& nodevel,
 #ifdef COMBUST_NORMAL_ENRICHMENT
         LINALG::Matrix<1,numnode>& nodevelenr,
 #endif
         LINALG::Matrix<1,2*numnode>& nodepres
     ) const;
-    
+
+#ifndef COMBUST_NORMAL_ENRICHMENT
     //! data at an arbitrary point lying in an element
-    template<size_t nsd, size_t numnode, DRT::Element::DiscretizationType DISTYPE>
+    template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
     void pointdataXFEM(
         DRT::Element*& element,
-        LINALG::Matrix<nsd,1>& xi,
-        LINALG::Matrix<nsd,nsd>& xji,
+        LINALG::Matrix<3,1>& xi,
+        LINALG::Matrix<3,3>& xji,
         LINALG::Matrix<numnode,1>& shapeFcn,
         LINALG::Matrix<2*numnode,1>& enrShapeFcnVel,
         LINALG::Matrix<2*numnode,1>& enrShapeFcnPres,
-        LINALG::Matrix<nsd,2*numnode>& enrShapeXYVelDeriv1,
-        LINALG::Matrix<nsd,2*numnode>& enrShapeXYPresDeriv1,
+        LINALG::Matrix<3,2*numnode>& enrShapeXYVelDeriv1,
+        LINALG::Matrix<3,2*numnode>& enrShapeXYPresDeriv1,
         bool currentTimeStep
     ) const;
-    
+#endif
+
+#ifdef COMBUST_NORMAL_ENRICHMENT
     //! data at an arbitrary point in an element with normal enrichment
-    template<size_t nsd, size_t numnode, DRT::Element::DiscretizationType DISTYPE>
+    template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
     void pointdataXFEMnormal(
         DRT::Element*& element,
 #ifdef COLLAPSE_FLAME_NORMAL
-        LINALG::Matrix<nsd,1> xyz,
+        LINALG::Matrix<3,1> xyz,
 #endif
-        LINALG::Matrix<nsd,1>& xi,
-        LINALG::Matrix<nsd,nsd>& xji,
+        LINALG::Matrix<3,1>& xi,
+        LINALG::Matrix<3,3>& xji,
         LINALG::Matrix<numnode,1>& shapeFcn,
         LINALG::Matrix<2*numnode,1>& enrShapeFcnPres,
-        LINALG::Matrix<nsd,2*numnode>& enrShapeXYPresDeriv1,
+        LINALG::Matrix<3,2*numnode>& enrShapeXYPresDeriv1,
         ApproxFuncNormalVector<2,2*numnode>& shp,
         bool currentTimeStep
     ) const;
+#endif
 
     //! preparation of new iteration
     void newIteration_prepare(
@@ -331,12 +354,23 @@ namespace XFEM
         vector<RCP<Epetra_Vector> > newColVectors
     );
 
+    template<const int numnode, DRT::Element::DiscretizationType DISTYPE>
+    void computeNodalGradient(
+        vector<RCP<Epetra_Vector> >& newColVectors,
+        const Epetra_Map& newdofcolmap,
+        map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID>& newNodalDofColDistrib,
+        DRT::Element*& ele,
+        LINALG::Matrix<3,1> coords,
+        vector<LINALG::Matrix<3,3> >& velnpDeriv1,
+        vector<LINALG::Matrix<1,3> >& presnpDeriv1
+    ) const;
+
     //! compare phi values in combustion
     bool interfaceSideCompareCombust(
         double phi1,
         double phi2
     ) const;
-    
+
     //! sign function in combustion
     int interfaceSideCombust(
         double phi
@@ -347,22 +381,22 @@ namespace XFEM
     // a first startpoint approximation
     void exportStartData(
     );
-    
+
     //! export data to startpoint processor when Semi-Lagrange algorithm failed
     void exportAlternativAlgoData(
     );
-    
+
     //! export data to neighbour proc in Newton loop
     void exportIterData(
       bool& procfinished
     );
-    
+
     //! export final data to the proc where the according node is
     void exportFinalData(
     );
 
-# endif 
-    
+# endif
+
     // data
     RCP<Epetra_Vector> phinpip_; // phi^n+1,i+1 in column map
     RCP<Epetra_Vector> phinpi_; // phi^n+1,i in column map
@@ -371,8 +405,8 @@ namespace XFEM
     set<int> oldEnrNodes_; // elements intersected by old interface at time n
     vector<RCP<Epetra_Vector> > oldVectors_; // global vectors at last iteration
     vector<RCP<Epetra_Vector> > newVectors_; // global vectors at new iteration
-    
-    
+
+
     // data accessing
     const RCP<DRT::Discretization> discret_;
     const RCP<XFEM::DofManager> olddofman_;
@@ -382,12 +416,12 @@ namespace XFEM
     map<DofKey<onNode>, DofGID> oldNodalDofColDistrib_;
     Epetra_Map newdofrowmap_;
     map<DofKey<onNode>, DofGID> newNodalDofRowDistrib_;
-    
+
     // stuff for parallel communication
     DRT::Exporter exporter_; // exporter for parallel communication
     const int myrank_; // current processor id
     const int numproc_; // number of processors
-    
+
     // constants
     const int max_iter_; // maximal iteration number of newton loop for finding Lagrangian origin
     const double dt_; // time-step size
@@ -395,7 +429,7 @@ namespace XFEM
     double theta_curr_; // factor for current semi-lagrange step
     bool predictor_step_; // predictor or standard step
     double flamespeed_;
-    
+
     // vector with the data that is required every time new startvalues shall be computed
     // -> set by the constructor and never changed
     RCP<vector<StartpointData> > basic_;
@@ -411,7 +445,7 @@ namespace XFEM
     // vector with the data where the main algorithm
     // failed and another algorithm has to be used
     RCP<vector<StartpointData> > failed_;
-    
+
   }; // class Startvalues
 } // namespace XFEM
 #endif /*STARTVALUES_H_*/
