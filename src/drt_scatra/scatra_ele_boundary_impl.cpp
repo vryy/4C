@@ -2327,7 +2327,15 @@ template <DRT::Element::DiscretizationType bdistype,
         gps(iquad,idim) = gpcoord[idim];
       }
     }
-    DRT::UTILS::BoundaryGPToParentGP<pnsd>(pqxg,gps,pdistype,bdistype,ele->BeleNumber());
+    if(pnsd==2)
+    {
+      DRT::UTILS::BoundaryGPToParentGP2(pqxg,gps,pdistype,bdistype,ele->BeleNumber());
+    }
+    else if (pnsd==3)
+    {
+      DRT::UTILS::BoundaryGPToParentGP3(pqxg,gps,pdistype,bdistype,ele->BeleNumber());
+    }
+      
   }
 
   //------------------------------------------------------------------------
@@ -2975,7 +2983,14 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::TaylorGalerkinBoundaryOutflow(
 	        gps(iquad,idim) = gpcoord[idim];
 	      }
 	    }
-	    DRT::UTILS::BoundaryGPToParentGP<pnsd>(pqxg,gps,pdistype,bdistype,ele->BeleNumber());
+	    if(pnsd==2)
+	    {
+	      DRT::UTILS::BoundaryGPToParentGP2(pqxg,gps,pdistype,bdistype,ele->BeleNumber());
+	    }
+	    else if (pnsd==3)
+	    {
+	      DRT::UTILS::BoundaryGPToParentGP3(pqxg,gps,pdistype,bdistype,ele->BeleNumber());
+	    }
 	  }
 
 
@@ -3673,7 +3688,14 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ReinitCharacteristicGalerkinBou
 	        gps(iquad,idim) = gpcoord[idim];
 	      }
 	    }
-	    DRT::UTILS::BoundaryGPToParentGP<pnsd>(pqxg,gps,pdistype,bdistype,ele->BeleNumber());
+	    if(pnsd==2)
+	    {
+	      DRT::UTILS::BoundaryGPToParentGP2(pqxg,gps,pdistype,bdistype,ele->BeleNumber());
+	    }
+	    else if (pnsd==3)
+	    {
+	      DRT::UTILS::BoundaryGPToParentGP3(pqxg,gps,pdistype,bdistype,ele->BeleNumber());
+	    }
 	  }
 
 

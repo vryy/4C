@@ -3037,7 +3037,7 @@ template <DRT::Element::DiscretizationType bndydistype,
             gps(iquad,idim) = gpcoord[idim];
           }
         }
-        BoundaryGPToParentGP<nsd>(pqxg     ,
+        BoundaryGPToParentGP3(pqxg     ,
                                   gps,
                                   pdistype   ,
                                   bndydistype,
@@ -3316,11 +3316,22 @@ template <DRT::Element::DiscretizationType bndydistype,
           gps(iquad,idim) = gpcoord[idim];
         }
       }
-      BoundaryGPToParentGP<nsd>(pqxg     ,
-                                gps,
-                                pdistype   ,
-                                bndydistype,
-                                surfele->SurfaceNumber());
+      if(nsd==2)
+      {
+        BoundaryGPToParentGP2(pqxg,
+                            gps,
+                            pdistype,
+                            bndydistype,
+                            surfele->SurfaceNumber());
+      }
+      else if(nsd==3)
+      {
+        BoundaryGPToParentGP3(pqxg,
+                            gps,
+                            pdistype,
+                            bndydistype,
+                            surfele->SurfaceNumber());
+      }
     }
 
 

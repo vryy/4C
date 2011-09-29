@@ -204,19 +204,15 @@ void ComputeMetricTensorForBoundaryEle(
        parent element (required for integrations of parent-element
        shape functions over boundary elements, for example
        in weak dirichlet boundary conditions).
-
+       2D-version
   -----------------------------------------------------------------*/
-template <const int NSD>
-void BoundaryGPToParentGP(
+inline void BoundaryGPToParentGP2(
   Epetra_SerialDenseMatrix                   & pqxg     ,
   const Epetra_SerialDenseMatrix               intpoints,
   const DRT::Element::DiscretizationType       pdistype ,
   const DRT::Element::DiscretizationType       distype  ,
   const int                                    beleid   )
 {
-
-  if(NSD==2)
-  {
     // resize output array
     pqxg.Shape(intpoints.M(),2);
 
@@ -480,9 +476,21 @@ void BoundaryGPToParentGP(
     {
       dserror("only line2/quad4 and nurbs3/nurbs9 mappings of surface gausspoint to parent element implemented up to now\n");
     }
-  }
-  else if(NSD==3)
-  {
+};
+/*-----------------------------------------------------------------
+\brief Transform Gausspoints on boundary element to space of
+       parent element (required for integrations of parent-element
+       shape functions over boundary elements, for example
+       in weak dirichlet boundary conditions).
+       3D-version
+  -----------------------------------------------------------------*/
+inline void BoundaryGPToParentGP3(
+  Epetra_SerialDenseMatrix                   & pqxg     ,
+  const Epetra_SerialDenseMatrix               intpoints,
+  const DRT::Element::DiscretizationType       pdistype ,
+  const DRT::Element::DiscretizationType       distype  ,
+  const int                                    beleid   )
+{
 
     // resize output array
     pqxg.Shape(intpoints.M(),3);
@@ -502,7 +510,7 @@ void BoundaryGPToParentGP(
                   |                     |
              1         2           3         2
               +-------+             +-------+
-	      |   |   |      s      |   |   |      r
+              |   |   |      s      |   |   |      r
               |   +-- |  -----      |   +-- |  -----
               |       |             |       |
               +-------+             +-------+
@@ -526,7 +534,7 @@ void BoundaryGPToParentGP(
                   |                     |
              4         5           3         2
               +-------+             +-------+
-	      |   |   |      r      |   |   |      r
+              |   |   |      r      |   |   |      r
               |   +-- |  -----      |   +-- |  -----
               |       |             |       |
               +-------+             +-------+
@@ -550,7 +558,7 @@ void BoundaryGPToParentGP(
                   |                     |
              5         6           3         2
               +-------+             +-------+
-	      |   |   |      s      |   |   |      r
+              |   |   |      s      |   |   |      r
               |   +-- |  -----      |   +-- |  -----
               |       |             |       |
               +-------+             +-------+
@@ -574,8 +582,8 @@ void BoundaryGPToParentGP(
                   |                     |
              6         7           3         2
               +-------+             +-------+
-	r     |   |   |             |   |   |      r
-        ----  |   +-- |             |   +-- |  -----
+        r     |   |   |             |   |   |      r
+        ----  | --+   |             |   +-- |  -----
               |       |             |       |
               +-------+             +-------+
              2         3           0         1
@@ -598,7 +606,7 @@ void BoundaryGPToParentGP(
                   |                     |
              3         7           3         2
               +-------+             +-------+
-	      |   |   |      t      |   |   |      r
+              |   |   |      t      |   |   |      r
               |   +-- |  -----      |   +-- |  -----
               |       |             |       |
               +-------+             +-------+
@@ -622,7 +630,7 @@ void BoundaryGPToParentGP(
                   |                     |
              7         6           3         2
               +-------+             +-------+
-	      |   |   |      r      |   |   |      r
+              |   |   |      r      |   |   |      r
               |   +-- |  -----      |   +-- |  -----
               |       |             |       |
               +-------+             +-------+
@@ -653,7 +661,7 @@ void BoundaryGPToParentGP(
                  s|                    s|
                   |                     |
               +---+---+             +---+---+
-	     6|  7|  8|      r     6|  7|  8|      r
+             6|  7|  8|      r     6|  7|  8|      r
               +   +-- +  -----      +   +-- +  -----
              3|  4   5|            3|  4   5|
               +---+---+             +---+---+
@@ -676,7 +684,7 @@ void BoundaryGPToParentGP(
                  s|                    s|
                   |                     |
               +---+---+             +---+---+
-	    24| 25| 26|      r     6|  7|  8|      r
+            24| 25| 26|      r     6|  7|  8|      r
               +   +-- +  -----      +   +-- +  -----
             21| 22  23|            3|  4   5|
               +---+---+             +---+---+
@@ -699,7 +707,7 @@ void BoundaryGPToParentGP(
                  t|                    s|
                   |                     |
               +---+---+             +---+---+
-	    18| 19| 20|      r     6|  7|  8|      r
+            18| 19| 20|      r     6|  7|  8|      r
               +   +-- +  -----      +   +-- +  -----
              9| 10  11|            3|  4   5|
               +---+---+             +---+---+
@@ -723,7 +731,7 @@ void BoundaryGPToParentGP(
                  t|                    s|
                   |                     |
               +---+---+             +---+---+
- 	    24| 25| 26|    r       6|  7|  8|      r
+            24| 25| 26|    r       6|  7|  8|      r
               +   +-- + ----        +   +-- +  -----
             15| 16  17|            3|  4   5|
               +---+---+             +---+---+
@@ -746,7 +754,7 @@ void BoundaryGPToParentGP(
                  t|                    s|
                   |                     |
               +---+---+             +---+---+
-	    20| 23| 26|      s     6|  7|  8|      r
+            20| 23| 26|      s     6|  7|  8|      r
               +   +-- +  -----      +   +-- +  -----
             11| 14  17|            3|  4   5|
               +---+---+             +---+---+
@@ -769,7 +777,7 @@ void BoundaryGPToParentGP(
                  t|                    s|
                   |                     |
               +---+---+             +---+---+
-	    18| 21| 24|      s     6|  7|  8|      r
+            18| 21| 24|      s     6|  7|  8|      r
               +   +-- +  -----      +   +-- +  -----
              9| 12  15|            3|  4   5|
               +---+---+             +---+---+
@@ -791,10 +799,7 @@ void BoundaryGPToParentGP(
     {
       dserror("only quad4/hex8 and nurbs9/nurbs27 mappings of surface gausspoint to parent element implemented up to now\n");
     }
-  }
-
-  return;
-}
+};
 
 
 
