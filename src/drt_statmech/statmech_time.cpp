@@ -297,7 +297,11 @@ void StatMechTime::Integrate()
               // increase iteration index
               ++uzawaiter_;
               if (uzawaiter_ > maxuzawaiter)
-                dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
+              {
+								cout<<"Uzawa unconverged in "<<uzawaiter_<<" iterations"<<endl;
+								break;
+                //dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
+              }
 
               if (discret_.Comm().MyPID() == 0)
                 cout << endl << "Starting Uzawa step No. " << uzawaiter_ << endl;
@@ -1112,8 +1116,8 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
       std::cout<<"\n\n";
       if(uzawa)
       {
-      	std::cout<<"Newton iteration in Uzawa Step "<<uzawaiter_<<" unconverged-leaving loop!\n\n";
-      	dserror("interrupt at Uzawa iter %d", uzawaiter_);
+      	std::cout<<"Newton iteration in Uzawa Step "<<uzawaiter_<<" unconverged-leaving Uzawa loop and restarting time step...!\n\n";
+      	return;
       }
       else
       	std::cout<<"iteration unconverged - new trial with new random numbers!\n\n";

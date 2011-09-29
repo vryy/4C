@@ -590,17 +590,24 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
         else
           color = 0.5;
 
-        /*if(DRT::INPUT::IntegralValue<int>(statmechparams_, "BEAMCONTACT"))
+        // highlight contacting elements (works for old gap function(??))
+        if(DRT::INPUT::IntegralValue<int>(statmechparams_, "BEAMCONTACT"))
         {
         	for(int j=0; j<(int)(*(beamcmanager->Pairs())).size(); j++)
         	{
+        		// GIDs of contact discretization
 						int celeid1 = (*(beamcmanager->Pairs()))[j]->Element1()->Id();
 						int celeid2 = (*(beamcmanager->Pairs()))[j]->Element2()->Id();
 
-						if(element->Id()==celeid1 || element->Id()==celeid2)
-							color = 0.75;
+						// element row maps should be the same in both discretizations (?)
+						int celerowid1 = beamcmanager->ContactDiscret().ElementRowMap()->LID(celeid1);
+						int celerowid2 = beamcmanager->ContactDiscret().ElementRowMap()->LID(celeid2);
+						int elerowid = discret_.ElementRowMap()->LID(element->Id());
+
+						if(elerowid==celerowid1 || elerowid==celerowid2)
+							color = 0.375;
         	}
-        }*/
+        }
 
         //if no periodic boundary conditions are to be applied, we just plot the current element
         if (periodlength == 0.0)
