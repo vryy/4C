@@ -431,25 +431,35 @@ void fluid_fluid_ale_drt()
 //   DRT::Problem::Instance()->AddFieldTest(Teuchos::rcp(new FLD::XFluidFluidResultTest(&fluid)));
 //   DRT::Problem::Instance()->TestAll(comm);
 }
+
 /*----------------------------------------------------------------------*/
 // entry point for fluid-fluid-fsi based on XFEM
 /*----------------------------------------------------------------------*/
 void fluid_fluid_fsi_drt()
 {
- // create a communicator
+  // create a communicator
   #ifdef PARALLEL
    RCP<Epetra_Comm> comm = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
   #else
     Epetra_SerialComm comm;
   #endif
 
+  // make sure the three discretizations are filled in the right order:
+  // structure dof < fluid dof < ale dof
+
   RCP<DRT::Problem> problem = DRT::Problem::Instance();
+
+  RCP<DRT::Discretization> structdis = problem->Dis(genprob.numsf,0);
+  structdis->FillComplete();
 
   RCP<DRT::Discretization> bgfluiddis = problem->Dis(genprob.numff,0);
   bgfluiddis->FillComplete();
 
   RCP<DRT::Discretization> embfluiddis = problem->Dis(genprob.numff,1);
   embfluiddis->FillComplete();
+
+  RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
+  aledis->FillComplete();
 
   // copy  bgfluid to embfluid
   const int numcolele = bgfluiddis->NumMyColElements();
@@ -561,9 +571,7 @@ void fluid_fluid_fsi_drt()
 
   for(size_t mv=0; mv<MovingFluidNodeGIDsall.size(); ++mv)
     bgfluiddis->DeleteNode(MovingFluidNodeGIDsall.at(mv));
-
   bgfluiddis->FillComplete();
-
 #if defined(PARALLEL)
   vector<int> bgeleids;          // ele ids
   for (int i=0; i<bgfluiddis->NumMyRowElements(); ++i)
@@ -592,8 +600,9 @@ void fluid_fluid_fsi_drt()
   bgfluiddis->ExportColumnNodes(*bgcolnodes);
   bgfluiddis->ExportColumnElements(*bgnewcoleles);
 
-  bgfluiddis->FillComplete();
 #endif
+  bgfluiddis->FillComplete();
+
   //-------------------------------------------------------------------------
 
   // ----------------------------------------------------------------------------
@@ -635,12 +644,12 @@ void fluid_fluid_fsi_drt()
   // export nodes and elements to the column map (create ghosting)
   embfluiddis->ExportColumnNodes(*embcolnodes);
   embfluiddis->ExportColumnElements(*embnewcoleles);
-
   embfluiddis->FillComplete();
 #endif
-  //------------------------------------------------------------------------------
 
-  RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
+  embfluiddis->FillComplete();
+
+  //------------------------------------------------------------------------------
 
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0)
@@ -657,6 +666,9 @@ void fluid_fluid_fsi_drt()
     }
   }
 
+  structdis->FillComplete();
+  bgfluiddis->FillComplete();
+  embfluiddis->FillComplete();
   aledis->FillComplete();
 
   const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
