@@ -319,7 +319,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   }
 
   // sanity checks and default flags
-  if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_fsi_lung_gas)
+  if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_fsi_lung_gas or genprob.probtyp == prb_fluid_fluid_fsi)
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
@@ -340,7 +340,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
         coupling == fsi_iter_constr_monolithicstructuresplit or
         coupling == fsi_iter_constr_monolithicfluidsplit or
         coupling == fsi_iter_mortar_monolithicfluidsplit or
-        coupling == fsi_iter_mortar_monolithicstructuresplit)
+        coupling == fsi_iter_mortar_monolithicstructuresplit or
+        coupling == fsi_iter_fluidfluid_monolithicstructuresplit)
     {
       if ((DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT")!=INPAR::STR::pred_constdisvelacc)
           and (DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdyn,"PREDICT") != INPAR::STR::pred_constdisvelaccpres))
@@ -406,10 +407,10 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   {
     if(mortarcontact || mortarmeshtying)
       tintegrator = Teuchos::rcp(new CONTACT::CmtStruGenAlpha(*genalphaparams,*actdis,*solver,contactsolver,*output));
- 
+
     if (beamcontact)
       tintegrator = Teuchos::rcp(new CONTACT::Beam3ContactStruGenAlpha(*genalphaparams,*actdis,*solver,*output));
- 
+
     if(thermalbath)
       tintegrator = Teuchos::rcp(new StatMechTime(*genalphaparams,*actdis,*solver,*output));
   }
@@ -502,7 +503,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
     sdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("UPRES"));
   }
   // sanity checks and default flags
-  if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_fsi_lung_gas)
+  if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_fsi_lung_gas or genprob.probtyp == prb_fluid_fluid_fsi)
   {
     // FSI input parameters
     const Teuchos::ParameterList& fsidyn
@@ -528,7 +529,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
          or (coupling == fsi_iter_constr_monolithicfluidsplit)
          or (coupling == fsi_iter_constr_monolithicstructuresplit)
          or (coupling == fsi_iter_mortar_monolithicfluidsplit)
-         or (coupling == fsi_iter_mortar_monolithicstructuresplit))
+         or (coupling == fsi_iter_mortar_monolithicstructuresplit)
+         or (coupling == fsi_iter_fluidfluid_monolithicstructuresplit))
     {
       if ((DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(*sdyn,"PREDICT")
           != INPAR::STR::pred_constdisvelacc) and
@@ -688,7 +690,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
 
   if (sta!=Teuchos::null)
   {
-    if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_fsi_lung_gas)
+    if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_fsi_lung_gas or genprob.probtyp == prb_fluid_fluid_fsi)
     {
       dserror("no adaptive time integration with fsi");
     }
@@ -697,7 +699,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
   }
   else if (stie!=Teuchos::null)
   {
-    if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_fsi_lung_gas)
+    if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_fsi_lung_gas or genprob.probtyp == prb_fluid_fluid_fsi)
     {
       dserror("no explicit time integration with fsi");
     }
@@ -713,7 +715,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
     if (genprob.probtyp == prb_fsi or
         genprob.probtyp == prb_fsi_lung or
         genprob.probtyp == prb_fsi_lung_gas or
-        genprob.probtyp == prb_fsi_xfem)
+        genprob.probtyp == prb_fsi_xfem or
+        genprob.probtyp == prb_fluid_fluid_fsi)
     {
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
       const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
@@ -724,7 +727,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
       if (tmpstr->HaveConstraint())
       {
         if (coupling == fsi_iter_constr_monolithicstructuresplit or
-            coupling == fsi_iter_constr_monolithicfluidsplit)
+            coupling == fsi_iter_constr_monolithicfluidsplit or
+            coupling == fsi_iter_fluidfluid_monolithicstructuresplit)
           structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
         else
           structure_ = rcp(new StructureNOXCorrectionWrapper(rcp(new StructureConstrMerged(tmpstr))));
@@ -818,7 +822,7 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
         solver =
         rcp(new LINALG::Solver(DRT::Problem::Instance()->ContactSolverParams(),
                                actdis->Comm(),
-                               DRT::Problem::Instance()->ErrorFile()->Handle()));	
+                               DRT::Problem::Instance()->ErrorFile()->Handle()));
       }
       actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
@@ -865,7 +869,7 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
         solver =
         rcp(new LINALG::Solver(DRT::Problem::Instance()->ContactSolverParams(),
                                actdis->Comm(),
-                               DRT::Problem::Instance()->ErrorFile()->Handle()));	
+                               DRT::Problem::Instance()->ErrorFile()->Handle()));
       }
       actdis->ComputeNullSpaceIfNecessary(solver->Params());
     }
