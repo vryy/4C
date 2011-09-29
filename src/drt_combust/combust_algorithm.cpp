@@ -90,6 +90,7 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
     }
   }
 
+  // TODO:	scatra and fluid/combustion time-integration methods do not have to fit, or shall they? - winklmaier
   const INPAR::FLUID::TimeIntegrationScheme timealgo = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT");
   switch(timealgo)
   {
@@ -98,7 +99,7 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
     if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_stationary)
       dserror("fluid time integration scheme does not match");
     if (ScaTraField().MethodName() != INPAR::SCATRA::timeint_stationary)
-      dserror("scatra time integration scheme does not match");
+      cout << "WARNING: combustion and scatra time integration scheme do not match" << endl;
     break;
   }
   case INPAR::FLUID::timeint_one_step_theta:
@@ -106,7 +107,7 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
     if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_one_step_theta)
       dserror("fluid time integration scheme does not match");
     if (ScaTraField().MethodName() != INPAR::SCATRA::timeint_one_step_theta)
-      dserror("scatra time integration scheme does not match");
+      cout << "WARNING: combustion and scatra time integration scheme do not match" << endl;
     break;
   }
   case INPAR::FLUID::timeint_afgenalpha:
@@ -114,7 +115,7 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
     if (FluidField().TimIntScheme() != INPAR::FLUID::timeint_afgenalpha)
       dserror("fluid time integration scheme does not match");
     if (ScaTraField().MethodName() != INPAR::SCATRA::timeint_gen_alpha)
-      dserror("scatra time integration scheme does not match");
+      cout << "WARNING: combustion and scatra time integration scheme do not match" << endl;
 
     //TODO remove
     dserror("Generalized alpha time integration scheme for combustion is not working yet");
@@ -1218,6 +1219,55 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
   // update field vectors
   UpdateInterface();
 
+  // assign the fluid velocity field to the G-function as convective velocity field
+  switch(combusttype_)
+  {
+  case INPAR::COMBUST::combusttype_twophaseflow:
+  case INPAR::COMBUST::combusttype_twophaseflow_surf:
+  case INPAR::COMBUST::combusttype_twophaseflowjump:
+  {
+    // for two-phase flow, the fluid velocity field is continuous; it can be directly transferred to
+    // the scalar transport field
+
+    ScaTraField().SetVelocityField(
+      //OverwriteFluidVel(),
+      FluidField().ExtractInterfaceVeln(),
+      Teuchos::null,
+      FluidField().DofSet(),
+      FluidField().Discretization()
+    );
+
+    // Transfer history vector only for subgrid-velocity
+    //ScaTraField().SetVelocityField(
+    //    FluidField().ExtractInterfaceVeln(),
+    //    FluidField().Hist(),
+    //    FluidField().DofSet(),
+    //    FluidField().Discretization()
+    //);
+    break;
+  }
+  case INPAR::COMBUST::combusttype_premixedcombustion:
+  {
+    // for combustion, the velocity field is discontinuous; the relative flame velocity is added
+
+    // extract convection velocity from fluid solution
+    const Teuchos::RCP<Epetra_Vector> convel = FluidField().ExtractInterfaceVeln();
+
+    ScaTraField().SetVelocityField(
+//        OverwriteFluidVel(),
+        //FluidField().ExtractInterfaceVeln(),
+        ComputeFlameVel(convel,FluidField().DofSet()),
+        Teuchos::null,
+        FluidField().DofSet(),
+        FluidField().Discretization()
+    );
+    break;
+  }
+  default:
+    dserror("unknown type of combustion problem");
+  }
+
+
   //-------
   // output
   //-------
@@ -1387,9 +1437,9 @@ void COMBUST::Algorithm::DoGfuncField()
 #endif
 
     ScaTraField().SetVelocityField(
-        OverwriteFluidVel(),
+//        OverwriteFluidVel(),
         //FluidField().ExtractInterfaceVeln(),
-//        ComputeFlameVel(convel,FluidField().DofSet()),
+        ComputeFlameVel(convel,FluidField().DofSet()),
         Teuchos::null,
         FluidField().DofSet(),
         FluidField().Discretization()
