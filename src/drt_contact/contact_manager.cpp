@@ -524,6 +524,10 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input,"PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
     dserror("ERROR: Self contact and parallel redistribution not yet compatible");
   
+  if(DRT::INPUT::IntegralValue<int>(input,"INITCONTACTBYGAP")==true && 
+     input.get<double>("INITCONTACTGAPVALUE") == 0.0)
+    dserror("ERROR: For initialization of init contact with gap, the INITCONTACTGAPVALUE is needed."); 
+
   // *********************************************************************
   // thermal-structure-interaction contact
   // *********************************************************************

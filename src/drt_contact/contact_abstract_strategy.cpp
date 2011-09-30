@@ -814,17 +814,56 @@ void CONTACT::CoAbstractStrategy::InitEvalMortar()
 void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,const RCP<Epetra_Vector> vec)
 {
 #ifndef CONTACTFORCEREFCONFIG 
-  
-  // only do something for frictional case
-  if (!friction_) return;
-  
+
   // only before the first time step
   if(step!=0) return;
+
+  // flag for initualization of contact with nodal gaps
+  bool initcontactbygap = DRT::INPUT::IntegralValue<int>(Params(),"INITCONTACTBYGAP");
+  
+  // only do something for frictional case 
+  // or for initialization of initial contact set with nodal gap
+  if (!friction_ and !initcontactbygap) return;
   
   // set state and do mortar calculation
   SetState("displacement",vec);
   InitEvalInterface();
   InitEvalMortar();
+  
+  // initialize init contact with nodal gap
+  if(initcontactbygap)
+  {
+    // merge interface maps to global maps
+    for (int i=0; i<(int)interface_.size(); ++i)
+    {
+      // merge active sets and slip sets of all interfaces
+      // (these maps are NOT allowed to be overlapping !!!)
+      interface_[i]->BuildActiveSet(true);
+      gactivenodes_ = LINALG::MergeMap(gactivenodes_, interface_[i]->ActiveNodes(), false);
+      gactivedofs_ = LINALG::MergeMap(gactivedofs_, interface_[i]->ActiveDofs(), false);
+      gactiven_ = LINALG::MergeMap(gactiven_, interface_[i]->ActiveNDofs(), false);
+      gactivet_ = LINALG::MergeMap(gactivet_, interface_[i]->ActiveTDofs(), false);
+      
+      if (friction_)
+      {
+        gslipnodes_ = LINALG::MergeMap(gslipnodes_, interface_[i]->SlipNodes(), false);
+        gslipdofs_ = LINALG::MergeMap(gslipdofs_, interface_[i]->SlipDofs(), false);
+        gslipt_ = LINALG::MergeMap(gslipt_, interface_[i]->SlipTDofs(), false);
+      }
+    }
+    
+    // initialize flags for global contact status
+    if (gactivenodes_->NumGlobalElements())
+    {
+      isincontact_=true;
+      wasincontact_=true;
+      wasincontactlts_=true;
+    }
+    
+    // error if no nodes are initialized to active
+    if(gactivenodes_->NumGlobalElements() == 0)
+      dserror("ERROR: No active nodes: Choose bigger value for INITCONTACTGAPVALUE!");
+  }  
   
   // store contact state to contact nodes (active or inactive)
   StoreNodalQuantities(MORTAR::StrategyBase::activeold);

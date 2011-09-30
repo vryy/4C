@@ -1386,6 +1386,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   INPAR::CONTACT::bsm_partially,INPAR::CONTACT::bsm_partially,
                   INPAR::CONTACT::bsm_cpp,INPAR::CONTACT::bsm_cpp),
        &scontact);
+  
+  setStringToIntegralParameter<int>("INITCONTACTBYGAP","No","Initialize init contact by weighted gap vector",
+                               yesnotuple,yesnovalue,&scontact);
+  
+  DoubleParameter("INITCONTACTGAPVALUE",0.0,"Value for initialization of init contact set with gap vector",&scontact);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& interaction_potential = list->sublist("INTERACTION POTENTIAL",false,"");

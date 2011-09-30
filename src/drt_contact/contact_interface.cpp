@@ -5352,8 +5352,19 @@ bool CONTACT::CoInterface::BuildActiveSet(bool init)
     // *******************************************************************
     if (init)
     {
-      // check if node is initially active
-      if (cnode->IsInitActive())
+      
+      // flag for initialization of init active nodes with nodal gaps      
+      bool initcontactbygap = DRT::INPUT::IntegralValue<int>(IParams(),"INITCONTACTBYGAP");
+      // value
+      double initcontactval = IParams().get<double>("INITCONTACTGAPVALUE");
+      
+      // Eiter init contact by definition of by gap
+      if(cnode->IsInitActive() and initcontactbygap)
+        dserror("Init contact either by definition in condition or by gap!");
+        
+      // check if node is initially active or, if initialization with nodal, gap,
+      // the gap is smaller than the prescribed value
+      if (cnode->IsInitActive() or (initcontactbygap and cnode->CoData().Getg() < initcontactval))
       {
         cnode->Active()=true;
         mynodegids.push_back(cnode->Id());
