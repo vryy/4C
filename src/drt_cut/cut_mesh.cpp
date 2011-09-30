@@ -1609,6 +1609,7 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, 
     {
       std::stringstream err;
       err << "volume test failed: "
+          << "eleID=" << e.Id() << "  "
           << "ve=" << ev << "  "
           << "vc=" << cv << "  "
           << "vd= "<< ev-cv << "  "

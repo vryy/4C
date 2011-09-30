@@ -230,6 +230,40 @@ void GEO::CUT::ElementHandle::BoundaryCellGaussPoints( MeshIntersection & mesh,
   }
 }
 
+
+void GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin( MeshIntersection & mesh,
+                                                       int mi,
+                                                       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+                                                       std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints )
+{
+  for ( std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::const_iterator i=bcells.begin(); i!=bcells.end(); ++i )
+  {
+    int sid = i->first;
+    const std::vector<GEO::CUT::BoundaryCell*> & cells = i->second;
+    std::vector<DRT::UTILS::GaussIntegration> & cell_points = intpoints[sid];
+
+    SideHandle * side = mesh.GetCutSide( sid, mi );
+    if ( side==NULL )
+    {
+      throw std::runtime_error( "no such side" );
+    }
+
+    cell_points.clear();
+    cell_points.reserve( cells.size() );
+
+    for ( std::vector<GEO::CUT::BoundaryCell*>::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+    {
+      GEO::CUT::BoundaryCell * bc = *i;
+
+      // Create (unmodified) gauss points for integration cell with requested
+      // polynomial order. This is supposed to be fast, since there is a cache.
+      DRT::UTILS::GaussIntegration gi( bc->Shape(), bc->CubatureDegree( bc->Shape() ) );
+      cell_points.push_back( DRT::UTILS::GaussIntegration( gi ) );
+
+    }
+  }
+}
+
 void GEO::CUT::ElementHandle::BoundaryCellGaussPoints( LevelSetIntersection & mesh,
                                                        const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
                                                        std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints )

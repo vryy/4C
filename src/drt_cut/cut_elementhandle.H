@@ -76,6 +76,11 @@ public:
                                 const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
                                 std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints );
 
+  void BoundaryCellGaussPointsLin( MeshIntersection & mesh,
+                                int mi,
+                                const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+                                std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints );
+
   void BoundaryCellGaussPoints( LevelSetIntersection & mesh,
                                 const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
                                 std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints );

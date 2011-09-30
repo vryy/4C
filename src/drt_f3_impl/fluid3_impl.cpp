@@ -8093,6 +8093,12 @@ namespace DRT
                               LINALG::Matrix<3,1> & normal,
                               double & drs) = 0;
 
+
+        virtual void ProjectOnSide(LINALG::Matrix<3,1> & x_gp_lin,
+                                   LINALG::Matrix<3,1> & x_side,
+                                   LINALG::Matrix<2,1> & xi_side) = 0;
+
+
         virtual void eivel(const DRT::Discretization &  cutdis,
                            const std::string            state,
                            const vector<int>&           lm) = 0;
@@ -8159,7 +8165,7 @@ namespace DRT
                               LINALG::Matrix<3,1>       & normal,
                               double                    & drs
                               )
-        {
+        { //cout << "side " << xyze_ << endl; cout << "eta " << eta << endl;
           LINALG::Matrix<2,side_nen> deriv;
           LINALG::Matrix<2,2> metrictensor;
           DRT::UTILS::shape_function_2D( side_funct_, eta( 0 ), eta( 1 ), side_distype );
@@ -8168,6 +8174,221 @@ namespace DRT
           x.Multiply( xyze_,side_funct_ );
 
         }
+
+
+        virtual void ProjectOnSide( LINALG::Matrix<3,1> & x_gp_lin,
+                                    LINALG::Matrix<3,1> & x_side,
+                                    LINALG::Matrix<2,1> & xi_side
+                                  )
+        {
+
+          // Initialization
+          LINALG::Matrix<side_nen,1> funct(true);          // shape functions
+          LINALG::Matrix<2,side_nen> deriv(true);          // derivatives dr, ds
+          LINALG::Matrix<3,side_nen> deriv2(true);          // 2nd derivatives drdr, dsds, drds
+
+
+          LINALG::Matrix<3,1> x(true);
+
+          LINALG::Matrix<3,2> derxy (true);
+          LINALG::Matrix<3,1> dx_dr (true);
+          LINALG::Matrix<3,1> dx_ds (true);
+
+          LINALG::Matrix<3,3> derxy2 (true);
+          LINALG::Matrix<3,1> dx_drdr (true);
+          LINALG::Matrix<3,1> dx_dsds (true);
+          LINALG::Matrix<3,1> dx_drds (true);
+
+          LINALG::Matrix<3,1> residuum(true);             // residuum of the newton iteration
+          LINALG::Matrix<3,3> sysmat(true);               // matrix for the newton system
+          LINALG::Matrix<3,1> incr(true);                 // increment of the newton system
+
+          LINALG::Matrix<3,1> sol(true); // sol carries xi_1, xi_2, d (distance)
+
+          if(side_distype == DRT::Element::tri3)
+          {
+        	  sol(0) = 0.333333333333333;
+        	  sol(1) = 0.333333333333333;
+          }
+          else if( side_distype == DRT::Element::quad4)
+          {
+        	  sol(0) = 0.0;
+        	  sol(1) = 0.0;
+          }
+          else
+          {
+        	  dserror("define start side xi-coordinates for unsupported cell type");
+          }
+
+          const double relTolIncr = 1.0e-11;   // rel tolerance for the local coordinates increment
+          const double relTolRes  = 1.0e-12;   // rel tolerance for the whole residual
+          const double absTOLdist = 1.0e-12;   // abs tolerance for distance
+
+          int iter=0;
+          const int maxiter = 5;
+
+          bool converged = false;
+
+          while(iter < maxiter && !converged)
+          {
+
+        	  iter++;
+
+
+        	  // get current values
+              DRT::UTILS::shape_function_2D( funct, sol( 0 ), sol( 1 ), side_distype );
+              DRT::UTILS::shape_function_2D_deriv1( deriv, sol( 0 ), sol( 1 ), side_distype );
+              DRT::UTILS::shape_function_2D_deriv2( deriv2, sol( 0 ), sol( 1 ), side_distype );
+
+              x.Multiply(xyze_, funct);
+
+              derxy.MultiplyNT(xyze_, deriv);
+
+              derxy2.MultiplyNT(xyze_, deriv2);
+
+              // set dx_dr and dx_ds
+              for (int i=0; i< 3; i++)
+              {
+            	  dx_dr(i) = derxy(i,0);
+            	  dx_ds(i) = derxy(i,1);
+
+            	  dx_drdr(i) = derxy2(i,0);
+            	  dx_dsds(i) = derxy2(i,1);
+            	  dx_drds(i) = derxy2(i,2);
+              }
+
+              // get vector products
+              LINALG::Matrix<3,1> dx_drdr_times_dx_ds(true);
+              LINALG::Matrix<3,1> dx_dr_times_dx_drds(true);
+              LINALG::Matrix<3,1> dx_drds_times_dx_ds(true);
+              LINALG::Matrix<3,1> dx_dr_times_dx_dsds(true);
+              LINALG::Matrix<3,1> dx_dr_times_dx_ds(true);
+
+              dx_drdr_times_dx_ds(0) = dx_drdr(1)*dx_ds(2)-dx_ds(1)*dx_drdr(2);
+              dx_drdr_times_dx_ds(1) = dx_drdr(2)*dx_ds(0)-dx_ds(2)*dx_drdr(0);
+              dx_drdr_times_dx_ds(2) = dx_drdr(0)*dx_ds(1)-dx_ds(0)*dx_drdr(1);
+
+              dx_dr_times_dx_drds(0) = dx_dr(1)*dx_drds(2)-dx_drds(1)*dx_dr(2);
+              dx_dr_times_dx_drds(1) = dx_dr(2)*dx_drds(0)-dx_drds(2)*dx_dr(0);
+              dx_dr_times_dx_drds(2) = dx_dr(0)*dx_drds(1)-dx_drds(0)*dx_dr(1);
+
+              dx_drds_times_dx_ds(0) = dx_drds(1)*dx_ds(2)-dx_ds(1)*dx_drds(2);
+              dx_drds_times_dx_ds(1) = dx_drds(2)*dx_ds(0)-dx_ds(2)*dx_drds(0);
+              dx_drds_times_dx_ds(2) = dx_drds(0)*dx_ds(1)-dx_ds(0)*dx_drds(1);
+
+              dx_dr_times_dx_dsds(0) = dx_dr(1)*dx_dsds(2)-dx_dsds(1)*dx_dr(2);
+              dx_dr_times_dx_dsds(1) = dx_dr(2)*dx_dsds(0)-dx_dsds(2)*dx_dr(0);
+              dx_dr_times_dx_dsds(2) = dx_dr(0)*dx_dsds(1)-dx_dsds(0)*dx_dr(1);
+
+              dx_dr_times_dx_ds(0) = dx_dr(1)*dx_ds(2)-dx_ds(1)*dx_dr(2);
+              dx_dr_times_dx_ds(1) = dx_dr(2)*dx_ds(0)-dx_ds(2)*dx_dr(0);
+              dx_dr_times_dx_ds(2) = dx_dr(0)*dx_ds(1)-dx_ds(0)*dx_dr(1);
+
+              // define sysmat
+              for(int i=0; i< 3; i++)
+              {
+            	  // d/dr
+            	  sysmat(i,0) = dx_dr(i) - sol(2) * (dx_drdr_times_dx_ds(i) + dx_dr_times_dx_drds(i));
+
+            	  // d/ds
+            	  sysmat(i,1) = dx_ds(i) - sol(2) * (dx_drds_times_dx_ds(i) + dx_dr_times_dx_dsds(i));
+
+            	  // d/d(dist)
+            	  sysmat(i,2) = - dx_dr_times_dx_ds(i);
+
+
+            	  // residual
+            	  residuum(i) = x(i) - sol(2) * dx_dr_times_dx_ds(i) - x_gp_lin(i);
+
+              }
+
+//              // scale the system
+//              LINALG::Matrix<3,1> Diag(true);
+//
+//              for(int r=0; r< 3; r++)
+//              {
+//            	  double max_abs_row = 0.0;
+//            	  for(int c=0; c< 3; c++)
+//            	  {
+//            		  max_abs_row = max(max_abs_row, fabs(sysmat(r,c)));
+//            	  }
+//            	  Diag(r) = max_abs_row;
+//              }
+//
+//              for(int r=0; r< 3; r++)
+//              {
+//            	  for(int c=0; c< 3; c++)
+//            		  sysmat(r,c)/=Diag(r);
+//            	      residuum(r)/=Diag(r);
+//              }
+
+              sysmat.Invert();
+
+              //solve Newton iteration
+              incr.Clear();
+              incr.Multiply(-1.0,sysmat,residuum); // incr = -Systemmatrix^-1 * residuum
+
+              // update solution
+              sol.Update(1.0, incr, 1.0);
+
+              if ( (incr.Norm2()/sol.Norm2() < relTolIncr) && (residuum.Norm2()/sol.Norm2() < relTolRes) )
+              {
+            	  converged = true;
+              }
+
+              // check ° relative criterion for local coordinates (between [-1,1]^2)
+              //       ° absolute criterion for distance (-> 0)
+              //       ° relative criterion for whole residuum
+              if(    sqrt(incr(0)*incr(0)+incr(1)*incr(1))/sqrt(sol(0)*sol(0)+sol(1)*sol(1)) <  relTolIncr
+                  && incr(2) < absTOLdist
+                  && residuum.Norm2()/sol.Norm2() < relTolRes)
+              {
+            	  converged = true;
+              }
+
+          }
+
+//          if(converged) cout << "converged " << endl;
+          if(!converged)
+          {
+        	  cout.precision(15);
+
+              cout << "increment criterion loc coord "
+                   << sqrt(incr(0)*incr(0)+incr(1)*incr(1))/sqrt(sol(0)*sol(0)+sol(1)*sol(1))
+                   << " TOL: " << relTolIncr
+                   << endl;
+              cout << "absolute criterion for distance "
+                   << incr(2)
+                   << " TOL: " << absTOLdist
+                   << endl;
+              cout << "relative criterion whole residuum "
+                   << residuum.Norm2()/sol.Norm2()
+                   << relTolRes
+                   << endl;
+
+
+        	  cout << "sysmat.Invert" << sysmat << endl;
+        	  cout << "sol-norm " << sol.Norm2() << endl;
+        	  cout << "sol " << sol << endl;
+        	  cout << "x_gp_lin" << x_gp_lin << endl;
+        	  cout << "side " << xyze_ << endl;
+
+        	  dserror( "newton scheme in ProjectOnSide not converged! " );
+          }
+
+
+
+          // evaluate shape function at solution
+          DRT::UTILS::shape_function_2D( side_funct_, sol( 0 ), sol( 1 ), side_distype );
+
+          // get projected gauss point
+          x_side.Multiply(xyze_, side_funct_);
+
+          xi_side(0) = sol(0);
+          xi_side(1) = sol(1);
+
+        }
+
 
         virtual void eivel(const DRT::Discretization &  cutdis,
                            const std::string            state,
@@ -8859,13 +9080,15 @@ void Fluid3Impl<distype>::ElementXfemInterface(
           ++i )
     {
       const DRT::UTILS::GaussIntegration & gi = *i;
-      //const GEO::CUT::BoundaryCell & bc = *bcs[i - cutintpoints.begin()];
+      GEO::CUT::BoundaryCell * bc = bcs[i - cutintpoints.begin()]; // get the corresponding boundary cell
 
       //gi.Print();
 
+
       for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
       {
-        const LINALG::Matrix<2,1> eta( iquad.Point() );
+#if 0
+        const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
         double drs = 0;
 
@@ -8877,6 +9100,46 @@ void Fluid3Impl<distype>::ElementXfemInterface(
         GEO::CUT::Position<distype> pos( xyze_, x_side );
         pos.Compute();
         const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+
+#else
+        const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
+
+        double drs = 0; // transformation factor between reference cell and linearized boundary cell
+
+        LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
+        normal.Clear();
+
+        // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
+        switch ( bc->Shape() )
+        {
+        case DRT::Element::tri3:
+        {
+            bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs);
+          break;
+        }
+        case DRT::Element::quad4:
+        {
+            bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs);
+          break;
+        }
+        default:
+          throw std::runtime_error( "unsupported integration cell type" );
+        }
+
+
+        const double fac = drs*iquad.Weight();
+
+        // find element local position of gauss point
+        GEO::CUT::Position<distype> pos( xyze_, x_gp_lin );
+        pos.Compute();
+        const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+
+
+        // project gaussian point from linearized interface to warped side (get local side coordinates)
+        LINALG::Matrix<2,1> xi_side(true);
+        si->ProjectOnSide(x_gp_lin, x_side, xi_side);
+
+#endif
 
         // evaluate shape functions
         DRT::UTILS::shape_function<distype>( rst, funct_ );
@@ -9638,26 +9901,79 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
 	          ++i )
 	    {
 	      const DRT::UTILS::GaussIntegration & gi = *i;
-	      //const GEO::CUT::BoundaryCell & bc = *bcs[i - cutintpoints.begin()];
+	      GEO::CUT::BoundaryCell * bc = bcs[i - cutintpoints.begin()]; // get the corresponding boundary cell
 
 	      //gi.Print();
 
 	      for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
 	      {
-	        const LINALG::Matrix<2,1> eta( iquad.Point() );
+#if 0
+        const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
-	        double drs = 0;
+        double drs = 0;
 
-	        si->Evaluate(eta,x_side,normal,drs);
+        si->Evaluate(eta,x_side,normal,drs);
+
+        const double fac = drs*iquad.Weight();
+
+        // find element local position of gauss point at interface
+        GEO::CUT::Position<distype> pos( xyze_, x_side );
+        pos.Compute();
+        const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+
+#else
+        const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
+
+        double drs = 0; // transformation factor between reference cell and linearized boundary cell
+
+        LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
+        normal.Clear();
+
+        // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
+        switch ( bc->Shape() )
+        {
+        case DRT::Element::tri3:
+        {
+            bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs);
+          break;
+        }
+        case DRT::Element::quad4:
+        {
+            bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs);
+          break;
+        }
+        default:
+          throw std::runtime_error( "unsupported integration cell type" );
+        }
 
 
+        const double fac = drs*iquad.Weight();
 
-	        const double fac = drs*iquad.Weight();
+        // find element local position of gauss point
+        GEO::CUT::Position<distype> pos( xyze_, x_gp_lin );
+        pos.Compute();
+        const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
 
-	        // find element local position of gauss point at interface
-	        GEO::CUT::Position<distype> pos( xyze_, x_side );
-	        pos.Compute();
-	        const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+
+        // project gaussian point from linearized interface to warped side (get local side coordinates)
+        LINALG::Matrix<2,1> xi_side(true);
+        si->ProjectOnSide(x_gp_lin, x_side, xi_side);
+
+#endif
+//	        const LINALG::Matrix<2,1> eta( iquad.Point() );
+//
+//	        double drs = 0;
+//
+//	        si->Evaluate(eta,x_side,normal,drs);
+//
+//
+//
+//	        const double fac = drs*iquad.Weight();
+//
+//	        // find element local position of gauss point at interface
+//	        GEO::CUT::Position<distype> pos( xyze_, x_side );
+//	        pos.Compute();
+//	        const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
 
 	        // evaluate shape functions
 	        DRT::UTILS::shape_function<distype>( rst, funct_ );

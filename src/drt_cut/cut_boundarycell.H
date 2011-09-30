@@ -16,6 +16,7 @@
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "../../src/drt_fem_general/drt_utils_gausspoints.H"
 
 namespace GEO
 {
@@ -65,6 +66,30 @@ public:
   void Clear() { points_.clear(); }
 
   bool IsValid() const { return points_.size() > 0; }
+
+
+  template <DRT::Element::DiscretizationType celldistype>
+  void Transform( const LINALG::Matrix<2,1> & eta,
+                  LINALG::Matrix<3,1>       & x_gp_lin,
+                  LINALG::Matrix<3,1>       & normal,
+                  double                    & drs)
+  {
+      const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
+      LINALG::Matrix<3,numnodes> xyze( this->xyz_, true );
+      LINALG::Matrix<numnodes,1> funct;
+      LINALG::Matrix<2,numnodes> deriv;
+      LINALG::Matrix<2,2> metrictensor;
+
+      DRT::UTILS::shape_function_2D( funct, eta(0), eta(1), celldistype );
+      DRT::UTILS::shape_function_2D_deriv1( deriv, eta(0), eta(1), celldistype );
+      DRT::UTILS::ComputeMetricTensorForBoundaryEle<celldistype>( xyze, deriv, metrictensor, drs, &normal );
+
+      x_gp_lin.Multiply(xyze, funct);
+
+      return;
+  }
+
+
 
 protected:
 

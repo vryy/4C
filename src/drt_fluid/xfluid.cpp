@@ -265,7 +265,15 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
               TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate boundary" );
 
               std::map<int, std::vector<DRT::UTILS::GaussIntegration> > bintpoints;
+
+              // Attention: switch also the flag in fluid3_impl.cpp
+#if 0
+              // original Axel's transformation
               e->BoundaryCellGaussPoints( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
+#else
+              // new Benedikt's transformation
+              e->BoundaryCellGaussPointsLin( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
+#endif
 
               // needed for fluid-fluid Coupling
               std::map<int, std::vector<Epetra_SerialDenseMatrix> >  side_coupling;
