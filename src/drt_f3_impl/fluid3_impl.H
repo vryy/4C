@@ -1083,6 +1083,8 @@ namespace ELEMENTS
     std::vector<Epetra_SerialDenseVector> myknots_;
 
     DRT::UTILS::GaussIntegration intpoints_;
+
+    double L2_; //Jeffery-Hamel
   };
 }
 }

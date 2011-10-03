@@ -779,6 +779,11 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   const double thermpressam   = params.get<double>("thermpress at n+alpha_M/n");
   const double thermpressdtam = params.get<double>("thermpressderiv at n+alpha_M/n+1");
 
+#ifdef JEFFERY-HAMEL-FLOW
+  L2_ = params.get<double>("L2");
+#endif
+
+
   // ---------------------------------------------------------------------
   // set parameters for classical turbulence models
   // ---------------------------------------------------------------------
@@ -827,6 +832,10 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
          sveln,
          svelnp,
          intpoints);
+
+#ifdef JEFFERY-HAMEL-FLOW
+  params.set("L2",L2_);
+#endif
 
   // ---------------------------------------------------------------------
   // output values of Cs, visceff and Cs_delta_sq
@@ -1591,6 +1600,25 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
                          timefacfac);
       else
         dserror("Linearization of the mesh motion is not available in 1D");
+
+#ifdef JEFFERY-HAMEL-FLOW
+      LINALG::Matrix<3,1> physpos(true);
+      GEO::elementToCurrentCoordinates(distype, xyze_, xsi_, physpos);
+
+      double position[2];
+      position[0] = physpos(0);
+      position[1] = physpos(1);
+      const double u_exact_x = DRT::Problem::Instance()->Funct(0).Evaluate(0,position,0.0,NULL);
+      const double u_exact_y = DRT::Problem::Instance()->Funct(0).Evaluate(1,position,0.0,NULL);
+
+      if (1.0 < position[0] and position[0] < 2.0 and 0.0 < position[1] and position[1] < position[0])
+      {
+        const double epsilon_x = (velint_(0) - u_exact_x);
+        const double epsilon_y = (velint_(1) - u_exact_y);
+
+        L2_ += (epsilon_x*epsilon_x + epsilon_y*epsilon_y)*fac_;
+      }
+#endif
     }
   }
   //------------------------------------------------------------------------
