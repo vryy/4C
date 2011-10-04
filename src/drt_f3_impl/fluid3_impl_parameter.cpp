@@ -157,7 +157,7 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementGeneralFluidParameter( Teucho
 
   if (not is_stationary_ and is_conservative_)
   {
-    cout << endl << "Warning: missing time derivative terms in conservative formulation!!" << endl;
+    cout << endl << "Warning: missing time derivative terms in conservative formulation (for variable density flows)!!" << endl;
   }
 
 

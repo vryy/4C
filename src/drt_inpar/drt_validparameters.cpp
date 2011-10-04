@@ -2581,18 +2581,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
    Teuchos::ParameterList& fdyn_turbinf = fdyn.sublist("TURBULENT INFLOW",false,"");
 
-//   setStringToIntegralParameter<int>("TURBULENTINFLOW",
-//                                "no",
-//                                "Flag to (de)activate potential separate turbulent inflow section",
-//                                tuple<std::string>(
-//                                  "no",
-//                                  "yes"),
-//                                tuple<std::string>(
-//                                  "no turbulent inflow section",
-//                                  "turbulent inflow section"),
-//                                tuple<int>(0,1),
-//                                &fdyn_turbinf);
-
    BoolParameter("TURBULENTINFLOW","No","Flag to (de)activate potential separate turbulent inflow section",&fdyn_turbinf);
 
    setStringToIntegralParameter<int>("INITIALINFLOWFIELD","zero_field",
@@ -2631,6 +2619,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
        "For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow."),
        tuple<int>(0,1,2),
        &fdyn_turbinf);
+
+   DoubleParameter(
+     "INFLOW_CHA_SIDE",
+     0.0,
+     "Most right side of inflow channel. Necessary to define sampling domain.",
+     &fdyn_turbinf);
 
    setStringToIntegralParameter<int>(
      "INFLOW_HOMDIR",

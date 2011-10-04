@@ -38,7 +38,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   scalesimilarity_    (scalesimilarity    ),
   subgrid_dissipation_(subgrid_dissipation),
   inflowchannel_      (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
-  inflowmax_(-0.1794),
+  inflowmax_(params_.sublist("TURBULENT INFLOW").get<double>("INFLOW_CHA_SIDE",0.0)),
   dens_     (1.0),
   visc_     (1.0)
 {
@@ -47,6 +47,20 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   int numdim = params_.get<int>("number of velocity degrees of freedom");
   if (numdim!=3)
     dserror("Evaluation of turbulence statistics only for 3d channel flow!");
+
+  //----------------------------------------------------------------------
+  // inflow channel check
+  if (inflowchannel_)
+  {
+    if (discret_->Comm().MyPID()==0)
+    {
+      std::cout << "\n---------------------------------------------------------------------------" << std::endl;
+      std::cout << "This is an additional the statistics manager for turbulent inflow channels." << std::endl;
+      std::cout << "Make sure to provide the outflow coordinate (INFLOW_CHA_SIDE)." << std::endl;
+      std::cout << "Current coordinate is: " << inflowmax_ << std::endl;
+      std::cout << "---------------------------------------------------------------------------\n" << std::endl;
+    }
+  }
 
   //----------------------------------------------------------------------
   // switches, control parameters, material parameters
@@ -161,10 +175,6 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
     // the criterion allows differences in coordinates by 1e-9
     set<double,PlaneSortCriterion> availablecoords;
-
-    if (inflowchannel_)
-      if (discret_->Comm().MyPID()==0)
-        cout << "  coordinate of outflow for inflow channel: " << inflowmax_ << "\n" << endl;
 
     // loop nodes, build set of planes accessible on this proc and
     // calculate bounding box
