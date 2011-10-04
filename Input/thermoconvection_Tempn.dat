@@ -411,7 +411,7 @@ DLINE  0
 --------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
 DSURF  1
 // right surf Neumann convection
-E 3 - Tempn coeff -1.0 surtemp 5.0 curve -1
+E 3 - Tempn coeff -1.0 surtemp 5.0 surtempcurve none curve -1
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY

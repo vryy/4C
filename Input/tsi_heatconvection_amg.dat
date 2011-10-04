@@ -609,7 +609,7 @@ DLINE  0
 --------------------------DESIGN THERMO CONVECTION SURF CONDITIONS
 DSURF  1
 // THR left surf heat convection
-E 8 - Tempnp coeff -6.444497425 surtemp 373.15 curve none // 1
+E 8 - Tempnp coeff -6.444497425 surtemp 373.15 surtempcurve none curve none // 1
 --------------------------------DESIGN EMBEDDING TISSUE CONDITIONS
 DSURF  0
 -----------------------------------------------DNODE-NODE TOPOLOGY
