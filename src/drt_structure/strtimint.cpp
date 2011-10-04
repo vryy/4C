@@ -1235,6 +1235,13 @@ void STR::TimInt::OutputContact()
     kinen *= 0.5;
 
     //-------------------------Calculation of total internal energy
+    // BE CAREFUL HERE!!!
+    // Currently this is only valid for materials without(!) history
+    // data, because we have already updated everything and thus
+    // any potential material history has already been overwritten.
+    // When we are interested in internal energy output for contact
+    // or meshtying simulations with(!) material history, we should
+    // move the following block before the first UpdateStep() method.
     double inten = 0.0;
     ParameterList p;
     p.set("action", "calc_struct_energy");
