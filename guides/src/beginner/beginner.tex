@@ -1483,7 +1483,7 @@ home directory. This way they can acces their code from another machine next tim
 
 
 \paragraph{Update baci version of the student}
-In order to update the student's code you first have to update the svn and the git instances of BACI  on your machine by:
+In order to update the student's code you have to update the svn and the git instances of BACI on your machine by:
   \begin{enumerate}
     \item \texttt{git svn rebase} (in folder Baci)\\
     get latest version from the svn repository
@@ -1513,12 +1513,12 @@ In order to update the student's code you first have to update the svn and the g
    \texttt{ git commit -a }\\
     a new file is added to the version control
   \end{itemize}
-  \item At different computers the student has allways access to the latest baci version stored in his home directory (Baci\_bare). Therefore, Baci\_bare need to be updated regularly.
+  \item At different computers the student has always access to the latest baci version stored in his home directory (Baci\_bare). Therefore, Baci\_bare need to be updated regularly.
   \begin{itemize}
     \item git pull cannot be executed from baci\_bare $\rightarrow$ update Baci\_bare: \\
-  \texttt{ git push $\sim$ /student/Baci\_bare $\rightarrow$ update Baci\_bare}
+  \texttt{ git push origin} (executed student's scratch)
     \item getting latest version from Baci\_bare: \\
-   \texttt{ git pull $\sim$/Baci\_bare $\rightarrow$ update Baci\_bare}
+   \texttt{ git pull origin} $\rightarrow$ update Baci\_bare (executed student's scratch) 
   \end{itemize}
   
   \item \texttt{gitk} \\
