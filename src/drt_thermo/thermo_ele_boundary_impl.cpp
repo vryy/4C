@@ -201,9 +201,13 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     // access parameters of the condition
     const std::string* tempstate = cond->Get<std::string>("temperature state");
     double coeff = cond->GetDouble("coeff");
-    double surtemp = cond->GetDouble("surtemp");
     const int curvenum = cond->GetInt("curve");
     const double time = params.get<double>("total time");
+
+    double surtemp = cond->GetDouble("surtemp");
+    // increase the surrounding temperature step by step (scale with a time curve)
+    const int surtempcurvenum = cond->GetInt("surtempcurve");
+
     // find out whether we shall use a time curve and get the factor
     double curvefac = 1.0;
     if (curvenum>=0)
@@ -212,6 +216,14 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     }
     // multiply heat convection coefficient with the timecurve factor
     coeff *= curvefac;
+
+    double surtempcurvefac = 1.0;
+    if (surtempcurvenum>=0)
+    {
+      surtempcurvefac = DRT::Problem::Instance()->Curve(surtempcurvenum).f(time);
+    }
+    // multiply surrounding temperatures with the timecurve factor
+    surtemp *= surtempcurvefac;
 
     if (*tempstate == "Tempnp")
     {
@@ -520,7 +532,8 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateThermoConvection(
     // q . n = h ( T - T_sur )
 
     // multiply fac_ * coeff
-    // --> must be insert in balance equation es positive term, but fext is included as negative --> scale with (-1)
+    // --> must be insert in balance equation es positive term,
+    // but fext is included as negative --> scale with (-1)
     double coefffac_ = fac_ * coeff;
 
     // get the current temperature

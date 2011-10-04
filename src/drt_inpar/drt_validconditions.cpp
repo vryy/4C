@@ -2485,6 +2485,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   thermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("surtemp")));
   thermoconvectcomponents.push_back(Teuchos::rcp(new RealConditionComponent("surtemp")));
   // time curve
+  thermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("surtempcurve")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new IntConditionComponent("surtempcurve",true,true)));
+  // time curve
   thermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("curve")));
   thermoconvectcomponents.push_back(Teuchos::rcp(new IntConditionComponent("curve",true,true)));
 
