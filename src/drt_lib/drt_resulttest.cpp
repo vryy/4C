@@ -75,7 +75,7 @@ int ResultTest::CompareValues(double actresult, DRT::INPUT::LineDefinition& res)
   res.ExtractDouble("TOLERANCE",tolerance);
   res.ExtractString("NAME",name);
 
-  fprintf(err,"actual = %24.16f, given = %24.16f, diff = %24.16f\n",
+  fprintf(err,"actual = %.17e, given = %.17e, diff = %.17e\n",
           actresult, givenresult, actresult-givenresult);
   if (!(FABS(FABS(actresult-givenresult)-FABS(actresult-givenresult)) < tolerance) )
   {
@@ -84,7 +84,7 @@ int ResultTest::CompareValues(double actresult, DRT::INPUT::LineDefinition& res)
   }
   else if (FABS(actresult-givenresult) > tolerance)
   {
-    printf("RESULTCHECK: %s not correct. actresult=%15.9e, givenresult=%15.9e\n",
+    printf("RESULTCHECK: %s not correct. actresult=%.17e, givenresult=%.17e\n",
            name.c_str(), actresult, givenresult);
     ret = 1;
   }

@@ -2511,6 +2511,9 @@ void FLD::CombustFluidImplicitTimeInt::Output()
   //if (step_ % 10 == 0 or step_== 1) //write every 5th time step only
   {
     OutputToGmsh("solution_field_pressure","solution_field_velocity",step_, time_);
+#ifdef GMSH_REF_FIELDS
+    OutputToGmsh("mod_start_field_pres","mod_start_field_vel",step_, time_);
+#endif
   }
 
 //  if (step_%upres_ == 0)  //write solution
@@ -2763,7 +2766,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
       //---------------------------------------
       // write pressure jump at Gaussian points
       //---------------------------------------
-#if 1
+#ifdef GMSH_WRITE_JUMPS
       if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion or
           combusttype_ == INPAR::COMBUST::combusttype_twophaseflowjump)
       {
@@ -2894,7 +2897,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
                 // write data to Gmsh file
                 IO::GMSH::ScalarToStream(posXYZDomain, presjump, gmshfilecontent);
 
-#if 0
+#ifdef GMSH_AVERAGE_JUMP
                 // compute average pressure jump
                 {
                   // here, a triangular boundary integration cell is assumed (numvertices = 3)
@@ -3463,7 +3466,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         }
       }
       gmshfilecontent << "};\n";
-#if 1
+#ifdef GMSH_WRITE_JUMPS
       //---------------------------------------
       // write velocity jump at Gaussian points
       //---------------------------------------
@@ -3684,7 +3687,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
                 //IO::GMSH::VectorToStream(posXYZDomain, veljump, gmshfilecontent);
                 IO::GMSH::ScalarToStream(posXYZDomain, veljumpnorm, gmshfilecontent);
 
-#if 0
+#ifdef GMSH_AVERAGE_JUMP
                 // compute average velocity jump
                 {
                   // here, a triangular boundary integration cell is assumed (numvertices = 3)
@@ -4405,7 +4408,10 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
   } // end loop over element nodes
   cout0_ << "done" << std::endl;
 #endif
-  //OutputToGmsh("mod_start_field_pres","mod_start_field_vel",Step(), Time());
+
+#ifdef GMSH_REF_FIELDS
+  OutputToGmsh("mod_start_field_pres","mod_start_field_vel",Step(), Time());
+#endif
 }
 
 

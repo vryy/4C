@@ -141,6 +141,13 @@ Maintainer: Florian Henke
 //gmsh output of subgrid velocity
 //#define SUGRVEL_OUTPUT // don't forget to transfer the time step
 
+//--------------------------
+// combustion output options
+//--------------------------
+//#define GMSH_AVERAGE_JUMP
+//#define GMSH_WRITE_JUMPS
+//#define GMSH_REF_FIELDS
+
 //-----------------------
 // Enrichment computation
 //-----------------------
