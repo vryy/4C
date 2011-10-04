@@ -5707,29 +5707,37 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       {
         const int pvi = vi*numdofpernode_+numscal_;
         const double timefacfac_diffus_valence_k_mig_vi = timefacfac*diffus_valence_k*migconv_(vi);
+        const double timefacfac_diffus_valence_m_mig_vi = timefacfac*diffus_[numscal_]*valence_[numscal_]*migconv_(vi);
 
         for (int ui=0; ui<nen_; ++ui)
         {
-          const int fui = ui*numdofpernode_+k;
+          // matrix entries
+          double matvalconc = 0.0;
+          double matvalpot = 0.0;
 
           double laplawf(0.0);
           GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
 
           // use 2nd order pde derived from electroneutrality condition (k=1,...,m-1)
           // a) derivative w.r.t. concentration c_k
-          emat(pvi, fui) -= valence_[k]*(timefacfac_diffus_valence_k_mig_vi*funct_(ui));
-          emat(pvi, fui) += valence_[k]*(timefacfac*diffus_[k]*laplawf);
+          matvalconc -= (timefacfac_diffus_valence_k_mig_vi*funct_(ui));
+          matvalconc += (timefacfac*diffus_[k]*laplawf);
           // b) derivative w.r.t. electric potential
-          emat(pvi, ui*numdofpernode_+numscal_) += valence_[k]*(frt*timefacfac*diffus_valence_k*conint_[k]*laplawf);
+          matvalpot += (frt*timefacfac*diffus_valence_k*conint_[k]*laplawf);
 
           // care for eliminated species with index m
           //(diffus_ and valence_ vector were extended in GetMaterialParams()!)
           // a) derivative w.r.t. concentration c_k
-          const double timefacfac_diffus_valence_m_mig_vi = timefacfac*diffus_[numscal_]*valence_[numscal_]*migconv_(vi);
-          emat(pvi, fui) += valence_[k]*(timefacfac_diffus_valence_m_mig_vi*funct_(ui));
-          emat(pvi, fui) -= valence_[k]*(timefacfac*diffus_[numscal_]*laplawf);
+          matvalconc += (timefacfac_diffus_valence_m_mig_vi*funct_(ui));
+          matvalconc -= (timefacfac*diffus_[numscal_]*laplawf);
           // b) derivative w.r.t. electric potential
-          emat(pvi, ui*numdofpernode_+numscal_) -= valence_[k]*(frt*timefacfac*diffus_[numscal_]*valence_[numscal_]*conint_[k]*laplawf);
+          matvalpot -= (frt*timefacfac*diffus_[numscal_]*valence_[numscal_]*conint_[k]*laplawf);
+
+          // try to access the element matrix not too often. Can be costly
+          const int fui = ui*numdofpernode_+k;
+          emat(pvi,fui) += valence_[k]*matvalconc;
+          const int pui = ui*numdofpernode_+numscal_;
+          emat(pvi,pui) += valence_[k]*matvalpot;
 
         } // for ui
       } // for vi
