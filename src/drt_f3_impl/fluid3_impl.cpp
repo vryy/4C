@@ -8233,12 +8233,15 @@ namespace DRT
 
           LINALG::Matrix<3,1> sol(true); // sol carries xi_1, xi_2, d (distance)
 
-          if(side_distype == DRT::Element::tri3)
+          if(side_distype == DRT::Element::tri3 or
+             side_distype == DRT::Element::tri6)
           {
         	  sol(0) = 0.333333333333333;
         	  sol(1) = 0.333333333333333;
           }
-          else if( side_distype == DRT::Element::quad4)
+          else if( side_distype == DRT::Element::quad4 or
+                   side_distype == DRT::Element::quad8 or
+                   side_distype == DRT::Element::quad9)
           {
         	  sol(0) = 0.0;
         	  sol(1) = 0.0;
