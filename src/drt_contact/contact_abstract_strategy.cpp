@@ -1002,6 +1002,33 @@ void CONTACT::CoAbstractStrategy::Evaluate(RCP<LINALG::SparseOperator>& kteff,
 }
 
 /*----------------------------------------------------------------------*
+ | evaluate matrix of normals (for VelocityUpdate)            popp 10/11|
+ *----------------------------------------------------------------------*/
+RCP<LINALG::SparseMatrix> CONTACT::CoAbstractStrategy::EvaluateNormals(RCP<Epetra_Vector> dis)
+{
+  // set displacement state and evaluate nodal normals
+  for (int i=0; i<(int)interface_.size(); ++i)
+  {
+    interface_[i]->SetState("displacement", dis);
+    interface_[i]->EvaluateNodalNormals();
+  }
+
+  // create empty global matrix
+  // (rectangular: rows=snodes, cols=sdofs)
+  RCP<LINALG::SparseMatrix> normals = rcp(new LINALG::SparseMatrix(*gsnoderowmap_,3));
+
+  // assemble nodal normals
+  for (int i=0; i<(int)interface_.size(); ++i)
+    interface_[i]->AssembleNormals(*normals);
+
+  // complete global matrix
+  // (rectangular: rows=snodes, cols=sdofs)
+  normals->Complete(*gsdofrowmap_,*gsnoderowmap_);
+
+  return normals;
+}
+
+/*----------------------------------------------------------------------*
  |  Store Lagrange mulitpliers and disp. jumps into CNode     popp 06/08|
  *----------------------------------------------------------------------*/
 void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type)

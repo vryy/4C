@@ -512,6 +512,14 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     */
     void Evaluate(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis);
 
+    /*!
+    \brief Evaluate matrix of nodal normals
+
+    This is needed for energy-conserving time integration (Velocity-Update)
+    */
+
+    RCP<LINALG::SparseMatrix> EvaluateNormals(RCP<Epetra_Vector> dis);
+
     //@}
 
     //! @name Quantity control methods

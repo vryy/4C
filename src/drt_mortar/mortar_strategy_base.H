@@ -169,6 +169,7 @@ class StrategyBase
     virtual void DoWriteRestart(RCP<Epetra_Vector>& activetoggle,RCP<Epetra_Vector>& sliptoggle,RCP<Epetra_Vector>& weightedwear) = 0;
     virtual void Evaluate(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis) = 0;
     virtual void EvaluateMeshtying(RCP<LINALG::SparseOperator>& kteff, RCP<Epetra_Vector>& feff, RCP<Epetra_Vector> dis) = 0;
+    virtual RCP<LINALG::SparseMatrix> EvaluateNormals(RCP<Epetra_Vector> dis) = 0;
     virtual void EvaluateReferenceState(int step,const RCP<Epetra_Vector> vec) = 0;
     virtual void EvaluateRelMov() = 0;
     virtual void EvaluateRelMovPredict() = 0;

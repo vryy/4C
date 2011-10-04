@@ -559,6 +559,12 @@ public:
   virtual void Evaluate();
 
   /*!
+  \brief Evaluate nodal normals
+
+  */
+  virtual void EvaluateNodalNormals();
+
+  /*!
   \brief Export nodal normals
 
   This method exports / communicates the nodal normal vector from row to
@@ -619,6 +625,12 @@ public:
   */
   virtual void AssembleDM(LINALG::SparseMatrix& dglobal,
                           LINALG::SparseMatrix& mglobal);
+
+  /*!
+  \brief Assemble matrix of normals N
+
+  */
+  virtual void AssembleNormals(LINALG::SparseMatrix& nglobal);
 
   /*!
   \brief Assemble transformation matrices T and T^(-1)

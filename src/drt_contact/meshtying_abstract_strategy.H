@@ -453,6 +453,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     void SaveReferenceState(RCP<Epetra_Vector> dis) {}
     void UpdateActiveSet() {}
     void UpdateActiveSetSemiSmooth() {}
+    RCP<LINALG::SparseMatrix> EvaluateNormals(RCP<Epetra_Vector> dis) {return Teuchos::null;}
     void EvaluateReferenceState (int step,const RCP<Epetra_Vector> vec){}
     void EvaluateRelMov() {}
     void EvaluateRelMovPredict() {}

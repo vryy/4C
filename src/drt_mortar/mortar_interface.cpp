@@ -1387,19 +1387,8 @@ void MORTAR::MortarInterface::Evaluate()
   fclose(fp);
 #endif // #ifdef MORTARGMSHCELLS
     
-  // loop over proc's slave nodes of the interface
-  // use row map and export to column map later
-  // (use boundary map to include slave side boundary nodes)
-  for(int i=0; i<snoderowmapbound_->NumMyElements();++i)
-  {
-    int gid = snoderowmapbound_->GID(i);
-    DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    MortarNode* mrtrnode = static_cast<MortarNode*>(node);
-
-    // build averaged normal at each slave node
-    mrtrnode->BuildAveragedNormal();
-  }
+  // evaluate nodal normals on slave node row map
+  EvaluateNodalNormals();
 
   // export nodal normals to slave node column map
   ExportNodalNormals();
@@ -1444,6 +1433,28 @@ void MORTAR::MortarInterface::Evaluate()
   fclose(fp);
 #endif // #ifdef MORTARGMSHCELLS
     
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  evaluate nodal normals (public)                           popp 10/11|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::EvaluateNodalNormals()
+{
+  // loop over proc's slave nodes of the interface
+  // use row map and export to column map later
+  // (use boundary map to include slave side boundary nodes)
+  for(int i=0; i<snoderowmapbound_->NumMyElements();++i)
+  {
+    int gid = snoderowmapbound_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    MortarNode* mrtrnode = static_cast<MortarNode*>(node);
+
+    // build averaged normal at each slave node
+    mrtrnode->BuildAveragedNormal();
+  }
+
   return;
 }
 
@@ -2385,6 +2396,38 @@ void MORTAR::MortarInterface::AssembleDM(LINALG::SparseMatrix& dglobal,
 
       mglobal.Assemble(-1,Mnode,lmrow,lmrowowner,lmcol);
     }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble matrix of normals                                popp 10/11|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarInterface::AssembleNormals(LINALG::SparseMatrix& nglobal)
+{
+  // get out of here if not participating in interface
+  if (!lComm())
+    return;
+
+  // loop over proc's slave nodes of the interface for assembly
+  // use standard row map to assemble each node only once
+  for (int i=0;i<snoderowmap_->NumMyElements();++i)
+  {
+    int gid = snoderowmap_->GID(i);
+    DRT::Node* node = idiscret_->gNode(gid);
+    if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+    MortarNode* mrtrnode = static_cast<MortarNode*>(node);
+
+    if (mrtrnode->Owner() != Comm().MyPID())
+      dserror("ERROR: AssembleDM: Node ownership inconsistency!");
+
+    // nodal normal
+    double* nodalnormal = mrtrnode->MoData().n();
+
+    // add normal to corresponding row in global matrix
+    for (int k=0;k<mrtrnode->NumDof();++k)
+      nglobal.Assemble(nodalnormal[k], gid, mrtrnode->Dofs()[k]);
   }
 
   return;
