@@ -423,7 +423,7 @@ private:
       Epetra_SerialDenseMatrix* force);
 
   //! assembly of transformation matrix 4-noded -> 2-noded
-  Epetra_SerialDenseMatrix* AssembleTrafoMatrix();
+  void AssembleTrafoMatrix(Epetra_SerialDenseMatrix* trafomatrix);
 
   //! get current nodal positions and displacements
   void CurrentNodePosAndDisp(std::vector<double>& disp,

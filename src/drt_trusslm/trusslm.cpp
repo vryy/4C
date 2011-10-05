@@ -376,9 +376,10 @@ void DRT::ELEMENTS::TrussLm::SetUpReferenceGeometry(const vector<double>& xrefe,
     //lrefe_ = pow(pow(X_(3)-X_(0),2)+pow(X_(4)-X_(1),2)+pow(X_(5)-X_(2),2),0.5);
     //reference length of interpolated truss (2-noded)
 		for(int j=0; j<3; j++)
-			lrefe_ += (((X_(6+j)*N_B(0) + X_(9+j)*N_B(1))-(X_(j)*N_A(0) + X_(3+j)*N_A(1))) - ((X_(6+j)*N_B(0) + X_(9+j)*N_B(1))-(X_(j)*N_A(0) + X_(3+j)*N_A(1)))) *
-								(((X_(6+j)*N_B(0) + X_(9+j)*N_B(1))-(X_(j)*N_A(0) + X_(3+j)*N_A(1))) - ((X_(6+j)*N_B(0) + X_(9+j)*N_B(1))-(X_(j)*N_A(0) + X_(3+j)*N_A(1))));
+			lrefe_ += ((X_(6+j)*N_B(0) + X_(9+j)*N_B(1))-(X_(j)*N_A(0) + X_(3+j)*N_A(1)))*((X_(6+j)*N_B(0) + X_(9+j)*N_B(1))-(X_(j)*N_A(0) + X_(3+j)*N_A(1)));
 		lrefe_ = sqrt(lrefe_);
+
+		cout<<"lrefe_ = "<<lrefe_<<endl;
 
     //set jacobi determinants for integration of mass matrix and at nodes
     // note: jacobie matrices for interpolated 2-node system
@@ -407,7 +408,7 @@ int DRT::ELEMENTS::TrussLmType::Initialize(DRT::Discretization& dis)
   vector<double> xrefe;
 
   //resize xrefe for the number of coordinates we need to store
-  xrefe.resize(3*2);
+  xrefe.resize(3*4);
 
   //setting beam reference director correctly
   for (int i=0; i<  dis.NumMyColElements(); ++i)

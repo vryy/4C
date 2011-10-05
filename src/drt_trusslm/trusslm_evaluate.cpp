@@ -489,16 +489,17 @@ void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass(ParameterList& params,
 {
 	//----------------------- Preliminary setup------------------------
 	//first, get the transformation matrix from 4-noded to 2-noded
-	Epetra_SerialDenseMatrix trafomatrix = AssembleTrafoMatrix();
+	Epetra_SerialDenseMatrix trafomatrix(6,12);
+	AssembleTrafoMatrix(&trafomatrix);
 
-	// cout of Trafo matrix
-	cout<<"transformation matrix:"<<endl;
+	/*/ cout of Trafo matrix
+	cout<<"transformation matrix:"<<trafomatrix.M()<<", "<<trafomatrix.N()<<endl;
 	for(int i=0; i<trafomatrix.M(); i++)
 	{
 		for(int j=0; j<trafomatrix.N(); j++)
-			cout<<trafomatrix(i,j)<<" ";
+			cout<<scientific<<trafomatrix(i,j)<<" ";
 		cout<<endl;
-	}
+	}*/
 
   //current node position (first entries 0 .. 2 for first node, 3 ..5 for second node, ...)
 	Epetra_SerialDenseMatrix xcurr(12,1);
@@ -512,22 +513,16 @@ void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass(ParameterList& params,
   CurrentNodePosAndDisp(disp, &xcurr, &ucurr);
 
   // interpolated stiffness and mass matrix
-  Epetra_SerialDenseMatrix* stiffmatint;
-  Epetra_SerialDenseMatrix* massmatint;
+  Epetra_SerialDenseMatrix* stiffmatint = new Epetra_SerialDenseMatrix(6,6);
+  Epetra_SerialDenseMatrix* massmatint = new Epetra_SerialDenseMatrix(6,6);
   // internal force vector
-  Epetra_SerialDenseMatrix* forceint;
+  Epetra_SerialDenseMatrix* forceint = new Epetra_SerialDenseMatrix(6,1);
 
-  if(stiffmatrix != NULL)
-  	stiffmatint = new Epetra_SerialDenseMatrix(6,6);
-  else
+  if(stiffmatrix == NULL)
   	stiffmatint = NULL;
-  if(massmatrix != NULL)
-  	massmatint = new Epetra_SerialDenseMatrix(6,6);
-  else
+  if(massmatrix == NULL)
   	massmatint = NULL;
-  if(force != NULL)
-  	forceint = new Epetra_SerialDenseMatrix(6,1);
-  else
+  if(force == NULL)
   	forceint = NULL;
 
   //-------------forward projection of real (4-node) system onto interpolated system-------------------------
@@ -546,22 +541,27 @@ void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass(ParameterList& params,
   else
 		dserror("Unknown type kintype_ for TrussLm");
 
-  // cout of stiffness matrix and mass matrix
-  cout<<"interpolated stiffness matrix:"<<endl;
-  for(int i=0; i<stiffmatint->M(); i++)
+  /*/ cout of stiffness matrix and mass matrix
+  if(stiffmatint!=NULL)
   {
-  	for(int j=0; j<stiffmatint->N(); j++)
-  		cout<<(*stiffmatint)(i,j)<<" ";
-  	cout<<endl;
+  	cout<<"interpolated stiffness matrix: "<<stiffmatint->M()<<", "<<stiffmatint->N()<<endl;
+		for(int i=0; i<stiffmatint->M(); i++)
+		{
+			for(int j=0; j<stiffmatint->N(); j++)
+				cout<<scientific<<(*stiffmatint)(i,j)<<" ";
+			cout<<endl;
+		}
   }
-  cout<<"interpolated mass matrix:"<<endl;
-  for(int i=0; i<massmatint->M(); i++)
+  if(massmatint!=NULL)
   {
-  	for(int j=0; j<massmatint->N(); j++)
-  		cout<<(*massmatint)(i,j)<<" ";
-  	cout<<endl;
-  }
-
+  	cout<<"interpolated mass matrix: "<<massmatint->M()<<", "<<massmatint->N()<<endl;
+		for(int i=0; i<massmatint->M(); i++)
+		{
+			for(int j=0; j<massmatint->N(); j++)
+				cout<<scientific<<(*massmatint)(i,j)<<" ";
+			cout<<endl;
+		}
+  }*/
   /*the following function call applies statistical forces and damping matrix according to the fluctuation dissipation theorem;
    * it is dedicated to the application of truss3 elements in the frame of statistical mechanics problems; for these problems a
    * special vector has to be passed to the element packed in the params parameter list; in case that the control routine calling
@@ -572,21 +572,27 @@ void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass(ParameterList& params,
 
   //-------------backwards projection of interpolated system onto real (4-node) system-------------------------
   RestoreSystemSize(trafomatrix, stiffmatint, massmatint, forceint, stiffmatrix, massmatrix, force);
-  // cout of stiffness matrix and mass matrix
-  cout<<"resulting stiffness matrix:"<<endl;
-  for(int i=0; i<stiffmatrix->M(); i++)
+  /*/ cout of stiffness matrix and mass matrix
+  if(stiffmatrix!=NULL)
   {
-  	for(int j=0; j<stiffmatrix->N(); j++)
-  		cout<<(*stiffmatrix)(i,j)<<" ";
-  	cout<<endl;
+    cout<<"resulting stiffness matrix: "<<stiffmatrix->M()<<", "<<stiffmatrix->N()<<endl;
+		for(int i=0; i<stiffmatrix->M(); i++)
+		{
+			for(int j=0; j<stiffmatrix->N(); j++)
+				cout<<scientific<<(*stiffmatrix)(i,j)<<" ";
+			cout<<endl;
+		}
   }
-  cout<<"resulting mass matrix:"<<endl;
-  for(int i=0; i<massmatrix->M(); i++)
+  if(massmatrix!=NULL)
   {
-  	for(int j=0; j<massmatrix->N(); j++)
-  		cout<<(*massmatrix)(i,j)<<" ";
-  	cout<<endl;
-  }
+    cout<<"resulting mass matrix: "<<massmatrix->M()<<", "<<massmatrix->N()<<endl;
+		for(int i=0; i<massmatrix->M(); i++)
+		{
+			for(int j=0; j<massmatrix->N(); j++)
+				cout<<scientific<<(*massmatrix)(i,j)<<" ";
+			cout<<endl;
+		}
+  }*/
 
   return;
 }
@@ -699,7 +705,7 @@ void DRT::ELEMENTS::TrussLm::StiffAndMassTotLag(const Epetra_SerialDenseVector& 
 /*--------------------------------------------------------------------------------------*
  | assembly of transformation matrix                                       mueller 09/11|
  *--------------------------------------------------------------------------------------*/
-Epetra_SerialDenseMatrix* DRT::ELEMENTS::TrussLm::AssembleTrafoMatrix()
+void DRT::ELEMENTS::TrussLm::AssembleTrafoMatrix(Epetra_SerialDenseMatrix* trafomatrix)
 {
 	/* here, we set up the matrix projecting the 4-node system onto a 2-node system*/
   const DiscretizationType distype = this->Shape();
@@ -712,16 +718,14 @@ Epetra_SerialDenseMatrix* DRT::ELEMENTS::TrussLm::AssembleTrafoMatrix()
   DRT::UTILS::shape_function_1D(N_B,xiB_,distype);
 
   // block matrix holding shape function values for specific xiA, xiB of trusses A and B
-  Epetra_SerialDenseMatrix trafomatrix(6,12,true);
   for(int i=0; i<3; i++)
   {
-  	trafomatrix(i,i) = N_A(0);
-  	trafomatrix(i,i+3) = N_A(1);
-  	trafomatrix(i+3,i+6) = N_B(0);
-  	trafomatrix(i+3,i+9) = N_B(1);
+  	(*trafomatrix)(i,i) = N_A(0);
+  	(*trafomatrix)(i,i+3) = N_A(1);
+  	(*trafomatrix)(i+3,i+6) = N_B(0);
+  	(*trafomatrix)(i+3,i+9) = N_B(1);
   }
-  Epetra_SerialDenseMatrix* result = &trafomatrix;
-  return result;
+  return;
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -780,13 +784,22 @@ void DRT::ELEMENTS::TrussLm::RestoreSystemSize(Epetra_SerialDenseMatrix& trafoma
 																							 Epetra_SerialDenseMatrix* massmatrix,
 																							 Epetra_SerialDenseMatrix* force)
 {
+	Epetra_SerialDenseMatrix temp;
   // stiffness matrix
-  Epetra_SerialDenseMatrix temp(stiffmatint->M(),stiffmatrix->M());
-  temp.Multiply('N','N',1.0,*stiffmatint,trafomatrix,0.0);
-  stiffmatrix->Multiply('T','N',1.0,trafomatrix,temp,0.0);
-  temp.Multiply('N','N',1.0,*massmatint,trafomatrix,0.0);
-  massmatrix->Multiply('T','N',1.0,trafomatrix,temp,0.0);
-  force->Multiply('T','N',1.0,trafomatrix,*forceint,0.0);
+	if(stiffmatint!=NULL)
+	{
+		temp.Reshape(stiffmatint->M(),stiffmatrix->M());
+		temp.Multiply('N','N',1.0,*stiffmatint,trafomatrix,0.0);
+		stiffmatrix->Multiply('T','N',1.0,trafomatrix,temp,0.0);
+	}
+	if(massmatint!=NULL)
+	{
+		temp.Reshape(massmatint->M(),massmatrix->M());
+		temp.Multiply('N','N',1.0,*massmatint,trafomatrix,0.0);
+		massmatrix->Multiply('T','N',1.0,trafomatrix,temp,0.0);
+	}
+	if(force!=NULL)
+		force->Multiply('T','N',1.0,trafomatrix,*forceint,0.0);
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
