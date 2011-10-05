@@ -923,11 +923,11 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity(double density0)
 
 
 /*----------------------------------------------------------------------*
- | convergence check for low-Mach-number flow                  vg 01/09 |
+ | convergence check (only for low-Mach-number flow)           vg 09/11 |
  *----------------------------------------------------------------------*/
-bool SCATRA::ScaTraTimIntImpl::LomaConvergenceCheck(int          itnum,
-                                                    int          itmax,
-                                                    const double ittol)
+bool SCATRA::ScaTraTimIntImpl::ConvergenceCheck(int          itnum,
+                                                int          itmax,
+                                                const double ittol)
 {
   bool stopnonliniter = false;
 
@@ -966,7 +966,6 @@ bool SCATRA::ScaTraTimIntImpl::LomaConvergenceCheck(int          itnum,
 
   if (myrank_==0)
   {
-    cout<<"\n************************\n  OUTER ITERATION STEP\n************************\n";
     printf("+------------+-------------------+--------------+--------------+\n");
     printf("|- step/max -|- tol      [norm] -|- residual   -|- scalar-inc -|\n");
     printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |",

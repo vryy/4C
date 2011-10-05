@@ -276,6 +276,24 @@ public:
   }
 
   /*!
+  \brief Get number of degrees of freedom of a certain node
+         (implements pure virtual DRT::Element)
+
+  The element decides how many degrees of freedom its nodes must have.
+  As this may vary along a simulation, the element can redecide the
+  number of degrees of freedom per node along the way for each of it's nodes
+  separately.
+
+  This is the version for a coupling to scalar transport with a second dof set.
+  */
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+  {
+    // number of dofs for scalar transport
+    if (nds==1){return 1;}
+    return NumDofPerNode(node);
+  }
+
+  /*!
   \brief Get number of degrees of freedom per element
          (implements pure virtual DRT::Element)
 
@@ -460,6 +478,7 @@ private:
     none,
     calc_fluid_systemmat_and_residual,
     calc_porousflow_sysmat_and_residual,
+    calc_loma_mono_odblock,
     calc_fluid_genalpha_sysmat_and_residual,
     calc_fluid_genalpha_update_for_subscales,
     calc_fluid_genalpha_average_for_subscales_and_residual,

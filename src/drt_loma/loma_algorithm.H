@@ -64,17 +64,69 @@ namespace LOMA
     /// prepare time step
     void PrepareTimeStep();
 
-    /// do generalized-alpha outer iteration loop
-    void GenAlphaOuterLoop();
+    /// do (partitioned) outer iteration loop
+    void OuterLoop();
 
-    /// do one-step-theta/BDF2 outer iteration loop
-    void OSTBDF2OuterLoop();
+    /// do monolithic iteration loop
+    void MonoLoop();
+
+    /// set fluid values required in scatra
+    void SetFluidValuesInScaTra();
+
+    /// set scatra values required in fluid
+    void SetScaTraValuesInFluid();
+
+    /// set up right-hand-side for monolithic low-Mach-number system
+    void SetupMonoLomaMatrix();
+
+    /// evaluate off-diagonal block with fluid weighting functions
+    void EvaluateLomaODBlockMatFluid(Teuchos::RCP<LINALG::SparseMatrix> mat_fs);
+
+    /// evaluate off-diagonal block with scatra weighting functions
+    //void EvaluateLomaODBlockMatScaTra(Teuchos::RCP<LINALG::SparseMatrix> mat_sf);
+
+    /// set up right-hand-side for monolithic low-Mach-number system
+    void SetupMonoLomaRHS();
+
+    /// solve monolithic low-Mach-number system
+    void MonoLomaSystemSolve();
+
+    /// update for next iteration step for monolithic low-Mach-number system
+    void IterUpdate();
+
+    /// convergence Check for present iteration step
+    bool ConvergenceCheck(int itnum);
 
     /// update for next time step
-    void Update();
+    void TimeUpdate();
 
     /// write output
     void Output();
+
+    /// flag for monolithic solver
+    bool monolithic_;
+
+    /// dof row map splitted in (field) blocks for monolithic solver
+    LINALG::MultiMapExtractor lomablockdofrowmap_;
+
+    /// combined Dirichlet boundary condition map for monolithic solver
+    /// (unique map of all dofs with Dirichlet boundary conditions)
+    Teuchos::RCP<Epetra_Map> lomadbcmap_;
+
+    /// incremental vector for monolithic solver
+    Teuchos::RCP<Epetra_Vector> lomaincrement_;
+
+    /// rhs vector for monolithic solver
+    Teuchos::RCP<Epetra_Vector> lomarhs_;
+
+    /// vector of zeros for Dirichlet boundary conditions for monolithic solver
+    Teuchos::RCP<Epetra_Vector> zeros_;
+
+    /// block matrix for monolithic solver
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> lomasystemmatrix_;
+
+    /// monolithic solver
+    Teuchos::RCP<LINALG::Solver> lomasolver_;
 
     /// (preliminary) maximum number of iterations and tolerance for outer iteration
     int     itmax_;

@@ -47,10 +47,13 @@ public:
     virtual Teuchos::RCP<const Epetra_Vector> Accnp() { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Vector> Accn() { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Vector> Accam();
+    virtual Teuchos::RCP<const Epetra_Vector> Scaaf() { dserror("not implemented"); return Teuchos::null; };
+    virtual Teuchos::RCP<const Epetra_Vector> Scaam() { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Vector> Hist();
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp();
     virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel();
     virtual Teuchos::RCP<const Epetra_Map>    DofRowMap();
+    virtual Teuchos::RCP<const Epetra_Map>    DofRowMap(unsigned nds) { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<LINALG::SparseMatrix>SystemMatrix();
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives();
@@ -63,7 +66,10 @@ public:
     virtual void TimeLoop();
     virtual void PrepareTimeStep();
     virtual void PrepareTimeandStep() { dserror("not implemented!"); return; }
+    virtual void PrepareSolve() { dserror("not implemented!"); return; }
 
+    virtual bool ConvergenceCheck(int itnum, int itmax, const double ittol) { dserror("not implemented!"); return false; }
+    virtual void IterUpdate(const Teuchos::RCP<const Epetra_Vector> increment) { dserror("not implemented!"); return; }
     virtual void Update();
     virtual void Output();
     virtual void StatisticsOutput() { dserror("not implemented!"); return; }

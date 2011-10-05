@@ -76,6 +76,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap() { dserror("not implemented");
                                                          const Epetra_Map* dofrowmap = fluiddis_->DofRowMap();
                                                          return Teuchos::rcp(dofrowmap, false); };
+    virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix(){ dserror("not implemented");
     // if anything (e.g. monolithic FSI) we give fluid coupling and interface DOF combined back
                                                                return fluid_.SystemMatrix(); };
@@ -176,6 +177,8 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> Velnm(){ dserror("not implemented"); return null; };
     virtual Teuchos::RCP<const Epetra_Vector> Accnp(){ dserror("not implemented"); return null; };
     virtual Teuchos::RCP<const Epetra_Vector> Accn(){ dserror("not implemented"); return null; };
+    virtual Teuchos::RCP<const Epetra_Vector> Scaaf() { dserror("not implemented"); return Teuchos::null; };
+    virtual Teuchos::RCP<const Epetra_Vector> Scaam() { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Vector> Hist();
     virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel(){ dserror("not implemented"); return null; };
 
@@ -187,7 +190,10 @@ namespace ADAPTER
     virtual void TimeLoop();
     virtual void PrepareTimeStep();
     virtual void PrepareTimeandStep() { dserror("not implemented!"); return; }
+    virtual void PrepareSolve() { dserror("not implemented!"); return; }
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc);
+    virtual bool ConvergenceCheck(int itnum, int itmax, const double ittol) { dserror("not implemented!"); return false; }
+    virtual void IterUpdate(const Teuchos::RCP<const Epetra_Vector> increment) { dserror("not implemented!"); return; }
     virtual void Update();
     virtual void Output();
     virtual void StatisticsOutput() { dserror("not implemented!"); return; }

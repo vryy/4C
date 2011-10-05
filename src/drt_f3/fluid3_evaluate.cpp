@@ -69,6 +69,8 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
     act = Fluid3::calc_fluid_systemmat_and_residual;
   else if (action == "calc_porousflow_sysmat_and_residual")
     act = Fluid3::calc_porousflow_sysmat_and_residual;
+  else if (action == "calc_loma_mono_odblock")
+    act = Fluid3::calc_loma_mono_odblock;
   else if (action == "calc_fluid_genalpha_sysmat_and_residual")
     act = Fluid3::calc_fluid_genalpha_sysmat_and_residual;
   else if (action == "time update for subscales")
@@ -186,6 +188,27 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       case calc_porousflow_sysmat_and_residual:
       {
         return DRT::ELEMENTS::Fluid3ImplInterface::Impl(Shape())->PoroEvaluate(
+               this,
+               discretization,
+               lm,
+               params,
+               mat,
+               elemat1,
+               elemat2,
+               elevec1,
+               elevec2,
+               elevec3 );
+      }
+      break;
+      //-----------------------------------------------------------------------
+      // standard implementation enabling time-integration schemes such as
+      // one-step-theta, BDF2, and generalized-alpha (n+alpha_F and n+1)
+      // for evaluation of off-diagonal matrix block for monolithic
+      // low-Mach-number solver
+      //-----------------------------------------------------------------------
+      case calc_loma_mono_odblock:
+      {
+        return DRT::ELEMENTS::Fluid3ImplInterface::Impl(Shape())->LomaMonoODBlockEvaluate(
                this,
                discretization,
                lm,

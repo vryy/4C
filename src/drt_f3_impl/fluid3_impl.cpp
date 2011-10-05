@@ -570,7 +570,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
   //  and at time n+1 otherwise)
   // ---------------------------------------------------------------------
   LINALG::Matrix<nsd_,nen_> edeadaf(true);
-  BodyForce(ele, f3Parameter_, edeadaf);
+  BodyForce(ele,f3Parameter_,edeadaf);
 
   // if not available, the arrays for the subscale quantities have to be
   // resized and initialised to zero
@@ -588,13 +588,12 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
   // acceleration/scalar time derivative values are at time n+alpha_M for
   // generalized-alpha scheme and at time n+1 for all other schemes
   // ---------------------------------------------------------------------
-
   // fill the local element vector/matrix with the global values
   // af_genalpha: velocity/pressure at time n+alpha_F
   // np_genalpha: velocity at time n+alpha_F, pressure at time n+1
   // ost:         velocity/pressure at time n+1
   LINALG::Matrix<nsd_,nen_> evelaf(true);
-  LINALG::Matrix<nen_,1> epreaf(true);
+  LINALG::Matrix<nen_,1>    epreaf(true);
   ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelaf, &epreaf,"velaf");
 
   // np_genalpha: additional vector for velocity at time n+1
@@ -609,11 +608,11 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
   ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &emhist, NULL,"hist");
 
   LINALG::Matrix<nsd_,nen_> eaccam(true);
-  LINALG::Matrix<nen_,1> escadtam(true);
+  LINALG::Matrix<nen_,1>    escadtam(true);
   ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &eaccam, &escadtam,"accam");
 
   LINALG::Matrix<nsd_,nen_> eveln(true);
-  LINALG::Matrix<nen_,1> escaam(true);
+  LINALG::Matrix<nen_,1>    escaam(true);
   ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &eveln, &escaam,"scaam");
 
   if (f3Parameter_->is_genalpha_) eveln.Clear();
@@ -739,28 +738,28 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat1,
   LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat2,
   LINALG::Matrix<(nsd_+1)*nen_,            1> & elevec1,
-  const LINALG::Matrix<nsd_,nen_> & evelaf,
-  const LINALG::Matrix<nen_,1>    & epreaf,
-  const LINALG::Matrix<nsd_,nen_> & evelnp,
-  const LINALG::Matrix<nen_,1>    & escaaf,
-  const LINALG::Matrix<nsd_,nen_> & emhist,
-  const LINALG::Matrix<nsd_,nen_> & eaccam,
-  const LINALG::Matrix<nen_,1>    & escadtam,
-  const LINALG::Matrix<nsd_,nen_> & eveln,
-  const LINALG::Matrix<nen_,1>    & escaam,
-  const LINALG::Matrix<nsd_,nen_> & edispnp,
-  const LINALG::Matrix<nsd_,nen_> & egridv,
-  const LINALG::Matrix<nsd_,nen_> & fsevelaf,
-  const LINALG::Matrix<nsd_,nen_> & evel_hat,
-  const LINALG::Matrix<nsd_*nsd_,nen_> & ereynoldsstress_hat,
-  Teuchos::RCP<MAT::Material>               mat,
-  bool                                      isale,
-  bool                                      isowned,
-  double CsDeltaSq,
-  double * saccn,
-  double * sveln,
-  double * svelnp,
-  const DRT::UTILS::GaussIntegration & intpoints )
+  const LINALG::Matrix<nsd_,nen_> &             evelaf,
+  const LINALG::Matrix<nen_,1>    &             epreaf,
+  const LINALG::Matrix<nsd_,nen_> &             evelnp,
+  const LINALG::Matrix<nen_,1>    &             escaaf,
+  const LINALG::Matrix<nsd_,nen_> &             emhist,
+  const LINALG::Matrix<nsd_,nen_> &             eaccam,
+  const LINALG::Matrix<nen_,1>    &             escadtam,
+  const LINALG::Matrix<nsd_,nen_> &             eveln,
+  const LINALG::Matrix<nen_,1>    &             escaam,
+  const LINALG::Matrix<nsd_,nen_> &             edispnp,
+  const LINALG::Matrix<nsd_,nen_> &             egridv,
+  const LINALG::Matrix<nsd_,nen_> &             fsevelaf,
+  const LINALG::Matrix<nsd_,nen_> &             evel_hat,
+  const LINALG::Matrix<nsd_*nsd_,nen_> &        ereynoldsstress_hat,
+  Teuchos::RCP<MAT::Material>                   mat,
+  bool                                          isale,
+  bool                                          isowned,
+  double                                        CsDeltaSq,
+  double *                                      saccn,
+  double *                                      sveln,
+  double *                                      svelnp,
+  const DRT::UTILS::GaussIntegration &          intpoints )
 {
   // flag for higher order elements
   is_higher_order_ele_ = IsHigherOrder<distype>::ishigherorder;
@@ -934,7 +933,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   // potential evaluation of material parameters, subgrid viscosity
   // and/or stabilization parameters at element center
   //------------------------------------------------------------------------
-
   // get material parameters at element center
   if (not f3Parameter_->mat_gp_ or not f3Parameter_->tau_gp_)
     GetMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam);
@@ -4131,13 +4129,9 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetResidualContinuityEq(
   // "incompressible" part of continuity residual: velocity divergence
   conres_old_ = vdiv_;
 
-  // initialize right-hand side of continuity residual to zero
-  // which is only modified for variable-density flow
-  rhscon_ = 0.0;
-
   if (f3Parameter_->is_genalpha_)
   {
-    if(f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
+    if (f3Parameter_->physicaltype_ == INPAR::FLUID::loma)
     {
       // time derivative of scalar at n+alpha_M
       const double tder_sca = funct_.Dot(escadtam);
@@ -4147,12 +4141,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetResidualContinuityEq(
 
       // convective scalar term at n+alpha_F
       conv_scaaf_ = velint_.Dot(grad_scaaf_);
-
-      // add subgrid-scale velocity part also to convective scalar term
-      // -> currently not taken into account
-      /*if (cross    != Fluid3::cross_stress_stab_none or
-          reynolds != Fluid3::reynolds_stress_stab_none)
-        conv_scaaf_ += sgvelint_.Dot(grad_scaaf_);*/
 
       /*
 
@@ -4167,6 +4155,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetResidualContinuityEq(
 
       // rhs of continuity equation (only relevant for low-Mach-number flow)
       rhscon_ = scadtfac_*tder_sca + scaconvfacaf_*conv_scaaf_ + thermpressadd_;
+
+      // residual of continuity equation
+      conres_old_ -= rhscon_;
+
+      // add subgrid-scale-velocity part to rhs of continuity equation
+      //if (f3Parameter_->cross_ != INPAR::FLUID::cross_stress_stab_none)
+        //rhscon_ += scaconvfacaf_*sgvelint_.Dot(grad_scaaf_);
     }
   }
   else
@@ -4210,25 +4205,22 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetResidualContinuityEq(
         // convective scalar term at n
         conv_scan_ = velintn_.Dot(grad_scan_);
 
-        // add subgrid-scale velocity part also to convective scalar term
-        // (subgrid-scale velocity at n+1 also approximately used at n)
-        // -> currently not taken into account
-        /*if (cross    != Fluid3::cross_stress_stab_none or
-              reynolds != Fluid3::reynolds_stress_stab_none)
-        {
-          conv_scaaf_ += sgvelint_.Dot(grad_scaaf_);
-          conv_scan_  += sgvelint_.Dot(grad_scan_);
-        }*/
-
         // rhs of continuity equation (only relevant for low-Mach-number flow)
-        /*rhscon_ = scadtfac_*(scaaf-scan)/f3Parameter_->dt_ +
-                  f3Parameter_->theta_*scaconvfacaf_*conv_scaaf_ +
-                  f3Parameter_->omtheta_*(scaconvfacn_*conv_scan_-vdivn) +
-                  thermpressadd_;*/
+        // (residual prepared for later multiplication by theta*dt in
+        //  evaluation of element matrix and vector contributions)
         rhscon_ = (scadtfac_*(scaaf-scan)/f3Parameter_->dt_ +
                           f3Parameter_->theta_*scaconvfacaf_*conv_scaaf_ +
                           f3Parameter_->omtheta_*(scaconvfacn_*conv_scan_-vdivn) +
                           thermpressadd_)/f3Parameter_->theta_;
+
+        // residual of continuity equation
+        conres_old_ -= rhscon_;
+
+        // add subgrid-scale-velocity part to rhs of continuity equation
+        // (subgrid-scale velocity at n+1 also approximately used at n)
+        //if (f3Parameter_->cross_ != INPAR::FLUID::cross_stress_stab_none)
+          //rhscon_ += scaconvfacaf_*sgvelint_.Dot(grad_scaaf_)
+            //        +(f3Parameter_->omtheta_/f3Parameter_->theta_)*scaconvfacn_*sgvelint_.Dot(grad_scan_);
       }
     }
     // stationary case
@@ -4242,24 +4234,18 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetResidualContinuityEq(
         // convective scalar term at n+1
         conv_scaaf_ = velint_.Dot(grad_scaaf_);
 
-        // add subgrid-scale velocity part also to convective scalar term
-        // (subgrid-scale velocity at n+1 also approximately used at n)
-        // -> currently not taken into account
-        /*if (cross    != Fluid3::cross_stress_stab_none or
-              reynolds != Fluid3::reynolds_stress_stab_none)
-        {
-          conv_scaaf_ += sgvelint_.Dot(grad_scaaf_);
-          conv_scan_  += sgvelint_.Dot(grad_scan_);
-        }*/
-
         // rhs of continuity equation (only relevant for low-Mach-number flow)
         rhscon_ = scaconvfacaf_*conv_scaaf_;
+
+        // residual of continuity equation
+        conres_old_ -= rhscon_;
+
+        // add subgrid-scale-velocity part to rhs of continuity equation
+        //if (f3Parameter_->cross_ != INPAR::FLUID::cross_stress_stab_none)
+          //rhscon_ += scaconvfacaf_*sgvelint_.Dot(grad_scaaf_);
       }
     }
   }
-
-  // residual of continuity equation
-  conres_old_ -= rhscon_;
 
   return;
 }
@@ -11634,6 +11620,399 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PoroSysmat(
         estif(numdofpernode_*vi+nsd_, numdof_ui_jdim) += estif_q_u(vi, nsd_ui_jdim);
     }
   }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ * evaluation of off-diagonal matrix block for monolithic loma solver (1)
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockEvaluate(
+                                                     DRT::ELEMENTS::Fluid3*       ele,
+                                                     DRT::Discretization & discretization,
+                                                     const std::vector<int> &     lm,
+                                                     Teuchos::ParameterList&       params,
+                                                     Teuchos::RCP<MAT::Material> & mat,
+                                                     Epetra_SerialDenseMatrix&  elemat1_epetra,
+                                                     Epetra_SerialDenseMatrix&  elemat2_epetra,
+                                                     Epetra_SerialDenseVector&  elevec1_epetra,
+                                                     Epetra_SerialDenseVector&  elevec2_epetra,
+                                                     Epetra_SerialDenseVector&  elevec3_epetra )
+{
+  return LomaMonoODBlockEvaluate(ele,discretization,lm,params,mat,elemat1_epetra,
+                                 elemat2_epetra,elevec1_epetra,elevec2_epetra,
+                                 elevec3_epetra,intpoints_);
+}
+
+/*----------------------------------------------------------------------*
+ * evaluation of off-diagonal matrix block for monolithic loma solver (2)
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockEvaluate(
+                                                     DRT::ELEMENTS::Fluid3*       ele,
+                                                     DRT::Discretization & discretization,
+                                                     const std::vector<int> &     lm,
+                                                     Teuchos::ParameterList&       params,
+                                                     Teuchos::RCP<MAT::Material> & mat,
+                                                     Epetra_SerialDenseMatrix&  elemat1_epetra,
+                                                     Epetra_SerialDenseMatrix&  elemat2_epetra,
+                                                     Epetra_SerialDenseVector&  elevec1_epetra,
+                                                     Epetra_SerialDenseVector&  elevec2_epetra,
+                                                     Epetra_SerialDenseVector&  elevec3_epetra,
+                                                     const DRT::UTILS::GaussIntegration & intpoints )
+{
+  // rotationally symmetric periodic bc's: do setup for current element
+  rotsymmpbc_->Setup(ele);
+
+  // construct view
+  LINALG::Matrix<(nsd_+1)*nen_,nen_> elemat1(elemat1_epetra,true);
+
+  // ---------------------------------------------------------------------
+  // call routine for calculation of body force in element nodes
+  // (evaluation at time n+alpha_F for generalized-alpha scheme,
+  //  and at time n+1 otherwise)
+  // ---------------------------------------------------------------------
+  LINALG::Matrix<nsd_,nen_> edeadaf(true);
+  BodyForce(ele,f3Parameter_,edeadaf);
+
+  // ---------------------------------------------------------------------
+  // get all general state vectors: velocity/pressure, scalar,
+  // acceleration/scalar time derivative and history
+  // velocity/pressure and scalar values are at time n+alpha_F/n+alpha_M
+  // for generalized-alpha scheme and at time n+1/n for all other schemes
+  // acceleration/scalar time derivative values are at time n+alpha_M for
+  // generalized-alpha scheme and at time n+1 for all other schemes
+  // ---------------------------------------------------------------------
+  // fill the local element vector/matrix with the global values
+  // af_genalpha: velocity/pressure at time n+alpha_F
+  // np_genalpha: velocity at time n+alpha_F, pressure at time n+1
+  // ost:         velocity/pressure at time n+1
+  LINALG::Matrix<nsd_,nen_> evelaf(true);
+  LINALG::Matrix<nen_,1>    epreaf(true);
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelaf, &epreaf,"velaf");
+
+  LINALG::Matrix<nen_,1> escaaf(true);
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &escaaf,"scaaf");
+
+  LINALG::Matrix<nsd_,nen_> emhist(true);
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &emhist, NULL,"hist");
+
+  LINALG::Matrix<nsd_,nen_> eaccam(true);
+  LINALG::Matrix<nen_,1>    escadtam(true);
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &eaccam, &escadtam,"accam");
+
+  LINALG::Matrix<nsd_,nen_> eveln(true);
+  LINALG::Matrix<nen_,1>    escaam(true);
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &eveln, &escaam,"scaam");
+
+  if (not f3Parameter_->is_genalpha_) eaccam.Clear();
+
+  // get node coordinates and number of elements per node
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+  //----------------------------------------------------------------
+  // Now do the nurbs specific stuff (for isogeometric elements)
+  //----------------------------------------------------------------
+  if(isNurbs_)
+  {
+    // access knots and weights for this element
+    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,myknots_,weights_);
+
+    // if we have a zero sized element due to a interpolated point -> exit here
+    if(zero_size)
+    return(0);
+  } // Nurbs specific stuff
+
+  // call inner evaluate (does not know about DRT element or discretization object)
+  int result = LomaMonoODBlockEvaluate(
+    ele->Id(),
+    params,
+    edeadaf,
+    elemat1,
+    evelaf,
+    epreaf,
+    escaaf,
+    emhist,
+    eaccam,
+    escaam,
+    mat,
+    ele->CsDeltaSq(),
+    intpoints);
+
+  return result;
+}
+
+/*----------------------------------------------------------------------*
+ * evaluation of off-diagonal matrix block for monolithic loma solver (3)
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockEvaluate(
+  int                                  eid,
+  Teuchos::ParameterList&              params,
+  const LINALG::Matrix<nsd_,nen_> &    edeadaf,
+  LINALG::Matrix<(nsd_+1)*nen_,nen_> & elemat1,
+  const LINALG::Matrix<nsd_,nen_> &    evelaf,
+  const LINALG::Matrix<nen_,1>    &    epreaf,
+  const LINALG::Matrix<nen_,1>    &    escaaf,
+  const LINALG::Matrix<nsd_,nen_> &    emhist,
+  const LINALG::Matrix<nsd_,nen_> &    eaccam,
+  const LINALG::Matrix<nen_,1>    &    escaam,
+  Teuchos::RCP<MAT::Material>          mat,
+  double                               CsDeltaSq,
+  const DRT::UTILS::GaussIntegration & intpoints )
+{
+  // flag for higher order elements
+  is_higher_order_ele_ = IsHigherOrder<distype>::ishigherorder;
+  // overrule higher_order_ele if input-parameter is set
+  // this might be interesting for fast (but slightly
+  // less accurate) computations
+  if (f3Parameter_->is_inconsistent_ == true) is_higher_order_ele_ = false;
+
+  // set thermodynamic pressure at n+1/n+alpha_F and n+alpha_M/n and
+  // its time derivative at n+alpha_M/n+1
+  const double thermpressaf   = params.get<double>("thermpress at n+alpha_F/n+1");
+  const double thermpressam   = params.get<double>("thermpress at n+alpha_M/n");
+  const double thermpressdtam = params.get<double>("thermpressderiv at n+alpha_M/n+1");
+
+  // ---------------------------------------------------------------------
+  // set parameters for classical turbulence models
+  // ---------------------------------------------------------------------
+  ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
+
+  double Cs_delta_sq   = 0.0;
+  visceff_  = 0.0;
+
+  // remember the layer of averaging for the dynamic Smagorinsky model
+  int  nlayer=0;
+
+  GetTurbulenceParams(turbmodelparams,
+                      Cs_delta_sq,
+                      nlayer,
+                      CsDeltaSq);
+
+  // ---------------------------------------------------------------------
+  // call routine for calculating element matrix
+  // ---------------------------------------------------------------------
+  LomaMonoODBlockSysmat(eid,
+                        edeadaf,
+                        evelaf,
+                        epreaf,
+                        eaccam,
+                        escaaf,
+                        escaam,
+                        emhist,
+                        elemat1,
+                        thermpressaf,
+                        thermpressam,
+                        thermpressdtam,
+                        mat,
+                        Cs_delta_sq,
+                        intpoints);
+
+  return 0;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  calculate element matrix for off-diagonal matrix block              |
+ |  for monolithic low-Mach-number solver                      vg 10/11 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3Impl<distype>::LomaMonoODBlockSysmat(
+  int                                  eid,
+  const LINALG::Matrix<nsd_,nen_>&     edeadaf,
+  const LINALG::Matrix<nsd_,nen_>&     evelaf,
+  const LINALG::Matrix<nen_,1>&        epreaf,
+  const LINALG::Matrix<nsd_,nen_>&     eaccam,
+  const LINALG::Matrix<nen_,1>&        escaaf,
+  const LINALG::Matrix<nen_,1>&        escaam,
+  const LINALG::Matrix<nsd_,nen_>&     emhist,
+  LINALG::Matrix<(nsd_+1)*nen_,nen_>&  estif,
+  const double                         thermpressaf,
+  const double                         thermpressam,
+  const double                         thermpressdtam,
+  Teuchos::RCP<const MAT::Material>    material,
+  double&                              Cs_delta_sq,
+  const DRT::UTILS::GaussIntegration & intpoints
+  )
+{
+  // definition of temperature-based residual vector for continuity equation
+  LINALG::Matrix<nen_,1> lin_resC_DT(true);
+
+  // evaluate shape functions and derivatives at element center
+  EvalShapeFuncAndDerivsAtEleCenter(eid);
+
+  // set element area or volume
+  const double vol = fac_;
+
+  //------------------------------------------------------------------------
+  // potential evaluation of material parameters, subgrid viscosity
+  // and/or stabilization parameters at element center
+  //------------------------------------------------------------------------
+  // get material parameters at element center
+  if (not f3Parameter_->mat_gp_ or not f3Parameter_->tau_gp_)
+    GetMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam);
+
+  // calculate subgrid viscosity and/or stabilization parameter at element center
+  if (not f3Parameter_->tau_gp_ and 
+      f3Parameter_->cross_==INPAR::FLUID::cross_stress_stab)
+  {
+    // calculate all-scale subgrid viscosity at element center
+    visceff_ = visc_;
+    if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::smagorinsky or f3Parameter_->turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky)
+    {
+      CalcSubgrVisc(evelaf,vol,f3Parameter_->Cs_,Cs_delta_sq,f3Parameter_->l_tau_);
+      // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
+      visceff_ += sgvisc_;
+    }
+
+    // get velocity at element center
+    velint_.Multiply(evelaf,funct_);
+
+    // calculate stabilization parameters at element center
+    CalcStabParameter(vol);
+  }
+
+  //------------------------------------------------------------------------
+  //  start loop over integration points
+  //------------------------------------------------------------------------
+  for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
+  {
+    // evaluate shape functions and derivatives at integration point
+    EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+
+    // get velocity at integration point
+    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    velint_.Multiply(evelaf,funct_);
+
+    // get material parameters at integration point
+    if (f3Parameter_->mat_gp_)
+      GetMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam);
+
+    // evaluation of convective operator
+    conv_c_.MultiplyTN(derxy_,velint_);
+
+    //----------------------------------------------------------------------
+    //  evaluate temperature-based residual vector for continuity equation
+    //----------------------------------------------------------------------
+    // set residual vector to zero
+    lin_resC_DT.Clear();
+
+    // transient term
+    if (not f3Parameter_->is_stationary_)
+    {
+      const double scadtfacfac = scadtfac_*fac_;
+
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        lin_resC_DT(ui) += scadtfacfac*funct_(ui);
+      }
+    }
+
+    // convective term
+    const double timefac_scaconvfacaf = f3Parameter_->timefac_*fac_*scaconvfacaf_;
+
+    for (int ui=0; ui<nen_; ++ui)
+    {
+      lin_resC_DT(ui) += timefac_scaconvfacaf*conv_c_(ui);
+    }
+
+    //----------------------------------------------------------------------
+    // subgrid-scale-velocity term (governed by cross-stress flag here)
+    //----------------------------------------------------------------------
+    /*if (f3Parameter_->cross_==INPAR::FLUID::cross_stress_stab)
+    {
+      //----------------------------------------------------------------------
+      //  evaluation of various values at integration point:
+      //  1) velocity derivatives
+      //  2) pressure (including derivatives)
+      //  3) body-force vector
+      //  4) "history" vector for momentum equation
+      //----------------------------------------------------------------------
+      // get velocity derivatives at integration point
+      // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+      vderxy_.MultiplyNT(evelaf,derxy_);
+
+      // get pressure gradient at integration point
+      // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+      gradp_.Multiply(derxy_,epreaf);
+
+      // get bodyforce at integration point
+      // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+      bodyforce_.Multiply(edeadaf,funct_);
+
+      // get momentum history data at integration point
+      // (only required for one-step-theta and BDF2 time-integration schemes)
+      histmom_.Multiply(emhist,funct_);
+
+      // calculate subgrid viscosity and/or stabilization parameter at integration point
+      if (f3Parameter_->tau_gp_)
+      {
+        // calculate all-scale subgrid viscosity at integration point
+        visceff_ = visc_;
+        if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::smagorinsky or f3Parameter_->turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky)
+        {
+          CalcSubgrVisc(evelaf,vol,f3Parameter_->Cs_,Cs_delta_sq,f3Parameter_->l_tau_);
+
+          // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
+          visceff_ += sgvisc_;
+        }
+
+        // calculate stabilization parameters at integration point
+        CalcStabParameter(vol);
+      }
+
+      // convective term from previous iteration
+      conv_old_.Multiply(vderxy_,velint_);
+
+      // compute viscous term from previous iteration
+      if (is_higher_order_ele_) CalcDivEps(evelaf);
+      else visc_old_.Clear();
+
+      // compute rhs for momentum equation and momentum residual
+      // -> different for generalized-alpha and other time-integration schemes
+      GetResidualMomentumEq(eaccam,f3Parameter_->timefac_);
+
+      // compute subgrid-scale velocity
+      sgvelint_.Update(-tau_(1),momres_old_,0.0);
+
+      // evaluation of convective operator based on subgrid-scale velocity
+      sgconv_c_.MultiplyTN(derxy_,sgvelint_);
+
+      // evaluate subgrid-scale-velocity term
+      for (int ui=0; ui<nen_; ++ui)
+      {
+        lin_resC_DT(ui) += timefac_scaconvfacaf*sgconv_c_(ui);
+      }
+    }*/
+
+    //----------------------------------------------------------------------
+    // computation of standard Galerkin contributions to element matrix:
+    // inertia and convection (potentially including subgrid-scale velocity)
+    //----------------------------------------------------------------------
+    /*
+            /                                        \
+           |         1     / dT     /         \   \   |
+       -   |    q , --- * | ---- + | u o nabla | T |  |
+           |         T     \ dt     \         /   /   |
+            \                                        /
+    */
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const int numdof_vi_p_nsd = numdofpernode_*vi+nsd_;
+
+      for (int ui=0; ui<nen_; ++ui)
+      {
+          estif(numdof_vi_p_nsd,ui) -= funct_(vi)*lin_resC_DT(ui);
+      }
+    }
+
+  }
+  //------------------------------------------------------------------------
+  //  end loop over integration points
+  //------------------------------------------------------------------------
 
   return;
 }

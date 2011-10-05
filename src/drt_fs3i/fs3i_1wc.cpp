@@ -249,7 +249,7 @@ FS3I::FS3I_1WC::FS3I_1WC(Teuchos::RCP<FSI::Monolithic> fsi):
                                          DRT::Problem::Instance()->ErrorFile()->Handle()));
 #else
   const Teuchos::ParameterList& coupledscatrasolvparams =
-    DRT::Problem::Instance()->CoupledScalarTransportSolverParams();
+    DRT::Problem::Instance()->CoupledFluidAndScalarTransportSolverParams();
   const int solvertype =
     DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(coupledscatrasolvparams,"SOLVER");
   if (solvertype != INPAR::SOLVER::aztec_msr)

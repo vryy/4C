@@ -119,7 +119,7 @@ namespace ADAPTER {
     /// velocities (and pressures) at t(n+1)
     virtual Teuchos::RCP<const Epetra_Vector> Velnp() = 0;
 
-    /// velocities (and pressures) at t(n+alphaF)
+    /// velocities (and pressures) at t(n+alpha_F)
     virtual Teuchos::RCP<const Epetra_Vector> Velaf() = 0;
 
     /// velocities (and pressures) at t(n)
@@ -134,8 +134,14 @@ namespace ADAPTER {
     /// accelerations at t(n)
     virtual Teuchos::RCP<const Epetra_Vector> Accn() = 0;
 
-    /// accelerations at t(n+alpaM)
+    /// accelerations at t(n+alpha_M)
     virtual Teuchos::RCP<const Epetra_Vector> Accam() = 0;
+
+    /// scalars at t(n+alpha_F)
+    virtual Teuchos::RCP<const Epetra_Vector> Scaaf() = 0;
+
+    /// scalars at t(n+alpha_M)
+    virtual Teuchos::RCP<const Epetra_Vector> Scaam() = 0;
 
     /// history vector
     virtual Teuchos::RCP<const Epetra_Vector> Hist() = 0;
@@ -152,6 +158,9 @@ namespace ADAPTER {
 
     /// dof map of vector of unknowns
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap() = 0;
+
+    /// dof map of vector of unknowns for multiple dofsets
+    virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) = 0;
 
     /// direct access to system matrix
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() = 0;
@@ -209,6 +218,9 @@ namespace ADAPTER {
     virtual void PrepareTimeStep() = 0;
     virtual void PrepareTimeandStep() = 0;
 
+    /// preparatives for solve
+    virtual void PrepareSolve() = 0;
+
     /// update fluid unknowns and evaluate elements
     ///
     /// there are two increments possible
@@ -221,7 +233,13 @@ namespace ADAPTER {
         Teuchos::RCP<const Epetra_Vector> stepinc ///< increment between time step n and n+1
         ) = 0;
 
-    /// update at time step end
+    /// convergence check
+    virtual bool ConvergenceCheck(int itnum, int itmax, const double ittol) = 0;
+
+    /// update at end of iteration step
+    virtual void IterUpdate(const Teuchos::RCP<const Epetra_Vector> increment) = 0;
+
+    /// update at end of time step
     virtual void Update() = 0;
 
     /// lift'n'drag forces, statistics time sample and

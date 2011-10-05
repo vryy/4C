@@ -3373,6 +3373,24 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> SCATRA::ScaTraTimIntImpl::BlockSyste
 }
 
 /*----------------------------------------------------------------------*
+ | return dof row map                                          vg 09/11 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> SCATRA::ScaTraTimIntImpl::DofRowMap()
+{
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  return Teuchos::rcp(new Epetra_Map(*dofrowmap));
+}
+
+/*----------------------------------------------------------------------*
+ | return dof row map for multiple discretizations             vg 09/11 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> SCATRA::ScaTraTimIntImpl::DofRowMap(unsigned nds)
+{
+  const Epetra_Map* dofrowmap = discret_->DofRowMap(nds);
+  return Teuchos::rcp(new Epetra_Map(*dofrowmap));
+}
+
+/*----------------------------------------------------------------------*
  | Destructor dtor (public)                                   gjb 04/08 |
  *----------------------------------------------------------------------*/
 SCATRA::ScaTraTimIntImpl::~ScaTraTimIntImpl()

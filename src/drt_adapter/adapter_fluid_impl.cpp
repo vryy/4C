@@ -136,6 +136,22 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Accam()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Scaaf()
+{
+  return fluid_.Scaaf();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Scaam()
+{
+  return fluid_.Scaam();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::Hist()
 {
   return fluid_.Hist();
@@ -173,6 +189,15 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidImpl::ConvectiveVel()
 Teuchos::RCP<const Epetra_Map> ADAPTER::FluidImpl::DofRowMap()
 {
   const Epetra_Map* dofrowmap = dis_->DofRowMap();
+  return Teuchos::rcp(dofrowmap, false);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> ADAPTER::FluidImpl::DofRowMap(unsigned nds)
+{
+  const Epetra_Map* dofrowmap = dis_->DofRowMap(nds);
   return Teuchos::rcp(dofrowmap, false);
 }
 
@@ -254,6 +279,14 @@ void ADAPTER::FluidImpl::PrepareTimeandStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::FluidImpl::PrepareSolve()
+{
+  fluid_.PrepareSolve();
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::FluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
   if (stepinc!=Teuchos::null)
@@ -264,6 +297,22 @@ void ADAPTER::FluidImpl::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
   {
     fluid_.Evaluate(Teuchos::null);
   }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool ADAPTER::FluidImpl::ConvergenceCheck(int itnum, int itmax, const double ittol)
+{
+  return fluid_.ConvergenceCheck(itnum, itmax, ittol);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidImpl::IterUpdate(const Teuchos::RCP<const Epetra_Vector> increment)
+{
+  fluid_.IterUpdate(increment);
 }
 
 

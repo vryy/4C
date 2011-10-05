@@ -35,6 +35,10 @@ namespace ADAPTER
     { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Vector> Accam()
     { return fluid_->Accam(); }
+    virtual Teuchos::RCP<const Epetra_Vector> Scaaf()
+    { dserror("not implemented"); return Teuchos::null; };
+    virtual Teuchos::RCP<const Epetra_Vector> Scaam()
+    { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Vector> Hist()
     { return fluid_->Hist(); }
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp()
@@ -43,6 +47,8 @@ namespace ADAPTER
     { return fluid_->ConvectiveVel(); }
     virtual Teuchos::RCP<const Epetra_Map> DofRowMap()
     { return fluid_->DofRowMap(); }
+    virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds)
+    { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
     { return fluid_->SystemMatrix(); }
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
@@ -82,8 +88,14 @@ namespace ADAPTER
     { return fluid_->PrepareTimeStep(); }
     virtual void PrepareTimeandStep()
     { dserror("not implemented!"); return; }
+    virtual void PrepareSolve()
+    { dserror("not implemented!"); return; }
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
     { return fluid_->Evaluate(stepinc); }
+    virtual bool ConvergenceCheck(int itnum, int itmax, const double ittol)
+    { dserror("not implemented!"); return false; }
+    virtual void IterUpdate(const Teuchos::RCP<const Epetra_Vector> increment)
+    { dserror("not implemented!"); return; }
     virtual void Update()
     { return fluid_->Update(); }
     virtual void StatisticsAndOutput()

@@ -230,8 +230,8 @@ public:
   /// compute density field from concentration(s) for ELCH natural convection
   void ComputeDensity(const double density);
 
-  /// check convergence for low-Mach-number flow
-  bool LomaConvergenceCheck(int itnum, int itmax, const double ittol);
+  /// check convergence (only for low-Mach-number flow, for the time being)
+  bool ConvergenceCheck(int itnum, int itmax, const double ittol);
 
   ///  compute time derivative
   virtual void ComputeTimeDerivative() = 0;
@@ -374,6 +374,12 @@ public:
 
   /// return system matrix downcasted as block sparse matrix
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+
+  /// return dof map of vector of unknowns
+  Teuchos::RCP<const Epetra_Map> DofRowMap();
+
+  /// return dof map of vector of unknowns for multiple dofsets
+  Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds);
 
   /// return residual
   Teuchos::RCP<Epetra_Vector> Residual();

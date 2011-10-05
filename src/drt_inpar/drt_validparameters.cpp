@@ -3083,6 +3083,7 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
       false,
       "control parameters for low-Mach-number flow problems\n");
 
+  BoolParameter("MONOLITHIC","no","monolithic solver",&lomacontrol);
   IntParameter("NUMSTEP",24,"Total number of time steps",&lomacontrol);
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&lomacontrol);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&lomacontrol);
@@ -3809,7 +3810,7 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   SetValidSolverParameters(scatrapotsolver);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& coupscatrasolver = list->sublist("COUPLED SCALAR TRANSPORT SOLVER",false,"solver parameters for block-preconditioning");
+  Teuchos::ParameterList& coupscatrasolver = list->sublist("COUPLED FLUID AND SCALAR TRANSPORT SOLVER",false,"solver parameters for block-preconditioning");
   SetValidSolverParameters(coupscatrasolver);
 
   /*----------------------------------------------------------------------*/

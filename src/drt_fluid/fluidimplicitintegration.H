@@ -322,6 +322,8 @@ public:
   Teuchos::RCP<Epetra_Vector> Accnp() { return accnp_; }
   Teuchos::RCP<Epetra_Vector> Accn() { return accn_; }
   Teuchos::RCP<Epetra_Vector> Accam() { return accam_; }
+  Teuchos::RCP<Epetra_Vector> Scaaf() { return scaaf_; }
+  Teuchos::RCP<Epetra_Vector> Scaam() { return scaam_; }
   Teuchos::RCP<Epetra_Vector> Hist() { return hist_; }
   Teuchos::RCP<Epetra_Vector> GridVel() { return gridv_; }
 

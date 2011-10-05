@@ -86,10 +86,13 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const Epetra_Vector> Accnp();
     virtual Teuchos::RCP<const Epetra_Vector> Accn();
     virtual Teuchos::RCP<const Epetra_Vector> Accam();
+    virtual Teuchos::RCP<const Epetra_Vector> Scaaf();
+    virtual Teuchos::RCP<const Epetra_Vector> Scaam();
     virtual Teuchos::RCP<const Epetra_Vector> Hist();
     virtual Teuchos::RCP<const Epetra_Vector> Dispnp();
     virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel();
     virtual Teuchos::RCP<const Epetra_Map>    DofRowMap();
+    virtual Teuchos::RCP<const Epetra_Map>    DofRowMap(unsigned nds);
     virtual Teuchos::RCP<LINALG::SparseMatrix>SystemMatrix();
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives();
@@ -103,7 +106,10 @@ namespace ADAPTER {
     virtual void TimeLoop();
     virtual void PrepareTimeStep();
     virtual void PrepareTimeandStep();
+    virtual void PrepareSolve();
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
+    virtual bool ConvergenceCheck(int itnum, int itmax, const double ittol);
+    virtual void IterUpdate(const Teuchos::RCP<const Epetra_Vector> increment);
     virtual void Update();
     virtual void StatisticsAndOutput();
     virtual void Output();
