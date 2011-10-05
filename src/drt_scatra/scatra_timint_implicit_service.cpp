@@ -2360,5 +2360,23 @@ for(int k=0;k<numscal_;++k)
 return;
 }
 
+/*----------------------------------------------------------------------*
+ | return dof row map                                          vg 09/11 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> SCATRA::ScaTraTimIntImpl::DofRowMap()
+{
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  return Teuchos::rcp(dofrowmap, false);
+}
+
+/*----------------------------------------------------------------------*
+ | return dof row map for multiple discretizations             vg 09/11 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> SCATRA::ScaTraTimIntImpl::DofRowMap(unsigned nds)
+{
+  const Epetra_Map* dofrowmap = discret_->DofRowMap(nds);
+  return Teuchos::rcp(dofrowmap, false);
+}
+
 
 #endif /* CCADISCRET       */
