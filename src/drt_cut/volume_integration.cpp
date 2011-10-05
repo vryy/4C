@@ -40,7 +40,7 @@ std::vector<double> GEO::CUT::VolumeIntegration::compute_rhs_moment()
     return rhs_mom;
 }
 
-//compute the gaussian points of the volumecell with numeach points in each 3-directions
+//compute the gaussian points of the volumecell with "numeach" points in each 3-directions
 //numeach should be more than 1
 bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
 {
@@ -74,6 +74,7 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
     vector<vector<double> > ycoord;
     get_zcoordinates(zcoord,ycoord);
 
+//min z plane which contains significant area
     double zmin=minn[2]+0.01*(maxx[2]-minn[2]),zmax=maxx[2]-0.01*(maxx[2]-minn[2]);
     while(1)
     {
@@ -89,6 +90,7 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
         if((zmax-zmin)<0.01*(maxx[2]-minn[2]))
                 break;
     }
+//max z plane which contains significant area
     while(1)
     {
         bool area=false;
@@ -107,10 +109,10 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
     if((zmax-zmin)<0.01*(maxx[2]-minn[2]))
     {
 //check for very thin volumecells
-//works fine but time taken is higher
-    	double zmin=minn[2]+0.005*(maxx[2]-minn[2]),zmax=maxx[2]-0.005*(maxx[2]-minn[2]);
-	while(1)
-    	{
+//works fine but time taken is slightly higher
+        double zmin=minn[2]+0.005*(maxx[2]-minn[2]),zmax=maxx[2]-0.005*(maxx[2]-minn[2]);
+        while(1)
+        {
         bool area=false;
         vector<vector<double> > InPlane;
         area = IsContainArea(minn,maxx,zmin,InPlane,zcoord,ycoord,0.001,numeach);
@@ -122,9 +124,9 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
         zmin += 0.001*(maxx[2]-minn[2]);
         if((zmax-zmin)<0.001*(maxx[2]-minn[2]))
                 break;
-    	}
-    	while(1)
-    	{
+        }
+        while(1)
+        {
         bool area=false;
         vector<vector<double> > InPlane;
         area = IsContainArea(minn,maxx,zmax,InPlane,zcoord,ycoord,0.001,numeach);
@@ -136,18 +138,19 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
         zmax -= 0.001*(maxx[2]-minn[2]);
         if((zmax-zmin)<0.001*(maxx[2]-minn[2]))
                 break;
-    	}
+        }
 
     //    cout<<"very small area"<<endl;
-    	if(gaus_pts_.size()==0)
-	        wei = false;
-	else
-		wei = true;
-    	if(gaus_pts_.size()==0)
-        	wei = false;
+        if(gaus_pts_.size()==0)
+                wei = false;
+        else
+                wei = true;
+        if(gaus_pts_.size()==0)
+                wei = false;
         cout<<"number of Gauss points"<<gaus_pts_.size()<<endl;//blockkk
         return wei;
     }
+//find z-planes in between zmin and zmax to generate Gauss points
     else
     {
         int num = numeach;   
@@ -168,6 +171,8 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
                         previous = true;
                         continue;
                 }
+//if the considered z-plane does not contain significant area, the interval is subdivided to check whether
+//any plane lies in between
                 else
                 {
                         if(previous==false)
@@ -249,7 +254,7 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
 /*******************until this*******************************************/
 }
 
-//store the z-coordinates of the all corner points which will be used to find whether the intersection
+//store the z- and y-coordinates of the all corner points which will be used to find whether the intersection
 //point lies inside the volume or not
 void GEO::CUT::VolumeIntegration::get_zcoordinates(vector<vector<double> >& zcoord,
                 vector<vector<double> >& ycoord)
@@ -292,18 +297,22 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
         bool intersect = false;
         vector<int> planeinter,InterFaces;
 
+//stores all the facets which is not in x-y or x-z
+//only in the remaining planes a horizontal line possibly intersect
         for(unsigned i=0;i<eqn_facets_.size();i++)
         {
                 if(fabs(eqn_facets_[i][0])>0.0000001)
                         planeinter.push_back(i);
         }
 
+//stores the facets which are actually cut by the line
         for(unsigned i=0;i<planeinter.size();i++)
         {
                 int faceno = planeinter[i];
                 vector<double>planez = zcoord[faceno];
                 vector<double>planey = ycoord[faceno];
                 int cutno=0;
+//check whether the intersection point lies inside the facet area
                 cutno = pnpoly(planez.size(), planey, planez, pt[1], pt[2]);
                 if(cutno==1)
                         InterFaces.push_back(faceno);
@@ -632,7 +641,7 @@ std::vector<double> GEO::CUT::VolumeIntegration::compute_weights()
         std::cout<<*i<<std::endl;*/
     bool wei;
 //we should ask for more than 1 point in each direction
-    wei = compute_Gaussian_points(5);
+    wei = compute_Gaussian_points(6);
 /*  for(int i=0;i<27;i++)
     {
         std::cout<<gaus_pts_[i][0]<<"\t"<<gaus_pts_[i][1]<<"\t"<<gaus_pts_[i][2]<<std::endl;
@@ -671,21 +680,21 @@ std::vector<double> GEO::CUT::VolumeIntegration::compute_weights()
 //    std::cout<<"value"<<chek<<std::endl;
     }*/
 
-/*    double chek=0.0;
-    for(int i=0;i<weights.size();i++)
+    double chek=0.0;
+    for(unsigned i=0;i<weights.size();i++)
     {
          chek += weights[i]*(pow(gaus_pts_[i][0],4)+pow(gaus_pts_[i][1],4)+5.0);     
     //  chek += weights[i]*(gaus_pts_[i][0]*gaus_pts_[i][0]*gaus_pts_[i][0]+gaus_pts_[i][1]*gaus_pts_[i][1]*gaus_pts_[i][1]+5.0);       
 //        chek += pow(gaus_pts_[i][0],4)*weights[i];
     }
     std::cout<<scientific<<"check"<<chek<<std::endl;
-    std::cout<<scientific<<"error"<<chek-(rhs_moment[20]+rhs_moment[30]+5*rhs_moment[0])<<std::endl;*/
+    std::cout<<scientific<<"error"<<chek-(rhs_moment[20]+rhs_moment[30]+5*rhs_moment[0])<<std::endl;
 
 /*  for(int i=0;i<weights.size();i++)
         std::cout<<"wei"<<weights[i]<<std::endl;*/
 
 #ifdef DEBUGCUTLIBRARY
-//    GaussPointGmsh();
+    GaussPointGmsh();
 #endif
 
     return weights;

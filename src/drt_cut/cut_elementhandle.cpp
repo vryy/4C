@@ -13,6 +13,7 @@
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_inpar/inpar_xfem.H"
 
 
 template <DRT::Element::DiscretizationType distype>
@@ -46,49 +47,69 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cell
   intpoints.clear();
   intpoints.reserve( cells.size() );
 
-  for ( plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
+  int tessellation = 1,momentfitting=0;//remove or blockkk
+
+  if(tessellation || cells.size()==1)
   {
-    GEO::CUT::VolumeCell * vc = *i;
 
-    Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
-      Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );
+        for ( plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
+        {
+            GEO::CUT::VolumeCell * vc = *i;
 
-    const plain_integrationcell_set & cells = vc->IntegrationCells();
-    for ( plain_integrationcell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
-    {
-      GEO::CUT::IntegrationCell * ic = *i;
-      switch ( ic->Shape() )
-      {
-      case DRT::Element::hex8:
-      {
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::hex8>( ic );
-        gpc->Append( gp );
-        break;
-      }
-      case DRT::Element::tet4:
-      {
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tet4>( ic );
-        gpc->Append( gp );
-        break;
-      }
-      case DRT::Element::wedge6:
-      {
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::wedge6>( ic );
-        gpc->Append( gp );
-        break;
-      }
-      case DRT::Element::pyramid5:
-      {
-        Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::pyramid5>( ic );
-        gpc->Append( gp );
-        break;
-      }
-      default:
-        throw std::runtime_error( "unsupported integration cell type" );
-      }
-    }
+            Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
+                Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );
 
-    intpoints.push_back( DRT::UTILS::GaussIntegration( gpc ) );
+            const plain_integrationcell_set & cells = vc->IntegrationCells();
+            for ( plain_integrationcell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+            {
+              GEO::CUT::IntegrationCell * ic = *i;
+              switch ( ic->Shape() )
+              {
+              case DRT::Element::hex8:
+              {
+                Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::hex8>( ic );
+                gpc->Append( gp );
+                break;
+              }
+              case DRT::Element::tet4:
+              {
+                Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tet4>( ic );
+                gpc->Append( gp );
+                break;
+              }
+              case DRT::Element::wedge6:
+              {
+                Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::wedge6>( ic );
+                gpc->Append( gp );
+                break;
+              }
+              case DRT::Element::pyramid5:
+              {
+                Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::pyramid5>( ic );
+                gpc->Append( gp );
+                break;
+              }
+              default:
+                throw std::runtime_error( "unsupported integration cell type" );
+              }
+          }
+
+        intpoints.push_back( DRT::UTILS::GaussIntegration( gpc ) );
+        }
+  }
+
+  else if(momentfitting)
+  {
+       for(plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i)
+       {
+               GEO::CUT::VolumeCell *vc = *i;
+               Teuchos::RCP<DRT::UTILS::GaussPoints> gp = vc->GaussPointsFitting();
+               Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
+                        Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );
+               gpc->Append(gp);
+               intpoints.push_back( DRT::UTILS::GaussIntegration( gp ) );
+
+       }
   }
 
 #if 0

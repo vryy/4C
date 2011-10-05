@@ -6,6 +6,7 @@
 #include "cut_volumecell.H"
 #include "cut_element.H"
 #include "cut_facet.H"
+
 namespace GEO
 {
     namespace CUT
@@ -28,6 +29,7 @@ class VolumeIntegration
 
         ~VolumeIntegration(){};
         std::vector<double> compute_weights();
+        std::vector<std::vector<double> > getGaussPointLocation(){return gaus_pts_;} 
 
     private:
         VolumeCell* volcell_;
@@ -47,7 +49,7 @@ class VolumeIntegration
         void OnLine(vector<double>inter1,vector<double>inter2,vector<vector<double> >&linePts,int num);
         void get_zcoordinates(vector<vector<double> >& zcoord,vector<vector<double> >& ycoord);
         int pnpoly(int npol, vector<double>xp, vector<double>yp, double x, double y);
-	bool traceVolume(vector<vector<double> >& zcoord,vector<vector<double> >& ycoord,double*minn,double*maxx,double toler);
+        bool traceVolume(vector<vector<double> >& zcoord,vector<vector<double> >& ycoord,double*minn,double*maxx,double toler);
 };
 }
 }

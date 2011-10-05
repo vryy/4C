@@ -55,8 +55,11 @@ std::vector<double> GEO::CUT::LeastSquares::ConjugateGradient(std::vector<std::v
 
 /*      for(unsigned i=0;i<rhs.size();i++)
                 std::cout<<soln[i]<<std::endl;*/
+	int ittno = 0;
+	double epsi = 1e-15;
         while(1)
         {
+		ittno++;
                 tempo = multiply(coeff,p);
                 double alpha = multi_vec(resi,resi)/multi_vec(p,tempo); 
 //double alpha = multi_vec(resi,resi);
@@ -68,8 +71,14 @@ std::vector<double> GEO::CUT::LeastSquares::ConjugateGradient(std::vector<std::v
                 }
                 double conv_check = multi_vec(resi_new,resi_new);
           //    std::cout<<sqrt(conv_check)<<std::endl;
-                if(sqrt(conv_check)<1e-08/*0.00000000001*/)
+                if(sqrt(conv_check)<epsi || ittno>4500)
                         break;
+		if(ittno>150)
+			epsi = 1e-12;
+		if(ittno>200)
+			epsi = 1e-10;
+		if(ittno>350)
+			epsi = 1e-08;
                 double beta = multi_vec(resi_new,resi_new)/multi_vec(resi,resi);
                 for(unsigned i=0;i<rhs.size();i++)
                 {
@@ -77,6 +86,7 @@ std::vector<double> GEO::CUT::LeastSquares::ConjugateGradient(std::vector<std::v
                         resi[i] = resi_new[i];
                 }
         }
+	std::cout<<ittno<<std::endl;//blockkk or remove
         return soln;
 }
 

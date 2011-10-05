@@ -527,7 +527,7 @@ void GEO::CUT::VolumeCell::DumpGmsh(const std::vector<std::vector<double> >&gaus
          if(i==facete.begin())
          {
                  static int sideno = 0;
-		 sideno++;
+                 sideno++;
                  std::stringstream out;
                  out <<"side"<<sideno<<".pos";
                  filename = out.str();
@@ -560,6 +560,51 @@ void GEO::CUT::VolumeCell::DumpGmsh(const std::vector<std::vector<double> >&gaus
     file.close();
 }
 
+Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::VolumeCell::GaussPointsFitting()
+//void GEO::CUT::VolumeCell::GaussPointsFitting()
+{
+    Element *ele1 =ParentElement();
+    const DRT::Element::DiscretizationType distyp = ele1->Shape();
+//    std::cout<<"distype"<<distyp<<std::endl;
+    const int nsd = DRT::UTILS::DisTypeToDim<DRT::Element::hex8>::dim;
+    const int nen = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+    LINALG::Matrix<3,nen> xyze;
+    ele1->Coordinates(xyze.A());
+
+    Teuchos::RCP<DRT::UTILS::GaussPoints> gp = DRT::UTILS::GaussPointCache::Instance().Create( DRT::Element::hex8, 
+                    5/*DRT::UTILS::CubatureDegree(DRT::Element::hex8) */);
+    Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new 
+                    DRT::UTILS::CollectedGaussPoints( gp->NumPoints() ) );
+
+    for(unsigned i=0;i<weights_.size();i++)
+    {
+        LINALG::Matrix<3,1> xe,xei;
+        xe(0,0) = gausPts_[i][0];
+        xe(1,0) = gausPts_[i][1];
+        xe(2,0) = gausPts_[i][2];
+
+        ele1->LocalCoordinates( xe, xei );
+
+        LINALG::Matrix<nsd,nen> deriv;
+        LINALG::Matrix<nsd,nsd> xjm;
+        DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xei,deriv);
+
+        xjm.MultiplyNT( deriv, xyze );
+
+        double det = xjm.Determinant();
+ //       std::cout<<weights_[i]<<"\t"<<weights_[i]/det<<"\n";
+        double wei = weights_[i]/det;
+//      std::cout<<xei(0,0)<<"\t"<<xei(1,0)<<"\t"<<xei(2,0)<<"\n";
+//
+        cgp->Append( xei, wei );
+    }
+/*    double sum=0.0;
+    for(unsigned i=0;i<weights_.size();i++)
+            sum += weights_[i];
+    std::cout<<"volume"<<sum<<"\n";*/
+    return cgp;
+}
+
 //Find Gaussian points and weights by moment fitting equations
 void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem)
 {
@@ -568,7 +613,14 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem)
     const GEO::CUT::Point::PointPosition posi = Position();
     VolumeIntegration vc_inte(this,elem,posi,35);
 
-    std::vector<double> weights = vc_inte.compute_weights();
+    weights_ = vc_inte.compute_weights();
+    gausPts_ = vc_inte.getGaussPointLocation(); 
+
+/*    std::cout<<"volume"<<std::endl;
+    for(unsigned i=0;i<weights_.size();i++)
+    {
+            std::cout<<gausPts_[i][0]<<"\t"<<gausPts_[i][1]<<"\t"<<gausPts_[i][2]<<"\t"<<weights_[i]<<std::endl;
+    }*/
 
 /*  const plain_facet_set & facete = Facets();
     for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)

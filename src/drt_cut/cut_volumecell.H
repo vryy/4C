@@ -9,6 +9,8 @@
 #include "cut_point.H"
 #include "cut_facet.H"
 
+#include "../../src/drt_fem_general/drt_utils_gausspoints.H"
+
 namespace GEO
 {
 namespace CUT
@@ -109,6 +111,9 @@ public:
 
   void DumpGmsh(const std::vector<std::vector<double> >&gauspts);
 
+  //return the Gauss points computed using moment fitting equations
+  Teuchos::RCP<DRT::UTILS::GaussPoints> GaussPointsFitting();
+ // void GaussPointsFitting();
 private:
 
   void SetTetPoints( const int * totet4,
@@ -142,6 +147,11 @@ private:
   static int hex8totet4[5][4];
   static int wedge6totet4[3][4];
   static int pyramid5totet4[2][4];
+
+ //store the Gauss point weights and location when moment fitting equations are
+ //used to arrive at them
+  std::vector<double> weights_;
+  std::vector<std::vector<double> > gausPts_;
 };
 
 

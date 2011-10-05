@@ -7,6 +7,7 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 
 #include "../../src/drt_fem_general/drt_utils_gausspoints.H"
+#include "../drt_inpar/inpar_xfem.H" //blockk or remove
 
 #include "cut_element.H"
 
@@ -66,7 +67,7 @@ public:
   virtual int NumVolumeCellGaussPoints() = 0;
 
   void VolumeCellGaussPoints( plain_volumecell_set & cells,
-                              std::vector<DRT::UTILS::GaussIntegration> & intpoints );
+                              std::vector<DRT::UTILS::GaussIntegration> & intpoints);
 
   void BoundaryCellGaussPoints( const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
                                 std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints );

@@ -583,6 +583,15 @@ void GEO::CUT::Element::MomentFitGaussWeights( Mesh & mesh )
   if ( not active_ )
     return;
 
+  if(cells_.size()==1)
+  {
+	  VolumeCell * vc = *cells_.begin();
+          if ( IntegrationCellCreator::CreateCell( mesh, Shape(), vc ) )
+          {
+             return;
+          }
+  }
+
   for(plain_volumecell_set::iterator i=cells_.begin();
                            i!=cells_.end();i++)
   {
