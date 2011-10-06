@@ -67,9 +67,8 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
   // avoid writing output also for ghosted elements
   const bool eleowner = DRT::Problem::Instance(0)->Dis(genprob.numsf,0)->ElementRowMap()->MyGID(ele_ID);
 
-  if (gp > static_cast<int>(matgp_.size())-1)
+  if (matgp_.find(gp) == matgp_.end())
   {
-    matgp_.resize(gp+1);
     matgp_[gp] = rcp(new MicroMaterialGP(gp, ele_ID, eleowner, microdisnum, V0));
   }
 
@@ -87,9 +86,10 @@ void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
 
 void MAT::MicroMaterial::Update()
 {
-  for (unsigned int gp=0; gp<matgp_.size(); ++gp)
+  std::map<int, RefCountPtr<MicroMaterialGP> >::iterator it;
+  for (it=matgp_.begin(); it!=matgp_.end(); ++it)
   {
-    RefCountPtr<MicroMaterialGP> actmicromatgp = matgp_[gp];
+    RefCountPtr<MicroMaterialGP> actmicromatgp = (*it).second;
     actmicromatgp->Update();
   }
 }
@@ -97,9 +97,10 @@ void MAT::MicroMaterial::Update()
 
 void MAT::MicroMaterial::PrepareOutput()
 {
-  for (unsigned int gp=0; gp<matgp_.size(); ++gp)
+  std::map<int, RefCountPtr<MicroMaterialGP> >::iterator it;
+  for (it=matgp_.begin(); it!=matgp_.end(); ++it)
   {
-    RefCountPtr<MicroMaterialGP> actmicromatgp = matgp_[gp];
+    RefCountPtr<MicroMaterialGP> actmicromatgp = (*it).second;
     actmicromatgp->PrepareOutput();
   }
 }
@@ -107,9 +108,10 @@ void MAT::MicroMaterial::PrepareOutput()
 
 void MAT::MicroMaterial::Output()
 {
-  for (unsigned int gp=0; gp<matgp_.size(); ++gp)
+  std::map<int, RefCountPtr<MicroMaterialGP> >::iterator it;
+  for (it=matgp_.begin(); it!=matgp_.end(); ++it)
   {
-    RefCountPtr<MicroMaterialGP> actmicromatgp = matgp_[gp];
+    RefCountPtr<MicroMaterialGP> actmicromatgp = (*it).second;
     actmicromatgp->Output();
   }
 }
@@ -117,12 +119,10 @@ void MAT::MicroMaterial::Output()
 
 void MAT::MicroMaterial::ReadRestart(const int gp, const int eleID, const bool eleowner)
 {
-  if (gp > static_cast<int>(matgp_.size())-1)
+  if (matgp_.find(gp) == matgp_.end())
   {
     int microdisnum = MicroDisNum();
     double V0 = InitVol();
-
-    matgp_.resize(gp+1);
     matgp_[gp] = rcp(new MicroMaterialGP(gp, eleID, eleowner, microdisnum, V0));
   }
 
@@ -133,9 +133,10 @@ void MAT::MicroMaterial::ReadRestart(const int gp, const int eleID, const bool e
 
 void MAT::MicroMaterial::InvAnaInit(const bool eleowner)
 {
-  for (unsigned int gp=0; gp<matgp_.size(); ++gp)
+  std::map<int, RefCountPtr<MicroMaterialGP> >::iterator it;
+  for (it=matgp_.begin(); it!=matgp_.end(); ++it)
   {
-    RefCountPtr<MicroMaterialGP> actmicromatgp = matgp_[gp];
+    RefCountPtr<MicroMaterialGP> actmicromatgp = (*it).second;
     actmicromatgp->ResetTimeAndStep();
     std::string newfilename;
     actmicromatgp->NewResultFile(eleowner, newfilename);

@@ -192,7 +192,7 @@ private:
 
   private:
 
-    vector<RefCountPtr<MicroMaterialGP> > matgp_;
+    std::map<int,RefCountPtr<MicroMaterialGP> > matgp_;
 
     /// my material parameters
     MAT::PAR::MicroMaterial* params_;
