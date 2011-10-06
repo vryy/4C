@@ -16,19 +16,19 @@ Maintainer: Mirella Coroneo
 #ifndef ADAPTER_STRUCTURE_BIO_H
 #define ADAPTER_STRUCTURE_BIO_H
 
-#include "../drt_adapter/adapter_structure.H"
+#include "adapter_structure.H"
 #include "../drt_ale/ale.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+#include "adapter_scatra_base_algorithm.H"
 #include "adapter_coupling.H"
-
 #include "adapter_algorithmbase.H"
 
 namespace ADAPTER
 {
-  class StructureBio : public AlgorithmBase,
-        public ADAPTER::StructureBaseAlgorithm,
-        public ADAPTER::ScaTraBaseAlgorithm,
-        public ALE::AleBaseAlgorithm
+  class StructureBio
+	  : public AlgorithmBase//,
+        //public ADAPTER::StructureBaseAlgorithm,
+        //public ADAPTER::ScaTraBaseAlgorithm,
+        //public ALE::AleBaseAlgorithm
   {
   public:
 
@@ -56,6 +56,8 @@ namespace ADAPTER
     void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp);
 
     void ChangeConfig(Teuchos::RCP<Epetra_Vector> structdisp);
+
+    virtual void ReadRestart(int step);
 
   protected:
 
@@ -94,6 +96,9 @@ namespace ADAPTER
 
     Teuchos::RCP<Epetra_Vector> structdisp;
 
+    Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure;
+
+    Teuchos::RCP<ALE::AleBaseAlgorithm> ale;
   };
 
 } // namespace ADAPTER

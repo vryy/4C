@@ -64,19 +64,17 @@ FS3I::BiofilmGrowth::BiofilmGrowth(
 	Teuchos::RCP<FSI::Monolithic> fsi,
 	Epetra_Comm& comm,
 	const Teuchos::ParameterList& prbdyn)
-:FS3I_1WC(fsi),
+:FS3I_1WC(fsi)/*,
  ADAPTER::StructureBio(comm,	///< communicator
 					   prbdyn, 	///< problem-specific parameters
 					   1,  		///< we need an ALE formulation of the structure
 					   0, 		///< scatra discretization number
-					   "FSICoupling")
-{
-	  // make sure that initial time derivative of concentration is not calculated
+					   "FSICoupling")*/
+{	  // make sure that initial time derivative of concentration is not calculated
 	  // automatically (i.e. field-wise)
 	  const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
 	  if (DRT::INPUT::IntegralValue<int>(scatradyn,"SKIPINITDER")==false)
 		  dserror("Initial time derivative of phi must not be calculated automatically -> set SKIPINITDER to false");
-
 	  //fsi parameters
 	  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 	  dt_fsi = fsidyn.get<double>("TIMESTEP");
@@ -84,7 +82,6 @@ FS3I::BiofilmGrowth::BiofilmGrowth(
 	  maxtime_fsi = fsidyn.get<double>("MAXTIME");
 	  step_fsi = 0;
 	  time_fsi = 0.;
-
 	  //surface growth parameters
 	  const Teuchos::ParameterList& biofilmcontrol = DRT::Problem::Instance()->BIOFILMControlParams();
 	  dt_bio= biofilmcontrol.get<double>("BIOTIMESTEP");
@@ -127,22 +124,16 @@ FS3I::BiofilmGrowth::BiofilmGrowth(
 
 	  /// do we need this. What's for???
 	  fsi_->FluidField().SetMeshMap(coupfa_.MasterDofMap());
+
+	  Teuchos::RCP<ADAPTER::StructureBio> structbio = Teuchos::rcp(new ADAPTER::StructureBio(comm, fsidyn, 1, 0, "FSICoupling"));
+
 }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FS3I::BiofilmGrowth::ReadRestart(int step)
-{
-	FS3I_1WC(fsi_).ReadRestart();
-};
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FS3I::BiofilmGrowth::OutTimeloop()
 {
-
 #ifdef PARALLEL
   Epetra_MpiComm comm(MPI_COMM_WORLD);
 #else
@@ -199,7 +190,10 @@ void FS3I::BiofilmGrowth::OutTimeloop()
 	  LinearSolveScatra();*/
 
 	  // do all the settings and solve the structure on a deforming mesh: still not properly implemented!!!
-	  StructAleSolve(idispnp_);
+	  //StructAleSolve(idispnp_);
+
+	  structbio->StructAleSolve(idispnp_);
+
 
 	  step_bio++;
 	  time_bio+=dt_bio;
@@ -251,7 +245,7 @@ void FS3I::BiofilmGrowth::DoScatraStep()
   bool stopnonliniter=false;
   int itnum = 0;
 
-  FS3I_1WC(fsi_).PrepareTimeStep();
+  PrepareTimeStep();
 
   while (stopnonliniter==false)
   {

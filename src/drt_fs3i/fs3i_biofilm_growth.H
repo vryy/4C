@@ -10,8 +10,8 @@
 namespace FS3I
 {
   class BiofilmGrowth :
-	public FS3I_1WC,
-	public ADAPTER::StructureBio
+	public FS3I_1WC/*,
+	public ADAPTER::StructureBio*/
 
 	{
 
@@ -30,8 +30,6 @@ namespace FS3I
 
     void DoScatraStep();
 
-    virtual void ReadRestart(int step);
-
     void ComputeInterfaceVectors(
         RCP<Epetra_Vector> idispnp_,
         RCP<Epetra_Vector> iveln_);
@@ -41,6 +39,7 @@ namespace FS3I
     Teuchos::RCP<Epetra_Vector> AleToFluidField(Teuchos::RCP<Epetra_Vector> iv) const;
 
     void UpdateAndOutput();
+
 
   private:
 
@@ -97,6 +96,8 @@ namespace FS3I
 
 	/// fluid velocity at interface (always zero!)
 	RCP<Epetra_Vector> iveln_;
+
+	Teuchos::RCP<ADAPTER::StructureBio> structbio;
 
   };
 

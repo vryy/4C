@@ -271,7 +271,7 @@ public:
   /*!
   \brief Change position reference
   */
-  virtual void ChangePos(int k);
+  virtual void ChangePos(vector<double> nvector);
 
   //@}
 

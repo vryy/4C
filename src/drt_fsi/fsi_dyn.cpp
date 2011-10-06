@@ -1253,11 +1253,11 @@ void fsi_lung_gas()
 
     	if (surfgrowth==1)
     		{
-    		cout << "\n\nSurface growth algorithm"<< endl;
+    		cout << "\n\n---------> Surface growth algorithm <---------"<< endl;
 
     		// create an FSI::BiofilmGrowth instance
     		Teuchos::RCP<FS3I::BiofilmGrowth> biofilmgrowth = Teuchos::rcp(new FS3I::BiofilmGrowth(fsi, comm, fsidyn));
-    		biofilmgrowth->ReadRestart(0);
+    		biofilmgrowth->ReadRestart();
     		//biofilmgrowth->SetupFSISystem();
     		biofilmgrowth->OutTimeloop();
     		}
