@@ -3098,7 +3098,6 @@ void FLD::XFluidFluid::Output()
 
     // (hydrodynamic) pressure
     Teuchos::RCP<Epetra_Vector> pressure = alevelpressplitter_.ExtractCondVector(alevelnp_);
-    pressure->Scale(density_);
     emboutput_->WriteVector("pressure", pressure);
 
     //output_.WriteVector("residual", trueresidual_);
