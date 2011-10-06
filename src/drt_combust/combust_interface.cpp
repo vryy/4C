@@ -235,6 +235,70 @@ const double COMBUST::InterfaceHandleCombust::ComputeVolumeMinus()
   return volume;
 }
 
+
+/*------------------------------------------------------------------------------------------------*
+ | compute surface of interface                                                   rasthofer 07/11 |
+ |                                                                                    DA wichmann |
+ *------------------------------------------------------------------------------------------------*/
+const double COMBUST::InterfaceHandleCombust::ComputeSurface()
+{
+  double area = 0.0;
+
+  for (int iele=0; iele<xfemdis_->NumMyRowElements(); ++iele)
+  {
+    const DRT::Element* ele = xfemdis_->lRowElement(iele);
+    const GEO::BoundaryIntCells& elementBoundaryIntCells = this->GetBoundaryIntCells(ele->Id());
+    GEO::BoundaryIntCells::const_iterator itercell;
+    for(itercell = elementBoundaryIntCells.begin(); itercell != elementBoundaryIntCells.end(); ++itercell )
+    {
+      if (!(itercell->Shape() == DRT::Element::tri3 or itercell->Shape() == DRT::Element::quad4))
+        dserror("invalid type of boundary integration cell for surface area calculation");
+
+      // get coordinates of vertices defining flame front patch
+      const LINALG::SerialDenseMatrix& coords = itercell->CellNodalPosXYZ();
+
+      // first point of flame front patch
+      LINALG::Matrix<3,1> pointA;
+      pointA(0) = coords(0,0);
+      pointA(1) = coords(1,0);
+      pointA(2) = coords(2,0);
+
+      // second point of flame front patch
+      LINALG::Matrix<3,1> pointB;
+      pointB(0) = coords(0,1);
+      pointB(1) = coords(1,1);
+      pointB(2) = coords(2,1);
+
+      // first edge of flame front patch
+      LINALG::Matrix<3,1> edgeBA;
+      edgeBA.Update(1.0, pointA, -1.0, pointB);
+
+      // third point of flame front patch
+      LINALG::Matrix<3,1> pointC;
+      pointC(0) = coords(0,2);
+      pointC(1) = coords(1,2);
+      pointC(2) = coords(2,2);
+
+      // second edge of flame front patch
+      LINALG::Matrix<3,1> edgeBC;
+      edgeBC.Update(1.0, pointC, -1.0, pointB);
+
+      LINALG::Matrix<3,1> crossP;
+      crossP(0) = edgeBA(1)*edgeBC(2) - edgeBA(2)*edgeBC(1);
+      crossP(1) = edgeBA(2)*edgeBC(0) - edgeBA(0)*edgeBC(2);
+      crossP(2) = edgeBA(0)*edgeBC(1) - edgeBA(1)*edgeBC(0);
+
+      if (itercell->Shape() == DRT::Element::tri3)
+        area += crossP.Norm2() / 2.0;
+      else
+        area += crossP.Norm2();
+    }
+  }
+
+  return area;
+}
+
+
 // return whether the element has a whole touched face and lies in the plus domain or not
 bool COMBUST::InterfaceHandleCombust::ElementTouched(const int xfemeleid) const
 {

@@ -54,6 +54,8 @@ DRT::ELEMENTS::Combust3::ActionType DRT::ELEMENTS::Combust3::convertStringToActi
     act = Combust3::store_xfem_info;
   else if (action == "get_density")
     act = Combust3::get_density;
+  else if (action == "integrate_Shapefunction")
+    act = Combust3::integrate_shapefunction;
   else if (action == "reset")
     act = Combust3::reset;
   else if (action == "set_standard_mode")
@@ -468,6 +470,21 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         // calculate Nitsche norms
         COMBUST::callNitscheErrors(params, NitscheErrorType, assembly_type, this, ih_, *eleDofManager_, mystate, material,smoothed_boundary_integration);
       }
+    }
+    break;
+    case Combust3::integrate_shapefunction:
+    {
+      // This case integrates the pressures shape functions. It is needed by the
+      // Krylov Subspace Projection.
+
+      // extract local (element level) vectors from global state vectors
+      // we only need phi and therefore turn everything else off
+      DRT::ELEMENTS::Combust3::MyState mystate(discretization, lm, false, true, false, this, ih_);
+
+      const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(*eleDofManager_, NumNode(), NodeIds());
+
+      // integrate the shape functions.(elemat is a dummy)
+      COMBUST::callIntegrateShape(assembly_type, this, ih_, *eleDofManager_, mystate, elemat1, elevec1);
     }
     break;
     default:

@@ -56,7 +56,7 @@ Teuchos::RCP<std::set<int> > FLD::UTILS::MapExtractor::ConditionedElementMap(con
 void FLD::UTILS::KSPMapExtractor::Setup(const DRT::Discretization& dis)
 {
   DRT::UTILS::MultiConditionSelector mcs;
-  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"KrylovSpaceProjection",0,genprob.ndim+1)));
+  mcs.AddSelector(rcp(new DRT::UTILS::ConditionSelector(dis,"KrylovSpaceProjection")));
   mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
 }
 

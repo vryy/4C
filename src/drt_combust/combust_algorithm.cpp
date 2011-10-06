@@ -16,10 +16,12 @@ Maintainer: Florian Henke
 
 #include "combust_algorithm.H"
 #include "combust_defines.H"
+#include "two_phase_defines.H"
 #include "combust_flamefront.H"
 #include "combust_reinitializer.H"
 #include "combust_utils.H"
 #include "combust_fluidimplicitintegration.H"
+#include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_mat/newtonianfluid.H"
@@ -64,6 +66,9 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   reinitband_(DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINITBAND")),
   reinitbandwidth_(combustdyn.sublist("COMBUSTION GFUNCTION").get<double>("REINITBANDWIDTH")),
   reinit_output_(DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINIT_OUTPUT")),
+  volcorrection_(DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINITVOLCORRECTION")),
+  extract_interface_vel_(DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"EXTRACT_INTERFACE_VEL")),
+  convel_layers_(combustdyn.sublist("COMBUSTION GFUNCTION").get<int>("NUM_CONVEL_LAYERS")),
   combustdyn_(combustdyn),
   interfacehandle_(Teuchos::null),
   interfacehandle_old_(Teuchos::null),
@@ -432,6 +437,7 @@ void COMBUST::Algorithm::DoReinitialization()
       if(reinitialization_accepted_ == true) ScaTraField().SetPhinp(ScaTraReinitField().Phinp());
       break;
     case INPAR::COMBUST::reinitaction_signeddistancefunction:
+    case INPAR::COMBUST::reinitaction_fastsigneddistancefunction:
       if(Comm().MyPID()==0) std::cout << "COMBUST::Algorithm: reinitialization via calculating signed distance functions" << std::endl;
       ReinitializeGfuncSignedDistance();
       reinitialization_accepted_ = true;
@@ -464,15 +470,26 @@ void COMBUST::Algorithm::DoReinitialization()
   }
 
   // TODO: the step used for output is switched for one
-  if(reinit_output_ and reinitialization_accepted_ and reinitaction_ != INPAR::COMBUST::reinitaction_signeddistancefunction)
+  if(reinit_output_ and reinitialization_accepted_ and !(reinitaction_ == INPAR::COMBUST::reinitaction_signeddistancefunction or reinitaction_ == INPAR::COMBUST::reinitaction_fastsigneddistancefunction))
   {
-	  ScaTraReinitField().OutputReinit(ScaTraField().Step(), ScaTraField().Time());
+    ScaTraReinitField().OutputReinit(ScaTraField().Step(), ScaTraField().Time());
   }
 
   // compute current volume of minus domain
   const double volume_current_after = ComputeVolume();
   // print mass conservation check on screen
   printMassConservationCheck(volume_start_, volume_current_after);
+
+  // do volume correction
+  if (volcorrection_)
+  {
+    CorrectVolume(volume_start_, volume_current_after);
+
+    // compute current volume of minus domain
+    const double volume_current_corrected = ComputeVolume();
+    // print mass conservation check on screen
+    printMassConservationCheck(volume_start_, volume_current_corrected);
+  }
 
   return;
 }
@@ -1391,21 +1408,35 @@ void COMBUST::Algorithm::DoGfuncField()
     // for two-phase flow, the fluid velocity field is continuous; it can be directly transferred to
     // the scalar transport field
 
-    ScaTraField().SetVelocityField(
-      //OverwriteFluidVel(),
-      FluidField().ExtractInterfaceVeln(),
-      Teuchos::null,
-      FluidField().DofSet(),
-      FluidField().Discretization()
-    );
+    if (extract_interface_vel_) // replace computed velocity field by the interface velocity
+    {
+      ScaTraField().SetVelocityField(
+        //OverwriteFluidVel(),
+        ManipulateFluidFieldForGfunc(FluidField().ExtractInterfaceVeln(), FluidField().DofSet()),
+        Teuchos::null,
+        FluidField().DofSet(),
+        FluidField().Discretization()
+      );
+    }
+    else // transfer the computed velocity as convective velocity to the g-function solver
+    {
+      ScaTraField().SetVelocityField(
+        //OverwriteFluidVel(),
+        FluidField().ExtractInterfaceVeln(),
+        Teuchos::null,
+        FluidField().DofSet(),
+        FluidField().Discretization()
+      );
 
-    // Transfer history vector only for subgrid-velocity
-    //ScaTraField().SetVelocityField(
-    //    FluidField().ExtractInterfaceVeln(),
-    //    FluidField().Hist(),
-    //    FluidField().DofSet(),
-    //    FluidField().Discretization()
-    //);
+      // Transfer history vector only for subgrid-velocity
+      //ScaTraField().SetVelocityField(
+      //    FluidField().ExtractInterfaceVeln(),
+      //    FluidField().Hist(),
+      //    FluidField().DofSet(),
+      //    FluidField().Discretization()
+      //);
+    }
+
     break;
   }
   case INPAR::COMBUST::combusttype_premixedcombustion:
@@ -1574,6 +1605,497 @@ double COMBUST::Algorithm::ComputeVolume()
 }
 
 
+/*------------------------------------------------------------------------------------------------*
+ | correct the volume of the minus domain after reinitialization                  rasthofer 07/11 |
+ |                                                                                    DA wichmann |
+ | Idea: shift level-set so that volume is conserved                                              |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::Algorithm::CorrectVolume(const double targetvol, const double currentvol)
+{
+  const double voldelta = targetvol - currentvol;
+
+  if (Comm().MyPID() == 0)
+    cout << "Correcting volume of minus(-) domain by " << voldelta << " ... " << flush;
+
+  // compute negative volume of discretization on this processor
+  double myarea = interfacehandle_->ComputeSurface();
+  double sumarea = 0.0;
+
+  cout << "Proc " << Comm().MyPID() << " myarea " << myarea << endl;
+
+  // sum volumes on all processors
+  // remark: ifndef PARALLEL sumvolume = myvolume
+  Comm().SumAll(&myarea,&sumarea,1);
+
+  if (Comm().MyPID() == 0)
+    cout << "sumarea " << sumarea << endl;
+
+  // This is a guess on how thick a layer needs to be added to the surface of the minus domain.
+  // Due to $ \grad \phi \approx 1 $ this also happens to be the value that needs to be subtracted
+  // of all phis. To make sure that \grad \phi really is close to 1 this function should only be
+  // called after a reinitialization.
+  const double thickness = -voldelta / sumarea;
+
+  if (Comm().MyPID() == 0)
+    cout << "thickness " << thickness << endl;
+
+  RCP<Epetra_Vector> phin = ScaTraField().Phin();
+
+  RCP<Epetra_Vector> one = rcp(new Epetra_Vector(phin->Map()));
+  one->PutScalar(1.0);
+
+  if (phin != Teuchos::null)
+    phin->Update(thickness, *one, 1.0);
+
+  RCP<Epetra_Vector> phinp = ScaTraField().Phinp();
+  if (phinp != Teuchos::null)
+    phinp->Update(thickness, *one, 1.0);
+
+  RCP<Epetra_Vector> phinm = ScaTraField().Phinm();
+  if (phinm != Teuchos::null)
+    phinm->Update(thickness, *one, 1.0);
+
+  // REMARK:
+  // after the reinitialization we update the flamefront in the usual sense
+  // this means that we modify phi-values if necessary -> default boolian modifyPhiVectors = true
+
+  // update flame front according to reinitialized G-function field
+  flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
+
+  // update interfacehandle (get integration cells) according to updated flame front
+  interfacehandle_->UpdateInterfaceHandle();
+
+  if (Comm().MyPID() == 0)
+    cout << "done" << endl;
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ |                                                                                rasthofer 08/11 |
+ |                                                                                    DA wichmann |
+ *------------------------------------------------------------------------------------------------*/
+const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ManipulateFluidFieldForGfunc(
+    const Teuchos::RCP<Epetra_Vector>& convel,
+    const Teuchos::RCP<const DRT::DofSet>& dofset
+    )
+{
+  if (convel_layers_ > 0)
+  {
+    // temporary vector for convective velocity (based on dofrowmap of standard (non-XFEM) dofset)
+    // remark: operations must not be performed on 'convel', because the vector is accessed by both
+    //         master and slave nodes, if periodic bounday conditions are present
+    Teuchos::RCP<Epetra_Vector> conveltmp = LINALG::CreateVector(*(dofset->DofRowMap()),true);
+
+    // get a pointer to the fluid discretization
+    const Teuchos::RCP<const DRT::Discretization> fluiddis = FluidField().Discretization();
+
+    // get G-function value vector on fluid NodeColMap
+    const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
+
+    // some variables necessary for the Gather command
+    //const int thisproc = fluiddis->Comm().MyPID();
+    const int numproc  = fluiddis->Comm().NumProc();
+    int allproc[numproc];
+    for (int i = 0; i < numproc; ++i)
+      allproc[i] = i;
+
+    //--------------------------------------------------------------------------------------------------
+    // due to the PBCs we need to get some info here in order to properly handle it later
+    //--------------------------------------------------------------------------------------------------
+    Teuchos::RCP<PeriodicBoundaryConditions> pbc = ScaTraField().PBC();
+
+    // get the following information about the pbc
+    // - planenormaldirection e.g. (1,0,0)
+    // - minimum in planenormaldirection
+    // - maximum in planenormaldirection
+    vector<DRT::Condition*>* surfacepbcs = pbc->ReturnSurfacePBCs();
+    vector<int>    planenormal(0);
+    vector<double> globalmins (0);
+    vector<double> globalmaxs (0);
+    for (size_t i = 0; i < surfacepbcs->size(); ++i)
+    {
+      const string* ismaster = (*surfacepbcs)[i]->Get<string>("Is slave periodic boundary condition");
+      if (*ismaster == "Master")
+      {
+        const int masterid = (*surfacepbcs)[i]->GetInt("Id of periodic boundary condition");
+        vector<int> nodeids(*((*surfacepbcs)[i]->Nodes()));
+        for (size_t j = 0; j < surfacepbcs->size(); ++j)
+        {
+          const int slaveid = (*surfacepbcs)[j]->GetInt("Id of periodic boundary condition");
+          if (masterid == slaveid)
+          {
+            const string* isslave = (*surfacepbcs)[j]->Get<string>("Is slave periodic boundary condition");
+            if (*isslave == "Slave")
+            {
+              const vector<int>* slavenodeids = (*surfacepbcs)[j]->Nodes();
+              // append slave node Ids to node Ids for the complete condition
+              for (size_t k = 0; k < slavenodeids->size(); ++k)
+               nodeids.push_back(slavenodeids->at(k));
+            }
+          }
+        }
+
+        // Get normal direction of pbc plane
+        const string* pbcplane = (*surfacepbcs)[i]->Get<string>("degrees of freedom for the pbc plane");
+        if (*pbcplane == "yz")
+          planenormal.push_back(0);
+        else if (*pbcplane == "xz")
+          planenormal.push_back(1);
+        else if (*pbcplane == "xy")
+          planenormal.push_back(2);
+        else
+          dserror("A PBC condition could not provide a plane normal.");
+
+        double min = +10e19;
+        double max = -10e19;
+        for (size_t j = 0; j < nodeids.size(); ++j)
+        {
+
+          const int gid = nodeids[j];
+          const int lid = fluiddis->NodeRowMap()->LID(gid);
+          if (lid < 0)
+            continue;
+          const DRT::Node* lnode = fluiddis->lRowNode(lid);
+          const double* coord = lnode->X();
+          if (coord[planenormal.back()] < min)
+            min = coord[planenormal.back()];
+          if (coord[planenormal.back()] > max)
+           max = coord[planenormal.back()];
+        }
+        globalmins.resize(planenormal.size());
+       globalmaxs.resize(planenormal.size());
+        fluiddis->Comm().MinAll(&min, &(globalmins.back()), 1);
+        fluiddis->Comm().MaxAll(&max, &(globalmaxs.back()), 1);
+      }
+    }//end loop over all surfacepbcs
+
+
+    // these sets contain the element/node GIDs that have been collected
+    Teuchos::RCP<set<int> > allcollectednodes    = rcp(new set<int>);
+    Teuchos::RCP<set<int> > allcollectedelements = rcp(new set<int>);
+
+    // this loop determines how many layers around the cut elements will be collected
+    for (int loopcounter = 0; loopcounter < convel_layers_; ++loopcounter)
+    {
+      if (loopcounter == 0)
+      {
+        //-------------------------------------------------------------------------------------------------
+        // loop over row elements an check whether it has positive and negative phi-values. If it does
+        // add the element to the allcollectedelements set.
+        //-------------------------------------------------------------------------------------------------
+        for(int lroweleid=0; lroweleid < fluiddis->NumMyRowElements(); ++lroweleid)
+        {
+          DRT::Element* ele = fluiddis->lRowElement(lroweleid);
+          const int* nodeids = ele->NodeIds();
+          bool gotpositivephi = false;
+          bool gotnegativephi = false;
+
+          for(int inode = 0; inode < ele->NumNode(); ++inode)
+          {
+            const int nodegid = nodeids[inode];
+            const int nodelid = phinp->Map().LID(nodegid);
+            if (nodelid < 0)
+              dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*phinp).Comm().MyPID(),nodegid);
+
+            if ((*phinp)[nodelid] <= 0.0)
+              gotnegativephi = true;
+            else
+              gotpositivephi = true;
+          }
+
+          if (gotpositivephi and gotnegativephi)
+            allcollectedelements->insert(ele->Id());
+        }
+      }
+      else
+      {
+        //------------------------------------------------------------------------------------------
+        // now, that we have collected all row nodes for this proc. Its time to get the adjacent elements
+        //------------------------------------------------------------------------------------------
+        set<int>::const_iterator nodeit;
+        for (nodeit = allcollectednodes->begin(); nodeit != allcollectednodes->end(); ++nodeit)
+        {
+          const int nodelid       = fluiddis->NodeRowMap()->LID(*nodeit);
+          DRT::Node* node         = fluiddis->lRowNode(nodelid);
+          DRT::Element** elements = node->Elements();
+          for (int iele = 0; iele < node->NumElement(); ++iele)
+          {
+            DRT::Element* ele     = elements[iele];
+            allcollectedelements->insert(ele->Id());
+          }
+        } // loop over elements
+      }
+
+      //------------------------------------------------------------------------------------------------
+      // now that we have collected all elements on this proc, its time to get the adjacent nodes.
+      // Afterwards the nodes are communicated in order to obtain the collected row nodes on every proc.
+      //------------------------------------------------------------------------------------------------
+      set<int>::const_iterator eleit;
+      for (eleit = allcollectedelements->begin(); eleit != allcollectedelements->end(); ++eleit)
+      {
+        const int elelid  = fluiddis->ElementColMap()->LID(*eleit);
+        DRT::Element* ele = fluiddis->lColElement(elelid);
+        DRT::Node** nodes = ele->Nodes();
+        for (int inode = 0; inode < ele->NumNode(); ++inode)
+        {
+          DRT::Node* node = nodes[inode];
+
+          // now check whether we have a pbc condition on this node
+          vector<DRT::Condition*> mypbc;
+          node->GetCondition("SurfacePeriodic",mypbc);
+
+          if (mypbc.size() == 0)
+          {
+            allcollectednodes->insert(node->Id());
+          }
+          else
+          {
+            // obtain a vector of master and slaves
+            const int nodeid = node->Id();
+            vector<int> pbcnodes;
+            for (size_t numcond=0; numcond<mypbc.size(); ++numcond)
+            {
+              Teuchos::RCP<map<int,vector<int> > > pbcmastertoslave = ScaTraField().PBCmap();
+              map<int,vector<int> >::iterator mapit;
+              for (mapit = pbcmastertoslave->begin(); mapit != pbcmastertoslave->end(); ++mapit)
+              {
+                if (mapit->first == nodeid)
+                {
+                  pbcnodes.push_back(mapit->first);
+                  for (size_t i = 0; i < mapit->second.size(); ++i)
+                    pbcnodes.push_back(mapit->second[i]);
+                  break;
+                }
+                for (size_t isec = 0; isec < mapit->second.size(); ++isec)
+                {
+                  if (mapit->second[isec] == nodeid)
+                  {
+                    pbcnodes.push_back(mapit->first);
+                    for (size_t i = 0; i < mapit->second.size(); ++i)
+                      pbcnodes.push_back(mapit->second[i]);
+                    break;
+                  }
+                }
+              }
+            }
+
+            for (size_t i = 0; i < pbcnodes.size(); ++i)
+              allcollectednodes->insert(pbcnodes[i]);
+          }
+        } // loop over elements' nodes
+      } // loop over elements
+
+      // with all nodes collected it is time to communicate them to all other procs
+      // which then eliminate all but their row nodes
+      {
+        Teuchos::RCP<set<int> > globalcollectednodes = rcp(new set<int>);
+        //TODO Ursula: patch gfunctionConvelManipulation
+        //             linalg_utils.H, drt_exporter.H
+        LINALG::Gather<int>(*allcollectednodes,*globalcollectednodes,numproc,allproc,fluiddis->Comm());
+
+        allcollectednodes->clear();
+        set<int>::const_iterator gnodesit;
+        for (gnodesit = globalcollectednodes->begin(); gnodesit != globalcollectednodes->end(); ++gnodesit)
+        {
+          const int nodegid = (*gnodesit);
+          const int nodelid = fluiddis->NodeRowMap()->LID(nodegid);
+          if (nodelid >= 0)
+            allcollectednodes->insert(nodegid);
+        }
+      }
+    } // loop over layers of elements
+
+    //-----------------------------------------------------------------------------------------------
+    // If a node does not have 8 elements in the allcollected elements it must be a the surface
+    // and therefore gets added to the surfacenodes set. This set is redundantly available and
+    // mereley knows a node's position and velocities
+    //-----------------------------------------------------------------------------------------------
+    Teuchos::RCP<vector<LINALG::Matrix<3,2> > > surfacenodes = rcp(new vector<LINALG::Matrix<3,2> >);
+
+    set<int>::const_iterator nodeit;
+    for (nodeit = allcollectednodes->begin(); nodeit != allcollectednodes->end(); ++nodeit)
+    {
+      const int nodelid   = fluiddis->NodeRowMap()->LID(*nodeit);
+      DRT::Node* node     = fluiddis->lRowNode(nodelid);
+      DRT::Element** eles = node->Elements();
+      int elementcount    = 0;
+      for (int iele = 0; iele < node->NumElement(); ++iele)
+      {
+        DRT::Element* ele = eles[iele];
+        set<int>::const_iterator foundit = allcollectedelements->find(ele->Id());
+        if (foundit != allcollectedelements->end())
+          elementcount++;
+      }
+
+      if (elementcount < 8)
+      {
+        LINALG::Matrix<3,2> coordandvel;
+        const double* coord = node->X();
+        const std::vector<int> dofids = (*dofset).Dof(node);
+        for (int i = 0; i < 3; ++i)
+        {
+          const int lid = convel->Map().LID(dofids[i]);
+          if (lid < 0)
+            dserror("Dof %d not found on this proc.", dofids[i]);
+          coordandvel(i,0) = coord[i];
+          coordandvel(i,1) = (*convel)[lid];
+        }
+        surfacenodes->push_back(coordandvel);
+      }
+    }
+
+    // Now the surfacenodes must be gathered to all procs
+    {
+      Teuchos::RCP<vector<LINALG::Matrix<3,2> > > mysurfacenodes = surfacenodes;
+      surfacenodes = rcp(new vector<LINALG::Matrix<3,2> >);
+
+      LINALG::Gather<LINALG::Matrix<3,2> >(*mysurfacenodes,*surfacenodes,numproc,allproc,fluiddis->Comm());
+    }
+
+    //----------------------------------------------------------------------------------------------
+    // Here we manipulate the velocity vector. If a node is not in allnodes we find the nearest node
+    // in surface nodes and use its velocity instead.
+    //----------------------------------------------------------------------------------------------
+    for(int lnodeid = 0; lnodeid < fluiddis->NumMyRowNodes(); ++lnodeid)
+    {
+      DRT::Node* lnode = fluiddis->lRowNode(lnodeid);
+
+      LINALG::Matrix<3,1> fluidvel(true);
+      // get the set of dof IDs for this node (3 x vel + 1 x pressure) from standard FEM dofset
+      const std::vector<int> dofids = (*dofset).Dof(lnode);
+
+      // extract velocity values (no pressure!) from global velocity vector
+      for (int i = 0; i < 3; ++i)
+      {
+        const int lid = convel->Map().LID(dofids[i]);
+        if (lid < 0)
+          dserror("Dof %d not found on this proc.");
+        fluidvel(i) = (*convel)[lid];
+      }
+
+      set<int>::const_iterator foundit = allcollectednodes->find(lnode->Id());
+      if (foundit == allcollectednodes->end())
+      {
+        // find closest node in surfacenodes
+        LINALG::Matrix<3,2> closestnodedata(true);
+        {
+          LINALG::Matrix<3,1> nodecoord;
+          const double* coord = lnode->X();
+          for (int i = 0; i < 3; ++i)
+            nodecoord(i) = coord[i];
+          double mindist = 1.0e19;
+
+          //--------------------------------
+          // due to the PBCs the node might actually be closer to the
+          // surfacenodes then would be calculated if one only considered
+          // the actual position of the node. In order to find the
+          // smallest distance the node is copied along all PBC directions
+          //
+          //   +------------------+ - - - - - - - - - -+
+          //   +             II   +
+          //   +   x        I  I  +    y               +
+          //   +             II   +
+          //   +------------------+ - - - - - - - - - -+
+          //         original           copy
+          //
+          //   x: current node
+          //   y: copy of current node
+          //   I: interface
+          //   +: pbc
+
+          if (planenormal.size() > 3)
+            dserror("Sorry, but currently a maximum of three periodic boundary conditions are supported by the combustion reinitializer.");
+
+          // since there is no stl pow(INT, INT) function, we calculate it manually
+          size_t looplimit = 1;
+          for (size_t i = 0; i < planenormal.size(); ++i)
+            looplimit *= 2;
+
+          for (size_t ipbc = 0; ipbc < looplimit; ++ipbc)
+          {
+            LINALG::Matrix<3,1> tmpcoord(nodecoord);
+
+            // determine which pbcs have to be applied
+            //
+            // loopcounter | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+            // ------------+---+---+---+---+---+---+---+---+
+            //  first PBC  |     x       x       x       x
+            // second PBC  |         x   x           x   x
+            //  third PBC  |                 x   x   x   x
+            //
+            // this is equivalent to the binary representation
+            // of the size_t
+            if (ipbc & 0x01)
+            {
+              const double pbclength = globalmaxs[0] - globalmins[0];
+              if (nodecoord(planenormal[0]) > globalmins[0] + pbclength/2.0)
+                tmpcoord(planenormal[0]) = nodecoord(planenormal[0]) - pbclength;
+              else
+                tmpcoord(planenormal[0]) = nodecoord(planenormal[0]) + pbclength;
+            }
+            if (ipbc & 0x02)
+            {
+              const double pbclength = globalmaxs[1] - globalmins[1];
+              if (nodecoord(planenormal[1]) > globalmins[1] + pbclength/2.0)
+                tmpcoord(planenormal[1]) = nodecoord(planenormal[1]) - pbclength;
+              else
+                tmpcoord(planenormal[1]) = nodecoord(planenormal[1]) + pbclength;
+            }
+            if (ipbc & 0x04)
+            {
+              const double pbclength = globalmaxs[2] - globalmins[2];
+              if (nodecoord(planenormal[2]) > globalmins[2] + pbclength/2.0)
+                tmpcoord(planenormal[2]) = nodecoord(planenormal[2]) - pbclength;
+              else
+                tmpcoord(planenormal[2]) = nodecoord(planenormal[2]) + pbclength;
+            }
+
+            for (size_t i = 0; i < surfacenodes->size(); ++i)
+            {
+              const double dist = sqrt((tmpcoord(0)-(*surfacenodes)[i](0,0))*(tmpcoord(0)-(*surfacenodes)[i](0,0)) + (tmpcoord(1)-(*surfacenodes)[i](1,0))*(tmpcoord(1)-(*surfacenodes)[i](1,0)) + (tmpcoord(2)-(*surfacenodes)[i](2,0))*(tmpcoord(2)-(*surfacenodes)[i](2,0)));
+              if (dist < mindist)
+              {
+                mindist = dist;
+                closestnodedata = (*surfacenodes)[i];
+              }
+            }
+          }
+        }
+
+        // write new velocities to the current node's dofs
+        for (int icomp=0; icomp<3; ++icomp)
+        {
+          int lid = convel->Map().LID(dofids[icomp]);
+          if (lid < 0)
+            dserror("Dof %d not found on this proc.");
+          const int err = conveltmp->ReplaceMyValues(1,&closestnodedata(icomp,1),&lid);
+          if (err)
+            dserror("could not replace values for convective velocity");
+        }
+      }
+      else
+      {
+        for (int icomp=0; icomp<3; ++icomp)
+        {
+          int lid = convel->Map().LID(dofids[icomp]);
+          if (lid < 0)
+            dserror("Dof %d not found on this proc.");
+          const int err = conveltmp->ReplaceMyValues(1,&fluidvel(icomp),&lid);
+          if (err)
+            dserror("could not replace values for convective velocity");
+        }
+      }
+    }
+
+    return conveltmp;
+  }
+  else
+    return convel;
+}
+
+
 /* -------------------------------------------------------------------------------*
  * Restart (fluid is solved before g-func)                               rasthofer|
  * -------------------------------------------------------------------------------*/
@@ -1681,6 +2203,11 @@ void COMBUST::Algorithm::RestartNew(int step)
   if (Comm().MyPID()==0)
     std::cout << "Restart of combustion problem" << std::endl;
 
+#ifdef BCF_IGNORE_SCATRA_RESTART
+  Teuchos::RCP<Epetra_Vector> oldphinp = rcp(new Epetra_Vector(*(ScaTraField().Phinp())));
+  Teuchos::RCP<Epetra_Vector> oldphin = rcp(new Epetra_Vector(*(ScaTraField().Phin())));
+#endif
+
   // restart of scalar transport (G-function) field
   ScaTraField().ReadRestart(step);
 
@@ -1769,6 +2296,24 @@ void COMBUST::Algorithm::RestartNew(int step)
 
   // restart of fluid field
   FluidField().ReadRestart(step);
+
+#ifdef BCF_IGNORE_SCATRA_RESTART
+  // now overwrite restart phis w/ the old phis
+  ScaTraField().Phinp()->Update(1.0, *(oldphinp), 0.0);
+  ScaTraField().Phin()->Update(1.0, *(oldphin), 0.0);
+  ScaTraField().ComputeTimeDerivative();
+  ScaTraField().Phidtn()->Update(1.0,*(ScaTraField().Phidtnp()),0.0);
+  ScaTraField().Phinm()->Update(1.0,*(ScaTraField().Phin()),0.0);
+
+  // additionally we need to update the interfacehandle and flamefront
+  // or later on the computeVolume function will return the old volume
+  flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
+  interfacehandle_->UpdateInterfaceHandle();
+  FluidField().ImportFlameFront(flamefront_);
+  FluidField().ImportInterface(interfacehandle_,interfacehandle_);
+  FluidField().ImportFlameFront(Teuchos::null);
+#endif
+
   //-------------------
   // write fluid output
   //-------------------

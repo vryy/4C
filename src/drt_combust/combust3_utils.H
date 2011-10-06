@@ -47,22 +47,31 @@ namespace COMBUST
   void BodyForce(
       const DRT::Element* ele,
       const double time,
+      const string neumtype,
       M& edead)
   {
     const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
     vector<DRT::Condition*> myneumcond;
+    int myindex = -1;
 
     // check whether all nodes have a unique VolumeNeumann condition
     DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);
 
-    if (myneumcond.size()>1)
-      dserror("more than one VolumeNeumann cond on one node");
+    for (size_t i = 0; i < myneumcond.size(); ++i)
+    {
+      const string* condtype = myneumcond[i]->Get<string>("type");
+      if (*condtype == neumtype or (neumtype == "DeadOrLive" and (*condtype == "neum_dead" or *condtype == "neum_live")))
+      {
+        myindex = (int)i;
+        break;
+      }
+    }
 
-    if (myneumcond.size()==1)
+    if (myindex >= 0)
     {
       // find out whether we will use a time curve
-      const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
+      const vector<int>* curve  = myneumcond[myindex]->Get<vector<int> >("curve");
       int curvenum = -1;
 
       if (curve) curvenum = (*curve)[0];
@@ -91,9 +100,9 @@ namespace COMBUST
       }
 
       // get values and switches from the condition
-      const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
-      const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
-      const vector<int>*    functions = myneumcond[0]->Get<vector<int> >("funct");
+      const vector<int>*    onoff = myneumcond[myindex]->Get<vector<int> >   ("onoff");
+      const vector<double>* val   = myneumcond[myindex]->Get<vector<double> >("val"  );
+      const vector<int>*    functions = myneumcond[myindex]->Get<vector<int> >("funct");
 
       // factor given by spatial function
       double functionfac = 1.0;
@@ -120,6 +129,10 @@ namespace COMBUST
           edead(isd,jnode) = num*functionfac;
         }
       }
+    }
+    else if(myneumcond.size()==2)
+    {
+
     }
   }
 

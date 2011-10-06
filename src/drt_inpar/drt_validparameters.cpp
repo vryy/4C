@@ -3348,11 +3348,13 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                  "None",
                                  "Function",
                                  "Signed_Distance_Function",
+                                 "Fast_Signed_Distance_Function",
                                  "Sussman"),
                                tuple<int>(
                                  INPAR::COMBUST::reinitaction_none,
                                  INPAR::COMBUST::reinitaction_byfunction,
                                  INPAR::COMBUST::reinitaction_signeddistancefunction,
+                                 INPAR::COMBUST::reinitaction_fastsigneddistancefunction,
                                  INPAR::COMBUST::reinitaction_sussman),
                                &combustcontrolgfunc);
 
@@ -3362,9 +3364,14 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   IntParameter("REINITINTERVAL",1,"reinitialization interval",&combustcontrolgfunc);
   BoolParameter("REINITBAND","No","reinitialization only within a band around the interface, or entire domain?",&combustcontrolgfunc);
   DoubleParameter("REINITBANDWIDTH",1.0,"G-function value defining band width for reinitialization",&combustcontrolgfunc);
+  BoolParameter("REINITVOLCORRECTION","No","volume correction after reinitialization",&combustcontrolgfunc);
+
   setStringToIntegralParameter<int>("REFINEMENT","No","Turn refinement strategy for level set function on/off",
                                      yesnotuple,yesnovalue,&combustcontrolgfunc);
   IntParameter("REFINEMENTLEVEL",-1,"number of refinement level for refinement strategy",&combustcontrolgfunc);
+
+  BoolParameter("EXTRACT_INTERFACE_VEL","No","replace computed velocity at nodes of given distance of interface by approximated interface velocity",&combustcontrolgfunc);
+  IntParameter("NUM_CONVEL_LAYERS",0,"number of layers around the interface which keep their computed convective velocity",&combustcontrolgfunc);
 
   /*----------------------------------------------------------------------*/
   // schott 04/11

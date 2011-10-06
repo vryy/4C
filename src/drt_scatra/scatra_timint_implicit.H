@@ -263,6 +263,9 @@ public:
   /// routine to return time derivative of scalar field phi at time step n+1
   Teuchos::RCP<Epetra_Vector> Phidtnp() { return phidtnp_; }
 
+  /// routine to return time derivative of scalar field phi at time step n
+  Teuchos::RCP<Epetra_Vector> Phidtn() { return phidtn_; }
+
   /// routine to return scalar field phi at time step n+alpha_F
   virtual Teuchos::RCP<Epetra_Vector> Phiaf() = 0;
 

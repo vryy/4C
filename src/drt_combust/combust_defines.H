@@ -136,10 +136,11 @@ Maintainer: Florian Henke
 //#define COMBUST_GMSH_NORMALFIELD
 
 //--------------------------
-// multiscale two-phase flow
+// combustion output options
 //--------------------------
-//gmsh output of subgrid velocity
-//#define SUGRVEL_OUTPUT // don't forget to transfer the time step
+//#define GMSH_AVERAGE_JUMP
+//#define GMSH_WRITE_JUMPS
+//#define GMSH_REF_FIELDS
 
 //--------------------------
 // combustion output options

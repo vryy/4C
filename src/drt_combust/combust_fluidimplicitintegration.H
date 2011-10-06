@@ -28,6 +28,7 @@ Maintainer: Florian Henke
 #include "../drt_fluid/turbulence_statistic_manager.H"
 #include "combust_flamefront.H"
 #include "combust_interface.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 namespace FLD
 {
@@ -36,6 +37,7 @@ namespace FLD
 
 \author henke (henke@lnm.mw.tum.de)
 */
+
 class CombustFluidImplicitTimeInt
 {
   friend class CombustFluidResultTest;
@@ -425,6 +427,13 @@ protected:
   IO::Ostream0 cout0_;
   //@}
 
+  //! project nullspace (useful for completely Dirichlet bounded problems)
+  bool                          project_;
+  //! integrated basis vector (pressure component)
+  Teuchos::RCP<Epetra_Vector>   w_;
+  //! basis vector for nullspace (vector of ones in the pressure component)
+  Teuchos::RCP<Epetra_Vector>   c_;
+
   /// switch for type of combustion problem
   INPAR::COMBUST::CombustionType combusttype_;
   INPAR::COMBUST::VelocityJumpType veljumptype_;
@@ -579,6 +588,9 @@ protected:
 
   //! Extractor used for convergence check
   LINALG::MapExtractor      velpressplitter_;
+
+  //! Krylov space projection map extractor
+  FLD::UTILS::KSPMapExtractor kspsplitter_;
 
   //! Extractor used for output
   LINALG::MapExtractor      velpressplitterForOutput_;

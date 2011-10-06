@@ -101,7 +101,12 @@ void SysmatTwoPhaseFlow(
 
   // read body force (dead load) from input file and apply it to element nodes
   LINALG::Matrix<nsd,numnode> edead(true);
-  COMBUST::BodyForce<DISTYPE>(ele, 0.0, edead);
+  COMBUST::BodyForce<DISTYPE>(ele, 0.0, "DeadOrLive", edead);
+
+  // read the pressure gradient (body force w/out scaling w/ density)
+  // from inut file and apply it to element nodes
+  LINALG::Matrix<nsd,numnode> epgrad(true);
+  COMBUST::BodyForce<DISTYPE>(ele, 0.0, "neum_pgrad", epgrad);
 
   // flag for higher order elements
   const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
@@ -548,12 +553,17 @@ void SysmatTwoPhaseFlow(
       // body force vector
       // remark: unit is acceleration (not density weighted)
       static LINALG::Matrix<nsd,1> bodyforce;
+      static LINALG::Matrix<nsd,1> noscalebodyforce;
       bodyforce.Clear();
+      noscalebodyforce.Clear();
       //bodyforce(1) = -9.81;
       for (std::size_t isd = 0; isd < nsd; isd++)
       {
         for (std::size_t inode = 0; inode < numnode; inode++)
+        {
           bodyforce(isd) += edead(isd,inode) * funct(inode);
+          noscalebodyforce(isd) += epgrad(isd,inode) * funct(inode);
+        }
       }
       // apply body force manually on Gauss point
       // remark: unit has to be acceleration (not density weighted)
@@ -569,7 +579,7 @@ void SysmatTwoPhaseFlow(
       bodyforce.Scale(densaf);
 
       for (size_t isd = 0; isd < nsd; ++isd)
-        rhsint(isd) = densaf*histvec(isd) + bodyforce(isd)*timefac;
+        rhsint(isd) = densaf*histvec(isd) + (bodyforce(isd) + noscalebodyforce(isd)) * timefac;
 
       /*----------------- get numerical representation of single operators ---*/
       /* Convective term  u_old * grad u_old: */

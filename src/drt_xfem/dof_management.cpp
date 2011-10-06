@@ -550,21 +550,80 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformXFEMtoStandardVector(
 
 
 /*----------------------------------------------------------------------*
- |  transform  to a string (Debug)                              ag 11/07|
+ | write values of a certain physical field              rasthofer 09/11|
+ |                                                          DA wichmann |
  *----------------------------------------------------------------------*/
-std::string XFEM::DofManager::toString() const
+void XFEM::DofManager::overwritePhysicalField(
+    Teuchos::RCP<Epetra_Vector>&           vector,
+    const map<DofKey<onNode>, DofGID>&     nodalDofDistributionMap,
+    const XFEM::PHYSICS::Field&            physfield,
+    const XFEM::Enrichment::EnrType&       enrichment,
+    const double                           value,
+    const bool                             strict
+) const
 {
-  std::stringstream s;
-  for (int i=0; i<ih_->xfemdis()->NumMyRowNodes(); ++i)
+  // loop nodes on this processor
+  for (int inode=0; inode < ih_->xfemdis()->NumMyRowNodes(); ++inode)
   {
-    const int gid = ih_->xfemdis()->lRowNode(i)->Id();
-    const set <XFEM::FieldEnr> actset = nodalDofSet_.find(gid)->second;
-    for ( std::set<XFEM::FieldEnr>::const_iterator var = actset.begin(); var != actset.end(); ++var )
+    // get GID of this node
+    const DRT::Node* node = ih_->xfemdis()->lRowNode(inode);
+    const int nodegid = node->Id();
+
+    // find the set of field enrichments (~ XFEM dofs) for this node
+    std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator nodeentry = nodalDofSet_.find(nodegid);
+
+    // node was not found in nodalDofSet_
+    if (nodeentry == nodalDofSet_.end())
     {
-      s << "Node: " << gid << ", " << var->toString() << endl;
-    };
-  };
-  return s.str();
+      dserror("Every node should have (at least a standard) field enrichments!");
+    }
+    else // node was found in nodalDofSet_
+    {
+      // get set of field enrichments for this node
+      const std::set<FieldEnr> fieldenrset = nodeentry->second;
+
+      // if strict is enabled we only want dofs of nodes which use only the specified enrichment
+      if (strict)
+      {
+        bool haswrongenrichment = false;
+        // loop over physical output fields
+        for(std::set<FieldEnr>::const_iterator ifield = fieldenrset.begin(); ifield != fieldenrset.end(); ++ifield)
+        {
+          if (ifield->getEnrichment().Type() != enrichment)
+          {
+            haswrongenrichment = true;
+            break;
+          }
+        }
+        // continue with next node
+        if (haswrongenrichment)
+          continue;
+      }
+
+      // loop over physical output fields
+      for(std::set<FieldEnr>::const_iterator ifield = fieldenrset.begin(); ifield != fieldenrset.end(); ++ifield)
+      {
+        if (ifield->getEnrichment().Type() == enrichment)
+        {
+          if (ifield->getField() == physfield)
+          {
+            // build a dofkey (= XFEM dof)
+            const XFEM::DofKey<XFEM::onNode> dofkey(nodegid, *ifield);
+            // get dof GID (XFEM layout) corresponding to this dofkey
+            std::map<DofKey<onNode>, DofGID>::const_iterator idof = nodalDofDistributionMap.find(dofkey);
+            if (idof == nodalDofDistributionMap.end())
+              dserror("bug!");
+            const int dofgid = idof->second;
+            if (dofgid < 0)
+              dserror("bug!");
+            // fill output vector by writing value of standard enrichment (XFEM)
+            vector->ReplaceGlobalValue(dofgid, 0, value);
+          }
+        }
+      } // loop over physical output fields
+    }
+  } // loop nodes on this processor
+  return;
 }
 
 

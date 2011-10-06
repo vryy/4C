@@ -22,6 +22,7 @@ Maintainer: Axel Gerstenberger
 #include "xdofmapcreation.H"
 #include "xdofmapcreation_combust.H"
 #include "xdofmapcreation_parallel_utils.H"
+#include "../drt_combust/two_phase_defines.H"
 #include "enrichment_utils.H"
 #include "dofkey.H"
 #include "../drt_lib/drt_exporter.H"
@@ -367,8 +368,13 @@ void XFEM::createDofMapCombust(
         break;
         case INPAR::COMBUST::combusttype_twophaseflow_surf:
         {
+#ifndef BCF_SURFTENS_PRES_KINK
           // apply kink enrichments to all nodes for velocity field and jumps to pressure field of a bisected element
           skipped_node_enr = ApplyKinkJumpEnrichment(xfemele, fieldset, nodeDofMap);
+#else
+          // apply kink enrichments to all nodes for velocity field and jumps to pressure field of a bisected element
+          skipped_node_enr = ApplyKinkEnrichment(xfemele, fieldset, nodeDofMap);
+#endif
         }
         break;
         case INPAR::COMBUST::combusttype_twophaseflowjump:

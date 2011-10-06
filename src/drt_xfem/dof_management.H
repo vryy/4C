@@ -153,6 +153,18 @@ namespace XFEM
           const std::set<XFEM::PHYSICS::Field>&   fieldsout
       ) const;
 
+      /*!
+       \brief overwrite the values of a certain physical field and enrichment
+      */
+      void overwritePhysicalField(
+          Teuchos::RCP<Epetra_Vector>&           vector,
+          const map<DofKey<onNode>, DofGID>&     nodalDofDistributionMap,
+          const XFEM::PHYSICS::Field&            physfield,
+          const XFEM::Enrichment::EnrType&       enrichment,
+          const double                           value,
+          const bool                             strict = false
+      ) const;
+
       //! return pointer to interface handle
       const Teuchos::RCP<XFEM::InterfaceHandle> getInterfaceHandle() const { return ih_; }
 

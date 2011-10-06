@@ -33,6 +33,7 @@ Maintainer: Florian Henke
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fluid/time_integration_scheme.H"
 #include "../drt_fluid/fluid_utils.H"
+//#include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_fluid/drt_pbcdofset.H"
 #include "../drt_geometry/position_array.H"
@@ -102,7 +103,8 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   uprestart_(params.get("write restart every", -1)),
   upres_(params.get("write solution every", -1)),
   writestresses_(params.get<int>("write stresses", 0)),
-  flamefront_(Teuchos::null)
+  flamefront_(Teuchos::null),
+  project_(false)
 {
   //------------------------------------------------------------------------------------------------
   // time measurement: initialization
@@ -124,6 +126,10 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     theta_ = 1.0;
     cout0_ << "parameters 'theta' and 'time step size' have been set to 1.0 for stationary problem " << endl;
   }
+
+  numdim_ = params_.get<int>("number of velocity degrees of freedom");
+  if (numdim_ != 3)
+    dserror("COMBUST only supports 3D problems.");
 
   //------------------------------------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -583,6 +589,40 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
     // compute values at intermediate time steps
     // ----------------------------------------------------------------
     GenAlphaIntermediateValues();
+  }
+
+  // sysmat might be singular (if we have a purely Dirichlet constrained
+  // problem, the pressure mode is defined only up to a constant)
+  // in this case, we need a basis vector for the nullspace/kernel
+  {
+    vector<DRT::Condition*> KSPcond;
+    discret_->GetCondition("KrylovSpaceProjection",KSPcond);
+    int numcond = KSPcond.size();
+
+    int numfluid = 0;
+
+    for(int icond = 0; icond < numcond; icond++)
+    {
+      const std::string* name = KSPcond[icond]->Get<std::string>("discretization");
+      if (*name == "fluid")
+        numfluid++;
+    }
+
+    if (numfluid == 1)
+    {
+      project_ = true;
+      w_       = LINALG::CreateVector(*discret_->DofRowMap(),true);
+      c_       = LINALG::CreateVector(*discret_->DofRowMap(),true);
+      kspsplitter_.Setup(*discret_);
+    }
+    else if (numfluid == 0)
+    {
+      project_ = false;
+      w_       = Teuchos::null;
+      c_       = Teuchos::null;
+    }
+    else
+      dserror("Received more than one KrylovSpaceCondition for fluid field");
   }
 
 }
@@ -1140,6 +1180,116 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     // to avoid that.
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
 
+
+    // Krylov projection for solver already required in convergence check
+    if (project_)
+    {
+      DRT::Condition* KSPcond=discret_->GetCondition("KrylovSpaceProjection");
+
+      // in this case, we want to project out some zero pressure modes
+      const string* definition = KSPcond->Get<string>("weight vector definition");
+
+      if(*definition == "pointvalues")
+      {
+        // zero w and c
+        w_->PutScalar(0.0);
+        c_->PutScalar(0.0);
+
+        // get pressure
+        const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
+
+        // make sure the dat file specified a pressure mode
+        for(int rr=0;rr<numdim_;++rr)
+        {
+          if(abs((*mode)[rr])>1e-14)
+            dserror("expecting only an undetermined pressure");
+        }
+
+        int predof = numdim_;
+
+        /* export to vector to normalize against
+        //
+        // Note that in the case of definition pointvalue based,
+        // the average pressure will vanish in a pointwise sense
+        //
+        //    +---+
+        //     \
+        //      +   p_i  = 0
+        //     /
+        //    +---+
+        */
+
+        // write the value specified in the .dat-file to every std. pressure dof
+        // (regardless of whether this node also uses enriched pressure)
+        dofmanagerForOutput_->overwritePhysicalField(w_, state_.nodalDofDistributionMap_, XFEM::PHYSICS::Pres,
+                                                                XFEM::Enrichment::typeStandard, (*mode)[predof], false);
+
+        // select only a certain volume to be affected by this projection
+        Teuchos::RCP<Epetra_Vector> tmpkspw = kspsplitter_.ExtractKSPCondVector(*w_);
+        LINALG::Export(*tmpkspw,*w_);
+
+        // c_ = w_ except we use 1.0 instead of the .dat-file provided value
+        dofmanagerForOutput_->overwritePhysicalField(c_, state_.nodalDofDistributionMap_, XFEM::PHYSICS::Pres,
+                                                     XFEM::Enrichment::typeStandard, 1.0, false);
+
+        Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*c_);
+        LINALG::Export(*tmpkspc,*c_);
+      }
+      else if(*definition == "integration")
+      {
+        // zero w and c
+        w_->PutScalar(0.0);
+        c_->PutScalar(0.0);
+
+        //---------------------------------------------------------
+        // fill w_
+        //---------------------------------------------------------
+        ParameterList eleparams;
+        // set action for elements
+        eleparams.set("action","integrate_Shapefunction");
+
+        /* evaluate KrylovSpaceProjection condition in order to get
+        // integrated nodal basis functions w_
+        // Note that in the case of definition integration based,
+        // the average pressure will vanish in an integral sense
+        //
+        //                    /              /                      /
+        //   /    \          |              |  /          \        |  /    \
+        //  | w_*p | = p_i * | N_i(x) dx =  | | N_i(x)*p_i | dx =  | | p(x) | dx = 0
+        //   \    /          |              |  \          /        |  \    /
+        //                   /              /                      /
+        */
+
+        // call loop over elements
+        discret_->ClearState();
+        discret_->EvaluateCondition(eleparams, w_, "KrylovSpaceProjection");
+        discret_->ClearState();
+
+        //----------------------------------------------------------
+        // fill c_
+        //----------------------------------------------------------
+        // same as for pointwise
+        dofmanagerForOutput_->overwritePhysicalField(c_, state_.nodalDofDistributionMap_, XFEM::PHYSICS::Pres,
+                                                     XFEM::Enrichment::typeStandard, 1.0, false);
+
+        Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*c_);
+        LINALG::Export(*tmpkspc,*c_);
+      }
+      else
+      {
+        dserror("unknown definition of weight vector w for restriction of Krylov space");
+      }
+
+      double cTw;
+      c_->Dot(*w_,&cTw);
+
+      double cTres;
+      c_->Dot(*residual_,&cTres);
+
+      residual_->Update(-cTres/cTw,*w_,1.0);
+    }
+
+
     double incvelnorm_L2 = 0.0;
     double velnorm_L2 = 0.0;
     double vresnorm = 0.0;
@@ -1484,7 +1634,8 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         currresidual = max(currresidual,incprenorm_L2/prenorm_L2);
         solver_.AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
-      solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1);
+
+      solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1,w_,c_,project_); // defaults: weighted_basis_mean_w = null, kernel_c = null, project = false
       solver_.ResetTolerance();
 
       // end time measurement for solver

@@ -262,6 +262,7 @@ private:
           calc_smagorinsky_const,
           store_xfem_info,
           get_density,
+          integrate_shapefunction,
           reset,
           set_standard_mode
         };

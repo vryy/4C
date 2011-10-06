@@ -1161,5 +1161,186 @@ void COMBUST::callNitscheErrors(
 }
 
 
+
+namespace COMBUST
+{
+/*!
+  Integrate the pressure shapefunctions
+  */
+template <DRT::Element::DiscretizationType DISTYPE,
+          XFEM::AssemblyType ASSTYPE>
+void IntegrateShape(
+    const DRT::ELEMENTS::Combust3*          ele,             ///< the element those matrix is calculated
+    const COMBUST::InterfaceHandleCombust*  ih,              ///< connection to the interface handler
+    const XFEM::ElementDofManager&          dofman,          ///< dofmanager of the current element
+    const DRT::ELEMENTS::Combust3::MyState& mystate,         ///< element state variables
+    Epetra_SerialDenseMatrix&               estif,           ///< element matrix to calculate
+    Epetra_SerialDenseVector&               eforce           ///< element rhs to calculate
+)
+{
+  // Initialize the element force vector. The matrix is not used.
+  eforce.Scale(0.0);
+
+  // space dimension for 3d fluid element
+  const size_t nsd = 3;
+
+  const int NUMDOF = 4;
+  COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF> assembler(dofman, estif, eforce);
+
+  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+  // extract the element phi vector from mystate
+  LINALG::Matrix<numnode,1> ephi(true);
+  for (size_t iparam=0; iparam<numnode; ++iparam)
+    ephi(iparam) = mystate.phinp_[iparam];
+
+  // get node coordinates of the current element
+  static LINALG::Matrix<nsd,numnode> xyze;
+  GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
+
+  // get the enrichments for pressure
+  const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
+
+  // information about domain integration cells
+  const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
+
+  // loop over integration cells
+  for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
+  {
+    // special getXFEMGaussruleKinkEnr for kink enrichment is called as parabolic shape functions are obtained
+    // after multipying N and Psi
+    const DRT::UTILS::GaussRule3D gaussrule = XFEM::getXFEMGaussruleKinkEnr<DISTYPE>(ele, xyze, ele->Bisected(),cell->Shape());
+
+    // gaussian points
+    const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
+
+    // integration loop over Gauss points
+    for(int iquad=0; iquad<intpoints.nquad; ++iquad)
+    {
+      // coordinates of the current integration point in cell coordinates \eta
+      LINALG::Matrix<nsd,1> pos_eta_domain;
+      pos_eta_domain(0) = intpoints.qxg[iquad][0];
+      pos_eta_domain(1) = intpoints.qxg[iquad][1];
+      pos_eta_domain(2) = intpoints.qxg[iquad][2];
+
+      // coordinates of the current integration point in element coordinates \xi
+      LINALG::Matrix<nsd,1> posXiDomain;
+      GEO::mapEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain, posXiDomain);
+      const double detcell = GEO::detEtaToXi3D<ASSTYPE>(*cell, pos_eta_domain);
+
+      // shape functions and their first derivatives
+      static LINALG::Matrix<numnode,1> funct;
+      static LINALG::Matrix<nsd,numnode> deriv;
+      DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+      DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+
+      // get transposed of the jacobian matrix d x / d \xi
+      // xjm(i,j) = deriv(i,k)*xyze(j,k)
+      static LINALG::Matrix<nsd,nsd> xjm;
+      xjm.MultiplyNT(deriv,xyze);
+
+      const double det = xjm.Determinant();
+      const double fac = intpoints.qwgt[iquad]*det*detcell;
+
+      if (det < 0.0)
+      {
+        dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", ele->Id(), det);
+      }
+
+      // create dummy derivates since ElementEnrichmentValues needs them
+      static LINALG::Matrix<3,numnode> dummyderxy;
+      dummyderxy.Clear();
+
+      static LINALG::Matrix<6,numnode> dummyderxy2;
+      dummyderxy2.Clear();
+
+      // the enrichment functions depend on the gauss point
+      // therefore the comutation of the enrichment functions is called here
+      // the gauss point is contained in funct!
+
+      // kink enrichments are called with level-set values
+      // jump enrichments are called with domain cells!
+      const XFEM::ElementEnrichmentValues enrvals(*ele, dofman, ephi, *cell,
+                                                  funct, dummyderxy, dummyderxy2);
+
+      const size_t shpVecSize = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+      static XFEM::ApproxFunc<2,shpVecSize> shppres;
+
+      static LINALG::Matrix<shpVecSize,1> enr_funct_pres;
+
+      if (ASSTYPE == XFEM::xfem_assembly)
+      {
+        // shape function for nodal dofs pressure
+        enrvals.ComputeModifiedEnrichedNodalShapefunction(
+            Pres,
+            funct,
+            enr_funct_pres);
+
+        for (size_t iparam = 0; iparam < numparampres; ++iparam)
+          shppres.d0(iparam) = enr_funct_pres(iparam);
+      }
+      else // not xfem_assembly
+      {
+        for (size_t iparam = 0; iparam < numnode; ++iparam)
+          shppres.d0(iparam) = funct(iparam);
+      }
+
+      // do the assembling
+      assembler.template Vector<Pres>(shppres.d0, fac);
+
+    } // end loop over gauss points
+  } // end loop over integration cells
+
+}
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void COMBUST::callIntegrateShape(
+    const XFEM::AssemblyType             assembly_type,
+    const DRT::ELEMENTS::Combust3*       ele,
+    const COMBUST::InterfaceHandleCombust* ih,
+    const XFEM::ElementDofManager&       eleDofManager,
+    const DRT::ELEMENTS::Combust3::MyState& mystate,      ///< element state variables
+    Epetra_SerialDenseMatrix&            estif,
+    Epetra_SerialDenseVector&            eforce)
+{
+  if (assembly_type == XFEM::standard_assembly)
+  {
+    switch (ele->Shape())
+    {
+    case DRT::Element::hex8:
+      COMBUST::IntegrateShape<DRT::Element::hex8,XFEM::standard_assembly>(
+          ele, ih, eleDofManager, mystate, estif, eforce);
+    break;
+    case DRT::Element::hex20:
+      COMBUST::IntegrateShape<DRT::Element::hex20,XFEM::standard_assembly>(
+          ele, ih, eleDofManager, mystate, estif, eforce);
+    break;
+    default:
+      dserror("standard_assembly IntegrateShape not templated yet");
+    };
+  }
+  else
+  {
+    switch (ele->Shape())
+    {
+    case DRT::Element::hex8:
+      COMBUST::IntegrateShape<DRT::Element::hex8,XFEM::xfem_assembly>(
+          ele, ih, eleDofManager, mystate, estif, eforce);
+    break;
+    case DRT::Element::hex20:
+      COMBUST::IntegrateShape<DRT::Element::hex20,XFEM::xfem_assembly>(
+          ele, ih, eleDofManager, mystate, estif, eforce);
+    break;
+    default:
+      dserror("xfem_assembly IntegrateShape not templated yet");
+    };
+  }
+}
+
+
 #endif
 #endif

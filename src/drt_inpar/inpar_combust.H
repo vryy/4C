@@ -39,6 +39,7 @@ namespace INPAR
       reinitaction_none,
       reinitaction_byfunction,
       reinitaction_signeddistancefunction,
+      reinitaction_fastsigneddistancefunction,
       reinitaction_sussman
     };
 

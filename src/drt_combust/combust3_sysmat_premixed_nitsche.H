@@ -100,7 +100,7 @@ void SysmatDomainNitsche(
 
   // read body force (dead load) from input file and apply it to element nodes
   LINALG::Matrix<nsd,numnode> edead(true);
-  COMBUST::BodyForce<DISTYPE>(ele, 0.0, edead);
+  COMBUST::BodyForce<DISTYPE>(ele, 0.0, "DeadOrLive", edead);
 
   // flag for higher order elements
   const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();

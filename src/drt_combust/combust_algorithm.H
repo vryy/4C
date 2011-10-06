@@ -126,6 +126,13 @@ namespace COMBUST
     /// print mass conservation check on screen
     void printMassConservationCheck(const double volume_start, const double volume_end);
 
+    /// manipulate the fluid field passed to the scatra
+    const Teuchos::RCP<Epetra_Vector> ManipulateFluidFieldForGfunc(const Teuchos::RCP<Epetra_Vector>& convel,
+                                                                   const Teuchos::RCP<const DRT::DofSet>& dofset);
+
+    /// correct the volume of the minus(-) domain after reinitialization
+    void CorrectVolume(const double targetvol, const double currentvol);
+
   private:
 
     //! @name Fluid-G-function iteration variables
@@ -170,13 +177,17 @@ namespace COMBUST
     const bool reinitband_;
     /// band width for reinitialization (maximum G-function value)
     const double reinitbandwidth_;
-
     // boolian for reinitialization output
     const bool reinit_output_; // schott
-
     /// reinitialization acception status
     bool reinitialization_accepted_; // schott
+    /// volume correction after reinitialization
+    bool volcorrection_;
 
+    /// switch for replacing the velocity of nodes at a certain distance of the interface by an approximate interface velocity
+    const bool extract_interface_vel_;
+    /// number of layers around the interface with unmodified velocity
+    const int convel_layers_;
 
     /// combustion input parameter list
     const Teuchos::ParameterList& combustdyn_;

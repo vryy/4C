@@ -1388,7 +1388,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
         for(int rr=0;rr<numdim_;++rr)
         {
-          if(abs((*mode)[rr]>1e-14))
+          if(abs((*mode)[rr])>1e-14)
           {
             dserror("expecting only an undetermined pressure");
           }
@@ -1465,7 +1465,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
         for(int rr=0;rr<numdim_;++rr)
         {
-          if(abs((*mode)[rr]>1e-14))
+          if(abs((*mode)[rr])>1e-14)
           {
             dserror("expecting only an undetermined pressure");
           }

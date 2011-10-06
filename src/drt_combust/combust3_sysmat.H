@@ -380,6 +380,19 @@ namespace COMBUST
       const bool                                             smoothed_boundary_integration
   );
 
+
+  /*!
+   * \brief integrates the pressure shape function and stores it to eforce.
+   */
+  void callIntegrateShape(
+      const XFEM::AssemblyType             assembly_type,
+      const DRT::ELEMENTS::Combust3*       ele,
+      const COMBUST::InterfaceHandleCombust* ih,
+      const XFEM::ElementDofManager&       eleDofManager,
+      const DRT::ELEMENTS::Combust3::MyState& mystate,      ///< element state variables
+      Epetra_SerialDenseMatrix&            estif,
+      Epetra_SerialDenseVector&            eforce
+  );
 }
 
 

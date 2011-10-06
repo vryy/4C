@@ -65,6 +65,12 @@ namespace COMBUST
     /// build signed distance function
     void SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> phivector);
 
+    /*!
+      This member function does the same as SignedDistanceFunction, only faster.
+     */
+    /// build signed distance function faster
+    void FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vector> phivector);
+
     /// compute normal vector of flame front patch
     void ComputeNormalVectorToFlameFront(
         const GEO::BoundaryIntCell&      patch,
@@ -231,6 +237,15 @@ namespace COMBUST
       }
 
       return converged;
+    }
+
+    /// compares the second entry of a pair<int,double>. To be passed to the sorting algo
+    static bool MyComparePairs (const pair<int,double>& first, const pair<int,double>& second)
+    {
+      if (fabs(first.second) < fabs(second.second))
+        return true;
+      else
+        return false;
     }
 
     /// parameter list with combustion input parameters

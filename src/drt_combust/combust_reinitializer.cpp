@@ -48,11 +48,12 @@ COMBUST::Reinitializer::Reinitializer(
       scatra_.SetInitialField(INPAR::SCATRA::initfield_field_by_function,combustdyn_.sublist("COMBUSTION GFUNCTION").get<int>("REINITFUNCNO"));
       break;
     case INPAR::COMBUST::reinitaction_signeddistancefunction:
-#ifdef PARALLEL
-      //dserror("direct computation of signed distance function not available in parallel");
-#endif
       SignedDistanceFunction(phivector);
       break;
+    case INPAR::COMBUST::reinitaction_fastsigneddistancefunction:
+      FastSignedDistanceFunction(phivector);
+      break;
+// should this reinhard-stuff be removed?
 //    case INPAR::COMBUST::sussman:
 //      // SCATRA parameters have to be set before in ScaTraFluidCouplingAlgorithm!
 //      ScaTraField().Reinitialize();
@@ -463,6 +464,502 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
     if (err) dserror("this did not work");
   }
 
+
+  if (comm.MyPID()==0)
+    std::cout << " done" << std::endl;
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | private: build signed distance function fast                                   rasthofer 08/11 |
+ |                                                                                    DA wichmann |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vector> phivector)
+{
+  // get communicator (for output)
+  const Epetra_Comm& comm = scatra_.Discretization()->Comm();
+
+  // array of procs involved in communication (all)
+  int targetprocs[comm.NumProc()];
+  for(int i = 0; i < comm.NumProc(); ++i)
+    targetprocs[i] = i;
+
+  if (comm.MyPID()==0)
+  {
+    std::cout << "---  reinitializing G-function by computing distance to interface really fast..." << std::flush;
+#ifdef COMBUST_2D
+    std::cout << "\n /!\\ third component or normal vector set to 0 to keep 2D-character!" << std::endl;
+#endif
+  }
+
+  // get a pointer to the G-function discretization
+  Teuchos::RCP<DRT::Discretization> gfuncdis = scatra_.Discretization();
+
+  // get map holding pairs of nodes (master-slave) on periodic boundaries (pbc nodes)
+  Teuchos::RCP<map<int,vector<int> > > pbcmap = scatra_.PBCmap();
+
+  // get the pbc itself
+  Teuchos::RCP<PeriodicBoundaryConditions> pbc = scatra_.PBC();
+
+  // map holding pbc nodes (masters or slaves) <pbc node id, distance to flame front>
+  std::map<int, double> pbcnodes;
+
+  const Epetra_Map* dofrowmap = gfuncdis->DofRowMap();
+
+  // determine the number of nodes per element
+  int numnodesperele = 0;
+  if (gfuncdis->NumMyRowElements() <= 0)
+    dserror("This discretization does not have any row elements.");
+  switch (gfuncdis->lRowElement(0)->Shape())
+  {
+  case DRT::Element::hex8:
+    numnodesperele = 8;
+    break;
+  case DRT::Element::hex20:
+    numnodesperele = 20;
+    cout << "Warning, the fast signed distance reinitialization has not been tested with hex20 elements!" << endl;
+    break;
+  case DRT::Element::hex27:
+    numnodesperele = 27;
+    cout << "Warning, the fast signed distance reinitialization has not been tested with hex27 elements!" << endl;
+    break;
+  default:
+    dserror("The fast signed distance reinitialization only supports hex8, hex20 and hex27 elements.");
+  }
+
+
+  //========================================================================
+  // get the following information about the pbc
+  // - planenormaldirection e.g. (1,0,0)
+  // - minimum in planenormaldirection
+  // - maximum in planenormaldirection
+  //========================================================================
+  vector<DRT::Condition*>* surfacepbcs = pbc->ReturnSurfacePBCs();
+  vector<int>    planenormal(0);
+  vector<double> globalmins (0);
+  vector<double> globalmaxs (0);
+
+  for (size_t i = 0; i < surfacepbcs->size(); ++i)
+  {
+    const string* ismaster = (*surfacepbcs)[i]->Get<string>("Is slave periodic boundary condition");
+    if (*ismaster == "Master")
+    {
+      const int masterid = (*surfacepbcs)[i]->GetInt("Id of periodic boundary condition");
+      vector<int> nodeids(*((*surfacepbcs)[i]->Nodes()));
+      for (size_t j = 0; j < surfacepbcs->size(); ++j)
+      {
+        const int slaveid = (*surfacepbcs)[j]->GetInt("Id of periodic boundary condition");
+        if (masterid == slaveid)
+        {
+          const string* isslave = (*surfacepbcs)[j]->Get<string>("Is slave periodic boundary condition");
+          if (*isslave == "Slave")
+          {
+            const vector<int>* slavenodeids = (*surfacepbcs)[j]->Nodes();
+            // append slave node Ids to node Ids for the complete condition
+            for (size_t k = 0; k < slavenodeids->size(); ++k)
+              nodeids.push_back(slavenodeids->at(k));
+          }
+        }
+      }
+
+      // Get normal direction of pbc plane
+      const string* pbcplane = (*surfacepbcs)[i]->Get<string>("degrees of freedom for the pbc plane");
+      if (*pbcplane == "yz")
+        planenormal.push_back(0);
+      else if (*pbcplane == "xz")
+        planenormal.push_back(1);
+      else if (*pbcplane == "xy")
+        planenormal.push_back(2);
+      else
+        dserror("A PBC condition could not provide a plane normal.");
+
+      double min = +10e19;
+      double max = -10e19;
+      for (size_t j = 0; j < nodeids.size(); ++j)
+      {
+
+        const int gid = nodeids[j];
+        const int lid = gfuncdis->NodeRowMap()->LID(gid);
+        if (lid < 0)
+          continue;
+        const DRT::Node* lnode = gfuncdis->lRowNode(lid);
+        const double* coord = lnode->X();
+        if (coord[planenormal.back()] < min)
+          min = coord[planenormal.back()];
+        if (coord[planenormal.back()] > max)
+          max = coord[planenormal.back()];
+      }
+      globalmins.resize(planenormal.size());
+      globalmaxs.resize(planenormal.size());
+      gfuncdis->Comm().MinAll(&min, &(globalmins.back()), 1);
+      gfuncdis->Comm().MaxAll(&max, &(globalmaxs.back()), 1);
+    }
+  }//end loop over all surfacepbcs
+
+
+  //=======================================================================
+  // Create a vector of eleGIDs and a vector of those eles' node coords and
+  // redundantly store it on each proc
+  //=======================================================================
+  std::vector<int> allcuteleids;
+  std::vector<double> allnodecoords;
+  {
+    // Here we simply take the eleids from the boundaryIntCells map, which leads to our list of cut elements
+    // also there is no distribution necessary, as this map is already stored on every proc
+    for (map<int,GEO::BoundaryIntCells>::const_iterator elepatches = flamefront_.begin(); elepatches != flamefront_.end(); ++elepatches)
+      allcuteleids.push_back(elepatches->first);
+
+    // our local nodecoords
+    std::vector<double> nodecoords( 3*numnodesperele*(allcuteleids.size()), 0.0);
+    allnodecoords.resize(nodecoords.size(), 0.0);
+
+    // write the node coordinates of every cut rownode of this proc into nodecoords
+    for(size_t ivec = 0; ivec < allcuteleids.size(); ++ivec)
+    {
+      int elegid = allcuteleids[ivec];
+      int elelid = gfuncdis->ElementRowMap()->LID(elegid);
+      if (elelid >= 0)
+      {
+        const int coordbase = 3*numnodesperele*ivec;
+        const DRT::Element* ele = gfuncdis->lRowElement(elelid);
+        const DRT::Node* const* nodes = ele->Nodes();
+        for(int inode = 0; inode < ele->NumNode(); ++inode)
+        {
+          const int nodecoordbase = coordbase + 3*inode;
+          nodecoords[nodecoordbase + 0] = nodes[inode]->X()[0];
+          nodecoords[nodecoordbase + 1] = nodes[inode]->X()[1];
+          nodecoords[nodecoordbase + 2] = nodes[inode]->X()[2];
+        }
+      }
+    }
+
+    comm.SumAll(&(nodecoords[0]), &(allnodecoords[0]), (int)nodecoords.size());
+  }
+
+  //================================================================
+  // loop all row nodes on the processor
+  // those nodes will receive new phi values
+  //================================================================
+  for(int lnodeid=0; lnodeid < gfuncdis->NumMyRowNodes(); ++lnodeid)
+  {
+    // get the processor local node
+    const DRT::Node* lnode = gfuncdis->lRowNode(lnodeid);
+
+    // get the dof associated with this node
+    const int dofgid = gfuncdis->Dof(lnode, 0); // since this is a scalar field the dof is always 0
+    int doflid = dofrowmap->LID(dofgid);
+    if (doflid < 0)
+      dserror("Proc %d: Cannot find dof gid=%d in Epetra_Vector",comm.MyPID(),dofgid);
+
+    // get physical coordinates of this node
+    LINALG::Matrix<3,1> nodecoord(false);
+    nodecoord(0) = lnode->X()[0];
+    nodecoord(1) = lnode->X()[1];
+    nodecoord(2) = lnode->X()[2];
+
+    //=======================================================================================
+    // Build a list< pair< int eleGID, double distance > >
+    // the distance is based on the distance between the current node and the closest node of
+    // the cut element. This guarantees an estimated distance <= the real distance
+    //=======================================================================================
+    list< pair< int, double > > eledistance;
+
+    {
+      // loop all cut elements
+      for (size_t ieleid = 0; ieleid < allcuteleids.size(); ++ieleid)
+      {
+        const size_t coordbase = 3*numnodesperele*ieleid;
+        double distance = 1.0e19;
+
+        // loop all cut element's nodes
+        for (int inode = 0; inode < numnodesperele; ++inode)
+        {
+          const int nodecoordbase = coordbase + 3*inode;
+          LINALG::Matrix<3,1> delta(false);
+          delta(0) = allnodecoords[nodecoordbase + 0];
+          delta(1) = allnodecoords[nodecoordbase + 1];
+          delta(2) = allnodecoords[nodecoordbase + 2];
+
+          delta.Update(1.0, nodecoord, -1.0);
+
+          // take care of PBCs
+          for (size_t ipbc = 0; ipbc < planenormal.size(); ++ipbc)
+          {
+            const double fulllength = (globalmaxs[ipbc] - globalmins[ipbc]);
+            if (delta(planenormal[ipbc]) >= fulllength/2.0)
+              delta(planenormal[ipbc]) = fulllength - delta(planenormal[ipbc]);
+            else if (delta(planenormal[ipbc]) <= -fulllength/2.0)
+              delta(planenormal[ipbc]) = delta(planenormal[ipbc]) + fulllength;
+          }
+          const double thisdistance = sqrt(delta(0)*delta(0) + delta(1)*delta(1) + delta(2)*delta(2));
+
+          if (thisdistance < distance)
+            distance = thisdistance;
+        }
+
+        pair< int, double> thispair;
+        thispair.first  = allcuteleids[ieleid];
+        thispair.second = distance;
+        eledistance.push_back( thispair );
+      }
+    }
+
+
+    //==================================================================
+    // sort the the vector in ascending order by the estimated distance
+    //==================================================================
+#if 0
+    // this is bubble sort and needs to be optimized
+    {
+      for (size_t i = 0; i < eledistance.size(); ++i)
+      {
+        for (size_t j = 1; j < eledistance.size(); ++j)
+        {
+          if (eledistance[j-1].second > eledistance[j].second)
+          {
+            pair< int, double> tmp = eledistance[j-1];
+            eledistance[j-1] = eledistance[j];
+            eledistance[j] = tmp;
+          }
+        }
+      }
+    }
+#else
+    // this is the STL sorting, which is pretty fast
+    eledistance.sort(MyComparePairs);
+#endif
+
+    //--------------------------------------------------------------------------------
+    // if a reinitbandwith is used the nodes not within the band will be set to the
+    // estimated distance for all others the actual distance will be determined
+    //--------------------------------------------------------------------------------
+    if (!reinitband_ or (reinitband_ and fabs(eledistance.front().second) <= reinitbandwidth_))
+    {
+
+      //========================================================================
+      // + update the eledistance vector with the real distance to the interface
+      //   starting with the closest estimated element.
+      // + Sort the vector by distance after every iteration.
+      // + if the distance of the first element in the vector does not change
+      //   any more, we have found the shortest distance
+      //========================================================================
+      int oldeleid = -1;
+      while (oldeleid != eledistance.front().first) // this is just a safety check. usually loop should abort earlier.
+      {
+        oldeleid = eledistance.front().first;
+
+        // the minimal distance, if all element patches and the PBCs are considered
+        double pbcmindist = 1.0e19;
+
+        // get patches belonging to first entry
+        map<int,GEO::BoundaryIntCells>::const_iterator elepatches = flamefront_.find( eledistance.front().first );
+        if (elepatches == flamefront_.end())
+          dserror("Could not find the boundary integration cells belonging to Element %d.", eledistance.front().first);
+
+        // number of flamefront patches for this element
+        const std::vector<GEO::BoundaryIntCell> patches = elepatches->second;
+        const int numpatch = patches.size();
+
+        //--------------------------------------------------------------------
+        // due to the PBCs the node might actually be closer to the
+        // interface then would be calculated if one only considered
+        // the actual position of the node. In order to find the
+        // smallest distance the node is copied along all PBC directions
+        //
+        //   +------------------+ - - - - - - - - - -+
+        //   +             II   +
+        //   +   x        I  I  +    y               +
+        //   +             II   +
+        //   +------------------+ - - - - - - - - - -+
+        //         original           copy
+        //
+        //   x: current node
+        //   y: copy of current node
+        //   I: interface
+        //   +: pbc
+        //--------------------------------------------------------------------
+        if (planenormal.size() > 3)
+          dserror("Sorry, but currently a maximum of three periodic boundary conditions are supported by the combustion reinitializer.");
+
+        // since there is no stl pow(INT, INT) function, we calculate it manually
+        size_t looplimit = 1;
+        for (size_t i = 0; i < planenormal.size(); ++i)
+          looplimit *= 2;
+
+        for (size_t ipbc = 0; ipbc < looplimit; ++ipbc)
+        {
+          double mindist = 1.0e19;
+          LINALG::Matrix<3,1> tmpcoord(nodecoord);
+
+          // determine which pbcs have to be applied
+          //
+          // loopcounter | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+          // ------------+---+---+---+---+---+---+---+---+
+          //  first PBC  |     x       x       x       x
+          // second PBC  |         x   x           x   x
+          //  third PBC  |                 x   x   x   x
+          //
+          // this is equivalent to the binary representation
+          // of the size_t
+          if (ipbc & 0x01)
+          {
+            const double pbclength = globalmaxs[0] - globalmins[0];
+            if (nodecoord(planenormal[0]) > globalmins[0] + pbclength/2.0)
+              tmpcoord(planenormal[0]) = nodecoord(planenormal[0]) - pbclength;
+            else
+              tmpcoord(planenormal[0]) = nodecoord(planenormal[0]) + pbclength;
+          }
+          if (ipbc & 0x02)
+          {
+            const double pbclength = globalmaxs[1] - globalmins[1];
+            if (nodecoord(planenormal[1]) > globalmins[1] + pbclength/2.0)
+              tmpcoord(planenormal[1]) = nodecoord(planenormal[1]) - pbclength;
+            else
+              tmpcoord(planenormal[1]) = nodecoord(planenormal[1]) + pbclength;
+          }
+          if (ipbc & 0x04)
+          {
+            const double pbclength = globalmaxs[2] - globalmins[2];
+            if (nodecoord(planenormal[2]) > globalmins[2] + pbclength/2.0)
+              tmpcoord(planenormal[2]) = nodecoord(planenormal[2]) - pbclength;
+            else
+              tmpcoord(planenormal[2]) = nodecoord(planenormal[2]) + pbclength;
+          }
+
+          //-----------------------------------------
+          // loop flame front patches of this element
+          //-----------------------------------------
+          for(int ipatch=0; ipatch<numpatch; ++ipatch)
+          {
+            // get a single patch from group of flamefront patches
+            const GEO::BoundaryIntCell patch = patches[ipatch];
+
+            // only triangles and quadrangles are allowed as flame front patches (boundary cells)
+            if (!(patch.Shape() == DRT::Element::tri3 or
+                  patch.Shape() == DRT::Element::quad4))
+            {
+              dserror("invalid type of boundary integration cell for reinitialization");
+            }
+
+            // get coordinates of vertices defining flame front patch
+            const LINALG::SerialDenseMatrix& patchcoord = patch.CellNodalPosXYZ();
+
+            // compute normal vector to flame front patch
+            LINALG::Matrix<3,1> normal(true);
+            ComputeNormalVectorToFlameFront(patch,patchcoord,normal);
+
+            //-----------------------------------------
+            // find flame front patches facing the node
+            //-----------------------------------------
+            // boolean indicating if facing patch was found
+            bool facenode = false;
+            // distance to the facing patch
+            double patchdist = 1.0e19; // default value
+            // check if this patch faces the node
+            FindFacingPatchProjCellSpace(tmpcoord,patch,patchcoord,normal,facenode,patchdist);
+
+            // a facing patch was found
+            if (facenode == true)
+            {
+              // overwrite smallest distance if computed patch distance is smaller
+              if (fabs(patchdist) < fabs(mindist))
+              {
+                mindist = patchdist;
+              }
+            }
+
+            //----------------------------------------------------------------
+            // compute smallest distance to vertices of this flame front patch
+            //----------------------------------------------------------------
+            // distance to the patch vertex
+            double vertexdist = 1.0e19;
+
+            ComputeDistanceToPatch(tmpcoord,patch,patchcoord,normal,vertexdist);
+
+            if (fabs(vertexdist) < fabs(mindist))
+            {
+              // if the sign has been changed by mistake in ComputeDistanceToPatch(), this has to be corrected here
+              if ((*phivector)[doflid] * vertexdist < 0.0 )
+                mindist = -vertexdist;
+              else
+                mindist = vertexdist;
+            }
+          } // loop over flamefront patches
+
+          if (fabs(mindist) < fabs(pbcmindist))
+          {
+            pbcmindist = mindist;
+          }
+        } // loop over PBCs
+
+        // store the new distance, which is >= the estimated distance
+        eledistance.front().second = pbcmindist;
+
+
+        //==============================================================
+        // sort the the vector in ascending order by the distance
+        //==============================================================
+  #if 0
+        // this is bubble sort and needs to be optimized
+        {
+          for (size_t i = 0; i < eledistance.size(); ++i)
+          {
+            for (size_t j = 1; j < eledistance.size(); ++j)
+            {
+              if (fabs(eledistance[j-1].second) > fabs(eledistance[j].second))
+              {
+                pair< int, double> tmp = eledistance[j-1];
+                eledistance[j-1] = eledistance[j];
+                eledistance[j] = tmp;
+              }
+            }
+          }
+        }
+  #elif 0
+        // this is the STL sorting, which is pretty fast
+        eledistance.sort(MyComparePairs);
+  #else
+        // here we use the fact, that everything is already sorted but the first list item
+        pair<int,double> tmppair = eledistance.front();
+        list<pair<int,double> >::iterator insertiter = eledistance.begin();
+        ++insertiter;
+
+        int loopcount = 0;
+        // find the place where the item must be inserted
+        while (fabs(tmppair.second) > fabs(insertiter->second) and insertiter != eledistance.end())
+        {
+          insertiter++;
+          loopcount++;
+        }
+
+        // this removes the item from the front and inserts it where insertiter points to
+        eledistance.splice(insertiter, eledistance, eledistance.begin());
+
+        // if item was inserted at the beginnig of the list, it must be the shortest distance
+        // possible and we can stop checking the other elements' distances
+        if (loopcount == 0)
+          break;
+  #endif
+
+      } // loop over eledistance
+    }
+    // if outside the reinit band
+    else
+    {
+      // correct the sign of estimated distance
+      if ((*phivector)[doflid] < 0.0)
+        eledistance.front().second = -eledistance.front().second;
+    }
+
+    //==========================================================
+    // write the resulting minimal distance into the phivector
+    //==========================================================
+    int err = phivector->ReplaceMyValues(1,&(eledistance.front().second),&doflid);
+    if (err)
+      dserror("this did not work");
+  }
 
   if (comm.MyPID()==0)
     std::cout << " done" << std::endl;
