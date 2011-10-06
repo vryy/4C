@@ -8,8 +8,6 @@
 #include "fsi_overlapprec.H"
 #include "fsi_matrixtransform.H"
 
-#include "../drt_adapter/adapter_fluid_fluid_impl.H"
-
 namespace FSI
 {
 

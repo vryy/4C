@@ -34,7 +34,6 @@ FSI::FluidFluidMonolithicStructureSplit::FluidFluidMonolithicStructureSplit(Epet
 /*----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicStructureSplit::SetupSystem()
 {
-  cout << "setup" << endl;
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   linearsolverstrategy_ = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 
@@ -291,46 +290,7 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool fi
 
       Extractor().AddVector(*veln,1,f);
     }
-
-    // if there is a free surface
-    if (FluidField().Interface().FSCondRelevant())
-    {
-      // here we extract the free surface submatrices from position 2
-      LINALG::SparseMatrix& aig = a->Matrix(0,2);
-
-      // extract fluid free surface velocities.
-      Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractFreeSurfaceVeln();
-      Teuchos::RCP<Epetra_Vector> aveln = icoupfa_.MasterToSlave(fveln);
-
-      Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
-      aig.Apply(*aveln,*rhs);
-
-      rhs->Scale(-1.*Dt());
-
-      Extractor().AddVector(*rhs,1,f);
-
-      // shape derivatives
-      Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
-      if (mmm!=Teuchos::null)
-      {
-        // here we extract the free surface submatrices from position 2
-        LINALG::SparseMatrix& fmig = mmm->Matrix(0,2);
-        LINALG::SparseMatrix& fmgg = mmm->Matrix(2,2);
-
-        rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap()));
-        fmig.Apply(*fveln,*rhs);
-        Teuchos::RCP<Epetra_Vector> veln = FluidField().Interface().InsertOtherVector(rhs);
-
-        rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap()));
-        fmgg.Apply(*fveln,*rhs);
-        FluidField().Interface().InsertFSCondVector(rhs,veln);
-
-        veln->Scale(-1.*Dt());
-
-        Extractor().AddVector(*veln,0,f);
-      }
-    }
-  }
+ }
 
   // NOX expects a different sign here.
   f.Scale(-1.);
@@ -436,46 +396,6 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSpa
                    mat.Matrix(1,2),
                    false,
                    true);
-  }
-
-  // if there is a free surface
-  if (FluidField().Interface().FSCondRelevant())
-  {
-    // here we extract the free surface submatrices from position 2
-    LINALG::SparseMatrix& aig = a->Matrix(0,2);
-
-    fsaigtransform_(a->FullRowMap(),
-                    a->FullColMap(),
-                    aig,
-                    1./timescale,
-                    ADAPTER::Coupling::SlaveConverter(fscoupfa_),
-                    mat.Matrix(2,1));
-
-    if (mmm!=Teuchos::null)
-    {
-      // We assume there is some space between fsi interface and free
-      // surface. Thus the matrices mmm->Matrix(1,2) and mmm->Matrix(2,1) are
-      // zero.
-
-      // here we extract the free surface submatrices from position 2
-      LINALG::SparseMatrix& fmig = mmm->Matrix(0,2);
-      LINALG::SparseMatrix& fmgi = mmm->Matrix(2,0);
-      LINALG::SparseMatrix& fmgg = mmm->Matrix(2,2);
-
-      mat.Matrix(1,1).Add(fmgg,false,1./timescale,1.0);
-      mat.Matrix(1,1).Add(fmig,false,1./timescale,1.0);
-
-      const ADAPTER::Coupling& coupfa = FluidAleCoupling();
-
-      fsmgitransform_(mmm->FullRowMap(),
-                      mmm->FullColMap(),
-                      fmgi,
-                      1.,
-                      ADAPTER::Coupling::MasterConverter(coupfa),
-                      mat.Matrix(1,2),
-                      false,
-                      false);
-    }
   }
 
   // done. make sure all blocks are filled.
@@ -657,39 +577,44 @@ void FSI::FluidFluidMonolithicStructureSplit::SetupVector(Epetra_Vector &f,
 {
   // extract the inner and boundary dofs of all three fields
 
+  // structure inner
   Teuchos::RCP<Epetra_Vector> sov = StructureField().Interface().ExtractOtherVector(sv);
+  // ale inner
   Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface().ExtractOtherVector(av);
 
   if (fluidscale!=0)
   {
     // add fluid interface values to structure vector
     Teuchos::RCP<Epetra_Vector> scv = StructureField().Interface().ExtractFSICondVector(sv);
-    // embedded condition dofs
+    // embedded condition dofs -  all embedded dofs
     Teuchos::RCP<Epetra_Vector> modfv = FluidField().Interface().InsertFSICondVector(StructToFluid(scv));
-    cout <<  " modfv " <<  *modfv << endl;
-    modfv->Update(1.0, *modfv, 1./fluidscale);
 
-    // adding rhC_ui_ to fluidale residual
+    // modfv = modfv * 1/fluidscale
+    modfv->Update(0.0, *modfv, 1./fluidscale);
+
+    Teuchos::RCP<Epetra_Vector> fvfluidfluid = Teuchos::rcp_const_cast< Epetra_Vector >(fv);
+
+    // adding modfv to fvfluidfluid
     for (int iter=0; iter<modfv->MyLength();++iter)
     {
-//       int rhsdgid = rhC_ui_->Map().GID(iter);
-//       if (rhC_ui_->Map().MyGID(rhsdgid) == false) dserror("rhsd_ should be on all prossesors");
-//       if (xfluid_.aleresidual_->Map().MyGID(rhsdgid))
-//         (*xfluid_.aleresidual_)[xfluid_.aleresidual_->Map().LID(rhsdgid)]=(*xfluid_.aleresidual_)[xfluid_.aleresidual_->Map().LID(rhsdgid)] +
-//                                                                           (*rhC_ui_)[rhC_ui_->Map().LID(rhsdgid)];
+      int gid = modfv->Map().GID(iter);
+      //       if (rhC_ui_->Map().MyGID(rhsdgid) == false) dserror("rhsd_ should be on all prossesors");
+      if (fvfluidfluid->Map().MyGID(gid))
+        (*fvfluidfluid)[fvfluidfluid->Map().LID(gid)] = (*fvfluidfluid)[fvfluidfluid->Map().LID(gid)] +
+                                                        (*modfv)[modfv->Map().LID(gid)];
     }
 
-//    LINALG::Export(*(xfluid_.aledispnp_),*(xfluid_.idispnp_));
+    // so war es frueher
+    //modfv->Update(1.0, *fv, 1./fluidscale);
+    //Extractor().InsertVector(*modfv,1,f);
 
-    modfv->Update(1.0, *fv, 1./fluidscale);
-    Extractor().InsertVector(*modfv,1,f);
+    Extractor().InsertVector(*fvfluidfluid,1,f);
   }
   else
   {
     Extractor().InsertVector(*fv,1,f);
   }
 
-    cout << "bis hier " << endl;
   Extractor().InsertVector(*sov,0,f);
   Extractor().InsertVector(*aov,2,f);
 }
@@ -907,8 +832,10 @@ void FSI::FluidFluidMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<c
   // process fluid unknowns
   fx = Extractor().ExtractVector(x,1);
 
+  Teuchos::RCP<Epetra_Vector> fx_emb = FluidField().ExtractEmbVector(fx);
   // process structure unknowns
-  Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface().ExtractFSICondVector(fx);
+  // Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface().ExtractFSICondVector(fx);
+  Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface().ExtractFSICondVector(fx_emb);
   FluidField().VelocityToDisplacement(fcx);
   Teuchos::RCP<const Epetra_Vector> sox = Extractor().ExtractVector(x,0);
   Teuchos::RCP<Epetra_Vector> scx = FluidToStruct(fcx);

@@ -2109,6 +2109,11 @@ void FLD::XFluidFluid::Evaluate(
 //       aux);
 
     *state_->fluidfluidvelnp_ = *aux;
+    state_->velnp_ = state_->fluidfluidsplitter_.ExtractXFluidVector(state_->fluidfluidvelnp_);
+    alevelnp_ = state_->fluidfluidsplitter_.ExtractFluidVector(state_->fluidfluidvelnp_);
+
+    // Update the fluid material velocity along the interface (ivelnp_), source (in): state_.alevelnp_
+    LINALG::Export(*(alevelnp_),*(ivelnp_));
   }
 
   // create the parameters for the discretization
@@ -2143,6 +2148,10 @@ void FLD::XFluidFluid::Evaluate(
   // hier shapederivatives_ !!!!!!!!!!!!
 
   state_->fluidfluidincvel_->PutScalar(0.0);
+
+  // insert fluid and alefluid residuals to fluidfluidresidual
+  state_->fluidfluidsplitter_.InsertXFluidVector(state_->residual_,state_->fluidfluidresidual_);
+  state_->fluidfluidsplitter_.InsertFluidVector(aleresidual_,state_->fluidfluidresidual_);
 
   //build a merged map from fluid-fluid dbc-maps
   std::vector<Teuchos::RCP<const Epetra_Map> > maps;

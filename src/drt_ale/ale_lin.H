@@ -81,7 +81,7 @@ public:
 
   virtual Teuchos::RCP<DRT::Discretization> Discretization()
     { return discret_; }
-  
+
   virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     { return dbcmaps_; }
 
@@ -101,6 +101,9 @@ private:
 
   /// the interface map setup for interface <-> full translation
   ALE::UTILS::MapExtractor interface_;
+
+  /// the interface map setup for xfluid-fluid interface
+  ALE::UTILS::XFluidFluidMapExtractor xffinterface_;
 
   //! @name local copies of input parameters
   Teuchos::RCP<DRT::Discretization> discret_;

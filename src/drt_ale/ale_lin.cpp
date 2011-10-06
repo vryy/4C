@@ -65,6 +65,8 @@ ALE::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
   dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
   discret_->EvaluateDirichlet(eleparams,dispnp_,null,null,null,dbcmaps_);
 
+  xffinterface_.Setup(*actdis);
+
   if (dirichletcond)
   {
     // for partitioned FSI the interface becomes a Dirichlet boundary
@@ -106,6 +108,15 @@ void ALE::AleLinear::BuildSystemMatrix(bool full)
   {
     EvaluateElements();
     LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,*(dbcmaps_->CondMap()));
+
+    if (xffinterface_.XFluidFluidCondRelevant())
+    {
+      Teuchos::RCP<Epetra_Vector> dispnp_xff = LINALG::CreateVector(*xffinterface_.XFluidFluidCondMap(),true);
+      dispnp_xff->PutScalar(1.0);
+      Teuchos::RCP<Epetra_Vector> dispnp_all = LINALG::CreateVector(*discret_->DofRowMap(),true);
+      xffinterface_.InsertXFluidFluidCondVector(dispnp_xff,dispnp_all);
+      LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispn_,dispnp_all);
+    }
 
     // prepare constant preconditioner on constant matrix
 
@@ -196,10 +207,10 @@ void ALE::AleLinear::Solve()
   // the DOFs with Dirchlet BCs are not rebuild, they are assumed to be correct
   if (incremental_)
     EvaluateElements();
-  
+
   discret_->EvaluateDirichlet(eleparams,dispnp_,null,null,Teuchos::null,Teuchos::null);
   LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,*(dbcmaps_->CondMap()));
-  
+
   solver_->Solve(sysmat_->EpetraOperator(),dispnp_,residual_,true);
 }
 
