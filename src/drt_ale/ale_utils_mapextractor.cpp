@@ -42,4 +42,14 @@ Teuchos::RCP<std::set<int> > ALE::UTILS::MapExtractor::ConditionedElementMap(con
   return condelements;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ALE::UTILS::XFluidFluidMapExtractor::Setup(const DRT::Discretization& dis)
+{
+  DRT::UTILS::MultiConditionSelector mcs;
+  mcs.AddSelector(rcp(new DRT::UTILS::NDimConditionSelector(dis,"FluidFluidCoupling",0,genprob.ndim)));
+  mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
+}
+
+
 #endif
