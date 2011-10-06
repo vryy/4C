@@ -3038,7 +3038,6 @@ void FLD::XFluidFluid::Output()
 
     // output (hydrodynamic) pressure for visualization
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(outvec_fluid_);
-    pressure->Scale(density_);
     output_->WriteVector("pressure", pressure);
 
 
