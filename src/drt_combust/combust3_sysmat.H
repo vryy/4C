@@ -77,6 +77,7 @@ namespace COMBUST
       Epetra_SerialDenseVector&               eforce,
       Teuchos::RCP<const MAT::Material>       material,
       const INPAR::FLUID::TimeIntegrationScheme timealgo,   ///< time discretization type
+      const double                            time,         ///< current time step
       const double                            dt,           ///< delta t (time step size)
       const double                            theta,        ///< factor for one step theta scheme
       const double                            ga_alphaF,
@@ -360,6 +361,20 @@ namespace COMBUST
 
     return;
   }
+
+
+  /*!
+   * \brief blend material parameters smoothly for turbulent combustion and two-phase flow problems
+   * place a second phase into a turbulent first phase by smoothlz blending the material parameters
+   */
+void BlendMaterial(
+    const DRT::Element* ele,
+    const double        time,
+    double&             denstarget,    // target density
+    double&             dynvisctarget, // target dynamic viscosity
+    const double        densorigin,    // origin density
+    const double        dynviscorigin  // origin dynamic viscosity
+);
 
 
   /*!

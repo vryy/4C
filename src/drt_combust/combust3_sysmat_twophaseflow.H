@@ -66,12 +66,13 @@ void SysmatTwoPhaseFlow(
     const M2&                           etensor,
     Teuchos::RCP<const MAT::Material>   material,      ///< fluid material
     const INPAR::FLUID::TimeIntegrationScheme timealgo,      ///< time discretization type
+    const double                        time,          ///< current time
     const double                        dt,            ///< delta t (time step size)
     const double                        theta,         ///< factor for one step theta scheme
     const double                        ga_alphaF,
     const double                        ga_alphaM,
     const double                        ga_gamma,
-    //const int                           step,        ///< for gmsh output of subgrid velocity
+    //const double                        step,          ///< for gmsh output of subgrid velocity
     const bool                          newton,        ///< full Newton or fixed-point-like
     const bool                          pstab,         ///< flag for stabilization
     const bool                          supg,          ///< flag for stabilization
@@ -143,6 +144,16 @@ void SysmatTwoPhaseFlow(
     double dynvisc = -1.0;
     // set density and dynamic viscosity
     COMBUST::GetMaterialParams(material, cell->getDomainPlus(), densaf, dynvisc);
+
+    // blend smoothly to minus (gas bubble) domain
+    if (!cell->getDomainPlus())
+    {
+      double densplus = -1.0;
+      double dynviscplus = -1.0;
+      COMBUST::GetMaterialParams(material, true, densplus, dynviscplus);
+
+      COMBUST::BlendMaterial(ele, time, densaf, dynvisc, densplus, dynviscplus);
+    }
     // density \rho^{n}
     // TODO until the XFEM time integration is done properly, densities from previous and
     // current time steps are identical

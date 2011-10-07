@@ -32,6 +32,8 @@ Maintainer: Florian Henke
 #include "combust_defines.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_lib/drt_timecurve.H"
+#include "../drt_lib/drt_condition_utils.H"
 #include "../drt_fluid/time_integration_element.H"
 #include "../drt_f3/xfluid3_utils.H"
 #include "../drt_f3/fluid3_stabilization.H"
@@ -539,6 +541,56 @@ void COMBUST::GetMaterialParams(
   return;
 }
 
+
+/*------------------------------------------------------------------------------------------------*
+ | blend material parameters smoothly from original to target parameters              henke 10/11 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::BlendMaterial(
+    const DRT::Element* ele,
+    const double        time,
+    double&             denstarget,    // target density
+    double&             dynvisctarget, // target dynamic viscosity
+    const double        densorigin ,   // original density
+    const double        dynviscorigin  // original viscosity
+)
+{
+  vector<DRT::Condition*> cond;
+  DRT::UTILS::FindElementConditions(ele, "BlendMaterial", cond);
+
+  if (cond.size()>=1)
+  {
+    // find out whether there is a time curve
+    const vector<int>* curve = cond[0]->Get<vector<int> >("curve");
+    int curvenum = -1;
+    if (curve) curvenum = (*curve)[0];
+
+    // initialisation
+    double curvefac = 0.0;
+    if (curvenum >= 0) // yes, we have a timecurve
+    {
+      // time factor for the intermediate step
+      if(time >= 0.0)
+        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+      else
+        dserror("Negative time value in blending material: time = %f",time);
+    }
+    else // we do not have a timecurve --- timefactors are constant equal 1
+      curvefac = 1.0;
+
+    double fac = -1.0;
+    // get switch from the condition
+    const vector<int>* onoff = cond[0]->Get<vector<int> > ("onoff");
+    if (onoff)
+      fac = (*onoff)[0]*curvefac;
+    else
+      dserror("could not read switch in blending material");
+
+    denstarget = densorigin*fac + denstarget*(1.0-fac);
+    dynvisctarget = dynviscorigin*fac + dynvisctarget*(1.0-fac);
+  }
+}
+
+
 namespace COMBUST
 {
 /*!
@@ -555,6 +607,7 @@ void Sysmat(
     Epetra_SerialDenseVector&               eforce,          ///< element rhs to calculate
     Teuchos::RCP<const MAT::Material>       material,        ///< fluid material
     const INPAR::FLUID::TimeIntegrationScheme timealgo,      ///< time discretization type
+    const double                            time,            ///< current time step
     const double                            dt,              ///< delta t (time step size)
     const double                            theta,           ///< factor for one step theta scheme
     const double                            ga_alphaF,
@@ -629,7 +682,7 @@ void Sysmat(
 #ifndef COMBUST_NORMAL_ENRICHMENT
     COMBUST::SysmatDomainNitsche<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi,
-        material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
+        material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
         ele_meas_plus, ele_meas_minus);
 #else
         LINALG::Matrix<3,numnode> egradphi(true);
@@ -642,7 +695,7 @@ void Sysmat(
 //    }
     COMBUST::SysmatDomainNitscheNormal<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, egradphi,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
+        material, timealgo, time, dt, theta, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
         ele_meas_plus, ele_meas_minus);
 #endif
 #endif
@@ -741,7 +794,7 @@ void Sysmat(
   {
     COMBUST::SysmatTwoPhaseFlow<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor,
-        material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary,
+        material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary,
         genalpha, assembler);
   }
   break;
@@ -749,7 +802,7 @@ void Sysmat(
   {
     COMBUST::SysmatTwoPhaseFlow<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor,
-        material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary,
+        material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary,
         genalpha, assembler);
 
     // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
@@ -778,7 +831,7 @@ void Sysmat(
 
     COMBUST::SysmatDomainNitsche<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi,
-        material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
+        material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
         ele_meas_plus, ele_meas_minus);
 
     // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
@@ -864,6 +917,7 @@ void COMBUST::callSysmat(
     Epetra_SerialDenseVector&            eforce,
     Teuchos::RCP<const MAT::Material>    material,
     const INPAR::FLUID::TimeIntegrationScheme timealgo, ///< time discretization type
+    const double                         time,          ///< current time step
     const double                         dt,            ///< delta t (time step size)
     const double                         theta,         ///< factor for one step theta scheme
     const double                         ga_alphaF,
@@ -893,33 +947,33 @@ void COMBUST::callSysmat(
     case DRT::Element::hex8:
       COMBUST::Sysmat<DRT::Element::hex8,XFEM::standard_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
-          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
     break;
     case DRT::Element::hex20:
       COMBUST::Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
-          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
           combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
     break;
 //    case DRT::Element::hex27:
 //      COMBUST::Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet4:
 //      COMBUST::Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet10:
 //      COMBUST::Sysmat<DRT::Element::tet10,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
     default:
@@ -933,33 +987,33 @@ void COMBUST::callSysmat(
     case DRT::Element::hex8:
       COMBUST::Sysmat<DRT::Element::hex8,XFEM::xfem_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
-          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
     break;
     case DRT::Element::hex20:
       COMBUST::Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
-          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
           combusttype, flamespeed, nitschevel, nitschepres,surftensapprox,
             connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
     break;
 //    case DRT::Element::hex27:
 //      COMBUST::Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet4:
 //      COMBUST::Sysmat<DRT::Element::tet4,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet10:
 //      COMBUST::Sysmat<DRT::Element::tet10,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
     default:

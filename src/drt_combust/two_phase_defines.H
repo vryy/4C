@@ -20,7 +20,6 @@ Maintainer: Ursula Rasthofer
 //-----------------------
 // bubbly channel flow
 //-----------------------
-//#define BCF_IGNORE_SCATRA_RESTART //> will use ScaTra field from .dat-file instead
 //#define BCF_SURFTENS_PRES_KINK //> use kink enrichment for pressure and apply surface tension (PROBLEMTYPE: Two_Phase_Flow_Surf)
 
 

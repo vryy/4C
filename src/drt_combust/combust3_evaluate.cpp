@@ -307,6 +307,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // time integration parameters
       const INPAR::FLUID::TimeIntegrationScheme timealgo = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "timealgo");
 
+      const double time   = params.get<double>("time");
       const double dt     = params.get<double>("dt");
       const double theta  = params.get<double>("theta");
       const double ga_gamma  = params.get<double>("gamma");
@@ -345,7 +346,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
-          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary,
+          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration);
       }
@@ -387,7 +388,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
         // calculate element coefficient matrix and rhs
         COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_uncondensed_, mystate, elemat1_uncond, elevec1_uncond,
-          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration);
 
@@ -404,7 +405,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       // calculate element coefficient matrix and rhs
       COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
-          material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
           combusttype, flamespeed, nitschevel, nitschepres, surftensapprox,
           connected_interface,veljumptype,fluxjumptype,smoothed_boundary_integration);
 #endif

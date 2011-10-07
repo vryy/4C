@@ -66,6 +66,7 @@ void SysmatDomainNitscheNormal(
     const M2&                      egradphi,     ///<
     Teuchos::RCP<const MAT::Material> material,  ///< fluid material
     const INPAR::FLUID::TimeIntegrationScheme timealgo,     ///< time discretization scheme
+    const double                   time,         ///< current time
     const double                   dt,           ///< delta t (time step size)
     const double                   theta,        ///< parameter for one step theta scheme
     const double                   ga_alphaF,

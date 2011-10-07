@@ -66,6 +66,7 @@ void SysmatDomainNitsche(
     const V2&                      ephi,         ///< nodal G-function values for this element
     Teuchos::RCP<const MAT::Material> material,  ///< fluid material
     const INPAR::FLUID::TimeIntegrationScheme timealgo,     ///< time discretization scheme
+    const double                   time,         ///< current time
     const double                   dt,           ///< delta t (time step size)
     const double                   theta,        ///< parameter for one step theta scheme
     const double                   ga_alphaF,
@@ -132,6 +133,16 @@ void SysmatDomainNitsche(
     double dynvisc = -1.0;
     // set density and dynamic viscosity
     COMBUST::GetMaterialParams(material, cell->getDomainPlus(), densaf, dynvisc);
+
+    // blend smoothly to plus (burnt) domain
+    if (cell->getDomainPlus())
+    {
+      double densminus = -1.0;
+      double dynviscminus = -1.0;
+      COMBUST::GetMaterialParams(material, false, densminus, dynviscminus);
+
+      COMBUST::BlendMaterial(ele, time, densaf, dynvisc, densminus, dynviscminus);
+    }
     // density \rho^{n}
     // TODO until the XFEM time integration is done properly, densities from previous and
     // current time steps are identical
@@ -743,7 +754,7 @@ void Nitsche_SysmatBoundaryCell(
     Jac_tmp.Clear();
     Jac_tmp.MultiplyTN(dx3Ddeta2D,dx3Ddeta2D);
 
-    if(Jac_tmp.Determinant() == 0.0) dserror("deformation factor for boundary integration is zero");
+    if(Jac_tmp.Determinant() <= 0.0) dserror("deformation factor for boundary integration is zero");
 
     const double deform_factor = sqrt(Jac_tmp.Determinant()); // sqrt(det(J^T*J))
 
@@ -771,63 +782,72 @@ void Nitsche_SysmatBoundaryCell(
     //--------------------------------------------------------------------------------------------
     static LINALG::Matrix<nsd,1> normal(true);
     normal.Clear();
+    // normal vector points from Omega^+ to Omega^- (n = n^+ = -n^-)
+    GEO::computeNormalToSurfaceElement(CELLDISTYPE, cellXYZDomain, posEtaBoundary, normal);
+
+    static LINALG::Matrix<nsd,1> normal_smooth(true);
+    normal_smooth.Clear();
+
     static double curv;
     curv = 0.0;
 
     // call smoothed normals for an accurate evaluation of boundary integration terms
-    if ((smoothed_boundary_integration == true)
-        and (surftensapprox != INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed
-        or surftensapprox != INPAR::COMBUST::surface_tension_approx_divgrad_normal))
+    if ((smoothed_boundary_integration == true) and
+        (surftensapprox != INPAR::COMBUST::surface_tension_approx_laplacebeltrami_smoothed or
+         surftensapprox != INPAR::COMBUST::surface_tension_approx_divgrad_normal))
     {
       // get shape functions at gaussian point
       static LINALG::Matrix<numnode,1> funct_gp;
       funct_gp.Clear();
       DRT::UTILS::shape_function_3D(funct_gp,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
 
-      normal.Clear();
       // loop over nodes
       for(size_t i = 0; i< numnode; i++)
       {
         LINALG::Matrix<nsd,1> nodal_grad_xyz_tmp;
         nodal_grad_xyz_tmp.Clear();
 
-        normal(0)+=grad_ephi_smoothed(0,i)*funct_gp(i);
-        normal(1)+=grad_ephi_smoothed(1,i)*funct_gp(i);
-        normal(2)+=grad_ephi_smoothed(2,i)*funct_gp(i);
+        // compute smoothed normal vector
+        normal_smooth(0)+=grad_ephi_smoothed(0,i)*funct_gp(i);
+        normal_smooth(1)+=grad_ephi_smoothed(1,i)*funct_gp(i);
+        normal_smooth(2)+=grad_ephi_smoothed(2,i)*funct_gp(i);
 
         // interpolate curvature to Gaussian point
         curv += ecurv(i)*funct_gp(i);
       }
       curv = 0.0;//curv*-1.0;
-      // 4. normalize final gradient
-      // remark: n = -grad(\phi)
 #ifdef COMBUST_2D
-      normal(2) = 0.0;
+      normal_smooth(2) = 0.0;
 #endif
-      const double norm = normal.Norm2(); // sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2))
+      // normalize final gradient
+      // remark: n = -grad(\phi)
+      const double norm = normal_smooth.Norm2(); // sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2))
       if (norm == 0.0) dserror("norm of normal vector is zero!");
-      normal.Scale(-1.0/norm);
+      normal_smooth.Scale(-1.0/norm);
     }
     else
     {
-      // normal vector points from Omega^+ to Omega^- (n = n^+ = -n^-)
-      GEO::computeNormalToSurfaceElement(CELLDISTYPE, cellXYZDomain, posEtaBoundary, normal);
+      normal_smooth = normal;
     }
 
 #ifdef COLLAPSE_FLAME
-      normal.Clear();
+      normal_smooth.Clear();
       // get shape functions at gaussian point
       static LINALG::Matrix<numnode,1> funct_gp;
       funct_gp.Clear();
       DRT::UTILS::shape_function_3D(funct_gp,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
       for (unsigned i=0;i<numnode;i++)
       {
-        normal(0) += funct_gp(i)*xyze(0,i);
-        normal(1) += funct_gp(i)*xyze(1,i);
+        normal_smooth(0) += funct_gp(i)*xyze(0,i);
+        normal_smooth(1) += funct_gp(i)*xyze(1,i);
+        normal_smooth(2) += funct_gp(i)*xyze(2,i);
       }
-      const double norm = normal.Norm2(); // sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2))
+#ifdef COMBUST_2D
+      normal_smooth(2) = 0.0;
+#endif
+      const double norm = normal_smooth.Norm2(); // sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2))
       if (norm == 0.0) dserror("norm of normal vector is zero!");
-      normal.Scale(-1.0/norm);
+      normal_smooth.Scale(-1.0/norm);
 #endif
 
       //-----------------------------
@@ -842,7 +862,7 @@ void Nitsche_SysmatBoundaryCell(
 #if 0
       // jump velocity vector ju_{n,t1,t2}
       LINALG::Matrix<nsd,1> ju_nt(true);
-      ju_nt(0,0) = -flamespeed_mod*dens_minus*(1.0/dens_minus - 1.0/dens_plus);
+      ju_nt(0,0) = -mflux*(1.0/dens_minus - 1.0/dens_plus);
       ju_nt(1,0) = 0.0;
       ju_nt(2,0) = 0.0;
 #else
@@ -911,9 +931,10 @@ void Nitsche_SysmatBoundaryCell(
     //ju = trafo*ju_nt;
     ju.Multiply(trafo,ju_nt);
 #else
-    ju(0) = ju_n*normal(0);
-    ju(1) = ju_n*normal(1);
-    ju(2) = ju_n*normal(2);
+    // use smoothes normal for velocity jump
+    ju(0) = ju_n*normal_smooth(0);
+    ju(1) = ju_n*normal_smooth(1);
+    ju(2) = ju_n*normal_smooth(2);
     //cout << "ju " << ju << endl;
 #ifdef COMBUST_TESTCOUETTEFLOW
     // overwrite velocity jump condition for shear flow test case
@@ -1105,6 +1126,80 @@ void Nitsche_SysmatBoundaryCell(
         vderxy_jump_visc(isd,2) += evelnp(isd,iparam) * shp_jump_visc.dz(iparam);
       }
 
+#if 0 // replace part of flux vector by deviatoric stress from last time step
+    static LINALG::Matrix<nsd,nsd> vderxy_jump_visc_old(true);
+    vderxy_jump_visc_old.Clear();
+
+    for (size_t iparam = 0; iparam < numparamvelx; ++iparam)
+      for (size_t isd = 0; isd < nsd; ++isd)
+      {
+        vderxy_jump_visc_old(isd,0) += eveln(isd,iparam) * shp_jump_visc.dx(iparam);
+        vderxy_jump_visc_old(isd,1) += eveln(isd,iparam) * shp_jump_visc.dy(iparam);
+        vderxy_jump_visc_old(isd,2) += eveln(isd,iparam) * shp_jump_visc.dz(iparam);
+      }
+
+    jflux(0) = jflux_n*normal(0)
+               + (vderxy_jump_visc_old(0,0)+vderxy_jump_visc_old(0,0))*normal(0)
+               + (vderxy_jump_visc_old(0,1)+vderxy_jump_visc_old(1,0))*normal(1)
+               + (vderxy_jump_visc_old(0,2)+vderxy_jump_visc_old(2,0))*normal(2);
+    jflux(1) = jflux_n*normal(1)
+               + (vderxy_jump_visc_old(1,0)+vderxy_jump_visc_old(0,1))*normal(0)
+               + (vderxy_jump_visc_old(1,1)+vderxy_jump_visc_old(1,1))*normal(1)
+               + (vderxy_jump_visc_old(1,2)+vderxy_jump_visc_old(2,1))*normal(2);
+    jflux(2) = jflux_n*normal(2)
+               + (vderxy_jump_visc_old(2,0)+vderxy_jump_visc_old(0,2))*normal(0)
+               + (vderxy_jump_visc_old(2,1)+vderxy_jump_visc_old(1,2))*normal(1)
+               + (vderxy_jump_visc_old(2,2)+vderxy_jump_visc_old(2,2))*normal(2);
+#endif
+
+#if 0 //#ifdef COLLAPSE_FLAME
+    static LINALG::Matrix<3,1> x(true);
+    static LINALG::Matrix<nsd,nsd> vderxy_jump_visc_analyt(true);
+    x.Clear();
+    vderxy_jump_visc_analyt.Clear();
+    // get shape functions at gaussian point
+    DRT::UTILS::shape_function_3D(funct_gp,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+    for (unsigned i=0;i<numnode;i++)
+    {
+      x(0) += funct_gp(i)*xyze(0,i);
+      x(1) += funct_gp(i)*xyze(1,i);
+      x(2) += funct_gp(i)*xyze(2,i);
+    }
+#ifdef COMBUST_2D
+    x(2)=0.0;
+#endif
+    const double r_0 = 0.25;
+    const double u_0 = 1.0;
+
+    vderxy_jump_visc_analyt(0,0) = -2.0*visc_plus*r_0*u_0 * 1.0/(x(0)*x(0)+x(1)*x(1)) * (1.0 - 2.0*x(0)*x(0)/(x(0)*x(0)+x(1)*x(1)));
+    vderxy_jump_visc_analyt(0,1) =  2.0*visc_plus*r_0*u_0 * 2.0*x(0)*x(1) / ((x(0)*x(0)+x(1)*x(1)) * (x(0)*x(0)+x(1)*x(1)));
+    vderxy_jump_visc_analyt(0,2) =  0.0;
+    vderxy_jump_visc_analyt(1,0) =  2.0*visc_plus*r_0*u_0 * 2.0*x(0)*x(1) / ((x(0)*x(0)+x(1)*x(1)) * (x(0)*x(0)+x(1)*x(1)));
+    vderxy_jump_visc_analyt(1,1) = -2.0*visc_plus*r_0*u_0 * 1.0/(x(0)*x(0)+x(1)*x(1)) * (1.0 - 2.0*x(1)*x(1)/(x(0)*x(0)+x(1)*x(1)));
+    vderxy_jump_visc_analyt(1,2) =  0.0;
+    vderxy_jump_visc_analyt(2,0) =  0.0;
+    vderxy_jump_visc_analyt(2,1) =  0.0;
+    vderxy_jump_visc_analyt(2,2) =  0.0;
+
+    // jump of traction vector (stress tensor * normal)
+    if(fluxjumptype == INPAR::COMBUST::flux_jump_const ||
+       fluxjumptype == INPAR::COMBUST::flux_jump_premixed_combustion)
+    {
+      jflux(0) = jflux_n*normal(0)
+                 + vderxy_jump_visc_analyt(0,0)*normal(0)
+                 + vderxy_jump_visc_analyt(0,1)*normal(1)
+                 + vderxy_jump_visc_analyt(0,2)*normal(2);
+      jflux(1) = jflux_n*normal(1)
+                 + vderxy_jump_visc_analyt(1,0)*normal(0)
+                 + vderxy_jump_visc_analyt(1,1)*normal(1)
+                 + vderxy_jump_visc_analyt(1,2)*normal(2);
+      jflux(2) = jflux_n*normal(2)
+                 + vderxy_jump_visc_analyt(2,0)*normal(0)
+                 + vderxy_jump_visc_analyt(2,1)*normal(1)
+                 + vderxy_jump_visc_analyt(2,2)*normal(2);
+    }
+#endif
+
     // get pressure jump
     static double pjump;
     pjump = 0.0;
@@ -1115,6 +1210,96 @@ void Nitsche_SysmatBoundaryCell(
     pmean = 0.0;
     for (size_t iparam = 0; iparam != numparampres; ++iparam)
       pmean += shp_mean.d0(iparam)*eprenp(iparam);
+
+
+#if 0 // #ifdef COMBUST_SIGMA_BASED_NEUMANN_INFLOW
+//      static XFEM::ApproxFunc<0,shpVecSize> shp_inflow;
+//      const double direction = veljump(0)*normal(0) + veljump(1)*normal(1) + veljump(2)*normal(2);
+//      if (direction < 0.0)
+//      {
+////        cout << "inflow right" << endl;
+//        for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
+//        {
+//          shp_inflow.d0(iparam) = enrfunct_minus(iparam);
+//        }
+//      }
+//      else
+//      {
+////        cout << "inflow left" << endl;
+//        for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
+//        {
+//          shp_inflow.d0(iparam) = enrfunct_plus(iparam);
+//        }
+//      }
+//      // inflow velocity
+//      static LINALG::Matrix<nsd,1> velinflow(true);
+//      velinflow.Clear();
+//      velinflow = XFEM::interpolateVectorFieldToIntPoint(evelnp, shp_inflow.d0, numparamvelx);
+//      //cout << velinflow << endl;
+#endif
+
+#if 0 // #ifdef COMBUST_SIGMA_BASED_ADVECTIVEFLUX
+      static XFEM::ApproxFunc<0,shpVecSize> shp_inflow;
+      const double direction = veljump(0)*normal(0) + veljump(1)*normal(1) + veljump(2)*normal(2);
+
+      //if (direction > 0.0)
+        for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
+        {
+          shp_inflow.d0(iparam) = enrfunct_plus(iparam);
+        }
+      //else
+      //{
+      //  dserror("falsche Flussrichtung!");
+      //  for (std::size_t iparam = 0; iparam < numparamvelx; ++iparam)
+      //  {
+      //    shp_inflow.d0(iparam) = enrfunct_minus(iparam);
+      //  }
+      //}
+
+      // inflow velocity
+      static LINALG::Matrix<nsd,1> velinflow(true);
+      velinflow.Clear();
+      velinflow = XFEM::interpolateVectorFieldToIntPoint(evelnp, shp_inflow.d0, numparamvelx);
+
+      // inflow velocity
+      LINALG::Matrix<3,1> vel_minus(true);
+      for (int iparam = 0; iparam < numparamvelx; ++iparam)
+        for (int isd = 0; isd < 3; ++isd)
+          vel_minus(isd) += evelnp(isd,iparam)*enrfunct_minus(iparam);
+
+      LINALG::Matrix<3,1> vel_plus(true);
+      for (int iparam = 0; iparam < numparamvelx; ++iparam)
+        for (int isd = 0; isd < 3; ++isd)
+          vel_plus(isd) += evelnp(isd,iparam)*enrfunct_plus(iparam);
+
+      if (velinflow != vel_plus)
+      {
+        cout << "velinflow " << velinflow << endl;
+        cout << "velinflow_plus " << vel_plus << endl;
+
+        dserror("nicht gleich");
+      }
+
+      //if (abs(x(1))<0.0001)
+      //{
+      //}
+
+      double velproj_plus  = vel_plus(0)*normal(0) + vel_plus(1)*normal(1) + vel_plus(2)*normal(2);
+      double velproj_minus = vel_minus(0)*normal(0) + vel_minus(1)*normal(1) + vel_minus(2)*normal(2);
+
+      if (velproj_plus > 0.0) // outflow plus domain
+        velproj_plus = 0.0;
+      if (velproj_minus < 0.0) // outflow minus domain
+        velproj_minus = 0.0;
+
+//      if (velproj_minus > 0.0)
+//      {
+//        cout << "da ist ein minus inflow!" << endl;
+//        cout << velproj_minus << endl;
+//      }
+
+      const double inflowvelproj = velinflow(0)*normal(0) + velinflow(1)*normal(1) + velinflow(2)*normal(2);
+#endif
 
     //--------------------------------------------------------------------------------------------
     // build single boundary integral stiffness terms
@@ -1169,39 +1354,39 @@ void Nitsche_SysmatBoundaryCell(
     // viscous consistency term  + |  < v > , || 2\mu epsilon( Du ) || n  |
     //-------------------------    |                                      |
 
-    assembler.template Matrix<Velx,Velx>(shp_mean.d0, 2.0*timefacfac*normal(0), shp_jump_visc.dx);
-    assembler.template Matrix<Velx,Velx>(shp_mean.d0,     timefacfac*normal(1), shp_jump_visc.dy);
-    assembler.template Matrix<Velx,Velx>(shp_mean.d0,     timefacfac*normal(2), shp_jump_visc.dz);
-    assembler.template Matrix<Velx,Vely>(shp_mean.d0,     timefacfac*normal(1), shp_jump_visc.dx);
-    assembler.template Matrix<Velx,Velz>(shp_mean.d0,     timefacfac*normal(2), shp_jump_visc.dx);
+    assembler.template Matrix<Velx,Velx>(shp_mean_inv.d0, 2.0*timefacfac*normal(0), shp_jump_visc.dx);
+    assembler.template Matrix<Velx,Velx>(shp_mean_inv.d0,     timefacfac*normal(1), shp_jump_visc.dy);
+    assembler.template Matrix<Velx,Velx>(shp_mean_inv.d0,     timefacfac*normal(2), shp_jump_visc.dz);
+    assembler.template Matrix<Velx,Vely>(shp_mean_inv.d0,     timefacfac*normal(1), shp_jump_visc.dx);
+    assembler.template Matrix<Velx,Velz>(shp_mean_inv.d0,     timefacfac*normal(2), shp_jump_visc.dx);
 
-    assembler.template Matrix<Vely,Velx>(shp_mean.d0,     timefacfac*normal(0), shp_jump_visc.dy);
-    assembler.template Matrix<Vely,Vely>(shp_mean.d0,     timefacfac*normal(0), shp_jump_visc.dx);
-    assembler.template Matrix<Vely,Vely>(shp_mean.d0, 2.0*timefacfac*normal(1), shp_jump_visc.dy);
-    assembler.template Matrix<Vely,Vely>(shp_mean.d0,     timefacfac*normal(2), shp_jump_visc.dz);
-    assembler.template Matrix<Vely,Velz>(shp_mean.d0,     timefacfac*normal(2), shp_jump_visc.dy);
+    assembler.template Matrix<Vely,Velx>(shp_mean_inv.d0,     timefacfac*normal(0), shp_jump_visc.dy);
+    assembler.template Matrix<Vely,Vely>(shp_mean_inv.d0,     timefacfac*normal(0), shp_jump_visc.dx);
+    assembler.template Matrix<Vely,Vely>(shp_mean_inv.d0, 2.0*timefacfac*normal(1), shp_jump_visc.dy);
+    assembler.template Matrix<Vely,Vely>(shp_mean_inv.d0,     timefacfac*normal(2), shp_jump_visc.dz);
+    assembler.template Matrix<Vely,Velz>(shp_mean_inv.d0,     timefacfac*normal(2), shp_jump_visc.dy);
 
-    assembler.template Matrix<Velz,Velx>(shp_mean.d0,     timefacfac*normal(0), shp_jump_visc.dz);
-    assembler.template Matrix<Velz,Vely>(shp_mean.d0,     timefacfac*normal(1), shp_jump_visc.dz);
-    assembler.template Matrix<Velz,Velz>(shp_mean.d0,     timefacfac*normal(0), shp_jump_visc.dx);
-    assembler.template Matrix<Velz,Velz>(shp_mean.d0,     timefacfac*normal(1), shp_jump_visc.dy);
-    assembler.template Matrix<Velz,Velz>(shp_mean.d0, 2.0*timefacfac*normal(2), shp_jump_visc.dz);
+    assembler.template Matrix<Velz,Velx>(shp_mean_inv.d0,     timefacfac*normal(0), shp_jump_visc.dz);
+    assembler.template Matrix<Velz,Vely>(shp_mean_inv.d0,     timefacfac*normal(1), shp_jump_visc.dz);
+    assembler.template Matrix<Velz,Velz>(shp_mean_inv.d0,     timefacfac*normal(0), shp_jump_visc.dx);
+    assembler.template Matrix<Velz,Velz>(shp_mean_inv.d0,     timefacfac*normal(1), shp_jump_visc.dy);
+    assembler.template Matrix<Velz,Velz>(shp_mean_inv.d0, 2.0*timefacfac*normal(2), shp_jump_visc.dz);
 
     //   |                                       |
     // - |  < v > , || 2\mu epsilon( u_i ) || n  |
     //   |                                       |
 
-    assembler.template Vector<Velx>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(0,0) + vderxy_jump_visc(0,0))*normal(0));
-    assembler.template Vector<Velx>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(0,1) + vderxy_jump_visc(1,0))*normal(1));
-    assembler.template Vector<Velx>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(0,2) + vderxy_jump_visc(2,0))*normal(2));
+    assembler.template Vector<Velx>(shp_mean_inv.d0, -timefacfac* (vderxy_jump_visc(0,0) + vderxy_jump_visc(0,0))*normal(0));
+    assembler.template Vector<Velx>(shp_mean_inv.d0, -timefacfac* (vderxy_jump_visc(0,1) + vderxy_jump_visc(1,0))*normal(1));
+    assembler.template Vector<Velx>(shp_mean_inv.d0, -timefacfac* (vderxy_jump_visc(0,2) + vderxy_jump_visc(2,0))*normal(2));
 
-    assembler.template Vector<Vely>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(1,0) + vderxy_jump_visc(0,1))*normal(0));
-    assembler.template Vector<Vely>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(1,1) + vderxy_jump_visc(1,1))*normal(1));
-    assembler.template Vector<Vely>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(1,2) + vderxy_jump_visc(2,1))*normal(2));
+    assembler.template Vector<Vely>(shp_mean_inv.d0, -timefacfac* (vderxy_jump_visc(1,0) + vderxy_jump_visc(0,1))*normal(0));
+    assembler.template Vector<Vely>(shp_mean_inv.d0, -timefacfac* (vderxy_jump_visc(1,1) + vderxy_jump_visc(1,1))*normal(1));
+    assembler.template Vector<Vely>(shp_mean_inv.d0, -timefacfac* (vderxy_jump_visc(1,2) + vderxy_jump_visc(2,1))*normal(2));
 
-    assembler.template Vector<Velz>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(2,0) + vderxy_jump_visc(0,2))*normal(0));
-    assembler.template Vector<Velz>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(2,1) + vderxy_jump_visc(1,2))*normal(1));
-    assembler.template Vector<Velz>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(2,2) + vderxy_jump_visc(2,2))*normal(2));
+    assembler.template Vector<Velz>(shp_mean_inv.d0, -timefacfac* (vderxy_jump_visc(2,0) + vderxy_jump_visc(0,2))*normal(0));
+    assembler.template Vector<Velz>(shp_mean_inv.d0, -timefacfac* (vderxy_jump_visc(2,1) + vderxy_jump_visc(1,2))*normal(1));
+    assembler.template Vector<Velz>(shp_mean_inv.d0, -timefacfac* (vderxy_jump_visc(2,2) + vderxy_jump_visc(2,2))*normal(2));
 #endif
 
 #ifdef COMBUST_NITSCHE_VISCADJCONSIST
@@ -1405,20 +1590,6 @@ void Nitsche_SysmatBoundaryCell(
       assembler.template Vector<Velx>(shp_mean_inv.d0, -timefacfac*jflux(0));
       assembler.template Vector<Vely>(shp_mean_inv.d0, -timefacfac*jflux(1));
       assembler.template Vector<Velz>(shp_mean_inv.d0, -timefacfac*jflux(2));
-
-#if 0
-      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(0,0) + vderxy_jump_visc(0,0))*normal(0));
-      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(0,1) + vderxy_jump_visc(1,0))*normal(1));
-      assembler.template Vector<Velx>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(0,2) + vderxy_jump_visc(2,0))*normal(2));
-
-      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(1,0) + vderxy_jump_visc(0,1))*normal(0));
-      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(1,1) + vderxy_jump_visc(1,1))*normal(1));
-      assembler.template Vector<Vely>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(1,2) + vderxy_jump_visc(2,1))*normal(2));
-
-      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(2,0) + vderxy_jump_visc(0,2))*normal(0));
-      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(2,1) + vderxy_jump_visc(1,2))*normal(1));
-      assembler.template Vector<Velz>(shp_mean.d0, -timefacfac* (vderxy_jump_visc(2,2) + vderxy_jump_visc(2,2))*normal(2));
-#endif
     }
 #endif
 
@@ -1489,18 +1660,60 @@ void Nitsche_SysmatBoundaryCell(
     // Nitsche term (velocity) RHS  + |  \alpha_u_conv || v ||*n, J_u*n  |
     //----------------------------    |                                  |
 
-    assembler.template Vector<Velx>(shp_jump.d0, +alpha_conv*normal(0)*timefacfac*normal(0)*normal(0)*ju_n);
-    assembler.template Vector<Velx>(shp_jump.d0, +alpha_conv*normal(0)*timefacfac*normal(1)*normal(1)*ju_n);
-    assembler.template Vector<Velx>(shp_jump.d0, +alpha_conv*normal(0)*timefacfac*normal(2)*normal(2)*ju_n);
+    assembler.template Vector<Velx>(shp_jump.d0, alpha_conv*normal(0)*timefacfac*normal(0)*ju(0));
+    assembler.template Vector<Velx>(shp_jump.d0, alpha_conv*normal(0)*timefacfac*normal(1)*ju(1));
+    assembler.template Vector<Velx>(shp_jump.d0, alpha_conv*normal(0)*timefacfac*normal(2)*ju(2));
 
-    assembler.template Vector<Vely>(shp_jump.d0, +alpha_conv*normal(1)*timefacfac*normal(0)*normal(0)*ju_n);
-    assembler.template Vector<Vely>(shp_jump.d0, +alpha_conv*normal(1)*timefacfac*normal(1)*normal(1)*ju_n);
-    assembler.template Vector<Vely>(shp_jump.d0, +alpha_conv*normal(1)*timefacfac*normal(2)*normal(2)*ju_n);
+    assembler.template Vector<Vely>(shp_jump.d0, alpha_conv*normal(1)*timefacfac*normal(0)*ju(0));
+    assembler.template Vector<Vely>(shp_jump.d0, alpha_conv*normal(1)*timefacfac*normal(1)*ju(1));
+    assembler.template Vector<Vely>(shp_jump.d0, alpha_conv*normal(1)*timefacfac*normal(2)*ju(2));
 
-    assembler.template Vector<Velz>(shp_jump.d0, +alpha_conv*normal(2)*timefacfac*normal(0)*normal(0)*ju_n);
-    assembler.template Vector<Velz>(shp_jump.d0, +alpha_conv*normal(2)*timefacfac*normal(1)*normal(1)*ju_n);
-    assembler.template Vector<Velz>(shp_jump.d0, +alpha_conv*normal(2)*timefacfac*normal(2)*normal(2)*ju_n);
+    assembler.template Vector<Velz>(shp_jump.d0, alpha_conv*normal(2)*timefacfac*normal(0)*ju(0));
+    assembler.template Vector<Velz>(shp_jump.d0, alpha_conv*normal(2)*timefacfac*normal(1)*ju(1));
+    assembler.template Vector<Velz>(shp_jump.d0, alpha_conv*normal(2)*timefacfac*normal(2)*ju(2));
+#endif
 
+#ifdef COMBUST_NEUMANN_INFLOW
+
+    //---------------------------------------------------    |                 |
+    // Neumann inflow term
+    //---------------------------------------------------    |                 |
+
+    assembler.template Matrix<Velx,Velx>(shp_mean_inv.d0, timefacfac*inflowvelproj, shp_jump.d0);
+    assembler.template Matrix<Vely,Vely>(shp_mean_inv.d0, timefacfac*inflowvelproj, shp_jump.d0);
+    assembler.template Matrix<Velz,Velz>(shp_mean_inv.d0, timefacfac*inflowvelproj, shp_jump.d0);
+
+    assembler.template Vector<Velx>(shp_mean_inv.d0, -timefacfac*inflowvelproj*veljump(0));
+    assembler.template Vector<Vely>(shp_mean_inv.d0, -timefacfac*inflowvelproj*veljump(1));
+    assembler.template Vector<Velz>(shp_mean_inv.d0, -timefacfac*inflowvelproj*veljump(2));
+
+    assembler.template Vector<Velx>(shp_mean_inv.d0, timefacfac*inflowvelproj*ju(0));
+    assembler.template Vector<Vely>(shp_mean_inv.d0, timefacfac*inflowvelproj*ju(1));
+    assembler.template Vector<Velz>(shp_mean_inv.d0, timefacfac*inflowvelproj*ju(2));
+
+//    assembler.template Matrix<Velx,Velx>(shp_mean_inv.d0, timefacfac*velproj_plus, shp_jump.d0);
+//    assembler.template Matrix<Vely,Vely>(shp_mean_inv.d0, timefacfac*velproj_plus, shp_jump.d0);
+//    assembler.template Matrix<Velz,Velz>(shp_mean_inv.d0, timefacfac*velproj_plus, shp_jump.d0);
+//
+//    assembler.template Vector<Velx>(shp_mean_inv.d0, -timefacfac*velproj_plus*veljump(0));
+//    assembler.template Vector<Vely>(shp_mean_inv.d0, -timefacfac*velproj_plus*veljump(1));
+//    assembler.template Vector<Velz>(shp_mean_inv.d0, -timefacfac*velproj_plus*veljump(2));
+//
+//    assembler.template Vector<Velx>(shp_mean_inv.d0, timefacfac*velproj_plus*ju(0));
+//    assembler.template Vector<Vely>(shp_mean_inv.d0, timefacfac*velproj_plus*ju(1));
+//    assembler.template Vector<Velz>(shp_mean_inv.d0, timefacfac*velproj_plus*ju(2));
+//
+//    assembler.template Matrix<Velx,Velx>(shp_mean_inv.d0, timefacfac*velproj_minus, shp_jump.d0);
+//    assembler.template Matrix<Vely,Vely>(shp_mean_inv.d0, timefacfac*velproj_minus, shp_jump.d0);
+//    assembler.template Matrix<Velz,Velz>(shp_mean_inv.d0, timefacfac*velproj_minus, shp_jump.d0);
+//
+//    assembler.template Vector<Velx>(shp_mean_inv.d0, -timefacfac*velproj_minus*veljump(0));
+//    assembler.template Vector<Vely>(shp_mean_inv.d0, -timefacfac*velproj_minus*veljump(1));
+//    assembler.template Vector<Velz>(shp_mean_inv.d0, -timefacfac*velproj_minus*veljump(2));
+//
+//    assembler.template Vector<Velx>(shp_mean_inv.d0, timefacfac*velproj_minus*ju(0));
+//    assembler.template Vector<Vely>(shp_mean_inv.d0, timefacfac*velproj_minus*ju(1));
+//    assembler.template Vector<Velz>(shp_mean_inv.d0, timefacfac*velproj_minus*ju(2));
 #endif
 
 #ifdef COMBUST_NITSCHE_NITSCHEPRES
@@ -1624,8 +1837,15 @@ void SysmatBoundaryNitsche(
   // get maximum of the viscosities of all fluid materials
   const double dynvisc_max = max(dynvisc_plus,dynvisc_minus);
 
+  double ele_meas = ele_meas_plus + ele_meas_minus;
+
+  //const double a_plus = ele_meas_plus/ele_meas;
+  //const double a_minus = ele_meas_minus/ele_meas;
+  //const double denominator = dynvisc_plus*a_minus + dynvisc_minus*a_plus;
+
   // Nitsche parameter velocity ( alph_u := 1/h_k * mu_max * gamma_u ) see Becker, Hansbo 2009
   const double alphau = 1.0/hk_eleDiam * dynvisc_max * nitschevel;
+  //const double alphau = 1.0/hk_eleDiam * 4.0*nitschevel*(dynvisc_plus*dynvisc_minus);
   //cout << "alpha_u: " << alphau << endl;
 
   // Benedikt:
@@ -1638,10 +1858,11 @@ void SysmatBoundaryNitsche(
   //                               and < () > = kappa_minus* ()_plus + kappa_plus  * ()_minus
   //-----------------------------------------------------------------------------------------
 
-  double ele_meas = ele_meas_plus + ele_meas_minus;
-//  if(ele_meas == 0.0) dserror("element measure is zero!!! Weighted average operators can not get defined!");
+  //if(ele_meas == 0.0) dserror("element measure is zero!!! Weighted average operators can not get defined!");
   double kappa_plus  = ele_meas_plus/ele_meas;
   double kappa_minus = ele_meas_minus/ele_meas;
+  //const double kappa_plus = dynvisc_minus*a_plus / denominator;
+  //const double kappa_minus = dynvisc_plus*a_minus / denominator;
 
   // flag for higher order elements
   const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();

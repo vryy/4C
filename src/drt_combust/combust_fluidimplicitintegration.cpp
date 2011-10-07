@@ -1128,6 +1128,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       //eleparams.set("total time",time_);
       //eleparams.set("thsl",theta_*dta_);
       eleparams.set<int>("timealgo",timealgo_);
+      eleparams.set("time",time_);
       eleparams.set("dt",dta_);
       eleparams.set("theta",theta_);
       eleparams.set("gamma",gamma_);
@@ -4321,7 +4322,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
       else // minus/unburnt domain -> unburnt material
       {
         dens = dens_u;
-        pres = -flamespeed_*flamespeed_*dens_u*dens_u*(1.0/dens_u - 1.0/dens_b)
+        pres = flamespeed_*flamespeed_*dens_u*dens_u*(1.0/dens_u - 1.0/dens_b)
         -0.5*(C*C/R_squared)*(exp(-r_squared_left) + exp(-r_squared_right));
       }
       //----------------------------------------------
@@ -4480,8 +4481,8 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
         else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
         {
           // -0.5 *jump + 0.5*dist*kink
-          (*state_.veln_)[dofrowmap.LID(dofpos)] = 0.5*(-6.0) + 0.5*gfuncval*4.0;
-          (*state_.velnp_)[dofrowmap.LID(dofpos)] = 0.5*(-6.0) + 0.5*gfuncval*4.0;
+          (*state_.veln_)[dofrowmap.LID(dofpos)] = 0.5*(-6.0) + 0.5*gfuncval*4.0; // 0.5*(2.0)
+          (*state_.velnp_)[dofrowmap.LID(dofpos)] = 0.5*(-6.0) + 0.5*gfuncval*4.0; // 0.5*(2.0)
         }
       } // end if jump enrichment
       else if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
@@ -4520,8 +4521,8 @@ void FLD::CombustFluidImplicitTimeInt::SetEnrichmentField(
           }
           else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
           {
-            (*state_.veln_)[dofrowmap.LID(dofpos)] = 5.5;
-            (*state_.velnp_)[dofrowmap.LID(dofpos)] = 5.5;
+            (*state_.veln_)[dofrowmap.LID(dofpos)] = 5.5; //-2.5;
+            (*state_.velnp_)[dofrowmap.LID(dofpos)] = 5.5; //-2.5;
           }
         }
       }
