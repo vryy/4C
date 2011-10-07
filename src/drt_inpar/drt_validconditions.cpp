@@ -675,6 +675,27 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
    condlist.push_back(turbulentinflowgeneration);
 
   /*--------------------------------------------------------------------*/
+  // volume condition to blend material parameters smoothly for turbulent combustion and two-phase flow
+
+  std::vector<Teuchos::RCP<ConditionComponent> > blendmaterialcomponents;
+
+  blendmaterialcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff",1)));
+  blendmaterialcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
+
+  Teuchos::RCP<ConditionDefinition> blendmaterial =
+    Teuchos::rcp(new ConditionDefinition("COMBUST BLEND MATERIAL VOLUME",
+                                         "BlendMaterial",
+                                         "BlendMaterial",
+                                         DRT::Condition::BlendMaterial,
+                                         true,
+                                         DRT::Condition::Volume));
+
+  for (unsigned i=0; i<blendmaterialcomponents.size(); ++i)
+    blendmaterial->AddComponent(blendmaterialcomponents[i]);
+
+  condlist.push_back(blendmaterial);
+
+   /*--------------------------------------------------------------------*/
   // weak Dirichlet
 
   std::vector<Teuchos::RCP<ConditionComponent> > weakDirichletcomponents;
@@ -885,7 +906,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
    condlist.push_back(linetransportneumanninflow);
    condlist.push_back(surftransportneumanninflow);
 
-   /*--------------------------------------------------------------------*/ // schott
+   /*--------------------------------------------------------------------*/
    // Taylor Galerkin outflow Boundaries for level set transport equation
 
    Teuchos::RCP<ConditionDefinition> surfOutflowTaylorGalerkin =
@@ -898,7 +919,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
     condlist.push_back(surfOutflowTaylorGalerkin);
 
-  /*--------------------------------------------------------------------*/ //schott
+  /*--------------------------------------------------------------------*/
 
     Teuchos::RCP<ConditionDefinition> surfneumanninflowTaylorGalerkin =
       Teuchos::rcp(new ConditionDefinition("TAYLOR GALERKIN NEUMANN INFLOW SURF CONDITIONS",
@@ -912,7 +933,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
 
   /*--------------------------------------------------------------------*/
-  // schott
   // Characteristic Galerkin Boundaries for LevelSet-Reinitialization
 
   Teuchos::RCP<ConditionDefinition> surfreinitializationtaylorgalerkin =

@@ -528,6 +528,8 @@ void DRT::UTILS::TimeCurveManager::ReadInput(DRT::INPUT::DatFileReader& reader)
           numex=-11; /* ramp function with horizontal slopes */
         else if (string(buffer)=="f(t)=(1-C2/C1)*T+C2")
           numex=-12; /* linearly increasing function with non-zero initial value */
+        else if (string(buffer)=="f(t)=0.5+0.5*cos(PI*(T-C1)/(C2-C1))")
+          numex=-13;
         else
           dserror("Cannot read function of CURVE%d: %s",i,string(buffer).c_str());
 
@@ -779,6 +781,14 @@ ScalarT DRT::UTILS::ExplicitTimeSlice::Fct(const ScalarT& T)
       fac = ( ( 1.0 - c2_ ) / c1_ ) * T + c2_;
     else
       fac = 1.0;
+    break;
+  case -13: /* f(t)=0.5+0.5*cos(PI*(T-C1)/(C2-C1)) */
+    if (T<= c1_)
+      fac = 1.0;
+    else if (T>= c2_)
+      fac = 0.0;
+    else
+      fac = 0.5 + 0.5*cos(M_PI*(T-c1_)/(c2_-c1_));
     break;
   default:
     dserror("Number of explicit timecurve (NUMEX=%d) unknown", numex_);

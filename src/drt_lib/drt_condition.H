@@ -134,6 +134,7 @@ public:
     SurfacePeriodic,
     TransferTurbulentInflow,
     TurbulentInflowSection,
+    BlendMaterial,
     LineWeakDirichlet,
     SurfaceWeakDirichlet,
     LineMixHybDirichlet,
