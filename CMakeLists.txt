@@ -1237,7 +1237,6 @@ set(OBJS_DRT_CONTACT
   src/drt_contact/meshtying_manager.cpp
   src/drt_contact/meshtying_penalty_strategy.cpp
   src/drt_contact/selfcontact_binarytree.cpp
-  src/drt_contact/strugenalpha_cmt.cpp
 )
 set(OBJS_STK_LIB
   src/stk_lib/stk_discret.cpp
@@ -1578,7 +1577,6 @@ set(SINGLEFIELD_LIBRARIES
   alg_ale
   alg_artnet
   alg_combust
-  alg_contact
   alg_fluid
   alg_redairways
   alg_scatra
@@ -1587,6 +1585,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_invanalysis
   alg_mlmc
   alg_thermo
+  alg_contact
   alg_stk_structure
   alg_stk_fluid
   )
@@ -1883,8 +1882,6 @@ baci_test(contact2D_hertz_linstatic 1 "")
 baci_test(contact2D_hertz_linstatic 2 "")
 baci_test(contact2D_lin_augmented 1 "")
 baci_test(contact2D_lin_augmented 2 "")
-baci_test(contact2D_lin_cmtgena 1 "")
-baci_test(contact2D_lin_cmtgena 2 "")
 baci_test(contact2D_lin_duallagr 1 "")
 baci_test(contact2D_lin_duallagr 2 "")
 baci_test(contact2D_lin_penalty 1 "")
@@ -1917,8 +1914,6 @@ baci_test(contact2D_wear 1 "")
 baci_test(contact2D_wear 2 "")
 baci_test(contact3D_lin_augmented 1 "")
 baci_test(contact3D_lin_augmented 2 "")
-baci_test(contact3D_lin_cmtgena 1 "")
-baci_test(contact3D_lin_cmtgena 2 "")
 baci_test(contact3D_lin_duallagr 1 "")
 baci_test(contact3D_lin_duallagr 2 "")
 baci_test(contact3D_lin_penalty 1 "")
@@ -1951,8 +1946,6 @@ baci_test(contact3D_slidingblock_lagrange_tet10 1 "")
 baci_test(contact3D_slidingblock_lagrange_tet10 2 "")
 baci_test(contact3D_slidingblock_lagrange_hex20 1 "")
 baci_test(contact3D_slidingblock_lagrange_hex20 2 "")
-baci_test(contact3D_slidingblock_cmtgena 1 "")
-baci_test(contact3D_slidingblock_cmtgena 2 "")
 baci_test(contact3D_slidingblock_coulomb 1 "")
 baci_test(contact3D_slidingblock_coulomb 2 "")
 baci_test(contact3D_slidingblock_penalty 1 "")

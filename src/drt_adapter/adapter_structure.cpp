@@ -40,7 +40,6 @@ Maintainer: Ulrich Kuettler
 #include "../drt_structure/strtimint_create.H"
 #include "../drt_structure/strtimada_create.H"
 #include "../drt_beamcontact/beam3contactstrugenalpha.H"
-#include "../drt_contact/strugenalpha_cmt.H"
 #include "../drt_statmech/statmech_time.H"
 #include "../drt_patspec/patspec.H"
 
@@ -356,10 +355,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
     }
   }
 
-  // invoke contact or meshtying strugenalpha
-  bool contact = false;
-  bool mortarcontact = false;
-  bool mortarmeshtying = false;
+  // detect whether beam contact is present
   bool beamcontact = false;
   INPAR::CONTACT::ApplicationType apptype =
     DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
@@ -368,10 +364,10 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
     case INPAR::CONTACT::app_none:
       break;
     case INPAR::CONTACT::app_mortarcontact:
-      mortarcontact = true;
+      dserror("ERROR: Mortar contact has moved to new STI");
       break;
     case INPAR::CONTACT::app_mortarmeshtying:
-      mortarmeshtying = true;
+      dserror("ERROR: Mortar meshtying has moved to new STI");
       break;
     case INPAR::CONTACT::app_beamcontact:
       beamcontact = true;
@@ -380,7 +376,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
       dserror("Cannot cope with choice of contact or meshtying type");
       break;
   }
-  if (mortarcontact || mortarmeshtying || beamcontact) contact = true;
 
   // detect whether thermal bath is present
   bool thermalbath = false;
@@ -401,13 +396,10 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   }
 
   Teuchos::RCP<StruGenAlpha> tintegrator = null;
-  if (!mortarcontact && !mortarmeshtying && !beamcontact && !thermalbath)
+  if (!beamcontact && !thermalbath)
     tintegrator = Teuchos::rcp(new StruGenAlpha(*genalphaparams,*actdis,*solver,*output));
   else
   {
-    if(mortarcontact || mortarmeshtying)
-      tintegrator = Teuchos::rcp(new CONTACT::CmtStruGenAlpha(*genalphaparams,*actdis,*solver,contactsolver,*output));
-
     if (beamcontact)
       tintegrator = Teuchos::rcp(new CONTACT::Beam3ContactStruGenAlpha(*genalphaparams,*actdis,*solver,*output));
 

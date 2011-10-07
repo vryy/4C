@@ -28,7 +28,6 @@ Maintainer: Michael Gee
 #include "strugenalpha.H"
 #include "strudyn_direct.H"
 #include "../drt_beamcontact/beam3contactstrugenalpha.H"
-#include "../drt_contact/strugenalpha_cmt.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -342,21 +341,19 @@ void dyn_nlnstructural_drt()
           break;
       }
 
-      // detect if contact or meshtying are present
-      bool mortarcontact = false;
-      bool mortarmeshtying = false;
+      // detect whether beam contact is present
       bool beamcontact = false;
-      INPAR::CONTACT::ApplicationType ctype =
+      INPAR::CONTACT::ApplicationType apptype =
         DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
-      switch (ctype)
+      switch (apptype)
       {
         case INPAR::CONTACT::app_none:
           break;
         case INPAR::CONTACT::app_mortarcontact:
-          mortarcontact = true;
+          dserror("ERROR: Mortar contact has moved to new STI");
           break;
         case INPAR::CONTACT::app_mortarmeshtying:
-          mortarmeshtying = true;
+          dserror("ERROR: Mortar meshtying has moved to new STI");
           break;
         case INPAR::CONTACT::app_beamcontact:
           beamcontact = true;
@@ -387,14 +384,10 @@ void dyn_nlnstructural_drt()
       // create the time integrator
       bool inv_analysis = genalphaparams.get("inv_analysis",false);
       RCP<StruGenAlpha> tintegrator;
-      if (!mortarcontact && !mortarmeshtying && !beamcontact && !inv_analysis && !thermalbath)
+      if (!beamcontact && !inv_analysis && !thermalbath)
         tintegrator = rcp(new StruGenAlpha(genalphaparams,*actdis,solver,output));
       else
       {
-        if (mortarcontact)
-          tintegrator = rcp(new CONTACT::CmtStruGenAlpha(genalphaparams,*actdis,solver,output));
-        if (mortarmeshtying)
-          tintegrator = rcp (new CONTACT::CmtStruGenAlpha(genalphaparams,*actdis,solver,output));
         if (beamcontact)
           tintegrator = rcp(new CONTACT::Beam3ContactStruGenAlpha(genalphaparams,*actdis,solver,output));
         if (thermalbath)
