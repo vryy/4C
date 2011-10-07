@@ -1313,6 +1313,242 @@ void SCATRA::ScaTraTimIntImpl::ApplyDirichletToSystem()
   return;
 }
 
+/*--------------------------------------------------------------------------------------------*
+ | Redistribute the scatra discretization and vectors according to nodegraph   wichmann 07/11 |
+ *--------------------------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph)
+{
+  const Epetra_BlockMap oldphinpmap = phinp_->Map();
+
+  // the rowmap will become the new distribution of nodes
+  const Epetra_BlockMap rntmp = nodegraph->RowMap();
+  Epetra_Map newnoderowmap(-1,rntmp.NumMyElements(),rntmp.MyGlobalElements(),0,discret_->Comm());
+
+  // the column map will become the new ghosted distribution of nodes
+  const Epetra_BlockMap Mcntmp = nodegraph->ColMap();
+  Epetra_Map newnodecolmap(-1,Mcntmp.NumMyElements(),Mcntmp.MyGlobalElements(),0,discret_->Comm());
+
+  // do the redistribution
+  discret_->Redistribute(newnoderowmap,newnodecolmap, false, false, false);
+
+  // update the PBCs and PBCDofSet
+  pbc_->PutAllSlavesToMastersProc();
+  pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
+
+  // ensure that degrees of freedom in the discretization have been set
+  if ((not discret_->Filled()) or (not discret_->HaveDofs()))
+    discret_->FillComplete();
+
+  //--------------------------------------------------------------------
+  // Now update all Epetra_Vectors and Epetra_Matrix to the new dofmap
+  //--------------------------------------------------------------------
+
+  discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
+
+  // -------------------------------------------------------------------
+  // get a vector layout from the discretization to construct matching
+  // vectors and matrices: local <-> global dof numbering
+  // -------------------------------------------------------------------
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  const Epetra_Map* noderowmap = discret_->NodeRowMap();
+
+  // -------------------------------------------------------------------
+  // create empty system matrix (27 adjacent nodes as 'good' guess)
+  // -------------------------------------------------------------------
+  if (IsElch(scatratype_))
+  {
+    // set up the concentration-el.potential splitter
+    splitter_ = rcp(new LINALG::MapExtractor);
+    FLD::UTILS::SetupFluidSplit(*discret_,numscal_,*splitter_);
+  }
+  else if (scatratype_ == INPAR::SCATRA::scatratype_loma and numscal_ > 1)
+  {
+    // set up a species-temperature splitter (if more than one scalar)
+    splitter_ = rcp(new LINALG::MapExtractor);
+    FLD::UTILS::SetupFluidSplit(*discret_,numscal_-1,*splitter_);
+  }
+
+  if (DRT::INPUT::IntegralValue<int>(*params_,"BLOCKPRECOND")
+      and msht_ == INPAR::FLUID::no_meshtying)
+  {
+    // we need a block sparse matrix here
+    if (not IsElch(scatratype_))
+      dserror("Block-Preconditioning is only for ELCH problems");
+    // initial guess for non-zeros per row: 27 neighboring nodes for hex8
+    // this is enough! A higher guess would require too much memory!
+    // A more precise guess for every submatrix would read:
+    // A_00: 27*1,  A_01: 27*1,  A_10: 27*numscal_ due to electroneutrality, A_11: empty matrix
+    // usage of a split strategy that makes use of the ELCH-specific sparsity pattern
+    Teuchos::RCP<LINALG::BlockSparseMatrix<SCATRA::SplitStrategy> > blocksysmat =
+      Teuchos::rcp(new LINALG::BlockSparseMatrix<SCATRA::SplitStrategy>(*splitter_,*splitter_,27,false,true));
+    blocksysmat->SetNumScal(numscal_);
+
+    sysmat_ = blocksysmat;
+  }
+  else if(msht_!= INPAR::FLUID::no_meshtying)
+  {
+    if (msht_!= INPAR::FLUID::condensed_smat)
+      dserror("In the moment the only option is condensation in a sparse matrix");
+
+    // define parameter list for meshtying
+    ParameterList mshtparams;
+    mshtparams.set("theta", params_->get<double>("THETA"));
+    mshtparams.set<int>("mshtoption", msht_);
+
+    meshtying_ = Teuchos::rcp(new FLD::Meshtying(discret_, *solver_, mshtparams));
+    sysmat_ = meshtying_->Setup();
+  }
+  else
+  {
+    // initialize standard (stabilized) system matrix (and save its graph!)
+    // in standard case, but do not save the graph if fine-scale subgrid
+    // diffusivity is used in non-incremental case
+    if (fssgd_ != INPAR::SCATRA::fssugrdiff_no and not incremental_)
+         sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27));
+    else sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
+  }
+
+  // -------------------------------------------------------------------
+  // create vectors containing problem variables
+  // -------------------------------------------------------------------
+
+  // solutions at time n+1 and n
+  Teuchos::RCP<Epetra_Vector> old;
+
+  if (phinp_ != Teuchos::null)
+  {
+    old = phinp_;
+    phinp_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *phinp_);
+  }
+
+  if (phin_ != Teuchos::null)
+  {
+    old = phin_;
+    phin_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *phin_);
+  }
+
+  // temporal solution derivative at time n+1
+  if (phidtnp_ != Teuchos::null)
+  {
+    old = phidtnp_;
+    phidtnp_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *phidtnp_);
+  }
+
+  // temporal solution derivative at time n
+  if (phidtn_ != Teuchos::null)
+  {
+    old = phidtn_;
+    phidtn_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *phidtn_);
+  }
+
+  // history vector (a linear combination of phinm, phin (BDF)
+  // or phin, phidtn (One-Step-Theta, Generalized-alpha))
+  if (hist_ != Teuchos::null)
+  {
+    old = hist_;
+    hist_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *hist_);
+  }
+
+  // convective velocity (always three velocity components per node)
+  // (get noderowmap of discretization for creating this multivector)
+  Teuchos::RCP<Epetra_MultiVector> oldMulti;
+  if (convel_ != Teuchos::null)
+  {
+    oldMulti = convel_;
+    convel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+    LINALG::Export(*oldMulti, *convel_);
+  }
+
+  // acceleration and pressure required for computation of subgrid-scale
+  // velocity (always four components per node)
+  if (accpre_ != Teuchos::null)
+  {
+    oldMulti = accpre_;
+    accpre_ = rcp(new Epetra_MultiVector(newnoderowmap,4,true));
+    LINALG::Export(*oldMulti, *accpre_);
+  }
+
+  if (dispnp_ != Teuchos::null)
+  {
+    oldMulti = dispnp_;
+    dispnp_ = rcp(new Epetra_MultiVector(newnoderowmap,3,true));
+    LINALG::Export(*oldMulti, *dispnp_);
+  }
+
+  // -------------------------------------------------------------------
+  // create vectors associated to boundary conditions
+  // -------------------------------------------------------------------
+  // a vector of zeros to be used to enforce zero dirichlet boundary conditions
+  if (zeros_ != Teuchos::null)
+  {
+    old = zeros_;
+    zeros_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *zeros_);
+  }
+
+  // -------------------------------------------------------------------
+  // create vectors associated to solution process
+  // -------------------------------------------------------------------
+  // the vector containing body and surface forces
+  if (neumann_loads_ != Teuchos::null)
+  {
+    old = neumann_loads_;
+    neumann_loads_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *neumann_loads_);
+  }
+
+  // the residual vector --- more or less the rhs
+  if (residual_ != Teuchos::null)
+  {
+    old = residual_;
+    residual_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *residual_);
+  }
+
+  // residual vector containing the normal boundary fluxes
+  if (trueresidual_ != Teuchos::null)
+  {
+    old = trueresidual_;
+    trueresidual_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *trueresidual_);
+  }
+
+  // incremental solution vector
+  if (increment_ != Teuchos::null)
+  {
+    old = increment_;
+    increment_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *increment_);
+  }
+
+  // subgrid-diffusivity(-scaling) vector
+  // (used either for AVM3 approach or temperature equation
+  //  with all-scale subgrid-diffusivity model)
+  if (subgrdiff_ != Teuchos::null)
+  {
+    old = subgrdiff_;
+    subgrdiff_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *subgrdiff_);
+  }
+
+  if (fssgd_ != INPAR::SCATRA::fssugrdiff_no)
+  {
+    dserror("No redistribution for AVM3 subgrid stuff.");
+  }
+
+  if (IsElch(scatratype_))
+    dserror("No redistribution for the elch.");
+
+  if(discret_->Comm().MyPID()==0)
+    cout << "done" << endl;
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::Redistribute
 
 /*----------------------------------------------------------------------*
  | iterative update of concentrations                                   |

@@ -87,7 +87,8 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   smoothgradphi_(DRT::INPUT::IntegralValue<INPAR::COMBUST::SmoothGradPhi>(params_.sublist("COMBUSTION FLUID"),"SMOOTHGRADPHI")),
   step_(0),
   time_(0.0),
-  stepmax_ (params_.get<int>("max number timesteps")),
+  dtele_(0.0),
+  stepmax_ (params_.get<int>   ("max number timesteps")),
   maxtime_ (params_.get<double>("total time")),
   startsteps_(params_.get<int> ("number of start steps")),
   dta_     (params_.get<double> ("time step size")),
@@ -142,9 +143,11 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     eleparams.set("action","set_standard_mode");
     discret_->Evaluate(eleparams);
 
-    PeriodicBoundaryConditions pbc(discret_);
-    pbc.UpdateDofsForPeriodicBoundaryConditions();
-    pbcmapmastertoslave_ = pbc.ReturnAllCoupledColNodes();
+    // we need to keep pbc_ in order to update the PBCDofset without
+    // losing the DofGid range that the PBCDofset is assigned here
+    pbc_ = Teuchos::rcp(new PeriodicBoundaryConditions(discret_));
+    pbc_->UpdateDofsForPeriodicBoundaryConditions();
+    pbcmapmastertoslave_ = pbc_->ReturnAllCoupledColNodes();
   }
 
   //------------------------------------------------------------------------------------------------
@@ -229,6 +232,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   standarddofset_ = Teuchos::rcp(new PBCDofSet(pbcmapmastertoslave_));
   standarddofset_->Reset();
   standarddofset_->AssignDegreesOfFreedom(*discret_,0,0);
+
   // split based on complete fluid field
   FLD::UTILS::SetupFluidSplit(*discret_,*standarddofset_,3,velpressplitterForOutput_);
 
@@ -984,7 +988,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
   bool              stopnonliniter = false;
 
   double dtsolve = 0.0;
-  double dtele   = 0.0;
+  dtele_   = 0.0;
 
   // out to screen
   PrintTimeStepInfo();
@@ -1168,7 +1172,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       }
 
       // end time measurement for element
-      dtele=Teuchos::Time::wallTime()-tcpu;
+      dtele_=Teuchos::Time::wallTime()-tcpu;
 
     } // end of element call
 
@@ -1348,12 +1352,18 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         - convergence check is not required (we solve at least once!)    */
     if (itnum == 1)
     {
+      double min = 1.0e19;
+      double max = 0.0;
+      discret_->Comm().MinAll(&dtele_,&min,1);
+      discret_->Comm().MaxAll(&dtele_,&max,1);
+
       if (myrank_ == 0)
       {
         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   |      --      |      --      |      --      |",
                itnum,itemax_,ittol,vresnorm,presnorm,fullresnorm);
-        printf(" (      --     ,te=%10.3E",dtele);
-        printf(")\n");
+//        printf(" (      --     ,te=%10.3E",dtele);
+//        printf(")\n");
+        printf(" (      --     ,te_min=%10.3E,te_max=%10.3E)\n", min, max);
       }
     }
     /* ordinary case later iteration steps:
@@ -1372,13 +1382,20 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
           incfullnorm_L2/fullnorm_L2 <= ittol)
       {
         stopnonliniter=true;
+
+        double min = 1.0e19;
+        double max = 0.0;
+        discret_->Comm().MinAll(&dtele_,&min,1);
+        discret_->Comm().MaxAll(&dtele_,&max,1);
+
         if (myrank_ == 0)
         {
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
                  itnum,itemax_,ittol,vresnorm,presnorm,fullresnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
-          printf(")\n");
+//          printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
+//          printf(")\n");
+          printf(" (ts=%10.3E,te_min=%10.3E,te_max=%10.3E)\n", dtsolve, min, max);
           printf("+------------+-------------------+--------------+--------------+--------------+--------------+--------------+--------------+\n");
 
           FILE* errfile = params_.get<FILE*>("err file");
@@ -1475,14 +1492,22 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         break;
       }
       else // if not yet converged
+      {
+        double min = 1.0e19;
+        double max = 0.0;
+        discret_->Comm().MinAll(&dtele_,&min,1);
+        discret_->Comm().MaxAll(&dtele_,&max,1);
+
         if (myrank_ == 0)
         {
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
                  itnum,itemax_,ittol,vresnorm,presnorm,fullresnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
-          printf(")\n");
+//          printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
+//          printf(")\n");
+          printf(" (ts=%10.3E,te_min=%10.3E,te_max=%10.3E)\n", dtsolve, min, max);
         }
+      }
     }
 
     // warn if itemax is reached without convergence, but proceed to
@@ -5351,6 +5376,150 @@ void FLD::CombustFluidImplicitTimeInt::ComputeSurfaceFlowrates() const
 
   return;
 }
+
+/*--------------------------------------------------------------------------------------------*
+ | Redistribute the fluid discretization and vectors according to nodegraph    wichmann 07/11 |
+ *--------------------------------------------------------------------------------------------*/
+void FLD::CombustFluidImplicitTimeInt::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph)
+{
+  // the fluid dis must be set to standard mode in order to avoid trouble with the dofmanager
+  ParameterList eleparams;
+  eleparams.set("action","set_standard_mode");
+  discret_->Evaluate(eleparams);
+
+  // the rowmap will become the new distribution of nodes
+  const Epetra_BlockMap rntmp = nodegraph->RowMap();
+  Epetra_Map newnoderowmap(-1,rntmp.NumMyElements(),rntmp.MyGlobalElements(),0,discret_->Comm());
+
+  // the column map will become the new ghosted distribution of nodes
+  const Epetra_BlockMap Mcntmp = nodegraph->ColMap();
+  Epetra_Map newnodecolmap(-1,Mcntmp.NumMyElements(),Mcntmp.MyGlobalElements(),0,discret_->Comm());
+
+  // do the redistribution
+  discret_->Redistribute(newnoderowmap,newnodecolmap, false, false, false);
+
+  // assign the new dofs, make absolutely sure that we always
+  // have all slaves to a master
+  // the finite edge weights are not a 100% warranty for that...
+  // update the PBCs and PBCDofSet
+  // includes call to FillComplete()
+  pbc_->PutAllSlavesToMastersProc();
+  pbcmapmastertoslave_ = pbc_->ReturnAllCoupledColNodes();
+
+  // create dummy instance of interfacehandle holding no flamefront and hence no integration cells
+  Teuchos::RCP<COMBUST::InterfaceHandleCombust> ihdummy = rcp(new COMBUST::InterfaceHandleCombust(discret_,Teuchos::null,Teuchos::null));
+  // create dummy instance of dof manager assigning standard enrichments to all nodes
+  const Teuchos::RCP<XFEM::DofManager> dofmanagerdummy = rcp(new XFEM::DofManager(ihdummy,physprob_.xfemfieldset_,*physprob_.elementAnsatz_,xparams_,Teuchos::null));
+
+  // save dofmanager to be able to plot Gmsh stuff in Output()
+  dofmanagerForOutput_ = dofmanagerdummy;
+
+  // pass dof information to elements (no enrichments yet, standard FEM!)
+  TransferDofInformationToElements(ihdummy, dofmanagerdummy);
+
+  // ensure that degrees of freedom in the discretization have been set
+  if ((not discret_->Filled()) or (not discret_->HaveDofs()))
+    discret_->FillComplete();
+
+  // update the dofset with the complete fluid unknowns
+  standarddofset_->SetCoupledNodes(pbcmapmastertoslave_);
+  standarddofset_->Reset();
+  standarddofset_->AssignDegreesOfFreedom(*discret_,0,0);
+
+  // split based on complete fluid field
+  FLD::UTILS::SetupFluidSplit(*discret_,*standarddofset_,3,velpressplitterForOutput_);
+
+  return;
+}
+
+
+void FLD::CombustFluidImplicitTimeInt::TransferVectorsToNewDistribution(const Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle)
+{
+  // build instance of DofManager with information about the interface from the interfacehandle
+  // remark: DofManager is rebuilt in every inter-field iteration step, because number and position
+  // of enriched degrees of freedom change in every time step/FG-iteration
+  const Teuchos::RCP<XFEM::DofManager> dofmanager = rcp(new XFEM::DofManager(
+      interfacehandle,
+      physprob_.xfemfieldset_,
+      *physprob_.elementAnsatz_,
+      xparams_,
+      pbcmapmastertoslave_)
+  );
+
+  // save dofmanager to be able to plot Gmsh stuff in Output()
+  dofmanagerForOutput_ = dofmanager;
+
+  // -------------------------------------------------------------------
+  // connect degrees of freedom for periodic boundary conditions
+  // -------------------------------------------------------------------
+  // tell elements about the dofs and the integration
+  TransferDofInformationToElements(interfacehandle, dofmanager);
+  // assign degrees of freedom
+  // remark: - assign degrees of freedom (first slot)
+  //         - build geometry for (Neumann) boundary conditions (third slot);
+  //           without Neumann boundary conditions Fillcomplete(true,false,false) will also work
+  discret_->FillComplete(true,false,true);
+
+  dofmanager->fillDofRowDistributionMaps(
+        state_.nodalDofDistributionMap_,
+        state_.elementalDofDistributionMap_);
+
+  //------------------------------------------------------------------------------------------------
+  // get dof layout from the discretization to construct vectors and matrices
+  //------------------------------------------------------------------------------------------------
+
+  // parallel dof distribution contained in dofrowmap: local (LID) <-> global (GID) dof numbering
+  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+  //------------------------------------------------------------------------------------------------
+  // rewrite vectors according to the new distribution
+  //------------------------------------------------------------------------------------------------
+
+  Teuchos::RCP<Epetra_Vector> old;
+
+  if (state_.velnp_ != Teuchos::null)
+  {
+    old = state_.velnp_;
+    state_.velnp_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *state_.velnp_);
+  }
+
+  if (state_.veln_ != Teuchos::null)
+  {
+    old = state_.veln_;
+    state_.veln_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *state_.veln_);
+  }
+
+  if (state_.velnm_ != Teuchos::null)
+  {
+    old = state_.velnm_;
+    state_.velnm_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *state_.velnm_);
+  }
+
+  // acceleration at time n+1 and n
+  if (state_.accnp_ != Teuchos::null)
+  {
+    old = state_.accnp_;
+    state_.accnp_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *state_.accnp_);
+  }
+
+  if (state_.accn_ != Teuchos::null)
+  {
+    old = state_.accn_;
+    state_.accn_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *state_.accn_);
+  }
+
+  // -------------------------------------------------------------------
+  // initialize turbulence-statistics evaluation
+  // -------------------------------------------------------------------
+  // currently omitted
+
+  return;
+} // FLD::CombustFluidImplicitTimeInt::Redistribute
 
 
 /*------------------------------------------------------------------------------------------------*

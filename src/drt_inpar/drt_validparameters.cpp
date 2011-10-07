@@ -3167,6 +3167,7 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields",&combustcontrol);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&combustcontrol);
   IntParameter("UPRES",1,"Increment for writing solution",&combustcontrol);
+  DoubleParameter("PARALLEL_REDIST_RATIO",0.0,"Ratio max to min element evaluation time at which the redistribution will be done",&combustcontrol);
   setStringToIntegralParameter<int>("TIMEINT","One_Step_Theta","Time Integration Scheme",
       tuple<std::string>(
           "Stationary",

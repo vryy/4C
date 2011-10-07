@@ -134,7 +134,7 @@ void IO::GMSH::ScalarFieldToGmsh(
  *------------------------------------------------------------------------------------------------*/
 void IO::GMSH::VectorFieldDofBasedToGmsh(
     const Teuchos::RCP<DRT::Discretization> discret,
-    const Teuchos::RCP<Epetra_Vector>       vectorfield_row,
+    const Teuchos::RCP<const Epetra_Vector> vectorfield_row,
     std::ostream&                           s
 )
 {

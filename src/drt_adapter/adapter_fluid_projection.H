@@ -109,6 +109,9 @@ public:
     virtual int Step() const;
     virtual double Dt() const;
     virtual void LiftDrag();
+    virtual const double EvalTime() const { dserror("not implemented!"); return 0.0; }
+    virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) { dserror("not implemented!"); return; }
+    virtual void TransferVectorsToNewDistribution(const Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle) { dserror("not implemented!"); return; }
 
     virtual void SetInitialFlowField(const INPAR::FLUID::InitialField initfield,const int startfuncno);
 

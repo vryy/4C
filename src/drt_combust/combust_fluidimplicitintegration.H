@@ -30,6 +30,9 @@ Maintainer: Florian Henke
 #include "combust_interface.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 
+// forward declarations
+class PeriodicBoundaryConditions;
+
 namespace FLD
 {
 /*!
@@ -370,6 +373,17 @@ public:
       bool splitmatrix=true
       );
 
+  const double EvalTime() const
+  {
+    return dtele_;
+  };
+
+  /// Redistribute the fluid discretization and vectors according to nodegraph. This is only done in STANDARD MODE!!!
+  void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);
+
+  /// Transfers all vectors based on an enriched dofmap to the new dofmap after a redistribution.
+  void TransferVectorsToNewDistribution(const Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle);
+
 protected:
 
   // don't want = operator and cctor and default constructor
@@ -515,8 +529,12 @@ protected:
 
   //! store dof distribution information for output
   Teuchos::RCP<XFEM::DofManager>      dofmanagerForOutput_;
+
   //! store dofset for unintersected domain
   Teuchos::RCP<PBCDofSet>                standarddofset_;
+
+  //! store the pbc-object which maintains the PBCDofSet
+  Teuchos::RCP<PeriodicBoundaryConditions> pbc_;
 
   /// (standard) system matrix
   Teuchos::RCP<LINALG::SparseOperator> sysmat_;

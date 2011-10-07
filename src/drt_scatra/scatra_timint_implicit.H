@@ -38,6 +38,7 @@ Maintainer: Georg Bauer
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
 #include <Epetra_SerialDenseVector.h>
+#include <Epetra_CrsGraph.h>
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_scatra.H"
 
@@ -425,6 +426,9 @@ public:
 
   /// return flag for incremental solver
   bool Incremental() { return incremental_; }
+
+  /// redistribute the scatra discretization and vectors according to nodegraph
+  virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);
 
 protected:
 

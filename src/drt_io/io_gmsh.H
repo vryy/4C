@@ -50,7 +50,7 @@ namespace IO
     //! write dof-based vector field to Gmsh postprocessing file
     void VectorFieldDofBasedToGmsh(
         const Teuchos::RCP<DRT::Discretization> discret,
-        const Teuchos::RCP<Epetra_Vector>       vectorfield,
+        const Teuchos::RCP<const Epetra_Vector> vectorfield,
         std::ostream&                           s
         );
 

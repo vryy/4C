@@ -97,4 +97,20 @@ int PBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsi
   return count;
 }
 
+/*----------------------------------------------------------------------*
+ |  update coupled nodes map                              wichmann 07/11|
+ *----------------------------------------------------------------------*/
+void PBCDofSet::SetCoupledNodes(RefCountPtr<map<int,vector<int> > >  couplednodes)
+{
+  perbndcouples_=couplednodes;
+
+  for( map<int,vector<int> >::iterator curr = perbndcouples_->begin();
+       curr != perbndcouples_->end();
+       ++curr )
+  {
+    std::vector<int> & sids = curr->second;
+    std::copy( sids.begin(), sids.end(), std::inserter( slavenodeids_, slavenodeids_.begin() ) );
+  }
+}
+
 #endif  // #ifdef CCADISCRET

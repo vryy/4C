@@ -242,6 +242,11 @@ namespace ADAPTER
 
     virtual void LiftDrag();
 
+    virtual const double EvalTime() const { return fluid_.EvalTime(); }
+
+    virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) { fluid_.Redistribute(nodegraph); return; }
+    virtual void TransferVectorsToNewDistribution(const Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle) { fluid_.TransferVectorsToNewDistribution(interfacehandle); return; }
+
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
     virtual Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln()  { dserror("not implemented!");

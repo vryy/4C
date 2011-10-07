@@ -122,6 +122,9 @@ namespace ADAPTER
     { return fluid_->Dt(); }
     virtual void LiftDrag()
     { return fluid_->LiftDrag(); }
+    virtual const double EvalTime() const { dserror("not implemented!"); return 0.0; }
+    virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) { dserror("not implemented!"); return; }
+    virtual void TransferVectorsToNewDistribution(const Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle) { dserror("not implemented!"); return; }
     virtual void NonlinearSolve()
     { return fluid_->NonlinearSolve(); }
     virtual void Predictor()

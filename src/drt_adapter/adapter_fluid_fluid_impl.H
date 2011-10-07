@@ -114,6 +114,9 @@ namespace ADAPTER {
     virtual int Step() const;
     virtual double Dt() const;
     virtual void LiftDrag();
+    virtual const double EvalTime() const { dserror("not implemented!"); return 0.0; }
+    virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) { dserror("not implemented!"); return; }
+    virtual void TransferVectorsToNewDistribution(const Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle) { dserror("not implemented!"); return; }
 
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForcesRobin() {dserror("not implemented!"); return null;}

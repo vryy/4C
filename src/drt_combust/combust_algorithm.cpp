@@ -252,6 +252,9 @@ void COMBUST::Algorithm::TimeLoop()
   // time loop
   while (NotFinished())
   {
+    // redistribute
+    Redistribute();
+
     // prepare next time step; update field vectors
     PrepareTimeStep();
 
@@ -1493,7 +1496,8 @@ void COMBUST::Algorithm::DoGfuncField()
 void COMBUST::Algorithm::UpdateInterface()
 {
   //overwrite old interfacehandle before updating flamefront
-  interfacehandle_old_->UpdateInterfaceHandle();
+  if (interfacehandle_old_ != Teuchos::null)
+    interfacehandle_old_->UpdateInterfaceHandle();
 
   // update flame front according to evolved G-function field
   // remark: for only one FGI iteration, 'phinpip_' == ScaTraField().Phin()
@@ -2332,4 +2336,616 @@ void COMBUST::Algorithm::RestartNew(int step)
   return;
 }
 
+/*------------------------------------------------------------------------------------------------*
+ | protected: redistribute scatra and fluid discretization                         wichmann 07/11 |
+ *------------------------------------------------------------------------------------------------*/
+void COMBUST::Algorithm::Redistribute()
+{
+#ifdef PARALLEL
+  const double ratiolimit = combustdyn_.get<double>("PARALLEL_REDIST_RATIO");
+
+  if (Comm().NumProc() > 1 and ratiolimit > 1.0)
+  {
+    // for ease of changing some constants are set here
+    double normalnodeweight   = 10.0;
+    double enrichednodeweight = 1000.0;
+    double slavenodeweight    = 1.0;
+
+    // determine whether a redistribution is necessary
+    // by comparing min and max evaltime of all procs
+    double myprocevaltime = FluidField().EvalTime();
+    double minprocevaltime;
+    double maxprocevaltime;
+
+    Comm().MinAll(&myprocevaltime, &minprocevaltime, 1);
+    Comm().MaxAll(&myprocevaltime, &maxprocevaltime, 1);
+
+    if (minprocevaltime <= 0.0)
+    {
+      if (Comm().MyPID() == 0)
+        cout << "The max / min ratio could not be determined --> Not redistributing" << endl;
+    }
+    else if (maxprocevaltime / minprocevaltime < ratiolimit)
+    {
+      if (Comm().MyPID() == 0)
+        cout << "The max / min ratio is " << maxprocevaltime / minprocevaltime << " < " << ratiolimit << " --> Not redistributing" << endl;
+    }
+    else
+    {
+      if (Comm().MyPID() == 0)
+      {
+        cout << "-------------------------------Redistributing-------------------------------" << endl;
+        cout << "The max / min ratio is " << maxprocevaltime / minprocevaltime << " > " << ratiolimit << " --> Redistributing" << endl;
+      }
+
+      //--------------------------------------------------------------------------------------
+      // Building graph for later use by parmetis
+      //--------------------------------------------------------------------------------------
+      const Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
+      const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField().Discretization();
+      const Epetra_Map* noderowmap = fluiddis->NodeRowMap();
+      Teuchos::RCP<map<int,vector<int> > > allcoupledcolnodes = ScaTraField().PBC()->ReturnAllCoupledColNodes();
+
+      // weights for graph partition
+      Epetra_Vector weights(*noderowmap,false);
+      weights.PutScalar(normalnodeweight);
+
+      // loop elements and raise the weight of nodes of cut elements to 1000
+      {
+        for (int iele = 0; iele < fluiddis->NumMyRowElements(); ++iele)
+        {
+          DRT::Element* ele = fluiddis->lRowElement(iele);
+          if (interfacehandle_->ElementCutStatus(ele->Id()) != COMBUST::FlameFront::uncut)
+          {
+            const int* nodes = ele->NodeIds();
+            for (int i = 0; i < ele->NumNode(); ++i)
+            {
+              int gid = nodes[i];
+              weights.ReplaceGlobalValues(1,&enrichednodeweight,&gid);
+            }
+          }
+        }
+      }
+
+      // ----------------------------------------
+      // loop masternodes to adjust weights of slavenodes
+      // they need a small weight since they do not contribute any dofs
+      // to the linear system
+      {
+        map<int,vector<int> >::iterator masterslavepair;
+
+        for(masterslavepair =allcoupledcolnodes->begin();
+            masterslavepair!=allcoupledcolnodes->end()  ;
+            ++masterslavepair)
+        {
+          // get masternode
+          DRT::Node*  master = fluiddis->gNode(masterslavepair->first);
+
+          if (master->Owner() != Comm().MyPID())
+            continue;
+
+          // loop slavenodes associated with master
+          for(vector<int>::iterator iter=masterslavepair->second.begin();
+              iter!=masterslavepair->second.end();++iter)
+          {
+            int gid       =*iter;
+            weights.ReplaceGlobalValues(1,&slavenodeweight,&gid);
+          }
+        }
+      }
+
+
+      // allocate graph
+      RefCountPtr<Epetra_CrsGraph> nodegraph = rcp(new Epetra_CrsGraph(Copy,*noderowmap,108,false));
+
+      // -------------------------------------------------------------
+      // iterate all elements on this proc including ghosted ones
+      // compute connectivity
+
+      // standard part without master<->slave coupling
+      // Note:
+      // if a proc stores the appropiate ghosted elements, the resulting
+      // graph will be the correct and complete graph of the distributed
+      // discretization even if nodes are not ghosted.
+
+      for (int nele = 0; nele < fluiddis->NumMyColElements(); ++nele)
+      {
+        // get the element
+        DRT::Element* ele = fluiddis->lColElement(nele);
+
+        // get its nodes and nodeids
+        const int  nnode   = ele->NumNode();
+        const int* nodeids = ele->NodeIds();
+
+        for (int row = 0; row < nnode; ++row)
+        {
+          const int rownode = nodeids[row];
+
+          // insert into line of graph only when this proc owns the node
+          if (!noderowmap->MyGID(rownode))
+            continue;
+
+          // insert all neighbors from element in the graph
+          for (int col = 0; col < nnode; ++col)
+          {
+            int colnode = nodeids[col];
+            int err = nodegraph->InsertGlobalIndices(rownode,1,&colnode);
+            if (err<0)
+              dserror("nodegraph->InsertGlobalIndices returned err=%d",err);
+          }
+        }
+      }
+
+      // -------------------------------------------------------------
+      // additional coupling between master and slave
+      // we do not only connect master and slave nodes but if a master/slave
+      // is connected to a master/slave, we connect the corresponding slaves/master
+      // as well
+
+      for (int nele = 0; nele < fluiddis->NumMyColElements();++nele)
+      {
+        // get the element
+        DRT::Element* ele = fluiddis->lColElement(nele);
+
+        // get its nodes and nodeids
+        const int  nnode   = ele->NumNode();
+        const int* nodeids = ele->NodeIds();
+
+        for (int row = 0; row < nnode; ++row)
+        {
+          const int rownode = nodeids[row];
+
+          // insert into line of graph only when this proc owns the node
+          if (!noderowmap->MyGID(rownode))
+            continue;
+
+          map<int,vector<int> >::iterator masterslavepair = allcoupledcolnodes->find(rownode);
+          if(masterslavepair != allcoupledcolnodes->end())
+          {
+            // get all masternodes of this element
+            for (int col = 0; col < nnode; ++col)
+            {
+              int colnode = nodeids[col];
+
+              map<int,vector<int> >::iterator othermasterslavepair = allcoupledcolnodes->find(colnode);
+              if(othermasterslavepair != allcoupledcolnodes->end())
+              {
+                // add connection to all slaves
+
+                for(vector<int>::iterator iter = othermasterslavepair->second.begin();
+                    iter != othermasterslavepair->second.end(); ++iter)
+                {
+                  int othermastersslaveindex = *iter;
+                  int masterindex            = rownode;
+                  int err = nodegraph->InsertGlobalIndices(rownode,1,&othermastersslaveindex);
+                  if (err<0)
+                    dserror("nodegraph->InsertGlobalIndices returned err=%d",err);
+
+                  if (noderowmap->MyGID(*iter))
+                  {
+                    err = nodegraph->InsertGlobalIndices(*iter,1,&masterindex);
+                    if (err<0)
+                      dserror("nodegraph->InsertGlobalIndices returned err=%d",err);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // finalize construction of initial graph
+      int err = nodegraph->FillComplete();
+      if (err)
+        dserror("graph->FillComplete returned %d",err);
+
+
+      //--------------------------------------------------------------------------------------
+      // prepare and call METIS
+      //--------------------------------------------------------------------------------------
+
+      const int myrank   = nodegraph->Comm().MyPID();
+      const int numproc  = nodegraph->Comm().NumProc();
+
+      // proc that will do the serial partitioning
+      // the graph is collapsed to this proc
+      // Normally this would be proc 0 but 0 always has so much to do.... ;-)
+      int workrank = 1;
+
+      // get rowmap of the graph
+      const Epetra_BlockMap& tmp = nodegraph->RowMap();
+      Epetra_Map rowmap(tmp.NumGlobalElements(),tmp.NumMyElements(),
+                        tmp.MyGlobalElements(),0,nodegraph->Comm());
+
+      // -------------------------------------------------------------
+      // build a target map that stores everything on proc workrank
+      // We have arbirtary gids here and we do not tell metis about
+      // them. So we have to keep rowrecv until the redistributed map is
+      // build.
+
+      // rowrecv is a fully redundant vector (size of number of nodes)
+      vector<int> rowrecv(rowmap.NumGlobalElements());
+
+      // after AllreduceEMap rowrecv contains
+      //
+      // *-+-+-    -+-+-*-+-+-    -+-+-*-           -*-+-+-    -+-+-*
+      // * | | .... | | * | | .... | | * ..........  * | | .... | | *
+      // *-+-+-    -+-+-*-+-+-    -+-+-*-           -*-+-+-    -+-+-*
+      //   gids stored     gids stored                  gids stored
+      //  on first proc  on second proc                 on last proc
+      //
+      // the ordering of the gids on the procs is arbitrary (as copied
+      // from the map)
+      LINALG::AllreduceEMap(rowrecv, rowmap);
+
+      // construct an epetra map from the list of gids
+      Epetra_Map tmap(rowmap.NumGlobalElements(),
+                      // if ..........    then ............... else
+                      (myrank == workrank) ? (int)rowrecv.size() : 0,
+                      &rowrecv[0],
+                      0,
+                      rowmap.Comm());
+
+      // export the graph to tmap
+      Epetra_CrsGraph tgraph(Copy,tmap,108,false);
+      Epetra_Export exporter(rowmap,tmap);
+      {
+        int err = tgraph.Export(*nodegraph,exporter,Add);
+        if (err < 0)
+          dserror("Graph export returned err=%d",err);
+      }
+      tgraph.FillComplete();
+      tgraph.OptimizeStorage();
+
+      // export the weights to tmap
+      Epetra_Vector tweights(tmap,false);
+      err = tweights.Export(weights,exporter,Insert);
+      if (err < 0)
+        dserror("Vector export returned err=%d",err);
+
+      // metis requests indexes. So we need a reverse lookup from gids
+      // to indexes.
+      map<int,int> idxmap;
+      // xadj points from index i to the index of the
+      // first adjacent node
+      vector<int> xadj  (rowmap.NumGlobalElements()+1);
+      // a list of adjacent nodes, adressed using xadj
+      vector<int> adjncy(tgraph.NumGlobalNonzeros()); // the size is an upper bound
+
+      // This is a vector of size n that upon successful completion stores the partition vector of the graph
+      vector<int> part(tmap.NumMyElements());
+
+      // construct reverse lookup for all procs
+      for (size_t i = 0; i < rowrecv.size(); ++i)
+      {
+        idxmap[rowrecv[i]] = i;
+      }
+
+      if (myrank == workrank)
+      {
+        // ----------------------------------------
+
+        // rowrecv(i)       rowrecv(i+1)                      node gids
+        //     ^                 ^
+        //     |                 |
+        //     | idxmap          | idxmap
+        //     |                 |
+        //     v                 v
+        //     i                i+1                       equivalent indices
+        //     |                 |
+        //     | xadj            | xadj
+        //     |                 |
+        //     v                 v
+        //    +-+-+-+-+-+-+-+-+-+-+                -+-+-+
+        //    | | | | | | | | | | | ............... | | |      adjncy
+        //    +-+-+-+-+-+-+-+-+-+-+                -+-+-+
+        //
+        //    |       i's       |    (i+1)'s
+        //    |    neighbours   |   neighbours           (numbered by equivalent indices)
+        //
+
+        int count=0;
+        xadj[0] = 0;
+        for (int row=0; row<tgraph.NumMyRows(); ++row)
+        {
+          int grid = tgraph.RowMap().GID(row);
+          int numindices;
+          int* lindices;
+          int err = tgraph.ExtractMyRowView(row,numindices,lindices);
+          if (err)
+            dserror("Epetra_CrsGraph::ExtractMyRowView returned err=%d",err);
+
+          for (int col = 0; col < numindices; ++col)
+          {
+            int gcid = tgraph.ColMap().GID(lindices[col]);
+            if (gcid == grid)
+              continue;
+            adjncy[count] = idxmap[gcid];
+            ++count;
+          }
+          xadj[row+1] = count;
+        }
+      } // if (myrank == workrank)
+
+      // broadcast xadj
+      tmap.Comm().Broadcast(&xadj[0],xadj.size(),workrank);
+
+      // broadcast adjacence (required for edge weights)
+      int adjncysize = (int)adjncy.size();
+      tmap.Comm().Broadcast(&adjncysize,1,workrank);
+      adjncy.resize(adjncysize);
+      tmap.Comm().Broadcast(&adjncy[0],adjncysize,workrank);
+
+      // -------------------------------------------------------------
+      // set a fully redundant vector of weights for edges
+      vector<int> ladjwgt(adjncy.size(),0);
+      vector<int>  adjwgt(adjncy.size(),0);
+
+      for(vector<int>::iterator iter =ladjwgt.begin();
+          iter!=ladjwgt.end();
+          ++iter)
+      {
+        *iter=0;
+      }
+
+      // loop all master nodes on this proc
+      {
+        map<int,vector<int> >::iterator masterslavepair;
+
+        for(masterslavepair =allcoupledcolnodes->begin();
+            masterslavepair!=allcoupledcolnodes->end()  ;
+            ++masterslavepair)
+        {
+          // get masternode
+          DRT::Node*  master = fluiddis->gNode(masterslavepair->first);
+
+          if(master->Owner()!=myrank)
+          {
+            continue;
+          }
+
+          map<int,int>::iterator paul = idxmap.find(master->Id());
+          if (paul == idxmap.end())
+            dserror("master not in reverse lookup");
+
+          // inverse lookup
+          int masterindex = idxmap[master->Id()];
+
+          // loop slavenodes
+          for(vector<int>::iterator iter = masterslavepair->second.begin();
+              iter != masterslavepair->second.end(); ++iter)
+          {
+            DRT::Node*  slave = fluiddis->gNode(*iter);
+
+            if(slave->Owner() != myrank)
+              dserror("own master but not slave\n");
+
+            int slaveindex = idxmap[slave->Id()];
+
+            map<int,int>::iterator foo = idxmap.find(slave->Id());
+            if (foo == idxmap.end())
+              dserror("slave not in reverse lookup");
+
+            // -------------------------------------------------------------
+            // connections between master and slavenodes are very strong
+            // we do not want to partition between master and slave nodes
+            for(int j = xadj[masterindex]; j < xadj[masterindex+1]; ++j)
+            {
+              if(adjncy[j] == slaveindex)
+              {
+                ladjwgt[j] = 100;
+              }
+            }
+
+            for(int j = xadj[slaveindex]; j < xadj[slaveindex+1]; ++j)
+            {
+              if(adjncy[j] == masterindex)
+              {
+                ladjwgt[j] = 100;
+              }
+            }
+          }
+        }
+      }
+
+      // do communication to aquire edge weight information from all procs
+      tmap.Comm().SumAll(&ladjwgt[0], &adjwgt[0], adjwgt.size());
+
+      // the standard edge weight is one
+      for(vector<int>::iterator iter =adjwgt.begin();
+          iter!=adjwgt.end();
+          ++iter)
+      {
+        if(*iter==0)
+        *iter=1;
+      }
+
+      // the reverse lookup is not required anymore
+      idxmap.clear();
+
+      // -------------------------------------------------------------
+      // do partitioning using metis on workrank
+      if (myrank == workrank)
+      {
+        // the vertex weights
+        vector<int> vwgt(tweights.MyLength());
+        for (int i=0; i<tweights.MyLength(); ++i) vwgt[i] = (int)tweights[i];
+
+        // 0 No weights (vwgts and adjwgt are NULL)
+        // 1 Weights on the edges only (vwgts = NULL)
+        // 2 Weights on the vertices only (adjwgt = NULL)
+        // 3 Weights both on vertices and edges.
+        int wgtflag=3;
+        // 0 C-style numbering is assumed that starts from 0
+        // 1 Fortran-style numbering is assumed that starts from 1
+        int numflag=0;
+        // The number of parts to partition the graph.
+        int npart=numproc;
+        // This is an array of 5 integers that is used to pass parameters for the various phases of the algorithm.
+        // If options[0]=0 then default values are used. If options[0]=1, then the remaining four elements of
+        // options are interpreted as follows:
+        // options[1]    Determines matching type. Possible values are:
+        //               1 Random Matching (RM)
+        //               2 Heavy-Edge Matching (HEM)
+        //               3 Sorted Heavy-Edge Matching (SHEM) (Default)
+        //               Experiments has shown that both HEM and SHEM perform quite well.
+        // options[2]    Determines the algorithm used during initial partitioning. Possible values are:
+        //               1 Region Growing (Default)
+        // options[3]    Determines the algorithm used for re%Gï¬%@nement. Possible values are:
+        //               1 Early-Exit Boundary FM re%Gï¬%@nement (Default)
+        // options[4]    Used for debugging purposes. Always set it to 0 (Default).
+        int options[5] = { 0,3,1,1,0 };
+        // Upon successful completion, this variable stores the number of edges that are cut by the partition.
+        int edgecut=0;
+        // The number of vertices in the graph.
+        int nummyele = tmap.NumMyElements();
+
+        cout << "proc " <<  myrank << " repartition graph using metis" << endl;
+
+        if (numproc<8) // better for smaller no. of partitions
+        {
+          METIS_PartGraphRecursive(&nummyele,
+                                   &xadj[0],
+                                   &adjncy[0],
+                                   &vwgt[0],
+                                   &adjwgt[0],
+                                   &wgtflag,
+                                   &numflag,
+                                   &npart,
+                                   options,
+                                   &edgecut,
+                                   &part[0]);
+
+          cout << "METIS_PartGraphRecursive produced edgecut of " << edgecut << endl;
+        }
+        else
+        {
+          METIS_PartGraphKway(&nummyele,
+                              &xadj[0],
+                              &adjncy[0],
+                              &vwgt[0],
+                              &adjwgt[0],
+                              &wgtflag,
+                              &numflag,
+                              &npart,
+                              options,
+                              &edgecut,
+                              &part[0]);
+          cout << "METIS_PartGraphKway produced edgecut of " << edgecut << endl;
+        }
+      } // if (myrank==workrank)
+
+      // broadcast partitioning result
+      int size = tmap.NumMyElements();
+      tmap.Comm().Broadcast(&size,1,workrank);
+      part.resize(size);
+      tmap.Comm().Broadcast(&part[0],size,workrank);
+
+      // loop part and count no. of nodes belonging to me
+      // (we reuse part to save on memory)
+      int count = 0;
+      for (int i = 0; i < size; ++i)
+      {
+        if (part[i]==myrank)
+        {
+          part[count] = rowrecv[i];
+          ++count;
+        }
+      }
+
+      // rowrecv is done
+      rowrecv.clear();
+
+      // create map with new layout
+      Epetra_Map newmap(size,count,&part[0],0,nodegraph->Comm());
+
+      // create the new graph and export to it
+      RefCountPtr<Epetra_CrsGraph> newnodegraph;
+
+      newnodegraph = rcp(new Epetra_CrsGraph(Copy,newmap,108,false));
+      Epetra_Export exporter2(nodegraph->RowMap(),newmap);
+      err = newnodegraph->Export(*nodegraph,exporter2,Add);
+      if (err<0)
+        dserror("Graph export returned err=%d",err);
+      newnodegraph->FillComplete();
+      newnodegraph->OptimizeStorage();
+
+      //--------------------------------------------------------------------------------------
+      // call ScaTra and Fluid field and pass the new graph, so they can manage all
+      // redistribution themselves
+      //--------------------------------------------------------------------------------------
+      if(Comm().MyPID()==0)
+        cout << "Redistributing ScaTra Discretization                                ... " << flush;
+
+      ScaTraField().Redistribute(newnodegraph);
+
+      if(Comm().MyPID()==0)
+        cout << "done\nRedistributing Fluid Discretization                                 ... " << flush;
+
+      FluidField().Redistribute(newnodegraph);
+
+      if(Comm().MyPID()==0)
+        cout << "done\nUpdating interface                                                  ... " << flush;
+
+      // the old interfacehandle is now invalid
+      // Remark: even though the interfacehandle is invalid, there are still some useful
+      // informations in there. Since they are used by Martin's semi lagrange timeint. the
+      // interfacehandle should not be deleted.
+      //interfacehandle_old_ = Teuchos::null;
+
+      // update flame front according to evolved G-function field
+      // remark: for only one FGI iteration, 'phinpip_' == ScaTraField().Phin()
+      flamefront_->UpdateFlameFront(combustdyn_, ScaTraField().Phin(), ScaTraField().Phinp());
+
+       // update interfacehandle (get integration cells) according to updated flame front
+      interfacehandle_->UpdateInterfaceHandle();
+
+      if(Comm().MyPID()==0)
+        cout << "done\nTransfering state vectors to new distribution                       ... " << flush;
+
+      FluidField().TransferVectorsToNewDistribution(interfacehandle_);
+
+      if(Comm().MyPID()==0)
+        cout << "done" << endl;
+
+      //--------------------------------------------------------------------------------------
+      // with the scatra- and fluid-field updated it is time to do the same with the algorithm
+      //--------------------------------------------------------------------------------------
+      Teuchos::RCP<Epetra_Vector> old;
+
+      if (velnpip_ != Teuchos::null)
+      {
+        old = velnpip_;
+        velnpip_ = rcp(new Epetra_Vector(*fluiddis->DofRowMap()),true);
+        LINALG::Export(*old, *velnpip_);
+      }
+
+      if (velnpi_ != Teuchos::null)
+      {
+        old = velnpi_;
+        velnpi_ = rcp(new Epetra_Vector(*fluiddis->DofRowMap()),true);
+        LINALG::Export(*old, *velnpi_);
+      }
+
+      if (phinpip_ != Teuchos::null)
+      {
+        old = phinpip_;
+        phinpip_ = rcp(new Epetra_Vector(*gfuncdis->DofRowMap()),true);
+        LINALG::Export(*old, *phinpip_);
+      }
+
+      if (phinpi_ != Teuchos::null)
+      {
+        old = phinpi_;
+        phinpi_ = rcp(new Epetra_Vector(*gfuncdis->DofRowMap()),true);
+        LINALG::Export(*old, *phinpi_);
+      }
+
+      if (Comm().MyPID() == 0)
+        cout << "----------------------------------------------------------------------------" << endl;
+    }
+  }
+#endif // #ifdef PARALLEL
+  return;
+}
 #endif // #ifdef CCADISCRET

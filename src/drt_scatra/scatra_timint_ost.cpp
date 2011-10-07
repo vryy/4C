@@ -556,6 +556,35 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
   return;
 }
 
+/*--------------------------------------------------------------------------------------------*
+ | Redistribute the scatra discretization and vectors according to nodegraph   wichmann 07/11 |
+ *--------------------------------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph)
+{
+  // let the base class do the basic redistribution and transfer of the base class members
+  ScaTraTimIntImpl::Redistribute(nodegraph);
+
+  // now do all the ost specfic steps
+  const Epetra_Map* newdofrowmap = discret_->DofRowMap();
+  Teuchos::RCP<Epetra_Vector> old;
+
+  if (fsphinp_ != Teuchos::null)
+  {
+    old = fsphinp_;
+    fsphinp_ = LINALG::CreateVector(*newdofrowmap,true);
+    LINALG::Export(*old, *fsphinp_);
+  }
+
+  if (phinm_ != Teuchos::null)
+  {
+    old = phinm_;
+    phinm_ = LINALG::CreateVector(*newdofrowmap,true);
+    LINALG::Export(*old, *phinm_);
+  }
+
+  return;
+}
+
 /*----------------------------------------------------------------------*
  | Initialization procedure before the first time step        gjb 08/08 |
  -----------------------------------------------------------------------*/

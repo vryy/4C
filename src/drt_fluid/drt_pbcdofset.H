@@ -83,6 +83,9 @@ public:
   /// Assign dof numbers using all elements and nodes of the discretization.
   virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start);
 
+  /// Update the coupled nodes map of dofset
+  virtual void SetCoupledNodes(RefCountPtr<map<int,vector<int> > >  couplednodes);
+
 protected:
 
   /// get number of nodal dofs for this element at this node

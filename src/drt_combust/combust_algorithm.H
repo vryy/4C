@@ -133,6 +133,9 @@ namespace COMBUST
     /// correct the volume of the minus(-) domain after reinitialization
     void CorrectVolume(const double targetvol, const double currentvol);
 
+    /// Redistribute the scatra and fluid discretizations
+    void Redistribute();
+
   private:
 
     //! @name Fluid-G-function iteration variables

@@ -153,7 +153,6 @@ public:
   //@}
 
 
-protected:
   //! @name handling of all pbc pairs
 
   /*!
@@ -196,6 +195,7 @@ protected:
 
   //@}
 
+protected:
 
   //! @name Methods to process one pair of pbcs
 
@@ -347,6 +347,9 @@ protected:
 
   //!\brief the discretisation
   RefCountPtr<DRT::Discretization> discret_;
+
+  //!\brief the pbc-dofset created by this object
+  RefCountPtr<PBCDofSet> pbcdofset_;
 
   //!\brief number of pairs of periodic boundary conditions
   int                     numpbcpairs_;

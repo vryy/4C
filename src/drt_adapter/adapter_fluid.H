@@ -23,6 +23,7 @@ Maintainer: Ulrich Kuettler
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
+#include <Epetra_CrsGraph.h>
 
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_dserror.H"
@@ -277,6 +278,15 @@ namespace ADAPTER {
 
     /// calculation (and output) of lift&drag
     virtual void LiftDrag() = 0;
+
+    /// this procs element evaluate time
+    virtual const double EvalTime() const = 0;
+
+    /// redistribute the fluid discretization and vectors according to nodegraph in std. mode
+    virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) = 0;
+
+    /// rewrite vectors to the new dofmaps after redistributing the discretization
+    virtual void TransferVectorsToNewDistribution(const Teuchos::RCP<COMBUST::InterfaceHandleCombust> interfacehandle) = 0;
 
     //@}
 
