@@ -28,9 +28,11 @@ Maintainer: Peter Gamnitzer
 using namespace std;
 using namespace Teuchos;
 
+//forward declarations
 namespace DRT
 {
   class Discretization;
+//  class DofSet;
 }
 
 namespace IO
@@ -42,6 +44,7 @@ namespace IO
 namespace COMBUST
 {
   class TurbulenceStatisticsORACLES;
+  class TurbulenceStatisticsBcf;
 }
 
 namespace FLD
@@ -49,9 +52,10 @@ namespace FLD
 // forward declarations
 class FluidGenAlphaIntegration;
 class FluidImplicitTimeInt;
+class CombustFluidImplicitTimeInt;
 class TurbulenceStatisticsGeneralMean;
-
 class TurbulenceStatisticsCha;
+//class TurbulenceStatisticsBcf;
 class TurbulenceStatisticsCcy;
 class TurbulenceStatisticsLdc;
 class TurbulenceStatisticsBfs;
@@ -73,6 +77,12 @@ public:
 
   */
   TurbulenceStatisticManager(FluidImplicitTimeInt& timeint);
+
+  /*!
+  \brief Combustion Constructor (public)
+
+  */
+  TurbulenceStatisticManager(CombustFluidImplicitTimeInt& timeint);
 
   /*!
   \brief Destructor
@@ -102,11 +112,41 @@ public:
   void StoreNodalValues(int step, const RCP<Epetra_Vector>   stress12);
 
   /*!
+  \brief Will a time sampling occur in this step
+
+  */
+//  bool SampleThisStep(const int step) const;
+
+  /*!
   \brief Include current quantities in the time
   averaging procedure
 
+  Include current quantities in the time
+  averaging procedure. The velnp parameters with
+  the default of Teuchos::null can be used in
+  case:
+  1. discretmatchingvelnp: the discretization has a varying
+                           number of dofs.
+  2. velnp:                instead of updating the original
+                           velnp to which myvelnp_ points a
+                           new velnp is created.
+
+  \param step (in)       : current time step
+  \param time (in)       : current time
+  \param eosfac (in)     : equation of state factor
+  \param velnp (in)      : velnp built with dofrowmap from standarddofset
+  \param force (in)      : trueresidual vector built with standarddofset
+  \param discretmatchingvelnp (in) : velnp built with dofrowmap from discretization
+
   */
-  void DoTimeSample(int step, double time, const double eosfac);
+  void DoTimeSample(int step                                                              ,
+                    double time                                                           ,
+                    const double eosfac                                                   );
+//                    Teuchos::RCP<const Epetra_Vector> velnp                = Teuchos::null,
+//                    Teuchos::RCP<const Epetra_Vector> force                = Teuchos::null,
+//                    Teuchos::RCP<const DRT::DofSet>   stddofset            = Teuchos::null,
+//                    Teuchos::RCP<const Epetra_Vector> discretmatchingvelnp = Teuchos::null,
+//                    Teuchos::RCP<const Epetra_Vector> phinp                = Teuchos::null);
 
   /*!
   \brief Write (dump) the statistics to a file
@@ -234,6 +274,7 @@ private:
     combust_oracles                 ,
     square_cylinder                 ,
     square_cylinder_nurbs           ,
+    bubbly_channel_flow             ,
     rotating_circular_cylinder_nurbs,
     rotating_circular_cylinder_nurbs_scatra,
     time_averaging                           }    flow_;
@@ -257,6 +298,9 @@ private:
 
   //! turbulence statistics for turbulent channel flow
   RCP<TurbulenceStatisticsCha>         statistics_channel_;
+
+  //! turbulence statistics for turbulent multi phase channel flow
+  RCP<COMBUST::TurbulenceStatisticsBcf> statistics_channel_multiphase_;
 
   //! turbulence statistics for a rotating circular cylinder
   RCP<TurbulenceStatisticsCcy>         statistics_ccy_;

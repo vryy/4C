@@ -18,11 +18,14 @@ Maintainer: Peter Gamnitzer
 #include "turbulence_statistic_manager.H"
 #include "../drt_fluid/fluid_genalpha_integration.H"
 #include "../drt_fluid/fluidimplicitintegration.H"
+#include "../drt_combust/combust_fluidimplicitintegration.H"
 #include "../drt_fluid/fluid_utils.H" // for LiftDrag
 #include "../drt_fluid/turbulence_statistics_mean_general.H"
+//#include "../drt_lib/drt_dofset.H"
 
 #include "../drt_fluid/turbulence_statistics_ccy.H"
 #include "../drt_fluid/turbulence_statistics_cha.H"
+#include "../drt_fluid/turbulence_statistics_bcf.H"
 #include "../drt_fluid/turbulence_statistics_ldc.H"
 #include "../drt_fluid/turbulence_statistics_bfs.H"
 #include "../drt_fluid/turbulence_statistics_oracles.H"
@@ -507,8 +510,8 @@ namespace FLD
       Setup();
     }
 
-    // allocate one instance of the flow indepedent averaging procedure
-    // providiing colerful output for paraview
+    // allocate one instance of the flow independent averaging procedure
+    // providing colorful output for paraview
     {
       ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
 
@@ -528,6 +531,86 @@ namespace FLD
     return;
 
   }
+
+
+  /*----------------------------------------------------------------------
+
+    Standard Constructor for combustion One-Step-Theta time integration (public)
+
+  ----------------------------------------------------------------------*/
+  TurbulenceStatisticManager::TurbulenceStatisticManager(CombustFluidImplicitTimeInt& timeint)
+    :
+    dt_              (timeint.dta_           ),
+    alphaM_          (0.0                  ),
+    alphaF_          (0.0                  ),
+    gamma_           (0.0                  ),
+    density_         (0.0                  ),
+    discret_         (timeint.discret_       ),
+    params_          (timeint.params_        ),
+    alefluid_        (false                ),
+    myaccnp_         (null                 ), // size is not fixed as we deal with xfem problems
+    myaccn_          (null                 ), // size is not fixed
+    myaccam_         (null                 ), // size is not fixed
+    myveln_          (null                 ), // size is not fixed
+    myvelaf_         (null                 ), // size is not fixed
+    myscanp_         (null                 ),
+    mydispnp_        (null                 ),
+    mydispn_         (null                 ),
+    mygridveln_      (null                 ),
+    mygridvelaf_     (null                 ),
+    myfilteredvel_   (null                 ),
+    myfilteredreystr_(null                 ),
+    myfsvelaf_       (null                 )
+  {
+
+    //subgrid dissipation
+    subgrid_dissipation_=false;
+
+    // the flow parameter will control for which geometry the
+    // sampling is done
+    if(timeint.special_flow_=="bubbly_channel_flow")
+    {
+      flow_=bubbly_channel_flow;
+      dserror("TO DO");
+
+      // do the time integration independent setup
+      Setup();
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_channel_multiphase_ = rcp(new COMBUST::TurbulenceStatisticsBcf(discret_, params_ ));
+    }
+    else
+    {
+      flow_=no_special_flow;
+
+      // do the time integration independent setup
+      Setup();
+    }
+
+    // allocate one instance of the flow independent averaging procedure
+    // providing colorful output for paraview
+//    {
+//      ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+//
+//      string homdir = modelparams->get<string>("HOMDIR","not_specified");
+//
+//
+//      statistics_general_mean_ = rcp(new TurbulenceStatisticsGeneralMean(
+//                                     discret_,
+//                                     homdir,
+//                                     density_,
+//                                     fluid.velpressplitterForOutput_,
+//                                     false, // scatra support not yet activated.
+//                                     stddofset
+//                                     ));
+//    }
+    statistics_general_mean_ = Teuchos::null;
+
+    return;
+
+  }
+
 
   /*
     Destructor
@@ -623,7 +706,8 @@ namespace FLD
     {
 
       if (flow_ == channel_flow_of_height_2 or
-          flow_ == loma_channel_flow_of_height_2)
+          flow_ == loma_channel_flow_of_height_2 or
+          flow_ == bubbly_channel_flow)
       {
         string homdir
           =
@@ -751,12 +835,31 @@ namespace FLD
 
   /*----------------------------------------------------------------------
 
+    Will the time sampling occur in this step
+
+  ----------------------------------------------------------------------*/
+//  bool TurbulenceStatisticManager::SampleThisStep(const int step) const
+//  {
+//    if(step>=samstart_ && step<=samstop_ && flow_ != no_special_flow)
+//      return true;
+//    else
+//      return false;
+//  }
+
+  /*----------------------------------------------------------------------
+
     Include current quantities in the time averaging procedure
 
   ----------------------------------------------------------------------*/
   void TurbulenceStatisticManager::DoTimeSample(int          step,
                                                 double       time,
-                                                const double eosfac)
+                                                const double eosfac
+                                                )
+//                                                Teuchos::RefCountPtr<const Epetra_Vector> velnp                /*= Teuchos::null */,
+//                                                Teuchos::RefCountPtr<const Epetra_Vector> force                /*= Teuchos::null */,
+//                                                Teuchos::RefCountPtr<const DRT::DofSet>   stddofset            /*= Teuchos::null */,
+//                                                Teuchos::RefCountPtr<const Epetra_Vector> discretmatchingvelnp /*= Teuchos::null */,
+//                                                Teuchos::RefCountPtr<const Epetra_Vector> phinp                /*= Teuchos::null */
   {
     // sampling takes place only in the sampling period
     if(step>=samstart_ && step<=samstop_ && flow_ != no_special_flow)
@@ -782,6 +885,21 @@ namespace FLD
           dserror("need statistics_channel_ to do a time sample for a turbulent channel flow at low Mach number");
 
         statistics_channel_->DoLomaTimeSample(myvelnp_,myscanp_,*myforce_,eosfac);
+        break;
+      }
+      case bubbly_channel_flow:
+      {
+        if(statistics_channel_multiphase_ == null)
+          dserror("need statistics_channel_multiphase_ to do a time sample for a turbulent channel flow");
+
+        dserror("Hier gibts noch was zu tun!");
+
+//        if (velnp == Teuchos::null        or force == Teuchos::null
+//            or stddofset == Teuchos::null or discretmatchingvelnp == Teuchos::null
+//            or phinp == Teuchos::null)
+//            dserror("The multi phase channel statistics need a current velnp, force, stddofset, discretmatchingvelnp, phinp.");
+//
+//        statistics_channel_multiphase_->DoTimeSample(velnp, force, stddofset, discretmatchingvelnp, phinp);
         break;
       }
       case lid_driven_cavity:
@@ -1003,7 +1121,8 @@ namespace FLD
 
       // add vector(s) to general mean value computation
       // scatra vectors may be Teuchos::null
-      statistics_general_mean_->AddToCurrentTimeAverage(dt_,myvelnp_,myscanp_,myfullphinp_);
+      if (statistics_general_mean_!=Teuchos::null)
+        statistics_general_mean_->AddToCurrentTimeAverage(dt_,myvelnp_,myscanp_,myfullphinp_);
 
     } // end step in sampling period
 
@@ -1060,6 +1179,7 @@ namespace FLD
         if(statistics_channel_==null)
           dserror("need statistics_channel_ to do a time sample for a turbulent channel flow");
 
+
         if(outputformat == write_multiple_records)
         {
           statistics_channel_->TimeAverageMeansAndOutputOfStatistics(step);
@@ -1077,6 +1197,21 @@ namespace FLD
 
         if(outputformat == write_single_record)
           statistics_channel_->DumpLomaStatistics(step);
+        break;
+      }
+      case bubbly_channel_flow:
+      {
+        if(statistics_channel_multiphase_==null)
+          dserror("need statistics_channel_multiphase_ to do a time sample for a turbulent channel flow");
+
+        if(outputformat == write_multiple_records)
+        {
+          statistics_channel_multiphase_->TimeAverageMeansAndOutputOfStatistics(step);
+          statistics_channel_multiphase_->ClearStatistics();
+        }
+
+        if(outputformat == write_single_record)
+          statistics_channel_multiphase_->DumpStatistics(step);
         break;
       }
       case lid_driven_cavity:

@@ -487,6 +487,39 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       COMBUST::callIntegrateShape(assembly_type, this, ih_, *eleDofManager_, mystate, elemat1, elevec1);
     }
     break;
+    case calc_turbulence_statistics:
+    {
+      // omitting check for 3-Dimensionality, since combust is implemented in 3D only.
+
+      // do nothing if you do not own this element
+      if(this->Owner() == discretization.Comm().MyPID())
+      {
+        // --------------------------------------------------
+        // extract velocities and pressure from the global distributed vectors
+
+        // velocity and pressure values (n+1)
+        RCP<const Epetra_Vector> velnp = discretization.GetState("u and p (n+1,converged)");
+        if (velnp==null)
+          dserror("Cannot get state vector 'velnp'");
+
+        vector<double> mysol (lm.size());
+        DRT::UTILS::ExtractMyValues(*velnp, mysol, lm);
+
+        // integrate mean values
+        const DiscretizationType distype = this->Shape();
+
+        switch(distype)
+        {
+        case DRT::Element::hex8:
+          calc_volume_fraction(discretization, mysol, params);
+          break;
+        default:
+          dserror("Unknown element type for mean value evaluation\n");
+          break;
+        }
+      }
+    } // end of case calc_turbulence_statistics
+    break;
     default:
       dserror("Unknown type of action for Combust3");
   } // end of switch(act)
@@ -729,6 +762,112 @@ void DRT::ELEMENTS::Combust3::f3_int_beltrami_err(
 
   return;
 }
+
+/*---------------------------------------------------------------------*
+ | Calculate spatial mean values for channel flow       rasthofer 06/11|
+ |                                                      DA wichmann    |
+ *---------------------------------------------------------------------*/
+void DRT::ELEMENTS::Combust3::calc_volume_fraction(
+  DRT::Discretization&      discretization,
+  const vector<double>&     solution      ,
+  ParameterList&            params
+  )
+{
+  // set element data
+  const DiscretizationType distype = this->Shape();
+  if (distype != DRT::Element::hex8)
+    dserror("This is for hex8 only");
+
+  // the plane normal tells you in which plane the integration takes place
+  const int normdirect = params.get<int>("normal direction to homogeneous plane");
+
+  // the vector planes contains the coordinates of the homogeneous planes (in
+  // wall normal direction)
+  RCP<vector<double> > planes = params.get<RCP<vector<double> > >("coordinate vector for hom. planes");
+
+  // a map to link a material to its index in the vectors
+  RCP<map<int,int> > matidtoindex = params.get<RCP<map<int,int> > >("map materialid to index");
+  RCP<const MAT::Material> material = this->Material();
+  int matidplus  = -1;
+  int matidminus = -1;
+
+  if (INPAR::MAT::m_matlist == material->MaterialType())
+  {
+    const MAT::MatList* matlist = static_cast<const MAT::MatList*>(material.get());
+    matidplus  = matlist->MatID(0);
+    matidminus = matlist->MatID(1);
+  }
+  else
+    dserror("COMBUST elements need a material list");
+
+
+  // get the pointers to the solution vectors
+  vector<RCP<vector<double> > >& sumvol = *(params.get<vector<RCP<vector<double> > >* >("element volume"));
+
+  // get node coordinates of element
+  LINALG::Matrix<3,8>  xyze;
+  DRT::Node** nodes = Nodes();
+  for(size_t inode=0; inode<8; inode++)
+  {
+    const double* x = nodes[inode]->X();
+    xyze(0,inode)=x[0];
+    xyze(1,inode)=x[1];
+    xyze(2,inode)=x[2];
+  }
+
+  double min = xyze(normdirect,0);
+  double max = xyze(normdirect,0);
+
+  // set maximum and minimum value in wall normal direction
+  for(size_t inode=0; inode<8; inode++)
+  {
+    if(min > xyze(normdirect,inode))
+    {
+      min=xyze(normdirect,inode);
+    }
+    if(max < xyze(normdirect,inode))
+    {
+      max=xyze(normdirect,inode);
+    }
+  }
+
+  // determine the id of the homogeneous planes intersecting this element
+  int eleplaneid;
+  for(size_t nplane=0; nplane<planes->size(); ++nplane)
+  {
+    if (min-2e-9 < (*planes)[nplane] and min+2e-9 > (*planes)[nplane])
+    {
+      eleplaneid = nplane;
+      break;
+    }
+  }
+
+  if (eleplaneid == 0)
+  {
+    // this is an element of the lowest element layer. Increase the counter
+    // in order to compute the total number of elements in one layer
+    int* count = params.get<int*>("count processed elements");
+
+    (*count)++;
+  }
+
+  //-------------------------------------------------
+  // loop over all integration cells and evaluate on each cell
+
+  const GEO::DomainIntCells& domainintcells = ih_->GetDomainIntCells(this);
+
+  for (GEO::DomainIntCells::const_iterator cell = domainintcells.begin(); cell != domainintcells.end(); ++cell)
+  {
+    const bool   indomainplus = cell->getDomainPlus();
+    const double cellvol      = cell->VolumeInPhysicalDomain();
+    const int    curmatid     = (indomainplus) ? matidplus : matidminus;
+
+    const int phaseindex = matidtoindex->at(curmatid);
+
+    (*(sumvol[phaseindex]))[eleplaneid] += cellvol;
+  }
+  return;
+} // DRT::ELEMENTS::Combust3::calc_volume_fraction
 
 
 /*------------------------------------------------------------------------------------------------*

@@ -41,8 +41,12 @@ namespace FLD
 \author henke (henke@lnm.mw.tum.de)
 */
 
+// forward declarations
+class TurbulenceStatisticManager;
+
 class CombustFluidImplicitTimeInt
 {
+  friend class TurbulenceStatisticManager;
   friend class CombustFluidResultTest;
 
 public:
@@ -256,8 +260,8 @@ public:
 
   */
   void OutputToGmsh(
-      char* presName,
-      char* velName,
+      const char* presName,
+      const char* velName,
       const int step,
       const double  time
   ) const;
@@ -309,12 +313,16 @@ public:
   Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return velpressplitter_.OtherMap(); }
   Teuchos::RCP<const Epetra_Map> PressureRowMap() { return velpressplitter_.CondMap(); }
 
-  /*double ResidualScaling() const
-  { if (TimIntScheme()==INPAR::FLUID::timeint_stationary)
-         return density_;
-    else if (TimIntScheme()==INPAR::FLUID::timeint_afgenalpha)
-         return density_*alphaM_/(gamma_*dta_);
-    else return density_/(theta_*dta_);}*/
+  double ResidualScaling() const
+  {
+    if (timealgo_ == INPAR::FLUID::timeint_one_step_theta)
+      return 1.0/(theta_ * dta_);
+    else if (timealgo_ == INPAR::FLUID::timeint_stationary)
+      return 1.0;
+    else
+      dserror("Only implemented for One Step Theta so far.");
+    return 0.0;
+  }
 
   double Dt()   const { return dta_; }
   double Time() const { return time_; }
@@ -424,9 +432,9 @@ protected:
   //! fluid discretization
   Teuchos::RCP<DRT::Discretization>      discret_;
   LINALG::Solver&                        solver_;
-  const ParameterList&                   params_;
+  ParameterList&                         params_;
   const ParameterList&                   xparams_;
-  const Teuchos::RCP<IO::DiscretizationWriter> output_;
+  Teuchos::RCP<IO::DiscretizationWriter> output_;
 
   //! the processor ID from the communicator
   const int                     myrank_;
@@ -524,8 +532,17 @@ protected:
   /// pointer to turbulence statistics manager
   Teuchos::RCP<FLD::TurbulenceStatisticManager> turbstatisticsmanager_;
 
-  /// density extracted from element material
-//  double density_;
+  //! @name parameters for sampling/dumping period
+  int samstart_;
+  int samstop_;
+  int dumperiod_;
+  //@}
+
+  /// flag for physical type of fluid flow (standard: incompressible)
+  enum INPAR::FLUID::PhysicalType physicaltype_;
+
+  /// flag for special flow: currently channel flow or flow in a lid-driven cavity
+  string special_flow_;
 
   //! store dof distribution information for output
   Teuchos::RCP<XFEM::DofManager>      dofmanagerForOutput_;

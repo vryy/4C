@@ -381,6 +381,27 @@ private:
             ParameterList&             params
         );
 
+        /*!
+          \brief calculate spatial mean void fraction for channel flow
+          (requires wall parallel layers of elements)
+
+                                                       rasthofer 06/11
+                                                       DA wichmann
+          <pre>
+
+          This method calculates the volume fraction per element
+          plane in the homogeneous directions.
+          All results are communicated via the parameter list!
+
+          </pre>
+
+         */
+        void calc_volume_fraction(
+          DRT::Discretization&      discretization,
+          const vector<double>&     solution,
+          ParameterList&            params
+          );
+
         //! compute stresses from previous newton iteration and store them in dlm_info_
         void UpdateOldDLMAndDLMRHS(
             const DRT::Discretization& discretization,

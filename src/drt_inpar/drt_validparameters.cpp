@@ -2498,8 +2498,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   {
     // a standard Teuchos::tuple can have at maximum 10 entries! We have to circumvent this here.
     // Otherwise BACI DEBUG version will crash during runtime!
-    Teuchos::Tuple<std::string,13> name;
-    Teuchos::Tuple<int,13> label;
+    Teuchos::Tuple<std::string,14> name;
+    Teuchos::Tuple<int,14> label;
     name[ 0] = "no";                                      label[ 0] = 0;
     name[ 1] = "time_averaging";                          label[ 1] = 1;
     name[ 2] = "channel_flow_of_height_2";                label[ 2] = 2;
@@ -2513,8 +2513,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     name[10] = "loma_lid_driven_cavity";                  label[10] = 10;
     name[11] = "loma_backward_facing_step";               label[11] = 11;
     name[12] = "combust_oracles";                         label[12] = 12;
+    name[13] = "bubbly_channel_flow";                     label[13] = 13;
 
-    Teuchos::Tuple<std::string,13> description;
+    Teuchos::Tuple<std::string,14> description;
     description[0]="The flow is not further specified, so spatial averaging \nand hence the standard sampling procedure is not possible";
     description[1]="The flow is not further specified, but time averaging of velocity and pressure field is performed";
     description[2]="For this flow, all statistical data could be averaged in \nthe homogenous planes --- it is essentially a statistically one dimensional flow.";
@@ -2528,6 +2529,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     description[10]="For this low-Mach-number flow, all statistical data are evaluated on the center lines of the xy-midplane, averaged only over time.";
     description[11]="For this low-Mach-number flow, statistical data are evaluated on various lines, averaged over time and z.";
     description[12]="ORACLES test rig for turbulent premixed combustion.";
+    description[13]="Turbulent two-phase flow: bubbly channel flow, statistical data are averaged in homogeneous planse and over time.";
 
     setStringToIntegralParameter<int>(
         "CANONICAL_FLOW",

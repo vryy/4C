@@ -36,6 +36,7 @@ Maintainer: Florian Henke
 //#include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_fluid/drt_pbcdofset.H"
+#include "../drt_fluid/turbulence_statistic_manager.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
 #include "../drt_xfem/xfem_element_utils.H"
@@ -256,6 +257,31 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // initialize standard (stabilized) system matrix (and save its graph!)
   sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
 
+
+  // ----------------------------------------------------
+  // initialize vectors and flags for turbulence approach
+  // ----------------------------------------------------
+
+  ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+
+  string physmodel = modelparams->get<string>("PHYSICAL_MODEL","no_model");
+  if (physmodel != "no_model")
+    dserror("Sorry, but XFEM does not support any fancy models yet.");
+
+  // flag for special flow: currently channel flow or flow in a lid-driven cavity
+  special_flow_ = modelparams->get<string>("CANONICAL_FLOW","no");
+  if (special_flow_ != "no" and special_flow_ != "bubbly_channel_flow")
+    dserror("Sorry, but XFEM does not support %s, yet.", special_flow_.c_str());
+
+  // -------------------------------------------------------------------
+  // initialize turbulence-statistics evaluation
+  // -------------------------------------------------------------------
+  turbstatisticsmanager_ = rcp(new FLD::TurbulenceStatisticManager(*this));
+
+  // parameter for sampling/dumping period
+  if (special_flow_ != "no")
+    samstart_ = modelparams->get<int>("SAMPLING_START",1);
+
   //------------------------------------------------------------------------------------------------
   // create empty vectors - used for different purposes
   //------------------------------------------------------------------------------------------------
@@ -308,17 +334,6 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // nonlinear iteration increment vector
   incvel_ = LINALG::CreateVector(*dofrowmap,true);
 
-  //------------------------------------------------------------------------------------------------
-  // get density from elements
-  //------------------------------------------------------------------------------------------------
-//  {
-//    ParameterList eleparams;
-//    eleparams.set("action","get_density");
-//    std::cout << "Warning: two-phase flows have different densities, evaluate(get_density) returns 1.0" << std::endl;
-//    discret_->Evaluate(eleparams,null,null,null,null,null);
-//    density_ = eleparams.get<double>("density");
-//    if (density_ <= 0.0) dserror("received negative or zero density value from elements");
-//  }
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -847,7 +862,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
   // Vectors used for solution process
   // ---------------------------------
   residual_     = LINALG::CreateVector(newdofrowmap,true);
-  trueresidual_ = Teuchos::null;
+  trueresidual_ = LINALG::CreateVector(newdofrowmap,true);
   incvel_       = LINALG::CreateVector(newdofrowmap,true);
 
 
@@ -981,6 +996,10 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
   //------------------------------ turn adaptive solver tolerance on/off
   const bool   isadapttol    = params_.get<bool>("ADAPTCONV");
   const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER");
+
+
+  // for turbulent channel flow: only one iteration before sampling otherwise use the usual itemax_
+  const int itemax = (special_flow_ == "bubbly_channel_flow" and step_ < samstart_) ? 2 : itemax_ ;
 
   //const bool fluidrobin = params_.get<bool>("fluidrobin", false);
 
@@ -1153,7 +1172,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
       // convergence check at itemax is skipped for speedup if
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax
-      if ((itnum != itemax_)
+      if ((itnum != itemax)
           ||
           (params_.get<string>("CONVCHECK")
            !=
@@ -1165,7 +1184,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         discret_->ClearState();
 
         // scaling to get true residual vector for all other schemes
-//        trueresidual_->Update(ResidualScaling(),*residual_,0.0);
+        trueresidual_->Update(ResidualScaling(),*residual_,0.0);
 
         // finalize the complete matrix
         sysmat_->Complete();
@@ -1360,7 +1379,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       if (myrank_ == 0)
       {
         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   |      --      |      --      |      --      |",
-               itnum,itemax_,ittol,vresnorm,presnorm,fullresnorm);
+               itnum,itemax,ittol,vresnorm,presnorm,fullresnorm);
 //        printf(" (      --     ,te=%10.3E",dtele);
 //        printf(")\n");
         printf(" (      --     ,te_min=%10.3E,te_max=%10.3E)\n", min, max);
@@ -1391,7 +1410,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         if (myrank_ == 0)
         {
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-                 itnum,itemax_,ittol,vresnorm,presnorm,fullresnorm,
+                 itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
 //          printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
 //          printf(")\n");
@@ -1402,7 +1421,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
           if (errfile!=NULL)
           {
             fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
-                    itnum,itemax_,ittol,vresnorm,presnorm,
+                    itnum,itemax,ittol,vresnorm,presnorm,
                     incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
           }
         }
@@ -1501,7 +1520,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         if (myrank_ == 0)
         {
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-                 itnum,itemax_,ittol,vresnorm,presnorm,fullresnorm,
+                 itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
 //          printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
 //          printf(")\n");
@@ -1512,7 +1531,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
     // warn if itemax is reached without convergence, but proceed to
     // next timestep...
-    if ((itnum == itemax_) and (vresnorm > ittol or presnorm > ittol or
+    if ((itnum == itemax) and (vresnorm > ittol or presnorm > ittol or
                              fullresnorm > ittol or
                              incvelnorm_L2/velnorm_L2 > ittol or
                              incprenorm_L2/prenorm_L2 > ittol or
@@ -1529,7 +1548,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         if (errfile!=NULL)
         {
           fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
-                  itnum,itemax_,ittol,vresnorm,presnorm,
+                  itnum,itemax,ittol,vresnorm,presnorm,
                   incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
         }
       }
@@ -1848,14 +1867,6 @@ void FLD::CombustFluidImplicitTimeInt::MultiCorrector()
   double       prenorm_L2;
   double       vresnorm;
   double       presnorm;
-
-  // -------------------------------------------------------------------
-  // currently default for turbulent channel flow:
-  // only one iteration before sampling
-  // -------------------------------------------------------------------
-  //if (special_flow_ == "channel_flow_of_height_2" && step_<samstart_ )
-  //     itemax = 1;
-  //else itemax = params_.get<int>("max nonlin iter steps");
 
   // -------------------------------------------------------------------
   // turn adaptive solver tolerance on/off
@@ -2442,6 +2453,8 @@ void FLD::CombustFluidImplicitTimeInt::Output()
 
   const bool write_visualization_data = step_%upres_ == 0;
   const bool write_restart_data = step_!=0 and uprestart_ != 0 and step_%uprestart_ == 0;
+  //TODO: kann man diese Funktion umgehen
+  const bool do_time_sample = false; //= turbstatisticsmanager_->SampleThisStep(step_);
 
   //-------------------------------------------- output of solution
 
@@ -2450,7 +2463,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
     output_->NewStep(step_,time_);
   }
 
-  if (write_visualization_data)  //write solution for visualization
+  if (write_visualization_data or do_time_sample)  //write solution for visualization
   {
     std::set<XFEM::PHYSICS::Field> outputfields;
     outputfields.insert(XFEM::PHYSICS::Velx);
@@ -2462,33 +2475,49 @@ void FLD::CombustFluidImplicitTimeInt::Output()
     Teuchos::RCP<Epetra_Vector> velnp_out = dofmanagerForOutput_->transformXFEMtoStandardVector(
         *state_.velnp_, *standarddofset_, state_.nodalDofDistributionMap_, outputfields);
 
-    // write physical fields on full domain including voids etc.
-    if (outputfields.find(XFEM::PHYSICS::Velx) != outputfields.end())
+    if (do_time_sample)
     {
-      // output velocity field for visualization
-      output_->WriteVector("velocity_smoothed", velnp_out);
+      // -------------------------------------------------------------------
+      //   add calculated velocity to mean value calculation (statistics)
+      // -------------------------------------------------------------------
 
-      // output (hydrodynamic) pressure for visualization
-      Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(velnp_out);
-//      pressure->Scale(density_);
-      output_->WriteVector("pressure_smoothed", pressure);
+      // transform residual XFEM vector to (standard FEM) output residual vector
+      Teuchos::RCP<Epetra_Vector> trueresidual_out = dofmanagerForOutput_->transformXFEMtoStandardVector(
+          *trueresidual_, *standarddofset_, state_.nodalDofDistributionMap_, outputfields);
 
-      //output_->WriteVector("residual", trueresidual_);
+      //TODO:
+      //turbstatisticsmanager_->DoTimeSample(step_,time_, /*eosfac=*/ 1.0, velnp_out, trueresidual_out, standarddofset_, state_.velnp_, flamefront_->Phinp());
+    }
 
-      //only perform stress calculation when output is needed
-      if (writestresses_)
-      {
-        Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
-        output_->WriteVector("traction",traction);
+    if (write_visualization_data)
+    {
+
+      // write physical fields on full domain including voids etc.
+      if (outputfields.find(XFEM::PHYSICS::Velx) != outputfields.end())
+     {
+        // output velocity field for visualization
+        output_->WriteVector("velocity_smoothed", velnp_out);
+
+        // output (hydrodynamic) pressure for visualization
+        Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(velnp_out);
+        output_->WriteVector("pressure_smoothed", pressure);
+
+        //output_->WriteVector("residual", trueresidual_);
+
+        //only perform stress calculation when output is needed
+        if (writestresses_)
+        {
+          Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
+          output_->WriteVector("traction",traction);
+        }
       }
-    }
-    else if (outputfields.find(XFEM::PHYSICS::Temp) != outputfields.end())
-    {
-      output_->WriteVector("temperature_smoothed", velnp_out);
-    }
+      else if (outputfields.find(XFEM::PHYSICS::Temp) != outputfields.end())
+      {
+        output_->WriteVector("temperature_smoothed", velnp_out);
+      }
 
-    // write domain decomposition for visualization
-    output_->WriteElementData();
+      // write domain decomposition for visualization
+      output_->WriteElementData();
 
 #if 0
     for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
@@ -2665,6 +2694,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
 //      }
 //    }
 #endif
+    }
   }
 
   // write restart
@@ -2691,6 +2721,13 @@ void FLD::CombustFluidImplicitTimeInt::Output()
     OutputToGmsh("mod_start_field_pres","mod_start_field_vel",step_, time_);
 #endif
   }
+
+  // -------------------------------------------------------------------
+  //          dumping of turbulence statistics if required
+  // -------------------------------------------------------------------
+  // eosfac, s.o.
+  turbstatisticsmanager_->DoOutput((*output_), step_, /*eosfac=*/ 1.0);
+
 
 //  if (step_%upres_ == 0)  //write solution
 //  {
@@ -2729,9 +2766,6 @@ void FLD::CombustFluidImplicitTimeInt::Output()
 //    // output (hydrodynamic) pressure vector
 //    //----------------------------------------------------------------------------------------------
 //    Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(velnp_out);
-//    // remark: pressure scaling was removed in COMBUST;
-//    //         we always compute the real (hydrodynamic) pressure [N/m^2] (not p/density!)
-//    // pressure->Scale(density_);
 //    output_.WriteVector("pressure", pressure);
 //
 //    //only perform stress calculation when output is needed
@@ -2815,8 +2849,8 @@ void FLD::CombustFluidImplicitTimeInt::ReadRestart(int step)
  | write output to Gmsh postprocessing files                                          henke 10/09 |
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
-    char* presName,
-    char* velName,
+    const char* presName,
+    const char* velName,
     const int step,
     const double time
     ) const
