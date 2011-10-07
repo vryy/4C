@@ -3181,6 +3181,8 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
               INPAR::FLUID::timeint_afgenalpha),
               &combustcontrol);
 
+  BoolParameter("RESTART_SCATRA_INPUT","No","Use ScaTra field from .dat-file instead",&combustcontrol);
+
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrolfluid = combustcontrol.sublist("COMBUSTION FLUID",false,
       "control parameters for the fluid field of a combustion problem");

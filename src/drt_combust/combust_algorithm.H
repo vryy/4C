@@ -66,7 +66,7 @@ namespace COMBUST
     /// restart combustion problem
     void Restart(int step);
     /// restart combustion problem
-    void RestartNew(int step);
+    void RestartNew(int step, const bool ignorescatrarestart = false);
 
   protected:
 
@@ -181,9 +181,9 @@ namespace COMBUST
     /// band width for reinitialization (maximum G-function value)
     const double reinitbandwidth_;
     // boolian for reinitialization output
-    const bool reinit_output_; // schott
+    const bool reinit_output_;
     /// reinitialization acception status
-    bool reinitialization_accepted_; // schott
+    bool reinitialization_accepted_;
     /// volume correction after reinitialization
     bool volcorrection_;
 

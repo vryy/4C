@@ -107,8 +107,10 @@ void combust_dyn()
   //------------------------------------------------------------------------------------------------
   if (genprob.restart)
   {
+    // turn on/off read scatra restart from input file
+    const bool restartscatrainput = (bool)DRT::INPUT::IntegralValue<int>(combustdyn,"RESTART_SCATRA_INPUT");
     // read the restart information, set vectors and variables
-    combust_->RestartNew(genprob.restart);
+    combust_->RestartNew(genprob.restart, restartscatrainput);
     //combust_->Restart(genprob.restart);
   }
   //------------------------------------------------------------------------------------------------

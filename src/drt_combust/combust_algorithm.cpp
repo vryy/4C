@@ -268,7 +268,7 @@ void COMBUST::Algorithm::TimeLoop()
       //      G-function is zero, if a zero initial fluid field is used.
       //      -> Should the fluid be solved first?
       // solve linear G-function equation
-      DoGfuncField();
+      //DoGfuncField();
 
       //(after Scatra transport but before reinitialization)
       // update interface geometry
@@ -699,181 +699,181 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::OverwriteFluidVel()
 const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeReinitVel(
     /*const Teuchos::RCP<Epetra_Vector>& convel,*/
     const Teuchos::RCP<const DRT::DofSet>& dofset
-    )
+)
 {
-	// needed for lids
-	const Teuchos::RCP<Epetra_Vector> & convel = FluidField().ExtractInterfaceVeln();
+  // needed for lids
+  const Teuchos::RCP<Epetra_Vector> & convel = FluidField().ExtractInterfaceVeln();
 
-	  // temporary vector for convective velocity (based on dofrowmap of standard (non-XFEM) dofset)
-	  // remark: operations must not be performed on 'convel', because the vector is accessed by both
-	  //         master and slave nodes, if periodic bounday conditions are present
-	  Teuchos::RCP<Epetra_Vector> reinitvel_tmp = LINALG::CreateVector(*(dofset->DofRowMap()),true);
+  // temporary vector for convective velocity (based on dofrowmap of standard (non-XFEM) dofset)
+  // remark: operations must not be performed on 'convel', because the vector is accessed by both
+  //         master and slave nodes, if periodic bounday conditions are present
+  Teuchos::RCP<Epetra_Vector> reinitvel_tmp = LINALG::CreateVector(*(dofset->DofRowMap()),true);
 
-	  // get a pointer to the fluid discretization
-	  const Teuchos::RCP<const DRT::Discretization> fluiddis = FluidField().Discretization();
+  // get a pointer to the fluid discretization
+  const Teuchos::RCP<const DRT::Discretization> fluiddis = FluidField().Discretization();
 
-	  // get G-function value vector on fluid NodeColMap
-	  const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
-	  const Teuchos::RCP<Epetra_MultiVector> gradphinp = flamefront_->GradPhi();
+  // get G-function value vector on fluid NodeColMap
+  const Teuchos::RCP<Epetra_Vector> phinp = flamefront_->Phinp();
+  const Teuchos::RCP<Epetra_MultiVector> gradphinp = flamefront_->GradPhi();
 
-	#ifdef DEBUG
-	  // get map of this vector
-	  const Epetra_BlockMap& phimap = phinp->Map();
-	  // check, whether this map is still identical with the current node map in the discretization
-	  if (not phimap.SameAs(*fluiddis->NodeColMap())) dserror("node column map has changed!");
-	  // get map of this vector
-	  const Epetra_BlockMap& gradphimap = gradphinp->Map();
-	  // check, whether this map is still identical with the current node map in the discretization
-	  if (not gradphimap.SameAs(*fluiddis->NodeColMap())) dserror("node column map has changed!");
-	#endif
+#ifdef DEBUG
+  // get map of this vector
+  const Epetra_BlockMap& phimap = phinp->Map();
+  // check, whether this map is still identical with the current node map in the discretization
+  if (not phimap.SameAs(*fluiddis->NodeColMap())) dserror("node column map has changed!");
+  // get map of this vector
+  const Epetra_BlockMap& gradphimap = gradphinp->Map();
+  // check, whether this map is still identical with the current node map in the discretization
+  if (not gradphimap.SameAs(*fluiddis->NodeColMap())) dserror("node column map has changed!");
+#endif
 
-	#ifdef COMBUST_GMSH_NORMALFIELD
-	  const std::string filestr = "normal_field";
-	  const std::string name_in_gmsh = "Normal field";
+#ifdef COMBUST_GMSH_NORMALFIELD
+  const std::string filestr = "normal_field";
+  const std::string name_in_gmsh = "Normal field";
 
-	  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, Step(), 500, true, fluiddis->Comm().MyPID());
-	  std::ofstream gmshfilecontent(filename.c_str());
-	  {
-	    gmshfilecontent << "View \" " << name_in_gmsh << "\" {\n";
-	#endif
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, Step(), 500, true, fluiddis->Comm().MyPID());
+  std::ofstream gmshfilecontent(filename.c_str());
+  {
+    gmshfilecontent << "View \" " << name_in_gmsh << "\" {\n";
+#endif
 
-	#if 1
-	    // loop over nodes on this processor
-	    for(int lnodeid=0; lnodeid < fluiddis->NumMyRowNodes(); ++lnodeid)
-	    {
-	      //-------------------------------------------------------------
-	      // get (smoothed) gradient of the G-function field at this node
-	      //-------------------------------------------------------------
-	      LINALG::Matrix<3,1> mygradphi(true);
+#if 1
+    // loop over nodes on this processor
+    for(int lnodeid=0; lnodeid < fluiddis->NumMyRowNodes(); ++lnodeid)
+    {
+      //-------------------------------------------------------------
+      // get (smoothed) gradient of the G-function field at this node
+      //-------------------------------------------------------------
+      LINALG::Matrix<3,1> mygradphi(true);
 
-	      // get the processor local node
-	      DRT::Node*  lnode = fluiddis->lRowNode(lnodeid);
-	      // get the global id for current node
-	      const int gid = lnode->Id();
-	      // get local processor id according to global node id
-	      const int nodelid = (*gradphinp).Map().LID(gid);
-	      if (nodelid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*gradphinp).Comm().MyPID(),gid);
+      // get the processor local node
+      DRT::Node*  lnode = fluiddis->lRowNode(lnodeid);
+      // get the global id for current node
+      const int gid = lnode->Id();
+      // get local processor id according to global node id
+      const int nodelid = (*gradphinp).Map().LID(gid);
+      if (nodelid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*gradphinp).Comm().MyPID(),gid);
 
-	      const int numcol = (*gradphinp).NumVectors();
-	      if( numcol != 3) dserror("number of columns in Epetra_MultiVector is not 3");
+      const int numcol = (*gradphinp).NumVectors();
+      if( numcol != 3) dserror("number of columns in Epetra_MultiVector is not 3");
 
-	      // loop over dimensions (= number of columns in multivector)
-	      for(int col=0; col< numcol; col++)
-	      {
-	        // get columns vector of multivector
-	        double* globalcolumn = (*gradphinp)[col];
-	        // set smoothed gradient entry of phi into column of global multivector
-	        mygradphi(col) = globalcolumn[nodelid];
-	      }
+      // loop over dimensions (= number of columns in multivector)
+      for(int col=0; col< numcol; col++)
+      {
+        // get columns vector of multivector
+        double* globalcolumn = (*gradphinp)[col];
+        // set smoothed gradient entry of phi into column of global multivector
+        mygradphi(col) = globalcolumn[nodelid];
+      }
 
-	      //------------------------------------
-	      // compute smoothed unit normal vector
-	      // n = - grad phi / |grad phi|
-	      //------------------------------------
-	      // smoothed normal vector at this node
-	      LINALG::Matrix<3,1> nvec = mygradphi;
-	      // compute norm of smoothed normal vector
-	      const double ngradphi = mygradphi.Norm2();
+      //------------------------------------
+      // compute smoothed unit normal vector
+      // n = - grad phi / |grad phi|
+      //------------------------------------
+      // smoothed normal vector at this node
+      LINALG::Matrix<3,1> nvec = mygradphi;
+      // compute norm of smoothed normal vector
+      const double ngradphi = mygradphi.Norm2();
 
-	      // divide vector by its norm to get unit normal vector
-	      if (abs(ngradphi < 1.0E-12))// 'ngradnorm' == 0.0
-	      {
-	        // length of smoothed normal is zero at this node -> node must be on a singularity of the
-	        // level set function (e.g. "regular level set cone"); all normals add up to zero normal vector
-	        // -> The fluid convective velocity 'fluidvel' alone constitutes the flame velocity, since the
-	        //    relative flame velocity 'flvelrel' turns out to be zero due to the zero average normal vector.
-	        std::cout << "/!\\ reinit velocity at node " << gid << " is set to zero" << std::endl;
-	        nvec.Clear();
-	      }
-	      else
-	      {
-	    	  nvec.Scale(1.0/ngradphi);
-	      }
+      // divide vector by its norm to get unit normal vector
+      if (abs(ngradphi < 1.0E-12))// 'ngradnorm' == 0.0
+      {
+        // length of smoothed normal is zero at this node -> node must be on a singularity of the
+        // level set function (e.g. "regular level set cone"); all normals add up to zero normal vector
+        // -> The fluid convective velocity 'fluidvel' alone constitutes the flame velocity, since the
+        //    relative flame velocity 'flvelrel' turns out to be zero due to the zero average normal vector.
+        std::cout << "/!\\ reinit velocity at node " << gid << " is set to zero" << std::endl;
+        nvec.Clear();
+      }
+      else
+      {
+        nvec.Scale(1.0/ngradphi);
+      }
 
-	#ifdef COMBUST_GMSH_NORMALFIELD
-	      LINALG::SerialDenseMatrix xyz(3,1);
-	      xyz(0,0) = lnode->X()[0];
-	      xyz(1,0) = lnode->X()[1];
-	      xyz(2,0) = lnode->X()[2];
+#ifdef COMBUST_GMSH_NORMALFIELD
+      LINALG::SerialDenseMatrix xyz(3,1);
+      xyz(0,0) = lnode->X()[0];
+      xyz(1,0) = lnode->X()[1];
+      xyz(2,0) = lnode->X()[2];
 
-	      IO::GMSH::cellWithVectorFieldToStream(DRT::Element::point1, nvec, xyz, gmshfilecontent);
-	#endif
+      IO::GMSH::cellWithVectorFieldToStream(DRT::Element::point1, nvec, xyz, gmshfilecontent);
+#endif
 
-	      //------------------------
-//	      // get material parameters
-//	      //------------------------
-//	      // get list of adjacent elements of this node
-//	      DRT::Element** elelist = lnode->Elements();
-//
-//	      // get material from first (arbitrary!) element adjacent to this node
-//	      const Teuchos::RCP<MAT::Material> matlistptr = elelist[0]->Material();
-//	      dsassert(matlistptr->MaterialType() == INPAR::MAT::m_matlist, "material is not of type m_matlist");
-//	      const MAT::MatList* matlist = static_cast<const MAT::MatList*>(matlistptr.get());
-//
-//	      // density burnt domain
-//	      Teuchos::RCP<const MAT::Material> matptrplus = matlist->MaterialById(3);
-//	      dsassert(matptrplus->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
-//	      const MAT::NewtonianFluid* matplus = static_cast<const MAT::NewtonianFluid*>(matptrplus.get());
-//	      const double rhoplus = matplus->Density();
-//
-//	      // density unburnt domain
-//	      Teuchos::RCP<const MAT::Material> matptrminus = matlist->MaterialById(4);
-//	      dsassert(matptrminus->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
-//	      const MAT::NewtonianFluid* matminus = static_cast<const MAT::NewtonianFluid*>(matptrminus.get());
-//	      const double rhominus = matminus->Density();
-//
-//	      // laminar flame speed
-//	      const double sl = combustdyn_.sublist("COMBUSTION FLUID").get<double>("LAMINAR_FLAMESPEED");
-//	      //---------------------------------------------
-//	      // compute relative flame velocity at this node
-//	      //---------------------------------------------
-//	      // get phi value for this node
-//	      const double gfuncval = (*phinp)[nodelid];
-//
-//	      double speedfac = 0.0;
-//	      if (gfuncval >= 0.0){ // interface or burnt domain -> burnt material
-//	        // flame speed factor = laminar flame speed * rho_unburnt / rho_burnt
-//	        speedfac = sl * rhominus/rhoplus;
-//	      }
-//	      else{ // unburnt domain -> unburnt material
-//	        // flame speed factor = laminar flame speed
-//	        speedfac = sl;
-//	      }
+      //------------------------
+      //      // get material parameters
+      //      //------------------------
+      //      // get list of adjacent elements of this node
+      //      DRT::Element** elelist = lnode->Elements();
+      //
+      //      // get material from first (arbitrary!) element adjacent to this node
+      //      const Teuchos::RCP<MAT::Material> matlistptr = elelist[0]->Material();
+      //      dsassert(matlistptr->MaterialType() == INPAR::MAT::m_matlist, "material is not of type m_matlist");
+      //      const MAT::MatList* matlist = static_cast<const MAT::MatList*>(matlistptr.get());
+      //
+      //      // density burnt domain
+      //      Teuchos::RCP<const MAT::Material> matptrplus = matlist->MaterialById(3);
+      //      dsassert(matptrplus->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
+      //      const MAT::NewtonianFluid* matplus = static_cast<const MAT::NewtonianFluid*>(matptrplus.get());
+      //      const double rhoplus = matplus->Density();
+      //
+      //      // density unburnt domain
+      //      Teuchos::RCP<const MAT::Material> matptrminus = matlist->MaterialById(4);
+      //      dsassert(matptrminus->MaterialType() == INPAR::MAT::m_fluid, "material is not of type m_fluid");
+      //      const MAT::NewtonianFluid* matminus = static_cast<const MAT::NewtonianFluid*>(matptrminus.get());
+      //      const double rhominus = matminus->Density();
+      //
+      //      // laminar flame speed
+      //      const double sl = combustdyn_.sublist("COMBUSTION FLUID").get<double>("LAMINAR_FLAMESPEED");
+      //      //---------------------------------------------
+      //      // compute relative flame velocity at this node
+      //      //---------------------------------------------
+      //      // get phi value for this node
+      //      const double gfuncval = (*phinp)[nodelid];
+      //
+      //      double speedfac = 0.0;
+      //      if (gfuncval >= 0.0){ // interface or burnt domain -> burnt material
+      //        // flame speed factor = laminar flame speed * rho_unburnt / rho_burnt
+      //        speedfac = sl * rhominus/rhoplus;
+      //      }
+      //      else{ // unburnt domain -> unburnt material
+      //        // flame speed factor = laminar flame speed
+      //        speedfac = sl;
+      //      }
 
 
-//	      cout << "WARNING: the velocity vector is set to zero at the moment" << endl;
-//	      nvec.Clear();
+      //      cout << "WARNING: the velocity vector is set to zero at the moment" << endl;
+      //      nvec.Clear();
 
-	      //-----------------------------------------------
-	      // compute (absolute) flame velocity at this node
-	      //-----------------------------------------------
-	      LINALG::Matrix<3,1> fluidvel(true);
-	      // get the set of dof IDs for this node (3 x vel + 1 x pressure) from standard FEM dofset
-	      const std::vector<int> dofids = (*dofset).Dof(lnode);
-	      std::vector<int> lids(3);
+      //-----------------------------------------------
+      // compute (absolute) flame velocity at this node
+      //-----------------------------------------------
+      LINALG::Matrix<3,1> fluidvel(true);
+      // get the set of dof IDs for this node (3 x vel + 1 x pressure) from standard FEM dofset
+      const std::vector<int> dofids = (*dofset).Dof(lnode);
+      std::vector<int> lids(3);
 
-	      // extract velocity values (no pressure!) from global velocity vector
-	      for (int icomp=0; icomp<3; ++icomp)
-	      {
-	        lids[icomp] = convel->Map().LID(dofids[icomp]);
-	      }
+      // extract velocity values (no pressure!) from global velocity vector
+      for (int icomp=0; icomp<3; ++icomp)
+      {
+        lids[icomp] = convel->Map().LID(dofids[icomp]);
+      }
 
-	      LINALG::Matrix<3,1> flvelabs(true);
-	      // add fluid velocity (Navier Stokes solution) and relative flame velocity
-	      for (int icomp=0; icomp<3; ++icomp)
-	      {
-	        const int err = reinitvel_tmp->ReplaceMyValues(1,&nvec(icomp),&lids[icomp]);
-	        if (err) dserror("could not replace values for convective reinit velocity");
-	      }
-	    }
-	#endif
+      LINALG::Matrix<3,1> flvelabs(true);
+      // add fluid velocity (Navier Stokes solution) and relative flame velocity
+      for (int icomp=0; icomp<3; ++icomp)
+      {
+        const int err = reinitvel_tmp->ReplaceMyValues(1,&nvec(icomp),&lids[icomp]);
+        if (err) dserror("could not replace values for convective reinit velocity");
+      }
+    }
+#endif
 
-	#ifdef COMBUST_GMSH_NORMALFIELD
-	    gmshfilecontent << "};\n";
-	  }
-	  gmshfilecontent.close();
-	  if (true) std::cout << " done" << endl;
-	#endif
+#ifdef COMBUST_GMSH_NORMALFIELD
+    gmshfilecontent << "};\n";
+  }
+  gmshfilecontent.close();
+  if (true) std::cout << " done" << endl;
+#endif
 
   return reinitvel_tmp;
 }
@@ -1028,6 +1028,33 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
         // flame speed factor = laminar flame speed
         speedfac = sl-D*curv;
       }
+
+#ifdef COMBUST_BUNSENBURNER
+//      if(((lnode->X()[1]>0.5 && lnode->X()[1]<=0.55) && (lnode->X()[0]>=0.45)) || ((lnode->X()[1]>0.5 && lnode->X()[1]<=0.55) && (lnode->X()[0]<=-0.45)))
+//      {
+//          if(lnode->X()[0]>0)
+//              speedfac = 10.0*sqrt((lnode->X()[1]-0.5)*(lnode->X()[1]-0.5)+(lnode->X()[0]-0.5)*(lnode->X()[0]-0.5));
+//          else
+//              speedfac = 10.0*sqrt((lnode->X()[1]-0.5)*(lnode->X()[1]-0.5)+(lnode->X()[0]+0.5)*(lnode->X()[0]+0.5));
+//      }
+      if(lnode->X()[1]<=0.5 && lnode->X()[0]<0.51 && lnode->X()[0]>-0.51)
+      {
+          speedfac = 0.0;
+      } //2D
+//      if(lnode->X()[1]<=0.0 && lnode->X()[0]<0.51 && lnode->X()[0]>-0.51)
+//      {
+//          speedfac = 0.0;
+//      } //2D einfach
+//      if(lnode->X()[2]<=0.5 && sqrt(lnode->X()[0]*lnode->X()[0]+lnode->X()[1]*lnode->X()[1])<0.51)
+//      {
+//          speedfac = 0.0;
+//      }  //3D
+#endif //BUNSENBURNER
+
+#ifdef ORACLES
+      // modify flame speed for ORACLES problem
+#endif
+
 
       LINALG::Matrix<3,1> flvelrel(true);
       for (int icomp=0; icomp<3; ++icomp)
@@ -1471,7 +1498,7 @@ void COMBUST::Algorithm::DoGfuncField()
 #endif
 
     ScaTraField().SetVelocityField(
-//        OverwriteFluidVel(),
+        //OverwriteFluidVel(),
         //FluidField().ExtractInterfaceVeln(),
         ComputeFlameVel(convel,FluidField().DofSet()),
         Teuchos::null,
@@ -2202,15 +2229,19 @@ void COMBUST::Algorithm::Restart(int step)
 /* -------------------------------------------------------------------------------*
  * Restart (g-func is solved before fluid)                               rasthofer|
  * -------------------------------------------------------------------------------*/
-void COMBUST::Algorithm::RestartNew(int step)
+void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput)
 {
   if (Comm().MyPID()==0)
     std::cout << "Restart of combustion problem" << std::endl;
 
-#ifdef BCF_IGNORE_SCATRA_RESTART
-  Teuchos::RCP<Epetra_Vector> oldphinp = rcp(new Epetra_Vector(*(ScaTraField().Phinp())));
-  Teuchos::RCP<Epetra_Vector> oldphin = rcp(new Epetra_Vector(*(ScaTraField().Phin())));
-#endif
+  // read level-set field from input file instead of restart file
+  Teuchos::RCP<Epetra_Vector> oldphinp = Teuchos::null;
+  Teuchos::RCP<Epetra_Vector> oldphin  = Teuchos::null;
+  if (restartscatrainput)
+  {
+    oldphinp = rcp(new Epetra_Vector(*(ScaTraField().Phinp())));
+    oldphin  = rcp(new Epetra_Vector(*(ScaTraField().Phin())));
+  }
 
   // restart of scalar transport (G-function) field
   ScaTraField().ReadRestart(step);
@@ -2301,22 +2332,24 @@ void COMBUST::Algorithm::RestartNew(int step)
   // restart of fluid field
   FluidField().ReadRestart(step);
 
-#ifdef BCF_IGNORE_SCATRA_RESTART
-  // now overwrite restart phis w/ the old phis
-  ScaTraField().Phinp()->Update(1.0, *(oldphinp), 0.0);
-  ScaTraField().Phin()->Update(1.0, *(oldphin), 0.0);
-  ScaTraField().ComputeTimeDerivative();
-  ScaTraField().Phidtn()->Update(1.0,*(ScaTraField().Phidtnp()),0.0);
-  ScaTraField().Phinm()->Update(1.0,*(ScaTraField().Phin()),0.0);
+  // read level-set field from input file instead of restart file
+  if (restartscatrainput)
+  {
+    // now overwrite restart phis w/ the old phis
+    ScaTraField().Phinp()->Update(1.0, *(oldphinp), 0.0);
+    ScaTraField().Phin() ->Update(1.0, *(oldphin),  0.0);
+    ScaTraField().ComputeTimeDerivative();
+    ScaTraField().Phidtn()->Update(1.0,*(ScaTraField().Phidtnp()),0.0);
+    ScaTraField().Phinm() ->Update(1.0,*(ScaTraField().Phin()),   0.0);
 
-  // additionally we need to update the interfacehandle and flamefront
-  // or later on the computeVolume function will return the old volume
-  flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
-  interfacehandle_->UpdateInterfaceHandle();
-  FluidField().ImportFlameFront(flamefront_);
-  FluidField().ImportInterface(interfacehandle_,interfacehandle_);
-  FluidField().ImportFlameFront(Teuchos::null);
-#endif
+    // additionally we need to update the interfacehandle and flamefront
+    // or later on the computeVolume function will return the old volume
+    flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
+    interfacehandle_->UpdateInterfaceHandle();
+    FluidField().ImportFlameFront(flamefront_);
+    FluidField().ImportInterface(interfacehandle_,interfacehandle_);
+    FluidField().ImportFlameFront(Teuchos::null);
+  }
 
   //-------------------
   // write fluid output
