@@ -202,21 +202,23 @@ namespace XFEM
           dserror("no rule defined for this xele");
         }
       }
-      // TODO: Clarify this! hex integration cells for uncut refinement cells in an element
       else if (celldistype == DRT::Element::hex8)
       {
         switch (XELEDISTYPE)
         {
         case DRT::Element::hex8:
+        {
+          rule = DRT::UTILS::intrule_hex_64point;
+          break;
+        }
         case DRT::Element::hex20:
+        {
+          rule = DRT::UTILS::intrule_hex_125point;
+          break;
+        }
         case DRT::Element::hex27:
         {
-          rule = getOptimalVelocityGaussrule(celldistype);
-          // Ich habe xeleGeoType == GEO::LINEAR
-          //            if (xeleGeoType == GEO::CARTESIAN) // constant jacobian
-          //              rule = DRT::UTILS::intrule_hex_8point; //27point?
-          //            else
-          //              rule = DRT::UTILS::intrule_hex_8point;
+          rule = DRT::UTILS::intrule_hex_125point;
           break;
         }
         default:
