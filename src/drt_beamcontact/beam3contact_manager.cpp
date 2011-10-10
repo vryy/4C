@@ -27,6 +27,8 @@ Maintainer: Alexander Popp, Christian Cyron
 #include "../drt_beam3ii/beam3ii.H"
 #endif
 
+//#define RELCONSTRTOL
+
 /*----------------------------------------------------------------------*
  |  constructor (public)                                      popp 04/10|
  *----------------------------------------------------------------------*/
@@ -1125,6 +1127,7 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(const int uzawaiter)
   // some local variables
   int j=0;
   int dim = (int)pairs_.size();
+  // vector holding the values of the penetration relative to the radius of the beam with the smaller radius
   Epetra_SerialDenseVector gapvector(dim);
   
   // initalize processor-local and global norms
@@ -1143,8 +1146,31 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(const int uzawaiter)
       	pairs_[i]->InvertNormal();
 				cout << "Penetration to large, choose higher penalty parameter!" << endl;
       }
+#ifdef RELCONSTRTOL
+      // Retrieve beam radii
+      std::vector<double> radii(2,0.0);
+      for(int k=0; k<(int)radii.size();k++)
+      {
+      	// get Element type
+      	DRT::Element* currele = cdiscret_->gElement(pairs_[i]->Element1()->Id());
+      	if(k>0)
+      		currele = cdiscret_->gElement(pairs_[i]->Element2()->Id());
 
-      gapvector[j] = pairs_[i]->GetGap();
+				const DRT::ElementType & eot = currele->ElementType();
+				if(eot == DRT::ELEMENTS::Beam3Type::Instance())
+					radii[k] = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(currele))->Izz()) / M_PI));
+				else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
+					radii[k] = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(currele))->Izz()) / M_PI));
+				if(radii[k]==0.0)
+					dserror("beam radius is 0! Check your element type.");
+      }
+
+			double smallerradius = min(radii[0], radii[1]);
+
+			gapvector[j] = pairs_[i]->GetGap()/smallerradius;
+#else
+			gapvector[j] = pairs_[i]->GetGap();
+#endif
       j++;
     }
   }
@@ -1158,8 +1184,7 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(const int uzawaiter)
   // update penalty parameter if necessary
   // (only possible for AUGMENTED LAGRANGE strategy)
   bool updatepp = false;
-  INPAR::CONTACT::SolvingStrategy soltype =
-  DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(InputParameters(),"STRATEGY");
+  INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(InputParameters(),"STRATEGY");
   
   if (soltype==INPAR::CONTACT::solution_auglag)
     updatepp = UpdateCurrentpp(globnorm,uzawaiter);
@@ -1229,7 +1254,7 @@ bool CONTACT::Beam3cmanager::UpdateCurrentpp(const double& globnorm,
   bool update = false;
   if ( (globnorm >= 0.25 * constrnorm_) && (uzawaiter >= 2) )
   {
-    currentpp_ = currentpp_ * 2;
+    currentpp_ = currentpp_ * 2.0;
     update = true;
   }
   
