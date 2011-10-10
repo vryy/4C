@@ -20,8 +20,6 @@ NUMFIELD                        2
 TIMETYP                         Dynamic
 RESTART                         0
 --------------------------------------------------------------------------IO
-----------------------------------------------------------------------STATIC
-GEOLINEAR
 ---------------------------------------------------------EIGENVALUE ANALYSIS
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      Gen_Alfa
@@ -55,10 +53,10 @@ GAMMA                           1.00
 NONLINITER                      fixed_point_like
 ITEMAX                          10
 CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-6
+CONVTOL                         1.0E-4
 STEADYCHECK                     L_2_norm
 STEADYSTEP                      5
-STEADYTOL                       1.0E-6
+STEADYTOL                       1.0E-4
 STARTINGALGO                    One_Step_Theta
 NUMSTASTEPS                     0
 START_THETA                     0.67
@@ -77,8 +75,8 @@ CROSS-STRESS          no_cross        // no_cross cross_complete cross_rhs
 REYNOLDS-STRESS       no_reynolds     // no_reynolds reynolds_rhs
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         1000.0
-TIMESTEP                        0.001
-NUMSTEP                         10
+TIMESTEP                        0.00025
+NUMSTEP                         20
 UPPSS                           1
 UPRES                           1
 RESTARTEVRY                     1
@@ -3079,8 +3077,8 @@ MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0.0
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 583 POSITION velx NAME velx VALUE 5.067485781e-02 TOLERANCE 1e-6
-FLUID DIS 1 NODE 583 POSITION vely NAME vely VALUE 4.713206140e-02 TOLERANCE 1e-6
-FLUID DIS 1 NODE 583 POSITION pressure NAME pressure VALUE 4.430953156e+02 TOLERANCE 1e-6
+FLUID DIS 1 NODE 583 POSITION velx NAME velx VALUE 4.603775848e-02 TOLERANCE 1e-6
+FLUID DIS 1 NODE 583 POSITION vely NAME vely VALUE 4.274998256e-02 TOLERANCE 1e-6
+FLUID DIS 1 NODE 583 POSITION pressure NAME pressure VALUE 4.417223376e+02 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 // END
