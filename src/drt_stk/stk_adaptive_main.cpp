@@ -75,5 +75,7 @@ void adaptive_main()
       dserror("solution of unknown problemtyp %d requested", genprob.probtyp);
       break;
   }
+#else
+  dserror("Adaptive mesh is not available (flag STKADAPTIVE not defined)");
 #endif
 }
