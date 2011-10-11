@@ -1,11 +1,11 @@
 /*
- * beamcontact_utilitis.cpp
+ * beam3contact_utils.cpp
  *
  *  Created on: Oct 15, 2010
  *      Author: meier
  */
 
-#include "beamcontact_utilitis.H"
+#include "beam3contact_utils.H"
 
 
 int sgn(double skalar)

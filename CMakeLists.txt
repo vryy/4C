@@ -598,7 +598,7 @@ set(OBJS_FILTER_COMMON
 set(OBJS_DRT_BEAMCONTACT_LIB
   src/drt_beamcontact/beam3contact.cpp
   src/drt_beamcontact/beam3contact_manager.cpp
-  src/drt_beamcontact/beamcontact_utilitis.cpp
+  src/drt_beamcontact/beam3contact_utils.cpp
   src/drt_beamcontact/beam3contact_octtree.cpp
 )
 set(OBJS_DRT_STRU_MULTI
