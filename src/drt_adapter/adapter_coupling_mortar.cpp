@@ -32,7 +32,7 @@
 using namespace std;
 extern struct _GENPROB genprob;
 
-//#define ALLDOF
+#define ALLDOF
 
 ADAPTER::CouplingMortar::CouplingMortar()
 {
