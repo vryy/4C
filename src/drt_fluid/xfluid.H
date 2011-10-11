@@ -263,6 +263,8 @@ namespace FLD
 
     const INPAR::XFEM::BoundaryIntegralType BoundIntType() const {return boundIntType_;}
 
+    const std::string GaussPointType() const {return gaussPointType_;} //block or remove
+
     double ResidualScaling() const
     {
       if (TimIntScheme()==INPAR::FLUID::timeint_stationary)
@@ -361,6 +363,7 @@ namespace FLD
 
     enum INPAR::XFEM::BoundaryIntegralType boundIntType_;
     int boundIntFunct_;
+    std::string gaussPointType_; //blockk or remove
 
     bool gmsh_debug_out_;
     bool gmsh_sol_out_;

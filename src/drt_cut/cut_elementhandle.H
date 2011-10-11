@@ -67,7 +67,8 @@ public:
   virtual int NumVolumeCellGaussPoints() = 0;
 
   void VolumeCellGaussPoints( plain_volumecell_set & cells,
-                              std::vector<DRT::UTILS::GaussIntegration> & intpoints);
+                              std::vector<DRT::UTILS::GaussIntegration> & intpoints,
+			      std::string gausstype);
 
   void BoundaryCellGaussPoints( const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
                                 std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints );

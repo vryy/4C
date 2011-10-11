@@ -533,11 +533,10 @@ void GEO::CUT::VolumeCell::DumpGmsh(const std::vector<std::vector<double> >&gaus
                  filename = out.str();
                  file.open(filename.c_str());
          }
-         const std::vector<Point*> & corners = fe->CornerPoints();
-         for(std::vector<Point*>::const_iterator k=corners.begin();k!=corners.end();k++)
+         const std::vector<std::vector<double> > corners = fe->CornerPointsLocal(ParentElement(),0);
+         for(std::vector<std::vector<double> >::const_iterator k=corners.begin();k!=corners.end();k++)
          {
-             const Point* po = *k;
-             const double * coords = po->X();
+             const std::vector<double> coords = *k;
              file<<"Point("<<pointno<<")={"<<coords[0]<<","<<coords[1]<<","<<coords[2]<<","<<"1"<<"};"<<std::endl;
              pointno++;
          }
@@ -593,10 +592,10 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::VolumeCell::GaussPointsFitting()
 
         double det = xjm.Determinant();
  //       std::cout<<weights_[i]<<"\t"<<weights_[i]/det<<"\n";
-        double wei = weights_[i]/det;
+        double wei = weights_[i]/det; 
 //      std::cout<<xei(0,0)<<"\t"<<xei(1,0)<<"\t"<<xei(2,0)<<"\n";
 //
-        cgp->Append( xei, wei );
+        cgp->Append( xe, weights_[i] );
     }
 /*    double sum=0.0;
     for(unsigned i=0;i<weights_.size();i++)
@@ -610,11 +609,35 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem)
 {
     //position is used to decide whether the ordering of points are in clockwise or not
 //        std::cout<<"volume"<<std::endl;
+//
+//        static int k=0; //blockkk or remove
+//if(k==0 || k==1)        //blockkk or remove
+//{                       //blockkk or remove
     const GEO::CUT::Point::PointPosition posi = Position();
-    VolumeIntegration vc_inte(this,elem,posi,35);
+    VolumeIntegration vc_inte(this,elem,posi,56); //change the number of equations
 
     weights_ = vc_inte.compute_weights();
     gausPts_ = vc_inte.getGaussPointLocation(); 
+
+/*    k++;               //blockkk or remove
+    
+    std::cout<<"volume"<<"\n";
+    const plain_facet_set & facete = Facets();
+    for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
+    {
+        Facet *fac = *i;
+        const std::vector<Point*> & corners = fac->CornerPoints();
+        std::cout<<"facet"<<std::endl;
+        for(std::vector<Point*>::const_iterator k=corners.begin();k!=corners.end();k++)
+        {
+            const Point* po = *k;
+            const double * coords = po->X();
+            std::cout<<coords[0]<<"\t"<<coords[1]<<"\t"<<coords[2]<<std::endl;
+        }
+    }*/
+
+//}                      //blockkk or remove 
+
 
 /*    std::cout<<"volume"<<std::endl;
     for(unsigned i=0;i<weights_.size();i++)
@@ -631,4 +654,21 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem)
         std::cout<<dee<<std::endl;
     //  break;
     }*/
+
+
+	  static int sideno = 0;
+          sideno++;
+	  std::string filename="wrong";
+   	  std::ofstream file;
+
+          std::stringstream out;
+          out <<"parent"<<sideno<<".dat";
+          filename = out.str();
+          file.open(filename.c_str());
+	  for (unsigned i=0;i<weights_.size();i++)
+	  { 
+		  file<<gausPts_[i][0]<<"\t"<<gausPts_[i][1]<<"\t"<<gausPts_[i][2]<<"\t"<<weights_[i]<<std::endl;
+	  }
+	  file.close();
+
 }

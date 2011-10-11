@@ -222,7 +222,8 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
       {
         GEO::CUT::plain_volumecell_set cells;
         std::vector<DRT::UTILS::GaussIntegration> intpoints;
-        e->VolumeCellGaussPoints( cells, intpoints );
+
+        e->VolumeCellGaussPoints( cells, intpoints, xfluid_.GaussPointType());
 
         int count = 0;
         for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
@@ -814,6 +815,7 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   // get XFEM specific input parameters
   boundIntType_ = DRT::INPUT::IntegralValue<INPAR::XFEM::BoundaryIntegralType>(xfemparams,"EMBEDDED_BOUNDARY");
   boundIntFunct_ = xfemparams.get<int>("BOUNDARY_FUNCT_NO");
+  gaussPointType_ = xfemparams.get<std::string>("GAUSSPOINTSBY");//blockkk or remove
 
   // load GMSH output flags
   gmsh_sol_out_      = (bool)DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_SOL_OUT");

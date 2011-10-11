@@ -15,6 +15,7 @@ namespace GEO
     class Node;
     class Edge;
     class Side;
+    class Facet;
     class VolumeCell;
     class Element;
 
@@ -31,6 +32,8 @@ public:
   
   explicit BoundingBox( VolumeCell & volcell );
 
+  explicit BoundingBox( VolumeCell & volcell, Element* elem1);
+  
   explicit BoundingBox( Element & element );
 
   void Assign( Edge & edge );

@@ -976,3 +976,37 @@ GEO::CUT::Point * GEO::CUT::Facet::OtherPoint( Point * p1, Point * p2 )
   }
   return result;
 }
+
+//return the local coordinates of corner points with respect to the given element
+const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsLocal(Element *elem1, bool print)
+{
+        const std::vector<Point*> & corners = CornerPoints();
+        int mm=0;
+        std::vector<std::vector<double> >cornersLocal;
+        for(std::vector<Point*>::const_iterator k=corners.begin();k!=corners.end();k++)
+        {
+            std::vector<double> pt_local;
+            const Point* po = *k;
+            const double * coords = po->X();
+            LINALG::Matrix<3,1> glo,loc;
+//          std::cout<<coords[0]<<"\t"<<coords[1]<<"\t"<<coords[2]<<std::endl;
+            glo(0,0) = coords[0];
+            glo(1,0) = coords[1];
+            glo(2,0) = coords[2];
+
+            elem1->LocalCoordinates(glo,loc);
+
+            pt_local.push_back(loc(0,0));
+            pt_local.push_back(loc(1,0));
+            pt_local.push_back(loc(2,0));
+
+            cornersLocal.push_back(pt_local);
+	    if(print)
+	    {
+//	    std::cout<<glo(0,0)<<"\t"<<glo(1,0)<<"\t"<<glo(2,0)<<"\t";//blockkk or remove
+//	    std::cout<<loc(0,0)<<"\t"<<loc(1,0)<<"\t"<<loc(2,0)<<"\n";
+	    }
+            mm++;
+        }
+        return cornersLocal;
+}

@@ -15,6 +15,8 @@
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_inpar/inpar_xfem.H"
 
+#include<fstream>
+
 
 template <DRT::Element::DiscretizationType distype>
 Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected( GEO::CUT::IntegrationCell * ic )
@@ -40,16 +42,15 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::ElementHandle::CreateProjected( 
 }
 
 void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cells,
-                                                     std::vector<DRT::UTILS::GaussIntegration> & intpoints )
+                                                     std::vector<DRT::UTILS::GaussIntegration> & intpoints,
+	                                             std::string gausstype )
 {
   GetVolumeCells( cells );
 
   intpoints.clear();
   intpoints.reserve( cells.size() );
 
-  int tessellation = 1,momentfitting=0;//remove or blockkk
-
-  if(tessellation || cells.size()==1)
+  if(gausstype == "Tessellation" || cells.size()==1)
   {
 
         for ( plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
@@ -98,7 +99,7 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cell
         }
   }
 
-  else if(momentfitting)
+  else if(gausstype == "MomentFitting")
   {
        for(plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i)
        {
@@ -107,10 +108,39 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cell
                Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
                         Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );
                gpc->Append(gp);
-               intpoints.push_back( DRT::UTILS::GaussIntegration( gp ) );
-
+               intpoints.push_back( DRT::UTILS::GaussIntegration( gpc ) );
        }
   }
+
+
+  /*if(IsCut())
+  {
+	  static int eeno=0;
+	  eeno++;
+	  if(eeno==1 || eeno==2 || eeno==3)
+	  {
+  for(std::vector<DRT::UTILS::GaussIntegration>::iterator i=intpoints.begin();i!=intpoints.end();i++)
+  {
+	  DRT::UTILS::GaussIntegration ga = *i;
+	  static int sideno = 0;
+          sideno++;
+	  std::string filename="wrong";
+   	  std::ofstream file;
+
+          std::stringstream out;
+          out <<"gauss"<<sideno<<".dat";
+          filename = out.str();
+          file.open(filename.c_str());
+	  for ( DRT::UTILS::GaussIntegration::const_iterator iquad=ga.begin(); iquad!=ga.end(); ++iquad )
+	  {
+		  const double* gpp = iquad.Point();
+		  file<<gpp[0]<<"\t"<<gpp[1]<<"\t"<<gpp[1]<<"\t";
+		  file<<iquad.Weight()<<std::endl;
+	  }
+	  file.close();
+  }
+  }
+  }*/
 
 #if 0
 

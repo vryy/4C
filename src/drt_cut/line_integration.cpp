@@ -65,7 +65,7 @@ std::vector<std::vector<double> > LineIntegration::find_line_integration_pts()
         {
                 xmid[i] = 0.5*(point_begin_[i]+point_end_[i]);
         }
-        //Finding the 3 integration points used in Gaussian quadrature
+        //Finding the 8 integration points used in Gaussian quadrature
         for(int i=0;i<8;i++)
         {
                 double tau_fac = line_tau[i];
@@ -123,11 +123,10 @@ double LineIntegration::integrate_line()
                 pt.push_back(line_int_pts[1][i]);
 
                 double linein = base_func_line_int(pt, inte_num_,alpha_);
-        //      std::cout<<"base = "<<linein<<std::endl;
                 inte = inte+line_wei[i]*linein;
         }
         inte = inte*normal[0]*half_len;
-//      std::cout<<"line_inte = "<<inte<<std::endl;
+//        std::cout<<"line_inte = "<<inte<<std::endl;
 
         return inte;
 }

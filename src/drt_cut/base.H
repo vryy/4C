@@ -219,6 +219,134 @@ double base_func_line_int(std::vector<double> pt, int inte_num,std::vector<doubl
                 basef_line = alfa[2]*pt[0]*pt[1]+0.5*alfa[1]*y2+alfa[0]*pt[0];
                 return basef_line*z4;
         }
+
+        
+        double a06=pow(alfa[0],6),a16=pow(alfa[1],6),a26=pow(alfa[2],6),z6=pow(pt[1],6),y7=pow(pt[0],7);
+        if(inte_num==36) //f(x,y,z) = x^5
+        {
+                if(fabs(alfa[1])<0.0000001)
+                        basef_line = pow((alfa[0]+alfa[2]*pt[1]),6)*pt[0]/6.0;
+                else
+                        basef_line = pow((alfa[0]+alfa[1]*pt[0]+alfa[2]*pt[1]),7)/42.0/alfa[1];
+                return basef_line;
+        }
+        if(inte_num==37) //f(x,y,z) = x^4*y
+        {
+                basef_line = pt[0]*pt[0]*(21*a25*z5+105*alfa[0]*a24*z4+210*a02*a23*z3+210*a03*a22*z2+105*a04*alfa[2]*pt[1]+21*a05)+
+                        pow(pt[0],3)*(70*alfa[1]*a24*z4+280*alfa[0]*alfa[1]*a23*z3+420*a02*alfa[1]*a22*z2+280*a03*alfa[1]*alfa[2]*pt[1]+
+                        70*a04*alfa[1])+pow(pt[0],4)*(105*a12*a23*z3+315*alfa[0]*a12*a22*z2+315*a02*a12*alfa[2]*pt[1]+105*a03*a12)+
+                        pow(pt[0],5)*(84*a13*a22*z2+168*alfa[0]*a13*alfa[2]*pt[1]+84*a02*a13)+pow(pt[0],6)*(35*a14*alfa[2]*pt[1]+35*alfa[0]*a14)+
+                        6*a15*y7;
+                return basef_line/210.0;
+        }
+        if(inte_num==38) //f(x,y,z) = x^4*z
+        {
+                basef_line = pt[1]*(a25*pt[0]*z5+5*alfa[0]*(a24*pt[0]*z4+2*alfa[1]*a23*y2*z3+2*a12*a22*y3*z2+a13*alfa[2]*y4*pt[1]+0.2*a14*y5)+
+                        2.5*alfa[1]*a24*y2*z4+10*a02*(a23*pt[0]*z3+1.5*alfa[1]*a22*y2*z2+a12*alfa[2]*y3*pt[1]+0.25*a13*y4)+10*a12*a23*y3*z3/3.0+
+                        10*a03*(a22*pt[0]*z2+alfa[1]*alfa[2]*y2*pt[1]+a12*y3/3.0)+2.5*a13*a22*y4*z2+5*a04*(alfa[2]*pt[0]*pt[1]+0.5*alfa[1]*y2)+
+                        a14*alfa[2]*y5*pt[1]+a15*y6/6.0+a05*pt[0]);
+                return basef_line*0.2;
+        }
+        if(inte_num==39) //f(x,y,z) = x^3*y^2
+        {
+                basef_line = pow(pt[0],3)*(35*a24*z4+140*alfa[0]*a23*z3+210*a02*a22*z2+140*a03*alfa[2]*pt[1]+35*a04)+pow(pt[0],4)*(105*alfa[1]*a23*z3+
+                        315*alfa[0]*alfa[1]*a22*z2+315*a02*alfa[1]*alfa[2]*pt[1]+105*a03*alfa[1])+pow(pt[0],5)*(126*a12*a22*z2+252*alfa[0]*a12*alfa[2]*pt[1]+
+                        126*a02*a12)+pow(pt[0],6)*(70*a13*alfa[2]*pt[1]+70*alfa[0]*a13)+15*a14*y7;
+                return basef_line/420.0;
+        }
+        if(inte_num==40) //f(x,y,z) = x^3*yz
+        {
+                basef_line = pt[1]*(y2*(15*a24*z4+60*alfa[0]*a23*z3+90*a02*a22*z2+60*a03*alfa[2]*pt[1]+15*a04)+y3*(40*alfa[1]*a23*z3+
+                        120*alfa[0]*alfa[1]*a22*z2+120*a02*alfa[1]*alfa[2]*pt[1]+40*a03*alfa[1])+y4*(45*a12*a22*z2+90*alfa[0]*a12*alfa[2]*pt[1]+
+                        45*a02*a12)+y5*(24*a13*alfa[2]*pt[1]+24*alfa[0]*a13)+5*a14*y6);
+                return basef_line/120.0;
+        }
+        if(inte_num==41) //f(x,y,z) = x^3*z^2
+        {
+                basef_line = z2*(a24*pt[0]*z4+4*alfa[0]*(a23*pt[0]*z3+1.5*alfa[1]*a22*y2*z2+a12*alfa[2]*y3*pt[1]+0.25*a13*y4)+2*alfa[1]*a23*y2*z3+6*a02*
+                        (a22*pt[0]*z2+alfa[1]*alfa[2]*y2*pt[1]+a12*y3/3.0)+2*a12*a22*y3*z2+4*a03*(alfa[2]*pt[0]*pt[1]+0.5*alfa[1]*y2)+a13*alfa[2]*y4*pt[1]+
+                        0.2*a14*y5+a04*pt[0]);
+                return basef_line*0.25;
+        }
+        if(inte_num==42) //f(x,y,z) = x^2*y^3
+        {
+                basef_line = y4*(35*a23*z3+105*alfa[0]*a22*z2+105*a02*alfa[2]*pt[1]+35*a03)+y5*(84*alfa[1]*a22*z2+168*alfa[0]*alfa[1]*alfa[2]*pt[1]+84*a02*alfa[1])+
+                        y6*(70*a12*alfa[2]*pt[1]+70*alfa[0]*a12)+20*a13*y7;
+                return basef_line/420.0;
+        }
+        if(inte_num==43) //f(x,y,z) = x^2*y^2*z
+        {
+                basef_line = pt[1]*(y3*(20*a23*z3+60*alfa[0]*a22*z2+60*a02*alfa[2]*pt[1]+20*a03)+y4*(45*alfa[1]*a22*z2+90*alfa[0]*alfa[1]*alfa[2]*pt[1]+45*a02*alfa[1])+
+                        y5*(36*a12*alfa[2]*pt[1]+36*alfa[0]*a12)+10*a13*y6);
+                return basef_line/180.0;
+        }
+        if(inte_num==44) //f(x,y,z) = x^2*yz^2
+        {
+                basef_line = z2*(y2*(10*a23*z3+30*alfa[0]*a22*z2+30*a02*alfa[2]*pt[1]+10*a03)+y3*(20*alfa[1]*a22*z2+40*alfa[0]*alfa[1]*alfa[2]*pt[1]+20*a02*alfa[1])+
+                        y4*(15*a12*alfa[2]*pt[1]+15*alfa[0]*a12)+4*a13*y5);
+                return basef_line/60.0;
+        }
+        if(inte_num==45) //f(x,y,z) = x^2*z^3
+        {
+                basef_line = z3*(a23*pt[0]*z3+3*alfa[0]*(a22*pt[0]*z2+alfa[1]*alfa[2]*y2*pt[1]+a12*y3/3.0)+1.5*alfa[1]*a22*y2*z2+3*a02*(alfa[2]*pt[0]*pt[1]+0.5*alfa[1]*y2)+
+                        a12*alfa[2]*y3*pt[1]+0.25*a13*y4+a03*pt[0]);
+                return basef_line/3.0;
+        }
+        if(inte_num==46) //f(x,y,z) = xy^4
+        {
+                basef_line = y5*(21*a22*z2+42*alfa[0]*alfa[2]*pt[1]+21*a02)+y6*(35*alfa[1]*alfa[2]*pt[1]+35*alfa[0]*alfa[1])+15*a12*y7;
+                return basef_line/210.0;
+        }
+        if(inte_num==47) //f(x,y,z) = xy^3*z
+        {
+                basef_line = pt[1]*(y4*(15*a22*z2+30*alfa[0]*alfa[2]*pt[1]+15*a02)+y5*(24*alfa[1]*alfa[2]*pt[1]+24*alfa[0]*alfa[1])+10*a12*y6);
+                return basef_line/120.0;
+        }
+        if(inte_num==48) //f(x,y,z) = xy^2*z^2
+        {
+                basef_line = z2*(y3*(10*a22*z2+20*alfa[0]*alfa[2]*pt[1]+10*a02)+y4*(15*alfa[1]*alfa[2]*pt[1]+15*alfa[0]*alfa[1])+6*a12*y5);
+                return basef_line/60.0;
+        }
+        if(inte_num==49) //f(x,y,z) = xyz^3
+        {
+                basef_line = z3*(y2*(6*a22*z2+12*alfa[0]*alfa[2]*pt[1]+6*a02)+y3*(8*alfa[1]*alfa[2]*pt[1]+8*alfa[0]*alfa[1])+3*a12*y4);
+                return basef_line/24.0;
+        }
+        if(inte_num==50) //f(x,y,z) = xz^4
+        {
+                basef_line = z4*(a22*pt[0]*z2+2*alfa[0]*(alfa[2]*pt[0]*pt[1]+0.5*alfa[1]*y2)+alfa[1]*alfa[2]*y2*pt[1]+a12*y3/3.0+a02*pt[0]);
+                return  basef_line*0.5;
+        }
+        if(inte_num==51) //f(x,y,z) = y^5
+        {
+                basef_line = y6*(7*alfa[2]*pt[1]+7*alfa[0])+6*alfa[1]*y7;
+                return basef_line/42.0;
+        }
+        if(inte_num==52) //f(x,y,z) = y^4*z
+        {
+                basef_line = pt[1]*(y5*(6*alfa[2]*pt[1]+6*alfa[0])+5*alfa[1]*y6);
+                return basef_line/30.0;
+        }
+        if(inte_num==53) //f(x,y,z) = y^3*z^2
+        {
+                basef_line = z2*(y4*(5*alfa[2]*pt[1]+5*alfa[0])+4*alfa[1]*y5);
+                return basef_line*0.05;
+        }
+        if(inte_num==54) //f(x,y,z) = y^2*z^3
+        {
+                basef_line = z3*(y3*(4*alfa[2]*pt[1]+4*alfa[0])+3*alfa[1]*y4);
+                return basef_line/12.0;
+        }
+        if(inte_num==55) //f(x,y,z) = yz^4
+        {
+                basef_line = z4*(y2*(3*alfa[2]*pt[1]+3*alfa[0])+2*alfa[1]*y3);
+                return basef_line/6.0;
+        }
+        if(inte_num==56) //f(x,y,z) = z^5
+        {
+                basef_line = z5*(alfa[2]*pt[0]*pt[1]+0.5*alfa[1]*y2+alfa[0]*pt[0]);
+                return basef_line;
+        }
 }
 
 /*//returns function which is used to form the matrix of moment fitting equations

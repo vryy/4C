@@ -3783,6 +3783,11 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                    ),
                                &xfem_general);
 
+  setStringToIntegralParameter<int>("GAUSSPOINTSBY","Tessellation","how to find Gauss Points for the cut volumes",
+                               tuple<std::string>("Tessellation","MomentFitting"),
+			       tuple<int>(0,1),
+			       &xfem_general);
+
   IntParameter("BOUNDARY_FUNCT_NO",-1,"funct no for WDBC or Neumann Condition at embedded boundary/interface",&xfem_general);
 
   /*----------------------------------------------------------------------*/

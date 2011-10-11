@@ -31,6 +31,7 @@ std::vector<double> GEO::CUT::VolumeIntegration::compute_rhs_moment()
             {
                 std::vector<double> eqn = faee1.get_equation();
                 eqn_facets_.push_back(eqn);
+//		std::cout<<"eqn_plane"<<eqn[0]<<"\t"<<eqn[1]<<"\t"<<eqn[2]<<"\t"<<eqn[3]<<"\n"; //blockkk or remove
             }
         }
         rhs_mom.push_back(mome);
@@ -58,7 +59,7 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
      ********* with the sides of the volumecell**************************************/
 //construct a bounding box within which the Gaussian points are distributed and checked whether
 //they are inside the volume cell or not
-    BoundingBox box1(*volcell_);
+    BoundingBox box1(*volcell_,elem1_);
     double minn[3],maxx[3];
     minn[0] = box1.minx();
     maxx[0] = box1.maxx();
@@ -66,8 +67,8 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
     maxx[1] = box1.maxy();
     minn[2] = box1.minz();
     maxx[2] = box1.maxz();
-//    std::cout<<minn[0]<<"\t"<<maxx[0]<<std::endl;
-  //  std::cout<<minn[1]<<"\t"<<maxx[1]<<std::endl;
+//    std::cout<<minn[0]<<"\t"<<maxx[0]<<"\t";
+  //  std::cout<<minn[1]<<"\t"<<maxx[1]<<"\t";
     //std::cout<<minn[2]<<"\t"<<maxx[2]<<std::endl;
  
     vector<vector<double> > zcoord;
@@ -274,11 +275,10 @@ void GEO::CUT::VolumeIntegration::get_zcoordinates(vector<vector<double> >& zcoo
                     continue;
             }
             Facet *face1 = *i;
-            const std::vector<Point*> & corners = face1->CornerPoints();
-            for(std::vector<Point*>::const_iterator k=corners.begin();k!=corners.end();k++)
+            const std::vector<vector<double> > corLocal = face1->CornerPointsLocal(elem1_,0);
+            for(std::vector<std::vector<double> >::const_iterator k=corLocal.begin();k!=corLocal.end();k++)
             {
-                const Point* po1 = *k;
-                const double * coords1 = po1->X();
+		std::vector<double> coords1 = *k;
 
                 thisplane1.push_back(coords1[1]);
                 thisplane2.push_back(coords1[2]);
@@ -665,7 +665,7 @@ std::vector<double> GEO::CUT::VolumeIntegration::compute_weights()
         weights.push_back(0.0);
     }
 
-/*    for(int j=0;j<num_func_;j++)
+    for(int j=0;j<num_func_;j++)
     {
     double chek = 0.0;
     for(int i=0;i<weights.size();i++)
@@ -678,9 +678,9 @@ std::vector<double> GEO::CUT::VolumeIntegration::compute_weights()
     }
     std::cout<<"check"<<rhs_moment[j]-chek<<std::endl;
 //    std::cout<<"value"<<chek<<std::endl;
-    }*/
+    }
 
-    double chek=0.0;
+/*    double chek=0.0;
     for(unsigned i=0;i<weights.size();i++)
     {
          chek += weights[i]*(pow(gaus_pts_[i][0],4)+pow(gaus_pts_[i][1],4)+5.0);     
@@ -688,13 +688,15 @@ std::vector<double> GEO::CUT::VolumeIntegration::compute_weights()
 //        chek += pow(gaus_pts_[i][0],4)*weights[i];
     }
     std::cout<<scientific<<"check"<<chek<<std::endl;
-    std::cout<<scientific<<"error"<<chek-(rhs_moment[20]+rhs_moment[30]+5*rhs_moment[0])<<std::endl;
+    std::cout<<scientific<<"error"<<chek-(rhs_moment[20]+rhs_moment[30]+5*rhs_moment[0])<<std::endl;*/
 
 /*  for(int i=0;i<weights.size();i++)
         std::cout<<"wei"<<weights[i]<<std::endl;*/
 
+    std::cout<<"volume = "<<rhs_moment[0]<<"\t"<<rhs_moment[1]<<"\t"<<rhs_moment[4]<<std::endl;
+
 #ifdef DEBUGCUTLIBRARY
-    GaussPointGmsh();
+//    GaussPointGmsh();
 #endif
 
     return weights;

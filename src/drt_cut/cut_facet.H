@@ -120,7 +120,9 @@ public:
 
   const std::vector<Point*> & Points() const { return points_; }
 
-  const std::vector<Point*> & CornerPoints() const { return corner_points_; }
+  const std::vector<Point*> CornerPoints() const { return corner_points_; }
+
+  const std::vector<std::vector<double> > CornerPointsLocal(Element *elem1,bool print);
 
   const std::vector<std::vector<Point*> > & Triangulation() const { return triangulation_; }
 

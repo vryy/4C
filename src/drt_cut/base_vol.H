@@ -78,6 +78,50 @@ double base_function(std::vector<double> coordi,int base_num)
                 return coordi[1]*coordi[2]*coordi[2]*coordi[2];
         if(base_num==35) //f(x,y,z) = z^4
                 return coordi[2]*coordi[2]*coordi[2]*coordi[2];
+
+        if(base_num==36) //f(x,y,z) = x^5
+                return coordi[0]*coordi[0]*coordi[0]*coordi[0]*coordi[0];
+        if(base_num==37) //f(x,y,z) = x^4*y
+                return coordi[0]*coordi[0]*coordi[0]*coordi[0]*coordi[1];
+        if(base_num==38) //f(x,y,z) = x^4*z
+                return coordi[0]*coordi[0]*coordi[0]*coordi[0]*coordi[2];
+        if(base_num==39) //f(x,y,z) = x^3*y^2
+                return coordi[0]*coordi[0]*coordi[0]*coordi[1]*coordi[1];
+        if(base_num==40) //f(x,y,z) = x^3*yz
+                return coordi[0]*coordi[0]*coordi[0]*coordi[1]*coordi[2];
+        if(base_num==41) //f(x,y,z) = x^3*z^2
+                return coordi[0]*coordi[0]*coordi[0]*coordi[2]*coordi[2];
+        if(base_num==42) //f(x,y,z) = x^2*y^3
+                return coordi[0]*coordi[0]*coordi[1]*coordi[1]*coordi[1];
+        if(base_num==43) //f(x,y,z) = x^2*y^2*z
+                return coordi[0]*coordi[0]*coordi[1]*coordi[1]*coordi[2];
+        if(base_num==44) //f(x,y,z) = x^2*yz^2
+                return coordi[0]*coordi[0]*coordi[1]*coordi[2]*coordi[2];
+        if(base_num==45) //f(x,y,z) = x^2*z^3
+                return coordi[0]*coordi[0]*coordi[2]*coordi[2]*coordi[2];
+        if(base_num==46) //f(x,y,z) = x*y^4
+                return coordi[0]*coordi[1]*coordi[1]*coordi[1]*coordi[1];
+        if(base_num==47) //f(x,y,z) = x*y^3*z
+                return coordi[0]*coordi[1]*coordi[1]*coordi[1]*coordi[2];
+        if(base_num==48) //f(x,y,z) = x*y^2*z^2
+                return coordi[0]*coordi[1]*coordi[1]*coordi[2]*coordi[2];
+        if(base_num==49) //f(x,y,z) = x*y*z^3
+                return coordi[0]*coordi[1]*coordi[2]*coordi[2]*coordi[2];
+        if(base_num==50) //f(x,y,z) = x*z^4
+                return coordi[0]*coordi[2]*coordi[2]*coordi[2]*coordi[2];
+        if(base_num==51) //f(x,y,z) = y^5
+                return coordi[1]*coordi[1]*coordi[1]*coordi[1]*coordi[1];
+        if(base_num==52) //f(x,y,z) = y^4*z
+                return coordi[1]*coordi[1]*coordi[1]*coordi[1]*coordi[2];
+        if(base_num==53) //f(x,y,z) = y^3*z^2
+                return coordi[1]*coordi[1]*coordi[1]*coordi[2]*coordi[2];
+        if(base_num==54) //f(x,y,z) = y^2*z^3
+                return coordi[1]*coordi[1]*coordi[2]*coordi[2]*coordi[2];
+        if(base_num==55) //f(x,y,z) = y*z^4
+                return coordi[1]*coordi[2]*coordi[2]*coordi[2]*coordi[2];
+        if(base_num==56) //f(x,y,z) = z^5
+                return coordi[2]*coordi[2]*coordi[2]*coordi[2]*coordi[2];
+
 }
 #endif
 
