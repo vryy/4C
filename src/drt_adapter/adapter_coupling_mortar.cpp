@@ -32,7 +32,7 @@
 using namespace std;
 extern struct _GENPROB genprob;
 
-#define ALLDOF
+//#define ALLDOF
 
 ADAPTER::CouplingMortar::CouplingMortar()
 {
@@ -512,6 +512,7 @@ void ADAPTER::CouplingMortar::Setup
 void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
     const Epetra_Comm& comm, int meshtyingoption, bool structslave)
 {
+  int myrank  = dis.Comm().MyPID();
 
   // initialize maps for row nodes
   map<int, DRT::Node*> masternodes;
@@ -556,15 +557,18 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
     if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
       dserror("Condensation works only for dual shape functions");
 
-  if (DRT::INPUT::IntegralValue<int>(input,"SHAPEFCN")==INPAR::MORTAR::shape_standard)
+  if(myrank == 0)
   {
-    if(comm.MyPID()==0)
-      cout << "Shape functions:  standard" << endl;
+    if (DRT::INPUT::IntegralValue<int>(input,"SHAPEFCN")==INPAR::MORTAR::shape_standard)
+    {
+      if(comm.MyPID()==0)
+        cout << "Shape functions:  standard" << endl;
+    }
+    else if (DRT::INPUT::IntegralValue<int>(input,"SHAPEFCN")==INPAR::MORTAR::shape_dual)
+    {
+      if(comm.MyPID()==0)
+        cout << "Shape functions:  dual" << endl;
   }
-  else if (DRT::INPUT::IntegralValue<int>(input,"SHAPEFCN")==INPAR::MORTAR::shape_dual)
-  {
-    if(comm.MyPID()==0)
-      cout << "Shape functions:  dual" << endl;
   }
 
   // check for parallel redistribution (only if more than 1 proc)
@@ -587,12 +591,19 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   //  Pressure DoF are also transferred to MortarInterface
 #ifdef ALLDOF
   int dof = dis.NumDof(dis.lRowNode(0));
-  cout << "All dof's are coupled!! " << endl << endl;
+
+  if(myrank==0)
+  {
+    cout << "All dof's are coupled!! " << endl << endl;
 #else
   //  Pressure DoF are not transferred to MortarInterface
   int dof = dis.NumDof(dis.lRowNode(0))-1;
-  cout << "Warning: NOT all dof's are coupled!! " << endl << endl;
+
+  if(myrank==0)
+  {
+    cout << "Warning: NOT all dof's are coupled!! " << endl << endl;
 #endif
+  }
 
   if(meshtyingoption != INPAR::FLUID::coupling_iontransport_laplace)
   {

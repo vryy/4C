@@ -76,6 +76,24 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
   // c) Saddle point system sparse matrix (sps_coupled)
   // d) Saddle point system block matrix (sps_pc)
 
+  // number of nodes master < number of nodes slave
+  // -> better results, Krylov does not work ??
+
+  if(myrank_==0)
+  {
+    int numdofmaster = (adaptermeshtying_.MasterDofRowMap())->NumGlobalElements();
+    int numdofslave = (adaptermeshtying_.SlaveDofRowMap())->NumGlobalElements();
+
+    cout << endl << "number of master dof's:   " << numdofmaster << endl;
+    cout << "number of slave dof's:   " << numdofslave << endl << endl;
+
+    if(numdofmaster > numdofslave)
+      // dserror("The master side is discretized by more elements than the slave side!! Do you really want to do it?");
+      cout << "The master side is discretized by more elements than the slave side" << endl;
+    else
+      cout << "The slave side is discretized by more elements than the master side" << endl;
+  }
+
   switch (msht_)
   {
   case INPAR::FLUID::condensed_bmat:
@@ -184,8 +202,10 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
 
 #ifdef DIRECTMANIPULATION
     cout << "Condensation operation takes place in the original sysmat -> graph is saved" << endl;
+    cout << "Warning: Dirichlet on the interface does not work in combination with smat" << endl << endl;
 #else
     cout << "Condensation operation is carried out in a new allocated sparse matrix -> graph is not saved" << endl;
+    cout << "Warning: Dirichlet on the interface does not work in combination with smat" << endl << endl;
 #endif
 
     return Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_,108,false,true));
