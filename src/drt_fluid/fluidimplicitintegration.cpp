@@ -587,11 +587,12 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     gasconstant_ = 1.0;
   }
 
-  // initialize all thermodynamic pressure values and its time derivative
+  // initialize all thermodynamic pressure values and its time derivatives
   // to one or zero, respectively
   // -> they are kept this way for incompressible flow
   thermpressaf_   = 1.0;
   thermpressam_   = 1.0;
+  thermpressdtaf_ = 0.0;
   thermpressdtam_ = 0.0;
 
 #ifdef D_ALE_BFLOW
@@ -1094,6 +1095,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       // set thermodynamic pressures
       eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
       eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
+      eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
       eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
 
       // set general vector values needed by elements
@@ -2186,6 +2188,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   // set thermodynamic pressures
   eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
   eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
+  eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
   eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
 
   // set general vector values needed by elements
@@ -2636,6 +2639,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // set thermodynamic pressures
   eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
   eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
+  eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
   eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
 
   // set general vector values needed by elements
@@ -3491,6 +3495,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   // set thermodynamic pressures
   eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
   eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
+  eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
   eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
 
   // set general vector values needed by elements
@@ -4013,6 +4018,7 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(
    RCP<const Epetra_Vector> scalardtam,
    const double             thermpressaf,
    const double             thermpressam,
+   const double             thermpressdtaf,
    const double             thermpressdtam,
    Teuchos::RCP<DRT::Discretization> scatradis)
 {
@@ -4078,11 +4084,12 @@ void FLD::FluidImplicitTimeInt::SetIterLomaFields(
   }
 
   //--------------------------------------------------------------------------
-  // get thermodynamic pressure at n+alpha_F/n+1 and n+alpha_M/n
-  // and time derivative of thermodynamic pressure at n+alpha_M/n+1
+  // get thermodynamic pressure at n+alpha_F/n+1 and n+alpha_M/n and
+  // time derivative of thermodyn. press. at n+alpha_F/n+1 and n+alpha_M/n+1
   //--------------------------------------------------------------------------
   thermpressaf_   = thermpressaf;
   thermpressam_   = thermpressam;
+  thermpressdtaf_ = thermpressdtaf;
   thermpressdtam_ = thermpressdtam;
 
   return;
@@ -4933,6 +4940,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     // set thermodynamic pressures
     eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
     eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
+    eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
     eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
 
     // set general vector values needed by elements

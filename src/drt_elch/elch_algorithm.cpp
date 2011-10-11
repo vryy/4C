@@ -202,6 +202,7 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
         1.0,
         1.0,
         0.0,
+        0.0,
         ScaTraField().Discretization());
     break;
   }
@@ -214,6 +215,7 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
         Teuchos::null,
         1.0,
         1.0,
+        0.0,
         0.0,
         ScaTraField().Discretization());
     break;
@@ -348,6 +350,7 @@ void ELCH::Algorithm::UpdateConvection()
         Teuchos::null,
         1.0,
         1.0,
+        0.0,
         0.0,
         numscal);
     break;

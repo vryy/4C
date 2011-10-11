@@ -97,7 +97,10 @@ public:
   /// routine to return thermo. press. at time step n+alpha_M for low-Mach-number flow
   double ThermPressAm(){return 1.0;}
 
-  /// routine to return thermo. press. at time step n+alpha_M for low-Mach-number flow
+  /// routine to return time derivative of thermo. press. at time step n+alpha_F for low-Mach-number flow
+  double ThermPressDtAf(){return 0.0;}
+
+  /// routine to return time derivative of thermo. press. at time step n+alpha_M for low-Mach-number flow
   double ThermPressDtAm(){return 0.0;}
 
 

@@ -288,11 +288,12 @@ FLD::FluidXFluidImplicitTimeInt::FluidXFluidImplicitTimeInt(RefCountPtr<DRT::Dis
   if (density_ < EPS15) dserror("received zero or negative density value");
 
 
-  // initialize all thermodynamic pressure values and its time derivative
+  // initialize all thermodynamic pressure values and its time derivatives
   // to one or zero, respectively
   // -> they are kept this way for incompressible flow
   thermpressaf_   = 1.0;
   thermpressam_   = 1.0;
+  thermpressdtaf_ = 0.0;
   thermpressdtam_ = 0.0;
 
   //xfluid vectors
@@ -882,6 +883,7 @@ void FLD::FluidXFluidImplicitTimeInt::NonlinearSolve(
 
       eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
       eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
+      eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
       eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
 
       // set general vector values needed by elements

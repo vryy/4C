@@ -68,10 +68,12 @@ namespace ADAPTER
                                    Teuchos::RCP<const Epetra_Vector> scalardtam,
                                    const double             thermpressaf,
                                    const double             thermpressam,
+                                   const double             thermpressdtaf,
                                    const double             thermpressdtam,
                                    Teuchos::RCP<DRT::Discretization> scatradis)
     { return fluid_->SetIterLomaFields(scalaraf, scalaram, scalardtam, thermpressaf,
-                                       thermpressam, thermpressdtam, scatradis); }
+                                       thermpressam, thermpressdtaf,
+                                       thermpressdtam, scatradis); }
     virtual void SetTimeLomaFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
                                    const double             thermpressnp,
                                    Teuchos::RCP<const Epetra_Vector> scatraresidual,

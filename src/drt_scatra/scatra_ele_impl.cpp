@@ -242,6 +242,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     sgvelint_(true),
     migvelint_(true),
     vdiv_(0.0),
+    scatrares_(numscal_),
     tau_(numscal_),
     sgdiff_(numscal_),
     xder2_(true),
@@ -255,6 +256,10 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     gradphi_(true),
     fsgradphi_(true),
     laplace_(true),
+    conv_phi_(numscal_),
+    diff_phi_(numscal_),
+    rea_phi_(numscal_),
+    sgphi_(numscal_),
     thermpressnp_(0.0),
     thermpressam_(0.0),
     thermpressdt_(0.0),
@@ -2069,6 +2074,17 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         sgvelint_.Clear();
         sgconv_.Clear();
 
+        // get history data (or acceleration)
+        hist_[k] = funct_.Dot(ehist_[k]);
+
+        // compute rhs containing bodyforce (divided by shcacp) and,
+        // for temperature equation, the time derivative of thermodynamic pressure,
+        // if not constant, and for temperature equation of a reactive
+        // equation system, the reaction-rate term
+        rhs_[k] = bodyforce_[k].Dot(funct_)/shcacp_;
+        rhs_[k] += thermpressdt_/shcacp_;
+        rhs_[k] += densnp_[k]*reatemprhs_[k];
+
         //--------------------------------------------------------------------
         // calculation of (fine-scale) subgrid diffusivity, subgrid-scale
         // velocity and stabilization parameter(s) at integration point
@@ -2104,25 +2120,23 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           CalTau(ele,diffus_[k],dt,timefac,whichtau,vol,k,0.0,false);
         }
 
-        // get history data (or acceleration)
-        hist_[k] = funct_.Dot(ehist_[k]);
+        // compute residual of scalar transport equation and
+        // subgrid-scale part of scalar
+        CalcResidualAndSubgrScalar(dt,timefac,k);
 
-        // get bodyforce in gausspoint (divided by shcacp)
-        // (For temperature equation, time derivative of thermodynamic pressure
-        //  is added, if not constant, and for temperature equation of a reactive
-        //  equation system, a reaction-rate term is added.)
+        // update material parameters based on inclusion of subgrid-scale
+        // part of scalar (active only for mixture fraction,
+        // Sutherland law and progress variable, for the time being)
+        UpdateMaterialParams(ele,k);
+
+        // recompute rhs based on updated material parameters
         rhs_[k] = bodyforce_[k].Dot(funct_)/shcacp_;
         rhs_[k] += thermpressdt_/shcacp_;
         rhs_[k] += densnp_[k]*reatemprhs_[k];
 
         // compute matrix and rhs
-        CalMatAndRHS(sys_mat,
-                     residual,
-                     fac,
-                     fssgd,
-                     timefac,
-                     alphaF,
-                     k);
+        CalMatAndRHS(sys_mat,residual,fac,fssgd,timefac,dt,alphaF,k);
+
       } // loop over each scalar
     }
   } // integration loop
@@ -2191,53 +2205,44 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::BodyForce(
 {
   vector<DRT::Condition*> myneumcond;
 
-  // check whether all nodes have a unique VolumeNeumann condition
+  // check whether all nodes have a unique Neumann condition
   switch(nsd_)
   {
-  case 3:
-    DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);
-  break;
-  case 2:
-    DRT::UTILS::FindElementConditions(ele, "SurfaceNeumann", myneumcond);
-  break;
-  case 1:
-    DRT::UTILS::FindElementConditions(ele, "LineNeumann", myneumcond);
-  break;
-  default:
-    dserror("Illegal number of space dimensions: %d",nsd_);
+    case 3:
+      DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);
+    break;
+    case 2:
+      DRT::UTILS::FindElementConditions(ele, "SurfaceNeumann", myneumcond);
+    break;
+    case 1:
+      DRT::UTILS::FindElementConditions(ele, "LineNeumann", myneumcond);
+    break;
+    default:
+      dserror("Illegal number of spatial dimensions: %d",nsd_);
   }
 
   if (myneumcond.size()>1)
-    dserror("more than one VolumeNeumann cond on one node");
+    dserror("More than one Neumann condition on one node!");
 
   if (myneumcond.size()==1)
   {
-    // find out whether we will use a time curve
+    // check for potential time curve
     const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
     int curvenum = -1;
-
     if (curve) curvenum = (*curve)[0];
 
-    // initialisation
+    // initialization of time-curve factor
     double curvefac(0.0);
 
-    if (curvenum >= 0) // yes, we have a timecurve
+    // compute potential time curve or set time-curve factor to one
+    if (curvenum >= 0)
     {
-      // time factor for the intermediate step
-      if(time >= 0.0)
-      {
-        curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
-      }
-      else
-      {
-        // A negative time value indicates an error.
-        dserror("Negative time value in body force calculation: time = %f",time);
-      }
+      // time factor (negative time indicating error)
+      if (time >= 0.0)
+           curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+      else dserror("Negative time in bodyforce calculation: time = %f",time);
     }
-    else // we do not have a timecurve --- timefactors are constant equal 1
-    {
-      curvefac = 1.0;
-    }
+    else curvefac = 1.0;
 
     // get values and switches from the condition
     const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
@@ -2256,7 +2261,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::BodyForce(
   {
     for(int idof=0;idof<numdofpernode_;idof++)
     {
-      // we have no dead load
+      // no bodyforce
       bodyforce_[idof].Clear();
     }
   }
@@ -2767,6 +2772,196 @@ return;
 
 
 /*----------------------------------------------------------------------*
+ | update material parameters including s.-s. part of scalar   vg 10/11 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::UpdateMaterialParams(
+    const DRT::Element*  ele,
+    const int            k
+)
+{
+// get material
+RefCountPtr<MAT::Material> material = ele->Material();
+
+if (material->MaterialType() == INPAR::MAT::m_mixfrac)
+{
+  const MAT::MixFrac* actmat = static_cast<const MAT::MixFrac*>(material.get());
+
+  // compute mixture fraction at n+1 or n+alpha_F
+  double mixfracnp = funct_.Dot(ephinp_[k]);
+
+  // add subgrid-scale part to obtain complete mixture fraction
+  mixfracnp += sgphi_[k];
+
+  // compute dynamic diffusivity at n+1 or n+alpha_F based on mixture fraction
+  diffus_[k] = actmat->ComputeDiffusivity(mixfracnp);
+
+  // compute density at n+1 or n+alpha_F based on mixture fraction
+  densnp_[k] = actmat->ComputeDensity(mixfracnp);
+
+  if (is_genalpha_)
+  {
+    // compute density at n+alpha_M
+    double mixfracam = funct_.Dot(ephiam_[k]);
+    mixfracam += sgphi_[k];
+    densam_[k] = actmat->ComputeDensity(mixfracam);
+
+    if (not is_incremental_)
+    {
+      // compute density at n
+      double mixfracn = funct_.Dot(ephin_[k]);
+      mixfracn += sgphi_[k];
+      densn_[k] = actmat->ComputeDensity(mixfracn);
+    }
+    else densn_[k] = 1.0;
+  }
+  else densam_[k] = densnp_[k];
+
+  // factor for density gradient
+  densgradfac_[k] = -densnp_[k]*densnp_[k]*actmat->EosFacA();
+}
+else if (material->MaterialType() == INPAR::MAT::m_sutherland)
+{
+  const MAT::Sutherland* actmat = static_cast<const MAT::Sutherland*>(material.get());
+
+  // compute temperature at n+1 or n+alpha_F
+  double tempnp = funct_.Dot(ephinp_[k]);
+
+  // add subgrid-scale part to obtain complete temperature
+  tempnp += sgphi_[k];
+
+  // compute diffusivity according to Sutherland law
+  diffus_[k] = actmat->ComputeDiffusivity(tempnp);
+
+  // compute density at n+1 or n+alpha_F based on temperature
+  // and thermodynamic pressure
+  densnp_[k] = actmat->ComputeDensity(tempnp,thermpressnp_);
+
+  if (is_genalpha_)
+  {
+    // compute density at n+alpha_M
+    double tempam = funct_.Dot(ephiam_[k]);
+    tempam += sgphi_[k];
+    densam_[k] = actmat->ComputeDensity(tempam,thermpressam_);
+
+    if (not is_incremental_)
+    {
+      // compute density at n (thermodynamic pressure approximated at n+alpha_M)
+      double tempn = funct_.Dot(ephin_[k]);
+      tempn += sgphi_[k];
+      densn_[k] = actmat->ComputeDensity(tempn,thermpressam_);
+    }
+    else densn_[k] = 1.0;
+  }
+  else densam_[k] = densnp_[k];
+
+  // factor for density gradient
+  densgradfac_[k] = -densnp_[k]/tempnp;
+}
+else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
+{
+  const MAT::ArrheniusPV* actmat = static_cast<const MAT::ArrheniusPV*>(material.get());
+
+  // get progress variable at n+1 or n+alpha_F
+  double provarnp = funct_.Dot(ephinp_[k]);
+
+  // add subgrid-scale part to obtain complete progress variable
+  provarnp += sgphi_[k];
+
+  // get specific heat capacity at constant pressure and
+  // compute temperature based on progress variable
+  shcacp_ = actmat->ComputeShc(provarnp);
+  const double tempnp = actmat->ComputeTemperature(provarnp);
+
+  // compute density at n+1 or n+alpha_F
+  densnp_[k] = actmat->ComputeDensity(provarnp);
+
+  if (is_genalpha_)
+  {
+    // compute density at n+alpha_M
+    double provaram = funct_.Dot(ephiam_[k]);
+    provaram += sgphi_[k];
+    densam_[k] = actmat->ComputeDensity(provaram);
+
+    if (not is_incremental_)
+    {
+      // compute density at n
+      double provarn = funct_.Dot(ephin_[k]);
+      provarn += sgphi_[k];
+      densn_[k] = actmat->ComputeDensity(provarn);
+    }
+    else densn_[k] = 1.0;
+  }
+  else densam_[k] = densnp_[k];
+
+  // factor for density gradient
+  densgradfac_[k] = -densnp_[k]*actmat->ComputeFactor(provarnp);
+
+  // compute diffusivity according to Sutherland law
+  diffus_[k] = actmat->ComputeDiffusivity(tempnp);
+
+  // compute reaction coefficient for progress variable
+  reacoeff_[k] = actmat->ComputeReactionCoeff(tempnp);
+  reacoeffderiv_[k] = reacoeff_[k];
+  // compute right-hand side contribution for progress variable
+  // -> equal to reaction coefficient
+  reatemprhs_[k] = reacoeff_[k];
+}
+else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
+{
+  const MAT::FerEchPV* actmat = static_cast<const MAT::FerEchPV*>(material.get());
+
+  // get progress variable at n+1 or n+alpha_F
+  double provarnp = funct_.Dot(ephinp_[k]);
+
+  // add subgrid-scale part to obtain complete progress variable
+  provarnp += sgphi_[k];
+
+  // get specific heat capacity at constant pressure and
+  // compute temperature based on progress variable
+  shcacp_ = actmat->ComputeShc(provarnp);
+  const double tempnp = actmat->ComputeTemperature(provarnp);
+
+  // compute density at n+1 or n+alpha_F
+  densnp_[k] = actmat->ComputeDensity(provarnp);
+
+  if (is_genalpha_)
+  {
+    // compute density at n+alpha_M
+    double provaram = funct_.Dot(ephiam_[k]);
+    provaram += sgphi_[k];
+    densam_[k] = actmat->ComputeDensity(provaram);
+
+    if (not is_incremental_)
+    {
+      // compute density at n
+      double provarn = funct_.Dot(ephin_[k]);
+      provarn += sgphi_[k];
+      densn_[k] = actmat->ComputeDensity(provarn);
+    }
+    else densn_[k] = 1.0;
+  }
+  else densam_[k] = densnp_[k];
+
+  // factor for density gradient
+  densgradfac_[k] = -densnp_[k]*actmat->ComputeFactor(provarnp);
+
+  // compute diffusivity according to Sutherland law
+  diffus_[k] = actmat->ComputeDiffusivity(tempnp);
+
+  // compute reaction coefficient for progress variable
+  reacoeff_[k] = actmat->ComputeReactionCoeff(provarnp);
+  reacoeffderiv_[k] = reacoeff_[k];
+  // compute right-hand side contribution for progress variable
+  // -> equal to reaction coefficient
+  reatemprhs_[k] = reacoeff_[k];
+}
+
+return;
+} //ScaTraImpl::UpdateMaterialParams
+
+
+/*----------------------------------------------------------------------*
  |  calculate all-scale art. subgrid diffusivity (private)     vg 10/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -2818,49 +3013,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
 
       if (grad_norm > EPS10)
       {
-        // initialize residual and compute values required for residual
-        double residual  = 0.0;
-
-        // get non-density-weighted history data (or acceleration)
-        hist_[k] = funct_.Dot(ehist_[k]);
-
-        // convective term using current scalar value
-        double conv_phi = velint_.Dot(gradphi_);
-
-        // diffusive term using current scalar value for higher-order elements
-        double diff_phi = 0.0;
-        if (use2ndderiv_) diff_phi = diff_.Dot(ephinp_[k]);
-
-       // reactive term using current scalar value
-        double rea_phi = 0.0;
-        if (reaction_)
-        {
-          // scalar at integration point
-          const double phi = funct_.Dot(ephinp_[k]);
-
-          rea_phi = densnp_[k]*reacoeff_[k]*phi;
-        }
-
-        // get bodyforce (divided by shcacp)
-        // (For temperature equation, time derivative of thermodynamic pressure
-        //  is added, if not constant, and for temperature equation of a reactive
-        //  equation system, a reaction-rate term is added.)
-        rhs_[k] = bodyforce_[k].Dot(funct_)/shcacp_;
-        rhs_[k] += thermpressdt_/shcacp_;
-        rhs_[k] += densnp_[k]*reatemprhs_[k];
-
-        // computation of residual depending on respective time-integration scheme
-        if (is_genalpha_)
-          residual = densam_[k]*hist_[k] + densnp_[k]*conv_phi - diff_phi + rea_phi - rhs_[k];
-        else if (is_stationary_)
-          residual = conv_phi - diff_phi + rea_phi - rhs_[k];
-        else
-        {
-          // compute density-weighted scalar at integration point
-          double dens_phi = funct_.Dot(ephinp_[k]);
-
-          residual = (densnp_[k]*(dens_phi - hist_[k]) + timefac * (densnp_[k]*conv_phi - diff_phi + rea_phi - rhs_[k])) / dt;
-        }
+        // compute residual of scalar transport equation
+        // (subgrid-scale part of scalar, which is also computed, not required)
+        CalcResidualAndSubgrScalar(dt,timefac,k);
 
         // for the present definitions, sigma and a specific term (either
         // residual or convective term) are different
@@ -2871,7 +3026,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
           case INPAR::SCATRA::assgd_hughes:
           {
             // get norm of velocity vector b_h^par
-            const double vel_norm_bhpar = abs(conv_phi/grad_norm);
+            const double vel_norm_bhpar = abs(conv_phi_[k]/grad_norm);
 
             // compute stabilization parameter based on b_h^par
             // (so far, only exact formula for stationary 1-D implemented)
@@ -2893,7 +3048,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
             sigma = max(0.0,tau_bhpar-tau_[k]);
 
             // set specific term to convective term
-            specific_term = conv_phi;
+            specific_term = conv_phi_[k];
           }
           break;
           case INPAR::SCATRA::assgd_tezduyar:
@@ -2902,7 +3057,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
             const double vel_norm = velint_.Norm2();
 
             // get norm of velocity vector b_h^par
-            const double vel_norm_bhpar = abs(conv_phi/grad_norm);
+            const double vel_norm_bhpar = abs(conv_phi_[k]/grad_norm);
 
             // compute stabilization parameter based on b_h^par
             // (so far, only exact formula for stationary 1-D implemented)
@@ -2916,7 +3071,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
             sigma = (h*h*grad_norm/(vel_norm*phi0))*(1.0-(vel_norm_bhpar/vel_norm));
 
             // set specific term to convective term
-            specific_term = conv_phi;
+            specific_term = conv_phi_[k];
           }
           break;
           case INPAR::SCATRA::assgd_docarmo:
@@ -2926,27 +3081,27 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
             const double vel_norm = velint_.Norm2();
 
             // get norm of velocity vector z_h
-            const double vel_norm_zh = abs(residual/grad_norm);
+            const double vel_norm_zh = abs(scatrares_[k]/grad_norm);
 
             // parameter zeta differentiating approaches by doCarmo and Galeao (1991)
             // and Almeida and Silva (1997)
             double zeta = 0.0;
             if (whichassgd == INPAR::SCATRA::assgd_docarmo)
                  zeta = 1.0;
-            else zeta = max(1.0,(conv_phi/residual));
+            else zeta = max(1.0,(conv_phi_[k]/scatrares_[k]));
 
             // compute sigma
             sigma = tau_[k]*max(0.0,(vel_norm/vel_norm_zh)-zeta);
 
             // set specific term to residual
-            specific_term = residual;
+            specific_term = scatrares_[k];
           }
           break;
           default: dserror("unknown type of all-scale subgrid diffusivity\n");
         } //switch (whichassgd)
 
         // computation of subgrid diffusivity
-        sgdiff_[k] = sigma*residual*specific_term/(grad_norm*grad_norm);
+        sgdiff_[k] = sigma*scatrares_[k]*specific_term/(grad_norm*grad_norm);
       }
       else sgdiff_[k] = 0.0;
     }
@@ -3749,14 +3904,18 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
   {
     for (int rr=0;rr<nsd_;++rr)
     {
-      sgvelint_(rr) = -tau_[k]*(densam_[k]*acc(rr)+densnp_[k]*conv(rr)+gradp(rr)-2*visc_*visc(rr)-densnp_[k]*bodyforce(rr));
+      sgvelint_(rr) = -tau_[k]*(densam_[k]*acc(rr)+densnp_[k]*conv(rr)
+                               +gradp(rr)-2*visc_*visc(rr)
+                               -densnp_[k]*bodyforce(rr));
     }
   }
   else
   {
     for (int rr=0;rr<nsd_;++rr)
     {
-       sgvelint_(rr) = -tau_[k]*(densnp_[k]*velint_(rr)+timefac*(densnp_[k]*conv(rr)+gradp(rr)-2*visc_*visc(rr)-densnp_[k]*bodyforce(rr))-densn_[k]*acc(rr))/dt;
+       sgvelint_(rr) = -tau_[k]*(densnp_[k]*velint_(rr)+timefac*(densnp_[k]*conv(rr)
+                                +gradp(rr)-2*visc_*visc(rr)
+                                -densnp_[k]*bodyforce(rr))-densn_[k]*acc(rr))/dt;
     }
   }
 
@@ -4114,6 +4273,72 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocityLevelSet(
 } //ScaTraImpl::CalcSubgrVelocityLevelSet
 
 /*----------------------------------------------------------------------*
+ |  calculate residual of scalar transport equation and                 |
+ |  subgrid-scale part of scalar (depending on respective               |
+ |  stationary or time-integration scheme)                     vg 10/11 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalcResidualAndSubgrScalar(
+    const double   dt,
+    const double   timefac,
+    const int      k
+  )
+{
+  // gradient of current scalar value
+  gradphi_.Multiply(derxy_,ephinp_[k]);
+
+  // convective term using current scalar value
+  conv_phi_[k] = velint_.Dot(gradphi_);
+
+  // diffusive term using current scalar value for higher-order elements
+  if (use2ndderiv_)
+  {
+    // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
+    GetLaplacianStrongForm(diff_, derxy2_);
+    diff_.Scale(diffus_[k]);
+
+    diff_phi_[k] = diff_.Dot(ephinp_[k]);
+  }
+
+  // reactive term using current scalar value
+  if (reaction_)
+  {
+    // scalar at integration point
+    const double phi = funct_.Dot(ephinp_[k]);
+
+    rea_phi_[k] = densnp_[k]*reacoeff_[k]*phi;
+  }
+
+  if (is_genalpha_)
+  {
+    // time derivative stored on history variable
+    scatrares_[k]  = densam_[k]*hist_[k] + densnp_[k]*conv_phi_[k]
+                    - diff_phi_[k] + rea_phi_[k] - rhs_[k];
+  }
+  else
+  {
+    // stationary residual
+    scatrares_[k] = densnp_[k]*conv_phi_[k] - diff_phi_[k] + rea_phi_[k] - rhs_[k];
+
+    if (not is_stationary_)
+    {
+      // compute scalar at integration point
+      const double phi = funct_.Dot(ephinp_[k]);
+
+      scatrares_[k] *= timefac/dt;
+      scatrares_[k] += densnp_[k]*(phi - hist_[k])/dt;
+    }
+  }
+
+  //--------------------------------------------------------------------
+  // calculation of subgrid-scale part of scalar
+  //--------------------------------------------------------------------
+  sgphi_[k] = -tau_[k]*scatrares_[k];
+
+  return;
+} //ScaTraImpl::CalcResidualAndSubgrScalar
+
+/*----------------------------------------------------------------------*
  | evaluate shape functions and derivatives at int. point     gjb 08/08 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -4219,6 +4444,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
     const double                          fac,
     const bool                            fssgd,
     const double                          timefac,
+    const double                          dt,
     const double                          alphaF,
     const int                             dofindex
     )
@@ -4311,10 +4537,6 @@ for (int vi=0; vi<nen_; ++vi)
 //----------------------------------------------------------------
 if (use2ndderiv_)
 {
-  // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
-  GetLaplacianStrongForm(diff_, derxy2_);
-  diff_.Scale(diffus_[dofindex]);
-
   const double denstaufac = timetaufac*densnp_[dofindex];
   // convective stabilization of diffusive term (in convective form)
   for (int vi=0; vi<nen_; ++vi)
@@ -4525,34 +4747,14 @@ if (reaction_)
 // (non-)incremental stationary or time-integration scheme
 //----------------------------------------------------------------
 double rhsint    = rhs_[dofindex];
-double residual  = 0.0;
 double rhsfac    = 0.0;
 double rhstaufac = 0.0;
-double conv_phi  = 0.0;
-double diff_phi  = 0.0;
-double rea_phi   = 0.0;
+
+// gradient of current scalar value
+gradphi_.Multiply(derxy_,ephinp_[dofindex]);
+
 if (is_incremental_ and is_genalpha_)
 {
-  // gradient of current scalar value
-  gradphi_.Multiply(derxy_,ephinp_[dofindex]);
-
-  // convective term using current scalar value
-  conv_phi = velint_.Dot(gradphi_);
-
-  // diffusive term using current scalar value for higher-order elements
-  if (use2ndderiv_) diff_phi = diff_.Dot(ephinp_[dofindex]);
-
-  // reactive term using current scalar value
-  if (reaction_)
-  {
-    // scalar at integration point
-    const double phi = funct_.Dot(ephinp_[dofindex]);
-
-    rea_phi = densnp_[dofindex]*reacoeff_[dofindex]*phi;
-  }
-
-  // time derivative stored on history variable
-  residual  = densam_[dofindex]*hist_[dofindex] + densnp_[dofindex]*conv_phi - diff_phi + rea_phi - rhsint;
   rhsfac    = timefacfac/alphaF;
   rhstaufac = timetaufac/alphaF;
   rhsint   *= (timefac/alphaF);
@@ -4568,7 +4770,7 @@ if (is_incremental_ and is_genalpha_)
   // addition to convective term due to subgrid-scale velocity
   // (not included in residual)
   double sgconv_phi = sgvelint_.Dot(gradphi_);
-  conv_phi += sgconv_phi;
+  conv_phi_[dofindex] += sgconv_phi;
 
   // addition to convective term for conservative form
   // (not included in residual)
@@ -4578,34 +4780,17 @@ if (is_incremental_ and is_genalpha_)
     const double phi = funct_.Dot(ephinp_[dofindex]);
 
     // convective term in conservative form
-    conv_phi += phi*(vdiv_+(densgradfac_[dofindex]/densnp_[dofindex])*conv_phi);
+    conv_phi_[dofindex] += phi*(vdiv_+(densgradfac_[dofindex]/densnp_[dofindex])*conv_phi_[dofindex]);
   }
 
   // multiply convective term by density
-  conv_phi *= densnp_[dofindex];
+  conv_phi_[dofindex] *= densnp_[dofindex];
 }
 else if (not is_incremental_ and is_genalpha_)
 {
-  // gradient of current scalar value
-  gradphi_.Multiply(derxy_,ephin_[dofindex]);
-
-  // convective term using current scalar value
-  conv_phi = velint_.Dot(gradphi_);
-
-  // diffusive term using current scalar value for higher-order elements
-  if (use2ndderiv_) diff_phi = diff_.Dot(ephin_[dofindex]);
-
-  // reactive term using current scalar value
-  if (reaction_)
-  {
-    // scalar at integration point
-    const double phi = funct_.Dot(ephin_[dofindex]);
-
-    rea_phi = densnp_[dofindex]*reacoeff_[dofindex]*phi;
-  }
-
   rhsint   += densam_[dofindex]*hist_[dofindex]*(alphaF/timefac);
-  residual  = (1.0-alphaF) * (densn_[dofindex]*conv_phi - diff_phi + rea_phi) - rhsint;
+  scatrares_[dofindex] = (1.0-alphaF) * (densn_[dofindex]*conv_phi_[dofindex]
+                        - diff_phi_[dofindex] + rea_phi_[dofindex]) - rhsint;
   rhsfac    = timefacfac*(1.0-alphaF)/alphaF;
   rhstaufac = timetaufac/alphaF;
   rhsint   *= (timefac/alphaF);
@@ -4613,7 +4798,7 @@ else if (not is_incremental_ and is_genalpha_)
   // addition to convective term due to subgrid-scale velocity
   // (not included in residual)
   double sgconv_phi = sgvelint_.Dot(gradphi_);
-  conv_phi += sgconv_phi;
+  conv_phi_[dofindex] += sgconv_phi;
 
   // addition to convective term for conservative form
   // (not included in residual)
@@ -4625,43 +4810,25 @@ else if (not is_incremental_ and is_genalpha_)
     // convective term in conservative form
     // caution: velocity divergence is for n+1 and not for n!
     // -> hopefully, this inconsistency is of small amount
-    conv_phi += phi*(vdiv_+(densgradfac_[dofindex]/densn_[dofindex])*conv_phi);
+    conv_phi_[dofindex] += phi*(vdiv_+(densgradfac_[dofindex]/densn_[dofindex])*conv_phi_[dofindex]);
   }
 
   // multiply convective term by density
-  conv_phi *= densn_[dofindex];
+  conv_phi_[dofindex] *= densn_[dofindex];
 }
 else if (is_incremental_ and not is_genalpha_)
 {
-  // gradient of current scalar value
-  gradphi_.Multiply(derxy_,ephinp_[dofindex]);
-
-  // convective term using current scalar value
-  conv_phi = velint_.Dot(gradphi_);
-
-  // diffusive term using current scalar value for higher-order elements
-  if (use2ndderiv_) diff_phi = diff_.Dot(ephinp_[dofindex]);
-
-  // reactive term using current scalar value
-  if (reaction_)
-  {
-    // scalar at integration point
-    const double phi = funct_.Dot(ephinp_[dofindex]);
-
-    rea_phi = densnp_[dofindex]*reacoeff_[dofindex]*phi;
-  }
-
   if (not is_stationary_)
   {
+    scatrares_[dofindex] *= dt;
+    rhsint               *= timefac;
+    rhsint               += densnp_[dofindex]*hist_[dofindex];
+    rhsfac                = timefacfac;
+
     // compute scalar at integration point
-    double dens_phi = funct_.Dot(ephinp_[dofindex]);
+    const double phi = funct_.Dot(ephinp_[dofindex]);
 
-    rhsint  *= timefac;
-    rhsint  += densnp_[dofindex]*hist_[dofindex];
-    residual = densnp_[dofindex]*dens_phi + timefac*(densnp_[dofindex]*conv_phi - diff_phi + rea_phi) - rhsint;
-    rhsfac   = timefacfac;
-
-    const double vtrans = fac*densnp_[dofindex]*dens_phi;
+    const double vtrans = fac*densnp_[dofindex]*phi;
     for (int vi=0; vi<nen_; ++vi)
     {
       const int fvi = vi*numdofpernode_+dofindex;
@@ -4669,17 +4836,14 @@ else if (is_incremental_ and not is_genalpha_)
       erhs[fvi] -= vtrans*funct_(vi);
     }
   }
-  else
-  {
-    residual = densnp_[dofindex]*conv_phi - diff_phi + rea_phi - rhsint;
-    rhsfac   = fac;
-  }
+  else rhsfac   = fac;
+
   rhstaufac = taufac;
 
   // addition to convective term due to subgrid-scale velocity
   // (not included in residual)
   double sgconv_phi = sgvelint_.Dot(gradphi_);
-  conv_phi += sgconv_phi;
+  conv_phi_[dofindex] += sgconv_phi;
 
   // addition to convective term for conservative form
   // (not included in residual)
@@ -4689,11 +4853,11 @@ else if (is_incremental_ and not is_genalpha_)
     const double phi = funct_.Dot(ephinp_[dofindex]);
 
     // convective term in conservative form
-    conv_phi += phi*(vdiv_+(densgradfac_[dofindex]/densnp_[dofindex])*conv_phi);
+    conv_phi_[dofindex] += phi*(vdiv_+(densgradfac_[dofindex]/densnp_[dofindex])*conv_phi_[dofindex]);
   }
 
   // multiply convective term by density
-  conv_phi *= densnp_[dofindex];
+  conv_phi_[dofindex] *= densnp_[dofindex];
 }
 else
 {
@@ -4702,8 +4866,8 @@ else
     rhsint *= timefac;
     rhsint += densnp_[dofindex]*hist_[dofindex];
   }
-  residual  = -rhsint;
-  rhstaufac = taufac;
+  scatrares_[dofindex] = -rhsint;
+  rhstaufac            = taufac;
 }
 
 //----------------------------------------------------------------
@@ -4721,7 +4885,7 @@ for (int vi=0; vi<nen_; ++vi)
 // standard Galerkin terms on right hand side
 //----------------------------------------------------------------
 // convective term
-vrhs = rhsfac*conv_phi;
+vrhs = rhsfac*conv_phi_[dofindex];
 for (int vi=0; vi<nen_; ++vi)
 {
   const int fvi = vi*numdofpernode_+dofindex;
@@ -4744,7 +4908,7 @@ for (int vi=0; vi<nen_; ++vi)
 // stabilization terms
 //----------------------------------------------------------------
 // convective rhs stabilization (in convective form)
-vrhs = rhstaufac*residual*densnp_[dofindex];
+vrhs = rhstaufac*scatrares_[dofindex]*densnp_[dofindex];
 for (int vi=0; vi<nen_; ++vi)
 {
   const int fvi = vi*numdofpernode_+dofindex;
@@ -4755,7 +4919,7 @@ for (int vi=0; vi<nen_; ++vi)
 // diffusive rhs stabilization
 if (use2ndderiv_)
 {
-  vrhs = rhstaufac*residual;
+  vrhs = rhstaufac*scatrares_[dofindex];
   // diffusive stabilization of convective temporal rhs term (in convective form)
   for (int vi=0; vi<nen_; ++vi)
   {
@@ -4771,7 +4935,7 @@ if (use2ndderiv_)
 // standard Galerkin term
 if (reaction_)
 {
-  vrhs = rhsfac*rea_phi;
+  vrhs = rhsfac*rea_phi_[dofindex];
   for (int vi=0; vi<nen_; ++vi)
   {
     const int fvi = vi*numdofpernode_+dofindex;
@@ -4780,7 +4944,7 @@ if (reaction_)
   }
 
   // reactive rhs stabilization
-  vrhs = diffreastafac_*rhstaufac*densnp_[dofindex]*reacoeff_[dofindex]*residual;
+  vrhs = diffreastafac_*rhstaufac*densnp_[dofindex]*reacoeff_[dofindex]*scatrares_[dofindex];
   for (int vi=0; vi<nen_; ++vi)
   {
     const int fvi = vi*numdofpernode_+dofindex;

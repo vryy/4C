@@ -397,6 +397,7 @@ public:
                          RCP<const Epetra_Vector> scalardtam,
                          const double             thermpressaf,
                          const double             thermpressam,
+                         const double             thermpressdtaf,
                          const double             thermpressdtam,
                          Teuchos::RCP<DRT::Discretization> scatradis);
 
@@ -541,9 +542,10 @@ protected:
   bool is_genalpha_;
 
   /// for low-Mach-number flow solver: thermodynamic pressure at n+alpha_F/n+1
-  /// and at n+alpha_M/n as well as its time derivative at n+alpha_M/n
+  /// and at n+alpha_M/n as well as its time derivative at n+alpha_F/n+1 and n+alpha_M/n
   double thermpressaf_;
   double thermpressam_;
+  double thermpressdtaf_;
   double thermpressdtam_;
 
   /// gas constant (only for low-Mach-number flow)

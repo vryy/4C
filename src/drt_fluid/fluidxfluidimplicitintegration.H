@@ -391,9 +391,10 @@ public:
   double density_;
 
   /// for low-Mach-number flow solver: thermodynamic pressure at n+alpha_F/n+1
-  /// and at n+alpha_M/n as well as its time derivative at n+alpha_M/n
+  /// and at n+alpha_M/n as well as its time derivative at n+alpha_F/n+1 and n+alpha_M/n
   double thermpressaf_;
   double thermpressam_;
+  double thermpressdtaf_;
   double thermpressdtam_;
 
   //! use (or not) linearisation of reactive terms on the element

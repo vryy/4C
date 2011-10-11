@@ -234,6 +234,13 @@ public:
         const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
         );
 
+    //! update material parameters based on inclusion of subgrid-scale part of
+    //! scalar (only for special materials)
+    virtual void UpdateMaterialParams(
+        const DRT::Element* ele, ///< the element we are dealing with
+        const int           k
+        );
+
     //! calculate all-scale subgrid diffusivity
     virtual void CalcSubgrDiff(
         const double                          dt,
@@ -299,6 +306,13 @@ public:
 //        const int                                    iquad       ///< id of current Gauss point
     );
 
+    //! calculate residual of scalar transport equation and subgrid-scale part of scalar
+    virtual void CalcResidualAndSubgrScalar(
+        const double  dt,
+        const double  timefac,
+        const int     k
+    );
+
     //! evaluate shape functions and their derivatives at current integration point
     virtual double EvalShapeFuncAndDerivsAtIntPoint(
         const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, ///< integration points
@@ -313,6 +327,7 @@ public:
         const double                          fac,      ///< integration factor
         const bool                            fssgd,
         const double                          timefac,
+        const double                          dt,
         const double                          alphaF,
         const int                             dofindex
     );
@@ -802,6 +817,8 @@ public:
     LINALG::Matrix<nsd_,1> migvelint_;
     //! velocity divergence
     double vdiv_;
+    //! residual of scalar transport equation
+    vector<double> scatrares_;
     //! the stabilisation parameters (one per transported scalar)
     vector<double> tau_;
     //! all-scale or fine-scale subgrid diffusivities (one per transported scalar)
@@ -828,6 +845,14 @@ public:
     LINALG::Matrix<nsd_,1> fsgradphi_;
     //! (global) Laplacian of shape functions at integration point
     LINALG::Matrix<nen_,1> laplace_;
+    //! convective term (part of residual)
+    vector<double> conv_phi_;
+    //! diffusive term (part of residual)
+    vector<double> diff_phi_;
+    //! reactive term (part of residual)
+    vector<double> rea_phi_;
+    //! subgrid-scale part of scalar
+    vector<double> sgphi_;
     //! thermodynamic pressure at t_(n+1) or t_(n+alpha_F) (LOMA specific)
     double thermpressnp_;
     //! thermodynamic pressure at t_(n+alpha_M) (LOMA specific)

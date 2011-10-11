@@ -365,6 +365,7 @@ void LOMA::Algorithm::SetScaTraValuesInFluid()
                                    ScaTraField().Phidtam(),
                                    ScaTraField().ThermPressAf(),
                                    ScaTraField().ThermPressAm(),
+                                   ScaTraField().ThermPressDtAf(),
                                    ScaTraField().ThermPressDtAm(),
                                    ScaTraField().Discretization());
   else
@@ -373,6 +374,7 @@ void LOMA::Algorithm::SetScaTraValuesInFluid()
                                    ScaTraField().Phidtnp(),
                                    ScaTraField().ThermPressNp(),
                                    ScaTraField().ThermPressN(),
+                                   ScaTraField().ThermPressDtNp(),
                                    ScaTraField().ThermPressDtNp(),
                                    ScaTraField().Discretization());
 }
@@ -475,6 +477,7 @@ void LOMA::Algorithm::EvaluateLomaODBlockMatFluid(
     // set thermodynamic pressures
     fparams.set("thermpress at n+alpha_F/n+1",ScaTraField().ThermPressAf());
     fparams.set("thermpress at n+alpha_M/n",ScaTraField().ThermPressAm());
+    fparams.set("thermpressderiv at n+alpha_F/n+1",ScaTraField().ThermPressDtAf());
     fparams.set("thermpressderiv at n+alpha_M/n+1",ScaTraField().ThermPressDtAm());
 
     // set velocity vector
@@ -485,6 +488,7 @@ void LOMA::Algorithm::EvaluateLomaODBlockMatFluid(
     // set thermodynamic pressures
     fparams.set("thermpress at n+alpha_F/n+1",ScaTraField().ThermPressNp());
     fparams.set("thermpress at n+alpha_M/n",ScaTraField().ThermPressN());
+    fparams.set("thermpressderiv at n+alpha_F/n+1",ScaTraField().ThermPressDtNp());
     fparams.set("thermpressderiv at n+alpha_M/n+1",ScaTraField().ThermPressDtNp());
 
     // set velocity vector

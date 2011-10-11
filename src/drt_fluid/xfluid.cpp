@@ -1305,6 +1305,7 @@ void FLD::XFluid::NonlinearSolve()
       // set thermodynamic pressures
       eleparams.set("thermpress at n+alpha_F/n+1",thermpressaf_);
       eleparams.set("thermpress at n+alpha_M/n",thermpressam_);
+      eleparams.set("thermpressderiv at n+alpha_F/n+1",thermpressdtaf_);
       eleparams.set("thermpressderiv at n+alpha_M/n+1",thermpressdtam_);
 
       state_->Evaluate( eleparams, *discret_, *boundarydis_, itnum );

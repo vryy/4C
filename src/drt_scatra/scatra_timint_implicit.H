@@ -358,7 +358,10 @@ public:
   /// routine to return time der. of thermo. press. at time step n+1 for low-Mach-number flow
   double ThermPressDtNp() const { return thermpressdtnp_; }
 
-  /// routine to return thermo. press. at time step n+alpha_M for low-Mach-number flow
+  /// routine to return time derivative of thermo. press. at time step n+alpha_F for low-Mach-number flow
+  virtual double ThermPressDtAf() = 0;
+
+  /// routine to return time derivative of thermo. press. at time step n+alpha_M for low-Mach-number flow
   virtual double ThermPressDtAm() = 0;
 
   /// return current time value

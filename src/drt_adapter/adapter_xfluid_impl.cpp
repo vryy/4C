@@ -1169,7 +1169,7 @@ void ADAPTER::XFluidImpl::SetInitialFlowField(const INPAR::FLUID::InitialField i
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidImpl::SetIterLomaFields(RCP<const Epetra_Vector> scalaraf,RCP<const Epetra_Vector> scalaram,RCP<const Epetra_Vector> scalardtam,const double thermpressaf,const double thermpressam,const double thermpressdtam,Teuchos::RCP<DRT::Discretization> scatradis)
+void ADAPTER::XFluidImpl::SetIterLomaFields(RCP<const Epetra_Vector> scalaraf,RCP<const Epetra_Vector> scalaram,RCP<const Epetra_Vector> scalardtam,const double thermpressaf,const double thermpressam,const double thermpressdtaf,const double thermpressdtam,Teuchos::RCP<DRT::Discretization> scatradis)
 {
    dserror("not implemented!");
    return;

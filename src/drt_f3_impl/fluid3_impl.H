@@ -146,7 +146,7 @@ namespace ELEMENTS
      */
     int Evaluate(int                                           eid,
                  Teuchos::ParameterList&                       params,
-                 const LINALG::Matrix<nsd_,nen_> &             edeadaf,
+                 const LINALG::Matrix<nsd_,nen_> &             ebofoaf,
                  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat1,
                  LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat2,
                  LINALG::Matrix<(nsd_+1)*nen_,            1> & elevec1,
@@ -157,6 +157,7 @@ namespace ELEMENTS
                  const LINALG::Matrix<nsd_,nen_> &             emhist,
                  const LINALG::Matrix<nsd_,nen_> &             eaccam,
                  const LINALG::Matrix<nen_,1>    &             escadtam,
+                 const LINALG::Matrix<nen_,1>    &             escabofoaf,
                  const LINALG::Matrix<nsd_,nen_> &             eveln,
                  const LINALG::Matrix<nen_,1>    &             escaam,
                  const LINALG::Matrix<nsd_,nen_> &             edispnp,
@@ -260,7 +261,7 @@ namespace ELEMENTS
      */
     int PoroEvaluate(int                                           eid,
                      Teuchos::ParameterList&                       params,
-                     const LINALG::Matrix<nsd_,nen_> &             edeadaf,
+                     const LINALG::Matrix<nsd_,nen_> &             ebofoaf,
                      LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat1,
                      LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat2,
                      LINALG::Matrix<(nsd_+1)*nen_,            1> & elevec1,
@@ -311,13 +312,16 @@ namespace ELEMENTS
      */
     int LomaMonoODBlockEvaluate(int                                  eid,
                                 Teuchos::ParameterList&              params,
-                                const LINALG::Matrix<nsd_,nen_> &    edeadaf,
+                                const LINALG::Matrix<nsd_,nen_> &    ebofoaf,
                                 LINALG::Matrix<(nsd_+1)*nen_,nen_> & elemat1,
                                 const LINALG::Matrix<nsd_,nen_> &    evelaf,
                                 const LINALG::Matrix<nen_,1>    &    epreaf,
                                 const LINALG::Matrix<nen_,1>    &    escaaf,
                                 const LINALG::Matrix<nsd_,nen_> &    emhist,
                                 const LINALG::Matrix<nsd_,nen_> &    eaccam,
+                                const LINALG::Matrix<nen_,1>    &    escadtam,
+                                const LINALG::Matrix<nen_,1>    &    escabofoaf,
+                                const LINALG::Matrix<nsd_,nen_> &    eveln,
                                 const LINALG::Matrix<nen_,1>    &    escaam,
                                 Teuchos::RCP<MAT::Material>          mat,
                                 double                               CsDeltaSq,
@@ -327,7 +331,7 @@ namespace ELEMENTS
       \brief calculate element matrix and rhs
 
       \param eid              (i) element id
-      \param edeadaf          (i) body force at n+alpha_F/n+1
+      \param ebofoaf          (i) body force at n+alpha_F/n+1
       \param evelaf           (i) nodal velocities at n+alpha_F/n+1
       \param eveln            (i) nodal velocities at n
       \param evelnp           (i) nodal velocities at n+1 (np_genalpha)
@@ -344,7 +348,8 @@ namespace ELEMENTS
       \param emesh            (o) linearization wrt mesh motion
       \param eforce           (o) element rhs to calculate
       \param thermpressaf     (i) thermodynamic pressure at n+alpha_F/n+1
-      \param thermpressam     (i) thermodynamic pressure at n+alpha_M/n+1
+      \param thermpressam     (i) thermodynamic pressure at n+alpha_M/n
+      \param thermpressdtaf   (i) thermodynamic pressure derivative at n+alpha_F/n+1
       \param thermpressdtam   (i) thermodynamic pressure derivative at n+alpha_M/n+1
       \param material         (i) fluid material
       \param Cs_delta_sq      (i) parameter for dynamic Smagorinsky model (Cs*h*h)
@@ -353,7 +358,7 @@ namespace ELEMENTS
 
       */
     void Sysmat(int                                            eid,
-                const LINALG::Matrix<nsd_,nen_> &              edeadaf,
+                const LINALG::Matrix<nsd_,nen_> &              ebofoaf,
                 const LINALG::Matrix<nsd_,nen_>&               evelaf,
                 const LINALG::Matrix<nsd_,nen_>&               eveln,
                 const LINALG::Matrix<nsd_,nen_> &              evelnp,
@@ -365,6 +370,7 @@ namespace ELEMENTS
                 const LINALG::Matrix<nen_,1>&                  escaaf,
                 const LINALG::Matrix<nen_,1>&                  escaam,
                 const LINALG::Matrix<nen_,1>&                  escadtam,
+                const LINALG::Matrix<nen_,1>&                  escabofoaf,
                 const LINALG::Matrix<nsd_,nen_>&               emhist,
                 const LINALG::Matrix<nsd_,nen_>&               edispnp,
                 const LINALG::Matrix<nsd_,nen_>&               egridv,
@@ -373,6 +379,7 @@ namespace ELEMENTS
                 LINALG::Matrix<(nsd_+1)*nen_,    1>&           eforce,
                 const double                                   thermpressaf,
                 const double                                   thermpressam,
+                const double                                   thermpressdtaf,
                 const double                                   thermpressdtam,
                 Teuchos::RCP<const MAT::Material>              material,
                 double&                                        Cs_delta_sq,
@@ -386,7 +393,7 @@ namespace ELEMENTS
       \brief calculate element matrix and rhs for porous flow
 
       \param eid              (i) element id
-      \param edeadaf          (i) body force at n+alpha_F/n+1
+      \param ebofoaf          (i) body force at n+alpha_F/n+1
       \param evelaf           (i) nodal velocities at n+alpha_F/n+1
       \param evelnp           (i) nodal velocities at n+1 (np_genalpha)
       \param epreaf           (i) nodal pressure at n+alpha_F/n+1
@@ -403,7 +410,7 @@ namespace ELEMENTS
 
       */
     void PoroSysmat(int                                            eid,
-                    const LINALG::Matrix<nsd_,nen_> &              edeadaf,
+                    const LINALG::Matrix<nsd_,nen_> &              ebofoaf,
                     const LINALG::Matrix<nsd_,nen_>&               evelaf,
                     const LINALG::Matrix<nsd_,nen_> &              evelnp,
                     const LINALG::Matrix<nen_,1>&                  epreaf,
@@ -422,7 +429,7 @@ namespace ELEMENTS
       \brief calculate element matrix for off-diagonal matrix block for monolithic low-Mach-number solver
 
       \param eid              (i) element id
-      \param edeadaf          (i) body force at n+alpha_F/n+1
+      \param ebofoaf          (i) body force at n+alpha_F/n+1
       \param evelaf           (i) nodal velocities at n+alpha_F/n+1
       \param epreaf           (i) nodal pressure at n+alpha_F/n+1
       \param eaccam           (i) nodal accelerations at n+alpha_M
@@ -433,7 +440,8 @@ namespace ELEMENTS
       \param egridv           (i) grid velocity (on moving mesh)
       \param estif            (o) element matrix to calculate
       \param thermpressaf     (i) thermodynamic pressure at n+alpha_F/n+1
-      \param thermpressam     (i) thermodynamic pressure at n+alpha_M/n+1
+      \param thermpressam     (i) thermodynamic pressure at n+alpha_M/n
+      \param thermpressdtaf   (i) thermodynamic pressure derivative at n+alpha_F/n+1
       \param thermpressdtam   (i) thermodynamic pressure derivative at n+alpha_M/n+1
       \param material         (i) fluid material
       \param Cs_delta_sq      (i) parameter for dynamic Smagorinsky model (Cs*h*h)
@@ -442,16 +450,20 @@ namespace ELEMENTS
 
       */
     void LomaMonoODBlockSysmat(int                                  eid,
-                               const LINALG::Matrix<nsd_,nen_> &    edeadaf,
+                               const LINALG::Matrix<nsd_,nen_> &    ebofoaf,
                                const LINALG::Matrix<nsd_,nen_>&     evelaf,
+                               const LINALG::Matrix<nsd_,nen_>&     eveln,
                                const LINALG::Matrix<nen_,1>&        epreaf,
                                const LINALG::Matrix<nsd_,nen_>&     eaccam,
                                const LINALG::Matrix<nen_,1>&        escaaf,
                                const LINALG::Matrix<nen_,1>&        escaam,
+                               const LINALG::Matrix<nen_,1>&        escadtam,
+                               const LINALG::Matrix<nen_,1>&        escabofoaf,
                                const LINALG::Matrix<nsd_,nen_>&     emhist,
                                LINALG::Matrix<(nsd_+1)*nen_,nen_>&  estif,
                                const double                         thermpressaf,
                                const double                         thermpressam,
+                               const double                         thermpressdtaf,
                                const double                         thermpressdtam,
                                Teuchos::RCP<const MAT::Material>    material,
                                double&                              Cs_delta_sq,
@@ -479,6 +491,7 @@ namespace ELEMENTS
       const LINALG::Matrix<(nsd_+1)*nen_,    1>&            eforce,
       const double                                          thermpressaf,
       const double                                          thermpressam,
+      const double                                          thermpressdtaf,
       const double                                          thermpressdtam,
       const Teuchos::RCP<const MAT::Material>               material,
       const double                                          timefac,
@@ -502,9 +515,10 @@ namespace ELEMENTS
 
     /// calculate body force from nodal conditions
     void BodyForce(
-      DRT::ELEMENTS::Fluid3*               ele,           //< pointer to element
-      DRT::ELEMENTS::Fluid3ImplParameter*  f3Parameter,   //< pointer to fluid parameter
-      LINALG::Matrix<nsd_,nen_> &          edeadaf        //<
+      DRT::ELEMENTS::Fluid3*               ele,         //< pointer to element
+      DRT::ELEMENTS::Fluid3ImplParameter*  f3Parameter, //< pointer to fluid parameter
+      LINALG::Matrix<nsd_,nen_> &          ebofoaf,     //< body force at nodes
+      LINALG::Matrix<nen_,1> &             escabofoaf   //< scatra body force at nodes
       );
 
     //! evaluate shape functions and their derivatives at element center
@@ -524,9 +538,19 @@ namespace ELEMENTS
                            const LINALG::Matrix<nsd_,nen_>&        evelaf,    ///< velocity at time n+alpha_f / n+1
                            const LINALG::Matrix<nen_,1>&           escaaf,    ///< scalar at time n+alpha_f / n+1
                            const LINALG::Matrix<nen_,1>&           escaam,    ///< scalar at time n+alpha_m / n
+                           const LINALG::Matrix<nen_,1>&           escabofoaf,   ///< body force for scalar transport at time n+alpha_f / n+1
                            const double                            thermpressaf,    ///< thermodynamic pressure at time n+alpha_f / n+1
                            const double                            thermpressam,    ///< thermodynamic pressure at time n+alpha_m / n
-                           const double                            thermpressdtam ///< time derivative of thermodynamic pressure at time n+alpha_m / n
+                           const double                            thermpressdtaf, ///< time derivative of thermodynamic pressure at time n+alpha_f / n+1
+                           const double                            thermpressdtam ///< time derivative of thermodynamic pressure at time n+alpha_m / n+1
+                           );
+
+    //! update material parameters including subgrid-scale part of scalar
+    void UpdateMaterialParams(Teuchos::RCP<const MAT::Material> material,  ///< reference pointer to material
+                           const LINALG::Matrix<nen_,1>&        escaaf,    ///< scalar at time n+alpha_f / n+1
+                           const LINALG::Matrix<nen_,1>&        escaam,    ///< scalar at time n+alpha_m / n
+                           const double                         thermpressaf,    ///< thermodynamic pressure at time n+alpha_f / n+1
+                           const double                         thermpressam    ///< thermodynamic pressure at time n+alpha_m / n
                            );
 
     //! get parameters for multifractal subgrid scales
@@ -588,32 +612,40 @@ namespace ELEMENTS
         const LINALG::Matrix<nsd_,nen_>&        evelaf   ///< velocity at time n+alpha_f / n+1
         );
 
-    //! calculate the residual of the fluid momentum equation
-    void GetResidualMomentumEq(
-        const LINALG::Matrix<nsd_,nen_>&              eaccam,     ///< acceleration at time n+alpha_a / n
-        const double &                                timefac     ///< time factor
-        );
-
-    //! update the subscale velocity
-    void UpdateSubscaleVelocity(
-        double &      fac1,         ///< factor for old subgrid velocities
-        double &      fac2,         ///< factor for old subgrid accelerations
-        double &      fac3,         ///< factor for residual in current subgrid velocities
-        double &      facMtau,      ///< facMtau = modified tau_M (see code)
-        int           iquad,        ///< actual integration point
-        double *        saccn,      ///< subgrid acceleration at time n+alpha_a / n
-        double *        sveln,      ///< subgrid velocity at time n+alpha_a / n
-        double *        svelnp      ///< subgrid velocity at time n+alpha_f / n+1
+    //! compute residual of momentum equation and subgrid-scale velocity
+    void ComputeSubgridScaleVelocity(
+        const LINALG::Matrix<nsd_,nen_>& eaccam,  ///< acceleration at time n+alpha_M
+        double &                         fac1,    ///< factor for old s.-s. velocities
+        double &                         fac2,    ///< factor for old s.-s. accelerations
+        double &                         fac3,    ///< factor for residual in current s.-s. velocities
+        double &                         facMtau, ///< facMtau = modified tau_M (see code)
+        int                              iquad,   ///< integration point
+        double *                         saccn,   ///< s.-s. acceleration at time n+alpha_a / n
+        double *                         sveln,   ///< s.-s. velocity at time n+alpha_a / n
+        double *                         svelnp   ///< s.-s. velocity at time n+alpha_f / n+1
       );
 
-    //! calculate the residual of the continuity equation
-    void GetResidualContinuityEq(
-        const LINALG::Matrix<nsd_,nen_>&          eveln,      ///< velocity at time n+alpha_a / n
-        const LINALG::Matrix<nen_,1>&             escaaf,     ///< scalar at time n+alpha_f / n+1
-        const LINALG::Matrix<nen_,1>&             escaam,     ///< scalar at time n+alpha_a / n
-        const LINALG::Matrix<nen_,1>&             escadtam,   ///< acceleration at time n+alpha_a / n
-        const double & timefac
+    //! compute additional Galerkin terms on right-hand side of continuity equation
+    //! (only required for variable-density flow at low Mach number)
+    void ComputeGalRHSContEq(
+        const LINALG::Matrix<nsd_,nen_>&          eveln,   ///< velocity at time n
+        const LINALG::Matrix<nen_,1>&             escaaf,  ///< scalar at time n+alpha_F/n+1
+        const LINALG::Matrix<nen_,1>&             escaam,  ///< scalar at time n+alpha_M/n
+        const LINALG::Matrix<nen_,1>&             escadtam ///< acceleration at time n+alpha_M/n
         );
+
+    //! compute residual of scalar equation and subgrid-scale part of scalar
+    //! (only required for variable-density flow at low Mach number)
+    void ComputeSubgridScaleScalar(
+        const LINALG::Matrix<nen_,1>&             escaaf,  ///< scalar at time n+alpha_F/n+1
+        const LINALG::Matrix<nen_,1>&             escaam  ///< scalar at time n+alpha_M/n
+        );
+
+    //! recompute Galerkin terms based on updated material parameters
+    //! including s.-s. part of scalar and compute cross-stress term on
+    //! right-hand side of continuity equation
+    //! (only required for variable-density flow at low Mach number)
+    void RecomputeGalAndComputeCrossRHSContEq();
 
     //! Provide linearization of Garlerkin momentum residual with respect to the velocities
     void LinGalMomResU(
@@ -1071,7 +1103,7 @@ namespace ELEMENTS
     LINALG::Matrix<nen_,1> conv_c_;
     //! linearisation of subgrid-scale convection, convective part
     LINALG::Matrix<nen_,1> sgconv_c_;
-    //! velocity divergence
+    //! velocity divergenceat at t_(n+alpha_F) or t_(n+1)
     double vdiv_;
     //! fine scale velocity divergence for multifractal subgrid-scale modeling
     double mffsvdiv_;
@@ -1124,6 +1156,8 @@ namespace ELEMENTS
     //! fine-scale subgrid viscosity
     double fssgvisc_;
     //! LOMA-specific variables:
+    //! physical diffusivity of scalar equation
+    double diffus_;
     //! right-hand-side term at int.-point for continuity equation
     double rhscon_;
     //! density at t_(n+alpha_F) or t_(n+1)
@@ -1146,14 +1180,26 @@ namespace ELEMENTS
     LINALG::Matrix<nsd_,1> velintn_;
     //! global velocity derivatives in gausspoint w.r.t x,y,z at t_(n)
     LINALG::Matrix<nsd_,nsd_> vderxyn_;
+    //! velocity divergenceat at t_(n)
+    double vdivn_;
     //! scalar gradient at t_(n+alpha_F) or t_(n+1)
     LINALG::Matrix<nsd_,1> grad_scaaf_;
     //! scalar gradient at t_(n)
     LINALG::Matrix<nsd_,1> grad_scan_;
+    //! scalar at t_(n+alpha_F) or t_(n+1)
+    double scaaf_;
+    //! scalar at t_(n)
+    double scan_;
+    //! time derivative of scalar term (only required for generalized-alpha scheme)
+    double tder_sca_;
     //! convective scalar term at t_(n+alpha_F) or t_(n+1)
     double conv_scaaf_;
     //! convective scalar term at t_(n)
     double conv_scan_;
+    //! right-hand side of scalar equation
+    double scarhs_;
+    //! subgrid-scale part of scalar at integration point
+    double sgscaint_;
     //! for the handling of rotationally symmetric periodic boundary conditions
     FLD::RotationallySymmetricPeriodicBC<distype>* rotsymmpbc_;
     //! Flag to (de)activate higher order elements
