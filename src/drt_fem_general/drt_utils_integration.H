@@ -100,6 +100,12 @@ inline bool IntRuleIsOpen(DRT::UTILS::GaussRule3D intrule)
   case intrule_hex_1point:             return true;
   case intrule_hex_8point:             return true;
   case intrule_hex_27point:            return true;
+  case intrule_hex_64point:            return true;
+  case intrule_hex_125point:           return true;
+  case intrule_hex_216point:           return true;
+  case intrule_hex_343point:           return true;
+  case intrule_hex_512point:           return true;
+  case intrule_hex_729point:           return true;
   case intrule_tet_1point:             return true;
   case intrule_tet_4point:             return true;
   case intrule_tet_4point_gauss_radau: return false;
