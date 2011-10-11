@@ -44,7 +44,7 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ---------------------------------------------------------EIGENVALUE ANALYSIS
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DYNAMICTYP                      Gen_Alfa
+DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
 RESTARTEVRY                     20
 TIMESTEP                        0.05
@@ -58,10 +58,21 @@ DAMPING                         No
 M_DAMP                          0.5
 K_DAMP                          0.5
 ITERATION                       full
-TOLDISP                         1.0E-07
+CONV_CHECK                      None
+TOLRES                          1.0E-8
+TOLDISP                         1.0E-8
+NORM_RESF                       Abs
+NORM_DISP                       Abs
+NORMCOMBI_RESFDISP              And
 MAXITER                         50
 TIMEADAPT                       0
 PREDICT                         ConstDisVelAcc
+---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG       ImrLike
+BETA         0.5
+GAMMA        1.0
+ALPHA_M      0.0
+ALPHA_F      0.0
 ---------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    zero_field
 RESSTEP                         -1
@@ -258,13 +269,13 @@ FUNCT1 EXPR 0 0 0 FUNCTION 1-(x*x+y*y)/(0.5*0.5)
 ---------------------------------------------------------------------LOCSYS5
 ------------------------------------------------------------------MONITORING
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS 1 NODE 478 POSITION velx NAME velx VALUE  1.053945773e+00 TOLERANCE 1e-7
-FLUID DIS 1 NODE 478 POSITION vely NAME vely VALUE -1.310679765e+00 TOLERANCE 1e-7
-FLUID DIS 1 NODE 478 POSITION velz NAME velz VALUE -6.308234050e-01 TOLERANCE 1e-7
-FLUID DIS 1 NODE 478 POSITION pressure NAME pressure VALUE 1.015189615e+04 TOLERANCE 1e-4
-STRUCTURE DIS 1 NODE 1325 POSITION dispx NAME ux VALUE  -1.414884939e-04 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 1325 POSITION dispy NAME uy VALUE  -8.067575124e-03 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 1325 POSITION dispz NAME uz VALUE  -2.243805515e-04 TOLERANCE 1e-8
+FLUID DIS 1 NODE 478 POSITION velx NAME velx VALUE  1.06658245418541497e+00 TOLERANCE 1e-7
+FLUID DIS 1 NODE 478 POSITION vely NAME vely VALUE -1.32567605721502857e+00 TOLERANCE 1e-7
+FLUID DIS 1 NODE 478 POSITION velz NAME velz VALUE -6.41566468293470527e-01 TOLERANCE 1e-7
+FLUID DIS 1 NODE 478 POSITION pressure NAME pressure VALUE 1.03107432206666708e+04 TOLERANCE 1e-4
+STRUCTURE DIS 1 NODE 1325 POSITION dispx NAME ux VALUE -1.42524908243014644e-04 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 1325 POSITION dispy NAME uy VALUE -8.13926204237328671e-03 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 1325 POSITION dispz NAME uz VALUE -2.20576963945771318e-04 TOLERANCE 1e-8
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
