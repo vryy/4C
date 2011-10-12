@@ -99,9 +99,6 @@ protected:
   //! \brief object for managing beam contact
   RCP<CONTACT::Beam3cmanager> beamcmanager_;
 
-  //! uzawa iteration counter
-  int uzawaiter_;
-
 }; // class StatMechTime
 
 #endif  // #ifndef STATMECH_H

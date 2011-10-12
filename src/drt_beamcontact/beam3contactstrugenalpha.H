@@ -106,9 +106,6 @@ protected:
   Beam3ContactStruGenAlpha operator = (const Beam3ContactStruGenAlpha& old);
   Beam3ContactStruGenAlpha(const Beam3ContactStruGenAlpha& old);
 
-  // uzawa iteration counter
-  int uzawaiter_;
-
   // beam contact manager
   RCP<CONTACT::Beam3cmanager> beamcmanager_;
 

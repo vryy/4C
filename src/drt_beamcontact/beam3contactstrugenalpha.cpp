@@ -34,9 +34,6 @@ StruGenAlpha(params,dis,solver,output)
     cout << "\n*******************************\n" << endl;
   }
   
-  // initialize uzawa counter (for augmented Lagrange)
-  uzawaiter_=0;
-  
   // -------------------------------------------------------------------
   // check again whether we have beam contact and create beam3cmanager
   // -------------------------------------------------------------------
@@ -257,7 +254,7 @@ void CONTACT::Beam3ContactStruGenAlpha::ConstantPredictor()
   // create gmsh-output to visualize predictor step
   int step  = params_.get<int>("step",0);
   int istep = step + 1;
-  beamcmanager_->GmshOutput(*disn_,istep,0,0);
+  beamcmanager_->GmshOutput(*disn_,istep,0);
   beamcmanager_->ConsoleOutput();
 #endif
   //**********************************************************************
@@ -571,7 +568,7 @@ void CONTACT::Beam3ContactStruGenAlpha::ConsistentPredictor()
   // create gmsh-output to visualize predictor step
   int step  = params_.get<int>("step",0);
   int istep = step + 1;
-  beamcmanager_->GmshOutput(*disn_,istep,0,0);
+  beamcmanager_->GmshOutput(*disn_,istep,0);
   beamcmanager_->ConsoleOutput();
 #endif
   //**********************************************************************
@@ -932,7 +929,7 @@ void CONTACT::Beam3ContactStruGenAlpha::FullNewton()
     // Create gmsh-output to visualize every step of newton iteration
     int step  = params_.get<int>("step",0);
     int istep = step + 1;
-    beamcmanager_->GmshOutput(*disn_,istep,uzawaiter_,numiter+1);
+    beamcmanager_->GmshOutput(*disn_,istep,numiter+1);
     beamcmanager_->ConsoleOutput();
 #endif
     //**********************************************************************
@@ -1012,7 +1009,7 @@ void CONTACT::Beam3ContactStruGenAlpha::InitializeNewtonUzawa()
   bool  loadlin    = params_.get<bool>("LOADLIN",false);
 
   // create out-of-balance force for 2nd, 3rd, ... Uzawa iteration
-  if (uzawaiter_>1)
+  if (beamcmanager_->GetUzawaIter() > 1)
   {
     //--------------------------- recompute external forces if nonlinear
     // at state n, the external forces and linearization are interpolated at
@@ -1275,8 +1272,6 @@ void CONTACT::Beam3ContactStruGenAlpha::Integrate()
     // LOOP1: time steps
     for (int i=step; i<nstep; ++i)
     {
-
-
       // set normal vector of last time step "normal_" to old normal vector "normal_old_"
       if (newgapfunction) beamcmanager_->ShiftAllNormal();
 
@@ -1294,25 +1289,25 @@ void CONTACT::Beam3ContactStruGenAlpha::Integrate()
       int maxuzawaiter = beamcmanager_->InputParameters().get<int>("UZAWAMAXSTEPS");
 
       // LOOP2: augmented Lagrangian (Uzawa)
-      uzawaiter_=0;
+      beamcmanager_->ResetUzawaIter();
       do
       {
-        // increase iteration index
-        ++uzawaiter_;
-        if (uzawaiter_ > maxuzawaiter)
+        // increase iteration index by one
+        beamcmanager_->UpdateUzawaIter();
+        if (beamcmanager_->GetUzawaIter() > maxuzawaiter)
           dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
 
         if (discret_.Comm().MyPID() == 0)
-          cout << endl << "Starting Uzawa step No. " << uzawaiter_ << endl;
+          cout << endl << "Starting Uzawa step No. " << beamcmanager_->GetUzawaIter() << endl;
         
         // LOOP3: nonlinear iteration (Newton)
         FullNewton();
         
         // update constraint norm and penalty parameter
-        beamcmanager_->UpdateConstrNorm(uzawaiter_);
+        beamcmanager_->UpdateConstrNorm();
         
         // update Uzawa Lagrange multipliers
-        beamcmanager_->UpdateAlllmuzawa(uzawaiter_);
+        beamcmanager_->UpdateAlllmuzawa();
         
       } while (abs(beamcmanager_->GetConstrNorm()) >= eps);
   
@@ -1395,7 +1390,7 @@ void CONTACT::Beam3ContactStruGenAlpha::Update()
   //**********************************************************************
   //**********************************************************************
   // update beam contact-specific quantities
-  beamcmanager_->Update(*dis_,istep,99,99);
+  beamcmanager_->Update(*dis_,istep,99);
   //**********************************************************************
   //**********************************************************************
   

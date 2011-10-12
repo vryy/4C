@@ -166,6 +166,9 @@ pdiscret_(discret)
   // initialize input parameters
   currentpp_ = scontact_.get<double>("PENALTYPARAM");
   
+  // initialize Uzawa iteration index
+  uzawaiter_ = 0;
+
   // Compute the search radius for searching possible contact pairs
   ComputeSearchRadius();
   
@@ -844,14 +847,15 @@ void CONTACT::Beam3cmanager::GetMaxEleLength(double& maxelelength)
  |  Update contact forces at the end of time step             popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& timestep,
-                                    const int& uzawastep, const int& newtonstep)
+                                    const int& newtonstep)
 {
   // store values of fc_ into fcold_ (generalized alpha)
   fcold_->Update(1.0,*fc_,0.0);
   
   // create gmsh output for nice visualization
+  // (endoftimestep flag set to TRUE)
 #ifdef GMSHTIMESTEPS
-  GmshOutput(disrow, timestep, uzawastep, newtonstep);
+  GmshOutput(disrow, timestep, newtonstep, true);
 #endif
   
   // print some data to screen
@@ -874,15 +878,12 @@ void CONTACT::Beam3cmanager::Update(const Epetra_Vector& disrow, const int& time
  |  Write Gmsh data for current state                          popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& timestep,
-                                        const int& uzawastep,  const int& newtonstep)
+                                        const int& newtonstep, bool endoftimestep)
 {
   //**********************************************************************
   // create filename for ASCII-file for output
   //**********************************************************************
   
-
-
-
   // STEP 1: OUTPUT OF TIME STEP INDEX
   std::ostringstream filename;
   filename << "o/gmsh_output/";
@@ -892,17 +893,27 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
     dserror("ERROR: Gmsh output implemented for max 999.999 time steps");
   
   // STEPS 2/3: OUTPUT OF UZAWA AND NEWTON STEP INDEX
-  // (for the end of time step output, indicated by 99, omit this)
-  if (uzawastep!=99 && newtonstep!=99)
+  // (for the end of time step output, omit this)
+  int uzawastep = 99;
+  if (!endoftimestep)
   {
-    if (uzawastep<10)
-      filename << "_u0";
-    else if (uzawastep<100)
-      filename << "_u";
-    else /*(uzawastep>=100)*/
-      dserror("ERROR: Gmsh output implemented for max 99 Uzawa steps");
-    filename << uzawastep;
+    // check if Uzawa index is needed or not
+    INPAR::CONTACT::SolvingStrategy soltype =
+    DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(InputParameters(),"STRATEGY");
+
+    if (soltype==INPAR::CONTACT::solution_auglag)
+    {
+      uzawastep = uzawaiter_;
+      if (uzawastep<10)
+        filename << "_u0";
+      else if (uzawastep<100)
+        filename << "_u";
+      else /*(uzawastep>=100)*/
+        dserror("ERROR: Gmsh output implemented for max 99 Uzawa steps");
+      filename << uzawastep;
+    }
     
+    // Newton index is always needed, of course
     if (newtonstep<10)
       filename << "_n0";
     else if (newtonstep<100)
@@ -979,7 +990,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
     gmshfilecontent << "View \" Step T" << timestep;
             
     // information about Uzawa and Newton step
-    if (uzawastep!=99 && newtonstep!=99)
+    if (!endoftimestep)
       gmshfilecontent << " U" << uzawastep << " N" << newtonstep;
 
     // finish step information
@@ -1122,7 +1133,7 @@ void CONTACT::Beam3cmanager::ResetAlllmuzawa()
 /*----------------------------------------------------------------------*
  |  Update contact constraint norm                            popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::UpdateConstrNorm(const int uzawaiter)
+void CONTACT::Beam3cmanager::UpdateConstrNorm()
 {
   // some local variables
   int j=0;
@@ -1187,13 +1198,13 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(const int uzawaiter)
   INPAR::CONTACT::SolvingStrategy soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(InputParameters(),"STRATEGY");
   
   if (soltype==INPAR::CONTACT::solution_auglag)
-    updatepp = UpdateCurrentpp(globnorm,uzawaiter);
+    updatepp = UpdateCurrentpp(globnorm);
   
    // print results to screen
   if (Comm().MyPID()==0)
   {
     cout << endl << "*********************************************"<<endl;
-    cout << "Global Constraint Norm = "<<globnorm<<endl;
+    cout << "Global Constraint Norm = " << globnorm << endl;
     if (updatepp) cout << "Updated penalty parameter = " << currentpp_ << endl;
     cout<<"*********************************************"<<endl;
   }
@@ -1223,7 +1234,7 @@ void CONTACT::Beam3cmanager::ShiftAllNormal()
 /*----------------------------------------------------------------------*
  |  Update all Uzawa-based Lagrange multipliers               popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::UpdateAlllmuzawa(const int& uzawaiter)
+void CONTACT::Beam3cmanager::UpdateAlllmuzawa()
 {
   // loop over all potential contact pairs
   for (int i=0;i<(int)pairs_.size();++i)
@@ -1244,15 +1255,36 @@ void CONTACT::Beam3cmanager::ResetCurrentpp()
 }
 
 /*----------------------------------------------------------------------*
+ |  Reset Uzawa iteration index                               popp 04/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3cmanager::ResetUzawaIter()
+{
+  // reset index to zero
+  uzawaiter_ = 0;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Update Uzawa iteration index                              popp 04/10|
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3cmanager::UpdateUzawaIter()
+{
+  // increase index by one
+  uzawaiter_++;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  Update penalty parameter                                  popp 04/10|
  *----------------------------------------------------------------------*/
-bool CONTACT::Beam3cmanager::UpdateCurrentpp(const double& globnorm,
-                                             const int& uzawaiter)
+bool CONTACT::Beam3cmanager::UpdateCurrentpp(const double& globnorm)
 {
   // check convergence rate of Uzawa iteration
   // if too slow then empirically increase the penalty parameter
   bool update = false;
-  if ( (globnorm >= 0.25 * constrnorm_) && (uzawaiter >= 2) )
+  if ( (globnorm >= 0.25 * constrnorm_) && (uzawaiter_ >= 2) )
   {
     currentpp_ = currentpp_ * 2.0;
     update = true;

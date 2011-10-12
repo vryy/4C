@@ -130,6 +130,12 @@ public:
   */
   const double GetConstrNorm() { return constrnorm_; }
 
+  /*!
+  \brief Get current Uzawa iteration index
+
+  */
+  const int GetUzawaIter() { return uzawaiter_; }
+
   //@}
 
   //! @name Public evaluation methods
@@ -155,8 +161,7 @@ public:
   visualization in GMSH will be written. Also some output to screen is done.
 
   */
-  void Update(const Epetra_Vector& disrow, const int& timestep,
-              const int& uzawastep, const int& newtonstep);
+  void Update(const Epetra_Vector& disrow, const int& timestep, const int& newtonstep);
 
   /*!
   \brief Rest Lagrange Multipliers
@@ -175,34 +180,25 @@ public:
   penalty parameter is also applied to speed up Uzawa convergence.
 
   */
-  void UpdateConstrNorm(const int uzawaiter = 0);
-
-
+  void UpdateConstrNorm();
 
   /*!
   \brief Shift current normal "normal_" vector to old normal vector "normal_old_"
 
   The converged normal vector of the last time step is stored as "normal_old_" to serve
-  as a reference for the modified gap function definition*/
+  as a reference for the modified gap function definition
 
-
+  */
   void ShiftAllNormal();
 
-
   /*!
-   \brief Check if the modified gapfunction is used or not*/
+  \brief Update Lagrange multipliers
 
+  Update all Lagrange multipliers of each contact pair at the beginning of each
+  new Uzawa time step. This is only needed for an augmented Lagrange / Uzawa scheme.
 
-
-
-  /*!
-   \brief Update Lagrange multipliers
-
-   Update all Lagrange multipliers of each contact pair at the beginning of each
-   new Uzawa time step. This is only needed for an augmented Lagrange / Uzawa scheme.*/
-
-
-  void UpdateAlllmuzawa(const int& uzawaiter);
+   */
+  void UpdateAlllmuzawa();
 
   /*!
   \brief Reset penalty parameter
@@ -215,6 +211,18 @@ public:
   void ResetCurrentpp();
 
   /*!
+  \brief Reset Uzawa iteration index
+
+  */
+  void ResetUzawaIter();
+
+  /*!
+  \brief Update Uzawa iteration index
+
+  */
+  void UpdateUzawaIter();
+
+  /*!
   \brief Create output files for GMSH visualization
 
   Create ASCII-files to visualize beams with GMSH. The circular cross section will
@@ -223,7 +231,7 @@ public:
 
   */
   void GmshOutput(const Epetra_Vector& disrow, const int& timestep,
-                  const int& uzawastep, const int& newtonstep);
+                  const int& newtonstep, bool endoftimestep = false);
 
   /*!
   \brief Print active set
@@ -305,6 +313,9 @@ private:
 
   //! current penalty parameter (might be modified within augmented Lagrange strategy)
   double currentpp_;
+
+  //! current Uzawa iteration index (for augmented Lagrange strategy)
+  int uzawaiter_;
 
   //@}
 
@@ -390,7 +401,7 @@ private:
   experience. It moght also be problem-dependent.
 
   */
-  bool UpdateCurrentpp(const double& GlobalConstrNorm, const int& uzawaiter);
+  bool UpdateCurrentpp(const double& GlobalConstrNorm);
 
   /*!
   \brief Set displacment state

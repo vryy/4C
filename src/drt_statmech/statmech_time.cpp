@@ -53,8 +53,7 @@ StatMechTime::StatMechTime(ParameterList& params,
                           LINALG::Solver& solver,
                           IO::DiscretizationWriter& output) :
 StruGenAlpha(params,dis,solver,output),
-isconverged_(0),
-uzawaiter_(0)
+isconverged_(0)
 {
 	Teuchos::RCP<LINALG::SparseMatrix> stiff = SystemMatrix();
   statmechmanager_ = rcp(new StatMechManager(params,dis));
@@ -291,20 +290,20 @@ void StatMechTime::Integrate()
             int maxuzawaiter = beamcmanager_->InputParameters().get<int>("UZAWAMAXSTEPS");
 
             // LOOP2: augmented Lagrangian (Uzawa)
-            uzawaiter_=0;
+            beamcmanager_->ResetUzawaIter();
             do
             {
               // increase iteration index
-              ++uzawaiter_;
-              if (uzawaiter_ > maxuzawaiter)
+              beamcmanager_->UpdateUzawaIter();
+              if (beamcmanager_->GetUzawaIter() > maxuzawaiter)
               {
-								cout<<"Uzawa unconverged in "<<uzawaiter_<<" iterations"<<endl;
+								cout << "Uzawa unconverged in "<< beamcmanager_->GetUzawaIter() << " iterations" << endl;
 								break;
                 //dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
               }
 
               if (discret_.Comm().MyPID() == 0)
-                cout << endl << "Starting Uzawa step No. " << uzawaiter_ << endl;
+                cout << endl << "Starting Uzawa step No. " << beamcmanager_->GetUzawaIter() << endl;
 
               // LOOP3: nonlinear iteration (Newton)
               if(ndim ==3)
@@ -317,9 +316,9 @@ void StatMechTime::Integrate()
               	break;
 
 							// update constraint norm and penalty parameter
-							beamcmanager_->UpdateConstrNorm(uzawaiter_);
+							beamcmanager_->UpdateConstrNorm();
 							// update Uzawa Lagrange multipliers
-							beamcmanager_->UpdateAlllmuzawa(uzawaiter_);
+							beamcmanager_->UpdateAlllmuzawa();
             } while (abs(beamcmanager_->GetConstrNorm()) >= eps);
 
             // reset penalty parameter
@@ -370,7 +369,7 @@ void StatMechTime::Integrate()
     // update beam contact-specific quantities
     if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
     {
-      beamcmanager_->Update(*dis_,params_.get<int>("step",0),99,99);
+      beamcmanager_->Update(*dis_,params_.get<int>("step",0),99);
       // output reaction forces and moments
       #ifdef REACTIONFORCES
       beamcmanager_->Reactions(*fint_,*dirichtoggle_,params_.get<int>("step",0));
@@ -568,7 +567,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
     // create gmsh-output to visualize predictor step
     int step  = params_.get<int>("step",0);
     int istep = step + 1;
-    beamcmanager_->GmshOutput(*disn_,istep,0,0);
+    beamcmanager_->GmshOutput(*disn_,istep,0);
     beamcmanager_->ConsoleOutput();
 #endif
   }
@@ -767,7 +766,7 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
       // Create gmsh-output to visualize every step of newton iteration
       int step  = params_.get<int>("step",0);
       int istep = step + 1;
-      beamcmanager_->GmshOutput(*disn_,istep,uzawaiter_,numiter+1);
+      beamcmanager_->GmshOutput(*disn_,istep,numiter+1);
       beamcmanager_->ConsoleOutput();
 #endif
     }
@@ -1088,7 +1087,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
     if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"GMSHOUTPUT") && DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
     {
 			std::ostringstream filename;
-			filename << "./GmshOutput/network"<< std::setw(6) << setfill('0') << istep <<"_u"<<std::setw(2) << setfill('0')<<uzawaiter_<<"_n"<<std::setw(2) << setfill('0')<<numiter<<".pos";
+			filename << "./GmshOutput/network"<< std::setw(6) << setfill('0') << istep <<"_u"<<std::setw(2) << setfill('0')<<beamcmanager_->GetUzawaIter()<<"_n"<<std::setw(2) << setfill('0')<<numiter<<".pos";
 			statmechmanager_->GmshOutput(*disn_,filename,istep,beamcmanager_);
     }
 #endif
@@ -1116,7 +1115,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
       std::cout<<"\n\n";
       if(uzawa)
       {
-      	std::cout<<"Newton iteration in Uzawa Step "<<uzawaiter_<<" unconverged-leaving Uzawa loop and restarting time step...!\n\n";
+      	std::cout<<"Newton iteration in Uzawa Step "<<beamcmanager_->GetUzawaIter()<<" unconverged-leaving Uzawa loop and restarting time step...!\n\n";
       	return;
       }
       else
@@ -1159,7 +1158,7 @@ void StatMechTime::InitializeNewtonUzawa(RCP<Epetra_MultiVector> randomnumbers)
   bool  loadlin    = params_.get<bool>("LOADLIN",false);
 
   // create out-of-balance force for 2nd, 3rd, ... Uzawa iteration
-  if (uzawaiter_>1)
+  if (beamcmanager_->GetUzawaIter() > 1)
   {
     //--------------------------- recompute external forces if nonlinear
     // at state n, the external forces and linearization are interpolated at
