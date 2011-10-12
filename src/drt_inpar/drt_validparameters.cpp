@@ -590,12 +590,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   }
 
   IntParameter("NUMFIELD",1,"",&type);
-  setStringToIntegralParameter<int>("TIMETYP","Dynamic","",
-                               tuple<std::string>("Static","Dynamic"),
-                               tuple<int>(time_static,time_dynamic),
-                               &type);
   //IntParameter("GRADERW",0,"",&type);
-  IntParameter("MULTISC_STRUCT",0,"",&type);
   IntParameter("RESTART",0,"",&type);
   setStringToIntegralParameter<int>("ALGEBRA","Trilinos","outdated",
                                tuple<std::string>("Trilinos","ccarat"),
@@ -1386,10 +1381,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   INPAR::CONTACT::bsm_partially,INPAR::CONTACT::bsm_partially,
                   INPAR::CONTACT::bsm_cpp,INPAR::CONTACT::bsm_cpp),
        &scontact);
-  
+
   setStringToIntegralParameter<int>("INITCONTACTBYGAP","No","Initialize init contact by weighted gap vector",
                                yesnotuple,yesnovalue,&scontact);
-  
+
   DoubleParameter("INITCONTACTGAPVALUE",0.0,"Value for initialization of init contact set with gap vector",&scontact);
 
   /*----------------------------------------------------------------------*/

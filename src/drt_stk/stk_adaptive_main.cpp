@@ -14,22 +14,11 @@ void adaptive_main()
   switch (genprob.probtyp)
   {
     case prb_structure:
-      switch (genprob.timetyp)
-      {
-        case time_static:
-          dserror( "nonlinear statics with new discretization" );
-          break;
-        case time_dynamic:
-        {
-          STK::STR::Problem prb;
-          prb.Execute();
-          break;
-        }
-        default:
-          dserror("Unspecified time handling");
-      }
+    {
+      STK::STR::Problem prb;
+      prb.Execute();
       break;
-
+    }
     case prb_fluid_pm:
     case prb_fluid:
     {

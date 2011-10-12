@@ -18,7 +18,6 @@ Maintainer: Moritz Frenzel
 
 #ifdef CCADISCRET
 
-#include "stru_static_drt.H"
 #include "strugenalpha.H"
 #include "strtimint.H"
 #include "../drt_lib/drt_resulttest.H"

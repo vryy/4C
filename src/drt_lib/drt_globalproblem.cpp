@@ -255,7 +255,6 @@ void DRT::Problem::InputControl()
   const Teuchos::ParameterList& type = ProblemTypeParams();
 
   genprob.probtyp        = DRT::INPUT::IntegralValue<PROBLEM_TYP>(type,"PROBLEMTYP");
-  genprob.timetyp        = DRT::INPUT::IntegralValue<TIME_TYP>(type,"TIMETYP");
 
   // If there is a restart flag on the command line, ignore the input file.
   if ( genprob.restart==0 )

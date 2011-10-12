@@ -14,7 +14,6 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_dserror.H"
 
 /* header for DRT style input */
-#include "../drt_structure/stru_static_drt.H"
 #include "../drt_lib/global_inp_control2.H"
 #include "../drt_fluid/fluid_dyn_nln_drt.H"
 #include "../drt_scatra/scatra_dyn.H"
@@ -46,20 +45,8 @@ void ntacal()
   switch (genprob.probtyp)
   {
     case prb_structure:
-      switch (genprob.timetyp)
-      {
-        case time_static:
-          /* nonlinear statics with new discretization */
-          stru_static_drt();
-          break;
-        case time_dynamic:
-          caldyn_drt();
-          break;
-        default:
-          dserror("Unspecified time handling");
-      }
+      caldyn_drt();
       break;
-
     case prb_fluid_pm:
     case prb_fluid:
       dyn_fluid_drt(genprob.restart);
