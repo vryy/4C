@@ -31,6 +31,11 @@ LOMA::Algorithm::Algorithm(
   // flag for monolithic solver
   monolithic_ = (DRT::INPUT::IntegralValue<int>(prbdyn,"MONOLITHIC"));
 
+  // time-step length, maximum time and maximum number of steps
+  dt_      = prbdyn.get<double>("TIMESTEP");
+  maxtime_ = prbdyn.get<double>("MAXTIME");
+  stepmax_ = prbdyn.get<int>("NUMSTEP");
+
   // (preliminary) maximum number of iterations and tolerance for outer iteration
   ittol_    = prbdyn.get<double>("CONVTOL");
   itmaxpre_ = prbdyn.get<int>("ITEMAX");
@@ -225,7 +230,13 @@ void LOMA::Algorithm::OuterLoop()
   int  itnum = 0;
   bool stopnonliniter = false;
 
-  if (Comm().MyPID()==0) cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
+  if (Comm().MyPID()==0)
+  {
+    cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
+
+    printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d\n",
+           ScaTraField().Time(),maxtime_,dt_,ScaTraField().MethodTitle().c_str(),ScaTraField().Step(),stepmax_);
+  }
 
   // maximum number of iterations tolerance for outer iteration
   // currently default for turbulent channel flow: only one iteration before sampling
@@ -284,7 +295,13 @@ void LOMA::Algorithm::MonoLoop()
   int  itnum = 0;
   bool stopnonliniter = false;
 
-  if (Comm().MyPID()==0) cout<<"\n****************************************\n       MONOLITHIC ITERATION LOOP\n****************************************\n";
+  if (Comm().MyPID()==0)
+  {
+    cout<<"\n****************************************\n       MONOLITHIC ITERATION LOOP\n****************************************\n";
+
+    printf("TIME: %11.4E/%11.4E  DT = %11.4E  %s  STEP = %4d/%4d\n",
+           ScaTraField().Time(),maxtime_,dt_,ScaTraField().MethodTitle().c_str(),ScaTraField().Step(),stepmax_);
+  }
 
   // maximum number of iterations tolerance for monolithic iteration
   // currently default for turbulent channel flow: only one iteration before sampling

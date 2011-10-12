@@ -128,6 +128,11 @@ namespace LOMA
     /// monolithic solver
     Teuchos::RCP<LINALG::Solver> lomasolver_;
 
+    /// time-step length, maximum time and maximum number of steps
+    double dt_;
+    double maxtime_;
+    int stepmax_;
+
     /// (preliminary) maximum number of iterations and tolerance for outer iteration
     int     itmax_;
     int     itmaxpre_;
