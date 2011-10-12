@@ -866,13 +866,15 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,const RCP<Epet
   }  
   
   // store contact state to contact nodes (active or inactive)
-  StoreNodalQuantities(MORTAR::StrategyBase::activeold);
+  if(friction_)
+    StoreNodalQuantities(MORTAR::StrategyBase::activeold);
 
   // store D and M to old ones
   StoreDM("old");
 
   // store nodal entries from D and M to old ones
-  StoreToOld(MORTAR::StrategyBase::dm);
+  if(friction_)
+    StoreToOld(MORTAR::StrategyBase::dm);
   
   // transform dold_ in the case of dual quadratic 3d
   if (Dualquadslave3d())
@@ -884,7 +886,8 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,const RCP<Epet
   // evaluate relative movement
   // needed because it is not called in the predictor of the  
   // lagrange multiplier strategy 
-  EvaluateRelMov();
+  if(friction_)
+    EvaluateRelMov();
 
   // reset unbalance factors for redistribution
   // (during EvalRefState the interface has been evaluated once)
@@ -922,18 +925,21 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(int step,const RCP<Epet
   if (!friction_) return;
   
   // store contact state to contact nodes (active or inactive)
-  StoreNodalQuantities(MORTAR::StrategyBase::activeold);
+  if(friction_)
+    StoreNodalQuantities(MORTAR::StrategyBase::activeold);
 
   // store D and M to old ones
   StoreDM("old");
 
   // store nodal entries from D and M to old ones
-  StoreToOld(MORTAR::StrategyBase::dm);
+  if(friction_)
+    StoreToOld(MORTAR::StrategyBase::dm);
 
   // evaluate relative movement
   // needed because it is not called in the predictor of the  
   // lagrange multiplier strategy 
-  EvaluateRelMov();
+  if(friction_)
+    EvaluateRelMov();
   
   // reset unbalance factors for redistribution
   // (during EvalRefState the interface has been evaluated once)
