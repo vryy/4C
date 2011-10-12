@@ -45,13 +45,10 @@ STRUCT_STRESS                   No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 --------------------------------------------------------PROBLEM TYP
-ALGEBRA                         Trilinos
-MULTISC_STRUCT                  0
 NUMFIELD                        1
 PROBLEMTYP                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
-TIMETYP                         Static
 ------------------------------------------------------STRUCT SOLVER
 AZBDIAG                         0
 AZCONV                          AZ_r0

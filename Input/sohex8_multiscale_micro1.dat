@@ -12,8 +12,6 @@ NUMDF        6
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Structure
 NUMFIELD     1
-TIMETYP      Dynamic
-ALGEBRA      Trilinos           // ccarat/Trilinos
 RESTART      0
 //!RESTART   1
 ----------------------------------------------------DISCRETISATION

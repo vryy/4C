@@ -15,8 +15,6 @@ NUMDF        4
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Fluid
 NUMFIELD     1
-TIMETYP      Dynamic
-ALGEBRA      Trilinos         // ccarat/Trilinos
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1
@@ -33,8 +31,6 @@ FLUID_SOL         Yes
 FLUID_STRESS      No
 FLUID_VIS         No
 ALE_DISP          No
-------------------------------------------------------------STATIC
-//
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 -----------------------------------------------------FLUID DYNAMIC

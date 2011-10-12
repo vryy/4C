@@ -17,7 +17,6 @@ NUMDF        6
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Fluid_XFEM2
 NUMFIELD     2
-TIMETYP      Dynamic
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1

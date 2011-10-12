@@ -24,8 +24,6 @@ NUMDF    	6
 --------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Structure
 NUMFIELD     1
-TIMETYP      Dynamic
-ALGEBRA      Trilinos           // ccarat/Trilinos
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  0
@@ -44,8 +42,6 @@ FLUID_STRESS      No
 FLUID_VIS         No
 ALE_DISP          No
 FILESTEPS         1000
-------------------------------------------------------------STATIC
-//
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Statics

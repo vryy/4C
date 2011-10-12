@@ -20,8 +20,6 @@ NUMDF        6
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Structure
 NUMFIELD     1
-TIMETYP      Dynamic
-ALGEBRA      Trilinos           // ccarat/Trilinos
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1
@@ -43,9 +41,6 @@ ALE_DISP               Yes
 THERM_TEMPERATURE      No
 THERM_HEATFLUX         No
 FILESTEPS              1000
-------------------------------------------------------------STATIC
-//LINEAR
-//
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS 1 NODE 404 POSITION dispy NAME uy VALUE -2.4604750290454236e+00 TOLERANCE 1e-5

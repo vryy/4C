@@ -12,7 +12,6 @@ NUMDF        2
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   ArterialNetwork
 NUMFIELD     1
-TIMETYP      Dynamic
 RESTART      0
 ----------------------------------------------------------------IO
 --------------------------------------------------ARTERIAL DYNAMIC

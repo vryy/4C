@@ -24,12 +24,8 @@ NUMDF        3
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Fluid_Structure_Interaction
 NUMFIELD     3
-TIMETYP      Dynamic
 RESTART      0
 ----------------------------------------------------------------IO
-------------------------------------------------------------STATIC
-//GEOLINEAR
-//
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   GenAlpha

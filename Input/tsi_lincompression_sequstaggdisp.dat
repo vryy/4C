@@ -56,13 +56,10 @@ THERM_HEATFLUX                  Current  // None,No,NO,no,Current,Initial
 THERM_TEMPERATURE               Yes  //  Yes,No,yes,no,YES,NO
 THERM_TEMPGRAD                  Current  //  None,No,NO,no,Current,Initial
 --------------------------------------------------------PROBLEM TYP
-ALGEBRA                         Trilinos
-MULTISC_STRUCT                  0
 NUMFIELD                        2 // thr+str
 PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
-TIMETYP                         Dynamic
 ------------------------------------------------------STRUCT SOLVER
 AMGBS_BS_DAMPING                1.3 1.3 1.3
 AMGBS_BS_PCCOARSE               Umfpack

@@ -20,8 +20,6 @@ NUMDF              1
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Thermo
 NUMFIELD     1
-TIMETYP      Dynamic
-ALGEBRA      Trilinos           // ccarat/Trilinos
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  0
@@ -44,8 +42,6 @@ THERM_HEATFLUX         Initial              // None, Current, Initial
 THERM_TEMPERATURE      Yes
 THERM_TEMPGRAD         Initial              // None, Current, Initial
 FILESTEPS              1000
-------------------------------------------------------------STATIC
-//
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------MESHTYING AND CONTACT

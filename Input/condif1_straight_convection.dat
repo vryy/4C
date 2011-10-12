@@ -23,8 +23,6 @@ NUMDF              1
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Scalar_Transport
 NUMFIELD     2
-TIMETYP      Dynamic
-ALGEBRA      Trilinos           // ccarat/Trilinos
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1
@@ -46,8 +44,6 @@ ALE_DISP               No
 THERM_TEMPERATURE      No
 THERM_HEATFLUX         No
 FILESTEPS              1000
-------------------------------------------------------------STATIC
-//
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------MESHTYING AND CONTACT

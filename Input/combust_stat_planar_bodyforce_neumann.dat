@@ -23,11 +23,9 @@ DIM       3
 MATERIALS 5
 NUMDF     6
 --------------------------------------------------------PROBLEM TYP
-ALGEBRA                         Trilinos
 NUMFIELD                        2
 PROBLEMTYP                      Combustion
 RESTART                         0
-TIMETYP                         Dynamic
 ----------------------------------------------------------------IO
 OUTPUT_OUT             No
 OUTPUT_GID             No

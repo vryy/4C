@@ -20,7 +20,6 @@ NUMDF        6
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Structure
 NUMFIELD     1
-TIMETYP      Static
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  0

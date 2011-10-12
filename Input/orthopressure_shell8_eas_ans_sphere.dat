@@ -21,7 +21,6 @@ NUMDF        6
 //PROBLEMTYP                      Fluid_Structure_Interaction
 //NUMFIELD                        3
 PROBLEMTYP                      Structure
-TIMETYP                         Dynamic
 RESTART                         0
 //!RESTART                      8
 ----------------------------------------------------DISCRETISATION
@@ -44,9 +43,6 @@ ALE_DISP               Yes
 THERM_TEMPERATURE      No
 THERM_HEATFLUX         No
 FILESTEPS              1000
-------------------------------------------------------------STATIC
-//LINEAR
-//
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa

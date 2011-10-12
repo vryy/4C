@@ -21,7 +21,6 @@ NUMDF        4
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Fluid
 NUMFIELD     1
-TIMETYP      Dynamic
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1

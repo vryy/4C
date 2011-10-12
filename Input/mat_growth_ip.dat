@@ -48,13 +48,10 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 --------------------------------------------------------PROBLEM TYP
-ALGEBRA                         Trilinos
-MULTISC_STRUCT                  0
 NUMFIELD                        1
 PROBLEMTYP                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
-TIMETYP                         Dynamic
 ------------------------------------------------------STRUCT SOLVER
 AZBDIAG                         0
 AZCONV                          AZ_r0

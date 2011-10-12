@@ -67,13 +67,10 @@ THERM_TEMPGRAD                  Current  //  None,No,NO,no,Current,Initial
 -------------------------------------------------------LOMA CONTROL
 ---------------------------------------------------PATIENT SPECIFIC
 --------------------------------------------------------PROBLEM TYP
-ALGEBRA                         Trilinos
-MULTISC_STRUCT                  0
 NUMFIELD                        2  // thr+str
 PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
-TIMETYP                         Dynamic
 --------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 ----------------------------------SCALAR TRANSPORT DYNAMIC/LEVELSET

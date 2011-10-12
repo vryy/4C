@@ -20,7 +20,6 @@ NUMDF        6
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 NUMFIELD                        1
-TIMETYP                         Dynamic
 RESTART                         0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1
@@ -42,8 +41,6 @@ ALE_DISP                        Yes
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
-------------------------------------------------------------STATIC
-//
 -----------------------------------------------EIGENVALUE ANALYSIS
 --------------------------------------------------INVERSE ANALYSIS
 INV_ANALYSIS    gen                   // lung gen none

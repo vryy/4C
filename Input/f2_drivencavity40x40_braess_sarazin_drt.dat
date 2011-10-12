@@ -185,13 +185,10 @@ THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 
 --------------------------------------------------------PROBLEM TYP
-ALGEBRA                         Trilinos
-MULTISC_STRUCT                  0
 NUMFIELD                        1
 PROBLEMTYP                      Fluid
 RESTART                         0
 SHAPEFCT                        Polynomial
-TIMETYP                         Dynamic
 ----------------------------------------------------------MATERIALS
 MAT 1   MAT_fluid   DYNVISCOSITY 0.01 DENSITY 1.0
 -------------------------------------------------------LOAD CURVES

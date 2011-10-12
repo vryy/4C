@@ -7,7 +7,6 @@ NUMDF                           1
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      ReducedDimensionalAirWays
 NUMFIELD                        1
-TIMETYP                         Dynamic
 RESTART                         0
 --------------------------------------------------------------------------IO
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC

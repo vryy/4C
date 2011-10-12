@@ -37,13 +37,10 @@ NUMTHERMDIS                     1
 APPROXIMATION_TYPE              None
 POTENTIAL_TYPE                  Volume
 --------------------------------------------------------PROBLEM TYP
-ALGEBRA                         Trilinos
-MULTISC_STRUCT                  0
 NUMFIELD                        1
 PROBLEMTYP                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
-TIMETYP                         Dynamic
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 ------------------------------------------------------STRUCT SOLVER
 AZBDIAG                         0

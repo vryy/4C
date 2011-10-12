@@ -20,8 +20,6 @@ NUMDF        3
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Structure
 NUMFIELD     1
-TIMETYP      Dynamic
-ALGEBRA      Trilinos           // ccarat/Trilinos
 RESTART      0
 //!RESTART   30
 ----------------------------------------------------DISCRETISATION

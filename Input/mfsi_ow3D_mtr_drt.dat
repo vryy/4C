@@ -15,7 +15,7 @@ DIM      	3
 MATERIALS	3
 NUMDF    	6
 --------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        springs
+ALE_TYPE                        classic_lin
 MAXTIME                         4
 NUMSTEP                         41
 NUM_INITSTEP                    0
@@ -107,12 +107,12 @@ SOLVER                          UMFPACK
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 --------------------------------------------------------FSI DYNAMIC
-ADAPTIVEDIST                    0
+ADAPTIVEDIST                    0.0001
 ALPHA_F                         -1
 ALPHA_S                         -1
-BASETOL                         1.0e-8
+BASETOL                         1.0e-7
 CONVCRIT                        ||g(i)||:sqrt(neq)
-CONVTOL                         1e-09
+CONVTOL                         1e-06
 COUPALGO                        iter_mortar_monolithicstructuresplit
 COUPFORCE                       nodeforce
 COUPMETHOD                      mtr
@@ -130,7 +130,7 @@ ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
 MAXOMEGA                        0
 MAXTIME                         100
-NUMSTEP                         4
+NUMSTEP                         50
 PARTITIONED                     DirichletNeumann
 PRECONDREUSE                    10
 PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)
@@ -142,7 +142,7 @@ STRUCTPCITER                    1 1 1
 STRUCTPCOMEGA                   1.0 1.0 1.0
 PCITER                          1 1 1
 PCOMEGA                         1.0 1.0 1.0
-TIMESTEP                        0.05
+TIMESTEP                        0.2
 TOLENCHECK                      1e-06
 UPPSS                           1
 UPRES                           1
@@ -167,13 +167,10 @@ THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 -------------------------------------------------------LOMA CONTROL
 --------------------------------------------------------PROBLEM TYP
-ALGEBRA                         Trilinos
-MULTISC_STRUCT                  0
 NUMFIELD                        3
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
-TIMETYP                         Dynamic
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 ALPHA_F                         0.5
 ALPHA_M                         0.5
@@ -281,7 +278,6 @@ SOLVER                          UMFPACK
 MAT 1 MAT_Struct_NeoHooke YOUNG 250.0 NUE 0.3 DENS 500
 MAT 2 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0
 MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 500
-
 -------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC (1-cos(2*t*pi/5)) t1 0.0 t2 5.0

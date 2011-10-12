@@ -10,13 +10,10 @@ DIM      	2
 MATERIALS	1
 NUMDF    	6
 --------------------------------------------------------PROBLEM TYP
-ALGEBRA                         Trilinos
-MULTISC_STRUCT                  0
 NUMFIELD                        1
 PROBLEMTYP                      Electrochemistry
 RESTART                         0
 SHAPEFCT                        Polynomial
-TIMETYP                         Dynamic
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1
 NUMSTRUCDIS  0

@@ -18,8 +18,6 @@ NUMDF              6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
 NUMFIELD                        3
-TIMETYP                         Dynamic
-ALGEBRA                         Trilinos                        // ccarat/Trilinos
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

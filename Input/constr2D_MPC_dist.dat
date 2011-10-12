@@ -49,7 +49,6 @@ THERM_TEMPERATURE               No
 NUMFIELD                        1
 PROBLEMTYP                      Structure
 RESTART                         0
-TIMETYP                         Dynamic
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 --------------------------------------------SCALAR TRANSPORT SOLVER
 ----------------------------------------------STATISTICAL MECHANICS

@@ -50,13 +50,10 @@ THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 -------------------------------------------------------LOMA CONTROL
 --------------------------------------------------------PROBLEM TYP
-ALGEBRA                         Trilinos
-MULTISC_STRUCT                  0
 NUMFIELD                        1
 PROBLEMTYP                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
-TIMETYP                         Dynamic
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 ------------------------------------------------------STRUCT SOLVER
 AZBDIAG                         0

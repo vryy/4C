@@ -20,8 +20,6 @@ NUMDF        	   4
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Fluid
 NUMFIELD     1
-TIMETYP      Dynamic
-ALGEBRA      Trilinos
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1
@@ -29,8 +27,6 @@ NUMSTRUCDIS  0
 NUMALEDIS    0
 NUMTHERMDIS  0
 ----------------------------------------------------------------IO
-------------------------------------------------------------STATIC
-//
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 -----------------------------------------------------FLUID DYNAMIC

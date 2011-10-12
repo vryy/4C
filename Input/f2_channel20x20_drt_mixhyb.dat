@@ -21,7 +21,6 @@ NUMDF        3
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Fluid
 NUMFIELD     1
-TIMETYP      Dynamic
 RESTART      0
 -----------------------------------------------------FLUID DYNAMIC
 TIMEINTEGR   One_Step_Theta

@@ -26,7 +26,6 @@ NDVOL                           5
 PROBLEMTYP                      Fluid
 SHAPEFCT                        Nurbs
 NUMFIELD                        1
-TIMETYP                         Dynamic
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1

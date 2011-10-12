@@ -138,13 +138,10 @@ STRUCT_STRAIN                   Yes
 STRUCT_STRESS                   Yes
 STRUCT_SURFACTANT               No
 --------------------------------------------------------PROBLEM TYP
-ALGEBRA                         Trilinos
-MULTISC_STRUCT                  0
 NUMFIELD                        2
 PROBLEMTYP                      Fluid_Structure_Interaction_XFEM
 RESTART                         0
 SHAPEFCT                        Polynomial
-TIMETYP                         Dynamic
 ---------------------------------------------------------STRUCT NOX
 Nonlinear Solver                = Line Search Based
 -----------------------------------------------STRUCT NOX/Direction

@@ -9,7 +9,6 @@ NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
 NUMFIELD                        3
-TIMETYP                         Dynamic
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
@@ -33,7 +32,6 @@ THERM_HEATFLUX                  No
 FILESTEPS                       1000
 -------------------------------------------------------MESHTYING AND CONTACT
 PARALLEL_REDIST                 No
-----------------------------------------------------------------------STATIC
 ---------------------------------------------------------EIGENVALUE ANALYSIS
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      OneStepTheta

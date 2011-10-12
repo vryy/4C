@@ -20,8 +20,6 @@ NUMDF              6
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   Low_Mach_Number_Flow
 NUMFIELD     2
-TIMETYP      Dynamic
-ALGEBRA      Trilinos           // ccarat/Trilinos
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  1
@@ -29,7 +27,6 @@ NUMSTRUCDIS  0
 NUMALEDIS    0
 NUMTHERMDIS  0
 ----------------------------------------------------------------IO
-------------------------------------------------------------STATIC
 -----------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA

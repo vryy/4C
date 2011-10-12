@@ -55,13 +55,10 @@ THERM_TEMPERATURE               Yes
 THERM_TEMPGRAD                  Current
 --------------------------------------------------------PROBLEM TYP
 ADAPTIVE                        No
-ALGEBRA                         Trilinos
-MULTISC_STRUCT                  0
 NUMFIELD                        2
 PROBLEMTYP                      Thermo_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
-TIMETYP                         Dynamic
 ------------------------------------------------------STRUCT SOLVER
 AMGBS_BS_DAMPING                1.3 1.3 1.3
 AMGBS_BS_PCCOARSE               Umfpack

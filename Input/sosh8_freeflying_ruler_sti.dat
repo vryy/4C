@@ -49,12 +49,9 @@ STRUCT_STRESS                   No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 --------------------------------------------------------PROBLEM TYP
-ALGEBRA                         Trilinos
-MULTISC_STRUCT                  0
 NUMFIELD                        1
 PROBLEMTYP                      Structure
 RESTART                         0
-TIMETYP                         Dynamic
 ------------------------------------------------------STRUCT SOLVER
 SOLVER                          UMFPACK
 -------------------------------------------------STRUCTURAL DYNAMIC

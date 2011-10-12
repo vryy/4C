@@ -28,7 +28,6 @@ NUMDF        6
 PROBLEMTYP   Structure
 NUMFIELD     1
 //ENRONOFF     no
-TIMETYP      Dynamic
 RESTART      0
 ----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS  0
@@ -46,8 +45,6 @@ STRUCT_STRESS No
 //FLUID_VIS_FILE         No
 //ALE_DISP_FILE          No
 //ALE_DISP_GID           No
-------------------------------------------------------------STATIC
-//
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 EIGEN        0

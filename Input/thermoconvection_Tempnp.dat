@@ -55,13 +55,10 @@ THERM_TEMPERATURE               Yes
 THERM_TEMPGRAD                  Current
 --------------------------------------------------------PROBLEM TYP
 ADAPTIVE                        No
-ALGEBRA                         Trilinos
-MULTISC_STRUCT                  0
 NUMFIELD                        1
 PROBLEMTYP                      Thermo
 RESTART                         0
 SHAPEFCT                        Polynomial
-TIMETYP                         Dynamic
 ----------------------------------------------------THERMAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1

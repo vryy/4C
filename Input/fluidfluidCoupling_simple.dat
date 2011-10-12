@@ -17,8 +17,6 @@ NUMDF    	6
 --------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction_XFEM
 NUMFIELD                        2
-TIMETYP                         Static
-ALGEBRA                         Trilinos
 RESTART                         0
 -----------------------------------------------------DISCRETISATION
 NUMALEDIS                       1
@@ -42,9 +40,6 @@ STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  No
-------------------------------------------------------------STATIC
-//LINEAR
-//
 -----------------------------------------------EIGENVALUE ANALYSIS
 -------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
