@@ -26,7 +26,6 @@ Maintainer: Michael Gee
 
 #include "stru_dyn_nln_drt.H"
 #include "strugenalpha.H"
-#include "strudyn_direct.H"
 #include "../drt_beamcontact/beam3contactstrugenalpha.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
@@ -122,7 +121,7 @@ void dyn_nlnstructural_drt()
   {
     structadaptor.ReadRestart(genprob.restart);
   }
-  
+
   // write output at beginnning of calc
   else
   {
@@ -133,7 +132,7 @@ void dyn_nlnstructural_drt()
     //output->WriteVector("displacement",zeros);
     //output->WriteElementData();
   }
-  
+
 #if 1
   // run time integration
   structadaptor.Integrate();

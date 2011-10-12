@@ -1055,7 +1055,6 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/stru_resulttest.cpp
   src/drt_structure/stru_static_drt.cpp
   src/drt_structure/structure_utils_mapextractor.cpp
-  src/drt_structure/strudyn_direct.cpp
   src/drt_structure/strugenalpha.cpp
   src/drt_structure/strugenalpha_lsnewton.cpp
 )
