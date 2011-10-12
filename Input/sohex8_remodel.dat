@@ -157,12 +157,12 @@ CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 1.0 100.0 FACTOR 1.0 1.0
 ------------------------------------------------------------FUNCT3
 ------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 1562 POSITION dispx NAME dispx VALUE 5.928878343e-01 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 852  POSITION dispx NAME dispx VALUE 4.253846409e-01 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 1431 POSITION dispx NAME dispx VALUE 4.329848841e-01 TOLERANCE 1e-6
-STRUCTURE DIS 1 NODE 852  POSITION dispy NAME dispy VALUE 4.253846409e-01 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 1562 POSITION dispx NAME dispx VALUE 6.014627712e-01 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 852  POSITION dispx NAME dispx VALUE 4.252984278e-01 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 1431 POSITION dispx NAME dispx VALUE 4.365734596e-01 TOLERANCE 1e-6
+STRUCTURE DIS 1 NODE 852  POSITION dispy NAME dispy VALUE 4.252984278e-01 TOLERANCE 1e-6
 ------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
+NDPOINT 4
 NDLINE  6
 NDSURF  5
 NDVOL   0
@@ -195,7 +195,15 @@ DSURF  0
 ------------------------------DESIGN VOL THERMO NEUMANN CONDITIONS
 DVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT 0
+DPOINT 4
+// topsymy
+E 1 - 0 1 1 0 0 0 0.0 0.0 0.2 0.0 0.0 0.0 none none 1 none none none 0 0 0 0 0 0
+// botsymy
+E 2 - 0 1 1 0 0 0 0.0 0.0 -0.2 0.0 0.0 0.0 none none 1 none none none 0 0 0 0 0 0
+// topsymx
+E 3 - 1 0 1 0 0 0 0.0 0.0 0.2 0.0 0.0 0.0 none none 1 none none none 0 0 0 0 0 0
+// botsymx
+E 4 - 1 0 1 0 0 0 0.0 0.0 -0.2 0.0 0.0 0.0 none none 1 none none none 0 0 0 0 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  6
 // topsymy
@@ -397,6 +405,10 @@ DPOINT 0
 ----------------------DESIGN NODE REDUCED-D LUNG ACINUS CONDITIONS
 DPOINT 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
+NODE    1562 DNODE 1
+NODE    262 DNODE 2
+NODE    1573 DNODE 3
+NODE    285 DNODE 4
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1431 DLINE 1
 NODE    1434 DLINE 1
