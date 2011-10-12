@@ -592,10 +592,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("NUMFIELD",1,"",&type);
   //IntParameter("GRADERW",0,"",&type);
   IntParameter("RESTART",0,"",&type);
-  setStringToIntegralParameter<int>("ALGEBRA","Trilinos","outdated",
-                               tuple<std::string>("Trilinos","ccarat"),
-                               tuple<int>(1,0),
-                               &type);
   setStringToIntegralParameter<int>("SHAPEFCT","Polynomial","Defines the function spaces for the spatial approximation",
                                tuple<std::string>("Polynomial","Nurbs"),
                                tuple<int>(1,0),
@@ -732,26 +728,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                 "the names.");
 
   condition.disableRecursiveValidation();
-
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& stat = list->sublist("STATIC",false,"");
-
-  //IntParameter("LINEAR",0,"",&stat);
-  //IntParameter("NONLINEAR",0,"",&stat);
-
-  setStringToIntegralParameter<int>("NEWTONRAPHSO","Load_Control",
-                                    "",
-                                    tuple<std::string>("Load_Control"),
-                                    tuple<int>(control_load),
-                                    &stat);
-
-  IntParameter("MAXITER",0,"",&stat);
-  IntParameter("NUMSTEP",0,"",&stat);
-  IntParameter("RESULTSEVRY",1,"",&stat);
-  IntParameter("RESTARTEVRY",20,"",&stat);
-
-  DoubleParameter("TOLDISP",0.0,"",&stat);
-  DoubleParameter("STEPSIZE",0.0,"",&stat);
 
   /*--------------------------------------------------------------------*/
   /* parameters for NOX - non-linear solution */

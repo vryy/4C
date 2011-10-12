@@ -161,7 +161,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--PROBLEM TYP", *list);
   reader.ReadGidSection("--IO", *list);
   reader.ReadGidSection("--DESIGN DESCRIPTION", *list);
-  reader.ReadGidSection("--STATIC", *list);
   reader.ReadGidSection("--PATIENT SPECIFIC", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC/TIMEADAPTIVITY", *list);
