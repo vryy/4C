@@ -4750,11 +4750,11 @@ double rhsint    = rhs_[dofindex];
 double rhsfac    = 0.0;
 double rhstaufac = 0.0;
 
-// gradient of current scalar value
-gradphi_.Multiply(derxy_,ephinp_[dofindex]);
-
 if (is_incremental_ and is_genalpha_)
 {
+  // gradient of current scalar value
+  gradphi_.Multiply(derxy_,ephinp_[dofindex]);
+
   rhsfac    = timefacfac/alphaF;
   rhstaufac = timetaufac/alphaF;
   rhsint   *= (timefac/alphaF);
@@ -4788,6 +4788,24 @@ if (is_incremental_ and is_genalpha_)
 }
 else if (not is_incremental_ and is_genalpha_)
 {
+  // gradient of scalar value at n
+  gradphi_.Multiply(derxy_,ephin_[dofindex]);
+
+  // convective term using scalar value at n
+  conv_phi_[dofindex] = velint_.Dot(gradphi_);
+
+  // diffusive term using current scalar value for higher-order elements
+  if (use2ndderiv_) diff_phi_[dofindex] = diff_.Dot(ephin_[dofindex]);
+
+  // reactive term using scalar value at n
+  if (reaction_)
+  {
+    // scalar at integration point
+    const double phi = funct_.Dot(ephin_[dofindex]);
+
+    rea_phi_[dofindex] = densnp_[dofindex]*reacoeff_[dofindex]*phi;
+  }
+
   rhsint   += densam_[dofindex]*hist_[dofindex]*(alphaF/timefac);
   scatrares_[dofindex] = (1.0-alphaF) * (densn_[dofindex]*conv_phi_[dofindex]
                         - diff_phi_[dofindex] + rea_phi_[dofindex]) - rhsint;
@@ -4818,6 +4836,9 @@ else if (not is_incremental_ and is_genalpha_)
 }
 else if (is_incremental_ and not is_genalpha_)
 {
+  // gradient of current scalar value
+  gradphi_.Multiply(derxy_,ephinp_[dofindex]);
+
   if (not is_stationary_)
   {
     scatrares_[dofindex] *= dt;
