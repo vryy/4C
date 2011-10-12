@@ -108,8 +108,6 @@ void MAT::HolzapfelCardio::Pack(DRT::PackBuffer& data) const
     AddtoPack(data,a2_->at(gp));
     AddtoPack(data,ca1_->at(gp));
     AddtoPack(data,ca2_->at(gp));
-    AddtoPack(data,olda1_->at(gp));
-    AddtoPack(data,olda2_->at(gp));
   }
   return;
 }
@@ -155,8 +153,6 @@ void MAT::HolzapfelCardio::Unpack(const vector<char>& data)
   a2_ = rcp(new vector<vector<double> >(numgp));
   ca1_ = rcp(new vector<vector<double> >(numgp));
   ca2_ = rcp(new vector<vector<double> >(numgp));
-  olda1_ = rcp(new vector<vector<double> >(numgp));
-  olda2_ = rcp(new vector<vector<double> >(numgp));
 
   for (int gp = 0; gp < numgp; ++gp) {
     vector<double> a;
@@ -168,10 +164,6 @@ void MAT::HolzapfelCardio::Unpack(const vector<char>& data)
     ca1_->at(gp) = a;
     ExtractfromPack(position,data,a);
     ca2_->at(gp) = a;
-    ExtractfromPack(position,data,a);
-    olda1_->at(gp) = a;
-    ExtractfromPack(position,data,a);
-    olda2_->at(gp) = a;
   }
 
   if (position != data.size())
@@ -194,16 +186,12 @@ void MAT::HolzapfelCardio::Setup(const int numgp, DRT::INPUT::LineDefinition* li
   a2_ = rcp(new vector<vector<double> > (numgp));
   ca1_ = rcp(new vector<vector<double> > (numgp));
   ca2_ = rcp(new vector<vector<double> > (numgp));
-  olda1_ = rcp(new vector<vector<double> > (numgp));
-  olda2_ = rcp(new vector<vector<double> > (numgp));
 
   for (int gp = 0; gp < numgp; gp++) {
     a1_->at(gp).resize(3);
     a2_->at(gp).resize(3);
     ca1_->at(gp).resize(3);
     ca2_->at(gp).resize(3);
-    olda1_->at(gp).resize(3);
-    olda2_->at(gp).resize(3);
   }
 
   int initflag = params_->init_;
@@ -249,14 +237,6 @@ void MAT::HolzapfelCardio::Setup(const int numgp, DRT::INPUT::LineDefinition* li
     // start with isotropic computation, thus fiber directions are set to zero
     // nothing has to be done
   } else dserror("INIT type not implemented");
-
-  // at Setup the old fiber directions have to be the same as the actual ones
-  for (int gp = 0; gp < numgp; gp++) {
-    for (int i = 0; i < 3; i++) {
-      olda1_->at(gp)[i] = a1_->at(gp)[i];
-      olda2_->at(gp)[i] = a2_->at(gp)[i];
-    }
-  }
 
   isinit_ = true;
   return;
@@ -306,8 +286,7 @@ void MAT::HolzapfelCardio::Evaluate
   const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
   const int gp,
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
-  LINALG::Matrix<NUM_STRESS_3D,1> * stress,
-  bool output
+  LINALG::Matrix<NUM_STRESS_3D,1> * stress
 )
 {
   const double mue = params_->mue_;
@@ -319,16 +298,9 @@ void MAT::HolzapfelCardio::Evaluate
   // here one can make a difference between output and normal call of material
   LINALG::Matrix<3,1> a1(true);
   LINALG::Matrix<3,1> a2(true);
-  if (output) {
-    for (int i = 0; i < 3; i++) {
-      a1(i) = olda1_->at(gp)[i];
-      a2(i) = olda2_->at(gp)[i];
-    }
-  } else {
-    for (int i = 0; i < 3; i++) {
-      a1(i) = a1_->at(gp)[i];
-      a2(i) = a2_->at(gp)[i];
-    }
+  for (int i = 0; i < 3; i++) {
+    a1(i) = a1_->at(gp)[i];
+    a2(i) = a2_->at(gp)[i];
   }
 
   //--------------------------------------------------------------------------------------
@@ -553,9 +525,6 @@ void MAT::HolzapfelCardio::EvaluateFiberVecs
   // If this function is called during Setup defgrd should be replaced by the Identity.
 
   for (int i = 0; i < 3; i++) {
-    // store old fiber directions
-    olda1_->at(gp)[i] = a1_->at(gp)[i];
-    olda2_->at(gp)[i] = a2_->at(gp)[i];
     // a1 = cos gamma e1 + sin gamma e2 with e1 related to maximal princ stress, e2 2nd largest
     ca1_->at(gp)[i] = cos(gamma)*locsys(i,2) + sin(gamma)*locsys(i,1);
     // a2 = cos gamma e1 - sin gamma e2 with e1 related to maximal princ stress, e2 2nd largest

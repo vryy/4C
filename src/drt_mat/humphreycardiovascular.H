@@ -172,8 +172,7 @@ private:
       const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
       const int gp,   ///< current Gauss point
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
-      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
-      bool output  ///< calculate stress for output
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress  ///< 2nd PK-stress
     );
 
     /// Return density
@@ -183,16 +182,16 @@ private:
     double ShearMod() const {return params_->mue_;};
 
     /// return a1s
-    RCP<vector<vector<double> > > Geta1() const {return olda1_;};
+    RCP<vector<vector<double> > > Geta1() const {return a1_;};
 
     /// return a2s
-    RCP<vector<vector<double> > > Geta2() const {return olda2_;};
+    RCP<vector<vector<double> > > Geta2() const {return a2_;};
 
     /// return a3s
-    RCP<vector<vector<double> > > Geta3() const {return olda3_;};
+    RCP<vector<vector<double> > > Geta3() const {return a3_;};
 
     /// return a4s
-    RCP<vector<vector<double> > > Geta4() const {return olda4_;};
+    RCP<vector<vector<double> > > Geta4() const {return a4_;};
 
     /// evaluate fiber directions from locsys, pull back
     void EvaluateFiberVecs
@@ -215,10 +214,6 @@ private:
     RCP<vector<vector<double> > > ca2_; ///< second fiber vector per gp (spatial config)
     RCP<vector<vector<double> > > ca3_; ///< third fiber vector per gp (spatial config)
     RCP<vector<vector<double> > > ca4_; ///< fourth fiber vector per gp (spatial config)
-    RCP<vector<vector<double> > > olda1_; ///< first fiber vector per gp (old one -> remodeling)
-    RCP<vector<vector<double> > > olda2_; ///< second fiber vector per gp (old one -> remodeling)
-    RCP<vector<vector<double> > > olda3_; ///< third fiber vector per gp (old one -> remodeling)
-    RCP<vector<vector<double> > > olda4_; ///< fourth fiber vector per gp (old one -> remodeling)
 
     bool isinit_;  ///< indicates if material is initialized
 

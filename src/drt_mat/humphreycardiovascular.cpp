@@ -118,10 +118,6 @@ void MAT::HumphreyCardio::Pack(DRT::PackBuffer& data) const
     AddtoPack(data,ca2_->at(gp));
     AddtoPack(data,ca3_->at(gp));
     AddtoPack(data,ca4_->at(gp));
-    AddtoPack(data,olda1_->at(gp));
-    AddtoPack(data,olda2_->at(gp));
-    AddtoPack(data,olda3_->at(gp));
-    AddtoPack(data,olda4_->at(gp));
   }
   return;
 }
@@ -171,10 +167,6 @@ void MAT::HumphreyCardio::Unpack(const vector<char>& data)
   ca2_ = rcp(new vector<vector<double> >(numgp));
   ca3_ = rcp(new vector<vector<double> >(numgp));
   ca4_ = rcp(new vector<vector<double> >(numgp));
-  olda1_ = rcp(new vector<vector<double> >(numgp));
-  olda2_ = rcp(new vector<vector<double> >(numgp));
-  olda3_ = rcp(new vector<vector<double> >(numgp));
-  olda4_ = rcp(new vector<vector<double> >(numgp));
 
   for (int gp = 0; gp < numgp; ++gp) {
     vector<double> a;
@@ -194,14 +186,6 @@ void MAT::HumphreyCardio::Unpack(const vector<char>& data)
     ca3_->at(gp) = a;
     ExtractfromPack(position,data,a);
     ca4_->at(gp) = a;
-    ExtractfromPack(position,data,a);
-    olda1_->at(gp) = a;
-    ExtractfromPack(position,data,a);
-    olda2_->at(gp) = a;
-    ExtractfromPack(position,data,a);
-    olda3_->at(gp) = a;
-    ExtractfromPack(position,data,a);
-    olda4_->at(gp) = a;
   }
 
   if (position != data.size())
@@ -228,10 +212,6 @@ void MAT::HumphreyCardio::Setup(const int numgp, DRT::INPUT::LineDefinition* lin
   ca2_ = rcp(new vector<vector<double> > (numgp));
   ca3_ = rcp(new vector<vector<double> > (numgp));
   ca4_ = rcp(new vector<vector<double> > (numgp));
-  olda1_ = rcp(new vector<vector<double> >(numgp));
-  olda2_ = rcp(new vector<vector<double> >(numgp));
-  olda3_ = rcp(new vector<vector<double> >(numgp));
-  olda4_ = rcp(new vector<vector<double> >(numgp));
 
   for (int gp = 0; gp < numgp; gp++) {
     a1_->at(gp).resize(3);
@@ -242,10 +222,6 @@ void MAT::HumphreyCardio::Setup(const int numgp, DRT::INPUT::LineDefinition* lin
     ca2_->at(gp).resize(3);
     ca3_->at(gp).resize(3);
     ca4_->at(gp).resize(3);
-    olda1_->at(gp).resize(3);
-    olda2_->at(gp).resize(3);
-    olda3_->at(gp).resize(3);
-    olda4_->at(gp).resize(3);
   }
 
   int initflag = params_->init_;
@@ -289,16 +265,6 @@ void MAT::HumphreyCardio::Setup(const int numgp, DRT::INPUT::LineDefinition* lin
     // start with isotropic computation, thus fiber directions are set to zero
     // nothing has to be done
   } else dserror("INIT type not implemented");
-
-  // at Setup the old fiber directions have to be the same as the actual ones
-  for (int gp = 0; gp < numgp; gp++) {
-    for (int i = 0; i < 3; i++) {
-      olda1_->at(gp)[i] = a1_->at(gp)[i];
-      olda2_->at(gp)[i] = a2_->at(gp)[i];
-      olda3_->at(gp)[i] = a3_->at(gp)[i];
-      olda4_->at(gp)[i] = a4_->at(gp)[i];
-    }
-  }
 
   isinit_ = true;
   return;
@@ -357,8 +323,7 @@ void MAT::HumphreyCardio::Evaluate
   const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
   const int gp,
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
-  LINALG::Matrix<NUM_STRESS_3D,1> * stress,
-  bool output
+  LINALG::Matrix<NUM_STRESS_3D,1> * stress
 )
 {
   const double mue = params_->mue_;
@@ -376,20 +341,11 @@ void MAT::HumphreyCardio::Evaluate
   LINALG::Matrix<3,1> a2(true);
   LINALG::Matrix<3,1> a3(true);
   LINALG::Matrix<3,1> a4(true);
-  if (output) {
-    for (int i = 0; i < 3; i++) {
-      a1(i) = olda1_->at(gp)[i];
-      a2(i) = olda2_->at(gp)[i];
-      a3(i) = olda3_->at(gp)[i];
-      a4(i) = olda4_->at(gp)[i];
-    }
-  } else {
-    for (int i = 0; i < 3; i++) {
-      a1(i) = a1_->at(gp)[i];
-      a2(i) = a2_->at(gp)[i];
-      a3(i) = a3_->at(gp)[i];
-      a4(i) = a4_->at(gp)[i];
-    }
+  for (int i = 0; i < 3; i++) {
+    a1(i) = a1_->at(gp)[i];
+    a2(i) = a2_->at(gp)[i];
+    a3(i) = a3_->at(gp)[i];
+    a4(i) = a4_->at(gp)[i];
   }
 
   //--------------------------------------------------------------------------------------
@@ -732,11 +688,6 @@ void MAT::HumphreyCardio::EvaluateFiberVecs
   const double gamma = (45*PI)/180.; //angle for diagonal fibers
 
   for (int i = 0; i < 3; i++) {
-    // store old fiber directions
-    olda1_->at(gp)[i] = a1_->at(gp)[i];
-    olda2_->at(gp)[i] = a2_->at(gp)[i];
-    olda3_->at(gp)[i] = a3_->at(gp)[i];
-    olda4_->at(gp)[i] = a4_->at(gp)[i];
     // a1 = e3, circumferential direction, used for collagen and smooth muscle
     ca1_->at(gp)[i] = locsys(i,2);
     // a2 = e2
