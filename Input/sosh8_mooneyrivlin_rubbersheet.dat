@@ -65,7 +65,7 @@ EIGEN        0
 RESULTSEVRY  1
 RESTARTEVRY  400
 NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
-TIMESTEP     0.001
+TIMESTEP     0.01
 NUMSTEP      5
 MAXTIME      100.0
 DAMPING      No
