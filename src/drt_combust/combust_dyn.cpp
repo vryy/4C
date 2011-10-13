@@ -107,10 +107,21 @@ void combust_dyn()
   //------------------------------------------------------------------------------------------------
   if (genprob.restart)
   {
+
+    // get the turbulent inflow parameter list
+    const Teuchos::ParameterList& turbinflow = DRT::Problem::Instance()->FluidDynamicParams().sublist("TURBULENT INFLOW");
+    // check if we restart from turbulent inflow
+    const bool restartturbinflow = (bool)DRT::INPUT::IntegralValue<int>(turbinflow,"TURBULENTINFLOW");
+
+      // finish turbulent inflow problem before restart
+    if (genprob.restart < turbinflow.get<int>("NUMINFLOWSTEP"))
+      dserror("turbulent inflow problem seems to be not finished yet, restart not possible");
+
     // turn on/off read scatra restart from input file
     const bool restartscatrainput = (bool)DRT::INPUT::IntegralValue<int>(combustdyn,"RESTART_SCATRA_INPUT");
+
     // read the restart information, set vectors and variables
-    combust_->RestartNew(genprob.restart, restartscatrainput);
+    combust_->RestartNew(genprob.restart, restartscatrainput, restartturbinflow);
     //combust_->Restart(genprob.restart);
   }
   //------------------------------------------------------------------------------------------------

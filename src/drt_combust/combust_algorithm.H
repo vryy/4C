@@ -66,7 +66,9 @@ namespace COMBUST
     /// restart combustion problem
     void Restart(int step);
     /// restart combustion problem
-    void RestartNew(int step, const bool ignorescatrarestart = false);
+    void RestartNew(int step,
+                    const bool restartscatrainput = false,
+                    const bool restartturbinflow  = false);
 
   protected:
 

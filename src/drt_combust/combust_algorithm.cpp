@@ -399,19 +399,16 @@ void COMBUST::Algorithm::SolveStationaryProblem()
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::PrepareReinitialization()
 {
+  // reset the ScatraFieldReinit
+  ScaTraReinitField().ResetTimeAndStep();
 
-	// reset the ScatraFieldReinit
-	ScaTraReinitField().ResetTimeAndStep();
+  // set the start phinp and phin field and phistart field
+  ScaTraReinitField().SetPhiReinit(ScaTraField().Phinp());
 
-	// set the start phinp and phin field and phistart field
-	ScaTraReinitField().SetPhiReinit(ScaTraField().Phinp());
+  // set params
+  // set velocity field for reinitialization -> implement this in Scatra-part
 
-	// set params
-	// set velocity field for reinitialization -> implement this in Scatra-part
-
-
-
-	return;
+  return;
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -2229,11 +2226,18 @@ void COMBUST::Algorithm::Restart(int step)
 /* -------------------------------------------------------------------------------*
  * Restart (g-func is solved before fluid)                               rasthofer|
  * -------------------------------------------------------------------------------*/
-void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput)
+void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, const bool restartturbinflow)
 {
   if (Comm().MyPID()==0)
-    std::cout << "Restart of combustion problem" << std::endl;
-
+  {
+    std::cout << "---------------------------------------------" << std::endl;
+    std::cout << "| restart of combustion problem             |" << std::endl;
+    if (restartscatrainput)
+      std::cout << "| restart with scalar field from input file |" << endl;
+    if (restartturbinflow)
+      std::cout << "| restart from turbulent inflow (fluid)     |" << endl;
+    std::cout << "---------------------------------------------" << std::endl;
+  }
   // read level-set field from input file instead of restart file
   Teuchos::RCP<Epetra_Vector> oldphinp = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> oldphin  = Teuchos::null;

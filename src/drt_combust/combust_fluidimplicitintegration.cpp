@@ -69,8 +69,9 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   solver_ (solver),
   params_ (params),
   xparams_(params.sublist("XFEM")),
-//  output_ (output),
+  //output_(output),
   output_ (rcp(new IO::DiscretizationWriter(actdis))), // so ist es bei Axel
+  flamefront_(Teuchos::null),
   myrank_(discret_->Comm().MyPID()),
   cout0_(discret_->Comm(), std::cout),
   combusttype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::CombustionType>(params_.sublist("COMBUSTION FLUID"),"COMBUSTTYPE")),
@@ -86,9 +87,9 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   connected_interface_(DRT::INPUT::IntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"CONNECTED_INTERFACE")),
   smoothed_boundary_integration_(DRT::INPUT::IntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"SMOOTHED_BOUNDARY_INTEGRATION")),
   smoothgradphi_(DRT::INPUT::IntegralValue<INPAR::COMBUST::SmoothGradPhi>(params_.sublist("COMBUSTION FLUID"),"SMOOTHGRADPHI")),
+  dtele_(0.0),
   step_(0),
   time_(0.0),
-  dtele_(0.0),
   stepmax_ (params_.get<int>   ("max number timesteps")),
   maxtime_ (params_.get<double>("total time")),
   startsteps_(params_.get<int> ("number of start steps")),
@@ -105,7 +106,6 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   uprestart_(params.get("write restart every", -1)),
   upres_(params.get("write solution every", -1)),
   writestresses_(params.get<int>("write stresses", 0)),
-  flamefront_(Teuchos::null),
   project_(false)
 {
   //------------------------------------------------------------------------------------------------
@@ -130,8 +130,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   }
 
   numdim_ = params_.get<int>("number of velocity degrees of freedom");
-  if (numdim_ != 3)
-    dserror("COMBUST only supports 3D problems.");
+  if (numdim_ != 3) dserror("COMBUST only supports 3D problems.");
 
   //------------------------------------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -585,6 +584,9 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
     discret_->EvaluateDirichletXFEM(eleparams,state_.velnp_,null,null,null,dbcmaps_);
     discret_->ClearState();
 
+    // Transfer of boundary data if necessary
+    turbulent_inflow_condition_->Transfer(state_.veln_,state_.velnp_,time_);
+
     // evaluate Neumann conditions
     neumann_loads_->PutScalar(0.0);
     discret_->EvaluateNeumann(eleparams,*neumann_loads_);
@@ -879,6 +881,11 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
   // initialize system matrix
   sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(newdofrowmap,0,false,true));
 
+  // -------------------------------------------------------------------
+  // check whether we have a coupling to a turbulent inflow generating
+  // computation and initialise the transfer if necessary
+  // -------------------------------------------------------------------
+  turbulent_inflow_condition_ = Teuchos::rcp(new TransferTurbulentInflowCondition(discret_,dbcmaps_));
 }
 
 
@@ -1204,7 +1211,6 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     // to avoid that.
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
 
-
     // Krylov projection for solver already required in convergence check
     if (project_)
     {
@@ -1250,6 +1256,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
         // select only a certain volume to be affected by this projection
         Teuchos::RCP<Epetra_Vector> tmpkspw = kspsplitter_.ExtractKSPCondVector(*w_);
+        w_->PutScalar(0.0);
         LINALG::Export(*tmpkspw,*w_);
 
         // c_ = w_ except we use 1.0 instead of the .dat-file provided value
@@ -1257,6 +1264,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
                                                      XFEM::Enrichment::typeStandard, 1.0, false);
 
         Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*c_);
+        c_->PutScalar(0.0);
         LINALG::Export(*tmpkspc,*c_);
       }
       else if(*definition == "integration")
@@ -1288,7 +1296,6 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         discret_->ClearState();
         discret_->EvaluateCondition(eleparams, w_, "KrylovSpaceProjection");
         discret_->ClearState();
-
         //----------------------------------------------------------
         // fill c_
         //----------------------------------------------------------
@@ -1297,6 +1304,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
                                                      XFEM::Enrichment::typeStandard, 1.0, false);
 
         Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*c_);
+        c_->PutScalar(0.0);
         LINALG::Export(*tmpkspc,*c_);
       }
       else
@@ -1312,7 +1320,6 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
       residual_->Update(-cTres/cTw,*w_,1.0);
     }
-
 
     double incvelnorm_L2 = 0.0;
     double velnorm_L2 = 0.0;
@@ -1680,6 +1687,31 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         solver_.AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
 
+//      // print matrix in matlab format
+//      // matrix printing options (DEBUGGING!)
+//      cout << "print matrix in matlab format to sparsematrix.mtl" << endl;
+//      //cast sysmat to SparseMatrix
+//      Teuchos::RCP<LINALG::SparseMatrix> A = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+//      if (A != Teuchos::null)
+//      {
+//        const std::string fname = "sparsematrix.mtl";
+//        cout << "Col:     MinGID " << A->ColMap().MinAllGID() << " MaxGID "   <<   A->ColMap().MaxAllGID()       <<    "   Row:    MinGID    " <<   A->RowMap().MinAllGID() << " MaxGID " << A->RowMap().MaxAllGID()<< endl;
+//        // print to  le in matlab format + const std::string fname = "sparsematrix.mtl";
+//        LINALG::PrintMatrixInMatlabFormat(fname,*(A->EpetraMatrix()));
+//        // print to screen
+//        // (A->EpetraMatrix())->Print(cout);
+//        // print sparsity pattern to  le
+//        //LINALG::PrintSparsityToPostscript( *(A->EpetraMatrix()) );
+//      }
+//      else
+//      {
+//        cout << "failure" << endl;
+//        //   Teuchos::RCP<LINALG::BlockSparseMatrixBase>            A  =   +//  state_->BlockSystemMatrix();
+//        // LINALG::PrintBlockMatrixInMatlabFormat(fname,*(A));
+//      }
+//      cout << " ...done" << endl;
+//      dserror("Fertig");
+
       solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1,w_,c_,project_); // defaults: weighted_basis_mean_w = null, kernel_c = null, project = false
       solver_.ResetTolerance();
 
@@ -1853,7 +1885,7 @@ void FLD::CombustFluidImplicitTimeInt::MultiCorrector()
   // -------------------------------------------------------------------
   TEUCHOS_FUNC_TIME_MONITOR("   + corrector");
 
-  dtsolve_  = 0.0;
+  double dtsolve = 0.0;
 
   // -------------------------------------------------------------------
   // parameters and variables for nonlinear iteration
@@ -2054,7 +2086,7 @@ void FLD::CombustFluidImplicitTimeInt::MultiCorrector()
       solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1);
       solver_.ResetTolerance();
 
-      dtsolve_ = Teuchos::Time::wallTime()-tcpusolve;
+      dtsolve = Teuchos::Time::wallTime()-tcpusolve;
     }
 
     // -------------------------------------------------------------------
@@ -2116,7 +2148,7 @@ void FLD::CombustFluidImplicitTimeInt::MultiCorrector()
     {
       printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",itnum,itemax_,ittol,vresnorm,presnorm,
                   incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-      printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
+      printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele_);
       printf(")\n");
     }
 
@@ -4633,10 +4665,10 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateSymmetryError(RCP<Epetra_Vector> 
 
   if (discret_->Comm().NumProc() == 1) // just test with one proc that has all data
   {
-    const int numnodes = discret_->NumGlobalNodes();
     const Epetra_Map dofrowmap = *discret_->DofRowMap();
 
 #ifdef COLLAPSE_FLAME
+    const int numnodes = discret_->NumGlobalNodes();
     const int numnodesperrow = static_cast<int>(2*(sqrt(numnodes/2)));
     const int numcols = numnodesperrow/2;
     // square root should be an integer! scaling with since pseudo 2D with one front and one back node
@@ -4904,6 +4936,7 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateSymmetryError(RCP<Epetra_Vector> 
 #endif
 
 #ifdef FLAME_VORTEX
+    const int numnodes = discret_->NumGlobalNodes();
     const int numnodespercol = static_cast<int>(2.0*(-1.0+sqrt(1.0+numnodes)));
     //cout << "numnodespercol: " << 2.0*(1.0+sqrt(1.0+numnodes)) << endl;
     const int numcols = static_cast<int>(numnodespercol/4.0 +1.0);

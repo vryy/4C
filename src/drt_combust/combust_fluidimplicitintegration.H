@@ -25,6 +25,7 @@ Maintainer: Florian Henke
 #include "../drt_inpar/inpar_combust.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_fluid/drt_pbcdofset.H"
+#include "../drt_fluid/drt_transfer_turb_inflow.H"
 #include "../drt_fluid/turbulence_statistic_manager.H"
 #include "combust_flamefront.H"
 #include "combust_interface.H"
@@ -435,9 +436,10 @@ protected:
   ParameterList&                         params_;
   const ParameterList&                   xparams_;
   Teuchos::RCP<IO::DiscretizationWriter> output_;
+  Teuchos::RCP<COMBUST::FlameFront>      flamefront_;
 
   //! the processor ID from the communicator
-  const int                     myrank_;
+  const int myrank_;
 
   /// number of spatial dimensions
   int numdim_;
@@ -448,13 +450,6 @@ protected:
   //!< a singular stream to stdout in parallel environment
   IO::Ostream0 cout0_;
   //@}
-
-  //! project nullspace (useful for completely Dirichlet bounded problems)
-  bool                          project_;
-  //! integrated basis vector (pressure component)
-  Teuchos::RCP<Epetra_Vector>   w_;
-  //! basis vector for nullspace (vector of ones in the pressure component)
-  Teuchos::RCP<Epetra_Vector>   c_;
 
   /// switch for type of combustion problem
   INPAR::COMBUST::CombustionType combusttype_;
@@ -482,6 +477,9 @@ protected:
   // smoothed normal vectors for boudary integration
   const bool smoothed_boundary_integration_;
   INPAR::COMBUST::SmoothGradPhi smoothgradphi_;
+
+  /// cpu-time measures
+  double  dtele_;
 
   //! @name time stepping variables
   int           step_;        ///< timestep
@@ -525,10 +523,6 @@ protected:
   const int writestresses_;
   //@}
 
-  /// cpu-time measures
-  double  dtele_;
-  double  dtsolve_;
-
   /// pointer to turbulence statistics manager
   Teuchos::RCP<FLD::TurbulenceStatisticManager> turbstatisticsmanager_;
 
@@ -537,6 +531,16 @@ protected:
   int samstop_;
   int dumperiod_;
   //@}
+
+  /// pointer to manager for turbulent inflow transfer condition
+  Teuchos::RCP<TransferTurbulentInflowCondition> turbulent_inflow_condition_;
+
+  //! project nullspace (useful for completely Dirichlet bounded problems)
+  bool                          project_;
+  //! integrated basis vector (pressure component)
+  Teuchos::RCP<Epetra_Vector>   w_;
+  //! basis vector for nullspace (vector of ones in the pressure component)
+  Teuchos::RCP<Epetra_Vector>   c_;
 
   /// flag for physical type of fluid flow (standard: incompressible)
   enum INPAR::FLUID::PhysicalType physicaltype_;
@@ -629,9 +633,6 @@ protected:
 
   //! Extractor used for output
   LINALG::MapExtractor      velpressplitterForOutput_;
-
-  //!
-  Teuchos::RCP<COMBUST::FlameFront> flamefront_;
 
   //! Reference values
   Teuchos::RCP<XFEM::Startvalues> startval_;
