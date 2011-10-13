@@ -3152,6 +3152,7 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
               INPAR::FLUID::timeint_afgenalpha),
               &combustcontrol);
 
+  BoolParameter("RESTART_FROM_FLUID","No","Restart from a standard fluid problem (no scalar transport field). No XFEM dofs allowed!",&combustcontrol);
   BoolParameter("RESTART_SCATRA_INPUT","No","Use ScaTra field from .dat-file instead",&combustcontrol);
 
   /*----------------------------------------------------------------------*/

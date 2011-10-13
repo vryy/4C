@@ -113,15 +113,15 @@ public:
   virtual void PrintPseudoTimeStepInfoReinit()
   {
     if (myrank_==0)
-        printf("TIMESTEPFACTOR: %11.4E      %s          PSEUDOSTEP = %4d/%4d \n",
-        		dta_,MethodTitle().c_str(),step_,stepmax_);
+      printf("TIMESTEPFACTOR: %11.4E      %s          PSEUDOSTEP = %4d/%4d \n",
+          dta_,MethodTitle().c_str(),step_,stepmax_);
   }
 
   /// increment time and step value
-  void ResetTimeAndStep()
+  void SetTimeStep(double time = 0.0, int step = 0)
   {
-    step_ = 0;
-    time_ = 0.0;
+    time_ = time;
+    step_ = step;
   }
 
   /// evaluate integrated error norm for reinitialization stop criterion

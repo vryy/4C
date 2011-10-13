@@ -400,7 +400,7 @@ void COMBUST::Algorithm::SolveStationaryProblem()
 void COMBUST::Algorithm::PrepareReinitialization()
 {
   // reset the ScatraFieldReinit
-  ScaTraReinitField().ResetTimeAndStep();
+  ScaTraReinitField().SetTimeStep(0.0, 0);
 
   // set the start phinp and phin field and phistart field
   ScaTraReinitField().SetPhiReinit(ScaTraField().Phinp());
@@ -2226,7 +2226,7 @@ void COMBUST::Algorithm::Restart(int step)
 /* -------------------------------------------------------------------------------*
  * Restart (g-func is solved before fluid)                               rasthofer|
  * -------------------------------------------------------------------------------*/
-void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, const bool restartturbinflow)
+void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, const bool restartfromfluid)
 {
   if (Comm().MyPID()==0)
   {
@@ -2234,10 +2234,13 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
     std::cout << "| restart of combustion problem             |" << std::endl;
     if (restartscatrainput)
       std::cout << "| restart with scalar field from input file |" << endl;
-    if (restartturbinflow)
-      std::cout << "| restart from turbulent inflow (fluid)     |" << endl;
+    if (restartfromfluid)
+      std::cout << "| restart from standard fluid problem       |" << endl;
     std::cout << "---------------------------------------------" << std::endl;
   }
+  if (restartfromfluid and !restartscatrainput)
+    dserror("scalar field must be read from input file for restart from standard fluid");
+
   // read level-set field from input file instead of restart file
   Teuchos::RCP<Epetra_Vector> oldphinp = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> oldphin  = Teuchos::null;
@@ -2248,7 +2251,8 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
   }
 
   // restart of scalar transport (G-function) field
-  ScaTraField().ReadRestart(step);
+  if (!restartfromfluid) // not if restart is
+    ScaTraField().ReadRestart(step);
 
   // get pointers to the discretizations from the time integration scheme of each field
   const Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
@@ -2339,12 +2343,17 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
   // read level-set field from input file instead of restart file
   if (restartscatrainput)
   {
+    if (Comm().MyPID()==0)
+      std::cout << "---  overwriting scalar field with field from input file... " << std::flush;
     // now overwrite restart phis w/ the old phis
     ScaTraField().Phinp()->Update(1.0, *(oldphinp), 0.0);
     ScaTraField().Phin() ->Update(1.0, *(oldphin),  0.0);
+    ScaTraField().Phidtn()->PutScalar(0.0);
     ScaTraField().ComputeTimeDerivative();
     ScaTraField().Phidtn()->Update(1.0,*(ScaTraField().Phidtnp()),0.0);
     ScaTraField().Phinm() ->Update(1.0,*(ScaTraField().Phin()),   0.0);
+    if (Comm().MyPID()==0)
+      std::cout << " done" << std::endl;
 
     // additionally we need to update the interfacehandle and flamefront
     // or later on the computeVolume function will return the old volume
@@ -2365,6 +2374,10 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
 //  FluidField().Output();
 //  // delete fluid's memory of flame front; it should never have seen it in the first place!
 //  FluidField().ImportFlameFront(Teuchos::null);
+
+  // set time in scalar transport time integration scheme
+  if(restartfromfluid)
+    ScaTraField().SetTimeStep(FluidField().Time(),step);
 
   SetTimeStep(FluidField().Time(),step);
 
