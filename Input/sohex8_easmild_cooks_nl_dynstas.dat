@@ -99,21 +99,6 @@ UZAWAPARAM                      1
 ---------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
 KIND                            None
 -----------------------------------------------------THERMAL SOLVER
-------------------------------------------------------------STATIC
-//NONLINEAR
-//KINTYP       Tot_Lagr
-NEWTONRAPHSO Load_Control
-NUMSTEP      100
-MAXITER      20
-//TOLRESID     1.0E-06
-TOLDISP      1.0E-07
-STEPSIZE     1.0
-//IARC         No
-//ARCSCL       1.0
-//SIGNCHCSP    No
-RESULTSEVRY  1
-RESTARTEVRY  200
-//
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_NeoHooke YOUNG 240.5653612 NUE 0.4999  DENS 0.001
 -------------------------------------------------------LOAD CURVES

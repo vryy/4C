@@ -81,21 +81,6 @@ GAMMA                           0.5
 GENAVG                          ImrLike
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
-------------------------------------------------------------STATIC
-//NONLINEAR
-//KINTYP       Tot_Lagr
-NEWTONRAPHSO Load_Control
-NUMSTEP      10
-MAXITER      20
-//TOLRESID     1.0E-06
-TOLDISP      1.0E-05
-STEPSIZE     0.1
-//IARC         No
-//ARCSCL       1.0
-//SIGNCHCSP    No
-RESULTSEVRY  1
-RESTARTEVRY  20
-//
 -----------------------------------------------------THERMAL SOLVER
 -------------------------------------------------------XFEM GENERAL
 ---------------------------------------------------------MATERIALS

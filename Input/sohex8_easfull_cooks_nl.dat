@@ -17,8 +17,6 @@ NODES            162
 DIM                3
 MATERIALS          1
 NUMDF              6
---------------------------------------------------------ALE DYNAMIC
----------------------------------------------------------ALE SOLVER
 ----------------------------------------------------CONDITION NAMES
 // number of nodal clouds
 -----------------------------------------------------DISCRETISATION
@@ -30,12 +28,6 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 // Number of meshes in thermal field
 NUMTHERMDIS                     1
-------------------------------------------------------FLUID DYNAMIC
-----------------------------------------FLUID DYNAMIC/STABILIZATION
--------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
-----------------------------------------------FLUID PRESSURE SOLVER
--------------------------------------------------------FLUID SOLVER
---------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------IO
 ALE_DISP                        No
 FILESTEPS                       1000
@@ -57,61 +49,27 @@ RESTART                         0
 ------------------------------------------------------STRUCT SOLVER
 SOLVER                          UMFPACK
 -------------------------------------------------STRUCTURAL DYNAMIC
-ALPHA_F                         0.5
-ALPHA_M                         0.5
-BETA                            0.25
-// type of convergence check
-//     AbsRes_Or_AbsDis
-//     AbsRes_And_AbsDis
-//     RelRes_Or_AbsDis
-//     RelRes_And_AbsDis
-//     RelRes_Or_RelDis
-//     RelRes_And_RelDis
-CONV_CHECK                      AbsRes_Or_AbsDis
-DAMPING                         No
-DYNAMICTYP                      Gen_Alfa
-EIGEN                           0
-GAMMA                           0.5
-ITERATION                       full
-ITWANT                          0
-K_DAMP                          0.5
-MAXDT                           0
-MAXITER                         50
-MAXTIME                         5
-M_DAMP                          0.5
-NLNSOL                          fullnewton
-NUMSTEP                         200
-PREDICT                         ConstDis
-RESULTSEVRY                     1
-RESTARTEVRY                     1
-RESULTDT                        0
-TIMEADAPT                       0
-TIMESTEP                        0.05
-TOLCONSTR                       1e-08
-TOLDISP                         1e-10
-TOLRES                          1e-08
-UZAWAALGO                       direct
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
+DYNAMICTYP   Statics
+EIGEN        0
+RESULTSEVRY  1
+RESTARTEVRY  200
+NLNSOL       fullnewton // fullnewton modnewton matfreenewton nlncg ptc
+TIMESTEP     1.0
+NUMSTEP      100
+MAXTIME      100.0
+DAMPING      No
+M_DAMP       0.00001
+K_DAMP       0.00001
+CONV_CHECK   None
+TOLRES       1.0E-7
+TOLDISP      1.0E-7
+NORM_RESF    Abs
+NORM_DISP    Abs
+NORMCOMBI_RESFDISP Or
+MAXITER      20
 ---------------------------------STRUCTURAL DYNAMIC/TIMEADAPTIVITY
 KIND                            None
 -----------------------------------------------------THERMAL SOLVER
-------------------------------------------------------------STATIC
-//NONLINEAR
-//KINTYP       Tot_Lagr
-NEWTONRAPHSO Load_Control
-NUMSTEP      100
-MAXITER      20
-//TOLRESID     1.0E-06
-TOLDISP      1.0E-07
-STEPSIZE     1.0
-//IARC         No
-//ARCSCL       1.0
-//SIGNCHCSP    No
-RESULTSEVRY  1
-RESTARTEVRY  200
-//
-//
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_NeoHooke YOUNG 240.5653612 NUE 0.4999  DENS 0.001
 -------------------------------------------------------LOAD CURVES
