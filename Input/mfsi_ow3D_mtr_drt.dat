@@ -15,7 +15,7 @@ DIM      	3
 MATERIALS	3
 NUMDF    	6
 --------------------------------------------------------ALE DYNAMIC
-ALE_TYPE                        classic_lin
+ALE_TYPE                        springs
 MAXTIME                         4
 NUMSTEP                         41
 NUM_INITSTEP                    0
@@ -107,12 +107,12 @@ SOLVER                          UMFPACK
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
 --------------------------------------------------------FSI DYNAMIC
-ADAPTIVEDIST                    0.0001
+ADAPTIVEDIST                    0
 ALPHA_F                         -1
 ALPHA_S                         -1
-BASETOL                         1.0e-7
+BASETOL                         1.0e-8
 CONVCRIT                        ||g(i)||:sqrt(neq)
-CONVTOL                         1e-06
+CONVTOL                         1e-09
 COUPALGO                        iter_mortar_monolithicstructuresplit
 COUPFORCE                       nodeforce
 COUPMETHOD                      mtr
@@ -130,7 +130,7 @@ ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
 MAXOMEGA                        0
 MAXTIME                         100
-NUMSTEP                         50
+NUMSTEP                         4
 PARTITIONED                     DirichletNeumann
 PRECONDREUSE                    10
 PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)
@@ -142,7 +142,7 @@ STRUCTPCITER                    1 1 1
 STRUCTPCOMEGA                   1.0 1.0 1.0
 PCITER                          1 1 1
 PCOMEGA                         1.0 1.0 1.0
-TIMESTEP                        0.2
+TIMESTEP                        0.05
 TOLENCHECK                      1e-06
 UPPSS                           1
 UPRES                           1
