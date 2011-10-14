@@ -397,13 +397,6 @@ void DRT::ELEMENTS::TrussLm::SetUpReferenceGeometry(const vector<double>& xrefe,
 
 int DRT::ELEMENTS::TrussLmType::Initialize(DRT::Discretization& dis)
 {
-	// In contrast to the conventional truss3 element, we have four nodes that constitute the element
-	// o--------x---------o
-	//          |
-	//          |
-	// o--------x---------o
-	// Thus, the intermediate positions - marked as x in the picture - are interpolated using the two nodes of on either side
-
   //reference node positions
   vector<double> xrefe;
 

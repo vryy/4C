@@ -33,6 +33,7 @@ Maintainer: Christian Cyron
 #endif
 #ifdef D_TRUSS3
 #include "../drt_truss3/truss3.H"
+#include "../drt_trusslm/trusslm.H"
 #endif
 
 #include "../drt_torsion3/torsion3.H"
@@ -590,7 +591,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
         else
           color = 0.5;
 
-        // highlight contacting elements (works for old gap function(??))
+        /*/ highlight contacting elements (works for old gap function(??))
         if(DRT::INPUT::IntegralValue<int>(statmechparams_, "BEAMCONTACT"))
         {
         	for(int j=0; j<(int)(*(beamcmanager->Pairs())).size(); j++)
@@ -607,7 +608,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
 						if(elerowid==celerowid1 || elerowid==celerowid2)
 							color = 0.375;
         	}
-        }
+        }*/
 
         //if no periodic boundary conditions are to be applied, we just plot the current element
         if (periodlength == 0.0)
@@ -631,7 +632,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
                   for(int n=0; n<2; n++)
                     coordout(m,n)=coord(m,j+n);
 
-                 GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
+                 GmshWedge(nline,coordout,element,gmshfilecontent,color);
 
               }
             }
@@ -657,7 +658,31 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
             else
               GmshKinkedVisual(coord, 0.875, element->Id(), gmshfilecontent);
           }
-          else
+					else if (eot == DRT::ELEMENTS::TrussLmType::Instance())
+          {
+						LINALG::SerialDenseMatrix tmpcoord(3,2);
+						// the framing trusses (filaments)
+						for (int j=0; j<element->NumNode()-1; j=j+2)
+						{
+							for(int k=0; k<tmpcoord.M(); k++)
+							{
+								tmpcoord(k,0) = coord(k,j);
+								tmpcoord(k,1) = coord(k,j+1);
+							}
+							GmshWedge(nline,tmpcoord,element,gmshfilecontent,color);
+						}
+						// the interpolated truss
+						RCP<Epetra_SerialDenseVector> xint = (dynamic_cast<DRT::ELEMENTS::TrussLm*>(element))->xNodeIntpl();
+						for (int j=0; j<tmpcoord.M(); j++)
+						{
+							tmpcoord(j,0) = (*xint)(j);
+							tmpcoord(j,1) = (*xint)(j+3);
+						}
+						// change the color since elements of this type are considered crosslinkers ( currently)
+						color = 0.5;
+						GmshWedge(nline,tmpcoord,element,gmshfilecontent,color);
+          }
+					else
 #endif
 #ifdef D_TORSION3
           if (eot == DRT::ELEMENTS::Torsion3Type::Instance())
@@ -677,7 +702,35 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
         }
         //in case of periodic boundary conditions we have to take care to plot correctly an element broken at some boundary plane
         else
-          GmshOutputPeriodicBoundary(coord, color, gmshfilecontent,element->Id(),false);
+        {
+        	const DRT::ElementType & eot = element->ElementType();
+        	if(eot==DRT::ELEMENTS::TrussLmType::Instance())
+        	{
+        		// coordinates of trusses A and B
+        		LINALG::SerialDenseMatrix coordA(3,2);
+        		LINALG::SerialDenseMatrix coordB(3,2);
+        		for(int j=0; j<coordA.M(); j++)
+        			for(int k=0; k<coordA.N(); k++)
+							{
+								coordA(j,k) = coord(j,k);
+								coordB(j,k) = coord(j,k+2);
+							}
+        		GmshOutputPeriodicBoundary(coordA, color, gmshfilecontent,element->Id(),false);
+        		GmshOutputPeriodicBoundary(coordB, color, gmshfilecontent,element->Id(),false);
+        		// interpolated node coordinates
+        		RCP<Epetra_SerialDenseVector> xint = (dynamic_cast<DRT::ELEMENTS::TrussLm*>(element))->xNodeIntpl();
+        		LINALG::SerialDenseMatrix intcoord(3,2);
+        		for(int j=0; j<intcoord.M(); j++)
+        		{
+        			intcoord(j,0) = (*xint)(j);
+        			intcoord(j,1) = (*xint)(j+3);
+        		}
+        		color = 0.5;
+        		GmshOutputPeriodicBoundary(intcoord, color, gmshfilecontent,element->Id(),false);
+        	}
+        	else
+        		GmshOutputPeriodicBoundary(coord, color, gmshfilecontent,element->Id(),false);
+        }
       }
       //write content into file and close it (this way we make sure that the output is written serially)
       fprintf(fp, gmshfilecontent.str().c_str());
@@ -709,7 +762,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
 					coord(j,0) = cog_(j);
 					coord(j,1) = cog_(j)+0.5*(*trafo_)(i,j);
 				}
-				GMSH_2_noded(1,coord,discret_.lRowElement(0),gmshfileend,0.0,true,true);
+				GmshWedge(1,coord,discret_.lRowElement(0),gmshfileend,0.0,true,true);
 			}
 		  // plot the cog
 			GmshOutputBox(0.75, &cog_, 0.05, &filename);
@@ -768,6 +821,8 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
 #ifdef D_TRUSS3
     if (element->ElementType().Name() == "Truss3Type")
       dotline = dotline or eot == DRT::ELEMENTS::Truss3Type::Instance();
+    if (element->ElementType().Name() == "TrussLmType")
+      dotline = dotline or eot == DRT::ELEMENTS::TrussLmType::Instance();
 #endif
 #ifdef D_TORSION3
     // draw spheres at node positions ("beads" of the bead spring model)
@@ -795,17 +850,13 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
      * element broken in respective coordinate direction (node 0 close to zero boundary and node 1 close to boundary
      * at PeriodLength);  2: element broken in respective coordinate direction (node 1 close to zero boundary and node
      * 0 close to boundary at PeriodLength);*/
-    LINALG::SerialDenseMatrix cut;
-    if (ignoreeleid)
-      cut = LINALG::SerialDenseMatrix(3, (int)coord.N()-1, true);
-    else
-      cut = LINALG::SerialDenseMatrix(3, (int)element->NumNode()-1, true);
+    LINALG::SerialDenseMatrix cut= LINALG::SerialDenseMatrix(3, coord.N()-1, true);
 
     /* "coord" currently holds the shifted set of coordinates.
      * In order to determine the correct vector "dir" of the visualization at the boundaries,
      * a copy of "coord" with adjustments in the proper places is introduced*/
     LINALG::SerialDenseMatrix unshift = coord;
-
+    
     for (int i=0; i<cut.N(); i++)
     {
       for (int dof=0; dof<ndim; dof++)
@@ -875,10 +926,9 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
         for(int j=0 ;j<coordout.M(); j++)
           coordout(j,i+1) = coord(j,i) + lambda0*dir(j);
         if(!ignoreeleid)
-          GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
+          GmshWedge(nline,coordout,element,gmshfilecontent,color);
         else
-          GMSH_2_noded(nline,coordout,element,gmshfilecontent,color,true);
-
+          GmshWedge(nline,coordout,element,gmshfilecontent,color,true);
         //define output coordinates for broken elements, second segment
         for(int j=0; j<coordout.M(); j++)
         {
@@ -886,20 +936,18 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
           coordout(j,i+1) = coord(j,i+1)+lambda1*dir(j);
         }
         if(!ignoreeleid)
-          GMSH_2_noded(nline,coordout,element,gmshfilecontent,color);
+          GmshWedge(nline,coordout,element,gmshfilecontent,color);
         else
-          GMSH_2_noded(nline,coordout,element,gmshfilecontent,color,true);
-
+          GmshWedge(nline,coordout,element,gmshfilecontent,color,true);
       }
       else // output for continuous elements
       {
         if (!kinked)
         {
           if(!ignoreeleid)
-            GMSH_2_noded(nline,coord,element,gmshfilecontent,color);
+            GmshWedge(nline,coord,element,gmshfilecontent,color);
           else
-            GMSH_2_noded(nline,coord,element,gmshfilecontent,color,true);
-
+            GmshWedge(nline,coord,element,gmshfilecontent,color,true);
         }
         else
           GmshKinkedVisual(coord, 0.875, element->Id(), gmshfilecontent);
@@ -1460,7 +1508,7 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
 /*----------------------------------------------------------------------*
  | wedge output for two-noded beams                        cyron   11/10|
  *----------------------------------------------------------------------*/
-void StatMechManager::GMSH_2_noded(const int& n,
+void StatMechManager::GmshWedge(const int& n,
                                   const Epetra_SerialDenseMatrix& coord,
                                   DRT::Element* thisele,
                                   std::stringstream& gmshfilecontent,
@@ -1479,8 +1527,8 @@ void StatMechManager::GMSH_2_noded(const int& n,
 			radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(thisele))->Izz()) / M_PI));
 		else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
 			radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(thisele))->Izz()) / M_PI));
-		else if(eot == DRT::ELEMENTS::Truss3Type::Instance())
-			radius = sqrt((dynamic_cast<DRT::ELEMENTS::Truss3*>(thisele))->CSec() / M_PI);
+		else if(eot == DRT::ELEMENTS::Truss3Type::Instance() || eot == DRT::ELEMENTS::TrussLmType::Instance())
+			radius = sqrt((dynamic_cast<DRT::ELEMENTS::TrussLm*>(thisele))->CSec() / M_PI);
 		else
 			//radius = 0.003;
 			dserror("thisele is not a line element providing its radius.");
@@ -1638,7 +1686,7 @@ void StatMechManager::GMSH_2_noded(const int& n,
     gmshfilecontent << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
   }
   return;
-}//GMSH_2_noded
+}//GmshWedge
 
 /*----------------------------------------------------------------------*
  | Gmsh Output of detected network structure volume        mueller 12/10|
@@ -2061,7 +2109,7 @@ void StatMechManager::GmshNetworkStructVolumePeriodic(const Epetra_SerialDenseMa
 			LINALG::SerialDenseMatrix coordout=linepart;
 			for(int l=0 ;l<coordout.M(); l++)
 				coordout(l,1) = linepart(l,0) + lambda0*dir(l);
-			GMSH_2_noded(1,coordout,discret_.lRowElement(0),gmshfilecontent,color,true);
+			GmshWedge(1,coordout,discret_.lRowElement(0),gmshfilecontent,color,true);
 
 			//define output coordinates for broken elements, second segment
 			for(int l=0; l<coordout.M(); l++)
@@ -2069,10 +2117,10 @@ void StatMechManager::GmshNetworkStructVolumePeriodic(const Epetra_SerialDenseMa
 				coordout(l,0) = linepart(l,1);
 				coordout(l,1) = linepart(l,1)+lambda1*dir(l);
 			}
-			GMSH_2_noded(1,coordout,discret_.lRowElement(0),gmshfilecontent,color,true);
+			GmshWedge(1,coordout,discret_.lRowElement(0),gmshfilecontent,color,true);
 		}
 		else // output for continuous elements
-			GMSH_2_noded(1,linepart,discret_.lRowElement(0),gmshfilecontent,color,true,false);
+			GmshWedge(1,linepart,discret_.lRowElement(0),gmshfilecontent,color,true,false);
 	}
 }//GmshNetworkStructVolumePeriodic()
 

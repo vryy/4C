@@ -310,6 +310,8 @@ public:
 
   //!\brief return cross section of the truss
   const double& CSec() const { return crosssec_;}
+  //!\brief return the curve parameters xi_A and xi_B
+  const RCP<Epetra_SerialDenseVector> xNodeIntpl() const { return xint_;}
   //@}
 
 private:
@@ -362,6 +364,8 @@ private:
   LINALG::Matrix<12,1> X_;
   //!reference interpolated node positions (two nodes)
   LINALG::Matrix<6,1> Xint_;
+  //!current interpolated node positions (for gmsh)
+  RCP<Epetra_SerialDenseVector> xint_;
 
   //! material type
   int material_;

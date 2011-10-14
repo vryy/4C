@@ -37,6 +37,7 @@ Maintainer: Christian Cyron
 #endif  // #ifdef D_BEAM2R
 #ifdef D_TRUSS3
 #include "../drt_truss3/truss3.H"
+#include "../drt_trusslm/trusslm.H"
 #endif  // #ifdef D_TRUSS3
 #ifdef D_TRUSS2
 #include "../drt_truss2/truss2.H"
@@ -116,7 +117,15 @@ isconverged_(0)
         if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
           statmechmanager_->PeriodicBoundaryTruss3Init(dis.lColElement(i));
       }
-      else
+      else if ( eot == DRT::ELEMENTS::TrussLmType::Instance() )
+			{
+				//see whether current element needs more random numbers per time step than any other before
+				randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::TrussLm*>(dis.lColElement(i))->HowManyRandomNumbersINeed());
+				//in case of periodic boundary conditions truss3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
+				if(statmechmanager_->statmechparams_.get<double>("PeriodLength",0.0) > 0.0)
+					statmechmanager_->PeriodicBoundaryTrussLmInit(dis.lColElement(i));
+			}
+			else
 #endif  // #ifdef D_TRUSS3
         continue;
   } //for (int i=0; i<dis_.NumMyColElements(); ++i)

@@ -278,7 +278,7 @@ protected:
 	void GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, const double& color, int eleid, std::stringstream& gmshfilecontent);
 
 	//! \brief Gmsh wedge output for filament and crosslinkers as solid lines using prisms
-	void GMSH_2_noded(const int& n, const Epetra_SerialDenseMatrix& coord, DRT::Element* thisele, std::stringstream& gmshfilecontent, const double color, bool ignoreeleid=false, bool drawsphere=true);
+	void GmshWedge(const int& n, const Epetra_SerialDenseMatrix& coord, DRT::Element* thisele, std::stringstream& gmshfilecontent, const double color, bool ignoreeleid=false, bool drawsphere=true);
 
 	/*! \brief Gmsh output of volume boundaries of detected structure type (detection in DDCorrCurrStructure())
 	 *  \param n               (in) number of edges for approximation of the cluster sphere or the bundle cylinder

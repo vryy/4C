@@ -487,6 +487,12 @@ void DRT::ELEMENTS::TrussLm::tlm_nlnstiffmass(ParameterList& params,
     Epetra_SerialDenseMatrix* massmatrix,
     Epetra_SerialDenseMatrix* force)
 {
+	// In contrast to the conventional truss3 element, we have four nodes that constitute the element
+	// o--------x---------o
+	//          |
+	//          |
+	// o--------x---------o
+	// Thus, the intermediate positions - marked as x in the picture - are interpolated using the two nodes of on either side
 	//----------------------- Preliminary setup------------------------
 	//first, get the transformation matrix from 4-noded to 2-noded
 	Epetra_SerialDenseMatrix trafomatrix(6,12);
@@ -771,6 +777,9 @@ void DRT::ELEMENTS::TrussLm::ReduceSystemSize(Epetra_SerialDenseMatrix& trafomat
 
   xint->Multiply('N','N',1.0,trafomatrix,xcurr,0.0);
   uint->Multiply('N','N',1.0,trafomatrix,ucurr,0.0);
+
+  // store xint in class variable in order to make it accessible to gmsh
+  xint_ = rcp(new Epetra_SerialDenseVector(*xint));
 }
 
 /*--------------------------------------------------------------------------------------*

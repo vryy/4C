@@ -33,7 +33,7 @@ Maintainer: Christian Cyron
 #endif
 #ifdef D_TRUSS3
 #include "../drt_truss3/truss3.H"
-//#include "../drt_trusslm/trusslm.H"
+#include "../drt_trusslm/trusslm.H"
 #endif
 
 #include "../drt_torsion3/torsion3.H"
@@ -650,7 +650,7 @@ void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element)
 
 	DRT::ELEMENTS::Truss3* truss = dynamic_cast<DRT::ELEMENTS::Truss3*> (element);
 
-	//3D beam elements are embeddet into R^3:
+	//3D truss elements are embeddet into R^3:
 	const int ndim = 3;
 
 	/*get reference configuration of truss3 element in proper format for later call of SetUpReferenceGeometry*/
@@ -688,16 +688,16 @@ void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element)
  | This function loops through all the elements of the discretization and |
  | tests whether truss3 are broken by periodic boundary conditions in the |
  | reference configuration; if yes initial values of jacobi determinants  |
- | are adapted in a proper way                                 cyron 03/10|
+ | are adapted in a proper way                               mueller 10/11|
  *-----------------------------------------------------------------------*/
-/*void StatMechManager::PeriodicBoundaryTrussLmInit(DRT::Element* element)
+void StatMechManager::PeriodicBoundaryTrussLmInit(DRT::Element* element)
 {
 
 #ifdef D_TRUSS3
 
 	DRT::ELEMENTS::TrussLm* truss = dynamic_cast<DRT::ELEMENTS::TrussLm*> (element);
 
-	//3D beam elements are embeddet into R^3:
+	//3D truss elements are embeddet into R^3:
 	const int ndim = 3;
 
 	//get reference configuration of truss3 element in proper format for later call of SetUpReferenceGeometry
@@ -729,7 +729,7 @@ void StatMechManager::PeriodicBoundaryTruss3Init(DRT::Element* element)
 	truss->SetUpReferenceGeometry(xrefe, true);
 
 #endif
-}*/
+}
 
 /*----------------------------------------------------------------------*
  | Assign crosslink molecules and nodes to volume partitions            |

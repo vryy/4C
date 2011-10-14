@@ -92,7 +92,6 @@ void DRT::UTILS::LocsysManager::Setup()
     else if (*type=="OriginRadialSliding")
       type_[i] = DRT::UTILS::LocsysManager::originradialsliding;
     else dserror("Unknown type of locsys");
-    cout << *type << " id: " << id_[i] << endl;
   }
 
   // As for Dirichlet conditions, we keep to a very strict hierarchy
