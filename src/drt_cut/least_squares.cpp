@@ -4,21 +4,18 @@
 
 //premultiplying the matrix with its transpose to get the square matrix
 //the source terms also get multiplied
-std::vector<std::vector<double> > GEO::CUT::LeastSquares::get_square_matrix(std::vector<double> &rhs)
+Epetra_SerialDenseMatrix GEO::CUT::LeastSquares::get_square_matrix(Epetra_SerialDenseVector &rhs)
 {
-        std::vector<std::vector<double> > sqr;
-        sqr.resize(matri_[0].size());
-        rhs.resize(matri_[0].size());
-        for(unsigned i=0;i<matri_[0].size();i++)
-                sqr[i].resize(matri_[0].size());
+        Epetra_SerialDenseMatrix sqr(matri_[0].size(),matri_[0].size());
 
         for(unsigned i=0;i<matri_[0].size();i++)
         {
                 for(unsigned j=0;j<matri_[0].size();j++)
                 {
-                        sqr[i][j] = 0.0;
+                        sqr(j,i) = 0.0;
+//it is sqr(j,i) because the Epetra elements are column ordered first
                         for(unsigned k=0;k<matri_.size();k++)
-                                sqr[i][j] += matri_[k][i]*matri_[k][j]; 
+                                sqr(j,i) += matri_[k][i]*matri_[k][j]; 
                 }
         }
 
@@ -31,9 +28,9 @@ std::vector<std::vector<double> > GEO::CUT::LeastSquares::get_square_matrix(std:
 
         for(unsigned i=0;i<matri_[0].size();i++)
         {
-                rhs[i] = 0.0;
+                rhs(i) = 0.0;
                 for(unsigned j=0;j<matri_.size();j++)
-                        rhs[i] += matri_[j][i]*sourc_[j];
+                        rhs(i) += matri_[j][i]*sourc_(j);
         }
 
 /*      for(unsigned i=0;i<matri_[0].size();i++)
@@ -44,7 +41,7 @@ std::vector<std::vector<double> > GEO::CUT::LeastSquares::get_square_matrix(std:
 //solves the system of equations using conjugate gradient method
 //this can be used only when the matrix is symmetric
 //since in our case we multiplied the A with its transpose the resulting system is always symmetric
-std::vector<double> GEO::CUT::LeastSquares::ConjugateGradient(std::vector<std::vector<double> >coeff, std::vector<double> rhs)
+/*std::vector<double> GEO::CUT::LeastSquares::ConjugateGradient(std::vector<std::vector<double> >coeff, std::vector<double> rhs)
 {
         std::vector<double> resi = rhs;
         std::vector<double> resi_new = rhs;
@@ -53,10 +50,10 @@ std::vector<double> GEO::CUT::LeastSquares::ConjugateGradient(std::vector<std::v
         soln.resize(rhs.size());
         tempo.resize(rhs.size());
 
-/*      for(unsigned i=0;i<rhs.size();i++)
-                std::cout<<soln[i]<<std::endl;*/
+//      for(unsigned i=0;i<rhs.size();i++)
+//                std::cout<<soln[i]<<std::endl;
 	int ittno = 0;
-	double epsi = 1e-15;
+	double epsi = 1e-12;
         while(1)
         {
 		ittno++;
@@ -69,26 +66,27 @@ std::vector<double> GEO::CUT::LeastSquares::ConjugateGradient(std::vector<std::v
                         soln[i] = soln[i]+alpha*p[i];
                         resi_new[i] = resi[i]-alpha*tempo[i];
                 }
-                double conv_check = multi_vec(resi_new,resi_new);
+                double conv_check =  maxAbsolute(resi_new);
           //    std::cout<<sqrt(conv_check)<<std::endl;
-                if(sqrt(conv_check)<epsi || ittno>4500)
+                if(conv_check<epsi || ittno>900)
                         break;
 		if(ittno>250)
-			epsi = 1e-12;
-		if(ittno>300)
-			epsi = 1e-10;
-		if(ittno>450)
 			epsi = 1e-08;
+		if(ittno>300)
+			epsi = 1e-06;
+		if(ittno>450)
+			epsi = 1e-05;
                 double beta = multi_vec(resi_new,resi_new)/multi_vec(resi,resi);
                 for(unsigned i=0;i<rhs.size();i++)
                 {
                         p[i] = resi_new[i]+beta*p[i];
                         resi[i] = resi_new[i];
                 }
+		std::cout<<"conv_check"<<conv_check<<"\n";
         }
 	std::cout<<"least_iter = "<<ittno<<"\t"<<"epsi = "<<epsi<<"\n";
         return soln;
-}
+}*/
 
 //multiply a n*n matrix and a n vector
 std::vector<double> GEO::CUT::LeastSquares::multiply(std::vector<std::vector<double> > mat, std::vector<double> ve)
@@ -113,12 +111,46 @@ double GEO::CUT::LeastSquares::multi_vec(std::vector<double> mm1, std::vector<do
 }
 
 //solve the rectangular system with linear least squares
-std::vector<double> GEO::CUT::LeastSquares::linear_least_square()
+Epetra_SerialDenseVector GEO::CUT::LeastSquares::linear_least_square()
 {
-        std::vector<std::vector<double> > sqr;
-        std::vector<double> rhs;
+        Epetra_SerialDenseMatrix sqr(matri_[0].size(),matri_[0].size());
+        Epetra_SerialDenseVector rhs(matri_[0].size());
         sqr = get_square_matrix(rhs);
+	unknown_.Size(matri_[0].size());
 
-        unknown_ = ConjugateGradient(sqr, rhs);
+/*	Epetra_SerialDenseMatrix matt(sqr.size(),sqr.size());//blockkk
+	Epetra_SerialDenseVector unn(sqr.size());//blockkk
+	Epetra_SerialDenseVector rrr(sqr.size());//blockkk
+	for(unsigned i=0;i<sqr.size();i++)
+	{
+		for(unsigned j=0;j<sqr.size();j++)
+			matt(j,i) = sqr[i][j];
+		unn(i) = 0.0;
+		rrr(i) = rhs[i];
+	}*/
+	Epetra_SerialDenseSolver solve_for_GPweights;  
+	solve_for_GPweights.SetMatrix(sqr);            
+	solve_for_GPweights.SetVectors(unknown_,rhs);
+	solve_for_GPweights.FactorWithEquilibration(true);
+	int err2 = solve_for_GPweights.Factor();
+	int err = solve_for_GPweights.Solve();         
+	if ((err != 0) && (err2!=0)) dserror("Computation of Gauss weights failed");
+
+//        unknown_ = ConjugateGradient(sqr, rhs); //unblockkk
+
+/*	for(unsigned i=0;i<unknown_.size();i++)
+		std::cout<<"error = "<<unn(i,0)<<"\t"<<unknown_[i]<<"\n";*/
+
         return unknown_;
+}
+
+double GEO::CUT::LeastSquares::maxAbsolute(std::vector<double>a)
+{
+	double maxx=0.0;
+	for(unsigned i=0;i<a.size();i++)
+	{
+		if(fabs(a[i])>maxx)
+			maxx = fabs(a[i]);
+	}
+	return maxx;
 }

@@ -575,7 +575,7 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::VolumeCell::GaussPointsFitting()
     Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new 
                     DRT::UTILS::CollectedGaussPoints( gp->NumPoints() ) );
 
-    for(unsigned i=0;i<weights_.size();i++)
+    for(unsigned i=0;i<gausPts_.size();i++)
     {
         LINALG::Matrix<3,1> xe,xei;
         xe(0,0) = gausPts_[i][0];
@@ -592,10 +592,10 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::VolumeCell::GaussPointsFitting()
 
         double det = xjm.Determinant();
  //       std::cout<<weights_[i]<<"\t"<<weights_[i]/det<<"\n";
-        double wei = weights_[i]/det; 
+        double wei = weights_(i)/det; 
 //      std::cout<<xei(0,0)<<"\t"<<xei(1,0)<<"\t"<<xei(2,0)<<"\n";
 //
-        cgp->Append( xe, weights_[i] );
+        cgp->Append( xe, weights_(i) );
     }
 /*    double sum=0.0;
     for(unsigned i=0;i<weights_.size();i++)
@@ -656,7 +656,7 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem)
     }*/
 
 
-	  static int sideno = 0;
+/*	  static int sideno = 0;
           sideno++;
 	  std::string filename="wrong";
    	  std::ofstream file;
@@ -669,6 +669,6 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem)
 	  { 
 		  file<<gausPts_[i][0]<<"\t"<<gausPts_[i][1]<<"\t"<<gausPts_[i][2]<<"\t"<<weights_[i]<<std::endl;
 	  }
-	  file.close();
+	  file.close();*/
 
 }

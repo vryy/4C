@@ -7,6 +7,10 @@
 #include "cut_element.H"
 #include "cut_facet.H"
 
+#include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensematrix.H"
+#include "../linalg/linalg_serialdensevector.H"
+
 namespace GEO
 {
     namespace CUT
@@ -28,7 +32,7 @@ class VolumeIntegration
         }
 
         ~VolumeIntegration(){};
-        std::vector<double> compute_weights();
+        Epetra_SerialDenseVector compute_weights();
         std::vector<std::vector<double> > getGaussPointLocation(){return gaus_pts_;} 
 
     private:
@@ -36,7 +40,7 @@ class VolumeIntegration
         Element* elem1_;
         const GEO::CUT::Point::PointPosition position_;
         int num_func_;
-        std::vector<double> compute_rhs_moment();
+        Epetra_SerialDenseVector compute_rhs_moment();
         std::vector<std::vector<double> > gaus_pts_;
         std::vector<std::vector<double> > eqn_facets_;
         bool compute_Gaussian_points(int numeach);

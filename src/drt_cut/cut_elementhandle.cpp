@@ -113,7 +113,7 @@ void GEO::CUT::ElementHandle::VolumeCellGaussPoints( plain_volumecell_set & cell
   }
 
 
-  /*if(IsCut())
+/*  if(IsCut())
   {
 	  static int eeno=0;
 	  eeno++;

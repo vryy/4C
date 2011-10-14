@@ -150,7 +150,7 @@ private:
 
  //store the Gauss point weights and location when moment fitting equations are
  //used to arrive at them
-  std::vector<double> weights_;
+  Epetra_SerialDenseVector weights_;
   std::vector<std::vector<double> > gausPts_;
 };
 

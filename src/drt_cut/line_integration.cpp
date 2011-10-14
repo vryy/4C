@@ -3,62 +3,58 @@
 #include<iostream>
 #include "base.H"
 
-std::vector<double> LineIntegration::compute_normal()
+LINALG::Matrix<2,1> LineIntegration::compute_normal()
 {
-        std::vector<double> normal;
-        normal.resize(2);
+        LINALG::Matrix<2,1> normal;
         double dy = point_end_[1]-point_begin_[1];
         double dx = -point_end_[0]+point_begin_[0];
         double modd = sqrt(dx*dx+dy*dy);
 
-        normal[0] = dy/modd;
-        normal[1] = dx/modd;
+        normal(0,0) = dy/modd;
+        normal(1,0) = dx/modd;
 //      std::cout<<normal[0]<<"\t"<<normal[1]<<std::endl;
         return normal;
 }
 
 std::vector<double> LineIntegration::get_Gauss_weights()
 {
-        std::vector<double> line_wei;
-        line_wei.push_back(0.1012285362903762591525314);
-        line_wei.push_back(0.2223810344533744705443560);
-        line_wei.push_back(0.3137066458778872873379622);
-        line_wei.push_back(0.3626837833783619829651504);
-        line_wei.push_back(0.3626837833783619829651504);
-        line_wei.push_back(0.3137066458778872873379622);
-        line_wei.push_back(0.2223810344533744705443560);
-        line_wei.push_back(0.1012285362903762591525314);
+        std::vector<double> line_wei(8);
+        line_wei[0] = 0.1012285362903762591525314;
+        line_wei[1] = 0.2223810344533744705443560;
+        line_wei[2] = 0.3137066458778872873379622;
+        line_wei[3] = 0.3626837833783619829651504;
+        line_wei[4] = 0.3626837833783619829651504;
+        line_wei[5] = 0.3137066458778872873379622;
+        line_wei[6] = 0.2223810344533744705443560;
+        line_wei[7] = 0.1012285362903762591525314;
 
         return line_wei;
 }
 
 std::vector<double> LineIntegration::get_Gauss_line_pts()
 {
-        std::vector<double> line_tau;
-        line_tau.push_back(-0.9602898564975362316835609);
-        line_tau.push_back(-0.7966664774136267395915539);
-        line_tau.push_back(-0.5255324099163289858177390);
-        line_tau.push_back(-0.1834346424956498049394761);
-        line_tau.push_back(0.1834346424956498049394761);
-        line_tau.push_back(0.5255324099163289858177390);
-        line_tau.push_back(0.7966664774136267395915539);
-        line_tau.push_back(0.9602898564975362316835609);
+        std::vector<double> line_tau(8);
+        line_tau[0] = -0.9602898564975362316835609;
+        line_tau[1] = -0.7966664774136267395915539;
+        line_tau[2] = -0.5255324099163289858177390;
+        line_tau[3] = -0.1834346424956498049394761;
+        line_tau[4] = 0.1834346424956498049394761;
+        line_tau[5] = 0.5255324099163289858177390;
+        line_tau[6] = 0.7966664774136267395915539;
+        line_tau[7] = 0.9602898564975362316835609;
 
         return line_tau;
 }
 
 //Obtain the actual integration points from the points available in (-1,1) interval
-std::vector<std::vector<double> > LineIntegration::find_line_integration_pts()
+LINALG::Matrix<2,8> LineIntegration::find_line_integration_pts()
 {
         std::vector<double> line_tau = get_Gauss_line_pts();
 
 /*      for(int i=0;i<3;i++)
                 std::cout<<line_tau[i]<<std::endl;*/
 
-        std::vector<std::vector<double> > line_int_pts;
-        line_int_pts.resize(2);
-        for(int i=0;i<2;i++)
-                line_int_pts[i].resize(8);
+	LINALG::Matrix<2,8> line_int_pts;
         double xmid[2];
         //middle point in all 2 coordinates
         for(int i=0;i<2;i++)
@@ -71,7 +67,7 @@ std::vector<std::vector<double> > LineIntegration::find_line_integration_pts()
                 double tau_fac = line_tau[i];
                 for(int j=0;j<2;j++)
                 {
-                        line_int_pts[j][i] = (xmid[j]-point_begin_[j])*tau_fac+xmid[j];
+                        line_int_pts(j,i) = (xmid[j]-point_begin_[j])*tau_fac+xmid[j];
                 }
         }
         
@@ -99,14 +95,14 @@ double LineIntegration::half_length()
 
 double LineIntegration::integrate_line()
 {
-        std::vector<double> normal;
+	LINALG::Matrix<2,1> normal;
         normal = compute_normal();
 //      std::cout<<normal[0]<<"\t"<<normal[1]<<std::endl;
 
-        if (fabs(normal[0])<0.000000001)
+        if (fabs(normal(0,0))<0.000000001)
                 return 0.0;
 
-        std::vector<std::vector<double> > line_int_pts;
+	LINALG::Matrix<2,8> line_int_pts;
         line_int_pts = find_line_integration_pts();
 
         std::vector<double> line_wei = get_Gauss_weights();
@@ -118,14 +114,14 @@ double LineIntegration::integrate_line()
         double inte = 0.0;
         for (int i=0;i<8;i++)
         {
-                std::vector<double> pt;
-                pt.push_back(line_int_pts[0][i]);
-                pt.push_back(line_int_pts[1][i]);
+                std::vector<double> pt(2);
+                pt[0] = line_int_pts(0,i);
+                pt[1] = line_int_pts(1,i);
 
                 double linein = base_func_line_int(pt, inte_num_,alpha_);
                 inte = inte+line_wei[i]*linein;
         }
-        inte = inte*normal[0]*half_len;
+        inte = inte*normal(0,0)*half_len;
 //        std::cout<<"line_inte = "<<inte<<std::endl;
 
         return inte;

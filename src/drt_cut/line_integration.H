@@ -2,6 +2,7 @@
 #define LINE_INTEGRATION_H
 
 #include<vector>
+#include "../linalg/linalg_fixedsizematrix.H"
 
 class LineIntegration
 {
@@ -21,10 +22,10 @@ class LineIntegration
                 std::vector<double> point_end_;
                 int inte_num_;
                 std::vector<double> alpha_;
-                std::vector<double> compute_normal();
+		LINALG::Matrix<2,1> compute_normal();
                 std::vector<double> get_Gauss_weights();
                 std::vector<double> get_Gauss_line_pts();
-                std::vector<std::vector<double> > find_line_integration_pts();
+		LINALG::Matrix<2,8> find_line_integration_pts();
                 double half_length();
                 
 };

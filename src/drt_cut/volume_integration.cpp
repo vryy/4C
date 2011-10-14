@@ -12,9 +12,9 @@ using namespace std;
 
 //compute the rhs of the moment fitting equations
 //Integration of base functions take place inside this
-std::vector<double> GEO::CUT::VolumeIntegration::compute_rhs_moment()
+Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_rhs_moment()
 {
-    std::vector<double> rhs_mom;
+     Epetra_SerialDenseVector rhs_mom(num_func_);
 
     const plain_facet_set & facete = volcell_->Facets();
     for(int fnc=1;fnc<=num_func_;fnc++)
@@ -34,7 +34,7 @@ std::vector<double> GEO::CUT::VolumeIntegration::compute_rhs_moment()
 //		std::cout<<"eqn_plane"<<eqn[0]<<"\t"<<eqn[1]<<"\t"<<eqn[2]<<"\t"<<eqn[3]<<"\n"; //blockkk or remove
             }
         }
-        rhs_mom.push_back(mome);
+        rhs_mom(fnc-1) = mome;
 //      std::cout<<mome<<std::endl;
 //
     }
@@ -146,8 +146,8 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
                 wei = false;
         else
                 wei = true;
-        if(gaus_pts_.size()==0)
-                wei = false;
+/*        if(gaus_pts_.size()==0)
+                wei = false;*/
         cout<<"number of Gauss points"<<gaus_pts_.size()<<endl;//blockkk
         return wei;
     }
@@ -361,7 +361,7 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
                 }
                 else if(fabs(inter2[0]-inter1[0])<0.05*(maxi[0]-mini[0]))
                 {
-                        OnLine(inter1,inter2,linePts,numeach/2+1);
+                        OnLine(inter1,inter2,linePts,2/*numeach/2+1*/);//blockkk or remove
                         intersect = true;
                 }
                 else
@@ -442,7 +442,7 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
                                 }
                                 else if((inter2[0]-inter1[0])<0.05*(maxi[0]-mini[0]))
                                 {
-                                        OnLine(inter1,inter2,linePts,numeach/3+1);
+                                        OnLine(inter1,inter2,linePts,2/*numeach/3+1*/);//blockkk or remove
                                         intersect = true;
                                 }
                                 else
@@ -632,9 +632,10 @@ void GEO::CUT::VolumeIntegration::moment_fitting_matrix(std::vector<std::vector<
 }
 
 //compute the weights and returns the coordinates of weights and the weighing points
-std::vector<double> GEO::CUT::VolumeIntegration::compute_weights()
+Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
 {
-    std::vector<double> rhs_moment;
+
+    Epetra_SerialDenseVector rhs_moment(num_func_);
     rhs_moment = compute_rhs_moment();
     
 /*  for(std::vector<double>::iterator i=rhs_moment.begin();i!=rhs_moment.end();i++)
@@ -647,13 +648,14 @@ std::vector<double> GEO::CUT::VolumeIntegration::compute_weights()
         std::cout<<gaus_pts_[i][0]<<"\t"<<gaus_pts_[i][1]<<"\t"<<gaus_pts_[i][2]<<std::endl;
     }*/
 
-    std::vector<double> weights;
+    Epetra_SerialDenseVector weights;
     if(wei)
     {
         std::vector<std::vector<double> > moment_matrix(num_func_,std::vector<double>(gaus_pts_.size()));
         moment_fitting_matrix(moment_matrix);
 
         LeastSquares least(moment_matrix,rhs_moment);
+	weights.Size(moment_matrix[0].size());
         weights = least.linear_least_square();
     }
     else
@@ -662,41 +664,42 @@ std::vector<double> GEO::CUT::VolumeIntegration::compute_weights()
         vector<double> zer(3);
         zer[0]=0.0;zer[1]=0.0;zer[2]=0.0;
         gaus_pts_.push_back(zer);
-        weights.push_back(0.0);
+	weights.Size(1);
+        weights(0) = 0.0;
     }
 
     for(int j=0;j<num_func_;j++)
     {
     double chek = 0.0;
-    for(int i=0;i<weights.size();i++)
+    for(int i=0;i<gaus_pts_.size();i++)
     {
         std::vector<double> coorrr;
         coorrr.push_back(gaus_pts_[i][0]);
         coorrr.push_back(gaus_pts_[i][1]);
         coorrr.push_back(gaus_pts_[i][2]);
-        chek += weights[i]*base_function(coorrr,j+1);
+        chek += weights(i)*base_function(coorrr,j+1);
     }
-    std::cout<<"check"<<rhs_moment[j]-chek<<std::endl;
+    std::cout<<"check"<<rhs_moment(j)-chek<<std::endl;
 //    std::cout<<"value"<<chek<<std::endl;
     }
 
 /*    double chek=0.0;
     for(unsigned i=0;i<weights.size();i++)
     {
-         chek += weights[i]*(pow(gaus_pts_[i][0],4)+pow(gaus_pts_[i][1],4)+5.0);     
-    //  chek += weights[i]*(gaus_pts_[i][0]*gaus_pts_[i][0]*gaus_pts_[i][0]+gaus_pts_[i][1]*gaus_pts_[i][1]*gaus_pts_[i][1]+5.0);       
-//        chek += pow(gaus_pts_[i][0],4)*weights[i];
+         chek += weights(i)*(pow(gaus_pts_[i][0],4)+pow(gaus_pts_[i][1],4)+5.0);     
+    //  chek += weights(i)*(gaus_pts_[i][0]*gaus_pts_[i][0]*gaus_pts_[i][0]+gaus_pts_[i][1]*gaus_pts_[i][1]*gaus_pts_[i][1]+5.0);       
+//        chek += pow(gaus_pts_[i][0],4)*weights(i];
     }
     std::cout<<scientific<<"check"<<chek<<std::endl;
-    std::cout<<scientific<<"error"<<chek-(rhs_moment[20]+rhs_moment[30]+5*rhs_moment[0])<<std::endl;*/
+    std::cout<<scientific<<"error"<<chek-(rhs_moment(20)+rhs_moment(30)+5*rhs_moment(0))<<std::endl;*/
 
 /*  for(int i=0;i<weights.size();i++)
-        std::cout<<"wei"<<weights[i]<<std::endl;*/
+        std::cout<<"wei"<<weights(i)<<std::endl;*/
 
-    std::cout<<"volume = "<<rhs_moment[0]<<"\t"<<rhs_moment[1]<<"\t"<<rhs_moment[4]<<std::endl;
+    std::cout<<"volume = "<<rhs_moment(0)<<"\t"<<rhs_moment(1)<<"\t"<<rhs_moment(4)<<std::endl;
 
 #ifdef DEBUGCUTLIBRARY
-//    GaussPointGmsh();
+    GaussPointGmsh();
 #endif
 
     return weights;
