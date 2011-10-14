@@ -29,7 +29,6 @@
 #include <Epetra_SerialComm.h>
 #endif
 
-#include "fs3i.H"
 #include "fs3i_1wc.H"
 
 
