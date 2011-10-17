@@ -268,8 +268,10 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
   }
   if (count_cond.size() > 0) // there are conditions left that were not recognized!!
   {
+    cout<<endl<<endl;
     for (count = count_cond.begin(); count != count_cond.end(); ++count)
-      cout<<"Section name "<< count->first <<" not valid. Typo?"<<endl;
+      cout<<"Section name  "<< count->first <<"  is not valid. Typo?"<<endl;
+
     dserror("There are invalid condition names in your bc file (see list above)");
   }
 
