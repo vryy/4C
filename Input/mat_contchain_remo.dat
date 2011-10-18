@@ -93,6 +93,7 @@ NORM_RESF    Abs
 NORM_DISP    Abs
 NORMCOMBI_RESFDISP And
 MAXITER      50
+PREDICT      ConstDisVelAcc
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_CONTCHAINNETW LAMBDA 27.293 MUE 3.103 DENS 1.0E-6 NCHAIN 2.0E21 ABSTEMP 310 CONTL_L 1.594 PERSL_A 1.365 R0 1.0 RELAX 0.025 REMBEGT 1.0 INITRAN 0 UPDRATE 3 DIFFTOL 1.0E-1
 -------------------------------------------------------LOAD CURVES
@@ -103,7 +104,7 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 25 150000 FACTOR 15 15
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS 1 NODE 1 POSITION dispx NAME dispx VALUE 2.069672066122307530e-01 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 1 POSITION dispx NAME dispx VALUE 2.07011935136985264e-01 TOLERANCE 1e-8
 STRUCTURE DIS 1 NODE 1 POSITION dispz NAME dispz VALUE 3.999998999999999916e-02 TOLERANCE 1e-8
 ------------------------------------------------------------FUNCT1
 ------------------------------------------------------------FUNCT2
