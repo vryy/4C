@@ -558,9 +558,6 @@ set(OBJS_DRT_ARTNET_LIB
   src/drt_art_net/artery_input.cpp
   src/drt_art_net/artery_lin_exp.cpp
 )
-set(OBJS_POST_DRT_Q9NECONVERT
-  src/post_q9neconvert/post_drt_q9neconvert.cpp
-)
 set(OBJS_DRT_COMBUST
   src/drt_combust/combust_algorithm.cpp
   src/drt_combust/combust_dyn.cpp
