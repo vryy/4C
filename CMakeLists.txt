@@ -180,16 +180,34 @@ if (NOT Trilinos_DIR)
   set ( Trilinos_DIR "/lnm/lib/fc8/openmpi/trilinos" )
 endif (NOT Trilinos_DIR)
 
-#
-### External Libraries
+###------------------------------------------------------------------ External Libraries
 
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
-#find_package(MPI REQUIRED)
-#find_package(Trilinos REQUIRED)
-find_package(Trilinos REQUIRED CONFIGS TrilinosConfig_install.cmake)
 
-#find_package(Blitz)
+#
+### TRILINOS
+SET(CMAKE_PREFIX_PATH ${Trilinos_PREFIX} ${CMAKE_PREFIX_PATH})
+find_package(Trilinos REQUIRED)
+#find_package(Trilinos REQUIRED CONFIGS TrilinosConfig_install.cmake)
+
+# Echo trilinos build info just for fun
+MESSAGE("\nFound Trilinos!  Here are the details: ")
+MESSAGE("   Trilinos_VERSION = ${Trilinos_VERSION}")
+IF (Trilinos_VERSION STREQUAL "10.1d") 
+MESSAGE("   LNM DEFAULT")
+ENDIF ()
+MESSAGE("   Trilinos_DIR = ${Trilinos_DIR}")
+MESSAGE("   Trilinos_PACKAGE_LIST = ${Trilinos_PACKAGE_LIST}")
+#MESSAGE("   Trilinos_LIBRARIES = ${Trilinos_LIBRARIES}")
+#MESSAGE("   Trilinos_INCLUDE_DIRS = ${Trilinos_INCLUDE_DIRS}")
+#MESSAGE("   Trilinos_LIBRARY_DIRS = ${Trilinos_LIBRARY_DIRS}")
+MESSAGE("   Trilinos_TPL_LIST = ${Trilinos_TPL_LIST}")
+#MESSAGE("   Trilinos_TPL_INCLUDE_DIRS = ${Trilinos_TPL_INCLUDE_DIRS}")
+#MESSAGE("   Trilinos_TPL_LIBRARIES = ${Trilinos_TPL_LIBRARIES}")
+#MESSAGE("   Trilinos_TPL_LIBRARY_DIRS = ${Trilinos_TPL_LIBRARY_DIRS}")
+#MESSAGE("   Trilinos_BUILD_SHARED_LIBS = ${Trilinos_BUILD_SHARED_LIBS}")
+MESSAGE("End of Trilinos details\n")
 
 #set(Boost_USE_STATIC_LIBS ON) 
 #set(Boost_DETAILED_FAILURE_MSG ON)
@@ -214,52 +232,17 @@ if (Trilinos_FOUND)
   include_directories(${Trilinos_INCLUDE_DIRS})
   include_directories(${Trilinos_TPL_INCLUDE_DIRS})
   link_directories(${Trilinos_LIBRARY_DIRS})
-#  set(USED_Trilinos_LIBRARIES
-#    trilinoscouplings
-#    noxepetra
-#    nox
-#    ifpack
-#    aztecoo
-#    amesos
-#    ml
-#    zoltan
-#    epetraext
-#    epetra
-#    teuchos
-#    )
-  
-#  # some parts of baci might require additional trilinos libraries
-
-#  if (STKADAPTIVE)
-#    set(USED_Trilinos_LIBRARIES
-#      stk_search stk_linsys
-#      stk_mesh_fem stk_mesh_base 
-#      #stk_util_use_cases 
-#      stk_util_parallel 
-#      #stk_util_diag 
-#      #stk_util_env 
-#      stk_util_util
-#      #intrepid
-#      #fei_test_utils fei_trilinos fei_base
-#      shards
-#      #isorropia
-#      #zoltan
-#      ${USED_Trilinos_LIBRARIES}
-#      )
-#  endif (STKADAPTIVE)
 
   set(LIBRARIES
     ${Trilinos_LIBRARIES}
     ${Trilinos_TPL_LIBRARIES}
     ${LIBRARIES}
     )
-
 # define of which library we are using - for compatibility checks
 #if (Trilinos_VERSION STREQUAL "10.1d") 
 #add_definitions("-DTRILINOS_10_1d")
 #else ()
 #endif ()
-
 endif (Trilinos_FOUND)
 
 #find_package(Umfpack)
