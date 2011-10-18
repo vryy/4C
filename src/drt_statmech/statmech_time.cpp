@@ -656,7 +656,8 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
   bool print_unconv = true;
 
   // create out-of-balance force for 2nd, 3rd, ... Uzawa iteration
-  InitializeNewtonUzawa(randomnumbers);
+  if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+  	InitializeNewtonUzawa(randomnumbers);
 
   while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) and numiter<=maxiter)
   {
@@ -885,7 +886,8 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
   if (dynkindstat) dserror("Static case not implemented");
 
   // create out-of-balance force for 2nd, 3rd, ... Uzawa iteration
-  InitializeNewtonUzawa(randomnumbers);
+  if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+  	InitializeNewtonUzawa(randomnumbers);
 
   // hard wired ptc parameters
   double ctransptc = (statmechmanager_->statmechparams_).get<double>("CTRANSPTC0",0.0);

@@ -703,6 +703,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
         //in case of periodic boundary conditions we have to take care to plot correctly an element broken at some boundary plane
         else
         {
+#ifdef D_TRUSS3
         	const DRT::ElementType & eot = element->ElementType();
         	if(eot==DRT::ELEMENTS::TrussLmType::Instance())
         	{
@@ -729,6 +730,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
         		GmshOutputPeriodicBoundary(intcoord, color, gmshfilecontent,element->Id(),false);
         	}
         	else
+#endif
         		GmshOutputPeriodicBoundary(coord, color, gmshfilecontent,element->Id(),false);
         }
       }
