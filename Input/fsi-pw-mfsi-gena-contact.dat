@@ -199,6 +199,8 @@ ML_DAMPFINE       1.0 // damping fine grid
 ML_DAMPMED        1.0 // damping med grids
 ML_DAMPCOARSE     1.0 // damping coarse grid
 PARTITION                       Cut_Elements
+--------------------------------------------------------------CONTACT SOLVER
+SOLVER      UMFPACK
 ------------------------------------------------------------------ALE SOLVER
 SOLVER      Aztec_MSR
 AZOUTPUT    0 // output every so often, 0 no output
