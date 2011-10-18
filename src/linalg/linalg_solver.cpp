@@ -989,6 +989,10 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
   // switch type of solver
   switch (DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(inparams,"SOLVER"))
   {
+  case INPAR::SOLVER::undefined: //=========================undefined solver
+	std::cout << "undefined solver! Set " << inparams.name() << "  in your dat file!" << std::endl;
+    dserror("fix your dat file");
+    break;
 #ifdef PARALLEL
   case INPAR::SOLVER::superlu://============================== superlu solver (parallel only)
     outparams.set("solver","superlu");

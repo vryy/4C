@@ -56,7 +56,8 @@ namespace INPAR
       belos,             ///< Belos solver
       stratimikos_amesos,///< Stratimikos solver framework (Amesos KLU)
       stratimikos_aztec, ///< Stratimikos solver framework (Aztec)
-      stratimikos_belos  ///< Stratimikos solver framework (Belos)
+      stratimikos_belos, ///< Stratimikos solver framework (Belos)
+      undefined          ///< undefined solver
     };
 
     /// Different solvers within the Aztec2.1 library

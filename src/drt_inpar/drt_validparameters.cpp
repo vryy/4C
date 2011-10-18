@@ -3842,8 +3842,8 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   using Teuchos::tuple;
   using Teuchos::setStringToIntegralParameter;
 
-  Teuchos::Tuple<std::string,12> solver_name;
-  Teuchos::Tuple<int,12>  solver_number;
+  Teuchos::Tuple<std::string,13> solver_name;
+  Teuchos::Tuple<int,13>  solver_number;
 
   solver_name[0] = "Amesos_KLU_sym";               solver_number[0] = INPAR::SOLVER::amesos_klu_sym;
   solver_name[1] = "Amesos_KLU_nonsym";            solver_number[1] = INPAR::SOLVER::amesos_klu_nonsym;
@@ -3857,9 +3857,10 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   solver_name[9] = "Stratimikos_Amesos";           solver_number[9] = INPAR::SOLVER::stratimikos_amesos;
   solver_name[10]= "Stratimikos_Aztec";            solver_number[10]= INPAR::SOLVER::stratimikos_aztec;
   solver_name[11]= "Stratimikos_Belos";            solver_number[11]= INPAR::SOLVER::stratimikos_belos;
+  solver_name[12]= "undefined";                    solver_number[12]= INPAR::SOLVER::undefined;
 
   setStringToIntegralParameter<int>(
-    "SOLVER", "UMFPACK",
+    "SOLVER", "undefined",
     "The solver to attack the system of linear equations arising of FE approach with.",
     solver_name,
     solver_number,
