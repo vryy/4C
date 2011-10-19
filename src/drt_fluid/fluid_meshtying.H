@@ -139,6 +139,10 @@ class Meshtying
     void SplitVector(RCP<Epetra_Vector>                   vector,           ///> vector to split
                      std::vector<RCP<Epetra_Vector> >&    splitvector);     ///> container for the split vector
 
+    //! Split vector and save parts in a std::vector<RCP<Epetra_Vector> >
+    void SplitVectorBasedOn3x3(RCP<Epetra_Vector> orgvector,        ///> original vector based on 3x3 blockmatrix
+                               RCP<Epetra_Vector> vectorbasedon2x2);     ///> split vector based on 2x2 blockmatrix
+
     //! Condensation operation for a sparse matrix:
     /// the sysmat is manipulated via a second sparse matrix
     /// Assembling is slower, since the graph cannot be saved
@@ -238,8 +242,11 @@ class Meshtying
     //! adapter to mortar framework
     ADAPTER::CouplingMortar adaptermeshtying_;
 
-    //! 2x2 block matrix for solving condensed system (3x3 block matrix)
+    //! 2x2 (3x3) block matrix for solving condensed system (3x3 block matrix)
     Teuchos::RCP<LINALG::SparseOperator> sysmatsolve_;
+
+    //! flag defining pressure coupling
+    bool pcoupled_;
 
 };  // end  class Meshtying
 } // end namespace FLD
