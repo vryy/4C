@@ -118,7 +118,7 @@ void Beam3ContactOctTree::extendedAABB(std::map<int, LINALG::Matrix<3,1> >&  cur
   // Initialize Variables....................
   // statistical mechanics parameter list from input file
   Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  const double PeriodLength = 5.0; //statmechparams.get<double>("PeriodLength", 0.0);   //Period Length of Cube
+  const double PeriodLength = statmechparams.get<double>("PeriodLength", 0.0);   //Period Length of Cube
 
   // factor by which the box is extruded in each dimension
   const double extrusionfactor = 1.05;

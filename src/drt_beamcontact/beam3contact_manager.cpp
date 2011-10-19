@@ -27,6 +27,9 @@ Maintainer: Alexander Popp, Christian Cyron
 #include "../drt_beam3ii/beam3ii.H"
 #endif
 
+// flag for octree search
+#define OCTTREESEARCH
+// flag switching between different evaluations of the constraint tolerance
 //#define RELCONSTRTOL
 
 /*----------------------------------------------------------------------*
@@ -206,10 +209,6 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   // update currentpositions and existing beam contact pairs
   SetState(currentpositions,disrow);
 
-  // flag for octree search
-  // (switch ON / OFF here)
-#define OCTTREESEARCH
-  
 #ifdef OCTTREESEARCH
   //**********************************************************************
   // octtree search (loop over all elements and find closest pairs)
