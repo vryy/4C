@@ -19,7 +19,6 @@
 #include "../drt_s8/shell8.H"
 #include "../drt_scatra/scatra_element.H"
 #include "../drt_f3/fluid3.H"
-#include "../drt_f3/fluid3_nurbs.H"
 #include "../drt_f3/xfluid3.H"
 #include "../drt_xdiff3/xdiff3.H"
 #include "../drt_combust/combust3.H"
@@ -150,7 +149,6 @@ std::string DRT::ParObjectList()
 #ifdef D_FLUID3
     << DRT::ELEMENTS::Combust3Type::Instance().Name() << " "
     << DRT::ELEMENTS::Fluid3Type::Instance().Name() << " "
-    << DRT::ELEMENTS::NURBS::Fluid3NurbsType::Instance().Name() << " "
     << DRT::ELEMENTS::XDiff3Type::Instance().Name() << " "
     << DRT::ELEMENTS::XFluid3Type::Instance().Name() << " "
 #endif
