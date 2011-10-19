@@ -103,14 +103,23 @@ public:
     // let's use the more general version using an explicit material id mapping
     // as defined in the input file section "--CLONING MATERIAL MAP"
 
-    // we have to know the material id of the source discretization
-    DRT::Element* sourceele = sourcedis->lRowElement(0);
-    int src_matid = sourceele->Material()->Parameter()->Id();
-
-    // create map containg only one pair of material ids
+    // we have to find out all the material ids of the source discretization
+    // all cloned elements will receive the same material with the provided matid
     std::map<int,int> matmap;
-    std::pair<int,int> matmappair(src_matid,matid);
-    matmap.insert(matmappair);
+    int numelements = sourcedis->NumMyColElements();
+    if (numelements < 1) dserror("At least one processor has no element");
+    for (int i=0; i<numelements; ++i)
+    {
+      DRT::Element* sourceele = sourcedis->lRowElement(i);
+      int src_matid = sourceele->Material()->Parameter()->Id();
+      // if a new material id is found -> extend the map
+      std::map<int,int>::iterator mat_iter = matmap.find(src_matid);
+      if (mat_iter==matmap.end())
+      {
+        std::pair<int,int> matmappair(src_matid,matid);
+        matmap.insert(matmappair);
+      }
+    }
 
     CreateMatchingDiscretization(sourcedis,targetdis,matmap);
 
@@ -278,7 +287,14 @@ private:
         targetdis->AddElement(newele);
       }
       else
-        dserror("no matching material ID in map");
+      {
+        // before we stop, print the material id map
+        cout<<"Material map:"<<endl;
+        for(mat_iter=matmap.begin(); mat_iter != matmap.end(); mat_iter++)
+          cout<<mat_iter->first<<" -> "<<mat_iter->second<<endl;
+
+        dserror("no matching material ID (%d) in map",src_matid);
+      }
     }
   }
 
