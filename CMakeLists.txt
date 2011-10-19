@@ -188,8 +188,8 @@ find_package(LAPACK REQUIRED)
 #
 ### TRILINOS
 SET(CMAKE_PREFIX_PATH ${Trilinos_PREFIX} ${CMAKE_PREFIX_PATH})
-find_package(Trilinos REQUIRED)
-#find_package(Trilinos REQUIRED CONFIGS TrilinosConfig_install.cmake)
+#find_package(Trilinos REQUIRED)
+find_package(Trilinos REQUIRED CONFIGS TrilinosConfig_install.cmake)
 
 # Echo trilinos build info just for fun
 MESSAGE("\nFound Trilinos!  Here are the details: ")
