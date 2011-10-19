@@ -47,10 +47,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Fluid3NurbsType::Create( const 
   }
   else if (eletype=="FLUID")
   {
-    if ( eledistype=="NURBS4" and eledistype=="NURBS9" and
-         eledistype=="NURBS8" and eledistype=="NURBS27" )
+    if ( eledistype=="NURBS4" or eledistype=="NURBS9" or
+         eledistype=="NURBS8" or eledistype=="NURBS27" )
     {
-      return rcp(new DRT::ELEMENTS::Fluid3(id,owner));
+      return rcp(new DRT::ELEMENTS::Fluid3Nurbs(id,owner));
     }
   }
   return Teuchos::null;
