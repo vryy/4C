@@ -103,14 +103,14 @@ public:
     // let's use the more general version using an explicit material id mapping
     // as defined in the input file section "--CLONING MATERIAL MAP"
 
-    // we have to find out all the material ids of the source discretization
-    // all cloned elements will receive the same material with the provided matid
+    // We have to find out all the material ids of the source discretization.
+    // All cloned elements will receive the same material with the provided matid.
     std::map<int,int> matmap;
     int numelements = sourcedis->NumMyColElements();
     if (numelements < 1) dserror("At least one processor has no element");
     for (int i=0; i<numelements; ++i)
     {
-      DRT::Element* sourceele = sourcedis->lRowElement(i);
+      DRT::Element* sourceele = sourcedis->lColElement(i);
       int src_matid = sourceele->Material()->Parameter()->Id();
       // if a new material id is found -> extend the map
       std::map<int,int>::iterator mat_iter = matmap.find(src_matid);
@@ -289,7 +289,7 @@ private:
       else
       {
         // before we stop, print the material id map
-        cout<<"Material map:"<<endl;
+        cout<<"Material map on PROC "<<myrank<<":"<<endl;
         for(mat_iter=matmap.begin(); mat_iter != matmap.end(); mat_iter++)
           cout<<mat_iter->first<<" -> "<<mat_iter->second<<endl;
 
