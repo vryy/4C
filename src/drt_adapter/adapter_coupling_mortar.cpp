@@ -509,9 +509,10 @@ void ADAPTER::CouplingMortar::Setup
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
+bool ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
     const Epetra_Comm& comm, int meshtyingoption, bool structslave)
 {
+  bool pcoupled = true;
   int myrank  = dis.Comm().MyPID();
 
   // initialize maps for row nodes
@@ -591,6 +592,7 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   //  Pressure DoF are also transferred to MortarInterface
 #ifdef ALLDOF
   int dof = dis.NumDof(dis.lRowNode(0));
+  pcoupled = true;
 
   if(myrank==0)
   {
@@ -598,6 +600,7 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
 #else
   //  Pressure DoF are not transferred to MortarInterface
   int dof = dis.NumDof(dis.lRowNode(0))-1;
+  pcoupled = false;
 
   if(myrank==0)
   {
@@ -869,7 +872,7 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
         "This leads to over-constraint");
   }
 
-  return;
+  return pcoupled;
 }
 
 

@@ -67,7 +67,7 @@ namespace ADAPTER
                 bool structslave = false);
 
     /// setup the machinery
-    void Setup( DRT::Discretization& dis,
+    bool Setup( DRT::Discretization& dis,
                 const Epetra_Comm& comm,
                 int meshtyingoption,
                 bool structslave = false);
