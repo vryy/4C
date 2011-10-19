@@ -1044,7 +1044,7 @@ There is only one debugger: \texttt{gdb}. But it has a very plain
 user interface. Most people use a frontend application that internally
 talks to \texttt{gdb}.
 
-Development environments that are more that text editors (xemacs,
+Development environments that are more than text editors (xemacs,
 eclipse, kdevelop) contain a debugging ability. There are, however,
 standalone debugging tools. The point of these frontends is to show
 the code along with the current position, the contents of variables
@@ -1416,9 +1416,9 @@ Refer to the experienced and friendly Eclipse community at LNM or the help in Ec
 \newpage
 
 \subsection{Checkout student version of BACI (version controlled: git)}
-Incorporating the work of students into the current version of BACI or updating the students version of the code can be painfull. Using git version controll alleviates the pain
+Incorporating the work of students into the current version of BACI or updating the students version of the code can be painful. Using git version control alleviates the pain
 to some extend and offers a more convenient way to provide students with BACI updates or to merge their work with the current revision.
-However, because svn and git do not really go great together it takes some effort to set it up. First you will have to create two additional instances of BACI on your Machine. The first instance is as usual
+However, because svn and git do not really go great together, it takes some effort to set it up. First you will have to create two additional instances of BACI on your Machine. The first instance is as usual
 checked out using svn into e.g /Baci. The second one is created by cloning the first with git and is in the following referred to as /Baci\_stud. From this git instance
 of BACI you can now push a version into the student's home directory which is from now on referred to as /Baci\_bare. The students can now pull a version of Baci\_bare onto their local 
 drive i.e /scratch to work with/compile BACI. Also they can commit changes to their /Baci\_bare instance, from which you can pull it back up onto your machine.
@@ -1433,7 +1433,7 @@ Allright, here's what you need to do:
   Revision number:  Baci reversion number (default is 0, thus entire Baci starting from revision 0 is checked out without this number)
   \item clone the git version which you have just checked out into a new folder e.g. Baci\_stud/ (execute the command in the new folder): \\
   \texttt{git clone Baci Baci\_stud}
-  \item generate a new branch (you can have as many branches as students): \\
+  \item generate a new branch (in Baci\_stud, you can have as many branches as students): \\
   \texttt{git branch student\_name}
   \item change to new branch: \\
  \texttt{git checkout student\_name}
@@ -1444,7 +1444,7 @@ Allright, here's what you need to do:
 \begin{itemize}
   \item show connections: \\
  \texttt{git config -$\,$-list }
-  \item git pull cannot be executed in branch student\_name: \\
+  \item git pull cannot be executed in branch student\_name. Thus, \\
   \texttt{git config branch.student\_name.merge refs/heads/master} \\
   \texttt{git config  branch.student\_name.remote origin} 
 \end{itemize}
@@ -1487,9 +1487,11 @@ In order to update the student's code you have to update the svn and the git ins
   \begin{enumerate}
     \item \texttt{git svn rebase} (in folder Baci)\\
     get latest version from the svn repository
-    \item \texttt{git pull $\sim$/Baci} (in folder Baci\_stud) \\
-    pull the updated version to Baci\_stud (git instance, only the active branch is updated)
-    \item \texttt{git pull student@red??.stud:$\sim$/Baci\_bare} (in folder Baci\_stud)\\
+    \item \texttt{git pull $\sim$/Baci */refs/heads/*:ref/remotes/origin/*} (in folder Baci\_stud) \\
+    pull the updated version to Baci\_stud (git instance, only the active branch is updated)\\
+    \texttt{*/refs/heads/*:ref/remotes/origin/*} has to be included. Otherwise, you will get an error message. 
+    \texttt{git pull} also serves this purpose.
+    \item \texttt{git pull student@red??.stud:$\sim$/Baci\_bare */refs/heads/*:ref/remotes/origin/*} (in folder Baci\_stud)\\
     this command is necessary to get the latest version of the student's Baci\_bare, which is merged before with the working copy from the student's scratch) \\
     possible conflicts need to be resolved
     \item \texttt{git push student@red??.stud:$\sim$/Baci\_bare } (in folder Baci\_stud)
@@ -1510,15 +1512,15 @@ In order to update the student's code you have to update the svn and the git ins
     \item \texttt{git commit -a }\\
     After commiting the modifications the command 'git diff' does not show anymore any differences in the files. Now, the git version in the branch student\_name on scratch matches the version on your computer 
     \item \texttt{git add 'file' }\\
-   \texttt{ git commit -a }\\
+   \texttt{ git commit}\\
     a new file is added to the version control
   \end{itemize}
   \item At different computers the student has always access to the latest baci version stored in his home directory (Baci\_bare). Therefore, Baci\_bare need to be updated regularly.
   \begin{itemize}
-    \item git pull cannot be executed from baci\_bare $\rightarrow$ update Baci\_bare: \\
+    \item git pull cannot be executed from baci\_bare: \\
   \texttt{ git push origin} (executed student's scratch)
     \item getting latest version from Baci\_bare: \\
-   \texttt{ git pull origin} $\rightarrow$ update Baci\_bare (executed student's scratch) 
+   \texttt{ git pull origin} (executed student's scratch) 
   \end{itemize}
   
   \item \texttt{gitk} \\
@@ -1551,7 +1553,7 @@ In order to update the student's code you have to update the svn and the git ins
   \item \texttt{mkdir baci\_debug}
   \item \texttt{cd baci\_debug}
   \item \texttt{kate ../do-configure-f12}
-  \item change line \texttt{BUILD\_TYPE="Release"} to \texttt{BUILD\_TYPE="Debug"}
+  \item change line \texttt{BUILD\_TYPE="Release"} to \texttt{BUILD\_TYPE="Debug"} (case sensitive!)
   \item change line \texttt{-D DEBUG:BOOL=OFF} to \texttt{-D DEBUG:BOOL=ON}
   \item \texttt{../do-configure-f12}
   \item it will take some seconds
