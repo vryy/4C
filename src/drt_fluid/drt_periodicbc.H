@@ -348,6 +348,10 @@ protected:
   //!\brief the discretisation
   RefCountPtr<DRT::Discretization> discret_;
 
+  //!\brief a flag controlling the verbosity, i.e. the amount of output
+  // displayed on the screen
+  bool verbose_;
+
   //!\brief the pbc-dofset created by this object
   RefCountPtr<PBCDofSet> pbcdofset_;
 
@@ -364,10 +368,6 @@ protected:
   //!\brief map connecting master to slave nodes owned or ghosted by this proc
   //       master node -> list of his slave node(s)
   RefCountPtr<map<int,vector<int> > > allcoupledcolnodes_;
-
-  //!\brief a flag controlling the verboisty, ie the amount of output
-  // displayed on the screen
-  bool verbose_;
 
   //!\brief time measurement (total)
   RefCountPtr<Time> timepbctot_     ;
