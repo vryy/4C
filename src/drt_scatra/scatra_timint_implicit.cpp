@@ -2375,6 +2375,98 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
     }
     break;
   }
+  case INPAR::SCATRA::initfield_oracles_flame:
+  {
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+
+    const double eps = 0.00152;
+    const double xsing = 0.2;
+    //const double zsing = 0.7525-0.05;//0.0354;
+
+    // loop all nodes on the processor
+    for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
+    {
+      // get the processor local node
+      DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
+      // the set of degrees of freedom associated with the node
+      vector<int> nodedofset = discret_->Dof(lnode);
+
+      // get x1, x2 and x3-coordinate
+      const double x1 = lnode->X()[0];
+      const double x2 = lnode->X()[1];
+      //const double x3 = lnode->X()[2];
+
+      int numdofs = nodedofset.size();
+      for (int k=0;k< numdofs;++k)
+      {
+        const int dofgid = nodedofset[k];
+        int doflid = dofrowmap->LID(dofgid);
+        // evaluate component k of spatial function
+
+        double initval = 0.0;
+
+        // implementation for periodic spanwise boundary
+        if (x1 <= 0.0)
+        {
+          if (x2 >= 0.0)
+            initval = (x2-0.0354) - eps;
+          else
+            initval = (-0.0354-x2) - eps;
+        }
+        else if (x1 > 0.0 and x1 < xsing)
+        {
+          initval = abs(x2)-0.0354*(xsing-x1)/xsing - eps;
+        }
+        else if (x1 >= xsing)
+          initval = x1 - xsing - eps;
+        else
+          dserror("impossible!");
+
+#if 0
+        // implementation for spanwise walls
+        if (x1 <= 0.0)
+        {
+          if ( x3 <= -zsing and abs(x2) <= abs(x3+zsing) )
+          {
+            initval = (-0.7525-x3) - eps;
+          }
+          else if ( x3 >= zsing and abs(x2) <= (x3-zsing) )
+          {
+            initval = (x3-0.7525) - eps;
+          }
+          else if ( x2 >= 0.0 and ( x2 > abs(x3+zsing) or x2 > (x3-zsing) ))
+          {
+            initval = (x2-0.0354) - eps;
+          }
+          else if ( x2 < 0.0 and (-x2 > abs(x3+zsing) or -x2 > (x3-zsing) ))
+          {
+            initval = (-0.0354-x2) - eps;
+          }
+          else
+            dserror("coordinate out of range of ORACLES initial function");
+        }
+        else if (x1 > 0.0 and x1 < xsing)
+        {
+          if (abs(x3) <= 0.07)
+            initval = abs(x2)-0.0354*(xsing-x1)/xsing - eps;
+          else
+          {
+            initval = 0.07525-0.07;
+          }
+        }
+        else if (x1 >= xsing)
+          initval = x1 - xsing - eps;
+        else
+          dserror("impossible!");
+#endif
+        phin_->ReplaceMyValues(1,&initval,&doflid);
+        // initialize also the solution vector. These values are a pretty good guess for the
+        // solution after the first time step (much better than starting with a zero vector)
+        phinp_->ReplaceMyValues(1,&initval,&doflid);
+      }
+    }
+  break;
+  }
   default:
     dserror("Unknown option for initial field: %d", init);
   } // switch(init)
