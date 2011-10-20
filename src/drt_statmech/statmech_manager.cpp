@@ -1391,6 +1391,16 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 	// a vector indicating the upcoming deletion of crosslinker elements
 	Epetra_Vector delcrosselement(*crosslinkermap_, true);
 	delcrosselement.PutScalar(-1.0);
+	// a vector indicating the possible unbinding of a linker governed by internal force:
+	// general idea behind this: Linker elements which do not unbind due to a negative outcome
+	// of the probability check undergo a second test in which their internal force is evaluated.
+	// If this force happens to be too high, the linker unbinds.
+	// Problem: Unbinding is determined by Proc 0. Since we do not have fully overlapping element maps,
+	// it does not have information on all linker elements. Remedy: Mark crosslinkers with two bonds
+	// having been ignored by the unbinding routine due to the probability check and recheck their status by means
+	// of internal forces.
+	Epetra_Vector unboundbyforce(*crosslinkermap_, true);
+	unboundbyforce.PutScalar(-1.0);
 
 	// SEARCH
 	// search and setup for the deletion of elements is done by Proc 0
@@ -1431,6 +1441,8 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 				// crosslinker element
 				case 2:
 				{
+					// number of failed prob. checks
+					int numfailed = 0;
 					// currently, if an element is deleted, a one-bonded crosslink molecule remains (no simultaneous cut of both bonds)
 					std::vector<int> jorder = Permutation(crosslinkerbond_->NumVectors());
 					for (int j=0; j<crosslinkerbond_->NumVectors(); j++)
@@ -1472,7 +1484,12 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 							// leave j-loop after first bond is dissolved
 							break;
 						}
+						else
+							numfailed++;
 					}
+					// update vector unboundbyforce if doubly bound linker was not marked for unbinding
+					if(numfailed==crosslinkerbond_->NumVectors())
+						unboundbyforce[i]=(*crosslink2element_)[i];
 				}
 				break;
 			}// switch ((int)(*numbond_)[irandom])
@@ -1505,6 +1522,7 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 	Epetra_Vector numbondtrans(*transfermap_, true);
 	Epetra_Vector crosslink2elementtrans(*transfermap_, true);
 	Epetra_Vector delcrosselementtrans(*transfermap_, true);
+	Epetra_Vector unboundbyforcetrans(*transfermap_, true);
 
 	//exports and reimports
 	crosslinkerpositionstrans.Export(*crosslinkerpositions_, crosslinkexporter, Add);
@@ -1517,18 +1535,35 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 	crosslink2element_->Import(crosslink2elementtrans, crosslinkimporter, Insert);
 	delcrosselementtrans.Export(delcrosselement, crosslinkexporter, Add);
 	delcrosselement.Import(delcrosselementtrans, crosslinkimporter, Insert);
+	unboundbyforcetrans.Export(unboundbyforce, crosslinkexporter, Add);
+	unboundbyforce.Import(unboundbyforcetrans, crosslinkimporter, Insert);
 
 	unsigned startsize = deletedelements_.size();
 	std::vector<DRT::PackBuffer> vdata( startsize );
 
 	// DELETION OF ELEMENTS
 	for (int i=0; i<delcrosselement.MyLength(); i++)
+	{
 		if (discret_.HaveGlobalElement((int)delcrosselement[i]))
 		{
 			//save the element by packing before elimination to make it restorable in case that needed
 			vdata.push_back( DRT::PackBuffer() );
 			discret_.gElement((int)delcrosselement[i])->Pack( vdata.back() );
 		}
+		/*else if(discret_.HaveGlobalElement((int)unboundbyforce[i]))
+		{
+			DRT::Element* crosslinker = discret_.gElement((int)unboundbyforce[i]);
+			const DRT::ElementType & eot = thisele->ElementType();
+			if(eot == DRT::ELEMENTS::Beam3Type::Instance())
+			{
+				(dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->Evaluate();
+			}
+			else if(eot == DRT::ELEMENTS::Truss3Type::Instance() || eot == DRT::ELEMENTS::TrussLmType::Instance())
+			{
+
+			}
+		}*/
+	}
 	for ( unsigned i=startsize; i<vdata.size(); ++i )
 		vdata[i].StartPacking();
 	for (int i=0; i<delcrosselement.MyLength(); i++)

@@ -1529,18 +1529,18 @@ void StatMechManager::GmshWedge(const int& n,
 			radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(thisele))->Izz()) / M_PI));
 		else if(eot == DRT::ELEMENTS::Beam3iiType::Instance())
 			radius = sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(thisele))->Izz()) / M_PI));
-		else if(eot == DRT::ELEMENTS::Truss3Type::Instance() || eot == DRT::ELEMENTS::TrussLmType::Instance())
+		else
+#endif
+#endif
+#ifdef D_TRUSS3
+		if(eot == DRT::ELEMENTS::Truss3Type::Instance() || eot == DRT::ELEMENTS::TrussLmType::Instance())
 			radius = sqrt((dynamic_cast<DRT::ELEMENTS::TrussLm*>(thisele))->CSec() / M_PI);
 		else
-			//radius = 0.003;
-			dserror("thisele is not a line element providing its radius.");
-
+#endif
+			dserror("thisele is not a line element providing its radius. Check your input file and your defines flags!");
 		// case: crosslinker
 		if(thisele->Id()>basisnodes_)
 			radius = sqrt(statmechparams_.get<double>("ALINK",4.75166e-06) / M_PI); //defaul value according to diss. Tharmann
-
-#endif
-#endif
   }
   //line elements are plotted by a factor PlotFactorThick thicker than they are actually to allow for better visibility in gmsh pictures
   radius *= statmechparams_.get<double>("PlotFactorThick", 1.0);
