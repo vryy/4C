@@ -546,6 +546,18 @@ namespace UTILS {
     double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
   };
 
+  /// special implementation for the G-function in the ORACLES problem
+  class ORACLESGFunction : public Function
+  {
+  public:
+
+    /// ctor
+    ORACLESGFunction();
+
+    /// evaluate function at given position in space
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+  };
+
   /// special implementation for a level set test function
   class RotatingConeFunction : public Function
   {
@@ -701,6 +713,12 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddTag("COLLAPSINGWATERCOLUMN")
     ;
 
+  DRT::INPUT::LineDefinition oraclesgfunc;
+  oraclesgfunc
+    .AddNamedInt("FUNCT")
+    .AddTag("ORACLESGFUNC")
+    ;
+
   DRT::INPUT::LineDefinition rotatingcone;
   rotatingcone
     .AddNamedInt("FUNCT")
@@ -746,6 +764,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(cylinder3d);
   lines->Add(zalesaksdisk);
   lines->Add(collapsingwatercolumn);
+  lines->Add(oraclesgfunc);
   lines->Add(rotatingcone);
   lines->Add(levelsetcuttest);
   lines->Add(componentexpr);
@@ -968,6 +987,10 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       else if (function->HaveNamed("COLLAPSINGWATERCOLUMN"))
       {
         functions_.push_back(rcp(new CollapsingWaterColumnFunction()));
+      }
+      else if (function->HaveNamed("ORACLESGFUNC"))
+      {
+        functions_.push_back(rcp(new ORACLESGFunction()));
       }
       else if (function->HaveNamed("ROTATINGCONE"))
       {
@@ -1409,7 +1432,9 @@ double DRT::UTILS::TurbBouLayerFunctionORACLES::Evaluate(int index, const double
   double noise;
 
   // fluctuation 10% of bulk mean velocity
-  double fluc= 1.1;
+  double fluc= 0.1;
+  // maximal velocity
+  double umax = 15.62;
 
   switch (index)
   {
@@ -1437,15 +1462,13 @@ double DRT::UTILS::TurbBouLayerFunctionORACLES::Evaluate(int index, const double
         y = xp[1]+0.0354;
       else
       {
-        dserror("coordinates do not match to ORACLES problem");
+        cout << xp[1] << endl;
+        //dserror("coordinates do not match to ORACLES problem");
       }
       // compute y+
       double yplus = y/ltau;
 
-      // maximal velocity
-      double umax = 15.62;
-
-      // generate noise via random number
+      // generate noise via random number between -1 and +1
       randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
       noise = fluc * randomnumber;
 
@@ -1458,7 +1481,7 @@ double DRT::UTILS::TurbBouLayerFunctionORACLES::Evaluate(int index, const double
       {
         double upre = utau * ( 2.5 * log(yplus) + 5.5 );
         if (upre > umax) return umax + noise;
-        else            return upre + noise;
+        else             return upre + noise;
       }
     }
     // return velocity value in z or y-direction
@@ -1467,7 +1490,7 @@ double DRT::UTILS::TurbBouLayerFunctionORACLES::Evaluate(int index, const double
     {
       // generate noise via random number
       randomnumber = 2*((double)rand()-((double) RAND_MAX)/2.)/((double) RAND_MAX);
-      noise = fluc * randomnumber;
+      noise = umax * fluc * randomnumber;
 
       return noise;
     }
@@ -2473,6 +2496,59 @@ double DRT::UTILS::CollapsingWaterColumnFunction::Evaluate(int index, const doub
   return distance;
 }
 
+
+/*----------------------------------------------------------------------*
+ | constructor                                              henke 10/11 |
+ *----------------------------------------------------------------------*/
+DRT::UTILS::ORACLESGFunction::ORACLESGFunction() :
+Function()
+{
+}
+
+/*----------------------------------------------------------------------*
+ | evaluation of level set test function "Zalesak's disk"   henke 05/09 |
+ *----------------------------------------------------------------------*/
+double DRT::UTILS::ORACLESGFunction::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+
+  if (xp[0] > 0.0)
+    dserror("invalid coordinate for ORACLES G-function function!");
+
+  const double eps = 0.00152;
+  //const double zsing = 0.7525-0.05;//0.0354;
+
+  double gfuncvalue = 0.0;
+
+  // implementation for periodic spanwise boundary
+  if (xp[1] >= 0.0)
+    gfuncvalue = (xp[1]-0.0354) - eps;
+  else
+    gfuncvalue = (-0.0354-xp[1]) - eps;
+
+#if 0
+  // implementation for spanwise walls
+  if ( xp[2] <= -zsing and abs(xp[1]) <= abs(xp[2]+zsing) )
+  {
+    gfuncvalue = (-0.7525-xp[2]) - eps;
+  }
+  else if ( xp[2] >= zsing and abs(xp[1]) <= (xp[2]-zsing) )
+  {
+    gfuncvalue = (xp[2]-0.7525) - eps;
+  }
+  else if ( xp[1] >= 0.0 and ( xp[1] > abs(xp[2]+zsing) or xp[1] > (xp[2]-zsing) ))
+  {
+    gfuncvalue = (xp[1]-0.0354) - eps;
+  }
+  else if ( xp[1] < 0.0 and (-xp[1] > abs(xp[2]+zsing) or -xp[1] > (xp[2]-zsing) ))
+  {
+    gfuncvalue = (-0.0354-xp[1]) - eps;
+  }
+  else
+    dserror("coordinate out of range of ORACLES G-function function");
+#endif
+
+  return gfuncvalue;
+}
 
 /*----------------------------------------------------------------------*
  | constructor                                             schott 05/11 |
