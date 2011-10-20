@@ -39,10 +39,18 @@ namespace DRT
   public:
 
     /*!
-    \brief Standard Constructor
+    \brief Constructor for one source discretization
 
     */
     explicit TransparentDofSet(RCP<DRT::Discretization> sourcedis,bool parallel=false);
+
+
+    /*!
+    \brief Constructor for several source discretizations
+
+    */
+    explicit TransparentDofSet(vector<RCP<DRT::Discretization> > sourcedis,bool parallel);
+
 
     /*!
     \brief Destructor
@@ -61,7 +69,7 @@ namespace DRT
 
     /// Assign dof numbers for new discretization using dof numbering from source discretization.
     void TransferDegreesOfFreedom(
-            const DRT::Discretization& sourcedis,    ///< source discret
+            const vector<RCP<DRT::Discretization> > sourcedis,    ///< source discrets
             const DRT::Discretization& newdis,       ///< discretization that gets dof numbering from source discret
             const int                  start         ///< offset for dof numbering (obsolete)
             );
@@ -71,10 +79,11 @@ namespace DRT
     /// for this version, newdis is allowed to be distributed completely different; the
     /// communication  of the dofs is done internally.
     void ParallelTransferDegreesOfFreedom(
-            const DRT::Discretization& sourcedis,    ///< source discret
+            const vector<RCP<DRT::Discretization> > sourcedis,    ///< source discrets
             const DRT::Discretization& newdis,       ///< discretization that gets dof numbering from source discret
             const int                  start         ///< offset for dof numbering (obsolete)
             );
+
 
     /// helper for ParallelTransferDegreesOfFreedom; unpack the received block to
     /// generate the current map node gid -> its dofs
@@ -112,9 +121,28 @@ namespace DRT
       DRT::Exporter  & exporter,
       MPI_Request    & request);
 
+    /// Get the gid of all dofs of a node
+    virtual vector<int> Dof(const Node* node) const
+    {
+      // first, local id of the node is needed
+      const int lid = node->LID();
+      if (lid==-1)
+        return vector<int>();
+      // get first gid of this node
+      const int idx = (*idxcolnodes_)[lid];
+      vector<int> dof((*numdfcolnodes_)[lid]);
+      // get lid of the first gid of the node; here we talk about dofs
+      const int lidx = DofColMap()->LID(idx);
+      // insert dofs of the node by using the dofcolmap
+      for (unsigned i=0; i<dof.size(); ++i)
+        dof[i] = DofColMap()->GID(lidx+i);
+      return dof;
+    }
+
+
   private:
 
-    RCP<DRT::Discretization> sourcedis_; ///< source discretization
+    vector<RCP<DRT::Discretization> > sourcedis_; ///< source discretizations
 
     bool parallel_; ///< call ParallelTransferDegreesOfFreedom instead of TransferDegreesOfFreedom
 
