@@ -40,10 +40,19 @@ namespace COMBUST
 
     /// constructor
     explicit Reinitializer(
-        const Teuchos::ParameterList& combustdyn,
-        SCATRA::ScaTraTimIntImpl& scatra,
+        const Teuchos::ParameterList&              combustdyn,
+        SCATRA::ScaTraTimIntImpl&                  scatra,
         const std::map<int,GEO::BoundaryIntCells>& boundaryintcells,
-        Teuchos::RCP<Epetra_Vector> phivector
+        Teuchos::RCP<Epetra_Vector>                phivector
+    );
+
+    /// constructor (overloaded for restart with level-set field from input file)
+    explicit Reinitializer(
+        const Teuchos::ParameterList&              combustdyn,
+        SCATRA::ScaTraTimIntImpl&                  scatra,
+        const std::map<int,GEO::BoundaryIntCells>& boundaryintcells,
+        Teuchos::RCP<Epetra_Vector>                phivector,
+        const bool                                 compdist  // flag for initial computation of signed distance function
     );
 
     /// destructor

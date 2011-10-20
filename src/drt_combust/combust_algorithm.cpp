@@ -168,20 +168,41 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   interfacehandle_->UpdateInterfaceHandle();
   interfacehandle_old_->UpdateInterfaceHandle();
 
-  volume_start_ = ComputeVolume(); // schott
+  volume_start_ = ComputeVolume();
 
+  //--------------------------------------------------------------
+  // initial reinitialization by geometric distance computation
+  // remark: guarantee (periodic) initial signed distance property
+  //--------------------------------------------------------------
   if (reinitaction_ != INPAR::COMBUST::reinitaction_none)
   {
-//    stepreinit_ = true;
-    DoReinitialization(); // schott 04/11
+    //cou t<< "reinitialization at timestep 0 switched off!" << endl;
 
-//	  cout<< "reinitialization at timestep 0 switched off!" << endl;
+    // get my flame front (boundary integration cells)
+    std::map<int, GEO::BoundaryIntCells> myflamefront = interfacehandle_->GetElementalBoundaryIntCells();
+#ifdef PARALLEL
+    // export flame front (boundary integration cells) to all processors
+    flamefront_->ExportFlameFront(myflamefront);
+#endif
+    // reinitialize initial level set field by geometric distance computation
+    COMBUST::Reinitializer reinitializer(
+        combustdyn_,
+        ScaTraField(),
+        myflamefront,
+        ScaTraField().Phinp(),
+        true);
 
     if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary)
     {
       // reset phin vector in ScaTra time integration scheme to phinp vector
       *ScaTraField().Phin() = *ScaTraField().Phinp();
     }
+
+    // update flame front according to reinitialized G-function field
+    flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
+    // update interfacehandle (get integration cells) according to updated flame front
+    interfacehandle_->UpdateInterfaceHandle();
+
     // pointer not needed any more
     stepreinit_ = false;
   }
@@ -2258,6 +2279,7 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
   const Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
   const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField().Discretization();
 
+#if 0
   //--------------------------
   // write output to Gmsh file
   //--------------------------
@@ -2292,6 +2314,7 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
 //    gmshfilecontent << "};" << endl;
   }
   gmshfilecontent.close();
+#endif
 
   //-------------------------------------------------------------
   // create (old) flamefront conforming to restart state of fluid
@@ -2362,6 +2385,28 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
     FluidField().ImportFlameFront(flamefront_);
     FluidField().ImportInterface(interfacehandle_,interfacehandle_);
     FluidField().ImportFlameFront(Teuchos::null);
+
+    if (!restartfromfluid)
+    {
+      // get my flame front (boundary integration cells)
+      std::map<int, GEO::BoundaryIntCells> myflamefront = interfacehandle_->GetElementalBoundaryIntCells();
+#ifdef PARALLEL
+    // export flame front (boundary integration cells) to all processors
+    flamefront_->ExportFlameFront(myflamefront);
+#endif
+    // reinitialize G-function (level set) field
+    COMBUST::Reinitializer reinitializer(
+        combustdyn_,
+        ScaTraField(),
+        myflamefront,
+        ScaTraField().Phinp(),
+        true);
+
+    // update flame front according to reinitialized G-function field
+    flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
+    // update interfacehandle (get integration cells) according to updated flame front
+    interfacehandle_->UpdateInterfaceHandle();
+    }
   }
 
   //-------------------

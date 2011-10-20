@@ -26,10 +26,10 @@ Maintainer: Florian Henke
  | constructor                                                                        henke 12/09 |
  *------------------------------------------------------------------------------------------------*/
 COMBUST::Reinitializer::Reinitializer(
-    const Teuchos::ParameterList& combustdyn,
-    SCATRA::ScaTraTimIntImpl& scatra,
+    const Teuchos::ParameterList&              combustdyn,
+    SCATRA::ScaTraTimIntImpl&                  scatra,
     const std::map<int,GEO::BoundaryIntCells>& boundaryintcells,
-    Teuchos::RCP<Epetra_Vector> phivector
+    Teuchos::RCP<Epetra_Vector>                phivector
   ) :
     combustdyn_(combustdyn),
     reinitaction_(DRT::INPUT::IntegralValue<INPAR::COMBUST::ReInitialActionGfunc>(combustdyn_.sublist("COMBUSTION GFUNCTION"),"REINITIALIZATION")),
@@ -40,27 +40,47 @@ COMBUST::Reinitializer::Reinitializer(
 {
   switch (reinitaction_)
   {
-    case INPAR::COMBUST::reinitaction_none:
-      // do nothing
-      break;
-    case INPAR::COMBUST::reinitaction_byfunction:
-      // read a FUNCTION from the input file and reinitialize the G-function by evaluating it
-      scatra_.SetInitialField(INPAR::SCATRA::initfield_field_by_function,combustdyn_.sublist("COMBUSTION GFUNCTION").get<int>("REINITFUNCNO"));
-      break;
-    case INPAR::COMBUST::reinitaction_signeddistancefunction:
-      SignedDistanceFunction(phivector);
-      break;
-    case INPAR::COMBUST::reinitaction_fastsigneddistancefunction:
-      FastSignedDistanceFunction(phivector);
-      break;
-// should this reinhard-stuff be removed?
-//    case INPAR::COMBUST::sussman:
-//      // SCATRA parameters have to be set before in ScaTraFluidCouplingAlgorithm!
-//      ScaTraField().Reinitialize();
-//      break;
-    default:
-      dserror ("unknown option to reinitialize the G-function");
+  case INPAR::COMBUST::reinitaction_none:
+    // do nothing
+    break;
+  case INPAR::COMBUST::reinitaction_byfunction:
+    // read a FUNCTION from the input file and reinitialize the G-function by evaluating it
+    scatra_.SetInitialField(INPAR::SCATRA::initfield_field_by_function,combustdyn_.sublist("COMBUSTION GFUNCTION").get<int>("REINITFUNCNO"));
+    break;
+  case INPAR::COMBUST::reinitaction_signeddistancefunction:
+    SignedDistanceFunction(phivector);
+    break;
+  case INPAR::COMBUST::reinitaction_fastsigneddistancefunction:
+    FastSignedDistanceFunction(phivector);
+    break;
+  default:
+    dserror ("unknown option to reinitialize the G-function");
   }
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ | constructor (overloaded for restart with level-set field from input file)          henke 10/11 |
+ *------------------------------------------------------------------------------------------------*/
+COMBUST::Reinitializer::Reinitializer(
+    const Teuchos::ParameterList&              combustdyn,
+    SCATRA::ScaTraTimIntImpl&                  scatra,
+    const std::map<int,GEO::BoundaryIntCells>& boundaryintcells,
+    Teuchos::RCP<Epetra_Vector>                phivector,
+    const bool                                 compdist  // flag for initial computation of signed distance function
+  ) :
+    combustdyn_(combustdyn),
+    reinitaction_(DRT::INPUT::IntegralValue<INPAR::COMBUST::ReInitialActionGfunc>(combustdyn_.sublist("COMBUSTION GFUNCTION"),"REINITIALIZATION")),
+    reinitband_(DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINITBAND")),
+    reinitbandwidth_(combustdyn.sublist("COMBUSTION GFUNCTION").get<double>("REINITBANDWIDTH")),
+    scatra_(scatra),
+    flamefront_(boundaryintcells)
+{
+  // special action if reinitializer is called from Algorithm::RestartNew()
+  if(restartscatrainput)
+    SignedDistanceFunction(phivector);
 
   return;
 }
