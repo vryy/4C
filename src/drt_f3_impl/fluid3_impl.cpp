@@ -790,7 +790,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
   const double thermpressdtaf = params.get<double>("thermpressderiv at n+alpha_F/n+1");
   const double thermpressdtam = params.get<double>("thermpressderiv at n+alpha_M/n+1");
 
-#ifdef JEFFERY-HAMEL-FLOW
+#ifdef JEFFERYHAMELFLOW
   L2_ = params.get<double>("L2");
 #endif
 
@@ -846,7 +846,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(
          svelnp,
          intpoints);
 
-#ifdef JEFFERY-HAMEL-FLOW
+#ifdef JEFFERYHAMELFLOW
   params.set("L2",L2_);
 #endif
 
@@ -1597,7 +1597,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
       else
         dserror("Linearization of the mesh motion is not available in 1D");
 
-#ifdef JEFFERY-HAMEL-FLOW
+#ifdef JEFFERYHAMELFLOW
       LINALG::Matrix<3,1> physpos(true);
       GEO::elementToCurrentCoordinates(distype, xyze_, xsi_, physpos);
 
@@ -9485,7 +9485,6 @@ void Fluid3Impl<distype>::ElementXfemInterface(
         GEO::CUT::Position<distype> pos( xyze_, x_side );
         pos.Compute();
         const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
-
 #else
         const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
 
