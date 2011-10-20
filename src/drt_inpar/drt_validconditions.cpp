@@ -332,6 +332,13 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::SurfaceDirichlet,
                                          false,
                                          DRT::Condition::Surface));
+  Teuchos::RCP<ConditionDefinition> voltransportdirichlet =
+    Teuchos::rcp(new ConditionDefinition("DESIGN VOL TRANSPORT DIRICH CONDITIONS",
+                                         "TransportDirichlet",
+                                         "Volume Dirichlet",
+                                         DRT::Condition::VolumeDirichlet,
+                                         false,
+                                         DRT::Condition::Volume));
 
   // Dirichlet conditions for thermo problems
   Teuchos::RCP<ConditionDefinition> pointthermodirichlet =
@@ -379,6 +386,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     pointtransportdirichlet->AddComponent(dirichletcomponents[i]);
     linetransportdirichlet->AddComponent(dirichletcomponents[i]);
     surftransportdirichlet->AddComponent(dirichletcomponents[i]);
+    voltransportdirichlet->AddComponent(dirichletcomponents[i]);
 
     pointthermodirichlet->AddComponent(dirichletcomponents[i]);
     linethermodirichlet->AddComponent(dirichletcomponents[i]);
@@ -399,6 +407,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(pointtransportdirichlet);
   condlist.push_back(linetransportdirichlet);
   condlist.push_back(surftransportdirichlet);
+  condlist.push_back(voltransportdirichlet);
 
   condlist.push_back(pointthermodirichlet);
   condlist.push_back(linethermodirichlet);
