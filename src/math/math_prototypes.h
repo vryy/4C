@@ -18,10 +18,6 @@ Maintainer: Malte Neumann
 /*----------------------------------------------------------------------*
  |  math1.c                                               m.gee 11/01   |
  *----------------------------------------------------------------------*/
-void math_array_copy(DOUBLE **from, INT n, INT m, DOUBLE **to);
-void math_inv3(DOUBLE **a, DOUBLE *det);
-void math_tran(DOUBLE **a, INT n);
-void math_unvc(DOUBLE *enorm,DOUBLE *vec, INT n);
 void math_matvecdense(DOUBLE  *r,
                          DOUBLE **A,
                          DOUBLE  *b,
@@ -29,6 +25,13 @@ void math_matvecdense(DOUBLE  *r,
                          INT      nk,
                          INT      init,
                          DOUBLE   factor);
+
+#ifndef CCADISCRET
+void math_array_copy(DOUBLE **from, INT n, INT m, DOUBLE **to);
+void math_inv3(DOUBLE **a, DOUBLE *det);
+void math_tran(DOUBLE **a, INT n);
+void math_unvc(DOUBLE *enorm,DOUBLE *vec, INT n);
+
 void math_mattrnvecdense(DOUBLE  *r,
                          DOUBLE **A,
                          DOUBLE  *b,
@@ -67,12 +70,6 @@ void math_sppr(DOUBLE *spat, DOUBLE *a, DOUBLE *b, DOUBLE *c);
 void math_addab(DOUBLE **a, DOUBLE **b, INT dim1, INT dim2, DOUBLE fact);
 
 
-
-/*----------------------------------------------------------------------*
- |  geometry.c                                           chfoe 09/04    |
- *----------------------------------------------------------------------*/
-/* DOUBLE area_lin_2d(ELEMENT *ele, DOUBLE xyz[2][MAXNOD]); */
-
 /*!---------------------------------------------------------------------
 \brief extract digits from integer number
 
@@ -104,5 +101,6 @@ INT quick_find(INT key, INT list[], INT length, INT shift, INT bins[]);
 void init_quick_find(INT list[], INT length, INT *shift, INT *bins);
 INT find_index(INT key, INT list[], INT length);
 
+#endif
 
 #endif
