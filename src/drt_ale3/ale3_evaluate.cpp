@@ -20,18 +20,8 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 
-#if 0
-#include "../drt_io/io_control.H"
-#endif
-
 using namespace DRT::UTILS;
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | vector of material laws                                              |
- | defined in global_control.c
- *----------------------------------------------------------------------*/
-extern struct _MATERIAL  *mat;
 
 DRT::ELEMENTS::Ale3_Impl_Interface* DRT::ELEMENTS::Ale3_Impl_Interface::Impl(DRT::ELEMENTS::Ale3* ele)
 {
@@ -132,6 +122,8 @@ int DRT::ELEMENTS::Ale3::Evaluate(ParameterList& params,
   string action = params.get<string>("action","none");
   if (action == "none")
     dserror("No action supplied");
+  else if (action == "calc_ale_laplace")
+      act = Ale3::calc_ale_laplace;
   else if (action == "calc_ale_lin_stiff")
     act = Ale3::calc_ale_lin_stiff;
   else if (action == "calc_ale_spring")
@@ -148,6 +140,29 @@ int DRT::ELEMENTS::Ale3::Evaluate(ParameterList& params,
 
   switch (act)
   {
+  case calc_ale_laplace:
+  {
+    std::vector<double> my_dispnp;
+    bool incremental = params.get<bool>("incremental");
+    if (incremental)
+    {
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      my_dispnp.resize(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
+    }
+
+    Ale3_Impl_Interface::Impl(this)->static_ke_laplace(
+                           this,
+                           discretization,
+                           elemat1,
+                           elevec1,
+                           incremental,
+                           my_dispnp,
+                           mat,
+                           params);
+
+    break;
+  }
   case calc_ale_lin_stiff:
   {
     std::vector<double> my_dispnp;
@@ -1762,6 +1777,169 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
 
 }
 
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(
+    Ale3*                      ele,
+    DRT::Discretization&       dis     ,
+    Epetra_SerialDenseMatrix&  sys_mat_epetra ,
+    Epetra_SerialDenseVector&  residual,
+    bool                       incremental,
+    std::vector<double>&        my_dispnp,
+    RefCountPtr<MAT::Material>  material,
+    ParameterList&              params  )
+    {
+  const int nd  = 3 * iel;
+  // A view to sys_mat_epetra
+  LINALG::Matrix<nd,nd> sys_mat(sys_mat_epetra.A(),true);
+
+  //  get material using class StVenantKirchhoff
+  //  if (material->MaterialType()!=INPAR::MAT::m_stvenant)
+  //    dserror("stvenant material expected but got type %d", material->MaterialType());
+  //  MAT::StVenantKirchhoff* actmat = static_cast<MAT::StVenantKirchhoff*>(material.get());
+
+  LINALG::Matrix<3,iel> xyze;
+
+  // get node coordinates
+  DRT::Node** nodes = ele->Nodes();
+  for(int i=0;i<iel;i++)
+  {
+    const double* x = nodes[i]->X();
+    xyze(0,i)=x[0];
+    xyze(1,i)=x[1];
+    xyze(2,i)=x[2];
+  }
+
+  if (incremental)  // Laplace with incremental????
+  {
+    for(int i=0;i<iel;i++)
+    {
+      xyze(0,i) += my_dispnp[3*i+0];
+      xyze(1,i) += my_dispnp[3*i+1];
+      xyze(2,i) += my_dispnp[3*i+2];
+    }
+  }
+
+  // --------------------------------------------------
+  // Now do the nurbs specific stuff
+  std::vector<Epetra_SerialDenseVector> myknots(3);
+  LINALG::Matrix<iel,1  >               weights(iel);
+
+  if(distype==DRT::Element::nurbs8
+      ||
+      distype==DRT::Element::nurbs27)
+  {
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+    =
+        dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
+
+    bool zero_size=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,ele->Id());
+
+    if(zero_size)
+    {
+      return;
+    }
+
+    for (int inode=0; inode<iel; ++inode)
+    {
+      DRT::NURBS::ControlPoint* cp
+      =
+          dynamic_cast<DRT::NURBS::ControlPoint* > (ele->Nodes()[inode]);
+
+      weights(inode) = cp->W();
+    }
+  }
+
+  /*----------------------------------------- declaration of variables ---*/
+  LINALG::Matrix<iel,1  > funct(true);
+  LINALG::Matrix<3,  iel> deriv(true);
+  LINALG::Matrix<3,  3  > xjm(true);
+  LINALG::Matrix<3,  3  > xji(true);
+  LINALG::Matrix<3,  iel> deriv_xy(true);
+  LINALG::Matrix<iel,iel> tempmat(true);
+
+  double vol=0.;
+
+  // gaussian points
+  const GaussRule3D gaussrule = getOptimalGaussrule();
+  const IntegrationPoints3D  intpoints(gaussrule);
+
+
+  double              min_detF;         /* minimal Jacobian determinant   */
+
+  //gjb   ale2_min_jaco(Shape(),xyze,&min_detF);
+  min_detF=1.0;
+
+  // integration loops
+  for (int iquad=0;iquad<intpoints.nquad;iquad++)
+  {
+    const double e1 = intpoints.qxg[iquad][0];
+    const double e2 = intpoints.qxg[iquad][1];
+    const double e3 = intpoints.qxg[iquad][2];
+
+
+    // get values of shape functions and derivatives in the gausspoint
+    if(distype != DRT::Element::nurbs8
+        &&
+        distype != DRT::Element::nurbs27)
+    {
+      // shape functions and their derivatives for polynomials
+      DRT::UTILS::shape_function_3D       (funct,e1,e2,e3,distype);
+      DRT::UTILS::shape_function_3D_deriv1(deriv,e1,e2,e3,distype);
+    }
+    else
+    {
+      // nurbs version
+      Epetra_SerialDenseVector gp(3);
+      gp(0)=e1;
+      gp(1)=e2;
+      gp(2)=e3;
+
+      DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv
+      (funct  ,
+          deriv  ,
+          gp     ,
+          myknots,
+          weights,
+          distype);
+    }
+
+    // determine jacobian matrix at point r,s,t
+    xjm.MultiplyNT(deriv,xyze);
+
+    // determinant and inverse of jacobian
+    const double det = xji.Invert(xjm);
+
+    // calculate element volume
+    const double fac = intpoints.qwgt[iquad]*det;
+    vol += fac;
+
+    // compute global derivatives
+    deriv_xy.Multiply(xji,deriv);
+
+    /*------------------------- diffusivity depends on displacement ---*/
+    //   const double k_diff = 1.0/min_detF/min_detF;
+    const double k_diff = 1.0/det;
+    /*------------------------------- sort it into stiffness matrix ---*/
+
+    tempmat.MultiplyTN(fac*k_diff,deriv_xy,deriv_xy,1.0);
+
+  } // integration loop
+
+  // insert finished temporary matrix
+  for (int d=0; d < 3; d++)
+  {
+    for (int i=0; i < iel; i++)
+    {
+      for (int j=0; j < iel; j++)
+      {
+        sys_mat(i*3+d,j*3+d)+= tempmat(i,j);
+      }
+    }
+  }
+
+  return;
+    }
 
 
 // get optimal gaussrule for discretization type

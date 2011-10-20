@@ -259,7 +259,7 @@ void ALE::AleLaplace::EvaluateElements()
   discret_->ClearState();
 
   // action for elements
-  eleparams.set("action", "calc_ale_lin_stiff");
+  eleparams.set("action", "calc_ale_laplace");
   eleparams.set("incremental", incremental_);
 
   discret_->SetState("dispnp", dispnp_);

@@ -332,6 +332,7 @@ private:
   enum ActionType
   {
     none,
+    calc_ale_laplace,
     calc_ale_lin_stiff,
     calc_ale_spring,           ///< compute stiffness based on springs algorithm on last time step configuration
     calc_ale_spring_fixed_ref,  ///< compute stiffness based on springs algorithm on initial configuration
@@ -377,6 +378,16 @@ public:
                          std::vector<double>&       my_dispnp,
                          RefCountPtr<MAT::Material> material,
                          ParameterList& 	    params) = 0;
+  virtual void static_ke_laplace(
+  Ale3*                      ele,
+  DRT::Discretization&       dis,
+  Epetra_SerialDenseMatrix&  sys_mat,
+  Epetra_SerialDenseVector&  residual,
+  bool                       incremental,
+  std::vector<double>&       my_dispnp,
+  RefCountPtr<MAT::Material> material,
+  ParameterList&             params) = 0;
+
     virtual void ElementNodeNormal(Ale3*                      ele,
                                    Epetra_SerialDenseVector&  elevec1,
                                    std::vector<double>&       my_dispnp
@@ -393,6 +404,16 @@ class Ale3_Impl: public Ale3_Impl_Interface
 public:
   Ale3_Impl() {}
   ~Ale3_Impl() {}
+
+  void static_ke_laplace(
+    Ale3*                      ele,
+    DRT::Discretization&       dis,
+    Epetra_SerialDenseMatrix&  sys_mat,
+    Epetra_SerialDenseVector&  residual,
+    bool                       incremental,
+    std::vector<double>&       my_dispnp,
+    RefCountPtr<MAT::Material> material,
+    ParameterList&             params);
 
   void static_ke_spring(Ale3*                     ele,
                         Epetra_SerialDenseMatrix& sys_mat,
