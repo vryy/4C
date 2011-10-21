@@ -79,7 +79,7 @@ COMBUST::Reinitializer::Reinitializer(
     flamefront_(boundaryintcells)
 {
   // special action if reinitializer is called from Algorithm::RestartNew()
-  if(restartscatrainput)
+  if(compdist)
     SignedDistanceFunction(phivector);
 
   return;
