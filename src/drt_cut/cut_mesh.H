@@ -157,6 +157,8 @@ public:
 
   void NewNodesFromPoints( std::map<Point*, Node*> & nodemap );
 
+  void GetNodeMap( std::map<int, Node*> & nodemap);
+
   Node* GetNode( int nid ) const;
 
   Node* GetNode( int nid, const double * xyz, double lsv=0.0 );
@@ -193,6 +195,13 @@ public:
                        const std::vector<int> & nids,
                        const CellTopologyData & top_data,
                        bool active=true );
+#if 0
+  Element* GetSubElement( int parenteid, int subeid,
+                       const std::vector<int> & nids,
+                       const CellTopologyData & top_data,
+                       bool active=true );
+
+#endif
 
 #if 0
   Element* GetElement( int eid,

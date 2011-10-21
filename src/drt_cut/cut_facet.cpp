@@ -672,6 +672,29 @@ void GEO::CUT::Facet::Neighbors( Point * p,
   }
 }
 
+
+void GEO::CUT::Facet::Neighbors( Point * p,
+                                 const plain_volumecell_set & cells,
+                                 const plain_volumecell_set & done,
+                                 plain_volumecell_set & connected)
+{
+
+  for ( plain_volumecell_set::iterator i=cells_.begin(); i!=cells_.end(); ++i )
+  {
+
+    VolumeCell * c = *i;
+    if ( cells.count( c )>0 )
+    {
+      if ( done.count( c )==0 and
+           connected.count( c )==0 )
+      {
+        connected.insert( c );
+        c->Neighbors( p, cells, done, connected);
+      }
+    }
+  }
+}
+
 bool GEO::CUT::Facet::Equals( DRT::Element::DiscretizationType distype )
 {
   if ( holes_.size()==0 )

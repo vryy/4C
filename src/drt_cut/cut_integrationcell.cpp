@@ -470,7 +470,7 @@ int GEO::CUT::Hex8IntegrationCell::CubatureDegree( DRT::Element::DiscretizationT
   case DRT::Element::hex8:
     return 5;
   case DRT::Element::hex20:
-    return 4;
+    return 15;
   case DRT::Element::hex27:
     return 4;
   case DRT::Element::tet4:
@@ -495,7 +495,7 @@ int GEO::CUT::Tet4IntegrationCell::CubatureDegree( DRT::Element::DiscretizationT
   case DRT::Element::hex8:
     return 11;
   case DRT::Element::hex20:
-    return 12;
+    return 15;
   case DRT::Element::hex27:
     return 14;
   case DRT::Element::tet4:

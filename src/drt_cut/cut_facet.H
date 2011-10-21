@@ -118,6 +118,11 @@ public:
                   plain_volumecell_set & connected,
                   plain_element_set & elements );
 
+  void Neighbors( Point * p,
+                  const plain_volumecell_set & cells,
+                  const plain_volumecell_set & done,
+                  plain_volumecell_set & connected);
+
   const std::vector<Point*> & Points() const { return points_; }
 
   const std::vector<Point*> CornerPoints() const { return corner_points_; }

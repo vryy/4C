@@ -38,6 +38,17 @@ public:
 
   virtual void GetVolumeCells( plain_volumecell_set & cells ) = 0;
 
+  virtual void GetCellSets_DofSets_GaussPoints ( std::vector< plain_volumecell_set > & cell_sets ,
+                                       std::vector< std::vector< int > >   & nds_sets,
+                                       std::vector< DRT::UTILS::GaussIntegration> & intpoints_sets,
+                                       std::string gausstype ) = 0;
+
+
+  virtual void VolumeCellSets ( bool include_inner, std::vector<plain_volumecell_set> & ele_vc_sets_inside, std::vector<plain_volumecell_set> & ele_vc_sets_outside) = 0;
+
+  // collect the volume cells of all subelements
+  virtual void CollectVolumeCells ( bool include_inner, plain_volumecell_set & cells_inside, plain_volumecell_set & cells_outside ) = 0;
+
   virtual void GetIntegrationCells( plain_integrationcell_set & cells ) = 0;
 
   virtual void GetBoundaryCells( plain_boundarycell_set & bcells ) = 0;
@@ -66,9 +77,25 @@ public:
 
   virtual int NumVolumeCellGaussPoints() = 0;
 
+  virtual const std::vector<plain_volumecell_set> & GetVcSetsInside() = 0;
+
+  virtual const std::vector<plain_volumecell_set> & GetVcSetsOutside() = 0;
+
+  std::vector<std::vector<int> > & GetNodalDofSet_VcSets_Inside() {return nodaldofset_vc_sets_inside_; };
+
+  std::vector<std::vector<int> > & GetNodalDofSet_VcSets_Outside() {return nodaldofset_vc_sets_outside_; };
+
+  void GetVolumeCellsDofSets( std::vector< plain_volumecell_set > & cellsets,
+  		                              std::vector< std::vector< int > >   & nds_sets  );
+
   void VolumeCellGaussPoints( plain_volumecell_set & cells,
                               std::vector<DRT::UTILS::GaussIntegration> & intpoints,
-			      std::string gausstype);
+                              std::string gausstype);
+
+  Teuchos::RCP<DRT::UTILS::GaussPointsComposite> GaussPointsConnected( plain_volumecell_set & cells, std::string gausstype );
+
+  void VolumeCellGaussPointsLin( plain_volumecell_set & cells,
+                              std::vector<DRT::UTILS::GaussIntegration> & intpoints );
 
   void BoundaryCellGaussPoints( const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
                                 std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & intpoints );
@@ -92,7 +119,20 @@ private:
   template <DRT::Element::DiscretizationType distype>
   Teuchos::RCP<DRT::UTILS::GaussPoints> CreateProjected( GEO::CUT::IntegrationCell * ic );
 
+#if 0
+  template <DRT::Element::DiscretizationType distype>
+  Teuchos::RCP<DRT::UTILS::GaussPoints> TransformVolumeCellGaussPoints( GEO::CUT::IntegrationCell * ic );
+#endif
+
   std::map<Point*, LINALG::Matrix<3,1> > local_coordinates_;
+
+protected:
+
+  /// dof set number of all element nodes, contains the dofset numbers for all nodes of the superior element (i.e. 20 for hex20 superior element)
+  std::vector<std::vector<int> > nodaldofset_vc_sets_inside_;
+  std::vector<std::vector<int> > nodaldofset_vc_sets_outside_;
+
+
 };
 
 /// linear element handle
@@ -115,6 +155,20 @@ public:
   virtual DRT::Element::DiscretizationType Shape() { return element_->Shape(); }
 
   virtual void GetVolumeCells( plain_volumecell_set & cells );
+
+//  virtual void GetVolumeCellsDofSets ( std::vector< plain_volumecell_set > & cellsets,
+//                                       std::vector< std::vector< int > >   & nds_sets   );
+
+  virtual void GetCellSets_DofSets_GaussPoints ( std::vector< plain_volumecell_set > & cell_sets ,
+                                       std::vector< std::vector< int > >   & nds_sets,
+                                       std::vector< DRT::UTILS::GaussIntegration> & intpoints_sets,
+                                       std::string gausstype);
+
+  // collect the volume cells of all subelements
+  virtual void CollectVolumeCells ( bool include_inner, plain_volumecell_set & cells_inside, plain_volumecell_set & cells_outside );
+
+  virtual void VolumeCellSets ( bool include_inner, std::vector<plain_volumecell_set> & ele_vc_sets_inside, std::vector<plain_volumecell_set> & ele_vc_sets_outside);
+
 
   virtual void GetIntegrationCells( plain_integrationcell_set & cells )
   {
@@ -151,8 +205,19 @@ public:
     return element_->NumGaussPoints( Shape() );
   }
 
+  const std::vector<plain_volumecell_set> & GetVcSetsInside() { return vc_sets_inside_; };
+
+  const std::vector<plain_volumecell_set> & GetVcSetsOutside() { return vc_sets_outside_; };
+
 private:
   Element * element_;
+
+
+protected:
+  bool cells_set_;
+  std::vector<plain_volumecell_set> vc_sets_inside_;
+  std::vector<plain_volumecell_set> vc_sets_outside_;
+
 };
 
 /// quadratic element handle
@@ -169,6 +234,24 @@ public:
   virtual void GetBoundaryCells( plain_boundarycell_set & bcells );
 
   virtual void VolumeCells( plain_volumecell_set & cells ) const;
+
+
+//  virtual void GetVolumeCellsDofSets ( std::vector< plain_volumecell_set > & cellsets ,
+//                                       std::vector< std::vector< int > >   & nds_sets   );
+
+  virtual void GetCellSets_DofSets_GaussPoints ( std::vector< plain_volumecell_set > & cell_sets ,
+                                       std::vector< std::vector< int > >   & nds_sets,
+                                       std::vector< DRT::UTILS::GaussIntegration > & intpoints_sets,
+                                       std::string gausstype);
+
+  // collect the volume cells of all subelements
+  virtual void CollectVolumeCells ( bool include_inner, plain_volumecell_set & cells_inside, plain_volumecell_set & cells_outside );
+
+  virtual void ConnectVolumeCells ( bool include_inner );
+
+  virtual void VolumeCellSets ( bool include_inner, std::vector<plain_volumecell_set> & ele_vc_sets_inside, std::vector<plain_volumecell_set> & ele_vc_sets_outside);
+
+  virtual void GetConnectedVolumeCellSets ( bool include_inner, std::vector<plain_volumecell_set> & connected_vc_sets_inside, std::vector<plain_volumecell_set> & connected_vc_sets_outside);
 
   virtual void CollectElements( plain_element_set & elements )
   {
@@ -191,7 +274,18 @@ public:
     return numgp;
   }
 
+  void BuildCellSets ( plain_volumecell_set & cells_to_connect, std::vector<plain_volumecell_set> & connected_sets);
+
+
+  const std::vector<plain_volumecell_set> & GetVcSetsInside() { return connected_vc_sets_inside_; };
+
+  const std::vector<plain_volumecell_set> & GetVcSetsOutside() { return connected_vc_sets_outside_; };
+
 protected:
+  bool cells_connected_;
+  std::vector<plain_volumecell_set> connected_vc_sets_inside_;
+  std::vector<plain_volumecell_set> connected_vc_sets_outside_;
+
   std::vector<Element*> subelements_;
   std::vector<Node*> nodes_;
 };

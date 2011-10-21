@@ -86,6 +86,45 @@ void GEO::CUT::VolumeCell::Neighbors( Point * p,
   }
 }
 
+// without check for elements
+void GEO::CUT::VolumeCell::Neighbors( Point * p,
+                                      const plain_volumecell_set & cells,
+                                      const plain_volumecell_set & done,
+                                      plain_volumecell_set & connected)
+{
+  if ( done.count( this )==0 )
+  {
+    // this volume is included
+    connected.insert( this );
+
+    // Do the facets that include the point first. This ensures we choose the
+    // right volumes (the ones attached to the point), if there are multiple
+    // connections possible (we are faced with a thin structure cut.)
+
+    for ( plain_facet_set::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
+    {
+      Facet * f = *i;
+      if ( p==NULL or f->Contains( p ) )
+      {
+        f->Neighbors( p, cells, done, connected);
+      }
+    }
+
+    if ( p!=NULL )
+    {
+      for ( plain_facet_set::const_iterator i=facets_.begin(); i!=facets_.end(); ++i )
+      {
+        Facet * f = *i;
+        if ( not f->Contains( p ) )
+        {
+          f->Neighbors( p, cells, done, connected);
+        }
+      }
+    }
+  }
+}
+
+
 void GEO::CUT::VolumeCell::GetAllPoints( Mesh & mesh, PointSet & cut_points )
 {
   for ( plain_facet_set::iterator i=facets_.begin(); i!=facets_.end(); ++i )

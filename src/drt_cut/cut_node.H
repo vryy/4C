@@ -7,6 +7,8 @@
 
 #include "cut_point.H"
 
+#include "../drt_fluid/xfluid_defines.H"
+
 namespace GEO
 {
 namespace CUT
@@ -60,16 +62,38 @@ public:
 
   const plain_element_set & Elements() const { return point_->Elements(); }
 
+  /// Assign the vc_sets to the node if possible
+  void AssignNodalCellSet( std::vector<plain_volumecell_set> & ele_vc_sets,
+                                           std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets);
+
   /// Find the number of dofsets required at this node.
   void FindDOFSets( bool include_inner );
 
+  void FindDOFSetsNEW( std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets, std::vector<plain_volumecell_set> & cell_sets );
+
   int DofSetNumber( VolumeCell * cell );
+
+  int DofSetNumberNEW( plain_volumecell_set & cells );
 
   const std::vector<plain_volumecell_set> & DofSets() const { return dofsets_; }
 
+  const std::vector<std::set<plain_volumecell_set> > & DofCellSets() const { return dof_cellsets_; }
+
+
+  // This is only for test with new dofsetmanagement
+#ifdef DOFSETS_NEW
+  int NumDofSets() const { return DofCellSets().size(); }
+#else  
   int NumDofSets() const { return DofSets().size(); }
+#endif
 
 private:
+
+  void BuildDOFCellSets( Point * p,
+                         const std::vector<plain_volumecell_set> & cell_sets,
+                         const plain_volumecell_set & cells,
+                         const std::vector<plain_volumecell_set> & nodal_cells,
+                         plain_volumecell_set & done );
 
   void BuildDOFCellSets( Point * p,
                          const plain_volumecell_set & cells,
@@ -83,6 +107,9 @@ private:
   plain_edge_set edges_;
 
   std::vector<plain_volumecell_set> dofsets_;
+
+  /// stores for each set of dofs, that has to be created, all its volume_sets which has been connected over all adjacent elements
+  std::vector<std::set<plain_volumecell_set> > dof_cellsets_;
 };
 
 }

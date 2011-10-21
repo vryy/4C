@@ -49,6 +49,23 @@ public:
 
   void Cut( bool include_inner );
 
+  void CreateNodalDofSetNEW ( bool include_inner, DRT::Discretization & dis);
+
+  void FindNodalCellSets( bool include_inner,
+                          std::set<int> & eids,
+                          std::map<int, ElementHandle*> & sourrounding_elements,
+                          std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets_inside,
+                          std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets_outside,
+                          std::vector<plain_volumecell_set> & cell_sets_inside,
+                          std::vector<plain_volumecell_set> & cell_sets_outside,
+                          std::vector<plain_volumecell_set> & cell_sets );
+
+
+  void ConnectNodalDOFSets( std::vector<Node *> & nodes,
+                            bool include_inner,
+                            const std::vector<plain_volumecell_set> & connected_vc_sets,
+                            std::vector<std::vector<int> > &    nodaldofset_vc_sets);
+
   Node * GetNode( int nid ) const;
 
   ElementHandle * GetElement( int eid ) const;
@@ -61,7 +78,15 @@ public:
 
   Mesh & NormalMesh() { return mesh_.LinearMesh(); }
 
+  MeshHandle & GetMeshHandle() { return mesh_; }
+
   Mesh & CutMesh( int i=0 ) { return cut_mesh_[i]->LinearMesh(); }
+
+  void DumpGmshNodalCellSet( std::map<Node*, std::vector<plain_volumecell_set> > & nodal_cell_sets, DRT::Discretization & dis );
+
+  void DumpGmshCellSets( std::vector<plain_volumecell_set> & cell_sets,  DRT::Discretization & dis );
+
+  void DumpGmshNumDOFSets( string filename, bool include_inner, DRT::Discretization & dis );
 
   void DumpGmshVolumeCells( std::string name, bool include_inner );
 

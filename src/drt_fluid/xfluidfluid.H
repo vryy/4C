@@ -10,6 +10,8 @@
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
 
+#include "xfluid_defines.H"
+
 #include "../drt_inpar/inpar_fluid.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_xfem/xfem_fluidwizard.H"
@@ -193,7 +195,8 @@ namespace FLD
                                  DRT::Element * actele,
                                  GEO::CUT::ElementHandle * e,
                                  GEO::CUT::VolumeCell * vc,
-                                 Teuchos::RCP<const Epetra_Vector> vel );
+                                 Teuchos::RCP<const Epetra_Vector> vel,
+                                 const std::vector<int> & nds);
 
       void GmshOutputBoundaryCell( DRT::Discretization & discret,
                                    DRT::Discretization & cutdiscret,

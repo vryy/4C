@@ -50,6 +50,11 @@ public:
                   plain_volumecell_set & connected,
                   plain_element_set & elements );
 
+  void Neighbors( Point * p,
+                  const plain_volumecell_set & cells,
+                  const plain_volumecell_set & done,
+                  plain_volumecell_set & connected);
+
   Element * ParentElement() { return element_; }
 
   void GetAllPoints( Mesh & mesh, PointSet & cut_points );

@@ -4,6 +4,8 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
+#include "../drt_fluid/xfluid_defines.H"
+
 #include "geo_intersection.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -109,6 +111,16 @@ GEO::CUT::Node * GEO::CutWizard::GetNode( int nid )
 void GEO::CutWizard::Cut( bool include_inner )
 {
   mesh_->Cut( include_inner );
+}
+
+void GEO::CutWizard::CreateNodalDofSet( bool include_inner, DRT::Discretization & backdis )
+{
+
+#ifdef DOFSETS_NEW
+  mesh_->CreateNodalDofSetNEW( include_inner, backdis );
+#else
+  mesh_->CreateNodalDofSet( include_inner, backdis );
+#endif
 }
 
 void GEO::CutWizard::Cut( std::map< int, DomainIntCells >& domainintcells,
@@ -249,6 +261,15 @@ void GEO::CutWizard::Cut( std::map< int, DomainIntCells >& domainintcells,
 void GEO::CutWizard::PrintCellStats()
 {
   mesh_->PrintCellStats();
+}
+
+void GEO::CutWizard::DumpGmshNumDOFSets( bool include_inner)
+{
+  std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  std::stringstream str;
+  str << filename;
+
+  mesh_->DumpGmshNumDOFSets( str.str(), include_inner, dis_ );
 }
 
 void GEO::CutWizard::DumpGmshVolumeCells( bool include_inner )

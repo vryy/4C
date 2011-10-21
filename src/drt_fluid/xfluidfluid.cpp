@@ -290,6 +290,193 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
       // Evaluate xfem
       if ( e!=NULL )
       {
+#ifdef DOFSETS_NEW
+          std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
+          std::vector< std::vector<int> > nds_sets;
+          std::vector< DRT::UTILS::GaussIntegration > intpoints_sets;
+
+          e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, "Tessellation"  );
+
+          if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
+          if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
+
+
+
+          double testvol = 0.0;
+          double test_vc = 0.0;
+
+
+          int set_counter = 0;
+
+          for( std::vector< GEO::CUT::plain_volumecell_set>::iterator s=cell_sets.begin();
+               s!=cell_sets.end();
+               s++)
+          {
+              std::map<int, std::vector<Epetra_SerialDenseMatrix> > side_coupling;
+              GEO::CUT::plain_volumecell_set & cells = *s;
+              const std::vector<int> & nds = nds_sets[set_counter];
+
+//              for(int i=0; i< nds.size(); i++)
+//              {
+////            	  cout << nds[i] << endl;
+//              }
+
+              // we have to assembly all volume cells of this set
+              // for linear elements, there should be only one volumecell for each set
+              // for quadratic elements, there are some volumecells with respect to subelements, that have to be assembled at once
+
+
+              // get element location vector, dirichlet flags and ownerships
+              actele->LocationVector(discret,nds,la,false);
+
+              // get dimension of element matrices and vectors
+              // Reshape element matrices and vectors and init to zero
+              strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
+
+              {
+                  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate cut domain" );
+
+                  // call the element evaluate method
+                  int err = impl->Evaluate( ele, discret, la[0].lm_, eleparams, mat,
+                                            strategy.Elematrix1(),
+                                            strategy.Elematrix2(),
+                                            strategy.Elevector1(),
+                                            strategy.Elevector2(),
+                                            strategy.Elevector3(),
+                                            intpoints_sets[set_counter] );
+
+                  if (err)
+                      dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
+              }
+
+              // do cut interface condition
+
+              // maps of sid and corresponding boundary cells ( for quadratic elements: collected via volumecells of subelements)
+              std::map<int, std::vector<GEO::CUT::BoundaryCell*> > bcells;
+        	  std::map<int, std::vector<DRT::UTILS::GaussIntegration> > bintpoints;
+
+              for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
+              {
+                  GEO::CUT::VolumeCell * vc = *i;
+                  if ( vc->Position()==GEO::CUT::Point::outside )
+                  {
+                      vc->GetBoundaryCells( bcells );
+                  }
+              }
+
+
+              if ( bcells.size() > 0 )
+              {
+                  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate boundary" );
+
+                  // Attention: switch also the flag in fluid3_impl.cpp
+#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
+                  // original Axel's transformation
+                  e->BoundaryCellGaussPoints( wizard_.CutWizard().Mesh(), 0, bcells, bintpoints );
+#else
+                  // new Benedikt's transformation
+                  e->BoundaryCellGaussPointsLin( wizard_.CutWizard().Mesh(), 0, bcells, bintpoints );
+#endif
+
+                  //std::map<int, std::vector<Epetra_SerialDenseMatrix> > side_coupling;
+
+                  std::set<int> begids;
+                  for (std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
+                       bc!=bcells.end(); ++bc )
+                  {
+                      int sid = bc->first;
+                      begids.insert(sid);
+                  }
+
+
+                  vector<int> patchelementslm;
+                  vector<int> patchelementslmowner;
+                  for ( std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
+                        bc!=bcells.end(); ++bc )
+                  {
+                    int sid = bc->first;
+                    DRT::Element * side = cutdiscret.gElement( sid );
+
+                    vector<int> patchlm;
+                    vector<int> patchlmowner;
+                    vector<int> patchlmstride;
+                    side->LocationVector(cutdiscret, patchlm, patchlmowner, patchlmstride);
+
+                    patchelementslm.reserve( patchelementslm.size() + patchlm.size());
+                    patchelementslm.insert(patchelementslm.end(), patchlm.begin(), patchlm.end());
+
+                    patchelementslmowner.reserve( patchelementslmowner.size() + patchlmowner.size());
+                    patchelementslmowner.insert( patchelementslmowner.end(), patchlmowner.begin(), patchlmowner.end());
+
+                    const size_t ndof_i = patchlm.size();
+                    const size_t ndof   = la[0].lm_.size();
+
+                    std::vector<Epetra_SerialDenseMatrix> & couplingmatrices = side_coupling[sid];
+                    if ( couplingmatrices.size()!=0 )
+                      dserror("zero sized vector expected");
+
+                    couplingmatrices.resize(3);
+                    couplingmatrices[0].Reshape(ndof_i,ndof); //C_uiu
+                    couplingmatrices[1].Reshape(ndof,ndof_i);  //C_uui
+                    couplingmatrices[2].Reshape(ndof_i,1);     //rhC_ui
+                  }
+
+                  const size_t nui = patchelementslm.size();
+                  Epetra_SerialDenseMatrix  Cuiui(nui,nui);
+
+                  impl->ElementXfemInterface( ele,
+                                              discret,
+                                              la[0].lm_,
+                                              intpoints_sets[set_counter],
+                                              cutdiscret,
+                                              bcells,
+                                              bintpoints,
+                                              side_coupling,
+                                              eleparams,
+                                              strategy.Elematrix1(),
+                                              strategy.Elevector1(),
+                                              Cuiui);
+
+              for ( std::map<int, std::vector<Epetra_SerialDenseMatrix> >::const_iterator sc=side_coupling.begin();
+                    sc!=side_coupling.end(); ++sc )
+              {
+                std::vector<Epetra_SerialDenseMatrix>  couplingmatrices = sc->second;
+
+                int sid = sc->first;
+
+                if ( cutdiscret.HaveGlobalElement(sid) )
+                {
+                  DRT::Element * side = cutdiscret.gElement( sid );
+                  vector<int> patchlm;
+                  vector<int> patchlmowner;
+                  vector<int> patchlmstride;
+                  side->LocationVector(cutdiscret, patchlm, patchlmowner, patchlmstride);
+
+                  // create a dummy stride vector that is correct
+                  Cuiu_->Assemble(-1, la[0].stride_, couplingmatrices[0], patchlm, patchlmowner, la[0].lm_);
+                  vector<int> stride(1); stride[0] = (int)patchlm.size();
+                  Cuui_->Assemble(-1, stride, couplingmatrices[1], la[0].lm_, la[0].lmowner_, patchlm);
+                  Epetra_SerialDenseVector rhC_ui_eptvec(::View,couplingmatrices[2].A(),patchlm.size());
+                  LINALG::Assemble(*rhC_ui_, rhC_ui_eptvec, patchlm, patchlmowner);
+                }
+              }
+
+              vector<int> stride(1); stride[0] = (int)patchelementslm.size();
+              Cuiui_->Assemble(-1,stride, Cuiui, patchelementslm, patchelementslmowner, patchelementslm );
+
+              }
+
+              int eid = actele->Id();
+              strategy.AssembleMatrix1(eid,la[0].lm_,la[0].lm_,la[0].lmowner_,la[0].stride_);
+              strategy.AssembleVector1(la[0].lm_,la[0].lmowner_);
+
+
+              set_counter += 1;
+
+          } // end of loop over cellsets // end of assembly for each set of cells
+#else
+
+
         GEO::CUT::plain_volumecell_set cells;
         std::vector<DRT::UTILS::GaussIntegration> intpoints;
         e->VolumeCellGaussPoints( cells, intpoints ,"Tessellation");//blockk or remove
@@ -342,7 +529,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
               std::map<int, std::vector<DRT::UTILS::GaussIntegration> > bintpoints;
 
               // Attention: switch also the flag in fluid3_impl.cpp
-#if 0
+#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
               // original Axel's transformation
               e->BoundaryCellGaussPoints( wizard_.CutWizard().Mesh(), 0, bcells, bintpoints );
 #else
@@ -445,6 +632,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
           }
           count += 1;
         }
+        #endif
       }
       else
       {
@@ -620,6 +808,42 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
     GEO::CUT::ElementHandle * e = wizard_.GetElement( actele );
     if ( e!=NULL )
     {
+#ifdef DOFSETS_NEW
+
+        std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
+        std::vector< std::vector<int> > nds_sets;
+
+        e->GetVolumeCellsDofSets( cell_sets, nds_sets );
+
+        int set_counter = 0;
+
+        for( std::vector< GEO::CUT::plain_volumecell_set>::iterator s=cell_sets.begin();
+             s!=cell_sets.end();
+             s++)
+        {
+            GEO::CUT::plain_volumecell_set & cells = *s;
+
+            const std::vector<int> & nds = nds_sets[set_counter];
+
+            for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
+            {
+                GEO::CUT::VolumeCell * vc = *i;
+                if ( vc->Position()==GEO::CUT::Point::outside )
+                {
+                    if ( e->IsCut() )
+                    {
+                        GmshOutputVolumeCell( discret, gmshfilecontent_vel, gmshfilecontent_press, actele, e, vc, col_vel, nds );
+                    }
+                    else
+                    {
+                        GmshOutputElement( discret, gmshfilecontent_vel, gmshfilecontent_press, actele, col_vel );
+                    }
+                }
+            }
+            set_counter += 1;
+        }
+
+#else
       GEO::CUT::plain_volumecell_set cells;
       std::vector<DRT::UTILS::GaussIntegration> intpoints;
       e->VolumeCellGaussPoints( cells, intpoints ,"Tessellation");//blockkk or remove
@@ -629,9 +853,15 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
         GEO::CUT::VolumeCell * vc = *i;
         if ( vc->Position()==GEO::CUT::Point::outside )
         {
+          const std::vector<int> & nds = vc->NodalDofSet();
+
+          //  std::vector<int>  ndstest;
+          //  for (int t=0;t<8; ++t)
+          //    ndstest.push_back(0);
+
           if ( e->IsCut() )
           {
-            GmshOutputVolumeCell( discret, gmshfilecontent_vel, gmshfilecontent_press, actele, e, vc, col_vel );
+            GmshOutputVolumeCell( discret, gmshfilecontent_vel, gmshfilecontent_press, actele, e, vc, col_vel, nds );
           }
           else
           {
@@ -640,6 +870,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
         }
       }
       count += 1;
+#endif
     }
     else
     {
@@ -730,6 +961,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputElement( DRT::Discretization 
   switch ( actele->Shape() )
   {
   case DRT::Element::hex8:
+  case DRT::Element::hex20:
     vel_f << "VH(";
     press_f << "SH(";
     break;
@@ -737,7 +969,8 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputElement( DRT::Discretization 
     dserror( "unsupported shape" );
   }
 
-  for ( int i=0; i<actele->NumNode(); ++i )
+//  for ( int i=0; i<actele->NumNode(); ++i )
+  for ( int i=0; i<8; ++i )
   {
     if ( i > 0 )
     {
@@ -751,7 +984,8 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputElement( DRT::Discretization 
   vel_f << "){";
   press_f << "){";
 
-  for ( int i=0; i<actele->NumNode(); ++i )
+//  for ( int i=0; i<actele->NumNode(); ++i )
+  for ( int i=0; i<8; ++i )
   {
     if ( i > 0 )
     {
@@ -792,6 +1026,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputElementEmb( DRT::Discretizati
   switch ( actele->Shape() )
   {
   case DRT::Element::hex8:
+  case DRT::Element::hex20:
     vel_f << "VH(";
     press_f << "SH(";
     break;
@@ -799,7 +1034,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputElementEmb( DRT::Discretizati
     dserror( "unsupported shape" );
   }
 
-  for ( int i=0; i<actele->NumNode(); ++i )
+  for ( int i=0; i<8; ++i )
   {
     if ( i > 0 )
     {
@@ -814,7 +1049,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputElementEmb( DRT::Discretizati
   vel_f << "){";
   press_f << "){";
 
-  for ( int i=0; i<actele->NumNode(); ++i )
+  for ( int i=0; i<8; ++i )
   {
     if ( i > 0 )
     {
@@ -837,18 +1072,14 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputVolumeCell( DRT::Discretizati
                                                      DRT::Element * actele,
                                                      GEO::CUT::ElementHandle * e,
                                                      GEO::CUT::VolumeCell * vc,
-                                                     Teuchos::RCP<const Epetra_Vector> velvec )
+                                                     Teuchos::RCP<const Epetra_Vector> velvec,
+                                                     const std::vector<int> & nds)
 {
-  const std::vector<int> & nds = vc->NodalDofSet();
-
-  std::vector<int>  ndstest;
-  for (int t=0;t<8; ++t)
-    ndstest.push_back(0);
 
   DRT::Element::LocationArray la( 1 );
 
   // get element location vector, dirichlet flags and ownerships
-  actele->LocationVector(discret,ndstest,la,false);
+  actele->LocationVector(discret,nds,la,false);
   //actele->LocationVector(discret,nds,la,false);
 
    std::vector<double> m(la[0].lm_.size());
@@ -919,6 +1150,18 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputVolumeCell( DRT::Discretizati
         const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
         LINALG::Matrix<numnodes,1> funct;
         DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex8 );
+        LINALG::Matrix<3,numnodes> velocity( vel, true );
+        LINALG::Matrix<1,numnodes> pressure( press, true );
+
+        v.Multiply( 1, velocity, funct, 1 );
+        p.Multiply( 1, pressure, funct, 1 );
+        break;
+      }
+      case DRT::Element::hex20:
+      {
+        const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
+        LINALG::Matrix<numnodes,1> funct;
+        DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex20 );
         LINALG::Matrix<3,numnodes> velocity( vel, true );
         LINALG::Matrix<1,numnodes> pressure( press, true );
 
@@ -1024,6 +1267,18 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputBoundaryCell( DRT::Discretiza
 
         switch ( side->Shape() )
         {
+        case DRT::Element::tri3:
+        {
+          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
+          LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
+          //LINALG::Matrix<numnodes,1> funct;
+          LINALG::Matrix<2,numnodes> deriv;
+          //DRT::UTILS::shape_function_2D( funct, eta( 0 ), eta( 1 ), DRT::Element::quad4 );
+          DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::tri3 );
+          DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::tri3>( xyze, deriv, metrictensor, drs, &normal );
+          //x.Multiply( xyze, funct );
+          break;
+        }
         case DRT::Element::quad4:
         {
           const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
@@ -1033,6 +1288,18 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputBoundaryCell( DRT::Discretiza
           //DRT::UTILS::shape_function_2D( funct, eta( 0 ), eta( 1 ), DRT::Element::quad4 );
           DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::quad4 );
           DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad4>( xyze, deriv, metrictensor, drs, &normal );
+          //x.Multiply( xyze, funct );
+          break;
+        }
+        case DRT::Element::quad8:
+        {
+          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement;
+          LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
+          //LINALG::Matrix<numnodes,1> funct;
+          LINALG::Matrix<2,numnodes> deriv;
+          //DRT::UTILS::shape_function_2D( funct, eta( 0 ), eta( 1 ), DRT::Element::quad4 );
+          DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::quad8 );
+          DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad8>( xyze, deriv, metrictensor, drs, &normal );
           //x.Multiply( xyze, funct );
           break;
         }

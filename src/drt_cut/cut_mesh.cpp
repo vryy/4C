@@ -5,6 +5,8 @@
 
 #include <boost/bind.hpp>
 
+#include "../drt_lib/drt_discret.H"
+
 #include "cut_mesh.H"
 
 #include "cut_creator.H"
@@ -130,6 +132,22 @@ void GEO::CUT::Mesh::NewNodesFromPoints( std::map<Point*, Node*> & nodemap )
     nid += 1;
   }
 }
+
+
+void GEO::CUT::Mesh::GetNodeMap( std::map<int, Node *> & nodemap )
+{
+
+    for (std::map<int, Teuchos::RCP<Node> >::iterator i = nodes_.begin();
+         i != nodes_.end();
+         i++ )
+    {
+        int nid = i->first;
+
+        nodemap.insert( pair< int, Node* >(nid, &*(i->second)) );
+    }
+
+}
+
 
 GEO::CUT::Node* GEO::CUT::Mesh::GetNode( int nid ) const
 {
@@ -436,6 +454,31 @@ GEO::CUT::Element* GEO::CUT::Mesh::GetElement( int eid,
 }
 
 #if 0
+GEO::CUT::Element* GEO::CUT::Mesh::GetSubElement( int parenteid, int subeid,
+                                               const std::vector<int> & nids,
+                                               const CellTopologyData & top_data,
+                                               bool active )
+{
+  std::map<int, Teuchos::RCP<Element> >::iterator ie = elements_.find( subeid );
+  if ( ie != elements_.end() )
+  {
+    return &*ie->second;
+  }
+
+  unsigned nc = top_data.node_count;
+  std::vector<Node*> nodes;
+  nodes.reserve( nc );
+
+  for ( unsigned i=0; i<nc; ++i )
+  {
+    nodes.push_back( GetNode( nids[i], static_cast<double*>( NULL ) ) );
+  }
+
+  return GetSubElement( parenteid, subeid, nodes, top_data, active );
+}
+#endif
+
+#if 0
 GEO::CUT::Element* GEO::CUT::Mesh::GetElement( int eid,
                                                const std::vector<Point*> & points,
                                                const CellTopologyData & top_data )
@@ -548,6 +591,101 @@ GEO::CUT::Element* GEO::CUT::Mesh::GetElement( int eid,
   }
   return e;
 }
+#if 0
+
+GEO::CUT::Element* GEO::CUT::Mesh::GetSubElement( int parenteid,
+                                                  int subeid,
+                                               const std::vector<Node*> & nodes,
+                                               const CellTopologyData & top_data,
+                                               bool active )
+{
+  static int shards_to_baci[] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 26, 20, 25, 24, 22, 21, 23, -1
+  };
+
+  unsigned sc = top_data.side_count;
+
+  std::vector<Side*> sides;
+
+  sides.reserve( sc );
+
+
+  for ( unsigned i=0; i<sc; ++i )
+  {
+    const CellTopologyData_Subcell & side = top_data.side[i] ;
+    const CellTopologyData & side_topology = *side.topology;
+
+    std::vector<Node*> side_nodes;
+    std::vector<int> side_nids;
+    side_nodes.reserve( side_topology.node_count );
+    side_nids .reserve( side_topology.node_count );
+    for ( unsigned j=0; j<side_topology.node_count; ++j )
+    {
+      int nid = shards_to_baci[side.node[j]];
+      side_nids .push_back( nodes[nid]->Id() );
+      side_nodes.push_back( nodes[nid] );
+    }
+
+    std::vector<Edge*> side_edges;
+    side_edges.reserve( side_topology.edge_count );
+    for ( unsigned j=0; j<side_topology.edge_count; ++j )
+    {
+      const CellTopologyData_Subcell & edge = side_topology.edge[j] ;
+      const CellTopologyData & edge_topology = *edge.topology;
+
+      std::vector<Node*> edge_nodes;
+      plain_int_set edge_nids;
+      edge_nodes.reserve( edge_topology.node_count );
+      for ( unsigned j=0; j<edge_topology.node_count; ++j )
+      {
+        edge_nids.insert( side_nids[edge.node[j]] );
+        edge_nodes.push_back( side_nodes[edge.node[j]] );
+      }
+
+      side_edges.push_back( GetEdge( edge_nids, edge_nodes, edge_topology ) );
+    }
+
+    plain_int_set side_nidset;
+    std::copy( side_nids.begin(), side_nids.end(),
+               std::inserter( side_nidset, side_nidset.begin() ) );
+    sides.push_back( GetSide( -1, side_nidset, side_nodes, side_edges, side_topology ) );
+  }
+
+  Element * e = NULL;
+  switch ( top_data.key )
+  {
+  case shards::Tetrahedron<4>::key :
+    e = new ConcreteElement<DRT::Element::tet4>( subeid, sides, nodes, active );
+    break;
+
+  case shards::Hexahedron<8>::key :
+    e = new ConcreteElement<DRT::Element::hex8>( subeid, sides, nodes, active );
+    break;
+
+  case shards::Pyramid<5>::key :
+    e = new ConcreteElement<DRT::Element::pyramid5>( subeid, sides, nodes, active );
+    break;
+
+  case shards::Wedge<6>::key :
+    e = new ConcreteElement<DRT::Element::wedge6>( subeid, sides, nodes, active );
+    break;
+
+  default:
+    throw std::runtime_error( "unsupported element topology" );
+  }
+  if ( subeid > -1 )
+  {
+	 dserror(" this case should not be called in sub-function");
+    elements_[parenteid] = Teuchos::rcp( e );
+  }
+  else
+  {
+	  shadow_elements_[parenteid].push_back( Teuchos::rcp( e ) );
+//    shadow_elements_.push_back( Teuchos::rcp( e ) );
+  }
+  return e;
+}
+#endif
 
 GEO::CUT::Point* GEO::CUT::Mesh::NewPoint( const double * x, Edge * cut_edge, Side * cut_side )
 {
@@ -1605,17 +1743,18 @@ void GEO::CUT::Mesh::TestElementVolume( DRT::Element::DiscretizationType shape, 
               << "\n";
 #endif
 
-/*    if ( fatal and fabs( volume_error ) > 1e-5 )
+    if ( fatal and fabs( volume_error ) > 1e-5 )
     {
       std::stringstream err;
-      err << "volume test failed: "
+      err << " !!!!!!!!!!! volume test failed: !!!!!!!!!!!!!!!"
           << "eleID=" << e.Id() << "  "
           << "ve=" << ev << "  "
           << "vc=" << cv << "  "
           << "vd= "<< ev-cv << "  "
           << "err=" << volume_error;
-      throw std::runtime_error( err.str() );
-    }*/
+      cout << err.str() << endl;
+//      throw std::runtime_error( err.str() );
+    }
   }
 }
 
@@ -1977,7 +2116,7 @@ void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name, bool include_inner )
   }
   file << "};\n";
 
-  file << "View \"Elements\" {\n";
+  file << "View \"Elements, NumVcs\" {\n";
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
         ++i )

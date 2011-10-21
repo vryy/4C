@@ -87,6 +87,8 @@ void XFEM::FluidWizard::Cut(  bool include_inner, const Epetra_Vector & idispcol
   // run the Cut
   cw.Cut( include_inner );
 
+  cw.CreateNodalDofSet( include_inner, backdis_ );
+
   // cleanup
 
   const double t_end = Teuchos::Time::wallTime()-t_start;
@@ -94,6 +96,9 @@ void XFEM::FluidWizard::Cut(  bool include_inner, const Epetra_Vector & idispcol
   {
     std::cout << " Success (" << t_end  <<  " secs)\n";
   }
+
+  cw.DumpGmshNumDOFSets(include_inner);
+
 
   cw.PrintCellStats();
   cw.DumpGmshIntegrationCells();

@@ -61,7 +61,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid )
   xfluid.discret_->ReplaceDofSet( dofset_ );
   xfluid.discret_->FillComplete();
 
-
+//  cout << "discret " << *xfluid.discret_ << endl;
 
   FLD::UTILS::SetupFluidSplit(*xfluid.discret_,xfluid.numdim_,velpressplitter_);
 
@@ -220,6 +220,147 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
       GEO::CUT::ElementHandle * e = wizard_->GetElement( actele );
       if ( e!=NULL )
       {
+
+#ifdef DOFSETS_NEW
+          std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
+          std::vector< std::vector<int> > nds_sets;
+          std::vector< DRT::UTILS::GaussIntegration > intpoints_sets;
+
+          e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, xfluid_.GaussPointType() );
+
+          if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
+          if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
+
+
+          int set_counter = 0;
+
+          for( std::vector< GEO::CUT::plain_volumecell_set>::iterator s=cell_sets.begin();
+               s!=cell_sets.end();
+               s++)
+          {
+
+              GEO::CUT::plain_volumecell_set & cells = *s;
+              const std::vector<int> & nds = nds_sets[set_counter];
+
+              // we have to assemble all volume cells of this set
+              // for linear elements, there should be only one volumecell for each set
+              // for quadratic elements, there are some volumecells with respect to subelements, that have to be assembled at once
+
+
+              // get element location vector, dirichlet flags and ownerships
+              actele->LocationVector(discret,nds,la,false);
+
+              // get dimension of element matrices and vectors
+              // Reshape element matrices and vectors and init to zero
+              strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
+
+              {
+                  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate cut domain" );
+
+                  // call the element evaluate method
+                  int err = impl->Evaluate( ele, discret, la[0].lm_, eleparams, mat,
+                                            strategy.Elematrix1(),
+                                            strategy.Elematrix2(),
+                                            strategy.Elevector1(),
+                                            strategy.Elevector2(),
+                                            strategy.Elevector3(),
+                                            intpoints_sets[set_counter] );
+
+                  if (err)
+                      dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
+              }
+
+              // do cut interface condition
+
+              // maps of sid and corresponding boundary cells ( for quadratic elements: collected via volumecells of subelements)
+              std::map<int, std::vector<GEO::CUT::BoundaryCell*> > bcells;
+        	  std::map<int, std::vector<DRT::UTILS::GaussIntegration> > bintpoints;
+
+              for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
+              {
+                  GEO::CUT::VolumeCell * vc = *i;
+                  if ( vc->Position()==GEO::CUT::Point::outside )
+                  {
+                      vc->GetBoundaryCells( bcells );
+                  }
+              }
+
+
+              if ( bcells.size() > 0 )
+              {
+                  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate boundary" );
+
+                  // Attention: switch also the flag in fluid3_impl.cpp
+#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
+                  // original Axel's transformation
+                  e->BoundaryCellGaussPoints( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
+#else
+                  // new Benedikt's transformation
+                  e->BoundaryCellGaussPointsLin( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
+#endif
+
+                  // needed for fluid-fluid Coupling
+                  std::map<int, std::vector<Epetra_SerialDenseMatrix> >  side_coupling;
+                  Epetra_SerialDenseMatrix  Cuiui(1,1);
+
+                  if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeSigma)
+                      impl->ElementXfemInterface( ele,
+                                                  discret,
+                                                  la[0].lm_,
+                                                  intpoints_sets[set_counter],
+                                                  cutdiscret,
+                                                  bcells,
+                                                  bintpoints,
+                                                  side_coupling,
+                                                  eleparams,
+                                                  strategy.Elematrix1(),
+                                                  strategy.Elevector1(),
+                                                  Cuiui);
+
+                  if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeNitsche)
+                      impl->ElementXfemInterfaceNitsche( ele,
+                                                         discret,
+                                                         la[0].lm_,
+                                                         intpoints_sets[set_counter],
+                                                         cutdiscret,
+                                                         bcells,
+                                                         bintpoints,
+                                                         side_coupling,
+                                                         eleparams,
+                                                         strategy.Elematrix1(),
+                                                         strategy.Elevector1(),
+                                                         Cuiui);
+                  if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeNeumann)
+                      impl->ElementXfemInterfaceNeumann( ele,
+                                                         discret,
+                                                         la[0].lm_,
+                                                         intpoints_sets[set_counter],
+                                                         cutdiscret,
+                                                         bcells,
+                                                         bintpoints,
+                                                         side_coupling,
+                                                         eleparams,
+                                                         strategy.Elematrix1(),
+                                                         strategy.Elevector1(),
+                                                         Cuiui);
+
+              }
+
+              int eid = actele->Id();
+              strategy.AssembleMatrix1(eid,la[0].lm_,la[0].lm_,la[0].lmowner_,la[0].stride_);
+              strategy.AssembleVector1(la[0].lm_,la[0].lmowner_);
+
+
+//              testvol += test_vc;
+//              cout << "test_vc" << test_vc << endl;
+
+              set_counter += 1;
+
+          } // end of loop over cellsets // end of assembly for each set of cells
+//          cout << "testvol " << testvol << endl;
+
+#else
+
         GEO::CUT::plain_volumecell_set cells;
         std::vector<DRT::UTILS::GaussIntegration> intpoints;
 
@@ -268,7 +409,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
               std::map<int, std::vector<DRT::UTILS::GaussIntegration> > bintpoints;
 
               // Attention: switch also the flag in fluid3_impl.cpp
-#if 0
+#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
               // original Axel's transformation
               e->BoundaryCellGaussPoints( wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
 #else
@@ -330,7 +471,8 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
           }
           count += 1;
         }
-      }
+#endif
+      } // end of if(e!=NULL) // assembly for cut elements
       else
       {
         TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate normal" );
@@ -436,6 +578,45 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
     GEO::CUT::ElementHandle * e = wizard_->GetElement( actele );
     if ( e!=NULL )
     {
+
+#ifdef DOFSETS_NEW
+
+        std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
+        std::vector< std::vector<int> > nds_sets;
+
+        e->GetVolumeCellsDofSets( cell_sets, nds_sets );
+
+        int set_counter = 0;
+
+        for( std::vector< GEO::CUT::plain_volumecell_set>::iterator s=cell_sets.begin();
+             s!=cell_sets.end();
+             s++)
+        {
+            GEO::CUT::plain_volumecell_set & cells = *s;
+
+            const std::vector<int> & nds = nds_sets[set_counter];
+
+            for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
+            {
+                GEO::CUT::VolumeCell * vc = *i;
+                if ( vc->Position()==GEO::CUT::Point::outside )
+                {
+                    if ( e->IsCut() )
+                    {
+                        GmshOutputVolumeCell( discret, gmshfilecontent_vel, gmshfilecontent_press, actele, e, vc, vel, nds );
+                        GmshOutputBoundaryCell( discret, cutdiscret, gmshfilecontent_bound, actele, e, vc );
+                    }
+                    else
+                    {
+                        GmshOutputElement( discret, gmshfilecontent_vel, gmshfilecontent_press, actele, vel );
+                    }
+                }
+            }
+            set_counter += 1;
+        }
+
+
+#else
       GEO::CUT::plain_volumecell_set cells;
       std::vector<DRT::UTILS::GaussIntegration> intpoints;
       e->VolumeCells( cells );
@@ -446,9 +627,10 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
         GEO::CUT::VolumeCell * vc = *i;
         if ( vc->Position()==GEO::CUT::Point::outside )
         {
+          const std::vector<int> & nds = vc->NodalDofSet();
           if ( e->IsCut() )
           {
-            GmshOutputVolumeCell( discret, gmshfilecontent_vel, gmshfilecontent_press, actele, e, vc, vel );
+            GmshOutputVolumeCell( discret, gmshfilecontent_vel, gmshfilecontent_press, actele, e, vc, vel, nds );
             GmshOutputBoundaryCell( discret, cutdiscret, gmshfilecontent_bound, actele, e, vc );
           }
           else
@@ -458,6 +640,9 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
         }
       }
       count += 1;
+
+#endif
+
     }
     else
     {
@@ -490,6 +675,7 @@ void FLD::XFluid::XFluidState::GmshOutputElement( DRT::Discretization & discret,
   switch ( actele->Shape() )
   {
   case DRT::Element::hex8:
+  case DRT::Element::hex20:
     vel_f << "VH(";
     press_f << "SH(";
     break;
@@ -497,7 +683,8 @@ void FLD::XFluid::XFluidState::GmshOutputElement( DRT::Discretization & discret,
     dserror( "unsupported shape" );
   }
 
-  for ( int i=0; i<actele->NumNode(); ++i )
+//  for ( int i=0; i<actele->NumNode(); ++i )
+  for ( int i=0; i<8; ++i )
   {
     if ( i > 0 )
     {
@@ -511,7 +698,8 @@ void FLD::XFluid::XFluidState::GmshOutputElement( DRT::Discretization & discret,
   vel_f << "){";
   press_f << "){";
 
-  for ( int i=0; i<actele->NumNode(); ++i )
+//  for ( int i=0; i<actele->NumNode(); ++i )
+  for ( int i=0; i<8; ++i )
   {
     if ( i > 0 )
     {
@@ -535,10 +723,9 @@ void FLD::XFluid::XFluidState::GmshOutputVolumeCell( DRT::Discretization & discr
                                                      DRT::Element * actele,
                                                      GEO::CUT::ElementHandle * e,
                                                      GEO::CUT::VolumeCell * vc,
-                                                     Teuchos::RCP<Epetra_Vector> velvec )
+                                                     Teuchos::RCP<Epetra_Vector> velvec,
+                                                     const std::vector<int> & nds)
 {
-
-  const std::vector<int> & nds = vc->NodalDofSet();
 
   DRT::Element::LocationArray la( 1 );
 
@@ -619,9 +806,23 @@ void FLD::XFluid::XFluidState::GmshOutputVolumeCell( DRT::Discretization & discr
         p.Multiply( 1, pressure, funct, 1 );
         break;
       }
+      case DRT::Element::hex20:
+      {
+    	  // TODO: check the output for hex20
+        const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
+        LINALG::Matrix<numnodes,1> funct;
+        DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex20 );
+        LINALG::Matrix<3,numnodes> velocity( vel, true );
+        LINALG::Matrix<1,numnodes> pressure( press, true );
+
+        v.Multiply( 1, velocity, funct, 1 );
+        p.Multiply( 1, pressure, funct, 1 );
+        break;
+      }
       default:
         dserror( "unsupported shape" );
       }
+
 
       if ( i > 0 )
       {
@@ -743,6 +944,18 @@ void FLD::XFluid::XFluidState::GmshOutputBoundaryCell( DRT::Discretization & dis
           //x.Multiply( xyze, funct );
           break;
         }
+        case DRT::Element::quad8:
+        {
+          const int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad8>::numNodePerElement;
+          LINALG::Matrix<3,numnodes> xyze( side_xyze, true );
+          //LINALG::Matrix<numnodes,1> funct;
+          LINALG::Matrix<2,numnodes> deriv;
+          //DRT::UTILS::shape_function_2D( funct, eta( 0 ), eta( 1 ), DRT::Element::quad4 );
+          DRT::UTILS::shape_function_2D_deriv1( deriv, eta( 0 ), eta( 1 ), DRT::Element::quad8 );
+          DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad8>( xyze, deriv, metrictensor, drs, &normal );
+          //x.Multiply( xyze, funct );
+          break;
+        }
         default:
           dserror( "unsupported side shape %d", side->Shape() );
         }
@@ -857,6 +1070,7 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
     std::cout << "Empty boundary discretization detected. No FSI coupling will be performed...\n";
   }
 
+  // TODO: for parallel jobs maybe we have to call TransparentDofSet with additional flag true
   RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentDofSet(soliddis));
   boundarydis_->ReplaceDofSet(newdofset);
   boundarydis_->FillComplete();
@@ -1762,8 +1976,6 @@ void FLD::XFluid::Output()
        // output (hydrodynamic) pressure for visualization
        Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(outvec_fluid_);
 
-       pressure->Scale(density_);
-
        fluid_output_->WriteVector("velnp", outvec_fluid_);
        fluid_output_->WriteVector("pressure", pressure);
 
@@ -1883,8 +2095,8 @@ void FLD::XFluid::SetInitialFlowField(
   cout << "SetInitialFlowField " << endl;
   // initial field by (undisturbed) function (init==2)
   // or disturbed function (init==3)
-  if (initfield == INPAR::FLUID::initfield_field_by_function or
-      initfield == INPAR::FLUID::initfield_disturbed_field_from_function)
+  if (initfield == INPAR::FLUID::initfield_field_by_function/* or
+      initfield == INPAR::FLUID::initfield_disturbed_field_from_function*/)
   {
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
@@ -1896,13 +2108,13 @@ void FLD::XFluid::SetInitialFlowField(
 
       if (nodedofset.size()!=0)
       {
-        for(int index=0;index<numdim_+1;++index)
-        {
-          int gid = nodedofset[index];
+          for(int dof=0;dof<(int)nodedofset.size();++dof)
+          {
+            int gid = nodedofset[dof];
 
-          double initialval=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(index,lnode->X(),0.0,NULL);
-          state_->velnp_->ReplaceGlobalValues(1,&initialval,&gid);
-        }
+            double initialval=DRT::Problem::Instance()->Funct(startfuncno-1).Evaluate(dof%4,lnode->X(),0.0,NULL);
+            state_->velnp_->ReplaceGlobalValues(1,&initialval,&gid);
+          }
       }
     }
 
@@ -2027,7 +2239,6 @@ void FLD::XFluid::SetInitialSolidField()
 //      soliddispn_->Update(1.0,*soliddispnp_ ,0.0);
 
 
-
       if(solid_vel_func_no != -1)
       {
           cout << "WDBC read by function: FUNCT " << boundIntFunct_ << endl;
@@ -2042,14 +2253,15 @@ void FLD::XFluid::SetInitialSolidField()
 
              if (nodedofset.size()!=0)
              {
-                 for(int index=0;index<numdim_+1;++index)
+                 for(int dof=0;dof<(int)nodedofset.size();++dof)
                  {
-                     int gid = nodedofset[index];
+                   int gid = nodedofset[dof];
 
-                     double initialval=DRT::Problem::Instance()->Funct(solid_vel_func_no-1).Evaluate(index,lnode->X(),0.0,NULL);
-                     solidvelnp_->ReplaceGlobalValues(1,&initialval,&gid);
+                   double initialval=DRT::Problem::Instance()->Funct(solid_vel_func_no-1).Evaluate(dof%4,lnode->X(),0.0,NULL);
+                   solidvelnp_->ReplaceGlobalValues(1,&initialval,&gid);
                  }
              }
+
           }
 
           // initialize veln_ as well.

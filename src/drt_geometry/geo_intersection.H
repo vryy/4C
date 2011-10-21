@@ -73,6 +73,8 @@ namespace GEO
 
     void Cut( bool include_inner );
 
+    void CreateNodalDofSet ( bool include_inner, DRT::Discretization & dis );
+
     void Cut( std::map< int, DomainIntCells >& domainintcells,
               std::map< int, BoundaryIntCells >& boundaryintcells );
 
@@ -85,6 +87,8 @@ namespace GEO
     GEO::CUT::MeshIntersection & Mesh() { return *mesh_; }
 
     void PrintCellStats();
+
+    void DumpGmshNumDOFSets( bool include_inner );
 
     void DumpGmshVolumeCells( bool include_inner );
 

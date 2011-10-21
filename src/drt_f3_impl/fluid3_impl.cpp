@@ -4556,7 +4556,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::RecomputeGalAndComputeCrossRHSContEq()
 
            /                                                       dp   \
           |         1     / dT     /               \   \     1      th  |
-          |    q , --- * | ---- + | (u + û) o nabla | T | - --- * ----  |
+          |    q , --- * | ---- + | (u + ï¿½) o nabla | T | - --- * ----  |
           |         T     \ dt     \               /   /    p      dt   |
            \                                                 th        /
            +-----------------------------------------------------+
@@ -9275,6 +9275,7 @@ void Fluid3Impl<distype>::ElementXfemInterface(
     // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     double press = funct_.Dot(epreaf);
 
+
     for ( int i=0; i<nen_; ++i )
     {
       dx( i ) = derxy_( 0, i );
@@ -9472,7 +9473,7 @@ void Fluid3Impl<distype>::ElementXfemInterface(
 
       for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
       {
-#if 0
+#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
         const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
         double drs = 0;
@@ -10279,6 +10280,10 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
 	    si->eivel(cutdis,"ivelnp",cutla[0].lm_);
 	    si->addeidisp(cutdis,"idispnp",cutla[0].lm_,side_xyze);
 
+
+	    double surface = 0.0;
+
+	    // pre-evaluate for element-size
 	    // loop gausspoints
 	    for ( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=cutintpoints.begin();
 	          i!=cutintpoints.end();
@@ -10291,7 +10296,70 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
 
 	      for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
 	      {
-#if 0
+#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
+        const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
+
+        double drs = 0;
+
+        si->Evaluate(eta,x_side,normal,drs);
+
+        const double fac = drs*iquad.Weight();
+
+        // find element local position of gauss point at interface
+        GEO::CUT::Position<distype> pos( xyze_, x_side );
+        pos.Compute();
+        const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+
+#else
+        const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
+
+        double drs = 0; // transformation factor between reference cell and linearized boundary cell
+
+        LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
+        normal.Clear();
+
+        // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
+        switch ( bc->Shape() )
+        {
+        case DRT::Element::tri3:
+        {
+            bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs);
+          break;
+        }
+        case DRT::Element::quad4:
+        {
+            bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs);
+          break;
+        }
+        default:
+          throw std::runtime_error( "unsupported integration cell type" );
+        }
+#endif
+
+            surface += drs*iquad.Weight();
+	      }
+	    }
+
+	    double surface_diameter = 2.0*sqrt(surface/PI);
+
+
+	    cout << surface_diameter << endl;
+
+
+
+	    // loop gausspoints
+	    for ( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=cutintpoints.begin();
+	          i!=cutintpoints.end();
+	          ++i )
+	    {
+	      const DRT::UTILS::GaussIntegration & gi = *i;
+	      GEO::CUT::BoundaryCell * bc = bcs[i - cutintpoints.begin()]; // get the corresponding boundary cell
+
+	      //gi.Print();
+
+	      for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
+	      {
+#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
         const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
         double drs = 0;
@@ -10653,10 +10721,10 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
 			    |  gamma*mu/h_K *  v , Du     | =  - |   gamma*mu/h_K *  v , u  - u   |
 				 \                           /        \                             */
 
-			  const double gamma = 100.0;
-			  const double h_K   = 1.0/10.0;
+			  const double gamma = 10.0;
+			  double h_K   = surface_diameter; //1.0/10.0
 
-			  const double stab_fac = gamma*visceff_/h_K;
+			  double stab_fac = gamma*visceff_/h_K;
 
 			  for(int ir=0; ir<nen_; ir++)
 			  {
@@ -10697,7 +10765,7 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
 
 			  const double gamma_conv = 10.0;
 
-			  const double stab_fac_conv = gamma_conv/h_K;
+			  double stab_fac_conv = gamma_conv/h_K;
 
 			  for(int ir=0; ir<nen_; ir++)
 			  {
@@ -11032,25 +11100,65 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNeumann(
 	    {
 	      const DRT::UTILS::GaussIntegration & gi = *i;
 	      //const GEO::CUT::BoundaryCell & bc = *bcs[i - cutintpoints.begin()];
+	      GEO::CUT::BoundaryCell * bc = bcs[i - cutintpoints.begin()]; // get the corresponding boundary cell
 
 	      //gi.Print();
 
 	      for ( DRT::UTILS::GaussIntegration::iterator iquad=gi.begin(); iquad!=gi.end(); ++iquad )
 	      {
-	        const LINALG::Matrix<2,1> eta( iquad.Point() );
+#ifdef BOUNDARYCELL_TRANSFORMATION_OLD
+        const LINALG::Matrix<2,1> eta( iquad.Point() ); // xi-coordinates with respect to side
 
-	        double drs = 0;
+        double drs = 0;
 
-	        si->Evaluate(eta,x_side,normal,drs);
+        si->Evaluate(eta,x_side,normal,drs);
+
+        const double fac = drs*iquad.Weight();
+
+        // find element local position of gauss point at interface
+        GEO::CUT::Position<distype> pos( xyze_, x_side );
+        pos.Compute();
+        const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+
+#else
+        const LINALG::Matrix<2,1> eta( iquad.Point() ); // eta-coordinates with respect to cell
+
+        double drs = 0; // transformation factor between reference cell and linearized boundary cell
+
+        LINALG::Matrix<3,1> x_gp_lin(true); // gp in xyz-system on linearized interface
+        normal.Clear();
+
+        // get normal vector on linearized boundary cell, x-coordinates of gaussian point and surface transformation factor
+        switch ( bc->Shape() )
+        {
+        case DRT::Element::tri3:
+        {
+            bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs);
+          break;
+        }
+        case DRT::Element::quad4:
+        {
+            bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs);
+          break;
+        }
+        default:
+          throw std::runtime_error( "unsupported integration cell type" );
+        }
 
 
+        const double fac = drs*iquad.Weight();
 
-	        const double fac = drs*iquad.Weight();
+        // find element local position of gauss point
+        GEO::CUT::Position<distype> pos( xyze_, x_gp_lin );
+        pos.Compute();
+        const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
 
-	        // find element local position of gauss point at interface
-	        GEO::CUT::Position<distype> pos( xyze_, x_side );
-	        pos.Compute();
-	        const LINALG::Matrix<3,1> & rst = pos.LocalCoordinates();
+
+        // project gaussian point from linearized interface to warped side (get local side coordinates)
+        LINALG::Matrix<2,1> xi_side(true);
+        si->ProjectOnSide(x_gp_lin, x_side, xi_side);
+
+#endif
 
 	        // evaluate shape functions
 	        DRT::UTILS::shape_function<distype>( rst, funct_ );
