@@ -2616,7 +2616,7 @@ void StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
 	// retrieve number of time curve that is to be applied
 	int curvenumber = statmechparams_.get<int>("CURVENUMBER",0)-1;
 
-	if(oscdir!=0 && oscdir!=1 && oscdir!=2)
+	if(oscdir!=0 && oscdir!=1 && oscdir!=2 && oscdir!=-1)
 		dserror("Please define the StatMech Parameter OSCILLDIR correctly");
 
   // get the current time
@@ -2624,7 +2624,7 @@ void StatMechManager::EvaluateDirichletPeriodic(ParameterList& params,
 	double dt = params.get<double>("delta time", 0.01);
 	double starttime = statmechparams_.get<double>("STARTTIMEACT",-1.0);
 	// check if time has superceeded start. If not, do nothing (i.e. no application of Dirichlet values) and just return!
-	if(time <= starttime || (time > starttime && fabs(time-starttime)<dt/1e4) || curvenumber<0)
+	if(time <= starttime || (time > starttime && fabs(time-starttime)<dt/1e4) || curvenumber<0 || oscdir==-1)
 		return;
 	if (time<0.0)
 		usetime = false;
