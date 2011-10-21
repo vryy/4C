@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file inpar_combust.H
+\file inpar_fluid.H
 
 \brief Input parameters for fluid
 
@@ -206,17 +206,27 @@ namespace INPAR
       minimal
     };
 
-    //---------------------------------------------
-    // some enums which could also be defined here
-    //---------------------------------------------
-    // more time integration schemes
-    // linearization strategy convective term
-    // type of stabilization strategy (SUPG,PSPG,CSTAB,...)
+    //!  norm for convergence check of nonlinear iteration
+    enum ItNorm
+    {
+      fncc_L1,       // converg. check with L1 norm
+      fncc_L2,       // converg. check with L2 norm
+      fncc_L2_wo_res,/* converg. check with L2 norm, no computation
+                      *   of residual norm if itmax is reached        */
+      fncc_Linf      //converg. check with L-inf. norm
+    };
+
+    //! options for lift & drag calculation
+    enum LiftDrag
+    {
+      liftdrag_none,
+      liftdrag_nodeforce
+    };
 
   }  // namespace FLUID
 
 }  // namespace INPAR
 
 /*----------------------------------------------------------------------*/
-#endif  // #ifndef INPAR_COMBUST_H
+#endif  // #ifndef INPAR_FLUID_H
 #endif  // #ifdef CCADISCRET

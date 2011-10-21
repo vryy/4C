@@ -86,7 +86,7 @@ typedef enum _FIELDTYP
 #define FIELDNAMES {"none", "fluid", "xfluid", "ale", "structure", "thermal", "pressure", "boundary", "scatra", "scatra1", "scatra2", "artery", "thermo", "FluidFluidboundary", "red_airway", "inflow", NULL}
 
 
-
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*
  | Discretisation classes                                   mn 10/05    |
  *----------------------------------------------------------------------*/
@@ -261,7 +261,7 @@ typedef enum _NODE_ARRAY {
 /* Mapping from node array numbers to printable names. To be used to
  * initialize static variables. Keep in sync! */
 #define NODEARRAYNAMES {"sol", "sol_increment", "sol_residual", "sol_mf", NULL}
-
+#endif
 /*----------------------------------------------------------------------*
  | enum MATERIAL_TYP                                      m.gee 7/01    |
  | material laws                                                        |
@@ -326,6 +326,9 @@ typedef enum _MATERIAL_TYP
                        m_humphreycardiovascular /* anisotropic material for arteries cf Humphrey */
 } MATERIAL_TYP;
 #endif
+
+
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*
  | enum PART_TYP                                          m.gee 7/01    |
  | type of domain decomposition                                         |
@@ -598,7 +601,7 @@ typedef enum _SSI_MESH
      conform,
      non_conform
 } SSI_MESH;
-
+#endif
 
 /*----------------------------------------------------------------------*/
 /* The known time marching schemes for fluids. */
@@ -661,7 +664,7 @@ typedef enum _FSI_COUPLING
   fsi_iter_fluidfluid_monolithicstructuresplit,
 } FSI_COUPLING;
 
-
+#ifndef CCADISCRET
 /*----------------------------------------------------------------------*
  |  FSI MESHES                                            genk 10/02    |
  *----------------------------------------------------------------------*/
@@ -781,6 +784,8 @@ typedef enum _TSI_COUPTYP
                          * element will be created.  */
 } TSI_COUPTYP;
 
+
+#endif
 
 /*!----------------------------------------------------------------------
 \brief enum of arterial network dynamic types

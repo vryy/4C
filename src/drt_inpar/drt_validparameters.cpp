@@ -40,7 +40,8 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_mlmc.H"
 
-#include "../headers/fluid.h"
+
+// old CCARAT header -> should go away
 #include "../headers/dynamic.h"
 
 #include <AztecOO.h>
@@ -1907,40 +1908,31 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("CONVCHECK","L_2_norm",
                                "norm for convergence check",
                                tuple<std::string>(
-                                 "No",
-                                 "L_infinity_norm",
-                                 "L_1_norm",
+                                 //"L_infinity_norm",
+                                 //"L_1_norm",
                                  "L_2_norm",
                                  "L_2_norm_without_residual_at_itemax"
                                  ),
                                tuple<std::string>(
-                                 "do not check for convergence (ccarat)",
-                                 "use max norm (ccarat)",
-                                 "use abs. norm (ccarat)",
+                                 //"use max norm (ccarat)",
+                                 //"use abs. norm (ccarat)",
                                  "compute L2 errors of increments (relative) and residuals (absolute)",
                                  "same as L_2_norm, only no residual norm is computed if itemax is reached (speedup for turbulence calculations, startup phase)"
                                  ),
                                tuple<int>(
-                                 FLUID_DYNAMIC::fncc_no,
-                                 FLUID_DYNAMIC::fncc_Linf,
-                                 FLUID_DYNAMIC::fncc_L1,
-                                 FLUID_DYNAMIC::fncc_L2,
-                                 FLUID_DYNAMIC::fncc_L2_wo_res
+                                 //INPAR::FLUID::fncc_Linf,
+                                 //INPAR::FLUID::fncc_L1,
+                                 INPAR::FLUID::fncc_L2,
+                                 INPAR::FLUID::fncc_L2_wo_res
                                  ),
                                &fdyn);
   setStringToIntegralParameter<int>("STEADYCHECK","L_2_norm",
                                "Norm of steady state check",
                                tuple<std::string>(
-                                 "No",
-                                 "L_infinity_norm",
-                                 "L_1_norm",
                                  "L_2_norm"
                                  ),
                                tuple<int>(
-                                 FLUID_DYNAMIC::fncc_no,
-                                 FLUID_DYNAMIC::fncc_Linf,
-                                 FLUID_DYNAMIC::fncc_L1,
-                                 FLUID_DYNAMIC::fncc_L2
+                                 INPAR::FLUID::fncc_L2
                                  ),
                                &fdyn);
 
@@ -1976,13 +1968,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "nodeforce"
                                  ),
                                tuple<int>(
-                                 FLUID_DYNAMIC::ld_none,
-                                 FLUID_DYNAMIC::ld_none,
-                                 FLUID_DYNAMIC::ld_nodeforce,
-                                 FLUID_DYNAMIC::ld_nodeforce,
-                                 FLUID_DYNAMIC::ld_nodeforce,
-                                 FLUID_DYNAMIC::ld_nodeforce,
-                                 FLUID_DYNAMIC::ld_nodeforce
+                                 INPAR::FLUID::liftdrag_none,
+                                 INPAR::FLUID::liftdrag_none,
+                                 INPAR::FLUID::liftdrag_nodeforce,
+                                 INPAR::FLUID::liftdrag_nodeforce,
+                                 INPAR::FLUID::liftdrag_nodeforce,
+                                 INPAR::FLUID::liftdrag_nodeforce,
+                                 INPAR::FLUID::liftdrag_nodeforce
                                  ),
                                &fdyn);
 
@@ -3107,7 +3099,23 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   DoubleParameter("CONVTOL",1e-6,"Convergence check tolerance for outer loop",&elchcontrol);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&elchcontrol);
   DoubleParameter("TEMPERATURE",298.0,"Constant temperature (Kelvin)",&elchcontrol);
-  BoolParameter("MOVINGBOUNDARY","No","ELCH algorithm for deforming meshes",&elchcontrol);
+  // parameter for possible types of ELCH algorithms for deforming meshes
+  setStringToIntegralParameter<int>("MOVINGBOUNDARY",
+                              "No",
+                              "ELCH algorithm for deforming meshes",
+                               tuple<std::string>(
+                                 "No",
+                                 "pseudo-transient",
+                                 "fully-transient"),
+                               tuple<std::string>(
+                                 "no moving boundary algorithm",
+                                 "pseudo-transient moving boundary algorithm",
+                                 "full moving boundary algorithm including fluid solve")  ,
+                                tuple<int>(
+                                  INPAR::ELCH::elch_mov_bndry_no,
+                                  INPAR::ELCH::elch_mov_bndry_pseudo_transient,
+                                  INPAR::ELCH::elch_mov_bndry_fully_transient),
+                                 &elchcontrol);
   DoubleParameter("MOLARVOLUME",0.0,"Molar volume for electrode shape change computations",&elchcontrol);
   BoolParameter("NATURAL_CONVECTION","No","Include natural convection effects",&elchcontrol);
   BoolParameter("GALVANOSTATIC","No","flag for galvanostatic mode",&elchcontrol);

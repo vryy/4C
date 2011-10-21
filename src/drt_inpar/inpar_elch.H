@@ -24,6 +24,14 @@ namespace INPAR
   namespace ELCH
   {
 
+  /// possible types of moving boundary simulation
+  enum ElchMovingBoundary
+  {
+    elch_mov_bndry_no,
+    elch_mov_bndry_pseudo_transient,
+    elch_mov_bndry_fully_transient,
+  };
+
   }  // namespace ELCH
 
 }  // namespace INPAR
