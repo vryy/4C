@@ -1926,15 +1926,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  INPAR::FLUID::fncc_L2_wo_res
                                  ),
                                &fdyn);
-  setStringToIntegralParameter<int>("STEADYCHECK","L_2_norm",
-                               "Norm of steady state check",
-                               tuple<std::string>(
-                                 "L_2_norm"
-                                 ),
-                               tuple<int>(
-                                 INPAR::FLUID::fncc_L2
-                                 ),
-                               &fdyn);
 
   setStringToIntegralParameter<int>("INITIALFIELD","zero_field",
                                "Initial field for fluid problem",
@@ -2634,13 +2625,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &adyn);
   IntParameter("NUM_INITSTEP",0,"",&adyn);
   IntParameter("RESULTSEVRY",1,"",&adyn);
-
-  setStringToIntegralParameter<int>("QUALITY","none","unused",
-                               tuple<std::string>("none","NONE"),
-                               tuple<int>(
-                                 ALE_DYNAMIC::no_quality,
-                                 ALE_DYNAMIC::no_quality),
-                               &adyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatradyn = list->sublist(
