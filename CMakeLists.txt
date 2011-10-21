@@ -199,14 +199,7 @@ MESSAGE("   LNM DEFAULT")
 ENDIF ()
 MESSAGE("   Trilinos_DIR = ${Trilinos_DIR}")
 MESSAGE("   Trilinos_PACKAGE_LIST = ${Trilinos_PACKAGE_LIST}")
-#MESSAGE("   Trilinos_LIBRARIES = ${Trilinos_LIBRARIES}")
-#MESSAGE("   Trilinos_INCLUDE_DIRS = ${Trilinos_INCLUDE_DIRS}")
-#MESSAGE("   Trilinos_LIBRARY_DIRS = ${Trilinos_LIBRARY_DIRS}")
 MESSAGE("   Trilinos_TPL_LIST = ${Trilinos_TPL_LIST}")
-#MESSAGE("   Trilinos_TPL_INCLUDE_DIRS = ${Trilinos_TPL_INCLUDE_DIRS}")
-#MESSAGE("   Trilinos_TPL_LIBRARIES = ${Trilinos_TPL_LIBRARIES}")
-#MESSAGE("   Trilinos_TPL_LIBRARY_DIRS = ${Trilinos_TPL_LIBRARY_DIRS}")
-#MESSAGE("   Trilinos_BUILD_SHARED_LIBS = ${Trilinos_BUILD_SHARED_LIBS}")
 MESSAGE("End of Trilinos details\n")
 
 #set(Boost_USE_STATIC_LIBS ON) 
@@ -288,26 +281,6 @@ endif (Trilinos_FOUND)
 #    )
 #endif(Boost_FOUND)
 
-#find_package(NemesisI REQUIRED)
-#if (NEMESIS_FOUND)
-#  include_directories(${NEMESIS_INCLUDE_DIRS})
-#  link_directories(${NEMESIS_LIBRARY_DIRS})
-#  set(LIBRARIES
-#    ${LIBRARIES}
-#    ${NEMESIS_LIBRARIES}
-#    )
-#endif(NEMESIS_FOUND)
-
-#find_package(ExodusII REQUIRED)
-#if (EXODUS_FOUND)
-#  include_directories(${EXODUS_INCLUDE_DIRS})
-#  link_directories(${EXODUS_LIBRARY_DIRS})
-#  set(LIBRARIES
-#    ${LIBRARIES}
-#    ${EXODUS_LIBRARIES}
-#    )
-#endif(EXODUS_FOUND)
-
 find_package(Netcdf REQUIRED)
 if (NETCDF_FOUND)
   include_directories(${NETCDF_INCLUDE_DIRS})
@@ -317,24 +290,6 @@ if (NETCDF_FOUND)
     ${NETCDF_LIBRARIES}
     )
 endif(NETCDF_FOUND)
-
-#if (LAPACK_FOUND)
-#  include_directories(${LAPACK_INCLUDE_DIRS})
-#  link_directories(${LAPACK_LIBRARY_DIRS})
-#  set(LIBRARIES
-#    ${LIBRARIES}
-#    ${LAPACK_LIBRARIES}
-#    )
-#endif(LAPACK_FOUND)
-
-#if (BLAS_FOUND)
-#  include_directories(${BLAS_INCLUDE_DIRS})
-#  link_directories(${BLAS_LIBRARY_DIRS})
-#  set(LIBRARIES
-#    ${LIBRARIES}
-#    ${BLAS_LIBRARIES}
-#    )
-#endif(BLAS_FOUND)
 
 ###------------------------------------------------------------------ List of files
 set(OBJS_DRT_ALE_LIB
