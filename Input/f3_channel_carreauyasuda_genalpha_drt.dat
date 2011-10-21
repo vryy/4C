@@ -23,7 +23,6 @@ ALE_TYPE                        classic_lin
 MAXTIME                         4
 NUMSTEP                         41
 NUM_INITSTEP                    0
-QUALITY                         none
 RESULTSEVRY                     1
 TIMESTEP                        0.1
 ---------------------------------------------------------ALE SOLVER
@@ -91,7 +90,6 @@ SIMPLER                         no
 STARTFUNCNO                     -1
 STARTINGALGO                    One_Step_Theta
 START_THETA                     0.67
-STEADYCHECK                     L_2_norm
 STEADYSTEP                      -1
 STEADYTOL                       1e-06
 THETA                           0.66

@@ -83,7 +83,6 @@ ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.01
 PREDICTOR                       steady_state_predictor
 SIMPLER                         no
-STEADYCHECK                     L_2_norm                        // No,L_infinity_norm,L_1_norm,L_2_norm
 THETA                           0.66                            // Time integration factor
 TIMEINTEGR                      One_Step_Theta                  // One_Step_Theta BDF2
 NEUMANNINFLOW                   yes

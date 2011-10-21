@@ -54,7 +54,6 @@ NONLINITER       Newton
 ITEMAX           15
 CONVCHECK        L_2_norm
 CONVTOL          1.0E-12
-STEADYCHECK      L_2_norm
 STEADYSTEP       -1
 STEADYTOL        1.0E-12
 UPOUT            1

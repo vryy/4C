@@ -53,7 +53,6 @@ NONLINITER                      fixed_point_like
 ITEMAX                          10
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-4
-STEADYCHECK                     L_2_norm
 STEADYSTEP                      5
 STEADYTOL                       1.0E-4
 STARTINGALGO                    One_Step_Theta

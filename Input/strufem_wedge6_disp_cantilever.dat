@@ -75,7 +75,6 @@ NONLINITER                      fixed_point_like
 ITEMAX                          5
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-6
-STEADYCHECK                     L_2_norm
 STEADYSTEP                      -1
 STEADYTOL                       1.0E-6
 UPOUT                           1
@@ -158,7 +157,6 @@ MAXTIME                         5.0
 NUM_INITSTEP                    0
 ALE_TYPE                        classic_lin
 RESULTSEVRY                     1
-QUALITY                         none
 -----------------------------------------------------------------TSI DYNAMIC
 ----------------------------------------------------------------FLUID SOLVER
 SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym

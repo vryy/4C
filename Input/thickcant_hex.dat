@@ -126,7 +126,6 @@ MAXTIME      5.0
 NUM_INITSTEP 0
 ALE_TYPE     classic_lin
 RESULTSEVRY  1
-QUALITY      none
 -------------------------------------------------------TSI DYNAMIC
 KIND         thermal_static_structure_genalpha
 NUMSTEP      200

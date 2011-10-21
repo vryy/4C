@@ -87,7 +87,6 @@ SIMPLER                         no
 STARTFUNCNO                     2
 STARTINGALGO                    One_Step_Theta
 START_THETA                     1
-STEADYCHECK                     L_2_norm
 STEADYSTEP                      -1
 STEADYTOL                       1e-06
 THETA                           1.00

@@ -73,7 +73,6 @@ NONLINITER       fixed_point_like // Newton
 ITEMAX           10 // 20
 CONVCHECK        L_2_norm
 CONVTOL          1.0E-5
-STEADYCHECK      L_2_norm
 STEADYSTEP       -1
 STEADYTOL        1.0E-6
 UPOUT            1
