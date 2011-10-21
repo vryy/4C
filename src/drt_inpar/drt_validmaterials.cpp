@@ -372,6 +372,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"THEXPANS","coefficient of linear thermal expansion");
     AddNamedReal(m,"INITTEMP","initial temperature");
     AddNamedReal(m,"YIELD","yield stress");
+    AddNamedReal(m,"ISOHARD","isotropic hardening modulus");
     AddNamedReal(m,"KINHARD","kinematic hardening modulus");
     AddNamedReal(m,"TOL","tolerance for local Newton iteration");
 
@@ -410,6 +411,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"DENS","mass density");
     AddNamedReal(m,"YIELD","yield stress");
+    AddNamedReal(m,"ISOHARD","isotropic hardening modulus");
     AddNamedReal(m,"KINHARD","kinematic hardening modulus");
     AddNamedReal(m,"TOL","tolerance for local Newton iteration");
 

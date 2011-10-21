@@ -58,6 +58,7 @@ MAT::PAR::PlasticLinElast::PlasticLinElast(
   poissonratio_(matdata->GetDouble("NUE")),
   density_(matdata->GetDouble("DENS")),
   yield_(matdata->GetDouble("YIELD")),
+  isohard_(matdata->GetDouble("ISOHARD")),
   kinhard_(matdata->GetDouble("KINHARD")),
   abstol_(matdata->GetDouble("TOL"))
 {
@@ -348,8 +349,10 @@ void MAT::PlasticLinElast::Evaluate(
   double young = params_->youngs_;
   // Poisson's ratio
   double nu = params_->poissonratio_;
-  // yield stress
-  double sigma_y = params_->yield_;
+  // initial yield stress
+  double sigma_y0 = params_->yield_;
+  // linear kinematic hardening modulus
+  double Hiso = params_->isohard_;
   // linear kinematic hardening modulus
   double Hkin = params_->kinhard_;
 
@@ -376,11 +379,11 @@ void MAT::PlasticLinElast::Evaluate(
   // REMARK: stress-like 6-Voigt vector
   LINALG::Matrix<NUM_STRESS_3D,1> strain(linstrain);
 
-  //-------------------------------------------------------------------
+  //---------------------------------------------------------------------------
   // elastic predictor (trial values)
-  //-------------------------------------------------------------------
+  //---------------------------------------------------------------------------
 
-  // --------------------------------------------- old plastic strain
+  // -------------------------------------------- old plastic strains
   // strain^{p,trial}_{n+1} = strain^p_n
   // equivalent plastic strain
   LINALG::Matrix<NUM_STRESS_3D,1> strain_p(true);
@@ -389,6 +392,9 @@ void MAT::PlasticLinElast::Evaluate(
 
   // get old equivalent plastic strain only in case of plastic step
   double strainbar_p;
+  // accumulated or equivalent plastic strain (scalar-valued)
+  // astrain^{p,trial}_{n+1} = astrain^p_n
+  strainbar_p = (strainbarpllast_->at(gp))(0,0);
 
   // ------------------------------------------------ old back stress
   // beta^{trial}_{n+1} = beta_n
@@ -453,11 +459,16 @@ void MAT::PlasticLinElast::Evaluate(
   double qbar = 0.0;
   qbar = sqrt( 3.0 * J2 );
 
-  //-------------------------------------------------------------------
+  //---------------------------------------------------------------------------
   // check plastic admissibility
-  //-------------------------------------------------------------------
+  //---------------------------------------------------------------------------
 
   // ----------------------------------------------- trial yield function
+
+  // calculate the uniaxial yield stress
+  // sigma_y = sigma_y0 + Hiso . astrain^{p}_{n} = sigma_y0 + Hiso . astrain^{p, trial}_{n+1}
+  double sigma_y = sigma_y0 + Hiso * strainbar_p;
+
   // calculate the yield function
   // Phi = \sqrt{ 3.0 . J2 } - sigma_y = q - sigma_y
   // with trial values: Phi_trial = q_trial - sigma_y
@@ -531,9 +542,6 @@ void MAT::PlasticLinElast::Evaluate(
       plastic_step = true;
     }
 
-    // accumulated or equivalent plastic strain (scalar-valued)
-    // astrain^{p,trial}_{n+1} = astrain^p_n
-    strainbar_p = (strainbarpllast_->at(gp))(0,0);
     // calculate kinematic hardening stress of old time step
     // beta_{n} = Hkin * astrain^p_{n} = Hkin * astrain^{p, trial}_{n+1}
     betabarold = Hkin * strainbar_p;
@@ -586,7 +594,7 @@ void MAT::PlasticLinElast::Evaluate(
 
       // plasticity with linear kinematic hardening
       // ResTan = -3G - Hkin = const.
-      ResTan = - 3 * G - Hkin;
+      ResTan = - 3 * G - Hkin -Hiso;
 
       // incremental plastic multiplier Dgamma
       // Dgamma = Dgamma - Phi / Phi'
@@ -599,6 +607,9 @@ void MAT::PlasticLinElast::Evaluate(
       // kinematic hardening stress betabar (scalar-valued)
       // beta_{n+1} = Hkin * astrain^p_{n+1}
       betabar = Hkin * strainbar_p;
+
+      // sigma = sigma_y0 + Hiso . astrain^{p}_{n+1}
+      sigma_y = sigma_y0 + Hiso * strainbar_p;
 
 #ifdef DEBUGMATERIAL
       if(gp==0)
@@ -685,7 +696,10 @@ void MAT::PlasticLinElast::Evaluate(
   // elastic unloading --> C == C_e
   else heaviside = 0.0;
 
-  // --------------------------- consistent elastoplastic tangent modulus
+  //---------------------------------------------------------------------------
+  // --------------------------------- consistent elastoplastic tangent modulus
+  //---------------------------------------------------------------------------
+
   // using an associative flow rule: C_ep is symmetric
   // ( generally C_ep is nonsymmetric )
   SetupCmatElastoPlastic(
@@ -696,6 +710,7 @@ void MAT::PlasticLinElast::Evaluate(
     flovec,
     eta, //devstress,
     heaviside,
+    Hiso,
     Hkin
     );
 
@@ -835,6 +850,7 @@ void MAT::PlasticLinElast::SetupCmatElastoPlastic(
   LINALG::Matrix<6,1> flowvector,  //!< unit flow vector
   LINALG::Matrix<6,1> eta,  //!< relative stress eta = s - beta
   double heaviside,  //!< Heaviside function,
+  double Hiso,  //!< isotropic hardening modulus
   double Hkin  //!< kinematic hardening modulus
   )
 {
@@ -915,7 +931,7 @@ void MAT::PlasticLinElast::SetupCmatElastoPlastic(
     {
       if (q != 0.0)
       {
-        epfac3 =  heaviside * 6 * G * G * ( Dgamma / q - 1.0 / (3*G + Hkin) )/(norm * norm);
+        epfac3 =  heaviside * 6 * G * G * ( Dgamma / q - 1.0 / (3*G + Hkin + Hiso) )/(norm * norm);
         cmat(i,k) += epfac3 * eta(i) * eta(k);
       }
     }

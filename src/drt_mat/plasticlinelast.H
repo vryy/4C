@@ -63,9 +63,11 @@ namespace MAT
       const double poissonratio_;
       /// mass density
       const double density_;
-      /// yield stress (constant for perfect plasticity)
+      /// initial yield stress (constant)
       const double yield_;
-      /// kinematic hardening
+      /// linear isotropic hardening modulus
+      const double isohard_;
+      /// linear kinematic hardening modulus
       const double kinhard_;
       // tolerance for local Newton iteration
       const double abstol_;
@@ -193,6 +195,7 @@ private:
       const LINALG::Matrix<6,1> flowvector,
       const LINALG::Matrix<6,1> eta,
       double heaviside,
+      double Hiso,
       double Hkin
       );
 
