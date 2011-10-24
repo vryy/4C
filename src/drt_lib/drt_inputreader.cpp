@@ -979,8 +979,6 @@ void DatFileReader::ReadDat()
   // the following section names are always regarded as valid
   knownsections_["--END"] = true;
   knownsections_["--TITLE"] = true;
-  //knownsections_["--ELEMENTS"] = true;
-  //knownsections_["--LOAD CURVES"] = true;
   knownsections_["--CURVE1"] = true;
   knownsections_["--CURVE2"] = true;
   knownsections_["--CURVE3"] = true;
@@ -993,12 +991,6 @@ void DatFileReader::ReadDat()
   knownsections_["--FUNCT4"] = true;
   knownsections_["--FUNCT5"] = true;
   knownsections_["--FUNCT6"] = true;
-  knownsections_["--LOCSYS1"] = true;
-  knownsections_["--LOCSYS2"] = true;
-  knownsections_["--LOCSYS3"] = true;
-  knownsections_["--LOCSYS4"] = true;
-  knownsections_["--LOCSYS5"] = true;
-  knownsections_["--LOCSYS6"] = true;
 }
 
 
