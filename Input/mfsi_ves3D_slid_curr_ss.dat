@@ -83,7 +83,6 @@ GENAVG                          ImrLike
 THETA                           0.66
 ---------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    zero_field
-RESSTEP                         -1
 STARTFUNCNO                     2
 TIMEINTEGR                      One_Step_Theta
 STARTINGALGO                    One_Step_Theta
@@ -91,8 +90,6 @@ NONLINITER                      Newton
 ITEMAX                          5
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-6
-STEADYSTEP                      -1
-STEADYTOL                       1.0E-6
 UPOUT                           1
 UPPSS                           1
 UPRES                           1
@@ -145,7 +142,6 @@ SLIDEALEPROJ                    Curr
 TIMESTEP                        0.1
 NUMSTEP                         200
 MAXTIME                         5.0
-NUM_INITSTEP                    0
 ALE_TYPE                        laplace
 RESULTSEVRY                     1
 ---------------------------------------------------------------STRUCT SOLVER

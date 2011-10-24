@@ -59,7 +59,6 @@ FILESTEPS              1000
 ------------------------------------------------STATISTICAL MECHANICS
 -----------------------------------------------------FLUID DYNAMIC
 INITIALFIELD     zero_field
-RESSTEP          -1
 STARTFUNCNO      2
 TIMEINTEGR       Stationary
 STARTINGALGO     One_Step_Theta
@@ -67,8 +66,6 @@ NONLINITER       fixed_point_like
 ITEMAX           20
 CONVCHECK        L_2_norm
 CONVTOL          1.0E-8
-STEADYSTEP       -1
-STEADYTOL        1.0E-8
 UPOUT            1
 UPPSS            1
 UPRES            1
@@ -2418,11 +2415,6 @@ FUNCT3 EXPR 0 0 0 FUNCTION (y^5)-0.5
 FUNCT4 EXPR 0 0 0 FUNCTION (5.0*x*(y^8))+(10.0*x*(y^3))+(60.0*10.0*x*y*y)
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
------------------------------------------------------------LOCSYS1
------------------------------------------------------------LOCSYS2
------------------------------------------------------------LOCSYS3
------------------------------------------------------------LOCSYS4
------------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 // FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
 // FLUID 1 - 0 0 0 0 0 0

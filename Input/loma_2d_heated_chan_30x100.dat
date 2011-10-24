@@ -38,7 +38,6 @@ NUMTHERMDIS  0
 -----------------------------------------------------FLUID DYNAMIC
 PHYSICAL_TYPE 	 Loma
 INITIALFIELD     field_by_function
-RESSTEP          -1
 STARTFUNCNO      2
 TIMEINTEGR       Af_Gen_Alpha
 STARTINGALGO     One_Step_Theta
@@ -9905,11 +9904,6 @@ FUNCT3 EXPR 0 0.0 0 FUNCTION 293.0    //initial temperature field
 FUNCT4 EXPR 0 0.0 0 FUNCTION 1.0-y
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
------------------------------------------------------------LOCSYS1
------------------------------------------------------------LOCSYS2
------------------------------------------------------------LOCSYS3
------------------------------------------------------------LOCSYS4
------------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 // FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
 // FLUID 1 - 0 0 0 0 0 0

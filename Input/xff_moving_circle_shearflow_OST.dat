@@ -55,14 +55,11 @@ MAXTIME                         10
 NONLINITER                      Newton
 NUMSTASTEPS                     0
 NUMSTEP                         8
-RESSTEP                         -1
 RESTARTEVRY                     20
 SIMPLER                         no
 STARTFUNCNO                     2
 STARTINGALGO                    One_Step_Theta
 START_THETA                     1
-STEADYSTEP                      -1
-STEADYTOL                       1e-06
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        1.0
@@ -74,7 +71,6 @@ PHYSICAL_TYPE                   Incompressible
 TIMESTEP     1.0
 NUMSTEP      40
 MAXTIME      1
-NUM_INITSTEP 0
 ALE_TYPE     classic_lin
 RESULTSEVRY  1
 --------------------------------------------------------FSI DYNAMIC

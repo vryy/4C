@@ -22,7 +22,6 @@ NUMDF    	6
 ALE_TYPE                        classic_lin
 MAXTIME                         4
 NUMSTEP                         41
-NUM_INITSTEP                    0
 RESULTSEVRY                     1
 TIMESTEP                        0.1
 ---------------------------------------------------------ALE SOLVER
@@ -84,14 +83,11 @@ MAXTIME                         1000
 NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0
 NUMSTEP                         10
-RESSTEP                         0
 RESTARTEVRY                     20
 SIMPLER                         no
 STARTFUNCNO                     -1
 STARTINGALGO                    One_Step_Theta
 START_THETA                     0.67
-STEADYSTEP                      -1
-STEADYTOL                       1e-06
 THETA                           0.66
 TIMEINTEGR                      Gen_Alpha
 TIMESTEP                        0.05

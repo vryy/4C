@@ -81,14 +81,11 @@ MAXTIME                         1000
 NONLINITER                      Newton
 NUMSTASTEPS                     0
 NUMSTEP                         30
-RESSTEP                         -1
 RESTARTEVRY                     20
 SIMPLER                         no
 STARTFUNCNO                     2
 STARTINGALGO                    One_Step_Theta
 START_THETA                     1
-STEADYSTEP                      -1
-STEADYTOL                       1e-06
 THETA                           1.00
 TIMEINTEGR                      Stationary
 TIMESTEP                        1.0

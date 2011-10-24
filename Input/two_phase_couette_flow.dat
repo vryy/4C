@@ -43,8 +43,6 @@ NONLINITER       fixed_point_like
 ITEMAX           15
 CONVCHECK        L_2_norm
 CONVTOL          1.0E-4
-STEADYSTEP       -1
-STEADYTOL        1.0E-4
 UPOUT            1
 UPPSS            1
 UPRES            1
@@ -63,7 +61,6 @@ CONVFORM         convective
 GAMMA            1
 GRIDVEL          1
 PREDICTOR        steady_state_predictor
-RESSTEP          0
 MAXTIME          1
 NUMSTEP          1
 TIMESTEP         0.01

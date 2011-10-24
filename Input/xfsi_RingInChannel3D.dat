@@ -42,7 +42,6 @@ NONLINITER                      Newton
 NUMSTASTEPS                     0
 NUMSTEP                         100000
 PREDICTOR                       steady_state_predictor
-RESSTEP                         0
 RESTARTEVRY                     10
 SIMPLER                         no
 STARTFUNCNO                     -1

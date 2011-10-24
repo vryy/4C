@@ -46,7 +46,6 @@ FILESTEPS              1000
 ---------------------------------------------MESHTYING AND CONTACT
 -----------------------------------------------------FLUID DYNAMIC
 INITIALFIELD     zero_field
-RESSTEP          -1
 STARTFUNCNO      2
 TIMEINTEGR       Stationary
 STARTINGALGO     One_Step_Theta
@@ -54,8 +53,6 @@ NONLINITER       Newton
 ITEMAX           15
 CONVCHECK        L_2_norm
 CONVTOL          1.0E-12
-STEADYSTEP       -1
-STEADYTOL        1.0E-12
 UPOUT            1
 UPPSS            1
 UPRES            1
@@ -195,11 +192,6 @@ MAT       1 MAT_scatra DIFFUSIVITY 1.0
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
------------------------------------------------------------LOCSYS1
------------------------------------------------------------LOCSYS2
------------------------------------------------------------LOCSYS3
------------------------------------------------------------LOCSYS4
------------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS 1 NODE 451  POSITION phi     NAME phi     VALUE 0.000000000e+00  TOLERANCE 1e-9

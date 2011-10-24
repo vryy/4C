@@ -66,14 +66,11 @@ NUMSTASTEPS                     0
 NUMSTEP                         1
 PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       steady_state_predictor
-RESSTEP                         0
 RESTARTEVRY                     20
 SIMPLER                         no
 STARTFUNCNO                     -1
 STARTINGALGO                    One_Step_Theta
 START_THETA                     1
-STEADYSTEP                      -1
-STEADYTOL                       1e-06
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
@@ -134,7 +131,6 @@ TIMESTEP     0.0002
 NUMSTEP      21 
 MAXTIME      0.02
 ALE_TYPE     classic_lin
-NUM_INITSTEP 0
 RESULTSEVRY  1
 -------------------------------------------------------SSI DYNAMIC
 -------------------------------------------------------TSI DYNAMIC
@@ -298,11 +294,6 @@ FUNCT3 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
------------------------------------------------------------LOCSYS1
------------------------------------------------------------LOCSYS2
------------------------------------------------------------LOCSYS3
------------------------------------------------------------LOCSYS4
------------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
 FLUID  DIS 1 NODE 1 POSITION velx   NAME velx    VALUE  0.000000000e+00 TOLERANCE 1e-9

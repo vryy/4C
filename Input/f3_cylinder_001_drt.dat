@@ -50,13 +50,10 @@ NONLINITER       fixed_point_like
 ITEMAX           10
 CONVCHECK        L_2_norm
 CONVTOL          1.0E-7
-STEADYSTEP       10
-STEADYTOL        1.0E-7
 STARTINGALGO     One_Step_Theta
 NUMSTASTEPS      0
 START_THETA      0.67
 INITIALFIELD     zero_field
-RESSTEP          2
 STARTFUNCNO      2
 ADAPTCONV        yes
 ADAPTCONV_BETTER 1.0
@@ -269,11 +266,6 @@ FUNCT1 CYLINDER_3D 2.25
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
------------------------------------------------------------LOCSYS1
------------------------------------------------------------LOCSYS2
------------------------------------------------------------LOCSYS3
------------------------------------------------------------LOCSYS4
------------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 // FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
 // FLUID 1 - 0 0 0 0 0 0

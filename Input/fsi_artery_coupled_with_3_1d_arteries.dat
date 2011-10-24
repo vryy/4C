@@ -73,7 +73,6 @@ MAXITER                         50
 UZAWAPARAM                      1.0
 ---------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    zero_field
-RESSTEP                         -1
 STARTFUNCNO                     2
 TIMEINTEGR                      BDF2
 STARTINGALGO                    One_Step_Theta
@@ -81,8 +80,6 @@ NONLINITER                      Newton
 ITEMAX                          12
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-6
-STEADYSTEP                      -1
-STEADYTOL                       1.0E-6
 UPOUT                           1
 UPPSS                           1
 UPRES                           1
@@ -102,7 +99,6 @@ TIMESTEP                        0.1
 NUMSTEP                         41
 MAXTIME                         4.0
 ALE_TYPE                        springs
-NUM_INITSTEP                    0
 RESULTSEVRY                     1
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         9.0

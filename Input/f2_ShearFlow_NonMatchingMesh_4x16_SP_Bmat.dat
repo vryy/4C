@@ -59,14 +59,11 @@ NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0
 NUMSTEP                         25
 PREDICTOR                       steady_state_predictor
-RESSTEP                         0
 RESTARTEVRY                     20
 SIMPLER                         no
 STARTFUNCNO                     2
 STARTINGALGO                    One_Step_Theta
 START_THETA                     1
-STEADYSTEP                      -1
-STEADYTOL                       1e-06
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1

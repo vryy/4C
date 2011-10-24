@@ -45,7 +45,6 @@ FILESTEPS         1000
 ------------------------------------------------STRUCTURAL DYNAMIC
 -----------------------------------------------------FLUID DYNAMIC
 INITIALFIELD zero_field
-RESSTEP      -1
 STARTFUNCNO  2
 TIMEINTEGR   Stationary
 STARTINGALGO One_Step_Theta
@@ -53,8 +52,6 @@ NONLINITER   Newton
 ITEMAX       15
 CONVCHECK    L_2_norm
 CONVTOL      1.0E-7
-STEADYSTEP   1
-STEADYTOL    1.0E-8
 UPOUT        1
 UPPSS        1
 UPRES        1
@@ -3666,11 +3663,6 @@ CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 2.0 c2 1.0
 FLUID DIS 1 NODE 27 POSITION vely NAME vely VALUE -6.555244537e-01 TOLERANCE 1e-8
 FLUID DIS 1 NODE 27 POSITION velx NAME velx VALUE -2.375735443e-02 TOLERANCE 1e-8
 FLUID DIS 1 NODE 27 POSITION pressure NAME pressure VALUE 1.338292877e-02 TOLERANCE 1e-7
------------------------------------------------------------LOCSYS1
------------------------------------------------------------LOCSYS2
------------------------------------------------------------LOCSYS3
------------------------------------------------------------LOCSYS4
------------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 // FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
 // FLUID 1 - 0 0 0 0 0 0

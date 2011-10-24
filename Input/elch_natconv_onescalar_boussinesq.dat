@@ -47,7 +47,6 @@ FILESTEPS              1000
 ---------------------------------------------MESHTYING AND CONTACT
 -----------------------------------------------------FLUID DYNAMIC
 INITIALFIELD     field_by_function
-RESSTEP          -1
 STARTFUNCNO      2
 TIMEINTEGR       BDF2
 STARTINGALGO     One_Step_Theta
@@ -55,8 +54,6 @@ NONLINITER       Newton
 ITEMAX           8
 CONVCHECK        L_2_norm
 CONVTOL          1.0E-6
-STEADYSTEP       -1
-STEADYTOL        1.0E-5
 UPOUT            1
 UPPSS            1
 UPRES            1
@@ -228,11 +225,6 @@ FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0    //initial pres. field (for Bouss
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
------------------------------------------------------------LOCSYS1
------------------------------------------------------------LOCSYS2
------------------------------------------------------------LOCSYS3
------------------------------------------------------------LOCSYS4
------------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS 1 NODE 737 POSITION fluxx   NAME fluxx    VALUE -2.000000000e-04 TOLERANCE 1e-9

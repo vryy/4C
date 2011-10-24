@@ -45,7 +45,6 @@ FILESTEPS         1000
 ------------------------------------------------STRUCTURAL DYNAMIC
 -----------------------------------------------------FLUID DYNAMIC
 INITIALFIELD zero_field
-RESSTEP      -1
 STARTFUNCNO  2
 TIMEINTEGR   Stationary
 STARTINGALGO One_Step_Theta
@@ -53,8 +52,6 @@ NONLINITER   Newton
 ITEMAX       20
 CONVCHECK    L_2_norm
 CONVTOL      1.0E-8
-STEADYSTEP   -1
-STEADYTOL    1.0E-8
 UPOUT        1
 UPPSS        1
 UPRES        1
@@ -8678,11 +8675,6 @@ FLUID DIS 1 NODE 1610 POSITION pressure NAME pressure VALUE 1.841253727e-02 TOLE
 FLUID DIS 1 NODE 1277 POSITION tractionx NAME tractionx VALUE -1.987759876e-02 TOLERANCE 1e-9
 FLUID DIS 1 NODE 1277 POSITION tractiony NAME tractiony VALUE 9.513520826e-03 TOLERANCE 1e-6
 FLUID DIS 1 NODE 1277 POSITION tractionz NAME tractionz VALUE 3.249899835e-02 TOLERANCE 1e-6
------------------------------------------------------------LOCSYS1
------------------------------------------------------------LOCSYS2
------------------------------------------------------------LOCSYS3
------------------------------------------------------------LOCSYS4
------------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 // FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
 // FLUID 1 - 0 0 0 0 0 0

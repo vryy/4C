@@ -90,8 +90,6 @@ ITEMAX           20
 INITSTATITEMAX   20
 CONVCHECK        L_2_norm
 CONVTOL          1.0E-8
-STEADYSTEP       -1
-STEADYTOL        1.0E-6
 UPOUT            1
 UPPSS            1
 UPRES            1
@@ -110,7 +108,6 @@ CONVFORM         convective
 GAMMA            1
 GRIDVEL          1
 PREDICTOR        steady_state_predictor
-RESSTEP          0
 MAXTIME          1.0
 NUMSTEP          30
 TIMESTEP         0.01

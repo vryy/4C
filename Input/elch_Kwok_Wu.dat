@@ -52,7 +52,6 @@ FILESTEPS              1000
 ---------------------------------------------MESHTYING AND CONTACT
 -----------------------------------------------------FLUID DYNAMIC
 INITIALFIELD     field_by_function
-RESSTEP          -1
 STARTFUNCNO      1
 TIMEINTEGR       One_Step_Theta //BDF2
 STARTINGALGO     One_Step_Theta
@@ -60,8 +59,6 @@ NONLINITER       Newton
 ITEMAX           8
 CONVCHECK        L_2_norm
 CONVTOL          1.0E-6
-STEADYSTEP       -1
-STEADYTOL        1.0E-5
 UPOUT            1
 UPPSS            1
 UPRES            1
@@ -248,11 +245,6 @@ FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION (-0.1666666666666)*log((2.0+(cos(1*pi*x
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
------------------------------------------------------------LOCSYS1
------------------------------------------------------------LOCSYS2
------------------------------------------------------------LOCSYS3
------------------------------------------------------------LOCSYS4
------------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS 1 NODE 131 POSITION fluxx   NAME fluxx    VALUE -4.219160790e-03 TOLERANCE 1e-9

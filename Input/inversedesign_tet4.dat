@@ -78,7 +78,6 @@ UZAWAALGO    direct
 ---------------------------------------------MESHTYING AND CONTACT
 -----------------------------------------------------FLUID DYNAMIC
 INITIALFIELD     zero_field
-RESSTEP          -1
 STARTFUNCNO      2
 TIMEINTEGR       One_Step_Theta
 STARTINGALGO     One_Step_Theta
@@ -86,8 +85,6 @@ NONLINITER       fixed_point_like
 ITEMAX           5
 CONVCHECK        L_2_norm
 CONVTOL          1.0E-6
-STEADYSTEP       -1
-STEADYTOL        1.0E-6
 UPOUT            1
 UPPSS            1
 UPRES            1
@@ -165,7 +162,6 @@ COUPMETHOD   conforming
 TIMESTEP     0.1
 NUMSTEP      200
 MAXTIME      5.0
-NUM_INITSTEP 0
 ALE_TYPE     classic_lin
 RESULTSEVRY  1
 -------------------------------------------------------TSI DYNAMIC
@@ -4720,11 +4716,6 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.11 1.0 FACTOR 12.0 12.0
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
------------------------------------------------------------LOCSYS1
------------------------------------------------------------LOCSYS2
------------------------------------------------------------LOCSYS3
------------------------------------------------------------LOCSYS4
------------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 // FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
 // FLUID 1 - 0 0 0 0 0 0

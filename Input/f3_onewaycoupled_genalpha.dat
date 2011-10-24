@@ -47,7 +47,6 @@ FILESTEPS              1000
 ---------------------------------------------MESHTYING AND CONTACT
 -----------------------------------------------------FLUID DYNAMIC
 INITIALFIELD     field_by_function
-RESSTEP          -1
 STARTFUNCNO      2
 TIMEINTEGR       Gen_Alpha  //Af_Gen_Alpha //One_Step_Theta
 STARTINGALGO     One_Step_Theta
@@ -55,8 +54,6 @@ NONLINITER       Newton
 ITEMAX           8
 CONVCHECK        L_2_norm
 CONVTOL          1.0E-14
-STEADYSTEP       -1
-STEADYTOL        1.0E-5
 UPOUT            1
 UPPSS            1
 UPRES            1
@@ -285,11 +282,6 @@ FUNCT4 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0    //magnetic field
 FUNCT4 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 1.0    //magnetic field
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
------------------------------------------------------------LOCSYS1
------------------------------------------------------------LOCSYS2
------------------------------------------------------------LOCSYS3
------------------------------------------------------------LOCSYS4
------------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
 // these results have to be the same for

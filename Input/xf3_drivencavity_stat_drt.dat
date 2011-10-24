@@ -8667,11 +8667,6 @@ FLUID DIS 1 NODE 1623 POSITION velz NAME velz VALUE -4.639767941e-01 TOLERANCE 1
 FLUID DIS 1 NODE 1623 POSITION velx NAME velx VALUE -3.035825040e-02 TOLERANCE 1e-6
 FLUID DIS 1 NODE 1623 POSITION pressure NAME pressure VALUE 1.914752744e-02 TOLERANCE 1e-5
 FLUID DIS 1 NODE 1610 POSITION pressure NAME pressure VALUE 1.914752744e-02 TOLERANCE 1e-5
------------------------------------------------------------LOCSYS1
------------------------------------------------------------LOCSYS2
------------------------------------------------------------LOCSYS3
------------------------------------------------------------LOCSYS4
------------------------------------------------------------LOCSYS5
 --------------------------------------------------------MONITORING
 // FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
 // FLUID 1 - 0 0 0 0 0 0

@@ -60,8 +60,6 @@ NONLINITER   fixed_point_like
 ITEMAX       10
 CONVCHECK    L_2_norm
 CONVTOL      1.0E-8
-STEADYSTEP   5
-STEADYTOL    1.0E-6
 STARTINGALGO One_Step_Theta
 NUMSTASTEPS  0
 START_THETA  1.00
@@ -83,7 +81,6 @@ TIMESTEP     0.1
 NUMSTEP      41
 MAXTIME      4.0
 ALE_TYPE     classic_lin
-NUM_INITSTEP 0
 RESULTSEVRY  1
 -------------------------------------------------------FSI DYNAMIC
 MAXTIME      1000.0

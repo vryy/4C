@@ -45,7 +45,6 @@ MAXTIME                         0.1
 NONLINITER                      Newton //fixed_point_like
 NUMSTEP                         4
 PREDICTOR                       steady_state_predictor
-RESSTEP                         0
 RESTARTEVRY                     20
 STARTFUNCNO                     -1
 STARTINGALGO                    One_Step_Theta
