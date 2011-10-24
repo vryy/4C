@@ -19,7 +19,7 @@
 
        example input line:
        MAT 1 MAT_Struct_PlasticLinElast YOUNG 206.9 NUE 0.29 DENS 0.0
-         YIELD 0.45 KINHARD 0.0 TOL 1.0e-6
+         YIELD 0.45 ISOHARD 0.0 KINHARD 0.0 TOL 1.0e-6
 
 <pre>
 Maintainer: Caroline Danowski
@@ -636,8 +636,8 @@ void MAT::PlasticLinElast::Evaluate(
     flovec.Scale(facflovec);
 
     // relative stress
-    // eta = ( 1 - (Delta gamma / qbar_{n+1}^{trial}) . [ 3 . G + Hkin] ) eta_{n+1}^{trial}
-    const double etafac = 1.0 - ( (Dgamma / qbar) * (3.0 * G + Hkin)  );
+    // eta = ( 1 - (Delta gamma / qbar_{n+1}^{trial}) . [ 3 . G + Hkin + Hiso] ) eta_{n+1}^{trial}
+    const double etafac = 1.0 - ( (Dgamma / qbar) * (3.0 * G + Hkin + Hiso)  );
     eta.Scale(etafac);
 
     // update back stress
