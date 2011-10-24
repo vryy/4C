@@ -234,7 +234,8 @@ public:
   */
   const double& Irr() const { return Irr_;}
 
-
+  //! \brief return if the element is to be removed from the discretization (triggered by evaluation of the internal force vector)
+  const int& MarkedForDeletion() const {return markedfordeletion_;}
   //@}
 
   //! @name Construction
@@ -364,7 +365,7 @@ private:
     calc_struct_update_imrlike,
     calc_struct_reset_istep, //!< reset elementwise internal variables during iteration to last converged state
     calc_struct_ptcstiff, //calculate artificial stiffness due to PTC solution strategy
-    calc_struct_energy //calculate current elastic energy of element
+    calc_struct_energy, //calculate current elastic energy of element
   };
 
   //! kind of integration to be performed
@@ -377,6 +378,8 @@ private:
 
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
+  //! variable stating whether or not the element is to removed from the dicretization
+  int markedfordeletion_;
 
   //! quaternions of triads at GPs at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.65)
   vector<LINALG::Matrix<4,1> > Qconv_;
@@ -733,6 +736,11 @@ private:
                              const LINALG::Matrix<ndim,1>& evaluationpoint,  //!<point at which background velocity and its gradient has to be computed
                              LINALG::Matrix<ndim,1>& velbackground,  //!< velocity of background fluid
                              LINALG::Matrix<ndim,ndim>& velbackgroundgrad); //!<gradient of velocity of background fluid
+
+   //!Evaluates whether the beam element remains or is to be removed from the discretization
+   template<int nnode> //number of nodes
+   void EvaluateForceBasedDeletion(ParameterList& params,  //!<parameter list
+																 Epetra_SerialDenseVector* force); //!<element internal force vector
 
    //!shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions
    template<int nnode, int ndim> //number of nodes, number of dimensions

@@ -1255,7 +1255,6 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 			 * Note: No need for the usual procedure of exporting and reimporting to make things redundant
 			 * because info IS already redundant by design here.*/
 			(*crosslink2element_)[i] = newcrosslinkerGID;
-
 			/*a crosslinker is added on each processor which is row node owner of at least one of its nodes;
 			 *the processor which is row map owner of the node with the larger GID will be the owner of the new crosslinker element; on the other processors the new
 			 *crosslinker element will be present as a ghost element only*/
@@ -1399,8 +1398,8 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 	// it does not have information on all linker elements. Remedy: Mark crosslinkers with two bonds
 	// having been ignored by the unbinding routine due to the probability check and recheck their status by means
 	// of internal forces.
-	Epetra_Vector unboundbyforce(*crosslinkermap_, true);
-	unboundbyforce.PutScalar(-1.0);
+	Epetra_Vector unbindbyforce(*crosslinkermap_, true);
+	unbindbyforce.PutScalar(-1.0);
 
 	// SEARCH
 	// search and setup for the deletion of elements is done by Proc 0
@@ -1487,9 +1486,9 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 						else
 							numfailed++;
 					}
-					// update vector unboundbyforce if doubly bound linker was not marked for unbinding
+					// update vector unbindbyforce if doubly bound linker was not marked for unbinding
 					if(numfailed==crosslinkerbond_->NumVectors())
-						unboundbyforce[i]=(*crosslink2element_)[i];
+						unbindbyforce[irandom]=(*crosslink2element_)[irandom];
 				}
 				break;
 			}// switch ((int)(*numbond_)[irandom])
@@ -1522,24 +1521,31 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 	Epetra_Vector numbondtrans(*transfermap_, true);
 	Epetra_Vector crosslink2elementtrans(*transfermap_, true);
 	Epetra_Vector delcrosselementtrans(*transfermap_, true);
-	Epetra_Vector unboundbyforcetrans(*transfermap_, true);
+	Epetra_Vector unbindbyforcetrans(*transfermap_, true);
 
-	//exports and reimports
+	//exports
 	crosslinkerpositionstrans.Export(*crosslinkerpositions_, crosslinkexporter, Add);
-	crosslinkerpositions_->Import(crosslinkerpositionstrans, crosslinkimporter, Insert);
 	crosslinkerbondtrans.Export(*crosslinkerbond_, crosslinkexporter, Add);
-	crosslinkerbond_->Import(crosslinkerbondtrans, crosslinkimporter, Insert);
 	numbondtrans.Export(*numbond_, crosslinkexporter, Add);
-	numbond_->Import(numbondtrans, crosslinkimporter, Insert);
 	crosslink2elementtrans.Export(*crosslink2element_, crosslinkexporter, Add);
-	crosslink2element_->Import(crosslink2elementtrans, crosslinkimporter, Insert);
 	delcrosselementtrans.Export(delcrosselement, crosslinkexporter, Add);
+	unbindbyforcetrans.Export(unbindbyforce, crosslinkexporter, Add);
+	// imports
+	crosslinkerpositions_->Import(crosslinkerpositionstrans, crosslinkimporter, Insert);
+	crosslinkerbond_->Import(crosslinkerbondtrans, crosslinkimporter, Insert);
+	numbond_->Import(numbondtrans, crosslinkimporter, Insert);
+	crosslink2element_->Import(crosslink2elementtrans, crosslinkimporter, Insert);
 	delcrosselement.Import(delcrosselementtrans, crosslinkimporter, Insert);
-	unboundbyforcetrans.Export(unboundbyforce, crosslinkexporter, Add);
-	unboundbyforce.Import(unboundbyforcetrans, crosslinkimporter, Insert);
+	unbindbyforce.Import(unbindbyforcetrans, crosslinkimporter, Insert);
 
 	unsigned startsize = deletedelements_.size();
 	std::vector<DRT::PackBuffer> vdata( startsize );
+
+	// evaluate force based unbinding of crosslinkers
+	// note: starting from identical vectors "unbindbyforce", the resulting vector delcrosselement will be processor-specific
+	// due to the processor-specific element row maps
+	if((DRT::INPUT::IntegralValue<int>(statmechparams_, "FORCEDEPUNLINKING")))
+		ForcedCrosslinkerUnbinding(dt, &unbindbyforce, &delcrosselement);
 
 	// DELETION OF ELEMENTS
 	for (int i=0; i<delcrosselement.MyLength(); i++)
@@ -1550,19 +1556,6 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 			vdata.push_back( DRT::PackBuffer() );
 			discret_.gElement((int)delcrosselement[i])->Pack( vdata.back() );
 		}
-		/*else if(discret_.HaveGlobalElement((int)unboundbyforce[i]))
-		{
-			DRT::Element* crosslinker = discret_.gElement((int)unboundbyforce[i]);
-			const DRT::ElementType & eot = thisele->ElementType();
-			if(eot == DRT::ELEMENTS::Beam3Type::Instance())
-			{
-				(dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->Evaluate();
-			}
-			else if(eot == DRT::ELEMENTS::Truss3Type::Instance() || eot == DRT::ELEMENTS::TrussLmType::Instance())
-			{
-
-			}
-		}*/
 	}
 	for ( unsigned i=startsize; i<vdata.size(); ++i )
 		vdata[i].StartPacking();
@@ -1586,6 +1579,100 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 		cout<<numdelelements<<" crosslinker element(s) deleted!"<<endl;
 	return;
 } //StatMechManager::SearchAndDeleteCrosslinkers()
+
+/*----------------------------------------------------------------------*
+ | (private) determine crosslinker unbinding by internal force          |
+ |                                                          mueller 1/11|
+ *----------------------------------------------------------------------*/
+void StatMechManager::ForcedCrosslinkerUnbinding(const double& dt, Epetra_Vector* unbindbyforce,Epetra_Vector* delcrosselement)
+{
+  // vectors indicating changes to be made in the class vectors
+  // changes in vectors with crosslinker based map
+  Epetra_Vector crosschange(*crosslinkermap_);
+  crosschange.PutScalar(-1.0);
+  // changes in vectors with nodal maps
+  Epetra_Vector nodechange(*(discret_.NodeColMap()),true);
+
+  // add element gids to the element deletion vector
+  for(int i=0; i<unbindbyforce->MyLength(); i++)
+  	if((*unbindbyforce)[i]>-1.0 && discret_.HaveGlobalElement((int)(*unbindbyforce)[i]))
+  	{
+  		DRT::ELEMENTS::Beam3* beam = dynamic_cast<DRT::ELEMENTS::Beam3*>(discret_.gElement((int)(*unbindbyforce)[i]));
+  		// determine the node at which the unbinding force / moment threshold might be superceeded
+  		switch(beam->MarkedForDeletion())
+  		{
+  			// node 0
+  			case -1:
+  			break;
+  			case 0:
+  			{
+  				// mark the vector entries which have to be changed in the class vectors
+  				for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
+  					if((int)(*crosslinkerbond_)[j][i]==beam->Nodes()[beam->MarkedForDeletion()]->Id())
+  					{
+  						crosschange[i] = j;
+  						nodechange[discret_.NodeColMap()->LID((int)(*crosslinkerbond_)[j][i])] = 1.0;
+  						break;
+  					}
+    			// add the crosslinker gid
+    			(*delcrosselement)[i] = (*unbindbyforce)[i];
+  			}
+				break;
+				// node 1
+  			case 1:
+  			{
+  				// mark the vector entries which have to be changed in the class vectors
+  				for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
+  				{
+  					if((int)(*crosslinkerbond_)[j][i]==beam->Nodes()[beam->MarkedForDeletion()]->Id())
+  					{
+  						crosschange[i] = j;
+  						nodechange[discret_.NodeColMap()->LID((int)(*crosslinkerbond_)[j][i])] = 1.0;
+  						break;
+  					}
+  				}
+    			// add the crosslinker gid
+    			(*delcrosselement)[i] = (*unbindbyforce)[i];
+  			}
+				break;
+  			default:
+  				dserror("Check your beam element! Force based unbinding implemented only for 2-noded beams...");
+  		}
+  	}
+
+  // communication between processors -> make information redundant
+  Epetra_Vector crosschangetrans(*transfermap_);
+  Epetra_Vector nodechangerow(*(discret_.NodeRowMap()),true);
+  crosschangetrans.PutScalar(-1.0);
+  // Exporters and Importers
+  Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
+  Epetra_Import crosslinkimporter(*crosslinkermap_, *transfermap_);
+  Epetra_Export nodeexporter(*(discret_.NodeColMap()),*(discret_.NodeRowMap()));
+  Epetra_Import nodeimporter(*(discret_.NodeColMap()),*(discret_.NodeRowMap()));
+  // Export
+  crosschangetrans.Export(crosschange,crosslinkexporter,AbsMax);
+  nodechangerow.Export(nodechange,nodeexporter,AbsMax);
+  // Re-Import
+  crosschange.Import(crosschangetrans,crosslinkimporter,Insert);
+  nodechange.Import(nodechangerow,nodeimporter,Insert);
+
+  // Adjust class vectors
+	// in english: get the node GID of the crosschange[i]-th column and the i-th row of crosslinkerbond_. Then,
+	// decrement the number of crosslinkers bound to the node with the above gid by reducing the vector value of
+	// numcrossnodes_ at the position of the nodal LID  corresponding to the GID. ;-)
+  for(int i=0; i<nodechange.MyLength(); i++)
+  	if(nodechange[i]>0.1)
+  		(*numcrossnodes_)[i] -= 1.0;
+  for(int i=0; i<crosschange.MyLength(); i++)
+  	if(crosschange[i]>-0.9)
+  	{
+  		(*numbond_)[i] -= 1.0;
+  		(*crosslink2element_)[i] = -1.0;
+  		(*crosslinkonsamefilament_)[i] = 0.0;
+  		(*crosslinkerbond_)[(int)crosschange[i]][i] = -1.0;
+  	}
+  return;
+}
 
 /*----------------------------------------------------------------------*
  | (private) Reduce currently existing crosslinkers by a certain        |

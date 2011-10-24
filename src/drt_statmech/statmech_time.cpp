@@ -1017,6 +1017,18 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
       p.set("DELTA_T_NEW",(statmechmanager_->statmechparams_).get<double>("DELTA_T_NEW",0.0));
       p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
       p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
+      // in case unbinding occurs above a certain force/moment threshold
+      if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"FORCEDEPUNLINKING"))
+      {
+      	p.set("forcedepunlinking","yes");
+      	if((statmechmanager_->statmechparams_).get<double>("CLUNBINDFORCE",0.0)!=0.0)
+      		p.set("clunbindforce",(statmechmanager_->statmechparams_).get<double>("CLUNBINDFORCE",0.0));
+      	if((statmechmanager_->statmechparams_).get<double>("CLUNBINDMOMENT",0.0)!=0.0)
+      	{
+      		p.set("clunbindmoment",(statmechmanager_->statmechparams_).get<double>("CLUNBINDMOMENT",0.0));
+      		p.set("clunbindmomdir",(statmechmanager_->statmechparams_).get<int>("CLUNBINDMOMDIR",-1));
+      	}
+      }
 
       // set vector values needed by elements
       discret_.ClearState();
@@ -1095,11 +1107,16 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
 
 #ifdef GMSHPTCSTEPS
     // GmshOutput
+    std::ostringstream filename;
     if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"GMSHOUTPUT") && DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
     {
-			std::ostringstream filename;
 			filename << "./GmshOutput/network"<< std::setw(6) << setfill('0') << istep <<"_u"<<std::setw(2) << setfill('0')<<beamcmanager_->GetUzawaIter()<<"_n"<<std::setw(2) << setfill('0')<<numiter<<".pos";
 			statmechmanager_->GmshOutput(*disn_,filename,istep,beamcmanager_);
+    }
+    else
+    {
+    	filename << "./GmshOutput/network"<< std::setw(6) << setfill('0') << istep <<"_n"<<std::setw(2) << setfill('0')<<numiter<<".pos";
+    	statmechmanager_->GmshOutput(*disn_,filename,istep);
     }
 #endif
 		//--------------------------------- increment equilibrium loop index

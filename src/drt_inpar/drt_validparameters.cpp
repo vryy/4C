@@ -1485,6 +1485,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //Reading whether dynamics remodelling of cross linker distribution takes place
   setStringToIntegralParameter<int>("DYN_CROSSLINKERS","No","If chosen cross linker proteins are added and removed in each time step",
                                yesnotuple,yesnovalue,&statmech);
+  //Reading whether DBCs shall be applied to broken elements
+  setStringToIntegralParameter<int>("FORCEDEPUNLINKING","No","Turns force-based unlinking of crosslinks on and off",
+                               yesnotuple,yesnovalue,&statmech);
   //Reading double parameter for shear flow field
   DoubleParameter("SHEARAMPLITUDE",0.0,"Shear amplitude of flow in z-direction; note: not amplitude of displacement, but of shear strain!",&statmech);
   //Reading double parameter for viscosity of background fluid
@@ -1531,6 +1534,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("IPLINK",0.0,"Polar moment of inertia of area of crosslinkers",&statmech);
   //Cross section of crosslinkers
   DoubleParameter("ALINK",0.0,"Cross section of crosslinkers",&statmech);
+  //crosslinker unbinding force
+	DoubleParameter("CLUNBINDFORCE",0.0,"Force value above which a crosslinker unbinds.",&statmech);
+  //crosslinker unbinding moment
+	DoubleParameter("CLUNBINDMOMENT",0.0,"Moment value above which a crosslinker unbinds.",&statmech);
+  //crosslinker unbinding force
+	IntParameter("CLUNBINDMOMDIR",-1,"direction of crosslinker unbinding moment.",&statmech);
   //Parameter for PTC according to Cyron,Wall (2011):Numerical method for the simulation of the Brownian dynamics of rod-like microstructures with three dimensional nonlinear beam elements
   DoubleParameter("CTRANSPTC0",0.0,"PTC factor for translational DOF in first iteration step",&statmech);
   //Parameter for PTC according to Cyron,Wall (2011):Numerical method for the simulation of the Brownian dynamics of rod-like microstructures with three dimensional nonlinear beam elements
@@ -1538,7 +1547,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //Parameter for PTC according to Cyron,Wall (2011):Numerical method for the simulation of the Brownian dynamics of rod-like microstructures with three dimensional nonlinear beam elements
   DoubleParameter("ALPHAPTC",6.0,"exponent of power law for reduction of PTC factor",&statmech);
   //Makes filaments and crosslinkers be plotted by that factor thicker than they are acutally
-  DoubleParameter("PlotFactorThick",1.0,"Makes filaments and crosslinkers be plotted by that factor thicker than they are acutally",&statmech);
+  DoubleParameter("PlotFactorThick",0.0,"Makes filaments and crosslinkers be plotted by that factor thicker than they are acutally",&statmech);
   //Reading whether fixed seed for random numbers should be applied
   setStringToIntegralParameter<int>("CHECKORIENT","No","If chosen crosslinkers are set only after check of orientation of linked filaments",
                                yesnotuple,yesnovalue,&statmech);
@@ -1546,7 +1555,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("GMSHOUTPUT","No","If chosen gmsh output is generated.",
                                yesnotuple,yesnovalue,&statmech);
   // toggling Gmsh Output for structure detection
-  setStringToIntegralParameter<int>("GMSHNETSTRUCT","No","If chosen special gmsh visualization for network structure types is generated.",
+  setStringToIntegralParameter<int>("GMSHNETSTRUCT","No","If chosen, special gmsh visualization for network structure types is generated.",
                                yesnotuple,yesnovalue,&statmech);
   setStringToIntegralParameter<int>("FIXEDDIRICHNODES","Yes","If chosen, the set of Dirichlet Nodes is fixed and is not updated/changed anymore.",
                                yesnotuple,yesnovalue,&statmech);

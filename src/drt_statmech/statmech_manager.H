@@ -187,6 +187,9 @@ protected:
   void SearchAndDeleteCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
 																	 const std::map<int,LINALG::Matrix<3,1> >& currentpositions);
 
+  //! \brief force based unbinding of crosslinkers
+  void ForcedCrosslinkerUnbinding(const double& dt, Epetra_Vector* unbindbyforce, Epetra_Vector* delcrosselement);
+
   /*! \brief reduce number of currently existing crosslinker elements by numtoreduce
    *  \param (in) numtoreduce number of crosslinkers by which overall number of crosslinkers is reduced*/
   void ReduceNumOfCrosslinkersBy(const int numtoreduce);

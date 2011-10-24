@@ -912,6 +912,8 @@ void DRT::ELEMENTS::Beam3::b3_energy( ParameterList& params,
 
   }
 
+  // hack in order to just get the contribution of beam3II elements (filaments) -> set contribution to 0
+  //(*intenergy)(0) = 0.0;
 
   return;
 
@@ -1218,7 +1220,10 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
    * special vector has to be passed to the element packed in the params parameter list; in case that the control routine calling
    * the element does not attach this special vector to params the following method is just doing nothing, which means that for
    * any ordinary problem of structural mechanics it may be ignored*/
-   CalcBrownian<nnode,3,6,4>(params,vel,disp,stiffmatrix,force);
+  CalcBrownian<nnode,3,6,4>(params,vel,disp,stiffmatrix,force);
+
+  // evaluate if element is to be deleted from the discretization (only for 2-noded element)
+  EvaluateForceBasedDeletion<nnode>(params,force);
 
   return;
 
@@ -1780,6 +1785,58 @@ return;
 
 }//DRT::ELEMENTS::Beam3::CalcBrownian(.)
 
+/*-----------------------------------------------------------------------------------------------------------*
+ | Evaluate whether the element is to be deleted from the discretization              (private) mueller 10/11|
+ *----------------------------------------------------------------------------------------------------------*/
+template<int nnode> //number of nodes
+void DRT::ELEMENTS::Beam3::EvaluateForceBasedDeletion(ParameterList& params,
+																										 Epetra_SerialDenseVector* force) //!< element internal force vector
+{
+  if(params.get<string>("forcedepunlinking","no")=="yes" && force != NULL && nnode==2)
+  {
+  	//return if no values are given
+  	if(params.get<double>("clunbindforce",0.0)!=0.0)
+  	{
+  		// nodal internal force vectors
+  		LINALG::Matrix<3,1> fint0;
+  		LINALG::Matrix<3,1> fint1;
+  		for(int i=0; i<(int)fint0.M(); i++)
+  		{
+  			fint0(i) = (*force)[i];
+  			fint1(i) = (*force)[6+i];
+  		}
+  		double norm0 = fint0.Norm2();
+  		double norm1 = fint1.Norm2();
+
+  		//cout<<"norm0="<<norm0<<", norm1="<<norm1;
+
+  		if(norm0>=norm1 && norm0>params.get<double>("clunbindforce",0.0))
+  			markedfordeletion_ = 0;
+  		else if(norm1>norm0 && norm1>params.get<double>("clunbindforce",0.0))
+  			markedfordeletion_ = 1;
+  		else
+  			markedfordeletion_ = -1;
+  	}
+  	else if(params.get<double>("clunbindmoment",0.0)!=0.0)
+  	{
+  		if(params.get<double>("clunbindmomdir",-1)<0 || params.get<int>("clunbindmomdir",-1)>2)
+  			dserror("CLUNBINDMOMDIR has to be defined correctly in your input file (StatMech section!");
+
+  		// nodal component of the internal moment vector
+  		double mint0 = (*force)[3+params.get<int>("clunbindmomdir",-1)];
+  		double mint1 = (*force)[6+3+params.get<int>("clunbindmomdir",-1)];
+
+  		if(mint0>=mint1 && mint0>params.get<double>("clunbindmoment",0.0))
+  			markedfordeletion_=0;
+  		else if(mint1>mint0 && mint1>params.get<double>("clunbindmoment",0.0))
+  			markedfordeletion_=1;
+  		else
+  			markedfordeletion_=-1;
+  	}
+    //cout<<" , flag = "<<markedfordeletion_<<endl;
+  }
+  return;
+} // DRT::ELEMENTS::Beam3::EvaluateForceBasedDeletion(.)
 
 /*-----------------------------------------------------------------------------------------------------------*
  | shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions; if two   |
