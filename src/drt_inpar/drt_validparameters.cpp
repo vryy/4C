@@ -3304,6 +3304,7 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   // unused
   //DoubleParameter("PHI_MODIFY_TOL",1.0E-10,"We modify GfuncValues near zero",&combustcontrolfluid);
   DoubleParameter("LAMINAR_FLAMESPEED",1.0,"The laminar flamespeed incorporates all chemical kinetics into the problem for now",&combustcontrolfluid);
+  DoubleParameter("MOL_DIFFUSIVITY",0.0,"Molecular diffusivity",&combustcontrolfluid);
   DoubleParameter("MARKSTEIN_LENGTH",0.0,"The Markstein length takes flame curvature into account",&combustcontrolfluid);
   DoubleParameter("NITSCHE_VELOCITY",100.0,"Nitsche parameter to stabilize/penalize the velocity jump",&combustcontrolfluid);
   DoubleParameter("NITSCHE_PRESSURE",0.0,"Nitsche parameter to stabilize/penalize the pressure jump",&combustcontrolfluid);
