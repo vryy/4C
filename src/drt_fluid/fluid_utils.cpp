@@ -19,6 +19,7 @@ Maintainer: Axel Gerstenberger
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
 #include "../linalg/linalg_mapextractor.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 
 /*----------------------------------------------------------------------*
@@ -425,11 +426,9 @@ void FLD::UTILS::LiftDrag(
 {
   const int liftdrag = params.get<int>("liftdrag");
 
-  if (liftdrag == 0); // do nothing, we don't want lift & drag
-  if (liftdrag == 1)
-    dserror("we do not support lift&drag calculation by stresses anymore; use nodal forces!");
+  if (liftdrag == INPAR::FLUID::liftdrag_none); // do nothing, we don't want lift & drag
 
-  if (liftdrag == 2)
+  if (liftdrag == INPAR::FLUID::liftdrag_nodeforce)
   {
     int myrank=dis.Comm().MyPID();
 
