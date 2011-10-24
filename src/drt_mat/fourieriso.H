@@ -144,6 +144,9 @@ private:
     /// @name Access material constants
     //@{
 
+    /// conductivity
+    double Conductivity() const { return params_->conduct_; }
+
     /// material capacity
     double Capacity() const { return params_->capa_; }
 

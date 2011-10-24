@@ -781,8 +781,8 @@ public:
     vector<double> valence_;
     //! diffusivity times valence for each ion species (ELCH specific)
     vector<double> diffusvalence_;
-    //! specific heat capacity at constant pressure (in case of temp. or react. eq.)
-    double shcacp_;
+    //! specific heat capacity (either at constant pressure or at constant volume)
+    double shc_;
     //! fluid viscosity
     double visc_;
     //! coordinates of current integration point in reference coordinates

@@ -26,6 +26,7 @@ Maintainer: Georg Bauer
 #include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/ion.H"
 #include "../drt_mat/biofilm.H"
+#include "../drt_mat/fourieriso.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_timecurve.H"
@@ -225,7 +226,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     reacoeff_(numscal_),
     valence_(numscal_),
     diffusvalence_(numscal_),
-    shcacp_(0.0),
+    shc_(0.0),
     xsi_(true),
     funct_(true),
     deriv_(true),
@@ -2022,13 +2023,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 //        // get history data (or acceleration)
 //        hist_[k] = funct_.Dot(ehist_[k]);
 //
-//        // get bodyforce in gausspoint (divided by shcacp)
+//        // get bodyforce in gausspoint (divided by specific heat capacity)
 //        // (For temperature equation, time derivative of thermodynamic pressure
 //        //  is added, if not constant, and for temperature equation of a reactive
 //        //  equation system, a reaction-rate term is added.)
-//        rhs_[k] = bodyforce_[k].Dot(funct_) / shcacp_;
-//        rhs_[k] += thermpressdt_ / shcacp_;
-//        rhs_[k] += reatemprhs_[k] / shcacp_;
+//        rhs_[k] = bodyforce_[k].Dot(funct_) / shc_;
+//        rhs_[k] += thermpressdt_ / shc_;
+//        rhs_[k] += reatemprhs_[k] / shc_;
 //
 //      // gradient of current scalar value
 //
@@ -2077,12 +2078,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         // get history data (or acceleration)
         hist_[k] = funct_.Dot(ehist_[k]);
 
-        // compute rhs containing bodyforce (divided by shcacp) and,
+        // compute rhs containing bodyforce (divided by specific heat capacity) and,
         // for temperature equation, the time derivative of thermodynamic pressure,
         // if not constant, and for temperature equation of a reactive
         // equation system, the reaction-rate term
-        rhs_[k] = bodyforce_[k].Dot(funct_)/shcacp_;
-        rhs_[k] += thermpressdt_/shcacp_;
+        rhs_[k] = bodyforce_[k].Dot(funct_)/shc_;
+        rhs_[k] += thermpressdt_/shc_;
         rhs_[k] += densnp_[k]*reatemprhs_[k];
 
         //--------------------------------------------------------------------
@@ -2130,8 +2131,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         UpdateMaterialParams(ele,k);
 
         // recompute rhs based on updated material parameters
-        rhs_[k] = bodyforce_[k].Dot(funct_)/shcacp_;
-        rhs_[k] += thermpressdt_/shcacp_;
+        rhs_[k] = bodyforce_[k].Dot(funct_)/shc_;
+        rhs_[k] += thermpressdt_/shc_;
         rhs_[k] += densnp_[k]*reatemprhs_[k];
 
         // compute matrix and rhs
@@ -2335,7 +2336,7 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
     reatemprhs_[k] = 0.0;
 
     // set specific heat capacity at constant pressure to 1.0
-    shcacp_ = 1.0;
+    shc_ = 1.0;
 
     // set density at various time steps and density gradient factor to 1.0/0.0
     densn_[k]       = 1.0;
@@ -2408,7 +2409,7 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
       const MAT::ArrheniusTemp* actsinglemat = static_cast<const MAT::ArrheniusTemp*>(singlemat.get());
 
       // get specific heat capacity at constant pressure
-      shcacp_ = actsinglemat->Shc();
+      shc_ = actsinglemat->Shc();
 
       // compute species mass fraction and temperature
       const double spmf   = funct_.Dot(ephinp_[0]);
@@ -2441,7 +2442,7 @@ if (material->MaterialType() == INPAR::MAT::m_matlist)
 
       // compute sum of reaction rates for temperature equation divided by specific
       // heat capacity -> will be considered a right-hand side contribution
-      reatemprhs_[k] = actsinglemat->ComputeReactionRHS(spmf,tempnp)/shcacp_;
+      reatemprhs_[k] = actsinglemat->ComputeReactionRHS(spmf,tempnp)/shc_;
 
       // set reaction flag to true
       reaction_ = true;
@@ -2502,7 +2503,7 @@ else if (material->MaterialType() == INPAR::MAT::m_scatra)
   reacoeffderiv_[0] = reacoeff_[0];
 
   // set specific heat capacity at constant pressure to 1.0
-  shcacp_ = 1.0;
+  shc_ = 1.0;
 
   // set temperature rhs for reactive equation system to zero
   reatemprhs_[0] = 0.0;
@@ -2523,7 +2524,7 @@ else if (material->MaterialType() == INPAR::MAT::m_ion)
   reacoeff_[0]   = 0.0;
   reatemprhs_[0] = 0.0;
   // set specific heat capacity at constant pressure to 1.0
-  shcacp_ = 1.0;
+  shc_ = 1.0;
   // set density at various time steps and density gradient factor to 1.0/0.0
   densn_[0]       = 1.0;
   densnp_[0]      = 1.0;
@@ -2551,7 +2552,7 @@ else if (material->MaterialType() == INPAR::MAT::m_mixfrac)
   densnp_[0] = actmat->ComputeDensity(mixfracnp);
 
   // set specific heat capacity at constant pressure to 1.0
-  shcacp_ = 1.0;
+  shc_ = 1.0;
 
   if (is_genalpha_)
   {
@@ -2587,7 +2588,7 @@ else if (material->MaterialType() == INPAR::MAT::m_sutherland)
   dsassert(numdofpernode_==1,"more than 1 dof per node for Sutherland material");
 
   // get specific heat capacity at constant pressure
-  shcacp_ = actmat->Shc();
+  shc_ = actmat->Shc();
 
   // compute temperature at n+1 or n+alpha_F
   const double tempnp = funct_.Dot(ephinp_[0]);
@@ -2637,7 +2638,7 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
 
   // get specific heat capacity at constant pressure and
   // compute temperature based on progress variable
-  shcacp_ = actmat->ComputeShc(provarnp);
+  shc_ = actmat->ComputeShc(provarnp);
   const double tempnp = actmat->ComputeTemperature(provarnp);
 
   // compute density at n+1 or n+alpha_F
@@ -2689,7 +2690,7 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
 
   // get specific heat capacity at constant pressure and
   // compute temperature based on progress variable
-  shcacp_ = actmat->ComputeShc(provarnp);
+  shc_ = actmat->ComputeShc(provarnp);
   const double tempnp = actmat->ComputeTemperature(provarnp);
 
   // compute density at n+1 or n+alpha_F
@@ -2751,7 +2752,7 @@ else if (material->MaterialType() == INPAR::MAT::m_biofilm)
   reacoeffderiv_[0] = actmat->ComputeReactionCoeffDeriv(csnp);
 
   // set specific heat capacity at constant pressure to 1.0
-  shcacp_ = 1.0;
+  shc_ = 1.0;
 
   // set temperature rhs for reactive equation system to zero
   reatemprhs_[0] = 0.0;
@@ -2761,6 +2762,31 @@ else if (material->MaterialType() == INPAR::MAT::m_biofilm)
   densnp_[0]      = 1.0;
   densam_[0]      = 1.0;
   densgradfac_[0] = 0.0;
+}
+else if (material->MaterialType() == INPAR::MAT::m_th_fourier_iso)
+{
+  dsassert(numdofpernode_==1,"more than 1 dof per node for isotropic Fourier material");
+
+  const MAT::FourierIso* actmat = static_cast<const MAT::FourierIso*>(material.get());
+
+  // get constant diffusivity (conductivity divided by specific heat capacity)
+  diffus_[0] = actmat->Conductivity()/actmat->Capacity();
+
+  // set density at various time steps and density gradient factor to 1.0/0.0
+  // (preliminary setting)
+  densn_[0]       = 1.0;
+  densnp_[0]      = 1.0;
+  densam_[0]      = 1.0;
+  densgradfac_[0] = 0.0;
+
+  // set specific heat capacity at constant volume
+  // (value divided by density here for its intended use on right-hand side)
+  shc_ = actmat->Capacity()/densnp_[0];
+
+  // set reaction coeff. and temperature rhs for reactive equation system to zero
+  reacoeff_[0]      = 0.0;
+  reacoeffderiv_[0] = 0.0;
+  reatemprhs_[0]    = 0.0;
 }
 else dserror("Material type is not supported");
 
@@ -2870,7 +2896,7 @@ else if (material->MaterialType() == INPAR::MAT::m_arrhenius_pv)
 
   // get specific heat capacity at constant pressure and
   // compute temperature based on progress variable
-  shcacp_ = actmat->ComputeShc(provarnp);
+  shc_ = actmat->ComputeShc(provarnp);
   const double tempnp = actmat->ComputeTemperature(provarnp);
 
   // compute density at n+1 or n+alpha_F
@@ -2919,7 +2945,7 @@ else if (material->MaterialType() == INPAR::MAT::m_ferech_pv)
 
   // get specific heat capacity at constant pressure and
   // compute temperature based on progress variable
-  shcacp_ = actmat->ComputeShc(provarnp);
+  shc_ = actmat->ComputeShc(provarnp);
   const double tempnp = actmat->ComputeTemperature(provarnp);
 
   // compute density at n+1 or n+alpha_F
@@ -5065,11 +5091,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
     //------------ get values of variables at integration point
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
     {
-      // get bodyforce in gausspoint (divided by shcacp)
+      // get bodyforce in gausspoint (divided by specific heat capacity)
       // (For temperature equation, time derivative of thermodynamic pressure
       //  is added, if not constant.)
-      rhs_[k] = bodyforce_[k].Dot(funct_) / shcacp_;
-      rhs_[k] += thermpressdt_/shcacp_;
+      rhs_[k] = bodyforce_[k].Dot(funct_) / shc_;
+      rhs_[k] += thermpressdt_/shc_;
 
       // get gradient of el. potential at integration point
       gradpot_.Multiply(derxy_,epotnp_);
@@ -5301,10 +5327,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
     //------------ get values of variables at integration point
     for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
     {
-      // get bodyforce in gausspoint (divided by shcacp)
+      // get bodyforce in gausspoint (divided by specific heat capacity)
       // (For temperature equation, time derivative of thermodynamic pressure
       //  is added, if not constant.)
-      rhs_[k] = bodyforce_[k].Dot(funct_) / shcacp_;
+      rhs_[k] = bodyforce_[k].Dot(funct_) / shc_;
 
       // get gradient of el. potential at integration point
       gradpot_.Multiply(derxy_,epotnp_);
