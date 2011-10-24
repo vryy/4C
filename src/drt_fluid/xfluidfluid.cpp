@@ -302,10 +302,6 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
 
 
-          double testvol = 0.0;
-          double test_vc = 0.0;
-
-
           int set_counter = 0;
 
           for( std::vector< GEO::CUT::plain_volumecell_set>::iterator s=cell_sets.begin();

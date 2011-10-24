@@ -2294,10 +2294,13 @@ baci_test(w1q9_dyn_rot_drt_gemm 1 "")
 baci_test(w1q9_dyn_rot_drt_gena 1 "")
 baci_test(womersley_f3 2 "")
 baci_test(xfluid_channel_constWDBC_inclinedCut 1 "")
+baci_test(xfluid_channel_constWDBC_inclinedCut_bodyf_hex20 1 "")
 baci_test(xfluid_channel_constWDBC_straightCut 1 "")
+baci_test(xfluid_channel_constWDBC_straightCut_hex20 1 "")
 baci_test(xfluid_channel_shearWDBC_inclinedCut 1 "")
 baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf 1 "")
-passive_baci_test(xfluid_channel_shearWDBC_inclineddoubleCut_bodyf 1 "")
+baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf_hex20 1 "")
+baci_test(xfluid_channel_shearWDBC_inclineddoubleCut_bodyf 1 "")
 
 
 
@@ -2311,7 +2314,7 @@ endif (D_BEAM3II)
 baci_test(inversedesign_wedge6 1 "")
 baci_test(inversedesign_wedge6 2 "")
 
-baci_test(fluidfluidCoupling_hex20_constinflow 1 "")
+#  baci_test(fluidfluidCoupling_hex20_constinflow 1 "")
 #  baci_test(fluidfluidCoupling_hex20_parainflow_ydir 1 "")
 #  baci_test(fluidfluidCoupling_hex20_parainflow_ydir_cond 1 "")
 passive_baci_test(fluidfluidCoupling_simple 1 "")

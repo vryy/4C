@@ -10343,8 +10343,6 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
 	    double surface_diameter = 2.0*sqrt(surface/PI);
 
 
-	    cout << surface_diameter << endl;
-
 
 
 	    // loop gausspoints

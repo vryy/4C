@@ -141,12 +141,14 @@ class LinearElementHandle : public ElementHandle
 public:
 
   LinearElementHandle()
-    : element_( NULL )
+    : element_( NULL ),
+      cells_set_ ( false )
   {
   }
 
   explicit LinearElementHandle( Element * e )
-    : element_( e )
+    : element_( e ),
+      cells_set_ ( false )
   {
   }
 
@@ -224,6 +226,10 @@ protected:
 class QuadraticElementHandle : public ElementHandle
 {
 public:
+  QuadraticElementHandle()
+    : cells_connected_ ( false )
+  {
+  }
 
   virtual bool IsCut();
 
