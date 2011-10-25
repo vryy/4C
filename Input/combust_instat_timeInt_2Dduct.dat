@@ -147,7 +147,7 @@ DEFINITION_TAU                  Taylor_Hughes_Zarins
 GMSH_DEBUG_OUT                  Yes
 -------------------------------------------------------FLUID SOLVER
 SOLVER         UMFPACK
-------------------------------------- FLUID SCALAR TRANSPORT SOLVER
+--------------------------------------FLUID SCALAR TRANSPORT SOLVER
 SOLVER         UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT       1 MAT_matlist  NUMMAT 2 MATIDS 3 4
