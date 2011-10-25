@@ -151,6 +151,8 @@ public:
 	//! brief computes the internal energy of the network
 	void ComputeInternalEnergy(const RCP<Epetra_Vector> dis, double& energy, const double& dt, const std::ostringstream& filename);
 
+	//! \brief return number of initial elements
+	const int& NumBasisElements() const {return basiselements_;}
   //! \brief containing statistical mechanics input parameters
   Teuchos::ParameterList statmechparams_;
 
@@ -188,7 +190,7 @@ protected:
 																	 const std::map<int,LINALG::Matrix<3,1> >& currentpositions);
 
   //! \brief force based unbinding of crosslinkers
-  void ForcedCrosslinkerUnbinding(const double& dt, Epetra_Vector* unbindbyforce, Epetra_Vector* delcrosselement);
+  void ForcedCrosslinkerUnbinding(const double& dt, Epetra_Vector* unbindbyforce, Epetra_Vector* delcrosselement, int* numdelelements);
 
   /*! \brief reduce number of currently existing crosslinker elements by numtoreduce
    *  \param (in) numtoreduce number of crosslinkers by which overall number of crosslinkers is reduced*/

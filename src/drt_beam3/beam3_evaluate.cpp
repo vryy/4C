@@ -1808,14 +1808,15 @@ void DRT::ELEMENTS::Beam3::EvaluateForceBasedDeletion(ParameterList& params,
   		double norm0 = fint0.Norm2();
   		double norm1 = fint1.Norm2();
 
-  		//cout<<"norm0="<<norm0<<", norm1="<<norm1;
-
+  		// assign status: 1=node0, 2=node2, 0=no action
   		if(norm0>=norm1 && norm0>params.get<double>("clunbindforce",0.0))
-  			markedfordeletion_ = 0;
-  		else if(norm1>norm0 && norm1>params.get<double>("clunbindforce",0.0))
   			markedfordeletion_ = 1;
+  		else if(norm1>norm0 && norm1>params.get<double>("clunbindforce",0.0))
+  			markedfordeletion_ = 2;
   		else
-  			markedfordeletion_ = -1;
+  			markedfordeletion_ = 0;
+
+  		cout<<"Element "<<Id()<<": norm0 = "<<norm0<<", norm1 = "<<norm1<<" : status "<<markedfordeletion_<<endl;
   	}
   	else if(params.get<double>("clunbindmoment",0.0)!=0.0)
   	{
@@ -1827,13 +1828,12 @@ void DRT::ELEMENTS::Beam3::EvaluateForceBasedDeletion(ParameterList& params,
   		double mint1 = (*force)[6+3+params.get<int>("clunbindmomdir",-1)];
 
   		if(mint0>=mint1 && mint0>params.get<double>("clunbindmoment",0.0))
-  			markedfordeletion_=0;
-  		else if(mint1>mint0 && mint1>params.get<double>("clunbindmoment",0.0))
   			markedfordeletion_=1;
+  		else if(mint1>mint0 && mint1>params.get<double>("clunbindmoment",0.0))
+  			markedfordeletion_=2;
   		else
-  			markedfordeletion_=-1;
+  			markedfordeletion_=0;
   	}
-    //cout<<" , flag = "<<markedfordeletion_<<endl;
   }
   return;
 } // DRT::ELEMENTS::Beam3::EvaluateForceBasedDeletion(.)
