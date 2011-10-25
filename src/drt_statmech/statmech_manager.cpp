@@ -1586,6 +1586,7 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
  *----------------------------------------------------------------------*/
 void StatMechManager::ForcedCrosslinkerUnbinding(const double& dt, Epetra_Vector* unbindbyforce,Epetra_Vector* delcrosselement)
 {
+#ifdef D_BEAM3
   // vectors indicating changes to be made in the class vectors
   // changes in vectors with crosslinker based map
   Epetra_Vector crosschange(*crosslinkermap_);
@@ -1656,6 +1657,8 @@ void StatMechManager::ForcedCrosslinkerUnbinding(const double& dt, Epetra_Vector
   crosschange.Import(crosschangetrans,crosslinkimporter,Insert);
   nodechange.Import(nodechangerow,nodeimporter,Insert);
 
+  //cout<<nodechange<<endl;
+
   // Adjust class vectors
 	// in english: get the node GID of the crosschange[i]-th column and the i-th row of crosslinkerbond_. Then,
 	// decrement the number of crosslinkers bound to the node with the above gid by reducing the vector value of
@@ -1671,6 +1674,7 @@ void StatMechManager::ForcedCrosslinkerUnbinding(const double& dt, Epetra_Vector
   		(*crosslinkonsamefilament_)[i] = 0.0;
   		(*crosslinkerbond_)[(int)crosschange[i]][i] = -1.0;
   	}
+#endif
   return;
 }
 
