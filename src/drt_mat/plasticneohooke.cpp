@@ -138,7 +138,7 @@ void MAT::PlasticNeoHooke::Pack(DRT::PackBuffer& data) const
     histsize = histplasticrcglast_->size();
   }
 
-  AddtoPack(data,2*histsize); // Length of history vector(s)
+  AddtoPack(data,histsize); // Length of history vector(s)
   for (int var = 0; var < histsize; ++var)
   {
     AddtoPack(data,histplasticrcglast_->at(var));
