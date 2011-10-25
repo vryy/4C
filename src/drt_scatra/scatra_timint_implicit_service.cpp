@@ -23,18 +23,8 @@ Maintainer: Georg Bauer
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 // for AVM3 solver:
-#include <MLAPI_Error.h>
-#include <MLAPI_CompObject.h>
-#include <MLAPI_TimeObject.h>
-#include <MLAPI_Operator.h>
-#include <MLAPI_Operator_Utils.h>
-#include <MLAPI_MultiVector.h>
-#include <MLAPI_InverseOperator.h>
-#include <MLAPI_Expressions.h>
-#include <MLAPI_BaseOperator.h>
 #include <MLAPI_Workspace.h>
 #include <MLAPI_Aggregation.h>
-#include <MLAPI_Eig.h>
 // for printing electrode status to file
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
