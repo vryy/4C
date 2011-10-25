@@ -636,9 +636,9 @@ void MAT::PlasticLinElast::Evaluate(
     // flow vector flovec = sqrt(3/2) eta_{n+1}^{trial}  / || eta_{n+1}^{trial} ||
     flovec.Scale(facflovec);
 
-    // relative stress
-    // eta = ( 1 - (Delta gamma / qbar_{n+1}^{trial}) . [ 3 . G + Hkin + Hiso] ) eta_{n+1}^{trial}
-    const double etafac = 1.0 - ( (Dgamma / qbar) * (3.0 * G + Hkin + Hiso)  );
+    // relative stress (7.193)
+    // eta = ( 1 - (Delta gamma / qbar_{n+1}^{trial}) . [ 3 . G + Hkin] ) eta_{n+1}^{trial}
+    const double etafac = 1.0 - ( (Dgamma / qbar) * (3.0 * G + Hkin) );
     eta.Scale(etafac);
 
     // update back stress
