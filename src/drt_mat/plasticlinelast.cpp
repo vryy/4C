@@ -593,13 +593,14 @@ void MAT::PlasticLinElast::Evaluate(
       }
 
       // plasticity with linear kinematic hardening
-      // ResTan = -3G - Hkin = const.
+      // ResTan = -3G - Hkin - Hiso = const.
       ResTan = - 3 * G - Hkin -Hiso;
 
       // incremental plastic multiplier Dgamma
       // Dgamma = Dgamma - Phi / Phi'
       Dgamma += ( -Res )/ResTan;
 
+      // -------------------------------------- update of plastic values
       // compute new residual of accumulatd plastic strains
       strainbar_p += Dgamma;
 
