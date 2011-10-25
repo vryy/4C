@@ -35,7 +35,6 @@ Maintainer: Florian Henke
 #include "../drt_fluid/fluid_utils.H"
 //#include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_fluid/drt_periodicbc.H"
-#include "../drt_fluid/drt_pbcdofset.H"
 #include "../drt_fluid/turbulence_statistic_manager.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/integrationcell_coordtrafo.H"
@@ -50,6 +49,8 @@ Maintainer: Florian Henke
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_function.H"
+#include "../drt_lib/drt_dofset_pbc.H"
+#include "../drt_lib/drt_dofset_independent_pbc.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../linalg/linalg_ana.H"
 #include <Teuchos_TimeMonitor.hpp>
@@ -229,7 +230,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   output_->WriteMesh(0,0.0);
 
   // store a dofset with the complete fluid unknowns
-  standarddofset_ = Teuchos::rcp(new PBCDofSet(pbcmapmastertoslave_));
+  standarddofset_ = Teuchos::rcp(new DRT::IndependentPBCDofSet(pbcmapmastertoslave_));
   standarddofset_->Reset();
   standarddofset_->AssignDegreesOfFreedom(*discret_,0,0);
 
@@ -5446,7 +5447,8 @@ void FLD::CombustFluidImplicitTimeInt::ComputeSurfaceFlowrates() const
 }
 
 /*--------------------------------------------------------------------------------------------*
- | Redistribute the fluid discretization and vectors according to nodegraph    wichmann 07/11 |
+ | Redistribute the fluid discretization and vectors according to nodegraph   rasthofer 07/11 |
+ |                                                                            DA wichmann     |
  *--------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph)
 {

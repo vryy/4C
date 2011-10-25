@@ -531,10 +531,12 @@ const Epetra_Map* DRT::Discretization::DofColMap(unsigned nds) const
 /*----------------------------------------------------------------------*
  |  replace the dofset of the discretisation (public)        gammi 05/07|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::ReplaceDofSet(unsigned nds, Teuchos::RCP<DofSet> newdofset)
+void DRT::Discretization::ReplaceDofSet(unsigned nds, Teuchos::RCP<DofSet> newdofset, bool replaceinstatdofsets)
 {
   dsassert(nds<dofsets_.size(),"undefined dof set");
   havedof_ = false;
+  if (replaceinstatdofsets)
+    newdofset->ReplaceInStaticDofsets(dofsets_[nds]);
   dofsets_[nds] = newdofset;
   return;
 }
@@ -563,10 +565,12 @@ Teuchos::RCP<DRT::DofSet> DRT::Discretization::GetDofSetProxy()
 /*----------------------------------------------------------------------*
  |  replace the dofset of the discretisation (public)        gammi 05/07|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::ReplaceDofSet(RCP<DofSet> newdofset)
+void DRT::Discretization::ReplaceDofSet(RCP<DofSet> newdofset, bool replaceinstatdofsets)
 {
   dsassert(dofsets_.size()==1,"expect just one dof set");
   havedof_ = false;
+  if (replaceinstatdofsets)
+    newdofset->ReplaceInStaticDofsets(dofsets_[0]);
   dofsets_[0] = newdofset;
   return;
 }

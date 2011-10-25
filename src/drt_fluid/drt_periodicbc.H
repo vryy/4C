@@ -41,11 +41,9 @@ using namespace Teuchos;
 namespace DRT
 {
 class Discretization;
-class DofSet;
+class PBCDofSet;
 class Condition;
 }
-
-class PBCDofSet;
 
 
 /*!
@@ -353,7 +351,7 @@ protected:
   bool verbose_;
 
   //!\brief the pbc-dofset created by this object
-  RefCountPtr<PBCDofSet> pbcdofset_;
+  RefCountPtr<DRT::PBCDofSet> pbcdofset_;
 
   //!\brief number of pairs of periodic boundary conditions
   int                     numpbcpairs_;

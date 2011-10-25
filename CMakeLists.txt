@@ -312,7 +312,6 @@ set(OBJS_DRT_B2_LIB
   src/drt_beam2/beam2_input.cpp
 )
 set(OBJS_DRT_LIB
-  src/drt_fluid/drt_pbcdofset.cpp
   src/drt_fluid/drt_periodicbc.cpp
   src/drt_lib/drt_assemblestrategy.cpp
   src/drt_lib/drt_condition.cpp
@@ -328,6 +327,9 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_dofset_base.cpp
   src/drt_lib/drt_dofset_proxy.cpp
   src/drt_lib/drt_dofset_transparent.cpp
+  src/drt_lib/drt_dofset_pbc.cpp
+  src/drt_lib/drt_dofset_independent.cpp
+  src/drt_lib/drt_dofset_independent_pbc.cpp
   src/drt_lib/drt_element.cpp
   src/drt_lib/drt_singletondestruction.cpp
   src/drt_lib/drt_function.cpp
@@ -2328,6 +2330,7 @@ baci_test(xff_moving_circle_parainflow_OST 1 "")
 baci_test(xff_moving_circle_shearflow_OST 1 "")
 baci_test(two_phase_couette_flow 1 "")
 baci_test(two_phase_rayleigh_taylor_instability_32x128 1 4)
+baci_test(two_phase_rayleigh_taylor_instability_32x128 2 4)
 baci_test(two_phase_stat_bubble_surftens_20x20x20 2 "")
 baci_test(two_phase_stat_bubble_surftens_50x50x1 1 "")
 passive_baci_test(xf3_beltrami_tet4_drt 1 2)

@@ -89,6 +89,9 @@ public:
   /// Get maximum GID of degree of freedom row map
   virtual int MaxAllGID() const;
 
+  /// Get minimum GID of degree of freedom row map
+  virtual int MinAllGID() const;
+
   /// Get degree of freedom row map
   virtual const Epetra_Map* DofRowMap() const;
 
@@ -108,10 +111,16 @@ public:
   /// Add Dof Set to list #static_dofsets_
   virtual void AddDofSettoList();
 
+  /// Replace a Dof Set in list #static_dofsets_ with this
+  virtual void ReplaceInStaticDofsets(Teuchos::RCP<DofSetBase> olddofset);
+
   /// reset all internal variables
   virtual void Reset()=0;
 
   //@}
+
+//  /// Print the dofsets in the static_dofsets_ list
+//  virtual void PrintAllDofsets(const Epetra_Comm& comm) const;
 
 protected:
 

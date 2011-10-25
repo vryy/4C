@@ -1314,7 +1314,8 @@ void SCATRA::ScaTraTimIntImpl::ApplyDirichletToSystem()
 }
 
 /*--------------------------------------------------------------------------------------------*
- | Redistribute the scatra discretization and vectors according to nodegraph   wichmann 07/11 |
+ | Redistribute the scatra discretization and vectors according to nodegraph  rasthofer 07/11 |
+ |                                                                            DA wichmann    |
  *--------------------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph)
 {

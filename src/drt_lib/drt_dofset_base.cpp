@@ -95,6 +95,16 @@ int DRT::DofSetBase::MaxAllGID() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+int DRT::DofSetBase::MinAllGID() const
+{
+  if (dofrowmap_ == Teuchos::null)
+    dserror("DRT::DofSetBase::MinAllGID(): dofrowmap_ not initialized, yet");
+  return dofrowmap_->MinAllGID();
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::DofSetBase::DofRowMap() const
 {
   if (dofrowmap_ == Teuchos::null)
@@ -120,6 +130,24 @@ void DRT::DofSetBase::AddDofSettoList()
   if (std::find(static_dofsets_.begin(),static_dofsets_.end(),this)==static_dofsets_.end())
   {
     static_dofsets_.push_back(this);
+  }
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSetBase::ReplaceInStaticDofsets(Teuchos::RCP<DofSetBase> olddofset)
+{
+  std::list<DRT::DofSetBase*>::iterator iterold = std::find(static_dofsets_.begin(),static_dofsets_.end(),&(*olddofset));
+  if (iterold == static_dofsets_.end())
+  {
+    static_dofsets_.push_back(this);
+  }
+  else
+  {
+    static_dofsets_.insert(iterold, this);
+    static_dofsets_.remove(&(*olddofset));
   }
   return;
 }
@@ -158,5 +186,85 @@ int DRT::DofSetBase::MaxGIDinList(const Epetra_Comm& comm) const
   comm.MaxAll(&count,&max,1);
   return max;
 }
+
+//void DRT::DofSetBase::PrintAllDofsets(const Epetra_Comm& comm) const
+//{
+//  if (comm.MyPID() == 0)
+//  {
+//    vector<int> min;
+//    vector<int> max;
+//    for (std::list<DofSetBase*>::const_iterator i=static_dofsets_.begin(); i!=static_dofsets_.end(); ++i)
+//    {
+//      min.push_back((*i)->MinAllGID());
+//      max.push_back((*i)->MaxAllGID());
+//    }
+//    if (min.size() < 1)
+//      return;
+//
+//    vector<int>::const_iterator largest = max_element( max.begin(), max.end() );
+//    int allmax = *largest;
+//    int availspace = 80;
+//    int arrowlen = availspace + 3;
+//
+//    if (min[0] > 0)
+//      availspace -= 2;
+//
+//    for (int i = 0; i < min.size(); ++i)
+//    {
+//      // left bar
+//      availspace--;
+//      // number
+//      availspace -= 12;
+//      //right bar
+//      if (i+1 < min.size())
+//      {
+//        if (max[i]+1 < min[i+1])
+//          availspace -= 2;
+//      }
+//      else
+//        availspace--;
+//    }
+//
+//    if (availspace < 0)
+//    {
+//      arrowlen -= availspace;
+//      availspace = 0;
+//    }
+//
+//    cout << "All registered dofsets:" << endl;
+//
+//    if (min[0] > 0)
+//      cout << "| ";
+//    for (int i = 0; i < min.size(); ++i)
+//    {
+//      // left bar
+//      if (i > 0 and max[i-1] > min[i])
+//        cout << "X";
+//      else
+//        cout << "|";
+//
+//      // number
+//      cout << left << setw(6) << min[i];
+//      for (int j = 0; j < (int)(max[i]-min[i])*1.0*availspace/allmax; ++j)
+//        cout << " ";
+//      cout << right << setw(6) << max[i];
+//
+//      //right bar
+//      if (i+1 < min.size())
+//      {
+//        if (max[i]+1 < min[i+1])
+//          cout << "| ";
+//      }
+//      else
+//        cout << "|";
+//    }
+//
+//    cout << endl << "+";
+//    for (int i = 0; i < arrowlen; ++i)
+//      cout << "-";
+//    cout << "> DofGID" << endl;
+//  }
+//  return;
+//}
 
 #endif  // #ifdef CCADISCRET

@@ -317,7 +317,7 @@ public:
   \brief Replace the dofset associated with the discretisation by a new dofset.
                  Sets havedof_ to false.
   */
-  virtual void ReplaceDofSet(RCP<DofSet> newdofset);
+  virtual void ReplaceDofSet(RCP<DofSet> newdofset, bool replaceinstatdofsets = false);
 
   //@}
 
@@ -469,7 +469,7 @@ public:
   \brief Replace the dofset associated with the discretisation by a new dofset.
                  Sets havedof_ to false.
   */
-  virtual void ReplaceDofSet(unsigned nds, Teuchos::RCP<DofSet> newdofset);
+  virtual void ReplaceDofSet(unsigned nds, Teuchos::RCP<DofSet> newdofset, bool replaceinstatdofsets = false);
 
   /*!
   \brief Add a new dofset to the discretisation.

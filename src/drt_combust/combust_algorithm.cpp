@@ -2432,7 +2432,8 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
 }
 
 /*------------------------------------------------------------------------------------------------*
- | protected: redistribute scatra and fluid discretization                         wichmann 07/11 |
+ | protected: redistribute scatra and fluid discretization                        rasthofer 07/11 |
+ |                                                                                    DA wichmann |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::Redistribute()
 {

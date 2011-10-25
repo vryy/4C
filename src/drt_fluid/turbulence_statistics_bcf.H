@@ -7,23 +7,19 @@
 <pre>
 
 This class has the essential features of the regular channel
-flow. All averages are calculated seperately for each phase.
+flow. All averages are calculated separately for each phase.
 In addition the fraction distribution is calculated.
 
 o Create set of all available homogeneous planes
   (Construction based on a round robin communication pattern)
 
 o loop planes (e.g. plane coordinates)
-
   - pointwise in-plane average of first- and second order moments
-  - integral in-plane average of first- and second order moments
   - in-plane average of wall force
 
 o in plane mean values are averaged in time over all steps between two
   outputs (by computation of the arithmetic mean)
-
   - time average pointwise values
-  - time average integral values
   - time average forces
 
 o Write pointwise and integral statistics for first and second
@@ -35,10 +31,14 @@ the normal direction to the plane, in which the average values in space
 should be computed, and the basename of the statistics outfile. These
 parameters are expected to be contained in the fluid time integration
 parameter list given on input.
-In addition the multiple phase version needes information about which
+
+In addition the multiple phase version needs information about which
 phase the velocity dofs belong to.
 
 Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -86,7 +86,7 @@ public:
 
   o allocate all vectors of sum_something vectors
 
-  o initialise the output (open/clear files, print header)
+  o initialize the output (open/clear files, print header)
 
   </pre>
 

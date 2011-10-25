@@ -557,7 +557,8 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
 }
 
 /*--------------------------------------------------------------------------------------------*
- | Redistribute the scatra discretization and vectors according to nodegraph   wichmann 07/11 |
+ | Redistribute the scatra discretization and vectors according to nodegraph  rasthofer 07/11 |
+ |                                                                            DA wichmann     |
  *--------------------------------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph)
 {

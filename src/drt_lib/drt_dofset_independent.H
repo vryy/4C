@@ -1,0 +1,88 @@
+/*!----------------------------------------------------------------------
+\file drt_dofset_independent.H
+
+\brief This class is inherited from dofset and replaces the
+       method AssignDegreesOfFreedom by a version that does not query
+       the static_dofsets_ list for the max GID, but always starts from
+       0. Also, it does not register with the static_dofsets_ list. This
+       class is intended to be used for xfem approaches. It provides a
+       dofset without xfem dofs for output routines.
+
+<pre>
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
+#ifdef CCADISCRET
+#ifndef DOFSET_INDEPENDENT_H
+#define DOFSET_INDEPENDENT_H
+
+#include <vector>
+#include <map>
+
+#include <Epetra_IntVector.h>
+#include <Teuchos_RefCountPtr.hpp>
+#include <Epetra_Comm.h>
+#include <Epetra_Map.h>
+
+#include "../drt_lib/drt_dofset.H"
+
+using namespace std;
+
+// forward declarations
+namespace DRT
+{
+class Discretization;
+
+/*!
+\brief A set of degrees of freedom
+
+\author
+*/
+class IndependentDofSet: virtual public DofSet
+{
+public:
+
+  /*!
+  \brief Standard Constructor
+
+
+  <pre>
+
+  create a dofset that is independent of the other dofsets
+
+  </pre>
+
+  \return void
+
+  */
+  IndependentDofSet();
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~IndependentDofSet();
+
+  /// create a copy of this object
+  virtual Teuchos::RCP<DofSet> Clone()
+  {
+    return Teuchos::rcp(new IndependentDofSet(*this));
+  }
+
+  /// Assign dof numbers using all elements and nodes of the discretization.
+  virtual int AssignDegreesOfFreedom(const DRT::Discretization& dis, const unsigned dspos, const int start);
+
+protected:
+
+private:
+
+}; // class StdDofSet
+
+}
+
+#endif  // #ifndef DOFSET_INDEPENDENT_H
+#endif  // #ifdef CCADISCRET

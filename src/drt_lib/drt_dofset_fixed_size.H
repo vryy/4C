@@ -1,0 +1,98 @@
+/*!----------------------------------------------------------------------
+\file drt_dofset_fixed_size.H
+
+\brief A modified set of degrees of freedom that always pretends to be
+       of a certain size in order to reserve space for fields that vary
+       in size, i.e. XFEM fluid.
+
+<pre>
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
+
+*----------------------------------------------------------------------*/
+#ifdef CCADISCRET
+#ifndef DOFSET_FIXED_SIZE_H
+#define DOFSET_FIXED_SIZE_H
+
+#include <vector>
+#include <map>
+
+#include <Epetra_IntVector.h>
+#include <Teuchos_RefCountPtr.hpp>
+#include <Epetra_Comm.h>
+#include <Epetra_Map.h>
+
+#include "../drt_lib/drt_dofset.H"
+
+using namespace std;
+
+// forward declarations
+namespace DRT
+{
+class Discretization;
+
+/*!
+\brief A set of degrees of freedom
+
+\author
+*/
+class FixedSizeDofSet: virtual public DofSet
+{
+public:
+
+  /*!
+  \brief Standard Constructor
+
+
+  <pre>
+
+  create a dofset that reserves a certain amount of dofGIDs
+
+  </pre>
+
+  \return void
+
+  */
+  FixedSizeDofSet(int numreservedof)
+    :DofSet(), numMyReservedDofs_(numreservedof)
+  {
+    return;
+  }
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~FixedSizeDofSet()
+  {
+    return;
+  }
+
+  /// create a copy of this object
+  virtual Teuchos::RCP<DofSet> Clone()
+  {
+    return Teuchos::rcp(new FixedSizeDofSet(*this));
+  }
+
+  /// Get maximum GID of degree of freedom row map
+  virtual int MaxAllGID() const
+  {
+    return MinAllGID() + numMyReservedDofs_;
+  }
+
+protected:
+
+  /// Number of reserved dofs
+  int numMyReservedDofs_;
+
+private:
+
+}; // class StdDofSet
+
+}
+
+#endif  // #ifndef DOFSET_INDEPENDENT_H
+#endif  // #ifdef CCADISCRET

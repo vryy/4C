@@ -24,7 +24,8 @@ Maintainer: Florian Henke
 #include "../drt_xfem/enrichmentvalues.H"
 #include "../drt_inpar/inpar_combust.H"
 #include "../drt_inpar/inpar_fluid.H"
-#include "../drt_fluid/drt_pbcdofset.H"
+#include "../drt_lib/drt_dofset_pbc.H"
+#include "../drt_lib/drt_dofset_independent_pbc.H"
 #include "../drt_fluid/drt_transfer_turb_inflow.H"
 #include "../drt_fluid/turbulence_statistic_manager.H"
 #include "combust_flamefront.H"
@@ -307,7 +308,7 @@ public:
   Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_); }
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> BlockSystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_); }
   Teuchos::RCP<DRT::Discretization>& Discretization() { return discret_; }
-  Teuchos::RCP<const PBCDofSet> StandardDofSet() { return standarddofset_; }
+  Teuchos::RCP<const DRT::IndependentPBCDofSet> StandardDofSet() { return standarddofset_; }
   Teuchos::RCP<Epetra_Vector>& RobinRHS()      { return robinrhs_; }
 
   LINALG::MapExtractor& VelPresSplitter()         { return velpressplitter_; }
@@ -552,7 +553,7 @@ protected:
   Teuchos::RCP<XFEM::DofManager>      dofmanagerForOutput_;
 
   //! store dofset for unintersected domain
-  Teuchos::RCP<PBCDofSet>                standarddofset_;
+  Teuchos::RCP<DRT::IndependentPBCDofSet>                standarddofset_;
 
   //! store the pbc-object which maintains the PBCDofSet
   Teuchos::RCP<PeriodicBoundaryConditions> pbc_;

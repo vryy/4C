@@ -24,7 +24,7 @@ Maintainer: Peter Gamnitzer
 #include "drt_periodicbc.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
-#include "drt_pbcdofset.H"
+#include "../drt_lib/drt_dofset_pbc.H"
 #include "../linalg/linalg_utils.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1365,8 +1365,10 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     if (pbcdofset_ == Teuchos::null)
     {
       // create a new dofset specialisation for periodic boundary conditions
-      pbcdofset_ = rcp(new PBCDofSet(allcoupledcolnodes_));
-      discret_->ReplaceDofSet(pbcdofset_);
+      // the 'true' flag makes sure that the pbc dofset replaces the old
+      // dofset also in the static_dofsets_.
+      pbcdofset_ = rcp(new DRT::PBCDofSet(allcoupledcolnodes_));
+      discret_->ReplaceDofSet(pbcdofset_,true);
     }
     else
     {
