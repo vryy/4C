@@ -4675,7 +4675,7 @@ if (not is_stationary_)
 if (reaction_)
 {
   const double fac_reac        = timefacfac*densnp_[dofindex]*reacoeffderiv_[dofindex];
-  const double timetaufac_reac = timetaufac*densnp_[dofindex]*reacoeff_[dofindex];
+  const double timetaufac_reac = timetaufac*densnp_[dofindex]*reacoeffderiv_[dofindex];
   //----------------------------------------------------------------
   // standard Galerkin reactive term
   //----------------------------------------------------------------
@@ -4742,6 +4742,14 @@ if (reaction_)
       const int fui = ui*numdofpernode_+dofindex;
 
       emat(fvi,fui) += v*(conv_(ui)+reacoeff_[dofindex]*funct_(ui));
+
+      if (abs(diffreastafac_)>1e-5)
+      {
+    	if (reacoeff_[dofindex]!=reacoeffderiv_[dofindex])
+		dserror("Only SUPG stabilization is implemented for the case of non-linear reaction term");
+    	cout<<"additional term for USFEM and GLS are not properly implemented in the case of non-linear reaction term"<<endl;
+      }
+
     }
   }
 
