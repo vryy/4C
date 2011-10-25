@@ -34,7 +34,6 @@ ALE_DISP                        No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
----------------------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 EIGEN        0
@@ -72,14 +71,10 @@ PARTITION      Cut_Elements
 --------------------------------------------------------ALE SOLVER
 SOLVER         UMFPACK
 PARTITION      Cut_Elements
--------------------------------------------------------------LEVELSET SOLVER
 -------------------------------------------------------------------MATERIALS
 MAT  1  MAT_Struct_StVenantKirchhoff  YOUNG  1.0E4  NUE  0.49  DENS  1.0
 MAT  2 MAT_fluid  DYNVISCOSITY 1.0 DENSITY 1.0
 MAT  3  MAT_Struct_StVenantKirchhoff  YOUNG  1.0E4  NUE  0.49  DENS  1.0
---------------------------------------------------------MULTILAYER MATERIALS
-----------------------------------------------------------------CONTROL NODE
------------------------------------------------------------------LOAD CURVES
 ----------------------------------------------------------------------CURVE1
 CURVE1  on  Polygonal  T  0.0  BYABSTIME  Yes  0.0  0.1  FACTOR  0.0  0.001
 CURVE1  on  Polygonal  T  0.0  BYABSTIME  Yes  0.1  1000  FACTOR  0.0  0.0
@@ -113,10 +108,6 @@ NDPOINT 4
 NDLINE  0
 NDSURF  2
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 3
@@ -147,53 +138,24 @@ DSURF 0
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL 0
-----------------------------------DESIGN COUPLING POINT CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DPOINT 0
------------------------------------DESIGN COUPLING LINE CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DLINE 0
------------------------------------DESIGN COUPLING SURF CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DSURF 0
-------------------------------------DESIGN COUPLING VOL CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DVOL 0
 -------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 // DOBJECT FSI_ID FIELD MESH FLAG
 DLINE 0
 -------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 // DOBJECT FSI_ID FIELD MESH FLAG
 DSURF 0
-------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
-// DOBJECT
-DPOINT 0
 -------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 // DOBJECT
 DLINE 0
 -------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 // DOBJECT
 DSURF 0
-------------------------------------------------CONTACT CONDITIONS
-DLINE 0
--------------------------DESIGN AXISHELL THICKNESS LINE CONDITIONS
-DLINE 0
-------------------------------DESIGN AXISHELL LOAD LINE CONDITIONS
-DLINE 0
-------------------------------DESIGN AXISHELL COS POINT CONDITIONS
-DPOINT 0
 ---------------------------------------DESIGN FLUID LINE LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
 DLINE 0
 ---------------------------------------DESIGN FLUID SURF LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
 DSURF 0
------------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
-// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-DSURF 0
-------------------------DESIGN FLUID VOLUME STABILISING CONDITIONS
-// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-DVOL 0
 ------------------------------------DESIGN POINT LOCSYS CONDITIONS
 // DOBJECT Id
 DPOINT 0
@@ -462,7 +424,6 @@ NODE          240     COORD 5.0000000000000e-01     3.7500000000000e-01     -5.0
 NODE          241     COORD 5.0000000000000e-01     5.0000000000000e-01     0.0000000000000e+00
 NODE          242     COORD 5.0000000000000e-01     5.0000000000000e-01     5.0000000745058e-02
 NODE          243     COORD 5.0000000000000e-01     5.0000000000000e-01     -5.0000000745058e-02
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
       1 SOLIDH8 HEX8       1      2      3      4      5      6      7      8 MAT       1 EAS mild  KINTYP nln
       2 SOLIDH8 HEX8       2      9     10      3      6     11     12      7 MAT       1 EAS mild  KINTYP nln
@@ -594,7 +555,6 @@ NODE          243     COORD 5.0000000000000e-01     5.0000000000000e-01     -5.0
     128 SOLIDH8 HEX8     211    213    216    214    238    240    243    241 MAT       1 EAS mild  KINTYP nln
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
--------------------------------------------------LEVELSET ELEMENTS
 ------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS 1 NODE 1 POSITION dispz NAME dispz VALUE -1.0e-02 TOLERANCE 1e-5
 ---------------------------------------------------------------END

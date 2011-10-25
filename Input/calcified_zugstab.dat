@@ -71,7 +71,6 @@ PARTITION                       Cut_Elements
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 10 11 DENS 0.001 GAMMA 1
 MAT 10 ELAST_IsoVolHUDependentNeoHooke ALPHA_MAX 1.0E4 CT_MIN 50.0 CT_MAX 600.0 NUE 0.475 BETA -2.0
 MAT 11 ELAST_IsoVolAAAGasser CLUM 2.0E4 CMED 5.0E4 CABLUM 8.0E4 NUE 0.475 BETA -2.0
------------------------------------------------------------------LOAD CURVES
 -----------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.00 1.0 FACTOR 0.0 170.23
 -----------------------------------------------------------------CURVE2
@@ -83,10 +82,6 @@ NDPOINT 2
 NDLINE  0
 NDSURF  2
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -435,7 +430,6 @@ NODE 96  COORD   10.0  10.0  -20.0
 NODE 97  COORD   10.0  10.0  -30.0
 NODE 98  COORD   10.0  10.0  -40.0
 NODE 99  COORD   10.0  10.0  -50.0
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
 1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8            MAT 1 EAS none KINTYP nln HU 200.0
 2 SOLIDH8 HEX8  2 9 10 3 6 11 12 7         MAT 1 EAS none KINTYP nln HU 200.0

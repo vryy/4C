@@ -38,7 +38,6 @@ FLUID_STRESS      No
 FLUID_VIS         No
 ALE_DISP          No
 FILESTEPS         1000
------------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Statics
 EIGEN        0
@@ -148,9 +147,6 @@ PARTITION      Cut_Elements
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_Struct_StVenantKirchhoff  YOUNG 21000 NUE 0.0 DENS 1 THEXPANS 0.0
 MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 210 NUE 0.0 DENS 1 THEXPANS 0.0
-----------------------------------------------MULTILAYER MATERIALS
-------------------------------------------------------CONTROL NODE
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 2.0 FACTOR 0.0 1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 2.0 4.0 FACTOR 1.0 1
@@ -166,7 +162,6 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 2.0 4.0 FACTOR 0.0 1.0
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
---------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS 1 NODE 2 POSITION dispx NAME dispx VALUE  9.3736108397383694e-02 TOLERANCE 1e-7
 STRUCTURE DIS 1 NODE 2 POSITION dispy NAME dispy VALUE -4.9734987185849086e-05 TOLERANCE 1e-7
@@ -176,10 +171,6 @@ NDPOINT 0
 NDLINE  0
 NDSURF  4
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -571,7 +562,6 @@ NODE 85  	COORD	4.30000019e+00	-5.50000012e-01	-1.00000000e+00
 NODE 86  	COORD	4.30000019e+00	0.00000000e+00	-1.50000000e+00	
 NODE 87  	COORD	4.30000019e+00	5.50000012e-01	-1.00000000e+00	
 NODE 88  	COORD	4.30000019e+00	0.00000000e+00	-5.00000000e-01	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH20 HEX20  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20    MAT 1 GP 3 3 3 KINEM Totlag
    2 SOLIDH20 HEX20  21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40    MAT 2 GP 3 3 3 KINEM Totlag

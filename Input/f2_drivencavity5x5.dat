@@ -12,7 +12,6 @@ NUMFIELD                        1
 RESTART                         0
 ADAPTIVE                        Yes
 --------------------------------------------------------------------------IO
----------------------------------------------------------EIGENVALUE ANALYSIS
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      Gen_Alfa
 EIGEN                           0
@@ -180,74 +179,6 @@ NDPOINT                         4
 NDLINE                          4
 NDSURF                          1
 NDVOL                           0
----------------------------------------------------------------DESIGN POINTS
-POINT
-Num: 1 HigherEntity: 2 conditions: 2 material: 0
-Coord: 0.000000 0.000000 0.000000
-END POINT
-POINT
-Num: 2 HigherEntity: 2 conditions: 2 material: 0
-Coord: 1.000000 0.000000 0.000000
-END POINT
-POINT
-Num: 3 HigherEntity: 2 conditions: 2 material: 0
-Coord: 1.000000 1.000000 0.000000
-END POINT
-POINT
-Num: 4 HigherEntity: 2 conditions: 2 material: 0
-Coord: 0.000000 1.000000 0.000000
-END POINT
-----------------------------------------------------------------DESIGN LINES
-STLINE
-Num: 1 HigherEntity: 1 conditions: 2 material: 0
-Meshing Info: (num=1,NOE=1) Elemtype=1 IsStructured=1 size=20 Meshing=Default
-Points: 1 2
-END STLINE
-STLINE
-Num: 2 HigherEntity: 1 conditions: 2 material: 0
-Meshing Info: (num=4,NOE=1) Elemtype=1 IsStructured=1 size=20 Meshing=Default
-Points: 2 3
-END STLINE
-STLINE
-Num: 3 HigherEntity: 1 conditions: 2 material: 0
-Meshing Info: (num=5,NOE=1) Elemtype=1 IsStructured=1 size=20 Meshing=Default
-Points: 3 4
-END STLINE
-STLINE
-Num: 4 HigherEntity: 1 conditions: 2 material: 0
-Meshing Info: (num=3,NOE=1) Elemtype=1 IsStructured=1 size=20 Meshing=Default
-Points: 4 1
-END STLINE
--------------------------------------------------------------DESIGN SURFACES
-NURBSURFACE
-Num: 1 HigherEntity: 0 conditions: 2 material: 1
-Meshing Info: (num=2,NOE=1) Elemtype=3 IsStructured=1 size=0 Meshing=Default
-NumLines:                       4
-Line: 4 Orientation: SAME1ST
-Line: 1 Orientation: SAME1ST
-Line: 2 Orientation: SAME1ST
-Line: 3 Orientation: SAME1ST
-Number of Control Points= 2 2 Degree= 1 1
-Point 1,1 coords:-0.050000,1.050000,0.000000
-Point 1,2 coords:-0.050000,-0.050000,0.000000
-Point 2,1 coords:1.050000,1.050000,0.000000
-Point 2,2 coords:1.050000,-0.050000,0.000000
-Number of knots in U= 4
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=1.000000
-knot 4 value=1.000000
-Number of knots in V= 4
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=1.000000
-knot 4 value=1.000000
-Non rational
-IsTrimmed:                      1
-Center: 0.500000 0.500000 0.000000
-Normal: 0.000000 0.000000 1.000000
-END NURBSURFACE
---------------------------------------------------------------DESIGN VOLUMES
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 E 1 - 1 1 1 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
@@ -272,23 +203,10 @@ DLINE                           0
 DSURF                           0
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
---------------------------------------------DESIGN COUPLING POINT CONDITIONS
-DPOINT                          0
----------------------------------------------DESIGN COUPLING LINE CONDITIONS
-DLINE                           0
----------------------------------------------DESIGN COUPLING SURF CONDITIONS
-DSURF                           0
-----------------------------------------------DESIGN COUPLING VOL CONDITIONS
-DVOL                            0
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 DLINE                           0
-----------------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
-DPOINT                          0
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 DLINE                           0
----------------------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
-DSURF                           1
-E 1 - USFEM
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 332 DNODE 1
 NODE 1 DNODE 2
@@ -394,7 +312,6 @@ NODE 405 COORD 4.000000000000000e-001 1.000000000000000e+000 0.000000000000000e+
 NODE 430 COORD 0.000000000000000e+000 8.000000000000000e-001 0.000000000000000e+000
 NODE 431 COORD 2.000000000000000e-001 1.000000000000000e+000 0.000000000000000e+000
 NODE 441 COORD 0.000000000000000e+000 1.000000000000000e+000 0.000000000000000e+000
---------------------------------------------------------------------ELEMENTS
 ----------------------------------------------------------STRUCTURE ELEMENTS
 --------------------------------------------------------------FLUID ELEMENTS
 20 FLUID2 QUAD4 332 215 231 349 MAT 1 NA Euler
@@ -425,8 +342,6 @@ NODE 441 COORD 0.000000000000000e+000 1.000000000000000e+000 0.000000000000000e+
 ----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0
-----------------------------------------------------------------CONTROL NODE
------------------------------------------------------------------LOAD CURVES
 ----------------------------------------------------------------------CURVE1
 //CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 10.0 c2 1.0
 CURVE1 on EXPR FUNC sin(t/10.0*pi/2) t1 0 t2 1000
@@ -434,7 +349,6 @@ CURVE1 on EXPR FUNC sin(t/10.0*pi/2) t1 0 t2 1000
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
-------------------------------------------------------------------MONITORING
 ----------------------------------------------------------RESULT DESCRIPTION
 -------------------------------------------------------------------------END
 // END

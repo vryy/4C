@@ -44,7 +44,6 @@ ALE_DISP               No
 THERM_TEMPERATURE      No
 THERM_HEATFLUX         No
 FILESTEPS              1000
------------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------MESHTYING AND CONTACT
 -----------------------------------------------------FLUID DYNAMIC
@@ -126,7 +125,6 @@ SAMPLING_START        0
 SAMPLING_STOP         0
 DUMPING_PERIOD        0
 -------------------------------------------------------FSI DYNAMIC
--------------------------------------------------------SSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC
 -------------------------------------------------------TSI DYNAMIC
 ------------------------------------------------------FLUID SOLVER
@@ -208,10 +206,6 @@ NDPOINT 8
 NDLINE  14
 NDSURF  7
 NDVOL   1
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 0
@@ -261,18 +255,6 @@ DSURF 1
 //E 2 - 1 1 0 0 0 0 1.0 1.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 //E 4 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 E 7 - 0 0 1 0 0 0 0.0 0.0 1.0 0.0 0.0 0.0 none none none none none none 0 0 3 0 0 0 // all potential dof are dirichlet points!!
-----------------------------------DESIGN COUPLING POINT CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DPOINT 0
------------------------------------DESIGN COUPLING LINE CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DLINE 0
------------------------------------DESIGN COUPLING SURF CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DSURF 0
-------------------------------------DESIGN COUPLING VOL CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DVOL 0
 -------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 // DOBJECT FSI_ID FIELD MESH FLAG
 DLINE 0
@@ -285,9 +267,6 @@ DLINE 0
 ------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 // DOBJECT COUPLING BCFLUID
 DSURF 0
-------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
-// DOBJECT
-DPOINT 0
 -------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 // DOBJECT
 DLINE 0
@@ -314,12 +293,6 @@ DSURF 0
 DSURF 0
 ---------------------------------------DESIGN LINE AREA MONITOR 2D
 DLINE 0
--------------------------DESIGN AXISHELL THICKNESS LINE CONDITIONS
-DLINE 0
-------------------------------DESIGN AXISHELL LOAD LINE CONDITIONS
-DLINE 0
-------------------------------DESIGN AXISHELL COS POINT CONDITIONS
-DPOINT 0
 --------------------------DESIGN FLUID STRESS CALC LINE CONDITIONS
 // DOBJECT
 DLINE 0
@@ -332,12 +305,6 @@ DLINE 0
 ---------------------------------------DESIGN FLUID SURF LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
 DSURF 0
------------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
-// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-DSURF 0
-------------------------DESIGN FLUID VOLUME STABILISING CONDITIONS
-// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-DVOL 0
 ------------------------------------DESIGN POINT LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId
 DPOINT 0
@@ -355,21 +322,6 @@ DVOL 0
 DLINE 0
 --------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 // DOBJECT PBC_ID ORIENTATION
-DSURF 0
------------------------------------DESIGN LINE SYMMETRY CONDITIONS
-// DOBJECT NORMAL
-DLINE 0
---------------------------------DESIGN SURFACE SYMMETRY CONDITIONS
-// DOBJECT NORMAL
-DSURF 0
--------------------------------DESIGN LINE DIRICH DGFEM CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DLINE 0
-------------------------------DESIGN LINE NEUMANN DGFEM CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DLINE 0
-----------------------------------------DESIGN SURF INTERFACE MASK
-// DOBJECT ELEMENT_TYPE
 DSURF 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE     643 DNODE 1
@@ -5477,7 +5429,6 @@ NODE         1328     COORD 1.000000000000000e+00     0.000000000000000e+00     
 NODE         1329     COORD 9.000000000000000e-01     0.000000000000000e+00     1.000000000000000e+00
 NODE         1330     COORD 1.000000000000000e+00     9.999999999999998e-02     1.000000000000000e+00
 NODE         1331     COORD 1.000000000000000e+00     0.000000000000000e+00     1.000000000000000e+00
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
       1 FLUID3 HEX8       8      5      3      7      6      2      1      4 MAT       1 NA Euler GP 2 2 2
@@ -6481,16 +6432,12 @@ NODE         1331     COORD 1.000000000000000e+00     0.000000000000000e+00     
     999 FLUID3 HEX8    1328   1325   1317   1323   1322   1318   1299   1312 MAT       1 NA Euler GP 2 2 2
    1000 FLUID3 HEX8    1331   1328   1323   1329   1330   1322   1312   1324 MAT       1 NA Euler GP 2 2 2
 ------------------------------------------------------ALE ELEMENTS
---------------------------------------------------THERMAL ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_fluid  DYNVISCOSITY 0.001 DENSITY 1.0
 MAT       2 MAT_ion DIFFUSIVITY 0.01 VALENCE 1.0
 MAT       3 MAT_ion DIFFUSIVITY 0.01 VALENCE -1.0
 MAT       4 MAT_matlist NUMMAT 2 MATIDS 2 3
-----------------------------------------------MULTILAYER MATERIALS
-------------------------------------------------------CONTROL NODE
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
@@ -6510,7 +6457,6 @@ FUNCT3 EXPR 0 0.0 0 FUNCTION -250.0*z+250.0
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
---------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS 1 NODE 922 POSITION phi1    NAME phi1     VALUE 1.105608978e+00 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 784 POSITION phi1    NAME phi1     VALUE 9.888467441e-01 TOLERANCE 1e-9

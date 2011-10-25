@@ -89,7 +89,6 @@ KIND                            None
 -----------------------------------------------------THERMAL SOLVER
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_Struct_StVenantKirchhoff  YOUNG 2.06E11 NUE 0.0 DENS 7.8E3
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 2.0E-03 FACTOR 0 20
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 2.0E-03 4.0E-03 FACTOR 20 0
@@ -110,10 +109,6 @@ NDPOINT 0
 NDLINE  6
 NDSURF  0
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 0
@@ -150,53 +145,24 @@ DSURF 0
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL 0
-----------------------------------DESIGN COUPLING POINT CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DPOINT 0
------------------------------------DESIGN COUPLING LINE CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DLINE 0
------------------------------------DESIGN COUPLING SURF CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DSURF 0
-------------------------------------DESIGN COUPLING VOL CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DVOL 0
 -------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 // DOBJECT FSI_ID FIELD MESH FLAG
 DLINE 0
 -------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 // DOBJECT FSI_ID FIELD MESH FLAG
 DSURF 0
-------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
-// DOBJECT
-DPOINT 0
 -------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 // DOBJECT
 DLINE 0
 -------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 // DOBJECT
 DSURF 0
-------------------------------------------------CONTACT CONDITIONS
-DLINE 0
--------------------------DESIGN AXISHELL THICKNESS LINE CONDITIONS
-DLINE 0
-------------------------------DESIGN AXISHELL LOAD LINE CONDITIONS
-DLINE 0
-------------------------------DESIGN AXISHELL COS POINT CONDITIONS
-DPOINT 0
 ---------------------------------------DESIGN FLUID LINE LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
 DLINE 0
 ---------------------------------------DESIGN FLUID SURF LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
 DSURF 0
------------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
-// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-DSURF 0
-------------------------DESIGN FLUID VOLUME STABILISING CONDITIONS
-// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-DVOL 0
 ------------------------------------DESIGN POINT LOCSYS CONDITIONS
 // DOBJECT Id
 DPOINT 0
@@ -328,7 +294,6 @@ NODE           93     COORD 1.5000000596046e-01     0.0000000000000e+00     -1.0
 NODE           94     COORD 1.5000000596046e-01     0.0000000000000e+00     1.0000000474975e-03
 NODE           95     COORD 1.5000000596046e-01     2.9999999329448e-02     -1.0000000474975e-03
 NODE           96     COORD 1.5000000596046e-01     2.9999999329448e-02     1.0000000474975e-03
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
       1 SOLIDSH8 HEX8       1      2      3      4      5      6      7      8 MAT 1 EAS sosh8 ANS sosh8 THICKDIR auto
       2 SOLIDSH8 HEX8       4      3      9     10      8      7     11     12 MAT 1 EAS sosh8 ANS sosh8 THICKDIR auto
@@ -362,6 +327,5 @@ NODE           96     COORD 1.5000000596046e-01     2.9999999329448e-02     1.00
      30 SOLIDSH8 HEX8      88     87     89     90     94     93     95     96 MAT 1 EAS sosh8 ANS sosh8 THICKDIR auto
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
--------------------------------------------------LEVELSET ELEMENTS
 ---------------------------------------------------------------END
 // END

@@ -19,7 +19,6 @@ MATERIALS	62
 NUMDF    	6
 --------------------------------------------------------ALE DYNAMIC
 ---------------------------------------------------------ALE SOLVER
-----------------------------------------------------BROWNIAN MOTION
 -------------------------------------------------COMBUSTION CONTROL
 --------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 ----------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
@@ -175,7 +174,6 @@ TREE_TYPE                  	quadtree2d
 -------------------------------------------------------XFEM GENERAL
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff  YOUNG 0.5 NUE 0.3 DENS 0.00000125 THEXPANS 0.0
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC (1-cos(t*pi/1.0))/2.0 t1 0.0 t2 1.0
 CURVE1 on EXPR FUNC 1.0 t1 1.0 t2 10000.0
@@ -201,10 +199,6 @@ NDPOINT 0
 NDLINE  0
 NDSURF  11
 NDVOL   2
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -4092,7 +4086,6 @@ NODE 1053  	COORD	-2.86666656e+00	0.00000000e+00	0.00000000e+00
 NODE 1054  	COORD	-2.79999995e+00	0.00000000e+00	0.00000000e+00	
 NODE 1055  	COORD	-2.93333340e+00	0.00000000e+00	0.00000000e+00	
 NODE 1056  	COORD	-3.00000000e+00	0.00000000e+00	0.00000000e+00	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 WALL QUAD4  1 2 3 4    MAT 1 THICK 1 GP 2 2 PLANE_STRAIN W_TotalLagr EAS_Model
    2 WALL QUAD4  2 5 6 3    MAT 1 THICK 1 GP 2 2 PLANE_STRAIN W_TotalLagr EAS_Model

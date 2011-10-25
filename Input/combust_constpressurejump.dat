@@ -131,9 +131,6 @@ ADAPTCONV_BETTER                0.1
 EXPLPREDICT                     no //sonst Probleme
 -----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        SUPG
------------------------------SCALAR TRANSPORT DYNAMIC/LEVELSET
-MASSCALCULATION                 Interpolated
-REINITIALIZATION                None
 -------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  Yes
 -------------------------------------------------------FLUID SOLVER
@@ -145,7 +142,6 @@ MAT       1 MAT_matlist  NUMMAT 2 MATIDS 3 4
 MAT       2 MAT_scatra  DIFFUSIVITY 0.000000001 // 1*10E-9
 MAT       3 MAT_fluid   DYNVISCOSITY 1.0 DENSITY 1.0 // plus side (right)
 MAT       4 MAT_fluid   DYNVISCOSITY 2.0 DENSITY 2.0 // minus side (left)
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Explicit FUNC f(t)=(sin(PI(t:C1-0.5))+1)*0.5 c1 1.0 c2 1.0  // sin curve with zero derivatives
 ------------------------------------------------------------CURVE2
@@ -166,10 +162,6 @@ NDPOINT 4
 NDLINE  12
 NDSURF  6
 NDVOL   1
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -1159,7 +1151,6 @@ NODE 239  	COORD	5.00000000e-01	4.00000006e-01	-5.00000007e-02
 NODE 240  	COORD	5.00000000e-01	4.00000006e-01	5.00000007e-02	
 NODE 241  	COORD	5.00000000e-01	5.00000000e-01	-5.00000007e-02	
 NODE 242  	COORD	5.00000000e-01	5.00000000e-01	5.00000007e-02	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
    1 COMBUST3 HEX8  1 2 3 4 5 6 7 8    MAT 1 NA Euler GP_TET 4 GP_ALT standard

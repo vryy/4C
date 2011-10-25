@@ -154,9 +154,6 @@ ML_DAMPCOARSE                   1.0                             // damping coars
 PARTITION                       Cut_Elements
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_NeoHooke  YOUNG 10 NUE 0.3 DENS 7.8e-6
-----------------------------------------------MULTILAYER MATERIALS
-------------------------------------------------------CONTROL NODE
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 2.0
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 2.0 FACTOR 2.0 0.0
@@ -170,7 +167,6 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 2.0 FACTOR 2.0 0.0
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
---------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS 1 NODE 180 POSITION dispx NAME ux VALUE 0.0 TOLERANCE 1e-7
 STRUCTURE DIS 1 NODE 180 POSITION dispy NAME uy VALUE 0.0 TOLERANCE 1e-7
@@ -183,10 +179,6 @@ NDPOINT 2
 NDLINE  4
 NDSURF  4
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -1125,7 +1117,6 @@ NODE 556    COORD   5.00000000e+00  -1.20654642e-16 -3.39745969e-01
 NODE 557    COORD   5.00000000e+00  1.76429915e+00  -5.21365166e-01 
 NODE 558    COORD   5.00000000e+00  3.45459795e+00  -1.05860507e+00 
 NODE 559    COORD   5.00000000e+00  5.00000000e+00  -1.92893219e+00 
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 1 EAS none  KINTYP nln
    2 SOLIDH8 HEX8  2 9 10 3 6 11 12 7    MAT 1 EAS none  KINTYP nln 

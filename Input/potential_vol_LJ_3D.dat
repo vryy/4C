@@ -19,7 +19,6 @@ MATERIALS	1
 NUMDF    	6
 --------------------------------------------------------ALE DYNAMIC
 ---------------------------------------------------------ALE SOLVER
-----------------------------------------------------BROWNIAN MOTION
 -------------------------------------------------COMBUSTION CONTROL
 --------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 ----------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
@@ -145,7 +144,6 @@ TREE_TYPE                  	octree3d
 GMSH_DEBUG_OUT                  Yes
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff  YOUNG 0.5 NUE 0.3 DENS 0.00000125 THEXPANS 0.0
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC (1-cos(t*pi/5))/2.0 t1 0.0 t2 5
 CURVE1 on EXPR FUNC 1.0 t1 5 t2 10000.0
@@ -174,10 +172,6 @@ NDPOINT 8
 NDLINE  11
 NDSURF  12
 NDVOL   3
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -326,11 +320,7 @@ E 1 - 2 label 1 depth 0.000000000000000000000000001 rootDist 0.2 cutOff 0.1 exvo
 E 2 - 2 label 2 depth 0.000000000000000000000000001 rootDist 0.2 cutOff 0.1 exvollength 0.0 beta 50000000000000
 -------------------------------DESIGN SURF LJ_POTENTIAL CONDITIONS
 DSURF  0
------------------------------DESIGN SURF ZETA_POTENTIAL CONDITIONS
-DSURF  0
 -------------------------------DESIGN LINE LJ_POTENTIAL CONDITIONS
-DLINE  0
------------------------------DESIGN LINE ZETA_POTENTIAL CONDITIONS
 DLINE  0
 ----------------------------DESIGN BROWNIAN MOTION SURF CONDITIONS
 DSURF  0
@@ -1584,7 +1574,6 @@ NODE 321  	COORD	4.00000000e+00	6.09999990e+00	-1.00000001e-01
 NODE 322  	COORD	4.07612038e+00	5.71731663e+00	-1.00000001e-01	
 NODE 323  	COORD	4.00000000e+00	6.09999990e+00	1.00000001e-01	
 NODE 324  	COORD	4.07612038e+00	5.71731663e+00	1.00000001e-01	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 1 EAS full  KINTYP nln
    2 SOLIDH8 HEX8  2 9 10 3 6 11 12 7    MAT 1 EAS full  KINTYP nln

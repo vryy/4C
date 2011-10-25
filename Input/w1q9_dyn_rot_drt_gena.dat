@@ -41,7 +41,6 @@ FLUID_STRESS      No
 FLUID_VIS         No
 ALE_DISP          No
 FILESTEPS         1000
------------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 EIGEN        0
@@ -172,83 +171,6 @@ NDPOINT 4
 NDLINE  4
 NDSURF  1
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-POINT
-Num: 1 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 0.000000 0.000000 0.000000
-END POINT
-POINT
-Num: 2 HigherEntity: 2 conditions: 2 material: 0
-LAYER: Layer0
-Coord: 1.000000 1.000000 0.000000
-END POINT
-POINT
-Num: 3 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 0.000000 2.000000 0.000000
-END POINT
-POINT
-Num: 4 HigherEntity: 2 conditions: 2 material: 0
-LAYER: Layer0
-Coord: -1.000000 1.000000 0.000000
-END POINT
-------------------------------------------------------DESIGN LINES
-STLINE
-Num: 1 HigherEntity: 1 conditions: 1 material: 0
-LAYER: Layer0
-Meshing Info: (num=3,NOE=4) Elemtype=1 IsStructured=1 size=1 Meshing=Default
-Points: 4 3
-END STLINE
-STLINE
-Num: 2 HigherEntity: 1 conditions: 1 material: 0
-LAYER: Layer0
-Meshing Info: (num=3,NOE=4) Elemtype=1 IsStructured=1 size=1 Meshing=Default
-Points: 3 2
-END STLINE
-STLINE
-Num: 3 HigherEntity: 1 conditions: 1 material: 0
-LAYER: Layer0
-Meshing Info: (num=3,NOE=4) Elemtype=1 IsStructured=1 size=1 Meshing=Default
-Points: 2 1
-END STLINE
-STLINE
-Num: 4 HigherEntity: 1 conditions: 1 material: 0
-LAYER: Layer0
-Meshing Info: (num=3,NOE=4) Elemtype=1 IsStructured=1 size=1 Meshing=Default
-Points: 1 4
-END STLINE
----------------------------------------------------DESIGN SURFACES
-NURBSURFACE
-Num: 1 HigherEntity: 0 conditions: 2 material: 2
-LAYER: Layer0
-Meshing Info: (num=1,NOE=1) Elemtype=3 IsStructured=1 size=0 Meshing=Default
-NumLines: 4
-Line: 1 Orientation: DIFF1ST
-Line: 4 Orientation: DIFF1ST
-Line: 3 Orientation: DIFF1ST
-Line: 2 Orientation: DIFF1ST
-Number of Control Points= 2 2 Degree= 1 1
-Point 1,1 coords:-1.100000,2.100000,0.000000
-Point 1,2 coords:-1.100000,-0.100000,0.000000
-Point 2,1 coords:1.100000,2.100000,0.000000
-Point 2,2 coords:1.100000,-0.100000,0.000000
-Number of knots in U= 4
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=1.000000
-knot 4 value=1.000000
-Number of knots in V= 4
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=1.000000
-knot 4 value=1.000000
-Non rational
-IsTrimmed: 1
-Center: 0.000000 1.000000 0.000000
-Normal: -0.000000 0.000000 1.000000
-END NURBSURFACE
-----------------------------------------------------DESIGN VOLUMES
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 1
@@ -284,18 +206,6 @@ DLINE 0
 ---------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF 0
-----------------------------------DESIGN COUPLING POINT CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DPOINT 0
------------------------------------DESIGN COUPLING LINE CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DLINE 0
------------------------------------DESIGN COUPLING SURF CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DSURF 0
-------------------------------------DESIGN COUPLING VOL CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DVOL 0
 -------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 // DOBJECT FSI_ID FIELD MESH FLAG
 DLINE 0
@@ -308,9 +218,6 @@ DLINE 0
 ------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 // DOBJECT COUPLING BCFLUID
 DSURF 0
-------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
-// DOBJECT
-DPOINT 0
 -------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 // DOBJECT
 DLINE 0
@@ -329,30 +236,12 @@ DSURF 0
 DSURF 0
 ------------------------------------DESIGN SURFACE AREA MONITOR 3D
 DSURF 0
--------------------------DESIGN AXISHELL THICKNESS LINE CONDITIONS
-DLINE 0
-------------------------------DESIGN AXISHELL LOAD LINE CONDITIONS
-DLINE 0
-------------------------------DESIGN AXISHELL COS POINT CONDITIONS
-DPOINT 0
---------------------------------DESIGN LINE STRESS CALC CONDITIONS
-// DOBJECT
-DLINE 0
---------------------------------DESIGN SURF STRESS CALC CONDITIONS
-// DOBJECT
-DSURF 0
 ---------------------------------------DESIGN FLUID LINE LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
 DLINE 0
 ---------------------------------------DESIGN FLUID SURF LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
 DSURF 0
------------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
-// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-DSURF 0
-------------------------DESIGN FLUID VOLUME STABILISING CONDITIONS
-// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-DVOL 0
 ------------------------------------DESIGN POINT LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId
 DPOINT 0
@@ -410,18 +299,13 @@ NODE            6     COORD -1.000000000000000e+00     1.000000000000000e+00    
 NODE            7     COORD -5.000000000000000e-01     1.500000000000000e+00     0.000000000000000e+00
 NODE            8     COORD 5.000000000000000e-01     1.500000000000000e+00     0.000000000000000e+00
 NODE            9     COORD 0.000000000000000e+00     2.000000000000000e+00     0.000000000000000e+00
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
       1 WALL QUAD9       6      1      5      9      3      2      8      7      4 MAT       1 THICK 1.0 GP 3 3 PLANE_STRESS W_TotalLagr Displ_Model STRESSES XY SSI_COUPTYP none TSI_COUPTYP none
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
---------------------------------------------------THERMAL ELEMENTS
 ---------------------------------------------------------MATERIALS
 // MAT_Struct_StVenantKirchhoff
 MAT       1 MAT_Struct_StVenantKirchhoff  YOUNG 21000 NUE 0.3 DENS 7.8e-2 THEXPANS 0.0
-----------------------------------------------MULTILAYER MATERIALS
-------------------------------------------------------CONTROL NODE
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 0.1
 ------------------------------------------------------------CURVE2
@@ -434,11 +318,6 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 0.1
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
---------------------------------------------------------MONITORING
-// FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
-// FLUID 1 - 0 0 0 0 0 0
-// STRUCTURE 2 - 0 0 0 0 0 0
-// ALE 3 - 0 0 0 0 0 0
 ------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS 1 NODE 6 POSITION dispx NAME dispx VALUE 2.531719871394317450e-02 TOLERANCE 1e-6
 STRUCTURE DIS 1 NODE 6 POSITION dispy NAME dispy VALUE 3.173010801767789379e-01 TOLERANCE 1e-6

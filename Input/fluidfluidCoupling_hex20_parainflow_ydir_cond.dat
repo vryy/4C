@@ -40,7 +40,6 @@ STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  No
------------------------------------------------EIGENVALUE ANALYSIS
 -------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
@@ -155,7 +154,6 @@ GMSH_DEBUG_OUT                  Yes
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff  YOUNG 10000000.0 NUE 0.4 DENS 2.0 THEXPANS 0.0
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC (1-cos(pi*t/4.0))/2.0 t1 0.0 t2 4.0
 ------------------------------------------------------------CURVE2
@@ -171,10 +169,6 @@ NDPOINT 0
 NDLINE  0
 NDSURF  8
 NDVOL   4
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -1004,7 +998,6 @@ NODE 186  	COORD	1.12500000e+00	0.00000000e+00	-1.25000000e-01
 NODE 187  	COORD	1.12500000e+00	1.25000000e-01	0.00000000e+00	
 NODE 188  	COORD	1.12500000e+00	1.25000000e-01	1.25000000e-01	
 NODE 189  	COORD	1.12500000e+00	1.25000000e-01	-1.25000000e-01	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8 HEX8  163 164 165 166 167 168 169 170    MAT 2 EAS mild KINTYP nln
    2 SOLIDH8 HEX8  164 171 172 165 168 173 174 169    MAT 2 EAS mild KINTYP nln

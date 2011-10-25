@@ -27,7 +27,6 @@ NUMSTRUCDIS  0
 NUMALEDIS    0
 NUMTHERMDIS  0
 ----------------------------------------------------------------IO
------------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 -----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
@@ -123,10 +122,8 @@ UPRES            1
 RESTARTEVRY      10    // 2000
 CONSTHERMPRESS   Yes
 -------------------------------------------------------FSI DYNAMIC
--------------------------------------------------------SSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC
 -------------------------------------------------------TSI DYNAMIC
-------------------------------------------------COMBUSTION DYNAMIC
 ------------------------------------------------------FLUID SOLVER
 SOLVER         Aztec_MSR    // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0            // output every so often, 0 no output
@@ -221,107 +218,6 @@ NDPOINT 6
 NDLINE  6
 NDSURF  1
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-POINT
-Num: 1 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 0.000000 0.000000 0.000000
-END POINT
-POINT
-Num: 2 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 0.500000 0.000000 0.000000
-END POINT
-POINT
-Num: 3 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 1.000000 0.000000 0.000000
-END POINT
-POINT
-Num: 4 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 5.000000 0.000000 0.000000
-END POINT
-POINT
-Num: 5 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 5.000000 1.000000 0.000000
-END POINT
-POINT
-Num: 6 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 0.000000 1.000000 0.000000
-END POINT
-------------------------------------------------------DESIGN LINES
-STLINE
-Num: 1 HigherEntity: 1 conditions: 2 material: 0
-LAYER: Layer0
-Meshing Info: (num=5,NOE=2) Elemtype=1 IsStructured=1 size=10 Meshing=Default
-Points: 1 2
-END STLINE
-STLINE
-Num: 2 HigherEntity: 1 conditions: 3 material: 0
-LAYER: Layer0
-Meshing Info: (num=5,NOE=2) Elemtype=1 IsStructured=1 size=10 Meshing=Default
-Points: 2 3
-END STLINE
-STLINE
-Num: 3 HigherEntity: 1 conditions: 2 material: 0
-LAYER: Layer0
-Meshing Info: (num=4,NOE=1) Elemtype=1 IsStructured=1 size=80 Meshing=Default
-Points: 3 4
-END STLINE
-STLINE
-Num: 4 HigherEntity: 1 conditions: 1 material: 0
-LAYER: Layer0
-Meshing Info: (num=2,NOE=2) Elemtype=1 IsStructured=1 size=30 Meshing=Default
-Points: 4 5
-END STLINE
-STLINE
-Num: 5 HigherEntity: 1 conditions: 2 material: 0
-LAYER: Layer0
-Meshing Info: (num=3,NOE=1) Elemtype=1 IsStructured=1 size=100 Meshing=Default
-Points: 5 6
-END STLINE
-STLINE
-Num: 6 HigherEntity: 1 conditions: 3 material: 0
-LAYER: Layer0
-Meshing Info: (num=2,NOE=2) Elemtype=1 IsStructured=1 size=30 Meshing=Default
-Points: 6 1
-END STLINE
----------------------------------------------------DESIGN SURFACES
-NURBSURFACE
-Num: 1 HigherEntity: 0 conditions: 3 material: 14
-LAYER: Layer0
-Meshing Info: (num=1,NOE=1) Elemtype=3 IsStructured=1 size=0 Meshing=Default
-NumLines: 6
-Line: 6 Orientation: SAME1ST
-Line: 1 Orientation: SAME1ST
-Line: 2 Orientation: SAME1ST
-Line: 3 Orientation: SAME1ST
-Line: 4 Orientation: SAME1ST
-Line: 5 Orientation: SAME1ST
-Number of Control Points= 2 2 Degree= 1 1
-Point 1,1 coords:-1.475000,1.066667,0.000000
-Point 1,2 coords:-1.475000,-0.400000,0.000000
-Point 2,1 coords:5.308333,1.066667,0.000000
-Point 2,2 coords:5.308333,-0.400000,0.000000
-Number of knots in U= 4
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=1.000000
-knot 4 value=1.000000
-Number of knots in V= 4
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=1.000000
-knot 4 value=1.000000
-Non rational
-IsTrimmed: 1
-Center: 1.916667 0.333333 0.000000
-Normal: -0.000000 0.000000 1.000000
-END NURBSURFACE
-----------------------------------------------------DESIGN VOLUMES
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE 6
@@ -6889,7 +6785,6 @@ NODE         3128     COORD 0.000000000000000e+00     9.999999999999998e-02     
 NODE         3129     COORD 0.000000000000000e+00     6.666666666666665e-02     0.000000000000000e+00
 NODE         3130     COORD 0.000000000000000e+00     3.333333333333333e-02     0.000000000000000e+00
 NODE         3131     COORD 0.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
       1 FLUID2 QUAD4    3092   3061   3060   3091 MAT       1 NA Euler GP 2 2 TURBULENCE No CA No
@@ -9893,13 +9788,9 @@ NODE         3131     COORD 0.000000000000000e+00     0.000000000000000e+00     
    2999 FLUID2 QUAD4     467    465    433    436 MAT       1 NA Euler GP 2 2 TURBULENCE No CA No
    3000 FLUID2 QUAD4     499    495    465    467 MAT       1 NA Euler GP 2 2 TURBULENCE No CA No
 ------------------------------------------------------ALE ELEMENTS
---------------------------------------------------THERMAL ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_sutherland REFVISC 0.01178 REFTEMP 293.0 SUTHTEMP 110.4 SHC 1004.5 PRANUM 1.0 THERMPRESS 98100.0 GASCON 287.0
-----------------------------------------------MULTILAYER MATERIALS
-------------------------------------------------------CONTROL NODE
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 // c1: start-up period, c2: ratio of initial and final value
 CURVE1 on Explicit FUNC f(t)=(1-C2/C1)*T+C2 c1 15.0 c2 0.666666666667
@@ -9923,11 +9814,6 @@ FUNCT3 EXPR 0 0.0 0 FUNCTION 293.0    //initial temperature field
 FUNCT4 EXPR 0 0.0 0 FUNCTION 1.0-y
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
---------------------------------------------------------MONITORING
-// FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
-// FLUID 1 - 0 0 0 0 0 0
-// STRUCTURE 2 - 0 0 0 0 0 0
-// ALE 3 - 0 0 0 0 0 0
 ------------------------------------------------RESULT DESCRIPTION
 FLUID DIS 1 NODE 3026 POSITION velx     NAME velx     VALUE 1.690086115e-01 TOLERANCE 1e-4
 FLUID DIS 1 NODE 3026 POSITION vely     NAME vely     VALUE -1.263307390e-01 TOLERANCE 1e-4

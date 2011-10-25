@@ -41,7 +41,6 @@ ALE_DISP                        Yes
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
----------------------------------------------------------EIGENVALUE ANALYSIS
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
@@ -235,9 +234,6 @@ PARTITION                       Cut_Elements
 MAT 1 MAT_fluid DYNVISCOSITY 0.03 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 3e6 NUE 0.3 DENS 1.2 THEXPANS 0.0
 MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 3e6 NUE 0.3 DENS 1.2 THEXPANS 0.0
---------------------------------------------------------MULTILAYER MATERIALS
-----------------------------------------------------------------CONTROL NODE
------------------------------------------------------------------LOAD CURVES
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 3e-3 FACTOR 1.0 1.0
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 3e-3 3.1e-3 FACTOR 1.0 0.0
@@ -257,7 +253,6 @@ FUNCT1 EXPR 0 0 0 FUNCTION 1-(x*x+y*y)/(0.5*0.5)
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
-------------------------------------------------------------------MONITORING
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS 1 NODE 478 POSITION velx NAME velx VALUE  1.06658245418541497e+00 TOLERANCE 1e-7
 FLUID DIS 1 NODE 478 POSITION vely NAME vely VALUE -1.32567605721502857e+00 TOLERANCE 1e-7
@@ -271,10 +266,6 @@ NDPOINT 0
 NDLINE  0
 NDSURF  11
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -3850,7 +3841,6 @@ NODE 1977  	COORD	1.00000000e+00	-7.30000019e-01	-3.00000012e-01
 NODE 1978  	COORD	1.00000000e+00	-6.00000005e-01	-3.00000012e-01	
 NODE 1979  	COORD	1.00000000e+00	-7.30000019e-01	-5.00000000e-01	
 NODE 1980  	COORD	1.00000000e+00	-6.00000005e-01	-5.00000000e-01	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8 HEX8  963 964 2 1 965 966 6 5    MAT 2 EAS none  KINTYP nln
    2 SOLIDH8 HEX8  963 1 61 967 965 5 63 968    MAT 2 EAS none  KINTYP nln

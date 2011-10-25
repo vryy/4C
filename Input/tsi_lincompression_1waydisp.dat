@@ -26,7 +26,6 @@ NUMDF    	6
 ---------------------------------------------------------ALE SOLVER
 ---------------------------------------------------ARTERIAL DYNAMIC
 ----------------------------------------------ARTERY NETWORK SOLVER
-----------------------------------------------------BROWNIAN MOTION
 -------------------------------------------------COMBUSTION CONTROL
 --------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 ----------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
@@ -73,11 +72,9 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 --------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
-----------------------------------SCALAR TRANSPORT DYNAMIC/LEVELSET
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 -----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 -------------------------SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER
---------------------------------------------SCALAR TRANSPORT SOLVER
 --------------------------------------------------------SEARCH TREE
 ----------------------------------------------STATISTICAL MECHANICS
 ---------------------------------------------------------STRUCT NOX
@@ -267,7 +264,6 @@ UPRES                           1
 ----------------------------------------------------------MATERIALS
 MAT 1   MAT_Struct_ThrStVenantK   YOUNG 1.0e11 NUE 0.0 DENS 1.0  THEXPANS 1.0e-05 INITTEMP 293.0 
 MAT 2   THERM_FourierIso   CAPA 420   CONDUCT 52.0
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 0.0
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.1 1.0 FACTOR 0.0 -4.0e7
@@ -285,10 +281,6 @@ NDPOINT 4
 NDLINE  4
 NDSURF  5
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -594,7 +586,6 @@ NODE 9  	COORD	4.00000000e+00	0.00000000e+00	-1.00000000e+00
 NODE 10  	COORD	4.00000000e+00	2.00000000e+00	-1.00000000e+00	
 NODE 11  	COORD	4.00000000e+00	0.00000000e+00	1.00000000e+00	
 NODE 12  	COORD	4.00000000e+00	2.00000000e+00	1.00000000e+00	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 1 EAS none KINTYP lin
    2 SOLIDH8 HEX8  2 9 10 3 6 11 12 7    MAT 1 EAS none KINTYP lin

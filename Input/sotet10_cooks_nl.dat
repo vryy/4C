@@ -77,7 +77,6 @@ NORMCOMBI_RESFDISP Or
 MAXITER      20
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_NeoHooke YOUNG 240.5653612 NUE 0.4999  DENS 0.001
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000
 ------------------------------------------------------------CURVE2
@@ -91,10 +90,6 @@ NDPOINT 0
 NDLINE  0
 NDSURF  3
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 0
@@ -125,53 +120,24 @@ E 2 - 1  0 1 0 0 0 0 0.0 0.0625 0.0 0.0 0.0 0.0 Live Mid
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL 0
-----------------------------------DESIGN COUPLING POINT CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DPOINT 0
------------------------------------DESIGN COUPLING LINE CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DLINE 0
------------------------------------DESIGN COUPLING SURF CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DSURF 0
-------------------------------------DESIGN COUPLING VOL CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DVOL 0
 -------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 // DOBJECT FSI_ID FIELD MESH FLAG
 DLINE 0
 -------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 // DOBJECT FSI_ID FIELD MESH FLAG
 DSURF 0
-------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
-// DOBJECT
-DPOINT 0
 -------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 // DOBJECT
 DLINE 0
 -------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 // DOBJECT
 DSURF 0
-------------------------------------------------CONTACT CONDITIONS
-DLINE 0
--------------------------DESIGN AXISHELL THICKNESS LINE CONDITIONS
-DLINE 0
-------------------------------DESIGN AXISHELL LOAD LINE CONDITIONS
-DLINE 0
-------------------------------DESIGN AXISHELL COS POINT CONDITIONS
-DPOINT 0
 ---------------------------------------DESIGN FLUID LINE LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
 DLINE 0
 ---------------------------------------DESIGN FLUID SURF LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
 DSURF 0
------------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
-// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-DSURF 0
-------------------------DESIGN FLUID VOLUME STABILISING CONDITIONS
-// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-DVOL 0
 ------------------------------------DESIGN POINT LOCSYS CONDITIONS
 // DOBJECT Id
 DPOINT 0
@@ -1491,7 +1457,6 @@ NODE          723     COORD 0.0000000000000e+00     5.5000000000000e+00     5.00
 NODE          724     COORD 0.0000000000000e+00     2.7500000000000e+00     1.0000000000000e+00
 NODE          725     COORD 0.0000000000000e+00     1.3750000000000e+01     0.0000000000000e+00
 NODE          726     COORD 0.0000000000000e+00     3.5750000000000e+01     0.0000000000000e+00
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
       1 SOLIDT10 TET10       1      2      3      4      5      6      7      8      9     10 MAT       1 KINEM Totlag
       2 SOLIDT10 TET10      11      3     12      2     13     14     15     16      6     17 MAT       1 KINEM Totlag
@@ -1812,6 +1777,5 @@ NODE          726     COORD 0.0000000000000e+00     3.5750000000000e+01     0.00
     317 SOLIDT10 TET10     603    423    237    353    726    424    605    688    567    357 MAT       1 KINEM Totlag
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
--------------------------------------------------LEVELSET ELEMENTS
 ---------------------------------------------------------------END
 // END

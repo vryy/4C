@@ -41,9 +41,7 @@ ALE_DISP               No
 THERM_TEMPERATURE      No
 THERM_HEATFLUX         No
 FILESTEPS              1000
------------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
-------------------------------------------------STRUCTURAL CONTACT
 -----------------------------------------------------FLUID DYNAMIC
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE       nonlinear
@@ -81,7 +79,6 @@ TEMPERATURE      11.604506 // abused as a scaling factor in order to have: F/RT 
 ---------------------------------------FLUID DYNAMIC/STABILIZATION
 ------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 -------------------------------------------------------FSI DYNAMIC
--------------------------------------------------------SSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC
 -------------------------------------------------------TSI DYNAMIC
 ------------------------------------------------------FLUID SOLVER
@@ -97,9 +94,6 @@ MAT       2 MAT_ion  DIFFUSIVITY 0.02 VALENCE -2.0
 MAT       3 MAT_ion  DIFFUSIVITY 0.003 VALENCE 1.0
 MAT       4 MAT_matlist NUMMAT 4 MATIDS 1 2 3 5
 MAT       5 MAT_ion  DIFFUSIVITY 0.01 VALENCE 0.0 // a non-charged scalar for comparison
-----------------------------------------------MULTILAYER MATERIALS
-------------------------------------------------------CONTROL NODE
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC t-1.0 t1 0.0 t2 1000.0
 ------------------------------------------------------------CURVE2
@@ -120,7 +114,6 @@ FUNCT2 COMPONENT 4 EXPR 0 0.0 0 FUNCTION 0.0 // el. potential
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
---------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS 1 NODE 10 POSITION phi1     NAME phi1     VALUE 1.006727720e+00 TOLERANCE 1e-9
 SCATRA DIS 1 NODE 11 POSITION phi1     NAME phi1     VALUE 1.000000000e-01 TOLERANCE 1e-9
@@ -137,10 +130,6 @@ NDPOINT 2
 NDLINE  0
 NDSURF  0
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -385,7 +374,6 @@ NODE 8  	COORD	6.99999988e-01	0.00000000e+00	0.00000000e+00
 NODE 9  	COORD	8.00000012e-01	0.00000000e+00	0.00000000e+00	
 NODE 10  	COORD	8.99999976e-01	0.00000000e+00	0.00000000e+00	
 NODE 11  	COORD	1.00000000e+00	0.00000000e+00	0.00000000e+00	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS

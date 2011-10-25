@@ -68,8 +68,6 @@ PARTITION      Cut_Elements
 --------------------------------------------------------ALE SOLVER
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_ANISOTROPIC_BALZANI C1 100.0 EPS1 10.0 EPS2 5.0 ALPHA1 9800.0 ALPHA2 3.0 DENS 1.0E-3 ALOC 0 A1X 1.0 A1Y 0.0 A1Z 0.0 ALPHA1_2 14000.0 ALPHA2_2 2.3 A2X 0.0 A2Y 1.0 A2Z 0.0
-------------------------------------------------------CONTROL NODE
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000
 ------------------------------------------------------------CURVE2
@@ -84,10 +82,6 @@ NDPOINT 0
 NDLINE  1
 NDSURF  1
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 0
@@ -116,53 +110,24 @@ E 1 - 1  1 0 0 0 0 0 1.0 0.0 0.0 0.0 0.0 0.0 orthopressure Mid
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DVOL 0
-----------------------------------DESIGN COUPLING POINT CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DPOINT 0
------------------------------------DESIGN COUPLING LINE CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DLINE 0
------------------------------------DESIGN COUPLING SURF CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DSURF 0
-------------------------------------DESIGN COUPLING VOL CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DVOL 0
 -------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 // DOBJECT FSI_ID FIELD MESH FLAG
 DLINE 0
 -------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 // DOBJECT FSI_ID FIELD MESH FLAG
 DSURF 0
-------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
-// DOBJECT
-DPOINT 0
 -------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 // DOBJECT
 DLINE 0
 -------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 // DOBJECT
 DSURF 0
-------------------------------------------------CONTACT CONDITIONS
-DLINE 0
--------------------------DESIGN AXISHELL THICKNESS LINE CONDITIONS
-DLINE 0
-------------------------------DESIGN AXISHELL LOAD LINE CONDITIONS
-DLINE 0
-------------------------------DESIGN AXISHELL COS POINT CONDITIONS
-DPOINT 0
 ---------------------------------------DESIGN FLUID LINE LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
 DLINE 0
 ---------------------------------------DESIGN FLUID SURF LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
 DSURF 0
------------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
-// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-DSURF 0
-------------------------DESIGN FLUID VOLUME STABILISING CONDITIONS
-// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-DVOL 0
 ------------------------------------DESIGN POINT LOCSYS CONDITIONS
 // DOBJECT Id
 DPOINT 0
@@ -2822,7 +2787,6 @@ NODE          879     COORD 5.0000000000000e+01     4.5000000000000e+01     -1.0
 NODE          880     COORD 5.0000000000000e+01     4.5000000000000e+01     1.0000000149012e-01
 NODE          881     COORD 5.0000000000000e+01     5.0000000000000e+01     -1.0000000149012e-01
 NODE          882     COORD 5.0000000000000e+01     5.0000000000000e+01     1.0000000149012e-01
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
       1 SOLIDSH8 HEX8       1      2      3      4      5      6      7      8 MAT 1 EAS sosh8 ANS sosh8 THICKDIR auto
       2 SOLIDSH8 HEX8       4      3      9     10      8      7     11     12 MAT 1 EAS sosh8 ANS sosh8 THICKDIR auto
@@ -3226,6 +3190,5 @@ NODE          882     COORD 5.0000000000000e+01     5.0000000000000e+01     1.00
     400 SOLIDSH8 HEX8     838    837    839    840    880    879    881    882 MAT 1 EAS sosh8 ANS sosh8 THICKDIR auto
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
--------------------------------------------------LEVELSET ELEMENTS
 ---------------------------------------------------------------END
 // END

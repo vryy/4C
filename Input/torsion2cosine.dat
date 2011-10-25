@@ -146,7 +146,6 @@ NODE            8     COORD  42 0 0
 NODE            9     COORD  48 0 0
 NODE           10     COORD  54 0 0
 NODE           11     COORD  60 0 0
----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
       1 TRUSS2   LIN2       1      2 MAT       1 CROSS 19e-6 KINEM engstr
       2 TRUSS2   LIN2       2      3 MAT       1 CROSS 19e-6 KINEM engstr

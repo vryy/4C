@@ -437,7 +437,6 @@ GMSH_DEBUG_OUT                  Yes
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff  YOUNG 50000 NUE 0.3 DENS 0.00000125 THEXPANS 0.0
 MAT 2 MAT_fluid  DYNVISCOSITY 0.00101 DENSITY 0.000001 GAMMA 1.0
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC (1-cos(t*pi/1.0))/2.0 t1 0.0 t2 1.0
 CURVE1 on EXPR FUNC 1.0 t1 1.0 t2 10000.0
@@ -459,10 +458,6 @@ NDPOINT 28
 NDLINE  36
 NDSURF  24
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -719,10 +714,6 @@ DLINE  0
 DLINE  0
 ----------------------------------DESIGN SURF IMPEDANCE CONDITIONS
 DSURF  0
------------------------------------DESIGN MULTIPOINT CONSTRAINT 3D
-DSURF  0
------------------------------------DESIGN MULTIPOINT CONSTRAINT 2D
-DLINE  0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
 NODE    5 DNODE 2
@@ -58948,7 +58939,6 @@ NODE 27279  	COORD	4.30912056e+01	3.07206078e+01	-3.00000000e+00
 NODE 27280  	COORD	4.30912056e+01	3.07206078e+01	3.00000000e+00	
 NODE 27281  	COORD	4.34983902e+01	3.14661160e+01	-3.00000000e+00	
 NODE 27282  	COORD	4.34983902e+01	3.14661160e+01	3.00000000e+00	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 1 EAS full  KINTYP nln
    2 SOLIDH8 HEX8  2 9 10 3 6 11 12 7    MAT 1 EAS full  KINTYP nln

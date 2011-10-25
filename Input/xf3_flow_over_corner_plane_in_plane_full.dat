@@ -38,7 +38,6 @@ ALE_DISP               No
 THERM_TEMPERATURE      No
 THERM_HEATFLUX         No
 FILESTEPS              1000
------------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      Static //Gen_Alfa
 EIGEN        0
@@ -130,7 +129,6 @@ volumeRatioLimit                1.0e-6
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_NeoHooke YOUNG 2000 NUE 0.0  DENS 0.0
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC t/10.0 t1 0.0 t2 10.0
 ------------------------------------------------------------CURVE2
@@ -147,10 +145,6 @@ NDPOINT 0
 NDLINE  0
 NDSURF  12
 NDVOL   1
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -257,8 +251,6 @@ DSURF  0
 DLINE  0
 ---------------------------------------DESIGN LINE AREA MONITOR 2D
 DLINE  0
-----------------------------------------------IMPEDANCE CONDITIONS
-DSURF  0
 -----------------------------DESIGN SURFACE MULTIPNT CONSTRAINT 3D
 DSURF   0
 --------------------------------DESIGN LINE MULTIPNT CONSTRAINT 2D
@@ -10017,7 +10009,6 @@ NODE 4158  	COORD	2.00000000e+00	9.44444418e-01	-5.00000007e-02
 NODE 4159  	COORD	2.00000000e+00	1.00000000e+00	0.00000000e+00
 NODE 4160  	COORD	2.00000000e+00	1.00000000e+00	5.00000007e-02
 NODE 4161  	COORD	2.00000000e+00	1.00000000e+00	-5.00000007e-02
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 2 EAS full  KINTYP nln
    2 SOLIDH8 HEX8  2 9 10 3 6 11 12 7    MAT 2 EAS full  KINTYP nln

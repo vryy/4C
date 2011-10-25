@@ -353,7 +353,6 @@ NODE 108 DLINE 4
 NODE 120 DLINE 4
 NODE 132 DLINE 4
 NODE 144 DLINE 4
-----------------------------------------------------------ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
 1 FLUID2 NURBS9   1   2   3   13   14   15   25   26   27  MAT 1   NA Euler     GP 3 3
 2 FLUID2 NURBS9   2   3   4   14   15   16   26   27   28  MAT 1   NA Euler     GP 3 3
@@ -459,8 +458,6 @@ NODE 144 DLINE 4
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_fluid  DYNVISCOSITY 0.1 DENSITY 1.0
 MAT       2 MAT_scatra  DIFFUSIVITY 0.05
-------------------------------------------------------CONTROL NODE
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 5.0 c2 1.0
 ------------------------------------------------------------CURVE2

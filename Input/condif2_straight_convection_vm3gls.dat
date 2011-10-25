@@ -27,7 +27,6 @@ NUMSTRUCDIS  0
 NUMALEDIS    0
 NUMTHERMDIS  0
 ----------------------------------------------------------------IO
------------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE   linear_full
@@ -45,7 +44,6 @@ VELFUNCNO    1
 WRITEFLUX    No
 -------------------------------------------------------FSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC
-------------------------------------------------------OPTIMIZATION
 ------------------------------------------------------FLUID SOLVER
 -------------------------------------FLUID SCALAR TRANSPORT SOLVER
 SOLVER         Aztec_MSR    // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -87,83 +85,6 @@ NDPOINT 4
 NDLINE  4
 NDSURF  1
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-POINT
-Num: 1 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 0.000000 0.000000 0.000000
-END POINT
-POINT
-Num: 2 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 1.000000 0.000000 0.000000
-END POINT
-POINT
-Num: 3 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 1.000000 1.000000 0.000000
-END POINT
-POINT
-Num: 4 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 0.000000 1.000000 0.000000
-END POINT
-------------------------------------------------------DESIGN LINES
-STLINE
-Num: 1 HigherEntity: 1 conditions: 2 material: 0
-LAYER: Layer0
-Meshing Info: (num=2,NOE=4) Elemtype=1 IsStructured=1 size=19 Meshing=Default
-Points: 1 2
-END STLINE
-STLINE
-Num: 2 HigherEntity: 1 conditions: 2 material: 0
-LAYER: Layer0
-Meshing Info: (num=2,NOE=4) Elemtype=1 IsStructured=1 size=19 Meshing=Default
-Points: 2 3
-END STLINE
-STLINE
-Num: 3 HigherEntity: 1 conditions: 2 material: 0
-LAYER: Layer0
-Meshing Info: (num=2,NOE=4) Elemtype=1 IsStructured=1 size=19 Meshing=Default
-Points: 3 4
-END STLINE
-STLINE
-Num: 4 HigherEntity: 1 conditions: 2 material: 0
-LAYER: Layer0
-Meshing Info: (num=2,NOE=4) Elemtype=1 IsStructured=1 size=19 Meshing=Default
-Points: 4 1
-END STLINE
----------------------------------------------------DESIGN SURFACES
-NURBSURFACE
-Num: 1 HigherEntity: 0 conditions: 2 material: 14
-LAYER: Layer0
-Meshing Info: (num=1,NOE=1) Elemtype=3 IsStructured=1 size=0 Meshing=Default
-NumLines: 4
-Line: 4 Orientation: SAME1ST
-Line: 1 Orientation: SAME1ST
-Line: 2 Orientation: SAME1ST
-Line: 3 Orientation: SAME1ST
-Number of Control Points= 2 2 Degree= 1 1
-Point 1,1 coords:-0.050000,1.050000,0.000000
-Point 1,2 coords:-0.050000,-0.050000,0.000000
-Point 2,1 coords:1.050000,1.050000,0.000000
-Point 2,2 coords:1.050000,-0.050000,0.000000
-Number of knots in U= 4
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=1.000000
-knot 4 value=1.000000
-Number of knots in V= 4
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=1.000000
-knot 4 value=1.000000
-Non rational
-IsTrimmed: 1
-Center: 0.500000 0.500000 0.000000
-Normal: -0.000000 0.000000 1.000000
-END NURBSURFACE
-----------------------------------------------------DESIGN VOLUMES
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 0
@@ -202,18 +123,6 @@ DLINE 0
 ---------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF 0
-----------------------------------DESIGN COUPLING POINT CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DPOINT 0
------------------------------------DESIGN COUPLING LINE CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DLINE 0
------------------------------------DESIGN COUPLING SURF CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DSURF 0
-------------------------------------DESIGN COUPLING VOL CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DVOL 0
 -------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 // DOBJECT FSI_ID FIELD MESH FLAG
 DLINE 0
@@ -226,35 +135,18 @@ DLINE 0
 ------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 // DOBJECT COUPLING BCFLUID
 DSURF 0
-------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
-// DOBJECT
-DPOINT 0
 -------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 // DOBJECT
 DLINE 0
 -------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 // DOBJECT
 DSURF 0
-------------------------------------------------CONTACT CONDITIONS
-DLINE 0
--------------------------DESIGN AXISHELL THICKNESS LINE CONDITIONS
-DLINE 0
-------------------------------DESIGN AXISHELL LOAD LINE CONDITIONS
-DLINE 0
-------------------------------DESIGN AXISHELL COS POINT CONDITIONS
-DPOINT 0
 ---------------------------------------DESIGN FLUID LINE LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
 DLINE 0
 ---------------------------------------DESIGN FLUID SURF LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
 DSURF 0
------------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
-// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-DSURF 0
-------------------------DESIGN FLUID VOLUME STABILISING CONDITIONS
-// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-DVOL 0
 ------------------------------------DESIGN POINT LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId
 DPOINT 0
@@ -267,24 +159,6 @@ DSURF 0
 --------------------------------------DESIGN VOL LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId
 DVOL 0
----------------------------DESIGN ISOTHERM NO-SLIP LINE CONDITIONS
-// DOBJECT
-DLINE 0
---------------------------DESIGN Adiabatic NO-SLIP LINE CONDITIONS
-// DOBJECT
-DLINE 0
-----------------------------DESIGN SUBSONIC INFLOW LINE CONDITIONS
-// DOBJECT
-DLINE 0
---------------------------DESIGN SUPERSONIC INFLOW LINE CONDITIONS
-// DOBJECT
-DLINE 0
----------------------------DESIGN SUBSONIC OUTFLOW LINE CONDITIONS
-// DOBJECT
-DLINE 0
--------------------------DESIGN SUPERSONIC OUTFLOW LINE CONDITIONS
-// DOBJECT
-DLINE 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE     301 DNODE 1
 NODE       1 DNODE 2
@@ -1174,7 +1048,6 @@ NODE          397     COORD 0.000000000000000e+00     8.947368421052632e-01     
 NODE          398     COORD 5.263157894736847e-02     1.000000000000000e+00     0.000000000000000e+00
 NODE          399     COORD 0.000000000000000e+00     9.473684210526316e-01     0.000000000000000e+00
 NODE          400     COORD 0.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
@@ -1540,13 +1413,9 @@ NODE          400     COORD 0.000000000000000e+00     1.000000000000000e+00     
     360 TRANSP QUAD4       4      2      6      8 MAT       1 NA Euler GP 2 2
     361 TRANSP QUAD4       3      1      2      4 MAT       1 NA Euler GP 2 2
 ------------------------------------------------------ALE ELEMENTS
---------------------------------------------------THERMAL ELEMENTS
 ---------------------------------------------------------MATERIALS
 // MAT_condif
 MAT       1 MAT_scatra  DIFFUSIVITY 0.000001
-----------------------------------------------MULTILAYER MATERIALS
-------------------------------------------------------CONTROL NODE
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
@@ -1561,7 +1430,6 @@ FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
---------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS 1 NODE 4   POSITION phi     NAME phi     VALUE 1.046661736e+00 TOLERANCE 1e-1
 SCATRA DIS 1 NODE 272 POSITION phi     NAME phi     VALUE 1.003589392e+00 TOLERANCE 1e-1

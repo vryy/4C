@@ -17,7 +17,6 @@ MATERIALS	1
 NUMDF    	6
 --------------------------------------------------------ALE DYNAMIC
 ---------------------------------------------------------ALE SOLVER
-----------------------------------------------------BROWNIAN MOTION
 -------------------------------------------------COMBUSTION CONTROL
 --------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 ----------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
@@ -59,7 +58,6 @@ SHAPEFCT                        Polynomial
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 -------------------------SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER
---------------------------------------------SCALAR TRANSPORT SOLVER
 ----------------------------------------------STATISTICAL MECHANICS
 ------------------------------------------------------STRUCT SOLVER
 AZBDIAG                         0
@@ -158,7 +156,6 @@ STEPSIZEMIN                     0
 -------------------------------------------------------XFEM GENERAL
 ---------------------------------------------------------MATERIALS
 MAT  1  MAT_VISCONEOHOOKE  YOUNGS_SLOW  1.9E0  POISSON  0.4  DENS  1E-9  YOUNGS_FAST  3.0E5  RELAX  16.  THETA  0.5
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
@@ -173,10 +170,6 @@ NDPOINT 0
 NDLINE  0
 NDSURF  3
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -1594,7 +1587,6 @@ NODE 985  	COORD	4.00000006e-01	3.00000012e-01	-2.00000003e-01
 NODE 986  	COORD	5.00000000e-01	3.00000012e-01	-2.00000003e-01	
 NODE 987  	COORD	4.00000006e-01	3.00000012e-01	-3.00000012e-01	
 NODE 988  	COORD	5.00000000e-01	3.00000012e-01	-3.00000012e-01	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 1 EAS mild  KINTYP nln
    2 SOLIDH8 HEX8  4 3 9 10 8 7 11 12    MAT 1 EAS mild  KINTYP nln

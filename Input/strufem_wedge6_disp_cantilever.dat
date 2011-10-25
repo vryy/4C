@@ -38,7 +38,6 @@ ALE_DISP                        Yes
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
----------------------------------------------------------EIGENVALUE ANALYSIS
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Gen_Alfa
 EIGEN        0
@@ -132,21 +131,6 @@ CONVTOL                         1.0E-6
 ISDMAX                          0
 COUPMETHOD                      conforming
 COUPFORCE                       nodeforce
------------------------------------------------------------------SSI DYNAMIC
-MAXTIME                         1000.0
-TIMESTEP                        0.05
-NUMSTEP                         200
-UPPSS                           1
-IALE                            Pseudo_Structure
-COUPALGO                        sequ_staggerd
-CONVCRIT                        ||g(i)||:sqrt(neq)
-ENERGYCHECK                     yes
-TOLENCHECK                      1.0E-6
-RELAX                           1.0
-ITEMAX                          1
-CONVTOL                         1.0E-6
-ISDMAX                          0
-COUPMETHOD                      conforming
 -----------------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        0.1
 NUMSTEP                         200
@@ -296,78 +280,6 @@ NDPOINT                         4
 NDLINE                          4
 NDSURF                          8
 NDVOL                           0
----------------------------------------------------------------DESIGN POINTS
-POINT
-Num: 1 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 0.000000 0.000000 0.000000
-END POINT
-POINT
-Num: 2 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 100.000000 0.000000 0.000000
-END POINT
-POINT
-Num: 3 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 0.000000 0.000000 10.000000
-END POINT
-POINT
-Num: 4 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 100.000000 0.000000 10.000000
-END POINT
-----------------------------------------------------------------DESIGN LINES
-STLINE
-Num: 1 HigherEntity: 1 conditions: 1 material: 0
-LAYER: Layer0
-Points: 1 2
-END STLINE
-STLINE
-Num: 2 HigherEntity: 1 conditions: 1 material: 0
-LAYER: Layer0
-Points: 3 4
-END STLINE
-STLINE
-Num: 3 HigherEntity: 1 conditions: 2 material: 0
-LAYER: Layer0
-Points: 1 3
-END STLINE
-STLINE
-Num: 4 HigherEntity: 1 conditions: 2 material: 0
-LAYER: Layer0
-Points: 2 4
-END STLINE
--------------------------------------------------------------DESIGN SURFACES
-NURBSURFACE
-Num: 1 HigherEntity: 0 conditions: 3 material: 1
-LAYER: Layer0
-NumLines:                       4
-Line: 1 Orientation: SAME1ST
-Line: 4 Orientation: SAME1ST
-Line: 2 Orientation: DIFF1ST
-Line: 3 Orientation: DIFF1ST
-Number of Control Points= 2 2 Degree= 1 1
-Point 1,1 coords:0.000000,0.000000,0.000000
-Point 1,2 coords:100.000000,0.000000,0.000000
-Point 2,1 coords:0.000000,0.000000,10.000000
-Point 2,2 coords:100.000000,0.000000,10.000000
-Number of knots in U= 4
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=1.000000
-knot 4 value=1.000000
-Number of knots in V= 4
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=1.000000
-knot 4 value=1.000000
-Non rational
-IsTrimmed:                      0
-Center: 50.000000 0.000000 5.000000
-Normal: 0.000000 -1.000000 0.000000
-END NURBSURFACE
---------------------------------------------------------------DESIGN VOLUMES
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
@@ -394,14 +306,6 @@ DPOINT                          0
 DLINE                           0
 -------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           0
---------------------------------------------DESIGN COUPLING POINT CONDITIONS
-DPOINT                          0
----------------------------------------------DESIGN COUPLING LINE CONDITIONS
-DLINE                           0
----------------------------------------------DESIGN COUPLING SURF CONDITIONS
-DSURF                           0
-----------------------------------------------DESIGN COUPLING VOL CONDITIONS
-DVOL                            0
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 DLINE                           0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
@@ -410,8 +314,6 @@ DSURF                           0
 DLINE                           0
 ----------------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 DSURF                           0
-----------------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
-DPOINT                          0
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
@@ -432,24 +334,10 @@ DSURF                           0
 DSURF                           0
 -------------------------------------------------DESIGN LINE AREA MONITOR 2D
 DLINE                           0
------------------------------------DESIGN AXISHELL THICKNESS LINE CONDITIONS
-DLINE                           0
-----------------------------------------DESIGN AXISHELL LOAD LINE CONDITIONS
-DLINE                           0
-----------------------------------------DESIGN AXISHELL COS POINT CONDITIONS
-DPOINT                          0
-------------------------------------------DESIGN LINE STRESS CALC CONDITIONS
-DLINE                           0
-------------------------------------------DESIGN SURF STRESS CALC CONDITIONS
-DSURF                           0
 -------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
 DLINE                           0
 -------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
 DSURF                           0
----------------------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
-DSURF                           0
-----------------------------------DESIGN FLUID VOLUME STABILISING CONDITIONS
-DVOL                            0
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
 DPOINT                          0
 -----------------------------------------------DESIGN LINE LOCSYS CONDITIONS
@@ -3277,7 +3165,6 @@ NODE 1053 COORD 91.0 -1.0 5.19615242271
 NODE 1054 COORD 93.0 -1.0 5.19615242271
 NODE 1055 COORD 94.8880287199 -1.0 4.8299866628
 NODE 1056 COORD 5.11197128013 -1.0 4.8299866628
---------------------------------------------------------------------ELEMENTS
 ----------------------------------------------------------STRUCTURE ELEMENTS
 593 SOLIDW6 WEDGE6 353 357 455 705 709 807 MAT 2  KINEM Totlag 
 594 SOLIDW6 WEDGE6 357 358 463 709 710 815 MAT 2  KINEM Totlag 
@@ -4465,7 +4352,6 @@ NODE 1056 COORD 5.11197128013 -1.0 4.8299866628
 591 FLUID2 TRI3 337 344 339 MAT 1 NA ALE GP_TRI 1 GP_ALT standard TURBULENCE No CA No
 592 FLUID2 TRI3 17 10 8 MAT 1 NA ALE GP_TRI 1 GP_ALT standard TURBULENCE No CA No
 ----------------------------------------------------------------ALE ELEMENTS
-------------------------------------------------------------THERMAL ELEMENTS
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_NeoHooke  YOUNG 1000000 NUE 0.45 DENS 0.001
@@ -4474,9 +4360,6 @@ MAT 2 MAT_Struct_NeoHooke  YOUNG 1000000 NUE 0.45 DENS 0.001
 //STRUCTURE DIS 1 NODE 404 POSITION dispy NAME uy VALUE  2.307328550810935042e+01 TOLERANCE 1e-5
 // with NUMSTEP=30
 STRUCTURE DIS 1 NODE 404 POSITION dispy NAME uy VALUE  -1.698069512864041286 TOLERANCE 1e-5
---------------------------------------------------------MULTILAYER MATERIALS
-----------------------------------------------------------------CONTROL NODE
------------------------------------------------------------------LOAD CURVES
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 2.0
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.1 0.11 FACTOR 2.0 0.0
@@ -4494,6 +4377,5 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.11 1.0 FACTOR 0.0 0.0
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
-------------------------------------------------------------------MONITORING
 -------------------------------------------------------------------------END
 // END

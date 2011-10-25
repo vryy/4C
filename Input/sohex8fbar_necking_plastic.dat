@@ -113,7 +113,6 @@ STEPSIZEMIN                     0
 MAT 1 MAT_Struct_PlasticNeoHooke YOUNG 206.9 NUE 0.29 DENS 0.0 ISOHARD 0.12924 YIELD 0.45 INFYIELD 0.715 EXP 16.93 KINHARD 0.0
 //MAT 1 MAT_Struct_PlasticNeoHooke YOUNG 206.9 NUE 0.29 DENS 0.0 ISOHARD 0 YIELD 1.0e20 INFYIELD 0 EXP 0 KINHARD 0.0
 //MAT 1 MAT_Struct_NeoHooke YOUNG 206.9 NUE 0.29 DENS 0.0
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC -0.07*t t1 0.0 t2 100000000.0
 ------------------------------------------------------------CURVE2
@@ -129,10 +128,6 @@ NDPOINT 2
 NDLINE  5
 NDSURF  4
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -190,10 +185,6 @@ DPOINT 0
 ---------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
 DLINE  0
 ---------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
-DSURF  0
----------------------------------------------CONTACT CONDITIONS 2D
-DLINE  0
----------------------------------------------CONTACT CONDITIONS 3D
 DSURF  0
 ------------------------------------DESIGN POINT LOCSYS CONDITIONS
 DPOINT 0
@@ -668,7 +659,6 @@ NODE 206    COORD   0.00000000e+00  4.80975008e+00  -1.11112499e+01
 NODE 207    COORD   1.85045481e+00  4.22694349e+00  -1.11112499e+01 
 NODE 208    COORD   0.00000000e+00  6.41300011e+00  -1.11112499e+01 
 NODE 209    COORD   2.45414877e+00  5.92483950e+00  -1.11112499e+01 
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8FBAR HEX8  1 2 3 4 5 6 7 8    MAT 1 KINTYP nln
    2 SOLIDH8FBAR HEX8  2 9 10 3 6 11 12 7    MAT 1 KINTYP nln

@@ -50,7 +50,6 @@ NUMFIELD                        1
 PROBLEMTYP                      Structure
 RESTART                         0
 -------------------------------------------SCALAR TRANSPORT DYNAMIC
---------------------------------------------SCALAR TRANSPORT SOLVER
 ----------------------------------------------STATISTICAL MECHANICS
 ------------------------------------------------------STRUCT SOLVER
 AZBDIAG                         0
@@ -155,7 +154,6 @@ STEPSIZEMIN                     0
 -------------------------------------------------------XFEM GENERAL
 ---------------------------------------------------------MATERIALS
 MAT  1  MAT_Struct_StVenantKirchhoff  YOUNG  1.0E4  NUE  0.49  DENS  1.0
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1  on  Polygonal  T  0.0  BYABSTIME  Yes  0.0  5.0  FACTOR  1.0  0.75
 ------------------------------------------------------------CURVE2
@@ -171,10 +169,6 @@ NDPOINT 2
 NDLINE  1
 NDSURF  0
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -398,7 +392,6 @@ NODE 120  	COORD	9.25000012e-01	5.00000007e-02	0.00000000e+00
 NODE 121  	COORD	9.49999988e-01	5.00000007e-02	0.00000000e+00	
 NODE 122  	COORD	9.75000024e-01	5.00000007e-02	0.00000000e+00	
 NODE 123  	COORD	1.00000000e+00	5.00000007e-02	0.00000000e+00	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 WALL QUAD4  1 2 3 4    MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr EAS_Model SSI_COUPTYP none
    2 WALL QUAD4  2 5 6 3    MAT       1 THICK 1.0 GP 2 2 PLANE_STRESS W_TotalLagr EAS_Model SSI_COUPTYP none

@@ -55,8 +55,6 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1 1
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
-----------------------------------------------------BROWNIAN MOTION
-BROWNIAN_MOTION                 No
 -------------------------------------------------COMBUSTION CONTROL
 --------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 ----------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
@@ -495,7 +493,6 @@ MAT 1 MAT_Struct_NeoHooke YOUNG 250.0 NUE 0.3 DENS 500
 MAT 2 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0
 MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 500
 
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC (1-cos(2*t*pi/5)) t1 0.0 t2 5.0
 ------------------------------------------------------------CURVE2
@@ -511,10 +508,6 @@ NDPOINT 16
 NDLINE  34
 NDSURF  19
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -737,11 +730,7 @@ DSURF  0
 DSURF  0
 -------------------------------DESIGN SURF LJ_POTENTIAL CONDITIONS
 DSURF  0
------------------------------DESIGN SURF ZETA_POTENTIAL CONDITIONS
-DSURF  0
 -------------------------------DESIGN LINE LJ_POTENTIAL CONDITIONS
-DLINE  0
------------------------------DESIGN LINE ZETA_POTENTIAL CONDITIONS
 DLINE  0
 ----------------------------DESIGN BROWNIAN MOTION SURF CONDITIONS
 DSURF  0
@@ -3522,7 +3511,6 @@ NODE 1129  	COORD	1.00000000e+00	1.06666672e+00	0.00000000e+00
 NODE 1130  	COORD	1.00000000e+00	1.06666672e+00	-5.00000007e-02	
 NODE 1131  	COORD	1.00000000e+00	1.10000002e+00	0.00000000e+00	
 NODE 1132  	COORD	1.00000000e+00	1.10000002e+00	-5.00000007e-02	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDSH8 HEX8  1 2 3 4 5 6 7 8    MAT 1 EAS sosh8 ANS sosh8 THICKDIR auto
    2 SOLIDSH8 HEX8  5 6 7 8 9 10 11 12    MAT 1 EAS sosh8 ANS sosh8 THICKDIR auto

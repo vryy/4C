@@ -279,7 +279,6 @@ COUPALGO                        tsi_iterstagg
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK  YOUNG 400 NUE 0.0 DENS 1 THEXPANS 0.0001 INITTEMP 0
 MAT 2 THERM_FourierIso   CAPA 42 CONDUCT 5.2
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 1 t1 0.0 t2 4.0 
 CURVE1 on EXPR FUNC 0 t1 4.0 t2 20.0 
@@ -299,10 +298,6 @@ NDPOINT 0
 NDLINE  0
 NDSURF  5
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -765,7 +760,6 @@ NODE 136  	COORD	1.00000000e+00	5.00000000e-01	-1.54999995e+00
 NODE 137  	COORD	1.00000000e+00	1.00000000e+00	-1.04999995e+00	
 NODE 138  	COORD	1.00000000e+00	1.00000000e+00	-5.50000012e-01	
 NODE 139  	COORD	1.00000000e+00	1.00000000e+00	-1.54999995e+00	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 1 EAS none KINTYP lin
    2 SOLIDH8 HEX8  2 9 10 3 6 11 12 7    MAT 1 EAS none KINTYP lin

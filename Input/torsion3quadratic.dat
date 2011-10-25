@@ -150,7 +150,6 @@ NODE            8     COORD   29.69848481 29.69848481 0
 NODE            9     COORD   33.94112550 33.94112550 0
 NODE           10     COORD   38.18376618 38.18376618 0
 NODE           11     COORD   42.42640687 42.42640687 0
----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
       1 TRUSS3   LIN2       1      2 MAT       1 CROSS 3.141592654e-4 KINEM engstr
       2 TRUSS3   LIN2       2      3 MAT       1 CROSS 3.141592654e-4 KINEM engstr

@@ -49,7 +49,6 @@ ALE_DISP               No
 THERM_TEMPERATURE      No
 THERM_HEATFLUX         No
 FILESTEPS              1000
------------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 -----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
@@ -107,10 +106,8 @@ SAMPLING_STOP         0
 DUMPING_PERIOD        0
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 -------------------------------------------------------FSI DYNAMIC
--------------------------------------------------------SSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC
 -------------------------------------------------------TSI DYNAMIC
-------------------------------------------------COMBUSTION DYNAMIC
 ------------------------------------------------------FLUID SOLVER
 SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT       0                  // output every so often, 0 no output
@@ -146,7 +143,6 @@ ML_DAMPMED        1.0             // damping med grids
 ML_DAMPCOARSE     1.0             // damping coarse grid
 PARTITION         Cut_Elements
 ---------------------------------------------FLUID PRESSURE SOLVER
--------------------------------------------SCALAR TRANSPORT SOLVER
 -----------------------------------------------------STRUCT SOLVER
 --------------------------------------------------------ALE SOLVER
 ----------------------------------------------------THERMAL SOLVER
@@ -155,78 +151,6 @@ NDPOINT 4
 NDLINE  4
 NDSURF  1
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-POINT
-Num: 1 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 0.000000 0.000000 0.000000
-END POINT
-POINT
-Num: 2 HigherEntity: 2 conditions: 2 material: 0
-LAYER: Layer0
-Coord: 0.000000 1.000000 0.000000
-END POINT
-POINT
-Num: 3 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 1.000000 0.000000 0.000000
-END POINT
-POINT
-Num: 4 HigherEntity: 2 conditions: 2 material: 0
-LAYER: Layer0
-Coord: 1.000000 1.000000 0.000000
-END POINT
-------------------------------------------------------DESIGN LINES
-STLINE
-Num: 1 HigherEntity: 1 conditions: 1 material: 0
-LAYER: Layer0
-Points: 1 3
-END STLINE
-STLINE
-Num: 2 HigherEntity: 1 conditions: 2 material: 0
-LAYER: Layer0
-Points: 3 4
-END STLINE
-STLINE
-Num: 3 HigherEntity: 1 conditions: 2 material: 0
-LAYER: Layer0
-Points: 4 2
-END STLINE
-STLINE
-Num: 4 HigherEntity: 1 conditions: 2 material: 0
-LAYER: Layer0
-Points: 2 1
-END STLINE
----------------------------------------------------DESIGN SURFACES
-NURBSURFACE
-Num: 1 HigherEntity: 0 conditions: 3 material: 1
-LAYER: Layer0
-NumLines: 4
-Line: 4 Orientation: SAME1ST
-Line: 1 Orientation: SAME1ST
-Line: 2 Orientation: SAME1ST
-Line: 3 Orientation: SAME1ST
-Number of Control Points= 2 2 Degree= 1 1
-Point 1,1 coords:-0.050000,1.050000,0.000000
-Point 1,2 coords:-0.050000,-0.050000,0.000000
-Point 2,1 coords:1.050000,1.050000,0.000000
-Point 2,2 coords:1.050000,-0.050000,0.000000
-Number of knots in U= 4
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=1.000000
-knot 4 value=1.000000
-Number of knots in V= 4
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=1.000000
-knot 4 value=1.000000
-Non rational
-IsTrimmed: 1
-Center: 0.500000 0.500000 0.000000
-Normal: -0.000000 0.000000 1.000000
-END NURBSURFACE
-----------------------------------------------------DESIGN VOLUMES
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 2
@@ -275,18 +199,6 @@ DLINE 0
 ---------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF 0
-----------------------------------DESIGN COUPLING POINT CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DPOINT 0
------------------------------------DESIGN COUPLING LINE CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DLINE 0
------------------------------------DESIGN COUPLING SURF CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DSURF 0
-------------------------------------DESIGN COUPLING VOL CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DVOL 0
 -------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 // DOBJECT FSI_ID FIELD MESH FLAG
 DLINE 0
@@ -299,9 +211,6 @@ DLINE 0
 ------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 // DOBJECT COUPLING BCFLUID
 DSURF 0
-------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
-// DOBJECT
-DPOINT 0
 -------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 // DOBJECT
 DLINE 0
@@ -328,12 +237,6 @@ DSURF 0
 DSURF 0
 ---------------------------------------DESIGN LINE AREA MONITOR 2D
 DLINE 0
--------------------------DESIGN AXISHELL THICKNESS LINE CONDITIONS
-DLINE 0
-------------------------------DESIGN AXISHELL LOAD LINE CONDITIONS
-DLINE 0
-------------------------------DESIGN AXISHELL COS POINT CONDITIONS
-DPOINT 0
 --------------------------DESIGN FLUID STRESS CALC LINE CONDITIONS
 // DOBJECT
 DLINE 0
@@ -346,12 +249,6 @@ DLINE 0
 ---------------------------------------DESIGN FLUID SURF LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
 DSURF 0
------------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
-// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-DSURF 0
-------------------------DESIGN FLUID VOLUME STABILISING CONDITIONS
-// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-DVOL 0
 ------------------------------------DESIGN POINT LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId
 DPOINT 0
@@ -369,21 +266,6 @@ DVOL 0
 DLINE 0
 --------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 // DOBJECT PBC_ID ORIENTATION
-DSURF 0
------------------------------------DESIGN LINE SYMMETRY CONDITIONS
-// DOBJECT NORMAL
-DLINE 0
---------------------------------DESIGN SURFACE SYMMETRY CONDITIONS
-// DOBJECT NORMAL
-DSURF 0
--------------------------------DESIGN LINE DIRICH DGFEM CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DLINE 0
-------------------------------DESIGN LINE NEUMANN DGFEM CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DLINE 0
-----------------------------------------DESIGN SURF INTERFACE MASK
-// DOBJECT ELEMENT_TYPE
 DSURF 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE     765 DNODE 1
@@ -2032,7 +1914,6 @@ NODE          762     COORD 7.692307692307694e-02     0.000000000000000e+00     
 NODE          763     COORD 0.000000000000000e+00     3.846153846153855e-02     0.000000000000000e+00
 NODE          764     COORD 3.846153846153847e-02     0.000000000000000e+00     0.000000000000000e+00
 NODE          765     COORD 0.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
       1 FLUID2 TRI6     583    588    499    585    542    540 MAT       1 NA Euler GP_TRI 6 GP_ALT standard TURBULENCE No CA No
@@ -2392,14 +2273,10 @@ NODE          765     COORD 0.000000000000000e+00     0.000000000000000e+00     
     355 FLUID2 TRI6     284    274    332    280    304    308 MAT       1 NA Euler GP_TRI 6 GP_ALT standard TURBULENCE No CA No
     356 FLUID2 TRI6     284    332    309    308    319    296 MAT       1 NA Euler GP_TRI 6 GP_ALT standard TURBULENCE No CA No
 ------------------------------------------------------ALE ELEMENTS
---------------------------------------------------THERMAL ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------------MATERIALS
 // MAT_fluid
 MAT       1 MAT_fluid  DYNVISCOSITY 10.0 DENSITY 1.0 GAMMA 1.0
-----------------------------------------------MULTILAYER MATERIALS
-------------------------------------------------------CONTROL NODE
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
@@ -2415,11 +2292,6 @@ FUNCT3 EXPR 0 0 0 FUNCTION (y^5)-0.5
 FUNCT4 EXPR 0 0 0 FUNCTION (5.0*x*(y^8))+(10.0*x*(y^3))+(60.0*10.0*x*y*y)
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
---------------------------------------------------------MONITORING
-// FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
-// FLUID 1 - 0 0 0 0 0 0
-// STRUCTURE 2 - 0 0 0 0 0 0
-// ALE 3 - 0 0 0 0 0 0
 ------------------------------------------------RESULT DESCRIPTION
 FLUID DIS 1 NODE   1 POSITION pressure NAME pressure VALUE  5.087362209e+01 TOLERANCE 1e-8
 FLUID DIS 1 NODE 583 POSITION pressure NAME pressure VALUE  4.992597502e+01 TOLERANCE 1e-8

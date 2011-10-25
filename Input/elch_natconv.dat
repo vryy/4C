@@ -41,7 +41,6 @@ ALE_DISP               No
 THERM_TEMPERATURE      No
 THERM_HEATFLUX         No
 FILESTEPS              1000
------------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------MESHTYING AND CONTACT
 -----------------------------------------------------FLUID DYNAMIC
@@ -131,7 +130,6 @@ TEMPERATURE                     11604.506 // abused as a scaling factor in order
 NATURAL_CONVECTION              Yes
 CONVTOL                         5e-6
 -------------------------------------------------------FSI DYNAMIC
--------------------------------------------------------SSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC
 -------------------------------------------------------TSI DYNAMIC
 ------------------------------------------------------FLUID SOLVER
@@ -247,9 +245,6 @@ MAT       2 MAT_ion DIFFUSIVITY 5e-6 VALENCE 1.0 DENSIFICATION 0.5
 MAT       3 MAT_ion DIFFUSIVITY 5e-6 VALENCE -2.0
 MAT       4 MAT_ion DIFFUSIVITY 1e-6 VALENCE 0.0
 MAT       5 MAT_matlist NUMMAT 3 MATIDS 2 3 4
-----------------------------------------------MULTILAYER MATERIALS
-------------------------------------------------------CONTROL NODE
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 0.5*(sin((t*pi/5)-(pi/2)))+0.5  t1 0.0 t2 5.0
 ------------------------------------------------------------CURVE2
@@ -270,7 +265,6 @@ FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION -y*9.81*1.0+0.1*9.81*1.0    //initial p
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
---------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS 1 NODE 704 POSITION fluxx   NAME fluxx    VALUE -2.114807021e-05 TOLERANCE 1e-13
 SCATRA DIS 1 NODE 704 POSITION fluxy   NAME fluxy    VALUE  3.871932102e-05 TOLERANCE 1e-13
@@ -295,10 +289,6 @@ NDPOINT 1
 NDLINE  4
 NDSURF  1
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -3475,7 +3465,6 @@ NODE 1432  	COORD	4.51368950e-02	1.00000001e-01	0.00000000e+00
 NODE 1433  	COORD	4.68820557e-02	1.00000001e-01	0.00000000e+00	
 NODE 1434  	COORD	4.84999977e-02	1.00000001e-01	0.00000000e+00	
 NODE 1435  	COORD	5.00000007e-02	1.00000001e-01	0.00000000e+00	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
    1 FLUID2 QUAD4  1 2 3 4    MAT 1 NA Euler GP 2 2

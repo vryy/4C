@@ -243,7 +243,6 @@ UPRES                           1
 MAT 1   MAT_Struct_ThrStVenantK   YOUNG 2.1e11 NUE 0.0 DENS 7850.0 THEXPANS 1.2e-05 INITTEMP 300.0 
 // CAPA = C_V* rho = 420*7850 = 3297000
 MAT 2   THERM_FourierIso   CAPA 3297000.0 CONDUCT 52.0
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 // time curve of the structural Neumann load
 CURVE1 on EXPR FUNC (-4.0e10*t) t1 0.0 t2 1.0
@@ -260,10 +259,6 @@ NDPOINT 0
 NDLINE  0
 NDSURF  4
 NDVOL   1
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -536,7 +531,6 @@ NODE 9  	COORD	4.00000000e+00	0.00000000e+00	-1.00000000e+00
 NODE 10  	COORD	4.00000000e+00	2.00000000e+00	-1.00000000e+00	
 NODE 11  	COORD	4.00000000e+00	0.00000000e+00	1.00000000e+00	
 NODE 12  	COORD	4.00000000e+00	2.00000000e+00	1.00000000e+00	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 1 EAS none KINTYP lin
    2 SOLIDH8 HEX8  2 9 10 3 6 11 12 7    MAT 1 EAS none KINTYP lin

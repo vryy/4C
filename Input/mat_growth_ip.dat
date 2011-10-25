@@ -157,7 +157,6 @@ THETA                           0.5
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_GROWTH DENS 0.0001 IDMATELASTIC 2 STARTTIME 0.1 ENDTIME 100.0 TOL 1.0E-10 KPLUS 1.0 MPLUS 2.0 KMINUS 2.0 MMINUS 3.0 HOMMANDEL 0.0 
 MAT 2 MAT_Struct_LogNeoHooke YOUNG 1.0 NUE 0.3 DENS 1.0 MODEL 0
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.1 FACTOR 0. 1.
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.1 100.0 FACTOR 1. 1.
@@ -176,10 +175,6 @@ NDPOINT 8
 NDLINE  8
 NDSURF  2
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -767,7 +762,6 @@ NODE 213  	COORD	1.00000000e+00	1.00000000e+00	6.00000024e-01
 NODE 214  	COORD	1.00000000e+00	1.00000000e+00	4.00000006e-01	
 NODE 215  	COORD	1.00000000e+00	1.00000000e+00	2.00000003e-01	
 NODE 216  	COORD	1.00000000e+00	1.00000000e+00	0.00000000e+00	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 1 EAS none KINTYP nln RAD 0.0 0.0 1.0 CIR 1. 0.0 0.0 AXI 0.0 1.0 0.0
    2 SOLIDH8 HEX8  2 9 10 3 6 11 12 7    MAT 1 EAS none KINTYP nln RAD 0.0 0.0 1.0 CIR 1. 0.0 0.0 AXI 0.0 1.0 0.0

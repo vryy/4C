@@ -41,7 +41,6 @@ ALE_DISP               No
 THERM_TEMPERATURE      No
 THERM_HEATFLUX         No
 FILESTEPS              1000
------------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------MESHTYING AND CONTACT
 -----------------------------------------------------FLUID DYNAMIC
@@ -112,7 +111,6 @@ TIMESTEP                        0.1
 UPRES                           1
 TEMPERATURE                     298.15 //11604.506 // abused as a scaling factor in order to have: F/RT = 1.0
 -------------------------------------------------------FSI DYNAMIC
--------------------------------------------------------SSI DYNAMIC
 -------------------------------------------------------ALE DYNAMIC
 -------------------------------------------------------TSI DYNAMIC
 ------------------------------------------------------FLUID SOLVER
@@ -229,9 +227,6 @@ MAT       2 MAT_ion DIFFUSIVITY 0.00072  VALENCE 2.0
 MAT       3 MAT_ion DIFFUSIVITY 0.001065 VALENCE -2.0
 MAT       4 MAT_ion DIFFUSIVITY 0.009312 VALENCE 1.0
 MAT       5 MAT_matlist NUMMAT 3 MATIDS 2 3 4
-----------------------------------------------MULTILAYER MATERIALS
-------------------------------------------------------CONTROL NODE
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Explicit FUNC f(t)=-0.5*cos(PI*(T-C1)/C2)+0.5 c1 0.0 c2 1.0
 ------------------------------------------------------------CURVE2
@@ -256,7 +251,6 @@ FUNCT3 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT4 EXPR 0 0.0 0 FUNCTION 0.2*x
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
---------------------------------------------------------MONITORING
 ------------------------------------------------RESULT DESCRIPTION
 FLUID DIS 1 NODE 179 POSITION velx   NAME velx    VALUE  -1.016162519e-20 TOLERANCE 1e-9
 FLUID DIS 1 NODE 179 POSITION vely   NAME vely    VALUE  2.000000020e-02  TOLERANCE 1e-9
@@ -278,10 +272,6 @@ NDPOINT 2
 NDLINE  1
 NDSURF  9
 NDVOL   1
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -2480,7 +2470,6 @@ NODE 627  	COORD	3.23564000e-02	1.97365299e-01	1.99999996e-02
 NODE 628  	COORD	2.16238033e-02	1.98827595e-01	1.99999996e-02	
 NODE 629  	COORD	1.08277816e-02	1.99706689e-01	1.99999996e-02	
 NODE 630  	COORD	0.00000000e+00	2.00000003e-01	1.99999996e-02	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
    1 FLUID3 HEX8  1 2 3 4 5 6 7 8    MAT 1 NA Euler

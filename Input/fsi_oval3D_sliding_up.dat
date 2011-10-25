@@ -58,8 +58,6 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1 1
 PARTITION                       Cut_Elements
 SOLVER                          UMFPACK
-----------------------------------------------------BROWNIAN MOTION
-BROWNIAN_MOTION                 No
 -------------------------------------------------COMBUSTION CONTROL
 --------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 LAMINAR_FLAMESPEED              1
@@ -267,7 +265,6 @@ SHAPEFCT                        Polynomial
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 -----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 -------------------------SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER
---------------------------------------------SCALAR TRANSPORT SOLVER
 ----------------------------------------------STATISTICAL MECHANICS
 ------------------------------------------------------STRUCT SOLVER
 AZBDIAG                         0
@@ -356,7 +353,6 @@ THETA                           0.5
 ---------------------------------------------------------MATERIALS
 MAT  1  MAT_fluid  DYNVISCOSITY 1.8E-5 DENSITY 1.0E-6
 MAT  2  MAT_Struct_StVenantKirchhoff  YOUNG  1.E3  NUE  0.3  DENS  1E-1 
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1  on EXPR FUNC (0.25*(1-cos(2*pi*t/120))) t1 0.0 t2 60.0
 CURVE1  on EXPR FUNC 0.5 t1 60.0 t2 360.0
@@ -374,10 +370,6 @@ NDPOINT 0
 NDLINE  2
 NDSURF  8
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -487,11 +479,7 @@ DSURF  0
 DSURF  0
 -------------------------------DESIGN SURF LJ_POTENTIAL CONDITIONS
 DSURF  0
------------------------------DESIGN SURF ZETA_POTENTIAL CONDITIONS
-DSURF  0
 -------------------------------DESIGN LINE LJ_POTENTIAL CONDITIONS
-DLINE  0
------------------------------DESIGN LINE ZETA_POTENTIAL CONDITIONS
 DLINE  0
 ----------------------------DESIGN BROWNIAN MOTION SURF CONDITIONS
 DSURF  0
@@ -6316,7 +6304,6 @@ NODE 2479  	COORD	-7.41904676e-01	7.22214341e-01	2.62499988e-01
 NODE 2480  	COORD	-7.41904676e-01	7.22214341e-01	-2.62499988e-01	
 NODE 2481  	COORD	-8.43445003e-01	8.05823207e-01	2.62499988e-01	
 NODE 2482  	COORD	-8.43445003e-01	8.05823207e-01	-2.62499988e-01	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8 HEX8  1761 1762 1763 1764 1765 1766 1767 1768    MAT 2 EAS mild  KINTYP nln
    2 SOLIDH8 HEX8  1762 1769 1770 1763 1766 1771 1772 1767    MAT 2 EAS mild  KINTYP nln

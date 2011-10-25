@@ -142,7 +142,6 @@ UZAWATOL                        1e-08
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff  YOUNG 0.21 NUE 0.3 DENS 9.675e-7 THEXPANS 0.0
 MAT 2 MAT_Struct_StVenantKirchhoff  YOUNG 0.21 NUE 0.3 DENS 9.675e-7 THEXPANS 0.0
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC (1-cos(t*pi/0.1))/2.0 t1 0.0 t2 0.1
 CURVE1 on EXPR FUNC 1.0 t1 0.1 t2 10000.0
@@ -163,10 +162,6 @@ NDPOINT 0
 NDLINE  0
 NDSURF  2
 NDVOL   4
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -1860,7 +1855,6 @@ NODE 639  	COORD	-6.06186199e+00	-5.17766953e-01	-1.97006017e-17
 NODE 640  	COORD	-4.93813801e+00	0.00000000e+00	0.00000000e+00	
 NODE 641  	COORD	-5.50000000e+00	0.00000000e+00	0.00000000e+00	
 NODE 642  	COORD	-6.06186199e+00	0.00000000e+00	0.00000000e+00	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 1 EAS full  KINTYP nln
    2 SOLIDH8 HEX8  9 10 11 12 1 2 3 4    MAT 1 EAS full  KINTYP nln

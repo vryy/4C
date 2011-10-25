@@ -38,7 +38,6 @@ ALE_DISP               No
 THERM_TEMPERATURE      No
 THERM_HEATFLUX         No
 FILESTEPS              1000
------------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Statics
 EIGEN        0
@@ -112,7 +111,6 @@ volumeRatioLimit                1.0e-2
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.5 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_NeoHooke YOUNG 400 NUE 0.3  DENS 0.0
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
@@ -128,10 +126,6 @@ NDPOINT 0
 NDLINE  0
 NDSURF  9
 NDVOL   1
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -2377,7 +2371,6 @@ NODE 941  	COORD	6.66666701e-02	1.00000000e+00	1.00000501e-02
 NODE 942  	COORD	0.00000000e+00	1.00000000e+00	0.00000000e+00
 NODE 943  	COORD	0.00000000e+00	9.28571403e-01	-1.00000501e-02
 NODE 944  	COORD	6.66666701e-02	1.00000000e+00	-1.00000501e-02
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 2 EAS full  KINTYP nln
    2 SOLIDH8 HEX8  4 3 9 10 8 7 11 12    MAT 2 EAS full  KINTYP nln

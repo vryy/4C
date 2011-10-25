@@ -38,7 +38,6 @@ ALE_DISP               No
 THERM_TEMPERATURE      No
 THERM_HEATFLUX         No
 FILESTEPS              1000
------------------------------------------------EIGENVALUE ANALYSIS
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP   Statics // Gen_Alfa
 EIGEN        0
@@ -113,7 +112,6 @@ EMBEDDED_BOUNDARY               BoundaryTypeTauPressure
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.000 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff  YOUNG 10000.0 NUE 0.3 DENS 0.001 THEXPANS 0.0
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC (1-cos(2.0*pi*t/10.0))/2.0 t1 0.0 t2 10000.0  //x-oscilation
 ------------------------------------------------------------CURVE2
@@ -132,10 +130,6 @@ NDPOINT 0
 NDLINE  0
 NDSURF  8
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -4794,7 +4788,6 @@ NODE 2284   COORD   4.86815155e-01  8.31051648e-01  4.16666679e-02
 NODE 2285   COORD   4.86815155e-01  8.31051648e-01  1.25000000e-01
 NODE 2286   COORD   4.86815155e-01  8.31051648e-01  -4.16666679e-02
 NODE 2287   COORD   4.86815155e-01  8.31051648e-01  -1.25000000e-01
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8 HEX8  1956 1957 1958 1959 1960 1961 1962 1963    MAT 2 EAS mild  KINTYP nln
    2 SOLIDH8 HEX8  1957 1964 1965 1958 1961 1966 1967 1962    MAT 2 EAS mild  KINTYP nln

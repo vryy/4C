@@ -380,7 +380,6 @@ NODE 108 DLINE 4
 NODE 120 DLINE 4
 NODE 132 DLINE 4
 NODE 144 DLINE 4
-----------------------------------------------------------ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
 1 TRANSP NURBS9   1   2   3   13   14   15   25   26   27  MAT 2   NA Euler     GP 3 3
@@ -489,8 +488,6 @@ MAT       2 MAT_matlist NUMMAT 3 MATIDS 3 4 5
 MAT       3 MAT_ion DIFFUSIVITY 0.0072  VALENCE 2.0
 MAT       4 MAT_ion DIFFUSIVITY 0.01065 VALENCE -2.0
 MAT       5 MAT_ion DIFFUSIVITY 0.09312 VALENCE 1.0
-------------------------------------------------------CONTROL NODE
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 5.0 c2 1.0
 ------------------------------------------------------------CURVE2

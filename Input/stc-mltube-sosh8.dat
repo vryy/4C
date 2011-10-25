@@ -10,7 +10,6 @@ NUMDF                           6
 ------------------------------------------------------------------ALE SOLVER
 ------------------------------------------------------------ARTERIAL DYNAMIC
 -------------------------------------------------------ARTERY NETWORK SOLVER
--------------------------------------------------------------BROWNIAN MOTION
 ----------------------------------------------------------COMBUSTION CONTROL
 -----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 -------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
@@ -55,7 +54,6 @@ SHAPEFCT                        Polynomial
 ------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 ----------------------------------SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER
------------------------------------------------------SCALAR TRANSPORT SOLVER
 -------------------------------------------------------STATISTICAL MECHANICS
 ------------------------------------------------------------------STRUCT NOX
 --------------------------------------------------------STRUCT NOX/Direction
@@ -101,7 +99,6 @@ ML_DAMPFINE                     1.0                             // damping fine 
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 PARTITION                       Cut_Elements
-----------------------------------------------------------STRUCTURAL CONTACT
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
@@ -171,7 +168,6 @@ THETA                           1.0
 ----------------------------------------------------XFLUID PROJECTION SOLVER
 -------------------------------------------------------------------MATERIALS
 MAT  1  MAT_Struct_StVenantKirchhoff  YOUNG  2.06E11  NUE  0.3  DENS  7.8E3
------------------------------------------------------------------LOAD CURVES
 ----------------------------------------------------------------------CURVE1
 CURVE1  on  EXPR  FUNC  2.0E5*t/(1.0E-4)  t1  0.0  t2  20.0E-4
 CURVE1  on  EXPR  FUNC  2.0E5*10.0  t1  20.0E-4  t2  15.0E3
@@ -187,10 +183,6 @@ NDPOINT                         0
 NDLINE                          0
 NDSURF                          2
 NDVOL                           2
----------------------------------------------------------------DESIGN POINTS
-----------------------------------------------------------------DESIGN LINES
--------------------------------------------------------------DESIGN SURFACES
---------------------------------------------------------------DESIGN VOLUMES
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -1181,7 +1173,6 @@ NODE  309  COORD  -3.2526910300000e-02  3.2526910300000e-02  -2.2727273400000e-0
 NODE  310  COORD  0.0000000000000e+00  4.6000000100000e-02  -1.8939393750000e-01
 NODE  311  COORD  3.2526910300000e-02  3.2526910300000e-02  -2.2727273400000e-01
 NODE  312  COORD  0.0000000000000e+00  4.6000000100000e-02  -2.2727273400000e-01
---------------------------------------------------------------------ELEMENTS
 ----------------------------------------------------------STRUCTURE ELEMENTS
 1  SOLIDSH8  HEX8  1  2  3  4  5  6  7  8  MAT  1  EAS sosh8  ANS sosh8  THICKDIR auto
 2  SOLIDSH8  HEX8  2  9  10  3  6  11  12  7  MAT  1  EAS sosh8  ANS sosh8  THICKDIR auto

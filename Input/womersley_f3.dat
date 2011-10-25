@@ -263,9 +263,6 @@ MAT 1 MAT_fluid DYNVISCOSITY 0.004 DENSITY 0.001 GAMMA 1.0
 MAT 2 MAT_Struct_NeoHooke YOUNG 1.044E5 NUE 0.45 DENS 0.001
 MAT 3 MAT_Struct_AAANeoHooke YOUNG 1.044E6 BETA 1.881E6 NUE 0.49 DENS 0.001
 MAT 4 MAT_Struct_StVenantKirchhoff YOUNG 1000.0 NUE 0.0 DENS 1.0
-----------------------------------------------MULTILAYER MATERIALS
-------------------------------------------------------CONTROL NODE
------------------------------------------------------------------LOAD CURVES
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.0 0.3 FACTOR 0.0    70.214 
 CURVE1 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.3 1.0 FACTOR 70.214 70.214
@@ -281,16 +278,11 @@ CURVE1 on PhysiologicalWaveform InterpolType Fourier   Period 1.000 Flowrate  82
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
---------------------------------------------------------MONITORING
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  1
 NDSURF  3
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -1726,7 +1718,6 @@ NODE 507  	COORD	9.23076928e-01	3.00000000e+00	2.50000000e-01
 NODE 508  	COORD	9.23076928e-01	3.00000000e+00	-2.50000000e-01	
 NODE 509  	COORD	4.61538464e-01	3.00000000e+00	2.50000000e-01	
 NODE 510  	COORD	4.61538464e-01	3.00000000e+00	-2.50000000e-01	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
    1 FLUID3 HEX8  1 2 3 4 5 6 7 8    MAT 1 NA Euler GP 2 2 2

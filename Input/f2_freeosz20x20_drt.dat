@@ -19,7 +19,6 @@ PROBLEMTYP                      Fluid_Freesurface
 NUMFIELD                        2
 RESTART                         0
 --------------------------------------------------------------------------IO
----------------------------------------------------------EIGENVALUE ANALYSIS
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      Gen_Alfa
 EIGEN                           0
@@ -117,156 +116,6 @@ NDPOINT                         8
 NDLINE                          8
 NDSURF                          2
 NDVOL                           0
----------------------------------------------------------------DESIGN POINTS
-POINT
-Num: 1 HigherEntity: 2 conditions: 2 material: 0
-LAYER: fluid
-Coord: -0.500000 0.000000 0.000000
-END POINT
-POINT
-Num: 2 HigherEntity: 2 conditions: 2 material: 0
-LAYER: fluid
-Coord: 0.500000 0.000000 0.000000
-END POINT
-POINT
-Num: 3 HigherEntity: 2 conditions: 2 material: 0
-LAYER: fluid
-Coord: 0.500000 1.000000 0.000000
-END POINT
-POINT
-Num: 4 HigherEntity: 2 conditions: 2 material: 0
-LAYER: fluid
-Coord: -0.500000 1.000000 0.000000
-END POINT
-POINT
-Num: 5 HigherEntity: 2 conditions: 2 material: 0
-LAYER: ale
-Coord: -0.500000 0.000000 0.000000
-END POINT
-POINT
-Num: 6 HigherEntity: 2 conditions: 2 material: 0
-LAYER: ale
-Coord: 0.500000 0.000000 0.000000
-END POINT
-POINT
-Num: 7 HigherEntity: 2 conditions: 2 material: 0
-LAYER: ale
-Coord: 0.500000 1.000000 0.000000
-END POINT
-POINT
-Num: 8 HigherEntity: 2 conditions: 2 material: 0
-LAYER: ale
-Coord: -0.500000 1.000000 0.000000
-END POINT
-----------------------------------------------------------------DESIGN LINES
-STLINE
-Num: 1 HigherEntity: 1 conditions: 2 material: 0
-LAYER: fluid
-Meshing Info: (num=2,NOE=1) Elemtype=1 IsStructured=1 size=20 Meshing=Default
-Points: 1 2
-END STLINE
-STLINE
-Num: 2 HigherEntity: 1 conditions: 2 material: 0
-LAYER: fluid
-Meshing Info: (num=3,NOE=1) Elemtype=1 IsStructured=1 size=20 Meshing=Default
-Points: 2 3
-END STLINE
-STLINE
-Num: 3 HigherEntity: 1 conditions: 2 material: 0
-LAYER: fluid
-Meshing Info: (num=5,NOE=1) Elemtype=1 IsStructured=1 size=20 Meshing=Default
-Points: 3 4
-END STLINE
-STLINE
-Num: 4 HigherEntity: 1 conditions: 2 material: 0
-LAYER: fluid
-Meshing Info: (num=6,NOE=1) Elemtype=1 IsStructured=1 size=20 Meshing=Default
-Points: 4 1
-END STLINE
-STLINE
-Num: 5 HigherEntity: 1 conditions: 2 material: 0
-LAYER: ale
-Meshing Info: (num=7,NOE=1) Elemtype=1 IsStructured=1 size=20 Meshing=Default
-Points: 5 6
-END STLINE
-STLINE
-Num: 6 HigherEntity: 1 conditions: 2 material: 0
-LAYER: ale
-Meshing Info: (num=8,NOE=1) Elemtype=1 IsStructured=1 size=20 Meshing=Default
-Points: 6 7
-END STLINE
-STLINE
-Num: 7 HigherEntity: 1 conditions: 2 material: 0
-LAYER: ale
-Meshing Info: (num=9,NOE=1) Elemtype=1 IsStructured=1 size=20 Meshing=Default
-Points: 7 8
-END STLINE
-STLINE
-Num: 8 HigherEntity: 1 conditions: 2 material: 0
-LAYER: ale
-Meshing Info: (num=4,NOE=1) Elemtype=1 IsStructured=1 size=20 Meshing=Default
-Points: 8 5
-END STLINE
--------------------------------------------------------------DESIGN SURFACES
-NURBSURFACE
-Num: 1 HigherEntity: 0 conditions: 3 material: 1
-LAYER: fluid
-Meshing Info: (num=1,NOE=2) Elemtype=3 IsStructured=1 size=0 Meshing=Default
-NumLines:                       4
-Line: 4 Orientation: SAME1ST
-Line: 1 Orientation: SAME1ST
-Line: 2 Orientation: SAME1ST
-Line: 3 Orientation: SAME1ST
-Number of Control Points= 2 2 Degree= 1 1
-Point 1,1 coords:-0.550000,1.050000,0.000000
-Point 1,2 coords:-0.550000,-0.050000,0.000000
-Point 2,1 coords:0.550000,1.050000,0.000000
-Point 2,2 coords:0.550000,-0.050000,0.000000
-Number of knots in U= 4
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=1.000000
-knot 4 value=1.000000
-Number of knots in V= 4
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=1.000000
-knot 4 value=1.000000
-Non rational
-IsTrimmed:                      1
-Center: -0.000000 0.500000 0.000000
-Normal: 0.000000 0.000000 1.000000
-END NURBSURFACE
-NURBSURFACE
-Num: 2 HigherEntity: 0 conditions: 2 material: 3
-LAYER: ale
-Meshing Info: (num=1,NOE=2) Elemtype=3 IsStructured=1 size=0 Meshing=Default
-NumLines:                       4
-Line: 8 Orientation: SAME1ST
-Line: 5 Orientation: SAME1ST
-Line: 6 Orientation: SAME1ST
-Line: 7 Orientation: SAME1ST
-Number of Control Points= 2 2 Degree= 1 1
-Point 1,1 coords:-0.550000,1.050000,0.000000
-Point 1,2 coords:-0.550000,-0.050000,0.000000
-Point 2,1 coords:0.550000,1.050000,0.000000
-Point 2,2 coords:0.550000,-0.050000,0.000000
-Number of knots in U= 4
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=1.000000
-knot 4 value=1.000000
-Number of knots in V= 4
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=1.000000
-knot 4 value=1.000000
-Non rational
-IsTrimmed:                      1
-Center: 0.000000 0.500000 0.000000
-Normal: 0.000000 0.000000 1.000000
-END NURBSURFACE
---------------------------------------------------------------DESIGN VOLUMES
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          6
 E 1 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none
@@ -296,19 +145,8 @@ DSURF                           1
 E 1 - none 0 1 0 0 0 0 0.0 -980.0 0.0 0.0 0.0 0.0 Dead
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
---------------------------------------------DESIGN COUPLING POINT CONDITIONS
-DPOINT                          0
----------------------------------------------DESIGN COUPLING LINE CONDITIONS
-DLINE                           0
----------------------------------------------DESIGN COUPLING SURF CONDITIONS
-DSURF                           0
-----------------------------------------------DESIGN COUPLING VOL CONDITIONS
-DVOL                            0
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 DLINE                           0
----------------------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
-DSURF                           1
-E 1 - GLS yes yes GLS- yes 35 L_2 -1 533 at_center at_center 1.0
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 DLINE                           2
 E 3 - fluid lagrange
@@ -2258,7 +2096,6 @@ NODE 879 COORD 0.5 0.9405 0.0
 NODE 880 COORD 0.45 0.990123116594 0.0
 NODE 881 COORD 0.5 0.99 0.0
 NODE 882 COORD 0.5 0.99 0.0
---------------------------------------------------------------------ELEMENTS
 ----------------------------------------------------------STRUCTURE ELEMENTS
 --------------------------------------------------------------FLUID ELEMENTS
 1 FLUID2 QUAD4 603 605 671 664 MAT 1 NA ALE
@@ -3065,8 +2902,6 @@ NODE 882 COORD 0.5 0.99 0.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0 GAMMA 73.1
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0.0
-----------------------------------------------------------------CONTROL NODE
------------------------------------------------------------------LOAD CURVES
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3

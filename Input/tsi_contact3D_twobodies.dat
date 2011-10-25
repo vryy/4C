@@ -277,7 +277,6 @@ COUPALGO                        tsi_oneway
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_ThrStVenantK  YOUNG 400 NUE 0.0 DENS 1 THEXPANS 1 INITTEMP 273
 MAT 2 THERM_FourierIso   CAPA 420 CONDUCT 52
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.5 FACTOR 0.0 1
 ------------------------------------------------------------CURVE2
@@ -296,10 +295,6 @@ NDPOINT 0
 NDLINE  0
 NDSURF  6
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -676,7 +671,6 @@ NODE 88  	COORD	5.00000000e-01	0.00000000e+00	-1.60000002e+00
 NODE 89  	COORD	5.00000000e-01	5.00000000e-01	-1.10000002e+00	
 NODE 90  	COORD	5.00000000e-01	5.00000000e-01	-6.00000024e-01	
 NODE 91  	COORD	5.00000000e-01	5.00000000e-01	-1.60000002e+00	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8 HEX8  1 2 3 4 5 6 7 8    MAT 1 EAS none KINTYP nln
    2 SOLIDH8 HEX8  2 9 10 3 6 11 12 7    MAT 1 EAS none KINTYP nln

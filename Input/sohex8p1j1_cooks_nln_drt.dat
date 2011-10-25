@@ -21,7 +21,6 @@ NUMDF    	6
 ---------------------------------------------------------ALE SOLVER
 ---------------------------------------------------ARTERIAL DYNAMIC
 ----------------------------------------------ARTERY NETWORK SOLVER
-----------------------------------------------------BROWNIAN MOTION
 -------------------------------------------------COMBUSTION CONTROL
 --------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 ----------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
@@ -38,7 +37,6 @@ NUMTHERMDIS                     0
 ----------------------------------------------FLUID PRESSURE SOLVER
 -------------------------------------------------------FLUID SOLVER
 --------------------------------------------------------FSI DYNAMIC
----------------------------------------------INTERACTION POTENTIALS
 ---------------------------------------------------INVERSE ANALYSIS
 -----------------------------------------------------------------IO
 ALE_DISP                        No
@@ -66,7 +64,6 @@ SHAPEFCT                        Polynomial
 ---------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 -----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 -------------------------SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER
---------------------------------------------SCALAR TRANSPORT SOLVER
 ----------------------------------------------STATISTICAL MECHANICS
 ---------------------------------------------------------STRUCT NOX
 -----------------------------------------------STRUCT NOX/Direction
@@ -140,7 +137,6 @@ UZAWATOL                        1e-08
 MAT 1   MAT_ElastHyper   NUMMAT 2 MATIDS 10 11 DENS 0 GAMMA 0
 MAT 10   ELAST_CoupLogNeoHooke   MUE 80.1938 LAMBDA 0.0
 MAT 11   ELAST_VolOgden   KAPPA 40.0889e4 BETA -2.0
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000 FACTOR 0 10000
 ------------------------------------------------------------CURVE2
@@ -157,10 +153,6 @@ NDPOINT 1
 NDLINE  1
 NDSURF  3
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 1
 // tip
@@ -255,11 +247,7 @@ DSURF  0
 DSURF  0
 -------------------------------DESIGN SURF LJ_POTENTIAL CONDITIONS
 DSURF  0
------------------------------DESIGN SURF ZETA_POTENTIAL CONDITIONS
-DSURF  0
 -------------------------------DESIGN LINE LJ_POTENTIAL CONDITIONS
-DLINE  0
------------------------------DESIGN LINE ZETA_POTENTIAL CONDITIONS
 DLINE  0
 ----------------------------DESIGN BROWNIAN MOTION SURF CONDITIONS
 DSURF  0
@@ -693,7 +681,6 @@ NODE 159  	COORD	4.20000000e+01	5.80000000e+01	0.00000000e+00
 NODE 160  	COORD	4.20000000e+01	5.80000000e+01	1.00000000e+00	
 NODE 161  	COORD	4.80000000e+01	6.00000000e+01	0.00000000e+00	
 NODE 162  	COORD	4.80000000e+01	6.00000000e+01	1.00000000e+00	
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8P1J1 HEX8  1 2 3 4 5 6 7 8    MAT 1
    2 SOLIDH8P1J1 HEX8  2 9 10 3 6 11 12 7    MAT 1

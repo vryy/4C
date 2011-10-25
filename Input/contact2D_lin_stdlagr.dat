@@ -86,175 +86,6 @@ NDPOINT 9
 NDLINE  8
 NDSURF  2
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-POINT
-Num: 1 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 0.000000 0.000000 0.000000
-END POINT
-POINT
-Num: 2 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 10.000000 0.000000 0.000000
-END POINT
-POINT
-Num: 3 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 10.000000 1.000000 0.000000
-END POINT
-POINT
-Num: 4 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 0.000000 1.000000 0.000000
-END POINT
-POINT
-Num: 5 HigherEntity: 0 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 2.000000 3.000000 0.000000
-END POINT
-POINT
-Num: 6 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 3.000000 3.000000 0.000000
-END POINT
-POINT
-Num: 7 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 1.000000 3.000000 0.000000
-END POINT
-POINT
-Num: 8 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 1.000000 3.500000 0.000000
-END POINT
-POINT
-Num: 9 HigherEntity: 2 conditions: 1 material: 0
-LAYER: Layer0
-Coord: 3.000000 3.500000 0.000000
-END POINT
-------------------------------------------------------DESIGN LINES
-NURBLINE
-Num: 1 HigherEntity: 1 conditions: 2 material: 0
-LAYER: Layer0
-Points: 7 6
-Number of Control Points= 5 Degree= 2
-Point 1 coords:1.000000,3.000000,0.000000
-Point 2 coords:1.000000,2.000000,0.000000
-Point 3 coords:2.000000,2.000000,0.000000
-Point 4 coords:3.000000,2.000000,0.000000
-Point 5 coords:3.000000,3.000000,0.000000
-Number of knots= 8
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=0.000000
-knot 4 value=0.500000
-knot 5 value=0.500000
-knot 6 value=1.000000
-knot 7 value=1.000000
-knot 8 value=1.000000
-Rational weights:
-1.000000
-0.707107
-1.000000
-0.707107
-1.000000
-TotalLength= 3.141593
-END NURBLINE
-STLINE
-Num: 2 HigherEntity: 1 conditions: 2 material: 0
-LAYER: Layer0
-Points: 1 2
-END STLINE
-STLINE
-Num: 3 HigherEntity: 1 conditions: 1 material: 0
-LAYER: Layer0
-Points: 2 3
-END STLINE
-STLINE
-Num: 4 HigherEntity: 1 conditions: 2 material: 0
-LAYER: Layer0
-Points: 3 4
-END STLINE
-STLINE
-Num: 5 HigherEntity: 1 conditions: 1 material: 0
-LAYER: Layer0
-Points: 4 1
-END STLINE
-STLINE
-Num: 6 HigherEntity: 1 conditions: 1 material: 0
-LAYER: Layer0
-Points: 7 8
-END STLINE
-STLINE
-Num: 7 HigherEntity: 1 conditions: 2 material: 0
-LAYER: Layer0
-Points: 8 9
-END STLINE
-STLINE
-Num: 8 HigherEntity: 1 conditions: 1 material: 0
-LAYER: Layer0
-Points: 9 6
-END STLINE
----------------------------------------------------DESIGN SURFACES
-NURBSURFACE
-Num: 1 HigherEntity: 0 conditions: 2 material: 2
-LAYER: Layer0
-Meshing Info: (num=3,NOE=2) Elemtype=3 IsStructured=0 size=0.000000 Meshing=Default
-NumLines: 4
-Line: 5 Orientation: SAME1ST
-Line: 2 Orientation: SAME1ST
-Line: 3 Orientation: SAME1ST
-Line: 4 Orientation: SAME1ST
-Number of Control Points= 2 2 Degree= 1 1
-Point 1,1 coords:-0.500000,1.050000,0.000000
-Point 1,2 coords:-0.500000,-0.050000,0.000000
-Point 2,1 coords:10.500000,1.050000,0.000000
-Point 2,2 coords:10.500000,-0.050000,0.000000
-Number of knots in U= 4
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=1.000000
-knot 4 value=1.000000
-Number of knots in V= 4
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=1.000000
-knot 4 value=1.000000
-Non rational
-IsTrimmed: 1
-Center: 5.000000 0.500000 0.000000
-Normal: -0.000000 0.000000 1.000000
-END NURBSURFACE
-NURBSURFACE
-Num: 2 HigherEntity: 0 conditions: 2 material: 2
-LAYER: Layer0
-Meshing Info: (num=3,NOE=2) Elemtype=3 IsStructured=0 size=0.000000 Meshing=Default
-NumLines: 4
-Line: 6 Orientation: DIFF1ST
-Line: 1 Orientation: SAME1ST
-Line: 8 Orientation: DIFF1ST
-Line: 7 Orientation: DIFF1ST
-Number of Control Points= 2 2 Degree= 1 1
-Point 1,1 coords:0.847500,4.292952,0.000000
-Point 1,2 coords:0.847500,1.890812,0.000000
-Point 2,1 coords:3.102500,4.292952,0.000000
-Point 2,2 coords:3.102500,1.890812,0.000000
-Number of knots in U= 4
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=1.000000
-knot 4 value=1.000000
-Number of knots in V= 4
-knot 1 value=0.000000
-knot 2 value=0.000000
-knot 3 value=1.000000
-knot 4 value=1.000000
-Non rational
-IsTrimmed: 1
-Center: 2.000000 3.094618 0.000000
-Normal: -0.000000 0.000000 1.000000
-END NURBSURFACE
-----------------------------------------------------DESIGN VOLUMES
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT 0
@@ -290,18 +121,6 @@ DLINE 0
 ---------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF 0
-----------------------------------DESIGN COUPLING POINT CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DPOINT 0
------------------------------------DESIGN COUPLING LINE CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DLINE 0
------------------------------------DESIGN COUPLING SURF CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DSURF 0
-------------------------------------DESIGN COUPLING VOL CONDITIONS
-// DOBJECT COUPLE_ID FIELD DOFCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG GEOCOUPLE FLAG FLAG FLAG FLAG FLAG FLAG FSICOUPLE
-DVOL 0
 -------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 // DOBJECT FSI_ID FIELD MESH FLAG
 DLINE 0
@@ -314,9 +133,6 @@ DLINE 0
 ------------------------------DESIGN XFEM COUPLING SURF CONDITIONS
 // DOBJECT COUPLING BCFLUID
 DSURF 0
-------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
-// DOBJECT
-DPOINT 0
 -------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 // DOBJECT
 DLINE 0
@@ -337,30 +153,12 @@ DSURF 0
 DSURF 0
 ------------------------------------DESIGN SURFACE AREA MONITOR 3D
 DSURF 0
--------------------------DESIGN AXISHELL THICKNESS LINE CONDITIONS
-DLINE 0
-------------------------------DESIGN AXISHELL LOAD LINE CONDITIONS
-DLINE 0
-------------------------------DESIGN AXISHELL COS POINT CONDITIONS
-DPOINT 0
---------------------------------DESIGN LINE STRESS CALC CONDITIONS
-// DOBJECT
-DLINE 0
---------------------------------DESIGN SURF STRESS CALC CONDITIONS
-// DOBJECT
-DSURF 0
 ---------------------------------------DESIGN FLUID LINE LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
 DLINE 0
 ---------------------------------------DESIGN FLUID SURF LIFT&DRAG
 // DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
 DSURF 0
------------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
-// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-DSURF 0
-------------------------DESIGN FLUID VOLUME STABILISING CONDITIONS
-// DOBJECT STABTYPE IADVEC IPRES IVISC ICONT ISTAPA NORM_P MK IHELEM NINTHS ISTAPC C_LAMB
-DVOL 0
 ------------------------------------DESIGN POINT LOCSYS CONDITIONS
 // DOBJECT Id - LocsysId
 DPOINT 0
@@ -638,7 +436,6 @@ NODE           89     COORD 1.000000000000000e+00     3.500000000000000e+00     
 NODE           90     COORD 0.000000000000000e+00     0.000000000000000e+00     0.000000000000000e+00
 NODE           91     COORD 0.000000000000000e+00     5.000000000000000e-01     0.000000000000000e+00
 NODE           92     COORD 0.000000000000000e+00     1.000000000000000e+00     0.000000000000000e+00
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
       1 WALL QUAD4      85     91     90     83 MAT       1 THICK 0.1 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model STRESSES XY SSI_COUPTYP none TSI_COUPTYP none
       2 WALL QUAD4      85     83     69     71 MAT       1 THICK 0.1 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model STRESSES XY SSI_COUPTYP none TSI_COUPTYP none
@@ -705,13 +502,9 @@ NODE           92     COORD 0.000000000000000e+00     1.000000000000000e+00     
      63 WALL QUAD4      62     57     51     49 MAT       1 THICK 0.1 GP 2 2 PLANE_STRESS W_TotalLagr Displ_Model STRESSES XY SSI_COUPTYP none TSI_COUPTYP none
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
---------------------------------------------------THERMAL ELEMENTS
 ---------------------------------------------------------MATERIALS
 // MAT_Struct_StVenantKirchhoff
 MAT       1 MAT_Struct_StVenantKirchhoff  YOUNG 21000.0 NUE 0.3 DENS 7.8E-6 THEXPANS 0.0
-----------------------------------------------MULTILAYER MATERIALS
-------------------------------------------------------CONTROL NODE
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 0.0
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 1.0 6.0 FACTOR 0.0 6.0
@@ -727,11 +520,6 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 6.0 FACTOR 1.2 1.2
 ------------------------------------------------------------FUNCT4
 ------------------------------------------------------------FUNCT5
 ------------------------------------------------------------FUNCT6
---------------------------------------------------------MONITORING
-// FIELD globalId FLAG FLAG FLAG FLAG FLAG FLAG
-// FLUID 1 - 0 0 0 0 0 0
-// STRUCTURE 2 - 0 0 0 0 0 0
-// ALE 3 - 0 0 0 0 0 0
 ------------------------------------------------RESULT DESCRIPTION
 // note that these are the unmodified result from the augmented version
 STRUCTURE DIS 1 NODE 59 POSITION dispx NAME ux VALUE  5.8837525752039577e-01 TOLERANCE 1e-8

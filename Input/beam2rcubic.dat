@@ -132,7 +132,6 @@ NODE            4     COORD 5.000000000000000e-01     0     0
 NODE            5     COORD 6.666666666666666e-01     0     0
 NODE            6     COORD 8.333333333333334e-01     0     0
 NODE            7     COORD 1.000000000000000e+00     0     0
-----------------------------------------------------------ELEMENTS
 ------------------------------------------------STRUCTURE ELEMENTS
       1 BEAM2R LIN4       1      4      2      3       MAT 1 CROSS 1e-06 SHEARCORR 1.1 INERMOM 8.33333e-14 LUMPED 1
       2 BEAM2R LIN4       4      7      5      6       MAT 1 CROSS 1e-06 SHEARCORR 1.1 INERMOM 8.33333e-14 LUMPED 1

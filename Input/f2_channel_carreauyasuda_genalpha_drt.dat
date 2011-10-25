@@ -343,7 +343,6 @@ SOLVER                          UMFPACK
 GMSH_DEBUG_OUT                  No
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_carreauyasuda  NU_0 1.5238 NU_INF 0.03333 LAMBDA 8.2 APARAM 1.23 BPARAM 0.64 DENSITY 1.0
--------------------------------------------------------LOAD CURVES
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC (1-cos(2*t*pi))/2.0 t1 0.0 t2 0.5
 CURVE1 on EXPR FUNC 1 t1 0.5 t2 10000.0
@@ -361,10 +360,6 @@ NDPOINT 4
 NDLINE  5
 NDSURF  0
 NDVOL   0
------------------------------------------------------DESIGN POINTS
-------------------------------------------------------DESIGN LINES
----------------------------------------------------DESIGN SURFACES
-----------------------------------------------------DESIGN VOLUMES
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT 0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
@@ -457,8 +452,6 @@ DSURF  0
 DLINE  0
 ---------------------------------------DESIGN LINE AREA MONITOR 2D
 DLINE  0
-----------------------------------------------IMPEDANCE CONDITIONS
-DSURF  0
 -----------------------------DESIGN SURFACE MULTIPNT CONSTRAINT 3D
 DSURF   0
 --------------------------------DESIGN LINE MULTIPNT CONSTRAINT 2D
@@ -997,7 +990,6 @@ NODE 438  	COORD	5.50000072e-01	5.50001919e-01	0.00000000e+00
 NODE 439  	COORD	4.99999434e-01	5.50001025e-01	0.00000000e+00	
 NODE 440  	COORD	5.00000536e-01	4.49998707e-01	0.00000000e+00	
 NODE 441  	COORD	5.00000000e-01	4.99999851e-01	0.00000000e+00	
-----------------------------------------------------------ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
    1 FLUID2 QUAD4  1 2 3 4    MAT 1 NA Euler
    2 FLUID2 QUAD4  2 5 6 3    MAT 1 NA Euler
@@ -1401,7 +1393,6 @@ NODE 441  	COORD	5.00000000e-01	4.99999851e-01	0.00000000e+00
    400 FLUID2 QUAD4  434 435 440 441    MAT 1 NA Euler
 ------------------------------------------------STRUCTURE ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
--------------------------------------------------LEVELSET ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
 ------------------------------------------------RESULT DESCRIPTION
 FLUID DIS 1 NODE 101 POSITION velx      NAME velx      VALUE  2.220919721e-01 TOLERANCE 1e-9

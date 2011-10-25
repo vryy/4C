@@ -25,7 +25,6 @@ NUMSTRUCDIS                     1
 NUMALEDIS                       1
 NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
----------------------------------------------------------EIGENVALUE ANALYSIS
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      Gen_Alfa
 RESULTSEVRY                     1
@@ -203,10 +202,6 @@ NDPOINT                         12
 NDLINE                          22
 NDSURF                          14
 NDVOL                           3
----------------------------------------------------------------DESIGN POINTS
-----------------------------------------------------------------DESIGN LINES
--------------------------------------------------------------DESIGN SURFACES
---------------------------------------------------------------DESIGN VOLUMES
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
@@ -236,14 +231,6 @@ DSURF                           1
 E 3 - 1 1 0 0 0 0 0 1.3332e4 0.0 0.0 0.0 0.0 0.0 Live Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
---------------------------------------------DESIGN COUPLING POINT CONDITIONS
-DPOINT                          0
----------------------------------------------DESIGN COUPLING LINE CONDITIONS
-DLINE                           0
----------------------------------------------DESIGN COUPLING SURF CONDITIONS
-DSURF                           0
-----------------------------------------------DESIGN COUPLING VOL CONDITIONS
-DVOL                            0
 -----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
 DLINE                           0
 -----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
@@ -252,31 +239,14 @@ E 1 - 1 fluid conforming
 E 2 - 1 fluid conforming
 E 5 - 1 structure conforming
 E 6 - 1 structure conforming
-------------------------------------DESIGN FSI XFEM COUPLING LINE CONDITIONS
-DLINE                           0
-----------------------------------DESIGN FLUID FREE SURFACE POINT CONDITIONS
-DPOINT                          0
 -----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
 DLINE                           0
 -----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
 DSURF                           0
-----------------------------------------------------------CONTACT CONDITIONS
-DLINE                           0
------------------------------------DESIGN AXISHELL THICKNESS LINE CONDITIONS
-DLINE                           0
-----------------------------------------DESIGN AXISHELL LOAD LINE CONDITIONS
-DLINE                           0
-----------------------------------------DESIGN AXISHELL COS POINT CONDITIONS
-DPOINT                          0
 -------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
 DLINE                           0
 -------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
 DSURF                           0
----------------------------------DESIGN FLUID SURFACE STABILISING CONDITIONS
-DSURF                           0
-----------------------------------DESIGN FLUID VOLUME STABILISING CONDITIONS
-DVOL                            1
-E 1 - USFEM yes yes GLS- yes 35 L_2 -1 533 at_center at_center 1.0
 ----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
 DPOINT                          0
 -----------------------------------------------DESIGN LINE LOCSYS CONDITIONS
@@ -15262,7 +15232,6 @@ NODE 5562 COORD 5.0 -0.534603914504 0.272394299861
 NODE 5563 COORD 5.0 -0.352671151373 0.485410196627
 NODE 5564 COORD 5.0 -0.485410196622 0.35267115138
 NODE 5565 COORD 5.0 -0.424264068712 0.424264068712
---------------------------------------------------------------------ELEMENTS
 ----------------------------------------------------------STRUCTURE ELEMENTS
 2481 SOLIDH8 HEX8 5257 5519 5505 5240 5263 5528 5514 5253 MAT 2 EAS none  KINTYP nln
 2482 SOLIDH8 HEX8 4986 5257 5240 4973 4997 5263 5253 4981 MAT 2 EAS none  KINTYP nln
@@ -19346,13 +19315,9 @@ NODE 5565 COORD 5.0 -0.424264068712 0.424264068712
 2479 FLUID3 HEX8 4903 4920 4943 4938 5173 5195 5202 5194 MAT 1 NA ALE
 2480 FLUID3 HEX8 5173 5195 5202 5194 5432 5457 5467 5458 MAT 1 NA ALE
 ----------------------------------------------------------------ALE ELEMENTS
-------------------------------------------------------------THERMAL ELEMENTS
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.03 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 3e6 NUE 0.3 DENS 1.2 THEXPANS 0.0
---------------------------------------------------------MULTILAYER MATERIALS
-----------------------------------------------------------------CONTROL NODE
------------------------------------------------------------------LOAD CURVES
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 3e-3 FACTOR 1.0 1.0
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 3e-3 3.1e-3 FACTOR 1.0 0.0
@@ -19367,7 +19332,6 @@ CURVE1 on Polygonal T 0.0 BYABSTIME Yes 3.1e-3 10000 FACTOR 0.0 0.0
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
-------------------------------------------------------------------MONITORING
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS 1 NODE 3043 POSITION velx NAME velx VALUE  2.036511608e-03 TOLERANCE 1e-7
 FLUID DIS 1 NODE 3043 POSITION vely NAME vely VALUE -9.691266985e-04 TOLERANCE 1e-7
