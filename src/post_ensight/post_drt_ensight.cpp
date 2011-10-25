@@ -193,13 +193,6 @@ int main(
       structwriter.WriteFiles();
       break;
     }
-    case prb_fluid_dgfem:
-    {
-        PostField* field = problem.get_discretization(0);
-        DGFEMFluidEnsightWriter writer(field, problem.outname());
-        writer.WriteFiles();
-        break;
-    }
     case prb_ale:
     {
         PostField* field = problem.get_discretization(0);

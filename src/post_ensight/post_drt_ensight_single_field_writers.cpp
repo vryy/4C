@@ -116,6 +116,7 @@ void FluidEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("scalar_field", "scalar_field", dofbased, 1);
   EnsightWriter::WriteResult("residual", "residual", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("dispnp", "ale_displacement", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("idispnfull", "ale_idisp", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("traction", "traction", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("wss", "wss", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("border_radii", "border_radii",nodebased, 1);
@@ -187,14 +188,6 @@ void InterfaceEnsightWriter::WriteAllResults(PostField* field)
   WriteElementResults(field);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DGFEMFluidEnsightWriter::WriteAllResults(PostField* field)
-{
-  EnsightWriter::WriteResult("velnp", "elemean_velocity", elementdof, field->problem()->num_dim());
-  EnsightWriter::WriteResult("velnp", "elemean_pressure", elementdof, 1, field->problem()->num_dim());
-  WriteElementResults(field);
-}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

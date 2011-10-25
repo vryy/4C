@@ -115,25 +115,6 @@ protected:
 };
 
 /*!
- \brief Writer for fluid problems using DG-FEM
- */
-class DGFEMFluidEnsightWriter : public EnsightWriter
-{
-public:
-    DGFEMFluidEnsightWriter(
-            PostField* field,
-            string filename) :
-        EnsightWriter(field, filename)
-    {
-    }
-
-protected:
-
-    virtual void WriteAllResults(
-            PostField* field);
-};
-
-/*!
  \brief Writer for ale problems
  */
 class AleEnsightWriter : public EnsightWriter
