@@ -27,6 +27,7 @@ Maintainer: Michael Gee
 
 #include "drt_inputreader.H"
 #include "standardtypes_cpp.H"
+#include "drt_dserror.H"
 
 
 /*----------------------------------------------------------------------*
@@ -108,8 +109,9 @@ void ntainp_ccadiscret()
   if (comm->MyPID()==0)
     problem->WriteInputParameters();
 
-  // before we destroy the reader we want to know about unused sections
-  reader.PrintUnknownSections();
+  // before we destroy the reader we want to know about unused sections  
+  bool unknsec = reader.PrintUnknownSections();
+  dsassert(!unknsec,"Unknown sections detected. Correct this!");
 
   return;
 } // end of ntainp_ccadiscret()
