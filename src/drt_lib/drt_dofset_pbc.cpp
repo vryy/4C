@@ -139,7 +139,6 @@ void DRT::PBCDofSet::SetCoupledNodes(RefCountPtr<map<int,vector<int> > >  couple
 {
   perbndcouples_=couplednodes;
   slavenodeids_ = rcp(new std::set<int>);
-  Reset();
 
   for( map<int,vector<int> >::iterator curr = perbndcouples_->begin();
        curr != perbndcouples_->end();

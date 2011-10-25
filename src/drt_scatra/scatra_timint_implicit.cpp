@@ -172,7 +172,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // then again a new redistribution of the redistributed scatra discretization would be performed
   if(reinitswitch_ == false)
   {
-    pbc_ = rcp(new PeriodicBoundaryConditions (discret_));
+    pbc_ = rcp(new PeriodicBoundaryConditions (discret_, false));
     pbc_->UpdateDofsForPeriodicBoundaryConditions();
     pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
   }
@@ -1274,71 +1274,35 @@ void SCATRA::ScaTraTimIntImpl::PrepareLinearSolve()
   ApplyDirichletToSystem();
 }
 
-
-/*----------------------------------------------------------------------*
- | application of Dirichlet boundary conditions                         |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::ApplyDirichletToSystem()
-{
-  // -------------------------------------------------------------------
-  // Apply Dirichlet boundary conditions to system matrix
-  // -------------------------------------------------------------------
-  if (incremental_)
-  {
-    // blank residual DOFs which are on Dirichlet BC
-    // We can do this because the values at the Dirichlet positions
-    // are not used anyway.
-    // We could avoid this though, if the dofrowmap would not include
-    // the Dirichlet values as well. But it is expensive to avoid that.
-    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
-
-    //--------- Apply Dirichlet boundary conditions to system of equations
-    // residual values are supposed to be zero at Dirichlet boundaries
-    increment_->PutScalar(0.0);
-
-    {
-      // time measurement: application of DBC to system
-      TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
-
-      LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,*(dbcmaps_->CondMap()));
-    }
-  }
-  else
-  {
-    // time measurement: application of DBC to system
-    TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
-
-    LINALG::ApplyDirichlettoSystem(sysmat_,phinp_,residual_,phinp_,*(dbcmaps_->CondMap()));
-  }
-  return;
-}
-
 /*--------------------------------------------------------------------------------------------*
  | Redistribute the scatra discretization and vectors according to nodegraph  rasthofer 07/11 |
- |                                                                            DA wichmann    |
+ |                                                                            DA wichmann     |
  *--------------------------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph)
 {
-  const Epetra_BlockMap oldphinpmap = phinp_->Map();
+  if (reinitswitch_ == false)
+  {
+    const Epetra_BlockMap oldphinpmap = phinp_->Map();
 
-  // the rowmap will become the new distribution of nodes
-  const Epetra_BlockMap rntmp = nodegraph->RowMap();
-  Epetra_Map newnoderowmap(-1,rntmp.NumMyElements(),rntmp.MyGlobalElements(),0,discret_->Comm());
+    // the rowmap will become the new distribution of nodes
+    const Epetra_BlockMap rntmp = nodegraph->RowMap();
+    Epetra_Map newnoderowmap(-1,rntmp.NumMyElements(),rntmp.MyGlobalElements(),0,discret_->Comm());
 
-  // the column map will become the new ghosted distribution of nodes
-  const Epetra_BlockMap Mcntmp = nodegraph->ColMap();
-  Epetra_Map newnodecolmap(-1,Mcntmp.NumMyElements(),Mcntmp.MyGlobalElements(),0,discret_->Comm());
+    // the column map will become the new ghosted distribution of nodes
+    const Epetra_BlockMap Mcntmp = nodegraph->ColMap();
+    Epetra_Map newnodecolmap(-1,Mcntmp.NumMyElements(),Mcntmp.MyGlobalElements(),0,discret_->Comm());
 
-  // do the redistribution
-  discret_->Redistribute(newnoderowmap,newnodecolmap, false, false, false);
+    // do the redistribution
+    discret_->Redistribute(newnoderowmap,newnodecolmap, false, false, false);
 
-  // update the PBCs and PBCDofSet
-  pbc_->PutAllSlavesToMastersProc();
-  pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
+    // update the PBCs and PBCDofSet
+    pbc_->PutAllSlavesToMastersProc();
+    pbcmapmastertoslave_ = pbc_->ReturnAllCoupledRowNodes();
 
-  // ensure that degrees of freedom in the discretization have been set
-  if ((not discret_->Filled()) or (not discret_->HaveDofs()))
-    discret_->FillComplete();
+    // ensure that degrees of freedom in the discretization have been set
+    if ((not discret_->Filled()) or (not discret_->HaveDofs()))
+      discret_->FillComplete();
+  }
 
   //--------------------------------------------------------------------
   // Now update all Epetra_Vectors and Epetra_Matrix to the new dofmap
@@ -1430,6 +1394,14 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
     LINALG::Export(*old, *phin_);
   }
 
+  // phi at time 0 as reference for reinitialization procedure
+  if (phistart_ != Teuchos::null)
+  {
+    old = phistart_;
+    phistart_ = LINALG::CreateVector(*dofrowmap,true);
+    LINALG::Export(*old, *phistart_);
+  }
+
   // temporal solution derivative at time n+1
   if (phidtnp_ != Teuchos::null)
   {
@@ -1470,14 +1442,14 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
   if (accpre_ != Teuchos::null)
   {
     oldMulti = accpre_;
-    accpre_ = rcp(new Epetra_MultiVector(newnoderowmap,4,true));
+    accpre_ = rcp(new Epetra_MultiVector(*noderowmap,4,true));
     LINALG::Export(*oldMulti, *accpre_);
   }
 
   if (dispnp_ != Teuchos::null)
   {
     oldMulti = dispnp_;
-    dispnp_ = rcp(new Epetra_MultiVector(newnoderowmap,3,true));
+    dispnp_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
     LINALG::Export(*oldMulti, *dispnp_);
   }
 
@@ -1550,6 +1522,45 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
 
   return;
 } // SCATRA::ScaTraTimIntImpl::Redistribute
+
+/*----------------------------------------------------------------------*
+ | application of Dirichlet boundary conditions                         |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ApplyDirichletToSystem()
+{
+  // -------------------------------------------------------------------
+  // Apply Dirichlet boundary conditions to system matrix
+  // -------------------------------------------------------------------
+  if (incremental_)
+  {
+    // blank residual DOFs which are on Dirichlet BC
+    // We can do this because the values at the Dirichlet positions
+    // are not used anyway.
+    // We could avoid this though, if the dofrowmap would not include
+    // the Dirichlet values as well. But it is expensive to avoid that.
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
+
+    //--------- Apply Dirichlet boundary conditions to system of equations
+    // residual values are supposed to be zero at Dirichlet boundaries
+    increment_->PutScalar(0.0);
+
+    {
+      // time measurement: application of DBC to system
+      TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
+
+      LINALG::ApplyDirichlettoSystem(sysmat_,increment_,residual_,zeros_,*(dbcmaps_->CondMap()));
+    }
+  }
+  else
+  {
+    // time measurement: application of DBC to system
+    TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + apply DBC to system");
+
+    LINALG::ApplyDirichlettoSystem(sysmat_,phinp_,residual_,phinp_,*(dbcmaps_->CondMap()));
+  }
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
  | iterative update of concentrations                                   |

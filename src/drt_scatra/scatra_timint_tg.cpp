@@ -333,6 +333,36 @@ void SCATRA::TimIntTaylorGalerkin::ReadRestart(int step)
   return;
 }
 
+/*--------------------------------------------------------------------------------------------*
+ | Redistribute the scatra discretization and vectors according to nodegraph   wichmann 10/11 |
+ *--------------------------------------------------------------------------------------------*/
+void SCATRA::TimIntTaylorGalerkin::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph)
+{
+  // let the base class do the basic redistribution and transfer of the base class members
+  ScaTraTimIntImpl::Redistribute(nodegraph);
+
+  // now do all the tg specfic steps
+  const Epetra_Map* newdofrowmap = discret_->DofRowMap();
+  Teuchos::RCP<Epetra_Vector> old;
+
+  if (fsphinp_ != Teuchos::null)
+  {
+    old = fsphinp_;
+    fsphinp_ = LINALG::CreateVector(*newdofrowmap,true);
+    LINALG::Export(*old, *fsphinp_);
+  }
+
+  if (phinm_ != Teuchos::null)
+  {
+    old = phinm_;
+    phinm_ = LINALG::CreateVector(*newdofrowmap,true);
+    LINALG::Export(*old, *phinm_);
+  }
+
+  return;
+}
+
+
 /*----------------------------------------------------------------------*
  | Initialization procedure before the first time step     schott 05/11 |
  -----------------------------------------------------------------------*/

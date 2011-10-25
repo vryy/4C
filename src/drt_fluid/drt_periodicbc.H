@@ -191,12 +191,7 @@ public:
   */
   void PutAllSlavesToMastersProc();
 
-  //@}
-
 protected:
-
-  //! @name Methods to process one pair of pbcs
-
 
   /*!
   \brief Couple nodes for specific pair of periodic boundary conditions.

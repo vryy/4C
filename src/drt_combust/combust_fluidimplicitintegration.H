@@ -35,6 +35,9 @@ Maintainer: Florian Henke
 // forward declarations
 class PeriodicBoundaryConditions;
 
+// forward declarations
+class PeriodicBoundaryConditions;
+
 namespace FLD
 {
 /*!
