@@ -651,7 +651,6 @@ set(OBJS_DRT_BELE3_LIB
 set(OBJS_DRT_UTILS
   src/drt_fem_general/debug_nan.cpp
   src/drt_fem_general/drt_utils_boundary_integration.cpp
-  src/drt_fem_general/drt_utils_dgfem_basisfunctions.cpp
   src/drt_fem_general/drt_utils_fem_shapefunctions.cpp
   src/drt_fem_general/drt_utils_integration.cpp
   src/drt_fem_general/drt_utils_gausspoints.cpp
