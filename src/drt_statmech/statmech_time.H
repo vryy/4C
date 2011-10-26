@@ -55,31 +55,14 @@ public:
   //!\brief initialize Newton for 2nd, 3rd, ... Uzawa iteration
   void InitializeNewtonUzawa(RCP<Epetra_MultiVector> randomnumbers);
 
+  //!\brief special evaluation for force-based unbinding of crosslinker elements
+  void EvaluateForcedUnbinding(double& dt, RCP<Epetra_MultiVector> randomnumbers);
+
   //!\brief writing output including restart information
   virtual void Output();
 
   //!\brief read restart information
   virtual void ReadRestart(int step);
-
-  /*!
-  \brief adjusted DBC evaluation for periodic case
-
-  \param params					 a parameter list
-  \date 03/10
-   */
-  void EvaluateDirichletPeriodic(ParameterList& params);
-
-  /*!
-  \brief Determine Dirichlet condition at given time and apply its
-         values to a system vector
-
-  \param nodeids				 vector containing DBC Node IDs
-  \param onoff					 vector containing onoff values for DOFs
-  \date 03/10
-  */
-  void DoDirichletConditionPeriodic(vector<int>*								nodeids,
-																		vector<int>*								onoff);
-
 
 protected:
 

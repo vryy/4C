@@ -371,46 +371,7 @@ void StatMechTime::Integrate()
     // Evaluate internal forces of crosslinkers (force based unlinking)
     // only evaluate when there actually are crosslinker elements
     if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"FORCEDEPUNLINKING") && discret_.NumGlobalElements()>statmechmanager_->NumBasisElements())
-    {
-			// create the parameters for the discretization
-			ParameterList p;
-			// action for elements
-			p.set("action","calc_struct_internalforce");
-			p.set("delta time",dt);
-			//passing statistical mechanics parameters to elements
-			p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
-			p.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
-			p.set<int>("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
-			p.set("RandomNumbers",randomnumbers);
-			p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
-			p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
-			p.set("STARTTIMEACT",(statmechmanager_->statmechparams_).get<double>("STARTTIMEACT",0.0));
-			p.set("DELTA_T_NEW",(statmechmanager_->statmechparams_).get<double>("DELTA_T_NEW",0.0));
-			p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
-			p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
-    	p.set("forcedepunlinking","yes");
-    	if((statmechmanager_->statmechparams_).get<double>("CLUNBINDFORCE",0.0)!=0.0)
-    		p.set("clunbindforce",(statmechmanager_->statmechparams_).get<double>("CLUNBINDFORCE",0.0));
-    	if((statmechmanager_->statmechparams_).get<double>("CLUNBINDMOMENT",0.0)!=0.0)
-    	{
-    		p.set("clunbindmoment",(statmechmanager_->statmechparams_).get<double>("CLUNBINDMOMENT",0.0));
-    		p.set("clunbindmomdir",(statmechmanager_->statmechparams_).get<int>("CLUNBINDMOMDIR",-1));
-    	}
-
-			// set vector values needed by elements
-			discret_.ClearState();
-
-      discret_.SetState("residual displacement",disi_);
-			discret_.SetState("displacement",dis_);
-			discret_.SetState("velocity",vel_);
-
-			//discret_.SetState("velocity",velm_); // not used at the moment
-			RCP<Epetra_Vector> fint = rcp(new Epetra_Vector(*discret_.DofRowMap(),true));
-
-			discret_.Evaluate(p,null,null,fint,null,null);
-
-			discret_.ClearState();
-    }
+    	EvaluateForcedUnbinding(dt, randomnumbers);
 
 		//special output for statistical mechanics
     if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
@@ -1310,6 +1271,53 @@ void StatMechTime::InitializeNewtonUzawa(RCP<Epetra_MultiVector> randomnumbers)
   return;
 }//StatMechTime::InitializeNewtonUzawa()
 
+/*----------------------------------------------------------------------*
+ |  Evaluate call in order to determine crosslinker unbinding by force  |
+ |                                              (public)   mueller 10/11|
+ *----------------------------------------------------------------------*/
+void StatMechTime::EvaluateForcedUnbinding(double& dt, RCP<Epetra_MultiVector> randomnumbers)
+{
+	// create the parameters for the discretization
+	ParameterList p;
+	// action for elements
+	p.set("action","calc_struct_internalforce");
+	p.set("delta time",dt);
+	//passing statistical mechanics parameters to elements
+	p.set("ETA",(statmechmanager_->statmechparams_).get<double>("ETA",0.0));
+	p.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechmanager_->statmechparams_,"THERMALBATH"));
+	p.set<int>("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechmanager_->statmechparams_,"FRICTION_MODEL"));
+	p.set("RandomNumbers",randomnumbers);
+	p.set("SHEARAMPLITUDE",(statmechmanager_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
+	p.set("CURVENUMBER",(statmechmanager_->statmechparams_).get<int>("CURVENUMBER",-1));
+	p.set("STARTTIMEACT",(statmechmanager_->statmechparams_).get<double>("STARTTIMEACT",0.0));
+	p.set("DELTA_T_NEW",(statmechmanager_->statmechparams_).get<double>("DELTA_T_NEW",0.0));
+	p.set("OSCILLDIR",(statmechmanager_->statmechparams_).get<int>("OSCILLDIR",-1));
+	p.set("PeriodLength",(statmechmanager_->statmechparams_).get<double>("PeriodLength",0.0));
+	p.set("forcedepunlinking","yes");
+	if((statmechmanager_->statmechparams_).get<double>("CLUNBINDFORCE",0.0)!=0.0)
+		p.set("clunbindforce",(statmechmanager_->statmechparams_).get<double>("CLUNBINDFORCE",0.0));
+	if((statmechmanager_->statmechparams_).get<double>("CLUNBINDMOMENT",0.0)!=0.0)
+	{
+		p.set("clunbindmoment",(statmechmanager_->statmechparams_).get<double>("CLUNBINDMOMENT",0.0));
+		p.set("clunbindmomdir",(statmechmanager_->statmechparams_).get<int>("CLUNBINDMOMDIR",-1));
+	}
+
+	// set vector values needed by elements
+	discret_.ClearState();
+
+	discret_.SetState("residual displacement",disi_);
+	discret_.SetState("displacement",dis_);
+	discret_.SetState("velocity",vel_);
+
+	//discret_.SetState("velocity",velm_); // not used at the moment
+	RCP<Epetra_Vector> fint = rcp(new Epetra_Vector(*discret_.DofRowMap(),true));
+
+	discret_.Evaluate(p,null,null,fint,null,null);
+
+	discret_.ClearState();
+
+	return;
+}
 
 /*----------------------------------------------------------------------*
  |  do output including statistical mechanics data(public)    cyron 12/08|

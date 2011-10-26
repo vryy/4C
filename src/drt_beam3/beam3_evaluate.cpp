@@ -1816,7 +1816,7 @@ void DRT::ELEMENTS::Beam3::EvaluateForceBasedDeletion(ParameterList& params,
   		else
   			markedfordeletion_ = 0;
 
-  		cout<<"Element "<<Id()<<": norm0 = "<<norm0<<", norm1 = "<<norm1<<" : status "<<markedfordeletion_<<endl;
+  		//cout<<"Element "<<Id()<<": norm0 = "<<norm0<<", norm1 = "<<norm1<<" : status "<<markedfordeletion_<<endl;
   	}
   	else if(params.get<double>("clunbindmoment",0.0)!=0.0)
   	{

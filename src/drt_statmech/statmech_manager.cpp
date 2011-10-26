@@ -1600,7 +1600,6 @@ void StatMechManager::ForcedCrosslinkerUnbinding(const double& dt, Epetra_Vector
   	if((*unbindbyforce)[i]>-1.0 && discret_.HaveGlobalElement((int)(*unbindbyforce)[i]))
   	{
   		DRT::ELEMENTS::Beam3* beam = dynamic_cast<DRT::ELEMENTS::Beam3*>(discret_.gElement((int)(*unbindbyforce)[i]));
-  		cout<<"Proc "<<discret_.Comm().MyPID()<<" has element "<<(int)(*unbindbyforce)[i]<<", stat "<<beam->MarkedForDeletion()<<endl;
   		// determine the node at which the unbinding force / moment threshold might be superceeded
   		switch(beam->MarkedForDeletion())
   		{
@@ -1609,33 +1608,34 @@ void StatMechManager::ForcedCrosslinkerUnbinding(const double& dt, Epetra_Vector
   			break;
   			case 1:
   			{
-  				cout<<"Proc "<<discret_.Comm().MyPID()<<": Beam "<<beam->Id()<<"/ CL "<<i<<" will be deleted due to node 1"<<endl;
   				// mark the vector entries which have to be changed in the class vectors
   				// due to the use of Epetra_CombineMode "AbsMax", the values of markedfordeletion
   				// are of the set {1,2} for nodes 1 and 2 instead of c-convention {0,1} -> subtract 1
-  				for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
-  					if((int)(*crosslinkerbond_)[j][i]==beam->Nodes()[beam->MarkedForDeletion()-1]->Id())
-  					{
-  						crosschange[i] = j;
-  						nodechange[discret_.NodeColMap()->LID((int)(*crosslinkerbond_)[j][i])] = 1.0;
-  						break;
-  					}
+  				// only take into account the value of the owning Proc.
+  				if(discret_.Comm().MyPID()==beam->Owner())
+						for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
+							if((int)(*crosslinkerbond_)[j][i]==beam->Nodes()[beam->MarkedForDeletion()-1]->Id())
+							{
+								//cout<<"CL "<<beam->Id()<<" will be deleted due to node "<<(int)(*crosslinkerbond_)[j][i]<<" ("<<beam->MarkedForDeletion()<<"th beam node), Owner: Proc "<<beam->Owner()<<endl;
+								crosschange[i] = j;
+								nodechange[discret_.NodeColMap()->LID((int)(*crosslinkerbond_)[j][i])] = 1.0;
+								break;
+							}
   			}
 				break;
 				// node 1
   			case 2:
   			{
-  				cout<<"Proc "<<discret_.Comm().MyPID()<<": Beam "<<beam->Id()<<"/ CL "<<i<<" will be deleted due to node 2"<<endl;
   				// mark the vector entries which have to be changed in the class vectors
-  				for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
-  				{
-  					if((int)(*crosslinkerbond_)[j][i]==beam->Nodes()[beam->MarkedForDeletion()-1]->Id())
-  					{
-  						crosschange[i] = j;
-  						nodechange[discret_.NodeColMap()->LID((int)(*crosslinkerbond_)[j][i])] = 1.0;
-  						break;
-  					}
-  				}
+  				if(discret_.Comm().MyPID()==beam->Owner())
+						for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
+							if((int)(*crosslinkerbond_)[j][i]==beam->Nodes()[beam->MarkedForDeletion()-1]->Id())
+							{
+								//cout<<"CL "<<beam->Id()<<" will be deleted due to node "<<(int)(*crosslinkerbond_)[j][i]<<" ("<<beam->MarkedForDeletion()<<". beam node), Owner: Proc "<<beam->Owner()<<endl;
+								crosschange[i] = j;
+								nodechange[discret_.NodeColMap()->LID((int)(*crosslinkerbond_)[j][i])] = 1.0;
+								break;
+							}
   			}
 				break;
   			default:
@@ -1653,28 +1653,23 @@ void StatMechManager::ForcedCrosslinkerUnbinding(const double& dt, Epetra_Vector
   Epetra_Export nodeexporter(*(discret_.NodeColMap()),*(discret_.NodeRowMap()));
   Epetra_Import nodeimporter(*(discret_.NodeColMap()),*(discret_.NodeRowMap()));
   // Export
-  cout<<"cl 344-1: "<<crosschange[344]<<endl;
-
   crosschangetrans.Export(crosschange,crosslinkexporter,AbsMax);
   nodechangerow.Export(nodechange,nodeexporter,AbsMax);
   // Re-Import
   crosschange.Import(crosschangetrans,crosslinkimporter,Insert);
   nodechange.Import(nodechangerow,nodeimporter,Insert);
-
-  cout<<"cl 344-2: "<<crosschange[344]<<endl;
   // Adjust class vectors
 	// in english: get the node GID of the crosschange[i]-th column and the i-th row of crosslinkerbond_. Then,
 	// decrement the number of crosslinkers bound to the node with the above gid by reducing the vector value of
 	// numcrossnodes_ at the position of the nodal LID  corresponding to the GID. ;-)
-  int numdelele = 0;
-
+  int deleted = 0;
   for(int i=0; i<nodechange.MyLength(); i++)
   	if(nodechange[i]>0.1)
   		(*numcrossnodes_)[i] -= 1.0;
   for(int i=0; i<crosschange.MyLength(); i++)
   	if(crosschange[i]>0.1)
   	{
-  		numdelele++;
+  		deleted++;
 			// add the crosslinker gid
 			(*delcrosselement)[i] = (*unbindbyforce)[i];
   		(*numbond_)[i] -= 1.0;
@@ -1684,10 +1679,10 @@ void StatMechManager::ForcedCrosslinkerUnbinding(const double& dt, Epetra_Vector
   	}
 
   // update number of deleted elements in this time step
-  (*numdelelements) += numdelele;
+  (*numdelelements) += deleted;
 
-  if(!discret_.Comm().MyPID() && numdelele>0)
-  	cout<<numdelele<<" force-based crosslinker element ruptures!"<<endl;
+  if(!discret_.Comm().MyPID() && deleted>0)
+  	cout<<deleted<<" crosslinker rupture(s)!"<<endl;
 #endif
   return;
 }
