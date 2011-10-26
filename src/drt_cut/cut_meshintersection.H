@@ -49,6 +49,8 @@ public:
 
   void Cut( bool include_inner, std::string gausstype="Tessellation" );
 
+  void CreateNodalDofSet ( bool include_inner );
+
   void CreateNodalDofSetNEW ( bool include_inner, DRT::Discretization & dis);
 
   void FindNodalCellSets( bool include_inner,

@@ -149,6 +149,13 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner, std::string gausstype 
 }
 
 
+void GEO::CUT::MeshIntersection::CreateNodalDofSet( bool include_inner )
+{
+    Mesh & m = NormalMesh();
+
+    m.FindNodalDOFSets( include_inner );
+}
+
 
 void GEO::CUT::MeshIntersection::CreateNodalDofSetNEW( bool include_inner, DRT::Discretization & dis )
 {

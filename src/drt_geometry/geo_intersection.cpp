@@ -119,7 +119,7 @@ void GEO::CutWizard::CreateNodalDofSet( bool include_inner, DRT::Discretization 
 #ifdef DOFSETS_NEW
   mesh_->CreateNodalDofSetNEW( include_inner, backdis );
 #else
-  mesh_->CreateNodalDofSet( include_inner, backdis );
+  mesh_->CreateNodalDofSet( include_inner );
 #endif
 }
 
