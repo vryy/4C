@@ -112,6 +112,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   cdvel_    (DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*params,"VELOCITYFIELD")),
   convform_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(*params,"CONVFORM")),
   neumanninflow_(DRT::INPUT::IntegralValue<int>(*params,"NEUMANNINFLOW")),
+  convheatrans_(DRT::INPUT::IntegralValue<int>(*params,"CONV_HEAT_TRANS")),
   skipinitder_(DRT::INPUT::IntegralValue<int>(*params,"SKIPINITDER")),
   fssgd_    (DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
   frt_      (0.0),
@@ -163,6 +164,12 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   default:
     dserror("Received illegal scatra solvertype enum.");
   }
+
+  // -------------------------------------------------------------------
+  // check compatibility of boundary conditions
+  // -------------------------------------------------------------------
+  if (neumanninflow_ and convheatrans_)
+    dserror("Neumann inflow and convective heat transfer boundary conditions must not appear simultaneously for the same problem!");
 
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
@@ -1742,8 +1749,10 @@ void SCATRA::ScaTraTimIntImpl::ScalingAndNeumann()
   // add Neumann b.c. scaled with a factor due to time discretization
   AddNeumannToResidual();
 
-  // add potential Neumann inflow
-  if (neumanninflow_) ComputeNeumannInflow(sysmat_,residual_);
+  // add potential Neumann inflow or convective heat transfer boundary
+  // conditions (simultaneous evaluation of both conditions not allowed!)
+  if (neumanninflow_)     ComputeNeumannInflow(sysmat_,residual_);
+  else if (convheatrans_) EvaluateConvectiveHeatTransfer(sysmat_,residual_);
 
   return;
 } // ScaTraTimIntImpl::ScalingAndNeumann

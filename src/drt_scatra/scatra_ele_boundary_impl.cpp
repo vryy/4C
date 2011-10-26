@@ -46,6 +46,7 @@ Maintainer: Georg Bauer
 #include "../drt_mat/arrhenius_pv.H"
 #include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/ion.H"
+#include "../drt_mat/fourieriso.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "scatra_reinit_defines.H"
@@ -515,8 +516,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       if (timefac < 0.0) dserror("time factor is negative.");
     }
 
-    // set thermodynamic pressure and its time derivative as well as
-    // flag for turbulence model if required
+    // set thermodynamic pressure
     thermpress_ = 0.0;
     if (scatratype==INPAR::SCATRA::scatratype_loma)
       thermpress_ = params.get<double>("thermodynamic pressure");
@@ -561,7 +561,57 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
                   elevec1_epetra,
                   timefac,
                   alphaF);
+  }
+  else if (action =="calc_convective_heat_transfer")
+  {
+    // get control parameters
+    is_stationary_  = params.get<bool>("using stationary formulation");
+    is_genalpha_    = params.get<bool>("using generalized-alpha time integration");
+    is_incremental_ = params.get<bool>("incremental solver");
 
+    // get time factor and alpha_F if required
+    // one-step-Theta:    timefac = theta*dt
+    // BDF2:              timefac = 2/3 * dt
+    // generalized-alpha: timefac = alphaF * (gamma*/alpha_M) * dt
+    double timefac = 1.0;
+    double alphaF  = 1.0;
+    if (not is_stationary_)
+    {
+      timefac = params.get<double>("time factor");
+      if (is_genalpha_)
+      {
+        alphaF = params.get<double>("alpha_F");
+        timefac *= alphaF;
+      }
+      if (timefac < 0.0) dserror("time factor is negative.");
+    }
+
+    // get values of scalar
+    RefCountPtr<const Epetra_Vector> phinp  = discretization.GetState("phinp");
+    if (phinp==null) dserror("Cannot get state vector 'phinp'");
+
+    // extract local values from global vector
+    vector<double> ephinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
+
+    // get condition
+    Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
+    if (cond == Teuchos::null)
+      dserror("Cannot access condition 'ThermoConvections'!");
+
+    // get heat transfer coefficient and surrounding temperature
+    const double heatranscoeff = cond->GetDouble("coeff");
+    const double surtemp       = cond->GetDouble("surtemp");
+
+    ConvectiveHeatTransfer(ele,
+                           mat,
+                           ephinp,
+                           elemat1_epetra,
+                           elevec1_epetra,
+                           heatranscoeff,
+                           surtemp,
+                           timefac,
+                           alphaF);
   }
   else if (action =="WeakDirichlet")
   {
@@ -1138,7 +1188,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
           // compute density
           dens = actmat->ComputeDensity(provar);
         }
-        else dserror("Material type is not supported");
+        else dserror("Material type is not supported for Neumann inflow!");
 
         // integration factor for left-hand side
         const double lhsfac = dens*normvel*timefac*fac;
@@ -1183,8 +1233,97 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
   }
 
   return;
-
 } //ScaTraBoundaryImpl<distype>::NeumannInflow
+
+
+/*----------------------------------------------------------------------*
+ | calculate boundary cond. due to convective heat transfer    vg 10/11 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ConvectiveHeatTransfer(
+    const DRT::Element*                 ele,
+    Teuchos::RCP<const MAT::Material>   material,
+    const vector<double>&               ephinp,
+    Epetra_SerialDenseMatrix&           emat,
+    Epetra_SerialDenseVector&           erhs,
+    const double                        heatranscoeff,
+    const double                        surtemp,
+    const double                        timefac,
+    const double                        alphaF)
+{
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // define vector for scalar values at nodes
+  LINALG::Matrix<nen_,1> phinod(true);
+
+  // loop over all scalars
+  for(int k=0;k<numdofpernode_;++k)
+  {
+    // compute scalar values at nodes
+    for (int inode=0; inode< nen_;++inode)
+    {
+      phinod(inode) = ephinp[inode*numdofpernode_+k];
+    }
+
+    // loop over all integration points
+    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    {
+      const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id(),&normal_);
+
+      // get specific heat capacity at constant volume
+      double shc = 0.0;
+      if (material->MaterialType() == INPAR::MAT::m_th_fourier_iso)
+      {
+        const MAT::FourierIso* actmat = static_cast<const MAT::FourierIso*>(material.get());
+
+        shc = actmat->Capacity();
+      }
+      else dserror("Material type is not supported for convective heat transfer!");
+
+      // integration factor for left-hand side
+      const double lhsfac = heatranscoeff*timefac*fac/shc;
+
+      // integration factor for right-hand side
+      double rhsfac = 0.0;
+      if (is_incremental_ and is_genalpha_)
+        rhsfac = lhsfac/alphaF;
+      else if (not is_incremental_ and is_genalpha_)
+        rhsfac = lhsfac*(1.0-alphaF)/alphaF;
+      else if (is_incremental_ and not is_genalpha_)
+        rhsfac = lhsfac;
+
+      // matrix
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const double vlhs = lhsfac*funct_(vi);
+
+        const int fvi = vi*numdofpernode_+k;
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          const int fui = ui*numdofpernode_+k;
+
+          emat(fvi,fui) -= vlhs*funct_(ui);
+        }
+      }
+
+      // scalar at integration point
+      const double phi = funct_.Dot(phinod);
+
+      // rhs
+      const double vrhs = rhsfac*(phi-surtemp);
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+k;
+
+        erhs[fvi] += vrhs*funct_(vi);
+      }
+    }
+  }
+
+  return;
+} //ScaTraBoundaryImpl<distype>::ConvectiveHeatTransfer
 
 
 /*----------------------------------------------------------------------*

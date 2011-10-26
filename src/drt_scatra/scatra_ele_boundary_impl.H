@@ -292,6 +292,18 @@ public:
         const double                        timefac,
         const double                        alphaF);
 
+    //! calculate boundary condition due to convective heat transfer
+    void ConvectiveHeatTransfer(
+        const DRT::Element*                 ele,
+        Teuchos::RCP<const MAT::Material>   material,
+        const vector<double>&               ephinp,
+        Epetra_SerialDenseMatrix&           emat,
+        Epetra_SerialDenseVector&           erhs,
+        const double                        heatranscoeff,
+        const double                        surtemp,
+        const double                        timefac,
+        const double                        alphaF);
+
     /*!
     \brief Evaluate weak Dirichlet boundary conditions
 

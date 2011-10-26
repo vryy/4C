@@ -318,7 +318,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateElectrodeKinetics(
 
 
 /*----------------------------------------------------------------------*
- | compute potential Neumann inflow                            vg 03/09 |
+ | evaluate Neumann inflow boundary condition                  vg 03/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
     RCP<LINALG::SparseOperator> matrix,
@@ -334,23 +334,54 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
   condparams.set("action","calc_Neumann_inflow");
   condparams.set<int>("scatratype",scatratype_);
   condparams.set("incremental solver",incremental_);
+  condparams.set("isale",isale_);
 
   // provide velocity field and potentially acceleration/pressure field
+  // as well as displacement field in case of ALE
   // (export to column map necessary for parallel evaluation)
   AddMultiVectorToParameterList(condparams,"velocity field",convel_);
   AddMultiVectorToParameterList(condparams,"acceleration/pressure field",accpre_);
-
-  //provide displacement field in case of ALE
-  condparams.set("isale",isale_);
   if (isale_) AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
 
-  // set vector values needed by elements
+  // clear state
   discret_->ClearState();
 
-  // add element parameters according to time-integration scheme
+  // add element parameters and vectors according to time-integration scheme
   AddSpecificTimeIntegrationParameters(condparams);
 
   std::string condstring("TransportNeumannInflow");
+  discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
+  discret_->ClearState();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate boundary cond. due to convective heat transfer     vg 10/11 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
+    RCP<LINALG::SparseOperator> matrix,
+    RCP<Epetra_Vector>          rhs)
+{
+  // time measurement: evaluate condition 'ThermoConvections'
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ThermoConvections'");
+
+  // create parameter list
+  ParameterList condparams;
+
+  // action for elements
+  condparams.set("action","calc_convective_heat_transfer");
+  condparams.set<int>("scatratype",scatratype_);
+  condparams.set("incremental solver",incremental_);
+  condparams.set("isale",isale_);
+
+  // clear state
+  discret_->ClearState();
+
+  // add element parameters and vectors according to time-integration scheme
+  AddSpecificTimeIntegrationParameters(condparams);
+
+  std::string condstring("ThermoConvections");
   discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
   discret_->ClearState();
 

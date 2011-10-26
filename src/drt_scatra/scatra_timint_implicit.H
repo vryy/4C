@@ -592,8 +592,13 @@ protected:
       RCP<LINALG::SparseOperator> matrix,
       RCP<Epetra_Vector>          rhs);
 
-  /// compute potential Neumann inflow
+  /// evaluate Neumann inflow boundary condition
   void ComputeNeumannInflow(
+      RCP<LINALG::SparseOperator> matrix,
+      RCP<Epetra_Vector>          rhs);
+
+  /// evaluate boundary condition due to convective heat transfer
+  void EvaluateConvectiveHeatTransfer(
       RCP<LINALG::SparseOperator> matrix,
       RCP<Epetra_Vector>          rhs);
 
@@ -719,8 +724,11 @@ protected:
   /// form of convective term
   INPAR::SCATRA::ConvForm convform_;
 
-  /// flag for potential Neumann inflow
+  /// flag for potential Neumann inflow boundary condition
   bool neumanninflow_;
+
+  /// flag for potential boundary condition due to convective heat transfer
+  bool convheatrans_;
 
   /// flag for potentially skiping computation of initial time derivative
   bool skipinitder_;

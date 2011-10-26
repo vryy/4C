@@ -2790,6 +2790,9 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   BoolParameter("NEUMANNINFLOW",
       "no","Flag to (de)activate potential Neumann inflow term(s)",&scatradyn);
 
+  BoolParameter("CONV_HEAT_TRANS",
+      "no","Flag to (de)activate potential convective heat transfer boundary conditions",&scatradyn);
+
   BoolParameter("PERMEABLESURF",
       "no","Consideration of surface/interface permeability",&scatradyn);
 
