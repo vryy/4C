@@ -62,7 +62,8 @@ namespace ADAPTER
     /// solve fluid-ale
     virtual void FluidAleNonlinearSolve(
         Teuchos::RCP<Epetra_Vector> idisp,
-        Teuchos::RCP<Epetra_Vector> ivel
+        Teuchos::RCP<Epetra_Vector> ivel,
+        const bool pseudotransient
         );
 
   protected:
