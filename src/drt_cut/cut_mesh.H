@@ -133,7 +133,7 @@ public:
 
   void CreateIntegrationCells( int count, bool levelset );
 
-  void MomentFitGaussWeights();
+  void MomentFitGaussWeights(bool include_inner);
 
   void RemoveEmptyVolumeCells();
 
@@ -154,6 +154,8 @@ public:
   void DumpGmshVolumeCells( std::string name, bool include_inner );
 
   void DumpGmshIntegrationCells( std::string name );
+
+  void DumpGmshVolumeCells( std::string name );
 
   void NewNodesFromPoints( std::map<Point*, Node*> & nodemap );
 

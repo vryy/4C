@@ -2201,6 +2201,54 @@ void GEO::CUT::Mesh::DumpGmshIntegrationCells( std::string name )
   file << "};\n";
 }
 
+void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name )
+{
+  std::ofstream file( name.c_str() );
+  file << "View \"VolumeCells\" {\n";
+  for(std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
+		  i!=elements_.end();i++)
+  {
+	  Element& ele = *i->second;
+	  const plain_volumecell_set cells = ele.VolumeCells();
+	  for(plain_volumecell_set::const_iterator j=cells.begin();j!=cells.end();j++)
+	  {
+		  VolumeCell *vcc = *j;
+		  vcc->DumpGmsh(file);
+
+	  }
+#if 0
+	  if(cells.size()==1)
+	  {
+		  const plain_integrationcell_set & integrationcells = vc->IntegrationCells();
+		  for ( plain_integrationcell_set::const_iterator i=integrationcells.begin();
+		                i!=integrationcells.end();
+		                ++i )
+		          {
+		            IntegrationCell * ic = *i;
+		            ic->DumpGmsh( file, &count );
+		          }
+
+	  }
+/*	  else
+	  {
+
+	  }*/
+#endif
+  }
+  file << "};\n";
+
+  file << "View \"BoundaryCells\" {\n";
+  for ( std::list<Teuchos::RCP<BoundaryCell> >::iterator i=boundarycells_.begin();
+        i!=boundarycells_.end();
+        ++i )
+  {
+    BoundaryCell * bc = &**i;
+    if ( bc->IsValid() )
+      bc->DumpGmsh( file );
+  }
+  file << "};\n";
+}
+
 bool GEO::CUT::Mesh::WithinBB( const Epetra_SerialDenseMatrix & xyz )
 {
   return bb_.Within( norm_, xyz );
@@ -2319,7 +2367,7 @@ void GEO::CUT::Mesh::TestFacetArea()
   }
 }
 
-void GEO::CUT::Mesh::MomentFitGaussWeights()
+void GEO::CUT::Mesh::MomentFitGaussWeights(bool include_inner)
 {
   for ( std::map<int, Teuchos::RCP<Element> >::iterator i=elements_.begin();
         i!=elements_.end();
@@ -2330,7 +2378,7 @@ void GEO::CUT::Mesh::MomentFitGaussWeights()
     try
     {
 #endif
-      e.MomentFitGaussWeights( *this );
+      e.MomentFitGaussWeights( *this, include_inner );
 #ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )
@@ -2349,7 +2397,7 @@ void GEO::CUT::Mesh::MomentFitGaussWeights()
     try
     {
 #endif
-      e.MomentFitGaussWeights( *this );
+      e.MomentFitGaussWeights( *this, include_inner );
 #ifndef DEBUGCUTLIBRARY
     }
     catch ( std::runtime_error & err )

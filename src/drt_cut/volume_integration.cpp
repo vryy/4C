@@ -114,31 +114,31 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
         double zmin=minn[2]+0.005*(maxx[2]-minn[2]),zmax=maxx[2]-0.005*(maxx[2]-minn[2]);
         while(1)
         {
-        bool area=false;
-        vector<vector<double> > InPlane;
-        area = IsContainArea(minn,maxx,zmin,InPlane,zcoord,ycoord,0.001,numeach);
-        if(area)
-        {
-              gaus_pts_.insert(gaus_pts_.end(),InPlane.begin(),InPlane.end());
-              break;
-        }
-        zmin += 0.001*(maxx[2]-minn[2]);
-        if((zmax-zmin)<0.001*(maxx[2]-minn[2]))
-                break;
+			bool area=false;
+			vector<vector<double> > InPlane;
+			area = IsContainArea(minn,maxx,zmin,InPlane,zcoord,ycoord,0.001,numeach);
+			if(area)
+			{
+				  gaus_pts_.insert(gaus_pts_.end(),InPlane.begin(),InPlane.end());
+				  break;
+			}
+			zmin += 0.001*(maxx[2]-minn[2]);
+			if((zmax-zmin)<0.001*(maxx[2]-minn[2]))
+					break;
         }
         while(1)
         {
-        bool area=false;
-        vector<vector<double> > InPlane;
-        area = IsContainArea(minn,maxx,zmax,InPlane,zcoord,ycoord,0.001,numeach);
-        if(area)
-        {
-              gaus_pts_.insert(gaus_pts_.end(),InPlane.begin(),InPlane.end());
-              break;
-        }
-        zmax -= 0.001*(maxx[2]-minn[2]);
-        if((zmax-zmin)<0.001*(maxx[2]-minn[2]))
-                break;
+			bool area=false;
+			vector<vector<double> > InPlane;
+			area = IsContainArea(minn,maxx,zmax,InPlane,zcoord,ycoord,0.001,numeach);
+			if(area)
+			{
+				  gaus_pts_.insert(gaus_pts_.end(),InPlane.begin(),InPlane.end());
+				  break;
+			}
+			zmax -= 0.001*(maxx[2]-minn[2]);
+			if((zmax-zmin)<0.001*(maxx[2]-minn[2]))
+					break;
         }
 
     //    cout<<"very small area"<<endl;
@@ -278,7 +278,7 @@ void GEO::CUT::VolumeIntegration::get_zcoordinates(vector<vector<double> >& zcoo
             const std::vector<vector<double> > corLocal = face1->CornerPointsLocal(elem1_,0);
             for(std::vector<std::vector<double> >::const_iterator k=corLocal.begin();k!=corLocal.end();k++)
             {
-		std::vector<double> coords1 = *k;
+				std::vector<double> coords1 = *k;
 
                 thisplane1.push_back(coords1[1]);
                 thisplane2.push_back(coords1[2]);
@@ -578,29 +578,29 @@ bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3],double maxx[3], d
 void GEO::CUT::VolumeIntegration::OnLine(vector<double>inter1,vector<double>inter2,
                 vector<vector<double> >&linePts,int num)
 {
-                vector<double> left,right;
-                if(inter1[0]<inter2[0])
-                {
-                        left = inter1;
-                        right = inter2;
-                }
-                else 
-                {
-                        left = inter2;
-                        right = inter1;
-                }
-                double xlen = right[0]-left[0];
-                inter1[0] = left[0]+0.05*xlen;
-                inter2[0] = right[0]-0.05*xlen;
-                double xdiff = (inter2[0]-inter1[0])/(num-1);
-                for(int i=0;i<num;i++)
-                {
-                        vector<double> temp(3);
-                        temp[0] = inter1[0]+i*xdiff;
-                        temp[1] = inter1[1];
-                        temp[2] = inter1[2];
-                        linePts.push_back(temp);
-                }
+		vector<double> left,right;
+		if(inter1[0]<inter2[0])
+		{
+				left = inter1;
+				right = inter2;
+		}
+		else
+		{
+				left = inter2;
+				right = inter1;
+		}
+		double xlen = right[0]-left[0];
+		inter1[0] = left[0]+0.05*xlen;
+		inter2[0] = right[0]-0.05*xlen;
+		double xdiff = (inter2[0]-inter1[0])/(num-1);
+		for(int i=0;i<num;i++)
+		{
+				vector<double> temp(3);
+				temp[0] = inter1[0]+i*xdiff;
+				temp[1] = inter1[1];
+				temp[2] = inter1[2];
+				linePts.push_back(temp);
+		}
 }
 
 //form the moment fitting matrix
@@ -655,7 +655,7 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
         moment_fitting_matrix(moment_matrix);
 
         LeastSquares least(moment_matrix,rhs_moment);
-	weights.Size(moment_matrix[0].size());
+        weights.Size(moment_matrix[0].size());
         weights = least.linear_least_square();
     }
     else
@@ -664,11 +664,11 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
         vector<double> zer(3);
         zer[0]=0.0;zer[1]=0.0;zer[2]=0.0;
         gaus_pts_.push_back(zer);
-	weights.Size(1);
+        weights.Size(1);
         weights(0) = 0.0;
     }
 
-    for(int j=0;j<num_func_;j++)
+/*    for(int j=0;j<num_func_;j++)
     {
     double chek = 0.0;
     for(int i=0;i<gaus_pts_.size();i++)
@@ -679,9 +679,9 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
         coorrr.push_back(gaus_pts_[i][2]);
         chek += weights(i)*base_function(coorrr,j+1);
     }
-    std::cout<<"check"<<rhs_moment(j)-chek<<std::endl;
+    std::cout<<"check"<<(rhs_moment(j)-chek)<<std::endl;
 //    std::cout<<"value"<<chek<<std::endl;
-    }
+    }*/
 
 /*    double chek=0.0;
     for(unsigned i=0;i<weights.size();i++)
@@ -707,5 +707,5 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
 
 void GEO::CUT::VolumeIntegration::GaussPointGmsh()
 {
-        volcell_->DumpGmsh(gaus_pts_);
+        volcell_->DumpGmshGaussPoints(gaus_pts_);
 }

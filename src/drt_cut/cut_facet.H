@@ -171,6 +171,8 @@ public:
 
   Point * OtherPoint( Point * p1, Point * p2 );
 
+  void DoTriangulation(Mesh & mesh, const std::vector<Point*> & points ){CreateTriangulation(mesh,points );}
+
 private:
 
   Facet( const Facet & );

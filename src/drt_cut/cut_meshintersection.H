@@ -47,7 +47,7 @@ public:
 
   SideHandle * AddCutSide( int sid, const std::vector<int> & nids, const Epetra_SerialDenseMatrix & xyz, DRT::Element::DiscretizationType distype, int mi=0 );
 
-  void Cut( bool include_inner );
+  void Cut( bool include_inner, std::string gausstype="Tessellation" );
 
   void CreateNodalDofSetNEW ( bool include_inner, DRT::Discretization & dis);
 
@@ -74,7 +74,7 @@ public:
 
   void PrintCellStats();
 
-  void Status();
+  void Status(std::string gausstype="Tessellation");
 
   Mesh & NormalMesh() { return mesh_.LinearMesh(); }
 
@@ -91,6 +91,8 @@ public:
   void DumpGmshVolumeCells( std::string name, bool include_inner );
 
   void DumpGmshIntegrationCells( std::string name );
+
+  void DumpGmshVolumeCells( std::string name );
 
 private:
 

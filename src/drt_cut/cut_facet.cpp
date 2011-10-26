@@ -1024,11 +1024,11 @@ const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsLocal(Eleme
             pt_local.push_back(loc(2,0));
 
             cornersLocal.push_back(pt_local);
-	    if(print)
-	    {
-//	    std::cout<<glo(0,0)<<"\t"<<glo(1,0)<<"\t"<<glo(2,0)<<"\t";//blockkk or remove
-//	    std::cout<<loc(0,0)<<"\t"<<loc(1,0)<<"\t"<<loc(2,0)<<"\n";
-	    }
+            if(print)
+            {
+//	    		std::cout<<glo(0,0)<<"\t"<<glo(1,0)<<"\t"<<glo(2,0)<<"\t";//blockkk or remove
+//	    		std::cout<<loc(0,0)<<"\t"<<loc(1,0)<<"\t"<<loc(2,0)<<"\n";
+            }
             mm++;
         }
         return cornersLocal;

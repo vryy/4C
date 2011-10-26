@@ -578,7 +578,7 @@ void GEO::CUT::Element::DumpFacets()
   }
 }
 
-void GEO::CUT::Element::MomentFitGaussWeights( Mesh & mesh )
+void GEO::CUT::Element::MomentFitGaussWeights( Mesh & mesh, bool include_inner )
 {
   if ( not active_ )
     return;
@@ -586,16 +586,24 @@ void GEO::CUT::Element::MomentFitGaussWeights( Mesh & mesh )
   if(cells_.size()==1)
   {
 	  VolumeCell * vc = *cells_.begin();
-          if ( IntegrationCellCreator::CreateCell( mesh, Shape(), vc ) )
-          {
-             return;
-          }
+      if ( IntegrationCellCreator::CreateCell( mesh, Shape(), vc ) )
+      {
+           return;
+      }
   }
+
+ /* if ( mesh.CreateOptions().SimpleShapes() )
+    {
+      if ( IntegrationCellCreator::CreateCells( mesh, this, cells_ ) )
+      {
+        return;
+      }
+    }*/
 
   for(plain_volumecell_set::iterator i=cells_.begin();
                            i!=cells_.end();i++)
   {
           VolumeCell *cell1 = *i;
-          cell1->MomentFitGaussWeights(this);
+          cell1->MomentFitGaussWeights(this, mesh, include_inner);
   }
 }

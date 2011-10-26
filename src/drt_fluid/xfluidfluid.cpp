@@ -43,7 +43,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
     wizard_( *xfluid.bgdis_, *xfluid.boundarydis_ )
 {
   // cut and find the fluid dofset
-  wizard_.Cut( false, idispcol );
+  wizard_.Cut( false, idispcol, "Tessellation" );//modify gausstype
 
   dofset_ = wizard_.DofSet();
 
@@ -475,7 +475,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
         GEO::CUT::plain_volumecell_set cells;
         std::vector<DRT::UTILS::GaussIntegration> intpoints;
-        e->VolumeCellGaussPoints( cells, intpoints ,"Tessellation");//blockk or remove
+        e->VolumeCellGaussPoints( cells, intpoints ,"Tessellation");//modify gauss type
 
         int count = 0;
         for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
@@ -842,7 +842,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
 #else
       GEO::CUT::plain_volumecell_set cells;
       std::vector<DRT::UTILS::GaussIntegration> intpoints;
-      e->VolumeCellGaussPoints( cells, intpoints ,"Tessellation");//blockkk or remove
+      e->VolumeCellGaussPoints( cells, intpoints ,"Tessellation");//modify gauss type
       int count = 0;
       for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
       {
@@ -918,7 +918,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
     {
       GEO::CUT::plain_volumecell_set cells;
       std::vector<DRT::UTILS::GaussIntegration> intpoints;
-      e->VolumeCellGaussPoints( cells, intpoints ,"Tessellation");//blockkk or remove
+      e->VolumeCellGaussPoints( cells, intpoints ,"Tessellation");//modify gauss type
 
       int count = 0;
       for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )

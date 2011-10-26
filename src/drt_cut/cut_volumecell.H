@@ -63,7 +63,9 @@ public:
 
   void GetIntegrationCells( plain_integrationcell_set & cells );
 
-  void MomentFitGaussWeights(Element *elem);
+  void MomentFitGaussWeights(Element *elem, Mesh & mesh, bool include_inner );
+
+  void GenerateBoundaryCells(Mesh &mesh, const GEO::CUT::Point::PointPosition posi);
 
   void GetBoundaryCells( std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells );
 
@@ -114,7 +116,13 @@ public:
 
   int NumGaussPoints( DRT::Element::DiscretizationType shape );
 
-  void DumpGmsh(const std::vector<std::vector<double> >&gauspts);
+  void DumpGmshGaussPoints( const std::vector<std::vector<double> >&gauspts);
+
+  void DumpGmsh(std::ofstream& filename);
+
+  void OrientationFacet(const std::vector<Point*>pts, double *coef);
+
+  bool ToReverse(const GEO::CUT::Point::PointPosition posi,double* parOri,double* sideOri);
 
   //return the Gauss points computed using moment fitting equations
   Teuchos::RCP<DRT::UTILS::GaussPoints> GaussPointsFitting();

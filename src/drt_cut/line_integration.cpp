@@ -16,6 +16,7 @@ LINALG::Matrix<2,1> LineIntegration::compute_normal()
         return normal;
 }
 
+//returns the weights of 8-point gaussian quadrture in (-1,1) interval
 std::vector<double> LineIntegration::get_Gauss_weights()
 {
         std::vector<double> line_wei(8);
@@ -31,6 +32,7 @@ std::vector<double> LineIntegration::get_Gauss_weights()
         return line_wei;
 }
 
+//returns the positions of 8-point gaussian quadrture in (-1,1) interval
 std::vector<double> LineIntegration::get_Gauss_line_pts()
 {
         std::vector<double> line_tau(8);
@@ -54,7 +56,7 @@ LINALG::Matrix<2,8> LineIntegration::find_line_integration_pts()
 /*      for(int i=0;i<3;i++)
                 std::cout<<line_tau[i]<<std::endl;*/
 
-	LINALG::Matrix<2,8> line_int_pts;
+	    LINALG::Matrix<2,8> line_int_pts;
         double xmid[2];
         //middle point in all 2 coordinates
         for(int i=0;i<2;i++)
@@ -93,16 +95,17 @@ double LineIntegration::half_length()
         return hal_len;
 }
 
+//performs integration over the given line
 double LineIntegration::integrate_line()
 {
-	LINALG::Matrix<2,1> normal;
+	    LINALG::Matrix<2,1> normal;
         normal = compute_normal();
 //      std::cout<<normal[0]<<"\t"<<normal[1]<<std::endl;
 
         if (fabs(normal(0,0))<0.000000001)
                 return 0.0;
 
-	LINALG::Matrix<2,8> line_int_pts;
+	    LINALG::Matrix<2,8> line_int_pts;
         line_int_pts = find_line_integration_pts();
 
         std::vector<double> line_wei = get_Gauss_weights();
@@ -120,9 +123,10 @@ double LineIntegration::integrate_line()
 
                 double linein = base_func_line_int(pt, inte_num_,alpha_);
                 inte = inte+line_wei[i]*linein;
+//                std::cout<<linein<<"\t"<<"line = "<<inte<<"\n";
         }
         inte = inte*normal(0,0)*half_len;
-//        std::cout<<"line_inte = "<<inte<<std::endl;
+ //       std::cout<<"line_inte = "<<inte<<"normal = "<<normal(0,0)<<std::endl;//blockkk
 
         return inte;
 }

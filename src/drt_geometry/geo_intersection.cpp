@@ -108,9 +108,9 @@ GEO::CUT::Node * GEO::CutWizard::GetNode( int nid )
   return mesh_->GetNode( nid );
 }
 
-void GEO::CutWizard::Cut( bool include_inner )
+void GEO::CutWizard::Cut( bool include_inner, std::string gausstype )
 {
-  mesh_->Cut( include_inner );
+  mesh_->Cut( include_inner, gausstype );
 }
 
 void GEO::CutWizard::CreateNodalDofSet( bool include_inner, DRT::Discretization & backdis )
@@ -124,9 +124,10 @@ void GEO::CutWizard::CreateNodalDofSet( bool include_inner, DRT::Discretization 
 }
 
 void GEO::CutWizard::Cut( std::map< int, DomainIntCells >& domainintcells,
-                          std::map< int, BoundaryIntCells >& boundaryintcells )
+                          std::map< int, BoundaryIntCells >& boundaryintcells,
+                          std::string gausstype)
 {
-  mesh_->Cut( true );
+  mesh_->Cut( true, gausstype );
 
   std::vector<int> cutelements;
 
@@ -436,7 +437,8 @@ void GEO::computeIntersection( const Teuchos::RCP<DRT::Discretization> xfemdis,
                                std::map< int, DomainIntCells >& domainintcells,
                                std::map< int, BoundaryIntCells >& boundaryintcells,
                                const std::map<int,int>& labelPerElementId,
-                               const std::vector<int>& MovingFluideleGIDs )
+                               const std::vector<int>& MovingFluideleGIDs,
+                               std::string gausstype)
 {
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::computeIntersection" );
 
@@ -500,7 +502,7 @@ void GEO::computeIntersection( const Teuchos::RCP<DRT::Discretization> xfemdis,
 
   // Call tetgen on all cut elements.
 
-  wizard.Cut( domainintcells, boundaryintcells );
+  wizard.Cut( domainintcells, boundaryintcells, gausstype );
 
   // cleanup
 

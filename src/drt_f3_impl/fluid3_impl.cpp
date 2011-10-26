@@ -9511,6 +9511,8 @@ void Fluid3Impl<distype>::ElementXfemInterface(
           throw std::runtime_error( "unsupported integration cell type" );
         }
 
+  //      std::cout<<normal(0,0)<<"\t"<<normal<<(1,0)<<"\t"<<normal(2,0)<<"\n";
+
 
         const double fac = drs*iquad.Weight();
 

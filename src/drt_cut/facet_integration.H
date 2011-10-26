@@ -38,7 +38,7 @@ class FacetIntegration
         bool clockwise_;
         std::vector<double> eqn_plane_;
         std::vector<double> equation_plane(const std::vector<std::vector<double> > cornersLocal);
-        void IsClockwise(const std::vector<double> eqn_plane);
+        void IsClockwise(const std::vector<double> eqn_plane,const std::vector<std::vector<double> > cornersLocal);
         std::vector<double> compute_alpha(std::vector<double> eqn_plane);
         
     };

@@ -116,7 +116,7 @@ Epetra_SerialDenseVector GEO::CUT::LeastSquares::linear_least_square()
         Epetra_SerialDenseMatrix sqr(matri_[0].size(),matri_[0].size());
         Epetra_SerialDenseVector rhs(matri_[0].size());
         sqr = get_square_matrix(rhs);
-	unknown_.Size(matri_[0].size());
+        unknown_.Size(matri_[0].size());
 
 /*	Epetra_SerialDenseMatrix matt(sqr.size(),sqr.size());//blockkk
 	Epetra_SerialDenseVector unn(sqr.size());//blockkk
@@ -134,7 +134,8 @@ Epetra_SerialDenseVector GEO::CUT::LeastSquares::linear_least_square()
 	solve_for_GPweights.FactorWithEquilibration(true);
 	int err2 = solve_for_GPweights.Factor();
 	int err = solve_for_GPweights.Solve();         
-	if ((err != 0) && (err2!=0)) dserror("Computation of Gauss weights failed");
+	if ((err != 0) && (err2!=0)) dserror("Computation of Gauss weights failed, Ill"
+			"conditioned matrix in least square");
 
 //        unknown_ = ConjugateGradient(sqr, rhs); //unblockkk
 

@@ -53,7 +53,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid )
 
   // the XFEM::FluidWizard is created based on the xfluid-discretization and the boundary discretization
   // the FluidWizard creates also a cut-object of type GEO::CutWizard which performs the "CUT"
-  wizard_->Cut( false, idispcol );
+  wizard_->Cut( false, idispcol, xfluid_.GaussPointType() );
 
   // set the new dofset after cut
   dofset_ = wizard_->DofSet();
@@ -401,6 +401,7 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
 
             std::map<int, std::vector<GEO::CUT::BoundaryCell*> > bcells;
             vc->GetBoundaryCells( bcells );
+//            std::cout<<"boundary cell size = "<<bcells.size()<<std::endl;
 
             if ( bcells.size() > 0 )
             {

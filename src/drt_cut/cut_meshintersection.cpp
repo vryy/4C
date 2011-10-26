@@ -92,7 +92,7 @@ GEO::CUT::SideHandle * GEO::CUT::MeshIntersection::AddCutSide( int sid,
   return cut_mesh_[mi]->CreateSide( sid, nids, distype );
 }
 
-void GEO::CUT::MeshIntersection::Cut( bool include_inner )
+void GEO::CUT::MeshIntersection::Cut( bool include_inner, std::string gausstype )
 {
   Status();
 
@@ -123,21 +123,29 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner )
 //    m.FindNodalDOFSets( include_inner );
   }
 
-  m.CreateIntegrationCells( 0, false );
-  //m.RemoveEmptyVolumeCells();
-  //m.MomentFitGaussWeights();
+  std::cout<<"Gauss point generating method = "<<gausstype<<"\n";//blockkk
+
+  if(gausstype=="Tessellation")
+  {
+	  m.CreateIntegrationCells( 0, false );
+	  //m.RemoveEmptyVolumeCells();
 
 #ifdef DEBUGCUTLIBRARY
-  //m.TestVolumeSurface();
-  m.TestFacetArea();
+	  //m.TestVolumeSurface();
+	  m.TestFacetArea();
 #endif
-  m.SimplifyIntegrationCells();
-
-  Status();
+	  m.SimplifyIntegrationCells();
 
 #ifdef DEBUGCUTLIBRARY
-  m.TestElementVolume( true );
+	  m.TestElementVolume( true );
 #endif
+  }
+
+  if(gausstype=="MomentFitting")
+  {
+	  m.MomentFitGaussWeights(include_inner);
+  }
+  Status(gausstype);
 }
 
 
@@ -424,7 +432,7 @@ void GEO::CUT::MeshIntersection::PrintCellStats()
   NormalMesh().PrintCellStats();
 }
 
-void GEO::CUT::MeshIntersection::Status()
+void GEO::CUT::MeshIntersection::Status(std::string gausstype)
 {
 #ifdef DEBUG
   NormalMesh().Status();
@@ -453,7 +461,10 @@ void GEO::CUT::MeshIntersection::Status()
   }
 
   //NormalMesh().DumpGmshVolumeCells( "volumecells" );
-  DumpGmshIntegrationCells( "integrationcells.pos" );
+  if(gausstype=="Tessellation")
+	  DumpGmshIntegrationCells( "integrationcells.pos" );
+  else if(gausstype=="MomentFitting")
+	  DumpGmshVolumeCells("volumecells.pos");
 #endif
 #endif
 }
@@ -756,4 +767,9 @@ void GEO::CUT::MeshIntersection::DumpGmshVolumeCells( std::string name, bool inc
 void GEO::CUT::MeshIntersection::DumpGmshIntegrationCells( std::string name )
 {
   NormalMesh().DumpGmshIntegrationCells( name );
+}
+
+void GEO::CUT::MeshIntersection::DumpGmshVolumeCells( std::string name )
+{
+  NormalMesh().DumpGmshVolumeCells( name );
 }
