@@ -265,7 +265,7 @@ void cutmesh( GEO::CUT::Mesh & mesh )
     mesh.FindNodalDOFSets( true );
   }
   mesh.CreateIntegrationCells( 0, false );
-  mesh.MomentFitGaussWeights();
+  mesh.MomentFitGaussWeights(true);
   //mesh.RemoveEmptyVolumeCells();
 
   //mesh.DumpGmshVolumeCells( "volumecells" );
