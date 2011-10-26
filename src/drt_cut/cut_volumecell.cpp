@@ -762,7 +762,12 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells(Mesh &mesh, const GEO::CUT::Poi
 					bool rever = ToReverse(posi,parOri,sideOri);
 					if(rever)
 						std::reverse(tri.begin(),tri.end());
-					NewTri3Cell(mesh,fac,tri);
+					if(tri.size()==3)
+						NewTri3Cell(mesh,fac,tri);
+					else if(tri.size()==4)
+						NewQuad4Cell(mesh,fac,tri);
+					else
+						dserror("Triangulation created neither tri3 or quad4");
 				}
 			}
 		}
