@@ -591,7 +591,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   }
 
   IntParameter("NUMFIELD",1,"",&type);
-  //IntParameter("GRADERW",0,"",&type);
   IntParameter("RESTART",0,"",&type);
   setStringToIntegralParameter<int>("SHAPEFCT","Polynomial","Defines the function spaces for the spatial approximation",
                                tuple<std::string>("Polynomial","Nurbs"),
@@ -599,7 +598,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &type);
 
   setStringToIntegralParameter<int>("ADAPTIVE","No",
-                                    "If on switches to spacial adaptive algorithms",
+                                    "If on switches to spatial adaptive algorithms",
                                     yesnotuple,yesnovalue,&type);
 
   /*----------------------------------------------------------------------*/
@@ -3110,6 +3109,7 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                   INPAR::ELCH::elch_mov_bndry_fully_transient),
                                  &elchcontrol);
   DoubleParameter("MOLARVOLUME",0.0,"Molar volume for electrode shape change computations",&elchcontrol);
+  DoubleParameter("MOVBOUNDARYTHETA",0.0,"One-step-theta factor for electrode shape change computations",&elchcontrol);
   BoolParameter("NATURAL_CONVECTION","No","Include natural convection effects",&elchcontrol);
   BoolParameter("GALVANOSTATIC","No","flag for galvanostatic mode",&elchcontrol);
   IntParameter("GSTATCONDID_CATHODE",0,"condition id of electrode kinetics for cathode",&elchcontrol);

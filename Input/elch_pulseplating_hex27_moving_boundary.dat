@@ -115,6 +115,7 @@ GSTATCONVTOL                    1e-6
 GSTATCURVENO                    4
 GSTATITEMAX                     20
 MOVINGBOUNDARY                  fully-transient
+MOVBOUNDARYTHETA                1.0  // backward-Euler style
 MOLARVOLUME                     10.0 // 7.11E-3  // molar volume of copper: V_m = M/rho [mm^3/\mu mol]
 // Wikipedia:  7,11 x 10 a 6 m3/mol  
 -------------------------------------------------------FSI DYNAMIC
