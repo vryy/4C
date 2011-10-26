@@ -16,7 +16,10 @@ Maintainer: Georg Bauer
 #ifdef CCADISCRET
 
 #include "elch_moving_boundary_algorithm.H"
-#include <Teuchos_TimeMonitor.hpp>
+#include "../drt_inpar/inpar_elch.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../linalg/linalg_utils.H"
+//#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -25,14 +28,29 @@ ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(
     const Teuchos::ParameterList& prbdyn
     )
 :  ScaTraFluidAleCouplingAlgorithm(comm,prbdyn,"FSICoupling"),
+   pseudotransient_(false),
    molarvolume_(prbdyn.get<double>("MOLARVOLUME")),
    idispn_(FluidField().ExtractInterfaceVeln()),
    idispnp_(FluidField().ExtractInterfaceVeln()),
-   iveln_(FluidField().ExtractInterfaceVeln())
+   iveln_(FluidField().ExtractInterfaceVeln()),
+   itmax_ (prbdyn.get<int>("ITEMAX")),
+   ittol_ (prbdyn.get<double>("CONVTOL")),
+   theta_(prbdyn.get<double>("MOVBOUNDARYTHETA"))
 {
+  pseudotransient_ = (DRT::INPUT::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(prbdyn,"MOVINGBOUNDARY")
+          ==INPAR::ELCH::elch_mov_bndry_pseudo_transient);
+
   idispn_->PutScalar(0.0);
   idispnp_->PutScalar(0.0);
   iveln_->PutScalar(0.0);
+
+  // calculate normal flux vector field only at FSICoupling boundaries (no output to file)
+  vector<std::string> condnames(1);
+  condnames[0] = "FSICoupling";
+  SolveScaTra(); // set-up trueresidual_
+  fluxn_ = ScaTraField().CalcFluxAtBoundary(condnames,false);
+
+
   return;
 }
 
@@ -62,7 +80,8 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
     ScaTraField().EvaluateErrorComparedToAnalyticalSol();
   }
 
-
+if (not pseudotransient_)
+{
   // transfer convective velocity = fluid velocity - grid velocity
   ScaTraField().SetVelocityField(
       FluidField().ConvectiveVel(), // = velnp - grid velocity
@@ -70,6 +89,7 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
       Teuchos::null,
       FluidField().Discretization()
   );
+}
   // transfer moving mesh data
   ScaTraField().ApplyMeshMovement(
       FluidField().Dispnp(),
@@ -86,11 +106,12 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
     incr->PutScalar(0.0);
     double incnorm(0.0);
     int iter(0);
+    bool stopiter(false);
 
     // ToDo
     // improve this convergence test
     // (better check increment of ivel ????, test relative value etc.)
-    while((iter == 0) or (incnorm > EPS10)) // do at least one step
+    while(stopiter==false) // do at least one step
     {
       iter++;
 
@@ -117,9 +138,26 @@ void ELCH::MovingBoundaryAlgorithm::TimeLoop()
 
       if (Comm().MyPID()==0)
       {
-        cout<<"After outer iteration "<<iter<<" ||dispincnp|| = "<<incnorm<<endl;
+        cout<<"After outer iteration "<<iter<<" of "<<itmax_
+            <<":  ||idispnpinc|| = "<<incnorm<<endl;
       }
+      if (incnorm < ittol_)
+        {
+          stopiter = true;
+          if (Comm().MyPID()==0)
+            cout<<"   || Outer iteration loop converged! ||\n\n\n";
+        }
+      if (iter==itmax_)
+        {
+          stopiter = true;
+          if (Comm().MyPID()==0)
+            cout<<"   || Maximum number of iterations reached: "<<itmax_<<" ||\n\n\n";
+        }
     }
+
+    double normidsinp;
+    idispnp_->Norm2(&normidsinp);
+    cout<<"norm of isdispnp = "<<normidsinp<<endl;
 
     // update all single field solvers
     Update();
@@ -167,10 +205,8 @@ void ELCH::MovingBoundaryAlgorithm::PrepareTimeStep()
 /*----------------------------------------------------------------------*/
 void ELCH::MovingBoundaryAlgorithm::SolveFluidAle()
 {
-  //TEUCHOS_FUNC_TIME_MONITOR("ELCH::MovingBoundaryAlgorithm::SolveFluidAle");
-
   // solve nonlinear Navier-Stokes system on a moving mesh
-  FluidAleNonlinearSolve(idispnp_,iveln_);
+  FluidAleNonlinearSolve(idispnp_,iveln_,pseudotransient_);
 
   return;
 }
@@ -198,6 +234,8 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
   }
   else
   {
+    if (not pseudotransient_)
+    {
     // transfer convective velocity = fluid velocity - grid velocity
     ScaTraField().SetVelocityField(
         FluidField().ConvectiveVel(), // = velnp - grid velocity
@@ -205,6 +243,7 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
         Teuchos::null,
         FluidField().Discretization()
     );
+    }
   }
 
   // transfer moving mesh data
@@ -229,6 +268,8 @@ void ELCH::MovingBoundaryAlgorithm::Update()
 
   // perform time shift of interface displacement
   idispn_->Update(1.0, *idispnp_ , 0.0);
+  // perform time shift of interface mass flux vectors
+  fluxn_->Update(1.0, *fluxnp_ , 0.0);
 
   return;
 }
@@ -245,10 +286,19 @@ void ELCH::MovingBoundaryAlgorithm::Output()
   FluidField().StatisticsAndOutput();
   // additional vector needed for restarts:
   int uprestart = AlgoParameters().get<int>("RESTARTEVRY");
-  if (uprestart != 0 && FluidField().Step() % uprestart == 0)
+  if ((uprestart != 0) && (FluidField().Step() % uprestart == 0))
   {
     FluidField().DiscWriter().WriteVector("idispn",idispnp_);
   }
+
+#if 0
+  //ToDo
+  // for visualization only...
+  Teuchos::RCP<Epetra_Vector> idispnpfull = LINALG::CreateVector(*(FluidField().DofRowMap()),true);
+  (FluidField().Interface()).AddFSICondVector(idispnp_,idispnpfull);
+  FluidField().DiscWriter().WriteVector("idispnfull",idispnpfull);
+#endif
+
   // now the other physical fiels
   ScaTraField().Output();
   AleField().Output();
@@ -264,7 +314,7 @@ void ELCH::MovingBoundaryAlgorithm::ComputeInterfaceVectors(
   // calculate normal flux vector field only at FSICoupling boundaries (no output to file)
   vector<std::string> condnames(1);
   condnames[0] = "FSICoupling";
-  Teuchos::RCP<Epetra_MultiVector> flux = ScaTraField().CalcFluxAtBoundary(condnames,false);
+  fluxnp_ = ScaTraField().CalcFluxAtBoundary(condnames,false);
 
   // access discretizations
   RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
@@ -288,6 +338,12 @@ void ELCH::MovingBoundaryAlgorithm::ComputeInterfaceVectors(
     // get the degrees of freedom associated with this fluid node
     vector<int> fluidnodedofs = fluiddis->Dof(fluidlnode);
 
+    if (ScaTraField().ScaTraType()== INPAR::SCATRA::scatratype_condif)
+    {
+      if (ScaTraField().NumScal() != 1)
+        dserror("What do you do! I thought you were doing a potential model?");
+    }
+
     if(ivelmap.MyGID(fluidnodedofs[0])) // is this GID (implies: node) relevant for iveln_?
     {
       // determine number of space dimensions (numdof - pressure dof)
@@ -299,8 +355,8 @@ void ELCH::MovingBoundaryAlgorithm::ComputeInterfaceVectors(
       for(int index=0;index<numdim;++index)
       {
         const int pos = lnodeid*numscatradof+reactingspeciesid;
-        // interface growth has opposite direction of mass flow -> minus sign !!
-        Values[index] = (-molarvolume_)*((*flux)[index])[pos];
+        // interface growth has opposite direction of metal ion mass flow -> minus sign !!
+        Values[index] = (-molarvolume_)*(theta_*(((*fluxnp_)[index])[pos])+(1.0-theta_)*(((*fluxn_)[index])[pos]));
       }
 
       // now insert only the first numdim entries (pressure dof is not inserted!)
@@ -329,6 +385,7 @@ void ELCH::MovingBoundaryAlgorithm::ReadRestart(int step)
   // finally read isdispn which was written to the fluid restart data
   IO::DiscretizationReader reader(FluidField().Discretization(),step);
   reader.ReadVector(idispn_ ,"idispn");
+  // read same result into vector isdispnp_ as a 'good guess'
   reader.ReadVector(idispnp_,"idispn");
 
   return;

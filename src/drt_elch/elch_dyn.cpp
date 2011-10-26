@@ -146,9 +146,10 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
     RefCountPtr<DRT::Discretization> aledis = DRT::Problem::Instance()->Dis(disnumale,0);
     if (!aledis->Filled()) aledis->FillComplete();
     // is ALE needed or not?
-    const int withale = DRT::INPUT::IntegralValue<int>(elchcontrol,"MOVINGBOUNDARY");
+    const INPAR::ELCH::ElchMovingBoundary withale
+      = DRT::INPUT::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(elchcontrol,"MOVINGBOUNDARY");
 
-    if (withale==1)
+    if (withale!=INPAR::ELCH::elch_mov_bndry_no)
     {
       // create ale elements only if the ale discretization is empty
       if (aledis->NumGlobalNodes()==0)
