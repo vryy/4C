@@ -2068,10 +2068,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                yesnotuple,yesnovalue,&fdyn);
   DoubleParameter("ADAPTCONV_BETTER",0.1,"The linear solver shall be this much better than the current nonlinear residual in the nonlinear convergence limit",&fdyn);
 
-  IntParameter("UPPSS",1,"Increment for visualisation (unused)",&fdyn);
-  IntParameter("UPOUT",1,"Increment for writing solution to output file (unused)",&fdyn);
   IntParameter("UPRES",1,"Increment for writing solution",&fdyn);
-  IntParameter("RESSTEP",0,"Restart Step (unused)",&fdyn);
   IntParameter("RESTARTEVRY",20,"Increment for writing restart",&fdyn);
   IntParameter("NUMSTEP",1,"Total number of Timesteps",&fdyn);
   IntParameter("STEADYSTEP",-1,"steady state check every step",&fdyn);
@@ -3520,15 +3517,6 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                tuple<int>(1,2,3,4),
                                &fsidyn);
 
-  setStringToIntegralParameter<int>("CONVCRIT","||g(i)||:sqrt(neq)",
-                               "Convergence criterium for iteration over fields (unused)",
-                               tuple<std::string>(
-                                 "||g(i)||:sqrt(neq)",
-                                 "||g(i)||:||g(0)||"
-                                 ),
-                               tuple<int>(1,2),
-                               &fsidyn);
-
   setStringToIntegralParameter<int>("COUPVARIABLE","Displacement",
                                "Coupling variable at the interface",
                                tuple<std::string>("Displacement","Force"),
@@ -3556,19 +3544,6 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                  "conforming"
                                  ),
                                tuple<int>(0,0,0,1),
-                               &fsidyn);
-
-  setStringToIntegralParameter<int>("COUPFORCE","nodeforce",
-                               "Coupling force. Unused. We always couple with nodal forces.",
-                               tuple<std::string>(
-                                 "none",
-                                 "stress",
-                                 "nodeforce"
-                                 ),
-                               tuple<int>(
-                                 2,
-                                 2,
-                                 2),
                                &fsidyn);
 
   setStringToIntegralParameter<int>("SECONDORDER","No",
@@ -3617,12 +3592,8 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                "Supported in monolithic FSI for now.",
                                yesnotuple,yesnovalue,&fsidyn);
 
-  IntParameter("ITECHAPP",1,"unused",&fsidyn);
-  IntParameter("ICHMAX",1,"unused",&fsidyn);
-  IntParameter("ISDMAX",1,"not used up to now",&fsidyn);
   IntParameter("NUMSTEP",200,"Total number of Timesteps",&fsidyn);
   IntParameter("ITEMAX",100,"Maximum number of iterations over fields",&fsidyn);
-  IntParameter("UPPSS",1,"Increment for visualization (unused)",&fsidyn);
   IntParameter("UPRES",1,"Increment for writing solution",&fsidyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&fsidyn);
 
