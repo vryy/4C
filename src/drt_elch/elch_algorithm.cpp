@@ -61,12 +61,12 @@ ELCH::Algorithm::~Algorithm()
 /*----------------------------------------------------------------------*/
 void ELCH::Algorithm::TimeLoop()
 {
-  // write out initial state
-  // Output();
-
   // provide information about initial field (do not do for restarts!)
   if (Step()==0)
   {
+    // write out initial state
+    // Output();
+
     ScaTraField().OutputElectrodeInfo();
     ScaTraField().OutputMeanScalars();
 
