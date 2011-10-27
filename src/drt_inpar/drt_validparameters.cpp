@@ -22,6 +22,7 @@ Maintainer: Ulrich Kuettler
 #include "drt_validparameters.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../drt_inpar/inpar_ale.H"
 #include "../drt_inpar/inpar_solver.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_combust.H"
@@ -39,10 +40,6 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_searchtree.H"
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_mlmc.H"
-
-
-// old CCARAT header -> should go away
-#include "../headers/dynamic.h"
 
 #include <AztecOO.h>
 
@@ -2625,11 +2622,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("MAXTIME",4.0,"",&adyn);
   setStringToIntegralParameter<int>("ALE_TYPE","classic_lin","ale mesh movement algorithm",
                                tuple<std::string>("classic_lin","incr_lin","laplace","springs","springs_fixed_ref"),
-                               tuple<int>(ALE_DYNAMIC::classic_lin,
-                                          ALE_DYNAMIC::incr_lin,
-                                          ALE_DYNAMIC::laplace,
-                                          ALE_DYNAMIC::springs,
-                                          ALE_DYNAMIC::springs_fixed_ref),
+                               tuple<int>(INPAR::ALE::classic_lin,
+                                   INPAR::ALE::incr_lin,
+                                   INPAR::ALE::laplace,
+                                   INPAR::ALE::springs,
+                                   INPAR::ALE::springs_fixed_ref),
                                &adyn);
   IntParameter("NUM_INITSTEP",0,"",&adyn);
   IntParameter("RESULTSEVRY",1,"",&adyn);
@@ -3569,9 +3566,9 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                  "nodeforce"
                                  ),
                                tuple<int>(
-                                 FSI_DYNAMIC::cf_none,
-                                 FSI_DYNAMIC::cf_stress,
-                                 FSI_DYNAMIC::cf_nodeforce),
+                                 2,
+                                 2,
+                                 2),
                                &fsidyn);
 
   setStringToIntegralParameter<int>("SECONDORDER","No",

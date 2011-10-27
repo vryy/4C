@@ -47,7 +47,11 @@ ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(
   // calculate normal flux vector field only at FSICoupling boundaries (no output to file)
   vector<std::string> condnames(1);
   condnames[0] = "FSICoupling";
-  SolveScaTra(); // set-up trueresidual_
+  if (pseudotransient_ or (theta_<0.999))
+  {
+    SolveScaTra(); // set-up trueresidual_
+  }
+  // initialize the multivector for all possible cases
   fluxn_ = ScaTraField().CalcFluxAtBoundary(condnames,false);
 
 

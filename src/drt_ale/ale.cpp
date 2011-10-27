@@ -28,9 +28,9 @@ Maintainer: Ulrich Kuettler
 #include <Teuchos_Time.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
+#include "../drt_inpar/inpar_ale.H"
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_fluid/drt_periodicbc.H"
-#include "../headers/dynamic.h"
 
 using namespace std;
 using namespace Teuchos;
@@ -172,15 +172,15 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
   }
 
   int aletype = DRT::INPUT::IntegralValue<int>(adyn,"ALE_TYPE");
-  if (aletype==ALE_DYNAMIC::classic_lin)
+  if (aletype==INPAR::ALE::classic_lin)
     ale_ = rcp(new AleLinear(actdis, solver, params, output, false, dirichletcond));
-  else if (aletype==ALE_DYNAMIC::incr_lin)
+  else if (aletype==INPAR::ALE::incr_lin)
     ale_ = rcp(new AleLinear(actdis, solver, params, output, true , dirichletcond));
-  else if (aletype==ALE_DYNAMIC::laplace)
+  else if (aletype==INPAR::ALE::laplace)
     ale_ = rcp(new AleLaplace(actdis, solver, params, output, true, dirichletcond));
-  else if (aletype==ALE_DYNAMIC::springs)
+  else if (aletype==INPAR::ALE::springs)
     ale_ = rcp(new AleSprings(actdis, solver, params, output, dirichletcond));
-  else if (aletype==ALE_DYNAMIC::springs_fixed_ref)
+  else if (aletype==INPAR::ALE::springs_fixed_ref)
     ale_ = rcp(new AleSpringsFixedRef(actdis, solver, params, output, true, dirichletcond));
   else
     dserror("ale type '%s' unsupported",adyn.get<std::string>("ALE_TYPE").c_str());
