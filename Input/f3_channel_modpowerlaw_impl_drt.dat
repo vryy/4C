@@ -90,8 +90,6 @@ START_THETA                     0.67
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.05
-UPOUT                           10
-UPPSS                           10
 UPRES                           10
 ----------------------------------------FLUID DYNAMIC/STABILIZATION
 CROSS-STRESS                    no_cross
@@ -189,18 +187,13 @@ SOLVER                          UMFPACK
 ALPHA_F                         -1
 ALPHA_S                         -1
 BASETOL                         0.001
-CONVCRIT                        ||g(i)||:sqrt(neq)
 CONVTOL                         1e-06
 COUPALGO                        iter_stagg_AITKEN_rel_param
-COUPFORCE                       nodeforce
 COUPMETHOD                      conforming
 COUPVARIABLE                    Displacement
 DEBUGOUTPUT                     No
 ENERGYCHECK                     No
 IALE                            Pseudo_Structure
-ICHMAX                          1
-ISDMAX                          1
-ITECHAPP                        1
 ITEMAX                          100
 MAXOMEGA                        0
 MAXTIME                         1000
@@ -212,7 +205,6 @@ RESTARTEVRY                     1
 SECONDORDER                     No
 TIMESTEP                        0.1
 TOLENCHECK                      1e-06
-UPPSS                           1
 UPRES                           1
 -----------------------------------------------------------------IO
 ALE_DISP                        No

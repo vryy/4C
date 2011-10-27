@@ -30,8 +30,6 @@ NUMALEDIS    0
 FLUID_SOL         Yes
 -----------------------------------------------------FLUID DYNAMIC
 TIMEINTEGR   One_Step_Theta
-UPPSS        1
-UPOUT        1
 UPRES        1
 RESTARTEVRY  5
 MAXTIME      1000.0

@@ -30,8 +30,6 @@ NUMTHERMDIS  0
 ------------------------------------------------STRUCTURAL DYNAMIC
 -----------------------------------------------------FLUID DYNAMIC
 TIMEINTEGR   Af_Gen_Alpha
-UPPSS        1
-UPOUT        1
 UPRES        1
 RESTARTEVRY  2
 MAXTIME      0.1

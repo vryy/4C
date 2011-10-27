@@ -53,8 +53,6 @@ START_THETA 1
 THETA 0.66
 TIMEINTEGR One_Step_Theta
 TIMESTEP 0.01
-UPOUT 1
-UPPSS 1
 UPRES 1
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 CROSS-STRESS no_cross
@@ -75,7 +73,6 @@ SOLVER Aztec_MSR
 PARTITION Cut_Elements
 -----------------------------------------------------------------FSI DYNAMIC
 BASETOL 1e-8
-CONVCRIT ||g(i)||:sqrt(neq)
 CONVTOL 1e-8
 COUPALGO iter_lung_monolithicfluidsplit
 ENERGYCHECK No
@@ -86,7 +83,6 @@ PREDICTOR d(n)
 RELAX 1
 RESTARTEVRY 1
 TIMESTEP 0.05
-UPPSS 1
 UPRES 1
 SHAPEDERIVATIVES Yes
 SECONDORDER No

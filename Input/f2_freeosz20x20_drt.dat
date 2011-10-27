@@ -39,8 +39,6 @@ TOLDISP                         1.0E-08
 MAXITER                         50
 ---------------------------------------------------------------FLUID DYNAMIC
 TIMEINTEGR                      One_Step_Theta
-UPPSS                           1
-UPOUT                           1
 UPRES                           1
 RESTARTEVRY                     1
 MAXTIME                         1000.0
@@ -72,13 +70,11 @@ REYNOLDS-STRESS       no_reynolds     // no_reynolds reynolds_rhs
 MAXTIME                         1000.0
 TIMESTEP                        0.00025
 NUMSTEP                         20
-UPPSS                           1
 UPRES                           1
 RESTARTEVRY                     1
 IALE                            Pseudo_Structure
 COUPALGO                        basic_sequ_stagg
 PREDICTOR                       d(n)
-CONVCRIT                        ||g(i)||:sqrt(neq)
 ENERGYCHECK                     yes
 TOLENCHECK                      1.0E-6
 RELAX                           1.0

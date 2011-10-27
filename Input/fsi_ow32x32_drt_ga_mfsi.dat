@@ -46,8 +46,6 @@ MAXITER      50
 PREDICT      ConstDisVelAcc
 -----------------------------------------------------FLUID DYNAMIC
 TIMEINTEGR   Gen_Alpha
-UPPSS        1
-UPOUT        1
 UPRES        1
 RESTARTEVRY  1
 MAXTIME      1000.0
@@ -87,12 +85,10 @@ MAXTIME      1000.0
 TIMESTEP     0.1
 NUMSTEP      10
 IALE         Pseudo_Structure
-UPPSS        1
 UPRES        1
 RESTARTEVRY  1
 COUPALGO     iter_monolithicfluidsplit
 PREDICTOR    d(n)
-CONVCRIT     ||g(i)||:sqrt(neq)
 ENERGYCHECK  yes
 TOLENCHECK   1.0
 RELAX        0.825

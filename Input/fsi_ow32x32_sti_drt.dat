@@ -47,8 +47,6 @@ ALPHA_M      0.5
 ALPHA_F      0.5
 -----------------------------------------------------FLUID DYNAMIC
 TIMEINTEGR   One_Step_Theta
-UPPSS        1
-UPOUT        1
 UPRES        1
 RESTARTEVRY  1
 MAXTIME      1000.0
@@ -85,7 +83,6 @@ MAXTIME      1000.0
 TIMESTEP     0.1
 NUMSTEP      2
 IALE         Pseudo_Structure
-UPPSS        1
 UPRES        1
 RESTARTEVRY  1
 COUPALGO     iter_stagg_AITKEN_rel_param
@@ -94,15 +91,11 @@ PREDICTOR    d(n)
 //PREDICTOR    d(n)+dt*(1.5*v(n)-0.5*v(n-1))
 //PREDICTOR    d(n)+dt*v(n)
 //PREDICTOR    d(n)+dt*v(n)+0.5*dt^2*a(n)
-CONVCRIT     ||g(i)||:sqrt(neq)
 ENERGYCHECK  yes
 TOLENCHECK   1.0
 RELAX        0.825
 ITEMAX       100
 CONVTOL      1.0E-7
-ISDMAX       0
-ICHMAX       0
-ITECHAPP     20
 ------------------------------------------------------FLUID SOLVER
 //SOLVER         Amesos_KLU_nonsym
 SOLVER         UMFPACK

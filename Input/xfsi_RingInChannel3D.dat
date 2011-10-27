@@ -48,8 +48,6 @@ START_THETA                     1
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.005
-UPOUT                           1
-UPPSS                           1
 UPRES                           1
 ------------------------------------------------------FLUID SOLVER
 SOLVER         UMFPACK          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -91,19 +89,14 @@ ADAPTIVEDIST                    0
 ALPHA_F                         -1
 ALPHA_S                         -1
 BASETOL                         0.001
-CONVCRIT                        ||g(i)||:sqrt(neq)
 CONVTOL                         1e+6
 COUPALGO                        iter_stagg_AITKEN_rel_param
-COUPFORCE                       nodeforce
 COUPMETHOD                      conforming
 COUPVARIABLE                    Displacement
 DEBUGOUTPUT                     No
 ENERGYCHECK                     No
 IALE                            Pseudo_Structure
-ICHMAX                          1
 INFNORMSCALING                  Yes
-ISDMAX                          1
-ITECHAPP                        1
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
 MAXOMEGA                        0
@@ -118,7 +111,6 @@ SECONDORDER                     Yes
 SHAPEDERIVATIVES                No
 SYMMETRICPRECOND                No
 TIMESTEP                        0.01
-UPPSS                           1
 UPRES                           1
 -----------------------------------------------------------------IO
 ALE_DISP                        No

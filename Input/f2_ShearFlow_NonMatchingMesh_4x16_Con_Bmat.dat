@@ -67,8 +67,6 @@ START_THETA                     1
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1
-UPOUT                           1
-UPPSS                           1
 UPRES                           1
 MESHTYING			Condensed_Bmat
 CALCERROR			shear_flow

@@ -39,8 +39,6 @@ STARTINGALGO One_Step_Theta
 ITEMAX       10
 CONVCHECK    L_2_norm
 CONVTOL      1.0E-9
-UPOUT        1
-UPPSS        1
 UPRES        1
 RESTARTEVRY  20
 NUMSTEP      5

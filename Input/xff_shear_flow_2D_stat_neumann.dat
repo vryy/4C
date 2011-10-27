@@ -64,8 +64,6 @@ START_THETA                     1
 THETA                           1.00
 TIMEINTEGR                      Stationary //One_Step_Theta
 TIMESTEP                        1.0
-UPOUT                           1
-UPPSS                           1
 UPRES                           1
 2DFLOW	                        yes
 -------------------------------------------------------ALE DYNAMIC

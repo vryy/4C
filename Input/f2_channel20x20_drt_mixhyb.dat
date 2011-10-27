@@ -24,7 +24,6 @@ NUMFIELD     1
 RESTART      0
 -----------------------------------------------------FLUID DYNAMIC
 TIMEINTEGR   One_Step_Theta
-UPOUT        1
 UPRES        1
 RESTARTEVRY  1
 MAXTIME      1000.0

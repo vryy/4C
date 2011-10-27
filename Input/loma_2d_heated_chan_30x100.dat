@@ -44,8 +44,6 @@ NONLINITER       fixed_point_like
 ITEMAX           1
 CONVCHECK        L_2_norm
 CONVTOL          1.0E-5
-UPOUT            2000
-UPPSS            2000
 UPRES            1
 RESTARTEVRY      2000
 NUMSTEP          20

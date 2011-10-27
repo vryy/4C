@@ -89,8 +89,6 @@ NONLINITER                      Newton
 ITEMAX                          5
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-6
-UPOUT                           1
-UPPSS                           1
 UPRES                           1
 RESTARTEVRY                     20
 NUMSTEP                         200
@@ -108,7 +106,6 @@ FSIAMGANALYZE                   No
 MAXTIME                         1000000.0
 TIMESTEP                        .5
 NUMSTEP                         2
-UPPSS                           1
 UPRES                           1
 RESTARTEVRY                     10
 COUPALGO                        iter_mortar_monolithicstructuresplit
@@ -127,7 +124,6 @@ SYMMETRICPRECOND                no                              // SGS on monlit
 PRECONDREUSE                    0
 INFNORMSCALING                  yes
 PREDICTOR                       d(n)
-CONVCRIT                        ||g(i)||:sqrt(neq)
 ENERGYCHECK                     no
 TOLENCHECK                      1.0E-6
 RELAX                           1.0
