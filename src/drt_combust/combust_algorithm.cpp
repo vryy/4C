@@ -67,6 +67,7 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   reinitbandwidth_(combustdyn.sublist("COMBUSTION GFUNCTION").get<double>("REINITBANDWIDTH")),
   reinit_output_(DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINIT_OUTPUT")),
   volcorrection_(DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINITVOLCORRECTION")),
+  gmshoutput_(DRT::INPUT::IntegralValue<int>(combustdyn.sublist("XFEM"),"GMSH_DEBUG_OUTPUT")),
   extract_interface_vel_(DRT::INPUT::IntegralValue<int>(combustdyn.sublist("COMBUSTION GFUNCTION"),"EXTRACT_INTERFACE_VEL")),
   convel_layers_(combustdyn.sublist("COMBUSTION GFUNCTION").get<int>("NUM_CONVEL_LAYERS")),
   combustdyn_(combustdyn),
@@ -95,7 +96,7 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
     }
   }
 
-  // TODO:	scatra and fluid/combustion time-integration methods do not have to fit, or shall they? - winklmaier
+  // TODO: scatra and fluid/combustion time-integration methods do not have to fit, or shall they? - winklmaier
   const INPAR::FLUID::TimeIntegrationScheme timealgo = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT");
   switch(timealgo)
   {
@@ -122,7 +123,6 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
     if (ScaTraField().MethodName() != INPAR::SCATRA::timeint_gen_alpha)
       cout << "WARNING: combustion and scatra time integration scheme do not match" << endl;
 
-    //TODO remove
     dserror("Generalized alpha time integration scheme for combustion is not working yet");
     break;
   }
@@ -593,7 +593,7 @@ void COMBUST::Algorithm::ReinitializeGfunc()
 
 
     // get my flame front (boundary integration cells)
-    // TODO we generate a copy of the flame front here, which is not neccessary in the serial case
+    // remark: we generate a copy of the flame front here, which is not neccessary in the serial case
     std::map<int, GEO::BoundaryIntCells> myflamefront = interfacehandle_->GetElementalBoundaryIntCells();
 
 #ifdef PARALLEL
@@ -809,12 +809,15 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeReinitVel(
       }
 
 #ifdef COMBUST_GMSH_NORMALFIELD
-      LINALG::SerialDenseMatrix xyz(3,1);
-      xyz(0,0) = lnode->X()[0];
-      xyz(1,0) = lnode->X()[1];
-      xyz(2,0) = lnode->X()[2];
+      if (gmshoutput_)
+      {
+        LINALG::SerialDenseMatrix xyz(3,1);
+        xyz(0,0) = lnode->X()[0];
+        xyz(1,0) = lnode->X()[1];
+        xyz(2,0) = lnode->X()[2];
 
-      IO::GMSH::cellWithVectorFieldToStream(DRT::Element::point1, nvec, xyz, gmshfilecontent);
+        IO::GMSH::cellWithVectorFieldToStream(DRT::Element::point1, nvec, xyz, gmshfilecontent);
+      }
 #endif
 
       //------------------------
@@ -902,6 +905,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeReinitVel(
 const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
     const Teuchos::RCP<Epetra_Vector>& convel,
     const Teuchos::RCP<const DRT::DofSet>& dofset
+    //const Teuchos::RCP<const Epetra_Map >& dbcmap
     )
 {
   if((DRT::INPUT::IntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == false) and
@@ -934,7 +938,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
 
   // laminar flame speed
   const double sl = combustdyn_.sublist("COMBUSTION FLUID").get<double>("LAMINAR_FLAMESPEED");
-  const double D = 0.0;//1.161/(1.161*1.0);
+  const double D  = combustdyn_.sublist("COMBUSTION FLUID").get<double>("MOL_DIFFUSIVITY");
 
 #ifdef COMBUST_GMSH_NORMALFIELD
   const std::string filestr = "normal_field";
@@ -958,6 +962,12 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
       DRT::Node*  lnode = fluiddis->lRowNode(lnodeid);
       // get the global id for current node
       const int gid = lnode->Id();
+
+#ifdef ORACLES
+      // skip the part of the domain left of the expansion
+      if (lnode->X()[0] < 0.0)
+        continue;
+#endif
       // get local processor id according to global node id
       const int nodelid = (*gradphinp).Map().LID(gid);
       if (nodelid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",(*gradphinp).Comm().MyPID(),gid);
@@ -999,12 +1009,15 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
       }
 
 #ifdef COMBUST_GMSH_NORMALFIELD
-      LINALG::SerialDenseMatrix xyz(3,1);
-      xyz(0,0) = lnode->X()[0];
-      xyz(1,0) = lnode->X()[1];
-      xyz(2,0) = lnode->X()[2];
+      if (gmshoutput_)
+      {
+        LINALG::SerialDenseMatrix xyz(3,1);
+        xyz(0,0) = lnode->X()[0];
+        xyz(1,0) = lnode->X()[1];
+        xyz(2,0) = lnode->X()[2];
 
-      IO::GMSH::cellWithVectorFieldToStream(DRT::Element::point1, nvec, xyz, gmshfilecontent);
+        IO::GMSH::cellWithVectorFieldToStream(DRT::Element::point1, nvec, xyz, gmshfilecontent);
+      }
 #endif
 
       //------------------------
@@ -1038,6 +1051,51 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
       const double curv = 0.0;//(*curvature)[nodelid];
 
       double speedfac = 0.0;
+
+#ifdef COMBUST_BUNSENBURNER
+      //      if(((lnode->X()[1]>0.5 && lnode->X()[1]<=0.55) && (lnode->X()[0]>=0.45)) || ((lnode->X()[1]>0.5 && lnode->X()[1]<=0.55) && (lnode->X()[0]<=-0.45)))
+      //      {
+      //          if(lnode->X()[0]>0)
+      //              speedfac = 10.0*sqrt((lnode->X()[1]-0.5)*(lnode->X()[1]-0.5)+(lnode->X()[0]-0.5)*(lnode->X()[0]-0.5));
+      //          else
+      //              speedfac = 10.0*sqrt((lnode->X()[1]-0.5)*(lnode->X()[1]-0.5)+(lnode->X()[0]+0.5)*(lnode->X()[0]+0.5));
+      //      }
+      if(lnode->X()[1]<=0.5 && lnode->X()[0]<0.51 && lnode->X()[0]>-0.51)
+      {
+        speedfac = 0.0;
+      } //2D
+      //      if(lnode->X()[1]<=0.0 && lnode->X()[0]<0.51 && lnode->X()[0]>-0.51)
+      //      {
+      //          speedfac = 0.0;
+      //      } //2D einfach
+      //      if(lnode->X()[2]<=0.5 && sqrt(lnode->X()[0]*lnode->X()[0]+lnode->X()[1]*lnode->X()[1])<0.51)
+      //      {
+      //          speedfac = 0.0;
+      //      }  //3D
+#endif //BUNSENBURNER
+
+      double wallfac = 1.0;
+#ifdef ORACLES
+      //---------------------------------------------------------
+      // blend the flame speed close to walls for ORACLES problem
+      //---------------------------------------------------------
+      //    wall
+      // 1.0 |     ______
+      //     |    /
+      // 0.0 |___/ ,
+      //     |     H/6
+      const double wallzone = 0.0299/6.0;
+      if (lnode->X()[0] > 0.0) // inside combustion chamber
+      {
+        if ( (0.0653-abs(lnode->X()[1])) < wallzone or // close to top or bottom wall
+                         lnode->X()[0]   < wallzone )  // close to step
+        {
+          // wall factor is 0 at the wall and 1 at H/6 or further away from the wall
+          wallfac = 6.0/0.0299 * std::min(0.0653-abs(lnode->X()[1]),lnode->X()[0]);
+        }
+      }
+#endif
+
       if (gfuncval >= 0.0){ // interface or burnt domain -> burnt material
         // flame speed factor = laminar flame speed * rho_unburnt / rho_burnt
         speedfac = (sl -D*curv)* rhominus/rhoplus;
@@ -1047,36 +1105,9 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
         speedfac = sl-D*curv;
       }
 
-#ifdef COMBUST_BUNSENBURNER
-//      if(((lnode->X()[1]>0.5 && lnode->X()[1]<=0.55) && (lnode->X()[0]>=0.45)) || ((lnode->X()[1]>0.5 && lnode->X()[1]<=0.55) && (lnode->X()[0]<=-0.45)))
-//      {
-//          if(lnode->X()[0]>0)
-//              speedfac = 10.0*sqrt((lnode->X()[1]-0.5)*(lnode->X()[1]-0.5)+(lnode->X()[0]-0.5)*(lnode->X()[0]-0.5));
-//          else
-//              speedfac = 10.0*sqrt((lnode->X()[1]-0.5)*(lnode->X()[1]-0.5)+(lnode->X()[0]+0.5)*(lnode->X()[0]+0.5));
-//      }
-      if(lnode->X()[1]<=0.5 && lnode->X()[0]<0.51 && lnode->X()[0]>-0.51)
-      {
-          speedfac = 0.0;
-      } //2D
-//      if(lnode->X()[1]<=0.0 && lnode->X()[0]<0.51 && lnode->X()[0]>-0.51)
-//      {
-//          speedfac = 0.0;
-//      } //2D einfach
-//      if(lnode->X()[2]<=0.5 && sqrt(lnode->X()[0]*lnode->X()[0]+lnode->X()[1]*lnode->X()[1])<0.51)
-//      {
-//          speedfac = 0.0;
-//      }  //3D
-#endif //BUNSENBURNER
-
-#ifdef ORACLES
-      // modify flame speed for ORACLES problem
-#endif
-
-
       LINALG::Matrix<3,1> flvelrel(true);
       for (int icomp=0; icomp<3; ++icomp)
-        flvelrel(icomp) = speedfac * nvec(icomp);
+        flvelrel(icomp) = wallfac * speedfac * nvec(icomp);
 
       //-----------------------------------------------
       // compute (absolute) flame velocity at this node
@@ -1092,6 +1123,33 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
         lids[icomp] = convel->Map().LID(dofids[icomp]);
         fluidvel(icomp) = (*convel)[lids[icomp]];
       }
+
+#ifdef ORACLES
+      // set relative convective velocity to zero at the walls
+      // remark: - the wall factor does the same thing, this is just to be sure
+      //         - this is a hack for ORACLES
+      //         - this guarantees a zero transport velocity for no-slip Dirichlet walls
+      //         - this could be done in clean way by using a vector holding the fluid Dirichlet conditions
+      if ( (abs(lnode->X()[1])-0.0653) < 1.0E-9 or // top and bottom wall combustion chamber
+          ( abs(lnode->X()[0]) < 1.0E-9 and abs(lnode->X()[1]) > (0.005-1.0E-9) ) ) // walls above and below step
+        flvelrel.Clear();
+
+      // this is an attempt to do this in a clean general way; it failed
+      // set Dirichlet BC
+      //for (int icomp=0; icomp<3; ++icomp)
+      //{
+      //  const int gid = dofids[icomp];
+      //  cout << gid << endl;
+      //  if(dbcmap->MyGID(gid))
+      //  {
+      //    cout << "DBC overwritten" << endl;
+      //    cout << nodecoord(0,0) << endl;
+      //    cout << nodecoord(1,0) << endl;
+      //    cout << nodecoord(2,0) << endl;
+      //    flvelrel(icomp) = 0.0;
+      //  }
+      //}
+#endif
 
       LINALG::Matrix<3,1> flvelabs(true);
       // add fluid velocity (Navier Stokes solution) and relative flame velocity
@@ -1519,6 +1577,7 @@ void COMBUST::Algorithm::DoGfuncField()
         //OverwriteFluidVel(),
         //FluidField().ExtractInterfaceVeln(),
         ComputeFlameVel(convel,FluidField().DofSet()),
+        //ComputeFlameVel(convel,FluidField().DofSet(),FluidField().GetDBCMapExtractor()->CondMap()),
         Teuchos::null,
         FluidField().DofSet(),
         FluidField().Discretization()
@@ -2272,49 +2331,12 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
   }
 
   // restart of scalar transport (G-function) field
-  if (!restartfromfluid) // not if restart is
+  if (!restartfromfluid) // not if restart is done from standard fluid field; there is no scalar field
     ScaTraField().ReadRestart(step);
 
   // get pointers to the discretizations from the time integration scheme of each field
   const Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
   const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField().Discretization();
-
-#if 0
-  //--------------------------
-  // write output to Gmsh file
-  //--------------------------
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("field_scalar_after_restart", Step(), 701, true, gfuncdis->Comm().MyPID());
-  std::ofstream gmshfilecontent(filename.c_str());
-  {
-    // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "Phinp \" {" << endl;
-    // draw scalar field 'Phinp' for every element
-    IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phinp(),gmshfilecontent);
-    gmshfilecontent << "};" << endl;
-  }
-  {
-    // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "Phin \" {" << endl;
-    // draw scalar field 'Phin' for every element
-    IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phin(),gmshfilecontent);
-    gmshfilecontent << "};" << endl;
-  }
-  {
-    // add 'View' to Gmsh postprocessing file
-    gmshfilecontent << "View \" " << "Phinm \" {" << endl;
-    // draw scalar field 'Phinm' for every element
-    IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phinm(),gmshfilecontent);
-    gmshfilecontent << "};" << endl;
-  }
-  {
-//    // add 'View' to Gmsh postprocessing file
-//    gmshfilecontent << "View \" " << "Convective Velocity \" {" << endl;
-//    // draw vector field 'Convective Velocity' for every element
-//    IO::GMSH::VectorFieldNodeBasedToGmsh(gfuncdis,ScaTraField().ConVel(),gmshfilecontent);
-//    gmshfilecontent << "};" << endl;
-  }
-  gmshfilecontent.close();
-#endif
 
   //-------------------------------------------------------------
   // create (old) flamefront conforming to restart state of fluid
@@ -2386,6 +2408,44 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
     FluidField().ImportInterface(interfacehandle_,interfacehandle_);
     FluidField().ImportFlameFront(Teuchos::null);
 
+    if (gmshoutput_)
+    {
+      //--------------------------
+      // write output to Gmsh file
+      //--------------------------
+      const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("field_scalar_restart_before_reinit", Step(), 701, true, gfuncdis->Comm().MyPID());
+      std::ofstream gmshfilecontent(filename.c_str());
+      {
+        // add 'View' to Gmsh postprocessing file
+        gmshfilecontent << "View \" " << "Phinp \" {" << endl;
+        // draw scalar field 'Phinp' for every element
+        IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phinp(),gmshfilecontent);
+        gmshfilecontent << "};" << endl;
+      }
+      {
+        // add 'View' to Gmsh postprocessing file
+        gmshfilecontent << "View \" " << "Phin \" {" << endl;
+        // draw scalar field 'Phin' for every element
+        IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phin(),gmshfilecontent);
+        gmshfilecontent << "};" << endl;
+      }
+      {
+        // add 'View' to Gmsh postprocessing file
+        gmshfilecontent << "View \" " << "Phinm \" {" << endl;
+        // draw scalar field 'Phinm' for every element
+        IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phinm(),gmshfilecontent);
+        gmshfilecontent << "};" << endl;
+      }
+      {
+        //    // add 'View' to Gmsh postprocessing file
+        //    gmshfilecontent << "View \" " << "Convective Velocity \" {" << endl;
+        //    // draw vector field 'Convective Velocity' for every element
+        //    IO::GMSH::VectorFieldNodeBasedToGmsh(gfuncdis,ScaTraField().ConVel(),gmshfilecontent);
+        //    gmshfilecontent << "};" << endl;
+      }
+      gmshfilecontent.close();
+    }
+
     if (!restartfromfluid)
     {
       // get my flame front (boundary integration cells)
@@ -2402,11 +2462,52 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
         ScaTraField().Phinp(),
         true);
 
+    *ScaTraField().Phin() = *ScaTraField().Phinp();
+    *ScaTraField().Phinm() = *ScaTraField().Phinp();
+
     // update flame front according to reinitialized G-function field
     flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
     // update interfacehandle (get integration cells) according to updated flame front
     interfacehandle_->UpdateInterfaceHandle();
     }
+  }
+
+  if (gmshoutput_)
+  {
+    //--------------------------
+    // write output to Gmsh file
+    //--------------------------
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("field_scalar_restart_after_reinit", Step(), 701, true, gfuncdis->Comm().MyPID());
+    std::ofstream gmshfilecontent(filename.c_str());
+    {
+      // add 'View' to Gmsh postprocessing file
+      gmshfilecontent << "View \" " << "Phinp \" {" << endl;
+      // draw scalar field 'Phinp' for every element
+      IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phinp(),gmshfilecontent);
+      gmshfilecontent << "};" << endl;
+    }
+    {
+      // add 'View' to Gmsh postprocessing file
+      gmshfilecontent << "View \" " << "Phin \" {" << endl;
+      // draw scalar field 'Phin' for every element
+      IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phin(),gmshfilecontent);
+      gmshfilecontent << "};" << endl;
+    }
+    {
+      // add 'View' to Gmsh postprocessing file
+      gmshfilecontent << "View \" " << "Phinm \" {" << endl;
+      // draw scalar field 'Phinm' for every element
+      IO::GMSH::ScalarFieldToGmsh(gfuncdis,ScaTraField().Phinm(),gmshfilecontent);
+      gmshfilecontent << "};" << endl;
+    }
+    {
+      //    // add 'View' to Gmsh postprocessing file
+      //    gmshfilecontent << "View \" " << "Convective Velocity \" {" << endl;
+      //    // draw vector field 'Convective Velocity' for every element
+      //    IO::GMSH::VectorFieldNodeBasedToGmsh(gfuncdis,ScaTraField().ConVel(),gmshfilecontent);
+      //    gmshfilecontent << "};" << endl;
+    }
+    gmshfilecontent.close();
   }
 
   //-------------------

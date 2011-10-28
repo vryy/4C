@@ -124,7 +124,9 @@ Maintainer: Florian Henke
 //#define COMBUST_TESTCOUETTEFLOWDECOUPLED // velocity jump for combust_stat_inclined_couette_decoupled.dat
 //#define COLLAPSE_FLAME
 //#define FLAME_VORTEX
+//#define ORACLES
 //#define COMBUST_TWO_FLAME_FRONTS
+//#define COMBUST_BUNSENBURNER
 //#define COMBUST_XVELFREE // free Dirichlet boundary conditions x-component manually
 //#define COMBUST_YVELFREE // free Dirichlet boundary conditions y-component manually
 //#define COMBUST_PRESFREE
@@ -133,20 +135,13 @@ Maintainer: Florian Henke
 // combustion tolerances
 //----------------------
 //#define COMBUSTCONVTOL 1.0e-12 // just an example
-//#define COMBUST_GMSH_NORMALFIELD
+#define COMBUST_GMSH_NORMALFIELD
 
 //--------------------------
 // combustion output options
 //--------------------------
 //#define GMSH_AVERAGE_JUMP
-//#define GMSH_WRITE_JUMPS
-//#define GMSH_REF_FIELDS
-
-//--------------------------
-// combustion output options
-//--------------------------
-//#define GMSH_AVERAGE_JUMP
-//#define GMSH_WRITE_JUMPS
+#define GMSH_WRITE_JUMPS
 //#define GMSH_REF_FIELDS
 
 //-----------------------

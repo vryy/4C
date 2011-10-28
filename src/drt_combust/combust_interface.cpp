@@ -55,7 +55,7 @@ COMBUST::InterfaceHandleCombust::~InterfaceHandleCombust()
 void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
 {
   const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT")==1;
+  const bool gmshdebugout = DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
 
   const bool screen_out = true;
 
@@ -112,6 +112,28 @@ void COMBUST::InterfaceHandleCombust::toGmsh(const int step) const
         };
       };
       gmshfilecontent << "};" << endl;
+
+      // the cut is done in element coordinates; for distorted elements, the sence of orientation can be reversed in physical coordinates
+      gmshfilecontent << "View \" " << "Volume negative physical coordinates \" {" << endl;
+      for (int i=0; i<xfemdis_->NumMyRowElements(); ++i)
+      {
+        const DRT::Element* actele = xfemdis_->lRowElement(i);
+        const GEO::DomainIntCells& elementDomainIntCells = this->GetDomainIntCells(actele);
+        GEO::DomainIntCells::const_iterator cell;
+        for(cell = elementDomainIntCells.begin(); cell != elementDomainIntCells.end(); ++cell )
+        {
+          const LINALG::SerialDenseMatrix& cellpos = cell->CellNodalPosXYZ();
+          const double volphys = cell->VolumeInPhysicalDomain();
+          int vol_id = 3;
+          if (volphys<=0)
+            vol_id = 2;
+          //const double color = domain_id*100000+(closestElementId);
+          const double color = vol_id;
+          gmshfilecontent << IO::GMSH::cellWithScalarToString(cell->Shape(), color, cellpos) << endl;
+        };
+      };
+      gmshfilecontent << "};" << endl;
+
       f_system << gmshfilecontent.str();
     }
     f_system.close();

@@ -98,7 +98,9 @@ void combust_dyn()
   // create a combustion algorithm
   //------------------------------------------------------------------------------------------------
   // get the combustion parameter list
-  const Teuchos::ParameterList combustdyn = DRT::Problem::Instance()->CombustionDynamicParams();
+  Teuchos::ParameterList combustdyn = DRT::Problem::Instance()->CombustionDynamicParams();
+  const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
+  combustdyn.sublist("XFEM").set<bool>("GMSH_DEBUG_OUTPUT", DRT::INPUT::IntegralValue<int>(xdyn,"GMSH_DEBUG_OUT"));
   // create a COMBUST::Algorithm instance
   Teuchos::RCP<COMBUST::Algorithm> combust_ = Teuchos::rcp(new COMBUST::Algorithm(comm, combustdyn));
 

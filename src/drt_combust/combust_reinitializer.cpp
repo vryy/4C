@@ -80,7 +80,7 @@ COMBUST::Reinitializer::Reinitializer(
 {
   // special action if reinitializer is called from Algorithm::RestartNew()
   if(compdist)
-    SignedDistanceFunction(phivector);
+    FastSignedDistanceFunction(phivector);
 
   return;
 }
@@ -678,7 +678,11 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
     nodecoord(0) = lnode->X()[0];
     nodecoord(1) = lnode->X()[1];
     nodecoord(2) = lnode->X()[2];
-
+#ifdef ORACLES
+    // skip the part of the domian left of the expansion
+    if (nodecoord(0) <= 0.0)
+      continue;
+#endif
     //=======================================================================================
     // Build a list< pair< int eleGID, double distance > >
     // the distance is based on the distance between the current node and the closest node of
@@ -826,6 +830,8 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
           if (ipbc & 0x01)
           {
             const double pbclength = globalmaxs[0] - globalmins[0];
+            if (nodecoord(0) < globalmins[0] or nodecoord(0) > globalmaxs[0])
+              continue;
             if (nodecoord(planenormal[0]) > globalmins[0] + pbclength/2.0)
               tmpcoord(planenormal[0]) = nodecoord(planenormal[0]) - pbclength;
             else
@@ -834,6 +840,8 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
           if (ipbc & 0x02)
           {
             const double pbclength = globalmaxs[1] - globalmins[1];
+            if (nodecoord(1) < globalmins[1] or nodecoord(1) > globalmaxs[1])
+              continue;
             if (nodecoord(planenormal[1]) > globalmins[1] + pbclength/2.0)
               tmpcoord(planenormal[1]) = nodecoord(planenormal[1]) - pbclength;
             else
@@ -842,6 +850,8 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
           if (ipbc & 0x04)
           {
             const double pbclength = globalmaxs[2] - globalmins[2];
+            if (nodecoord(2) < globalmins[2] or nodecoord(2) > globalmaxs[2])
+              continue;
             if (nodecoord(planenormal[2]) > globalmins[2] + pbclength/2.0)
               tmpcoord(planenormal[2]) = nodecoord(planenormal[2]) - pbclength;
             else

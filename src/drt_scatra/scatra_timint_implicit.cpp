@@ -2401,7 +2401,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
     const double eps = 0.00152;
-    const double xsing = 0.2;
+    //const double xsing = 0.2;
     //const double zsing = 0.7525-0.05;//0.0354;
 
     // loop all nodes on the processor
@@ -2413,7 +2413,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       vector<int> nodedofset = discret_->Dof(lnode);
 
       // get x1, x2 and x3-coordinate
-      const double x1 = lnode->X()[0];
+      //const double x1 = lnode->X()[0];
       const double x2 = lnode->X()[1];
       //const double x3 = lnode->X()[2];
 
@@ -2426,7 +2426,14 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
 
         double initval = 0.0;
 
-        // implementation for periodic spanwise boundary
+        // initial plane implementation for periodic spanwise boundary
+        if (x2 >= 0.0)
+          initval = (x2-0.0354) - eps;
+        else
+          initval = (-0.0354-x2) - eps;
+
+#if 0
+        // initial wedge implementation for periodic spanwise boundary
         if (x1 <= 0.0)
         {
           if (x2 >= 0.0)
@@ -2442,9 +2449,10 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
           initval = x1 - xsing - eps;
         else
           dserror("impossible!");
+#endif
 
 #if 0
-        // implementation for spanwise walls
+        // initial wedge implementation for spanwise walls
         if (x1 <= 0.0)
         {
           if ( x3 <= -zsing and abs(x2) <= abs(x3+zsing) )

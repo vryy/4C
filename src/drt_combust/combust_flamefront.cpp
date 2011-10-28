@@ -2763,7 +2763,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
           // remark: this is unusual, since the
           if (numvolcells==1)
           {
-            cout << "element " << rootcell->Ele()->Id() << " is really touched" << endl;
+            //cout << "element " << rootcell->Ele()->Id() << " is really touched" << endl;
             // store domain integration cells
             const size_t numstoredvol = StoreDomainIntegrationCells(cutele,listDomainIntCellsperEle,xyze);
             // store boundary integration cells
@@ -2772,12 +2772,12 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
             if (numstoredvol==1 and numstoredbound==0)
             {
               StoreElementCutStatus(COMBUST::FlameFront::uncut, cutstat);
-              cout << "element " << rootcell->Ele()->Id() << " is uncut" << endl;
+              //cout << "element " << rootcell->Ele()->Id() << " is uncut" << endl;
             }
             else if (numstoredvol==1 and numstoredbound==1)
             {
               StoreElementCutStatus(COMBUST::FlameFront::touched, cutstat);
-              cout << "element " << rootcell->Ele()->Id() << " is touched" << endl;
+              //cout << "element " << rootcell->Ele()->Id() << " is touched" << endl;
             }
             else
               dserror("there should be a volume cell for a touched element");
@@ -2806,14 +2806,14 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
             else if (numstoredvol==1 and numstoredbound==1)
             {
               StoreElementCutStatus(COMBUST::FlameFront::touched, cutstat);
-              cout << "element " << rootcell->Ele()->Id() << " is touched" << endl;
+              //cout << "element " << rootcell->Ele()->Id() << " is touched" << endl;
               FlameFrontToGmsh(rootcell->ReturnRootCell(),listBoundaryIntCellsperEle,listDomainIntCellsperEle);
             }
             // a volume cell and all boundary cells have been deleted, because they were too small
             else if (numstoredvol==1 and numstoredbound==0)
             {
               StoreElementCutStatus(COMBUST::FlameFront::uncut, cutstat);
-              cout << "element " << rootcell->Ele()->Id() << " is uncut" << endl;
+              //cout << "element " << rootcell->Ele()->Id() << " is uncut" << endl;
             }
             // something went wrong
             else
@@ -2832,14 +2832,14 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
             // there are three volume cells:
             // - an inner (middle) volume cell (belongs to one domain (e.g. plus))
             // - two outer volume cells separated by the inner cell (belong to the other domain (e.g. minus))
-            cout << "element " << rootcell->Ele()->Id() << " is really trisected and consists of " << numvolcells << " volume cells" << endl;
+            //cout << "element " << rootcell->Ele()->Id() << " is really trisected and consists of " << numvolcells << " volume cells" << endl;
 
             // store domain integration cells
             const size_t numstoredvol = StoreDomainIntegrationCells(cutele,listDomainIntCellsperEle,xyze);
-            cout << "number of stored volumes " << numstoredvol << endl;
+            //cout << "number of stored volumes " << numstoredvol << endl;
             // store boundary integration cells
             const size_t numstoredbound = StoreBoundaryIntegrationCells(cutele,listBoundaryIntCellsperEle,xyze);
-            cout << "number of stored boundaries " << numstoredbound << endl;
+            //cout << "number of stored boundaries " << numstoredbound << endl;
 
             // regular cases: one volume more than boundaries
             if ( (numstoredvol==3 and numstoredbound==2) or // trisected in 2D
@@ -2849,7 +2849,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
               // update cut status of root cell (element)
               //StoreElementCutStatus(COMBUST::FlameFront::trisected, cutstat);
               StoreElementCutStatus(COMBUST::FlameFront::bisected, cutstat);
-              cout << "element " << rootcell->Ele()->Id() << " is bisected" << endl;
+              //cout << "element " << rootcell->Ele()->Id() << " is bisected" << endl;
             }
 
             // one outer volume cell is large enough, the other outer volume cell is too small
@@ -2873,7 +2873,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
             {
               // update cut status of root cell (element)
               StoreElementCutStatus(COMBUST::FlameFront::bisected, cutstat);
-              cout << "element " << rootcell->Ele()->Id() << " is bisected" << endl;
+              //cout << "element " << rootcell->Ele()->Id() << " is bisected" << endl;
             }
             // both outer volume cells are too small, but the boundary cells are not small
             // -> element is touched or double touched; stored boundary
@@ -2890,7 +2890,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
             {
               // update cut status of root cell (element)
               StoreElementCutStatus(COMBUST::FlameFront::touched, cutstat);
-              cout << "element " << rootcell->Ele()->Id() << " is touched" << endl;
+              //cout << "element " << rootcell->Ele()->Id() << " is touched" << endl;
             }
             // both outer volume cells are too small
             // -> stored the middle volume cell
@@ -2898,7 +2898,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
             {
               // update cut status of root cell (element)
               StoreElementCutStatus(COMBUST::FlameFront::uncut, cutstat);
-              cout << "element " << rootcell->Ele()->Id() << " is uncut" << endl;
+              //cout << "element " << rootcell->Ele()->Id() << " is uncut" << endl;
             }
             else
             {
@@ -2906,7 +2906,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
               dserror("flame front for bisected element %d could not be captured",rootcell->Ele()->Id());
             }
 
-            FlameFrontToGmsh(rootcell->ReturnRootCell(),listBoundaryIntCellsperEle,listDomainIntCellsperEle);
+            //FlameFrontToGmsh(rootcell->ReturnRootCell(),listBoundaryIntCellsperEle,listDomainIntCellsperEle);
           }
           else if (numvolcells>5)
           {
@@ -5131,6 +5131,9 @@ size_t COMBUST::FlameFront::StoreDomainIntegrationCells(
         }
         if (ic->Volume()/refvol > 1.0E-8)
         {
+          double physvolume = GEO::DomainIntCell( distype, coord, physCoord, inGplus ).VolumeInPhysicalDomain();
+          if (physvolume < 0.0)
+            cout << "negative volume detected for domain integration cell!" << endl;
           domainintcelllist.push_back( GEO::DomainIntCell( distype, coord, physCoord, inGplus ) );
           domcellcount += 1;
         }

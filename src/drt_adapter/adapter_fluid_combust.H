@@ -85,7 +85,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> ShapeDerivatives(){ dserror("not implemented");
                                                                           return Teuchos::null; };
     virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor(){ dserror("not implemented");
-                                                                         return Teuchos::null; };
+                                                                           return Teuchos::null;}; //return fluid_.DirichMaps();
     virtual const LINALG::MapExtractor& FreeSurface() const { dserror("not implemented!");
             // this is a hack to compile the code! danger of dangling reference!
             LINALG::MapExtractor object;

@@ -466,12 +466,16 @@ protected:
 
   // laminar flame speed
   const double flamespeed_;
+  // molecular diffusivity
+  const double moldiffusivity_;
   // Nitsche parameter velocity
   const double nitschevel_;
   // Nitsche parameter pressure
   const double nitschepres_;
   // boolean indicating condensation of element dofs on/off
   const bool condensation_;
+  // boolean turning output in Gmsh files on/off
+  const bool gmshoutput_;
 
   // parameters for two-phase flow problems
   // type of surface tension approximation

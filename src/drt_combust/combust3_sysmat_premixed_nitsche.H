@@ -646,6 +646,7 @@ void Nitsche_SysmatBoundaryCell(
     const double&                        visc_minus,   /// viscosity in minus domain
     const double&                        alphau,       /// Nitsche's stabilization parameter
     const double&                        alpha_conv,   /// stabilization parameter for convection dominated flows
+    const double&                        wallfac,      /// wall factor to fade jump at walls
     const size_t&                              numparamvelx,
     const size_t&                              numparampres,
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
@@ -855,8 +856,7 @@ void Nitsche_SysmatBoundaryCell(
       //-----------------------------
       // mass flux through flame front
       const double D = 0.0;//1.161/(1.161*1.0);
-      const double flamespeed_mod = flamespeed -D*curv;
-      const double mflux = flamespeed_mod*dens_minus;
+      const double mflux = (flamespeed -D*curv)*dens_minus*wallfac;
 
       // velocity jump in normal direction
 #if 0
@@ -1821,6 +1821,38 @@ void SysmatBoundaryNitsche(
   // set density and dynamic viscosity
   COMBUST::GetMaterialParams(material, dens_plus, dynvisc_plus, dens_minus, dynvisc_minus);
 
+  double wallfac = 1.0;
+#ifdef ORACLES
+  //--------------------------------------------------------
+  // get physical coordinates of element center
+  // remark: we want to blend the flame speed close to walls
+  //--------------------------------------------------------
+  LINALG::Matrix<3,1> center(true);
+  // the element center is at 0,0,0 (we assume hex elements, no tets!)
+  LINALG::Matrix<numnode,1> funct(true);
+  DRT::UTILS::shape_function_3D(funct,0.0,0.0,0.0,DISTYPE);
+  // compute coordinates of element center
+  center.MultiplyNN(xyze,funct);
+
+  //    wall
+  // 1.0 |     ______
+  //     |    /
+  // 0.0 |___/ ,
+  //     |     H/6
+  const double wallzone = 0.0299/6.0;
+  if (center(0) > 0.0) // inside combustion chamber
+  {
+    if ( (0.0653-abs(center(1))) < wallzone or // close to top or bottom wall
+                       center(0) < wallzone )  // close to step
+    {
+      // wall factor is 0 at the wall and 1 at H/6 or further away from the wall
+      wallfac = 6.0/0.0299 * std::min(0.0653-abs(center(1)),center(0));
+      if (wallfac < 0.1) // cut off the last 10% to guarantee a zero jump at the wall
+        wallfac = 0.0;
+    }
+  }
+#endif
+
   //-----------------------------------------------------------------------------------
   // get surface tension coefficient for all boundary integration cells of this element
   //-----------------------------------------------------------------------------------
@@ -1896,7 +1928,7 @@ void SysmatBoundaryNitsche(
           flamespeed, dens_minus, dens_plus,
           timefac, assembler,
           enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
-          alphau, alpha_conv,
+          alphau, alpha_conv, wallfac,
           numparamvelx, numparampres, surftensapprox, surftenscoeff, connected_interface, veljumptype, fluxjumptype,
           smoothed_boundary_integration
       );
@@ -1908,7 +1940,7 @@ void SysmatBoundaryNitsche(
           flamespeed, dens_minus, dens_plus,
           timefac, assembler,
           enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
-          alphau, alpha_conv,
+          alphau, alpha_conv, wallfac,
           numparamvelx, numparampres, surftensapprox, surftenscoeff, connected_interface, veljumptype, fluxjumptype,
           smoothed_boundary_integration
       );

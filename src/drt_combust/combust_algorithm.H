@@ -90,6 +90,7 @@ namespace COMBUST
     /// compute flame velocity
     const Teuchos::RCP<Epetra_Vector> ComputeFlameVel(const Teuchos::RCP<Epetra_Vector>& velnp,
                                                       const Teuchos::RCP<const DRT::DofSet>& dofset
+                                                      //const Teuchos::RCP<const Epetra_Map >& dbcmap
     );
 
     /// compute reinit velocity for advective scheme
@@ -188,6 +189,9 @@ namespace COMBUST
     bool reinitialization_accepted_;
     /// volume correction after reinitialization
     bool volcorrection_;
+
+    /// boolean turning output to Gmsh on/off
+    const bool gmshoutput_;
 
     /// switch for replacing the velocity of nodes at a certain distance of the interface by an approximate interface velocity
     const bool extract_interface_vel_;

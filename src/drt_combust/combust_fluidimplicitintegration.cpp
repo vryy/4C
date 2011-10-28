@@ -81,9 +81,11 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   xfemtimeint_(DRT::INPUT::IntegralValue<INPAR::COMBUST::XFEMTimeIntegration>(params_.sublist("COMBUSTION FLUID"),"XFEMTIMEINT")),
   xfemtimeint_enr_(DRT::INPUT::IntegralValue<INPAR::COMBUST::XFEMTimeIntegrationEnr>(params_.sublist("COMBUSTION FLUID"),"XFEMTIMEINT_ENR")),
   flamespeed_(params_.sublist("COMBUSTION FLUID").get<double>("LAMINAR_FLAMESPEED")),
+  moldiffusivity_(params_.sublist("COMBUSTION FLUID").get<double>("MOL_DIFFUSIVITY")),
   nitschevel_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_VELOCITY")),
   nitschepres_(params_.sublist("COMBUSTION FLUID").get<double>("NITSCHE_PRESSURE")),
   condensation_(xparams_.get<bool>("DLM_condensation")),
+  gmshoutput_(xparams_.get<bool>("gmshoutput")),
   surftensapprox_(DRT::INPUT::IntegralValue<INPAR::COMBUST::SurfaceTensionApprox>(params_.sublist("COMBUSTION FLUID"),"SURFTENSAPPROX")),
   connected_interface_(DRT::INPUT::IntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"CONNECTED_INTERFACE")),
   smoothed_boundary_integration_(DRT::INPUT::IntegralValue<int>(params_.sublist("COMBUSTION FLUID"),"SMOOTHED_BOUNDARY_INTEGRATION")),
@@ -790,7 +792,8 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
 
     if (step_ > 0)
     {
-      if ((xfemtimeint_==INPAR::COMBUST::xfemtimeint_semilagrange) or (xfemtimeint_enr_ ==INPAR::COMBUST::xfemtimeintenr_setenrichment))
+      if ((xfemtimeint_==INPAR::COMBUST::xfemtimeint_semilagrange) or
+          (xfemtimeint_enr_ ==INPAR::COMBUST::xfemtimeintenr_setenrichment))
       {
         // vectors to be written by time integration algorithm
         vector<RCP<Epetra_Vector> > newRowStateVectors;
@@ -2889,9 +2892,6 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
     const double time
     ) const
 {
-  const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (bool)DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
-
   const bool screen_out = true;
 
   // get a copy on column parallel distribution
@@ -2910,7 +2910,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
   //------------------------
   // write pressure solution
   //------------------------
-  if (gmshdebugout and (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.xfemfieldset_.end()))
+  if (gmshoutput_ and (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Pres) != this->physprob_.xfemfieldset_.end()))
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(presName, step, 5, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
@@ -3242,7 +3242,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
   //---------------------------
   // write temperature solution
   //---------------------------
-  if (gmshdebugout and (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Temp) != this->physprob_.xfemfieldset_.end()) )
+  if (gmshoutput_ and (this->physprob_.xfemfieldset_.find(XFEM::PHYSICS::Temp) != this->physprob_.xfemfieldset_.end()) )
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_temperature", step, 10, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
@@ -3344,7 +3344,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 #endif
 
 #if 0
-  if (gmshdebugout)
+  if (gmshoutput_)
   {
     std::ostringstream filename;
     std::ostringstream filenamedel;
@@ -3406,7 +3406,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 #endif
 
 #if 0
-  if (gmshdebugout)
+  if (gmshoutput_)
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_sigma_disc", step, 5, screen_out, discret_->Comm().MyPID());
     cout << endl;
@@ -3571,12 +3571,9 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
     const double time
     ) const
 {
-  const Teuchos::ParameterList& xfemparams = DRT::Problem::Instance()->XFEMGeneralParams();
-  const bool gmshdebugout = (bool)DRT::INPUT::IntegralValue<int>(xfemparams,"GMSH_DEBUG_OUT");
-
   const bool screen_out = true;
 
-  if (gmshdebugout)
+  if (gmshoutput_)
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, step, 10, screen_out, discret_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
