@@ -2100,6 +2100,7 @@ void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name, bool include_inner )
   {
     VolumeCell * vc = &**i;
 
+//    if ( true  ) // cout all volumecells - inside and outside
     if ( include_inner or vc->Position()!=Point::inside )
     {
       const plain_integrationcell_set & integrationcells = vc->IntegrationCells();
@@ -2165,13 +2166,24 @@ void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name, bool include_inner )
   }
   file << "};\n";
 
-  file << "View \"Nodes\" {\n";
+  file << "View \"Node-ID\" {\n";
   for ( std::map<int, Teuchos::RCP<Node> >::iterator i=nodes_.begin(); i!=nodes_.end(); ++i )
   {
     Node * n = &*i->second;
     Point * p = n->point();
     const double * x = p->X();
-    file << "SP(" << x[0] << "," << x[1] << "," << x[2] << "){" << n->NumDofSets() << "};\n";
+    file << "SP(" << x[0] << "," << x[1] << "," << x[2] << "){" << n->Id() << "};\n";
+  }
+  file << "};\n";
+
+
+  file << "View \"Node-Positions\" {\n";
+  for ( std::map<int, Teuchos::RCP<Node> >::iterator i=nodes_.begin(); i!=nodes_.end(); ++i )
+  {
+    Node * n = &*i->second;
+    Point * p = n->point();
+    const double * x = p->X();
+    file << "SP(" << x[0] << "," << x[1] << "," << x[2] << "){" <<  p->Position() << "};\n";
   }
   file << "};\n";
 }

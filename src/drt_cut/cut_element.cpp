@@ -139,23 +139,29 @@ void GEO::CUT::Element::FindNodePositions()
   LINALG::Matrix<3,1> rst;
 
   const std::vector<Node*> & nodes = Nodes();
+
   for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
   {
     Node * n = *i;
     Point * p = n->point();
     Point::PointPosition pos = p->Position();
+
     if ( pos==Point::undecided )
     {
       bool done = false;
       const plain_facet_set & facets = p->Facets();
+
       for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
       {
         Facet * f = *i;
+
+        double smallest_dist = 0.0;
+
         for ( plain_side_set::const_iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
         {
           Side * s = *i;
 
-          // Only take a side that belongs to one of this points facets and
+          // Only take a side that belongs to one of this point's facets and
           // shares a cut edge with this point. If there are multiple cut
           // sides within the element (facets), only the close one will always
           // give the right direction.
@@ -168,38 +174,80 @@ void GEO::CUT::Element::FindNodePositions()
             else
             {
               p->Coordinates( xyz.A() );
+              // the local coordinates here are wrong! (local coordinates of a point lying not within the side!?)
+              // but the third component gives the smallest distance of the point to the lines (line-segments) of this side
+              // (not to the inner of this side!!!, needs only linear operations and no newton)
+              // gives a distance != 0.0 only if distance to all lines could be determined (which means the projection of the point would lie
+              // within the side)
+              // if the distance could not be determined, then the local coordinates are (0,0,0) and also smaller than MINIMALTOL
               s->LocalCoordinates( xyz, rst );
               double d = rst( 2, 0 );
               if ( fabs( d ) > MINIMALTOL )
               {
-                if ( d > 0 )
+                if( fabs(smallest_dist) > MINIMALTOL ) // distance for node, this facet and another side already set, distance already set by another side and this facet
                 {
-                  p->Position( Point::outside );
+                    if ( (d > 0) and (fabs( d ) < fabs( smallest_dist )) ) // new smaller distance found for the same facet with another side
+                    {
+#if DEBUG
+                        if( pos == Point::inside) cout << "!!! position of node " << n->Id()  << " has changed from inside to outside" << endl;
+#endif
+                        // set new position
+                        pos = Point::outside;
+
+                        // set new smallest distance
+                        smallest_dist = d;
+                    }
+                    else if((d < 0) and (fabs( d ) < fabs( smallest_dist ))) //new smaller distance found for the same facet with another side
+                    {
+#if DEBUG
+                        if( pos == Point::outside) cout << "!!! position of node " << n->Id()  << " has changed from outside to inside" << endl;
+#endif
+
+                        // set new position
+                        pos = Point::inside;
+
+                        // set new smallest distance
+                        smallest_dist = d;
+                    }
                 }
-                else
+                else // standard case : distance set for the first time (smallest_dist currently 0.0)
                 {
-                  p->Position( Point::inside );
+                    if ( (d > 0) )
+                    {
+                        pos = Point::outside;
+                        smallest_dist = d;
+                    }
+                    else // d<0
+                    {
+                    	pos = Point::inside;
+                        smallest_dist = d;
+                    }
                 }
               }
-              else
+              else // d=0 or distance smaller than MINIMALTOL
               {
                 // within the cut plane but not cut by the side
                 break;
               }
             }
             done = true;
-            break;
+//            break; // do not finish the loop over sides (cut_faces_)
           }
         }
         if ( done )
+        {
+          // set the final found position
+          if(pos != Point::undecided ) p->Position(pos);
+
           break;
-      }
+        }
+      } // end for facets
       if ( p->Position()==Point::undecided )
       {
         // Still undecided! No facets with cut side attached! Will be set in a
         // minute.
       }
-    }
+    } // end if undecided
     else if ( pos==Point::outside or pos==Point::inside )
     {
       // The nodal position is already known. Set it to my facets. If the
@@ -212,8 +260,95 @@ void GEO::CUT::Element::FindNodePositions()
         f->Position( pos );
       }
     }
-  }
+
+  } // loop nodes
+
 }
+
+// Uli's original version
+//
+//void GEO::CUT::Element::FindNodePositions()
+//{
+//  LINALG::Matrix<3,1> xyz;
+//  LINALG::Matrix<3,1> rst;
+//
+//  const std::vector<Node*> & nodes = Nodes();
+//  for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+//  {
+//    Node * n = *i;
+//    Point * p = n->point();
+//    Point::PointPosition pos = p->Position();
+//    if ( pos==Point::undecided )
+//    {
+//      bool done = false;
+//      const plain_facet_set & facets = p->Facets();
+//      for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+//      {
+//        Facet * f = *i;
+//        for ( plain_side_set::const_iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
+//        {
+//          Side * s = *i;
+//
+//          // Only take a side that belongs to one of this points facets and
+//          // shares a cut edge with this point. If there are multiple cut
+//          // sides within the element (facets), only the close one will always
+//          // give the right direction.
+//          if ( f->IsCutSide( s ) and p->CommonCutEdge( s )!=NULL )
+//          {
+//            if ( p->IsCut( s ) )
+//            {
+//              p->Position( Point::oncutsurface );
+//            }
+//            else
+//            {
+//              p->Coordinates( xyz.A() );
+//              s->LocalCoordinates( xyz, rst );
+//              double d = rst( 2, 0 );
+//              if ( fabs( d ) > MINIMALTOL )
+//              {
+//                if ( d > 0 )
+//                {
+//                  p->Position( Point::outside );
+//                }
+//                else
+//                {
+//                  p->Position( Point::inside );
+//                }
+//              }
+//              else
+//              {
+//                // within the cut plane but not cut by the side
+//                break;
+//              }
+//            }
+//            done = true;
+//            break;
+//          }
+//        }
+//        if ( done )
+//          break;
+//      }
+//      if ( p->Position()==Point::undecided )
+//      {
+//        // Still undecided! No facets with cut side attached! Will be set in a
+//        // minute.
+//      }
+//    }
+//    else if ( pos==Point::outside or pos==Point::inside )
+//    {
+//      // The nodal position is already known. Set it to my facets. If the
+//      // facets are already set, this will not have much effect anyway. But on
+//      // multiple cuts we avoid unset facets this way.
+//      const plain_facet_set & facets = p->Facets();
+//      for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+//      {
+//        Facet * f = *i;
+//        f->Position( pos );
+//      }
+//    }
+//  }
+//}
+
 
 bool GEO::CUT::Element::IsCut()
 {
