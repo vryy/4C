@@ -188,8 +188,11 @@ find_package(LAPACK REQUIRED)
 #
 ### TRILINOS
 SET(CMAKE_PREFIX_PATH ${Trilinos_PREFIX} ${CMAKE_PREFIX_PATH})
-#find_package(Trilinos REQUIRED)
-find_package(Trilinos REQUIRED CONFIGS TrilinosConfig_install.cmake)
+if (TRILINOS_DEV)
+find_package(Trilinos REQUIRED)
+else ()
+find_package(Trilinos REQUIRED CONFIGS TrilinosConfig_install.cmake)  # needed for build system on navier??
+endif()
 
 # Echo trilinos build info just for fun
 MESSAGE("\nFound Trilinos!  Here are the details: ")
@@ -1700,6 +1703,8 @@ macro (baci_test arg nproc restart)
     add_test(NAME ${arg}-p${nproc}-restart
       COMMAND mpirun -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart})
   endif (${restart})
+
+  set_tests_properties ( ${arg}-p${nproc} PROPERTIES TIMEOUT 1000 )
 endmacro (baci_test)
 
 # Run the test but ignore any complaints. Can be used to silence tests that
