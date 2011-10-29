@@ -3154,6 +3154,7 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
 
   BoolParameter("RESTART_FROM_FLUID","No","Restart from a standard fluid problem (no scalar transport field). No XFEM dofs allowed!",&combustcontrol);
   BoolParameter("RESTART_SCATRA_INPUT","No","Use ScaTra field from .dat-file instead",&combustcontrol);
+  BoolParameter("GMSH_OUTPUT","No","write output to gmsh files",&combustcontrol);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrolfluid = combustcontrol.sublist("COMBUSTION FLUID",false,

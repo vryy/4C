@@ -190,13 +190,13 @@ namespace COMBUST
     /// volume correction after reinitialization
     bool volcorrection_;
 
-    /// boolean turning output to Gmsh on/off
-    const bool gmshoutput_;
-
     /// switch for replacing the velocity of nodes at a certain distance of the interface by an approximate interface velocity
     const bool extract_interface_vel_;
     /// number of layers around the interface with unmodified velocity
     const int convel_layers_;
+
+    /// boolean turning output to Gmsh on/off
+    const bool gmshoutput_;
 
     /// combustion input parameter list
     const Teuchos::ParameterList& combustdyn_;
