@@ -385,12 +385,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
    * which are only relevant for a combustion problem.                 07/08 henke */
   if (genprob.probtyp == prb_combust)
   {
-    const Teuchos::ParameterList& xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
     fluidtimeparams->sublist("COMBUSTION FLUID")=prbdyn.sublist("COMBUSTION FLUID");
     // parameter COMBUSTTYPE from sublist COMBUSTION FLUID is also added to sublist XFEM
-    fluidtimeparams->sublist("XFEM").set<int>("combusttype",
-        DRT::INPUT::IntegralValue<INPAR::COMBUST::CombustionType>(prbdyn.sublist("COMBUSTION FLUID"),"COMBUSTTYPE"));
-    fluidtimeparams->sublist("XFEM").set<bool>("gmshoutput", DRT::INPUT::IntegralValue<int>(xdyn,"GMSH_DEBUG_OUT"));
+    fluidtimeparams->sublist("XFEM").set<int>("combusttype", DRT::INPUT::IntegralValue<INPAR::COMBUST::CombustionType>(prbdyn.sublist("COMBUSTION FLUID"),"COMBUSTTYPE"));
+    fluidtimeparams->sublist("XFEM").set<bool>("GMSH_OUTPUT", DRT::INPUT::IntegralValue<bool>(prbdyn,"GMSH_OUTPUT"));
   }
 
   // -------------------------------------------------------------------
