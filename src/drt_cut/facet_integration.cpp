@@ -17,10 +17,31 @@ std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector
             x1[mm] = coords[0];
             y1[mm] = coords[1];
             z1[mm] = coords[2];
-            mm++;
-           //3 points are sufficient to find the equation of plane
+
+//make sure all three points do not lie on a line
+//construct a vector pt2-pt1 and pt3-pt1. If the cross product is zero then all are in same line
+//go to next point in such cases
+            if(mm==2)
+            {
+            	double pt1pt2[3],pt1pt3[3],cross[3];
+            	pt1pt2[0] = x1[1]-x1[0];pt1pt3[0]=x1[2]-x1[0];
+            	pt1pt2[1] = y1[1]-y1[0];pt1pt3[1]=y1[2]-y1[0];
+            	pt1pt2[2] = z1[1]-z1[0];pt1pt3[2]=z1[2]-z1[0];
+            	cross[0] = fabs(pt1pt2[1]*pt1pt3[2]-pt1pt2[2]*pt1pt3[1]);
+            	cross[1] = fabs(pt1pt2[0]*pt1pt3[2]-pt1pt2[2]*pt1pt3[0]);
+            	cross[2] = fabs(pt1pt2[1]*pt1pt3[0]-pt1pt2[0]*pt1pt3[1]);
+            	if(cross[0]<0.000001 && cross[1]<0.000001 && cross[2]<0.000001)
+					continue;
+            	else
+            		mm++;
+            }
+            else
+            	mm++;
+            //3 points are sufficient to find the equation of plane
             if(mm==3)
-                    break;
+				break;
+            if(mm==cornersLocal.size())
+            	dserror("All points are on a line");
 //
         }
         eqn_plane[0] = y1[0]*(z1[1]-z1[2])+y1[1]*(z1[2]-z1[0])+y1[2]*(z1[0]-z1[1]);

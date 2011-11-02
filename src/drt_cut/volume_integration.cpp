@@ -67,9 +67,9 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
     maxx[1] = box1.maxy();
     minn[2] = box1.minz();
     maxx[2] = box1.maxz();
-//    std::cout<<minn[0]<<"\t"<<maxx[0]<<"\t";
-  //  std::cout<<minn[1]<<"\t"<<maxx[1]<<"\t";
-    //std::cout<<minn[2]<<"\t"<<maxx[2]<<std::endl;
+    /*std::cout<<minn[0]<<"\t"<<maxx[0]<<"\t";
+    std::cout<<minn[1]<<"\t"<<maxx[1]<<"\t";
+    std::cout<<minn[2]<<"\t"<<maxx[2]<<std::endl;*/
  
     vector<vector<double> > zcoord;
     vector<vector<double> > ycoord;
@@ -91,6 +91,7 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
         if((zmax-zmin)<0.01*(maxx[2]-minn[2]))
                 break;
     }
+//    std::cout<<"intermediate gauss points = "<<gaus_pts_.size()<<"\n";
 //max z plane which contains significant area
     while(1)
     {
@@ -287,6 +288,27 @@ void GEO::CUT::VolumeIntegration::get_zcoordinates(vector<vector<double> >& zcoo
             zcoord.push_back(thisplane2);
             faceno++;
     }
+
+    /*std::cout<<"zcoord\n";
+    for(vector<vector<double> >::iterator i=zcoord.begin();i!=zcoord.end();i++)
+    {
+    	vector<double> zz=*i;
+    	for(vector<double>::iterator j=zz.begin();j!=zz.end();j++)
+    	{
+    		std::cout<<*j<<"\t";
+    	}
+    	std::cout<<"\n";
+    }
+    std::cout<<"ycoord\n";
+	for(vector<vector<double> >::iterator i=ycoord.begin();i!=ycoord.end();i++)
+	{
+		vector<double> zz=*i;
+		for(vector<double>::iterator j=zz.begin();j!=zz.end();j++)
+		{
+			std::cout<<*j<<"\t";
+		}
+		std::cout<<"\n";
+	}*/
 }
 
 //check whether the considered imaginary line intersect any of the facets
@@ -485,46 +507,46 @@ bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3],double maxx[3], d
 //checl for the lowest line
      while(1)
      {
-                 vector<vector<double> > linePts;
-                 ymin += toler*dx1[1];
-                 bool intersec = false;
-                 double a[] = {xmin,ymin,zmin};
-                 intersec = IsIntersect(a, minn, maxx, linePts,zcoord,ycoord,toler,numeach);
+		 vector<vector<double> > linePts;
+		 ymin += toler*dx1[1];
+		 bool intersec = false;
+		 double a[] = {xmin,ymin,zmin};
+		 intersec = IsIntersect(a, minn, maxx, linePts,zcoord,ycoord,toler,numeach);
 
 // the area of the solid volume in this particular z-plane is almost negligible
 // if the area of volumecell is less than 1% of bounding box
-                 if((ymax-ymin)<toler*dx1[1])
-                 {
-                      isArea = false;
-                      return isArea;
-                 }
-                 if(intersec)
-                 {
-     //                 cout<<ymin<<"\t"<<ymax<<endl;
-                      pts.insert(pts.end(),linePts.begin(),linePts.end());
-                      break; 
-                 }
+		 if((ymax-ymin)<toler*dx1[1])
+		 {
+			  isArea = false;
+			  return isArea;
+		 }
+		 if(intersec)
+		 {
+//                 cout<<ymin<<"\t"<<ymax<<endl;
+			  pts.insert(pts.end(),linePts.begin(),linePts.end());
+			  break;
+		 }
      }
 //   cout<<"line1"<<endl; 
 //check for the topmost line
      while(1)
      {
-                 vector<vector<double> > linePts;
-                 ymax -= toler*dx1[1];
+		 vector<vector<double> > linePts;
+		 ymax -= toler*dx1[1];
 //               cout<<ymax<<endl;
-                 bool intersec = false;
-                 double a[] = {xmin,ymax,zmin};
-                 intersec = IsIntersect(a, minn, maxx, linePts,zcoord,ycoord,toler,numeach);
-                 if((ymax-ymin)<toler*dx1[1])
-                 {
-                     isArea = false;
-                     return isArea;
-                 }
-                 if(intersec)
-                 {
-                     pts.insert(pts.end(),linePts.begin(),linePts.end());
-                     break; 
-                 }
+		 bool intersec = false;
+		 double a[] = {xmin,ymax,zmin};
+		 intersec = IsIntersect(a, minn, maxx, linePts,zcoord,ycoord,toler,numeach);
+		 if((ymax-ymin)<toler*dx1[1])
+		 {
+			 isArea = false;
+			 return isArea;
+		 }
+		 if(intersec)
+		 {
+			 pts.insert(pts.end(),linePts.begin(),linePts.end());
+			 break;
+		 }
      }
 //     cout<<"in this plane"<<ymin<<"\t"<<ymax<<endl;//blockkk or remove
 
@@ -537,39 +559,39 @@ bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3],double maxx[3], d
     bool previous = true;
     for(int i=1;i<num-1;i++)
     {
-                double a[] = {xmin,yplane[i],zmin};
-                bool intersec = false;
-                vector<vector<double> > linePts;
-                intersec = IsIntersect(a, minn, maxx, linePts,zcoord,ycoord,toler,numeach);
-                if(intersec)
-                {
-                        pts.insert(pts.end(),linePts.begin(),linePts.end());
-                        linePts.clear();
-                        previous = true;
-                        continue;
-                }
-                else
-                {
-                        if(previous==false)
-                                continue;
-                        double dyym = dyy;
-                        for(int k=0;k<4;k++)
-                        {
-                                dyym += 0.5*dyym;
-                                double a[] = {xmin,yplane[i]-dyym,zmin};
-                                bool innerintersec = false;
-                                vector<vector<double> > linePts;
-                                innerintersec = IsIntersect(a, minn, maxx, linePts,zcoord,ycoord,toler,numeach);
+		double a[] = {xmin,yplane[i],zmin};
+		bool intersec = false;
+		vector<vector<double> > linePts;
+		intersec = IsIntersect(a, minn, maxx, linePts,zcoord,ycoord,toler,numeach);
+		if(intersec)
+		{
+				pts.insert(pts.end(),linePts.begin(),linePts.end());
+				linePts.clear();
+				previous = true;
+				continue;
+		}
+		else
+		{
+				if(previous==false)
+						continue;
+				double dyym = dyy;
+				for(int k=0;k<4;k++)
+				{
+						dyym += 0.5*dyym;
+						double a[] = {xmin,yplane[i]-dyym,zmin};
+						bool innerintersec = false;
+						vector<vector<double> > linePts;
+						innerintersec = IsIntersect(a, minn, maxx, linePts,zcoord,ycoord,toler,numeach);
 
-                                 if(innerintersec)
-                                 {
-                                        pts.insert(pts.end(),linePts.begin(),linePts.end());
-                                        linePts.clear();
-                                        break; 
-                                 }
-                        }
-                        previous = false;
-                }
+						 if(innerintersec)
+						 {
+								pts.insert(pts.end(),linePts.begin(),linePts.end());
+								linePts.clear();
+								break;
+						 }
+				}
+				previous = false;
+		}
     }
     return isArea;  
 }

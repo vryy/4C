@@ -831,12 +831,12 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem, Mesh & mesh, boo
 {
 //        std::cout<<"volume"<<std::endl;
 //
-/*        static int k=0; //blockkk or remove
-if(k!=0)        //blockkk or remove
-	return;//blockkk or remove
-const GEO::CUT::Point::PointPosition posu = Position();//blockkk or remove
-if(posu==-3)//blokkk or remove
-	k++;//blockkk or remove*/
+//        static int k=0; //blockkk or remove
+//if(k>1)        //blockkk or remove
+//	return;//blockkk or remove
+//const GEO::CUT::Point::PointPosition posu = Position();//blockkk or remove
+//if(posu==-3)//blokkk or remove
+//	k++;//blockkk or remove*/
 
 	//position is used to decide whether the ordering of points are in clockwise or not
 	const GEO::CUT::Point::PointPosition posi = Position();
@@ -867,17 +867,16 @@ if(posu==-3)//blokkk or remove
 //    k++;               //blockkk or remove
 //}
     
-/*    std::cout<<"volume"<<"\n";
+    /*std::cout<<"volume"<<"\n";
     const plain_facet_set & facete = Facets();
     for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
     {
         Facet *fac = *i;
-        const std::vector<Point*> & corners = fac->CornerPoints();
+        const std::vector<vector<double> > corners = fac->CornerPointsLocal(elem,0);
         std::cout<<"facet"<<std::endl;
-        for(std::vector<Point*>::const_iterator k=corners.begin();k!=corners.end();k++)
+        for(std::vector<vector<double> >::const_iterator k=corners.begin();k!=corners.end();k++)
         {
-            const Point* po = *k;
-            const double * coords = po->X();
+            vector<double> coords = *k;
             std::cout<<coords[0]<<"\t"<<coords[1]<<"\t"<<coords[2]<<std::endl;
         }
     }*/
