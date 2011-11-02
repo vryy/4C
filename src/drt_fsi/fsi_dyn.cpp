@@ -163,8 +163,13 @@ void fluid_xfem2_drt()
 
   const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
 
+  // compute number of nodes
+  int numglobalnodes = 0.0;
+  int numlocalnodes = actdis->NumMyColNodes();
+  (actdis->Comm()).SumAll(&numlocalnodes,&numglobalnodes,1);
+
   // reserve max size of dofs for the fluid dis
-  int maxNumMyReservedDofs = actdis->NumGlobalNodes()*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
+  int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
   Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
   actdis->ReplaceDofSet(maxdofset);
 
@@ -212,8 +217,13 @@ void fluid_fluid_ale_drt()
 
   const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
 
+  // compute number of nodes
+  int numglobalnodes = 0.0;
+  int numlocalnodes = bgfluiddis->NumMyColNodes();
+  (bgfluiddis->Comm()).SumAll(&numlocalnodes,&numglobalnodes,1);
+
   // reserve max size of dofs for the background fluid
-  int maxNumMyReservedDofs = bgfluiddis->NumGlobalNodes()*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
+  int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
   Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
   bgfluiddis->ReplaceDofSet(maxdofset);
 
@@ -470,7 +480,13 @@ void fluid_fluid_fsi_drt()
 
   // reserve max size of dofs for the background fluid
   const Teuchos::ParameterList xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
-  int maxNumMyReservedDofs = bgfluiddis->NumGlobalNodes()*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
+
+  // compute number of nodes
+  int numglobalnodes = 0.0;
+  int numlocalnodes = bgfluiddis->NumMyColNodes();
+  (bgfluiddis->Comm()).SumAll(&numlocalnodes,&numglobalnodes,1);
+
+  int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
   Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
   bgfluiddis->ReplaceDofSet(maxdofset);
 

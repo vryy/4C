@@ -132,9 +132,15 @@ void fluid_fluid_drt()
 
   RCP<DRT::Discretization> bgfluiddis = problem->Dis(genprob.numff,0);
 
-  // reserve max size of dofs for the background fluid
   const Teuchos::ParameterList xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
-  int maxNumMyReservedDofs = bgfluiddis->NumGlobalNodes()*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
+
+  // compute numnode
+  int numglobalnodes = 0.0;
+  int numlocalnodes = bgfluiddis->NumMyColNodes();
+  (bgfluiddis->Comm()).SumAll(&numlocalnodes,&numglobalnodes,1);
+
+  // reserve max size of dofs for the background fluid
+  int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
   Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
   bgfluiddis->ReplaceDofSet(maxdofset);
 
