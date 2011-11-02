@@ -143,6 +143,7 @@ Maintainer: Florian Henke
 //#define GMSH_AVERAGE_JUMP
 #define GMSH_WRITE_JUMPS
 //#define GMSH_REF_FIELDS
+#define PRINTMASSCHECK
 
 //-----------------------
 // Enrichment computation

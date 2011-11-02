@@ -1023,12 +1023,6 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
   // out to screen
   PrintTimeStepInfo();
 
-  // action for elements
-  if (timealgo_!=INPAR::FLUID::timeint_stationary and theta_ < 1.0)
-  {
-    cout0_ << "* Warning! Works reliably only for Backward Euler time discretization! *" << endl;
-  }
-
 /*
   {
     std::ofstream f;
@@ -2868,7 +2862,7 @@ void FLD::CombustFluidImplicitTimeInt::ReadRestart(int step)
   //std::cout << state_.veln_->GlobalLength()  << std::endl;
   //std::cout << state_.velnm_->GlobalLength() << std::endl;
 
-  std::cout << "Read restart" << std::endl;
+  cout0_ << "Read restart" << std::endl;
 
   reader.ReadVector(state_.velnp_,"velnp");
   //std::cout << state_.velnp_->GlobalLength() << std::endl;

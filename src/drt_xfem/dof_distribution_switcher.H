@@ -51,7 +51,8 @@ namespace XFEM
       newElementalDofDistrib_(newElementalDofDistrib)
     {
       extractDofKeysForInitialization(unknownFieldEnr_);
-      cout << "Number of nodes with missing nodal unknowns: " << unknownFieldEnr_.size() << endl;
+      if (unknownFieldEnr_.size()>0)
+        cout << "Number of nodes with missing nodal unknowns: " << unknownFieldEnr_.size() << endl;
       return;
     }
 
@@ -78,7 +79,8 @@ namespace XFEM
       newElementalDofDistrib_(newElementalDofDistrib)
     {
       extractDofKeysForInitializationFluidXFluid(unknownFieldEnr_,nodelabeln);
-      cout << "Number of nodes with missing nodal unknowns: " << unknownFieldEnr_.size() << endl;
+      if (unknownFieldEnr_.size()>0)
+        cout << "Number of nodes with missing nodal unknowns: " << unknownFieldEnr_.size() << endl;
       return;
     }
 

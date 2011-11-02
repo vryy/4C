@@ -2807,7 +2807,7 @@ void COMBUST::FlameFront::CaptureFlameFront(const Teuchos::RCP<const COMBUST::Re
             {
               StoreElementCutStatus(COMBUST::FlameFront::touched, cutstat);
               //cout << "element " << rootcell->Ele()->Id() << " is touched" << endl;
-              FlameFrontToGmsh(rootcell->ReturnRootCell(),listBoundaryIntCellsperEle,listDomainIntCellsperEle);
+              //FlameFrontToGmsh(rootcell->ReturnRootCell(),listBoundaryIntCellsperEle,listDomainIntCellsperEle);
             }
             // a volume cell and all boundary cells have been deleted, because they were too small
             else if (numstoredvol==1 and numstoredbound==0)

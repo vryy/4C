@@ -289,7 +289,7 @@ void COMBUST::Algorithm::TimeLoop()
       //      G-function is zero, if a zero initial fluid field is used.
       //      -> Should the fluid be solved first?
       // solve linear G-function equation
-      DoGfuncField();
+      //DoGfuncField();
 
       //(after Scatra transport but before reinitialization)
       // update interface geometry
@@ -314,6 +314,7 @@ void COMBUST::Algorithm::TimeLoop()
     // write output to screen and files
     Output();
 
+#ifdef PRINTMASSCHECK
     if (!stepreinit_)
     {
       // compute current volume of minus domain
@@ -321,13 +322,16 @@ void COMBUST::Algorithm::TimeLoop()
       // print mass conservation check on screen
       printMassConservationCheck(volume_start_, volume_current);
     }
+#endif
 
   } // time loop
 
+#ifdef PRINTMASSCHECK
   // compute final volume of minus domain
   const double volume_end = ComputeVolume();
   // print mass conservation check on screen
   printMassConservationCheck(volume_start_, volume_end);
+#endif
 
   return;
 }
@@ -364,7 +368,7 @@ void COMBUST::Algorithm::SolveStationaryProblem()
     dserror("Scatra time integration scheme is not stationary");
 
   // compute initial volume of minus domain
-  const double volume_start = ComputeVolume();
+  volume_start_ = ComputeVolume();
 
   //--------------------------------------
   // loop over fluid and G-function fields
@@ -407,10 +411,12 @@ void COMBUST::Algorithm::SolveStationaryProblem()
   // write output to screen and files (and Gmsh)
   Output();
 
+#ifdef PRINTMASSCHECK
   // compute final volume of minus domain
   const double volume_end = ComputeVolume();
   // print mass conservation check on screen
-  printMassConservationCheck(volume_start, volume_end);
+  printMassConservationCheck(volume_start_, volume_end);
+#endif
 
   return;
 }
@@ -441,12 +447,12 @@ void COMBUST::Algorithm::DoReinitialization()
 //	  {cout << "Reinitialization Characteristic "
 //	 reinitaction_ == INPAR::COMBUST::reinitaction_pdebased_stabilized_convection)
 
-
+#ifdef PRINTMASSCHECK
   // compute current volume of minus domain
   const double volume_current_before = ComputeVolume();
   // print mass conservation check on screen
   printMassConservationCheck(volume_start_, volume_current_before);
-
+#endif
 
   // reinitialize Gfunc
   switch(reinitaction_)
@@ -498,18 +504,21 @@ void COMBUST::Algorithm::DoReinitialization()
 
   // compute current volume of minus domain
   const double volume_current_after = ComputeVolume();
+#ifdef PRINTMASSCHECK
   // print mass conservation check on screen
   printMassConservationCheck(volume_start_, volume_current_after);
-
+#endif
   // do volume correction
   if (volcorrection_)
   {
     CorrectVolume(volume_start_, volume_current_after);
 
+#ifdef PRINTMASSCHECK
     // compute current volume of minus domain
     const double volume_current_corrected = ComputeVolume();
     // print mass conservation check on screen
     printMassConservationCheck(volume_start_, volume_current_corrected);
+#endif
   }
 
   return;
@@ -908,9 +917,12 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
     //const Teuchos::RCP<const Epetra_Map >& dbcmap
     )
 {
-  if((DRT::INPUT::IntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == false) and
-      (DRT::INPUT::IntegralValue<INPAR::COMBUST::InitialField>(combustdyn_.sublist("COMBUSTION FLUID"),"INITIALFIELD") == INPAR::COMBUST::initfield_zero_field))
-    cout << "/!\\ Compute an initial stationary fluid solution to avoid a non-zero initial flame velocity" << endl;
+  if (Comm().MyPID()==0)
+  {
+    if((DRT::INPUT::IntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == false) and
+       (DRT::INPUT::IntegralValue<INPAR::COMBUST::InitialField>(combustdyn_.sublist("COMBUSTION FLUID"),"INITIALFIELD") == INPAR::COMBUST::initfield_zero_field))
+      cout << "/!\\ Compute an initial stationary fluid solution to avoid a non-zero initial flame velocity" << endl;
+  }
 
   // temporary vector for convective velocity (based on dofrowmap of standard (non-XFEM) dofset)
   // remark: operations must not be performed on 'convel', because the vector is accessed by both
@@ -1000,7 +1012,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
         // level set function (e.g. "regular level set cone"); all normals add up to zero normal vector
         // -> The fluid convective velocity 'fluidvel' alone constitutes the flame velocity, since the
         //    relative flame velocity 'flvelrel' turns out to be zero due to the zero average normal vector.
-        std::cout << "/!\\ phi gradient too small at node " << gid << " -> flame velocity is only the convective velocity" << std::endl;
+        //std::cout << "/!\\ phi gradient too small at node " << gid << " -> flame velocity is only the convective velocity" << std::endl;
         nvec.PutScalar(0.0);
       }
       else
@@ -1406,10 +1418,12 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
   // write output to screen and files (and Gmsh)
   Output();
 
+#ifdef PRINTMASSCHECK
   // compute final volume of minus domain
   const double volume_end = ComputeVolume();
   // print mass conservation check on screen
   printMassConservationCheck(volume_start, volume_end);
+#endif
   
   return;
 }
@@ -1628,13 +1642,15 @@ void COMBUST::Algorithm::UpdateTimeStep()
 
   if (stepreinit_ and reinitialization_accepted_)
   {
-	cout << "UpdateReinit" << endl;
+    if(Comm().MyPID()==0)
+      cout << "UpdateReinit" << endl;
     ScaTraField().UpdateReinit();
   }
   else
   {
-     cout << "Update" << endl;
-     ScaTraField().Update();
+    if(Comm().MyPID()==0)
+      cout << "Update" << endl;
+    ScaTraField().Update();
   }
 
   return;
@@ -1680,7 +1696,7 @@ void COMBUST::Algorithm::printMassConservationCheck(const double volume_start, c
         dserror("NaN detected in mass conservation check");
 
       std::cout << "---------------------------------------" << endl;
-      std::cout << "           mass conservation           " << endl;
+      std::cout << "           mass conservation"            << endl;
       std::cout << " initial mass: " << volume_start << endl;
       std::cout << " final mass:   " << volume_end   << endl;
       std::cout << " mass loss:    " << massloss << "%" << endl;

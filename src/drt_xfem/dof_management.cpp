@@ -97,9 +97,6 @@ XFEM::DofManager::DofManager(
     //         - periodic boundary conditions live on row (or colunm) nodes
     //         -> for a general parallel distribution 'pbcmap' and 'nodeDofMap' do not contain the same information
     //         -> simulation will crash as soon this discrepancy shows
-    if ((*pbcmap_).size()>0 and ih_->xfemdis()->Comm().NumProc()>1)
-      //dserror("algorithm does not work for general parallel distributions");
-      cout << "/!\\ this will crash as soon as the solution becomes unsymmetric at the periodic boundaries" << endl;
 
     for (std::map<int, vector<int>  >::const_iterator pbciter= (*pbcmap_).begin(); pbciter != (*pbcmap_).end(); ++pbciter)
     {

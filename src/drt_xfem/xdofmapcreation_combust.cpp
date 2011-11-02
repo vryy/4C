@@ -458,8 +458,10 @@ void XFEM::createDofMapCombust(
   syncNodalDofs(ih, nodeDofMap);
 #endif
 
-  cout << " skipped "<< skipped_node_enr_count << " node unknowns" << endl;
-  cout << " skipped "<< skipped_elem_enr_count << " element unknowns" << endl;
+  if (skipped_node_enr_count > 0)
+    cout << " skipped "<< skipped_node_enr_count << " node unknowns" << endl;
+  if (skipped_elem_enr_count > 0)
+    cout << " skipped "<< skipped_elem_enr_count << " element unknowns" << endl;
 }
 
 /*------------------------------------------------------------------------------------------------*
