@@ -35,8 +35,9 @@ Maintainer: Alexander Popp, Christian Cyron
 /*----------------------------------------------------------------------*
  |  constructor (public)                                      popp 04/10|
  *----------------------------------------------------------------------*/
-CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret):
-pdiscret_(discret)
+CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alphaf):
+pdiscret_(discret),
+alphaf_(alphaf)
 {
   // create new (basically copied) discretization for contact
   // (to ease our search algorithms we afford the luxury of
@@ -200,7 +201,7 @@ void CONTACT::Beam3cmanager::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
                                       Epetra_Vector& fres,
-                                      const Epetra_Vector& disrow, double alphaf)
+                                      const Epetra_Vector& disrow)
 {
   // map linking node numbers and current node positions
   std::map<int,LINALG::Matrix<3,1> > currentpositions;
@@ -365,8 +366,8 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
 
 
   // assemble contact forces into global fres vector
-  fres.Update(1.0-alphaf,*fc_,1.0);
-  fres.Update(alphaf,*fcold_,1.0);
+  fres.Update(1.0-alphaf_,*fc_,1.0);
+  fres.Update(alphaf_,*fcold_,1.0);
   
 
 

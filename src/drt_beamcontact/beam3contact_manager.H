@@ -64,7 +64,7 @@ public:
   \param discret (in): A discretization containing beam elements
 
   */
-  Beam3cmanager(DRT::Discretization& discret);
+  Beam3cmanager(DRT::Discretization& discret, double alphaf);
 
   /*!
   \brief Destructor
@@ -151,7 +151,7 @@ public:
 
   */
   void Evaluate(LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
-                const Epetra_Vector& disrow, double alphaf);
+                const Epetra_Vector& disrow);
 
   /*!
   \brief Update beam contact
@@ -307,6 +307,9 @@ private:
 
   //! contact forces of previous time step (for generalized alpha)
   RCP<Epetra_Vector> fcold_;
+
+  //! time integration parameter (0.0 for statics)
+  double alphaf_;
 
   //! current constraint norm (violation of non-penetration condition)
   double constrnorm_;

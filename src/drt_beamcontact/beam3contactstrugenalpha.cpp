@@ -34,13 +34,20 @@ StruGenAlpha(params,dis,solver,output)
     cout << "\n*******************************\n" << endl;
   }
   
+  // store integration parameter alphaf into beamcmanager_ as well
+  // (note that for statics, this parameter is zero, of course!)
+  double alphaf = params_.get<double>("alpha f",0.459);
+  bool dynkindstat = (params_.get<string>("DYNAMICTYP") == "Static");
+  if (dynkindstat && alphaf != 0.0)
+    dserror("ERROR: Alpha_f must be zero for statics!");
+
   // -------------------------------------------------------------------
   // check again whether we have beam contact and create beam3cmanager
   // -------------------------------------------------------------------
   // Check for beam contact
   const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION") == INPAR::CONTACT::app_beamcontact)
-    beamcmanager_ = rcp(new CONTACT::Beam3cmanager(dis));
+    beamcmanager_ = rcp(new CONTACT::Beam3cmanager(dis,alphaf));
   else
     dserror("ERROR: How did you arrive here...???");
   
@@ -246,7 +253,7 @@ void CONTACT::Beam3ContactStruGenAlpha::ConstantPredictor()
   // evaluate beam contact
 
 
-  beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
+  beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_);
   
 
 
@@ -561,7 +568,7 @@ void CONTACT::Beam3ContactStruGenAlpha::ConsistentPredictor()
   //**********************************************************************
   //**********************************************************************
   // evaluate beam contact
-  beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
+  beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_);
   
 
 #ifdef GMSHNEWTONSTEPS
@@ -923,7 +930,7 @@ void CONTACT::Beam3ContactStruGenAlpha::FullNewton()
     //**********************************************************************
     // evaluate beam contact
     // Res = Res + (1-alpha_f) * F_c(D_{n+1}) + alpha_f * F_c(D_{n})
-    beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
+    beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_);
     
 #ifdef GMSHNEWTONSTEPS
     // Create gmsh-output to visualize every step of newton iteration
@@ -1158,7 +1165,7 @@ void CONTACT::Beam3ContactStruGenAlpha::InitializeNewtonUzawa()
     //**********************************************************************
     // evaluate beam contact
     // Res = Res + (1-alpha_f) * F_c(D_{n+1}) + alpha_f * F_c(D_{n})
-    beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
+    beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_);
     //**********************************************************************
     //**********************************************************************
     

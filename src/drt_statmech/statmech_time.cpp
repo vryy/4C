@@ -148,10 +148,13 @@ isconverged_(0)
   //in case that beam contact is activated by respective input parameter, a Beam3cmanager object is created
   if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
   {
+    // store integration parameter alphaf into beamcmanager_ as well
+    double alphaf = params_.get<double>("alpha f",0.459);
+
     //check wheter appropriate parameters are set in the parameter list "CONTACT & MESHTYING"
     const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION") == INPAR::CONTACT::app_beamcontact)
-      beamcmanager_ = rcp(new CONTACT::Beam3cmanager(dis));
+      beamcmanager_ = rcp(new CONTACT::Beam3cmanager(dis,alphaf));
     else
       dserror("beam contact switched on in parameter list STATISTICAL MECHANICS, but not in in parameter list MESHTYING AND CONTACT!!!");
   }
@@ -576,7 +579,7 @@ void StatMechTime::ConsistentPredictor(RCP<Epetra_MultiVector> randomnumbers)
   if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
   {
     // evaluate beam contact
-    beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
+    beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_);
 
 #ifdef GMSHNEWTONSTEPS
     // create gmsh-output to visualize predictor step
@@ -776,7 +779,7 @@ void StatMechTime::FullNewton(RCP<Epetra_MultiVector> randomnumbers)
     // evaluate beam contact
     if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
     {
-      beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
+      beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_);
 
 #ifdef GMSHNEWTONSTEPS
       // Create gmsh-output to visualize every step of newton iteration
@@ -1060,7 +1063,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
     //**********************************************************************
     // evaluate beam contact
     if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
-      beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
+      beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_);
     //**********************************************************************
     //**********************************************************************
 
@@ -1259,7 +1262,7 @@ void StatMechTime::InitializeNewtonUzawa(RCP<Epetra_MultiVector> randomnumbers)
     //**********************************************************************
     // evaluate beam contact
     if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
-      beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_,alphaf);
+      beamcmanager_->Evaluate(*SystemMatrix(),*fresm_,*disn_);
     //**********************************************************************
     //**********************************************************************
 
