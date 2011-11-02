@@ -298,9 +298,9 @@ void XFEM::FluidWizard::CreateDofMap( std::map<int, const std::set<XFEM::FieldEn
   dserror( "todo" );
 }
 
-Teuchos::RCP<XFEM::FluidDofSet> XFEM::FluidWizard::DofSet()
+Teuchos::RCP<XFEM::FluidDofSet> XFEM::FluidWizard::DofSet(int maxNumMyReservedDofs)
 {
-  return Teuchos::rcp( new FluidDofSet( this ) );
+  return Teuchos::rcp( new FluidDofSet( this , maxNumMyReservedDofs) );
 }
 
 void XFEM::FluidWizard::DumpGmshIntegrationCells( std::map< int, GEO::DomainIntCells > & domainintcells,

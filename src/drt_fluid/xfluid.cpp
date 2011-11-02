@@ -56,9 +56,10 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid )
   wizard_->Cut( false, idispcol, xfluid_.GaussPointType() );
 
   // set the new dofset after cut
-  dofset_ = wizard_->DofSet();
+  int maxNumMyReservedDofs = xfluid.discret_->NumGlobalNodes()*(xfluid.maxnumdofsets_)*4;
+  dofset_ = wizard_->DofSet(maxNumMyReservedDofs);
 
-  xfluid.discret_->ReplaceDofSet( dofset_ );
+  xfluid.discret_->ReplaceDofSet( dofset_, true );
   xfluid.discret_->FillComplete();
 
 //  cout << "discret " << *xfluid.discret_ << endl;
@@ -1025,6 +1026,7 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
 
   numdim_       = genprob.ndim; //params_.get<int>("DIM");
 
+  maxnumdofsets_ = xfemparams.get<int>("MAX_NUM_DOFSETS");
 
   // get XFEM specific input parameters
   boundIntType_ = DRT::INPUT::IntegralValue<INPAR::XFEM::BoundaryIntegralType>(xfemparams,"EMBEDDED_BOUNDARY");

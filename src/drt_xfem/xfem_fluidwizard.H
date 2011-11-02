@@ -46,7 +46,7 @@ public:
                      const XFEM::ElementAnsatz&                        elementAnsatz,
                      const Teuchos::ParameterList&                     params );
 
-  Teuchos::RCP<FluidDofSet> DofSet();
+  Teuchos::RCP<FluidDofSet> DofSet(int maxNumMyReservedDofs);
 
   GEO::CutWizard & CutWizard()
   {

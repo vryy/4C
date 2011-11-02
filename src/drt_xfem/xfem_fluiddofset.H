@@ -2,17 +2,18 @@
 #define XFEM_FLUIDDOFSET_H
 
 #include "../drt_lib/drt_dofset.H"
+#include "../drt_lib/drt_dofset_fixed_size.H"
 
 namespace XFEM
 {
   class FluidWizard;
 
-  class FluidDofSet : public DRT::DofSet
+  class FluidDofSet : public DRT::FixedSizeDofSet
   {
   public:
 
-    FluidDofSet( FluidWizard * wizard )
-      : wizard_( wizard )
+    FluidDofSet( FluidWizard * wizard , int numMyReservedDofs )
+      : FixedSizeDofSet(numMyReservedDofs), wizard_( wizard )
     {
     }
 

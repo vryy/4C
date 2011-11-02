@@ -60,6 +60,8 @@
 
 #include "../drt_lib/drt_condition_utils.H"
 
+#include "../drt_lib/drt_dofset_fixed_size.H"
+
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
  | general problem data                                                 |
@@ -158,6 +160,14 @@ void fluid_xfem2_drt()
   soliddis->FillComplete();
 
   RCP<DRT::Discretization> actdis = problem->Dis(genprob.numff,0);
+
+  const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
+
+  // reserve max size of dofs for the fluid dis
+  int maxNumMyReservedDofs = actdis->NumGlobalNodes()*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
+  Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
+  actdis->ReplaceDofSet(maxdofset);
+
   actdis->FillComplete();
 
   // -------------------------------------------------------------------
@@ -168,7 +178,6 @@ void fluid_xfem2_drt()
                                     actdis->Comm(),
                                     problem->ErrorFile()->Handle()));
   //actdis->ComputeNullSpaceIfNecessary(solver->Params());
-  const Teuchos::ParameterList xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
 
   FLD::XFluid fluid( actdis,soliddis,*solver,problem->FluidDynamicParams(), xdyn);
   fluid.Integrate();
@@ -200,6 +209,14 @@ void fluid_fluid_ale_drt()
   RCP<DRT::Problem> problem = DRT::Problem::Instance();
 
   RCP<DRT::Discretization> bgfluiddis = problem->Dis(genprob.numff,0);
+
+  const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
+
+  // reserve max size of dofs for the background fluid
+  int maxNumMyReservedDofs = bgfluiddis->NumGlobalNodes()*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
+  Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
+  bgfluiddis->ReplaceDofSet(maxdofset);
+
   bgfluiddis->FillComplete();
 
   RCP<DRT::Discretization> embfluiddis = problem->Dis(genprob.numff,1);
@@ -416,8 +433,8 @@ void fluid_fluid_ale_drt()
   Teuchos::RCP<FSI::FluidAleAlgorithm> alefluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(*comm));
   alefluid->Timeloop();
 
-  DRT::Problem::Instance()->AddFieldTest(alefluid->MBFluidField().CreateFieldTest());
-  DRT::Problem::Instance()->TestAll(*comm);
+  problem->AddFieldTest(alefluid->MBFluidField().CreateFieldTest());
+  problem->TestAll(*comm);
 
   // -------------------------------------------------------------------
   // create a solver
@@ -437,15 +454,12 @@ void fluid_fluid_ale_drt()
 /*----------------------------------------------------------------------*/
 void fluid_fluid_fsi_drt()
 {
-  // create a communicator
+ // create a communicator
   #ifdef PARALLEL
    RCP<Epetra_Comm> comm = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
   #else
     Epetra_SerialComm comm;
   #endif
-
-  // make sure the three discretizations are filled in the right order:
-  // structure dof < fluid dof < ale dof
 
   RCP<DRT::Problem> problem = DRT::Problem::Instance();
 
@@ -453,6 +467,13 @@ void fluid_fluid_fsi_drt()
   structdis->FillComplete();
 
   RCP<DRT::Discretization> bgfluiddis = problem->Dis(genprob.numff,0);
+
+  // reserve max size of dofs for the background fluid
+  const Teuchos::ParameterList xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
+  int maxNumMyReservedDofs = bgfluiddis->NumGlobalNodes()*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
+  Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
+  bgfluiddis->ReplaceDofSet(maxdofset);
+
   bgfluiddis->FillComplete();
 
   RCP<DRT::Discretization> embfluiddis = problem->Dis(genprob.numff,1);
@@ -517,6 +538,7 @@ void fluid_fluid_fsi_drt()
   vector<string>          conditions_to_copy;
   conditions_to_copy.push_back("Dirichlet");
   conditions_to_copy.push_back("XFEMCoupling");
+  conditions_to_copy.push_back("FluidFluidCoupling");
 
   // copy selected conditions to the new discretization
   for (vector<string>::const_iterator conditername = conditions_to_copy.begin();

@@ -3718,6 +3718,7 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                yesnotuple,yesnovalue,&xfem_general);
   setStringToIntegralParameter<int>("CONDEST","No","Do you want to estimate the condition number? It is somewhat costly.",
                                    yesnotuple,yesnovalue,&xfem_general);
+  IntParameter("MAX_NUM_DOFSETS",3,"Maximum number of volumecells in the XFEM element",&xfem_general);
   DoubleParameter("volumeRatioLimit",1.0e-2,"don't enrich nodes of elements, when less than this fraction of the element is on one side of the interface",&xfem_general);
   DoubleParameter("boundaryRatioLimit",1.0e-4,"don't enrich element, when less than this area fraction is within this element",&xfem_general);
 

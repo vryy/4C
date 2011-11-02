@@ -447,6 +447,8 @@ namespace FLD
     double  dtsolve_;
 
     Teuchos::RCP<XFluidState> state_;
+
+    int maxnumdofsets_;
   };
 }
 

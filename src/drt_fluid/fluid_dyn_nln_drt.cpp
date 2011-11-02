@@ -38,6 +38,7 @@ Maintainer: Peter Gamnitzer
 #include "turbulent_flow_algorithm.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_lib/drt_dofset_fixed_size.H"
 
 /*----------------------------------------------------------------------*
  * Main control routine for fluid including various solvers:
@@ -130,6 +131,13 @@ void fluid_fluid_drt()
   RCP<DRT::Problem> problem = DRT::Problem::Instance();
 
   RCP<DRT::Discretization> bgfluiddis = problem->Dis(genprob.numff,0);
+
+  // reserve max size of dofs for the background fluid
+  const Teuchos::ParameterList xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
+  int maxNumMyReservedDofs = bgfluiddis->NumGlobalNodes()*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
+  Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
+  bgfluiddis->ReplaceDofSet(maxdofset);
+
   bgfluiddis->FillComplete();
 
   RCP<DRT::Discretization> embfluiddis = problem->Dis(genprob.numff,1);
