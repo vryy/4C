@@ -4743,12 +4743,12 @@ if (reaction_)
 
       emat(fvi,fui) += v*(conv_(ui)+reacoeff_[dofindex]*funct_(ui));
 
-      if (abs(diffreastafac_)>1e-5)
+    /*  if (abs(diffreastafac_)>1e-5)
       {
     	if (reacoeff_[dofindex]!=reacoeffderiv_[dofindex])
 		dserror("Only SUPG stabilization is implemented for the case of non-linear reaction term");
     	cout<<"additional term for USFEM and GLS are not properly implemented in the case of non-linear reaction term"<<endl;
-      }
+      }*/
 
     }
   }
