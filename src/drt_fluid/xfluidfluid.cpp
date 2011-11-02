@@ -45,9 +45,11 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
   // cut and find the fluid dofset
   wizard_.Cut( false, idispcol, "Tessellation" );//modify gausstype
 
-  dofset_ = wizard_.DofSet();
 
-  xfluid_.bgdis_->ReplaceDofSet( dofset_ );
+  int maxNumMyReservedDofs = xfluid.bgdis_->NumGlobalNodes()*(xfluid.maxnumdofsets_)*4;
+  dofset_ = wizard_.DofSet(maxNumMyReservedDofs);
+
+  xfluid_.bgdis_->ReplaceDofSet( dofset_, true );
   xfluid_.bgdis_->FillComplete();
 
   FLD::UTILS::SetupFluidSplit(*xfluid.bgdis_,xfluid.numdim_,velpressplitter_);
@@ -1314,6 +1316,8 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   upres_        = params_.get<int>("write solution every", -1);
 
   numdim_       = genprob.ndim; //params_.get<int>("DIM");
+
+  maxnumdofsets_ = params_.sublist("XFEM").get<int>("MAX_NUM_DOFSETS");
 
   // compute or set 1.0 - theta for time-integration schemes
   if (timealgo_ == INPAR::FLUID::timeint_one_step_theta)  omtheta_ = 1.0 - theta_;

@@ -604,6 +604,8 @@ namespace FLD
 
     Teuchos::RCP<XFluidFluidState> state_;
     Teuchos::RCP<XFluidFluidState> staten_;
+
+    int maxnumdofsets_;
   };
 }
 
