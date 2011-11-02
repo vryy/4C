@@ -20,6 +20,7 @@
 #include "../drt_io/io.H"
 
 #include "../drt_lib/drt_resulttest.H"
+#include "../drt_lib/drt_dofset_independent.H"
 #include "fluid_utils_mapextractor.H"
 
 #include "fluid_utils.H"
@@ -453,7 +454,7 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector>    idispnp_;
 
     // dofset for bg-fluid output
-    DRT::DofSet                dofset_out_;
+    DRT::IndependentDofSet       dofset_out_;
 
     // velocity pressure splitter for fluid output
     LINALG::MapExtractor      velpressplitterForOutput_;

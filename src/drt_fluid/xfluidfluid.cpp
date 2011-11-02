@@ -1487,6 +1487,7 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   DRT::UTILS::PrintParallelDistribution(*boundarydis_);
 
   // store a dofset with the complete fluid unknowns
+  dofset_out_ = DRT::IndependentDofSet();
   dofset_out_.Reset();
   dofset_out_.AssignDegreesOfFreedom(*bgdis_,0,0);
   // split based on complete fluid field

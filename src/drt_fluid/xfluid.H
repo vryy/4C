@@ -22,6 +22,7 @@
 #include "../drt_io/io_control.H"
 
 #include "../drt_lib/drt_resulttest.H"
+#include "../drt_lib/drt_dofset_independent.H"
 
 namespace DRT
 {
@@ -284,7 +285,7 @@ namespace FLD
 
 
     // dofset for fluid output
-    DRT::DofSet                dofset_out_;
+    DRT::IndependentDofSet       dofset_out_;
 
     // velocity pressure splitter for fluid output
     LINALG::MapExtractor      velpressplitterForOutput_;
