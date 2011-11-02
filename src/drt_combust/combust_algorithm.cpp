@@ -289,7 +289,7 @@ void COMBUST::Algorithm::TimeLoop()
       //      G-function is zero, if a zero initial fluid field is used.
       //      -> Should the fluid be solved first?
       // solve linear G-function equation
-      //DoGfuncField();
+      DoGfuncField();
 
       //(after Scatra transport but before reinitialization)
       // update interface geometry
