@@ -332,4 +332,19 @@ bool FS3I::FS3I_1WC::AbortScatraNonlinIter(const int itnum)
 }
 
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::FS3I_1WC::TestResults(const Epetra_Comm& comm)
+{
+  DRT::Problem::Instance()->AddFieldTest(fsi_->FluidField().CreateFieldTest());
+  DRT::Problem::Instance()->AddFieldTest(fsi_->StructureField().CreateFieldTest());
+
+  for (unsigned i=0; i<scatravec_.size(); ++i)
+  {
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
+    DRT::Problem::Instance()->AddFieldTest(scatra->CreateScaTraFieldTest());
+  }
+  DRT::Problem::Instance()->TestAll(comm);
+}
+
 #endif

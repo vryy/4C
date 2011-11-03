@@ -776,6 +776,7 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_utils.cpp
 )
 set(OBJS_DRT_FS3I
+  src/drt_fs3i/fs3i_dyn.cpp
   src/drt_fs3i/fs3i_1wc.cpp
   src/drt_fs3i/fs3i_1wc_service.cpp
   src/drt_fs3i/fs3i_biofilm_growth.cpp

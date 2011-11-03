@@ -60,10 +60,8 @@ extern struct _GENPROB     genprob;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FS3I::BiofilmGrowth::BiofilmGrowth(
-	Teuchos::RCP<FSI::Monolithic> fsi,
-	Epetra_Comm& comm,
-	const Teuchos::ParameterList& prbdyn)
-:FS3I_1WC(fsi)/*,
+	Epetra_Comm& comm)
+:FS3I_1WC(comm)/*,
  ADAPTER::StructureBio(comm,	///< communicator
 					   prbdyn, 	///< problem-specific parameters
 					   1,  		///< we need an ALE formulation of the structure
@@ -116,7 +114,7 @@ FS3I::BiofilmGrowth::BiofilmGrowth(
 	  const Epetra_Map* alenodemap   = fsi_->AleField().Discretization()->NodeRowMap();
 
 	  coupfa_.SetupCoupling(*(fsi_->FluidField().Discretization()),
-							*(fsi_->AleField().Discretization()),
+ 							*(fsi_->AleField().Discretization()),
 							*fluidnodemap,
 							*alenodemap,
 	                        genprob.ndim);
@@ -131,7 +129,7 @@ FS3I::BiofilmGrowth::BiofilmGrowth(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BiofilmGrowth::OutTimeloop()
+void FS3I::BiofilmGrowth::Timeloop()
 {
 #ifdef PARALLEL
   Epetra_MpiComm comm(MPI_COMM_WORLD);
@@ -145,10 +143,10 @@ void FS3I::BiofilmGrowth::OutTimeloop()
 	  printf(" surface growth step = %3d   \n",step_bio);
 	  printf(" Total time = %3f   \n",time_);
 
-	  SetupFSISystem();
+	  fsi_->SetupSystem();
 
 	  // inner loop for fsi and scatra
-	  Timeloop();
+	  InnerTimeloop();
 
 	  // compute interface displacement and velocity
 	  ComputeInterfaceVectors(idispnp_,iveln_);
@@ -204,7 +202,7 @@ void FS3I::BiofilmGrowth::OutTimeloop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BiofilmGrowth::Timeloop()
+void FS3I::BiofilmGrowth::InnerTimeloop()
 {
   fsi_->PrepareTimeloop();
 

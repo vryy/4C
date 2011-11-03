@@ -18,6 +18,9 @@ namespace FS3I
     /// destructor of base class
     virtual ~FS3I_Base(){};
 
+    /// setup
+    virtual void SetupSystem() = 0;
+
     /// timeloop of coupled problem
     virtual void Timeloop() = 0;
 
@@ -26,6 +29,9 @@ namespace FS3I
 
     /// read restart
     virtual void ReadRestart() = 0;
+
+    /// test results (if necessary)
+    virtual void TestResults(const Epetra_Comm& comm) = 0;
   };
 }
 

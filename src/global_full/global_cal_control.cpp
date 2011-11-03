@@ -19,6 +19,7 @@ Maintainer: Michael Gee
 #include "../drt_scatra/scatra_dyn.H"
 #include "../drt_ale/ale_dyn.H"
 #include "../drt_fsi/fsi_dyn.H"
+#include "../drt_fs3i/fs3i_dyn.H"
 #include "../drt_loma/loma_dyn.H"
 #include "../drt_elch/elch_dyn.H"
 #include "../drt_combust/combust_dyn.H"
@@ -84,8 +85,9 @@ void ntacal()
     case prb_fsi_xfem:
       xfsi_drt();
       break;
-    case prb_fsi_lung_gas:
-      fsi_lung_gas();
+
+  case prb_fsi_lung_gas:
+      fs3i_dyn();
       break;
 
     case prb_ale:

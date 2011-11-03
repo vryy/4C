@@ -2,8 +2,9 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "../drt_fsi/fsi_dyn.H"
+#include "../drt_lib/drt_utils_createdis.H"
 
+#include "../drt_fsi/fsi_partitionedmonolithic.H"
 #include "../drt_fsi/fsi_monolithicfluidsplit.H"
 #include "../drt_fsi/fsi_monolithiclagrange.H"
 #include "../drt_fsi/fsi_monolithicstructuresplit.H"
@@ -33,6 +34,7 @@
 #endif
 
 #include "fs3i_1wc.H"
+#include "fs3i_biofilm_growth.H"
 
 /*----------------------------------------------------------------------*
  |                                                       m.gee 06/01    |
@@ -47,15 +49,140 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FS3I::FS3I_1WC::FS3I_1WC(Teuchos::RCP<FSI::Monolithic> fsi):
-  FS3I_Base(),
-  fsi_(fsi)
+FS3I::FS3I_1WC::FS3I_1WC(Epetra_Comm& comm)
+  :FS3I_Base(),
+   comm_(comm)
 {
+  RCP<DRT::Problem> problem = DRT::Problem::Instance();
+
+  // make sure the three discretizations are filled in the right order
+  // this creates dof numbers with
+  //
+  //       structure dof < fluid dof < ale dof
+  //
+  // We rely on this ordering in certain non-intuitive places!
+
+  problem->Dis(genprob.numsf,0)->FillComplete();
+  problem->Dis(genprob.numff,0)->FillComplete();
+  problem->Dis(genprob.numaf,0)->FillComplete();
+  problem->Dis(genprob.numscatra,0)->FillComplete();
+  problem->Dis(genprob.numscatra,1)->FillComplete();
+
+  // create ale elements if the ale discretization is empty
+  RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
+  if (aledis->NumGlobalNodes()==0)
+  {
+    RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
+
+    Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
+      Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
+
+    alecreator->CreateMatchingDiscretization(fluiddis,aledis,-1);
+  }
+  //FSI::UTILS::CreateAleDiscretization();
+
+  // access the fluid discretization
+  RefCountPtr<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(1,0);
+  // access the structure discretization
+  RefCountPtr<DRT::Discretization> structdis = DRT::Problem::Instance()->Dis(0,0);
+  // access the fluid scatra discretization
+  RefCountPtr<DRT::Discretization> fluidscatradis = DRT::Problem::Instance()->Dis(3,0);
+  // access the fluid structure discretization
+  RefCountPtr<DRT::Discretization> structscatradis = DRT::Problem::Instance()->Dis(3,1);
+
+  // get material map for the transport elements
+  std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap = DRT::Problem::Instance()->ClonedMaterialMap();
+  if (clonefieldmatmap.size() < 2)
+    dserror("at least 2 matlists needed for lung gas exchange");
+
+  // FLUID SCATRA
+  // we use the fluid discretization as layout for the scalar transport discretization
+  if (fluiddis->NumGlobalNodes()==0) dserror("Fluid discretization is empty!");
+
+  // create fluid scatra elements if the fluid scatra discretization is empty
+  if (fluidscatradis->NumGlobalNodes()==0)
+  {
+    Epetra_Time time(comm);
+
+    // create the fluid scatra discretization
+    {
+      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy> > clonewizard =
+        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy>() );
+
+      std::pair<string,string> key("fluid","scatra1");
+      std::map<int,int> fluidmatmap = clonefieldmatmap[key];
+
+      clonewizard->CreateMatchingDiscretization(fluiddis,fluidscatradis,fluidmatmap);
+    }
+    if (comm.MyPID()==0)
+      cout<<"Created scalar transport discretization from fluid field in...."
+          <<time.ElapsedTime() << " secs\n\n";
+  }
+  else
+    dserror("Fluid AND ScaTra discretization present. This is not supported.");
+
+  // STRUCTURE SCATRA
+  // we use the structure discretization as layout for the scalar transport discretization
+  if (structdis->NumGlobalNodes()==0) dserror("Structure discretization is empty!");
+
+  // create structure scatra elements if the structure scatra discretization is empty
+  if (structscatradis->NumGlobalNodes()==0)
+  {
+    Epetra_Time time(comm);
+
+    // create the structure scatra discretization
+    {
+      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy> > clonewizard =
+        Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<SCATRA::ScatraFluidCloneStrategy>() );
+
+      std::pair<string,string> key("structure","scatra2");
+      std::map<int,int> structmatmap = clonefieldmatmap[key];
+
+      clonewizard->CreateMatchingDiscretization(structdis,structscatradis,structmatmap);
+    }
+    if (comm.MyPID()==0)
+      cout<<"Created scalar transport discretization from structure field in...."
+          <<time.ElapsedTime() << " secs\n\n";
+  }
+  else
+    dserror("Structure AND ScaTra discretization present. This is not supported.");
+
+  const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
+
+  int coupling = Teuchos::getIntegralValue<int>(fsidyn,"COUPALGO");
+  switch (coupling)
+  {
+  case fsi_iter_monolithicfluidsplit:
+  case fsi_iter_monolithicstructuresplit:
+  {
+    INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
+
+    // call constructor to initialise the base class
+    if (linearsolverstrategy==INPAR::FSI::PartitionedAitken or
+        linearsolverstrategy==INPAR::FSI::PartitionedVectorExtrapolation or
+        linearsolverstrategy==INPAR::FSI::PartitionedJacobianFreeNewtonKrylov)
+    {
+      fsi_ = Teuchos::rcp(new FSI::PartitionedMonolithic(comm));
+    }
+    else if (coupling==fsi_iter_monolithicfluidsplit)
+    {
+      fsi_ = Teuchos::rcp(new FSI::MonolithicFluidSplit(comm));
+    }
+    else if (coupling==fsi_iter_monolithicstructuresplit)
+    {
+      fsi_ = Teuchos::rcp(new FSI::MonolithicStructureSplit(comm));
+    }
+    else
+    {
+      dserror("Cannot find appropriate monolithic solver for coupling %d and linear strategy %d",coupling,linearsolverstrategy);
+    }
+  }
+  }
+
   // access the problem-specific parameter lists
   const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
   const Teuchos::ParameterList& structdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   const Teuchos::ParameterList& fluiddyn = DRT::Problem::Instance()->FluidDynamicParams();
-  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
   permeablesurf_ = DRT::INPUT::IntegralValue<int>(scatradyn,"PERMEABLESURF");
 
@@ -152,6 +279,34 @@ FS3I::FS3I_1WC::FS3I_1WC(Teuchos::RCP<FSI::Monolithic> fsi):
         dserror("Permeability coefficient of ScaTra interface needs to be the same in both conditions");
     }
   }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::FS3I_1WC::ReadRestart()
+{
+  // read the restart information, set vectors and variables ---
+  // be careful, dofmaps might be changed here in a Redistribute call
+  if (genprob.restart)
+  {
+    fsi_->ReadRestart(genprob.restart);
+
+    for (unsigned i=0; i<scatravec_.size(); ++i)
+    {
+      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
+      currscatra->ScaTraField().ReadRestart(genprob.restart);
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void FS3I::FS3I_1WC::SetupSystem()
+{
+  // now do the coupling setup and create the combined dofmap
+  fsi_->SetupSystem();
 
   /*----------------------------------------------------------------------*/
   /*                            General set up                            */
@@ -275,34 +430,6 @@ FS3I::FS3I_1WC::FS3I_1WC(Teuchos::RCP<FSI::Monolithic> fsi):
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::ReadRestart()
-{
-  // read the restart information, set vectors and variables ---
-  // be careful, dofmaps might be changed here in a Redistribute call
-  if (genprob.restart)
-  {
-    fsi_->ReadRestart(genprob.restart);
-
-    for (unsigned i=0; i<scatravec_.size(); ++i)
-    {
-      Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> currscatra = scatravec_[i];
-      currscatra->ScaTraField().ReadRestart(genprob.restart);
-    }
-  }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::SetupFSISystem()
-{
-  // now do the coupling setup and create the combined dofmap
-  fsi_->SetupSystem();
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void FS3I::FS3I_1WC::Timeloop()
 {
   fsi_->PrepareTimeloop();
@@ -322,6 +449,7 @@ void FS3I::FS3I_1WC::DoFsiStep()
 {
   fsi_->PrepareTimeStep();
   fsi_->TimeStep(fsi_);
+  fsi_->PrepareOutput();
   fsi_->Update();
 }
 
@@ -358,12 +486,12 @@ void FS3I::FS3I_1WC::DoScatraStep()
 
     SetupCoupledScatraSystem();
 
+    LinearSolveScatra();
+    FieldUpdateIter();
+
     stopnonliniter = AbortScatraNonlinIter(itnum);
     if (stopnonliniter)
       break;
-
-    LinearSolveScatra();
-    FieldUpdateIter();
 
     itnum++;
   }

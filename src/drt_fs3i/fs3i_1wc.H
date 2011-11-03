@@ -5,6 +5,8 @@
 
 #include "../drt_scatra/passive_scatra_algorithm.H"
 #include "fs3i.H"
+#include "../drt_fsi/fsi_monolithic.H"
+#include "../drt_fsi/fsi_matrixtransform.H"
 
 namespace FS3I
 {
@@ -12,7 +14,7 @@ namespace FS3I
   {
   public:
 
-    FS3I_1WC(Teuchos::RCP< ::FSI::Monolithic> fsi);
+    FS3I_1WC(Epetra_Comm& comm);
 
     virtual ~FS3I_1WC(){};
 
@@ -22,7 +24,9 @@ namespace FS3I
 
     virtual void ReadRestart();
 
-    void SetupFSISystem();
+    virtual void TestResults(const Epetra_Comm& comm);
+
+    virtual void SetupSystem();
 
     virtual void Timeloop();
 
@@ -72,17 +76,23 @@ namespace FS3I
     /// interface are defined on both discretizations
     void CheckInterfaceDirichletBC();
 
+    /// communicator
+    const Epetra_Comm& Comm() const { return comm_; }
+
 
   protected:
 
     /// fsi algorithm
-     Teuchos::RCP< ::FSI::Monolithic> fsi_;
+    Teuchos::RCP<FSI::Monolithic> fsi_;
 
-     /// vector of scatra algorithms
-     std::vector<Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> > scatravec_;
+    /// vector of scatra algorithms
+    std::vector<Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> > scatravec_;
 
 
   private:
+
+    /// communication (mainly for screen output)
+    Epetra_Comm& comm_;
 
     /// vector of scatra field map extractors (coupled vs. uncoupled dofs)
     std::vector<LINALG::MultiMapExtractor> scatrafieldexvec_;
@@ -120,11 +130,11 @@ namespace FS3I
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
-    FSI::UTILS::MatrixRowColTransform sbbtransform_;
-    FSI::UTILS::MatrixRowTransform sbitransform_;
-    FSI::UTILS::MatrixColTransform sibtransform_;
+    ::FSI::UTILS::MatrixRowColTransform sbbtransform_;
+    ::FSI::UTILS::MatrixRowTransform sbitransform_;
+    ::FSI::UTILS::MatrixColTransform sibtransform_;
 
-    FSI::UTILS::MatrixRowTransform fbitransform_;
+    ::FSI::UTILS::MatrixRowTransform fbitransform_;
     ///@}
   };
 
