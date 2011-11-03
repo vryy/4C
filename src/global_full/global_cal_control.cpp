@@ -86,7 +86,8 @@ void ntacal()
       xfsi_drt();
       break;
 
-  case prb_fsi_lung_gas:
+    case prb_gas_fsi:
+    case prb_biofilm_fsi:
       fs3i_dyn();
       break;
 

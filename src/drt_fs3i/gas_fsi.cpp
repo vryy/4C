@@ -33,23 +33,16 @@
 #include <Epetra_SerialComm.h>
 #endif
 
-#include "fs3i_1wc.H"
-#include "fs3i_biofilm_growth.H"
+#include "gas_fsi.H"
 
-/*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | general problem data                                                 |
- | global variable GENPROB genprob is defined in global_control.c       |
- *----------------------------------------------------------------------*/
 extern struct _GENPROB     genprob;
-
 
 #define SCATRABLOCKMATRIXMERGE
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FS3I::FS3I_1WC::FS3I_1WC(Epetra_Comm& comm)
+FS3I::GasFSI::GasFSI(Epetra_Comm& comm)
   :FS3I_Base(),
    comm_(comm)
 {
@@ -284,7 +277,7 @@ FS3I::FS3I_1WC::FS3I_1WC(Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::ReadRestart()
+void FS3I::GasFSI::ReadRestart()
 {
   // read the restart information, set vectors and variables ---
   // be careful, dofmaps might be changed here in a Redistribute call
@@ -303,7 +296,7 @@ void FS3I::FS3I_1WC::ReadRestart()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::SetupSystem()
+void FS3I::GasFSI::SetupSystem()
 {
   // now do the coupling setup and create the combined dofmap
   fsi_->SetupSystem();
@@ -430,7 +423,7 @@ void FS3I::FS3I_1WC::SetupSystem()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::Timeloop()
+void FS3I::GasFSI::Timeloop()
 {
   fsi_->PrepareTimeloop();
 
@@ -445,7 +438,7 @@ void FS3I::FS3I_1WC::Timeloop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::DoFsiStep()
+void FS3I::GasFSI::DoFsiStep()
 {
   fsi_->PrepareTimeStep();
   fsi_->TimeStep(fsi_);
@@ -456,7 +449,7 @@ void FS3I::FS3I_1WC::DoFsiStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::DoScatraStep()
+void FS3I::GasFSI::DoScatraStep()
 {
 #ifdef PARALLEL
   Epetra_MpiComm comm(MPI_COMM_WORLD);
@@ -502,7 +495,7 @@ void FS3I::FS3I_1WC::DoScatraStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::PrepareTimeStep()
+void FS3I::GasFSI::PrepareTimeStep()
 {
   SetMeshDisp();
   SetVelocityFields();
@@ -517,7 +510,7 @@ void FS3I::FS3I_1WC::PrepareTimeStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::EvaluateScatraFields()
+void FS3I::GasFSI::EvaluateScatraFields()
 {
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
@@ -551,7 +544,7 @@ void FS3I::FS3I_1WC::EvaluateScatraFields()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::SetupCoupledScatraSystem()
+void FS3I::GasFSI::SetupCoupledScatraSystem()
 {
   // set up scatra rhs
   SetupCoupledScatraRHS();
@@ -563,7 +556,7 @@ void FS3I::FS3I_1WC::SetupCoupledScatraSystem()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::SetupCoupledScatraRHS()
+void FS3I::GasFSI::SetupCoupledScatraRHS()
 {
   Teuchos::RCP<const Epetra_Vector> scatra1 = scatravec_[0]->ScaTraField().Residual();
   Teuchos::RCP<const Epetra_Vector> scatra2 = scatravec_[1]->ScaTraField().Residual();
@@ -595,7 +588,7 @@ void FS3I::FS3I_1WC::SetupCoupledScatraRHS()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::SetupCoupledScatraVector(Teuchos::RCP<Epetra_Vector> globalvec,
+void FS3I::GasFSI::SetupCoupledScatraVector(Teuchos::RCP<Epetra_Vector> globalvec,
                                                const Teuchos::RCP<const Epetra_Vector> vec1,
                                                const Teuchos::RCP<const Epetra_Vector> vec2)
 {
@@ -623,7 +616,7 @@ void FS3I::FS3I_1WC::SetupCoupledScatraVector(Teuchos::RCP<Epetra_Vector> global
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::ExtractScatraFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,
+void FS3I::GasFSI::ExtractScatraFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,
                                                 Teuchos::RCP<const Epetra_Vector>& vec1,
                                                 Teuchos::RCP<const Epetra_Vector>& vec2)
 {
@@ -651,7 +644,7 @@ void FS3I::FS3I_1WC::ExtractScatraFieldVectors(Teuchos::RCP<const Epetra_Vector>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::SetupCoupledScatraMatrix()
+void FS3I::GasFSI::SetupCoupledScatraMatrix()
 {
   Teuchos::RCP<LINALG::SparseMatrix> scatra1 = scatravec_[0]->ScaTraField().SystemMatrix();
   Teuchos::RCP<LINALG::SparseMatrix> scatra2 = scatravec_[1]->ScaTraField().SystemMatrix();
@@ -735,7 +728,7 @@ void FS3I::FS3I_1WC::SetupCoupledScatraMatrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::LinearSolveScatra()
+void FS3I::GasFSI::LinearSolveScatra()
 {
   scatraincrement_->PutScalar(0.0);
   CoupledScatraSolve();
@@ -744,7 +737,7 @@ void FS3I::FS3I_1WC::LinearSolveScatra()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::FieldUpdateIter()
+void FS3I::GasFSI::FieldUpdateIter()
 {
   Teuchos::RCP<const Epetra_Vector> inc1;
   Teuchos::RCP<const Epetra_Vector> inc2;
@@ -758,7 +751,7 @@ void FS3I::FS3I_1WC::FieldUpdateIter()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::UpdateScatraFields()
+void FS3I::GasFSI::UpdateScatraFields()
 {
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
@@ -770,7 +763,7 @@ void FS3I::FS3I_1WC::UpdateScatraFields()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::Output()
+void FS3I::GasFSI::Output()
 {
   fsi_->Output();
 
@@ -784,7 +777,7 @@ void FS3I::FS3I_1WC::Output()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::CoupledScatraSolve()
+void FS3I::GasFSI::CoupledScatraSolve()
 {
 #ifdef SCATRABLOCKMATRIXMERGE
   Teuchos::RCP<LINALG::SparseMatrix> sparse = scatrasystemmatrix_->Merge();

@@ -1590,7 +1590,8 @@ int main(int argc, char** argv)
       }
       break;
     }
-    case prb_fsi_lung_gas:
+    case prb_gas_fsi:
+    case prb_biofilm_fsi:
     {
       dserror("not implemented yet");
       break;

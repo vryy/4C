@@ -19,7 +19,7 @@ typedef enum _PROBLEM_TYP
                        prb_fsi,          /*  fluid structure interaction problem */
                        prb_fsi_xfem,     /*  fluid structure interaction problem including XFEM interfaces*/
                        prb_fsi_lung,     /*  airway fsi problem with attached parenchyma balloon */
-                       prb_fsi_lung_gas, /*  lung fsi problem with gas exchange */
+                       prb_gas_fsi,      /*  fsi with gas transport */
                        prb_structure,    /*  structural problem */
                        prb_struct_ale,   /*  structural problem, ale formulation */
                        prb_fluid,        /*  fluid problem */
@@ -41,13 +41,14 @@ typedef enum _PROBLEM_TYP
                        prb_elch,         /*  electrochemical problem */
                        prb_combust,      /*  combustion problem */
                        prb_art_net,      /*  arterial network problem */ /*_1D_ARTERY_*/
-                       prb_red_airways   /*  reduced dimensional airways */
+                       prb_red_airways,  /*  reduced dimensional airways */
+                       prb_biofilm_fsi   /*  biofilm growth problem */
 } PROBLEM_TYP;
 /* Mapping from problem type numbers to printable names. To be used to
  * initialize static variables. Keep in sync!
  * The trailing NULL is essential for the filters to read the problem
  * type! */
-#define PROBLEMNAMES {"none","fsi","fsi_xfem","fsi_lung","fsi_lung_gas","structure","structure_ale","fluid","fluid_xfem","fluid_xfem2","fluid_fluid_ale","fluid_fluid","fluid_fluid_fsi","fluid_ale","freesurf","opt","ale","tsi","thermo","fluid_pm","scatra","pfsi","loma","elch","combustion","art_net","red_airways",NULL }
+#define PROBLEMNAMES {"none","fsi","fsi_xfem","fsi_lung","gas_fsi","structure","structure_ale","fluid","fluid_xfem","fluid_xfem2","fluid_fluid_ale","fluid_fluid","fluid_fluid_fsi","fluid_ale","freesurf","opt","ale","tsi","thermo","fluid_pm","scatra","pfsi","loma","elch","combustion","art_net","red_airways","biofilm_fsi",NULL }
 /*----------------------------------------------------------------------*
  | TIME TYPES                                             m.gee 7/01    |
  *----------------------------------------------------------------------*/

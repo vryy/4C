@@ -43,7 +43,7 @@
 #include <Epetra_SerialComm.h>
 #endif
 
-#include "fs3i_biofilm_growth.H"
+#include "biofilm_fsi.H"
 #include "../drt_adapter/adapter_structure_bio.H"
 
 /*----------------------------------------------------------------------*
@@ -59,15 +59,20 @@ extern struct _GENPROB     genprob;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FS3I::BiofilmGrowth::BiofilmGrowth(
+FS3I::BiofilmFSI::BiofilmFSI(
 	Epetra_Comm& comm)
-:FS3I_1WC(comm)/*,
+:GasFSI(comm)/*,
  ADAPTER::StructureBio(comm,	///< communicator
 					   prbdyn, 	///< problem-specific parameters
 					   1,  		///< we need an ALE formulation of the structure
 					   0, 		///< scatra discretization number
 					   "FSICoupling")*/
-{	  // make sure that initial time derivative of concentration is not calculated
+{
+          const Teuchos::ParameterList& biofilmcontrol = DRT::Problem::Instance()->BIOFILMControlParams();
+          const int surfgrowth = DRT::INPUT::IntegralValue<int>(biofilmcontrol,"SURFACEGROWTH");
+          if (!surfgrowth) dserror("SURFACGROWTH needs to be activated in biofilm problems");
+
+          // make sure that initial time derivative of concentration is not calculated
 	  // automatically (i.e. field-wise)
 	  const Teuchos::ParameterList& scatradyn = DRT::Problem::Instance()->ScalarTransportDynamicParams();
 	  if (DRT::INPUT::IntegralValue<int>(scatradyn,"SKIPINITDER")==false)
@@ -80,7 +85,6 @@ FS3I::BiofilmGrowth::BiofilmGrowth(
 	  step_fsi = 0;
 	  time_fsi = 0.;
 	  //surface growth parameters
-	  const Teuchos::ParameterList& biofilmcontrol = DRT::Problem::Instance()->BIOFILMControlParams();
 	  dt_bio= biofilmcontrol.get<double>("BIOTIMESTEP");
 	  nstep_bio= biofilmcontrol.get<int>("BIONUMSTEP");
 	  grownvolume_ = biofilmcontrol.get<double>("GROWNVOLUME");
@@ -129,7 +133,7 @@ FS3I::BiofilmGrowth::BiofilmGrowth(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BiofilmGrowth::Timeloop()
+void FS3I::BiofilmFSI::Timeloop()
 {
 #ifdef PARALLEL
   Epetra_MpiComm comm(MPI_COMM_WORLD);
@@ -202,7 +206,7 @@ void FS3I::BiofilmGrowth::Timeloop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BiofilmGrowth::InnerTimeloop()
+void FS3I::BiofilmFSI::InnerTimeloop()
 {
   fsi_->PrepareTimeloop();
 
@@ -223,7 +227,7 @@ void FS3I::BiofilmGrowth::InnerTimeloop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BiofilmGrowth::DoScatraStep()
+void FS3I::BiofilmFSI::DoScatraStep()
 {
 #ifdef PARALLEL
   Epetra_MpiComm comm(MPI_COMM_WORLD);
@@ -280,7 +284,7 @@ void FS3I::BiofilmGrowth::DoScatraStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BiofilmGrowth::ComputeInterfaceVectors(
+void FS3I::BiofilmFSI::ComputeInterfaceVectors(
     RCP<Epetra_Vector> idispnp,
     RCP<Epetra_Vector> iveln)
 {
@@ -346,7 +350,7 @@ void FS3I::BiofilmGrowth::ComputeInterfaceVectors(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FS3I::BiofilmGrowth::FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> FS3I::BiofilmFSI::FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const
 {
   return icoupfa_.MasterToSlave(iv);
 }
@@ -354,14 +358,14 @@ Teuchos::RCP<Epetra_Vector> FS3I::BiofilmGrowth::FluidToAle(Teuchos::RCP<Epetra_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FS3I::BiofilmGrowth::AleToFluidField(Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Epetra_Vector> FS3I::BiofilmFSI::AleToFluidField(Teuchos::RCP<Epetra_Vector> iv) const
 {
   return coupfa_.SlaveToMaster(iv);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BiofilmGrowth::UpdateAndOutput()
+void FS3I::BiofilmFSI::UpdateAndOutput()
 {
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {

@@ -282,7 +282,8 @@ void DRT::Problem::InputControl()
     genprob.numaf=2;
     break;
   }
-  case prb_fsi_lung_gas:
+  case prb_gas_fsi:
+  case prb_biofilm_fsi:
   {
     genprob.numsf=0;
     genprob.numff=1;
@@ -925,7 +926,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     break;
   }
-  case prb_fsi_lung_gas:
+  case prb_gas_fsi:
+  case prb_biofilm_fsi:
   {
     if(distype == "Nurbs")
     {

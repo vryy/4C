@@ -577,7 +577,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     name.push_back("ArterialNetwork");                             label.push_back(prb_art_net);
     name.push_back("Fluid_Structure_Interaction_Lung");            label.push_back(prb_fsi_lung);
     name.push_back("ReducedDimensionalAirWays");                   label.push_back(prb_red_airways);
-    name.push_back("Fluid_Structure_Interaction_Lung_Gas");        label.push_back(prb_fsi_lung_gas);
+    name.push_back("Gas_Fluid_Structure_Interaction");             label.push_back(prb_gas_fsi);
+    name.push_back("Biofilm_Fluid_Structure_Interaction");         label.push_back(prb_biofilm_fsi);
     setStringToIntegralParameter<int>(
       "PROBLEMTYP",
       "Fluid_Structure_Interaction",

@@ -1,7 +1,7 @@
 #ifdef CCADISCRET
 
-#ifndef FS3I_1WC_H
-#define FS3I_1WC_H
+#ifndef GASFSI_H
+#define GASFSI_H
 
 #include "../drt_scatra/passive_scatra_algorithm.H"
 #include "fs3i.H"
@@ -10,13 +10,13 @@
 
 namespace FS3I
 {
-  class FS3I_1WC : public FS3I_Base
+  class GasFSI : public FS3I_Base
   {
   public:
 
-    FS3I_1WC(Epetra_Comm& comm);
+    GasFSI(Epetra_Comm& comm);
 
-    virtual ~FS3I_1WC(){};
+    virtual ~GasFSI(){};
 
     Teuchos::RCP<Epetra_Vector> Scatra2ToScatra1(Teuchos::RCP<Epetra_Vector> iv);
 

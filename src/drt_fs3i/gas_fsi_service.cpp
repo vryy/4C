@@ -29,12 +29,12 @@
 #include <Epetra_SerialComm.h>
 #endif
 
-#include "fs3i_1wc.H"
+#include "gas_fsi.H"
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FS3I::FS3I_1WC::Scatra2ToScatra1(Teuchos::RCP<Epetra_Vector> iv)
+Teuchos::RCP<Epetra_Vector> FS3I::GasFSI::Scatra2ToScatra1(Teuchos::RCP<Epetra_Vector> iv)
 {
   return scatracoup_.SlaveToMaster(iv);
 }
@@ -42,7 +42,7 @@ Teuchos::RCP<Epetra_Vector> FS3I::FS3I_1WC::Scatra2ToScatra1(Teuchos::RCP<Epetra
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FS3I::FS3I_1WC::Scatra1ToScatra2(Teuchos::RCP<Epetra_Vector> iv)
+Teuchos::RCP<Epetra_Vector> FS3I::GasFSI::Scatra1ToScatra2(Teuchos::RCP<Epetra_Vector> iv)
 {
   return scatracoup_.MasterToSlave(iv);
 }
@@ -50,7 +50,7 @@ Teuchos::RCP<Epetra_Vector> FS3I::FS3I_1WC::Scatra1ToScatra2(Teuchos::RCP<Epetra
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::CheckInterfaceDirichletBC()
+void FS3I::GasFSI::CheckInterfaceDirichletBC()
 {
 #ifdef PARALLEL
   Epetra_MpiComm comm(MPI_COMM_WORLD);
@@ -125,7 +125,7 @@ void FS3I::FS3I_1WC::CheckInterfaceDirichletBC()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >& vel)
+void FS3I::GasFSI::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >& vel)
 {
   // extract fluid velocities and accelerations
 
@@ -178,7 +178,7 @@ void FS3I::FS3I_1WC::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >&
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::SetVelocityFields()
+void FS3I::GasFSI::SetVelocityFields()
 {
   std::vector<Teuchos::RCP<const Epetra_Vector> > vel;
   ExtractVel(vel);
@@ -201,7 +201,7 @@ void FS3I::FS3I_1WC::SetVelocityFields()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::SetMeshDisp()
+void FS3I::GasFSI::SetMeshDisp()
 {
   // fluid field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> fluidscatra = scatravec_[0];
@@ -219,7 +219,7 @@ void FS3I::FS3I_1WC::SetMeshDisp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FS3I::FS3I_1WC::AbortScatraNonlinIter(const int itnum)
+bool FS3I::GasFSI::AbortScatraNonlinIter(const int itnum)
 {
 #ifdef PARALLEL
   Epetra_MpiComm comm(MPI_COMM_WORLD);
@@ -334,7 +334,7 @@ bool FS3I::FS3I_1WC::AbortScatraNonlinIter(const int itnum)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3I_1WC::TestResults(const Epetra_Comm& comm)
+void FS3I::GasFSI::TestResults(const Epetra_Comm& comm)
 {
   DRT::Problem::Instance()->AddFieldTest(fsi_->FluidField().CreateFieldTest());
   DRT::Problem::Instance()->AddFieldTest(fsi_->StructureField().CreateFieldTest());

@@ -136,7 +136,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     else if (prbtype_ == "combustion")   scatratype_ = INPAR::SCATRA::scatratype_levelset;
     else if (prbtype_ == "loma")         scatratype_ = INPAR::SCATRA::scatratype_loma;
     else if (prbtype_ == "scatra")       scatratype_ = INPAR::SCATRA::scatratype_condif;
-    else if (prbtype_ == "fsi_lung_gas") scatratype_ = INPAR::SCATRA::scatratype_condif;
+    else if (prbtype_ == "gas_fsi")      scatratype_ = INPAR::SCATRA::scatratype_condif;
+    else if (prbtype_ == "biofilm_fsi")  scatratype_ = INPAR::SCATRA::scatratype_condif;
     else
       dserror("Problemtype %s not supported", prbtype_.c_str());
   }

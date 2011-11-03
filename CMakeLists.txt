@@ -777,9 +777,9 @@ set(OBJS_DRT_FSI
 )
 set(OBJS_DRT_FS3I
   src/drt_fs3i/fs3i_dyn.cpp
-  src/drt_fs3i/fs3i_1wc.cpp
-  src/drt_fs3i/fs3i_1wc_service.cpp
-  src/drt_fs3i/fs3i_biofilm_growth.cpp
+  src/drt_fs3i/gas_fsi.cpp
+  src/drt_fs3i/gas_fsi_service.cpp
+  src/drt_fs3i/biofilm_fsi.cpp
 )
 set(OBJS_DRT_RED_AIRWAYS
   src/drt_red_airways/airwayimplicitintegration.cpp

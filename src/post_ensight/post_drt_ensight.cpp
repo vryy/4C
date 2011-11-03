@@ -85,7 +85,8 @@ int main(
         }
         break;
     }
-    case prb_fsi_lung_gas:
+    case prb_gas_fsi:
+    case prb_biofilm_fsi:
     {
       string basename = problem.outname();
       PostField* structfield = problem.get_discretization(0);

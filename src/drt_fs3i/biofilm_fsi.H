@@ -4,21 +4,21 @@
 #define FSI_BIOFILM_GROWTH_H
 
 #include "../drt_scatra/passive_scatra_algorithm.H"
-#include "../drt_fs3i/fs3i_1wc.H"
+#include "../drt_fs3i/gas_fsi.H"
 #include "../drt_adapter/adapter_structure_bio.H"
 
 namespace FS3I
 {
-  class BiofilmGrowth:  public FS3I_1WC/*,public ADAPTER::StructureBio*/
+  class BiofilmFSI:  public GasFSI/*,public ADAPTER::StructureBio*/
   {
 
   public:
 
-    BiofilmGrowth(
+    BiofilmFSI(
       Epetra_Comm& comm                   	///< communicator
       );
 
-    ~BiofilmGrowth(){};
+    ~BiofilmFSI(){};
 
     virtual void Timeloop();
 
