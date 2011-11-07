@@ -6,12 +6,41 @@ BACI_HOME=`dirname $0`
 EXTRA_ARGS=$@
 BUILD_TYPE="RELEASE"
 
-MPIDIR=/usr
+##############################################################
+# read in cmake version
+LOCAL_CMAKE_VERSION=`cmake --version`
+
+if [ "$LOCAL_CMAKE_VERSION" == "cmake version 2.8.0" ]; then
+	echo "Detected cmake (" $LOCAL_CMAKE_VERSION ") -> Fedora Core 12"
+	OS_VERSION="FC12"
+	CMAKE_COMMAND=cmake
+else
+	echo "Local cmake outdated (" $LOCAL_CMAKE_VERSION ") -> Fedora Core 8"
+	OS_VERSION="FC8"
+	CMAKE_COMMAND=/lnm/programs/cmake-2.8.2/bin/cmake
+fi
+
+# remove CMakeCache.txt
+rm -f CMakeCache.txt
+
+############################################################
+# decide which MPI is used
+if [ "$OS_VERSION" == "FC8" ]; then
+	MPIDIR=/usr
+elif [ "$OS_VERSION" == "FC12" ]; then
+	MPIDIR=/usr/lib/openmpi
+else
+	echo "unknown OS version! This is fatal!"
+	exit
+fi
+
+############################################################
+# use LNM Trilinos 10.1d
 INCLUDE_INSTALL_DIR="/lnm/lib/fc8/openmpi/include"
 LIB_INSTALL_DIR="/lnm/lib/fc8/openmpi/lib"
 Trilinos_DIR="/lnm/lib/fc8/openmpi/trilinos"
 
-/lnm/programs/cmake-2.8.2/bin/cmake \
+$CMAKE_COMMAND \
     -D CMAKE_BUILD_TYPE:STRING=$BUILD_TYPE \
     -D CMAKE_CXX_COMPILER:FILEPATH="$MPIDIR/bin/mpic++" \
     -D CMAKE_C_COMPILER:FILEPATH="$MPIDIR/bin/mpicc" \
