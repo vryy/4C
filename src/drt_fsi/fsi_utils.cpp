@@ -718,17 +718,17 @@ aletype_(aleproj)
   }
 
   int max_id = 0;
-  //build a redundant map of ids of all sliding elements
+  // find max FSI condition ID
   for ( meit=istructslideles_.begin(); meit != istructslideles_.end(); meit++ )
   {
-    for ( eit=meit->second.begin(); eit != meit->second.end(); eit++ )
-    {
-      //build slideeleidvector with unique distribution. Otherwise, AllreduceEMap() will complain in DEBUG
-      if (structdis->Comm().MyPID()==(*eit).second->Owner())
-        slideeleidvector.push_back((*eit).first);
-    }
-    const Epetra_Map slideelemap (-1, slideeleidvector.size(), &slideeleidvector[0], 0, structdis->Comm());
-    slideeleredmap_[meit->first] = LINALG::AllreduceEMap(slideelemap);
+//    for ( eit=meit->second.begin(); eit != meit->second.end(); eit++ )
+//    {
+//      //build slideeleidvector with unique distribution. Otherwise, AllreduceEMap() will complain in DEBUG
+//      if (structdis->Comm().MyPID()==(*eit).second->Owner())
+//        slideeleidvector.push_back((*eit).first);
+//    }
+//    const Epetra_Map slideelemap (-1, slideeleidvector.size(), &slideeleidvector[0], 0, structdis->Comm());
+//    slideeleredmap_[meit->first] = LINALG::AllreduceEMap(slideelemap);
     if (meit->first>max_id)
       max_id = meit->first;
   }
@@ -1227,7 +1227,8 @@ void FSI::UTILS::SlideAleUtils::RedundantElements
     {
       for (eit = istructslideles_[i].begin(); eit != istructslideles_[i].end(); eit++)
       {
-        vstruslideleids.push_back(eit->first);
+        if (interfacedis.Comm().MyPID()==(*eit).second->Owner())
+          vstruslideleids.push_back(eit->first);
       }
     }
     int globsum=0;

@@ -225,7 +225,7 @@ namespace FSI
       map<int, map<int, Teuchos::RCP<DRT::Element> > > istructslideles_;  ///< sliding struct elements in the interface
       map<int, DRT::Node*> istructdispnodes_;        ///< struct nodes in the interface used for centerdisp calculation
       map<int, Teuchos::RCP<DRT::Element> > istructdispeles_;  ///< struct elements in the interface used for centerdisp calc
-      map<int, Teuchos::RCP<Epetra_Map> >  slideeleredmap_;      ///< redundant version of sliding struct elements
+//      map<int, Teuchos::RCP<Epetra_Map> >  slideeleredmap_;      ///< redundant version of sliding struct elements
       map<int, map<int, DRT::Node*> > ifluidslidnodes_;          ///< sliding fluid nodes in the interface
       map<int, DRT::Node*> ifluidconfnodes_;          ///< sticking fluid nodes in the interface
       
