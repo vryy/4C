@@ -160,7 +160,8 @@ public:
   */
   bool UseTranspose() const
   {
-    dserror("UseTranspose not impl.");
+	// TAW: we can safely remove this. The (new) Belos now always checks the UseTransposed flag.
+    //dserror("UseTranspose not impl.");
     return false;
   }
 
