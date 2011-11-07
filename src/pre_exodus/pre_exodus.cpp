@@ -422,7 +422,7 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   "has 9417816 Elements"<<endl<<
   "'*eb0=\"ELEMENT\"'"<<endl<<
   "sectionname=\"STRUCTURE\""<<endl<<
-  "description=\"MAT 1 EAS mild\""<<endl<<
+  "description=\"MAT 1 EAS mild KINTYP nln\""<<endl<<
   "elementname=\"SOLIDH8\" \n"<<endl<<
   "Node Set, named:"<<endl<<
   "Property Name: INFLOW"<<endl<<
