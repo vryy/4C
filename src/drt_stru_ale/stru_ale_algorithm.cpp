@@ -31,6 +31,9 @@ Maintainer: Markus Gitterle
 #include "../drt_contact/contact_abstract_strategy.H"
 #include "../drt_w1/wall1.H"
 #include "../drt_lib/drt_elementtype.H"
+#include "../drt_ale/ale.H"
+#include "../drt_contact/contact_interface.H"
+#include "../drt_contact/contact_node.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -39,7 +42,8 @@ Maintainer: Markus Gitterle
  *----------------------------------------------------------------------*/
 STRU_ALE::Algorithm::Algorithm(Epetra_Comm& comm)
  : AlgorithmBase(comm,DRT::Problem::Instance()->StructuralDynamicParams()),
-   StructureBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams())
+   StructureBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams()),
+   AleBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams())
 {
   // contact/meshtying manager
   cmtman_= StructureField().ContactManager();
@@ -65,6 +69,10 @@ void STRU_ALE::Algorithm::TimeLoop()
     IncrementTimeAndStep();
     PrintHeader();
 
+    /********************************************************************/
+    /* LAGRANGE STEP                                                    */  
+    /* structural lagrange step with contact                            */
+    /********************************************************************/
     // predict and solve structural system
     StructureField().PrepareTimeStep();
     StructureField().Solve();
@@ -77,176 +85,185 @@ void STRU_ALE::Algorithm::TimeLoop()
 
     // write output to screen and files
     StructureField().Output();
+    
+    /********************************************************************/
+    /* EULERIAN STEP                                                    */  
+    /* 1. mesh displacements due to wear from ALE system                */
+    /* 2. mapping of results from "old" to "new" mesh                   */
+    /********************************************************************/
+    
+    // 1.----------------------------------------------------------------- 
+    // wear as interface displacements in ale dofs 
+    RCP<Epetra_Vector> idisale;
+    InterfaceDisp(idisale);
+    
+    // system of equation
+    AleField().BuildSystemMatrix();
 
-    // subtract wear
-    SubtractWear();
+    // application of interface displacements as dirichlet conditions
+    AleField().ApplyInterfaceDisplacements(idisale);
+    
+    // solution
+    AleField().Solve();
+
+    // 2.-----------------------------------------------------------------     
+    // mesh displacement from solution of ALE field in structural dofs
+    // FIXGIT: Has to be done with transformation of vector
+    RCP<Epetra_Vector> idis = rcp(new Epetra_Vector(*(StructureField().Discretization()->DofRowMap()),true));
+    for (int i=0; i<idis->MyLength(); ++i)
+      (*idis)[i]=(*(AleField().ExtractDisplacement()))[i];
+    
+    // application of mesh displacements to structural field, 
+    // mapping of results
+    ApplyMeshDisplacement(idis);
 
   }  // time loop
 }  // STRUE_ALE::Algorithm::TimeLoop()
 
 /*----------------------------------------------------------------------*
- | Subtract wear                                              mgit 12/09 |
+ | Vector of interface displacements in ALE dofs              mgit 07/11 |
  *----------------------------------------------------------------------*/
-void STRU_ALE::Algorithm::SubtractWear()
+void STRU_ALE::Algorithm::InterfaceDisp(RCP<Epetra_Vector>& disinterface)
 {
+  // FIXGIT: From global slave vector
+  // FIXGIT: Perhaps master nodes
+  
+  // get vector of unweighted wear
+  RCP<Epetra_Vector> realwear = cmtman_->GetStrategy().ContactWear();
+  
+  // map of slave dofs
+  RCP<Epetra_Map> slavedofs;
+   
+  // stactic cast of mortar strategy to contact strategy
+  MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
+  CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
 
-  if (cmtman_==null)
-    dserror("Structure with ale only for contact with wear so far.");
+  // get vector of contact interfaces
+  vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
 
-  if (!cmtman_->GetStrategy().Wear())
-    return;
+  // this currently works only for one interface yet
+  if (interface.size()>1)
+    dserror("Error in TSI::Algorithm::ConvertMaps: Only for one interface yet.");
 
+  // dimension of the problem
+  int dim = strategy.Dim();
+
+  // loop over all interfaces
+  for (int m=0; m<(int)interface.size(); ++m)
+  {
+    // slave nodes
+    const RCP<Epetra_Map> slavenodes = interface[m]->SlaveRowNodes();
+
+    // define local variables
+    int slavecountnodes = 0;
+    vector<int> myslavealedofs((slavenodes->NumMyElements())*dim);
+
+    // loop over all slave nodes of the interface
+    for (int i=0;i<slavenodes->NumMyElements();++i)
+    {
+      int gid = slavenodes->GID(i);
+      DRT::Node* node = StructureField().Discretization()->gNode(gid);
+      if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+      CONTACT::CoNode* cnode = static_cast<CONTACT::CoNode*>(node);
+
+      if (cnode->Owner() != Comm().MyPID())
+        dserror("ERROR: ConvertMaps: Node ownership inconsistency!");
+
+      // ale dofs
+      if (dim == 2)
+      {  
+        myslavealedofs[slavecountnodes*dim] = (AleField().Discretization()->Dof(0,node))[0];
+        myslavealedofs[slavecountnodes*dim+1] = (AleField().Discretization()->Dof(0,node))[1];
+      }
+      else
+        dserror("ERROR: 3D not yet implemented.");
+      
+      ++slavecountnodes;
+    }  
+
+    // resize the temporary vectors
+    myslavealedofs.resize(slavecountnodes*dim);
+
+    // communicate slavecuntnodes
+    int gslavecountnodes;
+    Comm().SumAll(&slavecountnodes,&gslavecountnodes,1);
+
+    // create slave node map and active dof map
+    slavedofs = rcp(new Epetra_Map(gslavecountnodes*dim,slavecountnodes*dim,&myslavealedofs[0],0,Comm()));
+  }
+  
+  // additional spatial displacements
+  // FIXGIT: check has to be done with nodal normal
+  // FIXGIT: transformation of results
+  disinterface = rcp(new Epetra_Vector(*slavedofs,true));
+  for (int i=0; i<disinterface->MyLength(); ++i)
+  {
+    if (i%2 > 0 and (*cstrategy.ContactWear())[i] > 0.0)
+      (*disinterface)[i] = 0;
+    else
+      (*disinterface)[i] = -(*cstrategy.ContactWear())[i]; 
+   }
+  
+  return;
+}  // STRU_ALE::Algorithm::InterfaceDisp()
+
+/*----------------------------------------------------------------------*
+ | Application of mesh displacement                           mgit 07/11 |
+ *----------------------------------------------------------------------*/
+void STRU_ALE::Algorithm::ApplyMeshDisplacement(RCP<Epetra_Vector>& disale)
+{
   // vector of current spatial displacements
   RCP<Epetra_Vector> dispn = StructureField().ExtractDispn();
 
   // additional spatial displacements
   RCP<Epetra_Vector> disadditional = rcp(new Epetra_Vector(dispn->Map()),true);
 
-  // new material displacements for slip nodes
+  // material displacements
   RCP<Epetra_Vector> dismat = rcp(new Epetra_Vector(dispn->Map()),true);
-
-  // set state (spatial displacements)
+  
+  // set state
   (StructureField().Discretization())->SetState(0,"displacement",dispn);
 
-  // set state (material displacements)
+  // set state
   (StructureField().Discretization())->SetState(0,"material displacement",StructureField().DispMat());
-
-  // get vector of unweighted wear
-  RCP<Epetra_Vector> realwear = cmtman_->GetStrategy().ContactWear();
-
-  // vector of slipnodes
-  RCP<Epetra_Map> sliprownodes = cmtman_->GetStrategy().SlipRowNodes();
-
-  // loop over slipnodes (only they are worn)
-  for (int j=0; j<sliprownodes->NumMyElements(); ++j)
-  {
-    int gid = sliprownodes->GID(j);
-    DRT::Node* node = StructureField().Discretization()->gNode(gid);
-
-    // adjacent elemets
-    DRT::Element** ElementPtr = node->Elements();
-    int numelement = node->NumElement();
-
-    // material displacement
-    double XMat[2];
-    double XMesh[2];
-
-    int locid = (dispn->Map()).LID(2*gid);
-    int locid1 = (realwear->Map()).LID(2*gid);
-
-    if((*realwear)[locid1+1]>0)
+ 
+  // loop over all row nodes to fill graph
+    for (int k=0;k<StructureField().Discretization()->NumMyRowNodes();++k)
     {
-      // dserror for negative wear
-      //dserror ("Negative wear!");
+      int gid = StructureField().Discretization()->NodeRowMap()->GID(k);
+      
+      DRT::Node* node = StructureField().Discretization()->gNode(gid);
+      DRT::Element** ElementPtr = node->Elements();
+        
+      int numelement = node->NumElement();
+        
+      double XMat[2];
+      double XMesh[2];
+      
+      XMat[0] = node->X()[0];
+      XMat[1] = node->X()[1];
+        
+      int locid = (dispn->Map()).LID(2*gid);
+  
+      XMesh[0]=node->X()[0]+(*dispn)[locid]+(*disale)[locid];
+      XMesh[1]=node->X()[1]+(*dispn)[locid+1]+(*disale)[locid+1];
+      
+      AdvectionMap(&XMat[0],&XMat[1],&XMesh[0],&XMesh[1],ElementPtr,numelement);
 
-      printf("REALWEAR1: % e \n",(*realwear)[locid1]);
-      printf("REALWEAR2: % e \n",(*realwear)[locid1+1]);
-      (*realwear)[locid1+1]=0;
+      (*disadditional)[locid]   = (*disale)[locid];
+      (*disadditional)[locid+1] = (*disale)[locid+1];
+
+      (*dismat)[locid] = XMat[0]-node->X()[0];
+      (*dismat)[locid+1] = XMat[1]-node->X()[1];
     }
 
-    // new spatial coordinates
-    XMesh[0]=node->X()[0]+(*dispn)[locid]-(*realwear)[locid1];
-    XMesh[1]=node->X()[1]+(*dispn)[locid+1]-(*realwear)[locid1+1];
+    // update spatial displacements
+    dispn->Update(1.0,*disadditional,1.0);
 
-    // find material coordinates
-    AdvectionMap(&XMat[0],&XMat[1],&XMesh[0],&XMesh[1],ElementPtr,numelement);
-
-    // additional spatial displacements
-    (*disadditional)[locid]   = -(*realwear)[locid1];
-    (*disadditional)[locid+1] = -(*realwear)[locid1+1];
-
-    // material displacements
-    (*dismat)[locid] = XMat[0]-node->X()[0];
-    (*dismat)[locid+1] = XMat[1]-node->X()[1];
-  }
-
-  // update spatial displacements
-  dispn->Update(1.0,*disadditional,1.0);
-
-  // apply material displacements to structural field
-  StructureField().ApplyDisMat(dismat);
-
-  return;
-
-//  // vector of current spatial displacements
-//  RCP<Epetra_Vector> dispn = StructureField().ExtractDispn();
-//
-//  // additional spatial displacements
-//  RCP<Epetra_Vector> disadditional = rcp(new Epetra_Vector(dispn->Map()),true);
-//
-//  RCP<Epetra_Vector> dismat = rcp(new Epetra_Vector(dispn->Map()),true);
-//
-//  // set state
-//  (StructureField().Discretization())->SetState(0,"displacement",dispn);
-//
-//  // set state
-//  (StructureField().Discretization())->SetState(0,"material displacement",StructureField().DispMat());
-//
-//  // loop over all row nodes to fill graph
-//    for (int k=0;k<StructureField().Discretization()->NumMyRowNodes();++k)
-//    {
-//      int gid = StructureField().Discretization()->NodeRowMap()->GID(k);
-//      cout << "GID " << gid <<endl;
-//
-//      DRT::Node* node = StructureField().Discretization()->gNode(gid);
-//      if (gid==2)
-//      {
-//        DRT::Element** ElementPtr = node->Elements();
-//
-//        int numelement = node->NumElement();
-//
-//        cout << "NUMELEMENT " << numelement << endl;
-//
-//        double XMat[2];
-//        double XMesh[2];
-//
-//        int locid = (dispn->Map()).LID(2*gid);
-//
-//        cout << "STEP " << Step() << endl;
-//
-//        double ux = 0;
-//        double uy =0;
-//
-//        if (Step() == 1)
-//        {
-//          ux= -0.2;
-//          uy= -0.257196;
-//        }
-//
-//        if (Step() ==2)
-//        {
-//          ux=0.1;
-//          uy = +0.257196;
-//        }
-//
-//
-//        XMesh[0]=node->X()[0]+(*dispn)[locid]+ux;
-//        XMesh[1]=node->X()[1]+(*dispn)[locid+1]+uy;
-//
-//
-//        StructureField().Discretization()->AdvectionMap(&XMat[0],&XMat[1],&XMesh[0],&XMesh[1],ElementPtr,numelement);
-//
-//        node->UMat()[0]= XMat[0]-node->X()[0];
-//        node->UMat()[1]= XMat[1]-node->X()[1];
-//
-//        (*disadditional)[locid]   = ux;
-//        (*disadditional)[locid+1] = uy;
-//
-//        (*dismat)[locid] = XMat[0]-node->X()[0];
-//        (*dismat)[locid+1] = XMat[1]-node->X()[1];
-//
-//        cout << "STRUE_ALE " << XMat[0]-node->X()[0] << endl;
-//        cout << "STRUE_ALE " << XMat[1]-node->X()[1] << endl;
-//      }
-//    }
-//
-//    // update spatial displacements
-//    dispn->Update(1.0,*disadditional,1.0);
-//
-//    // apply material displacements to structural field
-//    StructureField().ApplyDisMat(dismat);
-//
-//    return;
+    // apply material displacements to structural field
+    StructureField().ApplyDisMat(dismat);
+    
+    return;
 
 }  // STRU_ALE::Algorithm::SubtractWear()
 
@@ -298,7 +315,7 @@ void STRU_ALE::Algorithm::AdvectionMap(double* XMat1,
 
   // error if element is not found
   if (found == false)
-    dserror("STRU_ALE::Algorithm::AdvectionMap: Particle tracking not successful.");
+    cout << "STRU_ALE::Algorithm::AdvectionMap: Particle tracking not successful." << endl;
 
   // bye
   return;

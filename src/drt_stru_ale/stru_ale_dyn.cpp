@@ -69,6 +69,19 @@ void stru_ale_dyn_drt(int disnumsf,int disnumaf,int restart)
   if (structdis->NumGlobalNodes()==0) dserror("Structure discretization is empty!");
   
   // duplication of structure discretization will follow
+  if (aledis->NumGlobalNodes()==0)
+  { 
+    // fetch the desired material id for the thermo elements
+    const int matid = -1;
+    
+    // create the ale discretization
+    {
+      Teuchos::RCP<DRT::UTILS::DiscretizationCreator<STRU_ALE::UTILS::AleStructureCloneStrategy> > clonewizard
+        = Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<STRU_ALE::UTILS::AleStructureCloneStrategy>() );
+
+      clonewizard->CreateMatchingDiscretization(structdis,aledis,matid);
+    }
+  }
   
   // structure ale object
   Teuchos::RCP<STRU_ALE::Algorithm> stru_ale = Teuchos::rcp(new STRU_ALE::Algorithm(comm));

@@ -31,6 +31,7 @@ Maintainer: Markus Gitterle
 #include "../drt_adapter/adapter_structure.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 #include "../drt_lib/drt_element.H"
+#include "../drt_ale/ale.H"
 
 /*----------------------------------------------------------------------*
  |                                                           mgit 04/11 |
@@ -46,7 +47,8 @@ namespace STRU_ALE
   //!  \author gitterle
   //!  \date 04/11
   class Algorithm : public ADAPTER::AlgorithmBase,
-                    public ADAPTER::StructureBaseAlgorithm
+                    public ADAPTER::StructureBaseAlgorithm,
+                    public ALE::AleBaseAlgorithm
   {
   public:
 
@@ -59,8 +61,11 @@ namespace STRU_ALE
     /// time loop
     void TimeLoop();
 
-    /// Subtract wear (frictional contact)
-    void SubtractWear();
+    /// Interface displacements (frictional contact)
+    void InterfaceDisp (RCP<Epetra_Vector>& disinterface);
+    
+    /// Application of mesh displacements (frictional contact)
+    void ApplyMeshDisplacement(RCP<Epetra_Vector>& disale);
     
     /// material coordinates evaluated from spatial ones
     void AdvectionMap(double* XMat1,

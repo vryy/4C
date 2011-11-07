@@ -377,7 +377,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
              << "for the chosen problem type \"" << probtype << "\"!\n" << END_COLOR << endl;
 
       // errors
-      if (probtype!="tsi")
+      if (probtype!="tsi" and probtype!="structure_ale")
       {
         if (soltype == INPAR::CONTACT::solution_lagmult && (!semismooth || shapefcn != INPAR::MORTAR::shape_dual))
           dserror("ERROR: Multifield problems with LM strategy for meshtying/contact only for dual+semismooth case!");

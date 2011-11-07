@@ -16,6 +16,7 @@ Maintainer: Ulrich Kuettler
 
 #include "ale_springs.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*
@@ -57,8 +58,12 @@ ALE::AleSprings::AleSprings(RCP<DRT::Discretization> actdis,
   if (dirichletcond)
   {
     // for partitioned FSI the interface becomes a Dirichlet boundary
+    // also for structural Lagrangian simulations with contact and wear
+    // followed by an Eulerian step to take wear into account, the interface
+    // becomes a dirichlet
     std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
     condmaps.push_back(interface_.FSICondMap());
+    condmaps.push_back(interface_.AleWearCondMap());
     condmaps.push_back(dbcmaps_->CondMap());
     Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
     *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
@@ -559,7 +564,11 @@ void ALE::AleSprings::EvaluateElements()
  *----------------------------------------------------------------------*/
 void ALE::AleSprings::ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp)
 {
-  interface_.InsertFSICondVector(idisp,dispnp_);
+  // applying interface displacements
+  if(DRT::Problem::Instance()->ProblemType()!="structure_ale")
+    interface_.InsertFSICondVector(idisp,dispnp_);
+  else
+    interface_.InsertAleWearCondVector(idisp,dispnp_);
 }
 
 

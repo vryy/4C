@@ -514,6 +514,27 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(linecontact);
   condlist.push_back(surfcontact);
+  
+  /*--------------------------------------------------------------------*/
+  // wear in ALE description
+  
+  Teuchos::RCP<ConditionDefinition> linealewear =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE ALE WEAR CONDITIONS 2D",
+                                         "AleWear",
+                                         "Line Ale Wear",
+                                         DRT::Condition::AleWear,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfalewear =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE WEAR CONDITIONS 3D",
+                                         "AleWear",
+                                         "Surface Ale Wear",
+                                         DRT::Condition::AleWear,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  condlist.push_back(linealewear);
+  condlist.push_back(surfalewear);
 
   /*--------------------------------------------------------------------*/
   // local coordinate systems
