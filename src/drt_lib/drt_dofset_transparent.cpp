@@ -84,7 +84,7 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
       for (int i=0; i<int(sourcedis.size()); i++)
       {
         const DRT::Node* sourcenode = sourcedis[i]->gNode(newnode->Id());
-        vector<int> ldofs = sourcedis[i]->Dof(sourcenode);
+        vector<int> ldofs = sourcedis[i]->Dof(0, sourcenode);
         for(int l=0; l<int(ldofs.size()); l++)
         {
           dofs.push_back(ldofs[l]);
@@ -126,7 +126,7 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
         {
           dserror("required node %d not on proc",newnode->Id());
         }
-        vector<int> ldofs = sourcedis[i]->Dof(sourcenode);
+        vector<int> ldofs = sourcedis[i]->Dof(0, sourcenode);
         for(int l=0; l<int(ldofs.size()); l++)
           dofs.push_back(ldofs[l]);
       }
@@ -409,7 +409,7 @@ void DRT::TransparentDofSet::SetSourceDofsAvailableOnThisProc(
       {
         const DRT::Node* sourcenode = sourcedis_[i]->gNode(curr->first);
 
-        const vector<int> dofs = sourcedis_[i]->Dof(sourcenode);
+        const vector<int> dofs = sourcedis_[i]->Dof(0, sourcenode);
 
         for (vector<int>::const_iterator iter=dofs.begin();iter!=dofs.end();++iter)
         {

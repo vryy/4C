@@ -121,6 +121,23 @@ namespace DRT
       DRT::Exporter  & exporter,
       MPI_Request    & request);
 
+
+    /// Get the gid of all dofs of a node
+    virtual void Dof(const Node* node, vector<int>& lm) const
+    {
+      // first, local id of the node is needed
+      int lid = node->LID();
+      if (lid==-1)
+        return;
+      int idx = (*idxcolnodes_)[lid];
+      int size = (*numdfcolnodes_)[lid];
+      // get lid of the first gid of the node; here we talk about dofs
+      const int lidx = DofColMap()->LID(idx);
+      for (int i=0; i<size; ++i)
+        lm.push_back( (DofColMap()->GID(lidx+i)) );
+    }
+
+
     /// Get the gid of all dofs of a node
     virtual vector<int> Dof(const Node* node) const
     {
