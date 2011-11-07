@@ -30,7 +30,7 @@ Maintainer: Alexander Popp, Christian Cyron
 // flag for octree search
 #define OCTTREESEARCH
 // flag switching between different evaluations of the constraint tolerance
-//#define RELCONSTRTOL
+#define RELCONSTRTOL
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                      popp 04/10|
@@ -1261,6 +1261,17 @@ void CONTACT::Beam3cmanager::ResetUzawaIter()
 {
   // reset index to zero
   uzawaiter_ = 0;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Reset pairs vector                                     mueller 11/11|
+ *----------------------------------------------------------------------*/
+void CONTACT::Beam3cmanager::ResetPairs()
+{
+  // Reset pairs vector to size zero
+  pairs_.clear();
 
   return;
 }

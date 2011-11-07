@@ -1141,6 +1141,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
       if(uzawa)
       {
       	std::cout<<"Newton iteration in Uzawa Step "<<beamcmanager_->GetUzawaIter()<<" unconverged-leaving Uzawa loop and restarting time step...!\n\n";
+      	beamcmanager_->ResetPairs();
       	return;
       }
       else

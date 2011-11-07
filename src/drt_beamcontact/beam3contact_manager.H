@@ -217,6 +217,12 @@ public:
   void ResetUzawaIter();
 
   /*!
+  \brief Reset contact Pairs (e.g. if time step is redone)
+
+  */
+  void ResetPairs();
+
+  /*!
   \brief Update Uzawa iteration index
 
   */
