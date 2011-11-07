@@ -231,8 +231,8 @@ void LINALG::Solver::ResetTolerance()
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Setup(
   RefCountPtr<Epetra_Operator>     matrix             ,
-  RefCountPtr<Epetra_Vector>       x                  ,
-  RefCountPtr<Epetra_Vector>       b                  ,
+  RefCountPtr<Epetra_MultiVector>       x             ,
+  RefCountPtr<Epetra_MultiVector>       b             ,
   bool                             refactor           ,
   bool                             reset              ,
   RefCountPtr<Epetra_MultiVector>  weighted_basis_mean,
@@ -303,8 +303,8 @@ int LINALG::Solver::ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector
  *----------------------------------------------------------------------*/
 void LINALG::Solver::Solve(
   RefCountPtr<Epetra_Operator>     matrix             ,
-  RefCountPtr<Epetra_Vector>       x                  ,
-  RefCountPtr<Epetra_Vector>       b                  ,
+  RefCountPtr<Epetra_MultiVector>       x             ,
+  RefCountPtr<Epetra_MultiVector>       b             ,
   bool                             refactor           ,
   bool                             reset              ,
   RefCountPtr<Epetra_MultiVector>  weighted_basis_mean,
@@ -1113,7 +1113,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
       //     else if (verbosity > 3)
       //       beloslist.set("Verbosity", Belos::Errors + Belos::Warnings + Belos::StatusTestDetails);
       //     else if (verbosity > 6)
-     beloslist.set("Verbosity", Belos::Errors + Belos::Warnings + Belos::StatusTestDetails + Belos::TimingDetails);
+     beloslist.set("Verbosity", Belos::Errors + Belos::Warnings/*+ Belos::StatusTestDetails + Belos::TimingDetails*/);
      beloslist.set("Convergence Tolerance",inparams.get<double>("AZTOL"));
      //-------------------------------- set parameters for Ifpack if used
      if (azprectyp == INPAR::SOLVER::azprec_ILU  ||
@@ -1151,6 +1151,28 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Par
        ParameterList& mllist = outparams.sublist("ML Parameters");
        mllist = LINALG::Solver::TranslateBACIToML(inparams,&beloslist);
      } // if ml preconditioner
+
+     if (azprectyp == INPAR::SOLVER::azprec_BGS2x2)
+     {
+       ParameterList& bgslist = outparams.sublist("BGS Parameters");
+       bgslist.set("numblocks",2);
+
+       // currently, the number of Gauss-Seidel iterations and the relaxation
+       // parameter on the global level are set to 1 and 1.0, respectively
+       bgslist.set("global_iter",1);
+       bgslist.set("global_omega",1.0);
+
+       // currently, the order of blocks in the given EpetraOperator is not changed
+       // in the Gauss-Seidel procedure
+       bgslist.set("fliporder",false);
+
+       // currently, the number of Richardson iteratios and the relaxation
+       // parameter on the individual block level are set to 1 and 1.0, respectively
+       bgslist.set("block1_iter",1);
+       bgslist.set("block1_omega",1.0);
+       bgslist.set("block2_iter",1);
+       bgslist.set("block2_omega",1.0);
+     }
 
     break;
   }

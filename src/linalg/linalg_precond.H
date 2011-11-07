@@ -86,8 +86,8 @@ namespace LINALG
                               be recalculated including preconditioners
      */
     void Solve(Teuchos::RCP<Epetra_Operator>  matrix,
-               Teuchos::RCP<Epetra_Vector>    x,
-               Teuchos::RCP<Epetra_Vector>    b,
+               Teuchos::RCP<Epetra_MultiVector>    x,
+               Teuchos::RCP<Epetra_MultiVector>    b,
                bool refactor,
                bool reset = false);
 
@@ -157,8 +157,8 @@ namespace LINALG
     Teuchos::RCP<Epetra_RowMatrix> Pmatrix_;
 
     /// there is always a solver object
-    Teuchos::RCP<Epetra_Vector> x_;
-    Teuchos::RCP<Epetra_Vector> b_;
+    Teuchos::RCP<Epetra_MultiVector> x_;
+    Teuchos::RCP<Epetra_MultiVector> b_;
     Teuchos::RCP<Solver> solver_;
 
     //! counting how many times matrix was solved between resets

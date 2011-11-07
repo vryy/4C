@@ -29,10 +29,10 @@ namespace LINALG
 
       /// solve the linear system
       virtual void Setup( Teuchos::RCP<Epetra_Operator>     matrix             ,
-                          Teuchos::RCP<Epetra_Vector>       x                  ,
-                          Teuchos::RCP<Epetra_Vector>       b                  ,
-                          bool                             refactor           ,
-                          bool                             reset              ,
+                          Teuchos::RCP<Epetra_MultiVector>       x             ,
+                          Teuchos::RCP<Epetra_MultiVector>       b             ,
+                          bool                             refactor            ,
+                          bool                             reset               ,
                           Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean,
                           Teuchos::RCP<Epetra_MultiVector>  kernel_c           ,
                           bool                             project) = 0;

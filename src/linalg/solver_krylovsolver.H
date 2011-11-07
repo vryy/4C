@@ -34,10 +34,10 @@ namespace LINALG
       virtual ~KrylovSolver();
 
       virtual void Setup( Teuchos::RCP<Epetra_Operator>     matrix             ,
-          Teuchos::RCP<Epetra_Vector>       x                  ,
-          Teuchos::RCP<Epetra_Vector>       b                  ,
-          bool                             refactor           ,
-          bool                             reset              ,
+          Teuchos::RCP<Epetra_MultiVector>       x             ,
+          Teuchos::RCP<Epetra_MultiVector>       b             ,
+          bool                             refactor            ,
+          bool                             reset               ,
           Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean,
           Teuchos::RCP<Epetra_MultiVector>  kernel_c           ,
           bool                             project) = 0;
@@ -71,10 +71,10 @@ namespace LINALG
           FILE*                                 outfile_;
 
           //! initial guess and solution
-          Teuchos::RCP<Epetra_Vector>                    x_;
+          Teuchos::RCP<Epetra_MultiVector>                    x_;
 
           //! right hand side vector
-          Teuchos::RCP<Epetra_Vector>                    b_;
+          Teuchos::RCP<Epetra_MultiVector>                    b_;
 
           //! system of equations
           Teuchos::RCP<Epetra_Operator>  A_;

@@ -35,8 +35,8 @@ LINALG::SOLVER::AztecSolver::~AztecSolver()
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 void LINALG::SOLVER::AztecSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
-                                          Teuchos::RCP<Epetra_Vector> x,
-                                          Teuchos::RCP<Epetra_Vector> b,
+                                          Teuchos::RCP<Epetra_MultiVector> x,
+                                          Teuchos::RCP<Epetra_MultiVector> b,
                                           bool refactor,
                                           bool reset,
                                           Teuchos::RCP<Epetra_MultiVector> weighted_basis_mean,

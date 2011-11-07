@@ -12,6 +12,8 @@
 
 #include "Teuchos_RefCountPtr.hpp"
 #include "Teuchos_ParameterList.hpp"
+#include "Teuchos_Comm.hpp"
+
 
 #include "solver_solvertype.H"
 
@@ -29,8 +31,8 @@ namespace LINALG
       virtual ~StratimikosSolver();
 
       virtual void Setup( Teuchos::RCP<Epetra_Operator>     matrix             ,
-          Teuchos::RCP<Epetra_Vector>       x                  ,
-          Teuchos::RCP<Epetra_Vector>       b                  ,
+          Teuchos::RCP<Epetra_MultiVector>       x            ,
+          Teuchos::RCP<Epetra_MultiVector>       b            ,
           bool                             refactor           ,
           bool                             reset              ,
           Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean,
@@ -46,6 +48,8 @@ namespace LINALG
       Teuchos::ParameterList& Params() const { return params_; }
 
       protected:
+          //! helper function: transform Epetra_Comm to Teuchos::Comm
+          Teuchos::RCP<const Teuchos::Comm<int> > toTeuchosComm(const Epetra_Comm & comm);
 
           //! a communicator
           const Epetra_Comm&                    comm_;
@@ -57,10 +61,10 @@ namespace LINALG
           FILE*                                 outfile_;
 
           //! initial guess and solution
-          Teuchos::RCP<Epetra_Vector>                    x_;
+          Teuchos::RCP<Epetra_MultiVector>            x_;
 
           //! right hand side vector
-          Teuchos::RCP<Epetra_Vector>                    b_;
+          Teuchos::RCP<Epetra_MultiVector>            b_;
 
           //! system of equations
           Teuchos::RCP<Epetra_Operator>  A_;

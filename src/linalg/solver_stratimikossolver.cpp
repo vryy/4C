@@ -8,6 +8,10 @@
 #ifdef TRILINOS_DEV
 
 #include <Epetra_Comm.h>
+//#ifdef HAVE_MPI
+#include <Epetra_MpiComm.h>
+//#endif
+#include <Epetra_SerialComm.h>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 #include <Epetra_CrsMatrix.h>
@@ -17,6 +21,10 @@
 #include <Thyra_EpetraLinearOp.hpp>
 #include <Thyra_EpetraThyraWrappers.hpp>
 #include <Thyra_LinearOpWithSolveFactoryHelpers.hpp>
+#include <Thyra_DefaultSpmdVectorSpaceFactory_def.hpp>
+
+#include "Teuchos_DefaultSerialComm.hpp"
+#include "Teuchos_DefaultMpiComm.hpp"
 
 #include "../drt_lib/drt_dserror.H"
 #include "solver_stratimikossolver.H"
@@ -45,8 +53,8 @@ LINALG::SOLVER::StratimikosSolver::~StratimikosSolver()
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 void LINALG::SOLVER::StratimikosSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
-                                               Teuchos::RCP<Epetra_Vector> x,
-                                               Teuchos::RCP<Epetra_Vector> b,
+                                               Teuchos::RCP<Epetra_MultiVector> x,
+                                               Teuchos::RCP<Epetra_MultiVector> b,
                                                bool refactor,
                                                bool reset,
                                                Teuchos::RCP<Epetra_MultiVector> weighted_basis_mean,
@@ -84,10 +92,16 @@ void LINALG::SOLVER::StratimikosSolver::Solve()
   // see whether operator is a Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> epetra_A = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(A_);
 
+  // create a dummy one-column Thyra::VectorSpaceBase
+  Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = toTeuchosComm(A_->Comm());
+  Teuchos::RCP<Thyra::DefaultSpmdVectorSpaceFactory<double> > dummyDomainSpaceFac = Teuchos::rcp(new Thyra::DefaultSpmdVectorSpaceFactory<double>(TeuchosComm));
+
+  Teuchos::RCP<const Thyra::VectorSpaceBase<double> > dummyDomainSpace = dummyDomainSpaceFac->createVecSpc(x_->NumVectors());
+
   // wrap Epetra -> Thyra
   Teuchos::RCP<const Thyra::LinearOpBase<double> > A = Thyra::epetraLinearOp( epetra_A );
-  Teuchos::RCP<Thyra::VectorBase<double> > x = Thyra::create_Vector( x_, A->domain());
-  Teuchos::RCP<const Thyra::VectorBase<double> > b = Thyra::create_Vector( b_, A->range());
+  Teuchos::RCP<Thyra::MultiVectorBase<double> > x = Thyra::create_MultiVector( x_, A->domain(), dummyDomainSpace);
+  Teuchos::RCP<const Thyra::MultiVectorBase<double> > b = Thyra::create_MultiVector( b_, A->range(), dummyDomainSpace);
 
   // Create a linear solver factory given information read from the
   // parameter list.
@@ -134,6 +148,30 @@ int LINALG::SOLVER::StratimikosSolver::ApplyInverse(const Epetra_MultiVector& X,
 {
   dserror("ApplyInverse not implemented for StratimikosSolver");
   return -1;
+}
+
+Teuchos::RCP<const Teuchos::Comm<int> > LINALG::SOLVER::StratimikosSolver::toTeuchosComm(const Epetra_Comm & comm)
+{
+#ifdef HAVE_MPI
+  try {
+    const Epetra_MpiComm& mpiComm = dynamic_cast<const Epetra_MpiComm&>(comm);
+    Teuchos::RCP<Teuchos::MpiComm<int> > mpicomm =  Teuchos::rcp(new Teuchos::MpiComm<int>(Teuchos::opaqueWrapper(mpiComm.Comm())));
+    return Teuchos::rcp_dynamic_cast<const Teuchos::Comm<int> >(mpicomm);
+  }
+  catch (std::bad_cast & b) {}
+#endif
+  try
+  {
+    const Epetra_SerialComm& serialComm = dynamic_cast<const Epetra_SerialComm&>(comm);
+    serialComm.NumProc(); // avoid compilation warning
+    return Teuchos::rcp(new Teuchos::SerialComm<int>());
+  }
+  catch (std::bad_cast & b)
+  {
+    dserror("Cannot convert an Epetra_Comm to a Teuchos::Comm: The exact type of the Epetra_Comm object is unknown");
+  }
+  dserror("Congratulations! You should not be here!");
+  return Teuchos::null;
 }
 
 

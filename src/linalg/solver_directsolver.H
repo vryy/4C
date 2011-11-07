@@ -43,10 +43,10 @@ namespace LINALG
       virtual ~DirectSolver();
 
       virtual void Setup( RCP<Epetra_Operator>     matrix             ,
-                          RCP<Epetra_Vector>       x                  ,
-                          RCP<Epetra_Vector>       b                  ,
-                          bool                             refactor           ,
-                          bool                             reset              ,
+                          RCP<Epetra_MultiVector>       x             ,
+                          RCP<Epetra_MultiVector>       b             ,
+                          bool                             refactor   ,
+                          bool                             reset      ,
                           RCP<Epetra_MultiVector>  weighted_basis_mean,
                           RCP<Epetra_MultiVector>  kernel_c           ,
                           bool                             project);
@@ -70,10 +70,10 @@ namespace LINALG
       RCP<Epetra_LinearProblem>             lp_;
 
       //! initial guess and solution
-      RCP<Epetra_Vector>                    x_;
+      RCP<Epetra_MultiVector>               x_;
 
       //! right hand side vector
-      RCP<Epetra_Vector>                    b_;
+      RCP<Epetra_MultiVector>               b_;
 
       //! system of equations
       RCP<Epetra_Operator>  A_;

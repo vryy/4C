@@ -92,17 +92,14 @@ void LINALG::BGS2x2_Operator::SetupBlockPreconditioners()
 int LINALG::BGS2x2_Operator::ApplyInverse(const Epetra_MultiVector& X,
                                           Epetra_MultiVector& Y) const
 {
-  const Epetra_Vector &x = Teuchos::dyn_cast<const Epetra_Vector>(X);
-  Epetra_Vector &y = Teuchos::dyn_cast<Epetra_Vector>(Y);
+  Teuchos::RCP<Epetra_MultiVector> y1 = mmex_.ExtractVector(Y,firstind_);
+  Teuchos::RCP<Epetra_MultiVector> y2 = mmex_.ExtractVector(Y,secind_);
 
-  Teuchos::RCP<Epetra_Vector> y1 = mmex_.ExtractVector(y,firstind_);
-  Teuchos::RCP<Epetra_Vector> y2 = mmex_.ExtractVector(y,secind_);
+  Teuchos::RCP<Epetra_MultiVector> z1 = Teuchos::rcp(new Epetra_MultiVector(y1->Map(),y1->NumVectors()));
+  Teuchos::RCP<Epetra_MultiVector> z2 = Teuchos::rcp(new Epetra_MultiVector(y2->Map(),y2->NumVectors()));
 
-  Teuchos::RCP<Epetra_Vector> z1 = Teuchos::rcp(new Epetra_Vector(y1->Map()));
-  Teuchos::RCP<Epetra_Vector> z2 = Teuchos::rcp(new Epetra_Vector(y2->Map()));
-
-  Teuchos::RCP<Epetra_Vector> tmpx1 = Teuchos::rcp(new Epetra_Vector(A_->DomainMap(firstind_)));
-  Teuchos::RCP<Epetra_Vector> tmpx2 = Teuchos::rcp(new Epetra_Vector(A_->DomainMap(secind_)));
+  Teuchos::RCP<Epetra_MultiVector> tmpx1 = Teuchos::rcp(new Epetra_MultiVector(A_->DomainMap(firstind_),y1->NumVectors()));
+  Teuchos::RCP<Epetra_MultiVector> tmpx2 = Teuchos::rcp(new Epetra_MultiVector(A_->DomainMap(secind_),y2->NumVectors()));
 
   const LINALG::SparseMatrix& Op11 = A_->Matrix(firstind_,firstind_);
   const LINALG::SparseMatrix& Op22 = A_->Matrix(secind_,secind_);
@@ -112,8 +109,8 @@ int LINALG::BGS2x2_Operator::ApplyInverse(const Epetra_MultiVector& X,
   // outer Richardson loop
   for (int run=0; run<global_iter_; ++run)
   {
-    Teuchos::RCP<Epetra_Vector> x1 = A_->DomainExtractor().ExtractVector(x,firstind_);
-    Teuchos::RCP<Epetra_Vector> x2 = A_->DomainExtractor().ExtractVector(x,secind_);
+    Teuchos::RCP<Epetra_MultiVector> x1 = A_->DomainExtractor().ExtractVector(X,firstind_);
+    Teuchos::RCP<Epetra_MultiVector> x2 = A_->DomainExtractor().ExtractVector(X,secind_);
 
     // ----------------------------------------------------------------
     // first block
@@ -165,8 +162,8 @@ int LINALG::BGS2x2_Operator::ApplyInverse(const Epetra_MultiVector& X,
     }
   }
 
-  mmex_.InsertVector(*y1,firstind_,y);
-  mmex_.InsertVector(*y2,secind_,y);
+  mmex_.InsertVector(*y1,firstind_,Y);
+  mmex_.InsertVector(*y2,secind_,Y);
 
   return 0;
 }
@@ -176,16 +173,16 @@ int LINALG::BGS2x2_Operator::ApplyInverse(const Epetra_MultiVector& X,
  *----------------------------------------------------------------------*/
 void LINALG::BGS2x2_Operator::LocalBlockRichardson(Teuchos::RCP<LINALG::Preconditioner> solver,
                                                    const LINALG::SparseMatrix& Op,
-                                                   Teuchos::RCP<Epetra_Vector> x,
-                                                   Teuchos::RCP<Epetra_Vector> y,
-                                                   Teuchos::RCP<Epetra_Vector> tmpx,
+                                                   Teuchos::RCP<Epetra_MultiVector> x,
+                                                   Teuchos::RCP<Epetra_MultiVector> y,
+                                                   Teuchos::RCP<Epetra_MultiVector> tmpx,
                                                    int iter,
                                                    double omega) const
 {
   if (iter > 0)
   {
     y->Scale(omega);
-    Teuchos::RCP<Epetra_Vector> tmpy = Teuchos::rcp(new Epetra_Vector(y->Map()));
+    Teuchos::RCP<Epetra_MultiVector> tmpy = Teuchos::rcp(new Epetra_MultiVector(y->Map(),y->NumVectors()));
 
     for (int i=0; i < iter; ++i)
     {

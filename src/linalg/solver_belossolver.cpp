@@ -44,9 +44,9 @@ LINALG::SOLVER::BelosSolver::~BelosSolver()
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::BelosSolver::Setup(  Teuchos::RCP<Epetra_Operator>     matrix             ,
-                                          Teuchos::RCP<Epetra_Vector>       x                  ,
-                                          Teuchos::RCP<Epetra_Vector>       b                  ,
+void LINALG::SOLVER::BelosSolver::Setup(  Teuchos::RCP<Epetra_Operator>     matrix            ,
+                                          Teuchos::RCP<Epetra_MultiVector>       x            ,
+                                          Teuchos::RCP<Epetra_MultiVector>       b            ,
                                           bool                             refactor           ,
                                           bool                             reset              ,
                                           Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean,

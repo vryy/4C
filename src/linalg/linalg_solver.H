@@ -168,9 +168,9 @@ public:
                                          out of the Krylov space (Aztec only option)
   */
   void Setup(
-    Teuchos::RCP<Epetra_Operator>     matrix                              ,
-    Teuchos::RCP<Epetra_Vector>       x                                   ,
-    Teuchos::RCP<Epetra_Vector>       b                                   ,
+    Teuchos::RCP<Epetra_Operator>     matrix                     ,
+    Teuchos::RCP<Epetra_MultiVector>       x                     ,
+    Teuchos::RCP<Epetra_MultiVector>       b                     ,
     bool                     refactor                            ,
     bool                     reset   = false                     ,
     Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean_w= Teuchos::null,
@@ -212,9 +212,9 @@ public:
                                          out of the Krylov space (Aztec only option)
   */
   void Solve(
-      Teuchos::RCP<Epetra_Operator>     matrix                              ,
-      Teuchos::RCP<Epetra_Vector>       x                                   ,
-      Teuchos::RCP<Epetra_Vector>       b                                   ,
+      Teuchos::RCP<Epetra_Operator>     matrix                     ,
+      Teuchos::RCP<Epetra_MultiVector>       x                     ,
+      Teuchos::RCP<Epetra_MultiVector>       b                     ,
       bool                     refactor                            ,
       bool                     reset   = false                     ,
       Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean_w= Teuchos::null,

@@ -148,8 +148,8 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator>      matrix,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void LINALG::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator>  matrix,
-                                   Teuchos::RCP<Epetra_Vector>    x,
-                                   Teuchos::RCP<Epetra_Vector>    b,
+                                   Teuchos::RCP<Epetra_MultiVector>    x,
+                                   Teuchos::RCP<Epetra_MultiVector>    b,
                                    bool refactor,
                                    bool reset)
 {
@@ -179,8 +179,8 @@ void LINALG::Preconditioner::Solve(Teuchos::RCP<Epetra_Operator>  matrix,
     // they are always copied to x_ and b_ when the factorization is reused.
     if (refactor || reset)
     {
-      b_ = rcp(new Epetra_Vector(*b));
-      x_ = rcp(new Epetra_Vector(*x));
+      b_ = rcp(new Epetra_MultiVector(*b));
+      x_ = rcp(new Epetra_MultiVector(*x));
     }
     else
     {

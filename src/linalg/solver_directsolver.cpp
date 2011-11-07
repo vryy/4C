@@ -28,8 +28,8 @@ LINALG::SOLVER::DirectSolver::~DirectSolver()
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 void LINALG::SOLVER::DirectSolver::Setup( RCP<Epetra_Operator> matrix,
-                                          RCP<Epetra_Vector> x,
-                                          RCP<Epetra_Vector> b,
+                                          RCP<Epetra_MultiVector> x,
+                                          RCP<Epetra_MultiVector> b,
                                           bool refactor,
                                           bool reset,
                                           RCP<Epetra_MultiVector> weighted_basis_mean,

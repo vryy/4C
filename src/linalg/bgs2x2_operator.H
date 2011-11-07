@@ -123,9 +123,9 @@ private:
   /// Richardson iteration on one block using the given flags
   void LocalBlockRichardson(Teuchos::RCP<Preconditioner> solver,
                             const SparseMatrix& Op,
-                            Teuchos::RCP<Epetra_Vector> x,
-                            Teuchos::RCP<Epetra_Vector> y,
-                            Teuchos::RCP<Epetra_Vector> tmpx,
+                            Teuchos::RCP<Epetra_MultiVector> x,
+                            Teuchos::RCP<Epetra_MultiVector> y,
+                            Teuchos::RCP<Epetra_MultiVector> tmpx,
                             int iter,
                             double omega) const;
 
