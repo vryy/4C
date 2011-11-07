@@ -1919,7 +1919,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(
 
     /*------------------------- diffusivity depends on displacement ---*/
     //   const double k_diff = 1.0/min_detF/min_detF;
-    const double k_diff = 1.0/det;
+    const double k_diff = 1.0/(det*det);
     /*------------------------------- sort it into stiffness matrix ---*/
 
     tempmat.MultiplyTN(fac*k_diff,deriv_xy,deriv_xy,1.0);

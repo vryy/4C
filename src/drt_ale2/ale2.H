@@ -26,8 +26,6 @@ using namespace Teuchos;
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 
-struct _MATERIAL;
-
 namespace DRT
 {
 

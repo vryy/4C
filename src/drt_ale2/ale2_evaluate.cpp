@@ -23,13 +23,6 @@
 using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
- |                                                       m.gee 06/01    |
- | vector of material laws                                              |
- | defined in global_control.c
- *----------------------------------------------------------------------*/
-extern struct _MATERIAL  *mat;
-
-/*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Ale2::Evaluate(ParameterList&            params,
