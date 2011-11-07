@@ -248,9 +248,6 @@ void DRT::Problem::InputControl()
 
   genprob.ndim  = size.get<int>("DIM");
 
-  if (size.get<int>("MATERIALS")<=0)
-    dserror("No material defined!");
-
   const Teuchos::ParameterList& type = ProblemTypeParams();
 
   genprob.probtyp        = DRT::INPUT::IntegralValue<PROBLEM_TYP>(type,"PROBLEMTYP");
