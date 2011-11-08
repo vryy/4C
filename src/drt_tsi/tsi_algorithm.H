@@ -133,7 +133,7 @@ namespace TSI
 
     /// maximum iteration steps
     int itmax_;
-    /// temperature tolerance
+    /// convergence tolerance
     double ittol_;
 
     /// temperature increment of the outer loop
