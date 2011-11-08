@@ -103,6 +103,9 @@ public:
     // let's use the more general version using an explicit material id mapping
     // as defined in the input file section "--CLONING MATERIAL MAP"
 
+    // check and analyze source discretization (sorcedis must be filled!)
+    InitialChecks(sourcedis,targetdis);
+
     // We have to find out all the material ids of the source discretization.
     // All cloned elements will receive the same material with the provided matid.
     std::map<int,int> matmap;

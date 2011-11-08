@@ -77,15 +77,22 @@ void fluid_ale_drt()
   Epetra_SerialComm comm;
 #endif
 
-  RefCountPtr<DRT::Discretization> aledis = DRT::Problem::Instance()->Dis(genprob.numaf,0);
-  if (!aledis->Filled()) aledis->FillComplete();
+  // make sure the three discretizations are filled in the right order
+  // this creates dof numbers with
+  //
+  //       fluid dof < ale dof
+  //
+  // We rely on this ordering in certain non-intuitive places!
+
+  RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
+  RCP<DRT::Discretization> aledis   = DRT::Problem::Instance()->Dis(genprob.numaf,0);
+  fluiddis->FillComplete();
+  aledis->FillComplete();
 
   // create ale elements if the ale discretization is empty
   if (aledis->NumGlobalNodes()==0)
   {
     {
-      RCP<DRT::Discretization> fluiddis = DRT::Problem::Instance()->Dis(genprob.numff,0);
-
       Teuchos::RCP<DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy> > alecreator =
         Teuchos::rcp(new DRT::UTILS::DiscretizationCreator<FSI::UTILS::AleFluidCloneStrategy>() );
 
@@ -160,7 +167,7 @@ void fluid_xfem2_drt()
   const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
 
   // compute number of nodes
-  int numglobalnodes = 0.0;
+  int numglobalnodes = 0;
   int numlocalnodes = actdis->NumMyColNodes();
   (actdis->Comm()).SumAll(&numlocalnodes,&numglobalnodes,1);
 
@@ -214,7 +221,7 @@ void fluid_fluid_ale_drt()
   const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
 
   // compute number of nodes
-  int numglobalnodes = 0.0;
+  int numglobalnodes = 0;
   int numlocalnodes = bgfluiddis->NumMyColNodes();
   (bgfluiddis->Comm()).SumAll(&numlocalnodes,&numglobalnodes,1);
 
@@ -478,7 +485,7 @@ void fluid_fluid_fsi_drt()
   const Teuchos::ParameterList xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
 
   // compute number of nodes
-  int numglobalnodes = 0.0;
+  int numglobalnodes = 0;
   int numlocalnodes = bgfluiddis->NumMyColNodes();
   (bgfluiddis->Comm()).SumAll(&numlocalnodes,&numglobalnodes,1);
 
