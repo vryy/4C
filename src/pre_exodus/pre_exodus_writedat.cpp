@@ -72,41 +72,19 @@ int EXODUS::WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
 void EXODUS::WriteDatIntro(const string& headfile, const EXODUS::Mesh& mymesh, ostream& dat)
 {
   dat <<"==================================================================\n" \
-        "        General Data File CCARAT\n" \
+        "                  General Data File BACI\n" \
   "==================================================================\n" \
   "-------------------------------------------------------------TITLE\n" \
   "created by pre_exodus \n" \
   "------------------------------------------------------PROBLEM SIZE\n";
-  dat << "ELEMENTS " << '\t' << mymesh.GetNumEle() << endl;
-  dat << "NODES    " << '\t' << mymesh.GetNumNodes() << endl;
-  dat << "DIM      " << '\t' << mymesh.GetBACIDim() << endl;
-  dat << "MATERIALS" << '\t' << EXODUS::CountMat(headfile) << endl;
-  dat << "NUMDF    " << '\t' << "6" << endl;
+  // print number of elements and nodes just as an comment instead of
+  // a valid parameter (prevents possible misuse of these parameters in BACI)
+  dat << "//ELEMENTS    " << mymesh.GetNumEle() << endl;
+  dat << "//NODES       " << mymesh.GetNumNodes() << endl;
+  // parameter for the number of spatial dimensions
+  dat << "DIM           " << mymesh.GetBACIDim() << endl;
 
   return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-int EXODUS::CountMat(const string& headfile){
-  stringstream head;
-  const char *headfilechar = headfile.c_str();
-  ifstream header(headfilechar, ifstream::in);
-  if (not header.good()){
-    cout << endl << "Unable to open file: " << headfilechar << endl;
-    dserror("Unable to open head-file");
-  }
-  while (header.good()) head << (char) header.get();
-  //while (!header.eof()) head << (char) header.get();
-  header.close();
-  const string headstring = head.str();
-  size_t mat_section = headstring.find("MATERIALS");
-  int counter = 0;
-  while (mat_section != string::npos){
-    mat_section = headstring.find("MAT ",mat_section+4);
-    counter++;
-  }
-  return counter-1;
 }
 
 

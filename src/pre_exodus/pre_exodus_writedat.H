@@ -37,9 +37,6 @@ int WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
 //! datfile Intro
 void WriteDatIntro(const string& headfile,const EXODUS::Mesh& mymesh, ostream& dat);
 
-//! Count number of materials
-int CountMat(const string& headfile);
-
 //! headfile content into datfile
 void WriteDatHead(const string& headfile, ostream& dat);
 
