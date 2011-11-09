@@ -30,7 +30,7 @@ Maintainer: Alexander Popp, Christian Cyron
 // flag for octree search
 #define OCTTREESEARCH
 // flag switching between different evaluations of the constraint tolerance
-#define RELCONSTRTOL
+//#define RELCONSTRTOL
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                      popp 04/10|
@@ -1158,6 +1158,8 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
 				cout << "Penetration to large, choose higher penalty parameter!" << endl;
       }
 #ifdef RELCONSTRTOL
+#ifdef D_BEAM3
+#ifdef D_BEAM3II
       // Retrieve beam radii
       std::vector<double> radii(2,0.0);
       for(int k=0; k<(int)radii.size();k++)
@@ -1179,6 +1181,8 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
 			double smallerradius = min(radii[0], radii[1]);
 
 			gapvector[j] = pairs_[i]->GetGap()/smallerradius;
+#endif
+#endif
 #else
 			gapvector[j] = pairs_[i]->GetGap();
 #endif
