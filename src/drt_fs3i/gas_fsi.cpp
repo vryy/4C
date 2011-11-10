@@ -169,6 +169,11 @@ FS3I::GasFSI::GasFSI(Epetra_Comm& comm)
     {
       dserror("Cannot find appropriate monolithic solver for coupling %d and linear strategy %d",coupling,linearsolverstrategy);
     }
+    break;
+  }
+  default:
+  {
+    dserror("Unknown coupling FSI algorithm");
   }
   }
 
