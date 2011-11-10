@@ -135,7 +135,7 @@ void fluid_fluid_drt()
   const Teuchos::ParameterList xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
 
   // compute numnode
-  int numglobalnodes = 0.0;
+  int numglobalnodes = 0;
   int numlocalnodes = bgfluiddis->NumMyColNodes();
   (bgfluiddis->Comm()).SumAll(&numlocalnodes,&numglobalnodes,1);
 
