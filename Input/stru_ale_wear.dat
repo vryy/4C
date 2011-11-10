@@ -84,6 +84,8 @@ SOLVER         UMFPACK    // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Ame
 ----------------------------------------------------THERMAL SOLVER
 ----------------------------------------------------CONTACT SOLVER
 SOLVER         UMFPACK    
+--------------------------------------------------------ALE SOLVER
+SOLVER         UMFPACK   
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_Struct_StVenantKirchhoff  YOUNG 10000 NUE 0.0 DENS 1 THEXPANS 0.0
 MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 10000 NUE 0.0 DENS 1 THEXPANS 0.0
@@ -104,10 +106,10 @@ CURVE2 on EXPR FUNC 1 t1 1.0 t2 100
 ------------------------------------------------------------FUNCT6
 ------------------------------------------------RESULT DESCRIPTION
 // wear
-STRUCTURE DIS 1 NODE 180 POSITION dispx NAME ux VALUE  1.3950236807758351e-02 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 180 POSITION dispy NAME uy VALUE  1.5570833328450585e-05 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 168 POSITION dispx NAME ux VALUE  2.7909601018879907e-02 TOLERANCE 1e-8
-STRUCTURE DIS 1 NODE 168 POSITION dispy NAME uy VALUE -1.8330814678595300e-18 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 180 POSITION dispx NAME ux VALUE  3.1080648123069002e-02 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 180 POSITION dispy NAME uy VALUE  9.4842322444972106e-18 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 168 POSITION dispx NAME ux VALUE  3.6251810832230565e-02 TOLERANCE 1e-8
+STRUCTURE DIS 1 NODE 168 POSITION dispy NAME uy VALUE 1.0065246850471732e-17 TOLERANCE 1e-8
 
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
@@ -157,6 +159,10 @@ DLINE  1
 E 1 - 1 1 0 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0 none none none none none none  0 0 0 0 0 0
 ---------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF  0
+---------------------------------DESIGN LINE ALE WEAR CONDITIONS 2D
+DLINE  1
+// obenunten
+E 2 - 
 ----------------------------------DESIGN VOL ALE DIRICH CONDITIONS
 DVOL   0
 --------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
