@@ -3331,13 +3331,16 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
   reader.ReadVector(accnp_,"accnp");
   reader.ReadVector(accn_ ,"accn");
 
+  // set element time parameter after restart:
+  // Here it is already needed by AVM3 and impedance boundary condition!!
+  SetElementTimeParameter();
+
   statisticsmanager_->Restart(reader,step);
 
   if ((fssgv_ != "No") or
       (filtertype_ == INPAR::FLUID::algebraic_multigrid_operator and turbmodel_==INPAR::FLUID::scale_similarity) or
       (filtertype_ == INPAR::FLUID::algebraic_multigrid_operator and turbmodel_==INPAR::FLUID::multifractal_subgrid_scales))
   {
-    SetElementTimeParameter();
     AVM3Preparation();
   }
 
