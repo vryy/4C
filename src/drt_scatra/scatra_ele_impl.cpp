@@ -1681,6 +1681,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   // integration loop
   if (iselch_) // electrochemistry problem
   {
+    // Some safety checks. Do it here before it's too late.
+    if (abs(diffreastafac_) > EPS10) dserror("Only SUPG is supported for ELCH problems");
+
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     {
       const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
