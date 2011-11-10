@@ -175,8 +175,9 @@ namespace FLD
 
       Teuchos::RCP<LINALG::MapExtractor> fluidfluiddbcmaps_;
 
-      XFEM::FluidWizard wizard_;
+      XFluidFluid & xfluid_;
 
+      XFEM::FluidWizard wizard_;
 
       void GenAlphaIntermediateValues();
       void GenAlphaUpdateAcceleration();
@@ -214,7 +215,7 @@ namespace FLD
                                  Teuchos::RCP<const Epetra_Vector> vel,
                                  Teuchos::RCP<const Epetra_Vector> disp);
 
-      XFluidFluid & xfluid_;
+
       Teuchos::RCP<XFEM::FluidDofSet> dofset_;
     };
 
