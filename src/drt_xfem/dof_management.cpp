@@ -206,16 +206,13 @@ void XFEM::DofManager::GatherUniqueEnrichments() const
   }
 
   // screen output
-  if (ih_->xfemdis()->Comm().MyPID() == 0)
-  {
-    std::cout << " Enrichments available:";// << endl;
-    for (std::set<XFEM::Enrichment>::const_iterator enr =
+  std::cout << " Enrichments available:";// << endl;
+  for (std::set<XFEM::Enrichment>::const_iterator enr =
       unique_enrichments.begin(); enr != unique_enrichments.end(); ++enr)
-    {
-      std::cout << " " << enr->toString();// << endl;
-    }
-    std::cout << endl;
+  {
+    std::cout << " " << enr->toString();// << endl;
   }
+  std::cout << endl;
 }
 
 
