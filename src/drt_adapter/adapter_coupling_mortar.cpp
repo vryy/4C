@@ -1223,7 +1223,7 @@ void ADAPTER::CouplingMortar::Evaluate(RCP<Epetra_Vector> idisp)
 void ADAPTER::CouplingMortar::Evaluate(RCP<Epetra_Vector> idispma, RCP<Epetra_Vector> idispsl)
 {
 
-  const Epetra_BlockMap& stdmap = idispsl->Map();
+  const Epetra_BlockMap stdmap = idispsl->Map();
   idispsl->ReplaceMap(*slavedofrowmap_);
 
   Teuchos::RCP<Epetra_Map> dofrowmap = LINALG::MergeMap(*masterdofrowmap_,*slavedofrowmap_, true);
