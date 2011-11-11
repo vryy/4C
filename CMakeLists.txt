@@ -66,8 +66,8 @@ ENDIF(NOT CMAKE_BUILD_TYPE)
 # Legacy defines
 
 add_definitions("-DLINUX_MUENCH")
-add_definitions("-DPARALLEL")
-add_definitions("-DPARMETIS")
+add_definitions("-DPARALLEL") # TODO remove PARALLEL flag? exact meaning of this flag?
+add_definitions("-DPARMETIS") # TODO remove PARMETIS flag
 add_definitions("-DLOOPL=15")
 add_definitions("-DCCADISCRET")
 add_definitions("-DTRILINOS_PACKAGE")
@@ -1770,7 +1770,9 @@ baci_test(beam3test2quadratic 1 "")
 baci_test(beam3test2quadratic 2 "")
 baci_test(beam3test2quartic 1 "")
 baci_test(beam3test2quartic 2 "")
-baci_test(calcified_zugstab 2 "")
+if (NOT TRILINOS_DEV)
+baci_test(calcified_zugstab 2 "") # SUPERLU_dist available only in non-dev Trilinos
+endif()
 baci_test(combust_constpressurejump 1 "")
 baci_test(combust_constpressurejump 2 "")
 baci_test(combust_instat_timeInt_2Dduct 1 "")
