@@ -29,67 +29,6 @@ filter. But to link the filter stubs of these functions are needed.
 struct _PAR     par;
 struct _GENPROB genprob;
 
-/*----------------------------------------------------------------------*
- |  compare the integers - qsort routine                  a.lipka 5/01  |
- |                                                                      |
- |  the call for the sorter of an INT vector is then                    |
- |                                                                      |
- |  qsort((INT*) vector, lenght, sizeof(INT), cmp_int);                 |
- |                                                                      |
- *----------------------------------------------------------------------*/
-extern "C" INT cmp_int(const void *a, const void *b )
-{
-  return *(INT *)a - * (INT *)b;
-}
-
-/*----------------------------------------------------------------------*
- |  compare the doubles - qsort routine                   a.lipka 5/01  |
- |                                                                      |
- |  the call for the sorter of a DOUBLE vector is then                  |
- |                                                                      |
- |  qsort((DOUBLE*) vector, lenght, sizeof(DOUBLE), cmp_double);        |
- |                                                                      |
- *----------------------------------------------------------------------*/
-extern "C" DOUBLE cmp_double(const void *a, const void *b )
-{
-  return *(DOUBLE *)a - * (DOUBLE *)b;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*!
-  \brief A Hack.
-
-  This a yet another hack. This function is called by dserror and
-  closes all open files --- in ccarat. The filters are not that
-  critical. Thus we do nothing here. We just have to have this
-  function.
-
-  \author u.kue
-  \date 12/04
-*/
-/*----------------------------------------------------------------------*/
-extern "C" void io_emergency_close_files()
-{
-  // nothing to do!
-}
-
-
-using namespace DRT;
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-
-// Some of the global problems input methods are not linked with the
-// filters. We need them.
-
-//void DRT::Problem::ReadMaterial()
-//{}
-
-// another anachronism
-extern "C" void input_ReadGlobalParameterList()
-{}
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
