@@ -306,7 +306,7 @@ void XFEM::SemiLagrange::NewtonLoop(
   }
 #ifdef DEBUG
   // did newton iteration converge?
-  if(data->iter_ == max_iter_){cout << "WARNING: newton iteration for finding start value not converged for point\n" << endl;}
+  if(data->counter_ == newton_max_iter_){cout << "WARNING: newton iteration for finding start value not converged for point\n" << endl;}
 //    cout << "after " << data->iter_ << " iterations the endpoint is\n" << xAppr << endl;
 #endif
 } // end function NewtonLoop
