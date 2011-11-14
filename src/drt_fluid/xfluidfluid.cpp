@@ -43,8 +43,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
     wizard_( *xfluid.bgdis_, *xfluid.boundarydis_ )
 {
   // cut and find the fluid dofset
-  wizard_.Cut( false, idispcol, "Tessellation" );//modify gausstype
-
+  wizard_.Cut( false, idispcol, xfluid_.gaussPointType_ );//modify gausstype
 
   int maxNumMyReservedDofs = xfluid.bgdis_->NumGlobalNodes()*(xfluid.maxnumdofsets_)*4;
   dofset_ = wizard_.DofSet(maxNumMyReservedDofs);
@@ -254,7 +253,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
         std::vector< std::vector<int> > nds_sets;
         std::vector< DRT::UTILS::GaussIntegration > intpoints_sets;
 
-        e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, "Tessellation"  );
+        e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, xfluid_.gaussPointType_ );
 
         if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
         if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
@@ -429,7 +428,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
         GEO::CUT::plain_volumecell_set cells;
         std::vector<DRT::UTILS::GaussIntegration> intpoints;
-        e->VolumeCellGaussPoints( cells, intpoints ,"Tessellation");//modify gauss type
+        e->VolumeCellGaussPoints( cells, intpoints ,xfluid_.gaussPointType_);//modify gauss type
 
         int count = 0;
         for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
@@ -799,7 +798,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
 #else
       GEO::CUT::plain_volumecell_set cells;
       std::vector<DRT::UTILS::GaussIntegration> intpoints;
-      e->VolumeCellGaussPoints( cells, intpoints ,"Tessellation");//modify gauss type
+      e->VolumeCellGaussPoints( cells, intpoints ,xfluid_.gaussPointType_);//modify gauss type
       int count = 0;
       for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
       {
@@ -875,7 +874,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
     {
       GEO::CUT::plain_volumecell_set cells;
       std::vector<DRT::UTILS::GaussIntegration> intpoints;
-      e->VolumeCellGaussPoints( cells, intpoints ,"Tessellation");//modify gauss type
+      e->VolumeCellGaussPoints( cells, intpoints ,xfluid_.gaussPointType_);//modify gauss type
 
       int count = 0;
       for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
@@ -1318,6 +1317,7 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   numdim_       = genprob.ndim; //params_.get<int>("DIM");
 
   maxnumdofsets_ = params_.sublist("XFEM").get<int>("MAX_NUM_DOFSETS");
+  gaussPointType_ = params_.sublist("XFEM").get<string>("GAUSSPOINTSBY");
 
   // compute or set 1.0 - theta for time-integration schemes
   if (timealgo_ == INPAR::FLUID::timeint_one_step_theta)  omtheta_ = 1.0 - theta_;

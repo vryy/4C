@@ -608,6 +608,9 @@ namespace FLD
     Teuchos::RCP<XFluidFluidState> staten_;
 
     int maxnumdofsets_;
+
+    //gauss integration rule
+    std::string gaussPointType_;
   };
 }
 
