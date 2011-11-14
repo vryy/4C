@@ -53,7 +53,7 @@ CONNECTED_INTERFACE             No
 SMOOTHGRADPHI                   smooth_grad_phi_meanvalue
 SMOOTHED_BOUNDARY_INTEGRATION   Yes
 XFEMTIMEINT                     SemiLagrange
-XFEMTIMEINT_ENR                 SetEnrichment
+XFEMTIMEINT_ENR                 Projection
 INITSTATSOL                     No
 -----------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 REFINEMENT                      No

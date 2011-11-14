@@ -145,13 +145,6 @@ Maintainer: Florian Henke
 //#define GMSH_REF_FIELDS
 #define PRINTMASSCHECK
 
-//-----------------------
-// Enrichment computation
-//-----------------------
-//#define ENR_FULL
-//#define ENR_VEL_JUMP_SCALAR
-//#define SET_FEW_ENR_VALUES
-
 
 #endif // #ifndef COMBUST_DEFINES_H
 #endif // #ifdef CCADISCRET

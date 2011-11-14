@@ -3188,25 +3188,47 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
               &combustcontrolfluid);
 
   setStringToIntegralParameter<int>("XFEMTIMEINT","DoNothing",
-      "Type of time integration strategy",
+      "Type of time integration strategy for standard degrees of freedom",
       tuple<std::string>(
           "DoNothing",
-          "SemiLagrange"),
+          "SemiLagrange",
+          "Extrapolation",
+          "MixedSemiLagrangeExtrapolation"),
           tuple<int>(
               INPAR::COMBUST::xfemtimeint_donothing,
-              INPAR::COMBUST::xfemtimeint_semilagrange),
+              INPAR::COMBUST::xfemtimeint_semilagrange,
+              INPAR::COMBUST::xfemtimeint_extrapolation,
+              INPAR::COMBUST::xfemtimeint_mixed),
               &combustcontrolfluid);
 
   setStringToIntegralParameter<int>("XFEMTIMEINT_ENR","DoNothing",
-      "Type of time integration strategy",
+      "Type of time integration strategy for enrichment degrees of freedom",
       tuple<std::string>(
           "DoNothing",
           "QuasiStatic",
-          "SetEnrichment"),
+          "Projection",
+          "ProjectionScalar",
+          "Extrapolation",
+          "ExtrapolationScalar"),
           tuple<int>(
               INPAR::COMBUST::xfemtimeintenr_donothing,
               INPAR::COMBUST::xfemtimeintenr_quasistatic,
-              INPAR::COMBUST::xfemtimeintenr_setenrichment),
+              INPAR::COMBUST::xfemtimeintenr_project,
+              INPAR::COMBUST::xfemtimeintenr_project_scalar,
+              INPAR::COMBUST::xfemtimeintenr_extrapolate,
+              INPAR::COMBUST::xfemtimeintenr_extrapolate_scalar),
+              &combustcontrolfluid);
+
+  setStringToIntegralParameter<int>("XFEMTIMEINT_ENR_COMP","Standard",
+      "Type of time integration strategy for enrichment computation",
+      tuple<std::string>(
+          "Standard",
+          "Full",
+          "Minimal"),
+          tuple<int>(
+              INPAR::COMBUST::xfemtimeintenr_standard,
+              INPAR::COMBUST::xfemtimeintenr_full,
+              INPAR::COMBUST::xfemtimeintenr_minimal),
               &combustcontrolfluid);
 
   setStringToIntegralParameter<int>("INITIALFIELD","zero_field","Initial field for fluid problem",
@@ -3302,6 +3324,7 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   IntParameter("INITFUNCNO",-1,"Function for initial field",&combustcontrolfluid);
   // unused
   //DoubleParameter("PHI_MODIFY_TOL",1.0E-10,"We modify GfuncValues near zero",&combustcontrolfluid);
+  IntParameter("ITE_MAX_FRS",1,"The maximal number of iterations between fluid and recomputation of reference solution",&combustcontrolfluid);
   DoubleParameter("LAMINAR_FLAMESPEED",1.0,"The laminar flamespeed incorporates all chemical kinetics into the problem for now",&combustcontrolfluid);
   DoubleParameter("MOL_DIFFUSIVITY",0.0,"Molecular diffusivity",&combustcontrolfluid);
   DoubleParameter("MARKSTEIN_LENGTH",0.0,"The Markstein length takes flame curvature into account",&combustcontrolfluid);
@@ -3313,10 +3336,6 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
   setStringToIntegralParameter<int>("INITSTATSOL","No","Compute stationary solution as initial solution",
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
-//  setStringToIntegralParameter<int>("START_VAL_SEMILAGRANGE","No","Turn XFEM-time-integration strategy for nodal start values on/off",
-//                                     yesnotuple,yesnovalue,&combustcontrolfluid);
-//  setStringToIntegralParameter<int>("START_VAL_ENRICHMENT","No","Turn XFEM-time-integration strategy for enrichment values on/off",
-//                                     yesnotuple,yesnovalue,&combustcontrolfluid);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& combustcontrolgfunc = combustcontrol.sublist("COMBUSTION GFUNCTION",false,

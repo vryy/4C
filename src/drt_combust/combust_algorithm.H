@@ -146,10 +146,6 @@ namespace COMBUST
     int fgiter_;
     // maximum number of Fluid-G-function iterations
     int fgitermax_;
-    // L2-norm of velocity in Fluid-G-function iteration
-    double fgvelnormL2_;
-    // L2-norm of g-function in Fluid-G-function iteration
-    double fggfuncnormL2_;
     //
     double convtol_;
 

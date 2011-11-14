@@ -767,9 +767,9 @@ namespace XFEM
       n(1)=0.0;
 #endif
       n.Scale(-1.0/normgp);
-#ifdef COLLAPSE_FLAME
-      n=normal;
-#endif
+//#ifdef COLLAPSE_FLAME
+//      n=normal;
+//#endif
       //----------------------------------------
       // compute enriched normal shape functions
       //----------------------------------------
@@ -897,9 +897,9 @@ namespace XFEM
       n(1)=0.0;
 #endif
       n.Scale(-1.0/normgp);
-#ifdef COLLAPSE_FLAME
-      n=normal;
-#endif
+//#ifdef COLLAPSE_FLAME
+//      n=normal;
+//#endif
       // first derivative of normal vector
       LINALG::Matrix<3,3> dern(true);
       // dn_x/dx  dn_x/dy  dn_x/dz
@@ -914,30 +914,30 @@ namespace XFEM
               / (normgp*normgp) * gp(idim));
         }
       }
-#ifdef COLLAPSE_FLAME
-//cout << "normal " << normal << endl;
-      const double x = point(0);
-//cout << "x " << x << endl;
-      const double y = point(1);
-//cout << "y " << y << endl;
-      const double r2 = x*x + y*y;
-//cout << "r2 " << r2 << endl;
-      const double r = std::sqrt(r2);
-//cout << "r " << r << endl;
-      const double r2_32 = std::pow(r2,-1.5);
-//cout << "r2_32 " << r2_32 << endl;
-      const double r2_52 = std::pow(r2,-2.5);
-//cout << "r2_52 " << r2_52 << endl;
-      dern(0,0) = -1.0/r + x*x*r2_32;
-      dern(0,1) = x*y*r2_32;
-      dern(0,2) = 0.0;
-      dern(1,0) = y*x*r2_32;
-      dern(1,1) = -1.0/r + y*y*r2_32;
-      dern(1,2) = 0.0;
-      dern(2,0) = 0.0;
-      dern(2,1) = 0.0;
-      dern(2,2) = 0.0;
-#endif
+//#ifdef COLLAPSE_FLAME
+////cout << "normal " << normal << endl;
+//      const double x = point(0);
+////cout << "x " << x << endl;
+//      const double y = point(1);
+////cout << "y " << y << endl;
+//      const double r2 = x*x + y*y;
+////cout << "r2 " << r2 << endl;
+//      const double r = std::sqrt(r2);
+////cout << "r " << r << endl;
+//      const double r2_32 = std::pow(r2,-1.5);
+////cout << "r2_32 " << r2_32 << endl;
+//      const double r2_52 = std::pow(r2,-2.5);
+////cout << "r2_52 " << r2_52 << endl;
+//      dern(0,0) = -1.0/r + x*x*r2_32;
+//      dern(0,1) = x*y*r2_32;
+//      dern(0,2) = 0.0;
+//      dern(1,0) = y*x*r2_32;
+//      dern(1,1) = -1.0/r + y*y*r2_32;
+//      dern(1,2) = 0.0;
+//      dern(2,0) = 0.0;
+//      dern(2,1) = 0.0;
+//      dern(2,2) = 0.0;
+//#endif
       //cout << "dern " << dern << endl;
 
       // second derivative of normal vector
@@ -993,23 +993,23 @@ namespace XFEM
             +  dergp(2,1)*dergp(2,2) + gp(2)*der2gp(2,5))*gp(idim)
             + term(1)*dergp(idim,2) )/(normgp*normgp*normgp);
       }
-#ifdef COLLAPSE_FLAME
-      // second derivative of normal vector
-      der2n.Clear();
-      // d2n_1/dxdx
-      der2n(0,0) = 3.0*x*r2_32 - 3.0*x*x*x*r2_52;
-      // d2n_1/dydy
-      der2n(0,1) = x*r2_32 - 3.0*x*y*y*r2_52;
-      // d2n_1/dxdy = d2n_1/dydx
-      der2n(0,3) = y*r2_32 - 3.0*x*x*y*r2_52;
-
-      // d2n_2/dxdx
-      der2n(1,0) = y*r2_32 - 3.0*x*x*y*r2_52;
-      // d2n_2/dydy
-      der2n(1,1) = 3.0*y*r2_32 - 3.0*y*y*y*r2_52;
-      // d2n_2/dxdy = d2n_2/dydx
-      der2n(1,3) = x*r2_32 - 3.0*x*y*y*r2_52;
-#endif
+//#ifdef COLLAPSE_FLAME
+//      // second derivative of normal vector
+//      der2n.Clear();
+//      // d2n_1/dxdx
+//      der2n(0,0) = 3.0*x*r2_32 - 3.0*x*x*x*r2_52;
+//      // d2n_1/dydy
+//      der2n(0,1) = x*r2_32 - 3.0*x*y*y*r2_52;
+//      // d2n_1/dxdy = d2n_1/dydx
+//      der2n(0,3) = y*r2_32 - 3.0*x*x*y*r2_52;
+//
+//      // d2n_2/dxdx
+//      der2n(1,0) = y*r2_32 - 3.0*x*x*y*r2_52;
+//      // d2n_2/dydy
+//      der2n(1,1) = 3.0*y*r2_32 - 3.0*y*y*y*r2_52;
+//      // d2n_2/dxdy = d2n_2/dydx
+//      der2n(1,3) = x*r2_32 - 3.0*x*y*y*r2_52;
+//#endif
       //----------------------------------------
       // compute enriched normal shape functions
       //----------------------------------------

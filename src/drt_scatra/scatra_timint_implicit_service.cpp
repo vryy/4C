@@ -1026,7 +1026,7 @@ void SCATRA::ScaTraTimIntImpl::OutputToGmsh(
   const bool screen_out = true;
 
   // create Gmsh postprocessing file
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_scalar", step, 5, screen_out, discret_->Comm().MyPID());
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("solution_field_scalar", step, 500, screen_out, discret_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
 //  {
 //    // add 'View' to Gmsh postprocessing file

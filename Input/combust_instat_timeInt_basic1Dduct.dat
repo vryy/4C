@@ -54,7 +54,7 @@ SMOOTHGRADPHI			smooth_grad_phi_meanvalue
 SMOOTHED_BOUNDARY_INTEGRATION	Yes
 XFEMINTEGRATION                 Cut
 XFEMTIMEINT                     SemiLagrange // DoNothing // 
-XFEMTIMEINT_ENR                 SetEnrichment // QuasiStatic // DoNothing // 
+XFEMTIMEINT_ENR                 Projection // QuasiStatic // DoNothing // 
 INITSTATSOL			Yes // No // 
 -----------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 REFINEMENT                      No

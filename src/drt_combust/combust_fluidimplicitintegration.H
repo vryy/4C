@@ -20,8 +20,9 @@ Maintainer: Florian Henke
 #include "../drt_io/io.H"
 #include "../drt_io/io_ostream0.H"
 #include "../drt_xfem/dof_management.H"
-#include "../drt_xfem/startvalues.H"
-#include "../drt_xfem/enrichmentvalues.H"
+#include "../drt_xfem/timeInt_std_SemiLagrange.H"
+#include "../drt_xfem/timeInt_std_extrapolation.H"
+#include "../drt_xfem/timeInt_enr.H"
 #include "../drt_inpar/inpar_combust.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_lib/drt_dofset_pbc.H"
@@ -101,6 +102,10 @@ public:
          problems.
   */
   void SolveStationaryProblem();
+
+  bool FluidRefSolLoopFinished();
+
+  void ClearTimeInt();
 
   /// prepare a time step
   void PrepareTimeStep();
@@ -463,6 +468,7 @@ protected:
   /// xfem time integration
   INPAR::COMBUST::XFEMTimeIntegration xfemtimeint_;
   INPAR::COMBUST::XFEMTimeIntegrationEnr xfemtimeint_enr_;
+  INPAR::COMBUST::XFEMTimeIntegrationEnrComp xfemtimeint_enr_comp_;
 
   // laminar flame speed
   const double flamespeed_;
@@ -518,6 +524,11 @@ protected:
 
   /// maximum number of nonlinear iterations
   int itemax_;
+
+  /// fluid reference solution iteration handling
+  int itemaxFRS_; // maximal number of iterations per fgi
+  int totalitnumFRS_; // total number of frs iterations in time step
+  int curritnumFRS_; // number of frs iterations in fgi
 
   /// flag for potential Neumann inflow
   bool neumanninflow_;
@@ -642,11 +653,8 @@ protected:
   //! Extractor used for output
   LINALG::MapExtractor      velpressplitterForOutput_;
 
-  //! Reference values
-  Teuchos::RCP<XFEM::Startvalues> startval_;
-
-  //! Reference enrichment values
-  Teuchos::RCP<XFEM::Enrichmentvalues> enrichmentval_;
+  Teuchos::RCP<XFEM::STD> timeIntStd_; //! Standard reference values
+  Teuchos::RCP<XFEM::ENR> timeIntEnr_; //! Enriched reference values
 
 }; // class CombustFluidImplicitTimeInt
 

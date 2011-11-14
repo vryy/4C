@@ -134,7 +134,10 @@ class DomainIntCell : public IntCell
     virtual std::string toString() const;
 
     //! return string representation of the DomainIntCell
-    virtual void toGmsh(const std::string& filename) const;
+    virtual void xiToGmsh(const std::string& filename) const;
+
+    //! return string representation of the DomainIntCell
+    virtual void xToGmsh(const std::string& filename) const;
 
     //! return domain indicator
     bool getDomainPlus() const {return indomainplus_;}

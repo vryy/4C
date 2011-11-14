@@ -378,6 +378,11 @@ namespace ADAPTER {
       dserror("This function is not implemented for this type of fluid! Only available for combustion!");
     };
 
+    virtual void ClearTimeInt()
+    {
+    	dserror("This function is not implemented for this type of fluid! Only available for combustion!");
+    }
+
     //@}
 
     //! @name Apply interface values

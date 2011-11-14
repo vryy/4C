@@ -488,14 +488,16 @@ set(OBJS_INTERSECTION
   src/drt_xfem/dof_management.cpp
   src/drt_xfem/dof_management_element.cpp
   src/drt_xfem/enrichment.cpp
-  src/drt_xfem/enrichmentvalues.cpp
   src/drt_xfem/enrichment_utils.cpp
   src/drt_xfem/field_enriched.cpp
   src/drt_xfem/interface.cpp
   src/drt_xfem/interfacexfsi.cpp
   src/drt_xfem/physics.cpp
   src/drt_xfem/spacetime_boundary.cpp
-  src/drt_xfem/startvalues.cpp
+  src/drt_xfem/timeInt.cpp
+  src/drt_xfem/timeInt_enr.cpp
+  src/drt_xfem/timeInt_std_extrapolation.cpp
+  src/drt_xfem/timeInt_std_SemiLagrange.cpp
   src/drt_xfem/xdofmapcreation.cpp
   src/drt_xfem/xdofmapcreation_combust.cpp
   src/drt_xfem/xdofmapcreation_fsi.cpp

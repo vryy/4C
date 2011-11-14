@@ -97,6 +97,11 @@ void ADAPTER::FluidCombust::PrepareTimeStep()
   fluid_.PrepareTimeStep();
 }
 
+void ADAPTER::FluidCombust::ClearTimeInt()
+{
+	fluid_.ClearTimeInt();
+}
+
 /*------------------------------------------------------------------------------------------------*
  | Wozu ist diese Abfrage nötig?                                                      henke 10/08 |
  *------------------------------------------------------------------------------------------------*/

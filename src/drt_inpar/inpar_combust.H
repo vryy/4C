@@ -55,7 +55,9 @@ namespace INPAR
     enum XFEMTimeIntegration
     {
       xfemtimeint_donothing,
-      xfemtimeint_semilagrange
+      xfemtimeint_semilagrange,
+      xfemtimeint_extrapolation,
+      xfemtimeint_mixed
     };
 
     /// type of xfem time integration of enrichment values
@@ -63,7 +65,18 @@ namespace INPAR
     {
       xfemtimeintenr_donothing,
       xfemtimeintenr_quasistatic,
-      xfemtimeintenr_setenrichment
+      xfemtimeintenr_project,
+      xfemtimeintenr_project_scalar,
+      xfemtimeintenr_extrapolate,
+      xfemtimeintenr_extrapolate_scalar
+    };
+
+    /// type of xfem time integration of enrichment values computation
+    enum XFEMTimeIntegrationEnrComp
+    {
+      xfemtimeintenr_full,
+      xfemtimeintenr_standard,
+      xfemtimeintenr_minimal
     };
 
     /// type of initial fluid field

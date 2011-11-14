@@ -191,6 +191,7 @@ namespace ADAPTER
     virtual void TimeLoop();
     virtual void PrepareTimeStep();
     virtual void PrepareTimeandStep() { dserror("not implemented!"); return; }
+    virtual void ClearTimeInt();
     virtual void PrepareSolve() { dserror("not implemented!"); return; }
     virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc);
     virtual bool ConvergenceCheck(int itnum, int itmax, const double ittol) { dserror("not implemented!"); return false; }

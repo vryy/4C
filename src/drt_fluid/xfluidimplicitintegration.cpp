@@ -1191,8 +1191,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     {
       std::cout << "Stationary computation!\n";
     }
-    std::cout << "+------------+------------------+---------+---------+---------+---------+---------+---------+\n";
-    std::cout << "|  step/max  |  tol     [norm]  | vel-res | pre-res | fullres | vel-inc | pre-inc | fullinc |" << std::endl;
+    std::cout << "+------------+------------------+---------+---------+---------+---------+\n";
+    std::cout << "|  step/max  |  tol     [norm]  | vel-res | pre-res | vel-inc | pre-inc |" << std::endl;
   }
 
   const Teuchos::RCP<Epetra_Vector> iforcecolnp = LINALG::CreateVector(*cutterdiscret->DofColMap(),true);
@@ -1470,31 +1470,10 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     velpressplitter_.ExtractCondVector(state_.velnp_,onlypre);
     onlypre->Norm2(&prenorm_L2);
 
-    double incfullnorm_L2;
-    double fullnorm_L2;
-    double fullresnorm;
-
-    const Epetra_Map* dofrowmap       = discret_->DofRowMap();
-    Epetra_Vector full(*dofrowmap);
-    Epetra_Import importer(*dofrowmap,residual_->Map());
-
-    int err = full.Import(*residual_,importer,Insert);
-    if (err) dserror("Import using importer returned err=%d",err);
-    full.Norm2(&fullresnorm);
-
-    err = full.Import(*incvel_,importer,Insert);
-    if (err) dserror("Import using importer returned err=%d",err);
-    full.Norm2(&incfullnorm_L2);
-
-    err = full.Import(*state_.velnp_,importer,Insert);
-    if (err) dserror("Import using importer returned err=%d",err);
-    full.Norm2(&fullnorm_L2);
-
     // care for the case that nothing really happens in the velocity
     // or pressure field
     if (velnorm_L2 < 1e-5)  velnorm_L2 = 1.0;
     if (prenorm_L2 < 1e-5)  prenorm_L2 = 1.0;
-    if (fullnorm_L2 < 1e-5) fullnorm_L2 = 1.0;
 
     //-------------------------------------------------- output to screen
     /* special case of very first iteration step:
@@ -1504,8 +1483,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     {
       if (myrank_ == 0)
       {
-        printf("|  %3d/%3d   | %9.2E[L_2 ]  | %7.1e | %7.1e | %7.1e |    --   |    --   |    --   |",
-               itnum,itemax,ittol,vresnorm,presnorm,fullresnorm);
+        printf("|  %3d/%3d   | %9.2E[L_2 ]  | %7.1e | %7.1e |    --   |    --   |    --   |",
+               itnum,itemax,ittol,vresnorm,presnorm);
         printf(" (      --    , te=%9.2e)",dtele);
       }
     }
@@ -1519,19 +1498,17 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     // perturbation at the FSI interface might get by unnoticed.
       if (vresnorm <= ittol and
           presnorm <= ittol and
-          fullresnorm <= ittol and
           incvelnorm_L2/velnorm_L2 <= ittol and
-          incprenorm_L2/prenorm_L2 <= ittol and
-          incfullnorm_L2/fullnorm_L2 <= ittol)
+          incprenorm_L2/prenorm_L2 <= ittol)
       {
         stopnonliniter=true;
         if (myrank_ == 0)
         {
-          printf("|  %3d/%3d   | %9.2e[L_2 ]  | %7.1e | %7.1e | %7.1e | %7.1e | %7.1e | %7.1e |",
-                 itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
-                 incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
+          printf("|  %3d/%3d   | %9.2e[L_2 ]  | %7.1e | %7.1e | %7.1e | %7.1e |",
+                 itnum,itemax,ittol,vresnorm,presnorm,
+                 incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
           printf(" (ts=%9.2e, te=%9.2e)\n",dtsolve,dtele);
-          printf("+------------+------------------+---------+---------+---------+---------+---------+---------+\n");
+          printf("+------------+------------------+---------+---------+---------+---------+\n");
 
           FILE* errfile = params_.get<FILE*>("err file");
           if (errfile!=NULL)
@@ -1546,9 +1523,9 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
       else // if not yet converged
         if (myrank_ == 0)
         {
-          printf("|  %3d/%3d   | %9.2E[L_2 ]  | %7.1e | %7.1e | %7.1e | %7.1e | %7.1e | %7.1e |",
-                 itnum,itemax,ittol,vresnorm,presnorm,fullresnorm,
-                 incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2,incfullnorm_L2/fullnorm_L2);
+          printf("|  %3d/%3d   | %9.2E[L_2 ]  | %7.1e | %7.1e | %7.1e | %7.1e |",
+                 itnum,itemax,ittol,vresnorm,presnorm,
+                 incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
           printf(" (ts=%9.2e, te=%9.2e)",dtsolve,dtele);
         }
     }
@@ -1579,10 +1556,8 @@ void FLD::XFluidImplicitTimeInt::NonlinearSolve(
     // stop if NaNs occur
     if (std::isnan(vresnorm) or
         std::isnan(presnorm) or
-        std::isnan(fullresnorm) or
         std::isnan(incvelnorm_L2/velnorm_L2) or
-        std::isnan(incprenorm_L2/prenorm_L2) or
-        std::isnan(incfullnorm_L2/fullnorm_L2))
+        std::isnan(incprenorm_L2/prenorm_L2))
     {
       dserror("NaN's detected! Quitting...");
     }

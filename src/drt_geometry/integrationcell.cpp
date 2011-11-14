@@ -197,12 +197,13 @@ static string PosToString(double x, double y, double z)
 std::string GEO::DomainIntCell::toString() const
 {
   std::ostringstream s;
+  int numpoints = nodalpos_xi_domain_.N();
   s << "DomainIntCell:" << endl;
   s << " position in xi coordinates: " << endl;
-  for (int inode = 0; inode < 4; ++inode)
+  for (int inode = 0; inode < numpoints; ++inode)
     s << "   " << PosToString(nodalpos_xi_domain_(0,inode),nodalpos_xi_domain_(1,inode),nodalpos_xi_domain_(2,inode)) << endl;
   s << " position in xyz coordinates: " << endl;
-  for (int inode = 0; inode < 4; ++inode)
+  for (int inode = 0; inode < numpoints; ++inode)
     s << "   " << PosToString(nodalpos_xyz_domain_(0,inode),nodalpos_xyz_domain_(1,inode),nodalpos_xyz_domain_(2,inode)) << endl;
 
   s << endl << " Center : " << PosToString(phys_center_(0),phys_center_(1),phys_center_(2)) << endl;
@@ -216,9 +217,26 @@ std::string GEO::DomainIntCell::toString() const
 /*----------------------------------------------------------------------*
  *  to string                                                           *
  *----------------------------------------------------------------------*/
-void GEO::DomainIntCell::toGmsh(const std::string& filename) const
+void GEO::DomainIntCell::xiToGmsh(const std::string& filename) const
 {
   const LINALG::SerialDenseMatrix& cellpos = this->CellNodalPosXiDomain();
+
+  std::ofstream f_system(filename.c_str());
+  f_system << "View \" " << "Bad Cell \" {\n";
+  f_system << IO::GMSH::cellWithScalarToString(this->Shape(), 0.0, cellpos);
+  f_system << "};\n";
+  f_system << "View[0].Axes = 3;\nView[0].AxesMikado = 1;\n";
+  f_system.close();
+}
+
+
+
+/*----------------------------------------------------------------------*
+ *  to string                                                           *
+ *----------------------------------------------------------------------*/
+void GEO::DomainIntCell::xToGmsh(const std::string& filename) const
+{
+  const LINALG::SerialDenseMatrix& cellpos = this->CellNodalPosXYZ();
 
   std::ofstream f_system(filename.c_str());
   f_system << "View \" " << "Bad Cell \" {\n";
@@ -241,7 +259,7 @@ double GEO::DomainIntCell::VolumeInXiDomain(
   if(volume_cell <= 0.0)
   {
     cout << this->toString() << endl;
-    this->toGmsh("cell_with_negative_volume.pos");
+    this->xiToGmsh("cell_with_negative_volume.pos");
     dserror("GLOBAL ELEMENT NO.%i\n NEGATIVE VOLUME OF INTEGRATION CELL: %20.16f", ele.Id(), volume_cell);
   }
   const double normed_cell_volume = volume_cell/DRT::UTILS::getSizeInLocalCoordinates(ele.Shape());

@@ -242,9 +242,9 @@ void XFEM::InterpolateCellValuesFromElementValuesLevelSetNormal(
 
     // shape functions and derivatives for nodal parameters (dofs)
     enrvals.ComputeNormalShapeFunction(funct,gradphi,
-#ifdef COLLAPSE_FLAME
-        normal,
-#endif
+//#ifdef COLLAPSE_FLAME
+//        normal,
+//#endif
         shp);
 
     switch (field)

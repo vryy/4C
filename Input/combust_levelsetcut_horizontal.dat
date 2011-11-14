@@ -64,7 +64,7 @@ UPRES                           1
 -----------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Premixed_Combustion
 XFEMTIMEINT                     SemiLagrange
-XFEMTIMEINT_ENR                 SetEnrichment
+XFEMTIMEINT_ENR                 Projection
 INITSTATSOL                     No
 NITSCHE_VELOCITY                10
 NITSCHE_PRESSURE                0
