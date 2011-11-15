@@ -119,8 +119,8 @@ public:
 
   //@}
 
-//  /// Print the dofsets in the static_dofsets_ list
-//  virtual void PrintAllDofsets(const Epetra_Comm& comm) const;
+  /// Print the dofsets in the static_dofsets_ list
+  virtual void PrintAllDofsets(const Epetra_Comm& comm) const;
 
 protected:
 
