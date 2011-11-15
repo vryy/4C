@@ -294,6 +294,23 @@ if (NETCDF_FOUND)
     )
 endif(NETCDF_FOUND)
 
+# FFTW for Jonas Biehler
+find_package(FFTW)
+if (FFTW_FOUND)
+  include_directories(${FFTW_INCLUDE_DIRS})
+  link_directories(${FFTW_LIBRARY_DIRS})
+  set(LIBRARIES ${LIBRARIES} ${FFTW_LIBRARIES} )
+  add_definitions("-DHAVE_FFTW")  # HAVE_FFTW preprocessor flag for BACI
+else()
+  message("WW *************************************************************")
+  message("WW Warning: FFTW not found. no FFTW support in BACI.")
+  message("WW Warning: You cannot run simulations that need a discrete FFT.")
+  message("WW *************************************************************")
+endif()
+#endif (FFTW_FOUND)
+
+
+
 ###------------------------------------------------------------------ List of files
 set(OBJS_DRT_ALE_LIB
   src/drt_ale2/ale2.cpp
