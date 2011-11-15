@@ -332,6 +332,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // ------------------------------------ potential Neumann inflow terms
   fluidtimeparams->set<string> ("Neumann inflow",fdyn.get<string>("NEUMANNINFLOW"));
 
+
+  // ------------------------------------ potential reduced_D 3D coupling method
+  fluidtimeparams->set<string> ("Strong 3D_redD coupling",fdyn.get<string>("STRONG_REDD_3D_COUPLING_TYPE"));
+
   //--------------------------------------mesh tying for fluid
   fluidtimeparams->set<int>("MESHTYING",
       DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"));

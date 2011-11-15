@@ -217,7 +217,9 @@ public:
     ThermoConvections,
     ScaTraFluxCalc,
     ScaTraCoupling,
-    EmbeddingTissue
+    EmbeddingTissue,
+    TotalTractionCorrectionCond,
+    TotalTractionCorrectionBorderNodes
   };
 
   /*!

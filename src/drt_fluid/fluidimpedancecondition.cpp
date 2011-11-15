@@ -369,6 +369,10 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RefCountPtr<DRT::Discretization> 
   k2_ = (impedancecond[numcond])->GetDouble("k2");
   k3_ = (impedancecond[numcond])->GetDouble("k3");
 
+  E_  = (impedancecond[numcond])->GetDouble("stiffness");
+  h1_ = (impedancecond[numcond])->GetDouble("h1");
+  h2_ = (impedancecond[numcond])->GetDouble("h2");
+  h3_ = (impedancecond[numcond])->GetDouble("h3");
   // ---------------------------------------------------------------------
   // get the processor ID from the communicator
   // ---------------------------------------------------------------------
@@ -507,6 +511,15 @@ void FLD::UTILS::FluidImpedanceBc::WriteRestart( IO::DiscretizationWriter&  outp
   dpstream<<"dP"<<condnum;
   output.WriteDouble(dpstream.str(), dP_);
 
+
+  /*
+  double norm = 0.0;
+  impedancetbc_->Norm2(&norm);
+  if (!myrank_)
+  {
+    printf("impedancetbc_NORM: %10.5e\n",norm);
+  }
+  */
   return;
 }
 
@@ -528,7 +541,14 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
   // also read vector impedancetbc_ (previously missing, gee)
   stream3 << "impedancetbc" << condnum;
   reader.ReadVector(impedancetbc_,stream3.str());
-
+  /*
+  double norm = 0.0;
+  impedancetbc_->Norm2(&norm);
+  if (!myrank_)
+  {
+    printf("impedancetbc_NORM: %10.5e\n",norm);
+  }
+  */
   // old time step size
   double odta = reader.ReadDouble("ImpedanceBC_dta");
 
@@ -1019,17 +1039,25 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
 
 
   impedancetbc_->PutScalar(0.0);
+
   const string condstring("ImpedanceCond");
   discret_->EvaluateCondition(eleparams,impedancetbc_,condstring,condid);
-/*
-  double norm = 0.0;
+
+  /*
+  norm = 0.0;
   impedancetbc_->Norm2(&norm);
   if (!myrank_)
   {
-    printf("FLD::UTILS::FluidImpedanceBc::OutflowBoundary Norm of tbc: %10.5e\n",norm);
-    fflush(stdout);
+    cout<<"time: "<<time<<endl;
+    cout<<"dta: "<<dta<<endl;
+    cout<<"theta*dta: "<<theta*dta<<endl;
+    cout<<"pressure: "<<pressure<<endl;
+    printf("IMPEDANCE_NORM: %10.5e\n",norm);
+    printf("PRESSURE:  %10.5e\n",pressure);
+    //    exit(0);
   }
-*/
+  */
+
   // -------------------------------------------------------------------
   // fill the pressure vector
   // -------------------------------------------------------------------
@@ -1089,15 +1117,16 @@ void FLD::UTILS::FluidImpedanceBc::UpdateResidual(RCP<Epetra_Vector>  residual )
   residual->Update(1.0,*impedancetbc_,1.0);
   Pin_n_ = Pin_np_;
   Pc_n_  = Pc_np_;
-/*
+
+  /*
   double norm = 0.0;
   impedancetbc_->Norm2(&norm);
   if (!myrank_)
   {
-    printf("FLD::UTILS::FluidImpedanceBc::UpdateResidual Norm of tbc: %10.5e\n",norm);
-    fflush(stdout);
+    printf("RES--_NORM: %10.5e\n",norm);
   }
-*/
+  */
+
 }
 
 
@@ -1402,9 +1431,15 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
   double area = radius*radius*PI;
   double length = lscale * radius;
 
+#if 0
   double h=-0.0057*radius*radius+0.2096*radius+0.0904;
-  double E=0.0033;
+  double E= 0.0033;
   double compliance=2.0*PI*radius*radius*radius/(3.0*h*E);
+#else
+  double h= h1_*radius*radius+h2_*radius+h3_;
+  double E= E_;
+  double compliance=2.0*PI*radius*radius*radius/(3.0*h*E);
+#endif
 
   // get impedances of downward vessels ...
   //*****************************************

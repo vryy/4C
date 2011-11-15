@@ -115,12 +115,15 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   RefCountPtr<const Epetra_Vector> pn   = discretization.GetState("pn");
   RefCountPtr<const Epetra_Vector> pnm   = discretization.GetState("pnm");
 
+  RefCountPtr<Epetra_Vector> qin_nm  = params.get<RefCountPtr<Epetra_Vector> >("qin_nm");
   RefCountPtr<Epetra_Vector> qin_n   = params.get<RefCountPtr<Epetra_Vector> >("qin_n");
   RefCountPtr<Epetra_Vector> qin_np  = params.get<RefCountPtr<Epetra_Vector> >("qin_np");
-  RefCountPtr<Epetra_Vector> qout_n  = params.get<RefCountPtr<Epetra_Vector> >("qout_n");
-  RefCountPtr<Epetra_Vector> qout_np = params.get<RefCountPtr<Epetra_Vector> >("qout_np");
 
-  if (pnp==null || pn==null || pnm==null )
+  RefCountPtr<Epetra_Vector> qout_np = params.get<RefCountPtr<Epetra_Vector> >("qout_np");
+  RefCountPtr<Epetra_Vector> qout_n  = params.get<RefCountPtr<Epetra_Vector> >("qout_n");
+  RefCountPtr<Epetra_Vector> qout_nm = params.get<RefCountPtr<Epetra_Vector> >("qout_nm");
+
+ if (pnp==null || pn==null || pnm==null )
     dserror("Cannot get state vectors 'pnp', 'pn', an/or 'pnm''");
 
   // extract local values from the global vectors
@@ -150,10 +153,12 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
 
   // get the volumetric flow rate from the previous time step
   ParameterList elem_params;
-  elem_params.set<double>("qout_n" ,(*qout_n )[ele->LID()]);
   elem_params.set<double>("qout_np",(*qout_np)[ele->LID()]);
-  elem_params.set<double>("qin_n"  ,(*qin_n  )[ele->LID()]);
+  elem_params.set<double>("qout_n" ,(*qout_n )[ele->LID()]);
+  elem_params.set<double>("qout_nm",(*qout_nm)[ele->LID()]);
   elem_params.set<double>("qin_np" ,(*qin_np )[ele->LID()]);
+  elem_params.set<double>("qin_n"  ,(*qin_n  )[ele->LID()]);
+  elem_params.set<double>("qin_nm" ,(*qin_nm )[ele->LID()]);
 
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
@@ -249,6 +254,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
       double VolPerArea = ele->Nodes()[1]->GetCondition("RedLungAcinusCond")->GetDouble("VolumePerArea");
       double acin_vol = VolPerArea* A;
       a_volume->ReplaceGlobalValues(1,&acin_vol,&gid2);
+      //      cout<<"V_A "<<VolPerArea<<" A "<<A<<endl;
     }
   }
 
@@ -581,7 +587,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   // Check for the simple piston connected to a spring
   for(int i = 0; i<ele->NumNode(); i++)
   {
-
     //------------------------------------------------------------------
     // Evaluate the number of acini on the end of an outlet.
     // This is hard coded for now, but will be fixed later
@@ -594,6 +599,21 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     DRT::Condition * condition = ele->Nodes()[i]->GetCondition("RedLungAcinusCond");
     if(condition)
     {
+      double qnp= 0.0;
+      double qn = 0.0;
+      double qnm= 0.0;
+      if (i==0)
+      {
+        qnp = params.get<double>("qin_np");
+        qn  = params.get<double>("qin_n");
+        qnm = params.get<double>("qin_nm");
+      }
+      else
+      {
+        qnp = params.get<double>("qout_np");
+        qn  = params.get<double>("qout_n");
+        qnm = params.get<double>("qout_nm");
+      }
       double Area  = 0.0;
       ele->getParams("Area",Area);
 
@@ -604,7 +624,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       const double VolAcinus  = condition->GetDouble("Acinus_Volume");
       const double E1 = condition->GetDouble("Stiffness1");// / VolAcinus;
       const double E2 = condition->GetDouble("Stiffness2");// / VolAcinus;
-      const double B  = condition->GetDouble("Viscosity");//  / VolAcinus;
+      const double Rt = condition->GetDouble("Viscosity1");// / VolAcinus;
+      const double Ra = condition->GetDouble("Viscosity2");// / VolAcinus;
+      //      cout<<"E1: "<<E1<<" | E2: "<<E2<<" | R: "<<B<<endl;
       const double NumOfAcini = double(floor(VolPerArea*Area/VolAcinus));
 
       // cout<<"Area: "<<Area<<" V/A "<<VolPerArea<<" NumOfAcini: "<< NumOfAcini<<endl;
@@ -622,7 +644,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       double Pp_nm = 0.0;
       double Pp_n  = 0.0;
       double Pp_np = 0.0;
-      double qn    = q_out;
       
       double pnm = epnm(i);
       double pn  = epn(i);
@@ -657,24 +678,55 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       }
       else if (MatType == "KelvinVoigt")
       {
-        const double R  = B;
-        const double Kp_np = 2.0/(E1*dt) + 1.0/R;
-        const double Kp_n  = 2.0/(E1*dt) - 1.0/R;
+        const double Kp_np = 2.0/(E1*dt) + 1.0/Rt;
+        const double Kp_n  = 2.0/(E1*dt) - 1.0/Rt;
 
         sysmat(i,i) += pow(-1.0,i)*(Kp_np*NumOfAcini);
         rhs(i)      += pow(-1.0,i)*(q_out + pn*NumOfAcini * Kp_n + Pp_np*NumOfAcini * Kp_np);
       }
       else if (MatType == "ViscoElastic_2dof")
       {
-        const double R     = B;
-        const double Kp_np = E2/dt + R/(dt*dt);
-        const double Kp_n  = E2/dt + 2.0*R/(dt*dt);
-        const double Kp_nm = -R/(dt*dt);
-        const double Kq_np = E1*E2 + R*(E1 + E2)/dt;
-        const double Kq_n  = -R*(E1+E2)/dt;
+        const double Kp_np = E2/dt + Rt/(dt*dt);
+        const double Kp_n  = E2/dt + 2.0*Rt/(dt*dt);
+        const double Kp_nm = -Rt/(dt*dt);
+        const double Kq_np = E1*E2 + Rt*(E1 + E2)/dt;
+        const double Kq_n  = -Rt*(E1+E2)/dt;
         
         sysmat(i,i)+= pow(-1.0,i)*( Kp_np/Kq_np)*NumOfAcini;
         rhs(i)     += pow(-1.0,i)*((Kp_np*Pp_np + Kp_n*(pn-Pp_n) + Kp_nm*(pnm-Pp_nm))*NumOfAcini/Kq_np + Kq_n/Kq_np*qn);
+
+      }
+      else if (MatType == "ViscoElastic_3dof")
+      {
+        const double Kp_np = Rt/(dt*dt) + E2/dt;
+        const double Kp_n  = -2.0*Rt/(dt*dt) - E2/dt;
+        const double Kp_nm = Rt/(dt*dt);
+
+        const double Kq_np = Ra*Rt/(dt*dt) + (E1*Rt + E2*Ra + E2*Rt)/dt + E1*E2;
+        const double Kq_n  = -2.0*Ra*Rt/(dt*dt) - (E1*Rt + E2*Ra + E2*Rt)/dt;
+        const double Kq_nm = Ra*Rt/(dt*dt);
+        
+        sysmat(i,i)+= pow(-1.0,i)*( Kp_np/Kq_np)*NumOfAcini;
+        rhs(i)     += pow(-1.0,i)*(-(-Kp_np*Pp_np + Kp_n*(pn-Pp_n) + Kp_nm*(pnm-Pp_nm))*NumOfAcini/Kq_np + (Kq_n*qn + Kq_nm*qnm)/Kq_np);
+
+      }
+      else if (MatType == "Exponential")
+      {
+
+        //------------------------------------------------------------
+        // Q = Aa + B*exp(-K*P)
+        //------------------------------------------------------------
+        //        const double Aa = E1;
+        const double B = E2;
+        const double K = R;
+
+        //        cout<<"E2: "<<E2<<"  | B: "<<K<<endl;
+        const double Kp  = (1.0/dt)*(-K*B*exp(-K*(pn-Pp_n)));
+        const double Qeq = (1.0/dt)*( K*B*exp(-K*(pn-Pp_n))*(K*pow(pn-Pp_n - (pnm-Pp_nm),2)+2.0*(pn-Pp_n)-(pnm-Pp_nm))) - Kp*Pp_np;
+
+        //        cout<<"t "<<time<<" P: "<<Pp_np
+        sysmat(i,i)+= pow(-1.0,i)*(Kp)*NumOfAcini;
+        rhs(i)     += pow(-1.0,i)*(-qn - Qeq*NumOfAcini);
 
       }
       else
@@ -1018,13 +1070,14 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
 
   //  const int numnode = iel;
 
-  RefCountPtr<const Epetra_Vector> pnp = discretization.GetState("pnp");
-  RefCountPtr<const Epetra_Vector> pn  = discretization.GetState("pn");
-  RefCountPtr<Epetra_Vector> qin_np    = params.get<RefCountPtr<Epetra_Vector> >("qin_np");
-  RefCountPtr<Epetra_Vector> qout_np   = params.get<RefCountPtr<Epetra_Vector> >("qout_np");
-  RefCountPtr<Epetra_Vector> qin_n     = params.get<RefCountPtr<Epetra_Vector> >("qin_n");
-  RefCountPtr<Epetra_Vector> qout_n    = params.get<RefCountPtr<Epetra_Vector> >("qout_n");
-  RefCountPtr<Epetra_Vector> a_volume  = params.get<RefCountPtr<Epetra_Vector> >("acini_volume");
+  RefCountPtr<const Epetra_Vector> pnp   = discretization.GetState("pnp");
+  RefCountPtr<const Epetra_Vector> pn    = discretization.GetState("pn");
+  RefCountPtr<Epetra_Vector> qin_np      = params.get<RefCountPtr<Epetra_Vector> >("qin_np");
+  RefCountPtr<Epetra_Vector> qout_np     = params.get<RefCountPtr<Epetra_Vector> >("qout_np");
+  RefCountPtr<Epetra_Vector> qin_n       = params.get<RefCountPtr<Epetra_Vector> >("qin_n");
+  RefCountPtr<Epetra_Vector> qout_n      = params.get<RefCountPtr<Epetra_Vector> >("qout_n");
+  RefCountPtr<Epetra_Vector> a_volumen   = params.get<RefCountPtr<Epetra_Vector> >("acini_volumen");
+  RefCountPtr<Epetra_Vector> a_volumenp  = params.get<RefCountPtr<Epetra_Vector> >("acini_volumenp");
 
 
   // get time-step size
@@ -1056,9 +1109,11 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   vector<double> mypnp(lm.size());
   vector<double> mypn (lm.size());
   vector<double> mye_acini_voln (lm.size());
+  vector<double> mye_acini_volnp(lm.size());
   DRT::UTILS::ExtractMyValues(*pnp,mypnp,lm);
   DRT::UTILS::ExtractMyValues(*pn ,mypn ,lm);
-  DRT::UTILS::ExtractMyValues(*a_volume,mye_acini_voln,lm);
+  DRT::UTILS::ExtractMyValues(*a_volumen ,mye_acini_voln ,lm);
+  DRT::UTILS::ExtractMyValues(*a_volumenp,mye_acini_volnp,lm);
 
   const int numnode = lm.size();
 
@@ -1066,13 +1121,15 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   //  LINALG::Matrix<numnode,1> epnp;
   Epetra_SerialDenseVector epnp(numnode);
   Epetra_SerialDenseVector epn(numnode);
-  Epetra_SerialDenseVector e_acini_voln(numnode);
+  Epetra_SerialDenseVector e_acini_voln (numnode);
+  Epetra_SerialDenseVector e_acini_volnp(numnode);
   for (unsigned int i=0;i<lm.size();++i)
   {
     // split area and volumetric flow rate, insert into element arrays
     epnp(i)         = mypnp[i];
     epn(i)          = mypn[i];
-    e_acini_voln(i) = mye_acini_voln[i];
+    e_acini_voln (i)= mye_acini_voln [i];
+    e_acini_volnp(i)= mye_acini_volnp[i];
   }
 
 
@@ -1301,10 +1358,10 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     if(ele->Nodes()[i]->GetCondition("RedLungAcinusCond"))
     {
       double acinus_volume = e_acini_voln[i];
-      acinus_volume +=  (eqin_np)*dt;
+      acinus_volume +=  0.5*(eqout_np+eqout_n)*dt;
 
       int    gid2 = lm[i];
-      a_volume->ReplaceGlobalValues(1,&acinus_volume,&gid2);
+      a_volumenp->ReplaceGlobalValues(1,&acinus_volume,&gid2);
     }
   }
 

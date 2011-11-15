@@ -278,6 +278,39 @@ private:
       vector<int>&                      lm);
 
 
+    /*!
+    \brief calculate the velocity component of the traction
+
+    \param params (in/out)    : ParameterList for communication between control routine
+                                and elements
+    \param discretization (in): A reference to the underlying discretization
+    \param lm (in)            : location vector of this element
+    \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+    */
+    void CalcTractionVelocityComponent(
+      DRT::ELEMENTS::Fluid3Boundary*    ele,
+      ParameterList&                    params,
+      DRT::Discretization&              discretization,
+      vector<int>&                      lm,
+      Epetra_SerialDenseVector&         elevec1);
+
+
+    /*!
+    \brief calculate the integral of the neumann inflow component
+
+    \param params (in/out)    : ParameterList for communication between control routine
+                                and elements
+    \param discretization (in): A reference to the underlying discretization
+    \param lm (in)            : location vector of this element
+    \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+    */
+     void ComputeNeumannUvIntegral(
+                     DRT::ELEMENTS::Fluid3Boundary*    ele,
+                     ParameterList&                    params,
+                     DRT::Discretization&              discretization,
+                     vector<int>&                      lm,
+                     Epetra_SerialDenseVector&         elevec1);
+
 
     /*!
      brief integrate elemental flow rates over a surface
@@ -414,7 +447,9 @@ private:
       conservative_outflow_bc,
       calc_Neumann_inflow,
       integ_pressure_calc,
-      center_of_mass_calc
+      center_of_mass_calc,
+      traction_velocity_component,
+      traction_Uv_integral_component
     };
 
   //! evaluate shape functions/derivatives, metric tensor and

@@ -203,6 +203,8 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==FSICouplingCenterDisp)         os << "Sliding ALE Center Disp condition";
   else if (Type()==FSICouplingNoSlide)            os << "Do not consider these nodes for sliding ALE";
   else if (Type()==EmbeddingTissue)               os << "Embedding Tissue Condition";
+  else if (Type()==TotalTractionCorrectionCond)   os << "Total traction correct condition";
+  else if (Type()==TotalTractionCorrectionBorderNodes)  os << "Total traction correction border nodes condition";
 
   else dserror("no output string for condition defined in DRT::Condition::Print");
 

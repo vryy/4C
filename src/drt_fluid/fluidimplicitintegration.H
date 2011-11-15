@@ -99,6 +99,7 @@ namespace UTILS
   class FluidImpedanceWrapper;
   class FluidWkOptimizationWrapper;
   class FluidVolumetricSurfaceFlowWrapper;
+  class TotalTractionCorrector;
 #ifdef D_ARTNET
   class Fluid_couplingWrapperBase;
   template <class red_D_time_int>
@@ -604,6 +605,9 @@ protected:
   /// flag for potential Neumann inflow
   bool neumanninflow_;
 
+  /// flag for potential 3D Reduced_D coupling
+  bool strong_redD_3d_coupling_;
+
   /// form of convective term
   string convform_;
 
@@ -638,6 +642,7 @@ protected:
 
   /// (standard) residual vector (rhs for the incremental form),
   RCP<Epetra_Vector>    residual_;
+  RCP<Epetra_Vector>    trac_residual_;
 
   /// rhs: right hand side vector for linearised flow solution
   RCP<Epetra_Vector>    rhs_;
@@ -736,6 +741,9 @@ protected:
 
   /// bio related special (in/outflow) boudaries
   RCP<UTILS::FluidVolumetricSurfaceFlowWrapper> vol_surf_flow_bc_;
+
+  /// bio related special (in/outflow) traction velocity component adder
+  RCP<UTILS::TotalTractionCorrector> traction_vel_comp_adder_bc_;
 
 #ifdef D_ARTNET
   /// bio related, 3D to redued-D coupling

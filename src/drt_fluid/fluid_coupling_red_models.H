@@ -95,6 +95,8 @@ public:
   */
   void UpdateResidual(RCP<Epetra_Vector>  residual );
 
+
+
   void EvaluateDirichlet( RCP<Epetra_Vector>  velnp,
                           const Epetra_Map &  condmap,
                           double              time);
@@ -111,6 +113,11 @@ public:
 
 
   virtual void Integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList> & ) = 0;
+
+  /*!
+  \brief compute TimeUpdate
+  */
+  virtual void TimeUpdate() = 0;
 
 private:
 
@@ -171,6 +178,11 @@ public:
   void Integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList> & params )
     {
       reduced_D_time_integ_->Integrate(true,params);
+    }
+
+  void TimeUpdate()
+    {
+      reduced_D_time_integ_->TimeUpdate();
     }
   
   ~Fluid_couplingWrapper (){};
@@ -266,9 +278,16 @@ protected:
 
   void UpdateResidual ( RCP<Epetra_Vector> residual );
 
+
+
   void EvaluateDirichlet( RCP<Epetra_Vector>  velnp,
                           const Epetra_Map &  condmap,
                           double              time);
+
+  /*!
+  \brief compute TimeUpdate
+  */
+  void TimeUpdate() {}
 
   void Integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList> & params ){}
 

@@ -1805,6 +1805,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   impedancebc->AddComponent(Teuchos::rcp(new RealConditionComponent("k2")));
   impedancebc->AddComponent(Teuchos::rcp(new RealConditionComponent("k3")));
 
+  AddNamedReal(impedancebc,"stiffness");
+  impedancebc->AddComponent(Teuchos::rcp(new RealConditionComponent("h1")));
+  impedancebc->AddComponent(Teuchos::rcp(new RealConditionComponent("h2")));
+  impedancebc->AddComponent(Teuchos::rcp(new RealConditionComponent("h3")));
+
   condlist.push_back(impedancebc);
 
   /*--------------------------------------------------------------------*/
@@ -2176,6 +2181,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(surfinvana);
 
+#ifdef D_ARTNET
   /*--------------------------------------------------------------------*/
   // 1D-Artery connector condition
 
@@ -2299,7 +2305,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     true)));
 
   condlist.push_back(art_in_outlet_bc);
-
+#endif
   /*--------------------------------------------------------------------*/
   // 3-D/reduced-D coupling boundary condition
   Teuchos::RCP<ConditionDefinition> art_red_to_3d_bc =
@@ -2375,6 +2381,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   AddNamedReal(windkessel_optim_bc,"Tolerance");
 
   condlist.push_back(windkessel_optim_bc);
+
+#ifdef D_RED_AIRWAYS
   /*--------------------------------------------------------------------*/
   // Prescribed BC for reduced dimensional airways
 
@@ -2412,15 +2420,16 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Point));
 
   acinus_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("materialType", "NeoHookean",
-                                                                    Teuchos::tuple<std::string>("NeoHookean","ViscoElastic_2dof","KelvinVoigt"),
-                                                                    Teuchos::tuple<std::string>("NeoHookean","ViscoElastic_2dof","KelvinVoigt"),
+                                                                    Teuchos::tuple<std::string>("NeoHookean","ViscoElastic_2dof","ViscoElastic_3dof","KelvinVoigt","Exponential"),
+                                                                    Teuchos::tuple<std::string>("NeoHookean","ViscoElastic_2dof","ViscoElastic_3dof","KelvinVoigt","Exponential"),
     true)));
 
   AddNamedReal(acinus_bc,"Acinus_Volume");
   AddNamedReal(acinus_bc,"VolumePerArea");
   AddNamedReal(acinus_bc,"Stiffness1");
   AddNamedReal(acinus_bc,"Stiffness2");
-  AddNamedReal(acinus_bc,"Viscosity");
+  AddNamedReal(acinus_bc,"Viscosity1");
+  AddNamedReal(acinus_bc,"Viscosity2");
 
   // add the pleural pressure
   std::vector<Teuchos::RCP<ConditionComponent> > acinus_pleural_p_components;
@@ -2430,6 +2439,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     acinus_bc->AddComponent(acinus_pleural_p_components[i]);
 
   condlist.push_back(acinus_bc);
+
+#endif //D_RED_AIRWAYS
 
   /*--------------------------------------------------------------------*/
   // Volumetric surface flow profile condition
@@ -2449,6 +2460,12 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                                                                        Teuchos::tuple<std::string>("WOMERSLEY","POLYNOMIAL"),
                                                                                        Teuchos::tuple<std::string>("WOMERSLEY","POLYNOMIAL"),
                                                                                        true)));
+
+  volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("prebiased", "NOTPREBIASED",
+                                                                                       Teuchos::tuple<std::string>("NOTPREBIASED","PREBIASED","FORCED"),
+                                                                                       Teuchos::tuple<std::string>("NOTPREBIASED","PREBIASED","FORCED"),
+                                                                                       true)));
+
 
   volumetric_surface_flow_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("FlowType", "InFlow",
                                                                                        Teuchos::tuple<std::string>("InFlow","OutFlow"),
@@ -2510,6 +2527,86 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(volumetric_border_nodes_cond);
 
+  /*--------------------------------------------------------------------*/
+  // Volumetric surface total traction corrector
+  Teuchos::RCP<ConditionDefinition> total_traction_correction_cond =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURF TOTAL TRACTION CORRECTION CONDITIONS",
+                                         "TotalTractionCorrectionCond",
+                                         "total traction correction condition",
+                                         DRT::Condition::TotalTractionCorrectionCond,
+                                         true,
+                                         DRT::Condition::Surface));
+
+
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("ConditionType", "POLYNOMIAL",
+                                                                                         Teuchos::tuple<std::string>("POLYNOMIAL","WOMERSLEY"),
+                                                                                         Teuchos::tuple<std::string>("POLYNOMIAL","WOMERSLEY"),
+                                                                                         true)));
+
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("prebiased", "NOTPREBIASED",
+                                                                                         Teuchos::tuple<std::string>("NOTPREBIASED","PREBIASED","FORCED"),
+                                                                                         Teuchos::tuple<std::string>("NOTPREBIASED","PREBIASED","FORCED"),
+                                                                                         true)));
+
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("FlowType", "InFlow",
+                                                                                         Teuchos::tuple<std::string>("InFlow","OutFlow"),
+                                                                                         Teuchos::tuple<std::string>("InFlow","OutFlow"),
+                                                                                         true)));
+
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("CorrectionFlag", "WithOutCorrection",
+                                                                                         Teuchos::tuple<std::string>("WithOutCorrection","WithCorrection"),
+                                                                                         Teuchos::tuple<std::string>("WithOutCorrection","WithCorrection"),
+                                                                                         true)));
+  AddNamedReal(total_traction_correction_cond,"Period");
+  AddNamedInt (total_traction_correction_cond,"Order");
+  AddNamedInt (total_traction_correction_cond,"Harmonics");
+
+  std::vector<Teuchos::RCP<ConditionComponent> > flowbiasingcomponents;
+  flowbiasingcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",1)));
+  flowbiasingcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
+  for (unsigned i=0; i<flowbiasingcomponents.size(); ++i)
+  total_traction_correction_cond->AddComponent(flowbiasingcomponents[i]);
+
+
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("NORMAL", "self_evaluate_normal",
+                                                                                         Teuchos::tuple<std::string>("self_evaluate_normal","use_prescribed_normal"),
+                                                                                         Teuchos::tuple<std::string>("self_evaluate_normal","use_prescribed_normal"),
+                                                                                         true)));
+
+
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new RealConditionComponent("n1")));
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new RealConditionComponent("n2")));
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new RealConditionComponent("n3")));
+
+
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new StringConditionComponent("CenterOfMass", "self_evaluate_center_of_mass",
+                                                                                         Teuchos::tuple<std::string>("self_evaluate_center_of_mass","use_prescribed_center_of_mass"),
+                                                                                         Teuchos::tuple<std::string>("self_evaluate_center_of_mass","use_prescribed_center_of_mass"),
+                                                                                         true)));
+
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new RealConditionComponent("c1")));
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new RealConditionComponent("c2")));
+  total_traction_correction_cond->AddComponent(Teuchos::rcp(new RealConditionComponent("c3")));
+
+  condlist.push_back(total_traction_correction_cond);
+
+  /*--------------------------------------------------------------------*/
+  // Volumetric flow traction correction border nodes condition
+
+  Teuchos::RCP<ConditionDefinition> traction_corrector_border_nodes_cond =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE TOTAL TRACTION CORRECTION BORDER NODES",
+                                         "TotalTractionCorrectionBorderNodesCond",
+                                         "total traction correction border nodes condition",
+                                         DRT::Condition::TotalTractionCorrectionBorderNodes,
+                                         true,
+                                         DRT::Condition::Line));
+
+  traction_corrector_border_nodes_cond->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+
+
+  condlist.push_back(traction_corrector_border_nodes_cond);
 
 
   /*--------------------------------------------------------------------*/

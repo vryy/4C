@@ -2089,6 +2089,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("STEADYTOL",1e-6,"Tolerance for steady state check",&fdyn);
   DoubleParameter("START_THETA",1.0,"Time integration factor for starting scheme",&fdyn);
 
+  setStringToIntegralParameter<int>("STRONG_REDD_3D_COUPLING_TYPE",
+                               "no",
+                               "Flag to (de)activate potential Strong 3D redD coupling",
+                               tuple<std::string>(
+                                 "no",
+                                 "yes"),
+                               tuple<std::string>(
+                                 "Weak coupling",
+                                 "Strong coupling"),
+                               tuple<int>(0,1),
+                               &fdyn);
+
  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& andyn = list->sublist("ARTERIAL DYNAMIC",false,"");
 

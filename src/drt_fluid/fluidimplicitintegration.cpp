@@ -345,13 +345,22 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
 
     // evaluate the map of te womersley bcs
     vol_surf_flow_bc_ -> EvaluateMapExtractor(vol_flow_rates_bc_extractor_);
-    vol_surf_flow_bc_->EvaluateCondMap(vol_surf_flow_bcmaps_);
+    vol_surf_flow_bc_ -> EvaluateCondMap(vol_surf_flow_bcmaps_);
+
+    // Evaluate the womersley velocities
+    vol_surf_flow_bc_->EvaluateVelocities(velnp_,time_);
+  }
 
 
+  // -------------------------------------------------------------------
+  // Initialize the reduced models
+  // -------------------------------------------------------------------
+
+  strong_redD_3d_coupling_ = false;
+  if (params_.get<string>("Strong 3D_redD coupling","no") == "yes")   strong_redD_3d_coupling_ = true;
+  
+  {
 #ifdef D_ARTNET
-    // -----------------------------------------------------------------
-    // Initialize the reduced models
-    // -----------------------------------------------------------------
 
     ART_exp_timeInt_ = dyn_art_net_drt(true);
     // Check if one-dimensional artery network problem exist
@@ -396,14 +405,17 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
                                      airway_imp_timeInt_->Dt()));
 
     }
-#endif // D_RED_AIRWAYS
+    else
+    {
 
-    // Evaluate the womersley velocities
-    vol_surf_flow_bc_->EvaluateVelocities(velnp_,time_);
+    }
+#endif // D_RED_AIRWAYS
 
 
     zeros_->PutScalar(0.0); // just in case of change
   }
+
+  traction_vel_comp_adder_bc_ = rcp(new UTILS::TotalTractionCorrector(discret_, output_, dta_) );
 
   // the vector containing body and surface forces
   neumann_loads_= LINALG::CreateVector(*dofrowmap,true);
@@ -412,8 +424,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // ---------------------------------
 
   // rhs: standard (stabilized) residual vector (rhs for the incremental form)
-  residual_     = LINALG::CreateVector(*dofrowmap,true);
-  trueresidual_ = LINALG::CreateVector(*dofrowmap,true);
+  residual_      = LINALG::CreateVector(*dofrowmap,true);
+  trueresidual_  = LINALG::CreateVector(*dofrowmap,true);
+  trac_residual_ = LINALG::CreateVector(*dofrowmap,true);
 
   // right hand side vector for linearised solution;
   rhs_ = LINALG::CreateVector(*dofrowmap,true);
@@ -603,17 +616,18 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   }
 #endif // D_ALE_BFLOW
   // construct impedance bc wrapper
-  impedancebc_     = rcp(new UTILS::FluidImpedanceWrapper(discret_, output_, dta_) );
+  impedancebc_      = rcp(new UTILS::FluidImpedanceWrapper(discret_, output_, dta_) );
 
   Wk_optimization_  = rcp(new UTILS::FluidWkOptimizationWrapper(discret_,
-                                                               output_,
-                                                              impedancebc_,
-                                                               dta_) );
+                                                                output_,
+                                                                impedancebc_,
+                                                                dta_) );
 
   // ---------------------------------------------------------------------
   // set general fluid parameter defined before
   // ---------------------------------------------------------------------
   SetElementGeneralFluidParameter();
+  SetElementTimeParameter();
 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
@@ -729,6 +743,25 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
     //        current solution becomes old solution of next timestep
     // -------------------------------------------------------------------
     TimeUpdate();
+
+    // update the 3D-to-reduce_D coupling condition
+#ifdef D_ARTNET
+    // update the 3D-to-reduced_D coupling data
+    // Check if one-dimensional artery network problem exist
+    if (ART_exp_timeInt_ != Teuchos::null)
+    {
+      coupled3D_redDbc_art_->TimeUpdate();
+    }
+#endif //D_ARTNET
+#ifdef D_RED_AIRWAYS
+    // update the 3D-to-reduced_D coupling data
+    // Check if one-dimensional artery network problem exist
+    if (airway_imp_timeInt_ != Teuchos::null)
+    {
+      coupled3D_redDbc_airways_->TimeUpdate();
+    }
+#endif // D_RED_AIRWAYS
+
 
     // -------------------------------------------------------------------
     //  lift'n'drag forces, statistics time sample and output of solution
@@ -1036,12 +1069,29 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
       // update impedance boundary condition
       impedancebc_->UpdateResidual(residual_);
+      
+      discret_->ClearState();
+      discret_->SetState("velnp",velnp_);
+      discret_->SetState("hist",hist_);
 
+
+#ifdef D_ALE_BFLOW
+      if (alefluid_)
+      {
+        discret_->SetState("dispnp", dispnp_);
+      }
+#endif // D_ALE_BFLOW
+      
 #ifdef D_ARTNET
       // update the 3D-to-reduced_D coupling data
       // Check if one-dimensional artery network problem exist
       if (ART_exp_timeInt_ != Teuchos::null)
       {
+        if (strong_redD_3d_coupling_)
+        {
+          coupled3D_redDbc_art_->FlowRateCalculation(time_,dta_);
+          coupled3D_redDbc_art_->ApplyBoundaryConditions(time_, dta_, theta_);
+        }
         coupled3D_redDbc_art_->UpdateResidual(residual_);
       }
 #endif //D_ARTNET
@@ -1050,10 +1100,26 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       // Check if one-dimensional artery network problem exist
       if (airway_imp_timeInt_ != Teuchos::null)
       {
+        if (strong_redD_3d_coupling_)
+        {
+          coupled3D_redDbc_airways_->FlowRateCalculation(time_,dta_);
+          coupled3D_redDbc_airways_->ApplyBoundaryConditions(time_, dta_, theta_);
+        }
         coupled3D_redDbc_airways_->UpdateResidual(residual_);
       }
 #endif // D_RED_AIRWAYS
 
+
+      //------------------------------------------------------------------
+      // Add the traction velocity component
+      //------------------------------------------------------------------
+      traction_vel_comp_adder_bc_->EvaluateVelocities(velnp_,time_,theta_,dta_);
+      //      traction_vel_comp_adder_bc_->UpdateResidual(residual_);
+      trac_residual_->Update(0.0,*residual_,0.0);
+      traction_vel_comp_adder_bc_->UpdateResidual(trac_residual_);
+
+      residual_->Update(1.0,*trac_residual_,1.0);      
+      discret_->ClearState();
 
       // Filter velocity for dynamic Smagorinsky model --- this provides
       // the necessary dynamic constant
@@ -1654,6 +1720,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     }
 #endif
 
+
       if (msht_!= INPAR::FLUID::no_meshtying)
         meshtying_->SolveMeshtying(solver_, sysmat_, incvel_, residual_, itnum, w_, c_, project_);
       else
@@ -2088,7 +2155,112 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
     // convergence check
     // -------------------------------------------------------------------
     stopnonliniter = ConvergenceCheck(itnum,itmax,ittol);
+#if 0
+<<<<<<< .mine
+      GenAlphaIntermediateValues();
+    }
 
+    // -------------------------------------------------------------------
+    // calculate and print out norms for convergence check
+    // (blank residual DOFs which are on Dirichlet BC
+    // We can do this because the values at the dirichlet positions
+    // are not used anyway.
+    // We could avoid this though, if velrowmap_ and prerowmap_ would
+    // not include the dirichlet values as well. But it is expensive
+    // to avoid that.)
+    // -------------------------------------------------------------------
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),residual_);
+
+    // Treat the surface volumetric flow rate
+    //    vol_surf_flow_bc_->InsertCondVector( *temp_vec , *residual_);
+    vol_flow_rates_bc_extractor_->InsertVolumetricSurfaceFlowCondVector(
+      vol_flow_rates_bc_extractor_->ExtractVolumetricSurfaceFlowCondVector(zeros_),
+      residual_);
+
+    
+    Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
+    onlyvel->Norm2(&vresnorm);
+
+    velpressplitter_.ExtractOtherVector(incvel_,onlyvel);
+    onlyvel->Norm2(&incvelnorm_L2);
+
+    velpressplitter_.ExtractOtherVector(velnp_,onlyvel);
+    onlyvel->Norm2(&velnorm_L2);
+
+    Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(residual_);
+    onlypre->Norm2(&presnorm);
+
+    velpressplitter_.ExtractCondVector(incvel_,onlypre);
+    onlypre->Norm2(&incprenorm_L2);
+
+    velpressplitter_.ExtractCondVector(velnp_,onlypre);
+    onlypre->Norm2(&prenorm_L2);
+
+    // care for the case that nothing really happens in velocity
+    // or pressure field
+    if (velnorm_L2 < 1e-5) velnorm_L2 = 1.0;
+    if (prenorm_L2 < 1e-5) prenorm_L2 = 1.0;
+
+    if (myrank_ == 0)
+    {
+      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",itnum,itemax,ittol,vresnorm,presnorm,
+                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+      printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
+      if (dynamic_smagorinsky_ or scale_similarity_) printf(",tf=%10.3E",dtfilter_);
+      printf(")\n");
+    }
+
+    // -------------------------------------------------------------------
+    // check convergence and print out respective information:
+    // - stop if convergence is achieved
+    // - warn if itemax is reached without convergence, but proceed to
+    //   next timestep
+    // -------------------------------------------------------------------
+    if (vresnorm <= ittol and
+        presnorm <= ittol and
+        incvelnorm_L2/velnorm_L2 <= ittol and
+        incprenorm_L2/prenorm_L2 <= ittol)
+    {
+      stopnonliniter=true;
+      if (myrank_ == 0)
+      {
+        printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+        FILE* errfile = params_.get<FILE*>("err file",NULL);
+        if (errfile!=NULL)
+        {
+          fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
+          itnum,itemax,ittol,vresnorm,presnorm,
+          incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+        }
+      }
+      break;
+    }
+
+    if ((itnum == itemax) and (vresnorm > ittol or
+                               presnorm > ittol or
+                               incvelnorm_L2/velnorm_L2 > ittol or
+                               incprenorm_L2/prenorm_L2 > ittol))
+    {
+      stopnonliniter=true;
+      if (myrank_ == 0)
+      {
+        printf("+---------------------------------------------------------------+\n");
+        printf("|            >>>>>> not converged in itemax steps!              |\n");
+        printf("+---------------------------------------------------------------+\n");
+
+        FILE* errfile = params_.get<FILE*>("err file",NULL);
+        if (errfile!=NULL)
+        {
+          fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
+                  itnum,itemax,ittol,vresnorm,presnorm,
+                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
+        }
+      }
+      break;
+    }
+=======
+>>>>>>> .r15124
+#endif
   }
 
 } // FluidImplicitTimeInt::MultiCorrector
@@ -2146,20 +2318,53 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   impedancebc_->UpdateResidual(residual_);
 
   // update the 3D-to-reduced_D coupling condition
+
+  discret_->ClearState();
+  discret_->SetState("velnp",velnp_);
+  discret_->SetState("hist",hist_);
+
+#ifdef D_ALE_BFLOW
+  if (alefluid_)
+  {
+    discret_->SetState("dispnp", dispnp_);
+  }
+#endif // D_ALE_BFLOW
+
 #ifdef D_ARTNET
+  // update the 3D-to-reduced_D coupling data
   // Check if one-dimensional artery network problem exist
   if (ART_exp_timeInt_ != Teuchos::null)
   {
+    if (strong_redD_3d_coupling_)
+    {
+      coupled3D_redDbc_art_->FlowRateCalculation(time_,dta_);
+      coupled3D_redDbc_art_->ApplyBoundaryConditions(time_, dta_, theta_);
+    }
     coupled3D_redDbc_art_->UpdateResidual(residual_);
   }
 #endif //D_ARTNET
 #ifdef D_RED_AIRWAYS
+  // update the 3D-to-reduced_D coupling data
   // Check if one-dimensional artery network problem exist
   if (airway_imp_timeInt_ != Teuchos::null)
   {
+    if (strong_redD_3d_coupling_)
+    {
+      coupled3D_redDbc_airways_->FlowRateCalculation(time_,dta_);
+      coupled3D_redDbc_airways_->ApplyBoundaryConditions(time_, dta_, theta_);
+    }
     coupled3D_redDbc_airways_->UpdateResidual(residual_);
   }
 #endif // D_RED_AIRWAYS
+
+  //----------------------------------------------------------------------
+  // Add the traction velocity component
+  //----------------------------------------------------------------------
+  traction_vel_comp_adder_bc_->EvaluateVelocities( velnp_,time_,theta_,dta_);
+  traction_vel_comp_adder_bc_->UpdateResidual(residual_);
+    
+  discret_->ClearState();
+  
 
   if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky
    or turbmodel_ == INPAR::FLUID::scale_similarity
@@ -2614,21 +2819,53 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   // update impedance boundary condition
   impedancebc_->UpdateResidual(residual_);
 
+  discret_->ClearState();
+  discret_->SetState("velnp",velnp_);
+  discret_->SetState("hist",hist_);
   // update the 3D-to-reduce_D coupling condition
+#ifdef D_ALE_BFLOW
+      if (alefluid_)
+      {
+        discret_->SetState("dispnp", dispnp_);
+      }
+#endif // D_ALE_BFLOW
+      
+
 #ifdef D_ARTNET
+  // update the 3D-to-reduced_D coupling data
   // Check if one-dimensional artery network problem exist
   if (ART_exp_timeInt_ != Teuchos::null)
   {
+    if (strong_redD_3d_coupling_)
+    {
+      coupled3D_redDbc_art_->FlowRateCalculation(time_,dta_);
+      coupled3D_redDbc_art_->ApplyBoundaryConditions(time_, dta_, theta_);
+    }
     coupled3D_redDbc_art_->UpdateResidual(residual_);
   }
-#endif // D_ARTNET
+#endif //D_ARTNET
 #ifdef D_RED_AIRWAYS
+  // update the 3D-to-reduced_D coupling data
   // Check if one-dimensional artery network problem exist
   if (airway_imp_timeInt_ != Teuchos::null)
   {
+    if (strong_redD_3d_coupling_)
+    {
+      coupled3D_redDbc_airways_->FlowRateCalculation(time_,dta_);
+      coupled3D_redDbc_airways_->ApplyBoundaryConditions(time_, dta_, theta_);
+    }
     coupled3D_redDbc_airways_->UpdateResidual(residual_);
   }
 #endif // D_RED_AIRWAYS
+
+  //----------------------------------------------------------------------
+  // Add the traction velocity component
+  //----------------------------------------------------------------------
+  traction_vel_comp_adder_bc_->EvaluateVelocities( velnp_,time_,theta_,dta_);
+  traction_vel_comp_adder_bc_->UpdateResidual(residual_);
+
+      
+  discret_->ClearState();
 
   // create the parameters for the discretization
   ParameterList eleparams;
@@ -2898,6 +3135,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   {
     coupled3D_redDbc_art_->FlowRateCalculation(time_,dta_);
     coupled3D_redDbc_art_->ApplyBoundaryConditions(time_, dta_, theta_);
+    //    coupled3D_redDbc_art_->TimeUpdate();
   }
 #endif //D_ARTNET
 
@@ -2908,6 +3146,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   {
     coupled3D_redDbc_airways_->FlowRateCalculation(time_,dta_);
     coupled3D_redDbc_airways_->ApplyBoundaryConditions(time_, dta_, theta_);
+    //    coupled3D_redDbc_airways_->TimeUpdate();
   }
 #endif // D_RED_AIRWAYS
   discret_->ClearState();
@@ -3023,7 +3262,8 @@ void FLD::FluidImplicitTimeInt::Output()
 
     // velocity/pressure vector
     output_.WriteVector("velnp",velnp_);
-
+    output_.WriteVector("tract_resid",trac_residual_);
+    output_.WriteVector("neumann_loads",neumann_loads_);
     // (hydrodynamic) pressure
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_.ExtractCondVector(velnp_);
     output_.WriteVector("pressure", pressure);
@@ -3128,6 +3368,7 @@ void FLD::FluidImplicitTimeInt::Output()
     }
 
     vol_surf_flow_bc_->Output(output_);
+    traction_vel_comp_adder_bc_->Output(output_);
 
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
@@ -3165,6 +3406,8 @@ void FLD::FluidImplicitTimeInt::Output()
     output_.WriteVector("accn", accn_);
     output_.WriteVector("veln", veln_);
     output_.WriteVector("velnm",velnm_);
+    output_.WriteVector("tract_resid",trac_residual_);
+    output_.WriteVector("neumann_loads",neumann_loads_);
 
     // also write impedance bc information if required
     // Note: this method acts only if there is an impedance BC
@@ -3172,6 +3415,7 @@ void FLD::FluidImplicitTimeInt::Output()
 
     Wk_optimization_->WriteRestart(output_);
     vol_surf_flow_bc_->Output(output_);
+    traction_vel_comp_adder_bc_->Output(output_);
   }
 
   // write reduced model problem
@@ -3357,6 +3601,9 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
   Wk_optimization_->ReadRestart(reader);
 
   vol_surf_flow_bc_->ReadRestart(reader);
+  
+  traction_vel_comp_adder_bc_->ReadRestart(reader);
+
 
 #ifdef D_ARTNET
   // Check if one-dimensional artery network problem exist
@@ -3474,6 +3721,9 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
 
   // add Neumann loads
   residual_->Update(1.0,*neumann_loads_,0.0);
+
+  // add impedance Neumann loads
+  impedancebc_->UpdateResidual(residual_);
 
   // create the parameters for the discretization
   ParameterList eleparams;

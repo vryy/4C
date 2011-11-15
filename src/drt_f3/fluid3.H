@@ -1029,7 +1029,9 @@ public:
     conservative_outflow_bc,
     calc_Neumann_inflow,
     integ_pressure_calc,
-    center_of_mass_calc
+    center_of_mass_calc,
+    traction_velocity_component,
+    traction_Uv_integral_component
   };
 
 private:

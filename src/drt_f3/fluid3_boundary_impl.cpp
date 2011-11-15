@@ -183,6 +183,10 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
         act = Fluid3Boundary::integ_pressure_calc;
     else if (action == "center of mass calculation")
         act = Fluid3Boundary::center_of_mass_calc;
+    else if (action == "calculate traction velocity component")
+        act = Fluid3Boundary::traction_velocity_component;
+    else if (action == "calculate Uv integral component")
+        act = Fluid3Boundary::traction_Uv_integral_component;
     else dserror("Unknown type of action for Fluid3_Boundary: %s",action.c_str());
 
     // get status of Ale
@@ -395,6 +399,16 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::Fluid3Bo
         CenterOfMassCalculation(ele, params,discretization,lm);
       break;
     }
+    case traction_velocity_component:
+    {
+      CalcTractionVelocityComponent(ele,params,discretization,lm,elevec1);
+      break;
+    }
+    case traction_Uv_integral_component:
+    {
+      ComputeNeumannUvIntegral(ele, params,discretization,lm, elevec1);
+      break;
+    }
     default:
         dserror("Unknown type of action for Fluid3_Surface");
     } // end of switch(act)
@@ -501,6 +515,7 @@ int DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::EvaluateNeumann(
     // (evaluation always at integration point, in contrast to parent element)
     GetMaterialParams(material,escaaf,thermpressaf);
 
+    //    cout<<"Dens: "<<densaf_<<endl;
     const double fac_curve_time_dens = fac_*curvefac*timefac*densfac_;
 
     // factor given by spatial function
@@ -1516,7 +1531,7 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::AreaCaculation(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
     // Computation of nurb specific stuff is not activated here
     EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
-
+    
     area += fac_;
   }
 
@@ -2160,7 +2175,8 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
                   vector<int>&                      lm,
                   Epetra_SerialDenseVector&         elevec1)
 {
-  const double thsl = params.get("thsl",0.0);
+  //  const double thsl = params.get("thsl",0.0);
+  const double thsl = f3Parameter_->timefacrhs_;
 
   double invdensity=0.0; // inverse density of my parent element
 
@@ -2244,6 +2260,11 @@ void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ImpedanceIntegration(
         // inward pointing normal of unit length
         elevec1[inode*numdofpernode_+idim] += funct_(inode) * fac_thsl_pres_inve * (-unitnormal_(idim));
   }
+  //  cout<<"Pressure: "<<pressure<<endl;
+  //  cout<<"thsl: "<<thsl<<endl;
+  //  cout<<"density: "<<1.0/invdensity<<endl;
+  //  exit(1);
+
   return;
 } //DRT::ELEMENTS::Fluid3Surface::ImpedanceIntegration
 
@@ -3959,6 +3980,258 @@ template <DRT::Element::DiscretizationType bndydistype,
 
   return;
 }
+
+/*----------------------------------------------------------------------*
+ |  Evaluating the velocity component of the traction      ismail 05/11 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::CalcTractionVelocityComponent(
+  DRT::ELEMENTS::Fluid3Boundary*    ele,
+  ParameterList&                    params,
+  DRT::Discretization&              discretization,
+  vector<int>&                      lm,
+  Epetra_SerialDenseVector&         elevec1)
+{
+
+  // extract local values from the global vectors
+  RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+
+  if (velnp==null)
+    dserror("Cannot get state vector 'velnp'");
+
+  vector<double> myvelnp(lm.size());
+  DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
+
+  // allocate velocity vector
+  LINALG::Matrix<nsd_,bdrynen_> evelnp(true);
+
+  // split velocity and pressure, insert into element arrays
+  for (int inode=0;inode<bdrynen_;inode++)
+  {
+    for (int idim=0; idim< nsd_; idim++)
+    {
+      evelnp(idim,inode) = myvelnp[idim+(inode*numdofpernode_)];
+    }
+  }
+
+
+  RCP<Epetra_Vector> cond_velocities = params.get<RCP<Epetra_Vector> > ("condition velocities");
+  RCP<Epetra_Map>    cond_dofrowmap  = params.get<RCP<Epetra_Map> > ("condition dofrowmap");
+
+  double invdensity=0.0; // inverse density of my parent element
+
+  // get material of volume element this surface belongs to
+  RCP<MAT::Material> mat = ele->ParentElement()->Material();
+
+  if( mat->MaterialType()    != INPAR::MAT::m_carreauyasuda
+      && mat->MaterialType() != INPAR::MAT::m_modpowerlaw
+      && mat->MaterialType() != INPAR::MAT::m_fluid
+      && mat->MaterialType() != INPAR::MAT::m_permeable_fluid)
+          dserror("Material law is not a fluid");
+
+  if(mat->MaterialType()== INPAR::MAT::m_fluid)
+  {
+    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+    invdensity = 1.0/actmat->Density();
+  }
+  else if(mat->MaterialType()== INPAR::MAT::m_carreauyasuda)
+  {
+    const MAT::CarreauYasuda* actmat = static_cast<const MAT::CarreauYasuda*>(mat.get());
+    invdensity = 1.0/actmat->Density();
+  }
+  else if(mat->MaterialType()== INPAR::MAT::m_modpowerlaw)
+  {
+    const MAT::ModPowerLaw* actmat = static_cast<const MAT::ModPowerLaw*>(mat.get());
+    invdensity = 1.0/actmat->Density();
+  }
+  else if(mat->MaterialType()== INPAR::MAT::m_permeable_fluid)
+  {
+    const MAT::PermeableFluid* actmat = static_cast<const MAT::PermeableFluid*>(mat.get());
+    invdensity = 1.0/actmat->Density();
+  }
+  else
+    dserror("Fluid material expected but got type %d", mat->MaterialType());
+
+  //-------------------------------------------------------------------
+  // get the tractions velocity component
+  //-------------------------------------------------------------------
+ 
+  // get Gaussrule
+  //  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToGaussRuleForExactSol<distype>::rule);
+  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+
+  // get node coordinates
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
+
+#ifdef D_ALE_BFLOW
+  // Add the deformation of the ALE mesh to the nodes coordinates
+  // displacements
+  RCP<const Epetra_Vector>      dispnp;
+  vector<double>                mydispnp;
+
+  if (ele->ParentElement()->IsAle())
+  {
+    dispnp = discretization.GetState("dispnp");
+    if (dispnp!=null)
+    {
+      mydispnp.resize(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+    }
+    dsassert(mydispnp.size()!=0,"paranoid");
+    for (int inode=0;inode<bdrynen_;++inode)
+    {
+      for (int idim=0; idim<nsd_; ++idim)
+      {
+        xyze_(idim,inode)+=mydispnp[numdofpernode_*inode+idim];
+      }
+    }
+  }
+#endif // D_ALE_BFLOW
+  const double timefac = f3Parameter_->timefacrhs_;
+
+  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  {
+    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // Computation of the unit normal vector at the Gauss points
+    // Computation of nurb specific stuff is not activated here
+    EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
+
+    // Get the velocity value at the corresponding Gauss point.
+    vector<double> vel_gps(nsd_,0.0);
+    for (int inode=0;inode<bdrynen_;++inode)
+    {
+      for(int idim=0;idim<nsd_;++idim)
+      {
+        vel_gps[idim] += myvelnp[inode*numdofpernode_+idim]*funct_(inode);
+      }
+    }
+
+    // Evaluate the normal velocity at the corresponding Gauss point
+    double n_vel = 0.0;
+    for(int idim = 0 ;idim<nsd_;++idim)
+    {
+      n_vel += vel_gps[idim]*(unitnormal_(idim));
+    }
+
+    // loop over all node and add the corresponding effect of the Neumann-Inflow condition
+    for (int inode=0;inode<bdrynen_;++inode)
+    {
+      for(int idim=0;idim<nsd_;++idim)
+      {
+        // evaluate the value of the Un.U at the corresponding Gauss point
+        const double  uV = n_vel*vel_gps[idim];
+        const double fac_thsl_pres_inve = fac_ *  timefac  * uV;
+
+        // remove the Neumann-inflow contribution only if the normal velocity is an inflow velocity
+        // i.e n_vel < 0
+        if (n_vel<0.0)
+        {
+          elevec1[inode*numdofpernode_+idim] -= fac_thsl_pres_inve*funct_(inode);
+        }
+      }
+      //      double radius = sqrt(pow(xyze_(0,inode),2.0)+pow(xyze_(1,inode),2.0));
+      //      cout<<"n_vel("<<n_vel<<") vel: "<<n_vel<<" rad: "<<radius<<endl;
+    }
+  }
+  return;
+}
+
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::Fluid3BoundaryImpl<distype>::ComputeNeumannUvIntegral(
+  DRT::ELEMENTS::Fluid3Boundary*    ele,
+  ParameterList&                    params,
+  DRT::Discretization&              discretization,
+  vector<int>&                      lm,
+  Epetra_SerialDenseVector&         elevec1)
+{
+  // get integration rule
+  const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToGaussRuleForExactSol<distype>::rule);
+
+  // extract local values from the global vectors
+  RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+
+  if (velnp==null)
+    dserror("Cannot get state vector 'velnp'");
+
+  vector<double> myvelnp(lm.size());
+  DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
+
+  // allocate velocity vector
+  LINALG::Matrix<nsd_,bdrynen_> evelnp(true);
+
+  // split velocity and pressure, insert into element arrays
+  for (int inode=0;inode<bdrynen_;inode++)
+  {
+    double radius = sqrt(pow(xyze_(0,inode),2.0)+pow(xyze_(1,inode),2.0));
+    cout<<"RAD: "<<radius<<"\t";
+    for (int idim=0; idim< nsd_; idim++)
+    {
+      evelnp(idim,inode) = myvelnp[idim+(inode*numdofpernode_)];
+      cout<<evelnp(idim,inode)<<"\t";
+    }
+    cout<<endl;
+  }
+
+  // get node coordinates
+  // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of Fluid3Boundary element!)
+  //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze_);
+  GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
+
+#ifdef D_ALE_BFLOW
+  // Add the deformation of the ALE mesh to the nodes coordinates
+  // displacements
+  RCP<const Epetra_Vector>      dispnp;
+  vector<double>                mydispnp;
+
+  if (ele->ParentElement()->IsAle())
+  {
+    dispnp = discretization.GetState("dispnp");
+    if (dispnp!=null)
+    {
+      mydispnp.resize(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
+    }
+    dsassert(mydispnp.size()!=0,"paranoid");
+    for (int inode=0;inode<bdrynen_;++inode)
+    {
+      for (int idim=0; idim<nsd_; ++idim)
+      {
+        xyze_(idim,inode)+=mydispnp[numdofpernode_*inode+idim];
+      }
+    }
+  }
+#endif // D_ALE_BFLOW
+
+
+  //const IntegrationPoints2D  intpoints(gaussrule);
+  for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+  {
+    // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
+    // Computation of the unit normal vector at the Gauss points
+    // Computation of nurb specific stuff is not activated here
+    EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
+
+    //compute flowrate at gauss point
+    velint_.Multiply(evelnp,funct_);
+
+    // flowrate = uint o normal
+    const double flowrate = velint_.Dot(unitnormal_);
+
+    // store flowrate at first dof of each node
+    // use negative value so that inflow is positiv
+    for (int inode=0;inode<bdrynen_;++inode)
+    {
+      double term = 0.0;
+      //      if (funct_(inode)* fac_ * flowrate < 0.0)
+      {
+        //        term = funct_(inode)*  flowrate * funct_(inode)* flowrate *fac_;
+        term = funct_(inode) * flowrate * flowrate *fac_;
+      }
+      elevec1[inode*numdofpernode_] +=  term;//
+    }
+  }
+}//DRT::ELEMENTS::Fluid3Surface::ComputeNeumannUvIntegral
 
 
 #endif  // #ifdef CCADISCRET

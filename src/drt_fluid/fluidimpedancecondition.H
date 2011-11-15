@@ -301,7 +301,7 @@ private:
   string treetype_;
 
   //! 'material' parameters required for artery tree
-  double k1_, k2_, k3_;
+  double k1_, k2_, k3_, E_, h1_, h2_, h3_;
 
   //! time step size
   double dta_;

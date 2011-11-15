@@ -120,8 +120,7 @@ void FluidEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("idispnfull", "ale_idisp", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("traction", "traction", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("wss", "wss", dofbased, field->problem()->num_dim());
-  EnsightWriter::WriteResult("border_radii", "border_radii",nodebased, 1);
-  EnsightWriter::WriteResult("radii", "radii", nodebased, 1);
+  //  EnsightWriter::WriteResult("radii", "radii", nodebased, 1);
   EnsightWriter::WriteResult("par_vel", "par_vel", dofbased, field->problem()->num_dim());
 
   //additional output for turbulent flows (subfilter/-gridstress)
@@ -169,6 +168,7 @@ void XFluidEnsightWriter::WriteAllResults(PostField* field)
     // just turn the following lines on
     EnsightWriter::WriteResult("velnp", "velocity", dofbased, field->problem()->num_dim());
     EnsightWriter::WriteResult("pressure", "pressure", dofbased, 1);
+    EnsightWriter::WriteResult("tract_resid", "tract_residual", dofbased, field->problem()->num_dim());
   }
 
   WriteElementResults(field);

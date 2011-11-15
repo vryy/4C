@@ -68,20 +68,6 @@ public:
   */
   virtual ~FluidVolumetricSurfaceFlowWrapper();
 
-  /*!
-  \brief Wrapper for FluidVolumetricSurfaceBc::FindBoundaryNodes
-  */
-  void FindBoundaryNodes();
-
-  /*!
-  \brief Wrapper for FluidVolumetricSurfaceFlowBc::CenterOfMassCalculation
-  */
-  void CenterOfMassCalculation();
-
-  /*!
-  \brief Wrapper for FluidVolumetricSurfaceFlowBc::RadiiCalculation
-  */
-  void RadiiCalculation();
 
   /*!
   \brief Wrapper for FluidVolumetricSurfaceFlowBc::EvaluateVelocities
@@ -137,6 +123,82 @@ private:
 
 }; // class FluidWomersleyWrapper
 
+class TotalTractionCorrector
+{
+  friend class FluidImplicitTimeInt;
+
+
+public:
+  /*!
+  \brief Standard Constructor
+  */
+
+  TotalTractionCorrector( RCP<DRT::Discretization>  actdis,
+                          IO::DiscretizationWriter& output,
+                          double dta);
+
+  /*!
+  \brief Destructor
+  */
+  virtual ~TotalTractionCorrector();
+
+
+  /*!
+  \brief Wrapper for FluidVolumetricSurfaceFlowBc::EvaluateVelocities
+  */
+  void EvaluateVelocities(RCP<Epetra_Vector> bcdof,
+                          double             time,
+                          double             theta,
+                          double             dta);
+
+  /*!
+  \brief Wrapper for FluidVolumetricSurfaceFlowBc::EvaluateVelocities
+  */
+  void EvaluateCondMap(RCP<Epetra_Map> &   bcmap );
+
+
+  /*!
+  \brief Returns the map extractor of the conditions
+  */
+  void EvaluateMapExtractor(RCP<FLD::UTILS::MapExtractor>&  mapextractor );
+
+  /*!
+  \brief Wrapper for FluidVolumetricSurfaceFlowBc::UpdateResidual
+  */
+  void UpdateResidual(RCP<Epetra_Vector>  residual );
+
+
+  /*!
+  \brief Wrapper for FluidVolumetricSurfaceFlowBc::Output
+  */
+  void Output(IO::DiscretizationWriter&  output);
+
+  /*!
+  \brief Wrapper for FluidVolumetricSurfaceFlowBc::ReadRestart
+  */
+  void ReadRestart(IO::DiscretizationReader& reader);
+
+
+private:
+  /*!
+  \brief all single fluid volumetric surface flow conditions
+  */
+  map<const int, RCP<class FluidVolumetricSurfaceFlowBc> > fvsf_map_;
+
+  //! fluid discretization
+  RCP<DRT::Discretization>      discret_;
+
+  //! output
+  IO::DiscretizationWriter&     output_;
+
+  //! 
+  RCP<Epetra_Vector>            tractionvbc_;
+
+  //!
+  RCP<FLD::UTILS::MapExtractor> traction_mp_extractor_;
+
+}; // class TotalTractionCorrector
+
 
 
 //--------------------------------------------------------------------
@@ -150,6 +212,8 @@ private:
 class FluidVolumetricSurfaceFlowBc
 {
   friend class FluidVolumetricSurfaceFlowWrapper;
+  friend class TotalTractionCorrector;
+  //  friend class FluidSurfaceTotalTractionCorrectionWrapper;
 
 public:
 
@@ -159,6 +223,8 @@ public:
   FluidVolumetricSurfaceFlowBc( RCP<DRT::Discretization>  actdis,
                                 IO::DiscretizationWriter& output,
                                 double                    dta,
+                                string                    ds_condname,
+                                string                    dl_condname,
                                 int                       condid,
                                 int                       surf_numcond,
                                 int                       line_numcond);
@@ -173,22 +239,20 @@ public:
   */
   virtual ~FluidVolumetricSurfaceFlowBc() {}
 
-  /*!
-  \brief finds the boundary nodes
-  */
-  void FindBoundaryNodes();
 
   /*!
   \brief calculates the center of mass
   */
   void CenterOfMassCalculation(RCP<std::vector<double> > coords,
-                               RCP<std::vector<double> > normal);
+                               RCP<std::vector<double> > normal,
+                               string                    ds_condname);
 
 
   /*!
   \brief calculates the local radii of all nodes
   */
-  void EvalLocalNormalizedRadii();
+  void EvalLocalNormalizedRadii(string ds_condname,
+                                string dl_condname);
 
   /*!
   \brief get the node row map of the womersley condition
@@ -222,8 +286,23 @@ public:
   /*!
   \brief Evaluate velocities
   */
-  void EvaluateVelocities(RCP<Epetra_Vector> bcdof,
+  void EvaluateVelocities(double             flowrate,
+                          string             ds_condname,
                           double             time);
+
+
+  /*!
+  \brief Evaluate flowrate
+  */
+  double EvaluateFlowrate(//RCP<Epetra_Vector> bcdof,
+                          string             ds_condname,
+                          double             time);
+
+
+  /*!
+  \brief UpdateResidual
+  */
+  void UpdateResidual(RCP<Epetra_Vector>  residual );
 
   /*!
   \brief Evaluate velocities
@@ -248,26 +327,52 @@ public:
                            double R,
                            double Bn,
                            //complex<double> Bn,
+                           double phi,
                            int    n,
                            double t);
 
   /*!
   \brief Corrects the flow rate
   */
-  void CorrectFlowRate(RCP<Epetra_Vector> bcdof,
-                       double             time);
+  void CorrectFlowRate(string             ds_condname,
+                       string             action,
+                       double             time,
+                       bool               force_correction=false);
 
   /*!
   \brief Calculate the Flowrate on a boundary
   */
-  double FlowRateCalculation(double time, int condid);
+  double FlowRateCalculation(double time, string ds_condname, string action, int condid);
 
+  double PressureCalculation(double time, string ds_condname, string action, int condid);
+  /*!
+  \brief Calculate the Flowrate on a boundary
+  */
+  void SetVelocities(RCP<Epetra_Vector> velocities);
+
+  /*!
+  \brief Reset condition velocities
+  */
+  void ResetVelocities();
+
+  /*!
+  \brief evaluate the traction velocity component
+  */
+  void EvaluateTractionVelocityComp(string             ds_condname,
+                                    double             flowrate,
+                                    int                condid,
+                                    double             time,
+                                    double             theta,
+                                    double             dta);
+
+  void ResetTractionVelocityComp();
 
   /*!
   \brief Calculate the Flowrate on a boundary
   */
   void   DFT(RCP<vector<double> >   f,
-             RCP<vector<complex<double> > > & F);
+             RCP<vector<complex<double> > > & F,
+             int starting_pos);
 
 
 
@@ -278,17 +383,17 @@ private:
   /*!
   \brief calculate area at outflow boundary
   */
-  double Area( double& density, double& viscosity, int condid);
+  double Area( double& density, double& viscosity, string ds_condname, int condid);
 
   /*!
   \brief output
   */
-  void Output(IO::DiscretizationWriter&  output, int condnum );
+  void Output(IO::DiscretizationWriter&  output, string ds_condname, int condnum );
 
   /*!
   \brief Read restart
   */
-  void ReadRestart(IO::DiscretizationReader& reader, int condnum);
+  void ReadRestart(IO::DiscretizationReader& reader, string ds_condname, int condnum);
 
   /*!
   \brief Bessel function of orders 0 and 1
@@ -303,6 +408,12 @@ private:
                    int index1,
                    int & index2,
                    double time);
+
+  /*!
+  \brief Return prebiasing flag
+   */
+
+  std::string PrebiasingFlag(){ return prebiasing_flag_;}
 
 protected:
 
@@ -373,6 +484,12 @@ private:
 
   //! A map of corresponding border radii
   RCP<Epetra_Vector> border_radii_;
+
+  //! A map of only condition velocites
+  RCP<Epetra_Vector> cond_velocities_;
+
+  //! A map of only condition velocites
+  RCP<Epetra_Vector> cond_traction_vel_;
   
   //! A correction factor that will scale the velocities to the correct volumetric-flow-rate
   double correction_factor_;
@@ -389,6 +506,9 @@ private:
   //! Type of the flow profile
   string flowprofile_type_;
 
+  //! Prebiasing flag
+  string prebiasing_flag_;
+
   //! is +1 if inflow, else -1
   double flow_dir_;
 
@@ -400,6 +520,7 @@ private:
 
   //! flag to correct the flowprofile
   bool correct_flow_;
+
 
 };  // FluidVolumetricSurfaceFlowBc
 

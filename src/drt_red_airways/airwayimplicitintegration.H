@@ -325,7 +325,8 @@ protected:
   RCP<Epetra_Vector>          bcval_;
   RCP<Epetra_Vector>          dbctog_;
   RCP<Epetra_Vector>          acini_bc_;
-  RCP<Epetra_Vector>          acini_volume_;
+  RCP<Epetra_Vector>          acini_volumen_;
+  RCP<Epetra_Vector>          acini_volumenp_;
   //@}
 
   //! connection between master and slave nodes on this proc
