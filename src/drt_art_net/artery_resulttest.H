@@ -1,0 +1,63 @@
+#ifdef CCADISCRET
+#ifdef D_ARTNET
+
+#ifndef ART_NET_RESULTTEST_H
+#define ART_NET_RESULTTEST_H
+
+#include <Teuchos_RCP.hpp>
+#include <Epetra_Vector.h>
+#include <Epetra_MultiVector.h>
+
+#include "../drt_lib/drt_resulttest.H"
+#include "artnetexplicitintegration.H"
+
+namespace DRT
+{
+  class Discretization;
+}
+
+namespace ART{
+
+// forward declaration
+  class ArtNetExplicitTimeInt;
+
+/*!
+  \brief artnet specific result test class
+
+  \author Mahmoud Ismail
+  \date 11/11
+*/
+class ArteryResultTest: public DRT::ResultTest
+{
+public:
+
+  /*!
+  \brief constructor
+  */
+  ArteryResultTest(ArtNetExplicitTimeInt& art_net);
+
+
+  /// our version of nodal value tests
+  /*!
+    Possible position flags is only "phi"
+   */
+  virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+
+  /// return true if this is a scalar transport test
+  virtual bool Match(DRT::INPUT::LineDefinition& res);
+
+private:
+
+  /// RCP to scalar transport discretization
+  Teuchos::RCP<DRT::Discretization> dis_;
+  /// RCP to solution vector
+  Teuchos::RCP<Epetra_Vector>       mysol_;
+
+};
+
+} // namespace ART
+
+#endif //ART_NET_RESULTTEST_H
+
+#endif //#ifdef D_ARTNET
+#endif //#ifdef CCADISCRET

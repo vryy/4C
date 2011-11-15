@@ -544,6 +544,7 @@ set(OBJS_DRT_ARTNET_LIB
   src/drt_art_net/artery_evaluate.cpp
   src/drt_art_net/artery_input.cpp
   src/drt_art_net/artery_lin_exp.cpp
+  src/drt_art_net/artery_resulttest.cpp
 )
 set(OBJS_DRT_COMBUST
   src/drt_combust/combust_algorithm.cpp
@@ -2338,7 +2339,7 @@ baci_test(xfluid_channel_shearWDBC_inclinedCut 1 "")
 baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf 1 "")
 baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf_hex20 1 "")
 baci_test(xfluid_channel_shearWDBC_inclineddoubleCut_bodyf 1 "")
-
+baci_test(one_d_3_artery_network 1 9999)
 
 
 if (D_BEAM3II)

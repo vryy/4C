@@ -12,14 +12,14 @@ NUMDF        2
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP   ArterialNetwork
 NUMFIELD     1
-RESTART      0
+RESTART      9999
 ----------------------------------------------------------------IO
 --------------------------------------------------ARTERIAL DYNAMIC
 DYNAMICTYP   ExpTaylorGalerkin
 NUMSTEP      10000
 TIMESTEP     1.0e-4
-RESTARTEVRY  100
-UPRES        100
+RESTARTEVRY  1
+UPRES        1
 ---------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
@@ -357,6 +357,11 @@ CURVE3 on Polygonal T 0.0 BYABSTIME Yes 0.0 10000.0 FACTOR 1.0 1.0
 CURVE4 on PhysiologicalWaveform InterpolType Fourier     Period 1.1 Flowrate 1.0 Samplingpoints 60 Arrayread 0.0 0.0 0.0 0.0 0.0   0.0  0.0   0.0   0.0   0.0   0.00 0.0    0.0   0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0    0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0  0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0   0.0  0.0   0.0   0.0   0.0
 ------------------------------------------------------------CURVE5
 ------------------------------------------------RESULT DESCRIPTION
+ARTNET DIS 1 NODE  1 POSITION area  NAME area  VALUE   4.52418847582032697e+02  TOLERANCE 1e-6
+ARTNET DIS 1 NODE  2 POSITION area  NAME area  VALUE   4.52419716256846129e+02  TOLERANCE 1e-6
+ARTNET DIS 1 NODE  3 POSITION area  NAME area  VALUE   4.52420296315985183e+02  TOLERANCE 1e-6
+ARTNET DIS 1 NODE  4 POSITION flowrate  NAME flowrate  VALUE   1.94326725491695925e+02  TOLERANCE 1e-6
+ARTNET DIS 1 NODE 10 POSITION flowrate  NAME flowrate  VALUE   7.55186290747765128e+01  TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END
    
