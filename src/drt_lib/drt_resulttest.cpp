@@ -242,6 +242,17 @@ Teuchos::RCP<DRT::INPUT::Lines> ResultTestManager::ValidResultLines()
     .AddNamedDouble("TOLERANCE")
     ;
 
+  DRT::INPUT::LineDefinition art_net;
+  art_net
+    .AddTag("ARTNET")
+    .AddNamedInt("DIS")
+    .AddNamedInt("NODE")
+    .AddNamedString("POSITION")
+    .AddNamedString("NAME")
+    .AddNamedDouble("VALUE")
+    .AddNamedDouble("TOLERANCE")
+    ;
+
   Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("RESULT DESCRIPTION"));
   lines->Add(structure);
   lines->Add(fluid);
@@ -250,6 +261,7 @@ Teuchos::RCP<DRT::INPUT::Lines> ResultTestManager::ValidResultLines()
   lines->Add(thermal);
   lines->Add(scatra);
   lines->Add(red_airway);
+  lines->Add(art_net);
   return lines;
 }
 

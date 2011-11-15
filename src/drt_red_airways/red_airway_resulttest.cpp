@@ -1,14 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file scatra_resulttest.cpp
+\file red_airway_resulttest.cpp
 
-\brief testing of scalar transport calculation results
+\brief testing of Red_Ariway calculation results
 
 <pre>
-Maintainer: Georg Bauer
-            bauer@lnm.mw.tum.de
+Maintainer: Mahmoud Ismail
+            ismail@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15252
+            089 - 289-15268
 </pre>
 */
 /*----------------------------------------------------------------------*/

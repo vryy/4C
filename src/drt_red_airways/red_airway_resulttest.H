@@ -22,10 +22,10 @@ namespace AIRWAY{
 class RedAirwayImplicitTimeInt;
 
 /*!
-  \brief scalar-transport specific result test class
+  \brief red_airways specific result test class
 
-  \author gjb
-  \date 07/08
+  \author Mahmoud Ismail
+  \date 04/11
 */
 class RedAirwayResultTest : public DRT::ResultTest
 {

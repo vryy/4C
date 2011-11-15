@@ -28,6 +28,8 @@ Maintainer: Mahmoud Ismail
 #endif
 
 #include "art_net_dyn_drt.H"
+#include "artery_resulttest.H"
+
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
@@ -167,6 +169,11 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
     // call time-integration (or stationary) scheme
     RCP<ParameterList> param_temp;
     artnetexplicit->Integrate(CoupledTo3D,param_temp);
+
+    Teuchos::RCP<DRT::ResultTest> resulttest
+      = Teuchos::rcp(new ART::ArteryResultTest(*artnetexplicit));
+    DRT::Problem::Instance()->AddFieldTest(resulttest);
+    DRT::Problem::Instance()->TestAll(actdis->Comm());
 
     return artnetexplicit;
     //    return  Teuchos::null;
