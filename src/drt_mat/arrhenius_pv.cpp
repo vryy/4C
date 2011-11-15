@@ -168,7 +168,10 @@ double MAT::ArrheniusPV::ComputeShc(const double provar) const
 /*----------------------------------------------------------------------*/
 double MAT::ArrheniusPV::ComputeViscosity(const double temp) const
 {
-  const double visc = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc();
+  // previous implementation using "pow"-function appears to be extremely
+  // time-consuming sometimes, at least on the computing cluster
+  //const double visc = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc();
+  const double visc = sqrt((temp/RefTemp())*(temp/RefTemp())*(temp/RefTemp()))*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc();
 
   return visc;
 }
@@ -177,7 +180,10 @@ double MAT::ArrheniusPV::ComputeViscosity(const double temp) const
 /*----------------------------------------------------------------------*/
 double MAT::ArrheniusPV::ComputeDiffusivity(const double temp) const
 {
-  const double diffus = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc()/PraNum();
+  // previous implementation using "pow"-function appears to be extremely
+  // time-consuming sometimes, at least on the computing cluster
+  //const double diffus = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc()/PraNum();
+  const double diffus = sqrt((temp/RefTemp())*(temp/RefTemp())*(temp/RefTemp()))*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc()/PraNum();
 
   return diffus;
 }

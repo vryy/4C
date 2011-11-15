@@ -119,7 +119,10 @@ void MAT::ArrheniusSpec::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*/
 double MAT::ArrheniusSpec::ComputeDiffusivity(const double temp) const
 {
-  const double diffus = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc()/SchNum();
+  // previous implementation using "pow"-function appears to be extremely
+  // time-consuming sometimes, at least on the computing cluster
+  //const double diffus = pow((temp/RefTemp()),1.5)*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc()/SchNum();
+  const double diffus = sqrt((temp/RefTemp())*(temp/RefTemp())*(temp/RefTemp()))*((RefTemp()+SuthTemp())/(temp+SuthTemp()))*RefVisc()/SchNum();
 
   return diffus;
 }
