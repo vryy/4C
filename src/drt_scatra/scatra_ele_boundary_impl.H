@@ -275,6 +275,13 @@ public:
         const vector<double>&           enormdiffflux,
         const vector<double>&           enormvel);
 
+    //! compute integral of convective mass/heat flux over boundary surface
+    vector<double> CalcConvectiveFlux(
+        const DRT::Element*                 ele,
+        const vector<double>&               ephinp,
+        const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
+        Epetra_SerialDenseVector&           erhs);
+
     //! Compute a constant normal vector for a boundary element
     void GetConstNormal(
         LINALG::Matrix<nsd_+1,1>&            normal, ///< the constant normal vector

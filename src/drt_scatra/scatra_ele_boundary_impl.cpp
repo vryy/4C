@@ -905,6 +905,34 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 //                  alphaF);
 
   }
+  else if (action =="add_convective_mass_flux")
+  {
+    //calculate integral of convective mass/heat flux
+
+    // NOTE: add value only for boundary elements which are NOT ghosted!
+    if(ele->Owner() == discretization.Comm().MyPID())
+    {
+      // get actual values of transported scalars
+      RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      if (phinp==null) dserror("Cannot get state vector 'phinp'");
+
+      // extract local values from the global vector
+      vector<double> ephinp(lm.size());
+      DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
+
+      // get velocity values at nodes
+      const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+
+      // we deal with a (nsd_+1)-dimensional flow field
+      LINALG::Matrix<nsd_+1,nen_>  evel(true);
+      DRT::UTILS::ExtractMyNodeBasedValues(ele,evel,velocity,nsd_+1);
+
+      // for the moment we ignore the return values of this method
+      CalcConvectiveFlux(ele,ephinp,evel,elevec1_epetra);
+      //vector<double> locfluxintegral = CalcConvectiveFlux(ele,ephinp,evel,elevec1_epetra);
+      //cout<<"locfluxintegral[0] = "<<locfluxintegral[0]<<endl;
+    }
+  }
   else
     dserror("Unknown type of action for Scatra boundary impl.: %s",action.c_str());
 
@@ -1237,6 +1265,65 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
 
 
 /*----------------------------------------------------------------------*
+ | calculate integral of convective flux across boundary      gjb 11/11 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+vector<double> DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::CalcConvectiveFlux(
+    const DRT::Element*                 ele,
+    const vector<double>&               ephinp,
+    const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
+    Epetra_SerialDenseVector&           erhs
+)
+{
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // define vector for scalar values at nodes
+  LINALG::Matrix<nen_,1> phinod(true);
+
+  vector<double> integralflux(numscal_);
+
+  // loop over all scalars
+  for(int k=0;k<numscal_;++k)
+  {
+    integralflux[k] = 0.0;
+
+    // compute scalar values at nodes
+    for (int inode=0; inode< nen_;++inode)
+    {
+      phinod(inode) = ephinp[inode*numdofpernode_+k];
+    }
+
+    // loop over all integration points
+    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+    {
+      const double fac = EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id(),&normal_);
+
+      // get velocity at integration point
+      velint_.Multiply(evelnp,funct_);
+
+      // normal velocity (note: normal_ is already a unit(!) normal)
+      const double normvel = velint_.Dot(normal_);
+
+      // scalar at integration point
+      const double phi = funct_.Dot(phinod);
+
+      const double val = phi*normvel*fac;
+      integralflux[k] += val;
+      // add contribution to provided vector (distribute over nodes using shape fct.)
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int fvi = vi*numdofpernode_+k;
+        erhs[fvi] += val*funct_(vi);
+      }
+    }
+  }
+
+  return integralflux;
+
+} //ScaTraBoundaryImpl<distype>::ConvectiveFlux
+
+/*----------------------------------------------------------------------*
  | calculate boundary cond. due to convective heat transfer    vg 10/11 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -1361,6 +1448,7 @@ double DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
 
   // the metric tensor and the area of an infinitesimal surface/line element
   // optional: get normal at integration point as well
+  // Note: this is NOT yet a unit normal. Its norm corresponds to the area/length of the element
   double drs(0.0);
   DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xyze_,deriv_,metrictensor_,drs,normalvec);
 
@@ -1644,16 +1732,37 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
       }
       else if(kinetics=="linear") // linear law:  i_n = i_0*(alphaa*frt*(V_M - phi) + 1.0)
       {
+        double pow_conint_gamma_k = 0.0;
+        if ((conint/refcon) < EPS13)
+        {
+          pow_conint_gamma_k = pow(EPS13,gamma);
+#ifdef DEBUG
+          cout<<"WARNING: Rel. Conc. in Tafel formula is zero/negative: "<<(conint/refcon)<<endl;
+          cout<<"-> Replacement value: pow(EPS,gamma) = "<< pow_conint_gamma_k <<endl;
+#endif
+        }
+        else
+          pow_conint_gamma_k = pow(conint/refcon,gamma);
+
+        const double linearfunct = (alphaa*frt*eta + 1.0);
+        // note: gamma==0 deactivates concentration dependency
+        double concterm = 0.0;
+        if (conint > EPS13)
+          concterm = gamma*pow(conint,(gamma-1.0))/pow(refcon,gamma);
+        else
+          dserror("Better stop here!");
+
         for (int vi=0; vi<nen_; ++vi)
         {
           fac_fz_i0_funct_vi = fac*fz*i0*funct_(vi);
           // ---------------------matrix
           for (int ui=0; ui<nen_; ++ui)
           {
-            emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*(-alphaa)*frt*funct_(ui);
+            emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += fac_fz_i0_funct_vi*concterm*funct_(ui)*linearfunct;
+            emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += fac_fz_i0_funct_vi*pow_conint_gamma_k*(-alphaa)*frt*funct_(ui);
           }
           // ------------right-hand-side
-          erhs[vi*numdofpernode_+k] -= fac_fz_i0_funct_vi*(alphaa*frt*eta + 1.0);
+          erhs[vi*numdofpernode_+k] -= fac_fz_i0_funct_vi*pow_conint_gamma_k*linearfunct;
         }
       }
       else
@@ -1922,12 +2031,12 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
     {
       // compute integrals
       overpotentialint += eta * fac;
-      currentintegral += (-i0) * (alphaa*frt*eta + 1.0) * fac; // the negative(!) normal flux density
+      currentintegral += (-i0) * pow(conint/refcon,gamma)*(alphaa*frt*eta + 1.0) * fac; // the negative(!) normal flux density
       boundaryint += fac;
       concentrationint += conint*fac;
 
       // tangent and rhs (= negative residual) for galvanostatic equation
-      linea = alphaa*frt;
+      linea = pow(conint/refcon,gamma)*(alphaa*frt);
       currderiv += i0*linea*timefac*fac;
       currentresidual += (-i0)*(alphaa*frt*eta + 1.0)*timefac*fac;
     }

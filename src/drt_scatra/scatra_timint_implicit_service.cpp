@@ -1450,9 +1450,6 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux(const bool w
     // calculate normal flux vector field only for the user-defined boundary conditions:
     vector<std::string> condnames;
     condnames.push_back("ScaTraFluxCalc");
-    //condnames.push_back("ElectrodeKinetics");
-    //condnames.push_back("LineNeumann");
-    //condnames.push_back("SurfaceNeumann");
 
     return CalcFluxAtBoundary(condnames, writetofile);
     break;
@@ -1653,6 +1650,44 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     trueresidual_->Update(ResidualScaling(),*residual_,0.0);
 
   } // if ((solvtype_!=INPAR::SCATRA::solvertype_nonlinear) && (lastfluxoutputstep_ != step_))
+
+  // if total flux is desired add the convective flux contribution
+  // to the trueresidual_ now.
+  if(writeflux_==INPAR::SCATRA::flux_total_boundary)
+  {
+    if (myrank_==0)
+      cout<<"Convective flux contribution is added to trueresidual_ vector.\n"
+      "Be sure not to address the same boundary part twice!\n";
+
+    // now we evaluate the conditions and separate via ConditionID
+    for (unsigned int i=0; i < condnames.size(); i++)
+    {
+      vector<DRT::Condition*> cond;
+      discret_->GetCondition(condnames[i],cond);
+
+      discret_->ClearState();
+      ParameterList params;
+
+      params.set("action","add_convective_mass_flux");
+      params.set<int>("scatratype",scatratype_);
+
+      // add element parameters according to time-integration scheme
+      AddSpecificTimeIntegrationParameters(params);
+
+      // provide velocity field
+      // (export to column map necessary for parallel evaluation)
+      AddMultiVectorToParameterList(params,"velocity field",convel_);
+
+      //provide displacement field in case of ALE
+      params.set("isale",isale_);
+      if (isale_)
+        AddMultiVectorToParameterList(params,"dispnp",dispnp_);
+
+      // call loop over boundary elements and add integrated fluxes to trueresidual_
+      discret_->EvaluateCondition(params,trueresidual_,condnames[i]);
+      discret_->ClearState();
+    }
+  }
 
   vector<double> normfluxsum(numscal_);
 
