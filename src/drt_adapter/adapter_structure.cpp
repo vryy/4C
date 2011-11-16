@@ -400,10 +400,10 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
     tintegrator = Teuchos::rcp(new StruGenAlpha(*genalphaparams,*actdis,*solver,*output));
   else
   {
-    if (beamcontact)
+    if (beamcontact && !thermalbath)
       tintegrator = Teuchos::rcp(new CONTACT::Beam3ContactStruGenAlpha(*genalphaparams,*actdis,*solver,*output));
 
-    if(thermalbath)
+    if (thermalbath)
       tintegrator = Teuchos::rcp(new StatMechTime(*genalphaparams,*actdis,*solver,*output));
   }
   if (tintegrator == null) dserror("Failed to allocate strugenalpha derived time integrator");
