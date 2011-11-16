@@ -414,6 +414,7 @@ static inline bool currentToVolumeElementCoordinatesT(
     LINALG::Matrix<3,1>&                          xsi              ///< (r,s,t)
     )
 {
+  dserror("This function seems to deliver wrong results! Check carefully before use or use a different function, e.g. GEO::CUT::Position");
   const int dim = 3;
   bool nodeWithinElement = true;
   const int maxiter = 20;
