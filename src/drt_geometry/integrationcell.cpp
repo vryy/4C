@@ -215,7 +215,7 @@ std::string GEO::DomainIntCell::toString() const
 
 
 /*----------------------------------------------------------------------*
- *  to string                                                           *
+ * write Gmsh file with cell data in local coordinates                  *
  *----------------------------------------------------------------------*/
 void GEO::DomainIntCell::xiToGmsh(const std::string& filename) const
 {
@@ -232,7 +232,7 @@ void GEO::DomainIntCell::xiToGmsh(const std::string& filename) const
 
 
 /*----------------------------------------------------------------------*
- *  to string                                                           *
+ * write Gmsh file with cell data in global coordinates                 *
  *----------------------------------------------------------------------*/
 void GEO::DomainIntCell::xToGmsh(const std::string& filename) const
 {

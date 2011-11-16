@@ -22,97 +22,99 @@ Maintainer: Martin Winklmaier
 namespace XFEM
 {
 
-  /*!
+/*!
   \brief this class is used to compute enrichment values for the new timestep
 
-  */
-  class EnrichmentProjection : public ENR
+ */
+class EnrichmentProjection : public ENR
+{
+
+public:
+
+  //! constructor
+  explicit EnrichmentProjection(
+      XFEM::TIMEINT& timeInt,
+      INPAR::COMBUST::XFEMTimeIntegrationEnr timeIntEnr,
+      INPAR::COMBUST::XFEMTimeIntegrationEnrComp timeIntEnrType
+  );
+
+  //! destructor
+  ~EnrichmentProjection()
   {
+    return;
+  }
 
-  public:
+  //! main function computing the new enrichment values
+  void compute(
+      vector<RCP<Epetra_Vector> > newRowVectorsn,
+      vector<RCP<Epetra_Vector> > newRowVectorsnp
+  );
 
-    //! constructor
-    explicit EnrichmentProjection(
-		XFEM::TIMEINT& timeInt,
-		INPAR::COMBUST::XFEMTimeIntegrationEnr timeIntEnr,
-		INPAR::COMBUST::XFEMTimeIntegrationEnrComp timeIntEnrType
-    );
+  map<int,vector<LINALG::Matrix<2,4> > >* oldJumpAndKinkValues()
+        {
+    return &eleJumpsAndKinks_;
+        }
 
-    //! destructor
-    ~EnrichmentProjection()
-    {
-      return;
-    }
+protected:
 
-    //! main function computing the enrichment values
-    void compute(
-    	vector<RCP<Epetra_Vector> > newRowVectorsn,
-    	vector<RCP<Epetra_Vector> > newRowVectorsnp
-    );
+  //! disabled assignment operator
+  EnrichmentProjection operator = (const EnrichmentProjection& old);
 
-    map<int,vector<LINALG::Matrix<2,4> > >* oldJumpAndKinkValues()
-    {
-      return &eleJumpsAndKinks_;
-    }
+  //! call computation of different values for old interface position
+  void callOldValues(
+  );
 
-  private:
+  //! computation of different values for old interface position
+  template <const int numnode>
+  void oldValues(
+      const DRT::Element*& ele
+  );
 
-    //! disabled assignment operator
-    EnrichmentProjection operator = (const EnrichmentProjection& old);
+  //! computation of jump and kink values for jump enrichment at old interface position
+  template<const int numnode>
+  void oldJumpAndKinkValues(
+      const DRT::Element* ele,
+      LINALG::Matrix<1,numnode>& dmin,
+      LINALG::Matrix<3,1> normal,
+      vector<LINALG::Matrix<4,numnode> >& kinkEnrValues,
+      int& numnodeused
+  );
 
-    //! call computation of different values for old interface position
-    void callOldValues(
-    );
+  //! computation of kink values for kink enrichment at old interface position
+  template<const int numnode>
+  void oldKinkValues(
+      const DRT::Element* ele,
+      LINALG::Matrix<1,numnode>& dmin,
+      vector<LINALG::Matrix<4,numnode> >& kinkEnrValues,
+      int& numnodeused
+  );
 
-    //! computation of different values for old interface position
-    template <const int numnode>
-    void oldValues(
-        const DRT::Element*& ele
-    );
+  //! standard computation of new enrichment values at new interface position
+  void computeNewEnrichments(
+  );
 
-    //! computation of jump and kink values for jump enrichment at old interface position
-    template<const int numnode>
-    void oldJumpAndKinkValues(
-        const DRT::Element* ele,
-        LINALG::Matrix<1,numnode>& dmin,
-        LINALG::Matrix<3,1> normal,
-        vector<LINALG::Matrix<4,numnode> >& kinkEnrValues,
-        int& numnodeused
-    );
+  //! alternative computation of new enrichment values at new interface position
+  void handleFailedNodes(
+  );
 
-    //! computation of kink values for kink enrichment at old interface position
-    template<const int numnode>
-    void oldKinkValues(
-        const DRT::Element* ele,
-        LINALG::Matrix<1,numnode>& dmin,
-        vector<LINALG::Matrix<4,numnode> >& kinkEnrValues,
-        int& numnodeused
-    );
+  //! computation of new enrichment values at new interface position for jump enriched dofs
+  void computeJumpEnrichmentValues(
+      const DRT::Node* node,
+      vector<LINALG::Matrix<2,4> > jumpsAndKinks
+  );
 
-    //! standard computation of new enrichment values at new interface position
-    void computeNewEnrichments(
-    );
-
-    //! alternative computation of new enrichment values at new interface position
-    void handleFailedNodes(
-    );
-
-    void computeJumpEnrichmentValues(
-        const DRT::Node* node,
-        vector<LINALG::Matrix<2,4> > jumpsAndKinks
-    );
-
-    void computeKinkEnrichmentValues(
-        const DRT::Node* node,
-        vector<LINALG::Matrix<1,4> > kinks
-    );
+  //! computation of new enrichment values at new interface position for kink enriched dofs
+  void computeKinkEnrichmentValues(
+      const DRT::Node* node,
+      vector<LINALG::Matrix<1,4> > kinks
+  );
 
 #ifdef PARALLEL
-    //! export enrichment data to the neighbour processor
-    void exportEnrichmentData(
-    );
+  //! export enrichment data to the neighbour processor
+  void exportEnrichmentData(
+  );
 #endif
-  }; // class EnrichmentProjection
+}; // class EnrichmentProjection
 } // namespace XFEM
 
 #endif /*TIMEINT_ENR_H_*/

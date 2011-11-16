@@ -157,16 +157,10 @@ namespace COMBUST
     double volume_start_;
 
 
-    // phi vector reinitialized after time step n
-    Teuchos::RCP<Epetra_Vector>  phireinitn_;
-    // velocity vector of last iteration step
+    // velocity vector of last FG iteration step
     Teuchos::RCP<Epetra_Vector> velnpi_;
-    // velocity vector of new iteration step
-    Teuchos::RCP<Epetra_Vector> velnpip_;
-    // g-function vector of last iteration step
+    // g-function vector of last FG iteration step
     Teuchos::RCP<Epetra_Vector> phinpi_;
-    // g-function vector of new iteration step
-    Teuchos::RCP<Epetra_Vector> phinpip_;
     //@}
 
     /// switch for type of combustion problem

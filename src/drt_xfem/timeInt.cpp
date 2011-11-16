@@ -18,7 +18,7 @@ Maintainer: Martin Winklmaier
 
 
 /*------------------------------------------------------------------------------------------------*
- * Semi-Lagrange Back-Tracking algorithm constructor                             winklmaier 06/10 *
+ * basic XFEM time-integration constructor                                       winklmaier 11/11 *
  *------------------------------------------------------------------------------------------------*/
 XFEM::TIMEINT::TIMEINT(
     const RCP<DRT::Discretization> discret,
@@ -32,27 +32,27 @@ XFEM::TIMEINT::TIMEINT(
     const Epetra_Map& newdofrowmap,
     const map<DofKey<onNode>, DofGID>& oldNodalDofColDistrib,
     const map<DofKey<onNode>, DofGID>& newNodalDofRowDistrib,
-	const RCP<map<int,vector<int> > > pbcmap
+    const RCP<map<int,vector<int> > > pbcmap
 ) :
-  discret_(discret),
-  olddofman_(olddofman),
-  newdofman_(newdofman),
-  olddofcolmap_(olddofcolmap),
-  newdofrowmap_(newdofrowmap),
-  oldNodalDofColDistrib_(oldNodalDofColDistrib),
-  newNodalDofRowDistrib_(newNodalDofRowDistrib),
-  phin_(flamefront->Phin()),
-  phinp_(flamefront->Phinp()),
-  oldinterfacehandle_(oldinterfacehandle),
-  newinterfacehandle_(newinterfacehandle),
-  oldVectors_(oldVectors),
-  pbcmap_(pbcmap),
-  myrank_(discret_->Comm().MyPID()),
-  numproc_(discret_->Comm().NumProc()),
-  newton_max_iter_(10),
-  newton_tol_(1.0e-10)
+discret_(discret),
+olddofman_(olddofman),
+newdofman_(newdofman),
+olddofcolmap_(olddofcolmap),
+newdofrowmap_(newdofrowmap),
+oldNodalDofColDistrib_(oldNodalDofColDistrib),
+newNodalDofRowDistrib_(newNodalDofRowDistrib),
+phin_(flamefront->Phin()),
+phinp_(flamefront->Phinp()),
+oldinterfacehandle_(oldinterfacehandle),
+newinterfacehandle_(newinterfacehandle),
+oldVectors_(oldVectors),
+pbcmap_(pbcmap),
+myrank_(discret_->Comm().MyPID()),
+numproc_(discret_->Comm().NumProc()),
+newton_max_iter_(10),
+newton_tol_(1.0e-10)
 {
-	return;
+  return;
 } // end constructor
 
 
@@ -61,41 +61,48 @@ XFEM::TIMEINT::TIMEINT(
  * out of order!                                                                 winklmaier 10/11 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::TIMEINT::compute(
-	vector<RCP<Epetra_Vector> > newRowVectorsn,
-	vector<RCP<Epetra_Vector> > newRowVectorsnp
+    vector<RCP<Epetra_Vector> > newRowVectorsn,
+    vector<RCP<Epetra_Vector> > newRowVectorsnp
 )
 {
   dserror("Unused function! Use a function of the derived classes");
-}
+} // end function compute
 
 
 
+/*------------------------------------------------------------------------------------------------*
+ * set the computation type with help of the iteration counter                   winklmaier 10/11 *
+ *------------------------------------------------------------------------------------------------*/
 void XFEM::TIMEINT::type(
-	int iter,
-	int iterMax
+    int iter,
+    int iterMax
 )
 {
-	if (iter==1)								FGIType_=FRS1FGI1_;
-	else if (iterMax==1 or iter%iterMax==1)		FGIType_=FRS1FGINot1_;
-	else										FGIType_=FRSNot1_;
-}
+  if (iter==1)								FGIType_=FRS1FGI1_;
+  else if (iterMax==1 or iter%iterMax==1)		FGIType_=FRS1FGINot1_;
+  else										FGIType_=FRSNot1_;
+} // end function type
 
 
 
+/*------------------------------------------------------------------------------------------------*
+ * assign the Epetra vectors which shall be computed to the                                       *
+ * algorithms data structure                                                     winklmaier 10/11 *
+ *------------------------------------------------------------------------------------------------*/
 void XFEM::TIMEINT::handleVectors(
-	vector<RCP<Epetra_Vector> > newRowVectorsn,
-	vector<RCP<Epetra_Vector> > newRowVectorsnp
+    vector<RCP<Epetra_Vector> > newRowVectorsn,
+    vector<RCP<Epetra_Vector> > newRowVectorsnp
 )
 {
-	if (newRowVectorsn.size()!=newRowVectorsnp.size())
-		dserror("Number of state-vectors of different times are different!");
+  if (newRowVectorsn.size()!=newRowVectorsnp.size())
+    dserror("Number of state-vectors of different times are different!");
 
-	newVectors_ = newRowVectorsn;
-	newVectors_.insert(newVectors_.end(),newRowVectorsnp.begin(),newRowVectorsnp.end());
+  newVectors_ = newRowVectorsn;
+  newVectors_.insert(newVectors_.end(),newRowVectorsnp.begin(),newRowVectorsnp.end());
 
-	if (oldVectors_.size() != newVectors_.size())
-		dserror("Number of state-vectors at new and old discretization are different!");
-}
+  if (oldVectors_.size() != newVectors_.size())
+    dserror("Number of state-vectors at new and old discretization are different!");
+} // end function handleVectors
 
 
 
@@ -108,7 +115,7 @@ int XFEM::TIMEINT::interfaceSide(
 {
   if (phi >= 0) return 1;
   else return -1;
-}
+} // end function interfaceSide
 
 
 
@@ -121,129 +128,129 @@ int XFEM::TIMEINT::interfaceSide(
     bool newTimeStep
 ) const
 {
-	const int nsd = 3;
+  const int nsd = 3; // dimension
 
-	RCP<COMBUST::InterfaceHandleCombust> ih = newTimeStep ? newinterfacehandle_ : oldinterfacehandle_;
-	const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
+  // required interfacehandle
+  RCP<COMBUST::InterfaceHandleCombust> ih = newTimeStep ? newinterfacehandle_ : oldinterfacehandle_;
+  const GEO::DomainIntCells&  domainIntCells(ih->GetDomainIntCells(ele));
 
-	static LINALG::Matrix<nsd,1> eta(true);
-	bool pointInCell = false;
-	//-----------------------------------
-	// loop over domain integration cells
-	//-----------------------------------
-	for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
-	{
-		callXToXiCoords(*cell,x,eta,pointInCell);
+  static LINALG::Matrix<nsd,1> eta(true); // local cell coordinates
+  bool pointInCell = false; // boolean whether point is in current cell
 
-		if (pointInCell)
-		{
-			if (cell->getDomainPlus()==true)
-				return 1;
-			else
-				return -1;
-		}
-	}
+  // loop over domain integration cells
+  for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
+  {
+    callXToXiCoords(*cell,x,eta,pointInCell);
 
-	// handle special case of tiny cell which was removed by cut:
-	// all remaining cells are at same side, values in this ele are all at
-	// this side since it is uncut and no more enriched
-	bool side;
-	for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
-	{
-		if (cell == domainIntCells.begin())
-			side = cell->getDomainPlus();
-		else
-			if (side !=cell->getDomainPlus())
-				break; // special case of more than once cut element with deleted cell
+    if (pointInCell)
+    {
+      if (cell->getDomainPlus()==true) 	return 1;
+      else 								return -1;
+    }
+  }
 
-		if (side==true)
-			return 1;
-		else
-			return -1;
-	}
+  // handle special case of tiny cell which was removed by cut:
+  // all remaining cells are at same side, values in this ele are all at
+  // this side since it is uncut and no more enriched
+  bool side;
+  for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
+  {
+    if (cell == domainIntCells.begin())
+      side = cell->getDomainPlus();
+    else
+      if (side !=cell->getDomainPlus())
+        break; // special case of more than once cut element with deleted cell
 
-	dserror("point in an element should be in one of the elements domain integration cells");
-	return 0;
-}
+    if (side==true)		return 1;
+    else				return -1;
+  }
 
-
-
-//! transformation of point x to local eta-coordinates of an integration cell
-void XFEM::TIMEINT::callXToXiCoords(
-	const GEO::DomainIntCell& cell,
-	LINALG::Matrix<3,1>& x,
-	LINALG::Matrix<3,1>& xi,
-	bool& pointInDomain
-) const
-{
-	LINALG::SerialDenseMatrix xyz(cell.CellNodalPosXYZ());
-	callXToXiCoords(xyz,cell.Shape(),x,xi,pointInDomain);
-}
-
-
-
-//! transformation of point x to local eta-coordinates of an integration cell
-void XFEM::TIMEINT::callXToXiCoords(
-	DRT::Element* ele,
-	LINALG::Matrix<3,1>& x,
-	LINALG::Matrix<3,1>& xi,
-	bool& pointInDomain
-) const
-{//cout << "here checking element " << *ele;
-	LINALG::SerialDenseMatrix xyz(3,ele->NumNode(),true);
-	GEO::fillInitialPositionArray(ele, xyz);//cout << "here after prepare" << endl;
-	callXToXiCoords(xyz,ele->Shape(),x,xi,pointInDomain);
-}
-
-
-
-void XFEM::TIMEINT::callXToXiCoords(
-	LINALG::SerialDenseMatrix& nodecoords,
-	DRT::Element::DiscretizationType DISTYPE,
-	LINALG::Matrix<3,1>& x,
-	LINALG::Matrix<3,1>& xi,
-	bool& pointInDomain
-) const
-{
-	switch (DISTYPE)
-	{
-	case DRT::Element::hex8:
-		XToXiCoords<DRT::Element::hex8>(nodecoords,x,xi,pointInDomain);
-		break;
-	case DRT::Element::hex20:
-		XToXiCoords<DRT::Element::hex20>(nodecoords,x,xi,pointInDomain);
-		break;
-	case DRT::Element::tet4:
-		XToXiCoords<DRT::Element::tet4>(nodecoords,x,xi,pointInDomain);
-		break;
-	default: dserror("add your 3D distype and the according transformation!");
-	}
-}
+  dserror("point in an element should be in one of the elements domain integration cells");
+  return 0;
+} // end function interfaceSide
 
 
 
 /*------------------------------------------------------------------------------------------------*
- * add adjacebt elements for a periodic boundary node                            winklmaier 05/11 *
+ * call the computation of local coordinates for an element                      winklmaier 11/11 *
+ *------------------------------------------------------------------------------------------------*/
+void XFEM::TIMEINT::callXToXiCoords(
+    const GEO::DomainIntCell& cell,
+    LINALG::Matrix<3,1>& x,
+    LINALG::Matrix<3,1>& xi,
+    bool& pointInDomain
+) const
+{
+  LINALG::SerialDenseMatrix xyz(cell.CellNodalPosXYZ());
+  callXToXiCoords(xyz,cell.Shape(),x,xi,pointInDomain);
+} // end function callXToXiCoords
+
+
+
+/*------------------------------------------------------------------------------------------------*
+ * call the computation of local coordinates for an integration cell             winklmaier 10/10 *
+ *------------------------------------------------------------------------------------------------*/
+void XFEM::TIMEINT::callXToXiCoords(
+    DRT::Element* ele,
+    LINALG::Matrix<3,1>& x,
+    LINALG::Matrix<3,1>& xi,
+    bool& pointInDomain
+) const
+{
+  LINALG::SerialDenseMatrix xyz(3,ele->NumNode(),true);
+  GEO::fillInitialPositionArray(ele, xyz);
+  callXToXiCoords(xyz,ele->Shape(),x,xi,pointInDomain);
+} // end function callXToXiCoords
+
+
+
+/*------------------------------------------------------------------------------------------------*
+ * call the computation of local coordinates for a polytop                                        *
+ * with corners given by the coordinates                                         winklmaier 10/10 *
+ *------------------------------------------------------------------------------------------------*/
+void XFEM::TIMEINT::callXToXiCoords(
+    LINALG::SerialDenseMatrix& nodecoords,
+    DRT::Element::DiscretizationType DISTYPE,
+    LINALG::Matrix<3,1>& x,
+    LINALG::Matrix<3,1>& xi,
+    bool& pointInDomain
+) const
+{
+  switch (DISTYPE)
+  {
+  case DRT::Element::hex8:
+    XToXiCoords<DRT::Element::hex8>(nodecoords,x,xi,pointInDomain);
+    break;
+  case DRT::Element::hex20:
+    XToXiCoords<DRT::Element::hex20>(nodecoords,x,xi,pointInDomain);
+    break;
+  case DRT::Element::tet4:
+    XToXiCoords<DRT::Element::tet4>(nodecoords,x,xi,pointInDomain);
+    break;
+  default: dserror("add your 3D distype and the according transformation!");
+  } // end switch
+} // end function callXToXiCoords
+
+
+
+/*------------------------------------------------------------------------------------------------*
+ * add adjacent elements for a periodic boundary node                            winklmaier 05/11 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::TIMEINT::addPBCelements(
     const DRT::Node* node,
     vector<const DRT::Element*>&  eles
-  ) const
+) const
 {
-  const int nodegid = node->Id();
+  const int nodegid = node->Id(); // global node id
   const DRT::Element* const* elements = node->Elements(); // element around current node
 
   for (int iele=0;iele<node->NumElement();iele++)
-  {
-    //const DRT::Element* ele = elements[iele];
     eles.push_back(elements[iele]);
-  }
 
   //--------------------------------------
   // add elements along perodic boundaries
   //--------------------------------------
-  // boolean indicating whether this node is a pbc node
-  bool pbcnode = false;
+  bool pbcnode = false; // boolean indicating whether this node is a pbc node
   int coupnodegid = -1;
   // loop all nodes with periodic boundary conditions (master nodes)
   for (std::map<int, vector<int>  >::const_iterator pbciter= (*pbcmap_).begin(); pbciter != (*pbcmap_).end(); ++pbciter)
@@ -263,12 +270,11 @@ void XFEM::TIMEINT::addPBCelements(
         if (pbciter->second[islave] == nodegid) // node is a pbc slave node
         {
           pbcnode = true;
-          // coupled node is the master node
-          coupnodegid = pbciter->first;
+          coupnodegid = pbciter->first; // coupled node is the master node
         }
-      }
-    }
-  }
+      } // end loop over slave nodes
+    } // end if
+  } // end loop over pbc map
 
   // add elements located around the coupled pbc node
   if (pbcnode)
@@ -282,55 +288,64 @@ void XFEM::TIMEINT::addPBCelements(
     {
       eles.push_back(pbcelements[iele]);
     }
-  }
+  } // end if pbcnode true
 }
 
 
 
+/*------------------------------------------------------------------------------------------------*
+ * reset a special state with another state in the data class                    winklmaier 10/11 *
+ *------------------------------------------------------------------------------------------------*/
 void XFEM::TIMEINT::resetState(
-	TimeIntData::state oldState,
-	TimeIntData::state newState
+    TimeIntData::state oldState,
+    TimeIntData::state newState
 ) const
 {
-	for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-		data!=timeIntData_->end(); data++)
-	{
-		if (data->state_ == oldState)
-			data->state_ = newState;
-	}
-}
+  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+      data!=timeIntData_->end(); data++)
+  {
+    if (data->state_ == oldState)
+      data->state_ = newState;
+  }
+} // end function resetState
 
 
 
+/*------------------------------------------------------------------------------------------------*
+ * clear the data of all nodes having a special state                            winklmaier 10/11 *
+ *------------------------------------------------------------------------------------------------*/
 void XFEM::TIMEINT::clearState(
-	TimeIntData::state state
+    TimeIntData::state state
 ) const
 {
   vector<TimeIntData>::iterator data;
-  while(true)
+  while(true) // while loop over data to be cleared
   {
-	for (data=timeIntData_->begin();
-		data!=timeIntData_->end(); data++)
-	{
-		if (data->state_==state)
-		{
-			timeIntData_->erase(data);
-			break;
-		}
-	}
-	if (data==timeIntData_->end())
-		break;
-  }
-}
+    for (data=timeIntData_->begin();
+        data!=timeIntData_->end(); data++) // for loop over all data
+    {
+      if (data->state_==state)
+      {
+        timeIntData_->erase(data);
+        break;
+      }
+    } // end for loop over all data
+    if (data==timeIntData_->end())
+      break;
+  } // end while loop over data to be cleared
+} // end function clear state
 
 
 
 #ifdef PARALLEL
+/*------------------------------------------------------------------------------------------------*
+ * basic function sending data to dest and receiving data from source            winklmaier 10/10 *
+ *------------------------------------------------------------------------------------------------*/
 void XFEM::TIMEINT::sendData(
-	DRT::PackBuffer& dataSend,
-	int& dest,
-	int& source,
-	vector<char>& dataRecv
+    DRT::PackBuffer& dataSend,
+    int& dest,
+    int& source,
+    vector<char>& dataRecv
 ) const
 {
   vector<int> lengthSend(1,0);
@@ -370,127 +385,137 @@ void XFEM::TIMEINT::sendData(
 
 
 
+/*------------------------------------------------------------------------------------------------*
+ * packing a node for parallel communication only with the basic nodal data                       *
+ * without an underlying discretization fitting to the node's new prozessor      winklmaier 10/10 *
+ *------------------------------------------------------------------------------------------------*/
 void XFEM::TIMEINT::packNode(
-	DRT::PackBuffer& dataSend,
-	DRT::Node& node
+    DRT::PackBuffer& dataSend,
+    DRT::Node& node
 ) const
 {
-	const int nsd = 3;
-	DRT::ParObject::AddtoPack(dataSend,node.Id());
-	DRT::ParObject::AddtoPack(dataSend,LINALG::Matrix<nsd,1>(node.X()));
-	DRT::ParObject::AddtoPack(dataSend,node.Owner());
-}
+  const int nsd = 3;
+  DRT::ParObject::AddtoPack(dataSend,node.Id());
+  DRT::ParObject::AddtoPack(dataSend,LINALG::Matrix<nsd,1>(node.X()));
+  DRT::ParObject::AddtoPack(dataSend,node.Owner());
+} // end packNode
 
 
 
+/*------------------------------------------------------------------------------------------------*
+ * unpacking a node after parallel communication only with the basic nodal data                   *
+ * without an underlying discretization fitting to the node's new prozessor      winklmaier 10/10 *
+ *------------------------------------------------------------------------------------------------*/
 void XFEM::TIMEINT::unpackNode(
-	vector<char>::size_type& posinData,
-	vector<char>& dataRecv,
-	DRT::Node& node
+    vector<char>::size_type& posinData,
+    vector<char>& dataRecv,
+    DRT::Node& node
 ) const
 {
-	const int nsd = 3;
-	int id;
-	LINALG::Matrix<nsd,1> coords;
-	int owner;
+  const int nsd = 3; // dimension
+  int id; // global id
+  LINALG::Matrix<nsd,1> coords; // coordinates
+  int owner; // processor
 
-    DRT::ParObject::ExtractfromPack(posinData,dataRecv,id);
-    DRT::ParObject::ExtractfromPack(posinData,dataRecv,coords);
-    DRT::ParObject::ExtractfromPack(posinData,dataRecv,owner);
+  DRT::ParObject::ExtractfromPack(posinData,dataRecv,id);
+  DRT::ParObject::ExtractfromPack(posinData,dataRecv,coords);
+  DRT::ParObject::ExtractfromPack(posinData,dataRecv,owner);
 
-    if (owner==myrank_) // real node with all data
-    {
-    	node = *discret_->gNode(id);
-    }
-    else // just id, coords and owner
-    {
-		double coordinates[nsd];
-		for (int dim=0;dim<nsd;dim++)
-			coordinates[dim] = coords(dim);
+  if (owner==myrank_) // real node with all data
+  {
+    node = *discret_->gNode(id);
+  }
+  else // just id, coords and owner
+  {
+    double coordinates[nsd];
+    for (int dim=0;dim<nsd;dim++)
+      coordinates[dim] = coords(dim);
 
-		DRT::Node newNode(id,coordinates,owner);
-		node = newNode;
-    }
-}
+    DRT::Node newNode(id,coordinates,owner);
+    node = newNode;
+  } // end if correct processor
+} // end function unpackNode
 #endif // PARALLEL
 
 
 
 /*------------------------------------------------------------------------------------------------*
- * Semi-Lagrange Back-Tracking algorithm constructor                             winklmaier 06/10 *
+ * basic XFEM time-integration constructor for standard degrees of freedom       winklmaier 11/11 *
  *------------------------------------------------------------------------------------------------*/
 XFEM::STD::STD(
     XFEM::TIMEINT& timeInt,
     INPAR::COMBUST::XFEMTimeIntegration& timeIntType,
-	const RCP<Epetra_Vector> veln,
-	const double& dt,
-	bool initialize
+    const RCP<Epetra_Vector> veln,
+    const double& dt,
+    const RCP<COMBUST::FlameFront> flamefront,
+    bool initialize
 ) :
-	XFEM::TIMEINT::TIMEINT(timeInt),
-	timeIntType_(timeIntType),
-	veln_(veln),
-	dt_(dt)
+XFEM::TIMEINT::TIMEINT(timeInt),
+timeIntType_(timeIntType),
+veln_(veln),
+dt_(dt),
+flamefront_(flamefront)
 {
-  if (initialize==true)
+  if (initialize)
   {
-	  const int nsd = 3;
-	  timeIntData_ = rcp(new vector<TimeIntData>);
+    const int nsd = 3; // dimension
+    timeIntData_ = rcp(new vector<TimeIntData>); // vector containing all data used for computation
 
-	/*------------------------*
-	 * Initialization         *
-	 *------------------------*/
-	  for (int leleid=0; leleid<discret_->NumMyColElements(); leleid++)  // loop over processor nodes
-	  {
-		DRT::Element* iele = discret_->lColElement(leleid);
-		if (oldinterfacehandle_->ElementBisected(iele->Id()) or oldinterfacehandle_->ElementTouchedPlus(iele) or oldinterfacehandle_->ElementTouchedMinus(iele))
-		{
-		  const int* nodeGids = iele->NodeIds(); // node gids
-		  for (int inode=0;inode<iele->NumNode();inode++)
-		  {
-			if(olddofcolmap_.MyGID(nodeGids[inode]));
-			  oldEnrNodes_.insert(nodeGids[inode]);
-		  }
-		}
-	  }
+    /*------------------------*
+     * Initialization         *
+     *------------------------*/
+    for (int leleid=0; leleid<discret_->NumMyColElements(); leleid++)  // loop over processor nodes
+    {
+      DRT::Element* iele = discret_->lColElement(leleid);
+      if (oldinterfacehandle_->ElementBisected(iele->Id()) or oldinterfacehandle_->ElementTouchedPlus(iele) or oldinterfacehandle_->ElementTouchedMinus(iele)) // element cut
+      {
+        const int* nodeGids = iele->NodeIds(); // node gids
+        for (int inode=0;inode<iele->NumNode();inode++) // loop over element nodes
+        {
+          if(olddofcolmap_.MyGID(nodeGids[inode]));
+          oldEnrNodes_.insert(nodeGids[inode]);
+        } // end loop over element nodes
+      } // end if element cut
+    } // end loop over processor nodes
 
-	  LINALG::Matrix<nsd,1> dummyStartpoint;
-	  for (int i=0;i<nsd;i++) dummyStartpoint(i) = 777.777;
+    LINALG::Matrix<nsd,1> dummyStartpoint; // dummy startpoint for comparison
+    for (int i=0;i<nsd;i++) dummyStartpoint(i) = 777.777;
 
-	  // fill curr_ structure with the data for the nodes which changed interface side
-	  for (int lnodeid=0; lnodeid<discret_->NumMyColNodes(); lnodeid++)  // loop over processor nodes
-	  {
-		DRT::Node* currnode = discret_->lColNode(lnodeid);
+    // fill curr_ structure with the data for the nodes which changed interface side
+    for (int lnodeid=0; lnodeid<discret_->NumMyColNodes(); lnodeid++)  // loop over processor nodes
+    {
+      DRT::Node* currnode = discret_->lColNode(lnodeid); // current analysed node
 
-		// node on current processor which changed interface side
-		if ((currnode->Owner() == myrank_) &&
-			(interfaceSideCompare((*phinp_)[lnodeid],(*phin_)[lnodeid]) == false))
-		{
-		  timeIntData_->push_back(TimeIntData(
-			*currnode,
-			LINALG::Matrix<nsd,1>(true),
-			vector<LINALG::Matrix<nsd,nsd> >(oldVectors_.size(),LINALG::Matrix<nsd,nsd>(true)),
-			vector<LINALG::Matrix<1,nsd> >(oldVectors_.size(),LINALG::Matrix<1,nsd>(true)),
-			dummyStartpoint,
-			(*phinp_)[lnodeid],
-			1,
-			0,
-			vector<int>(1,-1),
-			vector<int>(1,-1),
-			INFINITY,
-			TimeIntData::predictor_));
-		}
-	  } // end loop over processor nodes
+      // node on current processor which changed interface side
+      if ((currnode->Owner() == myrank_) &&
+          (interfaceSideCompare((*phinp_)[lnodeid],(*phin_)[lnodeid]) == false))
+      {
+        timeIntData_->push_back(TimeIntData(
+            *currnode,
+            LINALG::Matrix<nsd,1>(true),
+            vector<LINALG::Matrix<nsd,nsd> >(oldVectors_.size(),LINALG::Matrix<nsd,nsd>(true)),
+            vector<LINALG::Matrix<1,nsd> >(oldVectors_.size(),LINALG::Matrix<1,nsd>(true)),
+            dummyStartpoint,
+            (*phinp_)[lnodeid],
+            1,
+            0,
+            vector<int>(1,-1),
+            vector<int>(1,-1),
+            INFINITY,
+            TimeIntData::predictor_)); // data created for the node
+      }
+    } // end loop over processor nodes
 
-	  startpoints();
+    startpoints();
 
-	  // test loop if all initial startpoints have been computed
-	  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-	  		data!=timeIntData_->end(); data++)
-	  {
-	      if (data->startpoint_==dummyStartpoint)
-	          dserror("WARNING! No enriched node on one interface side found!\nThis "
-	                  "indicates that the whole area is at one side of the interface!");
-	  } // end loop over nodes
+    // test loop if all initial startpoints have been computed
+    for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+        data!=timeIntData_->end(); data++)
+    {
+      if (data->startpoint_==dummyStartpoint) // startpoint unchanged
+        dserror("WARNING! No enriched node on one interface side found!\nThis "
+            "indicates that the whole area is at one side of the interface!");
+    } // end loop over nodes
   }
   return;
 } // end constructor
@@ -501,8 +526,8 @@ XFEM::STD::STD(
  * out of order!                                                                 winklmaier 10/11 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::STD::compute(
-	vector<RCP<Epetra_Vector> > newRowVectorsn,
-	vector<RCP<Epetra_Vector> > newRowVectorsnp
+    vector<RCP<Epetra_Vector> > newRowVectorsn,
+    vector<RCP<Epetra_Vector> > newRowVectorsnp
 )
 {
   dserror("Unused function! Use a function of the derived classes");
@@ -511,7 +536,31 @@ void XFEM::STD::compute(
 
 
 /*------------------------------------------------------------------------------------------------*
- * evaluate element and data for a given point                                   winklmaier 06/10 *
+ * initialize data when called in a new FGI                                      winklmaier 10/11 *
+ *------------------------------------------------------------------------------------------------*/
+void XFEM::STD::importNewFGIData(
+    const RCP<DRT::Discretization> discret,
+    const RCP<XFEM::DofManager> newdofman,
+    const RCP<COMBUST::FlameFront> flamefront,
+    const RCP<COMBUST::InterfaceHandleCombust> newinterfacehandle,
+    const Epetra_Map& newdofrowmap,
+    const map<DofKey<onNode>, DofGID>& newNodalDofRowDistrib)
+{
+  discret_ = discret;
+  newdofman_ = newdofman;
+  phinpi_ = phinp_;
+  phinp_ = flamefront->Phinp();
+  flamefront_ = flamefront;
+  newinterfacehandle_ = newinterfacehandle;
+  newdofrowmap_ = newdofrowmap;
+  newNodalDofRowDistrib_ = newNodalDofRowDistrib;
+  return;
+}
+
+
+
+/*------------------------------------------------------------------------------------------------*
+ * identify an element containing a point and additional data                    winklmaier 06/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::STD::elementSearch(
     DRT::Element*& ele,
@@ -522,7 +571,7 @@ void XFEM::STD::elementSearch(
     bool& found
 ) const
 {
-  DRT::Element* currele = NULL;
+  DRT::Element* currele = NULL; // current element
 
   int startid; // local row element id
   if (ele==NULL) startid = 0; // start with first local row element
@@ -539,14 +588,12 @@ void XFEM::STD::elementSearch(
       ele = NULL; // ele will be set if an element is found finally
     }
     else
-    {
       currele = discret_->lRowElement(ieleid);
-    }
 
-//    cout << "currently analysed element" << *currele;
-//    cout << "startpoint approximation: " << x;
+    //    cout << "currently analysed element" << *currele;
+    //    cout << "startpoint approximation: " << x;
     callXToXiCoords(currele,x,xi,found);
-//    cout << "in local xi-coordinates: " << xi;
+    //    cout << "in local xi-coordinates: " << xi;
 
     if (found)
     {
@@ -554,152 +601,154 @@ void XFEM::STD::elementSearch(
       getGPValues(ele,xi,vel,phi);
       break;
     }
-  }
+  } // end loop over processor elements
 } // end function findElementAndLocalCoords
 
 
 
+/*------------------------------------------------------------------------------------------------*
+ * interpolate velocity and phi-value for a point in an element                  winklmaier 11/11 *
+ *------------------------------------------------------------------------------------------------*/
 void XFEM::STD::getGPValues(
-	DRT::Element* ele,
-	LINALG::Matrix<3,1>& xi,
-	LINALG::Matrix<3,1>& vel,
-	double& phi
+    DRT::Element* ele,
+    LINALG::Matrix<3,1>& xi,
+    LINALG::Matrix<3,1>& vel,
+    double& phi
 ) const
 {
-	switch (ele->Shape())
-	{
-	case DRT::Element::hex8:
-		getGPValues<DRT::Element::hex8>(ele,xi,vel,phi);
-		break;
-	case DRT::Element::hex20:
-		getGPValues<DRT::Element::hex20>(ele,xi,vel,phi);
-		break;
-	case DRT::Element::tet4:
-		getGPValues<DRT::Element::tet4>(ele,xi,vel,phi);
-		break;
-	default: dserror("add your 3D distype here!");
-	}
-}
+  switch (ele->Shape())
+  {
+  case DRT::Element::hex8:
+    getGPValues<DRT::Element::hex8>(ele,xi,vel,phi);
+    break;
+  case DRT::Element::hex20:
+    getGPValues<DRT::Element::hex20>(ele,xi,vel,phi);
+    break;
+  case DRT::Element::tet4:
+    getGPValues<DRT::Element::tet4>(ele,xi,vel,phi);
+    break;
+  default: dserror("add your 3D distype here!");
+  } // end switch
+} // end function getGPValues
 
 
 
 /*------------------------------------------------------------------------------------------------*
- * Compute startvalues for the interface-changing nodes                          winklmaier 06/10 *
+ * Compute starting values for the interface-changing nodes                      winklmaier 06/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::STD::startpoints()
 {
   //Initialization
   const int nsd = 3; // 3 dimensions for a 3d fluid element
-  const double TOL = 1.0e-3;
+  const double TOL = 1.0e-3; // tolerance
 
   // loop over processors
   for (int procid=0; procid<numproc_; procid++)
   {
     // loop over nodes which changed interface side
     for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-    		data!=timeIntData_->end(); data++)
+        data!=timeIntData_->end(); data++)
     {
-    	if (data->state_==TimeIntData::basicStd_)
-    	{
-		  LINALG::Matrix<nsd,1> newNodeCoords(data->node_.X()); // coords of endpoint of Lagrangian characteristics
+      if (data->state_==TimeIntData::basicStd_) // correct state
+      {
+        LINALG::Matrix<nsd,1> newNodeCoords(data->node_.X()); // coords of endpoint of Lagrangian characteristics
 
-		  // loop over intersected elements on processor
-		  for (std::set<int>::const_iterator enrnode = oldEnrNodes_.begin();
-			  enrnode != oldEnrNodes_.end();
-			  enrnode++)
-		  {
-			DRT::Node* lnodeold = discret_->gNode(*enrnode);//elenodeids[elenode]);  // node near interface
+        // loop over intersected elements on processor
+        for (std::set<int>::const_iterator enrnode = oldEnrNodes_.begin();
+            enrnode != oldEnrNodes_.end();
+            enrnode++)
+        {
+          DRT::Node* lnodeold = discret_->gNode(*enrnode);//elenodeids[elenode]);  // node near interface
+          LINALG::Matrix<nsd,1> oldNodeCoords(lnodeold->X());  // coords of potential startpoint
 
-			LINALG::Matrix<nsd,1> oldNodeCoords(lnodeold->X());  // coords of potential startpoint
+          // just look for points on the same interface side and on the same processor in row map
+          if ((interfaceSideCompare(data->phiValue_,(*phin_)[lnodeold->LID()])) and
+              (lnodeold->Owner()==myrank_))
+          {
+            LINALG::Matrix<nsd,1> diff;  // vector from old point at time n to new point at time n+1
+            diff.Update(1.0,newNodeCoords,-1.0,oldNodeCoords);
 
-			// just look for points on the same interface side and on the same processor in row map
-			if ((interfaceSideCompare(data->phiValue_,(*phin_)[lnodeold->LID()])) and
-				(lnodeold->Owner()==myrank_))
-			{
-			  LINALG::Matrix<nsd,1> diff;  // vector from old point at time n to new point at time n+1
-			  diff.Update(1.0,newNodeCoords,-1.0,oldNodeCoords);
+            if (diff.Norm2() < 2*data->dMin_) // possible new nearest node
+            {
+              // get nodal velocity of a node
+              LINALG::Matrix<nsd,1> nodevel(true);  // velocity of "old" node at time n
+              const set<XFEM::FieldEnr>& fieldenrset(olddofman_->getNodeDofSet(*enrnode));
+              for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+                  fieldenr != fieldenrset.end();++fieldenr)
+              {
+                const DofKey<onNode> olddofkey(*enrnode,*fieldenr);
+                const int olddofpos = oldNodalDofColDistrib_.find(olddofkey)->second;
 
-			  if (diff.Norm2() < 2*data->dMin_) // possible new nearest node
-			  {
-				// get nodal velocity of a node
-				LINALG::Matrix<nsd,1> nodevel(true);  // velocity of "old" node at time n
-				const set<XFEM::FieldEnr>& fieldenrset(olddofman_->getNodeDofSet(*enrnode));
-				for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
-					fieldenr != fieldenrset.end();++fieldenr)
-				{
-				  const DofKey<onNode> olddofkey(*enrnode,*fieldenr);
-				  const int olddofpos = oldNodalDofColDistrib_.find(olddofkey)->second;
+                if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
+                {
+                  if (fieldenr->getField() == XFEM::PHYSICS::Velx)
+                    nodevel(0) = (*veln_)[olddofcolmap_.LID(olddofpos)];
+                  if (fieldenr->getField() == XFEM::PHYSICS::Vely)
+                    nodevel(1) = (*veln_)[olddofcolmap_.LID(olddofpos)];
+                  if (fieldenr->getField() == XFEM::PHYSICS::Velz)
+                    nodevel(2) = (*veln_)[olddofcolmap_.LID(olddofpos)];
+                }
+              } // end loop over fieldenr
 
-				  if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
-				  {
-					if (fieldenr->getField() == XFEM::PHYSICS::Velx)
-					  nodevel(0) = (*veln_)[olddofcolmap_.LID(olddofpos)];
-					if (fieldenr->getField() == XFEM::PHYSICS::Vely)
-					  nodevel(1) = (*veln_)[olddofcolmap_.LID(olddofpos)];
-					if (fieldenr->getField() == XFEM::PHYSICS::Velz)
-					  nodevel(2) = (*veln_)[olddofcolmap_.LID(olddofpos)];
-				  }
-				} // end loop over fieldenr
+              LINALG::Matrix<1,1> arc(true); // cosinus of angle between dist and vel(x_n+1)*diff.Norm2()
+              arc.MultiplyTN(1.0/nodevel.Norm2(),diff,nodevel);
+              double dist = diff.Norm2() + (diff.Norm2()-arc.Norm2()); // distance, containing arc influence
 
-				LINALG::Matrix<1,1> arc(true); // cosinus of angle between dist and vel(x_n+1)*diff.Norm2()
-				arc.MultiplyTN(1.0/nodevel.Norm2(),diff,nodevel);
-				double dist = diff.Norm2() + (diff.Norm2()-arc.Norm2());
-
-				if (dist-data->dMin_+TOL*dist < 0) // new nearest node (cosinus shall be near 1!)
-				{
-				  data->startpoint_.Update(1.0,newNodeCoords,-dt_,nodevel);
-				  data->dMin_ = dist;
-				  data->startGid_.clear();
-				  data->startGid_.push_back(*enrnode);
-				  data->startOwner_.clear();
-				  data->startOwner_.push_back(myrank_);
-				} // end if new best startvalue
-				else if ((dist-data->dMin_ > -TOL*dist) and
-					(dist-data->dMin_ < TOL*dist)) // handles special case that two nodes are very similar near
-				{
-				  data->startpoint_.Update(0.5,newNodeCoords,-0.5*dt_,nodevel,0.5); // midpoint is 0.5*(x-dt*vel+old_startpoint)
-				  data->dMin_ = (dist+data->dMin_)/2.0;
-				  data->startGid_.push_back(*enrnode);
-				  data->startOwner_.push_back(myrank_);
-				}
-			  } // end if possibly new best startvalue
-			} // end if just points on the correct side
-		  } // end loop over intersected elements
-    	}
+              if (dist-data->dMin_+TOL*dist < 0) // new nearest node (cosinus shall be near 1!)
+              {
+                data->startpoint_.Update(1.0,newNodeCoords,-dt_,nodevel);
+                data->dMin_ = dist;
+                data->startGid_.clear();
+                data->startGid_.push_back(*enrnode);
+                data->startOwner_.clear();
+                data->startOwner_.push_back(myrank_);
+              } // end if new best startvalue
+              else if ((dist-data->dMin_ > -TOL*dist) and
+                  (dist-data->dMin_ < TOL*dist)) // handles special case that two nodes are very similar near
+              {
+                data->startpoint_.Update(0.5,newNodeCoords,-0.5*dt_,nodevel,0.5); // midpoint is 0.5*(x-dt*vel+old_startpoint)
+                data->dMin_ = (dist+data->dMin_)/2.0;
+                data->startGid_.push_back(*enrnode);
+                data->startOwner_.push_back(myrank_);
+              } // end if new equal best startvalue
+            } // end if possibly new best startvalue
+          } // end if just points on the correct side
+        } // end loop over intersected elements
+      } // end if correct state
     } // end loop over nodes which changed interface side
-
 #ifdef PARALLEL
     exportStartData();
 #endif
-
   } // end loop over processors
 } // end startValuesFinder
 
 
 
 /*------------------------------------------------------------------------------------------------*
- * setting the final data in Epetra Vector for a node                            winklmaier 06/10 *
+ * setting the computed data for the standard degrees of freedom into the according               *
+ * Epetra Vectors for all handled nodes                                          winklmaier 06/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::STD::setFinalData(
 )
 {
   const int nsd = 3; // 3 dimensions for a 3d fluid element
-  map<int,int> usedStartpoints;
-  int numStartpoints;
-  double newValue = 0.0;
+  map<int,int> usedStartpoints; // map containing the used start points
+  int numStartpoints; // number of used start points
+  double newValue = 0.0; // new value
 
+  // loop over data
   for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-  		data!=timeIntData_->end(); data++)
+      data!=timeIntData_->end(); data++)
   {
-	if (data->state_!=TimeIntData::doneStd_)
-		dserror("when data is set, all computation has to be done");
+    if (data->state_!=TimeIntData::doneStd_)
+      dserror("when data is set, all computation has to be done");
 
     vector<LINALG::Matrix<nsd,1> >& velValues(data->velValues_); // velocities of the node
     vector<double>& presValues(data->presValues_); // pressures of the node
 
     const int gnodeid = data->node_.Id(); // global node id
 
-    map<int,int>::iterator currstartpoint = usedStartpoints.find(gnodeid);
+    map<int,int>::iterator currstartpoint = usedStartpoints.find(gnodeid); // current start point
     if (currstartpoint==usedStartpoints.end()) // standard case and "standard alternative" case
     {
       usedStartpoints.insert(pair<int,int>(gnodeid,1));
@@ -714,14 +763,14 @@ void XFEM::STD::setFinalData(
     // set nodal velocities and pressures with help of the field set of node
     const set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gnodeid));
     for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
-        fieldenr != fieldenrset.end();++fieldenr)
+        fieldenr != fieldenrset.end();++fieldenr) // loop over field enr set
     {
       const DofKey<onNode> newdofkey(gnodeid, *fieldenr);
       const int newdofpos = newNodalDofRowDistrib_.find(newdofkey)->second;
 
       if (fieldenr->getEnrichment().Type() == XFEM::Enrichment::typeStandard)
       {
-/*
+        /*
         if (fieldenr->getField() == XFEM::PHYSICS::Velx)
           cout << (*newVectors_[0])[newdofrowmap_.LID(newdofpos)] << " becomes " << velValues[0](0) << endl;
         else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
@@ -730,25 +779,26 @@ void XFEM::STD::setFinalData(
           cout << (*newVectors_[0])[newdofrowmap_.LID(newdofpos)] << " becomes " << velValues[0](2) << endl;
         else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
           cout << (*newVectors_[0])[newdofrowmap_.LID(newdofpos)] << " becomes " << presValues[0] << endl;
-*/
+         */
 
+        // loop over vectors to be set (either all vectors or only the vectors at t^n+1)
         for (size_t index=0;index<vectorSize(data->type_);index++)
         {
           double value = (*newVectors_[index])[newdofrowmap_.LID(newdofpos)];
           if (fieldenr->getField() == XFEM::PHYSICS::Velx)
             newValue = ((numStartpoints-1.0)/numStartpoints)*value
-                       + velValues[index](0)/numStartpoints;
+            + velValues[index](0)/numStartpoints;
           else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
             newValue = ((numStartpoints-1.0)/numStartpoints)*value
-                       + velValues[index](1)/numStartpoints;
+            + velValues[index](1)/numStartpoints;
           else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
             newValue = ((numStartpoints-1.0)/numStartpoints)*value
-                       + velValues[index](2)/numStartpoints;
+            + velValues[index](2)/numStartpoints;
           else if (fieldenr->getField() == XFEM::PHYSICS::Pres)
             newValue = ((numStartpoints-1.0)/numStartpoints)*value
-                       + presValues[index]/numStartpoints;
+            + presValues[index]/numStartpoints;
 
-          (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] = newValue;
+          (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] = newValue; // set the value
         }
       }
     } // end loop over fieldenr
@@ -776,11 +826,11 @@ void XFEM::STD::exportStartData()
   if(myrank_ == 0)
     source = numproc_-1;
 
-  DRT::PackBuffer dataSend;
+  DRT::PackBuffer dataSend; // data to be sent
 
   // packing the data
   for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-  		data!=timeIntData_->end(); data++)
+      data!=timeIntData_->end(); data++)
   {
     packNode(dataSend,data->node_);
     DRT::ParObject::AddtoPack(dataSend,data->vel_);
@@ -799,7 +849,7 @@ void XFEM::STD::exportStartData()
   dataSend.StartPacking();
 
   for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-  		data!=timeIntData_->end(); data++)
+      data!=timeIntData_->end(); data++)
   {
     packNode(dataSend,data->node_);
     DRT::ParObject::AddtoPack(dataSend,data->vel_);
@@ -827,19 +877,19 @@ void XFEM::STD::exportStartData()
   // unpack received data
   while (posinData < dataRecv.size())
   {
-	double coords[nsd] = {0.0};
-	DRT::Node node(0,(double*)coords,0);
-	LINALG::Matrix<nsd,1> vel;
-    vector<LINALG::Matrix<nsd,nsd> > velDeriv;
-    vector<LINALG::Matrix<1,nsd> > presDeriv;
-    LINALG::Matrix<nsd,1> startpoint;
-    double phiValue;
-    int searchedProcs;
-    int iter;
-    vector<int> startGid;
-    vector<int> startOwner;
-    double dMin;
-    int newtype;
+    double coords[nsd] = {0.0};
+    DRT::Node node(0,(double*)coords,0); // initialize node
+    LINALG::Matrix<nsd,1> vel; // velocity at point x
+    vector<LINALG::Matrix<nsd,nsd> > velDeriv; // derivation of velocity at point x
+    vector<LINALG::Matrix<1,nsd> > presDeriv; // derivation of pressure at point x
+    LINALG::Matrix<nsd,1> startpoint; // startpoint
+    double phiValue; // phi-value
+    int searchedProcs; // number of searched processors
+    int counter; // iteration counter
+    vector<int> startGid; // global id of first startpoint
+    vector<int> startOwner; // owner of first startpoint
+    double dMin; // minimal distance
+    int newtype; // type of the data
 
     unpackNode(posinData,dataRecv,node);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,vel);
@@ -848,7 +898,7 @@ void XFEM::STD::exportStartData()
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,startpoint);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,phiValue);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,searchedProcs);
-    DRT::ParObject::ExtractfromPack(posinData,dataRecv,iter);
+    DRT::ParObject::ExtractfromPack(posinData,dataRecv,counter);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,startGid);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,startOwner);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,dMin);
@@ -862,14 +912,14 @@ void XFEM::STD::exportStartData()
         startpoint,
         phiValue,
         searchedProcs,
-        iter,
+        counter,
         startGid,
         startOwner,
         dMin,
         (TimeIntData::type)newtype));
   }
-  // processors wait for each other
-  discret_->Comm().Barrier();
+
+  discret_->Comm().Barrier(); // processors wait for each other
 } // end exportStartData
 
 
@@ -887,10 +937,10 @@ void XFEM::STD::exportFinalData()
 
   // fill vectors with the data
   for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-	  data!=timeIntData_->end(); data++)
+      data!=timeIntData_->end(); data++)
   {
-	  if (data->state_!=TimeIntData::doneStd_)
-		  dserror("All data should be set here, having status 'done'. Thus something is wrong!");
+    if (data->state_!=TimeIntData::doneStd_)
+      dserror("All data should be set here, having status 'done'. Thus something is wrong!");
     dataVec[data->node_.Owner()].push_back(*data);
   }
 
@@ -903,16 +953,14 @@ void XFEM::STD::exportFinalData()
   {
     // Initialization
     int source = myrank_-(dest-myrank_); // source proc (sends (dest-myrank_) far and gets from (dest-myrank_) earlier)
-    if (source<0)
-      source+=numproc_;
-    else if (source>=numproc_)
-      source -=numproc_;
+    if (source<0)				source+=numproc_;
+    else if (source>=numproc_)	source-=numproc_;
 
     DRT::PackBuffer dataSend;
 
     // pack data to be sent
     for (vector<TimeIntData>::iterator data=dataVec[dest].begin();
-    	data!=dataVec[dest].end(); data++)
+        data!=dataVec[dest].end(); data++)
     {
       DRT::ParObject::AddtoPack(dataSend,data->node_.Id());
       DRT::ParObject::AddtoPack(dataSend,data->startpoint_);
@@ -927,7 +975,7 @@ void XFEM::STD::exportFinalData()
     dataSend.StartPacking();
 
     for (vector<TimeIntData>::iterator data=dataVec[dest].begin();
-    	data!=dataVec[dest].end(); data++)
+        data!=dataVec[dest].end(); data++)
     {
       DRT::ParObject::AddtoPack(dataSend,data->node_.Id());
       DRT::ParObject::AddtoPack(dataSend,data->startpoint_);
@@ -951,14 +999,14 @@ void XFEM::STD::exportFinalData()
     // unpack received data
     while (posinData < dataRecv.size())
     {
-      int gid;
-      LINALG::Matrix<nsd,1> startpoint;
-      double phiValue;
-      vector<int> startGid;
-      vector<int> startOwner;
-      vector<LINALG::Matrix<nsd,1> > velValues;
-      vector<double> presValues;
-      int newtype;
+      int gid; // global id of node
+      LINALG::Matrix<nsd,1> startpoint; // startpoint
+      double phiValue; // phi-value
+      vector<int> startGid; // global id of first startpoint
+      vector<int> startOwner; // owner of first startpoint
+      vector<LINALG::Matrix<nsd,1> > velValues; // velocity values
+      vector<double> presValues; // pressure values
+      int newtype; // type of the data
 
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,gid);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,startpoint);
@@ -989,29 +1037,29 @@ void XFEM::STD::exportFinalData()
 
 
 /*------------------------------------------------------------------------------------------------*
- * constructor of the enrichment recomputation                                   winklmaier 08/10 *
+ * basic XFEM time-integration constructor for enrichment degrees of freedom     winklmaier 11/11 *
  *------------------------------------------------------------------------------------------------*/
 XFEM::ENR::ENR(
     XFEM::TIMEINT& timeInt,
-	INPAR::COMBUST::XFEMTimeIntegrationEnr& timeIntEnr,
-	INPAR::COMBUST::XFEMTimeIntegrationEnrComp& timeIntEnrType
+    INPAR::COMBUST::XFEMTimeIntegrationEnr& timeIntEnr,
+    INPAR::COMBUST::XFEMTimeIntegrationEnrComp& timeIntEnrType
 ) :
-	XFEM::TIMEINT::TIMEINT(timeInt),
-	timeIntEnr_(timeIntEnr),
-	timeIntEnrType_(timeIntEnrType),
-	critTol_(1.0e-02)
+XFEM::TIMEINT::TIMEINT(timeInt),
+timeIntEnr_(timeIntEnr),
+timeIntEnrType_(timeIntEnrType),
+critTol_(1.0e-02)
 
 
 {
   // check if enrichment defines are set sensible
 #ifdef COMBUST_NORMAL_ENRICHMENT
-	if (timeIntEnrType_==INPAR::COMBUST::xfemtimeintenr_project_scalar)
-		dserror("if veln-field available no additional scalar computation required! Fix this!");
+  if (timeIntEnrType_==INPAR::COMBUST::xfemtimeintenr_project_scalar)
+    dserror("if veln-field available no additional scalar computation required! Fix this!");
 #endif
 
   // Initialization
   if (timeIntEnrType_==INPAR::COMBUST::xfemtimeintenr_standard)
-	  getCritCutElements();
+    getCritCutElements();
 
   timeIntData_ = rcp(new vector<TimeIntData>);
   return;
@@ -1023,38 +1071,43 @@ XFEM::ENR::ENR(
  * out of order!                                                                 winklmaier 10/11 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::ENR::compute(
-	vector<RCP<Epetra_Vector> > newRowVectorsn,
-	vector<RCP<Epetra_Vector> > newRowVectorsnp
+    vector<RCP<Epetra_Vector> > newRowVectorsn,
+    vector<RCP<Epetra_Vector> > newRowVectorsnp
 )
 {
   dserror("Unused function! Use a function of the derived classes");
-}
-
-
-
-///*------------------------------------------------------------------------------------------------*
-// * out of order!                                                                 winklmaier 10/11 *
-// *------------------------------------------------------------------------------------------------*/
-//void XFEM::ENR::callOldValues()
-//{
-//  dserror("Unused function! Use a function of the derived classes");
-//}
-//
-//
-//
-///*------------------------------------------------------------------------------------------------*
-// * out of order!                                                                 winklmaier 10/11 *
-// *------------------------------------------------------------------------------------------------*/
-//void XFEM::ENR::computeNewEnrichments()
-//{
-//  dserror("Unused function! Use a function of the derived classes");
-//}
+} // end function compute
 
 
 
 /*------------------------------------------------------------------------------------------------*
- * output true if a new enrichment value shall be                                winklmaier 08/10 *
- * computed (depending on flags), else false                                                      *
+ * initialize data when called in a new FGI                                      winklmaier 10/11 *
+ *------------------------------------------------------------------------------------------------*/
+void XFEM::ENR::importNewFGIData(
+    const RCP<DRT::Discretization> discret,
+    const RCP<XFEM::DofManager> newdofman,
+    const RCP<COMBUST::FlameFront> flamefront,
+    const RCP<COMBUST::InterfaceHandleCombust> newinterfacehandle,
+    const Epetra_Map& newdofrowmap,
+    const map<DofKey<onNode>, DofGID>& newNodalDofRowDistrib,
+    const map<DofKey<onNode>, DofGID>& oldNodalDofColDistrib
+)
+{
+  discret_=discret;
+  newdofman_=newdofman;
+  phinp_=flamefront->Phinp();
+  newinterfacehandle_=newinterfacehandle;
+  newdofrowmap_=newdofrowmap;
+  newNodalDofRowDistrib_=newNodalDofRowDistrib;
+  nodalDofColDistrib_npi_=oldNodalDofColDistrib;
+  return;
+}
+
+
+
+/*------------------------------------------------------------------------------------------------*
+ * give back a boolean indicating if a new enrichment value shall be computed.                    *
+ * use the FGI FRS type for this analysis as well as data about the node         winklmaier 11/11 *
  *------------------------------------------------------------------------------------------------*/
 bool XFEM::ENR::newEnrValueNeeded(
     const DRT::Node* node
@@ -1064,72 +1117,72 @@ bool XFEM::ENR::newEnrValueNeeded(
   {
   case FRS1FGI1_:
   {
-	  // case 1: the node was not enriched in old timestep and therefore needs a new enrichment
-	  const int gid = node->Id();
-//  	cout << "here with node " << *node << endl;
+    // case 1: the node was not enriched in old timestep and therefore needs a new enrichment
+    const int gid = node->Id();
+    //  	cout << "here with node " << *node << endl;
 
-	  const set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gid)); // field set of node
-	  for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
-	      fieldenr != fieldenrset.end();++fieldenr)
-	  {
-	    const DofKey<onNode> newdofkey(gid, *fieldenr);
+    const set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gid)); // field set of node
+    for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+        fieldenr != fieldenrset.end();++fieldenr)
+    {
+      const DofKey<onNode> newdofkey(gid, *fieldenr);
 
-	    if (fieldenr->getEnrichment().Type() != XFEM::Enrichment::typeStandard)
-	    {
-	      if (timeIntEnrType_==INPAR::COMBUST::xfemtimeintenr_full) // every enriched node gets new enrichment values with this flag
-	    	return true;
+      if (fieldenr->getEnrichment().Type() != XFEM::Enrichment::typeStandard)
+      {
+        if (timeIntEnrType_==INPAR::COMBUST::xfemtimeintenr_full) // every enriched node gets new enrichment values with this flag
+          return true;
 
-	      // additional checks for standard or minimal enrichment computation:
+        // additional checks for standard or minimal enrichment computation:
 
-	      // check if enrichment dofs existed before
-	      map<DofKey<onNode>, DofGID>::const_iterator olddof = oldNodalDofColDistrib_.find(newdofkey);
-	      if (olddof == oldNodalDofColDistrib_.end()) // olddof not found -> no enr value before -> enr value has to be set
-	        return true;
+        // check if enrichment dofs existed before
+        map<DofKey<onNode>, DofGID>::const_iterator olddof = oldNodalDofColDistrib_.find(newdofkey);
+        if (olddof == oldNodalDofColDistrib_.end()) // olddof not found -> no enr value before -> enr value has to be set
+          return true;
 
-	      if (timeIntEnrType_==INPAR::COMBUST::xfemtimeintenr_standard)
-			  return critCut(node);
-		//      cout << "bool is " << critCut << endl;
-	    } // end if dof has non standard enrichment
-	  } // end loop over fieldset
-	  break;
-  }
+        if (timeIntEnrType_==INPAR::COMBUST::xfemtimeintenr_standard)
+          return critCut(node);
+        //      cout << "bool is " << critCut << endl;
+      } // end if dof has non standard enrichment
+    } // end loop over fieldset
+    break;
+  } // end case FRS1FGI1
   case FRS1FGINot1_:
   {
-	  // case 1: the node was not enriched in old timestep and therefore needs a new enrichment
-	  const int gid = node->Id();
-//  	cout << "here with node " << *node << endl;
+    // case 1: the node was not enriched in old timestep and therefore needs a new enrichment
+    const int gid = node->Id();
+    //  	cout << "here with node " << *node << endl;
 
-	  const set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gid)); // field set of node
-	  for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
-	      fieldenr != fieldenrset.end();++fieldenr)
-	  {
-	    const DofKey<onNode> newdofkey(gid, *fieldenr);
+    const set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gid)); // field set of node
+    for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
+        fieldenr != fieldenrset.end();++fieldenr)
+    {
+      const DofKey<onNode> newdofkey(gid, *fieldenr);
 
-	    if (fieldenr->getEnrichment().Type() != XFEM::Enrichment::typeStandard)
-	    {
-	      // check if enrichment dofs existed before
-	      map<DofKey<onNode>, DofGID>::const_iterator dof_npi = nodalDofColDistrib_npi_.find(newdofkey);
-	      if (dof_npi == nodalDofColDistrib_npi_.end()) // olddof not found -> no enr value before -> enr value has to be set
-	      {
-		      map<DofKey<onNode>, DofGID>::const_iterator dof_n = oldNodalDofColDistrib_.find(newdofkey);
-		      if (dof_n != oldNodalDofColDistrib_.end()) // dof existed at t^n so use this value if not critical
-		      {
-		          if (critCut(node)) // critical cut has to be recomputed
-		        	  return true;
-		          else // use existing value of old solution which was deleted by former FGI
-		          {
-		        	  const int newdofpos = newNodalDofRowDistrib_.find(newdofkey)->second;
-		        	  for (size_t index=0;index<newVectors_.size();index++)
-		        		  (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] =
-		        				  (*oldVectors_[index])[olddofcolmap_.LID(dof_n->second)];
-		        	  return false;
-		          }
-		      }
-	      }
-	        return true;
-	    } // end if dof has non standard enrichment
-	  } // end loop over fieldset
-	  break;
+      if (fieldenr->getEnrichment().Type() != XFEM::Enrichment::typeStandard)
+      {
+        // check if enrichment dofs existed before
+        map<DofKey<onNode>, DofGID>::const_iterator dof_npi = nodalDofColDistrib_npi_.find(newdofkey);
+        if (dof_npi == nodalDofColDistrib_npi_.end()) // olddof not found -> no enr value before -> enr value has to be set
+        {
+          map<DofKey<onNode>, DofGID>::const_iterator dof_n = oldNodalDofColDistrib_.find(newdofkey);
+          if (dof_n != oldNodalDofColDistrib_.end()) // dof existed at t^n so use this value if not critical
+          {
+            if (critCut(node)) // critical cut has to be recomputed
+              return true;
+            else // use existing value of old solution which was deleted by former FGI
+            {
+              const int newdofpos = newNodalDofRowDistrib_.find(newdofkey)->second;
+              for (size_t index=0;index<newVectors_.size();index++)
+                (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] =
+                    (*oldVectors_[index])[olddofcolmap_.LID(dof_n->second)];
+              return false;
+            }
+          }
+        }
+        return true;
+      } // end if dof has non standard enrichment
+    } // end loop over fieldset
+    break;
   }
   case FRSNot1_: return false;
   default: dserror("undefined type");
@@ -1139,6 +1192,10 @@ bool XFEM::ENR::newEnrValueNeeded(
 
 
 
+/*------------------------------------------------------------------------------------------------*
+ * give back a boolean indicating if all cut elements around the node, which has to be
+ * enriched, are critically cut                                                  winklmaier 11/11 *
+ *------------------------------------------------------------------------------------------------*/
 bool XFEM::ENR::critCut(const DRT::Node* node) const
 {
   // case 2: the node was enriched but the according support is very small.
@@ -1157,38 +1214,38 @@ bool XFEM::ENR::critCut(const DRT::Node* node) const
   for (int iele=0;iele<numeles;iele++) // loop over elements around node
   {
 #ifdef COMBUST_CUT
-	if (oldinterfacehandle_->ElementBisected(eles[iele]->Id())) // element intersected
+    if (oldinterfacehandle_->ElementBisected(eles[iele]->Id())) // element intersected
 #else
-	if (oldinterfacehandle_->ElementBisected(eles[iele])) // element intersected
+      if (oldinterfacehandle_->ElementBisected(eles[iele])) // element intersected
 #endif
-	{
-	  if (domainPlus) // when node is in plus domain, support of enrichment is the minus part of the element
-	  {
-		set<int>::const_iterator tmp = critElesMinus_.find(eles[iele]->Id());
-		if (tmp == critElesMinus_.end()) // volumes just saved in critical cases
-		{
-		  critCut = false; // one element has a big enough support for the node -> no problem with values
-		  break;
-		}
-		else
-		  critCut = true;
-	  } // end if node in plus domain
-	  else
-	  {
-		set<int>::const_iterator tmp = critElesPlus_.find(eles[iele]->Id());
-		if (tmp == critElesPlus_.end()) // volumes just saved in critical cases
-		{
-		  critCut = false; // one element has a big enough support for the node -> no problem with values
-		  break;
-		}
-		else
-		  critCut = true;
-	  } // end if node in minus domain
-	} // end if element bisected or touched
+      {
+        if (domainPlus) // when node is in plus domain, support of enrichment is the minus part of the element
+        {
+          set<int>::const_iterator tmp = critElesMinus_.find(eles[iele]->Id());
+          if (tmp == critElesMinus_.end()) // volumes just saved in critical cases
+          {
+            critCut = false; // one element has a big enough support for the node -> no problem with values
+            break;
+          }
+          else
+            critCut = true;
+        } // end if node in plus domain
+        else
+        {
+          set<int>::const_iterator tmp = critElesPlus_.find(eles[iele]->Id());
+          if (tmp == critElesPlus_.end()) // volumes just saved in critical cases
+          {
+            critCut = false; // one element has a big enough support for the node -> no problem with values
+            break;
+          }
+          else
+            critCut = true;
+        } // end if node in minus domain
+      } // end if element bisected or touched
   } // end loop over elements around node
   return critCut;
-//      cout << "bool is " << critCut << endl;
-}
+  //      cout << "bool is " << critCut << endl;
+} // end function critCut
 
 
 
@@ -1212,46 +1269,46 @@ void XFEM::ENR::getCritCutElements(
 #ifdef COMBUST_CUT
     if (oldinterfacehandle_->ElementBisected(currEle->Id())) // element bisected
 #else
-    if (oldinterfacehandle_->ElementBisected(currEle)) // element bisected
+      if (oldinterfacehandle_->ElementBisected(currEle)) // element bisected
 #endif
-    {
-      plusVol = 0.0;
-      minusVol = 0.0;
-
-      // get domain integration cells for this element
-      const GEO::DomainIntCells&  domainIntCells(oldinterfacehandle_->GetDomainIntCells(currEle)); // domain integration cells of bisected element
-
-      // loop over domain integration cells
-      for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
       {
-        currVol = cell->VolumeInPhysicalDomain();
+        plusVol = 0.0;
+        minusVol = 0.0;
 
-        if (currVol < 0.0)
+        // get domain integration cells for this element
+        const GEO::DomainIntCells&  domainIntCells(oldinterfacehandle_->GetDomainIntCells(currEle)); // domain integration cells of bisected element
+
+        // loop over domain integration cells
+        for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
         {
-          cout << "negative volume detected and reverted" << endl;
-          currVol = -currVol;
-        }
+          currVol = cell->VolumeInPhysicalDomain();
 
-        if (cell->getDomainPlus()) plusVol += currVol;
-        else minusVol += currVol;
-      } // end loop over domain integration cells
+          if (currVol < 0.0)
+          {
+            cout << "negative volume detected and reverted" << endl;
+            currVol = -currVol;
+          }
 
-      if (plusVol == 0.0 || minusVol == 0.0) // no domain integration cell in one subdomain
-      {
-        cout << "element " << *currEle << " shall be bisected" << endl;
-        cout << "element volume in plus domain is " << plusVol << endl;
-        cout << "element volume in minus domain is " << minusVol << endl;
-        dserror("WARNING!!! Bisected domain shall have integration cells on both interface sides!");
-      } // end if no domain integration cell in one subdomain
+          if (cell->getDomainPlus())	plusVol += currVol;
+          else 						minusVol += currVol;
+        } // end loop over domain integration cells
 
-      eleVol = plusVol + minusVol;
+        if (plusVol == 0.0 || minusVol == 0.0) // no domain integration cell in one subdomain
+        {
+          cout << "element " << *currEle << " shall be bisected" << endl;
+          cout << "element volume in plus domain is " << plusVol << endl;
+          cout << "element volume in minus domain is " << minusVol << endl;
+          dserror("WARNING!!! Bisected domain shall have integration cells on both interface sides!");
+        } // end if no domain integration cell in one subdomain
 
-      if (plusVol/eleVol < critTol_)
-        critElesPlus_.insert(currEle->Id());
+        eleVol = plusVol + minusVol;
 
-      if (minusVol/eleVol < critTol_)
-        critElesMinus_.insert(currEle->Id());
-    } // end if element bisected
+        if (plusVol/eleVol < critTol_)
+          critElesPlus_.insert(currEle->Id());
+
+        if (minusVol/eleVol < critTol_)
+          critElesMinus_.insert(currEle->Id());
+      } // end if element bisected
   } // end loop over col elements
 } // end function getCritCutElements
 
@@ -1292,7 +1349,7 @@ void XFEM::ENR::SignedDistance(
     const GEO::BoundaryIntCell patch = patches[ipatch];
     // only triangles and quadrangles are allowed as flame front patches (boundary cells)
     if (!(patch.Shape() == DRT::Element::tri3 or
-          patch.Shape() == DRT::Element::quad4))
+        patch.Shape() == DRT::Element::quad4))
       dserror("invalid type of boundary integration cell for reinitialization");
 
     // get coordinates of vertices defining flame front patch
@@ -1404,7 +1461,7 @@ void XFEM::ENR::FindFacingPatchProjCellSpace(
     {
       facenode = true;
       patchdist = alpha;
-//      cout << "facing patch found (tri3 patch)! coordinates eta(0): " << eta(0) << " eta(1) " << eta(1) << endl;
+      //      cout << "facing patch found (tri3 patch)! coordinates eta(0): " << eta(0) << " eta(1) " << eta(1) << endl;
     }
     break;
   case DRT::Element::quad4:
@@ -1415,23 +1472,23 @@ void XFEM::ENR::FindFacingPatchProjCellSpace(
     {
       facenode = true;
       patchdist = alpha;
-//      cout << "facing patch found (quad4 patch)!" << endl;
+      //      cout << "facing patch found (quad4 patch)!" << endl;
     }
     break;
   default: dserror("unknown type of boundary integration cell");
   }
-//  if (!converged)
-//  {
-//    cout << "node x component " << node(0,0) << endl;
-//    cout << "node y component " << node(1,0) << endl;
-//    cout << "node z component " << node(2,0) << endl;
-//    cout << "eta1 " << eta(0) << endl;
-//    cout << "eta2 " << eta(1) << endl;
-//    cout << "alpha " << alpha << endl;
-//    cout << "patch vertices x component " << patchcoord(0,0) << " " << patchcoord(0,1) << " " << patchcoord(0,2) << endl;
-//    cout << "patch vertices y component " << patchcoord(1,0) << " " << patchcoord(1,1) << " " << patchcoord(1,2) << endl;
-//    cout << "patch vertices z component " << patchcoord(2,0) << " " << patchcoord(2,1) << " " << patchcoord(2,2) << endl;
-//  }
+  //  if (!converged)
+  //  {
+  //    cout << "node x component " << node(0,0) << endl;
+  //    cout << "node y component " << node(1,0) << endl;
+  //    cout << "node z component " << node(2,0) << endl;
+  //    cout << "eta1 " << eta(0) << endl;
+  //    cout << "eta2 " << eta(1) << endl;
+  //    cout << "alpha " << alpha << endl;
+  //    cout << "patch vertices x component " << patchcoord(0,0) << " " << patchcoord(0,1) << " " << patchcoord(0,2) << endl;
+  //    cout << "patch vertices y component " << patchcoord(1,0) << " " << patchcoord(1,1) << " " << patchcoord(1,2) << endl;
+  //    cout << "patch vertices z component " << patchcoord(2,0) << " " << patchcoord(2,1) << " " << patchcoord(2,2) << endl;
+  //  }
 
   return;
 }
@@ -1492,9 +1549,9 @@ void XFEM::ENR::ComputeDistanceToPatch(
  | private: compute normal vector to flame front patch                                henke 08/09 |
  *----------------------------------------------------------------------------------------------- */
 void XFEM::ENR::ComputeNormalVectorToFlameFront(
-      const GEO::BoundaryIntCell&      patch,
-      const LINALG::SerialDenseMatrix& patchcoord,
-      LINALG::Matrix<3,1>&             normal
+    const GEO::BoundaryIntCell&      patch,
+    const LINALG::SerialDenseMatrix& patchcoord,
+    LINALG::Matrix<3,1>&             normal
 ) const
 {
   // first point of flame front patch
@@ -1531,9 +1588,9 @@ void XFEM::ENR::ComputeNormalVectorToFlameFront(
   normal(2) = 0.0;
 #endif
 
-//  const Epetra_Comm& comm = scatra_.Discretization()->Comm();
-//  cout << "proc " << comm.MyPID() << " normal " <<  normal << endl;
-//  cout << "proc " << comm.MyPID() << " patch " <<  patchcoord << endl;
+  //  const Epetra_Comm& comm = scatra_.Discretization()->Comm();
+  //  cout << "proc " << comm.MyPID() << " normal " <<  normal << endl;
+  //  cout << "proc " << comm.MyPID() << " patch " <<  patchcoord << endl;
 
   // compute unit (normed) normal vector
   double norm = sqrt(normal(0)*normal(0) + normal(1)*normal(1) + normal(2)*normal(2));

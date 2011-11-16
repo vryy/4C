@@ -56,7 +56,6 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   convtol_(combustdyn.get<double>("CONVTOL")),
   stepbeforereinit_(false),
   stepreinit_(false),
-  phireinitn_(Teuchos::null),
   combusttype_(DRT::INPUT::IntegralValue<INPAR::COMBUST::CombustionType>(combustdyn.sublist("COMBUSTION FLUID"),"COMBUSTTYPE")),
   reinitaction_(DRT::INPUT::IntegralValue<INPAR::COMBUST::ReInitialActionGfunc>(combustdyn.sublist("COMBUSTION GFUNCTION"),"REINITIALIZATION")),
 //  reinitaction_(combustdyn.sublist("COMBUSTION GFUNCTION").get<INPAR::COMBUST::ReInitialActionGfunc>("REINITIALIZATION")),
@@ -134,18 +133,11 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
   const Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
   const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField().Discretization();
 
-  velnpip_ = rcp(new Epetra_Vector(*fluiddis->DofRowMap()),true);
+
+  // FGI vectors are initialized
   velnpi_ = rcp(new Epetra_Vector(*fluiddis->DofRowMap()),true);
-
-  // FGI vectors are initialized
-  velnpip_->Update(1.0,*FluidField().Velnp(),0.0);
   velnpi_->Update(1.0,*FluidField().Velnp(),0.0);
-
-  phinpip_ = rcp(new Epetra_Vector(*gfuncdis->DofRowMap()),true);
   phinpi_ = rcp(new Epetra_Vector(*gfuncdis->DofRowMap()),true);
-
-  // FGI vectors are initialized
-  phinpip_->Update(1.0,*ScaTraField().Phinp(),0.0);
   phinpi_->Update(1.0,*ScaTraField().Phinp(),0.0);
 
   /*----------------------------------------------------------------------------------------------*
@@ -283,9 +275,6 @@ void COMBUST::Algorithm::TimeLoop()
       // prepare Fluid-G-function iteration
       PrepareFGIteration();
 
-      // TODO In the first iteration of the first time step the convection velocity for the
-      //      G-function is zero, if a zero initial fluid field is used.
-      //      -> Should the fluid be solved first?
       // solve linear G-function equation
       DoGfuncField();
 
@@ -360,21 +349,21 @@ void COMBUST::Algorithm::SolveStationaryProblem()
   // compute initial volume of minus domain
   volume_start_ = ComputeVolume();
 
-    // solve nonlinear Navier-Stokes system
-    DoFluidField();
+  // solve nonlinear Navier-Stokes system
+  DoFluidField();
 
-    // solve (non)linear G-function equation
-    std::cout << "/!\\ warning === G-function field not solved for stationary problems" << std::endl;
-    //DoGfuncField();
+  // solve (non)linear G-function equation
+  std::cout << "/!\\ warning === G-function field not solved for stationary problems" << std::endl;
+  //DoGfuncField();
 
-    //reinitialize G-function
-    //if (fgiter_ % reinitinterval_ == 0)
-    //{
-    //  ReinitializeGfunc();
-    //}
+  //reinitialize G-function
+  //if (fgiter_ % reinitinterval_ == 0)
+  //{
+  //  ReinitializeGfunc();
+  //}
 
-    // update field vectors
-    UpdateInterface();
+  // update field vectors
+  UpdateInterface();
 
   //-------
   // output
@@ -1188,44 +1177,21 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::ComputeFlameVel(
  *------------------------------------------------------------------------------------------------*/
 bool COMBUST::Algorithm::NotConvergedFGI()
 {
-  // if (fgiter <= fgitermax and ComputeGfuncNorm() < maxepsg and ComputeFluidNorm() < maxepsf)
-  //return (fgiter_ < fgitermax_ and true);
+  bool notconverged = true;
 
-    bool notconverged = true;
+  if (fgitermax_ == 0)
+    dserror("A maximum of 0 FGI is not sensible!!!");
 
-    phinpi_->Update(1.0,*(ScaTraField().Phinp()),0.0);
-
-  if (fgiter_ == 0)
+  if (fgiter_ > 0) // nothing to do for FGI = 0
   {
-    // G-function field and fluid field haven't been solved, yet
+    RCP<const Epetra_Vector> velnpip = FluidField().Velnp();
+    RCP<const Epetra_Vector> phinpip = ScaTraField().Phinp();
 
-    // store old solution vectors
-    if (velnpip_->MyLength() != FluidField().ExtractInterfaceVeln()->MyLength())
-      dserror("vectors must have the same length 1");
-    velnpip_->Update(1.0,*(FluidField().ExtractInterfaceVeln()),0.0);
-    phinpi_->Update(1.0,*(ScaTraField().Phinp()),0.0);
-
-    if (fgiter_ == fgitermax_)
-    {
-      notconverged = false;
-      if (Comm().MyPID()==0)
-        cout << "!!!WARNING: A maximum of 0 FGI is not sensible!!!" << endl;
-    }
-  }
-  else if (fgiter_ > 0)
-  {
     double velnormL2 = 1.0;
     double gfuncnormL2 = 1.0;
 
-    // store new solution vectors and compute L2-norm
-    velnpi_->Update(1.0,*velnpip_,0.0);
-    phinpi_->Update(1.0,*phinpip_,0.0);
-
-    velnpip_->Update(1.0,*(FluidField().ExtractInterfaceVeln()),0.0);
-    velnpip_->Norm2(&velnormL2);
-
-    phinpip_->Update(1.0,*(ScaTraField().Phinp()),0.0);
-    phinpip_->Norm2(&gfuncnormL2);
+    velnpip->Norm2(&velnormL2);
+    phinpip->Norm2(&gfuncnormL2);
 
     if (velnormL2 < 1e-5) velnormL2 = 1.0;
     if (gfuncnormL2 < 1e-5) gfuncnormL2 = 1.0;
@@ -1234,45 +1200,44 @@ bool COMBUST::Algorithm::NotConvergedFGI()
     double fggfuncnormL2 = 1.0;
 
     // compute increment and L2-norm of increment
-    Teuchos::RCP<Epetra_Vector> incvel = rcp(new Epetra_Vector(velnpip_->Map()),true);
-    if (incvel->MyLength() != FluidField().ExtractInterfaceVeln()->MyLength())
-      dserror("vectors must have the same length 2");
-    incvel->Update(1.0,*velnpip_,-1.0,*velnpi_,0.0);
+    RCP<Epetra_Vector> incvel = rcp(new Epetra_Vector(velnpip->Map()),true);
+    incvel->Update(1.0,*velnpip,-1.0,*velnpi_,0.0);
     incvel->Norm2(&fgvelnormL2);
 
-    Teuchos::RCP<Epetra_Vector> incgfunc = rcp(new Epetra_Vector(*ScaTraField().Discretization()->DofRowMap()),true);
-    incgfunc->Update(1.0,*phinpip_,-1.0,*phinpi_,0.0);
+    RCP<Epetra_Vector> incgfunc = rcp(new Epetra_Vector(phinpip->Map(),true));//*ScaTraField().Discretization()->DofRowMap()),true);
+    incgfunc->Update(1.0,*phinpip,-1.0,*phinpi_,0.0);
     incgfunc->Norm2(&fggfuncnormL2);
 
-    if ((fgitermax_ > 1) and (Comm().MyPID()==0))
+    if (fgitermax_ > 1)
     {
-      printf("\n|+------------------------ FGI ------------------------+|");
-      printf("\n|iter/itermax|----tol-[Norm]--|-fluid inc--|-g-func inc-|");
-      printf("\n|   %2d/%2d    | %10.3E[L2] | ---------- | %10.3E |",fgiter_,fgitermax_,convtol_,fggfuncnormL2/gfuncnormL2);
-      printf("\n|+-----------------------------------------------------+|\n");
-
-      if ((fgvelnormL2/velnormL2 <= convtol_) and (fggfuncnormL2/gfuncnormL2 <= convtol_))
-    	  notconverged = false;
-      else
+      if (Comm().MyPID()==0)
       {
+        printf("\n|+------------------------ FGI ------------------------+|");
+        printf("\n|iter/itermax|----tol-[Norm]--|-fluid inc--|-g-func inc-|");
+        printf("\n|   %2d/%2d    | %10.3E[L2] | ---------- | %10.3E |",fgiter_,fgitermax_,convtol_,fggfuncnormL2/gfuncnormL2);
+        printf("\n|+-----------------------------------------------------+|\n");
+
         if (fgiter_ == fgitermax_)
         {
-          notconverged = false;
-          if (Comm().MyPID()==0)
-          {
-            printf("|+---------------- not converged ----------------------+|");
-            printf("\n|+-----------------------------------------------------+|\n");
-          }
+          printf("|+---------------- not converged ----------------------+|");
+          printf("\n|+-----------------------------------------------------+|\n");
         }
-      }
-    }
+      } // end if processor 0 for output
+
+      if ((fgvelnormL2/velnormL2 <= convtol_) and (fggfuncnormL2/gfuncnormL2 <= convtol_))
+        notconverged = false;
+    } // end if fgitermax > 1
+
+    if (fgiter_ >= fgitermax_)
+      notconverged = false;
+
+    if (!notconverged)
+      FluidField().ClearTimeInt(); // clear XFEM time integration
+
+    // update fgi-vectors
+    velnpi_->Update(1.0,*velnpip,0.0);
+    phinpi_->Update(1.0,*phinpip,0.0);
   }
-
-  if (fgiter_ >= fgitermax_)
-    notconverged = false;
-
-  if (!notconverged)
-	  FluidField().ClearTimeInt();
 
   return notconverged;
 }
@@ -1311,8 +1276,10 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
 
   FluidField().PrepareTimeStep();
   
+#ifdef PRINTMASSCHECK
   // compute initial volume of minus domain
   const double volume_start = ComputeVolume();
+#endif
 
   //-------------------------------------
   // solve nonlinear Navier-Stokes system
@@ -1576,9 +1543,9 @@ void COMBUST::Algorithm::DoGfuncField()
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::Algorithm::UpdateInterface()
 {
-    //overwrite old interfacehandle before updating flamefront in first FGI
-	if (fgiter_<=1 and interfacehandle_old_ != Teuchos::null)
-		interfacehandle_old_->UpdateInterfaceHandle();
+  //overwrite old interfacehandle before updating flamefront in first FGI
+  if (fgiter_<=1 and interfacehandle_old_ != Teuchos::null)
+    interfacehandle_old_->UpdateInterfaceHandle();
 
   // update flame front according to evolved G-function field
   // remark: for only one FGI iteration, 'phinpip_' == ScaTraField().Phin()
@@ -1589,7 +1556,7 @@ void COMBUST::Algorithm::UpdateInterface()
 
   // update interfacehandle (get integration cells) according to updated flame front
   interfacehandle_->UpdateInterfaceHandle();
-
+if (fgiter_==1) interfacehandle_->toGmsh(1111); else interfacehandle_->toGmsh(2222);
   // update the Fluid and the FGI vector at the end of the FGI loop
   return;
 }
@@ -2428,26 +2395,28 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
       // get my flame front (boundary integration cells)
       std::map<int, GEO::BoundaryIntCells> myflamefront = interfacehandle_->GetElementalBoundaryIntCells();
 #ifdef PARALLEL
-    // export flame front (boundary integration cells) to all processors
-    flamefront_->ExportFlameFront(myflamefront);
+      // export flame front (boundary integration cells) to all processors
+      flamefront_->ExportFlameFront(myflamefront);
 #endif
-    // reinitialize G-function (level set) field
-    COMBUST::Reinitializer reinitializer(
-        combustdyn_,
-        ScaTraField(),
-        myflamefront,
-        ScaTraField().Phinp(),
-        true);
+      // reinitialize G-function (level set) field
+      COMBUST::Reinitializer reinitializer(
+          combustdyn_,
+          ScaTraField(),
+          myflamefront,
+          ScaTraField().Phinp(),
+          true);
 
-    *ScaTraField().Phin() = *ScaTraField().Phinp();
-    *ScaTraField().Phinm() = *ScaTraField().Phinp();
+      *ScaTraField().Phin() = *ScaTraField().Phinp();
+      *ScaTraField().Phinm() = *ScaTraField().Phinp();
 
-    // update flame front according to reinitialized G-function field
-    flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
-    // update interfacehandle (get integration cells) according to updated flame front
-    interfacehandle_->UpdateInterfaceHandle();
+      // update flame front according to reinitialized G-function field
+      flamefront_->UpdateFlameFront(combustdyn_,ScaTraField().Phin(), ScaTraField().Phinp());
+      // update interfacehandle (get integration cells) according to updated flame front
+      interfacehandle_->UpdateInterfaceHandle();
     }
   }
+
+  phinpi_->Update(1.0,*ScaTraField().Phin(),0.0);
 
   if (gmshoutput_)
   {
@@ -3087,25 +3056,11 @@ void COMBUST::Algorithm::Redistribute()
       //--------------------------------------------------------------------------------------
       Teuchos::RCP<Epetra_Vector> old;
 
-      if (velnpip_ != Teuchos::null)
-      {
-        old = velnpip_;
-        velnpip_ = rcp(new Epetra_Vector(*fluiddis->DofRowMap()),true);
-        LINALG::Export(*old, *velnpip_);
-      }
-
       if (velnpi_ != Teuchos::null)
       {
         old = velnpi_;
         velnpi_ = rcp(new Epetra_Vector(*fluiddis->DofRowMap()),true);
         LINALG::Export(*old, *velnpi_);
-      }
-
-      if (phinpip_ != Teuchos::null)
-      {
-        old = phinpip_;
-        phinpip_ = rcp(new Epetra_Vector(*gfuncdis->DofRowMap()),true);
-        LINALG::Export(*old, *phinpip_);
       }
 
       if (phinpi_ != Teuchos::null)

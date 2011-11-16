@@ -103,8 +103,11 @@ public:
   */
   void SolveStationaryProblem();
 
+
+  /// check whether FRS iteration is finished
   bool FluidRefSolLoopFinished();
 
+  /// clear time integration data for XFEM problems
   void ClearTimeInt();
 
   /// prepare a time step
@@ -653,6 +656,7 @@ protected:
   //! Extractor used for output
   LINALG::MapExtractor      velpressplitterForOutput_;
 
+  // time integration handling
   Teuchos::RCP<XFEM::STD> timeIntStd_; //! Standard reference values
   Teuchos::RCP<XFEM::ENR> timeIntEnr_; //! Enriched reference values
 

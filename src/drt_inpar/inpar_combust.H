@@ -57,7 +57,10 @@ namespace INPAR
       xfemtimeint_donothing,
       xfemtimeint_semilagrange,
       xfemtimeint_extrapolation,
-      xfemtimeint_mixed
+      xfemtimeint_mixedSLExtrapol,
+      xfemtimeint_mixedghostSL,
+      xfemtimeint_mixedghostExtrapol,
+      xfemtimeint_mixedghostSLExtrapol
     };
 
     /// type of xfem time integration of enrichment values

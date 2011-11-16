@@ -18,12 +18,12 @@ Maintainer: Martin Winklmaier
 
 
 /*------------------------------------------------------------------------------------------------*
- * constructor of the enrichment recomputation                                   winklmaier 08/10 *
+ * constructor of the enrichment recomputation with projection approach          winklmaier 08/10 *
  *------------------------------------------------------------------------------------------------*/
 XFEM::EnrichmentProjection::EnrichmentProjection(
-	XFEM::TIMEINT& timeInt,
-	INPAR::COMBUST::XFEMTimeIntegrationEnr timeIntEnr,
-	INPAR::COMBUST::XFEMTimeIntegrationEnrComp timeIntEnrType
+    XFEM::TIMEINT& timeInt,
+    INPAR::COMBUST::XFEMTimeIntegrationEnr timeIntEnr,
+    INPAR::COMBUST::XFEMTimeIntegrationEnrComp timeIntEnrType
 ) : ENR(timeInt,timeIntEnr,timeIntEnrType)
 {
   callOldValues(); // compute the old enrichment data
@@ -33,31 +33,31 @@ XFEM::EnrichmentProjection::EnrichmentProjection(
 
 
 /*------------------------------------------------------------------------------------------------*
- * main function of the enrichment recomputation                                 winklmaier 08/10 *
+ * call computation of the projection approach for enrichment values             winklmaier 08/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::EnrichmentProjection::compute(
-	vector<RCP<Epetra_Vector> > newRowVectorsn,
-	vector<RCP<Epetra_Vector> > newRowVectorsnp
+    vector<RCP<Epetra_Vector> > newRowVectorsn,
+    vector<RCP<Epetra_Vector> > newRowVectorsnp
 )
 {
-	if (FGIType_==FRSNot1_)
-		return;
+  if (FGIType_==FRSNot1_)
+    return;
 
-	handleVectors(newRowVectorsn,newRowVectorsnp);
+  handleVectors(newRowVectorsn,newRowVectorsnp);
 
-/*-----------------------------------------------------------*
- * second part: compute enrichment values for new interface  *
- * according to the old values. this works when around an    *
- * enriched node at new interface an intersected element at  *
- * old interface has been. else node is added to failedNodes *
- *-----------------------------------------------------------*/
+  /*-----------------------------------------------------------*
+   * second part: compute enrichment values for new interface  *
+   * according to the old values. this works when around an    *
+   * enriched node at new interface an intersected element at  *
+   * old interface has been. else node is added to failedNodes *
+   *-----------------------------------------------------------*/
   computeNewEnrichments();
 
-/*---------------------------------------------------------------*
- * third part: handle the nodes which didn't get an sensible     *
- * enrichment value by the above step. look for nearest enriched *
- * node at old interface and take its surround elements          *
- *---------------------------------------------------------------*/
+  /*---------------------------------------------------------------*
+   * third part: handle the nodes which didn't get an sensible     *
+   * enrichment value by the above step. look for nearest enriched *
+   * node at old interface and take its surround elements          *
+   *---------------------------------------------------------------*/
   handleFailedNodes();
 
   return;
@@ -82,21 +82,21 @@ void XFEM::EnrichmentProjection::callOldValues(
 #ifdef COMBUST_CUT
     if (oldinterfacehandle_->ElementBisected(ele->Id()) or oldinterfacehandle_->ElementTouchedMinus(ele)) // element intersected
 #else
-    if (oldinterfacehandle_->ElementBisected(ele) or oldinterfacehandle_->ElementTouchedMinus(ele)) // element is intersected
+      if (oldinterfacehandle_->ElementBisected(ele) or oldinterfacehandle_->ElementTouchedMinus(ele)) // element is intersected
 #endif
-    {
-      switch (ele->Shape())
       {
-      case DRT::Element::hex8:
-        oldValues<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement>(ele);
-      break;
-      case DRT::Element::hex20:
-        oldValues<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement>(ele);
-      break;
-      default:
-        dserror("xfem assembly type not yet implemented in time integration");
-      };
-    } // end if element intersected
+        switch (ele->Shape())
+        {
+        case DRT::Element::hex8:
+          oldValues<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement>(ele);
+          break;
+        case DRT::Element::hex20:
+          oldValues<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement>(ele);
+          break;
+        default:
+          dserror("xfem assembly type not yet implemented in time integration");
+        };
+      } // end if element intersected
   } // end loop over col ele nodes
 }
 
@@ -137,7 +137,7 @@ void XFEM::EnrichmentProjection::oldValues(
 
 
 /*------------------------------------------------------------------------------------------------*
- * compute values for jump enrichments for the old interface position            winklmaier 08/10 *
+ * compute values for jump enriched dofs for the old interface position          winklmaier 08/10 *
  *------------------------------------------------------------------------------------------------*/
 template <const int numnode>
 void XFEM::EnrichmentProjection::oldJumpAndKinkValues(
@@ -153,210 +153,210 @@ void XFEM::EnrichmentProjection::oldJumpAndKinkValues(
   if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project)
   {
 #ifdef COMBUST_CUT
-	  if (oldinterfacehandle_->ElementBisected(ele->Id())) // compute jump and kink in bisected ele
+    if (oldinterfacehandle_->ElementBisected(ele->Id())) // compute jump and kink in bisected ele
 #else
-	  if (oldinterfacehandle_->ElementBisected(ele)) // compute jump and kink in bisected ele
+      if (oldinterfacehandle_->ElementBisected(ele)) // compute jump and kink in bisected ele
 #endif
-	  {
-		// compute the kink and jump height at the interface in this element
-		// a least squares approach is used for the computation
-		LINALG::Matrix<2,2> sysmat(true); // system matrix
-		LINALG::Matrix<2,1> rhs(true); // right hand side
+      {
+        // compute the kink and jump height at the interface in this element
+        // a least squares approach is used for the computation
+        LINALG::Matrix<2,2> sysmat(true); // system matrix
+        LINALG::Matrix<2,1> rhs(true); // right hand side
 
-		LINALG::Matrix<2,1> currJumpAndKink(true); // jump and kink value
-		LINALG::Matrix<2,nsd+1> currentJumpsAndKinks(true); // jump and kink values for all enrichments of current node
-		vector<LINALG::Matrix<2,nsd+1> > eleJumpAndKinks; // all jump and kink values for a node
+        LINALG::Matrix<2,1> currJumpAndKink(true); // jump and kink value
+        LINALG::Matrix<2,nsd+1> currentJumpsAndKinks(true); // jump and kink values for all enrichments of current node
+        vector<LINALG::Matrix<2,nsd+1> > eleJumpAndKinks; // all jump and kink values for a node
 
-		for (size_t field=0;field<oldVectors_.size();field++) // loop over fields that shall be set
-		{
-		  currentJumpsAndKinks.Clear();
-		  for (int ientry=0;ientry<nsd+1;ientry++) // number of enrichments for every node and field
-		  {
-			// set up system matrix and right hand side
-			sysmat.Clear();
-			rhs.Clear();
-			currJumpAndKink.Clear();
+        for (size_t field=0;field<oldVectors_.size();field++) // loop over fields that shall be set
+        {
+          currentJumpsAndKinks.Clear();
+          for (int ientry=0;ientry<nsd+1;ientry++) // number of enrichments for every node and field
+          {
+            // set up system matrix and right hand side
+            sysmat.Clear();
+            rhs.Clear();
+            currJumpAndKink.Clear();
 
-			sysmat(0,0) = numnodeused;
-			for (int index=0;index<numnode;index++) // loop over element nodes
-			{
-			  if (dmin(index)!=INFINITY) // if infinity then dont used node
-			  {
-				rhs(0) -= jumpEnrValues[field](ientry,index);
-				rhs(1) -= jumpEnrValues[field](ientry,index)*dmin(index);
-				sysmat(1,0) += dmin(index);
-				sysmat(1,1) -= dmin(index)*dmin(index);
-			  }
-			}
-			sysmat(0,1) = -sysmat(1,0);
-			sysmat.Scale(0.5);
+            sysmat(0,0) = numnodeused;
+            for (int index=0;index<numnode;index++) // loop over element nodes
+            {
+              if (dmin(index)!=INFINITY) // if infinity then dont used node
+              {
+                rhs(0) -= jumpEnrValues[field](ientry,index);
+                rhs(1) -= jumpEnrValues[field](ientry,index)*dmin(index);
+                sysmat(1,0) += dmin(index);
+                sysmat(1,1) -= dmin(index)*dmin(index);
+              }
+            }
+            sysmat(0,1) = -sysmat(1,0);
+            sysmat.Scale(0.5);
 
-			// compute and set jump and kink value
-			sysmat.Invert();
-			currJumpAndKink.Multiply(sysmat,rhs);
-			currentJumpsAndKinks(0,ientry) = currJumpAndKink(0);
-			currentJumpsAndKinks(1,ientry) = currJumpAndKink(1);
-		  } // end loop over enrichment number
+            // compute and set jump and kink value
+            sysmat.Invert();
+            currJumpAndKink.Multiply(sysmat,rhs);
+            currentJumpsAndKinks(0,ientry) = currJumpAndKink(0);
+            currentJumpsAndKinks(1,ientry) = currJumpAndKink(1);
+          } // end loop over enrichment number
 
-		  eleJumpAndKinks.push_back(currentJumpsAndKinks);
-		} // end loop over vectorfield size
+          eleJumpAndKinks.push_back(currentJumpsAndKinks);
+        } // end loop over vectorfield size
 
-//	    cout << "in bisected " << *ele << " final old jumps and kinks are " << eleJumpAndKinks[0] << endl;
-		eleJumpsAndKinks_.insert(make_pair(ele->Id(),eleJumpAndKinks));
-	  } // end if element bisected
-	  else // in touchedminus ele just compute jump since kink value = 0 (singulary sysmat)
-	  {
-		// compute the jump height at the interface in this element as a mean value
-		double sysmat = 0; // system matrix
-		double rhs = 0; // right hand side
-		double currJump = 0; // jump value
-		LINALG::Matrix<2,nsd+1> currentJumpsAndKinks(true); // jump and kink values for all enrichments of current node
-		vector<LINALG::Matrix<2,nsd+1> > eleJumpAndKinks; // all jump and kink values for a node
+        //	    cout << "in bisected " << *ele << " final old jumps and kinks are " << eleJumpAndKinks[0] << endl;
+        eleJumpsAndKinks_.insert(make_pair(ele->Id(),eleJumpAndKinks));
+      } // end if element bisected
+      else // in touchedminus ele just compute jump since kink value = 0 (singulary sysmat)
+      {
+        // compute the jump height at the interface in this element as a mean value
+        double sysmat = 0; // system matrix
+        double rhs = 0; // right hand side
+        double currJump = 0; // jump value
+        LINALG::Matrix<2,nsd+1> currentJumpsAndKinks(true); // jump and kink values for all enrichments of current node
+        vector<LINALG::Matrix<2,nsd+1> > eleJumpAndKinks; // all jump and kink values for a node
 
-		for (size_t field=0;field<oldVectors_.size();field++) // loop over fields that shall be set
-		{
-		  currentJumpsAndKinks.Clear();
-		  for (int ientry=0;ientry<nsd+1;ientry++) // number of enrichments for every node and field
-		  {
-			// set up system matrix and right hand side
-			sysmat = 0.5*numnodeused;
-			rhs = 0;
-			for (int index=0;index<numnode;index++) // loop over element nodes
-			{
-			  if (dmin(index)!=INFINITY) // if infinity then dont used node
-				rhs -= jumpEnrValues[field](ientry,index);
-			}
+        for (size_t field=0;field<oldVectors_.size();field++) // loop over fields that shall be set
+        {
+          currentJumpsAndKinks.Clear();
+          for (int ientry=0;ientry<nsd+1;ientry++) // number of enrichments for every node and field
+          {
+            // set up system matrix and right hand side
+            sysmat = 0.5*numnodeused;
+            rhs = 0;
+            for (int index=0;index<numnode;index++) // loop over element nodes
+            {
+              if (dmin(index)!=INFINITY) // if infinity then dont used node
+                rhs -= jumpEnrValues[field](ientry,index);
+            }
 
-			// compute and set jump value
-			currJump = rhs/sysmat;
-			currentJumpsAndKinks(0,ientry) = currJump;
+            // compute and set jump value
+            currJump = rhs/sysmat;
+            currentJumpsAndKinks(0,ientry) = currJump;
 
-		  } // end loop over enrichment number
+          } // end loop over enrichment number
 
-		  eleJumpAndKinks.push_back(currentJumpsAndKinks);
-		} // end loop over vectorfield size
+          eleJumpAndKinks.push_back(currentJumpsAndKinks);
+        } // end loop over vectorfield size
 
-	//    cout << "final old jumps and kinks at touched element are " << eleJumpAndKinks[0] << endl;
-		eleJumpsAndKinks_.insert(make_pair(ele->Id(),eleJumpAndKinks));
-	  } // end if element touchedminus
+        //    cout << "final old jumps and kinks at touched element are " << eleJumpAndKinks[0] << endl;
+        eleJumpsAndKinks_.insert(make_pair(ele->Id(),eleJumpAndKinks));
+      } // end if element touchedminus
   }
   else if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project_scalar)
   {
-	  if (oldinterfacehandle_->ElementBisected(ele->Id())) // compute jump and kink in bisected ele
-	  {
-		// compute the kink and jump height at the interface in this element
-		// a least squares approach is used for the computation
-		LINALG::Matrix<2,2> sysmat(true); // system matrix
-		LINALG::Matrix<2,1> rhsvel(true); // right hand side for the velocity
-		LINALG::Matrix<2,1> rhspres(true); // right hand side for the pressure
-		LINALG::Matrix<2,1> velJumpAndKink(true); // jump and kink value for the velocity
-		LINALG::Matrix<2,1> presJumpAndKink(true); // jump and kink value for the pressure
-		LINALG::Matrix<2,nsd+1> currentJumpsAndKinks(true); // jump and kink values for all physical fields of a node
-		vector<LINALG::Matrix<2,nsd+1> > eleJumpAndKinks; // all jump and kink values of a node
+    if (oldinterfacehandle_->ElementBisected(ele->Id())) // compute jump and kink in bisected ele
+    {
+      // compute the kink and jump height at the interface in this element
+      // a least squares approach is used for the computation
+      LINALG::Matrix<2,2> sysmat(true); // system matrix
+      LINALG::Matrix<2,1> rhsvel(true); // right hand side for the velocity
+      LINALG::Matrix<2,1> rhspres(true); // right hand side for the pressure
+      LINALG::Matrix<2,1> velJumpAndKink(true); // jump and kink value for the velocity
+      LINALG::Matrix<2,1> presJumpAndKink(true); // jump and kink value for the pressure
+      LINALG::Matrix<2,nsd+1> currentJumpsAndKinks(true); // jump and kink values for all physical fields of a node
+      vector<LINALG::Matrix<2,nsd+1> > eleJumpAndKinks; // all jump and kink values of a node
 
-		for (size_t field=0;field<oldVectors_.size();field++) // loop over vectors that shall be set
-		{
-		  // clear vectors and matrices
-		  currentJumpsAndKinks.Clear();
-		  sysmat.Clear();
-		  rhsvel.Clear();
-		  rhspres.Clear();
-		  velJumpAndKink.Clear();
-		  presJumpAndKink.Clear();
+      for (size_t field=0;field<oldVectors_.size();field++) // loop over vectors that shall be set
+      {
+        // clear vectors and matrices
+        currentJumpsAndKinks.Clear();
+        sysmat.Clear();
+        rhsvel.Clear();
+        rhspres.Clear();
+        velJumpAndKink.Clear();
+        presJumpAndKink.Clear();
 
-		  // compute system matrix and right hand side
-		  sysmat(0,0) = numnodeused;
-		  for (int index=0;index<numnode;index++) // loop over element nodes
-		  {
-			if (dmin(index)!=INFINITY) // if infinity then dont used node
-			{
-			  sysmat(1,0) += dmin(index);
-			  sysmat(1,1) -= dmin(index)*dmin(index);
+        // compute system matrix and right hand side
+        sysmat(0,0) = numnodeused;
+        for (int index=0;index<numnode;index++) // loop over element nodes
+        {
+          if (dmin(index)!=INFINITY) // if infinity then dont used node
+          {
+            sysmat(1,0) += dmin(index);
+            sysmat(1,1) -= dmin(index)*dmin(index);
 
-			  LINALG::Matrix<nsd,1> currVelEnrValues(true);
-			  for (int i=0;i<nsd;i++)
-				currVelEnrValues(i) = jumpEnrValues[field](i,index);
+            LINALG::Matrix<nsd,1> currVelEnrValues(true);
+            for (int i=0;i<nsd;i++)
+              currVelEnrValues(i) = jumpEnrValues[field](i,index);
 
-			  double currVelEnrScalar = currVelEnrValues.Norm2();
-			  rhsvel(0) -= currVelEnrScalar;
-			  rhsvel(1) -= currVelEnrScalar*dmin(index);
+            double currVelEnrScalar = currVelEnrValues.Norm2();
+            rhsvel(0) -= currVelEnrScalar;
+            rhsvel(1) -= currVelEnrScalar*dmin(index);
 
-			  rhspres(0) -= jumpEnrValues[field](nsd,index);
-			  rhspres(1) -= jumpEnrValues[field](nsd,index)*dmin(index);
-			}
-		  }
-		  sysmat(0,1) = -sysmat(1,0);
-		  sysmat.Scale(0.5);
+            rhspres(0) -= jumpEnrValues[field](nsd,index);
+            rhspres(1) -= jumpEnrValues[field](nsd,index)*dmin(index);
+          }
+        }
+        sysmat(0,1) = -sysmat(1,0);
+        sysmat.Scale(0.5);
 
-		  // compute and set jump and kink values
-		  sysmat.Invert();
-		  velJumpAndKink.Multiply(sysmat,rhsvel);
-		  presJumpAndKink.Multiply(sysmat,rhspres);
-		  currentJumpsAndKinks(0,0) = velJumpAndKink(0);
-		  currentJumpsAndKinks(1,0) = velJumpAndKink(1);
-		  currentJumpsAndKinks(0,1) = presJumpAndKink(0);
-		  currentJumpsAndKinks(1,1) = presJumpAndKink(1);
-		  eleJumpAndKinks.push_back(currentJumpsAndKinks);
-		} // end loop over vectorfield size
+        // compute and set jump and kink values
+        sysmat.Invert();
+        velJumpAndKink.Multiply(sysmat,rhsvel);
+        presJumpAndKink.Multiply(sysmat,rhspres);
+        currentJumpsAndKinks(0,0) = velJumpAndKink(0);
+        currentJumpsAndKinks(1,0) = velJumpAndKink(1);
+        currentJumpsAndKinks(0,1) = presJumpAndKink(0);
+        currentJumpsAndKinks(1,1) = presJumpAndKink(1);
+        eleJumpAndKinks.push_back(currentJumpsAndKinks);
+      } // end loop over vectorfield size
 
-//		cout << "final old jumps and kinks at bisected element are " << eleJumpAndKinks[0] << endl;
-		eleJumpsAndKinks_.insert(make_pair(ele->Id(),eleJumpAndKinks));
-	  } // end if element bisected
-	  else // in touchedminus ele just compute jump since kink value = 0 (singulary sysmat)
-	  {
-		// compute the jump height at the interface in this element as a mean value
-		double sysmat = 0; // system matrix
-		double rhsvel = 0; // right hand side for the velocity
-		double rhspres = 0; // right hand side for the pressure
-		double velJump = 0; // velocity jump
-		double presJump = 0; // pressure jump
-		LINALG::Matrix<2,nsd+1> currentJumpsAndKinks(true); // jump and kink values of the current node
-		vector<LINALG::Matrix<2,nsd+1> > eleJumpAndKinks; // all jump and kink values of the current node
+      //		cout << "final old jumps and kinks at bisected element are " << eleJumpAndKinks[0] << endl;
+      eleJumpsAndKinks_.insert(make_pair(ele->Id(),eleJumpAndKinks));
+    } // end if element bisected
+    else // in touchedminus ele just compute jump since kink value = 0 (singulary sysmat)
+    {
+      // compute the jump height at the interface in this element as a mean value
+      double sysmat = 0; // system matrix
+      double rhsvel = 0; // right hand side for the velocity
+      double rhspres = 0; // right hand side for the pressure
+      double velJump = 0; // velocity jump
+      double presJump = 0; // pressure jump
+      LINALG::Matrix<2,nsd+1> currentJumpsAndKinks(true); // jump and kink values of the current node
+      vector<LINALG::Matrix<2,nsd+1> > eleJumpAndKinks; // all jump and kink values of the current node
 
-		for (size_t field=0;field<oldVectors_.size();field++) // lop over vectors that shall be set
-		{
-		  currentJumpsAndKinks.Clear();
+      for (size_t field=0;field<oldVectors_.size();field++) // lop over vectors that shall be set
+      {
+        currentJumpsAndKinks.Clear();
 
-		  // compute system matrix and right hand side
-		  sysmat = 0.5*numnodeused;
-		  rhsvel = 0;
-		  rhspres = 0;
+        // compute system matrix and right hand side
+        sysmat = 0.5*numnodeused;
+        rhsvel = 0;
+        rhspres = 0;
 
-		  for (int index=0;index<numnode;index++) // loop over element nodes
-		  {
-			if (dmin(index)!=INFINITY) // if infinity then dont used node
-			{
-			  LINALG::Matrix<nsd,1> currVelEnrValues;
-			  for (int i=0;i<nsd;i++)
-				currVelEnrValues(i) = jumpEnrValues[field](i,index);
+        for (int index=0;index<numnode;index++) // loop over element nodes
+        {
+          if (dmin(index)!=INFINITY) // if infinity then dont used node
+          {
+            LINALG::Matrix<nsd,1> currVelEnrValues;
+            for (int i=0;i<nsd;i++)
+              currVelEnrValues(i) = jumpEnrValues[field](i,index);
 
-			  double currVelEnrScalar = currVelEnrValues.Dot(normal);
-			  rhsvel -= currVelEnrScalar;
+            double currVelEnrScalar = currVelEnrValues.Dot(normal);
+            rhsvel -= currVelEnrScalar;
 
-			  rhspres -= jumpEnrValues[field](3,index);
-			}
-		  }
-	//            cout << "rhs in touched ele is " << rhs << endl;
+            rhspres -= jumpEnrValues[field](3,index);
+          }
+        }
+        //            cout << "rhs in touched ele is " << rhs << endl;
 
-		  velJump = rhsvel/sysmat;
-		  presJump = rhspres/sysmat;
+        velJump = rhsvel/sysmat;
+        presJump = rhspres/sysmat;
 
-	//            cout << "curr jump in touched ele is " << currJump << endl;
-		  currentJumpsAndKinks(0,0) = velJump;
-		  currentJumpsAndKinks(0,1) = presJump;
+        //            cout << "curr jump in touched ele is " << currJump << endl;
+        currentJumpsAndKinks(0,0) = velJump;
+        currentJumpsAndKinks(0,1) = presJump;
 
-		  eleJumpAndKinks.push_back(currentJumpsAndKinks);
-		} // end loop over vectorfield size
-		//cout << "final old jumps and kinks at touched element are " << eleJumpAndKinks[0] << endl;
-		eleJumpsAndKinks_.insert(make_pair(ele->Id(),eleJumpAndKinks));
-	  } // end if element touchedminus
+        eleJumpAndKinks.push_back(currentJumpsAndKinks);
+      } // end loop over vectorfield size
+      //cout << "final old jumps and kinks at touched element are " << eleJumpAndKinks[0] << endl;
+      eleJumpsAndKinks_.insert(make_pair(ele->Id(),eleJumpAndKinks));
+    } // end if element touchedminus
   }
 }
 
 
 
 /*------------------------------------------------------------------------------------------------*
- * compute values for kink enrichments for the old interface position            winklmaier 08/10 *
+ * compute values for kink enriched dofs for the old interface position          winklmaier 08/10 *
  *------------------------------------------------------------------------------------------------*/
 template <const int numnode>
 void XFEM::EnrichmentProjection::oldKinkValues(
@@ -371,95 +371,95 @@ void XFEM::EnrichmentProjection::oldKinkValues(
   if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project)
   {
 #ifdef COMBUST_CUT
-	  if (oldinterfacehandle_->ElementBisected(ele->Id())) // compute kink in bisected ele
+    if (oldinterfacehandle_->ElementBisected(ele->Id())) // compute kink in bisected ele
 #else
-	  if (oldinterfacehandle_->ElementBisected(ele)) // compute kink in bisected ele
+      if (oldinterfacehandle_->ElementBisected(ele)) // compute kink in bisected ele
 #endif
-	  {
-		double enrSum; // sum of enrichment values of element nodes
-		LINALG::Matrix<1,nsd+1> currKinks(true); // kink values for all enrichments of current node
-		vector<LINALG::Matrix<1,nsd+1> > eleKinks; // all kink values for a node
+      {
+        double enrSum; // sum of enrichment values of element nodes
+        LINALG::Matrix<1,nsd+1> currKinks(true); // kink values for all enrichments of current node
+        vector<LINALG::Matrix<1,nsd+1> > eleKinks; // all kink values for a node
 
-		for (size_t field=0;field<oldVectors_.size();field++) // loop over fields that shall be set
-		{
-		  currKinks.Clear();
-		  for (int ientry=0;ientry<nsd+1;ientry++) // number of enrichments for every node and field
-		  {
-			enrSum = 0.0;
-			for (int index=0;index<numnode;index++) // loop over element nodes
-			{
-			  if (dmin(index)!=INFINITY) // if infinity then don't use node
-				enrSum += kinkEnrValues[field](ientry,index);
-			}
-			currKinks(ientry) = enrSum/numnodeused;
-		  } // end loop over enrichment number
-		  eleKinks.push_back(currKinks);
-		} // end loop over vectorfield size
-	//    cout << "final old kink values at bisected element are " << eleKinks[0] << endl;
-		eleKinks_.insert(make_pair(ele->Id(),eleKinks));
-	  } // end if element bisected
-	  else
-	  {
-		LINALG::Matrix<1,nsd+1> currKinks(true); // kink values for all enrichments of current node
-		vector<LINALG::Matrix<1,nsd+1> > eleKinks; // all kink values for a node
+        for (size_t field=0;field<oldVectors_.size();field++) // loop over fields that shall be set
+        {
+          currKinks.Clear();
+          for (int ientry=0;ientry<nsd+1;ientry++) // number of enrichments for every node and field
+          {
+            enrSum = 0.0;
+            for (int index=0;index<numnode;index++) // loop over element nodes
+            {
+              if (dmin(index)!=INFINITY) // if infinity then don't use node
+                enrSum += kinkEnrValues[field](ientry,index);
+            }
+            currKinks(ientry) = enrSum/numnodeused;
+          } // end loop over enrichment number
+          eleKinks.push_back(currKinks);
+        } // end loop over vectorfield size
+        //    cout << "final old kink values at bisected element are " << eleKinks[0] << endl;
+        eleKinks_.insert(make_pair(ele->Id(),eleKinks));
+      } // end if element bisected
+      else
+      {
+        LINALG::Matrix<1,nsd+1> currKinks(true); // kink values for all enrichments of current node
+        vector<LINALG::Matrix<1,nsd+1> > eleKinks; // all kink values for a node
 
-		for (size_t field=0;field<oldVectors_.size();field++) // loop over fields that shall be set
-		  eleKinks.push_back(currKinks);
+        for (size_t field=0;field<oldVectors_.size();field++) // loop over fields that shall be set
+          eleKinks.push_back(currKinks);
 
-		eleKinks_.insert(make_pair(ele->Id(),eleKinks));
-	  }
+        eleKinks_.insert(make_pair(ele->Id(),eleKinks));
+      }
   }
   else if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project_scalar)
   {
 #ifdef COMBUST_CUT
-	  if (oldinterfacehandle_->ElementBisected(ele->Id())) // compute kink in bisected ele
+    if (oldinterfacehandle_->ElementBisected(ele->Id())) // compute kink in bisected ele
 #else
-	  if (oldinterfacehandle_->ElementBisected(ele)) // compute kink in bisected ele
+      if (oldinterfacehandle_->ElementBisected(ele)) // compute kink in bisected ele
 #endif
-	  {
-		double enrSumVel; // sum of scalar velocity enrichment values of element nodes
-		double enrSumPres; // sum of pressure enrichment values
+      {
+        double enrSumVel; // sum of scalar velocity enrichment values of element nodes
+        double enrSumPres; // sum of pressure enrichment values
 
-		LINALG::Matrix<nsd,1> enrVel;
+        LINALG::Matrix<nsd,1> enrVel;
 
-		LINALG::Matrix<1,nsd+1> currKinks(true); // kink values for all enrichments of current node
-		vector<LINALG::Matrix<1,nsd+1> > eleKinks; // all kink values for a node
+        LINALG::Matrix<1,nsd+1> currKinks(true); // kink values for all enrichments of current node
+        vector<LINALG::Matrix<1,nsd+1> > eleKinks; // all kink values for a node
 
-		for (size_t field=0;field<oldVectors_.size();field++) // loop over fields that shall be set
-		{
-		  currKinks.Clear();
-		  enrSumPres = 0;
+        for (size_t field=0;field<oldVectors_.size();field++) // loop over fields that shall be set
+        {
+          currKinks.Clear();
+          enrSumPres = 0;
 
-		  for (int index=0;index<numnode;index++) // loop over element nodes
-		  {
-			if (dmin(index)!=INFINITY) // if infinity then don't use node
-			{
-			  enrSumPres += kinkEnrValues[field](3,index);
-			  for (int ientry=0;ientry<nsd;ientry++) // number of enrichments for every node and field
-				enrVel(0,ientry) += kinkEnrValues[field](ientry,index);
-			  enrSumVel = enrVel.Norm2();
-			} // end if distance infinity
-		  } // end loop over element nodes
-		  enrSumVel = enrVel.Norm2();
+          for (int index=0;index<numnode;index++) // loop over element nodes
+          {
+            if (dmin(index)!=INFINITY) // if infinity then don't use node
+            {
+              enrSumPres += kinkEnrValues[field](3,index);
+              for (int ientry=0;ientry<nsd;ientry++) // number of enrichments for every node and field
+                enrVel(0,ientry) += kinkEnrValues[field](ientry,index);
+              enrSumVel = enrVel.Norm2();
+            } // end if distance infinity
+          } // end loop over element nodes
+          enrSumVel = enrVel.Norm2();
 
-		  currKinks(0) = enrSumVel/numnodeused;
-		  currKinks(1) = enrSumPres/numnodeused;
+          currKinks(0) = enrSumVel/numnodeused;
+          currKinks(1) = enrSumPres/numnodeused;
 
-		  eleKinks.push_back(currKinks);
-		} // end loop over vectorfield size
-	//    cout << "final old kink values at bisected element are " << eleKinks[0] << endl;
-		eleKinks_.insert(make_pair(ele->Id(),eleKinks));
-	  } // end if element bisected
-	  else
-	  {
-		LINALG::Matrix<1,nsd+1> currKinks(true); // kink values for all enrichments of current node
-		vector<LINALG::Matrix<1,nsd+1> > eleKinks; // all kink values for a node
+          eleKinks.push_back(currKinks);
+        } // end loop over vectorfield size
+        //    cout << "final old kink values at bisected element are " << eleKinks[0] << endl;
+        eleKinks_.insert(make_pair(ele->Id(),eleKinks));
+      } // end if element bisected
+      else
+      {
+        LINALG::Matrix<1,nsd+1> currKinks(true); // kink values for all enrichments of current node
+        vector<LINALG::Matrix<1,nsd+1> > eleKinks; // all kink values for a node
 
-		for (size_t field=0;field<oldVectors_.size();field++) // loop over fields that shall be set
-		  eleKinks.push_back(currKinks);
+        for (size_t field=0;field<oldVectors_.size();field++) // loop over fields that shall be set
+          eleKinks.push_back(currKinks);
 
-		eleKinks_.insert(make_pair(ele->Id(),eleKinks));
-	  } // end if element touched
+        eleKinks_.insert(make_pair(ele->Id(),eleKinks));
+      } // end if element touched
   }
 }
 
@@ -499,20 +499,20 @@ void XFEM::EnrichmentProjection::computeNewEnrichments(
 #ifdef COMBUST_CUT
         if (oldinterfacehandle_->ElementBisected(eles[iele]->Id()) || oldinterfacehandle_->ElementTouchedMinus(eles[iele])) // element intersected
 #else
-        if (oldinterfacehandle_->ElementBisected(eles[iele]) || oldinterfacehandle_->ElementTouchedMinus(eles[iele])) // element intersected
+          if (oldinterfacehandle_->ElementBisected(eles[iele]) || oldinterfacehandle_->ElementTouchedMinus(eles[iele])) // element intersected
 #endif
-        {
-          numOldIntersectedEle++;
-          currJumpsAndKinks = eleJumpsAndKinks_.find(elegid)->second;
-          currKinks = eleKinks_.find(elegid)->second;
-          for (size_t ivector=0;ivector<newVectors_.size();ivector++)
           {
-            averageJumpsAndKinks[ivector] += currJumpsAndKinks[ivector];
-            averageKinks[ivector] += currKinks[ivector];
-          }
-        } // end if element bisected
+            numOldIntersectedEle++;
+            currJumpsAndKinks = eleJumpsAndKinks_.find(elegid)->second;
+            currKinks = eleKinks_.find(elegid)->second;
+            for (size_t ivector=0;ivector<newVectors_.size();ivector++)
+            {
+              averageJumpsAndKinks[ivector] += currJumpsAndKinks[ivector];
+              averageKinks[ivector] += currKinks[ivector];
+            }
+          } // end if element bisected
       } // end loop over elements containing the node
-//      cout << "summed jumps and kinks are " << averageJumpsAndKinks[0] << endl;
+      //      cout << "summed jumps and kinks are " << averageJumpsAndKinks[0] << endl;
 
       vector<LINALG::Matrix<1,nsd+1> > finalEnrichmentValues(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true));
       if (numOldIntersectedEle > 0) // >=1 elements around the node where enriched -> computed value can be used
@@ -577,9 +577,9 @@ void XFEM::EnrichmentProjection::handleFailedNodes(
   for (int iproc=0;iproc<numproc_;iproc++) // loop over processors
   {
 #endif // PARALLEL
-	for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-			data!=timeIntData_->end(); data++)
-	{
+    for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+        data!=timeIntData_->end(); data++)
+    {
       for (set<int>::const_iterator enrnode=oldEnrNodes.begin();
           enrnode!=oldEnrNodes.end(); enrnode++)
       {
@@ -619,20 +619,20 @@ void XFEM::EnrichmentProjection::handleFailedNodes(
 #ifdef COMBUST_CUT
             if (oldinterfacehandle_->ElementBisected(eles[iele]->Id()) || oldinterfacehandle_->ElementTouchedMinus(eles[iele])) // element intersected
 #else
-            if (oldinterfacehandle_->ElementBisected(eles[iele]) || oldinterfacehandle_->ElementTouchedMinus(eles[iele])) // element intersected
+              if (oldinterfacehandle_->ElementBisected(eles[iele]) || oldinterfacehandle_->ElementTouchedMinus(eles[iele])) // element intersected
 #endif
-            {
-              numOldIntersectedEle++;
-
-              currJumpsAndKinks=eleJumpsAndKinks_.find(elegid)->second;
-              currKinks=eleKinks_.find(elegid)->second;
-
-              for(size_t ivector=0;ivector<oldVectors_.size();ivector++)
               {
-                finalJumpsAndKinks[ivector] += currJumpsAndKinks[ivector];
-                finalKinks[ivector]+=currKinks[ivector];
-              }
-            } // end if element bisected
+                numOldIntersectedEle++;
+
+                currJumpsAndKinks=eleJumpsAndKinks_.find(elegid)->second;
+                currKinks=eleKinks_.find(elegid)->second;
+
+                for(size_t ivector=0;ivector<oldVectors_.size();ivector++)
+                {
+                  finalJumpsAndKinks[ivector] += currJumpsAndKinks[ivector];
+                  finalKinks[ivector]+=currKinks[ivector];
+                }
+              } // end if element bisected
           } // end loop over elements around the node
 
           if (numOldIntersectedEle==0)
@@ -679,20 +679,20 @@ void XFEM::EnrichmentProjection::handleFailedNodes(
 #ifdef COMBUST_CUT
             if (oldinterfacehandle_->ElementBisected(eles[iele]->Id()) || oldinterfacehandle_->ElementTouchedMinus(eles[iele])) // element intersected
 #else
-            if (oldinterfacehandle_->ElementBisected(eles[iele]) || oldinterfacehandle_->ElementTouchedMinus(eles[iele])) // element intersected
+              if (oldinterfacehandle_->ElementBisected(eles[iele]) || oldinterfacehandle_->ElementTouchedMinus(eles[iele])) // element intersected
 #endif
-            {
-              numOldIntersectedEle++;
-
-              currJumpsAndKinks=eleJumpsAndKinks_.find(elegid)->second;
-              currKinks=eleKinks_.find(elegid)->second;
-
-              for(size_t ivector=0;ivector<oldVectors_.size();ivector++)
               {
-                finalJumpsAndKinks[ivector] += currJumpsAndKinks[ivector];
-                finalKinks[ivector]+=currKinks[ivector];
-              }
-            } // end if element bisected
+                numOldIntersectedEle++;
+
+                currJumpsAndKinks=eleJumpsAndKinks_.find(elegid)->second;
+                currKinks=eleKinks_.find(elegid)->second;
+
+                for(size_t ivector=0;ivector<oldVectors_.size();ivector++)
+                {
+                  finalJumpsAndKinks[ivector] += currJumpsAndKinks[ivector];
+                  finalKinks[ivector]+=currKinks[ivector];
+                }
+              } // end if element bisected
           } // end loop over elements around the node
 
           if (numOldIntersectedEle==0)
@@ -724,7 +724,7 @@ void XFEM::EnrichmentProjection::handleFailedNodes(
 
   // compute new enrichment values
   for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-  		data!=timeIntData_->end(); data++)
+      data!=timeIntData_->end(); data++)
   {
     for(size_t ivector=0;ivector<oldVectors_.size();ivector++) // scaling loop
     {
@@ -738,6 +738,9 @@ void XFEM::EnrichmentProjection::handleFailedNodes(
 
 
 
+/*------------------------------------------------------------------------------------------------*
+ * compute and set values for jump enriched dofs for the new interface position  winklmaier 08/10 *
+ *------------------------------------------------------------------------------------------------*/
 void XFEM::EnrichmentProjection::computeJumpEnrichmentValues(
     const DRT::Node* node,
     vector<LINALG::Matrix<2,4> > jumpsAndKinks
@@ -758,39 +761,39 @@ void XFEM::EnrichmentProjection::computeJumpEnrichmentValues(
 #ifdef COMBUST_CUT
     if (newinterfacehandle_->ElementBisected(eles[iele]->Id()) || newinterfacehandle_->ElementTouchedMinus(eles[iele])) // element intersected
 #else
-    if (newinterfacehandle_->ElementBisected(eles[iele]) || newinterfacehandle_->ElementTouchedMinus(eles[iele])) // element intersected
+      if (newinterfacehandle_->ElementBisected(eles[iele]) || newinterfacehandle_->ElementTouchedMinus(eles[iele])) // element intersected
 #endif
-    {
-      numNewIntersectedEle++;
-      double dist = 0.0; // minimal distance from node to interface segment of current element
-      LINALG::Matrix<nsd,1> normal(true); // normal vector from node to interface segment of current element
-      SignedDistance(node,eles[iele]->Id(),newinterfacehandle_,phinp_,dist,normal);
-      double phiDiff = dist - (*phin_)[node->LID()]; // difference of the signed distances of the node to interface between this and last time step
-
-      for (size_t ivector=0;ivector<newVectors_.size();ivector++) // loop over global vectors
       {
-        if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project)
-        {
-			for (int entry=0;entry<nsd+1;entry++)
-			  finalEnrichmentValues[ivector](entry) +=
-				 -0.5*(jumpsAndKinks[ivector](0,entry)+phiDiff*jumpsAndKinks[ivector](1,entry)) // -0.5*new_jump
-				 +0.5*dist*jumpsAndKinks[ivector](1,entry); // +0.5*kink*signeddistance
-        }
-        else if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project_scalar)
-        {
-			// velocity entry
-			for (int entry=0;entry<nsd;entry++)
-			  finalEnrichmentValues[ivector](entry) +=
-				 -normal(entry)*((-0.5)*(jumpsAndKinks[ivector](0,0)+phiDiff*jumpsAndKinks[ivector](1,0)) // -0.5*new_jump
-				 +0.5*dist*jumpsAndKinks[ivector](1,0)); // +0.5*kink*signeddistance
+        numNewIntersectedEle++;
+        double dist = 0.0; // minimal distance from node to interface segment of current element
+        LINALG::Matrix<nsd,1> normal(true); // normal vector from node to interface segment of current element
+        SignedDistance(node,eles[iele]->Id(),newinterfacehandle_,phinp_,dist,normal);
+        double phiDiff = dist - (*phin_)[node->LID()]; // difference of the signed distances of the node to interface between this and last time step
 
-			// pressure entry
-			finalEnrichmentValues[ivector](nsd) +=
-			   -0.5*(jumpsAndKinks[ivector](0,1)+phiDiff*jumpsAndKinks[ivector](1,1)) // -0.5*jump
-			   +0.5*dist*jumpsAndKinks[ivector](1,1); // +0.5*kink*signeddistance
-        }
-      } // end loop over vector size
-    } // end if element bisected
+        for (size_t ivector=0;ivector<newVectors_.size();ivector++) // loop over global vectors
+        {
+          if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project)
+          {
+            for (int entry=0;entry<nsd+1;entry++)
+              finalEnrichmentValues[ivector](entry) +=
+                  -0.5*(jumpsAndKinks[ivector](0,entry)+phiDiff*jumpsAndKinks[ivector](1,entry)) // -0.5*new_jump
+                  +0.5*dist*jumpsAndKinks[ivector](1,entry); // +0.5*kink*signeddistance
+          }
+          else if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project_scalar)
+          {
+            // velocity entry
+            for (int entry=0;entry<nsd;entry++)
+              finalEnrichmentValues[ivector](entry) +=
+                  -normal(entry)*((-0.5)*(jumpsAndKinks[ivector](0,0)+phiDiff*jumpsAndKinks[ivector](1,0)) // -0.5*new_jump
+                      +0.5*dist*jumpsAndKinks[ivector](1,0)); // +0.5*kink*signeddistance
+
+            // pressure entry
+            finalEnrichmentValues[ivector](nsd) +=
+                -0.5*(jumpsAndKinks[ivector](0,1)+phiDiff*jumpsAndKinks[ivector](1,1)) // -0.5*jump
+                +0.5*dist*jumpsAndKinks[ivector](1,1); // +0.5*kink*signeddistance
+          }
+        } // end loop over vector size
+      } // end if element bisected
   } // end loop over elements containing the node
   if (numNewIntersectedEle==0)
   {
@@ -813,7 +816,7 @@ void XFEM::EnrichmentProjection::computeJumpEnrichmentValues(
       const int newdofpos = newNodalDofRowDistrib_.find(newdofkey)->second;
       const int lid = newdofrowmap_.LID(newdofpos);
 
-//      cout << "enrichment value "<< (*newVectors_[0])[lid] << " becomes " << finalEnrichmentValues[0](0,indexJumpEnr) << endl;
+      //      cout << "enrichment value "<< (*newVectors_[0])[lid] << " becomes " << finalEnrichmentValues[0](0,indexJumpEnr) << endl;
       for (size_t index=0;index<vectorSize(TimeIntData::predictor_);index++)
         (*newVectors_[index])[lid] = finalEnrichmentValues[index](0,indexJumpEnr);
       indexJumpEnr++;
@@ -823,6 +826,9 @@ void XFEM::EnrichmentProjection::computeJumpEnrichmentValues(
 
 
 
+/*------------------------------------------------------------------------------------------------*
+ * compute and set values for kink enriched dofs for the new interface position  winklmaier 08/10 *
+ *------------------------------------------------------------------------------------------------*/
 void XFEM::EnrichmentProjection::computeKinkEnrichmentValues(
     const DRT::Node* node,
     vector<LINALG::Matrix<1,4> > kinks
@@ -843,40 +849,40 @@ void XFEM::EnrichmentProjection::computeKinkEnrichmentValues(
 #ifdef COMBUST_CUT
     if (newinterfacehandle_->ElementBisected(eles[iele]->Id())) // element intersected
 #else
-    if (newinterfacehandle_->ElementBisected(eles[iele])) // element intersected
+      if (newinterfacehandle_->ElementBisected(eles[iele])) // element intersected
 #endif
-    {
-      numNewIntersectedEle++;
-      double dist = 0.0; // currently dummy
-      LINALG::Matrix<nsd,1> normal(true); // normal vector from node to interface segment of current element
-      SignedDistance(node,eles[iele]->Id(),newinterfacehandle_,phinp_,dist,normal);
-
-      for (size_t ivector=0;ivector<newVectors_.size();ivector++) // loop over global vectors
       {
-        for (int entry=0;entry<nsd+1;entry++)
-          finalEnrichmentValues[ivector](entry) += kinks[ivector](entry);
+        numNewIntersectedEle++;
+        double dist = 0.0; // currently dummy
+        LINALG::Matrix<nsd,1> normal(true); // normal vector from node to interface segment of current element
+        SignedDistance(node,eles[iele]->Id(),newinterfacehandle_,phinp_,dist,normal);
 
-        if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project)
+        for (size_t ivector=0;ivector<newVectors_.size();ivector++) // loop over global vectors
         {
-			for (int entry=0;entry<nsd+1;entry++)
-			  finalEnrichmentValues[ivector](entry) += 0.5*kinks[ivector](entry);
-        }
-        else if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project_scalar)
-        {
-			// velocity entry
-			for (int entry=0;entry<nsd;entry++)
-			  finalEnrichmentValues[ivector](0) +=
-				 -normal(entry)*(0.5*kinks[ivector](0)); // +0.5*kink*signeddistance
+          for (int entry=0;entry<nsd+1;entry++)
+            finalEnrichmentValues[ivector](entry) += kinks[ivector](entry);
 
-			// pressure entry
-			finalEnrichmentValues[ivector](nsd) += 0.5*kinks[ivector](1); // +0.5*kink*signeddistance
-        }
-      } // end loop over vector size
-    } // end if element intersected
+          if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project)
+          {
+            for (int entry=0;entry<nsd+1;entry++)
+              finalEnrichmentValues[ivector](entry) += 0.5*kinks[ivector](entry);
+          }
+          else if (timeIntEnr_==INPAR::COMBUST::xfemtimeintenr_project_scalar)
+          {
+            // velocity entry
+            for (int entry=0;entry<nsd;entry++)
+              finalEnrichmentValues[ivector](0) +=
+                  -normal(entry)*(0.5*kinks[ivector](0)); // +0.5*kink*signeddistance
+
+            // pressure entry
+            finalEnrichmentValues[ivector](nsd) += 0.5*kinks[ivector](1); // +0.5*kink*signeddistance
+          }
+        } // end loop over vector size
+      } // end if element intersected
   } // end loop over elements containing the node
   for (size_t ivector=0;ivector<newVectors_.size();ivector++)
     finalEnrichmentValues[ivector].Scale(1.0/static_cast<double>(numNewIntersectedEle));
-//  cout << *node << " has final enr values " << finalEnrichmentValues[0] << endl;
+  //  cout << *node << " has final enr values " << finalEnrichmentValues[0] << endl;
 
   int indexKinkEnr=0; // index which entry has to be used
   // set nodal velocities and pressures with help of the field set of node
@@ -921,33 +927,33 @@ void XFEM::EnrichmentProjection::exportEnrichmentData()
 
   // packing the data
   for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-  		data!=timeIntData_->end(); data++)
+      data!=timeIntData_->end(); data++)
   {
-	if (data->state_==TimeIntData::failedEnr_)
-	{
-		packNode(dataSend,data->node_);
-		DRT::ParObject::AddtoPack(dataSend,data->phiValue_);
-		DRT::ParObject::AddtoPack(dataSend,data->counter_);
-		DRT::ParObject::AddtoPack(dataSend,data->jumpAndKinkValues_);
-		DRT::ParObject::AddtoPack(dataSend,data->kinkValues_);
-	}
-	else
-		dserror("In enrichment computation all data should have enrichment status");
+    if (data->state_==TimeIntData::failedEnr_)
+    {
+      packNode(dataSend,data->node_);
+      DRT::ParObject::AddtoPack(dataSend,data->phiValue_);
+      DRT::ParObject::AddtoPack(dataSend,data->counter_);
+      DRT::ParObject::AddtoPack(dataSend,data->jumpAndKinkValues_);
+      DRT::ParObject::AddtoPack(dataSend,data->kinkValues_);
+    }
+    else
+      dserror("In enrichment computation all data should have enrichment status");
   }
 
   dataSend.StartPacking();
 
   for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-  		data!=timeIntData_->end(); data++)
+      data!=timeIntData_->end(); data++)
   {
-	if (data->state_==TimeIntData::failedEnr_)
-	{
-		packNode(dataSend,data->node_);
-		DRT::ParObject::AddtoPack(dataSend,data->phiValue_);
-		DRT::ParObject::AddtoPack(dataSend,data->counter_);
-		DRT::ParObject::AddtoPack(dataSend,data->jumpAndKinkValues_);
-		DRT::ParObject::AddtoPack(dataSend,data->kinkValues_);
-	}
+    if (data->state_==TimeIntData::failedEnr_)
+    {
+      packNode(dataSend,data->node_);
+      DRT::ParObject::AddtoPack(dataSend,data->phiValue_);
+      DRT::ParObject::AddtoPack(dataSend,data->counter_);
+      DRT::ParObject::AddtoPack(dataSend,data->jumpAndKinkValues_);
+      DRT::ParObject::AddtoPack(dataSend,data->kinkValues_);
+    }
   }
 
 
@@ -965,12 +971,12 @@ void XFEM::EnrichmentProjection::exportEnrichmentData()
   {
     double coords[nsd] = {0.0};
     DRT::Node node(0,(double*)coords,0);
-  	double phiValue;
+    double phiValue;
     int counter;
     vector<LINALG::Matrix<2,4> > jumpAndKinkValues;
     vector<LINALG::Matrix<1,4> > kinkValues;
 
-	unpackNode(posinData,dataRecv,node);
+    unpackNode(posinData,dataRecv,node);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,phiValue);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,counter);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,jumpAndKinkValues);

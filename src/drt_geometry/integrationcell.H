@@ -133,10 +133,10 @@ class DomainIntCell : public IntCell
     //! return string representation of the DomainIntCell
     virtual std::string toString() const;
 
-    //! return string representation of the DomainIntCell
+    //! write Gmsh file of the DomainIntCell in local coordinates
     virtual void xiToGmsh(const std::string& filename) const;
 
-    //! return string representation of the DomainIntCell
+    //! write Gmsh file of the DomainIntCell in global coordinates
     virtual void xToGmsh(const std::string& filename) const;
 
     //! return domain indicator

@@ -23,18 +23,17 @@ Maintainer: Martin Winklmaier
  *------------------------------------------------------------------------------------------------*/
 XFEM::SemiLagrange::SemiLagrange(
     XFEM::TIMEINT& timeInt,
-	INPAR::COMBUST::XFEMTimeIntegration& timeIntType,
+    INPAR::COMBUST::XFEMTimeIntegration& timeIntType,
     const RCP<Epetra_Vector> veln,
-    const RCP<COMBUST::FlameFront> flamefront,
     const double& dt,
     const double& theta,
+    const RCP<COMBUST::FlameFront> flamefront,
     const double& flamespeed,
     bool initialize
 ) :
-  STD(timeInt,timeIntType,veln,dt,initialize),
-  flamefront_(flamefront),
-  theta_default_(theta),
-  flamespeed_(flamespeed)
+STD(timeInt,timeIntType,veln,dt,flamefront,initialize),
+theta_default_(theta),
+flamespeed_(flamespeed)
 {
   return;
 } // end constructor
@@ -46,7 +45,7 @@ XFEM::SemiLagrange::SemiLagrange(
  *------------------------------------------------------------------------------------------------*/
 void XFEM::SemiLagrange::compute(
     vector<RCP<Epetra_Vector> > newRowVectorsn,
-	vector<RCP<Epetra_Vector> > newRowVectorsnp
+    vector<RCP<Epetra_Vector> > newRowVectorsnp
 )
 {
   const int nsd = 3; // 3 dimensions for a 3d fluid element
@@ -57,8 +56,8 @@ void XFEM::SemiLagrange::compute(
   {
   case FRS1FGI1_:
   {
-	  resetState(TimeIntData::basicStd_,TimeIntData::currSL_);
-	  break;
+    resetState(TimeIntData::basicStd_,TimeIntData::currSL_);
+    break;
   }
   case FRSNot1_:
   {
@@ -67,19 +66,18 @@ void XFEM::SemiLagrange::compute(
   }
   case FRS1FGINot1_:
   {
-	  reinitializeData();
-	  resetState(TimeIntData::basicStd_,TimeIntData::currSL_);
-      resetState(TimeIntData::doneStd_,TimeIntData::currSL_);
-      break;
+    reinitializeData();
+    resetState(TimeIntData::basicStd_,TimeIntData::currSL_);
+    resetState(TimeIntData::doneStd_,TimeIntData::currSL_);
+    break;
   }
   default: dserror("not implemented");
-  }
+  } // end switch
 
-
-/*----------------------------------------------------*
- * first part: get the correct origin for the node    *
- * in a lagrangian point of view using a newton loop  *
- *----------------------------------------------------*/
+  /*----------------------------------------------------*
+   * first part: get the correct origin for the node    *
+   * in a lagrangian point of view using a newton loop  *
+   *----------------------------------------------------*/
 #ifdef PARALLEL
   int counter = 0; // loop counter to avoid infinite loops
 
@@ -95,80 +93,80 @@ void XFEM::SemiLagrange::compute(
 #endif
       // loop over all nodes which changed interface side
       // remark: negative loop so that deleted elements don't influence other elements position
-	  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-		  data!=timeIntData_->end(); data++)
-	  {
-		if (data->state_ == TimeIntData::currSL_)
-		{
-//			cout << endl << "on proc " << myrank_ << " iteration starts for " <<
-//				data->node_ << " with initial startpoint " << data->startpoint_;
+      for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+          data!=timeIntData_->end(); data++)
+      {
+        if (data->state_ == TimeIntData::currSL_)
+        {
+//          cout << endl << "on proc " << myrank_ << " iteration starts for " <<
+//              data->node_ << " with initial startpoint " << data->startpoint_;
 
-			// Initialization
-			DRT::Element* ele = NULL; // pointer to the element where start point lies in
-			LINALG::Matrix<nsd,1> xi(true); // local transformed coordinates of x
-			LINALG::Matrix<nsd,1> vel(true); // velocity of the start point approximation
-			double phin = 0.0; // phi-value of the start point approximation
-			bool elefound = false;             // true if an element for a point was found on the processor
-			bool stdBackTracking = true; // true if standard back-tracking shall be done
+          // Initialization
+          DRT::Element* ele = NULL; // pointer to the element where start point lies in
+          LINALG::Matrix<nsd,1> xi(true); // local transformed coordinates of x
+          LINALG::Matrix<nsd,1> vel(true); // velocity of the start point approximation
+          double phin = 0.0; // phi-value of the start point approximation
+          bool elefound = false;             // true if an element for a point was found on the processor
+          bool stdBackTracking = true; // true if standard back-tracking shall be done
 
-			// search for an element where the current startpoint lies in
-			// if found, give out all data at the startpoint
-			elementSearch(ele,data->startpoint_,xi,vel,phin,elefound);
+          // search for an element where the current startpoint lies in
+          // if found, give out all data at the startpoint
+          elementSearch(ele,data->startpoint_,xi,vel,phin,elefound);
 
-			// if element is not found, look at another processor and so add all
-			// according data to the vectors which will be sent to the next processor
-			if (!elefound)
-			{
-			  if (data->searchedProcs_ < numproc_)
-			  {
-				data->state_ = TimeIntData::nextSL_;
-				data->searchedProcs_ += 1;
-			  }
-			  else // all procs searched -> point not in domain
-			  {
-				data->state_ = TimeIntData::failedSL_;
-				cout << "WARNING! Lagrangian start point not in domain!" << endl;
-			  }
-			} // end if elefound
-			else  // if element is found, the newton iteration to find a better startpoint can start
-			{
-			  if (interfaceSideCompare(ele,data->startpoint_,0,data->phiValue_) == false) // Lagrangian origin and original node on different interface sides
-				  data->state_ = TimeIntData::failedSL_;
-			  else  // Newton loop just for sensible points
-				  NewtonLoop(ele,&*data,xi,vel,phin,elefound,stdBackTracking);
+          // if element is not found, look at another processor and so add all
+          // according data to the vectors which will be sent to the next processor
+          if (!elefound)
+          {
+            if (data->searchedProcs_ < numproc_)
+            {
+              data->state_ = TimeIntData::nextSL_;
+              data->searchedProcs_ += 1;
+            }
+            else // all procs searched -> point not in domain
+            {
+              data->state_ = TimeIntData::failedSL_;
+              cout << "WARNING! Lagrangian start point not in domain!" << endl;
+            }
+          } // end if elefound
+          else  // if element is found, the newton iteration to find a better startpoint can start
+          {
+            if (interfaceSideCompare(ele,data->startpoint_,0,data->phiValue_) == false) // Lagrangian origin and original node on different interface sides
+              data->state_ = TimeIntData::failedSL_;
+            else  // Newton loop just for sensible points
+              NewtonLoop(ele,&*data,xi,vel,phin,elefound,stdBackTracking);
 
-			  // if iteration can go on (that is when startpoint is on
-			  // correct interface side and iter < max_iter)
-			  if ((data->counter_<newton_max_iter_) and (data->state_==TimeIntData::currSL_))
-			  {
-				// if element is not found in a newton step, look at another processor and so add
-				// all according data to the vectors which will be sent to the next processor
-				if (!elefound)
-				{
-				  data->searchedProcs_ = 2;
-				  data->state_ = TimeIntData::nextSL_;
-				}
-				else // newton iteration converged to a good startpoint and so the data can be used to go on
-					callBackTracking(ele,&*data,xi,"standard");
-			  } // end if
+            // if iteration can go on (that is when startpoint is on
+            // correct interface side and iter < max_iter)
+            if ((data->counter_<newton_max_iter_) and (data->state_==TimeIntData::currSL_))
+            {
+              // if element is not found in a newton step, look at another processor and so add
+              // all according data to the vectors which will be sent to the next processor
+              if (!elefound)
+              {
+                data->searchedProcs_ = 2;
+                data->state_ = TimeIntData::nextSL_;
+              }
+              else // newton iteration converged to a good startpoint and so the data can be used to go on
+                callBackTracking(ele,&*data,xi,"standard");
+            } // end if
 
-			  if (data->counter_ == newton_max_iter_) // maximum number of iterations reached
-			  {
-				cout << "WARNING: start value set somehow sensible\n"
-						"  but newton iteration to find it didnt converge!" << endl;
+            if (data->counter_ == newton_max_iter_) // maximum number of iterations reached
+            {
+              cout << "WARNING: start value set somehow sensible\n"
+                  "  but newton iteration to find it didnt converge!" << endl;
 
-				callBackTracking(
-					ele,&*data,xi,"standard");
-			  }
-			} // end if over nodes which changed interface
+              callBackTracking(
+                  ele,&*data,xi,"standard");
+            }
+          } // end if over nodes which changed interface
 
-//			cout << "on proc " << myrank_ << " after " << data->counter_ <<
-//				" iterations the startpoint is " << data->startpoint_ << endl;
-		}
+//          cout << "on proc " << myrank_ << " after " << data->counter_ <<
+//              " iterations the startpoint is " << data->startpoint_ << endl;
+        }
       } // end loop over all nodes with changed interface side
     } // end if movenodes is empty or max. iter reached
     else //
-  	    resetState(TimeIntData::currSL_,TimeIntData::failedSL_);
+      resetState(TimeIntData::currSL_,TimeIntData::failedSL_);
 
 #ifdef PARALLEL
     // export nodes and according data for which the startpoint isn't still found (next_ vector) to next proc
@@ -183,25 +181,25 @@ void XFEM::SemiLagrange::compute(
 
 
 
-/*-----------------------------------------------------------------------------*
- * second part: get sensible startvalues for nodes where the algorithm failed, *
- * using another algorithm, and combine the "Done" and the "Failed" - vectors  *
- *-----------------------------------------------------------------------------*/
+  /*-----------------------------------------------------------------------------*
+   * second part: get sensible startvalues for nodes where the algorithm failed, *
+   * using another algorithm, and combine the "Done" and the "Failed" - vectors  *
+   *-----------------------------------------------------------------------------*/
   if (FGIType_==FRSNot1_) // failed nodes stay equal after the first computation
-	  clearState(TimeIntData::failedSL_);
+    clearState(TimeIntData::failedSL_);
   else
   {
 #ifdef PARALLEL
-	  exportAlternativAlgoData(); // export data of failed nodes
+    exportAlternativAlgoData(); // export data of failed nodes
 #endif
-	  getDataForNotConvergedNodes(); // compute final data for failed nodes
+    getDataForNotConvergedNodes(); // compute final data for failed nodes
   }
 
 
 
-/*-----------------------------------------------------------*
- * third part: set the computed values into the state vector *
- *-----------------------------------------------------------*/
+  /*-----------------------------------------------------------*
+   * third part: set the computed values into the state vector *
+   *-----------------------------------------------------------*/
 #ifdef PARALLEL
   // send the computed startvalues for every node which needs
   // new start data to the processor where the node is
@@ -212,8 +210,10 @@ void XFEM::SemiLagrange::compute(
   setFinalData();
 
 #ifdef DEBUG
+#ifdef PARALLEL
   if (counter > 8*numproc_) // too much loops shouldnt be if all this works
     cout << "WARNING: semiLagrangeExtrapolation seems to run an infinite loop!" << endl;
+#endif
 #endif
 } // end semiLagrangeExtrapolation
 
@@ -240,7 +240,7 @@ void XFEM::SemiLagrange::NewtonLoop(
   LINALG::Matrix<nsd,1> residuum(true);             // residuum of the newton iteration
   LINALG::Matrix<nsd,1> incr(true);                 // increment of the newton system
 
-  const double relTolIncr = 1.0e-10;;  // tolerance for the increment
+  const double relTolIncr = 1.0e-10;   // tolerance for the increment
   const double relTolRes = 1.0e-10;    // tolerance for the residual
 
   LINALG::Matrix<nsd,1> origNodeCoords(true); // coordinates of endpoint of Lagrangian characteristics
@@ -272,7 +272,7 @@ void XFEM::SemiLagrange::NewtonLoop(
     break;
     default:
       dserror("xfem assembly type not yet implemented in time integration");
-    };
+    }; // end switch element type
 
     if (elefound) // element of data->startpoint_ at this processor
     {
@@ -299,22 +299,22 @@ void XFEM::SemiLagrange::NewtonLoop(
           if (incr.Norm2() < relTolIncr && residuum.Norm2() < relTolRes)
             break;
         }
-      }
-    }
+      } // end if interface side is the same
+    } // end if elefound is true
     else // element of data->startpoint_ not at this processor
       break; // stop newton loop on this proc
-  }
+  } // end while Newton loop
 #ifdef DEBUG
   // did newton iteration converge?
   if(data->counter_ == newton_max_iter_){cout << "WARNING: newton iteration for finding start value not converged for point\n" << endl;}
-//    cout << "after " << data->iter_ << " iterations the endpoint is\n" << xAppr << endl;
+  //    cout << "after " << data->iter_ << " iterations the endpoint is\n" << xAppr << endl;
 #endif
 } // end function NewtonLoop
 
 
 
 /*------------------------------------------------------------------------------------------------*
- * Main Newton loop of the Semi-Lagrangian Back-Tracking algorithm               winklmaier 06/10 *
+ * One Newton iteration of the Semi-Lagrangian Back-Tracking algorithm           winklmaier 06/10 *
  *------------------------------------------------------------------------------------------------*/
 template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
 void XFEM::SemiLagrange::NewtonIter(
@@ -461,7 +461,7 @@ void XFEM::SemiLagrange::NewtonIter(
   // update iteration
   for (int i=0;i<nsd;i++)
     data->startpoint_(i) += incr(i);
-    //cout << "in newton loop: approximate startvalue is " << data->startpoint_(0) << " " << data->startpoint_(1) << " " << data->startpoint_(2) << endl;
+  //cout << "in newton loop: approximate startvalue is " << data->startpoint_(0) << " " << data->startpoint_(1) << " " << data->startpoint_(2) << endl;
 
   //=============== update residuum================
   elementSearch(ele, data->startpoint_, xi, vel,phi,elefound);
@@ -470,106 +470,105 @@ void XFEM::SemiLagrange::NewtonIter(
 
 
 /*------------------------------------------------------------------------------------------------*
- * Computing final data where semi-Lagrangian approach failed                    winklmaier 06/10 *
+ * Computing final data where Semi-Lagrangian approach failed                    winklmaier 06/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::SemiLagrange::getDataForNotConvergedNodes(
 )
 {
-  if (timeIntType_==INPAR::COMBUST::xfemtimeint_mixed)
+  if (timeIntType_==INPAR::COMBUST::xfemtimeint_mixedSLExtrapol) // use Extrapolation as alternative
   {
-      RCP<XFEM::TIMEINT> timeIntData = rcp(new XFEM::TIMEINT(
-			discret_,
-			olddofman_,
-			newdofman_,
-			oldVectors_,
-			flamefront_,
-			oldinterfacehandle_,
-			newinterfacehandle_,
-			olddofcolmap_,
-			newdofrowmap_,
-			oldNodalDofColDistrib_,
-			newNodalDofRowDistrib_,
-			pbcmap_));
+    RCP<XFEM::TIMEINT> timeIntData = rcp(new XFEM::TIMEINT(
+        discret_,
+        olddofman_,
+        newdofman_,
+        oldVectors_,
+        flamefront_,
+        oldinterfacehandle_,
+        newinterfacehandle_,
+        olddofcolmap_,
+        newdofrowmap_,
+        oldNodalDofColDistrib_,
+        newNodalDofRowDistrib_,
+        pbcmap_));
 
-  	RCP<XFEM::Extrapolation> extrapol = rcp(new XFEM::Extrapolation(
-  		*timeIntData,
-  		timeIntType_,
-  	    veln_,
-  	    dt_,
-  	    false));
+    RCP<XFEM::Extrapolation> extrapol = rcp(new XFEM::Extrapolation(
+        *timeIntData,
+        timeIntType_,
+        veln_,
+        dt_,
+        flamefront_,
+        false));
 
-  	resetState(TimeIntData::failedSL_,TimeIntData::extrapolateStd_);
+    // set state for extrapolation
+    resetState(TimeIntData::failedSL_,TimeIntData::extrapolateStd_);
 
-  	extrapol->timeIntData_ = rcp(new vector<TimeIntData>);
+    // vector with data for extrapolation
+    extrapol->timeIntData_ = rcp(new vector<TimeIntData>);
 
-	for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-		data!=timeIntData_->end(); data++)
-	{
-		if (data->state_==TimeIntData::extrapolateStd_)
-			extrapol->timeIntData_->push_back(*data);
-	}
+    // add data for extrapolation
+    for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+        data!=timeIntData_->end(); data++)
+    {
+      if (data->state_==TimeIntData::extrapolateStd_)
+        extrapol->timeIntData_->push_back(*data);
+    }
 
-	clearState(TimeIntData::extrapolateStd_);
+    // clear data which is handled by extrapolation
+    clearState(TimeIntData::extrapolateStd_);
 
-   	extrapol->compute(newVectors_);
-   	timeIntData_->insert(timeIntData_->end(),
-						extrapol->timeIntData_->begin(),
-						extrapol->timeIntData_->end());
+    // call computation
+    extrapol->compute(newVectors_);
+
+    // add extrapolation data again in Semi-Lagrange data
+    timeIntData_->insert(timeIntData_->end(),
+        extrapol->timeIntData_->begin(),
+        extrapol->timeIntData_->end());
 
   }
   else
   {
-	  const int nsd = 3; // 3 dimensions for a 3d fluid element
+    const int nsd = 3; // 3 dimensions for a 3d fluid element
 
-	  // remark: all data has to be sent to the processor where
-	  //         the startpoint lies before calling this function
-	  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-		  data!=timeIntData_->end(); data++)
-	  {
-		  if (data->state_==TimeIntData::failedSL_)
-		  {
-			if (data->startGid_.size() != 1)
-			  dserror("data for alternative nodes shall be computed for one node here");
+    // remark: all data has to be sent to the processor where
+    //         the startpoint lies before calling this function
+    for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+        data!=timeIntData_->end(); data++)
+    {
+      if (data->state_==TimeIntData::failedSL_)
+      {
+        if (data->startGid_.size() != 1)
+          dserror("data for alternative nodes shall be computed for one node here");
 
-			DRT::Node* node = discret_->gNode(data->startGid_[0]); // failed node
-			DRT::Element* ele = node->Elements()[0]; // element of failed node
-			data->startpoint_=LINALG::Matrix<nsd,1>(node->X());
+        DRT::Node* node = discret_->gNode(data->startGid_[0]); // failed node
+        DRT::Element* ele = node->Elements()[0]; // element of failed node
+        data->startpoint_=LINALG::Matrix<nsd,1>(node->X());
 
-			LINALG::Matrix<nsd,1> x(node->X()); // coordinates of failed node
-			LINALG::Matrix<nsd,1> xi(true); // local coordinates of failed node
-			LINALG::Matrix<nsd,1> vel(true); // velocity at pseudo-Lagrangian origin
-			bool elefound = false;
+        LINALG::Matrix<nsd,1> x(node->X()); // coordinates of failed node
+        LINALG::Matrix<nsd,1> xi(true); // local coordinates of failed node
+        LINALG::Matrix<nsd,1> vel(true); // velocity at pseudo-Lagrangian origin
+        bool elefound = false;
 
-		/*------------------------------------------*
-		 * element data at pseudo-Lagrangian origin *
-		 * remark: an element must be found since   *
-		 *         the intersected node must be on  *
-		 *         the current processor            *
-		 *------------------------------------------*/
-			callXToXiCoords(ele,x,xi,elefound);
+        /*----------------------------------------------------------*
+         * element data at pseudo-Lagrangian origin                 *
+         * remark: an element must be found since the intersected   *
+         *         node must be on the current processor            *
+         *----------------------------------------------------------*/
+        callXToXiCoords(ele,x,xi,elefound);
 
-			if (!elefound)
-			  dserror("element of a row node of a proc should be in procs colmap!");
-			else
-			{
-		/*---------------------------------*
-		 * correction step:                *
-		 * vel = dt*velDeriv1*vel + vel    *
-		 * pres = pres + dt*presDeriv1*vel *
-		 * with pseudo time-step dt        *
-		 *---------------------------------*/
-				callBackTracking(ele,&*data,xi,static_cast<const char*>("failing"));
-			} // end if elefound
-		  }
+        if (!elefound)
+          dserror("element of a row node of a proc should be in procs colmap!");
+        else
+          callBackTracking(ele,&*data,xi,static_cast<const char*>("failing"));
+      }
 
-	  } // end loop over nodes
+    } // end loop over nodes
   }
 } // end getDataForNotConvergedNodes
 
 
 
 /*------------------------------------------------------------------------------------------------*
- * back-tracking of data at final Lagrangian origin of a point                   winklmaier 06/10 *
+ * call back-tracking of data at final Lagrangian origin of a point              winklmaier 06/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::SemiLagrange::callBackTracking(
     DRT::Element*& ele,
@@ -610,14 +609,14 @@ void XFEM::SemiLagrange::backTracking(
     const char* backTrackingType
 )
 {
-  const int nsd = 3;
+  const int nsd = 3; // dimension
 
   if ((strcmp(backTrackingType,static_cast<const char*>("standard"))!=0) and
       (strcmp(backTrackingType,static_cast<const char*>("failing"))!=0))
     dserror("backTrackingType not implemented");
 
-//  cout << data->node_ << "has lagrange origin " << data->startpoint_ << "with xi-coordinates "
-//      << xi << "in element " << *fittingele << endl;
+  //  cout << data->node_ << "has lagrange origin " << data->startpoint_ << "with xi-coordinates "
+  //      << xi << "in element " << *fittingele << endl;
   LINALG::Matrix<nsd,nsd> xji(true); // invers of jacobian
   LINALG::Matrix<numnode,1> shapeFcn(true); // shape function
   double deltaT = 0; // pseudo time-step size
@@ -634,23 +633,21 @@ void XFEM::SemiLagrange::backTracking(
   vector<LINALG::Matrix<1,nsd> > presnDeriv1(oldVectors_.size(),LINALG::Matrix<1,nsd>(true)); // first derivation of pressure data
   LINALG::Matrix<nsd,1> transportVeln(true); // transport velocity at Lagrangian origin (x_Lagr(t^n))
 
-  int numele;
-  DRT::Element** nodeeles = NULL;
+  int numele; // number of elements
+  DRT::Element** nodeeles = NULL; // elements around node
 
   if ((data->startGid_.size() != 1) and
       (strcmp(backTrackingType,static_cast<const char*>("failing")) == 0))
     dserror("back-tracking shall be done only for one node here!");
 
-  DRT::Node* node = discret_->gNode(data->startGid_[0]);
+  DRT::Node* node = discret_->gNode(data->startGid_[0]); // current node
   if (strcmp(backTrackingType,"failing")==0)
   {
     numele=node->NumElement();
     nodeeles = node->Elements();
   }
   else
-  {
     numele=1;
-  }
 
   // node velocities of the element nodes for transport velocity
   LINALG::Matrix<nsd,2*numnode> nodevel(true);
@@ -659,11 +656,11 @@ void XFEM::SemiLagrange::backTracking(
   // node pressures of the element nodes for the data that should be changed
   vector<LINALG::Matrix<1,2*numnode> > nodepresdata(oldVectors_.size(),LINALG::Matrix<1,2*numnode>(true));
 #ifdef COMBUST_NORMAL_ENRICHMENT
-    vector<LINALG::Matrix<1,numnode> > nodevelenrdata(oldVectors_.size(),LINALG::Matrix<1,numnode>(true));
-    LINALG::Matrix<1,numnode> nodevelenr(true);
+  vector<LINALG::Matrix<1,numnode> > nodevelenrdata(oldVectors_.size(),LINALG::Matrix<1,numnode>(true));
+  LINALG::Matrix<1,numnode> nodevelenr(true);
 #endif
-    vector<LINALG::Matrix<nsd,1> > velValues(oldVectors_.size(),LINALG::Matrix<nsd,1>(true)); // velocity of the data that should be changed
-    vector<double> presValues(oldVectors_.size(),0); // pressures of the data that should be changed
+  vector<LINALG::Matrix<nsd,1> > velValues(oldVectors_.size(),LINALG::Matrix<nsd,1>(true)); // velocity of the data that should be changed
+  vector<double> presValues(oldVectors_.size(),0); // pressures of the data that should be changed
 
   for (int iele=0;iele<numele;iele++) // loop over elements containing the startpoint (usually one)
   {
@@ -676,7 +673,7 @@ void XFEM::SemiLagrange::backTracking(
 #endif
     }
 
-    DRT::Element* ele = NULL;
+    DRT::Element* ele = NULL; // current element
     if (numele>1)
     {
       ele = nodeeles[iele];
@@ -687,14 +684,10 @@ void XFEM::SemiLagrange::backTracking(
 
       if ((!elefound) or
           (ele->Id()!=nodeeles[iele]->Id())) // node of element should lie in element...
-      {
         dserror("node of an element is not lying in the element! BUG?!");
-      }
     }
     else
-    {
       ele = fittingele;
-    }
 
     // evaluate data for the given point
 #ifdef COMBUST_NORMAL_ENRICHMENT
@@ -927,14 +920,14 @@ void XFEM::SemiLagrange::backTracking(
       } // end loop over element nodes
       if (index==0)
         cout << *ele << "with nodevels " << nodeveldata[0] << ", nodeenrvals " << nodevelenrdata[0]
-            << " and summed up velnderiv currently is " << velnDeriv1[0] << endl;
+                                                                                                 << " and summed up velnderiv currently is " << velnDeriv1[0] << endl;
 #else
       if (iele==0)
         veln[index].Multiply(nodeveldata[index],enrShapeFcnVel);
       velnDeriv1[index].MultiplyNT(1.0,nodeveldata[index],enrShapeXYVelDeriv1,1.0);
-//      if (index==0)
-//        cout << *ele << "with nodevels " << nodeveldata[index] << ", shapefcnderiv " <<
-//            enrShapeXYVelDeriv1 << " and summed up velnderiv currently is " << velnDeriv1[index] << endl;
+      //      if (index==0)
+      //        cout << *ele << "with nodevels " << nodeveldata[index] << ", shapefcnderiv " <<
+      //            enrShapeXYVelDeriv1 << " and summed up velnderiv currently is " << velnDeriv1[index] << endl;
 #endif
       presnDeriv1[index].MultiplyNT(1.0,nodepresdata[index],enrShapeXYPresDeriv1,1.0);
     } // end loop over vectors to be read from
@@ -945,15 +938,15 @@ void XFEM::SemiLagrange::backTracking(
     velnDeriv1[index].Scale(1.0/numele);
     presnDeriv1[index].Scale(1.0/numele);
 
-	vel.Multiply(1.0-Theta(data),velnDeriv1[index],transportVeln); // v = (1-theta)*Dv^n/Dx*v^n
-	vel.Multiply(Theta(data),data->velDeriv_[index],data->vel_,1.0); // v = theta*Dv^n+1/Dx*v^n+1+(1-theta)*Dv^n/Dx*v^n
-	vel.Update(1.0,veln[index],deltaT); // v = v_n + dt*(theta*Dv^n+1/Dx*v^n+1+(1-theta)*Dv^n/Dx*v^n)
-	velValues[index]=vel;
+    vel.Multiply(1.0-Theta(data),velnDeriv1[index],transportVeln); // v = (1-theta)*Dv^n/Dx*v^n
+    vel.Multiply(Theta(data),data->velDeriv_[index],data->vel_,1.0); // v = theta*Dv^n+1/Dx*v^n+1+(1-theta)*Dv^n/Dx*v^n
+    vel.Update(1.0,veln[index],deltaT); // v = v_n + dt*(theta*Dv^n+1/Dx*v^n+1+(1-theta)*Dv^n/Dx*v^n)
+    velValues[index]=vel;
 
-	pres.Multiply(1.0-Theta(data),presnDeriv1[index],transportVeln); // p = (1-theta)*Dp^n/Dx*v^n
-	pres.Multiply(Theta(data),data->presDeriv_[index],data->vel_,1.0); // p = theta*Dp^n+1/Dx*v^n+1+(1-theta)*Dp^n/Dx*v^n
-	pres.Multiply(1.0,nodepresdata[index],enrShapeFcnPres,deltaT); // p = p_n + dt*(theta*Dp^n+1/Dx*v^n+1+(1-theta)*Dp^n/Dx*v^n)
-	presValues[index] = pres(0);
+    pres.Multiply(1.0-Theta(data),presnDeriv1[index],transportVeln); // p = (1-theta)*Dp^n/Dx*v^n
+    pres.Multiply(Theta(data),data->presDeriv_[index],data->vel_,1.0); // p = theta*Dp^n+1/Dx*v^n+1+(1-theta)*Dp^n/Dx*v^n
+    pres.Multiply(1.0,nodepresdata[index],enrShapeFcnPres,deltaT); // p = p_n + dt*(theta*Dp^n+1/Dx*v^n+1+(1-theta)*Dp^n/Dx*v^n)
+    presValues[index] = pres(0);
   } // loop over vectors to be set
 
   data->startOwner_ = vector<int>(1,myrank_);
@@ -965,20 +958,20 @@ void XFEM::SemiLagrange::backTracking(
 
 
 /*------------------------------------------------------------------------------------------------*
- * rewrite data for new iteration of slbt                                        winklmaier 06/10 *
+ * rewrite data for new computation                                              winklmaier 06/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::SemiLagrange::newIteration_prepare(
     vector<RCP<Epetra_Vector> > newRowVectors
 )
 {
-	for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-		data!=timeIntData_->end(); data++)
-	{
-		data->searchedProcs_ = 1;
-		data->counter_ = 0;
-		data->velValues_.clear();
-		data->presValues_.clear();
-	}
+  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+      data!=timeIntData_->end(); data++)
+  {
+    data->searchedProcs_ = 1;
+    data->counter_ = 0;
+    data->velValues_.clear();
+    data->presValues_.clear();
+  }
 
   newIteration_nodalData(newRowVectors); // data at t^n+1 not used in predictor
   newRowVectors.clear(); // no more needed
@@ -1017,7 +1010,7 @@ void XFEM::SemiLagrange::newIteration_nodalData(
   vector<LINALG::Matrix<1,nsd> > presnpDeriv1Tmp(static_cast<int>(oldVectors_.size()),LINALG::Matrix<1,nsd>(true));
 
   for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-	  data!=timeIntData_->end(); data++)
+      data!=timeIntData_->end(); data++)
   {
     DRT::Node& node = data->node_;
     LINALG::Matrix<nsd,1> coords(node.X());
@@ -1030,8 +1023,7 @@ void XFEM::SemiLagrange::newIteration_nodalData(
 
     for (int iele=0;iele<node.NumElement();iele++)
     {
-      DRT::Element* currele = node.Elements()[iele];
-// compute velnpderiv and presnpderiv
+      DRT::Element* currele = node.Elements()[iele]; // current element
 
       switch (currele->Shape())
       {
@@ -1070,125 +1062,123 @@ void XFEM::SemiLagrange::newIteration_nodalData(
       {
         if (fieldenr->getField() == XFEM::PHYSICS::Velx)
         {
-            const int newdofpos = newNodalDofColDistrib.find(newdofkey)->second;
-            data->vel_(0) = (*newColVectors[0])[newdofcolmap.LID(newdofpos)];
+          const int newdofpos = newNodalDofColDistrib.find(newdofkey)->second;
+          data->vel_(0) = (*newColVectors[0])[newdofcolmap.LID(newdofpos)];
         }
         else if (fieldenr->getField() == XFEM::PHYSICS::Vely)
         {
-            const int newdofpos = newNodalDofColDistrib.find(newdofkey)->second;
-            data->vel_(1) = (*newColVectors[0])[newdofcolmap.LID(newdofpos)];
+          const int newdofpos = newNodalDofColDistrib.find(newdofkey)->second;
+          data->vel_(1) = (*newColVectors[0])[newdofcolmap.LID(newdofpos)];
         }
         else if (fieldenr->getField() == XFEM::PHYSICS::Velz)
         {
-            const int newdofpos = newNodalDofColDistrib.find(newdofkey)->second;
-            data->vel_(2) = (*newColVectors[0])[newdofcolmap.LID(newdofpos)];
+          const int newdofpos = newNodalDofColDistrib.find(newdofkey)->second;
+          data->vel_(2) = (*newColVectors[0])[newdofcolmap.LID(newdofpos)];
         }
       }
     } // end loop over fieldenr
-//    cout << "final velnpderiv is " << velnpDeriv1[0] << " and presnpderiv is " << presnpDeriv1[0] << endl;
 
     for (size_t i=0;i<newColVectors.size();i++)
     {
       velnpDeriv1[i].Scale(1.0/node.NumElement());
       presnpDeriv1[i].Scale(1.0/node.NumElement());
     }
-//    cout << "scaled velnpderiv is " << velnpDeriv1[0] << " and presnpderiv is " << presnpDeriv1[0] << endl;
 
     data->velDeriv_ = velnpDeriv1;
     data->presDeriv_ = presnpDeriv1;
-//    cout << "after setting transportvel is " << data->vel_ << ", velderiv is " << velnpDeriv1[0]
-//         << " and presderiv is " << presnpDeriv1[0] << endl;
+    //    cout << "after setting transportvel is " << data->vel_ << ", velderiv is " << velnpDeriv1[0]
+    //         << " and presderiv is " << presnpDeriv1[0] << endl;
   }
 }
 
 
 
+/*------------------------------------------------------------------------------------------------*
+ * reinitialize data for new computation                                         winklmaier 11/11 *
+ *------------------------------------------------------------------------------------------------*/
 void XFEM::SemiLagrange::reinitializeData()
 {
-  const int nsd = 3;
-  LINALG::Matrix<nsd,1> dummyStartpoint;
+  const int nsd = 3; // dimension
+  LINALG::Matrix<nsd,1> dummyStartpoint; // dummy startpoint for comparison
   for (int i=0;i<nsd;i++) dummyStartpoint(i) = 777.777;
-cout << "here1" << endl;
-cout << "phivalues are " << phinpi_ << endl;
 
   // fill curr_ structure with the data for the nodes which changed interface side
   for (int lnodeid=0; lnodeid<discret_->NumMyColNodes(); lnodeid++)  // loop over processor nodes
   {
-	DRT::Node* currnode = discret_->lColNode(lnodeid);
-	// node on current processor which changed interface side
-	if ((currnode->Owner() == myrank_) &&
-		(interfaceSideCompare((*phinp_)[lnodeid],(*phinpi_)[lnodeid])==false))
-	{
-		if (interfaceSideCompare((*phinp_)[lnodeid],(*phin_)[lnodeid]) == false) // real new side
-			timeIntData_->push_back(TimeIntData(
-				*currnode,
-				LINALG::Matrix<nsd,1>(true),
-				vector<LINALG::Matrix<nsd,nsd> >(oldVectors_.size(),LINALG::Matrix<nsd,nsd>(true)),
-				vector<LINALG::Matrix<1,nsd> >(oldVectors_.size(),LINALG::Matrix<1,nsd>(true)),
-				dummyStartpoint,
-				(*phinp_)[lnodeid],
-				1,
-				0,
-				vector<int>(1,-1),
-				vector<int>(1,-1),
-				INFINITY,
-				TimeIntData::predictor_));
-		else // other side than last FSI, but same side as old solution at last time step
-		{
-		  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-				data!=timeIntData_->end(); data++)
-		  {
-			const int nodeid = currnode->Id();
+    DRT::Node* currnode = discret_->lColNode(lnodeid);
+    // node on current processor which changed interface side
+    if ((currnode->Owner() == myrank_) &&
+        (interfaceSideCompare((*phinp_)[lnodeid],(*phinpi_)[lnodeid])==false))
+    {
+      if (interfaceSideCompare((*phinp_)[lnodeid],(*phin_)[lnodeid]) == false) // real new side
+        timeIntData_->push_back(TimeIntData(
+            *currnode,
+            LINALG::Matrix<nsd,1>(true),
+            vector<LINALG::Matrix<nsd,nsd> >(oldVectors_.size(),LINALG::Matrix<nsd,nsd>(true)),
+            vector<LINALG::Matrix<1,nsd> >(oldVectors_.size(),LINALG::Matrix<1,nsd>(true)),
+            dummyStartpoint,
+            (*phinp_)[lnodeid],
+            1,
+            0,
+            vector<int>(1,-1),
+            vector<int>(1,-1),
+            INFINITY,
+            TimeIntData::predictor_));
+      else // other side than last FSI, but same side as old solution at last time step
+      {
+        for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+            data!=timeIntData_->end(); data++)
+        {
+          const int nodeid = currnode->Id();
 
-			// 1) delete data
-			if (data->node_.Id()==nodeid)
-				timeIntData_->erase(data);
+          // 1) delete data
+          if (data->node_.Id()==nodeid)
+            timeIntData_->erase(data);
 
-			// 2) reset value of old solution
-			// get nodal velocities and pressures with help of the field set of node
-			const std::set<XFEM::FieldEnr>& fieldEnrSet(newdofman_->getNodeDofSet(nodeid));
-			for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
-				fieldenr != fieldEnrSet.end();++fieldenr)
-			{
-			  const DofKey<onNode> dofkey(nodeid, *fieldenr);
-			  const int newdofpos = newNodalDofRowDistrib_.find(dofkey)->second;
-			  const int olddofpos = oldNodalDofColDistrib_.find(dofkey)->second;
-			  switch (fieldenr->getEnrichment().Type())
-			  {
-			  case XFEM::Enrichment::typeJump :
-			  case XFEM::Enrichment::typeKink : break; // just standard dofs
-			  case XFEM::Enrichment::typeStandard :
-			  case XFEM::Enrichment::typeVoidFSI :
-			  case XFEM::Enrichment::typeVoid :
-				for (size_t index=0;index<newVectors_.size();index++) // reset standard dofs due to old solution
-					(*newVectors_[index])[newdofrowmap_.LID(newdofpos)] =
-							(*oldVectors_[index])[olddofcolmap_.LID(olddofpos)];
-			  case XFEM::Enrichment::typeUndefined :
-			  default :
-			  {
-				cout << fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) << endl;
-				dserror("unknown enrichment type");
-				break;
-			  }
-			  } // end switch enrichment
-			} // end loop over fieldenr
-		  } // end loop over nodes
-		}
-	}
+          // 2) reset value of old solution
+          // get nodal velocities and pressures with help of the field set of node
+          const std::set<XFEM::FieldEnr>& fieldEnrSet(newdofman_->getNodeDofSet(nodeid));
+          for (set<XFEM::FieldEnr>::const_iterator fieldenr = fieldEnrSet.begin();
+              fieldenr != fieldEnrSet.end();++fieldenr)
+          {
+            const DofKey<onNode> dofkey(nodeid, *fieldenr);
+            const int newdofpos = newNodalDofRowDistrib_.find(dofkey)->second;
+            const int olddofpos = oldNodalDofColDistrib_.find(dofkey)->second;
+            switch (fieldenr->getEnrichment().Type())
+            {
+            case XFEM::Enrichment::typeJump :
+            case XFEM::Enrichment::typeKink : break; // just standard dofs
+            case XFEM::Enrichment::typeStandard :
+            case XFEM::Enrichment::typeVoidFSI :
+            case XFEM::Enrichment::typeVoid :
+              for (size_t index=0;index<newVectors_.size();index++) // reset standard dofs due to old solution
+                (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] =
+                    (*oldVectors_[index])[olddofcolmap_.LID(olddofpos)];
+            case XFEM::Enrichment::typeUndefined :
+            default :
+            {
+              cout << fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) << endl;
+              dserror("unknown enrichment type");
+              break;
+            }
+            } // end switch enrichment
+          } // end loop over fieldenr
+        } // end loop over nodes
+      }
+    }
   } // end loop over processor nodes
 
   startpoints();
 
   // test loop if all initial startpoints have been computed
   for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-		data!=timeIntData_->end(); data++)
+      data!=timeIntData_->end(); data++)
   {
-	  if (data->startpoint_==dummyStartpoint)
-		  dserror("WARNING! No enriched node on one interface side found!\nThis "
-				  "indicates that the whole area is at one side of the interface!");
+    if (data->startpoint_==dummyStartpoint)
+      dserror("WARNING! No enriched node on one interface side found!\nThis "
+          "indicates that the whole area is at one side of the interface!");
   } // end loop over nodes
-
-}
+} // end function reinitializeData
 
 
 
@@ -1224,9 +1214,9 @@ void XFEM::SemiLagrange::computeNodalGradient(
   LINALG::Matrix<nsd,1> nodecoords(true);
 
   // dummies for function call
-  LINALG::Matrix<nsd,nsd> xji(true);
-  LINALG::Matrix<numnode,1> shapeFcn(true);
-  LINALG::Matrix<2*numnode,1> enrShapeFcnPres(true);
+  LINALG::Matrix<nsd,nsd> jacobiDummy(true);
+  LINALG::Matrix<numnode,1> shapeFcnDummy(true);
+  LINALG::Matrix<2*numnode,1> enrShapeFcnDummy(true);
 
 #ifdef COMBUST_NORMAL_ENRICHMENT
   LINALG::Matrix<1,numnode> nodevelenr(true);
@@ -1249,9 +1239,9 @@ void XFEM::SemiLagrange::computeNodalGradient(
       coords,
 #endif
       xi,
-      xji,
-      shapeFcn,
-      enrShapeFcnPres,
+      jacobiDummy,
+      shapeFcnDummy,
+      enrShapeFcnDummy,
       enrShapeXYPresDeriv1,
       shp,
       true);
@@ -1259,15 +1249,15 @@ void XFEM::SemiLagrange::computeNodalGradient(
   pointdataXFEM<numnode,DISTYPE>(
       ele,
       xi,
-      xji,
-      shapeFcn,
+      jacobiDummy,
+      shapeFcnDummy,
       enrShapeFcnVel,
-      enrShapeFcnPres,
+      enrShapeFcnDummy,
       enrShapeXYVelDeriv1,
       enrShapeXYPresDeriv1,
       true);
 #endif
-//cout << "shapefcnvel is " << enrShapeFcnVel << ", velderiv is " << enrShapeXYVelDeriv1 << " and presderiv is " << enrShapeXYPresDeriv1 << endl;
+  //cout << "shapefcnvel is " << enrShapeFcnVel << ", velderiv is " << enrShapeXYVelDeriv1 << " and presderiv is " << enrShapeXYPresDeriv1 << endl;
   for (size_t i=0;i<newColVectors.size();i++)
   {
 #ifdef COMBUST_NORMAL_ENRICHMENT
@@ -1335,50 +1325,50 @@ void XFEM::SemiLagrange::computeNodalGradient(
         newNodalDofColDistrib,
         nodevel,
         nodepres);
-//if (i==0) cout << "nodevels are " << nodevel << " and nodepres are " << nodepres << endl;
+
     velnpDeriv1[i].MultiplyNT(1.0,nodevel,enrShapeXYVelDeriv1,1.0);
     presnpDeriv1[i].MultiplyNT(1.0,nodepres,enrShapeXYPresDeriv1,1.0);
-//if (i==0) cout << "curr velnpderiv is " << velnpDeriv1[i] << " and presnpderiv is " << presnpDeriv1[i] << endl;
 #endif
   }
-}
+} // end function compute nodal gradient
 
 
 
+/*------------------------------------------------------------------------------------------------*
+ * get the time integration factor theta fitting to the computation type         winklmaier 06/10 *
+ *------------------------------------------------------------------------------------------------*/
 double XFEM::SemiLagrange::Theta(TimeIntData* data) const
 {
-	double theta = -1.0;
-
-	switch (data->type_)
-	{
-	case TimeIntData::predictor_: theta = 0.0; break;
-	case TimeIntData::standard_ : theta = theta_default_; break;
-	default: dserror("type not implemented");
-	}
-
-	if (theta < 0.0) dserror("something wrong");
-
-	return theta;
-}
+  double theta = -1.0;
+  switch (data->type_)
+  {
+  case TimeIntData::predictor_: theta = 0.0; break;
+  case TimeIntData::standard_ : theta = theta_default_; break;
+  default: dserror("type not implemented");
+  }
+  if (theta < 0.0) dserror("something wrong");
+  return theta;
+} // end function theta
 
 
 
+/*------------------------------------------------------------------------------------------------*
+ * check if newton iteration searching for the Lagrangian origin has finished    winklmaier 06/10 *
+ *------------------------------------------------------------------------------------------------*/
 bool XFEM::SemiLagrange::globalNewtonFinished(
-	int counter
+    int counter
 ) const
 {
-	if (counter == newton_max_iter_*numproc_)
-		return true; // maximal number of iterations reached
-
-	for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-		data!=timeIntData_->end(); data++)
-	{
-		if ((data->state_==TimeIntData::currSL_) or
-			(data->state_==TimeIntData::nextSL_))
-				return false; // one node requires more data
-	}
-
-	return true; // if no more node requires data, we are done
+  if (counter == newton_max_iter_*numproc_)
+    return true; // maximal number of iterations reached
+  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+      data!=timeIntData_->end(); data++)
+  {
+    if ((data->state_==TimeIntData::currSL_) or
+        (data->state_==TimeIntData::nextSL_))
+      return false; // one node requires more data
+  }
+  return true; // if no more node requires data, we are done
 }
 
 
@@ -1396,26 +1386,26 @@ void XFEM::SemiLagrange::exportAlternativAlgoData()
   vector<vector<TimeIntData> > dataVec(numproc_);
 
   // fill vectors with the data
-	for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-		data!=timeIntData_->end(); data++)
-	{
-		if (data->state_==TimeIntData::failedSL_)
-		{
-			for (size_t i=0;i<data->startOwner_.size();i++)
-			{
-				data->startGid_.clear();
-				data->startGid_.push_back(data->startGid_[i]);
-				data->startOwner_.clear();
-				data->startOwner_.push_back(data->startOwner_[i]);
-				dataVec[data->startOwner_[0]].push_back(*data);
-			}
-		}
-	}
+  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+      data!=timeIntData_->end(); data++)
+  {
+    if (data->state_==TimeIntData::failedSL_)
+    {
+      for (size_t i=0;i<data->startOwner_.size();i++)
+      {
+        data->startGid_.clear();
+        data->startGid_.push_back(data->startGid_[i]);
+        data->startOwner_.clear();
+        data->startOwner_.push_back(data->startOwner_[i]);
+        dataVec[data->startOwner_[0]].push_back(*data);
+      }
+    }
+  }
 
-	clearState(TimeIntData::failedSL_);
-   	timeIntData_->insert(timeIntData_->end(),
-		dataVec[myrank_].begin(),
-		dataVec[myrank_].end());
+  clearState(TimeIntData::failedSL_);
+  timeIntData_->insert(timeIntData_->end(),
+      dataVec[myrank_].begin(),
+      dataVec[myrank_].end());
 
   dataVec[myrank_].clear(); // clear the set data from the vector
 
@@ -1433,38 +1423,38 @@ void XFEM::SemiLagrange::exportAlternativAlgoData()
       source -=numproc_;
 
     // pack data to be sent
-	for (vector<TimeIntData>::iterator data=dataVec[dest].begin();
-		data!=dataVec[dest].end(); data++)
+    for (vector<TimeIntData>::iterator data=dataVec[dest].begin();
+        data!=dataVec[dest].end(); data++)
     {
-		if (data->state_==TimeIntData::failedSL_)
-		{
-			packNode(dataSend,data->node_);
-			DRT::ParObject::AddtoPack(dataSend,data->vel_);
-			DRT::ParObject::AddtoPack(dataSend,data->velDeriv_);
-			DRT::ParObject::AddtoPack(dataSend,data->presDeriv_);
-			DRT::ParObject::AddtoPack(dataSend,data->startpoint_);
-			DRT::ParObject::AddtoPack(dataSend,data->phiValue_);
-			DRT::ParObject::AddtoPack(dataSend,data->startGid_);
-			DRT::ParObject::AddtoPack(dataSend,(int)data->type_);
-		}
+      if (data->state_==TimeIntData::failedSL_)
+      {
+        packNode(dataSend,data->node_);
+        DRT::ParObject::AddtoPack(dataSend,data->vel_);
+        DRT::ParObject::AddtoPack(dataSend,data->velDeriv_);
+        DRT::ParObject::AddtoPack(dataSend,data->presDeriv_);
+        DRT::ParObject::AddtoPack(dataSend,data->startpoint_);
+        DRT::ParObject::AddtoPack(dataSend,data->phiValue_);
+        DRT::ParObject::AddtoPack(dataSend,data->startGid_);
+        DRT::ParObject::AddtoPack(dataSend,(int)data->type_);
+      }
     }
 
     dataSend.StartPacking();
 
-	for (vector<TimeIntData>::iterator data=dataVec[dest].begin();
-		data!=dataVec[dest].end(); data++)
+    for (vector<TimeIntData>::iterator data=dataVec[dest].begin();
+        data!=dataVec[dest].end(); data++)
     {
-		if (data->state_==TimeIntData::failedSL_)
-		{
-			packNode(dataSend,data->node_);
-			DRT::ParObject::AddtoPack(dataSend,data->vel_);
-			DRT::ParObject::AddtoPack(dataSend,data->velDeriv_);
-			DRT::ParObject::AddtoPack(dataSend,data->presDeriv_);
-			DRT::ParObject::AddtoPack(dataSend,data->startpoint_);
-			DRT::ParObject::AddtoPack(dataSend,data->phiValue_);
-			DRT::ParObject::AddtoPack(dataSend,data->startGid_);
-			DRT::ParObject::AddtoPack(dataSend,(int)data->type_);
-		}
+      if (data->state_==TimeIntData::failedSL_)
+      {
+        packNode(dataSend,data->node_);
+        DRT::ParObject::AddtoPack(dataSend,data->vel_);
+        DRT::ParObject::AddtoPack(dataSend,data->velDeriv_);
+        DRT::ParObject::AddtoPack(dataSend,data->presDeriv_);
+        DRT::ParObject::AddtoPack(dataSend,data->startpoint_);
+        DRT::ParObject::AddtoPack(dataSend,data->phiValue_);
+        DRT::ParObject::AddtoPack(dataSend,data->startGid_);
+        DRT::ParObject::AddtoPack(dataSend,(int)data->type_);
+      }
     }
 
     // clear the no more needed data
@@ -1521,7 +1511,7 @@ void XFEM::SemiLagrange::exportAlternativAlgoData()
  * export data while Newton loop to neighbour proc                               winklmaier 06/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::SemiLagrange::exportIterData(
-  bool& procDone
+    bool& procDone
 )
 {
   const int nsd = 3; // 3 dimensions for a 3d fluid element
@@ -1536,10 +1526,10 @@ void XFEM::SemiLagrange::exportIterData(
     source = numproc_-1;
 
 
-/*-------------------------------------------*
- * first part: send procfinished in order to *
- * check whether all procs have finished     *
- *-------------------------------------------*/
+  /*-------------------------------------------*
+   * first part: send procfinished in order to *
+   * check whether all procs have finished     *
+   *-------------------------------------------*/
   for (int iproc=0;iproc<numproc_-1;iproc++)
   {
     DRT::PackBuffer dataSend;
@@ -1566,56 +1556,56 @@ void XFEM::SemiLagrange::exportIterData(
   }
 
 
-/*--------------------------------------*
- * second part: if not all procs have   *
- * finished send data to neighbour proc *
- *--------------------------------------*/
+  /*--------------------------------------*
+   * second part: if not all procs have   *
+   * finished send data to neighbour proc *
+   *--------------------------------------*/
   if (!procDone)
   {
     DRT::PackBuffer dataSend;
 
     // fill vectors with the data
-  	for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-  		data!=timeIntData_->end(); data++)
-  	{
-  		if (data->state_==TimeIntData::nextSL_)
-  		{
-  		  packNode(dataSend,data->node_);
-  	      DRT::ParObject::AddtoPack(dataSend,data->vel_);
-  	      DRT::ParObject::AddtoPack(dataSend,data->velDeriv_);
-  	      DRT::ParObject::AddtoPack(dataSend,data->presDeriv_);
-  	      DRT::ParObject::AddtoPack(dataSend,data->startpoint_);
-  	      DRT::ParObject::AddtoPack(dataSend,data->phiValue_);
-  	      DRT::ParObject::AddtoPack(dataSend,data->searchedProcs_);
-  	      DRT::ParObject::AddtoPack(dataSend,data->counter_);
-  	      DRT::ParObject::AddtoPack(dataSend,data->startGid_);
-  	      DRT::ParObject::AddtoPack(dataSend,data->startOwner_);
-  	      DRT::ParObject::AddtoPack(dataSend,(int)data->type_);
-  		}
-  	}
+    for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+        data!=timeIntData_->end(); data++)
+    {
+      if (data->state_==TimeIntData::nextSL_)
+      {
+        packNode(dataSend,data->node_);
+        DRT::ParObject::AddtoPack(dataSend,data->vel_);
+        DRT::ParObject::AddtoPack(dataSend,data->velDeriv_);
+        DRT::ParObject::AddtoPack(dataSend,data->presDeriv_);
+        DRT::ParObject::AddtoPack(dataSend,data->startpoint_);
+        DRT::ParObject::AddtoPack(dataSend,data->phiValue_);
+        DRT::ParObject::AddtoPack(dataSend,data->searchedProcs_);
+        DRT::ParObject::AddtoPack(dataSend,data->counter_);
+        DRT::ParObject::AddtoPack(dataSend,data->startGid_);
+        DRT::ParObject::AddtoPack(dataSend,data->startOwner_);
+        DRT::ParObject::AddtoPack(dataSend,(int)data->type_);
+      }
+    }
 
     dataSend.StartPacking();
 
-  	for (vector<TimeIntData>::iterator data=timeIntData_->begin();
-  		data!=timeIntData_->end(); data++)
-  	{
-  		if (data->state_==TimeIntData::nextSL_)
-  		{
-  		  packNode(dataSend,data->node_);
-  	      DRT::ParObject::AddtoPack(dataSend,data->vel_);
-  	      DRT::ParObject::AddtoPack(dataSend,data->velDeriv_);
-  	      DRT::ParObject::AddtoPack(dataSend,data->presDeriv_);
-  	      DRT::ParObject::AddtoPack(dataSend,data->startpoint_);
-  	      DRT::ParObject::AddtoPack(dataSend,data->phiValue_);
-  	      DRT::ParObject::AddtoPack(dataSend,data->searchedProcs_);
-  	      DRT::ParObject::AddtoPack(dataSend,data->counter_);
-  	      DRT::ParObject::AddtoPack(dataSend,data->startGid_);
-  	      DRT::ParObject::AddtoPack(dataSend,data->startOwner_);
-  	      DRT::ParObject::AddtoPack(dataSend,(int)data->type_);
-  		}
-  	}
+    for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+        data!=timeIntData_->end(); data++)
+    {
+      if (data->state_==TimeIntData::nextSL_)
+      {
+        packNode(dataSend,data->node_);
+        DRT::ParObject::AddtoPack(dataSend,data->vel_);
+        DRT::ParObject::AddtoPack(dataSend,data->velDeriv_);
+        DRT::ParObject::AddtoPack(dataSend,data->presDeriv_);
+        DRT::ParObject::AddtoPack(dataSend,data->startpoint_);
+        DRT::ParObject::AddtoPack(dataSend,data->phiValue_);
+        DRT::ParObject::AddtoPack(dataSend,data->searchedProcs_);
+        DRT::ParObject::AddtoPack(dataSend,data->counter_);
+        DRT::ParObject::AddtoPack(dataSend,data->startGid_);
+        DRT::ParObject::AddtoPack(dataSend,data->startOwner_);
+        DRT::ParObject::AddtoPack(dataSend,(int)data->type_);
+      }
+    }
 
-  	clearState(TimeIntData::nextSL_);
+    clearState(TimeIntData::nextSL_);
 
     vector<char> dataRecv;
     sendData(dataSend,dest,source,dataRecv);
@@ -1626,9 +1616,9 @@ void XFEM::SemiLagrange::exportIterData(
     // unpack received data
     while (posinData < dataRecv.size())
     {
-	  double coords[nsd] = {0.0};
-	  DRT::Node node(0,(double*)coords,0);
-	  LINALG::Matrix<nsd,1> vel;
+      double coords[nsd] = {0.0};
+      DRT::Node node(0,(double*)coords,0);
+      LINALG::Matrix<nsd,1> vel;
       vector<LINALG::Matrix<nsd,nsd> > velDeriv;
       vector<LINALG::Matrix<1,nsd> > presDeriv;
       LINALG::Matrix<nsd,1> startpoint;
@@ -1639,7 +1629,7 @@ void XFEM::SemiLagrange::exportIterData(
       vector<int> startOwner;
       int newtype;
 
-	  unpackNode(posinData,dataRecv,node);
+      unpackNode(posinData,dataRecv,node);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,vel);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,velDeriv);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,presDeriv);

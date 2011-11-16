@@ -367,61 +367,64 @@ void FLD::CombustFluidImplicitTimeInt::TimeLoop()
   dserror("Thou shalt not use this function! Use COMBUST::Algorithm::TimeLoop() instead");
 }
 
+/*------------------------------------------------------------------------------------------------*
+ | check whether FRS iteration is finished                                       winklmaier 11/11 |
+ *------------------------------------------------------------------------------------------------*/
 bool FLD::CombustFluidImplicitTimeInt::FluidRefSolLoopFinished()
 {
-	bool finished = false;
+  bool finished = false;
 
-	if (timealgo_ == INPAR::FLUID::timeint_stationary
-			and curritnumFRS_>=1)
-		finished = true; // no FRS iterations in stationary case
+  if (timealgo_ == INPAR::FLUID::timeint_stationary
+      and curritnumFRS_>=1)
+    finished = true; // no FRS iterations in stationary case
 
-	if (curritnumFRS_>=itemaxFRS_) finished = true;
+  if (curritnumFRS_>=itemaxFRS_) finished = true;
 
-	if (totalitnumFRS_>=1) // check whether the algorithms require additional iterations
-	{
-		if (step_<1) // stationary solution just one time
-			finished = true;
+  if (totalitnumFRS_>=1) // check whether the algorithms require additional iterations
+  {
+    if (step_<1) // stationary solution just one time
+      finished = true;
 
-		switch (xfemtimeint_enr_) // currently no enrichment computation requires >1 iterations
-		{
-		case INPAR::COMBUST::xfemtimeintenr_donothing:
-		case INPAR::COMBUST::xfemtimeintenr_quasistatic:
-		case INPAR::COMBUST::xfemtimeintenr_project:
-		case INPAR::COMBUST::xfemtimeintenr_project_scalar: break;
-		default:
-			dserror("enrichment recomputation approach in XFEM time integration not implemented");
-		}
+    switch (xfemtimeint_enr_) // currently no enrichment computation requires >1 iterations
+    {
+    case INPAR::COMBUST::xfemtimeintenr_donothing:
+    case INPAR::COMBUST::xfemtimeintenr_quasistatic:
+    case INPAR::COMBUST::xfemtimeintenr_project:
+    case INPAR::COMBUST::xfemtimeintenr_project_scalar: break;
+    default:
+      dserror("enrichment recomputation approach in XFEM time integration not implemented");
+    }
 
-		switch (xfemtimeint_)
-		{
-		case INPAR::COMBUST::xfemtimeint_donothing:
-		case INPAR::COMBUST::xfemtimeint_extrapolation: finished = true; // the above standard value computations don't require -> iterations
-		case INPAR::COMBUST::xfemtimeint_semilagrange:
-		case INPAR::COMBUST::xfemtimeint_mixed: break;
-		default:
-			dserror("standard recomputation approach in XFEM time integration not implemented");
-		}
-	}
+    switch (xfemtimeint_)
+    {
+    case INPAR::COMBUST::xfemtimeint_donothing:
+    case INPAR::COMBUST::xfemtimeint_extrapolation: finished = true; // the above standard value computations don't require -> iterations
+    case INPAR::COMBUST::xfemtimeint_semilagrange:
+    case INPAR::COMBUST::xfemtimeint_mixedSLExtrapol: break;
+    default:
+      dserror("standard recomputation approach in XFEM time integration not implemented");
+    }
+  }
 
-	// if not finished, print iteration counter, update false
-	if (!finished)
-	{
-		totalitnumFRS_++;
-		curritnumFRS_++;
-		if (myrank_==0 and itemaxFRS_!=1)
-			printf("FLUID REFERENCE SOLUTION ITERATION %3d/%3d\n",curritnumFRS_,itemaxFRS_);
-	}
-	else
-		curritnumFRS_=0; // for new fgi or time step
-	return finished;
+  // if not finished, print iteration counter, update false
+  if (!finished)
+  {
+    totalitnumFRS_++;
+    curritnumFRS_++;
+    if (myrank_==0 and itemaxFRS_!=1)
+      printf("FLUID REFERENCE SOLUTION ITERATION %3d/%3d\n",curritnumFRS_,itemaxFRS_);
+  }
+  else
+    curritnumFRS_=0; // for new fgi or time step
+  return finished;
 }
 
 
 
 void FLD::CombustFluidImplicitTimeInt::ClearTimeInt()
 {
-	timeIntStd_ = Teuchos::null;
-	timeIntEnr_ = Teuchos::null;
+  timeIntStd_ = Teuchos::null;
+  timeIntEnr_ = Teuchos::null;
 }
 
 
@@ -605,41 +608,41 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
     eleparams.set("thsl",theta_*dta_);
 
 
-    if (step_ > 0) //(itnum == 1)
+    if (step_ > 0) // initial stationary solution does not require reference solution update
     {
-		vector<RCP<Epetra_Vector> > newRowVectorsn;
-		newRowVectorsn.push_back(state_.veln_);
-		newRowVectorsn.push_back(state_.accn_);
+      vector<RCP<Epetra_Vector> > newRowVectorsn; // solution vectors of old time step due to new interface
+      newRowVectorsn.push_back(state_.veln_);
+      newRowVectorsn.push_back(state_.accn_);
 
-		vector<RCP<Epetra_Vector> > newRowVectorsnp;
-		newRowVectorsnp.push_back(state_.velnp_);
-		newRowVectorsnp.push_back(state_.accnp_);
+      vector<RCP<Epetra_Vector> > newRowVectorsnp; // solution vectors at new time step
+      newRowVectorsnp.push_back(state_.velnp_);
+      newRowVectorsnp.push_back(state_.accnp_);
 
-		if(xfemtimeint_ != INPAR::COMBUST::xfemtimeint_donothing)
-		{
-			cout0_ << "---  XFEM time integration: adopt values to new interface... " << std::flush;
-			timeIntStd_->type(totalitnumFRS_,itemaxFRS_);
-			timeIntStd_->compute(newRowVectorsn,newRowVectorsnp);
-			cout0_ << "done" << std::endl;
-		}
+      if(xfemtimeint_ != INPAR::COMBUST::xfemtimeint_donothing) // do something for standard values
+      {
+        cout0_ << "---  XFEM time integration: adopt standard values to new interface... " << std::flush;
+        timeIntStd_->type(totalitnumFRS_,itemaxFRS_); // update algorithm handling
+        timeIntStd_->compute(newRowVectorsn,newRowVectorsnp); // call computation
+        cout0_ << "done" << std::endl;
+      }
 
-		if ((xfemtimeint_enr_!=INPAR::COMBUST::xfemtimeintenr_donothing) and
-			(xfemtimeint_enr_!=INPAR::COMBUST::xfemtimeintenr_quasistatic))
-		{
-			cout0_ << "compute enrichment values... " << std::flush;
-			timeIntEnr_->type(totalitnumFRS_,itemaxFRS_);
-			timeIntEnr_->compute(newRowVectorsn,newRowVectorsnp);
-			cout0_ << "done" << std::endl;
-		}
+      if ((xfemtimeint_enr_!=INPAR::COMBUST::xfemtimeintenr_donothing) and
+          (xfemtimeint_enr_!=INPAR::COMBUST::xfemtimeintenr_quasistatic)) // do something for enrichment values
+      {
+        cout0_ << "---  XFEM time integration: adopt enrichment values to new interface... " << std::flush;
+        timeIntEnr_->type(totalitnumFRS_,itemaxFRS_); // update algorithm handling
+        timeIntEnr_->compute(newRowVectorsn,newRowVectorsnp); // call computation
+        cout0_ << "done" << std::endl;
+      }
 
-		//#ifdef COLLAPSE_FLAME
-		//        cout << endl << endl << "reference solution symmetry error" << endl;
-		//        EvaluateSymmetryError(state_.veln_);
-		//#endif
-		//#ifdef FLAME_VORTEX
-		//        cout << endl << endl << "reference solution symmetry error" << endl;
-		//        EvaluateSymmetryError(state_.veln_);
-		//#endif
+      //#ifdef COLLAPSE_FLAME
+      //        cout << endl << endl << "reference solution symmetry error" << endl;
+      //        EvaluateSymmetryError(state_.veln_);
+      //#endif
+      //#ifdef FLAME_VORTEX
+      //        cout << endl << endl << "reference solution symmetry error" << endl;
+      //        EvaluateSymmetryError(state_.veln_);
+      //#endif
     }
 
     // set vector values needed by elements
@@ -810,20 +813,20 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
     vector<RCP<Epetra_Vector> > oldColStateVectors; // same order of vectors as newRowVectorsn combined with newRowVectorsnp
     RCP<Epetra_Vector> veln = rcp(new Epetra_Vector(olddofcolmap,true));
     {
-    	LINALG::Export(*state_.veln_,*veln);
-    	oldColStateVectors.push_back(veln);
+      LINALG::Export(*state_.veln_,*veln);
+      oldColStateVectors.push_back(veln);
 
-    	RCP<Epetra_Vector> accn = rcp(new Epetra_Vector(olddofcolmap,true));
-    	LINALG::Export(*state_.accn_,*accn);
-    	oldColStateVectors.push_back(accn);
+      RCP<Epetra_Vector> accn = rcp(new Epetra_Vector(olddofcolmap,true));
+      LINALG::Export(*state_.accn_,*accn);
+      oldColStateVectors.push_back(accn);
 
-    	RCP<Epetra_Vector> velnp = rcp(new Epetra_Vector(olddofcolmap,true));
-    	LINALG::Export(*state_.velnp_,*velnp);
-    	oldColStateVectors.push_back(velnp);
+      RCP<Epetra_Vector> velnp = rcp(new Epetra_Vector(olddofcolmap,true));
+      LINALG::Export(*state_.velnp_,*velnp);
+      oldColStateVectors.push_back(velnp);
 
-    	RCP<Epetra_Vector> accnp = rcp(new Epetra_Vector(olddofcolmap,true));
-    	LINALG::Export(*state_.accnp_,*accnp);
-    	oldColStateVectors.push_back(accnp);
+      RCP<Epetra_Vector> accnp = rcp(new Epetra_Vector(olddofcolmap,true));
+      LINALG::Export(*state_.accnp_,*accnp);
+      oldColStateVectors.push_back(accnp);
     }
 
     //---------------------------------------------
@@ -858,111 +861,129 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
 
     // all initial values can be set now; including the enrichment values
     if (step_ == 0)
+      SetEnrichmentField(dofmanager,newdofrowmap); // set initial (enrichment) field
+
+    if (step_ > 0) // reference solution update not in first update
     {
-      SetEnrichmentField(dofmanager,newdofrowmap);
-    }
+      if (totalitnumFRS_==0) // construct time int classes once every time step
+      {
+        if ((xfemtimeint_!=INPAR::COMBUST::xfemtimeint_donothing) or
+            ((xfemtimeint_enr_ !=INPAR::COMBUST::xfemtimeintenr_donothing) and (xfemtimeint_enr_ !=INPAR::COMBUST::xfemtimeintenr_quasistatic)))
+        {
+          // basic time integration data
+          RCP<XFEM::TIMEINT> timeIntData = rcp(new XFEM::TIMEINT(
+              discret_,
+              olddofmanager,
+              dofmanager,
+              oldColStateVectors,
+              flamefront_,
+              interfacehandle_old,
+              interfacehandle,
+              olddofcolmap,
+              newdofrowmap,
+              oldNodalDofColDistrib,
+              state_.nodalDofDistributionMap_,
+              pbcmapmastertoslave_));
 
-    if (step_ > 0)
-    {
-    	if (totalitnumFRS_==0)
-    	{
-		  if ((xfemtimeint_!=INPAR::COMBUST::xfemtimeint_donothing) or
-				  ((xfemtimeint_enr_ !=INPAR::COMBUST::xfemtimeintenr_donothing) and (xfemtimeint_enr_ !=INPAR::COMBUST::xfemtimeintenr_quasistatic)))
-		  {
-			RCP<XFEM::TIMEINT> timeIntData = rcp(new XFEM::TIMEINT(
-				discret_,
-				olddofmanager,
-				dofmanager,
-				oldColStateVectors,
-				flamefront_,
-				interfacehandle_old,
-				interfacehandle,
-				olddofcolmap,
-				newdofrowmap,
-				oldNodalDofColDistrib,
-				state_.nodalDofDistributionMap_,
-				pbcmapmastertoslave_));
+          switch (xfemtimeint_enr_)
+          {
+          case INPAR::COMBUST::xfemtimeintenr_donothing:
+          case INPAR::COMBUST::xfemtimeintenr_quasistatic:
+            break; // nothing to do
+          case INPAR::COMBUST::xfemtimeintenr_project:
+          case INPAR::COMBUST::xfemtimeintenr_project_scalar:
+          {
+            INPAR::COMBUST::XFEMTimeIntegrationEnrComp timeIntEnrComp(DRT::INPUT::IntegralValue<INPAR::COMBUST::XFEMTimeIntegrationEnrComp>(params_.sublist("COMBUSTION FLUID"),"XFEMTIMEINT_ENR_COMP"));
 
-			switch (xfemtimeint_enr_)
-			{
-			case INPAR::COMBUST::xfemtimeintenr_donothing:
-			case INPAR::COMBUST::xfemtimeintenr_quasistatic:
-				break; // nothing to do
-			case INPAR::COMBUST::xfemtimeintenr_project:
-			case INPAR::COMBUST::xfemtimeintenr_project_scalar:
-			{
-				INPAR::COMBUST::XFEMTimeIntegrationEnrComp timeIntEnrComp(DRT::INPUT::IntegralValue<INPAR::COMBUST::XFEMTimeIntegrationEnrComp>(params_.sublist("COMBUSTION FLUID"),"XFEMTIMEINT_ENR_COMP"));
-				timeIntEnr_ = rcp(new XFEM::EnrichmentProjection(
-					*timeIntData,
-					xfemtimeint_enr_,
-					timeIntEnrComp));
-				break;
-			}
-			default:
-				dserror("enrichment recomputation approach in XFEM time integration not implemented");
-			}
+            // enrichment time integration data
+            timeIntEnr_ = rcp(new XFEM::EnrichmentProjection(
+                *timeIntData,
+                xfemtimeint_enr_,
+                timeIntEnrComp));
+            break;
+          }
+          default:
+            dserror("enrichment recomputation approach in XFEM time integration not implemented");
+          }
 
-			switch (xfemtimeint_)
-			{
-			case INPAR::COMBUST::xfemtimeint_donothing:
-				break;
-			case INPAR::COMBUST::xfemtimeint_semilagrange:
-			case INPAR::COMBUST::xfemtimeint_mixed:
-			{
-				timeIntStd_ = rcp(new XFEM::SemiLagrange(
-					*timeIntData,
-					xfemtimeint_,
-					veln,
-					flamefront_,
-					dta_,
-					theta_,
-					flamespeed_,
-					true));
-				break;
-			}
-			case INPAR::COMBUST::xfemtimeint_extrapolation:
-			{
-				timeIntStd_ = rcp(new XFEM::Extrapolation(
-					*timeIntData,
-					xfemtimeint_,
-					veln,
-					dta_,
-					true));
-				break;
-			}
-			default:
-				dserror("standard recomputation approach in XFEM time integration not implemented");
-			}
-		  }
-		}
-    	else if (curritnumFRS_==0) // new FGI
-    	{
-			switch (xfemtimeint_enr_)
-			{
-			case INPAR::COMBUST::xfemtimeintenr_donothing:
-			case INPAR::COMBUST::xfemtimeintenr_quasistatic: break; // nothing to do
-			case INPAR::COMBUST::xfemtimeintenr_project:
-			case INPAR::COMBUST::xfemtimeintenr_project_scalar:
-			{
-				timeIntEnr_->importData(oldNodalDofColDistrib);
-				break;
-			}
-			default: dserror("enrichment recomputation approach in XFEM time integration not implemented");
-			}
+          switch (xfemtimeint_)
+          {
+          case INPAR::COMBUST::xfemtimeint_donothing:
+            break;
+          case INPAR::COMBUST::xfemtimeint_semilagrange:
+          case INPAR::COMBUST::xfemtimeint_mixedSLExtrapol:
+          {
+            // time integration data for standard dofs, semi-lagrangian approach
+            timeIntStd_ = rcp(new XFEM::SemiLagrange(
+                *timeIntData,
+                xfemtimeint_,
+                veln,
+                dta_,
+                theta_,
+                flamefront_,
+                flamespeed_,
+                true));
+            break;
+          }
+          case INPAR::COMBUST::xfemtimeint_extrapolation:
+          {
+            // time integration data for standard dofs, extrapolation approach
+            timeIntStd_ = rcp(new XFEM::Extrapolation(
+                *timeIntData,
+                xfemtimeint_,
+                veln,
+                dta_,
+                flamefront_,
+                true));
+            break;
+          }
+          default:
+            dserror("standard recomputation approach in XFEM time integration not implemented");
+          }
+        }
+      }
 
-			switch (xfemtimeint_)
-			{
-			case INPAR::COMBUST::xfemtimeint_donothing: break;
-			case INPAR::COMBUST::xfemtimeint_semilagrange:
-			case INPAR::COMBUST::xfemtimeint_mixed:
-			case INPAR::COMBUST::xfemtimeint_extrapolation:
-			{
-				timeIntStd_->importData(flamefront_->Phin());
-				break;
-			}
-			default: dserror("standard recomputation approach in XFEM time integration not implemented");
-			}
-    	} // end else if, nothing more to do
+      else if (curritnumFRS_==0) // new FGI requires little new data to check which dofs shall be recomputed
+      {
+        switch (xfemtimeint_enr_)
+        {
+        case INPAR::COMBUST::xfemtimeintenr_donothing:
+        case INPAR::COMBUST::xfemtimeintenr_quasistatic: break; // nothing to do
+        case INPAR::COMBUST::xfemtimeintenr_project:
+        case INPAR::COMBUST::xfemtimeintenr_project_scalar:
+        {
+          timeIntEnr_->importNewFGIData(
+              discret_,
+              dofmanager,
+              flamefront_,
+              interfacehandle,
+              newdofrowmap,
+              state_.nodalDofDistributionMap_,
+              oldNodalDofColDistrib); // new data due to gamma^n+1,i+1
+          break;
+        }
+        default: dserror("enrichment recomputation approach in XFEM time integration not implemented");
+        }
+
+        switch (xfemtimeint_)
+        {
+        case INPAR::COMBUST::xfemtimeint_donothing: break;
+        case INPAR::COMBUST::xfemtimeint_semilagrange:
+        case INPAR::COMBUST::xfemtimeint_mixedSLExtrapol:
+        case INPAR::COMBUST::xfemtimeint_extrapolation:
+        {
+          timeIntStd_->importNewFGIData(
+              discret_,
+              dofmanager,
+              flamefront_,
+              interfacehandle,
+              newdofrowmap,
+              state_.nodalDofDistributionMap_); // new data due to gamma^n+1,i+1
+          break;
+        }
+        default: dserror("standard recomputation approach in XFEM time integration not implemented");
+        }
+      } // end else if, nothing more to do
     }
   } // anonymous namespace for dofswitcher and startvalues
 
@@ -1118,35 +1139,35 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 {
   while (!FluidRefSolLoopFinished()) // iterator between NS-solution and recomputation of reference solution
   {
-	  PrepareNonlinearSolve();
+    PrepareNonlinearSolve();
 
-	  TEUCHOS_FUNC_TIME_MONITOR("   + nonlin. iteration/lin. solve");
+    TEUCHOS_FUNC_TIME_MONITOR("   + nonlin. iteration/lin. solve");
 
-	  // ---------------------------------------------- nonlinear iteration
-	  // ------------------------------- stop nonlinear iteration when both
-	  //                                 increment-norms are below this bound
-	  const double  ittol     = params_.get<double>("tolerance for nonlin iter");
+    // ---------------------------------------------- nonlinear iteration
+    // ------------------------------- stop nonlinear iteration when both
+    //                                 increment-norms are below this bound
+    const double  ittol     = params_.get<double>("tolerance for nonlin iter");
 
-	  //------------------------------ turn adaptive solver tolerance on/off
-	  const bool   isadapttol    = params_.get<bool>("ADAPTCONV");
-	  const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER");
+    //------------------------------ turn adaptive solver tolerance on/off
+    const bool   isadapttol    = params_.get<bool>("ADAPTCONV");
+    const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER");
 
 
-  // for turbulent channel flow: only one iteration before sampling otherwise use the usual itemax_
-  const int itemax = (special_flow_ == "bubbly_channel_flow" and step_ < samstart_) ? 2 : itemax_ ;
+    // for turbulent channel flow: only one iteration before sampling otherwise use the usual itemax_
+    const int itemax = (special_flow_ == "bubbly_channel_flow" and step_ < samstart_) ? 2 : itemax_ ;
 
-  //const bool fluidrobin = params_.get<bool>("fluidrobin", false);
+    //const bool fluidrobin = params_.get<bool>("fluidrobin", false);
 
-	  int               itnum = 0;
-	  bool              stopnonliniter = false;
+    int               itnum = 0;
+    bool              stopnonliniter = false;
 
-  double dtsolve = 0.0;
-  dtele_   = 0.0;
+    double dtsolve = 0.0;
+    dtele_   = 0.0;
 
-	  // out to screen
-	  PrintTimeStepInfo();
+    // out to screen
+    PrintTimeStepInfo();
 
-	/*
+    /*
 	  {
 		std::ofstream f;
 		const std::string fname = DRT::Problem::Instance()->OutputControlFile()->FileName()
@@ -1160,190 +1181,190 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
 		f.close();
 	  }
-	*/
+     */
 
-	  if (myrank_ == 0)
-	  {
-
-		printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
-		printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc ---|\n");
-	  }
-
-	  // TODO add comment
-	  incvel_->PutScalar(0.0);
-	  residual_->PutScalar(0.0);
-	  // increment of the old iteration step - used for update of condensed element stresses
-	  oldinc_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
-
-	  while (stopnonliniter==false)
-	  {
-		itnum++;
-
-	#ifdef SUGRVEL_OUTPUT
-		  std::cout << "writing gmsh output" << std::endl;
-		  const bool screen_out = false;
-
-		  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("SubgridVelocityFluid", step_, 350, screen_out, 0);
-		  std::ofstream gmshfilecontent(filename.c_str());
-		  gmshfilecontent << "View \" " << "SubgridVelocity" << " \" {\n";
-		  gmshfilecontent.close();
-
-		  const std::string filename2 = IO::GMSH::GetNewFileNameAndDeleteOldFiles("Residual", step_, 350, screen_out, 0);
-		  std::ofstream gmshfilecontent2(filename2.c_str());
-		  gmshfilecontent2 << "View \" " << "Residual" << " \" {\n";
-		  gmshfilecontent2.close();
-
-		  const std::string filename3 = IO::GMSH::GetNewFileNameAndDeleteOldFiles("Tau", step_, 350, screen_out, 0);
-		  std::ofstream gmshfilecontent3(filename3.c_str());
-		  gmshfilecontent3 << "View \" " << "Tau" << " \" {\n";
-		  gmshfilecontent3.close();
-	#endif
-
-		// -------------------------------------------------------------------
-		// call elements to calculate system matrix
-		// -------------------------------------------------------------------
-		{
-		  // time measurement: element
-		  TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
-
-		  // get cpu time
-		  const double tcpu=Teuchos::Time::wallTime();
-
-		  sysmat_->Zero();
-
-		  // add Neumann loads
-		  residual_->Update(1.0,*neumann_loads_,0.0);
-
-		  // create the parameters for the discretization
-		  ParameterList eleparams;
-
-		  // action for elements
-		  eleparams.set("action","calc_fluid_systemmat_and_residual");
-
-		  // flag for type of combustion problem
-		  eleparams.set<int>("combusttype",combusttype_);
-		  eleparams.set<int>("veljumptype",veljumptype_);
-		  eleparams.set<int>("fluxjumptype",fluxjumptype_);
-		  eleparams.set("flamespeed",flamespeed_);
-		  eleparams.set("nitschevel",nitschevel_);
-		  eleparams.set("nitschepres",nitschepres_);
-		  eleparams.set("DLM_condensation",condensation_);
-
-		  // parameters for two-phase flow problems with surface tension
-		  eleparams.set<int>("surftensapprox",surftensapprox_);
-		  eleparams.set("connected_interface",connected_interface_);
-
-		  // smoothed normal vectors for boundary integration
-		  eleparams.set("smoothed_bound_integration",smoothed_boundary_integration_);
-		  eleparams.set<int>("smoothgradphi",smoothgradphi_);
-
-		  // other parameters that might be needed by the elements
-		  //eleparams.set("total time",time_);
-		  //eleparams.set("thsl",theta_*dta_);
-		  eleparams.set<int>("timealgo",timealgo_);
-      eleparams.set("time",time_);
-		  eleparams.set("dt",dta_);
-		  eleparams.set("theta",theta_);
-		  eleparams.set("gamma",gamma_);
-		  eleparams.set("alphaF",alphaF_);
-		  eleparams.set("alphaM",alphaM_);
-
-	#ifdef SUGRVEL_OUTPUT
-		  //eleparams.set("step",step_);
-	#endif
-
-		  //eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation"));
-		  //type of linearisation: include reactive terms for linearisation
-		  if(DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation") == INPAR::FLUID::Newton)
-			eleparams.set("include reactive terms for linearisation",true);
-		  else if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation") == INPAR::FLUID::minimal)
-			dserror("LinearisationAction minimal is not defined in the combustion formulation");
-		  else
-			eleparams.set("include reactive terms for linearisation",false);
-
-		  // parameters for stabilization
-		  eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
-
-		  // parameters for stabilization
-		  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
-
-		  // set vector values needed by elements
-		  discret_->ClearState();
-
-		  // set scheme-specific element parameters and vector values
-		  //if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
-		  //  discret_->SetState("velaf",state_.velaf_);
-		  //else
-		  discret_->SetState("velnp",state_.velnp_);
-
-		  discret_->SetState("veln" ,state_.veln_);
-		  discret_->SetState("velnm",state_.velnm_);
-		  discret_->SetState("accn" ,state_.accn_);
-
-		  //discret_->SetState("accam",state_.accam_);
-
-		  discret_->SetState("velpres nodal iterinc",oldinc_);
-
-		  // convergence check at itemax is skipped for speedup if
-		  // CONVCHECK is set to L_2_norm_without_residual_at_itemax
-		  if ((itnum != itemax)
-			  ||
-			  (params_.get<string>("CONVCHECK")
-			   !=
-			   "L_2_norm_without_residual_at_itemax"))
-		  {
-			// call standard loop over elements
-			discret_->Evaluate(eleparams,sysmat_,residual_);
-
-			discret_->ClearState();
-
-			// scaling to get true residual vector for all other schemes
-        	trueresidual_->Update(ResidualScaling(),*residual_,0.0);
-
-			// finalize the complete matrix
-			sysmat_->Complete();
-		  }
-
-		  // end time measurement for element
-      	dtele_=Teuchos::Time::wallTime()-tcpu;
-
-		} // end of element call
-
-		// blank residual DOFs which are on Dirichlet BC
-		// We can do this because the values at the dirichlet positions
-		// are not used anyway.
-		// We could avoid this though, if velrowmap_ and prerowmap_ would
-		// not include the dirichlet values as well. But it is expensive
-		// to avoid that.
-		dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
-
-    // Krylov projection for solver already required in convergence check
-    if (project_)
+    if (myrank_ == 0)
     {
-      DRT::Condition* KSPcond=discret_->GetCondition("KrylovSpaceProjection");
 
-      // in this case, we want to project out some zero pressure modes
-      const string* definition = KSPcond->Get<string>("weight vector definition");
+      printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+      printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc ---|\n");
+    }
 
-      if(*definition == "pointvalues")
+    // TODO add comment
+    incvel_->PutScalar(0.0);
+    residual_->PutScalar(0.0);
+    // increment of the old iteration step - used for update of condensed element stresses
+    oldinc_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+
+    while (stopnonliniter==false)
+    {
+      itnum++;
+
+#ifdef SUGRVEL_OUTPUT
+      std::cout << "writing gmsh output" << std::endl;
+      const bool screen_out = false;
+
+      const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("SubgridVelocityFluid", step_, 350, screen_out, 0);
+      std::ofstream gmshfilecontent(filename.c_str());
+      gmshfilecontent << "View \" " << "SubgridVelocity" << " \" {\n";
+      gmshfilecontent.close();
+
+      const std::string filename2 = IO::GMSH::GetNewFileNameAndDeleteOldFiles("Residual", step_, 350, screen_out, 0);
+      std::ofstream gmshfilecontent2(filename2.c_str());
+      gmshfilecontent2 << "View \" " << "Residual" << " \" {\n";
+      gmshfilecontent2.close();
+
+      const std::string filename3 = IO::GMSH::GetNewFileNameAndDeleteOldFiles("Tau", step_, 350, screen_out, 0);
+      std::ofstream gmshfilecontent3(filename3.c_str());
+      gmshfilecontent3 << "View \" " << "Tau" << " \" {\n";
+      gmshfilecontent3.close();
+#endif
+
+      // -------------------------------------------------------------------
+      // call elements to calculate system matrix
+      // -------------------------------------------------------------------
       {
-        // zero w and c
-        w_->PutScalar(0.0);
-        c_->PutScalar(0.0);
+        // time measurement: element
+        TEUCHOS_FUNC_TIME_MONITOR("      + element calls");
 
-        // get pressure
-        const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
+        // get cpu time
+        const double tcpu=Teuchos::Time::wallTime();
 
-        // make sure the dat file specified a pressure mode
-        for(int rr=0;rr<numdim_;++rr)
+        sysmat_->Zero();
+
+        // add Neumann loads
+        residual_->Update(1.0,*neumann_loads_,0.0);
+
+        // create the parameters for the discretization
+        ParameterList eleparams;
+
+        // action for elements
+        eleparams.set("action","calc_fluid_systemmat_and_residual");
+
+        // flag for type of combustion problem
+        eleparams.set<int>("combusttype",combusttype_);
+        eleparams.set<int>("veljumptype",veljumptype_);
+        eleparams.set<int>("fluxjumptype",fluxjumptype_);
+        eleparams.set("flamespeed",flamespeed_);
+        eleparams.set("nitschevel",nitschevel_);
+        eleparams.set("nitschepres",nitschepres_);
+        eleparams.set("DLM_condensation",condensation_);
+
+        // parameters for two-phase flow problems with surface tension
+        eleparams.set<int>("surftensapprox",surftensapprox_);
+        eleparams.set("connected_interface",connected_interface_);
+
+        // smoothed normal vectors for boundary integration
+        eleparams.set("smoothed_bound_integration",smoothed_boundary_integration_);
+        eleparams.set<int>("smoothgradphi",smoothgradphi_);
+
+        // other parameters that might be needed by the elements
+        //eleparams.set("total time",time_);
+        //eleparams.set("thsl",theta_*dta_);
+        eleparams.set<int>("timealgo",timealgo_);
+        eleparams.set("time",time_);
+        eleparams.set("dt",dta_);
+        eleparams.set("theta",theta_);
+        eleparams.set("gamma",gamma_);
+        eleparams.set("alphaF",alphaF_);
+        eleparams.set("alphaM",alphaM_);
+
+#ifdef SUGRVEL_OUTPUT
+        //eleparams.set("step",step_);
+#endif
+
+        //eleparams.set("include reactive terms for linearisation",params_.get<bool>("Use reaction terms for linearisation"));
+        //type of linearisation: include reactive terms for linearisation
+        if(DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation") == INPAR::FLUID::Newton)
+          eleparams.set("include reactive terms for linearisation",true);
+        else if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation") == INPAR::FLUID::minimal)
+          dserror("LinearisationAction minimal is not defined in the combustion formulation");
+        else
+          eleparams.set("include reactive terms for linearisation",false);
+
+        // parameters for stabilization
+        eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
+
+        // parameters for stabilization
+        eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+
+        // set vector values needed by elements
+        discret_->ClearState();
+
+        // set scheme-specific element parameters and vector values
+        //if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+        //  discret_->SetState("velaf",state_.velaf_);
+        //else
+        discret_->SetState("velnp",state_.velnp_);
+
+        discret_->SetState("veln" ,state_.veln_);
+        discret_->SetState("velnm",state_.velnm_);
+        discret_->SetState("accn" ,state_.accn_);
+
+        //discret_->SetState("accam",state_.accam_);
+
+        discret_->SetState("velpres nodal iterinc",oldinc_);
+
+        // convergence check at itemax is skipped for speedup if
+        // CONVCHECK is set to L_2_norm_without_residual_at_itemax
+        if ((itnum != itemax)
+            ||
+            (params_.get<string>("CONVCHECK")
+                !=
+                    "L_2_norm_without_residual_at_itemax"))
         {
-          if(abs((*mode)[rr])>1e-14)
-            dserror("expecting only an undetermined pressure");
+          // call standard loop over elements
+          discret_->Evaluate(eleparams,sysmat_,residual_);
+
+          discret_->ClearState();
+
+          // scaling to get true residual vector for all other schemes
+          trueresidual_->Update(ResidualScaling(),*residual_,0.0);
+
+          // finalize the complete matrix
+          sysmat_->Complete();
         }
 
-        int predof = numdim_;
+        // end time measurement for element
+        dtele_=Teuchos::Time::wallTime()-tcpu;
 
-        /* export to vector to normalize against
+      } // end of element call
+
+      // blank residual DOFs which are on Dirichlet BC
+      // We can do this because the values at the dirichlet positions
+      // are not used anyway.
+      // We could avoid this though, if velrowmap_ and prerowmap_ would
+      // not include the dirichlet values as well. But it is expensive
+      // to avoid that.
+      dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
+
+      // Krylov projection for solver already required in convergence check
+      if (project_)
+      {
+        DRT::Condition* KSPcond=discret_->GetCondition("KrylovSpaceProjection");
+
+        // in this case, we want to project out some zero pressure modes
+        const string* definition = KSPcond->Get<string>("weight vector definition");
+
+        if(*definition == "pointvalues")
+        {
+          // zero w and c
+          w_->PutScalar(0.0);
+          c_->PutScalar(0.0);
+
+          // get pressure
+          const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
+
+          // make sure the dat file specified a pressure mode
+          for(int rr=0;rr<numdim_;++rr)
+          {
+            if(abs((*mode)[rr])>1e-14)
+              dserror("expecting only an undetermined pressure");
+          }
+
+          int predof = numdim_;
+
+          /* export to vector to normalize against
         //
         // Note that in the case of definition pointvalue based,
         // the average pressure will vanish in a pointwise sense
@@ -1353,40 +1374,40 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         //      +   p_i  = 0
         //     /
         //    +---+
-        */
+           */
 
-        // write the value specified in the .dat-file to every std. pressure dof
-        // (regardless of whether this node also uses enriched pressure)
-        dofmanagerForOutput_->overwritePhysicalField(w_, state_.nodalDofDistributionMap_, XFEM::PHYSICS::Pres,
-                                                                XFEM::Enrichment::typeStandard, (*mode)[predof], false);
+          // write the value specified in the .dat-file to every std. pressure dof
+          // (regardless of whether this node also uses enriched pressure)
+          dofmanagerForOutput_->overwritePhysicalField(w_, state_.nodalDofDistributionMap_, XFEM::PHYSICS::Pres,
+              XFEM::Enrichment::typeStandard, (*mode)[predof], false);
 
-        // select only a certain volume to be affected by this projection
-        Teuchos::RCP<Epetra_Vector> tmpkspw = kspsplitter_.ExtractKSPCondVector(*w_);
-        w_->PutScalar(0.0);
-        LINALG::Export(*tmpkspw,*w_);
+          // select only a certain volume to be affected by this projection
+          Teuchos::RCP<Epetra_Vector> tmpkspw = kspsplitter_.ExtractKSPCondVector(*w_);
+          w_->PutScalar(0.0);
+          LINALG::Export(*tmpkspw,*w_);
 
-        // c_ = w_ except we use 1.0 instead of the .dat-file provided value
-        dofmanagerForOutput_->overwritePhysicalField(c_, state_.nodalDofDistributionMap_, XFEM::PHYSICS::Pres,
-                                                     XFEM::Enrichment::typeStandard, 1.0, false);
+          // c_ = w_ except we use 1.0 instead of the .dat-file provided value
+          dofmanagerForOutput_->overwritePhysicalField(c_, state_.nodalDofDistributionMap_, XFEM::PHYSICS::Pres,
+              XFEM::Enrichment::typeStandard, 1.0, false);
 
-        Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*c_);
-        c_->PutScalar(0.0);
-        LINALG::Export(*tmpkspc,*c_);
-      }
-      else if(*definition == "integration")
-      {
-        // zero w and c
-        w_->PutScalar(0.0);
-        c_->PutScalar(0.0);
+          Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*c_);
+          c_->PutScalar(0.0);
+          LINALG::Export(*tmpkspc,*c_);
+        }
+        else if(*definition == "integration")
+        {
+          // zero w and c
+          w_->PutScalar(0.0);
+          c_->PutScalar(0.0);
 
-        //---------------------------------------------------------
-        // fill w_
-        //---------------------------------------------------------
-        ParameterList eleparams;
-        // set action for elements
-        eleparams.set("action","integrate_Shapefunction");
+          //---------------------------------------------------------
+          // fill w_
+          //---------------------------------------------------------
+          ParameterList eleparams;
+          // set action for elements
+          eleparams.set("action","integrate_Shapefunction");
 
-        /* evaluate KrylovSpaceProjection condition in order to get
+          /* evaluate KrylovSpaceProjection condition in order to get
         // integrated nodal basis functions w_
         // Note that in the case of definition integration based,
         // the average pressure will vanish in an integral sense
@@ -1396,67 +1417,67 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         //  | w_*p | = p_i * | N_i(x) dx =  | | N_i(x)*p_i | dx =  | | p(x) | dx = 0
         //   \    /          |              |  \          /        |  \    /
         //                   /              /                      /
-        */
+           */
 
-        // call loop over elements
-        discret_->ClearState();
-        discret_->EvaluateCondition(eleparams, w_, "KrylovSpaceProjection");
-        discret_->ClearState();
-        //----------------------------------------------------------
-        // fill c_
-        //----------------------------------------------------------
-        // same as for pointwise
-        dofmanagerForOutput_->overwritePhysicalField(c_, state_.nodalDofDistributionMap_, XFEM::PHYSICS::Pres,
-                                                     XFEM::Enrichment::typeStandard, 1.0, false);
+          // call loop over elements
+          discret_->ClearState();
+          discret_->EvaluateCondition(eleparams, w_, "KrylovSpaceProjection");
+          discret_->ClearState();
+          //----------------------------------------------------------
+          // fill c_
+          //----------------------------------------------------------
+          // same as for pointwise
+          dofmanagerForOutput_->overwritePhysicalField(c_, state_.nodalDofDistributionMap_, XFEM::PHYSICS::Pres,
+              XFEM::Enrichment::typeStandard, 1.0, false);
 
-        Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*c_);
-        c_->PutScalar(0.0);
-        LINALG::Export(*tmpkspc,*c_);
+          Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*c_);
+          c_->PutScalar(0.0);
+          LINALG::Export(*tmpkspc,*c_);
+        }
+        else
+        {
+          dserror("unknown definition of weight vector w for restriction of Krylov space");
+        }
+
+        double cTw;
+        c_->Dot(*w_,&cTw);
+
+        double cTres;
+        c_->Dot(*residual_,&cTres);
+
+        residual_->Update(-cTres/cTw,*w_,1.0);
       }
-      else
-      {
-        dserror("unknown definition of weight vector w for restriction of Krylov space");
-      }
 
-      double cTw;
-      c_->Dot(*w_,&cTw);
+      double incvelnorm_L2 = 0.0;
+      double velnorm_L2 = 0.0;
+      double vresnorm = 0.0;
 
-      double cTres;
-      c_->Dot(*residual_,&cTres);
+      Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
+      onlyvel->Norm2(&vresnorm);
 
-      residual_->Update(-cTres/cTw,*w_,1.0);
-    }
+      velpressplitter_.ExtractOtherVector(incvel_,onlyvel);
+      onlyvel->Norm2(&incvelnorm_L2);
 
-    double incvelnorm_L2 = 0.0;
-    double velnorm_L2 = 0.0;
-    double vresnorm = 0.0;
+      velpressplitter_.ExtractOtherVector(state_.velnp_,onlyvel);
+      onlyvel->Norm2(&velnorm_L2);
 
-    Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
-    onlyvel->Norm2(&vresnorm);
+      double incprenorm_L2 = 0.0;
+      double prenorm_L2 = 0.0;
+      double presnorm = 0.0;
 
-		velpressplitter_.ExtractOtherVector(incvel_,onlyvel);
-		onlyvel->Norm2(&incvelnorm_L2);
+      Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(residual_);
+      onlypre->Norm2(&presnorm);
 
-		velpressplitter_.ExtractOtherVector(state_.velnp_,onlyvel);
-		onlyvel->Norm2(&velnorm_L2);
+      velpressplitter_.ExtractCondVector(incvel_,onlypre);
+      onlypre->Norm2(&incprenorm_L2);
 
-		double incprenorm_L2 = 0.0;
-		double prenorm_L2 = 0.0;
-		double presnorm = 0.0;
+      velpressplitter_.ExtractCondVector(state_.velnp_,onlypre);
+      onlypre->Norm2(&prenorm_L2);
 
-		Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(residual_);
-		onlypre->Norm2(&presnorm);
-
-		velpressplitter_.ExtractCondVector(incvel_,onlypre);
-		onlypre->Norm2(&incprenorm_L2);
-
-		velpressplitter_.ExtractCondVector(state_.velnp_,onlypre);
-		onlypre->Norm2(&prenorm_L2);
-
-		// care for the case that nothing really happens in the velocity
-		// or pressure field
-    	if (velnorm_L2 < 1e-5) velnorm_L2 = 1.0;
-	    if (prenorm_L2 < 1e-5) prenorm_L2 = 1.0;
+      // care for the case that nothing really happens in the velocity
+      // or pressure field
+      if (velnorm_L2 < 1e-5) velnorm_L2 = 1.0;
+      if (prenorm_L2 < 1e-5) prenorm_L2 = 1.0;
 
     //-------------------------------------------------- output to screen
     /* special case of very first iteration step:
@@ -1471,7 +1492,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
       if (myrank_ == 0)
       {
-        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |      --      |",
+        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
                itnum,itemax,ittol,vresnorm,presnorm);
 //        printf(" (      --     ,te=%10.3E",dtele);
 //        printf(")\n");
@@ -1517,87 +1538,87 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
           }
         }
 #if 0//#ifdef COMBUST_2D
-			// for 2-dimensional problems errors occur because of pseudo 3D code!
-			// These error shall get smaller with the following modifications
-			const int dim = 2; // z-direction is assumed to be the pseudo-dimension
-			if (dim == 2)
-			{
-			  const Epetra_Map* dofcolmap = discret_->DofColMap();
-			  map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID> dofColDistrib;
-			  dofmanagerForOutput_->fillNodalDofColDistributionMap(dofColDistrib);
+        // for 2-dimensional problems errors occur because of pseudo 3D code!
+        // These error shall get smaller with the following modifications
+        const int dim = 2; // z-direction is assumed to be the pseudo-dimension
+        if (dim == 2)
+        {
+          const Epetra_Map* dofcolmap = discret_->DofColMap();
+          map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID> dofColDistrib;
+          dofmanagerForOutput_->fillNodalDofColDistributionMap(dofColDistrib);
 
-			  RCP<Epetra_Vector> velnp = rcp(new Epetra_Vector(*dofcolmap,true));
-			  LINALG::Export(*state_.velnp_,*velnp);
+          RCP<Epetra_Vector> velnp = rcp(new Epetra_Vector(*dofcolmap,true));
+          LINALG::Export(*state_.velnp_,*velnp);
 
 
-			  for (int inode=0;inode<discret_->NumMyColNodes();inode++)
-			  {
-				DRT::Node* frontnode = discret_->lColNode(inode);
-				DRT::Node* backnode = NULL;
-				if (frontnode->Id()%2==0) // gerade gid -> nachbar hat gid+1
-				  backnode = discret_->gNode(frontnode->Id()+1);
-				else // ungerade gid -> nachbar hat gid-1
-				  backnode = discret_->gNode(frontnode->Id()-1);
+          for (int inode=0;inode<discret_->NumMyColNodes();inode++)
+          {
+            DRT::Node* frontnode = discret_->lColNode(inode);
+            DRT::Node* backnode = NULL;
+            if (frontnode->Id()%2==0) // gerade gid -> nachbar hat gid+1
+              backnode = discret_->gNode(frontnode->Id()+1);
+            else // ungerade gid -> nachbar hat gid-1
+              backnode = discret_->gNode(frontnode->Id()-1);
 
-				const std::set<XFEM::FieldEnr>& frontfieldEnrSet(dofmanagerForOutput_->getNodeDofSet(frontnode->Id()));
+            const std::set<XFEM::FieldEnr>& frontfieldEnrSet(dofmanagerForOutput_->getNodeDofSet(frontnode->Id()));
 
-				{ // check if frontnode and backnode is correct
-				  LINALG::Matrix<3,1> frontcoords(frontnode->X());
-				  LINALG::Matrix<3,1> backcoords(backnode->X());
+            { // check if frontnode and backnode is correct
+              LINALG::Matrix<3,1> frontcoords(frontnode->X());
+              LINALG::Matrix<3,1> backcoords(backnode->X());
 
-				  if ((fabs(frontcoords(0) - backcoords(0)) > 1e-12) || (fabs(frontcoords(1) - backcoords(1)) > 1e-12))
-				  {
-					cout << *frontnode << endl;
-					cout << *backnode << endl;
-					dserror("wrong order of nodes as thought here!");
-				  }
+              if ((fabs(frontcoords(0) - backcoords(0)) > 1e-12) || (fabs(frontcoords(1) - backcoords(1)) > 1e-12))
+              {
+                cout << *frontnode << endl;
+                cout << *backnode << endl;
+                dserror("wrong order of nodes as thought here!");
+              }
 
-				  // compare both fieldenrsets
-				  const std::set<XFEM::FieldEnr>& backfieldEnrSet(dofmanagerForOutput_->getNodeDofSet(backnode->Id()));
-				  int i=0;
-				  for (set<XFEM::FieldEnr>::const_iterator frontfieldenr = frontfieldEnrSet.begin();
-				  frontfieldenr != frontfieldEnrSet.end();frontfieldenr++)
-				  {
-					int j=0;
-					for (set<XFEM::FieldEnr>::const_iterator backfieldenr = backfieldEnrSet.begin();
-						backfieldenr != backfieldEnrSet.end();backfieldenr++)
-					{
-					  if (i==j)
-					  {
-						if (*frontfieldenr != *backfieldenr)
-						  dserror("fieldenrsets do not fit");
-					  }
-					  j++;
-					}
-					i++;
-				  }
-				} // if the compare is successful, all fieldenrichments for this node fit for front and back
+              // compare both fieldenrsets
+              const std::set<XFEM::FieldEnr>& backfieldEnrSet(dofmanagerForOutput_->getNodeDofSet(backnode->Id()));
+              int i=0;
+              for (set<XFEM::FieldEnr>::const_iterator frontfieldenr = frontfieldEnrSet.begin();
+                  frontfieldenr != frontfieldEnrSet.end();frontfieldenr++)
+              {
+                int j=0;
+                for (set<XFEM::FieldEnr>::const_iterator backfieldenr = backfieldEnrSet.begin();
+                    backfieldenr != backfieldEnrSet.end();backfieldenr++)
+                {
+                  if (i==j)
+                  {
+                    if (*frontfieldenr != *backfieldenr)
+                      dserror("fieldenrsets do not fit");
+                  }
+                  j++;
+                }
+                i++;
+              }
+            } // if the compare is successful, all fieldenrichments for this node fit for front and back
 
-				for (set<XFEM::FieldEnr>::const_iterator fieldenr = frontfieldEnrSet.begin();
-					fieldenr != frontfieldEnrSet.end();fieldenr++)
-				{
-				  const XFEM::DofKey<XFEM::onNode> frontdofkey(frontnode->Id(),*fieldenr);
-				  const XFEM::DofKey<XFEM::onNode> backdofkey(backnode->Id(),*fieldenr);
+            for (set<XFEM::FieldEnr>::const_iterator fieldenr = frontfieldEnrSet.begin();
+                fieldenr != frontfieldEnrSet.end();fieldenr++)
+            {
+              const XFEM::DofKey<XFEM::onNode> frontdofkey(frontnode->Id(),*fieldenr);
+              const XFEM::DofKey<XFEM::onNode> backdofkey(backnode->Id(),*fieldenr);
 
-				  const int frontdofpos = dofColDistrib.find(frontdofkey)->second;
-				  const int backdofpos = dofColDistrib.find(backdofkey)->second;
+              const int frontdofpos = dofColDistrib.find(frontdofkey)->second;
+              const int backdofpos = dofColDistrib.find(backdofkey)->second;
 
-				  if (fieldenr->getField() != XFEM::PHYSICS::Velz)
-				  {
-					double average = 0.5*((*velnp)[(*dofcolmap).LID(frontdofpos)]
-										  +(*velnp)[(*dofcolmap).LID(backdofpos)]);
-					(*velnp)[(*dofcolmap).LID(frontdofpos)] = average;
-					(*velnp)[(*dofcolmap).LID(backdofpos)] = average;
-				  }
-				  else // Velz values shall be set to zero
-				  {
-					(*velnp)[(*dofcolmap).LID(frontdofpos)] = 0;
-					(*velnp)[(*dofcolmap).LID(backdofpos)] = 0;
-				  }
-				}
-			  }
-			  LINALG::Export(*velnp,*state_.velnp_);
-			}
+              if (fieldenr->getField() != XFEM::PHYSICS::Velz)
+              {
+                double average = 0.5*((*velnp)[(*dofcolmap).LID(frontdofpos)]
+                                               +(*velnp)[(*dofcolmap).LID(backdofpos)]);
+                (*velnp)[(*dofcolmap).LID(frontdofpos)] = average;
+                (*velnp)[(*dofcolmap).LID(backdofpos)] = average;
+              }
+              else // Velz values shall be set to zero
+              {
+                (*velnp)[(*dofcolmap).LID(frontdofpos)] = 0;
+                (*velnp)[(*dofcolmap).LID(backdofpos)] = 0;
+              }
+            }
+          }
+          LINALG::Export(*velnp,*state_.velnp_);
+        }
 #endif
         break;
       }
@@ -1633,129 +1654,129 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         printf("|            >>>>>> not converged in itemax steps!              |\n");
         printf("+---------------------------------------------------------------+\n");
 
-			FILE* errfile = params_.get<FILE*>("err file");
-			if (errfile!=NULL)
-			{
-			  fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
+        FILE* errfile = params_.get<FILE*>("err file");
+        if (errfile!=NULL)
+        {
+          fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
                   itnum,itemax,ittol,vresnorm,presnorm,
                   incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
         }
       }
 
 #if 0//#ifdef COMBUST_2D
-		  // for 2-dimensional problems errors occur because of pseudo 3D code!
-		  // These error shall be removed with the following modifications
-		  const int dim = 2; // z-direction is assumed to be the pseudo-dimension
-		  if (dim == 2)
-		  {
-			const Epetra_Map* dofcolmap = discret_->DofColMap();
-			map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID> dofColDistrib;
-			dofmanagerForOutput_->fillNodalDofColDistributionMap(dofColDistrib);
+      // for 2-dimensional problems errors occur because of pseudo 3D code!
+      // These error shall be removed with the following modifications
+      const int dim = 2; // z-direction is assumed to be the pseudo-dimension
+      if (dim == 2)
+      {
+        const Epetra_Map* dofcolmap = discret_->DofColMap();
+        map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID> dofColDistrib;
+        dofmanagerForOutput_->fillNodalDofColDistributionMap(dofColDistrib);
 
-			RCP<Epetra_Vector> velnp = rcp(new Epetra_Vector(*dofcolmap,true));
-			LINALG::Export(*state_.velnp_,*velnp);
+        RCP<Epetra_Vector> velnp = rcp(new Epetra_Vector(*dofcolmap,true));
+        LINALG::Export(*state_.velnp_,*velnp);
 
 
-			for (int inode=0;inode<discret_->NumMyColNodes();inode++)
-			{
-			  DRT::Node* frontnode = discret_->lColNode(inode);
-			  DRT::Node* backnode = NULL;
-			  if (frontnode->Id()%2==0) // gerade gid -> nachbar hat gid+1
-				backnode = discret_->gNode(frontnode->Id()+1);
-			  else // ungerade gid -> nachbar hat gid-1
-				backnode = discret_->gNode(frontnode->Id()-1);
+        for (int inode=0;inode<discret_->NumMyColNodes();inode++)
+        {
+          DRT::Node* frontnode = discret_->lColNode(inode);
+          DRT::Node* backnode = NULL;
+          if (frontnode->Id()%2==0) // gerade gid -> nachbar hat gid+1
+            backnode = discret_->gNode(frontnode->Id()+1);
+          else // ungerade gid -> nachbar hat gid-1
+            backnode = discret_->gNode(frontnode->Id()-1);
 
-			  const std::set<XFEM::FieldEnr>& frontfieldEnrSet(dofmanagerForOutput_->getNodeDofSet(frontnode->Id()));
+          const std::set<XFEM::FieldEnr>& frontfieldEnrSet(dofmanagerForOutput_->getNodeDofSet(frontnode->Id()));
 
-			  { // check if frontnode and backnode is correct
-				LINALG::Matrix<3,1> frontcoords(frontnode->X());
-				LINALG::Matrix<3,1> backcoords(backnode->X());
+          { // check if frontnode and backnode is correct
+            LINALG::Matrix<3,1> frontcoords(frontnode->X());
+            LINALG::Matrix<3,1> backcoords(backnode->X());
 
-				if ((fabs(frontcoords(0) - backcoords(0)) > 1e-12) || (fabs(frontcoords(1) - backcoords(1)) > 1e-12))
-				{
-				  cout << *frontnode << endl;
-				  cout << *backnode << endl;
-				  dserror("wrong order of nodes as thought here!");
-				}
+            if ((fabs(frontcoords(0) - backcoords(0)) > 1e-12) || (fabs(frontcoords(1) - backcoords(1)) > 1e-12))
+            {
+              cout << *frontnode << endl;
+              cout << *backnode << endl;
+              dserror("wrong order of nodes as thought here!");
+            }
 
-				// compare both fieldenrsets
-				const std::set<XFEM::FieldEnr>& backfieldEnrSet(dofmanagerForOutput_->getNodeDofSet(backnode->Id()));
-				int i=0;
-				for (set<XFEM::FieldEnr>::const_iterator frontfieldenr = frontfieldEnrSet.begin();
-				frontfieldenr != frontfieldEnrSet.end();frontfieldenr++)
-				{
-				  int j=0;
-				  for (set<XFEM::FieldEnr>::const_iterator backfieldenr = backfieldEnrSet.begin();
-					  backfieldenr != backfieldEnrSet.end();backfieldenr++)
-				  {
-					if (i==j)
-					{
-					  if (*frontfieldenr != *backfieldenr)
-						dserror("fieldenrsets do not fit");
-					}
-					j++;
-				  }
-				  i++;
-				}
-			  } // if the compare is successful, all fieldenrichments for this node fit for front and back
+            // compare both fieldenrsets
+            const std::set<XFEM::FieldEnr>& backfieldEnrSet(dofmanagerForOutput_->getNodeDofSet(backnode->Id()));
+            int i=0;
+            for (set<XFEM::FieldEnr>::const_iterator frontfieldenr = frontfieldEnrSet.begin();
+                frontfieldenr != frontfieldEnrSet.end();frontfieldenr++)
+            {
+              int j=0;
+              for (set<XFEM::FieldEnr>::const_iterator backfieldenr = backfieldEnrSet.begin();
+                  backfieldenr != backfieldEnrSet.end();backfieldenr++)
+              {
+                if (i==j)
+                {
+                  if (*frontfieldenr != *backfieldenr)
+                    dserror("fieldenrsets do not fit");
+                }
+                j++;
+              }
+              i++;
+            }
+          } // if the compare is successful, all fieldenrichments for this node fit for front and back
 
-			  for (set<XFEM::FieldEnr>::const_iterator fieldenr = frontfieldEnrSet.begin();
-				  fieldenr != frontfieldEnrSet.end();fieldenr++)
-			  {
-				const XFEM::DofKey<XFEM::onNode> frontdofkey(frontnode->Id(),*fieldenr);
-				const XFEM::DofKey<XFEM::onNode> backdofkey(backnode->Id(),*fieldenr);
+          for (set<XFEM::FieldEnr>::const_iterator fieldenr = frontfieldEnrSet.begin();
+              fieldenr != frontfieldEnrSet.end();fieldenr++)
+          {
+            const XFEM::DofKey<XFEM::onNode> frontdofkey(frontnode->Id(),*fieldenr);
+            const XFEM::DofKey<XFEM::onNode> backdofkey(backnode->Id(),*fieldenr);
 
-				const int frontdofpos = dofColDistrib.find(frontdofkey)->second;
-				const int backdofpos = dofColDistrib.find(backdofkey)->second;
+            const int frontdofpos = dofColDistrib.find(frontdofkey)->second;
+            const int backdofpos = dofColDistrib.find(backdofkey)->second;
 
-				if (fieldenr->getField() != XFEM::PHYSICS::Velz)
-				{
-				  double average = 0.5*((*velnp)[(*dofcolmap).LID(frontdofpos)]
-										+(*velnp)[(*dofcolmap).LID(backdofpos)]);
-				  (*velnp)[(*dofcolmap).LID(frontdofpos)] = average;
-				  (*velnp)[(*dofcolmap).LID(backdofpos)] = average;
-				}
-				else // Velz values shall be set to zero
-				{
-				  (*velnp)[(*dofcolmap).LID(frontdofpos)] = 0;
-				  (*velnp)[(*dofcolmap).LID(backdofpos)] = 0;
-				}
-			  }
-			}
-			LINALG::Export(*velnp,*state_.velnp_);
-		  }
+            if (fieldenr->getField() != XFEM::PHYSICS::Velz)
+            {
+              double average = 0.5*((*velnp)[(*dofcolmap).LID(frontdofpos)]
+                                             +(*velnp)[(*dofcolmap).LID(backdofpos)]);
+              (*velnp)[(*dofcolmap).LID(frontdofpos)] = average;
+              (*velnp)[(*dofcolmap).LID(backdofpos)] = average;
+            }
+            else // Velz values shall be set to zero
+            {
+              (*velnp)[(*dofcolmap).LID(frontdofpos)] = 0;
+              (*velnp)[(*dofcolmap).LID(backdofpos)] = 0;
+            }
+          }
+        }
+        LINALG::Export(*velnp,*state_.velnp_);
+      }
 #endif
-		  break;
-		}
+      break;
+    }
 
-		// stop if NaNs occur
-		if (std::isnan(vresnorm) or
-			std::isnan(presnorm) or
-			std::isnan(incvelnorm_L2/velnorm_L2) or
-			std::isnan(incprenorm_L2/prenorm_L2))
-		{
-		  dserror("NaN's detected! Quitting...");
-		}
+    // stop if NaNs occur
+    if (std::isnan(vresnorm) or
+        std::isnan(presnorm) or
+        std::isnan(incvelnorm_L2/velnorm_L2) or
+        std::isnan(incprenorm_L2/prenorm_L2))
+    {
+      dserror("NaN's detected! Quitting...");
+    }
 
 
-		//--------- Apply Dirichlet boundary conditions to system of equations
-		//          residual displacements are supposed to be zero at
-		//          boundary conditions
-		incvel_->PutScalar(0.0);
-		{
-		  // time measurement: application of dbc
-		  TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
-		  LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
-		}
+    //--------- Apply Dirichlet boundary conditions to system of equations
+    //          residual displacements are supposed to be zero at
+    //          boundary conditions
+    incvel_->PutScalar(0.0);
+    {
+      // time measurement: application of dbc
+      TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
+      LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
+    }
 
-		//-------solve for residual displacements to correct incremental displacements
-		{
-		  // time measurement: solver
-		  TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
+    //-------solve for residual displacements to correct incremental displacements
+    {
+      // time measurement: solver
+      TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
 
-		  // get cpu time
-		  discret_->Comm().Barrier();
-		  const double tcpusolve=Teuchos::Time::wallTime();
+      // get cpu time
+      discret_->Comm().Barrier();
+      const double tcpusolve=Teuchos::Time::wallTime();
 
       // do adaptive linear solver tolerance (not in first solve)
       if (isadapttol and itnum>1)
@@ -1794,35 +1815,36 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       solver_.Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1,w_,c_,project_); // defaults: weighted_basis_mean_w = null, kernel_c = null, project = false
       solver_.ResetTolerance();
 
-		  // end time measurement for solver
-		  // remark: to get realistic times, this barrier results in the longest time being printed
-		  discret_->Comm().Barrier();
-		  dtsolve = Teuchos::Time::wallTime()-tcpusolve;
-		}
+      // end time measurement for solver
+      // remark: to get realistic times, this barrier results in the longest time being printed
+      discret_->Comm().Barrier();
+      dtsolve = Teuchos::Time::wallTime()-tcpusolve;
+    }
 
-		//------------------------------------------------ update (u,p) trial
-		state_.velnp_->Update(1.0,*incvel_,1.0);
+    //------------------------------------------------ update (u,p) trial
+    state_.velnp_->Update(1.0,*incvel_,1.0);
 
-		// -------------------------------------------------------------------
-		// For af-generalized-alpha: update accelerations
-		// Furthermore, calculate velocities, pressures, scalars and
-		// accelerations at intermediate time steps n+alpha_F and n+alpha_M,
-		// respectively, for next iteration.
-		// This has to be done at the end of the iteration, since we might
-		// need the velocities at n+alpha_F in a potential coupling
-		// algorithm, for instance.
-		// -------------------------------------------------------------------
-		if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
-		{
-		  GenAlphaUpdateAcceleration();
+    // -------------------------------------------------------------------
+    // For af-generalized-alpha: update accelerations
+    // Furthermore, calculate velocities, pressures, scalars and
+    // accelerations at intermediate time steps n+alpha_F and n+alpha_M,
+    // respectively, for next iteration.
+    // This has to be done at the end of the iteration, since we might
+    // need the velocities at n+alpha_F in a potential coupling
+    // algorithm, for instance.
+    // -------------------------------------------------------------------
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+    {
+      GenAlphaUpdateAcceleration();
 
-		  GenAlphaIntermediateValues();
-		}
+      GenAlphaIntermediateValues();
+    }
 
-		//------------------- store nodal increment for element stress update
-		oldinc_->Update(1.0,*incvel_,0.0);
-	  }
+    //------------------- store nodal increment for element stress update
+    oldinc_->Update(1.0,*incvel_,0.0);
+    }
   }
+
 #ifdef COLLAPSE_FLAME
 //  cout << endl << endl << "solution solution symmetry error" << endl;
   EvaluateSymmetryError(state_.velnp_);
@@ -2563,7 +2585,6 @@ void FLD::CombustFluidImplicitTimeInt::StatisticsAndOutput()
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::Output()
 {
-
   const bool write_visualization_data = step_%upres_ == 0;
   const bool write_restart_data = step_!=0 and uprestart_ != 0 and step_%uprestart_ == 0;
   //TODO: kann man diese Funktion umgehen

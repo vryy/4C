@@ -378,9 +378,10 @@ namespace ADAPTER {
       dserror("This function is not implemented for this type of fluid! Only available for combustion!");
     };
 
+	/// clear time integration data for XFEM problems
     virtual void ClearTimeInt()
     {
-    	dserror("This function is not implemented for this type of fluid! Only available for combustion!");
+      dserror("This function is not implemented for this type of fluid! Only available for combustion!");
     }
 
     //@}

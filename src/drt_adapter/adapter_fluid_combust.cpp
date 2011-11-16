@@ -97,9 +97,12 @@ void ADAPTER::FluidCombust::PrepareTimeStep()
   fluid_.PrepareTimeStep();
 }
 
+/*------------------------------------------------------------------------------------------------*
+ | clear time integration data for XFEM problems                                 winklmaier 11/11 |
+ *------------------------------------------------------------------------------------------------*/
 void ADAPTER::FluidCombust::ClearTimeInt()
 {
-	fluid_.ClearTimeInt();
+  fluid_.ClearTimeInt();
 }
 
 /*------------------------------------------------------------------------------------------------*
