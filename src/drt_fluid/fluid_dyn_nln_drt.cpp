@@ -121,7 +121,7 @@ void dyn_fluid_drt(const int restart)
 //-------------------------------------------------------------------------
 void fluid_fluid_drt()
 {
-  // create a communicator
+   // create a communicator
   #ifdef PARALLEL
    RCP<Epetra_Comm> comm = rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
   #else
@@ -131,20 +131,9 @@ void fluid_fluid_drt()
   RCP<DRT::Problem> problem = DRT::Problem::Instance();
 
   RCP<DRT::Discretization> bgfluiddis = problem->Dis(genprob.numff,0);
+  bgfluiddis->FillComplete();
 
   const Teuchos::ParameterList xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
-
-  // compute numnode
-  int numglobalnodes = 0;
-  int numlocalnodes = bgfluiddis->NumMyColNodes();
-  (bgfluiddis->Comm()).SumAll(&numlocalnodes,&numglobalnodes,1);
-
-  // reserve max size of dofs for the background fluid
-  int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
-  Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
-  bgfluiddis->ReplaceDofSet(maxdofset);
-
-  bgfluiddis->FillComplete();
 
   RCP<DRT::Discretization> embfluiddis = problem->Dis(genprob.numff,1);
   embfluiddis->FillComplete();
@@ -166,25 +155,21 @@ void fluid_fluid_drt()
 
   embfluiddis->FillComplete();
 
-  vector<string> conditions_to_copy_mf;
-  conditions_to_copy_mf.push_back("MovingFluid");
-  Teuchos::RCP<DRT::Discretization> MovingFluiddis = DRT::UTILS::CreateDiscretizationFromCondition(bgfluiddis, "MovingFluid",
-           "MovingFluid", "VELE3", conditions_to_copy_mf);
+  //find MovingFluid's elements and nodes
+  map<int, DRT::Node*> MovingFluidNodemap;
+  map<int, RCP< DRT::Element> > MovingFluidelemap;
+  DRT::UTILS::FindConditionObjects(*bgfluiddis, MovingFluidNodemap, MovingFluidelemap, "MovingFluid");
 
-  // delete embedded fluid's node and elements from the background fluid
-  vector<int> MovingFluideleGIDs;
-  for (int iele=0; iele< MovingFluiddis->NumMyColElements(); ++iele)
-  {
-    DRT::Element* MovingFluidele = MovingFluiddis->lColElement(iele);
-    MovingFluideleGIDs.push_back(MovingFluidele->Id());
-  }
-
+  // local vectors of nodes and elements of moving dis
   vector<int> MovingFluidNodeGIDs;
-  for (int node=0; node<MovingFluiddis->NumMyColNodes(); node++)
-  {
-    DRT::Node*  MovingFluidnode = MovingFluiddis->lColNode(node);
-    MovingFluidNodeGIDs.push_back(MovingFluidnode->Id());
-  }
+  vector<int> MovingFluideleGIDs;
+
+  for( map<int, DRT::Node*>::iterator it = MovingFluidNodemap.begin(); it != MovingFluidNodemap.end(); ++it )
+    MovingFluidNodeGIDs.push_back( it->first);
+
+  for( map<int, RCP< DRT::Element> >::iterator it = MovingFluidelemap.begin(); it != MovingFluidelemap.end(); ++it )
+    MovingFluideleGIDs.push_back( it->first);
+
 
   vector<int> NonMovingFluideleGIDs;
   vector<int> NonMovingFluidNodeGIDs;
@@ -262,6 +247,13 @@ void fluid_fluid_drt()
 
   bgfluiddis->FillComplete();
 
+  // now we can reserve dofs for background fluid
+  int numglobalnodes = bgfluiddis->NumGlobalNodes();
+  int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
+  Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
+  bgfluiddis->ReplaceDofSet(maxdofset,true);
+  bgfluiddis->FillComplete();
+
 #if defined(PARALLEL)
   vector<int> bgeleids;          // ele ids
   for (int i=0; i<bgfluiddis->NumMyRowElements(); ++i)
@@ -304,6 +296,9 @@ void fluid_fluid_drt()
   for(size_t nmv=0; nmv<NonMovingFluidNodeGIDsall.size(); ++nmv)
     embfluiddis->DeleteNode(NonMovingFluidNodeGIDsall.at(nmv));
 
+  // new dofset for embfluiddis which begins after bgfluiddis dofs
+  Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::DofSet());
+  embfluiddis->ReplaceDofSet(newdofset,true);
   embfluiddis->FillComplete();
 
 #if defined(PARALLEL)
@@ -355,6 +350,7 @@ void fluid_fluid_drt()
   DRT::Problem::Instance()->AddFieldTest(fluidalgo->FluidField().CreateFieldTest());
   DRT::Problem::Instance()->TestAll(*comm);
   return;
+
 
 } // end of fluid_fluid_drt()
 

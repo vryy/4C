@@ -1,0 +1,170 @@
+/*!----------------------------------------------------------------------
+\file drt_dofset_transparent_independent.H
+
+\brief A set of degrees of freedom special for contact
+
+<pre>
+Maintainer: Shadan Shahmiri
+            kloeppel@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15240
+</pre>
+
+*----------------------------------------------------------------------*/
+#ifdef CCADISCRET
+#ifndef TRANSPARENTINDEPENDENTDOFSET_H
+#define TRANSPARENTINDEPENDENTDOFSET_H
+
+
+#include "drt_exporter.H"
+#include "drt_dofset_independent.H"
+#include "../drt_lib/drt_discret.H"
+using namespace std;
+
+
+namespace DRT
+{
+
+  /// Alias dofset that shares dof numbers with another dofset
+  /*!
+  A special set of degrees of freedom, implemented in order to assign the same degrees of freedom to nodes
+  belonging to two discretizations. This way two discretizations can assemble into the same position of the
+  system matrix.
+  As internal variable it holds a source discretization (Constructor). If such a nodeset is assigned to a
+  sub-discretization, its dofs are assigned according to the dofs of the source.
+
+  */
+  class TransparentIndependentDofSet : public IndependentDofSet
+  {
+  public:
+
+    /*!
+    \brief Constructor for one source discretization
+
+    */
+    explicit TransparentIndependentDofSet(RCP<DRT::Discretization> sourcedis,bool parallel=false);
+
+
+    /*!
+    \brief Constructor for several source discretizations
+
+    */
+    explicit TransparentIndependentDofSet(vector<RCP<DRT::Discretization> > sourcedis,bool parallel);
+
+
+    /*!
+    \brief Destructor
+
+    */
+    virtual ~TransparentIndependentDofSet() { return; }
+
+    /// create a copy of this object
+    virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new IndependentDofSet(*this)); }
+
+    /// Assign dof numbers to all elements and nodes of the discretization.
+    virtual int AssignDegreesOfFreedom(
+            const DRT::Discretization& dis,
+            const unsigned dspos,
+            const int start);
+
+    /// Assign dof numbers for new discretization using dof numbering from source discretization.
+    void TransferDegreesOfFreedom(
+            const vector<RCP<DRT::Discretization> > sourcedis,    ///< source discrets
+            const DRT::Discretization& newdis,       ///< discretization that gets dof numbering from source discret
+            const int                  start         ///< offset for dof numbering (obsolete)
+            );
+
+
+    /// Assign dof numbers for new discretization using dof numbering from source discretization.
+    /// for this version, newdis is allowed to be distributed completely different; the
+    /// communication  of the dofs is done internally.
+    void ParallelTransferDegreesOfFreedom(
+            const vector<RCP<DRT::Discretization> > sourcedis,    ///< source discrets
+            const DRT::Discretization& newdis,       ///< discretization that gets dof numbering from source discret
+            const int                  start         ///< offset for dof numbering (obsolete)
+            );
+
+
+    /// helper for ParallelTransferDegreesOfFreedom; unpack the received block to
+    /// generate the current map node gid -> its dofs
+    void UnpackLocalSourceDofs(
+      map<int,vector<int> >   & gid_to_dofs  ,
+      vector<char>            & rblock
+      );
+
+    /// helper for ParallelTransferDegreesOfFreedom; pack the current map
+    /// node gid -> its dofs into a send block
+    void PackLocalSourceDofs(
+      map<int,vector<int> >   & gid_to_dofs  ,
+      DRT::PackBuffer         & sblock
+      );
+
+    /// helper for ParallelTransferDegreesOfFreedom; add processor local information
+    /// to the map unpack the received block to the current map node gid -> its dofs
+    void SetSourceDofsAvailableOnThisProc(
+      map<int,vector<int> >   & gid_to_dofs
+      );
+
+    /// helper for ParallelTransferDegreesOfFreedom, an MPI send call
+    void SendBlock(
+      int             numproc ,
+      int             myrank  ,
+      vector<char>  & sblock  ,
+      DRT::Exporter & exporter,
+      MPI_Request   & request );
+
+    /// helper for ParallelTransferDegreesOfFreedom, an MPI receive call
+    void ReceiveBlock(
+      int             numproc ,
+      int             myrank  ,
+      vector<char>   & rblock,
+      DRT::Exporter  & exporter,
+      MPI_Request    & request);
+
+
+    /// Get the gid of all dofs of a node
+    virtual void Dof(const Node* node, vector<int>& lm) const
+    {
+      // first, local id of the node is needed
+      int lid = node->LID();
+      if (lid==-1)
+        return;
+      int idx = (*idxcolnodes_)[lid];
+      int size = (*numdfcolnodes_)[lid];
+      // get lid of the first gid of the node; here we talk about dofs
+      const int lidx = DofColMap()->LID(idx);
+      for (int i=0; i<size; ++i)
+        lm.push_back( (DofColMap()->GID(lidx+i)) );
+    }
+
+
+    /// Get the gid of all dofs of a node
+    virtual vector<int> Dof(const Node* node) const
+    {
+      // first, local id of the node is needed
+      const int lid = node->LID();
+      if (lid==-1)
+        return vector<int>();
+      // get first gid of this node
+      const int idx = (*idxcolnodes_)[lid];
+      vector<int> dof((*numdfcolnodes_)[lid]);
+      // get lid of the first gid of the node; here we talk about dofs
+      const int lidx = DofColMap()->LID(idx);
+      // insert dofs of the node by using the dofcolmap
+      for (unsigned i=0; i<dof.size(); ++i)
+        dof[i] = DofColMap()->GID(lidx+i);
+      return dof;
+    }
+
+
+  private:
+
+    vector<RCP<DRT::Discretization> > sourcedis_; ///< source discretizations
+
+    bool parallel_; ///< call ParallelTransferDegreesOfFreedom instead of TransferDegreesOfFreedom
+
+  }; // class TransparentDofSet
+} //namespace
+
+#endif  // #ifndef  TRANSPARENTINDEPENDENTDOFSET_H
+#endif  // #ifdef CCADISCRET

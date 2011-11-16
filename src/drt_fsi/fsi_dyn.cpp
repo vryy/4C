@@ -166,17 +166,15 @@ void fluid_xfem2_drt()
 
   const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
 
-  // compute number of nodes
-  int numglobalnodes = 0;
-  int numlocalnodes = actdis->NumMyColNodes();
-  (actdis->Comm()).SumAll(&numlocalnodes,&numglobalnodes,1);
+  actdis->FillComplete();
 
-  // reserve max size of dofs for the fluid dis
+  // now we can reserve dofs for background fluid
+  int numglobalnodes = actdis->NumGlobalNodes();
   int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
   Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
-  actdis->ReplaceDofSet(maxdofset);
-
+  actdis->ReplaceDofSet(maxdofset,true);
   actdis->FillComplete();
+
 
   // -------------------------------------------------------------------
   // create a solver
@@ -217,20 +215,10 @@ void fluid_fluid_ale_drt()
   RCP<DRT::Problem> problem = DRT::Problem::Instance();
 
   RCP<DRT::Discretization> bgfluiddis = problem->Dis(genprob.numff,0);
+  bgfluiddis->FillComplete();
 
   const Teuchos::ParameterList xdyn = problem->XFEMGeneralParams();
 
-  // compute number of nodes
-  int numglobalnodes = 0;
-  int numlocalnodes = bgfluiddis->NumMyColNodes();
-  (bgfluiddis->Comm()).SumAll(&numlocalnodes,&numglobalnodes,1);
-
-  // reserve max size of dofs for the background fluid
-  int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
-  Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
-  bgfluiddis->ReplaceDofSet(maxdofset);
-
-  bgfluiddis->FillComplete();
 
   RCP<DRT::Discretization> embfluiddis = problem->Dis(genprob.numff,1);
   embfluiddis->FillComplete();
@@ -252,25 +240,20 @@ void fluid_fluid_ale_drt()
 
   embfluiddis->FillComplete();
 
-  vector<string> conditions_to_copy_mf;
-  conditions_to_copy_mf.push_back("MovingFluid");
-  Teuchos::RCP<DRT::Discretization> MovingFluiddis = DRT::UTILS::CreateDiscretizationFromCondition(bgfluiddis, "MovingFluid",
-           "MovingFluid", "VELE3", conditions_to_copy_mf);
+  //find MovingFluid's elements and nodes
+  map<int, DRT::Node*> MovingFluidNodemap;
+  map<int, RCP< DRT::Element> > MovingFluidelemap;
+  DRT::UTILS::FindConditionObjects(*bgfluiddis, MovingFluidNodemap, MovingFluidelemap, "MovingFluid");
 
-  // delete embedded fluid's node and elements from the background fluid
-  vector<int> MovingFluideleGIDs;
-  for (int iele=0; iele< MovingFluiddis->NumMyColElements(); ++iele)
-  {
-    DRT::Element* MovingFluidele = MovingFluiddis->lColElement(iele);
-    MovingFluideleGIDs.push_back(MovingFluidele->Id());
-  }
-
+  // local vectors of nodes and elements of moving dis
   vector<int> MovingFluidNodeGIDs;
-  for (int node=0; node<MovingFluiddis->NumMyColNodes(); node++)
-  {
-    DRT::Node*  MovingFluidnode = MovingFluiddis->lColNode(node);
-    MovingFluidNodeGIDs.push_back(MovingFluidnode->Id());
-  }
+  vector<int> MovingFluideleGIDs;
+
+  for( map<int, DRT::Node*>::iterator it = MovingFluidNodemap.begin(); it != MovingFluidNodemap.end(); ++it )
+    MovingFluidNodeGIDs.push_back( it->first);
+
+  for( map<int, RCP< DRT::Element> >::iterator it = MovingFluidelemap.begin(); it != MovingFluidelemap.end(); ++it )
+    MovingFluideleGIDs.push_back( it->first);
 
   vector<int> NonMovingFluideleGIDs;
   vector<int> NonMovingFluidNodeGIDs;
@@ -346,6 +329,13 @@ void fluid_fluid_ale_drt()
   for(size_t mv=0; mv<MovingFluidNodeGIDsall.size(); ++mv)
     bgfluiddis->DeleteNode(MovingFluidNodeGIDsall.at(mv));
 
+  bgfluiddis->FillComplete();
+
+  // now we can reserve dofs for background fluid
+  int numglobalnodes = bgfluiddis->NumGlobalNodes();
+  int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
+  Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
+  bgfluiddis->ReplaceDofSet(maxdofset,true);
   bgfluiddis->FillComplete();
 
 #if defined(PARALLEL)
@@ -449,17 +439,6 @@ void fluid_fluid_ale_drt()
   problem->AddFieldTest(alefluid->MBFluidField().CreateFieldTest());
   problem->TestAll(*comm);
 
-  // -------------------------------------------------------------------
-  // create a solver
-  // -------------------------------------------------------------------
-//   Teuchos::RCP<LINALG::Solver> solver =
-//     Teuchos::rcp(new LINALG::Solver(problem->FluidSolverParams(),
-//                                     bgfluiddis->Comm(),
-//                                     problem->ErrorFile()->Handle()));
-//   FLD::XFluidFluid fluid(bgfluiddis,embfluiddis,*solver,problem->FluidDynamicParams());
-//   fluid.IntegrateFluidFluid();
-//   DRT::Problem::Instance()->AddFieldTest(Teuchos::rcp(new FLD::XFluidFluidResultTest(&fluid)));
-//   DRT::Problem::Instance()->TestAll(comm);
 }
 
 /*----------------------------------------------------------------------*/

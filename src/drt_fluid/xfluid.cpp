@@ -5,7 +5,7 @@
 #include "fluid_utils.H"
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dofset_transparent.H"
+#include "../drt_lib/drt_dofset_transparent_independent.H"
 
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_condition_utils.H"
@@ -62,7 +62,8 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid )
   xfluid.discret_->ReplaceDofSet( dofset_, true );
   xfluid.discret_->FillComplete();
 
-//  cout << "discret " << *xfluid.discret_ << endl;
+  //print all dofsets
+  xfluid_.discret_->GetDofSetProxy()->PrintAllDofsets(xfluid_.discret_->Comm());
 
   FLD::UTILS::SetupFluidSplit(*xfluid.discret_,xfluid.numdim_,velpressplitter_);
 
@@ -1074,10 +1075,9 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   }
 
   // TODO: for parallel jobs maybe we have to call TransparentDofSet with additional flag true
-  RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentDofSet(soliddis));
-  boundarydis_->ReplaceDofSet(newdofset);
+  RCP<DRT::DofSet> newdofset = rcp(new DRT::TransparentIndependentDofSet(soliddis));
+  boundarydis_->ReplaceDofSet(newdofset);//do not call this with true!!
   boundarydis_->FillComplete();
-
 
   // get constant density variable for incompressible flow
   {

@@ -11,7 +11,7 @@
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_dofset_transparent.H"
+#include "../drt_lib/drt_dofset_transparent_independent.H"
 #include "../drt_lib/drt_dofset.H"
 
 #include "../linalg/linalg_solver.H"
@@ -50,6 +50,9 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
 
   xfluid_.bgdis_->ReplaceDofSet( dofset_, true );
   xfluid_.bgdis_->FillComplete();
+
+  //print all dofsets
+  xfluid_.bgdis_->GetDofSetProxy()->PrintAllDofsets(xfluid_.bgdis_->Comm());
 
   FLD::UTILS::SetupFluidSplit(*xfluid.bgdis_,xfluid.numdim_,velpressplitter_);
 
@@ -1480,8 +1483,8 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   // make the dofset of boundarydis be a subset of the embedded dis
   RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(embdis_,boundarydis_);
   embdis_->Redistribute(*(embdis_->NodeRowMap()), *newcolnodemap);
-  RCP<DRT::DofSet> newdofset=rcp(new DRT::TransparentDofSet(embdis_));
-  boundarydis_->ReplaceDofSet(newdofset);
+  RCP<DRT::DofSet> newdofset=rcp(new DRT::TransparentIndependentDofSet(embdis_));
+  boundarydis_->ReplaceDofSet(newdofset); // do not call this with true!!
   boundarydis_->FillComplete();
 
   DRT::UTILS::PrintParallelDistribution(*boundarydis_);
