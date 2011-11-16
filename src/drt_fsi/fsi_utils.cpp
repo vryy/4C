@@ -1191,7 +1191,7 @@ void FSI::UTILS::SlideAleUtils::RedundantElements
   // We need the structure elements (NOT THE MORTAR-ELEMENTS!) on every processor for the projection of the fluid nodes.
   // Furthermore we need the current position of the structnodes on every processor.
   // Elements provided by interface discretization, necessary maps provided by interface.
-
+  #ifdef D_SOLID3
   int soffset = 0;
   int foffset = 0;
   if (structcoupmaster_)
@@ -1275,6 +1275,7 @@ void FSI::UTILS::SlideAleUtils::RedundantElements
       }
     }
   }
+#endif //#ifdef D_SOLID3
 }
 
 

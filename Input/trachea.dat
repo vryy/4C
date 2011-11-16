@@ -7,14 +7,14 @@ NUMDF                           1
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      ReducedDimensionalAirWays
 NUMFIELD                        1
-RESTART                         0
+RESTART                         100
 --------------------------------------------------------------------------IO
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
 DYNAMICTYP                      CrankNicolson
-NUMSTEP                         100
+NUMSTEP                         101
 TIMESTEP                        1.0e-3
-RESTARTEVRY                     10
-UPRES                           10
+RESTARTEVRY                     1
+UPRES                           1
 SOLVERTYPE                      Nonlinear                       // Linear Nonlinear
 MAXITERATIONS                   20
 TOLERANCE                       1E-1

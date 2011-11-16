@@ -48,6 +48,10 @@ Maintainer: Peter Gamnitzer
 #include "../drt_art_net/art_net_dyn_drt.H"
 #include "../drt_art_net/artnetexplicitintegration.H"
 #include "fluid_coupling_red_models.H"
+#else
+#ifdef D_RED_AIRWAYS
+#include "fluid_coupling_red_models.H"
+#endif //ifdef D_RED_AIRWAYS
 #endif // D_ARTNET
 
 #ifdef WRITEOUTSTATISTICS

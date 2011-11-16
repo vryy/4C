@@ -10,7 +10,7 @@ Maintainer: Lena Wiechert
 
 *----------------------------------------------------------------------*/
 #ifdef CCADISCRET
-
+#ifdef D_SOLID3
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "micromaterialgp_static.H"
@@ -340,4 +340,5 @@ void MAT::MicroMaterialGP::Output()
   plstrain_ = Teuchos::null;
 }
 
+#endif //#ifdef D_SOLID3
 #endif

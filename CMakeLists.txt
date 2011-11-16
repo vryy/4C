@@ -2340,6 +2340,7 @@ baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf 1 "")
 baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf_hex20 1 "")
 baci_test(xfluid_channel_shearWDBC_inclineddoubleCut_bodyf 1 "")
 baci_test(one_d_3_artery_network 1 9999)
+baci_test(trachea 2 100)
 
 
 if (D_BEAM3II)

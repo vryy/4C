@@ -104,6 +104,12 @@ namespace UTILS
   class Fluid_couplingWrapperBase;
   template <class red_D_time_int>
   class Fluid_couplingWrapper;
+#else
+#ifdef D_RED_AIRWAYS
+  class Fluid_couplingWrapperBase;
+  template <class red_D_time_int>
+  class Fluid_couplingWrapper;
+#endif
 #endif
 }
 

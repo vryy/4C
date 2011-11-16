@@ -48,7 +48,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   params_ (params),
   output_ (output),
   time_(0.0),
-  step_(0),
+  step_(1),
   uprestart_(params.get("write restart every", -1)),
   upres_(params.get("write solution every", -1)),
   coupledTo3D_(false)
@@ -299,7 +299,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeLoop(bool CoupledTo3D,
     {
       time3D  = CouplingTo3DParams->get<double>("time");
     }
-    if(time3D!=time_)
+    if(time3D!=time_ || !coupledTo3D_)
     {
       PrepareTimeStep();
     }

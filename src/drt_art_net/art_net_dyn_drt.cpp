@@ -186,5 +186,6 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
 
 } // end of dyn_art_net_drt()
 
+
 #endif //#ifdef D_ARTNET
 #endif // #ifdef CCADISCRET

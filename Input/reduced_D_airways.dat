@@ -115,8 +115,8 @@ DLINE 0
 // DOBJECT
 DLINE 0 
 -----------------------DESIGN NODE REDUCED-D LUNG ACINUS CONDITIONS
-DPOINT 1
-E 2 - NeoHookean Area 0.0 Stiffness 100.00
+DPOINT 0
+//E 2 - NeoHookean Area 0.0 Stiffness 100.00
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
 NODE    3 DNODE 2
@@ -130,9 +130,9 @@ NODE            2     COORD 10.0   0.0 0.0
 NODE            3     COORD 10.0  10.0 0.0
 NODE            4     COORD 10.0 -10.0 0.0
 ----------------------------------------REDUCED D AIRWAYS ELEMENTS
-1 RED_AIRWAY  LINE2    1   2 MAT 1 TYPE PoiseuilleResistive    WallCompliance 0.0   AirCompliance 0.0    WallThickness 10.0    Area 20.0
-2 RED_AIRWAY  LINE2    2   3 MAT 1 TYPE PoiseuilleResistive    WallCompliance 0.0    AirCompliance 0.0   WallThickness 08.0    Area 10.0
-3 RED_AIRWAY  LINE2    2   4 MAT 1 TYPE PoiseuilleResistive    WallCompliance 0.0    AirCompliance 0.0   WallThickness 07.0    Area 5.0
+1 RED_AIRWAY  LINE2    1   2 MAT 1 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0   AirCompliance 0.0    WallThickness 10.0    Area 20.0 Generation 0
+2 RED_AIRWAY  LINE2    2   3 MAT 1 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0    AirCompliance 0.0   WallThickness 08.0    Area 10.0 Generation 0
+3 RED_AIRWAY  LINE2    2   4 MAT 1 TYPE Resistive Resistance Generation_Dependent_Pedley WallCompliance 0.0    AirCompliance 0.0   WallThickness 07.0    Area 5.0 Generation 0
 ---------------------------------------------------ARTERY ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
 ------------------------------------------------------ALE ELEMENTS
