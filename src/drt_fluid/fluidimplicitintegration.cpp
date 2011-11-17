@@ -365,7 +365,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   
   {
 #ifdef D_ARTNET
-
     ART_exp_timeInt_ = dyn_art_net_drt(true);
     // Check if one-dimensional artery network problem exist
     if (ART_exp_timeInt_ != Teuchos::null)
@@ -415,7 +414,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
     }
 #endif // D_RED_AIRWAYS
 
-
     zeros_->PutScalar(0.0); // just in case of change
   }
 
@@ -426,7 +424,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
 
   // Vectors used for solution process
   // ---------------------------------
-
   // rhs: standard (stabilized) residual vector (rhs for the incremental form)
   residual_      = LINALG::CreateVector(*dofrowmap,true);
   trueresidual_  = LINALG::CreateVector(*dofrowmap,true);
@@ -630,9 +627,10 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(RefCountPtr<DRT::Discretization>
   // ---------------------------------------------------------------------
   // set general fluid parameter defined before
   // ---------------------------------------------------------------------
+ 
   SetElementGeneralFluidParameter();
   SetElementTimeParameter();
-
+ 
 } // FluidImplicitTimeInt::FluidImplicitTimeInt
 
 
@@ -3373,7 +3371,6 @@ void FLD::FluidImplicitTimeInt::Output()
 
     vol_surf_flow_bc_->Output(output_);
     traction_vel_comp_adder_bc_->Output(output_);
-
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ > 0 && step_%uprestart_ == 0)
@@ -5506,7 +5503,14 @@ void FLD::FluidImplicitTimeInt::SetElementTimeParameter()
   }
   else if (is_genalpha_)
   {
-    eleparams.set("total time",time_-(1-alphaF_)*dta_);
+    if (time_ >0.0)
+    {
+      eleparams.set("total time",time_-(1-alphaF_)*dta_);
+    }
+    else
+    {
+      eleparams.set("total time",time_);
+    }
     eleparams.set("alphaF",alphaF_);
     eleparams.set("alphaM",alphaM_);
     eleparams.set("gamma",gamma_);

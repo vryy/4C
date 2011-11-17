@@ -264,14 +264,6 @@ void DRT::Problem::InputControl()
   switch (genprob.probtyp)
   {
   case prb_fsi:
-  {
-#ifdef D_ARTNET
-    genprob.numartf = 3;
-#endif
-#ifdef D_RED_AIRWAYS
-    genprob.numawf  = 4;
-#endif
-  }
   case prb_fsi_lung:
   {
     genprob.numsf=0;
@@ -319,12 +311,6 @@ void DRT::Problem::InputControl()
   {
     genprob.numff=0;
     genprob.numaf=1;
-#ifdef D_ARTNET
-    genprob.numartf = 2;
-#endif
-#ifdef D_RED_AIRWAYS
-    genprob.numawf  = 3;
-#endif
     break;
   }
   case prb_fluid_ale:
@@ -386,7 +372,7 @@ void DRT::Problem::InputControl()
   }
   case prb_red_airways:
   {
-    genprob.numawf = 0;  /* reduced airway network field index */
+    genprob.numawf = 5;  /* reduced airway network field index */
     break;
   }
   case prb_struct_ale:
@@ -399,6 +385,26 @@ void DRT::Problem::InputControl()
   default:
     dserror("problem type %d unknown", genprob.probtyp);
   }
+
+  // set field ARTNET and RED_AIRWAY numbers
+  // this is the numbering used for such fields coupled to higher dimensional fields
+  switch (genprob.probtyp)
+  {
+  case prb_fsi:  case prb_fsi_lung:   case prb_fluid_ale:  case prb_fluid:  case prb_scatra:  case prb_loma:  case prb_elch:   case prb_freesurf:
+  {
+#ifdef D_ARTNET
+    //    genprob.numartf = 3;
+    genprob.numartf = 5;
+#endif
+#ifdef D_RED_AIRWAYS
+    //    genprob.numawf  = 4;
+    genprob.numawf  = 6;
+#endif
+  }
+  default:
+    break;
+  }
+
 }
 
 
@@ -843,15 +849,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     if (xfluiddis!=Teuchos::null)
       AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
     AddDis(genprob.numaf, aledis);
-#ifdef D_ARTNET
-    // create empty discretizations
-    arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
-    AddDis(genprob.numartf, arterydis);
-#endif
-#ifdef D_RED_AIRWAYS
-    airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
-    AddDis(genprob.numawf, airwaydis);
-#endif
 
     std::set<std::string> fluidelementtypes;
     fluidelementtypes.insert("FLUID");
@@ -863,12 +860,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     if (xfluiddis!=Teuchos::null)
       nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "XFLUID3")));
     nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(aledis, reader, "--ALE ELEMENTS")));
-#ifdef D_ARTNET
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
-#endif
-#ifdef D_RED_AIRWAYS
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
-#endif
 
     break;
   }
@@ -1015,17 +1006,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     if ( xfluiddis!=Teuchos::null )
       AddDis(genprob.numff, xfluiddis); // xfem discretization on slot 1
 
-#ifdef D_ARTNET
-    // create empty discretizations
-    arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
-    AddDis(genprob.numartf, arterydis);
-#endif
-#ifdef D_RED_AIRWAYS
-    // create empty discretizations
-    airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
-    AddDis(genprob.numawf, airwaydis);
-#endif
-
     std::set<std::string> fluidelementtypes;
     fluidelementtypes.insert("FLUID");
     fluidelementtypes.insert("FLUID2");
@@ -1035,13 +1015,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     if (xfluiddis!=Teuchos::null)
       nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(xfluiddis, reader, "--FLUID ELEMENTS", "XFLUID3")));
-
-#ifdef D_ARTNET
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
-#endif
-#ifdef D_RED_AIRWAYS
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
-#endif
 
     break;
   }
@@ -1239,6 +1212,26 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   } // end of else if (genprob.probtyp==prb_struct_ale)
   default:
     dserror("Unknown problem type: %d",genprob.probtyp);
+  }
+  
+  switch (genprob.probtyp)
+  {
+  case prb_fsi:  case prb_fsi_lung:   case prb_fluid_ale:  case prb_fluid:  case prb_scatra:  case prb_loma:  case prb_elch:  case prb_freesurf:
+  {
+#ifdef D_ARTNET
+    // create empty discretizations
+    arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
+    AddDis(genprob.numartf, arterydis);
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
+#endif
+#ifdef D_RED_AIRWAYS
+    airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
+    AddDis(genprob.numawf, airwaydis);
+    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
+#endif
+  }
+  default:
+    break;
   }
 
   if (readmesh) // now read and allocate!

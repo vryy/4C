@@ -11,7 +11,7 @@ RESTART                         0
 --------------------------------------------------------------------------IO
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
 DYNAMICTYP                      CrankNicolson
-NUMSTEP                         101
+NUMSTEP                         100
 TIMESTEP                        1.0e-3
 RESTARTEVRY                     1
 UPRES                           1

@@ -447,7 +447,16 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTimeParameter( Teuchos::Param
 
   if (dt_ < 0.0 or theta_ < 0.0 or time_ < 0.0 or omtheta_ < 0.0 or gamma_ < 0.0
       or alphaF_ < 0.0 or alphaM_ < 0.0)
+  {
+    cout<<"dt_: "<<dt_<<endl;
+    cout<<"theta_ "<<theta_<<endl;
+    cout<<"time_ "<<time_<<endl;
+    cout<<"omtheta_ "<<omtheta_<<endl;
+    cout<<"gamma_ "<<gamma_<<endl;
+    cout<<"alphaF_ "<<alphaF_<<endl;
+    cout<<"alphaM_ "<<alphaM_<<endl;
     dserror("Negative (or no) time-integration parameter or time-step length supplied");
+  }
 }
 
 //----------------------------------------------------------------------*/

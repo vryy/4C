@@ -48,7 +48,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   params_ (params),
   output_ (output),
   time_(0.0),
-  step_(1),
+  step_(0),
   uprestart_(params.get("write restart every", -1)),
   upres_(params.get("write solution every", -1)),
   coupledTo3D_(false)
@@ -898,7 +898,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
 
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
-    output_.WriteMesh(step_,time_);
+    //    output_.WriteMesh(step_,time_);
 
     if (CoupledTo3D)
     {
