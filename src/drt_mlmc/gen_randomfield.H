@@ -1,7 +1,8 @@
 /*!----------------------------------------------------------------------
 \file randomfield.h
-Created on: Apr 12, 2011
-\brief Class for generating samples of random fields based on spectral representation
+Created on: November 15, 2011
+\brief Class for generating samples of gaussian and non-gaussian random fields based on spectral representation
+usign FFT algorithms
 
  <pre>
 Maintainer: Jonas Biehler
@@ -13,9 +14,9 @@ Maintainer: Jonas Biehler
 
 #ifdef CCADISCRET
 #ifdef HAVE_FFTW
-#ifndef RANDOMFIELD_H_
-#define RANDOMFIELD_H_
-//testing
+#ifndef GENRANDOMFIELD_H_
+#define GENRANDOMFIELD_H_
+//testingGEN
 #include "Epetra_Comm.h"
 #include "Epetra_Map.h"
 #include "Epetra_CrsGraph.h"
@@ -44,28 +45,49 @@ Maintainer: Jonas Biehler
 
 
 
-class RandomField {
+class GenRandomField {
 
 private:
-  // some variables
+  // variables of random field
   int dim_; // dimension of stochastic field
-  double pi_;// = M_PI;
+  enum PROBABILITY_DISTRIBUTIONS
+  {
+    normal,
+    lognormal,
+    beta,
+  };
+  PROBABILITY_DISTRIBUTIONS marginal_pdf_;
+  enum correlation_structure_
+  {
+    exponential,
+    whatever,
+  };
   double d_; //correlation length
-  // set variance to 0.25 by default
   double sigma_0_; //= 0.25;
+  double mean_;
+  vector<double> discrete_PSD_;
+  vector<double> distribution_params_; // other distribution params
 
-  int N_;
+  // Simulation parameters
+  double periodicity_ ;//
+  int N_; // Number of cos terms
+  int M_; // length of FFT's
   double dkappa_;
-  unsigned int  seed_;
-  vector<double>  Phi_0_ ;
+  double dx_;
+
+  vector<double>  Phi_0_ ;// Vectors to store the random phase angles
   vector<double>  Phi_1_ ;
   vector<double>  Phi_2_ ;
   vector<double>  Phi_3_ ;
+  unsigned int  seed_;
 
-  //double Phi_Array_0_ [80][80][80];
-  //double Phi_Array_1_ [80][80][80];
-  //double Phi_Array_2_ [80][80][80];
-  //double Phi_Array_3_ [80][80][80];
+  // parametres for evaluation
+  vector<double> bb_min_;// min Bounding Box
+  vector<double> bb_max_; // max Bounding Box
+  double pi_;// = M_PI;
+
+  // store the values
+  double* values_;
 
   //! \brief generates uniformly distributed random numbers in interval [0;1], taken from statmech
    ranlib::UniformClosed<double> uniformclosedgen_;
@@ -74,7 +96,10 @@ private:
 
 public:
   // Standard constructor
-  RandomField(unsigned int seed,double sigma_0, double corr_length);
+   GenRandomField(unsigned int seed,double sigma_0, double corr_length);
+   // Compute Bounding Box of random field from discretization
+   void ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discret);
+   double EvalFieldAtLocation(vector<double> location);
 
   // generates new random Phase vector Phi_
   void CreateNewSample(unsigned int seed);
@@ -92,9 +117,11 @@ public:
   double  PowerSpectralDensity3D( double kappa_x, double kappa_y, double kappa_z );
 
   // FFT Stuff
+  void CalcDiscretePSD();
   double EvalRandomFieldFFT(double x, double y, double z);
 
-}; // class RandomField
+
+}; // class GenRandomField
 
 #endif /* RANDOMFIELD_H_ */
 #endif // HAVE_FFTw

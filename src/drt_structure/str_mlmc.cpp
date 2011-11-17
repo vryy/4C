@@ -13,6 +13,7 @@ Maintainer: Jonas Biehler
 /*----------------------------------------------------------------------*/
 /* macros */
 #ifdef CCADISCRET
+#ifdef HAVE_FFTW
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -26,11 +27,12 @@ Maintainer: Jonas Biehler
 #include <mpi.h>
 #endif
 
-#include "str_mlmc.H"
+
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "stru_resulttest.H"
+#include "str_mlmc.H"
 #include "../drt_mlmc/mlmc.H"
 #include "../drt_inpar/inpar_mlmc.H"
 
@@ -108,4 +110,5 @@ void STR::mlmc()
 
 
 /*----------------------------------------------------------------------*/
+#endif
 #endif  // #ifdef CCADISCRET

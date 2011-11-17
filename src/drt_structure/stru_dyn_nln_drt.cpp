@@ -39,9 +39,10 @@ Maintainer: Michael Gee
 
 #include "str_invanalysis.H"
 #include "../drt_inv_analysis/inv_analysis.H"
+#ifdef HAVE_FFTW
 #include "str_mlmc.H"
 #include "../drt_mlmc/mlmc.H"
-
+#endif
 #include "../drt_statmech/statmech_time.H"
 
 /*----------------------------------------------------------------------*
@@ -67,10 +68,15 @@ void caldyn_drt()
   {
     STR::invanalysis();
   }
+  //
   //do we want multi level monte carlo
   else if (Teuchos::getIntegralValue<int>(mlmcp,"MLMC")!= false)
   {
+#ifdef HAVE_FFTW
     STR::mlmc();
+#else
+  cout<< RED_LIGHT << "CANNOT PERFORM MLMC WITHOUT FFTW  "<< END_COLOR << endl;
+#endif
   }
   else
   {

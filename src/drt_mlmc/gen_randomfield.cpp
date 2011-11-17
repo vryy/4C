@@ -1,7 +1,7 @@
 /*!----------------------------------------------------------------------
 \file randomfield_fft.cpp
-Created on: November, 2011
-\brief Class for generating samples of random fields based on spectral representation
+Created on: 15 November, 2011
+\brief Class for generating samples of gaussian and non gaussian random fields based on spectral representation
 using FFT algorithms
 
  <pre>
@@ -13,7 +13,7 @@ Maintainer: Jonas Biehler
  *!----------------------------------------------------------------------*/
 #ifdef HAVE_FFTW
 
-#include "randomfield.H"
+#include "gen_randomfield.H"
 #include "mlmc.H"
 #include <ctime>
 #include <cstdlib>
@@ -29,17 +29,13 @@ Maintainer: Jonas Biehler
 //#include <boost/random.hpp>
 // include fftw++ tsuff for multidimensional FFT
 #include"fftw3.h"
-//include "/home/biehler/software/fft_stuff/fftw++-1.09/fftw++.h"
-//#include "/home/biehler/software/fft_stuff/fftw++-1.09/Array.h"
-//using namespace Array;
-//%using namespace fftwpp;
 using namespace DRT;
 
 
 
 /*----------------------------------------------------------------------*/
 /* standard constructor */
-RandomField::RandomField(unsigned int  seed,double sigma, double corr_length)
+GenRandomField::GenRandomField(unsigned int  seed,double sigma, double corr_length)
 {
 
   // Init the necessesary stuff
@@ -53,6 +49,13 @@ RandomField::RandomField(unsigned int  seed,double sigma, double corr_length)
   d_ = corr_length;
   sigma_0_ = sigma;
   pi_=M_PI;
+  periodicity_=mlmcp.get<double>("PERIODICITY");
+  M_=N_*2;
+  dx_=periodicity_/M_;
+  marginal_pdf_=normal;
+
+  // create Multidimesional array to store the values
+  values_ = new double[M_*M_];
   // The StoPro will have a period of 2*pi / Deltakappa == 2*pi*N*d / 6.
   // We want this to be >= 200.
   // ceil:= return next largest integer
@@ -111,7 +114,7 @@ RandomField::RandomField(unsigned int  seed,double sigma, double corr_length)
      break;
    }
 }
-void RandomField::CreateNewSample(unsigned int seed)
+void GenRandomField::CreateNewSample(unsigned int seed)
 {
 
   // This defines a random number genrator
@@ -165,7 +168,7 @@ void RandomField::CreateNewSample(unsigned int seed)
 }
 
 // Wrapper to decide wether we are 2D or 3D
-double RandomField::EvalRandomField(double x, double y, double z)
+double GenRandomField::EvalRandomField(double x, double y, double z)
 {
   double result=0;
   switch (dim_)
@@ -181,7 +184,7 @@ double RandomField::EvalRandomField(double x, double y, double z)
 }
 
 
-double RandomField::EvalRandomField2D( double x, double y, double z)
+double GenRandomField::EvalRandomField2D( double x, double y, double z)
 
 {
   double result = 0;
@@ -203,7 +206,7 @@ double RandomField::EvalRandomField2D( double x, double y, double z)
 }
 
 
-double RandomField::EvalRandomField3D( double x, double y, double z)
+double GenRandomField::EvalRandomField3D( double x, double y, double z)
 
 {
   //ofstream File("OutputPhiIndex.csv");
@@ -227,7 +230,7 @@ double RandomField::EvalRandomField3D( double x, double y, double z)
     return sqrt( 2 ) * result;
 }
 
-double RandomField::EvalRandomFieldCylinder( double x,double y, double z)
+double GenRandomField::EvalRandomFieldCylinder( double x,double y, double z)
 {
   // Instead of calculating a true 3D random field calculate
   // s = r *theta , the curvelength on the circle
@@ -253,21 +256,33 @@ double RandomField::EvalRandomFieldCylinder( double x,double y, double z)
 
 
 // compute power spectral density
-
-double  RandomField::PowerSpectralDensity3D( double kappa_x, double kappa_y, double kappa_z )
+void GenRandomField::CalcDiscretePSD()
 {
-  const static double coeff = pow( sigma_0_, 2 ) * pow( d_, 3 ) / pow( (2 * sqrt( pi_ )), 3 );
-  return coeff * exp( - pow( d_ * kappa_x / 2, 2 ) - pow( d_ * kappa_y / 2, 2 ) - pow( d_ * kappa_z / 2, 2 ) );
-}
-
-double  RandomField::PowerSpectralDensity2D( double kappa_x, double kappa_y)
-{
-  const static double coeff = pow( sigma_0_, 2 ) * pow( d_, 2 ) / pow( (2 * sqrt( pi_ )), 2 );
-  return coeff * exp( - pow( d_ * kappa_x / 2, 2 ) - pow( d_ * kappa_y / 2, 2 ) );
+  // check wether pdf is gaussian
+  if(marginal_pdf_==normal)
+  {
+    // just compute PSD
+    for (int j=0;j<N_;j++)
+      {
+        for (int k=0;k<N_;k++)
+        {
+          discrete_PSD_.push_back((pow(sigma_0_,2)*pow(d_,2)/(4*pi_)*exp(-(pow(d_*j*dkappa_/2,2))-(pow(d_*k*dkappa_/2,2))))*(pow(dkappa_,2)));
+        }
+      }
+  }
+  else if(marginal_pdf_==beta)
+  {
+    // compute underlying gaussian distribution based on shields2011
+    dserror("Beta Distribution not supported yet");
+  }
+  else
+  {
+    dserror("Only normal and beta distribution supported fix your input file");
+  }
 }
 
 // HERE comes the experimental FFT Stuff
-double RandomField::EvalRandomFieldFFT(double x, double y, double z)
+double GenRandomField::EvalRandomFieldFFT(double x, double y, double z)
 {
 // Lets see if we can speed up things with FFTW
   int M =N_*2; // Define number of points
@@ -298,7 +313,8 @@ double RandomField::EvalRandomFieldFFT(double x, double y, double z)
       }
       else
       {
-        A=sqrt(2*(pow(sigma_0_,2)*pow(d_,2)/(4*pi_)*exp(-(pow(d_*j*dkappa_/2,2))-(pow(d_*k*dkappa_/2,2))))*(pow(dkappa_,2)));
+        //A=sqrt(2*(pow(sigma_0_,2)*pow(d_,2)/(4*pi_)*exp(-(pow(d_*j*dkappa_/2,2))-(pow(d_*k*dkappa_/2,2))))*(pow(dkappa_,2)));
+        A=sqrt(2*(discrete_PSD_[k+j*N_]));
         real(b1[k+M*j])=A*sqrt(2)*cos(Phi_1_[k+M*j]);
         imag(b1[k+M*j])= A*sqrt(2)*sin(Phi_1_[k+M*j]);
         real(b2[k+M*j])= A*sqrt(2)*cos(Phi_2_[k+M*j]);
@@ -388,6 +404,11 @@ complex<double> scaling (M,M);
    //cout << "index_x :" << index_x <<endl;
    //cout << "index_y :" << index_y <<endl;
    double youngs = real(d2[index_x+index_y*128]);
+   // move values into class variable
+   for(int i=0;i<M_*M_;i++)
+   {
+     values_[i]=real(d2[i]);
+   }
    //cout <<" youngs "<< youngs << endl;
    // free memory
    delete b1;
@@ -399,7 +420,77 @@ complex<double> scaling (M,M);
 
 
 return youngs;
-
-
 }
+void GenRandomField::ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discret)
+{
+  // root bounding Box
+  vector<double> maxrbb;
+  maxrbb.push_back(10.0e-19);
+  maxrbb.push_back(10.0e-19);
+  maxrbb.push_back(10.0e-19);
+ // maxrbb.push_back(10.0e-19);
+  vector<double> minrbb;
+  minrbb.push_back(10.0e19);
+  minrbb.push_back(10.0e19);
+  minrbb.push_back(10.0e19);
+
+
+  bb_max_.push_back(10.0e-19);
+  bb_max_.push_back(10.0e-19);
+  bb_max_.push_back(10.0e-19);
+
+  bb_min_.push_back(10.0e19);
+  bb_min_.push_back(10.0e19);
+  bb_min_.push_back(10.0e19);
+  {
+      for (int lid = 0; lid <discret->NumMyColNodes(); ++lid)
+      {
+        const DRT::Node* node = discret->lColNode(lid);
+        // check if greater than maxrbb
+        if (maxrbb[0]<node->X()[0])
+          maxrbb[0]=node->X()[0];
+        if (maxrbb[1]<node->X()[1])
+          maxrbb[1]=node->X()[1];
+        if (maxrbb[2]<node->X()[2])
+           maxrbb[2]=node->X()[2];
+        // check if smaller than minrbb
+        if (minrbb[0]>node->X()[0])
+          minrbb[0]=node->X()[0];
+        if (minrbb[1]>node->X()[1])
+          minrbb[1]=node->X()[1];
+        if (minrbb[2]>node->X()[2])
+          minrbb[2]=node->X()[2];
+      }
+
+
+  }
+
+  //discret_->Comm().MaxAll(pmaxrbb,pglobal_maxrbb,3);
+  discret->Comm().MaxAll(&maxrbb[0],&bb_max_[0],3);
+  discret->Comm().MinAll(&minrbb[0],&bb_min_[0],3);
+
+  discret->Comm().Barrier();
+  const int myrank = discret->Comm().MyPID();
+  if (myrank == 0)
+  {
+    cout << "min " << bb_min_[0] << " "<< bb_min_[1]  << " "<< bb_min_[2] << endl;
+    cout << "max " << bb_max_[0] << " "<< bb_max_[1]  << " "<< bb_max_[2] << endl;
+  }
+  //dserror("Stop right here");
+}
+double GenRandomField::EvalFieldAtLocation(vector<double> location)
+{
+  int index_x;
+  int index_y;
+  int index_z;
+
+  // Compute indices
+  index_x=int(floor((location[0]-bb_min_[0])/dx_));
+  index_y=int(floor((location[1]-bb_min_[1])/dx_));
+  index_z=int(floor((location[2]-bb_min_[2])/dx_));
+  cout << "index_x " << index_x << "index_y " << index_y << "index_z " << index_z <<  endl;
+  return values_[index_x+M_*index_y]; // for now
+  //return Values[index_x+N_*index_y+ N_*index_z] something like that
+}
+
 #endif

@@ -10,7 +10,7 @@ Maintainer: Jonas Biehler
             089 - 289-15276
 </pre>
  *!----------------------------------------------------------------------*/
-
+#ifdef HAVE_FFTW
 #ifdef CCADISCRET
 
 #include "mlmc.H"
@@ -34,6 +34,7 @@ using namespace DRT;
 using namespace MAT;
 
 #include "randomfield.H"
+#include "gen_randomfield.H"
 #include "../drt_structure/stru_resulttest.H"
 
 //for file output
@@ -206,7 +207,8 @@ void STR::MLMC::Integrate()
       cout << "================================================================================" END_COLOR << endl;
    }
     //double t1 = timer.ElapsedTime();
-    ResetPrestress();
+   cout << RED_LIGHT " PRESTRESS NOT RESET " END_COLOR << endl;
+   // ResetPrestress();
     SetupStochMat((random_seed+(unsigned int)numb_run_));
     discret_->Comm().Barrier();
 
@@ -849,10 +851,12 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
   double youngs = 0.0, youngs_mean = 0.0;
   // element center
   vector<double> ele_c_location;
+
   // flag have init stochmat??
   int stochmat_flag=0;
   // Get parameters from stochastic matlaw
   const int myrank = discret_->Comm().MyPID();
+
   // loop all materials in problem
   const map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
   if (myrank == 0) printf("No. material laws considered : %d\n",(int) mats.size());
@@ -888,7 +892,17 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
           }
   // get elements on proc use col map to init ghost elements as well
   Teuchos::RCP<Epetra_Vector> my_ele = rcp(new Epetra_Vector(*discret_->ElementColMap(),true));
-  RandomField field(random_seed,sigma,corrlength);
+  GenRandomField field(random_seed,sigma,corrlength);
+  field.ComputeBoundingBox(discret_);
+  vector<double> test;
+  test.push_back(10.0);
+  test.push_back(11.0);
+  test.push_back(11.0);
+  //double test2 = field.EvalFieldAtLocation(test);
+
+  field.CalcDiscretePSD();
+  field.EvalRandomFieldFFT(3.4, 3.3 ,3.3);
+  cout << "debugging in FILE "<< __FILE__ << "LINE  " << __LINE__ << endl;
   // loop over all elements
   for (int i=0; i< (discret_->NumMyColElements()); i++)
   {
@@ -900,13 +914,20 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
       ele_center = discret_->lColElement(i)->ElementCenterRefeCoords();
 
       //beta = beta_mean+field.EvalRandomField(ele_center[0],ele_center[1],ele_center[2]);
-      youngs = youngs_mean+field.EvalRandomField(ele_center[0],ele_center[1],ele_center[2]);
+      //youngs = youngs_mean+field.EvalRandomField(ele_center[0],ele_center[1],ele_center[2]);
       // HACK instead of circular field use pseudo 3D Field
       // cout << RED_LIGHT << "HACK IN USE: BETA = BETA MEAN " END_COLOR << endl;
       //beta = beta_mean+field.EvalRandomFieldCylinder(ele_center[0],ele_center[1],ele_center[2]);
       // there is a lower threshold
-      if(youngs<500000)
-        youngs= 500000;
+      // call FFT Field from here for testing reasons
+     // cout << "calling FFT Routine " << endl;
+      //youngs = youngs_mean+field.EvalRandomFieldFFT(ele_center[0],ele_center[1],ele_center[2]);
+      //youngs = field.EvalRandomFieldFFT(ele_center[0],ele_center[1],ele_center[2]);
+      youngs = field.EvalFieldAtLocation(ele_center);
+      //cout << "called FFT Routine YOUNGS: "<< youngs << endl;
+      //dserror("STOP RIGHT HERE");
+      //if(youngs<500000)
+       // youngs= 500000;
 
       aaa_stopro->Init(youngs,"youngs");
 
@@ -1168,4 +1189,5 @@ void STR::MLMC::HelperFunctionOutputTube(RCP< Epetra_MultiVector> stress,RCP< Ep
 }
 
 
-#endif
+#endif /*CCARAT*/
+#endif // FFTW

@@ -11,6 +11,7 @@ Maintainer: Jonas Biehler
 </pre>
  *!----------------------------------------------------------------------*/
 #ifdef CCADISCRET
+#ifdef HAVE_FFTW
 #ifndef MLMC_H
 #define MLMC_H
 
@@ -198,4 +199,5 @@ public:
 }  // namespace STR
 
 #endif /*MLMC_H_*/
+#endif // HAVE_FFTw
 #endif  // #ifdef CCADISCRET
