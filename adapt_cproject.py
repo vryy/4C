@@ -86,6 +86,7 @@ def getSymbols(fname):
     symbollist.add("CCADISCRET")
     symbollist.add("PARALLEL")
     symbollist.add("PARMETIS")
+    symbollist.add("HAVE_FFTW")
     return symbollist
 
 def adapt(do_configure_file):
