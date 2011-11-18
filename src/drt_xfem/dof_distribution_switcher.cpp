@@ -989,7 +989,7 @@ void XFEM::DofDistributionSwitcher::GmshOutput(
     {
       const DRT::Element* pele = patchdis->lColElement(i);
       std::map<int,int>::const_iterator patchiter =mapforoutput.find(pele->Id());
-      int inside;
+      int inside = -1;
       if (patchiter != mapforoutput.end()) inside = patchiter->second;
       const std::size_t numnode = pele->NumNode();
       LINALG::SerialDenseMatrix xyze(3,numnode);
