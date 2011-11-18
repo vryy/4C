@@ -304,6 +304,73 @@ void fillElementUnknownsArrays(
   for (size_t iparam=0; iparam<numnode; ++iparam)
     ephi(iparam) = mystate.phinp_[iparam];
 }
+
+//! fill a number of (local) element arrays with unknown values from the (global) unknown vector given by the discretization
+template <DRT::Element::DiscretizationType DISTYPE,
+          XFEM::AssemblyType ASSTYPE,
+          class M, class V>
+void fillElementUnknownsArrays(
+    const XFEM::ElementDofManager& dofman,
+    const DRT::ELEMENTS::Combust3::MyStateSurface& mystate,
+    M& evelaf,
+    V& ephi
+)
+{
+  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+  // number of parameters for each field (assumed to be equal for each velocity component and the pressure)
+  //const int numparamvelx = getNumParam<ASSTYPE>(dofman, XFEM::PHYSICS::Velx, numnode);
+  const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
+  const size_t numparamvely = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Vely);
+  const size_t numparamvelz = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velz);
+  const size_t numparampres = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Pres);
+  dsassert((numparamvelx == numparamvely) and (numparamvelx == numparamvelz) and (numparamvelx == numparampres), "assumption violation");
+
+  const size_t shpVecSize = COMBUST::SizeFac<ASSTYPE>::fac*numnode;
+  if (numparamvelx > shpVecSize)
+    dserror("increase SizeFac for nodal unknowns");
+
+  const std::vector<int>& velxdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velx>());
+  const std::vector<int>& velydof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Vely>());
+  const std::vector<int>& velzdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Velz>());
+  const std::vector<int>& presdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::Pres>());
+
+  if (mystate.instationary_)
+  {
+    if(mystate.genalpha_)
+    {
+      for (size_t iparam=0; iparam<numparamvelx; ++iparam)
+        evelaf(0,iparam) = mystate.velaf_[velxdof[iparam]];
+      for (size_t iparam=0; iparam<numparamvely; ++iparam)
+        evelaf(1,iparam) = mystate.velaf_[velydof[iparam]];
+      for (size_t iparam=0; iparam<numparamvelz; ++iparam)
+        evelaf(2,iparam) = mystate.velaf_[velzdof[iparam]];
+    }
+    else
+    {
+      for (size_t iparam=0; iparam<numparamvelx; ++iparam)
+        evelaf(0,iparam) = mystate.velnp_[velxdof[iparam]];
+      for (size_t iparam=0; iparam<numparamvely; ++iparam)
+        evelaf(1,iparam) = mystate.velnp_[velydof[iparam]];
+      for (size_t iparam=0; iparam<numparamvelz; ++iparam)
+        evelaf(2,iparam) = mystate.velnp_[velzdof[iparam]];
+    }
+  }
+  else
+  {
+    for (size_t iparam=0; iparam<numparamvelx; ++iparam)
+      evelaf(0,iparam) = mystate.velnp_[velxdof[iparam]];
+    for (size_t iparam=0; iparam<numparamvely; ++iparam)
+      evelaf(1,iparam) = mystate.velnp_[velydof[iparam]];
+    for (size_t iparam=0; iparam<numparamvelz; ++iparam)
+      evelaf(2,iparam) = mystate.velnp_[velzdof[iparam]];
+  }
+
+  // copy element phi vector from std::vector (mystate) to LINALG::Matrix (ephi)
+  // remark: this is inefficient, but it is nice to have only fixed size matrices afterwards!
+  for (size_t iparam=0; iparam<numnode; ++iparam)
+    ephi(iparam) = mystate.phinp_[iparam];
+}
 }
 
 namespace COMBUST
@@ -862,7 +929,7 @@ void Sysmat(
   // symmetry check for element matrix
   // TODO: remove symmetry check
   //----------------------------------
-//if(ele->Id()==118)
+//if(ele->Id()==56)
 //{
 //  cout << endl << "stiffness matrix of element: " << ele->Id() << " columns " << estif.N() << " rows " << estif.M() << endl << endl;
 //  bool sym = true;
@@ -1016,6 +1083,214 @@ void COMBUST::callSysmat(
 //          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
 //          combusttype, flamespeed, nitschevel, nitschepres,surftensapprox);
 //    break;
+    default:
+      dserror("xfem_assembly Sysmat not templated yet");
+    };
+  }
+}
+
+
+namespace COMBUST
+{
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType DISTYPE,
+          XFEM::AssemblyType ASSTYPE>
+void SysmatNeumannInflow(
+    const DRT::ELEMENTS::Combust3*                  ele,
+    const DRT::ELEMENTS::Combust3Surface*           elesurf,
+    const XFEM::ElementDofManager&                  dofman,
+    const DRT::ELEMENTS::Combust3::MyStateSurface&  mystate,       ///< element state variables
+    Epetra_SerialDenseMatrix&                       estif,
+    Epetra_SerialDenseVector&                       eforce,
+    const GEO::BoundaryIntCells&                    surfintcells,
+    Teuchos::RCP<const MAT::Material>               material,
+    const INPAR::FLUID::TimeIntegrationScheme       timealgo,      ///< time discretization type
+    const double                                    time,          ///< current time step
+    const double                                    dt,            ///< delta t (time step size)
+    const double                                    theta,         ///< factor for one step theta scheme
+    const double                                    ga_gamma,
+    const double                                    ga_alphaF,
+    const double                                    ga_alphaM,
+    const bool                                      newton,
+    const bool                                      instationary,
+    const bool                                      genalpha,
+    const INPAR::COMBUST::CombustionType            combusttype,
+    const double                                    flamespeed
+)
+{
+  //TEUCHOS_FUNC_TIME_MONITOR(" - evaluating - combustion sysmat - boundary");
+  // initialize element stiffness matrix and force vector
+  estif.Scale(0.0);
+  eforce.Scale(0.0);
+
+  const int NUMDOF = 4;
+  COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF> assembler(dofman, estif, eforce);
+
+  // split velocity and pressure (and stress)
+  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+  const int shpVecSize = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+  LINALG::Matrix<3,shpVecSize> evelaf(true);
+
+  LINALG::Matrix<numnode,1> ephi(true);
+
+  COMBUST::fillElementUnknownsArrays<DISTYPE,ASSTYPE>(dofman, mystate, evelaf, ephi);
+
+  switch(combusttype)
+  {
+  case INPAR::COMBUST::combusttype_premixedcombustion:
+  {
+    // time integration constant
+    const double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
+
+    // get node coordinates of the current element
+    static LINALG::Matrix<3,numnode> xyze;
+    GEO::fillInitialPositionArray<DISTYPE>(ele, xyze);
+
+    //---------------------------------------------------------------------------
+    // get material parameters for all boundary integration cells of this element
+    //---------------------------------------------------------------------------
+#ifdef DEBUG
+    // check if we really got a list of materials
+    dsassert(material->MaterialType() == INPAR::MAT::m_matlist, "Material law is not of type m_matlist");
+#endif
+
+    // get number of parameters (dofs) for each field
+    // remark: it is assumed that all fields are enriched -> equal for all velocity components and pressure
+    const size_t numparamvelx = XFEM::NumParam<numnode,ASSTYPE>::get(dofman, XFEM::PHYSICS::Velx);
+
+    //-------------------------------------
+    // loop over boundary integration cells
+    //-------------------------------------
+    for (GEO::BoundaryIntCells::const_iterator cell = surfintcells.begin(); cell != surfintcells.end(); ++cell)
+    {
+      switch (cell->Shape())
+      {
+      case DRT::Element::tri3:
+        COMBUST::Nitsche_SysmatNeumannInflow<DISTYPE,DRT::Element::tri3,ASSTYPE,NUMDOF>(
+            assembler, ele, elesurf, dofman, *cell,
+            DRT::UTILS::intrule_tri_3point, xyze,
+            evelaf, ephi,
+            numparamvelx, newton,
+            material, flamespeed,
+            time, timefac
+        );
+        break;
+      case DRT::Element::quad4:
+        COMBUST::Nitsche_SysmatNeumannInflow<DISTYPE,DRT::Element::quad4,ASSTYPE,NUMDOF>(
+            assembler, ele, elesurf, dofman, *cell,
+            DRT::UTILS::intrule_quad_4point, xyze,
+            evelaf, ephi,
+            numparamvelx, newton,
+            material, flamespeed,
+            time, timefac
+        );
+        break;
+      default:
+        dserror("invalid type of boundary integration cell");
+      }
+    } // loop boundary integration cells
+
+  }
+  break;
+  case INPAR::COMBUST::combusttype_twophaseflow:
+  case INPAR::COMBUST::combusttype_twophaseflow_surf:
+  case INPAR::COMBUST::combusttype_twophaseflowjump:
+  {
+    dserror("Neumann inflow term only implemented for premixed combustion problems (jump enrichments)");
+  }
+  break;
+  }
+
+}
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void COMBUST::callSysmatNeumannInflow(
+    const XFEM::AssemblyType                 assembly_type,
+    const DRT::ELEMENTS::Combust3*           ele,
+    const DRT::ELEMENTS::Combust3Surface*    elesurf,
+    const XFEM::ElementDofManager&           dofman,
+    const DRT::ELEMENTS::Combust3::MyStateSurface&  mystate,       ///< element state variables
+    Epetra_SerialDenseMatrix&                estif,
+    Epetra_SerialDenseVector&                eforce,
+    const GEO::BoundaryIntCells&             surfintcells,
+    Teuchos::RCP<const MAT::Material>    material,
+    const INPAR::FLUID::TimeIntegrationScheme timealgo, ///< time discretization type
+    const double                         time,          ///< current time step
+    const double                         dt,            ///< delta t (time step size)
+    const double                         theta,         ///< factor for one step theta scheme
+    const double                         ga_gamma,
+    const double                         ga_alphaF,
+    const double                         ga_alphaM,
+    const bool                           newton,
+    const bool                           instationary,
+    const bool                           genalpha,
+    const INPAR::COMBUST::CombustionType combusttype,
+    const double                         flamespeed
+    )
+{
+  if (assembly_type == XFEM::standard_assembly)
+  {
+    switch (ele->Shape())
+    {
+    case DRT::Element::hex8:
+      COMBUST::SysmatNeumannInflow<DRT::Element::hex8,XFEM::standard_assembly>(
+          ele,
+          elesurf,
+          dofman,
+          mystate,       ///< element state variables
+          estif,
+          eforce,
+          surfintcells,
+          material,
+          timealgo, ///< time discretization type
+          time,          ///< current time step
+          dt,            ///< delta t (time step size)
+          theta,         ///< factor for one step theta scheme
+          ga_gamma,
+          ga_alphaF,
+          ga_alphaM,
+          newton,
+          instationary,
+          genalpha,
+          combusttype,
+          flamespeed);
+    break;
+    default:
+      dserror("standard_assembly Sysmat not templated yet");
+    };
+  }
+  else
+  {
+    switch (ele->Shape())
+    {
+        case DRT::Element::hex8:
+      COMBUST::SysmatNeumannInflow<DRT::Element::hex8,XFEM::xfem_assembly>(
+          ele,
+          elesurf,
+          dofman,
+          mystate,       ///< element state variables
+          estif,
+          eforce,
+          surfintcells,
+          material,
+          timealgo, ///< time discretization type
+          time,          ///< current time step
+          dt,            ///< delta t (time step size)
+          theta,         ///< factor for one step theta scheme
+          ga_gamma,
+          ga_alphaF,
+          ga_alphaM,
+          newton,
+          instationary,
+          genalpha,
+          combusttype,
+          flamespeed);
+    break;
     default:
       dserror("xfem_assembly Sysmat not templated yet");
     };

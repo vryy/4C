@@ -417,7 +417,7 @@ void SysmatDomainNitsche(
 
       // convective term:  u_old * grad u_old:
       // remark: conv_old = vderxy(i,j)*gpvelnp(j);
-      LINALG::Matrix<nsd,1> conv_old;
+      LINALG::Matrix<nsd,1> conv_old(true);
       conv_old.Multiply(vderxy,gpvelnp);
 
       // viscous term:  div epsilon(u_old)
@@ -630,7 +630,6 @@ void Nitsche_SysmatBoundaryCell(
     const bool&                       higher_order_ele,
     const M1&                         evelnp,
     const V1&                         eprenp,
-    const V2&                         ephi,
     const M3&                         grad_ephi_smoothed, ///<smoothed nodal G-function gradient values for this element
     const V2&                         ecurv,
     const double&                     flamespeed,
@@ -1924,7 +1923,7 @@ void SysmatBoundaryNitsche(
     case DRT::Element::tri3:
       COMBUST::Nitsche_SysmatBoundaryCell<DISTYPE,DRT::Element::tri3,ASSTYPE,NUMDOF>(
           *cell, DRT::UTILS::intrule_tri_37point, xyze, ele, higher_order_ele,
-          evelnp, eprenp, ephi, egradphi, ecurv,
+          evelnp, eprenp, egradphi, ecurv,
           flamespeed, dens_minus, dens_plus,
           timefac, assembler,
           enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
@@ -1936,7 +1935,7 @@ void SysmatBoundaryNitsche(
     case DRT::Element::quad4:
       COMBUST::Nitsche_SysmatBoundaryCell<DISTYPE,DRT::Element::quad4,ASSTYPE,NUMDOF>(
           *cell, DRT::UTILS::intrule_quad_25point , xyze, ele, higher_order_ele,
-          evelnp, eprenp, ephi, egradphi, ecurv,
+          evelnp, eprenp, egradphi, ecurv,
           flamespeed, dens_minus, dens_plus,
           timefac, assembler,
           enrvals_plus, enrvals_minus, kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
@@ -1950,6 +1949,282 @@ void SysmatBoundaryNitsche(
     }
   } // loop boundary integration cells
 
+  return;
+}
+
+/*!
+  Calculate boundary integrals for Neumann inflow term
+ */
+template <DRT::Element::DiscretizationType DISTYPE,
+          DRT::Element::DiscretizationType CELLDISTYPE,
+          XFEM::AssemblyType ASSTYPE,
+          size_t NUMDOF,
+          class M1, class M2, class V1>
+void Nitsche_SysmatNeumannInflow(
+    COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
+    const DRT::ELEMENTS::Combust3*         ele,           ///< the element those matrix is calculated
+    const DRT::ELEMENTS::Combust3Surface*  elesurf,
+    const XFEM::ElementDofManager&         dofman,
+    GEO::BoundaryIntCell                   cell,
+    const DRT::UTILS::GaussRule2D&         intrule2D,
+    const M2&                              xyze,
+    const M1&                              evelnp,
+    const V1&                              ephi,
+    const size_t&                          numparamvelx,
+    const bool&                            newton,
+    Teuchos::RCP<const MAT::Material>      material,
+    const double&                          flamespeed,
+    const double&                          time,
+    const double&                          timefac
+)
+{
+  const size_t nsd =3;
+
+  // number of nodes of element
+  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+  const size_t numvertices = DRT::UTILS::DisTypeToNumNodePerEle<CELLDISTYPE>::numNodePerElement;
+
+  //--------------------------------------------------
+  // get material parameters for this integration cell
+  //--------------------------------------------------
+  // density \rho^{n+1}
+  double densaf  = -1.0;
+  // dynamic viscosity \mu^{n+1}
+  double dynvisc = -1.0;
+  // set density and dynamic viscosity
+  COMBUST::GetMaterialParams(material, cell.getDomainPlus(), densaf, dynvisc);
+
+  // blend smoothly to plus (burnt) domain
+  if (cell.getDomainPlus())
+  {
+    double densminus = -1.0;
+    double dynviscminus = -1.0;
+    COMBUST::GetMaterialParams(material, false, densminus, dynviscminus);
+
+    COMBUST::BlendMaterial(ele, time, densaf, dynvisc, densminus, dynviscminus);
+  }
+  // density \rho^{n}
+  // TODO until the XFEM time integration is done properly, densities from previous and
+  // current time steps are identical
+  const double densn = densaf;
+
+  //-----------------------------------------------------------
+  // evaluate the enrichment function for this integration cell
+  //-----------------------------------------------------------
+  const XFEM::ElementEnrichmentValues enrvals(*ele,dofman,cell,ephi);
+
+  //----------------------------------------------
+  // get Gaussian points for this integration cell
+  //----------------------------------------------
+  const DRT::UTILS::IntegrationPoints2D intpoints(intrule2D);
+
+  // get coordinates of vertices of boundary integration cell in element coordinates \xi^domain
+  LINALG::SerialDenseMatrix cellXiDomaintmp = cell.CellNodalPosXiDomain();
+  // get coordinates of vertices of boundary integration cell in physical coordinates \x^domain
+  LINALG::SerialDenseMatrix cellXYZDomaintmp = cell.CellNodalPosXYZ();
+  // transform to fixed size format
+  const LINALG::Matrix<nsd,numvertices> cellXiDomain(cellXiDomaintmp);
+  const LINALG::Matrix<nsd,numvertices> cellXYZDomain(cellXYZDomaintmp);
+
+  //--------------------------------------
+  // integration loop over Gaussian points
+  //--------------------------------------
+  for (int iquad=0; iquad<intpoints.nquad; ++iquad)
+  {
+    // new transformation for boundary integrals
+    // 1. define a coupled transformation x_3D(xi_3D(eta_2D)): transformation from 2D->3D
+    // 2. compute the corresponding Jacobian J_eta2D->x_3D and
+    // 3. the corresponding surface integral factor sqrt(det(J_eta2D->x_3D^T * J_eta2D->x_3D))
+    // 4. approximate integral with Gauss rule in eta coordinate system
+    // 5. evaluate the transformed integrand f(x(xi(eta)))
+
+    const LINALG::Matrix<2,1> gpinEta2D(intpoints.qxg[iquad]);
+
+    // jacobian for coupled transformation
+    // get derivatives dxi_3D/deta_2D
+    static LINALG::Matrix<2,numvertices> deriv_eta2D;
+    DRT::UTILS::shape_function_2D_deriv1(deriv_eta2D,gpinEta2D(0,0),gpinEta2D(1,0),CELLDISTYPE);
+
+    // calculate dxi3Ddeta2D
+    static LINALG::Matrix<3,2> dXi3Ddeta2D;
+    dXi3Ddeta2D.Clear();
+    for (int i = 0; i < 3; i++)   // dimensions
+      for (int j = 0; j < 2; j++) // derivatives
+        for (int k = 0; k < (int)numvertices; k++)
+          dXi3Ddeta2D(i,j) += cellXiDomain(i,k)*deriv_eta2D(j,k);
+
+    // transform Gauss point to xi3D space (element parameter space)
+    static LINALG::Matrix<nsd,1> gpinXi3D;
+    gpinXi3D.Clear();
+    // coordinates of this integration point in element coordinates \xi^domain
+    GEO::mapEtaBToXiD(cell, gpinEta2D, gpinXi3D);
+
+    static LINALG::Matrix<3,numnode> deriv_xi3D;
+    DRT::UTILS::shape_function_3D_deriv1(deriv_xi3D,gpinXi3D(0,0), gpinXi3D(1,0), gpinXi3D(2,0), DISTYPE);
+
+    // calculate dx3Ddxi3D
+    static LINALG::Matrix<3,3> dX3DdXi3D;
+    dX3DdXi3D.Clear();
+    for (int i = 0; i < 3; i++)   // dimensions
+      for (int j = 0; j < 3; j++) // derivatives
+        for (int k = 0; k < (int)numnode; k++)
+          dX3DdXi3D(i,j) += xyze(i,k)*deriv_xi3D(j,k);
+
+    // get the coupled Jacobian dx3Ddeta2D
+    static LINALG::Matrix<3,2> dx3Ddeta2D;
+    dx3Ddeta2D.Clear();
+    for (int i = 0; i < 3; i++)   // dimensions
+      for (int j = 0; j < 2; j++) // derivatives
+        for (int k = 0; k < 3; k++)
+          dx3Ddeta2D(i,j) += dX3DdXi3D(i,k) * dXi3Ddeta2D(k,j);
+
+    // get deformation factor
+    static LINALG::Matrix<2,2> Jac_tmp; // J^T*J
+    Jac_tmp.Clear();
+    Jac_tmp.MultiplyTN(dx3Ddeta2D,dx3Ddeta2D);
+
+    if(Jac_tmp.Determinant() <= 0.0) dserror("deformation factor for boundary integration is zero");
+
+    const double deform_factor = sqrt(Jac_tmp.Determinant()); // sqrt(det(J^T*J))
+
+    const double fac = intpoints.qwgt[iquad]*deform_factor;
+
+    LINALG::Matrix<2,1> posEtaBoundary;
+    posEtaBoundary.Clear();
+    for (int i= 0; i< 2; i++){
+      posEtaBoundary(i,0) = gpinEta2D(i,0);
+    }
+
+    LINALG::Matrix<nsd,1> posXiDomain;
+    posXiDomain.Clear();
+    for (int i= 0; i< 3; i++){
+      posXiDomain(i,0) = gpinXi3D(i,0);
+    }
+
+    //--------------------------------------------------------------------------------------------
+    // compute normal vector (normed, in physical coordinates)
+    // remark: for linear boundary integration cells this could be done before the loop over all
+    //         Gaussian points
+    //--------------------------------------------------------------------------------------------
+    static LINALG::Matrix<nsd,1> normal(true);
+    normal.Clear();
+    // outside pointing normal vector
+    GEO::computeNormalToSurfaceElement(CELLDISTYPE, cellXYZDomain, posEtaBoundary, normal);
+
+    //----------------------------------------------------------------------------
+    // evaluate shape functions and their first derivatives at this Gaussian point
+    //----------------------------------------------------------------------------
+    // shape functions for fields with dofs at nodes
+    static LINALG::Matrix<numnode,1> funct;
+    funct.Clear();
+    DRT::UTILS::shape_function_3D(funct,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+    // derivatives of shape functions for fields with dofs at nodes
+    static LINALG::Matrix<nsd,numnode> deriv;
+    deriv.Clear();
+    DRT::UTILS::shape_function_3D_deriv1(deriv,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+
+    //--------------------------------------------------------
+    // procedures involving Jacobian matrix for domain mapping
+    //--------------------------------------------------------
+    // get transposed of the jacobian matrix d x / d \xi
+    // xjm(i,j) = deriv(i,k)*xyze(j,k)
+    static LINALG::Matrix<nsd,nsd> xjm;
+    xjm.Clear();
+    xjm.MultiplyNT(deriv,xyze);
+    // determinant for mapping from physical space (X^3D/domain) to element (Xi^3D/domain)
+    const double detXtoXi = xjm.Determinant();
+    //#ifdef DEBUG
+    if (detXtoXi < 0.0)
+    {
+      dserror("negative Jacobian determinant detXtoXi: %f for element %d!", detXtoXi, ele->Id());
+    }
+    //#endif
+    // inverse of jacobian
+    static LINALG::Matrix<nsd,nsd> xji;
+    xji.Clear();
+    xji.Invert(xjm);
+
+    //----------------------------------------------------------------
+    // rearrange (enriched) shape functions as approximation functions
+    //----------------------------------------------------------------
+    const size_t shpVecSize = COMBUST::SizeFac<ASSTYPE>::fac*DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+
+    // (enriched) shape functions = approximation functions (P = N * \Psi)
+    static XFEM::ApproxFunc<0,shpVecSize> shp;
+
+    if (ASSTYPE == XFEM::xfem_assembly)
+    {
+      // temporary arrays holding enriched shape functions (N * \Psi)
+      static LINALG::Matrix<shpVecSize,1> enr_funct;
+      enr_funct.Clear();
+
+      // shape functions and derivatives for nodal parameters (dofs)
+      enrvals.ComputeModifiedEnrichedNodalShapefunction(Velx, funct, enr_funct);
+
+      // fill approximation functions for XFEM
+      for (size_t iparam = 0; iparam != numparamvelx; ++iparam)
+      {
+        shp.d0(iparam) = enr_funct(iparam);
+      }
+    }
+    else // not xfem_assembly i.e. standard assembly
+    {
+      // fill approximation functions for standard FEM
+      // remark: numparamvelx == numnode, for standard FEM
+      for (size_t iparam = 0; iparam < numnode; ++iparam)
+      {
+        shp.d0(iparam) = funct(iparam);
+      }
+    }
+    //------------------------------------
+    // get velocities at integration point
+    //------------------------------------
+    const LINALG::Matrix<nsd,1> gpvelnp = XFEM::interpolateVectorFieldToIntPoint(evelnp, shp.d0, numparamvelx);
+    //const LINALG::Matrix<nsd,1> gpveln  = XFEM::interpolateVectorFieldToIntPoint(eveln , shp.d0, numparamvelx);
+    //const LINALG::Matrix<nsd,1> gpvelnm = XFEM::interpolateVectorFieldToIntPoint(evelnm, shp.d0, numparamvelx);
+
+    // compute velocity vector and normal velocity at integration point
+    const double inflowvelnorm = gpvelnp.Dot(normal);
+
+    // check normal velocity -> further computation only required for
+    // negative normal velocity, that is, inflow at this Neumann boundary
+    if (inflowvelnorm < -1.0e-8)
+    {
+#if 1 //def COMBUST_NEUMANN_INFLOW
+
+      //---------------------------------------------------    |                 |
+      // Neumann inflow term
+      //---------------------------------------------------    |                 |
+      // compute total (time and spatial) integration factor
+      const double denstimefacfac = densaf * timefac * fac;
+
+      assembler.template Matrix<Velx,Velx>(shp.d0, -denstimefacfac*inflowvelnorm, shp.d0);
+      assembler.template Matrix<Vely,Vely>(shp.d0, -denstimefacfac*inflowvelnorm, shp.d0);
+      assembler.template Matrix<Velz,Velz>(shp.d0, -denstimefacfac*inflowvelnorm, shp.d0);
+
+      assembler.template Vector<Velx>(shp.d0, denstimefacfac*inflowvelnorm*gpvelnp(0));
+      assembler.template Vector<Vely>(shp.d0, denstimefacfac*inflowvelnorm*gpvelnp(1));
+      assembler.template Vector<Velz>(shp.d0, denstimefacfac*inflowvelnorm*gpvelnp(2));
+
+      if(newton)
+      {
+        assembler.template Matrix<Velx,Velx>(shp.d0, -denstimefacfac*gpvelnp(0)*normal(0), shp.d0);
+        assembler.template Matrix<Velx,Vely>(shp.d0, -denstimefacfac*gpvelnp(0)*normal(1), shp.d0);
+        assembler.template Matrix<Velx,Velz>(shp.d0, -denstimefacfac*gpvelnp(0)*normal(2), shp.d0);
+
+        assembler.template Matrix<Vely,Velx>(shp.d0, -denstimefacfac*gpvelnp(1)*normal(0), shp.d0);
+        assembler.template Matrix<Vely,Vely>(shp.d0, -denstimefacfac*gpvelnp(1)*normal(1), shp.d0);
+        assembler.template Matrix<Vely,Velz>(shp.d0, -denstimefacfac*gpvelnp(1)*normal(2), shp.d0);
+
+        assembler.template Matrix<Velz,Velx>(shp.d0, -denstimefacfac*gpvelnp(2)*normal(0), shp.d0);
+        assembler.template Matrix<Velz,Vely>(shp.d0, -denstimefacfac*gpvelnp(2)*normal(1), shp.d0);
+        assembler.template Matrix<Velz,Velz>(shp.d0, -denstimefacfac*gpvelnp(2)*normal(2), shp.d0);
+      }
+#endif
+    }
+
+  } // loop Gaussian points
   return;
 }
 

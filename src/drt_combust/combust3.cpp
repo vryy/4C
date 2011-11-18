@@ -390,6 +390,54 @@ DRT::ELEMENTS::Combust3::MyState::MyState(
 
 
 /*----------------------------------------------------------------------*
+ | constructor                                              henke 04/10 |
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::Combust3::MyStateSurface::MyStateSurface(
+    const DRT::Discretization&             discretization,
+    const std::vector<int>&                lm,
+    const bool                             instationary,
+    const bool                             genalpha,
+    const bool                             gradphi,
+    const DRT::ELEMENTS::Combust3*         ele,
+    const COMBUST::InterfaceHandleCombust* ih
+    ) :
+      instationary_(instationary),
+      genalpha_(genalpha)
+{
+  if (!genalpha_)
+    DRT::UTILS::ExtractMyValues(*discretization.GetState("velnp"),velnp_,lm);
+  if (instationary_)
+  {
+    if(genalpha_)
+    {
+      DRT::UTILS::ExtractMyValues(*discretization.GetState("velaf") ,velaf_ ,lm);
+    }
+  }
+
+  // get pointer to vector holding G-function values at the fluid nodes
+  const Teuchos::RCP<Epetra_Vector> phinp = ih->FlameFront()->Phinp();
+#ifdef DEBUG
+  // check if this element is the first element on this processor
+  // remark:
+  // The SameAs-operation requires MPI communication between processors. Therefore it can only
+  // be performed once (at the beginning) on each processor. Otherwise some processors would
+  // wait to receive MPI information, but would never get it, because some processores are
+  // already done with their element loop. This will cause a mean parallel bug!   henke 11.08.09
+  if(ele->Id() == discretization.lRowElement(0)->Id())
+  {
+    // get map of this vector
+    const Epetra_BlockMap& phimap = phinp->Map();
+    // check, whether this map is still identical with the current node map in the discretization
+    if (not phimap.SameAs(*discretization.NodeColMap())) dserror("node column map has changed!");
+  }
+#endif
+
+  // extract local (element level) G-function values from global vector
+  DRT::UTILS::ExtractMyNodeBasedValues(ele, phinp_, *phinp);
+}
+
+
+/*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Combust3::DLMInfo::DLMInfo(const int nd, const int na)
 : oldKaainv_(LINALG::SerialDenseMatrix(na,na,true)),

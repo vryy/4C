@@ -103,6 +103,26 @@ private:
           std::vector<double> curv_;      ///< curvature based on G-function gradient at n+1
         };
 
+        class MyStateSurface
+        {
+        public:
+          MyStateSurface(
+              const DRT::Discretization&             discretization,
+              const std::vector<int>&                lm,
+              const bool                             instationary,
+              const bool                             genalpha,
+              const bool                             gradphi,
+              const DRT::ELEMENTS::Combust3*         ele,
+              const COMBUST::InterfaceHandleCombust* ih
+              );
+
+          const bool instationary_;
+          const bool genalpha_;
+          std::vector<double> velnp_;     ///< velocity/pressure unknowns at n+1
+          std::vector<double> velaf_;     ///< velocity/pressure unknowns at alpha+f for generalized alpha scheme
+          std::vector<double> phinp_;     ///< G-function unknowns at n+1
+        };
+
         //! @name Constructors and destructors and related methods
 
         //! Standard Constructor
@@ -207,6 +227,10 @@ private:
             }
           }
         }
+
+        Teuchos::RCP<XFEM::ElementDofManager> GetEleDofManager(){ return eleDofManager_; }
+
+        COMBUST::InterfaceHandleCombust* GetInterfaceHandle(){ return ih_; }
 
         void Print(ostream& os) const;
 
@@ -551,7 +575,8 @@ private:
         {
           none,
           integrate_Shapefunction,
-          calc_flux
+          calc_flux,
+          calc_Neumann_inflow
         };
 
         //! don't want = operator
@@ -574,7 +599,7 @@ private:
         //! integrate shapefunction over surface element
         virtual void IntegrateShapeFunction(
             ParameterList&                   params,          ///< ParameterList for communication between control routine and elements
-            DRT::Discretization&             discretization,  ///< vector to be filled by element
+            const DRT::Discretization&       discretization,  ///< vector to be filled by element
             const std::vector<int>&          lm,              ///< location vector of this element
             Epetra_SerialDenseVector&        elevec1,         ///< vector to be filled by element
             const std::vector<double>&       edispnp          ///< current displacement of fluid mesh
@@ -583,7 +608,7 @@ private:
         //! integrate shapefunction over surface element
         void IntegrateSurfaceFlow(
             ParameterList&                   params,          ///< ParameterList for communication between control routine and elements
-            DRT::Discretization&             discretization,  ///< vector to be filled by element
+            const DRT::Discretization&       discretization,  ///< vector to be filled by element
             const std::vector<int>&          lm,              ///< location vector of this element
             Epetra_SerialDenseVector&        elevec1,         ///< vector to be filled by element
             const std::vector<double>&       edispnp          ///< current displacement of fluid mesh

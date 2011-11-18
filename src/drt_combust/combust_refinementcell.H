@@ -42,6 +42,13 @@ namespace COMBUST
     //! constructor
     explicit RefinementCell(const COMBUST::RefinementCell *cell, const std::vector<std::vector<double> > vertexcoord);
 
+    //! constructor
+    explicit RefinementCell(
+        const DRT::Element* ele,
+        const DRT::Element::DiscretizationType distype,
+        const std::vector<std::vector<double> > vertexcoord
+    );
+
     //! refine a cell (split it into subcells)
     void RefineCell();
 

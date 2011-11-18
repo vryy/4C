@@ -17,12 +17,18 @@ Maintainer: Florian Henke
 #ifdef CCADISCRET
 
 #include "combust3.H"
+#include "combust3_sysmat.H"
+#include "combust_refinementcell.H"
+#include "../drt_geometry/integrationcell.H"
+#include "../drt_cut/cut_position.H"
 #include "../drt_f3/xfluid3_utils.H"
+#include "../drt_xfem/enrichment_utils.H"
 #include "../drt_xfem/xfem_element_utils.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_io/io_gmsh.H"
 
 
 /*----------------------------------------------------------------------*
@@ -45,6 +51,8 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
         act = Combust3Surface::integrate_Shapefunction;
     else if (action == "calc_flux")
         act = Combust3Surface::calc_flux;
+    else if (action == "calc_Neumann_inflow")
+        act = Combust3Surface::calc_Neumann_inflow;
     else dserror("Unknown type of action for Combust3_Surface");
 
     switch(act)
@@ -69,6 +77,576 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
         std::vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
         IntegrateSurfaceFlow(params,discretization,lm,elevec1,myvelnp);
+        break;
+      }
+      case calc_Neumann_inflow:
+      {
+        //cout << "ich werte jetzt den Neumann inflow Term aus!" << endl;
+        //this->Print(std::cout);
+
+        if (this->parent_->Shape() != DRT::Element::hex8)
+          dserror("Neumann inflow term evaluation only implemented for hex8 elements");
+
+        // remark: surface (2D) elements have been build on entering this function
+        //         according to Neumann inflow condition on nodes
+
+        //---------------------------------------------------------------
+        // generate boundary integration cells at Neumann inflow boundary
+        //---------------------------------------------------------------
+        // list of boundary integration cells
+        GEO::BoundaryIntCells surfaceintcelllist;
+        {
+          // get pointer to vector holding G-function values at the fluid nodes
+          const Teuchos::RCP<Epetra_Vector> phinp = parent_->GetInterfaceHandle()->FlameFront()->Phinp();
+          // vector holding G-function values for this surface element
+          std::vector<double> gfuncvalues_cell;
+          // extract local (element level) G-function values from global vector
+          DRT::UTILS::ExtractMyNodeBasedValues(this, gfuncvalues_cell, *phinp);
+
+          // get node coordinates of the parent (3D) element
+          const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+          LINALG::Matrix<3,numnode> xyze;
+          GEO::fillInitialPositionArray<DRT::Element::hex8>(this->parent_, xyze);
+
+          // get node coordinates of the surface (2D) element
+          std::vector<std::vector<double> > xicoord(4, vector<double>(3, 0.0));
+
+          size_t numnodesurf = this->NumNode();
+          if (numnodesurf != 4)
+            dserror("surfaces of hex8 elements expected (4 nodes)");
+
+          // loop nodes of surface element
+          const DRT::Node*const* nodessurf = this->Nodes();
+          for (size_t inode=0; inode<numnodesurf; inode++)
+          {
+            // compute local element coordinates
+            // remark: since we deal with nodes, we should get clean numbers (-1 or 1) for 'xicoord'
+            const double* x = nodessurf[inode]->X();
+            {
+              LINALG::Matrix<3,1> xyznode;
+              xyznode(0) = x[0];
+              xyznode(1) = x[1];
+              xyznode(2) = x[2];
+
+              LINALG::Matrix<3,1> xsi;
+              GEO::CUT::Position<DRT::Element::hex8> pos(xyze,xyznode);
+              pos.Compute();
+              xsi = pos.LocalCoordinates();
+              // fill array
+              xicoord[inode][0] = xsi(0);
+              xicoord[inode][1] = xsi(1);
+              xicoord[inode][2] = xsi(2);
+            }
+          }
+          // create refinement cell from a fluid element -> cell will have same geometry as element!
+          const Teuchos::RCP<COMBUST::RefinementCell> surfcell = rcp(new COMBUST::RefinementCell(parent_, DRT::Element::quad4, xicoord));
+
+          surfcell->SetGfuncValues(gfuncvalues_cell);
+
+          // get vertex coordinates (local fluid element coordinates) from refinement cell
+          const std::vector<std::vector<double> >& vertexcoord = surfcell->GetVertexCoord();
+
+          bool inGplus = false;
+          {
+            /*------------------------------------------------------------------------------
+             * - compute phi at each node of domain integration cell
+             * - compute average G-value for each surface integration cell
+             * -> >=0 in plus == true
+             * _> <0  in minus == false
+             * ----------------------------------------------------------------------------*/
+
+            int numcellnodes = 0;
+            switch(this->Shape())
+            {
+            case DRT::Element::tri3:
+            {
+              numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
+              break;
+            }
+            case DRT::Element::quad4:
+            {
+              numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
+              break;
+            }
+            default:
+              dserror("Discretization Type (IntCell) not supported yet!");
+            }
+
+            //calculate average Gfunc value
+            double averageGvalue = 0.0;
+
+            for (int icellnode=0; icellnode<numcellnodes; icellnode++)
+              averageGvalue += gfuncvalues_cell[icellnode];
+
+            if (numcellnodes == 0.0)
+              dserror("division by zero: number of vertices per cell is 0!");
+            averageGvalue /= numcellnodes;
+
+            // determine DomainIntCell position
+            // ">=" because of the approximation of the interface,
+            // also averageGvalue=0 is possible; as always approximation errors are made
+            if(averageGvalue>=0.0)
+              inGplus = true;
+          }
+
+          if(surfcell->Bisected() == true)
+          {
+            {
+              // get G-function values at vertices from refinement cell
+              const std::vector<double>& gfuncvalues = surfcell->GetGfuncValues();
+              // get vertex coordinates (local fluid element coordinates) from refinement cell
+              const std::vector<std::vector<double> >& vertexcoord = surfcell->GetVertexCoord();
+              // temporary variable to store intersection points
+              std::multimap<int,std::vector<double> > intersectionpoints;
+
+              //-------------------------------------------------
+              // get vector of lines with corresponding vertices
+              //-------------------------------------------------
+              // lines: edge numbers and corresponding vertices (hex8)
+              std::vector<std::vector<int> > lines;
+              //-------------------------------
+              // determine intersection points
+              //-------------------------------
+              lines = DRT::UTILS::getEleNodeNumberingLines(DRT::Element::quad4);
+              // loop edges of refinement cell
+              for(std::size_t iline=0; iline<lines.size(); iline++)
+              {
+                // get G-function value of the two vertices defining an edge
+                double gfuncval1 = gfuncvalues[lines[iline][0]];
+                double gfuncval2 = gfuncvalues[lines[iline][1]];
+
+                std::vector<double> coordinates(3);
+
+                // check for change of sign along edge
+                if (gfuncval1*gfuncval2 < 0.0)
+                {
+                  for (int dim = 0; dim < 3; dim++)
+                  {
+                    // vertices have one coordinate in common
+                    if(vertexcoord[lines[iline][0]][dim] == vertexcoord[lines[iline][1]][dim])
+                    {
+                      // intersection point has the same coordinate for that direction
+                      coordinates[dim] = vertexcoord[lines[iline][0]][dim];
+                    }
+                    else // compute intersection point
+                    {
+                      // linear interpolation (for hex8)
+                      // x = x1 + (phi(=0) - phi1)/(phi2 - phi1)*(x2 - x1)
+                      // store intersection point coordinate (local element coordinates) for every component dim
+                      coordinates[dim] = vertexcoord[lines[iline][0]][dim] - gfuncval1 / (gfuncval2 - gfuncval1)
+                                * (vertexcoord[lines[iline][1]][dim] - vertexcoord[lines[iline][0]][dim]);
+                    }
+                  }
+
+                  // store coordinates of intersection point for each line
+                  intersectionpoints.insert(pair<int, std::vector<double> >( iline, coordinates));
+                  //intersectionpoints[iline] = coordinates;
+                }
+                else
+                {
+                  //do nothing and go to the next line
+                }
+              }
+
+              //TEST Ausgabe
+              //for (std::map<int,std::vector<double> >::const_iterator iter = intersectionpoints.begin(); iter != intersectionpoints.end(); ++iter)
+              //{
+              //  std::cout<< iter->first << std::endl;
+              //  std::vector<double> coord = iter->second;
+              //  for (std::size_t isd=0; isd<3; isd++)
+              //  {
+              //    std::cout<< coord[isd] << std::endl;
+              //  }
+              //}
+
+              // store intersection points in refinement cell
+              surfcell->intersectionpoints_ = intersectionpoints;
+            }
+            if (surfcell->intersectionpoints_.size()!=1 and surfcell->intersectionpoints_.size()!=2)
+              dserror("1 or 2 intersection points expected");
+            // generate flame front (interface) geometry
+            {
+              //-----------------------------------------------------
+              // prepare lists, get coordinates and G-function values
+              //-----------------------------------------------------
+              std::vector<std::vector<double> >    pointlist;
+              std::vector<std::vector<int> >       trianglelist;
+
+              //---------------------------------------------
+              // fill list of points and intersection points
+              //---------------------------------------------
+              int numofpoints = 0;
+              int numvertex = DRT::UTILS::getNumberOfElementCornerNodes(DRT::Element::quad4);
+              // get intersection points from refinement cell
+
+              // corner points
+              for (int ivertex=0; ivertex<numvertex; ivertex++)
+              {
+                // remark: all hex elements/cells have 8 corners;
+                //         additional nodes (hex20,hex27) are inner nodes and not corners
+                //         here, only the corners are written into the point list
+                pointlist.push_back(vertexcoord[ivertex]);
+                numofpoints++;
+              }
+
+              const std::multimap<int,std::vector<double> >& intersectionpoints = surfcell->intersectionpoints_;
+              // map corresponds to intersection points, but contains the points' IDs instead of their coordinates
+              // links 'pointlist' required by TetGen to 'intersectionpointlist'
+              std::map<int,int> intersectionpointsids;
+
+              // intersection points
+              // map<ID of cut edge in element, coordinates of intersection point>
+              for (std::multimap<int,std::vector<double> >::const_iterator iter = intersectionpoints.begin(); iter != intersectionpoints.end(); ++iter)
+              {
+                pointlist.push_back(iter->second);
+                intersectionpointsids.insert(pair<int, int>(iter->first,numofpoints));
+                //intersectionpointsids[iter->first] = numofpoints;
+                numofpoints++;
+              }
+
+              //TEST
+              //std::cout << "number of intersection points " << intersectionpoints.size() << endl;
+              //for (std::size_t iter=0; iter<pointlist.size(); ++iter)
+              //{
+              //  std::cout<< iter << std::endl;
+              //  std::vector<double> coord = pointlist[iter];
+              //  for (std::size_t isd=0; isd<3; isd++)
+              //  {
+              //    std::cout<< coord[isd] << std::endl;
+              //  }
+              //}
+
+              //--------------------------------------
+              // triangulate flame front within a cell
+              //--------------------------------------
+
+              // array containing the point IDs for each line
+              int line[4][2] = {
+                  {0,  1},
+                  {1,  2},
+                  {2,  3},
+                  {3,  0}};
+
+              //--------------------
+              // build first polygon
+              //--------------------
+              std::map<int,std::vector<int> > polygonpoints;
+              polygonpoints.clear();
+
+              for (int ipoly=0; ipoly<2; ipoly++)
+              {
+                //contains the vertices of the polygon
+                std::vector<int> polypoints;
+
+                int iline = -1;
+                int ipoint = -1;
+                if (ipoly == 0) // first polygon
+                {
+                  // define first intersection point as starting point
+                  iline = intersectionpointsids.begin()->first;
+                  ipoint = intersectionpointsids.begin()->second;
+                  polypoints.push_back(ipoint);
+                }
+                if (ipoly == 1) // second polygon
+                {
+                  // define second (=last) intersection point as starting point
+                  iline = intersectionpointsids.rbegin()->first;
+                  ipoint = intersectionpointsids.rbegin()->second;
+                  polypoints.push_back(ipoint);
+                }
+
+                // add second point of intersected line
+                polypoints.push_back(line[iline][1]);
+
+                bool finished = false;
+                while(!finished)
+                {
+                  // next line
+                  iline = iline +1;
+                  if (iline > 3)
+                    iline = 0;
+                  std::multimap<int,int>::const_iterator iter = intersectionpointsids.find(iline);
+                  if (iter != intersectionpointsids.end()) // line is intersected
+                  {
+                    // add intersection point to list
+                    polypoints.push_back(iter->second);
+                    finished = true;
+                  }
+                  else // line is not intersected
+                  {
+                    // add next node to list
+                    polypoints.push_back(line[iline][1]);
+                  }
+                }
+                if (ipoly == 0) // first polygon
+                  polypoints.push_back( intersectionpointsids.begin()->second);
+                if (ipoly == 1) // second polygon
+                  polypoints.push_back( intersectionpointsids.rbegin()->second);
+
+                //TEST Ausgabe
+                //cout << "polypoints" << endl;
+                //for (int i=0; i<polypoints.size(); i++)
+                //  cout << polypoints[i] << endl;
+
+                polygonpoints[ipoly] = polypoints;
+              }
+              //----------------
+              // build triangles
+              //----------------
+              for (std::size_t ipolygons=0; ipolygons<polygonpoints.size(); ipolygons++)
+              {
+                std::vector<int> polypoints = polygonpoints[ipolygons];
+                if (polypoints.size()<4)
+                  dserror("TriangulateFlameFront needs at least 3 intersectionpoints");
+
+                //-----------------------------
+                // three points form a triangle
+                //-----------------------------
+                if (polypoints.size()==4) //there are only three different points and three points form a triangle
+                {
+                  std::vector<int> trianglepoints (3);
+                  for (int i=0; i<3; i++)
+                  {
+                    trianglepoints[i] = polypoints[i];
+                  }
+                  trianglelist.push_back(trianglepoints);
+                }
+                //----------------------------------------------------
+                // add a midpoint to the pointlist to create triangles
+                //----------------------------------------------------
+                else
+                {
+                  //-----------------------------
+                  //calculate midpoint of polygon
+                  //-----------------------------
+                  std::size_t numpoints = polypoints.size() - 1;
+                  std::vector<double> midpoint (3);
+                  std::vector<double> point1 (3);
+                  std::vector<double> point2 (3);
+                  if (numpoints%2==0) // even
+                  {
+                    point1 = pointlist[polypoints[0]];
+                    point2 = pointlist[polypoints[numpoints/2]];
+                  }
+                  else // odd
+                  {
+                    point1 = pointlist[polypoints[0]];
+                    point2 = pointlist[polypoints[(numpoints+1)/2]];
+                  }
+
+                  for (int dim=0; dim<3; dim++)
+                  {
+                    // compute middle of this coordinate
+                    midpoint[dim] = (point2[dim] + point1[dim]) * 0.5;
+                  }
+
+                  // add midpoint to list of points defining piecewise linear complex (interface surface)
+                  std::size_t midpoint_id = pointlist.size();//ids start at 0
+                  //std::cout<< "pointlistsize " << pointlist.size() << "midpointid " << midpoint_id<<std::endl;
+                  pointlist.push_back(midpoint);
+
+                  //build triangles
+                  for (std::size_t j=0; j<polypoints.size()-1; j++)
+                  {
+                    std::vector<int> trianglepoints (3);
+                    trianglepoints[0] = polypoints[j];
+                    trianglepoints[1] = polypoints[j+1];
+                    trianglepoints[2] = midpoint_id;
+                    trianglelist.push_back(trianglepoints);
+                  }
+                }
+              }
+
+              //-------------------------------------------
+              // store triangular surface integration cells
+              //-------------------------------------------
+              for (std::size_t itriangle=0; itriangle<trianglelist.size(); itriangle++)
+              {
+                LINALG::SerialDenseMatrix trianglecoord(3,3); //3 directions, 3 nodes
+                LINALG::SerialDenseMatrix phystrianglecoord(3,3);
+
+                for (int inode=0; inode<3; inode++)
+                {
+                  static LINALG::Matrix<3,1> tcoord;
+                  for (int dim=0; dim<3; dim++)
+                  {
+                    trianglecoord(dim,inode) = pointlist[trianglelist[itriangle][inode]][dim];
+                    tcoord(dim) = trianglecoord(dim,inode);
+                  }
+                  GEO::elementToCurrentCoordinatesInPlace(parent_->Shape(), xyze, tcoord);
+                  for(int  dim=0; dim<3; dim++)
+                    phystrianglecoord(dim,inode) = tcoord(dim);
+                }
+                // store boundary integration cells in boundaryintcelllist
+                // remark: boundary integration cells in bisected cells (these have always triangular boundary
+                //         integration cells) are defined to belong to the "plus" domain (G>0)
+                surfaceintcelllist.push_back(GEO::BoundaryIntCell(DRT::Element::tri3, -1, trianglecoord, Teuchos::null, phystrianglecoord, inGplus));
+                //cout << "created tri3 boundary cell" << endl;
+              }
+            }
+          }
+          else // non-bisected cell
+          {
+            {
+              // get node coordinates of the surface (2D) element
+              LINALG::SerialDenseMatrix xyzesurf(3,4);
+              LINALG::SerialDenseMatrix xicoord(3,4);
+
+              size_t numnodesurf = this->NumNode();
+              if (numnodesurf != 4)
+                dserror("surfaces of hex8 elements expected (4 nodes)");
+
+              // loop nodes of surface element
+              const DRT::Node*const* nodessurf = this->Nodes();
+              for (size_t inode=0; inode<numnodesurf; inode++)
+              {
+                // compute local element coordinates
+                // remark: since we deal with nodes, we should get clean numbers (-1 or 1) for 'xicoord'
+                const double* x = nodessurf[inode]->X();
+                {
+                  LINALG::Matrix<3,1> xyznode;
+                  xyznode(0) = x[0];
+                  xyznode(1) = x[1];
+                  xyznode(2) = x[2];
+
+                  LINALG::Matrix<3,1> xsi;
+                  GEO::CUT::Position<DRT::Element::hex8> pos(xyze,xyznode);
+                  pos.Compute();
+                  xsi = pos.LocalCoordinates();
+                  // fill array
+                  xicoord(0,inode) = xsi(0);
+                  xicoord(1,inode) = xsi(1);
+                  xicoord(2,inode) = xsi(2);
+                }
+                // fill array
+                xyzesurf(0,inode) = x[0];
+                xyzesurf(1,inode) = x[1];
+                xyzesurf(2,inode) = x[2];
+              }
+              //cout << "created quad4 boundary cell" << endl;
+              surfaceintcelllist.push_back(GEO::BoundaryIntCell(DRT::Element::quad4, -1, xicoord, Teuchos::null, xyzesurf, inGplus));
+            }
+          }
+          {
+            //const bool screen_out = false;
+            //
+            //const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("NeumannSurface", parent_->Id(), 200, screen_out, 0);
+            //std::ofstream gmshfilecontent(filename.c_str());
+            //{
+            //  gmshfilecontent << "View \" " << "SurfaceCell \" {\n";
+            //  const int Id = this->Id();
+            //  const int numnode = this->NumNode();
+            //  const DRT::Element::DiscretizationType distype = this->Shape();
+            //  const std::vector<std::vector<double> > vertexcoord = surfcell->GetVertexCoord();
+            //  LINALG::SerialDenseMatrix Pos(3,numnode);
+            //  for (int i=0; i<numnode; i++)
+            //  {
+            //    for (size_t k=0; k<3; k++)
+            //    {
+            //      Pos(k,i) = vertexcoord[i][k];
+            //    }
+            //  }
+            //  IO::GMSH::cellWithScalarToStream(distype, Id, Pos, gmshfilecontent);
+            //  gmshfilecontent << "};\n";
+            //}
+            //{
+            //  gmshfilecontent << "View \" " << "SurfaceIntCells \" {\n";
+            //  for(std::size_t icell = 0; icell < surfaceintcelllist.size(); icell++)
+            //  {
+            //    GEO::BoundaryIntCell cell = surfaceintcelllist[icell];
+            //    const LINALG::SerialDenseMatrix& cellpos = cell.CellNodalPosXiDomain();//cell.CellNodalPosXYZ();
+            //    const double color = 5;
+            //    gmshfilecontent << IO::GMSH::cellWithScalarToString(cell.Shape(), color, cellpos) << endl;
+            //  }
+            //  gmshfilecontent << "};\n";
+            //}
+            //gmshfilecontent.close();
+          }
+        }
+
+        //--------------------------------------------------
+        // build map of surface nodes for element dofmanager
+        //--------------------------------------------------
+        Teuchos::RCP<XFEM::ElementDofManager> eleDofManager = parent_->GetEleDofManager();
+
+        //----------------------
+        // unpack all parameters
+        //----------------------
+        // time integration parameters
+        const INPAR::FLUID::TimeIntegrationScheme timealgo = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "timealgo");
+        const double time   = params.get<double>("time");
+        const double dt     = params.get<double>("dt");
+        const double theta  = params.get<double>("theta");
+        const double ga_gamma  = params.get<double>("gamma");
+        const double ga_alphaF = params.get<double>("alphaF");
+        const double ga_alphaM = params.get<double>("alphaM");
+        // generalized alpha time integration scheme
+        bool genalpha = false;
+        // parameter for type of linearization
+        const bool newton = params.get<bool>("include reactive terms for linearisation",false);
+        // instationary formulation
+        bool instationary = true;
+        if (timealgo == INPAR::FLUID::timeint_stationary) instationary = false;
+
+        // general parameters for two-phase flow and premixed combustion problems
+        const INPAR::COMBUST::CombustionType combusttype   = DRT::INPUT::get<INPAR::COMBUST::CombustionType>(params, "combusttype");
+        // parameters for premixed combustion problems
+        const double flamespeed = params.get<double>("flamespeed");
+
+        //---------------------------------------------------
+        // get parent elements location vector and ownerships
+        //---------------------------------------------------
+
+        // the vectors have been allocated outside in EvaluateConditionUsingParentData()
+        RCP<vector<int> > plm = params.get<RCP<vector<int> > >("plm");
+        RCP<vector<int> > plmowner = params.get<RCP<vector<int> > >("plmowner");
+        RCP<vector<int> > plmstride = params.get<RCP<vector<int> > >("plmstride");
+
+        parent_->LocationVector(discretization,*plm,*plmowner,*plmstride);
+        // reshape element matrices and vectors and
+        const int eledim = (int)(*plm).size();
+        elemat1.Shape(eledim,eledim);
+        elevec1.Size (eledim);
+        // initialize to zero
+        elemat1.Scale(0.0);
+        elevec1.Scale(0.0);
+
+        //-----------------------------
+        // assemble Neumann inflow term
+        //-----------------------------
+        // get the list of materials
+        const Teuchos::RCP<MAT::Material> material = parent_->Material();
+
+        // extract local (element level) vectors from global state vectors
+        DRT::ELEMENTS::Combust3::MyStateSurface mystate(
+            discretization, (*plm), true, false, false, parent_, parent_->GetInterfaceHandle());
+
+        const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
+            *eleDofManager, parent_->NumNode(), parent_->NodeIds());
+
+        COMBUST::callSysmatNeumannInflow(
+            assembly_type,
+            this->parent_,
+            this,
+            *eleDofManager,
+            mystate,
+            elemat1,
+            elevec1,
+            surfaceintcelllist,
+            material,
+            timealgo,
+            time,
+            dt,
+            theta,
+            ga_gamma,
+            ga_alphaF,
+            ga_alphaM,
+            newton,
+            instationary,
+            genalpha,
+            combusttype,
+            flamespeed);
+
         break;
       }
       default:
@@ -334,7 +912,7 @@ void  DRT::ELEMENTS::Combust3Surface::ComputeMetricTensorForSurface(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Combust3Surface::IntegrateShapeFunction(
     ParameterList&                   params,
-    DRT::Discretization&             discretization,
+    const DRT::Discretization&       discretization,
     const std::vector<int>&          lm,
     Epetra_SerialDenseVector&        elevec1,
     const std::vector<double>&       edispnp)
@@ -450,7 +1028,7 @@ return;
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Combust3Surface::IntegrateSurfaceFlow(
     ParameterList&                   params,
-    DRT::Discretization&             discretization,
+    const DRT::Discretization&       discretization,
     const std::vector<int>&          lm,
     Epetra_SerialDenseVector&        elevec1,
     const std::vector<double>&       myvelnp)

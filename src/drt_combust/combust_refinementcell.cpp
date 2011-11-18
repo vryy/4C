@@ -81,6 +81,28 @@ parent_(cell)
 }
 
 /*------------------------------------------------------------------------------------------------*
+ | constructor: create refinement cell from coordinates                               henke 11/11 |
+ *------------------------------------------------------------------------------------------------*/
+COMBUST::RefinementCell::RefinementCell(
+    const DRT::Element* ele,
+    const DRT::Element::DiscretizationType distype,
+    const std::vector<std::vector<double> > vertexcoord)
+:
+    ele_(ele),
+    distype_(distype),
+    refinementlevel_(0),
+    vertexcoord_(vertexcoord),
+    gfuncvalues_(DRT::UTILS::getNumberOfElementNodes(distype_),1.0),
+    bisected_(false),
+    touched_(false),
+    parent_(NULL)
+{
+  //  std::cout << "Constructor Refinementcell" << std::endl;
+  children_.clear();
+  return;
+}
+
+/*------------------------------------------------------------------------------------------------*
  | set G-function values for refinement cell from outside the cell                    henke 03/09 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::RefinementCell::SetGfuncValues(std::vector<double> gfuncvalues)

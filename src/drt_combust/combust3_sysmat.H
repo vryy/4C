@@ -101,6 +101,31 @@ namespace COMBUST
       const bool                              smoothed_boundary_integration
   );
 
+  /// get material parameters for both domains
+  void callSysmatNeumannInflow(
+      const XFEM::AssemblyType                        assembly_type,
+      const DRT::ELEMENTS::Combust3*                  ele,
+      const DRT::ELEMENTS::Combust3Surface*           elesurf,
+      const XFEM::ElementDofManager&                  eleDofManager,
+      const DRT::ELEMENTS::Combust3::MyStateSurface&  mystate,       ///< element state variables
+      Epetra_SerialDenseMatrix&                       estif,
+      Epetra_SerialDenseVector&                       eforce,
+      const GEO::BoundaryIntCells&                    surfaceintcelllist,
+      Teuchos::RCP<const MAT::Material>               material,
+      const INPAR::FLUID::TimeIntegrationScheme       timealgo, ///< time discretization type
+      const double                                    time,          ///< current time step
+      const double                                    dt,            ///< delta t (time step size)
+      const double                                    theta,         ///< factor for one step theta scheme
+      const double                                    ga_gamma,
+      const double                                    ga_alphaF,
+      const double                                    ga_alphaM,
+      const bool                                      newton,
+      const bool                                      instationary,
+      const bool                                      genalpha,
+      const INPAR::COMBUST::CombustionType            combusttype,
+      const double                                    flamespeed
+  );
+
   /// get material parameters (constant within the domain integration cell)
   void GetMaterialParams(
       Teuchos::RCP<const MAT::Material> material, ///< pointer to material (list)

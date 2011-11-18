@@ -116,7 +116,7 @@ DRT::ELEMENTS::Combust3Surface::~Combust3Surface()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Combust3Surface::Print(ostream& os) const
 {
-  os << "XFluid3Surface ";
+  os << "Combust3Surface ";
   Element::Print(os);
   return;
 }

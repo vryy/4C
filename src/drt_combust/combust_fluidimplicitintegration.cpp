@@ -197,6 +197,12 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   }
 
   //------------------------------------------------------------------------------------------------
+  // Neumann inflow term if required
+  //------------------------------------------------------------------------------------------------
+  neumanninflow_ = false;
+  if (params_.get<string>("Neumann inflow","no") == "yes") neumanninflow_ = true;
+
+  //------------------------------------------------------------------------------------------------
   // prepare XFEM (initial degree of freedom management)
   //------------------------------------------------------------------------------------------------
   physprob_.xfemfieldset_.clear();
@@ -1185,7 +1191,6 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
     if (myrank_ == 0)
     {
-
       printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
       printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc ---|\n");
     }
@@ -1307,16 +1312,64 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
         // convergence check at itemax is skipped for speedup if
         // CONVCHECK is set to L_2_norm_without_residual_at_itemax
-        if ((itnum != itemax)
-            ||
-            (params_.get<string>("CONVCHECK")
-                !=
-                    "L_2_norm_without_residual_at_itemax"))
+        if ((itnum != itemax) || (params_.get<string>("CONVCHECK") != "L_2_norm_without_residual_at_itemax"))
         {
           // call standard loop over elements
           discret_->Evaluate(eleparams,sysmat_,residual_);
 
           discret_->ClearState();
+
+                 // account for potential Neumann inflow terms
+          if (neumanninflow_)
+          {
+            // create parameter list
+            ParameterList condparams;
+
+            // action for elements
+            condparams.set("action","calc_Neumann_inflow");
+
+            // flag for type of combustion problem
+            condparams.set<int>("combusttype",combusttype_);
+            condparams.set<int>("veljumptype",veljumptype_);
+            condparams.set<int>("fluxjumptype",fluxjumptype_);
+            condparams.set("flamespeed",flamespeed_);
+            condparams.set("nitschevel",nitschevel_);
+            condparams.set("nitschepres",nitschepres_);
+
+            // parameters for two-phase flow problems with surface tension
+            condparams.set<int>("surftensapprox",surftensapprox_);
+            condparams.set("connected_interface",connected_interface_);
+
+            // smoothed normal vectors for boundary integration
+            condparams.set("smoothed_bound_integration",smoothed_boundary_integration_);
+            condparams.set<int>("smoothgradphi",smoothgradphi_);
+
+            // other parameters that might be needed by the elements
+            //condparams.set("total time",time_);
+            //condparams.set("thsl",theta_*dta_);
+            condparams.set<int>("timealgo",timealgo_);
+            condparams.set("time",time_);
+            condparams.set("dt",dta_);
+            condparams.set("theta",theta_);
+            condparams.set("gamma",gamma_);
+            condparams.set("alphaF",alphaF_);
+            condparams.set("alphaM",alphaM_);
+
+            // set vector values needed by elements
+            discret_->ClearState();
+
+            // set scheme-specific element parameters and vector values
+            if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+              discret_->SetState("velaf",state_.velaf_);
+            else discret_->SetState("velnp",state_.velnp_);
+
+            discret_->SetState("veln" ,state_.veln_);
+            discret_->SetState("velnm",state_.velnm_);
+
+            std::string condstring("FluidNeumannInflow");
+            discret_->EvaluateConditionUsingParentData(condparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condstring);
+            discret_->ClearState();
+          }
 
           // scaling to get true residual vector for all other schemes
           trueresidual_->Update(ResidualScaling(),*residual_,0.0);
