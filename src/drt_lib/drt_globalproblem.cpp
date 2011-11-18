@@ -390,7 +390,13 @@ void DRT::Problem::InputControl()
   // this is the numbering used for such fields coupled to higher dimensional fields
   switch (genprob.probtyp)
   {
-  case prb_fsi:  case prb_fsi_lung:   case prb_fluid_ale:  case prb_fluid:  case prb_scatra:  case prb_loma:  case prb_elch:   case prb_freesurf:
+  case prb_fsi:
+  case prb_fsi_lung:
+  case prb_fluid_ale:
+  case prb_fluid:  
+  case prb_scatra:
+  case prb_loma:  
+  case prb_elch:
   {
 #ifdef D_ARTNET
     //    genprob.numartf = 3;
@@ -1218,8 +1224,10 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   case prb_fsi:
   case prb_fsi_lung:
   case prb_fluid_ale:
-  case prb_fluid:
-  case prb_freesurf:
+  case prb_fluid:  
+  case prb_scatra:
+  case prb_loma:  
+  case prb_elch:
   {
 #ifdef D_ARTNET
     if(distype != "Nurbs")

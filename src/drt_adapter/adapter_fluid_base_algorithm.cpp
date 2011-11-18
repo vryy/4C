@@ -129,6 +129,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       genprob.probtyp != prb_fluid_fluid_ale and
       genprob.probtyp != prb_fluid_fluid_fsi)
   {
+    cout<<"Writing out mesh!"<<endl;
     output->WriteMesh(0,0.0);
   }
 

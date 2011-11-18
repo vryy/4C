@@ -57,6 +57,25 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
 {
 #ifdef D_RED_AIRWAYS
   // -------------------------------------------------------------------
+  // check if descretization exits
+  // -------------------------------------------------------------------
+  if(DRT::Problem::Instance()->NumDis(genprob.numawf)<1)
+  {
+#if 0
+    if (actdis->Comm().MyPID()==0)
+    {
+      cout<<"+--------------------- WARNING ---------------------+"<<endl;
+      cout<<"|                                                   |"<<endl;
+      cout<<"| Reduced-dimensional airways is compiled, but no   |"<<endl;
+      cout<<"| airways elements are defined!                     |"<<endl;
+      cout<<"|                                                   |"<<endl;
+      cout<<"+---------------------------------------------------+"<<endl;
+    }
+#endif
+    return Teuchos::null;
+  }
+
+  // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
   RefCountPtr<DRT::Discretization> actdis = null;
@@ -71,23 +90,10 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   }
 
   // -------------------------------------------------------------------
-  // check if descretization exits
+  // If discretization is empty, then return empty time integration
   // -------------------------------------------------------------------
-  int NumberOfElements = actdis->NumMyRowElements();
-  int TotalNumberOfElements = 0;
-  actdis->Comm().SumAll(&NumberOfElements,&TotalNumberOfElements,1);
-
-  if(TotalNumberOfElements == 0 && CoupledTo3D)
+  if (actdis->NumGlobalElements()<1)
   {
-    if (actdis->Comm().MyPID()==0)
-    {
-      cout<<"+--------------------- WARNING ---------------------+"<<endl;
-      cout<<"|                                                   |"<<endl;
-      cout<<"| Reduced-dimensional airways is compiled, but no   |"<<endl;
-      cout<<"| airways elements are defined!                     |"<<endl;
-      cout<<"|                                                   |"<<endl;
-      cout<<"+---------------------------------------------------+"<<endl;
-    }
     return Teuchos::null;
   }
 
