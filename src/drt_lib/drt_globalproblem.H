@@ -301,7 +301,12 @@ public:
   unsigned NumFields() const { return discretizations_.size(); }
 
   /// tell number of discretizations in a field
-  unsigned NumDis(int fieldnum) const { return discretizations_[fieldnum].size(); }
+  unsigned NumDis(int fieldnum) const
+  { if (NumFields() < (unsigned) fieldnum)
+    return 0; // no entry for position fieldnum allocated!
+
+    return discretizations_[fieldnum].size();
+  }
 
   /// add a discretization to a specific field
   void AddDis(int fieldnum, RCP<Discretization> dis);
