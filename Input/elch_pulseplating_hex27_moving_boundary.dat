@@ -88,7 +88,7 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.0002
 VELFUNCNO                       1
 VELOCITYFIELD                   Navier_Stokes //function 
-WRITEFLUX                       totalflux_boundary
+WRITEFLUX                       diffusiveflux_boundary  // do not use totalflux_boundary due to introduction of mesh convection!
 UPRES                           1
 BLOCKPRECOND                    Yes
 MATID                           2

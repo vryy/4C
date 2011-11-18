@@ -908,31 +908,38 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   else if (action =="add_convective_mass_flux")
   {
     //calculate integral of convective mass/heat flux
+    // NOTE: since results are added to a global vector via normal assembly
+    //       it would be wrong to suppress results for a ghosted boundary!
 
-    // NOTE: add value only for boundary elements which are NOT ghosted!
-    if(ele->Owner() == discretization.Comm().MyPID())
-    {
-      // get actual values of transported scalars
-      RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      if (phinp==null) dserror("Cannot get state vector 'phinp'");
+    // get actual values of transported scalars
+    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    if (phinp==null) dserror("Cannot get state vector 'phinp'");
 
-      // extract local values from the global vector
-      vector<double> ephinp(lm.size());
-      DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
+    // extract local values from the global vector
+    vector<double> ephinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
 
-      // get velocity values at nodes
-      const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+    // get velocity values at nodes
+    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
 
-      // we deal with a (nsd_+1)-dimensional flow field
-      LINALG::Matrix<nsd_+1,nen_>  evel(true);
-      DRT::UTILS::ExtractMyNodeBasedValues(ele,evel,velocity,nsd_+1);
+    // we deal with a (nsd_+1)-dimensional flow field
+    LINALG::Matrix<nsd_+1,nen_>  evel(true);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,evel,velocity,nsd_+1);
 
-      // for the moment we ignore the return values of this method
-      CalcConvectiveFlux(ele,ephinp,evel,elevec1_epetra);
-      //vector<double> locfluxintegral = CalcConvectiveFlux(ele,ephinp,evel,elevec1_epetra);
-      //cout<<"locfluxintegral[0] = "<<locfluxintegral[0]<<endl;
-    }
+    // for the moment we ignore the return values of this method
+    CalcConvectiveFlux(ele,ephinp,evel,elevec1_epetra);
+    //vector<double> locfluxintegral = CalcConvectiveFlux(ele,ephinp,evel,elevec1_epetra);
+    //cout<<"locfluxintegral[0] = "<<locfluxintegral[0]<<endl;
   }
+
+  // NOTE: add value only for boundary elements which are NOT ghosted!
+
+  // if the flux integral for the whole boundary shell be computed as well
+  // by summing up locfluxintegral[k] for each element, then, of course,
+  // values only for boundary elements which are NOT ghosted should be summed up
+  // and added to the parameter list for transport to the outside world
+  //    if(ele->Owner() == discretization.Comm().MyPID())
+}
   else
     dserror("Unknown type of action for Scatra boundary impl.: %s",action.c_str());
 
