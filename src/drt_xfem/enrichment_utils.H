@@ -61,7 +61,7 @@ namespace XFEM
     explicit ElementEnrichmentValues(
             const DRT::Element&             ele,    ///< pointer to element
             const XFEM::ElementDofManager&  dofman, ///< pointer to element dof manager
-            const GEO::DomainIntCell&       cell,   ///< pointer to domain integration cell
+            const GEO::IntCell&             cell,   ///< pointer to integration cell
             const V1&                       phi     ///< vector of level set values
      ) :
        ele_(ele),

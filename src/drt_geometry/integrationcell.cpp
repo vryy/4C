@@ -100,9 +100,10 @@ GEO::DomainIntCell::DomainIntCell(
             IntCell(distype),
             nodalpos_xi_domain_(xfemEleDomainCoordinates),
             nodalpos_xyz_domain_(physDomainCoordinates),
-            phys_center_(ComputePhysicalCenterPosition(distype, physDomainCoordinates)),
-            indomainplus_(false)
-{}
+            phys_center_(ComputePhysicalCenterPosition(distype, physDomainCoordinates))
+{
+  indomainplus_ = false;
+}
 
 
 
@@ -117,9 +118,10 @@ GEO::DomainIntCell::DomainIntCell(
             IntCell(distype),
             nodalpos_xi_domain_(xfemEleDomainCoordinates),
             nodalpos_xyz_domain_(physDomainCoordinates),
-            phys_center_(ComputePhysicalCenterPosition(distype, physDomainCoordinates)),
-            indomainplus_(indomainplus)
-{}
+            phys_center_(ComputePhysicalCenterPosition(distype, physDomainCoordinates))
+{
+  indomainplus_ = indomainplus;
+}
 
 
 
@@ -133,9 +135,10 @@ GEO::DomainIntCell::DomainIntCell(
             IntCell(distype),
             nodalpos_xi_domain_(DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype)),
             nodalpos_xyz_domain_(xyze_ele),
-            phys_center_(ComputePhysicalCenterPosition(distype, xyze_ele)),
-            indomainplus_(false)
-{}
+            phys_center_(ComputePhysicalCenterPosition(distype, xyze_ele))
+{
+  indomainplus_ = false;
+}
 
 
 
@@ -147,10 +150,10 @@ GEO::DomainIntCell::DomainIntCell(
           IntCell(old),
           nodalpos_xi_domain_(old.nodalpos_xi_domain_),
           nodalpos_xyz_domain_(old.nodalpos_xyz_domain_),
-          phys_center_(old.phys_center_),
-          indomainplus_(old.indomainplus_)
-{}
-
+          phys_center_(old.phys_center_)
+{
+  indomainplus_ = old.indomainplus_;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -295,9 +298,10 @@ GEO::BoundaryIntCell::BoundaryIntCell(
             nodalpos_xi_domain_(    xfemEleDomainCoordinates),
             nodalpos_xi_boundary_(  eleBoundaryCoordinates),
             nodalpos_xyz_domain_(   physDomainCoordinates),
-            phys_center_(ComputePhysicalCenterPosition(distype, physDomainCoordinates)),
-            indomainplus_(true)
-{}
+            phys_center_(ComputePhysicalCenterPosition(distype, physDomainCoordinates))
+{
+  indomainplus_ = true;
+}
 
 /*----------------------------------------------------------------------*
  * constructor Boundary integration cells                               *
@@ -314,9 +318,10 @@ GEO::BoundaryIntCell::BoundaryIntCell(
             nodalpos_xi_domain_(    xfemEleDomainCoordinates),
             nodalpos_xi_boundary_(  eleBoundaryCoordinates),
             nodalpos_xyz_domain_(   physDomainCoordinates),
-            phys_center_(ComputePhysicalCenterPosition(distype, physDomainCoordinates)),
-            indomainplus_(indomainplus)
-{}
+            phys_center_(ComputePhysicalCenterPosition(distype, physDomainCoordinates))
+{
+  indomainplus_ = indomainplus;
+}
 
 
 /*----------------------------------------------------------------------*
@@ -328,9 +333,10 @@ GEO::BoundaryIntCell::BoundaryIntCell(
             surface_ele_gid_(old.surface_ele_gid_),
             nodalpos_xi_domain_(    old.nodalpos_xi_domain_),
             nodalpos_xi_boundary_(  old.nodalpos_xi_boundary_),
-            nodalpos_xyz_domain_(   old.nodalpos_xyz_domain_),
-            indomainplus_( old.indomainplus_)
-{}
+            nodalpos_xyz_domain_(   old.nodalpos_xyz_domain_)
+{
+  indomainplus_ = old.indomainplus_;
+}
 
 
 

@@ -155,7 +155,7 @@ namespace XFEM
 
       //! compute enrichment value for integration cell (constant!)
       double EnrValueIntCell(
-          const GEO::DomainIntCell& cell
+          const GEO::IntCell& cell
       ) const;
 
       //! compute enrichment value at an embedded interface

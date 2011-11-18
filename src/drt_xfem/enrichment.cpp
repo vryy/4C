@@ -183,7 +183,7 @@ double XFEM::Enrichment::EnrValue(
 /*----------------------------------------------------------------------*
  | get enrichment value for integration cell (constant!)    henke 07/09 |
  *----------------------------------------------------------------------*/
-double XFEM::Enrichment::EnrValueIntCell(const GEO::DomainIntCell& cell) const
+double XFEM::Enrichment::EnrValueIntCell(const GEO::IntCell& cell) const
 {
     double enrval = -777.777;
 

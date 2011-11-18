@@ -52,6 +52,8 @@ class IntCell
     //! returns a string representation of the IntCell
     virtual std::string toString() const;
 
+    //! return boolean indicating plus domain
+    const bool getDomainPlus() const {return indomainplus_;}
 
   private:
 
@@ -61,6 +63,9 @@ class IntCell
   protected:
     //! shape
     DRT::Element::DiscretizationType distype_;
+
+    // boolean indicating that cell belongs to "+"-part of the domain
+    bool indomainplus_;
 
     //! get geometric center of the cell in physical coordinates
     LINALG::Matrix<3,1> ComputePhysicalCenterPosition(
@@ -139,9 +144,6 @@ class DomainIntCell : public IntCell
     //! write Gmsh file of the DomainIntCell in global coordinates
     virtual void xToGmsh(const std::string& filename) const;
 
-    //! return domain indicator
-    bool getDomainPlus() const {return indomainplus_;}
-
   private:
 
     //! hide default constructor
@@ -156,8 +158,6 @@ class DomainIntCell : public IntCell
     //! get geometric center of the cell in physical coordinates
     LINALG::Matrix<3,1>                             phys_center_;
 
-    // boolean indicating that cell belongs to "+"-part of the domain
-    bool indomainplus_;
 };
 
 //! shortcut for a vector of DomainIntCells
@@ -220,10 +220,6 @@ class BoundaryIntCell : public IntCell
     //! return string representation of the BoundaryIntCell
     virtual std::string toString() const;
     
-    //! return boolean indicating plus domain
-    const bool getDomainPlus() const {return indomainplus_;}
-
-
   private:
 
     //! hide default constructor
@@ -243,9 +239,6 @@ class BoundaryIntCell : public IntCell
 
     //! get geometric center of the cell in physical coordinates
     LINALG::Matrix<3,1>                   phys_center_;
-    
-    // boolean indicating that cell belongs to "plus"-part of the domain
-    bool indomainplus_;
 
 };
 
