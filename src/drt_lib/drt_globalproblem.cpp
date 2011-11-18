@@ -1020,8 +1020,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
   }
   case prb_scatra:
   {
-    //if (genprob.numfld!=2) dserror("numfld != 2 for scalar transport problem");
-
     // create empty discretizations
     if(distype == "Nurbs")
     {
@@ -1214,20 +1212,31 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     dserror("Unknown problem type: %d",genprob.probtyp);
   }
   
+  // add artery or airways discretizations only for the following problem types
   switch (genprob.probtyp)
   {
-  case prb_fsi:  case prb_fsi_lung:   case prb_fluid_ale:  case prb_fluid:  case prb_scatra:  case prb_loma:  case prb_elch:  case prb_freesurf:
+  case prb_fsi:
+  case prb_fsi_lung:
+  case prb_fluid_ale:
+  case prb_fluid:
+  case prb_freesurf:
   {
 #ifdef D_ARTNET
-    // create empty discretizations
-    arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
-    AddDis(genprob.numartf, arterydis);
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
+    if(distype != "Nurbs")
+    {
+      // create empty discretizations
+      arterydis = rcp(new DRT::Discretization("artery",reader.Comm()));
+      AddDis(genprob.numartf, arterydis);
+      nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(arterydis, reader, "--ARTERY ELEMENTS")));
+    }
 #endif
 #ifdef D_RED_AIRWAYS
-    airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
-    AddDis(genprob.numawf, airwaydis);
-    nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
+    if(distype != "Nurbs")
+    {
+      airwaydis = rcp(new DRT::Discretization("red_airway",reader.Comm()));
+      AddDis(genprob.numawf, airwaydis);
+      nodereader.AddElementReader(rcp(new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
+    }
 #endif
   }
   default:

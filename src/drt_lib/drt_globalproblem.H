@@ -277,7 +277,6 @@ public:
   const Teuchos::ParameterList& XFluidProjectionSolverParams() const { return getParameterList()->sublist("XFLUID PROJECTION SOLVER"); }
   const Teuchos::ParameterList& AleSolverParams() const { return getParameterList()->sublist("ALE SOLVER"); }
   const Teuchos::ParameterList& ThermalSolverParams() const { return getParameterList()->sublist("THERMAL SOLVER"); }
-  //const Teuchos::ParameterList& ScalarTransportSolverParams() const { return getParameterList()->sublist("SCALAR TRANSPORT SOLVER"); }  // remove me
   const Teuchos::ParameterList& ScalarTransportFluidSolverParams() const { return getParameterList()->sublist("FLUID SCALAR TRANSPORT SOLVER"); }
   const Teuchos::ParameterList& ScalarTransportStructureSolverParams() const { return getParameterList()->sublist("STRUCTURE SCALAR TRANSPORT SOLVER"); }
   const Teuchos::ParameterList& ScalarTransportElectricPotentialSolverParams() const { return getParameterList()->sublist("SCALAR TRANSPORT ELECTRIC POTENTIAL SOLVER"); }  // for SIMPLE
