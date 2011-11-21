@@ -148,15 +148,11 @@ isconverged_(0)
   //in case that beam contact is activated by respective input parameter, a Beam3cmanager object is created
   if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
   {
-    // store integration parameter alphaf into beamcmanager_ as well
-    double alphaf = params_.get<double>("alpha f",0.459);
-
     //check wheter appropriate parameters are set in the parameter list "CONTACT & MESHTYING"
     const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION") == INPAR::CONTACT::app_beamcontact)
-      beamcmanager_ = rcp(new CONTACT::Beam3cmanager(dis,alphaf));
-    else
+    if (!DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION") == INPAR::CONTACT::app_beamcontact)
       dserror("beam contact switched on in parameter list STATISTICAL MECHANICS, but not in in parameter list MESHTYING AND CONTACT!!!");
+    // Note: the beam contact manager object (beamcmanager_) is built in Integrate(), not here due to reasons decribed below!
   }
 
 
@@ -175,46 +171,60 @@ void StatMechTime::Integrate()
   // can have values "full newton" , "modified newton" , "nonlinear cg"
   string equil = params_.get<string>("equilibrium iteration","full newton");
 
-
   double dt = params_.get<double>("delta time" ,0.01);
 
   //getting number of dimensions for diffusion coefficient calculation
   const Teuchos::ParameterList& psize = DRT::Problem::Instance()->ProblemSizeParams();
   int ndim=psize.get<int>("DIM");
 
-  // debug cout
-	Epetra_Vector discol(*discret_.DofColMap(), true);
-
-  //defining solution strategy for beam contact
+	//solution strategy for beam contact
 	INPAR::CONTACT::SolvingStrategy soltype(INPAR::CONTACT::solution_penalty);
-  if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
-  {
-    soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcmanager_->InputParameters(),"STRATEGY");
-    // decide wether the tangent field should be smoothed or not
-    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Smoothing>(DRT::Problem::Instance()->MeshtyingAndContactParams(),"BEAMS_SMOOTHING") == INPAR::CONTACT::bsm_none)
-		{
-			//cout << "Test BEAMS_SMOOTHING" << INPAR::CONTACT::bsm_none << endl;
-		}
-  }
 
   for (int i=step; i<nstep; ++i)
   {
-    /*in the very first step and in case that special output for statistical mechanics is requested we have
-     * to initialize the related output method*/
-    if(i == 0)
+  	// Initialization of Output and Beam Contact Manager
+    if(i == step)
     {
-      statmechmanager_->InitOutput(ndim,dt);
-      // handling gmsh output seperately
-      if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"GMSHOUTPUT"))
-    	{
-    		std::ostringstream filename;
-    			filename << "./GmshOutput/networkInit.pos";
-    		//calling method for writing Gmsh output
-				if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
-					statmechmanager_->GmshOutput(*dis_,filename,step, beamcmanager_);
-				else
+			if(i == 0)
+			{
+				statmechmanager_->InitOutput(ndim,dt);
+				// handling gmsh output seperately
+				if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"GMSHOUTPUT"))
+				{
+					std::ostringstream filename;
+						filename << "./GmshOutput/networkInit.pos";
+					//calling method for writing Gmsh output
 					statmechmanager_->GmshOutput(*dis_,filename,step);
-    	}
+				}
+			}
+
+			// (re)build beamcmanager_ with restored discretization during the very first step after entering the integration loop
+			/* Why here and not within the constructor? If called in the constructur, beamcmanager_ receives the intial discretization @t=0,
+			 * i.e. when resarting the simulation, we would build the contact discretization without the added elements (crosslinkers).
+			 * Detail: in stru_dyn_nln_drt.cpp, ReadRestart is only called after the time statmech-integration object has already been built.
+			 * Hence, the beamcmanager object of StatMechTime aquires erroneous information as desribed above. Since we do not want redundant
+			 * creation of the beamcmanager_ object, we do it here during the first time step of the integration, be it at t=0 or after a restart.
+			 */
+			if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+			{
+				if(!discret_.Comm().MyPID())
+					cout<<"====== employing beam contact ======"<<endl;
+				// store integration parameter alphaf into beamcmanager_ as well
+				double alphaf = params_.get<double>("alpha f",0.459);
+				beamcmanager_ = rcp(new CONTACT::Beam3cmanager(discret_,alphaf));
+				if(!discret_.Comm().MyPID())
+					cout<<"===================================="<<endl;
+				//defining solution strategy for beam contact
+				if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+				{
+					soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcmanager_->InputParameters(),"STRATEGY");
+					// decide wether the tangent field should be smoothed or not
+					if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Smoothing>(DRT::Problem::Instance()->MeshtyingAndContactParams(),"BEAMS_SMOOTHING") == INPAR::CONTACT::bsm_none)
+					{
+						//cout << "Test BEAMS_SMOOTHING" << INPAR::CONTACT::bsm_none << endl;
+					}
+				}
+			}
     }
 
     //time_ is time at the end of this time step
@@ -249,7 +259,11 @@ void StatMechTime::Integrate()
     {
       //set and delete crosslinkers compared to converged configuration of last time step
       const double t_admin = Teuchos::Time::wallTime();
-      statmechmanager_->Update(i, dt, *dis_, stiff_,ndim);
+
+      if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
+      	statmechmanager_->Update(i, dt, *dis_, stiff_,ndim,beamcmanager_);
+      else
+      	statmechmanager_->Update(i, dt, *dis_, stiff_,ndim);
 
       //processor 0 write total number of elements at the beginning of time step i to console as well as how often a time step had to be restarted due to bad random numbers
       if(!discret_.Comm().MyPID() && params_.get<bool>  ("print to screen",true))
@@ -314,7 +328,6 @@ void StatMechTime::Integrate()
 								break;
                 //dserror("Uzawa unconverged in %d iterations",maxuzawaiter);
               }
-
               if (discret_.Comm().MyPID() == 0)
                 cout << endl << "Starting Uzawa step No. " << beamcmanager_->GetUzawaIter() << endl;
 
@@ -323,7 +336,6 @@ void StatMechTime::Integrate()
               	PTC(randomnumbers,i,true);
               else
                 FullNewton(randomnumbers);
-
               // in case uzawa step did not converge, leave the inner loop and get a new set of random numbers
               if(isconverged_==0)
               	break;
@@ -360,7 +372,7 @@ void StatMechTime::Integrate()
         ParameterList p;
         p.set("action","calc_struct_reset_istep");
         discret_.Evaluate(p,null,null,null,null,null);
-        statmechmanager_->RestoreConv(stiff_);
+        statmechmanager_->RestoreConv(stiff_, beamcmanager_);
       }
 
     }
@@ -374,7 +386,7 @@ void StatMechTime::Integrate()
     // Evaluate internal forces of crosslinkers (force based unlinking)
     // only evaluate when there actually are crosslinker elements
     if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"FORCEDEPUNLINKING") && discret_.NumGlobalElements()>statmechmanager_->NumBasisElements())
-    	EvaluateForcedUnbinding(dt, randomnumbers);
+    	EvaluateForceDepUnlinking(dt, randomnumbers);
 
 		//special output for statistical mechanics
     if(DRT::INPUT::IntegralValue<int>(statmechmanager_->statmechparams_,"BEAMCONTACT"))
@@ -932,9 +944,6 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
     ctransptcold = ctransptc;
     crotptcold   = crotptc;
 
-    // debug cout
-  	Epetra_Vector discol(*discret_.DofColMap(), true);
-
     RCP<Epetra_Vector> xm = rcp(new Epetra_Vector(*x0));
     x0->Update(1.0,*disi_,0.0);
 
@@ -1135,14 +1144,14 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
   {
     isconverged_ = 0;
     statmechmanager_->unconvergedsteps_++;
+  	// reset pairs to size 0 since the octree is being constructed completely anew
+  	beamcmanager_->ResetPairs();
     if(discret_.Comm().MyPID()==0 and printscreen)
     {
       std::cout<<"\n\n";
       if(uzawa)
       {
       	std::cout<<"Newton iteration in Uzawa Step "<<beamcmanager_->GetUzawaIter()<<" unconverged-leaving Uzawa loop and restarting time step...!\n\n";
-      	beamcmanager_->ResetPairs();
-      	return;
       }
       else
       	std::cout<<"iteration unconverged - new trial with new random numbers!\n\n";
@@ -1161,7 +1170,7 @@ void StatMechTime::PTC(RCP<Epetra_MultiVector> randomnumbers, int& istep,  bool 
   params_.set<int>("num iterations",numiter);
 
   if(!discret_.Comm().MyPID() and printscreen)
-  std::cout << "\n***\nevaluation time: " << sumevaluation<< " seconds\nptc time: "<< sumptc <<" seconds\nsolver time: "<< sumsolver <<" seconds\ntotal solution time: "<<Teuchos::Time::wallTime() - tbegin<<" seconds\n***\n";
+  	std::cout << "\n***\nevaluation time: " << sumevaluation<< " seconds\nptc time: "<< sumptc <<" seconds\nsolver time: "<< sumsolver <<" seconds\ntotal solution time: "<<Teuchos::Time::wallTime() - tbegin<<" seconds\n***\n";
 
   return;
 } // StatMechTime::PTC()
@@ -1279,7 +1288,7 @@ void StatMechTime::InitializeNewtonUzawa(RCP<Epetra_MultiVector> randomnumbers)
  |  Evaluate call in order to determine crosslinker unbinding by force  |
  |                                              (public)   mueller 10/11|
  *----------------------------------------------------------------------*/
-void StatMechTime::EvaluateForcedUnbinding(double& dt, RCP<Epetra_MultiVector> randomnumbers)
+void StatMechTime::EvaluateForceDepUnlinking(double& dt, RCP<Epetra_MultiVector> randomnumbers)
 {
 	// create the parameters for the discretization
 	ParameterList p;

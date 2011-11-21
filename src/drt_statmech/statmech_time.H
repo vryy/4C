@@ -56,7 +56,7 @@ public:
   void InitializeNewtonUzawa(RCP<Epetra_MultiVector> randomnumbers);
 
   //!\brief special evaluation for force-based unbinding of crosslinker elements
-  void EvaluateForcedUnbinding(double& dt, RCP<Epetra_MultiVector> randomnumbers);
+  void EvaluateForceDepUnlinking(double& dt, RCP<Epetra_MultiVector> randomnumbers);
 
   //!\brief writing output including restart information
   virtual void Output();

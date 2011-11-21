@@ -25,26 +25,14 @@ Maintainer: Christian Cyron
 #include <random/uniform.h>
 #include <random/normal.h>
 
-//forward declaration of class Beam3 used in CheckOrientation(...)
-namespace DRT
-{
-  namespace ELEMENTS
-  {
-    class Beam3;
-  }
-}
-
-
 /*!
 \brief management and auxiliary functions for statistical mechanics
 \author cyron (cyron@lnm.mw.tum.de)
 */
-using namespace CONTACT;
 
 class StatMechManager
 {
 public:
-
   //! \brief Standard Constructor
   explicit StatMechManager(ParameterList& params, DRT::Discretization& discret);
 
@@ -70,7 +58,7 @@ public:
   void WriteConv();
 
   //! \brief resets all relevant variables *_ to *conv_ in order to return to the state at the beginning of the time step
-  void RestoreConv(RCP<LINALG::SparseOperator>& stiff);
+  void RestoreConv(RCP<LINALG::SparseOperator>& stiff, RCP<CONTACT::Beam3cmanager> beamcmanager);
 
   /*! \brief special update for statistical mechanics including setting and deleting crosslinkers in the discretization
    *  \param dt				(in)	current time step size
@@ -78,7 +66,7 @@ public:
    *  \param stiff		(in)
    *  \param ndim			(in)
    */
-  void Update(const int& istep, const double dt, Epetra_Vector& disrow, RCP<LINALG::SparseOperator>& stiff, int ndim);
+  void Update(const int& istep, const double dt, Epetra_Vector& disrow, RCP<LINALG::SparseOperator>& stiff, int ndim, RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null);
 
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   void InitOutput(const int ndim, const double& dt);
@@ -98,14 +86,8 @@ public:
 		 */
 	void GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid, bool ignoreeleid=false);
 
-
-  //! \brief Searches and saves in variable  crosslinkerneighbours neighbours for each col node
-  void SearchAndSetCrosslinkers(const int& istep,
-																const double& dt,
-																const Epetra_Map& noderowmap,
-																const Epetra_Map& nodecolmap,
-																const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
-																const std::map<int,LINALG::Matrix<3,1> >& currentrotations);
+  //! \brief update nodal triads
+  void GetBindingSpotTriads(Epetra_MultiVector* nodaltriadscol);
 
   //! \brief generate gaussian randomnumbers with mean "meanvalue" and standarddeviation "standarddeviation" for parallel use
   void GenerateGaussianRandomNumbers(RCP<Epetra_MultiVector> randomnumbers,const double meanvalue, const double standarddeviation);
@@ -130,6 +112,12 @@ public:
 
 	//! \brief counts the number of possible crosslinking spots and does an Orientation Check
 	void OrientationCorrelation(const Epetra_Vector& disrow, const int &istep);
+
+  //! \brief create a new crosslinker element and add it to the discretization
+  void AddNewCrosslinkerElement(const int& crossgid, int* globalnodeids, const std::vector<double>& xrefe, const std::vector<double>& rotrefe, DRT::Discretization& mydiscret);
+
+  //! \brief remove crosslinker element from a chosen discretization
+  void RemoveCrosslinkerElements(DRT::Discretization& mydiscret, Epetra_Vector& delcrosselement, std::vector<std::vector<char> >* deletedelements);
 
   /*! \brief adjusted DBC evaluation for periodic case
    *  \param params					 a parameter list*/
@@ -168,6 +156,23 @@ protected:
   StatMechManager operator = (const StatMechManager& old);
   StatMechManager(const StatMechManager& old);
 
+  //! \brief Searches and saves in variable  crosslinkerneighbours neighbours for each col node
+  void SearchAndSetCrosslinkers(const int& istep,
+																const double& dt,
+																const Epetra_Map& noderowmap,
+																const Epetra_Map& nodecolmap,
+																const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
+																const std::map<int,LINALG::Matrix<3,1> >& currentrotations,
+																RCP<CONTACT::Beam3cmanager> beamcmanager);
+
+  //! \brief delete crosslinkers according to delcrosslinkercol (if entry for a node equals 1 its crosslinker is deleted)
+  void SearchAndDeleteCrosslinkers(const double& dt,
+																	 const Epetra_Map& noderowmap,
+																	 const Epetra_Map& nodecolmap,
+																	 const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
+																	 Epetra_Vector& discol,
+																	 RCP<CONTACT::Beam3cmanager> beamcmanager);
+
   /*!\brief check whether element is "broken" due to periodic boundary conditions
     \param coord  (in)  set of nodal coordinates
 		\param cut    (in/out)  in case of a broken element, cut holds component and information about the location of the nodes of the element
@@ -185,12 +190,11 @@ protected:
      \param oscdir        (in) direction (DOF) of oscillation*/
   void UpdateForceSensors(vector<int>& sensornodes, int oscdir);
 
-  //! \brief delete crosslinkers according to delcrosslinkercol (if entry for a node equals 1 its crosslinker is deleted)
-  void SearchAndDeleteCrosslinkers(const double& dt, const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap,
-																	 const std::map<int,LINALG::Matrix<3,1> >& currentpositions);
+  //! \brief Update positions and rotations of binding spots
+  void UpdateBindingSpots(const Epetra_Vector& discol, std::map<int,LINALG::Matrix<3,1> >& currentpositions);
 
-  //! \brief force based unbinding of crosslinkers
-  void ForcedCrosslinkerUnbinding(const double& dt, Epetra_Vector* unbindbyforce, Epetra_Vector* delcrosselement, int* numdelelements);
+  //! \brief adjust off-rate by considering forces in the crosslinker
+  void ForceDependentOffRate(const double& dt, const double& koff0, Epetra_Vector* punlink, Epetra_Vector& discol);
 
   /*! \brief reduce number of currently existing crosslinker elements by numtoreduce
    *  \param (in) numtoreduce number of crosslinkers by which overall number of crosslinkers is reduced*/
@@ -208,7 +212,11 @@ protected:
 													  Epetra_Vector& numbond,
 													  Epetra_MultiVector& crosslinkerpositions,
 													  Epetra_MultiVector& crosslinkpartitions,
+													  Epetra_MultiVector& bspottriadscol,
 														RCP<Epetra_MultiVector>& neighboursLID);
+
+  //! \brief rotation of a vector around a given fixed axis by angle phirot
+  void RotationAroundFixedAxis(const LINALG::Matrix<3,1>& axis, LINALG::Matrix<3,1>* vector, double phirot);
 
   //! \brief initializes vector with crosslinker positions
   void CrosslinkerMoleculeInit();
@@ -323,7 +331,7 @@ protected:
 	/*! \brief map crosslink molecules and filament nodes to the according volume partition and detect nodes in proximity of the molecules
 	 * 	\param currentpositions			(in) 			column map node positions
 	 * 	\param neighbourslid				(in/out)	vector holding the node lids within search proximity of crosslink molecules*/
-	void PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, RCP<Epetra_MultiVector>& neighbourslid);
+	void PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, Epetra_MultiVector& bspottriadscol, RCP<Epetra_MultiVector>& neighbourslid);
 
   //! \brief point of time at which writing special statistical output is started
   double starttimeoutput_;
@@ -391,18 +399,31 @@ protected:
   RCP<Epetra_Map> ddcorrrowmap_;
   // \brief an Epetra_Map handling cumulated data of the density-density-correlation-function from all processors
   RCP<Epetra_Map> ddcorrcolmap_;
+  // note: the following two maps will be of importance later on. For now, we use noderowmap_ and nodecolmap_
+  // \brief an Epetra_Map handling processor-specific data of the binding spot geometry
+  RCP<Epetra_Map> bspotrowmap_;
+  // \brief an Epetra_Map handling cumulated data of the binding spot geometry from all processors
+  RCP<Epetra_Map> bspotcolmap_;
 	// \brief a vector memorizing the bonding status of the crosslink molecules
 	RCP<Epetra_MultiVector>		crosslinkerbond_;
 	// \brief a vector containing the current postion of the crosslink molecules
 	RCP<Epetra_MultiVector>		crosslinkerpositions_;
-	// \brief a vector indicating the number of attached crosslinkers to a node
-	RCP<Epetra_Vector>	numcrossnodes_;
 	// \brief a vector indicating the number of attached nodes to a crosslinker
 	RCP<Epetra_Vector>	numbond_;
 	// \brief a vector indicating crosslinker elements that cover two binding spots on the same filament
-	RCP<Epetra_Vector>	crosslinkonsamefilament_;
+	RCP<Epetra_Vector> crosslinkonsamefilament_;
 	// \brief a vector mapping crosslink molecule IDs to crosslinker element IDs
 	RCP<Epetra_Vector> crosslink2element_;
+	// \brief a vector mapping crosslinker element IDs to crosslink molecule IDs
+	RCP<Epetra_Vector> element2crosslink_;
+	// \brief a vector indicating whether a binding spot is occupied or not
+	RCP<Epetra_Vector> bspotstatus_;
+	// \brief a vector managing the binding spot geometry (Column Map)
+	RCP<Epetra_Vector> bspotorientations_;
+	// \brief a vector storing the curve parameters xi of the respective binding spots (Column Map)
+	RCP<Epetra_Vector> bspotxi_;
+	// \brief a vector managing binding spots to their respective element (Row Map)
+	RCP<Epetra_Vector> bspot2element_;
 	// \brief a vector just for the sake of visual quality
 	RCP<Epetra_MultiVector> visualizepositions_;
 	// \brief a vector holding information on whether or not a crosslink molecule searches for neighbours (switch for active/passive crosslinker)
@@ -414,18 +435,25 @@ protected:
 
 	// \brief elements deleted at the beginning when this time step was conducted the last time are packed into variable deletedelements_
 	std::vector<std::vector<char> > deletedelements_;
+	// \brief contact elements deleted at the beginning when this time step was conducted the last time are packed into variable deletedelements_
+	std::vector<std::vector<char> > deletedcelements_;
 
 	// \brief GIDs of elements added at the beginning when this time step was conducted the last time
 	std::vector<int> addedelements_;
+	// \brief GIDs of contact discretization elements added at the beginning when this time step was conducted the last time
+	std::vector<int> addedcelements_;
 
 	//variables to save certain class variables *_ in *conv_ in order to allow for repeating a time step with completely new random numbers and actions
 	RCP<Epetra_MultiVector> crosslinkerbondconv_;
   RCP<Epetra_MultiVector> crosslinkerpositionsconv_;
-  RCP<Epetra_Vector> numcrossnodesconv_;
+  RCP<Epetra_Vector> bspotstatusconv_;
   RCP<Epetra_Vector> numbondconv_;
   RCP<Epetra_Vector> crosslinkonsamefilamentconv_;
 	RCP<Epetra_Vector> crosslink2elementconv_;
   RCP<Epetra_Vector> searchforneighboursconv_;
+
+  // column map displacement of the previous time step (needed to calculate off-rate in case of force dependency)
+  RCP<Epetra_Vector> disprev_;
 
   // \brief structure type
   int structuretype_;

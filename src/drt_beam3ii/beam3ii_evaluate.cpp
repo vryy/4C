@@ -914,15 +914,12 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( ParameterList& params,
 
   }
 
-
-  /*the following function call applied statistical forces and damping matrix according to the fluctuation dissipation theorem;
+  	/*the following function call applied statistical forces and damping matrix according to the fluctuation dissipation theorem;
    * it is dedicated to the application of beam2 elements in the frame of statistical mechanics problems; for these problems a
    * special vector has to be passed to the element packed in the params parameter list; in case that the control routine calling
    * the element does not attach this special vector to params the following method is just doing nothing, which means that for
    * any ordinary problem of structural mechanics it may be ignored*/
    CalcBrownian<nnode,3,6,4>(params,vel,disp,stiffmatrix,force,Imass,Itildemass);
-
-
 
   return;
 
@@ -1008,7 +1005,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyDampingConstants(ParameterList& params,LIN
   /*damping coefficient of rigid straight rod spinning around its own axis according to Howard, p. 107, table 6.2;
    *as this coefficient is very small for thin rods it is increased artificially by a factor for numerical convencience*/
   double rsquare = pow((4*Iyy_/PI),0.5);
-  double artificial = 4000;//50;  //50 not bad for standard Actin3D_10.dat files; for 40 elements also 1 seems to work really well; for large networks 4000 seems good (artificial contribution then still just ~0.1 % of nodal moments)
+  double artificial = 4000;//50;  20000//50 not bad for standard Actin3D_10.dat files; for 40 elements also 1 seems to work really well; for large networks 4000 seems good (artificial contribution then still just ~0.1 % of nodal moments)
   gamma(2) = 4*PI*params.get<double>("ETA",0.0)*rsquare*artificial;
 
 
@@ -1305,6 +1302,13 @@ inline void DRT::ELEMENTS::Beam3ii::MyTranslationalDamping(ParameterList& params
               (*stiffmatrix)(i*dof+k,j*dof+l) += gausspoints.qwgt[gp]*funct(i)*deriv(j)*                                                   (gamma(0) - gamma(1))*tpar(k)*(velgp(l) - velbackground(l));
             }
         }
+    /*if(force->Norm2()>100)
+  	{
+  		cout<<"post RotDamp: "<<Id()<<endl;
+  		for(int i=0; i<3; i++)
+  			cout<<velgp(i)<<"/"<<velbackground(i)<<" ";
+  		cout<<"\n\n"<<endl;
+  	}*/
   }
 
   return;
@@ -1532,15 +1536,42 @@ inline void DRT::ELEMENTS::Beam3ii::CalcBrownian(ParameterList& params,
 
 
 
+  /*if(force->Norm2()>100)
+  {
+  	cout<<"pre: "<<Id()<<endl;
+  	for(int i=0; i<force->M(); i++)
+  		cout<<(*force)[i]<<" ";
+  	cout<<endl;
+  }*/
   //add stiffness and forces due to translational damping effects
   MyTranslationalDamping<nnode,ndim,dof>(params,vel,disp,stiffmatrix,force);
-
+  /*if(force->Norm2()>100)
+  {
+  	cout<<"post TransDamp: "<<Id()<<endl;
+  	for(int i=0; i<force->M(); i++)
+  		cout<<(*force)[i]<<" ";
+  	cout<<endl;
+  }*/
   //add stiffness and forces (i.e. moments) due to rotational damping effects
   MyRotationalDamping<nnode>(params,vel,disp,stiffmatrix,force,gausspointsdamping,Idamping,Itildedamping,Qconvdamping,Qnewdamping);
 
+  /*if(force->Norm2()>100)
+  {
+  	cout<<"post RotDamp: "<<Id()<<endl;
+  	for(int i=0; i<force->M(); i++)
+  		cout<<(*force)[i]<<" ";
+  	cout<<endl;
+  }*/
   //add stochastic forces and (if required) resulting stiffness
   MyStochasticForces<nnode,ndim,dof,randompergauss>(params,vel,disp,stiffmatrix,force);
 
+  /*if(force->Norm2()>100)
+  {
+  	cout<<"post Stoch: "<<Id()<<endl;
+  	for(int i=0; i<force->M(); i++)
+  		cout<<(*force)[i]<<" ";
+  	cout<<"\n\n"<<endl;
+  }*/
   //add stochastic moments and resulting stiffness
   //MyStochasticMoments<nnode,randompergauss>(params,vel,disp,stiffmatrix,force,gausspointsdamping,Idamping,Itildedamping,Qconvdamping,Qnewdamping);
 

@@ -44,52 +44,62 @@ using namespace std;
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     meier 01/11|
  *----------------------------------------------------------------------*/
-Beam3ContactOctTree::Beam3ContactOctTree(DRT::Discretization& discret,
-  DRT::Discretization& searchdis, const int& dofoffset, const int& basiselements, const int& basisnodes):
+Beam3ContactOctTree::Beam3ContactOctTree(DRT::Discretization& discret,DRT::Discretization& searchdis, const int& dofoffset):
 discret_(discret),
 searchdis_(searchdis),
-basiselements_(basiselements),
-basisnodes_(basisnodes),
+basisnodes_(discret.NumGlobalNodes()),
 dofoffset_(dofoffset)
 {
   // define max tree depth (maybe, set this as input file parameter)
   maxtreedepth_ = 5;
-
-  // initialize beam diameter
-  diameter_ = 0.0;
-
-  // ad-hoc approach for beam diameter
-  // (assume that all beam elements have the same diameter)
-  // (maybe, we need a more sophisticated approach here)
-  DRT::Element* beamelement = searchdis_.gElement(0);
-  const DRT::ElementType & eot = beamelement->ElementType();
-  
-#ifdef D_BEAM3
-  if (eot == DRT::ELEMENTS::Beam3Type::Instance())
-    diameter_ = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(beamelement))->Izz()) / M_PI));
-#endif // #ifdef BEAM3II
-  
-#ifdef D_BEAM3II
-  if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
-    diameter_ = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(beamelement))->Izz()) / M_PI));
-#endif
-  
-  // feasibility check
-  if (diameter_ <= 0.0) dserror("ERROR: Did not receive feasible element radius.");
+  // set flag signaling the existence of periodic boundary conditions
+  {
+  	Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+		if(statmechparams.get("PeriodLength",0.0)>0.0)
+			periodicBC_ = true;
+		else
+			periodicBC_ = false;
+  }
 }
 
 
 /*----------------------------------------------------------------------*
  |  calls the almighty Octtree (public)                      meier 01/11|
  *----------------------------------------------------------------------*/
-vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(
-                  std::map<int, LINALG::Matrix<3,1> >&  currentpositions)
+vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std::map<int, LINALG::Matrix<3,1> >&  currentpositions)
 {
+  // initialize beam diameter
+  diameter_ = rcp(new Epetra_Vector(*(searchdis_.ElementColMap())));
+
+  //beam diameter
+  for(int i=0; i<searchdis_.ElementColMap()->NumMyElements(); i++)
+  {
+		DRT::Element* beamelement = searchdis_.lColElement(i);
+		const DRT::ElementType & eot = beamelement->ElementType();
+
+#ifdef D_BEAM3
+		if (eot == DRT::ELEMENTS::Beam3Type::Instance())
+			(*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3*>(beamelement))->Izz()) / M_PI));
+#endif // #ifdef BEAM3II
+
+#ifdef D_BEAM3II
+		if (eot == DRT::ELEMENTS::Beam3iiType::Instance())
+			(*diameter_)[i] = 2.0 * sqrt(sqrt(4 * ((dynamic_cast<DRT::ELEMENTS::Beam3ii*>(beamelement))->Izz()) / M_PI));
+#endif
+
+		// feasibility check
+		if ((*diameter_)[i] <= 0.0) dserror("ERROR: Did not receive feasible element radius.");
+  }
   // initialize multivector storage of AABBs
   // (components 0,...,5 contain bounding box limits)
-  // (components 6,...,11 contain ???????)
+  // (components 6,...,11 contain bounding box limits in case of periodic boundary conditions (2nd part of the box))
   // (component 12 containts element ID)
-  RCP<Epetra_MultiVector> allAABB = rcp(new Epetra_MultiVector(*(searchdis_.ElementColMap()),13, true));
+  // in case of periodic boundary conditions, we need 12+1 vectors within allAABB, without periodic BCs 6+1
+  RCP<Epetra_MultiVector> allAABB = Teuchos::null;
+  if(periodicBC_)
+  	allAABB = rcp(new Epetra_MultiVector(*(searchdis_.ElementColMap()),13, true));
+  else
+  	allAABB = rcp(new Epetra_MultiVector(*(searchdis_.ElementColMap()),7, true));
   
   // build axis aligned bounding boxes
   extendedAABB(currentpositions, allAABB);
@@ -105,7 +115,6 @@ vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(
   return contactpairs;
 }
 
-
 /*----------------------------------------------------------------------*
  |  extendedAABB function (public)                           meier 01/11|
  |  generates AABB extended with factor 1.1 from input                  |
@@ -116,18 +125,17 @@ void Beam3ContactOctTree::extendedAABB(std::map<int, LINALG::Matrix<3,1> >&  cur
   double t_AABB = Teuchos::Time::wallTime();
 #endif
   // Initialize Variables....................
-  // statistical mechanics parameter list from input file
-  Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  const double PeriodLength = statmechparams.get<double>("PeriodLength", 0.0);   //Period Length of Cube
+  //edge length of root box in case of periodic boundary conditions
+  double PeriodLength = 0.0;
+  if(periodicBC_)
+  {
+  	Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+		PeriodLength = statmechparams.get<double>("PeriodLength", 0.0);
+  }
 
   // factor by which the box is extruded in each dimension
   const double extrusionfactor = 1.05;
 
-  //18.02.2011 Correction of allAABB in case of periodic boundary condition
-  double minimum =0.0;    double maximum =0.0;
-
-  // a vector determining the positions of crosslinkers which lie on the Row Maps of multiple procs
-  Epetra_Vector checkforcrosslinksrow(*(searchdis_.ElementRowMap()), true);
   // Get Nodes from discretization....................
   for (int elecolid=0; elecolid<searchdis_.ElementColMap()->NumMyElements(); elecolid++)
   {
@@ -170,22 +178,25 @@ void Beam3ContactOctTree::extendedAABB(std::map<int, LINALG::Matrix<3,1> >&  cur
        * a copy of "coord" with adjustments in the proper places is introduced*/
       LINALG::SerialDenseMatrix unshift = coord;
 
-      // Compute "cut"-matrix
-      for (int dof=0; dof<ndim; dof++)
+      // Compute "cut"-matrix (only in case of periodic BCs)
+      if(periodicBC_)
       {
-        if (fabs(coord(dof,1)-PeriodLength-coord(dof,0)) < fabs(coord(dof,1) - coord(dof,0)))
-        {
-          cut(dof,0) = 1;
-          unshift(dof,1) -= PeriodLength;
-        }
-        if (fabs(coord(dof,1)+PeriodLength - coord(dof,0)) < fabs(coord(dof,1)-coord(dof,0)))
-        {
-          cut(dof,0) = 2;
-          unshift(dof,1) += PeriodLength;
-        }
+				for (int dof=0; dof<ndim; dof++)
+				{
+					if (fabs(coord(dof,1)-PeriodLength-coord(dof,0)) < fabs(coord(dof,1) - coord(dof,0)))
+					{
+						cut(dof,0) = 1;
+						unshift(dof,1) -= PeriodLength;
+					}
+					if (fabs(coord(dof,1)+PeriodLength - coord(dof,0)) < fabs(coord(dof,1)-coord(dof,0)))
+					{
+						cut(dof,0) = 2;
+						unshift(dof,1) += PeriodLength;
+					}
+				}
       }
 
-      // handle broken elements....................
+      // handle broken elements ( without periodic BCs, the "if" remains untapped since sum(cut) will always be zero
       if (cut(0,0) + cut(1,0) + cut(2,0) > 0)
       {
         //compute direction vector between first(i-th) and second(i+1-th) node of element (normed):
@@ -249,8 +260,8 @@ void Beam3ContactOctTree::extendedAABB(std::map<int, LINALG::Matrix<3,1> >&  cur
 
         //Check for edgelength of AABB
         for(int i=0; i<(int)edgelength.M(); i++)
-          if (edgelength(i)<diameter_)
-            edgelength(i) = diameter_;
+          if (edgelength(i)<(*diameter_)[elecolid])
+            edgelength(i) = (*diameter_)[elecolid];
 
         // Calculate limits of AABB with extrusion around midpoint
         for(int i=0; i<6; i++)
@@ -276,8 +287,8 @@ void Beam3ContactOctTree::extendedAABB(std::map<int, LINALG::Matrix<3,1> >&  cur
 
         //Check for edgelength of AABB
                 for(int i=0; i<(int)edgelength.M(); i++)
-                  if (edgelength(i)<diameter_)
-                    edgelength(i) = diameter_;
+                  if (edgelength(i)<(*diameter_)[elecolid])
+                    edgelength(i) = (*diameter_)[elecolid];
 
         // Calculate limits of AABB with extrusion around midpoint
         for(int i=0; i<6; i++)
@@ -304,8 +315,8 @@ void Beam3ContactOctTree::extendedAABB(std::map<int, LINALG::Matrix<3,1> >&  cur
 
         //Check for edgelength of AABB
         for(int i=0; i<(int)edgelength.M(); i++)
-          if (edgelength(i)<diameter_)
-            edgelength(i) = diameter_;
+          if (edgelength(i)<(*diameter_)[elecolid])
+            edgelength(i) = (*diameter_)[elecolid];
 
         // Calculate limits of AABB with extrusion around midpoint
         for(int i=0; i<6; i++)
@@ -313,49 +324,39 @@ void Beam3ContactOctTree::extendedAABB(std::map<int, LINALG::Matrix<3,1> >&  cur
             (*allAABB)[i][elecolid] = midpoint((int)floor((double)i/2.0)) - 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
           else if(i%2==1)
             (*allAABB)[i][elecolid] = midpoint((int)floor((double)i/2.0)) + 0.5*edgelength((int)floor((double)i/2.0))*extrusionfactor;
-        // fill the latter 6 entries with bogus values
-        for(int i=0; i<6; i++)
-          (*allAABB)[i+6][elecolid] = -PeriodLength;
+        // fill the latter 6 entries with bogus values (in case of periodic BCs)
+        if(periodicBC_)
+					for(int i=0; i<6; i++)
+						(*allAABB)[i+6][elecolid] = -1e9;
 
 
         (*allAABB)[allAABB->NumVectors()-1][elecolid] = elegid;
       }
 
-      //18.02.2011 Bring coordinates in case of periodic boundary condition in right order
+      //18.02.2011 Bring coordinates in case of periodic boundary condition in right order ( "-1.9 signals the bogus value from above)
       //[xmin xmax ymin ymax zmin zmax]
-      if ((*allAABB)[7][elecolid]!=-PeriodLength)
+      if (periodicBC_ && (*allAABB)[6][elecolid]!=-1e9)
       {
+        double minimum =0.0;    double maximum =0.0;
+
         for(int l=0; l<6;l++)
         {
-        minimum = min((*allAABB)[2*l][elecolid],(*allAABB)[2*l+1][elecolid]);
-        maximum = max((*allAABB)[2*l][elecolid],(*allAABB)[2*l+1][elecolid]);
-        //cout << minimum << endl;
-        (*allAABB)[2*l][elecolid] = minimum;    (*allAABB)[2*l+1][elecolid] = maximum;
+					minimum = min((*allAABB)[2*l][elecolid],(*allAABB)[2*l+1][elecolid]);
+					maximum = max((*allAABB)[2*l][elecolid],(*allAABB)[2*l+1][elecolid]);
+					//cout << minimum << endl;
+					(*allAABB)[2*l][elecolid] = minimum;    (*allAABB)[2*l+1][elecolid] = maximum;
         }// end of correct
       } // end of normal AAABB
-
-      // mark entry as entered
-      int elerowid = searchdis_.ElementRowMap()->LID(elegid);
-      checkforcrosslinksrow[elerowid] += 1.0;
     }
   } //end for-loop which goes through all elements
 
-
-
   // communication of findings
   Epetra_MultiVector allAABBrow(*(searchdis_.ElementRowMap()),13,true);
-  Epetra_Vector checkforcrosslinks(*(searchdis_.ElementColMap()), true);
   Epetra_Export exporter(*(searchdis_.ElementColMap()),*(searchdis_.ElementRowMap()));
   Epetra_Import importer(*(searchdis_.ElementColMap()),*(searchdis_.ElementRowMap()));
   allAABBrow.Export(*allAABB, exporter, Add);
   allAABB->Import(allAABBrow,importer,Insert);
-  checkforcrosslinks.Import(checkforcrosslinksrow, importer, Insert);
 
-  // correct crosslinker entries
-  for(int i=0; i<allAABB->MyLength(); i++)
-    for(int j=0; j<allAABB->NumVectors(); j++)
-      if(checkforcrosslinks[i]>1.9)
-        (*allAABB)[j][i] /= 2.0;
 
   //Test: print allAABB->...................
   //cout << "\n\tTest extendedAABB" << endl;
@@ -412,22 +413,39 @@ void Beam3ContactOctTree::locateAll(RCP<Epetra_MultiVector> allAABB,
   //cout << "\n\tTest locateAll" << endl;
   
   // Parameters and Initialization....................
-  // statistical mechanics parameter list from input file
-  //Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  //const double PeriodLength = 5.0; statmechparams.get<double>("PeriodLength", 0.0);   //Period Length of Cube
-
   // Limits of control volumina [0 PeriodLength 0 PeriodLength 0 PeriodLength]....................
   LINALG::Matrix<1,6> lim;
-  // initialize
-  for(int i=0; i<(int)lim.N(); i++)
+  // if periodic BCs are applied
+  if(periodicBC_)
   {
-    if (i%2==0)
-      lim(i)=0.0;
-    else
-      lim(i)=5.0;
+		Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
+  	for(int i=0; i<(int)lim.N(); i++)
+  	{
+  		if(i%2==0)
+  			lim(i)= 0.0;
+  		else
+  			lim(i) =  statmechparams.get<double>("PeriodLength", 0.0);
+  	}
+  }
+  else // standard procedure to find root box limits
+  {
+  	// initialize
+  	for(int i=0; i<(int)lim.N(); i++)
+  		if(i%2==0)
+  			lim(i) = 1e13;
+  		else
+  			lim(i) = -1e13;
+
+  	// loop over allAABB and determine the extremes
+  	for(int i=0; i<allAABB->MyLength(); i++)
+  		for(int j=0; j<allAABB->NumVectors(); j++)
+  			if(j%2==0 && (*allAABB)[j][i]<lim(j)) // minimal values
+  				lim(j) = (*allAABB)[j][i];
+  			else if(j%2!=0 && (*allAABB)[j][i]>lim(j))
+  				lim(j) = (*allAABB)[j][i];
   }
   
-  // check later, there is still some mistake! (really???????????????)
+  /*/ check later, there is still some mistake! (really???????????????) update: Not sure, if this is even needed (just as a check if all the AABBs lie within the cubic volume?)
   for(int j=0; j<6; j++)
     for(int i=0; i<allAABB->MyLength(); i++)
     {
@@ -437,17 +455,18 @@ void Beam3ContactOctTree::locateAll(RCP<Epetra_MultiVector> allAABB,
       else
         if(lim(j)<(*allAABB)[j][i])
           lim(j)=(*allAABB)[j][i];
-    }
+    }*/
 
   // Convert Epetra_MultiVector allAABB to vector(vector(vector)....................
-  std::vector<std::vector<double> > allAABB_vec2(allAABB->MyLength(), std::vector<double>(allAABB->NumVectors(),0.0));
+  std::vector<std::vector<double> > allAABBstdvec(allAABB->MyLength(), std::vector<double>(allAABB->NumVectors(),0.0));
   for(int i=0; i < allAABB->MyLength(); i++)
   {
-    allAABB_vec2[i][0] = (*allAABB)[allAABB->NumVectors()-1][i];
+  	// swapped first and last position of the vectors (the GID)
+    allAABBstdvec[i][0] = (*allAABB)[allAABB->NumVectors()-1][i];
     for(int j=0; j<allAABB->NumVectors()-1; j++)
-      allAABB_vec2[i][j+1] = (*allAABB)[j][i];
+      allAABBstdvec[i][j+1] = (*allAABB)[j][i];
   }
-  //Starwert für treedepth
+  //initial tree depth value (will be incremented with each recursive call of locateBox()
   int treedepth = 0;
 
   //Initialize Vector of Vectors containing limits of Octants for Visualization
@@ -455,21 +474,21 @@ void Beam3ContactOctTree::locateAll(RCP<Epetra_MultiVector> allAABB,
 
   // Recursively construct octree; Proc 0 only (parallel computing impossible)
   if(searchdis_.Comm().MyPID()==0)
-    locateBox(allAABB_vec2, lim, &OctreeLimits, aabbinoctants, treedepth);
+    locateBox(allAABBstdvec, lim, &OctreeLimits, aabbinoctants, treedepth);
 
-  /*// Write allAABB_vec2 to .dat-file allAABB_vec2.dat
+  /*// Write allAABBstdvec to .dat-file allAABBstdvec.dat
   std::ostringstream filename;
-  filename << "allAABB_vec2.dat";
+  filename << "allAABBstdvec.dat";
   FILE* fp = NULL;
   //open file to write output data into
   fp = fopen(filename.str().c_str(), "w");
   // write output to temporary stringstream;
   std::stringstream myfile;
-  for (int u = 0; u < (int)allAABB_vec2.size(); u++)
+  for (int u = 0; u < (int)allAABBstdvec.size(); u++)
       {
-        for (int v = 0; v < (int)allAABB_vec2[0].size(); v++)
+        for (int v = 0; v < (int)allAABBstdvec[0].size(); v++)
         {
-          myfile <<scientific<<allAABB_vec2[u][v] <<" ";
+          myfile <<scientific<<allAABBstdvec[u][v] <<" ";
         }
         myfile <<endl;
       }
@@ -510,7 +529,7 @@ void Beam3ContactOctTree::locateAll(RCP<Epetra_MultiVector> allAABB,
  |  [ind, bx, by, bz] = locateBox(&allAABB, lim, n0)                                       |
  |  Primitive for locateAll                                                                |
  *----------------------------------------------------------------------------------------*/
-void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allAABB_vec2,
+void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allAABBstdvec,
                                     LINALG::Matrix<1,6> lim,
                                     std::vector<std::vector<double> >* OctreeLimits,
                                     std::vector<std::vector<int> >& aabbinoctants,
@@ -518,15 +537,12 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allAABB_ve
 {
   //cout << "\n\n\nTest locateBox...................." << endl;
 
-  //Initialization....................
-  // statistical mechanics parameter list from input file
-  Teuchos::ParameterList statmechparams = DRT::Problem::Instance()->StatisticalMechanicsParams();
-  const double PeriodLength = statmechparams.get<double>("PeriodLength", 0.0);    //Period Length of Cube
+  // Initialization
   // Number of Bounding Boxes in leaf octant
   int n0 = 10;
 
   // Zeilenanzahl der Eingangsmatrix
-  //cout << "INPUT Number of Boxes:   " << allAABB_vec2.size() << endl;
+  //cout << "INPUT Number of Boxes:   " << allAABBstdvec.size() << endl;
 
   // Check for further recursion by checking current treedepth (second criterion)....................
   //cout << "INPUT Treedepth:  " << treedepth <<"\n";
@@ -534,9 +550,9 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allAABB_ve
   // Divide further....................
   // Center of octant....................
   double xcenter = 0.0; double ycenter = 0.0; double zcenter = 0.0;
-  xcenter = (lim(0)+lim(1))/2;
-  ycenter = (lim(2)+lim(3))/2;
-  zcenter = (lim(4)+lim(5))/2;
+  xcenter = (lim(0)+lim(1))/2.0;
+  ycenter = (lim(2)+lim(3))/2.0;
+  zcenter = (lim(4)+lim(5))/2.0;
 
   double edgelength = fabs(lim(1)-(lim)(0));
   std::vector<LINALG::Matrix<1,6> > limits;
@@ -584,27 +600,21 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allAABB_ve
   //Goes through all suboctants
   for( int oct=0; oct<8; oct++)
   {
-    // Define temporary vector of same size as current allAABB_vec2
+    // Define temporary vector of same size as current allAABBstdvec
     std::vector<std::vector<double> > tmp_vec2;
     tmp_vec2.clear();
 
-    // Goes through all lines of input allAABB_vec2....................
-    for( int i=0; i<(int)allAABB_vec2.size(); i++)
+    // Goes through all lines of input allAABBstdvec....................
+    for( int i=0; i<(int)allAABBstdvec.size(); i++)
     {
-      // Processes colums 0 to 6, e.g. first boxes
-      if(!((limits[oct](0) >= allAABB_vec2[i][2]) || (allAABB_vec2[i][1] >= limits[oct](1)) || (limits[oct](2) >= allAABB_vec2[i][4]) || (allAABB_vec2[i][3] >= limits[oct](3)) || (limits[oct](4) >= allAABB_vec2[i][6]) || (allAABB_vec2[i][5] >= limits[oct](5))))
-      {
-        tmp_vec2.push_back(allAABB_vec2[i]);
-      } // end first boxes
+      // Processes colums indices 1 to 6, e.g. first boxes
+      if(!((limits[oct](0) >= allAABBstdvec[i][2]) || (allAABBstdvec[i][1] >= limits[oct](1)) || (limits[oct](2) >= allAABBstdvec[i][4]) || (allAABBstdvec[i][3] >= limits[oct](3)) || (limits[oct](4) >= allAABBstdvec[i][6]) || (allAABBstdvec[i][5] >= limits[oct](5))))
+        tmp_vec2.push_back(allAABBstdvec[i]);// end first boxes
 
-      // Processes colums 7 to 13, e.g. second boxes due to periodic boundary condition
-      else if (allAABB_vec2[i][7] !=-PeriodLength)
-      {
-        if(!((limits[oct](0) >= allAABB_vec2[i][8]) || (allAABB_vec2[i][7] >= limits[oct](1)) || (limits[oct](2) >= allAABB_vec2[i][10]) || (allAABB_vec2[i][9] >= limits[oct](3)) || (limits[oct](4) >= allAABB_vec2[i][12]) || (allAABB_vec2[i][11] >= limits[oct](5))))
-        {
-          tmp_vec2.push_back(allAABB_vec2[i]);
-        }
-      }//end second boxes
+      // Processes colums indices 7 to 12, e.g. second boxes due to periodic boundary condition
+      if(periodicBC_ && allAABBstdvec[i][7] !=-1e9)
+					if(!((limits[oct](0) >= allAABBstdvec[i][8]) || (allAABBstdvec[i][7] >= limits[oct](1)) || (limits[oct](2) >= allAABBstdvec[i][10]) || (allAABBstdvec[i][9] >= limits[oct](3)) || (limits[oct](4) >= allAABBstdvec[i][12]) || (allAABBstdvec[i][11] >= limits[oct](5))))
+						tmp_vec2.push_back(allAABBstdvec[i]);//end second boxes
 
     }// end of for-loop which goes through all elements of input
 
@@ -612,26 +622,16 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> > allAABB_ve
     int currtreedepth = treedepth+1;
 
     // Check for further recursion by checking number of boxes in octant (first criterion)....................
-    int N = 0;
-    N = (int)tmp_vec2.size();
+    int N = (int)tmp_vec2.size();
     //cout << "Number of Bounding Boxes in suboctant "<<oct<<":  "<< tmp_vec2.size() <<"\t";
 
-    //If to divide further....................
+    //If to divide further, let LocateBox call itself with updated inputs
     if ((N > n0) && (currtreedepth < maxtreedepth_-1))
-    {
-      //cout << "\nFurther division" << endl;
-      //Rekursiver Aufruf mit neuen Eingabegrößen und neuen Grenzen
       locateBox(tmp_vec2, limits[oct], OctreeLimits, aabbinoctants, currtreedepth);
-    }
     else
     {
-
-      //if(currtreedepth >= maxtreedepth_-1)
-        //cout << "\nNo further division because of maxtreedepth_\n";
-
-      //if(N < n0)
-        //cout << "No further division because number of AABBs in suboct " << oct <<"\n\n";
-
+    	// no further discretization of the volume because either the maximal tree depth or the minimal number of bounding
+    	// boxes per octant has been reached
       // Store IDs of Boxes of tmp_vec2 in vector
       std::vector<int> Box_IDs;
       if(tmp_vec2.size()!=0)
@@ -688,7 +688,7 @@ void Beam3ContactOctTree::IntersectionAABB(std::map<int, LINALG::Matrix<3,1> >& 
   discret_.Comm().MaxAll(&aabblengthlocal, &aabblengthglobal, 1);
 
   // build Epetra_MultiVector from OtreeMap
-  // build temporary fully overlapping map and row map
+  // build temporary, fully overlapping map and row map
   // create crosslinker maps
   std::vector<int> gids;
   for (int i=0 ; i<aabblengthglobal; i++ )
@@ -738,20 +738,14 @@ void Beam3ContactOctTree::IntersectionAABB(std::map<int, LINALG::Matrix<3,1> >& 
       {
         boxIDs[1] = (int)AABBinOct[k][i];
 
-        if (boxIDs[1] > boxIDs[0]+1) //+1 wirft die aneinanderhängenden raus
+        if (boxIDs[1] > boxIDs[0]+1) //+1 excludes the contact between two elements sharing one node
         {
-          int entry1 = boxIDs[0];
-          int entry2 = boxIDs[1];
-          // check the box number and correct it if
-          if(boxIDs[0] >= searchdis_.ElementColMap()->NumMyElements())
-            for(int k=basiselements_; k<allAABB->MyLength(); k++)
-              if((int)(*allAABB)[allAABB->NumVectors()-1][k]==boxIDs[0])
-                entry1=k;
-          if(boxIDs[1] >= searchdis_.ElementColMap()->NumMyElements())
-            for(int k=basiselements_; k<allAABB->MyLength(); k++)
-              if((int)(*allAABB)[allAABB->NumVectors()-1][k]==boxIDs[1])
-                entry2=k;
-          //Here Intersection Test must come
+        	// translate box / element GIDs to ElementColMap()-LIDs
+        	// note: GID and ColumnMap LID are usually the same except for crosslinker elements from statistical mechanics
+          int entry1 = searchdis_.ElementColMap()->LID(boxIDs[0]);
+          int entry2 = searchdis_.ElementColMap()->LID(boxIDs[1]);
+
+          //Intersection Test
 
           a_xmin=(*allAABB)[0][entry1];   a_xmax=(*allAABB)[1][entry1];
           a_ymin=(*allAABB)[2][entry1];   a_ymax=(*allAABB)[3][entry1];

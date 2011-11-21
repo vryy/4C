@@ -34,9 +34,7 @@ class Beam3ContactOctTree
     //!\brief Constructor
     Beam3ContactOctTree(DRT::Discretization& discret,
                         DRT::Discretization& searchdis,
-                        const int& dofoffset,
-                        const int& basiselements,
-                        const int& basisnodes);
+                        const int& dofoffset);
     
     //!\brief Destructor
     virtual ~Beam3ContactOctTree() {};
@@ -53,7 +51,7 @@ class Beam3ContactOctTree
                    std::vector<std::vector<int> >& aabbinoctants);
 
     // primitive for locateAll
-    void locateBox(std::vector<std::vector<double> > allAABB_vec2,
+    void locateBox(std::vector<std::vector<double> > allAABBstdvec,
                    LINALG::Matrix<1,6> lim,
                    std::vector<std::vector<double> >* OctreeLimits,
                    std::vector<std::vector<int> >& aabbinoctants,
@@ -68,14 +66,13 @@ class Beam3ContactOctTree
 
   private:
     
+    bool periodicBC_;
+
     // problem discretization
     DRT::Discretization& discret_;
     
     // contact discretization
     DRT::Discretization& searchdis_;
-
-    // number of initial elements
-    int basiselements_;
     
     // number of initial nodes
     int basisnodes_;
@@ -86,8 +83,8 @@ class Beam3ContactOctTree
     // max tree depth
     int maxtreedepth_;
 
-    // diameter (CONSTANT!!!) of all beam elements
-    double diameter_;
+    // diameters of all beam elements
+    RCP<Epetra_Vector> diameter_;
 
     // redundant map of bounding boxes
     RCP<Epetra_Map> AABBmap_;

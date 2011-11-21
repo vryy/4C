@@ -494,7 +494,7 @@ void StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std::ostrings
 
 	GmshPrepareVisualization(disrow);
 
-  //we need displacements also of ghost nodes and hence export displacment vector to column map format
+  //we need displacements also of ghost nodes and hence export displacement vector to column map format
   Epetra_Vector discol(*(discret_.DofColMap()), true);
   LINALG::Export(disrow, discol);
 
@@ -1288,6 +1288,11 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
   Epetra_Vector discol(*(discret_.DofColMap()), true);
   LINALG::Export(dis, discol);
 
+  // get binding spot triads
+	Epetra_MultiVector bspottriadscol(*bspotcolmap_,4,true);
+	if (DRT::INPUT::IntegralValue<int>(statmechparams_, "HELICALBINDINGSTRUCT"))
+		GetBindingSpotTriads(&bspottriadscol);
+
   if (discret_.Comm().MyPID() == 0)
   {
     for (int i=0; i<numbond_->MyLength(); i++)
@@ -1314,65 +1319,82 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
             }
 
           int nodeLID = discret_.NodeColMap()->LID((int)(*crosslinkerbond_)[occupied][i]);
-          int currfilament = (int)(*filamentnumber_)[nodeLID];
           const DRT::Node *node0 = discret_.lColNode(nodeLID);
-          // choose a second (neighbour) node
-          const DRT::Node *node1 = NULL;
-          if(nodeLID < basisnodes_-1)
-            if((*filamentnumber_)[nodeLID+1]==currfilament)
-              node1 = discret_.lColNode(nodeLID+1);
-            else
-              node1 = discret_.lColNode(nodeLID-1);
-          if(nodeLID == basisnodes_-1)
-            if((*filamentnumber_)[nodeLID-1]==currfilament)
-              node1 = discret_.lColNode(nodeLID-1);
 
           //calculate unit tangent
           LINALG::Matrix<3,1> nodepos0;
-          LINALG::Matrix<3,1> tangent;
 
           for (int j=0; j<3; j++)
           {
             int dofgid0 = discret_.Dof(node0)[j];
-            int dofgid1 = discret_.Dof(node1)[j];
             nodepos0(j,0) = node0->X()[j] + discol[discret_.DofColMap()->LID(dofgid0)];
-            double nodeposj1 = node1->X()[j] + discol[discret_.DofColMap()->LID(dofgid1)];
-            tangent(j) = nodeposj1 - nodepos0(j,0);
           }
-          tangent.Scale(1 / tangent.Norm2());
 
-          // calculate normal via cross product: [0 0 1]x[tx ty tz]
-          LINALG::Matrix<3, 1> normal;
-          normal.Clear();
-          normal(0) = -tangent(1);
-          normal(1) = tangent(0);
-          // norm it since the cross product does not keep the length
-          normal.Scale(1 / normal.Norm2());
+          // first and second vector of the nodal triad
+          LINALG::Matrix<3, 1> tangent;
+					LINALG::Matrix<3, 1> normal;
+					// rotation angle
+					double alpha = 0.0;
 
-          // obtain angle
-          // random angle
-          // by modulo operation involving the crosslink molecule number
-          double alpha = fmod((double) i, 2*M_PI);
+					// determine tangent and normal direction when helical binding spot geometry is applied
+					if(DRT::INPUT::IntegralValue<int>(statmechparams_, "HELICALBINDINGSTRUCT"))
+					{
+						LINALG::Matrix<3,3> bspottriad;
+						// auxiliary variable for storing a triad in quaternion form
+						LINALG::Matrix<4, 1> qnode;
+						// triad of node on first filament which is affected by the new crosslinker
+						for (int j=0; j<4; j++)
+							qnode(j) = bspottriadscol[j][nodeLID];
+						LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
 
-          // rotate the normal by alpha
-          LINALG::Matrix<3, 3> RotMat;
-          // build the matrix of rotation
-          for (int j=0; j<3; j++)
-            RotMat(j, j) = cos(alpha) + tangent(j) * tangent(j) * (1 - cos(alpha));
-          RotMat(0, 1) = tangent(0) * tangent(1) * (1 - cos(alpha)) - tangent(2) * sin(alpha);
-          RotMat(0, 2) = tangent(0) * tangent(2) * (1 - cos(alpha)) + tangent(1) * sin(alpha);
-          RotMat(1, 0) = tangent(1) * tangent(0) * (1 - cos(alpha)) + tangent(2) * sin(alpha);
-          RotMat(1, 2) = tangent(1) * tangent(2) * (1 - cos(alpha)) - tangent(0) * sin(alpha);
-          RotMat(2, 0) = tangent(2) * tangent(0) * (1 - cos(alpha)) - tangent(1) * sin(alpha);
-          RotMat(2, 1) = tangent(2) * tangent(1) * (1 - cos(alpha)) + tangent(0) * sin(alpha);
+						for(int j=0; j<(int)tangent.M(); j++)
+						{
+							tangent(j) = bspottriad(j,0);
+							normal(j) = bspottriad(j,1);
+						}
+						// rotation angle
+						alpha = (*bspotorientations_)[nodeLID];
+					}
+					else	// conventional case
+					{
+            // choose a second (neighbour) node
+            const DRT::Node *node1 = NULL;
+            int currfilament = (int)(*filamentnumber_)[nodeLID];
+            if(nodeLID < basisnodes_-1)
+              if((*filamentnumber_)[nodeLID+1]==currfilament)
+                node1 = discret_.lColNode(nodeLID+1);
+              else
+                node1 = discret_.lColNode(nodeLID-1);
+            if(nodeLID == basisnodes_-1)
+              if((*filamentnumber_)[nodeLID-1]==currfilament)
+                node1 = discret_.lColNode(nodeLID-1);
 
-          // rotation
-          LINALG::Matrix<3, 1> rotnormal;
-          rotnormal.Multiply(RotMat, normal);
+            //calculate unit tangent
+            for (int j=0; j<3; j++)
+            {
+              int dofgid1 = discret_.Dof(node1)[j];
+              double nodeposj1 = node1->X()[j] + discol[discret_.DofColMap()->LID(dofgid1)];
+              tangent(j) = nodeposj1 - nodepos0(j,0);
+            }
+            tangent.Scale(1 / tangent.Norm2());
+            // calculate normal via cross product: [0 0 1]x[tx ty tz]
+            normal.Clear();
+            normal(0) = -tangent(1);
+            normal(1) = tangent(0);
+            // norm it since the cross product does not keep the length
+            normal.Scale(1 / normal.Norm2());
+
+	          // random angle
+	          // by modulo operation involving the crosslink molecule number
+						alpha = fmod((double) i, 2*M_PI);
+					}
+
+          // rotate the normal by alpha and store the new direction into the same Matrix ("normal")
+          RotationAroundFixedAxis(tangent,&normal,alpha);
 
           // calculation of the visualized point lying in the direction of the rotated normal
           for (int j=0; j<visualizepositions_->NumVectors(); j++)
-            (*visualizepositions_)[j][i] = nodepos0(j,0) + ronebond*rotnormal(j,0);
+            (*visualizepositions_)[j][i] = nodepos0(j,0) + ronebond*normal(j,0);
         }
         break;
         case 2:
@@ -1426,65 +1448,82 @@ void StatMechManager::GmshPrepareVisualization(const Epetra_Vector& dis)
               }
 
             int nodeLID = discret_.NodeColMap()->LID((int)(*crosslinkerbond_)[occupied][i]);
-            int currfilament = (int)(*filamentnumber_)[nodeLID];
             const DRT::Node *node0 = discret_.lColNode(nodeLID);
-            // choose a second (neighbour) node
-            const DRT::Node *node1 = NULL;
-            if(nodeLID < basisnodes_-1)
-              if((*filamentnumber_)[nodeLID+1]==currfilament)
-                node1 = discret_.lColNode(nodeLID+1);
-              else
-                node1 = discret_.lColNode(nodeLID-1);
-            if(nodeLID == basisnodes_-1)
-              if((*filamentnumber_)[nodeLID-1]==currfilament)
-                node1 = discret_.lColNode(nodeLID-1);
 
             //calculate unit tangent
             LINALG::Matrix<3,1> nodepos0;
-            LINALG::Matrix<3,1> tangent;
 
             for (int j=0; j<3; j++)
             {
               int dofgid0 = discret_.Dof(node0)[j];
-              int dofgid1 = discret_.Dof(node1)[j];
               nodepos0(j,0) = node0->X()[j] + discol[discret_.DofColMap()->LID(dofgid0)];
-              double nodeposj1 = node1->X()[j] + discol[discret_.DofColMap()->LID(dofgid1)];
-              tangent(j) = nodeposj1 - nodepos0(j,0);
             }
-            tangent.Scale(1 / tangent.Norm2());
 
-            // calculate normal via cross product: [0 0 1]x[tx ty tz]
-            LINALG::Matrix<3, 1> normal;
-            normal.Clear();
-            normal(0) = -tangent(1);
-            normal(1) = tangent(0);
-            // norm it since the cross product does not keep the length
-            normal.Scale(1 / normal.Norm2());
+            // first and second vector of the nodal triad
+            LINALG::Matrix<3, 1> tangent;
+  					LINALG::Matrix<3, 1> normal;
+  					// rotation angle
+  					double alpha = 0.0;
 
-            // obtain angle
-            // random angle
-            // by modulo operation involving the crosslink molecule number
-            double alpha = fmod((double) i, 2*M_PI);
+  					// determine tangent and normal direction when helical binding spot geometry is applied
+  					if(DRT::INPUT::IntegralValue<int>(statmechparams_, "HELICALBINDINGSTRUCT"))
+  					{
+  						LINALG::Matrix<3,3> bspottriad;
+  						// auxiliary variable for storing a triad in quaternion form
+  						LINALG::Matrix<4, 1> qnode;
+  						// triad of node on first filament which is affected by the new crosslinker
+  						for (int j=0; j<4; j++)
+  							qnode(j) = bspottriadscol[j][nodeLID];
+  						LARGEROTATIONS::quaterniontotriad(qnode, bspottriad);
 
-            // rotate the normal by alpha
-            LINALG::Matrix<3, 3> RotMat;
-            // build the matrix of rotation
-            for (int j=0; j<3; j++)
-              RotMat(j, j) = cos(alpha) + tangent(j) * tangent(j) * (1 - cos(alpha));
-            RotMat(0, 1) = tangent(0) * tangent(1) * (1 - cos(alpha)) - tangent(2) * sin(alpha);
-            RotMat(0, 2) = tangent(0) * tangent(2) * (1 - cos(alpha)) + tangent(1) * sin(alpha);
-            RotMat(1, 0) = tangent(1) * tangent(0) * (1 - cos(alpha)) + tangent(2) * sin(alpha);
-            RotMat(1, 2) = tangent(1) * tangent(2) * (1 - cos(alpha)) - tangent(0) * sin(alpha);
-            RotMat(2, 0) = tangent(2) * tangent(0) * (1 - cos(alpha)) - tangent(1) * sin(alpha);
-            RotMat(2, 1) = tangent(2) * tangent(1) * (1 - cos(alpha)) + tangent(0) * sin(alpha);
+  						for(int j=0; j<(int)tangent.M(); j++)
+  						{
+  							tangent(j) = bspottriad(j,0);
+  							normal(j) = bspottriad(j,1);
+  						}
+  						// rotation angle
+  						alpha = (*bspotorientations_)[nodeLID];
+  					}
+  					else	// conventional case
+  					{
+              // choose a second (neighbour) node
+              const DRT::Node *node1 = NULL;
+              int currfilament = (int)(*filamentnumber_)[nodeLID];
+              if(nodeLID < basisnodes_-1)
+                if((*filamentnumber_)[nodeLID+1]==currfilament)
+                  node1 = discret_.lColNode(nodeLID+1);
+                else
+                  node1 = discret_.lColNode(nodeLID-1);
+              if(nodeLID == basisnodes_-1)
+                if((*filamentnumber_)[nodeLID-1]==currfilament)
+                  node1 = discret_.lColNode(nodeLID-1);
 
-            // rotation
-            LINALG::Matrix<3, 1> rotnormal;
-            rotnormal.Multiply(RotMat, normal);
+              //calculate unit tangent
+              for (int j=0; j<3; j++)
+              {
+                int dofgid1 = discret_.Dof(node1)[j];
+                double nodeposj1 = node1->X()[j] + discol[discret_.DofColMap()->LID(dofgid1)];
+                tangent(j) = nodeposj1 - nodepos0(j,0);
+              }
+              tangent.Scale(1 / tangent.Norm2());
+              // calculate normal via cross product: [0 0 1]x[tx ty tz]
+              normal.Clear();
+              normal(0) = -tangent(1);
+              normal(1) = tangent(0);
+              // norm it since the cross product does not keep the length
+              normal.Scale(1 / normal.Norm2());
+
+  	          // random angle
+  	          // by modulo operation involving the crosslink molecule number
+  						alpha = fmod((double) i, 2*M_PI);
+  					}
+
+            // rotate the normal by alpha and store the new direction into the same Matrix ("normal")
+            RotationAroundFixedAxis(tangent,&normal,alpha);
 
             // calculation of the visualized point lying in the direction of the rotated normal
             for (int j=0; j<visualizepositions_->NumVectors(); j++)
-              (*visualizepositions_)[j][i] = nodepos0(j,0) + ronebond*rotnormal(j,0);
+              (*visualizepositions_)[j][i] = nodepos0(j,0) + ronebond*normal(j,0);
           }
         }
         break;

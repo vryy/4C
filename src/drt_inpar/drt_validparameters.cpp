@@ -1482,9 +1482,19 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //Reading whether dynamics remodelling of cross linker distribution takes place
   setStringToIntegralParameter<int>("DYN_CROSSLINKERS","No","If chosen cross linker proteins are added and removed in each time step",
                                yesnotuple,yesnovalue,&statmech);
-  //Reading whether DBCs shall be applied to broken elements
+  //Unlinking is dependent on internal forces of the linkers, too
   setStringToIntegralParameter<int>("FORCEDEPUNLINKING","No","Turns force-based unlinking of crosslinks on and off",
                                yesnotuple,yesnovalue,&statmech);
+  //Toggles the use of internodal binding spots
+  setStringToIntegralParameter<int>("INTERNODALBSPOTS","No","If yes, the four-noded beam element is applied which allows linker positions between FE nodes.",
+                               yesnotuple,yesnovalue,&statmech);
+  //Toggles helical binding spot structure of the actin filament
+  setStringToIntegralParameter<int>("HELICALBINDINGSTRUCT","No","Turns double-helical binding spot geometry on and off",
+                               yesnotuple,yesnovalue,&statmech);
+	//Rise per monomer in the actin double helix according to Howard, p. 125
+	DoubleParameter("RISEPERBSPOT",0.00277,"rise per monomer in the actin one-start helix",&statmech);
+	//Rotation per monomer in the actin double helix according to Howard, p. 125
+	DoubleParameter("ROTPERBSPOT",-2.8999,"rotation per monomer in the actin double-helix",&statmech);
   //Reading double parameter for shear flow field
   DoubleParameter("SHEARAMPLITUDE",0.0,"Shear amplitude of flow in z-direction; note: not amplitude of displacement, but of shear strain!",&statmech);
   //Reading double parameter for viscosity of background fluid
@@ -1507,8 +1517,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("N_crosslink",0,"number of crosslinkers for switching on- and off-rates; if molecule diffusion model is used: number of crosslink molecules",&statmech);
   //number by which the number of crosslinkers is reduced.
   IntParameter("REDUCECROSSLINKSBY",0,"number of crosslinker elements by which the overall number of crosslinker is reduced.",&statmech);
-  //Maximal number of crosslinkers a node can establish to other nodes
-  IntParameter("N_CROSSMAX",1,"Maximal number of crosslinkers a node can establish to other nodes",&statmech);
   //Reading double parameter for crosslinker protein mean length
   DoubleParameter("R_LINK",0.0,"Mean distance between two nodes connected by a crosslinker",&statmech);
   //Absolute value of difference between maximal/minimal and mean cross linker length
@@ -1531,12 +1539,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("IPLINK",0.0,"Polar moment of inertia of area of crosslinkers",&statmech);
   //Cross section of crosslinkers
   DoubleParameter("ALINK",0.0,"Cross section of crosslinkers",&statmech);
-  //crosslinker unbinding force
-	DoubleParameter("CLUNBINDFORCE",0.0,"Force value above which a crosslinker unbinds.",&statmech);
-  //crosslinker unbinding moment
-	DoubleParameter("CLUNBINDMOMENT",0.0,"Moment value above which a crosslinker unbinds.",&statmech);
-  //crosslinker unbinding force
-	IntParameter("CLUNBINDMOMDIR",-1,"direction of crosslinker unbinding moment.",&statmech);
   //Parameter for PTC according to Cyron,Wall (2011):Numerical method for the simulation of the Brownian dynamics of rod-like microstructures with three dimensional nonlinear beam elements
   DoubleParameter("CTRANSPTC0",0.0,"PTC factor for translational DOF in first iteration step",&statmech);
   //Parameter for PTC according to Cyron,Wall (2011):Numerical method for the simulation of the Brownian dynamics of rod-like microstructures with three dimensional nonlinear beam elements

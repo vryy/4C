@@ -161,7 +161,6 @@ void DRT::ELEMENTS::Beam3Type::SetupElementDefinition( std::map<std::string,std:
 DRT::ELEMENTS::Beam3::Beam3(int id, int owner) :
 DRT::Element(id,owner),
 isinit_(false),
-markedfordeletion_(0),
 crosssec_(0),
 crosssecshear_(0),
 Iyy_(0),
@@ -179,7 +178,6 @@ jacobinode_(0)
 DRT::ELEMENTS::Beam3::Beam3(const DRT::ELEMENTS::Beam3& old) :
  DRT::Element(old),
  isinit_(old.isinit_),
- markedfordeletion_(old.markedfordeletion_),
  Qconv_(old.Qconv_),
  Qold_(old.Qold_),
  Qnew_(old.Qnew_),
@@ -286,7 +284,6 @@ void DRT::ELEMENTS::Beam3::Pack(DRT::PackBuffer& data) const
   AddtoPack<3,1>(data,curvconv_);
   AddtoPack<3,1>(data,curvold_);
   AddtoPack(data,isinit_);
-  AddtoPack(data,markedfordeletion_);
   AddtoPack(data,Irr_);
   AddtoPack(data,Iyy_);
   AddtoPack(data,Izz_);
@@ -330,7 +327,6 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
   ExtractfromPack<3,1>(position,data,curvconv_);
   ExtractfromPack<3,1>(position,data,curvold_);
   isinit_ = ExtractInt(position,data);
-  markedfordeletion_ = ExtractInt(position,data);
   ExtractfromPack(position,data,Irr_);
   ExtractfromPack(position,data,Iyy_);
   ExtractfromPack(position,data,Izz_);

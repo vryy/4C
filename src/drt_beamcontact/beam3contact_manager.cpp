@@ -49,7 +49,7 @@ alphaf_(alphaf)
   // Then, within all beam contact specific routines we will
   // NEVER use the underlying problem discretization but always
   // the copied beam contact discretization.
-  RCP<Epetra_Comm> comm = rcp(pdiscret_.Comm().Clone());
+	RCP<Epetra_Comm> comm = rcp(pdiscret_.Comm().Clone());
   cdiscret_ = rcp(new DRT::Discretization((string)"beam contact",comm));
 
   // loop over all column nodes of underlying problem discret and add
@@ -83,11 +83,12 @@ alphaf_(alphaf)
   // build fully overlapping node and element maps
   // fill my own row node ids into vector (e)sdata
   vector<int> sdata(noderowmap_->NumMyElements());
+  vector<int> esdata(elerowmap_->NumMyElements());
   for (int i=0; i<noderowmap_->NumMyElements(); ++i)
     sdata[i] = noderowmap_->GID(i);
-  vector<int> esdata(elerowmap_->NumMyElements());
   for (int i=0; i<elerowmap_->NumMyElements(); ++i)
     esdata[i] = elerowmap_->GID(i);
+
 
   // if current proc is participating it writes row IDs into (e)stproc
   vector<int> stproc(0);
@@ -141,6 +142,7 @@ alphaf_(alphaf)
   ContactDiscret().ExportColumnNodes(*newnodecolmap);
   ContactDiscret().ExportColumnElements(*newelecolmap);
 
+
   // complete beam contact discretization based on the new column maps
   // (this also assign new degrees of freedom what we actually do not
   // want, thus we have to introduce a dof mapping next)
@@ -173,14 +175,14 @@ alphaf_(alphaf)
   // initialize Uzawa iteration index
   uzawaiter_ = 0;
 
+  if(!pdiscret_.Comm().MyPID())
+  	cout<<"Elements in discret.   = "<<pdiscret_.NumGlobalElements()<<endl;
+
   // Compute the search radius for searching possible contact pairs
   ComputeSearchRadius();
   
   // initialize octtree for contact search
-  int numglobele = pdiscret_.NumGlobalElements();
-  int numglobnode = pdiscret_.NumGlobalNodes();
-  tree_ = rcp(new Beam3ContactOctTree(pdiscret_,*cdiscret_,dofoffset_,numglobele,numglobnode));
-
+  tree_ = rcp(new Beam3ContactOctTree(pdiscret_,*cdiscret_,dofoffset_));
   return;
 }
 
@@ -209,7 +211,6 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   
   // update currentpositions and existing beam contact pairs
   SetState(currentpositions,disrow);
-
 #ifdef OCTTREESEARCH
   //**********************************************************************
   // octtree search (loop over all elements and find closest pairs)
@@ -217,7 +218,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   double t_start = Teuchos::Time::wallTime();
   
   vector<RCP<Beam3contact> > newpairs = tree_->OctTreeSearch(currentpositions);
-  
+
   // merge old and new contact pairs
   for (int k=0;k<(int)newpairs.size();++k)
   {
@@ -243,6 +244,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   double t_end = Teuchos::Time::wallTime() - t_start;
   if(!pdiscret_.Comm().MyPID())
   	cout << "\nOcttree Search: " << t_end << " seconds\n";
+
   
   /*//Print ContactPairs to .dat-file and plot with Matlab....................
   std::ostringstream filename2;
@@ -307,8 +309,6 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     //cout << pairs_[i]->Element1().Id() << "/" << pairs_[i]->Element2().Id() << endl;
   }
 
-
-
   // decide wether the tangent field should be smoothed or not
   const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->MeshtyingAndContactParams();
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Smoothing>(scontact,"BEAMS_SMOOTHING") == INPAR::CONTACT::bsm_none)
@@ -316,11 +316,6 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     //cout << "Test BEAMS_SMOOTHING 2" << INPAR::CONTACT::bsm_none << endl;
   }
   int beams_smoothing = DRT::INPUT::IntegralValue<INPAR::CONTACT::Smoothing>(scontact,"BEAMS_SMOOTHING");
-
-
-
-
-
 
   // Loop over all pairs
   for (int i=0;i<(int)pairs_.size();++i)
@@ -336,9 +331,6 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     if (firstisincolmap || secondisincolmap) 
       pairs_[i]->PreEvaluation(beams_smoothing, currentpositions);
   }
-
-
-
 
   // Loop over all pairs
   for (int i=0;i<(int)pairs_.size();++i)
@@ -358,37 +350,20 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     }
   }
 
-
-
-
-
-
-
-
   // assemble contact forces into global fres vector
   fres.Update(1.0-alphaf_,*fc_,1.0);
   fres.Update(alphaf_,*fcold_,1.0);
   
-
-
   // complete stiffness matrix again (contact pair contributions
   // have already been assembled inside pairs_[i]->Evaluate)
   stiffmatrix.Complete();
     
-
-
   // debug output
   //cout << "fc:    " << endl << *fc_ << endl;
   //cout << "fcold: " << endl << *fcold_ << endl;
   //cout << "fres:  " << endl << fres << endl;
   
-
-
   return;
-
-
-
-
 }
 
 /*----------------------------------------------------------------------*
@@ -410,7 +385,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
   // export displacements into fully overlapping column map format
   Epetra_Vector discol(*ContactDiscret().DofColMap(),true);
   LINALG::Export(disbcrow,discol);
-  
+
   // loop over all beam contact nodes
   for (int i=0;i<FullNodes()->NumMyElements();++i)
   {
@@ -429,18 +404,16 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
     // store into currentpositions
     currentpositions[node->Id()] = currpos;
   }
-  
+
   //**********************************************************************
   // update nodal coordinates also in existing contact pairs objects
   //**********************************************************************
-  
   // loop over all pairs
   for(int i=0;i<(int)pairs_.size();++i)
   {
     // temporary matrices to store nodal coordinates of each element
     Epetra_SerialDenseMatrix ele1pos(3,pairs_[i]->Element1()->NumNode());
     Epetra_SerialDenseMatrix ele2pos(3,pairs_[i]->Element2()->NumNode());
-   
     // Loop over all nodes of element 1
     for(int m=0;m<(pairs_[i]->Element1())->NumNode();m++)
     {
@@ -448,9 +421,9 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
       LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
       
       // store updated nodal coordinates
-      for(int n=0;n<3;n++) ele1pos(n,m) = temppos(n);
-    }          
-
+      for(int n=0;n<3;n++)
+      	ele1pos(n,m) = temppos(n);
+    }
     // Loop over all nodes of element 2
     for(int m=0;m<(pairs_[i]->Element2())->NumNode();m++)
     {
@@ -458,13 +431,13 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
         LINALG::Matrix<3,1> temppos = currentpositions[tempGID];
         
       // store updated nodal coordinates
-      for(int n=0;n<3;n++) ele2pos(n,m) = temppos(n);  
+      for(int n=0;n<3;n++)
+      	ele2pos(n,m) = temppos(n);
     }
-    
     // finally update nodal positions in contact pair objects
     pairs_[i]->UpdateElePos(ele1pos,ele2pos);
   }
-  
+
   return;
 }
 

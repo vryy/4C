@@ -173,8 +173,6 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   //     -> contact forces are only returned as global vector
   // (3) Perform some finite difference checks
   //     -> only if the flag BEAMCONTACTFDCHECKS is defined
-  
-
   // set class variable for status of gapfunction
   ngf_ = ngf;
 
@@ -213,7 +211,6 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   double gap= 0.0;
   double norm = 0.0;
 
-
   // check if the CPP found for this contact pair really valid
   // if not we are already done here...
   if (elementscolinear == true)
@@ -247,7 +244,6 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
     return false;
   }
 
-
   if (abs(XiContact[0])< (1.0 + XIETATOL) && abs(XiContact[1]) < (1.0 + XIETATOL) && elementscolinear == false)
     { //cout << "Auswertung von Paar:" << element1_->Id() << "/" << element2_->Id() << endl;
 
@@ -257,7 +253,6 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
       contactflag_ = false;
       return false;
     }
-
 
   //**********************************************************************
   // (1) Compute some auxiliary quantities
@@ -292,12 +287,10 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   
   // call function to evaluate and assemble contact forces
   EvaluateFcContact(pp,gap,normal,fint,funct1,funct2,numnode1,numnode2);
-  
   // call function to evaluate and assemble contact stiffness
   EvaluateStiffcContact(pp,gap,normal,norm,stiffmatrix,x1,x2,dx1,dx2,
                         ddx1,ddx2,funct1,funct2,deriv1,deriv2,
                         secondderiv1,secondderiv2,numnode1,numnode2,XiContact, beams_smoothing);
-  
   return true;
 }
 /*----------------------------------------------------------------------*
@@ -655,8 +648,6 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
   const int dim1 = NDIM*numnode1;
   const int dim2 = NDIM*numnode2;
   
-
-
   // temporary vectors for contact forces, DOF-GIDs and owning procs
   Epetra_SerialDenseVector fc1(dim1);
   Epetra_SerialDenseVector fc2(dim2);
@@ -677,15 +668,13 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
     const int* node_ids1 = element1_->NodeIds();
     const int* node_ids2 = element2_->NodeIds();
     
-
     // define variable for sgn(normal*normal_old) of modified gapfunction
     double sgn_skalar = 1;
 
 
     // decide wether the modified gap function will be apllied or not
     if (ngf_)
-      {sgn_skalar = sgn(Computeskalar());
-      }
+    	sgn_skalar = sgn(Computeskalar());
 
 
     //********************************************************************
@@ -696,7 +685,7 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
       // get node pointer and dof ids
       DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
       vector<int> NodeDofGIDs = GetGlobalDofs(node);
-      
+
       // compute force vector Fc1 and prepare assembly
       for (int j=0;j<NDIM;++j)
       {
@@ -705,7 +694,6 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
         lmowner1[NDIM*i+j] = node->Owner();
       }
     }
-    
     //********************************************************************
     // Compute Fc2 (force acting on second element)
     //********************************************************************
@@ -746,13 +734,16 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
     // assemble fc1 and fc2 into global contact force vector
     LINALG::Assemble(fint,fc1,lm1,lmowner1);
     LINALG::Assemble(fint,fc2,lm2,lmowner2);
-    
     // debug output
     //cout << "********************  FC *********************"<<endl;
-    //for (int i=0;i<NDIM*numnode1;++i) cout << "Fc_1_" << i << ": " << fc1[i] << endl;  
-    //for (int i=0;i<NDIM*numnode2;++i) cout << "Fc_2_" << i << ": " << fc2[i] << endl;  
+    //for (int i=0;i<NDIM*numnode1;++i) cout << "Fc_1_" << i << ": " << fc1[i] << endl;
+    //for (int i=0;i<NDIM*numnode2;++i) cout << "Fc_2_" << i << ": " << fc2[i] << endl;
+
+    //int istart = (cdiscret_.NodeRowMap()->LID(element1_->Id()) * 6);
+    //int iend = (cdiscret_.NodeRowMap()->LID(element2_->Id()) * 6 + 5);
     //cout << "******************* FINT ********************"<<endl;
-    //for (int i=0;i<6*NDIM*(numnode1+numnode2);++i) cout << "fint_" << i << ": " << fint[i] << endl;
+    //for (int i=istart;i<iend;++i) cout << "fint_" << i << ": " << fint[i] << endl;
+    //cout<<"fint size = "<<fint.MyLength()<<endl;
   }
 
   return;
@@ -1848,7 +1839,8 @@ void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,DRT::Eleme
       {
 
         //only one neighbor element on each side of the considered element is allowed
-        if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
+      	if(!DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"BEAMCONTACT"))
+      		if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
 
         globalneighborId = (*((**(element1->Nodes())).Elements()+y))->Id();
 
@@ -1876,7 +1868,8 @@ void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,DRT::Eleme
         {
 
           //only one neighbor element on each side of the considered element is allowed
-          if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
+        	if(!DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"BEAMCONTACT"))
+        		if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
 
           globalneighborId = (*((**(element1->Nodes()+n_right)).Elements()+y))->Id();
 
@@ -1913,7 +1906,8 @@ void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,DRT::Eleme
   {
 
     //only one neighbor element on each side of the considered element is allowed
-    if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
+  	if(!DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"BEAMCONTACT"))
+  		if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
 
     globalneighborId = (*((**(element2->Nodes())).Elements()+y))->Id();
 
@@ -1942,7 +1936,8 @@ void CONTACT::Beam3contact::DetermineNeigbours(DRT::Element* element1,DRT::Eleme
   for (int y=0; y<(**(element2->Nodes()+n_right)).NumElement ();++y)
   {
     //only one neighbor element on each side of the considered element is allowed
-    if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
+  	if(!DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StatisticalMechanicsParams(),"BEAMCONTACT"))
+  		if (y>1){dserror("ERROR: The implemented smoothing routine does not work for more than 2 adjacent Elements per node");}
 
     globalneighborId = (*((**(element2->Nodes()+n_right)).Elements()+y))->Id();
 

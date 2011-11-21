@@ -1222,8 +1222,9 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( ParameterList& params,
    * any ordinary problem of structural mechanics it may be ignored*/
   CalcBrownian<nnode,3,6,4>(params,vel,disp,stiffmatrix,force);
 
-  // evaluate if element is to be deleted from the discretization (only for 2-noded element)
-  EvaluateForceBasedDeletion<nnode>(params,force);
+  // in statistical mechanics simulations, a deletion influenced by the values of the internal force vector might occur
+  if(params.get<string>("forcedepunlinking","no")=="yes" && force != NULL)
+  	internalforces_ = rcp(new Epetra_SerialDenseVector(*force));
 
   return;
 
@@ -1784,59 +1785,6 @@ inline void DRT::ELEMENTS::Beam3::CalcBrownian(ParameterList& params,
 return;
 
 }//DRT::ELEMENTS::Beam3::CalcBrownian(.)
-
-/*-----------------------------------------------------------------------------------------------------------*
- | Evaluate whether the element is to be deleted from the discretization              (private) mueller 10/11|
- *----------------------------------------------------------------------------------------------------------*/
-template<int nnode> //number of nodes
-void DRT::ELEMENTS::Beam3::EvaluateForceBasedDeletion(ParameterList& params,
-																										 Epetra_SerialDenseVector* force) //!< element internal force vector
-{
-  if(params.get<string>("forcedepunlinking","no")=="yes" && force != NULL && nnode==2)
-  {
-  	//return if no values are given
-  	if(params.get<double>("clunbindforce",0.0)!=0.0)
-  	{
-  		// nodal internal force vectors
-  		LINALG::Matrix<3,1> fint0;
-  		LINALG::Matrix<3,1> fint1;
-  		for(int i=0; i<(int)fint0.M(); i++)
-  		{
-  			fint0(i) = (*force)[i];
-  			fint1(i) = (*force)[6+i];
-  		}
-  		double norm0 = fint0.Norm2();
-  		double norm1 = fint1.Norm2();
-
-  		// assign status: 1=node0, 2=node2, 0=no action
-  		if(norm0>=norm1 && norm0>params.get<double>("clunbindforce",0.0))
-  			markedfordeletion_ = 1;
-  		else if(norm1>norm0 && norm1>params.get<double>("clunbindforce",0.0))
-  			markedfordeletion_ = 2;
-  		else
-  			markedfordeletion_ = 0;
-
-  		//cout<<"Element "<<Id()<<": norm0 = "<<norm0<<", norm1 = "<<norm1<<" : status "<<markedfordeletion_<<endl;
-  	}
-  	else if(params.get<double>("clunbindmoment",0.0)!=0.0)
-  	{
-  		if(params.get<double>("clunbindmomdir",-1)<0 || params.get<int>("clunbindmomdir",-1)>2)
-  			dserror("CLUNBINDMOMDIR has to be defined correctly in your input file (StatMech section!");
-
-  		// nodal component of the internal moment vector
-  		double mint0 = (*force)[3+params.get<int>("clunbindmomdir",-1)];
-  		double mint1 = (*force)[6+3+params.get<int>("clunbindmomdir",-1)];
-
-  		if(mint0>=mint1 && mint0>params.get<double>("clunbindmoment",0.0))
-  			markedfordeletion_=1;
-  		else if(mint1>mint0 && mint1>params.get<double>("clunbindmoment",0.0))
-  			markedfordeletion_=2;
-  		else
-  			markedfordeletion_=0;
-  	}
-  }
-  return;
-} // DRT::ELEMENTS::Beam3::EvaluateForceBasedDeletion(.)
 
 /*-----------------------------------------------------------------------------------------------------------*
  | shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions; if two   |
