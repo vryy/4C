@@ -6,7 +6,7 @@ example input line
 MAT 1 MAT_ConstraintMixture DENS 0.001 MUE 1.0E3 PHIE 0.08 PREELA 1.0
 K1 1.0 K2 1.0 PRECOLL 1.0 KAPPA 1.0E4 LIFETIME 5.0 HOMSTR 0.0
 GROWTHFAC 0.0 STARTTIME 100.0 INTEGRATION Explicit TOL 1.0E-8
-GROWTHFORCE Single
+GROWTHFORCE Single INITSTRETCH None DEGOPTION Lin
 
 Here an approach for growth and remodeling of an artery is modeled.
 For a detailed description see:
@@ -86,6 +86,12 @@ namespace MAT
       const double abstol_;
       // driving force of growth (Single,All)
       const string* growthforce_;
+      // how to set stretches in the beginning
+      const string* initstretch_;
+      // which degradation function
+      const string degoption_;
+      // tolerance for degradation
+      const double degtol_;
       //@}
 
       /// create material instance of matching type with my parameters
@@ -390,14 +396,7 @@ namespace MAT
     );
 
     /// returns how much collagen has been degraded
-    void Degradation(double t, double* degr)
-    {
-      if (t <= params_->lifetime_ + 1.0e-12) {
-        *degr = 1.0;
-      } else {
-        *degr = 0.0;
-      }
-    }
+    void Degradation(double t, double* degr);
 
     /// compute stress and cmat for implicit integration with whole stress as driving force
     void EvaluateImplicitAll
@@ -423,6 +422,17 @@ namespace MAT
       double time,  ///< time
       LINALG::Matrix<4,1> massprodcomp,  ///< mass production rate
       LINALG::Matrix<4,1> massstress  ///< growth stress measure
+    );
+
+    /// compute stress and cmat for implicit integration with fiber stress as driving force
+    void EvaluateImplicitSingleNew
+    (
+      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
+      const int gp,  ///< current Gauss point
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
+      double dt,  ///< delta time
+      double time  ///< time
     );
 
     /// derivative of stress with respect to massproduction of a single fiber family
@@ -472,7 +482,7 @@ namespace MAT
     discret_->SetState("displacement",Dis());
     MAT::ConstraintMixtureOutputToGmsh(discret_, GetStep(), 1);
   }
-  don't forget to include growth_ip.H */
+  don't forget to include constraintmixture.H */
   void ConstraintMixtureOutputToGmsh
   (
     const Teuchos::RCP<DRT::Discretization> dis, ///< discretization with displacements
