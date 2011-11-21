@@ -125,54 +125,21 @@ void FS3I::GasFSI::CheckInterfaceDirichletBC()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::GasFSI::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >& vel)
+void FS3I::GasFSI::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >& convel,
+                              std::vector<Teuchos::RCP<const Epetra_Vector> >& vel)
 {
-  // extract fluid velocities and accelerations
+  // extract fluid velocities
 
-  ADAPTER::Fluid& fluid = fsi_->FluidAdapter();
-
-  vel.push_back(fluid.ConvectiveVel());
+  convel.push_back(fsi_->FluidField().ConvectiveVel());
+  vel.push_back(fsi_->FluidField().Velnp());
 
   // extract structure velocities and accelerations
 
-  ADAPTER::Structure& structure = fsi_->StructureAdapter();
-
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-
-  // major switch to different time integrators
-  switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
-  {
-  case INPAR::STR::dyna_centr_diff :
-    dserror("no central differences in DRT");
-    break;
-  case INPAR::STR::dyna_gen_alfa :
-  case INPAR::STR::dyna_genalpha :
-  {
-    Teuchos::RCP<Epetra_Vector> convel = rcp(new Epetra_Vector(*(structure.ExtractVelaf())));
-    convel->Scale(-1.0);
-    vel.push_back(convel);
-    break;
-  }
-  case INPAR::STR::dyna_onesteptheta :
-  {
-    Teuchos::RCP<Epetra_Vector> convel = rcp(new Epetra_Vector(*(structure.ExtractVelnp())));
-    convel->Scale(-1.0);
-    vel.push_back(convel);
-    break;
-  }
-  case INPAR::STR::dyna_Gen_EMM :
-  case INPAR::STR::dyna_statics :
-  case INPAR::STR::dyna_gen_alfa_statics :
-  case INPAR::STR::dyna_gemm :
-  case INPAR::STR::dyna_ab2:
-  case INPAR::STR::dyna_euma :
-  case INPAR::STR::dyna_euimsto :
-  default :
-  {
-    dserror("structure time integration scheme not supported");
-    break;
-  }
-  }
+  Teuchos::RCP<Epetra_Vector> velocity = rcp(new Epetra_Vector(*(fsi_->StructureField().ExtractVelnp())));
+  vel.push_back(velocity);
+  // structure ScaTra: velocity and grid velocity are identical!
+  Teuchos::RCP<Epetra_Vector> zeros = rcp(new Epetra_Vector(velocity->Map(),true));
+  convel.push_back(zeros);
 }
 
 
@@ -180,8 +147,9 @@ void FS3I::GasFSI::ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >& v
 /*----------------------------------------------------------------------*/
 void FS3I::GasFSI::SetVelocityFields()
 {
+  std::vector<Teuchos::RCP<const Epetra_Vector> > convel;
   std::vector<Teuchos::RCP<const Epetra_Vector> > vel;
-  ExtractVel(vel);
+  ExtractVel(convel, vel);
 
   std::vector<Teuchos::RCP<DRT::Discretization> > discret;
 
@@ -191,8 +159,9 @@ void FS3I::GasFSI::SetVelocityFields()
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField().SetVelocityField(vel[i],
+    scatra->ScaTraField().SetVelocityField(convel[i],
                                            Teuchos::null,
+                                           vel[i],
                                            Teuchos::null,
                                            discret[i]);
   }

@@ -300,10 +300,11 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // or phin, phidtn (One-Step-Theta, Generalized-alpha))
   hist_ = LINALG::CreateVector(*dofrowmap,true);
 
-  // convective velocity (always three velocity components per node)
+  // velocities (always three velocity components per node)
   // (get noderowmap of discretization for creating this multivector)
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   convel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  vel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
   // acceleration and pressure required for computation of subgrid-scale
   // velocity (always four components per node)
@@ -1435,7 +1436,7 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
     LINALG::Export(*old, *hist_);
   }
 
-  // convective velocity (always three velocity components per node)
+  // velocities (always three velocity components per node)
   // (get noderowmap of discretization for creating this multivector)
   Teuchos::RCP<Epetra_MultiVector> oldMulti;
   if (convel_ != Teuchos::null)
@@ -1443,6 +1444,12 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
     oldMulti = convel_;
     convel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
     LINALG::Export(*oldMulti, *convel_);
+  }
+  if (vel_ != Teuchos::null)
+  {
+    oldMulti = vel_;
+    vel_ = rcp(new Epetra_MultiVector(*noderowmap,3,true));
+    LINALG::Export(*oldMulti, *vel_);
   }
 
   // acceleration and pressure required for computation of subgrid-scale
@@ -1646,7 +1653,8 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
 
   // provide velocity field and potentially acceleration/pressure field
   // (export to column map necessary for parallel evaluation)
-  AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
+  AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
+  AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
   AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
   AddMultiVectorToParameterList(eleparams,"magnetic field",magneticfield_);
 
@@ -1689,7 +1697,8 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
 
     mhdbcparams.set<int>("scatratype",INPAR::SCATRA::scatratype_condif);
 
-    AddMultiVectorToParameterList(mhdbcparams,"velocity field",convel_);
+    AddMultiVectorToParameterList(mhdbcparams,"convective velocity field",convel_);
+    AddMultiVectorToParameterList(mhdbcparams,"velocity field",vel_);
     AddSpecificTimeIntegrationParameters(mhdbcparams);
 
     // evaluate all mixed hybrid Dirichlet boundary conditions
@@ -1840,7 +1849,10 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
 void SCATRA::ScaTraTimIntImpl::SetVelocityField()
 {
   if (cdvel_ == INPAR::SCATRA::velocity_zero)
-    convel_->PutScalar(0); // just to be sure!
+  {
+    convel_->PutScalar(0.); // just to be sure!
+    vel_->PutScalar(0.);
+  }
   else if ((cdvel_ == INPAR::SCATRA::velocity_function)
       or (cdvel_ == INPAR::SCATRA::velocity_function_and_curve))
   {
@@ -1860,8 +1872,10 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
         {
           value *= DRT::Problem::Instance()->Curve(velcurveno-1).f(time_);
         }
-          err = convel_->ReplaceMyValue (lnodeid, index, value);
+        err = convel_->ReplaceMyValue (lnodeid, index, value);
         if (err!=0) dserror("error while inserting a value into convel_");
+        err = vel_->ReplaceMyValue (lnodeid, index, value);
+        if (err!=0) dserror("error while inserting a value into vel_");
       }
     }
   }
@@ -1881,8 +1895,9 @@ void SCATRA::ScaTraTimIntImpl::SetVelocityField()
  | if required)                                               gjb 05/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetVelocityField(
-Teuchos::RCP<const Epetra_Vector> fluidvel,
+Teuchos::RCP<const Epetra_Vector> confluidvel,
 Teuchos::RCP<const Epetra_Vector> fluidacc,
+Teuchos::RCP<const Epetra_Vector> fluidvel,
 Teuchos::RCP<const DRT::DofSet> dofset,
 Teuchos::RCP<DRT::Discretization> fluiddis)
 {
@@ -1937,20 +1952,41 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
       // global and processor's local fluid dof ID
       const int fgid = fluidnodedofs[index];
 //      const int flid = fluiddofrowmap->LID(fgid);
-      const int flid = fluidvel->Map().LID(fgid);
+      const int flid = confluidvel->Map().LID(fgid);
       if (flid < 0) dserror("lid not found in map for given gid");
 
-      // get value of corresponding velocity component
-      double velocity = (*fluidvel)[flid];
+      // get value of corresponding convective velocity component
+      double convelocity = (*confluidvel)[flid];
       if (havetorotate)
       {
         // this is the desired component of the rotated vector field
-        velocity = FLD::GetComponentOfRotatedVectorField(index,fluidvel,flid,rotangle);
+        convelocity = FLD::GetComponentOfRotatedVectorField(index,confluidvel,flid,rotangle);
       }
-
       // insert velocity value into node-based vector
-      err = convel_->ReplaceMyValue(lnodeid, index, velocity);
+      err = convel_->ReplaceMyValue(lnodeid, index, convelocity);
       if (err!=0) dserror("error while inserting a value into convel_");
+
+      if (fluidvel != Teuchos::null)
+      {
+        // get value of corresponding velocity component
+        double velocity = (*fluidvel)[flid];
+        if (havetorotate)
+        {
+          // this is the desired component of the rotated vector field
+          velocity = FLD::GetComponentOfRotatedVectorField(index,fluidvel,flid,rotangle);
+        }
+        // insert velocity value into node-based vector
+        err = vel_->ReplaceMyValue(lnodeid, index, velocity);
+        if (err!=0) dserror("error while inserting a value into vel_");
+      }
+      // if no fluid velocity is provided by the respective algorithm, we
+      // assume that it equals the given convective velocity
+      else
+      {
+        // insert velocity value into node-based vector
+        err = vel_->ReplaceMyValue(lnodeid, index, convelocity);
+        if (err!=0) dserror("error while inserting a value into vel_");
+      }
 
       if (sgvelswitch)
       {
@@ -1991,6 +2027,8 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
     {
       err = convel_->ReplaceMyValue(lnodeid, index, 0.0);
       if (err!=0) dserror("error while inserting a value into convel_");
+      err = vel_->ReplaceMyValue(lnodeid, index, 0.0);
+      if (err!=0) dserror("error while inserting a value into vel_");
     }
   }
 

@@ -726,6 +726,8 @@ public:
 
     //! nodal velocity values at t_(n+1) or t_(n+alpha_F)
     LINALG::Matrix<nsd_,nen_> evelnp_;
+    //! nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
+    LINALG::Matrix<nsd_,nen_> econvelnp_;
     //! nodal acceleration values at t_(n+1) or t_(n+alpha_F)
     LINALG::Matrix<nsd_,nen_> eaccnp_;
     //! nodal pressure values at t_(n+1) or t_(n+alpha_F)
@@ -811,6 +813,8 @@ public:
     vector<double> hist_;
     //! velocity vector in gausspoint
     LINALG::Matrix<nsd_,1> velint_;
+    //! convective velocity vector in gausspoint
+    LINALG::Matrix<nsd_,1> convelint_;
     //! subgrid-scale velocity vector in gausspoint
     LINALG::Matrix<nsd_,1> sgvelint_;
     //! migration velocity vector (divided by D_k*z_k) in gausspoint (ELCH)

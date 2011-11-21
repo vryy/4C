@@ -24,9 +24,6 @@ namespace FS3I
     /// timeloop of coupled problem
     virtual void Timeloop() = 0;
 
-    /// write output
-    virtual void Output() = 0;
-
     /// read restart
     virtual void ReadRestart() = 0;
 

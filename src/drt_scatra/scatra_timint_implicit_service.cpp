@@ -108,7 +108,8 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
 
     // provide velocity field and potentially acceleration/pressure field
     // (export to column map necessary for parallel evaluation)
-    AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
+    AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
+    AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
     AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
 
     // set switch for reinitialization
@@ -339,7 +340,8 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
   // provide velocity field and potentially acceleration/pressure field
   // as well as displacement field in case of ALE
   // (export to column map necessary for parallel evaluation)
-  AddMultiVectorToParameterList(condparams,"velocity field",convel_);
+  AddMultiVectorToParameterList(condparams,"convective velocity field",convel_);
+  AddMultiVectorToParameterList(condparams,"velocity field",vel_);
   AddMultiVectorToParameterList(condparams,"acceleration/pressure field",accpre_);
   if (isale_) AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
 
@@ -636,7 +638,8 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
 
   // provide velocity field and potentially acceleration/pressure field
   // (export to column map necessary for parallel evaluation)
-  AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
+  AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
+  AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
   AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
 
   // provide displacement field in case of ALE
@@ -1099,14 +1102,14 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars()
   if (myrank_ == 0)
   {
     if (scatratype_==INPAR::SCATRA::scatratype_loma)
-      cout << "Mean scalar: " << (*scalars)[0]/domint << endl;
+      cout << "Mean scalar: " << setprecision (9) << (*scalars)[0]/domint << endl;
     else
     {
-      cout << "Domain integral:          " << domint << endl;
+      cout << "Domain integral:          " << setprecision (9) << domint << endl;
       for (int k = 0; k < numscal_; k++)
       {
-        //cout << "Total concentration (c_"<<k+1<<"): "<< (*scalars)[k] << endl;
-        cout << "Mean concentration (c_"<<k+1<<"): "<< (*scalars)[k]/domint << endl;
+        cout << "Total concentration (c_"<<k+1<<"): "<< setprecision (9) << (*scalars)[k] << endl;
+        cout << "Mean concentration (c_"<<k+1<<"): "<< setprecision (9) << (*scalars)[k]/domint << endl;
       }
     }
   }
@@ -1516,7 +1519,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
 
   // provide velocity field and potentially acceleration/pressure field
   // (export to column map necessary for parallel evaluation)
-  AddMultiVectorToParameterList(params,"velocity field",convel_);
+  AddMultiVectorToParameterList(params,"convective velocity field",convel_);
+  AddMultiVectorToParameterList(params,"velocity field",vel_);
   AddMultiVectorToParameterList(params,"acceleration/pressure field",accpre_);
 
   //provide displacement field in case of ALE
@@ -1618,7 +1622,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
     // provide velocity field and potentially acceleration/pressure field
     // (export to column map necessary for parallel evaluation)
-    AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
+    AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
+    AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
     AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
 
     //provide displacement field in case of ALE
@@ -2280,7 +2285,7 @@ void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues(RCP<Epetra_Vector> vec)
     // in the whole computational domain!
     if(dynamic_cast<DRT::NURBS::NurbsDiscretization*>(discret_.get())!=NULL)
       return;
-  
+
     // this option can be helpful in some rare situations
     bool makepositive(false);
 

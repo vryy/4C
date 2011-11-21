@@ -429,7 +429,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     parentele->LocationVector(discretization,lmparent,lmparentowner,lmparentstride);
 
     // get velocity values at nodes
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
 
     // we deal with a (nsd_+1)-dimensional flow field
     Epetra_SerialDenseVector evel((nsd_+1)*nenparent);
@@ -464,7 +464,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     else          dserror("MultiVector %s has not been found!",name.c_str());
 
     // calculate normal diffusive and velocity flux at each node of the
-    // present boundary element 
+    // present boundary element
     for (int i=0; i<nen_; ++i)
     {
       for(int j = 0; j<nenparent;++j)
@@ -537,7 +537,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     parentele->LocationVector(discretization,lmparent,lmparentowner,lmparentstride);
 
     // get velocity values at nodes
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
 
     // we deal with a (nsd_+1)-dimensional flow field
     Epetra_SerialDenseVector evel((nsd_+1)*nenparent);
@@ -879,7 +879,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     parentele->LocationVector(discretization, lmparent, lmparentowner,lmparentstride);
 
     // get velocity values at nodes
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
 
     // we deal with a (nsd_+1)-dimensional flow field
     Epetra_SerialDenseVector evel((nsd_+1)*nenparent);
@@ -2418,7 +2418,7 @@ template <DRT::Element::DiscretizationType bdistype,
   pele->LocationVector(discretization,*plm,*plmowner,*plmstride);
 
   // get velocity values at parent element nodes
-  const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+  const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
   Epetra_SerialDenseVector evel(pnsd*pnen);
   DRT::UTILS::ExtractMyNodeBasedValues(pele,evel,velocity,pnsd);
 
@@ -2589,7 +2589,7 @@ template <DRT::Element::DiscretizationType bdistype,
     {
       DRT::UTILS::BoundaryGPToParentGP3(pqxg,gps,pdistype,bdistype,ele->BeleNumber());
     }
-      
+
   }
 
   //------------------------------------------------------------------------
@@ -3105,7 +3105,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::TaylorGalerkinBoundaryOutflow(
 	  pele->LocationVector(discretization,*plm,*plmowner,*plmstride);
 
 	  // get velocity values at parent element nodes
-	  const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+	  const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
 	  Epetra_SerialDenseVector evel(pnsd*pnen);
 	  DRT::UTILS::ExtractMyNodeBasedValues(pele,evel,velocity,pnsd);
 
@@ -3818,7 +3818,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ReinitCharacteristicGalerkinBou
 	  pele->LocationVector(discretization,*plm,*plmowner,*plmstride);
 
 //	  // get velocity values at parent element nodes
-//	  const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+//	  const RCP<Epetra_MultiVector> velocity = params.get<RCP<Epetra_MultiVector> >("convective velocity field",null);
 //	  Epetra_SerialDenseVector evel(pnsd*pnen);
 //	  DRT::UTILS::ExtractMyNodeBasedValues(pele,evel,velocity,pnsd);
 

@@ -118,24 +118,27 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
   if (FluidField().TimIntScheme()== INPAR::FLUID::timeint_gen_alpha)
   {
     ScaTraField().SetVelocityField(
-        FluidField().Velaf(),
+        FluidField().ConvectiveVel(),
         FluidField().Accam(),
+        FluidField().Velaf(),
         Teuchos::null,
         FluidField().Discretization());
   }
   else if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
   {
     ScaTraField().SetVelocityField(
-        FluidField().Velaf(),
+        FluidField().ConvectiveVel(),
         FluidField().Accam(),
+        FluidField().Velaf(),
         Teuchos::null,
         FluidField().Discretization());;
   }
   else
   {
     ScaTraField().SetVelocityField(
-        FluidField().Velnp(),
+        FluidField().ConvectiveVel(),
         FluidField().Hist(),
+        FluidField().Velnp(),
         Teuchos::null,
         FluidField().Discretization()
     );

@@ -191,8 +191,9 @@ public:
 
   /// set the convective velocity + subgrid velocity/viscosity field (Navier-Stokes solution)
   void SetVelocityField(
-      Teuchos::RCP<const Epetra_Vector> fluidvel, ///< fluid velocity/press. vector
+      Teuchos::RCP<const Epetra_Vector> confluidvel, ///< convective fluid velocity/press. vector
       Teuchos::RCP<const Epetra_Vector> fluidacc, ///< fluid acceleration vector
+      Teuchos::RCP<const Epetra_Vector> fluidvel,  ///< fluid velocity vector
       Teuchos::RCP<const DRT::DofSet> dofset,
       Teuchos::RCP<DRT::Discretization> fluiddis);    ///< fluid discretization
 
@@ -794,6 +795,9 @@ protected:
   /// histvector --- a linear combination of phinm, phin (BDF)
   ///                or phin, phidtn (One-Step-Theta)
   RCP<Epetra_Vector>    hist_;
+
+  /// fluid velocity
+  RCP<Epetra_MultiVector> vel_;
 
   /// convective velocity
   RCP<Epetra_MultiVector>    convel_;

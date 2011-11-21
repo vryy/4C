@@ -201,6 +201,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     isale_(false),
     diffreastafac_(0.0),
     evelnp_(true),   // initialize to zero
+    econvelnp_(true),   // initialize to zero
     eaccnp_(true),
     eprenp_(true),
     ephi0_Reinit_Reference_(numscal_),
@@ -240,6 +241,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     reatemprhs_(numdofpernode_),
     hist_(numdofpernode_),
     velint_(true),
+    convelint_(true),
     sgvelint_(true),
     migvelint_(true),
     vdiv_(0.0),
@@ -511,6 +513,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // get velocity at nodes
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
     DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
+    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
 
     // get data required for subgrid-scale velocity: acceleration and pressure
     if (sgvel_)
@@ -894,6 +898,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 		    // get velocity at nodes
 		    const RCP<Epetra_MultiVector> reinit_velocity = params.get< RCP<Epetra_MultiVector> >("reinit velocity field",null);
 		    DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,reinit_velocity,nsd_);
+                    const RCP<Epetra_MultiVector> reinit_convelocity = params.get< RCP<Epetra_MultiVector> >("reinit convective velocity field",null);
+		    DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,reinit_convelocity,nsd_);
 
 		    // get data required for subgrid-scale velocity: acceleration and pressure
 		    if (sgvel_)
@@ -958,6 +964,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // get initial velocity values at the nodes
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
     DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
+    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
 
     // need initial field -> extract local values from the global vector
     RefCountPtr<const Epetra_Vector> phi0 = discretization.GetState("phi0");
@@ -1057,6 +1065,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // get velocity values at the nodes
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
     DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
+    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
 
     // need current values of transported scalar
     // -> extract local values from global vectors
@@ -1255,6 +1265,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // get initial velocity values at the nodes
     const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
     DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
+    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
 
     // need initial field -> extract local values from the global vector
     RefCountPtr<const Epetra_Vector> phi0 = discretization.GetState("phi0");
@@ -1349,6 +1361,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 	    // get velocity at nodes
 	    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
 	    DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
+            const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
+	    DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
 
 	    // extract local values from the global vectors
 	    RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
@@ -1470,7 +1484,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat_TaylorGalerkin(
 
     // get velocity at integration point
     velint_.Multiply(evelnp_,funct_);
-
+    convelint_.Multiply(econvelnp_,funct_);
 
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
@@ -1608,6 +1622,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   {
     // get velocity at element center
     velint_.Multiply(evelnp_,funct_);
+    convelint_.Multiply(econvelnp_,funct_);
 
     bool twoionsystem(false);
     double resdiffus(diffus_[0]);
@@ -1695,9 +1710,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 
       // get velocity at integration point
       velint_.Multiply(evelnp_,funct_);
+      convelint_.Multiply(econvelnp_,funct_);
 
       // convective part in convective form: u_x*N,x + u_y*N,y + u_z*N,z
-      conv_.MultiplyTN(derxy_,velint_);
+      conv_.MultiplyTN(derxy_,convelint_);
 
       // momentum divergence required for conservative form
       if (conservative_) GetDivergence(vdiv_,evelnp_,derxy_);
@@ -2066,9 +2082,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       {
         // get velocity at integration point
         velint_.Multiply(evelnp_,funct_);
+        convelint_.Multiply(econvelnp_,funct_);
 
         // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-        conv_.MultiplyTN(derxy_,velint_);
+        conv_.MultiplyTN(derxy_,convelint_);
 
         // velocity divergence required for conservative form
         if (conservative_) GetDivergence(vdiv_,evelnp_,derxy_);
@@ -3023,7 +3040,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
       const double mk = SCATRA::MK<distype>();
 
       // velocity norm
-      const double vel_norm = velint_.Norm2();
+      const double vel_norm = convelint_.Norm2();
 
       // parameter relating convective and diffusive forces + respective switch
       const double epe = mk * densnp_[k] * vel_norm * h / diffus_[k];
@@ -3083,7 +3100,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
           case INPAR::SCATRA::assgd_tezduyar:
           {
             // velocity norm
-            const double vel_norm = velint_.Norm2();
+            const double vel_norm = convelint_.Norm2();
 
             // get norm of velocity vector b_h^par
             const double vel_norm_bhpar = abs(conv_phi_[k]/grad_norm);
@@ -3107,7 +3124,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
           case INPAR::SCATRA::assgd_almeida:
           {
             // velocity norm
-            const double vel_norm = velint_.Norm2();
+            const double vel_norm = convelint_.Norm2();
 
             // get norm of velocity vector z_h
             const double vel_norm_zh = abs(scatrares_[k]/grad_norm);
@@ -3212,7 +3229,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcFineScaleSubgrDiff(
     const double mk = SCATRA::MK<distype>();
 
     // velocity norm
-    const double vel_norm = velint_.Norm2();
+    const double vel_norm = convelint_.Norm2();
 
     // parameter relating convective and diffusive forces + respective switch
     const double epe = mk * densnp_[k] * vel_norm * h / diffus_[k];
@@ -3368,7 +3385,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
       */
       // effective velocity at element center:
       // (weighted) convective velocity + individual migration velocity
-      LINALG::Matrix<nsd_,1> veleff(velint_,false);
+      LINALG::Matrix<nsd_,1> veleff(convelint_,false);
       if (iselch_)
       {
         if (migrationintau) veleff.Update(diffusvalence_[k],migvelint_,1.0);
@@ -3477,7 +3494,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 #endif
       }
       else*/
-      vel_norm = velint_.Norm2();
+      vel_norm = convelint_.Norm2();
 
       // total reaction coefficient sigma_tot: sum of "artificial" reaction
       // due to time factor and reaction coefficient (reaction coefficient
@@ -3549,7 +3566,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 #endif
       }
       else*/
-      vel_norm = velint_.Norm2();
+      vel_norm = convelint_.Norm2();
 
       // calculate characteristic element length
       const double h = CalcCharEleLength(vol,vel_norm);
@@ -3614,7 +3631,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
     */
       // get Euclidean norm of velocity
-      const double vel_norm = velint_.Norm2();
+      const double vel_norm = convelint_.Norm2();
       if (iselch_ and migrationintau) migrationstab_=false;
 
       // total reaction coefficient sigma_tot: sum of "artificial" reaction
@@ -3656,7 +3673,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
       */
       // get Euclidean norm of velocity
-      const double vel_norm = velint_.Norm2();
+      const double vel_norm = convelint_.Norm2();
 
       // total reaction coefficient sigma_tot: sum of "artificial" reaction
       // due to time factor and reaction coefficient (reaction coefficient
@@ -3693,7 +3710,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
         dserror("Migration in tau not considered in Tau_Exact_1d");
       }
       else
-        vel_norm = velint_.Norm2();
+        vel_norm = convelint_.Norm2();
 
       if (diffus < EPS14) dserror("Invalid diffusion coefficent");
       double epe = 0.5 * densnp_[k] * vel_norm * h / diffus;
@@ -3761,7 +3778,7 @@ double DRT::ELEMENTS::ScaTraImpl<distype>::CalcCharEleLength(
   // a) streamlength due to Tezduyar et al. (1992) -> default
   // normed velocity vector
   LINALG::Matrix<nsd_,1> velino;
-  if (vel_norm>=1e-6) velino.Update(1.0/vel_norm,velint_);
+  if (vel_norm>=1e-6) velino.Update(1.0/vel_norm,convelint_);
   else
   {
     velino.Clear();
@@ -3813,7 +3830,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
   vderxy_.MultiplyNT(evelnp_,derxy_);
 
   // compute convective fluid term
-  conv.Multiply(vderxy_,velint_);
+  conv.Multiply(vderxy_,convelint_);
 
   // get pressure gradient
   gradp.Multiply(derxy_,eprenp_);
@@ -3942,7 +3959,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
   {
     for (int rr=0;rr<nsd_;++rr)
     {
-       sgvelint_(rr) = -tau_[k]*(densnp_[k]*velint_(rr)+timefac*(densnp_[k]*conv(rr)
+       sgvelint_(rr) = -tau_[k]*(densnp_[k]*convelint_(rr)+timefac*(densnp_[k]*conv(rr)
                                 +gradp(rr)-2*visc_*visc(rr)
                                 -densnp_[k]*bodyforce(rr))-densn_[k]*acc(rr))/dt;
     }
@@ -4000,7 +4017,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocityLevelSet(
   vderxy_.MultiplyNT(evelnp_,derxy_);
 
   // compute convective fluid term
-  conv.Multiply(vderxy_,velint_);
+  conv.Multiply(vderxy_,convelint_);
 
   // get pressure gradient
   gradp.Multiply(derxy_,eprenp_);
@@ -4165,7 +4182,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocityLevelSet(
 
   // stabilization parameter definition according to Bazilevs et al. (2007)
   // (weighted) convective velocity
-  LINALG::Matrix<nsd_,1> veleff(velint_,false);
+  LINALG::Matrix<nsd_,1> veleff(convelint_,false);
   /*
                                                                           1.0
              +-                                                      -+ - ---
@@ -4247,7 +4264,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocityLevelSet(
   {
     for (int rr=0;rr<nsd_;++rr)
     {
-       sgvelint_(rr) = -tau*(dens*velint_(rr)+timefacmod*(dens*conv(rr)+gradp(rr)-2*viscosity*visc(rr)-dens*bodyforce(rr))-dens*acc(rr))/dt;
+       sgvelint_(rr) = -tau*(dens*convelint_(rr)+timefacmod*(dens*conv(rr)+gradp(rr)-2*viscosity*visc(rr)-dens*bodyforce(rr))-dens*acc(rr))/dt;
 
 //test
 //       if (id==2076)
@@ -4317,7 +4334,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcResidualAndSubgrScalar(
   gradphi_.Multiply(derxy_,ephinp_[k]);
 
   // convective term using current scalar value
-  conv_phi_[k] = velint_.Dot(gradphi_);
+  conv_phi_[k] = convelint_.Dot(gradphi_);
 
   // diffusive term using current scalar value for higher-order elements
   if (use2ndderiv_)
@@ -4512,7 +4529,7 @@ if (conservative_)
   gradphi_.Multiply(derxy_,ephinp_[dofindex]);
 
   // convective term using current scalar value
-  const double cons_conv_phi = velint_.Dot(gradphi_);
+  const double cons_conv_phi = convelint_.Dot(gradphi_);
 
   const double consfac = timefacfac*(densnp_[dofindex]*vdiv_+densgradfac_[dofindex]*cons_conv_phi);
   for (int vi=0; vi<nen_; ++vi)
@@ -4829,7 +4846,7 @@ else if (not is_incremental_ and is_genalpha_)
   gradphi_.Multiply(derxy_,ephin_[dofindex]);
 
   // convective term using scalar value at n
-  conv_phi_[dofindex] = velint_.Dot(gradphi_);
+  conv_phi_[dofindex] = convelint_.Dot(gradphi_);
 
   // diffusive term using current scalar value for higher-order elements
   if (use2ndderiv_) diff_phi_[dofindex] = diff_.Dot(ephin_[dofindex]);
@@ -5116,9 +5133,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
 
       // get velocity at element center
       velint_.Multiply(evelnp_,funct_);
+      convelint_.Multiply(econvelnp_,funct_);
 
       // convective part in convective form: u_x*N,x+ u_y*N,y
-      conv_.MultiplyTN(derxy_,velint_);
+      conv_.MultiplyTN(derxy_,convelint_);
 
       // velocity divergence required for conservative form
       if (conservative_) GetDivergence(vdiv_,evelnp_,derxy_);
@@ -5311,6 +5329,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
       {
         // get velocity at element center
         velint_.Multiply(evelnp_,funct_);
+        convelint_.Multiply(econvelnp_,funct_);
 
         for (int k = 0;k<numscal_;++k) // loop of each transported scalar
         {
@@ -5348,9 +5367,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::TimeDerivativeReinit(
 
       // get velocity at element center
       velint_.Multiply(evelnp_,funct_);
+      convelint_.Multiply(econvelnp_,funct_);
 
       // convective part in convective form: u_x*N,x+ u_y*N,y
-      conv_.MultiplyTN(derxy_,velint_);
+      conv_.MultiplyTN(derxy_,convelint_);
 
       // velocity divergence required for conservative form
       if (conservative_) GetDivergence(vdiv_,evelnp_,derxy_);
@@ -6427,6 +6447,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
 
       // get velocity at integration point
       velint_.Multiply(evelnp_,funct_);
+      convelint_.Multiply(econvelnp_,funct_);
 
       // get scalar at integration point
       const double phi = funct_.Dot(ephinp_[dofindex]);
@@ -6446,7 +6467,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
       case INPAR::SCATRA::flux_total_domain:
 
         // convective flux contribution
-        q.Update(densnp_[dofindex]*phi,velint_);
+        q.Update(densnp_[dofindex]*phi,convelint_);
 
         // no break statement here!
       case INPAR::SCATRA::flux_diffusive_domain:
@@ -7100,7 +7121,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_LinearAdvection_REINITIALI
 	  gradphi_.Multiply(derxy_,ephinp_[dofindex]);
 
 	  // convective term using current scalar value
-	  const double cons_conv_phi = velint_.Dot(gradphi_);
+	  const double cons_conv_phi = convelint_.Dot(gradphi_);
 
 	  const double consfac = timefacfac*(densnp_[dofindex]*vdiv_+densgradfac_[dofindex]*cons_conv_phi);
 	  for (int vi=0; vi<nen_; ++vi)
@@ -7548,7 +7569,7 @@ if(penalty_method == INPAR::SCATRA::penalty_method_akkerman)
 	  gradphi_.Multiply(derxy_,ephinp_[dofindex]);
 
 	  // convective term using current scalar value
-	  conv_phi = velint_.Dot(gradphi_);
+	  conv_phi = convelint_.Dot(gradphi_);
 
 	  // diffusive term using current scalar value for higher-order elements
 	  if (use2ndderiv_) diff_phi = diff_.Dot(ephinp_[dofindex]);
@@ -8771,7 +8792,7 @@ for (int vi=0; vi<nen_; ++vi)
 LINALG::Matrix<nen_,1> uGradDphi;
 uGradDphi.Clear();
 
-uGradDphi.MultiplyTN(derxy_,velint_);
+uGradDphi.MultiplyTN(derxy_,convelint_);
 
 
 for (int vi=0; vi<nen_; ++vi)
@@ -8807,7 +8828,7 @@ for (int vi=0; vi<nen_; ++vi)
 
 LINALG::Matrix<1,1> uGradPhi;
 uGradPhi.Clear();
-uGradPhi.MultiplyTN(velint_,grad_dist_n);
+uGradPhi.MultiplyTN(convelint_,grad_dist_n);
 
 //cout << uGradPhi << endl;
 //exit(1);
@@ -8834,7 +8855,7 @@ sum_phi.Update(1.0,grad_dist_npi, 1.0, grad_dist_n);
 
 LINALG::Matrix<1,1> uGradSumPhi;
 uGradSumPhi.Clear();
-uGradSumPhi.MultiplyTN(velint_,sum_phi);
+uGradSumPhi.MultiplyTN(convelint_,sum_phi);
 
 for (int vi=0; vi<nen_; ++vi)
 {
@@ -8914,13 +8935,13 @@ for (int vi=0; vi<nen_; ++vi)
 
 // a*grad(w) bzw. a*grad(D(phi))
 LINALG::Matrix<nen_,1> aGradD(true);
-aGradD.MultiplyTN(derxy_,velint_);
+aGradD.MultiplyTN(derxy_,convelint_);
 
 // a*grad(phi_n)
-double a_phi_n = velint_.Dot(grad_dist_n);
+double a_phi_n = convelint_.Dot(grad_dist_n);
 
 // a*grad(phi_npi)
-//double a_phi_npi = velint_.Dot(grad_dist_npi);
+//double a_phi_npi = convelint_.Dot(grad_dist_npi);
 
 //----------  --------------    |                n    |
 //  rhs                     +dt | a*grad(w) , phi     |
@@ -9034,13 +9055,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_TG3(
 
 	// a*grad(w) bzw. a*grad(D(phi))
 	LINALG::Matrix<nen_,1> aGradD(true);
-	aGradD.MultiplyTN(derxy_,velint_);
+	aGradD.MultiplyTN(derxy_,convelint_);
 
 	// a*grad(phi_n)
-	double a_phi_n = velint_.Dot(grad_dist_n);
+	double a_phi_n = convelint_.Dot(grad_dist_n);
 
 	// a*grad(phi_npi)
-	double a_phi_npi = velint_.Dot(grad_dist_npi);
+	double a_phi_npi = convelint_.Dot(grad_dist_npi);
 
 
 	for (int vi=0; vi<nen_; ++vi)
@@ -9180,7 +9201,7 @@ for (int vi=0; vi<nen_; ++vi)
 
 // a*grad(w) bzw. a*grad(D(phi))
 LINALG::Matrix<nen_,1> aGradD(true);
-aGradD.MultiplyTN(derxy_,velint_);
+aGradD.MultiplyTN(derxy_,convelint_);
 
 
 for (int vi=0; vi<nen_; ++vi)
@@ -9203,10 +9224,10 @@ for (int vi=0; vi<nen_; ++vi)
 
 
 // a*grad(phi_n)
-double a_phi_n = velint_.Dot(grad_dist_n);
+double a_phi_n = convelint_.Dot(grad_dist_n);
 
 // a*grad(phi_npi)
-double a_phi_npi = velint_.Dot(grad_dist_npi);
+double a_phi_npi = convelint_.Dot(grad_dist_npi);
 
 
 for (int vi=0; vi<nen_; ++vi)
@@ -9338,16 +9359,16 @@ for (int vi=0; vi<nen_; ++vi)
 
 // a*grad(w) bzw. a*grad(D(phi))
 LINALG::Matrix<nen_,1> aGradD(true);
-aGradD.MultiplyTN(derxy_,velint_);
+aGradD.MultiplyTN(derxy_,convelint_);
 
 // a*grad(phi_n)
-//double a_phi_n = velint_.Dot(grad_dist_n);
+//double a_phi_n = convelint_.Dot(grad_dist_n);
 
 // a*grad(phi_npi)
-double a_phi_npi = velint_.Dot(grad_dist_npi);
+double a_phi_npi = convelint_.Dot(grad_dist_npi);
 
 // a*grad(phi_nm)
-double a_phi_nm = velint_.Dot(grad_dist_nm);
+double a_phi_nm = convelint_.Dot(grad_dist_nm);
 
 
 for (int vi=0; vi<nen_; ++vi)
@@ -9702,14 +9723,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::SysmatLinearAdvectionSysmat(
         // use orginial phi-gradients for computation of reinit velocity
 
         double grad_norm_phi_0    = grad_phi_0.Norm2();
-        if(fabs(grad_norm_phi_0)>1e-12) velint_.Update(1.0/grad_norm_phi_0, grad_phi_0, 0.0);
-        else                            velint_.Clear();
+        if(fabs(grad_norm_phi_0)>1e-12) convelint_.Update(1.0/grad_norm_phi_0, grad_phi_0, 0.0);
+        else                            convelint_.Clear();
 #endif
 #ifdef REINIT_LINEAR_ADVECTION_RECONSTRUCTED_NORMALS
 
         // use reconstructed phi-gradients for computation of reinit velocity
         // get velocity at integration point
         velint_.Multiply(evelnp_,funct_);
+        convelint_.Multiply(econvelnp_,funct_);
 #endif
 
         double smoothedSign = EvaluateSmoothedSign(phi_0, grad_norm_phi_0, epsilon_bandwidth,meshsize, smoothedSignType);
@@ -9732,9 +9754,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::SysmatLinearAdvectionSysmat(
 
         // evaluate signum function and scale the normalized direction stored in velint_;
         velint_.Scale(smoothedSign);
+        convelint_.Scale(smoothedSign);
 
         // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-        conv_.MultiplyTN(derxy_,velint_);
+        conv_.MultiplyTN(derxy_,convelint_);
 
         // velocity divergence required for conservative form
         if (conservative_) GetDivergence(vdiv_,evelnp_,derxy_);

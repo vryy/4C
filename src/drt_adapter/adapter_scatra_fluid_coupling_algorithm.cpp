@@ -35,7 +35,8 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   // transfer the initial convective velocity from initial fluid field to scalar transport field
   // subgrid scales not transferred since they are zero at time t=0.0
   ScaTraField().SetVelocityField(
-      FluidField().Velnp(),
+      FluidField().ConvectiveVel(),
+      Teuchos::null,
       Teuchos::null,
       Teuchos::null,
       FluidField().Discretization()

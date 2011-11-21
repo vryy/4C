@@ -275,7 +275,8 @@ void SCATRA::TimIntGenAlpha::ComputeThermPressure()
   discret_->SetState("phinp",phiaf_);
 
   // provide velocity field (export to column map necessary for parallel evaluation)
-  AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
+  AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
+  AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
 
   // provide displacement field in case of ALE
   eleparams.set("isale",isale_);
@@ -660,7 +661,8 @@ void SCATRA::TimIntGenAlpha::CalcPhidtReinit()
 
     // provide velocity field and potentially acceleration/pressure field
     // (export to column map necessary for parallel evaluation)
-    AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
+    AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
+    AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
     AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
 
     eleparams.set("time-step length",dta_);

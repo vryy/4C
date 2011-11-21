@@ -178,6 +178,7 @@ void LOMA::Algorithm::InitialCalculations()
   ScaTraField().SetVelocityField(FluidField().Velnp(),
                                  Teuchos::null,
                                  Teuchos::null,
+                                 Teuchos::null,
                                  FluidField().Discretization());
 
   // set initial value of thermodynamic pressure in SCATRA
@@ -361,10 +362,12 @@ void LOMA::Algorithm::SetFluidValuesInScaTra()
     ScaTraField().SetVelocityField(FluidField().Velaf(),
                                    FluidField().Accam(),
                                    Teuchos::null,
+                                   Teuchos::null,
                                    FluidField().Discretization());
   else
     ScaTraField().SetVelocityField(FluidField().Velnp(),
                                    FluidField().Hist(),
+                                   Teuchos::null,
                                    Teuchos::null,
                                    FluidField().Discretization());
 }

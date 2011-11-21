@@ -62,13 +62,15 @@ namespace FS3I
 
     void SetMeshDisp();
 
-    /// extract fluid convective and structure grid velocities
-    void ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >& vel);
+    /// extract fluid convective and structure convective velocities
+    void ExtractVel(std::vector<Teuchos::RCP<const Epetra_Vector> >& vel,
+                    std::vector<Teuchos::RCP<const Epetra_Vector> >& convel);
 
     /// update concentrations in each iteration
     void FieldUpdateIter();
 
-    virtual void Output();
+    /// output of scalars and mean scalars
+    virtual void ScatraOutput();
 
     void UpdateScatraFields();
 

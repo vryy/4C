@@ -147,7 +147,8 @@ void SCATRA::TimIntTaylorGalerkin::ComputeNeumannInflowTG(
 
   // provide velocity field and potentially acceleration/pressure field
   // (export to column map necessary for parallel evaluation)
-  AddMultiVectorToParameterList(condparams,"velocity field",convel_);
+  AddMultiVectorToParameterList(condparams,"convective velocity field",convel_);
+  AddMultiVectorToParameterList(condparams,"velocity field",vel_);
 
   //provide displacement field in case of ALE
   condparams.set("isale",isale_);

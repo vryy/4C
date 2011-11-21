@@ -136,7 +136,8 @@ void SCATRA::ScaTraTimIntImpl::AddReinitializationParameters(
 
 	  // provide velocity field and potentially acceleration/pressure field
 	  // (export to column map necessary for parallel evaluation)
-	  AddMultiVectorToParameterList(params,"reinit velocity field",convel_);
+	  AddMultiVectorToParameterList(params,"reinit convective velocity field",convel_);
+          AddMultiVectorToParameterList(params,"reinit velocity field",vel_);
 
 	  if(timealgo_  == INPAR::SCATRA::timeint_one_step_theta)
 	  {
@@ -181,7 +182,8 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS_Boundary()
 
 		TaylorGalerkinBoundaryParams.set<int>("scatratype",scatratype_);
 		TaylorGalerkinBoundaryParams.set<double>("time_step_size", dta_);
-		AddMultiVectorToParameterList(TaylorGalerkinBoundaryParams,"velocity field",convel_);
+		AddMultiVectorToParameterList(TaylorGalerkinBoundaryParams,"convective velocity field",convel_);
+                AddMultiVectorToParameterList(TaylorGalerkinBoundaryParams,"velocity field",vel_);
 
 		discret_->ClearState();
 

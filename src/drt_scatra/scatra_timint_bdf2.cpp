@@ -250,7 +250,8 @@ void SCATRA::TimIntBDF2::ComputeThermPressure()
   discret_->SetState("phinp",phinp_);
 
   // provide velocity field (export to column map necessary for parallel evaluation)
-  AddMultiVectorToParameterList(eleparams,"velocity field",convel_);
+  AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
+  AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
 
   // provide displacement field in case of ALE
   eleparams.set("isale",isale_);

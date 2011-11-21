@@ -217,8 +217,11 @@ FS3I::GasFSI::GasFSI(Epetra_Comm& comm)
 
   // make sure that initial time derivative of concentration is not calculated
   // automatically (i.e. field-wise)
-  if (DRT::INPUT::IntegralValue<int>(scatradyn,"SKIPINITDER")==false)
-    dserror("Initial time derivative of phi must not be calculated automatically -> set SKIPINITDER to false");
+  //if (DRT::INPUT::IntegralValue<int>(scatradyn,"SKIPINITDER")==false)
+  //  dserror("Initial time derivative of phi must not be calculated automatically -> set SKIPINITDER to false");
+
+  if (DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatradyn,"CONVFORM") != INPAR::SCATRA::convform_conservative)
+    dserror("Conservative formulation needs to be chosen for solids -> set CONVFORM to conservative!");
 
   // check if relevant parameters are chosen the same for FSI and ScaTra
   // dynamics
@@ -430,13 +433,15 @@ void FS3I::GasFSI::SetupSystem()
 /*----------------------------------------------------------------------*/
 void FS3I::GasFSI::Timeloop()
 {
+  // output of initial state
+  ScatraOutput();
+
   fsi_->PrepareTimeloop();
 
   while (fsi_->NotFinished())
   {
     DoFsiStep();
     DoScatraStep();
-    Output();
   }
 }
 
@@ -449,6 +454,7 @@ void FS3I::GasFSI::DoFsiStep()
   fsi_->TimeStep(fsi_);
   fsi_->PrepareOutput();
   fsi_->Update();
+  fsi_->Output();
 }
 
 
@@ -484,17 +490,19 @@ void FS3I::GasFSI::DoScatraStep()
 
     SetupCoupledScatraSystem();
 
-    LinearSolveScatra();
-    FieldUpdateIter();
-
     stopnonliniter = AbortScatraNonlinIter(itnum);
     if (stopnonliniter)
       break;
+
+    LinearSolveScatra();
+    FieldUpdateIter();
 
     itnum++;
   }
 
   UpdateScatraFields();
+
+  ScatraOutput();
 }
 
 
@@ -768,14 +776,13 @@ void FS3I::GasFSI::UpdateScatraFields()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::GasFSI::Output()
+void FS3I::GasFSI::ScatraOutput()
 {
-  fsi_->Output();
-
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
     scatra->ScaTraField().Output();
+    scatra->ScaTraField().OutputMeanScalars();
   }
 }
 

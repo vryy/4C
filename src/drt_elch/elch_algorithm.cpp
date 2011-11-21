@@ -232,6 +232,7 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
         FluidField().Velnp(),
         FluidField().Hist(),
         Teuchos::null,
+        Teuchos::null,
         FluidField().Discretization());
 
   // prepare time step (+ initialize one-step-theta scheme correctly with
@@ -283,6 +284,7 @@ void ELCH::Algorithm::DoTransportStep()
         FluidField().Velaf(),
         FluidField().Accam(),
         Teuchos::null,
+        Teuchos::null,
         FluidField().Discretization());
   }
   else if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
@@ -291,6 +293,7 @@ void ELCH::Algorithm::DoTransportStep()
         FluidField().Velaf(),
         FluidField().Accam(),
         Teuchos::null,
+        Teuchos::null,
         FluidField().Discretization());;
   }
   else
@@ -298,6 +301,7 @@ void ELCH::Algorithm::DoTransportStep()
     ScaTraField().SetVelocityField(
         FluidField().Velnp(),
         FluidField().Hist(),
+        Teuchos::null,
         Teuchos::null,
         FluidField().Discretization()
     );

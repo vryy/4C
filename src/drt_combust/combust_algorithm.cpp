@@ -230,6 +230,7 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
         //FluidField().ExtractInterfaceVeln(),
         ComputeFlameVel(convel,FluidField().DofSet()),
         Teuchos::null,
+        Teuchos::null,
         FluidField().DofSet(),
         FluidField().Discretization()
     );
@@ -1275,7 +1276,7 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
   }
 
   FluidField().PrepareTimeStep();
-  
+
 #ifdef PRINTMASSCHECK
   // compute initial volume of minus domain
   const double volume_start = ComputeVolume();
@@ -1303,6 +1304,7 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
       //OverwriteFluidVel(),
       FluidField().ExtractInterfaceVeln(),
       Teuchos::null,
+      Teuchos::null,
       FluidField().DofSet(),
       FluidField().Discretization()
     );
@@ -1311,6 +1313,7 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
     //ScaTraField().SetVelocityField(
     //    FluidField().ExtractInterfaceVeln(),
     //    FluidField().Hist(),
+    //    Teuchos::null,
     //    FluidField().DofSet(),
     //    FluidField().Discretization()
     //);
@@ -1327,6 +1330,7 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
 //        OverwriteFluidVel(),
         //FluidField().ExtractInterfaceVeln(),
         ComputeFlameVel(convel,FluidField().DofSet()),
+        Teuchos::null,
         Teuchos::null,
         FluidField().DofSet(),
         FluidField().Discretization()
@@ -1359,7 +1363,7 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
   // print mass conservation check on screen
   printMassConservationCheck(volume_start, volume_end);
 #endif
-  
+
   return;
 }
 
@@ -1464,6 +1468,7 @@ void COMBUST::Algorithm::DoGfuncField()
         //OverwriteFluidVel(),
         ManipulateFluidFieldForGfunc(FluidField().ExtractInterfaceVeln(), FluidField().DofSet()),
         Teuchos::null,
+        Teuchos::null,
         FluidField().DofSet(),
         FluidField().Discretization()
       );
@@ -1474,6 +1479,7 @@ void COMBUST::Algorithm::DoGfuncField()
         //OverwriteFluidVel(),
         FluidField().ExtractInterfaceVeln(),
         Teuchos::null,
+        Teuchos::null,
         FluidField().DofSet(),
         FluidField().Discretization()
       );
@@ -1482,6 +1488,7 @@ void COMBUST::Algorithm::DoGfuncField()
       //ScaTraField().SetVelocityField(
       //    FluidField().ExtractInterfaceVeln(),
       //    FluidField().Hist(),
+      //    Teuchos::null,
       //    FluidField().DofSet(),
       //    FluidField().Discretization()
       //);
@@ -1522,6 +1529,7 @@ void COMBUST::Algorithm::DoGfuncField()
         //FluidField().ExtractInterfaceVeln(),
         ComputeFlameVel(convel,FluidField().DofSet()),
         //ComputeFlameVel(convel,FluidField().DofSet(),FluidField().GetDBCMapExtractor()->CondMap()),
+        Teuchos::null,
         Teuchos::null,
         FluidField().DofSet(),
         FluidField().Discretization()
