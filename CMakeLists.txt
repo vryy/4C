@@ -554,7 +554,6 @@ set(OBJS_DRT_COMBUST
   src/drt_combust/combust_fluidimplicitintegration.cpp
   src/drt_combust/combust_fluidresulttest.cpp
 #  src/drt_combust/combust_interface.cpp
-  src/drt_combust/combust_refinementcell.cpp
   src/drt_combust/combust_reinitializer.cpp
   src/drt_combust/combust_utils.cpp
 )
@@ -844,6 +843,7 @@ set(OBJS_DRT_STATMECH_LIB
   src/drt_statmech/bromotion_manager.cpp
 )
 set(OBJS_DRT_COMBUST3_LIB
+  src/drt_combust/combust_refinementcell.cpp
   src/drt_combust/combust3.cpp
   src/drt_combust/combust3_evaluate.cpp
   src/drt_combust/combust3_input.cpp
