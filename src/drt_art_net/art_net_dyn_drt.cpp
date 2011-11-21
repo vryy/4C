@@ -60,6 +60,11 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   // -------------------------------------------------------------------
   // check if descretization exits
   // -------------------------------------------------------------------
+  if(DRT::Problem::Instance()->NumFields() >= genprob.numartf)
+  {
+    return Teuchos::null;
+  }
+
   if(DRT::Problem::Instance()->NumDis(genprob.numartf)<1)
   {
 #if 0
