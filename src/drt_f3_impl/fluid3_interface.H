@@ -19,6 +19,11 @@ Maintainer: Andreas Ehrl
 #ifdef D_FLUID3
 
 #include "../drt_f3/fluid3.H"
+
+#include "../drt_inpar/inpar_xfem.H"
+#include "../drt_bele3/bele3.H"
+#include "../drt_bele3/bele3_4.H"
+
 #include "../drt_lib/drt_singletondestruction.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
@@ -188,10 +193,33 @@ namespace ELEMENTS
                                        std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
                                        //std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
                                        Teuchos::ParameterList&    params,
+                                       double & nitsche_stab,
+                                       double & nitsche_stab_conv,
                                        Epetra_SerialDenseMatrix&  elemat1_epetra,
                                        Epetra_SerialDenseVector&  elevec1_epetra,
                                        Epetra_SerialDenseMatrix&  Cuiui
       ) = 0;
+
+    virtual void ElementXfemInterfaceNitscheTwoSided( DRT::ELEMENTS::Fluid3 * ele,
+                                       DRT::Discretization & dis,
+                                       const std::vector<int> & lm,
+                                       const DRT::UTILS::GaussIntegration & intpoints,
+                                       DRT::Discretization & cutdis,
+                                       const std::map<int, std::vector<GEO::CUT::BoundaryCell*> > & bcells,
+                                       const std::map<int, std::vector<DRT::UTILS::GaussIntegration> > & cutintpoints,
+                                       std::map<int, std::vector<Epetra_SerialDenseMatrix> > & side_coupling,
+                                       //std::map<int, std::vector<RCP<Epetra_SerialDenseMatrix> > > side_coupling,
+                                       Teuchos::ParameterList&    params,
+                                       DRT::Discretization &  alediscret,
+                                       map<int,int> & boundary_emb_gid_map,
+                                       INPAR::XFEM::CouplingStrategy & coupling_strategy,
+                                       double & nitsche_stab,
+                                       double & nitsche_stab_conv,
+                                       Epetra_SerialDenseMatrix&  elemat1_epetra,
+                                       Epetra_SerialDenseVector&  elevec1_epetra,
+                                       Epetra_SerialDenseMatrix&  Cuiui
+      ) = 0;
+
 
     /// add interface condition at cut to element matrix and rhs (Nitsche coupling)
     virtual void ElementXfemInterfaceNeumann( DRT::ELEMENTS::Fluid3 * ele,

@@ -58,13 +58,29 @@ void XFEM::FluidWizard::Cut(  bool include_inner, const Epetra_Vector & idispcol
       lm.clear();
       mydisp.clear();
       cutterdis_.Dof(&node, lm);
-      DRT::UTILS::ExtractMyValues(idispcol,mydisp,lm);
+
+
+      if(lm.size() == 3) // case for BELE3 boundary elements
+      {
+        DRT::UTILS::ExtractMyValues(idispcol,mydisp,lm);
+      }
+      else if(lm.size() == 4) // case for BELE3_4 boundary elements
+      {
+        // copy the first three entries for the displacement, the fourth entry should be zero if BELE3_4 is used for cutdis instead of BELE3
+        std::vector<int> lm_red; // reduced local map
+        lm_red.clear();
+        for(int k=0; k< 3; k++) lm_red.push_back(lm[k]);
+
+        DRT::UTILS::ExtractMyValues(idispcol,mydisp,lm_red);
+      }
+      else dserror("wrong number of dofs for node %i", lm.size());
 
       if (mydisp.size() != 3)
         dserror("we need 3 displacements here");
 
-      LINALG::Matrix<3, 1> disp( &mydisp[0], true );
-      LINALG::Matrix<3, 1> x( node.X() );
+
+      LINALG::Matrix<3, 1> disp( &mydisp[0], true ); //cout << "disp " << disp << endl;
+      LINALG::Matrix<3, 1> x( node.X() ); //cout << "x " << x << endl;
 
       // update x-position of cutter node for current time step (update with displacement)
       x.Update( 1, disp, 1 );

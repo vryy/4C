@@ -26,6 +26,7 @@
 #include "../drt_ale2/ale2_nurbs.H"
 #include "../drt_ale3/ale3.H"
 #include "../drt_ale3/ale3_nurbs.H"
+#include "../drt_bele3/bele3_4.H"
 #include "../drt_bele3/bele3.H"
 #include "../drt_bele3/vele3.H"
 #include "../drt_bele3/bele2.H"
@@ -162,6 +163,7 @@ std::string DRT::ParObjectList()
 #endif
     << DRT::ELEMENTS::Bele2Type::Instance().Name() << " "
     << DRT::ELEMENTS::Bele3Type::Instance().Name() << " "
+    << DRT::ELEMENTS::Bele3_4Type::Instance().Name() << " "
     << DRT::ELEMENTS::Vele3Type::Instance().Name() << " "
 #ifdef D_SOLID3
     << DRT::ELEMENTS::NStetType::Instance().Name() << " "

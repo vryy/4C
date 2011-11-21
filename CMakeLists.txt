@@ -668,6 +668,8 @@ set(OBJS_DRT_ELCH
 set(OBJS_DRT_BELE3_LIB
   src/drt_bele3/bele2.cpp
   src/drt_bele3/bele2_evaluate.cpp
+  src/drt_bele3/bele3_4.cpp
+  src/drt_bele3/bele3_4_evaluate.cpp
   src/drt_bele3/bele3.cpp
   src/drt_bele3/bele3_evaluate.cpp
   src/drt_bele3/bele3_line.cpp
@@ -2341,6 +2343,7 @@ baci_test(xfluid_channel_constWDBC_straightCut 1 "")
 baci_test(xfluid_channel_constWDBC_straightCut_hex20 1 "")
 baci_test(xfluid_channel_shearWDBC_inclinedCut 1 "")
 baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf 1 "")
+baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf_Nitsche 1 "")
 baci_test(xfluid_channel_shearWDBC_inclinedCut_bodyf_hex20 1 "")
 baci_test(xfluid_channel_shearWDBC_inclineddoubleCut_bodyf 1 "")
 baci_test(one_d_3_artery_network 1 9999)
@@ -2370,6 +2373,8 @@ baci_test(xff_shear_flow_2D_instat_neumann 1 "")
 baci_test(xff_moving_circle_parainflow_OST 1 "")
 baci_test(xff_moving_circle_shearflow_OST 1 "")
 baci_test(xff_shear_flow_2D_stat_neumann_moredofset_quad 1 "")
+baci_test(xff_shear_flow_2D_stat_neum_moredofs_circ_Nitsche_alesided 1 "")
+baci_test(xff_shear_flow_2D_stat_neum_moredofs_circ_Nitsche_xsided 1 "")
 baci_test(xff_shear_flow_2D_stat_neumann_moredofset_circle 1 "")
 baci_test(two_phase_couette_flow 1 "")
 baci_test(two_phase_rayleigh_taylor_instability_32x128 1 4)

@@ -3740,6 +3740,8 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfem_general = list->sublist("XFEM GENERAL",false,"");
 
+
+  // OUTPUT options
   setStringToIntegralParameter<int>("GMSH_DEBUG_OUT","Yes","Do you want to write extended Gmsh output for each timestep?",
                                yesnotuple,yesnovalue,&xfem_general);
   setStringToIntegralParameter<int>("GMSH_DEBUG_OUT_SCREEN","No","Do you want to be informed, if Gmsh output is written?",
@@ -3750,32 +3752,55 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                yesnotuple,yesnovalue,&xfem_general);
   setStringToIntegralParameter<int>("GMSH_CUT_OUT","Yes","Do you want to write extended Gmsh output for each timestep?",
                                yesnotuple,yesnovalue,&xfem_general);
-  setStringToIntegralParameter<int>("DLM_CONDENSATION","Yes","Do you want to condense the distributed Lagrange multiplier?",
-                                 yesnotuple,yesnovalue,&xfem_general);
-  setStringToIntegralParameter<int>("INCOMP_PROJECTION","No","Do you want to project the old velocity to an incompressible velocity field?",
-                               yesnotuple,yesnovalue,&xfem_general);
-  setStringToIntegralParameter<int>("CONDEST","No","Do you want to estimate the condition number? It is somewhat costly.",
-                                   yesnotuple,yesnovalue,&xfem_general);
-  IntParameter("MAX_NUM_DOFSETS",3,"Maximum number of volumecells in the XFEM element",&xfem_general);
-  DoubleParameter("volumeRatioLimit",1.0e-2,"don't enrich nodes of elements, when less than this fraction of the element is on one side of the interface",&xfem_general);
-  DoubleParameter("boundaryRatioLimit",1.0e-4,"don't enrich element, when less than this area fraction is within this element",&xfem_general);
 
-  setStringToIntegralParameter<int>("EMBEDDED_BOUNDARY","BoundaryTypeSigma","how to treat the interface",
+
+  // Boundary-Coupling options
+  setStringToIntegralParameter<int>("EMBEDDED_BOUNDARY","BoundaryTypeSigma","method how to enforce embedded boundary/coupling conditions at the interface",
                                tuple<std::string>("BoundaryTypeSigma","BoundaryTypeTauPressure", "BoundaryTypeNitsche", "BoundaryTypeNeumann"),
                                tuple<int>(
-                                   INPAR::XFEM::BoundaryTypeSigma,
-                                   INPAR::XFEM::BoundaryTypeTauPressure,
-                                   INPAR::XFEM::BoundaryTypeNitsche,
-                                   INPAR::XFEM::BoundaryTypeNeumann
+                                   INPAR::XFEM::BoundaryTypeSigma,       // stress/hybrid formulation
+                                   INPAR::XFEM::BoundaryTypeTauPressure, // not used in Xfluid
+                                   INPAR::XFEM::BoundaryTypeNitsche,     // Nitsche's formulation
+                                   INPAR::XFEM::BoundaryTypeNeumann      // interior Neumann condition
                                    ),
                                &xfem_general);
 
+  setStringToIntegralParameter<int>("COUPLING_STRATEGY","xfluid_sided_mortaring","on which side is the main part of enforcing",
+                               tuple<std::string>("xfluid_sided_mortaring", "embedded_sided_mortaring", "two_sided_mortaring"),
+                               tuple<int>(
+                                   INPAR::XFEM::Xfluid_Sided_Mortaring,    // coupling on cut mesh at interface
+                                   INPAR::XFEM::Embedded_Sided_Mortaring,  // coupling on embedded mesh at interface
+                                   INPAR::XFEM::Two_Sided_Mortaring        // coupling on cut mesh and embedded mesh at interface
+                                   ),
+                               &xfem_general);
+
+  IntParameter("BOUNDARY_FUNCT_NO",-1,"funct number for WDBC or Neumann Condition at embedded boundary/interface",&xfem_general);
+
+  // Nitsche stabilization parameter
+  DoubleParameter("Nitsche_stab",       1.0, "define Nitsche's stabilization parameter for BoundaryTypeNitsche",&xfem_general);
+  DoubleParameter("Nitsche_stab_conv",  0.0, "define Nitsche's stabilization parameter for convection dominated problems for BoundaryTypeNitsche",&xfem_general);
+
+  setStringToIntegralParameter<int>("DLM_CONDENSATION","Yes","Do you want to condense the discontinuous stress field?",
+                               yesnotuple,yesnovalue,&xfem_general);
+  setStringToIntegralParameter<int>("INCOMP_PROJECTION","No","Do you want to project the old velocity to an incompressible velocity field?",
+                               yesnotuple,yesnovalue,&xfem_general);
+  setStringToIntegralParameter<int>("CONDEST","No","Do you want to estimate the condition number? It is somewhat costly.",
+                               yesnotuple,yesnovalue,&xfem_general);
+
+  IntParameter("MAX_NUM_DOFSETS",3,"Maximum number of volumecells in the XFEM element",&xfem_general);
+
+
+  // CUT options
+  DoubleParameter("volumeRatioLimit",1.0e-2,"don't enrich nodes of elements, when less than this fraction of the element is on one side of the interface",&xfem_general);
+  DoubleParameter("boundaryRatioLimit",1.0e-4,"don't enrich element, when less than this area fraction is within this element",&xfem_general);
+
+  // Integration options
   setStringToIntegralParameter<int>("GAUSSPOINTSBY","Tessellation","how to find Gauss Points for the cut volumes",
                                tuple<std::string>("Tessellation","MomentFitting"),
-			       tuple<int>(0,1),
-			       &xfem_general);
+                               tuple<int>(0,1),
+                               &xfem_general);
 
-  IntParameter("BOUNDARY_FUNCT_NO",-1,"funct no for WDBC or Neumann Condition at embedded boundary/interface",&xfem_general);
+
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fluidsolver = list->sublist("FLUID SOLVER",false,"");

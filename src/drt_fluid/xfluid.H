@@ -367,6 +367,9 @@ namespace FLD
 
     enum INPAR::XFEM::BoundaryIntegralType boundIntType_;
     int boundIntFunct_;
+    double nitsche_stab_;                                      // stabilization parameter for Nitsche's method
+    double nitsche_stab_conv_;                                 // stabilizaiton parameter for convective Nitsche stabilization
+
     std::string gaussPointType_; //blockk or remove
 
     bool gmsh_debug_out_;

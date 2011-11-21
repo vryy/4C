@@ -329,6 +329,8 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                          bintpoints,
                                                          side_coupling,
                                                          eleparams,
+                                                         xfluid_.nitsche_stab_,
+                                                         xfluid_.nitsche_stab_conv_,
                                                          strategy.Elematrix1(),
                                                          strategy.Elevector1(),
                                                          Cuiui);
@@ -448,6 +450,8 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                               bintpoints,
                                               side_coupling,
                                               eleparams,
+                                              xfluid_.nitsche_stab_,
+                                              xfluid_.nitsche_stab_conv_,
                                               strategy.Elematrix1(),
                                               strategy.Elevector1(),
                                               Cuiui);
@@ -1032,6 +1036,11 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   // get XFEM specific input parameters
   boundIntType_ = DRT::INPUT::IntegralValue<INPAR::XFEM::BoundaryIntegralType>(xfemparams,"EMBEDDED_BOUNDARY");
   boundIntFunct_ = xfemparams.get<int>("BOUNDARY_FUNCT_NO");
+
+
+  nitsche_stab_       = params_.sublist("XFEM").get<double>("Nitsche_stab", 0.0);
+  nitsche_stab_conv_  = params_.sublist("XFEM").get<double>("Nitsche_stab_conv", 0.0);
+
   gaussPointType_ = xfemparams.get<std::string>("GAUSSPOINTSBY");//blockkk or remove
 
   // load GMSH output flags
@@ -1061,6 +1070,9 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   }
 
 
+
+  string element_name = "BELE3"; // use always 3 dofs
+
   // ensure that degrees of freedom in the discretization have been set
   if ( not discret_->Filled() or not actdis->HaveDofs() )
     discret_->FillComplete();
@@ -1068,7 +1080,7 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   std::vector<std::string> conditions_to_copy;
   conditions_to_copy.push_back("FSICoupling");
   conditions_to_copy.push_back("XFEMCoupling");
-  boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "boundary", "BELE3", conditions_to_copy);
+  boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(soliddis, "FSICoupling", "boundary", element_name, conditions_to_copy);
   if (boundarydis_->NumGlobalNodes() == 0)
   {
     std::cout << "Empty boundary discretization detected. No FSI coupling will be performed...\n";

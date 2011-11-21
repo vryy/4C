@@ -24,7 +24,7 @@ namespace INPAR
   namespace XFEM
   {
 
-    /// which algorithm is used to enforce the boundary condition
+    /// which method is used to enforce the boundary condition
     enum BoundaryIntegralType
     {
       BoundaryTypeSigma,
@@ -33,7 +33,15 @@ namespace INPAR
       BoundaryTypeNeumann
     };
 
-  }  // namespace FSI
+    /// which sided-mortaring is used to enforce the boundary condition
+    enum CouplingStrategy
+    {
+      Xfluid_Sided_Mortaring,
+      Embedded_Sided_Mortaring,
+      Two_Sided_Mortaring
+    };
+
+  }  // namespace XFEM
 
 }  // namespace INPAR
 

@@ -13,6 +13,7 @@
 #include "xfluid_defines.H"
 
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_xfem.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_xfem/xfem_fluidwizard.H"
 
@@ -65,7 +66,18 @@ namespace FLD
 
       explicit XFluidFluidState( XFluidFluid & xfluid, Epetra_Vector & idispcol );
 
+      void Evaluate          ( Teuchos::ParameterList & eleparams,
+                               INPAR::XFEM::CouplingStrategy & coupling_strategy,
+                               DRT::Discretization    & bgdis,
+                               DRT::Discretization    & cutdiscret,
+                               DRT::Discretization    & embdis);
+
       void EvaluateFluidFluid( Teuchos::ParameterList & eleparams,
+                               DRT::Discretization    & bgdis,
+                               DRT::Discretization    & cutdiscret,
+                               DRT::Discretization    & embdis);
+
+      void EvaluateFluidFluid_TwoSidedMortaring( Teuchos::ParameterList & eleparams,
                                DRT::Discretization    & bgdis,
                                DRT::Discretization    & cutdiscret,
                                DRT::Discretization    & embdis);
@@ -360,6 +372,8 @@ namespace FLD
     */
     const INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const {return timealgo_;}
 
+    const INPAR::XFEM::BoundaryIntegralType BoundIntType() const {return boundIntType_;}
+
     double Dt() const { return dta_; }
 
     double Time() const { return time_; }
@@ -446,6 +460,9 @@ namespace FLD
     const Epetra_Map* aledofrowmap_;
     const Epetra_Map* boundarydofrowmap_;
 
+    // map between boundary gid and corresponding embedded gid
+    std::map<int, int> boundary_emb_gid_map_;
+
 
     //! @name boundary-dis state vectors
     Teuchos::RCP<Epetra_Vector>    ivelnp_;
@@ -458,6 +475,7 @@ namespace FLD
     DRT::IndependentDofSet       dofset_out_;
 
     // velocity pressure splitter for fluid output
+    LINALG::MapExtractor      velpressplitterForBoundary_;
     LINALG::MapExtractor      velpressplitterForOutput_;
 
     // output vector for bg-fluid field (velocity and pressure)
@@ -525,6 +543,15 @@ namespace FLD
 //     //! basis vector for nullspace (vector of ones in the pressure component)
 //     Teuchos::RCP<Epetra_Vector>   c_;
     Teuchos::ParameterList        params_;
+
+
+    //! @name XFEM coupling specific parameters
+    enum INPAR::XFEM::BoundaryIntegralType boundIntType_;     // embedded boundary/coupling method
+    enum INPAR::XFEM::CouplingStrategy coupling_strategy_;    // coupling strategy (onesided, twosided mortaring)
+    double nitsche_stab_;                                      // stabilization parameter for Nitsche's method
+    double nitsche_stab_conv_;                                 // stabilizaiton parameter for convective Nitsche stabilization
+    //@}
+
 
     Teuchos::RCP<IO::DiscretizationWriter>     emboutput_;
     Teuchos::RCP<IO::DiscretizationWriter>     output_;

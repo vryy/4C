@@ -383,7 +383,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->sublist("XFEM").set<double>("volumeRatioLimit", xdyn.get<double>("volumeRatioLimit"));
     fluidtimeparams->sublist("XFEM").set<double>("boundaryRatioLimit", xdyn.get<double>("boundaryRatioLimit"));
     fluidtimeparams->sublist("XFEM").set<int>("EMBEDDED_BOUNDARY", DRT::INPUT::IntegralValue<INPAR::XFEM::BoundaryIntegralType>(xdyn, "EMBEDDED_BOUNDARY"));
+    fluidtimeparams->sublist("XFEM").set<int>("COUPLING_STRATEGY", DRT::INPUT::IntegralValue<INPAR::XFEM::CouplingStrategy>(xdyn, "COUPLING_STRATEGY"));
     fluidtimeparams->sublist("XFEM").set<int>("MAX_NUM_DOFSETS", xdyn.get<int>("MAX_NUM_DOFSETS"));
+    fluidtimeparams->sublist("XFEM").set<double>("Nitsche_stab", xdyn.get<double>("Nitsche_stab"));
+    fluidtimeparams->sublist("XFEM").set<double>("Nitsche_stab_conv", xdyn.get<double>("Nitsche_stab_conv"));
     fluidtimeparams->sublist("XFEM").set<string>("GAUSSPOINTSBY", xdyn.get<string>("GAUSSPOINTSBY"));
   }
 
