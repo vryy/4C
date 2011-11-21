@@ -174,6 +174,11 @@ public:
   */
   void AssembleMatAndRHS();
 
+  /*!
+  \brief Evaluate the error residual
+  */
+  void EvalResidual(Teuchos::RCP<ParameterList> CouplingTo3DParams);
+
 
   /*!
   \brief calculate error between a analytical solution and the
@@ -327,6 +332,11 @@ protected:
   RCP<Epetra_Vector>          acini_bc_;
   RCP<Epetra_Vector>          acini_volumen_;
   RCP<Epetra_Vector>          acini_volumenp_;
+  //@}
+
+  //! Error vector that shows the convergenece of the nonlinear problem
+  RCP<Epetra_Vector>          residual_;
+  RCP<Epetra_Vector>          bc_residual_;
   //@}
 
   //! connection between master and slave nodes on this proc

@@ -125,19 +125,18 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   qin_n_        = LINALG::CreateVector(*elementcolmap,true);
   qin_nm_       = LINALG::CreateVector(*elementcolmap,true);
 
-  qi_nl_np_     = LINALG::CreateVector(*elementcolmap,true);
-
   // outlet volumetric flow rates at time n+1, n and n-1
   qout_np_      = LINALG::CreateVector(*elementcolmap,true);
   qout_n_       = LINALG::CreateVector(*elementcolmap,true);
   qout_nm_      = LINALG::CreateVector(*elementcolmap,true);
 
-  qo_nl_np_     = LINALG::CreateVector(*elementcolmap,true);
-
   // This vector will be used for exportation and restart reasons
   qexp_         = LINALG::CreateVector(*elementrowmap,true);
   pexp_         = LINALG::CreateVector(*dofrowmap,true);
 
+  // This vector will be used to test convergence
+  residual_     = LINALG::CreateVector(*dofrowmap,true);
+  bc_residual_  = LINALG::CreateVector(*dofcolmap,true);
 
   // Volumetric flow rates at time n+1, n and n-1
   //  qcnp_          = LINALG::CreateVector(*elementrowmap,true);
@@ -413,7 +412,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<ParameterList> 
   //--------------------------------------------------------------------
   // 
   //--------------------------------------------------------------------
-  double error_norm = 1.e7;
+  double error_norm1 = 1.e7;
+  double error_norm2 = 1.e7;
 
   for (int i =1; i<=maxiter_; i++)
   {
@@ -435,10 +435,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<ParameterList> 
     //------------------------------------------------------------------
     // Evaluate the L2 norm of the difference
     //------------------------------------------------------------------
-    p_nonlin_->Norm2 (&error_norm);
-    error_norm  /= sqrt(double(p_nonlin_->GlobalLength()));
+    p_nonlin_->Norm2 (&error_norm1);
+    //    error_norm1 /= sqrt(double(p_nonlin_->GlobalLength()));
 
-
+    this->EvalResidual(CouplingTo3DParams);
+    residual_->Norm2 (&error_norm2);
     //    cout<<"Proc: "<<myrank_<<" Norm: "<<error_norm<<" length: "<<p_nonlin_->GlobalLength()<<endl;
     
     //------------------------------------------------------------------
@@ -447,9 +448,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<ParameterList> 
     if (!myrank_)
     {
       printf("iteration step %4d/%4d ",i,maxiter_);
-      printf(" | ||P{%d}-P{%d}||_L2 = %f\n",i-1,i,error_norm);
+      printf(" | ||P{%d}-P{%d}||_L2 = %10.3E\t\t|Qresidual|_2 = %10.3E\n",i-1,i,error_norm1,error_norm2);
     }
-    if(error_norm <= non_lin_tol_)
+    if(error_norm2 <= non_lin_tol_)
       break;
     
   }
@@ -1028,6 +1029,108 @@ AIRWAY::RedAirwayImplicitTimeInt::CreateFieldTest()
   return Teuchos::rcp(new AIRWAY::RedAirwayResultTest(*this));
 }
 #endif
+
+/*----------------------------------------------------------------------*
+ |                                                                      |
+ *----------------------------------------------------------------------*/
+void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<ParameterList> CouplingTo3DParams)
+{
+  residual_->PutScalar(0.0);
+  // -------------------------------------------------------------------
+  // call elements to calculate system matrix
+  // -------------------------------------------------------------------
+  {
+    // set both system matrix and rhs vector to zero
+    sysmat_->Zero();
+    rhs_->PutScalar(0.0);
+
+    // create the parameters for the discretization
+    ParameterList eleparams;
+
+    // action for elements
+    eleparams.set("action","calc_sys_matrix_rhs");
+    eleparams.set("time step size",dta_);
+
+    // other parameters that might be needed by the elements
+    eleparams.set("total time",time_);
+
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("pnp",pnp_);
+    discret_->SetState("pn" ,pn_ );
+    discret_->SetState("pnm",pnm_);
+
+    eleparams.set("qin_np",qin_np_);
+    eleparams.set("qin_n" ,qin_n_);
+    eleparams.set("qin_nm",qin_nm_);
+
+
+    eleparams.set("qout_np",qout_np_);
+    eleparams.set("qout_n" ,qout_n_ );
+    eleparams.set("qout_nm",qout_nm_ );
+
+    // call standard loop over all elements
+    discret_->Evaluate(eleparams,sysmat_,rhs_);
+    discret_->ClearState();
+
+    // finalize the complete matrix
+    sysmat_->Complete();
+    discret_->ClearState();
+  }
+
+  // -------------------------------------------------------------------
+  // Solve the boundary conditions 
+  // -------------------------------------------------------------------
+  bcval_->PutScalar(0.0);
+  dbctog_->PutScalar(0.0);
+  // Solve terminal BCs
+  {
+    // create the parameters for the discretization
+    ParameterList eleparams;
+
+    // action for elements
+    eleparams.set("action","set_bc");
+
+    // set vecotr values needed by elements
+    discret_->ClearState();
+    discret_->SetState("pnp",pnp_);
+    discret_->SetState("pn" ,pn_ );
+    discret_->SetState("pnm",pnm_);
+    //    discret_->SetState("qcnp",qcnp_);
+    //    discret_->SetState("qcn" ,qcn_ );
+    //    discret_->SetState("qcnm",qcnm_);
+
+    eleparams.set("qin_np",qin_np_);
+    eleparams.set("qin_n",qin_n_);
+
+    eleparams.set("qout_np",qout_np_);
+
+    eleparams.set("time step size",dta_);
+    eleparams.set("total time",time_);
+    eleparams.set("bcval",bcval_);
+    eleparams.set("dbctog",dbctog_);
+
+    // Add the parameters to solve terminal BCs coupled to 3D fluid boundary
+    eleparams.set("coupling with 3D fluid params",CouplingTo3DParams);
+
+    // call standard loop over all elements
+    discret_->Evaluate(eleparams,sysmat_,rhs_);
+    discret_->ClearState();
+  }
+  
+  // -------------------------------------------------------------------
+  // Apply the BCs to the system matrix and rhs
+  // -------------------------------------------------------------------
+  {
+    LINALG::ApplyDirichlettoSystem(sysmat_,pnp_,rhs_,bcval_,dbctog_);
+  }
+
+  // -------------------------------------------------------------------
+  // Evaluate Residual
+  // -------------------------------------------------------------------
+  sysmat_->Multiply(false, *pnp_, *residual_);
+  residual_-> Update(-1.0,*rhs_ ,1.0);
+}//EvalResidual
 
 /*----------------------------------------------------------------------*
  | Destructor dtor (public)                                 ismail 01/10|

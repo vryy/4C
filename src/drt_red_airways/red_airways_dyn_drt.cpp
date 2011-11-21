@@ -59,7 +59,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   // -------------------------------------------------------------------
   // check if descretization exits
   // -------------------------------------------------------------------
-  if(DRT::Problem::Instance()->NumFields() >= genprob.numawf)
+  if(DRT::Problem::Instance()->NumFields() >= genprob.numawf && CoupledTo3D)
   {
     return Teuchos::null;
   }

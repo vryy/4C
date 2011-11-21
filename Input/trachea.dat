@@ -12,7 +12,7 @@ RESTART                         0
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
 DYNAMICTYP                      CrankNicolson
 NUMSTEP                         100
-TIMESTEP                        1.0e-3
+TIMESTEP                        1.0e-12
 RESTARTEVRY                     1
 UPRES                           1
 SOLVERTYPE                      Nonlinear                       // Linear Nonlinear
