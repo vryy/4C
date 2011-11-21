@@ -114,11 +114,16 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
     cout<<"\n******************\n TRANSPORT SOLVER \n******************\n";
   }
 
-  // transfer convective velocity to scalar transport field solver
+  // transfer velocities to scalar transport field solver
+  // NOTE: so far, the convective velocity is chosen to equal the fluid velocity
+  //       since it is not yet clear how the grid velocity should be interpolated
+  //       properly -> hence, PassiveScaTraAlgorithm does not support moving
+  //       meshes yet
+
   if (FluidField().TimIntScheme()== INPAR::FLUID::timeint_gen_alpha)
   {
     ScaTraField().SetVelocityField(
-        FluidField().ConvectiveVel(),
+        FluidField().Velaf(),
         FluidField().Accam(),
         FluidField().Velaf(),
         Teuchos::null,
@@ -127,7 +132,7 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
   else if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
   {
     ScaTraField().SetVelocityField(
-        FluidField().ConvectiveVel(),
+      FluidField().Velaf(),
         FluidField().Accam(),
         FluidField().Velaf(),
         Teuchos::null,
@@ -136,7 +141,7 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
   else
   {
     ScaTraField().SetVelocityField(
-        FluidField().ConvectiveVel(),
+      FluidField().Velnp(),
         FluidField().Hist(),
         FluidField().Velnp(),
         Teuchos::null,

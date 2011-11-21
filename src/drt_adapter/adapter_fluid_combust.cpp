@@ -73,6 +73,11 @@ Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::Velnp()
   return fluid_.Velnp();
 }
 
+Teuchos::RCP<const Epetra_Vector> ADAPTER::FluidCombust::ConvectiveVel()
+{
+  return fluid_.Velnp();
+}
+
 /*------------------------------------------------------------------------------------------------*
  | return history vector                                                          rasthofer 01/10 |
  *------------------------------------------------------------------------------------------------*/

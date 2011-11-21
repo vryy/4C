@@ -2011,11 +2011,11 @@ Teuchos::RCP<DRT::Discretization> fluiddis)
       // global and processor's local fluid dof ID
       const int fgid = fluidnodedofs[numdim];
       // const int flid = fluiddofrowmap->LID(fgid);
-      const int flid = fluidvel->Map().LID(fgid);
+      const int flid = confluidvel->Map().LID(fgid);
       if (flid < 0) dserror("lid not found in map for given gid");
 
       // get value of corresponding pressure component
-      double pressure = (*fluidvel)[flid];
+      double pressure = (*confluidvel)[flid];
       // insert pressure value into node-based vector
       err = accpre_->ReplaceMyValue(lnodeid, numdim, pressure);
       if (err!=0) dserror("error while inserting a value into accpre_");
