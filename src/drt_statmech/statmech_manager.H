@@ -326,7 +326,7 @@ protected:
 	 *  \param LID									(in) column map node LIDs
 	 *  \param crosslinkernumber		(in) position in crosslink molecule vector*/
 	void CrosslinkerIntermediateUpdate(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, const LINALG::SerialDenseMatrix& LID,
-																		 int crosslinkernumber, bool coupledmovement=true);
+																		 const int& crosslinkernumber, Epetra_MultiVector& bspottriadscol, bool coupledmovement=true);
 
 	/*! \brief map crosslink molecules and filament nodes to the according volume partition and detect nodes in proximity of the molecules
 	 * 	\param currentpositions			(in) 			column map node positions
