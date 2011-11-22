@@ -99,9 +99,14 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
           // get pointer to vector holding G-function values at the fluid nodes
           const Teuchos::RCP<Epetra_Vector> phinp = parent_->GetInterfaceHandle()->FlameFront()->Phinp();
           // vector holding G-function values for this surface element
-          std::vector<double> gfuncvalues_cell;
+          std::vector<double> gfuncvalues_surfcell;
           // extract local (element level) G-function values from global vector
-          DRT::UTILS::ExtractMyNodeBasedValues(this, gfuncvalues_cell, *phinp);
+          DRT::UTILS::ExtractMyNodeBasedValues(this, gfuncvalues_surfcell, *phinp);
+
+          // vector holding G-function values for the parent (hex8) element
+          std::vector<double> gfuncvalues_parent;
+          // extract local (element level) G-function values from global vector
+          DRT::UTILS::ExtractMyNodeBasedValues(this->parent_, gfuncvalues_parent, *phinp);
 
           // get node coordinates of the parent (3D) element
           const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
@@ -141,53 +146,10 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
           // create refinement cell from a fluid element -> cell will have same geometry as element!
           const Teuchos::RCP<COMBUST::RefinementCell> surfcell = rcp(new COMBUST::RefinementCell(parent_, DRT::Element::quad4, xicoord));
 
-          surfcell->SetGfuncValues(gfuncvalues_cell);
+          surfcell->SetGfuncValues(gfuncvalues_surfcell);
 
           // get vertex coordinates (local fluid element coordinates) from refinement cell
           const std::vector<std::vector<double> >& vertexcoord = surfcell->GetVertexCoord();
-
-          bool inGplus = false;
-          {
-            /*------------------------------------------------------------------------------
-             * - compute phi at each node of domain integration cell
-             * - compute average G-value for each surface integration cell
-             * -> >=0 in plus == true
-             * _> <0  in minus == false
-             * ----------------------------------------------------------------------------*/
-
-            int numcellnodes = 0;
-            switch(this->Shape())
-            {
-            case DRT::Element::tri3:
-            {
-              numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement;
-              break;
-            }
-            case DRT::Element::quad4:
-            {
-              numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
-              break;
-            }
-            default:
-              dserror("Discretization Type (IntCell) not supported yet!");
-            }
-
-            //calculate average Gfunc value
-            double averageGvalue = 0.0;
-
-            for (int icellnode=0; icellnode<numcellnodes; icellnode++)
-              averageGvalue += gfuncvalues_cell[icellnode];
-
-            if (numcellnodes == 0.0)
-              dserror("division by zero: number of vertices per cell is 0!");
-            averageGvalue /= numcellnodes;
-
-            // determine DomainIntCell position
-            // ">=" because of the approximation of the interface,
-            // also averageGvalue=0 is possible; as always approximation errors are made
-            if(averageGvalue>=0.0)
-              inGplus = true;
-          }
 
           if(surfcell->Bisected() == true)
           {
@@ -262,9 +224,8 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
               // store intersection points in refinement cell
               surfcell->intersectionpoints_ = intersectionpoints;
             }
-            if (surfcell->intersectionpoints_.size()!=1 and surfcell->intersectionpoints_.size()!=2)
-              dserror("1 or 2 intersection points expected");
             // generate flame front (interface) geometry
+            if (surfcell->intersectionpoints_.size()==2)
             {
               //-----------------------------------------------------
               // prepare lists, get coordinates and G-function values
@@ -465,6 +426,10 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
                 LINALG::SerialDenseMatrix trianglecoord(3,3); //3 directions, 3 nodes
                 LINALG::SerialDenseMatrix phystrianglecoord(3,3);
 
+                // average value of G-function (indicates side of interface)
+                double averageGvalue = 0.0;
+                bool inGplus = false;
+
                 for (int inode=0; inode<3; inode++)
                 {
                   static LINALG::Matrix<3,1> tcoord;
@@ -473,10 +438,40 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
                     trianglecoord(dim,inode) = pointlist[trianglelist[itriangle][inode]][dim];
                     tcoord(dim) = trianglecoord(dim,inode);
                   }
+                  //-------------------------------------------------------------
+                  // determine which side the surface integration cell belongs to
+                  //-------------------------------------------------------------
+                  {
+                    // number of nodes of element
+                    const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+                    if (gfuncvalues_parent.size() != numnode)
+                      dserror("mismatch between number of phi values and number of nodes");
+                    // get shape functions at vertex point
+                    static LINALG::Matrix<numnode,1> funct;
+                    funct.Clear();
+                    DRT::UTILS::shape_function_3D(funct,tcoord(0),tcoord(1),tcoord(2),parent_->Shape());
+
+                    double phi = 0;
+                    // interpolate phi value
+                    for(size_t i = 0; i< numnode; i++)
+                      phi += gfuncvalues_parent[i] *funct(i);
+
+                    // calculate average Gfunc value
+                    averageGvalue += phi;
+                  }
+
                   GEO::elementToCurrentCoordinatesInPlace(parent_->Shape(), xyze, tcoord);
                   for(int  dim=0; dim<3; dim++)
                     phystrianglecoord(dim,inode) = tcoord(dim);
                 }
+                averageGvalue /= 3;
+
+                // determine surface cell position
+                // ">=" because of the approximation of the interface,
+                // also averageGvalue=0 is possible; as always approximation errors are made
+                if(averageGvalue>=0.0)
+                  inGplus = true;
+
                 // store boundary integration cells in boundaryintcelllist
                 // remark: boundary integration cells in bisected cells (these have always triangular boundary
                 //         integration cells) are defined to belong to the "plus" domain (G>0)
@@ -484,48 +479,86 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
                 //cout << "created tri3 boundary cell" << endl;
               }
             }
-          }
-          else // non-bisected cell
-          {
+            else if (surfcell->intersectionpoints_.size()==1)
             {
-              // get node coordinates of the surface (2D) element
-              LINALG::SerialDenseMatrix xyzesurf(3,4);
-              LINALG::SerialDenseMatrix xicoord(3,4);
-
-              size_t numnodesurf = this->NumNode();
-              if (numnodesurf != 4)
-                dserror("surfaces of hex8 elements expected (4 nodes)");
-
-              // loop nodes of surface element
-              const DRT::Node*const* nodessurf = this->Nodes();
-              for (size_t inode=0; inode<numnodesurf; inode++)
-              {
-                // compute local element coordinates
-                // remark: since we deal with nodes, we should get clean numbers (-1 or 1) for 'xicoord'
-                const double* x = nodessurf[inode]->X();
-                {
-                  LINALG::Matrix<3,1> xyznode;
-                  xyznode(0) = x[0];
-                  xyznode(1) = x[1];
-                  xyznode(2) = x[2];
-
-                  LINALG::Matrix<3,1> xsi;
-                  GEO::CUT::Position<DRT::Element::hex8> pos(xyze,xyznode);
-                  pos.Compute();
-                  xsi = pos.LocalCoordinates();
-                  // fill array
-                  xicoord(0,inode) = xsi(0);
-                  xicoord(1,inode) = xsi(1);
-                  xicoord(2,inode) = xsi(2);
-                }
-                // fill array
-                xyzesurf(0,inode) = x[0];
-                xyzesurf(1,inode) = x[1];
-                xyzesurf(2,inode) = x[2];
-              }
-              //cout << "created quad4 boundary cell" << endl;
-              surfaceintcelllist.push_back(GEO::BoundaryIntCell(DRT::Element::quad4, -1, xicoord, Teuchos::null, xyzesurf, inGplus));
+              // the interface cuts through a node -> only one intersection point
+              dserror("Neumann inflow special case with one intersection point!");
             }
+            else
+            {
+              dserror("1 or 2 intersection points expected");
+            }
+          }
+          else // non-bisected cell (touched or uncut)
+          {
+            // get node coordinates of the surface (2D) element
+            LINALG::SerialDenseMatrix xyzesurf(3,4);
+            LINALG::SerialDenseMatrix xicoord(3,4);
+
+            size_t numnodesurf = this->NumNode();
+            if (numnodesurf != 4)
+              dserror("surfaces of hex8 elements expected (4 nodes)");
+
+            // loop nodes of surface element
+            const DRT::Node*const* nodessurf = this->Nodes();
+            for (size_t inode=0; inode<numnodesurf; inode++)
+            {
+              // compute local element coordinates
+              // remark: since we deal with nodes, we should get clean numbers (-1 or 1) for 'xicoord'
+              const double* x = nodessurf[inode]->X();
+              {
+                LINALG::Matrix<3,1> xyznode;
+                xyznode(0) = x[0];
+                xyznode(1) = x[1];
+                xyznode(2) = x[2];
+
+                LINALG::Matrix<3,1> xsi;
+                GEO::CUT::Position<DRT::Element::hex8> pos(xyze,xyznode);
+                pos.Compute();
+                xsi = pos.LocalCoordinates();
+                // fill array
+                xicoord(0,inode) = xsi(0);
+                xicoord(1,inode) = xsi(1);
+                xicoord(2,inode) = xsi(2);
+              }
+              // fill array
+              xyzesurf(0,inode) = x[0];
+              xyzesurf(1,inode) = x[1];
+              xyzesurf(2,inode) = x[2];
+            }
+            bool inGplus = false;
+            {
+              /*------------------------------------------------------------------------------
+               * - compute phi at each node of domain integration cell
+               * - compute average G-value for each surface integration cell
+               * -> >=0 in plus == true
+               * _> <0  in minus == false
+               * ----------------------------------------------------------------------------*/
+
+              int numcellnodes = 0;
+              if (surfcell->Shape() == DRT::Element::quad4)
+                numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
+              else
+                dserror("quad4 surface cell expected");
+
+              //calculate average Gfunc value
+              double averageGvalue = 0.0;
+
+              for (int icellnode=0; icellnode<numcellnodes; icellnode++)
+                averageGvalue += gfuncvalues_surfcell[icellnode];
+
+              if (numcellnodes == 0.0)
+                dserror("division by zero: number of vertices per cell is 0!");
+              averageGvalue /= numcellnodes;
+
+              // determine DomainIntCell position
+              // ">=" because of the approximation of the interface,
+              // also averageGvalue=0 is possible; as always approximation errors are made
+              if(averageGvalue>=0.0)
+                inGplus = true;
+            }
+            //cout << "created quad4 boundary cell" << endl;
+            surfaceintcelllist.push_back(GEO::BoundaryIntCell(DRT::Element::quad4, -1, xicoord, Teuchos::null, xyzesurf, inGplus));
           }
           {
             //const bool screen_out = false;
