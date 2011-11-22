@@ -12,12 +12,12 @@ RESTART                         0
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
 DYNAMICTYP                      CrankNicolson
 NUMSTEP                         100
-TIMESTEP                        1.0e-12
+TIMESTEP                        1.0e-3
 RESTARTEVRY                     1
 UPRES                           1
 SOLVERTYPE                      Nonlinear                       // Linear Nonlinear
 MAXITERATIONS                   20
-TOLERANCE                       1E-1
+TOLERANCE                       1E-6
 ------------------------------------------REDUCED DIMENSIONAL AIRWAYS SOLVER
 SOLVER                          UMFPACK                         // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                               // output every so often, 0 no output

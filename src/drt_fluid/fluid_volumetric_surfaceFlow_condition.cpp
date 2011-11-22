@@ -1065,7 +1065,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(
   //--------------------------------------------------------------------
   // get the processor rank
   //--------------------------------------------------------------------
-  //int myrank = discret_->Comm().MyPID();
+  // int myrank = discret_->Comm().MyPID();
 
   double time_in_a_period = fmod(time,period_);//time - period_*floor(time/period_);
   // get the flowrate position
@@ -1283,7 +1283,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
   int cycle_num = 0;
   double in_cycle_time = 0.0;
   double time2= time- dta_;
-  cycle_num = double(floor(time2/period));
+  cycle_num = int(floor(time2/period));
   in_cycle_time = time2 - period*double(cycle_num);
   flowratespos_ = int((in_cycle_time/dta_));
 

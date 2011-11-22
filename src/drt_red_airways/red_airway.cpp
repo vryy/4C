@@ -251,6 +251,8 @@ bool DRT::ELEMENTS::RedAirway::VisData(const string& name, vector<double>& data)
   // Put the owner of this element into the file (use base class method for this)
   if(DRT::Element::VisData(name,data))
     return true;
+
+  return false;
 }
 
 
