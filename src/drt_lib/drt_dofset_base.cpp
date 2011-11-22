@@ -209,7 +209,7 @@ void DRT::DofSetBase::PrintAllDofsets(const Epetra_Comm& comm) const
     if (min[0] > 0)
       availspace -= 2;
 
-    for (int i = 0; i < min.size(); ++i)
+    for (unsigned int i = 0; i < min.size(); ++i)
     {
       // left bar
       availspace--;
@@ -235,7 +235,7 @@ void DRT::DofSetBase::PrintAllDofsets(const Epetra_Comm& comm) const
 
     if (min[0] > 0)
       cout << "| ";
-    for (int i = 0; i < min.size(); ++i)
+    for (unsigned int i = 0; i < min.size(); ++i)
     {
       // left bar
       if (i > 0 and max[i-1] > min[i])

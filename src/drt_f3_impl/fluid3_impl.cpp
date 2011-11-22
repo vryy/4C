@@ -9426,7 +9426,7 @@ namespace DRT
             int idVelx = ir*(nsd_+1) + 0;
             int idVely = ir*(nsd_+1) + 1;
             int idVelz = ir*(nsd_+1) + 2;
-            int idPres = ir*(nsd_+1) + 3;
+            //int idPres = ir*(nsd_+1) + 3;
 
 
             for(int ic =0; ic<nen_; ic++)
@@ -9434,7 +9434,7 @@ namespace DRT
               int iVelx = ic*(nsd_+1)+0;
               int iVely = ic*(nsd_+1)+1;
               int iVelz = ic*(nsd_+1)+2;
-              int iPres = ic*(nsd_+1)+3;
+              //int iPres = ic*(nsd_+1)+3;
 
 
               // + (v2, (2*k1*mu1) *eps(Du1)*n)
@@ -10258,7 +10258,7 @@ namespace DRT
         LINALG::Matrix<nsd_,nsd_> emb_xji(true);
 
         emb_xjm.MultiplyNT(emb_deriv_,emb_xyze_);
-        double det = emb_xji.Invert(emb_xjm);
+        //double det = emb_xji.Invert(emb_xjm);
 
         // compute global first derivates
         emb_derxy_.Multiply(emb_xji,emb_deriv_);
@@ -10363,7 +10363,7 @@ namespace DRT
         const unsigned Velx = 0;
         const unsigned Vely = 1;
         const unsigned Velz = 2;
-        const unsigned Pres = 3;
+        //const unsigned Pres = 3;
 
         //--------------------------------------------
 
@@ -10765,7 +10765,7 @@ namespace DRT
           int idVelx = ir*(nsd_+1) + 0;
           int idVely = ir*(nsd_+1) + 1;
           int idVelz = ir*(nsd_+1) + 2;
-          int idPres = ir*(nsd_+1) + 3;
+          //int idPres = ir*(nsd_+1) + 3;
 
 
           for(int ic =0; ic<nen_; ic++)
@@ -10773,7 +10773,7 @@ namespace DRT
             int iVelx = ic*(nsd_+1)+0;
             int iVely = ic*(nsd_+1)+1;
             int iVelz = ic*(nsd_+1)+2;
-            int iPres = ic*(nsd_+1)+3;
+            //int iPres = ic*(nsd_+1)+3;
 
 
             // + (v2, (2*k1*mu1) *eps(Du1)*n)
@@ -10899,7 +10899,7 @@ namespace DRT
             int idVelx = ir*(nsd_+1) + 0;
             int idVely = ir*(nsd_+1) + 1;
             int idVelz = ir*(nsd_+1) + 2;
-            int idPres = ir*(nsd_+1) + 3;
+            //int idPres = ir*(nsd_+1) + 3;
 
 
             for(int ic =0; ic<emb_nen_; ic++)
@@ -10907,7 +10907,7 @@ namespace DRT
               int iVelx = ic*(nsd_+1)+0;
               int iVely = ic*(nsd_+1)+1;
               int iVelz = ic*(nsd_+1)+2;
-              int iPres = ic*(nsd_+1)+3;
+              //int iPres = ic*(nsd_+1)+3;
 
 
               // + (v2, (2*k2*mu2) *eps(Du2)*n)
@@ -12631,10 +12631,10 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitsche(
 
 
   // numbering for velocity components and pressure
-  const unsigned Velx = 0;
-  const unsigned Vely = 1;
-  const unsigned Velz = 2;
-  const unsigned Pres = 3;
+  //const unsigned Velx = 0;
+  //const unsigned Vely = 1;
+  //const unsigned Velz = 2;
+  //const unsigned Pres = 3;
 
 
   // integrate surface
@@ -13237,10 +13237,10 @@ void Fluid3Impl<distype>::ElementXfemInterfaceNitscheTwoSided(
 
 
   // numbering for velocity components and pressure
-  const unsigned Velx = 0;
-  const unsigned Vely = 1;
-  const unsigned Velz = 2;
-  const unsigned Pres = 3;
+  //const unsigned Velx = 0;
+  //const unsigned Vely = 1;
+  //const unsigned Velz = 2;
+  //const unsigned Pres = 3;
 
 
   // integrate surface
