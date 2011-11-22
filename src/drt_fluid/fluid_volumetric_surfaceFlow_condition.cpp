@@ -173,7 +173,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::EvaluateVelocities(RCP<Epetr
 
   for (mapiter = fvsf_map_.begin(); mapiter != fvsf_map_.end(); mapiter++ )
   {
-
+    
     double flowrate =  mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateFlowrate("VolumetricSurfaceFlowCond",time);
 
     mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateVelocities(flowrate,"VolumetricSurfaceFlowCond",time);
@@ -460,7 +460,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CenterOfMassCalculation(RCP<std::
   eleparams.set<RCP<std::vector<double> > >("normal", normal);
 
   const string condstring(ds_condname);
-
+ 
   discret_->EvaluateCondition(eleparams,cond_velocities_,condstring,condid_);
 
   // get center of mass in parallel case
@@ -1065,7 +1065,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(
   //--------------------------------------------------------------------
   // get the processor rank
   //--------------------------------------------------------------------
-  // int myrank = discret_->Comm().MyPID();
+  //  int myrank = discret_->Comm().MyPID();
 
   double time_in_a_period = fmod(time,period_);//time - period_*floor(time/period_);
   // get the flowrate position
@@ -1136,7 +1136,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::ResetTractionVelocityComp()
-{
+{  
   cond_traction_vel_->Scale(0.0);
 }
 
@@ -1159,7 +1159,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateTractionVelocityComp(
   double             dta)
 {
   ParameterList eleparams;
-  //double norm2= 0.0;
+  //  double norm2= 0.0;
 
   eleparams.set("thsl",theta*dta);
   eleparams.set("condition velocities",cond_velocities_);
@@ -1268,7 +1268,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
   // polynomial order
   int order            = params->get<int>("polynomial order");
   // flow direction
-  //double flow_dir      = params->get<double>("flow direction");
+  //  double flow_dir      = params->get<double>("flow direction");
 
   // surface area
   double area          = params->get<double>("area");
@@ -1298,14 +1298,14 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
     {
       dserror("The number of Womersley harmonics is %d (less than 1)",n_harmonics);
     }
-
+  
     this->DFT(velocities,Vn,flowratespos_);
-
+    
     Bn  = vector<double>(n_harmonics,0.0);
-
+    
     double rl = real((*Vn)[0]);
     double im = imag((*Vn)[0]);
-
+    
     Bn[0] = 0.5*rl;
 
     for(unsigned int k = 1; k<Bn.size(); k++)
@@ -1390,7 +1390,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
             const double Phik = atan2(-imag((*Vn)[k]),real((*Vn)[k]));
             Bn[k] = Mk* cos(2.0*M_PI*double(k) - Phik);
             // Bn[k] = Mk* cos(2.0*M_PI*double(k)*time/period - Phik);
-
+            
             velocity_wom += this->WomersleyVelocity(r,R,Mk,Phik,k,period);
           }
           velocity += velocity_wom;
@@ -1435,7 +1435,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
  double             time,
  bool               force_correction)
 {
-
+  
   if(!force_correction)
   {
     if(!correct_flow_)
@@ -1530,7 +1530,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
     {
       int gid = correction_velnp->Map().GID(lid);
       correction = correction_factor_*(*correction_velnp)[lid];
-
+      
       int bc_lid = cond_velocities_->Map().LID(gid);
       (*cond_velocities_)[bc_lid] += correction;
     }
@@ -1544,7 +1544,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
     {
       int gid = correction_velnp->Map().GID(lid);
       correction = correction_factor_*(*correction_velnp)[lid];
-
+      
       int bc_lid = cond_velocities_->Map().LID(gid);
       (*cond_velocities_)[bc_lid] = correction;
     }
@@ -1779,7 +1779,7 @@ complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::BesselJ01(complex<doub
   {
     alpha = 1;
   }
-
+  
   for(int m=0;m<end;m++)
   {
     double fac   = 1.0;
@@ -1796,7 +1796,7 @@ complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::BesselJ01(complex<doub
     Jmine += pow(z*complex<double>(0.5),double(alpha))
       *  pow(-complex<double>(0.25)*z*z,double(m))
       /(complex<double> (fac) * complex<double> (gamma));
-
+      
   }
 #if 1
   // Bessel function of the first kind and order 0
@@ -1918,15 +1918,16 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::DFT(RCP<std::vector<double> >   f
   //--------------------------------------------------------------------
   F =Teuchos::rcp(new std::vector<complex<double> >(f->size(),0.0));
 
-  const double N = double(f->size());
+  const double N  = double(f->size());
+  const int fsize = f->size();
 
   //--------------------------------------------------------------------
   // Compute the Fourier values
   //--------------------------------------------------------------------
-  for (unsigned int k = 0; k < f->size(); k++)
+  for (int k = 0; k < fsize; k++)
   {
     (*F) [k] = complex<double>(0.0,0.0);
-    for (unsigned int n = 0; n< f->size(); n++)
+    for (int n = 0; n< fsize; n++)
     {
       int pos = 0;
       if (starting_pos - n >= 0)
@@ -1935,11 +1936,11 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::DFT(RCP<std::vector<double> >   f
       }
       else
       {
-        pos = f->size() - (n - starting_pos);
+        pos = fsize - (n - starting_pos);
       }
 
-      double rl = (*f)[pos]*2.0/N*( cos(2.0*M_PI*double(k)*double(f->size()-1 - n)/N));
-      double im = (*f)[pos]*2.0/N*(-sin(2.0*M_PI*double(k)*double(f->size()-1 - n)/N));
+      double rl = (*f)[pos]*2.0/N*( cos(2.0*M_PI*double(k)*double(fsize-1 - n)/N));
+      double im = (*f)[pos]*2.0/N*(-sin(2.0*M_PI*double(k)*double(fsize-1 - n)/N));
 
       (*F) [k] += complex<double> (rl,im);
     }
@@ -2070,7 +2071,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::UpdateResidual(RCP<Epetra_Vector>
   //  cout<<"DIR("<<flow_dir_<<"): Residual Norm: "<<norm2<<endl;
   //  residual->Update(1.0,*cond_traction_vel_,1.0);
   residual->Update(1.0,*cond_traction_vel_,1.0);
-
+  
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -2196,7 +2197,7 @@ void FLD::UTILS::TotalTractionCorrector::EvaluateVelocities(RCP<Epetra_Vector> v
     }
 
     mapiter->second->FluidVolumetricSurfaceFlowBc::EvaluateVelocities(flowrate,"TotalTractionCorrectionCond",time);
-
+    
     discret_->SetState("velnp",velocities);
     //    mapiter->second->FluidVolumetricSurfaceFlowBc::CorrectFlowRate("TotalTractionCorrectionCond","calculate Uv integral component",time,true);
     mapiter->second->FluidVolumetricSurfaceFlowBc::CorrectFlowRate("TotalTractionCorrectionCond","calc_flowrate",time,true);
