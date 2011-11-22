@@ -833,7 +833,7 @@ void DRT::ELEMENTS::Combust3::calc_volume_fraction(
   }
 
   // determine the id of the homogeneous planes intersecting this element
-  int eleplaneid;
+  int eleplaneid = -1;
   for(size_t nplane=0; nplane<planes->size(); ++nplane)
   {
     if (min-2e-9 < (*planes)[nplane] and min+2e-9 > (*planes)[nplane])
