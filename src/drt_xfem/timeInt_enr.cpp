@@ -42,6 +42,8 @@ void XFEM::EnrichmentProjection::compute(
 {
   if (FGIType_==FRSNot1_)
     return;
+  else if (FGIType_==FRS1FGINot1_)
+    timeIntData_->clear();
 
   handleVectors(newRowVectorsn,newRowVectorsnp);
 
@@ -816,7 +818,7 @@ void XFEM::EnrichmentProjection::computeJumpEnrichmentValues(
       const int newdofpos = newNodalDofRowDistrib_.find(newdofkey)->second;
       const int lid = newdofrowmap_.LID(newdofpos);
 
-      //      cout << "enrichment value "<< (*newVectors_[0])[lid] << " becomes " << finalEnrichmentValues[0](0,indexJumpEnr) << endl;
+//      cout << *node << ": enrichment value "<< (*newVectors_[0])[lid] << " becomes " << finalEnrichmentValues[0](0,indexJumpEnr) << endl;
       for (size_t index=0;index<vectorSize(TimeIntData::predictor_);index++)
         (*newVectors_[index])[lid] = finalEnrichmentValues[index](0,indexJumpEnr);
       indexJumpEnr++;

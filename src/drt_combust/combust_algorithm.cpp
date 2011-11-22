@@ -135,8 +135,8 @@ COMBUST::Algorithm::Algorithm(Epetra_Comm& comm, const Teuchos::ParameterList& c
 
 
   // FGI vectors are initialized
-  velnpi_ = rcp(new Epetra_Vector(*fluiddis->DofRowMap()),true);
-  velnpi_->Update(1.0,*FluidField().Velnp(),0.0);
+  velnpi_ = rcp(new Epetra_Vector(FluidField().ExtractInterfaceVeln()->Map()),true);//*fluiddis->DofRowMap()),true);
+  velnpi_->Update(1.0,*FluidField().ExtractInterfaceVeln(),0.0);
   phinpi_ = rcp(new Epetra_Vector(*gfuncdis->DofRowMap()),true);
   phinpi_->Update(1.0,*ScaTraField().Phinp(),0.0);
 
@@ -1185,7 +1185,7 @@ bool COMBUST::Algorithm::NotConvergedFGI()
 
   if (fgiter_ > 0) // nothing to do for FGI = 0
   {
-    RCP<const Epetra_Vector> velnpip = FluidField().Velnp();
+    RCP<const Epetra_Vector> velnpip = FluidField().ExtractInterfaceVeln();
     RCP<const Epetra_Vector> phinpip = ScaTraField().Phinp();
 
     double velnormL2 = 1.0;
@@ -1215,7 +1215,8 @@ bool COMBUST::Algorithm::NotConvergedFGI()
       {
         printf("\n|+------------------------ FGI ------------------------+|");
         printf("\n|iter/itermax|----tol-[Norm]--|-fluid inc--|-g-func inc-|");
-        printf("\n|   %2d/%2d    | %10.3E[L2] | ---------- | %10.3E |",fgiter_,fgitermax_,convtol_,fggfuncnormL2/gfuncnormL2);
+        printf("\n|   %2d/%2d    | %10.3E[L2] | %10.3E | %10.3E |",
+            fgiter_,fgitermax_,convtol_,fgvelnormL2/velnormL2,fggfuncnormL2/gfuncnormL2);
         printf("\n|+-----------------------------------------------------+|\n");
 
         if (fgiter_ == fgitermax_)
@@ -1564,7 +1565,7 @@ void COMBUST::Algorithm::UpdateInterface()
 
   // update interfacehandle (get integration cells) according to updated flame front
   interfacehandle_->UpdateInterfaceHandle();
-if (fgiter_==1) interfacehandle_->toGmsh(1111); else interfacehandle_->toGmsh(2222);
+
   // update the Fluid and the FGI vector at the end of the FGI loop
   return;
 }
@@ -3067,7 +3068,7 @@ void COMBUST::Algorithm::Redistribute()
       if (velnpi_ != Teuchos::null)
       {
         old = velnpi_;
-        velnpi_ = rcp(new Epetra_Vector(*fluiddis->DofRowMap()),true);
+        velnpi_ = rcp(new Epetra_Vector(FluidField().ExtractInterfaceVeln()->Map()),true);
         LINALG::Export(*old, *velnpi_);
       }
 

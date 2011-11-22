@@ -1590,7 +1590,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
                     incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
           }
         }
-#if 0//#ifdef COMBUST_2D
+#ifdef COMBUST_2D
         // for 2-dimensional problems errors occur because of pseudo 3D code!
         // These error shall get smaller with the following modifications
         const int dim = 2; // z-direction is assumed to be the pseudo-dimension
@@ -1716,7 +1716,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         }
       }
 
-#if 0//#ifdef COMBUST_2D
+#ifdef COMBUST_2D
       // for 2-dimensional problems errors occur because of pseudo 3D code!
       // These error shall be removed with the following modifications
       const int dim = 2; // z-direction is assumed to be the pseudo-dimension
@@ -3165,8 +3165,9 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
           combusttype_ == INPAR::COMBUST::combusttype_twophaseflowjump)
       {
         gmshfilecontent << "View \" " << "Pressure Jump \" {\n";
+#ifdef GMSH_AVERAGE_JUMP
         double presjumpnorm = 0.0;
-
+#endif
         for (int iele=0; iele<discret_->NumMyRowElements(); ++iele)
         {
           const DRT::Element* ele = discret_->lRowElement(iele);
@@ -3864,8 +3865,9 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
       if (combusttype_ == INPAR::COMBUST::combusttype_premixedcombustion or
           combusttype_ == INPAR::COMBUST::combusttype_twophaseflowjump)
       {
+#ifdef GMSH_AVERAGE_JUMP
         double veljumpnormsquare = 0.0;
-
+#endif
         gmshfilecontent << "View \" " << "Velocity Jump \" {\n";
         for (int iele=0; iele<discret_->NumMyRowElements(); ++iele)
         {
@@ -4144,12 +4146,13 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 
                   veljumpnormsquare += fac*veljumpnorm;
                 }
-#endif // computation averae velocity jump
+#endif // computation average velocity jump
               }
             }
           }
         }
 #ifdef COLLAPSE_FLAME
+#ifdef GMSH_AVERAGE_JUMP
         cout << endl;
         // get the processor local node
         DRT::Node* lnode = discret_->lRowNode(0);
@@ -4167,6 +4170,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         const double area = pi*2.*0.25*deltaz;
         const double avveljump = sqrt(veljumpnormsquare/area);
         cout << "avveljump " << avveljump << endl;
+#endif
 #endif
         gmshfilecontent << "};\n";
       }

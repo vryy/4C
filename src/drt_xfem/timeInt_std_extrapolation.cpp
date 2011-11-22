@@ -115,12 +115,12 @@ void XFEM::Extrapolation::extrapolationMain(
 
   LINALG::Matrix<nsd,1> endpoint(data->node_.X());
 
+//    cout << "searching node = endpoint = " << endpoint << endl;
   // identify final element and local coordinates of startpoint and midpoint for extrapolation
   bisection(data,startele,startpoint,xistartpoint,midele,midpoint,ximidpoint);
 
-  //  cout << endl << "startpoint is " << startpoint;
-  //  cout << "midpoint is " << midpoint;
-  //  cout << "endpoint is " << endpoint << endl;
+//    cout << endl << "startpoint is " << startpoint;
+//    cout << "midpoint is " << midpoint;
 
   // compute the constants for the extrapolation:
   // value = c1*valuestartpoint + c2*valuemidpoint
@@ -129,8 +129,8 @@ void XFEM::Extrapolation::extrapolationMain(
 
   dist1.Update(1.0,midpoint,-1.0,startpoint);
   dist2.Update(1.0,endpoint,-1.0,midpoint);
-  //cout << "distance from startpoint to midpoint is " << dist1;
-  //cout << "distance from midpoint to endpoint is " << dist2;
+//  cout << "distance from startpoint to midpoint is " << dist1;
+//  cout << "distance from midpoint to endpoint is " << dist2;
 
   if (dist1.Norm2()<1e-14 or dist2.Norm2()<1e-14)
     dserror("something wrong in bisection");
@@ -190,16 +190,17 @@ void XFEM::Extrapolation::bisection(
   // general initialization
   const int nsd = 3;
 
-  DRT::Node* node = discret_->gNode(data->startGid_[0]); // failed node on current proc
+  DRT::Node* node = discret_->gNode(data->startGid_[0]); // startpoint node on current proc
   LINALG::Matrix<nsd,1> nodecoords(node->X());
 
-  DRT::Element** eles = node->Elements();
-  const int numele = node->NumElement();
+  vector<const DRT::Element*> eles;
+  addPBCelements(node,eles);
+  const int numele=eles.size();
 
   startpoint = nodecoords; // first point used for extrapolation
   midpoint = nodecoords; // second point used for extrapolation
   LINALG::Matrix<nsd,1> endpoint(data->node_.X()); // coordinates of data-requiring node
-  //  cout << "initial startpoint and midpoint is " << nodecoords;
+//    cout << endl << "initial startpoint and midpoint is " << nodecoords;
 
   LINALG::Matrix<nsd,1> pointTmp; // temporarily point used for computations and for bisection
   pointTmp.Update(0.5,startpoint,0.5,endpoint); // midpoint of startpoint and endpoint
@@ -210,19 +211,34 @@ void XFEM::Extrapolation::bisection(
   LINALG::Matrix<nsd,1> xipointTmp(true);
 
   int iter = 0;
-  const int max_iter = 10; // maximal "max_iter" bisection steps
+  const int crit_max_iter = 100; // maximal iteration number for critical cases
+  int curr_max_iter = 10; // currently used iteration number
+  int std_max_iter = 10; // iteration number usually sufficient
   bool elefound = false;
+
+  DRT::Element* eletmp = NULL;
+  bool elefoundtmp = false;
 
   // prework: search for the element around "startpoint" into "endpoint"-direction
   while(true)
   {
-    //cout << "potential midpoint is " << pointTmp;
+//    cout << "potential midpoint is " << pointTmp;
     iter++;
     for (int i=0; i<numele; i++)
     {
-      midele = eles[i];
-      callXToXiCoords(midele,pointTmp,xipointTmp,elefound);
-      if (elefound) break;
+      eletmp = (DRT::Element*)eles[i];
+      callXToXiCoords(eletmp,pointTmp,xipointTmp,elefoundtmp);
+      if (elefoundtmp) // usually loop can stop here, just in special cases of critical cuts problems might happen
+      {
+        midele = eletmp;
+        elefound = true;
+        if (oldinterfacehandle_->ElementBisected(midele->Id()) == true) // really cut -> ok
+          break;
+        else if (oldinterfacehandle_->GetNumDomainIntCells(midele) <= 1) // really uncut -> ok
+          break;
+        else // special cases -> try to take another element
+          ; // do not break, but potential element is saved
+      }
     }
 
     if (elefound)
@@ -230,16 +246,18 @@ void XFEM::Extrapolation::bisection(
     else // corresponds to CFL > 1 -> not very good, but possible
       pointTmp.Update(1.0,pointTmp,-pow(0.5,iter+1),dist);
 
-    if (iter==max_iter) break;
+    if (iter==crit_max_iter) break;
   }
+
+  curr_max_iter = crit_max_iter;
 
   // search for midpoint with bisection of the straight line:
   //	distances p1-p2 and p2-pend as even as possible
   //	-> p2 near midpoint of p1 and pend as far as possible
   //	gives back either a point between pend and p1 or p2 = p1
-  for (int i=iter;i<=max_iter;i++)
+  for (int i=iter;i<=curr_max_iter;i++)
   {
-    //cout << "potential midpoint is " << pointTmp;
+//    cout << "potential midpoint is " << pointTmp;
     callXToXiCoords(midele,pointTmp,xipointTmp,elefound);
 
     if (!elefound)
@@ -248,7 +266,8 @@ void XFEM::Extrapolation::bisection(
 
     if (interfaceSideCompare(midele,pointTmp,0,data->phiValue_) == true) // Lagrangian origin and original node on different interface sides
     {
-      //cout << "current midpoint is " << pointTmp;
+//      cout << "current midpoint is " << pointTmp;
+      curr_max_iter = std_max_iter; // usable point found
       midpoint = pointTmp; // possible point
       ximidpoint = xipointTmp;
       pointTmp.Update(1.0,pointTmp,pow(0.5,i+1),dist); // nearer to endpoint
@@ -260,10 +279,11 @@ void XFEM::Extrapolation::bisection(
   // if element is (nearly) touched, the above bisection might fail
   if (midpoint == nodecoords) // nothing was changed above
   {
-    midele = eles[0];
+    cout << endl << endl << "WARNING: this case should no more happen!" << endl << endl;
+    midele = (DRT::Element*)eles[0];
     callXToXiCoords(midele,midpoint,ximidpoint,elefound);
   }
-  //cout << "final midpoint is " << midpoint << " in " << *midele;
+//  cout << "final midpoint is " << midpoint << " in " << *midele;
 
   // get current distances of the three points
   LINALG::Matrix<nsd,1> dist1; // distance from startpoint to midpoint
@@ -272,6 +292,7 @@ void XFEM::Extrapolation::bisection(
   dist1.Update(1.0,midpoint,-1.0,startpoint);
   dist2.Update(1.0,endpoint,-1.0,midpoint);
 
+  curr_max_iter = crit_max_iter;
 
   // compute potentially final startpoint
   if ((dist1.Norm2()/dist.Norm2() > 1.0/3.0) and (dist2.Norm2()/dist.Norm2() > 1.0/3.0)) // distances are ok
@@ -304,12 +325,13 @@ void XFEM::Extrapolation::bisection(
       // get the potential startpoint on the "node"-side of the current, not usable startpoint
       dist.Update(1.0,startpoint,-1.0,nodecoords);
       pointTmp.Update(0.5,startpoint,0.5,nodecoords);
-      for (int i=1;i<=max_iter;i++)
+      for (int i=1;i<=curr_max_iter;i++)
       {
         callXToXiCoords(startele,pointTmp,xipointTmp,elefound);
 
         if (interfaceSideCompare(startele,pointTmp,0,data->phiValue_) == true) // Lagrangian origin and original node on different interface sides
         {
+          curr_max_iter = std_max_iter;
           startpointLeft = pointTmp; // possible point
           pointTmp.Update(1.0,pointTmp,pow(0.5,i+1),dist); // nearer to optimal startpoint
         }
@@ -317,15 +339,17 @@ void XFEM::Extrapolation::bisection(
           pointTmp.Update(1.0,pointTmp,-pow(0.5,i+1),dist); // nearer to not-optimal, but possible node
       }
 
+      curr_max_iter = crit_max_iter;
       // get the potential startpoint on the "midpoint"-side of the current, not usable startpoint
       dist.Update(1.0,midpoint,-1.0,startpoint);
       pointTmp.Update(0.5,midpoint,0.5,startpoint);
-      for (int i=1;i<=max_iter;i++)
+      for (int i=1;i<=curr_max_iter;i++)
       {
         callXToXiCoords(startele,pointTmp,xipointTmp,elefound);
 
         if (interfaceSideCompare(startele,pointTmp,0,data->phiValue_) == true) // Lagrangian origin and original node on different interface sides
         {
+          curr_max_iter = std_max_iter;
           startpointRight = pointTmp; // possible point
           pointTmp.Update(1.0,pointTmp,-pow(0.5,i+1),dist); // nearer to original startpoint
         }
@@ -368,13 +392,13 @@ void XFEM::Extrapolation::bisection(
       iter++;
       for (int i=0; i<numele; i++)
       {
-        startele = eles[i];
+        startele = (DRT::Element*)eles[i];
         callXToXiCoords(startele,pointTmp,xipointTmp,elefound);
         if (elefound) break;
       }
 
       if (elefound) break;
-      if (iter==max_iter) break;
+      if (iter==curr_max_iter) break;
 
       pointTmp.Update(1.0,pointTmp,+pow(0.5,iter),dist);
     }
@@ -383,7 +407,7 @@ void XFEM::Extrapolation::bisection(
       dserror("extrapolation should be done within one convex element. Thus this should work");
 
     // get the potential startpoint on the "node"-side of the current, not usable startpoint
-    for (int i=iter;i<=max_iter+1;i++)
+    for (int i=iter;i<=curr_max_iter+1;i++)
     {
       if (!elefound)
         pointTmp.Update(1.0,pointTmp,+pow(0.5,i),dist); // nearer to midpoint
@@ -391,6 +415,7 @@ void XFEM::Extrapolation::bisection(
       {
         if (interfaceSideCompare(startele,pointTmp,0,data->phiValue_) == true) // Lagrangian origin and original node on different interface sides
         {
+          curr_max_iter = std_max_iter;
           startpoint = pointTmp; // possible point
           xistartpoint = xipointTmp;
           pointTmp.Update(1.0,pointTmp,-pow(0.5,i),dist); // nearer to original startpoint
@@ -399,14 +424,14 @@ void XFEM::Extrapolation::bisection(
           pointTmp.Update(1.0,pointTmp,+pow(0.5,i),dist); // nearer to midpoint
       }
 
-      if (i<=max_iter)
+      if (i<=curr_max_iter)
       {
         callXToXiCoords(startele,pointTmp,xipointTmp,elefound);
         if (!elefound)
         {
           for (int i=0; i<numele; i++)
           {
-            startele = eles[i];
+            startele = (DRT::Element*)eles[i];
             callXToXiCoords(startele,pointTmp,xipointTmp,elefound);
             if (elefound) break;
           }
@@ -414,7 +439,7 @@ void XFEM::Extrapolation::bisection(
       }
     }
   }
-  //cout << "final startpoint is " << startpoint << " in " << *startele;
+//  cout << "final startpoint is " << startpoint << " in " << *startele;
 
 } // end bisection
 

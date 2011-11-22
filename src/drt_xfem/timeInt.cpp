@@ -191,7 +191,7 @@ void XFEM::TIMEINT::callXToXiCoords(
  * call the computation of local coordinates for an integration cell             winklmaier 10/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::TIMEINT::callXToXiCoords(
-    DRT::Element* ele,
+    const DRT::Element* ele,
     LINALG::Matrix<3,1>& x,
     LINALG::Matrix<3,1>& xi,
     bool& pointInDomain
@@ -1163,7 +1163,7 @@ bool XFEM::ENR::newEnrValueNeeded(
         // check if enrichment dofs existed before
         map<DofKey<onNode>, DofGID>::const_iterator dof_npi = nodalDofColDistrib_npi_.find(newdofkey);
         if (dof_npi == nodalDofColDistrib_npi_.end()) // olddof not found -> no enr value before -> enr value has to be set
-        {
+        {cout << "here with newly enriched node " << *node << endl;
           map<DofKey<onNode>, DofGID>::const_iterator dof_n = oldNodalDofColDistrib_.find(newdofkey);
           if (dof_n != oldNodalDofColDistrib_.end()) // dof existed at t^n so use this value if not critical
           {
@@ -1178,8 +1178,9 @@ bool XFEM::ENR::newEnrValueNeeded(
               return false;
             }
           }
+          else // node enriched, was not enriched at t^n+1,i and t^n
+            return true;
         }
-        return true;
       } // end if dof has non standard enrichment
     } // end loop over fieldset
     break;
@@ -1429,11 +1430,15 @@ void XFEM::ENR::FindFacingPatchProjCellSpace(
   switch(patch.Shape())
   {
   case DRT::Element::tri3:
+  {
     converged = ProjectNodeOnPatch<DRT::Element::tri3>(node, patch, patchcoord, normal, eta, alpha);
     break;
+  }
   case DRT::Element::quad4:
+  {
     converged = ProjectNodeOnPatch<DRT::Element::quad4>(node, patch, patchcoord, normal, eta, alpha);
     break;
+  }
   default:
     dserror("unknown type of boundary integration cell");
   }
@@ -1453,6 +1458,7 @@ void XFEM::ENR::FindFacingPatchProjCellSpace(
   switch(patch.Shape())
   {
   case DRT::Element::tri3:
+  {
     // criteria for tri3 patch
     if ((eta(0) > -TOL) and (eta(0) < 1.0+TOL) and
         (eta(1) > -TOL) and (eta(1) < 1.0+TOL) and
@@ -1464,7 +1470,9 @@ void XFEM::ENR::FindFacingPatchProjCellSpace(
       //      cout << "facing patch found (tri3 patch)! coordinates eta(0): " << eta(0) << " eta(1) " << eta(1) << endl;
     }
     break;
+  }
   case DRT::Element::quad4:
+  {
     // criteria for quad4 patch
     if ((eta(0) > -1.0-TOL) and (eta(0) < 1.0+TOL) and
         (eta(1) > -1.0-TOL) and (eta(1) < 1.0+TOL) and
@@ -1475,7 +1483,9 @@ void XFEM::ENR::FindFacingPatchProjCellSpace(
       //      cout << "facing patch found (quad4 patch)!" << endl;
     }
     break;
-  default: dserror("unknown type of boundary integration cell");
+  }
+  default:
+    dserror("unknown type of boundary integration cell");
   }
   //  if (!converged)
   //  {
@@ -1598,11 +1608,13 @@ void XFEM::ENR::ComputeNormalVectorToFlameFront(
   normal.Scale(1.0/norm);
 
 #ifdef DEBUG
+#ifdef COMBUST_2D
   if (!((normal(2) > 0.0-1.0E-8) and (normal(2) < 0.0+1.0E-8)))
   {
     cout << "z-component of normal: " << normal(2) << endl;
     dserror ("pseudo-3D problem not symmetric anymore!");
   }
+#endif
 #endif
 
   return;

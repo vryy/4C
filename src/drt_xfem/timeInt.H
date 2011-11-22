@@ -156,7 +156,7 @@ protected:
 
   //! transformation of point x to local eta-coordinates of an integration cell
   void callXToXiCoords(
-      DRT::Element* ele,
+      const DRT::Element* ele,
       LINALG::Matrix<3,1>& x,
       LINALG::Matrix<3,1>& xi,
       bool& pointInDomain
@@ -447,7 +447,7 @@ protected:
   //! data at an arbitrary point lying in an element
   template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
   void pointdataXFEM(
-      DRT::Element*& element,
+      DRT::Element* element,
       LINALG::Matrix<3,1>& xi,
       LINALG::Matrix<3,3>& xji,
       LINALG::Matrix<numnode,1>& shapeFcn,
@@ -877,7 +877,7 @@ public:
   //! extract nodal pressures and velocities for element nodes
   template<const int numnode>
   void elementsNodalData(
-      DRT::Element*& element,
+      DRT::Element* element,
       const RCP<Epetra_Vector> field, // Epetra_Vector fitting to field and dofDistribution
       const RCP<DofManager> dofman,
       const Epetra_Map& dofMap, // DofMap fitting to field and dofDistribution

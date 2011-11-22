@@ -151,17 +151,14 @@ void XFEM::SemiLagrange::compute(
             } // end if
 
             if (data->counter_ == newton_max_iter_) // maximum number of iterations reached
-            {
-              cout << "WARNING: start value set somehow sensible\n"
-                  "  but newton iteration to find it didnt converge!" << endl;
-
-              callBackTracking(
-                  ele,&*data,xi,"standard");
+            { // do not use the lagrangian origin since this case is strange and potential dangerous
+              cout << "WARNING: newton iteration to find start value did not converge!" << endl;
+              data->state_ = TimeIntData::failedSL_;
             }
           } // end if over nodes which changed interface
 
-//          cout << "on proc " << myrank_ << " after " << data->counter_ <<
-//              " iterations the startpoint is " << data->startpoint_ << endl;
+//          cout << "on proc " << myrank_ << " after " << data->counter_ << " iterations "
+//              << data->node_ << " has startpoint " << data->startpoint_ << endl;
         }
       } // end loop over all nodes with changed interface side
     } // end if movenodes is empty or max. iter reached
@@ -634,7 +631,7 @@ void XFEM::SemiLagrange::backTracking(
   LINALG::Matrix<nsd,1> transportVeln(true); // transport velocity at Lagrangian origin (x_Lagr(t^n))
 
   int numele; // number of elements
-  DRT::Element** nodeeles = NULL; // elements around node
+  vector<const DRT::Element*> nodeeles;
 
   if ((data->startGid_.size() != 1) and
       (strcmp(backTrackingType,static_cast<const char*>("failing")) == 0))
@@ -643,8 +640,8 @@ void XFEM::SemiLagrange::backTracking(
   DRT::Node* node = discret_->gNode(data->startGid_[0]); // current node
   if (strcmp(backTrackingType,"failing")==0)
   {
-    numele=node->NumElement();
-    nodeeles = node->Elements();
+    addPBCelements(node,nodeeles);
+    numele=nodeeles.size();
   }
   else
     numele=1;
@@ -676,7 +673,7 @@ void XFEM::SemiLagrange::backTracking(
     DRT::Element* ele = NULL; // current element
     if (numele>1)
     {
-      ele = nodeeles[iele];
+      ele = (DRT::Element*)nodeeles[iele];
       LINALG::Matrix<nsd,1> coords(node->X());
       LINALG::Matrix<nsd,1> vel(true); // dummy
       bool elefound = false;
@@ -1015,15 +1012,19 @@ void XFEM::SemiLagrange::newIteration_nodalData(
     DRT::Node& node = data->node_;
     LINALG::Matrix<nsd,1> coords(node.X());
 
+    vector<const DRT::Element*> eles;
+    addPBCelements(&node,eles);
+    const int numeles=eles.size();
+
     for (size_t i=0;i<newColVectors.size();i++)
     {
       velnpDeriv1[i].Clear();
       presnpDeriv1[i].Clear();
     }
 
-    for (int iele=0;iele<node.NumElement();iele++)
+    for (int iele=0;iele<numeles;iele++)
     {
-      DRT::Element* currele = node.Elements()[iele]; // current element
+      const DRT::Element* currele = eles[iele]; // current element
 
       switch (currele->Shape())
       {
@@ -1080,8 +1081,8 @@ void XFEM::SemiLagrange::newIteration_nodalData(
 
     for (size_t i=0;i<newColVectors.size();i++)
     {
-      velnpDeriv1[i].Scale(1.0/node.NumElement());
-      presnpDeriv1[i].Scale(1.0/node.NumElement());
+      velnpDeriv1[i].Scale(1.0/numeles);
+      presnpDeriv1[i].Scale(1.0/numeles);
     }
 
     data->velDeriv_ = velnpDeriv1;
@@ -1151,10 +1152,13 @@ void XFEM::SemiLagrange::reinitializeData()
             case XFEM::Enrichment::typeStandard :
             case XFEM::Enrichment::typeVoidFSI :
             case XFEM::Enrichment::typeVoid :
+            {
               for (size_t index=0;index<newVectors_.size();index++) // reset standard dofs due to old solution
                 (*newVectors_[index])[newdofrowmap_.LID(newdofpos)] =
                     (*oldVectors_[index])[olddofcolmap_.LID(olddofpos)];
-            case XFEM::Enrichment::typeUndefined :
+              break;
+            }
+            case XFEM::Enrichment::typeUndefined : break;
             default :
             {
               cout << fieldenr->getEnrichment().enrTypeToString(fieldenr->getEnrichment().Type()) << endl;
@@ -1190,8 +1194,8 @@ void XFEM::SemiLagrange::computeNodalGradient(
     vector<RCP<Epetra_Vector> >& newColVectors,
     const Epetra_Map& newdofcolmap,
     map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID>& newNodalDofColDistrib,
-    DRT::Element*& ele,
-    LINALG::Matrix<3,1> coords,
+    const DRT::Element* ele,
+    LINALG::Matrix<3,1>& coords,
     vector<LINALG::Matrix<3,3> >& velnpDeriv1,
     vector<LINALG::Matrix<1,3> >& presnpDeriv1
 ) const
@@ -1247,7 +1251,7 @@ void XFEM::SemiLagrange::computeNodalGradient(
       true);
 #else
   pointdataXFEM<numnode,DISTYPE>(
-      ele,
+      (DRT::Element*)ele,
       xi,
       jacobiDummy,
       shapeFcnDummy,
@@ -1257,6 +1261,7 @@ void XFEM::SemiLagrange::computeNodalGradient(
       enrShapeXYPresDeriv1,
       true);
 #endif
+
   //cout << "shapefcnvel is " << enrShapeFcnVel << ", velderiv is " << enrShapeXYVelDeriv1 << " and presderiv is " << enrShapeXYPresDeriv1 << endl;
   for (size_t i=0;i<newColVectors.size();i++)
   {
@@ -1318,7 +1323,7 @@ void XFEM::SemiLagrange::computeNodalGradient(
 
 #else
     elementsNodalData<numnode>(
-        ele,
+        (DRT::Element*)ele,
         newColVectors[i],
         newdofman_,
         newdofcolmap,
