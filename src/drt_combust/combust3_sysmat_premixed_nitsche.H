@@ -2004,10 +2004,6 @@ void Nitsche_SysmatNeumannInflow(
 
     COMBUST::BlendMaterial(ele, time, densaf, dynvisc, densminus, dynviscminus);
   }
-  // density \rho^{n}
-  // TODO until the XFEM time integration is done properly, densities from previous and
-  // current time steps are identical
-  const double densn = densaf;
 
   //-----------------------------------------------------------
   // evaluate the enrichment function for this integration cell
