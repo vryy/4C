@@ -11959,7 +11959,7 @@ void Fluid3Impl<distype>::ElementXfemInterface(
 
         si->Evaluate(eta,x_side,normal,drs);
 
-        const double fac = drs*iquad.Weight();
+        const double fac = drs * iquad.Weight() * f3Parameter_->timefac_;
 
         // find element local position of gauss point at interface
         GEO::CUT::Position<distype> pos( xyze_, x_side );
@@ -11993,7 +11993,7 @@ void Fluid3Impl<distype>::ElementXfemInterface(
   //      std::cout<<normal(0,0)<<"\t"<<normal<<(1,0)<<"\t"<<normal(2,0)<<"\n";
 
 
-        const double fac = drs*iquad.Weight();
+        const double fac = drs * iquad.Weight() * f3Parameter_->timefac_;
 
         // find element local position of gauss point
         GEO::CUT::Position<distype> pos( xyze_, x_gp_lin );

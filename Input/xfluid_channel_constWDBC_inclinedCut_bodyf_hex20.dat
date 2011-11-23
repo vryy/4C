@@ -39,7 +39,7 @@ THERM_TEMPERATURE      No
 THERM_HEATFLUX         No
 FILESTEPS              1000
 -----------------------------------------------------FLUID DYNAMIC
-INITIALFIELD     field_by_function //zero_field
+INITIALFIELD     zero_field
 TIMEINTEGR       Stationary
 NONLINITER       Newton
 ITEMAX           10

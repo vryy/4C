@@ -530,10 +530,11 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
                                            const std::string & filename_base,
                                            int step,
                                            int count,                           // counter for DEBUG
-                                           Teuchos::RCP<Epetra_Vector> vel )
+                                           Teuchos::RCP<Epetra_Vector> vel,
+                                           Teuchos::RCP<Epetra_Vector> acc)
 {
 
-	const int step_diff = 1;
+	const int step_diff = 10;
 	const bool screen_out = 1;
 
    // output for Element and Node IDs
@@ -555,6 +556,15 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    gmshfilecontent_press.setf(ios::scientific,ios::floatfield);
    gmshfilecontent_press.precision(16);
 
+   std::ostringstream filename_base_acc;
+   if(count > -1) filename_base_acc << filename_base << "_" << count << "_acc";
+   else           filename_base_acc << filename_base << "_acc";
+   const std::string filename_acc = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_acc.str(), step, step_diff, screen_out, discret.Comm().MyPID());
+   cout << endl;
+   std::ofstream gmshfilecontent_acc(filename_acc.c_str());
+   gmshfilecontent_acc.setf(ios::scientific,ios::floatfield);
+   gmshfilecontent_acc.precision(16);
+
    std::ostringstream filename_base_bound;
    if(count > -1) filename_base_bound << filename_base << "_" << count << "_bound";
    else           filename_base_bound << filename_base << "_bound";
@@ -574,6 +584,7 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    {
        gmshfilecontent_vel   << "View \"" << "SOL " << "vel "   << "\" {\n";
        gmshfilecontent_press << "View \"" << "SOL " << "press " << "\" {\n";
+       gmshfilecontent_acc   << "View \"" << "SOL " << "acc   " << "\" {\n";
        gmshfilecontent_bound << "View \"" << "SOL " << "bound " << "\" {\n";
    }
 
@@ -610,12 +621,12 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
                 {
                     if ( e->IsCut() )
                     {
-                        GmshOutputVolumeCell( discret, gmshfilecontent_vel, gmshfilecontent_press, actele, e, vc, vel, nds );
+                        GmshOutputVolumeCell( discret, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, e, vc, nds, vel, acc );
                         GmshOutputBoundaryCell( discret, cutdiscret, gmshfilecontent_bound, actele, e, vc );
                     }
                     else
                     {
-                        GmshOutputElement( discret, gmshfilecontent_vel, gmshfilecontent_press, actele, vel );
+                        GmshOutputElement( discret, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, vel, acc );
                     }
                 }
             }
@@ -653,12 +664,13 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
     }
     else
     {
-      GmshOutputElement( discret, gmshfilecontent_vel, gmshfilecontent_press, actele, vel );
+      GmshOutputElement( discret, gmshfilecontent_vel, gmshfilecontent_press, gmshfilecontent_acc, actele, vel, acc );
     }
   }
 
-  gmshfilecontent_vel << "};\n";
+  gmshfilecontent_vel   << "};\n";
   gmshfilecontent_press << "};\n";
+  if(count == -1) gmshfilecontent_acc   << "};\n";
   gmshfilecontent_bound << "};\n";
 
 }
@@ -668,9 +680,17 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
 void FLD::XFluid::XFluidState::GmshOutputElement( DRT::Discretization & discret,
                                                   std::ofstream & vel_f,
                                                   std::ofstream & press_f,
+                                                  std::ofstream & acc_f,
                                                   DRT::Element * actele,
-                                                  Teuchos::RCP<Epetra_Vector> vel )
+                                                  Teuchos::RCP<Epetra_Vector> vel,
+                                                  Teuchos::RCP<Epetra_Vector> acc)
 {
+
+  //output for accvec ?
+  bool acc_output = true;
+  if(acc == Teuchos::null) acc_output=false;
+
+
   DRT::Element::LocationArray la( 1 );
 
   // get element location vector, dirichlet flags and ownerships
@@ -679,12 +699,19 @@ void FLD::XFluid::XFluidState::GmshOutputElement( DRT::Discretization & discret,
   std::vector<double> m(la[0].lm_.size());
   DRT::UTILS::ExtractMyValues(*vel,m,la[0].lm_);
 
+  std::vector<double> m_acc(la[0].lm_.size());
+  if(acc_output)
+  {
+    DRT::UTILS::ExtractMyValues(*acc,m_acc,la[0].lm_);
+  }
+
   switch ( actele->Shape() )
   {
   case DRT::Element::hex8:
   case DRT::Element::hex20:
     vel_f << "VH(";
     press_f << "SH(";
+    if(acc_output) acc_f << "VH(";
     break;
   default:
     dserror( "unsupported shape" );
@@ -697,13 +724,16 @@ void FLD::XFluid::XFluidState::GmshOutputElement( DRT::Discretization & discret,
     {
       vel_f << ",";
       press_f << ",";
+      if(acc_output) acc_f << ",";
     }
     const double * x = actele->Nodes()[i]->X();
     vel_f   << x[0] << "," << x[1] << "," << x[2];
     press_f << x[0] << "," << x[1] << "," << x[2];
+    if(acc_output) acc_f << x[0] << "," << x[1] << "," << x[2];
   }
   vel_f << "){";
   press_f << "){";
+  if(acc_output) acc_f << "){";
 
 //  for ( int i=0; i<actele->NumNode(); ++i )
   for ( int i=0; i<8; ++i )
@@ -712,14 +742,17 @@ void FLD::XFluid::XFluidState::GmshOutputElement( DRT::Discretization & discret,
     {
       vel_f << ",";
       press_f << ",";
+      if(acc_output) acc_f << ",";
     }
     int j = 4*i;
     vel_f   << m[j] << "," << m[j+1] << "," << m[j+2];
     press_f << m[j+3];
+    if(acc_output) acc_f   << m_acc[j] << "," << m_acc[j+1] << "," << m_acc[j+2];
   }
 
   vel_f << "};\n";
   press_f << "};\n";
+  if(acc_output) acc_f << "};\n";
 }
 
 // -------------------------------------------------------------------
@@ -727,12 +760,19 @@ void FLD::XFluid::XFluidState::GmshOutputElement( DRT::Discretization & discret,
 void FLD::XFluid::XFluidState::GmshOutputVolumeCell( DRT::Discretization & discret,
                                                      std::ofstream & vel_f,
                                                      std::ofstream & press_f,
+                                                     std::ofstream & acc_f,
                                                      DRT::Element * actele,
                                                      GEO::CUT::ElementHandle * e,
                                                      GEO::CUT::VolumeCell * vc,
+                                                     const std::vector<int> & nds,
                                                      Teuchos::RCP<Epetra_Vector> velvec,
-                                                     const std::vector<int> & nds)
+                                                     Teuchos::RCP<Epetra_Vector> accvec
+                                                     )
 {
+
+  //output for accvec ?
+  bool acc_output = true;
+  if(accvec == Teuchos::null) acc_output=false;
 
   DRT::Element::LocationArray la( 1 );
 
@@ -744,13 +784,22 @@ void FLD::XFluid::XFluidState::GmshOutputVolumeCell( DRT::Discretization & discr
 
   Epetra_SerialDenseMatrix vel( 3, actele->NumNode() );
   Epetra_SerialDenseMatrix press( 1, actele->NumNode() );
+  Epetra_SerialDenseMatrix acc( 3, actele->NumNode() );
 
   for ( int i=0; i<actele->NumNode(); ++i )
   {
     vel( 0, i ) = m[4*i+0];
     vel( 1, i ) = m[4*i+1];
     vel( 2, i ) = m[4*i+2];
+
     press( 0, i ) = m[4*i+3];
+
+    if(acc_output)
+    {
+     acc( 0, i ) = m[4*i+0];
+     acc( 1, i ) = m[4*i+1];
+     acc( 2, i ) = m[4*i+2];
+    }
   }
 
   const GEO::CUT::plain_integrationcell_set & intcells = vc->IntegrationCells();
@@ -768,10 +817,12 @@ void FLD::XFluid::XFluidState::GmshOutputVolumeCell( DRT::Discretization & discr
     case DRT::Element::hex8:
       vel_f << "VH(";
       press_f << "SH(";
+      if(acc_output) acc_f << "VH(";
       break;
     case DRT::Element::tet4:
       vel_f << "VS(";
       press_f << "SS(";
+      if(acc_output) acc_f << "VS(";
       break;
     default:
       dserror( "unsupported shape" );
@@ -783,18 +834,22 @@ void FLD::XFluid::XFluidState::GmshOutputVolumeCell( DRT::Discretization & discr
       {
         vel_f << ",";
         press_f << ",";
+        if(acc_output) acc_f << ",";
       }
       const double * x = points[i]->X();
       vel_f   << x[0] << "," << x[1] << "," << x[2];
       press_f << x[0] << "," << x[1] << "," << x[2];
+      if(acc_output) acc_f   << x[0] << "," << x[1] << "," << x[2];
     }
     vel_f << "){";
     press_f << "){";
+    if(acc_output) acc_f << "){";
 
     for ( unsigned i=0; i<points.size(); ++i )
     {
       LINALG::Matrix<3,1> v( true );
       LINALG::Matrix<1,1> p( true );
+      LINALG::Matrix<3,1> a( true );
 
        GEO::CUT::Point * point = points[i];
       const LINALG::Matrix<3,1> & rst = e->LocalCoordinates( point );
@@ -808,9 +863,11 @@ void FLD::XFluid::XFluidState::GmshOutputVolumeCell( DRT::Discretization & discr
         DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex8 );
         LINALG::Matrix<3,numnodes> velocity( vel, true );
         LINALG::Matrix<1,numnodes> pressure( press, true );
+        LINALG::Matrix<3,numnodes> acceleration( acc, true );
 
         v.Multiply( 1, velocity, funct, 1 );
         p.Multiply( 1, pressure, funct, 1 );
+        if(acc_output) a.Multiply( 1, acceleration, funct, 1 );
         break;
       }
       case DRT::Element::hex20:
@@ -821,9 +878,11 @@ void FLD::XFluid::XFluidState::GmshOutputVolumeCell( DRT::Discretization & discr
         DRT::UTILS::shape_function_3D( funct, rst( 0 ), rst( 1 ), rst( 2 ), DRT::Element::hex20 );
         LINALG::Matrix<3,numnodes> velocity( vel, true );
         LINALG::Matrix<1,numnodes> pressure( press, true );
+        LINALG::Matrix<3,numnodes> acceleration( acc, true );
 
         v.Multiply( 1, velocity, funct, 1 );
         p.Multiply( 1, pressure, funct, 1 );
+        if(acc_output) a.Multiply( 1, acceleration, funct, 1 );
         break;
       }
       default:
@@ -835,13 +894,16 @@ void FLD::XFluid::XFluidState::GmshOutputVolumeCell( DRT::Discretization & discr
       {
         vel_f << ",";
         press_f << ",";
+        if(acc_output) acc_f << ",";
       }
       vel_f   << v( 0 ) << "," << v( 1 ) << "," << v( 2 );
       press_f << p( 0 );
+      if(acc_output) acc_f   << a( 0 ) << "," << a( 1 ) << "," << a( 2 );
     }
 
     vel_f << "};\n";
     press_f << "};\n";
+    if(acc_output) acc_f << "};\n";
   }
 
 }
@@ -1037,6 +1099,18 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   boundIntType_ = DRT::INPUT::IntegralValue<INPAR::XFEM::BoundaryIntegralType>(xfemparams,"EMBEDDED_BOUNDARY");
   boundIntFunct_ = xfemparams.get<int>("BOUNDARY_FUNCT_NO");
 
+  initfield_ = DRT::INPUT::IntegralValue<INPAR::FLUID::InitialField>(params_,"INITIALFIELD");
+
+  if(initfield_ != INPAR::FLUID::initfield_zero_field)
+  {
+    startfuncno_ = params_.get<int>("STARTFUNCNO");
+    if (initfield_ != INPAR::FLUID::initfield_field_by_function and
+        initfield_ != INPAR::FLUID::initfield_disturbed_field_from_function)
+    {
+      startfuncno_=-1;
+    }
+  }
+
 
   nitsche_stab_       = params_.sublist("XFEM").get<double>("Nitsche_stab", 0.0);
   nitsche_stab_conv_  = params_.sublist("XFEM").get<double>("Nitsche_stab_conv", 0.0);
@@ -1068,6 +1142,11 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
 	dserror("BoundaryType unknown!!!");
 
   }
+
+
+  // compute or set 1.0 - theta for time-integration schemes
+  if (timealgo_ == INPAR::FLUID::timeint_one_step_theta)  omtheta_ = 1.0 - theta_;
+  else                                      omtheta_ = 0.0;
 
 
 
@@ -1241,7 +1320,11 @@ void FLD::XFluid::Integrate()
   }
 
   // TODO: do this in ADAPTER!!!
-//  SetInitialFlowField(INPAR::FLUID::initfield_field_by_function,1);
+  if(initfield_ != INPAR::FLUID::initfield_zero_field)
+  {
+    SetInitialFlowField(initfield_,startfuncno_);
+  }
+
   SetInitialSolidField();
 
   // distinguish stationary and instationary case
@@ -1485,7 +1568,7 @@ void FLD::XFluid::PrepareTimeStep()
 
 	      discret_->ClearState();
 	    }
-	    cout << "Neumann_loads " << *state_->neumann_loads_ << endl;
+
 }
 
 void FLD::XFluid::NonlinearSolve()
@@ -1786,8 +1869,95 @@ void FLD::XFluid::Evaluate(
 
 void FLD::XFluid::TimeUpdate()
 {
+  cout << "FLD::XFluid::TimeUpdate " << endl;
 
-}
+  ParameterList *  stabparams=&(params_.sublist("STABILIZATION"));
+
+  if(stabparams->get<string>("TDS") == "time_dependent")
+  {
+    const double tcpu=Teuchos::Time::wallTime();
+
+    if(myrank_==0)
+    {
+      cout << "time update for subscales";
+    }
+
+    // call elements to calculate system matrix and rhs and assemble
+    // this is required for the time update of the subgrid scales and
+    // makes sure that the current subgrid scales correspond to the
+    // current residual
+    AssembleMatAndRHS();
+
+    // create the parameters for the discretization
+    ParameterList eleparams;
+    // action for elements
+    eleparams.set("action","time update for subscales");
+
+    // update time paramters
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+    {
+      eleparams.set("gamma"  ,gamma_);
+    }
+    else if (timealgo_==INPAR::FLUID::timeint_one_step_theta)
+    {
+      eleparams.set("gamma"  ,theta_);
+    }
+    else if((timealgo_==INPAR::FLUID::timeint_bdf2))
+    {
+      eleparams.set("gamma"  ,1.0);
+    }
+    else dserror("unknown timealgo_");
+
+
+    eleparams.set("dt"     ,dta_    );
+
+    // call loop over elements to update subgrid scales
+    discret_->Evaluate(eleparams,null,null,null,null,null);
+
+    if(myrank_==0)
+    {
+      cout << "("<<Teuchos::Time::wallTime()-tcpu<<")\n";
+    }
+  }
+
+  // Compute accelerations
+  {
+    Teuchos::RCP<Epetra_Vector> onlyaccn  = state_->velpressplitter_.ExtractOtherVector(state_->accn_ );
+    Teuchos::RCP<Epetra_Vector> onlyaccnp = state_->velpressplitter_.ExtractOtherVector(state_->accnp_);
+    Teuchos::RCP<Epetra_Vector> onlyvelnm = state_->velpressplitter_.ExtractOtherVector(state_->velnm_);
+    Teuchos::RCP<Epetra_Vector> onlyveln  = state_->velpressplitter_.ExtractOtherVector(state_->veln_ );
+    Teuchos::RCP<Epetra_Vector> onlyvelnp = state_->velpressplitter_.ExtractOtherVector(state_->velnp_);
+
+    TIMEINT_THETA_BDF2::CalculateAcceleration(onlyvelnp,
+                                              onlyveln ,
+                                              onlyvelnm,
+                                              onlyaccn ,
+                                              timealgo_,
+                                              step_    ,
+                                              theta_   ,
+                                              dta_     ,
+                                              dtp_     ,
+                                              onlyaccnp);
+
+    // copy back into global vector
+    LINALG::Export(*onlyaccnp,*state_->accnp_);
+
+  }
+
+
+  // update old acceleration
+  state_->accn_->Update(1.0,*state_->accnp_,0.0);
+
+  // velocities/pressures of this step become most recent
+  // velocities/pressures of the last step
+  state_->velnm_->Update(1.0,*state_->veln_ ,0.0);
+  state_->veln_ ->Update(1.0,*state_->velnp_,0.0);
+
+
+
+} //XFluid::TimeUpdate()
+
+
 
 void FLD::XFluid::StatisticsAndOutput()
 {
@@ -1905,6 +2075,7 @@ void FLD::XFluid::Output()
    {
        int count = -1; // no counter for standard solution output
        state_->GmshOutput( *discret_, *boundarydis_, "SOL", step_, count , state_->velnp_ );
+
    }
 
     //---------------------------------- PARAVIEW SOLUTION OUTPUT (solution fields for pressure, velocity) ------------------------
@@ -2136,7 +2307,6 @@ void FLD::XFluid::SetInitialFlowField(
 
     // initialize veln_ as well.
     state_->veln_->Update(1.0,*state_->velnp_ ,0.0);
-
   }
 
 

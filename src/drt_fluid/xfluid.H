@@ -91,7 +91,8 @@ namespace FLD
                        const std::string & name,
                        int step,
                        int count,
-                       Teuchos::RCP<Epetra_Vector> vel );
+                       Teuchos::RCP<Epetra_Vector> vel,
+                       Teuchos::RCP<Epetra_Vector> acc = Teuchos::null);
 
       /// (standard) system matrix
       Teuchos::RCP<LINALG::SparseOperator> sysmat_;
@@ -172,17 +173,22 @@ namespace FLD
       void GmshOutputElement( DRT::Discretization & discret,
                               std::ofstream & vel_f,
                               std::ofstream & press_f,
+                              std::ofstream & acc_f,
                               DRT::Element * actele,
-                              Teuchos::RCP<Epetra_Vector> vel );
+                              Teuchos::RCP<Epetra_Vector> vel,
+                              Teuchos::RCP<Epetra_Vector> acc = Teuchos::null);
 
       void GmshOutputVolumeCell( DRT::Discretization & discret,
                                  std::ofstream & vel_f,
                                  std::ofstream & press_f,
+                                 std::ofstream & acc_f,
                                  DRT::Element * actele,
                                  GEO::CUT::ElementHandle * e,
                                  GEO::CUT::VolumeCell * vc,
+                                 const std::vector<int> & nds,
                                  Teuchos::RCP<Epetra_Vector> vel,
-                                 const std::vector<int> & nds);
+                                 Teuchos::RCP<Epetra_Vector> acc = Teuchos::null
+                                 );
 
       void GmshOutputBoundaryCell( DRT::Discretization & discret,
                                    DRT::Discretization & cutdiscret,
@@ -367,6 +373,11 @@ namespace FLD
 
     enum INPAR::XFEM::BoundaryIntegralType boundIntType_;
     int boundIntFunct_;
+
+    // initial flow field
+    INPAR::FLUID::InitialField initfield_;
+    int startfuncno_;
+
     double nitsche_stab_;                                      // stabilization parameter for Nitsche's method
     double nitsche_stab_conv_;                                 // stabilizaiton parameter for convective Nitsche stabilization
 
