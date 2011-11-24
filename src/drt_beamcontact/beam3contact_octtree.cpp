@@ -100,18 +100,18 @@ vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std::map<int, LINA
   	allAABB = rcp(new Epetra_MultiVector(*(searchdis_.ElementColMap()),13, true));
   else
   	allAABB = rcp(new Epetra_MultiVector(*(searchdis_.ElementColMap()),7, true));
-  
+
   // build axis aligned bounding boxes
   extendedAABB(currentpositions, allAABB);
-  
+
   // call recursive octtree build
   std::vector<std::vector<int> > aabbinoctants;
   locateAll(allAABB, aabbinoctants);
-  
+
   // intersection checks
   vector<RCP<Beam3contact> > contactpairs;
   IntersectionAABB(currentpositions, &contactpairs, &aabbinoctants, allAABB);
-  
+
   return contactpairs;
 }
 
@@ -438,13 +438,12 @@ void Beam3ContactOctTree::locateAll(RCP<Epetra_MultiVector> allAABB,
 
   	// loop over allAABB and determine the extremes
   	for(int i=0; i<allAABB->MyLength(); i++)
-  		for(int j=0; j<allAABB->NumVectors(); j++)
+  		for(int j=0; j<allAABB->NumVectors()-1; j++)
   			if(j%2==0 && (*allAABB)[j][i]<lim(j)) // minimal values
   				lim(j) = (*allAABB)[j][i];
   			else if(j%2!=0 && (*allAABB)[j][i]>lim(j))
   				lim(j) = (*allAABB)[j][i];
   }
-  
   /*/ check later, there is still some mistake! (really???????????????) update: Not sure, if this is even needed (just as a check if all the AABBs lie within the cubic volume?)
   for(int j=0; j<6; j++)
     for(int i=0; i<allAABB->MyLength(); i++)
@@ -468,7 +467,6 @@ void Beam3ContactOctTree::locateAll(RCP<Epetra_MultiVector> allAABB,
   }
   //initial tree depth value (will be incremented with each recursive call of locateBox()
   int treedepth = 0;
-
   //Initialize Vector of Vectors containing limits of Octants for Visualization
   std::vector< std::vector <double> > OctreeLimits;
 
