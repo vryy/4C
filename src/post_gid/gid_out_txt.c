@@ -27,6 +27,12 @@ This is a port of the gidpost library version 1.5.
 
 #define LINE_SIZE 8192
 
+/* although the following function declaration is contained in <stdio.h>
+ * it is not available when compiling with compile flag -ansi as we  normally do.
+ * To remove the compiler warning, the function declaration was added explicitely.
+ * gjb 11/11
+ */
+int snprintf (char *s, size_t size, const char *template, ...);
 
 /*----------------------------------------------------------------------*/
 /*!

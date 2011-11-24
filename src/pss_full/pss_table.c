@@ -1304,7 +1304,8 @@ static void init_parser_data(struct _PARSER_DATA* data, const CHAR* filename)
     /* read file to local buffer */
     data->file_buffer = CCAMALLOC((data->file_size+1)*sizeof(CHAR));
     fseek(file, 0, SEEK_SET);
-    bytes_read = fread(data->file_buffer, sizeof(CHAR), data->file_size, file);
+    /*bytes_read = fread(data->file_buffer, sizeof(CHAR), data->file_size, file);*/
+    bytes_read = fread(data->file_buffer, sizeof(CHAR), (size_t) data->file_size, file);
     if (bytes_read != data->file_size) {
       dserror("failed to read file %s", filename);
     }
@@ -1650,7 +1651,8 @@ static void parse_definitions(PARSER_DATA* data, MAP* dir)
        * into the file buffer. However, we know its length so we can
        * handle that. */
       name = CCAMALLOC((data->token_int+1)*sizeof(CHAR));
-      strncpy(name, data->token_string, data->token_int);
+      /*strncpy(name, data->token_string, data->token_int);*/
+      strncpy(name, data->token_string, (size_t) data->token_int);
       name[data->token_int] = '\0';
 
       lexan(data);
@@ -1684,7 +1686,8 @@ static void parse_definitions(PARSER_DATA* data, MAP* dir)
 
           /* Again, be carefully with those pointers... */
           string = CCAMALLOC((data->token_int+1)*sizeof(CHAR));
-          strncpy(string, data->token_string, data->token_int);
+          /*strncpy(string, data->token_string, data->token_int);*/
+          strncpy(string, data->token_string, (size_t) data->token_int);
           string[data->token_int] = '\0';
 
           map_insert_string(dir, string, name);
@@ -1761,7 +1764,8 @@ void parse_control_file_serial(MAP* map, const CHAR* filename)
   /* read file to local buffer */
   data.file_buffer = CCAMALLOC((data.file_size+1)*sizeof(CHAR));
   fseek(file, 0, SEEK_SET);
-  bytes_read = fread(data.file_buffer, sizeof(CHAR), data.file_size, file);
+  /*bytes_read = fread(data.file_buffer, sizeof(CHAR), data.file_size, file);*/
+  bytes_read = fread(data.file_buffer, sizeof(CHAR), (size_t) data.file_size, file);
   if (bytes_read != data.file_size) {
     dserror("failed to read file %s", filename);
   }
