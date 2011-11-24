@@ -113,8 +113,8 @@ public:
   //double EvalQuadrantRandomField( double x, double y, double z);
 
   // Calculate Power Spectral Density
-  double  PowerSpectralDensity2D( double kappa_x, double kappa_y );
-  double  PowerSpectralDensity3D( double kappa_x, double kappa_y, double kappa_z );
+  //double  PowerSpectralDensity2D( double kappa_x, double kappa_y );
+  //double  PowerSpectralDensity3D( double kappa_x, double kappa_y, double kappa_z );
 
   // FFT Stuff
   void CalcDiscretePSD();

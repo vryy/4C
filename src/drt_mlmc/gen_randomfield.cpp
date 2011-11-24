@@ -31,6 +31,7 @@ Maintainer: Jonas Biehler
 #include"fftw3.h"
 using namespace DRT;
 
+#warning "Be aware that FFTW is under the GPL v2.0! A strict interpretation of the GPL license does not allow BACI to be used with GPL code!"
 
 
 /*----------------------------------------------------------------------*/
@@ -196,9 +197,13 @@ double GenRandomField::EvalRandomField2D( double x, double y, double z)
                   (cos( (k0+1) * dkappa_ * x  + (k1+1) * dkappa_ * y  + Phi_0_[k0 + k1*N_])+
                       cos( (k0+1) * dkappa_ * x  - (k1+1) * dkappa_ * y  + Phi_1_[k0 + k1*N_]) );*/
         // test forsumm from k=0
+#if 0
         result += sqrt( 2*PowerSpectralDensity2D( (k0) * dkappa_, (k1) * dkappa_) * pow( dkappa_, 2 ) ) *
                           (cos( (k0) * dkappa_ * x  + (k1) * dkappa_ * y  + Phi_0_[k0 + k1*N_])+
                               cos( (k0) * dkappa_ * x  - (k1) * dkappa_ * y  + Phi_1_[k0 + k1*N_]) );
+#else
+	#warning "Shame on you! PowerSpectralDensity2D has not been declared in GenRandomFiled! That's why the linker cannot find it!"
+#endif
       }
     }
 
@@ -218,12 +223,16 @@ double GenRandomField::EvalRandomField3D( double x, double y, double z)
         for ( int k2 = 0; k2 < N_; ++k2 )
         {
           // This tiny little formular is from Shinozuka1996, page 46 Simulation of quadrant fields
+#if 0
           result += sqrt( 2*PowerSpectralDensity3D( (k0+1) * dkappa_, (k1+1) * dkappa_, (k2+1) * dkappa_ ) * pow( dkappa_, 3 ) ) *
                     (cos( (k0+1) * dkappa_ * x  + (k1+1) * dkappa_ * y + (k2+1) * dkappa_ * z + Phi_0_[k0 + k1*N_ + k2*N_*N_])+
                         cos( (k0+1) * dkappa_ * x  + (k1+1) * dkappa_ * y - (k2+1) * dkappa_ * z + Phi_1_[k0 + k1*N_ + k2*N_*N_])+
                         cos( (k0+1) * dkappa_ * x  - (k1+1) * dkappa_ * y - (k2+1) * dkappa_ * z + Phi_2_[k0 + k1*N_ + k2*N_*N_])+
                         cos( (k0+1) * dkappa_ * x  - (k1+1) * dkappa_ * y + (k2+1) * dkappa_ * z + Phi_3_ [k0 + k1*N_ + k2*N_*N_] )
                         );
+#else
+	#warning "Shame on you! PowerSpectralDensity3D has not been declared in GenRandomFiled! That's why the linker cannot find it!"
+#endif
         }
       }
     }
