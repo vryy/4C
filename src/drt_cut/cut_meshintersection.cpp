@@ -8,6 +8,8 @@
 
 #include "cut_meshintersection.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 GEO::CUT::ElementHandle * GEO::CUT::MeshIntersection::AddElement( int eid,
                                                                   const std::vector<int> & nids,
                                                                   const Epetra_SerialDenseMatrix & xyz,
@@ -123,10 +125,11 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner, std::string gausstype 
 //    m.FindNodalDOFSets( include_inner );
   }
 
-  std::cout<<"Gauss point generating method = "<<gausstype<<"\n";//blockkk
+  std::cout<<"Gauss point generating method = "<<gausstype<<"\n";
 
   if(gausstype=="Tessellation")
   {
+	  TEUCHOS_FUNC_TIME_MONITOR( "Tessellation time" );
 	  m.CreateIntegrationCells( 0, false );
 	  //m.RemoveEmptyVolumeCells();
 
@@ -143,6 +146,7 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner, std::string gausstype 
 
   if(gausstype=="MomentFitting")
   {
+	  TEUCHOS_FUNC_TIME_MONITOR( "MomentFitting time" );
 	  m.MomentFitGaussWeights(include_inner);
   }
   Status(gausstype);

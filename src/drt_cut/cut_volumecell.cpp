@@ -832,7 +832,7 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem, Mesh & mesh, boo
 //        std::cout<<"volume"<<std::endl;
 //
 //        static int k=0; //blockkk or remove
-//if(k>1)        //blockkk or remove
+//if(k>0)        //blockkk or remove
 //	return;//blockkk or remove
 //const GEO::CUT::Point::PointPosition posu = Position();//blockkk or remove
 //if(posu==-3)//blokkk or remove
@@ -843,9 +843,9 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem, Mesh & mesh, boo
 	std::cout<<"position = "<<posi<<"\n";
 //if the volumecell is inside and includeinner is false, no need to compute the Gaussian points
 //as this vc will never be computed in xfem algorithm
-	if(posi==-2 && include_inner==false)
+	if(posi==-2 && include_inner==false)//unblockkk
 		return;
-    VolumeIntegration vc_inte(this,elem,posi,56); //change the number of equations
+    VolumeIntegration vc_inte(this,elem,posi,84); //change the number of equations
 
     weights_ = vc_inte.compute_weights();
     gausPts_ = vc_inte.getGaussPointLocation(); 
@@ -901,7 +901,7 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem, Mesh & mesh, boo
     }*/
 
 
-/*	  static int sideno = 0;
+	  /*static int sideno = 0;
           sideno++;
 	  std::string filename="wrong";
    	  std::ofstream file;
@@ -910,7 +910,7 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem, Mesh & mesh, boo
           out <<"parent"<<sideno<<".dat";
           filename = out.str();
           file.open(filename.c_str());
-	  for (unsigned i=0;i<weights_.size();i++)
+	  for (unsigned i=0;i<gausPts_.size();i++)
 	  { 
 		  file<<gausPts_[i][0]<<"\t"<<gausPts_[i][1]<<"\t"<<gausPts_[i][2]<<"\t"<<weights_[i]<<std::endl;
 	  }

@@ -261,29 +261,29 @@ double GEO::CUT::FacetIntegration::integrate_facet()
         double facet_integ = 0.0;
         for(std::vector<std::vector<double> >::const_iterator k=cornersLocal.begin();k!=cornersLocal.end();k++)
         {
-		const std::vector<double> coords1 = *k;
-		std::vector<double> coords2;
-        //for the last line the end point is the first point of the facet
-                if(k!=(cornersLocal.end()-1))
-                        coords2 = *(k+1);
-                else
-                        coords2= *(cornersLocal.begin());
+			const std::vector<double> coords1 = *k;
+			std::vector<double> coords2;
+			//for the last line the end point is the first point of the facet
+			if(k!=(cornersLocal.end()-1))
+					coords2 = *(k+1);
+			else
+					coords2= *(cornersLocal.begin());
 
-                std::vector<double> coord1,coord2;
-                coord1.resize(2);
-                coord2.resize(2);
+			std::vector<double> coord1,coord2;
+			coord1.resize(2);
+			coord2.resize(2);
 //The facet is projected over y-z plane and then the integration is performed
 //so only y- and z-coordinates are passed to make the lines
 //[0]-- indicates y and [1] indicate z because we are now in y-z plane
-                coord1[0] = coords1[1];
-                coord1[1] = coords1[2];
-                coord2[0] = coords2[1];
-                coord2[1] = coords2[2];
+			coord1[0] = coords1[1];
+			coord1[1] = coords1[2];
+			coord2[0] = coords2[1];
+			coord2[1] = coords2[2];
 
 //              std::cout<<coord1[0]<<"\t"<<coord1[1]<<"\t"<<coord2[0]<<"\t"<<coord2[1]<<std::endl;
 //
-                LineIntegration line1(coord1,coord2,inte_num_,alpha);
-                facet_integ += line1.integrate_line();
+			LineIntegration line1(coord1,coord2,inte_num_,alpha);
+			facet_integ += line1.integrate_line();
         }
 
 //this condition results in negative normal for all the lines in the line integral

@@ -250,6 +250,9 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, const std::vector<Point*> & points 
   return true;
 }
 
+//the triangulation works only when the facet is convex
+//Find the middle point in the facet and connect the middle point with every line of the facet
+//to create triangles
 void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*> & points )
 {
   LINALG::Matrix<3,1> x1;

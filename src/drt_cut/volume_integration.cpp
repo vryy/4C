@@ -7,6 +7,7 @@
 #include "least_squares.H"
 #include "cut_boundingbox.H"
 #include "cut_options.H"
+#include <Epetra_MultiVector.h>
 
 using namespace std;
 
@@ -43,6 +44,7 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_rhs_moment()
 
 //compute the gaussian points of the volumecell with "numeach" points in each 3-directions
 //numeach should be more than 1
+//uses ray tracing method
 bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
 {
     
@@ -55,8 +57,6 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
 /*        for(unsigned i=0;i<eqn_facets_.size();i++)      
                std::cout<<eqn_facets_[i][0]<<"\t"<<eqn_facets_[i][1]<<"\t"<<eqn_facets_[i][2]<<"\t"<<eqn_facets_[i][3]<<std::endl;*/
 
-    /*********geneate Gaussian points by checking the intersection of an arbitrary line
-     ********* with the sides of the volumecell**************************************/
 //construct a bounding box within which the Gaussian points are distributed and checked whether
 //they are inside the volume cell or not
     BoundingBox box1(*volcell_,elem1_);
@@ -199,61 +199,6 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
     }
     cout<<"number of Gauss points"<<gaus_pts_.size()<<endl;//blockkk
     return wei;
-     
-/*************** probably need to remove this*****************************************/
-//create a bounding box over the volume and generate gaussian points over that volume   
-/*    const plain_facet_set & facete = volcell_->Facets();
-    std::vector<double> x1,y1,z1;
-    for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
-    {
-        Facet *fac = *i;
-        const std::vector<Point*> & corners = fac->CornerPoints();
-//        std::cout<<"facet"<<std::endl;
-        for(std::vector<Point*>::const_iterator k=corners.begin();k!=corners.end();k++)
-        {
-            const Point* po = *k;
-            const double * coords = po->X();
-            x1.push_back(coords[0]);
-            y1.push_back(coords[1]);
-            z1.push_back(coords[2]);
-//            std::cout<<coords[0]<<"\t"<<coords[1]<<"\t"<<coords[2]<<std::endl;
-        }
-
-    }
-    std::sort(x1.begin(),x1.end());
-    std::sort(y1.begin(),y1.end());
-    std::sort(z1.begin(),z1.end());
-
-    unsigned numb = x1.size();
-    double minnx=x1[0],maxxx=x1[numb-1],minny=y1[0],maxxy=y1[numb-1],minnz=z1[0],maxxz=z1[numb-1];  
-//    double tauu[] = {0.1,0.2,0.5,0.6};
-//    double tauuz[] = {0.1,0.2,0.5,0.6};
-    double tauux[] = {0.2,0.4, 0.55,0.7,0.9};
-    double tauuy[] = {0.2,0.4, 0.55,0.7,0.9};
-    double tauuz[] = {0.2,0.4, 0.55,0.7,0.9};
-    for(int i=0;i<5;i++)
-    {
-        
-        std::vector<double> ptt;
-        ptt.resize(3);
-        ptt[2] = minnz+(maxxz-minnz)*tauuz[i];
-        for(int j=0;j<5;j++)
-        {
-
-            ptt[1] = minny+(maxxy-minny)*tauuy[j];
-            for(int k=0;k<5;k++)
-            {
-                ptt[0] = minnx+(maxxx-minnx)*tauux[k];
-                gaus_pts_.push_back(ptt);
-            }
-        }
-    }*/
-//    std::cout<<"size"<<gaus_pts_.size()<<std::endl;
-/*  for(int i=0;i<27;i++)
-    {
-        std::cout<<gau_pts[i][0]<<"\t"<<gau_pts[i][1]<<"\t"<<gau_pts[i][2]<<std::endl;
-    }*/
-/*******************until this*******************************************/
 }
 
 //store the z- and y-coordinates of the all corner points which will be used to find whether the intersection
@@ -504,7 +449,7 @@ bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3],double maxx[3], d
      dx1[0]=maxx[0]-minn[0],dx1[1]=maxx[1]-minn[1],dx1[2]=maxx[2]-minn[2];
      double xmin=minn[0]+toler*dx1[0],ymin=minn[1],ymax=maxx[1];
 
-//checl for the lowest line
+//check for the lowest line
      while(1)
      {
 		 vector<vector<double> > linePts;
@@ -600,29 +545,29 @@ bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3],double maxx[3], d
 void GEO::CUT::VolumeIntegration::OnLine(vector<double>inter1,vector<double>inter2,
                 vector<vector<double> >&linePts,int num)
 {
-		vector<double> left,right;
-		if(inter1[0]<inter2[0])
-		{
-				left = inter1;
-				right = inter2;
-		}
-		else
-		{
-				left = inter2;
-				right = inter1;
-		}
-		double xlen = right[0]-left[0];
-		inter1[0] = left[0]+0.05*xlen;
-		inter2[0] = right[0]-0.05*xlen;
-		double xdiff = (inter2[0]-inter1[0])/(num-1);
-		for(int i=0;i<num;i++)
-		{
-				vector<double> temp(3);
-				temp[0] = inter1[0]+i*xdiff;
-				temp[1] = inter1[1];
-				temp[2] = inter1[2];
-				linePts.push_back(temp);
-		}
+	vector<double> left,right;
+	if(inter1[0]<inter2[0])
+	{
+			left = inter1;
+			right = inter2;
+	}
+	else
+	{
+			left = inter2;
+			right = inter1;
+	}
+	double xlen = right[0]-left[0];
+	inter1[0] = left[0]+0.05*xlen;
+	inter2[0] = right[0]-0.05*xlen;
+	double xdiff = (inter2[0]-inter1[0])/(num-1);
+	for(int i=0;i<num;i++)
+	{
+			vector<double> temp(3);
+			temp[0] = inter1[0]+i*xdiff;
+			temp[1] = inter1[1];
+			temp[2] = inter1[2];
+			linePts.push_back(temp);
+	}
 }
 
 //form the moment fitting matrix
@@ -653,7 +598,7 @@ void GEO::CUT::VolumeIntegration::moment_fitting_matrix(std::vector<std::vector<
 
 }
 
-//compute the weights and returns the coordinates of weights and the weighing points
+//compute the weights and returns the coordinates of Gauss points and their corresponding weights
 Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
 {
 
@@ -664,31 +609,69 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
         std::cout<<*i<<std::endl;*/
     bool wei;
 //we should ask for more than 1 point in each direction
-    wei = compute_Gaussian_points(6);
-/*  for(int i=0;i<27;i++)
-    {
-        std::cout<<gaus_pts_[i][0]<<"\t"<<gaus_pts_[i][1]<<"\t"<<gaus_pts_[i][2]<<std::endl;
-    }*/
-
+    int numeach=7;
     Epetra_SerialDenseVector weights;
-    if(wei)
+    while(1)
     {
-        std::vector<std::vector<double> > moment_matrix(num_func_,std::vector<double>(gaus_pts_.size()));
-        moment_fitting_matrix(moment_matrix);
+    	gaus_pts_.clear();
+		wei = compute_Gaussian_points(numeach);
 
-        LeastSquares least(moment_matrix,rhs_moment);
-        weights.Size(moment_matrix[0].size());
-        weights = least.linear_least_square();
+		if(wei)
+		{
+			std::vector<std::vector<double> > moment_matrix(num_func_,std::vector<double>(gaus_pts_.size()));
+			moment_fitting_matrix(moment_matrix);
+
+			/*if(num_func_>1)
+				FirstOrderAdditionalTerms(moment_matrix,rhs_moment);
+			if(num_func_>4)
+				SecondOrderAdditionalTerms(moment_matrix,rhs_moment);
+			if(num_func_>10)
+				ThirdOrderAdditionalTerms(moment_matrix,rhs_moment);
+			if(num_func_>20)
+				FourthOrderAdditionalTerms(moment_matrix,rhs_moment);
+			if(num_func_>35)
+				FifthOrderAdditionalTerms(moment_matrix,rhs_moment);
+			if(num_func_>56)
+				SixthOrderAdditionalTerms(moment_matrix,rhs_moment);*/
+
+			LeastSquares least(moment_matrix,rhs_moment);
+			weights.Size(moment_matrix[0].size());
+			weights = least.linear_least_square();
+		}
+		else							//the considered volumecell has negligible volume and can be eliminated
+		{
+			gaus_pts_.clear();
+			vector<double> zer(3);
+			zer[0]=0.0;zer[1]=0.0;zer[2]=0.0;
+			gaus_pts_.push_back(zer);
+			weights.Size(1);
+			weights(0) = 0.0;
+			break;
+		}
+
+		Epetra_SerialDenseVector err(num_func_);
+		for(unsigned i=0;i<num_func_;i++)
+		{
+			err(i) = 0.0;
+			for(unsigned j=0;j<gaus_pts_.size();j++)
+			{
+				err(i) += weights(j)*base_function(gaus_pts_[j],i+1);
+			}
+			err(i) = fabs(err(i)-rhs_moment(i));
+			//std::cout<<"error = "<<err(i)<<"\n";
+		}
+		//ErrorForSpecificFunction(rhs_moment,weights,numeach);//blockkk
+		const double maxError = err.InfNorm();
+		//std::cout<<"max error = "<<maxError<<"\n";
+		if(maxError<1e-10 || numeach==15)//blockkk
+			break;
+		else
+			numeach++;
+		break;
+
     }
-    else
-    {
-        gaus_pts_.clear();
-        vector<double> zer(3);
-        zer[0]=0.0;zer[1]=0.0;zer[2]=0.0;
-        gaus_pts_.push_back(zer);
-        weights.Size(1);
-        weights(0) = 0.0;
-    }
+
+    std::cout<<"volume = "<<rhs_moment(0)<<"\t"<<rhs_moment(1)<<"\t"<<rhs_moment(4)<<std::endl;
 
 /*    for(int j=0;j<num_func_;j++)
     {
@@ -718,7 +701,9 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
 /*  for(int i=0;i<weights.size();i++)
         std::cout<<"wei"<<weights(i)<<std::endl;*/
 
-    std::cout<<"volume = "<<rhs_moment(0)<<"\t"<<rhs_moment(1)<<"\t"<<rhs_moment(4)<<std::endl;
+
+
+
 
 #ifdef DEBUGCUTLIBRARY
     GaussPointGmsh();
@@ -731,3 +716,202 @@ void GEO::CUT::VolumeIntegration::GaussPointGmsh()
 {
         volcell_->DumpGmshGaussPoints(gaus_pts_);
 }
+
+//compute integration of x+y,y+z and x+z values from the integration of x, y and z values
+void GEO::CUT::VolumeIntegration::FirstOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs)
+{
+	unsigned int i = mat.size(),kk=mat[0].size();
+	//no of additional elements is n(n+1)/2 where n=(no_of_monomials-1). Here no_of monomials=3=>(x,y,z)
+	rhs.Resize(i+3);
+	mat.resize(i+3,std::vector<double>(kk));
+	unsigned int ibegin=1,iend=3;//the row numbers that contain the first order terms in rhs
+	for(unsigned j=ibegin;j<=iend;j++)
+	{
+		for(unsigned k=j+1;k<=iend;k++)
+		{
+			rhs(i) = rhs(j)+rhs(k);
+			for(unsigned m=0;m<mat[0].size();m++)
+				mat[i][m] = mat[j][m]+mat[k][m];
+			i++;
+		}
+	}
+}
+
+void GEO::CUT::VolumeIntegration::SecondOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs)
+{
+	unsigned int i = mat.size(),kk=mat[0].size();
+	rhs.Resize(i+15);
+	mat.resize(i+15,std::vector<double>(kk));
+	unsigned int ibegin=4,iend=9;//the row numbers that contain the second order terms in rhs
+	for(unsigned j=ibegin;j<=iend;j++)
+	{
+		for(unsigned k=j+1;k<=iend;k++)
+		{
+			rhs(i) = rhs(j)+rhs(k);
+			for(unsigned m=0;m<mat[0].size();m++)
+				mat[i][m] = mat[j][m]+mat[k][m];
+			i++;
+		}
+	}
+}
+
+void GEO::CUT::VolumeIntegration::ThirdOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs)
+{
+	unsigned int i = mat.size(),kk=mat[0].size();
+	rhs.Resize(i+45);
+	mat.resize(i+45,std::vector<double>(kk));
+	unsigned int ibegin=10,iend=19;//the row numbers that contain the third order terms in rhs
+	for(unsigned j=ibegin;j<=iend;j++)
+	{
+		for(unsigned k=j+1;k<=iend;k++)
+		{
+			rhs(i) = rhs(j)+rhs(k);
+			for(unsigned m=0;m<mat[0].size();m++)
+				mat[i][m] = mat[j][m]+mat[k][m];
+			i++;
+		}
+	}
+}
+
+void GEO::CUT::VolumeIntegration::FourthOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs)
+{
+	unsigned int i = mat.size(),kk=mat[0].size();
+	rhs.Resize(i+105);
+	mat.resize(i+105,std::vector<double>(kk));
+	unsigned int ibegin=20,iend=34;//the row numbers that contain the fourth order terms in rhs
+	for(unsigned j=ibegin;j<=iend;j++)
+	{
+		for(unsigned k=j+1;k<=iend;k++)
+		{
+			rhs(i) = rhs(j)+rhs(k);
+			for(unsigned m=0;m<mat[0].size();m++)
+				mat[i][m] = mat[j][m]+mat[k][m];
+			i++;
+		}
+	}
+}
+
+void GEO::CUT::VolumeIntegration::FifthOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs)
+{
+	unsigned int i = mat.size(),kk=mat[0].size();
+	rhs.Resize(i+210);
+	mat.resize(i+210,std::vector<double>(kk));
+	unsigned int ibegin=35,iend=55;//the row numbers that contain the fifth order terms in rhs
+	for(unsigned j=ibegin;j<=iend;j++)
+	{
+		for(unsigned k=j+1;k<=iend;k++)
+		{
+			rhs(i) = rhs(j)+rhs(k);
+			for(unsigned m=0;m<mat[0].size();m++)
+				mat[i][m] = mat[j][m]+mat[k][m];
+			i++;
+		}
+	}
+}
+
+void GEO::CUT::VolumeIntegration::SixthOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs)
+{
+	unsigned int i = mat.size(),kk=mat[0].size();
+	rhs.Resize(i+561);
+	mat.resize(i+561,std::vector<double>(kk));
+	unsigned int ibegin=56,iend=83;//the row numbers that contain the fifth order terms in rhs
+	for(unsigned j=ibegin;j<=iend;j++)
+	{
+		for(unsigned k=j+1;k<=iend;k++)
+		{
+			rhs(i) = rhs(j)+rhs(k);
+			for(unsigned m=0;m<mat[0].size();m++)
+				mat[i][m] = mat[j][m]+mat[k][m];
+			i++;
+		}
+	}
+}
+
+//computes error for some specified functions (used only in postprocessing)
+void GEO::CUT::VolumeIntegration::ErrorForSpecificFunction(Epetra_SerialDenseVector rhs_moment,
+		Epetra_SerialDenseVector weights,int numeach)
+{
+    static std::vector<int> gausSize;
+    gausSize.push_back(gaus_pts_.size());
+    static std::vector<std::vector<double> > errAccu;
+    std::vector<double> error (7);
+
+    double chek = 0.0;
+    for(unsigned i=0;i<gaus_pts_.size();i++)
+	{
+		 chek += 5*weights(i);
+	}
+    error[0] = 5*rhs_moment(0)-chek;
+
+    chek = 0.0;
+	for(unsigned i=0;i<gaus_pts_.size();i++)
+	{
+		 chek += 2*weights(i)*gaus_pts_[i][0]+3*weights(i)*gaus_pts_[i][1]+5*weights(i)*gaus_pts_[i][2];
+	}
+	error[1] = 2*rhs_moment(1)+3*rhs_moment(2)+5*rhs_moment(3)-chek;
+
+    chek = 0.0;
+	for(unsigned i=0;i<gaus_pts_.size();i++)
+	{
+		 chek += weights(i)*(gaus_pts_[i][0]*gaus_pts_[i][0]-gaus_pts_[i][0]*gaus_pts_[i][1]+gaus_pts_[i][1]*gaus_pts_[i][2]+
+				 gaus_pts_[i][2]*gaus_pts_[i][2]);
+	}
+	error[2] = rhs_moment(4)-rhs_moment(5)+rhs_moment(8)+rhs_moment(9)-chek;
+
+	chek = 0.0;
+	for(unsigned i=0;i<gaus_pts_.size();i++)
+	{
+		 chek += weights(i)*(pow(gaus_pts_[i][0],3)+gaus_pts_[i][0]*gaus_pts_[i][1]*gaus_pts_[i][2]+pow(gaus_pts_[i][1],3));
+	}
+	error[3] = rhs_moment(10)+rhs_moment(14)+rhs_moment(16)-chek;
+
+	chek = 0.0;
+	for(unsigned i=0;i<gaus_pts_.size();i++)
+	{
+		 chek += weights(i)*(pow(gaus_pts_[i][0],4)-7*gaus_pts_[i][0]*gaus_pts_[i][1]*gaus_pts_[i][1]+pow(gaus_pts_[i][2],3));
+	}
+	error[4] = rhs_moment(20)-7*rhs_moment(13)+rhs_moment(19)-chek;
+
+	chek = 0.0;
+	for(unsigned i=0;i<gaus_pts_.size();i++)
+	{
+		 chek += weights(i)*(pow(gaus_pts_[i][1],5)+gaus_pts_[i][0]*pow(gaus_pts_[i][2],4)+pow(gaus_pts_[i][2],5));
+	}
+	error[5] = rhs_moment(50)+rhs_moment(49)+rhs_moment(55)-chek;
+
+	chek = 0.0;
+	for(unsigned i=0;i<gaus_pts_.size();i++)
+	{
+		 chek += weights(i)*(pow(gaus_pts_[i][0],6)+pow(gaus_pts_[i][1],6)+pow(gaus_pts_[i][2],6)+pow(gaus_pts_[i][0],2)*pow(gaus_pts_[i][1],2)
+				 *pow(gaus_pts_[i][2],2)+gaus_pts_[i][0]*pow(gaus_pts_[i][1],5));
+	}
+	error[6] = rhs_moment(56)+rhs_moment(77)+rhs_moment(83)+rhs_moment(68)+rhs_moment(71)-chek;
+
+	errAccu.push_back(error);
+
+	if(numeach==15)
+	{
+		  std::string filename="wrong";
+		  std::ofstream file;
+
+		  std::stringstream out;
+		  out <<"funcOutput.dat";
+		  filename = out.str();
+		  file.open(filename.c_str());
+		  /*for(unsigned i=0;i<gausSize.size();i++)
+			  file<<gausSize[i]<<"\t";
+		  file<<"\n";*/
+		  for(unsigned i=0;i<errAccu.size();i++)
+		  {
+			  file<<gausSize[i]<<"\t";
+			  for(unsigned j=0;j<errAccu[0].size();j++)
+				  file<<errAccu[i][j]<<"\t";
+			  file<<"\n";
+		  }
+		  file.close();
+	}
+
+/*    for(unsigned i=0;i<7;i++)
+    	std::cout<<scientific<<error[i]<<"\n";*/
+}
+

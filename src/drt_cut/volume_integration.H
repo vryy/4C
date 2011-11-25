@@ -54,6 +54,13 @@ class VolumeIntegration
         void get_zcoordinates(vector<vector<double> >& zcoord,vector<vector<double> >& ycoord);
         int pnpoly(int npol, vector<double>xp, vector<double>yp, double x, double y);
         bool traceVolume(vector<vector<double> >& zcoord,vector<vector<double> >& ycoord,double*minn,double*maxx,double toler);
+        void FirstOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs);
+        void SecondOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs);
+        void ThirdOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs);
+        void FourthOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs);
+        void FifthOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs);
+        void SixthOrderAdditionalTerms(std::vector<std::vector<double> >&mat,Epetra_SerialDenseVector&rhs);
+        void ErrorForSpecificFunction(Epetra_SerialDenseVector rhs_moment,Epetra_SerialDenseVector weights,int numeach);
 };
 }
 }
