@@ -518,6 +518,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     eleparams.set("qin_nm",qin_nm_);
 
 
+    discret_->SetState("acinar_vn" ,acini_volumen_);
+    discret_->SetState("acinar_vnp",acini_volumenp_);
+
+
     eleparams.set("qout_np",qout_np_);
     eleparams.set("qout_n" ,qout_n_ );
     eleparams.set("qout_nm",qout_nm_ );
@@ -568,6 +572,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     discret_->SetState("pnp",pnp_);
     discret_->SetState("pn" ,pn_ );
     discret_->SetState("pnm",pnm_);
+
+    discret_->SetState("acinar_vn" ,acini_volumen_);
+    discret_->SetState("acinar_vnp",acini_volumenp_);
+
     //    discret_->SetState("qcnp",qcnp_);
     //    discret_->SetState("qcn" ,qcn_ );
     //    discret_->SetState("qcnm",qcnm_);
@@ -585,6 +593,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     eleparams.set("total time",time_);
     eleparams.set("bcval",bcval_);
     eleparams.set("dbctog",dbctog_);
+
     //    eleparams.set("abc",abc_);
     //    eleparams.set("rhs",rhs_);
 
@@ -1060,6 +1069,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<ParameterList>
     discret_->SetState("pn" ,pn_ );
     discret_->SetState("pnm",pnm_);
 
+    discret_->SetState("acinar_vn" ,acini_volumen_);
+    discret_->SetState("acinar_vnp",acini_volumenp_);
+
     eleparams.set("qin_np",qin_np_);
     eleparams.set("qin_n" ,qin_n_);
     eleparams.set("qin_nm",qin_nm_);
@@ -1099,6 +1111,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<ParameterList>
     //    discret_->SetState("qcnp",qcnp_);
     //    discret_->SetState("qcn" ,qcn_ );
     //    discret_->SetState("qcnm",qcnm_);
+
+    discret_->SetState("acinar_vn" ,acini_volumen_);
+    discret_->SetState("acinar_vnp",acini_volumenp_);
 
     eleparams.set("qin_np",qin_np_);
     eleparams.set("qin_n",qin_n_);

@@ -113,7 +113,9 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
 
   RefCountPtr<const Epetra_Vector> pnp  = discretization.GetState("pnp");
   RefCountPtr<const Epetra_Vector> pn   = discretization.GetState("pn");
-  RefCountPtr<const Epetra_Vector> pnm   = discretization.GetState("pnm");
+  RefCountPtr<const Epetra_Vector> pnm  = discretization.GetState("pnm");
+  RefCountPtr<const Epetra_Vector> acinar_vnp  = discretization.GetState("acinar_vnp");
+  RefCountPtr<const Epetra_Vector> acinar_vn   = discretization.GetState("acinar_vn");
 
   RefCountPtr<Epetra_Vector> qin_nm  = params.get<RefCountPtr<Epetra_Vector> >("qin_nm");
   RefCountPtr<Epetra_Vector> qin_n   = params.get<RefCountPtr<Epetra_Vector> >("qin_n");
@@ -124,7 +126,10 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   RefCountPtr<Epetra_Vector> qout_nm = params.get<RefCountPtr<Epetra_Vector> >("qout_nm");
 
  if (pnp==null || pn==null || pnm==null )
-    dserror("Cannot get state vectors 'pnp', 'pn', an/or 'pnm''");
+    dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
+
+ if (acinar_vnp==null || acinar_vn ==null )
+    dserror("Cannot get state vectors 'acinar_vnp' and/or 'acinar_vn'");
 
   // extract local values from the global vectors
   vector<double> mypnp(lm.size());
@@ -150,6 +155,23 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
     epnm(i)    = mypnm[i];
   }
 
+  // extract local values from the global vectors
+  vector<double> my_acin_vnp(lm.size());
+  DRT::UTILS::ExtractMyValues(*acinar_vnp,my_acin_vnp,lm);
+
+  // extract local values from the global vectors
+  vector<double> my_acin_vn (lm.size());
+  DRT::UTILS::ExtractMyValues(*acinar_vn ,my_acin_vn ,lm);
+
+  // create objects for element arrays
+  Epetra_SerialDenseVector e_acin_vnp (elemVecdim);
+  Epetra_SerialDenseVector e_acin_vn  (elemVecdim);
+  for (int i=0;i<elemVecdim;++i)
+  {
+    // split area and volumetric flow rate, insert into element arrays
+    e_acin_vnp(i) = my_acin_vnp[i];
+    e_acin_vn (i) = my_acin_vn [i];
+  }
 
   // get the volumetric flow rate from the previous time step
   ParameterList elem_params;
@@ -159,6 +181,9 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   elem_params.set<double>("qin_np" ,(*qin_np )[ele->LID()]);
   elem_params.set<double>("qin_n"  ,(*qin_n  )[ele->LID()]);
   elem_params.set<double>("qin_nm" ,(*qin_nm )[ele->LID()]);
+
+  elem_params.set<Epetra_SerialDenseVector>("acin_vnp" ,e_acin_vnp);
+  elem_params.set<Epetra_SerialDenseVector>("acin_vn"  ,e_acin_vn );
 
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
@@ -584,6 +609,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
   // Adding the acinus model if Prescribed
   // -------------------------------------------------------------------
 
+  Epetra_SerialDenseVector acin_vnp = params.get<Epetra_SerialDenseVector>("acin_vnp");
+  Epetra_SerialDenseVector acin_vn  = params.get<Epetra_SerialDenseVector>("acin_vn");
+
   // Check for the simple piston connected to a spring
   for(int i = 0; i<ele->NumNode(); i++)
   {
@@ -648,6 +676,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       double pnm = epnm(i);
       double pn  = epn(i);
       
+      double vnp= acin_vnp(i);
+      double vn = acin_vn(i);
 
       // evaluate the pleural pressure at (t - dt), (t), and (t + dt)
       if((*curve)[0]>=0)
@@ -712,22 +742,59 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       }
       else if (MatType == "Exponential")
       {
+        double Vo  = 0.0372;
+        double dvnp= vnp -Vo;
+        double dvn = vn  -Vo;
 
         //------------------------------------------------------------
-        // Q = Aa + B*exp(-K*P)
+        // V  = A + B*exp(-K*P)
+        //
+        // The P-V curve is fitted to create the following
+        // P1 = E1.(V-Vo)
+        // 
+        // E1 = a + b.(V-Vo) + c.exp(d.(V-Vo))
         //------------------------------------------------------------
-        //        const double Aa = E1;
-        const double B = E2;
-        const double K = R;
 
-        //        cout<<"E2: "<<E2<<"  | B: "<<K<<endl;
-        const double Kp  = (1.0/dt)*(-K*B*exp(-K*(pn-Pp_n)));
-        const double Qeq = (1.0/dt)*( K*B*exp(-K*(pn-Pp_n))*(K*pow(pn-Pp_n - (pnm-Pp_nm),2)+2.0*(pn-Pp_n)-(pnm-Pp_nm))) - Kp*Pp_np;
+        double kp_np = Rt/(E2*dt)+1;
+        double kp_n  =-Rt/(E2*dt);
+        double kq_np = Rt*Ra/(E2*dt) + (Ra+Rt);
+        double kq_n  =-Rt*Ra/(E2*dt);
+        
+        double term_nonlin = 0.0;
 
-        //        cout<<"t "<<time<<" P: "<<Pp_np
-        sysmat(i,i)+= pow(-1.0,i)*(Kp)*NumOfAcini;
-        rhs(i)     += pow(-1.0,i)*(-qn - Qeq*NumOfAcini);
+        //------------------------------------------------------------
+        // for now the (a,b,c,d) components are not read from the 
+        // input file
+        //------------------------------------------------------------
+        double a = 6449.0 ;
+        double b = 33557.7;
+        double c = 6.5158;
+        double d = 47.9892;
 
+        //------------------------------------------------------------
+        // get the terms assosciated with the nonlinear behavior of 
+        // E1
+        //------------------------------------------------------------
+        double pnpi = 0.0;
+        double pnpi2= 0.0;
+        double dpnpi_dt = 0.0;
+        double dpnpi2_dt= 0.0;
+
+        // componets of linearized E1
+        pnpi      = (a + b*dvnp + c*exp(d*dvnp))*dvnp;
+        pnpi2     = (a + 2*b*dvnp + c*exp(d*dvnp)*(d*dvnp+1));
+
+        // componets of linearized d(E1)/dt
+        dpnpi_dt  = (a+2*b*dvnp+c*exp(d*dvnp)*(1+d*dvnp))*(dvnp-dvn)/dt;
+        dpnpi2_dt = (2*b+d*c*exp(d*dvnp)*(1+d*dvnp) + c*d*exp(d*dvnp))*(dvnp-dvn)/dt + (a+2*b*dvnp+c*exp(d*dvnp)*(1+d*dvnp))/dt;
+
+        term_nonlin = pnpi + pnpi2*(-(vnp-Vo) +qn*dt/2 + vn-Vo);
+        kq_np = kq_np + pnpi2/2*dt;
+        term_nonlin = term_nonlin + dpnpi_dt*Rt/E2  + dpnpi2_dt*Rt/E2 *(-(vnp-Vo)+qnp*dt/2 + vn-Vo);
+        kq_np = kq_np + dpnpi2_dt*Rt/E2/2*dt;
+        
+        sysmat(i,i)+= pow(-1.0,i)*( kp_np/kq_np)*NumOfAcini;
+        rhs(i)     += pow(-1.0,i)*(-(-kp_np*Pp_np + kp_n*(pn-Pp_n))*NumOfAcini/kq_np +( kq_n*qn + term_nonlin)/kq_np);
       }
       else
       {
