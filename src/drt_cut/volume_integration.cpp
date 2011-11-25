@@ -650,7 +650,7 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
 		}
 
 		Epetra_SerialDenseVector err(num_func_);
-		for(unsigned i=0;i<num_func_;i++)
+		for(int i=0;i<num_func_;i++)
 		{
 			err(i) = 0.0;
 			for(unsigned j=0;j<gaus_pts_.size();j++)
@@ -706,7 +706,7 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_weights()
 
 
 #ifdef DEBUGCUTLIBRARY
-    GaussPointGmsh();
+//    GaussPointGmsh();
 #endif
 
     return weights;

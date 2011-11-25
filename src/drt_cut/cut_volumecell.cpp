@@ -659,9 +659,9 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::VolumeCell::GaussPointsFitting()
 //void GEO::CUT::VolumeCell::GaussPointsFitting()
 {
     Element *ele1 =ParentElement();
-    const DRT::Element::DiscretizationType distyp = ele1->Shape();
+//    const DRT::Element::DiscretizationType distyp = ele1->Shape();
 //    std::cout<<"distype"<<distyp<<std::endl;
-    const int nsd = DRT::UTILS::DisTypeToDim<DRT::Element::hex8>::dim;
+//    const int nsd = DRT::UTILS::DisTypeToDim<DRT::Element::hex8>::dim;
     const int nen = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
     LINALG::Matrix<3,nen> xyze;
     ele1->Coordinates(xyze.A());
@@ -807,7 +807,7 @@ bool GEO::CUT::VolumeCell::ToReverse(const GEO::CUT::Point::PointPosition posi,d
 void GEO::CUT::VolumeCell::OrientationFacet(const std::vector<Point*>pts, double *coef)
 {
 	int count=0;
-	double x1[3],y1[3],z1[3];
+	double x1[3]={0.0,0.0,0.0},y1[3]={0.0,0.0,0.0},z1[3]={0.0,0.0,0.0};
 	for(std::vector<Point*>::const_iterator i=pts.begin();i!=pts.end();i++)
 	{
 		Point* pt1 = *i;

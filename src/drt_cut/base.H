@@ -348,7 +348,8 @@ double base_func_line_int(std::vector<double> pt, int inte_num,std::vector<doubl
                 return basef_line;
         }
 
-    	double a07=pow(alfa[0],7),a17=pow(alfa[1],7),a27=pow(alfa[2],7),z7=pow(pt[1],7),y8=pow(pt[0],8);
+        double y8=pow(pt[0],8);
+//    	double a07=pow(alfa[0],7),a17=pow(alfa[1],7),a27=pow(alfa[2],7),z7=pow(pt[1],7),y8=pow(pt[0],8);
     	if(inte_num==57) //f(x,y,z) = x^6
     	{
     		if(fabs(alfa[1])<0.0000001)
@@ -525,9 +526,8 @@ double base_func_line_int(std::vector<double> pt, int inte_num,std::vector<doubl
     		return basef_line;
     	}
 
-    	else
-    		dserror("the base function corresponding to this number is not defined");
-
+    	dserror("the base function required is not defined");
+    	return 0.0;
 }
 
 /*//returns function which is used to form the matrix of moment fitting equations

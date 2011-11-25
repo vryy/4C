@@ -179,8 +179,8 @@ double base_function(std::vector<double> coordi,int base_num)
     	if(base_num==84) //f(x,y,z) = z^6
     		return coordi[2]*coordi[2]*coordi[2]*coordi[2]*coordi[2]*coordi[2];
 
-    	else
-    		dserror("The base_vol function is not defined for the corresponding number");
+    	dserror("the base function required is not defined");
+		return 0.0;
 
 
 }

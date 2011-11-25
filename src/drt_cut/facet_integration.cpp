@@ -8,8 +8,8 @@ std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector
 {
         std::vector<double> eqn_plane(4);
 
-        double x1[3],y1[3],z1[3];
-        int mm=0;
+        double x1[3]={0.0,0.0,0.0},y1[3]={0.0,0.0,0.0},z1[3]={0.0,0.0,0.0};
+        unsigned mm=0;
         for(std::vector<std::vector<double> >::const_iterator k=cornersLocal.begin();k!=cornersLocal.end();k++)
         {
 	        const std::vector<double> coords = *k;
