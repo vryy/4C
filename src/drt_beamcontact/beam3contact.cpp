@@ -21,6 +21,8 @@ Maintainer: Alexander Popp, Christian Cyron, Christoph Meier
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_lib/drt_globalproblem.H"
+
 
 #ifdef D_BEAM3
 #include "../drt_beam3/beam3.H"
