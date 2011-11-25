@@ -743,8 +743,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       else if (MatType == "Exponential")
       {
         double Vo  = 0.0372;
-        double dvnp= vnp -Vo;
-        double dvn = vn  -Vo;
+        double dvnp= (vnp/NumOfAcini)- Vo;
+        double dvn = (vn /NumOfAcini)- Vo;
 
         //------------------------------------------------------------
         // V  = A + B*exp(-K*P)
@@ -788,13 +788,13 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         dpnpi_dt  = (a+2*b*dvnp+c*exp(d*dvnp)*(1+d*dvnp))*(dvnp-dvn)/dt;
         dpnpi2_dt = (2*b+d*c*exp(d*dvnp)*(1+d*dvnp) + c*d*exp(d*dvnp))*(dvnp-dvn)/dt + (a+2*b*dvnp+c*exp(d*dvnp)*(1+d*dvnp))/dt;
 
-        term_nonlin = pnpi + pnpi2*(-(vnp-Vo) +qn*dt/2 + vn-Vo);
+        term_nonlin = pnpi + pnpi2*(-(dvnp) +(qn/NumOfAcini)*dt/2 + dvn);
         kq_np = kq_np + pnpi2/2*dt;
-        term_nonlin = term_nonlin + dpnpi_dt*Rt/E2  + dpnpi2_dt*Rt/E2 *(-(vnp-Vo)+qnp*dt/2 + vn-Vo);
+        term_nonlin = term_nonlin + dpnpi_dt*Rt/E2  + dpnpi2_dt*Rt/E2 *(-(dvnp)+(qnp/NumOfAcini)*dt/2 + dvn);
         kq_np = kq_np + dpnpi2_dt*Rt/E2/2*dt;
         
         sysmat(i,i)+= pow(-1.0,i)*( kp_np/kq_np)*NumOfAcini;
-        rhs(i)     += pow(-1.0,i)*(-(-kp_np*Pp_np + kp_n*(pn-Pp_n))*NumOfAcini/kq_np +( kq_n*qn + term_nonlin)/kq_np);
+        rhs(i)     += pow(-1.0,i)*(-(-kp_np*Pp_np + kp_n*(pn-Pp_n) - term_nonlin)*NumOfAcini/kq_np +( kq_n*qn)/kq_np);
       }
       else
       {

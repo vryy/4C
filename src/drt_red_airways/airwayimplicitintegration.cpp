@@ -450,7 +450,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<ParameterList> 
       printf("iteration step %4d/%4d ",i,maxiter_);
       printf(" | ||P{%d}-P{%d}||_L2 = %10.3E\t\t|Qresidual|_2 = %10.3E\n",i-1,i,error_norm1,error_norm2);
     }
-    if(error_norm2 <= non_lin_tol_)
+    if(error_norm1 <= non_lin_tol_)
       break;
     
   }
@@ -893,8 +893,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     LINALG::Export(*qout_np_,*qexp_);
     output_.WriteVector("qout_np",qexp_);
     //
+    LINALG::Export(*acini_volumen_,*pexp_);
+    output_.WriteVector("acini_vn",pexp_);
     LINALG::Export(*acini_volumenp_,*pexp_);
-    output_.WriteVector("acini_volume",pexp_);
+    output_.WriteVector("acini_vnp",pexp_);
+
 
     if (step_==upres_)
     {
@@ -951,8 +954,10 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     LINALG::Export(*qout_np_,*qexp_);
     output_.WriteVector("qout_np",qexp_);
     //
+    LINALG::Export(*acini_volumen_,*pexp_);
+    output_.WriteVector("acini_vn",pexp_);
     LINALG::Export(*acini_volumenp_,*pexp_);
-    output_.WriteVector("acini_volume",pexp_);
+    output_.WriteVector("acini_vnp",pexp_);
 
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
@@ -1008,6 +1013,12 @@ void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step)
   reader.ReadVector(pn_,"pn");
   reader.ReadVector(pnm_,"pnm");
 
+
+  reader.ReadVector(pexp_, "acini_vn");
+  LINALG::Export(*pexp_,*acini_volumen_);
+  reader.ReadVector(pexp_, "acini_vnp");
+  LINALG::Export(*pexp_,*acini_volumenp_);
+  
   reader.ReadVector(qexp_, "qin_nm");
   LINALG::Export(*qexp_,*qin_nm_);
   reader.ReadVector(qexp_ , "qin_n" );
