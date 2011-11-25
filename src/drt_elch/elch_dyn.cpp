@@ -121,7 +121,7 @@ void elch_dyn(int disnumff,int disnumscatra,int disnumale,int restart)
       Epetra_Time time(comm);
 
       // fetch the desired material id for the transport elements
-      const int matid = SCATRA::GetScaTraMatID(scatradyn);
+      const int matid = scatradyn.get<int>("MATID");
 
       // create the scatra discretization
       {

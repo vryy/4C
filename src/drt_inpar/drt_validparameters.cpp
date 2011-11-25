@@ -542,10 +542,14 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& size = list->sublist("PROBLEM SIZE",false,"");
 
+  IntParameter("DIM",3,"2d or 3d problem",&size);
+
+  // deactivate all the follwing (unused) parameters one day
+  // they are nice as general info in the input file but should not
+  // read into a parameter list. Misuse is possible
   IntParameter("ELEMENTS",0,"Total number of elements",&size);
   IntParameter("NODES",0,"Total number of nodes",&size);
   IntParameter("NPATCHES",0,"number of nurbs patches",&size);
-  IntParameter("DIM",3,"2d or 3d problem",&size);
   IntParameter("MATERIALS",0,"number of materials",&size);
   IntParameter("NUMDF",3,"maximum number of degrees of freedom",&size);
 
@@ -2701,9 +2705,7 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
   //IntParameter("WRITESOLEVRY",1,"Increment for writing solution",&scatradyn);
   IntParameter("UPRES",1,"Increment for writing solution",&scatradyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&scatradyn);
-  setNumericStringParameter("MATID","-1",
-               "Material IDs for automatic mesh generation",
-               &scatradyn);
+  IntParameter("MATID",-1,"Material ID for automatic mesh generation",&scatradyn);
 
   setStringToIntegralParameter<int>("VELOCITYFIELD","zero",
                                "type of velocity field used for scalar transport problems",

@@ -78,7 +78,8 @@ void combust_dyn()
 
     // access the scalar transport parameter list
     const Teuchos::ParameterList& scatracontrol = DRT::Problem::Instance()->ScalarTransportDynamicParams();
-    const int matid = SCATRA::GetScaTraMatID(scatracontrol);
+    // fetch the desired material id for the transport elements
+    const int matid = scatracontrol.get<int>("MATID");
 
     // create the scatra discretization
     {
