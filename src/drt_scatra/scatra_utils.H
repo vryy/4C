@@ -361,12 +361,6 @@ private:
   }; // class SplitStrategy
 
 
-  /// get vector of material (list) IDs
-  vector<int> GetScaTraMatList(const ParameterList& scatradyn);
-
-  /// get material (list) ID (in case of single ScaTra field)
-  int GetScaTraMatID(const ParameterList& scatradyn);
-
   /// does the given scatratype belong to the ELCH group of problems?
   bool IsElch(const enum INPAR::SCATRA::ScaTraType scatratype);
 

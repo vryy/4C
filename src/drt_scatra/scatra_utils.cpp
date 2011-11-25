@@ -136,38 +136,6 @@ bool SCATRA::ScatraFluidCloneStrategy::DetermineEleType(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<int> SCATRA::GetScaTraMatList(const Teuchos::ParameterList& scatradyn)
-{
-  int num;
-  std::vector<int> matlist;
-  std::istringstream matliststream(Teuchos::getNumericStringParameter(scatradyn,"MATID"));
-
-  while (matliststream >> num)
-  {
-    if (num == -1) // default (invalid) material ID
-      dserror("Invalid matlist ID");
-    else
-      matlist.push_back(num);
-  }
-  return matlist;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-int SCATRA::GetScaTraMatID(const Teuchos::ParameterList& scatradyn)
-{
-  std::vector<int> matlist = GetScaTraMatList(scatradyn);
-
-  if (matlist.size() != 1)
-    dserror("Expected one matlist in scatra problem");
-
-  return matlist[0];
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 /// does the given scatratype belong to the ELCH group of problems?
 bool SCATRA::IsElch(const enum INPAR::SCATRA::ScaTraType scatratype)
 {
