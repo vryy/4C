@@ -286,9 +286,9 @@ void Beam3ContactOctTree::extendedAABB(std::map<int, LINALG::Matrix<3,1> >&  cur
           edgelength(i) = coordout(i,1) - coordout(i,0);
 
         //Check for edgelength of AABB
-                for(int i=0; i<(int)edgelength.M(); i++)
-                  if (edgelength(i)<(*diameter_)[elecolid])
-                    edgelength(i) = (*diameter_)[elecolid];
+				for(int i=0; i<(int)edgelength.M(); i++)
+					if (edgelength(i)<(*diameter_)[elecolid])
+						edgelength(i) = (*diameter_)[elecolid];
 
         // Calculate limits of AABB with extrusion around midpoint
         for(int i=0; i<6; i++)
@@ -351,12 +351,11 @@ void Beam3ContactOctTree::extendedAABB(std::map<int, LINALG::Matrix<3,1> >&  cur
   } //end for-loop which goes through all elements
 
   // communication of findings
-  Epetra_MultiVector allAABBrow(*(searchdis_.ElementRowMap()),13,true);
+  Epetra_MultiVector allAABBrow(*(searchdis_.ElementRowMap()),allAABB->NumVectors(),true);
   Epetra_Export exporter(*(searchdis_.ElementColMap()),*(searchdis_.ElementRowMap()));
   Epetra_Import importer(*(searchdis_.ElementColMap()),*(searchdis_.ElementRowMap()));
   allAABBrow.Export(*allAABB, exporter, Add);
   allAABB->Import(allAABBrow,importer,Insert);
-
 
   //Test: print allAABB->...................
   //cout << "\n\tTest extendedAABB" << endl;
@@ -444,17 +443,8 @@ void Beam3ContactOctTree::locateAll(RCP<Epetra_MultiVector> allAABB,
   			else if(j%2!=0 && (*allAABB)[j][i]>lim(j))
   				lim(j) = (*allAABB)[j][i];
   }
-  /*/ check later, there is still some mistake! (really???????????????) update: Not sure, if this is even needed (just as a check if all the AABBs lie within the cubic volume?)
-  for(int j=0; j<6; j++)
-    for(int i=0; i<allAABB->MyLength(); i++)
-    {
-      if(j%2==0)
-        if(lim(j)>(*allAABB)[j][i])
-          lim(j)=(*allAABB)[j][i];
-      else
-        if(lim(j)<(*allAABB)[j][i])
-          lim(j)=(*allAABB)[j][i];
-    }*/
+
+  //cout<<*allAABB<<endl;
 
   // Convert Epetra_MultiVector allAABB to vector(vector(vector)....................
   std::vector<std::vector<double> > allAABBstdvec(allAABB->MyLength(), std::vector<double>(allAABB->NumVectors(),0.0));
@@ -702,10 +692,8 @@ void Beam3ContactOctTree::IntersectionAABB(std::map<int, LINALG::Matrix<3,1> >& 
   {
     AABBinOct.PutScalar(-9.0);
     for (int i=0 ; i<(int)aabbinoctants->size(); i++ )
-    {
       for(int j=0; j<(int)(*aabbinoctants)[i].size(); j++)
         AABBinOct[j][i] = (*aabbinoctants)[i][j];
-    }
   }
   else
     AABBinOct.PutScalar(0.0);
@@ -736,7 +724,31 @@ void Beam3ContactOctTree::IntersectionAABB(std::map<int, LINALG::Matrix<3,1> >& 
       {
         boxIDs[1] = (int)AABBinOct[k][i];
 
-        if (boxIDs[1] > boxIDs[0]+1) //+1 excludes the contact between two elements sharing one node
+        // exclude element pairs sharing one node
+        // contact flag
+        bool considerpair = false;
+        // only consider existing bounding boxes, i.e. no dummy entries "-9.0"
+        if(boxIDs[0]>-1 && boxIDs[1]>-1)
+        {
+        	considerpair = true;
+          DRT::Element* element1 = searchdis_.gElement(boxIDs[0]);
+          DRT::Element* element2 = searchdis_.gElement(boxIDs[1]);
+					for(int k=0; k<element1->NumNode(); k++)
+					{
+						for(int l=0; l<element2->NumNode(); l++)
+							if(element1->NodeIds()[k]==element2->NodeIds()[l])
+							{
+								considerpair = false;
+								break;
+							}
+
+						// break after first found match
+						if(!considerpair)
+							break;
+					}
+        }
+
+        if (considerpair)
         {
         	// translate box / element GIDs to ElementColMap()-LIDs
         	// note: GID and ColumnMap LID are usually the same except for crosslinker elements from statistical mechanics

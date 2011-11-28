@@ -331,53 +331,15 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
 		const Epetra_Map noderowmap = *discret_.NodeRowMap();
 		const Epetra_Map nodecolmap = *discret_.NodeColMap();
 
-		/*in preparation for later decision whether a crosslink should be established between two nodes (binding spots) we first store the
-		 * current positions of all column map nodes (column map binding spots) in the map currentpositions; additionally we store the rotational displacements
-		 * analogously in a map currentrotations for later use in setting up reference geometry of crosslinkers; the maps
-		 * currentpositions and currentrotations relate positions and rotations to a local column map node Id, respectively*/
+		//node positions and rotations (binding spot positions and rotations when applying 4-noded beam element)
 		std::map<int, LINALG::Matrix<3, 1> > currentpositions;
 		std::map<int, LINALG::Matrix<3, 1> > currentrotations;
-		currentpositions.clear();
-		currentrotations.clear();
 
 		/*note: access by ExtractMyValues requires column map vector, whereas displacements on level of time integration are
 		 * handled as row map vector*/
 		Epetra_Vector discol(*discret_.DofColMap(), true);
-
 		LINALG::Export(disrow, discol);
-
-		// in case the four-noded crosslinker beam element is used, currentpositions and currentrotations have to be set up another way
-		if(DRT::INPUT::IntegralValue<int>(statmechparams_, "INTERNODALBSPOTS"))
-			UpdateBindingSpots(discol, currentpositions);
-		else	// conventional crosslinker beam element, i.e. binding spots coincide with nodes
-		{
-			for (int i=0; i<discret_.NumMyColNodes(); ++i)
-			{
-
-				//get pointer at a node
-				const DRT::Node* node = discret_.lColNode(i);
-
-				//get GIDs of this node's degrees of freedom
-				std::vector<int> dofnode = discret_.Dof(node);
-
-				LINALG::Matrix<3, 1> currpos;
-				LINALG::Matrix<3, 1> currrot;
-
-				currpos(0) = node->X()[0] + discol[discret_.DofColMap()->LID(dofnode[0])];
-				currpos(1) = node->X()[1] + discol[discret_.DofColMap()->LID(dofnode[1])];
-				currpos(2) = node->X()[2] + discol[discret_.DofColMap()->LID(dofnode[2])];
-				//if node has also rotational degrees of freedom
-				if (discret_.NumDof(node) == 6)
-				{
-					currrot(0) = discol[discret_.DofColMap()->LID(dofnode[3])];
-					currrot(1) = discol[discret_.DofColMap()->LID(dofnode[4])];
-					currrot(2) = discol[discret_.DofColMap()->LID(dofnode[5])];
-				}
-
-				currentpositions[node->LID()] = currpos;
-				currentrotations[node->LID()] = currrot;
-			}
-		}
+		GetNodePositions(disrow, discol, currentpositions, currentrotations);
 
 		// set crosslinkers, i.e. considering crosslink molecule diffusion after filaments had time to equilibrate
 		if(time_>=statmechparams_.get<double>("EQUILIBTIME",0.0) || fabs(time_-statmechparams_.get<double>("EQUILIBTIME",0.0))<(dt/1e3))
@@ -435,6 +397,49 @@ void StatMechManager::Update(const int& istep, const double dt, Epetra_Vector& d
 	return;
 } // StatMechManager::Update()
 
+void StatMechManager::GetNodePositions(Epetra_Vector& disrow, Epetra_Vector& discol, std::map<int,LINALG::Matrix<3,1> >& currentpositions, std::map<int,LINALG::Matrix<3,1> >& currentrotations)
+{
+	/*in preparation for later decision whether a crosslink should be established between two nodes (binding spots) we first store the
+	 * current positions of all column map nodes (column map binding spots) in the map currentpositions; additionally we store the rotational displacements
+	 * analogously in a map currentrotations for later use in setting up reference geometry of crosslinkers; the maps
+	 * currentpositions and currentrotations relate positions and rotations to a local column map node Id, respectively*/
+	currentpositions.clear();
+	currentrotations.clear();
+
+	// in case the four-noded crosslinker beam element is used, currentpositions and currentrotations have to be set up another way
+	if(DRT::INPUT::IntegralValue<int>(statmechparams_, "INTERNODALBSPOTS"))
+		UpdateBindingSpots(discol, currentpositions);
+	else	// conventional crosslinker beam element, i.e. binding spots coincide with nodes
+	{
+		for (int i=0; i<discret_.NumMyColNodes(); ++i)
+		{
+
+			//get pointer at a node
+			const DRT::Node* node = discret_.lColNode(i);
+
+			//get GIDs of this node's degrees of freedom
+			std::vector<int> dofnode = discret_.Dof(node);
+
+			LINALG::Matrix<3, 1> currpos;
+			LINALG::Matrix<3, 1> currrot;
+
+			currpos(0) = node->X()[0] + discol[discret_.DofColMap()->LID(dofnode[0])];
+			currpos(1) = node->X()[1] + discol[discret_.DofColMap()->LID(dofnode[1])];
+			currpos(2) = node->X()[2] + discol[discret_.DofColMap()->LID(dofnode[2])];
+			//if node has also rotational degrees of freedom
+			if (discret_.NumDof(node) == 6)
+			{
+				currrot(0) = discol[discret_.DofColMap()->LID(dofnode[3])];
+				currrot(1) = discol[discret_.DofColMap()->LID(dofnode[4])];
+				currrot(2) = discol[discret_.DofColMap()->LID(dofnode[5])];
+			}
+
+			currentpositions[node->LID()] = currpos;
+			currentrotations[node->LID()] = currrot;
+		}
+	}
+	return;
+}
 /*----------------------------------------------------------------------*
  | Updates positions and rotations of binding spots        mueller 11/11|
  *----------------------------------------------------------------------*/
@@ -832,8 +837,6 @@ void StatMechManager::PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,
 			int partition = (int)std::floor((posi->second)(j)/pl*(double)N);
 			if(partition==N)
 				partition--;
-			if(partition<0 || partition>N-1)
-				cout<<"Proc "<<discret_.Comm().MyPID()<<": pos("<<j<<") = "<<(posi->second)(j)<<", partition = "<<partition<<endl;
 			bspotinpartition[j][partition].push_back((int)(posi->first)); //column lid
 		}
 
@@ -842,17 +845,9 @@ void StatMechManager::PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,
 	Epetra_MultiVector crosslinkerpositionstrans(*transfermap_, 3, true);
 	Epetra_Vector numbondtrans(*transfermap_, true);
 	Epetra_MultiVector crosslinkpartitiontrans(*transfermap_, 3, false);
-	Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
 
-	// preparations
-	if(discret_.Comm().MyPID()!=0)
-	{
-	  numbond_->PutScalar(0.0);
-		crosslinkerpositions_->PutScalar(0.0);
-	}
-	// Export to transfer map format
-	numbondtrans.Export(*numbond_, crosslinkexporter, Add);
-	crosslinkerpositionstrans.Export(*crosslinkerpositions_, crosslinkexporter, Add);
+	CommunicateVector(numbondtrans, *numbond_, true, false);
+	CommunicateMultiVector(crosslinkerpositionstrans, *crosslinkerpositions_, true, false);
 
 	for(int i=0; i<crosslinkpartitiontrans.MyLength(); i++)
 	{
@@ -907,15 +902,9 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
 	 *
 	 * After having found a match in the next component, we exit the loop to avoid unnecessary computational cost
 	 */
+	// distribute information of crosslinkerbond_ to processorspecific maps
 	Epetra_MultiVector crosslinkerbond(*transfermap_, 2, true);
-	Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
-	Epetra_Export crosslinkimporter(*crosslinkermap_, *transfermap_);
-	if(discret_.Comm().MyPID()!=0)
-		crosslinkerbond_->PutScalar(0.0);
-	// forth...
-	crosslinkerbond.Export(*crosslinkerbond_, crosslinkexporter, Add);
-	//...and back
-	crosslinkerbond_->Import(crosslinkerbond, crosslinkimporter, Insert);
+	CommunicateMultiVector(crosslinkerbond, *crosslinkerbond_);
 
 	std::vector<std::vector<int> > neighbournodes(crosslinkpartitions.MyLength(), std::vector<int>());
 
@@ -1038,7 +1027,7 @@ void StatMechManager::DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1
 
 	// make information redundant on all Procs
 	neighbourslid = rcp(new Epetra_MultiVector(*crosslinkermap_,maxneighboursglobal,false));
-	neighbourslid->Import(*neighbourslidtrans, crosslinkimporter, Insert);
+	CommunicateMultiVector(*neighbourslidtrans, *neighbourslid, false, true);
 
 	return;
 }// StatMechManager::DetectNeighbourNodes
@@ -1275,45 +1264,23 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 		}// for(int i=0; i<numbond_->MyLength(); i++)
 		cout << "\nsearch time: " << Teuchos::Time::wallTime() - t_search<< " seconds";
 	}// if(discret_.Comm().MypPID==0)
-	else
-	{
-		/* zerofy numcrossnodes at the beginning of each search except for Proc 0
-		 * for subsequent export and reimport. This way, we guarantee redundant information
-		 * on all processors.
-		 * note: searchforneighbours_ and crosslinkonsamefilament_ are not being communicated
-		 * to the other Procs because their information is of concern to Proc 0 only. */
-		bspotstatus_->PutScalar(0.0);
-		crosslinkerpositions_->PutScalar(0.0);
-		crosslinkerbond_->PutScalar(0.0);
-		numbond_->PutScalar(0.0);
-	}
 
+	/* note: searchforneighbours_ and crosslinkonsamefilament_ are not being communicated
+	 * to the other Procs because their information is of concern to Proc 0 only.*/
 	//synchronize information about number of bonded filament nodes by exporting it to row map format and then reimporting it to column map format
-	Epetra_Export exporter(nodecolmap,noderowmap);
-	Epetra_Import importer(nodecolmap,noderowmap);
-	Epetra_Vector numcrossnodesrow(noderowmap,true);
-	numcrossnodesrow.Export(*bspotstatus_,exporter,Add);
-	bspotstatus_->Import(numcrossnodesrow,importer,Insert);
-
-	// exporter and importer for crosslink molecules
-	Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
-	Epetra_Import crosslinkimporter(*crosslinkermap_, *transfermap_);
+	Epetra_Vector bspotstatusrow(*bspotrowmap_,true);
+	CommunicateVector(bspotstatusrow, *bspotstatus_);
 
 	// transfer vectors
 	Epetra_MultiVector crosslinkerpositionstrans(*transfermap_,3,true);
 	Epetra_MultiVector crosslinkerbondtrans(*transfermap_,2,true);
 	Epetra_Vector numbondtrans(*transfermap_, true);
 	Epetra_Vector addcrosselementtrans(*transfermap_, true);
-
 	// exports and reimports
-	crosslinkerpositionstrans.Export(*crosslinkerpositions_, crosslinkexporter, Add);
-	crosslinkerpositions_->Import(crosslinkerpositionstrans, crosslinkimporter, Insert);
-	crosslinkerbondtrans.Export(*crosslinkerbond_, crosslinkexporter, Add);
-	crosslinkerbond_->Import(crosslinkerbondtrans, crosslinkimporter, Insert);
-	numbondtrans.Export(*numbond_, crosslinkexporter, Add);
-	numbond_->Import(numbondtrans, crosslinkimporter, Insert);
-	addcrosselementtrans.Export(addcrosselement, crosslinkexporter, Add);
-	addcrosselement.Import(addcrosselementtrans, crosslinkimporter, Insert);
+	CommunicateMultiVector(crosslinkerpositionstrans, *crosslinkerpositions_);
+	CommunicateMultiVector(crosslinkerbondtrans, *crosslinkerbond_);
+	CommunicateVector(numbondtrans, *numbond_);
+	CommunicateVector(addcrosselementtrans, addcrosselement);
 
 	// ADDING ELEMENTS
 	// add elements to problem discretization (processor specific)
@@ -1618,46 +1585,25 @@ void StatMechManager::SearchAndDeleteCrosslinkers(const double& dt, const Epetra
 			}// switch ((int)(*numbond_)[irandom])
 		}// for (int i=0; i<numbond_->MyLength(); i++)
 	}// if(discret_.Comm().MyPID()==0)
-	else
-	{
-		// set the values of all vectors to zero in order to be able to correctly communicate all the data among the processors
-		bspotstatus_->PutScalar(0.0);
-		crosslinkerbond_->PutScalar(0.0);
-		numbond_->PutScalar(0.0);
-		crosslink2element_->PutScalar(0.0);
-		delcrosselement.PutScalar(0.0);
-		// searchforneighbours_ and crosslinkonsamefilament_ are not communicated, hence, no resetting to zero here
-	}
 
-	//synchronize information about number of bonded filament nodes by exporting it to row map format and then reimporting it to column map format
-	Epetra_Export exporter(*bspotcolmap_, *bspotrowmap_);
-	Epetra_Import importer(*bspotcolmap_, *bspotrowmap_);
-	Epetra_Vector bspotstatusrow(*bspotrowmap_, true);
-	bspotstatusrow.Export(*bspotstatus_, exporter, Add);
-	bspotstatus_->Import(bspotstatusrow, importer, Insert);
-
-	// exporter and importer
-	Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
-	Epetra_Import crosslinkimporter(*crosslinkermap_, *transfermap_);
+	// synchronize information about number of bonded filament nodes by exporting it to row map format and then reimporting it to column map format
+	// note: searchforneighbours_ and crosslinkonsamefilament_ are not communicated
 	// transfer vectors
+	Epetra_Vector bspotstatusrow(*bspotrowmap_, true);
 	Epetra_MultiVector crosslinkerpositionstrans(*transfermap_, true);
 	Epetra_MultiVector crosslinkerbondtrans(*transfermap_, 2, true);
 	Epetra_Vector numbondtrans(*transfermap_, true);
 	Epetra_Vector crosslink2elementtrans(*transfermap_, true);
 	Epetra_Vector delcrosselementtrans(*transfermap_, true);
 
-	//exports
-	crosslinkerpositionstrans.Export(*crosslinkerpositions_, crosslinkexporter, Add);
-	crosslinkerbondtrans.Export(*crosslinkerbond_, crosslinkexporter, Add);
-	numbondtrans.Export(*numbond_, crosslinkexporter, Add);
-	crosslink2elementtrans.Export(*crosslink2element_, crosslinkexporter, Add);
-	delcrosselementtrans.Export(delcrosselement, crosslinkexporter, Add);
-	// imports
-	crosslinkerpositions_->Import(crosslinkerpositionstrans, crosslinkimporter, Insert);
-	crosslinkerbond_->Import(crosslinkerbondtrans, crosslinkimporter, Insert);
-	numbond_->Import(numbondtrans, crosslinkimporter, Insert);
-	crosslink2element_->Import(crosslink2elementtrans, crosslinkimporter, Insert);
-	delcrosselement.Import(delcrosselementtrans, crosslinkimporter, Insert);
+	// export and reimport
+	CommunicateVector(bspotstatusrow, *bspotstatus_);
+	CommunicateMultiVector(crosslinkerpositionstrans, *crosslinkerpositions_);
+	CommunicateMultiVector(crosslinkerbondtrans, *crosslinkerbond_);
+	CommunicateVector(numbondtrans, *numbond_);
+	CommunicateVector(crosslink2elementtrans, *crosslink2element_);
+	CommunicateVector(delcrosselementtrans, delcrosselement);
+
 
 	// DELETION OF ELEMENTS
 	RemoveCrosslinkerElements(discret_,delcrosselement,&deletedelements_);
@@ -1779,11 +1725,8 @@ void StatMechManager::ForceDependentOffRate(const double& dt, const double& koff
 			(*punlink)[(int)(*element2crosslink_)[i]] = 0.0;
 
 	// Export and and reimport -> redundancy on all Procs
-	Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
-	Epetra_Import crosslinkimporter(*crosslinkermap_, *transfermap_);
 	Epetra_Vector punlinktrans(*transfermap_,true);
-	punlinktrans.Export(*punlink,crosslinkexporter,Add);
-	punlink->Import(punlinktrans,crosslinkimporter,Insert);
+	CommunicateVector(punlinktrans, *punlink);
 
 #endif
 	return;
@@ -1799,8 +1742,6 @@ void StatMechManager::GetBindingSpotTriads(Epetra_MultiVector* bspottriadscol)
 #ifdef D_BEAM3II
 	//first get triads at all row nodes
 	Epetra_MultiVector bspottriadsrow(*bspotrowmap_, 4, true);
-	Epetra_Import importer(*bspotcolmap_,*bspotrowmap_);
-
 	//update nodaltriads_
 	for (int i=0; i<bspotrowmap_->NumMyElements(); i++)
 	{
@@ -1846,7 +1787,7 @@ void StatMechManager::GetBindingSpotTriads(Epetra_MultiVector* bspottriadscol)
 
 	}
 	//export nodaltriadsrow to col map variable
-	bspottriadscol->Import(bspottriadsrow,importer,Insert); // BSPOT TRIAD UPDATE
+	CommunicateMultiVector(bspottriadsrow, *bspottriadscol, false, true);
 #endif
 #endif
 	return;
@@ -1950,22 +1891,16 @@ void StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
 	}
 
 	//synchronize information about number of bonded filament nodes by exporting it to row map format and then reimporting it to column map format
-	Epetra_Export exporter(*bspotcolmap_, *bspotrowmap_);
-	Epetra_Import importer(*bspotcolmap_, *bspotrowmap_);
-	Epetra_Vector bspotstatusrow(*bspotrowmap_, true);
-	bspotstatusrow.Export(*bspotstatus_, exporter, Add);
-	bspotstatus_->Import(bspotstatusrow, importer, Insert);
-	// exporter and importer
-	Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
-	Epetra_Import crosslinkimporter(*crosslinkermap_, *transfermap_);
 	// transfer vector
+	Epetra_Vector bspotstatusrow(*bspotrowmap_, true);
 	Epetra_Vector delcrosselementtrans(*transfermap_, true);
 	Epetra_Vector delcrossmoleculestrans(*transfermap_, true);
 	//export and reimport
-	delcrosselementtrans.Export(delcrosselement, crosslinkexporter, Add);
-	delcrosselement.Import(delcrosselementtrans, crosslinkimporter, Insert);
-	delcrossmoleculestrans.Export(delcrossmolecules, crosslinkexporter, Add);
-	delcrossmolecules.Import(delcrossmoleculestrans, crosslinkimporter, Insert);
+	CommunicateVector(bspotstatusrow, *bspotstatus_);
+	CommunicateVector(delcrosselementtrans, delcrosselement);
+	CommunicateVector(delcrossmoleculestrans, delcrossmolecules);
+
+
 
 	//PREPARE REBUILDING OF CROSSLINKER MAPS AND CORRESPONDING VECTORS
 	// std::vectors for transfer of data to new maps and vectors
@@ -2257,6 +2192,50 @@ void StatMechManager::WriteConv()
 
   return;
 } // StatMechManager::WriteConv()
+
+/*-----------------------------------------------------------------------*
+ | communicate Vector to all Processors                    mueller 11/11 |
+ *-----------------------------------------------------------------------*/
+void StatMechManager::CommunicateVector(Epetra_Vector& InVec, Epetra_Vector& OutVec, bool doexport, bool doimport)
+{
+	/* zerofy InVec at the beginning of each search except for Proc 0
+	 * for subsequent export and reimport. This way, we guarantee redundant information
+	 * on all processors. */
+
+	// first, export the values of OutVec on Proc 0 to InVecs of all participating processors
+	Epetra_Export exporter(OutVec.Map(), InVec.Map());
+	Epetra_Import importer(OutVec.Map(), InVec.Map());
+	if(doexport)
+	{
+		// zero out all vectors which are not Proc 0. Then, export Proc 0 data to InVec map.
+		if(discret_.Comm().MyPID()!=0)
+			OutVec.PutScalar(0.0);
+		InVec.Export(OutVec, exporter, Add);
+	}
+	if(doimport)
+		OutVec.Import(InVec,importer,Insert);
+	return;
+}
+
+/*-----------------------------------------------------------------------*
+ | communicate MultiVector to all Processors               mueller 11/11 |
+ *-----------------------------------------------------------------------*/
+void StatMechManager::CommunicateMultiVector(Epetra_MultiVector& InVec, Epetra_MultiVector& OutVec, bool doexport, bool doimport)
+{
+	// first, export the values of OutVec on Proc 0 to InVecs of all participating processors
+	Epetra_Export exporter(OutVec.Map(), InVec.Map());
+	Epetra_Import importer(OutVec.Map(), InVec.Map());
+	if(doexport)
+	{
+		// zero out all vectors which are not Proc 0. Then, export Proc 0 data to InVec map.
+		if(discret_.Comm().MyPID()!=0)
+			OutVec.PutScalar(0.0);
+		InVec.Export(OutVec, exporter, Add);
+	}
+	if(doimport)
+		OutVec.Import(InVec,importer,Insert);
+	return;
+}
 
 /*-----------------------------------------------------------------------*
  | (public) restore state at the beginning of this time step cyron 11/10 |
@@ -2637,15 +2616,10 @@ void StatMechManager::CrosslinkerDiffusion(const Epetra_Vector& dis, double mean
 		if (statmechparams_.get<double> ("PeriodLength", 0.0) > 0.0)
 			CrosslinkerPeriodicBoundaryShift(*crosslinkerpositions_);
 	} // if(discret_.Comm().MyPID()==0)
-	else
-		crosslinkerpositions_->PutScalar(0.0);
 
 	// Update by Broadcast: copy this information to all processors
-	Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
-	Epetra_Import crosslinkimporter(*crosslinkermap_, *transfermap_);
 	Epetra_MultiVector crosslinkerpositionstrans(*transfermap_, 3, true);
-	crosslinkerpositionstrans.Export(*crosslinkerpositions_, crosslinkexporter, Add);
-	crosslinkerpositions_->Import(crosslinkerpositionstrans, crosslinkimporter, Insert);
+	CommunicateMultiVector(crosslinkerpositionstrans, *crosslinkerpositions_);
 
 	return;
 }// StatMechManager::CrosslinkerDiffusion
@@ -2925,7 +2899,7 @@ void StatMechManager::CrosslinkerMoleculeInit()
 	{
 		bspotcolmap_ = rcp(new Epetra_Map(*(discret_.NodeColMap())));
 		bspotrowmap_ = rcp(new Epetra_Map(*(discret_.NodeRowMap())));
-		bspotstatus_ = rcp(new Epetra_Vector(*(discret_.NodeColMap()), true));
+		bspotstatus_ = rcp(new Epetra_Vector(*bspotcolmap_, true));
 	}
 
 	// create density-density-correlation-function map with
@@ -3051,8 +3025,261 @@ void StatMechManager::CrosslinkerMoleculeInit()
 	searchforneighbours_ = rcp(new Epetra_Vector(*crosslinkermap_, false));
 	searchforneighbours_->PutScalar(1.0);
 
+	if(statmechparams_.get<int>("NUMINITLINKS",0)>0)
+		SetInitialCrosslinkers();
+
+
 	return;
 }//StatMechManager::CrosslinkerMoleculeInit
+
+/*----------------------------------------------------------------------*
+ | Set crosslinkers whereever possible before the first time step 			|
+ |																						   (private) mueller 11/11|
+ *----------------------------------------------------------------------*/
+void StatMechManager::SetInitialCrosslinkers()
+{
+#ifdef D_BEAM3
+#ifdef D_BEAM3II
+	Epetra_MultiVector bspottriadscol(*bspotcolmap_,4,true);
+	if(DRT::INPUT::IntegralValue<int>(statmechparams_,"HELICALBINDINGSTRUCT"))
+		GetBindingSpotTriads(&bspottriadscol);
+
+	const Epetra_Map noderowmap = *discret_.NodeRowMap();
+	const Epetra_Map nodecolmap = *discret_.NodeColMap();
+	//node positions and rotations (binding spot positions and rotations when applying 4-noded beam element)
+	std::map<int, LINALG::Matrix<3, 1> > currentpositions;
+	std::map<int, LINALG::Matrix<3, 1> > currentrotations;
+
+	// Vectors hold zero->ok, since no displacement at this stage of the simulation
+	Epetra_Vector disrow(*discret_.DofRowMap(), true);
+	Epetra_Vector discol(*discret_.DofColMap(), true);
+	GetNodePositions(disrow, discol, currentpositions, currentrotations);
+
+	// generate a random order of binding spots and crosslinkers (only on Proc 0)
+	std::vector<int> randbspot;
+	std::vector<int> randlink;
+
+	//1. set singly bound linkers
+	if(discret_.Comm().MyPID()==0)
+	{
+		randbspot = Permutation(bspotcolmap_->NumMyElements());
+		randlink = Permutation(statmechparams_.get<int>("N_crosslink", 0));
+
+		int numinitlinks = statmechparams_.get<int>("NUMINITLINKS",0);
+		int ilink = 0;
+		// first, establish specified number of singly bound crosslinkers
+		for(int i=0; i<numinitlinks; i++)
+		{
+			// ibspot-th random binding spot
+			int firstbspot = randbspot[i];
+			// if this binding spot is still unoccupied
+			if((*bspotstatus_)[firstbspot]<0.1)
+			{
+				// get the ilink-th random crosslinker
+				int currlink = randlink[ilink];
+				// attach it to the first binding spot (i.e. update of relevant class vectors)
+				(*bspotstatus_)[firstbspot] = 1.0;
+				(*numbond_)[currlink] = 1.0;
+				for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
+					if((*crosslinkerbond_)[j][currlink]<0.1)
+					{
+						(*crosslinkerbond_)[j][currlink] = bspotcolmap_->GID(firstbspot);
+						break;
+					}
+
+				//update crosslinker position
+				Epetra_SerialDenseMatrix LID(1,1);
+				LID(0,0) = firstbspot;
+				CrosslinkerIntermediateUpdate(currentpositions, LID, currlink, bspottriadscol);
+				// update visualization
+				for (int j=0; j<visualizepositions_->NumVectors(); j++)
+					(*visualizepositions_)[j][currlink] = (*crosslinkerpositions_)[j][currlink];
+				ilink++;
+			}
+		}
+	}
+
+	// Communication, first stage (not sure if we need to communicate all of these vectors here (or later)
+	// transfer vectors
+	Epetra_Vector bspotstatusrow(*discret_.NodeRowMap(),true);
+	Epetra_Vector numbondtrans(*transfermap_, true);
+	Epetra_MultiVector crosslinkerpositionstrans(*transfermap_,3,true);
+	Epetra_MultiVector visualizepositionstrans(*transfermap_,3,true);
+	Epetra_MultiVector crosslinkerbondtrans(*transfermap_,2,true);
+
+	CommunicateVector(bspotstatusrow, *bspotstatus_);
+	CommunicateVector(numbondtrans, *numbond_);
+	CommunicateMultiVector(crosslinkerpositionstrans, *crosslinkerpositions_);
+	CommunicateMultiVector(visualizepositionstrans, *visualizepositions_);
+	CommunicateMultiVector(crosslinkerbondtrans, *crosslinkerbond_);
+
+
+	// 2. Now, parallely search for neighbour nodes
+	RCP<Epetra_MultiVector> neighbourslid;
+	if(statmechparams_.get<int>("SEARCHRES",1)>0)
+		PartitioningAndSearch(currentpositions,bspottriadscol, neighbourslid);
+
+	// 3. create double bonds
+	// a vector indicating the crosslink molecule which is going to constitute a crosslinker element
+	Epetra_Vector addcrosselement(*crosslinkermap_, true);
+	int numsetelements = 0;
+
+	if(discret_.Comm().MyPID()==0)
+	{
+		int numinitlinks = statmechparams_.get<int>("NUMINITLINKS",0);
+		for(int i=0; i<numinitlinks; i++)
+		{
+			// get current linker
+			int currlink = randlink[i];
+			// obtain a random order of neighboursLID indices
+			std::vector<int> neighbourorder = Permutation(neighbourslid->NumVectors());
+			// if there is a potential second binding spot in the vicinity of the crosslinker (sufficient to check the first entry)
+			for(int j=0; j<neighbourslid->NumVectors(); j++)
+			{
+				int currneighbour = neighbourorder[j];
+				int secondbspot = (int)(*neighbourslid)[currneighbour][currlink];
+				// if second binding exists and spot is unoccupied
+				if((*neighbourslid)[currneighbour][currlink]>-0.1 && (*bspotstatus_)[secondbspot] < 0.1)
+				{
+					numsetelements++;
+					addcrosselement[currlink] = 1.0;
+					// establish double bond to the first given neighbour
+					// attach it to the second binding spot
+					(*bspotstatus_)[secondbspot] = 1.0;
+					(*numbond_)[currlink] = 2.0;
+					Epetra_SerialDenseMatrix LID(2,1);
+					for(int k=0; k<crosslinkerbond_->NumVectors(); k++)
+						if((*crosslinkerbond_)[k][currlink]<0.1)
+						{
+							LID(k,0) = secondbspot;
+							(*crosslinkerbond_)[k][currlink] = bspotcolmap_->GID(secondbspot);
+						}
+						else
+							LID(k,0) = (*crosslinkerbond_)[k][currlink];
+
+					//update crosslinker position
+					CrosslinkerIntermediateUpdate(currentpositions, LID, currlink, bspottriadscol);
+					// update visualization
+					for (int k=0; k<visualizepositions_->NumVectors(); k++)
+						(*visualizepositions_)[k][currlink] = (*crosslinkerpositions_)[k][currlink];
+					break;
+				}
+				else // break j-loop
+					break;
+			}
+		}
+	}
+	else
+	{
+		numbond_->PutScalar(0.0);
+		crosslinkerbond_->PutScalar(0.0);
+		crosslinkerpositions_->PutScalar(0.0);
+		visualizepositions_->PutScalar(0.0);
+		addcrosselement.PutScalar(0.0);
+	}
+
+	// Communication, second stage
+	Epetra_Vector addcrosselementtrans(*transfermap_,true);
+	bspotstatusrow.PutScalar(0.0);
+	crosslinkerpositionstrans.PutScalar(0.0);
+	visualizepositionstrans.PutScalar(0.0);
+	crosslinkerbondtrans.PutScalar(0.0);
+	numbondtrans.PutScalar(0.0);
+
+	// export and reimport
+	CommunicateVector(addcrosselementtrans, addcrosselement);
+	CommunicateVector(bspotstatusrow, *bspotstatus_);
+	CommunicateVector(numbondtrans, *numbond_);
+	CommunicateMultiVector(crosslinkerpositionstrans, *crosslinkerpositions_);
+	CommunicateMultiVector(visualizepositionstrans, *visualizepositions_);
+	CommunicateMultiVector(crosslinkerbondtrans, *crosslinkerbond_);
+
+	// ADDING ELEMENTS
+	// add elements to problem discretization (processor specific)
+	for(int i=0; i<addcrosselement.MyLength(); i++)
+	{
+		if(addcrosselement[i]>0.9)
+		{
+			// obtain node GID
+			int nodeGID[2] = {	(int)(*crosslinkerbond_)[0][i],(int)(*crosslinkerbond_)[1][i]};
+			// determine smaller and larger of the GIDs
+			int GID2 = min(nodeGID[0],nodeGID[1]);
+			int GID1 = max(nodeGID[0],nodeGID[1]);
+			int globalnodeids[2] = {GID1, GID2};
+			// calculate element GID
+			int newcrosslinkerGID = (GID1 + 1)*basisnodes_ + GID2;
+
+			discret_.Comm().Barrier();
+			while(1)
+			{
+				int gidexists = 1;
+				// query existance of node on this Proc
+				int gidonproc = (int)(discret_.HaveGlobalElement(newcrosslinkerGID));
+				// sum over all processors
+				discret_.Comm().MaxAll(&gidonproc, &gidexists, 1);
+				// calculate new GID if necessary by shifting the initial GID
+				if(gidexists>0)
+					newcrosslinkerGID++;
+				else
+					break;
+			}
+
+			(*crosslink2element_)[i] = newcrosslinkerGID;
+
+			//getting current position and rotational status of nodes with GID nodeGID[] (based on problem discretization NodeColmap()
+			// node 1
+			map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find( nodecolmap.LID(nodeGID[0]) );
+			map< int,LINALG::Matrix<3,1> >::const_iterator rot0 = currentrotations.find( nodecolmap.LID(nodeGID[0]) );
+			// node 2
+			map< int,LINALG::Matrix<3,1> >::const_iterator pos1 = currentpositions.find( nodecolmap.LID(nodeGID[1]) );
+			map< int,LINALG::Matrix<3,1> >::const_iterator rot1 = currentrotations.find( nodecolmap.LID(nodeGID[1]) );
+
+			//save positions of nodes between which a crosslinker has to be established in variables xrefe and rotrefe:
+			std::vector<double> rotrefe(6);
+			std::vector<double> xrefe(6);
+
+			for(int k=0; k<3; k++)
+			{
+				//the first three positions in xrefe and rotrefe are for the data of node GID1
+				if(nodeGID[0] > nodeGID[1])
+				{
+					//set nodal positions
+					xrefe[k ] = (pos0->second)(k);
+					xrefe[k+3] = (pos1->second)(k);
+
+					//set nodal rotations (not true ones, only those given in the displacement vector)
+					rotrefe[k ] = (rot0->second)(k);
+					rotrefe[k+3] = (rot1->second)(k);
+				}
+				else
+				{
+					//set nodal positions
+					xrefe[k ] = (pos1->second)(k);
+					xrefe[k+3] = (pos0->second)(k);
+
+					//set nodal rotations (not true ones, only those given in the displacement vector)
+					rotrefe[k ] = (rot1->second)(k);
+					rotrefe[k+3] = (rot0->second)(k);
+				}
+			}
+			// add linker element if one of the element's nodes is on the node row map of the processor
+			// we do not need to worry about contact yet: if enabled, the contact discretization is initialized
+			// after the statmechmanager...
+			if(noderowmap.LID(nodeGID[0]) > -1 || noderowmap.LID(nodeGID[1]) > -1)
+				AddNewCrosslinkerElement(newcrosslinkerGID,&globalnodeids[0],xrefe,rotrefe,discret_);
+		}
+	}
+	// synchronization for problem discretization
+	discret_.CheckFilledGlobally();
+	discret_.FillComplete(true, false, false);
+
+	//couts
+	if(!discret_.Comm().MyPID())
+		cout<<"\n\n"<<numsetelements<<" crosslinker element(s) added!"<<endl;
+#endif
+#endif
+	return;
+}
 
 /*----------------------------------------------------------------------*
  | Periodic Boundary Shift for crosslinker diffusion simulation					|

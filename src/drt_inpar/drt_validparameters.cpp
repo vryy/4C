@@ -1521,6 +1521,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("K_ON_SELF",0.0,"crosslinker on-rate for crosslinkers with both bonds on same filament",&statmech);
   //number of overall crosslink molecules in the boundary volume
   IntParameter("N_crosslink",0,"number of crosslinkers for switching on- and off-rates; if molecule diffusion model is used: number of crosslink molecules",&statmech);
+  //number of overall crosslink molecules in the boundary volume
+	IntParameter("NUMINITLINKS",0,"number of initially doubly bound crosslinkers",&statmech);
   //number by which the number of crosslinkers is reduced.
   IntParameter("REDUCECROSSLINKSBY",0,"number of crosslinker elements by which the overall number of crosslinker is reduced.",&statmech);
   //Reading double parameter for crosslinker protein mean length

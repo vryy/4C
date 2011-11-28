@@ -156,6 +156,9 @@ protected:
   StatMechManager operator = (const StatMechManager& old);
   StatMechManager(const StatMechManager& old);
 
+  //! \brief Get current binding spot positions
+  void GetNodePositions(Epetra_Vector& disrow, Epetra_Vector& discol, std::map<int,LINALG::Matrix<3,1> >& currentpositions, std::map<int, LINALG::Matrix<3, 1> >& currentrotations);
+
   //! \brief Searches and saves in variable  crosslinkerneighbours neighbours for each col node
   void SearchAndSetCrosslinkers(const int& istep,
 																const double& dt,
@@ -220,6 +223,9 @@ protected:
 
   //! \brief initializes vector with crosslinker positions
   void CrosslinkerMoleculeInit();
+
+  //! \brief sets crosslinkers  whereever possible before the first time step
+  void SetInitialCrosslinkers();
 
   //! \brief shifts crosslinker reprentations (spatial points) if they drift out of the boundary box in case of periodic BCs
 	void CrosslinkerPeriodicBoundaryShift(Epetra_MultiVector& crosslinkerpositions);
@@ -332,6 +338,12 @@ protected:
 	 * 	\param currentpositions			(in) 			column map node positions
 	 * 	\param neighbourslid				(in/out)	vector holding the node lids within search proximity of crosslink molecules*/
 	void PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, Epetra_MultiVector& bspottriadscol, RCP<Epetra_MultiVector>& neighbourslid);
+
+	//! \brief comunicate Vector to all participating processors
+	void CommunicateVector(Epetra_Vector& InVec, Epetra_Vector& OutVec, bool doexport=true, bool doimport=true);
+
+	//! \brief comunicate MultiVector to all participating processors
+	void CommunicateMultiVector(Epetra_MultiVector& InVec, Epetra_MultiVector& OutVec, bool doexport=true, bool doimport=true);
 
   //! \brief point of time at which writing special statistical output is started
   double starttimeoutput_;
