@@ -72,7 +72,7 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("pnp", "pressure", dofbased, 1);
   EnsightWriter::WriteResult("NodeIDs", "NodeIDs", dofbased, 1);
   EnsightWriter::WriteResult("radii", "radii", dofbased, 1);
-  EnsightWriter::WriteResult("acini_volume", "acini_volume", dofbased, 1);
+  EnsightWriter::WriteResult("acini_vnp", "acini_volume", dofbased, 1);
   EnsightWriter::WriteResult("acin_bc", "acini_bc", elementbased, 1);
   EnsightWriter::WriteResult("qin_np", "flow_in", elementbased, 1);
   EnsightWriter::WriteResult("qout_np", "flow_out", elementbased, 1);

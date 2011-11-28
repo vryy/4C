@@ -118,6 +118,8 @@ Here must add the steps for evaluating an element
       DRT::ELEMENTS::RedAirwayImplInterface::Impl(this)->CalcFlowRates(this,
                                                                        params,
                                                                        discretization,
+                                                                       elevec1,
+                                                                       elevec2,
                                                                        lm,
                                                                        mat);
 

@@ -153,8 +153,8 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   bcval_   = LINALG::CreateVector(*dofrowmap,true);
   dbctog_  = LINALG::CreateVector(*dofrowmap,true);
 
-  acini_volumen_  = LINALG::CreateVector(*dofcolmap,true);
-  acini_volumenp_ = LINALG::CreateVector(*dofcolmap,true);
+  acini_volumen_  = LINALG::CreateVector(*dofrowmap,true);
+  acini_volumenp_ = LINALG::CreateVector(*dofrowmap,true);
   acini_bc_       = LINALG::CreateVector(*elementcolmap,true);
 
   // Vectors used for solution process
@@ -189,7 +189,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
   acini_volumen_->Update(1.0,*acini_volumenp_,0.0);
-  
+
   // Fill the NodeId vector
   for (int nele=0;nele<discret_->NumMyColElements();++nele)
   {
@@ -517,10 +517,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     eleparams.set("qin_n" ,qin_n_);
     eleparams.set("qin_nm",qin_nm_);
 
-
     discret_->SetState("acinar_vn" ,acini_volumen_);
     discret_->SetState("acinar_vnp",acini_volumenp_);
-
 
     eleparams.set("qout_np",qout_np_);
     eleparams.set("qout_n" ,qout_n_ );
@@ -573,8 +571,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     discret_->SetState("pn" ,pn_ );
     discret_->SetState("pnm",pnm_);
 
-    discret_->SetState("acinar_vn" ,acini_volumen_);
-    discret_->SetState("acinar_vnp",acini_volumenp_);
+    eleparams.set("acinar_vn" ,acini_volumen_);
+    eleparams.set("acinar_vnp",acini_volumenp_);
 
     //    discret_->SetState("qcnp",qcnp_);
     //    discret_->SetState("qcn" ,qcn_ );
@@ -695,6 +693,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     discret_->SetState("pnp",pnp_);
     discret_->SetState("pn" ,pn_ );
     discret_->SetState("pnm",pnm_);
+    discret_->SetState("acinar_vn" ,acini_volumen_);
 
     eleparams.set("time step size",dta_);
     eleparams.set("total time",time_);
@@ -703,11 +702,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     eleparams.set("qin_np",qin_np_);
     eleparams.set("qout_np",qout_np_);
 
-    eleparams.set("acini_volumen",acini_volumen_);
-    eleparams.set("acini_volumenp",acini_volumenp_);
-
+    acini_volumenp_->PutScalar(0.0);
     // call standard loop over all elements
-    discret_->Evaluate(eleparams,sysmat_,rhs_);
+    discret_->Evaluate(eleparams,sysmat_,Teuchos::null ,Teuchos::null,acini_volumenp_,Teuchos::null);
     discret_->ClearState();
   }
 
@@ -723,14 +720,11 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> Couplin
     discret_->ClearState();
     discret_->SetState("pnp",pnp_);
 
-
     eleparams.set("qin_np",qin_np_);
     eleparams.set("qin_n",qin_n_);
 
-
     eleparams.set("qout_np",qout_np_);
     eleparams.set("qout_n" ,qout_n_ );
-
 
     eleparams.set("time step size",dta_);
     eleparams.set("total time",time_);
@@ -893,10 +887,12 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     LINALG::Export(*qout_np_,*qexp_);
     output_.WriteVector("qout_np",qexp_);
     //
-    LINALG::Export(*acini_volumen_,*pexp_);
-    output_.WriteVector("acini_vn",pexp_);
-    LINALG::Export(*acini_volumenp_,*pexp_);
-    output_.WriteVector("acini_vnp",pexp_);
+    output_.WriteVector("acini_vn",acini_volumen_);
+    output_.WriteVector("acini_vnp",acini_volumenp_);
+//   LINALG::Export(*acini_volumen_,*pexp_);
+//   output_.WriteVector("acini_vn",pexp_);
+//   LINALG::Export(*acini_volumenp_,*pexp_);
+//   output_.WriteVector("acini_vnp",pexp_);
 
 
     if (step_==upres_)
@@ -954,10 +950,12 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     LINALG::Export(*qout_np_,*qexp_);
     output_.WriteVector("qout_np",qexp_);
     //
-    LINALG::Export(*acini_volumen_,*pexp_);
-    output_.WriteVector("acini_vn",pexp_);
-    LINALG::Export(*acini_volumenp_,*pexp_);
-    output_.WriteVector("acini_vnp",pexp_);
+    //    LINALG::Export(*acini_volumen_,*pexp_);
+    //    output_.WriteVector("acini_vn",pexp_);
+    //    LINALG::Export(*acini_volumenp_,*pexp_);
+    //    output_.WriteVector("acini_vnp",pexp_);
+    output_.WriteVector("acini_vn",acini_volumen_);
+    output_.WriteVector("acini_vnp",acini_volumenp_);
 
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
@@ -1013,11 +1011,13 @@ void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step)
   reader.ReadVector(pn_,"pn");
   reader.ReadVector(pnm_,"pnm");
 
+  //  reader.ReadVector(pexp_, "acini_vn");
+  //  LINALG::Export(*pexp_,*acini_volumen_);
+  //  reader.ReadVector(pexp_, "acini_vnp");
+  //  LINALG::Export(*pexp_,*acini_volumenp_);
 
-  reader.ReadVector(pexp_, "acini_vn");
-  LINALG::Export(*pexp_,*acini_volumen_);
-  reader.ReadVector(pexp_, "acini_vnp");
-  LINALG::Export(*pexp_,*acini_volumenp_);
+  reader.ReadVector(acini_volumen_ ,"acini_vn");
+  reader.ReadVector(acini_volumenp_,"acini_vnp");
   
   reader.ReadVector(qexp_, "qin_nm");
   LINALG::Export(*qexp_,*qin_nm_);
@@ -1080,6 +1080,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<ParameterList>
     discret_->SetState("pn" ,pn_ );
     discret_->SetState("pnm",pnm_);
 
+    
     discret_->SetState("acinar_vn" ,acini_volumen_);
     discret_->SetState("acinar_vnp",acini_volumenp_);
 
@@ -1123,8 +1124,8 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<ParameterList>
     //    discret_->SetState("qcn" ,qcn_ );
     //    discret_->SetState("qcnm",qcnm_);
 
-    discret_->SetState("acinar_vn" ,acini_volumen_);
-    discret_->SetState("acinar_vnp",acini_volumenp_);
+    eleparams.set("acinar_vn" ,acini_volumen_);
+    eleparams.set("acinar_vnp",acini_volumenp_);
 
     eleparams.set("qin_np",qin_np_);
     eleparams.set("qin_n",qin_n_);

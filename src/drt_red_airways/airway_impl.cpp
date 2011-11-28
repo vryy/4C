@@ -114,6 +114,7 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   RefCountPtr<const Epetra_Vector> pnp  = discretization.GetState("pnp");
   RefCountPtr<const Epetra_Vector> pn   = discretization.GetState("pn");
   RefCountPtr<const Epetra_Vector> pnm  = discretization.GetState("pnm");
+
   RefCountPtr<const Epetra_Vector> acinar_vnp  = discretization.GetState("acinar_vnp");
   RefCountPtr<const Epetra_Vector> acinar_vn   = discretization.GetState("acinar_vn");
 
@@ -127,9 +128,6 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
 
  if (pnp==null || pn==null || pnm==null )
     dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
-
- if (acinar_vnp==null || acinar_vn ==null )
-    dserror("Cannot get state vectors 'acinar_vnp' and/or 'acinar_vn'");
 
   // extract local values from the global vectors
   vector<double> mypnp(lm.size());
@@ -152,7 +150,7 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
     // split area and volumetric flow rate, insert into element arrays
     epnp(i)   = mypnp[i];
     epn(i)    = mypn[i];
-    epnm(i)    = mypnm[i];
+    epnm(i)   = mypnm[i];
   }
 
   // extract local values from the global vectors
@@ -279,7 +277,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
       double VolPerArea = ele->Nodes()[1]->GetCondition("RedLungAcinusCond")->GetDouble("VolumePerArea");
       double acin_vol = VolPerArea* A;
       a_volume->ReplaceGlobalValues(1,&acin_vol,&gid2);
-      //      cout<<"V_A "<<VolPerArea<<" A "<<A<<endl;
     }
   }
 
@@ -1130,6 +1127,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   RedAirway*                   ele,
   ParameterList&               params,
   DRT::Discretization&         discretization,
+  Epetra_SerialDenseVector&    nothing,
+  Epetra_SerialDenseVector&    a_volumenp,
   vector<int>&                 lm,
   RefCountPtr<MAT::Material>   material)
 {
@@ -1139,13 +1138,12 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
 
   RefCountPtr<const Epetra_Vector> pnp   = discretization.GetState("pnp");
   RefCountPtr<const Epetra_Vector> pn    = discretization.GetState("pn");
+  RefCountPtr<const Epetra_Vector> acinar_vn = discretization.GetState("acinar_vn");
+
   RefCountPtr<Epetra_Vector> qin_np      = params.get<RefCountPtr<Epetra_Vector> >("qin_np");
   RefCountPtr<Epetra_Vector> qout_np     = params.get<RefCountPtr<Epetra_Vector> >("qout_np");
   RefCountPtr<Epetra_Vector> qin_n       = params.get<RefCountPtr<Epetra_Vector> >("qin_n");
   RefCountPtr<Epetra_Vector> qout_n      = params.get<RefCountPtr<Epetra_Vector> >("qout_n");
-  RefCountPtr<Epetra_Vector> a_volumen   = params.get<RefCountPtr<Epetra_Vector> >("acini_volumen");
-  RefCountPtr<Epetra_Vector> a_volumenp  = params.get<RefCountPtr<Epetra_Vector> >("acini_volumenp");
-
 
   // get time-step size
   const double dt = params.get<double>("time step size");
@@ -1170,17 +1168,14 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     exit(1);
   }
 
-
-
   // extract local values from the global vectors
   vector<double> mypnp(lm.size());
   vector<double> mypn (lm.size());
-  vector<double> mye_acini_voln (lm.size());
-  vector<double> mye_acini_volnp(lm.size());
+  vector<double> myacinar_vn (lm.size());
+
   DRT::UTILS::ExtractMyValues(*pnp,mypnp,lm);
   DRT::UTILS::ExtractMyValues(*pn ,mypn ,lm);
-  DRT::UTILS::ExtractMyValues(*a_volumen ,mye_acini_voln ,lm);
-  DRT::UTILS::ExtractMyValues(*a_volumenp,mye_acini_volnp,lm);
+  DRT::UTILS::ExtractMyValues(*acinar_vn,myacinar_vn,lm);
 
   const int numnode = lm.size();
 
@@ -1188,15 +1183,13 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   //  LINALG::Matrix<numnode,1> epnp;
   Epetra_SerialDenseVector epnp(numnode);
   Epetra_SerialDenseVector epn(numnode);
-  Epetra_SerialDenseVector e_acini_voln (numnode);
-  Epetra_SerialDenseVector e_acini_volnp(numnode);
+  Epetra_SerialDenseVector a_volumen(numnode);
   for (unsigned int i=0;i<lm.size();++i)
   {
     // split area and volumetric flow rate, insert into element arrays
-    epnp(i)         = mypnp[i];
-    epn(i)          = mypn[i];
-    e_acini_voln (i)= mye_acini_voln [i];
-    e_acini_volnp(i)= mye_acini_volnp[i];
+    epnp(i)      = mypnp[i];
+    epn(i)       = mypn[i];
+    a_volumen(i) = myacinar_vn[i];    
   }
 
 
@@ -1424,11 +1417,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   {
     if(ele->Nodes()[i]->GetCondition("RedLungAcinusCond"))
     {
-      double acinus_volume = e_acini_voln[i];
+      double acinus_volume = a_volumen(i);
       acinus_volume +=  0.5*(eqout_np+eqout_n)*dt;
-
-      int    gid2 = lm[i];
-      a_volumenp->ReplaceGlobalValues(1,&acinus_volume,&gid2);
+      a_volumenp(i) = acinus_volume;
     }
   }
 
