@@ -2773,14 +2773,16 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                  "totalflux_domain",
                                  "diffusiveflux_domain",
                                  "totalflux_boundary",
-                                 "diffusiveflux_boundary"
+                                 "diffusiveflux_boundary",
+                                 "convectiveflux_boundary"
                                  ),
                                tuple<int>(
                                    INPAR::SCATRA::flux_no,
                                    INPAR::SCATRA::flux_total_domain,
                                    INPAR::SCATRA::flux_diffusive_domain,
                                    INPAR::SCATRA::flux_total_boundary,
-                                   INPAR::SCATRA::flux_diffusive_boundary),
+                                   INPAR::SCATRA::flux_diffusive_boundary,
+                                   INPAR::SCATRA::flux_convective_boundary),
                                &scatradyn);
 
   setNumericStringParameter("WRITEFLUX_IDS","-1",

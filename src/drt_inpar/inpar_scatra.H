@@ -135,7 +135,8 @@ namespace INPAR
       flux_total_domain,
       flux_diffusive_domain,
       flux_total_boundary,
-      flux_diffusive_boundary
+      flux_diffusive_boundary,
+      flux_convective_boundary
     };
 
     // this parameter selects the location where tau is evaluated
@@ -188,25 +189,25 @@ namespace INPAR
     /// type of signum function for reinitialization based on solving Sussman's equation
     enum SmoothedSignType
     {
-    	signtype_nonsmoothed,
-    	signtype_Nagrath2005,
-    	signtype_LinEtAl2005,
-    	signtype_LinEtAl_normalized
+      signtype_nonsmoothed,
+      signtype_Nagrath2005,
+      signtype_LinEtAl2005,
+      signtype_LinEtAl_normalized
     };
 
     /// type of signum function for reinitialization based on solving Sussman's equation
     enum PenaltyMethod
     {
-    	penalty_method_none,
-    	penalty_method_intersection_points,
-    	penalty_method_akkerman
+      penalty_method_none,
+      penalty_method_intersection_points,
+      penalty_method_akkerman
     };
 
     /// type of reinitialization convergence check
     enum ReInitialStationaryCheck
     {
-    	reinit_stationarycheck_L1normintegrated,
-    	reinit_stationarycheck_numsteps
+      reinit_stationarycheck_L1normintegrated,
+      reinit_stationarycheck_numsteps
     };                                                 // schott
 
     /// type of mass calculation strategy for level set function

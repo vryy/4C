@@ -1591,74 +1591,83 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   if ((normals_ == Teuchos::null) or (isale_== true))
     normals_ = ComputeNormalVectors(condnames);
 
-  // was the residual already prepared? (Important only for the result test)
-  if ((solvtype_!=INPAR::SCATRA::solvertype_nonlinear) and (lastfluxoutputstep_ != step_))
+  if (writeflux_==INPAR::SCATRA::flux_convective_boundary)
   {
-    lastfluxoutputstep_ = step_;
-
-    // For nonlinear problems we already have the actual residual vector
-    // from the last convergence test!
-    // For linear problems we have to compute this information first, since
-    // the residual (w.o. Neumann boundary) has not been computed after the last solve!
-
-    // zero out matrix entries
-    sysmat_->Zero();
-
-    // zero out residual vector
+    // zero out residual vector -> we do not need this info
     residual_->PutScalar(0.0);
-
-    ParameterList eleparams;
-    // action for elements
-    eleparams.set("action","calc_condif_systemmat_and_residual");
-
-    // other parameters that might be needed by the elements
-    eleparams.set("time-step length",dta_);
-    eleparams.set<int>("scatratype",scatratype_);
-    eleparams.set("incremental solver",true); // say yes and you get the residual!!
-    eleparams.set<int>("form of convective term",convform_);
-    eleparams.set<int>("fs subgrid diffusivity",fssgd_);
-    eleparams.set("turbulence model",turbmodel_);
-    eleparams.set("frt",frt_);
-
-    // provide velocity field and potentially acceleration/pressure field
-    // (export to column map necessary for parallel evaluation)
-    AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
-    AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
-    AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
-
-    //provide displacement field in case of ALE
-    eleparams.set("isale",isale_);
-    if (isale_)
-      AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-
-    // parameters for stabilization
-    eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
-
-    // clear state
-    discret_->ClearState();
-
-    // we have to perform some dirty action here...
-    bool incremental_old = incremental_;
-    incremental_ = true;
-    // add element parameters according to time-integration scheme
-    AddSpecificTimeIntegrationParameters(eleparams);
-    // undo
-    incremental_ = incremental_old;
-
+  }
+  else
+  {
+    // was the residual already prepared?
+    if ((solvtype_!=INPAR::SCATRA::solvertype_nonlinear) and (lastfluxoutputstep_ != step_))
     {
-      // call standard loop over elements
-      discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
+      lastfluxoutputstep_ = step_;
+
+      // For nonlinear problems we already have the actual residual vector
+      // from the last convergence test!
+      // For linear problems we have to compute this information first, since
+      // the residual (w.o. Neumann boundary) has not been computed after the last solve!
+
+      // zero out matrix entries
+      sysmat_->Zero();
+
+      // zero out residual vector
+      residual_->PutScalar(0.0);
+
+      ParameterList eleparams;
+      // action for elements
+      eleparams.set("action","calc_condif_systemmat_and_residual");
+
+      // other parameters that might be needed by the elements
+      eleparams.set("time-step length",dta_);
+      eleparams.set<int>("scatratype",scatratype_);
+      eleparams.set("incremental solver",true); // say yes and you get the residual!!
+      eleparams.set<int>("form of convective term",convform_);
+      eleparams.set<int>("fs subgrid diffusivity",fssgd_);
+      eleparams.set("turbulence model",turbmodel_);
+      eleparams.set("frt",frt_);
+
+      // provide velocity field and potentially acceleration/pressure field
+      // (export to column map necessary for parallel evaluation)
+      AddMultiVectorToParameterList(eleparams,"convective velocity field",convel_);
+      AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
+      AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
+
+      //provide displacement field in case of ALE
+      eleparams.set("isale",isale_);
+      if (isale_)
+        AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
+
+      // parameters for stabilization
+      eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+
+      // clear state
       discret_->ClearState();
-    }
 
-    // scaling to get true residual vector for all time integration schemes
-    trueresidual_->Update(ResidualScaling(),*residual_,0.0);
+      // we have to perform some dirty action here...
+      bool incremental_old = incremental_;
+      incremental_ = true;
+      // add element parameters according to time-integration scheme
+      AddSpecificTimeIntegrationParameters(eleparams);
+      // undo
+      incremental_ = incremental_old;
 
-  } // if ((solvtype_!=INPAR::SCATRA::solvertype_nonlinear) && (lastfluxoutputstep_ != step_))
+      {
+        // call standard loop over elements
+        discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
+        discret_->ClearState();
+      }
 
-  // if total flux is desired add the convective flux contribution
+      // scaling to get true residual vector for all time integration schemes
+      trueresidual_->Update(ResidualScaling(),*residual_,0.0);
+
+    } // if ((solvtype_!=INPAR::SCATRA::solvertype_nonlinear) && (lastfluxoutputstep_ != step_))
+  } // if (writeflux_==INPAR::SCATRA::flux_convective_boundary)
+
+  // if desired add the convective flux contribution
   // to the trueresidual_ now.
-  if(writeflux_==INPAR::SCATRA::flux_total_boundary)
+  if((writeflux_==INPAR::SCATRA::flux_total_boundary)
+      or (writeflux_==INPAR::SCATRA::flux_convective_boundary))
   {
     if (myrank_==0)
       cout<<"Convective flux contribution is added to trueresidual_ vector.\n"
