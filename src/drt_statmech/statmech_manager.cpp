@@ -3025,7 +3025,7 @@ void StatMechManager::CrosslinkerMoleculeInit()
 	searchforneighbours_ = rcp(new Epetra_Vector(*crosslinkermap_, false));
 	searchforneighbours_->PutScalar(1.0);
 
-	if(statmechparams_.get<int>("NUMINITLINKS",0)>0)
+	if(statmechparams_.get<int>("INITOCCUPIEDBSPOTS",0)>0)
 		SetInitialCrosslinkers();
 
 
@@ -3064,19 +3064,20 @@ void StatMechManager::SetInitialCrosslinkers()
 	{
 		randbspot = Permutation(bspotcolmap_->NumMyElements());
 		randlink = Permutation(statmechparams_.get<int>("N_crosslink", 0));
+		int numbspots = statmechparams_.get<int>("INITOCCUPIEDBSPOTS",0);
 
-		int numinitlinks = statmechparams_.get<int>("NUMINITLINKS",0);
-		int ilink = 0;
+		if(numbspots>bspotcolmap_->NumMyElements())
+			dserror("Given number of initially occupied binding spots (%i) exceeds the total binding spot count (%i)! Check your input file!",numbspots, bspotcolmap_->NumMyElements());
+
 		// first, establish specified number of singly bound crosslinkers
-		for(int i=0; i<numinitlinks; i++)
+		for(int i=0; i<numbspots; i++)
 		{
-			// ibspot-th random binding spot
 			int firstbspot = randbspot[i];
 			// if this binding spot is still unoccupied
 			if((*bspotstatus_)[firstbspot]<0.1)
 			{
 				// get the ilink-th random crosslinker
-				int currlink = randlink[ilink];
+				int currlink = randlink[i];
 				// attach it to the first binding spot (i.e. update of relevant class vectors)
 				(*bspotstatus_)[firstbspot] = 1.0;
 				(*numbond_)[currlink] = 1.0;
@@ -3094,7 +3095,6 @@ void StatMechManager::SetInitialCrosslinkers()
 				// update visualization
 				for (int j=0; j<visualizepositions_->NumVectors(); j++)
 					(*visualizepositions_)[j][currlink] = (*crosslinkerpositions_)[j][currlink];
-				ilink++;
 			}
 		}
 	}
@@ -3126,8 +3126,8 @@ void StatMechManager::SetInitialCrosslinkers()
 
 	if(discret_.Comm().MyPID()==0)
 	{
-		int numinitlinks = statmechparams_.get<int>("NUMINITLINKS",0);
-		for(int i=0; i<numinitlinks; i++)
+		int numbspots = statmechparams_.get<int>("INITOCCUPIEDBSPOTS",0);
+		for(int i=0; i<numbspots; i++)
 		{
 			// get current linker
 			int currlink = randlink[i];
@@ -3139,33 +3139,34 @@ void StatMechManager::SetInitialCrosslinkers()
 				int currneighbour = neighbourorder[j];
 				int secondbspot = (int)(*neighbourslid)[currneighbour][currlink];
 				// if second binding exists and spot is unoccupied
-				if((*neighbourslid)[currneighbour][currlink]>-0.1 && (*bspotstatus_)[secondbspot] < 0.1)
+				if((*neighbourslid)[currneighbour][currlink]>-0.1)
 				{
-					numsetelements++;
-					addcrosselement[currlink] = 1.0;
-					// establish double bond to the first given neighbour
-					// attach it to the second binding spot
-					(*bspotstatus_)[secondbspot] = 1.0;
-					(*numbond_)[currlink] = 2.0;
-					Epetra_SerialDenseMatrix LID(2,1);
-					for(int k=0; k<crosslinkerbond_->NumVectors(); k++)
-						if((*crosslinkerbond_)[k][currlink]<0.1)
-						{
-							LID(k,0) = secondbspot;
-							(*crosslinkerbond_)[k][currlink] = bspotcolmap_->GID(secondbspot);
-						}
-						else
-							LID(k,0) = (*crosslinkerbond_)[k][currlink];
+					if((*bspotstatus_)[secondbspot] < 0.1)
+					{
+						numsetelements++;
+						addcrosselement[currlink] = 1.0;
+						// establish double bond to the first given neighbour
+						// attach it to the second binding spot
+						(*bspotstatus_)[secondbspot] = 1.0;
+						(*numbond_)[currlink] = 2.0;
+						Epetra_SerialDenseMatrix LID(2,1);
+						for(int k=0; k<crosslinkerbond_->NumVectors(); k++)
+							if((*crosslinkerbond_)[k][currlink]<0.1)
+							{
+								LID(k,0) = secondbspot;
+								(*crosslinkerbond_)[k][currlink] = bspotcolmap_->GID(secondbspot);
+							}
+							else
+								LID(k,0) = (*crosslinkerbond_)[k][currlink];
 
-					//update crosslinker position
-					CrosslinkerIntermediateUpdate(currentpositions, LID, currlink, bspottriadscol);
-					// update visualization
-					for (int k=0; k<visualizepositions_->NumVectors(); k++)
-						(*visualizepositions_)[k][currlink] = (*crosslinkerpositions_)[k][currlink];
-					break;
+						//update crosslinker position
+						CrosslinkerIntermediateUpdate(currentpositions, LID, currlink, bspottriadscol);
+						// update visualization
+						for (int k=0; k<visualizepositions_->NumVectors(); k++)
+							(*visualizepositions_)[k][currlink] = (*crosslinkerpositions_)[k][currlink];
+						break;
+					}
 				}
-				else // break j-loop
-					break;
 			}
 		}
 	}
@@ -3275,7 +3276,7 @@ void StatMechManager::SetInitialCrosslinkers()
 
 	//couts
 	if(!discret_.Comm().MyPID())
-		cout<<"\n\n"<<numsetelements<<" crosslinker element(s) added!"<<endl;
+		cout<<"\n\n"<<numsetelements<<" initial crosslinker elements added!\n"<<endl;
 #endif
 #endif
 	return;
