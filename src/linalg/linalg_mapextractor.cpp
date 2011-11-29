@@ -282,6 +282,8 @@ void LINALG::MultiMapExtractor::InsertVector(const Epetra_MultiVector& partial, 
 void LINALG::MultiMapExtractor::AddVector(const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full, double scale) const
 {
   Teuchos::RCP<Epetra_MultiVector> v = ExtractVector(full, block);
+  if (not v->Map().SameAs(partial.Map()))
+    dserror("The maps of the vectors must be the same!");
   v->Update(scale,partial,1.0);
   InsertVector(*v,block,full);
 }
