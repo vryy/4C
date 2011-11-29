@@ -254,8 +254,17 @@ void DRT::Problem::InputControl()
 
   // If there is a restart flag on the command line, ignore the input file.
   if ( genprob.restart==0 )
+  {
     genprob.restart        = type.get<int>("RESTART");
-
+  }
+  else
+  {
+    // If there is a non-zero restart flag on the command line, the
+    // RESTART flag in the input file should be zero or have the same value!
+    const int restartflaginfile = type.get<int>("RESTART");
+    if ((restartflaginfile > 0) and (restartflaginfile != genprob.restart))
+      dserror("Restart flags in input file and command line are non-zero and different!");
+  }
 
   // If we have an adaptive mesh, things are totally different.
   genprob.adaptive       = DRT::INPUT::IntegralValue<int>(type,"ADAPTIVE");
