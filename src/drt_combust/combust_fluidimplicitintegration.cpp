@@ -4204,18 +4204,14 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
 
     int err =0;
 
-    const int numdim  = params_.get<int>("number of velocity degrees of freedom");
-    const int npredof = numdim;
+    const int npredof = numdim_;
 
     double         p;
-    vector<double> u  (numdim);
-    vector<double> xyz(numdim);
+    vector<double> u  (numdim_);
+    vector<double> xyz(numdim_);
 
-
-    if(numdim!=3)
-    {
-      dserror("Beltrami flow is three dimensional flow!");
-    }
+    // check whether present flow is indeed three-dimensional
+    if (numdim_!=3) dserror("Beltrami flow is a three-dimensional flow!");
 
     // set constants for analytical solution
     const double a      = M_PI/4.0;
@@ -4231,10 +4227,18 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
       vector<int> nodedofset = discret_->Dof(lnode);
 
       // set node coordinates
-      for(int dim=0;dim<numdim;dim++)
+      for(int dim=0;dim<numdim_;dim++)
       {
         xyz[dim]=lnode->X()[dim];
       }
+
+      // compute initial velocity components
+      u[0] = -a * ( exp(a*xyz[0]) * sin(a*xyz[1] + d*xyz[2]) +
+                    exp(a*xyz[2]) * cos(a*xyz[0] + d*xyz[1]) );
+      u[1] = -a * ( exp(a*xyz[1]) * sin(a*xyz[2] + d*xyz[0]) +
+                    exp(a*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) );
+      u[2] = -a * ( exp(a*xyz[2]) * sin(a*xyz[0] + d*xyz[1]) +
+                    exp(a*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) );
 
       // compute initial pressure
       p = -a*a/2.0 *
@@ -4246,24 +4250,17 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
           + 2.0 * sin(a*xyz[2] + d*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) * exp(a*(xyz[0]+xyz[1]))
           );
 
-      // compute initial velocities
-      u[0] = -a * ( exp(a*xyz[0]) * sin(a*xyz[1] + d*xyz[2]) +
-                    exp(a*xyz[2]) * cos(a*xyz[0] + d*xyz[1]) );
-      u[1] = -a * ( exp(a*xyz[1]) * sin(a*xyz[2] + d*xyz[0]) +
-                    exp(a*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) );
-      u[2] = -a * ( exp(a*xyz[2]) * sin(a*xyz[0] + d*xyz[1]) +
-                    exp(a*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) );
-      // initial velocities
-      for(int nveldof=0;nveldof<numdim;nveldof++)
+      // set initial velocity components
+      for(int nveldof=0;nveldof<numdim_;nveldof++)
       {
         const int gid = nodedofset[nveldof];
         int lid = dofrowmap->LID(gid);
         err += state_.velnp_->ReplaceMyValues(1,&(u[nveldof]),&lid);
         err += state_.veln_ ->ReplaceMyValues(1,&(u[nveldof]),&lid);
         err += state_.velnm_->ReplaceMyValues(1,&(u[nveldof]),&lid);
-     }
+      }
 
-      // initial pressure
+      // set initial pressure
       const int gid = nodedofset[npredof];
       int lid = dofrowmap->LID(gid);
       err += state_.velnp_->ReplaceMyValues(1,&p,&lid);
@@ -4271,10 +4268,9 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
       err += state_.velnm_->ReplaceMyValues(1,&p,&lid);
 
     } // end loop nodes lnodeid
-    if(err!=0)
-    {
-      dserror("dof not on proc");
-    }
+
+    if(err!=0) dserror("dof not on proc");
+
     break;
   }
   case INPAR::COMBUST::initfield_field_by_function:
