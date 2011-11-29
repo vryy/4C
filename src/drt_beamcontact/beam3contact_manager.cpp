@@ -27,10 +27,8 @@ Maintainer: Alexander Popp, Christian Cyron
 #include "../drt_beam3ii/beam3ii.H"
 #endif
 
-// flag for octree search
-#define OCTTREESEARCH
 // flag switching between different evaluations of the constraint tolerance
-//#define RELCONSTRTOL
+#define RELCONSTRTOL
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                      popp 04/10|
@@ -182,7 +180,11 @@ alphaf_(alphaf)
   ComputeSearchRadius();
   
   // initialize octtree for contact search
-  tree_ = rcp(new Beam3ContactOctTree(pdiscret_,*cdiscret_,dofoffset_));
+  if (DRT::INPUT::IntegralValue<INPAR::CONTACT::OctreeType>(scontact_,"BEAMS_OCTREE") != INPAR::CONTACT::boct_none)
+  	tree_ = rcp(new Beam3ContactOctTree(scontact_,pdiscret_,*cdiscret_,dofoffset_));
+  else
+  	tree_ = Teuchos::null;
+
   return;
 }
 
@@ -211,73 +213,76 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   
   // update currentpositions and existing beam contact pairs
   SetState(currentpositions,disrow);
-#ifdef OCTTREESEARCH
-  //**********************************************************************
-  // octtree search (loop over all elements and find closest pairs)
-  //**********************************************************************
-  double t_start = Teuchos::Time::wallTime();
-  
-  vector<RCP<Beam3contact> > newpairs = tree_->OctTreeSearch(currentpositions);
 
-  // merge old and new contact pairs
-  for (int k=0;k<(int)newpairs.size();++k)
+	//**********************************************************************
+	// octtree search (loop over all elements and find closest pairs)
+	//**********************************************************************
+  if(tree_ != Teuchos::null)
   {
-    int currid1 = (newpairs[k]->Element1())->Id();
-    int currid2 = (newpairs[k]->Element2())->Id();
-    bool foundbefore = false;
-    
-    for (int m=0;m<(int)pairs_.size();++m)
-    {
-      int id1 = (pairs_[m]->Element1())->Id();
-      int id2 = (pairs_[m]->Element2())->Id();
-      
-      // pair already exists
-      if ((id1 == currid1 && id2 == currid2) || (id1 == currid2 && id2 == currid1))
-        foundbefore = true;
-    }
-    
-    // add to pairs_ if not found before
-    if (!foundbefore)
-      pairs_.push_back(newpairs[k]);
-  }
-  
-  double t_end = Teuchos::Time::wallTime() - t_start;
-  if(!pdiscret_.Comm().MyPID())
-  	cout << "\nOcttree Search: " << t_end << " seconds\n";
+		double t_start = Teuchos::Time::wallTime();
 
-  
-  /*//Print ContactPairs to .dat-file and plot with Matlab....................
-  std::ostringstream filename2;
-  filename2 << "ContactPairs_beam3contactmanager.dat";
-  FILE* fp2 = NULL;
-  fp2 = fopen(filename2.str().c_str(), "w");
-  fclose(fp2);
-  //open file to write output data into
-  // write output to temporary stringstream;
-  std::stringstream myfile2;
-  fp2 = fopen(filename2.str().c_str(), "a");
-  for (int i=0;i<(int)pairs_.size();i++)
-    myfile2 << (pairs_[i]->Element1())->Id() <<"  "<< (pairs_[i]->Element2())->Id() <<endl;
-  fprintf(fp2, myfile2.str().c_str());
-  fclose(fp2);*/
-  
-#else
-  //**********************************************************************
-  // brute-force search (loop over all elements and find closest pairs)
-  //**********************************************************************
-  // call function 'SearchPossibleContactPairs' to fill the vector pairs_
-  // with pairs of elements, that might get in contact. The criterion is
-  // the distance of the nodes of the elements, which has to be smaller
-  // than the search radius searchradius_
-  //**********************************************************************
-  
-  // call search algorithm
-  double t_start = Teuchos::Time::wallTime();
-  SearchPossibleContactPairs(currentpositions);
-  double t_end = Teuchos::Time::wallTime() - t_start;
-  if(!pdiscret_.Comm().MyPID())
-  	cout << "\nBrute Force Search: " << t_end << " seconds\n";
-#endif // #ifdef OCTTREESEARCH
+		vector<RCP<Beam3contact> > newpairs = tree_->OctTreeSearch(currentpositions);
+
+		// merge old and new contact pairs
+		for (int k=0;k<(int)newpairs.size();++k)
+		{
+			int currid1 = (newpairs[k]->Element1())->Id();
+			int currid2 = (newpairs[k]->Element2())->Id();
+			bool foundbefore = false;
+
+			for (int m=0;m<(int)pairs_.size();++m)
+			{
+				int id1 = (pairs_[m]->Element1())->Id();
+				int id2 = (pairs_[m]->Element2())->Id();
+
+				// pair already exists
+				if ((id1 == currid1 && id2 == currid2) || (id1 == currid2 && id2 == currid1))
+					foundbefore = true;
+			}
+
+			// add to pairs_ if not found before
+			if (!foundbefore)
+				pairs_.push_back(newpairs[k]);
+		}
+
+		double t_end = Teuchos::Time::wallTime() - t_start;
+		if(!pdiscret_.Comm().MyPID())
+			cout << "\nOcttree Search: " << t_end << " seconds\n";
+
+
+		/*//Print ContactPairs to .dat-file and plot with Matlab....................
+		std::ostringstream filename2;
+		filename2 << "ContactPairs_beam3contactmanager.dat";
+		FILE* fp2 = NULL;
+		fp2 = fopen(filename2.str().c_str(), "w");
+		fclose(fp2);
+		//open file to write output data into
+		// write output to temporary stringstream;
+		std::stringstream myfile2;
+		fp2 = fopen(filename2.str().c_str(), "a");
+		for (int i=0;i<(int)pairs_.size();i++)
+			myfile2 << (pairs_[i]->Element1())->Id() <<"  "<< (pairs_[i]->Element2())->Id() <<endl;
+		fprintf(fp2, myfile2.str().c_str());
+		fclose(fp2);*/
+  }
+  else
+  {
+		//**********************************************************************
+		// brute-force search (loop over all elements and find closest pairs)
+		//**********************************************************************
+		// call function 'SearchPossibleContactPairs' to fill the vector pairs_
+		// with pairs of elements, that might get in contact. The criterion is
+		// the distance of the nodes of the elements, which has to be smaller
+		// than the search radius searchradius_
+		//**********************************************************************
+
+		// call search algorithm
+		double t_start = Teuchos::Time::wallTime();
+		SearchPossibleContactPairs(currentpositions);
+		double t_end = Teuchos::Time::wallTime() - t_start;
+		if(!pdiscret_.Comm().MyPID())
+			cout << "\nBrute Force Search: " << t_end << " seconds\n";
+  }
   
   //**********************************************************************
   // evalutation of contact pairs

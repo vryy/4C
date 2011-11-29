@@ -1360,6 +1360,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   INPAR::CONTACT::bsm_cpp,INPAR::CONTACT::bsm_cpp),
        &scontact);
 
+  // enable octree search and determine type of bounding box (aabb = axis aligned, cobb = cylindrical oriented)
+  setStringToIntegralParameter<int>("BEAMS_OCTREE","None","octree and bounding box type for octree search routine",
+       tuple<std::string>("None","none","octree_axisaligned","octree_cylorient"),
+       tuple<int>(INPAR::CONTACT::boct_none,INPAR::CONTACT::boct_none,
+									INPAR::CONTACT::boct_aabb,INPAR::CONTACT::boct_cobb),
+			 &scontact);
+
   setStringToIntegralParameter<int>("INITCONTACTBYGAP","No","Initialize init contact by weighted gap vector",
                                yesnotuple,yesnovalue,&scontact);
 

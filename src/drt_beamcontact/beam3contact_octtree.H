@@ -32,7 +32,8 @@ class Beam3ContactOctTree
 {
   public:
     //!\brief Constructor
-    Beam3ContactOctTree(DRT::Discretization& discret,
+    Beam3ContactOctTree(ParameterList& params,
+												DRT::Discretization& discret,
                         DRT::Discretization& searchdis,
                         const int& dofoffset);
     
@@ -42,29 +43,43 @@ class Beam3ContactOctTree
     // call octtree search routine
     vector<RCP<Beam3contact> > OctTreeSearch(std::map<int, LINALG::Matrix<3,1> >&  currentpositions);
 
-    // generator of extended AABBs
-    void extendedAABB(std::map<int, LINALG::Matrix<3,1> >&  currentpositions,
-                      RCP<Epetra_MultiVector> allAABB);
+  private:
+    // Bounding Box Types
+    enum BboxType
+    {
+    	none,
+      axisaligned,
+      cyloriented
+    };
+
+    // generator of extended Bounding Boxes (axis aligned as well as cylindrical oriented)
+    void CreateBoundingBoxes(std::map<int, LINALG::Matrix<3,1> >&  currentpositions,RCP<Epetra_MultiVector> allBBoxes);
+    // create axis aligned bounding boxes
+    void CreateAABB(const Epetra_SerialDenseMatrix& coord, RCP<Epetra_MultiVector> allBBoxes, const int& elecolid, const double& PeriodLength);
+    // create coylindrical oriented bounding boxes
+    void CreateCOBB(const Epetra_SerialDenseMatrix&  coord, RCP<Epetra_MultiVector> allBBoxes, const int& elecolid, const double& PeriodLength);
 
     // spatial division of 3-dimensional volume
-    void locateAll(RCP<Epetra_MultiVector> allAABB,
-                   std::vector<std::vector<int> >& aabbinoctants);
+    void locateAll(RCP<Epetra_MultiVector> allBBoxes,
+                   std::vector<std::vector<int> >& bboxesinoctants);
 
     // primitive for locateAll
-    void locateBox(std::vector<std::vector<double> > allAABBstdvec,
+    void locateBox(std::vector<std::vector<double> > allBBoxesstdvec,
                    LINALG::Matrix<1,6> lim,
                    std::vector<std::vector<double> >* OctreeLimits,
-                   std::vector<std::vector<int> >& aabbinoctants,
+                   std::vector<std::vector<int> >& bboxesinoctants,
                    int& treedepth);
 
     // build list
-    void IntersectionAABB(std::map<int, LINALG::Matrix<3,1> >&  currentpositions,
+    void BoundingBoxIntersection(std::map<int, LINALG::Matrix<3,1> >&  currentpositions,
                           vector<RCP<Beam3contact> >* contactpairs,
-                          std::vector<std::vector<int> >* aabbinoctants,
-                          RCP<Epetra_MultiVector> allAABB);
+                          std::vector<std::vector<int> >* bboxesinoctants,
+                          RCP<Epetra_MultiVector> allBBoxes);
 
-
-  private:
+    // intersection method applying axis-aligned bounding boxes
+    bool IntersectionAABB(std::vector<int>& bboxIDs, RCP<Epetra_MultiVector> allBBoxes);
+    // intersection method applying cylindrical oriented bounding boxes
+    bool IntersectionCOBB(std::vector<int>& bboxIDs, RCP<Epetra_MultiVector> allBBoxes);
     
     bool periodicBC_;
 
@@ -88,6 +103,9 @@ class Beam3ContactOctTree
 
     // redundant map of bounding boxes
     RCP<Epetra_Map> AABBmap_;
+
+    // Bounding Box type
+    Beam3ContactOctTree::BboxType boundingbox_;
 };
 
 #endif  // #ifndef BEAM3OCTTREE_H

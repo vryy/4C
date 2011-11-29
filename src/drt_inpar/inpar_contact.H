@@ -116,6 +116,15 @@ namespace INPAR
       bsm_cpp           ///< smoothing only for the closest point projection; element evaluation without smoothing"
     };
 
+    /// Beam Contact Octree  and Bounding Box Type
+    /// (this enum represents the input file parameter BEAMS_OCTREEBBOX)
+    enum OctreeType
+    {
+      boct_none,         ///< no boundig box -> no octree
+      boct_aabb,     	 ///< axis aligned bounding boxes
+      boct_cobb,      	 ///< cylindrical oriented bounding boxes
+    };
+
   }  // namespace CONTACT
 
 }  // namespace INPAR

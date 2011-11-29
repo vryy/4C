@@ -73,6 +73,7 @@ UZAWACONSTRTOL 1e-08
 UZAWAMAXSTEPS  25
 BEAMS_NEWGAP   No
 BEAMS_SMOOTHING None
+BEAMS_OCTREE	octree_axisaligned
 ----------------------------------------------STATISTICAL MECHANICS
 THERMALBATH         uniform
 GMSHOUTPUT          No
