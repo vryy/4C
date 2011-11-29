@@ -129,6 +129,7 @@ ADAPTCONV_BETTER                0.1
 EXPLPREDICT                     no //sonst Probleme
 -----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        SUPG
+DEFINITION_TAU                  Taylor_Hughes_Zarins
 -------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  no
 -------------------------------------------------------FLUID SOLVER

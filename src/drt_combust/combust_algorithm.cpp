@@ -302,7 +302,6 @@ void COMBUST::Algorithm::TimeLoop()
     // write output to screen and files
     Output();
 
-#ifdef PRINTMASSCHECK
     if (!stepreinit_)
     {
       // compute current volume of minus domain
@@ -310,16 +309,13 @@ void COMBUST::Algorithm::TimeLoop()
       // print mass conservation check on screen
       printMassConservationCheck(volume_start_, volume_current);
     }
-#endif
 
   } // time loop
 
-#ifdef PRINTMASSCHECK
   // compute final volume of minus domain
   const double volume_end = ComputeVolume();
   // print mass conservation check on screen
   printMassConservationCheck(volume_start_, volume_end);
-#endif
 
   return;
 }
@@ -381,12 +377,10 @@ void COMBUST::Algorithm::SolveStationaryProblem()
   // write output to screen and files (and Gmsh)
   Output();
 
-#ifdef PRINTMASSCHECK
   // compute final volume of minus domain
   const double volume_end = ComputeVolume();
   // print mass conservation check on screen
   printMassConservationCheck(volume_start_, volume_end);
-#endif
 
   return;
 }
@@ -417,12 +411,10 @@ void COMBUST::Algorithm::DoReinitialization()
 //	  {cout << "Reinitialization Characteristic "
 //	 reinitaction_ == INPAR::COMBUST::reinitaction_pdebased_stabilized_convection)
 
-#ifdef PRINTMASSCHECK
   // compute current volume of minus domain
   const double volume_current_before = ComputeVolume();
   // print mass conservation check on screen
   printMassConservationCheck(volume_start_, volume_current_before);
-#endif
 
   // reinitialize Gfunc
   switch(reinitaction_)
@@ -474,21 +466,17 @@ void COMBUST::Algorithm::DoReinitialization()
 
   // compute current volume of minus domain
   const double volume_current_after = ComputeVolume();
-#ifdef PRINTMASSCHECK
   // print mass conservation check on screen
   printMassConservationCheck(volume_start_, volume_current_after);
-#endif
   // do volume correction
   if (volcorrection_)
   {
     CorrectVolume(volume_start_, volume_current_after);
 
-#ifdef PRINTMASSCHECK
     // compute current volume of minus domain
     const double volume_current_corrected = ComputeVolume();
     // print mass conservation check on screen
     printMassConservationCheck(volume_start_, volume_current_corrected);
-#endif
   }
 
   return;
@@ -1278,10 +1266,8 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
 
   FluidField().PrepareTimeStep();
 
-#ifdef PRINTMASSCHECK
   // compute initial volume of minus domain
   const double volume_start = ComputeVolume();
-#endif
 
   //-------------------------------------
   // solve nonlinear Navier-Stokes system
@@ -1358,12 +1344,10 @@ void COMBUST::Algorithm::SolveInitialStationaryProblem()
   // write output to screen and files (and Gmsh)
   Output();
 
-#ifdef PRINTMASSCHECK
   // compute final volume of minus domain
   const double volume_end = ComputeVolume();
   // print mass conservation check on screen
   printMassConservationCheck(volume_start, volume_end);
-#endif
 
   return;
 }
@@ -1641,7 +1625,7 @@ void COMBUST::Algorithm::printMassConservationCheck(const double volume_start, c
     }
     else
     {
-      dserror(" there is no 'minus domain'! -> division by zero checking mass conservation");
+      cout << " there is no 'minus domain'! -> division by zero checking mass conservation" << endl;
     }
   }
 
