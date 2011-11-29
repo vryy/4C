@@ -3,7 +3,7 @@
 #ifndef FSI_MORTARMONOLITHICFLUID_H
 #define FSI_MORTARMONOLITHICFLUID_H
 
-#include "fsi_monolithic.H"
+#include "fsi_monolithic_nox.H"
 #include "fsi_overlapprec.H"
 #include "fsi_matrixtransform.H"
 #include "../drt_inpar/inpar_fsi.H"
@@ -62,7 +62,7 @@ namespace FSI
 
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
-    
+
     /// read restart
     virtual void ReadRestart(int step);
 
@@ -73,9 +73,9 @@ namespace FSI
   protected:
 
     virtual void Update();
-    
+
     virtual void Output();
-    
+
     /// setup solver for global block system
     Teuchos::RCP<NOX::Epetra::LinearSystem>
     CreateLinearSystem(ParameterList& nlParams,
@@ -117,7 +117,7 @@ namespace FSI
 
     ///communicator
     Epetra_Comm& comm_;
-    
+
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
@@ -129,7 +129,7 @@ namespace FSI
 
     /// coupling of structure and fluid at the interface
     ADAPTER::CouplingMortar               coupsfm_;
-    
+
     UTILS::MatrixRowColTransform fggtransform_;
     UTILS::MatrixRowTransform fgitransform_;
     UTILS::MatrixColTransform figtransform_;
@@ -153,16 +153,16 @@ namespace FSI
 
     /// preconditioned block Krylov or block Gauss-Seidel linear solver
     INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
-    
+
     /// ale movement relative to structure (none, slide_curr, slide_ref)
     INPAR::FSI::SlideALEProj aleproj_;
     bool notsetup_;  ///< indicates if Setup has not been called yet
-    
+
     Teuchos::RCP<FSI::UTILS::SlideAleUtils> slideale_;  ///< Sliding Ale helper class
-    
+
     Teuchos::RCP<Epetra_Vector> iprojdispinc_;        ///<displacement of fluid side of the interface
     Teuchos::RCP<Epetra_Vector> iprojdisp_;        ///<displacement of fluid side of the interface
-    
+
   };
 }
 

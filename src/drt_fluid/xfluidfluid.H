@@ -166,6 +166,7 @@ namespace FLD
       Teuchos::RCP<Epetra_Map> fluidfluiddofrowmap_;
       Teuchos::RCP<const Epetra_Map> outputfluiddofrowmap_;
       Teuchos::RCP<const Epetra_Map> outputpressuredofrowmap_;
+      Teuchos::RCP<const Epetra_Map> fluidfluiddbcmaps_;
 
       // fluid-fluid
       Teuchos::RCP<LINALG::SparseOperator> fluidfluidsysmat_;
@@ -184,8 +185,6 @@ namespace FLD
       FLD::UTILS::FluidXFluidMapExtractor fluidfluidsplitter_;
 
       LINALG::MapExtractor      fluidfluidvelpressplitter_;
-
-      Teuchos::RCP<LINALG::MapExtractor> fluidfluiddbcmaps_;
 
       XFluidFluid & xfluid_;
 
@@ -234,12 +233,12 @@ namespace FLD
   public:
 
 
-    XFluidFluid( Teuchos::RCP<DRT::Discretization>  actdis,
+    XFluidFluid(Teuchos::RCP<DRT::Discretization>  actdis,
                  Teuchos::RCP<DRT::Discretization>  embdis,
                  LINALG::Solver &                   solver,
-                 ParameterList &                    params,
-                 bool                               alefluid=false
-      );
+                 const ParameterList &              params,
+                 bool                               alefluid=false,
+                 bool                               monolithicfluidfluidfsi=false);
 
     /// start time loop for startingalgo, normal problems and restarts
     /// of Fluid-Fluid problems
@@ -285,24 +284,33 @@ namespace FLD
     void UpdateGridv();
 
 
-    void SetNewStatevectorAndProjectEmbToBg(map<int, vector<int> > stdnoden,
-                                            map<int, vector<int> > stdnodenp,
-                                            map<int, vector<int> > enrichednoden,
-                                            map<int, vector<int> > enrichednodenp,
-                                            std::map<int,GEO::CUT::BoundingBox> & patchboxes,
-                                            Teuchos::RCP<Epetra_Vector> statevn,
-                                            Teuchos::RCP<Epetra_Vector> statevnp,
-                                            Teuchos::RCP<Epetra_Vector> fluidstate_vector_n);
+    void SetNewBgStatevectorAndProjectEmbToBg(map<int, vector<int> >                stdnoden,
+                                              map<int, vector<int> >                stdnodenp,
+                                              map<int, vector<int> >                enrichednoden,
+                                              map<int, vector<int> >                enrichednodenp,
+                                              std::map<int,GEO::CUT::BoundingBox> & patchboxes,
+                                              Teuchos::RCP<Epetra_Vector>           bgstatevn,
+                                              Teuchos::RCP<Epetra_Vector>           bgstatevnp,
+                                              Teuchos::RCP<Epetra_Vector>           embstatevn);
 
-    void CutAndSetStateVectors();
+    void SetNewEmbStatevector(Teuchos::RCP<Epetra_Vector>           statevbg_n,
+                              Epetra_Vector                         statevemb_n,
+                              Teuchos::RCP<Epetra_Vector>           statevembnew_n,
+                              Teuchos::RCP<Epetra_Vector>           aledispnp);
+
+
+    void CutAndSaveBgFluidStatus();
+
+    void SetBgStateVectorsAndPrepareTimeStep();
 
     void CreatePatchBoxes(std::map<int, GEO::CUT::BoundingBox> & patchboxes);
 
-    bool ComputeSpacialToElementCoordAndProject(DRT::Element*           pele,
-                                                LINALG::Matrix<3,1>&    x,  // background node's coordinates (x,y,z)
-                                                LINALG::Matrix<4,1>&    interpolatedvec,
-                                                RCP<Epetra_Vector>       fluidstate_vector_n,
-                                                Teuchos::RCP<Epetra_Vector>   embededddisp);
+    bool ComputeSpacialToElementCoordAndProject(DRT::Element*                      pele,
+                                                LINALG::Matrix<3,1>&               x,  //coordinates of the unknown node(x,y,z)
+                                                LINALG::Matrix<4,1>&               interpolatedvec,
+                                                Epetra_Vector                      embstate_n,
+                                                Teuchos::RCP<Epetra_Vector>        embeddedddisp,
+                                                Teuchos::RCP<DRT::Discretization>  sourcedis);
 
     void SetInitialFlowField(
       const INPAR::FLUID::InitialField initfield,
@@ -325,16 +333,16 @@ namespace FLD
     /// update configuration and output to file/screen
     void Output();
 
-    Teuchos::RCP<Epetra_Vector> InitialGuess() {cout<< "InitialGuess" <<endl; return state_->fluidfluidincvel_; }
-    Teuchos::RCP<Epetra_Vector> Residual() { cout << "Residual" << endl;return state_->fluidfluidresidual_; }
-    Teuchos::RCP<Epetra_Vector> TrueResidual() { cout << "TrueResidual" << endl;return aletrueresidual_; }
-    Teuchos::RCP<Epetra_Vector> Velnp() { cout << "Velnp" << endl; return alevelnp_; }
+    Teuchos::RCP<Epetra_Vector> InitialGuess() {return state_->fluidfluidincvel_; }
+    Teuchos::RCP<Epetra_Vector> Residual() { return state_->fluidfluidresidual_; }
+    Teuchos::RCP<Epetra_Vector> TrueResidual() { return aletrueresidual_; }
+    Teuchos::RCP<Epetra_Vector> Velnp() { return state_->fluidfluidvelnp_; }
     Teuchos::RCP<Epetra_Vector> Velaf() { cout << "Velaf" << endl;return alevelaf_; }
-    Teuchos::RCP<Epetra_Vector> Veln() { cout << "Veln() in!!! " <<  endl; return aleveln_; } //return state_->fluidfluidveln_ ;}//
-    Teuchos::RCP<Epetra_Vector> GridVel() {cout << "GridVel" << endl; return gridv_; }
+    Teuchos::RCP<Epetra_Vector> Veln() { return aleveln_; } //return state_->fluidfluidveln_ ;}/
+    Teuchos::RCP<Epetra_Vector> GridVel() {return gridv_; }
 
-    Teuchos::RCP<Epetra_Vector> Dispnp() { cout << "Dispnp " << endl;return aledispnp_; }
-    Teuchos::RCP<Epetra_Vector> Dispn() { cout << "Dispn" << endl;return aledispn_; }
+    Teuchos::RCP<Epetra_Vector> Dispnp() {return aledispnp_; }
+    Teuchos::RCP<Epetra_Vector> Dispn() { return aledispn_; }
 
     Teuchos::RCP<const Epetra_Map> DofRowMap() { return state_->fluidfluiddofrowmap_; }
 
@@ -343,11 +351,12 @@ namespace FLD
 
     Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix() { return Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(state_->fluidfluidsysmat_); }
 
-    Teuchos::RCP<Epetra_Vector> ExtractEmbVector(Teuchos::RCP<const Epetra_Vector> f){ return state_->fluidfluidsplitter_.ExtractFluidVector(f); }
+    FLD::UTILS::FluidXFluidMapExtractor XFluidFluidMapExtractor(){return state_->fluidfluidsplitter_; }
 
     /// provide access to the Dirichlet maps
     const Teuchos::RCP<const LINALG::MapExtractor> EmbeddedDirichMaps() { return aledbcmaps_;}
     const Teuchos::RCP<const LINALG::MapExtractor> BackgroundDirichMaps() { return state_->dbcmaps_;}
+    Teuchos::RCP<const Epetra_Map>  FluidFluidDirichMaps() { return state_->fluidfluiddbcmaps_;} // whole fluid
 
     /// Expand the Dirichlet DOF set
     ///
@@ -364,7 +373,7 @@ namespace FLD
       This method must (and will) be called during setup with a properly
       initialized extractor object iff we are on an ale mesh.
     */
-    void SetSurfaceSplitter(const UTILS::MapExtractor* surfacesplitter) {cout << "SetSurfaceSplitter" << endl; state_->surfacesplitter_ = surfacesplitter; }
+    void SetSurfaceSplitter(const UTILS::MapExtractor* surfacesplitter) {state_->surfacesplitter_ = surfacesplitter; }
 
     /*!
       \brief return type of time integration scheme
@@ -442,6 +451,9 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector>    aledispn_;
     Teuchos::RCP<Epetra_Vector>    aledispnm_;
     //@}
+
+    // old state of aledispnp used for fluid-fluid-fsi
+    Teuchos::RCP<Epetra_Vector>    aledispnpoldstate_;
 
     Teuchos::RCP<Epetra_Vector>    aletotaldispnp_;
     Teuchos::RCP<Epetra_Vector>    aletotaldispn_;
@@ -633,6 +645,8 @@ namespace FLD
 
     Teuchos::RCP<XFluidFluidState> state_;
     Teuchos::RCP<XFluidFluidState> staten_;
+
+    bool       monolithicfluidfluidfsi_;
 
     int maxnumdofsets_;
 

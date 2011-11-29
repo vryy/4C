@@ -46,7 +46,7 @@ namespace INPAR
       BGSVectorExtrapolation,
       BGSJacobianFreeNewtonKrylov
     };
-    
+
     /// Projection methods for sliding fluid-structure interface
     enum SlideALEProj
     {
@@ -63,7 +63,25 @@ namespace INPAR
       Simple,
       Simplec
     };
-    
+
+    /// @name Solution technique and related
+
+    /// type of norm to check for convergence of newton loop
+    enum ConvNorm
+    {
+      convnorm_abs,  ///< absolute norm
+      convnorm_rel,  ///< relative norm
+      convnorm_mix   ///< mixed absolute-relative norm
+    };
+
+    /// type of norm to check for convergence
+    enum BinaryOp
+    {
+      bop_and  ///<  and
+    };
+
+    //@}
+
   }  // namespace FSI
 
 }  // namespace INPAR

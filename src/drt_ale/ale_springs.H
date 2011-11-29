@@ -43,6 +43,8 @@ public:
   /// a very simple time loop to be used for standalone ALE problems
   void Integrate();
 
+  virtual void SolveAleXFluidFluidFSI() {};
+
   //! @name Algorithm core methods
   virtual void PrepareTimeStep();
   virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> ddisp);
@@ -80,7 +82,7 @@ public:
 
   virtual Teuchos::RCP<DRT::Discretization> Discretization()
     { return discret_; }
-  
+
   virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor()
     { return dbcmaps_; }
 

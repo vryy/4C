@@ -117,7 +117,7 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
 
 
   bool dirichletcond = true;
-  if (genprob.probtyp == prb_fsi)
+  if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fluid_fluid_fsi)
   {
     // FSI input parameters
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
@@ -130,7 +130,8 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn)
         coupling == fsi_iter_lung_monolithicfluidsplit or
         coupling == fsi_iter_lung_monolithicstructuresplit or
         coupling == fsi_iter_mortar_monolithicstructuresplit or
-        coupling == fsi_iter_mortar_monolithicfluidsplit)
+        coupling == fsi_iter_mortar_monolithicfluidsplit or
+        coupling == fsi_iter_fluidfluid_monolithicstructuresplit)
     {
       // partitioned MFSI solvers require Dirichlet conditions
       INPAR::FSI::LinearBlockSolver linearsolverstrategy =

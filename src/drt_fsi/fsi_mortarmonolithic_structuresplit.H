@@ -5,7 +5,7 @@
 
 #include "../drt_inpar/inpar_fsi.H"
 #include "../drt_adapter/adapter_coupling_mortar.H"
-#include "fsi_monolithic.H"
+#include "fsi_monolithic_nox.H"
 #include "fsi_overlapprec.H"
 #include "fsi_matrixtransform.H"
 #include "fsi_utils.H"
@@ -70,7 +70,7 @@ namespace FSI
   protected:
 
     virtual void Update();
-    
+
     virtual void Output();
 
     /// setup solver for global block system
@@ -151,17 +151,17 @@ namespace FSI
 
     /// preconditioned block Krylov or block Gauss-Seidel linear solver
     INPAR::FSI::LinearBlockSolver linearsolverstrategy_;
-    
+
     /// ale movement relative to structure (none, slide_curr, slide_ref)
     INPAR::FSI::SlideALEProj aleproj_;
-    
+
     bool notsetup_;  ///< indicates if Setup has not been called yet
 
     Teuchos::RCP<FSI::UTILS::SlideAleUtils> slideale_;  ///< Sliding Ale helper class
-    
+
     Teuchos::RCP<Epetra_Vector> iprojdispinc_;        ///<displacement of fluid side of the interface
     Teuchos::RCP<Epetra_Vector> iprojdisp_;        ///<displacement of fluid side of the interface
-    
+
   };
 }
 

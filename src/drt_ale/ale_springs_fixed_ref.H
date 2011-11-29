@@ -64,6 +64,8 @@ public:
   virtual void Output();
   //@}
 
+  virtual void SolveAleXFluidFluidFSI() {};
+
   /// get the linear solver object used for this field
   Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 

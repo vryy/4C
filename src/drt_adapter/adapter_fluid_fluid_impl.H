@@ -26,6 +26,7 @@ Maintainer: Shadan Shahmiri
 #include "../drt_fluid/xfluidfluid.H"
 #include "../drt_fluid/xfluidfluidresulttest.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 #include "adapter_fluid.H"
 
@@ -65,6 +66,7 @@ namespace ADAPTER {
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
     virtual Teuchos::RCP<const DRT::DofSet> DofSet() {dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
+    virtual Teuchos::RCP<const Epetra_Map>  FluidDirichMaps() {return fluid_.FluidFluidDirichMaps();}
 
     virtual void TimeLoop();
     virtual void PrepareTimeStep();
@@ -135,7 +137,7 @@ namespace ADAPTER {
     virtual void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx) {dserror("not implemented");}
     virtual void FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx) {dserror("not implemented");}
 
-    virtual Teuchos::RCP<Epetra_Vector> ExtractEmbVector(Teuchos::RCP<const Epetra_Vector> f) { return fluid_.ExtractEmbVector(f);};
+    virtual FLD::UTILS::FluidXFluidMapExtractor XFluidFluidMapExtractor() {return fluid_.XFluidFluidMapExtractor();}
 
     virtual int  Itemax() const;
     virtual void SetItemax(int itemax);

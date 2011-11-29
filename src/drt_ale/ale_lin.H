@@ -62,16 +62,18 @@ public:
   void ApplyInterfaceDisplacements(Teuchos::RCP<Epetra_Vector> idisp);
   void ApplyFreeSurfaceDisplacements(Teuchos::RCP<Epetra_Vector> fsdisp);
 
+  virtual void SolveAleXFluidFluidFSI();
+
   virtual Teuchos::RCP<Epetra_Vector> ExtractDisplacement() const;
 
   //! @name access functions for monolithic FSI
 
   virtual Teuchos::RCP<Epetra_Vector> InitialGuess()
-    { return residual_; }
+  { return residual_; }
   virtual Teuchos::RCP<Epetra_Vector> RHS() const
     { return residual_; }
   virtual Teuchos::RCP<Epetra_Vector> Disp()
-    { return dispnp_; }
+  { return dispnp_; }
   virtual Teuchos::RCP<const Epetra_Map> DofRowMap() const
     { return Teuchos::rcp(discret_->DofRowMap(),false); }
   virtual Teuchos::RCP<LINALG::SparseMatrix> SystemMatrix()
@@ -134,6 +136,9 @@ private:
   Teuchos::RCP<Epetra_Vector>    dispnp_;
   Teuchos::RCP<Epetra_Vector>    dispn_;
   //Teuchos::RCP<Epetra_Vector>    dispnm_;
+
+  // toggle vector of xfluidfluid
+  Teuchos::RCP<Epetra_Vector>    xfftoggle_;
 
   Teuchos::RCP<Epetra_Vector>    residual_;
   //@}

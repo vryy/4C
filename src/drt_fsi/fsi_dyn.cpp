@@ -55,6 +55,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_condition_selector.H"
 
 #include "../drt_lib/drt_dofset_fixed_size.H"
 
@@ -453,32 +454,21 @@ void fluid_fluid_fsi_drt()
     Epetra_SerialComm comm;
   #endif
 
+  /* |--str dofs--|--bgfluid dofs--|--embfluid dofs--|--ale dofs--|-> */
+
   RCP<DRT::Problem> problem = DRT::Problem::Instance();
 
   RCP<DRT::Discretization> structdis = problem->Dis(genprob.numsf,0);
   structdis->FillComplete();
 
   RCP<DRT::Discretization> bgfluiddis = problem->Dis(genprob.numff,0);
+  bgfluiddis->FillComplete();
 
   // reserve max size of dofs for the background fluid
   const Teuchos::ParameterList xdyn = DRT::Problem::Instance()->XFEMGeneralParams();
 
-  // compute number of nodes
-  int numglobalnodes = 0;
-  int numlocalnodes = bgfluiddis->NumMyColNodes();
-  (bgfluiddis->Comm()).SumAll(&numlocalnodes,&numglobalnodes,1);
-
-  int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
-  Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
-  bgfluiddis->ReplaceDofSet(maxdofset);
-
-  bgfluiddis->FillComplete();
-
   RCP<DRT::Discretization> embfluiddis = problem->Dis(genprob.numff,1);
   embfluiddis->FillComplete();
-
-  RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
-  aledis->FillComplete();
 
   // copy  bgfluid to embfluid
   const int numcolele = bgfluiddis->NumMyColElements();
@@ -497,26 +487,22 @@ void fluid_fluid_fsi_drt()
 
   embfluiddis->FillComplete();
 
-  vector<string> conditions_to_copy_mf;
-  conditions_to_copy_mf.push_back("MovingFluid");
-  Teuchos::RCP<DRT::Discretization> MovingFluiddis = DRT::UTILS::CreateDiscretizationFromCondition(bgfluiddis, "MovingFluid",
-           "MovingFluid", "VELE3", conditions_to_copy_mf);
+  //find MovingFluid's elements and nodes
+  map<int, DRT::Node*> MovingFluidNodemap;
+  map<int, RCP< DRT::Element> > MovingFluidelemap;
+  DRT::UTILS::FindConditionObjects(*bgfluiddis, MovingFluidNodemap, MovingFluidelemap, "MovingFluid");
 
-  // delete embedded fluid's node and elements from the background fluid
-  vector<int> MovingFluideleGIDs;
-  for (int iele=0; iele< MovingFluiddis->NumMyColElements(); ++iele)
-  {
-    DRT::Element* MovingFluidele = MovingFluiddis->lColElement(iele);
-    MovingFluideleGIDs.push_back(MovingFluidele->Id());
-  }
-
+  // local vectors of nodes and elements of moving dis
   vector<int> MovingFluidNodeGIDs;
-  for (int node=0; node<MovingFluiddis->NumMyColNodes(); node++)
-  {
-    DRT::Node*  MovingFluidnode = MovingFluiddis->lColNode(node);
-    MovingFluidNodeGIDs.push_back(MovingFluidnode->Id());
-  }
+  vector<int> MovingFluideleGIDs;
 
+  for( map<int, DRT::Node*>::iterator it = MovingFluidNodemap.begin(); it != MovingFluidNodemap.end(); ++it )
+    MovingFluidNodeGIDs.push_back( it->first);
+
+  for( map<int, RCP< DRT::Element> >::iterator it = MovingFluidelemap.begin(); it != MovingFluidelemap.end(); ++it )
+    MovingFluideleGIDs.push_back( it->first);
+
+  // local vectors of nodes and elements of non-moving dis
   vector<int> NonMovingFluideleGIDs;
   vector<int> NonMovingFluidNodeGIDs;
   for (int iele=0; iele< bgfluiddis->NumMyColElements(); ++iele)
@@ -541,7 +527,7 @@ void fluid_fluid_fsi_drt()
   // copy selected conditions to the new discretization
   for (vector<string>::const_iterator conditername = conditions_to_copy.begin();
        conditername != conditions_to_copy.end(); ++conditername)
- {
+  {
      vector<DRT::Condition*> conds;
      bgfluiddis->GetCondition(*conditername, conds);
      for (unsigned i=0; i<conds.size(); ++i)
@@ -592,6 +578,16 @@ void fluid_fluid_fsi_drt()
   for(size_t mv=0; mv<MovingFluidNodeGIDsall.size(); ++mv)
     bgfluiddis->DeleteNode(MovingFluidNodeGIDsall.at(mv));
   bgfluiddis->FillComplete();
+
+  // now we can reserve dofs for background fluid
+  int numglobalnodes = bgfluiddis->NumGlobalNodes();
+  int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
+  Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
+  cout << " maxNumMyReservedDofs " << maxNumMyReservedDofs << endl;
+  bgfluiddis->ReplaceDofSet(maxdofset,true);
+  bgfluiddis->FillComplete();
+
+
 #if defined(PARALLEL)
   vector<int> bgeleids;          // ele ids
   for (int i=0; i<bgfluiddis->NumMyRowElements(); ++i)
@@ -621,7 +617,7 @@ void fluid_fluid_fsi_drt()
   bgfluiddis->ExportColumnElements(*bgnewcoleles);
 
 #endif
-  bgfluiddis->FillComplete();
+   bgfluiddis->FillComplete();
 
   //-------------------------------------------------------------------------
 
@@ -635,6 +631,9 @@ void fluid_fluid_fsi_drt()
   for(size_t nmv=0; nmv<NonMovingFluidNodeGIDsall.size(); ++nmv)
     embfluiddis->DeleteNode(NonMovingFluidNodeGIDsall.at(nmv));
 
+  // new dofset for embfluiddis which begins after bgfluiddis dofs
+  Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::DofSet());
+  embfluiddis->ReplaceDofSet(newdofset,true);
   embfluiddis->FillComplete();
 
 #if defined(PARALLEL)
@@ -672,6 +671,7 @@ void fluid_fluid_fsi_drt()
   //------------------------------------------------------------------------------
 
   // create ale elements if the ale discretization is empty
+  RCP<DRT::Discretization> aledis = problem->Dis(genprob.numaf,0);
   if (aledis->NumGlobalNodes()==0)
   {
     {
@@ -685,11 +685,10 @@ void fluid_fluid_fsi_drt()
       cout << "\n\nCreating ALE discretisation ....\n\n";
     }
   }
-
-  structdis->FillComplete();
-  bgfluiddis->FillComplete();
-  embfluiddis->FillComplete();
   aledis->FillComplete();
+
+  // print all dofsets
+  structdis->GetDofSetProxy()->PrintAllDofsets(*comm);
 
   const Teuchos::ParameterList& fsidyn   = problem->FSIDynamicParams();
   int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
@@ -699,17 +698,17 @@ void fluid_fluid_fsi_drt()
   {
     Teuchos::RCP<FSI::Monolithic> fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplit(*comm));
 
-    // now do the coupling setup an create the combined dofmap
+     // now do the coupling setup an create the combined dofmap
     fsi->SetupSystem();
 
     // here we go...
-    fsi->Timeloop(fsi);
+    fsi->Timeloop();
 
 //     DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
 //     DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
 //     DRT::Problem::Instance()->TestAll(comm);
   }
-    break;
+  break;
   default:
   {
     // Any partitioned algorithm
@@ -907,7 +906,7 @@ void fsi_ale_drt()
   case fsi_iter_mortar_monolithicstructuresplit:
   case fsi_iter_mortar_monolithicfluidsplit:
   {
-    Teuchos::RCP<FSI::Monolithic> fsi;
+    Teuchos::RCP<FSI::MonolithicNOX> fsi;
 
     INPAR::FSI::LinearBlockSolver linearsolverstrategy = DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsidyn,"LINEARBLOCKSOLVER");
 

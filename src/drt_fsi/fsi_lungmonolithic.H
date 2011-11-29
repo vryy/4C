@@ -5,7 +5,7 @@
 
 #include "../drt_inpar/inpar_fsi.H"
 #include "fsi_lung_overlapprec.H"
-#include "fsi_monolithic.H"
+#include "fsi_monolithic_nox.H"
 
 namespace UTILS
 {

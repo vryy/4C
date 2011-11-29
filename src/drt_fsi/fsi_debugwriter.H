@@ -15,7 +15,7 @@ namespace IO
 
 namespace FSI
 {
-  class Monolithic;
+  class MonolithicNOX;
 
 namespace UTILS
 {
@@ -113,7 +113,7 @@ namespace UTILS
   {
   public:
 
-    MonolithicDebugWriter(FSI::Monolithic& algorithm);
+    MonolithicDebugWriter(FSI::MonolithicNOX& algorithm);
 
     virtual ~MonolithicDebugWriter() {}
 
@@ -134,7 +134,7 @@ namespace UTILS
     virtual void WriteVector(const std::string& name, const Teuchos::RCP<Epetra_Vector>& v);
 
   private:
-    FSI::Monolithic& algorithm_;
+    FSI::MonolithicNOX& algorithm_;
 
     Teuchos::RCP<SimpleDebugWriter> struct_writer_;
     Teuchos::RCP<SimpleDebugWriter> fluid_writer_;

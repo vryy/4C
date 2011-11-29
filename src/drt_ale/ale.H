@@ -127,6 +127,8 @@ public:
 
   //@}
 
+  virtual void SolveAleXFluidFluidFSI() = 0;
+
   //! @name Misc
 
   /// dof map of vector of unknowns
@@ -151,7 +153,7 @@ public:
 
   /// create result test for encapsulated algorithm
   virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
-  
+
   virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
 
   //@}

@@ -532,6 +532,7 @@ std::map<string,string> FSI::UTILS::AleFluidCloneStrategy::ConditionsToCopy()
   conditions_to_copy.insert(pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
   conditions_to_copy.insert(pair<string,string>("ElectrodeKinetics","ElectrodeKinetics"));
   conditions_to_copy.insert(pair<string,string>("XFEMCoupling","XFEMCoupling"));
+  conditions_to_copy.insert(pair<string,string>("FluidFluidCoupling","FluidFluidCoupling"));
 
   return conditions_to_copy;
 }
@@ -1040,7 +1041,7 @@ std::map<int,LINALG::Matrix<3,1> > FSI::UTILS::SlideAleUtils::CurrentStructPos
       }
     }
   }
-  
+
   return currentpositions;
 }
 
@@ -1312,7 +1313,7 @@ void FSI::UTILS::SlideAleUtils::Rotation
     double maxcoord = 0.0;
     if (ifluidslidstructeles_.find(i) != ifluidslidstructeles_.end())
       maxcoord=rotrat[i];
-    
+
     map<int, RCP<DRT::Element> >::const_iterator elemiter;
     for (elemiter = ifluidslidstructeles_[i].begin(); elemiter != ifluidslidstructeles_[i].end(); elemiter++)
     {

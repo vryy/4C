@@ -770,6 +770,7 @@ set(OBJS_DRT_FSI
   src/drt_fsi/fsi_lungmonolithic_fluidsplit.cpp
   src/drt_fsi/fsi_lungmonolithic_structuresplit.cpp
   src/drt_fsi/fsi_matrixtransform.cpp
+  src/drt_fsi/fsi_monolithic_nox.cpp
   src/drt_fsi/fsi_monolithic.cpp
   src/drt_fsi/fsi_monolithic_linearsystem.cpp
   src/drt_fsi/fsi_monolithiclagrange.cpp

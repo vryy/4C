@@ -5,7 +5,7 @@
 
 #include "../drt_scatra/passive_scatra_algorithm.H"
 #include "fs3i.H"
-#include "../drt_fsi/fsi_monolithic.H"
+#include "../drt_fsi/fsi_monolithic_nox.H"
 #include "../drt_fsi/fsi_matrixtransform.H"
 
 namespace FS3I
@@ -85,7 +85,7 @@ namespace FS3I
   protected:
 
     /// fsi algorithm
-    Teuchos::RCP<FSI::Monolithic> fsi_;
+    Teuchos::RCP<FSI::MonolithicNOX> fsi_;
 
     /// vector of scatra algorithms
     std::vector<Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> > scatravec_;

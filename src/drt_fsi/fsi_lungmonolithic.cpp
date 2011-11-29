@@ -342,7 +342,7 @@ void FSI::LungMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   // evaluation of all fields
   //-----------------------------------------------------------------------------
 
-  FSI::Monolithic::Evaluate(x);
+  FSI::MonolithicNOX::Evaluate(x);
 
   //-----------------------------------------------------------------------------
   // evaluation of lung volume constraints
@@ -903,7 +903,7 @@ void FSI::LungMonolithic::Output()
 /*----------------------------------------------------------------------*/
 void FSI::LungMonolithic::ReadRestart(int step)
 {
-  FSI::Monolithic::ReadRestart(step);
+  FSI::MonolithicNOX::ReadRestart(step);
 
   ADAPTER::StructureLung& structfield = dynamic_cast<ADAPTER::StructureLung&>(StructureField());
 

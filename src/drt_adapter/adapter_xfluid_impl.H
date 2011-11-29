@@ -101,7 +101,13 @@ namespace ADAPTER {
     virtual Teuchos::RCP<const DRT::DofSet> DofSet() { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
 
-    virtual Teuchos::RCP<Epetra_Vector> ExtractEmbVector(Teuchos::RCP<const Epetra_Vector> f) {dserror("not implemented"); return Teuchos::null;};
+    virtual FLD::UTILS::FluidXFluidMapExtractor XFluidFluidMapExtractor() {dserror("not implemented");
+      // this is a hack to compile the code! danger of dangling reference!
+      FLD::UTILS::FluidXFluidMapExtractor  object;
+      FLD::UTILS::FluidXFluidMapExtractor& reftoobject=object;
+      return reftoobject;}
+    /// Return dirichlet boundray condition (used for fluidfluid)
+    virtual Teuchos::RCP<const Epetra_Map> FluidDirichMaps(){dserror("not implemented"); return Teuchos::null;};
 
     //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const;
 

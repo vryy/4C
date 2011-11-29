@@ -318,7 +318,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
   }
 
   // sanity checks and default flags
-  if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_gas_fsi or genprob.probtyp == prb_biofilm_fsi or genprob.probtyp == prb_fluid_fluid_fsi)
+  if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_gas_fsi or genprob.probtyp == prb_biofilm_fsi or
+      genprob.probtyp == prb_fluid_fluid_fsi)
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
@@ -495,7 +496,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
     sdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("UPRES"));
   }
   // sanity checks and default flags
-  if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_gas_fsi or genprob.probtyp == prb_biofilm_fsi or genprob.probtyp == prb_fluid_fluid_fsi)
+  if (genprob.probtyp == prb_fsi or genprob.probtyp == prb_fsi_lung or genprob.probtyp == prb_gas_fsi or genprob.probtyp == prb_biofilm_fsi or
+      genprob.probtyp == prb_fluid_fluid_fsi)
   {
     // FSI input parameters
     const Teuchos::ParameterList& fsidyn
@@ -720,8 +722,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterLi
       if (tmpstr->HaveConstraint())
       {
         if (coupling == fsi_iter_constr_monolithicstructuresplit or
-            coupling == fsi_iter_constr_monolithicfluidsplit or
-            coupling == fsi_iter_fluidfluid_monolithicstructuresplit)
+            coupling == fsi_iter_constr_monolithicfluidsplit)
           structure_ = rcp(new StructureNOXCorrectionWrapper(tmpstr));
         else
           structure_ = rcp(new StructureNOXCorrectionWrapper(rcp(new StructureConstrMerged(tmpstr))));

@@ -8653,9 +8653,9 @@ namespace DRT
         	  dserror("define start side xi-coordinates for unsupported cell type");
           }
 
-          const double relTolIncr = 1.0e-11;   // rel tolerance for the local coordinates increment
-          const double relTolRes  = 1.0e-12;   // rel tolerance for the whole residual
-          const double absTOLdist = 1.0e-12;   // abs tolerance for distance
+          const double relTolIncr = 1.0e-10;   // rel tolerance for the local coordinates increment
+          const double relTolRes  = 1.0e-10;   // rel tolerance for the whole residual
+          const double absTOLdist = 1.0e-10;   // abs tolerance for distance
 
           int iter=0;
           const int maxiter = 5;

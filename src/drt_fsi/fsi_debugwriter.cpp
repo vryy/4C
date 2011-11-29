@@ -3,7 +3,7 @@
 #include <sstream>
 
 #include "fsi_debugwriter.H"
-#include "fsi_monolithic.H"
+#include "fsi_monolithic_nox.H"
 
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_utils.H"
@@ -142,7 +142,7 @@ void FSI::UTILS::SimpleDebugWriter::WriteVector(const std::string& name, Epetra_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::UTILS::MonolithicDebugWriter::MonolithicDebugWriter(Monolithic& algorithm)
+FSI::UTILS::MonolithicDebugWriter::MonolithicDebugWriter(MonolithicNOX& algorithm)
   : algorithm_(algorithm),
     counter_(0)
 {

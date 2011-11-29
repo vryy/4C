@@ -26,6 +26,7 @@ wiesner@lnm.mw.tum.de
 #include "../drt_fluid/fluid_projectionmethod.H"
 #include "../drt_fluid/fluidresulttest.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 #include "adapter_fluid.H"
 
@@ -60,8 +61,14 @@ public:
     virtual Teuchos::RCP<DRT::Discretization> Discretization();
     virtual Teuchos::RCP<const DRT::DofSet> DofSet() { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor();
+    /// Return dirichlet boundray condition (used for fluidfluid)
+    virtual Teuchos::RCP<const Epetra_Map> FluidDirichMaps(){dserror("not implemented"); return Teuchos::null;};
 
-    virtual Teuchos::RCP<Epetra_Vector> ExtractEmbVector(Teuchos::RCP<const Epetra_Vector> f) {dserror("not implemented"); return Teuchos::null;};
+    virtual FLD::UTILS::FluidXFluidMapExtractor XFluidFluidMapExtractor() {dserror("not implemented");
+      // this is a hack to compile the code! danger of dangling reference!
+      FLD::UTILS::FluidXFluidMapExtractor  object;
+      FLD::UTILS::FluidXFluidMapExtractor& reftoobject=object;
+      return reftoobject;}
 
     virtual void TimeLoop();
     virtual void PrepareTimeStep();

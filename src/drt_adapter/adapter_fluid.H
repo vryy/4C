@@ -29,6 +29,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_combust.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 namespace LINALG
 {
@@ -180,6 +181,10 @@ namespace ADAPTER {
 
     /// Return MapExtractor for Dirichlet boundary conditions
     virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
+
+    // should it be pure virtual?!
+    /// Return dirichlet boundray condition (used for fluidfluid)
+    virtual Teuchos::RCP<const Epetra_Map> FluidDirichMaps() = 0;
 
     //virtual Teuchos::RCP<Epetra_Vector> StructCondRHS() const = 0;
 
@@ -412,7 +417,7 @@ namespace ADAPTER {
     /// extract fluid forces at the interface
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() = 0;
 
-    virtual Teuchos::RCP<Epetra_Vector> ExtractEmbVector(Teuchos::RCP<const Epetra_Vector> f) = 0;
+    virtual FLD::UTILS::FluidXFluidMapExtractor XFluidFluidMapExtractor() = 0;
 
     /// After the fluid solve we need the forces at the FSI interface.
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForcesRobin() = 0;

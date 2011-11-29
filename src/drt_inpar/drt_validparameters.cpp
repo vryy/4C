@@ -3489,8 +3489,8 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
     "Partitioned FSI solver with various coupling methods"
     );
 
-  Teuchos::Tuple<std::string,21> name;
-  Teuchos::Tuple<int,21> label;
+  Teuchos::Tuple<std::string,22> name;
+  Teuchos::Tuple<int,22> label;
 
   name[ 0] = "basic_sequ_stagg";                   label[ 0] = fsi_basic_sequ_stagg;
   name[ 1] = "iter_stagg_fixed_rel_param";         label[ 1] = fsi_iter_stagg_fixed_rel_param;
@@ -3673,6 +3673,38 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                   "This is the improvement we want to achieve in the linear extrapolation of the\n"
                   "adaptive convergence check. Set to zero to avoid the adaptive check altogether.",
                   &fsidyn);
+
+  // Iterationparameters for convergence check of newton loop
+  setStringToIntegralParameter<int>("NORM_INC","Abs","type of norm for primary variables convergence check",
+                               tuple<std::string>(
+                                 "Abs",
+                                 "Rel"
+                                 ),
+                               tuple<int>(
+                                 INPAR::FSI::convnorm_abs,
+                                 INPAR::FSI::convnorm_rel
+                                 ),
+                               &fsidyn);
+
+  setStringToIntegralParameter<int>("NORM_RESF","Abs","type of norm for residual convergence check",
+                                 tuple<std::string>(
+                                   "Abs",
+                                   "Rel",
+                                   "Mix"
+                                   ),
+                                 tuple<int>(
+                                   INPAR::FSI::convnorm_abs,
+                                   INPAR::FSI::convnorm_rel,
+                                   INPAR::FSI::convnorm_mix
+                                   ),
+                                 &fsidyn);
+
+  setStringToIntegralParameter<int>("NORMCOMBI_RESFINC","And","binary operator to combine primary variables and residual force values",
+                               tuple<std::string>("And"),
+                               tuple<int>(
+                                 INPAR::FSI::bop_and
+                                 ),
+                               &fsidyn);
 
   // monolithic preconditioner parameter
 
