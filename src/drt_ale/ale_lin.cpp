@@ -71,7 +71,6 @@ ALE::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
 
   if (xffinterface_.XFluidFluidCondRelevant())
   {
-    cout << "xff "  << endl;
     // create the toggle vector for fluid-fluid-Coupling
     Teuchos::RCP<Epetra_Vector> dispnp_xff = LINALG::CreateVector(*xffinterface_.XFluidFluidCondMap(),true);
     dispnp_xff->PutScalar(1.0);
