@@ -2440,6 +2440,39 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(acinus_bc);
 
+  /*--------------------------------------------------------------------*/
+  // Prescribed Ventilator BC for reduced dimensional airways
+
+  Teuchos::RCP<ConditionDefinition> raw_vent_bc =
+    Teuchos::rcp(new ConditionDefinition("DESIGN NODE Reduced D AIRWAYS VENTILATOR CONDITIONS",
+                                         "RedAirwayVentilatorCond",
+                                         "Reduced d airway prescribed ventilator condition",
+                                         DRT::Condition::RedAirwayVentilatorCond,
+                                         true,
+                                         DRT::Condition::Point));
+
+  raw_vent_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("phase1", "flow",
+                                                                      Teuchos::tuple<std::string>("flow","pressure"),
+                                                                      Teuchos::tuple<std::string>("flow","pressure"),
+                                                                      true)));
+
+  raw_vent_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("phase2", "pressure",
+                                                                      Teuchos::tuple<std::string>("pressure","flow"),
+                                                                      Teuchos::tuple<std::string>("pressure","flow"),
+                                                                      true)));
+
+  AddNamedReal(raw_vent_bc,"period");
+  AddNamedReal(raw_vent_bc,"phase1_period");
+
+  std::vector<Teuchos::RCP<ConditionComponent> > redairwayventcomponents;
+  redairwayventcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",2)));
+  redairwayventcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",2,true,true)));
+  for (unsigned i=0; i<redairwayventcomponents.size(); ++i)
+    raw_vent_bc->AddComponent(redairwayventcomponents[i]);
+
+  condlist.push_back(raw_vent_bc);
+
+  
 #endif //D_RED_AIRWAYS
 
   /*--------------------------------------------------------------------*/

@@ -739,7 +739,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       }
       else if (MatType == "Exponential")
       {
-        double Vo  = 0.0372;
+        const double Vo  = VolAcinus;
         double dvnp= (vnp/NumOfAcini)- Vo;
         double dvn = (vn /NumOfAcini)- Vo;
 
@@ -857,7 +857,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
   {
     if (ele->Nodes()[i]->Owner()== myrank)
     {
-      if(ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond") || ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
+      if(ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond") || ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond") || ele->Nodes()[i]->GetCondition("RedAirwayVentilatorCond"))
       {
         string Bc;
         double BCin = 0.0;
@@ -955,7 +955,51 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
             }
           }
 
-          //          cout<<"Return ["<<Bc<<"] form 3D problem to 1D POINT of ID["<<ID<<"]: "<<BCin<<endl;
+        }
+        else if (ele->Nodes()[i]->GetCondition("RedAirwayVentilatorCond"))
+        {
+          DRT::Condition * condition = ele->Nodes()[i]->GetCondition("RedAirwayVentilatorCond");
+          // Get the type of prescribed bc
+          Bc  = *(condition->Get<string>("phase1"));
+        
+          double period  = condition->GetDouble("period");
+          double period1 = condition->GetDouble("phase1_period");
+
+          unsigned int phase_number = 0;
+
+          if (fmod(time,period) > period1)
+          {
+            phase_number = 1;
+            Bc = *(condition->Get<string>("phase2"));
+          }
+
+          const  vector<int>*    curve  = condition->Get<vector<int> >("curve");
+          double curvefac = 1.0;
+          const  vector<double>* vals   = condition->Get<vector<double> >("val");
+
+          // -----------------------------------------------------------------
+          // Read in the value of the applied BC
+          // -----------------------------------------------------------------
+          if((*curve)[phase_number]>=0)
+          {
+            curvefac = DRT::Problem::Instance()->Curve((*curve)[phase_number]).f(time);
+            BCin = (*vals)[phase_number]*curvefac;
+          }
+          else
+          {
+            dserror("no boundary condition defined!");
+            exit(1);
+          }
+
+          // -----------------------------------------------------------------------------
+          // get the local id of the node to whome the bc is prescribed
+          // -----------------------------------------------------------------------------
+          int local_id =  discretization.NodeRowMap()->LID(ele->Nodes()[i]->Id());
+          if (local_id< 0 )
+          {
+            dserror("node (%d) doesn't exist on proc(%d)",ele->Nodes()[i]->Id(),discretization.Comm().MyPID());
+            exit(1);
+          } 
         }
         else
         {

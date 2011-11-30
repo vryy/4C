@@ -169,7 +169,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
     Teuchos::rcp(new AIRWAY::RedAirwayImplicitTimeInt(actdis,*solver,airwaystimeparams,*output));
   // initial field from restart or calculated by given function
 
-  if (probtype.get<int>("RESTART") && !CoupledTo3D)
+  if (genprob.restart && !CoupledTo3D)
   {
     // read the restart information, set vectors and variables
     airwayimplicit->ReadRestart(probtype.get<int>("RESTART"));
