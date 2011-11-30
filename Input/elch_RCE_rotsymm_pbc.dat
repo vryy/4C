@@ -453,7 +453,7 @@ DPOINT 0
 DPOINT 0
 -----------------------DESIGN NODE 1D ARTERY WINDKESSEL CONDITIONS
 DPOINT 0
---------------------------SCATRA FLUX CALC SURF CONDITIONS                                                    
+-----------------------------------SCATRA FLUX CALC SURF CONDITIONS
 DSURF 1
 E 7 - //flux calculation at inner cylinder
 -----------------------------------------------DNODE-NODE TOPOLOGY
