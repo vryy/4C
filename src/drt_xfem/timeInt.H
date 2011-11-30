@@ -123,6 +123,12 @@ protected:
       vector<const DRT::Element*>&  eles
   ) const;
 
+  void findPBCNode(
+      const DRT::Node* node,
+      DRT::Node*& pbcnode,
+      bool& pbcnodefound
+  ) const;
+
   //! basic function for parallel sending of data
 #ifdef PARALLEL
   void sendData(
@@ -422,7 +428,7 @@ protected:
     if (newVectors_.size()==0)
       dserror("call this function only when setting the final values");
 
-    size_t size; // vector size
+    size_t size = 0; // vector size
     switch (currtype)
     {
     case TimeIntData::predictor_: size = newVectors_.size();break; // old solutions and new initialization of new solutions

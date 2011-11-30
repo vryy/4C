@@ -152,7 +152,7 @@ int XFEM::TIMEINT::interfaceSide(
   // handle special case of tiny cell which was removed by cut:
   // all remaining cells are at same side, values in this ele are all at
   // this side since it is uncut and no more enriched
-  bool side;
+  bool side = 0;
   for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
   {
     if (cell == domainIntCells.begin())
@@ -241,23 +241,46 @@ void XFEM::TIMEINT::addPBCelements(
     vector<const DRT::Element*>&  eles
 ) const
 {
-  const int nodegid = node->Id(); // global node id
   const DRT::Element* const* elements = node->Elements(); // element around current node
 
   for (int iele=0;iele<node->NumElement();iele++)
     eles.push_back(elements[iele]);
 
-  //--------------------------------------
-  // add elements along perodic boundaries
-  //--------------------------------------
-  bool pbcnode = false; // boolean indicating whether this node is a pbc node
+  // get pbcnode
+  bool pbcnodefound = false; // boolean indicating whether this node is a pbc node
+  DRT::Node* pbcnode = NULL;
+  findPBCNode(node,pbcnode,pbcnodefound);
+
+  // add elements located around the coupled pbc node
+  if (pbcnodefound)
+  {
+    // get adjacent elements of this node
+    const DRT::Element*const* pbcelements = pbcnode->Elements();
+    // add elements to list
+    for (int iele=0;iele<pbcnode->NumElement();iele++)// = ptToNode->Elements();
+    {
+      eles.push_back(pbcelements[iele]);
+    }
+  } // end if pbcnode true
+}
+
+
+
+void XFEM::TIMEINT::findPBCNode(
+    const DRT::Node* node,
+    DRT::Node*& pbcnode,
+    bool& pbcnodefound
+) const
+{
+  const int nodegid = node->Id(); // global node id
+  pbcnodefound = false; // boolean indicating whether this node is a pbc node
   int coupnodegid = -1;
   // loop all nodes with periodic boundary conditions (master nodes)
   for (std::map<int, vector<int>  >::const_iterator pbciter= (*pbcmap_).begin(); pbciter != (*pbcmap_).end(); ++pbciter)
   {
     if (pbciter->first == nodegid) // node is a pbc master node
     {
-      pbcnode = true;
+      pbcnodefound = true;
       // coupled node is the (first) slave node
       coupnodegid = pbciter->second[0];
       if (pbciter->second.size()!=1) dserror("this might need to be modified for more than 1 slave per master");
@@ -269,27 +292,17 @@ void XFEM::TIMEINT::addPBCelements(
       {
         if (pbciter->second[islave] == nodegid) // node is a pbc slave node
         {
-          pbcnode = true;
+          pbcnodefound = true;
           coupnodegid = pbciter->first; // coupled node is the master node
         }
       } // end loop over slave nodes
     } // end if
   } // end loop over pbc map
 
-  // add elements located around the coupled pbc node
-  if (pbcnode)
-  {
-    // get coupled pbc node (master or slave)
-    const DRT::Node* ptToCoupNode = discret_->gNode(coupnodegid);
-    // get adjacent elements of this node
-    const DRT::Element*const* pbcelements = ptToCoupNode->Elements();
-    // add elements to list
-    for (int iele=0;iele<ptToCoupNode->NumElement();iele++)// = ptToNode->Elements();
-    {
-      eles.push_back(pbcelements[iele]);
-    }
-  } // end if pbcnode true
-}
+  // get pbcnode
+  if (pbcnodefound)
+    pbcnode = discret_->gNode(coupnodegid);
+  } // end if pbcnode true}
 
 
 
@@ -1163,11 +1176,11 @@ bool XFEM::ENR::newEnrValueNeeded(
         // check if enrichment dofs existed before
         map<DofKey<onNode>, DofGID>::const_iterator dof_npi = nodalDofColDistrib_npi_.find(newdofkey);
         if (dof_npi == nodalDofColDistrib_npi_.end()) // olddof not found -> no enr value before -> enr value has to be set
-        {cout << "here with newly enriched node " << *node << endl;
+        {
           map<DofKey<onNode>, DofGID>::const_iterator dof_n = oldNodalDofColDistrib_.find(newdofkey);
-          if (dof_n != oldNodalDofColDistrib_.end()) // dof existed at t^n so use this value if not critical
+          if (dof_n != oldNodalDofColDistrib_.end()) // dof existed at t^n so use this value if it is not critical
           {
-            if (critCut(node)) // critical cut has to be recomputed
+            if ((timeIntEnrType_==INPAR::COMBUST::xfemtimeintenr_standard) and (critCut(node))) // critical cut has to be recomputed
               return true;
             else // use existing value of old solution which was deleted by former FGI
             {

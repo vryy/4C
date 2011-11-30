@@ -1010,7 +1010,6 @@ void XFEM::SemiLagrange::newIteration_nodalData(
       data!=timeIntData_->end(); data++)
   {
     DRT::Node& node = data->node_;
-    LINALG::Matrix<nsd,1> coords(node.X());
 
     vector<const DRT::Element*> eles;
     addPBCelements(&node,eles);
@@ -1031,13 +1030,13 @@ void XFEM::SemiLagrange::newIteration_nodalData(
       case DRT::Element::hex8:
       {
         const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-        computeNodalGradient<numnode,DRT::Element::hex8>(newColVectors,newdofcolmap,newNodalDofColDistrib,currele,coords,velnpDeriv1Tmp,presnpDeriv1Tmp);
+        computeNodalGradient<numnode,DRT::Element::hex8>(newColVectors,newdofcolmap,newNodalDofColDistrib,currele,&node,velnpDeriv1Tmp,presnpDeriv1Tmp);
       }
       break;
       case DRT::Element::hex20:
       {
         const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
-        computeNodalGradient<numnode,DRT::Element::hex20>(newColVectors,newdofcolmap,newNodalDofColDistrib,currele,coords,velnpDeriv1Tmp,presnpDeriv1Tmp);
+        computeNodalGradient<numnode,DRT::Element::hex20>(newColVectors,newdofcolmap,newNodalDofColDistrib,currele,&node,velnpDeriv1Tmp,presnpDeriv1Tmp);
       }
       break;
       default:
@@ -1195,7 +1194,7 @@ void XFEM::SemiLagrange::computeNodalGradient(
     const Epetra_Map& newdofcolmap,
     map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID>& newNodalDofColDistrib,
     const DRT::Element* ele,
-    LINALG::Matrix<3,1>& coords,
+    DRT::Node* node,
     vector<LINALG::Matrix<3,3> >& velnpDeriv1,
     vector<LINALG::Matrix<1,3> >& presnpDeriv1
 ) const
@@ -1230,11 +1229,26 @@ void XFEM::SemiLagrange::computeNodalGradient(
   LINALG::Matrix<2*numnode,1> enrShapeFcnVel(true);
 #endif
 
-  bool elefound = false;
-  callXToXiCoords(ele,coords,xi,elefound);
+  { // get local coordinates
+    bool elefound = false;
+    LINALG::Matrix<nsd,1> coords(node->X());
+    callXToXiCoords(ele,coords,xi,elefound);
 
-  if (!elefound)
-    dserror("element of a row node not on same processor as node?! BUG!");
+    if (!elefound) // possibly slave node looked for element of master node or vice versa
+    {
+      // get pbcnode
+      bool pbcnodefound = false; // boolean indicating whether this node is a pbc node
+      DRT::Node* pbcnode = NULL;
+      findPBCNode(node,pbcnode,pbcnodefound);
+
+      // get local coordinates
+      LINALG::Matrix<nsd,1> pbccoords(pbcnode->X());
+      callXToXiCoords(ele,pbccoords,xi,elefound);
+
+      if (!elefound) // now something is really wrong...
+        dserror("element of a row node not on same processor as node?! BUG!");
+    }
+  }
 
 #ifdef COMBUST_NORMAL_ENRICHMENT
   pointdataXFEMNormal<numnode,DISTYPE>(

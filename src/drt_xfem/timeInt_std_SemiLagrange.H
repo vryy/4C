@@ -128,7 +128,7 @@ private:
       const Epetra_Map& newdofcolmap,
       map<XFEM::DofKey<XFEM::onNode>,XFEM::DofGID>& newNodalDofColDistrib,
       const DRT::Element* ele,
-      LINALG::Matrix<3,1>& coords,
+      DRT::Node* node,
       vector<LINALG::Matrix<3,3> >& velnpDeriv1,
       vector<LINALG::Matrix<1,3> >& presnpDeriv1
   ) const;
