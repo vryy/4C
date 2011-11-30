@@ -146,6 +146,17 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
           // create refinement cell from a fluid element -> cell will have same geometry as element!
           const Teuchos::RCP<COMBUST::RefinementCell> surfcell = rcp(new COMBUST::RefinementCell(parent_, DRT::Element::quad4, xicoord));
 
+          // reset G-function values close to 0 with in tolerance 1.0e-10
+          // remark: facilitates handling of special cases
+          for (size_t i=0; i<gfuncvalues_surfcell.size(); i++ )
+          {
+            if (fabs(gfuncvalues_surfcell[i])<1.0E-10)
+            {
+              gfuncvalues_surfcell[i] = 0.0;
+              //std::cout << " G-Function value  reset to 0 " << std::endl;
+            }
+          }
+
           surfcell->SetGfuncValues(gfuncvalues_surfcell);
 
           // get vertex coordinates (local fluid element coordinates) from refinement cell
@@ -153,6 +164,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
 
           if(surfcell->Bisected() == true)
           {
+            // determine number of intersection points
             {
               // get G-function values at vertices from refinement cell
               const std::vector<double>& gfuncvalues = surfcell->GetGfuncValues();
@@ -479,14 +491,100 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
                 //cout << "created tri3 boundary cell" << endl;
               }
             }
-            else if (surfcell->intersectionpoints_.size()==1)
-            {
-              // the interface cuts through a node -> only one intersection point
-              dserror("Neumann inflow special case with one intersection point!");
-            }
             else
             {
-              dserror("1 or 2 intersection points expected");
+              cout << "--------------------------------" << endl;
+              cout << "special case Neumann inflow term" << endl;
+              cout << "--------------------------------" << endl;
+              // print G-function values on screen
+              const std::vector<double>& gfuncvalues = surfcell->GetGfuncValues();
+              for (size_t i=0; i<gfuncvalues.size(); i++ )
+                cout << "G-function value " << i << ": " << gfuncvalues[i] << endl;
+
+              // remark: - case: 0 intersection points
+              //                 the interface cuts through two nodes diagonally
+              //                 we should build two triangular cells
+              //         - case: 1 intersection point
+              //                 the interface cuts through one nodes and intersects a line
+              //                 we should build a triangle and 4 triangular cells
+              //         - case: the interface cuts through one node
+              //                 should not occur here, since this surface cell is 'touched_'
+              //         - case: anything else is very strange
+              cout << "number of intersection points: " << surfcell->intersectionpoints_.size() << endl;
+              //dserror("exactly 2 intersection points expected");
+
+              // compute Neumann inflow term as if this surface cell was not bisected
+              // remark: this code is duplicated from the non-bisected case below
+              {
+                // get node coordinates of the surface (2D) element
+                LINALG::SerialDenseMatrix xyzesurf(3,4);
+                LINALG::SerialDenseMatrix xicoord(3,4);
+
+                size_t numnodesurf = this->NumNode();
+                if (numnodesurf != 4)
+                  dserror("surfaces of hex8 elements expected (4 nodes)");
+
+                // loop nodes of surface element
+                const DRT::Node*const* nodessurf = this->Nodes();
+                for (size_t inode=0; inode<numnodesurf; inode++)
+                {
+                  // compute local element coordinates
+                  // remark: since we deal with nodes, we should get clean numbers (-1 or 1) for 'xicoord'
+                  const double* x = nodessurf[inode]->X();
+                  {
+                    LINALG::Matrix<3,1> xyznode;
+                    xyznode(0) = x[0];
+                    xyznode(1) = x[1];
+                    xyznode(2) = x[2];
+
+                    LINALG::Matrix<3,1> xsi;
+                    GEO::CUT::Position<DRT::Element::hex8> pos(xyze,xyznode);
+                    pos.Compute();
+                    xsi = pos.LocalCoordinates();
+                    // fill array
+                    xicoord(0,inode) = xsi(0);
+                    xicoord(1,inode) = xsi(1);
+                    xicoord(2,inode) = xsi(2);
+                  }
+                  // fill array
+                  xyzesurf(0,inode) = x[0];
+                  xyzesurf(1,inode) = x[1];
+                  xyzesurf(2,inode) = x[2];
+                }
+                bool inGplus = false;
+                {
+                  /*------------------------------------------------------------------------------
+                   * - compute phi at each node of domain integration cell
+                   * - compute average G-value for each surface integration cell
+                   * -> >=0 in plus == true
+                   * ->  <0 in minus == false
+                   * ----------------------------------------------------------------------------*/
+
+                  int numcellnodes = 0;
+                  if (surfcell->Shape() == DRT::Element::quad4)
+                    numcellnodes = DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
+                  else
+                    dserror("quad4 surface cell expected");
+
+                  //calculate average Gfunc value
+                  double averageGvalue = 0.0;
+
+                  for (int icellnode=0; icellnode<numcellnodes; icellnode++)
+                    averageGvalue += gfuncvalues_surfcell[icellnode];
+
+                  if (numcellnodes == 0.0)
+                    dserror("division by zero: number of vertices per cell is 0!");
+                  averageGvalue /= numcellnodes;
+
+                  // determine DomainIntCell position
+                  // ">=" because of the approximation of the interface,
+                  // also averageGvalue=0 is possible; as always approximation errors are made
+                  if(averageGvalue>=0.0)
+                    inGplus = true;
+                }
+                //cout << "created quad4 boundary cell" << endl;
+                surfaceintcelllist.push_back(GEO::BoundaryIntCell(DRT::Element::quad4, -1, xicoord, Teuchos::null, xyzesurf, inGplus));
+              }
             }
           }
           else // non-bisected cell (touched or uncut)
@@ -532,7 +630,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
                * - compute phi at each node of domain integration cell
                * - compute average G-value for each surface integration cell
                * -> >=0 in plus == true
-               * _> <0  in minus == false
+               * ->  <0 in minus == false
                * ----------------------------------------------------------------------------*/
 
               int numcellnodes = 0;
