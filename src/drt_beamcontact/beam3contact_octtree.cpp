@@ -106,7 +106,7 @@ vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std::map<int, LINA
 		// feasibility check
 		if ((*diameter_)[i] <= 0.0) dserror("ERROR: Did not receive feasible element radius.");
   }
-  // initialize multivector storage of AABBs
+  // initialize multivector storage of Bounding Boxes
   // (components 0,...,5 contain bounding box limits)
   // (components 6,...,11 contain bounding box limits in case of periodic boundary conditions (2nd part of the box))
   // (component 12 containts element ID)
@@ -702,48 +702,48 @@ void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3
 
   //determine maximum depth of OctreeMap
   int maxdepthlocal = 0;
-  int aabblengthlocal = 0;
+  int bboxlengthlocal = 0;
   if(discret_.Comm().MyPID()==0)
   {
-    aabblengthlocal = (int)bboxesinoctants->size();
+    bboxlengthlocal = (int)bboxesinoctants->size();
     for (int i=0 ; i<(int)bboxesinoctants->size(); i++ )
       if((int)(*bboxesinoctants)[i].size()>maxdepthlocal)
         maxdepthlocal = (int)(*bboxesinoctants)[i].size();
   }
 
   int maxdepthglobal = 0;
-  int aabblengthglobal = 0;
+  int bboxlengthglobal = 0;
   discret_.Comm().MaxAll(&maxdepthlocal, &maxdepthglobal, 1);
-  discret_.Comm().MaxAll(&aabblengthlocal, &aabblengthglobal, 1);
+  discret_.Comm().MaxAll(&bboxlengthlocal, &bboxlengthglobal, 1);
 
   // build Epetra_MultiVector from OtreeMap
   // build temporary, fully overlapping map and row map
   // create crosslinker maps
   std::vector<int> gids;
-  for (int i=0 ; i<aabblengthglobal; i++ )
+  for (int i=0 ; i<bboxlengthglobal; i++ )
     gids.push_back(i);
   // crosslinker column and row map
   Epetra_Map octtreerowmap((int)gids.size(), 0, discret_.Comm());
   Epetra_Map octtreemap(-1, (int)gids.size(), &gids[0], 0, discret_.Comm());
   // build Epetra_MultiVectors which hold the AABBs of the OctreeMap; for communication
-  Epetra_MultiVector AABBinOct(octtreemap,maxdepthglobal+1);
-  Epetra_MultiVector AABBinOctRow(octtreerowmap,maxdepthglobal+1, true);
-  // fill AABBinOct for Proc 0
+  Epetra_MultiVector BBoxinOct(octtreemap,maxdepthglobal+1);
+  Epetra_MultiVector BBoxinOctRow(octtreerowmap,maxdepthglobal+1, true);
+  // fill BBoxinOct for Proc 0
   if(searchdis_.Comm().MyPID()==0)
   {
-    AABBinOct.PutScalar(-9.0);
+    BBoxinOct.PutScalar(-9.0);
     for (int i=0 ; i<(int)bboxesinoctants->size(); i++ )
       for(int j=0; j<(int)(*bboxesinoctants)[i].size(); j++)
-        AABBinOct[j][i] = (*bboxesinoctants)[i][j];
+        BBoxinOct[j][i] = (*bboxesinoctants)[i][j];
   }
   else
-    AABBinOct.PutScalar(0.0);
+    BBoxinOct.PutScalar(0.0);
 
   // Communication
   Epetra_Export exporter(octtreemap, octtreerowmap);
   Epetra_Import importer(octtreemap, octtreerowmap);
-  AABBinOctRow.Export(AABBinOct,exporter,Add);
-  AABBinOct.Import(AABBinOctRow,importer,Insert);
+  BBoxinOctRow.Export(BBoxinOct,exporter,Add);
+  BBoxinOct.Import(BBoxinOctRow,importer,Insert);
 
   //Algorithm begins
 
@@ -751,19 +751,19 @@ void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3
   std::map<int, std::vector<int> > contactpairmap;
   // create contact pair vector, redundant on all Procs; including redundant pairs
   //for-loop lines of map
-  for (int i=0 ; i<AABBinOct.MyLength(); i++ )
+  for (int i=0 ; i<BBoxinOct.MyLength(); i++ )
   {
     //for-loop index first box
-    for(int j=0; j<AABBinOct.NumVectors(); j++)
+    for(int j=0; j<BBoxinOct.NumVectors(); j++)
     {
       // first box ID
       std::vector<int> bboxIDs(2,0);
-      bboxIDs[0] = (int)AABBinOct[j][i];
+      bboxIDs[0] = (int)BBoxinOct[j][i];
 
       //for-loop second box
-      for(int k=j+1; k<AABBinOct.NumVectors(); k++)
+      for(int k=j+1; k<BBoxinOct.NumVectors(); k++)
       {
-        bboxIDs[1] = (int)AABBinOct[k][i];
+        bboxIDs[1] = (int)BBoxinOct[k][i];
 
         // exclude element pairs sharing one node
         // contact flag
