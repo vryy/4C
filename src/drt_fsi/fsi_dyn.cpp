@@ -704,9 +704,9 @@ void fluid_fluid_fsi_drt()
     // here we go...
     fsi->Timeloop();
 
-//     DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
-//     DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
-//     DRT::Problem::Instance()->TestAll(comm);
+    DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
+    DRT::Problem::Instance()->AddFieldTest(fsi->StructureField().CreateFieldTest());
+    DRT::Problem::Instance()->TestAll(*comm);
   }
   break;
   default:
