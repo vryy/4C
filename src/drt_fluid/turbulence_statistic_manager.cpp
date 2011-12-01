@@ -86,8 +86,6 @@ namespace FLD
                                                           alefluid_           ,
                                                           mydispnp_           ,
                                                           params_             ,
-                                                          smagorinsky_        ,
-                                                          scalesimilarity_    ,
                                                           subgrid_dissipation_));
     }
     else if(fluid.special_flow_=="loma_channel_flow_of_height_2")
@@ -103,8 +101,6 @@ namespace FLD
                                                           alefluid_           ,
                                                           mydispnp_           ,
                                                           params_             ,
-                                                          smagorinsky_        ,
-                                                          scalesimilarity_    ,
                                                           subgrid_dissipation_));
     }
     else if(fluid.special_flow_=="lid_driven_cavity")
@@ -315,8 +311,6 @@ namespace FLD
                                                           alefluid_           ,
                                                           mydispnp_           ,
                                                           params_             ,
-                                                          smagorinsky_        ,
-                                                          scalesimilarity_    ,
                                                           subgrid_dissipation_));
     }
     else if(fluid.special_flow_=="loma_channel_flow_of_height_2")
@@ -332,8 +326,6 @@ namespace FLD
                                                           alefluid_           ,
                                                           mydispnp_           ,
                                                           params_             ,
-                                                          smagorinsky_        ,
-                                                          scalesimilarity_    ,
                                                           subgrid_dissipation_));
     }
     else if(fluid.special_flow_=="lid_driven_cavity")
@@ -379,8 +371,6 @@ namespace FLD
                                                               alefluid_,
                                                               mydispnp_,
                                                               params_,
-                                                              smagorinsky_,
-                                                              scalesimilarity_,
                                                               subgrid_dissipation_));
         }
       }
@@ -409,8 +399,6 @@ namespace FLD
                                                               alefluid_,
                                                               mydispnp_,
                                                               params_,
-                                                              smagorinsky_,
-                                                              scalesimilarity_,
                                                               subgrid_dissipation_));
         }
       }
@@ -439,8 +427,6 @@ namespace FLD
                                                               alefluid_,
                                                               mydispnp_,
                                                               params_,
-                                                              smagorinsky_,
-                                                              scalesimilarity_,
                                                               subgrid_dissipation_));
         }
       }

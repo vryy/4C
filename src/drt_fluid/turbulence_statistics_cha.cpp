@@ -25,8 +25,6 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   bool                             alefluid           ,
   RefCountPtr<Epetra_Vector>       dispnp             ,
   ParameterList&                   params             ,
-  bool                             smagorinsky        ,
-  bool                             scalesimilarity    ,
   bool                             subgrid_dissipation
   )
   :
@@ -34,8 +32,6 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   alefluid_           (alefluid           ),
   dispnp_             (dispnp             ),
   params_             (params             ),
-  smagorinsky_        (smagorinsky        ),
-  scalesimilarity_    (scalesimilarity    ),
   subgrid_dissipation_(subgrid_dissipation),
   inflowchannel_      (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
   inflowmax_(params_.sublist("TURBULENT INFLOW").get<double>("INFLOW_CHA_SIDE",0.0)),
@@ -91,6 +87,53 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     else
     {
       dserror("homogeneuous plane for channel flow was specified incorrectly.");
+    }
+  }
+
+
+  // get turbulence model
+  ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+  smagorinsky_=false;
+  scalesimilarity_=false;
+  if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
+      ==
+      "CLASSICAL_LES")
+  {
+    // check if we want to compute averages of Smagorinsky
+    // constants, effective viscosities etc
+    if(modelparams->get<string>("PHYSICAL_MODEL","no_model")
+       ==
+       "Dynamic_Smagorinsky"
+       ||
+       params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+       ==
+       "Smagorinsky_with_van_Driest_damping"
+       ||
+       params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+       ==
+       "Smagorinsky"
+      )
+    {
+      if(discret_->Comm().MyPID()==0)
+      {
+        cout << "                             Initialising output for Smagorinsky type models\n\n\n";
+        fflush(stdout);
+      }
+
+      smagorinsky_=true;
+    }
+    // check if we want to compute averages of scale similarity
+    // quantities (tau_SFS)
+    else if(modelparams->get<string>("PHYSICAL_MODEL","no_model")
+            == "Scale_Similarity")
+    {
+      if(discret_->Comm().MyPID()==0)
+      {
+        cout << "                             Initializing output for scale similarity type models\n\n\n";
+        fflush(stdout);
+      }
+
+      scalesimilarity_=true;
     }
   }
 

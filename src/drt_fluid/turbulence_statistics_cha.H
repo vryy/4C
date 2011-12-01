@@ -106,8 +106,6 @@ public:
                           bool                             alefluid           ,
                           RefCountPtr<Epetra_Vector>       dispnp             ,
                           ParameterList&                   params             ,
-                          bool                             smagorinsky        ,
-                          bool                             scalesimilarity    ,
                           bool                             subgrid_dissipation);
 
   /*!
@@ -305,7 +303,7 @@ private:
   int                              countrecord_;
 
   /// flag for physical type of fluid flow (standard: incompressible)
-  INPAR::FLUID::PhysicalType 		physicaltype_;
+  INPAR::FLUID::PhysicalType       physicaltype_;
 
   //! The discretisation (required for nodes, dofs etc;)
   RefCountPtr<DRT::Discretization> discret_;
