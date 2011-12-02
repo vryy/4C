@@ -59,7 +59,7 @@ LAMINAR_FLAMESPEED              0.0
 MARKSTEIN_LENGTH                0.0
 NITSCHE_VELOCITY                10000
 NITSCHE_PRESSURE                0
-SURFTENSAPPROX	                surface_tension_approx_divgrad
+SURFTENSAPPROX                  surface_tension_approx_divgrad_normal
                                 // surface_tension_approx_none
                                 // surface_tension_approx_divgrad 
                                 // surface_tension_approx_fixed_curvature

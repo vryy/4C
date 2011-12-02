@@ -99,6 +99,7 @@ namespace INPAR
       surface_tension_approx_fixed_curvature,
       surface_tension_approx_divgrad,
       surface_tension_approx_divgrad_normal,
+      surface_tension_approx_nodal_curvature,
       surface_tension_approx_laplacebeltrami,
       surface_tension_approx_laplacebeltrami_smoothed
     };

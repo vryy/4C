@@ -882,7 +882,7 @@ void Sysmat(
         COMBUST::fillElementGradPhi<DISTYPE>(mystate, egradphi, ecurv);
 
       COMBUST::SysmatBoundarySurfaceTension<DISTYPE,ASSTYPE,NUMDOF>(
-          ele, ih, dofman, evelaf, epreaf, ephi, egradphi, etensor,
+          ele, ih, dofman, evelaf, epreaf, ephi, egradphi, ecurv, etensor,
           material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
           flamespeed, nitschevel, nitschepres,
           surftensapprox, connected_interface, smoothed_boundary_integration);

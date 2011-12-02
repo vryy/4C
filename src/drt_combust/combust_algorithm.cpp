@@ -3015,6 +3015,14 @@ void COMBUST::Algorithm::Redistribute()
 
       ScaTraField().Redistribute(newnodegraph);
 
+      if (reinitaction_ == INPAR::COMBUST::reinitaction_sussman)
+      {
+        if(Comm().MyPID()==0)
+          cout << "done\nRedistributing ScaTra Reinit Discretization                         ... " << flush;
+
+        ScaTraReinitField().Redistribute(newnodegraph);
+      }
+
       if(Comm().MyPID()==0)
         cout << "done\nRedistributing Fluid Discretization                                 ... " << flush;
 

@@ -103,6 +103,11 @@ void SysmatDomainNitsche(
   LINALG::Matrix<nsd,numnode> edead(true);
   COMBUST::BodyForce<DISTYPE>(ele, 0.0, "DeadOrLive", edead);
 
+  // read the pressure gradient (body force w/out scaling w/ density)
+  // from inut file and apply it to element nodes
+  LINALG::Matrix<nsd,numnode> epgrad(true);
+  COMBUST::BodyForce<DISTYPE>(ele, 0.0, "neum_pgrad", epgrad);
+
   // flag for higher order elements
   const bool higher_order_ele = DRT::UTILS::secondDerivativesZero<DISTYPE>();
 
@@ -398,18 +403,21 @@ void SysmatDomainNitsche(
       // remark: unit is acceleration (not density weighted)
       static LINALG::Matrix<nsd,1> bodyforce;
       bodyforce.Clear();
+      static LINALG::Matrix<nsd,1> noscalebodyforce;
+      noscalebodyforce.Clear();
       for (std::size_t isd = 0; isd < nsd; isd++)
       {
         for (std::size_t inode = 0; inode < numnode; inode++)
         {
           bodyforce(isd) += edead(isd,inode) * funct(inode);
+          noscalebodyforce(isd) += epgrad(isd,inode) * funct(inode);
         }
       }
       // scale body force: body force * density^{n+1}
       bodyforce.Scale(densaf);
 
       for (size_t isd = 0; isd < nsd; ++isd)
-        rhsint(isd) = histvec(isd) + timefac*bodyforce(isd);
+        rhsint(isd) = histvec(isd) + timefac*(bodyforce(isd) + noscalebodyforce(isd));
 
       //-----------------------------------------------------------------------
       // compute numerical representation of some single operators (not scaled)
@@ -1578,7 +1586,7 @@ void Nitsche_SysmatBoundaryCell(
       // assemble boundary integrals for surface tension
       //------------------------------------------------
       COMBUST::RHS_SurfaceTension2DIntegrals<DISTYPE,ASSTYPE,NUMDOF>(posXiDomain, shp_mean_inv, ele,
-          xyze, grad_ephi_smoothed, normal, timefacfac, surftensapprox, surftenscoeff, assembler);
+          xyze, grad_ephi_smoothed, ecurv, normal, timefacfac, surftensapprox, surftenscoeff, assembler);
     }
     else
     {

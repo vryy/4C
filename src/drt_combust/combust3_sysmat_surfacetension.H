@@ -854,13 +854,14 @@ void CalcCurvature(
 template <DRT::Element::DiscretizationType DISTYPE,
 XFEM::AssemblyType ASSTYPE,
 int NUMDOF,
-class M1, class M2, class M3, class M4, class M5>
+class M1, class M2, class M3, class M4, class M5, class V1>
 void RHS_SurfaceTension2DIntegrals(
     M1&                                        posXiDomain, // position of gaussian point for evaluating of surface tension terms
     M5&                                        shp_mean_inv,
     const DRT::ELEMENTS::Combust3*             ele,           ///< the element those matrix is calculated
     M2&                                        xyze,          ///< xyz coordinates of element ele
     const M3&                                  grad_ephi_smoothed, ///<smoothed nodal G-function gradient values for this element
+    const V1&                                  ecurv,              ///<curvature for this element?
     M4&                                        normal,
     const double&                              timefacfac,
     const INPAR::COMBUST::SurfaceTensionApprox surftensapprox, ///<
@@ -996,16 +997,34 @@ void RHS_SurfaceTension2DIntegrals(
 
   }
   else if(surftensapprox == INPAR::COMBUST::surface_tension_approx_divgrad
-          or surftensapprox == INPAR::COMBUST::surface_tension_approx_divgrad_normal)
+          or surftensapprox == INPAR::COMBUST::surface_tension_approx_divgrad_normal
+          or surftensapprox == INPAR::COMBUST::surface_tension_approx_nodal_curvature)
   {
 
     //----------------------------------------     |                                 |
     // surface tension (constant jump) term      - |  < v > , surftens*Curv*n >      |
     //----------------------------------------     |                                 |
 
-    double curvature=0.0;
-    // compute curvature at gausspoint
-    COMBUST::CalcCurvature<DISTYPE>(posXiDomain,xyze,grad_ephi_smoothed,curvature);
+
+
+    double curvature = 0.0;
+
+    if (surftensapprox == INPAR::COMBUST::surface_tension_approx_nodal_curvature)
+    {
+      // get shape functions at gaussian point
+      static LINALG::Matrix<numnode,1> funct_gp;
+      funct_gp.Clear();
+       DRT::UTILS::shape_function_3D(funct_gp,posXiDomain(0),posXiDomain(1),posXiDomain(2),DISTYPE);
+
+      for(size_t i=0; i<numnode; i++)
+        curvature -= ecurv(i) * funct_gp(i); // Do not ask me why ecurv contains the negative surface tension...
+    }
+    else
+    {
+      // compute curvature at gausspoint
+      COMBUST::CalcCurvature<DISTYPE>(posXiDomain,xyze,grad_ephi_smoothed,curvature);
+    }
+
 
     assembler.template Vector<Velx>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(0) );
     assembler.template Vector<Vely>(shp_mean_inv.d0, timefacfac*curvature*surftenscoeff*normal(1) );
@@ -1025,7 +1044,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
 DRT::Element::DiscretizationType CELLDISTYPE,
 XFEM::AssemblyType ASSTYPE,
 size_t NUMDOF,
-class M1, class M2, class M3, class V1, class V2>
+class M1, class M2, class M3, class V1, class V2, class V3>
 void SysmatBoundarySurfaceTensionIntCell(
     const XFEM::ElementDofManager&    dofman,
     GEO::BoundaryIntCell              cell,
@@ -1037,6 +1056,7 @@ void SysmatBoundarySurfaceTensionIntCell(
     const V1&                         eprenp,
     const V2&                         ephi,
     const M3&                         grad_ephi_smoothed, ///<smoothed nodal G-function gradient values for this element
+    const V3&                         ecurv,              ///<curvature for this element?
     const double&                       timefac,
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>& assembler,
     const size_t&                              numparamvelx,
@@ -1322,7 +1342,7 @@ void SysmatBoundarySurfaceTensionIntCell(
 
     //================================ SURFACE TENSION ASSEMBLY =================================
     //---------------------assemble 2D surface integrals -------------------------
-    COMBUST::RHS_SurfaceTension2DIntegrals<DISTYPE,ASSTYPE,NUMDOF>(posXiDomain,shp_mean_inv,ele,xyze,grad_ephi_smoothed,normal,timefacfac,surftensapprox,surftenscoeff,assembler);
+    COMBUST::RHS_SurfaceTension2DIntegrals<DISTYPE,ASSTYPE,NUMDOF>(posXiDomain,shp_mean_inv,ele,xyze,grad_ephi_smoothed,ecurv,normal,timefacfac,surftensapprox,surftenscoeff,assembler);
 
     //===========================================================================================
   }// loop Gaussian points
@@ -1337,7 +1357,7 @@ void SysmatBoundarySurfaceTensionIntCell(
 template <DRT::Element::DiscretizationType DISTYPE,
 XFEM::AssemblyType ASSTYPE,
 int NUMDOF,
-class M1, class M2, class M3, class V1, class V2>
+class M1, class M2, class M3, class V1, class V2, class V3>
 void SysmatBoundarySurfaceTension(
     const DRT::ELEMENTS::Combust3*    ele,           ///< the element those matrix is calculated
     const COMBUST::InterfaceHandleCombust*&  ih,   ///< connection to the interface handler
@@ -1346,6 +1366,7 @@ void SysmatBoundarySurfaceTension(
     const V1&                         eprenp,
     const V2&                         ephi,
     const M3&                         grad_ephi_smoothed, ///<smoothed nodal G-function gradient values for this element
+    const V3&                         ecurv,              ///<curvature for this element?
     const M2&                         etau,
     Teuchos::RCP<const MAT::Material> material,      ///< fluid material
     const INPAR::FLUID::TimeIntegrationScheme timealgo,      ///< time discretization type
@@ -1417,7 +1438,7 @@ void SysmatBoundarySurfaceTension(
       COMBUST::SysmatBoundarySurfaceTensionIntCell<DISTYPE,DRT::Element::tri3,ASSTYPE,NUMDOF>(
           dofman,
           *cell, DRT::UTILS::intrule_tri_37point, xyze, ele, higher_order_ele,
-          evelnp, eprenp, ephi, grad_ephi_smoothed,
+          evelnp, eprenp, ephi, grad_ephi_smoothed, ecurv,
           timefac, assembler,
 //          kappa_plus, kappa_minus,
           numparamvelx, surftensapprox, surftenscoeff, connected_interface, smoothed_boundary_integration
@@ -1427,8 +1448,8 @@ void SysmatBoundarySurfaceTension(
       // TODO check this intrule !!!
       COMBUST::SysmatBoundarySurfaceTensionIntCell<DISTYPE,DRT::Element::quad4,ASSTYPE,NUMDOF>(
           dofman,
-          *cell, DRT::UTILS::intrule_quad_9point, xyze, ele, higher_order_ele,
-          evelnp, eprenp, ephi, grad_ephi_smoothed,
+          *cell, DRT::UTILS::intrule_quad_36point, xyze, ele, higher_order_ele,
+          evelnp, eprenp, ephi, grad_ephi_smoothed, ecurv,
           timefac, assembler,
 //          kappa_plus, kappa_minus,
           numparamvelx, surftensapprox, surftenscoeff, connected_interface, smoothed_boundary_integration
