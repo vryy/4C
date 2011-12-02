@@ -16,6 +16,7 @@
 #include "../drt_inpar/inpar_xfem.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_xfem/xfem_fluidwizard.H"
+#include "../drt_xfem/xfluidfluid_timeInt.H"
 
 #include "../drt_io/io_ostream0.H"
 #include "../drt_io/io.H"
@@ -283,34 +284,9 @@ namespace FLD
     /// determine grid velocity
     void UpdateGridv();
 
-
-    void SetNewBgStatevectorAndProjectEmbToBg(map<int, vector<int> >                stdnoden,
-                                              map<int, vector<int> >                stdnodenp,
-                                              map<int, vector<int> >                enrichednoden,
-                                              map<int, vector<int> >                enrichednodenp,
-                                              std::map<int,GEO::CUT::BoundingBox> & patchboxes,
-                                              Teuchos::RCP<Epetra_Vector>           bgstatevn,
-                                              Teuchos::RCP<Epetra_Vector>           bgstatevnp,
-                                              Teuchos::RCP<Epetra_Vector>           embstatevn);
-
-    void SetNewEmbStatevector(Teuchos::RCP<Epetra_Vector>           statevbg_n,
-                              Epetra_Vector                         statevemb_n,
-                              Teuchos::RCP<Epetra_Vector>           statevembnew_n,
-                              Teuchos::RCP<Epetra_Vector>           aledispnp);
-
-
     void CutAndSaveBgFluidStatus();
 
     void SetBgStateVectorsAndPrepareTimeStep();
-
-    void CreatePatchBoxes(std::map<int, GEO::CUT::BoundingBox> & patchboxes);
-
-    bool ComputeSpacialToElementCoordAndProject(DRT::Element*                      pele,
-                                                LINALG::Matrix<3,1>&               x,  //coordinates of the unknown node(x,y,z)
-                                                LINALG::Matrix<4,1>&               interpolatedvec,
-                                                Epetra_Vector                      embstate_n,
-                                                Teuchos::RCP<Epetra_Vector>        embeddedddisp,
-                                                Teuchos::RCP<DRT::Discretization>  sourcedis);
 
     void SetInitialFlowField(
       const INPAR::FLUID::InitialField initfield,
@@ -333,7 +309,7 @@ namespace FLD
     /// update configuration and output to file/screen
     void Output();
 
-    Teuchos::RCP<Epetra_Vector> InitialGuess() {return state_->fluidfluidincvel_; }
+    Teuchos::RCP<Epetra_Vector> InitialGuess() {return state_->fluidfluidincvel_ ;}
     Teuchos::RCP<Epetra_Vector> Residual() { return state_->fluidfluidresidual_; }
     Teuchos::RCP<Epetra_Vector> TrueResidual() { return aletrueresidual_; }
     Teuchos::RCP<Epetra_Vector> Velnp() { return state_->fluidfluidvelnp_; }
@@ -493,13 +469,6 @@ namespace FLD
     // output vector for bg-fluid field (velocity and pressure)
     Teuchos::RCP<Epetra_Vector> outvec_fluid_;
 
-    // maps needed for xfem time integration
-    std::map<int, vector<int> > stdnoden_;
-    std::map<int, vector<int> > stdnodenp_;
-
-    std::map<int, vector<int> > enrichednoden_;
-    std::map<int, vector<int> > enrichednodenp_;
-
   private:
 
     //! @name Set general parameter in class f3Parameter
@@ -645,6 +614,8 @@ namespace FLD
 
     Teuchos::RCP<XFluidFluidState> state_;
     Teuchos::RCP<XFluidFluidState> staten_;
+
+    Teuchos::RCP<XFEM::XFluidFluidTimeIntegration> xfluidfluid_timeint_;
 
     bool       monolithicfluidfluidfsi_;
 
