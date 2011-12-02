@@ -1160,43 +1160,45 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                     yesnotuple,yesnovalue,&iap);
 
   /*----------------------------------------------------------------------*/
+  /* parameters for multi-level monte carlo */
+  Teuchos::ParameterList& mlmcp = list->sublist("MULTI LEVEL MONTE CARLO",false,"");
+
+  setStringToIntegralParameter<int>("MLMC","no",
+                                    "perform multi level monte carlo analysis",
+                                    yesnotuple,yesnovalue,&mlmcp);
+  IntParameter("NUMRUNS",200,"Number of Monte Carlo runs",&mlmcp);
+
+  //IntParameter("NUMLEVELS",2,"Number of levels",&mlmcp);
+  setStringToIntegralParameter<int>("DIFF_TO_LOWER_LEVEL","no","calculate difference to next lower level",yesnotuple,yesnovalue,&mlmcp);
+  IntParameter("START_RUN",0,"Run to start calculating the difference to lower level", &mlmcp);
+  //IntParameter("END_RUN",0,"Run to stop calculating the difference to lower level", &mlmcp);
+  // NUMLEVEL additional inputfiles are read name must be standard_inputfilename+_level_i.dat
+  setNumericStringParameter("DISCRETIZATION_FOR_PROLONGATION","filename.dat",
+                            "filename of.dat file which contains discretization to which the results are prolongated",
+                            &mlmcp);
+  setNumericStringParameter("OUTPUT_FILE_OF_LOWER_LEVEL","level0",
+                            "filename of controlfiles of next lower level",
+                            &mlmcp);
+  setStringToIntegralParameter<int>("PROLONGATERES","Yes",
+                                    "Prolongate Displacements to finest Discretization",
+                                    yesnotuple,yesnovalue,&mlmcp);
+  //Parameter for Newton loop to find background element
+  IntParameter("ITENODEINELE",20,"Number iteration in Newton loop to determine background element",&mlmcp);
+  DoubleParameter("CONVTOL",10e-5,"Convergence tolerance for Newton loop",&mlmcp);
+  IntParameter("INITRANDOMSEED",1000,"Random seed for first Monte Carlo run",&mlmcp);
+  IntParameter("LEVELNUMBER",0,"Level number for Multi Level Monte Carlo", &mlmcp);
+  // Parameters to simulate random field
+  IntParameter("RANDOM_FIELD_DIMENSION",3,"Dimension of Random Field 2 or 3",&mlmcp);
+  DoubleParameter("PERIODICITY",3000,"Period length of Random Field",&mlmcp);
+  //DoubleParameter("CorrLength",3000,"Correlation length of Random Field",&mlmcp);
+  IntParameter("NUM_COS_TERMS",200,"Number of terms in geometric row ",&mlmcp);
+  IntParameter("WRITESTATS",1000,"Write statistics to file every WRITESTATS (only for polongated Dis",&mlmcp);
+  setStringToIntegralParameter<int>("REDUCED_OUTPUT","NO",
+                                    "Write reduced Coarse Level Output, i.e. no mesh stresses, just disp",
+                                    yesnotuple,yesnovalue,&mlmcp);
+
   /*----------------------------------------------------------------------*/
-   Teuchos::ParameterList& mlmcp = list->sublist("MULTI LEVEL MONTE CARLO",false,"");
-
-   setStringToIntegralParameter<int>("MLMC","no",
-                                     "perform multi level monte carlo analysis",
-                                     yesnotuple,yesnovalue,&mlmcp);
-   IntParameter("NUMRUNS",200,"Number of Monte Carlo runs",&mlmcp);
-
-   //IntParameter("NUMLEVELS",2,"Number of levels",&mlmcp);
-   setStringToIntegralParameter<int>("DIFF_TO_LOWER_LEVEL","no","calculate difference to next lower level",yesnotuple,yesnovalue,&mlmcp);
-   IntParameter("START_RUN",0,"Run to start calculating the difference to lower level", &mlmcp);
-   //IntParameter("END_RUN",0,"Run to stop calculating the difference to lower level", &mlmcp);
-   // NUMLEVEL additional inputfiles are read name must be standard_inputfilename+_level_i.dat
-   setNumericStringParameter("DISCRETIZATION_FOR_PROLONGATION","filename.dat",
-                          "filename of.dat file which contains discretization to which the results are prolongated",
-                          &mlmcp);
-   setNumericStringParameter("OUTPUT_FILE_OF_LOWER_LEVEL","level0",
-                             "filename of controlfiles of next lower level",
-                             &mlmcp);
-   setStringToIntegralParameter<int>("PROLONGATERES","Yes",
-                                        "Prolongate Displacements to finest Discretization",
-                                        yesnotuple,yesnovalue,&mlmcp);
-   //Parameter for Newton loop to find background element
-   IntParameter("ITENODEINELE",20,"Number iteration in Newton loop to determine background element",&mlmcp);
-   DoubleParameter("CONVTOL",10e-5,"Convergence tolerance for Newton loop",&mlmcp);
-   IntParameter("INITRANDOMSEED",1000,"Random seed for first Monte Carlo run",&mlmcp);
-   IntParameter("LEVELNUMBER",0,"Level number for Multi Level Monte Carlo", &mlmcp);
-   // Parameters to simulate random field
-   IntParameter("RANDOM_FIELD_DIMENSION",3,"Dimension of Random Field 2 or 3",&mlmcp);
-   DoubleParameter("PERIODICITY",3000,"Period length of Random Field",&mlmcp);
-   //DoubleParameter("CorrLength",3000,"Correlation length of Random Field",&mlmcp);
-   IntParameter("NUM_COS_TERMS",200,"Number of terms in geometric row ",&mlmcp);
-   IntParameter("WRITESTATS",1000,"Write statistics to file every WRITESTATS (only for polongated Dis",&mlmcp);
-   setStringToIntegralParameter<int>("REDUCED_OUTPUT","NO",
-                                          "Write reduced Coarse Level Output, i.e. no mesh stresses, just disp",
-                                          yesnotuple,yesnovalue,&mlmcp);
-
+  /* parameters for meshtying and contact */
   Teuchos::ParameterList& scontact = list->sublist("MESHTYING AND CONTACT",false,"");
 
   setStringToIntegralParameter<int>("APPLICATION","None","Type of contact or meshtying app",
@@ -1346,7 +1348,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                yesnotuple,yesnovalue,&scontact);
 
   setStringToIntegralParameter<int>("BEAMS_NEWGAP","No","choose between original or enhanced gapfunction",
-                                yesnotuple,yesnovalue,&scontact);
+                               yesnotuple,yesnovalue,&scontact);
 
   setStringToIntegralParameter<int>("BEAMS_SMOOTHING","None","Application of smoothed tangent field",
        tuple<std::string>("None","none",
@@ -1364,8 +1366,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("BEAMS_OCTREE","None","octree and bounding box type for octree search routine",
        tuple<std::string>("None","none","octree_axisaligned","octree_cylorient"),
        tuple<int>(INPAR::CONTACT::boct_none,INPAR::CONTACT::boct_none,
-									INPAR::CONTACT::boct_aabb,INPAR::CONTACT::boct_cobb),
-			 &scontact);
+                  INPAR::CONTACT::boct_aabb,INPAR::CONTACT::boct_cobb),
+       &scontact);
 
   setStringToIntegralParameter<int>("INITCONTACTBYGAP","No","Initialize init contact by weighted gap vector",
                                yesnotuple,yesnovalue,&scontact);
