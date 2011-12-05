@@ -313,7 +313,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStruGenAlpha(const Teuchos::Parameter
     actdis->GetCondition("PatientSpecificData", mypatspeccond);
      if (!mypatspeccond.size())
      {
-       PATSPEC::PatientSpecificGeometry(*actdis);
+       PATSPEC::PatientSpecificGeometry(*actdis, *genalphaparams);
      }
   }
 

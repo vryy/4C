@@ -26,7 +26,7 @@ using namespace std;
 /*----------------------------------------------------------------------*
  |                                                             gee 03/10|
  *----------------------------------------------------------------------*/
-void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis)
+void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis, Teuchos::ParameterList& params)
 {
   if (!dis.Comm().MyPID())
   {
@@ -73,7 +73,7 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis)
   {
     if (!dis.Comm().MyPID())
       cout << "Computing distance functions...\n";
-    PATSPEC::ComputeEleNormalizedLumenDistance(dis);
+    PATSPEC::ComputeEleNormalizedLumenDistance(dis, params);
     PATSPEC::ComputeEleLocalRadius(dis);
 
   }
@@ -82,7 +82,7 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis)
   {
     if (!dis.Comm().MyPID())
       cout << "Computing strength model...\n";
-    PATSPEC::ComputeEleStrength(dis);
+    PATSPEC::ComputeEleStrength(dis, params);
   }
   //-------------------------------------------------------------------------
 
@@ -175,7 +175,7 @@ void PATSPEC::PatientSpecificGeometry(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |                                                          amaier 07/11|
  *----------------------------------------------------------------------*/
-void PATSPEC::ComputeEleStrength(DRT::Discretization& dis)
+void PATSPEC::ComputeEleStrength(DRT::Discretization& dis, Teuchos::ParameterList& params)
 {
   const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
   double subrendia = pslist.get<double>("AAA_SUBRENDIA");
@@ -183,6 +183,9 @@ void PATSPEC::ComputeEleStrength(DRT::Discretization& dis)
   int has_familyhist  = DRT::INPUT::IntegralValue<int>(pslist,"FAMILYHIST");
   double spatialconst = 922000.0; //spatial constant strength contrib
 				 //acc. Vande Geest [Pa]
+
+  double maxiltthick = params.get<double>("max ilt thick");
+
 
   if (!dis.Comm().MyPID())
   {
@@ -215,9 +218,13 @@ void PATSPEC::ComputeEleStrength(DRT::Discretization& dis)
     {
       for (int j=0; j<elestrength->MyLength(); ++j)
       {
-	(*elestrength)[j] = spatialconst - 379000 * (pow(((*ilt)[ilt->Map().LID(dis.ElementRowMap()->GID(j))]/10),0.5) - 0.81); //from Vande Geest strength formula
+	// Careful! ilt thickness is still normalized! Multiply with max
+	// ilt thickness.
+	(*elestrength)[j] = spatialconst - 379000 * (pow(((*ilt)[ilt->Map().LID(dis.ElementRowMap()->GID(j))]/10*maxiltthick),0.5) - 0.81); //from Vande Geest strength formula
+    
       }
     }
+    
   }
 
   for(unsigned int i=0; i<mypatspeccond.size(); ++i)
@@ -256,7 +263,7 @@ void PATSPEC::ComputeEleStrength(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |                                                             gee 03/10|
  *----------------------------------------------------------------------*/
-void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis)
+void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis, Teuchos::ParameterList& params)
 {
   // find out whether we have a orthopressure or FSI condition
   vector<DRT::Condition*> conds;
@@ -346,6 +353,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(DRT::Discretization& dis)
   iltthick->Scale(1.0/maxiltthick);
   if (!dis.Comm().MyPID())
     printf("Max ILT thickness %10.5e\n",maxiltthick);
+  params.set("max ilt thick",maxiltthick);
 
   // export nodal distances to column map
   RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(dis.NodeColMap()),true);

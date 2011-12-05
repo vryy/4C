@@ -16,6 +16,7 @@ Maintainer: Michael Gee
 #define PATSPEC_H
 
 #include <Teuchos_RefCountPtr.hpp>
+#include <Teuchos_ParameterList.hpp>
 
 
 class Epetra_Vector;
@@ -43,15 +44,15 @@ namespace IO
 namespace PATSPEC
 {
 
-  void PatientSpecificGeometry(DRT::Discretization& dis);
+  void PatientSpecificGeometry(DRT::Discretization& dis, Teuchos::ParameterList& params);
 
-  void ComputeEleNormalizedLumenDistance(DRT::Discretization& dis);
+  void ComputeEleNormalizedLumenDistance(DRT::Discretization& dis, Teuchos::ParameterList& params);
 
   void ComputeEleLocalRadius(DRT::Discretization& dis);
 
   std::vector<double> GetCenterline(std::string filename);
 
-  void ComputeEleStrength(DRT::Discretization& dis);
+  void ComputeEleStrength(DRT::Discretization& dis, Teuchos::ParameterList& params);
 
   void GetILTDistance(const int eleid, 
                       Teuchos::ParameterList& params, 

@@ -3319,6 +3319,7 @@ void StruGenAlpha::Output()
     IO::DiscretizationWriter::VectorType vt= IO::DiscretizationWriter::elementvector;
     if (mypatspeccond.size())
     {
+      double maxiltthick = params_.get<double>("max ilt thick");
       RCP<Epetra_Vector> patspecstuff = LINALG::CreateVector(*(discret_.ElementRowMap()),true);
       for(unsigned int i=0; i<mypatspeccond.size(); ++i)
       {
@@ -3327,6 +3328,7 @@ void StruGenAlpha::Output()
         {
           for (int j=0; j<patspecstuff->MyLength(); ++j)
             (*patspecstuff)[j] = (*actcond)[actcond->Map().LID(discret_.ElementRowMap()->GID(j))];
+	  patspecstuff->Scale(maxiltthick);
           output_.WriteVector("thrombus_thickness", patspecstuff, vt);
         }
 
