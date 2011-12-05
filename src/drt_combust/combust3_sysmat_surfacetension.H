@@ -1440,18 +1440,15 @@ void SysmatBoundarySurfaceTension(
           *cell, DRT::UTILS::intrule_tri_37point, xyze, ele, higher_order_ele,
           evelnp, eprenp, ephi, grad_ephi_smoothed, ecurv,
           timefac, assembler,
-//          kappa_plus, kappa_minus,
           numparamvelx, surftensapprox, surftenscoeff, connected_interface, smoothed_boundary_integration
       );
       break;
     case DRT::Element::quad4:
-      // TODO check this intrule !!!
       COMBUST::SysmatBoundarySurfaceTensionIntCell<DISTYPE,DRT::Element::quad4,ASSTYPE,NUMDOF>(
           dofman,
           *cell, DRT::UTILS::intrule_quad_36point, xyze, ele, higher_order_ele,
           evelnp, eprenp, ephi, grad_ephi_smoothed, ecurv,
           timefac, assembler,
-//          kappa_plus, kappa_minus,
           numparamvelx, surftensapprox, surftenscoeff, connected_interface, smoothed_boundary_integration
       );
       break;
