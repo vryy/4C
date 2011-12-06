@@ -51,7 +51,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     if (discret_->Comm().MyPID()==0)
     {
       std::cout << "\n---------------------------------------------------------------------------" << std::endl;
-      std::cout << "This is an additional the statistics manager for turbulent inflow channels." << std::endl;
+      std::cout << "This is an additional statistics manager for turbulent inflow channels." << std::endl;
       std::cout << "Make sure to provide the outflow coordinate (INFLOW_CHA_SIDE)." << std::endl;
       std::cout << "Current coordinate is: " << inflowmax_ << std::endl;
       std::cout << "---------------------------------------------------------------------------\n" << std::endl;
@@ -90,11 +90,12 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     }
   }
 
-
   // get turbulence model
   ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
   smagorinsky_=false;
   scalesimilarity_=false;
+  multifractal_=false;
+
   if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
       ==
       "CLASSICAL_LES")
@@ -134,6 +135,25 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       }
 
       scalesimilarity_=true;
+    }
+    // check if we want to compute averages of multifractal
+    // quantities (N, B)
+    else if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
+             ==
+             "CLASSICAL_LES")
+    {
+      if(modelparams->get<string>("PHYSICAL_MODEL","no_model")
+         ==
+         "Multifractal_Subgrid_Scales")
+      {
+        if(discret_->Comm().MyPID()==0)
+        {
+          cout << "                             Initializing output for multifractal subgrid scales type models\n\n\n";
+          fflush(stdout);
+        }
+
+        multifractal_=true;
+      }
     }
   }
 
@@ -823,14 +843,68 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   }
 
   //----------------------------------------------------------------------
+  // arrays for averaging of parameters of multifractal subgrid-scales
+  //
+
+  // check if we want to compute averages of multifractal subgrid-scales
+  if (multifractal_)
+  {
+    // vectors for statistics computation (sums and increments)
+    // means for N
+    sumN_stream_  =  rcp(new vector<double> );
+    sumN_stream_->resize(nodeplanes_->size()-1,0.0);
+    sumN_normal_  =  rcp(new vector<double> );
+    sumN_normal_->resize(nodeplanes_->size()-1,0.0);
+    sumN_span_  =  rcp(new vector<double> );
+    sumN_span_->resize(nodeplanes_->size()-1,0.0);
+
+    incrsumN_stream_  =  rcp(new vector<double> );
+    incrsumN_stream_->resize(nodeplanes_->size()-1,0.0);
+    incrsumN_normal_  =  rcp(new vector<double> );
+    incrsumN_normal_->resize(nodeplanes_->size()-1,0.0);
+    incrsumN_span_  =  rcp(new vector<double> );
+    incrsumN_span_->resize(nodeplanes_->size()-1,0.0);
+
+    // means for B
+    sumB_stream_  =  rcp(new vector<double> );
+    sumB_stream_->resize(nodeplanes_->size()-1,0.0);
+    sumB_normal_  =  rcp(new vector<double> );
+    sumB_normal_->resize(nodeplanes_->size()-1,0.0);
+    sumB_span_  =  rcp(new vector<double> );
+    sumB_span_->resize(nodeplanes_->size()-1,0.0);
+
+    incrsumB_stream_  =  rcp(new vector<double> );
+    incrsumB_stream_->resize(nodeplanes_->size()-1,0.0);
+    incrsumB_normal_  =  rcp(new vector<double> );
+    incrsumB_normal_->resize(nodeplanes_->size()-1,0.0);
+    incrsumB_span_  =  rcp(new vector<double> );
+    incrsumB_span_->resize(nodeplanes_->size()-1,0.0);
+
+    // means for C_sgs
+    sumCsgs_  =  rcp(new vector<double> );
+    sumCsgs_->resize(nodeplanes_->size()-1,0.0);
+
+    incrsumCsgs_  =  rcp(new vector<double> );
+    incrsumCsgs_->resize(nodeplanes_->size()-1,0.0);
+
+    // means for subgrid viscosity
+    // if used in combination with eddy viscosity model
+    sumsgvisc_  =  rcp(new vector<double> );
+    sumsgvisc_->resize(nodeplanes_->size()-1,0.0);
+
+    incrsumsgvisc_  =  rcp(new vector<double> );
+    incrsumsgvisc_->resize(nodeplanes_->size()-1,0.0);
+  }
+
+  //----------------------------------------------------------------------
   // arrays for averaging of residual, subscales etc.
 
   // prepare time averaging for subscales and residual
   if(subgrid_dissipation_)
   {
     //--------------------------------------------------
-    // local_incrtauC            (in plane) averaged values of stabilisation parameter tauC
-    // local_incrtauM            (in plane) averaged values of stabilisation parameter tauM
+    // local_incrtauC            (in plane) averaged values of stabilization parameter tauC
+    // local_incrtauM            (in plane) averaged values of stabilization parameter tauM
     // local_incrres(_sq,abs)    (in plane) averaged values of resM (^2) (||.||)
     // local_incrsacc(_sq,abs)   (in plane) averaged values of sacc (^2) (||.||)
     // local_incrsvelaf(_sq,abs) (in plane) averaged values of svelaf (^2) (||.||)
@@ -1019,6 +1093,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   Teuchos::RefCountPtr<std::ofstream> log;
   Teuchos::RefCountPtr<std::ofstream> log_Cs;
   Teuchos::RefCountPtr<std::ofstream> log_SSM;
+  Teuchos::RefCountPtr<std::ofstream> log_MF;
   Teuchos::RefCountPtr<std::ofstream> log_res;
 
   if (discret_->Comm().MyPID()==0)
@@ -1064,6 +1139,16 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
         log_SSM = Teuchos::rcp(new std::ofstream(s_ssm.c_str(),ios::out));
         (*log_SSM) << "# Statistics for turbulent incompressible channel flow (subfilter stresses)\n\n";
+      }
+
+      // additional output for multifractal subgrid scales
+      if (multifractal_)
+      {
+        std::string s_mf = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+        s_mf.append(".MF_statistics");
+
+        log_MF = Teuchos::rcp(new std::ofstream(s_mf.c_str(),ios::out));
+        (*log_MF) << "# Statistics for turbulent incompressible channel flow (parameter multifractal subgrid scales)\n\n";
       }
 
       // output of residuals and subscale quantities
@@ -1248,7 +1333,7 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
   {
     for (unsigned rr=0;rr<(*incrsumstress12_).size();++rr)
     {
-      (*sumstress12_         )[rr]+=(*incrsumstress12_         )[rr];
+      (*sumstress12_)[rr]+=(*incrsumstress12_)[rr];
     }
   }
 
@@ -2117,7 +2202,6 @@ void FLD::TurbulenceStatisticsCha::AddSubfilterStresses(const RCP<Epetra_Vector>
         node->X()[1] > (*boundingbox_)(0,1)-NODETOL and
         node->X()[2] > (*boundingbox_)(0,2)-NODETOL )
     {
-
       // get coordinate in node plane direction
       double nodecoord = node->X()[dim_];
 
@@ -2166,6 +2250,180 @@ void FLD::TurbulenceStatisticsCha::AddSubfilterStresses(const RCP<Epetra_Vector>
 
 /*----------------------------------------------------------------------*
 
+            Add parameters of multifractal
+                 subgrid-scales model
+
+  ----------------------------------------------------------------------*/
+void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
+     Teuchos::RefCountPtr<Epetra_Vector> velnp,
+     Teuchos::RefCountPtr<Epetra_Vector> fsvelnp)
+{
+  // action for elements
+  ParameterList paramsele;
+  paramsele.set("action","calc model parameter multifractal subgid scales");
+  paramsele.sublist("MULTIFRACTAL SUBGRID SCALES") = params_.sublist("MULTIFRACTAL SUBGRID SCALES");
+
+  // vectors containing processor local values to sum element
+  // contributions on this proc
+  RefCountPtr<vector<double> > local_N_stream_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_N_normal_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_N_span_sum            =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_B_stream_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_B_normal_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_B_span_sum            =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_Csgs_sum              =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RefCountPtr<vector<double> > local_sgvisc_sum            =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+
+  // store them in parameterlist for access on the element
+  ParameterList *  modelparams = &(paramsele.sublist("TURBULENCE MODEL"));
+
+  modelparams->set<RefCountPtr<vector<double> > >("planecoords"                ,nodeplanes_               );
+  modelparams->set<RefCountPtr<vector<double> > >("local_N_stream_sum"         ,local_N_stream_sum         );
+  modelparams->set<RefCountPtr<vector<double> > >("local_N_normal_sum"         ,local_N_normal_sum         );
+  modelparams->set<RefCountPtr<vector<double> > >("local_N_span_sum"           ,local_N_span_sum           );
+  modelparams->set<RefCountPtr<vector<double> > >("local_B_stream_sum"         ,local_B_stream_sum         );
+  modelparams->set<RefCountPtr<vector<double> > >("local_B_normal_sum"         ,local_B_normal_sum         );
+  modelparams->set<RefCountPtr<vector<double> > >("local_B_span_sum"           ,local_B_span_sum           );
+  modelparams->set<RefCountPtr<vector<double> > >("local_Csgs_sum"             ,local_Csgs_sum             );
+  modelparams->set<RefCountPtr<vector<double> > >("local_sgvisc_sum"           ,local_sgvisc_sum           );
+
+  // set state vectors for element call
+  discret_->ClearState();
+  discret_->SetState("velnp",velnp);
+  if (fsvelnp == null)
+    dserror("Haven't got fine-scale velocity!");
+  discret_->SetState("fsvelnp",fsvelnp);
+
+  // call loop over elements to compute means
+  discret_->Evaluate(paramsele,null,null,null,null,null);
+
+  discret_->ClearState();
+
+  // extract values for N, B, Csgs and sgvisc from parameter list
+  // the values are stored in vectors --- each component corresponds to
+  // one element layer
+  RefCountPtr<vector<double> > global_incr_N_stream_sum;
+  global_incr_N_stream_sum          = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_N_stream_sum                = modelparams->get<RefCountPtr<vector<double> > >("local_N_stream_sum",Teuchos::null);
+  if(local_N_stream_sum==Teuchos::null)
+    dserror("local_N_stream_sum==null from parameterlist");
+  RefCountPtr<vector<double> > global_incr_N_normal_sum;
+  global_incr_N_normal_sum          = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_N_normal_sum                = modelparams->get<RefCountPtr<vector<double> > >("local_N_normal_sum",Teuchos::null);
+  if(local_N_normal_sum==Teuchos::null)
+    dserror("local_N_normal_sum==null from parameterlist");
+  RefCountPtr<vector<double> > global_incr_N_span_sum;
+  global_incr_N_span_sum          = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_N_span_sum                = modelparams->get<RefCountPtr<vector<double> > >("local_N_span_sum",Teuchos::null);
+  if(local_N_span_sum==Teuchos::null)
+    dserror("local_N_span_sum==null from parameterlist");
+
+  RefCountPtr<vector<double> > global_incr_B_stream_sum;
+  global_incr_B_stream_sum = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_B_stream_sum       = modelparams->get<RefCountPtr<vector<double> > >("local_B_stream_sum",Teuchos::null);
+  if(local_B_stream_sum==Teuchos::null)
+    dserror("local_B_stream_sum==null from parameterlist");
+  RefCountPtr<vector<double> > global_incr_B_normal_sum;
+  global_incr_B_normal_sum = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_B_normal_sum       = modelparams->get<RefCountPtr<vector<double> > >("local_B_normal_sum",Teuchos::null);
+  if(local_B_normal_sum==Teuchos::null)
+    dserror("local_B_normal_sum==null from parameterlist");
+  RefCountPtr<vector<double> > global_incr_B_span_sum;
+  global_incr_B_span_sum = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_B_span_sum       = modelparams->get<RefCountPtr<vector<double> > >("local_B_span_sum",Teuchos::null);
+  if(local_B_span_sum==Teuchos::null)
+    dserror("local_B_span_sum==null from parameterlist");
+
+  RefCountPtr<vector<double> > global_incr_Csgs_sum;
+  global_incr_Csgs_sum     = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_Csgs_sum           = modelparams->get<RefCountPtr<vector<double> > >("local_Csgs_sum",Teuchos::null);
+  if(local_Csgs_sum==Teuchos::null)
+      dserror("local_Csgs_sum==null from parameterlist");
+
+  RefCountPtr<vector<double> > global_incr_sgvisc_sum;
+  global_incr_sgvisc_sum     = rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_sgvisc_sum           = modelparams->get<RefCountPtr<vector<double> > >("local_sgvisc_sum",Teuchos::null);
+  if(local_sgvisc_sum==Teuchos::null)
+      dserror("local_sgvsic_sum==null from parameterlist");
+
+  // now add all the stuff from the different processors
+  discret_->Comm().SumAll(&((*local_N_stream_sum      )[0]),
+                          &((*global_incr_N_stream_sum)[0]),
+                          local_N_stream_sum->size());
+  discret_->Comm().SumAll(&((*local_N_normal_sum      )[0]),
+                          &((*global_incr_N_normal_sum)[0]),
+                          local_N_normal_sum->size());
+  discret_->Comm().SumAll(&((*local_N_span_sum      )[0]),
+                          &((*global_incr_N_span_sum)[0]),
+                          local_N_span_sum->size());
+  discret_->Comm().SumAll(&((*local_B_stream_sum      )[0]),
+                          &((*global_incr_B_stream_sum)[0]),
+                          local_B_stream_sum->size());
+  discret_->Comm().SumAll(&((*local_B_normal_sum      )[0]),
+                          &((*global_incr_B_normal_sum)[0]),
+                          local_B_normal_sum->size());
+  discret_->Comm().SumAll(&((*local_B_span_sum      )[0]),
+                          &((*global_incr_B_span_sum)[0]),
+                          local_B_span_sum->size());
+  discret_->Comm().SumAll(&((*local_Csgs_sum      )[0]),
+                          &((*global_incr_Csgs_sum)[0]),
+                          local_Csgs_sum->size());
+  discret_->Comm().SumAll(&((*local_sgvisc_sum      )[0]),
+                          &((*global_incr_sgvisc_sum)[0]),
+                          local_sgvisc_sum->size());
+
+  // Replace increment to compute average of parameters N and B as well as
+  // subgrid viscosity
+  for (unsigned rr=0;rr<global_incr_N_stream_sum->size();++rr)
+  {
+    (*incrsumN_stream_     )[rr] =(*global_incr_N_normal_sum)[rr];
+    (*incrsumN_normal_     )[rr] =(*global_incr_N_normal_sum)[rr];
+    (*incrsumN_span_     )[rr] =(*global_incr_N_span_sum)[rr];
+    (*incrsumB_stream_     )[rr] =(*global_incr_B_normal_sum)[rr];
+    (*incrsumB_normal_     )[rr] =(*global_incr_B_normal_sum)[rr];
+    (*incrsumB_span_     )[rr] =(*global_incr_B_span_sum)[rr];
+    (*incrsumCsgs_)[rr] =(*global_incr_Csgs_sum)[rr];
+    (*incrsumsgvisc_)[rr] =(*global_incr_sgvisc_sum)[rr];
+  }
+
+  // reinitialize to zero for next element call
+  local_N_stream_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_N_normal_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_N_span_sum            =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_B_stream_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_B_normal_sum          =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_B_span_sum            =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_Csgs_sum              =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_sgvisc_sum            =  rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+
+  modelparams->set<RefCountPtr<vector<double> > >("local_N_stream_sum"     ,local_N_stream_sum);
+  modelparams->set<RefCountPtr<vector<double> > >("local_N_normal_sum"     ,local_N_normal_sum);
+  modelparams->set<RefCountPtr<vector<double> > >("local_N_span_sum"       ,local_N_span_sum  );
+  modelparams->set<RefCountPtr<vector<double> > >("local_B_stream_sum"     ,local_B_stream_sum);
+  modelparams->set<RefCountPtr<vector<double> > >("local_B_normal_sum"     ,local_B_normal_sum);
+  modelparams->set<RefCountPtr<vector<double> > >("local_B_span_sum"       ,local_B_span_sum  );
+  modelparams->set<RefCountPtr<vector<double> > >("local_Csgs_sum"         ,local_Csgs_sum    );
+  modelparams->set<RefCountPtr<vector<double> > >("local_sgvisc_sum"       ,local_sgvisc_sum  );
+
+  // add increment of last iteration to the sum of all values
+  for (unsigned rr=0;rr<(*incrsumN_stream_).size();++rr)
+  {
+    (*sumN_stream_     )[rr]+=(*incrsumN_stream_   )[rr];
+    (*sumN_normal_     )[rr]+=(*incrsumN_normal_   )[rr];
+    (*sumN_span_       )[rr]+=(*incrsumN_span_     )[rr];
+    (*sumB_stream_     )[rr]+=(*incrsumB_stream_   )[rr];
+    (*sumB_normal_     )[rr]+=(*incrsumB_normal_   )[rr];
+    (*sumB_span_       )[rr]+=(*incrsumB_span_     )[rr];
+    (*sumCsgs_)[rr]+=(*incrsumCsgs_)[rr];
+    (*sumsgvisc_)[rr]+=(*incrsumsgvisc_)[rr];
+  }
+
+  return;
+} // FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal();
+
+
+/*----------------------------------------------------------------------*
+
 
   ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
@@ -2208,6 +2466,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
 
 
     // set state vectors for element call
+    discret_->ClearState();
     for(map<string,RCP<Epetra_Vector> >::iterator state =statevecs.begin();
                                                   state!=statevecs.end()  ;
                                                   ++state                 )
@@ -2679,7 +2938,6 @@ void FLD::TurbulenceStatisticsCha::EvaluateResidualsFluidImplInt(
   )
 {
 
-#if 1
   if(subgrid_dissipation_)
   {
     //--------------------------------------------------------------------
@@ -2711,9 +2969,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResidualsFluidImplInt(
       {
         for(map<string,RCP<Epetra_MultiVector> >::iterator state =statetenss.begin();state!=statetenss.end();++state)
         {
-//        std::cout << "set filtered velocity" << std::endl;
-//        std::cout << state->first << std::endl;
-        eleparams_.set(state->first,state->second);
+          eleparams_.set(state->first,state->second);
         }
       }
     }
@@ -2748,11 +3004,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResidualsFluidImplInt(
     RefCountPtr<vector<double> > local_incr_eps_cstab    = eleparams_.get<RefCountPtr<vector<double> > >("incr_eps_cstab"   );
     RefCountPtr<vector<double> > local_incr_eps_pspg     = eleparams_.get<RefCountPtr<vector<double> > >("incr_eps_pspg"    );
 
-//    int presize    = local_incrresC       ->size();
-//    int velsize    = local_incrres        ->size();
-//    int stresssize = local_incrcrossstress->size();
     int scalarsize    = local_vol->size();
-    //int vectorsize    = local_
 
     //--------------------------------------------------
     // vectors to sum over all procs
@@ -2863,7 +3115,6 @@ void FLD::TurbulenceStatisticsCha::EvaluateResidualsFluidImplInt(
     eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_cstab"   ,local_incr_eps_cstab   );
     eleparams_.set<RefCountPtr<vector<double> > >("incr_eps_pspg"    ,local_incr_eps_pspg    );
   }
-#endif
 
   return;
 } // FLD::TurbulenceStatisticsCha::EvaluateResiduals
@@ -3115,7 +3366,52 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
       log_SSM->flush();
     } // end scalesimilarity_
 
-#if 1
+    // ------------------------------------------------------------------
+    // additional output for dynamic Smagorinsky model
+    if (multifractal_)
+    {
+      // get the outfile
+      Teuchos::RefCountPtr<std::ofstream> log_mf;
+
+      std::string s_mf = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      s_mf.append(".MF_statistics");
+
+      log_mf = Teuchos::rcp(new std::ofstream(s_mf.c_str(),ios::app));
+
+      (*log_mf) << "\n\n\n";
+      (*log_mf) << "# Statistics record " << countrecord_;
+      (*log_mf) << " (Steps " << step-numsamp_+1 << "--" << step <<")\n";
+
+
+      (*log_mf) << "#     y      ";
+      (*log_mf) << "  N_stream   ";
+      (*log_mf) << "  N_normal   ";
+      (*log_mf) << "  N_span     ",
+      (*log_mf) << "  B_stream   ";
+      (*log_mf) << "  B_normal   ";
+      (*log_mf) << "  B_span     ";
+      (*log_mf) << "    Csgs     ";
+      (*log_mf) << "    sgvisc   ";
+      (*log_mf) << &endl;
+      (*log_mf) << scientific;
+      for (unsigned rr=0;rr<sumN_stream_->size();++rr)
+      {
+        // we associate the value with the midpoint of the element layer
+        (*log_mf) << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+
+        // the three values to be visualised
+        (*log_mf) << setw(11) << setprecision(4) << ((*sumN_stream_     )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_mf) << setw(11) << setprecision(4) << ((*sumN_normal_     )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_mf) << setw(11) << setprecision(4) << ((*sumN_span_     )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_mf) << setw(11) << setprecision(4) << ((*sumB_stream_     )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_mf) << setw(11) << setprecision(4) << ((*sumB_normal_     )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_mf) << setw(11) << setprecision(4) << ((*sumB_span_     )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_mf) << setw(11) << setprecision(4) << ((*sumCsgs_     )[rr])/(numele_*numsamp_)   << "  ";
+        (*log_mf) << setw(11) << setprecision(4) << ((*sumsgvisc_)[rr])/(numele_*numsamp_)   << &endl;
+      }
+      log_mf->flush();
+    } // end multifractal_
+
     if(subgrid_dissipation_)
     {
       Teuchos::RefCountPtr<std::ofstream> log_res;
@@ -3314,7 +3610,6 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(int ste
       }
       log_res->flush();
     } // end subgrid_dissipation_
-#endif
   } // end myrank 0
 
 
@@ -3739,6 +4034,23 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
       (*sumstress12_)         [rr]=0;
     }
   } // end scalesimilarity_
+
+  // reset sampling for multifractal subgrid scales
+  if (multifractal_)
+  {
+    for (unsigned rr=0;rr<sumN_stream_->size();++rr)
+    {
+      // reset value
+      (*sumN_stream_)         [rr]=0;
+      (*sumN_normal_)         [rr]=0;
+      (*sumN_span_)           [rr]=0;
+      (*sumB_stream_)         [rr]=0;
+      (*sumB_normal_)         [rr]=0;
+      (*sumB_span_)           [rr]=0;
+      (*sumCsgs_)             [rr]=0;
+      (*sumsgvisc_)           [rr]=0;
+    }
+  } // end multifractal_
 
   // reset residuals and subscale averages
   if(subgrid_dissipation_)

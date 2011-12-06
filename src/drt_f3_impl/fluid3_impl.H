@@ -583,7 +583,7 @@ namespace ELEMENTS
                                         );
 
     //! get turbulence parameter
-    void GetTurbulenceParams(ParameterList&             turbmodelparams,    ///< pointer turbulence parameter list
+    void GetTurbulenceParams(ParameterList&             turbmodelparams,    ///< pointer general turbulence parameter list
                              double&                    Cs_delta_sq,        ///< parameter CS in dynamic Smagorinsky
                              int&                       nlayer,             ///< number of layers for computation of parameter CS in dynamic Smagorinsky
                              double CsDeltaSq                               ///< parameter CS in dynamic Smagorinsky computed in DynSmagFilter()
@@ -604,16 +604,8 @@ namespace ELEMENTS
                                 double&                             Cs          ///< parameter CS in fixed Smagorinsky
                                 );
 
-    void CalcScaleSimilarityFineScaleSubgrVisc(
-      const LINALG::Matrix<nsd_,nen_>&        evel_hat,
-      const LINALG::Matrix<nsd_,nen_>&        fsevelaf,
-      const double                            vol,
-      double&                                 Cs,
-      const LINALG::Matrix<nsd_,1>&           B
-      );
-
     void CalcMultiFracSubgridVelCoef(
-      const double            CI,
+      const double            Csgs,
       const double            alpha,
       const vector<double>    N,
       LINALG::Matrix<nsd_,1>& B
@@ -837,47 +829,32 @@ namespace ELEMENTS
         const double &                            fssgviscfac     ///< = (fine scale subgrid viscousity) x timefacfac
         );
 
-    void SubGridStressTermPrefiltering(
-        //const int &                               eid,
+    void ScaleSimSubGridStressTermPrefiltering(
         LINALG::Matrix<nsd_,nen_> &               velforce,
         const double &                            rhsfac,
         const double &                            Cl);
 
-    void SubGridStressTerm(
-        //const int &                               eid,
+    void ScaleSimSubGridStressTermCross(
         LINALG::Matrix<nsd_,nen_> &               velforce,
         const double &                            rhsfac,
         const double &                            Cl);
 
-    void SubGridStressTermCross(
-        //const int &                               eid,
-        LINALG::Matrix<nsd_,nen_> &               velforce,
-        const double &                            rhsfac,
-        const double &                            Cl);
-
-    void SubGridStressTermReynolds(
-        //const int &                               eid,
+    void ScaleSimSubGridStressTermReynolds(
         LINALG::Matrix<nsd_,nen_> &               velforce,
         const double &                            rhsfac,
         const double &                            Cl);
 
     void MultfracSubGridScalesCross(
-        //const int &                               eid,
         LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
         LINALG::Matrix<nsd_,nen_> &               velforce,
         const double &                            timefacfac,
-        const double &                            rhsfac,
-        //const double &                            B
-        LINALG::Matrix<nsd_,1>&                   B);
+        const double &                            rhsfac);
 
     void MultfracSubGridScalesReynolds(
-        //const int &                               eid,
         LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_u,
         LINALG::Matrix<nsd_,nen_> &               velforce,
         const double &                            timefacfac,
-        const double &                            rhsfac,
-        //const double &                            B
-        LINALG::Matrix<nsd_,1>&                   B);
+        const double &                            rhsfac);
 
     void FineScaleSimilaritySubGridViscosityTerm(
         LINALG::Matrix<nsd_,nen_> &             velforce,

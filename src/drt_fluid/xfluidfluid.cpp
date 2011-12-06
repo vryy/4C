@@ -1935,7 +1935,6 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   theta_             = params_.get<double>("theta");
   newton_            = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params_, "Linearisation");
   convform_          = params_.get<string>("form of convective term","convective");
-  fssgv_             = params_.get<string>("fs subgrid viscosity","No");
   upres_             = params_.get<int>("write solution every", -1);
 
   numdim_            = genprob.ndim; //params_.get<int>("DIM");
@@ -1982,9 +1981,6 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
     dserror("BoundaryType unknown!!!");
 
   }
-
-
-
 
 
 //  boundIntType_ = params_.sublist("XFEM").get<INPAR::XFEM::BoundaryIntegralType>("EMBEDDED_BOUNDARY");
@@ -2334,6 +2330,7 @@ FLD::XFluidFluid::XFluidFluid( Teuchos::RCP<DRT::Discretization> actdis,
   // set general fluid parameter defined before
   // -----------------------------------------------------------------
   SetElementGeneralFluidParameter();
+  SetElementTurbulenceParameter();
 
   if (alefluid_)
     xfluidfluid_timeint_ =  Teuchos::rcp(new XFEM::XFluidFluidTimeIntegration( bgdis_, embdis_, state_->wizard_, step_));
@@ -3874,15 +3871,11 @@ void FLD::XFluidFluid::SetElementGeneralFluidParameter()
 
   // set general element parameters
   eleparams.set("form of convective term",convform_);
-  eleparams.set("fs subgrid viscosity",fssgv_);
   eleparams.set<int>("Linearisation",newton_);
   eleparams.set<int>("Physical Type", physicaltype_);
 
   // parameter for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
-
-  // parameter for turbulent flow
-  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
   //set time integration scheme
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);
@@ -3894,6 +3887,27 @@ void FLD::XFluidFluid::SetElementGeneralFluidParameter()
 #else
   dserror("D_FLUID3 required");
 #endif
+}
+
+// -------------------------------------------------------------------
+// set turbulence parameters                         rasthofer 11/2011
+// -------------------------------------------------------------------
+void FLD::XFluidFluid::SetElementTurbulenceParameter()
+{
+  ParameterList eleparams;
+
+  eleparams.set("action","set_turbulence_parameter");
+
+  // set general parameters for turbulent flow
+  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+
+  // set model-dependent parameters
+  eleparams.sublist("SUBGRID VISCOSITY") = params_.sublist("SUBGRID VISCOSITY");
+  eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_.sublist("MULTIFRACTAL SUBGRID SCALES");
+
+  // call standard loop over elements
+  DRT::ELEMENTS::Fluid3Type::Instance().PreEvaluate(*bgdis_,eleparams,null,null,null,null,null);
+  return;
 }
 
 // -------------------------------------------------------------------

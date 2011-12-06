@@ -47,7 +47,6 @@ ALPHA_M                         1
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
 CONVTOL                         1e-06
-FSSUGRVISC                      No
 GAMMA                           1
 GRIDVEL                         1
 INITIALFIELD                    field_by_function

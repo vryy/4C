@@ -1159,8 +1159,11 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
     const double adaptolbetter = params_.get<double>("ADAPTCONV_BETTER");
 
 
+    // REMARK:
+    // commented reduced number of iterations out as it seems that more iterations
+    // are necessary before sampling to obtain a converged result
     // for turbulent channel flow: only one iteration before sampling otherwise use the usual itemax_
-    const int itemax = (special_flow_ == "bubbly_channel_flow" and step_ < samstart_) ? 2 : itemax_ ;
+    //const int itemax = (special_flow_ == "bubbly_channel_flow" and step_ < samstart_) ? 2 : itemax_ ;
 
     //const bool fluidrobin = params_.get<bool>("fluidrobin", false);
 
@@ -1312,7 +1315,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
         // convergence check at itemax is skipped for speedup if
         // CONVCHECK is set to L_2_norm_without_residual_at_itemax
-        if ((itnum != itemax) || (params_.get<string>("CONVCHECK") != "L_2_norm_without_residual_at_itemax"))
+        if ((itnum != itemax_) || (params_.get<string>("CONVCHECK") != "L_2_norm_without_residual_at_itemax"))
         {
           // call standard loop over elements
           discret_->Evaluate(eleparams,sysmat_,residual_);
@@ -1546,7 +1549,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       if (myrank_ == 0)
       {
         printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
-               itnum,itemax,ittol,vresnorm,presnorm);
+               itnum,itemax_,ittol,vresnorm,presnorm);
 //        printf(" (      --     ,te=%10.3E",dtele);
 //        printf(")\n");
         printf(" (      --     ,te_min=%10.3E,te_max=%10.3E)\n", min, max);
@@ -1575,7 +1578,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         if (myrank_ == 0)
         {
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-                 itnum,itemax,ittol,vresnorm,presnorm,
+                 itnum,itemax_,ittol,vresnorm,presnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
 //          printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
 //          printf(")\n");
@@ -1586,7 +1589,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
           if (errfile!=NULL)
           {
             fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
-                    itnum,itemax,ittol,vresnorm,presnorm,
+                    itnum,itemax_,ittol,vresnorm,presnorm,
                     incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
           }
         }
@@ -1685,7 +1688,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         if (myrank_ == 0)
         {
           printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-                 itnum,itemax,ittol,vresnorm,presnorm,
+                 itnum,itemax_,ittol,vresnorm,presnorm,
                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
 //          printf(" (ts=%10.3E,te=%10.3E",dtsolve,dtele);
 //          printf(")\n");
@@ -1696,7 +1699,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
     // warn if itemax is reached without convergence, but proceed to
     // next timestep...
-    if ((itnum == itemax) and (vresnorm > ittol or presnorm > ittol or
+    if ((itnum == itemax_) and (vresnorm > ittol or presnorm > ittol or
                              incvelnorm_L2/velnorm_L2 > ittol or
                              incprenorm_L2/prenorm_L2 > ittol))
     {
@@ -1711,7 +1714,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         if (errfile!=NULL)
         {
           fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
-                  itnum,itemax,ittol,vresnorm,presnorm,
+                  itnum,itemax_,ittol,vresnorm,presnorm,
                   incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
         }
       }

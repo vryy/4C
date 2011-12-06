@@ -36,7 +36,7 @@ namespace FLD
 
   /*----------------------------------------------------------------------
 
-    Standard Constructor for Genalpha time integration (public)
+    Standard Constructor for Genalpha time integration (public) (Gammis Fluid Algo!!!!!!)
 
   ----------------------------------------------------------------------*/
   TurbulenceStatisticManager::TurbulenceStatisticManager(FluidGenAlphaIntegration& fluid)
@@ -135,6 +135,21 @@ namespace FLD
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_,"geometry_DNS_incomp_flow"));
+      if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+        dserror("Sorry, no inflow generation for gammi-style fluid!");
+    }
+    else if(fluid.special_flow_=="loma_backward_facing_step")
+    {
+      flow_=loma_backward_facing_step;
+
+      // do the time integration independent setup
+      Setup();
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_,"geometry_LES_flow_with_heating"));
+      if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+        dserror("Sorry, no inflow generation for gammi-style fluid!");
     }
     else if(fluid.special_flow_=="combust_oracles")
     {
@@ -152,17 +167,6 @@ namespace FLD
 
       if(discret_->Comm().MyPID()==0)
         std::cout << " done" << std::endl;
-    }
-    else if(fluid.special_flow_=="loma_backward_facing_step")
-    {
-      flow_=loma_backward_facing_step;
-
-      // do the time integration independent setup
-      Setup();
-
-      // allocate one instance of the averaging procedure for
-      // the flow under consideration
-      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_,"geometry_LES_flow_with_heating"));
     }
     else if(fluid.special_flow_=="square_cylinder")
     {
@@ -262,7 +266,7 @@ namespace FLD
 
   /*----------------------------------------------------------------------
 
-    Standard Constructor for One-Step-Theta time integration (public)
+    Standard Constructor for standard time integration (public)
 
   ----------------------------------------------------------------------*/
   TurbulenceStatisticManager::TurbulenceStatisticManager(FluidImplicitTimeInt& fluid)
@@ -375,6 +379,32 @@ namespace FLD
         }
       }
     }
+    else if(fluid.special_flow_=="loma_backward_facing_step")
+    {
+      flow_=loma_backward_facing_step;
+
+      // do the time integration independent setup
+      Setup();
+
+      // allocate one instance of the averaging procedure for
+      // the flow under consideration
+      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_,"geometry_LES_flow_with_heating"));
+
+      // build statistics manager for inflow channel flow
+      if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+      {
+        if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2"
+         or params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
+        {
+          // allocate one instance of the averaging procedure for the flow under consideration
+          statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_,
+                                                              alefluid_,
+                                                              mydispnp_,
+                                                              params_,
+                                                              subgrid_dissipation_));
+        }
+      }
+    }
     else if(fluid.special_flow_=="combust_oracles")
     {
       flow_=combust_oracles;
@@ -405,31 +435,6 @@ namespace FLD
 
       if(discret_->Comm().MyPID()==0)
         std::cout << " done" << std::endl;
-    }
-    else if(fluid.special_flow_=="loma_backward_facing_step")
-    {
-      flow_=loma_backward_facing_step;
-
-      // do the time integration independent setup
-      Setup();
-
-      // allocate one instance of the averaging procedure for
-      // the flow under consideration
-      statistics_bfs_ = rcp(new TurbulenceStatisticsBfs(discret_,params_,"geometry_LES_flow_with_heating"));
-
-      // build statistics manager for inflow channel flow
-      if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
-      {
-        if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
-        {
-          // allocate one instance of the averaging procedure for the flow under consideration
-          statistics_channel_=rcp(new TurbulenceStatisticsCha(discret_,
-                                                              alefluid_,
-                                                              mydispnp_,
-                                                              params_,
-                                                              subgrid_dissipation_));
-        }
-      }
     }
     else if(fluid.special_flow_=="square_cylinder")
     {
@@ -617,61 +622,65 @@ namespace FLD
 
     ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
 
-    // check if we want to compute averages of Smagorinsky
-    // constants, effective viscosities etc
     smagorinsky_=false;
+    scalesimilarity_=false;
+    multifractal_=false;
     if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
         ==
         "CLASSICAL_LES")
     {
+      // check if we want to compute averages of Smagorinsky
+      // constants, effective viscosities etc
       if(modelparams->get<string>("PHYSICAL_MODEL","no_model")
          ==
          "Dynamic_Smagorinsky"
          ||
-         params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+         modelparams->get<string>("PHYSICAL_MODEL","no_model")
          ==
          "Smagorinsky_with_van_Driest_damping"
          ||
-         params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+         modelparams->get<string>("PHYSICAL_MODEL","no_model")
          ==
          "Smagorinsky"
         )
       {
-        if(discret_->Comm().MyPID()==0)
-        {
-          cout << "                             Initialising output for Smagorinsky type models\n\n\n";
-          fflush(stdout);
-        }
+//        if(discret_->Comm().MyPID()==0)
+//        {
+//          cout << "                             Initialising output for Smagorinsky type models\n\n\n";
+//          fflush(stdout);
+//        }
 
         smagorinsky_=true;
       }
+      // check if we want to compute averages of scale similarity
+      // quantities (tau_SFS)
+      else if(modelparams->get<string>("PHYSICAL_MODEL","no_model")
+              ==
+              "Scale_Similarity")
+      {
+//        if(discret_->Comm().MyPID()==0)
+//        {
+//          cout << "                             Initializing output for scale similarity type models\n\n\n";
+//          fflush(stdout);
+//        }
+
+        scalesimilarity_=true;
+      }
+      // check if we want to compute averages of multifractal
+      // quantities (N, B)
+      else if(modelparams->get<string>("PHYSICAL_MODEL","no_model")
+           ==
+           "Multifractal_Subgrid_Scales")
+      {
+//        if(discret_->Comm().MyPID()==0)
+//        {
+//          cout << "                             Initializing output for multifractal subgrid scales type models\n\n\n";
+//          fflush(stdout);
+//        }
+
+        multifractal_=true;
+      }
     }
-
-    // check if we want to compute averages of scale similarity
-    // quantities (tau_SFS)
-        scalesimilarity_=false;
-        if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
-            ==
-            "CLASSICAL_LES")
-        {
-          if(modelparams->get<string>("PHYSICAL_MODEL","no_model")
-             ==
-             "Scale_Similarity"
-             ||
-             params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
-             ==
-             "Mixed_Scale_Similarity_Eddy_Viscosity_Model"
-            )
-          {
-            if(discret_->Comm().MyPID()==0)
-            {
-              cout << "                             Initialising output for scale similarity type models\n\n\n";
-              fflush(stdout);
-            }
-
-            scalesimilarity_=true;
-          }
-        }
 
     // parameters for sampling/dumping period
     if (flow_ != no_special_flow)
@@ -911,7 +920,7 @@ namespace FLD
 
         statistics_bfs_->DoTimeSample(myvelnp_);
 
-        // build statistics manager for inflow channel flow
+        // do time sample for inflow channel flow
         if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
         {
           if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
@@ -920,6 +929,39 @@ namespace FLD
           }
         }
 
+        break;
+      }
+      case loma_backward_facing_step:
+      {
+        if(statistics_bfs_==null)
+          dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step at low Mach number");
+
+        if (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type") == INPAR::FLUID::incompressible)
+        {
+          statistics_bfs_->DoTimeSample(myvelnp_);
+
+          // do time sample for inflow channel flow
+          if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+          {
+            if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+            {
+              statistics_channel_->DoTimeSample(myvelnp_,*myforce_);
+            }
+          }
+        }
+        else
+        {
+          statistics_bfs_->DoLomaTimeSample(myvelnp_,myscanp_,eosfac);
+
+          // do time sample for inflow channel flow
+          if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+          {
+            if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
+            {
+              statistics_channel_->DoLomaTimeSample(myvelnp_,myscanp_,*myforce_,eosfac);
+            }
+          }
+        }
         break;
       }
       case combust_oracles:
@@ -938,30 +980,6 @@ namespace FLD
           {
             statistics_channel_->DoTimeSample(myvelnp_,*myforce_);
           }
-        }
-        break;
-      }
-      case loma_backward_facing_step:
-      {
-        if(statistics_bfs_==null)
-          dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step at low Mach number");
-
-        if (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type") == INPAR::FLUID::incompressible)
-        {
-          statistics_bfs_->DoTimeSample(myvelnp_);
-
-          // build statistics manager for inflow channel flow
-          if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
-          {
-            if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
-            {
-              statistics_channel_->DoTimeSample(myvelnp_,*myforce_);
-            }
-          }
-        }
-        else
-        {
-          statistics_bfs_->DoLomaTimeSample(myvelnp_,myscanp_,eosfac);
         }
         break;
       }
@@ -1069,7 +1087,7 @@ namespace FLD
             else
               dserror("Time integartion scheme not supported!");
 
-            if (params_.get<string>("fs subgrid viscosity")!= "No")
+            if (params_.sublist("SUBGRID VISCOSITY").get<string>("FSSUGRVISC")!= "No")
             {
               statevecs.insert(pair<string,RCP<Epetra_Vector> >("fsvel",myfsvelaf_));
               if (myfsvelaf_==null)
@@ -1103,6 +1121,23 @@ namespace FLD
       if(discret_->Comm().MyPID()==0)
       {
         cout << "\n";
+      }
+
+      if(multifractal_)
+      {
+        switch(flow_)
+        {
+          case channel_flow_of_height_2:
+          {
+            // add parameters of multifractal subgrid-scales model
+            statistics_channel_->AddModelParamsMultifractal(myvelaf_,myfsvelaf_);
+            break;
+          }
+          default:
+          {
+            break;
+          }
+        }
       }
 
       // add vector(s) to general mean value computation
@@ -1226,19 +1261,49 @@ namespace FLD
         if(outputformat == write_single_record)
           statistics_bfs_->DumpStatistics(step);
 
-        // build statistics manager for inflow channel flow
+        //write statistics of inflow channel flow
         if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
         {
           if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
           {
-            if(outputformat == write_multiple_records)
-            {
-              statistics_channel_->TimeAverageMeansAndOutputOfStatistics(step);
-              statistics_channel_->ClearStatistics();
-            }
+            statistics_channel_->TimeAverageMeansAndOutputOfStatistics(step);
+            statistics_channel_->ClearStatistics();
+          }
+        }
+        break;
+      }
+      case loma_backward_facing_step:
+      {
+        if(statistics_bfs_==null)
+          dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step at low Mach number");
 
-            if(outputformat == write_single_record)
-              statistics_channel_->DumpStatistics(step);
+        if (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type") == INPAR::FLUID::incompressible)
+        {
+          if(outputformat == write_single_record)
+            statistics_bfs_->DumpStatistics(step);
+
+          // write statistics of inflow channel flow
+          if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+          {
+            if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+            {
+                statistics_channel_->TimeAverageMeansAndOutputOfStatistics(step);
+                statistics_channel_->ClearStatistics();
+            }
+          }
+        }
+        else
+        {
+          if(outputformat == write_single_record)
+            statistics_bfs_->DumpLomaStatistics(step);
+
+          // write statistics of inflow channel flow
+          if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
+          {
+            if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
+            {
+                statistics_channel_->DumpLomaStatistics(step);
+            }
           }
         }
         break;
@@ -1265,33 +1330,6 @@ namespace FLD
               statistics_channel_->ClearStatistics();
             }
           }
-        }
-        break;
-      }
-      case loma_backward_facing_step:
-      {
-        if(statistics_bfs_==null)
-          dserror("need statistics_bfs_ to do a time sample for a flow over a backward-facing step at low Mach number");
-
-        if (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params_, "Physical Type") == INPAR::FLUID::incompressible)
-        {
-          if(outputformat == write_single_record)
-            statistics_bfs_->DumpStatistics(step);
-
-          // build statistics manager for inflow channel flow
-          if (DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")==true)
-          {
-            if(params_.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
-            {
-              if(outputformat == write_single_record)
-                statistics_channel_->DumpStatistics(step);
-            }
-          }
-        }
-        else
-        {
-          if(outputformat == write_single_record)
-            statistics_bfs_->DumpLomaStatistics(step);
         }
         break;
       }
@@ -1478,43 +1516,6 @@ namespace FLD
     return;
   } // RestartScaTra
 
-
-  /*----------------------------------------------------------------------
-
-  Clear all statistics collected up to now
-
-  ----------------------------------------------------------------------*/
-  void TurbulenceStatisticManager::Reset()
-  {
-    switch(flow_)
-    {
-    case channel_flow_of_height_2:
-    case loma_channel_flow_of_height_2:
-    {
-      if (statistics_channel_==null)
-        dserror("need statistics_channel_ to do a time sample for a turbulent channel flow");
-      statistics_channel_->ClearStatistics();
-      break;
-    }
-    case lid_driven_cavity:
-    case loma_lid_driven_cavity:
-    case backward_facing_step:
-    case combust_oracles:
-    case loma_backward_facing_step:
-    case square_cylinder:
-    {
-      // nothing to do here
-      break;
-    }
-    default:
-    {
-      // nothing to do here
-      break;
-    }
-    }
-
-    return;
-  }
 
 } // end namespace FLD
 

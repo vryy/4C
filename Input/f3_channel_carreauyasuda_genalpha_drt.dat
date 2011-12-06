@@ -73,7 +73,6 @@ ALPHA_F      			0.666666666666660
 GAMMA        			0.666666666666667
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-06
-FSSUGRVISC                      No
 GAMMA                           1
 GRIDVEL                         1
 INITIALFIELD                    zero_field
@@ -106,9 +105,7 @@ VSTAB                           no_vstab
 -------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 CANONICAL_FLOW                  no
 HOMDIR                          xz
-CHANNEL_L_TAU                   0
 CHAN_AMPL_INIT_DIST             0.1
-C_SMAGORINSKY                   0
 DUMPING_PERIOD                  1
 PHYSICAL_MODEL                  no_model
 SAMPLING_START                  1

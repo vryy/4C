@@ -14,6 +14,7 @@ Maintainer: Ursula Rasthofer
 #ifndef FLUID_TURBULENCE_DEFINES_H
 #define FLUID_TURBULENCE_DEFINES_H
 
+namespace FLD {
 
 //----------------------------------//
 // scale similarity model           //
@@ -30,9 +31,6 @@ Maintainer: Ursula Rasthofer
 //> only right hand side
 //#define SGS_TERM_PREFILTERING
 
-//> subgrid-stress term is considered in residual of momentum equation for stabilization terms
-//> only original version
-//#define TAU_SUBGRID_IN_RES_MOM
 
 //> modified version of the subgrid-scale model proposed by Liu, Meneveau and Katz (1994)
           /*
@@ -66,10 +64,6 @@ Maintainer: Ursula Rasthofer
               */
 //#define SGS_TERM_REYNOLDS
 
-//> partially integrated form
-//#define PARTINT
-
-
 //----------------------------------//
 // multifractal subgrid-scales      //
 //----------------------------------//
@@ -84,7 +78,7 @@ Maintainer: Ursula Rasthofer
               |                                        |
                \                                      /
       */
-#define SGS_TERM_CROSS
+//#define SGS_TERM_CROSS
 //> Reynolds-stress term
 //> currently conservative form (may be switched off)
       /*
@@ -94,77 +88,32 @@ Maintainer: Ursula Rasthofer
               |                         |
                \                       /
       */
-#define SGS_TERM_REYNOLDS
+//#define SGS_TERM_REYNOLDS
 
-//> include lhs contribution (as far as possible)
-//#define LHS
-
-//> partially integrated form (only rhs side)
-//#define PARTINT
-
-//> filter width ratio
-    /*
-                    Test Filter
-           alpha = -------------
-                    Grid Filter
-     */
-//> algebraic_multigrid_operator: alpha = 3
-//> box_filter: alpha = 2
-#define ALPHA 3.0
-//> proportionality constant
-#define C 0.125
-
+//> turn direction-dependence on: can be used for different Ns or weights for N
+//> caution: smoothing not included
+//#define DIR_N
 //> parameter depending on the ratio of resolved scales and viscous scales
 //> same values for x, y and z if DIRNUM is turned of
-#define NUMX 2
-#define NUMY 2
-#define NUMZ 2
-//> turn direction-dependence on
-//#define DIRNUM
+//#define NUMX 2
+//#define NUMY 2
+//#define NUMZ 2
+//> weights for N depending on direction
+//#define WEIGHT_NX 1
+//#define WEIGHT_NY 1
+//#define WEIGHT_NZ 0.5
 
 //> calculate N depending on the element Reynolds-number for each element
-#define RE_ELE
-//> set reference length for Reynolds-number
-//> stream length
-#define STREAM_LENGTH
-//> volume equivalent diameter
-//#define VOLUME_EQ_DIA
-//> length of cube with same volume
-//#define CUBIC_LENGTH
-//> set reference velocity
-//> use resolved velocity at element center
-//#define RESOLVED_VEL
-//> use fine-scale velocity at element center
-#define FINESCALE_VEL
-//> scale element Reynolds-number
-//#define FINESCALE_VEL_SCALED
-//> factor for scaling
-//#define FAC 0.75
-//> use strain rate
-//#define STRAINRATE
-//> set N equal to zero if N < Tol
-//#define CLIPPING
-//#define TOL 1.0
-//> set N equal to zero in all elements adjacent to the wall
-//#define ZERO_N
+//> length of element edge (minimum or maximum)
+//#define HMIN
+//#define HMAX
 
+//> use constant B instead of calculation
+//> Warning: overwrites calculation of B
+//#define CONST_B
+//> high Reynolds number limit: B = 0.42
+//#define B_CONST 0.21
 
-//> additional eddy viscosity models
-
-//> small-scale eddy viscosity (similar to avm3)
-#define FINE_SCALE_EDDY_VISC
-//> set Smagorinsky-constant
-#define MYCS 0.06
-//> set velocity for calculation of subgrid-viscosity
-//> use resolved velocity
-//#define ALL_SCALE
-//> use fine-scale velocity
-#define SMALL_SCALE
-//> use subgrid-scale velocity of multifractal subgrid-scale model
-//#define SUBGRID_SCALE
-
-//> calculate subgrid-viscosity based on subgid-energy
-//#define SUBGRID_ENR_EDDY_VISC
-
+}
 #endif // #ifndef FLUID_TURBULENCE_DEFINES_H
 #endif // #ifdef CCADISCRET

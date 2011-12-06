@@ -39,6 +39,10 @@ Maintainer: Georg Bauer
 
 #include "../linalg/linalg_utils.H"
 
+#include "../drt_inpar/inpar_turbulence.H"
+// include define flags for turbulence models under development
+#include "../drt_fluid/fluid_turbulence_defines.H"
+
 using namespace DRT::UTILS;
 
 /*
@@ -79,6 +83,8 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
     act = Fluid3::calc_fluid_genalpha_average_for_subscales_and_residual;
   else if (action == "calc_dissipation")
     act = Fluid3::calc_dissipation;
+  else if (action == "calc model parameter multifractal subgid scales")
+    act = Fluid3::calc_model_params_mfsubgr_scales;
   else if (action == "calc_fluid_error")
     act = Fluid3::calc_fluid_error;
   else if (action == "calc_turbulence_statistics")
@@ -103,6 +109,8 @@ DRT::ELEMENTS::Fluid3::ActionType DRT::ELEMENTS::Fluid3::convertStringToActionTy
     act = Fluid3::set_general_fluid_parameter;
   else if (action == "set_time_parameter")
     act = Fluid3::set_time_parameter;
+  else if (action == "set_turbulence_parameter")
+    act = Fluid3::set_turbulence_parameter;
   else
   dserror("(%s) Unknown type of action for Fluid3",action.c_str());
   return act;
@@ -131,6 +139,12 @@ void DRT::ELEMENTS::Fluid3Type::PreEvaluate(DRT::Discretization& dis,
   {
     DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter = DRT::ELEMENTS::Fluid3ImplParameter::Instance();
     f3Parameter->SetElementTimeParameter(p);
+  }
+
+  if (action == "set_turbulence_parameter")
+  {
+    DRT::ELEMENTS::Fluid3ImplParameter* f3Parameter = DRT::ELEMENTS::Fluid3ImplParameter::Instance();
+    f3Parameter->SetElementTurbulenceParameter(p);
   }
 
   return;
@@ -455,9 +469,11 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
           RCP<Epetra_MultiVector> col_filtered_modeled_subgrid_stress =
             params.get<RCP<Epetra_MultiVector> >("col_filtered_modeled_subgrid_stress");
 
-          double LijMij   = 0;
-          double MijMij   = 0;
-          double center   = 0;
+          double LijMij   = 0.0;
+          double MijMij   = 0.0;
+          double xcenter  = 0.0;
+          double ycenter  = 0.0;
+          double zcenter  = 0.0;
 
           const DiscretizationType distype = this->Shape();
           switch (distype)
@@ -470,7 +486,9 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
               col_filtered_modeled_subgrid_stress,
               LijMij                             ,
               MijMij                             ,
-              center                             );
+              xcenter                            ,
+              ycenter                            ,
+              zcenter                            );
             break;
           }
           case DRT::Element::tet4:
@@ -481,7 +499,9 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
               col_filtered_modeled_subgrid_stress,
               LijMij                             ,
               MijMij                             ,
-              center                             );
+              xcenter                            ,
+              ycenter                            ,
+              zcenter                            );
             break;
           }
           default:
@@ -500,7 +520,9 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
 
           params.set<double>("LijMij",LijMij);
           params.set<double>("MijMij",MijMij);
-          params.set<double>("center",center);
+          params.set<double>("xcenter",xcenter);
+          params.set<double>("ycenter",ycenter);
+          params.set<double>("zcenter",zcenter);
         } // end if(nsd == 3)
         else dserror("action 'calc_smagorinsky_const' is a 3D specific action");
       }
@@ -572,7 +594,7 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       {
         if (nsd == 3)
         {
-          if (this->Owner() == discretization.Comm().MyPID())
+          if (this->Owner() == discretization.Comm().MyPID()) // don't store values of gosted elements
           {
             return DRT::ELEMENTS::Fluid3ImplInterface::Impl(Shape())->CalcDissipation(
               this,
@@ -585,6 +607,45 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
         else dserror("%i D elements does not support calculation of dissipation", nsd);
       }
       break;
+      case calc_model_params_mfsubgr_scales:
+      {
+        if (nsd == 3)
+        {
+            // velocity values
+            RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
+            // fine scale velocity values
+            RCP<const Epetra_Vector> fsvelnp = discretization.GetState("fsvelnp");
+            if (velnp==null or fsvelnp==null)
+            {
+              dserror("Cannot get state vectors");
+            }
+
+            // extract local values from the global vectors
+            vector<double> myvel(lm.size());
+            DRT::UTILS::ExtractMyValues(*velnp,myvel,lm);
+            vector<double> myfsvel(lm.size());
+            DRT::UTILS::ExtractMyValues(*fsvelnp,myfsvel,lm);
+
+            const DiscretizationType distype = this->Shape();
+            switch (distype)
+            {
+            case DRT::Element::hex8:
+            {
+              // don't store values of gosted elements
+              if (this->Owner() == discretization.Comm().MyPID())
+              {
+                this->f3_get_mf_params<8,3,DRT::Element::hex8>(params,mat,myvel,myfsvel);
+              }
+              break;
+            }
+            default:
+            {
+              dserror("Unknown element type for box filter application\n");
+            }
+            }
+        }
+        else dserror("%i D elements does not support calculation of model parameters", nsd);
+      }
       case get_density:
       {
         // This is a very poor way to transport the density to the
@@ -673,6 +734,8 @@ int DRT::ELEMENTS::Fluid3::Evaluate(ParameterList& params,
       case set_general_fluid_parameter:
         break;
       case set_time_parameter:
+        break;
+      case set_turbulence_parameter:
         break;
       default:
         dserror("Unknown type of action for Fluid3");
@@ -2053,7 +2116,9 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   RCP<Epetra_MultiVector>& col_filtered_modeled_subgrid_stress,
   double&                  LijMij,
   double&                  MijMij,
-  double&                  center)
+  double&                  xcenter,
+  double&                  ycenter,
+  double&                  zcenter)
 {
 
   LINALG::Matrix<3,iel> evel_hat                            ;
@@ -2088,8 +2153,10 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
   LINALG::Matrix<iel,1> funct;
   LINALG::Matrix<3,iel> deriv;
 
-  //this will be the y-coordinate of a point in the element interior
-  center = 0;
+  //this will be the of a point in the element interior
+  xcenter = 0;
+  ycenter = 0;
+  zcenter = 0;
 
   // get node coordinates of element
   LINALG::Matrix<3,iel> xyze;
@@ -2099,9 +2166,13 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
     xyze(1,inode)=Nodes()[inode]->X()[1];
     xyze(2,inode)=Nodes()[inode]->X()[2];
 
-    center+=xyze(1,inode);
+    xcenter+=xyze(1,inode);
+    ycenter+=xyze(1,inode);
+    zcenter+=xyze(1,inode);
   }
-  center/=iel;
+  xcenter/=iel;
+  ycenter/=iel;
+  zcenter/=iel;
 
 
   // use one point gauss rule to calculate tau at element center
@@ -2379,6 +2450,647 @@ void DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij(
 
   return;
 } // DRT::ELEMENTS::Fluid3::f3_calc_smag_const_LijMij_and_MijMij
+
+
+//----------------------------------------------------------------------
+//                                                       rasthofer 05/11
+//----------------------------------------------------------------------
+template<int NEN, int NSD, DRT::Element::DiscretizationType DISTYPE>
+void DRT::ELEMENTS::Fluid3::f3_get_mf_params(
+  ParameterList&       params,
+  RCP<MAT::Material>   mat   ,
+  vector<double>&      vel   ,
+  vector<double>&      fsvel )
+{
+  // get mfs parameter
+  ParameterList *  turbmodelparamsmfs = &(params.sublist("MULTIFRACTAL SUBGRID SCALES"));
+
+  // allocate a fixed size array for nodal velocities
+  LINALG::Matrix<NSD,NEN>   evel;
+  LINALG::Matrix<NSD,NEN>   efsvel;
+
+  // split velocity and throw away  pressure, insert into element array
+  for (int inode=0;inode<NEN;inode++)
+  {
+    for (int idim=0;idim<NSD;idim++)
+    {
+      evel(idim,inode) = vel[inode*4+idim];
+      efsvel(idim,inode) = fsvel[inode*4+idim];
+    }
+  }
+
+  // get material
+  double dynvisc = 0.0;
+  double dens = 0.0;
+  if (mat->MaterialType() == INPAR::MAT::m_fluid)
+  {
+    const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+    // get constant viscosity
+    dynvisc = actmat->Viscosity();
+    // get constant density
+    dens = actmat->Density();
+    if (dens == 0.0 or dynvisc == 0.0)
+    {
+      dserror("Could not get material parameters!");
+    }
+  }
+
+  // allocate array for gauss-point velocities and derivatives
+  LINALG::Matrix<NSD,1> velint;
+  LINALG::Matrix<NSD,NSD> velintderxy;
+  LINALG::Matrix<NSD,1> fsvelint;
+  LINALG::Matrix<NSD,NSD> fsvelintderxy;
+
+  // allocate arrays for shape functions and derivatives
+  LINALG::Matrix<NEN,1> funct;
+  LINALG::Matrix<NSD,NEN> deriv;
+  LINALG::Matrix<NSD,NEN> derxy;
+  double vol = 0.0;
+
+  // array for element coordinates in physical space
+  LINALG::Matrix<NSD,NEN> xyze;
+  //this will be the y-coordinate of the element center
+  double center = 0;
+  // get node coordinates of element
+  for(int inode=0;inode<NEN;inode++)
+  {
+    for (int idim=0;idim<NSD;idim++)
+      xyze(idim,inode)=this->Nodes()[inode]->X()[idim];
+
+    center+=xyze(1,inode);
+  }
+  center/=NEN;
+
+  // evaluate shape functions and derivatives at element center
+  LINALG::Matrix<NSD,NSD> xji;
+  {
+    // use one-point Gauss rule
+    DRT::UTILS::IntPointsAndWeights<NSD> intpoints(DRT::ELEMENTS::DisTypeToStabGaussRule<DISTYPE>::rule);
+
+    // coordinates of the current integration point
+    const double* gpcoord = (intpoints.IP().qxg)[0];
+    LINALG::Matrix<NSD,1> xsi;
+    for (int idim=0;idim<NSD;idim++)
+    {
+      xsi(idim) = gpcoord[idim];
+    }
+    const double wquad = intpoints.IP().qwgt[0];
+
+    // shape functions and their first derivatives
+    DRT::UTILS::shape_function<DISTYPE>(xsi,funct);
+    DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi,deriv);
+
+    // get Jacobian matrix and determinant
+    LINALG::Matrix<NSD,NSD> xjm;
+    //LINALG::Matrix<NSD,NSD> xji;
+    xjm.MultiplyNT(deriv,xyze);
+    double det = xji.Invert(xjm);
+    // check for degenerated elements
+    if (det < 1E-16)
+      dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", this->Id(), det);
+
+    // set element area or volume
+    vol = wquad*det;
+
+    // compute global first derivatives
+    derxy.Multiply(xji,deriv);
+  }
+
+  // calculate parameters of multifractal subgrid-scales
+  // set input parameters
+  double Csgs = turbmodelparamsmfs->get<double>("CSGS");
+  double alpha = turbmodelparamsmfs->get<double>("ALPHA");
+  // allocate vector for parameter N
+  // N may depend on the direction
+  vector<double> N (3);
+
+  // characteristic element length
+  double hk = 1.0e+10;
+
+  // calculate norm of strain rate
+  double strainnorm = 0.0;
+  // compute (resolved) norm of strain
+  //
+  //          +-                                 -+ 1
+  //          |          /   \           /   \    | -
+  //          |     eps | vel |   * eps | vel |   | 2
+  //          |          \   / ij        \   / ij |
+  //          +-                                 -+
+  //
+  velintderxy.MultiplyNT(evel,derxy);
+  LINALG::Matrix<NSD,NSD> twoeps;
+  for(int idim=0;idim<NSD;idim++)
+  {
+    for(int jdim=0;jdim<NSD;jdim++)
+    {
+      twoeps(idim,jdim) = velintderxy(idim,jdim) + velintderxy(jdim,idim);
+    }
+  }
+
+  for(int idim=0;idim<NSD;idim++)
+  {
+    for(int jdim=0;jdim<NSD;jdim++)
+    {
+      strainnorm += twoeps(idim,jdim)*twoeps(idim,jdim);
+    }
+  }
+  strainnorm = (sqrt(strainnorm/4.0));
+
+  // do we have a fixed parameter N
+  if (not turbmodelparamsmfs->get<bool>("CALC_N"))
+  {
+    for (int rr=1;rr<3;rr++)
+      N[rr] = turbmodelparamsmfs->get<double>("N");
+#ifdef DIR_N // direction dependent stuff, currently not used
+  N[0] = NUMX;
+  N[1] = NUMY;
+  N[2] = NUMZ;
+#endif
+  }
+  else //no, so we calculate N from Re
+  {
+  double Re_ele = -1.0;
+  double scale_ratio = 0.0;
+
+  // get velocity at element center
+  velint.Multiply(evel,funct);
+  fsvelint.Multiply(efsvel,funct);
+  // get norm
+  const double vel_norm = velint.Norm2();
+  const double fsvel_norm = fsvelint.Norm2();
+
+  // calculate characteristic element length
+  // cf. stabilization parameters
+  INPAR::FLUID::RefLength reflength = INPAR::FLUID::cube_edge;
+  if (turbmodelparamsmfs->get<string>("REF_LENGTH") == "cube_edge")
+   reflength = INPAR::FLUID::cube_edge;
+  else if (turbmodelparamsmfs->get<string>("REF_LENGTH") == "sphere_diameter")
+   reflength = INPAR::FLUID::sphere_diameter;
+  else if (turbmodelparamsmfs->get<string>("REF_LENGTH") == "streamlength")
+   reflength = INPAR::FLUID::streamlength;
+  else if (turbmodelparamsmfs->get<string>("REF_LENGTH") == "gradient_based")
+   reflength = INPAR::FLUID::gradient_based;
+  else if (turbmodelparamsmfs->get<string>("REF_LENGTH") == "metric_tensor")
+   reflength = INPAR::FLUID::metric_tensor;
+  else
+   dserror("Unknown length!");
+  switch (reflength)
+  {
+    case INPAR::FLUID::streamlength:
+    {
+        // a) streamlength due to Tezduyar et al. (1992)
+        // normed velocity vector
+        LINALG::Matrix<NSD,1> velino(true);
+        if (vel_norm>=1e-6) velino.Update(1.0/vel_norm,velint);
+        else
+        {
+          velino.Clear();
+          velino(0,0) = 1.0;
+        }
+        LINALG::Matrix<NEN,1> tmp;
+        tmp.MultiplyTN(derxy,velino);
+        const double val = tmp.Norm1();
+        hk = 2.0/val;
+
+      break;
+    }
+    case INPAR::FLUID::sphere_diameter:
+    {
+      // b) volume-equivalent diameter
+      hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+
+      break;
+    }
+    case INPAR::FLUID::cube_edge:
+    {
+      // c) qubic element length
+      hk = pow(vol,(1.0/NSD));
+      break;
+    }
+    case INPAR::FLUID::metric_tensor:
+    {
+        /*          +-           -+   +-           -+   +-           -+
+                    |             |   |             |   |             |
+                    |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
+              G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
+               ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
+                    |    i     j  |   |    i     j  |   |    i     j  |
+                    +-           -+   +-           -+   +-           -+
+        */
+        LINALG::Matrix<3,3> G;
+
+        for (int nn=0;nn<3;++nn)
+        {
+          for (int rr=0;rr<3;++rr)
+          {
+            G(nn,rr) = xji(nn,0)*xji(rr,0);
+            for (int mm=1;mm<3;++mm)
+            {
+              G(nn,rr) += xji(nn,mm)*xji(rr,mm);
+            }
+          }
+        }
+
+        /*          +----
+                     \
+            G : G =   +   G   * G
+            -   -    /     ij    ij
+            -   -   +----
+                     i,j
+        */
+        double normG = 0;
+        for (int nn=0;nn<3;++nn)
+        {
+          for (int rr=0;rr<3;++rr)
+          {
+            normG+=G(nn,rr)*G(nn,rr);
+          }
+        }
+        hk = pow(normG,-0.25);
+
+      break;
+    }
+    case INPAR::FLUID::gradient_based:
+    {
+       velintderxy.MultiplyNT(evel,derxy);
+       LINALG::Matrix<3,1> normed_velgrad;
+
+       for (int rr=0;rr<3;++rr)
+       {
+         normed_velgrad(rr)=sqrt(velintderxy(0,rr)*velintderxy(0,rr)
+                               + velintderxy(1,rr)*velintderxy(1,rr)
+                               + velintderxy(2,rr)*velintderxy(2,rr));
+       }
+       double norm=normed_velgrad.Norm2();
+
+       // normed gradient
+       if (norm>1e-6)
+       {
+         for (int rr=0;rr<3;++rr)
+         {
+           normed_velgrad(rr)/=norm;
+         }
+       }
+       else
+       {
+         normed_velgrad(0) = 1.;
+         for (int rr=1;rr<3;++rr)
+         {
+           normed_velgrad(rr)=0.0;
+         }
+       }
+
+       // get length in this direction
+       double val = 0.0;
+       for (int rr=0;rr<NEN;++rr) /* loop element nodes */
+       {
+         val += FABS( normed_velgrad(0)*derxy(0,rr)
+                     +normed_velgrad(1)*derxy(1,rr)
+                     +normed_velgrad(2)*derxy(2,rr));
+       } /* end of loop over element nodes */
+
+       hk = 2.0/val;
+
+      break;
+    }
+    default:
+      dserror("Unknown length");
+  }
+
+  // alternative length for comparison, currently not used
+#ifdef HMIN
+      double xmin = 0.0;
+      double ymin = 0.0;
+      double zmin = 0.0;
+      double xmax = 0.0;
+      double ymax = 0.0;
+      double zmax = 0.0;
+      for (int inen=0; inen<NEN; inen++)
+      {
+        if (inen == 0)
+        {
+          xmin = xyze(0,inen);
+          xmax = xyze(0,inen);
+          ymin = xyze(1,inen);
+          ymax = xyze(1,inen);
+          zmin = xyze(2,inen);
+          zmax = xyze(2,inen);
+        }
+        else
+        {
+          if(xyze(0,inen)<xmin)
+            xmin = xyze(0,inen);
+          if(xyze(0,inen)>xmax)
+            xmax = xyze(0,inen);
+          if(xyze(1,inen)<ymin)
+            ymin = xyze(1,inen);
+          if(xyze(1,inen)>ymax)
+            ymax = xyze(1,inen);
+          if(xyze(2,inen)<zmin)
+            zmin = xyze(2,inen);
+          if(xyze(2,inen)>zmax)
+            zmax = xyze(2,inen);
+        }
+      }
+      if ((xmax-xmin) < (ymax-ymin))
+      {
+        if ((xmax-xmin) < (zmax-zmin))
+           hk = xmax-xmin;
+      }
+      else
+      {
+        if ((ymax-ymin) < (zmax-zmin))
+           hk = ymax-ymin;
+        else
+           hk = zmax-zmin;
+      }
+#endif
+#ifdef HMAX
+      double xmin = 0.0;
+      double ymin = 0.0;
+      double zmin = 0.0;
+      double xmax = 0.0;
+      double ymax = 0.0;
+      double zmax = 0.0;
+      for (int inen=0; inen<NEN; inen++)
+      {
+        if (inen == 0)
+        {
+          xmin = xyze(0,inen);
+          xmax = xyze(0,inen);
+          ymin = xyze(1,inen);
+          ymax = xyze(1,inen);
+          zmin = xyze(2,inen);
+          zmax = xyze(2,inen);
+        }
+        else
+        {
+          if(xyze(0,inen)<xmin)
+            xmin = xyze(0,inen);
+          if(xyze(0,inen)>xmax)
+            xmax = xyze(0,inen);
+          if(xyze(1,inen)<ymin)
+            ymin = xyze(1,inen);
+          if(xyze(1,inen)>ymax)
+            ymax = xyze(1,inen);
+          if(xyze(2,inen)<zmin)
+            zmin = xyze(2,inen);
+          if(xyze(2,inen)>zmax)
+            zmax = xyze(2,inen);
+        }
+      }
+      if ((xmax-xmin) > (ymax-ymin))
+      {
+        if ((xmax-xmin) > (zmax-zmin))
+           hk = xmax-xmin;
+      }
+      else
+      {
+        if ((ymax-ymin) > (zmax-zmin))
+           hk = ymax-ymin;
+        else
+           hk = zmax-zmin;
+      }
+#endif
+
+  if (hk == 1.0e+10)
+    dserror("Something went wrong!");
+
+  // get reference velocity
+  INPAR::FLUID::RefVelocity refvel = INPAR::FLUID::strainrate;
+  if (turbmodelparamsmfs->get<string>("REF_VELOCITY") == "strainrate")
+   refvel = INPAR::FLUID::strainrate;
+  else if (turbmodelparamsmfs->get<string>("REF_VELOCITY") == "resolved")
+   refvel = INPAR::FLUID::resolved;
+  else if (turbmodelparamsmfs->get<string>("REF_VELOCITY") == "fine_scale")
+   refvel = INPAR::FLUID::fine_scale;
+  else
+   dserror("Unknown velocity!");
+
+  switch (refvel){
+  case INPAR::FLUID::resolved:
+  {
+    Re_ele = vel_norm * hk *dens / dynvisc;
+    break;
+  }
+  case INPAR::FLUID::fine_scale:
+  {
+    Re_ele = fsvel_norm * hk *dens / dynvisc;
+    break;
+  }
+  case INPAR::FLUID::strainrate:
+  {
+    Re_ele = strainnorm * hk * hk * dens / dynvisc;
+    break;
+  }
+  default:
+    dserror("Unknown velocity!");
+  }
+  if (Re_ele < 0.0)
+    dserror("Something went wrong!");
+
+  if (Re_ele < 1.0)
+     Re_ele = 1.0;
+
+  //
+  //   Delta
+  //  ---------  ~ Re^(3/4)
+  //  lambda_nu
+  //
+  scale_ratio = pow(Re_ele,3.0/4.0);
+  scale_ratio = turbmodelparamsmfs->get<double>("C_NU") * pow(Re_ele,3.0/4.0);
+  // scale_ration < 1.0 leads to N < 0
+  // therefore, we clip once more
+  if (scale_ratio < 1.0)
+    scale_ratio = 1.0;
+
+  //         |   Delta     |
+  //  N =log | ----------- |
+  //        2|  lambda_nu  |
+  double N_re = log(scale_ratio)/log(2.0);
+  if (N_re < 0.0)
+    dserror("Something went wrong when calculating N!");
+
+  for (int i=0; i<NSD; i++)
+    N[i] = N_re;
+  }
+#ifdef DIR_N
+    vector<double> weights (3);
+    weights[0] = WEIGHT_NX;
+    weights[1] = WEIGHT_NY;
+    weights[2] = WEIGHT_NZ;
+    for (int i=0; i<NSD; i++)
+      N[i] *= weights[i];
+#endif
+
+
+  // calculate coefficient of subgrid-velocity
+  // allocate array for coefficient B
+  // B may depend on the direction (if N depends on it)
+  LINALG::Matrix<NSD,1> B(true);
+  {
+    //                                  1
+    //          |       1              |2
+    //  kappa = | -------------------- |
+    //          |  1 - alpha ^ (-4/3)  |
+    //
+    double kappa = 1.0/(1.0-pow(alpha,-4.0/3.0));
+
+    //                                                     1
+    //                                  |                 |2
+    //  B = CI * kappa * 2 ^ (-2*N/3) * | 2 ^ (4*N/3) - 1 |
+    //                                  |                 |
+    //
+
+
+    // calculate near-wall correction
+    if (turbmodelparamsmfs->get<bool>("NEAR_WALL_LIMIT"))
+    {
+      // get Re from strain rate
+      double Re_ele_str = strainnorm * hk * hk * dens / dynvisc;
+      if (Re_ele_str < 0.0)
+        dserror("Something went wrong!");
+      // ensure positive values
+      if (Re_ele_str < 1.0)
+        Re_ele_str = 1.0;
+
+      // calculate corrected Csgs
+      //           -3/8
+      //  *(1 - (Re)   )
+      //
+      Csgs *= (1-pow(Re_ele_str,-3.0/8.0));
+    }
+
+    for (int dim=0; dim<NSD; dim++)
+    {
+      B(dim,0) = Csgs * sqrt(kappa) * pow(2.0,-2.0*N[0]/3.0) * sqrt((pow(2.0,4.0*N[0]/3.0)-1));
+    }
+  }
+
+#ifdef DIR_N
+    B(0,0) = Csgs * sqrt(kappa) * pow(2.0,-2.0*N[0]/3.0) * sqrt((pow(2.0,4.0*N[0]/3.0)-1));
+    B(1,0) = Csgs * sqrt(kappa) * pow(2.0,-2.0*N[1]/3.0) * sqrt((pow(2.0,4.0*N[1]/3.0)-1));
+    B(2,0) = Csgs * sqrt(kappa) * pow(2.0,-2.0*N[2]/3.0) * sqrt((pow(2.0,4.0*N[2]/3.0)-1));
+#endif
+#ifdef CONST_B
+  for (int dim=0; dim<NSD; dim++)
+  {
+    B(dim,0) = B_CONST;
+  }
+#endif
+
+  // calculate subgrid-viscosity, if small-scale eddy-viscosity term is included
+  double sgvisc = 0.0;
+#ifdef FINE_SCALE_EDDY_VISC
+  {
+    // get filter width and Smagorinsky-coefficient
+    const double hk_sgvisc = pow(vol,(1.0/NSD));
+    const double Cs = MYCS;
+
+    // compute rate of strain
+    //
+    //          +-                                 -+ 1
+    //          |          /   \           /   \    | -
+    //          | 2 * eps | vel |   * eps | vel |   | 2
+    //          |          \   / ij        \   / ij |
+    //          +-                                 -+
+    //
+    LINALG::Matrix<NSD,NSD> velderxy(true);
+    velintderxy.MultiplyNT(evel,derxy);
+    fsvelintderxy.MultiplyNT(efsvel,derxy);
+#ifdef ALL_SCALE
+    velderxy = velintderxy;
+#endif
+#ifdef SMALL_SCALE
+    velderxy = fsvelintderxy;
+#endif
+#ifdef SUBGRID_SCALE
+    for (int idim=0; idim<NSD; idim++)
+    {
+      for (int jdim=0; jdim<NSD; jdim++)
+        mffsvelintderxy_(idim,jdim) = fsvelintderxy_(idim,jdim) * B(idim,0);
+    }
+    velderxy = mffsvelintderxy;
+#endif
+    LINALG::Matrix<NSD,NSD> two_epsilon;
+    double rateofstrain = 0.0;
+    for (int idim=0; idim<NSD; idim++)
+    {
+      for (int jdim=0; jdim<NSD; jdim++)
+      {
+        two_epsilon(idim,jdim) = velderxy(idim,jdim) + velderxy(jdim,idim);
+      }
+    }
+
+    for (int idim=0; idim<NSD; idim++)
+    {
+      for (int jdim=0; jdim<NSD; jdim++)
+      {
+        rateofstrain += two_epsilon(idim,jdim)*two_epsilon(jdim,idim);
+      }
+    }
+
+    rateofstrain = (sqrt(rateofstrain/2.0));
+
+    //                                      +-                                 -+ 1
+    //                                  2   |          /    \          /   \    | -
+    //    visc          = dens * (C_S*h)  * | 2 * eps | vel |   * eps | vel |   | 2
+    //        turbulent                     |          \   / ij        \   / ij |
+    //                                      +-                                 -+
+    //                                      |                                   |
+    //                                      +-----------------------------------+
+    //                                                   rate of strain
+    sgvisc = dens * Cs * Cs * hk_sgvisc * hk_sgvisc * rateofstrain;
+
+  }
+#endif
+
+  // set parameter in sublist turbulence
+  ParameterList *  modelparams =&(params.sublist("TURBULENCE MODEL"));
+  RCP<vector<double> > sum_N_stream      = modelparams->get<RCP<vector<double> > >("local_N_stream_sum");
+  RCP<vector<double> > sum_N_normal      = modelparams->get<RCP<vector<double> > >("local_N_normal_sum");
+  RCP<vector<double> > sum_N_span        = modelparams->get<RCP<vector<double> > >("local_N_span_sum");
+  RCP<vector<double> > sum_B_stream      = modelparams->get<RCP<vector<double> > >("local_B_stream_sum");
+  RCP<vector<double> > sum_B_normal      = modelparams->get<RCP<vector<double> > >("local_B_normal_sum");
+  RCP<vector<double> > sum_B_span        = modelparams->get<RCP<vector<double> > >("local_B_span_sum");
+  RCP<vector<double> > sum_Csgs          = modelparams->get<RCP<vector<double> > >("local_Csgs_sum");
+  RCP<vector<double> > sum_sgvisc        = modelparams->get<RCP<vector<double> > >("local_sgvisc_sum");
+
+  // the coordinates of the element layers in the channel
+  // planecoords are named nodeplanes in turbulence_statistics_channel!
+  RCP<vector<double> > planecoords  = modelparams->get<RCP<vector<double> > >("planecoords",Teuchos::null);
+  if(planecoords==Teuchos::null)
+    dserror("planecoords is null, but need channel_flow_of_height_2\n");
+
+  bool found = false;
+  int nlayer = 0;
+  for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
+  {
+    if(center<(*planecoords)[nlayer+1])
+    {
+      found = true;
+      break;
+    }
+    nlayer++;
+  }
+  if (found ==false)
+  {
+    dserror("could not determine element layer");
+  }
+
+  (*sum_N_stream)[nlayer] += N[0];
+  (*sum_N_normal)[nlayer] += N[1];
+  (*sum_N_span)[nlayer] += N[2];
+  (*sum_B_stream)[nlayer] += B(0,0);
+  (*sum_B_normal)[nlayer] += B(1,0);
+  (*sum_B_span)[nlayer] += B(2,0);
+  (*sum_Csgs)[nlayer] += Csgs;
+  (*sum_sgvisc)[nlayer] += sgvisc;
+
+
+
+  return;
+} // DRT::ELEMENTS::Fluid3::f3_get_mf_params
 
 
 //----------------------------------------------------------------------

@@ -339,6 +339,16 @@ namespace FLD
     */
     void SetElementTimeParameter();
 
+    //! @name Set general parameter in class f3Parameter
+    /*!
+
+    \brief parameter (fix over all time step) are set in this method.
+           Therefore, these parameter are accessible in the fluid element
+           and in the fluid boundary element
+
+    */
+    void SetElementTurbulenceParameter();
+
     /*!
       \brief compute values at intermediate time steps for gen.-alpha
 
@@ -452,9 +462,6 @@ namespace FLD
 
     /// form of convective term
     std::string convform_;
-
-    /// fine-scale subgrid-viscosity flag
-    std::string fssgv_;
 
     /// cpu-time measures
     double  dtele_;

@@ -128,7 +128,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       genprob.probtyp != prb_fluid_fluid_ale and
       genprob.probtyp != prb_fluid_fluid_fsi)
   {
-    cout<<"Writing out mesh!"<<endl;
     output->WriteMesh(0,0.0);
   }
 
@@ -344,9 +343,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   fluidtimeparams->set<int>("calculate error",
       Teuchos::getIntegralValue<int>(fdyn,"CALCERROR"));
 
-  // ---------------------------- fine-scale subgrid viscosity approach
-  fluidtimeparams->set<string> ("fs subgrid viscosity"   ,fdyn.get<string>("FSSUGRVISC"));
-
   // -----------------------sublist containing stabilization parameters
   fluidtimeparams->sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");
 
@@ -368,6 +364,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // --------------------------sublist containing turbulence parameters
   {
     fluidtimeparams->sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
+    fluidtimeparams->sublist("SUBGRID VISCOSITY")=fdyn.sublist("SUBGRID VISCOSITY");
+    fluidtimeparams->sublist("MULTIFRACTAL SUBGRID SCALES")=fdyn.sublist("MULTIFRACTAL SUBGRID SCALES");
     fluidtimeparams->sublist("TURBULENT INFLOW")=fdyn.sublist("TURBULENT INFLOW");
 
     fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("statistics outfile",DRT::Problem::Instance()->OutputControlFile()->FileName());
@@ -797,9 +795,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   fluidtimeparams->set<int>("calculate error",
       Teuchos::getIntegralValue<int>(fdyn,"CALCERROR"));
 
-  // ---------------------------- fine-scale subgrid viscosity approach
-  fluidtimeparams->set<string> ("fs subgrid viscosity"   ,fdyn.get<string>("FSSUGRVISC"));
-
   // -----------------------sublist containing stabilization parameters
   fluidtimeparams->sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");
 
@@ -811,6 +806,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   // --------------------------sublist containing turbulence parameters
   {
     fluidtimeparams->sublist("TURBULENCE MODEL")=fdyn.sublist("TURBULENCE MODEL");
+    fluidtimeparams->sublist("SUBGRID VISCOSITY")=fdyn.sublist("SUBGRID VISCOSITY");
+    fluidtimeparams->sublist("MULTIFRACTAL SUBGRID SCALES")=fdyn.sublist("MULTIFRACTAL SUBGRID SCALES");
     fluidtimeparams->sublist("TURBULENT INFLOW")=fdyn.sublist("TURBULENT INFLOW");
 
     fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("statistics outfile",DRT::Problem::Instance()->OutputControlFile()->FileName());

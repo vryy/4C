@@ -107,6 +107,19 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
   set<double,LineSortCriterion> clravcoords;
   set<double,LineSortCriterion> ctbavcoords;
 
+  // only necessary for averaging of Samgorinsky constant
+  if (params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+      == "Dynamic_Smagorinsky")
+  {
+    if (homdir_=="z")
+    {
+      x1coordinates_ = rcp(new vector<double> );
+      x2coordinates_ = rcp(new vector<double> );
+    }
+  }
+  set<double,LineSortCriterion> x1avcoords;
+  set<double,LineSortCriterion> x2avcoords;
+
   // loop nodes and build sets of lines accessible on this proc
   for (int i=0; i<discret_->NumMyRowNodes(); ++i)
   {
@@ -124,6 +137,20 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
     if ((node->X()[0]<(5.5+2e-9) && node->X()[0]>(4.5-2e-9)) &&
         (node->X()[1]<(7.5+2e-9) && node->X()[1]>(7.5-2e-9)))
       ctbavcoords.insert(node->X()[0]);
+
+    // only necessary for averaging of Samgorinsky constant
+    if (params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+        == "Dynamic_Smagorinsky")
+    {
+      if (homdir_=="z")
+      {
+        if (node->X()[1]<(0.0+2e-9) && node->X()[1]>(0.0-2e-9))
+          x1avcoords.insert(node->X()[0]);
+        if (node->X()[0]<(0.0+2e-9) && node->X()[0]>(0.0-2e-9))
+          x2avcoords.insert(node->X()[1]);
+      }
+    }
+
 
     if (x3min_>node->X()[2])
     {
@@ -530,6 +557,162 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
         }
       }
     }
+
+    // only necessary for averaging of Samgorinsky constant
+    if (params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+        == "Dynamic_Smagorinsky")
+    {
+      if (homdir_=="z")
+      {
+        // first, communicate coordinates in x1-direction
+        for (int np=0;np<numprocs;++np)
+        {
+          // export set to sendbuffer
+          DRT::PackBuffer data;
+
+          for (set<double,LineSortCriterion>::iterator x1line=x1avcoords.begin();
+               x1line!=x1avcoords.end();
+               ++x1line)
+          {
+            DRT::ParObject::AddtoPack(data,*x1line);
+          }
+          data.StartPacking();
+          for (set<double,LineSortCriterion>::iterator x1line=x1avcoords.begin();
+               x1line!=x1avcoords.end();
+               ++x1line)
+          {
+            DRT::ParObject::AddtoPack(data,*x1line);
+          }
+          swap( sblock, data() );
+
+#ifdef PARALLEL
+          MPI_Request request;
+          int         tag    =myrank;
+
+          int         frompid=myrank;
+          int         topid  =(myrank+1)%numprocs;
+
+          int         length=sblock.size();
+
+          exporter.ISend(frompid,topid,
+                         &(sblock[0]),sblock.size(),
+                         tag,request);
+
+          rblock.clear();
+
+          // receive from predecessor
+          frompid=(myrank+numprocs-1)%numprocs;
+          exporter.ReceiveAny(frompid,tag,rblock,length);
+
+          if(tag!=(myrank+numprocs-1)%numprocs)
+          {
+            dserror("received wrong message (ReceiveAny)");
+          }
+
+          exporter.Wait(request);
+
+          {
+            // for safety
+            exporter.Comm().Barrier();
+          }
+#else
+          // dummy communication
+          rblock.clear();
+          rblock=sblock;
+#endif
+
+          //--------------------------------------------------
+          // Unpack received block into set of all planes.
+          {
+            vector<double> coordsvec;
+
+            coordsvec.clear();
+
+            vector<char>::size_type index = 0;
+            while (index < rblock.size())
+            {
+              double onecoord;
+              DRT::ParObject::ExtractfromPack(index,rblock,onecoord);
+              x1avcoords.insert(onecoord);
+            }
+          }
+        }
+
+        // second, communicate coordinates in x2-centerline-direction
+        for (int np=0;np<numprocs;++np)
+        {
+          // export set to sendbuffer
+          DRT::PackBuffer data;
+
+          for (set<double,LineSortCriterion>::iterator x2line=x2avcoords.begin();
+               x2line!=x2avcoords.end();
+               ++x2line)
+          {
+            DRT::ParObject::AddtoPack(data,*x2line);
+          }
+          data.StartPacking();
+          for (set<double,LineSortCriterion>::iterator x2line=x2avcoords.begin();
+               x2line!=x2avcoords.end();
+               ++x2line)
+          {
+            DRT::ParObject::AddtoPack(data,*x2line);
+          }
+          swap( sblock, data() );
+
+#ifdef PARALLEL
+          MPI_Request request;
+          int         tag    =myrank;
+
+          int         frompid=myrank;
+          int         topid  =(myrank+1)%numprocs;
+
+          int         length=sblock.size();
+
+          exporter.ISend(frompid,topid,
+                         &(sblock[0]),sblock.size(),
+                         tag,request);
+
+          rblock.clear();
+
+          // receive from predecessor
+          frompid=(myrank+numprocs-1)%numprocs;
+          exporter.ReceiveAny(frompid,tag,rblock,length);
+
+          if(tag!=(myrank+numprocs-1)%numprocs)
+          {
+            dserror("received wrong message (ReceiveAny)");
+          }
+
+          exporter.Wait(request);
+
+          {
+            // for safety
+            exporter.Comm().Barrier();
+          }
+#else
+          // dummy communication
+          rblock.clear();
+          rblock=sblock;
+#endif
+
+          //--------------------------------------------------
+          // Unpack received block into set of all planes.
+          {
+            vector<double> coordsvec;
+
+            coordsvec.clear();
+
+            vector<char>::size_type index = 0;
+            while (index < rblock.size())
+            {
+              double onecoord;
+              DRT::ParObject::ExtractfromPack(index,rblock,onecoord);
+              x2avcoords.insert(onecoord);
+            }
+          }
+        }
+      }
+    }
   }
 
   //----------------------------------------------------------------------
@@ -575,6 +758,31 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
         ++coordtb)
     {
       ctbcoordinates_->push_back(*coordtb);
+    }
+
+    // only necessary for averaging of Samgorinsky constant
+    if (params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+        == "Dynamic_Smagorinsky")
+    {
+      if (homdir_=="z")
+      {
+        x1coordinates_ = rcp(new vector<double> );
+        x2coordinates_ = rcp(new vector<double> );
+
+        for(set<double,LineSortCriterion>::iterator coord1=x1avcoords.begin();
+            coord1!=x1avcoords.end();
+            ++coord1)
+        {
+          x1coordinates_->push_back(*coord1);
+        }
+
+        for(set<double,LineSortCriterion>::iterator coord2=x2avcoords.begin();
+            coord2!=x2avcoords.end();
+            ++coord2)
+        {
+          x2coordinates_->push_back(*coord2);
+        }
+      }
     }
   }
 
@@ -775,6 +983,21 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
   cylrsumsqp_->resize(sizelr,0.0);
   cylbsumsqp_ =  rcp(new vector<double> );
   cylbsumsqp_->resize(sizetb,0.0);
+
+  //----------------------------------------------------------------------
+  // define homogeneous direction to compute averages of Smagorinsky constant
+
+  ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+  // check if we want to compute averages of Smagorinsky constant
+  if (modelparams->get<string>("PHYSICAL_MODEL","no_model") == "Dynamic_Smagorinsky")
+  {
+    if (homdir_ == "z")
+    {
+      // store them in parameterlist for access on the element
+      modelparams->set<RefCountPtr<vector<double> > >("dir1coords_",x1coordinates_);
+      modelparams->set<RefCountPtr<vector<double> > >("dir2coords_",x2coordinates_);
+    }
+  }
 
   //----------------------------------------------------------------------
   // initialize output and initially open respective statistics output file

@@ -65,7 +65,6 @@ ALPHA_M                         1
 GAMMA                           1
 CONVCHECK                       L_2_norm                        // No,L_infinity_norm,L_1_norm,L_2_norm,L_2_norm_without_residual_at_itemax
 CONVTOL                         1e-04
-FSSUGRVISC                      No
 GRIDVEL                         1
 INITIALFIELD                    zero_field
 ITEMAX                          20

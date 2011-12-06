@@ -295,10 +295,10 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
     outflow_stabil_= LINALG::CreateVector(*dofrowmap,true);
 
   // (fine-scale) subgrid viscosity?
-  fssgv_ = params_.get<string>("fs subgrid viscosity","No");
+  fssgv_ = params_.sublist("TURBULENCE MODEL").get<string>("FSSUGRVISC","No");
 
   // -------------------------------------------------------------------
-  // necessary only for the VM3 approach: fine-scale solution vector
+  // necessary only for the AVM3 approach: fine-scale solution vector
   // -------------------------------------------------------------------
   if (fssgv_ != "No") fsvelaf_ = LINALG::CreateVector(*dofrowmap,true);
 
@@ -348,6 +348,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // set general fluid parameter defined before
   // ---------------------------------------------------------------------
   SetElementGeneralFluidParameter();
+  SetElementTurbulenceParameter();
 
   // end time measurement for timeloop
 
@@ -2785,7 +2786,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
             {
               cout << "                             " ;
               cout << "with Smagorinsky constant Cs= ";
-              cout << modelparams->get<double>("C_SMAGORINSKY") ;
+              cout << params_.sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") ;
             }
             else if(physmodel == "Smagorinsky_with_van_Driest_damping")
             {
@@ -2798,12 +2799,12 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
 
               cout << "                             "          ;
               cout << "- Smagorinsky constant:   Cs   = "      ;
-              cout << modelparams->get<double>("C_SMAGORINSKY");
+              cout << params_.sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY");
               cout << endl;
 
               cout << "                             "          ;
               cout << "- viscous length      :   l_tau= "      ;
-              cout << modelparams->get<double>("CHANNEL_L_TAU");
+              cout << params_.sublist("SUBGRID VISCOSITY").get<double>("CHANNEL_L_TAU");
               cout << endl;
             }
             else if(physmodel == "Dynamic_Smagorinsky")
@@ -2835,7 +2836,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
           cout << endl << endl;
           cout << params_.get<string>("fs subgrid viscosity");
           cout << " with Smagorinsky constant Cs= ";
-          cout << modelparams->get<double>("C_SMAGORINSKY") ;
+          cout << params_.sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") ;
           cout << endl << endl;
         }
 
@@ -3326,18 +3327,35 @@ void FLD::FluidGenAlphaIntegration::SetElementGeneralFluidParameter()
 
   // set general element parameters
   eleparams.set("form of convective term","convective");
-  eleparams.set("fs subgrid viscosity",fssgv_);
   eleparams.set<int>("Linearisation",newton_);
   eleparams.set<int>("Physical Type", physicaltype_);
 
   // parameter for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
 
-  // parameter for turbulent flow
-  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
-
   // timealgorithm is gen_alpha
   eleparams.set<int>("TimeIntegrationScheme", INPAR::FLUID::timeint_gen_alpha);
+
+  // call standard loop over elements
+  discret_->Evaluate(eleparams,null,null,null,null,null);
+  return;
+}
+
+// -------------------------------------------------------------------
+// set turbulence parameters                         rasthofer 11/2011
+// -------------------------------------------------------------------
+void FLD::FluidGenAlphaIntegration::SetElementTurbulenceParameter()
+{
+  ParameterList eleparams;
+
+  eleparams.set("action","set_turbulence_parameter");
+
+  // set general parameters for turbulent flow
+  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+
+  // set model-dependent parameters
+  eleparams.sublist("SUBGRID VISCOSITY") = params_.sublist("SUBGRID VISCOSITY");
+  eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_.sublist("MULTIFRACTAL SUBGRID SCALES");
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,null,null,null,null,null);

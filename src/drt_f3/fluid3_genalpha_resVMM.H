@@ -921,6 +921,7 @@ namespace DRT
       void SetParametersForTurbulenceModel(
         const Fluid3*                       ele            ,
         ParameterList                     & turbmodelparams,
+        ParameterList                     & sgvsicparams,
         const INPAR::FLUID::FineSubgridVisc     & fssgv          ,
         INPAR::FLUID::TurbModelAction           & turb_mod_action,
         double                            & Cs             ,

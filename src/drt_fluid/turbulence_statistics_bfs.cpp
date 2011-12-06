@@ -41,11 +41,12 @@ Maintainer: Volker Gravemeier
 FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   RefCountPtr<DRT::Discretization> actdis,
   ParameterList&                   params,
-  const string&                    geotype)
-  :
-  discret_(actdis),
-  params_ (params),
-  geotype_(TurbulenceStatisticsBfs::none)
+  const string&                    geotype):
+  discret_      (actdis),
+  params_       (params),
+  geotype_      (TurbulenceStatisticsBfs::none),
+  inflowchannel_(DRT::INPUT::IntegralValue<int>(params_.sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
+  inflowmax_    (params_.sublist("TURBULENT INFLOW").get<double>("INFLOW_CHA_SIDE",0.0))
 {
   if (discret_->Comm().MyPID()==0)
   {
@@ -55,6 +56,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
     std::cout << "- geometry of experiment by Kasagi,Matsunaga (expansion ratio 1.5)." << std::endl;
     std::cout << "If additional output in front of the step is required, it has to be set manually (look for numx1supplocations_)." << std::endl;
   }
+
   //----------------------------------------------------------------------
   // plausibility check
   int numdim = params_.get<int>("number of velocity degrees of freedom");
@@ -108,14 +110,23 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   {
     DRT::Node* node = discret_->lRowNode(i);
 
-    if (node->X()[1]<2e-9 && node->X()[1]>-2e-9)
-      x1avcoords.insert(node->X()[0]);
+    if (inflowchannel_==true)
+    {
+      // store also x-coordinate of outflow of inflow channel
+      if ((node->X()[1]<2e-9 && node->X()[1]>-2e-9) && (node->X()[0]>(inflowmax_-2e-9)))
+        x1avcoords.insert(node->X()[0]);
+    }
+    else
+    {
+      if (node->X()[1]<2e-9 && node->X()[1]>-2e-9)
+        x1avcoords.insert(node->X()[0]);
+    }
     if (node->X()[0]<2e-9 && node->X()[0]>-2e-9)
       x2avcoords.insert(node->X()[1]);
 
     // find mins and maxs
     // we do not look for x1min and x1max as they depend
-    // on inflow generation technique
+    // on the inflow generation technique
     if (x2min_>node->X()[1]) x2min_=node->X()[1];
     if (x2max_<node->X()[1]) x2max_=node->X()[1];
 
@@ -524,6 +535,18 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
 
   // set number of samples to zero
   numsamp_ = 0;
+
+  //----------------------------------------------------------------------
+  // define homogeneous direction to compute averages of Smagorinsky constant
+
+  ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+  // check if we want to compute averages of Smagorinsky constant
+  if (modelparams->get<string>("PHYSICAL_MODEL","no_model") == "Dynamic_Smagorinsky")
+  {
+    // store them in parameterlist for access on the element
+    modelparams->set<RefCountPtr<vector<double> > >("dir1coords_",x1coordinates_);
+    modelparams->set<RefCountPtr<vector<double> > >("dir2coords_",x2coordinates_);
+  }
 
   //----------------------------------------------------------------------
   // initialize output and initially open respective statistics output file

@@ -202,6 +202,13 @@ public:
 
   void AddSubfilterStresses(const RCP<Epetra_Vector>   stress12);
 
+  /*!
+    \brief Add parameters of multifractal
+           subgrid-scales model
+  */
+
+  void AddModelParamsMultifractal(Teuchos::RefCountPtr<Epetra_Vector> velnp,
+                                  Teuchos::RefCountPtr<Epetra_Vector> fsvelnp);
 
   /*!
     \brief do averaging of residuals, dissipation rates etc
@@ -323,7 +330,10 @@ private:
   bool                             smagorinsky_;
 
   //! toggle evaluation of scale similarity quantities
-  bool                                 scalesimilarity_;
+  bool                             scalesimilarity_;
+
+  //! toggle evaluation of scale multifractal quantities
+  bool                             multifractal_;
 
   //! toggle whether to evaluate residuals, taus, dissipation rates etc
   bool                             subgrid_dissipation_;
@@ -494,9 +504,37 @@ private:
 
   //! sum over subfilter stress 12 --- used only for scale similarity model
   RefCountPtr<vector<double> >     sumstress12_;
-  //! increment of sumstress12 over in one timestep
+  //! increment of sumstress12 over in one time step
   RefCountPtr<vector<double> >     incrsumstress12_;
 
+  //!--------------------------------------------------
+  //!  averaged quantities from multifractal subgid-scales
+  //!--------------------------------------------------
+
+  //! sum over parameter N --- used only for multifractal subgid-scale model
+  RefCountPtr<vector<double> >     sumN_stream_;
+  RefCountPtr<vector<double> >     sumN_normal_;
+  RefCountPtr<vector<double> >     sumN_span_;
+  //! increment of parameter N over in one time step
+  RefCountPtr<vector<double> >     incrsumN_stream_;
+  RefCountPtr<vector<double> >     incrsumN_normal_;
+  RefCountPtr<vector<double> >     incrsumN_span_;
+  //! sum over parameter B --- used only for multifractal subgid-scale model
+  RefCountPtr<vector<double> >     sumB_stream_;
+  RefCountPtr<vector<double> >     sumB_normal_;
+  RefCountPtr<vector<double> >     sumB_span_;
+  //! increment of parameter B over in one time step
+  RefCountPtr<vector<double> >     incrsumB_stream_;
+  RefCountPtr<vector<double> >     incrsumB_normal_;
+  RefCountPtr<vector<double> >     incrsumB_span_;
+  //! sum over parameter Csgs --- used only for multifractal subgid-scale model
+  RefCountPtr<vector<double> >     sumCsgs_;
+  //! increment of Csgs over in one time step
+  RefCountPtr<vector<double> >     incrsumCsgs_;
+  //! sum over subgrid viscosity --- used only for multifractal subgid-scale model in combination with eddy viscosity model
+  RefCountPtr<vector<double> >     sumsgvisc_;
+  //! increment of subgrid viscosity over in one time step
+  RefCountPtr<vector<double> >     incrsumsgvisc_;
 
   //!--------------------------------------------------
   //!  averaged resudiuals and subscale quantities

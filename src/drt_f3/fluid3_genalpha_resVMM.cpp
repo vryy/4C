@@ -315,6 +315,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
   // --------------------------------------------------
   // set parameters for turbulence model
   ParameterList& turbmodelparams    = params.sublist("TURBULENCE MODEL");
+  ParameterList& sgviscparams    = params.sublist("SUBGRID VISCOSITY");
 
   // the default action is no model
   INPAR::FLUID::TurbModelAction turb_mod_action = INPAR::FLUID::no_model;
@@ -333,6 +334,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::Evaluate(
     SetParametersForTurbulenceModel(
       ele            ,
       turbmodelparams,
+      sgviscparams   ,
       fssgv          ,
       turb_mod_action,
       Cs             ,
@@ -10572,6 +10574,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   // --------------------------------------------------
   // set parameters for turbulence model
   ParameterList& turbmodelparams    = params.sublist("TURBULENCE MODEL");
+  ParameterList& sgviscparams    = params.sublist("SUBGRID VISCOSITY");
 
   // the default action is no model
   INPAR::FLUID::TurbModelAction turb_mod_action = INPAR::FLUID::no_model;
@@ -10588,6 +10591,7 @@ int DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::CalcResAvgs(
   SetParametersForTurbulenceModel(
     ele            ,
     turbmodelparams,
+    sgviscparams   ,
     fssgv          ,
     turb_mod_action,
     Cs             ,
@@ -11791,6 +11795,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetParametersForTurbulenceModel(
   const Fluid3*                       ele            ,
   ParameterList                     & turbmodelparams,
+  ParameterList                     & sgviscparams,
   const INPAR::FLUID::FineSubgridVisc     & fssgv          ,
   INPAR::FLUID::TurbModelAction           & turb_mod_action,
   double                            & Cs             ,
@@ -11806,7 +11811,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetParametersForTurbulenceMod
   // used (and never both), the same input parameter can be exploited.)
   if (fssgv != INPAR::FLUID::no_fssgv && turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
     dserror("No combination of a classical (all-scale) turbulence model and a fine-scale subgrid-viscosity approach currently possible!");
-  if (fssgv != INPAR::FLUID::no_fssgv) Cs = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
+  if (fssgv != INPAR::FLUID::no_fssgv) Cs = sgviscparams.get<double>("C_SMAGORINSKY",0.0);
 
   if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
   {
@@ -11816,7 +11821,7 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetParametersForTurbulenceMod
     {
       // the classic Smagorinsky model only requires one constant parameter
       turb_mod_action = INPAR::FLUID::smagorinsky;
-      Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
+      Cs              = sgviscparams.get<double>("C_SMAGORINSKY");
     }
     else if (physical_turbulence_model == "Smagorinsky_with_van_Driest_damping")
     {
@@ -11828,8 +11833,8 @@ void DRT::ELEMENTS::Fluid3GenalphaResVMM<distype>::SetParametersForTurbulenceMod
       // for the Smagorinsky model with van Driest damping, we need a viscous length to determine
       // the y+ (heigth in wall units)
       turb_mod_action = INPAR::FLUID::smagorinsky_with_van_Driest_damping;
-      Cs              = turbmodelparams.get<double>("C_SMAGORINSKY");
-      l_tau           = turbmodelparams.get<double>("CHANNEL_L_TAU");
+      Cs              = sgviscparams.get<double>("C_SMAGORINSKY");
+      l_tau           = sgviscparams.get<double>("CHANNEL_L_TAU");
 
       //this will be the y-coordinate of a point in the element interior
       double center = 0;

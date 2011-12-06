@@ -39,18 +39,10 @@ namespace DRT
   public:
 
     /*!
-    \brief Constructor for one source discretization
+    \brief Standard Constructor
 
     */
     explicit TransparentIndependentDofSet(RCP<DRT::Discretization> sourcedis,bool parallel=false);
-
-
-    /*!
-    \brief Constructor for several source discretizations
-
-    */
-    explicit TransparentIndependentDofSet(vector<RCP<DRT::Discretization> > sourcedis,bool parallel);
-
 
     /*!
     \brief Destructor
@@ -69,7 +61,7 @@ namespace DRT
 
     /// Assign dof numbers for new discretization using dof numbering from source discretization.
     void TransferDegreesOfFreedom(
-            const vector<RCP<DRT::Discretization> > sourcedis,    ///< source discrets
+            const DRT::Discretization& sourcedis,    ///< source discret
             const DRT::Discretization& newdis,       ///< discretization that gets dof numbering from source discret
             const int                  start         ///< offset for dof numbering (obsolete)
             );
@@ -79,11 +71,10 @@ namespace DRT
     /// for this version, newdis is allowed to be distributed completely different; the
     /// communication  of the dofs is done internally.
     void ParallelTransferDegreesOfFreedom(
-            const vector<RCP<DRT::Discretization> > sourcedis,    ///< source discrets
+            const DRT::Discretization& sourcedis,    ///< source discret
             const DRT::Discretization& newdis,       ///< discretization that gets dof numbering from source discret
             const int                  start         ///< offset for dof numbering (obsolete)
             );
-
 
     /// helper for ParallelTransferDegreesOfFreedom; unpack the received block to
     /// generate the current map node gid -> its dofs
@@ -159,7 +150,7 @@ namespace DRT
 
   private:
 
-    vector<RCP<DRT::Discretization> > sourcedis_; ///< source discretizations
+    RCP<DRT::Discretization> sourcedis_; ///< source discretization
 
     bool parallel_; ///< call ParallelTransferDegreesOfFreedom instead of TransferDegreesOfFreedom
 

@@ -737,6 +737,16 @@ private:
   */
   void SetElementTimeParameter();
 
+  //! @name Set general parameter in class f3Parameter
+  /*!
+
+  \brief parameter (fix over all time step) are set in this method.
+         Therefore, these parameter are accessible in the fluid element
+         and in the fluid boundary element
+
+  */
+  void SetElementTurbulenceParameter();
+
 protected:
 
 private:

@@ -179,6 +179,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
   // ------------------------------------get also fluid turbulence sublist
   const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
   extraparams->sublist("TURBULENCE PARAMETERS")=fdyn.sublist("TURBULENCE MODEL");
+  extraparams->sublist("SUBGRID VISCOSITY")=fdyn.sublist("SUBGRID VISCOSITY");
 
   // -------------------------------------------------------------------
   // algorithm construction depending on

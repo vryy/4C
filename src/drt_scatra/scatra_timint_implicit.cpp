@@ -369,6 +369,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // -------------------------------------------------------------------
   // get fluid turbulence sublist
   ParameterList * turbparams =&(extraparams_->sublist("TURBULENCE PARAMETERS"));
+  ParameterList * sgviscparams =&(extraparams_->sublist("SUBGRID VISCOSITY"));
 
   // parameters for statistical evaluation of normal fluxes
   samstart_  = turbparams->get<int>("SAMPLING_START");
@@ -446,10 +447,10 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       dserror("No combination of classical (all-scale) turbulence model and fine-scale subgrid-diffusivity approach currently possible!");
 
     // Smagorinsky constant
-    Cs_ = turbparams->get<double>("C_SMAGORINSKY",0.0);
+    Cs_ = sgviscparams->get<double>("C_SMAGORINSKY",0.0);
 
     // turbulent Prandtl number
-    tpn_ = turbparams->get<double>("C_TURBPRANDTL",1.0);
+    tpn_ = sgviscparams->get<double>("C_TURBPRANDTL",1.0);
 
     // Output
     if (turbmodel_ and myrank_ == 0)

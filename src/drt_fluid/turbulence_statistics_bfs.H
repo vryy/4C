@@ -186,6 +186,11 @@ private:
   //! geometry of DNS of incompressible flow over bfs by Le, Moin and Kim or geometry of Avancha and Pletcher of LES of flow over bfs with heating
   FLD::TurbulenceStatisticsBfs::GeoType geotype_;
 
+  //! boolean indicating turbulent inflow channel discretization
+  const bool inflowchannel_;
+  //! x-coordinate of outflow of inflow channel
+  const double inflowmax_;
+
    //! pointer to vel/pres^2 field (space allocated in constructor)
   RCP<Epetra_Vector>       squaredvelnp_;
   //! pointer to T^2 field (space allocated in constructor)

@@ -85,7 +85,6 @@ ALPHA_M                         1
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
 CONVTOL                         1e-06
-FSSUGRVISC                      No
 GAMMA                           1
 GRIDVEL                         1
 INITIALFIELD                    zero_field
@@ -118,9 +117,7 @@ TRANSIENT                       no_transient
 VSTAB                           no_vstab
 -------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 CANONICAL_FLOW                  no
-CHANNEL_L_TAU                   0
 CHAN_AMPL_INIT_DIST             0.1
-C_SMAGORINSKY                   0
 DUMPING_PERIOD                  1
 HOMDIR                          not_specified
 PHYSICAL_MODEL                  no_model

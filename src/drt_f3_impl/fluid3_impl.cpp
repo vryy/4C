@@ -46,6 +46,7 @@ Maintainer: Ulrich Kuettler
 #include "../linalg/linalg_fixedsizeblockmatrix.H"
 #include "../linalg/linalg_sparsematrix.H"
 
+#include "../drt_inpar/inpar_turbulence.H"
 // include define flags for turbulence models under development
 #include "../drt_fluid/fluid_turbulence_defines.H"
 
@@ -645,7 +646,8 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
   // time n+1 for all other schemes
   // ---------------------------------------------------------------------
   LINALG::Matrix<nsd_,nen_> fsevelaf(true);
-  if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
+  if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv
+   or f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
   {
     ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &fsevelaf, NULL,"fsvelaf");
   }
@@ -660,7 +662,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::Evaluate(DRT::ELEMENTS::Fluid3*    ele,
   LINALG::Matrix<nsd_,nen_> evel_hat(true);
   LINALG::Matrix<nsd_*nsd_,nen_> ereynoldsstress_hat(true);
   if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
-      or f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
+      or f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity_basic)
   {
     RCP<Epetra_MultiVector> filtered_vel = params.get<RCP<Epetra_MultiVector> >("Filtered velocity");
     RCP<Epetra_MultiVector> fs_vel = params.get<RCP<Epetra_MultiVector> >("Fine scale velocity");
@@ -953,21 +955,25 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
   if (not f3Parameter_->mat_gp_ or not f3Parameter_->tau_gp_)
     GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
 
-
   //-----------------------------MULTIFRACTAL SUBGRID SCALES----------------------------------------
-  //------------------------------------------------------------------------------------------------
-  // calculate coefficient for multifractal modeling of subgrid velocity
-  //------------------------------------------------------------------------------------------------
+  // potential evaluation of multifractal subgrid-scales at element center
+  // coefficient B of fine-scale velocity
   LINALG::Matrix<nsd_,1> B(true);
   if ( f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
   {
-    //TODO: insert
-//    // make sure to get material parameters at element center
-//    if (f3Parameter_->mat_gp_)
-//      GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+    if (not f3Parameter_->B_gp_)
+    {
+      //------------------------------------------------------------------------------------------------
+      // calculate coefficient for multifractal modeling of subgrid velocity
+      //------------------------------------------------------------------------------------------------
+      // make sure to get material parameters at element center
+      if (f3Parameter_->mat_gp_ and f3Parameter_->tau_gp_)
+        //GetMaterialParams(material,evelaf,escaaf,escaam,thermpressaf,thermpressam,thermpressdtam);
+        GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
 
-    // calculate parameters of multifractal subgrid-scales
-    PrepareMultifractalSubgrScales(B, evelaf, fsevelaf, vol);
+      // calculate parameters of multifractal subgrid-scales
+      PrepareMultifractalSubgrScales(B, evelaf, fsevelaf, vol);
+    }
   }
   //-----------------------------MULTIFRACTAL SUBGRID SCALES----------------------------------------
 
@@ -985,15 +991,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     }
     else if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
       CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,f3Parameter_->Cs_);
-#ifdef FINE_SCALE_EDDY_VISC
-    else if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
-          or f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
-    {
-      double Cs=MYCS;
-      CalcScaleSimilarityFineScaleSubgrVisc(evelaf,fsevelaf,vol,Cs,B);//f3Parameter_->Cs_);
-    }
-#endif
-
     // get velocity at element center
     velint_.Multiply(evelaf,funct_);
 
@@ -1036,13 +1033,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     {
       fsvderxy_.MultiplyNT(fsevelaf,derxy_);
     }
-#ifdef FINE_SCALE_EDDY_VISC
-    else if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
-          or f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
-    {
-      fsvderxy_.MultiplyNT(fsevelaf,derxy_);
-    }
-#endif
     else
     {
       fsvderxy_.Clear();
@@ -1079,7 +1069,8 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     // get filtered velocities and reynolds-stresses at integration point
     // get fine scale velocity at integration point for advanced models
     //------------------------------------------------------------------------------------------------
-    if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity)
+    if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
+     or f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity_basic)
     {
         velinthat_.Clear();
         velhatderxy_.Clear();
@@ -1151,12 +1142,52 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     //--------------------------------------SCALE SIMILARITY------------------------------------------
 
 
-    //-----------------------------MULTIFRACTAL SUBGRID SCALES----------------------------------------
-    //------------------------------------------------------------------------------------------------
-    // calculate coefficient for multifractal modeling of subgrid velocity
-    //------------------------------------------------------------------------------------------------
-    if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
+    //----------------------------------------------------------------------
+    // potential evaluation of material parameters, subgrid viscosity
+    // and/or stabilization parameters at integration point
+    //----------------------------------------------------------------------
+    // get material parameters at integration point
+    if (f3Parameter_->mat_gp_)
+      GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+
+    // calculate subgrid viscosity and/or stabilization parameter at integration point
+    if (f3Parameter_->tau_gp_)
     {
+      // calculate all-scale or fine-scale subgrid viscosity at integration point
+      visceff_ = visc_;
+      if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::smagorinsky or f3Parameter_->turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky)
+      {
+        CalcSubgrVisc(evelaf,vol,f3Parameter_->Cs_,Cs_delta_sq,f3Parameter_->l_tau_);
+        // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
+        visceff_ += sgvisc_;
+      }
+      else if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
+        CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,f3Parameter_->Cs_);
+
+      // calculate stabilization parameters at integration point
+      CalcStabParameter(vol);
+    }
+
+    //-----------------------------MULTIFRACTAL SUBGRID SCALES----------------------------------------
+    // potential evaluation of multifractal subgrid-scales at integarion point
+    if ( f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
+    {
+      if (f3Parameter_->B_gp_)
+      {
+        //------------------------------------------------------------------------------------------------
+        // calculate coefficient for multifractal modeling of subgrid velocity
+        //------------------------------------------------------------------------------------------------
+        // make sure to get material parameters at gauss point
+        if (not f3Parameter_->mat_gp_ and not f3Parameter_->tau_gp_)
+          GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+
+        // calculate parameters of multifractal subgrid-scales
+        PrepareMultifractalSubgrScales(B, evelaf, fsevelaf, vol);
+      }
+
+      //------------------------------------------------------------------------------------------------
+      // calculate fine-scale velocity for multifractal subgrid-scale model
+      //------------------------------------------------------------------------------------------------
       fsvelint_.Multiply(fsevelaf,funct_);
 
       fsvderxy_.MultiplyNT(fsevelaf,derxy_);
@@ -1182,41 +1213,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     }
     //-----------------------------MULTIFRACTAL SUBGRID SCALES----------------------------------------
 
-
-
-    //----------------------------------------------------------------------
-    // potential evaluation of material parameters, subgrid viscosity
-    // and/or stabilization parameters at integration point
-    //----------------------------------------------------------------------
-    // get material parameters at integration point
-    if (f3Parameter_->mat_gp_)
-      GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
-
-    // calculate subgrid viscosity and/or stabilization parameter at integration point
-    if (f3Parameter_->tau_gp_)
-    {
-      // calculate all-scale or fine-scale subgrid viscosity at integration point
-      visceff_ = visc_;
-      if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::smagorinsky or f3Parameter_->turb_mod_action_ == INPAR::FLUID::dynamic_smagorinsky)
-      {
-        CalcSubgrVisc(evelaf,vol,f3Parameter_->Cs_,Cs_delta_sq,f3Parameter_->l_tau_);
-        // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
-        visceff_ += sgvisc_;
-      }
-      else if (f3Parameter_->fssgv_ != INPAR::FLUID::no_fssgv)
-        CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,f3Parameter_->Cs_);
-#ifdef SCALE_SIM_FINE_SCALE_EDDY_VISC
-      else if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
-            or f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
-      {
-        double Cs=MYCS;
-        CalcScaleSimilarityFineScaleSubgrVisc(evelaf,fsevelaf,vol,Cs,B);//f3Parameter_->Cs_);
-      }
-#endif
-
-      // calculate stabilization parameters at integration point
-      CalcStabParameter(vol);
-    }
 
     //----------------------------------------------------------------------
     //  evaluation of various partial operators at integration point
@@ -1508,75 +1504,39 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::Sysmat(
     //     (contribution only to right-hand-side vector)
     if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity)
     {
-#ifdef SGS_TERM_PREFILTERING
-      SubGridStressTermPrefiltering(//eid,
+      ScaleSimSubGridStressTermCross(
                         velforce,
                         rhsfac,
                         f3Parameter_->Cl_);
-#endif
 
-#ifdef SGS_TERM
-      SubGridStressTerm(//eid,
+      ScaleSimSubGridStressTermReynolds(
                         velforce,
                         rhsfac,
                         f3Parameter_->Cl_);
-#endif
+    }
 
-#ifdef SGS_TERM_CROSS
-      SubGridStressTermCross(//eid,
-                        velforce,
-                        rhsfac,
-                        f3Parameter_->Cl_);
-#endif
-
-#ifdef SGS_TERM_REYNOLDS
-      SubGridStressTermReynolds(//eid,
-                        velforce,
-                        rhsfac,
-                        f3Parameter_->Cl_);
-#endif
-
-#ifdef FINE_SCALE_EDDY_VISC
-      const double fssgviscfac = fssgvisc_*rhsfac;
-
-      FineScaleSubGridViscosityTerm(velforce,
-                                    fssgviscfac);
-
-      //FineScaleSimilaritySubGridViscosityTerm(velforce,
-      //                                        fssgviscfac);
-#endif
+    if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity_basic)
+    {
+      ScaleSimSubGridStressTermPrefiltering(
+                            velforce,
+                            rhsfac,
+                            f3Parameter_->Cl_);
     }
 
     // 17) subgrid-stress term (multifractal subgrid scales)
     if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
     {
-#ifdef SGS_TERM_CROSS
-      MultfracSubGridScalesCross(//eid,
+      MultfracSubGridScalesCross(
                         estif_u,
                         velforce,
                         timefacfac,
-                        rhsfac,
-                        B);
-#endif
+                        rhsfac);
 
-#ifdef SGS_TERM_REYNOLDS
-      MultfracSubGridScalesReynolds(//eid,
+      MultfracSubGridScalesReynolds(
                         estif_u,
                         velforce,
                         timefacfac,
-                        rhsfac,
-                        B);
-#endif
-
-#ifdef FINE_SCALE_EDDY_VISC
-      const double fssgviscfac = fssgvisc_*rhsfac;
-
-      FineScaleSubGridViscosityTerm(velforce,
-                                    fssgviscfac);
-
-      //FineScaleSimilaritySubGridViscosityTerm(velforce,
-      //                                        fssgviscfac);
-#endif
+                        rhsfac);
     }
 
     // linearization wrt mesh motion
@@ -2877,6 +2837,7 @@ else dserror("Update of material parameters not required for this material type!
 return;
 } // Fluid3Impl::UpdateMaterialParams
 
+
 /*----------------------------------------------------------------------*
  |  compute multifractal subgrid scales parameters    rasthofer 04/2011 |
  *----------------------------------------------------------------------*/
@@ -2889,22 +2850,19 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PrepareMultifractalSubgrScales(
 )
 {
     // set input parameters
-    double CI = C;
-    double alpha = ALPHA;
+    double Csgs = f3Parameter_->Csgs_;
+    double alpha = f3Parameter_->alpha_;
+
     // allocate vector for parameter N
     // N may depend on the direction
     vector<double> N (3);
 
-    // fixed parameter N
-#ifndef RE_ELE
-    // get N from input
-    N[0] = NUMX;
-    N[1] = NUMY;
-    N[2] = NUMZ;
-
-    // calculate N depending on element Reynolds number
-#else
+    // potential calculation of Re to determine N
     double Re_ele = -1.0;
+    // characteristic element length
+    double hk = 1.0e+10;
+    double strainnorm = 0.0;
+    // ratio of viscous scale to element length
     double scale_ratio = 0.0;
 
     // get velocity at element center
@@ -2913,122 +2871,336 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::PrepareMultifractalSubgrScales(
     const double vel_norm = velint_.Norm2();
     fsvelint_.Multiply(fsevelaf,funct_);
     const double fsvel_norm = fsvelint_.Norm2();
-//    std::cout << "vel_norm:   " << vel_norm << "     " << "fsvel_norm" << fsvel_norm << std::endl;
-    // characteristic element length
-    double hk = 1.0e+10;
-    // calculate characteristic element length
-    // cf. stabilization parameters
+
+    // do we have a fixed parameter N
+    if (not f3Parameter_->CalcN_)
     {
-#ifdef STREAM_LENGTH
-      // a) streamlength due to Tezduyar et al. (1992)
-      // normed velocity vector
-      LINALG::Matrix<nsd_,1> velino(true);
-      if (vel_norm>=1e-6) velino.Update(1.0/vel_norm,velint_);
+      for (int rr=1;rr<3;rr++)
+        N[rr] = f3Parameter_->N_;
+#ifdef DIR_N // direction dependent stuff, currently not used
+    N[0] = NUMX;
+    N[1] = NUMY;
+    N[2] = NUMZ;
+#endif
+    }
+    else //no, so we calculate N from Re
+    {
+      // calculate characteristic element length
+      // cf. stabilization parameters
+      switch (f3Parameter_->reflength_){
+      case INPAR::FLUID::streamlength:
+      {
+        // a) streamlength due to Tezduyar et al. (1992)
+        // normed velocity vector
+        LINALG::Matrix<nsd_,1> velino(true);
+        if (vel_norm>=1e-6) velino.Update(1.0/vel_norm,velint_);
+        else
+        {
+          velino.Clear();
+          velino(0,0) = 1.0;
+        }
+        LINALG::Matrix<nen_,1> tmp;
+        tmp.MultiplyTN(derxy_,velino);
+        const double val = tmp.Norm1();
+        hk = 2.0/val;
+
+        break;
+      }
+      case INPAR::FLUID::sphere_diameter:
+      {
+        // b) volume-equivalent diameter
+        hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+
+        break;
+      }
+      case INPAR::FLUID::cube_edge:
+      {
+        // c) qubic element length
+        hk = pow(vol,(1.0/nsd_));
+        break;
+      }
+      case INPAR::FLUID::metric_tensor:
+      {
+        /*          +-           -+   +-           -+   +-           -+
+                    |             |   |             |   |             |
+                    |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
+              G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
+               ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
+                    |    i     j  |   |    i     j  |   |    i     j  |
+                    +-           -+   +-           -+   +-           -+
+        */
+        LINALG::Matrix<3,3> G;
+
+        for (int nn=0;nn<3;++nn)
+        {
+          for (int rr=0;rr<3;++rr)
+          {
+            G(nn,rr) = xji_(nn,0)*xji_(rr,0);
+            for (int mm=1;mm<3;++mm)
+            {
+              G(nn,rr) += xji_(nn,mm)*xji_(rr,mm);
+            }
+          }
+        }
+
+        /*          +----
+                     \
+            G : G =   +   G   * G
+            -   -    /     ij    ij
+            -   -   +----
+                     i,j
+        */
+        double normG = 0;
+        for (int nn=0;nn<3;++nn)
+        {
+          for (int rr=0;rr<3;++rr)
+          {
+            normG+=G(nn,rr)*G(nn,rr);
+          }
+        }
+        hk = pow(normG,-0.25);
+
+        break;
+      }
+      case INPAR::FLUID::gradient_based:
+      {
+        vderxy_.MultiplyNT(evelaf,derxy_);
+        LINALG::Matrix<3,1> normed_velgrad;
+
+        for (int rr=0;rr<3;++rr)
+        {
+          normed_velgrad(rr)=sqrt(vderxy_(0,rr)*vderxy_(0,rr)
+                                +
+                                vderxy_(1,rr)*vderxy_(1,rr)
+                                +
+                                vderxy_(2,rr)*vderxy_(2,rr));
+        }
+        double norm=normed_velgrad.Norm2();
+
+        // normed gradient
+        if (norm>1e-6)
+        {
+          for (int rr=0;rr<3;++rr)
+          {
+            normed_velgrad(rr)/=norm;
+          }
+        }
+        else
+        {
+          normed_velgrad(0) = 1.;
+          for (int rr=1;rr<3;++rr)
+          {
+            normed_velgrad(rr)=0.0;
+          }
+        }
+
+        // get length in this direction
+        double val = 0.0;
+        for (int rr=0;rr<nen_;++rr) /* loop element nodes */
+        {
+          val += FABS( normed_velgrad(0)*derxy_(0,rr)
+                      +normed_velgrad(1)*derxy_(1,rr)
+                      +normed_velgrad(2)*derxy_(2,rr));
+        } /* end of loop over element nodes */
+
+        hk = 2.0/val;
+
+        break;
+      }
+      default:
+        dserror("Unknown length");
+      }
+
+// alternative length for comparison, currently not used
+#ifdef HMIN
+      double xmin = 0.0;
+      double ymin = 0.0;
+      double zmin = 0.0;
+      double xmax = 0.0;
+      double ymax = 0.0;
+      double zmax = 0.0;
+      for (int inen=0; inen<nen_; inen++)
+      {
+        if (inen == 0)
+        {
+          xmin = xyze_(0,inen);
+          xmax = xyze_(0,inen);
+          ymin = xyze_(1,inen);
+          ymax = xyze_(1,inen);
+          zmin = xyze_(2,inen);
+          zmax = xyze_(2,inen);
+        }
+        else
+        {
+          if(xyze_(0,inen)<xmin)
+            xmin = xyze_(0,inen);
+          if(xyze_(0,inen)>xmax)
+            xmax = xyze_(0,inen);
+          if(xyze_(1,inen)<ymin)
+            ymin = xyze_(1,inen);
+          if(xyze_(1,inen)>ymax)
+            ymax = xyze_(1,inen);
+          if(xyze_(2,inen)<zmin)
+            zmin = xyze_(2,inen);
+          if(xyze_(2,inen)>zmax)
+            zmax = xyze_(2,inen);
+        }
+      }
+      if ((xmax-xmin) < (ymax-ymin))
+      {
+        if ((xmax-xmin) < (zmax-zmin))
+           hk = xmax-xmin;
+      }
       else
       {
-        velino.Clear();
-        velino(0,0) = 1.0;
+        if ((ymax-ymin) < (zmax-zmin))
+           hk = ymax-ymin;
+        else
+           hk = zmax-zmin;
       }
-      LINALG::Matrix<nen_,1> tmp;
-      tmp.MultiplyTN(derxy_,velino);
-      const double val = tmp.Norm1();
-      hk = 2.0/val;
 #endif
-#ifdef VOLUME_EQ_DIA
-      // b) volume-equivalent diameter
-      hk = pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+#ifdef HMAX
+      double xmin = 0.0;
+      double ymin = 0.0;
+      double zmin = 0.0;
+      double xmax = 0.0;
+      double ymax = 0.0;
+      double zmax = 0.0;
+      for (int inen=0; inen<nen_; inen++)
+      {
+        if (inen == 0)
+        {
+          xmin = xyze_(0,inen);
+          xmax = xyze_(0,inen);
+          ymin = xyze_(1,inen);
+          ymax = xyze_(1,inen);
+          zmin = xyze_(2,inen);
+          zmax = xyze_(2,inen);
+        }
+        else
+        {
+          if(xyze_(0,inen)<xmin)
+            xmin = xyze_(0,inen);
+          if(xyze_(0,inen)>xmax)
+            xmax = xyze_(0,inen);
+          if(xyze_(1,inen)<ymin)
+            ymin = xyze_(1,inen);
+          if(xyze_(1,inen)>ymax)
+            ymax = xyze_(1,inen);
+          if(xyze_(2,inen)<zmin)
+            zmin = xyze_(2,inen);
+          if(xyze_(2,inen)>zmax)
+            zmax = xyze_(2,inen);
+        }
+      }
+      if ((xmax-xmin) > (ymax-ymin))
+      {
+        if ((xmax-xmin) > (zmax-zmin))
+           hk = xmax-xmin;
+      }
+      else
+      {
+        if ((ymax-ymin) > (zmax-zmin))
+           hk = ymax-ymin;
+        else
+           hk = zmax-zmin;
+      }
 #endif
-#ifdef CUBIC_LENGTH
-      // c) qubic element length
-      hk = pow(vol,(1.0/nsd_));
-#endif
+
       if (hk == 1.0e+10)
-        dserror("Set characteristic element length for Re-dependent N!");
+        dserror("Something went wrong!");
+
+      switch (f3Parameter_->refvel_){
+      case INPAR::FLUID::resolved:
+      {
+        Re_ele = vel_norm * hk * densaf_ / visc_;
+        break;
+      }
+      case INPAR::FLUID::fine_scale:
+      {
+        Re_ele = fsvel_norm * hk * densaf_ / visc_;
+        break;
+      }
+      case INPAR::FLUID::strainrate:
+      {
+        strainnorm = GetNormStrain(evelaf,derxy_,vderxy_);
+        Re_ele = strainnorm * hk * hk * densaf_ / visc_;
+        break;
+      }
+      default:
+        dserror("Unknown velocity!");
+      }
+      if (Re_ele < 0.0)
+        dserror("Something went wrong!");
+
+      // clip Re to prevent negative N
+      if (Re_ele < 1.0)
+         Re_ele = 1.0;
+
+      //
+      //   Delta
+      //  ---------  ~ Re^(3/4)
+      //  lambda_nu
+      //
+      scale_ratio = f3Parameter_->c_nu_ * pow(Re_ele,3.0/4.0);
+      // scale_ration < 1.0 leads to N < 0
+      // therefore, we clip once more
+      if (scale_ratio < 1.0)
+        scale_ratio = 1.0;
+
+      //         |   Delta     |
+      //  N =log | ----------- |
+      //        2|  lambda_nu  |
+      double N_re = log(scale_ratio)/log(2.0);
+      if (N_re < 0.0)
+        dserror("Something went wrong when calculating N!");
+
+      // store calculated N
+      for (int i=0; i<nsd_; i++)
+        N[i] = N_re;
     }
-
-#ifdef RESOLVED_VEL
-    Re_ele = vel_norm * hk * densaf_ / visc_;
-#endif
-#ifdef FINESCALE_VEL
-    Re_ele = fsvel_norm * hk * densaf_ / visc_;
-#endif
-#ifdef STRAINRATE
-    double strainnorm = GetNormStrain(evelaf,derxy_,vderxy_);
-    Re_ele = strainnorm * hk * hk * densaf_ / visc_;
-#endif
-    if (Re_ele < 0.0)
-      dserror("Set velocity for Re-dependent N!");
-
-    if (Re_ele < 1.0)
-       Re_ele = 1.0;
-
-    //
-    //   Delta
-    //  ---------  ~ Re^(3/4)
-    //  lambda_nu
-    //
-    scale_ratio = pow(Re_ele,3.0/4.0);
-#ifdef FINESCALE_VEL_SCALED
-  scale_ratio = scale_ratio * FAC;
-  if (scale_ratio < 1.0)
-    scale_ratio = 1.0;
-#endif
-
-    //         |   Delta     |
-    //  N =log | ----------- |
-    //        2|  lambda_nu  |
-  //    int N_re = 0;
-  //    if (scale_ratio < 1.5)
-  //      N_re = 0;
-  //    else if (scale_ratio >= 1.5  and scale_ratio < 3.0)
-  //      N_re = 1;
-  //    else if (scale_ratio >= 3.0  and scale_ratio < 6.0)
-  //      N_re = 2;
-  //    else if (scale_ratio >= 6.0  and scale_ratio < 12.0)
-  //      N_re = 3;
-  //    else if (scale_ratio >= 12.0 and scale_ratio < 24.0)
-  //      N_re = 4;
-  //    else if (scale_ratio >= 24.0)
-  //      N_re = 5;
-  //    else
-  //      dserror("Could not estimate N!");
-    //or
-    double N_re = log(scale_ratio)/log(2.0);
-    if (N_re < 0.0)
-      dserror("Something went wrong when calculating N!");
-#ifdef CLIPPING
-  if (N_re < TOL)
-    N_re = 0.0;
-#endif
-
-#ifdef ZERO_N
-  //this will be the y-coordinate of a point in the element interior
-  double center = 0.0;
-  // get node coordinates of element
-  for(int inode=0;inode<nen_;inode++)
-  {
-    center+=xyze_(1,inode);
-  }
-  center/=nen_;
-  double tol = 1e-5;
-  if ((center <= (-9.9819e-01+tol)) and (center >= (-9.9819e-01-tol))
-      or (center <= (9.9819e-01+tol)) and (center >= (9.9819e-01-tol)))
-    N_re = 0.0;
-#endif
-
-    for (int i=0; i<nsd_; i++)
-      N[i] = N_re;
 
     velint_.Clear();
     fsvelint_.Clear();
+
+#ifdef DIR_N
+    vector<double> weights (3);
+    weights[0] = WEIGHT_NX;
+    weights[1] = WEIGHT_NY;
+    weights[2] = WEIGHT_NZ;
+    for (int i=0; i<nsd_; i++)
+      N[i] *= weights[i];
 #endif
 
-    CalcMultiFracSubgridVelCoef(CI,alpha,N,B);
+    // calculate near-wall correction
+    if (f3Parameter_->near_wall_limit_)
+    {
+      // not yet calculated, estimate norm of strain rate
+      if (f3Parameter_->CalcN_ or f3Parameter_->refvel_ != INPAR::FLUID::strainrate)
+        strainnorm = GetNormStrain(evelaf,derxy_,vderxy_);
+
+      // get Re from strain rate
+      double Re_ele_str = strainnorm * hk * hk * densaf_ / visc_;
+      if (Re_ele_str < 0.0)
+        dserror("Something went wrong!");
+      // ensure positive values
+      if (Re_ele_str < 1.0)
+         Re_ele_str = 1.0;
+
+      // calculate corrected Csgs
+      //           -3/8
+      //  *(1 - (Re)   )
+      //
+      Csgs *= (1-pow(Re_ele_str,-3.0/8.0));
+    }
+
+    // call function to compute coefficient B
+    CalcMultiFracSubgridVelCoef(Csgs,alpha,N,B);
 }
 
 
 /*----------------------------------------------------------------------*
- |  compute turbulence parameters                            ehrl 04/10 |
+ |  compute turbulence parameters                       rasthofer 10/11 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::GetTurbulenceParams(
@@ -3081,10 +3253,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetTurbulenceParams(
   {
     //turb_mod_action_ = Fluid3::dynamic_smagorinsky;
 
-    // for turbulent channel flow, use averaged quantities
-    if (turbmodelparams.get<string>("CANONICAL_FLOW","no")
-        ==
-        "channel_flow_of_height_2")
+    // for homogeneous flow, use averaged quantities
+    if (f3Parameter_->Cs_averaged_==true){
+    if (turbmodelparams.get<string>("HOMDIR","not_specified")
+            !=
+            "not_specified")
     {
       RCP<vector<double> > averaged_LijMij
         =
@@ -3093,34 +3266,110 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetTurbulenceParams(
         =
         turbmodelparams.get<RCP<vector<double> > >("averaged_MijMij_");
 
-      //this will be the y-coordinate of a point in the element interior
+      // get homogeneous direction
+      string homdir = turbmodelparams.get<string>("HOMDIR","not_specified");
+
       // here, the layer is determined in order to get the correct
       // averaged value from the vector of averaged (M/L)ijMij
-      double center = 0;
+      double xcenter = 0.0;
+      double ycenter = 0.0;
+      double zcenter = 0.0;
       for(int inode=0;inode<nen_;inode++)
       {
-        center += xyze_( 1, inode );
+        xcenter += xyze_( 0, inode );
+        ycenter += xyze_( 1, inode );
+        zcenter += xyze_( 2, inode );
       }
-      center/=nen_;
+      xcenter/=nen_;
+      ycenter/=nen_;
+      zcenter/=nen_;
 
-      RCP<vector<double> > planecoords
-        =
-        turbmodelparams.get<RCP<vector<double> > >("planecoords_");
-
-      bool found = false;
-      for (nlayer=0;nlayer < static_cast<int>((*planecoords).size()-1);)
+      if (homdir == "xy" or homdir == "xz" or homdir == "yz")
       {
-        if(center<(*planecoords)[nlayer+1])
+        RCP<vector<double> > planecoords = turbmodelparams.get<RCP<vector<double> > >("planecoords_");
+        // get center
+        double center = 0.0;
+        if (homdir == "xy")
+          center = zcenter;
+        else if (homdir == "xz")
+          center = ycenter;
+        else if (homdir == "yz")
+          center = xcenter;
+
+        bool found = false;
+        for (nlayer=0;nlayer < static_cast<int>((*planecoords).size()-1);)
         {
-          found = true;
-          break;
+          if(center<(*planecoords)[nlayer+1])
+          {
+            found = true;
+            break;
+          }
+          nlayer++;
         }
-        nlayer++;
+        if (found ==false)
+        {
+          dserror("could not determine element layer");
+        }
       }
-      if (found ==false)
+      else if (homdir == "x" or homdir == "y" or homdir == "z")
       {
-        dserror("could not determine element layer");
+        RCP<vector<double> > dir1coords = turbmodelparams.get<RCP<vector<double> > >("dir1coords_");
+        RCP<vector<double> > dir2coords = turbmodelparams.get<RCP<vector<double> > >("dir2coords_");
+        // get center
+        double dim1_center = 0.0;
+        double dim2_center = 0.0;
+        if (homdir == "x")
+        {
+          dim1_center = ycenter;
+          dim2_center = zcenter;
+        }
+        else if (homdir == "y")
+        {
+          dim1_center = xcenter;
+          dim2_center = zcenter;
+        }
+        else if (homdir == "z")
+        {
+          dim1_center = xcenter;
+          dim2_center = ycenter;
+        }
+
+        int  n1layer;
+        int  n2layer;
+        bool dir1found = false;
+        bool dir2found = false;
+        for (n1layer=0;n1layer<(int)(*dir1coords).size()-1;)
+        {
+          if(dim1_center<(*dir1coords)[n1layer+1])
+          {
+            dir1found = true;
+            break;
+          }
+          n1layer++;
+        }
+        if (dir1found ==false)
+        {
+          dserror("could not determine element layer");
+        }
+        for (n2layer=0;n2layer<(int)(*dir2coords).size()-1;)
+        {
+          if(dim2_center<(*dir2coords)[n2layer+1])
+          {
+            dir2found = true;
+            break;
+          }
+          n2layer++;
+        }
+        if (dir2found ==false)
+        {
+          dserror("could not determine element layer");
+        }
+
+        const int numdir1layer = (int)(*dir2coords).size()-1;
+        nlayer = numdir1layer * n2layer + n1layer;
       }
+      else
+        dserror("More than two homogeneous directions not supported!");
 
       // Cs_delta_sq is set by the averaged quantities
       Cs_delta_sq = 0.5 * (*averaged_LijMij)[nlayer]/(*averaged_MijMij)[nlayer] ;
@@ -3130,6 +3379,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::GetTurbulenceParams(
       {
         Cs_delta_sq=0;
       }
+    }
     }
     else
     {
@@ -3309,132 +3559,13 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcFineScaleSubgrVisc(
   return;
 }
 
-/*----------------------------------------------------------------------*
- |                                       rasthofer
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3Impl<distype>::CalcScaleSimilarityFineScaleSubgrVisc(
-  const LINALG::Matrix<nsd_,nen_>&        evelaf,
-  const LINALG::Matrix<nsd_,nen_>&        fsevelaf,
-  const double                            vol,
-  double&                                 Cs,
-  const LINALG::Matrix<nsd_,1>&           B
-  )
-{
-  // cast dimension to a double varibale -> pow()
-  const double dim = double (nsd_);
-
-  //     // get characteristic element length for Smagorinsky model for 2D and 3D
-  // 3D: hk = V^1/3
-  // 2D: hk = A^1/2
-  const double hk = pow(vol,(1.0/dim));
-
-#ifdef ALL_SCALE
-  {
-    //
-    // ALL-SCALE SMAGORINSKY MODEL
-    // ---------------------------
-    //                                      +-                                 -+ 1
-    //                                  2   |          / h \           / h \    | -
-    //    visc          = dens * (C_S*h)  * | 2 * eps | u   |   * eps | u   |   | 2
-    //        turbulent                     |          \   / ij        \   / ij |
-    //                                      +-                                 -+
-    //                                      |                                   |
-    //                                      +-----------------------------------+
-    //                                            'resolved' rate of strain
-    //
-
-    // compute (all-scale) rate of strain
-    double rateofstrain = -1.0e30;
-    rateofstrain = GetStrainRate(evelaf,derxy_,vderxy_);
-
-    fssgvisc_ = densaf_ * Cs * Cs * hk * hk * rateofstrain;
-  }
-#endif
-#ifdef SMALL_SCALE
-  {
-    //
-    // FINE-SCALE SMAGORINSKY MODEL
-    // ----------------------------
-    //                                      +-                                 -+ 1
-    //                                  2   |          /    \          /   \    | -
-    //    visc          = dens * (C_S*h)  * | 2 * eps | fsu |   * eps | fsu |   | 2
-    //        turbulent                     |          \   / ij        \   / ij |
-    //                                      +-                                 -+
-    //                                      |                                   |
-    //                                      +-----------------------------------+
-    //                                            'resolved' rate of strain
-    //
-
-    // fine-scale rate of strain
-    double fsrateofstrain = -1.0e30;
-    fsrateofstrain = GetStrainRate(fsevelaf,derxy_,fsvderxy_);
-
-    fssgvisc_ = densaf_ * Cs * Cs * hk * hk * fsrateofstrain;
-  }
-#endif
-#ifdef SUBGRID_SCALE
-  {
-    //
-    // SUBGRID-SCALE SMAGORINSKY MODEL
-    // -------------------------------
-    //                                      +-                                   -+ 1
-    //                                  2   |          /    \           /    \    | -
-    //    visc          = dens * (C_S*h)  * | 2 * eps | mfsu |   * eps | mfsu |   | 2
-    //        turbulent                     |          \    / ij        \    / ij |
-    //                                      +-                                   -+
-    //                                      |                                     |
-    //                                      +-------------------------------------+
-    //                                            'resolved' rate of strain
-    //
-
-    // fine-scale rate of strain
-    double fsrateofstrain = 0.0;
-
-    if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::multifractal_subgrid_scales)
-    {
-      fsvderxy_.MultiplyNT(fsevelaf,derxy_);
-
-      for (int idim=0; idim<nsd_; idim++)
-      {
-        for (int jdim=0; jdim<nsd_; jdim++)
-          mffsvderxy_(idim,jdim) = fsvderxy_(idim,jdim) * B(idim,0);
-      }
-
-      LINALG::Matrix<nsd_,nsd_> two_epsilon;
-      for(int rr=0;rr<nsd_;++rr)
-      {
-        for(int mm=0;mm<nsd_;++mm)
-        {
-          two_epsilon(rr,mm) = mffsvderxy_(rr,mm) + mffsvderxy_(mm,rr);
-        }
-      }
-
-      for(int rr=0;rr<nsd_;++rr)
-      {
-        for(int mm=0;mm<nsd_;++mm)
-        {
-          fsrateofstrain += two_epsilon(rr,mm)*two_epsilon(mm,rr);
-        }
-      }
-    }
-    else
-        dserror("-------");
-
-    fssgvisc_ = densaf_ * Cs * Cs * hk * hk * sqrt(fsrateofstrain/2.0);;
-  }
-#endif
-
-  return;
-}
-
 
 /*-------------------------------------------------------------------------------*
  |calculation parameter for multifractal subgrid scale modeling  rasthofer 03/11 |
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::CalcMultiFracSubgridVelCoef(
-  const double            CI,
+  const double            Csgs,
   const double            alpha,
   const vector<double>    N,
   LINALG::Matrix<nsd_,1>& B
@@ -3447,23 +3578,27 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::CalcMultiFracSubgridVelCoef(
   //
   double kappa = 1.0/(1.0-pow(alpha,-4.0/3.0));
 
-  //                                                     1
-  //                                  |                 |2
-  //  B = CI * kappa * 2 ^ (-2*N/3) * | 2 ^ (4*N/3) - 1 |
-  //                                  |                 |
+  //                                                       1
+  //                                  |                   |2
+  //  B = Csgs * kappa * 2 ^ (-2*N/3) * | 2 ^ (4*N/3) - 1 |
+  //                                  |                   |
   //
   for (int dim=0; dim<nsd_; dim++)
   {
-#ifndef DIRNUM
-    B(dim,0) = CI * sqrt(kappa) * pow(2.0,-2.0*N[0]/3.0) * sqrt((pow(2.0,4.0*N[0]/3.0)-1));
-#endif
+    B(dim,0) = Csgs *sqrt(kappa) * pow(2.0,-2.0*N[0]/3.0) * sqrt((pow(2.0,4.0*N[0]/3.0)-1));
   }
-#ifdef DIRNUM
-  B(0,0) = CI * sqrt(kappa) * pow(2.0,-2.0*N[0]/3.0) * sqrt((pow(2.0,4.0*N[0]/3.0)-1));
-  B(1,0) = CI * sqrt(kappa) * pow(2.0,-2.0*N[1]/3.0) * sqrt((pow(2.0,4.0*N[1]/3.0)-1));
-  B(2,0) = CI * sqrt(kappa) * pow(2.0,-2.0*N[2]/3.0) * sqrt((pow(2.0,4.0*N[2]/3.0)-1));
+#ifdef DIR_N // overwrite for direction dependent N
+  B(0,0) = Csgs * sqrt(kappa) * pow(2.0,-2.0*N[0]/3.0) * sqrt((pow(2.0,4.0*N[0]/3.0)-1));
+  B(1,0) = Csgs * sqrt(kappa) * pow(2.0,-2.0*N[1]/3.0) * sqrt((pow(2.0,4.0*N[1]/3.0)-1));
+  B(2,0) = Csgs * sqrt(kappa) * pow(2.0,-2.0*N[2]/3.0) * sqrt((pow(2.0,4.0*N[2]/3.0)-1));
 #endif
 
+#ifdef CONST_B // overwrite all, just for testing
+  for (int dim=0; dim<nsd_; dim++)
+  {
+    B(dim,0) = B_CONST;
+  }
+#endif
 
   return;
 }
@@ -6564,18 +6699,19 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::FineScaleSubGridViscosityTerm(
   return;
 }
 
+
+//----------------------------------------------------------------------
+// Basic scale-similarity                                rasthofer 01/11
+//----------------------------------------------------------------------
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3Impl<distype>::SubGridStressTermPrefiltering(
+void DRT::ELEMENTS::Fluid3Impl<distype>::ScaleSimSubGridStressTermPrefiltering(
 //    const int &                             eid,
     LINALG::Matrix<nsd_,nen_> &             velforce,
     const double &                          rhsfac,
     const double &                          Cl)
 {
-//  LINALG::Matrix<nsd_,nen_> velforceold (true);
-//  LINALG::Matrix<nsd_,nen_> velforcenew (true);
   if (nsd_ == 3)
   {
-#if 0 // without partial integration of subfilter-stress term
     for (int vi=0; vi<nen_; ++vi)
     {
           /* subgrid-stress term on right hand side */
@@ -6596,118 +6732,49 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SubGridStressTermPrefiltering(
                                +velinthat_(1,0) * velhatderxy_(nn,1)
                                +velinthat_(2,0) * velhatderxy_(nn,2)
                                + velinthat_(nn,0) * velhatdiv_));
-//         if (f3Parameter_->is_conservative_)
-//         {
-//           velforceold(nn, vi) += Cl * rhsfac * densaf_ * funct_(vi) * velinthat_(nn,0) * velhatdiv_;
-//         }
+         if (f3Parameter_->is_conservative_)
+         {
+           velforce(nn, vi) += Cl * rhsfac * densaf_ * funct_(vi) * velinthat_(nn,0) * velhatdiv_;
+         }
 #else
          velforce(nn, vi) -= Cl * rhsfac * densaf_ * funct_(vi)
                              * (reystresshatdiv_(nn,0) - velhativelhatjdiv_(nn,0));
 #endif
        }
     }
-
-#else // with partial integration of subfilter-stress term, boundary integral is assumed included in Neumann BC
-    for (int vi=0; vi<nen_; ++vi)
-    {
-              /* subgrid-stress term on right hand side */
-              /*
-                            /                             \
-                           |     ^     ^   ^               |
-                           | ( (u*u) - u * u ) , grad(v)   |
-                           |                               |
-                            \                             /
-              */
-      for (int nn=0; nn<nsd_; nn++)
-      {
-        velforce(nn,vi) += Cl * rhsfac * densaf_
-                         * (derxy_(0, vi)* (reystressinthat_(nn,0) - velinthat_(nn,0) * velinthat_(0,0))
-                         +  derxy_(1, vi)* (reystressinthat_(nn,1) - velinthat_(nn,0) * velinthat_(1,0))
-                         +  derxy_(2, vi)* (reystressinthat_(nn,2) - velinthat_(nn,0) * velinthat_(2,0)));
-//        if (eid == 13) std::cout << "rhs part int  " << velforcenew(nn, vi) << std::endl;
-      }
-    }
-#endif
+// // with partial integration of subfilter-stress term, boundary integral is assumed included in Neumann BC
+//    for (int vi=0; vi<nen_; ++vi)
+//    {
+//              /* subgrid-stress term on right hand side */
+//              /*
+//                            /                             \
+//                           |     ^     ^   ^               |
+//                           | ( (u*u) - u * u ) , grad(v)   |
+//                           |                               |
+//                            \                             /
+//              */
+//      for (int nn=0; nn<nsd_; nn++)
+//      {
+//        velforce(nn,vi) += Cl * rhsfac * densaf_
+//                         * (derxy_(0, vi)* (reystressinthat_(nn,0) - velinthat_(nn,0) * velinthat_(0,0))
+//                         +  derxy_(1, vi)* (reystressinthat_(nn,1) - velinthat_(nn,0) * velinthat_(1,0))
+//                         +  derxy_(2, vi)* (reystressinthat_(nn,2) - velinthat_(nn,0) * velinthat_(2,0)));
+//      }
+//    }
+//
   }
   else
     dserror("Scale similarity model for 3D-problems only!");
-//  if (eid == 13) std::cout << "rhs  " << velforceold << std::endl;
-//  std::cout << "rhs part int  " << velforcenew << std::endl;
 
   return;
 }
 
 
+//----------------------------------------------------------------------
+// Cross-stress terms: scale-similarity                  rasthofer 03/11
+//----------------------------------------------------------------------
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3Impl<distype>::SubGridStressTerm(
-//    const int &                             eid,
-    LINALG::Matrix<nsd_,nen_> &             velforce,
-    const double &                          rhsfac,
-    const double &                          Cl)
-{
-
-  //LINALG::Matrix<nsd_,nen_> velforcenew (true);
-  if (nsd_ == 3)
-  {
-// with partial integration of subfilter-stress term, boundary integral is assumed included in Neumann BC
-    for (int vi=0; vi<nen_; ++vi)
-    {
-#if 0
-              /* subgrid-stress term on right hand side */
-              /*
-                            /                             \
-                           |           ^   ^               |
-                           | ( u * u - u * u ) ,  eps(v)   |
-                           |                               |
-                            \                             /
-              */
-        velforce(0,vi) += 0.5 *Cl * rhsfac * densaf_
-                        * ((2.0*derxy_(0, vi)*(velint_(0,0)*velint_(0,0)-velinthat_(0,0)*velinthat_(0,0))
-                           +    derxy_(1, vi)*(velint_(1,0)*velint_(0,0)-velinthat_(1,0)*velinthat_(0,0))
-                           +    derxy_(1, vi)*(velint_(0,0)*velint_(1,0)-velinthat_(0,0)*velinthat_(1,0))
-                           +    derxy_(2, vi)*(velint_(0,0)*velint_(2,0)-velinthat_(0,0)*velinthat_(2,0))
-                           +    derxy_(2, vi)*(velint_(2,0)*velint_(0,0)-velinthat_(2,0)*velinthat_(0,0))));
-        velforce(1,vi) += 0.5 *Cl * rhsfac * densaf_
-                        * ((    derxy_(0, vi)*(velint_(0,0)*velint_(1,0)-velinthat_(0,0)*velinthat_(1,0))
-                           +    derxy_(0, vi)*(velint_(1,0)*velint_(0,0)-velinthat_(1,0)*velinthat_(0,0))
-                           +2.0*derxy_(1, vi)*(velint_(1,0)*velint_(1,0)-velinthat_(1,0)*velinthat_(1,0))
-                           +    derxy_(2, vi)*(velint_(1,0)*velint_(2,0)-velinthat_(1,0)*velinthat_(2,0))
-                           +    derxy_(2, vi)*(velint_(2,0)*velint_(1,0)-velinthat_(2,0)*velinthat_(1,0))));
-        velforce(2,vi) += 0.5 *Cl * rhsfac * densaf_
-                        * ((    derxy_(0, vi)*(velint_(0,0)*velint_(2,0)-velinthat_(0,0)*velinthat_(2,0))
-                           +    derxy_(0, vi)*(velint_(2,0)*velint_(0,0)-velinthat_(2,0)*velinthat_(0,0))
-                           +    derxy_(1, vi)*(velint_(1,0)*velint_(2,0)-velinthat_(1,0)*velinthat_(2,0))
-                           +    derxy_(1, vi)*(velint_(2,0)*velint_(1,0)-velinthat_(2,0)*velinthat_(1,0))
-                           +2.0*derxy_(2, vi)*(velint_(2,0)*velint_(2,0)-velinthat_(2,0)*velinthat_(2,0))));
-#else
-        /* subgrid-stress term on right hand side */
-        /*
-                      /                             \
-                     |           ^   ^               |
-                     | ( u * u - u * u ) , grad(v)   |
-                     |                               |
-                      \                             /
-        */
-        for (int nn=0; nn<nsd_; nn++)
-        {
-          velforce(nn,vi) += Cl * rhsfac * densaf_
-                           * (derxy_(0, vi)* (velint_(nn,0) * velint_(0,0) - velinthat_(nn,0) * velinthat_(0,0))
-                           +  derxy_(1, vi)* (velint_(nn,0) * velint_(1,0) - velinthat_(nn,0) * velinthat_(1,0))
-                           +  derxy_(2, vi)* (velint_(nn,0) * velint_(2,0) - velinthat_(nn,0) * velinthat_(2,0)));
-        }
-#endif
-    }
-  }
-  else
-    dserror("Scale similarity model for 3D-problems only!");
-
-  //std::cout << "rhs part int  " << velforcenew << std::endl;
-  return;
-}
-
-
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3Impl<distype>::SubGridStressTermCross(
+void DRT::ELEMENTS::Fluid3Impl<distype>::ScaleSimSubGridStressTermCross(
 //    const int &                             eid,
     LINALG::Matrix<nsd_,nen_> &             velforce,
     const double &                          rhsfac,
@@ -6715,9 +6782,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SubGridStressTermCross(
 {
   if (nsd_ == 3)
   {
-#ifndef PARTINT // without partial integration of subfilter-stress term
-    dserror("SubGridStressTermCross only in partially integrated form");
-#else // with partial integration of subfilter-stress term, boundary integral is assumed included in Neumann BC
+    // with partial integration of subfilter-stress term, boundary integral is assumed included in Neumann BC
     for (int vi=0; vi<nen_; ++vi)
     {
               /* cross-stress term on right hand side */
@@ -6747,9 +6812,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SubGridStressTermCross(
                            +    derxy_(1, vi)*(fsvelint_(1,0)*velinthat_(2,0)+velinthat_(1,0)*fsvelint_(2,0))
                            +    derxy_(1, vi)*(fsvelint_(2,0)*velinthat_(1,0)+velinthat_(2,0)*fsvelint_(1,0))
                            +2.0*derxy_(2, vi)*(fsvelint_(2,0)*velinthat_(2,0)+velinthat_(2,0)*fsvelint_(2,0))));
-
       }
-#endif
     }
   else
     dserror("Scale similarity model for 3D-problems only!");
@@ -6758,8 +6821,11 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SubGridStressTermCross(
 }
 
 
+//----------------------------------------------------------------------
+// Reynolds-stress term: scale-similarity                rasthofer 03/11
+//----------------------------------------------------------------------
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Fluid3Impl<distype>::SubGridStressTermReynolds(
+void DRT::ELEMENTS::Fluid3Impl<distype>::ScaleSimSubGridStressTermReynolds(
 //    const int &                             eid,
     LINALG::Matrix<nsd_,nen_> &             velforce,
     const double &                          rhsfac,
@@ -6767,9 +6833,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SubGridStressTermReynolds(
 {
   if (nsd_ == 3)
   {
-#ifndef PARTINT // without partial integration of subfilter-stress term
-    dserror("SubGridStressTermReynolds only in partially integrated form");
-#else // with partial integration of subfilter-stress term, boundary integral is assumed included in Neumann BC
+    // with partial integration of subfilter-stress term, boundary integral is assumed included in Neumann BC
     for (int vi=0; vi<nen_; ++vi)
     {
               /* subgrid-stress term on right hand side */
@@ -6801,7 +6865,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SubGridStressTermReynolds(
                            +2.0*derxy_(2, vi)*(fsvelint_(2,0)*fsvelint_(2,0))));
 
     }
-#endif
   }
   else
     dserror("Scale similarity model for 3D-problems only!");
@@ -6810,67 +6873,23 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::SubGridStressTermReynolds(
 }
 
 
+//----------------------------------------------------------------------
+// Cross-stress terms: multifractal subgrid-scales       rasthofer 06/11
+//----------------------------------------------------------------------
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::MultfracSubGridScalesCross(
-//    const int &                             eid,
     LINALG::Matrix<nen_*nsd_,nen_*nsd_> &   estif_u,
     LINALG::Matrix<nsd_,nen_> &             velforce,
     const double &                          timefacfac,
-    const double &                          rhsfac,
-    //const double &                          B
-    LINALG::Matrix<nsd_,1>&                 B)
+    const double &                          rhsfac)
 {
   //--------------------------------------------------------------------
   // rhs contribution
   //--------------------------------------------------------------------
   if (nsd_ == 3)
   {
-#ifndef PARTINT // without partial integration of subfilter-stress term
-
-//    double fsvdiv = 0.0;
-//    //fsvdiv = B(0,0) * fsvderxy_(0,0) + B(1,0) * fsvderxy_(1,1) + B(2,0) * fsvderxy_(2,2);
-//    fsvdiv = mffsvderxy_(0,0) + mffsvderxy_(1,1) + mffsvderxy_(2,2);
-
     for (int vi=0; vi<nen_; ++vi)
     {
-    //--------------OLD-------------------------------------------
-//      velforce(0,vi) -= rhsfac * densaf_ * funct_(vi,0)
-//                      * (velint_(0,0) * B(0,0) * fsvderxy_(0,0)
-//                        +velint_(1,0) * B(0,0) * fsvderxy_(0,1)
-//                        +velint_(2,0) * B(0,0) * fsvderxy_(0,2)
-//                        +B(0,0) * fsvelint_(0,0) * vderxy_(0,0)
-//                        +B(1,0) * fsvelint_(1,0) * vderxy_(0,1)
-//                        +B(2,0) * fsvelint_(2,0) * vderxy_(0,2));
-//      velforce(1,vi) -= rhsfac * densaf_ * funct_(vi,0)
-//                      * (velint_(0,0) * B(1,0) * fsvderxy_(1,0)
-//                        +velint_(1,0) * B(1,0) * fsvderxy_(1,1)
-//                        +velint_(2,0) * B(1,0) * fsvderxy_(1,2)
-//                        +B(0,0) * fsvelint_(0,0) * vderxy_(1,0)
-//                        +B(1,0) * fsvelint_(1,0) * vderxy_(1,1)
-//                        +B(2,0) * fsvelint_(2,0) * vderxy_(1,2));
-//      velforce(2,vi) -= rhsfac * densaf_ * funct_(vi,0)
-//                      * (velint_(0,0) * B(2,0) * fsvderxy_(2,0)
-//                        +velint_(1,0) * B(2,0) * fsvderxy_(2,1)
-//                        +velint_(2,0) * B(2,0) * fsvderxy_(2,2)
-//                        +B(0,0) * fsvelint_(0,0) * vderxy_(2,0)
-//                        +B(1,0) * fsvelint_(1,0) * vderxy_(2,1)
-//                        +B(2,0) * fsvelint_(2,0) * vderxy_(2,2));
-//
-//      if (f3Parameter_->is_conservative_)
-//      {
-//        velforce(0,vi) -= rhsfac * densaf_ * funct_(vi,0)
-//                        * (B(0,0) * fsvelint_(0,0) * vdiv_
-//                          +velint_(0,0) * fsvdiv);
-//        velforce(1,vi) -= rhsfac * densaf_ * funct_(vi,0)
-//                        * (B(1,0) * fsvelint_(1,0) * vdiv_
-//                          +velint_(1,0) * fsvdiv);
-//        velforce(2,vi) -= rhsfac * densaf_ * funct_(vi,0)
-//                        * (B(2,0) * fsvelint_(2,0) * vdiv_
-//                          +velint_(2,0) * fsvdiv);
-//      }
-      //------------------------------------------------------------
-
-      //--------------NEW-------------------------------------------
       /* cross-stress term on right hand side */
       /*
                /                                      \
@@ -6910,7 +6929,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::MultfracSubGridScalesCross(
               |                                           |
                \                                         /
       */
-      //if (f3Parameter_->is_conservative_)
+      if (f3Parameter_->is_conservative_)
       {
         velforce(0,vi) -= rhsfac * densaf_ * funct_(vi,0)
                         * (mffsvelint_(0,0) * vdiv_
@@ -6922,73 +6941,20 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::MultfracSubGridScalesCross(
                         * (mffsvelint_(2,0) * vdiv_
                           +velint_(2,0) * mffsvdiv_);
       }
-      //------------------------------------------------------------
     }
-
-#else // with partial integration of subfilter-stress term, boundary integral is assumed included in Neumann BC
-    for (int vi=0; vi<nen_; ++vi)
-    {
-              /* cross-stress term on right hand side */
-              /*
-                            /                               \
-                           |        ^   ^                    |
-                           | ( du * u - u * du ) ,  eps(v)   |
-                           |                                 |
-                            \                               /
-              */
-
-// B = const
-//        velforce(0,vi) += B(0,0) * 0.5 * rhsfac * densaf_
-//                         * ((2.0*derxy_(0, vi)*(fsvelint_(0,0)*velint_(0,0)+velint_(0,0)*fsvelint_(0,0))
-//                            +    derxy_(1, vi)*(fsvelint_(1,0)*velint_(0,0)+velint_(1,0)*fsvelint_(0,0))
-//                            +    derxy_(1, vi)*(fsvelint_(0,0)*velint_(1,0)+velint_(0,0)*fsvelint_(1,0))
-//                            +    derxy_(2, vi)*(fsvelint_(0,0)*velint_(2,0)+velint_(0,0)*fsvelint_(2,0))
-//                            +    derxy_(2, vi)*(fsvelint_(2,0)*velint_(0,0)+velint_(2,0)*fsvelint_(0,0))));
-//         velforce(1,vi) += B(0,0) * 0.5 * rhsfac * densaf_
-//                         * ((    derxy_(0, vi)*(fsvelint_(0,0)*velint_(1,0)+velint_(0,0)*fsvelint_(1,0))
-//                            +    derxy_(0, vi)*(fsvelint_(1,0)*velint_(0,0)+velint_(1,0)*fsvelint_(0,0))
-//                            +2.0*derxy_(1, vi)*(fsvelint_(1,0)*velint_(1,0)+velint_(1,0)*fsvelint_(1,0))
-//                            +    derxy_(2, vi)*(fsvelint_(1,0)*velint_(2,0)+velint_(1,0)*fsvelint_(2,0))
-//                            +    derxy_(2, vi)*(fsvelint_(2,0)*velint_(1,0)+velint_(2,0)*fsvelint_(1,0))));
-//         velforce(2,vi) += B(0,0) * 0.5 * rhsfac * densaf_
-//                         * ((    derxy_(0, vi)*(fsvelint_(0,0)*velint_(2,0)+velint_(0,0)*fsvelint_(2,0))
-//                            +    derxy_(0, vi)*(fsvelint_(2,0)*velint_(0,0)+velint_(2,0)*fsvelint_(0,0))
-//                            +    derxy_(1, vi)*(fsvelint_(1,0)*velint_(2,0)+velint_(1,0)*fsvelint_(2,0))
-//                            +    derxy_(1, vi)*(fsvelint_(2,0)*velint_(1,0)+velint_(2,0)*fsvelint_(1,0))
-//                            +2.0*derxy_(2, vi)*(fsvelint_(2,0)*velint_(2,0)+velint_(2,0)*fsvelint_(2,0))));
-
-         velforce(0,vi) += 0.5 * rhsfac * densaf_
-                          * ((2.0*derxy_(0, vi)*(mffsvelint_(0,0)*velint_(0,0)+velint_(0,0)*mffsvelint_(0,0))
-                             +    derxy_(1, vi)*(mffsvelint_(1,0)*velint_(0,0)+velint_(1,0)*mffsvelint_(0,0))
-                             +    derxy_(1, vi)*(mffsvelint_(0,0)*velint_(1,0)+velint_(0,0)*mffsvelint_(1,0))
-                             +    derxy_(2, vi)*(mffsvelint_(0,0)*velint_(2,0)+velint_(0,0)*mffsvelint_(2,0))
-                             +    derxy_(2, vi)*(mffsvelint_(2,0)*velint_(0,0)+velint_(2,0)*mffsvelint_(0,0))));
-          velforce(1,vi) += 0.5 * rhsfac * densaf_
-                          * ((    derxy_(0, vi)*(mffsvelint_(0,0)*velint_(1,0)+velint_(0,0)*mffsvelint_(1,0))
-                             +    derxy_(0, vi)*(mffsvelint_(1,0)*velint_(0,0)+velint_(1,0)*mffsvelint_(0,0))
-                             +2.0*derxy_(1, vi)*(mffsvelint_(1,0)*velint_(1,0)+velint_(1,0)*mffsvelint_(1,0))
-                             +    derxy_(2, vi)*(mffsvelint_(1,0)*velint_(2,0)+velint_(1,0)*mffsvelint_(2,0))
-                             +    derxy_(2, vi)*(mffsvelint_(2,0)*velint_(1,0)+velint_(2,0)*mffsvelint_(1,0))));
-          velforce(2,vi) += 0.5 * rhsfac * densaf_
-                          * ((    derxy_(0, vi)*(mffsvelint_(0,0)*velint_(2,0)+velint_(0,0)*mffsvelint_(2,0))
-                             +    derxy_(0, vi)*(mffsvelint_(2,0)*velint_(0,0)+velint_(2,0)*mffsvelint_(0,0))
-                             +    derxy_(1, vi)*(mffsvelint_(1,0)*velint_(2,0)+velint_(1,0)*mffsvelint_(2,0))
-                             +    derxy_(1, vi)*(mffsvelint_(2,0)*velint_(1,0)+velint_(2,0)*mffsvelint_(1,0))
-                             +2.0*derxy_(2, vi)*(mffsvelint_(2,0)*velint_(2,0)+velint_(2,0)*mffsvelint_(2,0))));
-
-      }
-#endif
-    }
+  }
   else
     dserror("Scale similarity model for 3D-problems only!");
 
   //--------------------------------------------------------------------
   // lhs contribution
   //--------------------------------------------------------------------
-#ifndef PARTINT
-#ifdef LHS
+  // linearized as far as possible due to the filter
+
   LINALG::Matrix<nen_,1> mfconv_c(true);
   mfconv_c.MultiplyTN(derxy_,mffsvelint_);
+  // turn left-hand-side contribution on
+  double beta = f3Parameter_->beta_;
 
   // convective part
   for (int ui=0; ui<nen_; ui++)
@@ -7008,7 +6974,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::MultfracSubGridScalesCross(
                    |  \                 /          |
                     \                             /
           */
-          estif_u(fvi,fui) += timefacfac * densaf_ * funct_(vi)
+          estif_u(fvi,fui) += beta * timefacfac * densaf_ * funct_(vi)
                             * funct_(ui) * mffsvderxy_(jdim,idim);
           /*
                     /                             \
@@ -7019,12 +6985,12 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::MultfracSubGridScalesCross(
           */
           if (jdim == idim)
           {
-            estif_u(fvi,fui) += timefacfac * densaf_ * funct_(vi)
+            estif_u(fvi,fui) += beta * timefacfac * densaf_ * funct_(vi)
                               * mfconv_c(ui);
           }
 
           // additional terms conservative part
-          //if (f3Parameter_->is_conservative_)
+          if (f3Parameter_->is_conservative_)
           {
             /*
                    /                                     \
@@ -7033,7 +6999,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::MultfracSubGridScalesCross(
                    |      \               /       /      |
                    \                                     /
             */
-            estif_u(fvi,fui) += timefacfac * densaf_ * funct_(vi)
+            estif_u(fvi,fui) += beta * timefacfac * densaf_ * funct_(vi)
                               * mffsvelint_(jdim) * derxy_(idim, ui);
               /*
                     /                                     \
@@ -7044,7 +7010,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::MultfracSubGridScalesCross(
               */
             if (jdim == idim)
             {
-              estif_u(fvi,fui) += timefacfac * densaf_
+              estif_u(fvi,fui) += beta * timefacfac * densaf_
                                 * funct_(vi) * funct_(ui) * mffsvdiv_;
             }
           }
@@ -7052,110 +7018,26 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::MultfracSubGridScalesCross(
       }
     }
   }
-/*
-  // additional terms conservative part
-  //if (f3Parameter_->is_conservative_)
-  {
-    for (int idim = 0; idim <nsd_; ++idim)
-    {
-      for (int ui=0; ui<nen_; ++ui)
-      {
-        const int fui   = nsd_*ui + idim;
-
-        for (int vi=0; vi<nen_; ++vi)
-        {
-          const int fvi   = nsd_*vi + idim;
-            /                                     \
-            |      /               \       \      |
-            |  Du | rho*nabla o du  | , v   |     |
-            |      \               /       /      |
-            \                                     /
-          /
-          estif_u(fvi  , fui  ) += timefacfac * densaf_
-                                 * funct_(vi) * funct_(ui) * mffsvdiv_;
-        }
-      }
-    }
-
-    for (int idim = 0; idim <nsd_; ++idim)
-    {
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        const int fvi   = nsd_*vi + idim;
-
-        for (int ui=0; ui<nen_; ++ui)
-        {
-          const int fui   = nsd_*ui;
-            /                                     \
-            |      /               \       \      |
-            |  du | rho*nabla o Du  | , v   |     |
-            |      \               /       /      |
-            \                                     /
-          /
-          for(int jdim=0; jdim<nsd_;++jdim)
-            estif_u(fvi,  fui+jdim  ) += timefacfac * densaf_ * funct_(vi)
-                                       * mffsvelint_(idim) * derxy_(jdim, ui) ;
-        }
-      }
-    }
-  }*/
-#endif
-#endif
 
   return;
 }
 
 
+//----------------------------------------------------------------------
+// Reynolds-stress terms: multifractal subgrid-scales    rasthofer 06/11
+//----------------------------------------------------------------------
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Fluid3Impl<distype>::MultfracSubGridScalesReynolds(
-//    const int &                             eid,
     LINALG::Matrix<nen_*nsd_,nen_*nsd_> &   estif_u,
     LINALG::Matrix<nsd_,nen_> &             velforce,
     const double &                          timefacfac,
-    const double &                          rhsfac,
-    //const double &                          B
-    LINALG::Matrix<nsd_,1>&                 B)
+    const double &                          rhsfac)
 {
   //--------------------------------------------------------------------
   // rhs contribution
   //--------------------------------------------------------------------
   if (nsd_ == 3)
   {
-#ifndef PARTINT // without partial integration of subfilter-stress term
-
-//    double fsvdiv = 0.0;
-//    //fsvdiv = B(0,0) * fsvderxy_(0,0) + B(1,0) * fsvderxy_(1,1) + B(2,0) * fsvderxy_(2,2);
-//    fsvdiv = mffsvderxy_(0,0) + mffsvderxy_(1,1) + mffsvderxy_(2,2);
-
-    //--------------OLD-------------------------------------------
-//    for (int vi=0; vi<nen_; ++vi)
-//    {
-//      velforce(0,vi) -= rhsfac * densaf_ * funct_(vi,0)
-//                      * (B(0,0) * fsvelint_(0,0) * B(0,0) * fsvderxy_(0,0)
-//                        +B(1,0) * fsvelint_(1,0) * B(0,0) * fsvderxy_(0,1)
-//                        +B(2,0) * fsvelint_(2,0) * B(0,0) * fsvderxy_(0,2));
-//      velforce(1,vi) -= rhsfac * densaf_ * funct_(vi,0)
-//                      * (B(0,0) * fsvelint_(0,0) * B(1,0) * fsvderxy_(1,0)
-//                        +B(1,0) * fsvelint_(1,0) * B(1,0) * fsvderxy_(1,1)
-//                        +B(2,0) * fsvelint_(2,0) * B(1,0) * fsvderxy_(1,2));
-//      velforce(2,vi) -= rhsfac * densaf_ * funct_(vi,0)
-//                      * (B(0,0) * fsvelint_(0,0) * B(2,0) * fsvderxy_(2,0)
-//                        +B(1,0) * fsvelint_(1,0) * B(2,0) * fsvderxy_(2,1)
-//                        +B(2,0) * fsvelint_(2,0) * B(2,0) * fsvderxy_(2,2));
-//
-//      if (f3Parameter_->is_conservative_)
-//      {
-//        velforce(0,vi) -= rhsfac * densaf_ * funct_(vi,0)
-//                        * (B(0,0) * fsvelint_(0,0) * fsvdiv);
-//        velforce(1,vi) -= rhsfac * densaf_ * funct_(vi,0)
-//                        * (B(1,0) * fsvelint_(1,0) * fsvdiv);
-//        velforce(2,vi) -= rhsfac * densaf_ * funct_(vi,0)
-//                        * (B(2,0) * fsvelint_(2,0) * fsvdiv);
-//      }
-//    }
-    //------------------------------------------------------------
-
-    //--------------NEW-------------------------------------------
     for (int vi=0; vi<nen_; ++vi)
     {
       /* reynolds-stress term on right hand side */
@@ -7188,7 +7070,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::MultfracSubGridScalesReynolds(
               |                         |
                \                       /
       */
-      //if (f3Parameter_->is_conservative_)
+      if (f3Parameter_->is_conservative_)
       {
         velforce(0,vi) -= rhsfac * densaf_ * funct_(vi,0)
                         * (mffsvelint_(0,0) * mffsvdiv_);
@@ -7198,61 +7080,6 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::MultfracSubGridScalesReynolds(
                         * (mffsvelint_(2,0) * mffsvdiv_);
       }
     }
-    //------------------------------------------------------------
-
-#else // with partial integration of subfilter-stress term, boundary integral is assumed included in Neumann BC
-    for (int vi=0; vi<nen_; ++vi)
-    {
-              /* subgrid-stress term on right hand side */
-              /*
-                            /                      \
-                           |                        |
-                           | ( du * du ) , eps(v)   |
-                           |                        |
-                            \                      /
-              */
-
-// B = const
-//        velforce(0,vi) += B(0,0) * B(0,0) * 0.5 * rhsfac * densaf_
-//                        * ((2.0*derxy_(0, vi)*(fsvelint_(0,0)*fsvelint_(0,0))
-//                           +    derxy_(1, vi)*(fsvelint_(1,0)*fsvelint_(0,0))
-//                           +    derxy_(1, vi)*(fsvelint_(0,0)*fsvelint_(1,0))
-//                           +    derxy_(2, vi)*(fsvelint_(0,0)*fsvelint_(2,0))
-//                           +    derxy_(2, vi)*(fsvelint_(2,0)*fsvelint_(0,0))));
-//        velforce(1,vi) += B(0,0) * B(0,0) * 0.5 * rhsfac * densaf_
-//                        * ((    derxy_(0, vi)*(fsvelint_(0,0)*fsvelint_(1,0))
-//                           +    derxy_(0, vi)*(fsvelint_(1,0)*fsvelint_(0,0))
-//                           +2.0*derxy_(1, vi)*(fsvelint_(1,0)*fsvelint_(1,0))
-//                           +    derxy_(2, vi)*(fsvelint_(1,0)*fsvelint_(2,0))
-//                           +    derxy_(2, vi)*(fsvelint_(2,0)*fsvelint_(1,0))));
-//        velforce(2,vi) += B(0,0) * B(0,0) * 0.5 * rhsfac * densaf_
-//                        * ((    derxy_(0, vi)*(fsvelint_(0,0)*fsvelint_(2,0))
-//                           +    derxy_(0, vi)*(fsvelint_(2,0)*fsvelint_(0,0))
-//                           +    derxy_(1, vi)*(fsvelint_(1,0)*fsvelint_(2,0))
-//                           +    derxy_(1, vi)*(fsvelint_(2,0)*fsvelint_(1,0))
-//                           +2.0*derxy_(2, vi)*(fsvelint_(2,0)*fsvelint_(2,0))));
-
-        velforce(0,vi) += 0.5 * rhsfac * densaf_
-                        * ((2.0*derxy_(0, vi)*(mffsvelint_(0,0)*mffsvelint_(0,0))
-                           +    derxy_(1, vi)*(mffsvelint_(1,0)*mffsvelint_(0,0))
-                           +    derxy_(1, vi)*(mffsvelint_(0,0)*mffsvelint_(1,0))
-                           +    derxy_(2, vi)*(mffsvelint_(0,0)*mffsvelint_(2,0))
-                           +    derxy_(2, vi)*(mffsvelint_(2,0)*mffsvelint_(0,0))));
-        velforce(1,vi) += 0.5 * rhsfac * densaf_
-                        * ((    derxy_(0, vi)*(mffsvelint_(0,0)*mffsvelint_(1,0))
-                           +    derxy_(0, vi)*(mffsvelint_(1,0)*mffsvelint_(0,0))
-                           +2.0*derxy_(1, vi)*(mffsvelint_(1,0)*mffsvelint_(1,0))
-                           +    derxy_(2, vi)*(mffsvelint_(1,0)*mffsvelint_(2,0))
-                           +    derxy_(2, vi)*(mffsvelint_(2,0)*mffsvelint_(1,0))));
-        velforce(2,vi) += 0.5 * rhsfac * densaf_
-                        * ((    derxy_(0, vi)*(mffsvelint_(0,0)*mffsvelint_(2,0))
-                           +    derxy_(0, vi)*(mffsvelint_(2,0)*mffsvelint_(0,0))
-                           +    derxy_(1, vi)*(mffsvelint_(1,0)*mffsvelint_(2,0))
-                           +    derxy_(1, vi)*(mffsvelint_(2,0)*mffsvelint_(1,0))
-                           +2.0*derxy_(2, vi)*(mffsvelint_(2,0)*mffsvelint_(2,0))));
-
-    }
-#endif
   }
   else
     dserror("Scale similarity model for 3D-problems only!");
@@ -7260,9 +7087,7 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::MultfracSubGridScalesReynolds(
   //--------------------------------------------------------------------
   // lhs contribution
   //--------------------------------------------------------------------
-#ifdef LHS
-  // no contribution
-#endif
+  // no contribution, due to necessary linearization of filter
 
   return;
 }
@@ -7977,7 +7802,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::CalcDissipation(
   }
   LINALG::Matrix<nsd_,nen_> evel_hat;
   LINALG::Matrix<nsd_*nsd_,nen_> ereynoldsstress_hat;
-  if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity)
+  if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity_basic)
   {
     RCP<Epetra_MultiVector> filtered_vel = params.get<RCP<Epetra_MultiVector> >("filtered vel");
     RCP<Epetra_MultiVector> filtered_reystre = params.get<RCP<Epetra_MultiVector> >("filtered reystr");
@@ -8120,7 +7945,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::CalcDissipation(
     // get acceleration at integration point
     accint_.Multiply(eacc,funct_);
 
-    if(f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity)
+    if(f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity_basic)
     {
       reystressinthat_.Clear();
       velinthat_.Clear();
@@ -8137,25 +7962,6 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::CalcDissipation(
           }
         }
       }
-
-#ifdef TAU_SUBGRID_IN_RES_MOM
-      velhatderxy_.Clear();
-      reystresshatdiv_.Clear();
-      // get filtered velocity derivatives at integration point
-      velhatderxy_.MultiplyNT(evel_hat,derxy_);
-      // get divergence of filtered reynoldsstress at integration point
-      for (int nn=0;nn<nsd_;++nn)
-      {
-        for (int rr=0;rr<nsd_;++rr)
-        {
-            int index = 3*nn+rr;
-            for (int mm=0;mm<nen_;++mm)
-            {
-              reystresshatdiv_(nn,0) += derxy_(rr,mm)*ereynoldsstress_hat(index,mm);
-            }
-        }
-      }
-#endif
     }
     // calculate residual of momentum equation at integration point
     /*
@@ -8168,16 +7974,6 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::CalcDissipation(
     for (int rr=0;rr<nsd_;rr++)
     {
       momres_old_(rr,0) = densaf_ * (accint_(rr,0) + conv_old_(rr,0) + gradp_(rr,0) - bodyforce_(rr,0));
-#ifdef TAU_SUBGRID_IN_RES_MOM
-      if (f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity
-          or f3Parameter_->turb_mod_action_ == INPAR::FLUID::mixed_scale_similarity_eddy_viscosity_model)
-      {
-        momres_old_(rr) += f3Parameter_->Cl_*(reystresshatdiv_(rr,0)
-                             - (velinthat_(0,0) * velhatderxy_(rr,0)
-                               +velinthat_(1,0) * velhatderxy_(rr,1)
-                               +velinthat_(2,0) * velhatderxy_(rr,2)));
-      }
-#endif
     }
     // get second derivative of the viscous term:
     // div(epsilon(u))
@@ -8286,7 +8082,7 @@ int DRT::ELEMENTS::Fluid3Impl<distype>::CalcDissipation(
             |        \     /         \     /   |
              \                                /
     */
-    if(f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity)
+    if(f3Parameter_->turb_mod_action_ == INPAR::FLUID::scale_similarity_basic)
     {
       LINALG::Matrix<nsd_,nsd_> tau_scale_sim;
       for(int rr=0;rr<nsd_;++rr)

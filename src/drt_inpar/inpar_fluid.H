@@ -178,15 +178,10 @@ namespace INPAR
       smagorinsky,
       smagorinsky_with_van_Driest_damping,
       dynamic_smagorinsky,
+      avm3,
       scale_similarity,
+      scale_similarity_basic,
       multifractal_subgrid_scales
-    };
-
-    //! filter type for LES (if necessary)
-    enum FilterType
-    {
-      box_filter,
-      algebraic_multigrid_operator
     };
 
     //! options for fine-scale subgrid viscosity

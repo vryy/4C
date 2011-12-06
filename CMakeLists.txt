@@ -888,6 +888,7 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/fluidimplicitintegration.cpp
   src/drt_fluid/xfluidfluidresulttest.cpp
   src/drt_fluid/fluidresulttest.cpp
+  src/drt_fluid/scale_sep_gmo.cpp
   src/drt_fluid/time_integration_scheme.cpp
   src/drt_fluid/turbulent_flow_algorithm.cpp
   src/drt_fluid/turbulence_statistic_manager.cpp
@@ -2041,6 +2042,9 @@ baci_test(f3_ew_Q1_27x_drt 2 "")
 baci_test(f3_onewaycoupled_afgenalpha 2 8)
 baci_test(f3_onewaycoupled_genalpha 2 8)
 baci_test(f3_onewaycoupled_ost 2 8)
+baci_test(f3_turbmodel_test_dynsmag 1 "")
+baci_test(f3_turbmodel_test_fssgvisc 1 "")
+baci_test(f3_turbmodel_test_mfs 1 "")
 baci_test(f3_simpler_dgs 1 "")
 baci_test(f3_simpler_dgs 2 "")
 baci_test(fs-kugel-tet 1 "")

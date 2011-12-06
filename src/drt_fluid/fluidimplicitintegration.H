@@ -38,6 +38,7 @@ Maintainer: Peter Gamnitzer
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_turbulence.H"
 #include "fluid_utils_mapextractor.H" // should go away
 
 using namespace std;
@@ -90,6 +91,7 @@ namespace FLD
 // forward declarations
 class TurbulenceStatisticManager;
 class DynSmagFilter;
+class LESScaleSeparation;
 class Meshtying;
 class TransferTurbulentInflowCondition;
 namespace UTILS
@@ -471,7 +473,7 @@ public:
 
   //! @name methods for turbulence models
 
-  void ApplyFilterForLES();
+  void ApplyScaleSeparationForLES();
 
   void OutputofFilteredVel(Teuchos::RCP<Epetra_Vector> outvec,
                            Teuchos::RCP<Epetra_Vector> fsoutvec);
@@ -702,7 +704,7 @@ protected:
   RCP<Epetra_MultiVector>    finescalevel_;
 
   /// only necessary for LES models including filtered quantities: filter type
-  enum INPAR::FLUID::FilterType filtertype_;
+  enum INPAR::FLUID::ScaleSeparation scale_sep_;
 
   /// grid velocity (set from the adapter!)
   RCP<Epetra_Vector>    gridv_;
@@ -720,6 +722,7 @@ protected:
 
   //! one instance of the filter object
   RCP<DynSmagFilter> DynSmag_;
+  RCP<LESScaleSeparation> ScaleSepGMO_;
 
   //@}
 
@@ -812,6 +815,16 @@ private:
 
   */
   void SetElementTimeParameter();
+
+  //! @name Set general parameter in class f3Parameter
+  /*!
+
+  \brief parameter (fix over all time step) are set in this method.
+         Therefore, these parameter are accessible in the fluid element
+         and in the fluid boundary element
+
+  */
+  void SetElementTurbulenceParameter();
 
 }; // class FluidImplicitTimeInt
 

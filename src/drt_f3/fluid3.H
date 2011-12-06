@@ -486,6 +486,7 @@ private:
     calc_turbulence_statistics,
     calc_loma_statistics,
     calc_dissipation,
+    calc_model_params_mfsubgr_scales,
     calc_fluid_box_filter,
     calc_smagorinsky_const,
     get_density,
@@ -494,7 +495,8 @@ private:
     calc_node_normal,
     calc_fluid_elementvolume,
     set_general_fluid_parameter,
-    set_time_parameter
+    set_time_parameter,
+    set_turbulence_parameter
   };
 
   //! discretization type
@@ -720,7 +722,19 @@ void f3_calc_smag_const_LijMij_and_MijMij(
   RCP<Epetra_MultiVector>& col_filtered_modeled_subgrid_stress,
   double&                  LijMij,
   double&                  MijMij,
-  double&                  center);
+  double&                  xcenter,
+  double&                  ycenter,
+  double&                  zcenter);
+
+/*!
+   \brief compute parameters of multifractal subgrid-scale model
+*/
+template<int NEN, int NSD, DRT::Element::DiscretizationType DISTYPE>
+void f3_get_mf_params(
+  ParameterList&       params,
+  RCP<MAT::Material>   mat   ,
+  vector<double>&      vel   ,
+  vector<double>&      fsvel );
 
   /*!
     \brief Calculate node normals using the volume integral in Wall (7.13).

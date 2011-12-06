@@ -82,7 +82,6 @@ START_THETA                     0.67
 ALPHA_F                         1.00
 ALPHA_M                         1.00
 LIFTDRAG                        no
-FSSUGRVISC                      No
 ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 SIMPLER                         No
@@ -100,8 +99,6 @@ REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
 PHYSICAL_MODEL                  no_model
-C_SMAGORINSKY                   0.17
-CHANNEL_L_TAU                   0.0
 CANONICAL_FLOW                  no
 CHAN_AMPL_INIT_DIST             0.1
 HOMDIR                          xz

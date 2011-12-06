@@ -23,6 +23,7 @@ Maintainer: Andreas Ehrl
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_turbulence.H"
 
 namespace DRT
 {
@@ -43,6 +44,10 @@ public:
 
   //! time parameter are set
   void SetElementTimeParameter(Teuchos::ParameterList& params    //> parameter list
+      );
+
+  //! turbulence parameters are set
+  void SetElementTurbulenceParameter(Teuchos::ParameterList& params    //> parameter list
       );
 
   //! print parameter to screen
@@ -129,12 +134,25 @@ public:
   double viscreastabfac_;
 
   /// constant parameters for the turbulence formulation
+  /// subgrid viscosity models
   //! smagorinsky constant
   double Cs_;
+  bool Cs_averaged_;
   //! channel length to normalize the normal wall distance
   double l_tau_;
   //! scale similarity constant
   double Cl_;
+  /// multifractal subgrid-scales
+  double Csgs_;
+  double alpha_;
+  bool CalcN_;
+  double N_;
+  enum INPAR::FLUID::RefVelocity refvel_;
+  enum INPAR::FLUID::RefLength reflength_;
+  double c_nu_;
+  bool near_wall_limit_;
+  bool B_gp_;
+  double beta_;
 
 private:
 

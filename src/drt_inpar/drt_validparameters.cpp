@@ -35,6 +35,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_potential.H"
 #include "../drt_inpar/inpar_thermo.H"
 #include "../drt_inpar/inpar_tsi.H"
+#include "../drt_inpar/inpar_turbulence.H"
 #include "../drt_inpar/inpar_elch.H"
 #include "../drt_inpar/inpar_invanalysis.H"
 #include "../drt_inpar/inpar_searchtree.H"
@@ -2061,19 +2062,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::FLUID::shear_flow),
                                &fdyn);
 
-  setStringToIntegralParameter<int>("FSSUGRVISC","No","fine-scale subgrid viscosity",
-                               tuple<std::string>(
-                                 "No",
-                                 "Smagorinsky_all",
-                                 "Smagorinsky_small"
-                                 ),
-                               tuple<int>(
-                                   INPAR::FLUID::no_fssgv,
-                                   INPAR::FLUID::smagorinsky_all,
-                                   INPAR::FLUID::smagorinsky_small
-                                   ),
-                               &fdyn);
-
   setStringToIntegralParameter<int>("SIMPLER","no",
                                "Switch on SIMPLE family of solvers, needs additional FLUID PRESSURE SOLVER block!",
                                yesnotuple,yesnovalue,&fdyn);
@@ -2451,35 +2439,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       "Smagorinsky",
       "Smagorinsky_with_van_Driest_damping",
       "Dynamic_Smagorinsky",
+      "AVM3",
       "Scale_Similarity",
+      "Scale_Similarity_basic",
       "Multifractal_Subgrid_Scales"),
     tuple<std::string>(
       "If classical LES is our turbulence approach, this is a contradiction and should cause a dserror.",
       "Classical constant coefficient Smagorinsky model. Be careful if you \nhave a wall bounded flow domain!",
       "Use an exponential damping function for the turbulent viscosity \nclose to the wall. This is only implemented for a channel geometry of \nheight 2 in y direction. The viscous lengthscale l_tau is \nrequired as additional input.",
       "The solution is filtered and by comparison of the filtered \nvelocity field with the real solution, the Smagorinsky constant is \nestimated in each step --- mind that this procedure includes \nan averaging in the xz plane, hence this implementation will only work \nfor a channel flow.",
-      "",
-      ""),
-    tuple<int>(0,1,2,3,4,5),
-    &fdyn_turbu);
-
-  DoubleParameter("C_SMAGORINSKY",0.0,"Constant for the Smagorinsky model. Something between 0.1 to 0.24",&fdyn_turbu);
-
-  DoubleParameter("C_TURBPRANDTL",1.0,"(Constant) turbulent Prandtl number for the Smagorinsky model in scalar transport.",&fdyn_turbu);
-
-  DoubleParameter("C_SCALE_SIMILARITY",1.0,"Constant for the scale similarity model. Something between 0.45 +- 0.15 or 1.0.", &fdyn_turbu);
-
-  setStringToIntegralParameter<int>(
-    "FILTERTYPE",
-    "box_filter",
-    "Specify the filter type for scale separation in LES",
-    tuple<std::string>(
-      "box_filter",
-      "algebraic_multigrid_operator"),
-    tuple<std::string>(
-      "classical box filter",
-      "scale separation by algebraic multigrid operator"),
-    tuple<int>(0,1),
+      "Algebraic variational multiscale-multigrid method",
+      "Scale Similarity Model coherent with the variational multiscale formulation",
+      "Scale Similarity Model according to liu, meneveau, katz",
+      "Multifractal Subgrid-Scale Modeling based on the work of burton"),
+    tuple<int>(0,1,2,3,4,5,6,7),
     &fdyn_turbu);
 
   {
@@ -2552,12 +2525,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     &fdyn_turbu);
 
   DoubleParameter(
-    "CHANNEL_L_TAU",
-    0.0,
-    "Used for normalisation of the wall normal distance in the Van \nDriest Damping function. May be taken from the output of \nthe apply_mesh_stretching.pl preprocessing script.",
-    &fdyn_turbu);
-
-  DoubleParameter(
     "CHAN_AMPL_INIT_DIST",
     0.1,
     "Max. amplitude of the random disturbance in percent of the initial value in mean flow direction.",
@@ -2566,6 +2533,131 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("SAMPLING_START",10000000,"Time step after when sampling shall be started",&fdyn_turbu);
   IntParameter("SAMPLING_STOP",1,"Time step when sampling shall be stopped",&fdyn_turbu);
   IntParameter("DUMPING_PERIOD",1,"Period of time steps after which statistical data shall be dumped",&fdyn_turbu);
+
+  setStringToIntegralParameter<int>("FSSUGRVISC","No","fine-scale subgrid viscosity",
+                               tuple<std::string>(
+                                 "No",
+                                 "Smagorinsky_all",
+                                 "Smagorinsky_small"
+                                 ),
+                               tuple<int>(
+                                   INPAR::FLUID::no_fssgv,
+                                   INPAR::FLUID::smagorinsky_all,
+                                   INPAR::FLUID::smagorinsky_small
+                                   ),
+                               &fdyn_turbu);
+
+  /*----------------------------------------------------------------------*/
+  // sublist with additional input parameters for smagorinsky model
+  Teuchos::ParameterList& fdyn_turbsgv = fdyn.sublist("SUBGRID VISCOSITY",false,"");
+
+  DoubleParameter("C_SMAGORINSKY",0.0,"Constant for the Smagorinsky model. Something between 0.1 to 0.24",&fdyn_turbsgv);
+  BoolParameter("C_SMAGORINSKY_AVERAGED","No","Flag to (de)activate averaged Smagorinksy constant",&fdyn_turbsgv);
+
+  DoubleParameter(
+    "CHANNEL_L_TAU",
+    0.0,
+    "Used for normalisation of the wall normal distance in the Van \nDriest Damping function. May be taken from the output of \nthe apply_mesh_stretching.pl preprocessing script.",
+    &fdyn_turbsgv);
+
+  DoubleParameter("C_TURBPRANDTL",1.0,"(Constant) turbulent Prandtl number for the Smagorinsky model in scalar transport.",&fdyn_turbsgv);
+
+  /*----------------------------------------------------------------------*/
+  // sublist with additional input parameters for multifractal subgrid-scales
+  Teuchos::ParameterList& fdyn_turbmfs = fdyn.sublist("MULTIFRACTAL SUBGRID SCALES",false,"");
+
+  DoubleParameter(
+    "CSGS",
+    0.0,
+    "Modelparameter of multifractal subgrid-scales.",
+    &fdyn_turbmfs);
+
+  setStringToIntegralParameter<int>(
+    "SCALE_SEPARATION",
+    "no_scale_sep",
+    "Specify the filter type for scale separation in LES",
+    tuple<std::string>(
+      "no_scale_sep",
+      "box_filter",
+      "algebraic_multigrid_operator",
+      "geometric_multigrid_operator"),
+    tuple<std::string>(
+      "no scale separation",
+      "classical box filter",
+      "scale separation by algebraic multigrid operator",
+      "scale separation by geometric multigrid operator"),
+    tuple<int>(0,1,2,3),
+    &fdyn_turbmfs);
+
+  BoolParameter("CALC_N","No","Flag to (de)activate calculation of N from the Reynolds number.",&fdyn_turbmfs);
+
+  DoubleParameter(
+    "N",
+    1.0,
+    "Set grid to viscous scale ratio..",
+    &fdyn_turbmfs);
+
+  setStringToIntegralParameter<int>(
+    "REF_LENGTH",
+    "cube_edge",
+    "Specify the reference length for Re-dependent N.",
+    tuple<std::string>(
+      "cube_edge",
+      "sphere_diameter",
+      "streamlength",
+      "gradient_based",
+      "metric_tensor"),
+    tuple<std::string>(
+      "edge length of volume equivalent cube",
+      "diameter of volume equivalent sphere",
+      "streamlength taken from stabilization",
+      "gradient based length taken from stabilization",
+      "metric tensor taken from stabilization"),
+    tuple<int>(0,1,2,3,4),
+    &fdyn_turbmfs);
+
+  setStringToIntegralParameter<int>(
+    "REF_VELOCITY",
+    "strainrate",
+    "Specify the reference velocity for Re-dependent N.",
+    tuple<std::string>(
+      "strainrate",
+      "resolved",
+      "fine_scale"),
+    tuple<std::string>(
+      "norm of strain rate",
+      "resolved velocity",
+      "fine-scale velocity"),
+    tuple<int>(0,1,2),
+    &fdyn_turbmfs);
+
+  DoubleParameter(
+    "C_NU",
+    1.0,
+    "Proportionality constant between Re and ratio viscous scale to element length.",
+    &fdyn_turbmfs);
+
+  BoolParameter("NEAR_WALL_LIMIT","No","Flag to (de)activate near-wall limit.",&fdyn_turbmfs);
+
+  setStringToIntegralParameter<int>("EVALUATION_B",
+                               "element_center",
+                               "Location where B is evaluated",
+                               tuple<std::string>(
+                                 "element_center",
+                                 "integration_point"),
+                               tuple<std::string>(
+                                 "evaluate B at element center",
+                                 "evaluate B at integration point")  ,
+                                tuple<int>(0,1),
+                               &fdyn_turbmfs);
+
+  DoubleParameter(
+    "BETA",
+    0.0,
+    "Cross- and Reynolds-stress terms only on right-hand-side.",
+    &fdyn_turbmfs);
+
+  DoubleParameter("C_SCALE_SIMILARITY",1.0,"Constant for the scale similarity model. Something between 0.45 +- 0.15 or 1.0.", &fdyn_turbmfs);
 
   /*----------------------------------------------------------------------*/
    Teuchos::ParameterList& fdyn_turbinf = fdyn.sublist("TURBULENT INFLOW",false,"");

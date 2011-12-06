@@ -158,12 +158,6 @@ public:
        const double inflow = false);
 
   /*!
-  \brief Clear all statistics collected up to now
-
-  */
-  void Reset();
-
-  /*!
   \brief Restart collection of statistics
 
   */
@@ -285,6 +279,9 @@ private:
 
   //! toggle evaluation of scale similarity quantities
   bool                                 scalesimilarity_;
+
+  //! toggle evaluation of scale multifractal quantities
+  bool                                 multifractal_;
 
   //! toggle evaluation of subgrid quantities, dissipation rates etc
   //! this is only possible for the genalpha implementation since

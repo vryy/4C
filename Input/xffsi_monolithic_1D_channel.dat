@@ -45,7 +45,6 @@ ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-07
-FSSUGRVISC                      No
 INITIALFIELD                    zero_field //field_by_function 
 ITEMAX                          5
 LIFTDRAG                        No

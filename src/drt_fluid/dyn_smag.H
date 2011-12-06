@@ -322,7 +322,8 @@ private:
   //@}
 
   //! @name control parameters
-  bool                         channel_flow_;
+  bool                         homdir_;
+  string                       special_flow_homdir_;
   bool                         apply_dynamic_smagorinsky_;
   bool                         apply_box_filter_;
   //@}
@@ -349,11 +350,12 @@ private:
   RCP<Epetra_MultiVector>      col_fs_vel_;
   //@}
 
-  //! @name turbulent channel flow specials
+  //! @name homogeneous flow specials
   //        -------------------------------
 
-  //! the plane coordinates for the above mentioned averaging procedure
-  RCP<vector<double> >         planecoords_;
+  //! the direction coordinates for the above mentioned averaging procedure
+  RCP<vector<double> >         dir1coords_;
+  RCP<vector<double> >         dir2coords_;
   //@}
 
 }; // end class DynSmagFilter

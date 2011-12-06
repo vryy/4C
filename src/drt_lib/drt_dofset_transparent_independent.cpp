@@ -18,14 +18,6 @@ Maintainer: Shadan Shahmiri
 
 DRT::TransparentIndependentDofSet::TransparentIndependentDofSet(RCP<DRT::Discretization> sourcedis,bool parallel) :
 DRT::IndependentDofSet(),
-parallel_(parallel)
-{
-  sourcedis_.push_back(sourcedis);
-  return;
-}
-
-DRT::TransparentIndependentDofSet::TransparentIndependentDofSet(vector<RCP<DRT::Discretization> > sourcedis,bool parallel) :
-DRT::IndependentDofSet(),
 sourcedis_(sourcedis),
 parallel_(parallel)
 {
@@ -40,11 +32,11 @@ int DRT::TransparentIndependentDofSet::AssignDegreesOfFreedom(const DRT::Discret
 
   if(!parallel_)
   {
-    TransferDegreesOfFreedom(sourcedis_, dis, start);
+    TransferDegreesOfFreedom(*sourcedis_, dis, start);
   }
   else
   {
-    ParallelTransferDegreesOfFreedom(sourcedis_, dis, start);
+    ParallelTransferDegreesOfFreedom(*sourcedis_, dis, start);
   }
 
   // tell all proxies (again!)
@@ -55,115 +47,101 @@ int DRT::TransparentIndependentDofSet::AssignDegreesOfFreedom(const DRT::Discret
 
 /// Assign dof numbers for new discretization using dof numbering from source discretization.
 void DRT::TransparentIndependentDofSet::TransferDegreesOfFreedom(
-        const vector<RCP<DRT::Discretization> > sourcedis,
+        const DRT::Discretization& sourcedis,
         const DRT::Discretization& newdis,
         const int start
         )
 {
-  for (int i=0; i<int(sourcedis.size()); i++)
-  {
-    if (!sourcedis[i]->DofRowMap()->UniqueGIDs()) dserror("DofRowMap is not unique");
-    if (!sourcedis[i]->NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
-    if (!sourcedis[i]->ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
-  }
+    if (!sourcedis.DofRowMap()->UniqueGIDs()) dserror("DofRowMap is not unique");
+    if (!sourcedis.NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
+    if (!sourcedis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
 
     if (!newdis.DofRowMap()->UniqueGIDs()) dserror("DofRowMap is not unique");
     if (!newdis.NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
     if (!newdis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
 
-    // build dofrowmap based on dofrowvec which contains the dofs of each node from the (multiple) source dis;
-    // dofs of the first node are followed by dofs of the second node and so on
+    //build dofrowmap
+    set<int> dofrowset;
     vector<int> dofrowvec;
     dofrowvec.reserve(dofrowmap_->NumMyElements());
     for (int inode = 0; inode != newdis.NumMyRowNodes(); ++inode)
     {
       const DRT::Node* newnode = newdis.lRowNode(inode);
+      const DRT::Node* sourcenode = sourcedis.gNode(newnode->Id());
 
-      // loop over all source discretizations to fill each node with dofs from the different source discrets
-      vector<int> dofs;
-      for (int i=0; i<int(sourcedis.size()); i++)
-      {
-        const DRT::Node* sourcenode = sourcedis[i]->gNode(newnode->Id());
-        vector<int> ldofs = sourcedis[i]->Dof(0, sourcenode);
-        for(int l=0; l<int(ldofs.size()); l++)
-        {
-          dofs.push_back(ldofs[l]);
-        }
-      }
+      const vector<int> dofs = sourcedis.Dof(0,sourcenode);
 
       const int newlid = newnode->LID();
       const int numdofs = (*numdfcolnodes_)[newlid];
       if (numdofs > 0)
       {
-        if(numdofs > (int)dofs.size())
-          dserror("numdofs %d > %d for node %d",numdofs,(int)dofs.size(),newnode->Id());
         (*idxcolnodes_)[newlid] = dofs[0];
         for (int idof = 0; idof < numdofs; ++idof)
         {
-          dofrowvec.push_back(dofs[idof]);
+          dofrowset.insert(dofs[idof]);
         }
       }
     }
 
+    for(set<int>::iterator idof=dofrowset.begin();
+        idof!=dofrowset.end();++idof)
+    {
+      dofrowvec.push_back(*idof);
+    }
+
     dofrowmap_ = rcp(new Epetra_Map(-1, dofrowvec.size(), &dofrowvec[0], 0, newdis.Comm()));
 
-    // build dofcolmap based on dofcolvec which contains the dofs of each node from the (multiple) source dis;
-    // dofs of the first node are followed by dofs of the second node and so on
+    //build dofcolvec
+    set<int> dofcolset;
     vector<int> dofcolvec;
     dofcolvec.reserve(dofcolmap_->NumMyElements());
     for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
     {
       const DRT::Node* newnode = newdis.lColNode(inode);
+      const DRT::Node* sourcenode = sourcedis.gNode(newnode->Id());
 
-      // loop over all source discretizations to fill each node with dofs from the different source discrets
-      vector<int> dofs;
-      for (int i=0; i<int(sourcedis.size()); i++)
+      const int lid = sourcenode->LID();
+      if (lid==-1)
       {
-        const DRT::Node* sourcenode = sourcedis[i]->gNode(newnode->Id());
-
-        const int lid = sourcenode->LID();
-        if (lid==-1)
-        {
-          dserror("required node %d not on proc",newnode->Id());
-        }
-        vector<int> ldofs = sourcedis[i]->Dof(0, sourcenode);
-        for(int l=0; l<int(ldofs.size()); l++)
-          dofs.push_back(ldofs[l]);
+        dserror("required node %d not on proc",newnode->Id());
       }
-
+      const vector<int> dofs = sourcedis.Dof(0,sourcenode);
       const int newlid = newnode->LID();
       //const int newfirstidx = (*idxcolnodes_)[newlid];
       const int numdofs = (*numdfcolnodes_)[newlid];
       if (numdofs > 0)
       {
-        if(numdofs > (int)dofs.size())
-          dserror("numdofs %d > %d for node %d",numdofs,(int)dofs.size(),newnode->Id());
         (*idxcolnodes_)[newlid] = dofs[0];
+//        if(numdofs!=(int)dofs.size())
+//        dserror("numdofs %d!=%d for node %d",numdofs,(int)dofs.size(),newnode->Id());
+
         for (int idof = 0; idof < numdofs; ++idof)
         {
-          dofcolvec.push_back(dofs[idof]);
+          dofcolset.insert(dofs[idof]);
         }
       }
     }
 
-    dofcolmap_ = rcp(new Epetra_Map(-1, dofcolvec.size(), &dofcolvec[0], 0, newdis.Comm()));
+    for(set<int>::iterator idof=dofcolset.begin();
+        idof!=dofcolset.end();++idof)
+    {
+      dofcolvec.push_back(*idof);
+    }
 
+    dofcolmap_ = rcp(new Epetra_Map(-1, dofcolvec.size(), &dofcolvec[0], 0, newdis.Comm()));
 }
 
 
 /// Assign dof numbers for new discretization using dof numbering from source discretization.
 void DRT::TransparentIndependentDofSet::ParallelTransferDegreesOfFreedom(
-  const vector<RCP<DRT::Discretization> > sourcedis,
+  const DRT::Discretization& sourcedis,
   const DRT::Discretization& newdis,
   const int start
   )
 {
-  for (int i=0; i<int(sourcedis.size()); i++)
-  {
-    if (!sourcedis[i]->DofRowMap()->UniqueGIDs()) dserror("DofRowMap is not unique");
-    if (!sourcedis[i]->NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
-    if (!sourcedis[i]->ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
-  }
+  if (!sourcedis.DofRowMap()->UniqueGIDs()) dserror("DofRowMap is not unique");
+  if (!sourcedis.NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
+  if (!sourcedis.ElementRowMap()->UniqueGIDs()) dserror("ElementRowMap is not unique");
 
   if (!newdis.DofRowMap()->UniqueGIDs()) dserror("DofRowMap is not unique");
   if (!newdis.NodeRowMap()->UniqueGIDs()) dserror("NodeRowMap is not unique");
@@ -182,6 +160,7 @@ void DRT::TransparentIndependentDofSet::ParallelTransferDegreesOfFreedom(
   // this unique number
   //
   map<int,vector<int> >  gid_to_dofs;
+
   for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
   {
     const DRT::Node* newnode = newdis.lColNode(inode);
@@ -193,7 +172,7 @@ void DRT::TransparentIndependentDofSet::ParallelTransferDegreesOfFreedom(
   {
 #ifdef PARALLEL
     // create an exporter for point to point comunication
-    DRT::Exporter exporter(sourcedis[0]->Comm());
+    DRT::Exporter exporter(sourcedis.Comm());
 
     // necessary variables
     MPI_Request request;
@@ -204,8 +183,8 @@ void DRT::TransparentIndependentDofSet::ParallelTransferDegreesOfFreedom(
     vector<char> rblock;
 
     // get number of processors and the current processors id
-    int numproc=sourcedis[0]->Comm().NumProc();
-    int myrank=sourcedis[0]->Comm().MyPID();
+    int numproc=sourcedis.Comm().NumProc();
+    int myrank=sourcedis.Comm().MyPID();
 
     //----------------------------------------------------------------------
     // communication is done in a round robin loop
@@ -248,15 +227,14 @@ void DRT::TransparentIndependentDofSet::ParallelTransferDegreesOfFreedom(
   }
 
   set<int> slaveset;
-
   std::vector<DRT::Condition*> mypbcs;
 
   // get periodic surface boundary conditions
-  sourcedis_[0]->GetCondition("SurfacePeriodic",mypbcs);
+  sourcedis_->GetCondition("SurfacePeriodic",mypbcs);
 
   if(mypbcs.empty())
   {
-    sourcedis_[0]->GetCondition("LinePeriodic",mypbcs);
+    sourcedis_->GetCondition("LinePeriodic",mypbcs);
   }
 
   for (unsigned numcond=0;numcond<mypbcs.size();++numcond)
@@ -267,29 +245,9 @@ void DRT::TransparentIndependentDofSet::ParallelTransferDegreesOfFreedom(
     const string* mymasterslavetoggle
       = thiscond->Get<string>("Is slave periodic boundary condition");
 
-    // test whether in all source discretizations the same periodic bc are slave or master
-    if(int(sourcedis.size()) != 1)
-      cout<<"Warning! ParallelTransferDegreesOfFreedom hasn't been tested for this application!!"<<endl;
-    for (int i=1; i<int(sourcedis.size()); i++)
-    {
-      std::vector<DRT::Condition*> testpbcs;
-      sourcedis_[i]->GetCondition("SurfacePeriodic",testpbcs);
-
-      if(testpbcs.empty())
-      {
-        sourcedis_[i]->GetCondition("LinePeriodic",testpbcs);
-      }
-
-      const string* testmasterslavetoggle
-        = testpbcs[numcond]->Get<string>("Is slave periodic boundary condition");
-
-      if( *testmasterslavetoggle != *mymasterslavetoggle)
-        dserror("the same periodic boundary conditions are different for different source discretizations");
-    } // test end
-
-    // normal prcedure with periodic bcs
     if(!(*mymasterslavetoggle=="Master"))
     {
+
       const vector <int>* pbcids;
       pbcids = (*thiscond).Nodes();
 
@@ -300,9 +258,8 @@ void DRT::TransparentIndependentDofSet::ParallelTransferDegreesOfFreedom(
     }
   }
 
-
-  // build dofrowmap based on dofrowvec which contains the dofs of each node from the (multiple) source dis;
-  // dofs of the first node are followed by dofs of the second node and so on
+  //build dofrowmap
+  set<int> dofrowset;
   vector<int> dofrowvec;
   dofrowvec.reserve(dofrowmap_->NumMyElements());
   for (int inode = 0; inode != newdis.NumMyRowNodes(); ++inode)
@@ -329,23 +286,29 @@ void DRT::TransparentIndependentDofSet::ParallelTransferDegreesOfFreedom(
     {
       (*idxcolnodes_)[newlid] = dofs[0];
 
-      // slave-dofs must not enter the dofrowvec (if master&slave are on different procs)
+      // slave-dofs must not enter the dofrowset (if master&slave are on different procs)
       std::set<int>::iterator curr=slaveset.find(newnode->Id());
 
       if(curr==slaveset.end())
       {
         for (int idof = 0; idof < numdofs; ++idof)
         {
-          dofrowvec.push_back(dofs[idof]);
+          dofrowset.insert(dofs[idof]);
         }
       }
     }
   }
 
+  for(set<int>::iterator idof=dofrowset.begin();
+      idof!=dofrowset.end();++idof)
+  {
+    dofrowvec.push_back(*idof);
+  }
+
   dofrowmap_ = rcp(new Epetra_Map(-1, dofrowvec.size(), &dofrowvec[0], 0, newdis.Comm()));
 
-  // build dofcolmap based on dofcolvec which contains the dofs of each node from the (multiple) source dis;
-  // dofs of the first node are followed by dofs of the second node and so on
+  //build dofcolvec
+  set<int> dofcolset;
   vector<int> dofcolvec;
   dofcolvec.reserve(dofcolmap_->NumMyElements());
   for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
@@ -365,12 +328,19 @@ void DRT::TransparentIndependentDofSet::ParallelTransferDegreesOfFreedom(
 
       for (int idof = 0; idof < numdofs; ++idof)
       {
-        dofcolvec.push_back(dofs[idof]);
+        dofcolset.insert(dofs[idof]);
       }
     }
   }
 
+  for(set<int>::iterator idof=dofcolset.begin();
+      idof!=dofcolset.end();++idof)
+  {
+    dofcolvec.push_back(*idof);
+  }
+
   dofcolmap_ = rcp(new Epetra_Map(-1, dofcolvec.size(), &dofcolvec[0], 0, newdis.Comm()));
+
 
   return;
 }
@@ -393,38 +363,29 @@ void DRT::TransparentIndependentDofSet::SetSourceDofsAvailableOnThisProc(
     curr!=gid_to_dofs.end();++curr)
   {
 
-    // test whether all source nodes in all discrets are on this proc
-    int lid = 0;
-    for (int i=0; i<int(sourcedis_.size()); i++)
-    {
-      if( sourcedis_[i]->NodeRowMap()->LID(curr->first) == -1)
-        lid = sourcedis_[i]->NodeRowMap()->LID(curr->first);
-    }
+    const int lid = sourcedis_->NodeRowMap()->LID(curr->first);
 
     if (lid>-1)
     {
       curr->second.clear();
-      // Gather dofs of all source discretizations
-      for (int i=0; i<int(sourcedis_.size()); i++)
+
+      const DRT::Node* sourcenode = sourcedis_->gNode(curr->first);
+
+      const vector<int> dofs = sourcedis_->Dof(0,sourcenode);
+
+      for (vector<int>::const_iterator iter=dofs.begin();iter!=dofs.end();++iter)
       {
-        const DRT::Node* sourcenode = sourcedis_[i]->gNode(curr->first);
-
-        const vector<int> dofs = sourcedis_[i]->Dof(0, sourcenode);
-
-        for (vector<int>::const_iterator iter=dofs.begin();iter!=dofs.end();++iter)
-        {
-          curr->second.push_back(*iter);
-        }
+        curr->second.push_back(*iter);
       }
     }
     else
-    {
-      int numproc=sourcedis_[0]->Comm().NumProc();
-      if(numproc==1)
       {
-        dserror("I have a one-processor problem but the node is not on the proc. sourcedis_->NodeRowMap() is probably currupted.");
+        int numproc=sourcedis_->Comm().NumProc();
+        if(numproc==1)
+          {
+            dserror("I have a one-processor problem but the node is not on the proc. sourcedis_->NodeRowMap() is probably currupted.");
+          }
       }
-    }
   }
   return;
 }

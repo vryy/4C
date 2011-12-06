@@ -181,6 +181,9 @@ private:
   RefCountPtr<vector<double> >     x2wcoordinates_;
   RefCountPtr<vector<double> >     clrcoordinates_;
   RefCountPtr<vector<double> >     ctbcoordinates_;
+  //! all coordinates in x1- and x2-direction (required for averaging of Smagorinsky constant)
+  RefCountPtr<vector<double> >     x1coordinates_;
+  RefCountPtr<vector<double> >     x2coordinates_;
 
   //! sum over u
   RefCountPtr<vector<double> >     x1csumu_;

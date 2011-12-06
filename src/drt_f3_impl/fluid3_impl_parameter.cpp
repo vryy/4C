@@ -80,7 +80,19 @@ DRT::ELEMENTS::Fluid3ImplParameter::Fluid3ImplParameter()
   timefacpre_(1.0),
   viscreastabfac_(0.0),
   Cs_(0.0),
-  l_tau_(0.0)
+  Cs_averaged_(false),
+  l_tau_(0.0),
+  Cl_(0.0),
+  Csgs_(0.0),
+  alpha_(0.0),
+  CalcN_(false),
+  N_(0.0),
+  refvel_(INPAR::FLUID::strainrate),
+  reflength_(INPAR::FLUID::cube_edge),
+  c_nu_(1.0),
+  near_wall_limit_(false),
+  B_gp_(false),
+  beta_(0.0)
 {
 }
 
@@ -257,92 +269,6 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementGeneralFluidParameter( Teucho
   const std::string matloc = stablist.get<std::string>("EVALUATION_MAT");
   if (matloc == "integration_point") mat_gp_ = true;
   else                               mat_gp_ = false;
-
-//---------------------------------------------------------------------------------
-// parameter for turbulence and subgrid-viscosity approach
-//---------------------------------------------------------------------------------
-
-  // get flag for fine-scale subgrid-viscosity approach
-  {
-    const std::string fssgvdef = params.get<std::string>("fs subgrid viscosity","No");
-
-    if (fssgvdef == "Smagorinsky_all")        fssgv_ = INPAR::FLUID::smagorinsky_all;
-    else if (fssgvdef == "Smagorinsky_small") fssgv_ = INPAR::FLUID::smagorinsky_small;
-  }
-
-  Teuchos::ParameterList& turbmodelparams    = params.sublist("TURBULENCE MODEL");
-
-  if (fssgv_ != INPAR::FLUID::no_fssgv) Cs_ = turbmodelparams.get<double>("C_SMAGORINSKY",0.0);
-
-  // the default action is no model
-  turb_mod_action_ = INPAR::FLUID::no_model;
-
-  // No turbulent flow: TURBULENCE_APPROACH = DNS
-  if (turbmodelparams.get<std::string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
-  {
-    if (is_stationary_ == true)
-      dserror("Stationary turbulent flow does not make any sense");
-
-    // get Smagorinsky model parameter for fine-scale subgrid viscosity
-    // (Since either all-scale Smagorinsky model (i.e., classical LES model
-    // as will be inititalized below) or fine-scale Smagorinsky model is
-    // used (and never both), the same input parameter can be exploited.)
-
-    std::string& physical_turbulence_model = turbmodelparams.get<std::string>("PHYSICAL_MODEL");
-
-    // --------------------------------------------------
-    // standard constant coefficient Smagorinsky model
-    if (physical_turbulence_model == "Smagorinsky")
-    {
-      // the classic Smagorinsky model only requires one constant parameter
-      turb_mod_action_ = INPAR::FLUID::smagorinsky;
-      Cs_              = turbmodelparams.get<double>("C_SMAGORINSKY");
-    }
-    // --------------------------------------------------
-    // Smagorinsky model with van Driest damping
-    else if (physical_turbulence_model == "Smagorinsky_with_van_Driest_damping")
-    {
-      // that's only implemented for turbulent channel flow
-      // wall function length is hard implemented
-      if (turbmodelparams.get<std::string>("CANONICAL_FLOW","no")
-          !=
-          "channel_flow_of_height_2")
-          dserror("van_Driest_damping only for channel_flow_of_height_2\n");
-
-      // for the Smagorinsky model with van Driest damping, we need
-      // a viscous length to determine the y+ (heigth in wall units)
-      turb_mod_action_ = INPAR::FLUID::smagorinsky_with_van_Driest_damping;
-
-      // get parameters of model
-      Cs_              = turbmodelparams.get<double>("C_SMAGORINSKY");
-      l_tau_           = turbmodelparams.get<double>("CHANNEL_L_TAU");
-    }
-
-    // --------------------------------------------------
-    // Smagorinsky model with dynamic Computation of Cs
-    else if (physical_turbulence_model == "Dynamic_Smagorinsky")
-    {
-      turb_mod_action_ = INPAR::FLUID::dynamic_smagorinsky;
-
-      // In the case of dynamic Smagorinsky:
-      // Cs_ is calculated from Cs_sqrt_delta to compare it with the standard
-      // it is stored in Cs_ after its calculation in CalcSubgrVisc
-      Cs_ = 0.0;
-    }
-    else if (physical_turbulence_model == "Scale_Similarity")
-    {
-      turb_mod_action_ = INPAR::FLUID::scale_similarity;
-      Cl_ = turbmodelparams.get<double>("C_SCALE_SIMILARITY");
-    }
-    else if (physical_turbulence_model == "Multifractal_Subgrid_Scales")
-    {
-      turb_mod_action_ = INPAR::FLUID::multifractal_subgrid_scales;
-    }
-    else
-    {
-      dserror("Up to now, only Smagorinsky, Scale Similarity and Multifractal Subgrid Scales are available");
-    }
-  } // end if(Classical LES)
 }
 
 void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTimeParameter( Teuchos::ParameterList& params )
@@ -457,6 +383,160 @@ void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTimeParameter( Teuchos::Param
     cout<<"alphaM_ "<<alphaM_<<endl;
     dserror("Negative (or no) time-integration parameter or time-step length supplied");
   }
+}
+
+//----------------------------------------------------------------------*
+//  set turbulence parameters                            rasthofer 11/11|
+//---------------------------------------------------------------------*/
+void DRT::ELEMENTS::Fluid3ImplParameter::SetElementTurbulenceParameter( Teuchos::ParameterList& params )
+{
+  // get parameter lists
+  Teuchos::ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
+  Teuchos::ParameterList& turbmodelparamssgvisc = params.sublist("SUBGRID VISCOSITY");
+  Teuchos::ParameterList& turbmodelparamsmfs = params.sublist("MULTIFRACTAL SUBGRID SCALES");
+
+  //---------------------------------------------------------------------------------
+  // parameter for subgrid-viscosity approach
+  //---------------------------------------------------------------------------------
+
+  // get flag for fine-scale subgrid-viscosity approach
+  {
+    const std::string fssgvdef = turbmodelparams.get<std::string>("FSSUGRVISC","No");
+
+    if (fssgvdef == "Smagorinsky_all")        fssgv_ = INPAR::FLUID::smagorinsky_all;
+    else if (fssgvdef == "Smagorinsky_small") fssgv_ = INPAR::FLUID::smagorinsky_small;
+  }
+
+  // get Smagorinsky model parameter for fine-scale subgrid viscosity
+  // (Since either all-scale Smagorinsky model (i.e., classical LES model
+  // as will be inititalized below) or fine-scale Smagorinsky model is
+  // used (and never both), the same input parameter can be exploited.)
+  if (fssgv_ != INPAR::FLUID::no_fssgv) Cs_ = turbmodelparamssgvisc.get<double>("C_SMAGORINSKY",0.0);
+
+  //---------------------------------------------------------------------------------
+  // parameter for turbulence approach
+  //---------------------------------------------------------------------------------
+
+  // the default action is no model
+  turb_mod_action_ = INPAR::FLUID::no_model;
+
+  // No turbulent flow: TURBULENCE_APPROACH = DNS
+  if (turbmodelparams.get<std::string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
+  {
+    if (is_stationary_ == true)
+      dserror("Stationary turbulent flow does not make any sense");
+
+    std::string& physical_turbulence_model = turbmodelparams.get<std::string>("PHYSICAL_MODEL");
+
+    // --------------------------------------------------
+    // standard constant coefficient Smagorinsky model
+    if (physical_turbulence_model == "Smagorinsky")
+    {
+      // the classic Smagorinsky model only requires one constant parameter
+      turb_mod_action_ = INPAR::FLUID::smagorinsky;
+      Cs_              = turbmodelparamssgvisc.get<double>("C_SMAGORINSKY");
+    }
+    // --------------------------------------------------
+    // Smagorinsky model with van Driest damping
+    else if (physical_turbulence_model == "Smagorinsky_with_van_Driest_damping")
+    {
+      // that's only implemented for turbulent channel flow
+      // wall function length is hard implemented
+      if (turbmodelparamssgvisc.get<std::string>("CANONICAL_FLOW","no")
+          !=
+          "channel_flow_of_height_2")
+          dserror("van_Driest_damping only for channel_flow_of_height_2\n");
+
+      // for the Smagorinsky model with van Driest damping, we need
+      // a viscous length to determine the y+ (heigth in wall units)
+      turb_mod_action_ = INPAR::FLUID::smagorinsky_with_van_Driest_damping;
+
+      // get parameters of model
+      Cs_              = turbmodelparamssgvisc.get<double>("C_SMAGORINSKY");
+      l_tau_           = turbmodelparamssgvisc.get<double>("CHANNEL_L_TAU");
+    }
+
+    // --------------------------------------------------
+    // Smagorinsky model with dynamic Computation of Cs
+    else if (physical_turbulence_model == "Dynamic_Smagorinsky")
+    {
+      turb_mod_action_ = INPAR::FLUID::dynamic_smagorinsky;
+
+      // In the case of dynamic Smagorinsky:
+      // Cs_ is calculated from Cs_sqrt_delta to compare it with the standard
+      // it is stored in Cs_ after its calculation in CalcSubgrVisc
+      Cs_ = 0.0;
+      Cs_averaged_ = DRT::INPUT::IntegralValue<int>(turbmodelparamssgvisc,"C_SMAGORINSKY_AVERAGED");
+    }
+    else if (physical_turbulence_model == "Scale_Similarity")
+    {
+      turb_mod_action_ = INPAR::FLUID::scale_similarity;
+      Cl_ = turbmodelparamsmfs.get<double>("C_SCALE_SIMILARITY");
+    }
+    else if (physical_turbulence_model == "Scale_Similarity_basic")
+    {
+      turb_mod_action_ = INPAR::FLUID::scale_similarity_basic;
+      Cl_ = turbmodelparamsmfs.get<double>("C_SCALE_SIMILARITY");
+    }
+    else if (physical_turbulence_model == "Multifractal_Subgrid_Scales")
+    {
+      turb_mod_action_ = INPAR::FLUID::multifractal_subgrid_scales;
+
+      // get parameters of model
+      Csgs_ = turbmodelparamsmfs.get<double>("CSGS");
+
+      if (turbmodelparamsmfs.get<string>("SCALE_SEPARATION") == "algebraic_multigrid_operator")
+       alpha_ = 3.0;
+      else if (turbmodelparamsmfs.get<string>("SCALE_SEPARATION") == "box_filter"
+            or turbmodelparamsmfs.get<string>("SCALE_SEPARATION") == "geometric_multigrid_operator")
+       alpha_ = 2.0;
+      else
+       dserror("Unknown filter type!");
+
+      CalcN_ = DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs,"CALC_N");
+
+      N_ = turbmodelparamsmfs.get<double>("N");
+
+      if (turbmodelparamsmfs.get<string>("REF_VELOCITY") == "strainrate")
+       refvel_ = INPAR::FLUID::strainrate;
+      else if (turbmodelparamsmfs.get<string>("REF_VELOCITY") == "resolved")
+       refvel_ = INPAR::FLUID::resolved;
+      else if (turbmodelparamsmfs.get<string>("REF_VELOCITY") == "fine_scale")
+       refvel_ = INPAR::FLUID::fine_scale;
+      else
+       dserror("Unknown velocity!");
+
+      if (turbmodelparamsmfs.get<string>("REF_LENGTH") == "cube_edge")
+       reflength_ = INPAR::FLUID::cube_edge;
+      else if (turbmodelparamsmfs.get<string>("REF_LENGTH") == "sphere_diameter")
+       reflength_ = INPAR::FLUID::sphere_diameter;
+      else if (turbmodelparamsmfs.get<string>("REF_LENGTH") == "streamlength")
+       reflength_ = INPAR::FLUID::streamlength;
+      else if (turbmodelparamsmfs.get<string>("REF_LENGTH") == "gradient_based")
+       reflength_ = INPAR::FLUID::gradient_based;
+      else if (turbmodelparamsmfs.get<string>("REF_LENGTH") == "metric_tensor")
+       reflength_ = INPAR::FLUID::metric_tensor;
+      else
+       dserror("Unknown length!");
+
+      c_nu_ = turbmodelparamsmfs.get<double>("C_NU");
+
+      near_wall_limit_ = DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs,"NEAR_WALL_LIMIT");
+
+      if (turbmodelparamsmfs.get<string>("EVALUATION_B") == "element_center")
+      B_gp_ = false;
+      else if (turbmodelparamsmfs.get<string>("EVALUATION_B") == "integration_point")
+      B_gp_ = true;
+      else
+        dserror("Unknown evaluation point!");
+
+      beta_ = turbmodelparamsmfs.get<double>("BETA");
+    }
+    else
+    {
+      dserror("Up to now, only Smagorinsky, Scale Similarity and Multifractal Subgrid Scales are available");
+    }
+  } // end if(Classical LES)
 }
 
 //----------------------------------------------------------------------*/

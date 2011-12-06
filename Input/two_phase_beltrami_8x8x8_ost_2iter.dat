@@ -70,7 +70,6 @@ GAMMA                           0.666666
 CONVCHECK                       L_2_norm
 CONVFORM                        convective //conservative
 CONVTOL                         1e-06
-FSSUGRVISC                      No
 GRIDVEL                         1
 ITEMAX                          2
 MAXTIME                         0.5

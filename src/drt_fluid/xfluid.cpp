@@ -1087,7 +1087,6 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   theta_        = params_.get<double>("THETA");
   newton_       = DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(params_,"NONLINITER");
   convform_     = params_.get<string>("CONVFORM");
-  fssgv_        = params_.get<string>("FSSUGRVISC","No");
 
   upres_        = params_.get<int>("write solution every", -1);
 
@@ -1250,6 +1249,7 @@ FLD::XFluid::XFluid( Teuchos::RCP<DRT::Discretization> actdis,
   // set general fluid parameter defined before
   // ---------------------------------------------------------------------
   SetElementGeneralFluidParameter();
+  SetElementTurbulenceParameter();
 }
 
 void FLD::XFluid::Integrate()
@@ -2469,15 +2469,11 @@ void FLD::XFluid::SetElementGeneralFluidParameter()
 
   // set general element parameters
   eleparams.set("form of convective term",convform_);
-  eleparams.set("fs subgrid viscosity",fssgv_);
   eleparams.set<int>("Linearisation",newton_);
   eleparams.set<int>("Physical Type", physicaltype_);
 
   // parameter for stabilization
   eleparams.sublist("STABILIZATION") = params_.sublist("STABILIZATION");
-
-  // parameter for turbulent flow
-  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
 
   //set time integration scheme
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);
@@ -2489,6 +2485,27 @@ void FLD::XFluid::SetElementGeneralFluidParameter()
 #else
   dserror("D_FLUID3 required");
 #endif
+}
+
+// -------------------------------------------------------------------
+// set turbulence parameters                         rasthofer 11/2011
+// -------------------------------------------------------------------
+void FLD::XFluid::SetElementTurbulenceParameter()
+{
+  ParameterList eleparams;
+
+  eleparams.set("action","set_turbulence_parameter");
+
+  // set general parameters for turbulent flow
+  eleparams.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
+
+  // set model-dependent parameters
+  eleparams.sublist("SUBGRID VISCOSITY") = params_.sublist("SUBGRID VISCOSITY");
+  eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_.sublist("MULTIFRACTAL SUBGRID SCALES");
+
+  // call standard loop over elements
+  DRT::ELEMENTS::Fluid3Type::Instance().PreEvaluate(*discret_,eleparams,null,null,null,null,null);
+  return;
 }
 
 // -------------------------------------------------------------------
