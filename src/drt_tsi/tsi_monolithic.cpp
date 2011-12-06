@@ -41,6 +41,8 @@ Maintainer: Caroline Danowski
 #include "../drt_contact/contact_node.H"
 #include "../drt_mortar/mortar_utils.H"
 
+#include "../drt_lib/drt_locsys.H"
+
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
 //! define the order in which the filters handle the Discretizations, which in
@@ -131,33 +133,6 @@ void TSI::MonolithicBase::Update()
 }
 
 
-/*----------------------------------------------------------------------*
- | output (protected)                                        dano 11/10 |
- *----------------------------------------------------------------------*/
-void TSI::MonolithicBase::Output()
-{
-  // Note: The order is important here! In here control file entries are
-  // written. And these entries define the order in which the filters handle
-  // the Discretizations, which in turn defines the dof number ordering of the
-  // Discretizations.
-  StructureField().Output();
-
-  // write the thermo output (temperatures at the moment) to the the structure output
-  // get disc writer from structure field
-  Teuchos::RCP<IO::DiscretizationWriter> output = StructureField().DiscWriter();
-
-  // get the temperature and the noderowmap of thermo discretization
-  Epetra_Vector temperature = *(ThermoField().Tempn());
-  const Epetra_Map* temprowmap = ThermoField().Discretization()->NodeRowMap();
-
-  // replace map and write it to output
-  temperature.ReplaceMap(*temprowmap);
-  RCP<Epetra_Vector> temp = rcp(new Epetra_Vector(temperature));
-  output->WriteVector("temperature",temp);
-
-  ThermoField().Output();
-} // MonolithicBase::Output()
-
 
 
 
@@ -169,16 +144,16 @@ TSI::Monolithic::Monolithic(
   Epetra_Comm& comm,
   const Teuchos::ParameterList& sdynparams
   )
-  : MonolithicBase(comm),
-    solveradapttol_(DRT::INPUT::IntegralValue<int>(sdynparams,"ADAPTCONV")==1),
-    solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
-    printscreen_(true),  // ADD INPUT PARAMETER
-    printiter_(true),  // ADD INPUT PARAMETER
-    printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
-    errfile_(NULL),
-    zeros_(Teuchos::null),
-    strmethodname_(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP")),
-    veln_(Teuchos::null)
+: MonolithicBase(comm),
+  solveradapttol_(DRT::INPUT::IntegralValue<int>(sdynparams,"ADAPTCONV")==1),
+  solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
+  printscreen_(true),  // ADD INPUT PARAMETER
+  printiter_(true),  // ADD INPUT PARAMETER
+  printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
+  errfile_(NULL),
+  zeros_(Teuchos::null),
+  strmethodname_(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP")),
+  veln_(Teuchos::null)
 {
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams
@@ -224,8 +199,23 @@ TSI::Monolithic::Monolithic(
     if (cmtman_->GetStrategy().Friction())
       dserror ("TSI with contact only for frictionless contact so far!");
   }
+
+  // StructureField: check whether we have locsys BCs and create LocSysManager
+  // if so after checking
+  {
+    std::vector<DRT::Condition*> locsysconditions(0);
+    (StructureField().Discretization())->GetCondition("Locsys", locsysconditions);
+    if (locsysconditions.size())
+    {
+      locsysman_ = StructureField().LocsysManager();
+    }
+  }
+
 }
 
+/*----------------------------------------------------------------------*
+ | create linear solver                                   wiesner 07/11 |
+ *----------------------------------------------------------------------*/
 void TSI::Monolithic::CreateLinearSolver()
 {
   const Teuchos::ParameterList& tsisolveparams
@@ -235,6 +225,7 @@ void TSI::Monolithic::CreateLinearSolver()
         tsisolveparams,
         "SOLVER"
         );
+
   if (solvertype != INPAR::SOLVER::aztec_msr &&
       solvertype != INPAR::SOLVER::belos)
   {
@@ -349,6 +340,109 @@ void TSI::Monolithic::TimeLoop(
 
 
 /*----------------------------------------------------------------------*
+ | output (protected)                                        dano 11/10 |
+ *----------------------------------------------------------------------*/
+void TSI::Monolithic::Output()
+{
+  // Note: The order in the output is important here!
+
+  // In here control file entries are written. And these entries define the
+  // order in which the filters handle the Discretizations, which in turn
+  // defines the dof number ordering of the Discretizations.
+  StructureField().Output();
+
+  ThermoField().Output();
+
+  // call the TSI parameter list
+  const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
+  // Get the parameters for the Newton iteration
+  int upres = tsidyn.get<int>("UPRES");
+  int uprestart = tsidyn.get<int>("RESTARTEVRY");
+  // communicate the deformation to the thermal field,
+  // current displacements are contained in Dispn()
+  if ((upres!=0 and (Step()%upres == 0))
+    or (uprestart != 0) and (Step()%uprestart == 0))
+    {
+      // displacement field
+      // (get noderowmap of discretisation for creating this multivector)
+      dispnp_ = rcp(new Epetra_MultiVector(*(ThermoField().Discretization()->NodeRowMap()),3,true));
+
+      OutputDeformationInThr(
+          StructureField().Dispn(),
+          StructureField().Discretization()
+          );
+
+      ThermoField().DiscWriter()->WriteVector("displacement",dispnp_,IO::DiscretizationWriter::nodevector);
+    }
+
+
+}  // Monolithic::Output()
+
+
+/*----------------------------------------------------------------------*
+ | communicate the displacement vector to THR field          dano 12/11 |
+ | enable visualisation of thermal variables on deformed body           |
+ *----------------------------------------------------------------------*/
+void  TSI::Monolithic::OutputDeformationInThr(
+  Teuchos::RCP<const Epetra_Vector> dispnp,
+  Teuchos::RCP<DRT::Discretization> structdis
+  )
+{
+  TEUCHOS_FUNC_TIME_MONITOR("TSI: write displacements for THR");
+
+  if (dispnp == Teuchos::null)
+    dserror("Got null pointer for displacements");
+
+  int err(0);
+
+  // get dofrowmap of structural discretisation
+  const Epetra_Map* structdofrowmap = structdis->DofRowMap(0);
+
+  // loop over all local nodes of thermal discretisation
+  for (int lnodeid=0; lnodeid<(ThermoField().Discretization()->NumMyRowNodes()); lnodeid++)
+  {
+    // Here we rely on the fact that the thermal discretisation is a clone of
+    // the structural mesh.
+    // => a thermal node has the same local (and global) ID as its corresponding
+    // structural node!
+
+    // get the processor's local structural node with the same lnodeid
+    DRT::Node* structlnode = structdis->lRowNode(lnodeid);
+    // get the degrees of freedom associated with this structural node
+    std::vector<int> structnodedofs = structdis->Dof(0,structlnode);
+    // determine number of space dimensions
+    const int numdim = genprob.ndim;
+
+    // now we transfer displacment dofs only
+    for(int index=0; index<numdim; ++index)
+    {
+      // global and processor's local fluid dof ID
+      const int sgid = structnodedofs[index];
+      const int slid = structdofrowmap->LID(sgid);
+
+      // get value of corresponding displacement component
+      double disp = (*dispnp)[slid];
+      // insert velocity value into node-based vector
+      err = dispnp_->ReplaceMyValue(lnodeid, index, disp);
+      if (err!= 0) dserror("error while inserting a value into dispnp_");
+    }
+
+    // for security reasons in 1D or 2D problems:
+    // set zeros for all unused velocity components
+    for (int index=numdim; index < 3; ++index)
+    {
+      err = dispnp_->ReplaceMyValue(lnodeid, index, 0.0);
+      if (err!= 0) dserror("error while inserting a value into dispnp_");
+    }
+
+  } // for lnodid
+
+return;
+
+}  // OutputDeformationInThr()
+
+
+/*----------------------------------------------------------------------*
  | solution with full Newton-Raphson iteration               dano 10/10 |
  | in tsi_algorithm: NewtonFull()                                       |
  *----------------------------------------------------------------------*/
@@ -356,7 +450,8 @@ void TSI::Monolithic::NewtonFull(
   const Teuchos::ParameterList& sdynparams
   )
 {
-  cout << "TSI::Monolithic::NewtonFull()" << endl;
+  if ( Comm().MyPID()==0 )
+    cout << "TSI::Monolithic::NewtonFull()" << endl;
 
   // we do a Newton-Raphson iteration here.
   // the specific time integration has set the following
@@ -376,6 +471,7 @@ void TSI::Monolithic::NewtonFull(
     = DRT::INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn,"NORM_RESF");
   combincfres_
     = DRT::INPUT::IntegralValue<INPAR::TSI::BinaryOp>(tsidyn,"NORMCOMBI_RESFINC");
+
   // FIRST STEP: to test the residual and the increments use the same tolerance
   tolinc_ =  tsidyn.get<double>("CONVTOL");
   tolfres_ = tsidyn.get<double>("CONVTOL");
@@ -405,15 +501,6 @@ void TSI::Monolithic::NewtonFull(
   // equilibrium iteration loop (loop over k)
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
-    // compute residual forces #rhs_ and tangent #tang_
-    // whose components are globally oriented
-    // build linear system stiffness matrix and rhs/force residual for each
-    // field, here e.g. for structure field: field want the iteration increment
-    // 1.) Update(iterinc_),
-    // 2.) EvaluateForceStiffResidual(),
-    // 3.) PrepareSystemForNewtonSolve()
-    Evaluate(iterinc_);
-
     // create the linear system
     // \f$J(x_i) \Delta x_i = - R(x_i)\f$
     // create the systemmatrix
@@ -432,6 +519,15 @@ void TSI::Monolithic::NewtonFull(
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
     // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
     LinearSolve();
+
+    // compute residual forces #rhs_ and tangent #tang_
+    // whose components are globally oriented
+    // build linear system stiffness matrix and rhs/force residual for each
+    // field, here e.g. for structure field: field want the iteration increment
+    // 1.) Update(iterinc_),
+    // 2.) EvaluateForceStiffResidual(),
+    // 3.) PrepareSystemForNewtonSolve()
+    Evaluate(iterinc_);
 
     // recover LM in the case of contact
     RecoverStructThermLM();
@@ -477,14 +573,15 @@ void TSI::Monolithic::NewtonFull(
 /*----------------------------------------------------------------------*
  | evaluate the single fields                                dano 11/10 |
  *----------------------------------------------------------------------*/
-void TSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
+void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
 {
-  cout << "\n TSI::Monolithic::Evaluate()" << endl;
+  if (Comm().MyPID() == 0)
+    cout << "\n TSI::Monolithic::Evaluate()" << endl;
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::Evaluate");
 
   // displacement and temperature incremental vector
-  Teuchos::RCP<const Epetra_Vector> sx;
-  Teuchos::RCP<const Epetra_Vector> tx;
+  Teuchos::RCP<Epetra_Vector> sx;
+  Teuchos::RCP<Epetra_Vector> tx;
 
   // if an increment vector exists
   if (x!=Teuchos::null)
@@ -523,8 +620,10 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   // structure Evaluate (builds tangent, residual and applies DBC)
   Epetra_Time timerstructure(Comm());
 
+#ifndef MonTSIwithoutTHR
   // apply current temperature to structure
   StructureField().ApplyTemperatures(ThermoField().Tempnp());
+#endif
 
 #ifdef TSIPARALLEL
   cout << Comm().MyPID() << " nach ApplyTemp!!" << endl;
@@ -542,6 +641,9 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   //   UpdaterIterIncrementally(sx),
   //   EvaluateForceStiffResidual()
   //   PrepareSystemForNewtonSolve()
+  //     blank residual DOFs that are on Dirichlet BC
+  //     in the case of local systems we have to rotate forth and back
+  //     ApplyDirichlettoSystem is called as well with roated stiff_!
   StructureField().Evaluate(sx);
   cout << "  structure time for calling Evaluate: " << timerstructure.ElapsedTime() << "\n";
 
@@ -565,8 +667,10 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   {
     veln_ = StructureField().ExtractVelnp();
   }
+#ifndef MonTSIwithoutSTR
   // pass the structural values to the thermo field
   ThermoField().ApplyStructVariables(StructureField().Dispnp(),veln_);
+#endif
 
 #ifdef TSIASOUTPUT
   cout << "d_n+1 inserted in THR field\n" << *(StructureField().Dispnp()) << endl;
@@ -587,9 +691,9 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
  | single fields                                                        |
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::ExtractFieldVectors(
-  Teuchos::RCP<const Epetra_Vector> x,
-  Teuchos::RCP<const Epetra_Vector>& sx,
-  Teuchos::RCP<const Epetra_Vector>& tx
+  Teuchos::RCP<Epetra_Vector> x,
+  Teuchos::RCP<Epetra_Vector>& sx,
+  Teuchos::RCP<Epetra_Vector>& tx
   )
 {
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::ExtractFieldVectors");
@@ -626,7 +730,8 @@ Teuchos::RCP<Epetra_Vector> TSI::Monolithic::CalcVelocity(
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::SetupSystem()
 {
-  cout << " TSI::Monolithic::SetupSystem()" << endl;
+  if ( Comm().MyPID()==0 )
+    cout << " TSI::Monolithic::SetupSystem()" << endl;
 
   // create combined map
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
@@ -675,7 +780,8 @@ void TSI::Monolithic::SetupSystemMatrix(
   const Teuchos::ParameterList& sdynparams
   )
 {
-  cout << " TSI::Monolithic::SetupSystemMatrix()" << endl;
+  if ( Comm().MyPID()==0 )
+    cout << " TSI::Monolithic::SetupSystemMatrix()" << endl;
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::SetupSystemMatrix");
 
   /*----------------------------------------------------------------------*/
@@ -731,6 +837,7 @@ void TSI::Monolithic::SetupSystemMatrix(
   // call the element and calculate the matrix block
 #ifndef MonTSIwithoutTHR
   ApplyStrCouplMatrix(k_st,sdynparams);
+
 #endif // MonTSIwithoutTHR
 
   // modify towards contact
@@ -750,7 +857,7 @@ void TSI::Monolithic::SetupSystemMatrix(
   // build block matrix
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here. Extract Jacobian matrices and put them into composite system
-  // matrix W
+  // matrix systemmatrix_
   Teuchos::RCP<LINALG::SparseMatrix> k_tt = ThermoField().SystemMatrix();
 
   // Uncomplete thermo matrix to be able to deal with slightly defective
@@ -793,7 +900,6 @@ void TSI::Monolithic::SetupSystemMatrix(
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
   systemmatrix_->Complete();
-
 }  // SetupSystemMatrix
 
 
@@ -802,7 +908,8 @@ void TSI::Monolithic::SetupSystemMatrix(
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::SetupRHS()
 {
-  cout << " TSI::Monolithic::SetupRHS()" << endl;
+  if ( Comm().MyPID()==0 )
+    cout << " TSI::Monolithic::SetupRHS()" << endl;
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::SetupRHS");
 
   // create full monolithic rhs vector
@@ -863,16 +970,20 @@ void TSI::Monolithic::LinearSolve()
 
   // apply Dirichlet BCs to system of equations
   iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
+
+  // in case of inclined boundary conditions
+  // rotate systemmatrix_ using GetLocSysTrafo()!=Teuchos::null
   LINALG::ApplyDirichlettoSystem(
-    systemmatrix_, //
+    systemmatrix_,
     iterinc_,
     rhs_,
     Teuchos::null,
     zeros_,
     *CombinedDBCMap()
     );
+
   if ( Comm().MyPID()==0 )
-  { cout << " DBC applied to TSI system on " << Comm().MyPID() << endl; }
+  { cout << " DBC applied to TSI system on proc" << Comm().MyPID() << endl; }
 
   solver_->Solve(
              systemmatrix_->EpetraOperator(),
@@ -1663,8 +1774,8 @@ void TSI::Monolithic::RecoverStructThermLM()
     return;
 
   // vector of displacement and temperature increments
-  Teuchos::RCP<const Epetra_Vector> sx;
-  Teuchos::RCP<const Epetra_Vector> tx;
+  Teuchos::RCP<Epetra_Vector> sx;
+  Teuchos::RCP<Epetra_Vector> tx;
 
   // extract field vectors
   ExtractFieldVectors(iterinc_,sx,tx);
@@ -1771,7 +1882,7 @@ void TSI::Monolithic::RecoverStructThermLM()
  | linearization of D and M with respect to displacements     mgit 06/11 |
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
-                                       LINALG::SparseMatrix& linmglobal)
+                                    LINALG::SparseMatrix& linmglobal)
 {
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
@@ -2039,6 +2150,7 @@ void TSI::Monolithic::AssembleThermContCondition(LINALG::SparseMatrix& lindisglo
   }
   return;
 }
+
 
 /*----------------------------------------------------------------------*/
 #endif  // CCADISCRET

@@ -98,9 +98,6 @@ namespace TSI
       StructureField().PrepareOutput();
     }
 
-    /// write output
-    virtual void Output();
-
     //@}
 
   }; // MonolithicBase
@@ -183,7 +180,7 @@ namespace TSI
 
     /// evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     virtual void Evaluate(
-      Teuchos::RCP<const Epetra_Vector> stepinc //!< increment between time step n and n+1
+      Teuchos::RCP<Epetra_Vector> stepinc //!< increment between time step n and n+1
       );
 
     /// extract initial guess from fields
@@ -243,9 +240,9 @@ namespace TSI
       \param tx (o) thermal vector (e.g. temperatures)
       */
     virtual void ExtractFieldVectors(
-      Teuchos::RCP<const Epetra_Vector> x,
-      Teuchos::RCP<const Epetra_Vector>& sx,
-      Teuchos::RCP<const Epetra_Vector>& tx
+      Teuchos::RCP<Epetra_Vector> x,
+      Teuchos::RCP<Epetra_Vector>& sx,
+      Teuchos::RCP<Epetra_Vector>& tx
       );
 
     //! @name Access methods for subclasses
@@ -322,6 +319,19 @@ namespace TSI
     bool printerrfile_;  //!< print infos to error file #errfile_
     FILE* errfile_;  //!< error file handle
 
+    /// write output
+    void Output();
+
+    /// communicate displacement vector to thermal field to enable their
+    /// visualisation on the deformed body
+    void OutputDeformationInThr(
+      Teuchos::RCP<const Epetra_Vector> dispnp,
+      Teuchos::RCP<DRT::Discretization> structdis
+      );
+
+    /// displacements at time n+1 for thermal output
+    Teuchos::RCP<Epetra_MultiVector>    dispnp_;
+
     //@}
 
     //! @name Global vectors
@@ -377,19 +387,21 @@ namespace TSI
                                         //!< \f${V}_{n+1}\f$
                                         //!< at \f$t_{n+1}\f$
 
+    //! Dirichlet BCs with local co-ordinate system
+    Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
+
     // contact manager
-    RCP<MORTAR::ManagerBase> cmtman_;
+    Teuchos::RCP<MORTAR::ManagerBase> cmtman_;
 
     // thermo contact manager
     Teuchos::RCP<THR::ThermoContactMan> thermcontman_;
 
-    RCP<Epetra_Vector> zstruct_ ;
-    RCP<Epetra_Vector> ztherm_;
-    RCP<LINALG::SparseMatrix> kst_;  // stiffness block K_ss (needed for LM)
-    RCP<LINALG::SparseMatrix> invd_;  // stiffness block K_ss (needed for LM)
-    RCP<LINALG::SparseMatrix> kts_;  // stiffness block K_ss (needed for LM)
-    RCP<LINALG::SparseMatrix> invdtherm_;  // stiffness block K_ss (needed for LM)
-
+    Teuchos::RCP<Epetra_Vector> zstruct_ ;
+    Teuchos::RCP<Epetra_Vector> ztherm_;
+    Teuchos::RCP<LINALG::SparseMatrix> kst_;  // stiffness block K_ss (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> invd_;  // stiffness block K_ss (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> kts_;  // stiffness block K_ss (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> invdtherm_;  // stiffness block K_ss (needed for LM)
 
     //@}
 
