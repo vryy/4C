@@ -61,9 +61,6 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("tanmasterforce", "tanmasterforce", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("wear", "wear", dofbased, field->problem()->num_dim());
 
-  // thermo results
-  EnsightWriter::WriteResult("temperature", "temperature", nodebased, 1);
-  
   // one-dimensional artery
   EnsightWriter::WriteResult("one_d_artery_pressure", "pressure", nodebased, 1);
   EnsightWriter::WriteResult("one_d_artery_flow", "flow", nodebased, 1);
@@ -333,6 +330,9 @@ void ThermoEnsightWriter::WriteAllResults(PostField* field)
     PostHeatflux("gauss_initial_tempgrad_xyz", tempgradtype_);
     EnsightWriter::WriteResult("tempgrad", "tempgrad", nodebased, field->problem()->num_dim());
   }
+
+  // write displacement field
+  EnsightWriter::WriteResult("displacement", "displacement", nodebased, field->problem()->num_dim());
 
 } // ThermoEnsightWriter::WriteAllResults
 
