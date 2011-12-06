@@ -33,7 +33,6 @@ Maintainer: Florian Henke
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fluid/time_integration_scheme.H"
 #include "../drt_fluid/fluid_utils.H"
-//#include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_fluid/turbulence_statistic_manager.H"
 #include "../drt_geometry/position_array.H"
@@ -250,8 +249,6 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // split based on complete fluid field
   FLD::UTILS::SetupFluidSplit(*discret_,*standarddofset_,3,velpressplitterForOutput_);
 
-  turbstatisticsmanager_ = Teuchos::null;
-
   //------------------------------------------------------------------------------------------------
   // get dof layout from the discretization to construct vectors and matrices
   //------------------------------------------------------------------------------------------------
@@ -269,31 +266,6 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
 
   // initialize standard (stabilized) system matrix (and save its graph!)
   sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,27,false,true));
-
-
-  // ----------------------------------------------------
-  // initialize vectors and flags for turbulence approach
-  // ----------------------------------------------------
-
-  ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-
-  string physmodel = modelparams->get<string>("PHYSICAL_MODEL","no_model");
-  if (physmodel != "no_model")
-    dserror("Sorry, but XFEM does not support any fancy models yet.");
-
-  // flag for special flow: currently channel flow or flow in a lid-driven cavity
-  special_flow_ = modelparams->get<string>("CANONICAL_FLOW","no");
-  if (special_flow_ != "no" and special_flow_ != "bubbly_channel_flow")
-    dserror("Sorry, but XFEM does not support %s, yet.", special_flow_.c_str());
-
-  // -------------------------------------------------------------------
-  // initialize turbulence-statistics evaluation
-  // -------------------------------------------------------------------
-  turbstatisticsmanager_ = rcp(new FLD::TurbulenceStatisticManager(*this));
-
-  // parameter for sampling/dumping period
-  if (special_flow_ != "no")
-    samstart_ = modelparams->get<int>("SAMPLING_START",1);
 
   //------------------------------------------------------------------------------------------------
   // create empty vectors - used for different purposes
@@ -347,6 +319,37 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // nonlinear iteration increment vector
   incvel_ = LINALG::CreateVector(*dofrowmap,true);
 
+  //------------------------------------------------------------------------------------------------
+  // prepare turbulence specific stuff
+  //------------------------------------------------------------------------------------------------
+
+  // ----------------------------------------------------
+  // initialize vectors and flags for turbulence approach
+  // ----------------------------------------------------
+
+  // get list of turbulence parameters
+  ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+
+  // read turbulence model
+  string physmodel = modelparams->get<string>("PHYSICAL_MODEL","no_model");
+  if (physmodel != "no_model")
+    dserror("XFEM does not support any fancy turbulence models");
+
+  // read flag for special flow
+  special_flow_ = modelparams->get<string>("CANONICAL_FLOW","no");
+  if ( special_flow_ != "no" and
+       special_flow_ != "bubbly_channel_flow" and
+       special_flow_ != "combust_oracles" )
+    dserror("XFEM does not support special flow %s.", special_flow_.c_str());
+
+  // -------------------------------------------------------------------
+  // initialize turbulence statistics evaluation
+  // -------------------------------------------------------------------
+  turbstatisticsmanager_ = rcp(new FLD::TurbulenceStatisticManager(*this));
+
+  // parameter for sampling/dumping period
+  if (special_flow_ != "no")
+    samstart_ = modelparams->get<int>("SAMPLING_START",1);
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -2599,43 +2602,6 @@ void FLD::CombustFluidImplicitTimeInt::GenAlphaIntermediateValues()
 } // FluidImplicitTimeInt::GenAlphaIntermediateValues
 
 
-
-/*------------------------------------------------------------------------------------------------*
- | lift'n'drag forces, statistics time sample and output of solution and statistics   gammi 11/08 |
- *------------------------------------------------------------------------------------------------*/
-void FLD::CombustFluidImplicitTimeInt::StatisticsAndOutput()
-{
-  // time measurement: output and statistics
-  TEUCHOS_FUNC_TIME_MONITOR("      + output and statistics");
-
-  // -------------------------------------------------------------------
-  //          calculate lift'n'drag forces from the residual
-  // -------------------------------------------------------------------
-  LiftDrag();
-
-  // -------------------------------------------------------------------
-  //          calculate flow through surfaces
-  // -------------------------------------------------------------------
-  ComputeSurfaceFlowrates();
-
-  // -------------------------------------------------------------------
-  //   add calculated velocity to mean value calculation (statistics)
-  // -------------------------------------------------------------------
-//  statisticsmanager_->DoTimeSample(step_,time_);
-
-  // -------------------------------------------------------------------
-  //                         output of solution
-  // -------------------------------------------------------------------
-  Output();
-
-  // -------------------------------------------------------------------
-  //          dumping of turbulence statistics if required
-  // -------------------------------------------------------------------
-//  statisticsmanager_->DoOutput(step_);
-
-  return;
-} // CombustFluidImplicitTimeInt::StatisticsAndOutput
-
 /*------------------------------------------------------------------------------------------------*
  | henke 08/08 |
  *------------------------------------------------------------------------------------------------*/
@@ -2643,8 +2609,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
 {
   const bool write_visualization_data = step_%upres_ == 0;
   const bool write_restart_data = step_!=0 and uprestart_ != 0 and step_%uprestart_ == 0;
-  //TODO: kann man diese Funktion umgehen
-  const bool do_time_sample = false; //= turbstatisticsmanager_->SampleThisStep(step_);
+  const bool do_time_sample = special_flow_!="no" && step_>=samstart_ && step_<=samstop_;
 
   //-------------------------------------------- output of solution
 
@@ -2675,8 +2640,13 @@ void FLD::CombustFluidImplicitTimeInt::Output()
       Teuchos::RCP<Epetra_Vector> trueresidual_out = dofmanagerForOutput_->transformXFEMtoStandardVector(
           *trueresidual_, *standarddofset_, state_.nodalDofDistributionMap_, outputfields);
 
-      //TODO:
-      //turbstatisticsmanager_->DoTimeSample(step_,time_, /*eosfac=*/ 1.0, velnp_out, trueresidual_out, standarddofset_, state_.velnp_, flamefront_->Phinp());
+      turbstatisticsmanager_->DoTimeSample(
+          step_,
+          time_,
+          velnp_out,
+          trueresidual_out,
+          flamefront_->Phinp(),
+          standarddofset_);
     }
 
     if (write_visualization_data)
@@ -2912,12 +2882,10 @@ void FLD::CombustFluidImplicitTimeInt::Output()
 #endif
   }
 
-  // -------------------------------------------------------------------
-  //          dumping of turbulence statistics if required
-  // -------------------------------------------------------------------
-  // eosfac, s.o.
-  turbstatisticsmanager_->DoOutput((*output_), step_, /*eosfac=*/ 1.0);
-
+  // --------------------------
+  // dump turbulence statistics
+  // --------------------------
+  turbstatisticsmanager_->DoOutput((*output_), step_, 0.0);
 
 //  if (step_%upres_ == 0)  //write solution
 //  {

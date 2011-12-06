@@ -32,7 +32,7 @@ using namespace Teuchos;
 namespace DRT
 {
   class Discretization;
-//  class DofSet;
+  class DofSet;
 }
 
 namespace IO
@@ -112,12 +112,6 @@ public:
   void StoreNodalValues(int step, const RCP<Epetra_Vector>   stress12);
 
   /*!
-  \brief Will a time sampling occur in this step
-
-  */
-//  bool SampleThisStep(const int step) const;
-
-  /*!
   \brief Include current quantities in the time
   averaging procedure
 
@@ -147,6 +141,18 @@ public:
 //                    Teuchos::RCP<const DRT::DofSet>   stddofset            = Teuchos::null,
 //                    Teuchos::RCP<const Epetra_Vector> discretmatchingvelnp = Teuchos::null,
 //                    Teuchos::RCP<const Epetra_Vector> phinp                = Teuchos::null);
+
+  /*!
+  \brief function called by the combustion time integration
+
+  */
+  void DoTimeSample(int                             step,
+                    double                          time,
+                    Teuchos::RCP<Epetra_Vector>     velnp,
+                    Teuchos::RCP<Epetra_Vector>     force,
+                    Teuchos::RCP<Epetra_Vector>     phi,
+                    Teuchos::RCP<const DRT::DofSet> stddofset
+                    );
 
   /*!
   \brief Write (dump) the statistics to a file
@@ -184,6 +190,13 @@ public:
   void DoOutputForScaTra(IO::DiscretizationWriter& output, int step);
 
   //@}
+
+  /*!
+  \brief remote access method to general mean statistics manager
+
+  */
+  const RCP<TurbulenceStatisticsGeneralMean> GetTurbulenceStatisticsGeneralMean() const
+    { return statistics_general_mean_; }
 
 private:
   /*!

@@ -193,11 +193,6 @@ public:
   */
   void TimeUpdate();
 
-  /*!
-  \brief lift'n'drag forces, statistics time sample and output of solution and statistics
-  */
-  void StatisticsAndOutput();
-
   /*
   \brief provide access to turbulence statistics manager
   */

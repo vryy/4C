@@ -15,6 +15,7 @@ Maintainer: Peter Gamnitzer
 #ifdef CCADISCRET
 
 #include "turbulence_statistics_mean_general.H"
+#include "../drt_fluid/fluid_utils.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"
@@ -32,10 +33,68 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
   const bool               withscatra
   )
   :
-  discret_(discret),
-  density_(density),
+  discret_        (discret),
+  standarddofset_ (Teuchos::null),
+  density_        (density),
   velpressplitter_(velpressplitter),
-  withscatra_(withscatra)
+  withscatra_     (withscatra)
+{
+  // get directions to do spatial averaging
+  homdir_.clear();
+
+  if(homdir=="xy")
+  {
+    homdir_.push_back(0);
+    homdir_.push_back(1);
+  }
+  else if(homdir=="xz")
+  {
+    homdir_.push_back(0);
+    homdir_.push_back(2);
+  }
+  else if(homdir=="yz")
+  {
+    homdir_.push_back(1);
+    homdir_.push_back(2);
+  }
+  else if(homdir=="x")
+  {
+    homdir_.push_back(0);
+  }
+  else if(homdir=="y")
+  {
+    homdir_.push_back(1);
+  }
+  else if(homdir=="z")
+  {
+    homdir_.push_back(2);
+  }
+
+  // initialise all counters, timers and vectors to zero
+  ResetComplete();
+
+  return;
+} // FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean
+
+//----------------------------------------------------------------------
+//
+//                                 Constructor
+//
+//----------------------------------------------------------------------
+FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
+  Teuchos::RCP<DRT::Discretization> discret,
+  Teuchos::RCP<const DRT::DofSet>   standarddofset,
+  string                            homdir,
+  double &                          density,
+  LINALG::MapExtractor&             velpressplitter,
+  const bool                        withscatra
+  )
+  :
+  discret_        (Teuchos::null),
+  standarddofset_ (standarddofset),
+  density_        (density),
+  velpressplitter_(velpressplitter),
+  withscatra_     (withscatra)
 {
   // get directions to do spatial averaging
   homdir_.clear();
@@ -121,7 +180,10 @@ void FLD::TurbulenceStatisticsGeneralMean::AddToCurrentTimeAverage(
     if ((curr_avg_sca_ != Teuchos::null) and (scavec != Teuchos::null))
       curr_avg_sca_->Update(incfac,*scavec,oldfac);
     else
-      dserror("curr_avg_sca_ or scavec is Teuchos::null");
+    {
+      // any XFEM problem with scatra will crash here, it could probably be removed     henke 12/11
+      cout << "curr_avg_sca_ or scavec is Teuchos::null" << endl;
+    }
 
     if ((curr_avg_scatra_ != Teuchos::null) and (scatravec != Teuchos::null))
     {
@@ -1089,7 +1151,9 @@ void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(
 
   AddToTotalTimeAverage();
 
-  if(discret_->Comm().MyPID()==0)
+  // don't ask the fluid discretization 'discret_' for its communicator, since it could be
+  // Teuchos::null (for XFEM problems); use the scatra discretization instead
+  if(scatradis_->Comm().MyPID()==0)
   {
     cout << "XXXXXXXXXXXXXXXXXXXXX              ";
     cout << " Wrote averaged vector             ";
@@ -1120,15 +1184,24 @@ void FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec(
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsGeneralMean::TimeReset()
 {
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  if (discret_ != Teuchos::null)
+  {
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    TimeResetFluidAvgVectors(*dofrowmap);
+  }
 
-  curr_avg_     = Teuchos::null;
-  curr_avg_     = LINALG::CreateVector(*dofrowmap,true);
+  if (standarddofset_ != Teuchos::null)
+  {
+    const Epetra_Map* dofrowmap = standarddofset_->DofRowMap();
+    TimeResetFluidAvgVectors(*dofrowmap);
+  }
+
+  if ( (discret_ == Teuchos::null and standarddofset_ == Teuchos::null) or
+       (discret_ != Teuchos::null and standarddofset_ != Teuchos::null) )
+    dserror("valid discretization (standard fluid) or standard dofset (XFEM fluid) expected");
+
   if(withscatra_)
   {
-    curr_avg_sca_     = Teuchos::null;
-    curr_avg_sca_     = LINALG::CreateVector(*dofrowmap,true);
-
     if (scatradis_ != Teuchos::null)
     {
       const Epetra_Map* scatradofrowmap = scatradis_->DofRowMap();
@@ -1143,6 +1216,23 @@ void FLD::TurbulenceStatisticsGeneralMean::TimeReset()
   return;
 } // FLD::TurbulenceStatisticsGeneralMean::TimeReset
 
+//----------------------------------------------------------------------
+//
+//     Clear all statistics vectors based on fluid maps collected in the current period
+//
+//----------------------------------------------------------------------
+void FLD::TurbulenceStatisticsGeneralMean::TimeResetFluidAvgVectors(const Epetra_Map& dofrowmap)
+{
+  curr_avg_     = Teuchos::null;
+  curr_avg_     = LINALG::CreateVector(dofrowmap,true);
+  if(withscatra_)
+  {
+    curr_avg_sca_     = Teuchos::null;
+    curr_avg_sca_     = LINALG::CreateVector(dofrowmap,true);
+  }
+
+  return;
+} // FLD::TurbulenceStatisticsGeneralMean::TimeResetFluidAvgVectors
 
 //----------------------------------------------------------------------
 //
@@ -1151,39 +1241,138 @@ void FLD::TurbulenceStatisticsGeneralMean::TimeReset()
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsGeneralMean::ResetComplete()
 {
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
+  if (discret_ != Teuchos::null)
+  {
+    const Epetra_Map* dofrowmap = discret_->DofRowMap();
+    ResetFluidAvgVectors(*dofrowmap);
+  }
 
-  curr_avg_     = Teuchos::null;
-  curr_avg_     = LINALG::CreateVector(*dofrowmap,true);
+  if (standarddofset_ != Teuchos::null)
+  {
+    const Epetra_Map* dofrowmap = standarddofset_->DofRowMap();
+    ResetFluidAvgVectors(*dofrowmap);
+  }
+
+  if ( (discret_ == Teuchos::null and standarddofset_ == Teuchos::null) or
+       (discret_ != Teuchos::null and standarddofset_ != Teuchos::null) )
+    dserror("valid discretization (standard fluid) or standard dofset (XFEM fluid) expected");
+
+  if(withscatra_)
+  {
+    if (scatradis_ != Teuchos::null)
+    {
+      const Epetra_Map* scatradofrowmap = scatradis_->DofRowMap();
+      curr_avg_scatra_ = Teuchos::null;
+      curr_avg_scatra_ = LINALG::CreateVector(*scatradofrowmap,true);
+      prev_avg_scatra_ = Teuchos::null;
+      prev_avg_scatra_ = LINALG::CreateVector(*scatradofrowmap,true);
+    }
+  }
+
+  return;
+} // FLD::TurbulenceStatisticsGeneralMean::ResetComplete
+
+
+//----------------------------------------------------------------------
+//
+//          Clear all statistics vectors based on fluid maps
+//
+//----------------------------------------------------------------------
+void FLD::TurbulenceStatisticsGeneralMean::ResetFluidAvgVectors(const Epetra_Map& dofrowmap)
+{
+  curr_avg_ = Teuchos::null;
+  curr_avg_ = LINALG::CreateVector(dofrowmap,true);
 
   curr_n_       = 0;
   curr_avg_time_= 0.0;
 
-  prev_avg_     = Teuchos::null;
-  prev_avg_     = LINALG::CreateVector(*dofrowmap,true);
+  prev_avg_ = Teuchos::null;
+  prev_avg_ = LINALG::CreateVector(dofrowmap,true);
 
   prev_n_       = 0;
   prev_avg_time_= 0.0;
 
   if(withscatra_)
   {
-    curr_avg_sca_     = Teuchos::null;
-    curr_avg_sca_     = LINALG::CreateVector(*dofrowmap,true);
-    prev_avg_sca_     = Teuchos::null;
-    prev_avg_sca_     = LINALG::CreateVector(*dofrowmap,true);
+    curr_avg_sca_ = Teuchos::null;
+    curr_avg_sca_ = LINALG::CreateVector(dofrowmap,true);
+    prev_avg_sca_ = Teuchos::null;
+    prev_avg_sca_ = LINALG::CreateVector(dofrowmap,true);
+  }
+
+  return;
+} // FLD::TurbulenceStatisticsGeneralMean::ResetFluidAvgVectors
+
+//----------------------------------------------------------------------
+//
+//    Redistribute average vectors according to fluid discretization
+//
+//----------------------------------------------------------------------
+void FLD::TurbulenceStatisticsGeneralMean::Redistribute(
+    Teuchos::RCP<const DRT::DofSet>   standarddofset,
+    Teuchos::RCP<DRT::Discretization> discret)
+{
+  standarddofset_ = Teuchos::null;
+  standarddofset_ = standarddofset;
+  const Epetra_Map* dofrowmap = standarddofset_->DofRowMap();
+
+  // split based on complete fluid field
+  FLD::UTILS::SetupFluidSplit(*discret,*standarddofset_,3,velpressplitter_);
+
+  Teuchos::RCP<Epetra_Vector> old;
+
+  if (curr_avg_ != Teuchos::null)
+  {
+    old = curr_avg_;
+    curr_avg_ = rcp(new Epetra_Vector(*dofrowmap),true);
+    LINALG::Export(*old, *curr_avg_);
+  }
+
+  if (prev_avg_ != Teuchos::null)
+  {
+    old = prev_avg_;
+    prev_avg_ = rcp(new Epetra_Vector(*dofrowmap),true);
+    LINALG::Export(*old, *prev_avg_);
+  }
+
+  if(withscatra_)
+  {
+    if (curr_avg_sca_ != Teuchos::null)
+    {
+      old = curr_avg_sca_;
+      curr_avg_sca_ = rcp(new Epetra_Vector(*dofrowmap),true);
+      LINALG::Export(*old, *curr_avg_sca_);
+    }
+
+    if (prev_avg_sca_ != Teuchos::null)
+    {
+      old = prev_avg_sca_;
+      prev_avg_sca_ = rcp(new Epetra_Vector(*dofrowmap),true);
+      LINALG::Export(*old, *prev_avg_sca_);
+    }
 
     if (scatradis_ != Teuchos::null)
     {
       const Epetra_Map* scatradofrowmap = scatradis_->DofRowMap();
-      curr_avg_scatra_     = Teuchos::null;
-      curr_avg_scatra_     = LINALG::CreateVector(*scatradofrowmap,true);
-      prev_avg_scatra_     = Teuchos::null;
-      prev_avg_scatra_     = LINALG::CreateVector(*scatradofrowmap,true);
+
+      if (curr_avg_scatra_ != Teuchos::null)
+      {
+        old = curr_avg_scatra_;
+        curr_avg_scatra_ = rcp(new Epetra_Vector(*scatradofrowmap),true);
+        LINALG::Export(*old, *curr_avg_scatra_);
+      }
+
+      if (prev_avg_scatra_ != Teuchos::null)
+      {
+        old = prev_avg_scatra_;
+        prev_avg_scatra_ = rcp(new Epetra_Vector(*scatradofrowmap),true);
+        LINALG::Export(*old, *prev_avg_scatra_);
+      }
     }
   }
 
   return;
-} // FLD::TurbulenceStatisticsGeneralMean::ResetComplete
+} // FLD::TurbulenceStatisticsGeneralMean::Redistribute
 
 
 /*----------------------------------------------------------------------
@@ -1225,7 +1414,7 @@ void  FLD::TurbulenceStatisticsGeneralMean::DoOutputForScaTra(
     else
       dserror("Could not write vector to result file");
 
-    if(discret_->Comm().MyPID()==0)
+    if(scatradis_->Comm().MyPID()==0)
     {
       cout << "XXXXXXXXXXXXXXXXXXXXX           ";
       cout << " Wrote averaged scatra vector         ";

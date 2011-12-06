@@ -51,7 +51,8 @@ public:
   */
   TurbulenceStatisticsORACLES(Teuchos::RCP<DRT::Discretization> discret,
                               Teuchos::ParameterList&           params,
-                              const string&                     geotype);
+                              const string&                     geotype,
+                              const bool                        withscatra);
 
   /*!
   \brief destructor
@@ -63,8 +64,10 @@ public:
   //! @name functions for averaging
 
   void DoTimeSample(
-      Teuchos::RCP<Epetra_Vector> velnp,
-      Teuchos::RCP<Epetra_Vector> force
+      Teuchos::RCP<Epetra_Vector>     velnp,
+      Teuchos::RCP<Epetra_Vector>     force,
+      Teuchos::RCP<Epetra_Vector>     phi,
+      Teuchos::RCP<const DRT::DofSet> stddofset
   );
 
   void ExtractProfiles();
@@ -82,7 +85,8 @@ public:
     LINALG::SerialDenseMatrix& profilespp,
     LINALG::SerialDenseMatrix& profilesuv,
     LINALG::SerialDenseMatrix& profilesuw,
-    LINALG::SerialDenseMatrix& profilesvw
+    LINALG::SerialDenseMatrix& profilesvw,
+    LINALG::SerialDenseMatrix& profilesg
   );
 
   void TimeAverageStatistics();
@@ -104,13 +108,11 @@ public:
       double* profilepp,
       double* profileuv,
       double* profileuw,
-      double* profilevw
+      double* profilevw,
+      double* profileg
   );
 
   void ClearStatistics();
-
-  /// dump results to a file
-  void DumpStatistics(int step);
 
 private:
 
@@ -140,12 +142,24 @@ private:
   //! pointer to discretisation
   Teuchos::RCP<DRT::Discretization> discret_;
 
+  //! dofset containing fluid standard dofs (no XFEM dofs)
+  Teuchos::RCP<const DRT::DofSet> stddofset_;
+
+  //! pointer to ScaTra discretisation
+  Teuchos::RCP<DRT::Discretization> scatradis_;
+
   //! parameter list of time integration
   Teuchos::ParameterList& params_;
 
   //! pointer to fluid solution vel/pres and residual (force)
   Teuchos::RCP<Epetra_Vector> vel_;
   Teuchos::RCP<Epetra_Vector> force_;
+
+  //! pointer to scalar transport solution phi (G-function) on fluid RowNodeMap
+  Teuchos::RCP<Epetra_Vector> phi_;
+
+  //! boolean indicating scalar (G-function) transport statistics
+  const bool withscatra_;
 
   //! step height
   const double h_; // 29.9mm
@@ -225,26 +239,31 @@ private:
   Teuchos::RCP<LINALG::SerialDenseMatrix> vertinflowv_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> vertinfloww_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> vertinflowp_;
+  Teuchos::RCP<LINALG::SerialDenseMatrix> vertinflowg_;
 
   Teuchos::RCP<LINALG::SerialDenseMatrix> vertmixingu_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> vertmixingv_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> vertmixingw_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> vertmixingp_;
+  Teuchos::RCP<LINALG::SerialDenseMatrix> vertmixingg_;
 
   Teuchos::RCP<LINALG::SerialDenseMatrix> vert1hu_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> vert1hv_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> vert1hw_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> vert1hp_;
+  Teuchos::RCP<LINALG::SerialDenseMatrix> vert1hg_;
 
   Teuchos::RCP<LINALG::SerialDenseMatrix> vert2hu_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> vert2hv_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> vert2hw_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> vert2hp_;
+  Teuchos::RCP<LINALG::SerialDenseMatrix> vert2hg_;
 
   Teuchos::RCP<LINALG::SerialDenseMatrix> vertchamberu_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> vertchamberv_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> vertchamberw_;
   Teuchos::RCP<LINALG::SerialDenseMatrix> vertchamberp_;
+  Teuchos::RCP<LINALG::SerialDenseMatrix> vertchamberg_;
 
   //! second order momentum
   Teuchos::RCP<LINALG::SerialDenseMatrix> vertinflowuu_;

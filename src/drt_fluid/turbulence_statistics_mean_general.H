@@ -43,6 +43,7 @@ using namespace Teuchos;
 namespace DRT
 {
   class Discretization;
+  class DofSet;
 }
 namespace IO
 {
@@ -70,6 +71,15 @@ public:
     double &                 density        ,
     LINALG::MapExtractor&    velpressplitter,
     const bool               withscatra
+    );
+
+  TurbulenceStatisticsGeneralMean(
+    Teuchos::RCP<DRT::Discretization> discret,
+    Teuchos::RCP<const DRT::DofSet>   standarddofset ,
+    string                            homdir,
+    double &                          density,
+    LINALG::MapExtractor&             velpressplitter,
+    const bool                        withscatra
     );
 
   /*!
@@ -143,12 +153,31 @@ public:
   */
   void TimeReset();
 
+  /*!
+  \brief Clear all statistics vectors based on fluid maps collected in the current period
+
+  */
+  void TimeResetFluidAvgVectors(const Epetra_Map& dofrowmap);
 
   /*!
   \brief Clear all statistics collected up to now
 
   */
   void ResetComplete();
+
+  /*!
+  \brief Clear statistics vectors based on fluid maps
+
+  */
+  void ResetFluidAvgVectors(const Epetra_Map& dofrowmap);
+
+  /*!
+  \brief Redistribute all statistics vectors
+
+  */
+  void Redistribute(
+      Teuchos::RCP<const DRT::DofSet>   standarddofset,
+      Teuchos::RCP<DRT::Discretization> discret);
 
   /*!
   \brief Add results from scalar transport field solver to statistics
@@ -174,6 +203,9 @@ private:
 
   //! the fluid discretization
   RCP<DRT::Discretization>     discret_        ;
+
+  //! dofset containing fluid standard dofs (no XFEM dofs)
+  Teuchos::RCP<const DRT::DofSet> standarddofset_;
 
   //! the scatra discretization
   RCP<DRT::Discretization>     scatradis_      ;

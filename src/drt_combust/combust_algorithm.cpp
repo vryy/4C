@@ -21,6 +21,7 @@ Maintainer: Florian Henke
 #include "combust_reinitializer.H"
 #include "combust_utils.H"
 #include "combust_fluidimplicitintegration.H"
+#include "../drt_fluid/turbulence_statistics_mean_general.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_function.H"
@@ -1599,6 +1600,10 @@ void COMBUST::Algorithm::Output()
   //FluidField().LiftDrag();
   ScaTraField().Output();
 
+  // we have to call the output of averaged fields for scatra separately
+  if (FluidField().TurbulenceStatisticManager() != Teuchos::null)
+    FluidField().TurbulenceStatisticManager()->DoOutputForScaTra(ScaTraField().DiscWriter(),ScaTraField().Step());
+
   return;
 }
 
@@ -2416,6 +2421,7 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
     //--------------------------
     // write output to Gmsh file
     //--------------------------
+    std::cout << "\n"<< std::flush;
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("field_scalar_restart_after_reinit", Step(), 701, true, gfuncdis->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
     {
@@ -3069,6 +3075,30 @@ void COMBUST::Algorithm::Redistribute()
         old = phinpi_;
         phinpi_ = rcp(new Epetra_Vector(*gfuncdis->DofRowMap()),true);
         LINALG::Export(*old, *phinpi_);
+      }
+
+      //-----------------------------------------------------------------------------
+      // redistibute vectors holding the means in the general mean statistics manager
+      //-----------------------------------------------------------------------------
+      // if applicable, provide scatra data to the turbulence statistics
+      if (FluidField().TurbulenceStatisticManager() != Teuchos::null)
+      {
+//        if(Comm().MyPID()==0)
+//          cout << "Updating pointer to ScaTra vector                                               ... " << flush;
+
+        // update the statistics manager to the new ScaTra discretization
+//        FluidField().TurbulenceStatisticManager()
+//            ->AddScaTraResults(ScaTraField().Discretization(),ScaTraField().Phinp());
+
+        if(Comm().MyPID()==0)
+          cout << "Redistributing General Mean Statistics Manager                          ... " << flush;
+
+        // redistribute with redistributed standard fluid dofset
+        FluidField().TurbulenceStatisticManager()->GetTurbulenceStatisticsGeneralMean()
+            ->Redistribute(FluidField().DofSet(), FluidField().Discretization());
+
+        if(Comm().MyPID()==0)
+          cout << "done" << endl;
       }
 
       if (Comm().MyPID() == 0)

@@ -27,10 +27,12 @@ Maintainer: Florian Henke
 COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
   RefCountPtr<DRT::Discretization> discret,
   ParameterList&                   params,
-  const string&                    geotype)
+  const string&                    geotype,
+  const bool                       withscatra)
   :
   discret_    (discret),
   params_     (params),
+  withscatra_ (withscatra),
   h_          (0.0299),
   x1min_      (-9.0*h_), // (-5.0*h_),
   x1max_      (16.0*h_), //(-6.0*h_),
@@ -343,10 +345,6 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
     numx1_wallchamber_ = x1_wallchamber_->size();
     numx1_wallinflowchannel_ = x1_wallinflowchannel_->size();
 
-    // number of nodes at inflows -1 = number of nodes at expansion, since two nodes coincide at edge of splitter plate
-//TODO put check back in
-    //    if (numx2_inflow_-1 != numx2_0h_) dserror("structured grid expected between inflow and expansion");
-
     const size_t numx2_1h = x2_1h_->size();
     const size_t numx2_2h = x2_2h_->size();
     const size_t numx2_3h = x2_3h_->size();
@@ -382,26 +380,31 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
   vertinflowv_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
   vertinfloww_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
   vertinflowp_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
+  vertinflowg_ = rcp(new LINALG::SerialDenseMatrix(x2_inflow_->size(),2,true));
 
   vertmixingu_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
   vertmixingv_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
   vertmixingw_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
   vertmixingp_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
+  vertmixingg_ = rcp(new LINALG::SerialDenseMatrix(x2_0h_->size(),3,true));
 
   vert1hu_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
   vert1hv_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
   vert1hw_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
   vert1hp_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
+  vert1hg_ = rcp(new LINALG::SerialDenseMatrix(x2_1h_->size(),1,true));
 
   vert2hu_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
   vert2hv_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
   vert2hw_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
   vert2hp_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
+  vert2hg_ = rcp(new LINALG::SerialDenseMatrix(x2_2h_->size(),1,true));
 
   vertchamberu_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
   vertchamberv_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
   vertchamberw_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
   vertchamberp_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
+  vertchamberg_ = rcp(new LINALG::SerialDenseMatrix(x2_3h_->size(),14,true));
 
   //-------------------------------------------------------------------
   // allocate arrays holding time mean profiles of second order moments
@@ -622,8 +625,10 @@ COMBUST::TurbulenceStatisticsORACLES::~TurbulenceStatisticsORACLES()
  | take a sample from the flow field (first and second order momentum profiles, Cs)   henke 06/11 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
-  Teuchos::RCP<Epetra_Vector> velnp,
-  Teuchos::RCP<Epetra_Vector> residual
+  Teuchos::RCP<Epetra_Vector>     velnp,
+  Teuchos::RCP<Epetra_Vector>     residual,
+  Teuchos::RCP<Epetra_Vector>     phi,
+  Teuchos::RCP<const DRT::DofSet> stddofset
   )
 {
   if (discret_->Comm().MyPID()==0)
@@ -634,9 +639,37 @@ void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
   //------------------------
   numsamp_++;
 
-  // meanvelnp is a refcount copy of velnp
-  vel_->Update(1.0,*velnp,0.0);
-  force_->Update(1.0,*residual,0.0);
+  // call from combustion fluid (XFEM) with G-function field
+  if (withscatra_)
+  {
+    cout << "sampling with scatra" << flush;
+    if (velnp != Teuchos::null)
+      vel_=velnp;
+    else
+      dserror("turbulence statistics ORACLES did not receive velnp vector");
+
+    if (residual != Teuchos::null)
+      force_ = residual;
+    else
+      dserror("turbulence statistics ORACLES did not receive residual vector");
+
+    if (phi != Teuchos::null)
+      phi_ = phi;
+    else
+      dserror("turbulence statistics ORACLES did not receive phi vector");
+
+    if (stddofset != Teuchos::null)
+      stddofset_ = stddofset;
+  }
+  // call from standard fluid
+  else
+  {
+    cout << "sampling without scatra" << flush;
+    vel_  ->Update(1.0,*velnp,0.0);
+    force_->Update(1.0,*residual,0.0);
+    phi_       = Teuchos::null;
+    stddofset_ = Teuchos::null;
+  }
 
   //----------------------------------------------------------------------
   // loop planes and calculate integral means in each plane
@@ -723,7 +756,11 @@ void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
               // this node belongs to the plane under consideration
               if ( node->X()[dim] > forceplanes[iplane]-NODETOL and node->X()[dim]<forceplanes[iplane]+NODETOL )
               {
-                vector<int> dof = discret_->Dof(node);
+                vector<int> dof;
+                if (withscatra_)
+                  dof = stddofset_->Dof(node);
+                else
+                  dof = discret_->Dof(node);
 
                 // extract local values from the global vector
                 vector<double> myforce(dof.size());
@@ -852,7 +889,11 @@ void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
               // this node belongs to the plane under consideration
               if ( node->X()[dim] > forceplanes[iplane]-NODETOL and node->X()[dim]<forceplanes[iplane]+NODETOL )
               {
-                vector<int> dof = discret_->Dof(node);
+                vector<int> dof;
+                if (withscatra_)
+                  dof = stddofset_->Dof(node);
+                else
+                  dof = discret_->Dof(node);
 
                 // extract local values from the global vector
                 vector<double> myforce(dof.size());
@@ -906,6 +947,15 @@ void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
     }
   }
 
+  // clean up pointers
+  if (withscatra_)
+  {
+    vel_       = Teuchos::null;
+    force_     = Teuchos::null;
+    phi_       = Teuchos::null;
+    stddofset_ = Teuchos::null;
+  }
+
   if (discret_->Comm().MyPID()==0)
     std::cout << "done" << std::endl;
 }
@@ -926,7 +976,7 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractProfiles()
 
     ExtractSetOfProfiles(x1locations, *x2_inflow_, *vertinflowu_,  *vertinflowv_,  *vertinfloww_, *vertinflowp_,
                                                    *vertinflowuu_, *vertinflowvv_, *vertinflowww_, *vertinflowpp_,
-                                                   *vertinflowuv_, *vertinflowuw_, *vertinflowvw_);
+                                                   *vertinflowuv_, *vertinflowuw_, *vertinflowvw_, *vertinflowg_);
   }
 
   //----------------------------------------
@@ -940,7 +990,7 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractProfiles()
 
     ExtractSetOfProfiles(x1locations, *x2_0h_, *vertmixingu_,  *vertmixingv_,  *vertmixingw_, *vertmixingp_,
                                                *vertmixinguu_, *vertmixingvv_, *vertmixingww_, *vertmixingpp_,
-                                               *vertmixinguv_, *vertmixinguw_, *vertmixingvw_);
+                                               *vertmixinguv_, *vertmixinguw_, *vertmixingvw_, *vertmixingg_);
   }
 
   //-----------------------------------------------------
@@ -952,7 +1002,7 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractProfiles()
 
     ExtractSetOfProfiles(x1locations, *x2_1h_, *vert1hu_,  *vert1hv_,  *vert1hw_, *vert1hp_,
                                                *vert1huu_, *vert1hvv_, *vert1hww_, *vert1hpp_,
-                                               *vert1huv_, *vert1huw_, *vert1hvw_);
+                                               *vert1huv_, *vert1huw_, *vert1hvw_, *vert1hg_);
   }
 
   //-----------------------------------------------------
@@ -964,7 +1014,7 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractProfiles()
 
     ExtractSetOfProfiles(x1locations, *x2_2h_, *vert2hu_,  *vert2hv_,  *vert2hw_, *vert2hp_,
                                                *vert2huu_, *vert2hvv_, *vert2hww_, *vert2hpp_,
-                                               *vert2huv_, *vert2huw_, *vert2hvw_);
+                                               *vert2huv_, *vert2huw_, *vert2hvw_, *vert2hg_);
   }
 
   //------------------------------------
@@ -989,7 +1039,7 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractProfiles()
 
     ExtractSetOfProfiles(x1locations, *x2_3h_, *vertchamberu_,  *vertchamberv_,  *vertchamberw_, *vertchamberp_,
                                                *vertchamberuu_, *vertchambervv_, *vertchamberww_, *vertchamberpp_,
-                                               *vertchamberuv_, *vertchamberuw_, *vertchambervw_);
+                                               *vertchamberuv_, *vertchamberuw_, *vertchambervw_, *vertchamberg_);
   }
 
   return;
@@ -1012,7 +1062,8 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractSetOfProfiles(
     LINALG::SerialDenseMatrix& profilespp,
     LINALG::SerialDenseMatrix& profilesuv,
     LINALG::SerialDenseMatrix& profilesuw,
-    LINALG::SerialDenseMatrix& profilesvw
+    LINALG::SerialDenseMatrix& profilesvw,
+    LINALG::SerialDenseMatrix& profilesg
 )
 {
   // store contributions of each processor (local) to profile
@@ -1020,11 +1071,13 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractSetOfProfiles(
   vector<vector<double> > locv(x1locations.size(),vector<double>(x2locations.size()));
   vector<vector<double> > locw(x1locations.size(),vector<double>(x2locations.size()));
   vector<vector<double> > locp(x1locations.size(),vector<double>(x2locations.size()));
+  vector<vector<double> > locg(x1locations.size(),vector<double>(x2locations.size()));
 
   vector<vector<double> > globu(x1locations.size(),vector<double>(x2locations.size()));
   vector<vector<double> > globv(x1locations.size(),vector<double>(x2locations.size()));
   vector<vector<double> > globw(x1locations.size(),vector<double>(x2locations.size()));
   vector<vector<double> > globp(x1locations.size(),vector<double>(x2locations.size()));
+  vector<vector<double> > globg(x1locations.size(),vector<double>(x2locations.size()));
 
   //vector<double> locu(x1locations.size()*x2locations.size());
   //std::fill(locu.begin(),locu.end(),0);
@@ -1040,11 +1093,13 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractSetOfProfiles(
         locv[irow][icol] = 0.0;
         locw[irow][icol] = 0.0;
         locp[irow][icol] = 0.0;
+        locg[irow][icol] = 0.0;
 
         globu[irow][icol] = 0.0;
         globv[irow][icol] = 0.0;
         globw[irow][icol] = 0.0;
         globp[irow][icol] = 0.0;
+        globg[irow][icol] = 0.0;
       }
     }
 
@@ -1066,16 +1121,36 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractSetOfProfiles(
             if ( x(1)>(x2locations[ix2pos]-NODETOL) and x(1)<(x2locations[ix2pos]+NODETOL) )
             {
 
-              vector<int> dof = discret_->Dof(node);
+              if (withscatra_)
+              {
+                vector<int> dof = stddofset_->Dof(node);
+                // extract local values from the global vector
+                vector<double> myvel(dof.size());
+                DRT::UTILS::ExtractMyValues(*vel_, myvel, dof);
 
-              // extract local values from the global vector
-              vector<double> myvel(dof.size());
-              DRT::UTILS::ExtractMyValues(*vel_, myvel, dof);
+                locu[ix1pos][ix2pos]=myvel[0];
+                locv[ix1pos][ix2pos]=myvel[1];
+                locw[ix1pos][ix2pos]=myvel[2];
+                locp[ix1pos][ix2pos]=myvel[3];
 
-              locu[ix1pos][ix2pos]=myvel[0];
-              locv[ix1pos][ix2pos]=myvel[1];
-              locw[ix1pos][ix2pos]=myvel[2];
-              locp[ix1pos][ix2pos]=myvel[3];
+                const int nodegid = node->Id();
+                const int lid = phi_->Map().LID(nodegid);
+
+                locg[ix1pos][ix2pos] = (*phi_)[lid];
+              }
+              else
+              {
+                vector<int> dof = discret_->Dof(node);
+                // extract local values from the global vector
+                vector<double> myvel(dof.size());
+                DRT::UTILS::ExtractMyValues(*vel_, myvel, dof);
+
+                locu[ix1pos][ix2pos]=myvel[0];
+                locv[ix1pos][ix2pos]=myvel[1];
+                locw[ix1pos][ix2pos]=myvel[2];
+                locp[ix1pos][ix2pos]=myvel[3];
+              }
+
             }
           }
         }
@@ -1085,6 +1160,7 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractSetOfProfiles(
     discret_->Comm().SumAll( &(locv[ix1pos][0]), &(globv[ix1pos][0]),x2locations.size() );
     discret_->Comm().SumAll( &(locw[ix1pos][0]), &(globw[ix1pos][0]),x2locations.size() );
     discret_->Comm().SumAll( &(locp[ix1pos][0]), &(globp[ix1pos][0]),x2locations.size() );
+    discret_->Comm().SumAll( &(locg[ix1pos][0]), &(globg[ix1pos][0]),x2locations.size() );
 
     for(size_t ix2pos=0; ix2pos<x2locations.size(); ++ix2pos)
     {
@@ -1101,6 +1177,8 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractSetOfProfiles(
       profilesuv(ix2pos,ix1pos) += globu[ix1pos][ix2pos]*globv[ix1pos][ix2pos];
       profilesuw(ix2pos,ix1pos) += globu[ix1pos][ix2pos]*globw[ix1pos][ix2pos];
       profilesvw(ix2pos,ix1pos) += globv[ix1pos][ix2pos]*globw[ix1pos][ix2pos];
+
+      profilesg(ix2pos,ix1pos) += globg[ix1pos][ix2pos];
     }
 
     //std::copy(globu[ix1pos].begin(), globu[ix1pos].end(), profilesu(0,ix1pos));
@@ -1390,12 +1468,12 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       WriteStatisticsFile(step, "oracles.-5h", 0, *x2_inflow_,
           (*vertinflowu_) [0], (*vertinflowv_) [0], (*vertinfloww_) [0], (*vertinflowp_) [0],
           (*vertinflowuu_)[0], (*vertinflowvv_)[0], (*vertinflowww_)[0], (*vertinflowpp_)[0],
-          (*vertinflowuv_)[0], (*vertinflowuw_)[0], (*vertinflowvw_)[0]);
+          (*vertinflowuv_)[0], (*vertinflowuw_)[0], (*vertinflowvw_)[0], (*vertinflowg_) [0]);
 
       WriteStatisticsFile(step, "oracles.ramp", 1, *x2_inflow_,
           (*vertinflowu_) [1], (*vertinflowv_) [1], (*vertinfloww_) [1], (*vertinflowp_) [1],
           (*vertinflowuu_)[1], (*vertinflowvv_)[1], (*vertinflowww_)[1], (*vertinflowpp_)[1],
-          (*vertinflowuv_)[1], (*vertinflowuw_)[1], (*vertinflowvw_)[1]);
+          (*vertinflowuv_)[1], (*vertinflowuw_)[1], (*vertinflowvw_)[1], (*vertinflowg_) [1]);
     }
     //-------------------------------
     // write vertical mixing profiles
@@ -1404,7 +1482,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       WriteStatisticsFile(step, "oracles.00h", 4, *x2_0h_,
           (*vertmixingu_) [2], (*vertmixingv_) [2], (*vertmixingw_) [2], (*vertmixingp_) [2],
           (*vertmixinguu_)[2], (*vertmixingvv_)[2], (*vertmixingww_)[2], (*vertmixingpp_)[2],
-          (*vertmixinguv_)[2], (*vertmixinguw_)[2], (*vertmixingvw_)[2]);
+          (*vertmixinguv_)[2], (*vertmixinguw_)[2], (*vertmixingvw_)[2], (*vertmixingg_) [2]);
     }
     //-----------------------------
     // write vertical profile at 1h
@@ -1413,7 +1491,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       WriteStatisticsFile(step, "oracles.01h", 5, *x2_1h_,
           (*vert1hu_) [0], (*vert1hv_) [0], (*vert1hw_) [0], (*vert1hp_) [0],
           (*vert1huu_)[0], (*vert1hvv_)[0], (*vert1hww_)[0], (*vert1hpp_)[0],
-          (*vert1huv_)[0], (*vert1huw_)[0], (*vert1hvw_)[0]);
+          (*vert1huv_)[0], (*vert1huw_)[0], (*vert1hvw_)[0], (*vert1hg_) [0]);
     }
     //-----------------------------
     // write vertical profile at 2h
@@ -1422,7 +1500,7 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       WriteStatisticsFile(step, "oracles.02h", 6, *x2_2h_,
           (*vert2hu_) [0], (*vert2hv_) [0], (*vert2hw_) [0], (*vert2hp_) [0],
           (*vert2huu_)[0], (*vert2hvv_)[0], (*vert2hww_)[0], (*vert2hpp_)[0],
-          (*vert2huv_)[0], (*vert2huw_)[0], (*vert2hvw_)[0]);
+          (*vert2huv_)[0], (*vert2huw_)[0], (*vert2hvw_)[0], (*vert2hg_) [0]);
     }
     //---------------------------------
     // write vertical chamber profiles
@@ -1431,72 +1509,72 @@ void COMBUST::TurbulenceStatisticsORACLES::OutputStatistics(int step)
       WriteStatisticsFile(step, "oracles.03h", 7, *x2_3h_,
           (*vertchamberu_) [0], (*vertchamberv_) [0], (*vertchamberw_) [0], (*vertchamberp_) [0],
           (*vertchamberuu_)[0], (*vertchambervv_)[0], (*vertchamberww_)[0], (*vertchamberpp_)[0],
-          (*vertchamberuv_)[0], (*vertchamberuw_)[0], (*vertchambervw_)[0]);
+          (*vertchamberuv_)[0], (*vertchamberuw_)[0], (*vertchambervw_)[0], (*vertchamberg_) [0]);
 
       WriteStatisticsFile(step, "oracles.04h", 8, *x2_3h_,
           (*vertchamberu_) [1], (*vertchamberv_) [1], (*vertchamberw_) [1], (*vertchamberp_) [1],
           (*vertchamberuu_)[1], (*vertchambervv_)[1], (*vertchamberww_)[1], (*vertchamberpp_)[1],
-          (*vertchamberuv_)[1], (*vertchamberuw_)[1], (*vertchambervw_)[1]);
+          (*vertchamberuv_)[1], (*vertchamberuw_)[1], (*vertchambervw_)[1], (*vertchamberg_) [1]);
 
       WriteStatisticsFile(step, "oracles.05h", 9, *x2_3h_,
           (*vertchamberu_) [2], (*vertchamberv_) [2], (*vertchamberw_) [2], (*vertchamberp_) [2],
           (*vertchamberuu_)[2], (*vertchambervv_)[2], (*vertchamberww_)[2], (*vertchamberpp_)[2],
-          (*vertchamberuv_)[2], (*vertchamberuw_)[2], (*vertchambervw_)[2]);
+          (*vertchamberuv_)[2], (*vertchamberuw_)[2], (*vertchambervw_)[2], (*vertchamberg_) [2]);
 
       WriteStatisticsFile(step, "oracles.06h", 10, *x2_3h_,
           (*vertchamberu_) [3], (*vertchamberv_) [3], (*vertchamberw_) [3], (*vertchamberp_) [3],
           (*vertchamberuu_)[3], (*vertchambervv_)[3], (*vertchamberww_)[3], (*vertchamberpp_)[3],
-          (*vertchamberuv_)[3], (*vertchamberuw_)[3], (*vertchambervw_)[3]);
+          (*vertchamberuv_)[3], (*vertchamberuw_)[3], (*vertchambervw_)[3], (*vertchamberg_) [3]);
 
       WriteStatisticsFile(step, "oracles.07h", 11, *x2_3h_,
           (*vertchamberu_) [4], (*vertchamberv_) [4], (*vertchamberw_) [4], (*vertchamberp_) [4],
           (*vertchamberuu_)[4], (*vertchambervv_)[4], (*vertchamberww_)[4], (*vertchamberpp_)[4],
-          (*vertchamberuv_)[4], (*vertchamberuw_)[4], (*vertchambervw_)[4]);
+          (*vertchamberuv_)[4], (*vertchamberuw_)[4], (*vertchambervw_)[4], (*vertchamberg_) [4]);
 
       WriteStatisticsFile(step, "oracles.08h", 12, *x2_3h_,
           (*vertchamberu_) [5], (*vertchamberv_) [5], (*vertchamberw_) [5], (*vertchamberp_) [5],
           (*vertchamberuu_)[5], (*vertchambervv_)[5], (*vertchamberww_)[5], (*vertchamberpp_)[5],
-          (*vertchamberuv_)[5], (*vertchamberuw_)[5], (*vertchambervw_)[5]);
+          (*vertchamberuv_)[5], (*vertchamberuw_)[5], (*vertchambervw_)[5], (*vertchamberg_) [5]);
 
       WriteStatisticsFile(step, "oracles.09h", 13, *x2_3h_,
           (*vertchamberu_) [6], (*vertchamberv_) [6], (*vertchamberw_) [6], (*vertchamberp_) [6],
           (*vertchamberuu_)[6], (*vertchambervv_)[6], (*vertchamberww_)[6], (*vertchamberpp_)[6],
-          (*vertchamberuv_)[6], (*vertchamberuw_)[6], (*vertchambervw_)[6]);
+          (*vertchamberuv_)[6], (*vertchamberuw_)[6], (*vertchambervw_)[6], (*vertchamberg_) [6]);
 
       WriteStatisticsFile(step, "oracles.10h", 14, *x2_3h_,
           (*vertchamberu_) [7], (*vertchamberv_) [7], (*vertchamberw_) [7], (*vertchamberp_) [7],
           (*vertchamberuu_)[7], (*vertchambervv_)[7], (*vertchamberww_)[7], (*vertchamberpp_)[7],
-          (*vertchamberuv_)[7], (*vertchamberuw_)[7], (*vertchambervw_)[7]);
+          (*vertchamberuv_)[7], (*vertchamberuw_)[7], (*vertchambervw_)[7], (*vertchamberg_) [7]);
 
       WriteStatisticsFile(step, "oracles.11h", 15, *x2_3h_,
           (*vertchamberu_) [8], (*vertchamberv_) [8], (*vertchamberw_) [8], (*vertchamberp_) [8],
           (*vertchamberuu_)[8], (*vertchambervv_)[8], (*vertchamberww_)[8], (*vertchamberpp_)[8],
-          (*vertchamberuv_)[8], (*vertchamberuw_)[8], (*vertchambervw_)[8]);
+          (*vertchamberuv_)[8], (*vertchamberuw_)[8], (*vertchambervw_)[8], (*vertchamberg_) [8]);
 
       WriteStatisticsFile(step, "oracles.12h", 16, *x2_3h_,
           (*vertchamberu_) [9], (*vertchamberv_) [9], (*vertchamberw_) [9], (*vertchamberp_) [9],
           (*vertchamberuu_)[9], (*vertchambervv_)[9], (*vertchamberww_)[9], (*vertchamberpp_)[9],
-          (*vertchamberuv_)[9], (*vertchamberuw_)[9], (*vertchambervw_)[9]);
+          (*vertchamberuv_)[9], (*vertchamberuw_)[9], (*vertchambervw_)[9], (*vertchamberg_) [9]);
 
       WriteStatisticsFile(step, "oracles.13h", 17, *x2_3h_,
           (*vertchamberu_) [10], (*vertchamberv_) [10], (*vertchamberw_) [10], (*vertchamberp_) [10],
           (*vertchamberuu_)[10], (*vertchambervv_)[10], (*vertchamberww_)[10], (*vertchamberpp_)[10],
-          (*vertchamberuv_)[10], (*vertchamberuw_)[10], (*vertchambervw_)[10]);
+          (*vertchamberuv_)[10], (*vertchamberuw_)[10], (*vertchambervw_)[10], (*vertchamberg_)[10]);
 
       WriteStatisticsFile(step, "oracles.14h", 18, *x2_3h_,
           (*vertchamberu_) [11], (*vertchamberv_) [11], (*vertchamberw_) [11], (*vertchamberp_) [11],
           (*vertchamberuu_)[11], (*vertchambervv_)[11], (*vertchamberww_)[11], (*vertchamberpp_)[11],
-          (*vertchamberuv_)[11], (*vertchamberuw_)[11], (*vertchambervw_)[11]);
+          (*vertchamberuv_)[11], (*vertchamberuw_)[11], (*vertchambervw_)[11], (*vertchamberg_) [11]);
 
       WriteStatisticsFile(step, "oracles.15h", 19, *x2_3h_,
           (*vertchamberu_) [12], (*vertchamberv_) [12], (*vertchamberw_) [12], (*vertchamberp_) [12],
           (*vertchamberuu_)[12], (*vertchambervv_)[12], (*vertchamberww_)[12], (*vertchamberpp_)[12],
-          (*vertchamberuv_)[12], (*vertchamberuw_)[12], (*vertchambervw_)[12]);
+          (*vertchamberuv_)[12], (*vertchamberuw_)[12], (*vertchambervw_)[12], (*vertchamberg_) [12]);
 
       WriteStatisticsFile(step, "oracles.16h", 20, *x2_3h_,
           (*vertchamberu_) [13], (*vertchamberv_) [13], (*vertchamberw_) [13], (*vertchamberp_) [13],
           (*vertchamberuu_)[13], (*vertchambervv_)[13], (*vertchamberww_)[13], (*vertchamberpp_)[13],
-          (*vertchamberuv_)[13], (*vertchamberuw_)[13], (*vertchambervw_)[13]);
+          (*vertchamberuv_)[13], (*vertchamberuw_)[13], (*vertchambervw_)[13], (*vertchamberg_) [13]);
     }
   }
 
@@ -1524,7 +1602,8 @@ void COMBUST::TurbulenceStatisticsORACLES::WriteStatisticsFile(
       double* profilepp,
       double* profileuv,
       double* profileuw,
-      double* profilevw
+      double* profilevw,
+      double* profileg
 )
 {
   std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
@@ -1547,7 +1626,7 @@ void COMBUST::TurbulenceStatisticsORACLES::WriteStatisticsFile(
   (*log) << "#     y             y+";
   (*log) << "          umean         vmean         wmean         pmean";
   (*log) << "        mean u^2      mean v^2      mean w^2";
-  (*log) << "      mean u*v      mean u*w      mean v*w      mean p^2 \n";
+  (*log) << "      mean u*v      mean u*w      mean v*w      mean p^2      mean G\n";
   (*log) << scientific;
 
   for(int ix2pos=x2locations.size()-1; ix2pos>=0; --ix2pos)
@@ -1571,6 +1650,8 @@ void COMBUST::TurbulenceStatisticsORACLES::WriteStatisticsFile(
     (*log) << "   " << setw(11) << setprecision(4) << profilevw[ix2pos];
 
     (*log) << "   " << setw(11) << setprecision(4) << profilepp[ix2pos];
+
+    (*log) << "   " << setw(11) << setprecision(4) << profileg[ix2pos];
 
     (*log) << "\n";
   }
@@ -1614,26 +1695,31 @@ void COMBUST::TurbulenceStatisticsORACLES::ClearStatistics()
   (*vertinflowv_).Zero();
   (*vertinfloww_).Zero();
   (*vertinflowp_).Zero();
+  (*vertinflowg_).Zero();
 
   (*vertmixingu_).Zero();
   (*vertmixingv_).Zero();
   (*vertmixingw_).Zero();
   (*vertmixingp_).Zero();
+  (*vertmixingg_).Zero();
 
   (*vert1hu_).Zero();
   (*vert1hv_).Zero();
   (*vert1hw_).Zero();
   (*vert1hp_).Zero();
+  (*vert1hg_).Zero();
 
   (*vert2hu_).Zero();
   (*vert2hv_).Zero();
   (*vert2hw_).Zero();
   (*vert2hp_).Zero();
+  (*vert2hg_).Zero();
 
   (*vertchamberu_).Zero();
   (*vertchamberv_).Zero();
   (*vertchamberw_).Zero();
   (*vertchamberp_).Zero();
+  (*vertchamberg_).Zero();
 
   //! second order momentum
   (*vertinflowuu_).Zero();
@@ -1683,133 +1769,6 @@ void COMBUST::TurbulenceStatisticsORACLES::ClearStatistics()
   (*vertchambervw_).Zero();
 
   return;
-}
-
-/*------------------------------------------------------------------------------------------------*
- | write statistic data to log file                                                   henke 06/11 |
- *------------------------------------------------------------------------------------------------*/
-void COMBUST::TurbulenceStatisticsORACLES::DumpStatistics(const int step)
-{
-#if 0
-  Teuchos::RCP<std::ofstream> log;
-
-  // only proc 0 writes
-  if (discret_->Comm().MyPID()==0)
-  {
-    // get name of the output *.control file
-    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
-    s.append(".flow_statistics");
-
-    log = Teuchos::rcp(new std::ofstream(s.c_str(),ios::out));
-    (*log) << "# statistics for incompressible flow for turbulent premixed combustion benchmark problem ORACLES (first- and second-order moments) \n";
-    (*log) << "\n";
-    (*log) << "# statistics record for steps " << step-numsamp_+1 << "--" << step <<"\n";
-    (*log) << "\n\n";
-
-    (*log) << scientific;
-    (*log) << "# lower wall behind step \n";
-    (*log) << "#     x1           duxdy         pmean \n";
-
-    // distance from wall to first node off wall
-    double dist = x2supplocations_(0) - x2statlocations_(0);
-
-    for (unsigned i=0; i<x1coordinates_->size(); ++i)
-    {
-      if ((*x1coordinates_)[i] > -2e-9)
-      {
-        double lwx1u     = (*x1sumu_)(0,i)/numsamp_;
-        double lwx1duxdy = lwx1u/dist;
-        double lwx1p     = (*x1sump_)(0,i)/numsamp_;
-
-        (*log) <<  " "  << setw(11) << setprecision(4) << (*x1coordinates_)[i];
-        (*log) << "   " << setw(11) << setprecision(4) << lwx1duxdy;
-        (*log) << "   " << setw(11) << setprecision(4) << lwx1p;
-        (*log) << "\n";
-      }
-    }
-
-//    if (geotype_ == TurbulenceStatisticsORACLES::geometry_LES_flow_with_heating)
-//    {
-//      (*log) << "\n\n\n";
-//      (*log) << "# upper wall\n";
-//      (*log) << "#     x1";
-//      (*log) << "           duxdy         pmean\n";
-//
-//      // distance from wall to first node off wall
-//      dist = x2statlocations_(1) - x2supplocations_(1);
-//
-//      for (unsigned i=0; i<x1coordinates_->size(); ++i)
-//      {
-//        double uwx1u     = (*x1sumu_)(1,i)/numsamp_;
-//        double uwx1duxdy = uwx1u/dist;
-//        double uwx1p     = (*x1sump_)(1,i)/numsamp_;
-//
-//        (*log) <<  " "  << setw(11) << setprecision(4) << (*x1coordinates_)[i];
-//        (*log) << "   " << setw(11) << setprecision(4) << uwx1duxdy;
-//        (*log) << "   " << setw(11) << setprecision(4) << uwx1p;
-//        (*log) << "\n";
-//      }
-//    }
-
-    for (int i=0; i<numx1statlocations_; ++i)
-    {
-      // current x1-coordinate
-      // caution: if there are supplementary locations in x1-direction, we loop
-      //          them first (only DNS geometry)
-      double x1 = 1.0e20;
-      if (i < numx1supplocations_)
-      {
-        x1 = x1supplocations_(i);
-      }
-      else
-      {
-        x1 = x1statlocations_(i - numx1supplocations_);
-      }
-
-      (*log) << "\n\n\n";
-      (*log) << "# line in x2-direction at x1 = " << setw(11) << setprecision(4) << x1 << "\n";
-      (*log) << "#     x2";
-      (*log) << "           umean         vmean         wmean         pmean";
-      (*log) << "         urms          vrms          wrms          prms";
-      (*log) << "          u'v'          u'w'          v'w'\n";
-
-      for (unsigned j=0; j<x2coordinates_->size(); ++j)
-      {
-        double x2u  = (*x2sumu_)(i,j)/numsamp_;
-        double x2v  = (*x2sumv_)(i,j)/numsamp_;
-        double x2w  = (*x2sumw_)(i,j)/numsamp_;
-        double x2p  = (*x2sump_)(i,j)/numsamp_;
-
-        double x2urms  = sqrt((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u);
-        double x2vrms  = sqrt((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v);
-        double x2wrms  = sqrt((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w);
-        double x2prms  = sqrt((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p);
-
-        double x2uv   = (*x2sumuv_)(i,j)/numsamp_-x2u*x2v;
-        double x2uw   = (*x2sumuw_)(i,j)/numsamp_-x2u*x2w;
-        double x2vw   = (*x2sumvw_)(i,j)/numsamp_-x2v*x2w;
-
-        (*log) <<  " "  << setw(11) << setprecision(4) << (*x2coordinates_)[j];
-        (*log) << "   " << setw(11) << setprecision(4) << x2u;
-        (*log) << "   " << setw(11) << setprecision(4) << x2v;
-        (*log) << "   " << setw(11) << setprecision(4) << x2w;
-        (*log) << "   " << setw(11) << setprecision(4) << x2p;
-        (*log) << "   " << setw(11) << setprecision(4) << x2urms;
-        (*log) << "   " << setw(11) << setprecision(4) << x2vrms;
-        (*log) << "   " << setw(11) << setprecision(4) << x2wrms;
-        (*log) << "   " << setw(11) << setprecision(4) << x2prms;
-        (*log) << "   " << setw(11) << setprecision(4) << x2uv;
-        (*log) << "   " << setw(11) << setprecision(4) << x2uw;
-        (*log) << "   " << setw(11) << setprecision(4) << x2vw;
-        (*log) << "\n";
-      }
-    }
-
-    log->flush();
-  }
-#endif
-  return;
-
 }
 
 
