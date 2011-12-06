@@ -360,8 +360,8 @@ void TSI::Monolithic::Output()
   int uprestart = tsidyn.get<int>("RESTARTEVRY");
   // communicate the deformation to the thermal field,
   // current displacements are contained in Dispn()
-  if ((upres!=0 and (Step()%upres == 0))
-    or (uprestart != 0) and (Step()%uprestart == 0))
+  if ( (upres!=0 and (Step()%upres == 0))
+    or (uprestart != 0) and (Step()%uprestart == 0) )
     {
       // displacement field
       // (get noderowmap of discretisation for creating this multivector)
@@ -374,7 +374,6 @@ void TSI::Monolithic::Output()
 
       ThermoField().DiscWriter()->WriteVector("displacement",dispnp_,IO::DiscretizationWriter::nodevector);
     }
-
 
 }  // Monolithic::Output()
 
