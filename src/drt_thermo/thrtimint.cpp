@@ -68,7 +68,6 @@ THR::TimInt::TimInt(
   writerestartevery_(tdynparams.get<int>("RESTARTEVRY")),
   writeglob_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"THERM_TEMPERATURE")),
   writeglobevery_(tdynparams.get<int>("RESEVRYGLOB")),
-  writeelemevery_(tdynparams.get<int>("RESEVRYELEM")),
   writeheatflux_(DRT::INPUT::IntegralValue<INPAR::THR::HeatFluxType>(ioparams,"THERM_HEATFLUX")),
   writetempgrad_(DRT::INPUT::IntegralValue<INPAR::THR::TempGradType>(ioparams,"THERM_TEMPGRAD")),
   writeenergyevery_(tdynparams.get<int>("RESEVRYERGY")),
@@ -374,10 +373,10 @@ void THR::TimInt::OutputStep()
   }
 
   // output heatflux & tempgrad
-  if ( writeelemevery_
+  if ( writeglobevery_
        and ( (writeheatflux_ != INPAR::THR::heatflux_none)
              or (writetempgrad_ != INPAR::THR::tempgrad_none) )
-       and (step_%writeelemevery_ == 0) )
+       and (step_%writeglobevery_ == 0) )
   {
     OutputHeatfluxTempgrad(datawritten);
   }

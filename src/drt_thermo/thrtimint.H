@@ -457,7 +457,6 @@ namespace THR
                              //!< if 0, restart is not written
     bool writeglob_;  //!< write state on/off
     int writeglobevery_;  //!< write state every given step
-    int writeelemevery_;  //!< write stress/strain every given step
     INPAR::THR::HeatFluxType writeheatflux_;
     INPAR::THR::TempGradType writetempgrad_;
     int writeenergyevery_;  //!< write system energy every given step
