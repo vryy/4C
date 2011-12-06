@@ -174,7 +174,6 @@ NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         200
 PREDICT                         ConstTemp  // TangTemp
-RESEVRYELEM                     1
 RESEVRYERGY                     0
 RESEVRYGLOB                     1
 RESTARTEVRY                     1

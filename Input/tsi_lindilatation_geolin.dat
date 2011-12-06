@@ -181,7 +181,6 @@ NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         200  // this NUMSTEP is used for the outer iteration!
 PREDICT                         ConstTemp  // Vague,ConstTemp,ConstTempRate,TangTemp
-RESEVRYELEM                     1
 RESEVRYGLOB                     1
 RESTARTEVRY                     1
 TIMESTEP                        1  // 0.01

@@ -177,7 +177,6 @@ NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         200
 PREDICT                         ConstTemp  // Vague,ConstTemp,ConstTempRate,TangTemp
-RESEVRYELEM                     1
 RESEVRYGLOB                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.01

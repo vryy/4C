@@ -76,7 +76,6 @@ NORM_RESF                       Abs
 NORM_TEMP                       Abs
 NUMSTEP                         20000
 PREDICT                         ConstTemp
-RESEVRYELEM                     1
 RESEVRYERGY                     0
 RESEVRYGLOB                     1
 RESTARTEVRY                     1
