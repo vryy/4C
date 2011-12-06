@@ -112,9 +112,6 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
     AddMultiVectorToParameterList(eleparams,"velocity field",vel_);
     AddMultiVectorToParameterList(eleparams,"acceleration/pressure field",accpre_);
 
-    // set switch for reinitialization
-    eleparams.set("reinitswitch",reinitswitch_);
-
     // parameters for stabilization (here required for material evaluation location)
     eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
 
@@ -2058,6 +2055,44 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
       printf("\nL2_err for concentric cylinders:\n");
       printf(" concentration1 %15.8e\n concentration2 %15.8e\n potential      %15.8e\n\n",
              conerr1,conerr2,poterr);
+    }
+  }
+  break;
+  case INPAR::SCATRA::calcerror_electroneutrality:
+  {
+    // compute L2 norm of electroneutrality condition
+
+    // create the parameters for the discretization
+    ParameterList p;
+
+    // parameters for the elements
+    p.set("action","calc_error");
+    p.set<int>("scatratype",scatratype_);
+    p.set("total time",time_);
+    p.set("frt",frt_);
+    p.set<int>("calcerrorflag",calcerr);
+    //provide displacement field in case of ALE
+    p.set("isale",isale_);
+    if (isale_)
+      AddMultiVectorToParameterList(p,"dispnp",dispnp_);
+
+    // set vector values needed by elements
+    discret_->ClearState();
+    discret_->SetState("phinp",phinp_);
+
+    // get (squared) error values
+    Teuchos::RCP<Epetra_SerialDenseVector> errors
+      = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+    discret_->EvaluateScalars(p, errors);
+    discret_->ClearState();
+
+    // for the L2 norm, we need the square root
+    double err = sqrt((*errors)[0]);
+
+    if (myrank_ == 0)
+    {
+      printf("\nL2_err for electroneutrality:\n");
+      printf(" Deviation from ENC: %15.8e\n\n",err);
     }
   }
   break;

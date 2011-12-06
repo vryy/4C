@@ -2861,12 +2861,15 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                tuple<std::string>(
                                  "No",
                                  "Kwok_Wu",
-                                 "ConcentricCylinders"
+                                 "ConcentricCylinders",
+                                 "Electroneutrality"
                                  ),
                                tuple<int>(
                                    INPAR::SCATRA::calcerror_no,
                                    INPAR::SCATRA::calcerror_Kwok_Wu,
-                                   INPAR::SCATRA::calcerror_cylinder),
+                                   INPAR::SCATRA::calcerror_cylinder,
+                                   INPAR::SCATRA::calcerror_electroneutrality
+                                   ),
                                &scatradyn);
 
   setStringToIntegralParameter<int>("WRITEFLUX","No","output of diffusive/total flux vectors",
@@ -2947,7 +2950,8 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                  "Elch_ENC",
                                  "Elch_ENC_PDE",
                                  "Elch_ENC_PDE_ELIM",
-                                 "Elch_Possion",
+                                 "Elch_Poisson",
+                                 "Elch_Laplace",
                                  "LevelSet"),
                                tuple<int>(
                                  INPAR::SCATRA::scatratype_undefined,
@@ -2957,6 +2961,7 @@ setStringToIntegralParameter<int>("TIMEINTEGR","One_Step_Theta",
                                  INPAR::SCATRA::scatratype_elch_enc_pde,
                                  INPAR::SCATRA::scatratype_elch_enc_pde_elim,
                                  INPAR::SCATRA::scatratype_elch_poisson,
+                                 INPAR::SCATRA::scatratype_elch_laplace,
                                  INPAR::SCATRA::scatratype_levelset),
                                  &scatradyn);
 

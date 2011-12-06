@@ -167,7 +167,6 @@ public:
         const bool                            assgd, ///< all-scale subgrid-diff. flag
         const bool                            fssgd, ///< fine-scale subgrid-diff. flag
         const bool                            turbmodel, ///< flag for turbulence model
-        const bool                            reinitswitch,
         const double                          Cs, ///< Smagorinsky constant
         const double                          tpn, ///< turbulent Prandtl number
         const double                          frt, ///< factor F/RT needed for ELCH calculations
@@ -189,7 +188,6 @@ public:
         DRT::Element*                         ele,  ///< the element
         Epetra_SerialDenseMatrix&             emat, ///< element matrix to calculate
         Epetra_SerialDenseVector&             erhs, ///< element rhs to calculate
-        const bool                            reinitswitch,
         const double                          frt, ///< factor F/RT needed for ELCH calculations
         const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
     );
@@ -203,7 +201,6 @@ public:
         const double                          dt, ///< current time-step length
         const double                          timefac, ///< time discretization factor
         const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
-//        const bool                            reinitswitch,
 //        const double                          frt ///< factor F/RT needed for ELCH calculations
     );
 
@@ -219,14 +216,6 @@ public:
         const DRT::Element*    ele,  ///< the element we are dealing with
         const double           time  ///< current simulation time
     );
-
-//REINHARD
-    //! get the body force for the sign function on the right hand side in reinitialization
-    virtual void BodyForceReinit(
-        const DRT::Element*    ele, ///< the element we are dealing with
-        const double           time ///< current simulation time
-    );
-//end REINHARD
 
     //! get the material parameters
     virtual void GetMaterialParams(
@@ -423,8 +412,7 @@ public:
    virtual void CalculateDomainAndBodyforce(
         Epetra_SerialDenseVector&  scalars, ///< vector for the computed integrals
         const DRT::Element*        ele,     ///< pointer to the element
-        const double               time,    ///< current simulation time
-        const bool                 reinitswitch
+        const double               time     ///< current simulation time
         );
 
    //! integral of shape functions over the element
@@ -584,7 +572,6 @@ public:
         const bool                            assgd, ///< all-scale subgrid-diff. flag
         const bool                            fssgd, ///< fine-scale subgrid-diff. flag
         const bool                            turbmodel, ///< turbulence model flag
-        const bool                            reinitswitch,
         const double                          Cs, ///< Smagorinsky constant
         const double                          tpn, ///< turbulent Prandtl number
         const double                          frt, ///< factor F/RT needed for ELCH calculations

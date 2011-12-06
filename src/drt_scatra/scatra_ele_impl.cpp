@@ -422,8 +422,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     conservative_ = false;
     if (convform ==INPAR::SCATRA::convform_conservative) conservative_ = true;
 
-    bool reinitswitch = params.get<bool>("reinitswitch",false);
-
     // set parameters for stabilization
     ParameterList& stablist = params.sublist("STABILIZATION");
 
@@ -697,7 +695,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       assgd,
       fssgd,
       turbmodel,
-      reinitswitch,
       Cs,
       tpn,
       frt,
@@ -721,7 +718,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         assgd,
         fssgd,
         turbmodel,
-        reinitswitch,
         Cs,
         tpn,
         frt,
@@ -991,8 +987,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       thermpressdt_ = params.get<double>("time derivative of thermodynamic pressure");
     }
 
-    bool reinitswitch = params.get<bool>("reinitswitch",false);
-
     // get stabilization parameter sublist
     ParameterList& stablist = params.sublist("STABILIZATION");
 
@@ -1027,7 +1021,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       ele,
       elemat1_epetra,
       elevec1_epetra,
-      reinitswitch,
       frt,
       scatratype);
   }
@@ -1162,10 +1155,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     {
       const double time = params.get<double>("total time");
 
-      bool reinitswitch = params.get<bool>("reinitswitch",false);
-
       // calculate domain and bodyforce integral
-      CalculateDomainAndBodyforce(elevec1_epetra,ele,time,reinitswitch);
+      CalculateDomainAndBodyforce(elevec1_epetra,ele,time);
     }
   }
   else if (action=="calc_error")
@@ -1180,9 +1171,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // extract local values from the global vector
     vector<double> myphinp(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
-
-    if (numscal_ != 2)
-      dserror("Numscal_ != 2 for error calculation of existing examples");
 
     // fill element arrays
     for (int i=0;i<nen_;++i)
@@ -1581,7 +1569,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   const bool                            assgd, ///< all-scale subgrid-diff. flag
   const bool                            fssgd, ///< fine-scale subgrid-diff. flag
   const bool                            turbmodel, ///< turbulence model flag
-  const bool                            reinitswitch,
   const double                          Cs, ///< Smagorinsky constant
   const double                          tpn, ///< turbulent Prandtl number
   const double                          frt, ///< factor F/RT needed for ELCH calculations
@@ -1592,12 +1579,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   // call routine for calculation of body force in element nodes
   // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
   // ---------------------------------------------------------------------
-//REINHARD
-  if (reinitswitch == false)
-    BodyForce(ele,time);
-  else
-    BodyForceReinit(ele,time);
-//end REINHARD
+  BodyForce(ele,time);
 
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.
@@ -1794,278 +1776,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       CalMatElch(sys_mat,residual,frt,timefac,alphaF,fac,scatratype);
     }
 
-  }
-  else if ((scatratype == INPAR::SCATRA::scatratype_levelset) and reinitswitch == true)
-  {
-//REINHARD
-    dserror("Due to Volkers commit on 14.9.09 things have to be rearranged!");
-// 	  Epetra_SerialDenseMatrix gradphi_gpscur(8,3);
-//	  // up to now only implemented for Hex8 elements...
-//		  //calculation of expol_temp, is then inverted and overwritten
-//	  Epetra_SerialDenseMatrix expol_invert(8,8);
-//	  LINALG::Matrix<8,8> expol_temp;
-//
-//	  double sq3=sqrt(3.0);
-//	  expol_temp(0,0)=1.25+0.75*sq3;
-//	  expol_temp(0,1)=-0.25-0.25*sq3;
-//	  expol_temp(0,2)=-0.25+0.25*sq3;
-//	  expol_temp(0,3)=-0.25-0.25*sq3;
-//	  expol_temp(0,4)=-0.25-0.25*sq3;
-//	  expol_temp(0,5)=-0.25+0.25*sq3;
-//	  expol_temp(0,6)=1.25-0.75*sq3;
-//	  expol_temp(0,7)=-0.25+0.25*sq3;
-//	  expol_temp(1,1)=1.25+0.75*sq3;
-//	  expol_temp(1,2)=-0.25-0.25*sq3;
-//	  expol_temp(1,3)=-0.25+0.25*sq3;
-// 		  expol_temp(1,4)=-0.25+0.25*sq3;
-// 		  expol_temp(1,5)=-0.25-0.25*sq3;
-// 		  expol_temp(1,6)=-0.25+0.25*sq3;
-// 		  expol_temp(1,7)=1.25-0.75*sq3;
-// 		  expol_temp(2,2)=1.25+0.75*sq3;
-// 		  expol_temp(2,3)=-0.25-0.25*sq3;
-// 		  expol_temp(2,4)=1.25-0.75*sq3;
-// 		  expol_temp(2,5)=-0.25+0.25*sq3;
-// 		  expol_temp(2,6)=-0.25-0.25*sq3;
-// 		  expol_temp(2,7)=-0.25+0.25*sq3;
-// 		  expol_temp(3,3)=1.25+0.75*sq3;
-// 		  expol_temp(3,4)=-0.25+0.25*sq3;
-// 		  expol_temp(3,5)=1.25-0.75*sq3;
-// 		  expol_temp(3,6)=-0.25+0.25*sq3;
-// 		  expol_temp(3,7)=-0.25-0.25*sq3;
-// 		  expol_temp(4,4)=1.25+0.75*sq3;
-// 		  expol_temp(4,5)=-0.25-0.25*sq3;
-// 		  expol_temp(4,6)=-0.25+0.25*sq3;
-// 		  expol_temp(4,7)=-0.25-0.25*sq3;
-// 		  expol_temp(5,5)=1.25+0.75*sq3;
-// 		  expol_temp(5,6)=-0.25-0.25*sq3;
-// 		  expol_temp(5,7)=-0.25+0.25*sq3;
-// 		  expol_temp(6,6)=1.25+0.75*sq3;
-// 		  expol_temp(6,7)=-0.25-0.25*sq3;
-// 		  expol_temp(7,7)=1.25+0.75*sq3;
-//
-// 		  for (int k=0;k<8;++k)
-// 			  for (int l=0;l<k;++l)
-// 				  expol_temp(k,l)=expol_temp(l,k);
-//
-// 		  LINALG::FixedSizeSerialDenseSolver<8,8,1> solve_for_inverseexpol_temp;
-// 		  solve_for_inverseexpol_temp.SetMatrix(expol_temp);
-// 		  int err2 = solve_for_inverseexpol_temp.Factor();
-// 		  int err = solve_for_inverseexpol_temp.Invert();
-// 		  if ((err != 0) || (err2!=0)) dserror("Inversion of expol_temp failed");
-//
-// 		  for (int k=0; k<8; ++k)
-// 			  for (int l=0; l<8; ++l)
-// 				  expol_invert(k,l) = expol_temp(k,l);
-//
-// 		  //end calculation of expol_invert
-//
-// 		  RefCountPtr<const Epetra_Vector> phinp = discretization.GetState("phinp");
-// 		  //final gradients of phi at all nodes of current element
-// 		  Epetra_SerialDenseMatrix gradphi_nodescur(8,3);
-//
-// 		  const int* nodeids = ele->NodeIds();
-// 		  //loop over all nodes of current element
-// 		  for (int lnodeid=0; lnodeid < nen_; lnodeid++)
-// 		  {
-// 			  //get current node
-// 			  DRT::Node* actnode = discretization.lRowNode(nodeids[lnodeid]);
-// 			  //get all adjacent elements to this node
-// 			  DRT::Element** elements=actnode->Elements();
-//
-// 			  //final gradient of phi at the one relevant node
-// 			  Epetra_SerialDenseMatrix gradphi(3,1);
-// 			  for (int j=0; j<3; j++)
-// 				  gradphi(j,0) = 0.0;
-//
-// 			  int numadnodes = actnode->NumElement();
-// 			  //loop over all adjacent elements of the current node
-// 			  for (int elecur=0; elecur<numadnodes; elecur++)
-// 			  {
-// 				  Epetra_SerialDenseMatrix gradphi_node(3,1);
-// 				  //get current element
-// 				   const DRT::Element* ele_cur = elements[elecur];
-//
-// 				  // create vector "ephinp" holding scalar phi values for this element
-// 				  Epetra_SerialDenseMatrix ephinp(nen_,1);
-//
-// 				  //temporal vector necessary just for function ExtractMyValues...
-// 				  //that is requiring vectors and not matrices
-// 				  vector<double> etemp(nen_);
-//
-// 				  // remark: vector "lm" is neccessary, because ExtractMyValues() only accepts "vector<int>"
-// 				  // arguments, but ele->NodeIds delivers an "int*" argument
-// 				  vector<int> lm(nen_);
-//
-// 				  // get vector of node GIDs for this element
-// 				  const int* nodeids_cur = ele_cur->NodeIds();
-// 				  for (int inode=0; inode < nen_; inode++)
-// 					  lm[inode] = nodeids_cur[inode];
-//
-// 				  // get entries in "gfuncvalues" corresponding to node GIDs "lm" and store them in "ephinp"
-// 				  DRT::UTILS::ExtractMyValues(*phinp, etemp, lm);
-//
-// 				  for (int k=0; k<nen_; k++)
-// 					  ephinp(k,0) = etemp[k];
-//
-// 				  //current node is number iquadcur of current element
-// 				  int iquadcur = 0;
-// 				  for (int k=0; k<nen_; k++)
-// 				  {
-// 					  if (actnode->Id()==nodeids_cur[k])
-// 						  iquadcur = k;
-// 				  }
-// 				  //local coordinates of current node
-// 				  LINALG::Matrix<3,1> xsi;
-// 				  LINALG::SerialDenseMatrix eleCoordMatrix=DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
-// 				  for (int k=0; k<3; k++)
-// 					  xsi(k,0)=eleCoordMatrix(k,iquadcur);
-// 				  Epetra_SerialDenseMatrix deriv(3,nen_);
-// 				  DRT::UTILS::shape_function_3D_deriv1(deriv,xsi(0,0),xsi(1,0),xsi(2,0),distype);
-// 				  //xyze are the positions of the nodes in the global coordinate system
-// 				  Epetra_SerialDenseMatrix xyze(3,nen_);
-// 				  const DRT::Node*const* nodes = ele->Nodes();
-// 				  for (int inode=0; inode<nen_; inode++)
-// 				  {
-// 					  const double* x = nodes[inode]->X();
-// 					  xyze(0,inode) = x[0];
-// 					  xyze(1,inode) = x[1];
-// 					  xyze(2,inode) = x[2];
-// 				  }
-//
-// 				  //get transposed of the jacobian matrix
-// 				  Epetra_SerialDenseMatrix xjm(3,3);
-// 				  //computing: this = 0*this+1*deriv*(xyze)T
-// 				  xjm.Multiply('N','T',1.0,deriv,xyze,0.0);
-// 				  //xji=xjm^-1
-// 				  Epetra_SerialDenseMatrix xji(xjm);
-// 				  LINALG::Matrix<3,3> xjm_temp;
-// 				  for (int i1=0; i1<3; i1++)
-// 					  for (int i2=0; i2<3; i2++)
-// 						  xjm_temp(i1,i2) = xjm(i1,i2);
-// 				  LINALG::Matrix<3,3> xji_temp;
-// 				  const double det = xji_temp.Invert(xjm_temp);
-// 				  if (det < 1e-16)
-// 					  dserror("zero or negative jacobian determinant");
-//
-// 				  for (int i1=0; i1<3; i1++)
-// 					  for (int i2=0; i2<3; i2++)
-// 						  xji(i1,i2) = xji_temp(i1,i2);
-//
-// 				  Epetra_SerialDenseMatrix derxy(3,nen_);
-// 				  //compute global derivatives
-// 				  derxy.Multiply('N','N',1.0,xji,deriv,0.0);
-//
-// 				  gradphi_node.Multiply('N','N',1.0,derxy,ephinp,0.0);
-//
-// 				  //an average value is calculated of all adjacent elements to get second order accuracy
-// 				  for (int k=0; k<3; k++)
-// 					  gradphi(k,0) = gradphi(k,0)+gradphi_node(k,0);
-// 				  if (elecur==(numadnodes-1))
-// 				  {
-// 					  for (int k=0; k<3; k++)
-// 						  gradphi(k,0) = gradphi(k,0)/numadnodes;
-// 				  }
-//
-// 			  }//end loop over all adjacent elements
-//
-// 			  for (int j=0; j<3; j++)
-// 				  gradphi_nodescur(lnodeid,j)=gradphi(j,0);
-//
-// 		  }//end loop over all nodes of current element
-//
-// 		 gradphi_gpscur.Multiply('N','N',1.0,expol_invert,gradphi_nodescur,0.0);
-//end REINHARD
-//
-//    for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-//    {
-//      EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
-//      //----------------------------------------------------------------------
-//      // get material parameters (evaluation at integration point)
-//      //----------------------------------------------------------------------
-//      if (mat_gp_) GetMaterialParams(ele);
-//
-//      for (int k=0;k<numscal_;++k) // deal with a system of transported scalars
-//      {
-//        // get velocity at integration point
-//        velint_.Multiply(evelnp_,funct_);
-//
-//        // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-//        conv_.MultiplyTN(derxy_,velint_);
-//
-//        // momentum divergence required for conservative form
-//        if (conservative_) GetVelocityDivergence(vdiv_,evelnp_,derxy_);
-//
-//        //--------------------------------------------------------------------
-//        // calculation of subgrid diffusivity and stabilization parameter(s)
-//        // at integration point
-//        //--------------------------------------------------------------------
-//        if (tau_gp_)
-//        {
-//          // calculation of all-scale subgrid diffusivity (artificial or due to
-//          // constant-coefficient Smagorinsky model) at integration point
-//          if (assgd or turbmodel)
-//            CalcSubgrDiff(dt,timefac,whichassgd,assgd,turbmodel,Cs,tpn,vol,k);
-//
-//          // calculation of fine-scale artificial subgrid diffusivity
-//          // at integration point
-//          if (fssgd) CalcFineScaleSubgrDiff(ele,subgrdiff,whichfssgd,Cs,tpn,vol,k);
-//
-//          // generating copy of diffusivity for use in CalTau routine
-//          double diffus = diffus_[k];
-//
-//          // calculation of stabilization parameter at integration point
-//          CalTau(ele,diffus,dt,timefac,whichtau,vol,k);
-//        }
-//
-//        // subgrid-scale velocity
-//        if (sgvel_)
-//        {
-//          // calculate subgrid-scale velocity
-//          if (scatratype != INPAR::SCATRA::scatratype_levelset)
-//          {
-//            CalcSubgrVelocity(ele,time,dt,timefac,k);
-//          }
-//          else
-//          {
-//            CalcSubgrVelocityLevelSet(ele,time,dt,timefac,k);
-//          }
-//
-//          // calculate subgrid-scale convective part
-//          sgconv_.MultiplyTN(derxy_,sgvelint_);
-//        }
-//        else
-//        {
-//          sgvelint_.Clear();
-//          sgconv_.Clear();
-//        }
-//
-//        // get history data (or acceleration)
-//        hist_[k] = funct_.Dot(ehist_[k]);
-//
-//        // get bodyforce in gausspoint (divided by specific heat capacity)
-//        // (For temperature equation, time derivative of thermodynamic pressure
-//        //  is added, if not constant, and for temperature equation of a reactive
-//        //  equation system, a reaction-rate term is added.)
-//        rhs_[k] = bodyforce_[k].Dot(funct_) / shc_;
-//        rhs_[k] += thermpressdt_ / shc_;
-//        rhs_[k] += reatemprhs_[k] / shc_;
-//
-//      // gradient of current scalar value
-//
-////REINHARD
-////        for (int j=0; j<3; j++)
-////          gradphi_(j,0)=gradphi_gpscur(iquad,j);
-////end REINHARD
-//
-//        // compute matrix and rhs
-//        CalMatAndRHS(sys_mat,
-//                     residual,
-//                     fssgd,
-//                     timefac,
-//                     alphaF,
-//                     k);
-//      } // loop over each scalar
-//    }
   }
   else // 'standard' scalar transport
   {
@@ -2290,45 +2000,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::BodyForce(
   return;
 
 } //ScaTraImpl::BodyForce
-
-
-//REINHARD
-/*----------------------------------------------------------------------*
-  |  body force for sign function on the right hand side  (private)      |
-  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraImpl<distype>::BodyForceReinit(
-  const DRT::Element* ele,
-  const double time)
-{
-//REINHARD
-
-  double signum = 0.0;
-  double epsilon = 0.015; //1.5*h in Sussman1994
-  vector<int> onoff(numdofpernode_);
-  onoff[0]=1;
-  for (int k=1; k<numdofpernode_; k++)
-    onoff[k]=0;
-
-  for(int idof=0;idof<numdofpernode_;idof++)
-  {
-    for (int jnode=0; jnode<nen_; jnode++) //loop over all nodes of this element
-    {
-      if (ephinp_[idof](jnode,0)<-epsilon)
-        signum = -1.0;
-      else if (ephinp_[idof](jnode,0)>epsilon)
-        signum = 1.0;
-      else
-        signum = ephinp_[idof](jnode,0)/epsilon + sin(PI*ephinp_[idof](jnode,0)/epsilon)/PI;
-
-      // value_rhs
-      (bodyforce_[idof])(jnode) = onoff[idof]*signum;
-    }
-  }
-
-  return;
-} //ScaTraImpl::BodyForceReinit
-//end REINHARD
 
 
 /*----------------------------------------------------------------------*
@@ -5057,7 +4728,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
   DRT::Element*                         ele,
   Epetra_SerialDenseMatrix&             emat,
   Epetra_SerialDenseVector&             erhs,
-  const bool                            reinitswitch,
   const double                          frt,
   const enum INPAR::SCATRA::ScaTraType  scatratype
   )
@@ -5065,12 +4735,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::InitialTimeDerivative(
   // dead load in element nodes at initial point in time
   const double time = 0.0;
 
-//REINHARD
-  if (reinitswitch == false)
-    BodyForce(ele,time);
-  else
-    BodyForceReinit(ele,time);
-//end REINHARD
+  BodyForce(ele,time);
 
   //----------------------------------------------------------------------
   // get material parameters (evaluation at element center)
@@ -5566,6 +5231,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
   const enum INPAR::SCATRA::ScaTraType  scatratype
   )
 {
+  const double epsilon = 1.e-4;
+  const double faraday = 96485.34;
+
   // get gradient of electric potential at integration point
   gradpot_.Multiply(derxy_,epotnp_);
 
@@ -5989,15 +5657,44 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       for (int vi=0; vi<nen_; ++vi)
       {
         const int pvi = vi*numdofpernode_+numscal_;
+        const double alphaF_valence_k_fac_funct_vi = alphaF*valence_[k]*fac*funct_(vi);
 
         for (int ui=0; ui<nen_; ++ui)
         {
-          const int pui = ui*numdofpernode_+numscal_;
-          double laplawf(0.0);
-          GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
+          // we have a loop over k around. So prevent that the potential
+          // term is added more than once!!
+          if (k==0)
+          {
+            const int pui = ui*numdofpernode_+numscal_;
+            double laplawf(0.0);
+            GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
 
-          const double epsilon = 1.0;
-          emat(pvi,pui) += alphaF*fac*epsilon*laplawf;
+            const double epsbyF = epsilon/faraday;
+            emat(pvi,pui) += alphaF*fac*epsbyF*laplawf;
+          }
+          const int fui = ui*numdofpernode_+k;
+          // electroneutrality condition (only derivative w.r.t. concentration c_k)
+          emat(pvi, fui) += alphaF_valence_k_fac_funct_vi*funct_(ui);
+        } // for ui
+      } // for vi
+    }
+    else if (scatratype==INPAR::SCATRA::scatratype_elch_laplace)
+    {
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int pvi = vi*numdofpernode_+numscal_;
+
+        for (int ui=0; ui<nen_; ++ui)
+        {
+          // we have a loop over k around. So prevent that the potential
+          // term is added more than once!!
+          if (k==0)
+          {
+            const int pui = ui*numdofpernode_+numscal_;
+            double laplawf(0.0);
+            GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
+            emat(pvi,pui) += alphaF*fac*laplawf;
+          }
         } // for ui
       } // for vi
     }
@@ -6189,11 +5886,37 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
       {
         const int pvi = vi*numdofpernode_+numscal_;
 
-        double laplawf(0.0);
-        GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
+        // we have a loop over k around. So prevent that the potential
+        // term is added more than once!!
+        if (k==0)
+        {
+          double laplawf(0.0);
+          GetLaplacianWeakFormRHS(laplawf,derxy_,gradpot_,vi);
+          const double epsbyF = epsilon/faraday;
+          erhs[pvi] -= fac*epsbyF*laplawf;
+        }
 
-        const double epsilon = 1.0;
-        erhs[pvi] -= fac*epsilon*laplawf;
+        // electroneutrality condition
+        // for incremental formulation, there is the residuum on the rhs! : 0-sum(z_k c_k)
+        erhs[pvi] -= valence_[k]*fac*funct_(vi)*conint_[k];
+
+      } // for vi
+    }
+    else if (scatratype==INPAR::SCATRA::scatratype_elch_laplace)
+    {
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const int pvi = vi*numdofpernode_+numscal_;
+
+        // we have a loop over k around. So prevent that the potential
+        // term is added more than once!!
+        if (k==0)
+        {
+          double laplawf(0.0);
+          GetLaplacianWeakFormRHS(laplawf,derxy_,gradpot_,vi);
+          erhs[pvi] -= fac*laplawf;
+
+        }
 
       } // for vi
     }
@@ -6254,6 +5977,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
     //   A 3D finite element approach for the coupled numerical simulation of
     //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339–1359.
 
+    if (numscal_ != 2)
+      dserror("Numscal_ != 2 for desired error calculation.");
+
     // working arrays
     double                  potint(0.0);
     LINALG::Matrix<2,1>     conint(true);
@@ -6268,7 +5994,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
       const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
       // get values of all transported scalars at integration point
-      for (int k=0; k<2; ++k)
+      for (int k=0; k<numscal_; ++k)
       {
         conint(k) = funct_.Dot(ephinp_[k]);
       }
@@ -6338,6 +6064,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
     //   A 3D finite element approach for the coupled numerical simulation of
     //   electrochemical systems and fluid flow, IJNME, 86 (2011) 1339–1359.
 
+    if (numscal_ != 2)
+      dserror("Numscal_ != 2 for desired error calculation.");
+
     // working arrays
     LINALG::Matrix<2,1>     conint(true);
     LINALG::Matrix<nsd_,1>  xint(true);
@@ -6358,7 +6087,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
       const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
       // get values of all transported scalars at integration point
-      for (int k=0; k<2; ++k)
+      for (int k=0; k<numscal_; ++k)
       {
         conint(k) = funct_.Dot(ephinp_[k]);
       }
@@ -6397,6 +6126,27 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
 
     } // end of loop over integration points
   } // concentric cylinders
+  break;
+  case INPAR::SCATRA::calcerror_electroneutrality:
+  {
+    // start loop over integration points
+    for (int iquad=0;iquad<intpoints.IP().nquad;iquad++)
+    {
+      const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+      // get values of transported scalars at integration point
+      // and compute electroneutrality
+      double deviation(0.0);
+      for (int k=0; k<numscal_; ++k)
+      {
+        const double conint_k = funct_.Dot(ephinp_[k]);
+        deviation += valence_[k]*conint_k;
+      }
+
+    // add square to L2 error
+    errors[0] += deviation*deviation*fac;
+    } // loop over integration points
+  }
   break;
   default: dserror("Unknown analytical solution!");
   } //switch(errortype)
@@ -6563,8 +6313,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateDomainAndBodyforce(
   Epetra_SerialDenseVector&  scalars,
   const DRT::Element*        ele,
-  const double               time,
-  const bool                 reinitswitch
+  const double               time
   )
 {
   // ---------------------------------------------------------------------
@@ -6572,12 +6321,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateDomainAndBodyforce(
   // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
   // ---------------------------------------------------------------------
 
-//REINHARD
-  if (reinitswitch == false)
-    BodyForce(ele,time);
-  else
-    BodyForceReinit(ele,time);
-//end REINHARD
+  BodyForce(ele,time);
 
   // integrations points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -6778,7 +6522,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
   const bool                            assgd,
   const bool                            fssgd,
   const bool                            turbmodel,
-  const bool                            reinitswitch,
   const double                          Cs,
   const double                          tpn,
   const double                          frt,
@@ -6901,7 +6644,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
         assgd,
         fssgd,
         turbmodel,
-        reinitswitch,
         Cs,
         tpn,
         frt,

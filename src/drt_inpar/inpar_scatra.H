@@ -82,7 +82,8 @@ namespace INPAR
     {
       calcerror_no,
       calcerror_Kwok_Wu,
-      calcerror_cylinder
+      calcerror_cylinder,
+      calcerror_electroneutrality
     };
 
     /// possible types of stabilization
@@ -163,6 +164,7 @@ namespace INPAR
       scatratype_elch_enc_pde,
       scatratype_elch_enc_pde_elim,
       scatratype_elch_poisson,
+      scatratype_elch_laplace,
       scatratype_levelset
     };
 

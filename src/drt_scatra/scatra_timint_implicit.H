@@ -308,21 +308,6 @@ public:
       double& electrodesurface   ///< surface of the electrode
       );
 
-//REINHARD
-  /// preliminary: reinitialize level set function
-  void Reinitialize();
-//end REINHARD
-
-//REINHARD
-  /// preliminary: calculate mass loss for level set function
-  void CalculateMassLoss();
-//end REINHARD
-
-//REINHARD
-  /// preliminary: set velocity field for level set functon
-  void SetReinitVelocityField();
-//end REINHARD
-
   /// routine to return density field at time n+1 for ELCH natural convection
   Teuchos::RCP<Epetra_Vector> DensElchNp() { return elchdensnp_; }
 
@@ -438,6 +423,7 @@ protected:
 
   /// don't want = operator and cctor
   //ScaTraTimIntImpl operator = (const ScaTraTimIntImpl& old);
+
   /// copy constructor
   ScaTraTimIntImpl (const ScaTraTimIntImpl& old);
 
@@ -574,7 +560,8 @@ protected:
   bool DoBoundaryFluxStatistics()
     { return ((step_>=samstart_) and (step_<=samstop_)
         and ((writeflux_==INPAR::SCATRA::flux_total_boundary)
-          or (writeflux_==INPAR::SCATRA::flux_diffusive_boundary)));};
+          or (writeflux_==INPAR::SCATRA::flux_diffusive_boundary)
+          or (writeflux_==INPAR::SCATRA::flux_convective_boundary)));};
 
   /// write state vectors (phinp and convective velocity) to BINIO
   void OutputState();
