@@ -219,9 +219,6 @@ initialset_(false)
     }
   }
 
-  //we construct a search tree with maximal depth of 8 (different numbers might be tried out, too)
-  octTree_ = rcp(new GEO::SearchTree(8));
-
   /*after having generated a search tree and a discretization with fully overlapping column map we initialize the search tree
    * for accelerated search for each nodes neighbouring nodes; note: the tree is based on a bounding box
    * with respect to the reference positions (which are the positions at the beginning of the simulation;
@@ -242,12 +239,6 @@ initialset_(false)
     currpos(2) = node->X()[2];
     currentpositions[node->LID()] = currpos;
   }
-
-  //find bounding box for search tree
-  const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(discret_, currentpositions);
-
-  //initialize search tree
-  octTree_->initializePointTree(rootBox,currentpositions,GEO::TreeType(GEO::OCTTREE));
 
 	/* Initialization of N_CROSSLINK crosslinker molecule REPRESENTATIONS. As long as the molecules do not act as a link
 	 * between two filaments, only their positions are calculated. Here, the molecules' initial positions are determined.
@@ -2055,7 +2046,7 @@ void StatMechManager::WriteRestart(IO::DiscretizationWriter& output)
 	output.WriteDouble("sumsquareincmid", sumsquareincmid_);
 	output.WriteDouble("sumsquareincrot", sumsquareincrot_);
   /*note: crosslinkermap_, transfermap_, ddcorrrowmap_, ddcorrcolmap_,
-   * filamentnumber_, forcesensor_, octTree_ not considered, because generated in constructor*/
+   * filamentnumber_, forcesensor_, not considered, because generated in constructor*/
 
 	//note: Using WriteVector and ReadMultiVector requires unique map of MultiVector thus export/import for restart to/from row map
 	Epetra_Export exporter(*bspotcolmap_,*bspotrowmap_);
@@ -2120,7 +2111,7 @@ void StatMechManager::ReadRestart(IO::DiscretizationReader& reader)
 	sumsquareincmid_ = reader.ReadDouble("sumsquareincmid");
 	sumsquareincrot_ = reader.ReadDouble("sumsquareincrot");
 	/*note: crosslinkermap_, transfermap_, ddcorrrowmap_, ddcorrcolmap_,
-	 * filamentnumber_, forcesensor_, octTree_ not considered, because generated in constructor*/
+	 * filamentnumber_, forcesensor_, not considered, because generated in constructor*/
 
 	//note: Using WriteVector and ReadMultiVector requires uniquen map of MultiVector thus export/import for restart to/from row map
   Epetra_Import importer(*bspotcolmap_,*bspotrowmap_);
@@ -3138,8 +3129,9 @@ void StatMechManager::SetInitialCrosslinkers()
 			{
 				int currneighbour = neighbourorder[j];
 				int secondbspot = (int)(*neighbourslid)[currneighbour][currlink];
-				// if second binding exists and spot is unoccupied
-				if((*neighbourslid)[currneighbour][currlink]>-0.1)
+
+				// if second binding exists and spot is unoccupied; mandatory: occupy two binding spots on DIFFERENT filaments
+				if((*neighbourslid)[currneighbour][currlink]>-0.1 && (*filamentnumber_)[secondbspot]!=(*filamentnumber_)[randbspot[i]])
 				{
 					if((*bspotstatus_)[secondbspot] < 0.1)
 					{
@@ -3273,6 +3265,15 @@ void StatMechManager::SetInitialCrosslinkers()
 	// synchronization for problem discretization
 	discret_.CheckFilledGlobally();
 	discret_.FillComplete(true, false, false);
+
+	//Gmsh output
+	if(!discret_.Comm().MyPID() && DRT::INPUT::IntegralValue<int>(statmechparams_,"GMSHOUTPUT"))
+	{
+		std::ostringstream filename;
+		filename << "./GmshOutput/InitLinks.pos";
+		GmshOutput(disrow,filename,0);
+	}
+
 
 	//couts
 	if(!discret_.Comm().MyPID())

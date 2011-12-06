@@ -36,12 +36,16 @@ class Beam3ContactOctTree
 												DRT::Discretization& discret,
                         DRT::Discretization& searchdis,
                         const int& dofoffset);
-    
+
     //!\brief Destructor
     virtual ~Beam3ContactOctTree() {};
 
     // call octtree search routine
     vector<RCP<Beam3contact> > OctTreeSearch(std::map<int, LINALG::Matrix<3,1> >&  currentpositions);
+
+    std::vector<int> InWhichOctantLies(const int& thisBBoxID);
+    // intersection test of all elements in the octant in which a given bounding box lies
+    bool IsecBBoxesOfOctantWith(const int& bboxid, Epetra_SerialDenseMatrix& nodecoords);
 
   private:
     // Bounding Box Types
@@ -53,15 +57,20 @@ class Beam3ContactOctTree
     };
 
     // generator of extended Bounding Boxes (axis aligned as well as cylindrical oriented)
-    void CreateBoundingBoxes(std::map<int, LINALG::Matrix<3,1> >&  currentpositions,RCP<Epetra_MultiVector> allBBoxes);
+    void CreateBoundingBoxes(std::map<int, LINALG::Matrix<3,1> >&  currentpositions);
+    // get the dimensions of the root octant
+    LINALG::Matrix<1,6> GetRootOctant();
     // create axis aligned bounding boxes
-    void CreateAABB(const Epetra_SerialDenseMatrix& coord, RCP<Epetra_MultiVector> allBBoxes, const int& elecolid, const double& PeriodLength);
+    void CreateAABB(const Epetra_SerialDenseMatrix& coord, const int& elecolid);
     // create coylindrical oriented bounding boxes
-    void CreateCOBB(const Epetra_SerialDenseMatrix&  coord, RCP<Epetra_MultiVector> allBBoxes, const int& elecolid, const double& PeriodLength);
+    void CreateCOBB(const Epetra_SerialDenseMatrix&  coord, const int& elecolid);
+    // create axis aligned bounding boxes
+    RCP<Epetra_SerialDenseMatrix> CreateAABBNoElement(const Epetra_SerialDenseMatrix& coord);
+    // create coylindrical oriented bounding boxes
+    RCP<Epetra_SerialDenseMatrix> CreateCOBBNoElement(const Epetra_SerialDenseMatrix&  coord);
 
     // spatial division of 3-dimensional volume
-    void locateAll(RCP<Epetra_MultiVector> allBBoxes,
-                   std::vector<std::vector<int> >& bboxesinoctants);
+    void locateAll(LINALG::Matrix<1,6>& rootoctantlim, std::vector<std::vector<int> >& bboxesinoctants);
 
     // primitive for locateAll
     void locateBox(std::vector<std::vector<double> > allBBoxesstdvec,
@@ -71,15 +80,16 @@ class Beam3ContactOctTree
                    int& treedepth);
 
     // build list
-    void BoundingBoxIntersection(std::map<int, LINALG::Matrix<3,1> >&  currentpositions,
-                          vector<RCP<Beam3contact> >* contactpairs,
-                          std::vector<std::vector<int> >* bboxesinoctants,
-                          RCP<Epetra_MultiVector> allBBoxes);
+    void BoundingBoxIntersection(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, std::vector<std::vector<int> >& bboxesinoctants, vector<RCP<Beam3contact> >* contactpairs);
 
-    // intersection method applying axis-aligned bounding boxes
-    bool IntersectionAABB(std::vector<int>& bboxIDs, RCP<Epetra_MultiVector> allBBoxes);
-    // intersection method applying cylindrical oriented bounding boxes
-    bool IntersectionCOBB(std::vector<int>& bboxIDs, RCP<Epetra_MultiVector> allBBoxes);
+    // intersection method applying axis-aligned bounding boxes when both boxes belong to existing elements
+    bool IntersectionAABB(std::vector<int>& bboxIDs);
+    // intersection method applying cylindrical oriented bounding boxes when both boxes belong to existing elements
+    bool IntersectionCOBB(std::vector<int>& bboxIDs);
+    // intersection method applying axis-aligned bounding boxes when only one of the boxes belongs to an existing element
+    bool IsecAABBNoElement(const int& bboxinoct, RCP<Epetra_SerialDenseMatrix> bboxlimits);
+    // intersection method applying cylindrical oriented bounding boxes when only one of the boxes belongs to an existing element
+    bool IsecCOBBNoElement(const int& bboxinoct, RCP<Epetra_SerialDenseMatrix> bboxlimits);
     
     bool periodicBC_;
 
@@ -101,8 +111,17 @@ class Beam3ContactOctTree
     // diameters of all beam elements
     RCP<Epetra_Vector> diameter_;
 
-    // redundant map of bounding boxes
-    RCP<Epetra_Map> AABBmap_;
+    // stores the IDs and the coordinates of all bounding boxes
+    RCP<Epetra_MultiVector> allbboxes_;
+
+    // vector listing the bounding boxes located in the octants
+    RCP<Epetra_MultiVector> bboxesinoctants_;
+
+    // mapping bounding boxes to octants they lie in
+    RCP<Epetra_MultiVector> bbox2octant_;
+
+    // vector holding information on how many times a bounding box is shifted due to periodic boundary conditions
+    RCP<Epetra_Vector> numshifts_;
 
     // Bounding Box type
     Beam3ContactOctTree::BboxType boundingbox_;

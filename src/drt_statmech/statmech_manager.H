@@ -18,6 +18,7 @@ Maintainer: Christian Cyron
 #include "../drt_geometry/intersection_service.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
+#include "../drt_beamcontact/beam3contact_octtree.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 
@@ -396,9 +397,6 @@ protected:
 
   //store displacement of midpoint compared to initial state as a 3-vector
   LINALG::Matrix<3,1>sumdispmiddle_;
-
-  //! brief SearchTree which allows accelerated search for neighbouring nodes in case of dynamic crosslinkers
-  Teuchos::RCP<GEO::SearchTree>  octTree_;
 
   //! brief rotation matrix for transformation from global to local coordinates
   RCP<LINALG::SerialDenseMatrix> trafo_;

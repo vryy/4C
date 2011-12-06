@@ -176,14 +176,21 @@ alphaf_(alphaf)
   if(!pdiscret_.Comm().MyPID())
   	cout<<"Elements in discret.   = "<<pdiscret_.NumGlobalElements()<<endl;
 
-  // Compute the search radius for searching possible contact pairs
-  ComputeSearchRadius();
-  
   // initialize octtree for contact search
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::OctreeType>(scontact_,"BEAMS_OCTREE") != INPAR::CONTACT::boct_none)
+  {
+    if (!pdiscret_.Comm().MyPID())
+      cout << "Penalty parameter      = " << currentpp_ << endl;
   	tree_ = rcp(new Beam3ContactOctTree(scontact_,pdiscret_,*cdiscret_,dofoffset_));
+  }
   else
+  {
+    // Compute the search radius for searching possible contact pairs
+    ComputeSearchRadius();
   	tree_ = Teuchos::null;
+    if(!pdiscret_.Comm().MyPID())
+    	cout<<"\nBrute Force Search"<<endl;
+  }
 
   return;
 }
@@ -247,7 +254,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
 
 		double t_end = Teuchos::Time::wallTime() - t_start;
 		if(!pdiscret_.Comm().MyPID())
-			cout << "\nOcttree Search: " << t_end << " seconds\n";
+			cout << "\nOctree Search: " << t_end << " seconds\n";
 
 
 		/*//Print ContactPairs to .dat-file and plot with Matlab....................

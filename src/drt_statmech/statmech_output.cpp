@@ -857,103 +857,139 @@ void StatMechManager::GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix
     /* "coord" currently holds the shifted set of coordinates.
      * In order to determine the correct vector "dir" of the visualization at the boundaries,
      * a copy of "coord" with adjustments in the proper places is introduced*/
-    LINALG::SerialDenseMatrix unshift = coord;
-    
     for (int i=0; i<cut.N(); i++)
     {
+    	LINALG::SerialDenseMatrix unshift(3,2);
+
+      int numshifts = 0;
+      int shiftdof = -1;
       for (int dof=0; dof<ndim; dof++)
       {
+      	// initialize unshift with coord values
+      	unshift(dof,0) = coord(dof,i);
+      	unshift(dof,1) = coord(dof,i+1);
         if (fabs(coord(dof,i+1)-periodlength-coord(dof,i)) < fabs(coord(dof,i+1) - coord(dof,i)))
         {
-          cut(dof, i) = 1;
-          unshift(dof, i + 1) -= periodlength;
+          cut(dof, i) = 1.0;
+          shiftdof = dof;
+          unshift(dof,1) -= periodlength;
+          numshifts++;
         }
-        if (fabs(coord(dof, i+1)+periodlength - coord(dof,i)) < fabs(coord(dof,i+1)-coord(dof,i)))
+        if (fabs(coord(dof,1)+periodlength - coord(dof,i)) < fabs(coord(dof,i+1)-coord(dof,i)))
         {
-          cut(dof,i) = 2;
-          unshift(dof,i+1) += periodlength;
+          cut(dof,i) = 2.0;
+          shiftdof = dof;
+          unshift(dof,1) += periodlength;
+          numshifts++;
         }
       }
-    }
 
-    // write special output for broken elements
-    for (int i=0; i<cut.N(); i++)
-    {
-      if (cut(0, i) + cut(1, i) + cut(2, i) > 0)
-      {
-        //compute direction vector between first(i-th) and second(i+1-th) node of element (normed):
-        LINALG::Matrix<3, 1> dir;
-        double ldir = 0.0;
-        for (int dof = 0; dof < ndim; dof++)
-        {
-          dir(dof) = unshift(dof, i + 1) - unshift(dof, i);
-          ldir += dir(dof) * dir(dof);
-        }
-        for (int dof = 0; dof < ndim; dof++)
-          dir(dof) /= ldir;
+      // write special output for broken elements
+  		if (numshifts > 0)
+  		{
+  			// directional vector
+  			LINALG::Matrix<3, 1> dir;
+  			for (int dof = 0; dof < ndim; dof++)
+  				dir(dof) = unshift(dof,1) - unshift(dof,0);
+  			dir.Scale(1.0/dir.Norm2());
 
-        //from node 0 to nearest boundary where element is broken you get by vector X + lambda0*dir
-        double lambda0 = 1e4;
-        for (int dof = 0; dof < ndim; dof++)
-        {
-          if (cut(dof, i) == 1)
-          {
-            if (fabs(-coord(dof, i) / dir(dof)) < fabs(lambda0))
-              lambda0 = -coord(dof, i) / dir(dof);
-          }
-          else if (cut(dof, i) == 2)
-          {
-            if (fabs((periodlength - coord(dof, i)) / dir(dof)) < fabs(lambda0))
-              lambda0 = (periodlength - coord(dof, i)) / dir(dof);
-          }
-        }
+  			/* determine the intersection points of the line through unshift(:,0) and direction dir with the faces of the boundary cube
+  			 * and sort them by distance. Thus, we obtain an order by which we have to shift the element back into the cube so that all
+  			 * segments that arise by multiple shifts remain within the volume (see my notes on 6/12/2011).*/
+  			LINALG::Matrix<3,2> lambdaorder;
+  			lambdaorder.PutScalar(1e6);
+  			// collect lambdas
+  			for(int dof=0; dof<(int)lambdaorder.M(); dof++)
+  			{
+					switch((int)cut(dof,i))
+					{
+						case 1:
+						{
+							lambdaorder(dof,0) = -coord(dof, i) / dir(dof);
+							lambdaorder(dof,1) = dof;
+						}
+						break;
+						case 2:
+						{
+							lambdaorder(dof,0) = (periodlength - coord(dof,i)) / dir(dof);
+							lambdaorder(dof,1) = dof;
+						}
+						break;
+						default:
+						{
+							lambdaorder(dof,1) = dof;
+						}
+					}
+  			}
+  			// sort the lambdas (ascending values) and indices accordingly
+  			// in case of multiple shifts
+  			if(numshifts>1)
+  			{
+					for(int j=0; j<(int)lambdaorder.M()-1; j++)
+						for(int k=j+1; k<(int)lambdaorder.M(); k++)
+							if(lambdaorder(k,0)<lambdaorder(j,0))
+							{
+								double temp = lambdaorder(j,0);
+								int tempindex = (int)lambdaorder(j,1);
+								lambdaorder(j,0) = lambdaorder(k,0);
+								lambdaorder(j,1) = lambdaorder(k,1);
+								lambdaorder(k,0) = temp;
+								lambdaorder(k,1) = tempindex;
+							}
+  			}
+				else	// for a single shift (the majority of broken elements), just put the index and the lambda of the broken dof in front
+					for(int n=0; n<(int)lambdaorder.N(); n++)
+						lambdaorder(0,n) = lambdaorder(shiftdof,n);
 
-        //from node 1 to nearest boundary where element is broken you get by vector X + lambda1*dir
-        double lambda1 = 1e4;
-        for (int dof = 0; dof < ndim; dof++)
-        {
-          if (cut(dof, i) == 2)
-          {
-            if (fabs(-coord(dof, i + 1) / dir(dof)) < fabs(lambda1))
-              lambda1 = -coord(dof, i + 1) / dir(dof);
-          }
-          else if (cut(dof, i) == 1)
-          {
-            if (fabs((periodlength - coord(dof, i + 1)) / dir(dof)) < fabs(lambda1))
-              lambda1 = (periodlength - coord(dof, i + 1)) / dir(dof);
-          }
-        }
-        //define output coordinates for broken elements, first segment
-        LINALG::SerialDenseMatrix coordout=coord;
-        for(int j=0 ;j<coordout.M(); j++)
-          coordout(j,i+1) = coord(j,i) + lambda0*dir(j);
-        if(!ignoreeleid)
-          GmshWedge(nline,coordout,element,gmshfilecontent,color);
-        else
-          GmshWedge(nline,coordout,element,gmshfilecontent,color,true);
-        //define output coordinates for broken elements, second segment
-        for(int j=0; j<coordout.M(); j++)
-        {
-          coordout(j,i) = coord(j,i+1);
-          coordout(j,i+1) = coord(j,i+1)+lambda1*dir(j);
-        }
-        if(!ignoreeleid)
-          GmshWedge(nline,coordout,element,gmshfilecontent,color);
-        else
-          GmshWedge(nline,coordout,element,gmshfilecontent,color,true);
-      }
-      else // output for continuous elements
-      {
-        if (!kinked)
-        {
-          if(!ignoreeleid)
-            GmshWedge(nline,coord,element,gmshfilecontent,color);
-          else
-            GmshWedge(nline,coord,element,gmshfilecontent,color,true);
-        }
-        else
-          GmshKinkedVisual(coord, 0.875, element->Id(), gmshfilecontent);
-      }
+				// calculate segment lambdas
+				for(int dof=numshifts-1; dof>0; dof--)
+					lambdaorder(dof,0) -= lambdaorder(dof-1,0);
+
+  			// the idea is to gradually shift the matrix "unshift" back into the volume and, while doing so,
+  			// calculate the segments except for the last one
+  			// determine closest boundary component-wise
+  			for(int shift=0; shift<numshifts; shift++)
+  			{
+					//second point
+					for(int j=0 ;j<unshift.M(); j++)
+						unshift(j,1) = unshift(j,0) + lambdaorder(shift,0)*dir(j);
+					//GmshOutput
+					if(!ignoreeleid)
+						GmshWedge(nline,unshift,element,gmshfilecontent,color);
+					else
+						GmshWedge(nline,unshift,element,gmshfilecontent,color,true);
+
+  				int currshift = (int)lambdaorder(shift,1);
+					// shift the coordinates of the second point
+					if(cut(currshift,i)==1.0)
+						unshift(currshift,1) += periodlength;
+					else if(cut(currshift,i)==2.0)
+						unshift(currshift,1) -= periodlength;
+					// make second point the first and calculate new second point in the next iteration!
+					for(int j=0; j<unshift.M(); j++)
+						unshift(j,0) = unshift(j,1);
+  			}
+  			//last segment
+  			// the last segment
+  			for(int dof=0; dof<unshift.M(); dof++)
+  				unshift(dof,1) = coord(dof,i+1);
+  			if(!ignoreeleid)
+  				GmshWedge(nline,unshift,element,gmshfilecontent,color);
+  			else
+  				GmshWedge(nline,unshift,element,gmshfilecontent,color,true);
+  		}
+  		else // output for continuous elements
+  		{
+  			if (!kinked)
+  			{
+  				if(!ignoreeleid)
+  					GmshWedge(nline,coord,element,gmshfilecontent,color);
+  				else
+  					GmshWedge(nline,coord,element,gmshfilecontent,color,true);
+  			}
+  			else
+  				GmshKinkedVisual(coord, 0.875, element->Id(), gmshfilecontent);
+  		}
     }
   }
   return;
