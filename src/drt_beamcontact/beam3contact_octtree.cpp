@@ -74,6 +74,20 @@ dofoffset_(dofoffset)
   }
   else
   	dserror("No Octree declared in your Input file!");
+
+  // initialize beam diameter
+  diameter_ = rcp(new Epetra_Vector(*(searchdis_.ElementColMap())));
+
+  // initialize vector mapping bounding boxes to octants with -1.0 for empty
+	// initialize with 4 columns (the maximum number of octants a single bounding box can belong to
+	bbox2octant_ = rcp(new Epetra_MultiVector(*(searchdis_.ElementColMap()),4));
+	bbox2octant_->PutScalar(-1.0);
+	// initialize vector counting the number of shifts across volume boundaries in case of periodic boundary conditions
+	// used to optimize bounding box intersection
+	if(periodicBC_)
+		numshifts_ = rcp(new Epetra_Vector(*(searchdis_.ElementColMap()),true));
+
+  return;
 }
 
 
@@ -873,10 +887,7 @@ RCP<Epetra_SerialDenseMatrix> Beam3ContactOctTree::CreateAABBNoElement(const Epe
 RCP<Epetra_SerialDenseMatrix> Beam3ContactOctTree::CreateCOBBNoElement(const Epetra_SerialDenseMatrix& coord)
 {
 	RCP<Epetra_SerialDenseMatrix> boxlimits=Teuchos::null;
-	if(periodicBC_)
-		boxlimits = rcp(new Epetra_SerialDenseMatrix(12,1));	//note: have to think about this; can be more than 12 rows (multiple periodic shifts)
-	else
-		boxlimits = rcp(new Epetra_SerialDenseMatrix(6,1));
+
 	return boxlimits;
 }
 

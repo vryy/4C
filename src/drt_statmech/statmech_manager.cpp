@@ -3127,7 +3127,6 @@ void StatMechManager::SetInitialCrosslinkers()
 	CommunicateMultiVector(visualizepositionstrans, *visualizepositions_);
 	CommunicateMultiVector(crosslinkerbondtrans, *crosslinkerbond_);
 
-
 	// 2. Now, parallely search for neighbour nodes
 	RCP<Epetra_MultiVector> neighbourslid;
 	if(statmechparams_.get<int>("SEARCHRES",1)>0)
@@ -3285,18 +3284,18 @@ void StatMechManager::SetInitialCrosslinkers()
 				AddNewCrosslinkerElement(newcrosslinkerGID,&globalnodeids[0],xrefe,rotrefe,discret_);
 		}
 	}
+
 	// synchronization for problem discretization
 	discret_.CheckFilledGlobally();
 	discret_.FillComplete(true, false, false);
 
 	//Gmsh output
-	if(!discret_.Comm().MyPID() && DRT::INPUT::IntegralValue<int>(statmechparams_,"GMSHOUTPUT"))
+	if(DRT::INPUT::IntegralValue<int>(statmechparams_,"GMSHOUTPUT"))
 	{
 		std::ostringstream filename;
 		filename << "./GmshOutput/InitLinks.pos";
 		GmshOutput(disrow,filename,0);
 	}
-
 
 	//couts
 	if(!discret_.Comm().MyPID())
