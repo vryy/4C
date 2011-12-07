@@ -499,7 +499,16 @@ void TSI::Monolithic::NewtonFull(
 
   // equilibrium iteration loop (loop over k)
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
-  {
+  {  
+    // compute residual forces #rhs_ and tangent #tang_
+    // whose components are globally oriented
+    // build linear system stiffness matrix and rhs/force residual for each
+    // field, here e.g. for structure field: field want the iteration increment
+    // 1.) Update(iterinc_),
+    // 2.) EvaluateForceStiffResidual(),
+    // 3.) PrepareSystemForNewtonSolve()
+    Evaluate(iterinc_);
+  
     // create the linear system
     // \f$J(x_i) \Delta x_i = - R(x_i)\f$
     // create the systemmatrix
@@ -518,15 +527,6 @@ void TSI::Monolithic::NewtonFull(
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
     // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
     LinearSolve();
-
-    // compute residual forces #rhs_ and tangent #tang_
-    // whose components are globally oriented
-    // build linear system stiffness matrix and rhs/force residual for each
-    // field, here e.g. for structure field: field want the iteration increment
-    // 1.) Update(iterinc_),
-    // 2.) EvaluateForceStiffResidual(),
-    // 3.) PrepareSystemForNewtonSolve()
-    Evaluate(iterinc_);
 
     // recover LM in the case of contact
     RecoverStructThermLM();
