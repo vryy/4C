@@ -99,6 +99,9 @@ namespace ADAPTER {
     // access to contact/meshtying manager
     Teuchos::RCP<MORTAR::ManagerBase> ContactManager();
 
+    // access to contact/meshtying manager
+    Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager();
+
     /// External force at t_{n+1}
     Teuchos::RCP<const Epetra_Vector> FExtn();
 

@@ -155,6 +155,14 @@ Teuchos::RCP<MORTAR::ManagerBase> ADAPTER::StructureTimIntAda::ContactManager()
 }
 
 /*----------------------------------------------------------------------*/
+/* get locsys manager */
+Teuchos::RCP<DRT::UTILS::LocsysManager> ADAPTER::StructureTimIntAda::LocsysManager()
+{
+  dserror("not implemented");
+  return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*/
 /* get discretisation */
 Teuchos::RCP<DRT::Discretization> ADAPTER::StructureTimIntAda::Discretization()
 {

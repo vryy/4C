@@ -230,6 +230,14 @@ Teuchos::RCP<MORTAR::ManagerBase> ADAPTER::StructureGenAlpha::ContactManager()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::UTILS::LocsysManager> ADAPTER::StructureGenAlpha::LocsysManager()
+{
+  dserror("no application here");
+  return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization> ADAPTER::StructureGenAlpha::Discretization()
 {
   return structure_->Discretization();

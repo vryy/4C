@@ -124,6 +124,9 @@ namespace ADAPTER {
     /// return contact/meshtying manager
     virtual Teuchos::RCP<MORTAR::ManagerBase> ContactManager() = 0;
 
+    // access to locsys manager
+    virtual Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() = 0;
+
     /// direct access to discretization
     virtual Teuchos::RCP<DRT::Discretization> Discretization() = 0;
 

@@ -152,6 +152,14 @@ Teuchos::RCP<MORTAR::ManagerBase> ADAPTER::StructureTimIntImpl::ContactManager()
   return structure_->ContactManager();
 }
 
+/*----------------------------------------------------------------------*
+ | get locsys manager                                        dano 08/11 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::UTILS::LocsysManager> ADAPTER::StructureTimIntImpl::LocsysManager()
+{
+  return structure_->LocsysManager();
+}
+
 /*----------------------------------------------------------------------*/
 /* get discretisation */
 Teuchos::RCP<DRT::Discretization> ADAPTER::StructureTimIntImpl::Discretization()
