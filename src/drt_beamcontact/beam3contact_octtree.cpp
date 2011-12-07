@@ -158,7 +158,7 @@ std::vector<int> Beam3ContactOctTree::InWhichOctantLies(const int& thisBBoxID)
  |  Intersect the bounding boxes of a certain octant with a given       |
  |  bounding box (public)                                  mueller 01/11|
  *----------------------------------------------------------------------*/
-bool Beam3ContactOctTree::IsecBBoxesOfOctantWith(const int& bboxid, Epetra_SerialDenseMatrix& nodecoords)
+bool Beam3ContactOctTree::IsecBBoxesOfOctantWith(const int& bboxid, Epetra_SerialDenseMatrix& nodecoords, LINALG::Matrix<2,1>& nodeLID)
 {
 	/* note:
 	 * 1) do not apply this before having constructed the octree. This is merely a query tool
@@ -198,17 +198,32 @@ bool Beam3ContactOctTree::IsecBBoxesOfOctantWith(const int& bboxid, Epetra_Seria
 			{
 				// get the second bounding box ID
 				int bboxinoct = (int)(*bboxesinoctants_)[i][octants[oct]];
+				/*check for adjacent nodes: if there are adjacent nodes, then, of course, there
+				 * the intersection test will turn out positive. We skip those cases.*/
+				// note: bounding box IDs are equal to element GIDs
+				bool sharednode = false;
+				for(int j=0; j<searchdis_.gElement(bboxinoct)->NumNode(); j++)
+					for(int k=0; k<(int)nodeLID.M(); k++)
+						if(searchdis_.gElement(bboxinoct)->NodeIds()[j]==(int)nodeLID(k))
+						{
+							sharednode = true;
+							break;
+						}
+
 
 				// apply different bounding box intersection schemes
-				switch(boundingbox_)
+				if(!sharednode)
 				{
-					case Beam3ContactOctTree::axisaligned:
-						intersection = IsecAABBNoElement(bboxinoct, bboxlimits);
-					break;
-					case Beam3ContactOctTree::cyloriented:
-						intersection = IsecCOBBNoElement(bboxinoct, bboxlimits);
-					break;
-					default: dserror("No or an invalid Octree type was chosen. Check your input file!");
+					switch(boundingbox_)
+					{
+						case Beam3ContactOctTree::axisaligned:
+							intersection = IsecAABBNoElement(bboxinoct, bboxlimits);
+						break;
+						case Beam3ContactOctTree::cyloriented:
+							intersection = IsecCOBBNoElement(bboxinoct, bboxlimits);
+						break;
+						default: dserror("No or an invalid Octree type was chosen. Check your input file!");
+					}
 				}
 
 				// leave loop when an intersection has been detected

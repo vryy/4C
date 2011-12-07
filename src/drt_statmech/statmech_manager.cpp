@@ -1208,9 +1208,32 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 									direction -= (currentpositions.find((int)LID(1)))->second;
 									direction.Scale(1.0/direction.Norm2());
 
+									/* In case of beam contact, evaluate whether a crosslinker would intersect with any exisiting elements
+									 * if it were to be set between the two nodes considered*/
+									bool intersection = false;
+									if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
+									{
+										Epetra_SerialDenseMatrix nodecoords(3,3);
+										for(int k=0; k<nodecoords.M(); k++)
+										{
+											nodecoords(k,0) = ((currentpositions.find((int)LID(0)))->second)(k);
+											nodecoords(k,1) = ((currentpositions.find((int)LID(1)))->second)(k);
+										}
+										for(int k=0; k<(int)LID.M(); k++)
+										{
+											// get an element adjacent to the k-th node (any adjacent element does the job, we simply need a starting point)
+											int elegid = beamcmanager->ContactDiscret().lColNode((int)LID(k))->Elements()[0]->Id();
+											intersection = beamcmanager->OcTree()->IsecBBoxesOfOctantWith(elegid, nodecoords, LID);
+											if(intersection)
+												break;
+										}
+									}
+
 									/*Orientation Check: only if the two nodes in question pass a check for their
-									 * orientation, a marker, indicating an element to be added, will be set*/
-									if(CheckOrientation(direction,bspottriadscol,LID))
+									 * orientation, a marker, indicating an element to be added, will be set
+									 * In addition to that, if beam contact is enabled, a linker is only set if
+									 * it does not intersect with other existing elements*/
+									if(CheckOrientation(direction,bspottriadscol,LID) && !intersection)
 									{
 										numsetelements++;
 										LINALG::SerialDenseMatrix lid(2,1,true);
