@@ -2559,7 +2559,14 @@ void DRT::ELEMENTS::Fluid3::f3_get_mf_params(
   // calculate parameters of multifractal subgrid-scales
   // set input parameters
   double Csgs = turbmodelparamsmfs->get<double>("CSGS");
-  double alpha = turbmodelparamsmfs->get<double>("ALPHA");
+  double alpha = 0.0;
+  if (turbmodelparamsmfs->get<string>("SCALE_SEPARATION") == "algebraic_multigrid_operator")
+   alpha = 3.0;
+  else if (turbmodelparamsmfs->get<string>("SCALE_SEPARATION") == "box_filter"
+        or turbmodelparamsmfs->get<string>("SCALE_SEPARATION") == "geometric_multigrid_operator")
+   alpha = 2.0;
+  else
+   dserror("Unknown filter type!");
   // allocate vector for parameter N
   // N may depend on the direction
   vector<double> N (3);
@@ -2597,7 +2604,7 @@ void DRT::ELEMENTS::Fluid3::f3_get_mf_params(
   strainnorm = (sqrt(strainnorm/4.0));
 
   // do we have a fixed parameter N
-  if (not turbmodelparamsmfs->get<bool>("CALC_N"))
+  if ((DRT::INPUT::IntegralValue<int>(*turbmodelparamsmfs,"CALC_N")) == false)
   {
     for (int rr=1;rr<3;rr++)
       N[rr] = turbmodelparamsmfs->get<double>("N");
@@ -2944,7 +2951,7 @@ void DRT::ELEMENTS::Fluid3::f3_get_mf_params(
 
 
     // calculate near-wall correction
-    if (turbmodelparamsmfs->get<bool>("NEAR_WALL_LIMIT"))
+    if ((DRT::INPUT::IntegralValue<int>(*turbmodelparamsmfs,"NEAR_WALL_LIMIT")) == true)
     {
       // get Re from strain rate
       double Re_ele_str = strainnorm * hk * hk * dens / dynvisc;
@@ -2981,11 +2988,11 @@ void DRT::ELEMENTS::Fluid3::f3_get_mf_params(
 
   // calculate subgrid-viscosity, if small-scale eddy-viscosity term is included
   double sgvisc = 0.0;
-#ifdef FINE_SCALE_EDDY_VISC
+  if (params.sublist("TURBULENCE MODEL").get<string>("FSSUGRVISC","No") != "No")
   {
     // get filter width and Smagorinsky-coefficient
     const double hk_sgvisc = pow(vol,(1.0/NSD));
-    const double Cs = MYCS;
+    const double Cs = params.sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY");
 
     // compute rate of strain
     //
@@ -2998,13 +3005,15 @@ void DRT::ELEMENTS::Fluid3::f3_get_mf_params(
     LINALG::Matrix<NSD,NSD> velderxy(true);
     velintderxy.MultiplyNT(evel,derxy);
     fsvelintderxy.MultiplyNT(efsvel,derxy);
-#ifdef ALL_SCALE
-    velderxy = velintderxy;
-#endif
-#ifdef SMALL_SCALE
-    velderxy = fsvelintderxy;
-#endif
-#ifdef SUBGRID_SCALE
+
+    if (params.sublist("TURBULENCE MODEL").get<string>("FSSUGRVISC","No") == "Smagorinsky_all")
+      velderxy = velintderxy;
+    else if (params.sublist("TURBULENCE MODEL").get<string>("FSSUGRVISC","No") == "Smagorinsky_small")
+      velderxy = fsvelintderxy;
+    else
+      dserror("fssgvisc-type unknown");
+
+#ifdef SUBGRID_SCALE //unused
     for (int idim=0; idim<NSD; idim++)
     {
       for (int jdim=0; jdim<NSD; jdim++)
@@ -3043,7 +3052,6 @@ void DRT::ELEMENTS::Fluid3::f3_get_mf_params(
     sgvisc = dens * Cs * Cs * hk_sgvisc * hk_sgvisc * rateofstrain;
 
   }
-#endif
 
   // set parameter in sublist turbulence
   ParameterList *  modelparams =&(params.sublist("TURBULENCE MODEL"));

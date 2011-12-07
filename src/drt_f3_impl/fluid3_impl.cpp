@@ -6745,14 +6745,15 @@ void DRT::ELEMENTS::Fluid3Impl<distype>::ScaleSimSubGridStressTermPrefiltering(
 // // with partial integration of subfilter-stress term, boundary integral is assumed included in Neumann BC
 //    for (int vi=0; vi<nen_; ++vi)
 //    {
-//              /* subgrid-stress term on right hand side */
-//              /*
-//                            /                             \
-//                           |     ^     ^   ^               |
-//                           | ( (u*u) - u * u ) , grad(v)   |
-//                           |                               |
-//                            \                             /
-//              */
+//              // subgrid-stress term on right hand side //
+//              //
+                /*
+                              /                             \
+                             |     ^     ^   ^               |
+                             | ( (u*u) - u * u ) , grad(v)   |
+                             |                               |
+                              \                             /
+                */
 //      for (int nn=0; nn<nsd_; nn++)
 //      {
 //        velforce(nn,vi) += Cl * rhsfac * densaf_

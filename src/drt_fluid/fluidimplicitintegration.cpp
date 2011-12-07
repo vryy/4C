@@ -3342,7 +3342,7 @@ void FLD::FluidImplicitTimeInt::Output()
 
     // don't write output in case of separate inflow computation
     // Sep_-Matrix needed for algebraic-multigrid filter has never been build
-#if 1
+#if 0
     // output of coarse and fine scale velocities
     // at time n+1 or n+af depending on the time
     // integration scheme
@@ -5656,6 +5656,7 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
         cout << "                             " ;
         cout << "with Smagorinsky constant Cs= ";
         cout << params_.sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") ;
+        cout << &endl;
       }
       else if(turbmodel_ == INPAR::FLUID::smagorinsky_with_van_Driest_damping)
         {
@@ -5681,6 +5682,7 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
           if (homdir == "not_specified")
           {
             cout << "      no homogeneous directions specified --- so we just use pointwise clipping for Cs\n";
+            cout << &endl;
           }
         }
         else if(turbmodel_ == INPAR::FLUID::scale_similarity or turbmodel_ == INPAR::FLUID::scale_similarity_basic)
@@ -5691,6 +5693,7 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
           cout << "\n                             ";
           cout << "                           ";
           cout << "- Scale separation:  " << params_.sublist("MULTIFRACTAL SUBGRID SCALES").get<std::string>("SCALE_SEPARATION");
+          cout << &endl;
         }
         else if(turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
         {
@@ -5710,12 +5713,9 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
           cout << "- near-wall limit:   " << DRT::INPUT::IntegralValue<int>(*modelparams,"NEAR_WALL_LIMIT") << "\n";
           cout << "- beta:              " << modelparams->get<double>("BETA") << "\n";
           cout << "- evaluation B:      " << modelparams->get<std::string>("EVALUATION_B") << "\n";
+          cout << &endl;
         }
-        cout << &endl;
       }
-
-      cout << &endl;
-      cout << &endl;
 
   return;
 }
