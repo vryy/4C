@@ -153,6 +153,9 @@ void XFluidEnsightWriter::WriteAllResults(PostField* field)
   {
     EnsightWriter::WriteResult("velocity_smoothed", "velocity_smoothed", dofbased, field->problem()->num_dim());
     EnsightWriter::WriteResult("pressure_smoothed", "pressure_smoothed", dofbased, 1);
+    EnsightWriter::WriteResult("averaged_velnp", "averaged_velocity", dofbased, field->problem()->num_dim());
+    EnsightWriter::WriteResult("averaged_pressure", "averaged_pressure", dofbased, 1);
+
 
     // for diffusion problem, if ever needed
     EnsightWriter::WriteResult("temperature_smoothed", "temperature_smoothed", dofbased, 1);
