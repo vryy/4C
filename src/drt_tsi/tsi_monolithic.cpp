@@ -360,8 +360,8 @@ void TSI::Monolithic::Output()
   int uprestart = tsidyn.get<int>("RESTARTEVRY");
   // communicate the deformation to the thermal field,
   // current displacements are contained in Dispn()
-  if ( (upres!=0 and (Step()%upres == 0))
-    or (uprestart != 0) and (Step()%uprestart == 0) )
+  if ( (upres!=0 && (Step()%upres == 0))
+    || ((uprestart != 0) && (Step()%uprestart == 0)) )
     {
       // displacement field
       // (get noderowmap of discretisation for creating this multivector)
@@ -449,8 +449,10 @@ void TSI::Monolithic::NewtonFull(
   const Teuchos::ParameterList& sdynparams
   )
 {
+#ifndef TFSI
   if ( Comm().MyPID()==0 )
     cout << "TSI::Monolithic::NewtonFull()" << endl;
+#endif
 
   // we do a Newton-Raphson iteration here.
   // the specific time integration has set the following
@@ -574,8 +576,10 @@ void TSI::Monolithic::NewtonFull(
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
 {
+#ifndef TFSI
   if (Comm().MyPID() == 0)
     cout << "\n TSI::Monolithic::Evaluate()" << endl;
+#endif
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::Evaluate");
 
   // displacement and temperature incremental vector
@@ -644,7 +648,9 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   //     in the case of local systems we have to rotate forth and back
   //     ApplyDirichlettoSystem is called as well with roated stiff_!
   StructureField().Evaluate(sx);
+#ifndef TFSI
   cout << "  structure time for calling Evaluate: " << timerstructure.ElapsedTime() << "\n";
+#endif
 
 #ifdef TSIASOUTPUT
   cout << "STR fres_" << *StructureField().RHS() << endl;
@@ -680,7 +686,9 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   //   EvaluateRhsTangResidual() and
   //   PrepareSystemForNewtonSolve()
   ThermoField().Evaluate();
+#ifndef TFSI
   cout << "  thermo time for calling Evaluate: " << timerthermo.ElapsedTime() << "\n";
+#endif
 
 }  // Evaluate()
 
@@ -729,8 +737,10 @@ Teuchos::RCP<Epetra_Vector> TSI::Monolithic::CalcVelocity(
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::SetupSystem()
 {
+#ifndef TFSI
   if ( Comm().MyPID()==0 )
     cout << " TSI::Monolithic::SetupSystem()" << endl;
+#endif
 
   // create combined map
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
@@ -779,8 +789,10 @@ void TSI::Monolithic::SetupSystemMatrix(
   const Teuchos::ParameterList& sdynparams
   )
 {
+#ifndef TFSI
   if ( Comm().MyPID()==0 )
     cout << " TSI::Monolithic::SetupSystemMatrix()" << endl;
+#endif
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::SetupSystemMatrix");
 
   /*----------------------------------------------------------------------*/
@@ -907,8 +919,10 @@ void TSI::Monolithic::SetupSystemMatrix(
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::SetupRHS()
 {
+#ifndef TFSI
   if ( Comm().MyPID()==0 )
     cout << " TSI::Monolithic::SetupRHS()" << endl;
+#endif
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::SetupRHS");
 
   // create full monolithic rhs vector
@@ -953,7 +967,9 @@ void TSI::Monolithic::LinearSolve()
     zeros_,
     *CombinedDBCMap()
     );
+#ifndef TFSI
   if ( Comm().MyPID()==0 ) { cout << " DBC applied to TSI system" << endl; }
+#endif
 
   // standard solver call
   solver_->Solve(
@@ -963,7 +979,9 @@ void TSI::Monolithic::LinearSolve()
              true,
              iter_==1
              );
+#ifndef TFSI
   if ( Comm().MyPID()==0 ) { cout << " Solved" << endl; }
+#endif
 
 #else // use bgs2x2_operator
 
@@ -981,8 +999,10 @@ void TSI::Monolithic::LinearSolve()
     *CombinedDBCMap()
     );
 
+#ifndef TFSI
   if ( Comm().MyPID()==0 )
   { cout << " DBC applied to TSI system on proc" << Comm().MyPID() << endl; }
+#endif
 
   solver_->Solve(
              systemmatrix_->EpetraOperator(),
@@ -991,7 +1011,9 @@ void TSI::Monolithic::LinearSolve()
              true,
              iter_==1
              );
+#ifndef TFSI
   if ( Comm().MyPID()==0 ) { cout << " Solved" << endl; }
+#endif
 
 #endif  // TSIBLOCKMATRIXMERGE
 
@@ -1246,8 +1268,10 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
   const Teuchos::ParameterList& sdynparams
   )
 {
+#ifndef TFSI
   if ( Comm().MyPID()==0 )
     cout << " TSI::Monolithic::ApplyStrCouplMatrix()" << endl;
+#endif
 
   // create the parameters for the discretization
   Teuchos::ParameterList sparams;
@@ -1319,8 +1343,10 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
   const Teuchos::ParameterList& sdynparams
   )
 {
+#ifndef TFSI
   if ( Comm().MyPID()==0 )
     cout << " TSI::Monolithic::ApplyThrCouplMatrix()" << endl;
+#endif
 
   // create the parameters for the discretization
   Teuchos::ParameterList tparams;

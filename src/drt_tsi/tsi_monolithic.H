@@ -82,7 +82,7 @@ namespace TSI
       int step  ///< step number where the calculation is continued
       );
 
-  protected:
+  public:
 
     //! @name Time loop building blocks
 
@@ -216,6 +216,9 @@ namespace TSI
     //! print statistics of converged Newton-Raphson iteration
     void PrintNewtonConv();
 
+    /// write output
+    void Output();
+
     //@}
 
   protected:
@@ -319,9 +322,6 @@ namespace TSI
     bool printerrfile_;  //!< print infos to error file #errfile_
     FILE* errfile_;  //!< error file handle
 
-    /// write output
-    void Output();
-
     /// communicate displacement vector to thermal field to enable their
     /// visualisation on the deformed body
     void OutputDeformationInThr(
@@ -330,7 +330,7 @@ namespace TSI
       );
 
     /// displacements at time n+1 for thermal output
-    Teuchos::RCP<Epetra_MultiVector>    dispnp_;
+    Teuchos::RCP<Epetra_MultiVector> dispnp_;
 
     //@}
 
