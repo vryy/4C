@@ -172,28 +172,98 @@ void TSI::Algorithm::Update()
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::Output()
 {
-  // Note: The order is important here! In here control file entries are
-  // written. And these entries define the order in which the filters handle
-  // the Discretizations, which in turn defines the dof number ordering of the
-  // Discretizations.
+  // Note: The order in the output is important here!
+
+  // In here control file entries are written. And these entries define the
+  // order in which the filters handle the Discretizations, which in turn
+  // defines the dof number ordering of the Discretizations.
   StructureField().Output();
 
-  // write the thermo output (temperatures at the moment) to the the structure output
-  // get disc writer from structure field
-  Teuchos::RCP<IO::DiscretizationWriter> output = StructureField().DiscWriter();
-
-  // get the temperature and the noderowmap of thermo discretization
-  Epetra_Vector temperature = *(ThermoField().Tempn());
-  const Epetra_Map* temprowmap = ThermoField().Discretization()->NodeRowMap();
-
-  // replace map and write it to output
-  temperature.ReplaceMap(*temprowmap);
-  RCP<Epetra_Vector> temp = rcp(new Epetra_Vector(temperature));
-  output->WriteVector("temperature",temp);
-
   ThermoField().Output();
+
+  // call the TSI parameter list
+  const Teuchos::ParameterList& tsidyn = DRT::Problem::Instance()->TSIDynamicParams();
+  // Get the parameters for the Newton iteration
+  int upres = tsidyn.get<int>("UPRES");
+  int uprestart = tsidyn.get<int>("RESTARTEVRY");
+  // communicate the deformation to the thermal field,
+  // current displacements are contained in Dispn()
+  if ( (upres!=0 and (Step()%upres == 0))
+    or (uprestart != 0) and (Step()%uprestart == 0) )
+    {
+      // displacement field
+      // (get noderowmap of discretisation for creating this multivector)
+      dispnp_ = rcp(new Epetra_MultiVector(*(ThermoField().Discretization()->NodeRowMap()),3,true));
+
+      OutputDeformationInThr(
+          StructureField().Dispn(),
+          StructureField().Discretization()
+          );
+
+      ThermoField().DiscWriter()->WriteVector("displacement",dispnp_,IO::DiscretizationWriter::nodevector);
+    }
+
 }
 
+/*----------------------------------------------------------------------*
+ | communicate the displacement vector to THR field          dano 12/11 |
+ | enable visualisation of thermal variables on deformed body           |
+ *----------------------------------------------------------------------*/
+void  TSI::Algorithm::OutputDeformationInThr(
+  Teuchos::RCP<const Epetra_Vector> dispnp,
+  Teuchos::RCP<DRT::Discretization> structdis
+  )
+{
+  if (dispnp == Teuchos::null)
+    dserror("Got null pointer for displacements");
+
+  int err(0);
+
+  // get dofrowmap of structural discretisation
+  const Epetra_Map* structdofrowmap = structdis->DofRowMap(0);
+
+  // loop over all local nodes of thermal discretisation
+  for (int lnodeid=0; lnodeid<(ThermoField().Discretization()->NumMyRowNodes()); lnodeid++)
+  {
+    // Here we rely on the fact that the thermal discretisation is a clone of
+    // the structural mesh.
+    // => a thermal node has the same local (and global) ID as its corresponding
+    // structural node!
+
+    // get the processor's local structural node with the same lnodeid
+    DRT::Node* structlnode = structdis->lRowNode(lnodeid);
+    // get the degrees of freedom associated with this structural node
+    std::vector<int> structnodedofs = structdis->Dof(0,structlnode);
+    // determine number of space dimensions
+    const int numdim = genprob.ndim;
+
+    // now we transfer displacment dofs only
+    for(int index=0; index<numdim; ++index)
+    {
+      // global and processor's local fluid dof ID
+      const int sgid = structnodedofs[index];
+      const int slid = structdofrowmap->LID(sgid);
+
+      // get value of corresponding displacement component
+      double disp = (*dispnp)[slid];
+      // insert velocity value into node-based vector
+      err = dispnp_->ReplaceMyValue(lnodeid, index, disp);
+      if (err!= 0) dserror("error while inserting a value into dispnp_");
+    }
+
+    // for security reasons in 1D or 2D problems:
+    // set zeros for all unused velocity components
+    for (int index=numdim; index < 3; ++index)
+    {
+      err = dispnp_->ReplaceMyValue(lnodeid, index, 0.0);
+      if (err!= 0) dserror("error while inserting a value into dispnp_");
+    }
+
+  } // for lnodid
+
+return;
+
+}  // OutputDeformationInThr()
 
 /*----------------------------------------------------------------------*
  | time loop                                                 dano 12/09 |

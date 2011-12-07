@@ -102,6 +102,16 @@ namespace TSI
     /// write output
     virtual void Output();
 
+    /// communicate displacement vector to thermal field to enable their
+    /// visualisation on the deformed body
+    void OutputDeformationInThr(
+      Teuchos::RCP<const Epetra_Vector> dispnp,
+      Teuchos::RCP<DRT::Discretization> structdis
+      );
+
+    /// displacements at time n+1 for thermal output
+    Teuchos::RCP<Epetra_MultiVector> dispnp_;
+
     //@}
 
     //! @name Solve
