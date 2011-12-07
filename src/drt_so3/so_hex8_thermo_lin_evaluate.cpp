@@ -54,6 +54,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
   string action = params.get<string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_nlnstiff")      act = So_hex8::calc_struct_nlnstiff;
+  else if (action=="calc_struct_internalforce") act = So_hex8::calc_struct_internalforce;
   else if (action=="calc_struct_nlnstiffmass")  act = So_hex8::calc_struct_nlnstiffmass;
   else if (action=="calc_struct_stress")        act = So_hex8::calc_struct_stress;
   else if (action=="calc_struct_update_istep")  act = So_hex8::calc_struct_update_istep;
@@ -89,6 +90,59 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
     if (elemat1.IsInitialized()) matptr = &elemat1;
     // call the well-known soh8_nlnstiffmass for the normal structure solution
     soh8_linstiffmass(lm,mydisp,myres,matptr,NULL,&elevec1,NULL,NULL,NULL,params,
+      INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
+
+    // need current temperature state, call the temperature discretization
+    // disassemble temperature
+    if (discretization.HasState(1,"temperature"))
+    {
+      // check if you can get the temperature state
+      Teuchos::RCP<const Epetra_Vector> tempnp
+       = discretization.GetState(1,"temperature");
+      if (tempnp == Teuchos::null)
+        dserror("Cannot get state vector 'tempnp'");
+      // call the temperature discretization in the location array
+      std::vector<double> mytempnp((la[1].lm_).size());
+
+      // the temperature field has only one dof per node, disregarded by the
+      // dimension of the problem
+      const int numdofpernode_ = NumDofPerNode(1,*(Nodes()[0]));
+      // number of nodes per element
+      const int nen_ = 8;
+      if (la[1].Size() != nen_*numdofpernode_)
+        dserror("Location vector length for temperature does not match!");
+      // extract the current temperatures
+      DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
+
+      // calculate the THERMOmechanical term for fint
+      soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,
+        NULL,NULL,params,INPAR::STR::stress_none,INPAR::STR::strain_none);
+    }
+  }
+  break;
+
+  //==================================================================================
+  // internal force vector only
+  case calc_struct_internalforce:
+  {
+    // internal force vector
+    LINALG::Matrix<NUMDOF_SOH8,1> elevec1(elevec1_epetra.A(),true);
+    // elemat1+2, elevec2+3 are not used anyway
+
+    // need current displacement and residual forces
+    RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
+    RCP<const Epetra_Vector> res  = discretization.GetState(0,"residual displacement");
+    if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
+    // build the location vector only for the structure field
+    vector<int> lm = la[0].lm_;
+    vector<double> mydisp((la[0].lm_).size());
+    DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+    vector<double> myres((la[0].lm_).size());
+    DRT::UTILS::ExtractMyValues(*res,myres,lm);
+    // create a dummy element matrix to apply linearised EAS-stuff onto
+    LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> myemat(true);
+
+    soh8_linstiffmass(lm,mydisp,myres,&myemat,NULL,&elevec1,NULL,NULL,NULL,params,
       INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
 
     // need current temperature state, call the temperature discretization
