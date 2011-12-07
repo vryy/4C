@@ -1213,7 +1213,7 @@ void StatMechManager::SearchAndSetCrosslinkers(const int& istep,const double& dt
 									bool intersection = false;
 									if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
 									{
-										Epetra_SerialDenseMatrix nodecoords(3,3);
+										Epetra_SerialDenseMatrix nodecoords(3,2);
 										for(int k=0; k<nodecoords.M(); k++)
 										{
 											nodecoords(k,0) = ((currentpositions.find((int)LID(0)))->second)(k);
