@@ -1744,7 +1744,7 @@ void COMBUST::FlameFront::CallSmoothGradPhi(const Teuchos::ParameterList& combus
   };
 
   if (gfuncdis_->Comm().MyPID()==0)
-    std::cout << " done" << std::endl;
+    std::cout << "done" << std::endl;
 
   return;
 }
