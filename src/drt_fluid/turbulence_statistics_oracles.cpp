@@ -642,7 +642,7 @@ void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
   // call from combustion fluid (XFEM) with G-function field
   if (withscatra_)
   {
-    cout << "sampling with scatra" << flush;
+    cout << "sampling with scatra... " << flush;
     if (velnp != Teuchos::null)
       vel_=velnp;
     else
@@ -664,7 +664,7 @@ void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
   // call from standard fluid
   else
   {
-    cout << "sampling without scatra" << flush;
+    cout << "sampling without scatra... " << flush;
     vel_  ->Update(1.0,*velnp,0.0);
     force_->Update(1.0,*residual,0.0);
     phi_       = Teuchos::null;

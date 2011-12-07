@@ -137,7 +137,7 @@ void COMBUST::FlameFront::ProcessFlameFront(const Teuchos::RCP<const Epetra_Vect
    */
 
   if (fluiddis_->Comm().MyPID()==0)
-    std::cout << "\n---  capturing flame front... " << std::flush;
+    std::cout << "---  capturing flame front... " << std::flush;
 
   const Teuchos::RCP<Epetra_Vector> phicol = rcp(new Epetra_Vector(*fluiddis_->NodeColMap()));
   if (phicol->MyLength() != phi->MyLength())

@@ -846,7 +846,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
     // remark: as soon as the XFEM-time-integration works for kinks, this should be removed
     if (xfemtimeint_enr_==INPAR::COMBUST::xfemtimeintenr_quasistatic)
     {
-      cout0_ << "\n... quasi-static enrichment for two-phase flow problems ..." << std::endl;
+      cout0_ << "quasi-static enrichment for two-phase flow problems... " << std::flush;
 
       // accelerations at time n+1 and n
       dofswitch.mapVectorToNewDofDistributionCombust(state_.accnp_,true);
@@ -866,7 +866,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(
       dofswitch.mapVectorToNewDofDistributionCombust(state_.veln_ ,false);
       dofswitch.mapVectorToNewDofDistributionCombust(state_.velnm_,false);
     }
-    cout0_ << "... done  ---" << endl;
+    cout0_ << "done" << endl;
 
     // all initial values can be set now; including the enrichment values
     if (step_ == 0)

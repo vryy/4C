@@ -433,7 +433,7 @@ void COMBUST::Algorithm::DoReinitialization()
       reinitialization_accepted_ = true;
       break;
     case INPAR::COMBUST::reinitaction_none:
-      if(Comm().MyPID()==0) std::cout << "No reinitialization chosen" << std::endl;
+      if(Comm().MyPID()==0) std::cout << "No reinitialization chosen" << std::flush;
       reinitialization_accepted_=false;
       break;
     default: dserror("unknown type of reinitialization technique");
@@ -1564,14 +1564,14 @@ void COMBUST::Algorithm::UpdateTimeStep()
 
   if (stepreinit_ and reinitialization_accepted_)
   {
-    if(Comm().MyPID()==0)
-      cout << "UpdateReinit" << endl;
+    //if(Comm().MyPID()==0)
+    //  cout << "UpdateReinit" << endl;
     ScaTraField().UpdateReinit();
   }
   else
   {
-    if(Comm().MyPID()==0)
-      cout << "Update" << endl;
+    //if(Comm().MyPID()==0)
+    //  cout << "Update" << endl;
     ScaTraField().Update();
   }
 
@@ -2340,7 +2340,7 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
     ScaTraField().Phidtn()->Update(1.0,*(ScaTraField().Phidtnp()),0.0);
     ScaTraField().Phinm() ->Update(1.0,*(ScaTraField().Phin()),   0.0);
     if (Comm().MyPID()==0)
-      std::cout << " done" << std::endl;
+      std::cout << "done" << std::endl;
 
     // additionally we need to update the interfacehandle and flamefront
     // or later on the computeVolume function will return the old volume
@@ -2386,6 +2386,7 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
         //    gmshfilecontent << "};" << endl;
       }
       gmshfilecontent.close();
+      std::cout << " done" << endl;
     }
 
     if (!restartfromfluid)
@@ -2421,7 +2422,6 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
     //--------------------------
     // write output to Gmsh file
     //--------------------------
-    std::cout << "\n"<< std::flush;
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("field_scalar_restart_after_reinit", Step(), 701, true, gfuncdis->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
     {
@@ -2453,6 +2453,7 @@ void COMBUST::Algorithm::RestartNew(int step, const bool restartscatrainput, con
       //    gmshfilecontent << "};" << endl;
     }
     gmshfilecontent.close();
+    std::cout << " done" << endl;
   }
 
   //-------------------
