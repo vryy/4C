@@ -581,6 +581,8 @@ namespace STR
       return (locsysman_ != Teuchos::null) ? locsysman_->Trafo() : Teuchos::null;
     }
 
+    //! Return locsys manager
+    Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() {return locsysman_;}
 
     //! Sets the time for the next time step needed for the inverse analysis
     void SetTimen(double time){timen_ = time;};  //!< target time \f$t_{n+1}\f$
