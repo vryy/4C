@@ -552,10 +552,22 @@ void XFEM::SemiLagrange::getDataForNotConvergedNodes(
          *----------------------------------------------------------*/
         callXToXiCoords(ele,x,xi,elefound);
 
-        if (!elefound)
-          dserror("element of a row node of a proc should be in procs colmap!");
-        else
-          callBackTracking(ele,&*data,xi,static_cast<const char*>("failing"));
+        if (!elefound) // possibly slave node looked for element of master node or vice versa
+        {
+          // get pbcnode
+          bool pbcnodefound = false; // boolean indicating whether this node is a pbc node
+          DRT::Node* pbcnode = NULL;
+          findPBCNode(node,pbcnode,pbcnodefound);
+
+          // get local coordinates
+          LINALG::Matrix<nsd,1> pbccoords(pbcnode->X());
+          callXToXiCoords(ele,pbccoords,xi,elefound);
+
+          if (!elefound) // now something is really wrong...
+            dserror("element of a row node not on same processor as node?! BUG!");
+        }
+
+        callBackTracking(ele,&*data,xi,static_cast<const char*>("failing"));
       }
 
     } // end loop over nodes
@@ -679,9 +691,20 @@ void XFEM::SemiLagrange::backTracking(
       bool elefound = false;
       callXToXiCoords(ele,coords,xi,elefound);
 
-      if ((!elefound) or
-          (ele->Id()!=nodeeles[iele]->Id())) // node of element should lie in element...
-        dserror("node of an element is not lying in the element! BUG?!");
+      if (!elefound) // possibly slave node looked for element of master node or vice versa
+      {
+        // get pbcnode
+        bool pbcnodefound = false; // boolean indicating whether this node is a pbc node
+        DRT::Node* pbcnode = NULL;
+        findPBCNode(node,pbcnode,pbcnodefound);
+
+        // get local coordinates
+        LINALG::Matrix<nsd,1> pbccoords(pbcnode->X());
+        callXToXiCoords(ele,pbccoords,xi,elefound);
+
+        if (!elefound) // now something is really wrong...
+          dserror("element of a row node not on same processor as node?! BUG!");
+      }
     }
     else
       ele = fittingele;
