@@ -98,10 +98,10 @@ namespace ADAPTER
     {
       return thermo_->GetDBCMapExtractor();
     }
-    
+
     /// External force at t_{n+1} (corresponds in structure to FExtn())
     Teuchos::RCP<const Epetra_Vector> FExtnp();
-    
+
     // access to thermal contact manager
     Teuchos::RCP<THR::ThermoContactMan> ThermoContactManager();
 
@@ -145,6 +145,12 @@ namespace ADAPTER
     /// print info about finished time step
     void PrintStep();
 
+    //! Access to output object
+    Teuchos::RCP<IO::DiscretizationWriter> DiscWriter()
+    {
+      return output_;
+    }
+
     /// output results
     void Output();
 
@@ -176,7 +182,7 @@ namespace ADAPTER
 
     /// extract current temperatures for inserting in structure field
     virtual Teuchos::RCP<Epetra_Vector> ExtractTempnp();
-    
+
     /// prepare thermal contact
     void PrepareThermoContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
                               Teuchos::RCP<DRT::Discretization> discretstruct);

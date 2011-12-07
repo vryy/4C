@@ -126,7 +126,7 @@ namespace ADAPTER
 
     /// Return MapExtractor for Dirichlet boundary conditions
     virtual Teuchos::RCP<const LINALG::MapExtractor> GetDBCMapExtractor() = 0;
-    
+
     //@}
 
     //! @name Time step helpers
@@ -168,6 +168,9 @@ namespace ADAPTER
     /// print info about finished time step
     virtual void PrintStep() = 0;
 
+    //! Access to output object
+    virtual Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() = 0;
+
     /// output results
     virtual void Output() = 0;
 
@@ -177,7 +180,7 @@ namespace ADAPTER
     /// prepare thermal contact
     virtual void PrepareThermoContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
                                       Teuchos::RCP<DRT::Discretization> discretstruct) = 0;
-    
+
     /// return thermal contact manager
     virtual Teuchos::RCP<THR::ThermoContactMan> ThermoContactManager() = 0;
 

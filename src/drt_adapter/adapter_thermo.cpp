@@ -128,6 +128,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimIntImpl(const Teuchos::ParameterList&
   // -------------------------------------------------------------------
   // overrule certain parameters for coupled problems
   // -------------------------------------------------------------------
+
   // the default time step size
   tdyn->set<double>("TIMESTEP",prbdyn.get<double>("TIMESTEP"));
   // maximum simulation time
